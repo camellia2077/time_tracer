@@ -7,7 +7,9 @@
 #include <algorithm> // For std::string::find_first_not_of
 #include <chrono>    // For high-precision timing
 #include <iomanip>   // For std::fixed and std::setprecision
+#include <sstream>   // <--- 新增：用于 std::stringstream
 
+// ... (结构体 RawEvent, DayData 和函数 formatTime, isDateLine, parseEventLine, processDayData, writeDayData 保持不变) ...
 // Structure to hold event details (raw from input)
 struct RawEvent {
     std::string endTimeStr; // "HHMM" format
@@ -34,7 +36,7 @@ struct DayData {
 
 // Format HHMM to HH:MM
 std::string formatTime(const std::string& timeStr) {
-    if (timeStr.length() == 4 && 
+    if (timeStr.length() == 4 &&
         std::isdigit(timeStr[0]) && std::isdigit(timeStr[1]) &&
         std::isdigit(timeStr[2]) && std::isdigit(timeStr[3])) {
         return timeStr.substr(0, 2) + ":" + timeStr.substr(2, 2);
@@ -56,12 +58,12 @@ bool isDateLine(const std::string& line) {
 // Populates timeStr ("HHMM") and description.
 bool parseEventLine(const std::string& line, std::string& timeStr, std::string& description) {
     if (line.length() < 5) return false; // Needs HHMM + at least one char for description
-    
+
     timeStr = line.substr(0, 4);
     for (char c : timeStr) {
         if (!std::isdigit(c)) return false; // Time part must be digits
     }
-    
+
     // Basic validation for HHMM time values
     try {
         int hh = std::stoi(timeStr.substr(0,2));
@@ -75,7 +77,7 @@ bool parseEventLine(const std::string& line, std::string& timeStr, std::string& 
 
     description = line.substr(4);
     if (description.empty()) return false; // Description cannot be empty
-    
+
     return true;
 }
 
@@ -85,9 +87,6 @@ void processDayData(DayData& day, const std::map<std::string, std::string>& mapp
         return; // No date, nothing to process
     }
 
-    // If no getupTime is set and there are events, we cannot correctly form the first time interval.
-    // According to the problem, "起床" (Getup) event sets the baseline.
-    // If getupTime is empty, no remarks will be generated.
     if (day.getupTime.empty() && !day.rawEvents.empty()) {
         // Optional: std::cerr << "Warning: Day " << day.date << " has events but no Getup time. Remarks may not be generated correctly." << std::endl;
         return; // No Getup time, cannot generate remarks
@@ -101,7 +100,7 @@ void processDayData(DayData& day, const std::map<std::string, std::string>& mapp
     for (const auto& rawEvent : day.rawEvents) {
         std::string formattedEventStartTime = currentEventStartTime;
         std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
-        
+
         std::string originalDescription = rawEvent.description;
         std::string mappedDescription = originalDescription; // Default to original if not in map
 
@@ -110,7 +109,6 @@ void processDayData(DayData& day, const std::map<std::string, std::string>& mapp
             mappedDescription = mapIt->second;
         }
 
-        // Check if the mapped description contains "study"
         if (mappedDescription.find("study") != std::string::npos) {
             day.hasStudyActivity = true;
         }
@@ -157,14 +155,20 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // --- 修改开始 ---
+    // 将整个文件内容读入一个 stringstream
+    std::stringstream buffer;
+    buffer << inFile.rdbuf();
+    inFile.close(); // 文件内容已在 buffer 中，可以关闭文件
+    // --- 修改结束 ---
+
     std::ofstream outFile(outputFileName);
     if (!outFile.is_open()) {
         std::cerr << "Error: Could not open output file " << outputFileName << std::endl;
-        inFile.close();
+        // inFile.close(); // 已经被关闭了
         return 1;
     }
 
-    // Text mapping relationships
     const std::map<std::string, std::string> G_TEXT_MAPPING = {
         {"word", "study_english_words"},
         {"单词", "study_english_words"},
@@ -198,29 +202,29 @@ int main(int argc, char* argv[]) {
 
     DayData currentDayData;
     std::string line;
-    const std::string YEAR_PREFIX = "2025"; // Fixed year as per example output
+    const std::string YEAR_PREFIX = "2025";
 
-    while (std::getline(inFile, line)) {
+    // --- 修改开始 ---
+    // 从 stringstream 而不是 ifstream 逐行读取
+    while (std::getline(buffer, line)) {
+    // --- 修改结束 ---
         // Skip empty or whitespace-only lines
-        if (line.empty() || line.find_first_not_of(" \t\n\v\f\r") == std::string::npos) { 
-            continue; 
+        if (line.empty() || line.find_first_not_of(" \t\n\v\f\r") == std::string::npos) {
+            continue;
         }
 
         std::string eventTime, eventDesc;
-        if (isDateLine(line)) { 
-            // If there's data from a previous day, process and write it
+        if (isDateLine(line)) {
             if (!currentDayData.date.empty()) {
                 processDayData(currentDayData, G_TEXT_MAPPING);
                 writeDayData(outFile, currentDayData);
             }
-            // Start a new day
             currentDayData.clear();
-            currentDayData.date = YEAR_PREFIX + line; // line is MMDD
+            currentDayData.date = YEAR_PREFIX + line;
         } else if (parseEventLine(line, eventTime, eventDesc)) {
             if (currentDayData.date.empty()) {
-                // Event line appeared before any date line. Ignore this event.
                 // Optional: std::cerr << "Warning: Event line '" << line << "' appeared before a date line and will be ignored." << std::endl;
-                continue; 
+                continue;
             }
 
             if (eventDesc == "起床") {
@@ -229,20 +233,18 @@ int main(int argc, char* argv[]) {
                 currentDayData.rawEvents.push_back({eventTime, eventDesc});
             }
         } else {
-             // Optional: std::cerr << "Warning: Skipping malformed line: '" << line << "'" << std::endl;
+            // Optional: std::cerr << "Warning: Skipping malformed line: '" << line << "'" << std::endl;
         }
     }
 
-    // Process and write data for the last day in the file
     if (!currentDayData.date.empty()) {
         processDayData(currentDayData, G_TEXT_MAPPING);
         writeDayData(outFile, currentDayData);
     }
 
-    inFile.close();
+    // inFile.close(); // 已经被关闭了
     outFile.close();
 
-    // Stop timing
     auto endTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsedSeconds = endTime - startTime;
 
