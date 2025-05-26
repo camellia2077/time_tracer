@@ -2,14 +2,13 @@
 #include <fstream>
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map> 
 #include <cctype>    // For std::isdigit
 #include <algorithm> // For std::string::find_first_not_of
 #include <chrono>    // For high-precision timing
 #include <iomanip>   // For std::fixed and std::setprecision
-#include <sstream>   // <--- 新增：用于 std::stringstream
+#include <sstream>   // For std::stringstream
 
-// ... (结构体 RawEvent, DayData 和函数 formatTime, isDateLine, parseEventLine, processDayData, writeDayData 保持不变) ...
 // Structure to hold event details (raw from input)
 struct RawEvent {
     std::string endTimeStr; // "HHMM" format
@@ -82,13 +81,13 @@ bool parseEventLine(const std::string& line, std::string& timeStr, std::string& 
 }
 
 // Process collected raw events for a day to generate remarks and determine status
-void processDayData(DayData& day, const std::map<std::string, std::string>& mapping) {
+// --- 修改：mapping 参数类型改为 std::unordered_map ---
+void processDayData(DayData& day, const std::unordered_map<std::string, std::string>& mapping) {
     if (day.date.empty()) {
         return; // No date, nothing to process
     }
 
     if (day.getupTime.empty() && !day.rawEvents.empty()) {
-        // Optional: std::cerr << "Warning: Day " << day.date << " has events but no Getup time. Remarks may not be generated correctly." << std::endl;
         return; // No Getup time, cannot generate remarks
     }
     if (day.rawEvents.empty()){ // If no other activities, no remarks to generate
@@ -104,9 +103,9 @@ void processDayData(DayData& day, const std::map<std::string, std::string>& mapp
         std::string originalDescription = rawEvent.description;
         std::string mappedDescription = originalDescription; // Default to original if not in map
 
-        auto mapIt = mapping.find(originalDescription);
+        auto mapIt = mapping.find(originalDescription); // find() works the same
         if (mapIt != mapping.end()) {
-            mappedDescription = mapIt->second;
+            mappedDescription = mapIt->second; // Accessing works the same
         }
 
         if (mappedDescription.find("study") != std::string::npos) {
@@ -126,7 +125,7 @@ void writeDayData(std::ofstream& outFile, const DayData& day) {
 
     outFile << "Date:" << day.date << std::endl;
     outFile << "Status:" << (day.hasStudyActivity ? "True" : "False") << std::endl;
-    outFile << "Getup:" << day.getupTime << std::endl; // Output "Getup:" even if getupTime is empty
+    outFile << "Getup:" << day.getupTime << std::endl;
     outFile << "Remark:" << std::endl;
     if (!day.remarksOutput.empty()) {
         for (const auto& remark : day.remarksOutput) {
@@ -144,9 +143,8 @@ int main(int argc, char* argv[]) {
     }
 
     std::string inputFileName = argv[1];
-    std::string outputFileName = "output.txt"; // Default output filename
+    std::string outputFileName = "output.txt";
 
-    // Start timing
     auto startTime = std::chrono::high_resolution_clock::now();
 
     std::ifstream inFile(inputFileName);
@@ -155,21 +153,18 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // --- 修改开始 ---
-    // 将整个文件内容读入一个 stringstream
     std::stringstream buffer;
     buffer << inFile.rdbuf();
-    inFile.close(); // 文件内容已在 buffer 中，可以关闭文件
-    // --- 修改结束 ---
+    inFile.close();
 
     std::ofstream outFile(outputFileName);
     if (!outFile.is_open()) {
         std::cerr << "Error: Could not open output file " << outputFileName << std::endl;
-        // inFile.close(); // 已经被关闭了
         return 1;
     }
 
-    const std::map<std::string, std::string> G_TEXT_MAPPING = {
+    // --- 修改：G_TEXT_MAPPING 类型改为 std::unordered_map ---
+    const std::unordered_map<std::string, std::string> G_TEXT_MAPPING = {
         {"word", "study_english_words"},
         {"单词", "study_english_words"},
         {"听力", "study_english_listening"},
@@ -204,11 +199,7 @@ int main(int argc, char* argv[]) {
     std::string line;
     const std::string YEAR_PREFIX = "2025";
 
-    // --- 修改开始 ---
-    // 从 stringstream 而不是 ifstream 逐行读取
     while (std::getline(buffer, line)) {
-    // --- 修改结束 ---
-        // Skip empty or whitespace-only lines
         if (line.empty() || line.find_first_not_of(" \t\n\v\f\r") == std::string::npos) {
             continue;
         }
@@ -223,7 +214,6 @@ int main(int argc, char* argv[]) {
             currentDayData.date = YEAR_PREFIX + line;
         } else if (parseEventLine(line, eventTime, eventDesc)) {
             if (currentDayData.date.empty()) {
-                // Optional: std::cerr << "Warning: Event line '" << line << "' appeared before a date line and will be ignored." << std::endl;
                 continue;
             }
 
@@ -242,7 +232,6 @@ int main(int argc, char* argv[]) {
         writeDayData(outFile, currentDayData);
     }
 
-    // inFile.close(); // 已经被关闭了
     outFile.close();
 
     auto endTime = std::chrono::high_resolution_clock::now();
