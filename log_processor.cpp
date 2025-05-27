@@ -11,6 +11,7 @@
 // Include the nlohmann/json library header
 // Make sure this file is in your include path (e.g., same directory or system path)
 #include "json.hpp" // Or <nlohmann/json.hpp> depending on your setup
+namespace fs = std::filesystem;
 
 // Structure to hold event details (raw from input)
 struct RawEvent {
@@ -194,8 +195,11 @@ int main(int argc, char* argv[]) {
     std::ios_base::sync_with_stdio(false);
 
     std::string inputFileName = argv[1];
-    std::string outputFileName = "duration_time.txt";
-    std::string mappingFileName = "log_processor.json"; // Name of the JSON mapping file
+
+    fs::path inputPath(inputFileName); // 将输入文件名字符串转换为路径对象
+    std::string baseName = inputPath.filename().string(); // 获取文件名部分（例如 "myfile.txt"）
+    std::string outputFileName = "Duration_" + baseName; // 构造新的输出文件名
+    std::string mappingFileName = "log_processor.json";
 
     auto overallStartTime = std::chrono::high_resolution_clock::now();
 
