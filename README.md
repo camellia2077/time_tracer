@@ -7,6 +7,12 @@ program.exe <num_days> <items_per_day>
 
 log_generator.exe 3650 30
 
+# time_tracker
+time_tracker.exe <filepath.txt>// 存入数据
+
+time_tracker.exe' query 20250501//查询 20250501这天的数据
+
+
 # 性能对比 log_generator.cpp
 days_36500_items_30
 
