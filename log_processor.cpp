@@ -7,7 +7,10 @@
 #include <algorithm> // For std::all_of
 #include <chrono>    // For high-precision timing
 #include <iomanip>   // For std::fixed and std::setprecision
-// <sstream> is no longer needed for buffering the whole file
+
+// Include the nlohmann/json library header
+// Make sure this file is in your include path (e.g., same directory or system path)
+#include "json.hpp" // Or <nlohmann/json.hpp> depending on your setup
 
 // Structure to hold event details (raw from input)
 struct RawEvent {
@@ -32,6 +35,45 @@ struct DayData {
     }
 };
 
+// Function to load the text mapping from a JSON file
+std::unordered_map<std::string, std::string> load_text_mapping(const std::string& filename) {
+    std::ifstream ifs(filename);
+    if (!ifs.is_open()) {
+        std::cerr << "Error: Could not open mapping file: " << filename << std::endl;
+        return {}; // Return an empty map on error
+    }
+
+    nlohmann::json j;
+    try {
+        ifs >> j; // Parse the JSON from the input stream
+    } catch (nlohmann::json::parse_error& e) {
+        std::cerr << "Error: Failed to parse mapping JSON from " << filename << "\n"
+                  << "Message: " << e.what() << "\n"
+                  << "Byte position: " << e.byte << std::endl;
+        return {}; // Return an empty map on error
+    }
+    ifs.close();
+
+    // Check if the parsed JSON is an object (map-like structure)
+    if (!j.is_object()) {
+        std::cerr << "Error: Root of JSON in " << filename << " is not an object." << std::endl;
+        return {};
+    }
+
+    std::unordered_map<std::string, std::string> mapping;
+    try {
+        // Deserialize the JSON object directly into the unordered_map
+        // This works if all values in the JSON object are strings.
+        mapping = j.get<std::unordered_map<std::string, std::string>>();
+    } catch (nlohmann::json::type_error& e) {
+         std::cerr << "Error: Type mismatch when converting JSON to map from " << filename << ".\n"
+                   << "Ensure all values in the JSON object are strings.\n"
+                   << "Message: " << e.what() << std::endl;
+         return {}; // Return an empty map on error
+    }
+    return mapping;
+}
+
 // Format HHMM to HH:MM
 // Assumes timeStrHHMM is a valid 4-digit string.
 std::string formatTime(const std::string& timeStrHHMM) {
@@ -45,7 +87,7 @@ std::string formatTime(const std::string& timeStrHHMM) {
         return formattedTime;
     }
     // Fallback for unexpected cases
-    return timeStrHHMM; 
+    return timeStrHHMM;
 }
 
 // Check if a line is a 4-digit date (MMDD)
@@ -72,7 +114,7 @@ bool parseEventLine(const std::string& line, std::string& outTimeStr, std::strin
     if (hh > 23 || mm > 59) return false;
 
     // Use assign with pointer and length to avoid intermediate substr objects for performance
-    outTimeStr.assign(line.data(), 4); 
+    outTimeStr.assign(line.data(), 4);
     outDescription.assign(line.data() + 4, line.length() - 4);
 
     if (outDescription.empty()) return false;
@@ -86,7 +128,7 @@ void processDayData(DayData& day, const std::unordered_map<std::string, std::str
         return;
     }
 
-    // Preserving original C++ logic: If Getup time is missing, but there are events, 
+    // Preserving original C++ logic: If Getup time is missing, but there are events,
     // do not generate remarks (differs from the Python script).
     if (day.getupTime.empty() && !day.rawEvents.empty()) {
         return;
@@ -111,7 +153,7 @@ void processDayData(DayData& day, const std::unordered_map<std::string, std::str
         if (mappedDescription.find("study") != std::string::npos) {
             day.hasStudyActivity = true;
         }
-        
+
         std::string remark;
         remark.reserve(currentEventIntervalStartTime.length() + 1 + formattedEventEndTime.length() + mappedDescription.length());
         remark.append(currentEventIntervalStartTime);
@@ -149,14 +191,23 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    // Optimizations for C++ standard streams (though primarily using fstream here)
     std::ios_base::sync_with_stdio(false);
-    // std::cin.tie(NULL); // Not using cin, but good practice if cin were used
 
     std::string inputFileName = argv[1];
-    std::string outputFileName = "output.txt"; 
+    std::string outputFileName = "duration_time.txt";
+    std::string mappingFileName = "log_processor.json"; // Name of the JSON mapping file
 
     auto overallStartTime = std::chrono::high_resolution_clock::now();
+
+    // Load G_TEXT_MAPPING from the JSON file
+    std::unordered_map<std::string, std::string> G_TEXT_MAPPING = load_text_mapping(mappingFileName);
+
+    // Check if mapping was loaded successfully
+    if (G_TEXT_MAPPING.empty()) {
+        std::cerr << "Error: Text mapping could not be loaded from " << mappingFileName
+                  << " or the file is empty/invalid. Exiting." << std::endl;
+        return 1; // Exit if mapping is crucial and not loaded
+    }
 
     std::ifstream inFile(inputFileName);
     if (!inFile.is_open()) {
@@ -167,42 +218,23 @@ int main(int argc, char* argv[]) {
     std::ofstream outFile(outputFileName);
     if (!outFile.is_open()) {
         std::cerr << "Error: Could not open output file " << outputFileName << std::endl;
-        inFile.close(); 
+        inFile.close();
         return 1;
     }
-    
-    const std::unordered_map<std::string, std::string> G_TEXT_MAPPING = {
-        {"word", "study_english_words"}, {"单词", "study_english_words"},
-        {"听力", "study_english_listening"}, {"文章", "study_english_article"},
-        {"timemaster", "code_time-master"}, {"refactor", "code_refactor"},
-        {"休息短", "rest_short"}, {"休息中", "rest_medium"}, {"休息长", "rest_long"},
-        {"饭中", "meal_medium"}, {"饭长","meal_long"},
-        {"zh", "recreation_zhihu"}, {"知乎", "recreation_zhihu"},
-        {"dy", "recreation_douyin"}, {"抖音", "recreation_douyin"},
-        {"守望先锋", "recreation_game_overwatch"}, {"皇室", "recreation_game_clash-royale"},
-        {"ow", "recreation_game_overwatch"}, {"bili", "recreation_bilibili"},
-        {"mix", "recreation_mix"}, {"b", "recreation_bilibili"},
-        {"电影", "recreation_movie"}, {"撸", "rest_masturbation"},
-        {"school", "other_school"}, {"有氧", "exercise_cardio"},
-        {"无氧", "exercise_anaerobic"}, {"运动", "exercise_both"},
-        {"break", "break_unknown"}
-    };
 
     DayData currentDayData;
     std::string line;
     const std::string YEAR_PREFIX = "2025";
-    
-    // Pre-allocate strings for parsing results to reduce reallocations in the loop
-    std::string eventTimeBuffer; 
+
+    std::string eventTimeBuffer;
     std::string eventDescBuffer;
 
-    // Direct line-by-line reading from file stream
     while (std::getline(inFile, line)) {
         if (line.empty() || std::all_of(line.begin(), line.end(), ::isspace)) {
             continue;
         }
-        
-        eventTimeBuffer.clear(); // Reuse buffers
+
+        eventTimeBuffer.clear();
         eventDescBuffer.clear();
 
         if (isDateLine(line)) {
@@ -214,7 +246,6 @@ int main(int argc, char* argv[]) {
             currentDayData.date = YEAR_PREFIX + line;
         } else if (parseEventLine(line, eventTimeBuffer, eventDescBuffer)) {
             if (currentDayData.date.empty()) {
-                // std::cerr << "Warning: Event line '" << line << "' found without active date. Skipping." << std::endl;
                 continue;
             }
 
@@ -234,12 +265,13 @@ int main(int argc, char* argv[]) {
     }
 
     inFile.close();
-    outFile.close(); 
+    outFile.close();
 
     auto overallEndTime = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsedSeconds = overallEndTime - overallStartTime;
 
     std::cout << "Processing complete. Output written to " << outputFileName << std::endl;
+    std::cout << "Text mapping loaded from " << mappingFileName << std::endl;
     std::cout << "Time taken: " << std::fixed << std::setprecision(6) << elapsedSeconds.count() << " seconds." << std::endl;
 
     return 0;
