@@ -72,7 +72,7 @@ int main(int argc, char* argv[]) {
     // Construct output filename
     std::ostringstream filename_ss;
     filename_ss << "log_" << num_days_val
-                << "_items_" << items_per_day_val << "_randomized.txt"; // Added _randomized to filename
+                << "_items_" << items_per_day_val << "_final_sleep.txt"; // Updated filename
     std::string output_filename_str = filename_ss.str();
 
     // Ensure start_month and start_day_of_month are somewhat sensible for the start.
@@ -84,8 +84,6 @@ int main(int argc, char* argv[]) {
     int current_month = start_month;
     int current_day_of_month = start_day_of_month;
 
-    // IMPORTANT: Ensure this source file is saved with UTF-8 encoding
-    // for the Chinese characters to be correctly represented in string literals.
     std::vector<std::string> common_activities = {
         "word", "饭中", "timemaster", "休息短", "听力", "bili", "运动", "洗澡",
         "refactor", "单词", "听力", "文章", "timemaster", "refactor", "休息短",
@@ -111,54 +109,65 @@ int main(int argc, char* argv[]) {
         dis_activity_selector = std::make_unique<std::uniform_int_distribution<>>(0, static_cast<int>(common_activities.size()) - 1);
     }
 
+    // Stores the wakeup minute for the *current* day's "起床" event.
+    // Initialized for the first day (d=0).
+    int minute_for_todays_actual_wakeup = dis_minute(gen);
+
     for (int d = 0; d < num_days_val; ++d) {
         // Print date line (MMDD)
         outFile << format_two_digits(current_month) << format_two_digits(current_day_of_month) << std::endl;
 
+        // Determine the wakeup minute for the *next* day (d+1).
+        // This will be used for the current day's (d) "睡觉长" item's time.
+        // And it will become `minute_for_todays_actual_wakeup` in the next iteration.
+        int minute_for_next_days_scheduled_wakeup = dis_minute(gen);
+
         for (int i = 0; i < items_per_day_val; ++i) {
-            int logical_event_hour;
-            int event_minute = dis_minute(gen); // Random minute for this event
-            std::string event_text_to_use;
+            int display_hour_final;
+            int event_minute_final;
+            std::string event_text_to_use_final;
 
-            // Determine the logical hour for the event (6 AM to 1 AM next day, i.e., 6 to 25)
-            // This distributes items_per_day_val items across a 19-hour span.
-            if (items_per_day_val == 1) {
-                logical_event_hour = 6; // Single item at 06:MM
-            } else {
-                // progress_ratio goes from 0 (for i=0) to 1 (for i=items_per_day_val-1)
+            if (i == items_per_day_val - 1) { // LAST item of the day
+                event_text_to_use_final = "睡觉长";
+                display_hour_final = 6; // Next day's wakeup hour is 06:00
+                event_minute_final = minute_for_next_days_scheduled_wakeup; // Use (d+1)'s scheduled wakeup minute
+            } else if (i == 0) { // FIRST item (and not the last, as that's covered above)
+                event_text_to_use_final = "起床";
+                display_hour_final = 6;
+                event_minute_final = minute_for_todays_actual_wakeup; // Use (d)'s actual wakeup minute
+            } else { // INTERMEDIATE items
+                // These items are between "起床" and the item just before "睡觉长".
+                // Their times should be distributed within the 06:00 current day to ~01:00 next day (current cycle).
                 double progress_ratio = static_cast<double>(i) / (items_per_day_val - 1);
-                // hour_offset goes from 0 to 19
                 int hour_offset = static_cast<int>(std::round(progress_ratio * 19.0));
-                logical_event_hour = 6 + hour_offset;
-            }
-            
-            // Ensure logical_event_hour stays within the 6 to 25 range (defensive)
-            if (logical_event_hour < 6) logical_event_hour = 6;
-            if (logical_event_hour > 25) logical_event_hour = 25;
+                int logical_event_hour = 6 + hour_offset;
+                
+                // Ensure logical_event_hour stays within the 6 to 25 range (defensive)
+                if (logical_event_hour < 6) logical_event_hour = 6;
+                if (logical_event_hour > 25) logical_event_hour = 25;
 
 
-            int display_hour;
-            if (logical_event_hour == 24) { // Midnight
-                display_hour = 0;
-            } else if (logical_event_hour == 25) { // 1 AM next day
-                display_hour = 1;
-            } else { // Hours 6 to 23
-                display_hour = logical_event_hour;
-            }
+                if (logical_event_hour == 24) { // Midnight
+                    display_hour_final = 0;
+                } else if (logical_event_hour == 25) { // 1 AM next day
+                    display_hour_final = 1;
+                } else { // Hours 6 to 23
+                    display_hour_final = logical_event_hour;
+                }
 
-            outFile << format_two_digits(display_hour) << format_two_digits(event_minute);
+                event_minute_final = dis_minute(gen); // New random minute for this intermediate item
 
-            if (i == 0) {
-                event_text_to_use = "起床";
-            } else {
                 if (dis_activity_selector) { // If common_activities is not empty
-                    event_text_to_use = common_activities[(*dis_activity_selector)(gen)];
+                    event_text_to_use_final = common_activities[(*dis_activity_selector)(gen)];
                 } else {
-                    event_text_to_use = "generic_activity"; // Fallback
+                    event_text_to_use_final = "generic_activity"; // Fallback
                 }
             }
-            outFile << event_text_to_use << std::endl;
+            outFile << format_two_digits(display_hour_final) << format_two_digits(event_minute_final) << event_text_to_use_final << std::endl;
         }
+
+        // For the next day (d+1), its "起床" minute will be what we just scheduled for its wakeup.
+        minute_for_todays_actual_wakeup = minute_for_next_days_scheduled_wakeup;
 
         // Advance to the next day
         current_day_of_month++;
