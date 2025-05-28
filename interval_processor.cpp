@@ -3,13 +3,15 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <cctype>    // For std::isdigit, ::isspace
-#include <algorithm> // For std::all_of
-#include <chrono>    // For high-precision timing
-#include <iomanip>   // For std::fixed and std::setprecision
-#include <filesystem> // For std::filesystem
+#include <cctype>
+#include <algorithm>
+#include <chrono>
+#include <iomanip>
+#include <filesystem>
+#include <ctime>   // Required for std::localtime, std::tm
+#include <sstream> // Required for std::ostringstream
 
-#include "json.hpp" 
+#include "json.hpp"
 namespace fs = std::filesystem;
 
 // Structure to hold event details (raw from input)
@@ -216,7 +218,14 @@ int main(int argc, char* argv[]) {
     DayData previousDay; // Stores the data for the day before the current one being parsed (N-1)
     DayData currentDay;  // Stores data for the day currently being parsed (N)
     std::string line;
-    const std::string YEAR_PREFIX = "2025"; // As per original logic
+    
+    // --- Modification Start ---
+    // Get current year
+    std::time_t now = std::time(nullptr);
+    std::tm* ltm = std::localtime(&now);
+    std::string YEAR_PREFIX = std::to_string(1900 + ltm->tm_year);
+    // --- Modification End ---
+
 
     std::string eventTimeBuffer;
     std::string eventDescBuffer;
@@ -259,7 +268,7 @@ int main(int argc, char* argv[]) {
             // Shift days: currentDay becomes previousDay, and currentDay is reset for the new date
             previousDay = currentDay;
             currentDay.clear();
-            currentDay.date = YEAR_PREFIX + line;
+            currentDay.date = YEAR_PREFIX + line; //
 
         } else if (parseEventLine(line, eventTimeBuffer, eventDescBuffer)) {
             if (currentDay.date.empty()) { // Should not happen if date lines are always first for a day
