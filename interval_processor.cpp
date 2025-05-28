@@ -104,12 +104,9 @@ bool parseEventLine(const std::string& line, std::string& outTimeStr, std::strin
     int mm = (line[2] - '0') * 10 + (line[3] - '0');
 
     if (hh > 23 || mm > 59) return false;
-
     outTimeStr.assign(line.data(), 4);
     outDescription.assign(line.data() + 4, line.length() - 4);
-
     if (outDescription.empty()) return false;
-
     return true;
 }
 
