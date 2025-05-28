@@ -1,0 +1,118 @@
+{
+    "PARENT_CATEGORIES": {
+      "code": [
+        "code_time-master",
+        "code_weibo",
+        "code_binary",
+        "code_ascii",
+        "code_spider",
+        "code_refactor"
+      ],
+      "routine": [
+        "routine_grooming",
+        "routine_bath",
+        "routine_toilet",
+        "routine_washing",
+        "routine_express"
+      ],
+      "study": [
+        "study_computer_algorithm",
+        "study_computer_algorithm_graph",
+        "study_computer_algorithm_DFS",
+        "study_computer_algorithm_list",
+        "study_computer_algorithm_linked-list",
+        "study_computer_algorithm_queue",
+        "study_computer_algorithm_greed",
+        "study_computer_algorithm_array",
+        "study_computer_algorithm_sort",
+        "study_computer_algorithm_stack",
+        "study_computer_algorithm_tree",
+        "study_computer_algorithm_time-complexity",
+
+        "study_computer_composition",
+        "study_computer_os",
+        "study_computer_network",
+        "study_computer_config",
+        "study_english_words",
+        "study_english_article",
+        "study_english_translate",
+        "study_english_listening",
+        "study_english_method",
+        "study_math_method",
+        "study_math_calculus",
+        "study_math_algorithm_sequence",
+        "study_math_calculus_derivative",
+        "study_math_calculus_limit",
+        "study_math_calculus_definite-integral",
+        "study_math_linear-algebra",
+        "study_math_probability",
+        "study_math_calculus_lhospital",
+        "study_math_calculus_taylor",
+        "study_math_calculus_sequence-limit",
+        "study_math_calculus_sequence",
+        "study_math_calculus_indefinite-integral",
+        "study_math_calculus_improper-integral",
+        "study_computer_algorithm_binary-search",
+        "study_computer_database"
+      ],
+      "break": [
+        "break_unknown",
+        "break_allday"
+      ],
+      "rest": [
+        "rest_masturbation",
+        "rest_short",
+        "rest_medium",
+        "rest_long"
+      ],
+      "exercise": [
+        "exercise_cardio",
+        "exercise_anaerobic",
+        "exercise_both"
+      ],
+      "sleep": [
+        "sleep_day",
+        "sleep_night"
+      ],
+      "insomnia": [
+        "insomnia_medium",
+        "insomnia_short",
+        "insomnia_long"
+      ],
+      "recreation": [
+        "recreation_game_clash-royale",
+        "recreation_game_overwatch",
+        "recreation_game_minecraft",
+        "recreation_bilibili",
+        "recreation_zhihu",
+        "recreation_douyin",
+        "recreation_weibo",
+        "recreation_qq",
+        "recreation_mix",
+        "recreation_pet",
+        "recreation_movie",
+        "recreation_other"
+      ],
+      "arrange": [
+        "arrange_onenote",
+        "arrange_file",
+        "arrange_packingup"
+      ],
+      "other": [
+        "other_learndriving",
+        "other_school",
+        "other_transfer-book-to-pdf",
+        "other_housework",
+        "other_searching_redmibuds4pro",
+        "other_searching",
+        "other_fix",
+        "other_unknown"
+      ],
+      "meal": [
+        "meal_short",
+        "meal_medium",
+        "meal_long",
+        "meal_feast"
+      ]
+    }
+  }
