@@ -7,10 +7,9 @@
 #include <algorithm> // For std::all_of
 #include <chrono>    // For high-precision timing
 #include <iomanip>   // For std::fixed and std::setprecision
+#include <filesystem> // For std::filesystem
 
-// Include the nlohmann/json library header
-// Make sure this file is in your include path (e.g., same directory or system path)
-#include "json.hpp" // Or <nlohmann/json.hpp> depending on your setup
+#include "json.hpp" 
 namespace fs = std::filesystem;
 
 // Structure to hold event details (raw from input)
@@ -63,31 +62,26 @@ std::unordered_map<std::string, std::string> load_text_mapping(const std::string
 
     std::unordered_map<std::string, std::string> mapping;
     try {
-        // Deserialize the JSON object directly into the unordered_map
-        // This works if all values in the JSON object are strings.
         mapping = j.get<std::unordered_map<std::string, std::string>>();
     } catch (nlohmann::json::type_error& e) {
          std::cerr << "Error: Type mismatch when converting JSON to map from " << filename << ".\n"
                    << "Ensure all values in the JSON object are strings.\n"
                    << "Message: " << e.what() << std::endl;
-         return {}; // Return an empty map on error
+         return {};
     }
     return mapping;
 }
 
 // Format HHMM to HH:MM
-// Assumes timeStrHHMM is a valid 4-digit string.
 std::string formatTime(const std::string& timeStrHHMM) {
     if (timeStrHHMM.length() == 4) {
-        std::string formattedTime = "00:00"; // Pre-allocate with "HH:MM" structure
+        std::string formattedTime = "00:00"; 
         formattedTime[0] = timeStrHHMM[0];
         formattedTime[1] = timeStrHHMM[1];
-        // formattedTime[2] is already ':'
         formattedTime[3] = timeStrHHMM[2];
         formattedTime[4] = timeStrHHMM[3];
         return formattedTime;
     }
-    // Fallback for unexpected cases
     return timeStrHHMM;
 }
 
@@ -98,23 +92,19 @@ bool isDateLine(const std::string& line) {
 }
 
 // Parse an event line (HHMMdescription)
-// Populates outTimeStr ("HHMM") and outDescription.
 bool parseEventLine(const std::string& line, std::string& outTimeStr, std::string& outDescription) {
-    if (line.length() < 5) return false; // Minimum HHMM + 1 char for description
+    if (line.length() < 5) return false; 
 
-    // Validate first 4 chars are digits for time without creating a substring yet
     if (!std::isdigit(line[0]) || !std::isdigit(line[1]) ||
         !std::isdigit(line[2]) || !std::isdigit(line[3])) {
         return false;
     }
 
-    // Efficiently convert and validate HHMM time values
     int hh = (line[0] - '0') * 10 + (line[1] - '0');
     int mm = (line[2] - '0') * 10 + (line[3] - '0');
 
     if (hh > 23 || mm > 59) return false;
 
-    // Use assign with pointer and length to avoid intermediate substr objects for performance
     outTimeStr.assign(line.data(), 4);
     outDescription.assign(line.data() + 4, line.length() - 4);
 
@@ -129,20 +119,20 @@ void processDayData(DayData& day, const std::unordered_map<std::string, std::str
         return;
     }
 
-    // Preserving original C++ logic: If Getup time is missing, but there are events,
-    // do not generate remarks (differs from the Python script).
     if (day.getupTime.empty() && !day.rawEvents.empty()) {
         return;
     }
     if (day.rawEvents.empty()){
+        // If there are no raw events, but there was a getup time,
+        // remarksOutput will remain empty, which is fine.
+        // If sleep_night is added later, it will be the only remark.
         return;
     }
 
-    std::string currentEventIntervalStartTime = day.getupTime; // Already "HH:MM" or empty
+    std::string currentEventIntervalStartTime = day.getupTime; 
 
     for (const auto& rawEvent : day.rawEvents) {
         std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
-
         std::string originalDescription = rawEvent.description;
         std::string mappedDescription = originalDescription;
 
@@ -161,7 +151,7 @@ void processDayData(DayData& day, const std::unordered_map<std::string, std::str
         remark.append("~");
         remark.append(formattedEventEndTime);
         remark.append(mappedDescription);
-        day.remarksOutput.push_back(std::move(remark)); // Use std::move
+        day.remarksOutput.push_back(std::move(remark)); 
 
         currentEventIntervalStartTime = formattedEventEndTime;
     }
@@ -182,7 +172,7 @@ void writeDayData(std::ofstream& outFile, const DayData& day) {
             outFile << remark << "\n";
         }
     }
-    outFile << "\n"; // Blank line separator
+    outFile << "\n"; 
 }
 
 
@@ -195,23 +185,23 @@ int main(int argc, char* argv[]) {
     std::ios_base::sync_with_stdio(false);
 
     std::string inputFileName = argv[1];
-
-    fs::path inputPath(inputFileName); // 将输入文件名字符串转换为路径对象
-    std::string baseName = inputPath.filename().string(); // 获取文件名部分（例如 "myfile.txt"）
-    std::string outputFileName = "Duration_" + baseName; // 构造新的输出文件名
-    std::string mappingFileName = "log_processor.json";
+    fs::path inputPath(inputFileName);
+    std::string baseName = inputPath.filename().string();
+    std::string outputFileName = "Duration_" + baseName;
+    std::string mappingFileName = "interval_processor.json";
 
     auto overallStartTime = std::chrono::high_resolution_clock::now();
 
-    // Load G_TEXT_MAPPING from the JSON file
     std::unordered_map<std::string, std::string> G_TEXT_MAPPING = load_text_mapping(mappingFileName);
-
-    // Check if mapping was loaded successfully
-    if (G_TEXT_MAPPING.empty()) {
-        std::cerr << "Error: Text mapping could not be loaded from " << mappingFileName
-                  << " or the file is empty/invalid. Exiting." << std::endl;
-        return 1; // Exit if mapping is crucial and not loaded
+    if (G_TEXT_MAPPING.empty() && fs::exists(mappingFileName)) { // Check if file exists but map is empty due to parse error
+        std::cerr << "Warning: Text mapping loaded from " << mappingFileName << " is empty. Proceeding without mappings." << std::endl;
+        // Allow proceeding if mapping is empty but file exists (e.g. intentionally empty JSON object)
+        // If file doesn't exist, load_text_mapping already printed an error.
+    } else if (G_TEXT_MAPPING.empty() && !fs::exists(mappingFileName)) {
+         std::cerr << "Error: Text mapping file " << mappingFileName << " not found. Exiting." << std::endl;
+        return 1; // Exit if mapping file is crucial and not found
     }
+
 
     std::ifstream inFile(inputFileName);
     if (!inFile.is_open()) {
@@ -226,46 +216,104 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    DayData currentDayData;
+    DayData previousDay; // Stores the data for the day before the current one being parsed (N-1)
+    DayData currentDay;  // Stores data for the day currently being parsed (N)
     std::string line;
-    const std::string YEAR_PREFIX = "2025";
+    const std::string YEAR_PREFIX = "2025"; // As per original logic
 
     std::string eventTimeBuffer;
     std::string eventDescBuffer;
 
     while (std::getline(inFile, line)) {
-        if (line.empty() || std::all_of(line.begin(), line.end(), ::isspace)) {
+        // Basic line cleanup (remove leading/trailing whitespace)
+        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
+        line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
+
+        if (line.empty()) {
             continue;
         }
 
         eventTimeBuffer.clear();
         eventDescBuffer.clear();
 
-        if (isDateLine(line)) {
-            if (!currentDayData.date.empty()) {
-                processDayData(currentDayData, G_TEXT_MAPPING);
-                writeDayData(outFile, currentDayData);
+        if (isDateLine(line)) { // Marks the beginning of a new day's data (currentDay)
+                                // previousDay's data is now complete regarding its own events.
+            if (!previousDay.date.empty()) {
+                // Process previousDay's own events first
+                processDayData(previousDay, G_TEXT_MAPPING);
+
+                // Add sleep_night to previousDay if currentDay has a getup time
+                // and previousDay had actual activities.
+                if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
+                    std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
+                    std::string sleepEndTime = currentDay.getupTime; // Already HH:MM
+
+                    std::string sleepRemark;
+                    sleepRemark.reserve(sleepStartTime.length() + 1 + sleepEndTime.length() + 11 /*sleep_night*/);
+                    sleepRemark.append(sleepStartTime);
+                    sleepRemark.append("~");
+                    sleepRemark.append(sleepEndTime);
+                    sleepRemark.append("sleep_night");
+                    previousDay.remarksOutput.push_back(std::move(sleepRemark));
+                }
+                writeDayData(outFile, previousDay);
             }
-            currentDayData.clear();
-            currentDayData.date = YEAR_PREFIX + line;
+
+            // Shift days: currentDay becomes previousDay, and currentDay is reset for the new date
+            previousDay = currentDay;
+            currentDay.clear();
+            currentDay.date = YEAR_PREFIX + line;
+
         } else if (parseEventLine(line, eventTimeBuffer, eventDescBuffer)) {
-            if (currentDayData.date.empty()) {
+            if (currentDay.date.empty()) { // Should not happen if date lines are always first for a day
+                std::cerr << "Warning: Event line encountered before a date. Line: '" << line << "'" << std::endl;
                 continue;
             }
 
-            if (eventDescBuffer == "起床") {
-                currentDayData.getupTime = formatTime(eventTimeBuffer);
+            // Check for "起床" (get up) or "醒" (wake)
+            if (eventDescBuffer == "起床" || eventDescBuffer == "醒") {
+                if (currentDay.getupTime.empty()) { // Only set the first getup time for the day
+                    currentDay.getupTime = formatTime(eventTimeBuffer);
+                } else {
+                    // If getup time is already set, treat subsequent "起床" or "醒" as regular events
+                    currentDay.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
+                }
             } else {
-                currentDayData.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
+                currentDay.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
             }
         } else {
             // Optional: std::cerr << "Warning: Skipping malformed line: '" << line << "'" << std::endl;
         }
     }
 
-    if (!currentDayData.date.empty()) {
-        processDayData(currentDayData, G_TEXT_MAPPING);
-        writeDayData(outFile, currentDayData);
+    // After the loop, process the last two days held in previousDay and currentDay
+
+    // Process previousDay (which is the second to last day from the input)
+    if (!previousDay.date.empty()) {
+        processDayData(previousDay, G_TEXT_MAPPING);
+
+        // Add sleep_night to previousDay if currentDay (the last day) has a getup time
+        // and previousDay had actual activities.
+        if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
+            std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
+            std::string sleepEndTime = currentDay.getupTime;
+
+            std::string sleepRemark;
+            sleepRemark.reserve(sleepStartTime.length() + 1 + sleepEndTime.length() + 11);
+            sleepRemark.append(sleepStartTime);
+            sleepRemark.append("~");
+            sleepRemark.append(sleepEndTime);
+            sleepRemark.append("sleep_night");
+            previousDay.remarksOutput.push_back(std::move(sleepRemark));
+        }
+        writeDayData(outFile, previousDay);
+    }
+
+    // Process currentDay (the very last day from the input)
+    // It won't have a "sleep_night" added to it by this new logic, as there's no subsequent day.
+    if (!currentDay.date.empty()) {
+        processDayData(currentDay, G_TEXT_MAPPING);
+        writeDayData(outFile, currentDay);
     }
 
     inFile.close();
@@ -275,7 +323,11 @@ int main(int argc, char* argv[]) {
     std::chrono::duration<double> elapsedSeconds = overallEndTime - overallStartTime;
 
     std::cout << "Processing complete. Output written to " << outputFileName << std::endl;
-    std::cout << "Text mapping loaded from " << mappingFileName << std::endl;
+    if (fs::exists(mappingFileName)) {
+        std::cout << "Text mapping loaded from " << mappingFileName << std::endl;
+    } else {
+        std::cout << "Text mapping file " << mappingFileName << " not found or not used." << std::endl;
+    }
     std::cout << "Time taken: " << std::fixed << std::setprecision(6) << elapsedSeconds.count() << " seconds." << std::endl;
 
     return 0;
