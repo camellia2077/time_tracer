@@ -185,7 +185,7 @@ int main(int argc, char* argv[]) {
     fs::path inputPath(inputFileName);
     std::string baseName = inputPath.filename().string();
     std::string outputFileName = "Duration_" + baseName;
-    std::string mappingFileName = "interval_processor.json";
+    std::string mappingFileName = "interval_processor_config.json";
 
     auto overallStartTime = std::chrono::high_resolution_clock::now();
 
