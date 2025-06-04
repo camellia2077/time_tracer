@@ -200,9 +200,9 @@ void validate_remark_line(const std::string& line, int line_num, DateBlock& curr
     current_block.remark_str = line;
 }
 
-// 修改点：validate_activity_line 内部 regex 改为 static const，并且使用 unordered_set 进行查找
+// MODIFIED FUNCTION
 void validate_activity_line(const std::string& line, int line_num, const Config& config, DateBlock& current_block, std::set<Error>& errors) {
-    static const std::regex activity_regex("^(\\d{2}:\\d{2})~(\\d{2}:\\d{2})(.+)$"); // 改为 static const
+    static const std::regex activity_regex("^(\\d{2}:\\d{2})~(\\d{2}:\\d{2})(.+)$");
     std::smatch match;
 
     if (std::regex_match(line, match, activity_regex)) {
@@ -222,15 +222,45 @@ void validate_activity_line(const std::string& line, int line_num, const Config&
         }
 
         if (start_valid && end_valid) {
-            if (start_hh == end_hh && end_mm < start_mm) {
-                errors.insert({line_num, "Activity end time minutes cannot be less than start time minutes if hours are the same."});
+            if (start_hh > end_hh) {
+                // This case is allowed for overnight activities, no error here.
+                // However, the problem description implies activities are within the same day.
+                // For now, let's assume end time must be after start time if on the same day.
+                // If strict same-day: errors.insert({line_num, "Activity end time cannot be earlier than start time."});
+            } else if (start_hh == end_hh && end_mm < start_mm) {
+                 errors.insert({line_num, "Activity end time minutes cannot be less than start time minutes if hours are the same."});
             }
         }
 
-        static const std::regex text_content_regex("^[a-zA-Z0-9_-]+$"); 
+        // --- Start of new/modified activity text validation ---
+        bool text_format_rules_passed = true; // Flag for all text format rules
+
+        static const std::regex text_content_regex("^[a-zA-Z0-9_-]+$");
         if (!std::regex_match(activity_text, text_content_regex)) {
             errors.insert({line_num, "Activity text content \"" + activity_text + "\" contains invalid characters. Only letters, numbers, underscore (_), hyphen (-) allowed."});
-        } else {
+            text_format_rules_passed = false;
+        }
+
+        // New Rule 1: Must contain an underscore
+        if (text_format_rules_passed) { // Only proceed if basic regex passed
+            if (activity_text.find('_') == std::string::npos) {
+                errors.insert({line_num, "Activity text \"" + activity_text + "\" must contain an underscore ('_')."});
+                text_format_rules_passed = false;
+            }
+        }
+
+        // New Rule 2: Cannot end with an underscore
+        if (text_format_rules_passed) { // Only proceed if previous rules also passed
+            // activity_text is guaranteed non-empty here due to previous checks if text_format_rules_passed is true
+            if (activity_text.back() == '_') {
+                errors.insert({line_num, "Activity text \"" + activity_text + "\" cannot end with an underscore ('_')."});
+                text_format_rules_passed = false;
+            }
+        }
+        // --- End of new/modified activity text validation ---
+
+
+        if (text_format_rules_passed) { // Proceed only if all text format rules (regex, underscore presence, no trailing underscore) passed
             if (config.loaded && !config.parent_categories.empty()) {
                 bool tag_is_valid_by_config = false;
                 bool tag_matched_a_parent_prefix_rule = false;
@@ -240,12 +270,12 @@ void validate_activity_line(const std::string& line, int line_num, const Config&
                 } else {
                     for (const auto& pair : config.parent_categories) {
                         const std::string& parent_name = pair.first;
-                        const std::unordered_set<std::string>& allowed_sub_tags_set = pair.second; // 使用 unordered_set
+                        const std::unordered_set<std::string>& allowed_sub_tags_set = pair.second;
                         std::string prefix = parent_name + "_";
 
-                        if (activity_text.rfind(prefix, 0) == 0) { 
+                        if (activity_text.rfind(prefix, 0) == 0) {
                             tag_matched_a_parent_prefix_rule = true;
-                            if (allowed_sub_tags_set.count(activity_text)) { // 使用 unordered_set::count()
+                            if (allowed_sub_tags_set.count(activity_text)) {
                                 tag_is_valid_by_config = true;
                             } else {
                                 std::string examples_str;
@@ -260,7 +290,7 @@ void validate_activity_line(const std::string& line, int line_num, const Config&
                                 }
                                 errors.insert({line_num, "Activity text \"" + activity_text + "\" is not an allowed sub-tag for parent '" + parent_name + "'." + examples_str});
                             }
-                            break; 
+                            break;
                         }
                     }
                     if (!tag_matched_a_parent_prefix_rule && !tag_is_valid_by_config) {
@@ -283,10 +313,10 @@ void validate_activity_line(const std::string& line, int line_num, const Config&
                         errors.insert({line_num, "Activity text \"" + activity_text + "\" does not conform to any defined parent category prefix structures or is not a recognized activity." + all_examples_str});
                     }
                 }
-                 if(tag_is_valid_by_config) { 
+                 if(tag_is_valid_by_config) {
                     current_block.activity_lines_content.push_back({activity_text, line_num});
                  }
-            } else { 
+            } else { // Config not loaded or empty, and text_format_rules_passed is true
                  current_block.activity_lines_content.push_back({activity_text, line_num});
             }
         }
@@ -294,6 +324,7 @@ void validate_activity_line(const std::string& line, int line_num, const Config&
         errors.insert({line_num, "Activity line format error. Expected \"HH:MM~HH:MMTextContent\"."});
     }
 }
+
 
 void finalize_block_status_validation(DateBlock& block, std::set<Error>& errors) {
     if (!block.status_format_valid) {
@@ -303,6 +334,9 @@ void finalize_block_status_validation(DateBlock& block, std::set<Error>& errors)
 
     bool contains_study = false;
     for (const auto& activity_pair : block.activity_lines_content) {
+        // Modified to check for "study" as a whole word or part of a valid underscore-separated tag.
+        // Example: "category_study", "study_project"
+        // This simple find should still work if "study" is required to be part of an activity name.
         if (activity_pair.first.find("study") != std::string::npos) {
             contains_study = true;
             break;
@@ -388,12 +422,21 @@ bool process_file(const std::string& file_path, const Config& config, std::set<E
             }
 
             if (!current_block.header_completely_valid && current_parse_state != ParseState::EXPECT_DATE) {
+                // If header (Date, Status, Getup, Remark) had an error, 
+                // we might not want to process activities for this block,
+                // or we might still want to report activity errors.
+                // Current logic: if header invalid, subsequent lines might be skipped or misparsed by state machine.
+                // For now, if a header part fails, it might prevent further parsing of that block's items correctly.
+                // This `continue` means if e.g. Date was bad, we won't try to parse Status, Getup, etc. or activities.
+                // This might be okay, as the block is already marked problematic.
                 continue;
             }
 
             switch (current_parse_state) {
                 case ParseState::EXPECT_STATUS:
                     validate_status_line(trimmed_line, line_number, current_block, file_errors_out);
+                    // Only proceed if Status itself was okay, or always proceed?
+                    // The `header_completely_valid` flag on current_block handles whether date/status/getup/remark had errors.
                     current_parse_state = ParseState::EXPECT_GETUP;
                     break;
                 case ParseState::EXPECT_GETUP:
@@ -408,6 +451,11 @@ bool process_file(const std::string& file_path, const Config& config, std::set<E
                     validate_activity_line(trimmed_line, line_number, config, current_block, file_errors_out);
                     break;
                 case ParseState::EXPECT_DATE: 
+                    // This state means we are waiting for a new Date line, likely due to an error in the previous one
+                    // or it's the very start of the file processing after an initial non-Date line.
+                    // Non-Date lines encountered here (if not empty) should ideally be flagged if they aren't a new Date line.
+                    // However, the logic for `trimmed_line.rfind("Date:", 0) == 0` handles new Date lines.
+                    // Other lines here are effectively ignored until a new Date starts or file ends.
                     break; 
             }
         }
@@ -415,23 +463,24 @@ bool process_file(const std::string& file_path, const Config& config, std::set<E
 
     if (date_line_encountered_for_file) { 
         if (current_parse_state != ParseState::EXPECT_ACTIVITY && current_parse_state != ParseState::EXPECT_DATE) {
+             // This means the file ended after Date, or Date+Status, or Date+Status+Getup, or Date+Status+Getup+Remark, but before any activities or a new Date.
+             // An error if we expect at least one activity, or if the block structure is strictly Date,S,G,R,Activity(s)
              file_errors_out.insert({current_block.start_line_number != -1 ? current_block.start_line_number : line_number,
-                                   "File ended before current block was complete (expected S/G/R or activity)."});
+                                   "File ended before current block was complete (expected Status, Getup, Remark, or activity lines)."});
         }
-       finalize_previous_block(current_block);
-    } else if (!first_non_empty_line_in_file && line_number > 0) { 
-        if(file_errors_out.empty()){
+       finalize_previous_block(current_block); // Finalize the last block
+    } else if (!first_non_empty_line_in_file && line_number > 0) { // File had content but no Date: line
+        if(file_errors_out.empty()){ // Add this error only if no other error (like "must begin with Date") was added for line 1
              file_errors_out.insert({1, "File (if non-empty) must begin with a valid Date: line. No Date: line found."});
         }
-    }
+    } // If file is empty (line_number == 0), no errors.
+
     return !file_errors_out.empty();
 }
 
 int main(int argc, char* argv[]) {
-    // 关闭C++标准流与C标准流的同步，可以提速IO，但需注意混合使用printf/cout可能导致顺序问题
     std::ios_base::sync_with_stdio(false);
-    // 解除cin与cout的绑定，可以进一步提速cin，对cout影响不大，但这里主要用cout
-    std::cin.tie(NULL); // 对于此程序cout为主，此行影响较小，但作为良好实践保留
+    std::cin.tie(NULL); 
 
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <file.txt|directory_path>" << std::endl;
@@ -448,7 +497,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Environment variable " << config_path_env << " not set. Using default '" << config_file << "' in current directory." << std::endl;
     }
 
-    Config config = load_configuration(config_file); //
+    Config config = load_configuration(config_file); 
     if (!config.loaded) {
         std::cout << YELLOW_COLOR << "Running with potentially limited validation due to configuration issues." << RESET_COLOR << std::endl;
     } else {
@@ -490,16 +539,16 @@ int main(int argc, char* argv[]) {
 
     int total_files_processed = 0;
     int files_with_errors = 0;
-    std::chrono::duration<double, std::milli> accumulated_core_processing_time(0.0); //
+    std::chrono::duration<double, std::milli> accumulated_core_processing_time(0.0); 
 
     for (const auto& file_path : files_to_process) {
         std::cout << "Processing file: " << file_path << "..." << std::endl;
         std::set<Error> current_file_errors;
 
-        auto individual_file_start_time = std::chrono::high_resolution_clock::now(); //
-        bool has_errors = process_file(file_path, config, current_file_errors); //
-        auto individual_file_end_time = std::chrono::high_resolution_clock::now(); //
-        accumulated_core_processing_time += (individual_file_end_time - individual_file_start_time); //
+        auto individual_file_start_time = std::chrono::high_resolution_clock::now(); 
+        bool has_errors = process_file(file_path, config, current_file_errors); 
+        auto individual_file_end_time = std::chrono::high_resolution_clock::now(); 
+        accumulated_core_processing_time += (individual_file_end_time - individual_file_start_time); 
         
         total_files_processed++;
 
@@ -507,7 +556,7 @@ int main(int argc, char* argv[]) {
             files_with_errors++;
             std::cout << RED_COLOR << "File: " << file_path << " - Errors found:" << RESET_COLOR << std::endl;
             for (const auto& err : current_file_errors) {
-                std::cout << RED_COLOR << "  Line " << err.line_number << ": " <<  RESET_COLOR << err.message  << std::endl; //
+                std::cout << RED_COLOR << "  Line " << err.line_number << ": " << RESET_COLOR << err.message  << std::endl; 
             }
         } else {
             std::cout << GREEN_COLOR << "File: " << file_path << " - No errors found." << RESET_COLOR << std::endl;
@@ -515,14 +564,14 @@ int main(int argc, char* argv[]) {
         std::cout << "----------------------------------------" << std::endl;
     }
 
-    const int G_PRECISION = 6; // 处理时间 精度常量，方便修改
+    const int G_PRECISION = 6; 
 
     if (is_directory) {
         std::cout << "\n--- Directory Scan Summary ---" << std::endl;
         std::cout << "Total .txt files processed: " << total_files_processed << std::endl;
         std::cout << "Files with errors: " << (files_with_errors > 0 ? RED_COLOR : GREEN_COLOR) << files_with_errors << RESET_COLOR << std::endl;
         std::cout << "Total core processing time (sum of process_file calls): " 
-                  << std::fixed << std::setprecision(G_PRECISION) // 使用新的精度
+                  << std::fixed << std::setprecision(G_PRECISION) 
                   << accumulated_core_processing_time.count() / 1000.0 << " seconds" << std::endl;
     } else if (total_files_processed == 1) { 
          std::cout << "\n--- File Processing Summary ---" << std::endl;
@@ -532,7 +581,7 @@ int main(int argc, char* argv[]) {
              std::cout << GREEN_COLOR << "No errors found in " << path_arg << RESET_COLOR << std::endl;
          }
          std::cout << "Core processing time (process_file call): " 
-                   << std::fixed << std::setprecision(G_PRECISION) // 使用新的精度
+                   << std::fixed << std::setprecision(G_PRECISION) 
                    << accumulated_core_processing_time.count() / 1000.0 << " seconds" << std::endl;
     }
 
