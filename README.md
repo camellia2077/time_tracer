@@ -10,6 +10,9 @@ time_tracker.exe <filepath.txt>// 存入数据
 
 time_tracker.exe' query 20250501//查询 20250501这天的数据
 
+# db
+g++ -std=c++17 -O3 -o time_tracker main.cpp -lsqlite3
+
 
 # 性能对比 log_generator.cpp
 days_36500_items_30
