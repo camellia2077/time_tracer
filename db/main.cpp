@@ -177,7 +177,7 @@ void run_application_loop() {
                  if (!db) { std::cerr << "Database not open." << std::endl; break; } 
                 std::string date_str = get_valid_date_input(); 
                 query_day_raw(db, date_str); 
-                break; /
+                break; 
             }
             case 6: { // Generate study heatmap for a year 
                 std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
