@@ -71,7 +71,7 @@ inline int time_str_to_seconds(const std::string& time_str_in) {
 // Formats total seconds into a string like "XhYYm" or "YYm", with optional averaging.
 inline std::string time_format_duration(long long total_seconds, int avg_days = 1) {
     if (total_seconds == 0) {
-        if (avg_days > 1) return "0m (平均0m/day)";
+        if (avg_days > 1) return "0m (average: 0m/day)";
         return "0m";
     }
 
@@ -105,7 +105,7 @@ inline std::string time_format_duration(long long total_seconds, int avg_days = 
 
     if (avg_days > 1) { // Only show average if avg_days makes sense for averaging
         std::string avg_duration_str = format_single_duration(seconds_per_day);
-        main_duration_str += " (平均" + avg_duration_str + "/day)";
+        main_duration_str += " (average: " + avg_duration_str + "/day)";
     }
     return main_duration_str;
 }
