@@ -3,13 +3,14 @@
 
 #include <string>
 #include <sqlite3.h>
+#include "data_parser.h" // Include parser to get data structures and class definition
 
 class DatabaseImporter {
 public:
     DatabaseImporter(const std::string& db_path);
     ~DatabaseImporter();
     bool is_db_open() const;
-    void import_from_directory(const std::string& dir_path);
+    void import_data(const DataFileParser& parser);
 
 private:
     sqlite3* db;
@@ -20,8 +21,6 @@ private:
     void _initialize_database();
     void _prepare_statements();
     void _finalize_statements();
-    
-    bool _import_csv(const std::string& file_path, sqlite3_stmt* stmt, int num_cols);
 };
 
 // Non-member helper function

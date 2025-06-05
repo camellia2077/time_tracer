@@ -1,22 +1,13 @@
-// This file utilizes functions defined in common_utils.h, specifically time_str_to_seconds.
-// Do not redefine functions that are already present in common_utils.h within this file.
-
 #include "data_parser.h"
-#include "common_utils.h"
 #include <fstream>
 #include <iostream>
-#include <regex>
 #include <algorithm>
 #include <stdexcept>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 // --- DataFileParser Constructor & Destructor ---
 
-DataFileParser::DataFileParser(const std::string& out_dir) 
-    : output_dir(out_dir), current_date_processed(false) {
-    _open_output_files();
+DataFileParser::DataFileParser() 
+    : current_date_processed(false) {
     initial_top_level_parents = {
         {"study", "STUDY"},
         {"code", "CODE"}
@@ -24,16 +15,15 @@ DataFileParser::DataFileParser(const std::string& out_dir)
 }
 
 DataFileParser::~DataFileParser() {
-    // Ensure any remaining data is written before closing.
-    _write_previous_date_data();
-    _flush_parent_child_buffer();
-    _close_output_files();
+    // The commit_all() method should be called explicitly by the owner
+    // to ensure any lingering data from the last file is processed.
 }
 
 // --- Public Member Functions ---
 
 void DataFileParser::commit_all() {
-    _write_previous_date_data();
+    // Store any lingering data from the last date in the last file processed.
+    _store_previous_date_data();
 }
 
 bool DataFileParser::parse_file(const std::string& filename) {
@@ -56,7 +46,7 @@ bool DataFileParser::parse_file(const std::string& filename) {
             if (line.empty()) continue;
 
             if (line.rfind("Date:", 0) == 0) {
-                _write_previous_date_data(); 
+                _store_previous_date_data(); 
                 _handle_date_line(line);
             } else if (line.rfind("Status:", 0) == 0) {
                 _handle_status_line(line);
@@ -68,9 +58,6 @@ bool DataFileParser::parse_file(const std::string& filename) {
                 _handle_time_record_line(line, line_num);
             }
         }
-        _write_previous_date_data();    // Write the very last day's data
-        _flush_parent_child_buffer(); // Flush all unique parent-child pairs
-
     } catch (const std::exception& e) {
         std::cerr << current_file_name << ": An error occurred during parsing: " << e.what() << std::endl;
         success = false;
@@ -82,29 +69,17 @@ bool DataFileParser::parse_file(const std::string& filename) {
 
 // --- Private Member Functions ---
 
-void DataFileParser::_open_output_files() {
-    fs::path dir(output_dir);
-    day_file.open(dir / "days.csv", std::ios::out | std::ios::app);
-    record_file.open(dir / "records.csv", std::ios::out | std::ios::app);
-    parent_child_file.open(dir / "parent_child.csv", std::ios::out | std::ios::app);
-}
-
-void DataFileParser::_close_output_files() {
-    if (day_file.is_open()) day_file.close();
-    if (record_file.is_open()) record_file.close();
-    if (parent_child_file.is_open()) parent_child_file.close();
-}
-
 void DataFileParser::_handle_date_line(const std::string& line) {
     if (line.length() > 5) {
         current_date = line.substr(5);
         current_date.erase(0, current_date.find_first_not_of(" \t"));
         current_date.erase(current_date.find_last_not_of(" \t") + 1);
 
+        // Reset for the new day
         current_status = "False";
         current_remark = "";
         current_getup_time = "00:00";
-        current_time_records_buffer.clear();
+        buffered_records_for_day.clear();
         current_date_processed = false;
     }
 }
@@ -133,7 +108,7 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
         int end_seconds = time_str_to_seconds(end_time_str);
         int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
 
-        current_time_records_buffer.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
+        buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
         _process_project_path(project_path);
     }
 }
@@ -151,7 +126,7 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
     if (segments.empty()) return;
     
     for (const auto& pair : initial_top_level_parents) {
-        parent_child_buffer.insert({pair.first, pair.second});
+        parent_child_pairs.insert({pair.first, pair.second});
     }
 
     std::string current_full_path = "";
@@ -170,33 +145,19 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
             parent_of_current_segment = current_full_path;
             current_full_path += "_" + segments[i];
         }
-        parent_child_buffer.insert({current_full_path, parent_of_current_segment});
+        parent_child_pairs.insert({current_full_path, parent_of_current_segment});
     }
 }
 
-void DataFileParser::_flush_parent_child_buffer() {
-    if (!parent_child_file.is_open()) return;
-    for (const auto& pair : parent_child_buffer) {
-        parent_child_file << "\"" << pair.first << "\",\"" << pair.second << "\"\n";
-    }
-    parent_child_buffer.clear();
-}
-
-void DataFileParser::_write_previous_date_data() {
+void DataFileParser::_store_previous_date_data() {
     if (current_date.empty() || current_date_processed) return;
 
-    // Write day record
-    if (day_file.is_open()) {
-        day_file << "\"" << current_date << "\",\"" << current_status << "\",\"" << current_remark << "\",\"" << current_getup_time << "\"\n";
-    }
+    // Add the collected day info to the main 'days' vector
+    days.push_back({current_date, current_status, current_remark, current_getup_time});
 
-    // Write all buffered time records
-    if (record_file.is_open()) {
-        for (const auto& record : current_time_records_buffer) {
-            record_file << "\"" << record.date << "\",\"" << record.start << "\",\"" << record.end << "\",\"" << record.project_path << "\"," << record.duration_seconds << "\n";
-        }
-    }
+    // Add all buffered time records for that day to the main 'records' vector
+    records.insert(records.end(), buffered_records_for_day.begin(), buffered_records_for_day.end());
 
-    current_time_records_buffer.clear();
+    buffered_records_for_day.clear();
     current_date_processed = true;
 }

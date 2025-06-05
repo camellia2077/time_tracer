@@ -1,12 +1,7 @@
 #include "database_importer.h"
 #include <iostream>
-#include <fstream>
-#include <sstream>
 #include <stdexcept>
 #include <vector>
-#include <filesystem>
-
-namespace fs = std::filesystem;
 
 // --- DatabaseImporter Constructor & Destructor ---
 
@@ -34,14 +29,50 @@ bool DatabaseImporter::is_db_open() const {
     return db != nullptr;
 }
 
-void DatabaseImporter::import_from_directory(const std::string& dir_path) {
+void DatabaseImporter::import_data(const DataFileParser& parser) {
     if (!db) return;
 
-    fs::path dir(dir_path);
-    // Corrected lines: added .string() to convert path to string
-    _import_csv((dir / "days.csv").string(), stmt_insert_day, 4);
-    _import_csv((dir / "records.csv").string(), stmt_insert_record, 5);
-    _import_csv((dir / "parent_child.csv").string(), stmt_insert_parent_child, 2);
+    execute_sql_importer(db, "BEGIN TRANSACTION;", "Begin import transaction");
+
+    // Import days from the parser's in-memory vector
+    for (const auto& day_data : parser.days) {
+        sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 2, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 3, day_data.remark.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 4, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
+            std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
+        }
+        sqlite3_reset(stmt_insert_day);
+    }
+
+    // Import time records from the parser's in-memory vector
+    for (const auto& record_data : parser.records) {
+        sqlite3_bind_text(stmt_insert_record, 1, record_data.date.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_record, 2, record_data.start.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_record, 3, record_data.end.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_record, 4, record_data.project_path.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt_insert_record, 5, record_data.duration_seconds);
+
+        if (sqlite3_step(stmt_insert_record) != SQLITE_DONE) {
+            std::cerr << "Error inserting record row: " << sqlite3_errmsg(db) << std::endl;
+        }
+        sqlite3_reset(stmt_insert_record);
+    }
+
+    // Import parent-child relationships from the parser's in-memory set
+    for (const auto& pair : parser.parent_child_pairs) {
+        sqlite3_bind_text(stmt_insert_parent_child, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_parent_child, 2, pair.second.c_str(), -1, SQLITE_TRANSIENT);
+
+        if (sqlite3_step(stmt_insert_parent_child) != SQLITE_DONE) {
+            std::cerr << "Error inserting parent-child row: " << sqlite3_errmsg(db) << std::endl;
+        }
+        sqlite3_reset(stmt_insert_parent_child);
+    }
+
+    execute_sql_importer(db, "COMMIT;", "Commit import transaction");
 }
 
 // --- Private Member Functions ---
@@ -53,7 +84,6 @@ void DatabaseImporter::_initialize_database() {
 }
 
 void DatabaseImporter::_prepare_statements() {
-    // Using INSERT OR REPLACE for days and records, and OR IGNORE for parent_child
     const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, remark, getup_time) VALUES (?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
@@ -75,60 +105,6 @@ void DatabaseImporter::_finalize_statements() {
     if (stmt_insert_record) sqlite3_finalize(stmt_insert_record);
     if (stmt_insert_parent_child) sqlite3_finalize(stmt_insert_parent_child);
 }
-
-bool DatabaseImporter::_import_csv(const std::string& file_path, sqlite3_stmt* stmt, int num_cols) {
-    std::ifstream file(file_path);
-    if (!file.is_open()) {
-        std::cerr << "Warning: Cannot open intermediate file " << file_path << std::endl;
-        return false;
-    }
-
-    execute_sql_importer(db, "BEGIN TRANSACTION;", "Begin import transaction");
-
-    std::string line;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::string field;
-        std::vector<std::string> fields;
-
-        // Basic CSV parsing (assumes fields are quoted if they contain commas)
-        while(std::getline(ss, field, ',')) {
-            if (!field.empty() && field.front() == '"') {
-                std::string temp = field.substr(1);
-                while (ss.good() && (field.empty() || field.back() != '"')) {
-                    std::string next_part;
-                    std::getline(ss, next_part, ',');
-                    temp += "," + next_part;
-                }
-                if (!temp.empty() && temp.back() == '"') temp.pop_back();
-                 fields.push_back(temp);
-            } else {
-                 fields.push_back(field);
-            }
-        }
-        
-        if (fields.size() != num_cols) continue;
-
-        for (int i = 0; i < num_cols; ++i) {
-            // The last column for time_records is an integer
-            if (stmt == stmt_insert_record && i == 4) {
-                 sqlite3_bind_int(stmt, i + 1, std::stoi(fields[i]));
-            } else {
-                 sqlite3_bind_text(stmt, i + 1, fields[i].c_str(), -1, SQLITE_TRANSIENT);
-            }
-        }
-        
-        if (sqlite3_step(stmt) != SQLITE_DONE) {
-            std::cerr << "Error inserting row into database: " << sqlite3_errmsg(db) << std::endl;
-        }
-        sqlite3_reset(stmt);
-    }
-    
-    execute_sql_importer(db, "COMMIT;", "Commit import transaction");
-    file.close();
-    return true;
-}
-
 
 // Non-member helper function
 bool execute_sql_importer(sqlite3* db, const std::string& sql, const std::string& context_msg) {
