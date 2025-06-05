@@ -167,7 +167,10 @@ void FileDataParser::_handle_getup_line(const std::string& line) {
 }
 
 void FileDataParser::_handle_time_record_line(const std::string& line, int line_num) {
-    std::regex time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})\s+(.+))");
+    // 注意：以下正则表达式用于匹配时间记录行，例如：03:31~11:53sleep_night
+    // 根据业务逻辑，时间段与项目路径之间可能没有空格（例如 "11:53sleep_night" 是合法格式）
+    // 因此，这里必须使用 \s*（允许0个或多个空白字符），不要改成 \s+  如果改为 \s+，将导致合法记录被错误忽略
+    std::regex time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})\s*(.+))");
     std::smatch matches;
     if (std::regex_match(line, matches, time_record_regex) && matches.size() == 4) {
         std::string start_time_str = matches[1].str();
