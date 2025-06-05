@@ -1,29 +1,28 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
+#endif
 #include <iostream>
 #include <string>
 #include <vector>
-#include <limits>       // Required for std::numeric_limits
-#include <sstream>      // Required for std::stringstream (used in case 0)
-#include <algorithm>    // Required for std::all_of, std::sort
+#include <limits>
+#include <sstream>
+#include <algorithm>
 #include <sqlite3.h>
-#include <filesystem>   // Required for filesystem operations
+#include <filesystem>
 #include <chrono>
 
 #include "common_utils.h"
 #include "data_parser.h"
-#include "database_importer.h" // Include the new importer header
+#include "database_importer.h" 
 #include "database_querier.h" 
-#endif
 
 // Declare ANSI escape codes for text colors
-const std::string ANSI_COLOR_GREEN = "\x1b[32m"; // Code for green text
-const std::string ANSI_COLOR_RESET = "\x1b[0m";  // Code to reset text color
+const std::string ANSI_COLOR_GREEN = "\x1b[32m";
+const std::string ANSI_COLOR_RESET = "\x1b[0m";
 // Define a namespace alias for convenience
 namespace fs = std::filesystem;
 
 const std::string DATABASE_NAME = "time_data.db";
-const std::string INTERMEDIATE_DIR = "intermediate_data";
 
 void print_menu() {
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
@@ -128,13 +127,8 @@ void run_application_loop() {
                     break;
                 }
                 
-                // Create a directory for intermediate files
-                if (!fs::exists(INTERMEDIATE_DIR)) {
-                    fs::create_directory(INTERMEDIATE_DIR);
-                }
-
+                // --- STAGE 1: Find all .txt files to process ---
                 std::vector<std::string> actual_files_to_process;
-
                 for (const std::string& input_path_str : user_inputs) {
                     fs::path p(input_path_str);
                     if (!fs::exists(p)) {
@@ -165,9 +159,9 @@ void run_application_loop() {
                 
                 std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
 
-                // --- STAGE 1: Parsing ---
-                std::cout << "Stage 1: Parsing files to intermediate format..." << std::endl;
-                DataFileParser parser(INTERMEDIATE_DIR);
+                // --- STAGE 2: Parsing files into memory ---
+                std::cout << "Stage 1: Parsing files into memory..." << std::endl;
+                DataFileParser parser;
                 int successful_files_count = 0;
                 std::vector<std::string> failed_files;
 
@@ -178,15 +172,15 @@ void run_application_loop() {
                         failed_files.push_back(fname);
                     }
                 }
-                parser.commit_all(); // Final write of buffered data
+                parser.commit_all(); // Finalize any buffered data from the last file
 
-                // --- STAGE 2: Importing ---
+                // --- STAGE 3: Importing from memory to database ---
                 std::cout << "Stage 2: Importing data into the database..." << std::endl;
                 DatabaseImporter importer(DATABASE_NAME);
                 if (!importer.is_db_open()) {
                     std::cerr << "Importer could not open database. Aborting." << std::endl;
                 } else {
-                    importer.import_from_directory(INTERMEDIATE_DIR);
+                    importer.import_data(parser);
                 }
 
                 // --- Reporting ---
@@ -203,14 +197,6 @@ void run_application_loop() {
                     for (const std::string& fname : failed_files) {
                         std::cerr << "- " << fname << std::endl;
                     }
-                }
-
-                // Cleanup intermediate files
-                try {
-                    fs::remove_all(INTERMEDIATE_DIR);
-                    std::cout << "Cleaned up intermediate files." << std::endl;
-                } catch (const fs::filesystem_error& e) {
-                    std::cerr << "Warning: Could not remove intermediate directory " << INTERMEDIATE_DIR << ": " << e.what() << std::endl;
                 }
                 
                 auto end = std::chrono::high_resolution_clock::now();
