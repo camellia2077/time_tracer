@@ -1,3 +1,10 @@
+// This file utilizes utility functions defined in common_utils.h, specifically:
+// - ProjectNode structure
+// - ProjectTree alias
+// - time_format_duration(long long, int)
+// - split_string(const std::string&, char)
+// Do not redefine these structures or functions within this file
+
 #ifndef DATABASE_QUERIER_H
 #define DATABASE_QUERIER_H
 

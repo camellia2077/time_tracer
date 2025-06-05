@@ -1,3 +1,6 @@
+// This file utilizes functions defined in common_utils.h, specifically time_str_to_seconds.
+// Do not redefine functions that are already present in common_utils.h within this file.
+
 #include "data_parser.h"
 #include "common_utils.h" // 确保包含了 time_str_to_seconds 的定义
 #include <fstream>

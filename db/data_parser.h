@@ -1,3 +1,6 @@
+// This file utilizes functions defined in common_utils.h, specifically time_str_to_seconds.
+// Do not redefine functions that are already present in common_utils.h within this file.
+
 #ifndef DATA_PARSER_H
 #define DATA_PARSER_H
 
