@@ -12,7 +12,8 @@
 
 #include "common_utils.h"
 #include "data_parser.h"
-#include "database_querier.h" // This file already provides the query function definitions
+#include "database_importer.h" // Include the new importer header
+#include "database_querier.h" 
 #endif
 
 // Declare ANSI escape codes for text colors
@@ -22,6 +23,7 @@ const std::string ANSI_COLOR_RESET = "\x1b[0m";  // Code to reset text color
 namespace fs = std::filesystem;
 
 const std::string DATABASE_NAME = "time_data.db";
+const std::string INTERMEDIATE_DIR = "intermediate_data";
 
 void print_menu() {
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
@@ -37,7 +39,7 @@ void print_menu() {
     std::cout << "Enter your choice: ";
 }
 
-// Helper to get validatedYYYYMMDD date string
+// Helper to get validated YYYYMMDD date string
 std::string get_valid_date_input() {
     std::string date_str;
     while (true) {
@@ -112,7 +114,7 @@ void run_application_loop() {
                 std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
                 std::string line;
                 std::getline(std::cin, line);
-                std::cout << "\nStart processing files... ";
+                std::cout << "\nStart processing files... " << std::endl;
                 auto start = std::chrono::high_resolution_clock::now();
                 std::stringstream ss(line);
                 std::string token;
@@ -124,6 +126,11 @@ void run_application_loop() {
                 if (user_inputs.empty()) {
                     std::cout << "No filenames or directories entered." << std::endl;
                     break;
+                }
+                
+                // Create a directory for intermediate files
+                if (!fs::exists(INTERMEDIATE_DIR)) {
+                    fs::create_directory(INTERMEDIATE_DIR);
                 }
 
                 std::vector<std::string> actual_files_to_process;
@@ -158,12 +165,9 @@ void run_application_loop() {
                 
                 std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
 
-                FileDataParser parser(DATABASE_NAME);
-                if (!parser.is_db_open()){
-                    std::cerr << "Parser could not open database. Aborting file processing." << std::endl;
-                    break;
-                }
-
+                // --- STAGE 1: Parsing ---
+                std::cout << "Stage 1: Parsing files to intermediate format..." << std::endl;
+                DataFileParser parser(INTERMEDIATE_DIR);
                 int successful_files_count = 0;
                 std::vector<std::string> failed_files;
 
@@ -174,27 +178,44 @@ void run_application_loop() {
                         failed_files.push_back(fname);
                     }
                 }
+                parser.commit_all(); // Final write of buffered data
 
-                parser.commit_all();
-                
-                std::cout << "\n--- File processing complete. ---" << std::endl;
+                // --- STAGE 2: Importing ---
+                std::cout << "Stage 2: Importing data into the database..." << std::endl;
+                DatabaseImporter importer(DATABASE_NAME);
+                if (!importer.is_db_open()) {
+                    std::cerr << "Importer could not open database. Aborting." << std::endl;
+                } else {
+                    importer.import_from_directory(INTERMEDIATE_DIR);
+                }
 
+                // --- Reporting ---
+                std::cout << "\n--- Data processing complete. ---" << std::endl;
                 if (failed_files.empty()) {
-                    std::cout << ANSI_COLOR_GREEN << "All files successfully uploaded." << ANSI_COLOR_RESET<< std::endl;
+                    std::cout << ANSI_COLOR_GREEN << "All files successfully processed and imported." << ANSI_COLOR_RESET << std::endl;
                     std::cout << "Successfully processed " << successful_files_count << " files." << std::endl;
                 } else {
-                    std::cerr << "There were errors during processing." << std::endl;
+                    std::cerr << "There were errors during the parsing stage." << std::endl;
                     if (successful_files_count > 0) {
-                        std::cout << "Successfully processed " << successful_files_count << " files." << std::endl;
+                        std::cout << "Successfully parsed " << successful_files_count << " files." << std::endl;
                     }
-                    std::cerr << "Failed to process the following " << failed_files.size() << " files:" << std::endl;
+                    std::cerr << "Failed to parse the following " << failed_files.size() << " files:" << std::endl;
                     for (const std::string& fname : failed_files) {
                         std::cerr << "- " << fname << std::endl;
                     }
                 }
+
+                // Cleanup intermediate files
+                try {
+                    fs::remove_all(INTERMEDIATE_DIR);
+                    std::cout << "Cleaned up intermediate files." << std::endl;
+                } catch (const fs::filesystem_error& e) {
+                    std::cerr << "Warning: Could not remove intermediate directory " << INTERMEDIATE_DIR << ": " << e.what() << std::endl;
+                }
+                
                 auto end = std::chrono::high_resolution_clock::now();
                 double elapsed = std::chrono::duration<double>(end - start).count();
-                std::cout << "Processing time: " << elapsed << " seconds." << std::endl;
+                std::cout << "Total processing time: " << elapsed << " seconds." << std::endl;
                 break;
             }
             case 1: { 
