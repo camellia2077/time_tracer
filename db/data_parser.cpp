@@ -21,28 +21,6 @@ bool execute_sql(sqlite3* db, const std::string& sql, const std::string& context
     return true;
 }
 
-// Helper function to convert HH:MM time to seconds since midnight
-int time_to_seconds(const std::string& time_str) {
-    if (time_str.length() != 5 || time_str[2] != ':') {
-        std::cerr << "Error: Invalid time format '" << time_str << "'. Expected HH:MM." << std::endl;
-        return 0; // Return 0 for invalid format as per requirement
-    }
-    try {
-        int hours = std::stoi(time_str.substr(0, 2));
-        int minutes = std::stoi(time_str.substr(3, 2));
-        if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
-            std::cerr << "Error: Invalid time value in '" << time_str << "'." << std::endl;
-            return 0;
-        }
-        return hours * 3600 + minutes * 60;
-    } catch (const std::invalid_argument& ia) {
-        std::cerr << "Error: Non-numeric value in time '" << time_str << "': " << ia.what() << std::endl;
-        return 0;
-    } catch (const std::out_of_range& oor) {
-        std::cerr << "Error: Time value out of range in '" << time_str << "': " << oor.what() << std::endl;
-        return 0;
-    }
-}
 
 struct TimeRecord {
     std::string date;
@@ -305,7 +283,7 @@ private:
             current_getup_time.erase(0, current_getup_time.find_first_not_of(" \t"));
             current_getup_time.erase(current_getup_time.find_last_not_of(" \t") + 1);
             // Validate HH:MM format for getup_time
-            if (time_to_seconds(current_getup_time) == 0 && current_getup_time != "00:00") { // time_to_seconds returns 0 on error
+            if (time_str_to_seconds(current_getup_time) == 0 && current_getup_time != "00:00") { // time_str_to_seconds returns 0 on error
                  // Allow "00:00" as a valid default/error, but warn if it's not "00:00" and invalid.
                 if (current_getup_time.find_first_not_of("0123456789:") != std::string::npos || current_getup_time.length() != 5) {
                    std::cerr << current_file_name << ": Warning: Invalid Getup time format '" << current_getup_time << "'. Using '00:00'." << std::endl;
@@ -333,8 +311,8 @@ private:
                 std::string project_path = matches[3].str();
                 project_path.erase(project_path.find_last_not_of(" \t") + 1); // Trim trailing from project_path only
 
-                int start_seconds = time_to_seconds(start_time_str);
-                int end_seconds = time_to_seconds(end_time_str);
+                int start_seconds = time_str_to_seconds(start_time_str);
+                int end_seconds = time_str_to_seconds(end_time_str);
 
                 if (start_seconds == 0 && start_time_str != "00:00") {
                      std::cerr << current_file_name << ":" << line_num << ": Invalid start time format in line: " << line << std::endl;
