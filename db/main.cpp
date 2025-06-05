@@ -3,17 +3,21 @@
 #include <vector>
 #include <limits>       // Required for std::numeric_limits
 #include <sstream>      // Required for std::stringstream (used in case 0)
-#include <algorithm>    // Required for std::all_of, std::sort (used in input validation and case 6)
+#include <algorithm>    // Required for std::all_of, std::sort
 #include <sqlite3.h>
 #include <filesystem>   // Required for filesystem operations
-#include "common_utils.h"   // Should be included first if others depend on its types
-#include "data_parser.h"
-#include "database_querier.h"
+#include <chrono>
 
+#include "common_utils.h"
+#include "data_parser.h"
+#include "database_querier.h" // This file already provides the query function definitions
+// Declare ANSI escape codes for text colors
+const std::string ANSI_COLOR_GREEN = "\x1b[32m"; // Code for green text
+const std::string ANSI_COLOR_RESET = "\x1b[0m";  // Code to reset text color
 // Define a namespace alias for convenience
 namespace fs = std::filesystem;
 
-const std::string DATABASE_NAME = "time_data.db"; // Standardized DB name
+const std::string DATABASE_NAME = "time_data.db";
 
 void print_menu() {
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
@@ -44,8 +48,8 @@ std::string get_valid_date_input() {
             }
         }
         std::cout << "Invalid date format or value. Please use YYYYMMDD." << std::endl;
-        std::cin.clear(); // Clear error flags
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Discard bad input
+        std::cin.clear();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     return date_str;
 }
@@ -70,27 +74,8 @@ std::string get_valid_month_input() {
     return month_str;
 }
 
-// Helper to get validated YYYY year string
-std::string get_valid_year_input() {
-    std::string year_str;
-    while (true) {
-        std::cout << "Enter year (YYYY): ";
-        std::cin >> year_str;
-        if (year_str.length() == 4 && std::all_of(year_str.begin(), year_str.end(), ::isdigit)) {
-            int year = std::stoi(year_str);
-            if (year > 1900 && year < 3000) {
-                break;
-            }
-        }
-        std::cout << "Invalid year format or value. Please use YYYY." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-    return year_str;
-}
-
 void run_application_loop() {
-    sqlite3* db = nullptr; // Querier functions will use this directly
+    sqlite3* db = nullptr;
     int choice = -1;
 
     while (choice != 8) {
@@ -101,38 +86,33 @@ void run_application_loop() {
             std::cout << "Invalid input. Please enter a number." << std::endl;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            choice = -1; // Reset choice
+            choice = -1;
             continue;
         }
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Consume newline
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        // Open database for querying if not already open, except for parsing
         if (choice != 0 && choice != 8 && db == nullptr) {
-            int rc = sqlite3_open(DATABASE_NAME.c_str(), &db);
-            if (rc) {
+            if (sqlite3_open(DATABASE_NAME.c_str(), &db)) {
                 std::cerr << "Can't open database " << DATABASE_NAME << ": " << sqlite3_errmsg(db) << std::endl;
-                sqlite3_close(db); // It's safe to call sqlite3_close on a failed open if db is not NULL
-                db = nullptr;      // Ensure db is NULL so we don't try to use it
-            } else {
-                std::cout << "Database " << DATABASE_NAME << " opened for querying." << std::endl;
+                sqlite3_close(db);
+                db = nullptr;
             }
         }
-
 
         switch (choice) {
             case 0: {
                 if (db) {
                     sqlite3_close(db);
                     db = nullptr;
-                    std::cout << "Closed main DB connection for parsing." << std::endl;
                 }
-                // Modified prompt to include directory support
-                std::cout << "Enter file name(s) or directory path(s) to process (space-separated if multiple, then Enter): ";
+                std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
                 std::string line;
                 std::getline(std::cin, line);
+                std::cout << "\nStart processing files... ";
+                auto start = std::chrono::high_resolution_clock::now();
                 std::stringstream ss(line);
                 std::string token;
-                std::vector<std::string> user_inputs; // Store raw user inputs
+                std::vector<std::string> user_inputs;
                 while (ss >> token) {
                     user_inputs.push_back(token);
                 }
@@ -142,26 +122,20 @@ void run_application_loop() {
                     break;
                 }
 
-                std::vector<std::string> actual_files_to_process; // This will hold all .txt files found
+                std::vector<std::string> actual_files_to_process;
 
                 for (const std::string& input_path_str : user_inputs) {
                     fs::path p(input_path_str);
-
                     if (!fs::exists(p)) {
                         std::cerr << "Warning: Path does not exist: " << input_path_str << std::endl;
                         continue;
                     }
-
                     if (fs::is_regular_file(p)) {
                         if (p.extension() == ".txt") {
                             actual_files_to_process.push_back(p.string());
-                        } else {
-                            std::cerr << "Warning: Skipping non-TXT file: " << input_path_str << std::endl;
                         }
                     } else if (fs::is_directory(p)) {
-                        std::cout << "Searching for .txt files in directory: " << input_path_str << std::endl;
                         try {
-                            // Recursively iterate through the directory
                             for (const auto& entry : fs::recursive_directory_iterator(p)) {
                                 if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".txt") {
                                     actual_files_to_process.push_back(entry.path().string());
@@ -170,72 +144,93 @@ void run_application_loop() {
                         } catch (const fs::filesystem_error& e) {
                             std::cerr << "Filesystem error accessing directory " << input_path_str << ": " << e.what() << std::endl;
                         }
-                    } else {
-                        std::cerr << "Warning: Skipping unsupported path type (not a file or directory): " << input_path_str << std::endl;
                     }
                 }
 
                 if (actual_files_to_process.empty()) {
-                    std::cout << "No .txt files found to process from the given inputs." << std::endl;
+                    std::cout << "No .txt files found to process." << std::endl;
                     break;
                 }
-
-                // Sort the files for consistent processing order (optional but good practice)
+                
                 std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
 
-                FileDataParser parser(DATABASE_NAME); // Parser opens its own connection
+                FileDataParser parser(DATABASE_NAME);
                 if (!parser.is_db_open()){
                     std::cerr << "Parser could not open database. Aborting file processing." << std::endl;
                     break;
                 }
+
+                int successful_files_count = 0;
+                std::vector<std::string> failed_files;
+
                 for (const std::string& fname : actual_files_to_process) {
-                    std::cout << "\n--- Processing file: " << fname << " ---" << std::endl;
-                    if (!parser.parse_file(fname)) {
-                        std::cerr << "Failed to process file: " << fname << std::endl;
+                    if (parser.parse_file(fname)) {
+                        successful_files_count++;
+                    } else {
+                        failed_files.push_back(fname);
                     }
                 }
-                parser.commit_all(); // Ensure any final data is stored by the parser
+
+                parser.commit_all();
+                
                 std::cout << "\n--- File processing complete. ---" << std::endl;
+
+                if (failed_files.empty()) {
+                    std::cout << ANSI_COLOR_GREEN << "All files successfully uploaded." << ANSI_COLOR_RESET<< std::endl;
+                    std::cout << "Successfully processed " << successful_files_count << " files." << std::endl;
+                } else {
+                    std::cerr << "There were errors during processing." << std::endl;
+                    if (successful_files_count > 0) {
+                        std::cout << "Successfully processed " << successful_files_count << " files." << std::endl;
+                    }
+                    std::cerr << "Failed to process the following " << failed_files.size() << " files:" << std::endl;
+                    for (const std::string& fname : failed_files) {
+                        std::cerr << "- " << fname << std::endl;
+                    }
+                }
+                auto end = std::chrono::high_resolution_clock::now();
+                double elapsed = std::chrono::duration<double>(end - start).count();
+                std::cout << "Processing time: " << elapsed << " seconds." << std::endl;
                 break;
             }
-            case 1: { // Query daily statistics
-                if (!db) { std::cerr << "Database not open. Please process a file first or check DB connection." << std::endl; break; }
+            case 1: { 
+                if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 std::string date_str = get_valid_date_input();
                 query_day(db, date_str);
                 break;
             }
-            case 2: { // Query last 7 days
+            case 2: {
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 query_period(db, 7);
                 break;
             }
-            case 3: { // Query last 14 days
+            case 3: {
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 query_period(db, 14);
                 break;
             }
-            case 4: { // Query last 30 days
+            case 4: { 
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 query_period(db, 30);
                 break;
             }
-            case 5: { // Output raw data for a day
+            case 5: { 
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 std::string date_str = get_valid_date_input();
                 query_day_raw(db, date_str);
                 break;
             }
-            case 6: { // Generate study heatmap for a year
+            case 6: { 
                 std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
                 break;
             }
-            case 7: { // Query monthly statistics
+            case 7: {
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 std::string month_str = get_valid_month_input();
                 query_month_summary(db, month_str);
                 break;
             }
-            case 8:
+             case 8:
                 std::cout << "Exiting program." << std::endl;
                 break;
             default:
@@ -246,13 +241,10 @@ void run_application_loop() {
 
     if (db) {
         sqlite3_close(db);
-        std::cout << "Main database connection closed." << std::endl;
     }
 }
 
 int main() {
-
-    run_application_loop(); // Call the new function that contains the main loop
-
+    run_application_loop();
     return 0;
 }
