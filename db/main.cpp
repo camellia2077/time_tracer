@@ -1,3 +1,5 @@
+#if defined(_WIN32) || defined(_WIN64)
+#include <windows.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,6 +13,8 @@
 #include "common_utils.h"
 #include "data_parser.h"
 #include "database_querier.h" // This file already provides the query function definitions
+#endif
+
 // Declare ANSI escape codes for text colors
 const std::string ANSI_COLOR_GREEN = "\x1b[32m"; // Code for green text
 const std::string ANSI_COLOR_RESET = "\x1b[0m";  // Code to reset text color
@@ -245,6 +249,9 @@ void run_application_loop() {
 }
 
 int main() {
+    #if defined(_WIN32) || defined(_WIN64)
+    SetConsoleOutputCP(CP_UTF8);
+    #endif
     run_application_loop();
     return 0;
 }
