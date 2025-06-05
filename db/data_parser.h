@@ -47,6 +47,7 @@ public:
 
     ~FileDataParser() {
         if (db) {
+            // Ensure the last buffered data is stored before closing.
             _store_previous_date_data();
             sqlite3_close(db);
         }
@@ -80,6 +81,7 @@ public:
 
             try {
                 if (line.rfind("Date:", 0) == 0) {
+                    // When we find a new date, store all data for the previous one.
                     _store_previous_date_data();
                     _handle_date_line(line);
                 } else if (line.rfind("Status:", 0) == 0) {
@@ -97,11 +99,13 @@ public:
                 std::cerr << current_file_name << ":" << line_num << ": Error processing line: " << line << " - " << e.what() << std::endl;
             }
         }
+        // After the loop, store the data for the very last date in the file.
         _store_previous_date_data();
         file.close();
         return true;
     }
-
+    
+    // Public method to explicitly commit any pending data.
     void commit_all() {
         _store_previous_date_data();
     }
@@ -186,17 +190,19 @@ private:
             current_date.erase(0, current_date.find_first_not_of(" \t"));
             current_date.erase(current_date.find_last_not_of(" \t") + 1);
 
+            // Reset buffers for the new date
             current_status = "False";
             current_remark = "";
             current_getup_time = "00:00";
             current_time_records_buffer.clear();
             current_date_processed = false;
 
+            // Insert the initial record for the day. This is done outside the main transaction
+            // as it's a prerequisite for the foreign key constraints in time_records.
             sqlite3_stmt* stmt;
             const char* sql = "INSERT OR IGNORE INTO days (date, status, remark, getup_time) VALUES (?, ?, ?, ?);";
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
                 sqlite3_bind_text(stmt, 1, current_date.c_str(), -1, SQLITE_STATIC);
-                // *** THE TYPO WAS HERE: c_st() is now c_str() ***
                 sqlite3_bind_text(stmt, 2, current_status.c_str(), -1, SQLITE_STATIC);
                 sqlite3_bind_text(stmt, 3, current_remark.c_str(), -1, SQLITE_STATIC);
                 sqlite3_bind_text(stmt, 4, current_getup_time.c_str(), -1, SQLITE_STATIC);
@@ -379,12 +385,21 @@ private:
         }
         sqlite3_finalize(stmt);
     }
-
+    
+    // This function now wraps all DB writes for a given date in a single transaction.
     void _store_previous_date_data() {
         if (current_date.empty() || !db || current_date_processed) {
             return;
         }
 
+        // --- BEGIN TRANSACTION ---
+        if (!execute_sql_parser(db, "BEGIN TRANSACTION;", "Begin transaction for " + current_date)) {
+            return; // Failed to start transaction, abort.
+        }
+
+        bool success = true;
+
+        // 1. Update the 'days' table with final status, remark, etc.
         sqlite3_stmt* day_stmt;
         const char* update_day_sql = "UPDATE days SET status = ?, remark = ?, getup_time = ? WHERE date = ?;";
         if (sqlite3_prepare_v2(db, update_day_sql, -1, &day_stmt, nullptr) == SQLITE_OK) {
@@ -395,36 +410,50 @@ private:
 
             if (sqlite3_step(day_stmt) != SQLITE_DONE) {
                 std::cerr << "Error updating day record for " << current_date << ": " << sqlite3_errmsg(db) << std::endl;
+                success = false;
             }
             sqlite3_finalize(day_stmt);
         } else {
             std::cerr << "Failed to prepare statement for updating day record: " << sqlite3_errmsg(db) << std::endl;
+            success = false;
         }
 
-        sqlite3_stmt* record_stmt;
-        const char* insert_record_sql = "INSERT OR REPLACE INTO time_records (date, start, end, project_path, duration) VALUES (?, ?, ?, ?, ?);";
-        if (sqlite3_prepare_v2(db, insert_record_sql, -1, &record_stmt, nullptr) == SQLITE_OK) {
-            for (const auto& record : current_time_records_buffer) {
-                sqlite3_bind_text(record_stmt, 1, record.date.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 2, record.start.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 3, record.end.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 4, record.project_path.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_int(record_stmt, 5, record.duration_seconds);
+        // 2. Insert all time records, only if the day update was successful
+        if (success) {
+            sqlite3_stmt* record_stmt;
+            const char* insert_record_sql = "INSERT OR REPLACE INTO time_records (date, start, end, project_path, duration) VALUES (?, ?, ?, ?, ?);";
+            if (sqlite3_prepare_v2(db, insert_record_sql, -1, &record_stmt, nullptr) == SQLITE_OK) {
+                for (const auto& record : current_time_records_buffer) {
+                    sqlite3_bind_text(record_stmt, 1, record.date.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 2, record.start.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 3, record.end.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 4, record.project_path.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_int(record_stmt, 5, record.duration_seconds);
 
-                if (sqlite3_step(record_stmt) != SQLITE_DONE) {
-                    if (sqlite3_errcode(db) != SQLITE_CONSTRAINT_PRIMARYKEY && sqlite3_errcode(db) != SQLITE_CONSTRAINT_UNIQUE) {
-                        std::cerr << "Error inserting/replacing time record for " << record.date << " " << record.start << ": " << sqlite3_errmsg(db) << std::endl;
+                    if (sqlite3_step(record_stmt) != SQLITE_DONE) {
+                         std::cerr << "Error inserting/replacing time record for " << record.date << " " << record.start << ": " << sqlite3_errmsg(db) << std::endl;
+                         success = false;
+                         break; // Stop processing further records for this date on failure
                     }
+                    sqlite3_reset(record_stmt);
                 }
-                sqlite3_reset(record_stmt);
+                sqlite3_finalize(record_stmt);
+            } else {
+                std::cerr << "Failed to prepare statement for inserting time records: " << sqlite3_errmsg(db) << std::endl;
+                success = false;
             }
-            sqlite3_finalize(record_stmt);
+        }
+        
+        // --- COMMIT OR ROLLBACK ---
+        if (success) {
+            execute_sql_parser(db, "COMMIT;", "Commit transaction for " + current_date);
+            current_date_processed = true; // Mark as processed only on successful commit
         } else {
-            std::cerr << "Failed to prepare statement for inserting time records: " << sqlite3_errmsg(db) << std::endl;
+            execute_sql_parser(db, "ROLLBACK;", "Rollback transaction for " + current_date);
         }
 
+        // Clear buffer regardless of outcome, to prevent reprocessing
         current_time_records_buffer.clear();
-        current_date_processed = true;
     }
 };
 

@@ -61,30 +61,13 @@ public:
         }
 
         std::cout << "Processing file: " << filename << std::endl;
-        // Reset date-specific state for a new file, except if current_date has pending data
-        // The problem states "In processing each new file, reset internal date-related state"
-        // but also "When encountering a new 'Date:' line, store previous date's data".
-        // This implies state persists across files until a new Date line or end of all processing.
-        // For simplicity here, let's assume date context is flushed at end of file or new Date.
-        // If a file doesn't start with a Date: line but contains other data, it needs a current_date.
-        // This design decision focuses on flushing data when a new Date is found or file ends.
-
-        // To correctly handle multiple files where one file might not end a date block,
-        // we should not reset current_date here unless it's truly a fresh start of the whole process.
-        // The prompt's "reset internal date-related state" before a new file might mean
-        // ensuring that if a file *doesn't* start with a Date:, it doesn't accidentally use
-        // a stale current_date from a *previous file's incomplete block*.
-        // My _store_previous_date_data() will handle flushing, and new Date: lines set current_date.
-        // So, the main thing to "reset" might be to ensure we are ready for a new Date.
-        // The current logic should handle this correctly by processing line by line.
-
         std::string line;
         int line_num = 0;
         current_file_name = filename; // For error reporting
 
         while (std::getline(file, line)) {
             line_num++;
-            // Trim whitespace (simple trim for this example)
+            // Trim whitespace
             line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
             line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 
@@ -93,7 +76,7 @@ public:
             }
 
             try {
-                if (line.rfind("Date:", 0) == 0) { // starts_with "Date:"
+                if (line.rfind("Date:", 0) == 0) {
                     _store_previous_date_data();
                     _handle_date_line(line);
                 } else if (line.rfind("Status:", 0) == 0) {
@@ -111,18 +94,14 @@ public:
                 std::cerr << current_file_name << ":" << line_num << ": Error processing line: " << line << " - " << e.what() << std::endl;
             }
         }
-
-        // Ensure data from the last date in the file is stored
         _store_previous_date_data();
-        // Commit any pending transactions if using them (sqlite3_exec handles this for simple statements)
-        // For more complex scenarios with explicit BEGIN TRANSACTION, a COMMIT would be here.
         std::cout << "Finished processing file: " << filename << std::endl;
         file.close();
         return true;
     }
 
-    void commit_all() { // Call this after all files are processed
-        _store_previous_date_data(); // Store any final pending data
+    void commit_all() {
+        _store_previous_date_data();
         std::cout << "All pending data committed." << std::endl;
     }
 
@@ -134,13 +113,12 @@ private:
     std::string current_remark;
     std::string current_getup_time;
     std::vector<TimeRecord> current_time_records_buffer;
-    std::string current_file_name; // For error messages
-    bool current_date_processed; // Flag to track if current_date data has been partially written to DB
+    std::string current_file_name;
+    bool current_date_processed;
 
     std::map<std::string, std::string> initial_top_level_parents = {
         {"study", "STUDY"},
         {"code", "CODE"}
-        // Add more predefined top-level activities here if needed
     };
 
     void _initialize_database() {
@@ -210,20 +188,17 @@ private:
 
 
     void _handle_date_line(const std::string& line) {
-        // Format: Date:YYYYMMDD
         if (line.length() > 5) {
             current_date = line.substr(5);
             current_date.erase(0, current_date.find_first_not_of(" \t"));
             current_date.erase(current_date.find_last_not_of(" \t") + 1);
 
-            // Reset daily accumulators
-            current_status = "False"; // Default status
-            current_remark = "";      // Default remark
-            current_getup_time = "00:00"; // Default getup time
+            current_status = "False";
+            current_remark = "";
+            current_getup_time = "00:00";
             current_time_records_buffer.clear();
-            current_date_processed = false; // New date, not yet written
+            current_date_processed = false;
 
-            // Create initial record in days table
             sqlite3_stmt* stmt;
             const char* sql = "INSERT OR IGNORE INTO days (date, status, remark, getup_time) VALUES (?, ?, ?, ?);";
             if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
@@ -249,7 +224,7 @@ private:
             std::cerr << current_file_name << ": Status line found before Date: " << line << std::endl;
             return;
         }
-        if (line.length() > 7) { // "Status:" is 7 chars
+        if (line.length() > 7) {
             current_status = line.substr(7);
             current_status.erase(0, current_status.find_first_not_of(" \t"));
             current_status.erase(current_status.find_last_not_of(" \t") + 1);
@@ -263,11 +238,13 @@ private:
             std::cerr << current_file_name << ": Remark line found before Date: " << line << std::endl;
             return;
         }
-        if (line.length() > 7) { // "Remark:" is 7 chars
-            current_remark = line.substr(7);
-            // Trim leading space if any, but keep internal/trailing spaces for remark content
-            current_remark.erase(0, current_remark.find_first_not_of(" \t"));
-             // Do not trim trailing for remark content, only leading after colon.
+        if (line.length() >= 7) {
+             if (line.length() > 7) {
+                current_remark = line.substr(7);
+                current_remark.erase(0, current_remark.find_first_not_of(" \t"));
+             } else {
+                current_remark = "";
+             }
         } else {
              std::cerr << current_file_name << ": Malformed Remark line: " << line << std::endl;
         }
@@ -278,16 +255,14 @@ private:
             std::cerr << current_file_name << ": Getup line found before Date: " << line << std::endl;
             return;
         }
-        if (line.length() > 6) { // "Getup:" is 6 chars
+        if (line.length() > 6) {
             current_getup_time = line.substr(6);
             current_getup_time.erase(0, current_getup_time.find_first_not_of(" \t"));
             current_getup_time.erase(current_getup_time.find_last_not_of(" \t") + 1);
-            // Validate HH:MM format for getup_time
-            if (time_str_to_seconds(current_getup_time) == 0 && current_getup_time != "00:00") { // time_str_to_seconds returns 0 on error
-                 // Allow "00:00" as a valid default/error, but warn if it's not "00:00" and invalid.
+            if (time_str_to_seconds(current_getup_time) == 0 && current_getup_time != "00:00") {
                 if (current_getup_time.find_first_not_of("0123456789:") != std::string::npos || current_getup_time.length() != 5) {
                    std::cerr << current_file_name << ": Warning: Invalid Getup time format '" << current_getup_time << "'. Using '00:00'." << std::endl;
-                   current_getup_time = "00:00"; // Reset to default if invalid
+                   current_getup_time = "00:00";
                 }
             }
         } else {
@@ -295,12 +270,26 @@ private:
         }
     }
 
+    // A helper function you might need for time conversion
+    int time_str_to_seconds(const std::string& time_str) {
+        if (time_str.length() != 5 || time_str[2] != ':') return 0;
+        try {
+            int hours = std::stoi(time_str.substr(0, 2));
+            int minutes = std::stoi(time_str.substr(3, 2));
+            if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+                return hours * 3600 + minutes * 60;
+            }
+        } catch (...) {
+            return 0;
+        }
+        return 0;
+    }
+
     void _handle_time_record_line(const std::string& line, int line_num) {
         if (current_date.empty()) {
             std::cerr << current_file_name << ":" << line_num << ": Time record line found before Date: " << line << std::endl;
             return;
         }
-        // Regex: HH:MM~HH:MM project_path
         std::regex time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})\s+(.+))");
         std::smatch matches;
 
@@ -309,7 +298,7 @@ private:
                 std::string start_time_str = matches[1].str();
                 std::string end_time_str = matches[2].str();
                 std::string project_path = matches[3].str();
-                project_path.erase(project_path.find_last_not_of(" \t") + 1); // Trim trailing from project_path only
+                project_path.erase(project_path.find_last_not_of(" \t") + 1);
 
                 int start_seconds = time_str_to_seconds(start_time_str);
                 int end_seconds = time_str_to_seconds(end_time_str);
@@ -322,7 +311,6 @@ private:
                      std::cerr << current_file_name << ":" << line_num << ": Invalid end time format in line: " << line << std::endl;
                      return;
                 }
-
 
                 int duration_seconds;
                 if (end_seconds < start_seconds) { // Overnight
@@ -343,10 +331,9 @@ private:
 
     void _process_project_path(const std::string& project_path_orig) {
         if (!db) return;
-        std::string project_path = project_path_orig; // Modifiable copy
+        std::string project_path = project_path_orig;
 
-        std::replace(project_path.begin(), project_path.end(), ' ', '_'); // Replace spaces with underscores if desired, or handle as part of name.
-                                                                         // The prompt implies project_path uses underscores already.
+        std::replace(project_path.begin(), project_path.end(), ' ', '_');
 
         std::stringstream ss(project_path);
         std::string segment;
@@ -370,27 +357,27 @@ private:
         std::string parent_of_current_segment;
 
         for (size_t i = 0; i < segments.size(); ++i) {
-            if (i == 0) { // First segment (e.g., "study")
+            if (i == 0) {
                 current_full_path = segments[i];
                 auto it = initial_top_level_parents.find(current_full_path);
                 if (it != initial_top_level_parents.end()) {
-                    parent_of_current_segment = it->second; // "STUDY"
+                    parent_of_current_segment = it->second;
                 } else {
-                    parent_of_current_segment = current_full_path; // "study"
-                    std::transform(parent_of_current_segment.begin(), parent_of_current_segment.end(), parent_of_current_segment.begin(), ::toupper); // "STUDY"
+                    parent_of_current_segment = current_full_path;
+                    std::transform(parent_of_current_segment.begin(), parent_of_current_segment.end(), parent_of_current_segment.begin(), ::toupper);
                 }
-            } else { // Subsequent segments (e.g., "program" in "study_program")
-                parent_of_current_segment = current_full_path; // Parent is the previous full path (e.g. "study")
-                current_full_path += "_" + segments[i];      // Current becomes "study_program"
+            } else {
+                parent_of_current_segment = current_full_path;
+                current_full_path += "_" + segments[i];
             }
 
-            // Insert (child=current_full_path, parent=parent_of_current_segment)
-            // Example: ("study", "STUDY"), ("study_program", "study"), ("study_program_python", "study_program")
             sqlite3_bind_text(stmt, 1, current_full_path.c_str(), -1, SQLITE_STATIC);
             sqlite3_bind_text(stmt, 2, parent_of_current_segment.c_str(), -1, SQLITE_STATIC);
 
             if (sqlite3_step(stmt) != SQLITE_DONE) {
-                std::cerr << "Failed to insert parent_child (" << current_full_path << ", " << parent_of_current_segment << "): " << sqlite3_errmsg(db) << std::endl;
+                 if (sqlite3_errcode(db) != SQLITE_CONSTRAINT_PRIMARYKEY && sqlite3_errcode(db) != SQLITE_CONSTRAINT_UNIQUE) {
+                    std::cerr << "Failed to insert parent_child (" << current_full_path << ", " << parent_of_current_segment << "): " << sqlite3_errmsg(db) << std::endl;
+                 }
             }
             sqlite3_reset(stmt);
         }
@@ -398,15 +385,22 @@ private:
     }
 
     void _store_previous_date_data() {
-        if (current_date.empty() || !db) {
+        if (current_date.empty() || !db || current_date_processed) {
             return;
         }
-         std::cout << "Storing data for date: " << current_date << std::endl;
+        std::cout << "Storing data for date: " << current_date << std::endl;
+        
+        // --- MODIFICATION START: TRANSACTION HANDLING ---
+        
+        // 1. Begin Transaction
+        if (!execute_sql(db, "BEGIN TRANSACTION;", "Begin transaction")) {
+            return; // Exit if we can't even start a transaction
+        }
 
-        // Update days table
+        bool success = true;
+
+        // 2. Update days table
         sqlite3_stmt* day_stmt;
-        // Use INSERT OR REPLACE for days to update if Date was already there or create if new from an earlier file.
-        // More robust: UPDATE existing, or INSERT if it's somehow missing (though _handle_date_line should have inserted)
         const char* update_day_sql = "UPDATE days SET status = ?, remark = ?, getup_time = ? WHERE date = ?;";
         if (sqlite3_prepare_v2(db, update_day_sql, -1, &day_stmt, nullptr) == SQLITE_OK) {
             sqlite3_bind_text(day_stmt, 1, current_status.c_str(), -1, SQLITE_STATIC);
@@ -416,53 +410,57 @@ private:
 
             if (sqlite3_step(day_stmt) != SQLITE_DONE) {
                 std::cerr << "Error updating day record for " << current_date << ": " << sqlite3_errmsg(db) << std::endl;
+                success = false;
             }
             sqlite3_finalize(day_stmt);
         } else {
             std::cerr << "Failed to prepare statement for updating day record: " << sqlite3_errmsg(db) << std::endl;
+            success = false;
         }
 
+        // 3. Insert time records, only if the previous step was successful
+        if (success) {
+            sqlite3_stmt* record_stmt;
+            const char* insert_record_sql = "INSERT OR REPLACE INTO time_records (date, start, end, project_path, duration) VALUES (?, ?, ?, ?, ?);";
+            if (sqlite3_prepare_v2(db, insert_record_sql, -1, &record_stmt, nullptr) == SQLITE_OK) {
+                for (const auto& record : current_time_records_buffer) {
+                    sqlite3_bind_text(record_stmt, 1, record.date.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 2, record.start.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 3, record.end.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_text(record_stmt, 4, record.project_path.c_str(), -1, SQLITE_STATIC);
+                    sqlite3_bind_int(record_stmt, 5, record.duration_seconds);
 
-        // Insert time records
-        sqlite3_stmt* record_stmt;
-        const char* insert_record_sql = "INSERT OR REPLACE INTO time_records (date, start, end, project_path, duration) VALUES (?, ?, ?, ?, ?);";
-        if (sqlite3_prepare_v2(db, insert_record_sql, -1, &record_stmt, nullptr) == SQLITE_OK) {
-            for (const auto& record : current_time_records_buffer) {
-                sqlite3_bind_text(record_stmt, 1, record.date.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 2, record.start.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 3, record.end.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_text(record_stmt, 4, record.project_path.c_str(), -1, SQLITE_STATIC);
-                sqlite3_bind_int(record_stmt, 5, record.duration_seconds);
-
-                if (sqlite3_step(record_stmt) != SQLITE_DONE) {
-                    std::cerr << "Error inserting time record for " << record.date << " " << record.start << ": " << sqlite3_errmsg(db) << std::endl;
+                    if (sqlite3_step(record_stmt) != SQLITE_DONE) {
+                        std::cerr << "Error inserting time record for " << record.date << " " << record.start << ": " << sqlite3_errmsg(db) << std::endl;
+                        success = false;
+                        break; // Stop processing records on the first error
+                    }
+                    sqlite3_reset(record_stmt);
                 }
-                sqlite3_reset(record_stmt); // Reset for next iteration
+                sqlite3_finalize(record_stmt);
+            } else {
+                std::cerr << "Failed to prepare statement for inserting time records: " << sqlite3_errmsg(db) << std::endl;
+                success = false;
             }
-            sqlite3_finalize(record_stmt);
-        } else {
-            std::cerr << "Failed to prepare statement for inserting time records: " << sqlite3_errmsg(db) << std::endl;
         }
 
-        // Clear buffers for the processed date
+        // 4. Commit or Rollback Transaction
+        if (success) {
+            execute_sql(db, "COMMIT;", "Commit transaction");
+        } else {
+            std::cerr << "Rolling back transaction for date " << current_date << " due to errors." << std::endl;
+            execute_sql(db, "ROLLBACK;", "Rollback transaction");
+        }
+
+        // --- MODIFICATION END ---
+
         current_time_records_buffer.clear();
-        current_date_processed = true; // Mark as processed
-        // current_date itself is not cleared here, it's cleared or overwritten by the next Date: line
+        current_date_processed = true;
     }
 };
 
 
 int main(int argc, char* argv[]) {
-    // --- UTF-8 Console Output Setup (Windows specific, optional for MSYS2/MinGW but can help) ---
-    // #ifdef _WIN32
-    // SetConsoleOutputCP(CP_UTF8);
-    // SetConsoleCP(CP_UTF8);
-    // #endif
-    // std::ios_base::sync_with_stdio(false); // Might improve performance with cout/cerr for large outputs
-    // std::cout.imbue(std::locale("en_US.UTF-8")); // Or your system's UTF-8 locale
-    // std::cerr.imbue(std::locale("en_US.UTF-8"));
-    // --- End UTF-8 Console ---
-
     if (argc < 2) {
         std::cerr << "Usage: " << argv[0] << " <input_file1> [input_file2 ...]" << std::endl;
         std::cerr << "Example: " << argv[0] << " data.txt" << std::endl;
@@ -478,7 +476,7 @@ int main(int argc, char* argv[]) {
         }
     }
     
-    parser.commit_all(); // Ensure any final data is stored
+    parser.commit_all();
 
     std::cout << "\n--- Processing complete. ---" << std::endl;
     std::cout << "Data stored in time_tracking.db" << std::endl;
