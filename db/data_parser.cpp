@@ -3,7 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
-
+// 调用 common_utils.h 中的 time_str_to_seconds 函数
 // --- DataFileParser Constructor & Destructor ---
 
 DataFileParser::DataFileParser() 
@@ -35,19 +35,20 @@ bool DataFileParser::parse_file(const std::string& filename) {
         std::cerr << "Error: Cannot open file " << filename << std::endl;
         return false;
     }
-
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    file.close();
     current_file_name = filename;
     bool success = true;
-
     try {
         std::string line;
         int line_num = 0;
-        while (std::getline(file, line)) {
+        
+        while (std::getline(buffer, line)) { 
             line_num++;
             line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
             line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
             if (line.empty()) continue;
-
             if (line.rfind("Date:", 0) == 0) {
                 _store_previous_date_data(); 
                 _handle_date_line(line);
@@ -66,7 +67,6 @@ bool DataFileParser::parse_file(const std::string& filename) {
         success = false;
     }
 
-    file.close();
     return success;
 }
 
@@ -107,7 +107,7 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
         std::string end_time_str = matches[2].str();
         std::string project_path = matches[3].str();
 
-        int start_seconds = time_str_to_seconds(start_time_str);
+        int start_seconds = time_str_to_seconds(start_time_str);// 调用 common_utils.h 中的 time_str_to_seconds 函数
         int end_seconds = time_str_to_seconds(end_time_str);
         int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
 
