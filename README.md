@@ -5,6 +5,11 @@ program.exe <num_days> <items_per_day>
 
 log_generator.exe 3650 30
 
+# processor
+用于处理数据和验证合法性
+
+-v <fielpath>
+
 # time_tracker
 time_tracker.exe <filepath.txt>// 存入数据
 
