@@ -9,6 +9,8 @@ log_generator.exe 3650 30
 用于处理数据和验证合法性
 
 -v <fielpath>
+## 编译命令
+g++ -std=c++17 -O3 -o processor main.cpp IntervalProcessor.cpp FormatValidator.cpp -march=native -flto -s
 
 # time_tracker
 time_tracker.exe <filepath.txt>// 存入数据
