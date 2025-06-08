@@ -8,6 +8,7 @@
 #include <random>      // For random number generation
 #include <cmath>       // For std::round
 #include <memory>      // For std::unique_ptr
+#include <chrono>      // *** ADDED: For timing the execution ***
 
 // Include the nlohmann/json library.
 // Make sure json.hpp is in your include path or in the same directory.
@@ -109,7 +110,11 @@ int main(int argc, char* argv[]) {
         std::cerr << "Error: <items_per_day> must be at least 2 to include '起床' and '睡觉长'." << '\n';
         return 1;
     }
-
+    
+    // *** MODIFICATION START: Timing logic ***
+    // Record the starting time point, after arguments are validated.
+    auto start_time = std::chrono::high_resolution_clock::now();
+    // *** MODIFICATION END ***
 
     int start_month = 1;
     int start_day_of_month = 1;
@@ -239,7 +244,20 @@ int main(int argc, char* argv[]) {
     }
 
     outFile.close();
+
+    // Record the ending time point.
+    auto end_time = std::chrono::high_resolution_clock::now();
+    
+    // Calculate the duration in milliseconds.
+    auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    
+    // Calculate the duration in seconds as a floating-point number for better readability on longer tasks.
+    auto duration_s = std::chrono::duration<double>(end_time - start_time);
+
     std::cout << "Data generation complete. Output is in '" << output_filename_str << "'" << '\n';
+    
+    // Print the elapsed time.
+    std::cout << "Total generation time: " << duration_ms.count() << " ms (" << std::fixed << std::setprecision(3) << duration_s.count() << " s)." << '\n';
 
     return 0;
 }
