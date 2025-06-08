@@ -24,17 +24,17 @@ namespace fs = std::filesystem;
 
 const std::string DATABASE_NAME = "time_data.db";
 
-void print_menu() {
+void print_menu() 
+{
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
     std::cout << "0. Process file(s) and import data" << std::endl;
     std::cout << "1. Query daily statistics" << std::endl;
     std::cout << "2. Query last 7 days" << std::endl;
     std::cout << "3. Query last 14 days" << std::endl;
     std::cout << "4. Query last 30 days" << std::endl;
-    std::cout << "5. Output raw data for a day" << std::endl;
-    std::cout << "6. Generate study heatmap for a year" << std::endl;
-    std::cout << "7. Query monthly statistics" << std::endl;
-    std::cout << "8. Exit" << std::endl;
+    std::cout << "5. Generate study heatmap for a year" << std::endl;
+    std::cout << "6. Query monthly statistics" << std::endl;
+    std::cout << "7. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -83,7 +83,7 @@ void run_application_loop() {
     sqlite3* db = nullptr;
     int choice = -1;
 
-    while (choice != 8) {
+    while (choice != 7) { // 退出条件从 8 修改为 7
         print_menu();
         std::cin >> choice;
 
@@ -96,7 +96,7 @@ void run_application_loop() {
         }
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-        if (choice != 0 && choice != 8 && db == nullptr) {
+        if (choice != 0 && choice != 7 && db == nullptr) { // 退出条件从 8 修改为 7
             if (sqlite3_open(DATABASE_NAME.c_str(), &db)) {
                 std::cerr << "Can't open database " << DATABASE_NAME << ": " << sqlite3_errmsg(db) << std::endl;
                 sqlite3_close(db);
@@ -127,7 +127,6 @@ void run_application_loop() {
                     break;
                 }
                 
-                // --- STAGE 1: Find all .txt files to process ---
                 std::vector<std::string> actual_files_to_process;
                 for (const std::string& input_path_str : user_inputs) {
                     fs::path p(input_path_str);
@@ -159,7 +158,6 @@ void run_application_loop() {
                 
                 std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
 
-                // --- STAGE 2: Parsing files into memory ---
                 std::cout << "Stage 1: Parsing files into memory..." << std::endl;
                 DataFileParser parser;
                 int successful_files_count = 0;
@@ -172,9 +170,8 @@ void run_application_loop() {
                         failed_files.push_back(fname);
                     }
                 }
-                parser.commit_all(); // Finalize any buffered data from the last file
+                parser.commit_all();
 
-                // --- STAGE 3: Importing from memory to database ---
                 std::cout << "Stage 2: Importing data into the database..." << std::endl;
                 DatabaseImporter importer(DATABASE_NAME);
                 if (!importer.is_db_open()) {
@@ -183,7 +180,6 @@ void run_application_loop() {
                     importer.import_data(parser);
                 }
 
-                // --- Reporting ---
                 std::cout << "\n--- Data processing complete. ---" << std::endl;
                 if (failed_files.empty()) {
                     std::cout << ANSI_COLOR_GREEN << "All files successfully processed and imported." << ANSI_COLOR_RESET << std::endl;
@@ -225,23 +221,18 @@ void run_application_loop() {
                 query_period(db, 30);
                 break;
             }
-            case 5: { 
-                 if (!db) { std::cerr << "Database not open." << std::endl; break; }
-                std::string date_str = get_valid_date_input();
-                query_day_raw(db, date_str);
-                break;
-            }
-            case 6: { 
+            // case 5 (Output raw data for a day) 已被移除
+            case 5: { // 原来的 case 6
                 std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
                 break;
             }
-            case 7: {
+            case 6: { // 原来的 case 7
                  if (!db) { std::cerr << "Database not open." << std::endl; break; }
                 std::string month_str = get_valid_month_input();
                 query_month_summary(db, month_str);
                 break;
             }
-             case 8:
+             case 7: // 原来的 case 8
                 std::cout << "Exiting program." << std::endl;
                 break;
             default:
