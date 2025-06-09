@@ -233,15 +233,24 @@ bool handle_user_choice(int choice, sqlite3*& db) {
                 report_generator.generate_report();
                 break;
             }
-        case 2:
-            query_period(db, 7);
-            break;
-        case 3:
-            query_period(db, 14);
-            break;
-        case 4:
-            query_period(db, 30);
-            break;
+            case 2: {
+                
+                PeriodReportGenerator report_generator(db, 7);// 创建并使用 PeriodReportGenerator 类
+                report_generator.generate_report();
+                break;
+            }
+            case 3: {
+                
+                PeriodReportGenerator report_generator(db, 14);// 创建并使用 PeriodReportGenerator 类
+                report_generator.generate_report();
+                break;
+            }
+            case 4: {
+                
+                PeriodReportGenerator report_generator(db, 30);// 创建并使用 PeriodReportGenerator 类
+                report_generator.generate_report();
+                break;
+            }
         case 5:
             std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
             break;
