@@ -20,6 +20,7 @@ find_package(SQLite3 REQUIRED)
 
 # --- 【修改】收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
+file(GLOB COMMON_SOURCES "common/*.cpp")   # 查找 common 目录下的源文件
 file(GLOB PARSING_SOURCES "parsing/*.cpp")
 file(GLOB DATABASE_SOURCES "database/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
@@ -29,12 +30,13 @@ add_executable(
     time_tracker_app
     # 列出所有需要编译的源文件
     main.cpp
+    ${COMMON_SOURCES}    # 添加 common 目录下的源文件
     ${PARSING_SOURCES}   # 添加 parsing 目录下的所有 .cpp 文件
     ${DATABASE_SOURCES}  # 添加 database 目录下的所有 .cpp 文件
     ${QUERIES_SOURCES}   # 添加 queries 目录下的所有 .cpp 文件
 )
 
-# --- 【修改】为目标添加头文件搜索路径 ---
+# --- 为目标添加头文件搜索路径 ---
 # 使用 target_include_directories 为我们的程序添加所有需要的头文件目录
 # 这是比 include_directories() 更现代、更推荐的做法
 target_include_directories(time_tracker_app PRIVATE
