@@ -14,7 +14,10 @@
 #include "common_utils.h"
 #include "data_parser.h"
 #include "database_importer.h"
-#include "database_querier.h"
+// MODIFICATION: Replace the old querier header with the new, specific headers.
+#include "query_day.h"
+#include "query_period.h"
+#include "query_month.h"
 
 // Declare ANSI escape codes for text colors
 const std::string ANSI_COLOR_GREEN = "\x1b[32m";
