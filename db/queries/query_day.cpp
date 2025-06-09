@@ -75,7 +75,7 @@ void DailyReportGenerator::_fetch_time_records() {
 void DailyReportGenerator::_display_header() {
     std::cout << "\n--- Daily Report for " << m_date << " ---\n";
     std::cout << "Date: " << m_date << std::endl;
-    std::cout << "Total Time Recorded: " << time_format_duration(m_total_duration) << std::endl;
+    std::cout << "Total Time Recorded: " << time_format_duration(m_total_duration) << std::endl;// 调用 common_utils.h 中的 time_format_duration 函数，将总秒数格式化为 "XhYYm" 的可读形式。
     std::cout << "Status: " << m_metadata.status << std::endl;
     std::cout << "Getup Time: " << m_metadata.getup_time << std::endl;
     std::cout << "Remark: " << m_metadata.remark << std::endl;
@@ -104,7 +104,7 @@ void DailyReportGenerator::_display_project_breakdown() {
         double percentage = (static_cast<double>(category_node.duration) / m_total_duration * 100.0);
         
         std::cout << "\n## " << category_name << ": "
-                  << time_format_duration(category_node.duration)
+                  << time_format_duration(category_node.duration)// 再次调用 common_utils.h 中的 time_format_duration 函数，格式化每个分类的时长。
                   << " (" << std::fixed << std::setprecision(1) << percentage << "%) ##\n";
 
         std::vector<std::string> output_lines = generate_sorted_output(category_node, 1);

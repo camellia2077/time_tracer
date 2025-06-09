@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "common_utils.h" // For ProjectTree etc.
+#include "common_utils.h" // For ProjectTree struct and time_format_duration function
 
 // 用于存储从 'days' 表中获取的元数据
 struct DayMetadata {

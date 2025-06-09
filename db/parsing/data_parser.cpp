@@ -108,7 +108,7 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
         std::string project_path = matches[3].str();
 
         int start_seconds = time_str_to_seconds(start_time_str);// 调用 common_utils.h 中的 time_str_to_seconds 函数
-        int end_seconds = time_str_to_seconds(end_time_str);
+        int end_seconds = time_str_to_seconds(end_time_str);// 调用 common_utils.h 中的 time_str_to_seconds 函数
         int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
 
         buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
@@ -121,10 +121,7 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
     std::replace(project_path.begin(), project_path.end(), ' ', '_');
     std::stringstream ss(project_path);
     std::string segment;
-    std::vector<std::string> segments;
-    while(std::getline(ss, segment, '_')) {
-        if (!segment.empty()) segments.push_back(segment);
-    }
+    std::vector<std::string> segments = split_string(project_path, '_');//调用 common_utils.h 中的 split_string 函数，按 '_' 分隔符切分项目路径。
 
     if (segments.empty()) return;
     
