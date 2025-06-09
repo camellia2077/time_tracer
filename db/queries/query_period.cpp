@@ -77,7 +77,7 @@ void PeriodReportGenerator::_display_summary() {
 void PeriodReportGenerator::_display_project_breakdown() {
     ProjectTree project_tree;
     std::map<std::string, std::string> parent_map = get_parent_map(m_db);
-    build_project_tree_from_records(project_tree, m_records, parent_map);
+    build_project_tree_from_records(project_tree, m_records, parent_map);// Calls build_project_tree_from_records from common_utils.h
 
     std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
     for (const auto& pair : project_tree) {
@@ -96,7 +96,7 @@ void PeriodReportGenerator::_display_project_breakdown() {
                   << time_format_duration(category_node.duration, m_actual_days)
                   << " (" << std::fixed << std::setprecision(1) << percentage << "% of total period) ##\n";
 
-        std::vector<std::string> output_lines = generate_sorted_output(category_node, m_actual_days);
+        std::vector<std::string> output_lines = generate_sorted_output(category_node, m_actual_days);// Calls generate_sorted_output from common_utils.h
         for (const auto& line : output_lines) {
             std::cout << line << std::endl;
         }

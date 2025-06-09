@@ -31,7 +31,7 @@ std::vector<std::string> generate_sorted_output(const ProjectNode& node, int avg
 
         if (child_node.duration > 0 || !child_node.children.empty()) {
             std::stringstream line_ss;
-            line_ss << indent_str << "- " << name << ": " << time_format_duration(child_node.duration, avg_days);
+            line_ss << indent_str << "- " << name << ": " << time_format_duration(child_node.duration, avg_days);// Calls time_format_duration from common_utils.h
             output_lines.push_back(line_ss.str());
 
             if (!child_node.children.empty()) {
@@ -70,7 +70,7 @@ void build_project_tree_from_records(
         const std::string& project_path = record.first;
         long long duration = record.second;
 
-        std::vector<std::string> parts = split_string(project_path, '_');
+        std::vector<std::string> parts = split_string(project_path, '_');// Calls split_string from common_utils.h
         if (parts.empty()) continue;
 
         std::string top_level_category_key = parts[0];
