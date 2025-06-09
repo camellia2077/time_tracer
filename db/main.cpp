@@ -227,11 +227,12 @@ bool handle_user_choice(int choice, sqlite3*& db) {
             }
             handle_process_files();
             break;
-        case 1: {
-            std::string date_str = get_valid_date_input();
-            query_day(db, date_str);
-            break;
-        }
+            case 1: {
+                std::string date_str = get_valid_date_input();
+                DailyReportGenerator report_generator(db, date_str);//　创建并使用 DailyReportGenerator 类
+                report_generator.generate_report();
+                break;
+            }
         case 2:
             query_period(db, 7);
             break;
@@ -244,11 +245,12 @@ bool handle_user_choice(int choice, sqlite3*& db) {
         case 5:
             std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
             break;
-        case 6: {
-            std::string month_str = get_valid_month_input();
-            query_month_summary(db, month_str);
-            break;
-        }
+            case 6: {
+                std::string month_str = get_valid_month_input();
+                MonthlyReportGenerator report_generator(db, month_str);//创建并使用 MonthlyReportGenerator 类
+                report_generator.generate_report();
+                break;
+            }
         case 7:
             std::cout << "Exiting program." << std::endl;
             should_continue = false;
