@@ -7,6 +7,7 @@
 #include <limits>
 #include <sstream>
 #include <algorithm>
+#include <iomanip> // 为 std::setprecision 和 std::fixed 添加
 #include <sqlite3.h>
 #include <filesystem>
 #include <chrono>
@@ -14,10 +15,7 @@
 #include "common_utils.h"
 #include "data_parser.h"
 #include "database_importer.h"
-// MODIFICATION: Replace the old querier header with the new, specific headers.
-#include "query_day.h"
-#include "query_period.h"
-#include "query_month.h"
+#include "query_handler.h" // 总的查询处理器头文件
 
 // Declare ANSI escape codes for text colors
 const std::string ANSI_COLOR_GREEN = "\x1b[32m";
@@ -97,8 +95,7 @@ void handle_process_files() {
     std::string line;
     std::getline(std::cin, line);
     std::cout << "\nStart processing files... " << std::endl;
-    auto start = std::chrono::high_resolution_clock::now();
-
+    
     std::stringstream ss(line);
     std::string token;
     std::vector<std::string> user_inputs;
@@ -142,6 +139,8 @@ void handle_process_files() {
 
     std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
 
+    auto start_total = std::chrono::high_resolution_clock::now();
+
     std::cout << "Stage 1: Parsing files into memory..." << std::endl;
     DataFileParser parser;
     int successful_files_count = 0;
@@ -156,6 +155,8 @@ void handle_process_files() {
     }
     parser.commit_all();
 
+    auto end_parsing = std::chrono::high_resolution_clock::now();
+
     std::cout << "Stage 2: Importing data into the database..." << std::endl;
     DatabaseImporter importer(DATABASE_NAME);
     if (!importer.is_db_open()) {
@@ -163,6 +164,8 @@ void handle_process_files() {
     } else {
         importer.import_data(parser);
     }
+    
+    auto end_total = std::chrono::high_resolution_clock::now();
 
     std::cout << "\n--- Data processing complete. ---" << std::endl;
     if (failed_files.empty()) {
@@ -179,9 +182,18 @@ void handle_process_files() {
         }
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    double elapsed = std::chrono::duration<double>(end - start).count();
-    std::cout << "Total processing time: " << elapsed << " seconds." << std::endl;
+    // --- 修改后的计时统计输出 ---
+    double parsing_elapsed_s = std::chrono::duration<double>(end_parsing - start_total).count();
+    double db_insertion_elapsed_s = std::chrono::duration<double>(end_total - end_parsing).count();
+    double total_elapsed_s = std::chrono::duration<double>(end_total - start_total).count();
+
+    std::cout << std::fixed << std::setprecision(4);
+    std::cout << "\n--------------------------------------";
+    std::cout << "Timing Statistics:\n" << std::endl;
+    std::cout << "Total time: " << total_elapsed_s << " seconds (" << total_elapsed_s * 1000.0 << " ms)" << std::endl;
+    std::cout << "Total Parsing files time: " << parsing_elapsed_s << " seconds (" << parsing_elapsed_s * 1000.0 << " ms)" << std::endl;
+    std::cout << "Total database insertion time: " << db_insertion_elapsed_s << " seconds (" << db_insertion_elapsed_s * 1000.0 << " ms)" << std::endl;
+    std::cout << "--------------------------------------\n";
 }
 
 /**
@@ -212,54 +224,47 @@ bool open_database_if_needed(sqlite3*& db) {
 bool handle_user_choice(int choice, sqlite3*& db) {
     bool should_continue = true;
 
-    // For any query, ensure the database is open.
+    // 对于任何查询，确保数据库是打开的
     if (choice >= 1 && choice <= 6) {
         if (!open_database_if_needed(db)) {
-            return true; // Continue the loop, but the operation failed.
+            return true;
         }
     }
 
+    // 在 switch 外部创建一个 QueryHandler 对象
+    // 这样，无论用户选择哪个查询，我们都使用同一个处理器
+    QueryHandler query_handler(db);
+
     switch (choice) {
         case 0:
-            if (db) { // Close the connection before bulk import
+            if (db) {
                 sqlite3_close(db);
                 db = nullptr;
             }
             handle_process_files();
             break;
-            case 1: {
-                std::string date_str = get_valid_date_input();
-                DailyReportGenerator report_generator(db, date_str);//　创建并使用 DailyReportGenerator 类
-                report_generator.generate_report();
-                break;
-            }
-            case 2: {
-                
-                PeriodReportGenerator report_generator(db, 7);// 创建并使用 PeriodReportGenerator 类
-                report_generator.generate_report();
-                break;
-            }
-            case 3: {
-                
-                PeriodReportGenerator report_generator(db, 14);// 创建并使用 PeriodReportGenerator 类
-                report_generator.generate_report();
-                break;
-            }
-            case 4: {
-                
-                PeriodReportGenerator report_generator(db, 30);// 创建并使用 PeriodReportGenerator 类
-                report_generator.generate_report();
-                break;
-            }
+        case 1: {
+            std::string date_str = get_valid_date_input();
+            query_handler.run_daily_query(date_str);
+            break;
+        }
+        case 2:
+            query_handler.run_period_query(7);
+            break;
+        case 3:
+            query_handler.run_period_query(14);
+            break;
+        case 4:
+            query_handler.run_period_query(30);
+            break;
         case 5:
             std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
             break;
-            case 6: {
-                std::string month_str = get_valid_month_input();
-                MonthlyReportGenerator report_generator(db, month_str);//创建并使用 MonthlyReportGenerator 类
-                report_generator.generate_report();
-                break;
-            }
+        case 6: {
+            std::string month_str = get_valid_month_input();
+            query_handler.run_monthly_query(month_str);
+            break;
+        }
         case 7:
             std::cout << "Exiting program." << std::endl;
             should_continue = false;
