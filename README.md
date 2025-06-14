@@ -1,6 +1,6 @@
-# db
+# 1 db
 主程序，用于解析文本内容与查询
-## structure
+## 1.1 structure
 ```
 db/
 ├── CMakeLists.txt
@@ -35,7 +35,7 @@ db/
     ├── app_icon.rc
     └── output_icon.ico
 ```
-## compile
+## 1.2 compile
 cd 'c:Time_Master_cpp/db'
 
 mkdir build
@@ -46,22 +46,17 @@ cmake .. -D CMAKE_BUILD_TYPE=Release
 
 cmake --build .
 
-# 辅助工具
-## log_generator.cpp
+# 2 辅助工具
+## 2.1 log_generator.cpp
 用于生成截止时间的测试数据，通过命令行输入生成时间以及每天的项目数量
-### usage
+### 2.1.1 usage
 program.exe num_days items_per_day
 
 log_generator.exe 3650 30
 
-## processor
+## 2.2 processor
 用于处理数据和验证合法性
-### usage
+### 2.2.1usage
 -v yourfielpath
 
 
-## time_tracker
-### usage
-time_tracker.exe <filepath.txt>// 存入数据
-
-time_tracker.exe query 20250501//查询 20250501这天的数据
