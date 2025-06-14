@@ -28,7 +28,6 @@ const std::string DATABASE_NAME = "time_data.db";
 
 // Forward declarations
 void handle_process_files();
-bool handle_user_choice(int choice, sqlite3*& db);
 
 // =================================================================
 // Refactored Class: FileFinder
@@ -215,58 +214,6 @@ private:
 // Main Application Logic
 // =================================================================
 
-void print_menu() {
-    std::cout << "\n--- Time Tracking Menu ---" << std::endl;
-    std::cout << "0. Process file(s) and import data" << std::endl;
-    std::cout << "1. Query daily statistics" << std::endl;
-    std::cout << "2. Query last 7 days" << std::endl;
-    std::cout << "3. Query last 14 days" << std::endl;
-    std::cout << "4. Query last 30 days" << std::endl;
-    std::cout << "5. Generate study heatmap for a year" << std::endl;
-    std::cout << "6. Query monthly statistics" << std::endl;
-    std::cout << "7. Exit" << std::endl;
-    std::cout << "Enter your choice: ";
-}
-
-std::string get_valid_date_input() {
-    std::string date_str;
-    while (true) {
-        std::cout << "Enter date (YYYYMMDD): ";
-        std::cin >> date_str;
-        if (date_str.length() == 8 && std::all_of(date_str.begin(), date_str.end(), ::isdigit)) {
-            int year = std::stoi(date_str.substr(0, 4));
-            int month = std::stoi(date_str.substr(4, 2));
-            int day = std::stoi(date_str.substr(6, 2));
-            if (year > 1900 && year < 3000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-                break;
-            }
-        }
-        std::cout << "Invalid date format or value. Please use YYYYMMDD." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-    return date_str;
-}
-
-std::string get_valid_month_input() {
-    std::string month_str;
-    while (true) {
-        std::cout << "Enter month (YYYYMM): ";
-        std::cin >> month_str;
-        if (month_str.length() == 6 && std::all_of(month_str.begin(), month_str.end(), ::isdigit)) {
-            int year = std::stoi(month_str.substr(0, 4));
-            int month = std::stoi(month_str.substr(4, 2));
-            if (year > 1900 && year < 3000 && month >= 1 && month <= 12) {
-                break;
-            }
-        }
-        std::cout << "Invalid month format or value. Please use YYYYMM." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-    }
-    return month_str;
-}
-
 /**
  * @brief Simplified function to handle the file processing workflow.
  *
@@ -276,7 +223,6 @@ void handle_process_files() {
     FileProcessor processor(DATABASE_NAME);
     processor.run();
 }
-
 
 bool open_database_if_needed(sqlite3*& db) {
     if (db == nullptr) {
@@ -290,83 +236,151 @@ bool open_database_if_needed(sqlite3*& db) {
     return true;
 }
 
-bool handle_user_choice(int choice, sqlite3*& db) {
-    // For any query, ensure the database is open
-    if (choice >= 1 && choice <= 6) {
-        if (!open_database_if_needed(db)) {
-            return true; // Continue loop, but query will fail
-        }
-    }
+// =================================================================
+// Refactored Class: Menu
+// =================================================================
+/**
+ * @class Menu
+ * @brief Handles the main application menu and user interaction loop.
+ */
+class Menu {
+public:
+    Menu() : db(nullptr) {}
 
-    QueryHandler query_handler(db);
+    /**
+     * @brief Runs the main application loop.
+     */
+    void run() {
+        while (true) {
+            print_menu();
+            int choice = -1;
+            std::cin >> choice;
 
-    switch (choice) {
-        case 0:
-            if (db) {
-                sqlite3_close(db); // Close DB connection before writing
-                db = nullptr;
+            if (std::cin.fail()) {
+                std::cout << "Invalid input. Please enter a number." << std::endl;
+                std::cin.clear();
+                std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+                continue;
             }
-            handle_process_files();
-            break;
-        case 1: {
-            std::string date_str = get_valid_date_input();
-            query_handler.run_daily_query(date_str);
-            break;
+            // Consume the rest of the line to handle trailing characters
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+            if (!handle_user_choice(choice)) {
+                break; // Exit loop if handler returns false
+            }
         }
-        case 2:
-            query_handler.run_period_query(7);
-            break;
-        case 3:
-            query_handler.run_period_query(14);
-            break;
-        case 4:
-            query_handler.run_period_query(30);
-            break;
-        case 5:
-            std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
-            break;
-        case 6: {
-            std::string month_str = get_valid_month_input();
-            query_handler.run_monthly_query(month_str);
-            break;
+
+        if (db) {
+            sqlite3_close(db);
         }
-        case 7:
-            std::cout << "Exiting program." << std::endl;
-            return false; // Signal to exit
-        default:
-            std::cout << "Invalid choice. Please try again." << std::endl;
-            break;
     }
-    return true; // Signal to continue
-}
 
+private:
+    sqlite3* db;
 
-void run_application_loop() {
-    sqlite3* db = nullptr;
-    int choice = -1;
+    void print_menu() {
+        std::cout << "\n--- Time Tracking Menu ---" << std::endl;
+        std::cout << "0. Process file(s) and import data" << std::endl;
+        std::cout << "1. Query daily statistics" << std::endl;
+        std::cout << "2. Query last 7 days" << std::endl;
+        std::cout << "3. Query last 14 days" << std::endl;
+        std::cout << "4. Query last 30 days" << std::endl;
+        std::cout << "5. Generate study heatmap for a year" << std::endl;
+        std::cout << "6. Query monthly statistics" << std::endl;
+        std::cout << "7. Exit" << std::endl;
+        std::cout << "Enter your choice: ";
+    }
 
-    while (true) {
-        print_menu();
-        std::cin >> choice;
-
-        if (std::cin.fail()) {
-            std::cout << "Invalid input. Please enter a number." << std::endl;
+    std::string get_valid_date_input() {
+        std::string date_str;
+        while (true) {
+            std::cout << "Enter date (YYYYMMDD): ";
+            std::cin >> date_str;
+            if (date_str.length() == 8 && std::all_of(date_str.begin(), date_str.end(), ::isdigit)) {
+                int year = std::stoi(date_str.substr(0, 4));
+                int month = std::stoi(date_str.substr(4, 2));
+                int day = std::stoi(date_str.substr(6, 2));
+                if (year > 1900 && year < 3000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                    break;
+                }
+            }
+            std::cout << "Invalid date format or value. Please use YYYYMMDD." << std::endl;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            continue;
         }
-        // Consume the rest of the line to handle trailing characters or full-line input
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-
-        if (!handle_user_choice(choice, db)) {
-            break; // Exit loop if handler returns false
-        }
+        return date_str;
     }
 
-    if (db) {
-        sqlite3_close(db);
+    std::string get_valid_month_input() {
+        std::string month_str;
+        while (true) {
+            std::cout << "Enter month (YYYYMM): ";
+            std::cin >> month_str;
+            if (month_str.length() == 6 && std::all_of(month_str.begin(), month_str.end(), ::isdigit)) {
+                int year = std::stoi(month_str.substr(0, 4));
+                int month = std::stoi(month_str.substr(4, 2));
+                if (year > 1900 && year < 3000 && month >= 1 && month <= 12) {
+                    break;
+                }
+            }
+            std::cout << "Invalid month format or value. Please use YYYYMM." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        }
+        return month_str;
     }
-}
+
+    bool handle_user_choice(int choice) {
+        // For any query, ensure the database is open
+        if (choice >= 1 && choice <= 6) {
+            if (!open_database_if_needed(db)) {
+                return true; // Continue loop, but query will fail
+            }
+        }
+
+        QueryHandler query_handler(db);
+
+        switch (choice) {
+            case 0:
+                if (db) {
+                    sqlite3_close(db); // Close DB connection before writing
+                    db = nullptr;
+                }
+                handle_process_files();
+                break;
+            case 1: {
+                std::string date_str = get_valid_date_input();
+                query_handler.run_daily_query(date_str);
+                break;
+            }
+            case 2:
+                query_handler.run_period_query(7);
+                break;
+            case 3:
+                query_handler.run_period_query(14);
+                break;
+            case 4:
+                query_handler.run_period_query(30);
+                break;
+            case 5:
+                std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
+                break;
+            case 6: {
+                std::string month_str = get_valid_month_input();
+                query_handler.run_monthly_query(month_str);
+                break;
+            }
+            case 7:
+                std::cout << "Exiting program." << std::endl;
+                return false; // Signal to exit
+            default:
+                std::cout << "Invalid choice. Please try again." << std::endl;
+                break;
+        }
+        return true; // Signal to continue
+    }
+};
+
 
 #if defined(_WIN32) || defined(_WIN64)
 void EnableVirtualTerminalProcessing() {
@@ -385,7 +399,8 @@ int main() {
     EnableVirtualTerminalProcessing();
     #endif
 
-    run_application_loop();
+    Menu app_menu;
+    app_menu.run();
     
     return 0;
 }
