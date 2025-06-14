@@ -11,7 +11,10 @@ db/
 ├── database/ # Manages the creation of the database and the importation of data into it.
 │   ├── database_importer.cpp
 │   └── database_importer.h
-├── parsing/ # Handles the parsing and structuring of data from input files.
+├── Menu/                # UI components
+│   ├── Menu.h           # Header for the Menu class
+│   └── Menu.cpp         # Implementation of the Menu class
+├── parsing/             # Handles the parsing and structuring of data from input files.
 │   ├── data_parser.cpp
 │   └── data_parser.h
 queries/                 # Contains all logic for querying the database and generating user-facing reports.
