@@ -10,7 +10,15 @@ log_generator.exe 3650 30
 
 -v <fielpath>
 ## 编译命令
-g++ -std=c++17 -O3 -o processor main.cpp IntervalProcessor.cpp FormatValidator.cpp -march=native -flto -s
+cd 'c:Time_Master_cpp/db'
+
+mkdir build
+
+cd build
+
+cmake .. -D CMAKE_BUILD_TYPE=Release
+
+cmake --build .
 
 # time_tracker
 time_tracker.exe <filepath.txt>// 存入数据
