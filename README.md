@@ -8,8 +8,43 @@ log_generator.exe 3650 30
 # processor
 用于处理数据和验证合法性
 
--v <fielpath>
-## 编译命令
+-v "<yourfielpath>"
+
+
+# time_tracker
+time_tracker.exe <filepath.txt>// 存入数据
+
+time_tracker.exe' query 20250501//查询 20250501这天的数据
+
+# db
+## structure
+db/
+├── CMakeLists.txt
+├── main.cpp
+├── common/
+│   ├── common_utils.cpp
+│   └── common_utils.h
+├── database/
+│   ├── database_importer.cpp
+│   └── database_importer.h
+├── parsing/
+│   ├── data_parser.cpp
+│   └── data_parser.h
+├── queries/
+│   ├── query_day.cpp
+│   ├── query_day.h
+│   ├── query_handler.cpp
+│   ├── query_handler.h
+│   ├── query_month.cpp
+│   ├── query_month.h
+│   ├── query_period.cpp
+│   ├── query_period.h
+│   ├── query_utils.cpp
+│   └── query_utils.h
+└── resources/
+    ├── app_icon.rc
+    └── output_icon.ico
+## compile
 cd 'c:Time_Master_cpp/db'
 
 mkdir build
@@ -19,14 +54,6 @@ cd build
 cmake .. -D CMAKE_BUILD_TYPE=Release
 
 cmake --build .
-
-# time_tracker
-time_tracker.exe <filepath.txt>// 存入数据
-
-time_tracker.exe' query 20250501//查询 20250501这天的数据
-
-# db
-g++ -std=c++17 -O3 -o time_tracker main.cpp -lsqlite3
 
 
 # 性能对比 log_generator.cpp
