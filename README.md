@@ -5,26 +5,36 @@
 db/
 ├── CMakeLists.txt
 ├── main.cpp
-├── common/
+├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
 │   └── common_utils.h
-├── database/
+├── database/ # Manages the creation of the database and the importation of data into it.
 │   ├── database_importer.cpp
 │   └── database_importer.h
-├── parsing/
+├── parsing/ # Handles the parsing and structuring of data from input files.
 │   ├── data_parser.cpp
 │   └── data_parser.h
-├── queries/
-│   ├── query_day.cpp
-│   ├── query_day.h
-│   ├── query_handler.cpp
-│   ├── query_handler.h
-│   ├── query_month.cpp
-│   ├── query_month.h
-│   ├── query_period.cpp
-│   ├── query_period.h
-│   ├── query_utils.cpp
-│   └── query_utils.h
+queries/                 # Contains all logic for querying the database and generating user-facing reports.
+│
+├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to route query requests.
+│
+├── query_handler.h      # Declares the QueryHandler class, the main entry point for all query operations.
+│
+├── query_day.cpp        # Implements the logic to generate a detailed report for a single day.
+│
+├── query_day.h          # Declares the class responsible for generating a daily report.
+│
+├── query_month.cpp      # Implements the logic to generate a summary report for a specific month.
+│
+├── query_month.h        # Declares the class that generates a monthly report.
+│
+├── query_period.cpp     # Implements the logic for generating reports over a custom period (e.g., last 7 days).
+│
+├── query_period.h       # Declares the class for generating reports over a specific time period.
+│
+├── query_utils.cpp      # Implements shared helper functions for querying, such as building project trees and formatting output.
+│
+└── query_utils.h        # Declares various utility functions used by the different query generators.
 └── resources/
     ├── app_icon.rc
     └── output_icon.ico
