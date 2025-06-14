@@ -1,6 +1,7 @@
 # db
 主程序，用于解析文本内容与查询
 ## structure
+```
 db/
 ├── CMakeLists.txt
 ├── main.cpp
@@ -27,6 +28,7 @@ db/
 └── resources/
     ├── app_icon.rc
     └── output_icon.ico
+```
 ## compile
 cd 'c:Time_Master_cpp/db'
 
