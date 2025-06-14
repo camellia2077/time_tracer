@@ -14,33 +14,23 @@ db/
 ├── menu/                # UI components
 │   ├── menu.h           # Header for the Menu class
 │   └── menu.cpp         # Implementation of the Menu class
-├── parsing/             # Handles the parsing and structuring of data from input files.
-│   ├── data_parser.cpp
-│   └── data_parser.h
-├── processing/
-│   ├── processing.cpp
-│   └── processing.h
+├── parsing/                    # Handles data parsing from input files.
+│   ├── data_parser.cpp         # Implements the DataFileParser for parsing files and populating data structures.
+│   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
+├── processing/                 # Manages the file processing workflow.
+│   ├── processing.cpp          # Implements file collection, parsing, and database import.
+│   └── processing.h            # Declares the main function to start file processing.
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
-│
-├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to route query requests.
-│
-├── query_handler.h      # Declares the QueryHandler class, the main entry point for all query operations.
-│
-├── query_day.cpp        # Implements the logic to generate a detailed report for a single day.
-│
-├── query_day.h          # Declares the class responsible for generating a daily report.
-│
-├── query_month.cpp      # Implements the logic to generate a summary report for a specific month.
-│
-├── query_month.h        # Declares the class that generates a monthly report.
-│
-├── query_period.cpp     # Implements the logic for generating reports over a custom period (e.g., last 7 days).
-│
-├── query_period.h       # Declares the class for generating reports over a specific time period.
-│
-├── query_utils.cpp      # Implements shared helper functions for querying, such as building project trees and formatting output.
-│
-└── query_utils.h        # Declares various utility functions used by the different query generators.
+│   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to route query requests.
+│   └── query_handler.h      # Declares the QueryHandler class, the main entry point for all query operations.
+│   ├── query_day.cpp        # Implements the logic to generate a detailed report for a single day.
+│   └── query_day.h          # Declares the class responsible for generating a daily report.
+│   ├── query_month.cpp      # Implements the logic to generate a summary report for a specific month.
+│   └── query_month.h        # Declares the class that generates a monthly report.
+│   ├── query_period.cpp     # Implements the logic for generating reports over a custom period (e.g., last 7 days).
+│   └── query_period.h       # Declares the class for generating reports over a specific time period.
+│   ├── query_utils.cpp      # Implements shared helper functions for querying, such as building project trees and formatting output.
+│   └── query_utils.h        # Declares various utility functions used by the different query generators.
 └── resources/
     ├── app_icon.rc
     └── output_icon.ico
