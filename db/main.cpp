@@ -309,10 +309,40 @@ void run_application_loop() {
     }
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+/**
+ * @brief Enables virtual terminal processing for the console.
+ *
+ * This function is required on Windows to make the console interpret
+ * ANSI escape codes for colors and other text formatting.
+ */
+void EnableVirtualTerminalProcessing() {
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE) {
+        // 获取标准输出句柄失败
+        return;
+    }
+
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode)) {
+        // 获取当前控制台模式失败
+        return;
+    }
+
+    // 添加 ENABLE_VIRTUAL_TERMINAL_PROCESSING 标志
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    if (!SetConsoleMode(hOut, dwMode)) {
+        // 设置新模式失败 (可能在非常旧的系统上)
+    }
+}
+#endif
+
 int main() {
     #if defined(_WIN32) || defined(_WIN64)
     // Set console output to UTF-8 to support special characters
     SetConsoleOutputCP(CP_UTF8);
+    // 启用 ANSI 转义码处理
+    EnableVirtualTerminalProcessing();
     #endif
     run_application_loop();
     return 0;
