@@ -17,7 +17,10 @@ db/
 ├── parsing/             # Handles the parsing and structuring of data from input files.
 │   ├── data_parser.cpp
 │   └── data_parser.h
-queries/                 # Contains all logic for querying the database and generating user-facing reports.
+├── processing/
+│   ├── processing.cpp
+│   └── processing.h
+├── queries/             # Contains all logic for querying the database and generating user-facing reports.
 │
 ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to route query requests.
 │
