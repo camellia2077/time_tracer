@@ -36,6 +36,24 @@ add_executable(
     ${QUERIES_SOURCES}   # 添加 queries 目录下的所有 .cpp 文件
 )
 
+# --- 为 Windows 平台添加图标资源 ---
+if(WIN32)
+    # 找到 windres.exe 程序，它是编译 .rc 文件的工具
+    find_program(WINDRES_EXECUTABLE windres)
+    if(NOT WINDRES_EXECUTABLE)
+        message(FATAL_ERROR "Failed to find windres.exe. Please ensure it is in your PATH.")
+    endif()
+
+    # 将 .rc 文件添加到源文件列表
+    list(APPEND RESOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/resources/app_icon.rc")
+
+    # 将资源文件也添加到可执行文件的源列表中
+    target_sources(time_tracker_app PRIVATE ${RESOURCE_FILES})
+
+    # 打印消息，确认图标已添加
+    message(STATUS "Windows icon resource added to target 'time_tracker_app'.")
+endif()
+
 # --- 为目标添加头文件搜索路径 ---
 # 使用 target_include_directories 为我们的程序添加所有需要的头文件目录
 # 这是比 include_directories() 更现代、更推荐的做法
@@ -44,6 +62,7 @@ target_include_directories(time_tracker_app PRIVATE
     "database"
     "parsing"
     "queries"
+    "resources"
 )
 
 # --- 链接库 ---
