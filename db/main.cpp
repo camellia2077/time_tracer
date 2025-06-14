@@ -7,7 +7,7 @@
 #include <limits>
 #include <sstream>
 #include <algorithm>
-#include <iomanip> // 为 std::setprecision 和 std::fixed 添加
+#include <iomanip> // For std::setprecision and std::fixed
 #include <sqlite3.h>
 #include <filesystem>
 #include <chrono>
@@ -15,22 +15,207 @@
 #include "common_utils.h"
 #include "data_parser.h"
 #include "database_importer.h"
-#include "query_handler.h" // 总的查询处理器头文件
+#include "query_handler.h" // Main query handler header
+
+// Define a namespace alias for convenience
+namespace fs = std::filesystem;
 
 // Declare ANSI escape codes for text colors
 const std::string ANSI_COLOR_GREEN = "\x1b[32m";
 const std::string ANSI_COLOR_RESET = "\x1b[0m";
-// Define a namespace alias for convenience
-namespace fs = std::filesystem;
 
 const std::string DATABASE_NAME = "time_data.db";
 
-// Forward declarations for newly created functions
+// Forward declarations
 void handle_process_files();
 bool handle_user_choice(int choice, sqlite3*& db);
 
-void print_menu()
-{
+// =================================================================
+// Refactored Class: FileFinder
+// =================================================================
+/**
+ * @class FileFinder
+ * @brief Handles discovery of files to be processed.
+ *
+ * It prompts the user for input paths (files or directories),
+ * validates them, and recursively finds all .txt files.
+ */
+class FileFinder {
+public:
+    FileFinder() = default;
+
+    /**
+     * @brief The main public method to collect user input and find files.
+     * @return A sorted vector of strings, where each string is a path to a .txt file.
+     */
+    std::vector<std::string> collect_and_find_files() {
+        std::vector<std::string> user_inputs = get_user_inputs();
+        if (user_inputs.empty()) {
+            std::cout << "No filenames or directories entered." << std::endl;
+            return {};
+        }
+
+        std::vector<std::string> found_files = find_txt_files_in_paths(user_inputs);
+        std::sort(found_files.begin(), found_files.end());
+        return found_files;
+    }
+
+private:
+    /**
+     * @brief Prompts the user and gets a list of input paths.
+     * @return A vector of strings representing the user's input.
+     */
+    std::vector<std::string> get_user_inputs() {
+        std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
+        std::string line;
+        std::getline(std::cin, line);
+        std::stringstream ss(line);
+        std::string token;
+        std::vector<std::string> user_inputs;
+        while (ss >> token) {
+            user_inputs.push_back(token);
+        }
+        return user_inputs;
+    }
+
+    /**
+     * @brief Scans the provided paths to find all .txt files.
+     * @param input_paths A vector of user-provided file or directory paths.
+     * @return A vector of full paths to all found .txt files.
+     */
+    std::vector<std::string> find_txt_files_in_paths(const std::vector<std::string>& input_paths) {
+        std::vector<std::string> files_to_process;
+        for (const std::string& path_str : input_paths) {
+            fs::path p(path_str);
+            if (!fs::exists(p)) {
+                std::cerr << "Warning: Path does not exist: " << path_str << std::endl;
+                continue;
+            }
+
+            if (fs::is_regular_file(p) && p.extension() == ".txt") {
+                files_to_process.push_back(p.string());
+            } else if (fs::is_directory(p)) {
+                try {
+                    for (const auto& entry : fs::recursive_directory_iterator(p)) {
+                        if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".txt") {
+                            files_to_process.push_back(entry.path().string());
+                        }
+                    }
+                } catch (const fs::filesystem_error& e) {
+                    std::cerr << "Filesystem error accessing directory " << path_str << ": " << e.what() << std::endl;
+                }
+            }
+        }
+        return files_to_process;
+    }
+};
+
+
+// =================================================================
+// Refactored Class: FileProcessor
+// =================================================================
+/**
+ * @class FileProcessor
+ * @brief Orchestrates the file processing workflow.
+ *
+ * This class uses a FileFinder to get files, a DataFileParser to parse them,
+ * and a DatabaseImporter to save the data. It also handles timing and reporting.
+ */
+class FileProcessor {
+public:
+    explicit FileProcessor(std::string db_name) : db_name_(std::move(db_name)) {}
+
+    /**
+     * @brief Runs the entire file processing pipeline.
+     */
+    void run() {
+        FileFinder finder;
+        std::vector<std::string> files_to_process = finder.collect_and_find_files();
+
+        if (files_to_process.empty()) {
+            std::cout << "No .txt files found to process." << std::endl;
+            return;
+        }
+
+        std::cout << "\nStart processing " << files_to_process.size() << " file(s)... " << std::endl;
+        auto start_total = std::chrono::high_resolution_clock::now();
+
+        // Stage 1: Parsing
+        std::cout << "Stage 1: Parsing files into memory..." << std::endl;
+        DataFileParser parser;
+        std::vector<std::string> failed_files;
+        for (const std::string& fname : files_to_process) {
+            if (!parser.parse_file(fname)) {
+                failed_files.push_back(fname);
+            }
+        }
+        parser.commit_all();
+        auto end_parsing = std::chrono::high_resolution_clock::now();
+
+        // Stage 2: Importing
+        std::cout << "Stage 2: Importing data into the database..." << std::endl;
+        DatabaseImporter importer(db_name_);
+        if (!importer.is_db_open()) {
+            std::cerr << "Importer could not open database. Aborting." << std::endl;
+            double parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();
+            report_results(files_to_process.size(), failed_files, parsing_s, 0.0);
+            return;
+        }
+        importer.import_data(parser);
+        auto end_total = std::chrono::high_resolution_clock::now();
+
+        // Calculate timings
+        double parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();
+        double db_insertion_s = std::chrono::duration<double>(end_total - end_parsing).count();
+
+        // Report final results
+        report_results(files_to_process.size(), failed_files, parsing_s, db_insertion_s);
+    }
+
+private:
+    /**
+     * @brief Displays a summary report of the processing task.
+     * @param total_file_count Total files attempted.
+     * @param failed_files A list of files that failed to parse.
+     * @param parsing_time Time taken for the parsing stage, in seconds.
+     * @param db_time Time taken for the database import stage, in seconds.
+     */
+    void report_results(size_t total_file_count, const std::vector<std::string>& failed_files, double parsing_time, double db_time) {
+        size_t successful_count = total_file_count - failed_files.size();
+        double total_time = parsing_time + db_time;
+
+        std::cout << "\n--- Data processing complete. ---" << std::endl;
+        if (failed_files.empty()) {
+            std::cout << ANSI_COLOR_GREEN << "All files successfully processed and imported." << ANSI_COLOR_RESET << std::endl;
+            std::cout << "Successfully processed " << successful_count << " files." << std::endl;
+        } else {
+            std::cerr << "There were errors during the parsing stage." << std::endl;
+            if (successful_count > 0) {
+                std::cout << "Successfully parsed " << successful_count << " files." << std::endl;
+            }
+            std::cerr << "Failed to parse the following " << failed_files.size() << " files:" << std::endl;
+            for (const std::string& fname : failed_files) {
+                std::cerr << "- " << fname << std::endl;
+            }
+        }
+
+        std::cout << std::fixed << std::setprecision(4);
+        std::cout << "\n--------------------------------------\n";
+        std::cout << "Timing Statistics:\n" << std::endl;
+        std::cout << "Total time: " << total_time << " seconds (" << total_time * 1000.0 << " ms)" << std::endl;
+        std::cout << "  - Parsing files: " << parsing_time << " seconds (" << parsing_time * 1000.0 << " ms)" << std::endl;
+        std::cout << "  - Database insertion: " << db_time << " seconds (" << db_time * 1000.0 << " ms)" << std::endl;
+        std::cout << "--------------------------------------\n";
+    }
+
+    std::string db_name_;
+};
+
+// =================================================================
+// Main Application Logic
+// =================================================================
+
+void print_menu() {
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
     std::cout << "0. Process file(s) and import data" << std::endl;
     std::cout << "1. Query daily statistics" << std::endl;
@@ -43,7 +228,6 @@ void print_menu()
     std::cout << "Enter your choice: ";
 }
 
-// Helper to get validated YYYYMMDD date string
 std::string get_valid_date_input() {
     std::string date_str;
     while (true) {
@@ -54,7 +238,7 @@ std::string get_valid_date_input() {
             int month = std::stoi(date_str.substr(4, 2));
             int day = std::stoi(date_str.substr(6, 2));
             if (year > 1900 && year < 3000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-                 break;
+                break;
             }
         }
         std::cout << "Invalid date format or value. Please use YYYYMMDD." << std::endl;
@@ -64,18 +248,17 @@ std::string get_valid_date_input() {
     return date_str;
 }
 
-// Helper to get validated YYYYMM month string
 std::string get_valid_month_input() {
     std::string month_str;
     while (true) {
         std::cout << "Enter month (YYYYMM): ";
         std::cin >> month_str;
         if (month_str.length() == 6 && std::all_of(month_str.begin(), month_str.end(), ::isdigit)) {
-             int year = std::stoi(month_str.substr(0, 4));
-             int month = std::stoi(month_str.substr(4, 2));
-             if (year > 1900 && year < 3000 && month >= 1 && month <= 12) {
+            int year = std::stoi(month_str.substr(0, 4));
+            int month = std::stoi(month_str.substr(4, 2));
+            if (year > 1900 && year < 3000 && month >= 1 && month <= 12) {
                 break;
-             }
+            }
         }
         std::cout << "Invalid month format or value. Please use YYYYMM." << std::endl;
         std::cin.clear();
@@ -85,123 +268,16 @@ std::string get_valid_month_input() {
 }
 
 /**
- * @brief Handles the entire file processing workflow.
+ * @brief Simplified function to handle the file processing workflow.
  *
- * This includes prompting the user for paths, finding all .txt files,
- * parsing them, importing the data into the database, and reporting the results.
+ * This function now instantiates and runs the FileProcessor class.
  */
 void handle_process_files() {
-    std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
-    std::string line;
-    std::getline(std::cin, line);
-    std::cout << "\nStart processing files... " << std::endl;
-    
-    std::stringstream ss(line);
-    std::string token;
-    std::vector<std::string> user_inputs;
-    while (ss >> token) {
-        user_inputs.push_back(token);
-    }
-
-    if (user_inputs.empty()) {
-        std::cout << "No filenames or directories entered." << std::endl;
-        return;
-    }
-
-    std::vector<std::string> actual_files_to_process;
-    for (const std::string& input_path_str : user_inputs) {
-        fs::path p(input_path_str);
-        if (!fs::exists(p)) {
-            std::cerr << "Warning: Path does not exist: " << input_path_str << std::endl;
-            continue;
-        }
-        if (fs::is_regular_file(p)) {
-            if (p.extension() == ".txt") {
-                actual_files_to_process.push_back(p.string());
-            }
-        } else if (fs::is_directory(p)) {
-            try {
-                for (const auto& entry : fs::recursive_directory_iterator(p)) {
-                    if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".txt") {
-                        actual_files_to_process.push_back(entry.path().string());
-                    }
-                }
-            } catch (const fs::filesystem_error& e) {
-                std::cerr << "Filesystem error accessing directory " << input_path_str << ": " << e.what() << std::endl;
-            }
-        }
-    }
-
-    if (actual_files_to_process.empty()) {
-        std::cout << "No .txt files found to process." << std::endl;
-        return;
-    }
-
-    std::sort(actual_files_to_process.begin(), actual_files_to_process.end());
-
-    auto start_total = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Stage 1: Parsing files into memory..." << std::endl;
-    DataFileParser parser;
-    int successful_files_count = 0;
-    std::vector<std::string> failed_files;
-
-    for (const std::string& fname : actual_files_to_process) {
-        if (parser.parse_file(fname)) {
-            successful_files_count++;
-        } else {
-            failed_files.push_back(fname);
-        }
-    }
-    parser.commit_all();
-
-    auto end_parsing = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Stage 2: Importing data into the database..." << std::endl;
-    DatabaseImporter importer(DATABASE_NAME);
-    if (!importer.is_db_open()) {
-        std::cerr << "Importer could not open database. Aborting." << std::endl;
-    } else {
-        importer.import_data(parser);
-    }
-    
-    auto end_total = std::chrono::high_resolution_clock::now();
-
-    std::cout << "\n--- Data processing complete. ---" << std::endl;
-    if (failed_files.empty()) {
-        std::cout << ANSI_COLOR_GREEN << "All files successfully processed and imported." << ANSI_COLOR_RESET << std::endl;
-        std::cout << "Successfully processed " << successful_files_count << " files." << std::endl;
-    } else {
-        std::cerr << "There were errors during the parsing stage." << std::endl;
-        if (successful_files_count > 0) {
-            std::cout << "Successfully parsed " << successful_files_count << " files." << std::endl;
-        }
-        std::cerr << "Failed to parse the following " << failed_files.size() << " files:" << std::endl;
-        for (const std::string& fname : failed_files) {
-            std::cerr << "- " << fname << std::endl;
-        }
-    }
-
-    // --- 修改后的计时统计输出 ---
-    double parsing_elapsed_s = std::chrono::duration<double>(end_parsing - start_total).count();
-    double db_insertion_elapsed_s = std::chrono::duration<double>(end_total - end_parsing).count();
-    double total_elapsed_s = std::chrono::duration<double>(end_total - start_total).count();
-
-    std::cout << std::fixed << std::setprecision(4);
-    std::cout << "\n--------------------------------------";
-    std::cout << "Timing Statistics:\n" << std::endl;
-    std::cout << "Total time: " << total_elapsed_s << " seconds (" << total_elapsed_s * 1000.0 << " ms)" << std::endl;
-    std::cout << "Total Parsing files time: " << parsing_elapsed_s << " seconds (" << parsing_elapsed_s * 1000.0 << " ms)" << std::endl;
-    std::cout << "Total database insertion time: " << db_insertion_elapsed_s << " seconds (" << db_insertion_elapsed_s * 1000.0 << " ms)" << std::endl;
-    std::cout << "--------------------------------------\n";
+    FileProcessor processor(DATABASE_NAME);
+    processor.run();
 }
 
-/**
- * @brief Ensures the database connection is open before performing a query.
- *
- * @param db A pointer to the sqlite3 database connection handle.
- * @return true if the database is open and ready, false otherwise.
- */
+
 bool open_database_if_needed(sqlite3*& db) {
     if (db == nullptr) {
         if (sqlite3_open(DATABASE_NAME.c_str(), &db)) {
@@ -214,31 +290,20 @@ bool open_database_if_needed(sqlite3*& db) {
     return true;
 }
 
-/**
- * @brief Executes the action corresponding to the user's menu choice.
- *
- * @param choice The user's selected menu option.
- * @param db A reference to the sqlite3 database connection handle.
- * @return true if the program should continue, false if it should exit.
- */
 bool handle_user_choice(int choice, sqlite3*& db) {
-    bool should_continue = true;
-
-    // 对于任何查询，确保数据库是打开的
+    // For any query, ensure the database is open
     if (choice >= 1 && choice <= 6) {
         if (!open_database_if_needed(db)) {
-            return true;
+            return true; // Continue loop, but query will fail
         }
     }
 
-    // 在 switch 外部创建一个 QueryHandler 对象
-    // 这样，无论用户选择哪个查询，我们都使用同一个处理器
     QueryHandler query_handler(db);
 
     switch (choice) {
         case 0:
             if (db) {
-                sqlite3_close(db);
+                sqlite3_close(db); // Close DB connection before writing
                 db = nullptr;
             }
             handle_process_files();
@@ -267,21 +332,15 @@ bool handle_user_choice(int choice, sqlite3*& db) {
         }
         case 7:
             std::cout << "Exiting program." << std::endl;
-            should_continue = false;
-            break;
+            return false; // Signal to exit
         default:
             std::cout << "Invalid choice. Please try again." << std::endl;
             break;
     }
-    return should_continue;
+    return true; // Signal to continue
 }
 
-/**
- * @brief The main loop of the application.
- *
- * It continuously displays the menu, gets user input, and dispatches
- * the corresponding action until the user chooses to exit.
- */
+
 void run_application_loop() {
     sqlite3* db = nullptr;
     int choice = -1;
@@ -296,7 +355,7 @@ void run_application_loop() {
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
-        // Consume the rest of the line to handle trailing characters
+        // Consume the rest of the line to handle trailing characters or full-line input
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
         if (!handle_user_choice(choice, db)) {
@@ -310,40 +369,23 @@ void run_application_loop() {
 }
 
 #if defined(_WIN32) || defined(_WIN64)
-/**
- * @brief Enables virtual terminal processing for the console.
- *
- * This function is required on Windows to make the console interpret
- * ANSI escape codes for colors and other text formatting.
- */
 void EnableVirtualTerminalProcessing() {
     HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (hOut == INVALID_HANDLE_VALUE) {
-        // 获取标准输出句柄失败
-        return;
-    }
-
+    if (hOut == INVALID_HANDLE_VALUE) return;
     DWORD dwMode = 0;
-    if (!GetConsoleMode(hOut, &dwMode)) {
-        // 获取当前控制台模式失败
-        return;
-    }
-
-    // 添加 ENABLE_VIRTUAL_TERMINAL_PROCESSING 标志
+    if (!GetConsoleMode(hOut, &dwMode)) return;
     dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-    if (!SetConsoleMode(hOut, dwMode)) {
-        // 设置新模式失败 (可能在非常旧的系统上)
-    }
+    SetConsoleMode(hOut, dwMode);
 }
 #endif
 
 int main() {
     #if defined(_WIN32) || defined(_WIN64)
-    // Set console output to UTF-8 to support special characters
     SetConsoleOutputCP(CP_UTF8);
-    // 启用 ANSI 转义码处理
     EnableVirtualTerminalProcessing();
     #endif
+
     run_application_loop();
+    
     return 0;
 }
