@@ -12,17 +12,19 @@
 - 从命令行接收日期作为参数。
 - 将时间轴固定在 00:00 到 24:00，并裁剪超出此范围的活动。
 - 支持中文显示。
+- 在分组视图中，为每个时长超过30分钟的独立活动片段标注时长和占比。
 
 用法:
 python <脚本名>.py <日期>
 例如:
-python create_timeline.py 20250401
+python timeline_generator.py 20250401
 """
 import sqlite3
 import sys
 import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import matplotlib.patheffects as path_effects # 导入用于文本效果的模块
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -145,7 +147,6 @@ def plot_detailed_timeline(plot_data, target_date, window_start, window_end):
 
     for i, data in enumerate(plot_data):
         start_num = mdates.date2num(data['start'])
-        # 修复：将 duration 从 timedelta 对象转换为浮点数
         duration_num = mdates.date2num(data['end']) - start_num
         ax.broken_barh([(start_num, duration_num)], (i - 0.4, 0.8), facecolors=data['color'])
 
@@ -174,6 +175,7 @@ def plot_detailed_timeline(plot_data, target_date, window_start, window_end):
 def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
     """
     绘制分组视图时间线，同类活动在同一行，并输出统计。
+    在每个时长超过30分钟的独立活动片段上标注时长和占比。
     """
     if not plot_data:
         return
@@ -186,6 +188,12 @@ def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
         grouped_data[parent_project].append(item)
         project_durations[parent_project] += (item['end'] - item['start'])
 
+    # 首先计算总时长，用于后续百分比计算
+    total_duration = sum(project_durations.values(), timedelta())
+    if total_duration.total_seconds() == 0:
+        print("警告: 总活动时长为零，无法继续绘图。")
+        return
+
     fig, ax = plt.subplots(figsize=(15, max(6, len(grouped_data) * 0.8)))
 
     y_labels = sorted(grouped_data.keys())
@@ -194,9 +202,40 @@ def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
     for label, items in grouped_data.items():
         y_pos = y_positions[label]
         color = get_color_for_project(label)
-        # 修复：将 duration 从 timedelta 对象转换为浮点数
         segments = [(mdates.date2num(item['start']), mdates.date2num(item['end']) - mdates.date2num(item['start'])) for item in items]
         ax.broken_barh(segments, (y_pos - 0.4, 0.8), facecolors=color)
+
+        # --- 修改后的代码：为每个符合条件的活动片段添加文本标签 ---
+        for item in items:
+            segment_duration = item['end'] - item['start']
+            # 条件：只为持续时间大于30分钟的独立片段添加标签
+            if segment_duration > timedelta(minutes=30):
+                # 1. 计算百分比
+                percentage = (segment_duration.total_seconds() / total_duration.total_seconds()) * 100
+                
+                # 2. 格式化时长文本 (例如 "1h 30m")
+                hours, remainder = divmod(segment_duration.total_seconds(), 3600)
+                minutes, _ = divmod(remainder, 60)
+                parts = []
+                if hours > 0:
+                    parts.append(f"{int(hours)}h")
+                if minutes > 0:
+                    parts.append(f"{int(minutes)}m")
+                duration_str = " ".join(parts)
+                
+                # 3. 组合最终文本
+                label_text = f"{duration_str} ({percentage:.1f}%)"
+
+                # 4. 确定文本位置 (在当前片段的中心)
+                text_x_pos_dt = item['start'] + segment_duration / 2
+                text_x_pos_num = mdates.date2num(text_x_pos_dt)
+
+                # 5. 在图上添加文本 (白色带黑边，确保在所有颜色上都清晰可见)
+                text_effect = [path_effects.withStroke(linewidth=2.5, foreground='black')]
+                ax.text(text_x_pos_num, y_pos, label_text, 
+                        ha='center', va='center', 
+                        fontsize=9, color='white', weight='bold',
+                        path_effects=text_effect)
 
     ax.set_yticks(list(y_positions.values()))
     ax.set_yticklabels(list(y_positions.keys()))
@@ -220,19 +259,28 @@ def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
     print(f"分组视图已成功保存为: {output_filename}")
     plt.close(fig)
 
+    # --- 更新控制台输出，加入百分比 ---
     print("\n--- 当日活动时长统计 ---")
     sorted_durations = sorted(project_durations.items(), key=lambda item: item[1], reverse=True)
-    total_duration = sum(project_durations.values(), timedelta())
     
-    for project, duration in sorted_durations:
-        hours, remainder = divmod(duration.total_seconds(), 3600)
-        minutes, _ = divmod(remainder, 60)
-        print(f"{project:<15} | {int(hours):02d} 小时 {int(minutes):02d} 分钟")
+    if total_duration.total_seconds() > 0:
+        print(f"{'项目':<16}| {'时长':<18} | {'占比'}")
+        print("-" * 45)
+        for project, duration in sorted_durations:
+            hours, remainder = divmod(duration.total_seconds(), 3600)
+            minutes, _ = divmod(remainder, 60)
+            percentage = (duration.total_seconds() / total_duration.total_seconds()) * 100
+            duration_text = f"{int(hours):02d} 小时 {int(minutes):02d} 分钟"
+            print(f"{project:<15} | {duration_text:<18} | ({percentage:.1f}%)")
         
-    total_hours, total_remainder = divmod(total_duration.total_seconds(), 3600)
-    total_minutes, _ = divmod(total_remainder, 60)
-    print("----------------------------")
-    print(f"{'总计':<15} | {int(total_hours):02d} 小时 {int(total_minutes):02d} 分钟")
+        total_hours, total_remainder = divmod(total_duration.total_seconds(), 3600)
+        total_minutes, _ = divmod(total_remainder, 60)
+        total_duration_text = f"{int(total_hours):02d} 小时 {int(total_minutes):02d} 分钟"
+        print("-" * 45)
+        print(f"{'总计':<15} | {total_duration_text:<18} | (100.0%)")
+    else:
+        print("无有效时长的活动。")
+
 
 def main():
     """
@@ -241,8 +289,8 @@ def main():
     configure_matplotlib_for_chinese()
 
     if len(sys.argv) != 2:
-        print("用法: python create_timeline.py <日期YYYYMMDD>")
-        print("例如: python create_timeline.py 20250401")
+        print("用法: python timeline_generator.py <日期YYYYMMDD>")
+        print("例如: python timeline_generator.py 20250401")
         sys.exit(1)
 
     db_path = 'time_data.db'
