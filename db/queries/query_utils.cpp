@@ -81,7 +81,6 @@ void build_project_tree_from_records(
             top_level_display_name = it_parent->second;
         } else {
             top_level_display_name = top_level_category_key;
-            std::transform(top_level_display_name.begin(), top_level_display_name.end(), top_level_display_name.begin(), ::toupper);
         }
 
         tree[top_level_display_name].duration += duration;
