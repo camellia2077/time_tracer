@@ -51,23 +51,31 @@ def configure_matplotlib_for_chinese():
 def get_color_for_project(project_path):
     """
     根据项目路径的关键词返回对应的颜色。
-    - 'study': 绿色
-    - 'sleep': 深灰色
-    - 'recreation': 红色
-    - 'rest', 'meal', 'exercise', 'routine': 灰色
-    - 其他: 蓝色
+    - 使用字典映射实现，代替if-elif结构。
     """
+    # 颜色映射表：关键词 -> 颜色
+    color_map = {
+        'study': 'mediumseagreen',      # 绿色
+        'sleep': '#4F4F4F',           # 深灰色
+        'recreation': '#FF0404',      # 红色
+        'rest': 'silver',             # 灰色
+        'meal': 'silver',             # 灰色
+        'exercise': 'silver',         # 灰色
+        'routine': 'silver',          # 灰色
+    }
+    
+    # 默认颜色
+    default_color = 'cornflowerblue' # 默认蓝色
+    
     project_lower = project_path.lower()
-    if 'study' in project_lower:
-        return 'mediumseagreen' # 绿色
-    elif 'sleep' in project_lower:
-        return '#4F4F4F' # 深灰色
-    elif 'recreation' in project_lower:
-        return "#FF0404" # 红色
-    elif any(keyword in project_lower for keyword in ['rest',  'meal', 'exercise', 'routine']):
-        return 'silver' # 灰色
-    else:
-        return 'cornflowerblue' # 默认蓝色
+
+    # 遍历映射表，查找第一个匹配的关键词
+    for keyword, color in color_map.items():
+        if keyword in project_lower:
+            return color
+            
+    # 如果没有找到任何关键词，返回默认颜色
+    return default_color
 
 def fetch_daily_records(db_path, target_date):
     """
