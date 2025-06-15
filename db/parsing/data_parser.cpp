@@ -10,7 +10,7 @@ DataFileParser::DataFileParser() // 构造函数与析构函数
     : current_date_processed(false), // 初始化 current_date_processed 为 false
     _time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})(.+))")// WARNING: Do not change this regex — it matches the expected input format 用于匹配 "HH:MM~HH:MMevent" 格式的时间记录行
 {
-    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "study"，"code" 对应 "code"。
+    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "STUDY"，"code" 对应 "CODE"。
     {
         {"study", "study"},
         {"code", "code"}
@@ -146,7 +146,6 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
 
 void DataFileParser::_process_project_path(const std::string& project_path_orig) {
     std::string project_path = project_path_orig; // 复制原始项目路径
-    std::replace(project_path.begin(), project_path.end(), ' ', '_'); // 将路径中的所有空格替换为下划线
     std::stringstream ss(project_path); // 使用字符串流处理路径（此处未直接使用，但可以是后续处理的基础）
     std::string segment; // 用于存储路径的片段
     std::vector<std::string> segments = split_string(project_path, '_'); // 调用 common_utils.h 中的 split_string 函数，按 '_' 分隔符切分项目路径。
