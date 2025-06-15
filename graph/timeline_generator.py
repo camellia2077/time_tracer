@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-每日活动时间线生成器
+每日活动时间线生成器 (双视图版)
 
 本脚本通过连接一个SQLite数据库来查询指定日期的时间记录，
-并使用Matplotlib生成一个可视化的时间线图表。
+并使用Matplotlib生成两种可视化的时间线图表：
+1. 详细视图：每个活动片段单独占一行。
+2. 分组视图：同类活动合并到同一行，并输出时长统计。
 
 功能:
 - 默认读取同目录下的 'time_data.db' 数据库文件。
 - 从命令行接收日期作为参数。
-- 查询数据库中指定日期的所有时间记录。
-- Y轴标签仅显示活动的父项目（如 'study', 'code'）。
 - 将时间轴固定在 00:00 到 24:00，并裁剪超出此范围的活动。
-- 为不同类型的活动（学习、休息、睡眠等）分配特定颜色。
 - 支持中文显示。
 
 用法:
@@ -25,6 +24,7 @@ import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timedelta
+from collections import defaultdict
 
 def configure_matplotlib_for_chinese():
     """
@@ -70,14 +70,6 @@ def get_color_for_project(project_path):
 def fetch_daily_records(db_path, target_date):
     """
     从SQLite数据库中获取指定日期的时间记录。
-
-    Args:
-        db_path (str): 数据库文件路径。
-        target_date (str): 目标日期，格式为 'YYYYMMDD'。
-
-    Returns:
-        list: 包含 (start, end, project_path) 元组的列表。
-              如果没有记录或发生错误，则返回空列表。
     """
     if not os.path.exists(db_path):
         print(f"错误: 数据库文件 '{db_path}' 未找到。请确保它与脚本在同一目录下。")
@@ -88,7 +80,6 @@ def fetch_daily_records(db_path, target_date):
         conn = sqlite3.connect(db_path)
         cursor = conn.cursor()
         
-        # 按开始时间排序，确保记录按时间顺序排列
         query = "SELECT start, end, project_path FROM time_records WHERE date = ? ORDER BY start ASC"
         cursor.execute(query, (target_date,))
         records = cursor.fetchall()
@@ -103,141 +94,172 @@ def fetch_daily_records(db_path, target_date):
         print(f"数据库错误: {e}")
         return []
 
-def plot_timeline(records, target_date):
+def process_and_clip_records(records, target_date):
     """
-    使用Matplotlib绘制时间线图表。
-
-    Args:
-        records (list): 从数据库获取的记录列表。
-        target_date (str): 目标日期，用于图表标题和文件名。
+    处理原始记录，进行时间解析和窗口裁剪。
     """
-    if not records:
-        return
-
-    # 1. 数据处理：将时间字符串转换为datetime对象并裁剪到00:00-24:00窗口
-    # -----------------------------------------------------------------
-    plot_data = []
+    processed_data = []
     base_date_obj = datetime.strptime(target_date, '%Y%m%d')
-    
-    # 定义00:00到24:00的裁剪窗口
     window_start = base_date_obj
     window_end = base_date_obj + timedelta(days=1)
 
-    for i, (start_str, end_str, project_path) in enumerate(records):
+    for start_str, end_str, project_path in records:
         try:
-            # 解析开始和结束时间
             start_time = datetime.strptime(start_str, '%H:%M').time()
             end_time = datetime.strptime(end_str, '%H:%M').time()
             
-            # 组合成完整的datetime对象
             start_dt = base_date_obj.combine(base_date_obj.date(), start_time)
             end_dt = base_date_obj.combine(base_date_obj.date(), end_time)
 
-            # 处理原始的跨天事件
             if end_dt < start_dt:
                 end_dt += timedelta(days=1)
 
-            # **新增逻辑：将活动裁剪到00:00-24:00的窗口内**
             plot_start = max(start_dt, window_start)
             plot_end = min(end_dt, window_end)
 
-            # 如果裁剪后时间段有效（时长大于0），则添加到绘图列表
             if plot_start < plot_end:
-                # 获取父项目作为标签
                 parent_project = project_path.split('_')[0]
-                    
-                plot_data.append({
+                processed_data.append({
                     'label': parent_project,
-                    'full_path': project_path, # 保留完整路径用于颜色判断
-                    'start': plot_start, # 使用裁剪后的开始时间
-                    'end': plot_end,   # 使用裁剪后的结束时间
+                    'full_path': project_path,
+                    'start': plot_start,
+                    'end': plot_end,
                     'color': get_color_for_project(project_path)
                 })
         except ValueError as e:
             print(f"警告: 跳过格式错误的时间记录: {start_str}-{end_str}. 错误: {e}")
             continue
+    return processed_data, window_start, window_end
 
+def plot_detailed_timeline(plot_data, target_date, window_start, window_end):
+    """
+    绘制详细视图时间线，每个活动占一行。
+    """
     if not plot_data:
-        print("没有在00:00-24:00时间范围内的有效活动可供绘图。")
         return
 
-    # 2. Matplotlib 绘图设置
-    # -----------------------------------------------------------------
-    fig, ax = plt.subplots(figsize=(15, 10)) # 增加了图表高度以容纳标签
-
-    # 准备Y轴标签和位置
-    # Y轴显示父项目，但每个条目仍然是独立的
+    fig, ax = plt.subplots(figsize=(15, max(6, len(plot_data) * 0.5)))
+    
     labels = [f"{item['label']} ({item['start'].strftime('%H:%M')}-{item['end'].strftime('%H:%M')})" for item in plot_data]
     y_pos = range(len(plot_data))
 
-    # 3. 绘制水平条形图 (Gantt-like chart)
-    # -----------------------------------------------------------------
     for i, data in enumerate(plot_data):
-        # matplotlib的日期格式是浮点数，需要转换
         start_num = mdates.date2num(data['start'])
-        end_num = mdates.date2num(data['end'])
-        duration_num = end_num - start_num
-        
-        # 使用 broken_barh 绘制条形
+        # 修复：将 duration 从 timedelta 对象转换为浮点数
+        duration_num = mdates.date2num(data['end']) - start_num
         ax.broken_barh([(start_num, duration_num)], (i - 0.4, 0.8), facecolors=data['color'])
 
-    # 4. 格式化图表
-    # -----------------------------------------------------------------
     ax.set_yticks(y_pos)
     ax.set_yticklabels(labels)
-    ax.invert_yaxis()  # 将第一个活动放在顶部
+    ax.invert_yaxis()
 
-    # 格式化X轴为时间
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
-    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2)) # 每2小时一个主刻度
-    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1)) # 每1小时一个次刻度
-
-    # **修改逻辑：设置固定的X轴范围**
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
     ax.set_xlim(window_start, window_end)
     
-    # 设置标题和标签
-    ax.set_title(f'{target_date[:4]}年{target_date[4:6]}月{target_date[6:]}日 时间线 (00:00 - 24:00)', fontsize=16)
+    ax.set_title(f'{target_date[:4]}年{target_date[4:6]}月{target_date[6:]}日 时间线 [详细视图]', fontsize=16)
     ax.set_xlabel('时间', fontsize=12)
     ax.set_ylabel('活动', fontsize=12)
 
-    # 添加网格线并美化
     ax.grid(True, which='major', axis='x', linestyle='--', linewidth=0.5)
-    fig.autofmt_xdate() # 自动旋转X轴标签以防重叠
+    fig.autofmt_xdate()
     plt.tight_layout()
 
-    # 5. 保存图表
-    # -----------------------------------------------------------------
-    output_filename = f'timeline_{target_date}.png'
+    output_filename = f'timeline_detailed_{target_date}.png'
     plt.savefig(output_filename, dpi=150)
-    print(f"图表已成功保存为: {output_filename}")
-    # plt.show() # 如果想直接显示图表，取消此行注释
+    print(f"详细视图已成功保存为: {output_filename}")
+    plt.close(fig) # 关闭图表以释放内存
+
+def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
+    """
+    绘制分组视图时间线，同类活动在同一行，并输出统计。
+    """
+    if not plot_data:
+        return
+        
+    grouped_data = defaultdict(list)
+    project_durations = defaultdict(timedelta)
+
+    for item in plot_data:
+        parent_project = item['label']
+        grouped_data[parent_project].append(item)
+        project_durations[parent_project] += (item['end'] - item['start'])
+
+    fig, ax = plt.subplots(figsize=(15, max(6, len(grouped_data) * 0.8)))
+
+    y_labels = sorted(grouped_data.keys())
+    y_positions = {label: i for i, label in enumerate(y_labels)}
+
+    for label, items in grouped_data.items():
+        y_pos = y_positions[label]
+        color = get_color_for_project(label)
+        # 修复：将 duration 从 timedelta 对象转换为浮点数
+        segments = [(mdates.date2num(item['start']), mdates.date2num(item['end']) - mdates.date2num(item['start'])) for item in items]
+        ax.broken_barh(segments, (y_pos - 0.4, 0.8), facecolors=color)
+
+    ax.set_yticks(list(y_positions.values()))
+    ax.set_yticklabels(list(y_positions.keys()))
+    ax.invert_yaxis()
+
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
+    ax.set_xlim(window_start, window_end)
+    
+    ax.set_title(f'{target_date[:4]}年{target_date[4:6]}月{target_date[6:]}日 时间线 [分组视图]', fontsize=16)
+    ax.set_xlabel('时间', fontsize=12)
+    ax.set_ylabel('活动类别', fontsize=12)
+
+    ax.grid(True, which='major', axis='x', linestyle='--', linewidth=0.5)
+    fig.autofmt_xdate()
+    plt.tight_layout()
+
+    output_filename = f'timeline_grouped_{target_date}.png'
+    plt.savefig(output_filename, dpi=150)
+    print(f"分组视图已成功保存为: {output_filename}")
+    plt.close(fig)
+
+    print("\n--- 当日活动时长统计 ---")
+    sorted_durations = sorted(project_durations.items(), key=lambda item: item[1], reverse=True)
+    total_duration = sum(project_durations.values(), timedelta())
+    
+    for project, duration in sorted_durations:
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes, _ = divmod(remainder, 60)
+        print(f"{project:<15} | {int(hours):02d} 小时 {int(minutes):02d} 分钟")
+        
+    total_hours, total_remainder = divmod(total_duration.total_seconds(), 3600)
+    total_minutes, _ = divmod(total_remainder, 60)
+    print("----------------------------")
+    print(f"{'总计':<15} | {int(total_hours):02d} 小时 {int(total_minutes):02d} 分钟")
 
 def main():
     """
     主执行函数
     """
-    # 配置字体
     configure_matplotlib_for_chinese()
 
-    # 检查命令行参数
     if len(sys.argv) != 2:
         print("用法: python create_timeline.py <日期YYYYMMDD>")
         print("例如: python create_timeline.py 20250401")
         sys.exit(1)
 
-    # 默认数据库路径
     db_path = 'time_data.db'
     target_date = sys.argv[1]
 
-    # 校验日期格式
     if len(target_date) != 8 or not target_date.isdigit():
-        print("错误: 日期格式必须为 YYYYMMDD (例如: 20250401)")
+        print("错误: 日期格式必须为 projetypiMMDD (例如: 20250401)")
         sys.exit(1)
     
-    # 获取数据并绘图
     records = fetch_daily_records(db_path, target_date)
     if records:
-        plot_timeline(records, target_date)
+        plot_data, window_start, window_end = process_and_clip_records(records, target_date)
+        if plot_data:
+            plot_detailed_timeline(plot_data, target_date, window_start, window_end)
+            plot_grouped_timeline(plot_data, target_date, window_start, window_end)
+        else:
+            print("没有在00:00-24:00时间范围内的有效活动可供绘图。")
 
 if __name__ == "__main__":
     main()
