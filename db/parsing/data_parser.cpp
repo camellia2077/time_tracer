@@ -168,8 +168,6 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
                 parent_of_current_segment = it->second; // 使用预定义的父级（如 "STUDY"）
             } else { // 如果没有找到
                 parent_of_current_segment = current_full_path; // 父级就是它自己
-                // 将其转换为大写形式作为父级
-                std::transform(parent_of_current_segment.begin(), parent_of_current_segment.end(), parent_of_current_segment.begin(), ::toupper);
             }
         } else { // 如果不是第一个分段
             parent_of_current_segment = current_full_path; // 上一个完整路径是当前段的父路径
