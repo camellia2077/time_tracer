@@ -1,190 +1,243 @@
-import sys
+# -*- coding: utf-8 -*-
+"""
+每日活动时间线生成器
+
+本脚本通过连接一个SQLite数据库来查询指定日期的时间记录，
+并使用Matplotlib生成一个可视化的时间线图表。
+
+功能:
+- 默认读取同目录下的 'time_data.db' 数据库文件。
+- 从命令行接收日期作为参数。
+- 查询数据库中指定日期的所有时间记录。
+- Y轴标签仅显示活动的父项目（如 'study', 'code'）。
+- 将时间轴固定在 00:00 到 24:00，并裁剪超出此范围的活动。
+- 为不同类型的活动（学习、休息、睡眠等）分配特定颜色。
+- 支持中文显示。
+
+用法:
+python <脚本名>.py <日期>
+例如:
+python create_timeline.py 20250401
+"""
 import sqlite3
+import sys
 import os
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import matplotlib.dates as mdates
 from datetime import datetime, timedelta
 
-# --- Matplotlib 字体配置 ---
-# 为了正确显示中文标签（如果您的活动类别是中文），我们在此设置字体。
-# 您需要确保您的系统上安装了所选字体。
-# 常见中文字体:
-# - Windows: 'SimHei', 'Microsoft YaHei'
-# - macOS: 'PingFang SC', 'STHeiti'
-# - Linux: 'WenQuanYi Micro Hei', 'Noto Sans CJK SC'
-plt.rcParams['font.family'] = 'sans-serif'
-plt.rcParams['font.sans-serif'] = ['SimHei']
-# 解决保存图像时负号'-'显示为方块的问题
-plt.rcParams['axes.unicode_minus'] = False
-
-
-# --- 配置 ---
-
-# 数据库文件名
-DB_FILE = 'time_data.db'
-
-# 父项目与其颜色的映射
-COLOR_MAP = {
-    'study': 'green',
-    'sleep': 'grey',
-    'recreation': 'red',
-    'break': 'red',
-    'exercise': 'lightblue',
-    'meal': 'lightblue',
-    # 您可以添加更多类别
-    'code': 'orange',
-    'work': 'purple',
-    # 为未指定颜色的类别提供一个默认颜色
-    'default': 'silver'
-}
-
-# --- 核心功能 ---
-
-def get_daily_activities(db_path, target_date):
+def configure_matplotlib_for_chinese():
     """
-    从数据库查询指定日期的所有活动，并找到每个活动的顶级父项目。
-    （此函数与之前版本相同，无需修改）
+    配置Matplotlib以正确显示中文字符。
+    它会尝试使用系统中常见的几种中文字体。
+    """
+    try:
+        # 优先使用黑体
+        plt.rcParams['font.sans-serif'] = ['SimHei'] 
+        plt.rcParams['axes.unicode_minus'] = False # 解决负号显示为方块的问题
+        print("Matplotlib 已配置为使用 'SimHei' 字体。")
+    except:
+        try:
+            # 如果没有黑体，尝试使用微软雅黑
+            plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
+            plt.rcParams['axes.unicode_minus'] = False
+            print("Matplotlib 已配置为使用 'Microsoft YaHei' 字体。")
+        except:
+            print("警告: 未找到 'SimHei' 或 'Microsoft YaHei' 字体。图表中的中文可能无法正常显示。")
+            print("请安装中文字体（如 'SimHei'）或修改脚本以使用您系统中的可用字体。")
+
+def get_color_for_project(project_path):
+    """
+    根据项目路径的关键词返回对应的颜色。
+    - 'study': 绿色
+    - 'sleep': 深灰色
+    - 'recreation': 红色
+    - 'rest', 'meal', 'exercise', 'routine': 灰色
+    - 其他: 蓝色
+    """
+    project_lower = project_path.lower()
+    if 'study' in project_lower:
+        return 'mediumseagreen' # 绿色
+    elif 'sleep' in project_lower:
+        return '#4F4F4F' # 深灰色
+    elif 'recreation' in project_lower:
+        return "#FF0404" # 红色
+    elif any(keyword in project_lower for keyword in ['rest',  'meal', 'exercise', 'routine']):
+        return 'silver' # 灰色
+    else:
+        return 'cornflowerblue' # 默认蓝色
+
+def fetch_daily_records(db_path, target_date):
+    """
+    从SQLite数据库中获取指定日期的时间记录。
+
+    Args:
+        db_path (str): 数据库文件路径。
+        target_date (str): 目标日期，格式为 'YYYYMMDD'。
+
+    Returns:
+        list: 包含 (start, end, project_path) 元组的列表。
+              如果没有记录或发生错误，则返回空列表。
     """
     if not os.path.exists(db_path):
-        print(f"错误: 数据库文件 '{db_path}' 不存在。")
+        print(f"错误: 数据库文件 '{db_path}' 未找到。请确保它与脚本在同一目录下。")
         return []
-
-    query = """
-    WITH RECURSIVE project_hierarchy(child, parent, top_level_parent) AS (
-        SELECT child, parent, child FROM parent_child WHERE child = parent
-        UNION ALL
-        SELECT pc.child, pc.parent, ph.top_level_parent FROM parent_child pc JOIN project_hierarchy ph ON pc.parent = ph.child WHERE pc.child != pc.parent
-    )
-    SELECT
-        tr.start,
-        tr.duration,
-        ph.top_level_parent
-    FROM
-        time_records tr
-    JOIN
-        project_hierarchy ph ON tr.project_path = ph.child
-    WHERE
-        tr.date = ?
-    ORDER BY
-        tr.start;
-    """
 
     records = []
     try:
-        with sqlite3.connect(db_path) as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, (target_date,))
-            records = cursor.fetchall()
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # 按开始时间排序，确保记录按时间顺序排列
+        query = "SELECT start, end, project_path FROM time_records WHERE date = ? ORDER BY start ASC"
+        cursor.execute(query, (target_date,))
+        records = cursor.fetchall()
+        
+        conn.close()
+        
+        if not records:
+            print(f"在日期 {target_date} 没有找到任何记录。")
+            
+        return records
     except sqlite3.Error as e:
-        print(f"数据库查询错误: {e}")
+        print(f"数据库错误: {e}")
         return []
 
-    return records
-
-def time_str_to_minutes(time_str):
-    """将 "HH:MM" 格式的时间字符串转换为从午夜开始的分钟数。"""
-    try:
-        hours, minutes = map(int, time_str.split(':'))
-        return hours * 60 + minutes
-    except (ValueError, IndexError):
-        return 0
-
-def create_timeline_plot(date_str, activities):
+def plot_timeline(records, target_date):
     """
-    使用matplotlib创建并显示一个水平时间线图表 (Gantt-like)。
+    使用Matplotlib绘制时间线图表。
 
     Args:
-        date_str (str): 用于图表标题的日期字符串。
-        activities (list): 从数据库获取的活动列表。
+        records (list): 从数据库获取的记录列表。
+        target_date (str): 目标日期，用于图表标题和文件名。
     """
-    if not activities:
-        print(f"日期 {date_str} 没有找到任何活动记录。")
+    if not records:
         return
 
-    fig, ax = plt.subplots(figsize=(15, 8))
+    # 1. 数据处理：将时间字符串转换为datetime对象并裁剪到00:00-24:00窗口
+    # -----------------------------------------------------------------
+    plot_data = []
+    base_date_obj = datetime.strptime(target_date, '%Y%m%d')
+    
+    # 定义00:00到24:00的裁剪窗口
+    window_start = base_date_obj
+    window_end = base_date_obj + timedelta(days=1)
 
-    # 获取所有独特的父类别，并按字母顺序排序
-    parent_categories = sorted(list(set(act[2] for act in activities)))
+    for i, (start_str, end_str, project_path) in enumerate(records):
+        try:
+            # 解析开始和结束时间
+            start_time = datetime.strptime(start_str, '%H:%M').time()
+            end_time = datetime.strptime(end_str, '%H:%M').time()
+            
+            # 组合成完整的datetime对象
+            start_dt = base_date_obj.combine(base_date_obj.date(), start_time)
+            end_dt = base_date_obj.combine(base_date_obj.date(), end_time)
 
-    # 为每个类别分配一个Y轴位置
-    y_positions = {category: i for i, category in enumerate(parent_categories)}
+            # 处理原始的跨天事件
+            if end_dt < start_dt:
+                end_dt += timedelta(days=1)
 
-    # 绘制每个活动条
-    for start_str, duration_sec, parent in activities:
-        start_minutes = time_str_to_minutes(start_str)
-        duration_minutes = duration_sec / 60
+            # **新增逻辑：将活动裁剪到00:00-24:00的窗口内**
+            plot_start = max(start_dt, window_start)
+            plot_end = min(end_dt, window_end)
 
-        # 获取颜色
-        color = COLOR_MAP.get(parent, COLOR_MAP['default'])
+            # 如果裁剪后时间段有效（时长大于0），则添加到绘图列表
+            if plot_start < plot_end:
+                # 获取父项目作为标签
+                parent_project = project_path.split('_')[0]
+                    
+                plot_data.append({
+                    'label': parent_project,
+                    'full_path': project_path, # 保留完整路径用于颜色判断
+                    'start': plot_start, # 使用裁剪后的开始时间
+                    'end': plot_end,   # 使用裁剪后的结束时间
+                    'color': get_color_for_project(project_path)
+                })
+        except ValueError as e:
+            print(f"警告: 跳过格式错误的时间记录: {start_str}-{end_str}. 错误: {e}")
+            continue
 
-        # 使用 broken_barh 绘制水平条
-        # 第一个参数是 (start, length) 对的列表
-        # 第二个参数是 (y_start, y_height)
-        ax.broken_barh(
-            [(start_minutes, duration_minutes)],
-            (y_positions[parent] - 0.4, 0.8), # y位置和条的高度
-            facecolors=color,
-            edgecolor='black'
-        )
+    if not plot_data:
+        print("没有在00:00-24:00时间范围内的有效活动可供绘图。")
+        return
 
-    # --- 美化图表 ---
+    # 2. Matplotlib 绘图设置
+    # -----------------------------------------------------------------
+    fig, ax = plt.subplots(figsize=(15, 10)) # 增加了图表高度以容纳标签
 
-    # 设置图表标题和坐标轴标签
-    ax.set_title(f"每日时间线 - {date_str}", fontsize=16, pad=20)
-    ax.set_xlabel("一天中的时间", fontsize=12)
-    ax.set_ylabel("活动类别", fontsize=12)
+    # 准备Y轴标签和位置
+    # Y轴显示父项目，但每个条目仍然是独立的
+    labels = [f"{item['label']} ({item['start'].strftime('%H:%M')}-{item['end'].strftime('%H:%M')})" for item in plot_data]
+    y_pos = range(len(plot_data))
 
-    # 设置Y轴（类别轴）
-    ax.set_yticks(range(len(parent_categories)))
-    ax.set_yticklabels(parent_categories)
-    ax.set_ylim(-0.5, len(parent_categories) - 0.5) # 设置Y轴范围以适应所有类别
+    # 3. 绘制水平条形图 (Gantt-like chart)
+    # -----------------------------------------------------------------
+    for i, data in enumerate(plot_data):
+        # matplotlib的日期格式是浮点数，需要转换
+        start_num = mdates.date2num(data['start'])
+        end_num = mdates.date2num(data['end'])
+        duration_num = end_num - start_num
+        
+        # 使用 broken_barh 绘制条形
+        ax.broken_barh([(start_num, duration_num)], (i - 0.4, 0.8), facecolors=data['color'])
 
-    # 设置X轴（时间轴）
-    ax.set_xlim(0, 24 * 60)
-    # 设置X轴的刻度，每2小时一个主刻度
-    x_ticks = range(0, 24 * 60 + 1, 120)
-    x_tick_labels = [f"{h:02d}:00" for h in range(0, 25, 2)]
-    ax.set_xticks(x_ticks)
-    ax.set_xticklabels(x_tick_labels, rotation=45, ha='right')
+    # 4. 格式化图表
+    # -----------------------------------------------------------------
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(labels)
+    ax.invert_yaxis()  # 将第一个活动放在顶部
 
-    # 添加垂直网格线，方便对齐时间
-    ax.grid(axis='x', linestyle='--', alpha=0.7)
+    # 格式化X轴为时间
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    ax.xaxis.set_major_locator(mdates.HourLocator(interval=2)) # 每2小时一个主刻度
+    ax.xaxis.set_minor_locator(mdates.HourLocator(interval=1)) # 每1小时一个次刻度
 
-    # 反转Y轴，使类别列表看起来更直观（A, B, C...从上到下）
-    ax.invert_yaxis()
+    # **修改逻辑：设置固定的X轴范围**
+    ax.set_xlim(window_start, window_end)
+    
+    # 设置标题和标签
+    ax.set_title(f'{target_date[:4]}年{target_date[4:6]}月{target_date[6:]}日 时间线 (00:00 - 24:00)', fontsize=16)
+    ax.set_xlabel('时间', fontsize=12)
+    ax.set_ylabel('活动', fontsize=12)
 
-    # 创建一个智能图例
-    # 在这个图表中，Y轴标签已经起到了图例的作用，所以我们不再需要独立的图例。
-    # 如果您仍然想要它，可以取消下面的注释
-    # legend_patches = [mpatches.Patch(color=COLOR_MAP.get(cat, 'silver'), label=cat) for cat in parent_categories]
-    # ax.legend(handles=legend_patches, bbox_to_anchor=(1.02, 1), loc='upper left')
-
-    # 调整布局以防止标签重叠
+    # 添加网格线并美化
+    ax.grid(True, which='major', axis='x', linestyle='--', linewidth=0.5)
+    fig.autofmt_xdate() # 自动旋转X轴标签以防重叠
     plt.tight_layout()
 
-    # 显示图表
-    plt.show()
+    # 5. 保存图表
+    # -----------------------------------------------------------------
+    output_filename = f'timeline_{target_date}.png'
+    plt.savefig(output_filename, dpi=150)
+    print(f"图表已成功保存为: {output_filename}")
+    # plt.show() # 如果想直接显示图表，取消此行注释
 
 def main():
     """
-    主函数，处理命令行参数并启动程序。
-    (此函数与之前版本相同，无需修改)
+    主执行函数
     """
+    # 配置字体
+    configure_matplotlib_for_chinese()
+
+    # 检查命令行参数
     if len(sys.argv) != 2:
-        print("用法: python plot_horizontal_timeline.py YYYYMMDD")
-        print("示例: python plot_horizontal_timeline.py 20250301")
+        print("用法: python create_timeline.py <日期YYYYMMDD>")
+        print("例如: python create_timeline.py 20250401")
         sys.exit(1)
 
+    # 默认数据库路径
+    db_path = 'time_data.db'
     target_date = sys.argv[1]
 
-    if not (target_date.isdigit() and len(target_date) == 8):
-        print("错误: 日期格式不正确，请输入8位数字，例如 20250301。")
+    # 校验日期格式
+    if len(target_date) != 8 or not target_date.isdigit():
+        print("错误: 日期格式必须为 YYYYMMDD (例如: 20250401)")
         sys.exit(1)
-
-    print(f"正在为日期 {target_date} 生成水平时间线图表...")
-
-    activities = get_daily_activities(DB_FILE, target_date)
-    create_timeline_plot(target_date, activities)
+    
+    # 获取数据并绘图
+    records = fetch_daily_records(db_path, target_date)
+    if records:
+        plot_timeline(records, target_date)
 
 if __name__ == "__main__":
     main()
