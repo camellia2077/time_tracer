@@ -10,10 +10,10 @@ DataFileParser::DataFileParser() // 构造函数与析构函数
     : current_date_processed(false), // 初始化 current_date_processed 为 false
     _time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})(.+))")// WARNING: Do not change this regex — it matches the expected input format 用于匹配 "HH:MM~HH:MMevent" 格式的时间记录行
 {
-    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "STUDY"，"code" 对应 "CODE"。
+    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "study"，"code" 对应 "code"。
     {
-        {"study", "STUDY"},
-        {"code", "CODE"}
+        {"study", "study"},
+        {"code", "code"}
     };
 }
 
