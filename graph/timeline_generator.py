@@ -223,8 +223,8 @@ def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
                     parts.append(f"{int(minutes)}m")
                 duration_str = " ".join(parts)
                 
-                # 3. 组合最终文本
-                label_text = f"{duration_str} ({percentage:.1f}%)"
+                # 3. 组合最终文本 (带换行)
+                label_text = f"{duration_str}\n({percentage:.1f}%)"
 
                 # 4. 确定文本位置 (在当前片段的中心)
                 text_x_pos_dt = item['start'] + segment_duration / 2
@@ -234,8 +234,9 @@ def plot_grouped_timeline(plot_data, target_date, window_start, window_end):
                 text_effect = [path_effects.withStroke(linewidth=2.5, foreground='black')]
                 ax.text(text_x_pos_num, y_pos, label_text, 
                         ha='center', va='center', 
-                        fontsize=9, color='white', weight='bold',
-                        path_effects=text_effect)
+                        fontsize=8, color='white', weight='bold',
+                        path_effects=text_effect,
+                        linespacing=0.9)
 
     ax.set_yticks(list(y_positions.values()))
     ax.set_yticklabels(list(y_positions.keys()))
