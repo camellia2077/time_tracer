@@ -6,80 +6,72 @@ import os
 import sys
 import json
 
-# --- 配置 ---
-# 数据库文件路径
+# --- Configuration ---
+# Path to the database file
 DB_PATH = 'time_data.db'
-# 颜色配置文件路径
+# Path to the color configuration file
 COLOR_CONFIG_PATH = 'heatmap_colors_config.json'
-# 数据库连接超时时间 (秒)
+# Database connection timeout in seconds
 DB_CONNECTION_TIMEOUT = 10
-# 递归查询的最大深度，防止无限循环
-MAX_RECURSION_DEPTH = 2
+# Maximum recursion depth for queries to prevent infinite loops
+MAX_RECURSION_DEPTH = 4
 
 def load_color_config() -> dict:
     """
-    从JSON配置文件加载颜色配置。
+    Loads color configuration from a JSON file.
 
     Returns:
-        一个包含调色板和特殊颜色的字典。
+        A dictionary containing the color palette and special colors.
         e.g., {'palette': [...], 'over_12h_color': '#f97148'}
     """
-    print(f"🎨 [步骤 1/4] 正在从 '{COLOR_CONFIG_PATH}' 加载颜色配置...")
+    print(f"🎨 [Step 1/4] Loading color configuration from '{COLOR_CONFIG_PATH}'...")
     
     try:
         with open(COLOR_CONFIG_PATH, 'r', encoding='utf-8') as f:
             config = json.load(f)
     except FileNotFoundError:
-        print(f"❌ 错误: 颜色配置文件 '{COLOR_CONFIG_PATH}' 未找到。", file=sys.stderr)
+        print(f"❌ Error: Color configuration file '{COLOR_CONFIG_PATH}' not found.", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError:
-        print(f"❌ 错误: 颜色配置文件 '{COLOR_CONFIG_PATH}' 格式无效。", file=sys.stderr)
+        print(f"❌ Error: Invalid format in color configuration file '{COLOR_CONFIG_PATH}'.", file=sys.stderr)
         sys.exit(1)
 
-    # --- 加载调色板 ---
+    # --- Load color palette ---
     palette_name = config.get("DEFAULT_COLOR_PALETTE_NAME")
     if palette_name is None:
-        print(f"❌ 错误: 在配置文件 '{COLOR_CONFIG_PATH}' 中未找到 'DEFAULT_COLOR_PALETTE_NAME' 键。", file=sys.stderr)
+        print(f"❌ Error: 'DEFAULT_COLOR_PALETTE_NAME' key not found in '{COLOR_CONFIG_PATH}'.", file=sys.stderr)
         sys.exit(1)
         
-    print(f"  将使用JSON中定义的默认调色板: '{palette_name}'")
+    print(f"  Using default color palette defined in JSON: '{palette_name}'")
     color_palette = config.get("COLOR_PALETTES", {}).get(palette_name)
 
     if color_palette is None:
-        print(f"❌ 错误: 在配置文件中未找到名为 '{palette_name}' 的调色板。", file=sys.stderr)
+        print(f"❌ Error: Palette '{palette_name}' not found in the configuration file.", file=sys.stderr)
         sys.exit(1)
     if not isinstance(color_palette, list) or len(color_palette) != 5:
-        print(f"❌ 错误: 调色板 '{palette_name}' 必须是一个包含5个颜色值的数组。", file=sys.stderr)
+        print(f"❌ Error: Palette '{palette_name}' must be an array of 5 color values.", file=sys.stderr)
         sys.exit(1)
     
-    # --- 加载 >12 小时的特殊颜色 ---
-    print(f"  正在加载 >12 小时的特殊颜色...")
+    # --- Load special color for >12 hours ---
+    print(f"  Loading special color for >12 hours...")
     over_12h_ref = config.get("OVER_12_HOURS_COLOR_REF")
     if over_12h_ref is None:
-        print(f"❌ 错误: 在配置文件中未找到 'OVER_12_HOURS_COLOR_REF' 键。", file=sys.stderr)
+        print(f"❌ Error: 'OVER_12_HOURS_COLOR_REF' key not found in the configuration file.", file=sys.stderr)
         sys.exit(1)
 
     over_12h_color = config.get("SINGLE_COLORS", {}).get(over_12h_ref)
     if over_12h_color is None:
-        print(f"❌ 错误: 在 'SINGLE_COLORS' 中未找到名为 '{over_12h_ref}' 的颜色引用。", file=sys.stderr)
+        print(f"❌ Error: Color reference '{over_12h_ref}' not found in 'SINGLE_COLORS'.", file=sys.stderr)
         sys.exit(1)
     
-    print(f"  ✔️  颜色配置加载成功: {color_palette}, 特殊颜色: {over_12h_color}")
+    print(f"  ✔️  Color configuration loaded successfully: {color_palette}, Special color: {over_12h_color}")
     
     return {"palette": color_palette, "over_12h_color": over_12h_color}
 
-def get_project_data_for_year(year: int, project_name: str) -> dict[datetime.date, float]:
+def _execute_query(cursor, project_name: str, year: int) -> list:
     """
-    根据年份和项目名称，查询数据库中每天的总时长。
+    Executes the SQL query to fetch time records for a given project and year.
     """
-    print(f"🔍 [步骤 2/4] 开始为年份 {year} 检索项目 '{project_name}' 的数据...")
-    
-    if not os.path.exists(DB_PATH):
-        print(f"❌ 错误: 在当前目录下未找到数据库文件 '{DB_PATH}'。", file=sys.stderr)
-        sys.exit(1)
-    
-    print(f"  ✔️  数据库文件 '{DB_PATH}' 已找到。")
-
     sql_query = f"""
     WITH RECURSIVE target_projects(project, depth) AS (
       VALUES(?, 1) 
@@ -94,17 +86,30 @@ def get_project_data_for_year(year: int, project_name: str) -> dict[datetime.dat
       AND SUBSTR(tr.date, 1, 4) = ?
     GROUP BY tr.date;
     """
+    cursor.execute(sql_query, (project_name, str(year)))
+    return cursor.fetchall()
+
+def get_project_data_for_year(year: int, project_name: str) -> dict[datetime.date, float]:
+    """
+    Retrieves and processes the total time spent per day for a given project and year from the database.
+    """
+    print(f"🔍 [Step 2/4] Retrieving data for project '{project_name}' for the year {year}...")
+    
+    if not os.path.exists(DB_PATH):
+        print(f"❌ Error: Database file '{DB_PATH}' not found in the current directory.", file=sys.stderr)
+        sys.exit(1)
+    
+    print(f"  ✔️  Database file '{DB_PATH}' found.")
 
     project_data = {}
     try:
         with sqlite3.connect(DB_PATH, timeout=DB_CONNECTION_TIMEOUT) as conn:
             cursor = conn.cursor()
-            cursor.execute(sql_query, (project_name, str(year)))
-            rows = cursor.fetchall()
+            rows = _execute_query(cursor, project_name, year)
             
-            print(f"  ✔️  查询执行完毕。找到 {len(rows)} 天包含 '{project_name}' 的数据。")
+            print(f"  ✔️  Query executed. Found data for {len(rows)} days for '{project_name}'.")
             if not rows:
-                print(f"  ⚠️  警告: 在 {year} 年未找到 '{project_name}' 的记录。")
+                print(f"  ⚠️  Warning: No records found for '{project_name}' in {year}.")
 
             for row in rows:
                 date_str, total_seconds = row
@@ -113,14 +118,14 @@ def get_project_data_for_year(year: int, project_name: str) -> dict[datetime.dat
                     hours = total_seconds / 3600.0
                     project_data[current_date] = hours
     except Exception as e:
-        print(f"❌ 数据库操作时发生错误: {e}", file=sys.stderr)
+        print(f"❌ An error occurred during database operation: {e}", file=sys.stderr)
         sys.exit(1)
     
-    print("✅ [步骤 2/4] 数据检索完成。")
+    print("✅ [Step 2/4] Data retrieval complete.")
     return project_data
 
 def get_color_for_hours(hours: float, color_palette: list, over_12h_color: str) -> str:
-    """根据小时数和调色板决定热力图的颜色。"""
+    """Determines the heatmap color based on the number of hours and the color palette."""
     if hours > 12:
         return over_12h_color
     elif hours > 10:  # 10 < hours <= 12
@@ -134,10 +139,10 @@ def get_color_for_hours(hours: float, color_palette: list, over_12h_color: str) 
     else:             # hours <= 0
         return color_palette[0]
 
-def generate_heatmap_html(year: int, project_name: str, data: dict[datetime.date, float], color_config: dict) -> str:
-    """为热力图生成完整的HTML内容。"""
-    print(f"🎨 [步骤 3/4] 正在为项目 '{project_name}' 生成SVG和HTML结构...")
-    
+def _generate_svg_content(year: int, project_name: str, data: dict[datetime.date, float], color_config: dict) -> tuple[str, int, int]:
+    """
+    Generates the SVG content for the heatmap.
+    """
     color_palette = color_config['palette']
     over_12h_color = color_config['over_12h_color']
     
@@ -166,7 +171,7 @@ def generate_heatmap_html(year: int, project_name: str, data: dict[datetime.date
         hours = data.get(current_date, 0)
         color = get_color_for_hours(hours, color_palette, over_12h_color)
         
-        tooltip = f"{hours:.2f} 小时的 {project_name} on {current_date.strftime('%Y-%m-%d')}"
+        tooltip = f"{hours:.2f} hours of {project_name} on {current_date.strftime('%Y-%m-%d')}"
         rects_html.append(
             f'    <rect width="{SQUARE_SIZE}" height="{SQUARE_SIZE}" x="{x_pos}" y="{y_pos}" '
             f'fill="{color}" rx="{SQUARE_RADIUS}" ry="{SQUARE_RADIUS}">'
@@ -184,15 +189,32 @@ def generate_heatmap_html(year: int, project_name: str, data: dict[datetime.date
         f'<text x="{LEFT_PADDING - 10}" y="{TOP_PADDING + GRID_UNIT * 3 + SQUARE_SIZE / 1.5}" class="day-label">W</text>',
         f'<text x="{LEFT_PADDING - 10}" y="{TOP_PADDING + GRID_UNIT * 5 + SQUARE_SIZE / 1.5}" class="day-label">F</text>'
     ]
+
+    svg_content = f"""
+        <svg width="{svg_width}" height="{svg_height}">
+            {"\n".join(month_labels_html)}
+            {"\n".join(day_labels_html)}
+            {"\n".join(rects_html)}
+        </svg>
+    """
     
+    return svg_content, svg_width, svg_height
+
+def generate_heatmap_html(year: int, project_name: str, data: dict[datetime.date, float], color_config: dict) -> str:
+    """
+    Generates the full HTML content for the heatmap by embedding the SVG.
+    """
+    print(f"🎨 [Step 3/4] Generating SVG and HTML structure for project '{project_name}'...")
+    
+    svg_content, svg_width, svg_height = _generate_svg_content(year, project_name, data, color_config)
     display_project_name = project_name.capitalize()
     
     html_template = f"""
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{display_project_name} 热力图 - {year}</title>
+    <title>{display_project_name} Heatmap - {year}</title>
     <style>
         body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background-color: #f6f8fa; color: #24292e; display: flex; justify-content: center; align-items: center; flex-direction: column; margin: 2em; }}
         .heatmap-container {{ border: 1px solid #e1e4e8; border-radius: 6px; padding: 20px; background-color: #ffffff; max-width: 100%; overflow-x: auto; }}
@@ -204,55 +226,61 @@ def generate_heatmap_html(year: int, project_name: str, data: dict[datetime.date
     </style>
 </head>
 <body>
-    <h1>{display_project_name} 热力图 - {year}</h1>
+    <h1>{display_project_name} Heatmap - {year}</h1>
     <div class="heatmap-container">
-        <svg width="{svg_width}" height="{svg_height}">
-            {"\n".join(month_labels_html)}
-            {"\n".join(day_labels_html)}
-            {"\n".join(rects_html)}
-        </svg>
+        {svg_content}
     </div>
 </body>
 </html>"""
-    print("✅ [步骤 3/4] HTML生成完成。")
+    print("✅ [Step 3/4] HTML generation complete.")
     return html_template
 
+def _write_html_to_file(filename: str, content: str):
+    """
+    Writes the given content to a file.
+    """
+    print(f"📄 [Step 4/4] Writing HTML to file '{filename}'...")
+    try:
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(content)
+        print("✅ [Step 4/4] File writing complete.")
+    except IOError as e:
+        print(f"❌ Error writing to file '{filename}': {e}", file=sys.stderr)
+        sys.exit(1)
+
 def main():
-    """主函数，用于解析参数并生成热力图。"""
+    """Main function to parse arguments and generate the heatmap."""
     parser = argparse.ArgumentParser(
-        description="从 time_data.db 数据库为指定项目生成一个GitHub风格的热力图。",
+        description="Generate a GitHub-style heatmap for a specific project from a time_data.db database.",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument("year", type=int, help="要生成热力图的年份 (例如: 2024)。")
-    parser.add_argument("-p", "--project", type=str, default="study", help='要生成热力图的父项目 (例如 "code")。\n默认为 "study"。')
+    parser.add_argument("year", type=int, help="The year to generate the heatmap for (e.g., 2024).")
+    parser.add_argument("-p", "--project", type=str, default="study", help='The parent project to generate the heatmap for (e.g., "code").\nDefaults to "study".')
     args = parser.parse_args()
     
     year = args.year
     project_name = args.project.lower()
 
     try:
-        # 1. 加载颜色配置
+        # 1. Load color configuration
         color_config = load_color_config()
         
-        # 2. 从数据库获取数据
+        # 2. Get data from the database
         project_data = get_project_data_for_year(year, project_name)
 
-        # 3. 生成HTML内容
+        # 3. Generate HTML content
         html_content = generate_heatmap_html(year, project_name, project_data, color_config)
 
-        # 4. 写入文件
+        # 4. Write to file
         output_filename = f"heatmap_{project_name}_{year}.html"
-        print(f"📄 [步骤 4/4] 正在将HTML写入文件 '{output_filename}'...")
-        with open(output_filename, "w", encoding="utf-8") as f:
-            f.write(html_content)
+        _write_html_to_file(output_filename, html_content)
         
-        print("✅ [步骤 4/4] 文件写入完成。")
-        print(f"\n🎉 全部完成！已成功生成热力图: {output_filename}")
+        print(f"\n🎉 All done! Heatmap generated successfully: {output_filename}")
 
     except Exception as e:
-        print(f"\n❌ 主进程中发生意外错误: {e}", file=sys.stderr)
+        print(f"\n❌ An unexpected error occurred in the main process: {e}", file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
-    print("🚀 启动热力图生成器...")
+    print("🚀 Starting heatmap generator...")
     main()
