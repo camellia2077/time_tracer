@@ -1,5 +1,5 @@
-# 1 db
-主程序，用于解析文本内容与查询
+# 1 db 
+主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
 db/
@@ -45,18 +45,44 @@ cd build
 cmake .. -D CMAKE_BUILD_TYPE=Release
 
 cmake --build .
+# 2 process 数据预处理
+数据预处理与合法性检验
+## 2.1 structure
+```
+process/
+├── main.cpp                 # Main program entry point, handles argument parsing, orchestrates file processing and validation.
+├── IntervalProcessor.h      # Header for IntervalProcessor class, declares the class and its structures for processing raw input files into a standardized format.
+├── IntervalProcessor.cpp    # Implementation of IntervalProcessor, contains logic for parsing, mapping, and transforming event data.
+├── FormatValidator.h        # Header for FormatValidator class, declares the class and its structures for validating the format of processed files.
+├── FormatValidator.cpp      # Implementation of FormatValidator, contains logic for checking various format rules and identifying errors.
+└── SharedUtils.h            # Header for sharing ANSI color codes.
+```
 
-# 2 辅助工具
-## 2.1 log_generator.cpp
-用于生成截止时间的测试数据，通过命令行输入生成时间以及每天的项目数量
-### 2.1.1 usage
-program.exe num_days items_per_day
+# 3 graph 可视化工具
+读取数据库并且生成图表
+## 3.1 heatmap_generator.py
+用于生成年份的热力图
+### 3.1.1 生成热力图(默认study)
+python generate_heatmap.py 2024
+### 3.1.1 指定项目生成热力图
+python generate_heatmap.py 2024 -p code
 
-log_generator.exe 3650 30
+或
 
-## 2.2 processor
-用于处理数据和验证合法性
-### 2.2.1usage
--v yourfielpath
+python generate_heatmap.py 2024 --project code
+
+## 3.2 timeline_generator.py
+用于生成某日的时间线
+# ４ test tools 测试工具
+txt生成器
+## 4.1 log_generator.py
+用于生成测试数据
+### 4.1.1 usage
+log_generator.exe \<num_days> \<items_per_day>
+### 3.2.1 usage 
+python timeline_generator.py 20241201
+
+
+
 
 
