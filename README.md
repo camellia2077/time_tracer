@@ -62,11 +62,18 @@ process/
 读取数据库并且生成图表
 ## 3.1 heatmap_generator.py
 用于生成年份的热力图
-### 3.1.1 usage
+### 3.1.1 生成热力图(默认study)
 python generate_heatmap.py 2024
+### 3.1.1 指定项目生成热力图
+python generate_heatmap.py 2024 -p code
+
+或
+
+python generate_heatmap.py 2024 --project code
+
 ## 3.2 timeline_generator.py
 用于生成某日的时间线
-### 3.2.1 usage
+### 3.2.1 usage 
 python timeline_generator.py 20241201
 
 
