@@ -9,8 +9,9 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-# Import the new data access function
+# Import the new data access function and color constants
 import db_access 
+from db_access import COLOR_GREEN, COLOR_RED, COLOR_RESET
 
 # --- Domain Logic Class ---
 
@@ -99,14 +100,14 @@ class DataProcessor:
         """Fetches data for a specific date and constructs a LogicalDay object."""
         day_info = self.df_days[self.df_days['date'] == target_date_str]
         if day_info.empty:
-            print(f"Error: No data found for date {target_date_str}.")
+            print(f"{COLOR_RED}Error: No data found for date {target_date_str}.{COLOR_RESET}")
             return None
         
         getup_time_str = day_info['getup_time'].iloc[0]
         raw_records = self.df_records[self.df_records['date'] == target_date_str]
         
         if raw_records.empty:
-            print(f"Error: No time records found for {target_date_str}.")
+            print(f"{COLOR_RED}Error: No time records found for {target_date_str}.{COLOR_RESET}")
             return None
             
         return LogicalDay(raw_records, getup_time_str, self.parent_lookup)
@@ -155,7 +156,7 @@ class TimelinePlotter:
             fig.savefig(output_path, bbox_inches='tight')
             print(f"Timeline chart successfully saved to '{output_path}'")
         except Exception as e:
-            print(f"Error saving chart to '{output_path}': {e}")
+            print(f"{COLOR_RED}Error saving chart to '{output_path}': {e}{COLOR_RESET}")
         finally:
             plt.close(fig)
 
@@ -169,15 +170,19 @@ class Application:
         self.colors_path = 'timeline_colors_configs.json'
 
     def _load_color_config(self):
+        """Loads color config from JSON, exiting on failure."""
+        print(f"🎨 Loading color configuration from '{self.colors_path}'...")
         try:
-            with open(self.colors_path, 'r') as f:
-                return json.load(f)
+            with open(self.colors_path, 'r', encoding='utf-8') as f:
+                config = json.load(f)
+            print(f"{COLOR_GREEN}✅ Color configuration successfully loaded.{COLOR_RESET}")
+            return config
         except FileNotFoundError:
-            print(f"Warning: Color configuration file not found at '{self.colors_path}'.")
-            return {}
+            print(f"{COLOR_RED}❌ Error: Color configuration file not found at '{self.colors_path}'.{COLOR_RESET}", file=sys.stderr)
+            sys.exit(1)
         except json.JSONDecodeError:
-            print(f"Warning: Could not parse '{self.colors_path}'. Check for syntax errors.")
-            return {}
+            print(f"{COLOR_RED}❌ Error: Could not parse '{self.colors_path}'. Check for syntax errors.{COLOR_RESET}", file=sys.stderr)
+            sys.exit(1)
 
     def run(self):
         """Executes the main logic of the application."""
@@ -195,15 +200,17 @@ class Application:
             processor = DataProcessor()
             logical_day = processor.create_logical_day(self.date_str)
 
-            if logical_day and logical_day.processed_data is not None:
+            if logical_day and logical_day.processed_data is not None and not logical_day.processed_data.empty:
                 plotter = TimelinePlotter(logical_day, color_map)
                 output_filename = f"timeline_{self.date_str}_{active_scheme_name}.png"
                 formatted_date = datetime.strptime(self.date_str, "%Y%m%d").strftime('%B %d, %Y')
                 title = f"Logical Day Timeline for {formatted_date} (Scheme: {active_scheme_name})"
                 plotter.save_chart(output_filename, title)
+            elif logical_day is not None:
+                 print("No processed data available for plotting.")
 
         except (ValueError, ConnectionError) as e:
-            print(f"An application error occurred: {e}")
+            print(f"{COLOR_RED}An application error occurred: {e}{COLOR_RESET}")
         # No need to close the connection here, as db_access handles it.
         
 
@@ -222,7 +229,7 @@ def main():
     try:
         datetime.strptime(args.date, "%Y%m%d")
     except ValueError:
-        print("Error: Date must be in YYYYMMDD format.")
+        print(f"{COLOR_RED}Error: Date must be in YYYYMMDD format.{COLOR_RESET}")
         sys.exit(1)
 
     app = Application(args.date)
