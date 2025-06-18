@@ -67,6 +67,13 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
         if (block.date_line_num != -1) {
             if (block.header_completely_valid) {
                 finalize_block_status_validation(block, errors);
+                // New check for 'sleep_night' as the last activity
+                if (!block.activity_lines_content.empty()) {
+                    const auto& last_activity = block.activity_lines_content.back();
+                    if (last_activity.first != "sleep_night") {
+                        errors.insert({last_activity.second, "The last activity of the day must be 'sleep_night'."});
+                    }
+                }
             }
             block.reset();
         }
