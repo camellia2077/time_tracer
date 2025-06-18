@@ -1,3 +1,4 @@
+// FormatValidator.h (修改后)
 #ifndef FORMAT_VALIDATOR_H
 #define FORMAT_VALIDATOR_H
 
@@ -10,13 +11,26 @@
 
 class FormatValidator {
 public:
+    // 定义错误类型
+    enum class ErrorType {
+        FileAccess,
+        Structural,
+        LineFormat,
+        TimeDiscontinuity,
+        MissingSleepNight,
+        Logical
+    };
+
     // Structure to represent a single validation error
     struct Error {
         int line_number;
         std::string message;
+        ErrorType type;
 
+        // 为方便在 std::set 中排序，重载 < 运算符
         bool operator<(const Error& other) const {
             if (line_number != other.line_number) return line_number < other.line_number;
+            if (type != other.type) return type < other.type;
             return message < other.message;
         }
     };
