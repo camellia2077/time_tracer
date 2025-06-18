@@ -80,6 +80,8 @@ void DataFileParser::_process_single_line(const std::string& line, int line_num)
         _handle_date_line(trimmed_line);
     } else if (trimmed_line.rfind("Status:", 0) == 0) { // 如果行以 "Status:" 开头
         _handle_status_line(trimmed_line);
+    } else if (trimmed_line.rfind("Sleep:", 0) == 0) { // 新增：处理Sleep行
+        _handle_sleep_line(trimmed_line);
     } else if (trimmed_line.rfind("Remark:", 0) == 0) { // 如果行以 "Remark:" 开头
         _handle_remark_line(trimmed_line);
     } else if (trimmed_line.rfind("Getup:", 0) == 0) { // 如果行以 "Getup:" 开头
@@ -99,6 +101,7 @@ void DataFileParser::_handle_date_line(const std::string& line) {
         // Reset for the new day
         // 为新的一天重置所有状态
         current_status = "False"; // 重置状态为 "False"
+        current_sleep = "False";  // 新增：重置Sleep状态为 "False"
         current_remark = ""; // 重置备注为空字符串
         current_getup_time = "00:00"; // 重置起床时间为 "00:00"
         buffered_records_for_day.clear(); // 清空当天的时间记录缓冲区
@@ -109,6 +112,13 @@ void DataFileParser::_handle_date_line(const std::string& line) {
 void DataFileParser::_handle_status_line(const std::string& line) {
     if (line.length() > 7) { // 确保行长度足够提取状态
         current_status = line.substr(7); // 提取 "Status:" 后面的子字符串作为状态
+    }
+}
+
+// 新增方法
+void DataFileParser::_handle_sleep_line(const std::string& line) {
+    if (line.length() > 6) { // "Sleep:" is 6 chars
+        current_sleep = line.substr(6); // 提取 "Sleep:" 后面的子字符串作为状态
     }
 }
 
@@ -183,7 +193,8 @@ void DataFileParser::_store_previous_date_data() {
 
     // Add the collected day info to the main 'days' vector
     // 将收集到的当天信息添加到 'days' 向量中
-    days.push_back({current_date, current_status, current_remark, current_getup_time});
+    // 修改：在构造DayData时加入current_sleep
+    days.push_back({current_date, current_status, current_sleep, current_remark, current_getup_time});
 
     // Add all buffered time records for that day to the main 'records' vector
     // 将缓冲区中所有当天的时间记录添加到 'records' 主向量中

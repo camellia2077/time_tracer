@@ -24,6 +24,7 @@ struct TimeRecordInternal {
 struct DayData {// 表示某一天的总体数据，不包括具体的时间记录
     std::string date; // TimeRecordInternal 中的 date 和 DayData 中的 date 将会用于将所有相关信息关联到同一个日期
     std::string status; // 状态 False或者True
+    std::string sleep; // 新增：Sleep状态 False或者True
     std::string remark; //备注内容,可与为任何字符
     std::string getup_time; // 起床时间,例如Getup:09:10
 };
@@ -55,6 +56,7 @@ private:
     // --- Internal State for Parsing ---
     std::string current_date; // 当前正在处理的日期字符串
     std::string current_status; // 当前日期的状态
+    std::string current_sleep; // 新增：当前日期的Sleep状态
     std::string current_remark; // 当前日期的备注
     std::string current_getup_time; // 当前日期的起床时间
     std::vector<TimeRecordInternal> buffered_records_for_day; // 缓冲区，用于存储当前日期下的所有时间记录，直到遇到新的日期行才将其提交到 records
@@ -68,6 +70,7 @@ private:
     void _process_single_line(const std::string& line, int line_num); // 处理单行内容，并根据内容分发到相应的处理函数
     void _handle_date_line(const std::string& line); // 处理 "Date:" 开头的行，更新 current_date 并重置当日数据缓冲区
     void _handle_status_line(const std::string& line); // 处理 "Status:" 开头的行，更新 current_status
+    void _handle_sleep_line(const std::string& line); // 新增：处理 "Sleep:" 开头的行
     void _handle_remark_line(const std::string& line); // 处理 "Remark:" 开头的行，更新 current_remark
     void _handle_getup_line(const std::string& line); // 处理 "Getup:" 开头的行，更新 current_getup_time
     void _handle_time_record_line(const std::string& line, int line_num); // 处理包含 "~" 的时间记录行。使用正则表达式提取开始时间、结束时间和项目路径，计算持续时间，并将记录添加到 buffered_records_for_day
