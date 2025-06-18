@@ -9,18 +9,16 @@
 
 // --- Internal Data Structures ---
 
-// Structure to hold data for a single date block during parsing
 struct FormatValidator::DateBlock {
     int start_line_number = -1;
     std::string date_str;
     int date_line_num = -1;
-
     bool status_value_from_file = false;
     bool status_format_valid = false;
     int status_line_num = -1;
-    
     std::vector<std::pair<std::string, int>> activity_lines_content;
     bool header_completely_valid = true;
+    std::string last_activity_end_time;
 
     void reset() {
         start_line_number = -1;
@@ -31,6 +29,7 @@ struct FormatValidator::DateBlock {
         status_line_num = -1;
         activity_lines_content.clear();
         header_completely_valid = true;
+        last_activity_end_time.clear();
     }
 };
 
@@ -49,13 +48,12 @@ FormatValidator::FormatValidator(const std::string& config_filename)
 bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>& errors) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
-        errors.insert({0, "Could not open file: " + file_path});
+        errors.insert({0, "Could not open file: " + file_path, ErrorType::FileAccess});
         return false;
     }
 
     std::string line;
     int line_number = 0;
-    
     DateBlock current_block;
     bool first_non_empty_line = true;
     bool date_line_encountered = false;
@@ -67,11 +65,10 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
         if (block.date_line_num != -1) {
             if (block.header_completely_valid) {
                 finalize_block_status_validation(block, errors);
-                // New check for 'sleep_night' as the last activity
                 if (!block.activity_lines_content.empty()) {
                     const auto& last_activity = block.activity_lines_content.back();
                     if (last_activity.first != "sleep_night") {
-                        errors.insert({last_activity.second, "The last activity of the day must be 'sleep_night'."});
+                        errors.insert({last_activity.second, "The last activity of the day must be 'sleep_night'.", ErrorType::MissingSleepNight});
                     }
                 }
             }
@@ -86,17 +83,20 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
         if (first_non_empty_line && !trimmed_line.empty()) {
             first_non_empty_line = false;
             if (trimmed_line.rfind("Date:", 0) != 0) {
-                errors.insert({line_number, "File must begin with a valid Date: line."});
+                errors.insert({line_number, "File must begin with a valid Date: line.", ErrorType::Structural});
                 current_block.header_completely_valid = false;
             }
         }
         
-        if (trimmed_line.empty()) continue;
+        if (trimmed_line.empty()) {
+            current_block.last_activity_end_time.clear();
+            continue;
+        }
 
         if (trimmed_line.rfind("Date:", 0) == 0) {
             if (date_line_encountered) {
                  if (state != ParseState::EXPECT_ACTIVITY && state != ParseState::EXPECT_DATE) {
-                     errors.insert({current_block.start_line_number, "New Date: line found before previous block was complete."});
+                     errors.insert({current_block.start_line_number, "New Date: line found before previous block was complete.", ErrorType::Structural});
                  }
                  finalize_previous_block(current_block);
             }
@@ -106,7 +106,7 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
             state = current_block.header_completely_valid ? ParseState::EXPECT_STATUS : ParseState::EXPECT_DATE;
         } else {
             if (!date_line_encountered) {
-                errors.insert({line_number, "Expected Date: line to start a block."});
+                errors.insert({line_number, "Expected Date: line to start a block.", ErrorType::Structural});
                 state = ParseState::EXPECT_DATE;
                 continue;
             }
@@ -128,7 +128,7 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
                 case ParseState::EXPECT_ACTIVITY:
                     validate_activity_line(trimmed_line, line_number, current_block, errors);
                     break;
-                case ParseState::EXPECT_DATE: // In an error state, wait for the next Date
+                case ParseState::EXPECT_DATE:
                     break;
             }
         }
@@ -136,16 +136,15 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
 
     if (date_line_encountered) {
         if (state != ParseState::EXPECT_ACTIVITY && state != ParseState::EXPECT_DATE) {
-             errors.insert({current_block.start_line_number, "File ended before final block was complete."});
+             errors.insert({current_block.start_line_number, "File ended before final block was complete.", ErrorType::Structural});
         }
        finalize_previous_block(current_block);
     } else if (!first_non_empty_line) {
-        errors.insert({1, "File contains text but no Date: line was found."});
+        errors.insert({1, "File contains text but no Date: line was found.", ErrorType::Structural});
     }
 
     return errors.empty();
 }
-
 
 // --- Private Helper Methods ---
 
@@ -197,7 +196,7 @@ void FormatValidator::validate_date_line(const std::string& line, int line_num, 
     if (std::regex_match(line, match, date_regex)) {
         block.date_str = match[1].str();
     } else {
-        errors.insert({line_num, "Date line format error. Expected 'Date:YYYYMMDD'."});
+        errors.insert({line_num, "Date line format error. Expected 'Date:YYYYMMDD'.", ErrorType::LineFormat});
         block.header_completely_valid = false;
     }
 }
@@ -211,7 +210,7 @@ void FormatValidator::validate_status_line(const std::string& line, int line_num
         block.status_value_from_file = false;
         block.status_format_valid = true;
     } else {
-        errors.insert({line_num, "Status line format error. Expected 'Status:True' or 'Status:False'."});
+        errors.insert({line_num, "Status line format error. Expected 'Status:True' or 'Status:False'.", ErrorType::LineFormat});
         block.status_format_valid = false;
         block.header_completely_valid = false;
     }
@@ -223,18 +222,18 @@ void FormatValidator::validate_getup_line(const std::string& line, int line_num,
     if (std::regex_match(line, match, getup_regex)) {
         int hh, mm;
         if (!parse_time_format(match[1].str(), hh, mm)) {
-            errors.insert({line_num, "Getup time value invalid."});
+            errors.insert({line_num, "Getup time value invalid.", ErrorType::LineFormat});
             block.header_completely_valid = false;
         }
     } else {
-        errors.insert({line_num, "Getup line format error. Expected 'Getup:HH:MM'."});
+        errors.insert({line_num, "Getup line format error. Expected 'Getup:HH:MM'.", ErrorType::LineFormat});
         block.header_completely_valid = false;
     }
 }
 
 void FormatValidator::validate_remark_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
     if (line.rfind("Remark:", 0) != 0) {
-        errors.insert({line_num, "Remark line format error. Expected 'Remark:' prefix."});
+        errors.insert({line_num, "Remark line format error. Expected 'Remark:' prefix.", ErrorType::LineFormat});
         block.header_completely_valid = false;
     }
 }
@@ -243,7 +242,7 @@ void FormatValidator::validate_activity_line(const std::string& line, int line_n
     static const std::regex activity_regex("^(\\d{2}:\\d{2})~(\\d{2}:\\d{2})(.+)$");
     std::smatch match;
     if (!std::regex_match(line, match, activity_regex)) {
-        errors.insert({line_num, "Activity line format error. Expected 'HH:MM~HH:MMTextContent'."});
+        errors.insert({line_num, "Activity line format error. Expected 'HH:MM~HH:MMTextContent'.", ErrorType::LineFormat});
         return;
     }
 
@@ -255,31 +254,36 @@ void FormatValidator::validate_activity_line(const std::string& line, int line_n
     bool start_valid = parse_time_format(start_time_str, start_hh, start_mm);
     bool end_valid = parse_time_format(end_time_str, end_hh, end_mm);
 
-    if (!start_valid) errors.insert({line_num, "Activity start time invalid."});
-    if (!end_valid) errors.insert({line_num, "Activity end time invalid."});
-    if (start_valid && end_valid && start_hh == end_hh && end_mm < start_mm) {
-        errors.insert({line_num, "Activity end time cannot be before start time on the same hour."});
+    if (!start_valid) errors.insert({line_num, "Activity start time invalid.", ErrorType::LineFormat});
+    if (!end_valid) errors.insert({line_num, "Activity end time invalid.", ErrorType::LineFormat});
+
+    if (start_valid && end_valid) {
+        if (!block.last_activity_end_time.empty() && block.last_activity_end_time != start_time_str) {
+            errors.insert({line_num, "Previous activity ended at " + block.last_activity_end_time + " but this one starts at " + start_time_str + ".", ErrorType::TimeDiscontinuity});
+        }
+        block.last_activity_end_time = end_time_str;
+        if (start_hh == end_hh && end_mm < start_mm) {
+            errors.insert({line_num, "Activity end time cannot be before start time on the same hour.", ErrorType::LineFormat});
+        }
     }
 
-    // Syntax validation
     static const std::regex text_content_regex("^[a-zA-Z0-9_-]+$");
     if (!std::regex_match(activity_text, text_content_regex)) {
-        errors.insert({line_num, "Activity text '" + activity_text + "' contains invalid characters."});
+        errors.insert({line_num, "Activity text '" + activity_text + "' contains invalid characters.", ErrorType::Logical});
         return;
     }
     if (activity_text.find('_') == std::string::npos) {
-        errors.insert({line_num, "Activity text '" + activity_text + "' must contain an underscore."});
+        errors.insert({line_num, "Activity text '" + activity_text + "' must contain an underscore.", ErrorType::Logical});
         return;
     }
     if (activity_text.back() == '_') {
-        errors.insert({line_num, "Activity text '" + activity_text + "' cannot end with an underscore."});
+        errors.insert({line_num, "Activity text '" + activity_text + "' cannot end with an underscore.", ErrorType::Logical});
         return;
     }
 
-    // Config validation
     if (config_.loaded) {
         if (config_.parent_categories.count(activity_text)) {
-            errors.insert({line_num, "Activity '" + activity_text + "' cannot be a parent category."});
+            errors.insert({line_num, "Activity '" + activity_text + "' cannot be a parent category.", ErrorType::Logical});
             return;
         }
         bool prefix_matched = false;
@@ -288,17 +292,16 @@ void FormatValidator::validate_activity_line(const std::string& line, int line_n
             if (activity_text.rfind(prefix, 0) == 0) {
                 prefix_matched = true;
                 if (pair.second.find(activity_text) == pair.second.end()) {
-                    errors.insert({line_num, "Activity '" + activity_text + "' is not an allowed sub-tag for parent '" + pair.first + "'."});
+                    errors.insert({line_num, "Activity '" + activity_text + "' is not an allowed sub-tag for parent '" + pair.first + "'.", ErrorType::Logical});
                 }
                 break;
             }
         }
         if (!prefix_matched) {
-            errors.insert({line_num, "Activity '" + activity_text + "' does not match any defined parent category prefix."});
+            errors.insert({line_num, "Activity '" + activity_text + "' does not match any defined parent category prefix.", ErrorType::Logical});
         }
     }
     
-    // If all checks passed for this line, add it to the block for status validation
     block.activity_lines_content.push_back({activity_text, line_num});
 }
 
@@ -314,8 +317,8 @@ void FormatValidator::finalize_block_status_validation(DateBlock& block, std::se
     }
 
     if (contains_study && !block.status_value_from_file) {
-        errors.insert({block.status_line_num, "Status must be 'True' because a 'study' activity was found."});
+        errors.insert({block.status_line_num, "Status must be 'True' because a 'study' activity was found.", ErrorType::Logical});
     } else if (!contains_study && block.status_value_from_file) {
-        errors.insert({block.status_line_num, "Status must be 'False' because no 'study' activity was found."});
+        errors.insert({block.status_line_num, "Status must be 'False' because no 'study' activity was found.", ErrorType::Logical});
     }
 }

@@ -3,6 +3,8 @@
 #include <filesystem>
 #include <fstream>
 #include <clocale> // Required for std::setlocale
+#include <vector>  // 新增
+#include <map>     // 新增
 
 #include "IntervalProcessor.h"
 #include "FormatValidator.h"
@@ -29,6 +31,64 @@ void setup_console_for_utf8() {
         std::cerr << YELLOW_COLOR << "Warning: Could not set locale. UTF-8 display might be affected." << RESET_COLOR << std::endl;
     }
 #endif
+}
+
+// --- 新增辅助函数 ---
+
+// 根据错误类型返回对应的标题字符串
+std::string getErrorTypeHeader(FormatValidator::ErrorType type) {
+    switch (type) {
+        case FormatValidator::ErrorType::TimeDiscontinuity:
+            return "Time discontinuity errors(时间不连续):";
+        case FormatValidator::ErrorType::MissingSleepNight:
+            return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
+        case FormatValidator::ErrorType::FileAccess:
+            return "File access errors:";
+        case FormatValidator::ErrorType::Structural:
+            return "Structural errors:";
+        case FormatValidator::ErrorType::LineFormat:
+            return "Line format errors:";
+        case FormatValidator::ErrorType::Logical:
+            return "Logical consistency errors:";
+        default:
+            return "Other errors:";
+    }
+}
+
+// 分组并打印错误到控制台和日志文件
+void printGroupedErrors(const std::string& filename, const std::set<FormatValidator::Error>& errors, const std::string& error_log_path) {
+    std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
+
+    // 1. 按错误类型对错误进行分组
+    std::map<FormatValidator::ErrorType, std::vector<FormatValidator::Error>> grouped_errors;
+    for (const auto& err : errors) {
+        grouped_errors[err.type].push_back(err);
+    }
+
+    std::ofstream err_stream(error_log_path);
+    err_stream << "文件 " << filename << " 的检验错误\n";
+    err_stream << "--------------------------------------------------\n\n";
+
+    // 2. 遍历分组后的错误并打印
+    for (const auto& pair : grouped_errors) {
+        std::string header = getErrorTypeHeader(pair.first);
+        
+        // 打印到控制台
+        std::cerr << "\n" << header << std::endl;
+        // 写入日志文件
+        err_stream << header << "\n";
+
+        for (const auto& err : pair.second) {
+            std::string error_message = "行 " + std::to_string(err.line_number) + ": " + err.message;
+            // 打印到控制台
+            std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
+            // 写入日志文件
+            err_stream << "  " << error_message << "\n";
+        }
+    }
+
+    err_stream.close();
+    std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
 }
 
 
@@ -77,19 +137,8 @@ int main(int argc, char* argv[]) {
             std::cout << GREEN_COLOR << "成功! 文件 '" << input_file << "' 已通过所有合法性检验。" << RESET_COLOR << std::endl;
         } else {
             std::cerr << RED_COLOR << "检验失败。在文件 '" << input_file << "' 中发现错误。" << RESET_COLOR << std::endl;
-            std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
-            
-            std::ofstream err_stream(error_file);
-            err_stream << "文件 " << input_file << " 的检验错误\n";
-            err_stream << "--------------------------------------------------\n";
-
-            for (const auto& err : errors) {
-                std::string error_message = "行 " + std::to_string(err.line_number) + ": " + err.message;
-                std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
-                err_stream << error_message << "\n";
-            }
-            err_stream.close();
-            std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_file << RESET_COLOR << std::endl;
+            // --- 调用新的打印函数 ---
+            printGroupedErrors(input_file, errors, error_file);
             return 1;
         }
 
@@ -126,19 +175,8 @@ int main(int argc, char* argv[]) {
             std::cout << GREEN_COLOR << "成功! 生成的文件 '" << processed_output_file << "' 已通过所有合法性检验。" << RESET_COLOR << std::endl;
         } else {
             std::cerr << RED_COLOR << "检验失败。在生成的文件 '" << processed_output_file << "' 中发现错误。" << RESET_COLOR << std::endl;
-            std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
-            
-            std::ofstream err_stream(error_file);
-            err_stream << "文件 " << processed_output_file << " 的检验错误\n";
-            err_stream << "--------------------------------------------------\n";
-
-            for (const auto& err : errors) {
-                std::string error_message = "行 " + std::to_string(err.line_number) + ": " + err.message;
-                std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
-                err_stream << error_message << "\n";
-            }
-            err_stream.close();
-            std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_file << RESET_COLOR << std::endl;
+            // --- 调用新的打印函数 ---
+            printGroupedErrors(processed_output_file, errors, error_file);
             return 1;
         }
     }
