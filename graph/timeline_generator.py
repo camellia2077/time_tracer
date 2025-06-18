@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import json
 import argparse
 from datetime import datetime, timedelta
 import sys
@@ -170,21 +171,35 @@ class DataProcessor:
 
 class TimelinePlotter:
     """Creates a timeline visualization from processed data and saves it to a file."""
-    # (This class is modified to save instead of show)
-    def __init__(self, logical_day):
+
+    DEFAULT_COLOR = '#CCCCCC' # A light grey for any category not in the map
+
+    def __init__(self, logical_day, color_map):
+        """
+        Initializes the plotter.
+
+        Args:
+            logical_day (LogicalDay): A processed LogicalDay object.
+            color_map (dict): A dictionary mapping parent categories to colors.
+        """
         if not isinstance(logical_day, LogicalDay) or logical_day.processed_data.empty:
             raise ValueError("TimelinePlotter must be initialized with a valid and processed LogicalDay object.")
         self.data = logical_day.processed_data
         self.start_dt = logical_day.start_time
         self.end_dt = logical_day.end_time
+        self.color_map = color_map # Store the color map from the JSON file
         
     def save_chart(self, output_path, title):
         """Generates the timeline plot and saves it to the specified path."""
         parent_categories = sorted(self.data['parent'].unique())
         y_labels = {cat: i for i, cat in enumerate(parent_categories)}
         
-        colors = plt.get_cmap('tab20', len(parent_categories))
-        cat_colors = {cat: colors(i) for i, cat in enumerate(parent_categories)}
+        # Use the color_map passed during initialization.
+        # The .get() method safely assigns the default color if a parent category is not in our map.
+        cat_colors = {
+            cat: self.color_map.get(cat, self.DEFAULT_COLOR) 
+            for cat in parent_categories
+        }
 
         fig, ax = plt.subplots(figsize=(15, 8))
 
@@ -194,7 +209,7 @@ class TimelinePlotter:
             end = mdates.date2num(row['end_dt'])
             duration = end - start
             ax.barh(y_pos, duration, left=start, height=0.6, 
-                    color=cat_colors[row['parent']], edgecolor='black', linewidth=0.5)
+                    color=cat_colors.get(row['parent']), edgecolor='black', linewidth=0.5)
 
         ax.set_yticks(list(y_labels.values()))
         ax.set_yticklabels(list(y_labels.keys()))
@@ -209,13 +224,11 @@ class TimelinePlotter:
         ax.set_ylabel("Activity Category")
         
         try:
-            # Use bbox_inches='tight' to prevent labels from being cut off
             fig.savefig(output_path, bbox_inches='tight')
             print(f"Timeline chart successfully saved to '{output_path}'")
         except Exception as e:
             print(f"Error saving chart to '{output_path}': {e}")
         finally:
-            # Close the figure to free up memory
             plt.close(fig)
 
 
@@ -226,19 +239,48 @@ class Application:
     def __init__(self, date_str):
         self.date_str = date_str
         self.db_path = 'time_data.db'
+        self.colors_path = 'timeline_colors_configs.json'
+
+    def _load_color_config(self):
+        """Loads the entire color configuration from the JSON file."""
+        try:
+            with open(self.colors_path, 'r') as f:
+                return json.load(f)
+        except FileNotFoundError:
+            print(f"Warning: Color configuration file not found at '{self.colors_path}'.")
+            return {}
+        except json.JSONDecodeError:
+            print(f"Warning: Could not parse '{self.colors_path}'. Check for syntax errors.")
+            return {}
 
     def run(self):
         """Executes the main logic of the application."""
+        # Load the entire configuration file.
+        color_config = self._load_color_config()
+        
+        # Determine the active scheme from the JSON file. Fallback to 'default'.
+        active_scheme_name = color_config.get('active_scheme', 'default')
+        
+        # Get the specific color map for the active scheme.
+        all_schemes = color_config.get('color_schemes', {})
+        color_map = all_schemes.get(active_scheme_name)
+
+        if color_map is None:
+            print(f"Warning: Scheme '{active_scheme_name}' not found in '{self.colors_path}'. Using default grey colors.")
+            color_map = {} # Fallback to an empty map, which will use the default grey.
+
         db_handler = DatabaseHandler(self.db_path)
         try:
             processor = DataProcessor(db_handler)
             logical_day = processor.create_logical_day(self.date_str)
 
             if logical_day and logical_day.processed_data is not None:
-                plotter = TimelinePlotter(logical_day)
-                output_filename = f"timeline_{self.date_str}.png"
+                # Pass the final selected color_map to the plotter.
+                plotter = TimelinePlotter(logical_day, color_map)
+                
+                output_filename = f"timeline_{self.date_str}_{active_scheme_name}.png"
                 formatted_date = datetime.strptime(self.date_str, "%Y%m%d").strftime('%B %d, %Y')
-                title = f"Logical Day Timeline for {formatted_date}"
+                title = f"Logical Day Timeline for {formatted_date} (Scheme: {active_scheme_name})"
                 
                 plotter.save_chart(output_filename, title)
 
@@ -246,7 +288,6 @@ class Application:
             print(f"An application error occurred: {e}")
         finally:
             db_handler.close()
-
 
 def main():
     """Main function to parse arguments and run the program."""
@@ -266,6 +307,7 @@ def main():
         print("Error: Date must be in YYYYMMDD format.")
         sys.exit(1)
 
+    # The scheme argument is no longer needed here.
     app = Application(args.date)
     app.run()
 
