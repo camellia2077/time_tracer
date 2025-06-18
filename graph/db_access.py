@@ -13,18 +13,23 @@ DB_PATH = 'time_data.db'
 DB_CONNECTION_TIMEOUT = 10
 MAX_RECURSION_DEPTH = 4 # Used for the heatmap query
 
+# --- Terminal Colors ---
+COLOR_GREEN = '\033[92m'
+COLOR_RED = '\033[91m'
+COLOR_RESET = '\033[0m'
+
 # --- Connection Management ---
 
 def _get_db_connection():
     """Establishes and returns a database connection."""
     if not os.path.exists(DB_PATH):
-        print(f"Error: Database file not found at '{DB_PATH}'")
+        print(f"{COLOR_RED}Error: Database file not found at '{DB_PATH}'{COLOR_RESET}")
         sys.exit(1)
     try:
         conn = sqlite3.connect(DB_PATH, timeout=DB_CONNECTION_TIMEOUT)
         return conn
     except sqlite3.Error as e:
-        print(f"Database connection error: {e}")
+        print(f"{COLOR_RED}Database connection error: {e}{COLOR_RESET}")
         sys.exit(1)
 
 # --- Public Data Access Functions ---
@@ -47,8 +52,8 @@ def get_data_for_timeline() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, pd.Dat
         print("DataAccess: Successfully loaded all tables.")
         return df_days, df_records, df_parents
     except pd.io.sql.DatabaseError as e:
-        print(f"Error reading from database: {e}")
-        print("Please ensure the database contains 'days', 'time_records', and 'parent_child' tables.")
+        print(f"{COLOR_RED}Error reading from database: {e}{COLOR_RESET}")
+        print(f"{COLOR_RED}Please ensure the database contains 'days', 'time_records', and 'parent_child' tables.{COLOR_RESET}")
         return None
     finally:
         if conn:
@@ -102,7 +107,7 @@ def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, fl
                 project_data[current_date] = hours
                 
     except sqlite3.Error as e:
-        print(f"An error occurred during database operation: {e}", file=sys.stderr)
+        print(f"{COLOR_RED}An error occurred during database operation: {e}{COLOR_RESET}", file=sys.stderr)
         # In a real app, you might want to raise the exception instead of exiting.
         sys.exit(1)
     finally:
@@ -111,4 +116,3 @@ def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, fl
             
     print("DataAccess: Heatmap data processing complete.")
     return project_data
-
