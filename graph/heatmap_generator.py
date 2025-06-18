@@ -8,8 +8,9 @@ import json
 import calendar
 from typing import Dict, Any, List
 
-# Import the new data access function
+# Import the new data access function and color constants
 import db_access
+from db_access import COLOR_GREEN, COLOR_RED, COLOR_RESET
 
 # --- Configuration ---
 # DB_PATH and other db-related configs are now managed in db_access.py
@@ -26,7 +27,7 @@ class HeatmapGenerator:
         self.color_palette = color_config.get('palette')
         self.over_12h_color = color_config.get('over_12h_color')
         if not self.color_palette or not self.over_12h_color:
-            print("❌ 错误: 颜色配置不完整。", file=sys.stderr)
+            print(f"{COLOR_RED}❌ 错误: 颜色配置不完整。{COLOR_RESET}", file=sys.stderr)
             sys.exit(1)
         print("  ✔️  HeatmapGenerator 初始化成功。")
 
@@ -161,7 +162,7 @@ class HeatmapGenerator:
     <div class="monthly-heatmaps-container">{monthly_heatmaps_content}</div>
 </body>
 </html>"""
-        print("✅ [步骤 2/3] HTML生成完成。")
+        print("✅ {COLOR_GREEN}[步骤 2/3] HTML生成完成。{COLOR_RESET}")
         return html_template
 
 def load_color_config(config_path: str) -> Dict[str, Any]:
@@ -170,19 +171,22 @@ def load_color_config(config_path: str) -> Dict[str, Any]:
         with open(config_path, 'r', encoding='utf-8') as f:
             config = json.load(f)
     except FileNotFoundError:
-        print(f"❌ 错误: 颜色配置文件 '{config_path}' 未找到。", file=sys.stderr)
+        print(f"{COLOR_RED}❌ 错误: 颜色配置文件 '{config_path}' 未找到。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
     except json.JSONDecodeError:
-        print(f"❌ 错误: 颜色配置文件 '{config_path}' 格式无效。", file=sys.stderr)
+        print(f"{COLOR_RED}❌ 错误: 颜色配置文件 '{config_path}' 格式无效。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
+    
     palette_name = config.get("DEFAULT_COLOR_PALETTE_NAME")
     color_palette = config.get("COLOR_PALETTES", {}).get(palette_name)
     over_12h_ref = config.get("OVER_12_HOURS_COLOR_REF")
     over_12h_color = config.get("SINGLE_COLORS", {}).get(over_12h_ref)
+    
     if not all([palette_name, color_palette, over_12h_ref, over_12h_color]):
-        print("❌ 错误: 颜色配置文件中的键缺失或无效。", file=sys.stderr)
+        print(f"{COLOR_RED}❌ 错误: 颜色配置文件中的键缺失或无效。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
-    print("✅ [步骤 1/3] 颜色配置加载成功。")
+        
+    print(f"{COLOR_GREEN}✅ [步骤 1/3] 颜色配置加载成功。{COLOR_RESET}")
     return {"palette": color_palette, "over_12h_color": over_12h_color}
 
 def write_html_to_file(filename: str, content: str):
@@ -190,9 +194,9 @@ def write_html_to_file(filename: str, content: str):
     try:
         with open(filename, "w", encoding="utf-8") as f:
             f.write(content)
-        print("✅ [步骤 3/3] 文件写入完成。")
+        print(f"✅ {COLOR_RED}[步骤 3/3] 文件写入完成。{COLOR_RESET}")
     except IOError as e:
-        print(f"❌ 写入文件 '{filename}' 时出错: {e}", file=sys.stderr)
+        print(f"{COLOR_RED}❌ 写入文件 '{filename}' 时出错: {e}{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
 
 def main():
@@ -227,7 +231,7 @@ def main():
         print(f"\n🎉 全部完成！热力图已成功生成: {output_filename}")
 
     except Exception as e:
-        print(f"\n❌ 主进程中发生意外错误: {e}", file=sys.stderr)
+        print(f"\n{COLOR_RED}❌ 主进程中发生意外错误: {e}{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
 
 if __name__ == "__main__":
