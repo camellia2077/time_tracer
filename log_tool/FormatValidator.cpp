@@ -1,3 +1,5 @@
+// FormatValidator.cpp
+
 #include "FormatValidator.h"
 #include "SharedUtils.h"
 #include <iostream>
@@ -7,8 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-// --- Internal Data Structures ---
-
+// 修改：DateBlock 结构体增加 sleep 相关字段
 struct FormatValidator::DateBlock {
     int start_line_number = -1;
     std::string date_str;
@@ -16,6 +17,8 @@ struct FormatValidator::DateBlock {
     bool status_value_from_file = false;
     bool status_format_valid = false;
     int status_line_num = -1;
+    bool sleep_format_valid = false; // 新增
+    int sleep_line_num = -1; // 新增
     std::vector<std::pair<std::string, int>> activity_lines_content;
     bool header_completely_valid = true;
     std::string last_activity_end_time;
@@ -27,24 +30,26 @@ struct FormatValidator::DateBlock {
         status_value_from_file = false;
         status_format_valid = false;
         status_line_num = -1;
+        sleep_format_valid = false; // 新增
+        sleep_line_num = -1; // 新增
         activity_lines_content.clear();
         header_completely_valid = true;
         last_activity_end_time.clear();
     }
 };
 
-// --- Constructor ---
-FormatValidator::FormatValidator(const std::string& config_filename)
-    : config_filepath_(config_filename) {
+// 修改：构造函数接收两个配置文件
+FormatValidator::FormatValidator(const std::string& config_filename, const std::string& header_config_filename)
+    : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
     loadConfiguration();
-    if (config_.loaded) {
-        std::cout << GREEN_COLOR << "Format validator configuration loaded successfully." << RESET_COLOR << std::endl;
+    if (config_.loaded && !header_order_.empty()) {
+        std::cout << GREEN_COLOR << "Format validator configurations loaded successfully." << RESET_COLOR << std::endl;
     } else {
-        std::cout << YELLOW_COLOR << "Warning: Format validator running with limited validation due to configuration issues." << RESET_COLOR << std::endl;
+        std::cout << YELLOW_COLOR << "Warning: Format validator running with limited/default validation." << RESET_COLOR << std::endl;
     }
 }
 
-// --- Public Methods ---
+// 重写：validateFile 使用新的动态状态机
 bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>& errors) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
@@ -55,11 +60,10 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
     std::string line;
     int line_number = 0;
     DateBlock current_block;
-    bool first_non_empty_line = true;
-    bool date_line_encountered = false;
     
-    enum class ParseState { EXPECT_DATE, EXPECT_STATUS, EXPECT_GETUP, EXPECT_REMARK, EXPECT_ACTIVITY };
-    ParseState state = ParseState::EXPECT_DATE;
+    // 动态状态机状态
+    size_t expected_header_idx = 0; // 0对应header_order_的第一个元素
+    bool in_activity_section = false;
 
     auto finalize_previous_block = [&](DateBlock& block) {
         if (block.date_line_num != -1) {
@@ -79,97 +83,96 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
     while (std::getline(file, line)) {
         line_number++;
         std::string trimmed_line = trim(line);
-
-        if (first_non_empty_line && !trimmed_line.empty()) {
-            first_non_empty_line = false;
-            if (trimmed_line.rfind("Date:", 0) != 0) {
-                errors.insert({line_number, "File must begin with a valid Date: line.", ErrorType::Structural});
-                current_block.header_completely_valid = false;
-            }
-        }
-        
-        if (trimmed_line.empty()) {
-            current_block.last_activity_end_time.clear();
-            continue;
-        }
+        if (trimmed_line.empty()) continue;
 
         if (trimmed_line.rfind("Date:", 0) == 0) {
-            if (date_line_encountered) {
-                 if (state != ParseState::EXPECT_ACTIVITY && state != ParseState::EXPECT_DATE) {
-                     errors.insert({current_block.start_line_number, "New Date: line found before previous block was complete.", ErrorType::Structural});
-                 }
-                 finalize_previous_block(current_block);
-            }
-            date_line_encountered = true;
+            finalize_previous_block(current_block);
+            expected_header_idx = 0;
+            in_activity_section = false;
             current_block.start_line_number = line_number;
-            validate_date_line(trimmed_line, line_number, current_block, errors);
-            state = current_block.header_completely_valid ? ParseState::EXPECT_STATUS : ParseState::EXPECT_DATE;
-        } else {
-            if (!date_line_encountered) {
-                errors.insert({line_number, "Expected Date: line to start a block.", ErrorType::Structural});
-                state = ParseState::EXPECT_DATE;
+        }
+
+        if (current_block.start_line_number == -1) {
+            errors.insert({line_number, "File must begin with a valid Date: line.", ErrorType::Structural});
+            continue;
+        }
+        
+        if (!current_block.header_completely_valid) continue;
+        
+        if (!in_activity_section) {
+            if (expected_header_idx >= header_order_.size()) {
+                 // 理论上不应该到这里，除非 Remark 后面还有非活动行
+                errors.insert({line_number, "Unexpected line after header section.", ErrorType::Structural});
+                current_block.header_completely_valid = false;
                 continue;
             }
-            if (!current_block.header_completely_valid) continue;
 
-            switch (state) {
-                case ParseState::EXPECT_STATUS:
-                    validate_status_line(trimmed_line, line_number, current_block, errors);
-                    state = ParseState::EXPECT_GETUP;
-                    break;
-                case ParseState::EXPECT_GETUP:
-                    validate_getup_line(trimmed_line, line_number, current_block, errors);
-                    state = ParseState::EXPECT_REMARK;
-                    break;
-                case ParseState::EXPECT_REMARK:
+            const std::string& expected_header = header_order_[expected_header_idx];
+            if (trimmed_line.rfind(expected_header, 0) == 0) {
+                // 根据期望的头部调用相应的验证函数
+                if (expected_header == "Date:") validate_date_line(trimmed_line, line_number, current_block, errors);
+                else if (expected_header == "Status:") validate_status_line(trimmed_line, line_number, current_block, errors);
+                else if (expected_header == "Sleep:") validate_sleep_line(trimmed_line, line_number, current_block, errors);
+                else if (expected_header == "Getup:") validate_getup_line(trimmed_line, line_number, current_block, errors);
+                else if (expected_header == "Remark:") {
                     validate_remark_line(trimmed_line, line_number, current_block, errors);
-                    state = ParseState::EXPECT_ACTIVITY;
-                    break;
-                case ParseState::EXPECT_ACTIVITY:
-                    validate_activity_line(trimmed_line, line_number, current_block, errors);
-                    break;
-                case ParseState::EXPECT_DATE:
-                    break;
+                    in_activity_section = true; // Remark之后就是活动列表
+                }
+                expected_header_idx++;
+            } else {
+                errors.insert({line_number, "Line out of order. Expected '" + expected_header + "'.", ErrorType::Structural});
+                current_block.header_completely_valid = false; // 停止处理这个块的头部
             }
+        } else {
+            // 在活动区域
+            validate_activity_line(trimmed_line, line_number, current_block, errors);
         }
     }
 
-    if (date_line_encountered) {
-        if (state != ParseState::EXPECT_ACTIVITY && state != ParseState::EXPECT_DATE) {
-             errors.insert({current_block.start_line_number, "File ended before final block was complete.", ErrorType::Structural});
-        }
-       finalize_previous_block(current_block);
-    } else if (!first_non_empty_line) {
-        errors.insert({1, "File contains text but no Date: line was found.", ErrorType::Structural});
-    }
+    finalize_previous_block(current_block);
 
     return errors.empty();
 }
 
-// --- Private Helper Methods ---
 
+// 修改：加载两个配置文件
 void FormatValidator::loadConfiguration() {
+    // 1. 加载主配置
     std::ifstream ifs(config_filepath_);
-    if (!ifs.is_open()) {
-        std::cerr << YELLOW_COLOR << "Warning: Config file '" << config_filepath_ << "' not found." << RESET_COLOR << std::endl;
+    if (ifs.is_open()) {
+        try {
+            nlohmann::json j;
+            ifs >> j;
+            if (j.contains("PARENT_CATEGORIES") && j["PARENT_CATEGORIES"].is_object()) {
+                config_.parent_categories = j["PARENT_CATEGORIES"].get<std::map<std::string, std::unordered_set<std::string>>>();
+                config_.loaded = true;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << YELLOW_COLOR << "Warning: Error processing config file '" << config_filepath_ << "': " << e.what() << RESET_COLOR << std::endl;
+        }
+    }
+
+    // 2. 加载头部顺序配置
+    std::ifstream header_ifs(header_config_filepath_);
+    if (!header_ifs.is_open()) {
+        std::cerr << RED_COLOR << "Fatal Error: Header format config file not found: " << header_config_filepath_ << RESET_COLOR << std::endl;
         return;
     }
     try {
         nlohmann::json j;
-        ifs >> j;
-        if (j.contains("PARENT_CATEGORIES") && j["PARENT_CATEGORIES"].is_object()) {
-            for (auto const& [key, val] : j["PARENT_CATEGORIES"].items()) {
-                if (val.is_array()) {
-                    config_.parent_categories[key] = val.get<std::unordered_set<std::string>>();
-                }
-            }
-            config_.loaded = true;
+        header_ifs >> j;
+        if (j.contains("header_order") && j["header_order"].is_array()) {
+            header_order_ = j["header_order"].get<std::vector<std::string>>();
+        } else {
+            throw std::runtime_error("Header config missing 'header_order' array.");
         }
     } catch (const std::exception& e) {
-        std::cerr << YELLOW_COLOR << "Warning: Error processing config file '" << config_filepath_ << "': " << e.what() << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Fatal Error processing header config: " << e.what() << RESET_COLOR << std::endl;
+        header_order_.clear(); // 清空以示失败
     }
 }
 
+// ... trim 和 parse_time_format 保持不变 ...
 std::string FormatValidator::trim(const std::string& str) {
     const std::string whitespace = " \t\n\r\f\v";
     size_t start = str.find_first_not_of(whitespace);
@@ -189,6 +192,8 @@ bool FormatValidator::parse_time_format(const std::string& time_str, int& hours,
     }
 }
 
+
+// ... validate_date_line, validate_status_line, validate_getup_line, validate_remark_line, validate_activity_line, finalize_block_status_validation 等函数保持不变，但新增 validate_sleep_line
 void FormatValidator::validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
     block.date_line_num = line_num;
     static const std::regex date_regex("^Date:(\\d{8})$");
@@ -212,6 +217,18 @@ void FormatValidator::validate_status_line(const std::string& line, int line_num
     } else {
         errors.insert({line_num, "Status line format error. Expected 'Status:True' or 'Status:False'.", ErrorType::LineFormat});
         block.status_format_valid = false;
+        block.header_completely_valid = false;
+    }
+}
+
+// 新增：validate_sleep_line 实现
+void FormatValidator::validate_sleep_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
+    block.sleep_line_num = line_num;
+    if (line == "Sleep:True" || line == "Sleep:False") {
+        block.sleep_format_valid = true;
+    } else {
+        errors.insert({line_num, "Sleep line format error. Expected 'Sleep:True' or 'Sleep:False'.", ErrorType::LineFormat});
+        block.sleep_format_valid = false;
         block.header_completely_valid = false;
     }
 }

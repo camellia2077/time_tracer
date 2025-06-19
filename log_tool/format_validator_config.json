@@ -2,7 +2,7 @@
   "PARENT_CATEGORIES": {
     "code": [
       "code_time-master",
-      "code_bill-master",
+      "code_bills-master",
       "code_weibo",
       "code_ascii",
       "code_spider",
@@ -95,6 +95,7 @@
       "recreation_game_clash-royale",
       "recreation_game_overwatch",
       "recreation_game_minecraft",
+      "recreation_game_wokong",
       "recreation_bilibili",
       "recreation_zhihu",
       "recreation_douyin",
@@ -118,7 +119,8 @@
       "other_searching_redmibuds4pro",
       "other_searching",
       "other_fix",
-      "other_unknown"
+      "other_unknown",
+      "other_instruction"
     ],
     "meal": [
       "meal_short",

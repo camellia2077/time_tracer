@@ -60,7 +60,7 @@ namespace Utils {
     }
 
     void print_usage(const char* prog_name) {
-        std::cerr << ConsoleColors::red << "Usage: " << prog_name << " <num_days> <items_per_day>" << ConsoleColors::reset << '\n';
+        std::cerr << ConsoleColors::red << "Usage: " <<  ConsoleColors::reset << prog_name << " <num_days> <items_per_day>\n";
         std::cerr << "Description: Generates test log data. Reads activities from 'activities_config.json'." << '\n';
         std::cerr << "  <num_days>        : Total number of days to generate (positive integer)." << '\n';
         std::cerr << "  <items_per_day>   : Number of log items per day (positive integer)." << '\n';
@@ -70,7 +70,7 @@ namespace Utils {
 } // namespace Utils
 
 
-// --- 2. Configuration Components ( unchanged ) ---
+// --- 2. Configuration Components ---
 // These components are responsible for loading and validating configuration from external sources.
 
 struct Config {
@@ -150,10 +150,17 @@ namespace ConfigLoader {
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
+        
+        // --- MODIFICATION START ---
+        // The check below is removed as "睡觉长" is no longer a required, separate item.
+        // The positive integer check above is sufficient.
+        /*
         if (config.items_per_day < 2) {
             std::cerr << Utils::ConsoleColors::red << "Error: <items_per_day> must be at least 2 to include '起床' and '睡觉长'." << Utils::ConsoleColors::reset << '\n';
             return std::nullopt;
         }
+        */
+        // --- MODIFICATION END ---
 
         return config;
     }
@@ -162,7 +169,6 @@ namespace ConfigLoader {
 
 // --- 3. Core Logic Component ---
 // This class is dedicated to the business logic of generating log data.
-// It knows nothing about command-line arguments, file I/O, or console colors.
 class LogGenerator {
 public:
     LogGenerator(const Config& config, const std::vector<std::string>& activities)
@@ -193,24 +199,23 @@ public:
             }
 
             log_chunk_stream << Utils::format_two_digits(current_month) << Utils::format_two_digits(current_day_of_month) << '\n';
-            int minute_for_next_days_scheduled_wakeup = dis_minute_(gen_);
-
+            
+            // --- MODIFICATION START ---
+            // The generation logic for the last item ("睡觉长") is removed.
+            // The loop now treats all items after the first one as a regular activity.
             for (int i = 0; i < config_.items_per_day; ++i) {
                 int display_hour_final;
                 int event_minute_final;
                 std::string event_text_to_use_final;
 
                 if (i == 0) {
+                    // First item is always "起床"
                     event_text_to_use_final = "起床";
                     display_hour_final = 6;
                     event_minute_final = minute_for_todays_actual_wakeup;
                 }
-                else if (i == config_.items_per_day - 1) {
-                    event_text_to_use_final = "睡觉长";
-                    display_hour_final = 6;
-                    event_minute_final = minute_for_next_days_scheduled_wakeup;
-                }
                 else {
+                    // All other items are now regular, random activities
                     double progress_ratio = static_cast<double>(i) / (config_.items_per_day - 1);
                     int logical_event_hour = 6 + static_cast<int>(std::round(progress_ratio * 19.0));
                     if (logical_event_hour > 25) logical_event_hour = 25;
@@ -220,8 +225,10 @@ public:
                 }
                 log_chunk_stream << Utils::format_two_digits(display_hour_final) << Utils::format_two_digits(event_minute_final) << event_text_to_use_final << '\n';
             }
+            // --- MODIFICATION END ---
 
-            minute_for_todays_actual_wakeup = minute_for_next_days_scheduled_wakeup;
+            // The wakeup time for the next day is now generated at the start of that day's loop.
+            minute_for_todays_actual_wakeup = dis_minute_(gen_); 
 
             current_day_of_month++;
             if (current_day_of_month > days_in_months[current_month]) {
@@ -246,9 +253,7 @@ private:
 };
 
 
-// --- 4. Application Runner ---
-// This class is responsible for the overall application flow.
-// It orchestrates the configuration, logic, and output phases.
+// --- 4. Application Runner ( unchanged ) ---
 class Application {
 public:
     int run(int argc, char* argv[]) {
@@ -308,9 +313,7 @@ private:
 };
 
 
-// --- 5. Main Entry Point ---
-// The main function is now extremely simple. Its only job is to
-// create an Application instance and start it.
+// --- 5. Main Entry Point ( unchanged ) ---
 int main(int argc, char* argv[]) {
     Application app;
     return app.run(argc, argv);
