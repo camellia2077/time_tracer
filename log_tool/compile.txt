@@ -1,0 +1,1 @@
+g++ -std=c++17 -O3 -o log_tool main.cpp IntervalProcessor.cpp FormatValidator.cpp -march=native -flto -s
