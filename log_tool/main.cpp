@@ -1,3 +1,4 @@
+// main.cpp
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -78,15 +79,15 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
     std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
 }
 
-// --- 新增的核心处理函数，用于处理单个文件 ---
-void processSingleFile(const fs::path& filePath, bool validate_only, const std::string& interval_config, const std::string& validator_config, const std::string& error_file) {
+// --- 核心处理函数，用于处理单个文件 ---
+void processSingleFile(const fs::path& filePath, bool validate_only, const std::string& interval_config, const std::string& validator_config, const std::string& header_config, const std::string& error_file) {
     std::cout << "\n=======================================================\n";
     std::cout << "正在处理文件: " << filePath.string() << "\n";
     std::cout << "=======================================================\n";
 
     if (validate_only) {
         // --- 检验模式 ---
-        FormatValidator validator(validator_config);
+        FormatValidator validator(validator_config, header_config);
         std::set<FormatValidator::Error> errors;
         bool is_valid = validator.validateFile(filePath.string(), errors);
 
@@ -101,7 +102,7 @@ void processSingleFile(const fs::path& filePath, bool validate_only, const std::
         std::string processed_output_file = "processed_" + filePath.filename().string();
         
         // 步骤 1: 处理文件
-        IntervalProcessor processor(interval_config);
+        IntervalProcessor processor(interval_config, header_config);
         if (!processor.processFile(filePath.string(), processed_output_file)) {
             std::cerr << RED_COLOR << "处理文件失败。跳过此文件。" << RESET_COLOR << std::endl;
             return;
@@ -109,7 +110,7 @@ void processSingleFile(const fs::path& filePath, bool validate_only, const std::
         std::cout << "初始处理完成。输出已写入: " << processed_output_file << std::endl;
         
         // 步骤 2: 检验已处理的文件
-        FormatValidator validator(validator_config);
+        FormatValidator validator(validator_config, header_config);
         std::set<FormatValidator::Error> errors;
         bool is_valid = validator.validateFile(processed_output_file, errors);
 
@@ -129,7 +130,7 @@ int main(int argc, char* argv[]) {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
-    // --- 参数解析 ---
+    // ... 参数解析部分不变 ...
     bool validate_only = false;
     std::string input_path_str;
 
@@ -148,12 +149,14 @@ int main(int argc, char* argv[]) {
     // --- 配置文件路径 ---
     std::string interval_config = "interval_processor_config.json";
     std::string validator_config = "format_validator_config.json";
+    std::string header_config = "header_format.json"; // 新增
     std::string error_file = "validation_errors.txt";
 
     // 清空之前的错误日志
     std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
 
+    // ... 文件/文件夹路径处理部分不变 ...
     fs::path input_path(input_path_str);
     std::vector<fs::path> files_to_process;
 
@@ -173,7 +176,6 @@ int main(int argc, char* argv[]) {
             std::cout << YELLOW_COLOR << "警告: 在文件夹 " << input_path_str << " 中未找到 .txt 文件。" << RESET_COLOR << std::endl;
             return 0;
         }
-        // 对文件进行排序，确保处理顺序一致
         std::sort(files_to_process.begin(), files_to_process.end());
     } else if (fs::is_regular_file(input_path)) {
         files_to_process.push_back(input_path);
@@ -183,11 +185,12 @@ int main(int argc, char* argv[]) {
     }
 
     // --- 循环处理所有找到的文件 ---
+    // 修改：将 header_config 传递给处理函数
     for (const auto& file : files_to_process) {
-        processSingleFile(file, validate_only, interval_config, validator_config, error_file);
+        processSingleFile(file, validate_only, interval_config, validator_config, header_config, error_file);
     }
 
     std::cout << "\n--- 所有任务处理完毕 ---" << std::endl;
 
-    return 0; // Success
+    return 0;
 }

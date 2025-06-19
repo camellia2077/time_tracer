@@ -1,3 +1,5 @@
+// IntervalProcessor.h
+
 #ifndef INTERVAL_PROCESSOR_H
 #define INTERVAL_PROCESSOR_H
 
@@ -8,37 +10,33 @@
 
 class IntervalProcessor {
 public:
-    // Constructor: Initializes the processor with the path to the configuration file.
-    IntervalProcessor(const std::string& config_filename);
-
-    // Processes the input file and writes the result to the output file.
-    // Returns true on success, false on failure.
+    IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename); // 修改：接收新的配置文件
     bool processFile(const std::string& input_filepath, const std::string& output_filepath);
 
 private:
-    // Structure to hold event details (raw from input)
+    // ... (RawEvent 和 DayData 结构体保持不变)
     struct RawEvent {
-        std::string endTimeStr; // "HHMM" format
+        std::string endTimeStr;
         std::string description;
     };
 
-    // Structure to hold processed daily data
     struct DayData {
-        std::string date; // "YYYYMMDD" format
+        std::string date;
         bool hasStudyActivity = false;
-        std::string getupTime; // "HH:MM" format, or empty
+        std::string getupTime;
         std::vector<RawEvent> rawEvents;
         std::vector<std::string> remarksOutput;
-
         void clear();
     };
 
-    // Configuration and state
+    // --- Configuration and state ---
     std::string config_filepath_;
+    std::string header_config_filepath_; // 新增
     std::unordered_map<std::string, std::string> text_mapping_;
+    std::vector<std::string> header_order_; // 新增
 
-    // Private helper methods
-    bool loadTextMapping();
+    // --- Private helper methods ---
+    bool loadConfiguration(); // 修改：合并两个配置加载
     void processDayData(DayData& day);
     void writeDayData(std::ofstream& outFile, const DayData& day);
     std::string formatTime(const std::string& timeStrHHMM);
