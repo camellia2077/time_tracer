@@ -9,7 +9,7 @@
 #include <ctime>
 #include <filesystem>
 
-// 修改：构造函数接收两个配置文件
+// 构造函数接收两个配置文件
 IntervalProcessor::IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename)
     : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
     if (!loadConfiguration()) {
@@ -17,7 +17,6 @@ IntervalProcessor::IntervalProcessor(const std::string& config_filename, const s
     }
 }
 
-// ... processFile 方法保持不变 ...
 bool IntervalProcessor::processFile(const std::string& input_filepath, const std::string& output_filepath) {
     std::ifstream inFile(input_filepath);
     if (!inFile.is_open()) {
@@ -54,11 +53,15 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
         if (isDateLine(line)) {
             if (!previousDay.date.empty()) {
                 processDayData(previousDay);
+                // --- MODIFICATION START ---
+                // 当我们为前一天添加 sleep_night 时，设置标志位
                 if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
                     std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
                     std::string sleepEndTime = currentDay.getupTime;
                     previousDay.remarksOutput.push_back(sleepStartTime + "~" + sleepEndTime + "sleep_night");
+                    previousDay.endsWithSleepNight = true; // 设置标志
                 }
+                // --- MODIFICATION END ---
                 writeDayData(outFile, previousDay);
             }
             previousDay = currentDay;
@@ -85,15 +88,19 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     // After the loop, process the last two days
     if (!previousDay.date.empty()) {
         processDayData(previousDay);
+        // --- MODIFICATION START ---
         if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
             std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
             std::string sleepEndTime = currentDay.getupTime;
             previousDay.remarksOutput.push_back(sleepStartTime + "~" + sleepEndTime + "sleep_night");
+            previousDay.endsWithSleepNight = true; // 设置标志
         }
+        // --- MODIFICATION END ---
         writeDayData(outFile, previousDay);
     }
     if (!currentDay.date.empty()) {
         processDayData(currentDay);
+        // 对于文件的最后一天，没有下一天来形成 sleep_night，所以 endsWithSleepNight 标志将保持默认的 false
         writeDayData(outFile, currentDay);
     }
 
@@ -102,7 +109,7 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     return true;
 }
 
-// 修改：加载两个配置文件
+// 加载两个配置文件
 bool IntervalProcessor::loadConfiguration() {
     // 1. 加载文本映射配置
     std::ifstream mapping_ifs(config_filepath_);
@@ -133,7 +140,6 @@ bool IntervalProcessor::loadConfiguration() {
         } else {
             throw std::runtime_error("'header_order' key not found or not an array.");
         }
-        // 验证必须的字段
         if (header_order_.empty() || header_order_[0] != "Date:") {
             throw std::runtime_error("'Date:' must be the first item in header_order.");
         }
@@ -149,20 +155,23 @@ bool IntervalProcessor::loadConfiguration() {
     return true;
 }
 
-// ... DayData::clear(), formatTime(), isDateLine(), parseEventLine(), processDayData() 保持不变 ...
+// --- MODIFICATION START ---
+// 在 clear 方法中重置新成员
 void IntervalProcessor::DayData::clear() {
     date.clear();
     hasStudyActivity = false;
+    endsWithSleepNight = false; // 重置
     getupTime.clear();
     rawEvents.clear();
     remarksOutput.clear();
 }
+// --- MODIFICATION END ---
 
 std::string IntervalProcessor::formatTime(const std::string& timeStrHHMM) {
     if (timeStrHHMM.length() == 4) {
         return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
     }
-    return timeStrHHMM; // Return original if format is unexpected
+    return timeStrHHMM;
 }
 
 bool IntervalProcessor::isDateLine(const std::string& line) {
@@ -182,6 +191,7 @@ bool IntervalProcessor::parseEventLine(const std::string& line, std::string& out
     return !outDescription.empty();
 }
 
+// processDayData 已经正确设置了 hasStudyActivity，无需修改
 void IntervalProcessor::processDayData(DayData& day) {
     if (day.date.empty() || day.getupTime.empty() || day.rawEvents.empty()) {
         return;
@@ -207,7 +217,8 @@ void IntervalProcessor::processDayData(DayData& day) {
 }
 
 
-// 重写：根据 header_order_ 动态生成输出文件
+// --- MODIFICATION START ---
+// 重写：根据 hasStudyActivity 和 endsWithSleepNight 标志动态生成输出
 void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day) {
     if (day.date.empty()) return;
 
@@ -215,9 +226,11 @@ void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day)
         if (header == "Date:") {
             outFile << "Date:" << day.date << "\n";
         } else if (header == "Status:") {
+            // 根据 hasStudyActivity 标志设置 Status
             outFile << "Status:" << (day.hasStudyActivity ? "True" : "False") << "\n";
         } else if (header == "Sleep:") {
-            outFile << "Sleep:True\n"; // 默认值为 True
+            // 根据 endsWithSleepNight 标志设置 Sleep
+            outFile << "Sleep:" << (day.endsWithSleepNight ? "True" : "False") << "\n";
         } else if (header == "Getup:") {
             outFile << "Getup:" << (day.getupTime.empty() ? "00:00" : day.getupTime) << "\n";
         } else if (header == "Remark:") {
