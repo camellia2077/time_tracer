@@ -10,11 +10,11 @@
 
 class IntervalProcessor {
 public:
-    IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename); // 修改：接收新的配置文件
+    // 构造函数现在接收两个配置文件路径
+    IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename);
     bool processFile(const std::string& input_filepath, const std::string& output_filepath);
 
 private:
-    // ... (RawEvent 和 DayData 结构体保持不变)
     struct RawEvent {
         std::string endTimeStr;
         std::string description;
@@ -23,20 +23,22 @@ private:
     struct DayData {
         std::string date;
         bool hasStudyActivity = false;
+        bool endsWithSleepNight = false; // 新增：标记最后一个活动是否为 sleep_night
         std::string getupTime;
         std::vector<RawEvent> rawEvents;
         std::vector<std::string> remarksOutput;
+
         void clear();
     };
 
     // --- Configuration and state ---
     std::string config_filepath_;
-    std::string header_config_filepath_; // 新增
+    std::string header_config_filepath_;
     std::unordered_map<std::string, std::string> text_mapping_;
-    std::vector<std::string> header_order_; // 新增
+    std::vector<std::string> header_order_;
 
     // --- Private helper methods ---
-    bool loadConfiguration(); // 修改：合并两个配置加载
+    bool loadConfiguration();
     void processDayData(DayData& day);
     void writeDayData(std::ofstream& outFile, const DayData& day);
     std::string formatTime(const std::string& timeStrHHMM);
