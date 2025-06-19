@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-// 修改：DateBlock 结构体增加 sleep 相关字段
+// 修改：DateBlock 结构体增加 sleep_value_from_file
 struct FormatValidator::DateBlock {
     int start_line_number = -1;
     std::string date_str;
@@ -17,8 +17,9 @@ struct FormatValidator::DateBlock {
     bool status_value_from_file = false;
     bool status_format_valid = false;
     int status_line_num = -1;
-    bool sleep_format_valid = false; // 新增
-    int sleep_line_num = -1; // 新增
+    bool sleep_value_from_file = true; // 新增：记录Sleep的值，默认为true
+    bool sleep_format_valid = false;
+    int sleep_line_num = -1;
     std::vector<std::pair<std::string, int>> activity_lines_content;
     bool header_completely_valid = true;
     std::string last_activity_end_time;
@@ -30,26 +31,27 @@ struct FormatValidator::DateBlock {
         status_value_from_file = false;
         status_format_valid = false;
         status_line_num = -1;
-        sleep_format_valid = false; // 新增
-        sleep_line_num = -1; // 新增
+        sleep_value_from_file = true; // 新增：重置时恢复默认值
+        sleep_format_valid = false;
+        sleep_line_num = -1;
         activity_lines_content.clear();
         header_completely_valid = true;
         last_activity_end_time.clear();
     }
 };
 
-// 修改：构造函数接收两个配置文件
+// 构造函数接收两个配置文件
 FormatValidator::FormatValidator(const std::string& config_filename, const std::string& header_config_filename)
     : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
     loadConfiguration();
     if (config_.loaded && !header_order_.empty()) {
-        std::cout << GREEN_COLOR << "Format validator configurations loaded successfully." << RESET_COLOR << std::endl;
+        std::cout << GREEN_COLOR << "Successfully loaded: " << RESET_COLOR  << " Format validator configurations ."  << std::endl;
     } else {
-        std::cout << YELLOW_COLOR << "Warning: Format validator running with limited/default validation." << RESET_COLOR << std::endl;
+        std::cout << YELLOW_COLOR << "Warning:  " << RESET_COLOR <<  "Format validator running with limited/default validation."  << std::endl;
     }
 }
 
-// 重写：validateFile 使用新的动态状态机
+// validateFile 使用新的动态状态机
 bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>& errors) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
@@ -71,9 +73,13 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
                 finalize_block_status_validation(block, errors);
                 if (!block.activity_lines_content.empty()) {
                     const auto& last_activity = block.activity_lines_content.back();
-                    if (last_activity.first != "sleep_night") {
+                    
+                    // --- MODIFICATION START ---
+                    // 只有当 Sleep 状态为 True 时，才检查最后一个活动是否为 sleep_night
+                    if (block.sleep_value_from_file && last_activity.first != "sleep_night") {
                         errors.insert({last_activity.second, "The last activity of the day must be 'sleep_night'.", ErrorType::MissingSleepNight});
                     }
+                    // --- MODIFICATION END ---
                 }
             }
             block.reset();
@@ -101,7 +107,6 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
         
         if (!in_activity_section) {
             if (expected_header_idx >= header_order_.size()) {
-                 // 理论上不应该到这里，除非 Remark 后面还有非活动行
                 errors.insert({line_number, "Unexpected line after header section.", ErrorType::Structural});
                 current_block.header_completely_valid = false;
                 continue;
@@ -109,22 +114,20 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
 
             const std::string& expected_header = header_order_[expected_header_idx];
             if (trimmed_line.rfind(expected_header, 0) == 0) {
-                // 根据期望的头部调用相应的验证函数
                 if (expected_header == "Date:") validate_date_line(trimmed_line, line_number, current_block, errors);
                 else if (expected_header == "Status:") validate_status_line(trimmed_line, line_number, current_block, errors);
                 else if (expected_header == "Sleep:") validate_sleep_line(trimmed_line, line_number, current_block, errors);
                 else if (expected_header == "Getup:") validate_getup_line(trimmed_line, line_number, current_block, errors);
                 else if (expected_header == "Remark:") {
                     validate_remark_line(trimmed_line, line_number, current_block, errors);
-                    in_activity_section = true; // Remark之后就是活动列表
+                    in_activity_section = true;
                 }
                 expected_header_idx++;
             } else {
                 errors.insert({line_number, "Line out of order. Expected '" + expected_header + "'.", ErrorType::Structural});
-                current_block.header_completely_valid = false; // 停止处理这个块的头部
+                current_block.header_completely_valid = false;
             }
         } else {
-            // 在活动区域
             validate_activity_line(trimmed_line, line_number, current_block, errors);
         }
     }
@@ -135,7 +138,7 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
 }
 
 
-// 修改：加载两个配置文件
+// 加载两个配置文件
 void FormatValidator::loadConfiguration() {
     // 1. 加载主配置
     std::ifstream ifs(config_filepath_);
@@ -168,11 +171,11 @@ void FormatValidator::loadConfiguration() {
         }
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Fatal Error processing header config: " << e.what() << RESET_COLOR << std::endl;
-        header_order_.clear(); // 清空以示失败
+        header_order_.clear();
     }
 }
 
-// ... trim 和 parse_time_format 保持不变 ...
+// trim 和 parse_time_format 保持不变
 std::string FormatValidator::trim(const std::string& str) {
     const std::string whitespace = " \t\n\r\f\v";
     size_t start = str.find_first_not_of(whitespace);
@@ -193,7 +196,7 @@ bool FormatValidator::parse_time_format(const std::string& time_str, int& hours,
 }
 
 
-// ... validate_date_line, validate_status_line, validate_getup_line, validate_remark_line, validate_activity_line, finalize_block_status_validation 等函数保持不变，但新增 validate_sleep_line
+//... 其他 validate 函数保持不变...
 void FormatValidator::validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
     block.date_line_num = line_num;
     static const std::regex date_regex("^Date:(\\d{8})$");
@@ -221,10 +224,14 @@ void FormatValidator::validate_status_line(const std::string& line, int line_num
     }
 }
 
-// 新增：validate_sleep_line 实现
+// 修改：validate_sleep_line 实现，增加对值的记录
 void FormatValidator::validate_sleep_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
     block.sleep_line_num = line_num;
-    if (line == "Sleep:True" || line == "Sleep:False") {
+    if (line == "Sleep:True") {
+        block.sleep_value_from_file = true; // 记录值
+        block.sleep_format_valid = true;
+    } else if (line == "Sleep:False") {
+        block.sleep_value_from_file = false; // 记录值
         block.sleep_format_valid = true;
     } else {
         errors.insert({line_num, "Sleep line format error. Expected 'Sleep:True' or 'Sleep:False'.", ErrorType::LineFormat});

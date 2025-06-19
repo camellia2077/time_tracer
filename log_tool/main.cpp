@@ -35,7 +35,7 @@ void setup_console_for_utf8() {
 #endif
 }
 
-// --- 错误处理函数 (不变) ---
+// --- Error handling function (unchanged) ---
 
 std::string getErrorTypeHeader(FormatValidator::ErrorType type) {
     switch (type) {
@@ -62,7 +62,7 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
     for (const auto& err : errors) {
         grouped_errors[err.type].push_back(err);
     }
-    std::ofstream err_stream(error_log_path, std::ios::app); // 使用追加模式
+    std::ofstream err_stream(error_log_path, std::ios::app); // Use append mode
     err_stream << "\n文件 " << filename << " 的检验错误\n";
     err_stream << "--------------------------------------------------\n\n";
     for (const auto& pair : grouped_errors) {
@@ -70,7 +70,7 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
         std::cerr << "\n" << header << std::endl;
         err_stream << header << "\n";
         for (const auto& err : pair.second) {
-            std::string error_message = "行 " + std::to_string(err.line_number) + ": " + err.message;
+            std::string error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
             std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
             err_stream << "  " << error_message << "\n";
         }
@@ -79,118 +79,146 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
     std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
 }
 
-// --- 核心处理函数，用于处理单个文件 ---
-void processSingleFile(const fs::path& filePath, bool validate_only, const std::string& interval_config, const std::string& validator_config, const std::string& header_config, const std::string& error_file) {
-    std::cout << "\n=======================================================\n";
-    std::cout << "正在处理文件: " << filePath.string() << "\n";
-    std::cout << "=======================================================\n";
-
-    if (validate_only) {
-        // --- 检验模式 ---
-        FormatValidator validator(validator_config, header_config);
-        std::set<FormatValidator::Error> errors;
-        bool is_valid = validator.validateFile(filePath.string(), errors);
-
-        if (is_valid) {
-            std::cout << GREEN_COLOR << "成功! 文件已通过所有合法性检验。" << RESET_COLOR << std::endl;
-        } else {
-            std::cerr << RED_COLOR << "检验失败。在文件中发现错误。" << RESET_COLOR << std::endl;
-            printGroupedErrors(filePath.string(), errors, error_file);
-        }
-    } else {
-        // --- 完整处理模式 ---
-        std::string processed_output_file = "processed_" + filePath.filename().string();
-        
-        // 步骤 1: 处理文件
-        IntervalProcessor processor(interval_config, header_config);
-        if (!processor.processFile(filePath.string(), processed_output_file)) {
-            std::cerr << RED_COLOR << "处理文件失败。跳过此文件。" << RESET_COLOR << std::endl;
-            return;
-        }
-        std::cout << "初始处理完成。输出已写入: " << processed_output_file << std::endl;
-        
-        // 步骤 2: 检验已处理的文件
-        FormatValidator validator(validator_config, header_config);
-        std::set<FormatValidator::Error> errors;
-        bool is_valid = validator.validateFile(processed_output_file, errors);
-
-        if (is_valid) {
-            std::cout << GREEN_COLOR << "成功! 生成的文件已通过所有合法性检验。" << RESET_COLOR << std::endl;
-        } else {
-            std::cerr << RED_COLOR << "检验失败。在生成的文件中发现错误。" << RESET_COLOR << std::endl;
-            printGroupedErrors(processed_output_file, errors, error_file);
-        }
-    }
-}
-
 
 int main(int argc, char* argv[]) {
-    // --- 设置 ---
+    // --- Setup ---
     setup_console_for_utf8();
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
-    // ... 参数解析部分不变 ...
-    bool validate_only = false;
+    // --- Argument Parsing ---
+    bool process = false;
+    bool validate = false;
     std::string input_path_str;
 
-    if (argc == 2) {
-        input_path_str = argv[1];
-    } else if (argc == 3 && std::string(argv[1]) == "-v") {
-        validate_only = true;
-        input_path_str = argv[2];
-    } else {
-        std::cerr << RED_COLOR << "使用方法 (处理单个文件): " << argv[0] << " <文件路径.txt>" << RESET_COLOR << std::endl;
-        std::cerr << RED_COLOR << "使用方法 (处理文件夹): " << argv[0] << " <文件夹路径>" << RESET_COLOR << std::endl;
-        std::cerr << RED_COLOR << "或 (仅检验): " << argv[0] << " -v <文件或文件夹路径>" << RESET_COLOR << std::endl;
+    if (argc != 3) {
+        std::cerr << RED_COLOR << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径>" << RESET_COLOR << std::endl;
+        std::cerr << "  flags:" << std::endl;
+        std::cerr << "    -p\t只读取后转换文件,不检验内容合法性" << std::endl;
+        std::cerr << "    -pv\t读取文件转换,并且检验合法性" << std::endl;
+        std::cerr << "    -v\t只检验,不转换文件" << std::endl;
         return 1;
     }
 
-    // --- 配置文件路径 ---
+    std::string flag = argv[1];
+    input_path_str = argv[2];
+
+    if (flag == "-p"|| flag == "-P") {
+        process = true;
+    } else if (flag == "-pv"|| flag == "-PV") {
+        process = true;
+        validate = true;
+    } else if (flag == "-v"||flag == "-V") {
+        validate = true;
+    } else {
+        std::cerr << RED_COLOR << "Errors: " << RESET_COLOR <<  "未知的 flag '" << flag << "'" << std::endl;
+        std::cerr << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径>" << RESET_COLOR << std::endl;
+        std::cerr << "  flags:" << std::endl;
+        std::cerr << "    -p\t只读取后转换文件,不检验内容合法性" << std::endl;
+        std::cerr << "    -pv\t读取文件转换,并且检验合法性" << std::endl;
+        std::cerr << "    -v\t只检验,不转换文件" << std::endl;
+        return 1;
+    }
+
+
+    // --- Config File Paths ---
     std::string interval_config = "interval_processor_config.json";
     std::string validator_config = "format_validator_config.json";
-    std::string header_config = "header_format.json"; // 新增
+    std::string header_config = "header_format.json";
     std::string error_file = "validation_errors.txt";
 
-    // 清空之前的错误日志
+    // Clear previous error log
     std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
     ofs.close();
 
-    // ... 文件/文件夹路径处理部分不变 ...
+    // --- File/Directory Path Handling ---
     fs::path input_path(input_path_str);
     std::vector<fs::path> files_to_process;
 
     if (!fs::exists(input_path)) {
-        std::cerr << RED_COLOR << "错误: 输入的路径不存在: " << input_path_str << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Errors: "<< RESET_COLOR << "输入的路径不存在: " << input_path_str  << std::endl;
         return 1;
     }
 
     if (fs::is_directory(input_path)) {
-        std::cout << "检测到输入为文件夹，将处理其中所有的 .txt 文件..." << std::endl;
+        std::cout << "检测到输入为文件夹,将处理其中所有的 .txt 文件..." << std::endl;
         for (const auto& entry : fs::directory_iterator(input_path)) {
             if (entry.is_regular_file() && entry.path().extension() == ".txt") {
                 files_to_process.push_back(entry.path());
             }
         }
         if (files_to_process.empty()) {
-            std::cout << YELLOW_COLOR << "警告: 在文件夹 " << input_path_str << " 中未找到 .txt 文件。" << RESET_COLOR << std::endl;
+            std::cout << YELLOW_COLOR << "Warring: " << RESET_COLOR<<  "在文件夹 " << input_path_str << " 中未找到 .txt 文件。"  << std::endl;
             return 0;
         }
         std::sort(files_to_process.begin(), files_to_process.end());
     } else if (fs::is_regular_file(input_path)) {
         files_to_process.push_back(input_path);
     } else {
-        std::cerr << RED_COLOR << "错误: 输入的路径既不是文件也不是文件夹: " << input_path_str << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: " <<  RESET_COLOR <<"输入的路径既不是文件也不是文件夹: " << input_path_str << std::endl;
         return 1;
     }
 
-    // --- 循环处理所有找到的文件 ---
-    // 修改：将 header_config 传递给处理函数
+    // --- Initialize Counters ---
+    int success_count = 0;
+    int failure_count = 0;
+    int conversion_success_count = 0;
+    int conversion_failure_count = 0;
+
+    // --- Loop to process all found files ---
     for (const auto& file : files_to_process) {
-        processSingleFile(file, validate_only, interval_config, validator_config, header_config, error_file);
+        std::cout << "\n=======================================================\n"; // Start of wrapper
+        std::cout << "正在处理文件: " << file.string() << "\n";
+        
+        std::string file_to_validate = file.string();
+        bool processing_successful = true;
+
+        // Step 1: Conversion (if required)
+        if (process) {
+            std::string processed_output_file = "processed_" + file.filename().string();
+            IntervalProcessor processor(interval_config, header_config);
+            if (!processor.processFile(file.string(), processed_output_file)) {
+                std::cerr << RED_COLOR << "Errors: " << RESET_COLOR << "处理文件失败。跳过此文件。" << std::endl;
+                processing_successful = false;
+                conversion_failure_count++;
+            } else {
+                std::cout << GREEN_COLOR << "Succeeded: " << RESET_COLOR << "File conversion complete. Output written to: " << processed_output_file << std::endl;
+                file_to_validate = processed_output_file;
+                conversion_success_count++;
+            }
+        }
+
+        if (!processing_successful) {
+            std::cout << "=======================================================\n"; // End of wrapper for failed processing
+            continue; // Skip to next file
+        }
+
+        // Step 2: Validation (if required)
+        if (validate) {
+            FormatValidator validator(validator_config, header_config);
+            std::set<FormatValidator::Error> errors;
+            bool is_valid = validator.validateFile(file_to_validate, errors);
+
+            if (is_valid) {
+                std::cout << GREEN_COLOR << "\nSuccess: "<< RESET_COLOR << "This file has passed all validity checks." << std::endl;
+                success_count++;
+            } else {
+                std::cerr << RED_COLOR << "\nErrors: " << RESET_COLOR << "Mistakes were found in the file."  << std::endl;
+                printGroupedErrors(file_to_validate, errors, error_file);
+                failure_count++;
+            }
+        }
+
+        std::cout << "=======================================================\n"; // End of wrapper
     }
 
+    // --- Final Output ---
     std::cout << "\n--- 所有任务处理完毕 ---" << std::endl;
+    std::cout << "格式转换成功的txt数量:" << conversion_success_count << std::endl;
+    std::cout << "格式转换失败的txt数量:" << conversion_failure_count << std::endl;
+    std::cout  << std::endl;
+    std::cout << "检验成功的txt数量:" << success_count << std::endl;
+    std::cout << "检验失败的txt数量:" << failure_count << std::endl;
 
     return 0;
 }
