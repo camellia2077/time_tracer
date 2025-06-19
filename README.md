@@ -45,7 +45,7 @@ cd build
 cmake .. -D CMAKE_BUILD_TYPE=Release
 
 cmake --build .
-# 2 process 数据预处理
+# 2 log_tool 数据预处理
 数据预处理与合法性检验
 ## 2.1 structure
 ```
@@ -57,8 +57,21 @@ process/
 ├── FormatValidator.cpp      # Implementation of FormatValidator, contains logic for checking various format rules and identifying errors.
 └── SharedUtils.h            # Header for sharing ANSI color codes.
 ```
+## 2.1 usage
+### 2.1.1 转换格式
+-p or -P: 仅转换。读取源文件并生成一个新的格式化文件，但不进行内容合法性检验。输出文件名为 processed_<原始文件名>.txt。
+### 2.1.2 检验合法性
+-v or -V: 仅检验。对源文件的格式和内容进行合法性检验，不生成新文件。
+### 2.1.3 转换格式并验证合法性
+-pv or -PV: 转换并检验。首先根据源文件生成新的格式化文件，然后对这个新生成的文件进行合法性检验。
+### 2.1.4 文件目录
+```<path>``` (必需): 源文件或源文件夹的路径。
 
-# 3 graph 可视化工具
+如果提供的是文件路径，则只处理该文件。
+
+如果提供的是文件夹路径，则处理该文件夹下所有的 .txt 文件。
+
+# 3 graph_graph_generator 数据可视化
 读取数据库并且生成图表
 ## 3.1 heatmap_generator.py
 用于生成年份的热力图
@@ -73,7 +86,7 @@ python generate_heatmap.py 2024 --project code
 
 ## 3.2 timeline_generator.py
 用于生成某日的时间线
-# ４ test tools 测试工具
+# ４ log_generator 日志生成
 txt生成器
 ## 4.1 log_generator.py
 用于生成测试数据
