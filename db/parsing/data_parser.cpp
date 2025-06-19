@@ -10,10 +10,9 @@ DataFileParser::DataFileParser() // 构造函数与析构函数
     : current_date_processed(false), // 初始化 current_date_processed 为 false
     _time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})(.+))")// WARNING: Do not change this regex — it matches the expected input format 用于匹配 "HH:MM~HH:MMevent" 格式的时间记录行
 {
-    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "STUDY"，"code" 对应 "CODE"。
+    initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "study"，"code" 对应 "code"。
     {
-        {"study", "study"},
-        {"code", "code"}
+        {"study", "mystudy"}
     };
 }
 
@@ -155,35 +154,32 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
 }
 
 void DataFileParser::_process_project_path(const std::string& project_path_orig) {
-    std::string project_path = project_path_orig; // 复制原始项目路径
-    std::stringstream ss(project_path); // 使用字符串流处理路径（此处未直接使用，但可以是后续处理的基础）
-    std::string segment; // 用于存储路径的片段
-    std::vector<std::string> segments = split_string(project_path, '_'); // 调用 common_utils.h 中的 split_string 函数，按 '_' 分隔符切分项目路径。
+    // 调用 common_utils.h 中的 split_string 函数，按 '_' 分隔符切分项目路径。
+    std::vector<std::string> segments = split_string(project_path_orig, '_');
 
-    if (segments.empty()) return; // 如果没有分段，则直接返回
-    
+    if (segments.empty()) {
+        return; // 如果没有分段，则直接返回
+    }
+
     // 将预定义的顶级父子关系添加到总的父子关系集合中
+    // 每次调用此函数时都会运行此循环，但由于 parent_child_pairs 是一个集合，
+    // 重复插入不会产生副作用。
     for (const auto& pair : initial_top_level_parents) {
         parent_child_pairs.insert({pair.first, pair.second});
     }
 
-    std::string current_full_path = ""; // 用于构建当前处理到的完整路径
-    std::string parent_of_current_segment; // 用于存储当前段的父路径
-    for (size_t i = 0; i < segments.size(); ++i) { // 遍历所有路径分段
-        if (i == 0) { // 如果是第一个分段（顶级项目）
-            current_full_path = segments[i]; // 当前完整路径就是第一个分段本身
-            auto it = initial_top_level_parents.find(current_full_path); // 在预定义的顶级父项目中查找
-            if (it != initial_top_level_parents.end()) { // 如果找到了
-                parent_of_current_segment = it->second; // 使用预定义的父级（如 "STUDY"）
-            } else { // 如果没有找到
-                parent_of_current_segment = current_full_path; // 父级就是它自己
-            }
-        } else { // 如果不是第一个分段
-            parent_of_current_segment = current_full_path; // 上一个完整路径是当前段的父路径
-            current_full_path += "_" + segments[i]; // 更新完整路径，追加当前分段
+    // 仅当路径包含多个段时才创建层级关系。
+    // 例如，对于 "a_b_c"，将创建 (a_b, a) 和 (a_b_c, a_b) 的关系。
+    // 对于只有一个段的路径（例如 "study" 或 "workout"），只有当它存在于
+    // initial_top_level_parents 中时才会创建关系（已在上面的循环中处理）。
+    // 此实现避免了为不在映射中的顶级项目（如 "workout"）创建自我父关系（例如 {workout, workout}）。
+    if (segments.size() > 1) {
+        std::string parent_path = segments[0];
+        for (size_t i = 1; i < segments.size(); ++i) {
+            std::string child_path = parent_path + "_" + segments[i];
+            parent_child_pairs.insert({child_path, parent_path});
+            parent_path = child_path; // 对于下一个段，当前子路径成为父路径
         }
-        // 插入当前完整路径和其父路径的配对
-        parent_child_pairs.insert({current_full_path, parent_of_current_segment});
     }
 }
 
