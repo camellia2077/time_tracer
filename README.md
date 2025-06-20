@@ -86,14 +86,20 @@ python generate_heatmap.py 2024 --project code
 
 ## 3.2 timeline_generator.py
 用于生成某日的时间线
+### 3.2.1 usage
+py timeline_generator.py 20241201
+## 3.3 bool_generator.py
+用于生成bool类型标头的年份热力图
+### 3.3.1 usage
+py timeline_generator.py 2024
+
+
 # ４ log_generator 日志生成
 txt生成器
 ## 4.1 log_generator.py
 用于生成测试数据
 ### 4.1.1 usage
 log_generator.exe \<num_days> \<items_per_day>
-### 3.2.1 usage 
-python timeline_generator.py 20241201
 
 
 
