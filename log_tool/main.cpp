@@ -3,14 +3,15 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
-#include <clocale> // Required for std::setlocale
+#include <clocale>
 #include <vector>
 #include <map>
-#include <algorithm> // for std::sort
+#include <algorithm>
 
 #include "IntervalProcessor.h"
 #include "FormatValidator.h"
 #include "SharedUtils.h"
+#include "ErrorReporter.h" // <-- Include the new header
 
 // For platform-specific UTF-8 console setup
 #ifdef _WIN32
@@ -22,11 +23,9 @@ namespace fs = std::filesystem;
 // Sets up the console to correctly display UTF-8 characters.
 void setup_console_for_utf8() {
 #ifdef _WIN32
-    // Set console code page to UTF-8 on Windows
     SetConsoleOutputCP(CP_UTF8);
     SetConsoleCP(CP_UTF8);
 #else
-    // For Linux/macOS, set the locale to the system's default.
     try {
         std::setlocale(LC_ALL, "");
     } catch (...) {
@@ -35,50 +34,7 @@ void setup_console_for_utf8() {
 #endif
 }
 
-// --- Error handling function (unchanged) ---
-
-std::string getErrorTypeHeader(FormatValidator::ErrorType type) {
-    switch (type) {
-        case FormatValidator::ErrorType::TimeDiscontinuity:
-            return "Time discontinuity errors(时间不连续):";
-        case FormatValidator::ErrorType::MissingSleepNight:
-            return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
-        case FormatValidator::ErrorType::FileAccess:
-            return "File access errors:";
-        case FormatValidator::ErrorType::Structural:
-            return "Structural errors:";
-        case FormatValidator::ErrorType::LineFormat:
-            return "Line format errors:";
-        case FormatValidator::ErrorType::Logical:
-            return "Logical consistency errors:";
-        default:
-            return "Other errors:";
-    }
-}
-
-void printGroupedErrors(const std::string& filename, const std::set<FormatValidator::Error>& errors, const std::string& error_log_path) {
-    std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
-    std::map<FormatValidator::ErrorType, std::vector<FormatValidator::Error>> grouped_errors;
-    for (const auto& err : errors) {
-        grouped_errors[err.type].push_back(err);
-    }
-    std::ofstream err_stream(error_log_path, std::ios::app); // Use append mode
-    err_stream << "\n文件 " << filename << " 的检验错误\n";
-    err_stream << "--------------------------------------------------\n\n";
-    for (const auto& pair : grouped_errors) {
-        std::string header = getErrorTypeHeader(pair.first);
-        std::cerr << "\n" << header << std::endl;
-        err_stream << header << "\n";
-        for (const auto& err : pair.second) {
-            std::string error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
-            std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
-            err_stream << "  " << error_message << "\n";
-        }
-    }
-    err_stream.close();
-    std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
-}
-
+// --- REMOVED: getErrorTypeHeader and printGroupedErrors are now in ErrorReporter.cpp ---
 
 int main(int argc, char* argv[]) {
     // --- Setup ---
@@ -167,13 +123,12 @@ int main(int argc, char* argv[]) {
 
     // --- Loop to process all found files ---
     for (const auto& file : files_to_process) {
-        std::cout << "\n=======================================================\n"; // Start of wrapper
+        std::cout << "\n=======================================================\n";
         std::cout << "正在处理文件: " << file.string() << "\n";
         
         std::string file_to_validate = file.string();
         bool processing_successful = true;
 
-        // Step 1: Conversion (if required)
         if (process) {
             std::string processed_output_file = "processed_" + file.filename().string();
             IntervalProcessor processor(interval_config, header_config);
@@ -189,11 +144,10 @@ int main(int argc, char* argv[]) {
         }
 
         if (!processing_successful) {
-            std::cout << "=======================================================\n"; // End of wrapper for failed processing
-            continue; // Skip to next file
+            std::cout << "=======================================================\n";
+            continue;
         }
 
-        // Step 2: Validation (if required)
         if (validate) {
             FormatValidator validator(validator_config, header_config);
             std::set<FormatValidator::Error> errors;
@@ -204,12 +158,13 @@ int main(int argc, char* argv[]) {
                 success_count++;
             } else {
                 std::cerr << RED_COLOR << "\nErrors: " << RESET_COLOR << "Mistakes were found in the file."  << std::endl;
-                printGroupedErrors(file_to_validate, errors, error_file);
+                // --- UPDATED: Call the namespaced function ---
+                ErrorReporter::printGroupedErrors(file_to_validate, errors, error_file);
                 failure_count++;
             }
         }
 
-        std::cout << "=======================================================\n"; // End of wrapper
+        std::cout << "=======================================================\n";
     }
 
     // --- Final Output ---
