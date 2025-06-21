@@ -53,33 +53,56 @@ int main(int argc, char* argv[]) {
     bool process = false;
     bool validate = false;
     std::string input_path_str;
+    bool enable_day_count_check = false; // 新增：天数检查开关，默认关闭
+    std::string mode_flag;
 
-    if (argc != 3) {
-        std::cerr << RED_COLOR << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径>" << RESET_COLOR << std::endl;
+    // --- 新增：更灵活的参数解析 ---
+    std::vector<std::string> args;
+    for (int i = 1; i < argc; ++i) {
+        args.push_back(argv[i]);
+    }
+
+    // 查找并处理天数检查标志
+    auto it = std::remove_if(args.begin(), args.end(), [&](const std::string& arg) {
+        if (arg == "--enable-day-check" || arg == "-edc") {
+            enable_day_count_check = true;
+            return true; // 返回true表示此参数应被移除
+        }
+        return false;
+    });
+    args.erase(it, args.end()); // 从vector中真正移除标志
+
+    if (args.size() != 2) {
+        std::cerr << RED_COLOR << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径> [options]" << RESET_COLOR << std::endl;
         std::cerr << "  flags:" << std::endl;
         std::cerr << "    -p\t只读取后转换文件,不检验内容合法性" << std::endl;
         std::cerr << "    -pv\t读取文件转换,并且检验合法性" << std::endl;
         std::cerr << "    -v\t只检验,不转换文件" << std::endl;
+        std::cerr << "  options (可选):" << std::endl;
+        std::cerr << "    --enable-day-check, -edc\t启用对月份天数完整性的检查 (默认关闭)" << std::endl;
         return 1;
     }
 
-    std::string flag = argv[1];
-    input_path_str = argv[2];
+    mode_flag = args[0];
+    input_path_str = args[1];
+    // --- 参数解析修改结束 ---
 
-    if (flag == "-p"|| flag == "-P") {
+    if (mode_flag == "-p"|| mode_flag == "-P") {
         process = true;
-    } else if (flag == "-pv"|| flag == "-PV") {
+    } else if (mode_flag == "-pv"|| mode_flag == "-PV") {
         process = true;
         validate = true;
-    } else if (flag == "-v"||flag == "-V") {
+    } else if (mode_flag == "-v"||mode_flag == "-V") {
         validate = true;
     } else {
-        std::cerr << RED_COLOR << "Errors: " << RESET_COLOR <<  "未知的 flag '" << flag << "'" << std::endl;
-        std::cerr << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径>" << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Errors: " << RESET_COLOR <<  "未知的 flag '" << mode_flag << "'" << std::endl;
+        std::cerr << "使用方法: " << argv[0] << " <flag> <文件或文件夹路径> [options]" << RESET_COLOR << std::endl;
         std::cerr << "  flags:" << std::endl;
         std::cerr << "    -p\t只读取后转换文件,不检验内容合法性" << std::endl;
         std::cerr << "    -pv\t读取文件转换,并且检验合法性" << std::endl;
         std::cerr << "    -v\t只检验,不转换文件" << std::endl;
+        std::cerr << "  options (可选):" << std::endl;
+        std::cerr << "    --enable-day-check, -edc\t启用对月份天数完整性的检查 (默认关闭)" << std::endl;
         return 1;
     }
 
@@ -176,7 +199,8 @@ int main(int argc, char* argv[]) {
         }
 
         if (validate) {
-            FormatValidator validator(validator_config, header_config);
+            // --- 修改：将天数检查开关传递给构造函数 ---
+            FormatValidator validator(validator_config, header_config, enable_day_count_check);
             std::set<FormatValidator::Error> errors;
             bool is_valid = validator.validateFile(file_to_validate, errors);
 
