@@ -90,9 +90,13 @@ int main(int argc, char* argv[]) {
     std::string header_config = "header_format.json";
     std::string error_file = "validation_errors.txt";
 
-    // Clear previous error log
-    std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
-    ofs.close();
+    // --- MODIFICATION START: Only clear error log if validation is enabled ---
+    if (validate) {
+        // Clear previous error log
+        std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
+        ofs.close();
+    }
+    // --- MODIFICATION END ---
 
     // --- File/Directory Path Handling ---
     fs::path input_path(input_path_str);
