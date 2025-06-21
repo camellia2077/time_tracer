@@ -43,15 +43,7 @@ db/
     └── output_icon.ico
 ```
 ## 1.2 compile
-cd 'c:Time_Master_cpp/db'
-
-mkdir build
-
-cd build
-
-cmake .. -D CMAKE_BUILD_TYPE=Release
-
-cmake --build .
+在msys64中运行build.bat
 # 2 log_tool 数据预处理
 数据预处理与合法性检验
 ## 2.1 structure
