@@ -28,16 +28,26 @@ void FormatValidator::loadConfiguration() {
         try {
             nlohmann::json j;
             config_ifs >> j;
-            config_.parent_categories = j.get<std::map<std::string, std::unordered_set<std::string>>>();
-            config_.loaded = true;
+            
+            // --- 修改的部分 ---
+            if (j.contains("PARENT_CATEGORIES")) {
+                config_.parent_categories = j["PARENT_CATEGORIES"].get<std::map<std::string, std::unordered_set<std::string>>>();
+                config_.loaded = true;
+            } else {
+                 std::cerr << RED_COLOR << "Error: Validator config JSON does not contain 'PARENT_CATEGORIES' key." << RESET_COLOR << std::endl;
+                 config_.loaded = false;
+            }
+            // --- 修改结束 ---
+
         } catch (const std::exception& e) {
             std::cerr << RED_COLOR << "Error processing validator config JSON: " << e.what() << RESET_COLOR << std::endl;
+            config_.loaded = false; // 确保在出错时loaded为false
         }
     } else {
         std::cerr << RED_COLOR << "Error: Could not open validator config file: " << config_filepath_ << RESET_COLOR << std::endl;
     }
 
-    // Load header order configuration
+    // Load header order configuration (这部分代码是正确的，无需修改)
     std::ifstream header_ifs(header_config_filepath_);
     if (header_ifs.is_open()) {
         try {
