@@ -35,7 +35,8 @@ public:
         }
     };
 
-    FormatValidator(const std::string& config_filename, const std::string& header_config_filename);
+    // --- 修改：更新构造函数声明 ---
+    FormatValidator(const std::string& config_filename, const std::string& header_config_filename, bool enable_day_count_check = false);
     bool validateFile(const std::string& file_path, std::set<Error>& errors);
 
 private:
@@ -74,6 +75,7 @@ private:
     Config config_;
     std::vector<std::string> header_order_;
     std::string previous_date_str_;
+    bool check_day_count_enabled_; // --- 新增：用于存储天数检查的状态 ---
 
     // --- Private helper methods ---
     void loadConfiguration();
