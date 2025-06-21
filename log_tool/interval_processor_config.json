@@ -7,9 +7,6 @@
         "timemaster": "code_time-master",
         "refactor": "code_refactor",
         "billmaster": "code_bills-master",
-        "休息短": "rest_short",
-        "休息中": "rest_medium",
-        "休息长": "rest_long",
         "洗澡": "routine_bath",
         "快递": "routine_express",
         "洗漱": "routine_grooming",
@@ -33,10 +30,18 @@
         "break": "break_unknown",
         "黑神话": "recreation_game_wokong",
         "指导": "other_instruction",
+        "收拾" : "routine_express",
+        "洗衣服" : "routine_washing",
         "失眠": "insomnia",
-        "饭": "meal"
+        "饭": "meal",
+        "休息" : "rest"
     },
     "duration_mappings": {
+        "rest": [
+            { "less_than_minutes": 10, "value": "rest_short" },
+            { "less_than_minutes": 20, "value": "rest_medium" },
+            { "less_than_minutes": 30, "value": "rest_long" }
+        ],
         "insomnia": [
             { "less_than_minutes": 10, "value": "insomnia_short" },
             { "less_than_minutes": 30, "value": "insomnia_medium" },
