@@ -59,9 +59,22 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
             std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
             std::string mappedDescription = rawEvent.description;
 
+            // --- MODIFICATION START: Updated mapping logic ---
+            // 1. 尝试在常规映射中查找
             auto mapIt = text_mapping_.find(rawEvent.description);
-            if (mapIt != text_mapping_.end()) mappedDescription = mapIt->second;
+            if (mapIt != text_mapping_.end()) {
+                mappedDescription = mapIt->second;
+            } else {
+                // 2. 如果未找到，则在时长相关的映射中查找
+                auto durMapIt = text_duration_mapping_.find(rawEvent.description);
+                if (durMapIt != text_duration_mapping_.end()) {
+                    mappedDescription = durMapIt->second;
+                }
+            }
+            // --- MODIFICATION END ---
 
+
+            // 3. 检查映射后的活动名是否需要根据时长进一步处理
             auto durationRulesIt = duration_mappings_.find(mappedDescription);
             if (durationRulesIt != duration_mappings_.end()) {
                 int duration = calculateDurationMinutes(startTime, formattedEventEndTime);
@@ -93,9 +106,7 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
                     if (!previousDay.rawEvents.empty()) {
                         currentDay.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
                     }
-                // --- MODIFICATION START: Added !previousDay.isContinuation check ---
                 } else if (!previousDay.isContinuation && !currentDay.getupTime.empty()) {
-                // --- MODIFICATION END ---
                     if (!previousDay.rawEvents.empty()) {
                         std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
                         previousDay.remarksOutput.push_back(sleepStartTime + "~" + currentDay.getupTime + "sleep_night");
@@ -125,9 +136,7 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
 
     if (!previousDay.date.empty()) {
         process_day_events(previousDay);
-        // --- MODIFICATION START: Added !previousDay.isContinuation check ---
         if (currentDay.isContinuation) {
-        // --- MODIFICATION END ---
             previousDay.endsWithSleepNight = false;
             if (!previousDay.rawEvents.empty()) {
                 currentDay.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
@@ -170,15 +179,8 @@ void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day)
             }
         } else if (header == "Remark:") {
             outFile << "Remark:\n";
-            // --- 在这里添加注释 ---
             /*
              * 警告：不要对此活动记录向量 (remarksOutput) 进行排序！
-             *
-             * 这里的每条记录是类似 "HH:MM~HH:MMdescription" 的字符串。
-             * 如果使用 std::sort 或类似的通用排序函数，它会按字母顺序排序，
-             * 这会完全破坏事件的实际时间顺序
-             * * 正确的顺序已经在 processFile 函数的主循环中通过 push_back 精心构建，
-             * 确保了所有事件（包括最后的 sleep_night）都按时间先后顺序排列。
              */
             for (const auto& remark : day.remarksOutput) {
                 outFile << remark << "\n";
@@ -204,11 +206,24 @@ bool IntervalProcessor::loadConfiguration() {
     try {
         text_mapping_.clear();
         duration_mappings_.clear();
+        // --- MODIFICATION START ---
+        text_duration_mapping_.clear();
+        // --- MODIFICATION END ---
+
         if (j.contains("text_mappings") && j["text_mappings"].is_object()) {
             text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
         } else {
             std::cerr << YELLOW_COLOR << "Warning: 'text_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
         }
+
+        // --- MODIFICATION START: Load the new text_duration_mappings ---
+        if (j.contains("text_duration_mappings") && j["text_duration_mappings"].is_object()) {
+            text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
+        } else {
+            std::cerr << YELLOW_COLOR << "Warning: 'text_duration_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
+        }
+        // --- MODIFICATION END ---
+        
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
             const auto& duration_json = j["duration_mappings"];
             for (auto& [event_key, rules_json] : duration_json.items()) {

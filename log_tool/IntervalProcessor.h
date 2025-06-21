@@ -26,9 +26,7 @@ private:
         std::string getupTime;
         std::vector<RawEvent> rawEvents;
         std::vector<std::string> remarksOutput;
-        // --- MODIFICATION START ---
-        bool isContinuation = false; // 新增：标记这一天是否是前一天的延续
-        // --- MODIFICATION END ---
+        bool isContinuation = false; 
         
         void clear();
     };
@@ -41,6 +39,9 @@ private:
     std::string config_filepath_;
     std::string header_config_filepath_;
     std::unordered_map<std::string, std::string> text_mapping_;
+    // --- MODIFICATION START ---
+    std::unordered_map<std::string, std::string> text_duration_mapping_; // 新增：用于需要根据时长判断的活动的映射
+    // --- MODIFICATION END ---
     std::vector<std::string> header_order_;
     std::unordered_map<std::string, std::vector<DurationRule>> duration_mappings_;
 
