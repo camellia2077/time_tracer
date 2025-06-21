@@ -1,3 +1,10 @@
+# 依赖项 (Dependencies)
+
+本项目依赖于以下优秀的开源库：
+
+* **[nlohmann/json](https://github.com/nlohmann/json)**
+    * **用途**: 用于项目中所有 JSON 格式数据的解析和序列化（例如加载配置文件）。
+    * **许可证**: MIT License
 # 1 db 
 主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
