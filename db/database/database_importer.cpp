@@ -40,7 +40,16 @@ void DatabaseImporter::import_data(const DataFileParser& parser) {
         sqlite3_bind_text(stmt_insert_day, 2, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_day, 3, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT); // 新增：绑定sleep数据
         sqlite3_bind_text(stmt_insert_day, 4, day_data.remark.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从3变为4
-        sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从4变为5
+        
+        // --- MODIFICATION START ---
+        // 检查 getup_time 是否为 "Null" 或空，如果是，则绑定 SQL NULL
+        if (day_data.getup_time == "Null" || day_data.getup_time.empty()) {
+            sqlite3_bind_null(stmt_insert_day, 5); // 在第5个参数位置绑定NULL
+        } else {
+            // 否则，正常绑定文本值
+            sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从4变为5
+        }
+        // --- MODIFICATION END ---
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
