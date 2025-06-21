@@ -170,6 +170,16 @@ void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day)
             }
         } else if (header == "Remark:") {
             outFile << "Remark:\n";
+            // --- 在这里添加注释 ---
+            /*
+             * 警告：不要对此活动记录向量 (remarksOutput) 进行排序！
+             *
+             * 这里的每条记录是类似 "HH:MM~HH:MMdescription" 的字符串。
+             * 如果使用 std::sort 或类似的通用排序函数，它会按字母顺序排序，
+             * 这会完全破坏事件的实际时间顺序
+             * * 正确的顺序已经在 processFile 函数的主循环中通过 push_back 精心构建，
+             * 确保了所有事件（包括最后的 sleep_night）都按时间先后顺序排列。
+             */
             for (const auto& remark : day.remarksOutput) {
                 outFile << remark << "\n";
             }
