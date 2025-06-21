@@ -73,24 +73,35 @@ process/
 
 # 3 graph_graph_generator 数据可视化
 读取数据库并且生成图表
-## 3.1 heatmap_generator.py
+## 3.1 structure
+graph_generator/
+│
+├── db_access.py                # 模块：统一数据库访问层 (DAL)
+├── heatmap_generator.py        # 生成项目工时热力图 (年/月)
+├── timeline_generator.py       # 生成单日活动时间轴图
+├── bool_generator.py           # 生成布尔值（如睡眠）热力图
+│
+├── heatmap_config.json         # 配置文件：用于 heatmap_generator.py
+├── timeline_colors_configs.json # 配置文件：用于 timeline_generator.py
+└── time_data.db                # 数据库：存储所有时间追踪数据
+## 3.2 heatmap_generator.py
 用于生成年份的热力图
-### 3.1.1 生成热力图(默认study)
+### 3.2.1 生成热力图(默认study)
 python generate_heatmap.py 2024
-### 3.1.1 指定项目生成热力图
+### 3.2.1 指定项目生成热力图
 python generate_heatmap.py 2024 -p code
 
 或
 
 python generate_heatmap.py 2024 --project code
 
-## 3.2 timeline_generator.py
+## 3.3 timeline_generator.py
 用于生成某日的时间线
-### 3.2.1 usage
-py timeline_generator.py 20241201
-## 3.3 bool_generator.py
-用于生成bool类型标头的年份热力图
 ### 3.3.1 usage
+py timeline_generator.py 20241201
+## 3.4 bool_generator.py
+用于生成bool类型标头的年份热力图
+### 3.4.1 usage
 py timeline_generator.py 2024
 
 
