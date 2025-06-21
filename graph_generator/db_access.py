@@ -20,17 +20,20 @@ COLOR_RESET = '\033[0m'
 
 # --- Connection Management ---
 
-def _get_db_connection():
-    """Establishes and returns a database connection."""
+def _get_db_connection() -> Optional[sqlite3.Connection]:
+    """
+    Establishes and returns a database connection.
+    Returns None if the database file cannot be found.
+    """
     if not os.path.exists(DB_PATH):
         print(f"{COLOR_RED}Error: Database file not found at '{DB_PATH}'{COLOR_RESET}")
-        sys.exit(1)
+        return None
     try:
         conn = sqlite3.connect(DB_PATH, timeout=DB_CONNECTION_TIMEOUT)
         return conn
     except sqlite3.Error as e:
         print(f"{COLOR_RED}Database connection error: {e}{COLOR_RESET}")
-        sys.exit(1)
+        return None
 
 # --- Public Data Access Functions ---
 
@@ -45,6 +48,8 @@ def get_data_for_timeline() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, pd.Dat
     """
     print(f"DataAccess: Fetching all tables for timeline generation from '{DB_PATH}'...")
     conn = _get_db_connection()
+    if not conn:
+        return None
     try:
         df_days = pd.read_sql_query("SELECT * FROM days", conn)
         df_records = pd.read_sql_query("SELECT * FROM time_records", conn)
@@ -60,20 +65,12 @@ def get_data_for_timeline() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, pd.Dat
             conn.close()
 
 def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, float]:
-    """
-    Fetches and processes the total time spent per day for a specific project and its children.
-    This function is intended for use by the heatmap_generator.py script.
-
-    Args:
-        year (int): The target year to query.
-        project_name (str): The name of the root project to aggregate data for.
-
-    Returns:
-        A dictionary mapping each date to the total hours spent, e.g., {datetime.date(2024, 1, 15): 2.5}.
-    """
+    # ... (此函数保持不变) ...
     print(f"DataAccess: Fetching heatmap data for project '{project_name}' in year {year}...")
     project_data = {}
     conn = _get_db_connection()
+    if not conn:
+        return {} # Return empty dict if connection fails
     try:
         cursor = conn.cursor()
         
@@ -108,11 +105,51 @@ def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, fl
                 
     except sqlite3.Error as e:
         print(f"{COLOR_RED}An error occurred during database operation: {e}{COLOR_RESET}", file=sys.stderr)
-        # In a real app, you might want to raise the exception instead of exiting.
-        sys.exit(1)
+        return {}
     finally:
         if conn:
             conn.close()
             
     print("DataAccess: Heatmap data processing complete.")
     return project_data
+
+def get_sleep_data_for_bool_heatmap(year: int) -> Optional[Dict[datetime.date, str]]:
+    """
+    Queries the SQLite database for boolean sleep data for a specific year.
+    This function is intended for use by the bool_generator.py script.
+
+    Args:
+        year (int): The year for which to fetch data.
+
+    Returns:
+        A dictionary mapping dates to sleep status ('True' or 'False'),
+        or None if the database connection fails.
+    """
+    print(f"DataAccess: Fetching boolean sleep data for year {year}...")
+    data: Dict[datetime.date, str] = {}
+    conn = _get_db_connection()
+    if not conn:
+        return None
+
+    try:
+        cur = conn.cursor()
+        query = "SELECT date, sleep FROM days WHERE SUBSTR(date, 1, 4) = ?"
+        cur.execute(query, (str(year),))
+        rows = cur.fetchall()
+
+        for date_str, sleep_status in rows:
+            try:
+                day_date = datetime.datetime.strptime(date_str, '%Y%m%d').date()
+                data[day_date] = sleep_status
+            except ValueError:
+                print(f"Warning: Skipping invalid date format '{date_str}' in database.")
+
+        print(f"DataAccess: Found sleep data for {len(data)} days in {year}.")
+
+    except sqlite3.Error as e:
+        print(f"{COLOR_RED}Database error in get_sleep_data_for_bool_heatmap: {e}{COLOR_RESET}")
+        return {}  # Return empty dict on database error
+    finally:
+        if conn:
+            conn.close()
+    return data
