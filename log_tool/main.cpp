@@ -7,6 +7,8 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <chrono> // 新增：用于计时
+#include <iomanip> // 新增：用于格式化输出
 
 #include "IntervalProcessor.h"
 #include "FormatValidator.h"
@@ -41,6 +43,11 @@ int main(int argc, char* argv[]) {
     setup_console_for_utf8();
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
+
+    // --- MODIFICATION START: Initialize timers ---
+    auto total_start_time = std::chrono::high_resolution_clock::now();
+    auto parsing_start_time = std::chrono::high_resolution_clock::now();
+    // --- MODIFICATION END ---
 
     // --- Argument Parsing ---
     bool process = false;
@@ -114,12 +121,21 @@ int main(int argc, char* argv[]) {
         std::cerr << RED_COLOR << "Error: " <<  RESET_COLOR <<"输入的路径既不是文件也不是文件夹: " << input_path_str << std::endl;
         return 1;
     }
+    
+    // --- MODIFICATION START: Stop parsing timer ---
+    auto parsing_end_time = std::chrono::high_resolution_clock::now();
+    // --- MODIFICATION END ---
 
-    // --- Initialize Counters ---
+    // --- Initialize Counters & Durations ---
     int success_count = 0;
     int failure_count = 0;
     int conversion_success_count = 0;
     int conversion_failure_count = 0;
+    // --- MODIFICATION START: Declare duration variables ---
+    auto parsing_duration = parsing_end_time - parsing_start_time;
+    auto conversion_duration = std::chrono::high_resolution_clock::duration::zero();
+    // --- MODIFICATION END ---
+
 
     // --- Loop to process all found files ---
     for (const auto& file : files_to_process) {
@@ -130,6 +146,9 @@ int main(int argc, char* argv[]) {
         bool processing_successful = true;
 
         if (process) {
+            // --- MODIFICATION START: Time the conversion block ---
+            auto conversion_start_time = std::chrono::high_resolution_clock::now();
+            
             std::string processed_output_file = "processed_" + file.filename().string();
             IntervalProcessor processor(interval_config, header_config);
             if (!processor.processFile(file.string(), processed_output_file)) {
@@ -141,6 +160,10 @@ int main(int argc, char* argv[]) {
                 file_to_validate = processed_output_file;
                 conversion_success_count++;
             }
+
+            auto conversion_end_time = std::chrono::high_resolution_clock::now();
+            conversion_duration += conversion_end_time - conversion_start_time;
+            // --- MODIFICATION END ---
         }
 
         if (!processing_successful) {
@@ -166,10 +189,32 @@ int main(int argc, char* argv[]) {
 
         std::cout << "=======================================================\n";
     }
+    
+    // --- MODIFICATION START: Stop total timer and prepare for final output ---
+    auto total_end_time = std::chrono::high_resolution_clock::now();
+    auto total_duration = total_end_time - total_start_time;
+
+    double total_seconds = std::chrono::duration<double>(total_duration).count();
+    double parsing_seconds = std::chrono::duration<double>(parsing_duration).count();
+    double conversion_seconds = std::chrono::duration<double>(conversion_duration).count();
+    // --- MODIFICATION END ---
+
 
     // --- Final Output ---
     std::cout << "\n--- 所有任务处理完毕 ---" << std::endl;
-    std::cout << "格式转换成功的txt数量:" << conversion_success_count << std::endl;
+    
+    // --- MODIFICATION START: Print Timing Statistics ---
+    std::cout << "--------------------------------------";
+    std::cout << "\nTiming Statistics:\n\n";
+    std::cout << std::fixed << std::setprecision(4);
+    std::cout << "Total time: " << total_seconds << " seconds (" << total_seconds * 1000.0 << " ms)\n";
+    std::cout << "  - Parsing files: " << parsing_seconds << " seconds (" << parsing_seconds * 1000.0 << " ms)\n";
+    if (process) {
+        std::cout << "  - File conversion: " << conversion_seconds << " seconds (" << conversion_seconds * 1000.0 << " ms)\n";
+    }
+    std::cout << "--------------------------------------";
+
+    std::cout << "\n格式转换成功的txt数量:" << conversion_success_count << std::endl;
     std::cout << "格式转换失败的txt数量:" << conversion_failure_count << std::endl;
     std::cout  << std::endl;
     std::cout << "检验成功的txt数量:" << success_count << std::endl;
