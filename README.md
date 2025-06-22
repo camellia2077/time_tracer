@@ -1,10 +1,25 @@
 # 依赖项 (Dependencies)
 
 本项目依赖于以下优秀的开源库：
+* **[SQLite C Library](https://www.sqlite.org/index.html)**
+    * **用途**: C++ 部分的代码直接使用 SQLite C API 进行数据库操作。
+    * **许可证**: Public Domain
 
 * **[nlohmann/json](https://github.com/nlohmann/json)**
-    * **用途**: 用于项目中所有 JSON 格式数据的解析和序列化（例如加载配置文件）。
+    * **用途**: 用于项目中所有 JSON 格式数据的解析和序列化（例如加载 `Validator_Config.json` 配置文件）。
     * **许可证**: MIT License
+
+* **[json (Python standard library)](https://docs.python.org/3/library/json.html)**
+    * **用途**: 用于加载 `generate_report.json` 配置文件，以及处理项目中涉及到的 JSON 格式数据。
+    * **许可证**: Python Software Foundation License (PSF)
+
+* **[sqlite3 (Python standard library)](https://docs.python.org/3/library/sqlite3.html)**
+    * **用途**: 用于连接到 `bills.db` SQLite 数据库，并执行 SQL 查询以获取账单数据。
+    * **许可证**: Python Software Foundation License (PSF)
+
+* **[Matplotlib](https://matplotlib.org/)**
+    * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
+    * **许可证**: Matplotlib License (BSD-style)
 # 1 db 
 主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
