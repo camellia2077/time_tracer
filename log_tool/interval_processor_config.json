@@ -31,6 +31,8 @@
         "黑神话": "recreation_game_wokong",
         "指导": "other_instruction",
         "收拾" : "routine_express",
+        "饭" : "meal_long",
+        "aaa" : "meal_medium",
         "洗衣服" : "routine_washing"
     },
     "text_duration_mappings":{

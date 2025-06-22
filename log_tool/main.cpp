@@ -100,14 +100,6 @@ int main(int argc, char* argv[]) {
     std::string validator_config = "format_validator_config.json";
     std::string header_config = "header_format.json";
     std::string error_file = "validation_errors.txt";
-
-    // --- MODIFICATION START: REMOVED a code block here ---
-    // The following block has been removed from this location:
-    // if (validate) {
-    //     std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
-    //     ofs.close();
-    // }
-    // --- MODIFICATION END ---
     
     // --- File/Directory Path Handling ---
     fs::path input_path(input_path_str);

@@ -9,7 +9,7 @@
 #include <unordered_set>
 #include <map>
 #include <utility> // For std::pair
-#include "json.hpp"
+#include <nlohmann/json.hpp>
 
 class FormatValidator {
 public:
