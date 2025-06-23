@@ -1,14 +1,14 @@
-#ifndef DATABASE_IMPORTER_H
-#define DATABASE_IMPORTER_H
+#ifndef DATABASE_INSERTER_H
+#define DATABASE_INSERTER_H
 
 #include <string>
 #include <sqlite3.h>
 #include "data_parser.h" // Include parser to get data structures and class definition
 
-class DatabaseImporter {
+class DatabaseInserter {
 public:
-    DatabaseImporter(const std::string& db_path);
-    ~DatabaseImporter();
+    DatabaseInserter(const std::string& db_path);
+    ~DatabaseInserter();
     bool is_db_open() const;
     void import_data(const DataFileParser& parser);
 
@@ -24,6 +24,6 @@ private:
 };
 
 // Non-member helper function
-bool execute_sql_importer(sqlite3* db, const std::string& sql, const std::string& context_msg = "");
+bool execute_sql_Inserter(sqlite3* db, const std::string& sql, const std::string& context_msg = "");
 
-#endif // DATABASE_IMPORTER_H
+#endif // DATABASE_INSERTER_H

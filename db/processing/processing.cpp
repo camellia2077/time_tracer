@@ -12,7 +12,7 @@
 // 包含项目内其他模块的头文件
 #include "common_utils.h"      // 为了使用 ANSI 颜色代码
 #include "data_parser.h"       // FileProcessor 依赖于 DataFileParser
-#include "database_importer.h" // FileProcessor 依赖于 DatabaseImporter
+#include "database_inserter.h" // FileProcessor 依赖于 DatabaseInserter
 
 // 定义命名空间别名
 namespace fs = std::filesystem;
@@ -113,14 +113,14 @@ public:
 
         // Stage 2: Importing
         std::cout << "Stage 2: Importing data into the database..." << std::endl;
-        DatabaseImporter importer(db_name_);
-        if (!importer.is_db_open()) {
-            std::cerr << "Importer could not open database. Aborting." << std::endl;
+        DatabaseInserter inserter(db_name_);
+        if (!inserter.is_db_open()) {
+            std::cerr << "Inserter could not open database. Aborting." << std::endl;
             double parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();
             report_results(files_to_process.size(), failed_files, parsing_s, 0.0);
             return;
         }
-        importer.import_data(parser);
+        inserter.import_data(parser);
         auto end_total = std::chrono::high_resolution_clock::now();
 
         // Calculate timings
