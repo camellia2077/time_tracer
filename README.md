@@ -219,25 +219,55 @@ graph_generator/
     ├── day_analyzer.py         # 负责处理“逻辑日”数据 (从 timeline_generator 提取)
     ├── heatmap_generator.py    # 通用化的热力图生成器 (合并了旧的 heatmap 和 bool_generator)
     └── plotters.py             # 包含所有基于 matplotlib 的绘图类 (时间线和柱状图)
-## 3.2 heatmap_generator.py
-用于生成年份的热力图
-### 3.2.1 生成热力图(默认study)
-python generate_heatmap.py 2024
-### 3.2.1 指定项目生成热力图
-python generate_heatmap.py 2024 -p code
+## 3.2 timeline生成
+为2024年5月28日生成时间线图：
 
-或
+bash
 
-python generate_heatmap.py 2024 --project code
+python main.py timeline ```<date>```
+```<date>``` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240528)
 
-## 3.3 timeline_generator.py
-用于生成某日的时间线
-### 3.3.1 usage
-py timeline_generator.py 20241201
-## 3.4 bool_generator.py
-用于生成bool类型标头的年份热力图
-### 3.4.1 usage
-py timeline_generator.py 2024
+## 3.3 柱状图生成
+python main.py barchart ```<date>```
+
+```<date>``` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240115)
+
+## 3.4  热力图生成
+此命令为指定的项目和年份生成两种格式的 HTML 热力图：全年视图和月度视图。
+
+python main.py heatmap ```<year> [-p <project_name>]```
+
+```<year> ```(必需): 您希望查询的目标年份 (例如: 2024)。
+
+```-p, --project <project_name> ```(可选): 您希望分析的父项目名称。如果省略此参数，程序将默认使用 mystudy。
+### 3.4.1 热力图生成示例
+为默认的 mystudy 项目生成2024年的热力图：
+
+python main.py heatmap 2024
+
+为 code 项目生成2023年的热力图：
+
+python main.py heatmap 2023 -p code
+
+## 3.5  Sleep布尔状态生成
+此命令用于根据数据库中的睡眠记录，为指定年份生成两种格式的 HTML 睡眠状态热力图：全年视图和月度视图。
+
+### 3.5.1 语法
+```python main.py sleep <year> ```
+### 3.5.2 参数
+
+<year> (必需): 您希望查询的目标年份 (例如: 2024)。
+
+### 3.5.3 示例
+
+生成2024年的睡眠状态热力图：
+python main.py sleep 2024
+
+### 3.5.5 生成
+执行后，将会在当前目录同时生成两个文件：
+2024_sleep_heatmap_annual.html (全年视图)
+2024_sleep_heatmap_monthly.
+html (月度视图)。
 
 
 # ４ log_generator 日志生成
