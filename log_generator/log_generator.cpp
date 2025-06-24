@@ -12,7 +12,7 @@
 #include <optional>    // For safely returning from argument parsing and file loading
 
 // Include the nlohmann/json library
-#include "json.hpp" // Assuming json.hpp is in the same directory or accessible via include paths
+#include <nlohmann/json.hpp>
 
 // For Windows-specific console settings
 #if defined(_WIN32) || defined(_WIN64)
