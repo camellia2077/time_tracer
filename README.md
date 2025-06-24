@@ -106,9 +106,35 @@ time_tracker_command <command> [arguments]
 ```
 
 
-## 1.3 compile
+## 1.3 使用msys2环境进行编译
+0. 下载并安装 MSYS2
+访问 MSYS2 的官方网站：https://www.msys2.org/,根据您的系统选择安装程序，例如
 
-在msys64中运行build.bat
+Download the installer: msys2-x86_64-20250622.exe
+1. 执行首次更新
+```bash
+pacman -Syu
+```
+2. 安装 MinGW-w64 工具链
+```bash
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+3. 安装 CMake
+项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
+```bash
+pacman -S mingw-w64-x86_64-cmake
+```
+
+4. 安装 nlohmann-json 库
+```bash
+pacman -S mingw-w64-x86_64-nlohmann-json
+```
+
+5. 在环境中运行 build.sh
+```bash
+./build.sh
+```
 
 # 2 log_tool 数据预处理
 数据预处理与合法性检验
@@ -390,9 +416,32 @@ python main.py -v
 
 # ４ log_generator 日志生成
 txt生成器
-## 4.1 log_generator.py
-用于生成测试数据
-### 4.1.1 usage
+## 使用msys2环境进行编译
+1. 执行首次更新
+```bash
+pacman -Syu
+```
+2. 安装 MinGW-w64 工具链
+```bash
+pacman -S mingw-w64-x86_64-toolchain
+```
+
+3. 安装 CMake
+项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
+```bash
+pacman -S mingw-w64-x86_64-cmake
+```
+
+4. 安装 nlohmann-json 库
+```bash
+pacman -S mingw-w64-x86_64-nlohmann-json
+```
+
+5. 在环境中运行 build.sh
+```bash
+./build.sh
+```
+### 4.1 usage
 log_generator.exe \<num_days> \<items_per_day>
 
 
