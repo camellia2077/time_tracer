@@ -60,28 +60,47 @@ db/
     └── output_icon.ico
 ```
 ## 1.2 命令行使用方法
-### 1.2.1 用法
+### 1.2.1 基本命令格式
 ```bash
 time_tracker_command <command> [arguments]
 ```
 
+
 ### 1.2.2 可用命令
-|标签|功能描述|
-|-----|---------------|
-|`process`|解析txt并导入数据|
-|`query daily <YYYYMMDD>`|查询指定日期的统计数据|
-|`query period <days>`|查询过去指定天数的统计数据|
-|`query monthly <YYYYMM>`|查询指定月份的统计数据|
-|`--version`|查看程序版本|
+| 命令序号 | 标签 | 功能描述 |
+|---|---|---|
+| 1 |`-p,process <filepath>`|解析txt并导入数据|
+| 2 |`-q d,-query daily <YYYYMMDD>`|查询指定日期的统计数据|
+| 3 |`-q p,-query period <days>`|查询过去指定天数的统计数据|
+| 4 |`-q m,-query monthly <YYYYMM>`|查询指定月份的统计数据|
+| 5 |`-h,--help`|查看使用帮助|
+| 6 |`--version`|查看程序版本|
 
 ### 1.2.3 示例
-|标签|示例|
-|-----|---------------|
-|`process`|解析txt并导入数据|
-|`query daily <YYYYMMDD>`|查询指定日期的统计数据|
-|`query period <days>`|查询过去指定天数的统计数据|
-|`query monthly <YYYYMM>`|查询指定月份的统计数据|
-|`--version`|查看程序版本|
+1.  传入文本
+    1.1 传入文件夹下的全部文本 
+    ```bash
+      ./Time_Master -p,process C:\Date
+    ```
+    1.2 传入单个txt文件
+    ```bash
+    ./Time_Master -p,process C:\Date\2024\2024_10.txt
+    ```
+2. 查询数据库中指定日期的统计数据
+`./Time_Master -q d,-query daily 20250523`
+3. 查询过7天数的统计数据
+`./Time_Master -q p,-query period 7`
+查询过30天数的统计数据
+`./Time_Master -q p,-query period 30`
+
+
+| 2 |` <YYYYMMDD>`|查询指定日期的统计数据|
+| 3 |`-q p,-query period <days>`|查询过去指定天数的统计数据|
+| 4 |`-q m,-query monthly <YYYYMM>`|查询指定月份的统计数据|
+| 5 ||`-h,--help`|查看使用磅数|
+| 6 ||`--version`|查看程序版本|
+
+
 
 
 
