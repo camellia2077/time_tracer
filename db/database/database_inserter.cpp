@@ -1,11 +1,11 @@
-#include "database_importer.h"
+#include "database_inserter.h"
 #include <iostream>
 #include <stdexcept>
 #include <vector>
 
-// --- DatabaseImporter Constructor & Destructor ---
+// --- DatabaseInserter Constructor & Destructor ---
 
-DatabaseImporter::DatabaseImporter(const std::string& db_path) 
+DatabaseInserter::DatabaseInserter(const std::string& db_path) 
     : db(nullptr), stmt_insert_day(nullptr), stmt_insert_record(nullptr), stmt_insert_parent_child(nullptr) {
     if (sqlite3_open(db_path.c_str(), &db)) {
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
@@ -16,7 +16,7 @@ DatabaseImporter::DatabaseImporter(const std::string& db_path)
     }
 }
 
-DatabaseImporter::~DatabaseImporter() {
+DatabaseInserter::~DatabaseInserter() {
     if (db) {
         _finalize_statements();
         sqlite3_close(db);
@@ -25,14 +25,14 @@ DatabaseImporter::~DatabaseImporter() {
 
 // --- Public Member Functions ---
 
-bool DatabaseImporter::is_db_open() const {
+bool DatabaseInserter::is_db_open() const {
     return db != nullptr;
 }
 
-void DatabaseImporter::import_data(const DataFileParser& parser) {
+void DatabaseInserter::import_data(const DataFileParser& parser) {
     if (!db) return;
 
-    execute_sql_importer(db, "BEGIN TRANSACTION;", "Begin import transaction");
+    execute_sql_Inserter(db, "BEGIN TRANSACTION;", "Begin import transaction");
 
     // Import days from the parser's in-memory vector
     for (const auto& day_data : parser.days) {
@@ -82,19 +82,19 @@ void DatabaseImporter::import_data(const DataFileParser& parser) {
         sqlite3_reset(stmt_insert_parent_child);
     }
 
-    execute_sql_importer(db, "COMMIT;", "Commit import transaction");
+    execute_sql_Inserter(db, "COMMIT;", "Commit import transaction");
 }
 
 // --- Private Member Functions ---
 
-void DatabaseImporter::_initialize_database() {
+void DatabaseInserter::_initialize_database() {
     // 修改：为days表添加sleep列
-    execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, sleep TEXT, remark TEXT, getup_time TEXT);", "Create days table");
-    execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));", "Create time_records table");
-    execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS parent_child (child TEXT PRIMARY KEY, parent TEXT);", "Create parent_child table");
+    execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, sleep TEXT, remark TEXT, getup_time TEXT);", "Create days table");
+    execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));", "Create time_records table");
+    execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS parent_child (child TEXT PRIMARY KEY, parent TEXT);", "Create parent_child table");
 }
 
-void DatabaseImporter::_prepare_statements() {
+void DatabaseInserter::_prepare_statements() {
     // 修改：INSERT语句以包含sleep列
     const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, sleep, remark, getup_time) VALUES (?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
@@ -112,14 +112,14 @@ void DatabaseImporter::_prepare_statements() {
     }
 }
 
-void DatabaseImporter::_finalize_statements() {
+void DatabaseInserter::_finalize_statements() {
     if (stmt_insert_day) sqlite3_finalize(stmt_insert_day);
     if (stmt_insert_record) sqlite3_finalize(stmt_insert_record);
     if (stmt_insert_parent_child) sqlite3_finalize(stmt_insert_parent_child);
 }
 
 // Non-member helper function
-bool execute_sql_importer(sqlite3* db, const std::string& sql, const std::string& context_msg) {
+bool execute_sql_Inserter(sqlite3* db, const std::string& sql, const std::string& context_msg) {
     char* err_msg = nullptr;
     if (sqlite3_exec(db, sql.c_str(), 0, 0, &err_msg) != SQLITE_OK) {
         std::cerr << "SQL Error (" << context_msg << "): " << err_msg << std::endl;

@@ -1,3 +1,25 @@
+# 依赖项 (Dependencies)
+
+本项目依赖于以下优秀的开源库：
+* **[SQLite C Library](https://www.sqlite.org/index.html)**
+    * **用途**: C++ 部分的代码直接使用 SQLite C API 进行数据库操作。
+    * **许可证**: Public Domain
+
+* **[nlohmann/json](https://github.com/nlohmann/json)**
+    * **用途**: 用于项目中所有 JSON 格式数据的解析和序列化（例如加载 `Validator_Config.json` 配置文件）。
+    * **许可证**: MIT License
+
+* **[json (Python standard library)](https://docs.python.org/3/library/json.html)**
+    * **用途**: 用于加载 `generate_report.json` 配置文件，以及处理项目中涉及到的 JSON 格式数据。
+    * **许可证**: Python Software Foundation License (PSF)
+
+* **[sqlite3 (Python standard library)](https://docs.python.org/3/library/sqlite3.html)**
+    * **用途**: 用于连接到 `bills.db` SQLite 数据库，并执行 SQL 查询以获取账单数据。
+    * **许可证**: Python Software Foundation License (PSF)
+
+* **[Matplotlib](https://matplotlib.org/)**
+    * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
+    * **许可证**: Matplotlib License (BSD-style)
 # 1 db 
 主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
@@ -36,15 +58,7 @@ db/
     └── output_icon.ico
 ```
 ## 1.2 compile
-cd 'c:Time_Master_cpp/db'
-
-mkdir build
-
-cd build
-
-cmake .. -D CMAKE_BUILD_TYPE=Release
-
-cmake --build .
+在msys64中运行build.bat
 # 2 log_tool 数据预处理
 数据预处理与合法性检验
 ## 2.1 structure
@@ -175,13 +189,13 @@ PARENT_CATEGORIES: 一个对象，定义了所有项目的父子层级关系。
 ### 2.3.1 输入文件目录
 ```<path>``` (必需): 源文件或源文件夹的路径。
 ### 2.3.2 转换格式
--p or -P: 仅转换。读取源文件并生成一个新的格式化文件，但不进行内容合法性检验。输出文件名为 processed_<原始文件名>.txt。
+-p ```<path>``` or -P ```<path>```: 仅转换。读取源文件并生成一个新的格式化文件，但不进行内容合法性检验。输出文件名为 processed_<原始文件名>.txt。
 ### 2.3.3 检验合法性
--v or -V: 仅检验。对源文件的格式和内容进行合法性检验，不生成新文件。
+-v ```<path>``` or -V ```<path>```: 仅检验。对源文件的格式和内容进行合法性检验，不生成新文件。
 ### 2.3.4 转换格式并验证合法性
--pv or -PV: 转换并检验。首先根据源文件生成新的格式化文件，然后对这个新生成的文件进行合法性检验。
+-pv ```<path>``` or -PV ```<path>```: 转换并检验。首先根据源文件生成新的格式化文件，然后对这个新生成的文件进行合法性检验。
 ### 2.3.5 开启输入文本日期完整性检验
--edc or -
+-edc or ---enable-day-chec
 -pv ```<path>``` --enable-day-check :转换文本并，检验合法性且开启日期完整检验
 -v  ```<path>```  -edc :检验合法性并且开启日期检验
 
