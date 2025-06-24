@@ -43,10 +43,22 @@ int main(int argc, char* argv[]) {
     std::ios_base::sync_with_stdio(false);
     std::cin.tie(NULL);
 
+    //定义版本和日期信息
+    const std::string APP_VERSION = "0.0.1";
+    const std::string LAST_UPDATE_DATE = "2025-06-24";
+
+    // 添加 --version 标志的检查逻辑 这个检查应该在所有其他参数处理之前
+    if (argc == 2 && std::string(argv[1]) == "--version") {
+        std::cout << "版本号: " << APP_VERSION << std::endl;
+        std::cout << "最后更新时间: " << LAST_UPDATE_DATE << std::endl;
+        return 0; // 打印信息后立即退出
+    }
+
     auto total_start_time = std::chrono::high_resolution_clock::now();
     auto parsing_start_time = std::chrono::high_resolution_clock::now();
     
     // --- Argument Parsing ---
+    // (后面的代码保持不变)
     bool process = false;
     bool validate = false;
     std::string input_path_str;
@@ -75,6 +87,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "    -v\t只检验,不转换文件" << std::endl;
         std::cerr << "  options (可选):" << std::endl;
         std::cerr << "    --enable-day-check, -edc\t启用对月份天数完整性的检查 (默认关闭)" << std::endl;
+        // NEW: 在帮助信息中也加入 --version
+        std::cerr << "  other:" << std::endl;
+        std::cerr << "    --version\t显示版本号和更新日期" << std::endl;
         return 1;
     }
 
@@ -94,7 +109,8 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-
+    // ... 您的其余代码保持完全一样 ...
+    // ...
     // --- Config File Paths ---
     std::string interval_config = "interval_processor_config.json";
     std::string validator_config = "format_validator_config.json";

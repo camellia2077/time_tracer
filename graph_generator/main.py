@@ -101,11 +101,25 @@ def run_heatmap(year, heatmap_type, project=None):
 
 
 def main():
+    # 步骤 1: 在函数顶部定义版本和日期信息
+    APP_VERSION = "0.0.1"
+    LAST_UPDATE = "2025-06-24"
+    
     parser = argparse.ArgumentParser(
         description="一个集成的可视化工具，用于从 time_data.db 生成图表。",
         formatter_class=argparse.RawTextHelpFormatter
     )
-    subparsers = parser.add_subparsers(dest="command", required=True, help="可用的命令")
+
+    # 步骤 2: 添加 --version 参数
+    # action='version' 会在调用时自动格式化并打印信息，然后退出程序。
+    # 我们使用 f-string 来动态构建版本字符串。
+    parser.add_argument(
+        '-v', '--version', 
+        action='version', 
+        version=f'%(prog)s {APP_VERSION} (Last Updated: {LAST_UPDATE})'
+    )
+
+    subparsers = parser.add_subparsers(dest="command", help="可用的命令") # 注意：移除 required=True
 
     # --- 时间线子命令 ---
     parser_timeline = subparsers.add_parser("timeline", help="为指定日期生成时间线图。")
@@ -126,6 +140,11 @@ def main():
 
     args = parser.parse_args()
 
+    # 如果没有提供任何子命令 (并且不是 --version 或 --help)，则打印帮助信息
+    if not args.command:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+
     if args.command in ["timeline", "barchart"]:
         try:
             datetime.strptime(args.date, "%Y%m%d")
@@ -134,11 +153,6 @@ def main():
             print(f"{COLOR_RED}错误: 日期格式必须为 YYYYMMDD。{COLOR_RESET}", file=sys.stderr)
             sys.exit(1)
     elif args.command == 'heatmap':
-        # 调用时不传递 format
         run_heatmap(args.year, 'project', args.project.lower())
     elif args.command == 'sleep':
-        # 调用时不传递 format
         run_heatmap(args.year, 'sleep')
-
-if __name__ == "__main__":
-    main()
