@@ -62,30 +62,42 @@ def run_day_analysis_chart(date_str, chart_type):
 
 
 def run_heatmap(year, heatmap_type, project=None):
-    """运行热力图生成（项目时长或睡眠状态）。"""
-    print(f"🚀 开始为 {year} 年生成 {heatmap_type} 热力图...")
+    """运行热力图生成（项目时长或睡眠状态），默认生成两种格式。"""
+    print(f"🚀 开始为 {year} 年生成 {heatmap_type} 热力图 (年度和月度)...")
     
+    base_filename = ""
+    strategy = None
+
     if heatmap_type == 'project':
         # 1. 获取项目数据和策略
         data = db_access.get_data_for_heatmap(year, project)
-        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.json', project)
-        output_filename = f"heatmap_{project}_{year}.html"
+        # 注意：这里的文件名在原始代码中可能是 heatmap_colors.json
+        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.json', project) 
+        base_filename = f"heatmap_{project}_{year}"
 
     elif heatmap_type == 'sleep':
         # 2. 获取睡眠数据和策略
         data = db_access.get_sleep_data_for_bool_heatmap(year)
         strategy = create_boolean_heatmap_strategy()
-        output_filename = f"{year}_sleep_heatmap.html"
+        base_filename = f"{year}_sleep_heatmap"
     
     if data is None:
         print(f"{COLOR_RED}无法获取 {year} 年的数据。{COLOR_RESET}", file=sys.stderr)
         return
         
-    # 3. 生成热力图
-    generator = HeatmapGenerator(year, data, strategy)
-    generator.save_to_file(output_filename)
+    # 3. 实例化生成器
+    generator = HeatmapGenerator(year, data, strategy) #
     
-    print(f"\n🎉 成功生成热力图: {output_filename}")
+    # 4. 生成并保存两种格式的图表
+    annual_filename = f"{base_filename}_annual.html"
+    monthly_filename = f"{base_filename}_monthly.html"
+
+    generator.save_annual_heatmap(annual_filename) #
+    generator.save_monthly_heatmap(monthly_filename) #
+    
+    print(f"\n🎉 成功生成两种热力图:")
+    print(f"  - 年度视图: {annual_filename}")
+    print(f"  - 月度视图: {monthly_filename}")
 
 
 def main():
@@ -103,13 +115,13 @@ def main():
     parser_barchart = subparsers.add_parser("barchart", help="为指定日期生成活动时长的柱状图。")
     parser_barchart.add_argument("date", type=str, help="目标日期 (格式: YYYYMMDD)")
 
-    # --- 项目热力图子命令 ---
-    parser_heatmap = subparsers.add_parser("heatmap", help="为指定项目生成年度提交热力图。")
+    # --- 项目热力图子命令 (移除 --format 参数) ---
+    parser_heatmap = subparsers.add_parser("heatmap", help="为指定项目生成年度和月度提交热力图。")
     parser_heatmap.add_argument("year", type=int, help="目标年份 (例如: 2024)")
     parser_heatmap.add_argument("-p", "--project", type=str, default="mystudy", help="目标父项目名称 (默认: mystudy)")
 
-    # --- 睡眠热力图子命令 ---
-    parser_sleep = subparsers.add_parser("sleep", help="生成年度睡眠状态热力图。")
+    # --- 睡眠热力图子命令 (移除 --format 参数) ---
+    parser_sleep = subparsers.add_parser("sleep", help="生成年度和月度睡眠状态热力图。")
     parser_sleep.add_argument("year", type=int, help="目标年份 (例如: 2024)")
 
     args = parser.parse_args()
@@ -122,8 +134,10 @@ def main():
             print(f"{COLOR_RED}错误: 日期格式必须为 YYYYMMDD。{COLOR_RESET}", file=sys.stderr)
             sys.exit(1)
     elif args.command == 'heatmap':
+        # 调用时不传递 format
         run_heatmap(args.year, 'project', args.project.lower())
     elif args.command == 'sleep':
+        # 调用时不传递 format
         run_heatmap(args.year, 'sleep')
 
 if __name__ == "__main__":

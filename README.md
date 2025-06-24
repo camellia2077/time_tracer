@@ -208,15 +208,17 @@ PARENT_CATEGORIES: 一个对象，定义了所有项目的父子层级关系。
 读取数据库并且生成图表
 ## 3.1 structure
 graph_generator/
-│
-├── db_access.py                # 模块：统一数据库访问层 (DAL)
-├── heatmap_generator.py        # 生成项目工时热力图 (年/月)
-├── timeline_generator.py       # 生成单日活动时间轴图
-├── bool_generator.py           # 生成布尔值（如睡眠）热力图
-│
-├── heatmap_config.json         # 配置文件：用于 heatmap_generator.py
-├── timeline_colors_configs.json # 配置文件：用于 timeline_generator.py
-└── time_data.db                # 数据库：存储所有时间追踪数据
+├── main.py                     # 程序入口
+├── db_access.py                # 数据库查询
+|
+├── configs/
+│   ├── heatmap_colors.json     # 热力图颜色配置
+│   └── timeline_colors.json    # 时间线和柱状图颜色配置
+|
+└── modules/
+    ├── day_analyzer.py         # 负责处理“逻辑日”数据 (从 timeline_generator 提取)
+    ├── heatmap_generator.py    # 通用化的热力图生成器 (合并了旧的 heatmap 和 bool_generator)
+    └── plotters.py             # 包含所有基于 matplotlib 的绘图类 (时间线和柱状图)
 ## 3.2 heatmap_generator.py
 用于生成年份的热力图
 ### 3.2.1 生成热力图(默认study)
