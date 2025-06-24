@@ -108,7 +108,11 @@ time_tracker_command <command> [arguments]
 
 ## 1.3 使用msys2环境进行编译
 0. 下载并安装 MSYS2
-访问 MSYS2 的官方网站：https://www.msys2.org/,根据您的系统选择安装程序，例如
+MSYS2 是为 Windows 操作系统 设计的
+
+访问 MSYS2 的官方网站：https://www.msys2.org/
+
+选择安装程序：
 
 Download the installer: msys2-x86_64-20250622.exe
 1. 执行首次更新
