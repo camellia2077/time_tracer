@@ -13,11 +13,15 @@ namespace { // Anonymous namespace for internal linkage (like static)
 // This helper function is now private to this .cpp file.
 std::string getErrorTypeHeader(FormatValidator::ErrorType type) {
     switch (type) {
-        case FormatValidator::ErrorType::DateContinuity:
+        // MODIFICATION: DateContinuity is no longer here.
         case FormatValidator::ErrorType::IncorrectDayCountForMonth:
             return "Date errors(日期错误):";
+
+        // MODIFICATION: DateContinuity is now grouped with TimeDiscontinuity.
+        case FormatValidator::ErrorType::DateContinuity:
         case FormatValidator::ErrorType::TimeDiscontinuity:
             return "Time discontinuity errors(时间不连续):";
+
         case FormatValidator::ErrorType::MissingSleepNight:
             return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
         case FormatValidator::ErrorType::FileAccess:
