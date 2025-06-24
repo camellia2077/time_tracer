@@ -74,7 +74,8 @@ private:
     std::string header_config_filepath_;
     Config config_;
     std::vector<std::string> header_order_;
-    std::string previous_date_str_;
+    // --- MODIFICATION: Replaced previous_date_str_ with a vector to collect all dates ---
+    std::vector<std::pair<std::string, int>> collected_dates_;
     bool check_day_count_enabled_; // --- 新增：用于存储天数检查的状态 ---
 
     // --- Private helper methods ---
@@ -96,6 +97,12 @@ private:
     void validate_activity_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
     void finalize_block_status_validation(DateBlock& block, std::set<Error>& errors);
     
+    // --- MODIFICATION: Added new function for deferred date continuity check ---
+    void validate_date_continuity(std::set<Error>& errors);
+    
+    // --- MODIFICATION: Added new function to check if month starts with day 01 ---
+    void validate_month_start(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
+
     // Final validation check for all dates in the file
     void validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
 };

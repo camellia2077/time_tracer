@@ -127,7 +127,8 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
     size_t expected_header_idx = 0;
     bool in_activity_section = false;
     
-    previous_date_str_.clear();
+    // --- MODIFICATION: Clear collected dates vector for new file ---
+    collected_dates_.clear();
     std::map<std::string, std::set<int>> month_day_map;
 
     auto finalize_previous_block = [&](DateBlock& block) {
@@ -204,6 +205,10 @@ bool FormatValidator::validateFile(const std::string& file_path, std::set<Error>
 
     finalize_previous_block(current_block);
 
+    // --- MODIFICATION: Perform date checks after parsing the whole file ---
+    validate_date_continuity(errors);
+    // --- MODIFICATION: Add call to the new month start validation function ---
+    validate_month_start(month_day_map, errors);
     validate_all_days_for_month(month_day_map, errors);
 
     return errors.empty();
@@ -248,28 +253,62 @@ std::string FormatValidator::increment_date(const std::string& date_str) {
     return ss.str();
 }
 
-// validate_date_line is modified to check for continuity.
+// --- MODIFICATION: Date continuity check is removed. This function now only parses and collects dates. ---
 void FormatValidator::validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) {
     block.date_line_num = line_num;
     static const std::regex date_regex("^Date:(\\d{8})$");
     std::smatch match;
     if (std::regex_match(line, match, date_regex)) {
         block.date_str = match[1].str();
-        
-        if (!previous_date_str_.empty()) {
-            std::string expected_date = increment_date(previous_date_str_);
-            if (block.date_str != expected_date) {
-                errors.insert({line_num, "Date is not consecutive. Expected " + expected_date + " after " + previous_date_str_ + ".", ErrorType::DateContinuity});
-                block.header_completely_valid = false;
-            }
-        }
-        previous_date_str_ = block.date_str;
-
+        // Collect the date and its line number for later validation.
+        collected_dates_.push_back({block.date_str, line_num});
     } else {
         errors.insert({line_num, "Date line format error. Expected 'Date:YYYYMMDD'.", ErrorType::LineFormat});
         block.header_completely_valid = false;
     }
 }
+
+// --- MODIFICATION: New function to check continuity on all collected dates except the last one. ---
+void FormatValidator::validate_date_continuity(std::set<Error>& errors) {
+    // There must be at least two dates to check for continuity.
+    if (collected_dates_.size() < 2) {
+        return;
+    }
+
+    // Iterate up to the second-to-last date. This avoids checking continuity for the final date entry.
+    for (size_t i = 0; i < collected_dates_.size() - 1; ++i) {
+        const auto& current_date_info = collected_dates_[i];
+        const auto& next_date_info = collected_dates_[i+1];
+
+        std::string expected_date = increment_date(current_date_info.first);
+
+        if (next_date_info.first != expected_date) {
+            errors.insert({next_date_info.second, "Date is not consecutive. Expected " + expected_date + " after " + current_date_info.first + ".", ErrorType::DateContinuity});
+        }
+    }
+}
+
+// --- MODIFICATION: Added new function implementation ---
+void FormatValidator::validate_month_start(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors) {
+    for (const auto& pair : month_day_map) {
+        const std::string& yyyymm = pair.first;
+        const std::set<int>& days = pair.second;
+
+        if (days.empty()) {
+            continue; // Should not happen, but a safe check
+        }
+
+        // For any given month, the first day recorded must be 1.
+        // The `std::set` keeps the days ordered, so we check the first element.
+        if (*days.begin() != 1) {
+            std::string year = yyyymm.substr(0, 4);
+            std::string month_str = yyyymm.substr(4, 2);
+            // This is a file-level structural error, so line number 0 is appropriate.
+            errors.insert({0, "Data for month " + year + "-" + month_str + " must start from day 01.", ErrorType::Structural});
+        }
+    }
+}
+
 
 // --- 修改：在此函数中加入对命令行开关的判断 ---
 // New function to perform the final validation on all collected dates
