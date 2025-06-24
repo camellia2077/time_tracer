@@ -65,12 +65,23 @@ def get_data_for_timeline() -> Optional[Tuple[pd.DataFrame, pd.DataFrame, pd.Dat
             conn.close()
 
 def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, float]:
-    # ... (此函数保持不变) ...
-    print(f"DataAccess: Fetching heatmap data for project '{project_name}' in year {year}...")
+    """
+    Retrieves and processes the total time spent per day for a given project and year.
+    This function includes a recursive query to sum up time from all child projects.
+
+    Args:
+        year (int): The year for which to fetch data.
+        project_name (str): The parent project name.
+
+    Returns:
+        A dictionary mapping dates to the total hours recorded.
+    """
+    print(f"🔍 [DataAccess] Fetching heatmap data for project '{project_name}' in year {year}...")
     project_data = {}
     conn = _get_db_connection()
     if not conn:
         return {} # Return empty dict if connection fails
+        
     try:
         cursor = conn.cursor()
         
@@ -92,9 +103,9 @@ def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, fl
         cursor.execute(sql_query, (project_name, MAX_RECURSION_DEPTH, str(year)))
         rows = cursor.fetchall()
 
-        print(f"DataAccess: Found {len(rows)} days with records for '{project_name}'.")
+        print(f"  ✔️  [DataAccess] Query executed. Found {len(rows)} days with records for '{project_name}'.")
         if not rows:
-            print(f"Warning: No records found for '{project_name}' in {year}.")
+            print(f"  ⚠️  [DataAccess] Warning: No records found for '{project_name}' in {year}.")
 
         for row in rows:
             date_str, total_seconds = row
@@ -105,12 +116,12 @@ def get_data_for_heatmap(year: int, project_name: str) -> Dict[datetime.date, fl
                 
     except sqlite3.Error as e:
         print(f"{COLOR_RED}An error occurred during database operation: {e}{COLOR_RESET}", file=sys.stderr)
-        return {}
+        return {} # Return empty dict on error
     finally:
         if conn:
             conn.close()
             
-    print("DataAccess: Heatmap data processing complete.")
+    print(f"✅ [DataAccess] Heatmap data processing complete for '{project_name}'.")
     return project_data
 
 def get_sleep_data_for_bool_heatmap(year: int) -> Optional[Dict[datetime.date, str]]:
