@@ -338,13 +338,14 @@ void FormatValidator::validate_all_days_for_month(const std::map<std::string, st
             // Build the detailed, multi-line error message
             std::stringstream msg_ss;
             msg_ss << "Incorrect day count for " << yyyymm.substr(0, 4) << "-" << yyyymm.substr(4, 2)
-                   << ". Expected " << expected_days << " days, but found " << days.size() << ".";
+                   << ". Expected " << GREEN_COLOR << expected_days << RESET_COLOR
+                   << " days, but found " << RED_COLOR << days.size() << RESET_COLOR << ".";
 
             // Add the list of specific missing days
             if (!missing_days_vec.empty()) {
                 msg_ss << "\n  Missing days: ";
                 for (size_t i = 0; i < missing_days_vec.size(); ++i) {
-                    msg_ss << missing_days_vec[i] << (i == missing_days_vec.size() - 1 ? "" : ", ");
+                    msg_ss <<  RED_COLOR << missing_days_vec[i] << RESET_COLOR << (i == missing_days_vec.size() - 1 ? "" : ", ");
                 }
             }
 

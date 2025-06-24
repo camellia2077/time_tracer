@@ -57,7 +57,6 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
         std::cerr << "\n" << header << std::endl;
         err_stream << header << "\n";
         for (const auto& err : pair.second) {
-            // --- MODIFICATION START ---
             // Conditionally format the error message based on the line number.
             std::string error_message;
             if (err.line_number == 0) {
@@ -67,9 +66,9 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
                 // For all other errors, include the line number.
                 error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
             }
-            // --- MODIFICATION END ---
-            
-            std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
+            // The error message is now printed directly to std::cerr.
+            // Color codes must be included in the err.message string itself.
+            std::cerr << "  " << error_message << std::endl;
             err_stream << "  " << error_message << "\n";
         }
     }
