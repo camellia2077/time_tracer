@@ -20,8 +20,6 @@ set -e
 # --- 变量定义 ---
 # 构建目录的名称
 BUILD_DIR="build"
-# 目标可执行文件名 (与 CMakeLists.txt 中的项目名称对应)
-EXECUTABLE_NAME="time_tracker_app.exe"
 
 # --- 1. 清理旧的构建文件 ---
 echo "--- Cleaning up previous build artifacts..."
@@ -51,7 +49,10 @@ make -j$(nproc)
 echo "--- Build complete."
 
 # --- 4. 完成 ---
+# 【修改】更新成功消息，提示生成了两个可执行文件
 echo ""
 echo "--- Process finished successfully! ---"
-echo "--- The executable '${EXECUTABLE_NAME}' is located in the '${BUILD_DIR}' directory."
-echo "--- To run it, you may need to copy required DLLs (like sqlite3.dll) into the '${BUILD_DIR}' directory, or run it from the MSYS2 MinGW 64-bit shell."
+echo "--- Two executables are located in the '${BUILD_DIR}' directory:"
+echo "    - time_tracker_app.exe (Interactive Menu)"
+echo "    - time_tracker_command.exe (Command-Line Tool)"
+echo "--- To run them, you may need to copy required DLLs (like sqlite3.dll) into the '${BUILD_DIR}' directory, or run them from the MSYS2 MinGW 64-bit shell."
