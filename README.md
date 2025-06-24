@@ -20,13 +20,15 @@
 * **[Matplotlib](https://matplotlib.org/)**
     * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
     * **许可证**: Matplotlib License (BSD-style)
-# 1 db 
+# 1 Time_Master 
 主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
 db/
 ├── CMakeLists.txt
 ├── main.cpp
+├── main_command
+│
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
 │   └── common_utils.h
@@ -57,6 +59,31 @@ db/
     ├── app_icon.rc
     └── output_icon.ico
 ```
+## 1.2 命令行使用方法
+### 1.2.1 用法
+```bash
+time_tracker_command <command> [arguments]
+```
+
+### 1.2.2 可用命令
+|标签|功能描述|
+|-----|---------------|
+|`process`|解析txt并导入数据|
+|`query daily <YYYYMMDD>`|查询指定日期的统计数据|
+|`query period <days>`|查询过去指定天数的统计数据|
+|`query monthly <YYYYMM>`|查询指定月份的统计数据|
+|`--version`|查看程序版本|
+
+### 1.2.3 示例
+|标签|示例|
+|-----|---------------|
+|`process`|解析txt并导入数据|
+|`query daily <YYYYMMDD>`|查询指定日期的统计数据|
+|`query period <days>`|查询过去指定天数的统计数据|
+|`query monthly <YYYYMM>`|查询指定月份的统计数据|
+|`--version`|查看程序版本|
+
+
 
 ## 1.2 compile
 
