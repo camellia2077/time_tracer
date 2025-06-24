@@ -19,26 +19,12 @@ namespace fs = std::filesystem;
 
 // =================================================================
 // Class: FileFinder
-// (这个类的实现现在完全位于 processing.cpp 内部)
 // =================================================================
 class FileFinder {
 public:
     FileFinder() = default;
 
     std::vector<std::string> collect_and_find_files() {
-        std::vector<std::string> user_inputs = get_user_inputs();
-        if (user_inputs.empty()) {
-            std::cout << "No filenames or directories entered." << std::endl;
-            return {};
-        }
-
-        std::vector<std::string> found_files = find_txt_files_in_paths(user_inputs);
-        std::sort(found_files.begin(), found_files.end());
-        return found_files;
-    }
-
-private:
-    std::vector<std::string> get_user_inputs() {
         std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
         std::string line;
         std::getline(std::cin, line);
@@ -48,9 +34,21 @@ private:
         while (ss >> token) {
             user_inputs.push_back(token);
         }
-        return user_inputs;
+
+        if (user_inputs.empty()) {
+            std::cout << "No filenames or directories entered." << std::endl;
+            return {};
+        }
+        
+        return find_txt_files_in_paths(user_inputs);
+    }
+    
+    // 新增一个公共函数，用于处理单个路径，给命令行模式使用
+    std::vector<std::string> find_txt_files_in_single_path(const std::string& path) {
+        return find_txt_files_in_paths({path}); // 复用现有的私有函数
     }
 
+private:
     std::vector<std::string> find_txt_files_in_paths(const std::vector<std::string>& input_paths) {
         std::vector<std::string> files_to_process;
         for (const std::string& path_str : input_paths) {
@@ -74,6 +72,7 @@ private:
                 }
             }
         }
+        std::sort(files_to_process.begin(), files_to_process.end());
         return files_to_process;
     }
 };
@@ -81,16 +80,14 @@ private:
 
 // =================================================================
 // Class: FileProcessor
-// (这个类的实现现在也完全位于 processing.cpp 内部)
+// (这个类也被重构)
 // =================================================================
 class FileProcessor {
 public:
     explicit FileProcessor(std::string db_name) : db_name_(std::move(db_name)) {}
 
-    void run() {
-        FileFinder finder;
-        std::vector<std::string> files_to_process = finder.collect_and_find_files();
-
+    // 核心处理逻辑，接受一个文件列表
+    void process_files(const std::vector<std::string>& files_to_process) {
         if (files_to_process.empty()) {
             std::cout << "No .txt files found to process." << std::endl;
             return;
@@ -163,14 +160,29 @@ private:
     std::string db_name_;
 };
 
+
 // =================================================================
 // Main Application Logic (Implementation)
 // =================================================================
 
 /**
- * @brief Simplified function to handle the file processing workflow.
+ * @brief [交互模式] 实现
  */
 void handle_process_files(const std::string& db_name) {
+    FileFinder finder;
+    std::vector<std::string> files_to_process = finder.collect_and_find_files();
+    
     FileProcessor processor(db_name);
-    processor.run();
+    processor.process_files(files_to_process);
+}
+
+/**
+ * @brief [命令行模式] 重载实现
+ */
+void handle_process_files(const std::string& db_name, const std::string& path) {
+    FileFinder finder;
+    std::vector<std::string> files_to_process = finder.find_txt_files_in_single_path(path);
+
+    FileProcessor processor(db_name);
+    processor.process_files(files_to_process);
 }
