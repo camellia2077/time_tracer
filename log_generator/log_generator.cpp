@@ -61,10 +61,19 @@ namespace Utils {
 
     void print_usage(const char* prog_name) {
         std::cerr << ConsoleColors::red << "Usage: " <<  ConsoleColors::reset << prog_name << " <num_days> <items_per_day>\n";
+        std::cerr << "       " << prog_name << " --version\n"; // NEW: Add usage for version
         std::cerr << "Description: Generates test log data. Reads activities from 'activities_config.json'." << '\n';
         std::cerr << "  <num_days>        : Total number of days to generate (positive integer)." << '\n';
         std::cerr << "  <items_per_day>   : Number of log items per day (positive integer)." << '\n';
+        std::cerr << "  --version         : Display version information and exit." << '\n'; // NEW: Describe the option
         std::cerr << "Example: " << prog_name << " 10 5" << '\n';
+    }
+    void print_version() {
+        // NEW: Define version constants here for easy updating.
+        const std::string APP_VERSION = "1.2.0";
+        const std::string LAST_UPDATE = "2025-06-24";
+        std::cout << "log_generator version " << APP_VERSION << std::endl;
+        std::cout << "Last Updated: " << LAST_UPDATE << std::endl;
     }
 
 } // namespace Utils
@@ -257,6 +266,10 @@ private:
 class Application {
 public:
     int run(int argc, char* argv[]) {
+        if (argc == 2 && std::string(argv[1]) == "--version") {
+            Utils::print_version();
+            return 0; // Exit successfully after printing the version.
+        }
         Utils::setup_console();
 
         // Phase 1: Configuration & Setup
