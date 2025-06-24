@@ -59,52 +59,54 @@ db/
     ├── app_icon.rc
     └── output_icon.ico
 ```
+
 ## 1.2 命令行使用方法
+注意程序要在powershell或cmd中运行
 ### 1.2.1 基本命令格式
 ```bash
 time_tracker_command <command> [arguments]
 ```
-
-
 ### 1.2.2 可用命令
-| 命令序号 | 标签 | 功能描述 |
+| 序号 | 标签 | 功能描述 |
 |---|---|---|
-| 1 |`-p,process <filepath>`|解析txt并导入数据|
-| 2 |`-q d,-query daily <YYYYMMDD>`|查询指定日期的统计数据|
-| 3 |`-q p,-query period <days>`|查询过去指定天数的统计数据|
-| 4 |`-q m,-query monthly <YYYYMM>`|查询指定月份的统计数据|
+| 1 |`-p,--process <filepath>`|解析txt并导入数据|
+| 2 |`-q d,--query daily <YYYYMMDD>`|查询指定日期的统计数据|
+| 3 |`-q p,--query period <days>`|查询过去指定天数的统计数据|
+| 4 |`-q m,--query monthly <YYYYMM>`|查询指定月份的统计数据|
 | 5 |`-h,--help`|查看使用帮助|
 | 6 |`--version`|查看程序版本|
-
 ### 1.2.3 示例
-1.  传入文本
-    1.1 传入文件夹下的全部文本 
-    ```bash
-      ./Time_Master -p,process C:\Date
-    ```
-    1.2 传入单个txt文件
-    ```bash
-    ./Time_Master -p,process C:\Date\2024\2024_10.txt
-    ```
-2. 查询数据库中指定日期的统计数据
-`./Time_Master -q d,-query daily 20250523`
-3. 查询过7天数的统计数据
-`./Time_Master -q p,-query period 7`
-查询过30天数的统计数据
-`./Time_Master -q p,-query period 30`
+#### 示例1:导入文本(序号1)
+支持从文件夹中导入txt，或者导入单个txt文件
+1. 传入Date文件夹下的全部文本
+```bash
+./Time_Master -p,process C:\Date\2024\2024_10.txt
+```
+2. 传入单个txt文件
+```bash
+./Time_Master -p,process C:\Date\2024\2024_10.txt
+```
+#### 示例2:查询指定日期数据统计(序号2)
+```bash
+./Time_Master -q d,-query daily 20250523
+```
+#### 示例3:查询过去几天的数据统计(序号3)
+1. 查询过去7天数据统计
+```bash
+./Time_Master -q p,-query period 7
+```
+2. 查询过去30天数据统计
+```bash
+./Time_Master -q p,-query period 30
+```
+#### 示例4:查询月份数据统计(序号4)
+1. 查询2025年1月的数据
+```bash
+./Time_Master-q m,-query monthly 202501
+```
 
 
-| 2 |` <YYYYMMDD>`|查询指定日期的统计数据|
-| 3 |`-q p,-query period <days>`|查询过去指定天数的统计数据|
-| 4 |`-q m,-query monthly <YYYYMM>`|查询指定月份的统计数据|
-| 5 ||`-h,--help`|查看使用磅数|
-| 6 ||`--version`|查看程序版本|
-
-
-
-
-
-## 1.2 compile
+## 1.3 compile
 
 在msys64中运行build.bat
 
@@ -236,90 +238,78 @@ process/
 }
 ```
 
-## 2.3 log_tool使用方法 log_tool usage
-
+## 2.3 log_tool使用方法
+1. 输入路径可以是单个文件或包含`.txt`的文件夹
+2. Windows系统会自动配置UTF-8控制台输出
+3. 启用`-edc`选项会严格检查月份天数完整性
+4. 验证失败时会保留错误标记文件（`error_validation_*`）
 ### 2.3.1 基本命令格式
 ```bash
-./log_tool log_tool.exe <flag> <文件夹或文件路径> [options]
+./log_tool ]<executable_name> <flag> <file or folder path"> [options]
 ```
 
-### 2.3.2 功能标志(必选)
-|标签|功能描述|
-|-----|--------|
-|`-p`|仅转换文件|
-|`-v`|仅验证输入文件|
-|`-pv`|仅转换文件并且验证转化后文件的合法性|
+### 2.3.2 功能标志
+| 序号 | 标签 | 功能描述 |
+|---|---|---|
+| 1 |`-p <filepath>` | 仅转换文件|
+| 2 |`-v <filepath>` | 仅验证输入文件 |
+| 3 |`-pv <filepath> ` | 仅转换文件并且验证转化后文件的合法性 |
+| 4 |`-edc,--enable-day-check` | 启用月份完整性检查 |
 
-### 2.3.3 参数说明
-|参数|描述|是否必须|
-|-----|------|--------|
-|`<文件夹或文件路径>`|文件夹或文件路径|是|
-|`-edc,--enable-day-check`|启用月份完整性检查|否|
 
-### 2.3.4 配置文件
+
+### 2.3.3 配置文件
 程序依赖以下配置文件（需放在同级目录）：
 - `interval_processor_config.json` - 间隔转换配置
 - `format_validator_config.json` - 格式验证配置
 - `header_format.json` - 文件头格式顺序配置
 
-### 2.3.5 使用示例
+### 2.3.4 使用示例
 
-#### 示例1：仅转换文件
+
+#### 示例1:仅转换文件(序号1)
+1. 输入命令
 ```bash
 ./log_tool log_tool.exe -p /path/to/input.txt
 ```
+2. 输出文件
+`processed_input.txt`
 
-输出文件：`processed_input.txt`
-
-#### 示例2：仅验证文件，不开启日期完整性检测
+#### 示例2:仅验证文件，不开启日期完整性检测(序号2)
+1. 输入命令
 ```bash
 ./log_tool log_tool.exe -v /path/to/input.txt
 ```
-输出：控制台显示验证结果，错误内容写入`validation_errors.txt`
+2. 输出
+控制台显示验证结果，错误内容写入`validation_errors.txt`
 
-#### 示例3：仅验证文件，开启日期完整性检测
+#### 示例3:仅验证文件，开启日期完整性检测(序号2,4)
+1. 输入命令
 ```bash
 ./log_tool log_tool.exe -v /path/to/input.txt -edc
 ```
-输出：控制台显示验证结果，错误内容写入`validation_errors.txt`
+2. 输出
+控制台显示验证结果，错误内容写入`validation_errors.txt`
 
-#### 示例4：转换并验证，开启日期完整性检测
+#### 示例4：转换并验证(序号3)
+1. 输入命令
+```bash
+./log_tool log_tool.exe -pv /path/to/input.txt
+```
+2. 输出
+控制台显示验证结果，错误内容写入`validation_errors.txt`
+
+#### 示例5：转换并验证，开启日期完整性检测(序号4)
+1. 输入命令
 ```bash
 ./log_tool log_tool.exe -pv /path/to/folder -edc
 ```
+2. 输出
 输出文件：
-- 验证成功：`final_[原文件名]`
-- 验证失败：`error_validation_[原文件名]`
+- 如果验证成功，输出文件：`final_[原文件名]`
+- 如果验证失败，输出文件：`error_validation_[原文件名]`
 - 错误日志：`validation_errors.txt`
 
-#### 示例4：转换并验证，不开启日期完整性检测
-```bash
-./log_tool log_tool.exe -pv /path/to/folder
-```
-输出文件：
-- 验证成功：`final_[原文件名]`
-- 验证失败：`error_validation_[原文件名]`
-- 错误日志：`validation_errors.txt`
-
-### 2.3.4 输出说明
-1. **转换结果文件**：
-   - `processed_`前缀：仅转换未验证
-   - `temp_`前缀：中间文件（转换+验证流程）
-
-2. **验证结果**：
-   - 成功：控制台显示绿色成功信息
-   - 失败：红色错误信息+错误详情写入`validation_errors.txt`
-
-3. **统计信息**：
-   - 处理结束后显示：
-     - 耗时统计（总时间/解析时间/转换时间）
-     - 成功/失败文件计数
-
-### 2.3.6 注意事项
-1. 输入路径可以是单个文件或包含`.txt`的文件夹
-2. Windows系统会自动配置UTF-8控制台输出
-3. 启用`-edc`选项会严格检查月份天数完整性
-4. 验证失败时会保留错误标记文件（`error_validation_*`）
 
 
 # 3 graph_graph_generator 图表生成
@@ -345,80 +335,55 @@ graph_generator/
 2. 柱状图生成
 3. 项目热力图生成
 4. 睡眠bool状态生成
-## 3.3 timeline生成
-生成横坐标为时间，纵坐标为项目名称的timeline图表
-### 3.3.1 commond format 命令格式
+## 3.3 基本命令格式
 ```bash
-python main.py timeline <date>
+python main.py <command> [arguments]
 ```
-### 3.3.2 参数说明
+> **注意**：程序需要在 PowerShell 或 CMD 中运行
+> 
+## 3.4 可用命令
+| 序号 | 命令格式 | 功能描述 |
+|------|----------|----------|
+| 1 | `timeline <YYYYMMDD>` | 为指定日期生成时间线图 |
+| 2 | `barchart <YYYYMMDD>` | 为指定日期生成活动时长柱状图 |
+| 3 | `heatmap <year> [-p PROJECT]` | 生成项目热力图（年度+月度） |
+| 4 | `sleep <year>` | 生成睡眠状态热力图（年度+月度） |
+| 5 | `-h, --help` | 查看使用帮助 |
+| 6 | `-v, --version` | 查看程序版本 |
 
-`<date>` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240528)
-### 3.3.3 示例
-下面的代码给出了生成20240623日的timeline图表:
+## 3.5 使用示例
+### 3.5.1 生成时间线图（命令1）
 ```bash
-python main.py timeline 20240623
+python main.py timeline 20250624
 ```
-
-## 3.4 柱状图生成
-生成横坐标为项目名称，纵坐标为持续时间的柱状图
-### 3.4.1 commond format 命令格式
+### 3.5.2 生成柱状图（命令2）
 ```bash
-python main.py barchart <date>
+python main.py barchart 20250624
 ```
-### 3.4.2 参数说明
-`<date>` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240623)
-
-### 3.4.3 示例
-
-下面的代码给出了生成20240623日的柱状图图表:
-```bash
-python main.py barchart 20240623
-```
-
-## 3.5  热力图生成
-此命令为指定的项目和年份生成两种格式的 HTML 热力图：全年视图和月度视图。
-### 3.5.1 commond format 命令格式
-```bash
-python main.py heatmap <year> [-p <project_name>]
-```
-### 3.5.2 参数说明
-`<year> `(必需): 您希望查询的目标年份 (例如: 2025)。
-`-p, --project <project_name> `(可选): 您希望分析的父项目名称。如果省略此参数，程序将默认使用 mystudy。
-
-### 3.5.3 示例
-1. 下面的代码生成2025年的热力图(默认项目为 mystudy):
+### 3.5.3 项目热力图（命令3）
+#### 默认生成项目(mystudy)
 ```bash
 python main.py heatmap 2025
 ```
-2. 下面的代码生成2025年的热力图，项目为 meal:
+#### 指定项目meal
 ```bash
 python main.py heatmap 2025 -p meal
 ```
-
-
-
-
-## 3.6  Sleep布尔状态生成
-此命令用于根据数据库中的睡眠记录，为指定年份生成两种格式的 HTML 睡眠状态热力图：全年视图和月度视图。
-
-会在当前目录同时生成两个文件：
-1. 2024_sleep_heatmap_annual.html (全年视图)
-2. 2024_sleep_heatmap_monthly.html (月度视图)。
-
-### 3.6.1commond format 命令格式
+### 3.5.4 睡眠bool状态热力图（命令4）
 ```bash
-python main.py sleep <year>
+python main.py sleep 2025
 ```
-### 3.6.2 参数说明
-
-`<year> `(必需): 您希望查询的目标年份 (例如: 2024)。
-
-### 3.6.3 示例
-1. 生成2024年的睡眠状态热力图：
+### 3.5.4 查看帮助（命令5）
 ```bash
-python main.py sleep 2024
+python main.py -h
 ```
+### 3.6 查看版本（命令6）
+```bash
+python main.py -v
+```
+
+
+
 
 
 
