@@ -57,18 +57,26 @@ db/
     ├── app_icon.rc
     └── output_icon.ico
 ```
+
 ## 1.2 compile
+
 在msys64中运行build.bat
+
 # 2 log_tool 数据预处理
 数据预处理与合法性检验
 ## 2.1 structure
 ```
 process/
 ├── main.cpp                 # Main program entry point, handles argument parsing, orchestrates file processing and validation.
+│ 
 ├── IntervalProcessor.h      # Header for IntervalProcessor class, declares the class and its structures for processing raw input files into a standardized format.
+│ 
 ├── IntervalProcessor.cpp    # Implementation of IntervalProcessor, contains logic for parsing, mapping, and transforming event data.
+│ 
 ├── FormatValidator.h        # Header for FormatValidator class, declares the class and its structures for validating the format of processed files.
+│ 
 ├── FormatValidator.cpp      # Implementation of FormatValidator, contains logic for checking various format rules and identifying errors.
+│ 
 └── SharedUtils.h            # Header for sharing ANSI color codes.
 ```
 ## 2.2 JSON 配置文件
@@ -86,7 +94,7 @@ process/
 **注意**: `Date:` 必须始终是第一个元素。`Getup:` 和 `Remark:` 必须存在于数组中。
 
 **示例**:
-```
+```json
 {
   "header_order": [
     "Date:",
@@ -97,7 +105,7 @@ process/
   ]
 }
 ```
-### 2.2.2interval_processor_config.json
+### 2.2.2 interval_processor_config.json
 此文件控制着 IntervalProcessor 如何转换和映射原始日志中的活动。
 
 **文件路径**: configs/interval_processor_config.json
@@ -109,8 +117,7 @@ process/
 **键**: 原始日志中的文本（例如 "单词" 或 "听力"）。
 
 **值**: 希望转换成的标准项目路径（例如 "study_english_words"）。
-
-* `duration_mappings`:: 一个对象，用于定义基于活动持续时间的动态映射规则。
+* `duration_mappings`: 一个对象，用于定义基于活动持续时间的动态映射规则。
 
 **键**: 一个基础项目路径（必须已在 text_mappings 中定义过，例如 "insomnia"）。
 
@@ -120,7 +127,7 @@ process/
 
 **value**: 当活动持续时间小于此阈值时，最终采用的项目路径。
 
-使用方法:
+**使用方法**:
 
 要添加新的文本映射，只需在 text_mappings 对象中新增一行键值对。
 
@@ -128,8 +135,8 @@ process/
 
 然后在 duration_mappings 中新增一个以 "meal" 为键的规则数组。程序会按从小到大的顺序检查阈值。
 
-示例:
-```
+**示例**:
+```json
 {
     "text_mappings": {
         "单词": "study_english_words",
@@ -145,21 +152,20 @@ process/
 }
 ```
 
-### 2.2.3format_validator_config.json
+### 2.2.3 format_validator_config.json
 
 此文件为 FormatValidator 定义了项目层级关系和分类，用于合法性检验。
 
-文件路径: configs/format_validator_config.json
+**文件路径**: configs/format_validator_config.json
 
-结构:
+**结构**:
+* `PARENT_CATEGORIES`: 一个对象，定义了所有项目的父子层级关系。
 
-PARENT_CATEGORIES: 一个对象，定义了所有项目的父子层级关系。
+**键**: 父类别的名称（例如 "study", "code", "recreation"）。
 
-键: 父类别的名称（例如 "study", "code", "recreation"）。
+**值**: 一个字符串数组，包含了所有属于该父类别的子项目标准路径。
 
-值: 一个字符串数组，包含了所有属于该父类别的子项目标准路径。
-
-使用方法:
+**使用方法**:
 
 当您在 interval_processor_config.json 中定义了一个新的标准项目路径后，您应该将这个新路径添加到 PARENT_CATEGORIES 中对应父类别的数组里。
 
@@ -167,8 +173,8 @@ PARENT_CATEGORIES: 一个对象，定义了所有项目的父子层级关系。
 
 这确保了合法性检验器能够正确识别所有活动都属于一个已知的类别。
 
-示例:
-```
+**示例**:
+```json
 {
   "PARENT_CATEGORIES": {
     "recreation": [
@@ -184,31 +190,99 @@ PARENT_CATEGORIES: 一个对象，定义了所有项目的父子层级关系。
 }
 ```
 
-## 2.3 usage
+## 2.3 log_tool使用方法 log_tool usage
 
-### 2.3.1 输入文件目录
-```<path>``` (必需): 源文件或源文件夹的路径。
-### 2.3.2 转换格式
--p ```<path>``` or -P ```<path>```: 仅转换。读取源文件并生成一个新的格式化文件，但不进行内容合法性检验。输出文件名为 processed_<原始文件名>.txt。
-### 2.3.3 检验合法性
--v ```<path>``` or -V ```<path>```: 仅检验。对源文件的格式和内容进行合法性检验，不生成新文件。
-### 2.3.4 转换格式并验证合法性
--pv ```<path>``` or -PV ```<path>```: 转换并检验。首先根据源文件生成新的格式化文件，然后对这个新生成的文件进行合法性检验。
-### 2.3.5 开启输入文本日期完整性检验
--edc or ---enable-day-chec
--pv ```<path>``` --enable-day-check :转换文本并，检验合法性且开启日期完整检验
--v  ```<path>```  -edc :检验合法性并且开启日期检验
+### 2.3.1 基本命令格式
+```bash
+./log_tool log_tool.exe <flag> <文件夹或文件路径> [options]
+```
+
+### 2.3.2 功能标志(必选)
+|标签|功能描述|
+|-----|--------|
+|`-p`|仅转换文件|
+|`-v`|仅验证输入文件|
+|`-pv`|仅转换文件并且验证转化后文件的合法性|
+
+### 2.3.3 参数说明
+|参数|描述|是否必须|
+|-----|------|--------|
+|`<文件夹或文件路径>`|文件夹或文件路径|是|
+|`-edc,--enable-day-check`|启用月份完整性检查|否|
+
+### 2.3.4 配置文件
+程序依赖以下配置文件（需放在同级目录）：
+- `interval_processor_config.json` - 间隔转换配置
+- `format_validator_config.json` - 格式验证配置
+- `header_format.json` - 文件头格式顺序配置
+
+### 2.3.5 使用示例
+
+#### 示例1：仅转换文件
+```bash
+./log_tool log_tool.exe -p /path/to/input.txt
+```
+
+输出文件：`processed_input.txt`
+
+#### 示例2：仅验证文件，不开启日期完整性检测
+```bash
+./log_tool log_tool.exe -v /path/to/input.txt
+```
+输出：控制台显示验证结果，错误内容写入`validation_errors.txt`
+
+#### 示例3：仅验证文件，开启日期完整性检测
+```bash
+./log_tool log_tool.exe -v /path/to/input.txt -edc
+```
+输出：控制台显示验证结果，错误内容写入`validation_errors.txt`
+
+#### 示例4：转换并验证，开启日期完整性检测
+```bash
+./log_tool log_tool.exe -pv /path/to/folder -edc
+```
+输出文件：
+- 验证成功：`final_[原文件名]`
+- 验证失败：`error_validation_[原文件名]`
+- 错误日志：`validation_errors.txt`
+
+#### 示例4：转换并验证，不开启日期完整性检测
+```bash
+./log_tool log_tool.exe -pv /path/to/folder
+```
+输出文件：
+- 验证成功：`final_[原文件名]`
+- 验证失败：`error_validation_[原文件名]`
+- 错误日志：`validation_errors.txt`
+
+### 2.3.4 输出说明
+1. **转换结果文件**：
+   - `processed_`前缀：仅转换未验证
+   - `temp_`前缀：中间文件（转换+验证流程）
+
+2. **验证结果**：
+   - 成功：控制台显示绿色成功信息
+   - 失败：红色错误信息+错误详情写入`validation_errors.txt`
+
+3. **统计信息**：
+   - 处理结束后显示：
+     - 耗时统计（总时间/解析时间/转换时间）
+     - 成功/失败文件计数
+
+### 2.3.6 注意事项
+1. 输入路径可以是单个文件或包含`.txt`的文件夹
+2. Windows系统会自动配置UTF-8控制台输出
+3. 启用`-edc`选项会严格检查月份天数完整性
+4. 验证失败时会保留错误标记文件（`error_validation_*`）
 
 
-如果提供的是文件路径，则只处理该文件。
-
-如果提供的是文件夹路径，则处理该文件夹下所有的 .txt 文件。
-
-# 3 graph_graph_generator 数据可视化
+# 3 graph_graph_generator 图表生成
 读取数据库并且生成图表
-## 3.1 structure
+## 3.1 structure 程序结构
+```
 graph_generator/
-├── main.py                     # 程序入口
+├── main.py                     # 命令行程序入口
+├── main_input.py               # input交互
 ├── db_access.py                # 数据库查询
 |
 ├── configs/
@@ -219,55 +293,88 @@ graph_generator/
     ├── day_analyzer.py         # 负责处理“逻辑日”数据 (从 timeline_generator 提取)
     ├── heatmap_generator.py    # 通用化的热力图生成器 (合并了旧的 heatmap 和 bool_generator)
     └── plotters.py             # 包含所有基于 matplotlib 的绘图类 (时间线和柱状图)
-## 3.2 timeline生成
-为2024年5月28日生成时间线图：
+```
+## 3.2 commond 命令总览
+1. timeline图表生成
+2. 柱状图生成
+3. 项目热力图生成
+4. 睡眠bool状态生成
+## 3.3 timeline生成
+生成横坐标为时间，纵坐标为项目名称的timeline图表
+### 3.3.1 commond format 命令格式
+```bash
+python main.py timeline <date>
+```
+### 3.3.2 参数说明
 
-bash
+`<date>` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240528)
+### 3.3.3 示例
+下面的代码给出了生成20240623日的timeline图表:
+```bash
+python main.py timeline 20240623
+```
 
-python main.py timeline ```<date>```
-```<date>``` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240528)
+## 3.4 柱状图生成
+生成横坐标为项目名称，纵坐标为持续时间的柱状图
+### 3.4.1 commond format 命令格式
+```bash
+python main.py barchart <date>
+```
+### 3.4.2 参数说明
+`<date>` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240623)
 
-## 3.3 柱状图生成
-python main.py barchart ```<date>```
+### 3.4.3 示例
 
-```<date>``` (必需): 您希望查询的目标日期，格式必须为 YYYYMMDD (例如: 20240115)
+下面的代码给出了生成20240623日的柱状图图表:
+```bash
+python main.py barchart 20240623
+```
 
-## 3.4  热力图生成
+## 3.5  热力图生成
 此命令为指定的项目和年份生成两种格式的 HTML 热力图：全年视图和月度视图。
-
-python main.py heatmap ```<year> [-p <project_name>]```
-
-```<year> ```(必需): 您希望查询的目标年份 (例如: 2024)。
-
-```-p, --project <project_name> ```(可选): 您希望分析的父项目名称。如果省略此参数，程序将默认使用 mystudy。
-### 3.4.1 热力图生成示例
-为默认的 mystudy 项目生成2024年的热力图：
-
-python main.py heatmap 2024
-
-为 code 项目生成2023年的热力图：
-
-python main.py heatmap 2023 -p code
-
-## 3.5  Sleep布尔状态生成
-此命令用于根据数据库中的睡眠记录，为指定年份生成两种格式的 HTML 睡眠状态热力图：全年视图和月度视图。
-
-### 3.5.1 语法
-```python main.py sleep <year> ```
-### 3.5.2 参数
-
-<year> (必需): 您希望查询的目标年份 (例如: 2024)。
+### 3.5.1 commond format 命令格式
+```bash
+python main.py heatmap <year> [-p <project_name>]
+```
+### 3.5.2 参数说明
+`<year> `(必需): 您希望查询的目标年份 (例如: 2025)。
+`-p, --project <project_name> `(可选): 您希望分析的父项目名称。如果省略此参数，程序将默认使用 mystudy。
 
 ### 3.5.3 示例
+1. 下面的代码生成2025年的热力图(默认项目为 mystudy):
+```bash
+python main.py heatmap 2025
+```
+2. 下面的代码生成2025年的热力图，项目为 meal:
+```bash
+python main.py heatmap 2025 -p meal
+```
 
-生成2024年的睡眠状态热力图：
+
+
+
+## 3.6  Sleep布尔状态生成
+此命令用于根据数据库中的睡眠记录，为指定年份生成两种格式的 HTML 睡眠状态热力图：全年视图和月度视图。
+
+会在当前目录同时生成两个文件：
+1. 2024_sleep_heatmap_annual.html (全年视图)
+2. 2024_sleep_heatmap_monthly.html (月度视图)。
+
+### 3.6.1commond format 命令格式
+```bash
+python main.py sleep <year>
+```
+### 3.6.2 参数说明
+
+`<year> `(必需): 您希望查询的目标年份 (例如: 2024)。
+
+### 3.6.3 示例
+1. 生成2024年的睡眠状态热力图：
+```bash
 python main.py sleep 2024
+```
 
-### 3.5.5 生成
-执行后，将会在当前目录同时生成两个文件：
-2024_sleep_heatmap_annual.html (全年视图)
-2024_sleep_heatmap_monthly.
-html (月度视图)。
+
 
 
 # ４ log_generator 日志生成
