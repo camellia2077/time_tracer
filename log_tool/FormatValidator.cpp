@@ -310,10 +310,9 @@ void FormatValidator::validate_month_start(const std::map<std::string, std::set<
 }
 
 
-// --- 修改：在此函数中加入对命令行开关的判断 ---
-// New function to perform the final validation on all collected dates
+// --- MODIFICATION: This function is completely replaced with the enhanced version ---
 void FormatValidator::validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors) {
-    // 如果没有通过命令行启用此检查，则直接返回
+    // If the check is not enabled via the command line, do nothing.
     if (!check_day_count_enabled_) {
         return;
     }
@@ -328,7 +327,44 @@ void FormatValidator::validate_all_days_for_month(const std::map<std::string, st
         int expected_days = days_in_month(year, month);
         
         if (days.size() != expected_days) {
-            errors.insert({0, "Incorrect day count for " + yyyymm.substr(0, 4) + "-" + yyyymm.substr(4, 2) + ". Expected " + std::to_string(expected_days) + " days, but found " + std::to_string(days.size()) + ".", ErrorType::IncorrectDayCountForMonth});
+            // Find which days are missing
+            std::vector<int> missing_days_vec;
+            for (int d = 1; d <= expected_days; ++d) {
+                if (days.find(d) == days.end()) {
+                    missing_days_vec.push_back(d);
+                }
+            }
+
+            // Build the detailed, multi-line error message
+            std::stringstream msg_ss;
+            msg_ss << "Incorrect day count for " << yyyymm.substr(0, 4) << "-" << yyyymm.substr(4, 2)
+                   << ". Expected " << expected_days << " days, but found " << days.size() << ".";
+
+            // Add the list of specific missing days
+            if (!missing_days_vec.empty()) {
+                msg_ss << "\n  Missing days: ";
+                for (size_t i = 0; i < missing_days_vec.size(); ++i) {
+                    msg_ss << missing_days_vec[i] << (i == missing_days_vec.size() - 1 ? "" : ", ");
+                }
+            }
+
+            // Add the color-coded month overview
+            msg_ss << "\n  Month overview: [";
+            for (int d = 1; d <= expected_days; ++d) {
+                bool is_present = (days.find(d) != days.end());
+                if (is_present) {
+                    msg_ss << GREEN_COLOR << d << RESET_COLOR;
+                } else {
+                    msg_ss << RED_COLOR << d << RESET_COLOR;
+                }
+                if (d < expected_days) {
+                    msg_ss << ", ";
+                }
+            }
+            msg_ss << "]";
+
+            // Insert the complete message as a single error
+            errors.insert({0, msg_ss.str(), ErrorType::IncorrectDayCountForMonth});
         }
     }
 }

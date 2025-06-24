@@ -57,7 +57,18 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
         std::cerr << "\n" << header << std::endl;
         err_stream << header << "\n";
         for (const auto& err : pair.second) {
-            std::string error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
+            // --- MODIFICATION START ---
+            // Conditionally format the error message based on the line number.
+            std::string error_message;
+            if (err.line_number == 0) {
+                // For file-level errors (like month day count), don't print the line number.
+                error_message = err.message;
+            } else {
+                // For all other errors, include the line number.
+                error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
+            }
+            // --- MODIFICATION END ---
+            
             std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
             err_stream << "  " << error_message << "\n";
         }
