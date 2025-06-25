@@ -342,7 +342,7 @@ process/
 
 
 
-# 3 graph_graph_generator 图表生成
+# 3 graph_generator 图表生成
 读取数据库并且生成图表
 ## 3.1 structure 程序结构
 ```
@@ -446,7 +446,13 @@ pacman -S mingw-w64-x86_64-nlohmann-json
 ./build.sh
 ```
 ### 4.1 usage
-log_generator.exe \<num_days> \<items_per_day>
+```
+Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.
+  <start_year>      : The starting year (e.g., 1990).
+  <end_year>        : The ending year (inclusive).
+  <items_per_day>   : Number of log items per day (positive integer).
+  --version         : Display version information and exit.
+```
 
 
 
