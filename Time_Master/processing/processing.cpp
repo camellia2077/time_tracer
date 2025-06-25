@@ -1,6 +1,6 @@
 #include "processing.h"
 
-// 包含所有这个模块需要的标准库头文件
+// 解析txt数据(data_parser.h)并且插入数据库(database_inserter.h)
 #include <iostream>
 #include <vector>
 #include <sstream>
