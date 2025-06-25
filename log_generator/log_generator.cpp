@@ -10,6 +10,7 @@
 #include <memory>      // For std::unique_ptr
 #include <chrono>      // For timing the execution
 #include <optional>    // For safely returning from argument parsing and file loading
+#include <filesystem>  // MODIFIED: Added for directory creation
 
 // Include the nlohmann/json library
 #include <nlohmann/json.hpp>
@@ -22,7 +23,7 @@
 // Use nlohmann::json
 using json = nlohmann::json;
 
-// --- 1. Utility Components ( unchanged ) ---
+// --- 1. Utility Components ---
 // These are general-purpose tools that can be used throughout the application.
 
 namespace Utils {
@@ -58,20 +59,37 @@ namespace Utils {
         ss << std::setw(2) << std::setfill('0') << n;
         return ss.str();
     }
+    
+    // MODIFIED: Add helper functions for date calculations
+    bool is_leap(int year) {
+        return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+    }
 
+    int get_days_in_month(int year, int month) {
+        if (month < 1 || month > 12) return 0; // Basic validation
+        if (month == 2) {
+            return is_leap(year) ? 29 : 28;
+        } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+            return 30;
+        } else {
+            return 31;
+        }
+    }
+
+    // MODIFIED: Updated usage instructions for new arguments.
     void print_usage(const char* prog_name) {
-        std::cerr << ConsoleColors::red << "Usage: " <<  ConsoleColors::reset << prog_name << " <num_days> <items_per_day>\n";
-        std::cerr << "       " << prog_name << " --version\n"; // NEW: Add usage for version
-        std::cerr << "Description: Generates test log data. Reads activities from 'activities_config.json'." << '\n';
-        std::cerr << "  <num_days>        : Total number of days to generate (positive integer)." << '\n';
-        std::cerr << "  <items_per_day>   : Number of log items per day (positive integer)." << '\n';
-        std::cerr << "  --version         : Display version information and exit." << '\n'; // NEW: Describe the option
-        std::cerr << "Example: " << prog_name << " 10 5" << '\n';
+        std::cerr << ConsoleColors::red << "Usage: " << ConsoleColors::reset << prog_name << " <start_year> <end_year> <items_per_day>\n";
+        std::cerr << "       " << prog_name << " --version\n";
+        std::cerr << "Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.\n";
+        std::cerr << "  <start_year>      : The starting year (e.g., 1990).\n";
+        std::cerr << "  <end_year>        : The ending year (inclusive).\n";
+        std::cerr << "  <items_per_day>   : Number of log items per day (positive integer).\n";
+        std::cerr << "  --version         : Display version information and exit.\n";
+        std::cerr << "Example: " << prog_name << " 2023 2024 5\n";
     }
     void print_version() {
-        // NEW: Define version constants here for easy updating.
-        const std::string APP_VERSION = "1.2.0";
-        const std::string LAST_UPDATE = "2025-06-24";
+        const std::string APP_VERSION = "2.0.0"; // MODIFIED: Version bump
+        const std::string LAST_UPDATE = "2025-06-25";
         std::cout << "log_generator version " << APP_VERSION << std::endl;
         std::cout << "Last Updated: " << LAST_UPDATE << std::endl;
     }
@@ -82,8 +100,10 @@ namespace Utils {
 // --- 2. Configuration Components ---
 // These components are responsible for loading and validating configuration from external sources.
 
+// MODIFIED: Config struct updated for year range.
 struct Config {
-    int num_days;
+    int start_year;
+    int end_year;
     int items_per_day;
 };
 
@@ -107,7 +127,7 @@ namespace ConfigLoader {
                     std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "\"common_activities\" array in '" << json_filename << "' is empty." << '\n';
                     return std::nullopt;
                 }
-                std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << " activities from '" << json_filename << "'." << '\n';
+                std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << activities.size() << " activities from '" << json_filename << "'." << '\n';
                 return activities;
             }
             else {
@@ -132,19 +152,21 @@ namespace ConfigLoader {
         }
     }
 
+    // MODIFIED: Argument parsing logic completely rewritten for new requirements.
     std::optional<Config> parse_arguments(int argc, char* argv[]) {
-        if (argc != 3) {
+        if (argc != 4) {
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
         Config config;
         try {
-            config.num_days = std::stoi(argv[1]);
-            config.items_per_day = std::stoi(argv[2]);
+            config.start_year = std::stoi(argv[1]);
+            config.end_year = std::stoi(argv[2]);
+            config.items_per_day = std::stoi(argv[3]);
         }
         catch (const std::invalid_argument&) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Invalid argument. <num_days> and <items_per_day> must be integers." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << Utils::ConsoleColors::red << "Error: Invalid argument. All arguments must be integers." << Utils::ConsoleColors::reset << '\n';
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
@@ -154,22 +176,17 @@ namespace ConfigLoader {
             return std::nullopt;
         }
 
-        if (config.num_days <= 0 || config.items_per_day <= 0) {
-            std::cerr << Utils::ConsoleColors::red << "Error: <num_days> and <items_per_day> must be positive integers." << Utils::ConsoleColors::reset << '\n';
+        if (config.start_year <= 0 || config.end_year <= 0 || config.items_per_day <= 0) {
+            std::cerr << Utils::ConsoleColors::red << "Error: Years and <items_per_day> must be positive integers." << Utils::ConsoleColors::reset << '\n';
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
-        
-        // --- MODIFICATION START ---
-        // The check below is removed as "睡觉长" is no longer a required, separate item.
-        // The positive integer check above is sufficient.
-        /*
-        if (config.items_per_day < 2) {
-            std::cerr << Utils::ConsoleColors::red << "Error: <items_per_day> must be at least 2 to include '起床' and '睡觉长'." << Utils::ConsoleColors::reset << '\n';
+
+        if (config.end_year < config.start_year) {
+            std::cerr << Utils::ConsoleColors::red << "Error: <end_year> cannot be earlier than <start_year>." << Utils::ConsoleColors::reset << '\n';
+            Utils::print_usage(argv[0]);
             return std::nullopt;
         }
-        */
-        // --- MODIFICATION END ---
 
         return config;
     }
@@ -180,150 +197,163 @@ namespace ConfigLoader {
 // This class is dedicated to the business logic of generating log data.
 class LogGenerator {
 public:
-    LogGenerator(const Config& config, const std::vector<std::string>& activities)
-        : config_(config),
+    // MODIFIED: Constructor is decoupled, only takes data it needs.
+    LogGenerator(int items_per_day, const std::vector<std::string>& activities)
+        : items_per_day_(items_per_day),
         common_activities_(activities),
         gen_(std::random_device{}()), // Initialize random number generator
         dis_minute_(0, 59),
         dis_activity_selector_(0, static_cast<int>(activities.size()) - 1) {}
 
     /**
-     * @brief Generates log data and writes it to the provided output stream.
-     * @param outStream The stream (e.g., file stream, string stream) to write data to.
+     * @brief Generates log data for a full month and writes it to the output stream.
+     * @param outStream The stream to write data to.
+     * @param month The current month (1-12).
+     * @param days_in_month The number of days in the given month.
      */
-    void generate(std::ostream& outStream) {
-        static const int days_in_months[] = { 0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        const int days_per_chunk = 1000;
+    // MODIFIED: New generation method for a single month.
+    void generate_for_month(std::ostream& outStream, int month, int days_in_month) {
+        std::ostringstream log_stream;
 
-        std::ostringstream log_chunk_stream;
-
-        int current_month = 1;
-        int current_day_of_month = 1;
-
-        int minute_for_todays_actual_wakeup = dis_minute_(gen_);
-
-        for (int d = 0; d < config_.num_days; ++d) {
-            if (d > 0) {
-                log_chunk_stream << '\n';
+        for (int day = 1; day <= days_in_month; ++day) {
+            if (day > 1) {
+                log_stream << '\n';
             }
 
-            log_chunk_stream << Utils::format_two_digits(current_month) << Utils::format_two_digits(current_day_of_month) << '\n';
+            log_stream << Utils::format_two_digits(month) << Utils::format_two_digits(day) << '\n';
             
-            // --- MODIFICATION START ---
-            // The generation logic for the last item ("睡觉长") is removed.
-            // The loop now treats all items after the first one as a regular activity.
-            for (int i = 0; i < config_.items_per_day; ++i) {
+            // This daily generation logic is preserved from the original version.
+            for (int i = 0; i < items_per_day_; ++i) {
                 int display_hour_final;
                 int event_minute_final;
                 std::string event_text_to_use_final;
 
                 if (i == 0) {
-                    // First item is always "起床"
                     event_text_to_use_final = "起床";
                     display_hour_final = 6;
-                    event_minute_final = minute_for_todays_actual_wakeup;
+                    event_minute_final = dis_minute_(gen_);
                 }
                 else {
-                    // All other items are now regular, random activities
-                    double progress_ratio = static_cast<double>(i) / (config_.items_per_day - 1);
+                    double progress_ratio = (items_per_day_ > 1) ? static_cast<double>(i) / (items_per_day_ - 1) : 1.0;
                     int logical_event_hour = 6 + static_cast<int>(std::round(progress_ratio * 19.0));
                     if (logical_event_hour > 25) logical_event_hour = 25;
                     display_hour_final = (logical_event_hour >= 24) ? logical_event_hour - 24 : logical_event_hour;
                     event_minute_final = dis_minute_(gen_);
                     event_text_to_use_final = common_activities_[dis_activity_selector_(gen_)];
                 }
-                log_chunk_stream << Utils::format_two_digits(display_hour_final) << Utils::format_two_digits(event_minute_final) << event_text_to_use_final << '\n';
-            }
-            // --- MODIFICATION END ---
-
-            // The wakeup time for the next day is now generated at the start of that day's loop.
-            minute_for_todays_actual_wakeup = dis_minute_(gen_); 
-
-            current_day_of_month++;
-            if (current_day_of_month > days_in_months[current_month]) {
-                current_day_of_month = 1;
-                current_month = (current_month % 12) + 1;
-            }
-
-            if ((d + 1) % days_per_chunk == 0 || (d + 1) == config_.num_days) {
-                outStream << log_chunk_stream.str();
-                log_chunk_stream.str("");
-                log_chunk_stream.clear();
+                log_stream << Utils::format_two_digits(display_hour_final) << Utils::format_two_digits(event_minute_final) << event_text_to_use_final << '\n';
             }
         }
+        // Write the generated content for the whole month at once.
+        outStream << log_stream.str();
     }
 
 private:
-    const Config& config_;
+    int items_per_day_;
     const std::vector<std::string>& common_activities_;
     std::mt19937 gen_;
     std::uniform_int_distribution<> dis_minute_;
     std::uniform_int_distribution<> dis_activity_selector_;
 };
 
-
-// --- 4. Application Runner ( unchanged ) ---
+// --- 4. Application Runner ---
 class Application {
-public:
-    int run(int argc, char* argv[]) {
-        if (argc == 2 && std::string(argv[1]) == "--version") {
-            Utils::print_version();
-            return 0; // Exit successfully after printing the version.
+    public:
+        int run(int argc, char* argv[]) {
+            if (argc == 2 && std::string(argv[1]) == "--version") {
+                Utils::print_version();
+                return 0;
+            }
+            Utils::setup_console();
+    
+            // Phase 1: Configuration & Setup
+            auto config_opt = ConfigLoader::parse_arguments(argc, argv);
+            if (!config_opt) {
+                return 1;
+            }
+            Config config = *config_opt;
+    
+            auto activities_opt = ConfigLoader::load_activities_from_json("activities_config.json");
+            if (!activities_opt) {
+                std::cerr << Utils::ConsoleColors::red << "Exiting program due to configuration loading failure." << Utils::ConsoleColors::reset << std::endl;
+                return 1;
+            }
+            const std::vector<std::string>& common_activities = *activities_opt;
+    
+            // Phase 2: Execution & Output
+            auto start_time = std::chrono::high_resolution_clock::now();
+            std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
+    
+            LogGenerator generator(config.items_per_day, common_activities);
+            int files_generated = 0;
+    
+            // NEW: Define and create the master "Date" directory.
+            const std::string master_dir_name = "Date";
+            try {
+                if (!std::filesystem::exists(master_dir_name)) {
+                    std::filesystem::create_directory(master_dir_name);
+                    std::cout << "Created master directory: '" << master_dir_name << "'\n";
+                }
+            } catch(const std::filesystem::filesystem_error& e) {
+                std::cerr << Utils::ConsoleColors::red << "Error creating master directory '" << master_dir_name << "'. Detail: " << e.what() << Utils::ConsoleColors::reset << '\n';
+                return 1;
+            }
+            
+            for (int year = config.start_year; year <= config.end_year; ++year) {
+                // NEW: Construct the path for the year directory inside the master "Date" directory.
+                std::filesystem::path year_dir_path = std::filesystem::path(master_dir_name) / std::to_string(year);
+                
+                try {
+                    if (!std::filesystem::exists(year_dir_path)) {
+                        std::filesystem::create_directory(year_dir_path);
+                        std::cout << "Created directory: '" << year_dir_path.string() << "'\n";
+                    }
+                } catch(const std::filesystem::filesystem_error& e) {
+                    std::cerr << Utils::ConsoleColors::red << "Error creating directory '" << year_dir_path.string() << "'. Detail: " << e.what() << Utils::ConsoleColors::reset << '\n';
+                    return 1; // Stop if we can't create a required directory
+                }
+    
+                for (int month = 1; month <= 12; ++month) {
+                    std::string filename = std::to_string(year) + "_" + Utils::format_two_digits(month) + ".txt";
+    
+                    // NEW: Use the 'year_dir_path' object to build the full path.
+                    // The path is now correctly built as "Date/YYYY/YYYY_MM.txt"
+                    std::filesystem::path full_path = year_dir_path / filename;
+    
+                    std::ofstream outFile(full_path);
+                    if (!outFile.is_open()) {
+                        std::cerr << Utils::ConsoleColors::red << "Error: Could not open file '" << full_path.string() << "' for writing." << Utils::ConsoleColors::reset << '\n';
+                        continue; // Skip this month and continue with the next
+                    }
+    
+                    int days_in_month = Utils::get_days_in_month(year, month);
+                    generator.generate_for_month(outFile, month, days_in_month);
+                    outFile.close();
+                    files_generated++;
+                }
+            }
+    
+            // Phase 3: Reporting
+            auto end_time = std::chrono::high_resolution_clock::now();
+            report_completion(config, files_generated, start_time, end_time);
+            
+            return 0;
         }
-        Utils::setup_console();
-
-        // Phase 1: Configuration & Setup
-        auto config_opt = ConfigLoader::parse_arguments(argc, argv);
-        if (!config_opt) {
-            return 1;
+    
+    private:
+        // Reporting function is unchanged, but included here for completeness of the Application class
+        void report_completion(const Config& config,
+                               int files_generated,
+                               const std::chrono::high_resolution_clock::time_point& start, 
+                               const std::chrono::high_resolution_clock::time_point& end) {
+            auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+            auto duration_s = std::chrono::duration<double>(end - start);
+    
+            std::cout << Utils::ConsoleColors::green << "\nData generation complete. " << Utils::ConsoleColors::reset 
+                      << files_generated << " monthly log files created for years " << config.start_year << "-" << config.end_year << "." << '\n';
+            std::cout << "Total generation time: " << duration_ms.count() << " ms (" << std::fixed << std::setprecision(3) << duration_s.count() << " s)." << '\n';
         }
-        Config config = *config_opt;
-
-        auto activities_opt = ConfigLoader::load_activities_from_json("activities_config.json");
-        if (!activities_opt) {
-            std::cerr << Utils::ConsoleColors::red << "Exiting program due to configuration loading failure." << Utils::ConsoleColors::reset << std::endl;
-            return 1;
-        }
-        const std::vector<std::string>& common_activities = *activities_opt;
-
-        // Phase 2: Execution & Output
-        auto start_time = std::chrono::high_resolution_clock::now();
-        std::cout << "Generating data....." << '\n';
-
-        std::ostringstream filename_ss;
-        filename_ss << "log_" << config.num_days << "_items_" << config.items_per_day << ".txt";
-        std::string output_filename = filename_ss.str();
-
-        std::ofstream outFile(output_filename);
-        if (!outFile.is_open()) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Could not open file '" << output_filename << "' for writing." << Utils::ConsoleColors::reset << '\n';
-            return 1;
-        }
-
-        // Create the generator and run the core logic
-        LogGenerator generator(config, common_activities);
-        generator.generate(outFile);
-
-        outFile.close();
-
-        // Phase 3: Reporting
-        auto end_time = std::chrono::high_resolution_clock::now();
-        report_completion(output_filename, start_time, end_time);
-        
-        return 0;
-    }
-
-private:
-    void report_completion(const std::string& filename, 
-                           const std::chrono::high_resolution_clock::time_point& start, 
-                           const std::chrono::high_resolution_clock::time_point& end) {
-        auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-        auto duration_s = std::chrono::duration<double>(end - start);
-
-        std::cout << Utils::ConsoleColors::green << "Data generation complete. " << Utils::ConsoleColors::reset << "Output is in '" << filename << "'" << '\n';
-        std::cout << "Total generation time: " << duration_ms.count() << " ms (" << std::fixed << std::setprecision(3) << duration_s.count() << " s)." << '\n';
-    }
-};
+    };
 
 
 // --- 5. Main Entry Point ( unchanged ) ---
