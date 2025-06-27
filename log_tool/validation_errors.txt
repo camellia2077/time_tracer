@@ -1,6 +1,0 @@
-
-文件 processed_log_3_items_10.txt 的检验错误
---------------------------------------------------
-
-Lack of sleep_night errors(最后的活动项目缺少sleep_night):
-  行 46: The last activity of the day must be 'sleep_night'.

@@ -10,7 +10,8 @@
 
 class IntervalProcessor {
 public:
-    IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename);
+    // MODIFICATION: Constructor now only takes one config file.
+    IntervalProcessor(const std::string& config_filename);
     bool processFile(const std::string& input_filepath, const std::string& output_filepath);
 
 private:
@@ -24,6 +25,7 @@ private:
         bool hasStudyActivity = false;
         bool endsWithSleepNight = false;
         std::string getupTime;
+        std::vector<std::string> generalRemarks;
         std::vector<RawEvent> rawEvents;
         std::vector<std::string> remarksOutput;
         bool isContinuation = false; 
@@ -37,11 +39,10 @@ private:
     };
 
     std::string config_filepath_;
-    std::string header_config_filepath_;
+    // MODIFICATION: Removed header_config_filepath_ as it's no longer needed.
+    std::string remark_prefix_;
     std::unordered_map<std::string, std::string> text_mapping_;
-    // --- MODIFICATION START ---
-    std::unordered_map<std::string, std::string> text_duration_mapping_; // 新增：用于需要根据时长判断的活动的映射
-    // --- MODIFICATION END ---
+    std::unordered_map<std::string, std::string> text_duration_mapping_;
     std::vector<std::string> header_order_;
     std::unordered_map<std::string, std::vector<DurationRule>> duration_mappings_;
 

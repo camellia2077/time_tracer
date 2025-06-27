@@ -1,4 +1,13 @@
 {
+    "header_order": [
+        "Date:",
+        "Status:",
+        "Sleep:",
+        "Getup:",
+        "Remark:"
+    ],
+    "remark_prefix": "r ",
+    
     "text_mappings": {
         "word": "study_english_words",
         "单词": "study_english_words",
@@ -35,6 +44,7 @@
         "aaa" : "meal_medium",
         "洗衣服" : "routine_washing"
     },
+
     "text_duration_mappings":{
         "失眠": "insomnia",
         "饭": "meal",

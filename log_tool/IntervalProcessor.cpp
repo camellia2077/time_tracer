@@ -9,8 +9,9 @@
 #include <ctime>
 #include <filesystem>
 
-IntervalProcessor::IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename)
-    : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
+// MODIFICATION: Constructor updated to match the .h file.
+IntervalProcessor::IntervalProcessor(const std::string& config_filename)
+    : config_filepath_(config_filename) {
     if (!loadConfiguration()) {
         std::cerr << RED_COLOR << "Error: IntervalProcessor failed to load its configuration." << RESET_COLOR << std::endl;
     }
@@ -19,11 +20,12 @@ IntervalProcessor::IntervalProcessor(const std::string& config_filename, const s
 void IntervalProcessor::DayData::clear() {
     date.clear();
     hasStudyActivity = false;
-    endsWithSleepNight = false; 
+    endsWithSleepNight = false;
     getupTime.clear();
+    generalRemarks.clear();
     rawEvents.clear();
     remarksOutput.clear();
-    isContinuation = false; 
+    isContinuation = false;
 }
 
 bool IntervalProcessor::processFile(const std::string& input_filepath, const std::string& output_filepath) {
@@ -49,6 +51,10 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     std::string eventTimeBuffer, eventDescBuffer;
 
     auto process_day_events = [&](DayData& day) {
+        for (const auto& general_remark : day.generalRemarks) {
+             day.remarksOutput.push_back(general_remark);
+        }
+        
         if (day.getupTime.empty() && !day.isContinuation) return;
         if (day.getupTime.empty() && day.isContinuation) {
             if(day.getupTime.empty()) return;
@@ -59,22 +65,16 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
             std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
             std::string mappedDescription = rawEvent.description;
 
-            // --- MODIFICATION START: Updated mapping logic ---
-            // 1. 尝试在常规映射中查找
             auto mapIt = text_mapping_.find(rawEvent.description);
             if (mapIt != text_mapping_.end()) {
                 mappedDescription = mapIt->second;
             } else {
-                // 2. 如果未找到，则在时长相关的映射中查找
                 auto durMapIt = text_duration_mapping_.find(rawEvent.description);
                 if (durMapIt != text_duration_mapping_.end()) {
                     mappedDescription = durMapIt->second;
                 }
             }
-            // --- MODIFICATION END ---
 
-
-            // 3. 检查映射后的活动名是否需要根据时长进一步处理
             auto durationRulesIt = duration_mappings_.find(mappedDescription);
             if (durationRulesIt != duration_mappings_.end()) {
                 int duration = calculateDurationMinutes(startTime, formattedEventEndTime);
@@ -102,7 +102,7 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
                 process_day_events(previousDay);
 
                 if (currentDay.isContinuation) {
-                    previousDay.endsWithSleepNight = false; 
+                    previousDay.endsWithSleepNight = false;
                     if (!previousDay.rawEvents.empty()) {
                         currentDay.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
                     }
@@ -119,15 +119,25 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
             previousDay = currentDay;
             currentDay.clear();
             currentDay.date = year_prefix + line;
+        } else if (!remark_prefix_.empty() && line.rfind(remark_prefix_, 0) == 0) {
+            if (!currentDay.date.empty()) {
+                std::string remark_content = line.substr(remark_prefix_.length());
+                remark_content.erase(0, remark_content.find_first_not_of(" \t"));
+                if (!remark_content.empty()) {
+                    currentDay.generalRemarks.push_back(remark_content);
+                }
+            }
         } else if (parseEventLine(line, eventTimeBuffer, eventDescBuffer)) {
             if (currentDay.date.empty()) continue;
-
+            
             if (eventDescBuffer == "起床" || eventDescBuffer == "醒") {
-                if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(eventTimeBuffer);
-                else currentDay.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
+                if (currentDay.getupTime.empty()) {
+                    currentDay.getupTime = formatTime(eventTimeBuffer);
+                }
+                currentDay.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
             } else {
                 if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) {
-                    currentDay.isContinuation = true; 
+                    currentDay.isContinuation = true;
                 }
                 currentDay.rawEvents.push_back({eventTimeBuffer, eventDescBuffer});
             }
@@ -178,27 +188,29 @@ void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day)
                 outFile << "Getup:" << (day.getupTime.empty() ? "00:00" : day.getupTime) << "\n";
             }
         } else if (header == "Remark:") {
-            outFile << "Remark:\n";
-            /*
-             * 警告：不要对此活动记录向量 (remarksOutput) 进行排序！
-             */
-            for (const auto& remark : day.remarksOutput) {
-                outFile << remark << "\n";
+            if (day.remarksOutput.empty()) {
+                outFile << "Remark:\n";
+            } else {
+                outFile << "Remark:" << day.remarksOutput[0] << "\n";
+                for (size_t i = 1; i < day.remarksOutput.size(); ++i) {
+                    outFile << day.remarksOutput[i] << "\n";
+                }
             }
         }
     }
-    outFile << "\n"; 
+    outFile << "\n";
 }
 
+// MODIFICATION: loadConfiguration now reads all settings from the single config file.
 bool IntervalProcessor::loadConfiguration() {
-    std::ifstream main_config_ifs(config_filepath_);
-    if (!main_config_ifs.is_open()) {
+    std::ifstream config_ifs(config_filepath_);
+    if (!config_ifs.is_open()) {
         std::cerr << RED_COLOR << "Error: Could not open mapping file: " << config_filepath_ << RESET_COLOR << std::endl;
         return false;
     }
     nlohmann::json j;
     try {
-        main_config_ifs >> j;
+        config_ifs >> j;
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Error parsing main config JSON: " << e.what() << RESET_COLOR << std::endl;
         return false;
@@ -206,9 +218,27 @@ bool IntervalProcessor::loadConfiguration() {
     try {
         text_mapping_.clear();
         duration_mappings_.clear();
-        // --- MODIFICATION START ---
         text_duration_mapping_.clear();
-        // --- MODIFICATION END ---
+
+        if (j.contains("header_order") && j["header_order"].is_array()) {
+            header_order_ = j["header_order"].get<std::vector<std::string>>();
+        } else {
+            throw std::runtime_error("'header_order' key not found or not an array.");
+        }
+
+        if (j.contains("remark_prefix") && j["remark_prefix"].is_string()) {
+            remark_prefix_ = j["remark_prefix"].get<std::string>();
+        } else {
+            remark_prefix_ = ""; 
+        }
+
+        if (header_order_.empty() || header_order_[0] != "Date:") {
+            throw std::runtime_error("'Date:' must be the first item in header_order.");
+        }
+        if (std::find(header_order_.begin(), header_order_.end(), "Getup:") == header_order_.end() ||
+            std::find(header_order_.begin(), header_order_.end(), "Remark:") == header_order_.end()) {
+            throw std::runtime_error("'Getup:' and 'Remark:' must be present in header_order.");
+        }
 
         if (j.contains("text_mappings") && j["text_mappings"].is_object()) {
             text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
@@ -216,13 +246,11 @@ bool IntervalProcessor::loadConfiguration() {
             std::cerr << YELLOW_COLOR << "Warning: 'text_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
         }
 
-        // --- MODIFICATION START: Load the new text_duration_mappings ---
         if (j.contains("text_duration_mappings") && j["text_duration_mappings"].is_object()) {
             text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
         } else {
             std::cerr << YELLOW_COLOR << "Warning: 'text_duration_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
         }
-        // --- MODIFICATION END ---
         
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
             const auto& duration_json = j["duration_mappings"];
@@ -244,30 +272,6 @@ bool IntervalProcessor::loadConfiguration() {
         std::cerr << RED_COLOR << "Error processing content from " << config_filepath_ << ": " << e.what() << RESET_COLOR << std::endl;
         return false;
     }
-    std::ifstream header_ifs(header_config_filepath_);
-    if (!header_ifs.is_open()) {
-        std::cerr << RED_COLOR << "Error: Could not open header format file: " << header_config_filepath_ << RESET_COLOR << std::endl;
-        return false;
-    }
-    try {
-        nlohmann::json hj;
-        header_ifs >> hj;
-        if (hj.contains("header_order") && hj["header_order"].is_array()) {
-            header_order_ = hj["header_order"].get<std::vector<std::string>>();
-        } else {
-            throw std::runtime_error("'header_order' key not found or not an array.");
-        }
-        if (header_order_.empty() || header_order_[0] != "Date:") {
-            throw std::runtime_error("'Date:' must be the first item in header_order.");
-        }
-        if (std::find(header_order_.begin(), header_order_.end(), "Getup:") == header_order_.end() ||
-            std::find(header_order_.begin(), header_order_.end(), "Remark:") == header_order_.end()) {
-            throw std::runtime_error("'Getup:' and 'Remark:' must be present in header_order.");
-        }
-    } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "Error processing header format JSON: " << e.what() << RESET_COLOR << std::endl;
-        return false;
-    }
     return true;
 }
 
@@ -283,6 +287,9 @@ bool IntervalProcessor::isDateLine(const std::string& line) {
 }
 
 bool IntervalProcessor::parseEventLine(const std::string& line, std::string& outTimeStr, std::string& outDescription) {
+    if (!remark_prefix_.empty() && line.rfind(remark_prefix_, 0) == 0) {
+        return false;
+    }
     if (line.length() < 5 || !std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
         return false;
     }

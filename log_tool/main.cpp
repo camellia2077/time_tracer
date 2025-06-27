@@ -109,7 +109,6 @@ int main(int argc, char* argv[]) {
     // --- Config File Paths ---
     std::string interval_config = "interval_processor_config.json";
     std::string validator_config = "format_validator_config.json";
-    std::string header_config = "header_format.json";
     std::string error_file = "validation_errors.txt";
     
     // --- File/Directory Path Handling ---
@@ -208,7 +207,7 @@ int main(int argc, char* argv[]) {
             // --- MODIFICATION END ---
 
             auto conversion_start_time = std::chrono::high_resolution_clock::now();
-            IntervalProcessor processor(interval_config, header_config);
+            IntervalProcessor processor(interval_config);
             
             if (!processor.processFile(source_filepath, initial_output_filename)) {
                 std::cerr << RED_COLOR << "Errors: " << RESET_COLOR << "处理文件失败。跳过此文件。" << std::endl;
@@ -231,7 +230,7 @@ int main(int argc, char* argv[]) {
         if (validate) {
             std::string file_to_validate = (process) ? processed_filepath : source_filepath;
             
-            FormatValidator validator(validator_config, header_config, enable_day_count_check);
+            FormatValidator validator(validator_config, interval_config, enable_day_count_check);
             std::set<FormatValidator::Error> errors;
             is_valid = validator.validateFile(file_to_validate, errors);
 
