@@ -432,7 +432,7 @@ txt生成器
 ├── LogGenerator.cpp      // 核心逻辑模块的源文件 (实现LogGenerator类)
 ├── Utils.h               // 【必需的】工具类头文件，仅含声明
 └── main.cpp              // 主文件 (包含Application类, Utils实现和main函数)
-## 使用msys2环境进行编译
+## 4.2 使用msys2环境进行编译
 1. 执行首次更新
 ```bash
 pacman -Syu
@@ -457,7 +457,7 @@ pacman -S mingw-w64-x86_64-nlohmann-json
 ```bash
 ./build.sh
 ```
-### 4.1 usage
+## 4.3 usage
 ```
 Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.
   <start_year>      : The starting year (e.g., 1990).
