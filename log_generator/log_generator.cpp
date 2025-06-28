@@ -88,8 +88,8 @@ namespace Utils {
         std::cerr << "Example: " << prog_name << " 2023 2024 5\n";
     }
     void print_version() {
-        const std::string APP_VERSION = "2.0.0"; // MODIFIED: Version bump
-        const std::string LAST_UPDATE = "2025-06-25";
+        const std::string APP_VERSION = "2.2.0"; // MODIFIED: Version bump for new feature
+        const std::string LAST_UPDATE = "2025-06-27";
         std::cout << "log_generator version " << APP_VERSION << std::endl;
         std::cout << "Last Updated: " << LAST_UPDATE << std::endl;
     }
@@ -100,6 +100,13 @@ namespace Utils {
 // --- 2. Configuration Components ---
 // These components are responsible for loading and validating configuration from external sources.
 
+// MODIFIED: Structure for daily remarks now includes generation probability.
+struct DailyRemarkConfig {
+    std::string prefix;
+    std::vector<std::string> contents;
+    double generation_chance = 0.5; // Default to 50%
+};
+
 // MODIFIED: Config struct updated for year range.
 struct Config {
     int start_year;
@@ -107,12 +114,19 @@ struct Config {
     int items_per_day;
 };
 
+// NEW: Structure to hold all configurations loaded from the JSON file.
+struct JsonConfigData {
+    std::vector<std::string> activities;
+    std::optional<DailyRemarkConfig> remarks;
+};
+
 namespace ConfigLoader {
 
-    std::optional<std::vector<std::string>> load_activities_from_json(const std::string& json_filename) {
+    // MODIFIED: This function now loads all relevant data from the JSON file.
+    std::optional<JsonConfigData> load_json_configurations(const std::string& json_filename) {
         std::ifstream f(json_filename);
         if (!f.is_open()) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Could not open activities configuration file '" << json_filename << "'." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << Utils::ConsoleColors::red << "Error: Could not open configuration file '" << json_filename << "'." << Utils::ConsoleColors::reset << '\n';
             return std::nullopt;
         }
 
@@ -120,20 +134,56 @@ namespace ConfigLoader {
             json data = json::parse(f);
             f.close();
 
-            if (data.contains("common_activities") && data["common_activities"].is_array()) {
-                auto activities = data["common_activities"].get<std::vector<std::string>>();
-                if (activities.empty())
-                {
-                    std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "\"common_activities\" array in '" << json_filename << "' is empty." << '\n';
-                    return std::nullopt;
-                }
-                std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << activities.size() << " activities from '" << json_filename << "'." << '\n';
-                return activities;
-            }
-            else {
+            JsonConfigData config_data;
+
+            // 1. Load "common_activities" (mandatory)
+            if (data.contains("common_activities") && data["common_activities"].is_array() && !data["common_activities"].empty()) {
+                config_data.activities = data["common_activities"].get<std::vector<std::string>>();
+                std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << config_data.activities.size() << " activities from '" << json_filename << "'." << '\n';
+            } else {
                 std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "JSON file '" << json_filename << "' must contain a non-empty 'common_activities' array." << '\n';
                 return std::nullopt;
             }
+
+            // 2. Load "daily_remarks" (optional)
+            if (data.contains("daily_remarks") && data["daily_remarks"].is_object()) {
+                const auto& remarks_json = data["daily_remarks"];
+                DailyRemarkConfig remarks;
+                bool prefix_ok = false;
+                bool contents_ok = false;
+
+                if (remarks_json.contains("prefix") && remarks_json["prefix"].is_string()) {
+                    remarks.prefix = remarks_json["prefix"].get<std::string>();
+                    prefix_ok = true;
+                } else {
+                    std::cerr << "Warning: 'daily_remarks' object in '" << json_filename << "' is missing a 'prefix' string. This feature will be disabled.\n";
+                }
+
+                if (remarks_json.contains("contents") && remarks_json["contents"].is_array() && !remarks_json["contents"].empty()) {
+                    remarks.contents = remarks_json["contents"].get<std::vector<std::string>>();
+                    contents_ok = true;
+                } else {
+                    std::cerr << "Warning: 'daily_remarks' object in '" << json_filename << "' is missing a non-empty 'contents' array. This feature will be disabled.\n";
+                }
+
+                // NEW: Load "generation_chance" (optional)
+                if (remarks_json.contains("generation_chance") && remarks_json["generation_chance"].is_number()) {
+                    double chance = remarks_json["generation_chance"].get<double>();
+                    if (chance >= 0.0 && chance <= 1.0) {
+                        remarks.generation_chance = chance;
+                    } else {
+                        std::cerr << "Warning: 'generation_chance' in '" << json_filename << "' must be between 0.0 and 1.0. Using default of " << remarks.generation_chance << ".\n";
+                    }
+                }
+
+                // Only emplace if both prefix and contents were valid
+                if (prefix_ok && contents_ok) {
+                    config_data.remarks.emplace(remarks);
+                    std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << remarks.contents.size() << " daily remarks with a " << (remarks.generation_chance * 100) << "% generation chance." << '\n';
+                }
+            }
+
+            return config_data;
         }
         catch (const json::parse_error& e) {
             std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "Failed to parse JSON from '" << json_filename << "'. Detail: " << e.what() << '\n';
@@ -141,7 +191,7 @@ namespace ConfigLoader {
             return std::nullopt;
         }
         catch (const json::type_error& e) {
-            std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "JSON type error in '" << json_filename << "'. Is 'common_activities' an array of strings? Detail: " << e.what() << '\n';
+            std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "JSON type error in '" << json_filename << "'. Detail: " << e.what() << '\n';
             if (f.is_open()) f.close();
             return std::nullopt;
         }
@@ -151,6 +201,7 @@ namespace ConfigLoader {
             return std::nullopt;
         }
     }
+
 
     // MODIFIED: Argument parsing logic completely rewritten for new requirements.
     std::optional<Config> parse_arguments(int argc, char* argv[]) {
@@ -197,13 +248,27 @@ namespace ConfigLoader {
 // This class is dedicated to the business logic of generating log data.
 class LogGenerator {
 public:
-    // MODIFIED: Constructor is decoupled, only takes data it needs.
-    LogGenerator(int items_per_day, const std::vector<std::string>& activities)
+    // MODIFIED: Constructor now accepts optional remark configuration.
+    LogGenerator(int items_per_day,
+                 const std::vector<std::string>& activities,
+                 const std::optional<DailyRemarkConfig>& remark_config)
         : items_per_day_(items_per_day),
         common_activities_(activities),
+        remark_config_(remark_config), // Store the remarks config
         gen_(std::random_device{}()), // Initialize random number generator
         dis_minute_(0, 59),
-        dis_activity_selector_(0, static_cast<int>(activities.size()) - 1) {}
+        dis_activity_selector_(0, static_cast<int>(activities.size()) - 1) {
+    
+        // Initialize the remark selector and probability distribution only if remarks are configured.
+        if (remark_config_ && !remark_config_->contents.empty()) {
+            dis_remark_selector_ = std::make_unique<std::uniform_int_distribution<>>(
+                0, static_cast<int>(remark_config_->contents.size()) - 1
+            );
+            // NEW: Initialize a Bernoulli distribution for the generation chance.
+            dis_remark_should_generate_ = std::make_unique<std::bernoulli_distribution>(remark_config_->generation_chance);
+        }
+    }
+
 
     /**
      * @brief Generates log data for a full month and writes it to the output stream.
@@ -221,6 +286,12 @@ public:
             }
 
             log_stream << Utils::format_two_digits(month) << Utils::format_two_digits(day) << '\n';
+            
+            // MODIFIED: Add the daily remark line if configured AND the probability check passes.
+            if (remark_config_ && dis_remark_selector_ && dis_remark_should_generate_ && (*dis_remark_should_generate_)(gen_)) {
+                const std::string& random_content = remark_config_->contents[(*dis_remark_selector_)(gen_)];
+                log_stream << remark_config_->prefix << random_content << '\n';
+            }
             
             // This daily generation logic is preserved from the original version.
             for (int i = 0; i < items_per_day_; ++i) {
@@ -251,9 +322,14 @@ public:
 private:
     int items_per_day_;
     const std::vector<std::string>& common_activities_;
+    const std::optional<DailyRemarkConfig> remark_config_; // Store the config
     std::mt19937 gen_;
     std::uniform_int_distribution<> dis_minute_;
     std::uniform_int_distribution<> dis_activity_selector_;
+    // Use a unique_ptr for the optional random distribution for remarks
+    std::unique_ptr<std::uniform_int_distribution<>> dis_remark_selector_;
+    // NEW: Use a unique_ptr for the optional Bernoulli distribution for remark generation probability
+    std::unique_ptr<std::bernoulli_distribution> dis_remark_should_generate_;
 };
 
 // --- 4. Application Runner ---
@@ -273,18 +349,19 @@ class Application {
             }
             Config config = *config_opt;
     
-            auto activities_opt = ConfigLoader::load_activities_from_json("activities_config.json");
-            if (!activities_opt) {
+            // MODIFIED: Call the new JSON configuration loader.
+            auto json_configs_opt = ConfigLoader::load_json_configurations("activities_config.json");
+            if (!json_configs_opt) {
                 std::cerr << Utils::ConsoleColors::red << "Exiting program due to configuration loading failure." << Utils::ConsoleColors::reset << std::endl;
                 return 1;
             }
-            const std::vector<std::string>& common_activities = *activities_opt;
     
             // Phase 2: Execution & Output
             auto start_time = std::chrono::high_resolution_clock::now();
             std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
     
-            LogGenerator generator(config.items_per_day, common_activities);
+            // MODIFIED: Pass all loaded configs to the generator.
+            LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks);
             int files_generated = 0;
     
             // NEW: Define and create the master "Date" directory.
@@ -356,7 +433,7 @@ class Application {
     };
 
 
-// --- 5. Main Entry Point ( unchanged ) ---
+// --- 5. Main Entry Point ---
 int main(int argc, char* argv[]) {
     Application app;
     return app.run(argc, argv);
