@@ -10,31 +10,34 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- 3. Dependency Handling (nlohmann/json) ---
-# This section is MODIFIED.
-# We now use find_package to locate the nlohmann/json library that was
-# installed in the MSYS2/MinGW64 environment via pacman.
-find_package(nlohmann_json 3.11.3 REQUIRED)
+# We use find_package to locate the nlohmann/json library installed in the MSYS2 environment.
+ find_package(nlohmann_json 3.11.3 REQUIRED)
 
-# --- 4. Executable Definition ---
-# Creates the executable target from the source file.
-add_executable(log_generator log_generator.cpp) 
+# --- 4. Executable Definition (MODIFIED) ---
+# Creates the executable target from ALL a project's source files.
+# We list all .cpp files that need to be compiled.
+set(SOURCES
+    main.cpp
+    Config.cpp
+    LogGenerator.cpp
+)
+add_executable(log_generator ${SOURCES})
 
 # --- 5. Linking Dependencies ---
-# Links the executable with the nlohmann/json library found by find_package.
-# This line does NOT need to be changed.
+# Links the executable with the nlohmann/json library.  This does not need to be changed.
 target_link_libraries(log_generator PRIVATE nlohmann_json::nlohmann_json)
 
 # --- 6. Optimization and Version-Specific Compilation Options ---
-# Adds high-performance optimizations for "Release" builds.
-#   -O3: Aggressive optimization level. 
-#   -march=native: Optimizes the code for the build machine's CPU architecture. 
-#   -s: Strips symbols from the executable to reduce its size (linker option). 
-#   -flto: Enables Link-Time Optimization (LTO) for better global optimization. 
-# Compilation options for GCC/Clang 
+#  Adds high-performance optimizations for "Release" builds. 
+#    -O3: Aggressive optimization level.
+#    -march=native: Optimizes the code for the build machine's CPU architecture. 
+#    -s: Strips symbols from the executable to reduce its size (linker option). 
+#    -flto: Enables Link-Time Optimization (LTO) for better global optimization. 
+#  Compilation options for GCC/Clang
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(log_generator PRIVATE
     $<$<CONFIG:Release>:-O3>
-     $<$<CONFIG:Release>:-march=native>
+    $<$<CONFIG:Release>:-march=native>
   )
 endif()
 

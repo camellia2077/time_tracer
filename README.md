@@ -423,6 +423,15 @@ python main.py -v
 
 # ４ log_generator 日志生成
 txt生成器
+## 4.1 structure
+/project-root
+├── activities_config.json //配置
+├── Config.h              // 配置模块的头文件 (定义数据结构, 声明加载函数)
+├── Config.cpp            // 配置模块的源文件 (实现加载函数)
+├── LogGenerator.h        // 核心逻辑模块的头文件 (定义LogGenerator类)
+├── LogGenerator.cpp      // 核心逻辑模块的源文件 (实现LogGenerator类)
+├── Utils.h               // 【必需的】工具类头文件，仅含声明
+└── main.cpp              // 主文件 (包含Application类, Utils实现和main函数)
 ## 使用msys2环境进行编译
 1. 执行首次更新
 ```bash
