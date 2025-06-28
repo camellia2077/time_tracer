@@ -28,7 +28,7 @@ void IntervalProcessor::DayData::clear() {
     isContinuation = false;
 }
 
-bool IntervalProcessor::processFile(const std::string& input_filepath, const std::string& output_filepath) {
+bool IntervalProcessor::processFile(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix) {
     std::ifstream inFile(input_filepath);
     if (!inFile.is_open()) {
         std::cerr << RED_COLOR << "Error: Could not open input file " << input_filepath << RESET_COLOR << std::endl;
@@ -45,9 +45,6 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     DayData previousDay;
     DayData currentDay;
     std::string line;
-    std::time_t now = std::time(nullptr);
-    std::tm* ltm = std::localtime(&now);
-    std::string year_prefix = std::to_string(1900 + ltm->tm_year);
     std::string eventTimeBuffer, eventDescBuffer;
 
     auto process_day_events = [&](DayData& day) {
