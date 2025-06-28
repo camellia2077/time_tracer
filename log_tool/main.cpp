@@ -173,6 +173,40 @@ int main(int argc, char* argv[]) {
     for (const auto& file : files_to_process) {
         std::cout << "\n=======================================================\n";
         std::cout << "正在处理文件: " << file.string() << "\n";
+
+                 // MODIFICATION: Logic to determine the year from the file path.
+                 std::string year_str;
+                 fs::path current_path = file.parent_path();
+                 bool year_found = false;
+         
+                 // Lambda to check if a string is a 4-digit string.
+                 auto is_four_digit_string = [](const std::string& s) {
+                     if (s.length() != 4) return false;
+                     for (char c : s) {
+                         if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+                     }
+                     return true;
+                 };
+         
+                 // Traverse up the directory tree to find a folder named with a year.
+                 while (!current_path.empty() && current_path.has_filename()) {
+                     std::string dirname = current_path.filename().string();
+                     if (is_four_digit_string(dirname)) {
+                         year_str = dirname;
+                         year_found = true;
+                         std::cout << "Info: 从目录路径中提取年份 '" << year_str << "'" << std::endl;
+                         break;
+                     }
+                     current_path = current_path.parent_path();
+                 }
+         
+                 if (!year_found) {
+                     std::time_t now = std::time(nullptr);
+                     std::tm* ltm = std::localtime(&now);
+                     year_str = std::to_string(1900 + ltm->tm_year);
+                     std::cout << YELLOW_COLOR << "Warning: " << RESET_COLOR
+                               << "无法从目录结构中确定年份，将使用当前系统年份: " << year_str << std::endl;
+                 }
         
         std::string source_filepath = file.string();
         std::string processed_filepath = ""; 
@@ -209,7 +243,7 @@ int main(int argc, char* argv[]) {
             auto conversion_start_time = std::chrono::high_resolution_clock::now();
             IntervalProcessor processor(interval_config);
             
-            if (!processor.processFile(source_filepath, initial_output_filename)) {
+            if (!processor.processFile(source_filepath, initial_output_filename, year_str)) {
                 std::cerr << RED_COLOR << "Errors: " << RESET_COLOR << "处理文件失败。跳过此文件。" << std::endl;
                 conversion_failure_count++;
                 std::cout << "=======================================================\n";

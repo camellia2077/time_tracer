@@ -10,9 +10,8 @@
 
 class IntervalProcessor {
 public:
-    // MODIFICATION: Constructor now only takes one config file.
     IntervalProcessor(const std::string& config_filename);
-    bool processFile(const std::string& input_filepath, const std::string& output_filepath);
+    bool processFile(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix);
 
 private:
     struct RawEvent {
