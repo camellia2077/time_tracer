@@ -8,7 +8,8 @@
 // Include necessary header files for your project
 #include "common_utils.h"      
 #include "processing.h"        
-#include "query_handler.h"     
+#include "query_handler.h"    
+#include "version.h" 
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -72,8 +73,6 @@ int main(int argc, char* argv[]) {
 
     // Convert C-style arguments to a more manageable std::vector<std::string>
     std::vector<std::string> args(argv, argv + argc);
-    const std::string version = "1.2.0";
-    const std::string updated = "2025-06-24";
 
     if (args.size() < 2) {
         print_usage(args[0].c_str());
@@ -82,8 +81,8 @@ int main(int argc, char* argv[]) {
 
     // Handle --version and --help/ -h flags first
     if (args[1] == "--version") {
-        std::cout << "time_tracker_command Version: " << version << std::endl;
-        std::cout << "Last Updated: " << updated << std::endl;
+        std::cout << "time_tracker_command Version: " << AppInfo::VERSION << std::endl;
+        std::cout << "Last Updated: " <<  AppInfo::LAST_UPDATED << std::endl;
         return 0;
     }
 

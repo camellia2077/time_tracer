@@ -26,12 +26,13 @@
 ```
 Time_Master/
 ├── CMakeLists.txt
-├── main.cpp
-├── main_command
+├── main.cpp # 交互式
+├── main_command # 命令行传入
 │
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
-│   └── common_utils.h
+│   ├── common_utils.h
+│   └── version.h # for version info
 ├── database/ # Manages the creation of the database and the importation of data into it.
 │   ├── database_importer.cpp
 │   └── database_importer.h
