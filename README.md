@@ -109,7 +109,7 @@ time_tracker_command <command> [arguments]
 ```
 
 
-## 1.3 使用msys2环境进行编译
+## 1.3 使用msys2 UCRT64环境进行编译
 0. 下载并安装 MSYS2
 MSYS2 是为 Windows 操作系统 设计的
 
@@ -122,15 +122,15 @@ Download the installer: msys2-x86_64-20250622.exe
 ```bash
 pacman -Syu
 ```
-2. 安装 MinGW-w64 工具链
+2. 安装 UCRT64 开发工具
 ```bash
-pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-ucrt-x86_64-toolchain 
 ```
 
 3. 安装 CMake
 项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
 ```bash
-pacman -S mingw-w64-x86_64-cmake
+pacman -S mingw-w64-ucrt-x86_64-cmake 
 ```
 
 4. 安装 nlohmann-json 库
