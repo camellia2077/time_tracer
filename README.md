@@ -273,23 +273,24 @@ process/
 ```
 
 ## 2.3 log_tool使用方法
-1. 输入路径可以是单个文件或包含`.txt`的文件夹
-2. Windows系统会自动配置UTF-8控制台输出
-3. 启用`-edc`选项会严格检查月份天数完整性
-4. 验证失败时会保留错误标记文件（`error_validation_*`）
+1. 输入路径为文件夹
+2. 启用`-edc`选项会严格检查月份天数完整性
+
 ### 2.3.1 基本命令格式
 ```bash
 ./log_tool ]<executable_name> <flag> <file or folder path"> [options]
 ```
 
 ### 2.3.2 功能标志
-| 序号 | 标签 | 功能描述 |
+| 序号 | 长标签 | 短标签 | 功能描述 |
 |---|---|---|
-| 1 |`-p <filepath>` | 仅转换文件|
-| 2 |`-v <filepath>` | 仅验证输入文件 |
-| 3 |`-pv <filepath> ` | 仅转换文件并且验证转化后文件的合法性 |
-| 4 |`-edc,--enable-day-check` | 启用月份完整性检查 |
-
+| 1 | `--convert <filepath>` | `-c` | 转换文件 |
+| 2 | `--validate-source <filepath>` | `-vs`| 检验源文件 |
+| 3 | `--validate-output <filepath> ` | `-vo` | 检验输出文件 |
+| 4 | `--all <filepath> ` | `-a` | 依次执行 -vs (检验源)、-c (转换) 和 -vo (检验输出) |
+| 4 | `--enable-day-check` | `-edc` | 启用月份完整性检查 |
+| 5 | `--version` | `-v` | 查看版本号 |
+| 6 | `--help` | `-h` | 帮助 |
 
 
 ### 2.3.3 配置文件
@@ -310,39 +311,7 @@ process/
 `processed_input.txt`
 
 #### 示例2:仅验证文件，不开启日期完整性检测(序号2)
-1. 输入命令
-```bash
-./log_tool log_tool.exe -v /path/to/input.txt
-```
-2. 输出
-控制台显示验证结果，错误内容写入`validation_errors.txt`
 
-#### 示例3:仅验证文件，开启日期完整性检测(序号2,4)
-1. 输入命令
-```bash
-./log_tool log_tool.exe -v /path/to/input.txt -edc
-```
-2. 输出
-控制台显示验证结果，错误内容写入`validation_errors.txt`
-
-#### 示例4：转换并验证(序号3)
-1. 输入命令
-```bash
-./log_tool log_tool.exe -pv /path/to/input.txt
-```
-2. 输出
-控制台显示验证结果，错误内容写入`validation_errors.txt`
-
-#### 示例5：转换并验证，开启日期完整性检测(序号4)
-1. 输入命令
-```bash
-./log_tool log_tool.exe -pv /path/to/folder -edc
-```
-2. 输出
-输出文件：
-- 如果验证成功，输出文件：`final_[原文件名]`
-- 如果验证失败，输出文件：`error_validation_[原文件名]`
-- 错误日志：`validation_errors.txt`
 
 
 
