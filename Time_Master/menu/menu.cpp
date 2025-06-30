@@ -1,19 +1,19 @@
+// --- START OF FILE Menu/menu.cpp ---
+
 #include "Menu.h"
 #include "processing.h"
+#include "query_handler.h"
+#include "version.h"
 
 #include <iostream>
 #include <limits>
-#include <algorithm>
 #include <sqlite3.h>
-#include "version.h"
+#include <algorithm>
 
-// Assume FileProcessor is now in its own header/source files
-// You would create these files in a similar refactoring step.
-#include "processing.h" // A new header for file processing logic
-#include "query_handler.h" // For running the queries
 
-// Constructor
-Menu::Menu(const std::string& db_name) : db(nullptr), db_name_(db_name) {}
+// 【修改】构造函数，初始化所有成员变量
+Menu::Menu(const std::string& db_name, const std::string& config_path) 
+    : db(nullptr), db_name_(db_name), config_path_(config_path) {}
 
 // Main application loop
 void Menu::run() {
@@ -31,7 +31,7 @@ void Menu::run() {
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Consume newline
 
         if (!handle_user_choice(choice)) {
-            break; // Exit loop if handler returns false
+            break; 
         }
     }
     close_database();
@@ -52,10 +52,9 @@ void Menu::print_menu() {
 }
 
 bool Menu::handle_user_choice(int choice) {
-    // For any query, ensure the database is open
     if (choice >= 1 && choice <= 6) {
         if (!open_database_if_needed()) {
-            return true; // Continue loop, but query will fail gracefully
+            return true;
         }
     }
 
@@ -63,47 +62,44 @@ bool Menu::handle_user_choice(int choice) {
 
     switch (choice) {
         case 0:
-            close_database(); // Close DB connection before writing
-            handle_process_files(db_name_);
+            process_files_option();
             break;
         case 1: {
             std::string date_str = get_valid_date_input();
             query_handler.run_daily_query(date_str);
             break;
         }
-        case 2:
-            query_handler.run_period_query(7);
-            break;
-        case 3:
-            query_handler.run_period_query(14);
-            break;
-        case 4:
-            query_handler.run_period_query(30);
-            break;
-        case 5:
-            std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl;
-            break;
+        case 2: query_handler.run_period_query(7); break;
+        case 3: query_handler.run_period_query(14); break;
+        case 4: query_handler.run_period_query(30); break;
+        case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
         case 6: {
             std::string month_str = get_valid_month_input();
             query_handler.run_monthly_query(month_str);
             break;
         }
         case 7: {
-            // 使用在 version.h 中定义的值
             std::cout << "time_tracker_command Version: " << AppInfo::VERSION << std::endl;
             std::cout << "Last Updated: " << AppInfo::LAST_UPDATED << std::endl;
             break;
         }
         case 8:
             std::cout << "Exiting program." << std::endl;
-            return false; // Signal to exit
+            return false;
         default:
             std::cout << "Invalid choice. Please try again." << std::endl;
             break;
     }
-    return true; // Signal to continue
+    return true;
 }
 
+void Menu::process_files_option() {
+    close_database(); // 在写入前关闭数据库连接
+    // 【核心修复】调用 handle_process_files 时，传入存储的 config_path_
+    handle_process_files(db_name_, config_path_);
+}
+
+// --- 其他私有方法 (保持不变) ---
 bool Menu::open_database_if_needed() {
     if (db == nullptr) {
         if (sqlite3_open(db_name_.c_str(), &db)) {
@@ -132,13 +128,9 @@ std::string Menu::get_valid_date_input() {
             int year = std::stoi(date_str.substr(0, 4));
             int month = std::stoi(date_str.substr(4, 2));
             int day = std::stoi(date_str.substr(6, 2));
-            if (year > 1900 && year < 3000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
-                break;
-            }
+            if (year > 1900 && year < 3000 && month >= 1 && month <= 12 && day >= 1 && day <= 31) break;
         }
         std::cout << "Invalid date format or value. Please use YYYYMMDD." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     return date_str;
 }
@@ -151,13 +143,9 @@ std::string Menu::get_valid_month_input() {
         if (month_str.length() == 6 && std::all_of(month_str.begin(), month_str.end(), ::isdigit)) {
             int year = std::stoi(month_str.substr(0, 4));
             int month = std::stoi(month_str.substr(4, 2));
-            if (year > 1900 && year < 3000 && month >= 1 && month <= 12) {
-                break;
-            }
+            if (year > 1900 && year < 3000 && month >= 1 && month <= 12) break;
         }
         std::cout << "Invalid month format or value. Please use YYYYMM." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
     return month_str;
 }

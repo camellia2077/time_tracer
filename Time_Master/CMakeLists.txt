@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # 定义项目名称和所用语言 (CXX 代表 C++)
-project(TimeTrackerApp VERSION "0.0.2" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.1.2" LANGUAGES CXX)
 
 # 设置 C++ 标准为 C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -27,6 +27,7 @@ file(GLOB DATABASE_SOURCES "database/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB MENU_SOURCES "Menu/*.cpp")
 file(GLOB PROCESSING_SOURCES "processing/*.cpp")
+file(GLOB REPROCESSING_SOURCES "reprocessing/*.cpp")
 
 # --- 定义两个独立的可执行文件目标 ---
 
@@ -40,6 +41,8 @@ add_executable(
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES}
+    ${REPROCESSING_SOURCES}
+
 )
 
 # 目标 2: 命令行工具 (使用 main_command.cpp)
@@ -52,6 +55,7 @@ add_executable(
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES} 
+    ${REPROCESSING_SOURCES}
 )
 
 
@@ -76,10 +80,10 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "database" "parsing" "queries" "resources" "Menu" "processing"
+    "common" "database" "parsing" "queries" "resources" "Menu" "processing" "reprocessing"
 )
 target_include_directories(time_tracker_command PRIVATE
-    "common" "database" "parsing" "queries" "resources" "Menu" "processing"
+    "common" "database" "parsing" "queries" "resources" "Menu" "processing" "reprocessing"
 )
 
 # --- 为每个目标分别链接库 ---
@@ -112,7 +116,7 @@ set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确�
 
 # 【修正】根据 ldd 的输出更新 DLL 列表，特别是 sqlite3 的文件名
 install(FILES
-    "${UCRT64_BIN_PATH}/libsqlite3-0.dll"    # <-- 已修正
+    "${UCRT64_BIN_PATH}/libsqlite3-0.dll"    
     "${UCRT64_BIN_PATH}/libstdc++-6.dll"
     "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
     "${UCRT64_BIN_PATH}/libwinpthread-1.dll"

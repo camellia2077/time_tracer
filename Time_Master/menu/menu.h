@@ -1,42 +1,33 @@
+// --- START OF FILE Menu/menu.h ---
+
 #ifndef MENU_H
 #define MENU_H
 
 #include <string>
 
-// Forward-declare the sqlite3 struct to avoid including the full header here.
 struct sqlite3;
 
-/**
- * @class Menu
- * @brief Handles the main application menu and user interaction loop.
- */
 class Menu {
 public:
     /**
-     * @brief Constructs the Menu object.
-     * @param db_name The filename for the SQLite database.
+     * @brief 构造函数，接收数据库名和配置文件路径。
      */
-    explicit Menu(const std::string& db_name);
+    explicit Menu(const std::string& db_name, const std::string& config_path);
 
-    /**
-     * @brief Runs the main application loop.
-     */
     void run();
 
 private:
-    // Member Variables
     sqlite3* db;
     std::string db_name_;
+    std::string config_path_; // 【新增】存储 config.json 的路径
 
-    // Private Methods
     void print_menu();
     bool handle_user_choice(int choice);
     bool open_database_if_needed();
     void close_database();
-
-    // Input validation helpers
     std::string get_valid_date_input();
     std::string get_valid_month_input();
+    void process_files_option(); // 将处理逻辑移到私有方法中
 };
 
 #endif // MENU_H

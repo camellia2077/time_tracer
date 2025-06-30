@@ -1,22 +1,25 @@
+// --- START OF FILE common/common_utils.h ---
+
 #ifndef COMMON_UTILS_H
 #define COMMON_UTILS_H
 
-#include <iostream>
 #include <string>
 #include <vector>
 #include <map>
-#include <sstream>
-#include <iomanip>
-#include <algorithm>
-#include <stdexcept>
+#include <sstream>   // <-- MISSING: For std::stringstream, std::istringstream
+#include <stdexcept> // <-- MISSING: For std::invalid_argument, std::out_of_range
 #include <numeric>
 #include <cctype>
+#include <iostream>
+#include <iomanip>
+#include <algorithm>
 
-// --- ANSI Color Code Declarations ---
-// By declaring them here, any part of the application that includes common_utils.h
-// can use these constants for colored console output.
-extern const std::string ANSI_COLOR_GREEN;
-extern const std::string ANSI_COLOR_RESET;
+
+// --- ANSI Color Code Definitions (using macros for simplicity) ---
+#define RESET_COLOR   "\033[0m"
+#define RED_COLOR     "\033[31m"
+#define GREEN_COLOR   "\033[32m"
+#define YELLOW_COLOR  "\033[33m"
 
 
 // --- Structure Definitions ---
@@ -30,7 +33,8 @@ struct ProjectNode {
 // Alias for the project tree structure 
 using ProjectTree = std::map<std::string, ProjectNode>;
 
-// --- Function Declarations ---
+// --- Function Declarations (Prototypes) ---
+// Notice these just end with a semicolon; the code body is in the .cpp file.
 
 // Helper function to convert HH:MM or HHMM time string to seconds since midnight 
 int time_str_to_seconds(const std::string& time_str_in);
