@@ -8,8 +8,13 @@
 
 DataFileParser::DataFileParser() // 构造函数与析构函数
     : current_date_processed(false), // 初始化 current_date_processed 为 false
-    _time_record_regex(R"((\d{2}:\d{2})~(\d{2}:\d{2})(.+))")// WARNING: Do not change this regex — it matches the expected input format 用于匹配 "HH:MM~HH:MMevent" 格式的时间记录行
-{
+    // 【修改】将 \d 替换为 [0-9] 以提高正则表达式的兼容性
+    // [Compatibility Fix] 将 \d 替换为 [0-9].
+    // 原因是：某些 C++ 标准库实现 (特别是部分 MinGW-GCC 版本) 对 \d 的支持不佳,
+    // 在初始化时可能导致 'std::regex_error' 异常. 使用 [0-9] 是更健壮、可移植性更好的写法.
+    // WARNING: Do not change this regex — it matches the expected input format 用于匹配 "HH:MM~HH:MMevent" 格式的时间记录行
+    _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))")
+    {
     initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "study"，"code" 对应 "code"。
     {
         {"study", "mystudy"}
