@@ -1,3 +1,5 @@
+# --- START OF FILE CMakeLists.txt ---
+
 # 设置 CMake 所需的最低版本
 cmake_minimum_required(VERSION 3.10)
 
@@ -111,10 +113,8 @@ install(TARGETS time_tracker_app time_tracker_command
 )
 
 # 安装必要的 DLL 文件
-
 set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
 
-# 【修正】根据 ldd 的输出更新 DLL 列表，特别是 sqlite3 的文件名
 install(FILES
     "${UCRT64_BIN_PATH}/libsqlite3-0.dll"    
     "${UCRT64_BIN_PATH}/libstdc++-6.dll"
@@ -123,12 +123,12 @@ install(FILES
     DESTINATION bin # 将这些 DLL 也安装到 bin 目录
 )
 
-# 安装项目所需的JSON配置文件
-# 假设 config.json 在项目的根目录
-install(FILES
-    "config.json"
-    DESTINATION bin # 安装到根目录
-)
+# --- [核心修改] ---
+# 安装整个 config 目录
+# 这会将源文件中的 'config' 文件夹及其所有内容（如 config.json）
+# 复制到安装目录的 'bin' 文件夹下，最终形成 'bin/config/config.json' 的结构，
+# 这与 C++ 代码的期望完全一致。
+install(DIRECTORY config DESTINATION bin)
 
 
 # --- 2. 配置 CPack 打包工具 ---
@@ -141,8 +141,6 @@ set(CPACK_PACKAGE_VENDOR "Your Company Name")
 set(CPACK_PACKAGE_CONTACT "your.email@example.com")
 
 # 选择打包生成器
-# "NSIS" 会创建一个 .exe 安装程序 (推荐)
-# "ZIP" 会创建一个 .zip 压缩包
 set(CPACK_GENERATOR "NSIS")
 
 # 为 NSIS 安装程序设置特定选项
