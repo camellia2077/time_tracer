@@ -27,65 +27,6 @@ void IntervalProcessor::DayData::clear() {
     isContinuation = false;
 }
 
-// 验证功能保持不变
-bool IntervalProcessor::validateFile(const std::string& input_filepath) {
-    std::ifstream inFile(input_filepath);
-    if (!inFile.is_open()) {
-        std::cerr << RED_COLOR << "Error: Could not open input file for validation: " << input_filepath << RESET_COLOR << std::endl;
-        return false;
-    }
-
-    std::string line;
-    int lineNumber = 0;
-    bool firstLineFound = false;
-    bool eventFoundForCurrentDay = false; 
-
-    while (std::getline(inFile, line)) {
-        lineNumber++;
-        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
-        line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
-
-        if (line.empty()) {
-            continue; 
-        }
-
-        if (isDateLine(line)) {
-            eventFoundForCurrentDay = false; 
-            if (!firstLineFound) {
-                firstLineFound = true;
-            }
-            continue; 
-        }
-
-        if (!firstLineFound) {
-            std::cerr  << "Validation Error on" << RED_COLOR << " line " << lineNumber <<  RESET_COLOR << ": The first non-empty line must be a 4-digit date. Found: '" << line << "'"  << std::endl;
-            inFile.close();
-            return false;
-        }
-
-        if (isRemarkLine(line)) {
-            if (eventFoundForCurrentDay) {
-                std::cerr << RED_COLOR << "Validation Error on" << RED_COLOR << " line " << lineNumber <<  RESET_COLOR << ": Remark lines cannot appear after an event line for the same day. Found: '" << line << "'" << RESET_COLOR << std::endl;
-                inFile.close();
-                return false;
-            }
-            continue; 
-        }
-
-        std::string timeStr, description;
-        if (parseEventLine(line, timeStr, description)) {
-            eventFoundForCurrentDay = true; 
-            continue; 
-        }
-        
-        std::cerr << "Validation Error on" << RED_COLOR << " line " << lineNumber <<  RESET_COLOR << ": Invalid format. Must be a date, remark (e.g., 'r text'), or event (e.g., '0830event'). Found: '" << line << "'" << RESET_COLOR << std::endl;
-        inFile.close();
-        return false;
-    }
-    
-    inFile.close();
-    return true;
-}
 
 // 修改: processFile 重命名为 executeConversion，并移除内部的 validateFile 调用
 bool IntervalProcessor::executeConversion(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix) {
