@@ -1,10 +1,8 @@
+// --- START OF FILE common/common_utils.cpp ---
+
 #include "common_utils.h"
 
-// --- ANSI Color Code Definitions ---
-// The actual values for the color constants are defined here.
-const std::string ANSI_COLOR_GREEN = "\x1b[32m";
-const std::string ANSI_COLOR_RESET = "\x1b[0m";
-
+// Note: Function bodies (implementations) belong in the .cpp file.
 
 // Helper function to convert HH:MM or HHMM time string to seconds since midnight 
 int time_str_to_seconds(const std::string& time_str_in) {
@@ -53,12 +51,7 @@ std::string time_format_duration(long long total_seconds, int avg_days) {
         return "0m"; 
     }
 
-    long long seconds_for_format = total_seconds; 
-    long long seconds_per_day = total_seconds; 
-
-    if (avg_days > 1) { 
-         seconds_per_day = total_seconds / avg_days; 
-    }
+    long long seconds_per_day = (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
 
     auto format_single_duration = [](long long s) { 
         if (s == 0) return std::string("0m"); 
@@ -74,7 +67,7 @@ std::string time_format_duration(long long total_seconds, int avg_days) {
         return ss.str(); 
     };
 
-    std::string main_duration_str = format_single_duration(seconds_for_format); 
+    std::string main_duration_str = format_single_duration(total_seconds); 
 
     if (avg_days > 1) { 
         std::string avg_duration_str = format_single_duration(seconds_per_day); 
