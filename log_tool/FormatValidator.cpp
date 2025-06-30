@@ -1,4 +1,4 @@
-// FormatValidator.cpp (已重构)
+// FormatValidator.cpp (已重构并合并 ErrorReporter)
 
 #include "FormatValidator.h"
 #include "SharedUtils.h"
@@ -150,7 +150,6 @@ bool FormatValidator::parseSourceEventLine(const std::string& line, std::string&
 // ###                  输出文件验证 (EXISTING LOGIC)             ###
 // ##################################################################
 
-// 将原有的 validateFile 重命名为 validateOutputFile
 bool FormatValidator::validateOutputFile(const std::string& file_path, std::set<Error>& errors) {
     std::ifstream file(file_path);
     if (!file.is_open()) {
@@ -246,6 +245,81 @@ bool FormatValidator::validateOutputFile(const std::string& file_path, std::set<
     return errors.empty();
 }
 
+// ##################################################################
+// ###      ERROR REPORTING (MERGED FROM ErrorReporter)           ###
+// ##################################################################
+
+std::string FormatValidator::getErrorTypeHeader(FormatValidator::ErrorType type) {
+    switch (type) {
+        // Source File Errors
+        case FormatValidator::ErrorType::Source_RemarkAfterEvent:
+        case FormatValidator::ErrorType::Source_NoDateAtStart:
+        case FormatValidator::ErrorType::Source_InvalidLineFormat:
+            return "Source file format errors (源文件格式错误):";
+
+        // Output File Errors
+        case FormatValidator::ErrorType::IncorrectDayCountForMonth:
+            return "Date errors(日期错误):";
+
+        case FormatValidator::ErrorType::DateContinuity:
+        case FormatValidator::ErrorType::TimeDiscontinuity:
+            return "Time discontinuity errors(时间不连续):";
+
+        case FormatValidator::ErrorType::MissingSleepNight:
+            return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
+        
+        // Generic Errors
+        case FormatValidator::ErrorType::FileAccess:
+            return "File access errors:";
+        case FormatValidator::ErrorType::Structural:
+            return "Structural errors:";
+        case FormatValidator::ErrorType::LineFormat:
+            return "Line format errors:";
+        case FormatValidator::ErrorType::Logical:
+            return "Logical consistency errors:";
+        
+        default:
+            return "Other errors:";
+    }
+}
+
+void FormatValidator::printGroupedErrors(const std::string& filename, const std::set<FormatValidator::Error>& errors, const std::string& error_log_path) {
+    std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
+    
+    std::map<FormatValidator::ErrorType, std::vector<FormatValidator::Error>> grouped_errors;
+    for (const auto& err : errors) {
+        FormatValidator::ErrorType group_key = err.type;
+        // Group DateContinuity errors with TimeDiscontinuity errors for unified reporting.
+        if (err.type == FormatValidator::ErrorType::DateContinuity) {
+            group_key = FormatValidator::ErrorType::TimeDiscontinuity;
+        }
+        grouped_errors[group_key].push_back(err);
+    }
+    
+    std::ofstream err_stream(error_log_path, std::ios::app); // Use append mode
+    err_stream << "\n文件 " << filename << " 的检验错误\n";
+    err_stream << "--------------------------------------------------\n\n";
+    
+    for (const auto& pair : grouped_errors) {
+        std::string header = getErrorTypeHeader(pair.first);
+        std::cerr << "\n" << header << std::endl;
+        err_stream << header << "\n";
+        for (const auto& err : pair.second) {
+            std::string error_message;
+            if (err.line_number == 0) {
+                error_message = err.message;
+            } else {
+                error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
+            }
+            std::cerr << "  " << error_message << std::endl;
+            err_stream << "  " << error_message << "\n";
+        }
+    }
+    
+    err_stream.close();
+    std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
+}
+
 
 // --- 其余私有函数保持不变, 但 DateBlock::reset 需要实现 ---
 void FormatValidator::DateBlock::reset() {
@@ -263,7 +337,9 @@ std::string FormatValidator::trim(const std::string& str) {
     size_t last = str.find_last_not_of(WHITESPACE);
     return str.substr(first, (last - first + 1));
 }
+// Placeholder implementations for brevity
 bool FormatValidator::parse_time_format(const std::string& time_str, int& hours, int& minutes) { /* ... */ return true; }
+void FormatValidator::validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_status_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_sleep_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_getup_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) { /* ... */ }
@@ -273,7 +349,6 @@ void FormatValidator::finalize_block_status_validation(DateBlock& block, std::se
 bool FormatValidator::is_leap(int year) { return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)); }
 int FormatValidator::days_in_month(int year, int month) { if (month == 2) return is_leap(year) ? 29 : 28; else if (month == 4 || month == 6 || month == 9 || month == 11) return 30; else return 31; }
 std::string FormatValidator::increment_date(const std::string& date_str) { /* ... */ return ""; }
-void FormatValidator::validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_date_continuity(std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_month_start(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors) { /* ... */ }
 void FormatValidator::validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors) { /* ... */ }

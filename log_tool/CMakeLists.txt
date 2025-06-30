@@ -32,17 +32,6 @@ elseif (CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # 添加头文件搜索路径
-# 这里我们假设 nlohmann/json.hpp 已经在 MSYS2 的标准 MinGW 路径下，
-# 如果pacman正确安装了，CMake的find_package通常能找到
-# 如果还报错 "fatal error: nlohmann/json.hpp: No such file or directory"
-# 你可能需要手动添加，例如：
-# include_directories(C:/msys64/mingw64/include) # 替换成你实际的安装路径
-# 或者更好的方式是使用 find_package
-
-# 查找 nlohmann/json 库
-# CMake 3.11 及以上版本支持 FindnlohmannJson.cmake 模块
-# 如果你的 CMake 版本低于 3.11，你可能需要手动下载并放置 FindnlohmannJson.cmake
-# 或者直接使用 include_directories 添加路径
 find_package(nlohmann_json CONFIG REQUIRED)
 
 # 告诉 CMake 你的源文件
@@ -50,7 +39,6 @@ set(SOURCES
     main.cpp
     IntervalProcessor.cpp
     FormatValidator.cpp
-    ErrorReporter.cpp
 )
 
 # 告诉 CMake 你的头文件 (不需要编译，但有助于IDE理解项目结构)
@@ -58,7 +46,6 @@ set(HEADERS
     IntervalProcessor.h
     FormatValidator.h
     SharedUtils.h
-    ErrorReporter.h
 )
 
 # 创建可执行文件

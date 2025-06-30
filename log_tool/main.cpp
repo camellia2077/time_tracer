@@ -1,4 +1,4 @@
-// main.cpp (已支持 -a 命令和错误即停机制)
+// main.cpp (已支持 -a 命令和错误即停机制, 并适配合并后的 FormatValidator)
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -13,7 +13,7 @@
 #include "IntervalProcessor.h"
 #include "FormatValidator.h"
 #include "SharedUtils.h"
-#include "ErrorReporter.h"
+// MODIFICATION: Removed #include "ErrorReporter.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -153,7 +153,8 @@ int main(int argc, char* argv[]) {
             std::set<FormatValidator::Error> errors;
             if (!validator.validateSourceFile(file.string(), errors)) {
                 std::cerr << RED_COLOR << "错误: 源文件 " << file.string() << " 检验失败。" << RESET_COLOR << std::endl;
-                ErrorReporter::printGroupedErrors(file.string(), errors, error_file);
+                // MODIFICATION: Changed from ErrorReporter:: to FormatValidator::
+                FormatValidator::printGroupedErrors(file.string(), errors, error_file);
                 std::cerr << "\n程序已终止。" << std::endl;
                 return 1;
             }
@@ -203,7 +204,8 @@ int main(int argc, char* argv[]) {
             std::set<FormatValidator::Error> errors;
             if (!validator.validateOutputFile(output_file.string(), errors)) {
                 std::cerr << RED_COLOR << "错误: 输出文件 " << output_file.string() << " 检验失败。" << RESET_COLOR << std::endl;
-                ErrorReporter::printGroupedErrors(output_file.string(), errors, error_file);
+                // MODIFICATION: Changed from ErrorReporter:: to FormatValidator::
+                FormatValidator::printGroupedErrors(output_file.string(), errors, error_file);
                 std::cerr << "\n程序已终止。" << std::endl;
                 return 1;
             }
@@ -229,7 +231,13 @@ int main(int argc, char* argv[]) {
                 FormatValidator validator(validator_config, interval_config, enable_day_count_check);
                 std::set<FormatValidator::Error> errors;
                 if (validator.validateSourceFile(file.string(), errors)) { v_source_success++; std::cout << GREEN_COLOR << "成功: 源文件格式合规。" << RESET_COLOR << std::endl; } 
-                else { v_source_fail++; current_file_ok = false; std::cerr << RED_COLOR << "失败: 源文件格式错误。" << RESET_COLOR << std::endl; ErrorReporter::printGroupedErrors(file.string(), errors, error_file); }
+                else { 
+                    v_source_fail++; 
+                    current_file_ok = false; 
+                    std::cerr << RED_COLOR << "失败: 源文件格式错误。" << RESET_COLOR << std::endl; 
+                    // MODIFICATION: Changed from ErrorReporter:: to FormatValidator::
+                    FormatValidator::printGroupedErrors(file.string(), errors, error_file);
+                }
             }
 
             if (convert && current_file_ok) {
@@ -276,7 +284,8 @@ int main(int argc, char* argv[]) {
                 } else {
                     v_output_fail++;
                     std::cerr << RED_COLOR << "失败: 输出文件 " << final_output_path.string() << " 格式错误。" << RESET_COLOR << std::endl;
-                    ErrorReporter::printGroupedErrors(final_output_path.string(), errors, error_file);
+                    // MODIFICATION: Changed from ErrorReporter:: to FormatValidator::
+                    FormatValidator::printGroupedErrors(final_output_path.string(), errors, error_file);
                 }
             }
         }
