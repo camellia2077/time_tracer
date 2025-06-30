@@ -1,46 +1,20 @@
+// --- START OF FILE main.cpp ---
+
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
 #include <iostream>
 #include <string>
-#include <vector>
-#include <limits>
-#include <sstream>
-#include <algorithm>
-#include <iomanip> // For std::setprecision and std::fixed
-#include <sqlite3.h>
 #include <filesystem>
-#include <chrono>
 
-#include "common_utils.h"
-#include "data_parser.h"
-#include "database_inserter.h"
-#include "query_handler.h" // Main query handler header
-
-#include "menu.h"
-#include "processing.h"
+#include "Menu/menu.h" // 根据你的目录结构修改
 
 // 定义命名空间别名
 namespace fs = std::filesystem;
 
 // 核心常量定义
 const std::string DATABASE_NAME = "time_data.db";
-
-/**
- * @brief 用于处理文件处理工作流
- *
- * 此函数现在调用在 processing 模块中定义的同名函数。
- * 它由 Menu 类调用。
- */
-void handle_process_files_wrapper() { // Renamed to avoid conflicts if headers are included in a different order
-    // 调用位于 processing 模块中的函数，并传递全局数据库名称
-    handle_process_files(DATABASE_NAME);
-}
-
-
-// --- The Menu class and open_database_if_needed() function have been removed ---
-// (Assuming the Menu class is now in Menu/Menu.h and Menu/Menu.cpp)
-
+const std::string CONFIG_FILE_NAME = "config.json";
 
 #if defined(_WIN32) || defined(_WIN64)
 void EnableVirtualTerminalProcessing() {
@@ -53,14 +27,29 @@ void EnableVirtualTerminalProcessing() {
 }
 #endif
 
-int main() {
+int main(int argc, char* argv[]) {
     #if defined(_WIN32) || defined(_WIN64)
     SetConsoleOutputCP(CP_UTF8);
     EnableVirtualTerminalProcessing();
     #endif
 
-    // 实例化菜单，将数据库名称传递给其构造函数
-    Menu app_menu(DATABASE_NAME);
+    // --- 【核心修改】确定配置文件路径 ---
+    std::string config_path;
+    try {
+        fs::path exe_path = fs::canonical(fs::path(argv[0])).parent_path();
+        config_path = (exe_path / CONFIG_FILE_NAME).string();
+        if (!fs::exists(config_path)) {
+            std::cerr << "Warning: Main configuration file '" << CONFIG_FILE_NAME 
+                      << "' not found in the application directory." << std::endl;
+            // 即使文件不存在，也继续运行，但后续操作会收到警告
+        }
+    } catch (const std::exception& e) {
+        std::cerr << "Error determining config file path: " << e.what() << std::endl;
+        config_path = ""; // 路径无效，设置为空
+    }
+
+    // --- 【核心修改】实例化菜单，将数据库名称和配置文件路径传递给其构造函数 ---
+    Menu app_menu(DATABASE_NAME, config_path);
     app_menu.run();
     
     return 0;
