@@ -58,7 +58,6 @@ int main(int argc, char* argv[]) {
     auto parsing_start_time = std::chrono::high_resolution_clock::now();
     
     // --- Argument Parsing ---
-    // (后面的代码保持不变)
     bool process = false;
     bool validate = false;
     std::string input_path_str;
@@ -87,7 +86,6 @@ int main(int argc, char* argv[]) {
         std::cerr << "    -v\t只检验,不转换文件" << std::endl;
         std::cerr << "  options (可选):" << std::endl;
         std::cerr << "    --enable-day-check, -edc\t启用对月份天数完整性的检查 (默认关闭)" << std::endl;
-        // NEW: 在帮助信息中也加入 --version
         std::cerr << "  other:" << std::endl;
         std::cerr << "    --version\t显示版本号和更新日期" << std::endl;
         return 1;
@@ -105,16 +103,12 @@ int main(int argc, char* argv[]) {
         validate = true;
     } else {
         std::cerr << RED_COLOR << "Errors: " << RESET_COLOR <<  "未知的 flag '" << mode_flag << "'" << std::endl;
-        // (Help text omitted for brevity)
         return 1;
     }
-
-    // ... 您的其余代码保持完全一样 ...
-    // ...
+    
     // --- Config File Paths ---
     std::string interval_config = "interval_processor_config.json";
     std::string validator_config = "format_validator_config.json";
-    std::string header_config = "header_format.json";
     std::string error_file = "validation_errors.txt";
     
     // --- File/Directory Path Handling ---
@@ -126,9 +120,27 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    if (fs::is_directory(input_path)) {
+    // --- MODIFICATION START: New logic for directory handling ---
+    bool is_input_a_directory = fs::is_directory(input_path);
+    fs::path output_root_path; // Will store the new root like "p_Date"
+
+    if (is_input_a_directory) {
         std::cout << "检测到输入为文件夹,将处理其中所有的 .txt 文件..." << std::endl;
-        for (const auto& entry : fs::directory_iterator(input_path)) {
+        
+        // If in pure '-p' mode, create the new root output directory
+        if (process && !validate) {
+            // Use parent_path() to place the new directory alongside the original
+            output_root_path = input_path.parent_path() / ("p_" + input_path.filename().string());
+            try {
+                fs::create_directories(output_root_path);
+                std::cout << "Info: 创建输出目录以保持原始结构: " << output_root_path.string() << std::endl;
+            } catch (const fs::filesystem_error& e) {
+                std::cerr << RED_COLOR << "FATAL: " << RESET_COLOR << "创建目录失败: " << output_root_path.string() << ". 原因: " << e.what() << std::endl;
+                return 1;
+            }
+        }
+
+        for (const auto& entry : fs::recursive_directory_iterator(input_path)) {
             if (entry.is_regular_file() && entry.path().extension() == ".txt") {
                 files_to_process.push_back(entry.path());
             }
@@ -144,6 +156,7 @@ int main(int argc, char* argv[]) {
         std::cerr << RED_COLOR << "Error: " <<  RESET_COLOR <<"输入的路径既不是文件也不是文件夹: " << input_path_str << std::endl;
         return 1;
     }
+    // --- MODIFICATION END ---
     
     auto parsing_end_time = std::chrono::high_resolution_clock::now();
     
@@ -154,14 +167,46 @@ int main(int argc, char* argv[]) {
     auto parsing_duration = parsing_end_time - parsing_start_time;
     auto conversion_duration = std::chrono::high_resolution_clock::duration::zero();
 
-    // --- MODIFICATION START: Add a flag to track error file creation ---
     bool error_file_initialized = false;
-    // --- MODIFICATION END ---
 
     // --- Loop to process all found files ---
     for (const auto& file : files_to_process) {
         std::cout << "\n=======================================================\n";
         std::cout << "正在处理文件: " << file.string() << "\n";
+
+                 // MODIFICATION: Logic to determine the year from the file path.
+                 std::string year_str;
+                 fs::path current_path = file.parent_path();
+                 bool year_found = false;
+         
+                 // Lambda to check if a string is a 4-digit string.
+                 auto is_four_digit_string = [](const std::string& s) {
+                     if (s.length() != 4) return false;
+                     for (char c : s) {
+                         if (!std::isdigit(static_cast<unsigned char>(c))) return false;
+                     }
+                     return true;
+                 };
+         
+                 // Traverse up the directory tree to find a folder named with a year.
+                 while (!current_path.empty() && current_path.has_filename()) {
+                     std::string dirname = current_path.filename().string();
+                     if (is_four_digit_string(dirname)) {
+                         year_str = dirname;
+                         year_found = true;
+                         std::cout << "Info: 从目录路径中提取年份 '" << year_str << "'" << std::endl;
+                         break;
+                     }
+                     current_path = current_path.parent_path();
+                 }
+         
+                 if (!year_found) {
+                     std::time_t now = std::time(nullptr);
+                     std::tm* ltm = std::localtime(&now);
+                     year_str = std::to_string(1900 + ltm->tm_year);
+                     std::cout << YELLOW_COLOR << "Warning: " << RESET_COLOR
+                               << "无法从目录结构中确定年份，将使用当前系统年份: " << year_str << std::endl;
+                 }
         
         std::string source_filepath = file.string();
         std::string processed_filepath = ""; 
@@ -169,14 +214,36 @@ int main(int argc, char* argv[]) {
 
         // --- 阶段一: 文件处理 (-p or -pv) ---
         if (process) {
-            std::string initial_output_filename = (validate) 
-                ? "temp_" + file.filename().string() 
-                : "processed_" + file.filename().string();
+            std::string initial_output_filename;
+
+            // --- MODIFICATION START: Determine output path based on input type ---
+            // If it's a directory under pure '-p' mode, construct the mirrored path
+            if (is_input_a_directory && !validate) {
+                try {
+                    fs::path relative_path = fs::relative(file, input_path);
+                    fs::path final_output_path = output_root_path / relative_path;
+
+                    // Ensure the target subdirectory (e.g., p_Date/2023/) exists before writing the file
+                    fs::create_directories(final_output_path.parent_path());
+                    
+                    initial_output_filename = final_output_path.string();
+                } catch (const fs::filesystem_error& e) {
+                     std::cerr << RED_COLOR << "Errors: " << RESET_COLOR << "无法创建输出目录结构。原因: " << e.what() << ". 跳过此文件。" << std::endl;
+                     conversion_failure_count++;
+                     continue;
+                }
+            } else {
+                // Original logic for single files or modes other than '-p'
+                 initial_output_filename = (validate) 
+                    ? "temp_" + file.filename().string() 
+                    : "processed_" + file.filename().string();
+            }
+            // --- MODIFICATION END ---
 
             auto conversion_start_time = std::chrono::high_resolution_clock::now();
-            IntervalProcessor processor(interval_config, header_config);
+            IntervalProcessor processor(interval_config);
             
-            if (!processor.processFile(source_filepath, initial_output_filename)) {
+            if (!processor.processFile(source_filepath, initial_output_filename, year_str)) {
                 std::cerr << RED_COLOR << "Errors: " << RESET_COLOR << "处理文件失败。跳过此文件。" << std::endl;
                 conversion_failure_count++;
                 std::cout << "=======================================================\n";
@@ -197,7 +264,7 @@ int main(int argc, char* argv[]) {
         if (validate) {
             std::string file_to_validate = (process) ? processed_filepath : source_filepath;
             
-            FormatValidator validator(validator_config, header_config, enable_day_count_check);
+            FormatValidator validator(validator_config, interval_config, enable_day_count_check);
             std::set<FormatValidator::Error> errors;
             is_valid = validator.validateFile(file_to_validate, errors);
 
@@ -207,14 +274,11 @@ int main(int argc, char* argv[]) {
             } else {
                 std::cerr << RED_COLOR << "\nErrors: " << RESET_COLOR << "在文件中发现错误。"  << std::endl;
                 
-                // --- MODIFICATION START: Create error file on demand ---
                 if (!error_file_initialized) {
-                    // 这是本次运行中第一次发现错误，现在创建/清空错误日志文件
                     std::ofstream ofs(error_file, std::ofstream::out | std::ofstream::trunc);
                     ofs.close();
-                    error_file_initialized = true; // 标记已创建，避免重复清空
+                    error_file_initialized = true; 
                 }
-                // --- MODIFICATION END ---
 
                 ErrorReporter::printGroupedErrors(file_to_validate, errors, error_file);
                 failure_count++;

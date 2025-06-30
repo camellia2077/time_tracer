@@ -24,36 +24,40 @@
 主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
-db/
+Time_Master/
 ├── CMakeLists.txt
-├── main.cpp
-├── main_command
+├── main.cpp # 交互式
+├── main_command # 命令行传入
 │
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
-│   └── common_utils.h
+│   ├── common_utils.h
+│   └── version.h # for version info
 ├── database/ # Manages the creation of the database and the importation of data into it.
 │   ├── database_importer.cpp
 │   └── database_importer.h
 ├── menu/                # UI components
 │   ├── menu.h           # Header for the Menu class
 │   └── menu.cpp         # Implementation of the Menu class
+│
 ├── parsing/                    # Handles data parsing from input files.
-│   ├── data_parser.cpp         # Implements the DataFileParser for parsing files and populating data structures.
+│   ├── data_parser.cpp         # Parsing files and populating database
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
+│
 ├── processing/                 # Manages the file processing workflow.
 │   ├── processing.cpp          # Implements file collection, parsing, and database import.
 │   └── processing.h            # Declares the main function to start file processing.
+│
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
-│   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to route query requests.
+│   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── query_handler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   ├── query_day.cpp        # Implements the logic to generate a detailed report for a single day.
 │   └── query_day.h          # Declares the class responsible for generating a daily report.
 │   ├── query_month.cpp      # Implements the logic to generate a summary report for a specific month.
 │   └── query_month.h        # Declares the class that generates a monthly report.
-│   ├── query_period.cpp     # Implements the logic for generating reports over a custom period (e.g., last 7 days).
+│   ├── query_period.cpp     # Implements the logic for generating reports over a custom period.
 │   └── query_period.h       # Declares the class for generating reports over a specific time period.
-│   ├── query_utils.cpp      # Implements shared helper functions for querying, such as building project trees and formatting output.
+│   ├── query_utils.cpp      # Implements shared helper functions for querying.
 │   └── query_utils.h        # Declares various utility functions used by the different query generators.
 └── resources/
     ├── app_icon.rc
@@ -106,7 +110,7 @@ time_tracker_command <command> [arguments]
 ```
 
 
-## 1.3 使用msys2环境进行编译
+## 1.3 使用msys2 UCRT64环境进行编译
 0. 下载并安装 MSYS2
 MSYS2 是为 Windows 操作系统 设计的
 
@@ -119,15 +123,15 @@ Download the installer: msys2-x86_64-20250622.exe
 ```bash
 pacman -Syu
 ```
-2. 安装 MinGW-w64 工具链
+2. 安装 UCRT64 开发工具
 ```bash
-pacman -S mingw-w64-x86_64-toolchain
+pacman -S mingw-w64-ucrt-x86_64-toolchain 
 ```
 
 3. 安装 CMake
 项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
 ```bash
-pacman -S mingw-w64-x86_64-cmake
+pacman -S mingw-w64-ucrt-x86_64-cmake 
 ```
 
 4. 安装 nlohmann-json 库
@@ -342,7 +346,7 @@ process/
 
 
 
-# 3 graph_graph_generator 图表生成
+# 3 graph_generator 图表生成
 读取数据库并且生成图表
 ## 3.1 structure 程序结构
 ```
@@ -420,7 +424,16 @@ python main.py -v
 
 # ４ log_generator 日志生成
 txt生成器
-## 使用msys2环境进行编译
+## 4.1 structure
+/project-root
+├── activities_config.json //配置
+├── Config.h              // 配置模块的头文件 (定义数据结构, 声明加载函数)
+├── Config.cpp            // 配置模块的源文件 (实现加载函数)
+├── LogGenerator.h        // 核心逻辑模块的头文件 (定义LogGenerator类)
+├── LogGenerator.cpp      // 核心逻辑模块的源文件 (实现LogGenerator类)
+├── Utils.h               // 【必需的】工具类头文件，仅含声明
+└── main.cpp              // 主文件 (包含Application类, Utils实现和main函数)
+## 4.2 使用msys2环境进行编译
 1. 执行首次更新
 ```bash
 pacman -Syu
@@ -445,8 +458,14 @@ pacman -S mingw-w64-x86_64-nlohmann-json
 ```bash
 ./build.sh
 ```
-### 4.1 usage
-log_generator.exe \<num_days> \<items_per_day>
+## 4.3 usage
+```
+Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.
+  <start_year>      : The starting year (e.g., 1990).
+  <end_year>        : The ending year (inclusive).
+  <items_per_day>   : Number of log items per day (positive integer).
+  --version         : Display version information and exit.
+```
 
 
 
