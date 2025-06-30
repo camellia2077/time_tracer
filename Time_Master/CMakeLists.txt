@@ -94,5 +94,64 @@ target_link_libraries(time_tracker_command PRIVATE
 target_compile_options(time_tracker_app PRIVATE -Wall)
 target_compile_options(time_tracker_command PRIVATE -Wall)
 
+# ====================================================================
+# 新增内容：安装与打包配置 (Installation and Packaging)
+# ====================================================================
+
+# --- 1. 定义安装规则 ---
+
+# 安装两个可执行文件
+# DESTINATION bin: 指定将它们安装到安装目录下的 bin 文件夹中
+install(TARGETS time_tracker_app time_tracker_command
+    RUNTIME DESTINATION bin
+)
+
+# 安装必要的 DLL 文件
+
+set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
+
+# 【修正】根据 ldd 的输出更新 DLL 列表，特别是 sqlite3 的文件名
+install(FILES
+    "${UCRT64_BIN_PATH}/libsqlite3-0.dll"    # <-- 已修正
+    "${UCRT64_BIN_PATH}/libstdc++-6.dll"
+    "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
+    "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
+    DESTINATION bin # 将这些 DLL 也安装到 bin 目录
+)
+
+# 安装项目所需的JSON配置文件
+# 假设 config.json 在项目的根目录
+install(FILES
+    "config.json"
+    DESTINATION bin # 安装到根目录
+)
+
+
+# --- 2. 配置 CPack 打包工具 ---
+
+# 设置包的通用信息
+set(CPACK_PACKAGE_NAME "TimeTrackerApp")
+set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间和项目追踪的桌面应用")
+set(CPACK_PACKAGE_VENDOR "Your Company Name")
+set(CPACK_PACKAGE_CONTACT "your.email@example.com")
+
+# 选择打包生成器
+# "NSIS" 会创建一个 .exe 安装程序 (推荐)
+# "ZIP" 会创建一个 .zip 压缩包
+set(CPACK_GENERATOR "NSIS")
+
+# 为 NSIS 安装程序设置特定选项
+if(CPACK_GENERATOR STREQUAL "NSIS")
+  set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
+  set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+  # 如果您有许可证文件，可以取消下面的注释
+  # set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+endif()
+
+# 包含 CPack 模块以启用打包功能
+include(CPack)
+
 # 打印一条消息，确认配置完成
 message(STATUS "CMake configuration finished. Targets 'time_tracker_app' and 'time_tracker_command' are ready to be built.")
