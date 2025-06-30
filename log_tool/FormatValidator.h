@@ -1,4 +1,4 @@
-// FormatValidator.h (已重构)
+// FormatValidator.h (已重构并合并 ErrorReporter)
 
 #ifndef FORMAT_VALIDATOR_H
 #define FORMAT_VALIDATOR_H
@@ -39,10 +39,10 @@ public:
         }
     };
 
-    // 构造函数保持不变
+    // 构造函数
     FormatValidator(const std::string& config_filename, const std::string& header_config_filename, bool enable_day_count_check = false);
 
-    // #### 核心修改：定义两个独立的验证函数 ####
+    // #### 核心验证函数 ####
     /**
      * @brief 验证源文件格式 (例如 2023_01.txt)
      */
@@ -52,6 +52,16 @@ public:
      * @brief 验证输出文件格式 (例如 final_... or processed_...)
      */
     bool validateOutputFile(const std::string& file_path, std::set<Error>& errors);
+
+    // #### 错误报告功能 (MERGED FROM ErrorReporter) ####
+    /**
+     * @brief Groups errors by type and prints them to the console and a log file.
+     * @param filename The name of the file that was validated.
+     * @param errors A set containing the errors found during validation.
+     * @param error_log_path The path to the file where errors should be logged.
+     */
+    static void printGroupedErrors(const std::string& filename, const std::set<Error>& errors, const std::string& error_log_path);
+
 
 private:
     // 输出文件验证所需的数据结构
@@ -103,6 +113,9 @@ private:
     void validate_date_continuity(std::set<Error>& errors);
     void validate_month_start(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
     void validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
+
+    // #### 错误报告辅助函数 (MERGED FROM ErrorReporter) ####
+    static std::string getErrorTypeHeader(ErrorType type);
 };
 
 #endif // FORMAT_VALIDATOR_H
