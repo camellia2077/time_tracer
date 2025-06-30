@@ -39,6 +39,7 @@ set(SOURCES
     main.cpp
     IntervalProcessor.cpp
     FormatValidator.cpp
+    LogProcessor.cpp
 )
 
 # 告诉 CMake 你的头文件 (不需要编译，但有助于IDE理解项目结构)
@@ -46,6 +47,7 @@ set(HEADERS
     IntervalProcessor.h
     FormatValidator.h
     SharedUtils.h
+    LogProcessor.h
 )
 
 # 创建可执行文件
@@ -54,13 +56,6 @@ add_executable(log_tool ${SOURCES} ${HEADERS})
 # 链接 nlohmann/json 库
 # 这里使用 nlohmann_json::nlohmann_json，这是通过 find_package 找到的现代 CMake 目标
 target_link_libraries(log_tool PRIVATE nlohmann_json::nlohmann_json)
-
-# 如果你确定需要链接到 Windows API (SetConsoleOutputCP, SetConsoleCP)，
-# 并且它不是默认链接的，可以添加以下行：
-# target_link_libraries(log_tool PRIVATE kernel32) # 对于 SetConsoleOutputCP 和 SetConsoleCP
-
-# 也可以将头文件添加到 target 的 public 或 private 包含目录中，
-# 这样 IDE 能够更好地识别
 target_include_directories(log_tool PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR} # 包含当前目录的头文件，如 SharedUtils.h
 )
