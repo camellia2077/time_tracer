@@ -1,4 +1,4 @@
-// IntervalProcessor.h
+// IntervalProcessor.h (已重构)
 
 #ifndef INTERVAL_PROCESSOR_H
 #define INTERVAL_PROCESSOR_H
@@ -12,14 +12,12 @@ class IntervalProcessor {
 public:
     IntervalProcessor(const std::string& config_filename);
 
-    // 验证单个文件 (保持不变)
-    bool validateFile(const std::string& input_filepath);
-
-    // 转换单个文件 (由 processFile 修改而来)
-    // 这个函数假定文件已经通过了验证
+    // #### 核心修改：移除了 validateFile 函数 ####
+    // 唯一的公共功能就是转换文件
     bool executeConversion(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix);
 
 private:
+    // ... 私有成员和方法保持不变 ...
     struct RawEvent {
         std::string endTimeStr;
         std::string description;
@@ -34,7 +32,6 @@ private:
         std::vector<RawEvent> rawEvents;
         std::vector<std::string> remarksOutput;
         bool isContinuation = false; 
-        
         void clear();
     };
     

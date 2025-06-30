@@ -1,4 +1,4 @@
-// FormatValidator.h
+// FormatValidator.h (已重构)
 
 #ifndef FORMAT_VALIDATOR_H
 #define FORMAT_VALIDATOR_H
@@ -8,7 +8,7 @@
 #include <set>
 #include <unordered_set>
 #include <map>
-#include <utility> // For std::pair
+#include <utility>
 #include <nlohmann/json.hpp>
 
 class FormatValidator {
@@ -21,7 +21,11 @@ public:
         MissingSleepNight,
         Logical,
         DateContinuity,
-        IncorrectDayCountForMonth
+        IncorrectDayCountForMonth,
+        // 新增: 源文件特定的错误类型
+        Source_RemarkAfterEvent,
+        Source_NoDateAtStart,
+        Source_InvalidLineFormat
     };
 
     struct Error {
@@ -35,60 +39,60 @@ public:
         }
     };
 
-    // --- 修改：更新构造函数声明 ---
+    // 构造函数保持不变
     FormatValidator(const std::string& config_filename, const std::string& header_config_filename, bool enable_day_count_check = false);
-    bool validateFile(const std::string& file_path, std::set<Error>& errors);
+
+    // #### 核心修改：定义两个独立的验证函数 ####
+    /**
+     * @brief 验证源文件格式 (例如 2023_01.txt)
+     */
+    bool validateSourceFile(const std::string& file_path, std::set<Error>& errors);
+
+    /**
+     * @brief 验证输出文件格式 (例如 final_... or processed_...)
+     */
+    bool validateOutputFile(const std::string& file_path, std::set<Error>& errors);
 
 private:
-    // --- START CORRECTION ---
-    // The full definition of DateBlock is moved here from the .cpp file.
-    // The forward declaration is no longer needed.
+    // 输出文件验证所需的数据结构
     struct DateBlock {
         int start_line_number = -1;
         int date_line_num = -1;
         std::string date_str;
         bool header_completely_valid = true;
         bool sleep_value_from_file = false;
-        // Stores pairs of <activity_name, line_number>
         std::vector<std::pair<std::string, int>> activity_lines_content;
-
-        // Reset method to clear the state for the next block.
-        void reset() {
-            start_line_number = -1;
-            date_line_num = -1;
-            date_str.clear();
-            header_completely_valid = true;
-            sleep_value_from_file = false;
-            activity_lines_content.clear();
-        }
+        void reset();
     };
-    // --- END CORRECTION ---
-
+    
+    // 配置与状态
     struct Config {
         std::map<std::string, std::unordered_set<std::string>> parent_categories;
         bool loaded = false;
     };
-
-    // --- Configuration and state ---
+    
     std::string config_filepath_;
     std::string header_config_filepath_;
+    std::string remark_prefix_from_config_; // 新增: 存储从配置中读取的备注前缀
     Config config_;
     std::vector<std::string> header_order_;
-    // --- MODIFICATION: Replaced previous_date_str_ with a vector to collect all dates ---
     std::vector<std::pair<std::string, int>> collected_dates_;
-    bool check_day_count_enabled_; // --- 新增：用于存储天数检查的状态 ---
+    bool check_day_count_enabled_;
 
-    // --- Private helper methods ---
+    // 私有辅助函数
     void loadConfiguration();
     std::string trim(const std::string& str);
+
+    // --- 源文件验证的辅助函数 ---
+    bool isSourceDateLine(const std::string& line);
+    bool isSourceRemarkLine(const std::string& line);
+    bool parseSourceEventLine(const std::string& line, std::string& outTimeStr, std::string& outDescription);
+
+    // --- 输出文件验证的辅助函数 ---
     bool parse_time_format(const std::string& time_str, int& hours, int& minutes);
-    
-    // Date helper methods
     bool is_leap(int year);
     int days_in_month(int year, int month);
     std::string increment_date(const std::string& date_str);
-
-    // --- Validation logic helpers ---
     void validate_date_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
     void validate_status_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
     void validate_sleep_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
@@ -96,14 +100,8 @@ private:
     void validate_remark_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
     void validate_activity_line(const std::string& line, int line_num, DateBlock& block, std::set<Error>& errors);
     void finalize_block_status_validation(DateBlock& block, std::set<Error>& errors);
-    
-    // --- MODIFICATION: Added new function for deferred date continuity check ---
     void validate_date_continuity(std::set<Error>& errors);
-    
-    // --- MODIFICATION: Added new function to check if month starts with day 01 ---
     void validate_month_start(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
-
-    // Final validation check for all dates in the file
     void validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors);
 };
 
