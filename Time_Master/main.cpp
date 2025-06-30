@@ -1,5 +1,3 @@
-// --- START OF FILE main.cpp ---
-
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
@@ -15,6 +13,7 @@ namespace fs = std::filesystem;
 // 核心常量定义
 const std::string DATABASE_NAME = "time_data.db";
 const std::string CONFIG_FILE_NAME = "config.json";
+const std::string CONFIG_DIR_NAME = "config"; // 【新增】定义配置目录名称
 
 #if defined(_WIN32) || defined(_WIN64)
 void EnableVirtualTerminalProcessing() {
@@ -37,10 +36,18 @@ int main(int argc, char* argv[]) {
     std::string config_path;
     try {
         fs::path exe_path = fs::canonical(fs::path(argv[0])).parent_path();
-        config_path = (exe_path / CONFIG_FILE_NAME).string();
+        
+        // 【核心修改】构建指向 "config" 子目录中配置文件的路径
+        // 旧路径: exe_path / CONFIG_FILE_NAME
+        // 新路径: exe_path / CONFIG_DIR_NAME / CONFIG_FILE_NAME
+        config_path = (exe_path / CONFIG_DIR_NAME / CONFIG_FILE_NAME).string();
+
         if (!fs::exists(config_path)) {
-            std::cerr << "Warning: Main configuration file '" << CONFIG_FILE_NAME 
-                      << "' not found in the application directory." << std::endl;
+            // 【修改】更新警告消息以反映新的位置
+            std::cerr << "Warning: Configuration file '" << CONFIG_FILE_NAME 
+                      << "' not found in the '" << CONFIG_DIR_NAME 
+                      << "' subdirectory." << std::endl;
+            std::cerr << "Expected at: " << config_path << std::endl;
             // 即使文件不存在，也继续运行，但后续操作会收到警告
         }
     } catch (const std::exception& e) {
