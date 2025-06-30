@@ -1,5 +1,3 @@
-// --- START OF FILE Menu/menu.cpp ---
-
 #include "Menu.h"
 #include "processing.h"
 #include "query_handler.h"
