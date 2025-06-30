@@ -5,6 +5,7 @@
 #include <limits>
 #include <algorithm>
 #include <sqlite3.h>
+#include "version.h"
 
 // Assume FileProcessor is now in its own header/source files
 // You would create these files in a similar refactoring step.
@@ -45,7 +46,8 @@ void Menu::print_menu() {
     std::cout << "4. Query last 30 days" << std::endl;
     std::cout << "5. Generate study heatmap for a year" << std::endl;
     std::cout << "6. Query monthly statistics" << std::endl;
-    std::cout << "7. Exit" << std::endl;
+    std::cout << "7. --version" << std::endl;
+    std::cout << "8. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -86,7 +88,13 @@ bool Menu::handle_user_choice(int choice) {
             query_handler.run_monthly_query(month_str);
             break;
         }
-        case 7:
+        case 7: {
+            // 使用在 version.h 中定义的值
+            std::cout << "time_tracker_command Version: " << AppInfo::VERSION << std::endl;
+            std::cout << "Last Updated: " << AppInfo::LAST_UPDATED << std::endl;
+            break;
+        }
+        case 8:
             std::cout << "Exiting program." << std::endl;
             return false; // Signal to exit
         default:

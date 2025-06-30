@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # 定义项目名称和所用语言 (CXX 代表 C++)
-project(TimeTrackerApp CXX)
+project(TimeTrackerApp VERSION "0.0.2" LANGUAGES CXX)
 
 # 设置 C++ 标准为 C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -130,8 +130,8 @@ install(FILES
 # --- 2. 配置 CPack 打包工具 ---
 
 # 设置包的通用信息
-set(CPACK_PACKAGE_NAME "TimeTrackerApp")
-set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间和项目追踪的桌面应用")
 set(CPACK_PACKAGE_VENDOR "Your Company Name")
 set(CPACK_PACKAGE_CONTACT "your.email@example.com")
