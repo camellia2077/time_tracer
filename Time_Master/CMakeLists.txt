@@ -17,6 +17,7 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -s")
 
 # --- 查找外部依赖 ---
 find_package(SQLite3 REQUIRED)
+find_package(nlohmann_json REQUIRED)
 
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
@@ -73,7 +74,7 @@ if(WIN32)
     message(STATUS "Windows icon resource added to both targets.")
 endif()
 
-# --- 【修正】为每个目标分别添加头文件搜索路径 ---
+# --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
     "common" "database" "parsing" "queries" "resources" "Menu" "processing"
 )
@@ -81,11 +82,15 @@ target_include_directories(time_tracker_command PRIVATE
     "common" "database" "parsing" "queries" "resources" "Menu" "processing"
 )
 
-# --- 【修正】为每个目标分别链接库 ---
-target_link_libraries(time_tracker_app PRIVATE SQLite::SQLite3)
-target_link_libraries(time_tracker_command PRIVATE SQLite::SQLite3)
+# --- 为每个目标分别链接库 ---
+target_link_libraries(time_tracker_app PRIVATE 
+    SQLite::SQLite3 
+    nlohmann_json::nlohmann_json)
+target_link_libraries(time_tracker_command PRIVATE 
+    SQLite::SQLite3 
+    nlohmann_json::nlohmann_json)
 
-# --- 【修正】为每个目标分别设置通用编译选项 ---
+# --- 为每个目标分别设置通用编译选项 ---
 target_compile_options(time_tracker_app PRIVATE -Wall)
 target_compile_options(time_tracker_command PRIVATE -Wall)
 
