@@ -1,33 +1,38 @@
+// --- START OF FILE menu.cpp --- (MODIFIED)
+
 #include "Menu.h"
 #include "processing.h"
 #include "query_handler.h"
 #include "version.h"
-
+#include "LogProcessor.h"     
 #include <iostream>
 #include <limits>
 #include <sqlite3.h>
 #include <algorithm>
+#include <filesystem>
+
+namespace fs = std::filesystem;
+
+Menu::Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path) 
+    : db(nullptr), 
+      db_name_(db_name), 
+      app_config_(config),
+      main_config_path_(main_config_path) {}
 
 
-// 【修改】构造函数，初始化所有成员变量
-Menu::Menu(const std::string& db_name, const std::string& config_path) 
-    : db(nullptr), db_name_(db_name), config_path_(config_path) {}
-
-// Main application loop
 void Menu::run() {
+    // ... 此函数保持不变 ...
     while (true) {
         print_menu();
         int choice = -1;
         std::cin >> choice;
-
         if (std::cin.fail()) {
             std::cout << "Invalid input. Please enter a number." << std::endl;
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             continue;
         }
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // Consume newline
-
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); 
         if (!handle_user_choice(choice)) {
             break; 
         }
@@ -36,8 +41,9 @@ void Menu::run() {
 }
 
 void Menu::print_menu() {
+    // ... 此函数保持不变 ...
     std::cout << "\n--- Time Tracking Menu ---" << std::endl;
-    std::cout << "0. Process file(s) and import data" << std::endl;
+    std::cout << "0. File Processing & Validation (Submenu)" << std::endl;
     std::cout << "1. Query daily statistics" << std::endl;
     std::cout << "2. Query last 7 days" << std::endl;
     std::cout << "3. Query last 14 days" << std::endl;
@@ -50,54 +56,136 @@ void Menu::print_menu() {
 }
 
 bool Menu::handle_user_choice(int choice) {
+    // ... 此函数保持不变 ...
     if (choice >= 1 && choice <= 6) {
         if (!open_database_if_needed()) {
             return true;
         }
     }
-
-    QueryHandler query_handler(db);
-
-    switch (choice) {
-        case 0:
-            process_files_option();
-            break;
-        case 1: {
-            std::string date_str = get_valid_date_input();
-            query_handler.run_daily_query(date_str);
-            break;
+    if (choice >= 1 && choice <= 6) {
+        QueryHandler query_handler(db);
+        switch (choice) {
+            case 1: { std::string date_str = get_valid_date_input(); query_handler.run_daily_query(date_str); break; }
+            case 2: query_handler.run_period_query(7); break;
+            case 3: query_handler.run_period_query(14); break;
+            case 4: query_handler.run_period_query(30); break;
+            case 6: { std::string month_str = get_valid_month_input(); query_handler.run_monthly_query(month_str); break; }
         }
-        case 2: query_handler.run_period_query(7); break;
-        case 3: query_handler.run_period_query(14); break;
-        case 4: query_handler.run_period_query(30); break;
-        case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
-        case 6: {
-            std::string month_str = get_valid_month_input();
-            query_handler.run_monthly_query(month_str);
-            break;
+    } else {
+        switch (choice) {
+            case 0: run_log_processor_submenu(); break;
+            case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
+            case 7: { std::cout << "time_tracker_command Version: " << AppInfo::VERSION << std::endl; std::cout << "Last Updated: " << AppInfo::LAST_UPDATED << std::endl; break; }
+            case 8: std::cout << "Exiting program." << std::endl; return false;
+            default: std::cout << "Invalid choice. Please try again." << std::endl; break;
         }
-        case 7: {
-            std::cout << "time_tracker_command Version: " << AppInfo::VERSION << std::endl;
-            std::cout << "Last Updated: " << AppInfo::LAST_UPDATED << std::endl;
-            break;
-        }
-        case 8:
-            std::cout << "Exiting program." << std::endl;
-            return false;
-        default:
-            std::cout << "Invalid choice. Please try again." << std::endl;
-            break;
     }
     return true;
 }
 
-void Menu::process_files_option() {
-    close_database(); // 在写入前关闭数据库连接
-    // 【核心修复】调用 handle_process_files 时，传入存储的 config_path_
-    handle_process_files(db_name_, config_path_);
+void Menu::run_log_processor_submenu() {
+    AppOptions options;
+    std::string path;
+
+    while (true) {
+        std::cout << "\n--- File Processing & Validation Submenu ---\n";
+        std::cout << "--- (Step 1: File Operations) ---\n";
+        std::cout << "1. Validate source file(s) only\n";
+        std::cout << "2. Convert source file(s) only\n";
+        std::cout << "3. Validate source, then Convert\n";
+        std::cout << "4. Validate processed file(s) only\n"; // 【新增】
+        std::cout << "5. Full Pipeline (Validate Source -> Convert -> Validate Output)\n";
+        std::cout << "6. Full Pipeline - All-in-one (stops on first error)\n";
+        std::cout << "--- (Step 2: Database Operations) ---\n";
+        std::cout << "7. Import processed files into database\n"; // 顺延
+        std::cout << "8. Back to main menu\n"; // 顺延
+        std::cout << "Enter your choice: ";
+
+        int choice = -1;
+        std::cin >> choice;
+        if (std::cin.fail()) {
+            // ... (错误处理不变) ...
+            std::cout << "Invalid input. Please enter a number." << std::endl;
+            std::cin.clear();
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            continue;
+        }
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        
+        if (choice == 8) break; // 顺延
+
+        if (choice < 1 || choice > 7) { // 顺延
+            std::cout << "Invalid choice. Please try again.\n";
+            continue;
+        }
+
+        // 处理数据库导入
+        if (choice == 7) {
+            std::cout << "Enter the path to the DIRECTORY containing processed files (e.g., 'Processed_MyLogs'): ";
+            std::getline(std::cin, path);
+            if (!fs::exists(path) || !fs::is_directory(path)) {
+                std::cerr << "Error: Path does not exist or is not a directory. Aborting import." << std::endl;
+                continue;
+            }
+            close_database(); 
+            std::cout << "Starting import process..." << std::endl;
+            handle_process_files(db_name_, path, main_config_path_); 
+            std::cout << "Import process finished." << std::endl;
+            std::cout << "\nPress Enter to return to the submenu...";
+            std::cin.get();
+            continue;
+        }
+
+        // 处理文件操作
+        if (choice == 4) { // 【新增】处理仅验证输出
+             std::cout << "Enter the path to the PROCESSED file or directory to validate: ";
+        } else {
+             std::cout << "Enter the path to the SOURCE file or directory to process: ";
+        }
+        std::getline(std::cin, path);
+        options.input_path = path;
+        
+        // 重置所有标志
+        options.validate_source = false;
+        options.convert = false;
+        options.validate_output = false;
+        options.run_all = false;
+        options.enable_day_count_check = false;
+
+        // 根据选择设置标志
+        switch (choice) {
+            case 1: options.validate_source = true; break;
+            case 2: options.convert = true; break;
+            case 3: options.validate_source = true; options.convert = true; break;
+            case 4: options.validate_output = true; break; // 【新增】
+            case 5: options.validate_source = true; options.convert = true; options.validate_output = true; break;
+            case 6: options.run_all = true; options.validate_source = true; options.convert = true; options.validate_output = true; break;
+        }
+        
+        // 仅在需要验证输出时询问
+        if (options.validate_output) {
+            std::cout << "Enable strict day count check for output files? [Y/n]: ";
+            std::string user_input;
+            std::getline(std::cin, user_input);
+            if (user_input.empty() || (user_input[0] != 'n' && user_input[0] != 'N')) {
+                options.enable_day_count_check = true;
+            } else {
+                options.enable_day_count_check = false;
+            }
+        }
+        
+        close_database(); 
+        
+        LogProcessor processor(app_config_);
+        processor.run(options);
+
+        std::cout << "\nPress Enter to return to the submenu...";
+        std::cin.get();
+    }
 }
 
-// --- 其他私有方法 (保持不变) ---
+// --- 其他函数保持不变 ---
+// ... (open_database_if_needed, close_database, get_valid_date_input, get_valid_month_input)
 bool Menu::open_database_if_needed() {
     if (db == nullptr) {
         if (sqlite3_open(db_name_.c_str(), &db)) {
