@@ -54,17 +54,17 @@
         "rest": [
             { "less_than_minutes": 10, "value": "rest_short" },
             { "less_than_minutes": 20, "value": "rest_medium" },
-            { "less_than_minutes": 30, "value": "rest_long" }
+            { "less_than_minutes": 1440, "value": "rest_long" } 
         ],
         "insomnia": [
             { "less_than_minutes": 10, "value": "insomnia_short" },
             { "less_than_minutes": 30, "value": "insomnia_medium" },
-            { "less_than_minutes": 60, "value": "insomnia_long" }
+            { "less_than_minutes": 1440, "value": "insomnia_long" }
         ],
         "meal": [
             { "less_than_minutes": 25, "value": "meal_short" },
             { "less_than_minutes": 35, "value": "meal_medium" },
-            { "less_than_minutes": 60, "value": "meal_long" }
+            { "less_than_minutes": 1440, "value": "meal_long" }
         ]
     }
 }

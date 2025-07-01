@@ -1,4 +1,4 @@
-// IntervalProcessor.h (已重构)
+// --- START OF FILE IntervalProcessor.h --- (MODIFIED)
 
 #ifndef INTERVAL_PROCESSOR_H
 #define INTERVAL_PROCESSOR_H
@@ -7,7 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <nlohmann/json.hpp>
-#include <fstream> //
+#include <fstream> 
 #include <utility>
 
 class IntervalProcessor {
@@ -34,65 +34,36 @@ private:
         void clear();
     };
     
+    // 【新增】用于存储时长规则的结构体
     struct DurationRule {
         int less_than_minutes;
         std::string value;
     };
 
-    // 配置项 (无变化)
+    // 配置项
     std::string config_filepath_;
     std::string remark_prefix_;
     std::unordered_map<std::string, std::string> text_mapping_;
     std::unordered_map<std::string, std::string> text_duration_mapping_;
     std::vector<std::string> header_order_;
+    // 【新增】存储时长映射规则的成员变量
     std::unordered_map<std::string, std::vector<DurationRule>> duration_mappings_;
 
-    // 现有私有函数 (无变化)
+    // 私有函数
     bool loadConfiguration();
     void writeDayData(std::ofstream& outFile, const DayData& day);
     std::string formatTime(const std::string& timeStrHHMM);
     bool isDateLine(const std::string& line);
     bool isRemarkLine(const std::string& line);
     bool parseEventLine(const std::string& line, std::string& outTimeStr, std::string& outDescription);
+    // 【新增】计算分钟差的辅助函数
     int calculateDurationMinutes(const std::string& startTimeHHMM, const std::string& endTimeHHMM);
 
-    // #### MODIFICATION: 新增的私有辅助函数，用于拆分 executeConversion 的职责 ####
-    /**
-     * @brief 将原始事件列表转换为格式化的备注行。
-     * @param day 包含原始事件的 DayData 对象，其 remarksOutput 将被填充。
-     */
+    // 核心逻辑拆分函数
     void processAndFormatEvents(DayData& day);
-
-    /**
-     * @brief 完成一天的处理并写入文件，包括计算与下一天的 sleep_night 关联。
-     * @param dayToFinalize 需要被处理和写入的当天数据。
-     * @param nextDay 第二天的数据，用于获取起床时间。
-     * @param outFile 输出文件流。
-     */
     void finalizeAndWriteDay(DayData& dayToFinalize, DayData& nextDay, std::ofstream& outFile);
-
-    /**
-     * @brief 处理源文件中的日期行，触发前一天的最终处理和写入。
-     * @param line 包含日期的行。
-     * @param currentDay 当前正在处理的数据块。
-     * @param previousDay 前一天的数据块。
-     * @param outFile 输出文件流。
-     * @param year_prefix 年份前缀。
-     */
     void handleDateLine(const std::string& line, DayData& currentDay, DayData& previousDay, std::ofstream& outFile, const std::string& year_prefix);
-
-    /**
-     * @brief 处理源文件中的备注行。
-     * @param line 包含备注的行。
-     * @param currentDay 当前正在处理的数据块。
-     */
     void handleRemarkLine(const std::string& line, DayData& currentDay);
-
-    /**
-     * @brief 处理源文件中的事件行。
-     * @param line 包含事件的行。
-     * @param currentDay 当前正在处理的数据块。
-     */
     void handleEventLine(const std::string& line, DayData& currentDay);
 };
 
