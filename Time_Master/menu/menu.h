@@ -32,6 +32,7 @@ private:
     std::string get_valid_date_input();
     std::string get_valid_month_input();
     void run_log_processor_submenu(); 
+    void run_full_pipeline_and_import();//用于完成检验转换检验到插入数据库的全部操作
 };
 
 #endif // MENU_H
