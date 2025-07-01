@@ -19,6 +19,14 @@
 #include "query_handler.h"
 #include <nlohmann/json.hpp>
 
+#include "common_utils.h" // 调用颜色
+/*
+#define RESET_COLOR   "\033[0m"
+#define RED_COLOR     "\033[31m"
+#define GREEN_COLOR   "\033[32m"
+#define YELLOW_COLOR  "\033[33m"
+*/
+
 // --- Namespace alias ---
 namespace fs = std::filesystem;
 
@@ -64,7 +72,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // ... (分支1: 预处理命令 - 无变化) ...
+    // --- (分支1: 预处理命令 ) ---
     if (command == "-a" || command == "-c" || command == "-vs" || command == "-vo" || command == "-edc") {
         AppOptions options;
         bool path_provided = false;
@@ -76,12 +84,12 @@ int main(int argc, char* argv[]) {
             else if (arg == "-vo" || arg == "--validate-output") options.validate_output = true;
             else if (arg == "-edc" || arg == "--enable-day-check") options.enable_day_count_check = true;
             else if (arg.rfind("-", 0) != 0) {
-                if (path_provided) { std::cerr << RED_COLOR << "错误: 提供了多个路径。" << RESET_COLOR << std::endl; return 1; }
+                if (path_provided) { std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "提供了多个路径。" << std::endl; return 1; }
                 options.input_path = arg;
                 path_provided = true;
             }
         }
-        if (!path_provided) { std::cerr << RED_COLOR << "错误: 预处理命令需要一个文件或文件夹路径。" << RESET_COLOR << std::endl; return 1; }
+        if (!path_provided) { std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "预处理命令需要传入一个文件或文件夹路径。" << std::endl; return 1; }
         if (options.run_all) { options.validate_source = true; options.convert = true; options.validate_output = true; }
         AppConfig config;
         try {
@@ -94,7 +102,7 @@ int main(int argc, char* argv[]) {
                 throw std::runtime_error("预处理配置文件未在 config 目录中找到。");
             }
         } catch (const std::exception& e) {
-            std::cerr << RED_COLOR << "严重错误: " << e.what() << RESET_COLOR << std::endl; return 1;
+            std::cerr << RED_COLOR <<  "Fatal Error "<< RESET_COLOR << e.what() << RESET_COLOR << std::endl; return 1;
         }
         LogProcessor processor(config);
         return processor.run(options) ? 0 : 1;
@@ -105,7 +113,7 @@ int main(int argc, char* argv[]) {
     // ==========================================================
     else if (command == "-p" || command == "--process") {
         if (args.size() != 3) {
-            std::cerr << "错误: " << command << " 命令需要一个文件路径参数。\n";
+            std::cerr  << RED_COLOR << "Error: " << RESET_COLOR << command << "命令需要一个文件路径参数。\n";
             print_full_usage(args[0].c_str());
             return 1;
         }
@@ -117,16 +125,16 @@ int main(int argc, char* argv[]) {
             fs::path config_dir = exe_path / "config";
             config_path = (config_dir / "config.json").string();
         } catch(const std::exception& e) {
-            std::cerr << "错误: 无法确定配置文件路径: " << e.what() << std::endl;
+            std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "无法确定配置文件路径: " << e.what() << std::endl;
         }
 
         std::cout << "Processing file '" << filepath << "' and importing data into '" << DATABASE_NAME << "'...\n";
         handle_process_files(DATABASE_NAME, filepath, config_path);
     }
-    // ... (分支3: 查询命令 和 分支4: 未知命令 - 无变化) ...
+    // (分支3: 查询命令 和 分支4: 未知命令 )
     else if (command == "-q" || command == "--query") {
         if (args.size() < 4) {
-            std::cerr << "错误: query 命令需要一个子命令和参数 (例如: -q d 20240101).\n";
+            std::cerr << RED_COLOR << "Error: " << RESET_COLOR << " query 命令需要一个子命令和参数 (例如: -q d 20240101).\n";
             print_full_usage(args[0].c_str());
             return 1;
         }
@@ -139,17 +147,17 @@ int main(int argc, char* argv[]) {
             query_handler.run_daily_query(query_arg);
         } else if (sub_command == "p" || sub_command == "period") {
             try { query_handler.run_period_query(std::stoi(query_arg)); }
-            catch (const std::exception&) { std::cerr << "错误: <days> 参数必须是一个有效的数字。\n"; close_database(&db); return 1; }
+            catch (const std::exception&) { std::cerr  << RED_COLOR << "Error: " << RESET_COLOR << "<days> 参数必须是一个有效的数字。\n"; close_database(&db); return 1; }
         } else if (sub_command == "m" || sub_command == "monthly") {
             query_handler.run_monthly_query(query_arg);
         } else {
-            std::cerr << "错误: 未知的查询子命令 '" << sub_command << "'.\n";
+            std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "未知的查询子命令 '" << sub_command << "'.\n";
             print_full_usage(args[0].c_str()); close_database(&db); return 1;
         }
         close_database(&db);
     }
     else {
-        std::cerr << RED_COLOR << "错误: 未知命令 '" << command << "'" << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: " << RESET_COLOR << " 未知命令 '" << command << "'" << RESET_COLOR << std::endl;
         print_full_usage(args[0].c_str());
         return 1;
     }
@@ -157,7 +165,7 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// ... (print_full_usage, open_database, close_database 函数保持不变) ...
+
 void print_full_usage(const char* app_name) {
     std::cout << "TimeMaster: 一个用于时间数据预处理、入库和查询的命令行工具。\n\n";
     std::cout << "用法: " << app_name << " <命令> [参数...]\n\n";
@@ -185,7 +193,7 @@ void print_full_usage(const char* app_name) {
 }
 bool open_database(sqlite3** db, const std::string& db_name) {
     if (sqlite3_open(db_name.c_str(), db)) {
-        std::cerr << "错误: 无法打开数据库: " << sqlite3_errmsg(*db) << std::endl;
+        std::cerr  << RED_COLOR << "Error: " << RESET_COLOR << " 无法打开数据库: " << sqlite3_errmsg(*db) << std::endl;
         return false;
     }
     return true;
