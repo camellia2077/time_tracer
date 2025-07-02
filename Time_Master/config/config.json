@@ -1,9 +1,0 @@
-{
-  "interval_processor_config_path": "interval_processor_config.json",
-  "format_validator_config_path": "format_validator_config.json",
-  "error_log_path": "../error.log",
-
-  "initial_top_level_parents": {
-    "study": "mystudy"
-  }
-}
