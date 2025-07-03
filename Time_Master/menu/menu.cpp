@@ -20,6 +20,7 @@
 #include <set>    // 用于 std::set
 #include <map>    // 用于 std::map
 #include <ctime>  // 用于 std::time and std::localtime
+#include "FileHandler.h"
 
 namespace fs = std::filesystem;
 
@@ -208,7 +209,7 @@ void Menu::run_full_pipeline_and_import() {
         return;
     }
 
-    std::vector<fs::path> files_to_process;
+    std::vector<fs::path> files_to_process = FileHandler::find_text_files_recursively(input_path);
     for (const auto& entry : fs::recursive_directory_iterator(input_path)) {
         if (entry.is_regular_file() && entry.path().extension() == ".txt") {
             files_to_process.push_back(entry.path());
