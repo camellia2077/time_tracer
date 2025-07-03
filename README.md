@@ -43,9 +43,13 @@ Time_Master/
 │   ├── database_importer.cpp
 │   └── database_importer.h
 │
-├── menu/                # UI components
-│   ├── menu.h           # Header for the Menu class
-│   └── menu.cpp         # Implementation of the Menu class
+├── FileHandler/ 
+│   ├── FileHandler.cpp
+│   └── FileHandler.h
+│
+├── menu/                
+│   ├── menu.h           
+│   └── menu.cpp         
 │
 ├── parsing/                    # Handles data parsing from input files.
 │   ├── data_parser.cpp         # Parsing files and populating database

@@ -2,37 +2,31 @@
 #define MENU_H
 
 #include <string>
-#include "LogProcessor.h" 
+#include "LogProcessor.h" // For AppConfig
 
-struct sqlite3;
+// 前向声明，以避免在头文件中包含 ActionHandler.h
+class ActionHandler;
 
 class Menu {
 public:
-    /**
-     * @brief 构造函数
-     * @param db_name 数据库文件名。
-     * @param config 一个填充好的 AppConfig 结构体。
-     * @param main_config_path 主配置文件(config.json)的绝对路径，用于传递给旧模块。
-     */
     explicit Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path);
-
+    ~Menu(); // 添加析构函数来管理 ActionHandler
     void run();
 
 private:
-    sqlite3* db;
-    std::string db_name_;
-    AppConfig app_config_; 
-    std::string main_config_path_; // 存储主配置文件的路径
+    // Menu 不再直接管理数据库或配置，所有操作通过 ActionHandler
+    ActionHandler* action_handler_; // 使用指针，因为 ActionHandler 管理资源
 
-    // 私有方法
+    // --- 私有辅助函数 ---
     void print_menu();
     bool handle_user_choice(int choice);
-    bool open_database_if_needed();
-    void close_database();
+    void run_log_processor_submenu();
+    void run_full_pipeline_and_import_prompt();
+
+    // --- 用户输入处理 ---
+    std::string get_valid_path_input(const std::string& prompt_message);
     std::string get_valid_date_input();
     std::string get_valid_month_input();
-    void run_log_processor_submenu(); 
-    void run_full_pipeline_and_import();//用于完成检验转换检验到插入数据库的全部操作
 };
 
 #endif // MENU_H
