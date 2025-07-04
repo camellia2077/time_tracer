@@ -24,12 +24,13 @@ find_package(nlohmann_json REQUIRED)
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
-file(GLOB PARSING_SOURCES "parsing/*.cpp")
-file(GLOB DATABASE_SOURCES "database/*.cpp")
+file(GLOB INSERTER_SOURCES "Inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB MENU_SOURCES "Menu/*.cpp")
 file(GLOB PROCESSING_SOURCES "processing/*.cpp")
 file(GLOB REPROCESSING_SOURCES "reprocessing/*.cpp")
+file(GLOB FILEHANDLER_SOURCES "FileHandler/*.cpp")
+file(GLOB ACTIONHANDLER_SOURCES "ActionHandler/*.cpp")
 
 # --- 定义两个独立的可执行文件目标 ---
 
@@ -38,12 +39,13 @@ add_executable(
     time_tracker_app          # 可执行文件名
     main.cpp                  # 入口文件
     ${COMMON_SOURCES}
-    ${PARSING_SOURCES}
-    ${DATABASE_SOURCES}
+    ${INSERTER_SOURCES}
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES}
     ${REPROCESSING_SOURCES}
+    ${FILEHANDLER_SOURCES}
+    ${ACTIONHANDLER_SOURCES}
 
 )
 
@@ -52,12 +54,13 @@ add_executable(
     time_tracker_command      # 可执行文件名
     main_command.cpp          # 入口文件
     ${COMMON_SOURCES}
-    ${PARSING_SOURCES} 
-    ${DATABASE_SOURCES} 
+    ${INSERTER_SOURCES} 
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES} 
     ${REPROCESSING_SOURCES}
+    ${FILEHANDLER_SOURCES}
+    ${ACTIONHANDLER_SOURCES}
 )
 
 
@@ -82,10 +85,10 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "database" "parsing" "queries" "resources" "Menu" "processing" "reprocessing"
+    "common" "Inserter"  "queries" "resources" "Menu" "processing" "reprocessing" "FILEHANDLER" "ActionHandler"
 )
 target_include_directories(time_tracker_command PRIVATE
-    "common" "database" "parsing" "queries" "resources" "Menu" "processing" "reprocessing"
+    "common" "Inserter"  "queries" "resources" "Menu" "processing" "reprocessing" "FILEHANDLER" "ActionHandler"
 )
 
 # --- 为每个目标分别链接库 ---
@@ -123,7 +126,7 @@ install(FILES
     DESTINATION bin # 将这些 DLL 也安装到 bin 目录
 )
 
-# --- [核心修改] ---
+
 # 安装整个 config 目录
 # 这会将源文件中的 'config' 文件夹及其所有内容（如 config.json）
 # 复制到安装目录的 'bin' 文件夹下，最终形成 'bin/config/config.json' 的结构，
@@ -137,8 +140,8 @@ install(DIRECTORY config DESTINATION bin)
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间和项目追踪的桌面应用")
-set(CPACK_PACKAGE_VENDOR "Your Company Name")
-set(CPACK_PACKAGE_CONTACT "your.email@example.com")
+set(CPACK_PACKAGE_VENDOR "camellia")
+set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
 
 # 选择打包生成器
 set(CPACK_GENERATOR "NSIS")
