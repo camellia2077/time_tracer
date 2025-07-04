@@ -21,7 +21,7 @@
     * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
     * **许可证**: Matplotlib License (BSD-style)
 # 1 Time_Master 
-主程序，用于解析文本内容，存入数据库，查询数据库
+用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
 Time_Master/
@@ -34,14 +34,16 @@ Time_Master/
 │   ├── common_utils.h
 │   └── version.h # for version info
 │
-├── config/ # 用于存放json文件
+├── config/ # 用于存放json配置文件
 │   ├── config.json # 用于定于父项目的映射
 │   ├── format_validator_config.json # 检验转化后项目名称合法性
 │   └── interval_processor_config.json # 转化规则
 │
-├── database/ # Manages the creation of the database and the importation of data into it.
+├── Inserter/ 
 │   ├── database_importer.cpp
-│   └── database_importer.h
+│   ├── database_importer.h
+│   ├── data_parser.cpp         # Parsing files and populating database
+│   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
 ├── FileHandler/ 
 │   ├── FileHandler.cpp
@@ -50,10 +52,6 @@ Time_Master/
 ├── menu/                
 │   ├── menu.h           
 │   └── menu.cpp         
-│
-├── parsing/                    # Handles data parsing from input files.
-│   ├── data_parser.cpp         # Parsing files and populating database
-│   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
 ├── processing/                 # Manages the file processing workflow.
 │   ├── processing.cpp          # Implements file collection, parsing, and database import.
