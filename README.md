@@ -29,6 +29,10 @@ Time_Master/
 ├── main.cpp # 交互式
 ├── main_command.cpp # 命令行传入
 │
+├── action_handler/ # 所有功能的封装
+│   ├── action_handler.cpp
+│   └── action_handler.h
+│
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
 │   ├── common_utils.h
@@ -39,15 +43,15 @@ Time_Master/
 │   ├── format_validator_config.json # 检验转化后项目名称合法性
 │   └── interval_processor_config.json # 转化规则
 │
-├── Inserter/ 
+├── db_inserter/ 
 │   ├── database_importer.cpp
 │   ├── database_importer.h
 │   ├── data_parser.cpp         # Parsing files and populating database
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
-├── FileHandler/ 
-│   ├── FileHandler.cpp
-│   └── FileHandler.h
+├── file_handler/ # 用于递归文件
+│   ├── file_handler.cpp
+│   └── file_handlerr.h
 │
 ├── menu/                
 │   ├── menu.h           

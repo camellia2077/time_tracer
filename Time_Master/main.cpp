@@ -16,7 +16,7 @@
 
 #include "menu.h" 
 #include "common_utils.h"     // Contains color macro definitions
-#include "FileHandler.h"      // The new module for handling file operations
+#include "file_handler.h"      // The new module for handling file operations
 
 // Core constant for the database name
 const std::string DATABASE_NAME = "time_data.db";
