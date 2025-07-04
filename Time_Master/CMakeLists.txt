@@ -26,7 +26,7 @@ find_package(nlohmann_json REQUIRED)
 file(GLOB COMMON_SOURCES "common/*.cpp")
 file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
-file(GLOB MENU_SOURCES "menu/*.cpp")
+file(GLOB UI_SOURCES "ui/*.cpp")
 file(GLOB PROCESSING_SOURCES "processing/*.cpp")
 file(GLOB REPROCESSING_SOURCES "reprocessing/*.cpp")
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
@@ -41,7 +41,7 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${MENU_SOURCES}
+    ${UI_SOURCES}
     ${PROCESSING_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
@@ -49,14 +49,14 @@ add_executable(
 
 )
 
-# 目标 2: 命令行工具 (使用 main_command.cpp)
+# 目标 2: 命令行工具 (使用 main_cli.cpp)
 add_executable(
-    time_tracker_command      # 可执行文件名
-    main_command.cpp          # 入口文件
+    time_tracker_cli      # 可执行文件名
+    main_cli.cpp          # 入口文件
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES} 
     ${QUERIES_SOURCES}
-    ${MENU_SOURCES}
+    ${UI_SOURCES}
     ${PROCESSING_SOURCES} 
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
@@ -77,7 +77,7 @@ if(WIN32)
 
     # 将资源文件添加到两个目标中
     target_sources(time_tracker_app PRIVATE ${RESOURCE_FILES})
-    target_sources(time_tracker_command PRIVATE ${RESOURCE_FILES})
+    target_sources(time_tracker_cli PRIVATE ${RESOURCE_FILES})
 
     # 打印消息
     message(STATUS "Windows icon resource added to both targets.")
@@ -85,23 +85,23 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "db_inserter"  "queries" "resources" "menu" "processing" "reprocessing" "file_handler" "action_handler"
+    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "file_handler" "action_handler"
 )
-target_include_directories(time_tracker_command PRIVATE
-    "common" "db_inserter"  "queries" "resources" "menu" "processing" "reprocessing" "file_handler" "action_handler"
+target_include_directories(time_tracker_cli PRIVATE
+    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "file_handler" "action_handler"
 )
 
 # --- 为每个目标分别链接库 ---
 target_link_libraries(time_tracker_app PRIVATE 
     SQLite::SQLite3 
     nlohmann_json::nlohmann_json)
-target_link_libraries(time_tracker_command PRIVATE 
+target_link_libraries(time_tracker_cli PRIVATE 
     SQLite::SQLite3 
     nlohmann_json::nlohmann_json)
 
 # --- 为每个目标分别设置通用编译选项 ---
 target_compile_options(time_tracker_app PRIVATE -Wall)
-target_compile_options(time_tracker_command PRIVATE -Wall)
+target_compile_options(time_tracker_cli PRIVATE -Wall)
 
 # ====================================================================
 # 新增内容：安装与打包配置 (Installation and Packaging)
@@ -111,7 +111,7 @@ target_compile_options(time_tracker_command PRIVATE -Wall)
 
 # 安装两个可执行文件
 # DESTINATION bin: 指定将它们安装到安装目录下的 bin 文件夹中
-install(TARGETS time_tracker_app time_tracker_command
+install(TARGETS time_tracker_app time_tracker_cli
     RUNTIME DESTINATION bin
 )
 
@@ -159,4 +159,4 @@ endif()
 include(CPack)
 
 # 打印一条消息，确认配置完成
-message(STATUS "CMake configuration finished. Targets 'time_tracker_app' and 'time_tracker_command' are ready to be built.")
+message(STATUS "CMake configuration finished. Targets 'time_tracker_app' and 'time_tracker_cli' are ready to be built.")
