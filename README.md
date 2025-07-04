@@ -27,7 +27,7 @@
 Time_Master/
 ├── CMakeLists.txt
 ├── main.cpp # 交互式
-├── main_command.cpp # 命令行传入
+├── main_cli.cpp # 命令行传入
 │
 ├── action_handler/ # 所有功能的封装
 │   ├── action_handler.cpp
@@ -51,9 +51,9 @@ Time_Master/
 │
 ├── file_handler/ # 用于递归文件
 │   ├── file_handler.cpp
-│   └── file_handlerr.h
+│   └── file_handler.h
 │
-├── menu/                
+├── ui/                
 │   ├── menu.h           
 │   └── menu.cpp         
 │
