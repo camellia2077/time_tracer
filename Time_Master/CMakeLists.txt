@@ -24,13 +24,13 @@ find_package(nlohmann_json REQUIRED)
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
-file(GLOB INSERTER_SOURCES "Inserter/*.cpp")
+file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
-file(GLOB MENU_SOURCES "Menu/*.cpp")
+file(GLOB MENU_SOURCES "menu/*.cpp")
 file(GLOB PROCESSING_SOURCES "processing/*.cpp")
 file(GLOB REPROCESSING_SOURCES "reprocessing/*.cpp")
-file(GLOB FILEHANDLER_SOURCES "FileHandler/*.cpp")
-file(GLOB ACTIONHANDLER_SOURCES "ActionHandler/*.cpp")
+file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
+file(GLOB ACTION_HANDLER_SOURCES "action_handler/*.cpp")
 
 # --- 定义两个独立的可执行文件目标 ---
 
@@ -39,13 +39,13 @@ add_executable(
     time_tracker_app          # 可执行文件名
     main.cpp                  # 入口文件
     ${COMMON_SOURCES}
-    ${INSERTER_SOURCES}
+    ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES}
     ${REPROCESSING_SOURCES}
-    ${FILEHANDLER_SOURCES}
-    ${ACTIONHANDLER_SOURCES}
+    ${FILE_HANDLER_SOURCES}
+    ${ACTION_HANDLER_SOURCES}
 
 )
 
@@ -54,13 +54,13 @@ add_executable(
     time_tracker_command      # 可执行文件名
     main_command.cpp          # 入口文件
     ${COMMON_SOURCES}
-    ${INSERTER_SOURCES} 
+    ${DB_INSERTER_SOURCES} 
     ${QUERIES_SOURCES}
     ${MENU_SOURCES}
     ${PROCESSING_SOURCES} 
     ${REPROCESSING_SOURCES}
-    ${FILEHANDLER_SOURCES}
-    ${ACTIONHANDLER_SOURCES}
+    ${FILE_HANDLER_SOURCES}
+    ${ACTION_HANDLER_SOURCES}
 )
 
 
@@ -85,10 +85,10 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "Inserter"  "queries" "resources" "Menu" "processing" "reprocessing" "FILEHANDLER" "ActionHandler"
+    "common" "db_inserter"  "queries" "resources" "menu" "processing" "reprocessing" "file_handler" "action_handler"
 )
 target_include_directories(time_tracker_command PRIVATE
-    "common" "Inserter"  "queries" "resources" "Menu" "processing" "reprocessing" "FILEHANDLER" "ActionHandler"
+    "common" "db_inserter"  "queries" "resources" "menu" "processing" "reprocessing" "file_handler" "action_handler"
 )
 
 # --- 为每个目标分别链接库 ---

@@ -10,8 +10,8 @@
 
 #include "common_utils.h"
 #include "version.h"
-#include "FileHandler.h"
-#include "ActionHandler.h"
+#include "file_handler.h"
+#include "action_handler.h"
 
 // --- Global Constants ---
 const std::string DATABASE_NAME = "time_data.db";
