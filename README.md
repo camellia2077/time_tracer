@@ -49,7 +49,7 @@ Time_Master/
 │   ├── data_parser.cpp         # Parsing files and populating database
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
-├── file_handler/ # 用于递归文件
+├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── file_handler.cpp
 │   └── file_handler.h
 │

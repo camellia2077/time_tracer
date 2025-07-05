@@ -180,7 +180,87 @@ bool OutputFileValidator::is_valid_activity(const std::string& activity_name) co
     return false;
 }
 
-void OutputFileValidator::validate_date_logic(const std::string& file_path, std::set<Error>& errors){
-    // 日期连续性和完整性检查的逻辑可以放在这里
-    // (这部分逻辑较为复杂，作为占位符保留)
+static bool is_leap(int year) {
+    return (year % 4 == 0 && (year % 100 != 0 || year % 400 == 0));
+}
+
+// 获取指定月份的天数
+static int days_in_month(int year, int month) {
+    if (month < 1 || month > 12) return 0; // 无效月份
+    if (month == 2) {
+        return is_leap(year) ? 29 : 28;
+    } else if (month == 4 || month == 6 || month == 9 || month == 11) {
+        return 30;
+    } else {
+        return 31;
+    }
+}
+
+
+
+void OutputFileValidator::validate_date_logic(const std::string& file_path, std::set<Error>& errors) {
+    std::ifstream file(file_path);
+    if (!file.is_open()) {
+        // 文件打开失败的错误已在主 validate 函数中处理，这里无需重复
+        return;
+    }
+
+    // 步骤 1: 重新遍历文件，收集所有日期及其行号
+    // 数据结构: { "YYYYMM": { day_number: line_number } }
+    std::map<std::string, std::map<int, int>> month_day_map;
+    std::string line;
+    int line_number = 0;
+    while (std::getline(file, line)) {
+        line_number++;
+        std::string trimmed_line = trim(line);
+        if (trimmed_line.rfind("Date:", 0) == 0) {
+            std::string date_str = trimmed_line.substr(5);
+            if (date_str.length() == 8 && std::all_of(date_str.begin(), date_str.end(), ::isdigit)) {
+                try {
+                    int day = std::stoi(date_str.substr(6, 2));
+                    std::string yyyymm = date_str.substr(0, 6);
+                
+                    month_day_map[yyyymm][day] = line_number;
+                } catch (const std::exception&) {
+                    // 如果日期字符串不是有效数字，则忽略
+                    continue;
+                }
+            }
+        }
+    }
+
+    // 步骤 2: 遍历每个月，检查其日期的完整性
+    for (const auto& pair : month_day_map) {
+        const std::string& yyyymm = pair.first;
+        const std::map<int, int>& days_found = pair.second;
+
+        try {
+            int year = std::stoi(yyyymm.substr(0, 4));
+            int month = std::stoi(yyyymm.substr(4, 2));
+            int num_days_in_this_month = days_in_month(year, month);
+            
+            // 找到该月记录的第一天的行号，用于报告错误
+            int first_day_line_num = days_found.begin()->second;
+
+            // 检查从1号到月底的每一天
+            for (int d = 1; d <= num_days_in_this_month; ++d) {
+                if (days_found.find(d) == days_found.end()) {
+                    // 如果在map中找不到这一天，说明日期缺失
+                    char buffer[12];
+                    snprintf(buffer, sizeof(buffer), "%04d-%02d-%02d", year, month, d);
+                    std::string missing_date_str(buffer);
+                    
+                    errors.insert({
+                        first_day_line_num,
+                        "Missing date: " + missing_date_str,
+                        ErrorType::DateContinuity
+                    });
+                }
+            }
+
+        } catch (const std::exception&) {
+            // 如果 YYYYMM 格式不正确，则跳过
+            continue;
+        }
+    }
 }
