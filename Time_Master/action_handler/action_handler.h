@@ -14,10 +14,10 @@ public:
 
     // --- 所有核心业务逻辑的方法 ---
 
-    // 查询相关
-    void run_daily_query(const std::string& date);
-    void run_period_query(int days);
-    void run_monthly_query(const std::string& month);
+    // 查询相关 (返回类型已修改)
+    std::string run_daily_query(const std::string& date);
+    std::string run_period_query(int days);
+    std::string run_monthly_query(const std::string& month);
     
     // 文件预处理（对应旧的 LogProcessor 子菜单）
     void run_log_processing(const AppOptions& options);
