@@ -44,7 +44,9 @@ Time_Master/
 │   └── interval_processor_config.json # 转化规则
 │
 ├── db_inserter/ 
-│   ├── database_importer.cpp
+│   ├── processing.cpp          # Implements file collection, parsing, and database import.
+│   └── processing.h            # Declares the main function to start file processing.
+│   ├── database_importer.cpp   
 │   ├── database_importer.h
 │   ├── data_parser.cpp         # Parsing files and populating database
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
@@ -56,10 +58,6 @@ Time_Master/
 ├── ui/                
 │   ├── menu.h           
 │   └── menu.cpp         
-│
-├── processing/                 # Manages the file processing workflow.
-│   ├── processing.cpp          # Implements file collection, parsing, and database import.
-│   └── processing.h            # Declares the main function to start file processing.
 │
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
 │   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 

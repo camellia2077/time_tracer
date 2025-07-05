@@ -118,3 +118,37 @@ std::string get_current_date_str() {
     ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d");
     return ss.str();
 }
+void write_project_breakdown_to_stream(
+    std::stringstream& ss,
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days)
+{
+    ProjectTree project_tree;
+    std::map<std::string, std::string> parent_map = get_parent_map(db);
+    build_project_tree_from_records(project_tree, records, parent_map);
+
+    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
+    for (const auto& pair : project_tree) {
+        sorted_top_level.push_back(pair);
+    }
+    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    for (const auto& pair : sorted_top_level) {
+        const std::string& category_name = pair.first;
+        const ProjectNode& category_node = pair.second;
+        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
+
+        ss << "\n## " << category_name << ": "
+           << time_format_duration(category_node.duration, avg_days) // 使用 avg_days
+           << " (" << std::fixed << std::setprecision(1) << percentage << "%) ##\n";
+
+        std::vector<std::string> output_lines = generate_sorted_output(category_node, avg_days);
+        for (const auto& line : output_lines) {
+            ss << line << "\n";
+        }
+    }
+}
