@@ -1,10 +1,12 @@
 #include "action_handler.h"
 #include "query_handler.h"
 #include "processing.h"
-#include "FormatValidator.h"
+
 #include "IntervalProcessor.h"
 #include "common_utils.h"
 #include "file_handler.h"
+
+#include "LogProcessor.h"
 
 #include <iostream>
 #include <sqlite3.h>
@@ -26,24 +28,25 @@ ActionHandler::~ActionHandler() {
 }
 
 // --- 查询逻辑实现 ---
-void ActionHandler::run_daily_query(const std::string& date) {
-    if (!open_database_if_needed()) return;
-    QueryHandler(db_).run_daily_query(date);
+std::string ActionHandler::run_daily_query(const std::string& date) {
+    if (!open_database_if_needed()) return "";
+    return QueryHandler(db_).run_daily_query(date);
 }
 
-void ActionHandler::run_period_query(int days) {
-    if (!open_database_if_needed()) return;
-    QueryHandler(db_).run_period_query(days);
+std::string ActionHandler::run_period_query(int days) {
+    if (!open_database_if_needed()) return "";
+    return QueryHandler(db_).run_period_query(days);
 }
 
-void ActionHandler::run_monthly_query(const std::string& month) {
-    if (!open_database_if_needed()) return;
-    QueryHandler(db_).run_monthly_query(month);
+std::string ActionHandler::run_monthly_query(const std::string& month) {
+    if (!open_database_if_needed()) return "";
+    return QueryHandler(db_).run_monthly_query(month);
 }
 
 // --- 文件处理逻辑实现 ---
 void ActionHandler::run_log_processing(const AppOptions& options) {
-    close_database(); // 确保数据库已关闭，避免文件锁定
+    close_database(); 
+    // LogProcessor 封装了所有处理逻辑，ActionHandler 只负责调用它
     LogProcessor processor(app_config_);
     processor.run(options);
 }
@@ -60,7 +63,7 @@ void ActionHandler::run_database_import(const std::string& processed_path_str) {
     std::cout << "Import process finished." << std::endl;
 }
 
-// --- 完整流水线逻辑实现  ---
+// --- 完整流水线逻辑实现 ---
 void ActionHandler::run_full_pipeline_and_import(const std::string& source_path) {
     fs::path input_path(source_path);
     if (!fs::exists(input_path) || !fs::is_directory(input_path)) {
@@ -70,18 +73,19 @@ void ActionHandler::run_full_pipeline_and_import(const std::string& source_path)
 
     std::cout << "\n--- Starting Full Pipeline ---" << std::endl;
     
-    // 步骤 1: 验证源文件、转换、验证输出文件
+    // 阶段 1: 文件处理（验证 -> 转换 -> 验证）
     std::cout << "\n--- Phase 1: Processing files (Validate -> Convert -> Validate) ---\n";
-    close_database(); // 文件处理前关闭数据库
+    close_database();
     
     AppOptions options;
     options.input_path = input_path.string();
-    options.run_all = true; // 使用 run_all 保证遇到错误时停止
+    options.run_all = true;
     options.validate_source = true;
     options.convert = true;
     options.validate_output = true;
-    options.enable_day_count_check = true; // 默认在流水线中进行严格检查
+    options.enable_day_count_check = true;
 
+    // ActionHandler 只需创建 LogProcessor 并运行，所有细节都在 LogProcessor 内部
     LogProcessor processor(app_config_);
     bool processing_succeeded = processor.run(options);
 
@@ -92,12 +96,9 @@ void ActionHandler::run_full_pipeline_and_import(const std::string& source_path)
     
     std::cout << GREEN_COLOR << "\nFile processing phase completed successfully." << RESET_COLOR << std::endl;
 
-    // 步骤 2: 导入到数据库
+    // 阶段 2: 数据库导入
     std::cout << "\n--- Phase 2: Importing all processed files into database... ---\n";
-    
-    // 推断输出目录的路径 (与 LogProcessor 的逻辑保持一致)
     fs::path output_root_path = input_path.parent_path() / ("Processed_" + input_path.filename().string());
-    
     run_database_import(output_root_path.string());
     
     std::cout << GREEN_COLOR << "\nSuccess: Full pipeline completed and data imported." << RESET_COLOR << std::endl;
