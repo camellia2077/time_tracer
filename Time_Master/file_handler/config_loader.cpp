@@ -1,4 +1,4 @@
-#include "file_handler.h"
+#include "config_loader.h"
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -6,28 +6,8 @@
 
 // Define namespace alias for convenience
 namespace fs = std::filesystem;
-std::vector<fs::path> FileHandler::find_text_files_recursively(const fs::path& root_path) {
-    std::vector<fs::path> files_found;
-    
-    if (!fs::exists(root_path) || !fs::is_directory(root_path)) {
-        // 如果路径不存在或不是一个目录，则直接返回空向量
-        return files_found; 
-    }
 
-    // 使用 recursive_directory_iterator 进行递归遍历
-    for (const auto& entry : fs::recursive_directory_iterator(root_path)) {
-        if (entry.is_regular_file() && entry.path().extension() == ".txt") {
-            files_found.push_back(entry.path());
-        }
-    }
-
-    // 对找到的文件进行排序，确保处理顺序一致
-    std::sort(files_found.begin(), files_found.end());
-
-    return files_found;
-}
-
-FileHandler::FileHandler(const std::string& exe_path_str) {
+ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
     try {
         // 1. Get the canonical path to the executable's containing directory
         exe_path = fs::canonical(fs::path(exe_path_str)).parent_path();
@@ -40,11 +20,11 @@ FileHandler::FileHandler(const std::string& exe_path_str) {
     main_config_path = config_dir_path / CONFIG_FILE_NAME;
 }
 
-std::string FileHandler::get_main_config_path() const {
+std::string ConfigLoader::get_main_config_path() const {
     return main_config_path.string();
 }
 
-AppConfig FileHandler::load_configuration() {
+AppConfig ConfigLoader::load_configuration() {
     // 3. Check if the main configuration file exists
     if (!fs::exists(main_config_path)) {
         std::string error_msg = "Configuration file '" + CONFIG_FILE_NAME +
