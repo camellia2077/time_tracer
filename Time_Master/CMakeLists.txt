@@ -28,7 +28,6 @@ file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
 file(GLOB UI_SOURCES "ui/*.cpp")
-file(GLOB PROCESSING_SOURCES "processing/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
@@ -47,7 +46,6 @@ add_executable(
     ${QUERIES_SOURCES}
     ${REPORT_GENERATOR_SOURCES}
     ${UI_SOURCES}
-    ${PROCESSING_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -64,7 +62,6 @@ add_executable(
     ${QUERIES_SOURCES}
     ${REPORT_GENERATOR_SOURCES}
     ${UI_SOURCES}
-    ${PROCESSING_SOURCES} 
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -92,10 +89,10 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
+    "common" "db_inserter"  "queries" "resources" "ui"  "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
-    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
+    "common" "db_inserter"  "queries" "resources" "ui"  "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
 )
 
 # --- 为每个目标分别链接库 ---

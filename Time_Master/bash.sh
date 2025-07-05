@@ -45,7 +45,7 @@ echo "--- Packaging complete."
 
 # --- 5. 完成 ---
 echo ""
-echo "--- Process finished successfully! ---"
+echo -e "\e[32m--- Process finished successfully! ---\e[0m"
 echo "--- Check the '${BUILD_DIR}' directory for:"
 echo "    - Executables: time_tracker_app.exe and time_tracker_command.exe"
 echo "    - Installation Package: e.g., TimeTrackerApp-1.0.0-win64.exe"

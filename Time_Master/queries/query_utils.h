@@ -25,4 +25,13 @@ std::string add_days_to_date_str(std::string date_str, int days);
 // Gets the current system date as "YYYYMMDD".
 std::string get_current_date_str();
 
+// 将项目分类数据写入字符串流
+void write_project_breakdown_to_stream(
+    std::stringstream& ss,
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days = 1 // 默认为1，用于日报；月报和周期报告传入实际天数
+);
+
 #endif // QUERY_UTILS_H

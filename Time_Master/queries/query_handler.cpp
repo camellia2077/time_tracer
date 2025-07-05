@@ -1,23 +1,31 @@
 #include "query_handler.h"
 
-// 引入所有具体的报告生成器类
-#include "query_day.h"
-#include "query_period.h"
-#include "query_month.h"
+// 引入所有新的报告查询器和格式化器
+#include "report_generators/daily_report_querier.h"
+#include "report_generators/monthly_report_querier.h" 
+#include "report_generators/period_report_querier.h"  
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 
-void QueryHandler::run_daily_query(const std::string& date_str) const {
-    DailyReportGenerator generator(m_db, date_str);
-    generator.generate_report();
+std::string QueryHandler::run_daily_query(const std::string& date_str) const {
+    DailyReportQuerier querier(m_db, date_str);
+    DailyReportData data = querier.fetch_data();
+    DailyReportFormatter formatter;
+    return formatter.format_report(data, m_db);
 }
 
-void QueryHandler::run_period_query(int days) const {
-    PeriodReportGenerator generator(m_db, days);
-    generator.generate_report();
+// 修改月报查询
+std::string QueryHandler::run_monthly_query(const std::string& year_month_str) const {
+    MonthlyReportQuerier querier(m_db, year_month_str);
+    MonthlyReportData data = querier.fetch_data();
+    MonthlyReportFormatter formatter;
+    return formatter.format_report(data, m_db);
 }
 
-void QueryHandler::run_monthly_query(const std::string& year_month_str) const {
-    MonthlyReportGenerator generator(m_db, year_month_str);
-    generator.generate_report();
+// 修改周期报告查询
+std::string QueryHandler::run_period_query(int days) const {
+    PeriodReportQuerier querier(m_db, days);
+    PeriodReportData data = querier.fetch_data();
+    PeriodReportFormatter formatter;
+    return formatter.format_report(data, m_db);
 }
