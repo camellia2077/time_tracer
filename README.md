@@ -72,6 +72,20 @@ Time_Master/
 │   └── query_period.h       # Declares the class for generating reports over a specific time period.
 │   ├── query_utils.cpp      # Implements shared helper functions for querying.
 │   └── query_utils.h        # Declares various utility functions used by the different query generators.
+│
+├── reprocessing/               # 预处理
+│   ├── IntervalProcessor.cpp
+│   └── IntervalProcessor.h
+│   ├── LogProcessor.cpp
+│   └── LogProcessor.h
+│   └── validator/
+│       ├── OutputFileValidator.cpp # 转换后文件格式检验
+│       └── OutputFileValidator.h 
+│       ├── SourceFileValidator.cpp # 源文件格式检验
+│       └── SourceFileValidator.h 
+│       ├── ValidatorUtils.cpp
+│       └── ValidatorUtils.h
+│
 └── resources/
     ├── app_icon.rc
     └── output_icon.ico
