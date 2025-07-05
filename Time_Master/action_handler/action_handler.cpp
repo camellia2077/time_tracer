@@ -2,11 +2,10 @@
 #include "query_handler.h"
 #include "processing.h"
 
-#include "IntervalProcessor.h"
 #include "common_utils.h"
 #include "file_handler.h"
 
-#include "LogProcessor.h"
+#include "LogProcessor.h" // 包含格式验证和格式转换
 
 #include <iostream>
 #include <sqlite3.h>
