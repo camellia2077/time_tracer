@@ -26,9 +26,13 @@ find_package(nlohmann_json REQUIRED)
 file(GLOB COMMON_SOURCES "common/*.cpp")
 file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
+file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
 file(GLOB UI_SOURCES "ui/*.cpp")
 file(GLOB PROCESSING_SOURCES "processing/*.cpp")
-file(GLOB REPROCESSING_SOURCES "reprocessing/*.cpp")
+file(GLOB REPROCESSING_SOURCES
+    "reprocessing/*.cpp"
+    "reprocessing/validator/*.cpp"
+)
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
 file(GLOB ACTION_HANDLER_SOURCES "action_handler/*.cpp")
 
@@ -41,11 +45,13 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
+    ${REPORT_GENERATOR_SOURCES}
     ${UI_SOURCES}
     ${PROCESSING_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
+
 
 )
 
@@ -56,6 +62,7 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES} 
     ${QUERIES_SOURCES}
+    ${REPORT_GENERATOR_SOURCES}
     ${UI_SOURCES}
     ${PROCESSING_SOURCES} 
     ${REPROCESSING_SOURCES}
@@ -85,10 +92,10 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "file_handler" "action_handler"
+    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
-    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "file_handler" "action_handler"
+    "common" "db_inserter"  "queries" "resources" "ui" "processing" "reprocessing" "reprocessing/validator" "file_handler" "action_handler"
 )
 
 # --- 为每个目标分别链接库 ---
@@ -100,8 +107,9 @@ target_link_libraries(time_tracker_cli PRIVATE
     nlohmann_json::nlohmann_json)
 
 # --- 为每个目标分别设置通用编译选项 ---
-target_compile_options(time_tracker_app PRIVATE -Wall)
-target_compile_options(time_tracker_cli PRIVATE -Wall)
+# -Wextra -Wpedantic
+target_compile_options(time_tracker_app PRIVATE -Wall )
+target_compile_options(time_tracker_cli PRIVATE -Wall )
 
 # ====================================================================
 # 新增内容：安装与打包配置 (Installation and Packaging)
