@@ -6,20 +6,22 @@
 
 // --- DataFileParser Constructor & Destructor ---
 
-DataFileParser::DataFileParser(const nlohmann::json& config_json)
+// MODIFIED: Parameter type changed
+DataFileParser::DataFileParser(const ParserConfig& config)
     : current_date_processed(false),
       _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))")
 {
-    _load_initial_parents(config_json);
+    // It simply copies the pre-loaded data.
+    initial_top_level_parents = config.initial_top_level_parents;
 }
 
 DataFileParser::~DataFileParser() {
     // Destructor is empty, commit_all() is called externally.
 }
 
+// ... (The rest of the file remains the same)
 // --- Public Member Functions ---
-
-bool DataFileParser::parse_file(const std::string& filename) {
+bool DataFileParser::parse_file(const std::string& filename) { 
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Cannot open file " << filename << std::endl;
@@ -40,31 +42,13 @@ bool DataFileParser::parse_file(const std::string& filename) {
     return success;
 }
 
-void DataFileParser::commit_all() {
+void DataFileParser::commit_all() { 
     _store_previous_date_data();
 }
 
 
 // --- Private Member Functions ---
-
-void DataFileParser::_load_initial_parents(const nlohmann::json& config_json) {
-    try {
-        if (config_json.contains("initial_top_level_parents") && config_json["initial_top_level_parents"].is_object()) {
-            const auto& parents_map = config_json["initial_top_level_parents"];
-            for (auto& [key, value] : parents_map.items()) {
-                if (value.is_string()) {
-                    initial_top_level_parents[key] = value.get<std::string>();
-                }
-            }
-        } else {
-            std::cerr << "Warning: Provided JSON config does not contain a valid 'initial_top_level_parents' object. Proceeding without initial parent mappings." << std::endl;
-        }
-    } catch (const std::exception& e) {
-        std::cerr << "Warning: Error processing provided JSON config. Details: " << e.what() << std::endl;
-    }
-}
-
-void DataFileParser::_process_lines(std::stringstream& buffer) {
+void DataFileParser::_process_lines(std::stringstream& buffer) { 
     std::string line;
     int line_num = 0;
     while (std::getline(buffer, line)) {
@@ -73,7 +57,7 @@ void DataFileParser::_process_lines(std::stringstream& buffer) {
     }
 }
 
-void DataFileParser::_process_single_line(const std::string& line, int line_num) {
+void DataFileParser::_process_single_line(const std::string& line, int line_num) { 
     auto trimmed_line = line;
     trimmed_line.erase(0, trimmed_line.find_first_not_of(" \t\n\r\f\v"));
     trimmed_line.erase(trimmed_line.find_last_not_of(" \t\n\r\f\v") + 1);
@@ -96,7 +80,7 @@ void DataFileParser::_process_single_line(const std::string& line, int line_num)
     }
 }
 
-void DataFileParser::_handle_date_line(const std::string& line) {
+void DataFileParser::_handle_date_line(const std::string& line) { 
     if (line.length() > 5) {
         current_date = line.substr(5);
         current_date.erase(0, current_date.find_first_not_of(" \t"));
@@ -110,23 +94,23 @@ void DataFileParser::_handle_date_line(const std::string& line) {
     }
 }
 
-void DataFileParser::_handle_status_line(const std::string& line) {
+void DataFileParser::_handle_status_line(const std::string& line) { 
     if (line.length() > 7) current_status = line.substr(7);
 }
 
-void DataFileParser::_handle_sleep_line(const std::string& line) {
+void DataFileParser::_handle_sleep_line(const std::string& line) { 
     if (line.length() > 6) current_sleep = line.substr(6);
 }
 
-void DataFileParser::_handle_remark_line(const std::string& line) {
+void DataFileParser::_handle_remark_line(const std::string& line) { 
     if (line.length() > 7) current_remark = line.substr(7);
 }
 
-void DataFileParser::_handle_getup_line(const std::string& line) {
+void DataFileParser::_handle_getup_line(const std::string& line) { 
     if (line.length() > 6) current_getup_time = line.substr(6);
 }
 
-void DataFileParser::_handle_time_record_line(const std::string& line, int line_num) {
+void DataFileParser::_handle_time_record_line(const std::string& line, int line_num) { 
     std::smatch matches;
     if (std::regex_match(line, matches, _time_record_regex) && matches.size() == 4) {
         std::string start_time_str = matches[1].str();
@@ -140,7 +124,7 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
     }
 }
 
-void DataFileParser::_process_project_path(const std::string& project_path_orig) {
+void DataFileParser::_process_project_path(const std::string& project_path_orig) { 
     std::vector<std::string> segments = split_string(project_path_orig, '_');
     if (segments.empty()) return;
     for (const auto& pair : initial_top_level_parents) {
@@ -156,7 +140,7 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
     }
 }
 
-void DataFileParser::_store_previous_date_data() {
+void DataFileParser::_store_previous_date_data() { 
     if (current_date.empty() || current_date_processed) return;
     days.push_back({current_date, current_status, current_sleep, current_remark, current_getup_time});
     records.insert(records.end(), buffered_records_for_day.begin(), buffered_records_for_day.end());
