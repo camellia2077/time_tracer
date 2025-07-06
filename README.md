@@ -439,8 +439,3 @@ Description: Generates test log data for a given year range. Reads activities fr
   <items_per_day>   : Number of log items per day (positive integer).
   --version         : Display version information and exit.
 ```
-
-
-
-
-
