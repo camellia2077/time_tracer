@@ -27,7 +27,7 @@ file(GLOB COMMON_SOURCES "common/*.cpp")
 file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
-file(GLOB UI_SOURCES "ui/*.cpp")
+file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
@@ -45,7 +45,7 @@ add_executable(
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
     ${REPORT_GENERATOR_SOURCES}
-    ${UI_SOURCES}
+    ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -61,7 +61,7 @@ add_executable(
     ${DB_INSERTER_SOURCES} 
     ${QUERIES_SOURCES}
     ${REPORT_GENERATOR_SOURCES}
-    ${UI_SOURCES}
+    ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -92,19 +92,19 @@ target_include_directories(time_tracker_app PRIVATE
     "common" 
     "db_inserter" 
      "queries" 
-     "resources" 
-     "ui"  
-     "reprocessing" 
-     "reprocessing/validator" 
-     "file_handler" 
-     "action_handler"
+    "resources" 
+    "time_master_app"  
+    "reprocessing" 
+    "reprocessing/validator" 
+    "file_handler" 
+    "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
     "common" 
-    "db_inserter"  
-    "queries" 
+    "db_inserter" 
+     "queries" 
     "resources" 
-    "ui"  
+    "time_master_app"  
     "reprocessing" 
     "reprocessing/validator" 
     "file_handler" 

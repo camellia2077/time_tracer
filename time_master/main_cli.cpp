@@ -12,8 +12,8 @@
 #include "version.h"
 
 #include "file_controller.h" 
-#include "action_handler.h"
-#include "query_handler.h"
+#include "ActionHandler.h "
+#include "QueryHandler.h"
 #include "LogProcessor.h"
 
 // --- Global Constants ---
