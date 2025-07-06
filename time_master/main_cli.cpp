@@ -110,43 +110,33 @@ int main(int argc, char* argv[]) {
         // Branch 4: Query (-q)
         else if (command == "-q" || command == "--query") {
             if (args.size() < 4) {
-                std::cerr << RED_COLOR << "Error: " << RESET_COLOR << " query command requires a sub-command and argument (e.g., -q d 20240101).\n";
+                std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Query command requires a sub-command and an argument (e.g., -q d 20240101).\n";
                 print_full_usage(args[0].c_str());
                 return 1;
             }
-            sqlite3* db = nullptr;
-            if (!open_database(&db, DATABASE_NAME)) return 1;
-            
-            // 【修改 2/3】：将 QueryHandler 的创建和调用包裹在 try-catch-finally 结构中，确保数据库总是能被关闭
-            try {
-                QueryHandler query_handler(db);
-                std::string sub_command = args[2];
-                std::string query_arg = args[3];
-                if (sub_command == "d" || sub_command == "daily") {
-                    std::cout << query_handler.run_daily_query(query_arg); // 注意：这里改为输出报告
-                } else if (sub_command == "p" || sub_command == "period") {
-                    try { 
-                        std::cout << query_handler.run_period_query(std::stoi(query_arg)); // 注意：这里改为输出报告
-                    }
-                    catch (const std::exception&) { 
-                        std::cerr  << RED_COLOR << "Error: " << RESET_COLOR << "<days> argument must be a valid number.\n"; 
-                        close_database(&db); 
-                        return 1; 
-                    }
-                } else if (sub_command == "m" || sub_command == "monthly") {
-                    std::cout << query_handler.run_monthly_query(query_arg); // 注意：这里改为输出报告
-                } else {
-                    std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown query sub-command '" << sub_command << "'.\n";
-                    print_full_usage(args[0].c_str()); 
-                    close_database(&db); 
+        
+            std::string sub_command = args[2];
+            std::string query_arg = args[3];
+        
+            if (sub_command == "d" || sub_command == "daily") {
+                // 直接调用 action_handler 的方法
+                std::cout << action_handler.run_daily_query(query_arg);
+            } else if (sub_command == "p" || sub_command == "period") {
+                try {
+                    // 直接调用 action_handler 的方法
+                    std::cout << action_handler.run_period_query(std::stoi(query_arg));
+                } catch (const std::exception&) {
+                    std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "<days> argument must be a valid number.\n";
                     return 1;
                 }
-            } catch(...) {
-                close_database(&db);
-                throw; // 重新抛出异常
+            } else if (sub_command == "m" || sub_command == "monthly") {
+                // 直接调用 action_handler 的方法
+                std::cout << action_handler.run_monthly_query(query_arg);
+            } else {
+                std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown query sub-command '" << sub_command << "'.\n";
+                print_full_usage(args[0].c_str());
+                return 1;
             }
-            
-            close_database(&db);
         }
         // Unknown command
         else {
