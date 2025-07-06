@@ -15,7 +15,7 @@ public:
     /**
      * @brief Constructs a DailyReportQuerier.
      * @param db A pointer to the SQLite database connection.
-     * @param date The date for which to query the report (YYYY-MM-DD format).
+     * @param date The date for which to query the report (YYYYMMDD format).
      */
     explicit DailyReportQuerier(sqlite3* db, const std::string& date);
 
