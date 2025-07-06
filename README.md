@@ -55,21 +55,22 @@ Time_Master/
 │   ├── file_handler.cpp
 │   └── file_handler.h
 │
-├── ui/                
+├── time_master_app/                
 │   ├── menu.h           
 │   └── menu.cpp         
 │
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
-│   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
-│   └── query_handler.h      # Declares the QueryHandler class, the main entry point for all query operations.
-│   ├── query_day.cpp        # Implements the logic to generate a detailed report for a single day.
-│   └── query_day.h          # Declares the class responsible for generating a daily report.
-│   ├── query_month.cpp      # Implements the logic to generate a summary report for a specific month.
-│   └── query_month.h        # Declares the class that generates a monthly report.
-│   ├── query_period.cpp     # Implements the logic for generating reports over a custom period.
-│   └── query_period.h       # Declares the class for generating reports over a specific time period.
+│   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
+│   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   ├── query_utils.cpp      # Implements shared helper functions for querying.
 │   └── query_utils.h        # Declares various utility functions used by the different query generators.
+│   └── report_generators/
+│       ├── DailyReportQuerier.cpp        # Implements the logic to generate a detailed report for a single day.
+│       └── DailyReportQuerier.h          # Declares the class responsible for generating a daily report.
+│       ├── MonthlyReportQuerier.cpp     
+│       └── MonthlyReportQuerier.h        
+│       ├── PeriodReportQuerier.cpp     # Implements the logic for generating reports over a custom period.
+│       └── PeriodReportQuerier.h       # Declares the class for generating reports over a specific time period.
 │
 ├── reprocessing/               # 预处理
 │   ├── IntervalProcessor.cpp
