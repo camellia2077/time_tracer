@@ -74,7 +74,7 @@ def run_heatmap(year, heatmap_type, project=None):
 
     if heatmap_type == 'project':
         data = db_access.get_data_for_heatmap(year, project)
-        strategy = create_numeric_heatmap_strategy('configs/heatmap_config.json', project)
+        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.json', project)
         base_filename = f"heatmap_{project}_{year}"
 
     elif heatmap_type == 'sleep':

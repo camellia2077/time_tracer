@@ -30,8 +30,8 @@ private:
     void _fetch_total_duration(DailyReportData& data);
     void _fetch_time_records(DailyReportData& data);
 
-    sqlite3* m_db;
-    const std::string m_date;
+    sqlite3* m_db; // 指向 SQLite 数据库连接的指针，用于执行数据库查询
+    const std::string m_date; // 表示要查询日报的日期，格式为 YYYYMMDD
 };
 
 /**
