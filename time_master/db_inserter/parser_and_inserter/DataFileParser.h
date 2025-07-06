@@ -6,41 +6,28 @@
 #include <map>
 #include <regex>
 #include <sstream>
-#include <nlohmann/json.hpp>
 
 #include "common_utils.h"
-#include "time_sheet_model.h" // MODIFIED: Include shared data structures
+#include "time_sheet_model.h"
+#include "ParserConfig.h" // MODIFIED: Include path changed
 
-// --- DataFileParser Class Definition ---
 class DataFileParser {
 public:
-    // Public member variables to hold the parsed data
     std::vector<DayData> days;
     std::vector<TimeRecordInternal> records;
     std::unordered_set<std::pair<std::string, std::string>, pair_hash> parent_child_pairs;
 
     /**
-     * @brief DataFileParser constructor.
-     * @param config_json A nlohmann::json object containing top-level parent mappings.
+     * @brief MODIFIED: Constructor now accepts a pre-loaded ParserConfig object.
+     * @param config The parser-specific configuration.
      */
-    explicit DataFileParser(const nlohmann::json& config_json);
+    explicit DataFileParser(const ParserConfig& config); // MODIFIED: Parameter type changed
 
     ~DataFileParser();
-
-    /**
-     * @brief Parses the content of a single data file.
-     * @param filename The path to the file to parse.
-     * @return True if parsing was successful, false otherwise.
-     */
     bool parse_file(const std::string& filename);
-
-    /**
-     * @brief Commits any remaining buffered data after all files are parsed.
-     */
     void commit_all();
 
 private:
-    // Internal state for parsing
     std::string current_date;
     std::string current_status;
     std::string current_sleep;
@@ -52,8 +39,6 @@ private:
     std::map<std::string, std::string> initial_top_level_parents;
     const std::regex _time_record_regex;
 
-    // Private helper methods for processing file content
-    void _load_initial_parents(const nlohmann::json& config_json);
     void _process_lines(std::stringstream& buffer);
     void _process_single_line(const std::string& line, int line_num);
     void _handle_date_line(const std::string& line);
