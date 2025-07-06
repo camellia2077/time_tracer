@@ -29,27 +29,27 @@ bool DatabaseInserter::is_db_open() const {
     return db != nullptr;
 }
 
-void DatabaseInserter::import_data(const DataFileParser& parser) {
+// MODIFIED: The function signature and implementation now use direct data collections.
+void DatabaseInserter::import_data(
+    const std::vector<DayData>& days,
+    const std::vector<TimeRecordInternal>& records,
+    const std::unordered_set<std::pair<std::string, std::string>, pair_hash>& parent_child_pairs) {
     if (!db) return;
 
     execute_sql_Inserter(db, "BEGIN TRANSACTION;", "Begin import transaction");
 
-    // Import days from the parser's in-memory vector
-    for (const auto& day_data : parser.days) {
+    // Import days from the provided 'days' vector
+    for (const auto& day_data : days) { // MODIFIED: Iterates over the 'days' parameter
         sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_day, 2, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 3, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT); // 新增：绑定sleep数据
-        sqlite3_bind_text(stmt_insert_day, 4, day_data.remark.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从3变为4
+        sqlite3_bind_text(stmt_insert_day, 3, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 4, day_data.remark.c_str(), -1, SQLITE_TRANSIENT);
         
-        // --- MODIFICATION START ---
-        // 检查 getup_time 是否为 "Null" 或空，如果是，则绑定 SQL NULL
         if (day_data.getup_time == "Null" || day_data.getup_time.empty()) {
-            sqlite3_bind_null(stmt_insert_day, 5); // 在第5个参数位置绑定NULL
+            sqlite3_bind_null(stmt_insert_day, 5);
         } else {
-            // 否则，正常绑定文本值
-            sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从4变为5
+            sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
         }
-        // --- MODIFICATION END ---
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
@@ -57,8 +57,8 @@ void DatabaseInserter::import_data(const DataFileParser& parser) {
         sqlite3_reset(stmt_insert_day);
     }
 
-    // Import time records from the parser's in-memory vector
-    for (const auto& record_data : parser.records) {
+    // Import time records from the provided 'records' vector
+    for (const auto& record_data : records) { // MODIFIED: Iterates over the 'records' parameter
         sqlite3_bind_text(stmt_insert_record, 1, record_data.date.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 2, record_data.start.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 3, record_data.end.c_str(), -1, SQLITE_TRANSIENT);
@@ -71,8 +71,8 @@ void DatabaseInserter::import_data(const DataFileParser& parser) {
         sqlite3_reset(stmt_insert_record);
     }
 
-    // Import parent-child relationships from the parser's in-memory set
-    for (const auto& pair : parser.parent_child_pairs) {
+    // Import parent-child relationships from the provided set
+    for (const auto& pair : parent_child_pairs) { // MODIFIED: Iterates over the 'parent_child_pairs' parameter
         sqlite3_bind_text(stmt_insert_parent_child, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_parent_child, 2, pair.second.c_str(), -1, SQLITE_TRANSIENT);
 
@@ -88,14 +88,12 @@ void DatabaseInserter::import_data(const DataFileParser& parser) {
 // --- Private Member Functions ---
 
 void DatabaseInserter::_initialize_database() {
-    // 修改：为days表添加sleep列
     execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, sleep TEXT, remark TEXT, getup_time TEXT);", "Create days table");
     execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));", "Create time_records table");
     execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS parent_child (child TEXT PRIMARY KEY, parent TEXT);", "Create parent_child table");
 }
 
 void DatabaseInserter::_prepare_statements() {
-    // 修改：INSERT语句以包含sleep列
     const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, sleep, remark, getup_time) VALUES (?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
