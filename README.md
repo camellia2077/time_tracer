@@ -44,12 +44,12 @@ Time_Master/
 │   └── interval_processor_config.json # 转化规则
 │
 ├── db_inserter/ 
-│   ├── processing.cpp          # Implements file collection, parsing, and database import.
-│   └── processing.h            # Declares the main function to start file processing.
-│   ├── database_importer.cpp   
-│   ├── database_importer.h
-│   ├── data_parser.cpp         # Parsing files and populating database
-│   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
+│   ├── DatabaseInserter.cpp    # 数据库插入
+│   └── DatabaseInserter.h            
+│   ├── DataFileParser.cpp      # 解析数据
+│   ├── DataFileParser.h
+│   ├── DataImporterr.cpp       # 封装解析数据与插入数据库
+│   └── DataImporterr.h           
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── config_loader.cpp # 加载json

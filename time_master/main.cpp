@@ -16,7 +16,7 @@
 
 #include "menu.h" 
 #include "common_utils.h"     // Contains color macro definitions
-#include "FileController"   // 包含json读取和递归查询文件
+#include "FileController.h"   // 包含json读取和递归查询文件
 
 // Core constant for the database name
 const std::string DATABASE_NAME = "time_data.db";
