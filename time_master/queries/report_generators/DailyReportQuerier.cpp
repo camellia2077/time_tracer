@@ -1,5 +1,5 @@
 #include "DailyReportQuerier.h"
-#include "query_utils.h"
+#include "query_utils.h" // Assumed to contain time_format_duration and write_project_breakdown_to_stream
 #include <iomanip>
 
 // --- DailyReportQuerier Class Implementation ---
@@ -11,9 +11,11 @@ DailyReportData DailyReportQuerier::fetch_data() {
     DailyReportData data;
     data.date = m_date;
 
+    // Execute all necessary queries
     _fetch_metadata(data);
     _fetch_total_duration(data);
 
+    // Only fetch time records if there's any duration recorded to save resources
     if (data.total_duration > 0) {
         _fetch_time_records(data);
     }
@@ -27,7 +29,7 @@ void DailyReportQuerier::_fetch_metadata(DailyReportData& data) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             const unsigned char* s = sqlite3_column_text(stmt, 0);
-            if (s) data.metadata.status = reinterpret_cast<const char*>(s); 
+            if (s) data.metadata.status = reinterpret_cast<const char*>(s);
             const unsigned char* r = sqlite3_column_text(stmt, 1);
             if (r) data.metadata.remark = reinterpret_cast<const char*>(r);
             const unsigned char* g = sqlite3_column_text(stmt, 2);
@@ -55,7 +57,7 @@ void DailyReportQuerier::_fetch_time_records(DailyReportData& data) {
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            data.records.push_back({ 
+            data.records.push_back({
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
                 sqlite3_column_int64(stmt, 1)
             });
@@ -91,5 +93,6 @@ void DailyReportFormatter::_display_header(std::stringstream& ss, const DailyRep
 }
 
 void DailyReportFormatter::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) {
-    write_project_breakdown_to_stream(ss, db, data.records, data.total_duration, 1); 
+    // This function remains coupled to query_utils, but the class itself is clean.
+    write_project_breakdown_to_stream(ss, db, data.records, data.total_duration, 1);
 }
