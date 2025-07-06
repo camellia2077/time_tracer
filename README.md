@@ -52,8 +52,12 @@ Time_Master/
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
-│   ├── file_handler.cpp
-│   └── file_handler.h
+│   ├── config_loader.cpp # 加载json
+│   └── config_loader.h 
+│   ├── file_controller.cpp # 封装
+│   └── file_controller.h
+│   ├── file_utils.cpp # 递归查询
+│   └── file_utils.h
 │
 ├── time_master_app/                
 │   ├── menu.h           
