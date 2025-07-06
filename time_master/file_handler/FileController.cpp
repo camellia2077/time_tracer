@@ -1,6 +1,6 @@
-#include "file_controller.h"
-#include "config_loader.h" // 实现细节，包含在 .cpp 中
-#include "file_utils.h"    // 实现细节，包含在 .cpp 中
+#include "FileController.h"
+#include "ConfigLoader.h" 
+#include "FileUtils.h"    
 #include <iostream>
 
 FileController::FileController(const std::string& exe_path_str) {
