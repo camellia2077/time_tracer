@@ -16,7 +16,7 @@
 
 #include "menu.h" 
 #include "common_utils.h"     // Contains color macro definitions
-#include "file_handler.h"      // The new module for handling file operations
+#include "FileController"   // 包含json读取和递归查询文件
 
 // Core constant for the database name
 const std::string DATABASE_NAME = "time_data.db";
@@ -43,27 +43,28 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    AppConfig app_config;
-    std::string main_config_path_str;
-
     try {
-        // 1. Instantiate the file handler with the executable's path
-        FileHandler file_handler(argv[0]);
+        // --- 新的、简化的初始化流程 ---
+
+        // 1. 实例化 FileController。这一个步骤就完成了所有配置加载。
+        //    如果加载失败，其构造函数会抛出异常，由下面的 catch 块捕获。
+        FileController file_controller(argv[0]);
         
-        // 2. Load all configurations. The method will throw an exception on failure.
-        app_config = file_handler.load_configuration();
-        
-        // 3. Get the path to the main config file for passing to the menu if needed
-        main_config_path_str = file_handler.get_main_config_path();
+        // 2. 实例化并运行菜单。我们直接从控制器获取所需的数据来初始化它。
+        Menu app_menu(
+            DATABASE_NAME,
+            file_controller.get_config(),          // 从控制器获取 AppConfig
+            file_controller.get_main_config_path() // 从控制器获取主配置路径
+        );
+        app_menu.run();
 
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Fatal Error" << RESET_COLOR << " during configuration setup: " << e.what() << std::endl;
+        // 在交互模式下，可以增加一个暂停，让用户看到错误信息
+        std::cout << "Press Enter to exit...";
+        std::cin.get();
         return 1;
     }
-
-    // 4. Instantiate the menu, passing the database name, the fully populated AppConfig, and the main config path
-    Menu app_menu(DATABASE_NAME, app_config, main_config_path_str);
-    app_menu.run();
     
     return 0;
 }
