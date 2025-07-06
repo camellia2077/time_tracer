@@ -1,64 +1,46 @@
-// --- START OF FILE parsing/data_parser.h ---
-
 #ifndef DATA_PARSER_H
 #define DATA_PARSER_H
 
 #include <string>
 #include <vector>
 #include <map>
-#include <unordered_set>
-#include <utility>
 #include <regex>
 #include <sstream>
-
-#include "common_utils.h"
 #include <nlohmann/json.hpp>
 
-// --- 数据结构  ---
-struct TimeRecordInternal {
-    std::string date;
-    std::string start;
-    std::string end;
-    std::string project_path;
-    int duration_seconds;
-};
+#include "common_utils.h"
+#include "time_sheet_model.h" // MODIFIED: Include shared data structures
 
-struct DayData {
-    std::string date;
-    std::string status;
-    std::string sleep;
-    std::string remark;
-    std::string getup_time;
-};
-
-struct pair_hash {
-    template <class T1, class T2>
-    std::size_t operator () (const std::pair<T1,T2> &p) const {
-        auto h1 = std::hash<T1>{}(p.first);
-        auto h2 = std::hash<T2>{}(p.second);
-        return h1 ^ (h2 << 1);
-    }
-};
-
-// --- DataFileParser 类定义 ---
+// --- DataFileParser Class Definition ---
 class DataFileParser {
 public:
+    // Public member variables to hold the parsed data
     std::vector<DayData> days;
     std::vector<TimeRecordInternal> records;
     std::unordered_set<std::pair<std::string, std::string>, pair_hash> parent_child_pairs;
 
     /**
-     * @brief DataFileParser 的构造函数。
-     * @details 现在直接接收一个json对象来初始化父级映射。
-     * @param config_json 包含顶层父级映射的 nlohmann::json 对象。
+     * @brief DataFileParser constructor.
+     * @param config_json A nlohmann::json object containing top-level parent mappings.
      */
     explicit DataFileParser(const nlohmann::json& config_json);
 
     ~DataFileParser();
+
+    /**
+     * @brief Parses the content of a single data file.
+     * @param filename The path to the file to parse.
+     * @return True if parsing was successful, false otherwise.
+     */
     bool parse_file(const std::string& filename);
+
+    /**
+     * @brief Commits any remaining buffered data after all files are parsed.
+     */
     void commit_all();
 
 private:
+    // Internal state for parsing
     std::string current_date;
     std::string current_status;
     std::string current_sleep;
@@ -70,11 +52,8 @@ private:
     std::map<std::string, std::string> initial_top_level_parents;
     const std::regex _time_record_regex;
 
-    /**
-     * @brief 【修改】从传入的json对象加载初始的父级项目映射。
-     */
+    // Private helper methods for processing file content
     void _load_initial_parents(const nlohmann::json& config_json);
-    
     void _process_lines(std::stringstream& buffer);
     void _process_single_line(const std::string& line, int line_num);
     void _handle_date_line(const std::string& line);
