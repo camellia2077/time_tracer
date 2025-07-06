@@ -1,5 +1,3 @@
-#include "processing.h"
-
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -11,15 +9,13 @@
 
 // 包含项目内其他模块的头文件
 #include "common_utils.h"
-#include "DataFileParser.h"
-#include "DatabaseInserter.h"
+#include "parser_and_inserter/DataFileParser.h"
+#include "parser_and_inserter/DatabaseInserter.h"
 #include <nlohmann/json.hpp>
 
 namespace fs = std::filesystem;
 
 // 用于读取输入的txt文件
-
-//
 class UserInteractor {
 public:
     std::vector<std::string> collect_paths_from_user() const {
@@ -121,7 +117,6 @@ public:
                 std::cerr << RED_COLOR << "Error parsing config file: " << config_path_ << " - " << e.what() << RESET_COLOR << std::endl;
             }
         } else {
-            // 【核心修复】将警告信息改为黄色
             std::cerr << YELLOW_COLOR << "Warning: Could not open main config file: " << config_path_ 
                       << ". Proceeding without initial parent mappings." << RESET_COLOR << std::endl;
         }
@@ -135,7 +130,8 @@ public:
         std::cout << "Stage 2: Importing data into the database..." << std::endl;
         DatabaseInserter inserter(db_name_);
         if (inserter.is_db_open()) {
-            inserter.import_data(parser);
+            // MODIFIED: Pass the data collections from the parser to the inserter.
+            inserter.import_data(parser.days, parser.records, parser.parent_child_pairs);
         } else {
             std::cerr << "Inserter could not open database. Aborting import." << std::endl;
         }

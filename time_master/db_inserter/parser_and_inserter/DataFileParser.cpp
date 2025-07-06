@@ -1,12 +1,10 @@
-// --- START OF FILE parsing/data_parser.cpp ---
-
 #include "DataFileParser.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <stdexcept>
 
-// --- DataFileParser 构造函数与析构函数 ---
+// --- DataFileParser Constructor & Destructor ---
 
 DataFileParser::DataFileParser(const nlohmann::json& config_json)
     : current_date_processed(false),
@@ -16,10 +14,11 @@ DataFileParser::DataFileParser(const nlohmann::json& config_json)
 }
 
 DataFileParser::~DataFileParser() {
-    // 析构函数通常为空，因为 commit_all() 应由外部调用
+    // Destructor is empty, commit_all() is called externally.
 }
 
-// --- 公共成员函数 (parse_file, commit_all 保持不变) ---
+// --- Public Member Functions ---
+
 bool DataFileParser::parse_file(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -46,14 +45,10 @@ void DataFileParser::commit_all() {
 }
 
 
-// --- 私有成员函数 ---
+// --- Private Member Functions ---
 
-/**
- * @brief 【修改】此方法现在直接处理传入的json对象，不再关心文件IO。
- */
 void DataFileParser::_load_initial_parents(const nlohmann::json& config_json) {
     try {
-        // 检查 "initial_top_level_parents" 这个顶层键是否存在且为对象
         if (config_json.contains("initial_top_level_parents") && config_json["initial_top_level_parents"].is_object()) {
             const auto& parents_map = config_json["initial_top_level_parents"];
             for (auto& [key, value] : parents_map.items()) {
@@ -62,7 +57,6 @@ void DataFileParser::_load_initial_parents(const nlohmann::json& config_json) {
                 }
             }
         } else {
-            // 如果JSON中没有这个键，只打印警告，不中断程序
             std::cerr << "Warning: Provided JSON config does not contain a valid 'initial_top_level_parents' object. Proceeding without initial parent mappings." << std::endl;
         }
     } catch (const std::exception& e) {
@@ -70,8 +64,6 @@ void DataFileParser::_load_initial_parents(const nlohmann::json& config_json) {
     }
 }
 
-// --- 其余所有私有方法 (_process_lines, _process_single_line 等) 保持完全不变 ---
-// (此处省略它们的完整代码，因为它们没有变化)
 void DataFileParser::_process_lines(std::stringstream& buffer) {
     std::string line;
     int line_num = 0;
