@@ -4,12 +4,15 @@
 
 // --- DailyReportQuerier Class Implementation ---
 
-DailyReportQuerier::DailyReportQuerier(sqlite3* db, const std::string& date)
-    : m_db(db), m_date(date) {}
+DailyReportQuerier::DailyReportQuerier(sqlite3* db, const std::string& date) // 构造函数，需要和类使用相同的名称
+    // 成员初始化列表
+    : m_db(db),  
+    m_date(date) {} // {} 表示所有的初始化工作都在成员初始化列表中完成了，不需要在函数体内部执行额外的逻辑
+    
 
 DailyReportData DailyReportQuerier::fetch_data() {
     DailyReportData data;
-    data.date = m_date;
+    data.date = m_date; // 向结构体的std::string date;传入m_date
 
     // Execute all necessary queries
     _fetch_metadata(data);
@@ -22,6 +25,10 @@ DailyReportData DailyReportQuerier::fetch_data() {
     return data;
 }
 
+/**
+* @brief 从数据库中获取指定date的元数据（sstatus, remark, getup_time）。
+* @param data 对 DailyReportData 结构体的引用，用于填充获取到的元数据。
+*/
 void DailyReportQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT status, remark, getup_time FROM days WHERE date = ?;";
