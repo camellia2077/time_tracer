@@ -1,0 +1,12 @@
+{
+    "shared_paths": {
+      "executable": "C:/Computer/github_cpp/Time_Master_cpp/test/time_tracker_cli.exe",
+      "source_data": "C:/Computer/github_cpp/Time_Master_cpp/test/Date",
+      "processed_data": "C:/Computer/github_cpp/Time_Master_cpp/test/Processed_Date"
+    },
+    "query_module": {
+      "daily_query_date": "20760701",
+      "period_query_days": "7",
+      "monthly_query_month": "207701"
+    }
+  }
