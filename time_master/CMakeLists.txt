@@ -24,7 +24,10 @@ find_package(nlohmann_json REQUIRED)
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
-file(GLOB DB_INSERTER_SOURCES "db_inserter/*.cpp")
+file(GLOB DB_INSERTER_SOURCES 
+    "db_inserter/*.cpp"
+    "db_inserter/parser_and_inserter/*.cpp"
+)
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
 file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
