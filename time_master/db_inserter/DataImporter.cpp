@@ -9,9 +9,9 @@
 
 // 包含项目内其他模块的头文件
 #include "common_utils.h"
-#include "parser_and_inserter/DataFileParser.h"
+#include "parser_and_inserter/DataFileParser.h"         
 #include "parser_and_inserter/DatabaseInserter.h"
-#include <nlohmann/json.hpp>
+#include "parser_and_inserter/ConfigLoader.h"          
 
 namespace fs = std::filesystem;
 
@@ -108,21 +108,13 @@ public:
         ProcessReporter::TimingResult timing;
         auto start_total = std::chrono::high_resolution_clock::now();
 
-        nlohmann::json config_json;
-        std::ifstream config_stream(config_path_);
-        if (config_stream.is_open()) {
-            try {
-                config_stream >> config_json;
-            } catch (const nlohmann::json::parse_error& e) {
-                std::cerr << RED_COLOR << "Error parsing config file: " << config_path_ << " - " << e.what() << RESET_COLOR << std::endl;
-            }
-        } else {
-            std::cerr << YELLOW_COLOR << "Warning: Could not open main config file: " << config_path_ 
-                      << ". Proceeding without initial parent mappings." << RESET_COLOR << std::endl;
-        }
+
+        ParserConfig config = ConfigLoader::load_from_file(config_path_); // 传入json的父项目映射配置
+
 
         std::cout << "Stage 1: Parsing files into memory..." << std::endl;
-        DataFileParser parser(config_json); 
+        // The parser is now initialized with the clean ParserConfig object.
+        DataFileParser parser(config); 
         std::vector<std::string> failed_files = parse_all_files(parser, files_to_process);
         auto end_parsing = std::chrono::high_resolution_clock::now();
         timing.parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();
@@ -130,7 +122,6 @@ public:
         std::cout << "Stage 2: Importing data into the database..." << std::endl;
         DatabaseInserter inserter(db_name_);
         if (inserter.is_db_open()) {
-            // MODIFIED: Pass the data collections from the parser to the inserter.
             inserter.import_data(parser.days, parser.records, parser.parent_child_pairs);
         } else {
             std::cerr << "Inserter could not open database. Aborting import." << std::endl;
@@ -159,6 +150,7 @@ private:
 };
 
 // --- 函数封装 (外部入口) ---
+// (These functions remain unchanged)
 void handle_process_files(const std::string& db_name, const std::string& config_path) {
     UserInteractor interactor;
     std::vector<std::string> user_paths = interactor.collect_paths_from_user();
