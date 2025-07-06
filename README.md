@@ -62,9 +62,9 @@ Time_Master/
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
-│   ├── query_utils.cpp      # Implements shared helper functions for querying.
-│   └── query_utils.h        # Declares various utility functions used by the different query generators.
 │   └── report_generators/
+│       ├── query_utils.cpp      # Implements shared helper functions for querying.
+│       └── query_utils.h        # Declares various utility functions used by the different query generators.
 │       ├── DailyReportQuerier.cpp        # Implements the logic to generate a detailed report for a single day.
 │       └── DailyReportQuerier.h          # Declares the class responsible for generating a daily report.
 │       ├── MonthlyReportQuerier.cpp     
