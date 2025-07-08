@@ -4,32 +4,32 @@
 #include <algorithm>
 #include <stdexcept>
 
+
 // --- DataFileParser Constructor & Destructor ---
 
-// MODIFIED: Parameter type changed
 DataFileParser::DataFileParser(const ParserConfig& config)
-    : current_date_processed(false),
-      _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))")
+    // 成员初始化列表
+    : 
+    current_date_processed(false),
+    _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))")// 用于捕获 09:00~10:00Study_code
+    
 {
-    // It simply copies the pre-loaded data.
-    initial_top_level_parents = config.initial_top_level_parents;
+    initial_top_level_parents = config.initial_top_level_parents; // 传入父项目的映射
 }
 
 DataFileParser::~DataFileParser() {
     // Destructor is empty, commit_all() is called externally.
 }
-
-// ... (The rest of the file remains the same)
 // --- Public Member Functions ---
 bool DataFileParser::parse_file(const std::string& filename) { 
-    std::ifstream file(filename);
+    std::ifstream file(filename); // 创建file对象，用于传入filename指定的文件
     if (!file.is_open()) {
-        std::cerr << "Error: Cannot open file " << filename << std::endl;
+        std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Cannot open file " << filename << std::endl;
         return false;
     }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    file.close();
+    std::stringstream buffer; // 创建一个 std::stringstream 对象 buffer
+    buffer << file.rdbuf(); // file.rdbuf() 返回与 file 对象关联的文件缓冲区指针
+    file.close(); // 一旦文件内容被读取到 buffer 中，就关闭文件,释放内存资源
     current_file_name = filename;
     
     bool success = true;
@@ -48,34 +48,48 @@ void DataFileParser::commit_all() {
 
 
 // --- Private Member Functions ---
+
+//逐行处理文件内容缓冲区中的所有行
 void DataFileParser::_process_lines(std::stringstream& buffer) { 
     std::string line;
     int line_num = 0;
-    while (std::getline(buffer, line)) {
+    while (std::getline(buffer, line)) //从buffer中读取直到遇到换行符或文件末尾，并将读取的内容存储到 line 变量中
+    {
         line_num++;
         _process_single_line(line, line_num);
     }
 }
-
+// 处理单行内容
 void DataFileParser::_process_single_line(const std::string& line, int line_num) { 
-    auto trimmed_line = line;
-    trimmed_line.erase(0, trimmed_line.find_first_not_of(" \t\n\r\f\v"));
+    // 1. 去除首尾多余
+    auto trimmed_line = line; // 创建line内容的副本，在函数内部对字符串进行修改,不对实际内容进行修改
+    // 去除字符串开头的所有空白字符 返回找到的第一个非空白字符的索引 如果字符串是 "   Hello"，它会返回 3（'H' 的索引）
+    trimmed_line.erase(0, trimmed_line.find_first_not_of(" \t\n\r\f\v")); 
+
+    // ind_last_not_of() 返回的是最后一个非空白字符的索引。为了删除这些非空白字符之后的所有空白字符，我们需要从这个索引的下一个位置开始删除
+    // erase 从 索引 位置开始，删除字符串中从 索引 到字符串末尾的所有字符。
     trimmed_line.erase(trimmed_line.find_last_not_of(" \t\n\r\f\v") + 1);
 
+    // 2. 空行检查
+    // 如果去除首尾多余字符后trimmed_line为空，说明这一行没有字符串，直接return不做处理
     if (trimmed_line.empty()) return;
 
-    if (trimmed_line.rfind("Date:", 0) == 0) {
+    // 3. 内容类型判断与分派
+
+    // C++20 standard library provides string::starts_with.
+    if (trimmed_line.starts_with("Date:")) {
         _store_previous_date_data();
         _handle_date_line(trimmed_line);
-    } else if (trimmed_line.rfind("Status:", 0) == 0) {
+    } else if (trimmed_line.starts_with("Status:")) {
         _handle_status_line(trimmed_line);
-    } else if (trimmed_line.rfind("Sleep:", 0) == 0) {
+    } else if (trimmed_line.starts_with("Sleep:")) {
         _handle_sleep_line(trimmed_line);
-    } else if (trimmed_line.rfind("Remark:", 0) == 0) {
+    } else if (trimmed_line.starts_with("Remark:")) {
         _handle_remark_line(trimmed_line);
-    } else if (trimmed_line.rfind("Getup:", 0) == 0) {
+    } else if (trimmed_line.starts_with("Getup:")) {
         _handle_getup_line(trimmed_line);
-    } else if (trimmed_line.find('~') != std::string::npos) {
+    }
+    else { //Changed from else if (trimmed_line.find('~') != std::string::npos) 不用starts_with是因为'~'在文本的中间
         _handle_time_record_line(trimmed_line, line_num);
     }
 }
