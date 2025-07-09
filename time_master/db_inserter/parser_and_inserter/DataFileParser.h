@@ -46,7 +46,7 @@ private:
     void _handle_sleep_line(const std::string& line);
     void _handle_remark_line(const std::string& line);
     void _handle_getup_line(const std::string& line);
-    void _handle_time_record_line(const std::string& line, int line_num);
+    void _handle_time_record_line(const std::string& line);
     void _process_project_path(const std::string& project_path_orig);
     void _store_previous_date_data();
 };

@@ -83,8 +83,9 @@ Time_Master/
 ├── reprocessing/               # 预处理
 │   ├── IntervalProcessor.cpp
 │   └── IntervalProcessor.h
-│   ├── LogProcessor.cpp
-│   └── LogProcessor.h
+│   └── input_transfer/ # 转换验证后的输入文件
+│   │   ├── LogProcessor.cpp
+│   │   ├── LogProcessor.h
 │   └── validator/
 │       ├── OutputFileValidator.cpp # 转换后文件格式检验
 │       └── OutputFileValidator.h 
