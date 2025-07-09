@@ -90,7 +90,7 @@ void DataFileParser::_process_single_line(const std::string& line, int line_num)
         _handle_getup_line(trimmed_line);
     }
     else { //Changed from else if (trimmed_line.find('~') != std::string::npos) 不用starts_with是因为'~'在文本的中间
-        _handle_time_record_line(trimmed_line, line_num);
+        _handle_time_record_line(trimmed_line);
     }
 }
 
@@ -124,7 +124,7 @@ void DataFileParser::_handle_getup_line(const std::string& line) {
     if (line.length() > 6) current_getup_time = line.substr(6);
 }
 
-void DataFileParser::_handle_time_record_line(const std::string& line, int line_num) { 
+void DataFileParser::_handle_time_record_line(const std::string& line) { 
     std::smatch matches;
     if (std::regex_match(line, matches, _time_record_regex) && matches.size() == 4) {
         std::string start_time_str = matches[1].str();
