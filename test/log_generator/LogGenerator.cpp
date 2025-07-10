@@ -1,7 +1,7 @@
 #include "LogGenerator.h"
-#include "Utils.h" // 需要用到 Utils 中的工具函数声明
-#include <sstream>
+#include <format> // NEW: 包含 <format> 头文件
 #include <cmath>
+#include <iterator> // NEW: 为了 std::back_inserter
 
 LogGenerator::LogGenerator(int items_per_day,
                          const std::vector<std::string>& activities,
@@ -13,34 +13,34 @@ LogGenerator::LogGenerator(int items_per_day,
     dis_minute_(0, 59),
     dis_activity_selector_(0, static_cast<int>(activities.size()) - 1) {
     
-        // Initialize the remark selector and probability distribution only if remarks are configured.
         if (remark_config_ && !remark_config_->contents.empty()) {
             dis_remark_selector_ = std::make_unique<std::uniform_int_distribution<>>(
                 0, static_cast<int>(remark_config_->contents.size()) - 1
             );
-            // NEW: Initialize a Bernoulli distribution for the generation chance.
             dis_remark_should_generate_ = std::make_unique<std::bernoulli_distribution>(remark_config_->generation_chance);
         }
     }
 
-// 【修正】在这里加上了 LogGenerator:: 来指定这是 LogGenerator 类的成员函数
+// MODIFIED: 完全重写以使用 std::format
 void LogGenerator::generate_for_month(std::ostream& outStream, int month, int days_in_month) {
-    std::ostringstream log_stream;
+    std::string log_content;
+    // NEW: 预分配内存以提高效率，避免循环中的多次重新分配
+    log_content.reserve(days_in_month * (items_per_day_ * 25 + 30)); 
 
     for (int day = 1; day <= days_in_month; ++day) {
         if (day > 1) {
-            log_stream << '\n';
+            log_content += '\n';
         }
 
-        log_stream << Utils::format_two_digits(month) << Utils::format_two_digits(day) << '\n';
+        // NEW: 使用 std::format_to 直接将格式化后的内容追加到字符串末尾
+        // 这比创建临时字符串再拼接要高效得多
+        std::format_to(std::back_inserter(log_content), "{:02}{:02}\n", month, day);
         
-        // MODIFIED: Add the daily remark line if configured AND the probability check passes.
         if (remark_config_ && dis_remark_selector_ && dis_remark_should_generate_ && (*dis_remark_should_generate_)(gen_)) {
             const std::string& random_content = remark_config_->contents[(*dis_remark_selector_)(gen_)];
-            log_stream << remark_config_->prefix << random_content << '\n';
+            std::format_to(std::back_inserter(log_content), "{}{}\n", remark_config_->prefix, random_content);
         }
         
-        // This daily generation logic is preserved from the original version.
         for (int i = 0; i < items_per_day_; ++i) {
             int display_hour_final;
             int event_minute_final;
@@ -59,9 +59,10 @@ void LogGenerator::generate_for_month(std::ostream& outStream, int month, int da
                 event_minute_final = dis_minute_(gen_);
                 event_text_to_use_final = common_activities_[dis_activity_selector_(gen_)];
             }
-            log_stream << Utils::format_two_digits(display_hour_final) << Utils::format_two_digits(event_minute_final) << event_text_to_use_final << '\n';
+            // NEW: 同样使用 std::format_to 来格式化日志条目
+            std::format_to(std::back_inserter(log_content), "{:02}{:02}{}\n", display_hour_final, event_minute_final, event_text_to_use_final);
         }
     }
-    // Write the generated content for the whole month at once.
-    outStream << log_stream.str();
+    // 最后，将构建好的整个字符串一次性写入文件流
+    outStream << log_content;
 }
