@@ -40,7 +40,7 @@ private:
     const std::regex _time_record_regex;
 
     void _process_lines(std::stringstream& buffer);
-    void _process_single_line(const std::string& line, int line_num);
+    void _process_single_line(const std::string& line);
     void _handle_date_line(const std::string& line);
     void _handle_status_line(const std::string& line);
     void _handle_sleep_line(const std::string& line);

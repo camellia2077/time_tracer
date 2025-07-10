@@ -56,11 +56,11 @@ void DataFileParser::_process_lines(std::stringstream& buffer) {
     while (std::getline(buffer, line)) //从buffer中读取直到遇到换行符或文件末尾，并将读取的内容存储到 line 变量中
     {
         line_num++;
-        _process_single_line(line, line_num);
+        _process_single_line(line);
     }
 }
 // 处理单行内容
-void DataFileParser::_process_single_line(const std::string& line, int line_num) { 
+void DataFileParser::_process_single_line(const std::string& line) { 
     // 1. 去除首尾多余
     auto trimmed_line = line; // 创建line内容的副本，在函数内部对字符串进行修改,不对实际内容进行修改
     // 去除字符串开头的所有空白字符 返回找到的第一个非空白字符的索引 如果字符串是 "   Hello"，它会返回 3（'H' 的索引）
