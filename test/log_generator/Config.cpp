@@ -89,8 +89,7 @@ namespace ConfigLoader {
 
     std::optional<Config> parse_arguments(int argc, char* argv[]) {
         if (argc != 4) {
-            // This now calls the print_usage function defined inside main.cpp
-            Utils::print_usage(argv[0]); 
+            // 注意：不再调用 Utils::print_usage
             return std::nullopt;
         }
 
@@ -102,24 +101,21 @@ namespace ConfigLoader {
         }
         catch (const std::invalid_argument&) {
             std::cerr << "Error: Invalid argument. All arguments must be integers.\n";
-            Utils::print_usage(argv[0]);
+
             return std::nullopt;
         }
         catch (const std::out_of_range&) {
             std::cerr << "Error: Argument out of range.\n";
-            Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
         if (config.start_year <= 0 || config.end_year <= 0 || config.items_per_day <= 0) {
             std::cerr << "Error: Years and <items_per_day> must be positive integers.\n";
-            Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
         if (config.end_year < config.start_year) {
             std::cerr << "Error: <end_year> cannot be earlier than <start_year>.\n";
-            Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
