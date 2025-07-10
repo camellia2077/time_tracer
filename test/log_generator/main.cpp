@@ -97,6 +97,8 @@ class Application {
     
             auto config_opt = ConfigLoader::parse_arguments(argc, argv);
             if (!config_opt) {
+                // 现在由 main.cpp 自己承担打印用法信息的责任
+                Utils::print_usage(argv[0]);
                 return 1;
             }
             Config config = *config_opt;
