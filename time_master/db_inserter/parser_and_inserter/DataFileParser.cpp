@@ -95,31 +95,30 @@ void DataFileParser::_process_single_line(const std::string& line) {
 }
 
 void DataFileParser::_handle_date_line(const std::string& line) { 
-    if (line.length() > 5) {
-        current_date = line.substr(5);
-        current_status = "False";
-        current_sleep = "False";
-        current_remark = "";
-        current_getup_time = "00:00";
+
+        current_date = line.substr(5); // 截取标题行内容例如，Date:20030501五个字符后的中的日期，例如20030501
+        current_status = "False"; // Status:默认为False
+        current_sleep = "False"; // Sleep:默认为False
+        current_remark = ""; // Remark:默认为空
+        current_getup_time = "00:00"; //Getup:默认为00:00
         buffered_records_for_day.clear();
         current_date_processed = false;
-    }
 }
 
 void DataFileParser::_handle_status_line(const std::string& line) { 
-    if (line.length() > 7) current_status = line.substr(7);
+    current_status = line.substr(7);
 }
 
 void DataFileParser::_handle_sleep_line(const std::string& line) { 
-    if (line.length() > 6) current_sleep = line.substr(6);
+    current_sleep = line.substr(6);
 }
 
 void DataFileParser::_handle_remark_line(const std::string& line) { 
-    if (line.length() > 7) current_remark = line.substr(7);
+    current_remark = line.substr(7);
 }
 
 void DataFileParser::_handle_getup_line(const std::string& line) { 
-    if (line.length() > 6) current_getup_time = line.substr(6);
+    current_getup_time = line.substr(6);
 }
 
 void DataFileParser::_handle_time_record_line(const std::string& line) { 
