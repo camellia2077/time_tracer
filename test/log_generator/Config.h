@@ -21,6 +21,13 @@ struct JsonConfigData {
     std::optional<DailyRemarkConfig> remarks;
 };
 
+// --- NEW: Forward declaration for a function in the Utils namespace ---
+// This tells the compiler that the function `print_usage` exists in the `Utils` namespace
+// and that the linker will find its implementation later (in main.cpp).
+namespace Utils {
+    void print_usage(const char* prog_name);
+}
+
 // --- 加载函数声明 ---
 namespace ConfigLoader {
     std::optional<JsonConfigData> load_json_configurations(const std::string& json_filename);

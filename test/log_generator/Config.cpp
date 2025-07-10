@@ -1,5 +1,5 @@
 #include "Config.h"
-#include "Utils.h" // 需要用到 Utils 中的工具函数声明
+
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
@@ -12,7 +12,8 @@ namespace ConfigLoader {
     std::optional<JsonConfigData> load_json_configurations(const std::string& json_filename) {
         std::ifstream f(json_filename);
         if (!f.is_open()) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Could not open configuration file '" << json_filename << "'." << Utils::ConsoleColors::reset << '\n';
+            // MODIFIED: Removed color codes
+            std::cerr << "Error: Could not open configuration file '" << json_filename << "'.\n";
             return std::nullopt;
         }
 
@@ -22,16 +23,15 @@ namespace ConfigLoader {
 
             JsonConfigData config_data;
 
-            // 1. Load "common_activities" (mandatory)
             if (data.contains("common_activities") && data["common_activities"].is_array() && !data["common_activities"].empty()) {
                 config_data.activities = data["common_activities"].get<std::vector<std::string>>();
-                std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << config_data.activities.size() << " activities from '" << json_filename << "'." << '\n';
+                // MODIFIED: Removed color codes
+                std::cout << "Successfully loaded " << config_data.activities.size() << " activities from '" << json_filename << "'.\n";
             } else {
-                std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "JSON file '" << json_filename << "' must contain a non-empty 'common_activities' array." << '\n';
+                std::cerr << "Error: JSON file '" << json_filename << "' must contain a non-empty 'common_activities' array.\n";
                 return std::nullopt;
             }
 
-            // 2. Load "daily_remarks" (optional)
             if (data.contains("daily_remarks") && data["daily_remarks"].is_object()) {
                 const auto& remarks_json = data["daily_remarks"];
                 DailyRemarkConfig remarks;
@@ -63,34 +63,34 @@ namespace ConfigLoader {
 
                 if (prefix_ok && contents_ok) {
                     config_data.remarks.emplace(remarks);
-                    std::cout << Utils::ConsoleColors::green << "Successfully loaded " << Utils::ConsoleColors::reset << remarks.contents.size() << " daily remarks with a " << (remarks.generation_chance * 100) << "% generation chance." << '\n';
+                    // MODIFIED: Removed color codes
+                    std::cout << "Successfully loaded " << remarks.contents.size() << " daily remarks with a " << (remarks.generation_chance * 100) << "% generation chance.\n";
                 }
             }
 
             return config_data;
         }
-        // 【修正】补上缺失的 catch 块
         catch (const json::parse_error& e) {
-            std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "Failed to parse JSON from '" << json_filename << "'. Detail: " << e.what() << '\n';
+            std::cerr << "Error: Failed to parse JSON from '" << json_filename << "'. Detail: " << e.what() << '\n';
             if (f.is_open()) f.close();
             return std::nullopt;
         }
         catch (const json::type_error& e) {
-            std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "JSON type error in '" << json_filename << "'. Detail: " << e.what() << '\n';
+            std::cerr << "Error: JSON type error in '" << json_filename << "'. Detail: " << e.what() << '\n';
             if (f.is_open()) f.close();
             return std::nullopt;
         }
         catch (const std::exception& e) {
-            std::cerr << Utils::ConsoleColors::red << "Error: " << Utils::ConsoleColors::reset << "An unexpected error occurred while processing '" << json_filename << "'. Detail: " << e.what() << '\n';
+            std::cerr << "Error: An unexpected error occurred while processing '" << json_filename << "'. Detail: " << e.what() << '\n';
             if (f.is_open()) f.close();
             return std::nullopt;
         }
     }
 
-    // 【修正】将 parse_arguments 函数移动到正确的位置
     std::optional<Config> parse_arguments(int argc, char* argv[]) {
         if (argc != 4) {
-            Utils::print_usage(argv[0]);
+            // This now calls the print_usage function defined inside main.cpp
+            Utils::print_usage(argv[0]); 
             return std::nullopt;
         }
 
@@ -101,24 +101,24 @@ namespace ConfigLoader {
             config.items_per_day = std::stoi(argv[3]);
         }
         catch (const std::invalid_argument&) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Invalid argument. All arguments must be integers." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << "Error: Invalid argument. All arguments must be integers.\n";
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
         catch (const std::out_of_range&) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Argument out of range." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << "Error: Argument out of range.\n";
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
         if (config.start_year <= 0 || config.end_year <= 0 || config.items_per_day <= 0) {
-            std::cerr << Utils::ConsoleColors::red << "Error: Years and <items_per_day> must be positive integers." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << "Error: Years and <items_per_day> must be positive integers.\n";
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
 
         if (config.end_year < config.start_year) {
-            std::cerr << Utils::ConsoleColors::red << "Error: <end_year> cannot be earlier than <start_year>." << Utils::ConsoleColors::reset << '\n';
+            std::cerr << "Error: <end_year> cannot be earlier than <start_year>.\n";
             Utils::print_usage(argv[0]);
             return std::nullopt;
         }
