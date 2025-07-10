@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.16)
 project(log_generator_project CXX)
 
 # --- 2. C++ Standard ---
-# Sets the C++ standard to C++17, which is required by the source code.
-set(CMAKE_CXX_STANDARD 17) 
+# Sets the C++ standard to C++20, which is required by the source code.
+set(CMAKE_CXX_STANDARD 20) 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 

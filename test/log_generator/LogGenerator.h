@@ -13,7 +13,8 @@ public:
                  const std::vector<std::string>& activities,
                  const std::optional<DailyRemarkConfig>& remark_config);
 
-    void generate_for_month(std::ostream& outStream, int month, int days_in_month);
+    // MODIFIED: Now returns std::string instead of writing to ostream
+    std::string generate_for_month(int month, int days_in_month);
 
 private:
     int items_per_day_;

@@ -1,7 +1,7 @@
 #include "LogGenerator.h"
-#include <format> // NEW: 包含 <format> 头文件
+#include <format> 
 #include <cmath>
-#include <iterator> // NEW: 为了 std::back_inserter
+#include <iterator>
 
 LogGenerator::LogGenerator(int items_per_day,
                          const std::vector<std::string>& activities,
@@ -21,10 +21,9 @@ LogGenerator::LogGenerator(int items_per_day,
         }
     }
 
-// MODIFIED: 完全重写以使用 std::format
-void LogGenerator::generate_for_month(std::ostream& outStream, int month, int days_in_month) {
+// MODIFIED: Returns the generated string
+std::string LogGenerator::generate_for_month(int month, int days_in_month) {
     std::string log_content;
-    // NEW: 预分配内存以提高效率，避免循环中的多次重新分配
     log_content.reserve(days_in_month * (items_per_day_ * 25 + 30)); 
 
     for (int day = 1; day <= days_in_month; ++day) {
@@ -32,8 +31,6 @@ void LogGenerator::generate_for_month(std::ostream& outStream, int month, int da
             log_content += '\n';
         }
 
-        // NEW: 使用 std::format_to 直接将格式化后的内容追加到字符串末尾
-        // 这比创建临时字符串再拼接要高效得多
         std::format_to(std::back_inserter(log_content), "{:02}{:02}\n", month, day);
         
         if (remark_config_ && dis_remark_selector_ && dis_remark_should_generate_ && (*dis_remark_should_generate_)(gen_)) {
@@ -59,10 +56,9 @@ void LogGenerator::generate_for_month(std::ostream& outStream, int month, int da
                 event_minute_final = dis_minute_(gen_);
                 event_text_to_use_final = common_activities_[dis_activity_selector_(gen_)];
             }
-            // NEW: 同样使用 std::format_to 来格式化日志条目
             std::format_to(std::back_inserter(log_content), "{:02}{:02}{}\n", display_hour_final, event_minute_final, event_text_to_use_final);
         }
     }
-    // 最后，将构建好的整个字符串一次性写入文件流
-    outStream << log_content;
+    // MODIFIED: Return the string instead of writing to a stream
+    return log_content;
 }
