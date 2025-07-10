@@ -8,7 +8,7 @@ namespace Utils {
         static const std::string reset;
     };
     void setup_console();
-    std::string format_two_digits(int n);
+    // REMOVED: std::string format_two_digits(int n);
     bool is_leap(int year);
     int get_days_in_month(int year, int month);
     void print_usage(const char* prog_name);
