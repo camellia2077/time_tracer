@@ -97,8 +97,6 @@ void DataFileParser::_process_single_line(const std::string& line) {
 void DataFileParser::_handle_date_line(const std::string& line) { 
     if (line.length() > 5) {
         current_date = line.substr(5);
-        current_date.erase(0, current_date.find_first_not_of(" \t"));
-        current_date.erase(current_date.find_last_not_of(" \t") + 1);
         current_status = "False";
         current_sleep = "False";
         current_remark = "";
