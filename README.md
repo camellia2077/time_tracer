@@ -88,11 +88,11 @@ Time_Master/
 │       └── PeriodReportQuerier.h       # Declares the class for generating reports over a specific time period.
 │
 ├── reprocessing/               # 预处理
-│   ├── IntervalProcessor.cpp
-│   └── IntervalProcessor.h
+│   ├── LogProcessor.cpp
+│   └── LogProcessor.h
 │   └── input_transfer/ # 转换验证后的输入文件
-│   │   ├── LogProcessor.cpp
-│   │   ├── LogProcessor.h
+│   │   ├── IntervalProcessor.cpp
+│   │   └── IntervalProcessor.h
 │   └── validator/
 │       ├── FileValidator.cpp           # 公共接口实现
 │       ├── FileValidator.h             
