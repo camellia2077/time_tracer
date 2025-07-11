@@ -12,7 +12,9 @@ struct DayMetadata {
     std::string getup_time = "N/A";
 };
 
-// 用于日报的数据
+/**
+ * @brief 日查询的结构体
+ */
 struct DailyReportData {
     std::string date;
     DayMetadata metadata; // The compiler now sees the definition directly above
