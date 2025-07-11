@@ -1,5 +1,5 @@
 #include "Menu.h"
-#include "ActionHandler.h " 
+#include "ActionHandler.h"
 #include "version.h"
 #include "common_utils.h"
 
@@ -41,7 +41,7 @@ void Menu::run() {
             std::cout << YELLOW_COLOR << "Invalid input. Please enter a number." << RESET_COLOR << std::endl;
             continue;
         }
-    
+
         if (!handle_user_choice(choice)) {
             break;
         }
@@ -66,19 +66,39 @@ void Menu::print_menu() {
 bool Menu::handle_user_choice(int choice) {
     switch (choice) {
         case 0: run_log_processor_submenu(); break;
-        case 1: action_handler_->run_daily_query(get_valid_date_input()); break;
-        case 2: action_handler_->run_period_query(7); break;
-        case 3: action_handler_->run_period_query(14); break;
-        case 4: action_handler_->run_period_query(30); break;
+        case 1:
+            // We can't use run_daily_query directly anymore as it might be in a different class
+            // Instead, we will get the date and call the handler
+            {
+                std::string date = get_valid_date_input();
+                if (!date.empty()) {
+                    std::cout << action_handler_->run_daily_query(date);
+                }
+            }
+            break;
+        case 2: std::cout << action_handler_->run_period_query(7); break;
+        case 3: std::cout << action_handler_->run_period_query(14); break;
+        case 4: std::cout << action_handler_->run_period_query(30); break;
         case 5: run_full_pipeline_and_import_prompt(); break;
         case 6: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
-        case 7: action_handler_->run_monthly_query(get_valid_month_input()); break;
+        case 7:
+             {
+                std::string month = get_valid_month_input();
+                if (!month.empty()) {
+                    std::cout << action_handler_->run_monthly_query(month);
+                }
+            }
+            break;
         case 8: std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; break;
         case 9: std::cout << "Exiting program." << std::endl; return false;
         default: std::cout << YELLOW_COLOR << "Invalid choice. Please try again." << RESET_COLOR << std::endl; break;
     }
     // 添加一个暂停，以便用户可以看到操作结果
     std::cout << "\nPress Enter to continue...";
+    // Clear the buffer before waiting for input
+    if (std::cin.peek() == '\n') {
+        std::cin.ignore();
+    }
     std::cin.get();
     return true;
 }
@@ -90,8 +110,8 @@ void Menu::run_log_processor_submenu() {
         std::cout << "1. Validate source file(s) only\n";
         std::cout << "2. Convert source file(s) only\n";
         std::cout << "3. Validate source, then Convert\n";
-        std::cout << "4. Validate processed file(s) only\n";
-        std::cout << "5. Full Pipeline (Validate Source -> Convert -> Validate Output)\n";
+        std::cout << "4. Convert, then Validate Output\n"; // Changed text for clarity
+        std::cout << "5. Full Pre-processing (Validate Source -> Convert -> Validate Output)\n"; // Changed text for clarity
         std::cout << "--- (Step 2: Database Operations) ---\n";
         std::cout << "7. Import processed files into database\n";
         std::cout << "8. Back to main menu\n";
@@ -104,31 +124,55 @@ void Menu::run_log_processor_submenu() {
             std::cout << YELLOW_COLOR << "Invalid input. Please enter a number." << RESET_COLOR << std::endl;
             continue;
         }
-        
+
         if (choice == 8) break;
         if ((choice < 1 || choice > 5) && choice != 7) {
             std::cout << YELLOW_COLOR << "Invalid choice. Please try again.\n" << RESET_COLOR;
             continue;
         }
 
-        std::string path;
         if (choice == 7) {
-            path = get_valid_path_input("Enter the path to the DIRECTORY containing processed files: ");
-            if (path.empty()) continue; // 用户输入了无效路径
+            std::string path = get_valid_path_input("Enter the path to the DIRECTORY containing processed files: ");
+            if (path.empty()) continue;
             action_handler_->run_database_import(path);
         } else {
-            path = get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
-            if (path.empty()) continue; // 用户输入了无效路径
-            AppOptions options;
-            options.input_path = path;
-            switch (choice) {
-                case 1: options.validate_source = true; break;
-                case 2: options.convert = true; break;
-                case 3: options.validate_source = true; options.convert = true; break;
-                case 4: options.validate_output = true; break;
-                case 5: options.validate_source = true; options.convert = true; options.validate_output = true; break;
+            // All file processing choices (1-5) operate on a source path
+            std::string path = get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
+            if (path.empty()) continue;
+
+            // Step 1 for all options: Collect the files.
+            if (!action_handler_->collectFiles(path)) {
+                std::cout << RED_COLOR << "Failed to collect files. Please check the path and try again." << RESET_COLOR << std::endl;
+                continue;
             }
-            action_handler_->run_log_processing(options);
+
+            // Step 2: Execute the chosen sequence
+            // The unused 'success' variable has been removed here
+            switch (choice) {
+                case 1:
+                    action_handler_->validateSourceFiles();
+                    break;
+                case 2:
+                    action_handler_->convertFiles();
+                    break;
+                case 3:
+                    if (action_handler_->validateSourceFiles()) {
+                        action_handler_->convertFiles();
+                    }
+                    break;
+                case 4:
+                    if (action_handler_->convertFiles()) {
+                        action_handler_->validateOutputFiles(false); // Day count check disabled by default in menu
+                    }
+                    break;
+                case 5:
+                    if (action_handler_->validateSourceFiles()) {
+                        if (action_handler_->convertFiles()) {
+                           action_handler_->validateOutputFiles(false); // Day count check disabled
+                        }
+                    }
+                    break;
+            }
         }
         std::cout << "\nPress Enter to continue...";
         std::cin.get();
@@ -146,6 +190,7 @@ std::string Menu::get_valid_path_input(const std::string& prompt_message) {
     std::cout << prompt_message;
     std::string path_str;
     std::getline(std::cin, path_str);
+    if (path_str.empty()) return ""; // Allow empty input to cancel
     if (!fs::exists(path_str)) {
         std::cerr << RED_COLOR << "Error: Path '" << path_str << "' does not exist. Aborting." << RESET_COLOR << std::endl;
         return "";
@@ -157,7 +202,7 @@ std::string Menu::get_valid_date_input() {
     std::string date_str;
     while (true) {
         std::cout << "Enter date (YYYYMMDD): ";
-        if (!std::getline(std::cin, date_str)) { return ""; }
+        if (!std::getline(std::cin, date_str) || date_str.empty()) { return ""; }
         if (date_str.length() == 8 && std::all_of(date_str.begin(), date_str.end(), ::isdigit)) {
             int year = std::stoi(date_str.substr(0, 4));
             int month = std::stoi(date_str.substr(4, 2));
@@ -173,7 +218,7 @@ std::string Menu::get_valid_month_input() {
     std::string month_str;
     while (true) {
         std::cout << "Enter month (YYYYMM): ";
-        if (!std::getline(std::cin, month_str)) { return ""; }
+        if (!std::getline(std::cin, month_str) || month_str.empty()) { return ""; }
         if (month_str.length() == 6 && std::all_of(month_str.begin(), month_str.end(), ::isdigit)) {
             int year = std::stoi(month_str.substr(0, 4));
             int month = std::stoi(month_str.substr(4, 2));

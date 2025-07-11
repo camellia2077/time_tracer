@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include <ranges>
+#include <string_view>
+
+
 
 // --- DataFileParser Constructor & Destructor ---
 
@@ -88,7 +92,7 @@ void DataFileParser::_process_single_line(const std::string& line) {
         _handle_remark_line(trimmed_line);
     } else if (trimmed_line.starts_with("Getup:")) {
         _handle_getup_line(trimmed_line);
-    } else if (trimmed_line.find('~') != std::string::npos) { //不用starts_with是因为'~'在文本的中间
+    } else if (trimmed_line.contains('~')) { 
         _handle_time_record_line(trimmed_line);
     }
 }
@@ -136,22 +140,44 @@ void DataFileParser::_handle_time_record_line(const std::string& line) {
 
     int start_seconds = time_str_to_seconds(start_time_str);
     int end_seconds = time_str_to_seconds(end_time_str);
-    int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
+    int duration_seconds; // 先声明变量
+
+    if (end_seconds < start_seconds) {// 这种情况处理跨天的时间记录 (例如 23:00 ~ 01:00)
+        // 将结束持续的秒数加上一整天的秒数再计算差值
+        duration_seconds = (end_seconds + 24 * 3600) - start_seconds;
+    } else { // 没有跨天
+        
+        duration_seconds = end_seconds - start_seconds;
+    }
 
     buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
-    _process_project_path(project_path);
+    _process_project_path(project_path); // 处理层级结构
 }
 
-void DataFileParser::_process_project_path(const std::string& project_path_orig) { 
-    std::vector<std::string> segments = split_string(project_path_orig, '_');
-    if (segments.empty()) return;
+void DataFileParser::_process_project_path(const std::string& project_path_orig) {
+    if (project_path_orig.empty()) return;
+
     for (const auto& pair : initial_top_level_parents) {
         parent_child_pairs.insert({pair.first, pair.second});
     }
-    if (segments.size() > 1) {
-        std::string parent_path = segments[0];
-        for (size_t i = 1; i < segments.size(); ++i) {
-            std::string child_path = parent_path + "_" + segments[i];
+
+    // 使用 ranges 来创建一个分割后的视图，没有动态内存分配
+    auto segments_view = project_path_orig
+                       | std::views::split('_')
+                       | std::views::filter([](auto v) { return !v.empty(); });
+
+    std::string parent_path;
+    bool first = true;
+
+    for (const auto& segment_range : segments_view) {
+        // 将 range 转换为 string_view 或 string
+        std::string current_segment(&*segment_range.begin(), std::ranges::distance(segment_range));
+        
+        if (first) {
+            parent_path = current_segment;
+            first = false;
+        } else {
+            std::string child_path = parent_path + "_" + current_segment;
             parent_child_pairs.insert({child_path, parent_path});
             parent_path = child_path;
         }

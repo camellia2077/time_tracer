@@ -7,12 +7,19 @@
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 
-std::string QueryHandler::run_daily_query(const std::string& date_str) const {
+std::string QueryHandler::run_daily_query(const std::string& date_str) const 
+{
+    // 1. 创建查询器 (Querier) 并获取原始数据
     DailyReportQuerier querier(m_db, date_str);
     DailyReportData data = querier.fetch_data();
+
+    // 2. 创建格式化器 (Formatter)
     DailyReportFormatter formatter;
+
+    // 3. 使用格式化器处理数据，并返回最终的字符串
     return formatter.format_report(data, m_db);
 }
+
 
 // 修改月报查询
 std::string QueryHandler::run_monthly_query(const std::string& year_month_str) const {

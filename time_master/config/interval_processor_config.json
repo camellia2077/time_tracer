@@ -1,13 +1,12 @@
 {
-    "header_order": [
-        "Date:",
+    "main_header": "Date:",
+    "other_headers": [
         "Status:",
         "Sleep:",
         "Getup:",
         "Remark:"
     ],
     "remark_prefix": "r ",
-    
     "text_mappings": {
         "word": "study_english_words",
         "单词": "study_english_words",
@@ -44,17 +43,16 @@
         "aaa" : "meal_medium",
         "洗衣服" : "routine_washing"
     },
-
-    "text_duration_mappings":{
+    "text_duration_mappings": {
         "失眠": "insomnia",
         "饭": "meal",
-        "休息" : "rest"
+        "休息": "rest"
     },
     "duration_mappings": {
         "rest": [
             { "less_than_minutes": 10, "value": "rest_short" },
             { "less_than_minutes": 20, "value": "rest_medium" },
-            { "less_than_minutes": 1440, "value": "rest_long" } 
+            { "less_than_minutes": 1440, "value": "rest_long" }
         ],
         "insomnia": [
             { "less_than_minutes": 10, "value": "insomnia_short" },
