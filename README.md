@@ -115,6 +115,44 @@ time_master/
     └── output_icon.ico
 ```
 
+
+```mermaid
+graph TD
+    subgraph "用户接口层 (UI Layer)"
+        CLI(main_cli.cpp)
+    end
+
+    subgraph "应用协调层 (Application Layer)"
+        Action(ActionHandler)
+        File(FileController)
+    end
+
+    subgraph "核心业务层 (Business Logic Layer)"
+        Reproc(reprocessing/)
+        DBInsert(db_inserter/)
+        Query(queries/)
+    end
+
+    subgraph "通用工具/配置 (Common & Config)"
+        Common(common/)
+        Config(config/)
+    end
+    
+    subgraph "数据存储 (Data Store)"
+        DB[(time_data.db)]
+    end
+
+    CLI --> File
+    CLI --> Action
+    Action --> Reproc
+    Action --> DBInsert
+    Action --> Query
+    File --> Config
+    Reproc --> Common
+    DBInsert --> DB
+    Query --> DB
+```
+
 ## 1.2 命令行使用方法
 注意程序要在powershell或cmd中运行
 ### 1.2.1 基本命令格式
