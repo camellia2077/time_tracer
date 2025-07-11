@@ -136,7 +136,15 @@ void DataFileParser::_handle_time_record_line(const std::string& line) {
 
     int start_seconds = time_str_to_seconds(start_time_str);
     int end_seconds = time_str_to_seconds(end_time_str);
-    int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
+    int duration_seconds; // 先声明变量
+
+    if (end_seconds < start_seconds) {// 这种情况处理跨天的时间记录 (例如 23:00 ~ 01:00)
+        // 将结束持续的秒数加上一整天的秒数再计算差值
+        duration_seconds = (end_seconds + 24 * 3600) - start_seconds;
+    } else { // 没有跨天
+        
+        duration_seconds = end_seconds - start_seconds;
+    }
 
     buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
     _process_project_path(project_path);
