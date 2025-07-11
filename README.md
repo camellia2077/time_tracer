@@ -90,9 +90,15 @@ Time_Master/
 ├── reprocessing/               # 预处理
 │   ├── LogProcessor.cpp
 │   └── LogProcessor.h
-│   └── input_transfer/ # 转换验证后的输入文件
-│   │   ├── IntervalProcessor.cpp
-│   │   └── IntervalProcessor.h
+│   └── input_transfer/               # 转换验证后的输入文件
+│   │   ├── IntervalProcessor.cpp     # 协调器/外观 (负责文件I/O和流程控制)
+│   │   ├── IntervalProcessor.h
+│   │   └── internal/                   # 内部实现细节
+│   │        ├── InputData.h             # 共享数据结构
+│   │        ├── IntervalConverter.cpp   # 转换
+│   │        ├── IntervalConverter.h
+│   │        ├── IntervalProcessorConfig.cpp # 配置加载器
+│   │        └── IntervalProcessorConfig.h
 │   └── validator/
 │       ├── FileValidator.cpp           # 公共接口实现
 │       ├── FileValidator.h             

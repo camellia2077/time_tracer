@@ -39,6 +39,7 @@ file(GLOB REPROCESSING_SOURCES
     "reprocessing/validator/*.cpp"
     "reprocessing/validator/internal/*.cpp"
     "reprocessing/input_transfer/*.cpp"
+    "reprocessing/input_transfer/internal/*.cpp"
     
 )
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
@@ -114,6 +115,7 @@ target_include_directories(time_tracker_app PRIVATE
     "reprocessing/validator" 
     "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+    "reprocessing/input_transfer/internal"
 
     "file_handler" 
     "action_handler"
@@ -135,6 +137,7 @@ target_include_directories(time_tracker_cli PRIVATE
     "reprocessing/validator" 
     "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+    "reprocessing/input_transfer/internal"
 
     "file_handler" 
     "action_handler"
