@@ -98,23 +98,24 @@ void handle_time_record_line(const std::string& line) {
 
     static const std::regex time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))");
     std::smatch matches;
-    if (std::regex_match(line, matches, time_record_regex) && matches.size() == 4) {
-        std::string start_time_str = matches[1].str();
-        std::string end_time_str = matches[2].str();
-        std::string project_path = matches[3].str();
-        
-        // 去除 project_path 前后的多余空白
-        project_path.erase(0, project_path.find_first_not_of(" \t_"));
-        project_path.erase(project_path.find_last_not_of(" \t_") + 1);
 
-        int start_seconds = time_str_to_seconds(start_time_str);
-        int end_seconds = time_str_to_seconds(end_time_str);
-        int duration_seconds = (end_seconds < start_seconds) 
-                               ? ((end_seconds + 24 * 3600) - start_seconds) 
-                               : (end_seconds - start_seconds);
+    // 警告：下面的 if 条件已被移除用于测试。
+    // 这意味着如果传入的 'line' 格式不正确，程序将崩溃。
+    std::regex_match(line, matches, time_record_regex);
 
-        buffered_records_for_day.push_back({current_day_data.date, start_time_str, end_time_str, project_path, duration_seconds});
-    }
+    // 假设 line 格式总是正确的，直接提取数据
+    std::string start_time_str = matches[1].str();
+    std::string end_time_str = matches[2].str();
+    std::string project_path = matches[3].str();
+
+
+    int start_seconds = time_str_to_seconds(start_time_str);
+    int end_seconds = time_str_to_seconds(end_time_str);
+    int duration_seconds = (end_seconds < start_seconds) 
+                           ? ((end_seconds + 24 * 3600) - start_seconds) 
+                           : (end_seconds - start_seconds);
+
+    buffered_records_for_day.push_back({current_day_data.date, start_time_str, end_time_str, project_path, duration_seconds});
 }
 
 
