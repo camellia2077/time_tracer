@@ -88,8 +88,7 @@ void DataFileParser::_process_single_line(const std::string& line) {
         _handle_remark_line(trimmed_line);
     } else if (trimmed_line.starts_with("Getup:")) {
         _handle_getup_line(trimmed_line);
-    }
-    else { //Changed from else if (trimmed_line.find('~') != std::string::npos) 不用starts_with是因为'~'在文本的中间
+    } else if (trimmed_line.find('~') != std::string::npos) { //不用starts_with是因为'~'在文本的中间
         _handle_time_record_line(trimmed_line);
     }
 }
