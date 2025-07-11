@@ -9,8 +9,7 @@
 
 // 包含项目内其他模块的头文件
 #include "common_utils.h"
-#include "parser/DataFileParser.h"       
-#include "parser/ConfigLoader.h"
+#include "parser/ParserFactory.h"
 
 #include "inserter/DatabaseInserter.h"
           
@@ -110,13 +109,11 @@ public:
         ProcessReporter::TimingResult timing;
         auto start_total = std::chrono::high_resolution_clock::now();
 
-
-        ParserConfig config = ConfigLoader::load_from_file(config_path_); // 传入json的父项目映射配置
-
-
         std::cout << "Stage 1: Parsing files into memory..." << std::endl;
-        // The parser is now initialized with the clean ParserConfig object.
-        DataFileParser parser(config); 
+        // 直接通过工厂创建解析器，不再关心ConfigLoader和ParserConfig
+        DataFileParser parser = ParserFactory::create_parser(config_path_);
+
+
         std::vector<std::string> failed_files = parse_all_files(parser, files_to_process);
         auto end_parsing = std::chrono::high_resolution_clock::now();
         timing.parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();

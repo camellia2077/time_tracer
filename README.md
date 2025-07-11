@@ -57,7 +57,9 @@ Time_Master/
 │       ├── DataFileParserr.h       
 │       ├── DataFileParser.cpp      # 解析数据 
 │       ├── DataFileParser.h   
-│       └── ParserConfig.h         # 读取json配置的父项目映射
+│       ├── ParserConfig.h         # 读取json配置的父项目映射
+│       ├── ParserFactory.h     # 声明创建解析器的工厂
+│       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── config_loader.cpp # 加载json
