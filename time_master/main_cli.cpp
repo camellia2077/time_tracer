@@ -13,7 +13,7 @@
 #include "version.h"
 
 #include "FileController.h" 
-#include "ActionHandler.h "
+#include "ActionHandler.h"
 #include "QueryHandler.h"
 #include "LogProcessor.h"
 
@@ -62,16 +62,12 @@ int main(int argc, char* argv[]) {
     // --- 主逻辑块,包含初始化和命令分派 ---
     try {
         // --- Unified Initialization using FileController ---
-        // 1. 创建 FileController。它封装了所有配置加载的复杂性。
-        //    如果加载失败,其构造函数会抛出异常,被外层 try-catch 捕获。
         FileController file_controller(argv[0]);
 
-        // 2. 创建 ActionHandler,并直接从 FileController 获取所需的数据。
-        //    这使得 main 函数不需要管理 AppConfig 或路径字符串变量。
         ActionHandler action_handler(
             DATABASE_NAME,
-            file_controller.get_config(),          // 从控制器获取配置
-            file_controller.get_main_config_path() // 从控制器获取主配置路径
+            file_controller.get_config(),
+            file_controller.get_main_config_path()
         );
         
         // Branch 1: Full Pipeline (-a, --all)
@@ -81,50 +77,69 @@ int main(int argc, char* argv[]) {
             }
             action_handler.run_full_pipeline_and_import(args[2]);
         }
-        // Branch 2: File pre-processing (-c, -vs, etc.)
-        else if (command == "-c" || command == "-vs" || command == "-vo" || command == "-edc") {
-            AppOptions options;
+        // Branch 2: Manual Pre-processing Steps (e.g., -c, -vs) [REFACTORED]
+        else if (command == "-c" || command == "--convert" || command == "-vs" || command == "--validate-source" || command == "-vo" || command == "--validate-output" || command == "-edc" || command == "--enable-day-check") {
+            bool convert_flag = false;
+            bool validate_source_flag = false;
+            bool validate_output_flag = false;
+            bool day_check_flag = false;
+            std::string input_path;
             bool path_provided = false;
-            // Parse all file-processing related arguments
+
             for (size_t i = 1; i < args.size(); ++i) {
                 const std::string& arg = args[i];
-                if (arg == "-c" || arg == "--convert") options.convert = true;
-                else if (arg == "-vs" || arg == "--validate-source") options.validate_source = true;
-                else if (arg == "-vo" || arg == "--validate-output") options.validate_output = true;
-                else if (arg == "-edc" || arg == "--enable-day-check") options.enable_day_count_check = true;
-                else if (arg.rfind("-", 0) != 0) { // If the argument doesn't start with '-', it's a path
+                if (arg == "-c" || arg == "--convert") convert_flag = true;
+                else if (arg == "-vs" || arg == "--validate-source") validate_source_flag = true;
+                else if (arg == "-vo" || arg == "--validate-output") validate_output_flag = true;
+                else if (arg == "-edc" || arg == "--enable-day-check") day_check_flag = true;
+                else if (arg.rfind("-", 0) != 0) { // Argument is a path
                     if (path_provided) throw std::runtime_error("Multiple paths provided for file processing.");
-                    options.input_path = arg;
+                    input_path = arg;
                     path_provided = true;
                 }
             }
-            if (!path_provided) throw std::runtime_error("A file or folder path is required for these commands.");
-            
-            action_handler.run_log_processing(options);
+
+            if (!path_provided) {
+                throw std::runtime_error("A file or folder path is required for manual pre-processing commands.");
+            }
+            if (validate_output_flag && !convert_flag) {
+                throw std::runtime_error("The --validate-output (-vo) flag can only be used with the --convert (-c) flag.");
+            }
+
+            // --- New granular calling sequence ---
+            if (!action_handler.collectFiles(input_path)) {
+                 std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Failed to collect files from the specified path. Aborting." << std::endl;
+                 return 1;
+            }
+            if (validate_source_flag) {
+                if (!action_handler.validateSourceFiles()) return 1;
+            }
+            if (convert_flag) {
+                if (!action_handler.convertFiles()) return 1;
+            }
+            if (validate_output_flag) {
+                if (!action_handler.validateOutputFiles(day_check_flag)) return 1;
+            }
         }
         // Branch 3: Database import (-p, --process)
         else if (command == "-p" || command == "--process") {
             if (args.size() != 3) throw std::runtime_error("Command '" + command + "' requires exactly one directory path.");
             
-            // --- 打印警告并请求用户确认插入数据库 ---
             std::cout << YELLOW_COLOR << "Warning:\n" << RESET_COLOR;
-            std::cout << "此 -p 命令设计用于导入,已经完成预处理(-vs -c -vo)的日志文件。\n";
-            std::cout << "直接导入[原始]，或没有经过验证日志文件，将导致数据不正确地插入数据库,会导致这部分的查询 (-q) 功能失败。\n";
-            std::cout << "请确保指定的路径仅包含转换后的文件，已经完成预处理(-vs -c -vo)。\n\n";
-            std::cout << "您确定要继续吗？(y/n): ";
+            std::cout << "This -p command is designed to import log files that have already been pre-processed (-vs -c -vo).\n";
+            std::cout << "Importing raw or unvalidated log files will lead to incorrect data in the database and cause query (-q) functions to fail.\n";
+            std::cout << "Please ensure the specified path contains only converted and pre-processed files.\n\n";
+            std::cout << "Are you sure you want to continue? (y/n): ";
 
             char confirmation;
             std::cin >> confirmation;
 
-            // 如果用户输入的不是 'y' 或 'Y',则取消操作并退出程序
             if (confirmation != 'y' && confirmation != 'Y') {
-                std::cout << RED_COLOR << "\n操作已取消。" << RESET_COLOR << std::endl;
-                return 0; // 安全退出
+                std::cout << RED_COLOR << "\nOperation cancelled." << RESET_COLOR << std::endl;
+                return 0;
             }
             
-            std::cout << std::endl; // 在确认后添加一个换行符,使输出更美观
-            // --- 新增功能结束 ---
-
+            std::cout << std::endl;
             action_handler.run_database_import(args[2]);
         }
         // Branch 4: Query (-q)
@@ -139,18 +154,15 @@ int main(int argc, char* argv[]) {
             std::string query_arg = args[3];
         
             if (sub_command == "d" || sub_command == "daily") {
-                // 直接调用 action_handler 的方法
                 std::cout << action_handler.run_daily_query(query_arg);
             } else if (sub_command == "p" || sub_command == "period") {
                 try {
-                    // 直接调用 action_handler 的方法
                     std::cout << action_handler.run_period_query(std::stoi(query_arg));
                 } catch (const std::exception&) {
                     std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "<days> argument must be a valid number.\n";
                     return 1;
                 }
             } else if (sub_command == "m" || sub_command == "monthly") {
-                // 直接调用 action_handler 的方法
                 std::cout << action_handler.run_monthly_query(query_arg);
             } else {
                 std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown query sub-command '" << sub_command << "'.\n";
@@ -164,7 +176,6 @@ int main(int argc, char* argv[]) {
         }
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Error: " << RESET_COLOR << e.what() << std::endl;
-        // 仅在命令未知或参数错误时打印完整用法
         if (std::string(e.what()).find("command") != std::string::npos) {
              print_full_usage(args[0].c_str());
         }
@@ -183,12 +194,12 @@ void print_full_usage(const char* app_name) {
     std::cout << GREEN_COLOR << "--- Manual Pre-processing Steps ---\n" << RESET_COLOR;
     std::cout << "  Usage: " << app_name << " <flag(s)> <file_or_folder_path>\n";
     std::cout << "  Action Flags:\n";
-    std::cout << "    -c,  --convert\t\tOnly convert file format.\n";
     std::cout << "    -vs, --validate-source\tOnly validate the source file format.\n";
-    std::cout << "  Optional Flags:\n";
+    std::cout << "    -c,  --convert\t\tOnly convert file format.\n";
+    std::cout << "  Optional Flags (used with action flags):\n";
     std::cout << "    -vo, --validate-output\tValidate output file after conversion (use with -c).\n";
-    std::cout << "    -edc, --enable-day-check\tEnable check for completeness of days in a month.\n";
-    std::cout << "  Example: " << app_name << " -c -vo /path/to/logs\n\n";
+    std::cout << "    -edc, --enable-day-check\tEnable check for completeness of days in a month (use with -vo).\n";
+    std::cout << "  Example: " << app_name << " -vs -c -vo /path/to/logs\n\n";
     std::cout << GREEN_COLOR << "--- Manual Data Import ---\n" << RESET_COLOR;
     std::cout << "  -p, --process <path>\t\tProcess a directory of formatted .txt files and import to database.\n";
     std::cout << "  Example: " << app_name << " -p /path/to/processed_logs/\n\n";
@@ -210,10 +221,9 @@ bool open_database(sqlite3** db, const std::string& db_name) {
     return true;
 }
 
-// 在文件末尾添加 close_database 函数的完整实现
 void close_database(sqlite3** db) {
     if (db && *db) {
         sqlite3_close(*db);
-        *db = nullptr; // 将指针设为 nullptr,防止悬挂指针和重复释放
+        *db = nullptr;
     }
 }
