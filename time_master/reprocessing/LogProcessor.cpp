@@ -1,8 +1,7 @@
 #include "LogProcessor.h"
-// 【修改】：包含新的、分离的验证器头文件
-#include "SourceFileValidator.h"
-#include "OutputFileValidator.h"
-#include "ValidatorUtils.h" // 需要它来访问 printGroupedErrors 和 Error 结构
+
+#include "FileValidator.h" 
+#include "ValidatorUtils.h" 
 
 #include "IntervalProcessor.h"
 #include "common_utils.h"
@@ -34,9 +33,11 @@ bool LogProcessor::runAllInOneMode() {
     std::vector<fs::path> files_to_process;
     if (!collectFilesToProcess(files_to_process)) return false;
 
-    // 【修改】：分别创建源文件和输出文件验证器
-    SourceFileValidator source_validator(config_.interval_processor_config_path); // 源文件验证器需要 remark_prefix 配置
-    OutputFileValidator output_validator(config_.format_validator_config_path, config_.interval_processor_config_path, options_.enable_day_count_check);
+    FileValidator validator(
+        config_.interval_processor_config_path, // 用于 Source 验证
+        config_.format_validator_config_path,   // 用于 Output 验证 (活动类别)
+        config_.interval_processor_config_path  // 用于 Output 验证 (头部顺序)
+    );
 
     IntervalProcessor processor(config_.interval_processor_config_path);
     std::map<fs::path, fs::path> source_to_output_map;
@@ -50,10 +51,11 @@ bool LogProcessor::runAllInOneMode() {
 
     std::cout << "--- 阶段 1: 检验所有源文件... ---" << std::endl;
     for (const auto& file : files_to_process) {
-        std::set<Error> errors; // 【修改】: 使用共享的 Error 类型
-        if (!source_validator.validate(file.string(), errors)) { // 【修改】: 调用 source_validator
+        std::set<Error> errors;
+        // 【更新】: 使用统一的接口调用源文件验证
+        if (!validator.validate(file.string(), ValidatorType::Source, errors)) {
             std::cerr << RED_COLOR << "错误: 源文件 " << file.string() << " 检验失败。" << RESET_COLOR << std::endl;
-            printGroupedErrors(file.string(), errors, config_.error_log_path); // 【修改】: 调用共享的打印函数
+            printGroupedErrors(file.string(), errors, config_.error_log_path);
             std::cerr << "\n程序已终止。" << std::endl;
             return false;
         }
@@ -62,7 +64,6 @@ bool LogProcessor::runAllInOneMode() {
     std::cout << GREEN_COLOR << "所有源文件检验通过。" << RESET_COLOR << std::endl;
     std::cout << "\n--- 阶段 2: 转换所有文件... ---" << std::endl;
     for (const auto& file : files_to_process) {
-        // ... 转换逻辑不变 ...
         fs::path target_path;
         if (is_dir) {
             target_path = output_root_path / fs::relative(file, input_root);
@@ -82,10 +83,11 @@ bool LogProcessor::runAllInOneMode() {
     std::cout << "\n--- 阶段 3: 检验所有输出文件... ---" << std::endl;
     for (const auto& pair : source_to_output_map) {
         const fs::path& output_file = pair.second;
-        std::set<Error> errors; // 【修改】: 使用共享的 Error 类型
-        if (!output_validator.validate(output_file.string(), errors)) { // 【修改】: 调用 output_validator
+        std::set<Error> errors;
+        // 【更新】: 使用统一的接口调用输出文件验证，并传入附加选项
+        if (!validator.validate(output_file.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
             std::cerr << RED_COLOR << "错误: 输出文件 " << output_file.string() << " 检验失败。" << RESET_COLOR << std::endl;
-            printGroupedErrors(output_file.string(), errors, config_.error_log_path); // 【修改】: 调用共享的打印函数
+            printGroupedErrors(output_file.string(), errors, config_.error_log_path);
             std::cerr << "\n程序已终止。" << std::endl;
             return false;
         }
@@ -97,6 +99,13 @@ bool LogProcessor::runAllInOneMode() {
 bool LogProcessor::runIndividualMode() {
     std::vector<fs::path> files_to_process;
     if (!collectFilesToProcess(files_to_process)) return false;
+
+    // 在循环外创建统一的 FileValidator 实例，提高效率
+    FileValidator validator(
+        config_.interval_processor_config_path, // 用于 Source 验证
+        config_.format_validator_config_path,   // 用于 Output 验证 (活动类别)
+        config_.interval_processor_config_path  // 用于 Output 验证 (头部顺序)
+    );
 
     fs::path input_root(options_.input_path);
     fs::path output_root_path;
@@ -113,10 +122,9 @@ bool LogProcessor::runIndividualMode() {
         
         if (validate_output_only) {
             std::cout << "正在检验输出文件: " << file.string() << "\n";
-            // 【修改】: 创建并使用 OutputFileValidator
-            OutputFileValidator validator(config_.format_validator_config_path, config_.interval_processor_config_path, options_.enable_day_count_check);
             std::set<Error> errors;
-            if (validator.validate(file.string(), errors)) {
+            // 使用统一接口验证输出文件
+            if (validator.validate(file.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
                 v_output_success_++;
                 std::cout << GREEN_COLOR << "成功: 输出文件格式合规。" << RESET_COLOR << std::endl;
             } else {
@@ -133,10 +141,9 @@ bool LogProcessor::runIndividualMode() {
 
         if (options_.validate_source) {
             std::cout << "--- 阶段 1: 检验源文件 ---" << std::endl;
-            // 【修改】: 创建并使用 SourceFileValidator
-            SourceFileValidator validator(config_.interval_processor_config_path);
             std::set<Error> errors;
-            if (validator.validate(file.string(), errors)) {
+            // 使用统一接口验证源文件
+            if (validator.validate(file.string(), ValidatorType::Source, errors)) {
                 v_source_success_++;
                 std::cout << GREEN_COLOR << "成功: 源文件格式合规。" << RESET_COLOR << std::endl;
             } else {
@@ -148,7 +155,6 @@ bool LogProcessor::runIndividualMode() {
         }
 
         if (options_.convert && current_file_ok) {
-            // ... 转换逻辑不变 ...
             std::cout << "--- 阶段 2: 转换文件 ---" << std::endl;
             if (is_dir) {
                 final_output_path = output_root_path / fs::relative(file, input_root);
@@ -169,10 +175,9 @@ bool LogProcessor::runIndividualMode() {
 
         if (options_.validate_output && current_file_ok && options_.convert) {
             std::cout << "--- 阶段 3: 检验输出文件 ---" << std::endl;
-            // 【修改】: 创建并使用 OutputFileValidator
-            OutputFileValidator validator(config_.format_validator_config_path, config_.interval_processor_config_path, options_.enable_day_count_check);
             std::set<Error> errors;
-            if (validator.validate(final_output_path.string(), errors)) {
+            // 使用统一接口验证转换后的输出文件
+            if (validator.validate(final_output_path.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
                 v_output_success_++;
                 std::cout << GREEN_COLOR << "成功: 输出文件格式合规。" << RESET_COLOR << std::endl;
             } else {
@@ -187,7 +192,6 @@ bool LogProcessor::runIndividualMode() {
     return (v_source_fail_ + convert_fail_ + v_output_fail_) == 0;
 }
 
-// --- 以下辅助函数保持不变 ---
 bool LogProcessor::collectFilesToProcess(std::vector<fs::path>& out_files) {
     fs::path input_path(options_.input_path);
     if (!fs::exists(input_path)) {
@@ -208,7 +212,6 @@ bool LogProcessor::collectFilesToProcess(std::vector<fs::path>& out_files) {
 }
 
 std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
-    // ... 实现不变 ...
     fs::path current_path = file_path.parent_path();
     auto is_four_digit_string = [](const std::string& s) {
         return s.length() == 4 && std::all_of(s.begin(), s.end(), ::isdigit);
@@ -225,7 +228,6 @@ std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
 }
 
 void LogProcessor::printSummary() const {
-    // ... 实现不变 ...
     std::cout << "\n\n--- 所有任务处理完毕 ---\n";
     if (options_.validate_source) {
         std::cout << "  - 源文件检验: " << GREEN_COLOR << v_source_success_ << " 成功" << RESET_COLOR << ", " << RED_COLOR << v_source_fail_ << " 失败" << RESET_COLOR << std::endl;

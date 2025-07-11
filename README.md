@@ -93,6 +93,8 @@ Time_Master/
 │   │   ├── LogProcessor.cpp
 │   │   ├── LogProcessor.h
 │   └── validator/
+│       ├── FileValidator.cpp          # 封装
+│       ├── FileValidator.h            
 │       ├── OutputFileValidator.cpp # 转换后文件格式检验
 │       └── OutputFileValidator.h 
 │       ├── SourceFileValidator.cpp # 源文件格式检验
