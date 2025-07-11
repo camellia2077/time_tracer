@@ -136,7 +136,9 @@ target_link_libraries(time_tracker_app PRIVATE
     nlohmann_json::nlohmann_json)
 target_link_libraries(time_tracker_cli PRIVATE 
     SQLite::SQLite3 
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    stdc++exp #用于支持 main_cli.cpp中的std::println
+    )
 
 # --- 为每个目标分别设置通用编译选项 ---
 # -Wextra -Wpedantic
