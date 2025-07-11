@@ -104,34 +104,42 @@ void DataFileParser::_handle_date_line(const std::string& line) {
         current_date_processed = false;
 }
 
-void DataFileParser::_handle_status_line(const std::string& line) { 
+void DataFileParser::_handle_status_line(const std::string& line) { // "Status:" is 7 chars
     current_status = line.substr(7);
 }
 
-void DataFileParser::_handle_sleep_line(const std::string& line) { 
+void DataFileParser::_handle_sleep_line(const std::string& line) { // "Sleep:" is 6 chars 
     current_sleep = line.substr(6);
 }
 
-void DataFileParser::_handle_remark_line(const std::string& line) { 
+void DataFileParser::_handle_remark_line(const std::string& line) { // "Remark:" is 7 chars 
     current_remark = line.substr(7);
 }
 
-void DataFileParser::_handle_getup_line(const std::string& line) { 
+void DataFileParser::_handle_getup_line(const std::string& line) { // "Getup:" is 6 chars 
     current_getup_time = line.substr(6);
 }
 
-void DataFileParser::_handle_time_record_line(const std::string& line) { 
+void DataFileParser::_handle_time_record_line(const std::string& line) {
     std::smatch matches;
-    if (std::regex_match(line, matches, _time_record_regex) && matches.size() == 4) {
-        std::string start_time_str = matches[1].str();
-        std::string end_time_str = matches[2].str();
-        std::string project_path = matches[3].str();
-        int start_seconds = time_str_to_seconds(start_time_str);
-        int end_seconds = time_str_to_seconds(end_time_str);
-        int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
-        buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
-        _process_project_path(project_path);
-    }
+
+    // Directly perform the match to populate the 'matches' object.
+    // WARNING: This assumes the 'line' will ALWAYS be valid.
+    // If 'line' does not match the regex, subsequent access to matches[1], etc.,
+    // will cause the program to crash.
+    std::regex_match(line, matches, _time_record_regex);
+
+    // Proceed to extract data without validation.
+    std::string start_time_str = matches[1].str();
+    std::string end_time_str = matches[2].str();
+    std::string project_path = matches[3].str();
+
+    int start_seconds = time_str_to_seconds(start_time_str);
+    int end_seconds = time_str_to_seconds(end_time_str);
+    int duration_seconds = (end_seconds < start_seconds) ? ((end_seconds + 24 * 3600) - start_seconds) : (end_seconds - start_seconds);
+
+    buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
+    _process_project_path(project_path);
 }
 
 void DataFileParser::_process_project_path(const std::string& project_path_orig) { 
