@@ -46,14 +46,18 @@ Time_Master/
 ├── db_inserter/ 
 │   ├── DataImporterr.cpp  # 封装解析数据与插入数据库      
 │   └── DataImporterr.h           
-│   └── parser_and_inserter/
-│       ├── DatabaseInserter.cpp    # 数据库插入
-│       ├── DatabaseInserter.cpp    # 数据库插入
-│       └── DatabaseInserter.h       
+│   └── inserter/
+│   │   ├── DatabaseInserter.cpp    # 数据库插入
+│   │   └── DatabaseInserter.cpp    # 数据库插入
+│   └── model/
+│   │   └── time_sheet_model.h      # 共享的结构
+│   └── parser/
+│       ├── ConfigLoader.h       
+│       ├── ConfigLoader.cpp        # 加载配置
+│       ├── DataFileParserr.h       
 │       ├── DataFileParser.cpp      # 解析数据 
-│       └── DataFileParser.h   
-│       └── time_sheet_model.h      # 共享的结构
-│       └── ParserConfig.h          # json传入的变量
+│       ├── DataFileParser.h   
+│       └── ParserConfig.h         # 读取json配置的父项目映射
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── config_loader.cpp # 加载json
