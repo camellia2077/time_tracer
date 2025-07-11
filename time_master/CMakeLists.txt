@@ -29,6 +29,7 @@ file(GLOB DB_INSERTER_SOURCES
     "db_inserter/model/*.cpp"
     "db_inserter/inserter/*.cpp"
     "db_inserter/parser/*.cpp"
+    "db_inserter/parser/internal/*.cpp"
 )
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
@@ -36,7 +37,9 @@ file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
+    "reprocessing/validator/internal/*.cpp"
     "reprocessing/input_transfer/*.cpp"
+    "reprocessing/input_transfer/internal/*.cpp"
     
 )
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
@@ -102,30 +105,40 @@ target_include_directories(time_tracker_app PRIVATE
     "db_inserter/model" 
     "db_inserter/inserter" 
     "db_inserter/parser"
+    "db_inserter/parser/internal"
 
     "queries" 
     "resources" 
     "time_master_app"  
+
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+    "reprocessing/input_transfer/internal"
+
     "file_handler" 
     "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
     "common" 
-    
+
     "db_inserter" 
     "db_inserter/model" 
     "db_inserter/inserter" 
     "db_inserter/parser"
+    "db_inserter/parser/internal"
 
     "queries" 
     "resources" 
     "time_master_app"  
+
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+    "reprocessing/input_transfer/internal"
+
     "file_handler" 
     "action_handler"
 )
@@ -136,7 +149,9 @@ target_link_libraries(time_tracker_app PRIVATE
     nlohmann_json::nlohmann_json)
 target_link_libraries(time_tracker_cli PRIVATE 
     SQLite::SQLite3 
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    stdc++exp #用于支持 main_cli.cpp中的std::println
+    )
 
 # --- 为每个目标分别设置通用编译选项 ---
 # -Wextra -Wpedantic
@@ -179,7 +194,7 @@ install(DIRECTORY config DESTINATION bin)
 # 设置包的通用信息
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间和项目追踪的桌面应用")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间管理的工具")
 set(CPACK_PACKAGE_VENDOR "camellia")
 set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
 

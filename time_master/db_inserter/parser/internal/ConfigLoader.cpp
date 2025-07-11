@@ -3,9 +3,8 @@
 #include <fstream>
 #include <iostream>
 
-// MODIFIED: Return type changed
 ParserConfig ConfigLoader::load_from_file(const std::string& config_path) {
-    ParserConfig config; // MODIFIED: Variable type changed
+    ParserConfig config; 
     
     std::ifstream config_stream(config_path);
     if (!config_stream.is_open()) {
