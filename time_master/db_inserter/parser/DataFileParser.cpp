@@ -88,7 +88,7 @@ void DataFileParser::_process_single_line(const std::string& line) {
         _handle_remark_line(trimmed_line);
     } else if (trimmed_line.starts_with("Getup:")) {
         _handle_getup_line(trimmed_line);
-    } else if (trimmed_line.find('~') != std::string::npos) { //不用starts_with是因为'~'在文本的中间
+    } else if (trimmed_line.contains('~')) { 
         _handle_time_record_line(trimmed_line);
     }
 }
@@ -147,7 +147,7 @@ void DataFileParser::_handle_time_record_line(const std::string& line) {
     }
 
     buffered_records_for_day.push_back({current_date, start_time_str, end_time_str, project_path, duration_seconds});
-    _process_project_path(project_path);
+    _process_project_path(project_path); // 处理层级结构
 }
 
 void DataFileParser::_process_project_path(const std::string& project_path_orig) { 
