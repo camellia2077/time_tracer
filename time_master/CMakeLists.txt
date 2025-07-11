@@ -36,6 +36,7 @@ file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
+    "reprocessing/validator/internal/*.cpp"
     "reprocessing/input_transfer/*.cpp"
     
 )
@@ -106,15 +107,18 @@ target_include_directories(time_tracker_app PRIVATE
     "queries" 
     "resources" 
     "time_master_app"  
+
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+
     "file_handler" 
     "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
     "common" 
-    
+
     "db_inserter" 
     "db_inserter/model" 
     "db_inserter/inserter" 
@@ -123,9 +127,12 @@ target_include_directories(time_tracker_cli PRIVATE
     "queries" 
     "resources" 
     "time_master_app"  
+
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/validator/internal"
     "reprocessing/input_transfer"
+
     "file_handler" 
     "action_handler"
 )
@@ -181,7 +188,7 @@ install(DIRECTORY config DESTINATION bin)
 # 设置包的通用信息
 set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间和项目追踪的桌面应用")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间管理的工具")
 set(CPACK_PACKAGE_VENDOR "camellia")
 set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
 

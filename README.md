@@ -92,15 +92,16 @@ Time_Master/
 │   └── input_transfer/ # 转换验证后的输入文件
 │   │   ├── LogProcessor.cpp
 │   │   ├── LogProcessor.h
-│   └── validator/
-│       ├── FileValidator.cpp          # 封装
-│       ├── FileValidator.h            
-│       ├── OutputFileValidator.cpp # 转换后文件格式检验
-│       └── OutputFileValidator.h 
-│       ├── SourceFileValidator.cpp # 源文件格式检验
-│       └── SourceFileValidator.h 
-│       ├── ValidatorUtils.cpp
-│       └── ValidatorUtils.h
+│   └── validator/
+│       ├── FileValidator.cpp           # 公共接口实现
+│       ├── FileValidator.h             
+│       ├── ValidatorUtils.cpp          # 共享工具类
+│       ├── ValidatorUtils.h            
+│       └── internal/                   # 验证内部实现文件夹
+│           ├── OutputFileValidator.cpp
+│           ├── OutputFileValidator.h
+│           ├── SourceFileValidator.cpp
+│           └── SourceFileValidator.h
 │
 └── resources/
     ├── app_icon.rc
