@@ -62,13 +62,13 @@ Time_Master/
 │           └── ParserConfig.h    # 读取json配置的父项目映射
 │       
 │
-├── file_handler/ # 读取json配置，递归文件夹查询文件
-│   ├── config_loader.cpp # 加载json
-│   └── config_loader.h 
-│   ├── file_controller.cpp # 封装
-│   └── file_controller.h
-│   ├── file_utils.cpp # 递归查询
-│   └── file_utils.h
+├── file_handler/ # 预处理的读取文件以及递归查询模块
+│   ├── ConfigLoader.cpp # 加载json
+│   └── ConfigLoader.h 
+│   ├── FileController.cpp # 封装
+│   └── FileController.h
+│   ├── FileUtils.cpp # 递归查询
+│   └── FileUtils.h
 │
 ├── time_master_app/                
 │   ├── menu.h           
