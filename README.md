@@ -1,27 +1,20 @@
 # 依赖项 (Dependencies)
 
+本项目的实现离不开以下这些出色的开源库🚀💪。我向这些项目的开发者们表示感谢🙏❤️！他们的开源库极大地简化了我的开发过程，真是太棒了👍🎉！
 本项目依赖于以下优秀的开源库：
 * **[SQLite C Library](https://www.sqlite.org/index.html)**
-    * **用途**: C++ 部分的代码直接使用 SQLite C API 进行数据库操作。
+    * **用途**: 数据存储.
     * **许可证**: Public Domain
 
 * **[nlohmann/json](https://github.com/nlohmann/json)**
-    * **用途**: 用于项目中所有 JSON 格式数据的解析和序列化（例如加载 `Validator_Config.json` 配置文件）。
+    * **用途**: 读取配置.
     * **许可证**: MIT License
 
-* **[json (Python standard library)](https://docs.python.org/3/library/json.html)**
-    * **用途**: 用于加载 `generate_report.json` 配置文件，以及处理项目中涉及到的 JSON 格式数据。
-    * **许可证**: Python Software Foundation License (PSF)
-
-* **[sqlite3 (Python standard library)](https://docs.python.org/3/library/sqlite3.html)**
-    * **用途**: 用于连接到 `bills.db` SQLite 数据库，并执行 SQL 查询以获取账单数据。
-    * **许可证**: Python Software Foundation License (PSF)
-
 * **[Matplotlib](https://matplotlib.org/)**
-    * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
+    * **用途**: 用于数据可视化。
     * **许可证**: Matplotlib License (BSD-style)
 # 1 Time_Master 
-用于解析文本内容，存入数据库，查询数据库
+主程序，用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
 time_master/
@@ -123,19 +116,25 @@ graph TD
     end
 
     subgraph "应用协调层 (Application Layer)"
-        Action(ActionHandler)
-        File(FileController)
+        %% ActionHandler: 整体封装流程
+        Action["ActionHandler<br/><i>整体封装流程</i>"]
+        %% FileController是用于reprocessing读取配置和递归查询文件
+        File["FileController<br/><i>读取配置, 递归查询文件</i>"]
     end
 
     subgraph "核心业务层 (Business Logic Layer)"
-        Reproc(reprocessing/)
-        DBInsert(db_inserter/)
-        Query(queries/)
+        %% reprocessing/是验证并且转换文本
+        Reproc["reprocessing/<br/><i>验证与转换文本</i>"]
+        %% db_inserter/是解析并且插入数据库
+        DBInsert["db_inserter/<br/><i>解析并插入数据库</i>"]
+        %% queries/是查询数据库
+        Query["queries/<br/><i>查询数据库</i>"]
     end
 
     subgraph "通用工具/配置 (Common & Config)"
         Common(common/)
-        Config(config/)
+        %% config/: 用于存放reprocessing相关配置
+        Config["config/<br/><i>存放reprocessing相关配置</i>"]
     end
     
     subgraph "数据存储 (Data Store)"
@@ -177,7 +176,7 @@ time_tracker_command <command> [arguments]
 
 
 ## 1.3 使用msys2 UCRT64环境进行编译
-0. 下载并安装 MSYS2
+0. 下载并安装 MSYS2 UCRT64环境(推荐)
 MSYS2 是为 Windows 操作系统 设计的
 
 访问 MSYS2 的官方网站：https://www.msys2.org/
@@ -280,49 +279,23 @@ python main.py -h
 python main.py -v
 ```
 
-
-
-
-
-
-
-# ４ log_generator 日志生成
-txt生成器
-## 4.1 structure
+# 3 log_generator 日志生成
+txt生成器,用于生成测试数据
+## 3.1 structure
 /project-root
-├── activities_config.json //配置
-├── Config.h              // 配置模块的头文件 (定义数据结构, 声明加载函数)
-├── Config.cpp            // 配置模块的源文件 (实现加载函数)
-├── LogGenerator.h        // 核心逻辑模块的头文件 (定义LogGenerator类)
-├── LogGenerator.cpp      // 核心逻辑模块的源文件 (实现LogGenerator类)
-├── Utils.h               // 【必需的】工具类头文件，仅含声明
-└── main.cpp              // 主文件 (包含Application类, Utils实现和main函数)
-## 4.2 使用msys2环境进行编译
-1. 执行首次更新
-```bash
-pacman -Syu
-```
-2. 安装 MinGW-w64 工具链
-```bash
-pacman -S mingw-w64-x86_64-toolchain
-```
-
-3. 安装 CMake
-项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
-```bash
-pacman -S mingw-w64-x86_64-cmake
-```
-
-4. 安装 nlohmann-json 库
-```bash
-pacman -S mingw-w64-x86_64-nlohmann-json
-```
-
-5. 在环境中运行 build.sh
+├── activities_config.json  #配置
+├── Config.h                # 配置模块的头文件 (定义数据结构, 声明加载函数)
+├── Config.cpp              # 配置模块的源文件 (实现加载函数)
+├── LogGenerator.h         #核心逻辑模块的头文件 (定义LogGenerator类)
+├── LogGenerator.cpp       #核心逻辑模块的源文件 (实现LogGenerator类)
+├── Utils.h                # 工具类头文件，仅含声明
+└── main.cpp               #主文件 (包含Application类, Utils实现和main函数)
+## 3.2 UCRT64环境编译
+1. 在环境中运行 build.sh
 ```bash
 ./build.sh
 ```
-## 4.3 usage
+## 3.3 usage
 ```
 Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.
   <start_year>      : The starting year (e.g., 1990).
