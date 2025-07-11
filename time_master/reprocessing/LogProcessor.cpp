@@ -1,13 +1,12 @@
 #include "LogProcessor.h"
 
-#include "FileValidator.h" 
-#include "ValidatorUtils.h" 
-
+#include "FileValidator.h"
+#include "ValidatorUtils.h"
 #include "IntervalProcessor.h"
 #include "common_utils.h"
+
 #include <iostream>
 #include <algorithm>
-#include <map>
 #include <set>
 #include <ctime>
 #include <filesystem>
@@ -16,188 +15,62 @@ namespace fs = std::filesystem;
 
 LogProcessor::LogProcessor(const AppConfig& config) : config_(config) {}
 
-bool LogProcessor::run(const AppOptions& options) {
-    options_ = options;
-    v_source_success_ = 0;
-    v_source_fail_ = 0;
-    convert_success_ = 0;
-    convert_fail_ = 0;
-    v_output_success_ = 0;
-    v_output_fail_ = 0;
-
-    return options_.run_all ? runAllInOneMode() : runIndividualMode();
-}
-
-bool LogProcessor::runAllInOneMode() {
-    std::cout << "\n--- 运行 \"all-in-one\" 模式 (错误即停) ---\n" << std::endl;
-    std::vector<fs::path> files_to_process;
-    if (!collectFilesToProcess(files_to_process)) return false;
-
+bool LogProcessor::processFile(const std::filesystem::path& source_file,
+                               const std::filesystem::path& output_file,
+                               const AppOptions& options)
+{
+    bool is_ok = true;
     FileValidator validator(
-        config_.interval_processor_config_path, // 用于 Source 验证
-        config_.format_validator_config_path,   // 用于 Output 验证 (活动类别)
-        config_.interval_processor_config_path  // 用于 Output 验证 (头部顺序)
+        config_.interval_processor_config_path, // For Source validation
+        config_.format_validator_config_path,   // For Output validation (activity categories)
+        config_.interval_processor_config_path  // For Output validation (header order)
     );
 
-    IntervalProcessor processor(config_.interval_processor_config_path);
-    std::map<fs::path, fs::path> source_to_output_map;
-    fs::path input_root(options_.input_path);
-    fs::path output_root_path;
-    bool is_dir = fs::is_directory(input_root);
-     if (is_dir) {
-        output_root_path = input_root.parent_path() / ("Processed_" + input_root.filename().string());
-        fs::create_directories(output_root_path);
-    }
-
-    std::cout << "--- 阶段 1: 检验所有源文件... ---" << std::endl;
-    for (const auto& file : files_to_process) {
+    if (options.validate_source) {
+        std::cout << "--- Validating source: " << source_file.string() << " ---\n";
         std::set<Error> errors;
-        // 【更新】: 使用统一的接口调用源文件验证
-        if (!validator.validate(file.string(), ValidatorType::Source, errors)) {
-            std::cerr << RED_COLOR << "错误: 源文件 " << file.string() << " 检验失败。" << RESET_COLOR << std::endl;
-            printGroupedErrors(file.string(), errors, config_.error_log_path);
-            std::cerr << "\n程序已终止。" << std::endl;
-            return false;
-        }
-    }
-
-    std::cout << GREEN_COLOR << "所有源文件检验通过。" << RESET_COLOR << std::endl;
-    std::cout << "\n--- 阶段 2: 转换所有文件... ---" << std::endl;
-    for (const auto& file : files_to_process) {
-        fs::path target_path;
-        if (is_dir) {
-            target_path = output_root_path / fs::relative(file, input_root);
-            fs::create_directories(target_path.parent_path());
+        if (!validator.validate(source_file.string(), ValidatorType::Source, errors)) {
+            printGroupedErrors(source_file.string(), errors, config_.error_log_path);
+            is_ok = false;
         } else {
-            target_path = "Processed_" + file.filename().string();
+             std::cout << GREEN_COLOR << "Source validation successful." << RESET_COLOR << std::endl;
         }
-        std::string year_str = extractYearFromPath(file);
-        if (!processor.executeConversion(file.string(), target_path.string(), year_str)) {
-            std::cerr << RED_COLOR << "错误: 转换文件 " << file.string() << " 失败。" << RESET_COLOR << std::endl;
-            return false;
-        }
-        source_to_output_map[file] = target_path;
     }
 
-    std::cout << GREEN_COLOR << "所有文件转换成功。" << RESET_COLOR << std::endl;
-    std::cout << "\n--- 阶段 3: 检验所有输出文件... ---" << std::endl;
-    for (const auto& pair : source_to_output_map) {
-        const fs::path& output_file = pair.second;
+    if (is_ok && options.convert) {
+        std::cout << "--- Converting: " << source_file.string() << " -> " << output_file.string() << " ---\n";
+        IntervalProcessor processor(config_.interval_processor_config_path);
+        std::string year_str = extractYearFromPath(source_file);
+        if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
+             is_ok = false;
+        } else {
+            std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
+        }
+    }
+
+    // Note: The source_file can be empty here if we are only validating an output file
+    if (is_ok && options.validate_output) {
+        std::cout << "--- Validating output: " << output_file.string() << " ---\n";
         std::set<Error> errors;
-        // 【更新】: 使用统一的接口调用输出文件验证，并传入附加选项
-        if (!validator.validate(output_file.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
-            std::cerr << RED_COLOR << "错误: 输出文件 " << output_file.string() << " 检验失败。" << RESET_COLOR << std::endl;
+        if (!validator.validate(output_file.string(), ValidatorType::Output, errors, options.enable_day_count_check)) {
             printGroupedErrors(output_file.string(), errors, config_.error_log_path);
-            std::cerr << "\n程序已终止。" << std::endl;
-            return false;
+            is_ok = false;
+        } else {
+            std::cout << GREEN_COLOR << "Output validation successful." << RESET_COLOR << std::endl;
         }
     }
-    std::cout << GREEN_COLOR << "所有输出文件检验通过。" << RESET_COLOR << std::endl;
-    return true;
+
+    return is_ok;
 }
 
-bool LogProcessor::runIndividualMode() {
-    std::vector<fs::path> files_to_process;
-    if (!collectFilesToProcess(files_to_process)) return false;
-
-    // 在循环外创建统一的 FileValidator 实例，提高效率
-    FileValidator validator(
-        config_.interval_processor_config_path, // 用于 Source 验证
-        config_.format_validator_config_path,   // 用于 Output 验证 (活动类别)
-        config_.interval_processor_config_path  // 用于 Output 验证 (头部顺序)
-    );
-
-    fs::path input_root(options_.input_path);
-    fs::path output_root_path;
-    bool is_dir = fs::is_directory(input_root);
-    if (is_dir && options_.convert) {
-        output_root_path = input_root.parent_path() / ("Processed_" + input_root.filename().string());
-        fs::create_directories(output_root_path);
-    }
-
-    bool validate_output_only = options_.validate_output && !options_.validate_source && !options_.convert;
-
-    for (const auto& file : files_to_process) {
-        std::cout << "\n=======================================================\n";
-        
-        if (validate_output_only) {
-            std::cout << "正在检验输出文件: " << file.string() << "\n";
-            std::set<Error> errors;
-            // 使用统一接口验证输出文件
-            if (validator.validate(file.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
-                v_output_success_++;
-                std::cout << GREEN_COLOR << "成功: 输出文件格式合规。" << RESET_COLOR << std::endl;
-            } else {
-                v_output_fail_++;
-                std::cerr << RED_COLOR << "失败: 输出文件 " << file.string() << " 格式错误。" << RESET_COLOR << std::endl;
-                printGroupedErrors(file.string(), errors, config_.error_log_path);
-            }
-            continue;
-        }
-
-        std::cout << "正在处理源文件: " << file.string() << "\n";
-        bool current_file_ok = true;
-        fs::path final_output_path;
-
-        if (options_.validate_source) {
-            std::cout << "--- 阶段 1: 检验源文件 ---" << std::endl;
-            std::set<Error> errors;
-            // 使用统一接口验证源文件
-            if (validator.validate(file.string(), ValidatorType::Source, errors)) {
-                v_source_success_++;
-                std::cout << GREEN_COLOR << "成功: 源文件格式合规。" << RESET_COLOR << std::endl;
-            } else {
-                v_source_fail_++;
-                current_file_ok = false;
-                std::cerr << RED_COLOR << "失败: 源文件格式错误。" << RESET_COLOR << std::endl;
-                printGroupedErrors(file.string(), errors, config_.error_log_path);
-            }
-        }
-
-        if (options_.convert && current_file_ok) {
-            std::cout << "--- 阶段 2: 转换文件 ---" << std::endl;
-            if (is_dir) {
-                final_output_path = output_root_path / fs::relative(file, input_root);
-                fs::create_directories(final_output_path.parent_path());
-            } else {
-                final_output_path = "Processed_" + file.filename().string();
-            }
-            IntervalProcessor processor(config_.interval_processor_config_path);
-            std::string year_str = extractYearFromPath(file);
-            if (processor.executeConversion(file.string(), final_output_path.string(), year_str)) {
-                convert_success_++;
-                std::cout << GREEN_COLOR << "成功: 文件已转换为 " << final_output_path.string() << RESET_COLOR << std::endl;
-            } else {
-                convert_fail_++;
-                current_file_ok = false;
-            }
-        }
-
-        if (options_.validate_output && current_file_ok && options_.convert) {
-            std::cout << "--- 阶段 3: 检验输出文件 ---" << std::endl;
-            std::set<Error> errors;
-            // 使用统一接口验证转换后的输出文件
-            if (validator.validate(final_output_path.string(), ValidatorType::Output, errors, options_.enable_day_count_check)) {
-                v_output_success_++;
-                std::cout << GREEN_COLOR << "成功: 输出文件格式合规。" << RESET_COLOR << std::endl;
-            } else {
-                v_output_fail_++;
-                std::cerr << RED_COLOR << "失败: 输出文件 " << final_output_path.string() << " 格式错误。" << RESET_COLOR << std::endl;
-                printGroupedErrors(final_output_path.string(), errors, config_.error_log_path);
-            }
-        }
-    }
-
-    printSummary();
-    return (v_source_fail_ + convert_fail_ + v_output_fail_) == 0;
-}
-
-bool LogProcessor::collectFilesToProcess(std::vector<fs::path>& out_files) {
-    fs::path input_path(options_.input_path);
+// Corrected function signature to match the header file
+bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std::vector<fs::path>& out_files) {
+    fs::path input_path(input_path_str);
     if (!fs::exists(input_path)) {
-        std::cerr << RED_COLOR << "错误: 输入的路径不存在: " << options_.input_path << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: Input path does not exist: " << input_path_str << RESET_COLOR << std::endl;
         return false;
     }
+
     if (fs::is_directory(input_path)) {
         for (const auto& entry : fs::recursive_directory_iterator(input_path)) {
             if (entry.is_regular_file() && entry.path().extension() == ".txt") {
@@ -205,7 +78,7 @@ bool LogProcessor::collectFilesToProcess(std::vector<fs::path>& out_files) {
             }
         }
         std::sort(out_files.begin(), out_files.end());
-    } else {
+    } else if (fs::is_regular_file(input_path)) {
         out_files.push_back(input_path);
     }
     return true;
@@ -225,17 +98,4 @@ std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
     std::time_t now = std::time(nullptr);
     std::tm* ltm = std::localtime(&now);
     return std::to_string(1900 + ltm->tm_year);
-}
-
-void LogProcessor::printSummary() const {
-    std::cout << "\n\n--- 所有任务处理完毕 ---\n";
-    if (options_.validate_source) {
-        std::cout << "  - 源文件检验: " << GREEN_COLOR << v_source_success_ << " 成功" << RESET_COLOR << ", " << RED_COLOR << v_source_fail_ << " 失败" << RESET_COLOR << std::endl;
-    }
-    if (options_.convert) {
-        std::cout << "  - 文件转换:   " << GREEN_COLOR << convert_success_ << " 成功" << RESET_COLOR << ", " << RED_COLOR << convert_fail_ << " 失败" << RESET_COLOR << std::endl;
-    }
-    if (options_.validate_output) {
-        std::cout << "  - 输出文件检验: " << GREEN_COLOR << v_output_success_ << " 成功" << RESET_COLOR << ", " << RED_COLOR << v_output_fail_ << " 失败" << RESET_COLOR << std::endl;
-    }
 }
