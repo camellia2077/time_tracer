@@ -9,9 +9,11 @@
 
 // 包含项目内其他模块的头文件
 #include "common_utils.h"
-#include "parser_and_inserter/DataFileParser.h"         
-#include "parser_and_inserter/DatabaseInserter.h"
-#include "parser_and_inserter/ConfigLoader.h"          
+#include "parser/DataFileParser.h"       
+#include "parser/ConfigLoader.h"
+
+#include "inserter/DatabaseInserter.h"
+          
 
 namespace fs = std::filesystem;
 

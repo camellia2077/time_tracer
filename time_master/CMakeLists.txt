@@ -26,7 +26,9 @@ find_package(nlohmann_json REQUIRED)
 file(GLOB COMMON_SOURCES "common/*.cpp")
 file(GLOB DB_INSERTER_SOURCES 
     "db_inserter/*.cpp"
-    "db_inserter/parser_and_inserter/*.cpp"
+    "db_inserter/model/*.cpp"
+    "db_inserter/inserter/*.cpp"
+    "db_inserter/parser/*.cpp"
 )
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
@@ -34,6 +36,8 @@ file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
+    "reprocessing/input_transfer/*.cpp"
+    
 )
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
 file(GLOB ACTION_HANDLER_SOURCES "action_handler/*.cpp")
@@ -93,23 +97,35 @@ endif()
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
     "common" 
+
     "db_inserter" 
-     "queries" 
+    "db_inserter/model" 
+    "db_inserter/inserter" 
+    "db_inserter/parser"
+
+    "queries" 
     "resources" 
     "time_master_app"  
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/input_transfer"
     "file_handler" 
     "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
     "common" 
+    
     "db_inserter" 
-     "queries" 
+    "db_inserter/model" 
+    "db_inserter/inserter" 
+    "db_inserter/parser"
+
+    "queries" 
     "resources" 
     "time_master_app"  
     "reprocessing" 
     "reprocessing/validator" 
+    "reprocessing/input_transfer"
     "file_handler" 
     "action_handler"
 )
