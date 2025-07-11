@@ -1,6 +1,6 @@
 #include "FileValidator.h"
-#include "SourceFileValidator.h"
-#include "OutputFileValidator.h"
+#include "internal/SourceFileValidator.h"
+#include "internal/OutputFileValidator.h"
 
 FileValidator::FileValidator(const std::string& source_config_path, 
                              const std::string& output_validator_config_path, 
