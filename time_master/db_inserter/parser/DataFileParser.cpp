@@ -4,6 +4,10 @@
 #include <algorithm>
 #include <stdexcept>
 
+#include <ranges>
+#include <string_view>
+
+
 
 // --- DataFileParser Constructor & Destructor ---
 
@@ -150,16 +154,30 @@ void DataFileParser::_handle_time_record_line(const std::string& line) {
     _process_project_path(project_path); // 处理层级结构
 }
 
-void DataFileParser::_process_project_path(const std::string& project_path_orig) { 
-    std::vector<std::string> segments = split_string(project_path_orig, '_');
-    if (segments.empty()) return;
+void DataFileParser::_process_project_path(const std::string& project_path_orig) {
+    if (project_path_orig.empty()) return;
+
     for (const auto& pair : initial_top_level_parents) {
         parent_child_pairs.insert({pair.first, pair.second});
     }
-    if (segments.size() > 1) {
-        std::string parent_path = segments[0];
-        for (size_t i = 1; i < segments.size(); ++i) {
-            std::string child_path = parent_path + "_" + segments[i];
+
+    // 使用 ranges 来创建一个分割后的视图，没有动态内存分配
+    auto segments_view = project_path_orig
+                       | std::views::split('_')
+                       | std::views::filter([](auto v) { return !v.empty(); });
+
+    std::string parent_path;
+    bool first = true;
+
+    for (const auto& segment_range : segments_view) {
+        // 将 range 转换为 string_view 或 string
+        std::string current_segment(&*segment_range.begin(), std::ranges::distance(segment_range));
+        
+        if (first) {
+            parent_path = current_segment;
+            first = false;
+        } else {
+            std::string child_path = parent_path + "_" + current_segment;
             parent_child_pairs.insert({child_path, parent_path});
             parent_path = child_path;
         }
