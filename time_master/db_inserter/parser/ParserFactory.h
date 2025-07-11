@@ -2,7 +2,7 @@
 #define PARSER_FACTORY_H
 
 #include <string>
-#include "DataFileParser.h"
+#include "internal/DataFileParser.h"
 
 /**
  * @class ParserFactory

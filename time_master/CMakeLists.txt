@@ -29,6 +29,7 @@ file(GLOB DB_INSERTER_SOURCES
     "db_inserter/model/*.cpp"
     "db_inserter/inserter/*.cpp"
     "db_inserter/parser/*.cpp"
+    "db_inserter/parser/internal/*.cpp"
 )
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
 file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
@@ -103,6 +104,7 @@ target_include_directories(time_tracker_app PRIVATE
     "db_inserter/model" 
     "db_inserter/inserter" 
     "db_inserter/parser"
+    "db_inserter/parser/internal"
 
     "queries" 
     "resources" 
@@ -123,6 +125,7 @@ target_include_directories(time_tracker_cli PRIVATE
     "db_inserter/model" 
     "db_inserter/inserter" 
     "db_inserter/parser"
+    "db_inserter/parser/internal"
 
     "queries" 
     "resources" 
