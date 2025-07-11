@@ -51,15 +51,16 @@ Time_Master/
 │   │   └── DatabaseInserter.cpp    # 数据库插入
 │   └── model/
 │   │   └── time_sheet_model.h      # 共享的结构
-│   └── parser/
-│       ├── ConfigLoader.h       
-│       ├── ConfigLoader.cpp        # 加载配置
-│       ├── DataFileParserr.h       
-│       ├── DataFileParser.cpp      # 解析数据 
-│       ├── DataFileParser.h   
-│       ├── ParserConfig.h         # 读取json配置的父项目映射
+│   └── parser/        
 │       ├── ParserFactory.h     # 声明创建解析器的工厂
 │       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
+│       └── internal/ 
+│           ├── DataFileParser.h              
+│           ├── DataFileParser.cpp   # 解析数据 
+│           ├── ConfigLoader.h       
+│           ├── ConfigLoader.cpp     # 加载配置    
+│           └── ParserConfig.h    # 读取json配置的父项目映射
+│       
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── config_loader.cpp # 加载json
