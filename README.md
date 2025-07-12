@@ -71,14 +71,18 @@ time_master/
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   └── report_generators/
-│       ├── query_utils.cpp      # Implements shared helper functions for querying.
-│       └── query_utils.h        # Declares various utility functions used by the different query generators.
-│       ├── DailyReportQuerier.cpp        # Implements the logic to generate a detailed report for a single day.
-│       └── DailyReportQuerier.h          # Declares the class responsible for generating a daily report.
-│       ├── MonthlyReportQuerier.cpp     
-│       └── MonthlyReportQuerier.h        
-│       ├── PeriodReportQuerier.cpp     # Implements the logic for generating reports over a custom period.
-│       └── PeriodReportQuerier.h       # Declares the class for generating reports over a specific time period.
+│       ├── query_utils.cpp      
+│       └── query_utils.h        
+│       └── query_data_structs.h
+│       ├── daily/
+│       │   ├── DailyReportQuerier.cpp
+│       │   └── DailyReportQuerier.h
+│       ├── monthly/
+│       │   ├── MonthlyReportQuerier.cpp
+│       │   └── MonthlyReportQuerier.h
+│       └── period/
+│           ├── PeriodReportQuerier.cpp
+│           └── PeriodReportQuerier.h
 │
 ├── reprocessing/               # 预处理
 │   ├── LogProcessor.cpp
