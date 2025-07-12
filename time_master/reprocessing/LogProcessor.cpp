@@ -11,56 +11,77 @@
 #include <ctime>
 #include <filesystem>
 
+#include <chrono>
+
 namespace fs = std::filesystem;
 
 LogProcessor::LogProcessor(const AppConfig& config) : config_(config) {}
 
-bool LogProcessor::processFile(const std::filesystem::path& source_file,
-                               const std::filesystem::path& output_file,
-                               const AppOptions& options)
+// --- [MODIFIED] 函数返回类型和实现已更新 ---
+ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_file,
+                                           const std::filesystem::path& output_file,
+                                           const AppOptions& options)
 {
-    bool is_ok = true;
+    ProcessingResult result; // 初始化返回结果
+
     FileValidator validator(
-        config_.interval_processor_config_path, // For Source validation
-        config_.format_validator_config_path,   // For Output validation (activity categories)
-        config_.interval_processor_config_path  // For Output validation (header order)
+        config_.interval_processor_config_path,
+        config_.format_validator_config_path,
+        config_.interval_processor_config_path
     );
 
     if (options.validate_source) {
         std::cout << "--- Validating source: " << source_file.string() << " ---\n";
+        auto start_time = std::chrono::steady_clock::now();
+        
         std::set<Error> errors;
         if (!validator.validate(source_file.string(), ValidatorType::Source, errors)) {
             printGroupedErrors(source_file.string(), errors, config_.error_log_path);
-            is_ok = false;
+            result.success = false;
         } else {
              std::cout << GREEN_COLOR << "Source validation successful." << RESET_COLOR << std::endl;
         }
+        
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> duration = end_time - start_time;
+        result.timings.validation_source_ms = duration.count(); // 存储时间
     }
 
-    if (is_ok && options.convert) {
+    if (result.success && options.convert) {
         std::cout << "--- Converting: " << source_file.string() << " -> " << output_file.string() << " ---\n";
+        auto start_time = std::chrono::steady_clock::now();
+
         IntervalProcessor processor(config_.interval_processor_config_path);
         std::string year_str = extractYearFromPath(source_file);
         if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
-             is_ok = false;
+             result.success = false;
         } else {
             std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
         }
+
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> duration = end_time - start_time;
+        result.timings.conversion_ms = duration.count(); // 存储耗时
     }
 
-    // Note: The source_file can be empty here if we are only validating an output file
-    if (is_ok && options.validate_output) {
+    if (result.success && options.validate_output) {
         std::cout << "--- Validating output: " << output_file.string() << " ---\n";
+        auto start_time = std::chrono::steady_clock::now();
+        
         std::set<Error> errors;
         if (!validator.validate(output_file.string(), ValidatorType::Output, errors, options.enable_day_count_check)) {
             printGroupedErrors(output_file.string(), errors, config_.error_log_path);
-            is_ok = false;
+            result.success = false;
         } else {
             std::cout << GREEN_COLOR << "Output validation successful." << RESET_COLOR << std::endl;
         }
+
+        auto end_time = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::milli> duration = end_time - start_time;
+        result.timings.validation_output_ms = duration.count(); // 存储耗时
     }
 
-    return is_ok;
+    return result; // 返回包含成功标志和所有计时数据的结构体
 }
 
 // Corrected function signature to match the header file
