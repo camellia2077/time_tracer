@@ -3,7 +3,6 @@
 
 #include <sqlite3.h>
 #include <string>
-#include <sstream>
 #include "query_data_structs.h" // Assumed to contain DailyReportData definition
 
 /**
@@ -32,30 +31,6 @@ private:
 
     sqlite3* m_db; // 指向 SQLite 数据库连接的指针，用于执行数据库查询
     const std::string m_date; // 表示要查询日报的日期，格式为 YYYYMMDD
-};
-
-/**
- * @class DailyReportFormatter
- * @brief Formats the DailyReportData into a human-readable string.
- */
-class DailyReportFormatter {
-public:
-    /**
-     * @brief Default constructor.
-     */
-    DailyReportFormatter() = default;
-
-    /**
-     * @brief Formats the raw report data into a displayable string.
-     * @param data The DailyReportData struct to format.
-     * @param db A pointer to the SQLite database (needed for project breakdown).
-     * @return A formatted string representing the daily report.
-     */
-    std::string format_report(const DailyReportData& data, sqlite3* db);
-
-private:
-    void _display_header(std::stringstream& ss, const DailyReportData& data);
-    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db);
 };
 
 #endif // DAILY_REPORT_QUERIER_H
