@@ -75,8 +75,14 @@ time_master/
 │       └── query_utils.h        
 │       └── query_data_structs.h
 │       ├── daily/
-│       │   ├── DailyReportQuerier.cpp
-│       │   └── DailyReportQuerier.h
+│       │   ├── DailyReportGenerator.cpp    # (公共接口) 实现了日报生成器
+│       │   └── DailyReportGenerator.h      # (公共接口) 声明了日报生成器
+│       │   ├── formatter/                # (私有实现) 存放日报的格式化逻辑
+│       │   │   ├── DailyReportFormatter.cpp
+│       │   │   └── DailyReportFormatter.h
+│       │   └── querier/                  # (私有实现) 存放日报的数据查询逻辑
+│       │       ├── DailyReportQuerier.cpp
+│       │       └── DailyReportQuerier.h
 │       ├── monthly/
 │       │   ├── MonthlyReportQuerier.cpp
 │       │   └── MonthlyReportQuerier.h
