@@ -61,7 +61,7 @@ private:
     void close_database();
 
     // --- 封装了阶段性总结打印格式
-    void printTimingStatistics(double total_time_ms) const;
+    void printTimingStatistics(const std::string& operation_name, double total_time_ms) const;
 
     sqlite3* db_;
     std::string db_name_;
