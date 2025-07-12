@@ -31,8 +31,15 @@ file(GLOB DB_INSERTER_SOURCES
     "db_inserter/parser/*.cpp"
     "db_inserter/parser/internal/*.cpp"
 )
-file(GLOB QUERIES_SOURCES "queries/*.cpp")
-file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
+file(GLOB QUERIES_SOURCES 
+    "queries/*.cpp"
+    "queries/report_generators/*.cpp"
+
+    "queries/report_generators/daily/*.cpp"
+    "queries/report_generators/monthly/*.cpp"
+    "queries/report_generators/period/*.cpp"
+)
+
 file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
@@ -54,7 +61,6 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${REPORT_GENERATOR_SOURCES}
     ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
@@ -68,9 +74,8 @@ add_executable(
     time_tracker_cli      # 可执行文件名
     main_cli.cpp          # 入口文件
     ${COMMON_SOURCES}
-    ${DB_INSERTER_SOURCES} 
+    ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${REPORT_GENERATOR_SOURCES}
     ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
@@ -108,6 +113,12 @@ target_include_directories(time_tracker_app PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
+    "queries/report_generators"
+    "queries/report_generators/daily"
+    "queries/report_generators/monthly"
+    "queries/report_generators/period"
+    
+
     "resources" 
     "time_master_app"  
 
@@ -130,6 +141,12 @@ target_include_directories(time_tracker_cli PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
+    "queries/report_generators"
+    "queries/report_generators/daily"
+    "queries/report_generators/monthly"
+    "queries/report_generators/period"
+
+
     "resources" 
     "time_master_app"  
 
