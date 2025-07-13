@@ -92,18 +92,15 @@ time_master/
 │       │   └── querier/                  # (私有实现) 存放月报的数据查询逻辑
 │       │       ├── MonthlyReportQuerier.cpp
 │       │       └── MonthlyReportQuerier.h
-│       ├── period/
-│       │   ├── PeriodReportGenerator.cpp    # (公共接口) 实现了查询最近几天
-│       │   └── PeriodReportGenerator.h      # (公共接口) 声明
-│       │   ├── formatter/                # (私有实现) 存放格式化逻辑
-│       │   │   ├── PeriodReportFormatter.cpp
-│       │   │   └── PeriodReportFormatter.h
-│       │   └── querier/                  # (私有实现) 存放数据查询逻辑
-│       │       ├── PeriodReportQuerier.cpp
-│       │       └── PeriodReportQuerier.h
 │       └── period/
-│           ├── PeriodReportQuerier.cpp
-│           └── PeriodReportQuerier.h
+│           ├── PeriodReportGenerator.cpp    # (公共接口) 实现了查询最近几天
+│           └── PeriodReportGenerator.h      # (公共接口) 声明
+│           ├── formatter/                # (私有实现) 存放格式化逻辑
+│           │   ├── PeriodReportFormatter.cpp
+│           │   └── PeriodReportFormatter.h
+│           └── querier/                  # (私有实现) 存放数据查询逻辑
+│               ├── PeriodReportQuerier.cpp
+│               └── PeriodReportQuerier.h
 │
 ├── reprocessing/               # 预处理
 │   ├── LogProcessor.cpp
