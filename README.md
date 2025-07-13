@@ -71,9 +71,9 @@ time_master/
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   └── report_generators/
-│       ├── query_utils.cpp      
-│       └── query_utils.h        
-│       └── query_data_structs.h
+│       ├── query_utils.cpp    # 内容行解析逻辑  
+│       └── query_utils.h       
+│       └── query_data_structs.h    # 用于存放查询内容的头文件
 │       ├── daily/
 │       │   ├── DailyReportGenerator.cpp    # (公共接口) 实现了日报生成器
 │       │   └── DailyReportGenerator.h      # (公共接口) 声明了日报生成器
