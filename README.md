@@ -71,7 +71,6 @@ time_master/
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   └── report_generators/  
-│       └── query_data_structs.h    # 用于存放查询内容的头文件
 │       ├── shared/ #(私有)
 │       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
 │       │   └── query_utils.h  
