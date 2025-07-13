@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <sstream>
-#include "query_data_structs.h"
+#include "report_generators/query_data_structs.h"
 
 // 1. 周期报告查询器类
 class PeriodReportQuerier {

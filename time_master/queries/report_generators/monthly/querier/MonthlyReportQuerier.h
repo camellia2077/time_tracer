@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "query_data_structs.h" // 假设此文件在 report_generators 目录下
+#include "report_generators/query_data_structs.h" // 假设此文件在 report_generators 目录下
 
 // 月报查询器类
 class MonthlyReportQuerier {

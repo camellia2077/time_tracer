@@ -1,5 +1,5 @@
 #include "DailyReportFormatter.h"
-#include "query_utils.h" // For time_format_duration and write_project_breakdown_to_stream
+#include "report_generators/query_utils.h" // For time_format_duration and write_project_breakdown_to_stream
 #include <iomanip>
 
 // --- DailyReportFormatter Class Implementation ---

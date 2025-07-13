@@ -24,6 +24,7 @@ find_package(nlohmann_json REQUIRED)
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
+file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB DB_INSERTER_SOURCES 
     "db_inserter/*.cpp"
     "db_inserter/model/*.cpp"
@@ -47,7 +48,6 @@ file(GLOB QUERIES_SOURCES
     "queries/report_generators/period/*.cpp"
 )
 
-file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
@@ -83,7 +83,6 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -120,17 +119,7 @@ target_include_directories(time_tracker_app PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
-    "queries/report_generators"
-    "queries/report_generators/daily"
-    "queries/report_generators/daily/formatter"
-    "queries/report_generators/daily/querier"
 
-    "queries/report_generators/monthly"
-    "queries/report_generators/monthly/formatter"
-    "queries/report_generators/monthly/querier"
-
-    "queries/report_generators/period"
-    
 
     "resources" 
     "time_master_app"  
@@ -154,20 +143,8 @@ target_include_directories(time_tracker_cli PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
-    "queries/report_generators"
-    "queries/report_generators/daily"
-    "queries/report_generators/daily/formatter"
-    "queries/report_generators/daily/querier"
-
-    "queries/report_generators/monthly"
-    "queries/report_generators/monthly/formatter"
-    "queries/report_generators/monthly/querier"
-
-    "queries/report_generators/period"
-
 
     "resources" 
-    "time_master_app"  
 
     "reprocessing" 
     "reprocessing/validator" 
