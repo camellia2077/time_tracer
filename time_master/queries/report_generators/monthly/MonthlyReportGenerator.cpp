@@ -2,7 +2,7 @@
 
 #include "querier/MonthlyReportQuerier.h"
 #include "formatter/MonthlyReportFormatter.h"
-#include "report_generators/query_data_structs.h"
+#include "report_generators/_shared/query_data_structs.h"
 
 MonthlyReportGenerator::MonthlyReportGenerator(sqlite3* db) : m_db(db) {}
 

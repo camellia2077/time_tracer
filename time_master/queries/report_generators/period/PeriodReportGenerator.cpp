@@ -1,7 +1,7 @@
 #include "PeriodReportGenerator.h"
 #include "querier/PeriodReportQuerier.h"
 #include "formatter/PeriodReportFormatter.h"
-#include "report_generators/query_data_structs.h"
+#include "report_generators/_shared/query_data_structs.h"
 
 PeriodReportGenerator::PeriodReportGenerator(sqlite3* db) : m_db(db) {}
 

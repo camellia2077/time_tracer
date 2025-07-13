@@ -1,5 +1,5 @@
 #include "PeriodReportQuerier.h"
-#include "report_generators/query_utils.h"
+#include "report_generators/_shared/query_utils.h"
 #include <iomanip>
 
 PeriodReportQuerier::PeriodReportQuerier(sqlite3* db, int days_to_query)

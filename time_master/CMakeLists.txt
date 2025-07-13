@@ -36,6 +36,8 @@ file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
     "queries/report_generators/*.cpp"
 
+    "queries/report_generators/_shared/*.cpp"
+
     "queries/report_generators/daily/*.cpp"
     "queries/report_generators/daily/formatter/*.cpp"
     "queries/report_generators/daily/querier/*.cpp"

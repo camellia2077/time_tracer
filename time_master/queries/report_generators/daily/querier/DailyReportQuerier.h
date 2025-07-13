@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/query_data_structs.h" // Assumed to contain DailyReportData definition
+#include "report_generators/_shared/query_data_structs.h" // Assumed to contain DailyReportData definition
 
 /**
  * @class DailyReportQuerier

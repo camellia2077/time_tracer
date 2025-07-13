@@ -2,7 +2,7 @@
 
 #include "querier/DailyReportQuerier.h"
 #include "formatter/DailyReportFormatter.h"
-#include "report_generators/query_data_structs.h"
+#include "report_generators/_shared/query_data_structs.h"
 
 DailyReportGenerator::DailyReportGenerator(sqlite3* db) : m_db(db) {}
 

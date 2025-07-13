@@ -1,5 +1,5 @@
 #include "PeriodReportFormatter.h"
-#include "report_generators/query_utils.h"
+#include "report_generators/_shared/query_utils.h"
 #include <iomanip>
 
 std::string PeriodReportFormatter::format_report(const PeriodReportData& data, sqlite3* db) {

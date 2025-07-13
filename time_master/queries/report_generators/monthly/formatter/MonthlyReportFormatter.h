@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <sstream>
-#include "report_generators/query_data_structs.h" 
+#include "report_generators/_shared/query_data_structs.h" 
 
 // 月报格式化器类
 class MonthlyReportFormatter {
