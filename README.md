@@ -84,8 +84,14 @@ time_master/
 │       │       ├── DailyReportQuerier.cpp
 │       │       └── DailyReportQuerier.h
 │       ├── monthly/
-│       │   ├── MonthlyReportQuerier.cpp
-│       │   └── MonthlyReportQuerier.h
+│       │   ├── MonthlyReportGenerator.cpp    # (公共接口) 实现了月报生成器
+│       │   └── MonthlyReportGenerator.h      # (公共接口) 声明了月报生成器
+│       │   ├── formatter/                # (私有实现) 存放月报的格式化逻辑
+│       │   │   ├── MonthlyReportFormatter.cpp
+│       │   │   └── MonthlyReportFormatter.h
+│       │   └── querier/                  # (私有实现) 存放月报的数据查询逻辑
+│       │       ├── MonthlyReportQuerier.cpp
+│       │       └── MonthlyReportQuerier.h
 │       └── period/
 │           ├── PeriodReportQuerier.cpp
 │           └── PeriodReportQuerier.h

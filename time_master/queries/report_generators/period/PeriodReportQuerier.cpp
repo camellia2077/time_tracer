@@ -1,5 +1,5 @@
 #include "PeriodReportQuerier.h"
-#include "query_utils.h"
+#include "report_generators/query_utils.h"
 #include <iomanip>
 
 // --- PeriodReportQuerier Class Implementation ---
