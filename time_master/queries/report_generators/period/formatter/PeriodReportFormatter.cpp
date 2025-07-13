@@ -21,13 +21,15 @@ std::string PeriodReportFormatter::format_report(const PeriodReportData& data, s
 }
 
 void PeriodReportFormatter::_display_summary(std::stringstream& ss, const PeriodReportData& data) {
-    ss << "\n--- Period Report: Last " << data.days_to_query << " days ("
-       << data.start_date << " to " << data.end_date << ") ---\n";
+    // Main title for the period report, including the date range
+    ss << "## Period Report: Last " << data.days_to_query << " days ("
+       << data.start_date << " to " << data.end_date << ")\n\n";
+
+    // Display summary data only if there are records
     if (data.actual_days > 0) {
-        ss << "Total Time Recorded: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
-        ss << "Actual Days with Records: " << data.actual_days << "\n";
+        ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
+        ss << "- **Actual Days with Records**: " << data.actual_days << "\n";
     }
-    ss << "-------------------------------------\n";
 }
 
 void PeriodReportFormatter::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) {
