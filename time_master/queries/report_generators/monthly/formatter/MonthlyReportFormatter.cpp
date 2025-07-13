@@ -21,12 +21,14 @@ std::string MonthlyReportFormatter::format_report(const MonthlyReportData& data,
 }
 
 void MonthlyReportFormatter::_display_summary(std::stringstream& ss, const MonthlyReportData& data) {
-    ss << "\n--- Monthly Summary for " << data.year_month.substr(0, 4) << "-" << data.year_month.substr(4, 2) << " ---\n";
+    // Main title for the monthly report
+    ss << "## Monthly Summary for " << data.year_month.substr(0, 4) << "-" << data.year_month.substr(4, 2) << "\n\n";
+
+    // Display summary data only if there are records
     if (data.actual_days > 0) {
-        ss << "Actual Days with Records: " << data.actual_days << "\n";
-        ss << "Total Time Recorded: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
+        ss << "- **Actual Days with Records**: " << data.actual_days << "\n";
+        ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
     }
-    ss << "-------------------------------------\n";
 }
 
 void MonthlyReportFormatter::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) {
