@@ -1,5 +1,5 @@
 #include "PeriodReportFormatter.h"
-#include "report_generators/_shared/query_utils.h"
+#include "report_generators/_shared/query_utils.h" // Provides ProjectBreakdownFormatter
 #include <iomanip>
 
 std::string PeriodReportFormatter::format_report(const PeriodReportData& data, sqlite3* db) {
@@ -33,5 +33,8 @@ void PeriodReportFormatter::_display_summary(std::stringstream& ss, const Period
 }
 
 void PeriodReportFormatter::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) {
-    write_project_breakdown_to_stream(ss, db, data.records, data.total_duration, data.actual_days);
+    // Instantiate the formatter class with the period data.
+    // The number of actual days is passed for correct averaging.
+    ProjectBreakdownFormatter formatter(db, data.records, data.total_duration, data.actual_days);
+    formatter.write_to_stream(ss);
 }

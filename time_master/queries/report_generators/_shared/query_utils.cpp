@@ -10,8 +10,114 @@
 #include <chrono>
 #include <ctime>
 // This file provides the implementation for the shared utility functions.
-// Recursively generates formatted output for the project hierarchy
-std::vector<std::string> generate_sorted_output(const ProjectNode& node, int avg_days, int indent) {
+
+// --- ProjectBreakdownFormatter Class Implementation ---
+
+/**
+ * @brief Constructor for ProjectBreakdownFormatter.
+ * Initializes the formatter with the necessary data.
+ */
+ProjectBreakdownFormatter::ProjectBreakdownFormatter(
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days)
+    : m_db(db), m_records(records), m_total_duration(total_duration), m_avg_days(avg_days) {}
+
+/**
+ * @brief Main method to generate and write the formatted output to a stream.
+ * This method orchestrates the fetching of data, building the tree, and formatting the output.
+ */
+void ProjectBreakdownFormatter::write_to_stream(std::stringstream& ss) {
+    // Build the project tree using the provided records.
+    std::map<std::string, std::string> parent_map = _get_parent_map();
+    _build_project_tree_from_records(parent_map);
+
+    // Sort top-level categories by duration in descending order.
+    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
+    for (const auto& pair : m_project_tree) {
+        sorted_top_level.push_back(pair);
+    }
+    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    // Generate formatted output for each category.
+    for (const auto& pair : sorted_top_level) {
+        const std::string& category_name = pair.first;
+        const ProjectNode& category_node = pair.second;
+        double percentage = (m_total_duration > 0) ? (static_cast<double>(category_node.duration) / m_total_duration * 100.0) : 0.0;
+
+        ss << "\n## " << category_name << ": "
+           << time_format_duration(category_node.duration, m_avg_days)
+           << " (" << std::fixed << std::setprecision(1) << percentage << "%) ##\n";
+
+        std::vector<std::string> output_lines = _generate_sorted_output(category_node);
+        for (const auto& line : output_lines) {
+            ss << line << "\n";
+        }
+    }
+}
+
+/**
+ * @brief Fetches parent-child category mappings from the database.
+ * @return A map where the key is the child category and the value is the parent.
+ */
+std::map<std::string, std::string> ProjectBreakdownFormatter::_get_parent_map() {
+    std::map<std::string, std::string> parent_map;
+    sqlite3_stmt* stmt;
+    const char* sql = "SELECT child, parent FROM parent_child;";
+    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            parent_map[reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))] =
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        }
+    } else {
+        std::cerr << "Failed to prepare statement (_get_parent_map): " << sqlite3_errmsg(m_db) << std::endl;
+    }
+    sqlite3_finalize(stmt);
+    return parent_map;
+}
+
+/**
+ * @brief Builds the project tree from the records provided in the constructor.
+ * @param parent_map A map to resolve top-level category display names.
+ */
+void ProjectBreakdownFormatter::_build_project_tree_from_records(const std::map<std::string, std::string>& parent_map) {
+    for (const auto& record : m_records) {
+        const std::string& project_path = record.first;
+        long long duration = record.second;
+
+        std::vector<std::string> parts = split_string(project_path, '_');
+        if (parts.empty()) continue;
+
+        std::string top_level_category_key = parts[0];
+        std::string top_level_display_name;
+
+        auto it_parent = parent_map.find(top_level_category_key);
+        if (it_parent != parent_map.end()) {
+            top_level_display_name = it_parent->second;
+        } else {
+            top_level_display_name = top_level_category_key;
+        }
+
+        m_project_tree[top_level_display_name].duration += duration;
+        ProjectNode* current_node = &m_project_tree[top_level_display_name];
+
+        for (size_t i = 1; i < parts.size(); ++i) {
+            current_node->children[parts[i]].duration += duration;
+            current_node = &current_node->children[parts[i]];
+        }
+    }
+}
+
+/**
+ * @brief Recursively generates formatted and sorted output lines for a project node.
+ * @param node The current ProjectNode in the hierarchy.
+ * @param indent The current indentation level for hierarchical display.
+ * @return A vector of formatted strings representing the project breakdown.
+ */
+std::vector<std::string> ProjectBreakdownFormatter::_generate_sorted_output(const ProjectNode& node, int indent) {
     std::vector<std::string> output_lines;
     std::vector<std::pair<std::string, ProjectNode>> sorted_children;
 
@@ -31,17 +137,20 @@ std::vector<std::string> generate_sorted_output(const ProjectNode& node, int avg
 
         if (child_node.duration > 0 || !child_node.children.empty()) {
             std::stringstream line_ss;
-            line_ss << indent_str << "- " << name << ": " << time_format_duration(child_node.duration, avg_days);// Calls time_format_duration from common_utils.h
+            line_ss << indent_str << "- " << name << ": " << time_format_duration(child_node.duration, m_avg_days);
             output_lines.push_back(line_ss.str());
 
             if (!child_node.children.empty()) {
-                std::vector<std::string> child_lines = generate_sorted_output(child_node, avg_days, indent + 1);
+                std::vector<std::string> child_lines = _generate_sorted_output(child_node, indent + 1);
                 output_lines.insert(output_lines.end(), child_lines.begin(), child_lines.end());
             }
         }
     }
     return output_lines;
 }
+
+
+// --- Standalone Utility Functions Implementation ---
 
 // Gets parent-child category mappings
 std::map<std::string, std::string> get_parent_map(sqlite3* db) {
@@ -50,7 +159,7 @@ std::map<std::string, std::string> get_parent_map(sqlite3* db) {
     const char* sql = "SELECT child, parent FROM parent_child;";
     if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            parent_map[reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))] = 
+            parent_map[reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))] =
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
         }
     } else {
@@ -70,7 +179,7 @@ void build_project_tree_from_records(
         const std::string& project_path = record.first;
         long long duration = record.second;
 
-        std::vector<std::string> parts = split_string(project_path, '_');// Calls split_string from common_utils.h
+        std::vector<std::string> parts = split_string(project_path, '_');
         if (parts.empty()) continue;
 
         std::string top_level_category_key = parts[0];
@@ -92,6 +201,7 @@ void build_project_tree_from_records(
         }
     }
 }
+
 
 // Adds or subtracts days from a date string
 std::string add_days_to_date_str(std::string date_str, int days) {
@@ -117,38 +227,4 @@ std::string get_current_date_str() {
     std::stringstream ss;
     ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d");
     return ss.str();
-}
-void write_project_breakdown_to_stream(
-    std::stringstream& ss,
-    sqlite3* db,
-    const std::vector<std::pair<std::string, long long>>& records,
-    long long total_duration,
-    int avg_days)
-{
-    ProjectTree project_tree;
-    std::map<std::string, std::string> parent_map = get_parent_map(db);
-    build_project_tree_from_records(project_tree, records, parent_map);
-
-    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
-    for (const auto& pair : project_tree) {
-        sorted_top_level.push_back(pair);
-    }
-    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
-        return a.second.duration > b.second.duration;
-    });
-
-    for (const auto& pair : sorted_top_level) {
-        const std::string& category_name = pair.first;
-        const ProjectNode& category_node = pair.second;
-        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
-
-        ss << "\n## " << category_name << ": "
-           << time_format_duration(category_node.duration, avg_days) // 使用 avg_days
-           << " (" << std::fixed << std::setprecision(1) << percentage << "%) ##\n";
-
-        std::vector<std::string> output_lines = generate_sorted_output(category_node, avg_days);
-        for (const auto& line : output_lines) {
-            ss << line << "\n";
-        }
-    }
 }

@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 #include <sstream>
-#include "report_generators/_shared/query_data_structs.h" // Assumed to contain DailyReportData
+#include "report_generators/_shared/query_data_structs.h" // Contain DailyReportData
 
 /**
  * @class DailyReportFormatter

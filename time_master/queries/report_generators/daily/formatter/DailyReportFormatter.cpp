@@ -1,5 +1,5 @@
 #include "DailyReportFormatter.h"
-#include "report_generators/_shared/query_utils.h" // For time_format_duration and write_project_breakdown_to_stream
+#include "report_generators/_shared/query_utils.h" // For time_format_duration and now ProjectBreakdownFormatter
 #include <iomanip>
 
 // --- DailyReportFormatter Class Implementation ---
@@ -32,7 +32,8 @@ void DailyReportFormatter::_display_header(std::stringstream& ss, const DailyRep
 }
 // 输出内容行
 void DailyReportFormatter::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) {
-    // This function remains coupled to query_utils, which is acceptable
-    // as it is part of the formatting logic.
-    write_project_breakdown_to_stream(ss, db, data.records, data.total_duration, 1);
+    // This function is now decoupled from the global write_project_breakdown_to_stream
+    // and uses the new formatter class, improving modularity.
+    ProjectBreakdownFormatter formatter(db, data.records, data.total_duration, 1);
+    formatter.write_to_stream(ss);
 }
