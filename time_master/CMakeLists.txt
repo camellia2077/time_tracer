@@ -40,6 +40,10 @@ file(GLOB QUERIES_SOURCES
     "queries/report_generators/daily/querier/*.cpp"
 
     "queries/report_generators/monthly/*.cpp"
+    "queries/report_generators/monthly/formatter/*.cpp"
+    "queries/report_generators/monthly/querier/*.cpp"
+
+
     "queries/report_generators/period/*.cpp"
 )
 
@@ -122,6 +126,9 @@ target_include_directories(time_tracker_app PRIVATE
     "queries/report_generators/daily/querier"
 
     "queries/report_generators/monthly"
+    "queries/report_generators/monthly/formatter"
+    "queries/report_generators/monthly/querier"
+
     "queries/report_generators/period"
     
 
@@ -149,7 +156,13 @@ target_include_directories(time_tracker_cli PRIVATE
     "queries" 
     "queries/report_generators"
     "queries/report_generators/daily"
+    "queries/report_generators/daily/formatter"
+    "queries/report_generators/daily/querier"
+
     "queries/report_generators/monthly"
+    "queries/report_generators/monthly/formatter"
+    "queries/report_generators/monthly/querier"
+
     "queries/report_generators/period"
 
 
