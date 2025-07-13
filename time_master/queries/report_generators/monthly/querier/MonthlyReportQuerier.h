@@ -3,10 +3,9 @@
 
 #include <sqlite3.h>
 #include <string>
-#include <sstream>
-#include "query_data_structs.h"
+#include "query_data_structs.h" // 假设此文件在 report_generators 目录下
 
-// 1. 月报查询器类
+// 月报查询器类
 class MonthlyReportQuerier {
 public:
     explicit MonthlyReportQuerier(sqlite3* db, const std::string& year_month);
@@ -19,16 +18,6 @@ private:
 
     sqlite3* m_db;
     const std::string m_year_month;
-};
-
-// 2. 月报格式化器类
-class MonthlyReportFormatter {
-public:
-    std::string format_report(const MonthlyReportData& data, sqlite3* db);
-
-private:
-    void _display_summary(std::stringstream& ss, const MonthlyReportData& data);
-    void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db);
 };
 
 #endif // MONTHLY_REPORT_QUERIER_H
