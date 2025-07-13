@@ -1,6 +1,6 @@
 #include "ParserFactory.h"
-#include "parser/internal/ConfigLoader.h" // 工厂内部依赖ConfigLoader来加载配置
-#include "parser/internal/ParserConfig.h" // 工厂内部需要知道配置的数据结构
+#include "internal/ConfigLoader.h" // 工厂内部依赖ConfigLoader来加载配置
+#include "internal/ParserConfig.h" // 工厂内部需要知道配置的数据结构
 
 /**
  * @brief 实现创建解析器的具体逻辑。
