@@ -1,5 +1,3 @@
-// --- START OF FILE reprocessing/input_transfer/IntervalConverter.cpp ---
-
 #include "IntervalConverter.h"
 #include <stdexcept>
 

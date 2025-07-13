@@ -1,5 +1,5 @@
 #include "ValidatorUtils.h"
-#include "common_utils.h" // 假设颜色宏定义在这里
+#include "common_utils.h" // 颜色宏定义在这里
 #include <iostream>
 #include <fstream>
 #include <vector>

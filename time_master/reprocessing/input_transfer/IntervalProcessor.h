@@ -4,7 +4,7 @@
 #define INTERVAL_PROCESSOR_H
 
 #include <string>
-#include "IntervalProcessorConfig.h" // 包含配置类
+#include "internal/IntervalProcessorConfig.h" // 包含配置类
 
 class IntervalProcessor {
 public:
