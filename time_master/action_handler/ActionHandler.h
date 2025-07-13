@@ -60,6 +60,9 @@ private:
     bool open_database_if_needed();
     void close_database();
 
+    // --- 封装了阶段性总结打印格式
+    void printTimingStatistics(const std::string& operation_name, double total_time_ms) const;
+
     sqlite3* db_;
     std::string db_name_;
     AppConfig app_config_;

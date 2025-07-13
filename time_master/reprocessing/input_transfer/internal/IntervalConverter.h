@@ -1,5 +1,3 @@
-// --- START OF FILE reprocessing/input_transfer/IntervalConverter.h ---
-
 #ifndef INTERVAL_CONVERTER_H
 #define INTERVAL_CONVERTER_H
 

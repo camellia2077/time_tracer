@@ -24,6 +24,7 @@ find_package(nlohmann_json REQUIRED)
 # --- 收集所有源文件 ---
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
+file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
 file(GLOB DB_INSERTER_SOURCES 
     "db_inserter/*.cpp"
     "db_inserter/model/*.cpp"
@@ -31,9 +32,26 @@ file(GLOB DB_INSERTER_SOURCES
     "db_inserter/parser/*.cpp"
     "db_inserter/parser/internal/*.cpp"
 )
-file(GLOB QUERIES_SOURCES "queries/*.cpp")
-file(GLOB REPORT_GENERATOR_SOURCES "queries/report_generators/*.cpp")
-file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
+file(GLOB QUERIES_SOURCES 
+    "queries/*.cpp"
+    "queries/report_generators/*.cpp"
+
+    "queries/report_generators/_shared/*.cpp"
+
+    "queries/report_generators/daily/*.cpp"
+    "queries/report_generators/daily/formatter/*.cpp"
+    "queries/report_generators/daily/querier/*.cpp"
+
+    "queries/report_generators/monthly/*.cpp"
+    "queries/report_generators/monthly/formatter/*.cpp"
+    "queries/report_generators/monthly/querier/*.cpp"
+
+
+    "queries/report_generators/period/*.cpp"
+    "queries/report_generators/period/formatter/*.cpp"
+    "queries/report_generators/period/querier/*.cpp"
+)
+
 file(GLOB REPROCESSING_SOURCES
     "reprocessing/*.cpp"
     "reprocessing/validator/*.cpp"
@@ -54,7 +72,6 @@ add_executable(
     ${COMMON_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${REPORT_GENERATOR_SOURCES}
     ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
@@ -68,10 +85,8 @@ add_executable(
     time_tracker_cli      # 可执行文件名
     main_cli.cpp          # 入口文件
     ${COMMON_SOURCES}
-    ${DB_INSERTER_SOURCES} 
+    ${DB_INSERTER_SOURCES}
     ${QUERIES_SOURCES}
-    ${REPORT_GENERATOR_SOURCES}
-    ${TIME_MASTER_APP_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
@@ -108,6 +123,8 @@ target_include_directories(time_tracker_app PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
+
+
     "resources" 
     "time_master_app"  
 
@@ -130,8 +147,8 @@ target_include_directories(time_tracker_cli PRIVATE
     "db_inserter/parser/internal"
 
     "queries" 
+
     "resources" 
-    "time_master_app"  
 
     "reprocessing" 
     "reprocessing/validator" 

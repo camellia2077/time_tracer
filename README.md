@@ -70,15 +70,39 @@ time_master/
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
-│   └── report_generators/
-│       ├── query_utils.cpp      # Implements shared helper functions for querying.
-│       └── query_utils.h        # Declares various utility functions used by the different query generators.
-│       ├── DailyReportQuerier.cpp        # Implements the logic to generate a detailed report for a single day.
-│       └── DailyReportQuerier.h          # Declares the class responsible for generating a daily report.
-│       ├── MonthlyReportQuerier.cpp     
-│       └── MonthlyReportQuerier.h        
-│       ├── PeriodReportQuerier.cpp     # Implements the logic for generating reports over a custom period.
-│       └── PeriodReportQuerier.h       # Declares the class for generating reports over a specific time period.
+│   └── report_generators/  
+│       └── query_data_structs.h    # 用于存放查询内容的头文件
+│       ├── shared/ #(私有)
+│       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
+│       │   └── query_utils.h  
+│       │   └── query_data_structs.h    # 用于存放查询内容的头文件
+│       ├── daily/ #(公共接口)
+│       │   ├── DailyReportGenerator.cpp    # (公共接口) 实现了日报生成器
+│       │   └── DailyReportGenerator.h      # (公共接口) 声明了日报生成器
+│       │   ├── formatter/                # (私有实现) 存放日报的格式化逻辑
+│       │   │   ├── DailyReportFormatter.cpp
+│       │   │   └── DailyReportFormatter.h
+│       │   └── querier/                  # (私有实现) 存放日报的数据查询逻辑
+│       │       ├── DailyReportQuerier.cpp
+│       │       └── DailyReportQuerier.h
+│       ├── monthly/ # (公共接口)
+│       │   ├── MonthlyReportGenerator.cpp    # (公共接口) 实现了月报生成器
+│       │   └── MonthlyReportGenerator.h      # (公共接口) 声明了月报生成器
+│       │   ├── formatter/                # (私有实现) 存放月报的格式化逻辑
+│       │   │   ├── MonthlyReportFormatter.cpp
+│       │   │   └── MonthlyReportFormatter.h
+│       │   └── querier/                  # (私有实现) 存放月报的数据查询逻辑
+│       │       ├── MonthlyReportQuerier.cpp
+│       │       └── MonthlyReportQuerier.h
+│       └── period/ # (公共接口)
+│           ├── PeriodReportGenerator.cpp    # (公共接口) 实现了查询最近几天
+│           └── PeriodReportGenerator.h      # (公共接口) 声明
+│           ├── formatter/                # (私有实现) 存放格式化逻辑
+│           │   ├── PeriodReportFormatter.cpp
+│           │   └── PeriodReportFormatter.h
+│           └── querier/                  # (私有实现) 存放数据查询逻辑
+│               ├── PeriodReportQuerier.cpp
+│               └── PeriodReportQuerier.h
 │
 ├── reprocessing/               # 预处理
 │   ├── LogProcessor.cpp
