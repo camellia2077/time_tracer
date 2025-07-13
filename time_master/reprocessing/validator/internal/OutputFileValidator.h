@@ -1,7 +1,7 @@
 #ifndef OUTPUT_FILE_VALIDATOR_H
 #define OUTPUT_FILE_VALIDATOR_H
 
-#include "ValidatorUtils.h"
+#include "validator/ValidatorUtils.h"
 #include <string>
 #include <vector>
 #include <set>

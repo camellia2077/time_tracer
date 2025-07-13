@@ -1,10 +1,8 @@
-// --- START OF FILE reprocessing/input_transfer/IntervalProcessorConfig.cpp ---
-
-#include "IntervalProcessorConfig.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <nlohmann/json.hpp>
+#include "IntervalProcessorConfig.h"
 #include "common_utils.h"
 
 bool IntervalProcessorConfig::load(const std::string& filepath) {

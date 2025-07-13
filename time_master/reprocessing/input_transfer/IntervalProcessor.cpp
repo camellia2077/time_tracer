@@ -1,9 +1,11 @@
 // --- START OF FILE reprocessing/input_transfer/IntervalProcessor.cpp ---
 
 #include "IntervalProcessor.h"
-#include "InputData.h"
-#include "IntervalConverter.h"
+
 #include "common_utils.h"
+
+#include "internal/InputData.h"
+#include "internal/IntervalConverter.h"
 
 #include <fstream>
 #include <iostream>

@@ -1,8 +1,8 @@
 #include "LogProcessor.h"
 
-#include "FileValidator.h"
-#include "ValidatorUtils.h"
-#include "IntervalProcessor.h"
+#include "validator/FileValidator.h"
+#include "validator/ValidatorUtils.h"
+#include "input_transfer/IntervalProcessor.h"
 #include "common_utils.h"
 
 #include <iostream>
