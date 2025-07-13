@@ -1,5 +1,5 @@
 #include "MonthlyReportFormatter.h"
-#include "report_generators/query_utils.h" // 假设此文件在 report_generators 目录下
+#include "report_generators/_shared/query_utils.h"
 #include <iomanip>
 
 std::string MonthlyReportFormatter::format_report(const MonthlyReportData& data, sqlite3* db) {
