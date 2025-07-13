@@ -4,7 +4,7 @@
 #include "report_generators/daily/DailyReportGenerator.h" 
 // --- [修改] 引入新的月报生成器 ---
 #include "report_generators/monthly/MonthlyReportGenerator.h" 
-#include "report_generators/period/PeriodReportQuerier.h"  
+#include "report_generators/period/PeriodReportGenerator.h" 
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 
@@ -24,10 +24,11 @@ std::string QueryHandler::run_monthly_query(const std::string& year_month_str) c
     return generator.generate_report(year_month_str);
 }
 
-// --- 周期报告查询保持不变 ---
+// --- 周期报告 ---
 std::string QueryHandler::run_period_query(int days) const {
-    PeriodReportQuerier querier(m_db, days);
-    PeriodReportData data = querier.fetch_data();
-    PeriodReportFormatter formatter;
-    return formatter.format_report(data, m_db);
+    // 1. Create the period report generator
+    PeriodReportGenerator generator(m_db);
+    
+    // 2. Call its public interface to generate the report
+    return generator.generate_report(days);
 }
