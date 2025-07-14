@@ -15,7 +15,7 @@
     * **许可证**: Matplotlib License (BSD-style)
 # 1 Time_Master 
 主程序，用于解析文本内容，存入数据库，查询数据库
-## 1.1 structure
+## 1.1 目录结构
 ```
 time_master/
 ├── CMakeLists.txt
@@ -131,7 +131,7 @@ time_master/
     └── output_icon.ico
 ```
 
-
+## 1.2 程序架构图
 ```mermaid
 graph TD
     subgraph "用户接口层 (UI Layer)"
@@ -174,14 +174,57 @@ graph TD
     DBInsert --> DB
     Query --> DB
 ```
+## 1.2.1 配置文件传递
+```mermaid
+graph TD
+    %% Define nodes and aliases
+    A["main.cpp/main_cli.cpp"]
+    B["time_master/config/config.json<br>(主配置文件)"]
+    C["time_master/config/interval_processor_config.json<br>(间隔处理器配置)"]
+    D["time_master/config/format_validator_config.json<br>(格式验证器配置)"]
+    E["file_handler::ConfigLoader<br>(加载 config.json)"]
+    F["FileController<br>(文件控制器)"]
+    G["AppConfig<br>(应用配置结构体)"]
+    H["ActionHandler<br>(操作处理程序)"]
+    I["LogProcessor<br>(日志处理器)"]
+    J["IntervalProcessor<br>(间隔处理器)"]
+    K["FileValidator<br>(文件验证器)"]
+    L["db_inserter/parser/internal::ConfigLoader<br>(加载 config.json 中的<br>initial_top_level_parents)"]
+    M["ParserFactory<br>(解析器工厂)"]
+    N["ParserConfig<br>(解析器配置结构体)"]
+    O["DataFileParser<br>(数据文件解析器)"]
 
-## 1.2 命令行使用方法
+    %% Flow 1: Application Configuration and Validation
+    A -- 初始化 --> F
+    F -- 1. 加载 config.json --> E
+    E -- 1.1 读取 --> B
+    E -- 1.2 生成绝对路径 --> G
+    F -- 2. 传递 AppConfig --> H
+    H -- 3. 初始化 --> I
+    I -- 4. 传递 AppConfig --> K
+    I -- 4.1 传递 AppConfig --> J
+    
+    %% Validator and IntervalProcessor use config files indirectly via AppConfig paths
+    K -- 使用 AppConfig 中路径<br>加载验证规则 --> D
+    K -- 使用 AppConfig 中路径<br>加载头部配置 --> C
+    J -- 使用 AppConfig 中路径<br>加载转换规则 --> C
+
+    %% Flow 2: Database Inserter Configuration
+    H -- 5. 启动数据库导入<br>并传递 config.json 路径 --> M
+    M -- 6. 加载配置 --> L
+    L -- 6.1 读取 initial_top_level_parents --> B
+    L -- 6.2 生成 ParserConfig --> N
+    M -- 7. 创建并初始化 --> O
+    O -- 8. 使用配置 --> N
+```
+
+## 1.3 命令行使用方法
 注意程序要在powershell或cmd中运行
-### 1.2.1 基本命令格式
+### 1.3.1 基本命令格式
 ```bash
 time_tracker_command <command> [arguments]
 ```
-### 1.2.2 可用命令
+### 1.3.2 可用命令
 | 序号 | 短标签 | 长标签 | 功能描述 |
 |---|---|---|---|
 | 1 | `-vs <path>` | `--validate-source <path>` | 仅检验源文件的格式 |
@@ -198,7 +241,7 @@ time_tracker_command <command> [arguments]
 
 
 
-## 1.3 使用msys2 UCRT64环境进行编译
+## 1.4 使用msys2 UCRT64环境进行编译
 0. 下载并安装 MSYS2 UCRT64环境(推荐)
 MSYS2 是为 Windows 操作系统 设计的
 
