@@ -15,7 +15,7 @@
     * **许可证**: Matplotlib License (BSD-style)
 # 1 Time_Master 
 主程序，用于解析文本内容，存入数据库，查询数据库
-## 1.1 structure
+## 1.1 目录结构
 ```
 time_master/
 ├── CMakeLists.txt
@@ -43,7 +43,7 @@ time_master/
 │   │   ├── DatabaseInserter.cpp    # 数据库插入
 │   │   └── DatabaseInserter.cpp    # 数据库插入
 │   └── model/
-│   │   └── time_sheet_model.h      # 共享的结构
+│   │   └── time_sheet_model.h      # 共享日期数据的结构
 │   └── parser/        
 │       ├── ParserFactory.h     # 声明创建解析器的工厂
 │       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
@@ -71,7 +71,10 @@ time_master/
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   └── report_generators/  
-│       └── query_data_structs.h    # 用于存放查询内容的头文件
+│       │   ├── AllDayReports.cpp # 日总结导出
+│       │   └── AllDayReports.h 
+│       │   ├── AllMonthlyReports.cpp # 月总结导出
+│       │   └── AllMonthlyReports.h 
 │       ├── shared/ #(私有)
 │       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
 │       │   └── query_utils.h  
@@ -104,7 +107,7 @@ time_master/
 │               ├── PeriodReportQuerier.cpp
 │               └── PeriodReportQuerier.h
 │
-├── reprocessing/               # 预处理
+├── reprocessing/ # 数据验证与预处理               
 │   ├── LogProcessor.cpp
 │   └── LogProcessor.h
 │   └── input_transfer/               # 转换验证后的输入文件
@@ -116,7 +119,7 @@ time_master/
 │   │        ├── IntervalConverter.h
 │   │        ├── IntervalProcessorConfig.cpp # 配置加载器
 │   │        └── IntervalProcessorConfig.h
-│   └── validator/
+│   └── validator/ # 合法性验证
 │       ├── FileValidator.cpp           # 公共接口实现
 │       ├── FileValidator.h             
 │       ├── ValidatorUtils.cpp          # 共享工具类
@@ -132,7 +135,7 @@ time_master/
     └── output_icon.ico
 ```
 
-
+## 1.2 程序架构图
 ```mermaid
 graph TD
     subgraph "用户接口层 (UI Layer)"
@@ -176,13 +179,14 @@ graph TD
     Query --> DB
 ```
 
-## 1.2 命令行使用方法
+
+## 1.3 命令行使用方法
 注意程序要在powershell或cmd中运行
-### 1.2.1 基本命令格式
+### 1.3.1 基本命令格式
 ```bash
 time_tracker_command <command> [arguments]
 ```
-### 1.2.2 可用命令
+### 1.3.2 可用命令
 | 序号 | 短标签 | 长标签 | 功能描述 |
 |---|---|---|---|
 | 1 | `-vs <path>` | `--validate-source <path>` | 仅检验源文件的格式 |
@@ -199,7 +203,7 @@ time_tracker_command <command> [arguments]
 
 
 
-## 1.3 使用msys2 UCRT64环境进行编译
+## 1.4 使用msys2 UCRT64环境进行编译
 0. 下载并安装 MSYS2 UCRT64环境(推荐)
 MSYS2 是为 Windows 操作系统 设计的
 
