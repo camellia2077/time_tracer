@@ -169,15 +169,18 @@ int main(int argc, char* argv[]) {
                 return 1;
             }
         }
-        // [新增] Branch 5: Data Export (-export, -e)
+        // Branch 5: Data Export (-export, -e)
         else if (command == "-export" || command == "-e") {
             if (args.size() != 3) {
                 throw std::runtime_error("Command '" + command + "' requires a sub-command (e.g., -export day).");
             }
             std::string sub_command = args[2];
             if (sub_command == "day" || sub_command == "d") {
-                action_handler.run_export_all_reports_query();
-            } else {
+                action_handler.run_export_all_daily_reports_query();
+            } else if (sub_command == "month") { // [新增] month 子命令
+                action_handler.run_export_all_monthly_reports_query();
+            }
+            else {
                 std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown export sub-command '" << sub_command << "'.\n";
                 print_full_usage(args[0].c_str());
                 return 1;
@@ -221,10 +224,11 @@ void print_full_usage(const char* app_name) {
     std::cout << "  -q p, --query period <days>\t\tQuery statistics for the last N days.\n";
     std::cout << "  -q m, --query monthly <YYYYMM>\tQuery statistics for a specific month.\n";
     std::cout << "  Example: " << app_name << " -q m 202405\n\n";
-    // [新增] 导出指令的帮助文档
+    // [修改] 更新导出指令的帮助文档
     std::cout << GREEN_COLOR << "--- Data Export Module ---\n" << RESET_COLOR;
-    std::cout << "  -export day (-e d)\t\tExport all daily reports, grouped by month into .md files.\n";
-    std::cout << "  Example: " << app_name << " -export day\n\n";
+    std::cout << "  -export day (-e d)\t\tExport all daily reports to individual .md files.\n";
+    std::cout << "  -export month\t\t\tExport all monthly reports to combined .md files.\n";
+    std::cout << "  Example: " << app_name << " -export month\n\n";
     std::cout << GREEN_COLOR << "--- Other Options ---\n" << RESET_COLOR;
     std::cout << "  -h, --help\t\t\tShow this help message.\n";
     std::cout << "  -v, --version\t\t\tShow program version.\n";
