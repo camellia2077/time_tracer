@@ -58,8 +58,9 @@ void Menu::print_menu() {
     std::cout << "5. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl;
     std::cout << "6. Generate study heatmap for a year (Not Implemented)" << std::endl;
     std::cout << "7. Query monthly statistics" << std::endl;
-    std::cout << "8. Show Version" << std::endl;
-    std::cout << "9. Exit" << std::endl;
+    std::cout << "8. Export all reports to .md files" << std::endl; // [新增]
+    std::cout << "9. Show Version" << std::endl;
+    std::cout << "10. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -67,8 +68,6 @@ bool Menu::handle_user_choice(int choice) {
     switch (choice) {
         case 0: run_log_processor_submenu(); break;
         case 1:
-            // We can't use run_daily_query directly anymore as it might be in a different class
-            // Instead, we will get the date and call the handler
             {
                 std::string date = get_valid_date_input();
                 if (!date.empty()) {
@@ -89,9 +88,18 @@ bool Menu::handle_user_choice(int choice) {
                 }
             }
             break;
-        case 8: std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; break;
-        case 9: std::cout << "Exiting program." << std::endl; return false;
-        default: std::cout << YELLOW_COLOR << "Invalid choice. Please try again." << RESET_COLOR << std::endl; break;
+        case 8: // [新增] 调用导出功能
+            action_handler_->run_export_all_reports_query();
+            break;
+        case 9: 
+            std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; 
+            break;
+        case 10: 
+            std::cout << "Exiting program." << std::endl; 
+            return false;
+        default: 
+            std::cout << YELLOW_COLOR << "Invalid choice. Please try again." << RESET_COLOR << std::endl; 
+            break;
     }
     // 添加一个暂停，以便用户可以看到操作结果
     std::cout << "\nPress Enter to continue...";
@@ -110,8 +118,8 @@ void Menu::run_log_processor_submenu() {
         std::cout << "1. Validate source file(s) only\n";
         std::cout << "2. Convert source file(s) only\n";
         std::cout << "3. Validate source, then Convert\n";
-        std::cout << "4. Convert, then Validate Output\n"; // Changed text for clarity
-        std::cout << "5. Full Pre-processing (Validate Source -> Convert -> Validate Output)\n"; // Changed text for clarity
+        std::cout << "4. Convert, then Validate Output\n";
+        std::cout << "5. Full Pre-processing (Validate Source -> Convert -> Validate Output)\n";
         std::cout << "--- (Step 2: Database Operations) ---\n";
         std::cout << "7. Import processed files into database\n";
         std::cout << "8. Back to main menu\n";
@@ -140,14 +148,11 @@ void Menu::run_log_processor_submenu() {
             std::string path = get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
             if (path.empty()) continue;
 
-            // Step 1 for all options: Collect the files.
             if (!action_handler_->collectFiles(path)) {
                 std::cout << RED_COLOR << "Failed to collect files. Please check the path and try again." << RESET_COLOR << std::endl;
                 continue;
             }
 
-            // Step 2: Execute the chosen sequence
-            // The unused 'success' variable has been removed here
             switch (choice) {
                 case 1:
                     action_handler_->validateSourceFiles();
@@ -162,13 +167,13 @@ void Menu::run_log_processor_submenu() {
                     break;
                 case 4:
                     if (action_handler_->convertFiles()) {
-                        action_handler_->validateOutputFiles(false); // Day count check disabled by default in menu
+                        action_handler_->validateOutputFiles(false);
                     }
                     break;
                 case 5:
                     if (action_handler_->validateSourceFiles()) {
                         if (action_handler_->convertFiles()) {
-                           action_handler_->validateOutputFiles(false); // Day count check disabled
+                           action_handler_->validateOutputFiles(false);
                         }
                     }
                     break;
@@ -190,7 +195,7 @@ std::string Menu::get_valid_path_input(const std::string& prompt_message) {
     std::cout << prompt_message;
     std::string path_str;
     std::getline(std::cin, path_str);
-    if (path_str.empty()) return ""; // Allow empty input to cancel
+    if (path_str.empty()) return "";
     if (!fs::exists(path_str)) {
         std::cerr << RED_COLOR << "Error: Path '" << path_str << "' does not exist. Aborting." << RESET_COLOR << std::endl;
         return "";

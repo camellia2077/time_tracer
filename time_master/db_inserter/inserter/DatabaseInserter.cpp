@@ -29,7 +29,6 @@ bool DatabaseInserter::is_db_open() const {
     return db != nullptr;
 }
 
-// MODIFIED: The function signature and implementation now use direct data collections.
 void DatabaseInserter::import_data(
     const std::vector<DayData>& days,
     const std::vector<TimeRecordInternal>& records,
@@ -38,17 +37,20 @@ void DatabaseInserter::import_data(
 
     execute_sql_Inserter(db, "BEGIN TRANSACTION;", "Begin import transaction");
 
-    // Import days from the provided 'days' vector
-    for (const auto& day_data : days) { // MODIFIED: Iterates over the 'days' parameter
+    // Import days
+    for (const auto& day_data : days) {
+        // [修改] 绑定所有7个参数，包括新增的 year 和 month
         sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 2, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 3, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 4, day_data.remark.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_int(stmt_insert_day, 2, day_data.year);
+        sqlite3_bind_int(stmt_insert_day, 3, day_data.month);
+        sqlite3_bind_text(stmt_insert_day, 4, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 5, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 6, day_data.remark.c_str(), -1, SQLITE_TRANSIENT);
         
         if (day_data.getup_time == "Null" || day_data.getup_time.empty()) {
-            sqlite3_bind_null(stmt_insert_day, 5);
+            sqlite3_bind_null(stmt_insert_day, 7);
         } else {
-            sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
+            sqlite3_bind_text(stmt_insert_day, 7, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
         }
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
@@ -57,8 +59,8 @@ void DatabaseInserter::import_data(
         sqlite3_reset(stmt_insert_day);
     }
 
-    // Import time records from the provided 'records' vector
-    for (const auto& record_data : records) { // MODIFIED: Iterates over the 'records' parameter
+    // Import time records
+    for (const auto& record_data : records) {
         sqlite3_bind_text(stmt_insert_record, 1, record_data.date.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 2, record_data.start.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 3, record_data.end.c_str(), -1, SQLITE_TRANSIENT);
@@ -71,8 +73,8 @@ void DatabaseInserter::import_data(
         sqlite3_reset(stmt_insert_record);
     }
 
-    // Import parent-child relationships from the provided set
-    for (const auto& pair : parent_child_pairs) { // MODIFIED: Iterates over the 'parent_child_pairs' parameter
+    // Import parent-child relationships
+    for (const auto& pair : parent_child_pairs) {
         sqlite3_bind_text(stmt_insert_parent_child, 1, pair.first.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_parent_child, 2, pair.second.c_str(), -1, SQLITE_TRANSIENT);
 
@@ -88,13 +90,31 @@ void DatabaseInserter::import_data(
 // --- Private Member Functions ---
 
 void DatabaseInserter::_initialize_database() {
-    execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, sleep TEXT, remark TEXT, getup_time TEXT);", "Create days table");
+    // [修改] 更新 days 表的结构以包含 year 和 month
+    const char* create_days_sql = 
+        "CREATE TABLE IF NOT EXISTS days ("
+        "date TEXT PRIMARY KEY, "
+        "year INTEGER, "
+        "month INTEGER, "
+        "status TEXT, "
+        "sleep TEXT, "
+        "remark TEXT, "
+        "getup_time TEXT);";
+    execute_sql_Inserter(db, create_days_sql, "Create days table");
+
+    // [新增] 为 year 和 month 创建索引以优化查询
+    const char* create_index_sql = 
+        "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
+    execute_sql_Inserter(db, create_index_sql, "Create index on days(year, month)");
+
+    // 其他表保持不变
     execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));", "Create time_records table");
     execute_sql_Inserter(db, "CREATE TABLE IF NOT EXISTS parent_child (child TEXT PRIMARY KEY, parent TEXT);", "Create parent_child table");
 }
 
 void DatabaseInserter::_prepare_statements() {
-    const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, sleep, remark, getup_time) VALUES (?, ?, ?, ?, ?);";
+    // [修改] 更新插入语句以匹配新的表结构
+    const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, year, month, status, sleep, remark, getup_time) VALUES (?, ?, ?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }
@@ -116,7 +136,6 @@ void DatabaseInserter::_finalize_statements() {
     if (stmt_insert_parent_child) sqlite3_finalize(stmt_insert_parent_child);
 }
 
-// Non-member helper function
 bool execute_sql_Inserter(sqlite3* db, const std::string& sql, const std::string& context_msg) {
     char* err_msg = nullptr;
     if (sqlite3_exec(db, sql.c_str(), 0, 0, &err_msg) != SQLITE_OK) {

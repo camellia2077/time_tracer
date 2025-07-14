@@ -14,6 +14,8 @@
  */
 struct DayData {
     std::string date;
+    int year;
+    int month;
     std::string status;
     std::string sleep;
     std::string remark;
