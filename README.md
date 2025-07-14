@@ -43,7 +43,7 @@ time_master/
 │   │   ├── DatabaseInserter.cpp    # 数据库插入
 │   │   └── DatabaseInserter.cpp    # 数据库插入
 │   └── model/
-│   │   └── time_sheet_model.h      # 共享的结构
+│   │   └── time_sheet_model.h      # 共享日期数据的结构
 │   └── parser/        
 │       ├── ParserFactory.h     # 声明创建解析器的工厂
 │       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
@@ -71,6 +71,8 @@ time_master/
 │   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
 │   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
 │   └── report_generators/  
+│       │   ├── AllDayReports.cpp # 日查询逻辑
+│       │   └── AllDayReports.h 
 │       ├── shared/ #(私有)
 │       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
 │       │   └── query_utils.h  
@@ -103,7 +105,7 @@ time_master/
 │               ├── PeriodReportQuerier.cpp
 │               └── PeriodReportQuerier.h
 │
-├── reprocessing/               # 预处理
+├── reprocessing/ # 数据验证与预处理               
 │   ├── LogProcessor.cpp
 │   └── LogProcessor.h
 │   └── input_transfer/               # 转换验证后的输入文件
@@ -115,7 +117,7 @@ time_master/
 │   │        ├── IntervalConverter.h
 │   │        ├── IntervalProcessorConfig.cpp # 配置加载器
 │   │        └── IntervalProcessorConfig.h
-│   └── validator/
+│   └── validator/ # 合法性验证
 │       ├── FileValidator.cpp           # 公共接口实现
 │       ├── FileValidator.h             
 │       ├── ValidatorUtils.cpp          # 共享工具类
@@ -174,49 +176,7 @@ graph TD
     DBInsert --> DB
     Query --> DB
 ```
-## 1.2.1 配置文件传递
-```mermaid
-graph TD
-    %% Define nodes and aliases
-    A["main.cpp/main_cli.cpp"]
-    B["time_master/config/config.json<br>(主配置文件)"]
-    C["time_master/config/interval_processor_config.json<br>(间隔处理器配置)"]
-    D["time_master/config/format_validator_config.json<br>(格式验证器配置)"]
-    E["file_handler::ConfigLoader<br>(加载 config.json)"]
-    F["FileController<br>(文件控制器)"]
-    G["AppConfig<br>(应用配置结构体)"]
-    H["ActionHandler<br>(操作处理程序)"]
-    I["LogProcessor<br>(日志处理器)"]
-    J["IntervalProcessor<br>(间隔处理器)"]
-    K["FileValidator<br>(文件验证器)"]
-    L["db_inserter/parser/internal::ConfigLoader<br>(加载 config.json 中的<br>initial_top_level_parents)"]
-    M["ParserFactory<br>(解析器工厂)"]
-    N["ParserConfig<br>(解析器配置结构体)"]
-    O["DataFileParser<br>(数据文件解析器)"]
 
-    %% Flow 1: Application Configuration and Validation
-    A -- 初始化 --> F
-    F -- 1. 加载 config.json --> E
-    E -- 1.1 读取 --> B
-    E -- 1.2 生成绝对路径 --> G
-    F -- 2. 传递 AppConfig --> H
-    H -- 3. 初始化 --> I
-    I -- 4. 传递 AppConfig --> K
-    I -- 4.1 传递 AppConfig --> J
-    
-    %% Validator and IntervalProcessor use config files indirectly via AppConfig paths
-    K -- 使用 AppConfig 中路径<br>加载验证规则 --> D
-    K -- 使用 AppConfig 中路径<br>加载头部配置 --> C
-    J -- 使用 AppConfig 中路径<br>加载转换规则 --> C
-
-    %% Flow 2: Database Inserter Configuration
-    H -- 5. 启动数据库导入<br>并传递 config.json 路径 --> M
-    M -- 6. 加载配置 --> L
-    L -- 6.1 读取 initial_top_level_parents --> B
-    L -- 6.2 生成 ParserConfig --> N
-    M -- 7. 创建并初始化 --> O
-    O -- 8. 使用配置 --> N
-```
 
 ## 1.3 命令行使用方法
 注意程序要在powershell或cmd中运行

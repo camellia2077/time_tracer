@@ -17,11 +17,7 @@ public:
     std::vector<TimeRecordInternal> records;
     std::unordered_set<std::pair<std::string, std::string>, pair_hash> parent_child_pairs;
 
-    /**
-     * @brief MODIFIED: Constructor now accepts a pre-loaded ParserConfig object.
-     * @param config The parser-specific configuration.
-     */
-    explicit DataFileParser(const ParserConfig& config); // MODIFIED: Parameter type changed
+    explicit DataFileParser(const ParserConfig& config);
 
     ~DataFileParser();
     bool parse_file(const std::string& filename);
@@ -29,6 +25,8 @@ public:
 
 private:
     std::string current_date;
+    int current_year;   // [新增] 用于暂存当前日期的年份
+    int current_month;  // [新增] 用于暂存当前日期的月份
     std::string current_status;
     std::string current_sleep;
     std::string current_remark;
