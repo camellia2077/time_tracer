@@ -13,7 +13,7 @@ DataFileParser::DataFileParser(const ParserConfig& config)
     current_year(0),
     current_month(0),
     current_date_processed(false),
-    _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))")/ 用于捕获 09:00~10:00Study_code
+    _time_record_regex(R"(([0-9]{2}:[0-9]{2})~([0-9]{2}:[0-9]{2})(.+))") // 用于捕获 09:00~10:00Study_code
 {
     initial_top_level_parents = config.initial_top_level_parents;// 传入父项目的映射
 }

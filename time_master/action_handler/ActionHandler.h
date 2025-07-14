@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
+#include "report_generators/_shared/query_data_structs.h" // [新增]
 
 // 前向声明
 struct sqlite3;
@@ -30,13 +31,17 @@ public:
     std::string run_daily_query(const std::string& date) const;
     std::string run_period_query(int days) const;
     std::string run_monthly_query(const std::string& month) const;
-
-    // --- [修改] 导出所有日报内容 ---
+    
+    // --- 导出功能 ---
     /**
-     * @brief 导出所有日报，按年月分文件夹保存。
-     * 每个月的所有日报会合并成一个 .md 文件。
+     * @brief 导出所有日报，每个日报存为一个独立的 .md 文件。
      */
-    void run_export_all_reports_query() const;
+    void run_export_all_daily_reports_query() const;
+
+    /**
+     * @brief 导出所有月报，每个月合并成一个 .md 文件。
+     */
+    void run_export_all_monthly_reports_query() const;
 
 private:
     // 数据库连接管理

@@ -58,9 +58,10 @@ void Menu::print_menu() {
     std::cout << "5. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl;
     std::cout << "6. Generate study heatmap for a year (Not Implemented)" << std::endl;
     std::cout << "7. Query monthly statistics" << std::endl;
-    std::cout << "8. Export all reports to .md files" << std::endl; // [新增]
-    std::cout << "9. Show Version" << std::endl;
-    std::cout << "10. Exit" << std::endl;
+    std::cout << "8. Export all DAILY reports to .md files" << std::endl;
+    std::cout << "9. Export all MONTHLY reports to .md files" << std::endl; // [新增]
+    std::cout << "10. Show Version" << std::endl;
+    std::cout << "11. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -88,13 +89,16 @@ bool Menu::handle_user_choice(int choice) {
                 }
             }
             break;
-        case 8: // [新增] 调用导出功能
-            action_handler_->run_export_all_reports_query();
+        case 8: // [修正] 修正函数名以匹配 ActionHandler.h
+            action_handler_->run_export_all_daily_reports_query();
             break;
-        case 9: 
-            std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; 
+        case 9: // [新增] 调用导出所有月报的功能
+            action_handler_->run_export_all_monthly_reports_query();
             break;
         case 10: 
+            std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; 
+            break;
+        case 11: 
             std::cout << "Exiting program." << std::endl; 
             return false;
         default: 
@@ -103,11 +107,8 @@ bool Menu::handle_user_choice(int choice) {
     }
     // 添加一个暂停，以便用户可以看到操作结果
     std::cout << "\nPress Enter to continue...";
-    // Clear the buffer before waiting for input
-    if (std::cin.peek() == '\n') {
-        std::cin.ignore();
-    }
-    std::cin.get();
+    // 清空输入缓冲区，以防之前的输入影响 cin.get()
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
 
@@ -144,7 +145,6 @@ void Menu::run_log_processor_submenu() {
             if (path.empty()) continue;
             action_handler_->run_database_import(path);
         } else {
-            // All file processing choices (1-5) operate on a source path
             std::string path = get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
             if (path.empty()) continue;
 
@@ -180,7 +180,7 @@ void Menu::run_log_processor_submenu() {
             }
         }
         std::cout << "\nPress Enter to continue...";
-        std::cin.get();
+        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 }
 
