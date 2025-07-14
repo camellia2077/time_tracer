@@ -4,47 +4,37 @@ import sys
 import subprocess
 from pathlib import Path
 import shutil
-import json
+from datetime import datetime
 
-# 所有配置项现在从 config.json 读取
+# --- 全局配置参数 ---
+# 定义 time_tracker_cli.exe 的文件名。在测试开始前，此文件会被删除并从 source_executables_dir 复制到 target_executables_dir.
+EXECUTABLE_CLI_NAME = "time_tracker_cli.exe" 
+# 定义 time_tracker_app.exe 的文件名。在测试开始前，此文件会被删除并从 source_executables_dir 复制到 target_executables_dir.
+EXECUTABLE_APP_NAME = "time_tracker_app.exe" 
+# 包含 time_tracker_cli.exe 和 time_tracker_app.exe 的源目录路径.
+SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/Time_Master_cpp/time_master/build") 
+# 目标目录路径，可执行文件将被复制到这里。"./" 表示 run.py 脚本所在的当前目录.
+TARGET_EXECUTABLES_DIR = Path("./") 
 
-def load_config(config_path="config.json"):
-    """从 JSON 文件加载配置。"""
-    with open(config_path, 'r', encoding='utf-8') as f:
-        return json.load(f)
+# 主要的可执行文件，测试脚本会运行这个可执行文件。这里是 time_tracker_cli.exe 的文件名，因为它会被复制到当前目录.
+EXECUTABLE_TO_RUN = "time_tracker_cli.exe" 
+# 包含原始源数据文件(例如 "Date_test")的目录路径.
+SOURCE_DATA_PATH = Path("C:/Computer/my_github/github_cpp/Time_Master_cpp/test/Date_test")
+# 转换后的处理数据将存储的目录路径(例如 "Processed_Date_test")。在每次测试前会被删除.
+PROCESSED_DATA_DIR_NAME = "Processed_Date_test" # 保持名称，便于构建 Path
+# 测试过程中生成的数据库文件名(例如 "time_data.db")。在每次测试前会被删除.
+GENERATED_DB_FILE_NAME = "time_data.db"              
+# 转换文本后生成的数据目录名，通常与 processed_data 的最后一部分相同。在每次测试前会被删除.
+CONVERTED_TEXT_DIR_NAME = "Processed_Date_test"
 
-def validate_config(config: dict):
-    """
-    新增：验证加载的配置字典是否包含所有必需的键。
-    如果缺少任何键，则打印错误并退出程序。
-    """
-    print("--- 2. 验证配置文件 'config.json' ---")
-    try:
-        # 定义必需的键结构
-        required_keys = {
-            "shared_paths": ["executable", "source_data", "processed_data"],
-            "query_module": ["daily_query_date", "period_query_days", "monthly_query_month"]
-        }
-
-        # 逐层检查
-        for top_key, sub_keys in required_keys.items():
-            if top_key not in config:
-                print(f"错误：'config.json' 文件中缺少顶级配置项: '{top_key}'")
-                sys.exit(1)
-            for sub_key in sub_keys:
-                if sub_key not in config[top_key]:
-                    print(f"错误：'config.json' 的 '{top_key}' 中缺少配置项: '{sub_key}'")
-                    sys.exit(1)
-                    
-    except TypeError:
-        print("错误：'config.json' 文件格式不正确，无法解析。")
-        sys.exit(1)
-        
-    print("✔️ 配置文件 'config.json' 内容完整。")
+# 查询模块参数
+DAILY_QUERY_DATE = datetime.now().strftime("%Y%m%d")
+PERIOD_QUERY_DAYS = "7"
+MONTHLY_QUERY_MONTH = datetime.now().strftime("%Y%m")
 
 
 def strip_ansi_codes(text: str) -> str:
-    """使用正则表达式移除文本中的所有ANSI转义码（颜色代码）。"""
+    """使用正则表达式移除文本中的所有ANSI转义码(颜色代码)。"""
     ansi_escape_pattern = re.compile(r'\x1b\[[0-9;]*m')
     return ansi_escape_pattern.sub('', text)
 
@@ -58,15 +48,14 @@ class TestCounter:
 
 class BaseTester:
     """
-    测试器基类，现在从配置字典中初始化属性。
+    测试器基类，现在从全局变量初始化属性。
     """
-    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str, config: dict):
-        paths = config['shared_paths']
-        self.executable_path = Path(paths['executable'])
-        self.source_path = Path(paths['source_data'])
-        self.expected_output_path = Path(paths['processed_data'])
+    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str): # 移除 config 参数
+        # 直接使用全局变量
+        self.executable_path = Path.cwd() / EXECUTABLE_TO_RUN 
+        self.source_path = SOURCE_DATA_PATH
+        self.expected_output_path = Path.cwd() / CONVERTED_TEXT_DIR_NAME
         self.test_counter = counter
-        self.config = config 
         
         reports_dir_name_with_order = f"{module_order}_{reports_sub_dir_name}"
         self.reports_dir = Path.cwd() / "output" / reports_dir_name_with_order
@@ -81,7 +70,8 @@ class BaseTester:
         title = f" {current_count}. 测试: {test_name} "
         outer_separator = "=" * 80
         inner_separator = "-" * 80
-        if command_args[0] == '-q':
+        # 优化日志文件名生成逻辑，使其同样适用于 -e 命令
+        if command_args[0] in ['-q', '-e'] and len(command_args) > 1:
             flags_part = f"_{command_args[0]}_{command_args[1]}"
         else:
             flags = [arg for arg in command_args if arg.startswith('-')]
@@ -109,18 +99,19 @@ class BaseTester:
                 log_all(f"  [程序输出 - STDERR]:\n{result.stderr.strip() or '无'}")
                 if "-c" in command_args or "--convert" in command_args:
                     log_all(f"\n  [文件检查]:")
-                    if self.expected_output_path.exists():
-                        log_all(f"    ✔️ 成功！预期的输出路径 '{self.expected_output_path.name}' 已创建。")
+                    # 检查 expected_output_path 是否存在时，现在使用其作为目录进行检查
+                    if self.expected_output_path.exists() and self.expected_output_path.is_dir():
+                        log_all(f"    ✔️ 成功！预期的输出目录 '{self.expected_output_path.name}' 已创建。")
                     else:
-                        log_all(f"    ❌ 失败！预期的输出路径 '{self.expected_output_path.name}' 未被创建。")
+                        log_all(f"    ❌ 失败！预期的输出目录 '{self.expected_output_path.name}' 未被创建。")
             except Exception as e:
                 log_all(f"  执行命令时发生未知错误: {e}")
             log_all(outer_separator + "\n")
 
 class PreprocessingTester(BaseTester):
     """文件预处理测试类。"""
-    def __init__(self, counter: TestCounter, module_order: int, config: dict):
-        super().__init__(counter, module_order, "reprocessing", config)
+    def __init__(self, counter: TestCounter, module_order: int): # 移除 config 参数
+        super().__init__(counter, module_order, "reprocessing") # 移除 config 传递
 
     def run_tests(self):
         """运行所有与 Pre-processing 相关的测试。"""
@@ -132,28 +123,30 @@ class PreprocessingTester(BaseTester):
 
 class DatabaseImportTester(BaseTester):
     """数据库导入测试类。"""
-    def __init__(self, counter: TestCounter, module_order: int, config: dict):
-        super().__init__(counter, module_order, "db_import", config)
+    def __init__(self, counter: TestCounter, module_order: int): # 移除 config 参数
+        super().__init__(counter, module_order, "db_import") # 移除 config 传递
 
     def run_tests(self):
         self._log_to_console(f"\n--- [模块开始]: 数据库导入测试 (结果 -> {self.reports_dir.relative_to(Path.cwd())}) ---\n")
+        # 这里的 expected_output_path 应该是转换后的数据目录，而不是数据库文件
         if not self.expected_output_path.exists():
             self._log_to_console(f"警告：跳过数据库导入测试，因为预期的输入目录 '{self.expected_output_path.name}' 不存在。")
             return
         self.run_command_test("Database Import 命令测试 -p", ["-p", str(self.expected_output_path)], stdin_input="y\n")
 
 class QueryTester(BaseTester):
-    """数据查询测试类，从配置中读取查询参数。"""
-    def __init__(self, counter: TestCounter, module_order: int, config: dict):
-        super().__init__(counter, module_order, "query", config)
-        query_params = self.config['query_module']
-        self.query_date = query_params['daily_query_date']
-        self.query_days = query_params['period_query_days']
-        self.query_month = query_params['monthly_query_month']
+    """数据查询测试类，从全局变量读取查询参数。"""
+    def __init__(self, counter: TestCounter, module_order: int): # 移除 config 参数
+        super().__init__(counter, module_order, "query") # 移除 config 传递
+        # 直接使用全局变量
+        self.query_date = DAILY_QUERY_DATE
+        self.query_days = PERIOD_QUERY_DAYS
+        self.query_month = MONTHLY_QUERY_MONTH
 
     def run_tests(self):
         self._log_to_console(f"\n--- [模块开始]: 数据查询测试 (结果 -> {self.reports_dir.relative_to(Path.cwd())}) ---\n")
-        db_file = Path("./time_data.db")
+        # db_file 的路径现在从全局变量获取
+        db_file = Path.cwd() / GENERATED_DB_FILE_NAME 
         if not db_file.exists():
             self._log_to_console(f"警告：跳过数据查询测试，因为数据库文件 '{db_file.name}' 不存在。")
             return
@@ -161,80 +154,169 @@ class QueryTester(BaseTester):
         self.run_command_test("Data Query 命令测试 -q p", ["-q", "p", self.query_days])
         self.run_command_test("Data Query 命令测试 -q m", ["-q", "m", self.query_month])
 
-def setup_environment(config: dict):
+class ExportTester(BaseTester):
+    """数据导出测试类。"""
+    def __init__(self, counter: TestCounter, module_order: int):
+        super().__init__(counter, module_order, "export")
+
+    def run_tests(self):
+        self._log_to_console(f"\n--- [模块开始]: 数据导出测试 (结果 -> {self.reports_dir.relative_to(Path.cwd())}) ---\n")
+        
+        # 导出前先检测程序同目录是否有Export文件夹，如果有先删除
+        export_dir = Path.cwd() / "Export"
+        if export_dir.exists():
+            self._log_to_console(f"警告：发现旧的导出目录，将删除: {export_dir}")
+            try:
+                shutil.rmtree(export_dir)
+                self._log_to_console(f"    ✔️ 已删除旧目录: {export_dir}")
+            except OSError as e:
+                self._log_to_console(f"    ❌ 无法删除目录 {export_dir}: {e}")
+                return # 如果无法删除，则终止此模块测试
+
+        # 检查数据库文件是否存在
+        db_file = Path.cwd() / GENERATED_DB_FILE_NAME
+        if not db_file.exists():
+            self._log_to_console(f"警告：跳过数据导出测试，因为数据库文件 '{db_file.name}' 不存在。")
+            return
+
+        # 执行导出命令
+        self.run_command_test("Data Export 命令测试 -e d", ["-e", "d"])
+        self.run_command_test("Data Export 命令测试 -e m", ["-e", "m"])
+        self.run_command_test("Data Export 命令测试 -e p", ["-e", "p", "7,30,90"])
+
+        # 检查导出目录是否已创建
+        self._log_to_console(f"\n  [文件检查]:")
+        if export_dir.exists() and export_dir.is_dir():
+            self._log_to_console(f"    ✔️ 成功！预期的输出目录 '{export_dir.name}' 已创建。")
+        else:
+            self._log_to_console(f"    ❌ 失败！预期的输出目录 '{export_dir.name}' 未被创建。")
+
+
+def setup_environment(): 
     """
     执行所有测试前的一次性全局环境设置和清理。
     """
     print("--- 1. 验证测试环境依赖路径 ---")
-    paths = config['shared_paths']
-    executable_path = Path(paths['executable'])
-    source_path = Path(paths['source_data'])
-    expected_output_path = Path(paths['processed_data'])
+    
+    # 直接使用全局变量
+    executable_cli_name = EXECUTABLE_CLI_NAME
+    executable_app_name = EXECUTABLE_APP_NAME
+    source_executables_dir = SOURCE_EXECUTABLES_DIR
+    target_executables_dir = TARGET_EXECUTABLES_DIR
+
+    executable_cli_target_path = target_executables_dir / executable_cli_name
+    executable_app_target_path = target_executables_dir / executable_app_name
+
+    source_path = SOURCE_DATA_PATH
+    generated_db_file = Path.cwd() / GENERATED_DB_FILE_NAME
+    converted_text_dir = Path.cwd() / CONVERTED_TEXT_DIR_NAME
 
     all_ok = True
-    if not executable_path.exists():
-        print(f"错误：可执行文件未找到: {executable_path}")
+    # 验证源可执行文件目录是否存在
+    if not source_executables_dir.exists() or not source_executables_dir.is_dir():
+        print(f"错误：源可执行文件目录未找到或不是目录: {source_executables_dir}")
         all_ok = False
     else:
-        print(f"✔️ 可执行文件找到: {executable_path}")
+        print(f"✔️ 源可执行文件目录找到: {source_executables_dir}")
+
+    # 验证源数据目录是否存在
     if not source_path.exists():
         print(f"错误：源文件/目录未找到: {source_path}")
         all_ok = False
     else:
         print(f"✔️ 源文件/目录找到: {source_path}")
+
     if not all_ok:
-        print("\n环境检查失败，请修正 'config.json' 中的路径后重试。")
+        print("\n环境检查失败，请修正脚本中的路径后重试。")
         sys.exit(1)
     
     output_dir = Path.cwd() / "output"
     if not output_dir.exists():
         print("✔️ 'output' 目录不存在，环境干净。")
 
-    if expected_output_path.exists():
-        print(f"警告：发现旧的转换后数据路径，将删除: {expected_output_path}")
-        shutil.rmtree(expected_output_path)
+    # 删除旧的转换后文本目录
+    if converted_text_dir.exists():
+        print(f"警告：发现旧的转换后数据目录，将删除: {converted_text_dir}")
+        try:
+            shutil.rmtree(converted_text_dir)
+            print(f"    ✔️ 已删除旧目录: {converted_text_dir}")
+        except OSError as e:
+            print(f"    ❌ 无法删除目录 {converted_text_dir}: {e}")
+            sys.exit(1)
     
-    db_file = Path("./time_data.db")
-    if db_file.exists():
-        print(f"警告：发现旧的数据库文件，将删除: {db_file.name}")
-        db_file.unlink()
-    
+    # 删除旧的数据库文件
+    if generated_db_file.exists():
+        print(f"警告：发现旧的数据库文件，将删除: {generated_db_file.name}")
+        try:
+            generated_db_file.unlink()
+            print(f"    ✔️ 已删除旧文件: {generated_db_file.name}")
+        except OSError as e:
+            print(f"    ❌ 无法删除文件 {generated_db_file.name}: {e}")
+            sys.exit(1)
+
+    # 删除并复制可执行文件
+    print("\n--- 清理和复制可执行文件 ---")
+    executables_to_handle = {
+        executable_cli_name: executable_cli_target_path,
+        executable_app_name: executable_app_target_path
+    }
+
+    for name, target_path in executables_to_handle.items():
+        if target_path.exists():
+            print(f"警告：发现旧的可执行文件，将删除: {target_path.name}")
+            try:
+                target_path.unlink()
+                print(f"    ✔️ 已删除旧文件: {target_path.name}")
+            except OSError as e:
+                print(f"    ❌ 无法删除文件 {target_path.name}: {e}")
+                sys.exit(1)
+
+        source_path_full = source_executables_dir / name
+        if source_path_full.exists():
+            print(f"复制 '{name}' 从 '{source_executables_dir}' 到 '{target_executables_dir}'")
+            try:
+                shutil.copy2(source_path_full, target_path)
+                print(f"    ✔️ 成功复制 '{name}'")
+            except shutil.Error as e:
+                print(f"    ❌ 复制 '{name}' 失败: {e}")
+                sys.exit(1)
+        else:
+            print(f"错误：源可执行文件 '{name}' 未找到于 '{source_executables_dir}'")
+            sys.exit(1)
+            
     print("✔️ 环境验证和清理完成，准备开始测试。")
 
 def main():
     """
-    主测试函数，现在首先加载并验证配置，然后将其传递给所有需要它的部分。
+    主测试函数。
     """
-    try:
-        config = load_config()
-    except FileNotFoundError:
-        # 修改点：更明确的错误提示
-        print("错误：配置文件 'config.json' 未找到。")
-        print("请确保 'config.json' 文件与 'run.py' 在同一目录下，并包含所有必要的配置项。")
-        sys.exit(1)
+    setup_environment() # 直接调用，不再传递 config
 
-    # 修改点：在执行任何操作前，先验证配置文件的内容
-    validate_config(config)
-
-    setup_environment(config)
-    
     shared_counter = TestCounter()
     
     # 模块 1: 文件预处理
-    preproc_tester = PreprocessingTester(shared_counter, 1, config)
-    preproc_tester.reports_dir.mkdir(parents=True, exist_ok=True) 
+    # 构造函数不再需要 config 参数
+    preproc_tester = PreprocessingTester(shared_counter, 1)
+    preproc_tester.reports_dir.mkdir(parents=True, exist_ok=True)
     preproc_tester.run_tests()
     
     # 模块 2: 数据库导入
-    db_import_tester = DatabaseImportTester(shared_counter, 2, config)
+    # 构造函数不再需要 config 参数
+    db_import_tester = DatabaseImportTester(shared_counter, 2)
     db_import_tester.reports_dir.mkdir(parents=True, exist_ok=True)
     db_import_tester.run_tests()
     
     # 模块 3: 数据查询
-    query_tester = QueryTester(shared_counter, 3, config)
+    # 构造函数不再需要 config 参数
+    query_tester = QueryTester(shared_counter, 3)
     query_tester.reports_dir.mkdir(parents=True, exist_ok=True)
     query_tester.run_tests()
     
+    # 模块 4: 数据导出
+    export_tester = ExportTester(shared_counter, 4)
+    export_tester.reports_dir.mkdir(parents=True, exist_ok=True)
+    export_tester.run_tests()
+
     output_dir = Path.cwd() / "output"
     final_message_1 = "--- 所有测试执行完毕 ---"
     final_message_2 = f"所有测试日志已按模块保存在文件夹中: {output_dir.resolve()}"

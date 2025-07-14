@@ -7,6 +7,8 @@
 #include <limits>
 #include <string>
 #include <filesystem>
+#include <sstream>
+#include <vector>
 
 namespace fs = std::filesystem;
 
@@ -52,16 +54,15 @@ void Menu::print_menu() {
     std::cout << "\n" << "--- Time Tracking Menu ---"  << std::endl;
     std::cout << "0. File Processing & Validation (Submenu)" << std::endl;
     std::cout << "1. Query daily statistics" << std::endl;
-    std::cout << "2. Query last 7 days" << std::endl;
-    std::cout << "3. Query last 14 days" << std::endl;
-    std::cout << "4. Query last 30 days" << std::endl;
-    std::cout << "5. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl;
-    std::cout << "6. Generate study heatmap for a year (Not Implemented)" << std::endl;
-    std::cout << "7. Query monthly statistics" << std::endl;
-    std::cout << "8. Export all DAILY reports to .md files" << std::endl;
-    std::cout << "9. Export all MONTHLY reports to .md files" << std::endl; // [新增]
-    std::cout << "10. Show Version" << std::endl;
-    std::cout << "11. Exit" << std::endl;
+    std::cout << "2. Query Period Statistics" << std::endl; 
+    std::cout << "3. Query monthly statistics" << std::endl; 
+    std::cout << "4. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl; 
+    std::cout << "5. Generate study heatmap for a year (Not Implemented)" << std::endl;
+    std::cout << "6. Export all DAILY reports to .md files" << std::endl; 
+    std::cout << "7. Export all MONTHLY reports to .md files" << std::endl; 
+    std::cout << "8. Export PERIOD reports to .md files" << std::endl; 
+    std::cout << "9. Show Version" << std::endl; 
+    std::cout << "10. Exit" << std::endl; 
     std::cout << "Enter your choice: ";
 }
 
@@ -76,12 +77,8 @@ bool Menu::handle_user_choice(int choice) {
                 }
             }
             break;
-        case 2: std::cout << action_handler_->run_period_query(7); break;
-        case 3: std::cout << action_handler_->run_period_query(14); break;
-        case 4: std::cout << action_handler_->run_period_query(30); break;
-        case 5: run_full_pipeline_and_import_prompt(); break;
-        case 6: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
-        case 7:
+        case 2: run_period_query_prompt(); break;
+        case 3: 
              {
                 std::string month = get_valid_month_input();
                 if (!month.empty()) {
@@ -89,16 +86,21 @@ bool Menu::handle_user_choice(int choice) {
                 }
             }
             break;
-        case 8: // [修正] 修正函数名以匹配 ActionHandler.h
+        case 4: run_full_pipeline_and_import_prompt(); break; 
+        case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break; // [修改]
+        case 6: 
             action_handler_->run_export_all_daily_reports_query();
             break;
-        case 9: // [新增] 调用导出所有月报的功能
+        case 7: 
             action_handler_->run_export_all_monthly_reports_query();
             break;
-        case 10: 
+        case 8: 
+            run_export_period_reports_prompt();
+            break;
+        case 9: 
             std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; 
             break;
-        case 11: 
+        case 10:
             std::cout << "Exiting program." << std::endl; 
             return false;
         default: 
@@ -111,6 +113,54 @@ bool Menu::handle_user_choice(int choice) {
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
+
+// [新增] 实现周期查询的用户提示
+void Menu::run_period_query_prompt() {
+    std::cout << "Enter period days (e.g., 7 or 7,30,90): ";
+    std::string days_str;
+    if (!std::getline(std::cin, days_str) || days_str.empty()) {
+        return;
+    }
+
+    std::string token;
+    std::istringstream tokenStream(days_str);
+    while (std::getline(tokenStream, token, ',')) {
+        try {
+            int days = std::stoi(token);
+            std::cout << "\n--- Report for last " << days << " days ---\n";
+            std::cout << action_handler_->run_period_query(days);
+        } catch (const std::exception&) {
+            std::cerr << RED_COLOR << "Invalid number '" << token << "' skipped." << RESET_COLOR << std::endl;
+        }
+    }
+}
+
+// [新增] 实现导出周期报告的用户提示
+void Menu::run_export_period_reports_prompt() {
+    std::cout << "Enter period days to export (e.g., 7 or 7,30,90): ";
+    std::string days_str;
+    if (!std::getline(std::cin, days_str) || days_str.empty()) {
+        return;
+    }
+
+    std::vector<int> days_list;
+    std::string token;
+    std::istringstream tokenStream(days_str);
+    while (std::getline(tokenStream, token, ',')) {
+        try {
+            days_list.push_back(std::stoi(token));
+        } catch (const std::exception&) {
+            std::cerr << RED_COLOR << "Invalid number '" << token << "' skipped." << RESET_COLOR << std::endl;
+        }
+    }
+
+    if (!days_list.empty()) {
+        action_handler_->run_export_all_period_reports_query(days_list);
+    } else {
+        std::cout << YELLOW_COLOR << "No valid days provided for export." << RESET_COLOR << std::endl;
+    }
+}
+
 
 void Menu::run_log_processor_submenu() {
     while (true) {

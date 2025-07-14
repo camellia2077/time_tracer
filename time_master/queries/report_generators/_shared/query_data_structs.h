@@ -41,10 +41,11 @@ struct PeriodReportData {
     std::vector<std::pair<std::string, long long>> records;
 };
 
-// [新增] 用于导出所有报告的数据结构
-// Key: 年份, Value: (Key: 月份, Value: 一个月内所有日报的格式化后内容 <日期, 报告字符串>)
+//  用于导出所有报告的数据结构
 using FormattedGroupedReports = std::map<int, std::map<int, std::vector<std::pair<std::string, std::string>>>>;
-// [新增] 用于导出所有月报的数据结构
+//  用于导出所有月报的数据结构
 using FormattedMonthlyReports = std::map<int, std::map<int, std::string>>;
+// 用于导出所有周期报告的数据结构
+using FormattedPeriodReports = std::map<int, std::string>;
 
 #endif // QUERY_DATA_STRUCTS_H
