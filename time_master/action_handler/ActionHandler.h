@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "report_generators/_shared/query_data_structs.h" // [新增]
+#include "report_generators/_shared/query_data_structs.h"
 
 // 前向声明
 struct sqlite3;
@@ -42,6 +42,12 @@ public:
      * @brief 导出所有月报，每个月合并成一个 .md 文件。
      */
     void run_export_all_monthly_reports_query() const;
+
+    /**
+     * @brief 导出所有周期报告，每个周期存为一个 .md 文件。
+     * @param days_list 一个包含多个天数的 vector，例如 {7, 30, 90}。
+     */
+    void run_export_all_period_reports_query(const std::vector<int>& days_list) const; // [新增]
 
 private:
     // 数据库连接管理

@@ -4,6 +4,7 @@
 #include "report_generators/period/PeriodReportGenerator.h"
 #include "report_generators/AllDayReports.h"
 #include "report_generators/AllMonthlyReports.h"
+#include "report_generators/AllPeriodReports.h" // [新增]
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 
@@ -27,8 +28,13 @@ FormattedGroupedReports QueryHandler::run_export_all_daily_reports_query() const
     return generator.generate_all_reports();
 }
 
-// [新增] 导出所有月报的实现
 FormattedMonthlyReports QueryHandler::run_export_all_monthly_reports_query() const {
     AllMonthlyReports generator(m_db);
     return generator.generate_reports();
+}
+
+// [新增] 导出所有周期报告的实现
+FormattedPeriodReports QueryHandler::run_export_all_period_reports_query(const std::vector<int>& days_list) const {
+    AllPeriodReports generator(m_db);
+    return generator.generate_reports(days_list);
 }
