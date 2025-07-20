@@ -1,7 +1,14 @@
 # base_module.py
 import re
 import subprocess
+import time
 from pathlib import Path
+
+# --- ANSI Color Codes ---
+class Colors:
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    RESET = '\033[0m'
 
 # This contains the foundational code shared by all other modules
 def strip_ansi_codes(text: str) -> str:
@@ -19,70 +26,66 @@ class TestCounter:
 
 class BaseTester:
     """Base class for all test modules."""
-    # [修改] 更新构造函数以接收配置参数
-    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str, 
+    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str,
                  executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
         self.executable_path = Path.cwd() / executable_to_run
         self.source_data_path = source_data_path
         self.processed_data_path = Path.cwd() / converted_text_dir_name
         self.test_counter = counter
-        
+
+        self.module_name = reports_sub_dir_name.replace('_', ' ').title()
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
         self.reports_dir = Path.cwd() / "output" / reports_dir_name
 
-    def _log_to_console(self, message):
-        """Helper to print messages to the console."""
-        print(message)
-
     def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None):
-        """A generic function to run a command and log its output."""
+        """
+        A generic function to run a command, save detailed output to a log file,
+        and print a single summary line to the console.
+        """
         current_count = self.test_counter.increment()
-        title = f" {current_count}. Test: {test_name} "
-        outer_separator = "=" * 80
-        inner_separator = "-" * 80
 
-        # Create a more descriptive log filename
-        if command_args[0] in ['-q', '-e'] and len(command_args) > 1:
-            flags_part = f"_{command_args[0].replace('-', '')}_{command_args[1]}"
-        else:
-            flags = [arg.replace('--', '-').replace('-', '') for arg in command_args if arg.startswith('-')]
-            flags_part = "_".join(flags) if flags else "cmd"
-        
-        log_filename = f"{current_count}_{flags_part}.txt"
+        sanitized_test_name = re.sub(r'[^a-zA-Z0-9]+', '_', test_name).lower()
+        log_filename = f"{current_count}_{sanitized_test_name}.log"
         log_filepath = self.reports_dir / log_filename
-        
-        with open(log_filepath, 'w', encoding='utf-8') as log_file:
-            def log_all(message):
-                self._log_to_console(message)
-                log_file.write(strip_ansi_codes(message) + '\n')
 
-            log_all(outer_separator)
-            log_all(f"=={title}".ljust(len(outer_separator) - 2) + "==")
-            log_all(inner_separator)
-            
-            command = [str(self.executable_path)] + command_args
-            log_all(f"Step 1: Executing Command\n  {' '.join(command)}")
-            log_all(inner_separator)
-            log_all(f"Step 2: Program Output and Analysis")
-            
-            try:
-                result = subprocess.run(
-                    command, input=stdin_input, capture_output=True, text=True,
-                    check=False, encoding='utf-8', errors='ignore'
-                )
-                log_all(f"  [Exit Code]: {result.returncode}")
-                log_all(f"  [STDOUT]:\n{result.stdout.strip() or 'None'}")
-                log_all(f"  [STDERR]:\n{result.stderr.strip() or 'None'}")
-                
-                # Specific check for the pre-processing module
-                if "-c" in command_args or "--convert" in command_args:
-                    log_all(f"\n  [File Check]:")
-                    if self.processed_data_path.exists() and self.processed_data_path.is_dir():
-                        log_all(f"    ✔️ Success! Output directory '{self.processed_data_path.name}' was created.")
-                    else:
-                        log_all(f"    ❌ Failure! Output directory '{self.processed_data_path.name}' was NOT created.")
-            
-            except Exception as e:
-                log_all(f"  An unknown error occurred: {e}")
-            
-            log_all(outer_separator + "\n")
+        command = [str(self.executable_path)] + command_args
+        start_time = time.monotonic()
+        status = "FAIL"
+
+        try:
+            result = subprocess.run(
+                command, input=stdin_input, capture_output=True, text=True,
+                check=False, encoding='utf-8', errors='ignore'
+            )
+
+            with open(log_filepath, 'w', encoding='utf-8') as log_file:
+                log_file.write(f"Test: {test_name}\n")
+                log_file.write(f"Command: {' '.join(command)}\n")
+                log_file.write(f"Exit Code: {result.returncode}\n\n")
+                log_file.write("--- STDOUT ---\n")
+                log_file.write(strip_ansi_codes(result.stdout) or 'None')
+                log_file.write("\n\n--- STDERR ---\n")
+                log_file.write(strip_ansi_codes(result.stderr) or 'None')
+
+            if result.returncode == 0:
+                status = "OK"
+
+        except Exception as e:
+            with open(log_filepath, 'w', encoding='utf-8') as log_file:
+                log_file.write(f"An exception occurred while running the test: {test_name}\n")
+                log_file.write(str(e))
+
+        finally:
+            duration = time.monotonic() - start_time
+            log_path_str = str(log_filepath.relative_to(Path.cwd()))
+
+            # [MODIFIED] Add color to the status text
+            if status == "OK":
+                status_colored = f"{Colors.GREEN}{status}{Colors.RESET}"
+            else:
+                status_colored = f"{Colors.RED}{status}{Colors.RESET}"
+
+            test_info = f" -> {test_name:<15} | Log: {log_path_str}"
+            status_info = f"... {status_colored} ({duration:.2f}s)"
+
+            print(f"{test_info:<70} {status_info}")
