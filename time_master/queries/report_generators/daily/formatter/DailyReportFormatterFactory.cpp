@@ -1,12 +1,12 @@
 #include "DailyReportFormatterFactory.h"
-#include "DailyReportMarkdownFormatter.h"
-// #include "DailyReportJsonFormatter.h" // 未来可添加
+#include "report_generators/daily/formatter/day_md/DailyMarkdown.h"
+
 #include <stdexcept>
 
 std::unique_ptr<IReportFormatter> DailyReportFormatterFactory::create_formatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
-            return std::make_unique<DailyReportMarkdownFormatter>();
+            return std::make_unique<DailyMarkdown>();
         // case ReportFormat::Json:
         //     return std::make_unique<DailyReportJsonFormatter>();
         default:
