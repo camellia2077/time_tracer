@@ -40,6 +40,8 @@ file(GLOB QUERIES_SOURCES
 
     "queries/report_generators/daily/*.cpp"
     "queries/report_generators/daily/formatter/*.cpp"
+    "queries/report_generators/daily/formatter/day_md/*.cpp"
+    
     "queries/report_generators/daily/querier/*.cpp"
 
     "queries/report_generators/monthly/*.cpp"
