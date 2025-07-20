@@ -5,24 +5,24 @@
 #include <string>
 #include <vector>
 #include "report_generators/_shared/query_data_structs.h"
-// [新增] 引入报告格式定义，以便在接口中使用
 #include "report_generators/_shared/ReportFormat.h" 
 
 class QueryHandler {
 public:
     explicit QueryHandler(sqlite3* db);
 
-    // 单项查询
-    // [修改] 增加 format 参数，并提供默认值
-    std::string run_daily_query(const std::string& date_str, ReportFormat format = ReportFormat::Markdown) const;
-    std::string run_period_query(int days) const;
-    std::string run_monthly_query(const std::string& year_month_str) const;
+    // --- 单项查询 ---
+    std::string run_daily_query(const std::string& date_str, ReportFormat format) const;
+    // [修改] 为周期查询添加 ReportFormat 参数
+    std::string run_period_query(int days, ReportFormat format) const;
+    std::string run_monthly_query(const std::string& year_month_str, ReportFormat format) const;
 
-    // 批量导出查询
-    // [修改] 增加 format 参数，并提供默认值
-    FormattedGroupedReports run_export_all_daily_reports_query(ReportFormat format = ReportFormat::Markdown) const;
-    FormattedMonthlyReports run_export_all_monthly_reports_query() const;
-    FormattedPeriodReports run_export_all_period_reports_query(const std::vector<int>& days_list) const;
+
+    // --- 批量导出查询 ---
+    FormattedGroupedReports run_export_all_daily_reports_query(ReportFormat format) const;
+    FormattedMonthlyReports run_export_all_monthly_reports_query(ReportFormat format) const;
+    // [修改] 为批量导出周期报告添加 ReportFormat 参数
+    FormattedPeriodReports run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format = ReportFormat::Markdown) const;
 
 private:
     sqlite3* m_db;

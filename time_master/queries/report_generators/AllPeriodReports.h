@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <vector>
 #include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class AllPeriodReports
@@ -23,9 +24,10 @@ public:
     /**
      * @brief 根据提供的天数列表生成所有周期报告。
      * @param days_list 一个包含多个天数的 vector，例如 {7, 30, 90}。
+     * @param format [修改] 需要生成的报告格式。
      * @return 一个 map，键是天数，值是格式化后的报告字符串。
      */
-    FormattedPeriodReports generate_reports(const std::vector<int>& days_list);
+    FormattedPeriodReports generate_reports(const std::vector<int>& days_list, ReportFormat format);
 
 private:
     sqlite3* m_db;

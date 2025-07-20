@@ -25,14 +25,14 @@ find_package(nlohmann_json REQUIRED)
 # 使用 file(GLOB ...) 从每个子目录中自动查找源文件
 file(GLOB COMMON_SOURCES "common/*.cpp")
 file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
-file(GLOB DB_INSERTER_SOURCES 
+file(GLOB DB_INSERTER_SOURCES
     "db_inserter/*.cpp"
     "db_inserter/model/*.cpp"
     "db_inserter/inserter/*.cpp"
     "db_inserter/parser/*.cpp"
     "db_inserter/parser/internal/*.cpp"
 )
-file(GLOB QUERIES_SOURCES 
+file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
     "queries/report_generators/*.cpp"
 
@@ -41,7 +41,7 @@ file(GLOB QUERIES_SOURCES
     "queries/report_generators/daily/*.cpp"
     "queries/report_generators/daily/formatter/*.cpp"
     "queries/report_generators/daily/formatter/day_md/*.cpp"
-    
+
     "queries/report_generators/daily/querier/*.cpp"
 
     "queries/report_generators/monthly/*.cpp"
@@ -60,7 +60,7 @@ file(GLOB REPROCESSING_SOURCES
     "reprocessing/validator/internal/*.cpp"
     "reprocessing/input_transfer/*.cpp"
     "reprocessing/input_transfer/internal/*.cpp"
-    
+
 )
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
 file(GLOB ACTION_HANDLER_SOURCES "action_handler/*.cpp")
@@ -100,7 +100,7 @@ if(WIN32)
     # 找到 windres.exe 程序
     find_program(WINDRES_EXECUTABLE windres)
     if(NOT WINDRES_EXECUTABLE)
-        message(FATAL_ERROR "Failed to find windres.exe. Please ensure it is in your PATH.") 
+        message(FATAL_ERROR "Failed to find windres.exe. Please ensure it is in your PATH.")
     endif()
 
     # 将 .rc 文件添加到源文件列表
@@ -116,58 +116,58 @@ endif()
 
 # --- 为每个目标分别添加头文件搜索路径 ---
 target_include_directories(time_tracker_app PRIVATE
-    "common" 
+    "common"
 
-    "db_inserter" 
-    "db_inserter/model" 
-    "db_inserter/inserter" 
+    "db_inserter"
+    "db_inserter/model"
+    "db_inserter/inserter"
     "db_inserter/parser"
     "db_inserter/parser/internal"
 
-    "queries" 
+    "queries"
 
 
-    "resources" 
-    "time_master_app"  
+    "resources"
+    "time_master_app"
 
-    "reprocessing" 
-    "reprocessing/validator" 
+    "reprocessing"
+    "reprocessing/validator"
     "reprocessing/validator/internal"
     "reprocessing/input_transfer"
     "reprocessing/input_transfer/internal"
 
-    "file_handler" 
+    "file_handler"
     "action_handler"
 )
 target_include_directories(time_tracker_cli PRIVATE
-    "common" 
+    "common"
 
-    "db_inserter" 
-    "db_inserter/model" 
-    "db_inserter/inserter" 
+    "db_inserter"
+    "db_inserter/model"
+    "db_inserter/inserter"
     "db_inserter/parser"
     "db_inserter/parser/internal"
 
-    "queries" 
+    "queries"
 
-    "resources" 
+    "resources"
 
-    "reprocessing" 
-    "reprocessing/validator" 
+    "reprocessing"
+    "reprocessing/validator"
     "reprocessing/validator/internal"
     "reprocessing/input_transfer"
     "reprocessing/input_transfer/internal"
 
-    "file_handler" 
+    "file_handler"
     "action_handler"
 )
 
 # --- 为每个目标分别链接库 ---
-target_link_libraries(time_tracker_app PRIVATE 
-    SQLite::SQLite3 
+target_link_libraries(time_tracker_app PRIVATE
+    SQLite::SQLite3
     nlohmann_json::nlohmann_json)
-target_link_libraries(time_tracker_cli PRIVATE 
-    SQLite::SQLite3 
+target_link_libraries(time_tracker_cli PRIVATE
+    SQLite::SQLite3
     nlohmann_json::nlohmann_json
     stdc++exp #用于支持 main_cli.cpp中的std::println
     )
@@ -181,56 +181,64 @@ target_compile_options(time_tracker_cli PRIVATE -Wall )
 # 新增内容：安装与打包配置 (Installation and Packaging)
 # ====================================================================
 
+# 定义一个选项，用户可以选择是否生成安装包
+# 默认关闭 (OFF)，用户可以通过 -DBUILD_INSTALLER=ON 来启用
+option(BUILD_INSTALLER "Build a CPack installer package" OFF)
+
 # --- 1. 定义安装规则 ---
+# 只有当 BUILD_INSTALLER 为 ON 时才执行安装规则，因为安装规则是 CPack 的基础
+if(BUILD_INSTALLER)
+    # 安装两个可执行文件
+    # DESTINATION bin: 指定将它们安装到安装目录下的 bin 文件夹中
+    install(TARGETS time_tracker_app time_tracker_cli
+        RUNTIME DESTINATION bin
+    )
 
-# 安装两个可执行文件
-# DESTINATION bin: 指定将它们安装到安装目录下的 bin 文件夹中
-install(TARGETS time_tracker_app time_tracker_cli
-    RUNTIME DESTINATION bin
-)
+    # 安装必要的 DLL 文件
+    set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
 
-# 安装必要的 DLL 文件
-set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
+    install(FILES
+        "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
+        "${UCRT64_BIN_PATH}/libstdc++-6.dll"
+        "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
+        "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
+        DESTINATION bin # 将这些 DLL 也安装到 bin 目录
+    )
 
-install(FILES
-    "${UCRT64_BIN_PATH}/libsqlite3-0.dll"    
-    "${UCRT64_BIN_PATH}/libstdc++-6.dll"
-    "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
-    "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
-    DESTINATION bin # 将这些 DLL 也安装到 bin 目录
-)
-
-
-# 安装整个 config 目录
-# 这会将源文件中的 'config' 文件夹及其所有内容（如 config.json）
-# 复制到安装目录的 'bin' 文件夹下，最终形成 'bin/config/config.json' 的结构，
-# 这与 C++ 代码的期望完全一致。
-install(DIRECTORY config DESTINATION bin)
+    # 安装整个 config 目录
+    # 这会将源文件中的 'config' 文件夹及其所有内容（如 config.json）
+    # 复制到安装目录的 'bin' 文件夹下，最终形成 'bin/config/config.json' 的结构，
+    # 这与 C++ 代码的期望完全一致。
+    install(DIRECTORY config DESTINATION bin)
 
 
-# --- 2. 配置 CPack 打包工具 ---
+    # --- 2. 配置 CPack 打包工具 ---
 
-# 设置包的通用信息
-set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
-set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间管理的工具")
-set(CPACK_PACKAGE_VENDOR "camellia")
-set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
+    # 设置包的通用信息
+    set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
+    set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间管理的工具")
+    set(CPACK_PACKAGE_VENDOR "camellia")
+    set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
 
-# 选择打包生成器
-set(CPACK_GENERATOR "NSIS")
+    # 选择打包生成器
+    set(CPACK_GENERATOR "NSIS")
 
-# 为 NSIS 安装程序设置特定选项
-if(CPACK_GENERATOR STREQUAL "NSIS")
-  set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
-  set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
-  set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
-  # 如果您有许可证文件，可以取消下面的注释
-  # set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+    # 为 NSIS 安装程序设置特定选项
+    if(CPACK_GENERATOR STREQUAL "NSIS")
+      set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
+      set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
+      set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+      # 如果您有许可证文件，可以取消下面的注释
+      # set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.txt")
+    endif()
+
+    # 包含 CPack 模块以启用打包功能
+    include(CPack)
+    message(STATUS "CPack packaging is enabled.")
+else()
+    message(STATUS "CPack packaging is disabled. To enable, use -DBUILD_INSTALLER=ON with cmake.")
 endif()
-
-# 包含 CPack 模块以启用打包功能
-include(CPack)
 
 # 打印一条消息，确认配置完成
 message(STATUS "CMake configuration finished. Targets 'time_tracker_app' and 'time_tracker_cli' are ready to be built.")
