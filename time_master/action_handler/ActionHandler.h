@@ -37,8 +37,21 @@ public:
      * @return 格式化后的报告字符串。
      */
     std::string run_daily_query(const std::string& date, ReportFormat format) const;
-    std::string run_period_query(int days) const;
-    std::string run_monthly_query(const std::string& month) const;
+    /**
+     * @brief 为指定的周期生成格式化的报告。
+     * @param days 要查询的天数。
+     * @param format [修改] 指定报告的输出格式。
+     * @return 格式化后的报告字符串。
+     */
+    std::string run_period_query(int days, ReportFormat format) const;
+
+    /**
+     * @brief 为指定月份生成格式化的月报。
+     * @param month 要查询的月份，格式为 YYYYMM。
+     * @param format [修改] 指定报告的输出格式。
+     * @return 格式化后的报告字符串。
+     */
+    std::string run_monthly_query(const std::string& month, ReportFormat format) const;
     
     // --- 导出功能 ---
     /**
@@ -49,14 +62,16 @@ public:
 
     /**
      * @brief 导出所有月报，每个月合并成一个文件。
+     * @param format [修改] 指定导出的文件格式。
      */
-    void run_export_all_monthly_reports_query() const;
+    void run_export_all_monthly_reports_query(ReportFormat format) const;
 
     /**
      * @brief 导出所有周期报告，每个周期存为一个文件。
      * @param days_list 一个包含多个天数的 vector，例如 {7, 30, 90}。
+     * @param format [修改] 指定导出的文件格式。
      */
-    void run_export_all_period_reports_query(const std::vector<int>& days_list) const;
+    void run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format) const;
 
 private:
     // 数据库连接管理

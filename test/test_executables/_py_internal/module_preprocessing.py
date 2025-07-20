@@ -4,8 +4,11 @@ from .base_module import BaseTester, TestCounter
 
 class PreprocessingTester(BaseTester):
     """Module for file pre-processing tests."""
-    def __init__(self, counter: TestCounter, module_order: int):
-        super().__init__(counter, module_order, "preprocessing")
+    # [修改] 更新构造函数以接收并传递配置
+    def __init__(self, counter: TestCounter, module_order: int, 
+                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
+        super().__init__(counter, module_order, "preprocessing", 
+                         executable_to_run, source_data_path, converted_text_dir_name)
 
     def run_tests(self):
         """Runs all pre-processing related tests."""

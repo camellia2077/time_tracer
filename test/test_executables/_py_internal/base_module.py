@@ -2,7 +2,7 @@
 import re
 import subprocess
 from pathlib import Path
-from . import config
+
 # This contains the foundational code shared by all other modules
 def strip_ansi_codes(text: str) -> str:
     """Removes ANSI escape codes (for color) from text."""
@@ -19,10 +19,12 @@ class TestCounter:
 
 class BaseTester:
     """Base class for all test modules."""
-    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str):
-        self.executable_path = Path.cwd() / config.EXECUTABLE_TO_RUN
-        self.source_data_path = config.SOURCE_DATA_PATH
-        self.processed_data_path = Path.cwd() / config.CONVERTED_TEXT_DIR_NAME
+    # [修改] 更新构造函数以接收配置参数
+    def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str, 
+                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
+        self.executable_path = Path.cwd() / executable_to_run
+        self.source_data_path = source_data_path
+        self.processed_data_path = Path.cwd() / converted_text_dir_name
         self.test_counter = counter
         
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
@@ -39,13 +41,14 @@ class BaseTester:
         outer_separator = "=" * 80
         inner_separator = "-" * 80
 
+        # Create a more descriptive log filename
         if command_args[0] in ['-q', '-e'] and len(command_args) > 1:
-            flags_part = f"_{command_args[0]}_{command_args[1]}"
+            flags_part = f"_{command_args[0].replace('-', '')}_{command_args[1]}"
         else:
-            flags = [arg for arg in command_args if arg.startswith('-')]
-            flags_part = "".join([f"_{flag}" for flag in flags])
+            flags = [arg.replace('--', '-').replace('-', '') for arg in command_args if arg.startswith('-')]
+            flags_part = "_".join(flags) if flags else "cmd"
         
-        log_filename = f"{current_count}{flags_part}.txt"
+        log_filename = f"{current_count}_{flags_part}.txt"
         log_filepath = self.reports_dir / log_filename
         
         with open(log_filepath, 'w', encoding='utf-8') as log_file:
