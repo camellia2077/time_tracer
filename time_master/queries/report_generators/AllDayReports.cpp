@@ -1,6 +1,7 @@
 #include "AllDayReports.h"
-#include "daily/querier/DailyReportQuerier.h"       // 复用单日报查询器
-#include "daily/formatter/DailyReportFormatter.h"   // 复用单日报格式化器
+#include "daily/querier/DailyReportQuerier.h"
+// [修改] 移除对具体格式化器的依赖，引入工厂
+#include "daily/formatter/DailyReportFormatterFactory.h"
 #include <stdexcept>
 #include <vector>
 
@@ -10,7 +11,8 @@ AllDayReports::AllDayReports(sqlite3* db) : m_db(db) {
     }
 }
 
-FormattedGroupedReports AllDayReports::generate_all_reports() {
+// [修改] 函数签名更新，以接收格式参数
+FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format) {
     FormattedGroupedReports grouped_reports;
     sqlite3_stmt* stmt;
 
@@ -20,7 +22,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports() {
         throw std::runtime_error("Failed to prepare statement to fetch all dates.");
     }
 
-    DailyReportFormatter formatter;
+    // [修改] 在循环外使用工厂创建一次格式化器实例，以提高效率
+    auto formatter = DailyReportFormatterFactory::create_formatter(format);
 
     // 遍历数据库中的每一天
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -35,8 +38,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports() {
         DailyReportQuerier querier(m_db, date);
         DailyReportData report_data = querier.fetch_data();
 
-        // 2. 使用 DailyReportFormatter 格式化报告
-        std::string formatted_report = formatter.format_report(report_data, m_db);
+        // 2. [修改] 使用在循环外创建的格式化器实例来格式化报告
+        std::string formatted_report = formatter->format_report(report_data, m_db);
 
         // 3. 将格式化后的报告存入嵌套的 map 结构中
         grouped_reports[year][month].push_back({date, formatted_report});

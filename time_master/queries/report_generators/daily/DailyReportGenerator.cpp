@@ -1,48 +1,23 @@
 #include "DailyReportGenerator.h"
-
-/**
- * @brief 引入日报查询器模块 (DailyReportQuerier)
- *
- * 目的:
- * 这个头文件定义了 `DailyReportQuerier` 类。此类专门负责与数据库进行交互，
- * 以获取生成日报所需的所有原始数据。
- *
- * 引入的具体内容:
- * 1. `DailyReportQuerier` 类的完整定义。
- * 2. `fetch_data()` 成员函数的声明，该函数执行实际的数据库查询操作，
- * 并返回一个包含所有数据的 `DailyReportData` 结构体。
- *
- * 在本文件中，我们通过实例化 `DailyReportQuerier` 并调用其 `fetch_data()` 方法，
- * 将数据获取的复杂逻辑委托给它处理。
- */
 #include "querier/DailyReportQuerier.h"
-/**
- * @brief 引入日报格式化器模块 (DailyReportFormatter)
- *
- * 目的:
- * 这个头文件定义了 `DailyReportFormatter` 类。此类专门负责将从查询器
- * 获取的原始 `DailyReportData` 结构体转换成一段人类可读的、格式化好的字符串。
- *
- * 引入的具体内容:
- * 1. `DailyReportFormatter` 类的完整定义。
- * 2. `format_report()` 成员函数的声明，该函数接收 `DailyReportData`
- * 作为输入，并输出最终的报告字符串。
- *
- * 在本文件中，我们实例化 `DailyReportFormatter` 并调用其 `format_report()` 方法，
- * 将数据格式化的任务委托给它处理。
- */
-#include "formatter/DailyReportFormatter.h"
-#include "report_generators/_shared/query_data_structs.h" // 引入日查询报告所需的结构体 DailyReportData
+#include "report_generators/_shared/query_data_structs.h"
+// [新增] 引入格式化器工厂，替代原来的具体格式化器
+#include "formatter/DailyReportFormatterFactory.h" 
 
 DailyReportGenerator::DailyReportGenerator(sqlite3* db) : m_db(db) {}
 
-std::string DailyReportGenerator::generate_report(const std::string& date) {
-    // 1. Use the Querier module to fetch data
+// [修改] 函数签名与头文件保持一致
+std::string DailyReportGenerator::generate_report(const std::string& date, ReportFormat format) {
+    // 1. 使用 Querier 模块获取数据 (此部分逻辑不变)
     DailyReportQuerier querier(m_db, date);
-    // 使用在 query_data_structs.h 中定义的 DailyReportData 结构体，来存储查询到的日报数据
     DailyReportData report_data = querier.fetch_data();
 
-    // 2. Use the Formatter module to create the report string
-    DailyReportFormatter formatter;
-    return formatter.format_report(report_data, m_db);
+    // 2. [修改] 使用工厂根据指定格式创建格式化器实例
+    // 这里不再直接实例化 DailyReportFormatter，而是通过工厂获取一个实现了
+    // IReportFormatter 接口的对象。
+    auto formatter = DailyReportFormatterFactory::create_formatter(format);
+
+    // 3. [修改] 使用创建好的格式化器来生成报告字符串
+    // 调用的是接口的 format_report 方法，具体执行哪个实现取决于工厂返回的对象。
+    return formatter->format_report(report_data, m_db);
 }

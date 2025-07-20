@@ -2,6 +2,8 @@
 #include "ActionHandler.h"
 #include "version.h"
 #include "common_utils.h"
+// [ADDED] Include the header for the ReportFormat enum
+#include "report_generators/_shared/ReportFormat.h"
 
 #include <iostream>
 #include <limits>
@@ -12,12 +14,12 @@
 
 namespace fs = std::filesystem;
 
-// Menu 构造函数: 创建 ActionHandler 实例
+// Menu constructor: Creates an ActionHandler instance
 Menu::Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path) {
     action_handler_ = new ActionHandler(db_name, config, main_config_path);
 }
 
-// Menu 析构函数: 释放 ActionHandler 实例
+// Menu destructor: Releases the ActionHandler instance
 Menu::~Menu() {
     delete action_handler_;
 }
@@ -54,15 +56,15 @@ void Menu::print_menu() {
     std::cout << "\n" << "--- Time Tracking Menu ---"  << std::endl;
     std::cout << "0. File Processing & Validation (Submenu)" << std::endl;
     std::cout << "1. Query daily statistics" << std::endl;
-    std::cout << "2. Query Period Statistics" << std::endl; 
-    std::cout << "3. Query monthly statistics" << std::endl; 
-    std::cout << "4. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl; 
+    std::cout << "2. Query Period Statistics" << std::endl;
+    std::cout << "3. Query monthly statistics" << std::endl;
+    std::cout << "4. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl;
     std::cout << "5. Generate study heatmap for a year (Not Implemented)" << std::endl;
-    std::cout << "6. Export all DAILY reports to .md files" << std::endl; 
-    std::cout << "7. Export all MONTHLY reports to .md files" << std::endl; 
-    std::cout << "8. Export PERIOD reports to .md files" << std::endl; 
-    std::cout << "9. Show Version" << std::endl; 
-    std::cout << "10. Exit" << std::endl; 
+    std::cout << "6. Export all DAILY reports to .md files" << std::endl;
+    std::cout << "7. Export all MONTHLY reports to .md files" << std::endl;
+    std::cout << "8. Export PERIOD reports to .md files" << std::endl;
+    std::cout << "9. Show Version" << std::endl;
+    std::cout << "10. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
@@ -73,12 +75,13 @@ bool Menu::handle_user_choice(int choice) {
             {
                 std::string date = get_valid_date_input();
                 if (!date.empty()) {
-                    std::cout << action_handler_->run_daily_query(date);
+                    // [FIXED] Added ReportFormat::Markdown as the second argument
+                    std::cout << action_handler_->run_daily_query(date, ReportFormat::Markdown);
                 }
             }
             break;
         case 2: run_period_query_prompt(); break;
-        case 3: 
+        case 3:
              {
                 std::string month = get_valid_month_input();
                 if (!month.empty()) {
@@ -86,35 +89,36 @@ bool Menu::handle_user_choice(int choice) {
                 }
             }
             break;
-        case 4: run_full_pipeline_and_import_prompt(); break; 
-        case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break; // [修改]
-        case 6: 
-            action_handler_->run_export_all_daily_reports_query();
+        case 4: run_full_pipeline_and_import_prompt(); break;
+        case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
+        case 6:
+            // [FIXED] Added ReportFormat::Markdown as an argument
+            action_handler_->run_export_all_daily_reports_query(ReportFormat::Markdown);
             break;
-        case 7: 
+        case 7:
             action_handler_->run_export_all_monthly_reports_query();
             break;
-        case 8: 
+        case 8:
             run_export_period_reports_prompt();
             break;
-        case 9: 
-            std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl; 
+        case 9:
+            std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl;
             break;
         case 10:
-            std::cout << "Exiting program." << std::endl; 
+            std::cout << "Exiting program." << std::endl;
             return false;
-        default: 
-            std::cout << YELLOW_COLOR << "Invalid choice. Please try again." << RESET_COLOR << std::endl; 
+        default:
+            std::cout << YELLOW_COLOR << "Invalid choice. Please try again." << RESET_COLOR << std::endl;
             break;
     }
-    // 添加一个暂停，以便用户可以看到操作结果
+    // Add a pause so the user can see the result of the operation
     std::cout << "\nPress Enter to continue...";
-    // 清空输入缓冲区，以防之前的输入影响 cin.get()
+    // Clear the input buffer in case previous input affects cin.get()
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     return true;
 }
 
-// [新增] 实现周期查询的用户提示
+// Implements the user prompt for period queries
 void Menu::run_period_query_prompt() {
     std::cout << "Enter period days (e.g., 7 or 7,30,90): ";
     std::string days_str;
@@ -135,7 +139,7 @@ void Menu::run_period_query_prompt() {
     }
 }
 
-// [新增] 实现导出周期报告的用户提示
+// Implements the user prompt for exporting period reports
 void Menu::run_export_period_reports_prompt() {
     std::cout << "Enter period days to export (e.g., 7 or 7,30,90): ";
     std::string days_str;
