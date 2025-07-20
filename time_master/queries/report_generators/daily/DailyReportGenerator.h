@@ -3,26 +3,28 @@
 
 #include <sqlite3.h>
 #include <string>
+#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class DailyReportGenerator
- * @brief Encapsulates the logic for fetching and formatting a daily report.
- * This class provides a simple interface for generating a complete daily report string.
+ * @brief 封装了获取和格式化日报的逻辑。
+ * 这个类为生成完整的日报字符串提供了一个简单的接口。
  */
 class DailyReportGenerator {
 public:
     /**
-     * @brief Constructs a DailyReportGenerator.
-     * @param db A pointer to the SQLite database connection.
+     * @brief DailyReportGenerator 的构造函数。
+     * @param db 指向 SQLite 数据库连接的指针。
      */
     explicit DailyReportGenerator(sqlite3* db);
 
     /**
-     * @brief Generates a formatted daily report for a specific date.
-     * @param date The date for the report in YYYYMMDD format.
-     * @return A string containing the formatted daily report.
+     * @brief 为指定日期生成格式化的日报。
+     * @param date 报告的日期，格式为 YYYYMMDD。
+     * @param format [修改] 需要生成的报告格式（例如 Markdown）。
+     * @return 包含格式化日报的字符串。
      */
-    std::string generate_report(const std::string& date);
+    std::string generate_report(const std::string& date, ReportFormat format);
 
 private:
     sqlite3* m_db;

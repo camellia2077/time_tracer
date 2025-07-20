@@ -40,7 +40,6 @@ struct PeriodReportData {
     int actual_days = 0;
     std::vector<std::pair<std::string, long long>> records;
 };
-
 //  用于导出所有报告的数据结构
 using FormattedGroupedReports = std::map<int, std::map<int, std::vector<std::pair<std::string, std::string>>>>;
 //  用于导出所有月报的数据结构

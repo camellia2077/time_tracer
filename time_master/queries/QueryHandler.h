@@ -3,21 +3,26 @@
 
 #include <sqlite3.h>
 #include <string>
-#include <vector> // [新增] 引入 vector 以支持天数列表
+#include <vector>
 #include "report_generators/_shared/query_data_structs.h"
+// [新增] 引入报告格式定义，以便在接口中使用
+#include "report_generators/_shared/ReportFormat.h" 
+
 class QueryHandler {
 public:
     explicit QueryHandler(sqlite3* db);
 
     // 单项查询
-    std::string run_daily_query(const std::string& date_str) const;
+    // [修改] 增加 format 参数，并提供默认值
+    std::string run_daily_query(const std::string& date_str, ReportFormat format = ReportFormat::Markdown) const;
     std::string run_period_query(int days) const;
     std::string run_monthly_query(const std::string& year_month_str) const;
 
     // 批量导出查询
-    FormattedGroupedReports run_export_all_daily_reports_query() const;
+    // [修改] 增加 format 参数，并提供默认值
+    FormattedGroupedReports run_export_all_daily_reports_query(ReportFormat format = ReportFormat::Markdown) const;
     FormattedMonthlyReports run_export_all_monthly_reports_query() const;
-    FormattedPeriodReports run_export_all_period_reports_query(const std::vector<int>& days_list) const; // [新增]
+    FormattedPeriodReports run_export_all_period_reports_query(const std::vector<int>& days_list) const;
 
 private:
     sqlite3* m_db;
