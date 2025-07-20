@@ -155,23 +155,30 @@ int main(int argc, char* argv[]) {
         
             std::string sub_command = args[2];
             std::string query_arg = args[3];
-            // [修改] 解析格式选项
             ReportFormat format = parse_format_option(args);
         
             if (sub_command == "d" || sub_command == "daily") {
-                // [修改] 传递格式参数
                 std::cout << action_handler.run_daily_query(query_arg, format);
             } else if (sub_command == "p" || sub_command == "period") {
-                try {
-                    // 周期报告暂未实现多格式，因此不传递 format
-                    std::cout << action_handler.run_period_query(std::stoi(query_arg));
-                } catch (const std::exception&) {
-                    std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "<days> argument must be a valid number.\n";
-                    return 1;
+                // [修改] 添加循环逻辑以处理多个天数查询
+                std::string days_str = query_arg;
+                std::string token;
+                std::istringstream tokenStream(days_str);
+                bool first = true;
+                while (std::getline(tokenStream, token, ',')) {
+                    if (!first) {
+                        std::cout << "\n" << std::string(40, '-') << "\n";
+                    }
+                    try {
+                        int days = std::stoi(token);
+                        std::cout << action_handler.run_period_query(days, format);
+                    } catch (const std::exception&) {
+                        std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Invalid number '" << token << "' in list. Skipping.\n";
+                    }
+                    first = false;
                 }
             } else if (sub_command == "m" || sub_command == "monthly") {
-                // 月报暂未实现多格式，因此不传递 format
-                std::cout << action_handler.run_monthly_query(query_arg);
+                std::cout << action_handler.run_monthly_query(query_arg, format);
             } else {
                 std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown query sub-command '" << sub_command << "'.\n";
                 print_full_usage(args[0].c_str());
@@ -184,18 +191,17 @@ int main(int argc, char* argv[]) {
                 throw std::runtime_error("Command '" + command + "' requires a sub-command (e.g., -export day).");
             }
             std::string sub_command = args[2];
-            // [修改] 解析格式选项
             ReportFormat format = parse_format_option(args);
 
             if (sub_command == "day" || sub_command == "d") {
-                // [修改] 传递格式参数
                 action_handler.run_export_all_daily_reports_query(format);
             } else if (sub_command == "month" || sub_command == "m") { 
-                action_handler.run_export_all_monthly_reports_query();
+                action_handler.run_export_all_monthly_reports_query(format);
             } else if (sub_command == "period" || sub_command == "p") {
-                if (args.size() < 4 || (args.size() > 4 && args[4] == "-f") || (args.size() > 5 && args[4] != "-f")) {
+                if (args.size() < 4) {
                      throw std::runtime_error("Command '-export period' requires a list of days (e.g., 7 or 7,30,90).");
                 }
+                
                 std::string days_str = args[3];
                 std::vector<int> days_list;
                 std::string token;
@@ -209,7 +215,46 @@ int main(int argc, char* argv[]) {
                         throw std::runtime_error("Number out of range in days list: " + token);
                     }
                 }
-                action_handler.run_export_all_period_reports_query(days_list);
+                action_handler.run_export_all_period_reports_query(days_list, format);
+            }
+            else {
+                std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown export sub-command '" << sub_command << "'.\n";
+                print_full_usage(args[0].c_str());
+                return 1;
+            }
+        }
+        // Branch 5: Data Export (-export, -e)
+        else if (command == "-export" || command == "-e") {
+            if (args.size() < 3) {
+                throw std::runtime_error("Command '" + command + "' requires a sub-command (e.g., -export day).");
+            }
+            std::string sub_command = args[2];
+            ReportFormat format = parse_format_option(args);
+
+            if (sub_command == "day" || sub_command == "d") {
+                action_handler.run_export_all_daily_reports_query(format);
+            } else if (sub_command == "month" || sub_command == "m") { 
+                action_handler.run_export_all_monthly_reports_query(format);
+            } else if (sub_command == "period" || sub_command == "p") {
+                // [修改] 简化并修正参数检查逻辑
+                if (args.size() < 4) {
+                     throw std::runtime_error("Command '-export period' requires a list of days (e.g., 7 or 7,30,90).");
+                }
+                
+                std::string days_str = args[3];
+                std::vector<int> days_list;
+                std::string token;
+                std::istringstream tokenStream(days_str);
+                while (std::getline(tokenStream, token, ',')) {
+                    try {
+                        days_list.push_back(std::stoi(token));
+                    } catch (const std::invalid_argument& ia) {
+                        throw std::runtime_error("Invalid number provided in the days list: " + token);
+                    } catch (const std::out_of_range& oor) {
+                        throw std::runtime_error("Number out of range in days list: " + token);
+                    }
+                }
+                action_handler.run_export_all_period_reports_query(days_list, format);
             }
             else {
                 std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Unknown export sub-command '" << sub_command << "'.\n";
@@ -285,21 +330,23 @@ void print_full_usage(const char* app_name) {
     std::cout << GREEN_COLOR << "--- Manual Data Import ---\n" << RESET_COLOR;
     std::cout << "  -p, --process <path>\t\tProcess a directory of formatted .txt files and import to database.\n";
     std::cout << "  Example: " << app_name << " -p /path/to/processed_logs/\n\n";
+
     std::cout << GREEN_COLOR << "--- Data Query Module ---\n" << RESET_COLOR;
     std::cout << "  -q d, --query daily <YYYYMMDD>\tQuery statistics for a specific day.\n";
-    std::cout << "  -q p, --query period <days>\t\tQuery statistics for the last N days.\n";
+    std::cout << "  -q p, --query period <days>\t\tQuery statistics for last N days. Can be a list (e.g., 7,30).\n"; // [修改]
     std::cout << "  -q m, --query monthly <YYYYMM>\tQuery statistics for a specific month.\n";
-    std::cout << "  Optional (for daily query):\n";
+    std::cout << "  Optional (for ALL queries):\n";
     std::cout << "    -f, --format <format>\t\tSpecify output format (e.g., md). Default is md.\n";
-    std::cout << "  Example: " << app_name << " -q d 20240501 -f md\n\n";
+    std::cout << "  Example: " << app_name << " -q p 7,30,90 -f md\n\n"; // [修改]
 
     std::cout << GREEN_COLOR << "--- Data Export Module ---\n" << RESET_COLOR;
     std::cout << "  -e d, --export day\t\t\tExport all daily reports.\n";
-    std::cout << "  -e m, --export month\t\t\tExport all monthly reports to combined .md files.\n";
+    std::cout << "  -e m, --export month\t\t\tExport all monthly reports.\n";
     std::cout << "  -e p, --export period <days>\t\tExport period reports for given days (e.g., 7 or 7,30,90).\n";
-    std::cout << "  Optional (for day export):\n";
+    std::cout << "  Optional (for ALL exports):\n";
     std::cout << "    -f, --format <format>\t\tSpecify output format (e.g., md). Default is md.\n";
-    std::cout << "  Example: " << app_name << " -export day -f md\n\n";
+    std::cout << "  Example: " << app_name << " -export period 7,30 -f md\n\n";
+
     std::cout << GREEN_COLOR << "--- Other Options ---\n" << RESET_COLOR;
     std::cout << "  -h, --help\t\t\tShow this help message.\n";
     std::cout << "  -v, --version\t\t\tShow program version.\n";

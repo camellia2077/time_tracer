@@ -3,6 +3,7 @@
 
 #include <sqlite3.h>
 #include <string>
+#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class MonthlyReportGenerator
@@ -16,9 +17,10 @@ public:
     /**
      * @brief 为指定月份生成格式化的月报。
      * @param year_month 报告的年月，格式为 YYYYMM。
+     * @param format [修改] 需要生成的报告格式。
      * @return 包含格式化月报的字符串。
      */
-    std::string generate_report(const std::string& year_month);
+    std::string generate_report(const std::string& year_month, ReportFormat format);
 
 private:
     sqlite3* m_db;

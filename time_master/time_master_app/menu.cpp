@@ -85,7 +85,8 @@ bool Menu::handle_user_choice(int choice) {
              {
                 std::string month = get_valid_month_input();
                 if (!month.empty()) {
-                    std::cout << action_handler_->run_monthly_query(month);
+                    // [修改] 为月度查询添加 ReportFormat::Markdown 参数
+                    std::cout << action_handler_->run_monthly_query(month, ReportFormat::Markdown);
                 }
             }
             break;
@@ -96,7 +97,8 @@ bool Menu::handle_user_choice(int choice) {
             action_handler_->run_export_all_daily_reports_query(ReportFormat::Markdown);
             break;
         case 7:
-            action_handler_->run_export_all_monthly_reports_query();
+            // [修改] 为批量月报导出添加 ReportFormat::Markdown 参数
+            action_handler_->run_export_all_monthly_reports_query(ReportFormat::Markdown);
             break;
         case 8:
             run_export_period_reports_prompt();
@@ -119,6 +121,7 @@ bool Menu::handle_user_choice(int choice) {
 }
 
 // Implements the user prompt for period queries
+// [修改] 更新此函数以支持格式化
 void Menu::run_period_query_prompt() {
     std::cout << "Enter period days (e.g., 7 or 7,30,90): ";
     std::string days_str;
@@ -132,14 +135,15 @@ void Menu::run_period_query_prompt() {
         try {
             int days = std::stoi(token);
             std::cout << "\n--- Report for last " << days << " days ---\n";
-            std::cout << action_handler_->run_period_query(days);
+            // [修改] 为周期查询添加 ReportFormat::Markdown 参数
+            std::cout << action_handler_->run_period_query(days, ReportFormat::Markdown);
         } catch (const std::exception&) {
             std::cerr << RED_COLOR << "Invalid number '" << token << "' skipped." << RESET_COLOR << std::endl;
         }
     }
 }
 
-// Implements the user prompt for exporting period reports
+// [修改] 更新此函数以支持格式化
 void Menu::run_export_period_reports_prompt() {
     std::cout << "Enter period days to export (e.g., 7 or 7,30,90): ";
     std::string days_str;
@@ -159,7 +163,8 @@ void Menu::run_export_period_reports_prompt() {
     }
 
     if (!days_list.empty()) {
-        action_handler_->run_export_all_period_reports_query(days_list);
+        // [修改] 为批量周期报告导出添加 ReportFormat::Markdown 参数
+        action_handler_->run_export_all_period_reports_query(days_list, ReportFormat::Markdown);
     } else {
         std::cout << YELLOW_COLOR << "No valid days provided for export." << RESET_COLOR << std::endl;
     }
