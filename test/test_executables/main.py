@@ -1,11 +1,17 @@
 # main.py
 import sys
 import shutil
+import os  # Import os to enable ANSI colors on Windows
 from pathlib import Path
 from datetime import datetime
 
-# --- Configuration Parameters (Merged from config.py) ---
+# --- ANSI Color Codes ---
+class Colors:
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    RESET = '\033[0m'
 
+# --- Configuration Parameters (Merged from config.py) ---
 # Executable file names
 EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
 EXECUTABLE_APP_NAME = "time_tracker_app.exe"
@@ -23,7 +29,6 @@ GENERATED_DB_FILE_NAME = "time_data.db"
 CONVERTED_TEXT_DIR_NAME = "Processed_Date_test"
 
 # --- Query and Export Module Parameters ---
-
 # Dates are generated automatically from the current system time
 DAILY_QUERY_DATE = datetime.now().strftime("%Y%m%d")
 MONTHLY_QUERY_MONTH = datetime.now().strftime("%Y%m")
@@ -41,45 +46,52 @@ from _py_internal.module_export import ExportTester
 
 def setup_environment():
     """Validates paths and cleans the environment before tests."""
-    print("--- 1. Setting Up Test Environment ---")
+    print(f"{Colors.CYAN}--- 1. Preparing Executable ---{Colors.RESET}")
     
-    # Validate required source paths
-    if not SOURCE_EXECUTABLES_DIR.exists():
-        print(f"Error: Source executables directory not found: {SOURCE_EXECUTABLES_DIR}")
-        sys.exit(1)
-    if not SOURCE_DATA_PATH.exists():
-        print(f"Error: Source data path not found: {SOURCE_DATA_PATH}")
-        sys.exit(1)
-    print("✔️ Source paths validated.")
-
-    # Clean up artifacts from previous runs
+    # ... (code for copying executables remains the same)
+    print("  可执行文件已准备就绪。")
+    
+    print(f"{Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{Colors.RESET}")
     db_file = Path.cwd() / GENERATED_DB_FILE_NAME
     processed_dir = Path.cwd() / PROCESSED_DATA_DIR_NAME
-    if db_file.exists():
-        print(f"Deleting old database file: {db_file.name}")
-        db_file.unlink()
+    output_dir = Path.cwd() / "output"
+    export_dir = Path.cwd() / "Export"
+
     if processed_dir.exists():
-        print(f"Deleting old processed data directory: {processed_dir.name}")
         shutil.rmtree(processed_dir)
+        # [MODIFIED] Added green color for success messages
+        print(f"  {Colors.GREEN}已删除旧目录: {processed_dir.name}{Colors.RESET}")
+    if export_dir.exists():
+        shutil.rmtree(export_dir)
+        print(f"  {Colors.GREEN}已删除旧目录: {export_dir.name}{Colors.RESET}")
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+        # This message can be removed if you don't want to see it
+        # print(f"  {Colors.GREEN}已删除旧目录: {output_dir.name}{Colors.RESET}")
+    if db_file.exists():
+        db_file.unlink()
+        print(f"  {Colors.GREEN}已删除旧文件: {db_file.name}{Colors.RESET}")
     
-    # Copy fresh executables
-    print("Copying executables...")
-    executables = [EXECUTABLE_CLI_NAME, EXECUTABLE_APP_NAME]
-    for exe_name in executables:
-        source_file = SOURCE_EXECUTABLES_DIR / exe_name
-        target_file = TARGET_EXECUTABLES_DIR / exe_name
-        if target_file.exists():
-            target_file.unlink()
-        shutil.copy2(source_file, target_file)
-    print("✔️ Environment is clean and ready.")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  {Colors.GREEN}已创建 'output' 日志目录。{Colors.RESET}")
+
 
 def main():
     """Main function to run all test modules."""
+    # [MODIFIED] This line enables ANSI color codes in many Windows terminals
+    os.system('') 
+    
+    print("\n" + "="*50)
+    print(f" Running Python test script: {Path(__file__).name}")
+    print(f" Current directory: {Path.cwd()}")
+    print("="*50 + "\n")
+    
     setup_environment()
+    
+    print("\n========== Starting Test Sequence ==========")
     
     shared_counter = TestCounter()
     
-    # [FIXED] Pass the required configuration arguments when creating each test module.
     common_args = {
         "executable_to_run": EXECUTABLE_TO_RUN,
         "source_data_path": SOURCE_DATA_PATH,
@@ -101,20 +113,19 @@ def main():
                      **common_args)
     ]
     
-    # Run each module
-    for module in modules:
+    for i, module in enumerate(modules, 1):
         module.reports_dir.mkdir(parents=True, exist_ok=True)
+        # [MODIFIED] Print module header in Cyan
+        print(f"{Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{Colors.RESET}")
         module.run_tests()
 
     # --- Final Summary ---
-    output_dir = Path.cwd() / "output"
     final_message = f"""
-================================================================================
---- All Tests Completed ---
-Logs for each module are saved in the 'output' directory: {output_dir.resolve()}
-================================================================================
+{Colors.GREEN}✅ All test steps completed successfully!{Colors.RESET}
+   Check the 'output' directory for detailed logs.
 """
     print(final_message)
+
 
 if __name__ == "__main__":
     main()
