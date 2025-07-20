@@ -75,6 +75,8 @@ time_master/
 │       │   └── AllDayReports.h 
 │       │   ├── AllMonthlyReports.cpp # 月总结导出
 │       │   └── AllMonthlyReports.h 
+│       │   ├── AllPeriodReports.cpp # 最近几天总结导出
+│       │   └── AllPeriodReports.h 
 │       ├── shared/ #(私有)
 │       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
 │       │   └── query_utils.h  

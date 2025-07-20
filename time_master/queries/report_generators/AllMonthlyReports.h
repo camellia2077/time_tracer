@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 
 /**
@@ -24,9 +25,10 @@ public:
 
     /**
      * @brief 生成所有月报并返回分类好的结果。
+     * @param format [修改] 需要生成的报告格式。
      * @return 一个包含所有格式化后月报的嵌套 map。
      */
-    FormattedMonthlyReports generate_reports();
+    FormattedMonthlyReports generate_reports(ReportFormat format);
 
 private:
     sqlite3* m_db;

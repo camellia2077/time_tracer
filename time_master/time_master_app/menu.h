@@ -22,6 +22,8 @@ private:
     bool handle_user_choice(int choice);
     void run_log_processor_submenu();
     void run_full_pipeline_and_import_prompt();
+    void run_period_query_prompt(); // [新增]
+    void run_export_period_reports_prompt(); // [新增]
 
     // --- 用户输入处理 ---
     std::string get_valid_path_input(const std::string& prompt_message);

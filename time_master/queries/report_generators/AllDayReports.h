@@ -3,14 +3,15 @@
 
 #include <sqlite3.h>
 #include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class AllDayReports
  * @brief 生成所有日报，并按年月进行分类。
  *
  * 这个类负责查询数据库中的所有日报数据，
- * 复用 DailyReportFormatter 将其格式化，
- * 并返回一个按年、月分类好的数据结构。
+ * 并使用指定的格式化器将其格式化，
+ * 然后返回一个按年、月分类好的数据结构。
  */
 class AllDayReports {
 public:
@@ -22,9 +23,10 @@ public:
 
     /**
      * @brief 生成所有日报并返回分类好的结果。
+     * @param format [修改] 需要生成的报告格式（例如 Markdown）。
      * @return 一个包含所有格式化后日报的嵌套 map。
      */
-    FormattedGroupedReports generate_all_reports();
+    FormattedGroupedReports generate_all_reports(ReportFormat format);
 
 private:
     sqlite3* m_db;

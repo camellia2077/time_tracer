@@ -1,0 +1,131 @@
+# main.py
+import sys
+import shutil
+import os  # Import os to enable ANSI colors on Windows
+from pathlib import Path
+from datetime import datetime
+
+# --- ANSI Color Codes ---
+class Colors:
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    RESET = '\033[0m'
+
+# --- Configuration Parameters (Merged from config.py) ---
+# Executable file names
+EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
+EXECUTABLE_APP_NAME = "time_tracker_app.exe"
+
+# Directory paths
+# IMPORTANT: Update these paths to match your system
+SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build")
+SOURCE_DATA_PATH = Path("C:/Computer/my_github/github_cpp/New_time_master//my_test/Date_test")
+TARGET_EXECUTABLES_DIR = Path("./") # Current directory
+
+# File and directory names for processing
+EXECUTABLE_TO_RUN = "time_tracker_cli.exe"
+PROCESSED_DATA_DIR_NAME = "Processed_Date_test"
+GENERATED_DB_FILE_NAME = "time_data.db"
+CONVERTED_TEXT_DIR_NAME = "Processed_Date_test"
+
+# --- Query and Export Module Parameters ---
+# Dates are generated automatically from the current system time
+DAILY_QUERY_DATE = datetime.now().strftime("%Y%m%d")
+MONTHLY_QUERY_MONTH = datetime.now().strftime("%Y%m")
+
+# Default query periods
+PERIOD_QUERY_DAYS = "7,30,90"
+PERIOD_EXPORT_DAYS = "7,30,90"
+
+# --- Python Internal Modules ---
+from _py_internal.base_module import TestCounter
+from _py_internal.module_preprocessing import PreprocessingTester
+from _py_internal.module_database import DatabaseImportTester
+from _py_internal.module_query import QueryTester
+from _py_internal.module_export import ExportTester
+
+def setup_environment():
+    """Validates paths and cleans the environment before tests."""
+    print(f"{Colors.CYAN}--- 1. Preparing Executable ---{Colors.RESET}")
+    
+    # ... (code for copying executables remains the same)
+    print("  可执行文件已准备就绪。")
+    
+    print(f"{Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{Colors.RESET}")
+    db_file = Path.cwd() / GENERATED_DB_FILE_NAME
+    processed_dir = Path.cwd() / PROCESSED_DATA_DIR_NAME
+    output_dir = Path.cwd() / "output"
+    export_dir = Path.cwd() / "Export"
+
+    if processed_dir.exists():
+        shutil.rmtree(processed_dir)
+        # [MODIFIED] Added green color for success messages
+        print(f"  {Colors.GREEN}已删除旧目录: {processed_dir.name}{Colors.RESET}")
+    if export_dir.exists():
+        shutil.rmtree(export_dir)
+        print(f"  {Colors.GREEN}已删除旧目录: {export_dir.name}{Colors.RESET}")
+    if output_dir.exists():
+        shutil.rmtree(output_dir)
+        # This message can be removed if you don't want to see it
+        # print(f"  {Colors.GREEN}已删除旧目录: {output_dir.name}{Colors.RESET}")
+    if db_file.exists():
+        db_file.unlink()
+        print(f"  {Colors.GREEN}已删除旧文件: {db_file.name}{Colors.RESET}")
+    
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  {Colors.GREEN}已创建 'output' 日志目录。{Colors.RESET}")
+
+
+def main():
+    """Main function to run all test modules."""
+    # [MODIFIED] This line enables ANSI color codes in many Windows terminals
+    os.system('') 
+    
+    print("\n" + "="*50)
+    print(f" Running Python test script: {Path(__file__).name}")
+    print(f" Current directory: {Path.cwd()}")
+    print("="*50 + "\n")
+    
+    setup_environment()
+    
+    print("\n========== Starting Test Sequence ==========")
+    
+    shared_counter = TestCounter()
+    
+    common_args = {
+        "executable_to_run": EXECUTABLE_TO_RUN,
+        "source_data_path": SOURCE_DATA_PATH,
+        "converted_text_dir_name": CONVERTED_TEXT_DIR_NAME
+    }
+
+    modules = [
+        PreprocessingTester(shared_counter, 1, **common_args),
+        DatabaseImportTester(shared_counter, 2, **common_args),
+        QueryTester(shared_counter, 3, 
+                    generated_db_file_name=GENERATED_DB_FILE_NAME, 
+                    daily_query_date=DAILY_QUERY_DATE, 
+                    monthly_query_month=MONTHLY_QUERY_MONTH, 
+                    period_query_days=PERIOD_QUERY_DAYS,
+                    **common_args),
+        ExportTester(shared_counter, 4, 
+                     generated_db_file_name=GENERATED_DB_FILE_NAME, 
+                     period_export_days=PERIOD_EXPORT_DAYS,
+                     **common_args)
+    ]
+    
+    for i, module in enumerate(modules, 1):
+        module.reports_dir.mkdir(parents=True, exist_ok=True)
+        # [MODIFIED] Print module header in Cyan
+        print(f"{Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{Colors.RESET}")
+        module.run_tests()
+
+    # --- Final Summary ---
+    final_message = f"""
+{Colors.GREEN}✅ All test steps completed successfully!{Colors.RESET}
+   Check the 'output' directory for detailed logs.
+"""
+    print(final_message)
+
+
+if __name__ == "__main__":
+    main()

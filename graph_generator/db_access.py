@@ -2,7 +2,7 @@
 # This module serves as a centralized Data Access Layer (DAL) for all database interactions.
 
 import sqlite3
-import pandas as pd
+import pandas as pd # type: ignore
 import datetime
 import os
 import sys
