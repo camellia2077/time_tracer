@@ -4,7 +4,8 @@
 
 // --- DailyMarkdown Class Implementation ---
 
-std::string DailyMarkdown::format_report(const DailyReportData& data, sqlite3* db) const {
+// The 'const' keyword has been removed from the function definition to match the header
+std::string DailyMarkdown::format_report(const DailyReportData& data, sqlite3* db) {
     std::stringstream ss;
     _display_header(ss, data);
 

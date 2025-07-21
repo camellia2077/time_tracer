@@ -12,7 +12,8 @@ class DailyMarkdown : public IReportFormatter {
 public:
     DailyMarkdown() = default;
 
-    std::string format_report(const DailyReportData& data, sqlite3* db) const override;
+    // The 'const' keyword has been removed to match the base class interface
+    std::string format_report(const DailyReportData& data, sqlite3* db) override;
 
 private:
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
