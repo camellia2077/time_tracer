@@ -125,22 +125,11 @@ target_include_directories(time_tracker_app PRIVATE
     "common"
 
     "db_inserter"
-    "db_inserter/model"
-    "db_inserter/inserter"
-    "db_inserter/parser"
-    "db_inserter/parser/internal"
-
     "queries"
-
-
     "resources"
     "time_master_app"
 
     "reprocessing"
-    "reprocessing/validator"
-    "reprocessing/validator/internal"
-    "reprocessing/input_transfer"
-    "reprocessing/input_transfer/internal"
 
     "file_handler"
     "action_handler"
@@ -149,20 +138,12 @@ target_include_directories(time_tracker_cli PRIVATE
     "common"
 
     "db_inserter"
-    "db_inserter/model"
-    "db_inserter/inserter"
-    "db_inserter/parser"
-    "db_inserter/parser/internal"
 
     "queries"
 
     "resources"
 
     "reprocessing"
-    "reprocessing/validator"
-    "reprocessing/validator/internal"
-    "reprocessing/input_transfer"
-    "reprocessing/input_transfer/internal"
 
     "file_handler"
     "action_handler"
