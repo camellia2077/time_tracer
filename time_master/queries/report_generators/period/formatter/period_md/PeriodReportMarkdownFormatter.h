@@ -1,7 +1,8 @@
 #ifndef PERIOD_REPORT_MARKDOWN_FORMATTER_H
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_H
 
-#include "IReportFormatter.h" // [修改] 继承自接口
+#include "report_generators/period/formatter/IReportFormatter.h" // [修改] 继承自接口
+
 #include <sstream>
 
 /**

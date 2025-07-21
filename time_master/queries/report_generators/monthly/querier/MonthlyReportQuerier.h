@@ -3,7 +3,8 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/monthly/_month_data/MonthlyReportData.h"
+
 
 // 月报查询器类
 class MonthlyReportQuerier {

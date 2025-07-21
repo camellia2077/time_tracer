@@ -1,6 +1,6 @@
 #include "PeriodReportFormatterFactory.h"
-#include "PeriodReportMarkdownFormatter.h"
-// #include "PeriodReportJsonFormatter.h" // 未来若支持JSON，在此处添加
+#include "report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.cpp"
+
 #include <stdexcept>
 
 // create_formatter 方法的实现
