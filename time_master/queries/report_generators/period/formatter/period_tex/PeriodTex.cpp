@@ -1,49 +1,39 @@
-// PeriodTex.cpp
+// PeriodTex.cpp (已更新)
 #include "PeriodTex.h"
 #include <iomanip>
 #include <string>
 
-// --- 核心改动：包含新的依赖 ---
-#include "report_generators/_shared/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
-#include "format/ProjectBreakdownFormatterFactory.h" // 新的工厂
-#include "format/IProjectBreakdownFormatter.h"     // 工厂返回的接口
-#include "common_utils.h"                                // 为了 ProjectTree
+// --- 依赖保持不变 ---
+#include "report_generators/_shared/query_utils.h"
+#include "format/ProjectBreakdownFormatterFactory.h"
+#include "report_generators/period/formatter/IReportFormatter.h"
+#include "common_utils.h"
 
-// --- _escape_tex 函数已被移除 ---
-
-// format_report 方法的逻辑保持不变
+// 1. 公开的接口现在只负责调用基类的模板方法
 std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) const {
-    std::stringstream ss;
     if (data.days_to_query <= 0) {
+        // 对于无效输入，直接返回错误信息，不使用模板
         return "Number of days to query must be positive.\n";
     }
+    return format_report_template(data, db);
+}
 
-    _display_preamble(ss);
+// 2. 实现新的 format_content 方法，将所有核心内容生成逻辑移到这里
+void PeriodTex::format_content(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
+    // 步骤 A: 生成报告总结
     _display_summary(ss, data);
 
+    // 步骤 B: 生成报告主体
     if (data.actual_days == 0) {
         ss << "No time records found in this period.\n";
     } else {
-        // 调用更新后的 _display_project_breakdown
         _display_project_breakdown(ss, data, db);
     }
-
-    ss << "\n\\end{document}\n";
-    return ss.str();
 }
 
-// _display_preamble 方法保持不变
-void PeriodTex::_display_preamble(std::stringstream& ss) const {
-    ss << "\\documentclass{article}\n";
-    ss << "\\usepackage[a4paper, margin=1in]{geometry}\n";
-    ss << "\\usepackage{fontspec}\n";
-    ss << "\\usepackage{ctex}\n";
-    ss << "\\setmainfont{Noto Serif SC}\n";
-    ss << "\\setCJKmainfont{Noto Serif SC}\n\n";
-    ss << "\\begin{document}\n\n";
-}
+// 3. _display_preamble 方法被彻底删除
 
-// _display_summary 方法保持不变，但内部需要一个临时的转义逻辑
+// _display_summary 方法保持不变
 void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
     auto escape_tex_local = [](const std::string& s) {
         std::string escaped;
@@ -67,20 +57,14 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
     }
 }
 
-
-// --- 核心改动：_display_project_breakdown 的全新实现 ---
+// _display_project_breakdown 方法保持不变
 void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
-    // 1. 准备数据：构建项目树
     std::map<std::string, std::string> parent_map = get_parent_map(db);
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, data.records, parent_map);
 
-    // 2. 使用工厂创建 LaTeX 格式化器
     auto formatter = ProjectBreakdownFormatterFactory::createFormatter(ReportFormat::LaTeX);
-
-    // 3. 调用格式化器并获取结果
     if (formatter) {
-        // 调用新接口的 format 方法
         std::string breakdown_output = formatter->format(project_tree, data.total_duration, data.actual_days);
         ss << breakdown_output;
     }
