@@ -6,8 +6,6 @@
 #include <vector>
 #include <map>
 #include <filesystem>
-#include <functional> // [新增] For std::function
-#include <optional>   // [新增] For std::optional
 #include "report_generators/_shared/query_data_structs.h"
 #include "report_generators/_shared/ReportFormat.h"
 
@@ -43,20 +41,6 @@ public:
 
 
 private:
-    // [新增] Helper struct for report format details
-    struct ReportFormatDetails {
-        std::string dir_name;
-        std::string extension;
-    };
-
-    // [新增] Extracts report format details, returns nullopt for unsupported formats.
-    std::optional<ReportFormatDetails> get_report_format_details(ReportFormat format) const;
-
-    // [新增] Executes the file export task, handling exceptions and console output.
-    void execute_export_task(const std::string& report_type_name_singular,
-                             const fs::path& export_root_path,
-                             const std::function<int()>& file_writing_lambda) const;
-
     // 数据库连接管理
     bool open_database_if_needed() const;
     void close_database();
