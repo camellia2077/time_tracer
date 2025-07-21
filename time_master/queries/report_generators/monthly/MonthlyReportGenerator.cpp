@@ -1,6 +1,6 @@
 #include "MonthlyReportGenerator.h"
 #include "querier/MonthlyReportQuerier.h"
-#include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/monthly/_month_data/MonthlyReportData.h"
 // [修改] 引入格式化器工厂，替代具体的格式化器
 #include "formatter/MonthlyFormatterFactory.h"
 
