@@ -1,5 +1,7 @@
 #include "PeriodReportFormatterFactory.h"
-#include "report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.cpp"
+#include "report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.h"
+#include "report_generators/period/formatter/period_tex/PeriodTex.h"
+
 
 #include <stdexcept>
 
@@ -8,6 +10,8 @@ std::unique_ptr<IReportFormatter> PeriodReportFormatterFactory::create_formatter
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<PeriodReportMarkdownFormatter>();
+        case ReportFormat::LaTex:
+            return std::make_unique<PeriodTex>();
         // case ReportFormat::Json:
         //     return std::make_unique<PeriodReportJsonFormatter>();
         default:

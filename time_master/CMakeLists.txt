@@ -55,8 +55,9 @@ file(GLOB QUERIES_SOURCES
 
     "queries/report_generators/period/*.cpp"
     "queries/report_generators/period/formatter/*.cpp"
-    "queries/report_generators/period/formatter/period_md/*.cpp
-    "
+    "queries/report_generators/period/formatter/period_md/*.cpp"
+    "queries/report_generators/period/formatter/period_tex/*.cpp"
+
     "queries/report_generators/period/querier/*.cpp"
 )
 
