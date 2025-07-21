@@ -36,7 +36,8 @@ file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
     "queries/format/*.cpp"
     "queries/format/md/*.cpp"
-    
+    "queries/format/tex/*.cpp"
+
     "queries/report_generators/*.cpp"
 
     "queries/report_generators/_shared/*.cpp"
