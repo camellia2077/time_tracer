@@ -1,9 +1,10 @@
+// queries/report_generators/daily/querier/DailyReportQuerier.h
 #ifndef DAILY_REPORT_QUERIER_H
 #define DAILY_REPORT_QUERIER_H
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/_shared/query_data_structs.h" // Assumed to contain DailyReportData definition
+#include "report_generators/daily/data/DailyReportData.h" // Assumed to contain DailyReportData definition
 
 /**
  * @class DailyReportQuerier
