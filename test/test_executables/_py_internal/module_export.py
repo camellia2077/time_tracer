@@ -21,8 +21,13 @@ class ExportTester(BaseTester):
             print(f"Warning: Skipping export tests because the database file '{self.db_file.name}' does not exist.")
             return
 
-        self.run_command_test("Data Export Test (-e d)", ["-e", "d", "-f", "md"])
-        self.run_command_test("Data Export Test (-e m)", ["-e", "m", "-f", "md"])
-        self.run_command_test("Data Export Test (-e p)", ["-e", "p", self.period_days_to_export, "-f", "md"])
+        self.run_command_test("Data Export Test (-e d) [Markdown]", ["-e", "d", "-f", "md"])
+        self.run_command_test("Data Export Test (-e m) [Markdown]", ["-e", "m", "-f", "md"])
+        self.run_command_test("Data Export Test (-e p) [Markdown]", ["-e", "p", self.period_days_to_export, "-f", "md"])
+        
+        # New: Add export tests for TeX format
+        self.run_command_test("Data Export Test (-e d) [TeX]", ["-e", "d", "-f", "tex"])
+        self.run_command_test("Data Export Test (-e m) [TeX]", ["-e", "m", "-f", "tex"])
+        self.run_command_test("Data Export Test (-e p) [TeX]", ["-e", "p", self.period_days_to_export, "-f", "tex"])
         
         # The extra file check logic has also been removed to prevent the same error.
