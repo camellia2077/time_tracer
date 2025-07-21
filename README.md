@@ -1,374 +1,91 @@
-# 依赖项 (Dependencies)
+# Time Master
 
-本项目的实现离不开以下这些出色的开源库🚀💪。我向这些项目的开发者们表示感谢🙏❤️！他们的开源库极大地简化了我的开发过程，真是太棒了👍🎉！
-本项目依赖于以下优秀的开源库：
-* **[SQLite C Library](https://www.sqlite.org/index.html)**
-    * **用途**: 数据存储.
-    * **许可证**: Public Domain
+**Time Master** 是一套功能强大的个人时间管理与数据可视化工具集，旨在帮助您精确追踪、分析并优化您的时间利用。
 
-* **[nlohmann/json](https://github.com/nlohmann/json)**
-    * **用途**: 读取配置.
-    * **许可证**: MIT License
+本套件包含三个核心组件：
 
-* **[Matplotlib](https://matplotlib.org/)**
-    * **用途**: 用于数据可视化。
-    * **许可证**: Matplotlib License (BSD-style)
-# 1 Time_Master 
-主程序，用于解析文本内容，存入数据库，查询数据库
-## 1.1 目录结构
+  * **`Time_Master` (C++)**: 核心命令行程序，负责解析原始日志、将数据存入数据库，并提供丰富的查询与报告导出功能。
+  * **`graph_generator` (Python)**: 数据可视化工具，能够读取 `Time_Master` 生成的数据库，并创建多种图表，如每日时间线、活动热力图等。
+  * **`log_generator` (C++)**: 一个便捷的测试数据生成器，用于快速创建符合格式的日志文件。
+
+-----
+
+## 🚀 快速开始
+
+### 1\. 依赖项
+
+在开始之前，请确保您的系统已安装以下依赖：
+
+  * **C++ 部分 (`Time_Master`, `log_generator`)**:
+      * **MSYS2 UCRT64** 环境 (推荐用于 Windows)
+      * **CMake** \>= 3.10
+      * **GCC** (支持 C++23)
+      * **SQLite3** 库
+      * **nlohmann/json** 库
+  * **Python 部分 (`graph_generator`)**:
+      * **Python** \>= 3.8
+      * **Matplotlib** 库
+
+### 2\. 编译与安装
+
+我们为所有C++组件提供了详细的编译指南，包括如何配置MSYS2 UCRT64环境和安装必要的库。
+
+➡️ **详细步骤请参考：[编译指南](https://www.google.com/search?q=./docs/COMPILING.md)** *(您之后需要创建这个文件)*
+
+### 3\. 基本使用示例
+
+以下是 `Time_Master` 命令行工具的一些常用命令，让您快速感受其功能。
+
+**示例 1：完整处理数据**
+(检验源文件 -\> 转换 -\> 检验输出 -\> 存入数据库)
+
+```bash
+# 假设您的原始日志放在 "raw_logs" 文件夹下
+time_tracker_cli -a "path/to/your/raw_logs"
 ```
-time_master/
-├── CMakeLists.txt
-├── main.cpp # 交互式
-├── main_cli.cpp # 命令行传入
+
+**示例 2：查询指定日期的报告**
+
+```bash
+# 查询 2025年7月21日 的日报，并以 Markdown 格式输出
+time_tracker_cli -q d 20250721 -f md
+```
+
+**示例 3：查询上个月的报告**
+
+```bash
+# 查询 2025年6月 的月报，并以 LaTeX 格式输出
+time_tracker_cli -q m 202506 -f tex
+```
+
+-----
+
+## 📚 详细文档
+
+想要深入了解本项目吗？
+
+关于本项目的**详细架构图**、**完整的命令参考**、**API文档**和**各模块使用示例**，请查阅docs/
+```
+docs/
+├── compilation_guide.md          # 详细的编译步骤 (从原1.4节迁移)
 │
-├── action_handler/ # 所有功能的封装
-│   ├── action_handler.cpp
-│   └── action_handler.h
+├── time_master/                  # Time_Master主程序的专属文档
+│   ├── architecture.md           # 包含目录结构和架构图 (从原1.1, 1.2节迁移)
+│   └── usage.md                  # 包含完整的命令行参数表格和说明 (从原1.3节迁移)
 │
-├── common/ # Contains shared utilities and data structures used throughout the application.
-│   ├── common_utils.cpp
-│   ├── common_utils.h
-│   └── version.h # for version info
+├── graph_generator/              # 图表生成器的专属文档
+│   └── usage.md                  # 包含其结构、命令和使用示例 (从原第2大点迁移)
 │
-├── config/ # 用于存放json配置文件
-│   ├── config.json # 用于定于父项目的映射
-│   ├── format_validator_config.json # 检验转化后项目名称合法性
-│   └── interval_processor_config.json # 转化规则
-│
-├── db_inserter/ 
-│   ├── DataImporterr.cpp  # 封装解析数据与插入数据库      
-│   └── DataImporterr.h           
-│   └── inserter/
-│   │   ├── DatabaseInserter.cpp    # 数据库插入
-│   │   └── DatabaseInserter.cpp    # 数据库插入
-│   └── model/
-│   │   └── time_sheet_model.h      # 共享日期数据的结构
-│   └── parser/        
-│       ├── ParserFactory.h     # 声明创建解析器的工厂
-│       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
-│       └── internal/ 
-│           ├── DataFileParser.h              
-│           ├── DataFileParser.cpp   # 解析数据 
-│           ├── ConfigLoader.h       
-│           ├── ConfigLoader.cpp     # 加载配置    
-│           └── ParserConfig.h    # 读取json配置的父项目映射
-│       
-│
-├── file_handler/ # 预处理的读取文件以及递归查询模块
-│   ├── ConfigLoader.cpp # 加载json
-│   └── ConfigLoader.h 
-│   ├── FileController.cpp # 封装
-│   └── FileController.h
-│   ├── FileUtils.cpp # 递归查询
-│   └── FileUtils.h
-│
-├── time_master_app/                
-│   ├── menu.h           
-│   └── menu.cpp         
-│
-├── queries
-│   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
-│   │   ├── IProjectBreakdownFormatter.h  # 定义项目明细格式化器的通用接口(抽象基类)
-│   │   ├── md/                                  # Markdown格式的具体实现
-│   │   │   ├── ProjectBreakdownMdFormat.cpp
-│   │   │   └── ProjectBreakdownMdFormat.h
-│   │   ├── ProjectBreakdownFormatterFactory.cpp  # “项目明细”格式化器的工厂实现
-│   │   ├── ProjectBreakdownFormatterFactory.h    
-│   │   └── tex/                                 # LaTeX格式的具体实现
-│   │       ├── ProjectBreakdownTexFormat.cpp
-│   │       └── ProjectBreakdownTexFormat.h
-│   ├── QueryHandler.cpp                          # 负责解析用户输入的查询命令
-│   ├── QueryHandler.h
-│   └── report_generators                         # 包含所有高级报告的生成逻辑
-│       ├── _shared/                     # -存放被所有报告类型共享的通用代码
-│       │   ├── BaseTexFormatter.h              # TeX报告的基类，定义通用文档框架 (模板方法模式)
-│       │   ├── query_data_structs.h            # 定义报告所需的数据结构
-│       │   ├── query_utils.cpp                 # 通用工具函数(如数据转换)的实现
-│       │   ├── query_utils.h
-│       │   └── ReportFormat.h                  # 定义报告格式的枚举 
-│       ├── AllDayReports.cpp                     # 批量生成所有日报的逻辑
-│       ├── AllDayReports.h
-│       ├── AllMonthlyReports.cpp                 # 批量生成所有月报的逻辑
-│       ├── AllMonthlyReports.h
-│       ├── AllPeriodReports.cpp                  # 批量生成所有周期报告的逻辑
-│       ├── AllPeriodReports.h
-│       ├── daily/                                 # 日报模块
-│       │   ├── _daily_data/                     #  日报专用的数据结构
-│       │   │   └── DailyReportData.h
-│       │   ├── DailyReportGenerator.cpp        #  日报生成器的核心协调类
-│       │   ├── DailyReportGenerator.h
-│       │   ├── formatter/                       #  日报格式化模块
-│       │   │   ├── DailyReportFormatterFactory.cpp
-│       │   │   ├── DailyReportFormatterFactory.h
-│       │   │   ├── day_md/                      #  日报的Markdown格式化实现
-│       │   │   │   ├── DailyMarkdown.cpp
-│       │   │   │   └── DailyMarkdown.h
-│       │   │   ├── day_tex/                     # 日报的TeX格式化实现
-│       │   │   │   ├── DailyTex.cpp
-│       │   │   │   └── DailyTex.h
-│       │   │   └── IReportFormatter.h          # 日报格式化器的通用接口
-│       │   └── querier/                         # 日报数据查询模块
-│       │       ├── DailyReportQuerier.cpp
-│       │       └── DailyReportQuerier.h
-│       ├── monthly/                               # 月报模块
-│       │   ├── _month_data/                     # 月报专用的数据结构
-│       │   │   └── MonthlyReportData.h
-│       │   ├── formatter/                       # 月报格式化模块
-│       │   │   ├── IReportFormatter.h
-│       │   │   ├── month_md
-│       │   │   │   ├── MonthlyMarkdown.cpp
-│       │   │   │   └── MonthlyMarkdown.h
-│       │   │   ├── month_tex
-│       │   │   │   ├── MonthlyTex.cpp
-│       │   │   │   └── MonthlyTex.h
-│       │   │   ├── MonthlyFormatterFactory.cpp
-│       │   │   └── MonthlyFormatterFactory.h
-│       │   ├── MonthlyReportGenerator.cpp      # 月报生成器的核心协调类
-│       │   ├── MonthlyReportGenerator.h
-│       │   └── querier/                         # 月报数据查询模块
-│       │       ├── MonthlyReportQuerier.cpp
-│       │       └── MonthlyReportQuerier.h
-│       └── period/                                # 周期报告模块
-│           ├── _period_data                    # 周期报告专用的数据结构
-│           │   └── PeriodReportData.h
-│           ├── formatter                       #  周期报告格式化模块
-│           │   ├── IReportFormatter.h
-│           │   ├── period_md/
-│           │   │   ├── PeriodReportMarkdownFormatter.cpp
-│           │   │   └── PeriodReportMarkdownFormatter.h
-│           │   ├── period_tex
-│           │   │   ├── PeriodTex.cpp
-│           │   │   └── PeriodTex.h
-│           │   ├── PeriodReportFormatterFactory.cpp
-│           │   └── PeriodReportFormatterFactory.h
-│           ├── PeriodReportGenerator.cpp       #  周期报告生成器的核心协调类
-│           ├── PeriodReportGenerator.h
-│           └── querier/                         #  周期报告数据查询模块
-│               ├── PeriodReportQuerier.cpp
-│               └── PeriodReportQuerier.h
-│
-├── reprocessing/ # 数据验证与预处理               
-│   ├── LogProcessor.cpp
-│   └── LogProcessor.h
-│   └── input_transfer/               # 转换验证后的输入文件
-│   │   ├── IntervalProcessor.cpp     # 协调器/外观 (负责文件I/O和流程控制)
-│   │   ├── IntervalProcessor.h
-│   │   └── internal/                   # 内部实现细节
-│   │        ├── InputData.h             # 共享数据结构
-│   │        ├── IntervalConverter.cpp   # 转换
-│   │        ├── IntervalConverter.h
-│   │        ├── IntervalProcessorConfig.cpp # 配置加载器
-│   │        └── IntervalProcessorConfig.h
-│   └── validator/ # 合法性验证
-│       ├── FileValidator.cpp           # 公共接口实现
-│       ├── FileValidator.h             
-│       ├── ValidatorUtils.cpp          # 共享工具类
-│       ├── ValidatorUtils.h            
-│       └── internal/                   # 验证内部实现文件夹
-│           ├── OutputFileValidator.cpp
-│           ├── OutputFileValidator.h
-│           ├── SourceFileValidator.cpp
-│           └── SourceFileValidator.h
-│
-└── resources/ # 编译用的图标资源,不是代码
-    ├── app_icon.rc
-    └── output_icon.ico
+└── log_generator/                # 日志生成器的专属文档
+    └── usage.md                  # 包含其结构、用法和示例 (从原第3大点迁移)
 ```
 
-## 1.2 程序架构图
-```mermaid
-graph TD
-    subgraph "用户接口层 (UI Layer)"
-        CLI(main_cli.cpp)
-    end
+-----
 
-    subgraph "应用协调层 (Application Layer)"
-        %% ActionHandler: 整体封装流程
-        Action["ActionHandler<br/><i>整体封装流程</i>"]
-        %% FileController是用于reprocessing读取配置和递归查询文件
-        File["FileController<br/><i>读取配置, 递归查询文件</i>"]
-    end
+## 致谢与许可证
 
-    subgraph "核心业务层 (Business Logic Layer)"
-        %% reprocessing/是验证并且转换文本
-        Reproc["reprocessing/<br/><i>验证与转换文本</i>"]
-        %% db_inserter/是解析并且插入数据库
-        DBInsert["db_inserter/<br/><i>解析并插入数据库</i>"]
-        %% queries/是查询数据库
-        Query["queries/<br/><i>查询数据库</i>"]
-    end
+本项目的实现离不开以下这些出色的开源库。我向这些项目的开发者们表示感谢！
 
-    subgraph "通用工具/配置 (Common & Config)"
-        Common(common/)
-        %% config/: 用于存放reprocessing相关配置
-        Config["config/<br/><i>存放reprocessing相关配置</i>"]
-    end
-    
-    subgraph "数据存储 (Data Store)"
-        DB[(time_data.db)]
-    end
-
-    CLI --> File
-    CLI --> Action
-    Action --> Reproc
-    Action --> DBInsert
-    Action --> Query
-    File --> Config
-    Reproc --> Common
-    DBInsert --> DB
-    Query --> DB
-```
-
-
-## 1.3 命令行使用方法
-注意程序要在powershell或cmd中运行
-### 1.3.1 基本命令格式
-```bash
-time_tracker_command <command> [arguments]
-```
-### 1.3.2 可用命令
-| 序号 | 短标签 | 长标签 | 功能描述 |
-|---|---|---|---|
-| 1 | `-vs <path>` | `--validate-source <path>` | 仅检验源文件的格式 |
-| 2 | `-c <path>` | `--convert <path>` | 仅转换文件格式 |
-| 3 | `-vo`  | `--validate-output` | 转换后检验输出文件 (需与 `-c` 或 `-a` 配合) |
-| 4 | `-a <path>` | `--all <path>` | 执行完整流程(检验源->转换->检验输出) |
-| 5 | `-edc`  | `--enable-day-check`  | 启用对月份天数完整性的检查 |
-| 6 | `-p <filepath>` | `--process <filepath>` | 解析单个已格式化的txt文件并导入数据库 |
-| 7 | `-q d <YYYYMMDD>` | `--query daily <YYYYMMDD>` | 查询指定日期的统计数据 |
-| 8 | `-q p <days>` | `--query period <days>` | 查询过去指定天数的统计数据 |
-| 9 | `-q m <YYYYMM>` | `--query monthly <YYYYMM>` | 查询指定月份的统计数据 |
-| 10 | `-h` | `--help` | 查看此使用帮助 |
-| 11 | `-v` | `--version` | 查看程序版本和更新日期 |
-
-
-
-## 1.4 使用msys2 UCRT64环境进行编译
-0. 下载并安装 MSYS2 UCRT64环境(推荐)
-MSYS2 是为 Windows 操作系统 设计的
-
-访问 MSYS2 的官方网站：https://www.msys2.org/
-
-选择安装程序：
-
-Download the installer: msys2-x86_64-20250622.exe
-1. 执行首次更新
-```bash
-pacman -Syu
-```
-2. 安装 UCRT64 开发工具
-```bash
-pacman -S mingw-w64-ucrt-x86_64-toolchain 
-```
-
-3. 安装 CMake
-项目使用 CMake 来管理构建过程。继续在 MINGW64 终端中输入以下命令来安装它
-```bash
-pacman -S mingw-w64-ucrt-x86_64-cmake 
-```
-
-4. 安装 nlohmann-json 库
-```bash
-pacman -S mingw-w64-x86_64-nlohmann-json
-```
-
-5. 在环境中运行 build.sh
-```bash
-./build.sh
-```
-
-# 2 graph_generator 图表生成
-数据可视化,读取数据库并且生成图表
-## 2.1 structure 程序结构
-```
-graph_generator/
-├── main.py                     # 命令行程序入口
-├── main_input.py               # input交互
-├── db_access.py                # 数据库查询
-|
-├── configs/
-│   ├── heatmap_colors.json     # 热力图颜色配置
-│   └── timeline_colors.json    # 时间线和柱状图颜色配置
-|
-└── modules/
-    ├── day_analyzer.py         # 负责处理“逻辑日”数据 (从 timeline_generator 提取)
-    ├── heatmap_generator.py    # 通用化的热力图生成器 (合并了旧的 heatmap 和 bool_generator)
-    └── plotters.py             # 包含所有基于 matplotlib 的绘图类 (时间线和柱状图)
-```
-## 2.2 commond 命令总览
-1. timeline图表生成
-2. 柱状图生成
-3. 项目热力图生成
-4. 睡眠bool状态生成
-## 2.3 基本命令格式
-```bash
-python main.py <command> [arguments]
-```
-> **注意**：程序需要在 PowerShell 或 CMD 中运行
-> 
-## 2.4 可用命令
-| 序号 | 命令格式 | 功能描述 |
-|------|----------|----------|
-| 1 | `timeline <YYYYMMDD>` | 为指定日期生成时间线图 |
-| 2 | `barchart <YYYYMMDD>` | 为指定日期生成活动时长柱状图 |
-| 3 | `heatmap <year> [-p PROJECT]` | 生成项目热力图（年度+月度） |
-| 4 | `sleep <year>` | 生成睡眠状态热力图（年度+月度） |
-| 5 | `-h, --help` | 查看使用帮助 |
-| 6 | `-v, --version` | 查看程序版本 |
-
-## 2.5 使用示例
-### 2.5.1 生成时间线图（命令1）
-```bash
-python main.py timeline 20250624
-```
-### 2.5.2 生成柱状图（命令2）
-```bash
-python main.py barchart 20250624
-```
-### 2.5.3 项目热力图（命令3）
-#### 默认生成项目(mystudy)
-```bash
-python main.py heatmap 2025
-```
-#### 指定项目meal
-```bash
-python main.py heatmap 2025 -p meal
-```
-### 2.5.4 睡眠bool状态热力图（命令4）
-```bash
-python main.py sleep 2025
-```
-### 2.5.4 查看帮助（命令5）
-```bash
-python main.py -h
-```
-### 2.6 查看版本（命令6）
-```bash
-python main.py -v
-```
-
-# 3 log_generator 日志生成
-txt生成器,用于生成测试数据
-## 3.1 structure
-/project-root
-├── activities_config.json  #配置
-├── Config.h                # 配置模块的头文件 (定义数据结构, 声明加载函数)
-├── Config.cpp              # 配置模块的源文件 (实现加载函数)
-├── LogGenerator.h         #核心逻辑模块的头文件 (定义LogGenerator类)
-├── LogGenerator.cpp       #核心逻辑模块的源文件 (实现LogGenerator类)
-├── Utils.h                # 工具类头文件，仅含声明
-└── main.cpp               #主文件 (包含Application类, Utils实现和main函数)
-## 3.2 UCRT64环境编译
-1. 在环境中运行 build.sh
-```bash
-./build.sh
-```
-## 3.3 usage
-```
-Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.
-  <start_year>      : The starting year (e.g., 1990).
-  <end_year>        : The ending year (inclusive).
-  <items_per_day>   : Number of log items per day (positive integer).
-  --version         : Display version information and exit.
-```
+  * **[SQLite C Library](https://www.sqlite.org/index.html)**: 用于数据存储 (Public Domain)。
+  * **[nlohmann/json](https://github.com/nlohmann/json)**: 用于读取配置 (MIT License)。
+  * **[Matplotlib](https://matplotlib.org/)**: 用于数据可视化 (BSD-style License)。
