@@ -67,47 +67,86 @@ time_master/
 │   ├── menu.h           
 │   └── menu.cpp         
 │
-├── queries/             # Contains all logic for querying the database and generating user-facing reports.
-│   ├── QueryHandler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
-│   └── QueryHandler.h      # Declares the QueryHandler class, the main entry point for all query operations.
-│   └── report_generators/  
-│       │   ├── AllDayReports.cpp # 日总结导出
-│       │   └── AllDayReports.h 
-│       │   ├── AllMonthlyReports.cpp # 月总结导出
-│       │   └── AllMonthlyReports.h 
-│       │   ├── AllPeriodReports.cpp # 最近几天总结导出
-│       │   └── AllPeriodReports.h 
-│       ├── shared/ #(私有)
-│       │   ├── query_utils.cpp   # 日期时间工具,项目数据结构化处理,内容报告生成与格式化
-│       │   └── query_utils.h  
-│       │   └── query_data_structs.h    # 用于存放查询内容的头文件
-│       ├── daily/ #(公共接口)
-│       │   ├── DailyReportGenerator.cpp    # (公共接口) 实现了日报生成器
-│       │   └── DailyReportGenerator.h      # (公共接口) 声明了日报生成器
-│       │   ├── formatter/                # (私有实现) 存放日报的格式化逻辑
-│       │   │   ├── DailyReportFormatter.cpp
-│       │   │   └── DailyReportFormatter.h
-│       │   └── querier/                  # (私有实现) 存放日报的数据查询逻辑
-│       │       ├── DailyReportQuerier.cpp
-│       │       └── DailyReportQuerier.h
-│       ├── monthly/ # (公共接口)
-│       │   ├── MonthlyReportGenerator.cpp    # (公共接口) 实现了月报生成器
-│       │   └── MonthlyReportGenerator.h      # (公共接口) 声明了月报生成器
-│       │   ├── formatter/                # (私有实现) 存放月报的格式化逻辑
-│       │   │   ├── MonthlyReportFormatter.cpp
-│       │   │   └── MonthlyReportFormatter.h
-│       │   └── querier/                  # (私有实现) 存放月报的数据查询逻辑
-│       │       ├── MonthlyReportQuerier.cpp
-│       │       └── MonthlyReportQuerier.h
-│       └── period/ # (公共接口)
-│           ├── PeriodReportGenerator.cpp    # (公共接口) 实现了查询最近几天
-│           └── PeriodReportGenerator.h      # (公共接口) 声明
-│           ├── formatter/                # (私有实现) 存放格式化逻辑
-│           │   ├── PeriodReportFormatter.cpp
-│           │   └── PeriodReportFormatter.h
-│           └── querier/                  # (私有实现) 存放数据查询逻辑
-│               ├── PeriodReportQuerier.cpp
-│               └── PeriodReportQuerier.h
+├── queries
+│   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
+│   │   ├── IProjectBreakdownFormatter.h  # 定义项目明细格式化器的通用接口(抽象基类)
+│   │   ├── md/                                  # Markdown格式的具体实现
+│   │   │   ├── ProjectBreakdownMdFormat.cpp
+│   │   │   └── ProjectBreakdownMdFormat.h
+│   │   ├── ProjectBreakdownFormatterFactory.cpp  # “项目明细”格式化器的工厂实现
+│   │   ├── ProjectBreakdownFormatterFactory.h    
+│   │   └── tex/                                 # LaTeX格式的具体实现
+│   │       ├── ProjectBreakdownTexFormat.cpp
+│   │       └── ProjectBreakdownTexFormat.h
+│   ├── QueryHandler.cpp                          # 负责解析用户输入的查询命令
+│   ├── QueryHandler.h
+│   └── report_generators                         # 包含所有高级报告的生成逻辑
+│       ├── _shared/                     # -存放被所有报告类型共享的通用代码
+│       │   ├── BaseTexFormatter.h              # TeX报告的基类，定义通用文档框架 (模板方法模式)
+│       │   ├── query_data_structs.h            # 定义报告所需的数据结构
+│       │   ├── query_utils.cpp                 # 通用工具函数(如数据转换)的实现
+│       │   ├── query_utils.h
+│       │   └── ReportFormat.h                  # 定义报告格式的枚举 
+│       ├── AllDayReports.cpp                     # 批量生成所有日报的逻辑
+│       ├── AllDayReports.h
+│       ├── AllMonthlyReports.cpp                 # 批量生成所有月报的逻辑
+│       ├── AllMonthlyReports.h
+│       ├── AllPeriodReports.cpp                  # 批量生成所有周期报告的逻辑
+│       ├── AllPeriodReports.h
+│       ├── daily/                                 # 日报模块
+│       │   ├── _daily_data/                     #  日报专用的数据结构
+│       │   │   └── DailyReportData.h
+│       │   ├── DailyReportGenerator.cpp        #  日报生成器的核心协调类
+│       │   ├── DailyReportGenerator.h
+│       │   ├── formatter/                       #  日报格式化模块
+│       │   │   ├── DailyReportFormatterFactory.cpp
+│       │   │   ├── DailyReportFormatterFactory.h
+│       │   │   ├── day_md/                      #  日报的Markdown格式化实现
+│       │   │   │   ├── DailyMarkdown.cpp
+│       │   │   │   └── DailyMarkdown.h
+│       │   │   ├── day_tex/                     # 日报的TeX格式化实现
+│       │   │   │   ├── DailyTex.cpp
+│       │   │   │   └── DailyTex.h
+│       │   │   └── IReportFormatter.h          # 日报格式化器的通用接口
+│       │   └── querier/                         # 日报数据查询模块
+│       │       ├── DailyReportQuerier.cpp
+│       │       └── DailyReportQuerier.h
+│       ├── monthly/                               # 月报模块
+│       │   ├── _month_data/                     # 月报专用的数据结构
+│       │   │   └── MonthlyReportData.h
+│       │   ├── formatter/                       # 月报格式化模块
+│       │   │   ├── IReportFormatter.h
+│       │   │   ├── month_md
+│       │   │   │   ├── MonthlyMarkdown.cpp
+│       │   │   │   └── MonthlyMarkdown.h
+│       │   │   ├── month_tex
+│       │   │   │   ├── MonthlyTex.cpp
+│       │   │   │   └── MonthlyTex.h
+│       │   │   ├── MonthlyFormatterFactory.cpp
+│       │   │   └── MonthlyFormatterFactory.h
+│       │   ├── MonthlyReportGenerator.cpp      # 月报生成器的核心协调类
+│       │   ├── MonthlyReportGenerator.h
+│       │   └── querier/                         # 月报数据查询模块
+│       │       ├── MonthlyReportQuerier.cpp
+│       │       └── MonthlyReportQuerier.h
+│       └── period/                                # 周期报告模块
+│           ├── _period_data                    # 周期报告专用的数据结构
+│           │   └── PeriodReportData.h
+│           ├── formatter                       #  周期报告格式化模块
+│           │   ├── IReportFormatter.h
+│           │   ├── period_md/
+│           │   │   ├── PeriodReportMarkdownFormatter.cpp
+│           │   │   └── PeriodReportMarkdownFormatter.h
+│           │   ├── period_tex
+│           │   │   ├── PeriodTex.cpp
+│           │   │   └── PeriodTex.h
+│           │   ├── PeriodReportFormatterFactory.cpp
+│           │   └── PeriodReportFormatterFactory.h
+│           ├── PeriodReportGenerator.cpp       #  周期报告生成器的核心协调类
+│           ├── PeriodReportGenerator.h
+│           └── querier/                         #  周期报告数据查询模块
+│               ├── PeriodReportQuerier.cpp
+│               └── PeriodReportQuerier.h
 │
 ├── reprocessing/ # 数据验证与预处理               
 │   ├── LogProcessor.cpp
