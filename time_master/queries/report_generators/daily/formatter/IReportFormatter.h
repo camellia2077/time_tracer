@@ -1,9 +1,10 @@
+// queries/report_generators/daily/formatter/IReportFormatter.h
 #ifndef I_DAILY_REPORT_FORMATTER_H
 #define I_DAILY_REPORT_FORMATTER_H
 
 #include <string>
 #include <sqlite3.h>
-#include "report_generators/_shared/query_data_structs.h"
+#include "report_generators/daily/data/DailyReportData.h"
 
 /**
  * @class IReportFormatter
@@ -22,7 +23,7 @@ public:
      * @param db 数据库连接指针。
      * @return 格式化后的报告字符串。
      */
-    virtual std::string format_report(const DailyReportData& data, sqlite3* db) const = 0;
+    virtual std::string format_report(const DailyReportData& data, sqlite3* db) = 0;
 };
 
 #endif // I_DAILY_REPORT_FORMATTER_H
