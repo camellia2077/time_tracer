@@ -41,12 +41,14 @@ file(GLOB QUERIES_SOURCES
     "queries/report_generators/daily/*.cpp"
     "queries/report_generators/daily/formatter/*.cpp"
     "queries/report_generators/daily/formatter/day_md/*.cpp"
+    "queries/report_generators/daily/formatter/day_tex/*.cpp"
 
     "queries/report_generators/daily/querier/*.cpp"
 
     "queries/report_generators/monthly/*.cpp"
     "queries/report_generators/monthly/formatter/*.cpp"
     "queries/report_generators/monthly/formatter/month_md/*.cpp"
+    "queries/report_generators/monthly/formatter/month_tex/*.cpp"
     
     "queries/report_generators/monthly/querier/*.cpp"
 
