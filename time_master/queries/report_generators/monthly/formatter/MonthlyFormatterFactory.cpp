@@ -1,0 +1,14 @@
+#include "MonthlyFormatterFactory.h"
+#include "report_generators/monthly/formatter/month_md/MonthlyMarkdown.h"
+#include <stdexcept>
+
+// create_formatter 方法的实现
+std::unique_ptr<IReportFormatter> MonthlyFormatterFactory::create_formatter(ReportFormat format) {
+    switch (format) {
+        case ReportFormat::Markdown:
+            return std::make_unique<MonthlyMarkdown>();
+        default:
+            // 如果请求了工厂不知道如何创建的格式，则抛出异常
+            throw std::invalid_argument("Unsupported report format requested for monthly report.");
+    }
+}
