@@ -7,7 +7,7 @@ std::unique_ptr<IProjectBreakdownFormatter> ProjectBreakdownFormatterFactory::cr
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<ProjectBreakdownMdFormat>();
-        case ReportFormat::LaTex:
+        case ReportFormat::LaTeX:
             return std::make_unique<ProjectBreakdownTexFormat>();
         default:
             // 默认为 Markdown 或返回空指针

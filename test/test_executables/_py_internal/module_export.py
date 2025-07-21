@@ -13,21 +13,23 @@ class ExportTester(BaseTester):
         self.db_file = Path.cwd() / generated_db_file_name
         self.period_days_to_export = period_export_days
 
-    def run_tests(self):
+    def run_tests(self) -> bool:
         """Runs all data export related tests."""
-        # This line was removed
-        export_dir = Path.cwd() / "Export"
         if not self.db_file.exists():
             print(f"Warning: Skipping export tests because the database file '{self.db_file.name}' does not exist.")
-            return
+            return True # 跳过测试视为成功
 
-        self.run_command_test("Data Export Test (-e d) [Markdown]", ["-e", "d", "-f", "md"])
-        self.run_command_test("Data Export Test (-e m) [Markdown]", ["-e", "m", "-f", "md"])
-        self.run_command_test("Data Export Test (-e p) [Markdown]", ["-e", "p", self.period_days_to_export, "-f", "md"])
+        tests_to_run = [
+            ("Data Export Test (-e d) [Markdown]", ["-e", "d", "-f", "md"]),
+            ("Data Export Test (-e m) [Markdown]", ["-e", "m", "-f", "md"]),
+            ("Data Export Test (-e p) [Markdown]", ["-e", "p", self.period_days_to_export, "-f", "md"]),
+            ("Data Export Test (-e d) [TeX]", ["-e", "d", "-f", "tex"]),
+            ("Data Export Test (-e m) [TeX]", ["-e", "m", "-f", "tex"]),
+            ("Data Export Test (-e p) [TeX]", ["-e", "p", self.period_days_to_export, "-f", "tex"])
+        ]
         
-        # New: Add export tests for TeX format
-        self.run_command_test("Data Export Test (-e d) [TeX]", ["-e", "d", "-f", "tex"])
-        self.run_command_test("Data Export Test (-e m) [TeX]", ["-e", "m", "-f", "tex"])
-        self.run_command_test("Data Export Test (-e p) [TeX]", ["-e", "p", self.period_days_to_export, "-f", "tex"])
-        
-        # The extra file check logic has also been removed to prevent the same error.
+        for name, args in tests_to_run:
+            if not self.run_command_test(name, args):
+                return False # 如果任何一个测试失败，立即返回 False
+                
+        return True # 所有测试都通过了

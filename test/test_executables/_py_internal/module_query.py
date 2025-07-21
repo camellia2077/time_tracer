@@ -14,18 +14,23 @@ class QueryTester(BaseTester):
         self.monthly_month = monthly_query_month
         self.period_days = period_query_days
 
-    def run_tests(self):
+    def run_tests(self) -> bool:
         """Runs all data query related tests."""
-        # This line was removed
         if not self.db_file.exists():
             print(f"Warning: Skipping query tests because the database file '{self.db_file.name}' does not exist.")
-            return
+            return True # 跳过测试视为成功
 
-        self.run_command_test("Data Query Test (-q d) [Markdown]", ["-q", "d", self.daily_date, "-f", "md"])
-        self.run_command_test("Data Query Test (-q p) [Markdown]", ["-q", "p", self.period_days, "-f", "md"])
-        self.run_command_test("Data Query Test (-q m) [Markdown]", ["-q", "m", self.monthly_month, "-f", "md"])
-
-        # New: Add query tests for TeX format
-        self.run_command_test("Data Query Test (-q d) [TeX]", ["-q", "d", self.daily_date, "-f", "tex"])
-        self.run_command_test("Data Query Test (-q p) [TeX]", ["-q", "p", self.period_days, "-f", "tex"])
-        self.run_command_test("Data Query Test (-q m) [TeX]", ["-q", "m", self.monthly_month, "-f", "tex"])
+        tests_to_run = [
+            ("Data Query Test (-q d) [Markdown]", ["-q", "d", self.daily_date, "-f", "md"]),
+            ("Data Query Test (-q p) [Markdown]", ["-q", "p", self.period_days, "-f", "md"]),
+            ("Data Query Test (-q m) [Markdown]", ["-q", "m", self.monthly_month, "-f", "md"]),
+            ("Data Query Test (-q d) [TeX]", ["-q", "d", self.daily_date, "-f", "tex"]),
+            ("Data Query Test (-q p) [TeX]", ["-q", "p", self.period_days, "-f", "tex"]),
+            ("Data Query Test (-q m) [TeX]", ["-q", "m", self.monthly_month, "-f", "tex"])
+        ]
+        
+        for name, args in tests_to_run:
+            if not self.run_command_test(name, args):
+                return False # 如果任何一个测试失败，立即返回 False
+                
+        return True # 所有测试都通过了

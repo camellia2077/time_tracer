@@ -30,7 +30,7 @@ ReportFormat Menu::get_report_format_from_user() const {
     // 使用 getline 读取整行，避免输入缓冲问题
     if (std::getline(std::cin, line) && (line == "2" || line == "tex")) {
         std::cout << "-> TeX format selected.\n";
-        return ReportFormat::LaTex;
+        return ReportFormat::LaTeX;
     }
     std::cout << "-> Markdown format selected.\n";
     return ReportFormat::Markdown;
