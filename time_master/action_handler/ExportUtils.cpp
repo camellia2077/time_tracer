@@ -12,8 +12,8 @@ std::optional<ReportFormatDetails> get_report_format_details(ReportFormat format
     switch (format) {
         case ReportFormat::Markdown:
             return {{"Markdown", ".md"}};
-        case ReportFormat::LaTex:
-            return {{"LaTex", ".tex"}};
+        case ReportFormat::LaTeX:
+            return {{"LaTeX", ".tex"}};
         default:
             std::cerr << RED_COLOR << "错误: 不支持的导出格式。" << RESET_COLOR << std::endl;
             return std::nullopt;

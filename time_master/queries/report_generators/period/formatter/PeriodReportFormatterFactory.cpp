@@ -10,7 +10,7 @@ std::unique_ptr<IReportFormatter> PeriodReportFormatterFactory::create_formatter
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<PeriodReportMarkdownFormatter>();
-        case ReportFormat::LaTex:
+        case ReportFormat::LaTeX:
             return std::make_unique<PeriodTex>();
         // case ReportFormat::Json:
         //     return std::make_unique<PeriodReportJsonFormatter>();

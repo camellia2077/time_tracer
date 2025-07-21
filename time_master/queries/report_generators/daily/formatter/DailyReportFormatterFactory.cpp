@@ -9,7 +9,7 @@ std::unique_ptr<IReportFormatter> DailyReportFormatterFactory::create_formatter(
         case ReportFormat::Markdown:
             return std::make_unique<DailyMarkdown>(); //
         
-        case ReportFormat::LaTex: // 新增 case
+        case ReportFormat::LaTeX: // 新增 case
             return std::make_unique<DailyTex>(); // 创建 DailyTex 实例
 
         // case ReportFormat::Json:

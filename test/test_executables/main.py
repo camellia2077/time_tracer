@@ -9,7 +9,7 @@ from datetime import datetime
 class Colors:
     CYAN = '\033[96m'
     GREEN = '\033[92m'
-    RED = '\033[91m'  # Added for error messages
+    RED = '\033[91m'
     RESET = '\033[0m'
 
 # --- Configuration Parameters ---
@@ -44,10 +44,9 @@ def setup_environment():
     """验证路径、复制可执行文件并清理环境。"""
     print(f"{Colors.CYAN}--- 1. Preparing Executable ---{Colors.RESET}")
     
-    # --- START: 新增的核心文件复制逻辑 ---
     if not SOURCE_EXECUTABLES_DIR.exists():
         print(f"  {Colors.RED}错误: 源目录不存在: {SOURCE_EXECUTABLES_DIR}{Colors.RESET}")
-        sys.exit(1) # 退出脚本
+        sys.exit(1)
 
     executables_to_copy = [EXECUTABLE_CLI_NAME, EXECUTABLE_APP_NAME]
     for exe_name in executables_to_copy:
@@ -56,7 +55,7 @@ def setup_environment():
 
         if not source_path.exists():
             print(f"  {Colors.RED}警告: 在源目录中未找到可执行文件: {exe_name}{Colors.RESET}")
-            continue # 跳过不存在的文件
+            continue
 
         try:
             shutil.copy(source_path, target_path)
@@ -64,7 +63,6 @@ def setup_environment():
         except Exception as e:
             print(f"  {Colors.RED}复制文件时出错 {exe_name}: {e}{Colors.RESET}")
             sys.exit(1)
-    # --- END: 新增的核心文件复制逻辑 ---
 
     print("  可执行文件已准备就绪。")
     
@@ -74,21 +72,13 @@ def setup_environment():
     output_dir = Path.cwd() / "output"
     export_dir = Path.cwd() / "Export"
 
-    # 清理旧文件的逻辑保持不变...
-    if processed_dir.exists():
-        shutil.rmtree(processed_dir)
-        print(f"  {Colors.GREEN}已删除旧目录: {processed_dir.name}{Colors.RESET}")
-    if export_dir.exists():
-        shutil.rmtree(export_dir)
-        print(f"  {Colors.GREEN}已删除旧目录: {export_dir.name}{Colors.RESET}")
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    if db_file.exists():
-        db_file.unlink()
-        print(f"  {Colors.GREEN}已删除旧文件: {db_file.name}{Colors.RESET}")
+    if processed_dir.exists(): shutil.rmtree(processed_dir)
+    if export_dir.exists(): shutil.rmtree(export_dir)
+    if output_dir.exists(): shutil.rmtree(output_dir)
+    if db_file.exists(): db_file.unlink()
     
     output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"  {Colors.GREEN}已创建 'output' 日志目录。{Colors.RESET}")
+    print(f"  {Colors.GREEN}清理完成，已创建 'output' 日志目录。{Colors.RESET}")
 
 
 def main():
@@ -127,16 +117,26 @@ def main():
                      **common_args)
     ]
     
+    # --- 核心改动：主循环现在会检查返回值 ---
+    all_tests_passed = True
     for i, module in enumerate(modules, 1):
         module.reports_dir.mkdir(parents=True, exist_ok=True)
         print(f"{Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{Colors.RESET}")
-        module.run_tests()
+        
+        # 捕获模块的运行结果
+        if not module.run_tests():
+            # 如果模块返回 False，则标记失败并中断循环
+            all_tests_passed = False
+            print(f"\n{Colors.RED}错误: 测试序列因 '{module.module_name}' 模块执行失败而中断。{Colors.RESET}")
+            break
 
-    final_message = f"""
+    # --- 核心改动：只在所有测试都通过时才显示成功消息 ---
+    if all_tests_passed:
+        final_message = f"""
 {Colors.GREEN}✅ All test steps completed successfully!{Colors.RESET}
    Check the 'output' directory for detailed logs.
 """
-    print(final_message)
+        print(final_message)
 
 
 if __name__ == "__main__":

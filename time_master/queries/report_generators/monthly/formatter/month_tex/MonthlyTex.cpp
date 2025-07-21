@@ -76,7 +76,7 @@ void MonthlyTex::_display_project_breakdown(std::stringstream& ss, const Monthly
     build_project_tree_from_records(project_tree, data.records, parent_map);
 
     // 2. 使用工厂创建 LaTeX 格式化器
-    auto formatter = ProjectBreakdownFormatterFactory::createFormatter(ReportFormat::LaTex);
+    auto formatter = ProjectBreakdownFormatterFactory::createFormatter(ReportFormat::LaTeX);
 
     // 3. 调用格式化器并获取结果
     if (formatter) {

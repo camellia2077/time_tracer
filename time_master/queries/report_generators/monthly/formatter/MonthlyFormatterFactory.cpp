@@ -9,8 +9,8 @@ std::unique_ptr<IReportFormatter> MonthlyFormatterFactory::create_formatter(Repo
         case ReportFormat::Markdown:
             return std::make_unique<MonthlyMarkdown>();
         
-        // [修改] 新增对 LaTex 格式的处理
-        case ReportFormat::LaTex:
+        // [修改] 新增对 LaTeX 格式的处理
+        case ReportFormat::LaTeX:
             return std::make_unique<MonthlyTex>();
 
         default:
