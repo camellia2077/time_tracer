@@ -21,6 +21,11 @@ class QueryTester(BaseTester):
             print(f"Warning: Skipping query tests because the database file '{self.db_file.name}' does not exist.")
             return
 
-        self.run_command_test("Data Query Test (-q d)", ["-q", "d", self.daily_date, "-f", "md"])
-        self.run_command_test("Data Query Test (-q p)", ["-q", "p", self.period_days, "-f", "md"])
-        self.run_command_test("Data Query Test (-q m)", ["-q", "m", self.monthly_month, "-f", "md"])
+        self.run_command_test("Data Query Test (-q d) [Markdown]", ["-q", "d", self.daily_date, "-f", "md"])
+        self.run_command_test("Data Query Test (-q p) [Markdown]", ["-q", "p", self.period_days, "-f", "md"])
+        self.run_command_test("Data Query Test (-q m) [Markdown]", ["-q", "m", self.monthly_month, "-f", "md"])
+
+        # New: Add query tests for TeX format
+        self.run_command_test("Data Query Test (-q d) [TeX]", ["-q", "d", self.daily_date, "-f", "tex"])
+        self.run_command_test("Data Query Test (-q p) [TeX]", ["-q", "p", self.period_days, "-f", "tex"])
+        self.run_command_test("Data Query Test (-q m) [TeX]", ["-q", "m", self.monthly_month, "-f", "tex"])
