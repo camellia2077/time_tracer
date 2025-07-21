@@ -1,16 +1,16 @@
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "IReportFormatter.h" // [修改] 继承自接口
+#include "report_generators/monthly/formatter/IReportFormatter.h" // 继承自接口
 #include <sstream>
 
 /**
- * @class MonthlyReportMarkdownFormatter
+ * @class MonthlyMarkdown
  * @brief 将月报数据格式化为 Markdown 字符串的具体实现。
  */
-class MonthlyReportMarkdownFormatter : public IReportFormatter {
+class MonthlyMarkdown : public IReportFormatter {
 public:
-    MonthlyReportMarkdownFormatter() = default;
+    MonthlyMarkdown() = default;
 
     /**
      * @brief [修改] 重写接口的 format_report 方法。

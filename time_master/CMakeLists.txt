@@ -46,6 +46,8 @@ file(GLOB QUERIES_SOURCES
 
     "queries/report_generators/monthly/*.cpp"
     "queries/report_generators/monthly/formatter/*.cpp"
+    "queries/report_generators/monthly/formatter/month_md/*.cpp"
+    
     "queries/report_generators/monthly/querier/*.cpp"
 
 

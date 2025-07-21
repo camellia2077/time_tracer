@@ -1,9 +1,9 @@
-#include "MonthlyReportMarkdownFormatter.h"
+#include "MonthlyMarkdown.h"
 #include "report_generators/_shared/query_utils.h"
 #include <iomanip>
 
-// [修改] 实现 MonthlyReportMarkdownFormatter 类
-std::string MonthlyReportMarkdownFormatter::format_report(const MonthlyReportData& data, sqlite3* db) const {
+// [修改] 实现 MonthlyMarkdown 类
+std::string MonthlyMarkdown::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     if (data.year_month == "INVALID") {
         ss << "Invalid year_month format. Expected YYYYMM.\n";
@@ -21,7 +21,7 @@ std::string MonthlyReportMarkdownFormatter::format_report(const MonthlyReportDat
     return ss.str();
 }
 
-void MonthlyReportMarkdownFormatter::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
+void MonthlyMarkdown::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
     ss << "## Monthly Summary for " << data.year_month.substr(0, 4) << "-" << data.year_month.substr(4, 2) << "\n\n";
 
     if (data.actual_days > 0) {
@@ -30,7 +30,7 @@ void MonthlyReportMarkdownFormatter::_display_summary(std::stringstream& ss, con
     }
 }
 
-void MonthlyReportMarkdownFormatter::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+void MonthlyMarkdown::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
     ProjectBreakdownFormatter formatter(db, data.records, data.total_duration, data.actual_days);
     formatter.write_to_stream(ss);
 }

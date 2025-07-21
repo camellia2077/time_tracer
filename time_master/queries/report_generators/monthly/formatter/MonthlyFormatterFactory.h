@@ -6,10 +6,10 @@
 #include <memory>
 
 /**
- * @class MonthlyReportFormatterFactory
+ * @class MonthlyFormatterFactory
  * @brief 负责创建具体月报格式化器实例的工厂。
  */
-class MonthlyReportFormatterFactory {
+class MonthlyFormatterFactory {
 public:
     /**
      * @brief 根据指定的格式创建一个格式化器实例。
