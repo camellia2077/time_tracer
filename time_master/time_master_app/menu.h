@@ -3,6 +3,8 @@
 
 #include <string>
 #include "LogProcessor.h" // For AppConfig
+// [新增] 引入 ReportFormat，因为辅助函数需要返回此类型
+#include "report_generators/_shared/ReportFormat.h"
 
 // 前向声明，以避免在头文件中包含 ActionHandler.h
 class ActionHandler;
@@ -22,8 +24,9 @@ private:
     bool handle_user_choice(int choice);
     void run_log_processor_submenu();
     void run_full_pipeline_and_import_prompt();
-    void run_period_query_prompt(); // [新增]
-    void run_export_period_reports_prompt(); // [新增]
+    void run_period_query_prompt(); 
+    void run_export_period_reports_prompt();
+    ReportFormat get_report_format_from_user() const; // [新增] 获取用户选择的格式
 
     // --- 用户输入处理 ---
     std::string get_valid_path_input(const std::string& prompt_message);

@@ -2,7 +2,6 @@
 #include "ActionHandler.h"
 #include "version.h"
 #include "common_utils.h"
-// [ADDED] Include the header for the ReportFormat enum
 #include "report_generators/_shared/ReportFormat.h"
 
 #include <iostream>
@@ -23,6 +22,20 @@ Menu::Menu(const std::string& db_name, const AppConfig& config, const std::strin
 Menu::~Menu() {
     delete action_handler_;
 }
+
+// [新增] 实现辅助函数，用于获取用户选择的报告格式
+ReportFormat Menu::get_report_format_from_user() const {
+    std::cout << "Select report format (1: Markdown, 2: TeX) [Default: 1]: ";
+    std::string line;
+    // 使用 getline 读取整行，避免输入缓冲问题
+    if (std::getline(std::cin, line) && (line == "2" || line == "tex")) {
+        std::cout << "-> TeX format selected.\n";
+        return ReportFormat::LaTex;
+    }
+    std::cout << "-> Markdown format selected.\n";
+    return ReportFormat::Markdown;
+}
+
 
 void Menu::run() {
     while (true) {
@@ -52,6 +65,7 @@ void Menu::run() {
     }
 }
 
+// [修改] 更新菜单文本，使其更通用
 void Menu::print_menu() {
     std::cout << "\n" << "--- Time Tracking Menu ---"  << std::endl;
     std::cout << "0. File Processing & Validation (Submenu)" << std::endl;
@@ -60,14 +74,15 @@ void Menu::print_menu() {
     std::cout << "3. Query monthly statistics" << std::endl;
     std::cout << "4. Full Pipeline (Validate -> Convert -> Validate -> Import)" << std::endl;
     std::cout << "5. Generate study heatmap for a year (Not Implemented)" << std::endl;
-    std::cout << "6. Export all DAILY reports to .md files" << std::endl;
-    std::cout << "7. Export all MONTHLY reports to .md files" << std::endl;
-    std::cout << "8. Export PERIOD reports to .md files" << std::endl;
+    std::cout << "6. Export all DAILY reports" << std::endl;    // [修改]
+    std::cout << "7. Export all MONTHLY reports" << std::endl; // [修改]
+    std::cout << "8. Export PERIOD reports" << std::endl;    // [修改]
     std::cout << "9. Show Version" << std::endl;
     std::cout << "10. Exit" << std::endl;
     std::cout << "Enter your choice: ";
 }
 
+// [修改] 更新 case 语句，以调用格式选择函数
 bool Menu::handle_user_choice(int choice) {
     switch (choice) {
         case 0: run_log_processor_submenu(); break;
@@ -75,8 +90,8 @@ bool Menu::handle_user_choice(int choice) {
             {
                 std::string date = get_valid_date_input();
                 if (!date.empty()) {
-                    // [FIXED] Added ReportFormat::Markdown as the second argument
-                    std::cout << action_handler_->run_daily_query(date, ReportFormat::Markdown);
+                    ReportFormat format = get_report_format_from_user(); // 获取格式
+                    std::cout << action_handler_->run_daily_query(date, format);
                 }
             }
             break;
@@ -85,20 +100,24 @@ bool Menu::handle_user_choice(int choice) {
              {
                 std::string month = get_valid_month_input();
                 if (!month.empty()) {
-                    // [修改] 为月度查询添加 ReportFormat::Markdown 参数
-                    std::cout << action_handler_->run_monthly_query(month, ReportFormat::Markdown);
+                    ReportFormat format = get_report_format_from_user(); // 获取格式
+                    std::cout << action_handler_->run_monthly_query(month, format);
                 }
             }
             break;
         case 4: run_full_pipeline_and_import_prompt(); break;
         case 5: std::cout << "\nFeature 'Generate study heatmap for a year' is not yet implemented." << std::endl; break;
         case 6:
-            // [FIXED] Added ReportFormat::Markdown as an argument
-            action_handler_->run_export_all_daily_reports_query(ReportFormat::Markdown);
+            {
+                ReportFormat format = get_report_format_from_user(); // 获取格式
+                action_handler_->run_export_all_daily_reports_query(format);
+            }
             break;
         case 7:
-            // [修改] 为批量月报导出添加 ReportFormat::Markdown 参数
-            action_handler_->run_export_all_monthly_reports_query(ReportFormat::Markdown);
+            {
+                ReportFormat format = get_report_format_from_user(); // 获取格式
+                action_handler_->run_export_all_monthly_reports_query(format);
+            }
             break;
         case 8:
             run_export_period_reports_prompt();
@@ -115,13 +134,13 @@ bool Menu::handle_user_choice(int choice) {
     }
     // Add a pause so the user can see the result of the operation
     std::cout << "\nPress Enter to continue...";
-    // Clear the input buffer in case previous input affects cin.get()
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    // 使用 getline 清空缓冲区，而不是 ignore
+    std::string dummy;
+    std::getline(std::cin, dummy);
     return true;
 }
 
-// Implements the user prompt for period queries
-// [修改] 更新此函数以支持格式化
+// [修改] 更新此函数以支持用户选择格式
 void Menu::run_period_query_prompt() {
     std::cout << "Enter period days (e.g., 7 or 7,30,90): ";
     std::string days_str;
@@ -129,21 +148,22 @@ void Menu::run_period_query_prompt() {
         return;
     }
 
+    ReportFormat format = get_report_format_from_user(); // 在循环外获取一次格式
+
     std::string token;
     std::istringstream tokenStream(days_str);
     while (std::getline(tokenStream, token, ',')) {
         try {
             int days = std::stoi(token);
             std::cout << "\n--- Report for last " << days << " days ---\n";
-            // [修改] 为周期查询添加 ReportFormat::Markdown 参数
-            std::cout << action_handler_->run_period_query(days, ReportFormat::Markdown);
+            std::cout << action_handler_->run_period_query(days, format); // 使用选择的格式
         } catch (const std::exception&) {
             std::cerr << RED_COLOR << "Invalid number '" << token << "' skipped." << RESET_COLOR << std::endl;
         }
     }
 }
 
-// [修改] 更新此函数以支持格式化
+// [修改] 更新此函数以支持用户选择格式
 void Menu::run_export_period_reports_prompt() {
     std::cout << "Enter period days to export (e.g., 7 or 7,30,90): ";
     std::string days_str;
@@ -163,8 +183,8 @@ void Menu::run_export_period_reports_prompt() {
     }
 
     if (!days_list.empty()) {
-        // [修改] 为批量周期报告导出添加 ReportFormat::Markdown 参数
-        action_handler_->run_export_all_period_reports_query(days_list, ReportFormat::Markdown);
+        ReportFormat format = get_report_format_from_user(); // 获取格式
+        action_handler_->run_export_all_period_reports_query(days_list, format); // 使用选择的格式
     } else {
         std::cout << YELLOW_COLOR << "No valid days provided for export." << RESET_COLOR << std::endl;
     }
@@ -239,7 +259,8 @@ void Menu::run_log_processor_submenu() {
             }
         }
         std::cout << "\nPress Enter to continue...";
-        std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        std::string dummy;
+        std::getline(std::cin, dummy);
     }
 }
 
