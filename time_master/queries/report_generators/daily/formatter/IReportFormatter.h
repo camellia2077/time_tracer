@@ -4,7 +4,7 @@
 
 #include <string>
 #include <sqlite3.h>
-#include "report_generators/daily/data/DailyReportData.h"
+#include "report_generators/daily/_daily_data/DailyReportData.h"
 
 /**
  * @class IReportFormatter
