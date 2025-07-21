@@ -1,7 +1,7 @@
 # main.py
 import sys
 import shutil
-import os  # Import os to enable ANSI colors on Windows
+import os
 from pathlib import Path
 from datetime import datetime
 
@@ -9,31 +9,27 @@ from datetime import datetime
 class Colors:
     CYAN = '\033[96m'
     GREEN = '\033[92m'
+    RED = '\033[91m'  # Added for error messages
     RESET = '\033[0m'
 
-# --- Configuration Parameters (Merged from config.py) ---
-# Executable file names
+# --- Configuration Parameters ---
 EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
 EXECUTABLE_APP_NAME = "time_tracker_app.exe"
 
-# Directory paths
-# IMPORTANT: Update these paths to match your system
+# 源路径：您的 C++ 项目的 build 目录
 SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build")
-SOURCE_DATA_PATH = Path("C:/Computer/my_github/github_cpp/New_time_master//my_test/Date_test")
-TARGET_EXECUTABLES_DIR = Path("./") # Current directory
+# 数据源路径
+SOURCE_DATA_PATH = Path("C:/Computer/my_github/github_cpp/New_time_master/my_test/Date_test")
+# 目标路径：当前脚本所在的目录
+TARGET_EXECUTABLES_DIR = Path("./") 
 
-# File and directory names for processing
 EXECUTABLE_TO_RUN = "time_tracker_cli.exe"
 PROCESSED_DATA_DIR_NAME = "Processed_Date_test"
 GENERATED_DB_FILE_NAME = "time_data.db"
 CONVERTED_TEXT_DIR_NAME = "Processed_Date_test"
 
-# --- Query and Export Module Parameters ---
-# Dates are generated automatically from the current system time
 DAILY_QUERY_DATE = datetime.now().strftime("%Y%m%d")
 MONTHLY_QUERY_MONTH = datetime.now().strftime("%Y%m")
-
-# Default query periods
 PERIOD_QUERY_DAYS = "7,30,90"
 PERIOD_EXPORT_DAYS = "7,30,90"
 
@@ -45,10 +41,31 @@ from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
 
 def setup_environment():
-    """Validates paths and cleans the environment before tests."""
+    """验证路径、复制可执行文件并清理环境。"""
     print(f"{Colors.CYAN}--- 1. Preparing Executable ---{Colors.RESET}")
     
-    # ... (code for copying executables remains the same)
+    # --- START: 新增的核心文件复制逻辑 ---
+    if not SOURCE_EXECUTABLES_DIR.exists():
+        print(f"  {Colors.RED}错误: 源目录不存在: {SOURCE_EXECUTABLES_DIR}{Colors.RESET}")
+        sys.exit(1) # 退出脚本
+
+    executables_to_copy = [EXECUTABLE_CLI_NAME, EXECUTABLE_APP_NAME]
+    for exe_name in executables_to_copy:
+        source_path = SOURCE_EXECUTABLES_DIR / exe_name
+        target_path = TARGET_EXECUTABLES_DIR / exe_name
+
+        if not source_path.exists():
+            print(f"  {Colors.RED}警告: 在源目录中未找到可执行文件: {exe_name}{Colors.RESET}")
+            continue # 跳过不存在的文件
+
+        try:
+            shutil.copy(source_path, target_path)
+            print(f"  {Colors.GREEN}已成功复制: {exe_name}{Colors.RESET}")
+        except Exception as e:
+            print(f"  {Colors.RED}复制文件时出错 {exe_name}: {e}{Colors.RESET}")
+            sys.exit(1)
+    # --- END: 新增的核心文件复制逻辑 ---
+
     print("  可执行文件已准备就绪。")
     
     print(f"{Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{Colors.RESET}")
@@ -57,17 +74,15 @@ def setup_environment():
     output_dir = Path.cwd() / "output"
     export_dir = Path.cwd() / "Export"
 
+    # 清理旧文件的逻辑保持不变...
     if processed_dir.exists():
         shutil.rmtree(processed_dir)
-        # [MODIFIED] Added green color for success messages
         print(f"  {Colors.GREEN}已删除旧目录: {processed_dir.name}{Colors.RESET}")
     if export_dir.exists():
         shutil.rmtree(export_dir)
         print(f"  {Colors.GREEN}已删除旧目录: {export_dir.name}{Colors.RESET}")
     if output_dir.exists():
         shutil.rmtree(output_dir)
-        # This message can be removed if you don't want to see it
-        # print(f"  {Colors.GREEN}已删除旧目录: {output_dir.name}{Colors.RESET}")
     if db_file.exists():
         db_file.unlink()
         print(f"  {Colors.GREEN}已删除旧文件: {db_file.name}{Colors.RESET}")
@@ -78,7 +93,6 @@ def setup_environment():
 
 def main():
     """Main function to run all test modules."""
-    # [MODIFIED] This line enables ANSI color codes in many Windows terminals
     os.system('') 
     
     print("\n" + "="*50)
@@ -115,11 +129,9 @@ def main():
     
     for i, module in enumerate(modules, 1):
         module.reports_dir.mkdir(parents=True, exist_ok=True)
-        # [MODIFIED] Print module header in Cyan
         print(f"{Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{Colors.RESET}")
         module.run_tests()
 
-    # --- Final Summary ---
     final_message = f"""
 {Colors.GREEN}✅ All test steps completed successfully!{Colors.RESET}
    Check the 'output' directory for detailed logs.
