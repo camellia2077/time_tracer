@@ -53,11 +53,15 @@ private:
     AppConfig app_config_;
     std::string main_config_path_;
 
+    
+
     // 用于保存文件处理状态的成员
     fs::path input_root_;
     std::vector<fs::path> files_to_process_;
     std::map<fs::path, fs::path> source_to_output_map_;
     LogProcessor processor_;
+    // 新增：用于存储导出根路径的成员变量
+    std::filesystem::path export_root_path_; 
 };
 
 #endif // ACTION_HANDLER_H
