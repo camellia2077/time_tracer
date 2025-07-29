@@ -60,6 +60,13 @@ AppConfig ConfigLoader::load_configuration() {
         std::string error_log_relative = j.at("error_log_path").get<std::string>();
         // Use lexically_normal() to correctly resolve relative pathing like ".."
         app_config.error_log_path = (config_dir_path / error_log_relative).lexically_normal().string();
+        // --- 新增逻辑：尝试加载可选的导出路径 ---
+        // 检查 JSON 对象中是否存在 "export_path" 键
+        if (j.contains("export_path")) {
+            // 如果存在，则读取其值并赋给 app_config 的新成员
+            app_config.export_path = j.at("export_path").get<std::string>();
+        }
+        // 如果不存在，app_config.export_path 将自然地保持为空（std::nullopt）状态
 
     } catch (const nlohmann::json::exception& e) {
         // This catches errors like a missing key from .at()
