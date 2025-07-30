@@ -2,7 +2,7 @@
 #ifndef PERIOD_REPORT_MARKDOWN_FORMATTER_H
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_H
 
-#include "report_generators/period/formatter/IReportFormatter.h"
+#include "queries/report_generators/period/formatter/IReportFormatter.h"
 #include <sstream>
 
 /**

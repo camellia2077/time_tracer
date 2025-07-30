@@ -1,9 +1,10 @@
+// queries/report_generators/monthly/formatter/IReportFormatter.h
 #ifndef I_MONTHLY_REPORT_FORMATTER_H
 #define I_MONTHLY_REPORT_FORMATTER_H
 
 #include <string>
 #include <sqlite3.h>
-#include "report_generators/monthly/_month_data/MonthlyReportData.h"
+#include "queries/report_generators/monthly/_month_data/MonthlyReportData.h"
 
 /**
  * @class IReportFormatter

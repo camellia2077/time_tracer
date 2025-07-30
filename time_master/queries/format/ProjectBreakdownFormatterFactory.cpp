@@ -1,7 +1,7 @@
 // query/format/ProjectBreakdownFormatterFactory.cpp 
 #include "ProjectBreakdownFormatterFactory.h"
-#include "format/md/ProjectBreakdownMdFormat.h"
-#include "format/tex/ProjectBreakdownTexFormat.h" // 未来可以轻松加入新的格式
+#include "queries/format/md/ProjectBreakdownMdFormat.h"
+#include "queries/format/tex/ProjectBreakdownTexFormat.h" // 未来可以轻松加入新的格式
 
 std::unique_ptr<IProjectBreakdownFormatter> ProjectBreakdownFormatterFactory::createFormatter(ReportFormat format) {
     switch (format) {

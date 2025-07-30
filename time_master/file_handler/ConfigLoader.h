@@ -1,9 +1,12 @@
 #ifndef CONFIG_LOADER_H
 #define CONFIG_LOADER_H
 
+// file_handler/ConfigLoader.h
+
+
 #include <string>
 #include <filesystem>
-#include "LogProcessor.h" // For the AppConfig structure
+#include "reprocessing/LogProcessor.h" // For the AppConfig structure
 
 class ConfigLoader {
 public:

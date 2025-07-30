@@ -1,3 +1,4 @@
+// db_inserter/DataImporter.cpp
 #include <iostream>
 #include <vector>
 #include <sstream>
@@ -8,10 +9,10 @@
 #include <fstream>
 
 // 包含项目内其他模块的头文件
-#include "common_utils.h"
-#include "parser/ParserFactory.h"
+#include "common/common_utils.h"
+#include "db_inserter/parser/ParserFactory.h"
 
-#include "inserter/DatabaseInserter.h"
+#include "db_inserter/inserter/DatabaseInserter.h"
           
 
 namespace fs = std::filesystem;

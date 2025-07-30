@@ -1,13 +1,14 @@
 #ifndef ACTION_HANDLER_H
 #define ACTION_HANDLER_H
 
-#include "LogProcessor.h"
+// action_handler/ActionHandler.h
+#include "reprocessing/LogProcessor.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "report_generators/_shared/query_data_structs.h"
-#include "report_generators/_shared/ReportFormat.h"
+#include "queries/report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 
 // 前向声明
 struct sqlite3;

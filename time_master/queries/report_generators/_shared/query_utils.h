@@ -6,7 +6,10 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include "common_utils.h" // For ProjectNode, ProjectTree
+#include "common/common_utils.h" // For ProjectNode, ProjectTree
+
+
+// queries/report_generators/_shared/query_utils.h
 
 // This header declares the shared utility functions.
 

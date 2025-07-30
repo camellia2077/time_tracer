@@ -1,5 +1,4 @@
-// --- START OF FILE reprocessing/LogProcessor.h ---
-
+// reprocessing/LogProcessor.cpp
 #ifndef LOG_PROCESSOR_H
 #define LOG_PROCESSOR_H
 
@@ -7,14 +6,13 @@
 #include <vector>
 #include <filesystem>
 #include <nlohmann/json.hpp> 
-#include <optional> // <-- 新增: 为了使用 std::optional
+#include <optional> // 为了使用 std::optional
 
 struct AppConfig {
     std::string interval_processor_config_path;
     std::string format_validator_config_path;
     std::string error_log_path;
-    // 用于存储从 config.json 中读取的自定义导出根目录路径
-    std::optional<std::string> export_path;
+    std::optional<std::string> export_path;// 用于存储从 config.json 中读取的自定义导出根目录路径
 };
 
 struct AppOptions {

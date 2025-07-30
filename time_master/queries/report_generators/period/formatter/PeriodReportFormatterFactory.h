@@ -2,7 +2,7 @@
 #define PERIOD_REPORT_FORMATTER_FACTORY_H
 
 #include "IReportFormatter.h"
-#include "report_generators/_shared/ReportFormat.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 #include <memory>
 
 /**

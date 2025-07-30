@@ -1,10 +1,12 @@
 #ifndef FILE_CONTROLLER_H
 #define FILE_CONTROLLER_H
 
+// file_handler/FileController.h
+
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "LogProcessor.h" // For AppConfig
+#include "reprocessing/LogProcessor.h" // For AppConfig
 
 /**
  * @brief 一个外观类，封装了所有底层文件和配置相关的操作。

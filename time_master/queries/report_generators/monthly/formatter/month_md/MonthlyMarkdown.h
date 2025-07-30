@@ -1,8 +1,9 @@
-// MonthlyMarkdown.h
+// queries/report_generators/monthly/formatter/month_md/MonthlyMarkdown.h
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "report_generators/monthly/formatter/IReportFormatter.h" // 继承自接口
+#include "queries/report_generators/monthly/formatter/IReportFormatter.h" // 继承自接口
+
 #include <sstream>
 
 /**

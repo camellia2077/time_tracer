@@ -1,3 +1,4 @@
+// queries\report_generators\daily\querier\DailyReportQuerier.cpp
 #include "DailyReportQuerier.h"
 #include <stdexcept>
 

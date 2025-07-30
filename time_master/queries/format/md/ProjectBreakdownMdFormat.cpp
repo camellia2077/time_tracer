@@ -1,4 +1,4 @@
-// query/format/md/ProjectBreakdownMdFormat.cpp (NEW FILE)
+// query/format/md/ProjectBreakdownMdFormat.cpp
 #include "ProjectBreakdownMdFormat.h"
 #include <vector>
 #include <algorithm>

@@ -4,7 +4,7 @@
 
 #include <memory>
 #include "IProjectBreakdownFormatter.h"
-#include "report_generators/_shared/ReportFormat.h" // The shared enum
+#include "queries/report_generators/_shared/ReportFormat.h" // The shared enum
 
 class ProjectBreakdownFormatterFactory {
 public:

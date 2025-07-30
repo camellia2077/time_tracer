@@ -1,10 +1,10 @@
-// query/format/IProjectBreakdownFormatter.h (NEW FILE)
+// query/format/IProjectBreakdownFormatter.h
 #ifndef I_PROJECT_BREAKDOWN_FORMATTER_H
 #define I_PROJECT_BREAKDOWN_FORMATTER_H
 
 #include <string>
 #include <sstream>
-#include "common_utils.h" // For ProjectTree
+#include "common/common_utils.h" // For ProjectTree
 
 /**
  * @class IProjectBreakdownFormatter

@@ -1,4 +1,4 @@
-// report_generators/_shared/BaseTexFormatter.h (新文件)
+// queries/report_generators/_shared/BaseTexFormatter.h 
 #ifndef BASE_TEX_FORMATTER_H
 #define BASE_TEX_FORMATTER_H
 

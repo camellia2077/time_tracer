@@ -1,9 +1,11 @@
-#include "LogProcessor.h"
+// reprocessing/LogProcessor.cpp
+#include "reprocessing/LogProcessor.h"
 
-#include "validator/FileValidator.h"
-#include "validator/ValidatorUtils.h"
-#include "input_transfer/IntervalProcessor.h"
-#include "common_utils.h"
+#include "reprocessing/validator/FileValidator.h"
+#include "reprocessing/validator/ValidatorUtils.h"
+
+#include "reprocessing/input_transfer/IntervalProcessor.h"
+#include "common/common_utils.h"
 
 #include <iostream>
 #include <algorithm>

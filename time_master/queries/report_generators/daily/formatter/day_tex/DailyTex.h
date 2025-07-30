@@ -2,8 +2,8 @@
 #ifndef DAILY_REPORT_TEX_FORMATTER_H
 #define DAILY_REPORT_TEX_FORMATTER_H
 
-#include "report_generators/daily/formatter/IReportFormatter.h"
-#include "report_generators/_shared/BaseTexFormatter.h" // <-- 1. 包含新的基类头文件
+#include "queries/report_generators/daily/formatter/IReportFormatter.h"
+#include "queries/report_generators/_shared/BaseTexFormatter.h" // <-- 1. 包含新的基类头文件
 
 // --- 前置声明 ---
 struct MonthlyReportData;

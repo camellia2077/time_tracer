@@ -1,6 +1,6 @@
 // query/format/tex/ProjectBreakdownTexFormat.cpp (NEW FILE)
 #include "ProjectBreakdownTexFormat.h"
-#include "common_utils.h" // For time_format_duration
+#include "common/common_utils.h" // For time_format_duration
 #include <vector>
 #include <algorithm>
 #include <iomanip>

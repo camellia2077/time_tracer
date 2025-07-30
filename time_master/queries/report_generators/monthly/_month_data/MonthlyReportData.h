@@ -1,4 +1,4 @@
-// ReportData.h
+// queries/report_generators/monthly/_month_data/MonthlyReportData.h
 #ifndef REPORT_DATA_H
 #define REPORT_DATA_H
 

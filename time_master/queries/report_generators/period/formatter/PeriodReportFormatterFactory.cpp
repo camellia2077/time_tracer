@@ -1,6 +1,6 @@
 #include "PeriodReportFormatterFactory.h"
-#include "report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.h"
-#include "report_generators/period/formatter/period_tex/PeriodTex.h"
+#include "queries/report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.h"
+#include "queries/report_generators/period/formatter/period_tex/PeriodTex.h"
 
 
 #include <stdexcept>
