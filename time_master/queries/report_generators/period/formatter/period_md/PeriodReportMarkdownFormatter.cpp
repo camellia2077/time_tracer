@@ -1,12 +1,12 @@
-// PeriodReportMarkdownFormatter.cpp
+// queries/report_generators/period/formatter/period_md/PeriodReportMarkdownFormatter.cpp
 #include "PeriodReportMarkdownFormatter.h"
 #include <iomanip>
 
 // --- 核心改动：包含新的依赖 ---
-#include "report_generators/_shared/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
-#include "format/ProjectBreakdownFormatterFactory.h" // 新的工厂
-#include "format/IProjectBreakdownFormatter.h"     // 工厂返回的接口
-#include "common_utils.h"                                // 为了 ProjectTree
+#include "queries/report_generators/_shared/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
+#include "queries/format/ProjectBreakdownFormatterFactory.h" // 新的工厂
+#include "queries/format/IProjectBreakdownFormatter.h"     // 工厂返回的接口
+#include "common/common_utils.h"                                // 为了 ProjectTree
 
 // format_report 方法的逻辑保持不变
 std::string PeriodReportMarkdownFormatter::format_report(const PeriodReportData& data, sqlite3* db) const {

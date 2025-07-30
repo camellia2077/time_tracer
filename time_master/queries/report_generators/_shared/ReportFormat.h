@@ -1,6 +1,8 @@
 #ifndef REPORT_FORMAT_H
 #define REPORT_FORMAT_H
 
+// queries/report_generators/_shared/ReportFormat.h
+
 /**
  * @enum ReportFormat
  * @brief 定义支持的报告导出格式。

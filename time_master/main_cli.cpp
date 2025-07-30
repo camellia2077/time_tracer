@@ -1,3 +1,4 @@
+// main_cli.cpp
 #include <iostream>
 #include <string>
 #include <vector>
@@ -11,15 +12,15 @@
 #include <windows.h>
 #endif
 
-#include "common_utils.h"
-#include "version.h"
+#include "common/common_utils.h"
+#include "common/version.h"
 
-#include "FileController.h" 
-#include "ActionHandler.h"
-#include "QueryHandler.h"
-#include "LogProcessor.h"
-// [新增] 引入 ReportFormat 枚举
-#include "report_generators/_shared/ReportFormat.h" 
+#include "file_handler/FileController.h" 
+#include "action_handler/ActionHandler.h"
+#include "queries//QueryHandler.h"
+#include "reprocessing/LogProcessor.h"
+
+#include "queries/report_generators/_shared/ReportFormat.h" // 引入 ReportFormat 枚举
 
 // --- Global Constants ---
 const std::string DATABASE_NAME = "time_data.db";

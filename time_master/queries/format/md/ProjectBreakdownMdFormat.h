@@ -2,7 +2,7 @@
 #ifndef PROJECT_BREAKDOWN_MD_FORMAT_H
 #define PROJECT_BREAKDOWN_MD_FORMAT_H
 
-#include "format/IProjectBreakdownFormatter.h"
+#include "queries/format/IProjectBreakdownFormatter.h"
 
 class ProjectBreakdownMdFormat : public IProjectBreakdownFormatter {
 public:

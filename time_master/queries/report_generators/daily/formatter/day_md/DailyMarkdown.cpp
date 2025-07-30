@@ -1,12 +1,12 @@
-// DailyMarkdown.cpp
+// queries/report_generators/daily/formatter/day_md/DailyMarkdown.cpp
 #include "DailyMarkdown.h"
 #include <iomanip>
 
 // --- 核心改动：包含新的依赖 ---
-#include "report_generators/_shared/query_utils.h"   // 用于 build_project_tree_from_records 和 get_parent_map
-#include "format/ProjectBreakdownFormatterFactory.h" // 新的工厂
-#include "format/IProjectBreakdownFormatter.h"     // 工厂返回的接口
-#include "common_utils.h"                      // 为了 ProjectTree
+#include "queries/report_generators/_shared/query_utils.h"   // 用于 build_project_tree_from_records 和 get_parent_map
+#include "queries/format/ProjectBreakdownFormatterFactory.h" // 新的工厂
+#include "queries/format/IProjectBreakdownFormatter.h"     // 工厂返回的接口
+#include "common/common_utils.h"                      // 为了 ProjectTree
 
 // format_report 方法保持不变，因为它将工作委托给了辅助函数
 std::string DailyMarkdown::format_report(const DailyReportData& data, sqlite3* db) {

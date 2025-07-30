@@ -1,11 +1,11 @@
-// --- START OF FILE reprocessing/input_transfer/IntervalProcessor.cpp ---
+// reprocessing/input_transfer/IntervalProcessor.cpp
 
 #include "IntervalProcessor.h"
 
-#include "common_utils.h"
+#include "common/common_utils.h"
 
-#include "internal/InputData.h"
-#include "internal/IntervalConverter.h"
+#include "reprocessing/input_transfer/internal/InputData.h"
+#include "reprocessing/input_transfer/internal/IntervalConverter.h"
 
 #include <fstream>
 #include <iostream>

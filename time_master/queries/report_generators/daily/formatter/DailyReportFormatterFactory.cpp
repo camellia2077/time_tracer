@@ -1,6 +1,7 @@
+// queries/report_generators/daily/formatter/DailyReportFormatterFactory.cpp
 #include "DailyReportFormatterFactory.h"
-#include "report_generators/daily/formatter/day_md/DailyMarkdown.h"
-#include "report_generators/daily/formatter/day_tex/DailyTex.h" // 新增 Tex 格式化器头文件
+#include "queries/report_generators/daily/formatter/day_md/DailyMarkdown.h"
+#include "queries/report_generators/daily/formatter/day_tex/DailyTex.h" //Tex 格式化器头文件
 
 #include <stdexcept>
 
@@ -9,7 +10,7 @@ std::unique_ptr<IReportFormatter> DailyReportFormatterFactory::create_formatter(
         case ReportFormat::Markdown:
             return std::make_unique<DailyMarkdown>(); //
         
-        case ReportFormat::LaTeX: // 新增 case
+        case ReportFormat::LaTeX: //  case
             return std::make_unique<DailyTex>(); // 创建 DailyTex 实例
 
         // case ReportFormat::Json:

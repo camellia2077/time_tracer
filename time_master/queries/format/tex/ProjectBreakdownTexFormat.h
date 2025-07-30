@@ -1,8 +1,8 @@
-// query/format/tex/ProjectBreakdownTexFormat.h (NEW FILE)
+// query/format/tex/ProjectBreakdownTexFormat.h 
 #ifndef PROJECT_BREAKDOWN_TEX_FORMAT_H
 #define PROJECT_BREAKDOWN_TEX_FORMAT_H
 
-#include "format/IProjectBreakdownFormatter.h"
+#include "queries/format/IProjectBreakdownFormatter.h"
 
 /**
  * @class ProjectBreakdownTexFormat

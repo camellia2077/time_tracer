@@ -7,8 +7,8 @@
 #include <regex>
 #include <sstream>
 
-#include "common_utils.h"
-#include "model/time_sheet_model.h"
+#include "common/common_utils.h"
+#include "db_inserter/model/time_sheet_model.h"
 #include "ParserConfig.h" 
 
 class DataFileParser {

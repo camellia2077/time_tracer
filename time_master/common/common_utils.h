@@ -1,7 +1,8 @@
-// --- START OF FILE common/common_utils.h ---
 
 #ifndef COMMON_UTILS_H
 #define COMMON_UTILS_H
+
+//time_master/common/common_utils.h
 
 #include <string>
 #include <vector>

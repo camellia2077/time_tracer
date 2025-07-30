@@ -1,4 +1,4 @@
-// --- START OF FILE reprocessing/input_transfer/IntervalProcessor.h ---
+// reprocessing/input_transfer/IntervalProcessor.h
 
 #ifndef INTERVAL_PROCESSOR_H
 #define INTERVAL_PROCESSOR_H

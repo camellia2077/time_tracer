@@ -1,11 +1,13 @@
 #ifndef DATABASE_INSERTER_H
 #define DATABASE_INSERTER_H
 
+// db_inserter/inserter/DatabaseInserter.h
+
 #include <string>
 #include <vector>
 #include <unordered_set>
 #include <sqlite3.h>
-#include "model/time_sheet_model.h" 
+#include "db_inserter/model/time_sheet_model.h" 
 
 /**
  * @class DatabaseInserter

@@ -1,8 +1,7 @@
-// --- START OF FILE common/common_utils.cpp ---
 
-#include "common_utils.h"
 
-// Note: Function bodies (implementations) belong in the .cpp file.
+#include "common/common_utils.h"
+// Time_Master_cpp/time_master/common/common_utils.cpp
 
 // Helper function to convert HH:MM or HHMM time string to seconds since midnight 
 int time_str_to_seconds(const std::string& time_str_in) {

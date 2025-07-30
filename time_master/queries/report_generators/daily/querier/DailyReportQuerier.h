@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/daily/_daily_data/DailyReportData.h" 
+#include "queries/report_generators/daily/_daily_data/DailyReportData.h" 
 
 /**
  * @class DailyReportQuerier
