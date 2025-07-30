@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- 为 Release 构建类型设置优化编译选项 ---
+# 不要使用 -Os优化，因为程序会因为json.hpp报错
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -flto")
 
 # --- 为 Release 构建类型设置优化链接选项 ---
@@ -125,33 +126,12 @@ if(WIN32)
     message(STATUS "Windows icon resource added to both targets.")
 endif()
 
-# --- 为每个目标分别添加头文件搜索路径 ---
+# --- 为每个目标分别添加头文件搜索路径 (修改为绝对路径) ---
 target_include_directories(time_tracker_app PRIVATE
-    "common"
-
-    "db_inserter"
-    "queries"
-    "resources"
-    "time_master_app"
-
-    "reprocessing"
-
-    "file_handler"
-    "action_handler"
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_include_directories(time_tracker_cli PRIVATE
-    "common"
-
-    "db_inserter"
-
-    "queries"
-
-    "resources"
-
-    "reprocessing"
-
-    "file_handler"
-    "action_handler"
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # --- 为每个目标分别链接库 ---

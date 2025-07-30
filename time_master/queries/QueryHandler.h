@@ -4,8 +4,8 @@
 #include <sqlite3.h>
 #include <string>
 #include <vector>
-#include "report_generators/_shared/query_data_structs.h"
-#include "report_generators/_shared/ReportFormat.h" 
+#include "queries/report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/_shared/ReportFormat.h" 
 
 class QueryHandler {
 public:

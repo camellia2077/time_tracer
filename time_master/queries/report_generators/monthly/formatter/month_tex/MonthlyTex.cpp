@@ -4,10 +4,10 @@
 #include <string>
 
 // --- 依赖保持不变 ---
-#include "report_generators/_shared/query_utils.h"
-#include "format/ProjectBreakdownFormatterFactory.h"
-#include "format/IProjectBreakdownFormatter.h"
-#include "common_utils.h"
+#include "queries/report_generators/_shared/query_utils.h"
+#include "queries/format/ProjectBreakdownFormatterFactory.h"
+#include "queries/format/IProjectBreakdownFormatter.h"
+#include "common/common_utils.h"
 
 // 1. 公开的接口现在只负责调用基类的模板方法
 std::string MonthlyTex::format_report(const MonthlyReportData& data, sqlite3* db) const {

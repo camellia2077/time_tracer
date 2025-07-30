@@ -1,8 +1,9 @@
+// queries/report_generators/monthly/formatter/MonthlyFormatterFactory.h
 #ifndef MONTHLY_REPORT_FORMATTER_FACTORY_H
 #define MONTHLY_REPORT_FORMATTER_FACTORY_H
 
 #include "IReportFormatter.h"
-#include "report_generators/_shared/ReportFormat.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 #include <memory>
 
 /**

@@ -1,6 +1,7 @@
+// reprocessing/validator/FileValidator.cpp
 #include "FileValidator.h"
-#include "internal/SourceFileValidator.h"
-#include "internal/OutputFileValidator.h"
+#include "reprocessing/validator/internal/SourceFileValidator.h"
+#include "reprocessing/validator/internal/OutputFileValidator.h"
 
 FileValidator::FileValidator(const std::string& source_config_path, 
                              const std::string& output_validator_config_path, 

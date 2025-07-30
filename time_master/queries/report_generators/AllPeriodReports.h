@@ -3,8 +3,8 @@
 
 #include <sqlite3.h>
 #include <vector>
-#include "report_generators/_shared/query_data_structs.h"
-#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
+#include "queries/report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class AllPeriodReports

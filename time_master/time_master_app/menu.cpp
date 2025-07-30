@@ -1,8 +1,9 @@
+// time_master_app/menu.h
 #include "Menu.h"
-#include "ActionHandler.h"
-#include "version.h"
-#include "common_utils.h"
-#include "report_generators/_shared/ReportFormat.h"
+#include "action_handler/ActionHandler.h"
+#include "common/version.h"
+#include "common/common_utils.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 
 #include <iostream>
 #include <limits>

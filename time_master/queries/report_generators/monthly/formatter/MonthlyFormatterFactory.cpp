@@ -1,6 +1,8 @@
+// queries/report_generators/monthly/formatter/MonthlyFormatterFactory.cpp
 #include "MonthlyFormatterFactory.h"
-#include "report_generators/monthly/formatter/month_md/MonthlyMarkdown.h"
-#include "report_generators/monthly/formatter/month_tex/MonthlyTex.h" // [新增] 引入 MonthlyTex 头文件
+#include "queries/report_generators/monthly/formatter/month_md/MonthlyMarkdown.h"
+#include "queries/report_generators/monthly/formatter/month_tex/MonthlyTex.h" //引入 MonthlyTex 头文件
+
 #include <stdexcept>
 
 // create_formatter 方法的实现

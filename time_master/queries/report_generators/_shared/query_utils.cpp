@@ -1,5 +1,6 @@
 #include "query_utils.h"
-#include "common_utils.h"
+#include "common/common_utils.h"
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -9,6 +10,9 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+
+// queries/report_generators/_shared/query_utils.cpp
+
 // This file provides the implementation for the shared utility functions.
 
 // --- ProjectBreakdownFormatter Class Implementation ---

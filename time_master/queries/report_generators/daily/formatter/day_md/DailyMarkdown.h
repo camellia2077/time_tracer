@@ -1,7 +1,8 @@
+// queries/report_generators/daily/formatter/day_md/DailyMarkdown.h
 #ifndef DAILY_REPORT_MARKDOWN_FORMATTER_H
 #define DAILY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "report_generators/daily/formatter/IReportFormatter.h"
+#include "queries/report_generators/daily/formatter/IReportFormatter.h"
 #include <sstream>
 
 /**

@@ -1,6 +1,6 @@
 #include "PeriodReportGenerator.h"
 #include "querier/PeriodReportQuerier.h"
-#include "report_generators/period/_period_data/PeriodReportData.h"
+#include "queries/report_generators/period/_period_data/PeriodReportData.h"
 // [修改] 引入格式化器工厂，替代具体的格式化器
 #include "formatter/PeriodReportFormatterFactory.h"
 
