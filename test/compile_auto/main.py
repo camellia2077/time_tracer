@@ -7,16 +7,10 @@ import shutil
 
 # --- 修改点 1: 从 config.py 导入新增的配置 ---
 try:
-    from config import (
-        SOURCE_DIRECTORY, 
-        OUTPUT_DIRECTORY, 
-        COMPILE_TYPES,
-        ENABLE_PARTIAL_COMPILE,
-        PARTIAL_COMPILE_COUNT
-    )
+    from config import SOURCE_DIRECTORY, OUTPUT_DIRECTORY, COMPILE_TYPES
 except ImportError:
     print("错误：无法找到或导入 config.py 文件。")
-    print("请确保 config.py 文件存在，并其中定义了所有必需的配置项。")
+    print("请确保 config.py 文件存在，并其中定义了 SOURCE_DIRECTORY, OUTPUT_DIRECTORY, 和 COMPILE_TYPES。")
     sys.exit(1)
 
 # 从 internal 包中导入命令处理函数
@@ -26,7 +20,7 @@ def main():
     program_start_time = time.perf_counter()
     parser = argparse.ArgumentParser(
         description="一个通用的、支持并行的文档编译器（配置文件驱动）。",
-        epilog="现在，所有路径和编译选项都在 config.py 中配置。直接运行 'python main.py' 即可。"
+        epilog="现在，所有路径和编译类型都在 config.py 中配置。直接运行 'python main.py' 即可。"
     )
     
     parser.add_argument('--no-clean', action='store_true', help='【可选】启动时不清理旧的输出目录。')
@@ -53,11 +47,7 @@ def main():
             except OSError as e:
                 print(f"致命错误：无法删除输出目录 '{output_dir_to_process}': {e}")
                 sys.exit(1)
-        else:
-             print(f"🧹 输出目录 '{output_dir_to_process}' 不存在，无需清理。")
-    else:
-        print("🚫 用户选择跳过清理步骤。")
-
+    # ... (省略部分未改变的代码) ...
     try:
         os.makedirs(output_dir_to_process, exist_ok=True)
     except OSError as e:
@@ -68,15 +58,13 @@ def main():
         print(f"错误：在 config.py 中配置的源路径 '{source_dir_to_process}' 不是一个有效的目录。")
         sys.exit(1)
         
-    # --- 修改点 2: 将新增的配置项添加到参数包中 ---
+    # --- 修改点 2: 将 COMPILE_TYPES 添加到参数包中 ---
     auto_mode_args = argparse.Namespace(
         source_dir=source_dir_to_process,
         output_dir=output_dir_to_process,
         font=args.font,
         jobs=args.jobs,
-        compile_types=COMPILE_TYPES,
-        enable_partial_compile=bool(ENABLE_PARTIAL_COMPILE), # 转为布尔值
-        partial_compile_count=PARTIAL_COMPILE_COUNT
+        compile_types=COMPILE_TYPES  # <--- 将编译类型列表传递下去
     )
     handle_auto(auto_mode_args)
     

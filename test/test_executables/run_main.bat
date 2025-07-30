@@ -20,7 +20,7 @@ echo -----------------------------------
 echo.
 
 :: Execute the Python script.
-py main.py
+py test_exe_main.py
 
 echo.
 echo -----------------------------------
