@@ -1,10 +1,10 @@
 #include "QueryHandler.h"
-#include "report_generators/daily/DailyReportGenerator.h" 
-#include "report_generators/monthly/MonthlyReportGenerator.h" 
-#include "report_generators/period/PeriodReportGenerator.h"
-#include "report_generators/AllDayReports.h"
-#include "report_generators/AllMonthlyReports.h"
-#include "report_generators/AllPeriodReports.h"
+#include "queries/reports/daily/DailyReportGenerator.h" 
+#include "queries/reports/monthly/MonthlyReportGenerator.h" 
+#include "queries/reports/period/PeriodReportGenerator.h"
+#include "queries/reports/AllDayReports.h"
+#include "queries/reports/AllMonthlyReports.h"
+#include "queries/reports/AllPeriodReports.h"
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 

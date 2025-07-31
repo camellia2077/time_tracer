@@ -5,7 +5,7 @@
 #include <string>
 #include "reprocessing/LogProcessor.h" // For AppConfig
 // [新增] 引入 ReportFormat，因为辅助函数需要返回此类型
-#include "queries/report_generators/_shared/ReportFormat.h"
+#include "queries/_shared/ReportFormat.h"
 
 // 前向声明，以避免在头文件中包含 ActionHandler.h
 class ActionHandler;

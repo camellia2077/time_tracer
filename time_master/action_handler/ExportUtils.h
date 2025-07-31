@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <functional>
 #include <optional>
-#include "queries/report_generators/_shared/ReportFormat.h" 
+#include "queries/_shared/ReportFormat.h" 
 
 // 定义导出工具的命名空间
 namespace ExportUtils {
