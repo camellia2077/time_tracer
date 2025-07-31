@@ -3,7 +3,7 @@
 #include "action_handler/ActionHandler.h"
 #include "common/version.h"
 #include "common/common_utils.h"
-#include "queries/_shared/ReportFormat.h"
+#include "queries/shared/ReportFormat.h"
 
 #include <iostream>
 #include <limits>
