@@ -6,12 +6,12 @@
 #include "queries/shared/DailyReportData.h"
 
 /**
- * @class IDailyFmt
+ * @class IDayFmt
  * @brief 日报格式化器的抽象接口（策略接口）。
  */
-class IDailyFmt {
+class IDayFmt {
 public:
-    virtual ~IDailyFmt() = default;
+    virtual ~IDayFmt() = default;
 
     /**
      * @brief 格式化日报数据的纯虚函数。

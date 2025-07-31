@@ -1,5 +1,5 @@
-// MonthlyTex.cpp (已更新)
-#include "MonthlyTex.h"
+// MonthTex.cpp (已更新)
+#include "MonthTex.h"
 #include <iomanip>
 #include <string>
 
@@ -10,7 +10,7 @@
 #include "common/common_utils.h"
 
 // 1. 公开的接口现在只负责调用基类的模板方法
-std::string MonthlyTex::format_report(const MonthlyReportData& data, sqlite3* db) const {
+std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) const {
     if (data.year_month == "INVALID") {
         // 对于无效输入，直接返回错误信息，不使用模板
         return "Invalid year_month format. Expected YYYYMM.\n";
@@ -19,7 +19,7 @@ std::string MonthlyTex::format_report(const MonthlyReportData& data, sqlite3* db
 }
 
 // 2. 实现新的 format_content 方法，将所有核心内容生成逻辑移到这里
-void MonthlyTex::format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+void MonthTex::format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
     // 步骤 A: 生成报告总结
     _display_summary(ss, data);
 
@@ -34,7 +34,7 @@ void MonthlyTex::format_content(std::stringstream& ss, const MonthlyReportData& 
 // 3. _display_preamble 方法被彻底删除
 
 // _display_summary 方法保持不变
-void MonthlyTex::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
+void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
     auto escape_tex_local = [](const std::string& s) {
         std::string escaped;
         for (char c : s) {
@@ -58,7 +58,7 @@ void MonthlyTex::_display_summary(std::stringstream& ss, const MonthlyReportData
 }
 
 // _display_project_breakdown 方法保持不变
-void MonthlyTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
     std::map<std::string, std::string> parent_map = get_parent_map(db);
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, data.records, parent_map);

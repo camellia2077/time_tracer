@@ -1,5 +1,5 @@
 #include "PeriodFmtFactory.h"
-#include "queries/period/formatters/PeriodMarkdown.h" // Corrected header
+#include "queries/period/formatters/PeriodMd.h" // Corrected header
 #include "queries/period/formatters/PeriodTex.h"
 
 #include <stdexcept>
@@ -8,7 +8,7 @@
 std::unique_ptr<IPeriodFmt> PeriodFmtFactory::create_formatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
-            return std::make_unique<PeriodMarkdown>();
+            return std::make_unique<PeriodMd>();
         case ReportFormat::LaTeX:
             return std::make_unique<PeriodTex>();
         // case ReportFormat::Json:

@@ -1,4 +1,4 @@
-// MonthlyTex.h (corrected)
+// MonthTex.h (corrected)
 #ifndef MONTHLY_REPORT_TEX_FORMATTER_H
 #define MONTHLY_REPORT_TEX_FORMATTER_H
 
@@ -11,14 +11,14 @@ struct PeriodReportData;
 struct MonthlyReportData;
 
 /**
- * @class MonthlyTex
+ * @class MonthTex
  * @brief 将月报数据格式化为 TeX 字符串的具体实现。
  * 通过继承 BaseTexFormatter 来复用文档框架。
  */
 // Corrected: Inherits from the correct interface
-class MonthlyTex : public IMonthFmt, private BaseTexFormatter { 
+class MonthTex : public IMonthFmt, private BaseTexFormatter { 
 public:
-    MonthlyTex() = default;
+    MonthTex() = default;
 
     // This override is now correct because the base class is correct
     std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;

@@ -1,27 +1,24 @@
-// queries/report_generators/period/formatter/period_md/PeriodMarkdown.cpp
-#include "PeriodMarkdown.h"
+// queries/report_generators/monthly/formatter/month_md/MonthMd.cpp
+#include "MonthMd.h"
 #include <iomanip>
 
-#include "common/common_utils.h"                                // 为了 ProjectTree
-
-// --- 核心改动：包含新的依赖 ---
 #include "queries/shared/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
 #include "queries/shared/breakdown/ProjectBreakdownFormatterFactory.h" // 新的工厂
 #include "queries/shared/breakdown/IProjectBreakdownFormatter.h"     // 工厂返回的接口
+#include "common/common_utils.h"                                // 为了 ProjectTree
 
-
-// format_report 方法的逻辑保持不变
-std::string PeriodMarkdown::format_report(const PeriodReportData& data, sqlite3* db) const {
+// format_report 方法的逻辑保持不变，它将工作委托给辅助函数
+std::string MonthMd::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;
-    if (data.days_to_query <= 0) {
-        ss << "Number of days to query must be positive.\n";
+    if (data.year_month == "INVALID") {
+        ss << "Invalid year_month format. Expected YYYYMM.\n";
         return ss.str();
     }
 
     _display_summary(ss, data);
 
     if (data.actual_days == 0) {
-        ss << "No time records found in this period.\n";
+        ss << "No time records found for this month.\n";
         return ss.str();
     }
     
@@ -31,18 +28,17 @@ std::string PeriodMarkdown::format_report(const PeriodReportData& data, sqlite3*
 }
 
 // _display_summary 方法保持不变
-void PeriodMarkdown::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
-    ss << "## Period Report: Last " << data.days_to_query << " days ("
-       << data.start_date << " to " << data.end_date << ")\n\n";
+void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
+    ss << "## Monthly Summary for " << data.year_month.substr(0, 4) << "-" << data.year_month.substr(4, 2) << "\n\n";
 
     if (data.actual_days > 0) {
-        ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
         ss << "- **Actual Days with Records**: " << data.actual_days << "\n";
+        ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
     }
 }
 
 // --- 核心改动：_display_project_breakdown 的全新实现 ---
-void PeriodMarkdown::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
+void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
     // 1. 准备数据：构建项目树
     // 这些是来自 query_utils.cpp 的独立工具函数
     std::map<std::string, std::string> parent_map = get_parent_map(db);

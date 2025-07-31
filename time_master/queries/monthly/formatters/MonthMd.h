@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthlyMarkdown.h
+// queries/monthly/formatters/MonthMd.h
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 
@@ -9,13 +9,13 @@
 struct MonthlyReportData;
 
 /**
- * @class MonthlyMarkdown
+ * @class MonthMd
  * @brief 将月报数据格式化为 Markdown 字符串的具体实现。
  * (现在使用 ProjectBreakdownFormatterFactory 来处理项目明细)
  */
-class MonthlyMarkdown : public IMonthFmt { // Corrected: Was IReportFormatter
+class MonthMd : public IMonthFmt { // Corrected: Was IReportFormatter
 public:
-    MonthlyMarkdown() = default;
+    MonthMd() = default;
 
     std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;
 

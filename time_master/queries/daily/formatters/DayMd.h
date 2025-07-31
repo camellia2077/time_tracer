@@ -1,20 +1,20 @@
-// queries/daily/formatters/DailyMarkdown.h
+// queries/daily/formatters/DayMd.h
 #ifndef DAILY_REPORT_MARKDOWN_FORMATTER_H
 #define DAILY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/daily/IDailyFmt.h"
+#include "queries/daily/IDayFmt.h"
 #include <sstream>
 
 // Forward declaration
 struct DailyReportData;
 
 /**
- * @class DailyMarkdown
+ * @class DayMd
  * @brief 将日报数据格式化为 Markdown 字符串的具体实现。
  */
-class DailyMarkdown : public IDailyFmt {
+class DayMd : public IDayFmt {
 public:
-    DailyMarkdown() = default;
+    DayMd() = default;
 
     std::string format_report(const DailyReportData& data, sqlite3* db) const override;
 

@@ -1,4 +1,4 @@
-#include "DailyMarkdown.h"
+#include "DayMd.h"
 #include <iomanip>
 
 #include "common/common_utils.h"                      // 为了 ProjectTree
@@ -11,7 +11,7 @@
 
 
 // format_report 方法保持不变，因为它将工作委托给了辅助函数
-std::string DailyMarkdown::format_report(const DailyReportData& data, sqlite3* db) const {
+std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     _display_header(ss, data);
 
@@ -26,7 +26,7 @@ std::string DailyMarkdown::format_report(const DailyReportData& data, sqlite3* d
 }
 
 // _display_header 方法保持不变
-void DailyMarkdown::_display_header(std::stringstream& ss, const DailyReportData& data) const {
+void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     ss << "## Daily Report for " << data.date << "\n\n"; 
     ss << "- **Date**: " << data.date << "\n";
     ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration) << "\n";
@@ -36,7 +36,7 @@ void DailyMarkdown::_display_header(std::stringstream& ss, const DailyReportData
 }
 
 // --- 核心改动：_display_project_breakdown 的全新实现 ---
-void DailyMarkdown::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
     // 1. 准备数据：构建项目树
     // 注意：这些函数现在是来自 query_utils.cpp 的独立工具函数
     std::map<std::string, std::string> parent_map = get_parent_map(db);

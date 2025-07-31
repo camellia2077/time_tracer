@@ -87,14 +87,14 @@ time_master/
 │       │   ├── DailyReportGenerator.cpp        #  日报生成器的核心协调类
 │       │   ├── DailyReportGenerator.h
 │       │   ├── formatter/                       #  日报格式化模块
-│       │   │   ├── DailyFmtFactory.cpp
-│       │   │   ├── DailyFmtFactory.h
+│       │   │   ├── DayFmtFactory.cpp
+│       │   │   ├── DayFmtFactory.h
 │       │   │   ├── day_md/                      #  日报的Markdown格式化实现
-│       │   │   │   ├── DailyMarkdown.cpp
-│       │   │   │   └── DailyMarkdown.h
+│       │   │   │   ├── DayMd.cpp
+│       │   │   │   └── DayMd.h
 │       │   │   ├── day_tex/                     # 日报的TeX格式化实现
-│       │   │   │   ├── DailyTex.cpp
-│       │   │   │   └── DailyTex.h
+│       │   │   │   ├── DayTex.cpp
+│       │   │   │   └── DayTex.h
 │       │   │   └── IReportFormatter.h          # 日报格式化器的通用接口
 │       │   └── querier/                         # 日报数据查询模块
 │       │       ├── DailyReportQuerier.cpp
@@ -105,11 +105,11 @@ time_master/
 │       │   ├── formatter/                       # 月报格式化模块
 │       │   │   ├── IReportFormatter.h
 │       │   │   ├── month_md
-│       │   │   │   ├── MonthlyMarkdown.cpp
-│       │   │   │   └── MonthlyMarkdown.h
+│       │   │   │   ├── MonthMd.cpp
+│       │   │   │   └── MonthMd.h
 │       │   │   ├── month_tex
-│       │   │   │   ├── MonthlyTex.cpp
-│       │   │   │   └── MonthlyTex.h
+│       │   │   │   ├── MonthTex.cpp
+│       │   │   │   └── MonthTex.h
 │       │   │   ├── MonthFmtFactory.cpp
 │       │   │   └── MonthFmtFactory.h
 │       │   ├── MonthlyReportGenerator.cpp      # 月报生成器的核心协调类
@@ -123,8 +123,8 @@ time_master/
 │           ├── formatter                       #  周期报告格式化模块
 │           │   ├── IReportFormatter.h
 │           │   ├── period_md/
-│           │   │   ├── PeriodMarkdown.cpp
-│           │   │   └── PeriodMarkdown.h
+│           │   │   ├── PeriodMd.cpp
+│           │   │   └── PeriodMd.h
 │           │   ├── period_tex
 │           │   │   ├── PeriodTex.cpp
 │           │   │   └── PeriodTex.h

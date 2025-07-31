@@ -1,5 +1,5 @@
-// DailyTex.cpp 
-#include "DailyTex.h"
+// DayTex.cpp 
+#include "DayTex.h"
 #include <iomanip>
 #include <string>
 
@@ -12,12 +12,12 @@
 
 
 // The 'const' keyword is added here to match the header file
-std::string DailyTex::format_report(const DailyReportData& data, sqlite3* db) const {
+std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) const {
     return format_report_template(data, db);
 }
 
 // 2. 实现新的 format_content 方法，将所有核心内容生成逻辑移到这里
-void DailyTex::format_content(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayTex::format_content(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
     // 步骤 A: 生成报告头
     _display_header(ss, data);
 
@@ -32,7 +32,7 @@ void DailyTex::format_content(std::stringstream& ss, const DailyReportData& data
 // 3. _display_preamble 方法被彻底删除
 
 // _display_header 方法保持不变
-void DailyTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
+void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     auto escape_tex_local = [](const std::string& s) {
         std::string escaped;
         for (char c : s) {
@@ -55,7 +55,7 @@ void DailyTex::_display_header(std::stringstream& ss, const DailyReportData& dat
 }
 
 // _display_project_breakdown 方法保持不变
-void DailyTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
     std::map<std::string, std::string> parent_map = get_parent_map(db);
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, data.records, parent_map);

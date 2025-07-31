@@ -2,7 +2,7 @@
 #include "DailyReportGenerator.h"
 #include "DailyReportQuerier.h"
 #include "queries/shared/query_data_structs.h"
-#include "queries/daily/DailyFmtFactory.h" // Correct include
+#include "queries/daily/DayFmtFactory.h" // Correct include
 
 DailyReportGenerator::DailyReportGenerator(sqlite3* db) : m_db(db) {}
 
@@ -15,7 +15,7 @@ std::string DailyReportGenerator::generate_report(const std::string& date, Repor
     // 使用工厂根据指定格式创建格式化器实例
     // 这里不再直接实例化 DailyReportFormatter，而是通过工厂获取一个实现了
     // IReportFormatter 接口的对象。
-    auto formatter = DailyFmtFactory::create_formatter(format);
+    auto formatter = DayFmtFactory::create_formatter(format);
 
     // 使用创建好的格式化器来生成报告字符串
     // 调用的是接口的 format_report 方法，具体执行哪个实现取决于工厂返回的对象。
