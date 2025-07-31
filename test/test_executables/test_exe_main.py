@@ -13,25 +13,33 @@ class Colors:
     RESET = '\033[0m'
 
 # --- Configuration Parameters ---
+# MODIFICATION: Separated the parent directory and the specific data folder name.
+# To test a new folder, you only need to change SOURCE_DATA_FOLDER_NAME.
+SOURCE_DATA_PARENT_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/my_test")
+SOURCE_DATA_FOLDER_NAME = "Date_mini" 
+
+# The full path to the source data is now constructed automatically.
+SOURCE_DATA_PATH = SOURCE_DATA_PARENT_DIR / SOURCE_DATA_FOLDER_NAME
+
+# MODIFICATION: The processed directory name is now generated dynamically.
+# It will be "Processed_" + whatever SOURCE_DATA_FOLDER_NAME is.
+PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
+
+# Executable configuration remains the same.
 EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
 EXECUTABLE_APP_NAME = "time_tracker_app.exe"
-
-# 源路径：您的 C++ 项目的 build 目录
 SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build")
-# 数据源路径
-SOURCE_DATA_PATH = Path("C:/Computer/my_github/github_cpp/New_time_master/my_test/Date_test")
-# 目标路径：当前脚本所在的目录
 TARGET_EXECUTABLES_DIR = Path("./") 
 
+# Constants for the program's operation
 EXECUTABLE_TO_RUN = "time_tracker_cli.exe"
-PROCESSED_DATA_DIR_NAME = "Processed_Date_test"
 GENERATED_DB_FILE_NAME = "time_data.db"
-CONVERTED_TEXT_DIR_NAME = "Processed_Date_test"
 
+# Query and Export parameters
 DAILY_QUERY_DATE = datetime.now().strftime("%Y%m%d")
 MONTHLY_QUERY_MONTH = datetime.now().strftime("%Y%m")
-PERIOD_QUERY_DAYS = "7,30,90"
-PERIOD_EXPORT_DAYS = "7,30,90"
+PERIOD_QUERY_DAYS = "7,10,15"
+PERIOD_EXPORT_DAYS = "7,10,15"
 
 # --- Python Internal Modules ---
 from _py_internal.base_module import TestCounter
@@ -68,7 +76,10 @@ def setup_environment():
     
     print(f"{Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{Colors.RESET}")
     db_file = Path.cwd() / GENERATED_DB_FILE_NAME
-    processed_dir = Path.cwd() / PROCESSED_DATA_DIR_NAME
+    
+    # MODIFICATION: The script now uses the dynamically generated name for cleanup.
+    processed_dir = Path.cwd() / PROCESSED_DATA_DIR_NAME 
+    
     output_dir = Path.cwd() / "output"
     export_dir = Path.cwd() / "Export"
 
@@ -88,6 +99,8 @@ def main():
     print("\n" + "="*50)
     print(f" Running Python test script: {Path(__file__).name}")
     print(f" Current directory: {Path.cwd()}")
+    print(f" Input data folder: {SOURCE_DATA_FOLDER_NAME}")
+    print(f" Expecting processed folder: {PROCESSED_DATA_DIR_NAME}")
     print("="*50 + "\n")
     
     setup_environment()
@@ -96,10 +109,11 @@ def main():
     
     shared_counter = TestCounter()
     
+    # MODIFICATION: Pass the new dynamic PROCESSED_DATA_DIR_NAME to the test modules.
     common_args = {
         "executable_to_run": EXECUTABLE_TO_RUN,
         "source_data_path": SOURCE_DATA_PATH,
-        "converted_text_dir_name": CONVERTED_TEXT_DIR_NAME
+        "converted_text_dir_name": PROCESSED_DATA_DIR_NAME
     }
 
     modules = [
@@ -117,20 +131,16 @@ def main():
                      **common_args)
     ]
     
-    # --- 核心改动：主循环现在会检查返回值 ---
     all_tests_passed = True
     for i, module in enumerate(modules, 1):
         module.reports_dir.mkdir(parents=True, exist_ok=True)
         print(f"{Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{Colors.RESET}")
         
-        # 捕获模块的运行结果
         if not module.run_tests():
-            # 如果模块返回 False，则标记失败并中断循环
             all_tests_passed = False
             print(f"\n{Colors.RED}错误: 测试序列因 '{module.module_name}' 模块执行失败而中断。{Colors.RESET}")
             break
 
-    # --- 核心改动：只在所有测试都通过时才显示成功消息 ---
     if all_tests_passed:
         final_message = f"""
 {Colors.GREEN}✅ All test steps completed successfully!{Colors.RESET}
