@@ -2,7 +2,7 @@
 #ifndef DAILY_REPORT_MARKDOWN_FORMATTER_H
 #define DAILY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/daily/IDailyReportFormatter.h"
+#include "queries/daily/IDailyFmt.h"
 #include <sstream>
 
 // Forward declaration
@@ -12,7 +12,7 @@ struct DailyReportData;
  * @class DailyMarkdown
  * @brief 将日报数据格式化为 Markdown 字符串的具体实现。
  */
-class DailyMarkdown : public IDailyReportFormatter {
+class DailyMarkdown : public IDailyFmt {
 public:
     DailyMarkdown() = default;
 

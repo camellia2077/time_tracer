@@ -1,5 +1,5 @@
 #include "AllPeriodReports.h"
-#include "queries/period/PeriodReportFormatterFactory.h"
+#include "queries/period/PeriodFmtFactory.h"
 #include "queries/period/PeriodReportQuerier.h" // [修正] 添加缺失的头文件
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>
     FormattedPeriodReports reports;
     
     // [修改] 在循环外使用工厂创建一次格式化器实例
-    auto formatter = PeriodReportFormatterFactory::create_formatter(format);
+    auto formatter = PeriodFmtFactory::create_formatter(format);
 
     for (int days : days_list) {
         if (days > 0) {

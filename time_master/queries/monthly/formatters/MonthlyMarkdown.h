@@ -2,7 +2,7 @@
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/monthly/IMonthlyReportFormatter.h" // Corrected: Was IPeriodReportFormatter.h
+#include "queries/monthly/IMonthFmt.h" // Corrected: Was IPeriodFmt.h
 #include <sstream>
 
 // Forward declaration
@@ -13,7 +13,7 @@ struct MonthlyReportData;
  * @brief 将月报数据格式化为 Markdown 字符串的具体实现。
  * (现在使用 ProjectBreakdownFormatterFactory 来处理项目明细)
  */
-class MonthlyMarkdown : public IMonthlyReportFormatter { // Corrected: Was IReportFormatter
+class MonthlyMarkdown : public IMonthFmt { // Corrected: Was IReportFormatter
 public:
     MonthlyMarkdown() = default;
 

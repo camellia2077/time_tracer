@@ -1,11 +1,11 @@
-// queries/report_generators/daily/formatter/DailyReportFormatterFactory.cpp
-#include "DailyReportFormatterFactory.h"
+// queries/report_generators/daily/formatter/DailyFmtFactory.cpp
+#include "DailyFmtFactory.h"
 #include "queries/daily/formatters/DailyMarkdown.h"
 #include "queries/daily/formatters/DailyTex.h" //Tex 格式化器头文件
 
 #include <stdexcept>
 
-std::unique_ptr<IDailyReportFormatter> DailyReportFormatterFactory::create_formatter(ReportFormat format) {
+std::unique_ptr<IDailyFmt> DailyFmtFactory::create_formatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<DailyMarkdown>(); //

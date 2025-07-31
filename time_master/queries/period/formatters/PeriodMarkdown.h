@@ -2,7 +2,7 @@
 #ifndef PERIOD_REPORT_MARKDOWN_FORMATTER_H
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/period/IPeriodReportFormatter.h" // This path is corrected
+#include "queries/period/IPeriodFmt.h" // This path is corrected
 #include <sstream>
 
 // Forward declaration
@@ -13,7 +13,7 @@ struct PeriodReportData;
  * @brief 将周期报告数据格式化为 Markdown 字符串的具体实现。
  * (现在使用 ProjectBreakdownFormatterFactory 来处理项目明细)
  */
-class PeriodMarkdown : public IPeriodReportFormatter { // Inherits from the correct class
+class PeriodMarkdown : public IPeriodFmt { // Inherits from the correct class
 public:
     PeriodMarkdown() = default;
 

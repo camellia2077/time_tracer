@@ -6,7 +6,7 @@
 // --- 依赖保持不变 ---
 #include "queries/shared/query_utils.h"
 #include "queries/shared/breakdown/ProjectBreakdownFormatterFactory.h"
-#include "queries/period/IPeriodReportFormatter.h"
+#include "queries/period/IPeriodFmt.h"
 #include "common/common_utils.h"
 
 // 1. 公开的接口现在只负责调用基类的模板方法

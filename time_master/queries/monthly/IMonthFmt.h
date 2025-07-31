@@ -1,4 +1,4 @@
-// queries/monthly/IMonthlyReportFormatter.h
+// queries/monthly/IMonthFmt.h
 #ifndef I_MONTHLY_REPORT_FORMATTER_H
 #define I_MONTHLY_REPORT_FORMATTER_H
 
@@ -7,12 +7,12 @@
 #include "queries/shared/MonthlyReportData.h" // 注意：路径已更新
 
 /**
- * @class IMonthlyReportFormatter
+ * @class IMonthFmt
  * @brief 月报格式化器的抽象接口（策略接口）。
  */
-class IMonthlyReportFormatter {
+class IMonthFmt {
 public:
-    virtual ~IMonthlyReportFormatter() = default;
+    virtual ~IMonthFmt() = default;
 
     /**
      * @brief 格式化月报数据的纯虚函数。

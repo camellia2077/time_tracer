@@ -1,6 +1,6 @@
 #include "AllMonthlyReports.h"
 // [修改] 引入格式化器工厂和查询器
-#include "queries/monthly/MonthlyFormatterFactory.h"
+#include "queries/monthly/MonthFmtFactory.h"
 #include "queries/monthly/MonthlyReportQuerier.h"
 #include <vector>
 #include <iomanip>
@@ -24,7 +24,7 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
     }
 
     // [修改] 在循环外使用工厂创建一次格式化器实例，以供复用
-    auto formatter = MonthlyFormatterFactory::create_formatter(format);
+    auto formatter = MonthFmtFactory::create_formatter(format);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int year = sqlite3_column_int(stmt, 0);

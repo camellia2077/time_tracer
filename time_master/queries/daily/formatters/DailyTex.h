@@ -2,7 +2,7 @@
 #ifndef DAILY_REPORT_TEX_FORMATTER_H
 #define DAILY_REPORT_TEX_FORMATTER_H
 
-#include "queries/daily/IDailyReportFormatter.h"
+#include "queries/daily/IDailyFmt.h"
 #include "queries/shared/BaseTexFormatter.h" 
 
 // --- Forward Declarations ---
@@ -11,7 +11,7 @@ struct PeriodReportData;
 struct DailyReportData;
 
 
-class DailyTex : public IDailyReportFormatter, private BaseTexFormatter {
+class DailyTex : public IDailyFmt, private BaseTexFormatter {
 public:
     DailyTex() = default;
 
