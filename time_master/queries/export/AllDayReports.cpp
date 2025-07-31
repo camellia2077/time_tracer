@@ -1,6 +1,6 @@
 #include "AllDayReports.h"
 #include "queries/daily/DailyReportQuerier.h"
-#include "queries/daily/DailyReportFormatterFactory.h" // [修正] 添加缺失的头文件
+#include "queries/daily/DailyFmtFactory.h" // [修正] 添加缺失的头文件
 #include <stdexcept>
 #include <vector>
 
@@ -22,7 +22,7 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
     }
 
     // 在循环外使用工厂创建一次格式化器实例，以提高效率
-    auto formatter = DailyReportFormatterFactory::create_formatter(format);
+    auto formatter = DailyFmtFactory::create_formatter(format);
 
     // 遍历数据库中的每一天
     while (sqlite3_step(stmt) == SQLITE_ROW) {

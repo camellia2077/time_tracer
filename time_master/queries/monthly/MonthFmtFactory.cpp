@@ -1,12 +1,12 @@
-// queries/report_generators/monthly/formatter/MonthlyFormatterFactory.cpp
-#include "MonthlyFormatterFactory.h"
+// queries/report_generators/monthly/formatter/MonthFmtFactory.cpp
+#include "MonthFmtFactory.h"
 #include "queries/monthly/formatters/MonthlyMarkdown.h"
 #include "queries/monthly/formatters/MonthlyTex.h" //引入 MonthlyTex 头文件
 
 #include <stdexcept>
 
 // create_formatter 方法的实现
-std::unique_ptr<IMonthlyReportFormatter> MonthlyFormatterFactory::create_formatter(ReportFormat format) {
+std::unique_ptr<IMonthFmt> MonthFmtFactory::create_formatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<MonthlyMarkdown>();

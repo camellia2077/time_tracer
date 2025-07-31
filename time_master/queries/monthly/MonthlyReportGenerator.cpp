@@ -4,7 +4,7 @@
 #include "MonthlyReportQuerier.h"
 #include "queries/shared/MonthlyReportData.h"
 
-#include "queries/monthly/MonthlyFormatterFactory.h" //  引入格式化器工厂，替代具体的格式化器
+#include "queries/monthly/MonthFmtFactory.h" //  引入格式化器工厂，替代具体的格式化器
 
 MonthlyReportGenerator::MonthlyReportGenerator(sqlite3* db) : m_db(db) {}
 
@@ -15,7 +15,7 @@ std::string MonthlyReportGenerator::generate_report(const std::string& year_mont
     MonthlyReportData report_data = querier.fetch_data();
 
     // 2. 使用工厂根据指定格式创建格式化器实例
-    auto formatter = MonthlyFormatterFactory::create_formatter(format);
+    auto formatter = MonthFmtFactory::create_formatter(format);
 
     // 3. 使用创建好的格式化器接口来生成报告字符串
     return formatter->format_report(report_data, m_db);

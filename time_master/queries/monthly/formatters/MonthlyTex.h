@@ -2,7 +2,7 @@
 #ifndef MONTHLY_REPORT_TEX_FORMATTER_H
 #define MONTHLY_REPORT_TEX_FORMATTER_H
 
-#include "queries/monthly/IMonthlyReportFormatter.h" // Corrected: Was IPeriodReportFormatter.h
+#include "queries/monthly/IMonthFmt.h" // Corrected: Was IPeriodFmt.h
 #include "queries/shared/BaseTexFormatter.h" 
 
 // --- Forward Declarations ---
@@ -16,7 +16,7 @@ struct MonthlyReportData;
  * 通过继承 BaseTexFormatter 来复用文档框架。
  */
 // Corrected: Inherits from the correct interface
-class MonthlyTex : public IMonthlyReportFormatter, private BaseTexFormatter { 
+class MonthlyTex : public IMonthFmt, private BaseTexFormatter { 
 public:
     MonthlyTex() = default;
 

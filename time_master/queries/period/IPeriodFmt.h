@@ -1,4 +1,4 @@
-// queries/period/IPeriodReportFormatter.h
+// queries/period/IPeriodFmt.h
 #ifndef I_PERIOD_REPORT_FORMATTER_H
 #define I_PERIOD_REPORT_FORMATTER_H
 
@@ -7,12 +7,12 @@
 #include "queries/shared/PeriodReportData.h" // Corrected: Was MonthlyReportData.h
 
 /**
- * @class IPeriodReportFormatter
+ * @class IPeriodFmt
  * @brief 周期报告格式化器的抽象接口（策略接口）。
  */
-class IPeriodReportFormatter {
+class IPeriodFmt {
 public:
-    virtual ~IPeriodReportFormatter() = default;
+    virtual ~IPeriodFmt() = default;
 
     /**
      * @brief 格式化周期报告数据的纯虚函数。
