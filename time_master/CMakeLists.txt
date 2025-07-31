@@ -35,35 +35,19 @@ file(GLOB DB_INSERTER_SOURCES
 )
 file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
-    "queries/format/*.cpp"
-    "queries/format/md/*.cpp"
-    "queries/format/tex/*.cpp"
 
-    "queries/report_generators/*.cpp"
+    "queries/formatters/*.cpp"
+    "queries/formatters/markdown/*.cpp"
+    "queries/formatters/tex/*.cpp"
 
-    "queries/report_generators/_shared/*.cpp"
+    "queries/reports/*.cpp"
+    "queries/reports/daily/*.cpp"
+    "queries/reports/monthly/*.cpp"
+    "queries/reports/period/*.cpp"
 
-    "queries/report_generators/daily/*.cpp"
-    "queries/report_generators/daily/formatter/*.cpp"
-    "queries/report_generators/daily/formatter/day_md/*.cpp"
-    "queries/report_generators/daily/formatter/day_tex/*.cpp"
-
-    "queries/report_generators/daily/querier/*.cpp"
-
-    "queries/report_generators/monthly/*.cpp"
-    "queries/report_generators/monthly/formatter/*.cpp"
-    "queries/report_generators/monthly/formatter/month_md/*.cpp"
-    "queries/report_generators/monthly/formatter/month_tex/*.cpp"
-    
-    "queries/report_generators/monthly/querier/*.cpp"
+    "queries/_shared/*.cpp"
 
 
-    "queries/report_generators/period/*.cpp"
-    "queries/report_generators/period/formatter/*.cpp"
-    "queries/report_generators/period/formatter/period_md/*.cpp"
-    "queries/report_generators/period/formatter/period_tex/*.cpp"
-
-    "queries/report_generators/period/querier/*.cpp"
 )
 
 file(GLOB REPROCESSING_SOURCES
