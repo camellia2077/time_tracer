@@ -1,13 +1,13 @@
-// queries/report_generators/monthly/querier/MonthlyReportQuerier.cpp
-#include "MonthlyReportQuerier.h"
+// queries/report_generators/monthly/querier/MonthQuerier.cpp
+#include "MonthQuerier.h"
 #include "queries/shared/query_utils.h" 
 #include <algorithm>
 #include <cctype>
 
-MonthlyReportQuerier::MonthlyReportQuerier(sqlite3* db, const std::string& year_month)
+MonthQuerier::MonthQuerier(sqlite3* db, const std::string& year_month)
     : m_db(db), m_year_month(year_month) {}
 
-MonthlyReportData MonthlyReportQuerier::fetch_data() {
+MonthlyReportData MonthQuerier::fetch_data() {
     MonthlyReportData data;
     data.year_month = m_year_month;
 
@@ -21,11 +21,11 @@ MonthlyReportData MonthlyReportQuerier::fetch_data() {
     return data;
 }
 
-bool MonthlyReportQuerier::_validate_input() const {
+bool MonthQuerier::_validate_input() const {
     return m_year_month.length() == 6 && std::all_of(m_year_month.begin(), m_year_month.end(), ::isdigit);
 }
 
-void MonthlyReportQuerier::_fetch_records_and_duration(MonthlyReportData& data) {
+void MonthQuerier::_fetch_records_and_duration(MonthlyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT project_path, duration FROM time_records WHERE SUBSTR(date, 1, 6) = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -42,7 +42,7 @@ void MonthlyReportQuerier::_fetch_records_and_duration(MonthlyReportData& data) 
     sqlite3_finalize(stmt);
 }
 
-void MonthlyReportQuerier::_fetch_actual_days(MonthlyReportData& data) {
+void MonthQuerier::_fetch_actual_days(MonthlyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE SUBSTR(date, 1, 6) = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {

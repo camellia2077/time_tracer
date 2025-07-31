@@ -1,11 +1,11 @@
-#include "PeriodReportQuerier.h"
+#include "PeriodQuerier.h"
 #include "queries/shared/query_utils.h"
 #include <iomanip>
 
-PeriodReportQuerier::PeriodReportQuerier(sqlite3* db, int days_to_query)
+PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
     : m_db(db), m_days_to_query(days_to_query) {}
 
-PeriodReportData PeriodReportQuerier::fetch_data() {
+PeriodReportData PeriodQuerier::fetch_data() {
     PeriodReportData data;
     data.days_to_query = m_days_to_query;
 
@@ -23,11 +23,11 @@ PeriodReportData PeriodReportQuerier::fetch_data() {
     return data;
 }
 
-bool PeriodReportQuerier::_validate_input() const {
+bool PeriodQuerier::_validate_input() const {
     return m_days_to_query > 0;
 }
 
-void PeriodReportQuerier::_fetch_records_and_duration(PeriodReportData& data) {
+void PeriodQuerier::_fetch_records_and_duration(PeriodReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT project_path, duration FROM time_records WHERE date >= ? AND date <= ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -45,7 +45,7 @@ void PeriodReportQuerier::_fetch_records_and_duration(PeriodReportData& data) {
     sqlite3_finalize(stmt);
 }
 
-void PeriodReportQuerier::_fetch_actual_days(PeriodReportData& data) {
+void PeriodQuerier::_fetch_actual_days(PeriodReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE date >= ? AND date <= ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {

@@ -1,7 +1,7 @@
 #include "QueryHandler.h"
-#include "queries/daily/DailyReportGenerator.h" 
-#include "queries/monthly/MonthlyReportGenerator.h" 
-#include "queries/period/PeriodReportGenerator.h"
+#include "queries/daily/DayGenerator.h" 
+#include "queries/monthly/MonthGenerator.h" 
+#include "queries/period/PeriodGenerator.h"
 #include "queries/export/AllDayReports.h"
 #include "queries/export/AllMonthlyReports.h"
 #include "queries/export/AllPeriodReports.h"
@@ -9,18 +9,18 @@
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 
 std::string QueryHandler::run_daily_query(const std::string& date_str, ReportFormat format) const {
-    DailyReportGenerator generator(m_db);
+    DayGenerator generator(m_db);
     return generator.generate_report(date_str, format);
 }
 
 std::string QueryHandler::run_monthly_query(const std::string& year_month_str, ReportFormat format) const {
-    MonthlyReportGenerator generator(m_db);
+    MonthGenerator generator(m_db);
     return generator.generate_report(year_month_str, format);
 }
 
 // [修改] 更新函数以传递 format 参数
 std::string QueryHandler::run_period_query(int days, ReportFormat format) const {
-    PeriodReportGenerator generator(m_db);
+    PeriodGenerator generator(m_db);
     // 将 format 参数传递给周期报告生成器
     return generator.generate_report(days, format);
 }

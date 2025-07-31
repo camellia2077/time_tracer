@@ -1,17 +1,17 @@
-// queries\report_generators\daily\querier\DailyReportQuerier.cpp
-#include "DailyReportQuerier.h"
+// queries\report_generators\daily\querier\DayQuerier.cpp
+#include "DayQuerier.h"
 #include <stdexcept>
 
-// --- DailyReportQuerier Class Implementation ---
+// --- DayQuerier Class Implementation ---
 
-DailyReportQuerier::DailyReportQuerier(sqlite3* db, const std::string& date)
+DayQuerier::DayQuerier(sqlite3* db, const std::string& date)
     : m_db(db), m_date(date) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
 }
 
-DailyReportData DailyReportQuerier::fetch_data() {
+DailyReportData DayQuerier::fetch_data() {
     DailyReportData data;
     data.date = m_date;
 
@@ -26,7 +26,7 @@ DailyReportData DailyReportQuerier::fetch_data() {
     return data;
 }
 
-void DailyReportQuerier::_fetch_metadata(DailyReportData& data) {
+void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT status, remark, getup_time FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -43,7 +43,7 @@ void DailyReportQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
-void DailyReportQuerier::_fetch_total_duration(DailyReportData& data) {
+void DayQuerier::_fetch_total_duration(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT SUM(duration) FROM time_records WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -55,7 +55,7 @@ void DailyReportQuerier::_fetch_total_duration(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
-void DailyReportQuerier::_fetch_time_records(DailyReportData& data) {
+void DayQuerier::_fetch_time_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT project_path, duration FROM time_records WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {

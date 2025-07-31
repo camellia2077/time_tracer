@@ -1,4 +1,4 @@
-// queries/queries/daily/DailyReportGenerator.h
+// queries/queries/daily/DayGenerator.h
 #ifndef DAILY_REPORT_GENERATOR_H
 #define DAILY_REPORT_GENERATOR_H
 
@@ -7,17 +7,17 @@
 #include "queries/shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
- * @class DailyReportGenerator
+ * @class DayGenerator
  * @brief 封装了获取和格式化日报的逻辑。
  * 这个类为生成完整的日报字符串提供了一个简单的接口。
  */
-class DailyReportGenerator {
+class DayGenerator {
 public:
     /**
-     * @brief DailyReportGenerator 的构造函数。
+     * @brief DayGenerator 的构造函数。
      * @param db 指向 SQLite 数据库连接的指针。
      */
-    explicit DailyReportGenerator(sqlite3* db);
+    explicit DayGenerator(sqlite3* db);
 
     /**
      * @brief 为指定日期生成格式化的日报。

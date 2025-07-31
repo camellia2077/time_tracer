@@ -1,6 +1,6 @@
 #include "AllPeriodReports.h"
 #include "queries/period/PeriodFmtFactory.h"
-#include "queries/period/PeriodReportQuerier.h" // [修正] 添加缺失的头文件
+#include "queries/period/PeriodQuerier.h" // [修正] 添加缺失的头文件
 #include <stdexcept>
 
 AllPeriodReports::AllPeriodReports(sqlite3* db) : m_db(db) {
@@ -19,7 +19,7 @@ FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>
     for (int days : days_list) {
         if (days > 0) {
             // 步骤 1: 获取数据 (逻辑不变)
-            PeriodReportQuerier querier(m_db, days);
+            PeriodQuerier querier(m_db, days);
             PeriodReportData report_data = querier.fetch_data();
 
             // 步骤 2: [修改] 使用在循环外创建的格式化器实例来格式化报告

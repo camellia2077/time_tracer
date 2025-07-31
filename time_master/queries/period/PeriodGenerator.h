@@ -5,9 +5,9 @@
 #include <string>
 #include "queries/shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
-class PeriodReportGenerator {
+class PeriodGenerator {
 public:
-    explicit PeriodReportGenerator(sqlite3* db);
+    explicit PeriodGenerator(sqlite3* db);
 
     /**
      * @brief 为指定的周期生成格式化的报告。

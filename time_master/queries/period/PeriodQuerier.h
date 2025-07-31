@@ -6,9 +6,9 @@
 #include "queries/shared/PeriodReportData.h"
 
 
-class PeriodReportQuerier {
+class PeriodQuerier {
 public:
-    explicit PeriodReportQuerier(sqlite3* db, int days_to_query);
+    explicit PeriodQuerier(sqlite3* db, int days_to_query);
     PeriodReportData fetch_data();
 
 private:

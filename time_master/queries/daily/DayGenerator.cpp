@@ -1,15 +1,15 @@
-// queries/report_generators/daily/DailyReportGenerator.cpp
-#include "DailyReportGenerator.h"
-#include "DailyReportQuerier.h"
+// queries/report_generators/daily/DayGenerator.cpp
+#include "DayGenerator.h"
+#include "DayQuerier.h"
 #include "queries/shared/query_data_structs.h"
 #include "queries/daily/DayFmtFactory.h" // Correct include
 
-DailyReportGenerator::DailyReportGenerator(sqlite3* db) : m_db(db) {}
+DayGenerator::DayGenerator(sqlite3* db) : m_db(db) {}
 
 // [修改] 函数签名与头文件保持一致
-std::string DailyReportGenerator::generate_report(const std::string& date, ReportFormat format) {
+std::string DayGenerator::generate_report(const std::string& date, ReportFormat format) {
     // 使用 Querier 模块获取数据 (此部分逻辑不变)
-    DailyReportQuerier querier(m_db, date);
+    DayQuerier querier(m_db, date);
     DailyReportData report_data = querier.fetch_data();
 
     // 使用工厂根据指定格式创建格式化器实例

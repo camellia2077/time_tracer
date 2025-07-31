@@ -1,7 +1,7 @@
 #include "AllMonthlyReports.h"
 // [修改] 引入格式化器工厂和查询器
 #include "queries/monthly/MonthFmtFactory.h"
-#include "queries/monthly/MonthlyReportQuerier.h"
+#include "queries/monthly/MonthQuerier.h"
 #include <vector>
 #include <iomanip>
 #include <sstream>
@@ -35,7 +35,7 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         std::string year_month_str = year_month_ss.str();
 
         // 1. 获取数据 (逻辑不变)
-        MonthlyReportQuerier querier(m_db, year_month_str);
+        MonthQuerier querier(m_db, year_month_str);
         MonthlyReportData data = querier.fetch_data();
 
         if (data.total_duration > 0) {

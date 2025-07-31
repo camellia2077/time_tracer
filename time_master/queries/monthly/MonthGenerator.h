@@ -1,4 +1,4 @@
-// queries/queries/monthly/MonthlyReportGenerator.h
+// queries/queries/monthly/MonthGenerator.h
 #ifndef MONTHLY_REPORT_GENERATOR_H
 #define MONTHLY_REPORT_GENERATOR_H
 
@@ -7,13 +7,13 @@
 #include "queries/shared/ReportFormat.h" // 引入报告格式的定义
 
 /**
- * @class MonthlyReportGenerator
+ * @class MonthGenerator
  * @brief 封装了获取和格式化月报的逻辑。
  * 这个类为生成完整的月报字符串提供了一个简单的接口。
  */
-class MonthlyReportGenerator {
+class MonthGenerator {
 public:
-    explicit MonthlyReportGenerator(sqlite3* db);
+    explicit MonthGenerator(sqlite3* db);
 
     /**
      * @brief 为指定月份生成格式化的月报。

@@ -1,4 +1,4 @@
-// queries/report_generators/daily/querier/DailyReportQuerier.h
+// queries/report_generators/daily/querier/DayQuerier.h
 #ifndef DAILY_REPORT_QUERIER_H
 #define DAILY_REPORT_QUERIER_H
 
@@ -7,17 +7,17 @@
 #include "queries/shared/DailyReportData.h" 
 
 /**
- * @class DailyReportQuerier
+ * @class DayQuerier
  * @brief Fetches daily report data from the SQLite database for a specific date.
  */
-class DailyReportQuerier {
+class DayQuerier {
 public:
     /**
-     * @brief Constructs a DailyReportQuerier.
+     * @brief Constructs a DayQuerier.
      * @param db A pointer to the SQLite database connection.
      * @param date The date for which to query the report (YYYYMMDD format).
      */
-    explicit DailyReportQuerier(sqlite3* db, const std::string& date);
+    explicit DayQuerier(sqlite3* db, const std::string& date);
 
     /**
      * @brief Executes queries to fetch all data for the daily report.

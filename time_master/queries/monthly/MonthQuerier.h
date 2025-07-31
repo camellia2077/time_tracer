@@ -1,4 +1,4 @@
-// queries/report_generators/monthly/querier/MonthlyReportQuerier.h
+// queries/report_generators/monthly/querier/MonthQuerier.h
 #ifndef MONTHLY_REPORT_QUERIER_H
 #define MONTHLY_REPORT_QUERIER_H
 
@@ -8,9 +8,9 @@
 
 
 // 月报查询器类
-class MonthlyReportQuerier {
+class MonthQuerier {
 public:
-    explicit MonthlyReportQuerier(sqlite3* db, const std::string& year_month);
+    explicit MonthQuerier(sqlite3* db, const std::string& year_month);
     MonthlyReportData fetch_data();
 
 private:

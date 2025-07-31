@@ -84,8 +84,8 @@ time_master/
 │       ├── daily/                                 # 日报模块
 │       │   ├── _daily_data/                     #  日报专用的数据结构
 │       │   │   └── DailyReportData.h
-│       │   ├── DailyReportGenerator.cpp        #  日报生成器的核心协调类
-│       │   ├── DailyReportGenerator.h
+│       │   ├── DayGenerator.cpp        #  日报生成器的核心协调类
+│       │   ├── DayGenerator.h
 │       │   ├── formatter/                       #  日报格式化模块
 │       │   │   ├── DayFmtFactory.cpp
 │       │   │   ├── DayFmtFactory.h
@@ -97,8 +97,8 @@ time_master/
 │       │   │   │   └── DayTex.h
 │       │   │   └── IReportFormatter.h          # 日报格式化器的通用接口
 │       │   └── querier/                         # 日报数据查询模块
-│       │       ├── DailyReportQuerier.cpp
-│       │       └── DailyReportQuerier.h
+│       │       ├── DayQuerier.cpp
+│       │       └── DayQuerier.h
 │       ├── monthly/                               # 月报模块
 │       │   ├── _month_data/                     # 月报专用的数据结构
 │       │   │   └── MonthlyReportData.h
@@ -112,11 +112,11 @@ time_master/
 │       │   │   │   └── MonthTex.h
 │       │   │   ├── MonthFmtFactory.cpp
 │       │   │   └── MonthFmtFactory.h
-│       │   ├── MonthlyReportGenerator.cpp      # 月报生成器的核心协调类
-│       │   ├── MonthlyReportGenerator.h
+│       │   ├── MonthGenerator.cpp      # 月报生成器的核心协调类
+│       │   ├── MonthGenerator.h
 │       │   └── querier/                         # 月报数据查询模块
-│       │       ├── MonthlyReportQuerier.cpp
-│       │       └── MonthlyReportQuerier.h
+│       │       ├── MonthQuerier.cpp
+│       │       └── MonthQuerier.h
 │       └── period/                                # 周期报告模块
 │           ├── _period_data                    # 周期报告专用的数据结构
 │           │   └── PeriodReportData.h
@@ -130,11 +130,11 @@ time_master/
 │           │   │   └── PeriodTex.h
 │           │   ├── PeriodFmtFactory.cpp
 │           │   └── PeriodFmtFactory.h
-│           ├── PeriodReportGenerator.cpp       #  周期报告生成器的核心协调类
-│           ├── PeriodReportGenerator.h
+│           ├── PeriodGenerator.cpp       #  周期报告生成器的核心协调类
+│           ├── PeriodGenerator.h
 │           └── querier/                         #  周期报告数据查询模块
-│               ├── PeriodReportQuerier.cpp
-│               └── PeriodReportQuerier.h
+│               ├── PeriodQuerier.cpp
+│               └── PeriodQuerier.h
 │
 ├── reprocessing/ # 数据验证与预处理               
 │   ├── LogProcessor.cpp
