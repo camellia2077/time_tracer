@@ -1,6 +1,6 @@
 #include "AllDayReports.h"
-#include "queries/daily/DailyReportQuerier.h"
-#include "queries/daily/DailyReportFormatterFactory.h" // [修正] 添加缺失的头文件
+#include "queries/daily/DayQuerier.h"
+#include "queries/daily/DayFmtFactory.h" // [修正] 添加缺失的头文件
 #include <stdexcept>
 #include <vector>
 
@@ -22,7 +22,7 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
     }
 
     // 在循环外使用工厂创建一次格式化器实例，以提高效率
-    auto formatter = DailyReportFormatterFactory::create_formatter(format);
+    auto formatter = DayFmtFactory::create_formatter(format);
 
     // 遍历数据库中的每一天
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -33,8 +33,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
         int year = sqlite3_column_int(stmt, 1);
         int month = sqlite3_column_int(stmt, 2);
 
-        // 1. 使用 DailyReportQuerier 获取当天的完整数据
-        DailyReportQuerier querier(m_db, date);
+        // 1. 使用 DayQuerier 获取当天的完整数据
+        DayQuerier querier(m_db, date);
         DailyReportData report_data = querier.fetch_data();
 
         // 2. 使用在循环外创建的格式化器实例来格式化报告
