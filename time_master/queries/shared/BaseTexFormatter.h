@@ -22,7 +22,7 @@ struct sqlite3;
  * 包括文档头(Preamble)的生成和文档尾的添加。
  *
  * 它将“如何生成报告的核心内容”这一具体步骤，通过纯虚函数 format_content
- * 延迟到其子类（如 DailyTex, MonthlyTex）中去实现。
+ * 延迟到其子类（如 DayTex, MonthTex）中去实现。
  */
 class BaseTexFormatter {
 public:

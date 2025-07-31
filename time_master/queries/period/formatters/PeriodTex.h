@@ -2,7 +2,7 @@
 #ifndef PERIOD_REPORT_TEX_FORMATTER_H
 #define PERIOD_REPORT_TEX_FORMATTER_H
 
-#include "queries/period/IPeriodReportFormatter.h"
+#include "queries/period/IPeriodFmt.h"
 #include "queries/shared/BaseTexFormatter.h" //包含基类头文件
 
 // --- 前置声明 ---
@@ -15,7 +15,7 @@ struct MonthlyReportData;
  * 通过继承 BaseTexFormatter 来复用文档框架。
  */
 // 2. 同时继承接口和实现基类
-class PeriodTex : public IPeriodReportFormatter, private BaseTexFormatter { // Corrected Interface
+class PeriodTex : public IPeriodFmt, private BaseTexFormatter { // Corrected Interface
 public:
     PeriodTex() = default;
 

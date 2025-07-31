@@ -57,12 +57,12 @@ time_master/
 │
 ├── queries
 │   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
-│   │   ├── IProjectBreakdownFormatter.h  # 定义项目明细格式化器的通用接口(抽象基类)
+│   │   ├── ITreeFmt.h  # 定义项目明细格式化器的通用接口(抽象基类)
 │   │   ├── md/                                  # Markdown格式的具体实现
 │   │   │   ├── BreakdownMd.cpp
 │   │   │   └── BreakdownMd.h
-│   │   ├── ProjectBreakdownFormatterFactory.cpp  # “项目明细”格式化器的工厂实现
-│   │   ├── ProjectBreakdownFormatterFactory.h    
+│   │   ├── TreeFmtFactory.cpp  # “项目明细”格式化器的工厂实现
+│   │   ├── TreeFmtFactory.h    
 │   │   └── tex/                                 # LaTeX格式的具体实现
 │   │       ├── BreakdownTex.cpp
 │   │       └── BreakdownTex.h
@@ -84,57 +84,57 @@ time_master/
 │       ├── daily/                                 # 日报模块
 │       │   ├── _daily_data/                     #  日报专用的数据结构
 │       │   │   └── DailyReportData.h
-│       │   ├── DailyReportGenerator.cpp        #  日报生成器的核心协调类
-│       │   ├── DailyReportGenerator.h
+│       │   ├── DayGenerator.cpp        #  日报生成器的核心协调类
+│       │   ├── DayGenerator.h
 │       │   ├── formatter/                       #  日报格式化模块
-│       │   │   ├── DailyReportFormatterFactory.cpp
-│       │   │   ├── DailyReportFormatterFactory.h
+│       │   │   ├── DayFmtFactory.cpp
+│       │   │   ├── DayFmtFactory.h
 │       │   │   ├── day_md/                      #  日报的Markdown格式化实现
-│       │   │   │   ├── DailyMarkdown.cpp
-│       │   │   │   └── DailyMarkdown.h
+│       │   │   │   ├── DayMd.cpp
+│       │   │   │   └── DayMd.h
 │       │   │   ├── day_tex/                     # 日报的TeX格式化实现
-│       │   │   │   ├── DailyTex.cpp
-│       │   │   │   └── DailyTex.h
+│       │   │   │   ├── DayTex.cpp
+│       │   │   │   └── DayTex.h
 │       │   │   └── IReportFormatter.h          # 日报格式化器的通用接口
 │       │   └── querier/                         # 日报数据查询模块
-│       │       ├── DailyReportQuerier.cpp
-│       │       └── DailyReportQuerier.h
+│       │       ├── DayQuerier.cpp
+│       │       └── DayQuerier.h
 │       ├── monthly/                               # 月报模块
 │       │   ├── _month_data/                     # 月报专用的数据结构
 │       │   │   └── MonthlyReportData.h
 │       │   ├── formatter/                       # 月报格式化模块
 │       │   │   ├── IReportFormatter.h
 │       │   │   ├── month_md
-│       │   │   │   ├── MonthlyMarkdown.cpp
-│       │   │   │   └── MonthlyMarkdown.h
+│       │   │   │   ├── MonthMd.cpp
+│       │   │   │   └── MonthMd.h
 │       │   │   ├── month_tex
-│       │   │   │   ├── MonthlyTex.cpp
-│       │   │   │   └── MonthlyTex.h
-│       │   │   ├── MonthlyFormatterFactory.cpp
-│       │   │   └── MonthlyFormatterFactory.h
-│       │   ├── MonthlyReportGenerator.cpp      # 月报生成器的核心协调类
-│       │   ├── MonthlyReportGenerator.h
+│       │   │   │   ├── MonthTex.cpp
+│       │   │   │   └── MonthTex.h
+│       │   │   ├── MonthFmtFactory.cpp
+│       │   │   └── MonthFmtFactory.h
+│       │   ├── MonthGenerator.cpp      # 月报生成器的核心协调类
+│       │   ├── MonthGenerator.h
 │       │   └── querier/                         # 月报数据查询模块
-│       │       ├── MonthlyReportQuerier.cpp
-│       │       └── MonthlyReportQuerier.h
+│       │       ├── MonthQuerier.cpp
+│       │       └── MonthQuerier.h
 │       └── period/                                # 周期报告模块
 │           ├── _period_data                    # 周期报告专用的数据结构
 │           │   └── PeriodReportData.h
 │           ├── formatter                       #  周期报告格式化模块
 │           │   ├── IReportFormatter.h
 │           │   ├── period_md/
-│           │   │   ├── PeriodMarkdown.cpp
-│           │   │   └── PeriodMarkdown.h
+│           │   │   ├── PeriodMd.cpp
+│           │   │   └── PeriodMd.h
 │           │   ├── period_tex
 │           │   │   ├── PeriodTex.cpp
 │           │   │   └── PeriodTex.h
-│           │   ├── PeriodReportFormatterFactory.cpp
-│           │   └── PeriodReportFormatterFactory.h
-│           ├── PeriodReportGenerator.cpp       #  周期报告生成器的核心协调类
-│           ├── PeriodReportGenerator.h
+│           │   ├── PeriodFmtFactory.cpp
+│           │   └── PeriodFmtFactory.h
+│           ├── PeriodGenerator.cpp       #  周期报告生成器的核心协调类
+│           ├── PeriodGenerator.h
 │           └── querier/                         #  周期报告数据查询模块
-│               ├── PeriodReportQuerier.cpp
-│               └── PeriodReportQuerier.h
+│               ├── PeriodQuerier.cpp
+│               └── PeriodQuerier.h
 │
 ├── reprocessing/ # 数据验证与预处理               
 │   ├── LogProcessor.cpp
