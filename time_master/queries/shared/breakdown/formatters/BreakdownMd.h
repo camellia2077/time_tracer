@@ -2,9 +2,9 @@
 #ifndef PROJECT_BREAKDOWN_MD_FORMAT_H
 #define PROJECT_BREAKDOWN_MD_FORMAT_H
 
-#include "queries/shared/breakdown/IProjectBreakdownFormatter.h"
+#include "queries/shared/breakdown/ITreeFmt.h"
 
-class BreakdownMd : public IProjectBreakdownFormatter {
+class BreakdownMd : public ITreeFmt {
 public:
     std::string format(const ProjectTree& tree, long long total_duration, int avg_days) const override;
 

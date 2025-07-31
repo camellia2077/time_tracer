@@ -2,13 +2,13 @@
 #ifndef PROJECT_BREAKDOWN_TEX_FORMAT_H
 #define PROJECT_BREAKDOWN_TEX_FORMAT_H
 
-#include "queries/shared/breakdown/IProjectBreakdownFormatter.h"
+#include "queries/shared/breakdown/ITreeFmt.h"
 
 /**
  * @class BreakdownTex
  * @brief 将项目明细数据格式化为 LaTeX 字符串。
  */
-class BreakdownTex : public IProjectBreakdownFormatter {
+class BreakdownTex : public ITreeFmt {
 public:
     /**
      * @brief 实现接口的 format 方法，生成完整的 LaTeX 格式化字符串。

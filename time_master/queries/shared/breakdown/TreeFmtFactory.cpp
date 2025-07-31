@@ -1,9 +1,9 @@
-// query/format/ProjectBreakdownFormatterFactory.cpp 
-#include "ProjectBreakdownFormatterFactory.h"
+// query/format/TreeFmtFactory.cpp 
+#include "TreeFmtFactory.h"
 #include "queries/shared/breakdown/formatters/BreakdownMd.h"
 #include "queries/shared/breakdown/formatters/BreakdownTex.h" 
 
-std::unique_ptr<IProjectBreakdownFormatter> ProjectBreakdownFormatterFactory::createFormatter(ReportFormat format) {
+std::unique_ptr<ITreeFmt> TreeFmtFactory::createFormatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<BreakdownMd>();
