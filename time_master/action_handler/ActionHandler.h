@@ -7,8 +7,8 @@
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "queries/_shared/query_data_structs.h"
-#include "queries/_shared/ReportFormat.h"
+#include "queries/shared/query_data_structs.h"
+#include "queries/shared/ReportFormat.h"
 
 // 前向声明
 struct sqlite3;

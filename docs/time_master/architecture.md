@@ -59,13 +59,13 @@ time_master/
 │   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
 │   │   ├── IProjectBreakdownFormatter.h  # 定义项目明细格式化器的通用接口(抽象基类)
 │   │   ├── md/                                  # Markdown格式的具体实现
-│   │   │   ├── ProjectBreakdownMdFormat.cpp
-│   │   │   └── ProjectBreakdownMdFormat.h
+│   │   │   ├── BreakdownMd.cpp
+│   │   │   └── BreakdownMd.h
 │   │   ├── ProjectBreakdownFormatterFactory.cpp  # “项目明细”格式化器的工厂实现
 │   │   ├── ProjectBreakdownFormatterFactory.h    
 │   │   └── tex/                                 # LaTeX格式的具体实现
-│   │       ├── ProjectBreakdownTexFormat.cpp
-│   │       └── ProjectBreakdownTexFormat.h
+│   │       ├── BreakdownTex.cpp
+│   │       └── BreakdownTex.h
 │   ├── QueryHandler.cpp                          # 负责解析用户输入的查询命令
 │   ├── QueryHandler.h
 │   └── report_generators                         # 包含所有高级报告的生成逻辑
@@ -123,8 +123,8 @@ time_master/
 │           ├── formatter                       #  周期报告格式化模块
 │           │   ├── IReportFormatter.h
 │           │   ├── period_md/
-│           │   │   ├── PeriodReportMarkdownFormatter.cpp
-│           │   │   └── PeriodReportMarkdownFormatter.h
+│           │   │   ├── PeriodMarkdown.cpp
+│           │   │   └── PeriodMarkdown.h
 │           │   ├── period_tex
 │           │   │   ├── PeriodTex.cpp
 │           │   │   └── PeriodTex.h
