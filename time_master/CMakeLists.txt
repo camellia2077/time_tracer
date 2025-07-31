@@ -36,18 +36,20 @@ file(GLOB DB_INSERTER_SOURCES
 file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
 
-    "queries/formatters/*.cpp"
-    "queries/formatters/markdown/*.cpp"
-    "queries/formatters/tex/*.cpp"
+    "queries/export/*.cpp"
 
-    "queries/reports/*.cpp"
-    "queries/reports/daily/*.cpp"
-    "queries/reports/monthly/*.cpp"
-    "queries/reports/period/*.cpp"
+    "queries/daily/*.cpp"
+    "queries/daily/formatters/*.cpp"
 
-    "queries/_shared/*.cpp"
+    "queries/monthly/*.cpp"
+    "queries/monthly/formatters/*.cpp"
 
+    "queries/period/*.cpp"
+    "queries/period/formatters/*.cpp"
 
+    "queries/shared/*.cpp"
+    "queries/shared/breakdown/*.cpp"
+    "queries/shared/breakdown/formatters/*.cpp"
 )
 
 file(GLOB REPROCESSING_SOURCES
