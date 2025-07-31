@@ -1,4 +1,4 @@
-// query/format/IProjectBreakdownFormatter.h
+// query/format/ITreeFmt.h
 #ifndef I_PROJECT_BREAKDOWN_FORMATTER_H
 #define I_PROJECT_BREAKDOWN_FORMATTER_H
 
@@ -7,12 +7,12 @@
 #include "common/common_utils.h" // For ProjectTree
 
 /**
- * @class IProjectBreakdownFormatter
+ * @class ITreeFmt
  * @brief 项目明细格式化器的通用接口（抽象基类）。
  */
-class IProjectBreakdownFormatter {
+class ITreeFmt {
 public:
-    virtual ~IProjectBreakdownFormatter() = default;
+    virtual ~ITreeFmt() = default;
 
     /**
      * @brief 格式化项目明细数据。

@@ -11,7 +11,7 @@ struct PeriodReportData;
 /**
  * @class PeriodMd
  * @brief 将周期报告数据格式化为 Markdown 字符串的具体实现。
- * (现在使用 ProjectBreakdownFormatterFactory 来处理项目明细)
+ * (现在使用 TreeFmtFactory 来处理项目明细)
  */
 class PeriodMd : public IPeriodFmt { // Inherits from the correct class
 public:

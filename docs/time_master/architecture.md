@@ -57,12 +57,12 @@ time_master/
 │
 ├── queries
 │   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
-│   │   ├── IProjectBreakdownFormatter.h  # 定义项目明细格式化器的通用接口(抽象基类)
+│   │   ├── ITreeFmt.h  # 定义项目明细格式化器的通用接口(抽象基类)
 │   │   ├── md/                                  # Markdown格式的具体实现
 │   │   │   ├── BreakdownMd.cpp
 │   │   │   └── BreakdownMd.h
-│   │   ├── ProjectBreakdownFormatterFactory.cpp  # “项目明细”格式化器的工厂实现
-│   │   ├── ProjectBreakdownFormatterFactory.h    
+│   │   ├── TreeFmtFactory.cpp  # “项目明细”格式化器的工厂实现
+│   │   ├── TreeFmtFactory.h    
 │   │   └── tex/                                 # LaTeX格式的具体实现
 │   │       ├── BreakdownTex.cpp
 │   │       └── BreakdownTex.h

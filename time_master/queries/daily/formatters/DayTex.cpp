@@ -6,8 +6,8 @@
 #include "common/common_utils.h"
 
 #include "queries/shared/query_utils.h"
-#include "queries/shared/breakdown/ProjectBreakdownFormatterFactory.h"
-#include "queries/shared/breakdown/IProjectBreakdownFormatter.h"
+#include "queries/shared/breakdown/TreeFmtFactory.h"
+#include "queries/shared/breakdown/ITreeFmt.h"
 #include "queries/shared/DailyReportData.h"
 
 
@@ -60,7 +60,7 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, data.records, parent_map);
 
-    auto formatter = ProjectBreakdownFormatterFactory::createFormatter(ReportFormat::LaTeX);
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
     if (formatter) {
         std::string breakdown_output = formatter->format(project_tree, data.total_duration, 1);
         ss << breakdown_output;

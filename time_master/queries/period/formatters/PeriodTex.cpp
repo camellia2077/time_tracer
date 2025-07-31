@@ -5,7 +5,7 @@
 
 // --- 依赖保持不变 ---
 #include "queries/shared/query_utils.h"
-#include "queries/shared/breakdown/ProjectBreakdownFormatterFactory.h"
+#include "queries/shared/breakdown/TreeFmtFactory.h"
 #include "queries/period/IPeriodFmt.h"
 #include "common/common_utils.h"
 
@@ -63,7 +63,7 @@ void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodRe
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, data.records, parent_map);
 
-    auto formatter = ProjectBreakdownFormatterFactory::createFormatter(ReportFormat::LaTeX);
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
     if (formatter) {
         std::string breakdown_output = formatter->format(project_tree, data.total_duration, data.actual_days);
         ss << breakdown_output;
