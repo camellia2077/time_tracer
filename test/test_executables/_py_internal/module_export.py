@@ -17,19 +17,24 @@ class ExportTester(BaseTester):
         """Runs all data export related tests."""
         if not self.db_file.exists():
             print(f"Warning: Skipping export tests because the database file '{self.db_file.name}' does not exist.")
-            return True # 跳过测试视为成功
+            return True # Skipping tests is considered a success
 
         tests_to_run = [
-            ("Data Export Test (-e d) [Markdown]", ["-e", "d", "-f", "md"]),
-            ("Data Export Test (-e m) [Markdown]", ["-e", "m", "-f", "md"]),
-            ("Data Export Test (-e p) [Markdown]", ["-e", "p", self.period_days_to_export, "-f", "md"]),
-            ("Data Export Test (-e d) [TeX]", ["-e", "d", "-f", "tex"]),
-            ("Data Export Test (-e m) [TeX]", ["-e", "m", "-f", "tex"]),
-            ("Data Export Test (-e p) [TeX]", ["-e", "p", self.period_days_to_export, "-f", "tex"])
+            # --- 新增的测试用例 ---
+            ("Data Export Test (--export day) [Markdown]", ["--export", "day", "--format", "md"]),
+            # ---------------------
+            ("Data Export Test (--export month) [Markdown]", ["--export", "month", "--format", "md"]),
+            ("Data Export Test (--export period) [Markdown]", ["--export", "period", self.period_days_to_export, "--format", "md"]),
+            ("Data Export Test (--export day) [TeX]", ["--export", "day", "--format", "tex"]),
+            ("Data Export Test (--export month) [TeX]", ["--export", "month", "--format", "tex"]),
+            ("Data Export Test (--export period) [TeX]", ["--export", "period", self.period_days_to_export, "--format", "tex"]),
+            ("Data Export Test (--export day) [Typst]", ["--export", "day", "--format", "typ"]),
+            ("Data Export Test (--export month) [Typst]", ["--export", "month", "--format", "typ"]),
+            ("Data Export Test (--export period) [Typst]", ["--export", "period", self.period_days_to_export, "--format", "typ"])
         ]
         
         for name, args in tests_to_run:
             if not self.run_command_test(name, args):
-                return False # 如果任何一个测试失败，立即返回 False
+                return False # If any test fails, return False immediately
                 
-        return True # 所有测试都通过了
+        return True # All tests passed

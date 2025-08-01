@@ -53,16 +53,21 @@ std::string get_valid_month_input() {
     }
     return month_str;
 }
-
 ReportFormat get_report_format_from_user() {
-    std::cout << "Select report format (1: Markdown, 2: TeX) [Default: 1]: ";
+    std::cout << "Select report format (1: Markdown, 2: TeX, 3: Typst) [Default: 1]: ";
     std::string line;
-    if (std::getline(std::cin, line) && (line == "2" || line == "tex")) {
-        std::cout << "-> TeX format selected.\n";
-        return ReportFormat::LaTeX;
-    }
-    std::cout << "-> Markdown format selected.\n";
-    return ReportFormat::Markdown;
+    if (std::getline(std::cin, line)) {
+        if (line == "2" || line == "tex") {
+            std::cout << "-> TeX format selected.\n";
+            return ReportFormat::LaTeX;
+        }
+        if (line == "3" || line == "typ") {
+            std::cout << "-> Typst format selected.\n";
+            return ReportFormat::Typ;
+        }
+        }
+        std::cout << "-> Markdown format selected.\n";
+        return ReportFormat::Markdown;
 }
 
 std::vector<int> get_integer_list_input(const std::string& prompt_message) {
