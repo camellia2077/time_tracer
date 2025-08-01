@@ -43,10 +43,21 @@ file(GLOB QUERIES_SOURCES
     "queries/export/*.cpp"
     "queries/daily/*.cpp"
     "queries/daily/formatters/*.cpp"
+    "queries/daily/formatters/md/*.cpp"
+    "queries/daily/formatters/tex/*.cpp"
+
     "queries/monthly/*.cpp"
     "queries/monthly/formatters/*.cpp"
+    "queries/monthly/formatters/md/*.cpp"
+    "queries/monthly/formatters/tex/*.cpp"
+
+
     "queries/period/*.cpp"
     "queries/period/formatters/*.cpp"
+    "queries/period/formatters/md/*.cpp"
+    "queries/period/formatters/tex/*.cpp"
+
+
     "queries/shared/*.cpp"
     "queries/shared/breakdown/*.cpp"
     "queries/shared/breakdown/formatters/*.cpp"

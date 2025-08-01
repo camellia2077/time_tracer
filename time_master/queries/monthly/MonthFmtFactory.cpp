@@ -1,8 +1,8 @@
 #include "common/pch.h"
 // queries/report_generators/monthly/formatter/MonthFmtFactory.cpp
 #include "MonthFmtFactory.h"
-#include "queries/monthly/formatters/MonthMd.h"
-#include "queries/monthly/formatters/MonthTex.h"
+#include "queries/monthly/formatters/md/MonthMd.h"
+#include "queries/monthly/formatters/tex/MonthTex.h"
 
 #include <stdexcept>
 
