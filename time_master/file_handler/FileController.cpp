@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "FileController.h"
 #include "ConfigLoader.h" 
 #include "FileUtils.h"    

@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // queries/report_generators/monthly/formatter/MonthFmtFactory.cpp
 #include "MonthFmtFactory.h"
 #include "queries/monthly/formatters/MonthMd.h"

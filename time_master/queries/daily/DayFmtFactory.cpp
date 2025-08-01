@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // queries/report_generators/daily/formatter/DayFmtFactory.cpp
 #include "DayFmtFactory.h"
 #include "queries/daily/formatters/DayMd.h"

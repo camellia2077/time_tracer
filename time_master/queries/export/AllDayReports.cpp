@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "AllDayReports.h"
 #include "queries/daily/DayQuerier.h"
 #include "queries/daily/DayFmtFactory.h" // [修正] 添加缺失的头文件

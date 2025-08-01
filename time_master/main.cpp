@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // main.cpp
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>

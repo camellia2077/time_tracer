@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // time_master_app/menu.h
 #include "Menu.h"
 #include "action_handler/ActionHandler.h"

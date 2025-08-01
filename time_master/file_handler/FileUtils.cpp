@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "FileUtils.h"
 #include <algorithm> // for std::sort
 

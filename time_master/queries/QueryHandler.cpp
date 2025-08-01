@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "QueryHandler.h"
 #include "queries/daily/DayGenerator.h" 
 #include "queries/monthly/MonthGenerator.h" 

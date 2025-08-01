@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // MonthTex.cpp (已更新)
 #include "MonthTex.h"
 #include <iomanip>
