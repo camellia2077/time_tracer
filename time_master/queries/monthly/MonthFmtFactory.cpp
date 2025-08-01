@@ -1,17 +1,16 @@
 // queries/report_generators/monthly/formatter/MonthFmtFactory.cpp
 #include "MonthFmtFactory.h"
 #include "queries/monthly/formatters/MonthMd.h"
-#include "queries/monthly/formatters/MonthTex.h" //引入 MonthTex 头文件
+#include "queries/monthly/formatters/MonthTex.h"
 
 #include <stdexcept>
 
-// create_formatter 方法的实现
-std::unique_ptr<IMonthFmt> MonthFmtFactory::create_formatter(ReportFormat format) {
+// create_formatter 方法的实现，返回类型已更新
+std::unique_ptr<IReportFormatter<MonthlyReportData>> MonthFmtFactory::create_formatter(ReportFormat format) {
     switch (format) {
         case ReportFormat::Markdown:
             return std::make_unique<MonthMd>();
         
-        // [修改] 新增对 LaTeX 格式的处理
         case ReportFormat::LaTeX:
             return std::make_unique<MonthTex>();
 

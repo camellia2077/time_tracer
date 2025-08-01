@@ -1,12 +1,11 @@
-// PeriodTex.cpp (已更新)
+// PeriodTex.cpp (已修正)
 #include "PeriodTex.h"
 #include <iomanip>
 #include <string>
 
-// --- 依赖保持不变 ---
+// --- 依赖 ---
 #include "queries/shared/query_utils.h"
 #include "queries/shared/breakdown/TreeFmtFactory.h"
-#include "queries/period/IPeriodFmt.h"
 #include "common/common_utils.h"
 
 // 1. 公开的接口现在只负责调用基类的模板方法
@@ -30,8 +29,6 @@ void PeriodTex::format_content(std::stringstream& ss, const PeriodReportData& da
         _display_project_breakdown(ss, data, db);
     }
 }
-
-// 3. _display_preamble 方法被彻底删除
 
 // _display_summary 方法保持不变
 void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {

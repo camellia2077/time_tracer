@@ -2,7 +2,8 @@
 #ifndef PERIOD_REPORT_MARKDOWN_FORMATTER_H
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/period/IPeriodFmt.h" // This path is corrected
+#include "queries/shared/Interface/IReportFormatter.h"  // 替换 IPeriodFmt.h
+#include "queries/shared/PeriodReportData.h"  // 为模板类型引入定义
 #include <sstream>
 
 // Forward declaration
@@ -11,9 +12,8 @@ struct PeriodReportData;
 /**
  * @class PeriodMd
  * @brief 将周期报告数据格式化为 Markdown 字符串的具体实现。
- * (现在使用 TreeFmtFactory 来处理项目明细)
  */
-class PeriodMd : public IPeriodFmt { // Inherits from the correct class
+class PeriodMd : public IReportFormatter<PeriodReportData> { // 继承自模板化通用接口
 public:
     PeriodMd() = default;
 
