@@ -13,7 +13,7 @@ class DatabaseImportTester(BaseTester):
         """Runs all database import related tests."""
         if not self.processed_data_path.exists():
             print(f"Warning: Skipping DB import tests because the input directory '{self.processed_data_path.name}' does not exist.")
-            return True # 跳过测试视为成功
+            return True # Skipping tests is considered a success
 
-        # 直接返回子测试的结果
-        return self.run_command_test("Database Import Test (-p)", ["-p", str(self.processed_data_path)], stdin_input="y\n")
+        # Directly return the result of the sub-test
+        return self.run_command_test("Database Import Test (--process)", ["--process", str(self.processed_data_path)], stdin_input="y\n")

@@ -9,7 +9,8 @@
  */
 enum class ReportFormat {
     Markdown,
-    LaTeX
+    LaTeX,
+    Typ
 };
 
 #endif // REPORT_FORMAT_H
