@@ -2,7 +2,8 @@
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_H
 
-#include "queries/monthly/IMonthFmt.h" // Corrected: Was IPeriodFmt.h
+#include "queries/shared/Interface/IReportFormatter.h"  // 替换 IMonthFmt.h
+#include "queries/shared/MonthlyReportData.h" // 为模板类型引入定义
 #include <sstream>
 
 // Forward declaration
@@ -11,9 +12,8 @@ struct MonthlyReportData;
 /**
  * @class MonthMd
  * @brief 将月报数据格式化为 Markdown 字符串的具体实现。
- * (现在使用 TreeFmtFactory 来处理项目明细)
  */
-class MonthMd : public IMonthFmt { // Corrected: Was IReportFormatter
+class MonthMd : public IReportFormatter<MonthlyReportData> { // 继承自模板化通用接口
 public:
     MonthMd() = default;
 
