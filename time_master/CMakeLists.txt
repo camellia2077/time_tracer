@@ -30,7 +30,12 @@ find_package(nlohmann_json REQUIRED)
 
 # --- 收集所有源文件 ---
 file(GLOB COMMON_SOURCES "common/*.cpp")
-file(GLOB TIME_MASTER_APP_SOURCES "time_master_app/*.cpp")
+file(GLOB TIME_MASTER_APP_SOURCES 
+    "time_master_app/*.cpp"
+    "time_master_app/menu_processor/*.cpp"
+    "time_master_app/menu_input/*.cpp"
+    "time_master_app/*.cpp"
+)
 file(GLOB DB_INSERTER_SOURCES
     "db_inserter/*.cpp"
     "db_inserter/model/*.cpp"
