@@ -14,6 +14,8 @@ std::optional<ReportFormatDetails> get_report_format_details(ReportFormat format
             return {{"Markdown_logs", ".md"}};
         case ReportFormat::LaTeX:
             return {{"LaTeX_logs", ".tex"}};
+        case ReportFormat::Typ:
+            return {{"Typst_logs", ".typ"}};
         default:
             std::cerr << RED_COLOR << "错误: 不支持的导出格式。" << RESET_COLOR << std::endl;
             return std::nullopt;

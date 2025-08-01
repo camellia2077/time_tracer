@@ -18,19 +18,22 @@ class QueryTester(BaseTester):
         """Runs all data query related tests."""
         if not self.db_file.exists():
             print(f"Warning: Skipping query tests because the database file '{self.db_file.name}' does not exist.")
-            return True # 跳过测试视为成功
+            return True # Skipping tests is considered a success
 
         tests_to_run = [
-            ("Data Query Test (-q d) [Markdown]", ["-q", "d", self.daily_date, "-f", "md"]),
-            ("Data Query Test (-q p) [Markdown]", ["-q", "p", self.period_days, "-f", "md"]),
-            ("Data Query Test (-q m) [Markdown]", ["-q", "m", self.monthly_month, "-f", "md"]),
-            ("Data Query Test (-q d) [TeX]", ["-q", "d", self.daily_date, "-f", "tex"]),
-            ("Data Query Test (-q p) [TeX]", ["-q", "p", self.period_days, "-f", "tex"]),
-            ("Data Query Test (-q m) [TeX]", ["-q", "m", self.monthly_month, "-f", "tex"])
+            ("Data Query Test (--query daily) [Markdown]", ["--query", "daily", self.daily_date, "--format", "md"]),
+            ("Data Query Test (--query period) [Markdown]", ["--query", "period", self.period_days, "--format", "md"]),
+            ("Data Query Test (--query monthly) [Markdown]", ["--query", "monthly", self.monthly_month, "--format", "md"]),
+            ("Data Query Test (--query daily) [TeX]", ["--query", "daily", self.daily_date, "--format", "tex"]),
+            ("Data Query Test (--query period) [TeX]", ["--query", "period", self.period_days, "--format", "tex"]),
+            ("Data Query Test (--query monthly) [TeX]", ["--query", "monthly", self.monthly_month, "--format", "tex"]),
+            ("Data Query Test (--query daily) [Typst]", ["--query", "daily", self.daily_date, "--format", "typ"]),
+            ("Data Query Test (--query period) [Typst]", ["--query", "period", self.period_days, "--format", "typ"]),
+            ("Data Query Test (--query monthly) [Typst]", ["--query", "monthly", self.monthly_month, "--format", "typ"])
         ]
         
         for name, args in tests_to_run:
             if not self.run_command_test(name, args):
-                return False # 如果任何一个测试失败，立即返回 False
+                return False # If any test fails, return False immediately
                 
-        return True # 所有测试都通过了
+        return True # All tests passed

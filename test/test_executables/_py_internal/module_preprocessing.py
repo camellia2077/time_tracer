@@ -13,14 +13,14 @@ class PreprocessingTester(BaseTester):
         """Runs all pre-processing related tests."""
         source_path_str = str(self.source_data_path)
         tests_to_run = [
-            ("Pre-processing Test (-c)", ["-c", source_path_str]),
-            ("Pre-processing Test (-vs)", ["-vs", source_path_str]),
-            ("Pre-processing Test (-c -vo)", ["-c", "-vo", source_path_str]),
-            ("Pre-processing Test (-c -vo -edc)", ["-c", "-vo", "-edc", source_path_str])
+            ("Pre-processing Test (--convert)", ["--convert", source_path_str]),
+            ("Pre-processing Test (--validate-source)", ["--validate-source", source_path_str]),
+            ("Pre-processing Test (--convert --validate-output)", ["--convert", "--validate-output", source_path_str]),
+            ("Pre-processing Test (--convert --validate-output --enable-day-check)", ["--convert", "--validate-output", "--enable-day-check", source_path_str])
         ]
         
         for name, args in tests_to_run:
             if not self.run_command_test(name, args):
-                return False  # 如果任何一个测试失败，立即返回 False
+                return False  # If any test fails, return False immediately
         
-        return True # 所有测试都通过了
+        return True # All tests passed
