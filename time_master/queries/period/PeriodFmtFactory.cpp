@@ -1,8 +1,8 @@
 #include "common/pch.h"
 // PeriodFmtFactory.cpp
 #include "PeriodFmtFactory.h"
-#include "queries/period/formatters/PeriodMd.h"
-#include "queries/period/formatters/PeriodTex.h"
+#include "queries/period/formatters/md/PeriodMd.h"
+#include "queries/period/formatters/tex/PeriodTex.h"
 
 #include <stdexcept>
 
