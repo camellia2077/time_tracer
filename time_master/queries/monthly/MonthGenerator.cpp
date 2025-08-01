@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // queries/report_generators/monthly/MonthGenerator.cpp
 #include "MonthGenerator.h"
 

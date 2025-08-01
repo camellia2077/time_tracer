@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // PeriodFmtFactory.cpp
 #include "PeriodFmtFactory.h"
 #include "queries/period/formatters/PeriodMd.h"

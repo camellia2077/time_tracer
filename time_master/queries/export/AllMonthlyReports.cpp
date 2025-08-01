@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "AllMonthlyReports.h"
 // [修改] 引入格式化器工厂和查询器
 #include "queries/monthly/MonthFmtFactory.h"

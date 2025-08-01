@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // queries/report_generators/daily/DayGenerator.cpp
 #include "DayGenerator.h"
 #include "DayQuerier.h"

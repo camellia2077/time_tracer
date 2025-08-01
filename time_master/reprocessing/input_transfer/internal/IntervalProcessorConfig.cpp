@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // reprocessing/input_transfer/internal/IntervalProcessorConfig.cpp
 #include <fstream>
 #include <iostream>

@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "queries/period/PeriodGenerator.h"
 #include "queries/period/PeriodQuerier.h"
 #include "queries/shared/PeriodReportData.h"

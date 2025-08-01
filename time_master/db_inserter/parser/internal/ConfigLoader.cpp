@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "ConfigLoader.h"
 #include <nlohmann/json.hpp>
 #include <fstream>
