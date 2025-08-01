@@ -30,6 +30,9 @@ find_package(nlohmann_json REQUIRED)
 
 # --- 收集所有源文件 ---
 file(GLOB COMMON_SOURCES "common/*.cpp")
+file(GLOB TIME_MASTER_CLI_SOURCES 
+    "time_master_cli/*.cpp"
+)
 file(GLOB TIME_MASTER_APP_SOURCES 
     "time_master_app/*.cpp"
     "time_master_app/menu_processor/*.cpp"
@@ -50,17 +53,20 @@ file(GLOB QUERIES_SOURCES
     "queries/daily/formatters/*.cpp"
     "queries/daily/formatters/md/*.cpp"
     "queries/daily/formatters/tex/*.cpp"
+    "queries/daily/formatters/typ/*.cpp"
 
     "queries/monthly/*.cpp"
     "queries/monthly/formatters/*.cpp"
     "queries/monthly/formatters/md/*.cpp"
     "queries/monthly/formatters/tex/*.cpp"
+    "queries/monthly/formatters/typ/*.cpp"
 
 
     "queries/period/*.cpp"
     "queries/period/formatters/*.cpp"
     "queries/period/formatters/md/*.cpp"
     "queries/period/formatters/tex/*.cpp"
+    "queries/period/formatters/typ/*.cpp"
 
 
     "queries/shared/*.cpp"
@@ -99,6 +105,9 @@ add_executable(
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
+    
+    ${TIME_MASTER_CLI_SOURCES}
+    
 )
 
 
