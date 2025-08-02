@@ -1,40 +1,32 @@
 // cli/CliController.h
-#include "common/pch.h"
 #ifndef CLI_CONTROLLER_H
 #define CLI_CONTROLLER_H
 
 #include <string>
 #include <vector>
-#include <functional> // Required for std::function
 #include "queries/shared/ReportFormat.h"
 
-// Forward declarations to avoid including heavy headers
+// 前向声明
 class ActionHandler;
 class FileController;
 
 /**
  * @class CliController
- * @brief Handles all Command Line Interface (CLI) logic.
+ * @brief 处理所有命令行接口 (CLI) 的逻辑。
  *
- * This class parses command-line arguments and invokes the appropriate
- * ActionHandler methods based on those arguments. It serves as the main
- * business logic hub for the CLI.
+ * 此类解析命令行参数，并根据这些参数调用相应的 ActionHandler 方法。
+ * 它是 CLI 的主要业务逻辑中心。
  */
 class CliController {
 public:
-    /**
-     * @brief Constructs a CliController instance.
-     * @param args The list of command-line arguments from main.
-     */
     explicit CliController(const std::vector<std::string>& args);
     ~CliController();
 
     /**
-     * @brief Executes the command specified by the command-line arguments.
+     * @brief 执行由命令行参数指定的命令。
      *
-     * This is the main entry point for the class. It will parse the command
-     * and dispatch to the appropriate handler function.
-     * Throws std::runtime_error on failure.
+     * 这是该类的主要入口点。它将解析命令并分派给适当的处理函数。
+     * 失败时抛出 std::runtime_error。
      */
     void execute();
 
@@ -44,7 +36,7 @@ private:
     ActionHandler* action_handler_;
     FileController* file_controller_;
 
-    // --- Private helper functions for handling command branches ---
+    // --- 用于处理命令分支的私有辅助函数 ---
     void handle_full_pipeline();
     void handle_manual_preprocessing();
     void handle_database_import();
@@ -52,22 +44,8 @@ private:
     void handle_export();
 
     /**
-     * @brief Generic helper to export a single report.
-     * @param report_type The type of report (e.g., "日报", "月报").
-     * @param identifier The report's identifier (e.g., "20240115", "202401").
-     * @param content_generator A lambda function that returns the report content.
-     * @param format The format of the report.
-     */
-    void export_single_report(
-        const std::string& report_type,
-        const std::string& identifier,
-        std::function<std::string()> content_generator,
-        ReportFormat format
-    ) const; // <<< CORRECTION: Added 'const' to match the .cpp and added semicolon
-
-    /**
-     * @brief Parses the format option (-f, --format) from the command line.
-     * @return A ReportFormat enum value. Defaults to Markdown if not specified.
+     * @brief 从命令行解析格式选项 (-f, --format)。
+     * @return 一个 ReportFormat 枚举值。如果未指定，则默认为 Markdown。
      */
     ReportFormat parse_format_option() const;
 };

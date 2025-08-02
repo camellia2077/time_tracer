@@ -1,7 +1,6 @@
 #ifndef ACTION_HANDLER_H
 #define ACTION_HANDLER_H
 
-// action_handler/ActionHandler.h
 #include "reprocessing/LogProcessor.h"
 #include <string>
 #include <vector>
@@ -16,7 +15,6 @@ namespace fs = std::filesystem;
 
 class ActionHandler {
 public:
-    // ... (public members remain the same) ...
     ActionHandler(const std::string& db_name, const AppConfig& config, const std::string& main_config_path);
     ~ActionHandler();
 
@@ -35,7 +33,16 @@ public:
     std::string run_period_query(int days, ReportFormat format) const;
     std::string run_monthly_query(const std::string& month, ReportFormat format) const;
     
-    // --- 导出功能 ---
+    // =========================================================================
+    // 导出功能
+    // =========================================================================
+    
+    // --- 新增: 导出单个报告的方法 ---
+    void run_export_single_day_report(const std::string& date, ReportFormat format) const;
+    void run_export_single_month_report(const std::string& month, ReportFormat format) const;
+    void run_export_single_period_report(int days, ReportFormat format) const;
+
+    // --- 批量导出方法 (保持不变) ---
     void run_export_all_daily_reports_query(ReportFormat format) const;
     void run_export_all_monthly_reports_query(ReportFormat format) const;
     void run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format) const;
@@ -54,14 +61,12 @@ private:
     AppConfig app_config_;
     std::string main_config_path_;
 
-    
-
     // 用于保存文件处理状态的成员
     fs::path input_root_;
     std::vector<fs::path> files_to_process_;
     std::map<fs::path, fs::path> source_to_output_map_;
     LogProcessor processor_;
-    // 新增：用于存储导出根路径的成员变量
+    // 用于存储导出根路径的成员变量
     std::filesystem::path export_root_path_; 
 };
 
