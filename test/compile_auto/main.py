@@ -9,7 +9,8 @@ import shutil
 try:
     from config import (
         SOURCE_DIRECTORY, OUTPUT_DIRECTORY, COMPILE_TYPES,
-        MARKDOWN_COMPILERS, BENCHMARK_LOOPS
+        MARKDOWN_COMPILERS, BENCHMARK_LOOPS, INCREMENTAL_COMPILE,
+        CLEAN_OUTPUT_DEFAULT # <--- 导入新配置
     )
 except ImportError:
     print("错误：无法找到或导入 config.py 文件。")
@@ -34,7 +35,9 @@ def main():
         epilog="所有路径和编译选项均在 config.py 中配置。直接运行 'python main.py' 即可。"
     )
     
-    parser.add_argument('--no-clean', action='store_true', help='【可选】启动时不清理旧的输出目录。')
+    # --- 核心修改 1: 将 --no-clean 改为 --clean ---
+    parser.add_argument('--clean', action='store_true', help='【可选】启动时强制清理旧的输出目录。')
+    parser.add_argument('--no-incremental', action='store_true', help='【可选】禁用增量编译，强制重新编译所有文件。')
     parser.add_argument(
         '--jobs', '-j', type=int, default=None,
         help="【可选】并行编译的任务数量 (默认: 使用所有可用的CPU核心)"
@@ -46,9 +49,11 @@ def main():
     source_dir_to_process = SOURCE_DIRECTORY
     output_dir_to_process = os.path.join(os.getcwd(), OUTPUT_DIRECTORY)
 
-    if not args.no_clean:
+    # --- 核心修改 2: 更新清理逻辑 ---
+    # 只有当用户明确使用 --clean 参数，或者 config 文件中设置为 True 时，才执行清理
+    if args.clean or CLEAN_OUTPUT_DEFAULT:
         if os.path.exists(output_dir_to_process):
-            print(f"🧹 默认执行清理，正在删除旧的输出目录: '{output_dir_to_process}'")
+            print(f"🧹 清理模式已激活，正在删除旧的输出目录: '{output_dir_to_process}'")
             try:
                 shutil.rmtree(output_dir_to_process)
                 print("✅ 旧目录已成功删除。")
@@ -74,7 +79,8 @@ def main():
         jobs=args.jobs,
         compile_types=COMPILE_TYPES,
         markdown_compilers=MARKDOWN_COMPILERS,
-        benchmark_loops=BENCHMARK_LOOPS
+        benchmark_loops=BENCHMARK_LOOPS,
+        incremental=not args.no_incremental and INCREMENTAL_COMPILE
     )
     handle_auto(auto_mode_args)
     

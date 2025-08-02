@@ -20,7 +20,6 @@ def handle_tex(args):
     """
     处理 TeX 文件编译，并在完成后清理临时文件。
     """
-    # --- 修正点：恢复完整的清理函数 ---
     def cleanup_temp_files(directory: str):
         """在指定目录中查找并删除 .aux, .log, .out 文件。"""
         extensions_to_clean = ['.aux', '.log', '.out']
@@ -42,7 +41,6 @@ def handle_tex(args):
         else:
             print(f"--- 清理完成，共删除 {deleted_count} 个文件 ---")
 
-    # 将真正的清理函数作为 post_process_hook 传递下去
     file_count, duration = process_directory(
         source_dir=args.source_dir,
         base_output_dir=args.output_dir,
@@ -50,7 +48,8 @@ def handle_tex(args):
         log_file_type='TeX',
         command_builder=build_tex_command,
         max_workers=args.jobs,
-        post_process_hook=cleanup_temp_files # <--- 使用完整的清理函数
+        post_process_hook=cleanup_temp_files,
+        incremental=args.incremental # <--- 传递开关
     )
     
     if file_count > 0:
@@ -63,7 +62,8 @@ def handle_rst(args):
     builder = PandocCommandBuilder(source_format='rst', font=args.font)
     file_count, duration = process_directory(
         source_dir=args.source_dir, base_output_dir=args.output_dir, file_extension='.rst',
-        log_file_type='RST', command_builder=builder, max_workers=args.jobs
+        log_file_type='RST', command_builder=builder, max_workers=args.jobs,
+        incremental=args.incremental # <--- 传递开关
     )
     if file_count > 0: print(f"===== RST 处理完成 (共 {file_count} 个文件) =====")
     return file_count, duration
@@ -71,7 +71,8 @@ def handle_rst(args):
 def handle_typ(args):
     file_count, duration = process_directory(
         source_dir=args.source_dir, base_output_dir=args.output_dir, file_extension='.typ',
-        log_file_type='Typst', command_builder=build_typ_command, max_workers=args.jobs
+        log_file_type='Typst', command_builder=build_typ_command, max_workers=args.jobs,
+        incremental=args.incremental # <--- 传递开关
     )
     if file_count > 0: print(f"===== Typst 处理完成 (共 {file_count} 个文件) =====")
     return file_count, duration
@@ -98,12 +99,14 @@ def _run_benchmark(args: argparse.Namespace):
             duration = 0.0
             if compiler == 'pandoc':
                 builder = PandocCommandBuilder(source_format='gfm', font=args.font)
+                # 基准测试总是完全编译，所以 incremental=False
                 _, duration = process_directory(
-                    args.source_dir, args.output_dir, '.md', 'Markdown', builder, args.jobs, quiet=True
+                    args.source_dir, args.output_dir, '.md', 'Markdown', builder, args.jobs, quiet=True, incremental=False
                 )
             elif compiler == 'typst':
+                # 基准测试总是完全编译，所以 incremental=False
                 _, duration = process_directory_md_via_typ(
-                    args.source_dir, args.output_dir, font=args.font, max_workers=args.jobs, quiet=True
+                    args.source_dir, args.output_dir, font=args.font, max_workers=args.jobs, quiet=True, incremental=False
                 )
             
             benchmark_results[compiler].append(duration)
@@ -145,7 +148,9 @@ def handle_md(args: argparse.Namespace):
 
         if compiler == 'typst':
             results, duration = process_directory_md_via_typ(
-                source_dir=args.source_dir, base_output_dir=args.output_dir, font=args.font, max_workers=args.jobs
+                source_dir=args.source_dir, base_output_dir=args.output_dir, 
+                font=args.font, max_workers=args.jobs,
+                incremental=args.incremental # <--- 传递开关
             )
             file_count = len(results)
             if file_count > 0:
@@ -162,7 +167,8 @@ def handle_md(args: argparse.Namespace):
             file_count, duration = process_directory(
                 source_dir=args.source_dir, base_output_dir=args.output_dir,
                 file_extension='.md', log_file_type='Markdown',
-                command_builder=builder, max_workers=args.jobs
+                command_builder=builder, max_workers=args.jobs,
+                incremental=args.incremental # <--- 传递开关
             )
 
         if file_count > 0:
