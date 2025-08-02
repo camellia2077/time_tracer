@@ -1,8 +1,13 @@
 #include "common/pch.h"
 #include "AllPeriodReports.h"
-#include "queries/period/PeriodFmtFactory.h"
-#include "queries/period/PeriodQuerier.h" // [修正] 添加缺失的头文件
+#include "queries/period/PeriodQuerier.h"
 #include <stdexcept>
+
+// [修改] 引入新的通用工厂和具体的格式化器类
+#include "queries/shared/FmtFactory.h"
+#include "queries/period/formatters/md/PeriodMd.h"
+#include "queries/period/formatters/tex/PeriodTex.h"
+#include "queries/period/formatters/typ/PeriodTyp.h"
 
 AllPeriodReports::AllPeriodReports(sqlite3* db) : m_db(db) {
     if (m_db == nullptr) {
@@ -10,23 +15,18 @@ AllPeriodReports::AllPeriodReports(sqlite3* db) : m_db(db) {
     }
 }
 
-// [修改] 更新函数签名以接收 ReportFormat 参数
 FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>& days_list, ReportFormat format) {
     FormattedPeriodReports reports;
     
-    // [修改] 在循环外使用工厂创建一次格式化器实例
-    auto formatter = PeriodFmtFactory::create_formatter(format);
+    // [修改] 使用新的模板工厂创建格式化器
+    auto formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex, PeriodTyp>::create_formatter(format);
 
     for (int days : days_list) {
         if (days > 0) {
-            // 步骤 1: 获取数据 (逻辑不变)
             PeriodQuerier querier(m_db, days);
             PeriodReportData report_data = querier.fetch_data();
 
-            // 步骤 2: [修改] 使用在循环外创建的格式化器实例来格式化报告
             std::string formatted_report = formatter->format_report(report_data, m_db);
-
-            // 步骤 3: 存储结果 (逻辑不变)
             reports[days] = formatted_report;
         }
     }
