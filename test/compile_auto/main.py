@@ -16,6 +16,14 @@ except ImportError:
 # 从 internal 包中导入命令处理函数
 from internal.handlers import handle_auto
 
+def format_time(seconds):
+    """将秒数格式化为 HH:MM:SS """
+    seconds = int(seconds)
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 def main():
     program_start_time = time.perf_counter()
     parser = argparse.ArgumentParser(
@@ -69,7 +77,7 @@ def main():
     handle_auto(auto_mode_args)
     
     program_end_time = time.perf_counter()
-    print(f"\n\n🚀 程序总运行时间: {program_end_time - program_start_time:.2f} 秒")
+    print(f"\n\n🚀 程序总运行时间: {format_time(program_end_time - program_start_time)}")
 
 if __name__ == '__main__':
     main()
