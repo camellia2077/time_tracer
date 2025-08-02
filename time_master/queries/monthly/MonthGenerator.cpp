@@ -1,23 +1,22 @@
 #include "common/pch.h"
-// queries/report_generators/monthly/MonthGenerator.cpp
 #include "MonthGenerator.h"
-
 #include "MonthQuerier.h"
 #include "queries/shared/MonthlyReportData.h"
 
-#include "queries/monthly/MonthFmtFactory.h" //  引入格式化器工厂，替代具体的格式化器
+// [修改] 引入新的通用工厂和具体的格式化器类
+#include "queries/shared/FmtFactory.h"
+#include "queries/monthly/formatters/md/MonthMd.h"
+#include "queries/monthly/formatters/tex/MonthTex.h"
+#include "queries/monthly/formatters/typ/MonthTyp.h"
 
 MonthGenerator::MonthGenerator(sqlite3* db) : m_db(db) {}
 
-// 更新函数签名以接收 ReportFormat 参数
 std::string MonthGenerator::generate_report(const std::string& year_month, ReportFormat format) {
-    // 1. 使用 Querier 模块获取数据 (此部分逻辑不变)
     MonthQuerier querier(m_db, year_month);
     MonthlyReportData report_data = querier.fetch_data();
 
-    // 2. 使用工厂根据指定格式创建格式化器实例
-    auto formatter = MonthFmtFactory::create_formatter(format);
+    // [修改] 使用新的模板工厂创建格式化器
+    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex, MonthTyp>::create_formatter(format);
 
-    // 3. 使用创建好的格式化器接口来生成报告字符串
     return formatter->format_report(report_data, m_db);
 }
