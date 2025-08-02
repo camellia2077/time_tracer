@@ -8,6 +8,14 @@ from typing import Callable, List, Tuple, Dict, Any
 from .core import process_directory
 from .compilers import build_tex_command, build_typ_command, PandocCommandBuilder
 
+def format_time(seconds):
+    """将秒数格式化为 HH:MM:SS """
+    seconds = int(seconds)
+    hours = seconds // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
 def handle_tex(args):
     start_time = time.perf_counter()
     def cleanup_temp_files(directory: str):
@@ -38,7 +46,7 @@ def handle_tex(args):
     )
     
     end_time = time.perf_counter()
-    print(f"===== TeX 文件处理完成 (共 {file_count} 个文件，总耗时: {end_time - start_time:.2f}秒) =====")
+    print(f"===== TeX 文件处理完成 (共 {file_count} 个文件，总耗时: {format_time(end_time - start_time)}) =====")
     return file_count
 
 def handle_md(args):
@@ -57,7 +65,7 @@ def handle_md(args):
     )
     
     end_time = time.perf_counter()
-    print(f"===== Markdown 文件处理完成 (共 {file_count} 个文件，总耗时: {end_time - start_time:.2f}秒) =====")
+    print(f"===== Markdown 文件处理完成 (共 {file_count} 个文件，总耗时: {format_time(end_time - start_time)}) =====")
     return file_count
 
 def handle_rst(args):
@@ -76,7 +84,7 @@ def handle_rst(args):
     )
     
     end_time = time.perf_counter()
-    print(f"===== RST 文件处理完成 (共 {file_count} 个文件，总耗时: {end_time - start_time:.2f}秒) =====")
+    print(f"===== RST 文件处理完成 (共 {file_count} 个文件，总耗时: {format_time(end_time - start_time)}) =====")
     return file_count
 
 def handle_typ(args):
@@ -91,7 +99,7 @@ def handle_typ(args):
     )
     
     end_time = time.perf_counter()
-    print(f"===== Typst 文件处理完成 (共 {file_count} 个文件，总耗时: {end_time - start_time:.2f}秒) =====")
+    print(f"===== Typst 文件处理完成 (共 {file_count} 个文件，总耗时: {format_time(end_time - start_time)}) =====")
     return file_count
 
 def _discover_tasks(source_dir: str, compiler_map: Dict, types_to_compile: List[str]) -> List[Dict[str, Any]]:
@@ -161,7 +169,7 @@ def _print_summary(timing_summary: Dict):
     print("="*35)
     for format_name, (duration, count) in timing_summary.items():
         avg_time_str = f"平均: {(duration / count):.2f} 秒/文件" if count > 0 else "无文件编译"
-        print(f"- {format_name:<10} | 总耗时: {duration:>7.2f} 秒 | {avg_time_str}")
+        print(f"- {format_name:<10} | 总耗时: {format_time(duration)} | {avg_time_str}")
     print("="*35)
 
 # --- 重构点 2: `handle_auto` 现在是干净的协调者 ---
