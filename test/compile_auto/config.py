@@ -2,26 +2,33 @@
 # 在这里配置你所有的路径和选项
 
 # 1. 源文件夹的父目录
-SOURCE_DIRECTORY = "C:/Computer/my_github/github_cpp/New_time_master/my_test/exported_files"
+SOURCE_DIRECTORY = r"C:\Computer\my_github\github_cpp\bill_master\Bills_Master_cpp\my_test\exported_files"
 
 # 2. 统一的输出目录
 OUTPUT_DIRECTORY = "output_pdf"
 
 # 3. 指定要编译的文档类型
-# 可选值: 'TeX', 'Markdown', 'RST', 'Typst'
-# time_master暂时还没有实现rst，只有'TeX', 'Markdown', 'Typst'
-# bill_master 'TeX', 'Markdown', 'RST', 'Typst'都实现了
-COMPILE_TYPES = ['TeX', 'Markdown', 'Typst']
+# bill_master可选值: 'TeX', 'Markdown', 'RST', 'Typst'
+# time_master可选值: 'TeX', 'Markdown', 'Typst'
+COMPILE_TYPES = ['TeX', 'Markdown', 'RST', 'Typst']
+
+
+# === 增量编译设置 ===
+# True:  启用增量编译 (推荐)。只编译有变动的文件。
+# False: 禁用增量编译。每次都重新编译所有文件。
+INCREMENTAL_COMPILE = True
+# ========================
+
+
+# === 新增: 清理设置 ===
+# True:  每次启动时，默认清理 output_pdf 目录。
+# False: 每次启动时，默认不清理。(推荐，以便使用增量编译)
+# 这个设置可以被命令行的 --clean 参数覆盖。
+CLEAN_OUTPUT_DEFAULT = False
+# ========================
+
 
 # --- 以下为 Markdown 基准测试配置 ---
-
-# 4. Markdown 编译方式 (列表)
-#  不推荐使用pandoc 因为编译速度实在是太慢了，选择typst会比pandoc快大概三倍
-#    - 如果列表只有一个值 (如 ['pandoc'])，则执行常规编译。
-#    - 如果列表有多个值 (如 ['pandoc', 'typst'])，则启动基准测试模式。
-#    可选值: 'pandoc', 'typst'
+# ... (后续内容保持不变) ...
 MARKDOWN_COMPILERS = ['typst']
-
-# 5. 基准测试循环次数
-#    仅在基准测试模式下生效。
 BENCHMARK_LOOPS = 3
