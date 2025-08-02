@@ -2,18 +2,26 @@
 # 在这里配置你所有的路径和选项
 
 # 1. 源文件夹的父目录
-#    程序将扫描这个文件夹下的所有子目录（如 'LaTeX_bills', 'Markdown_bills' 等）。
-SOURCE_DIRECTORY = "C:/Computer/my_github/github_cpp/New_time_master/my_test/exported_files"  # <--- 修改这里：指向包含各类bills文件夹的父目录
+SOURCE_DIRECTORY = "C:/Computer/my_github/github_cpp/New_time_master/my_test/exported_files"
 
 # 2. 统一的输出目录
-#    所有编译好的文件，都会保持其原始目录结构，并存放在这里。
-OUTPUT_DIRECTORY = "output_pdf"  # <--- 修改这里：指定你想要的输出文件夹名称
+OUTPUT_DIRECTORY = "output_pdf"
 
-# 3. (新增) 指定要编译的文档类型
-#    这是一个列表，只编译列表中指定的类型。
-#    可选值: 'TeX', 'Markdown', 'RST', 'Typst'
-#    - 如果要编译所有类型，请保留全部: ['TeX', 'Markdown', 'RST', 'Typst']
-#    - 如果只想编译 Typst，就改成: ['Typst']
-#    - 如果只想编译 Markdown 和 TeX，就改成: ['Markdown', 'TeX']
-#    (注意：大小写不敏感，'typst' 和 'Typst' 效果一样)
-COMPILE_TYPES = ["Typst"]  # <--- 修改这里：指定你想要编译的类型
+# 3. 指定要编译的文档类型
+# 可选值: 'TeX', 'Markdown', 'RST', 'Typst'
+# time_master暂时还没有实现rst，只有'TeX', 'Markdown', 'Typst'
+# bill_master 'TeX', 'Markdown', 'RST', 'Typst'都实现了
+COMPILE_TYPES = ['TeX', 'Markdown', 'Typst']
+
+# --- 以下为 Markdown 基准测试配置 ---
+
+# 4. Markdown 编译方式 (列表)
+#  不推荐使用pandoc 因为编译速度实在是太慢了，选择typst会比pandoc快大概三倍
+#    - 如果列表只有一个值 (如 ['pandoc'])，则执行常规编译。
+#    - 如果列表有多个值 (如 ['pandoc', 'typst'])，则启动基准测试模式。
+#    可选值: 'pandoc', 'typst'
+MARKDOWN_COMPILERS = ['typst']
+
+# 5. 基准测试循环次数
+#    仅在基准测试模式下生效。
+BENCHMARK_LOOPS = 3
