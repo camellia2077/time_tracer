@@ -67,40 +67,48 @@ int main(int argc, char* argv[]) {
     return 0;
 }
 
-// [不变] 帮助文本函数保持原样
 void print_full_usage(const char* app_name) {
     std::cout << "TimeMaster: A command-line tool for time data pre-processing, import, and querying.\n\n";
     std::cout << "Usage: " << app_name << " <command> [arguments...]\n\n";
+    
     std::cout << GREEN_COLOR << "--- Full Pipeline ---\n" << RESET_COLOR;
-    std::cout << "  -a,  --all <path>\t\tExecute full flow: validate source, convert, and import into database.\n";
-    std::cout << "  Example: " << app_name << " -a /path/to/source_logs\n\n";
+    std::cout << "  --all, -a <path>\t\tExecute full flow: validate source, convert, and import into database.\n";
+    std::cout << "  Example: " << app_name << " --all /path/to/source_logs\n\n";
+    
     std::cout << GREEN_COLOR << "--- Manual Pre-processing Steps ---\n" << RESET_COLOR;
     std::cout << "  Usage: " << app_name << " <flag(s)> <file_or_folder_path>\n";
     std::cout << "  Action Flags:\n";
-    std::cout << "    -vs, --validate-source\tOnly validate the source file format.\n";
-    std::cout << "    -c,  --convert\t\tOnly convert file format.\n";
+    std::cout << "    --validate-source, -vs\tOnly validate the source file format.\n";
+    std::cout << "    --convert, -c\t\tOnly convert file format.\n";
     std::cout << "  Optional Flags (used with action flags):\n";
-    std::cout << "    -vo, --validate-output\tValidate output file after conversion (use with -c).\n";
-    std::cout << "    -edc, --enable-day-check\tEnable check for completeness of days in a month (use with -vo).\n";
-    std::cout << "  Example: " << app_name << " -vs -c -vo /path/to/logs\n\n";
+    std::cout << "    --validate-output, -vo\tValidate output file after conversion (use with -c).\n";
+    std::cout << "    --enable-day-check, -edc\tEnable check for completeness of days in a month (use with -vo).\n";
+    std::cout << "  Example: " << app_name << " --validate-source --convert --validate-output /path/to/logs\n\n";
+    
     std::cout << GREEN_COLOR << "--- Manual Data Import ---\n" << RESET_COLOR;
-    std::cout << "  -p, --process <path>\t\tProcess a directory of formatted .txt files and import to database.\n";
-    std::cout << "  Example: " << app_name << " -p /path/to/processed_logs/\n\n";
+    std::cout << "  --process, -p <path>\t\tProcess a directory of formatted .txt files and import to database.\n";
+    std::cout << "  Example: " << app_name << " --process /path/to/processed_logs/\n\n";
+    
     std::cout << GREEN_COLOR << "--- Data Query Module ---\n" << RESET_COLOR;
-    std::cout << "  -q d, --query daily <YYYYMMDD>\tQuery statistics for a specific day.\n";
-    std::cout << "  -q p, --query period <days>\t\tQuery statistics for last N days. Can be a list (e.g., 7,30).\n";
-    std::cout << "  -q m, --query monthly <YYYYMM>\tQuery statistics for a specific month.\n";
+    std::cout << "  --query daily, -q d <YYYYMMDD>\tQuery statistics for a specific day.\n";
+    std::cout << "  --query monthly, -q m <YYYYMM>\tQuery statistics for a specific month.\n";
+    std::cout << "  --query period, -q p <days>\t\tQuery statistics for last N days. Can be a list (e.g., 7,30).\n";
     std::cout << "  Optional (for ALL queries):\n";
-    std::cout << "    -f, --format <format>\t\tSpecify output format (e.g., md, tex, typ). Default is md.\n";
-    std::cout << "  Example: " << app_name << " -q d 20240101 -f tex\n\n";
+    std::cout << "    --format, -f <format>\t\tSpecify output format (e.g., md, tex, typ). Default is md.\n";
+    std::cout << "  Example: " << app_name << " --query daily 20240101 --format tex\n\n";
+    
     std::cout << GREEN_COLOR << "--- Data Export Module ---\n" << RESET_COLOR;
-    std::cout << "  -e d, --export day\t\t\tExport all daily reports.\n";
-    std::cout << "  -e m, --export month\t\t\tExport all monthly reports.\n";
-    std::cout << "  -e p, --export period <days>\t\tExport period reports for given days (e.g., 7 or 7,30,90).\n";
+    std::cout << "  --export daily <YYYYMMDD>\t\tExport a single daily report.\n";
+    std::cout << "  --export monthly <YYYYMM>\t\tExport a single monthly report.\n";
+    std::cout << "  --export period <days>\t\tExport period reports for given days (e.g., 7,30,90).\n";
+    std::cout << "  --export all-daily\t\t\tExport all daily reports.\n";
+    std::cout << "  --export all-monthly\t\t\tExport all monthly reports.\n";
     std::cout << "  Optional (for ALL exports):\n";
-    std::cout << "    -f, --format <format>\t\tSpecify output format (e.g., md, tex, typ). Default is md.\n";
-    std::cout << "  Example: " << app_name << " -export day -f tex\n\n";
+    std::cout << "    --format, -f <format>\t\tSpecify output format (e.g., md, tex, typ). Default is md.\n";
+    std::cout << "  Example: " << app_name << " --export daily 20240115 --format tex\n";
+    std::cout << "  Example: " << app_name << " --export all-daily --format tex\n\n";
+
     std::cout << GREEN_COLOR << "--- Other Options ---\n" << RESET_COLOR;
-    std::cout << "  -h, --help\t\t\tShow this help message.\n";
-    std::cout << "  -v, --version\t\t\tShow program version.\n";
+    std::cout << "  --help, -h\t\t\tShow this help message.\n";
+    std::cout << "  --version, -v\t\t\tShow program version.\n";
 }
