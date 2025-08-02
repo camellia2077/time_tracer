@@ -3,11 +3,16 @@
 #include "action_handler/ActionHandler.h"
 #include "file_handler/FileController.h"
 #include "common/common_utils.h"
+#include "action_handler/ExportUtils.h" // Needed for get_report_format_details
 
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
 #include <algorithm> // for std::find
+#include <functional> // for std::function
+#include <filesystem> // for std::filesystem
+#include <fstream>    // for std::ofstream
+
 
 const std::string DATABASE_NAME = "time_data.db";
 
@@ -17,7 +22,7 @@ CliController::CliController(const std::vector<std::string>& args) : args_(args)
     }
     command_ = args_[1];
 
-    // 初始化核心组件
+    // Initialize core components
     file_controller_ = new FileController(args_[0]);
     action_handler_ = new ActionHandler(
         DATABASE_NAME,
@@ -40,10 +45,10 @@ void CliController::execute() {
         handle_database_import();
     } else if (command_ == "-q" || command_ == "--query") {
         handle_query();
-    } else if (command_ == "-e" || command_ == "--export") { // This is the corrected line
+    } else if (command_ == "-e" || command_ == "--export") {
         handle_export();
     } else {
-        throw std::runtime_error("Unknown command '" + command_ + "'.");
+        throw std::runtime_error("Unknown command '" + command_ + "'. Use --help for usage information.");
     }
 }
 
@@ -128,17 +133,27 @@ void CliController::handle_query() {
 }
 
 void CliController::handle_export() {
-    if (args_.size() < 3) throw std::runtime_error("Export command requires a sub-command (e.g., -export day).");
+    if (args_.size() < 3) throw std::runtime_error("Export command requires a sub-command (e.g., --export daily).");
 
     std::string sub_command = args_[2];
     ReportFormat format = parse_format_option();
 
-    if (sub_command == "day" || sub_command == "d") {
-        action_handler_->run_export_all_daily_reports_query(format);
-    } else if (sub_command == "month" || sub_command == "m") {
-        action_handler_->run_export_all_monthly_reports_query(format);
-    } else if (sub_command == "period" || sub_command == "p") {
-        if (args_.size() < 4) throw std::runtime_error("Command '-export period' requires a list of days (e.g., 7 or 7,30,90).");
+    if (sub_command == "daily") {
+        if (args_.size() < 4) throw std::runtime_error("Command '--export daily' requires a date (YYYYMMDD).");
+        std::string date = args_[3];
+        export_single_report("日报", date, [&]() {
+            return action_handler_->run_daily_query(date, format);
+        }, format);
+
+    } else if (sub_command == "monthly") {
+        if (args_.size() < 4) throw std::runtime_error("Command '--export monthly' requires a month (YYYYMM).");
+        std::string month = args_[3];
+        export_single_report("月报", month, [&]() {
+            return action_handler_->run_monthly_query(month, format);
+        }, format);
+
+    } else if (sub_command == "period") {
+        if (args_.size() < 4) throw std::runtime_error("Command '--export period' requires a list of days (e.g., 7 or 7,30,90).");
         
         std::vector<int> days_list;
         std::string token;
@@ -151,21 +166,62 @@ void CliController::handle_export() {
             }
         }
         action_handler_->run_export_all_period_reports_query(days_list, format);
+
+    } else if (sub_command == "all-daily") {
+        action_handler_->run_export_all_daily_reports_query(format);
+
+    } else if (sub_command == "all-monthly") {
+        action_handler_->run_export_all_monthly_reports_query(format);
+
     } else {
-        throw std::runtime_error("Unknown export sub-command '" + sub_command + "'.");
+        throw std::runtime_error("Unknown export sub-command '" + sub_command + "'. Use 'daily', 'monthly', 'period', 'all-daily', or 'all-monthly'.");
     }
 }
+
+void CliController::export_single_report(
+    const std::string& report_type,
+    const std::string& identifier,
+    std::function<std::string()> content_generator,
+    ReportFormat format
+) const {
+    auto format_details_opt = ExportUtils::get_report_format_details(format);
+    if (!format_details_opt) {
+        return;
+    }
+    const auto& format_details = *format_details_opt;
+
+    std::string report_content = content_generator();
+    if (report_content.empty() || report_content.find("No time records") != std::string::npos) {
+        std::cout << YELLOW_COLOR << "信息: 没有为 " << identifier << " 找到可导出的" << report_type << "内容。" << RESET_COLOR << std::endl;
+        return;
+    }
+
+    std::filesystem::path export_dir = "exported_files";
+    std::filesystem::path output_path = export_dir / (identifier + "_report" + format_details.extension);
+    
+    std::filesystem::create_directories(export_dir);
+
+    std::ofstream output_file(output_path);
+    if (!output_file) {
+        std::cerr << RED_COLOR << "错误: 无法创建或打开文件: " << output_path << RESET_COLOR << std::endl;
+        return;
+    }
+    output_file << report_content;
+    
+    std::cout << GREEN_COLOR << "成功: " << report_type << "已成功导出到 " << std::filesystem::absolute(output_path) << RESET_COLOR << std::endl;
+}
+
 ReportFormat CliController::parse_format_option() const {
     auto it_f = std::find(args_.begin(), args_.end(), "-f");
     auto it_format = std::find(args_.begin(), args_.end(), "--format");
 
-    std::string format_str = "md"; // Default
+    std::string format_str = "md";
     if (it_f != args_.end() && std::next(it_f) != args_.end()) {
         format_str = *std::next(it_f);
     } else if (it_format != args_.end() && std::next(it_format) != args_.end()) {
         format_str = *std::next(it_format);
     } else {
-        return ReportFormat::Markdown; // No format flag, return default
+        return ReportFormat::Markdown;
     }
 
     if (format_str == "md" || format_str == "markdown") return ReportFormat::Markdown;
