@@ -12,8 +12,10 @@
 
 // 前向声明
 namespace fs = std::filesystem;
-class DatabaseManager; // 管理数据库连接
-class ReportExporter;  // 管理报告导出
+
+class DatabaseManager;      // 管理数据库连接
+class ReportExporter;       // 管理报告导出
+class DirectQueryManager;   // 新增: 管理直接查询
 
 /**
  * @brief 行为协调器 (重构后)
@@ -54,6 +56,7 @@ private:
     // 子系统管理器
     std::unique_ptr<DatabaseManager> db_manager_;
     std::unique_ptr<ReportExporter> report_exporter_; // 将被懒加载（需要时再创建）
+    std::unique_ptr<DirectQueryManager> direct_query_manager_; // 新增: 直接查询管理器，同样懒加载
 
     // 配置信息
     AppConfig app_config_;
