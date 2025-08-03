@@ -1,6 +1,6 @@
 #include "common/pch.h"
-#include "action_handler/ReportExporter.h"
-#include "action_handler/ExportUtils.h"
+#include "ReportExporter.h"
+#include "ExportUtils.h"
 #include "queries/QueryHandler.h"
 #include "common/common_utils.h" // For color constants
 
