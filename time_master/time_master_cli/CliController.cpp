@@ -8,6 +8,7 @@
 #include <stdexcept>
 #include <sstream>
 #include <algorithm> // for std::find
+#include "action_handler/file/FilePipelineManager.h"
 
 const std::string DATABASE_NAME = "time_data.db";
 
@@ -147,12 +148,21 @@ void CliController::handle_manual_preprocessing() {
     if (!path_provided) throw std::runtime_error("A file or folder path is required for manual pre-processing commands.");
     if (validate_output_flag && !convert_flag) throw std::runtime_error("The --validate-output (-vo) flag can only be used with the --convert (-c) flag.");
 
-    if (!action_handler_->collectFiles(input_path)) {
+    // [修改] 创建 FilePipelineManager 实例来处理文件操作
+    FilePipelineManager pipeline(file_controller_->get_config());
+
+    if (!pipeline.collectFiles(input_path)) {
          throw std::runtime_error("Failed to collect files from the specified path. Aborting.");
     }
-    if (validate_source_flag && !action_handler_->validateSourceFiles()) throw std::runtime_error("Source file validation failed.");
-    if (convert_flag && !action_handler_->convertFiles()) throw std::runtime_error("File conversion failed.");
-    if (validate_output_flag && !action_handler_->validateOutputFiles(day_check_flag)) throw std::runtime_error("Output file validation failed.");
+    if (validate_source_flag && !pipeline.validateSourceFiles()) {
+        throw std::runtime_error("Source file validation failed.");
+    }
+    if (convert_flag && !pipeline.convertFiles()) {
+        throw std::runtime_error("File conversion failed.");
+    }
+    if (validate_output_flag && !pipeline.validateOutputFiles(day_check_flag)) {
+        throw std::runtime_error("Output file validation failed.");
+    }
 }
 
 void CliController::handle_database_import() {

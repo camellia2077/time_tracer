@@ -84,6 +84,7 @@ file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
 file(GLOB ACTION_HANDLER_SOURCES 
     "action_handler/*.cpp"
     "action_handler/database/*.cpp"
+    "action_handler/file/*.cpp"
     "action_handler/query/*.cpp"
     "action_handler/reporting/*.cpp"
     
