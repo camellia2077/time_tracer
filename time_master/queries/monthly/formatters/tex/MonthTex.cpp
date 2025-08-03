@@ -58,15 +58,13 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     }
 }
 
-// _display_project_breakdown 方法保持不变
 void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
-    std::map<std::string, std::string> parent_map = get_parent_map(db);
-    ProjectTree project_tree;
-    build_project_tree_from_records(project_tree, data.records, parent_map);
-
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
-    if (formatter) {
-        std::string breakdown_output = formatter->format(project_tree, data.total_duration, data.actual_days);
-        ss << breakdown_output;
-    }
+    // 调用统一的工具函数来生成项目明细的 LaTeX 格式字符串
+    ss << generate_project_breakdown(
+        ReportFormat::LaTeX,     // 指定输出格式为 LaTeX
+        db,                             // 传入数据库连接，用于获取父子类别映射
+        data.records,               // 传入从月报数据中获取的时间记录
+        data.total_duration,  // 传入总时长，用于计算各项百分比
+        data.actual_days          // 对于月报，平均天数是该月实际有记录的天数
+    );
 }
