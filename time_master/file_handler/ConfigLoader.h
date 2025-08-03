@@ -1,12 +1,11 @@
+// time_master/file_handler/ConfigLoader.h
+
 #ifndef CONFIG_LOADER_H
 #define CONFIG_LOADER_H
 
-// file_handler/ConfigLoader.h
-
-
 #include <string>
 #include <filesystem>
-#include "reprocessing/LogProcessor.h" // For the AppConfig structure
+#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
 
 class ConfigLoader {
 public:

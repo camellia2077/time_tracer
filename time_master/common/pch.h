@@ -36,6 +36,7 @@
 #include "queries/shared/query_data_structs.h"
 
 // --- 核心数据结构 (Core Data Structures) ---
+#include "common/AppConfig.h"
 #include "queries/shared/DailyReportData.h"
 #include "queries/shared/MonthlyReportData.h"
 #include "queries/shared/PeriodReportData.h"

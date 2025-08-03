@@ -1,4 +1,4 @@
-// file: ActionHandler.h
+// time_master/action_handler/ActionHandler.h
 
 #ifndef ACTION_HANDLER_H
 #define ACTION_HANDLER_H
@@ -9,6 +9,7 @@
 #include <memory>
 #include "queries/shared/query_data_structs.h"
 #include "queries/shared/ReportFormat.h"
+#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
 
 // 前向声明
 namespace fs = std::filesystem;
@@ -16,9 +17,7 @@ namespace fs = std::filesystem;
 class DatabaseManager;
 class ReportExporter;
 class DirectQueryManager;
-// [移除] 不再需要前向声明 LogProcessor
-// [新增] 引入 FilePipelineManager 的定义
-#include "action_handler/file/FilePipelineManager.h"
+class FilePipelineManager;
 
 
 /**
@@ -49,16 +48,7 @@ public:
     void run_export_all_monthly_reports_query(ReportFormat format);
     void run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format);
     
-    // [移除] 不再需要文件预处理的公共接口
-    // bool collectFiles(const std::string& input_path);
-    // bool validateSourceFiles();
-    // bool convertFiles();
-    // bool validateOutputFiles(bool enable_day_count_check);
-
 private:
-    // [移除] 不再需要 printTimingStatistics
-    // void printTimingStatistics(const std::string& operation_name, double total_time_ms) const;
-
     // --- 私有辅助函数，用于获取子管理器 ---
     DirectQueryManager* get_direct_query_manager();
     ReportExporter* get_report_exporter();

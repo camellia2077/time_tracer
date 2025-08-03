@@ -1,4 +1,4 @@
-// file: action_handler/file/FilePipelineManager.h
+// time_master/action_handler/file/FilePipelineManager.h
 
 #ifndef FILE_PIPELINE_MANAGER_H
 #define FILE_PIPELINE_MANAGER_H
@@ -8,8 +8,9 @@
 #include <map>
 #include <filesystem>
 #include <optional>
-#include "reprocessing/LogProcessor.h"
-#include "queries/shared/query_data_structs.h" // 为了 AppConfig
+#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
+#include "reprocessing/LogProcessor.h" 
+
 
 namespace fs = std::filesystem;
 
