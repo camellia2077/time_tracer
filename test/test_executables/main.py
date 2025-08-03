@@ -1,91 +1,120 @@
-# main.py
-import os
+# test_exe_main.py
 import sys
-import argparse
-import time
 import shutil
+import os
+from pathlib import Path
 
-# --- 从 config.py 导入所有配置 ---
-try:
-    from config import (
-        SOURCE_DIRECTORY, OUTPUT_DIRECTORY, COMPILE_TYPES,
-        MARKDOWN_COMPILERS, BENCHMARK_LOOPS, INCREMENTAL_COMPILE,
-        CLEAN_OUTPUT_DEFAULT # <--- 导入新配置
-    )
-except ImportError:
-    print("错误：无法找到或导入 config.py 文件。")
-    print("请确保所有必需的配置项都已定义。")
-    sys.exit(1)
+# --- 从配置文件导入所有配置 ---
+import config
 
-# 从 internal 包中导入命令处理函数
-from internal.handlers import handle_auto
+# --- 内部测试模块 ---
+from _py_internal.base_module import TestCounter
+from _py_internal.module_preprocessing import PreprocessingTester
+from _py_internal.module_database import DatabaseImportTester
+from _py_internal.module_query import QueryTester
+from _py_internal.module_export import ExportTester
 
-def format_time(seconds):
-    """将秒数格式化为 HH:MM:SS """
-    seconds = int(seconds)
-    hours = seconds // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+def setup_environment():
+    """验证路径、复制可执行文件并清理环境。"""
+    print(f"{config.Colors.CYAN}--- 1. Preparing Executable ---{config.Colors.RESET}")
+    
+    if not config.SOURCE_EXECUTABLES_DIR.exists():
+        print(f"  {config.Colors.RED}错误: 源目录不存在: {config.SOURCE_EXECUTABLES_DIR}{config.Colors.RESET}")
+        sys.exit(1)
+
+    executables_to_copy = [config.EXECUTABLE_CLI_NAME, config.EXECUTABLE_APP_NAME]
+    for exe_name in executables_to_copy:
+        source_path = config.SOURCE_EXECUTABLES_DIR / exe_name
+        target_path = config.TARGET_EXECUTABLES_DIR / exe_name
+        if not source_path.exists():
+            print(f"  {config.Colors.RED}警告: 在源目录中未找到可执行文件: {exe_name}{config.Colors.RESET}")
+            continue
+        try:
+            shutil.copy(source_path, target_path)
+            print(f"  {config.Colors.GREEN}已成功复制: {exe_name}{config.Colors.RESET}")
+        except Exception as e:
+            print(f"  {config.Colors.RED}复制文件时出错 {exe_name}: {e}{config.Colors.RESET}")
+            sys.exit(1)
+    print("  可执行文件已准备就绪。")
+    
+    print(f"{config.Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
+    for dir_name in config.DIRECTORIES_TO_CLEAN:
+        dir_path = Path.cwd() / dir_name
+        if dir_path.exists():
+            try:
+                shutil.rmtree(dir_path)
+                print(f"  {config.Colors.GREEN}已移除旧目录: {dir_name}{config.Colors.RESET}")
+            except OSError as e:
+                print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
+                sys.exit(1)
+    db_file = Path.cwd() / config.GENERATED_DB_FILE_NAME
+    if db_file.exists():
+        db_file.unlink()
+        print(f"  {config.Colors.GREEN}已移除旧数据库文件: {config.GENERATED_DB_FILE_NAME}{config.Colors.RESET}")
+    output_dir = Path.cwd() / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 日志目录。{config.Colors.RESET}")
+
 
 def main():
-    program_start_time = time.perf_counter()
-    parser = argparse.ArgumentParser(
-        description="一个通用的、支持并行的文档编译器（配置文件驱动）。",
-        epilog="所有路径和编译选项均在 config.py 中配置。直接运行 'python main.py' 即可。"
-    )
+    """运行所有测试模块的主函数。"""
+    os.system('')
     
-    # --- 核心修改 1: 将 --no-clean 改为 --clean ---
-    parser.add_argument('--clean', action='store_true', help='【可选】启动时强制清理旧的输出目录。')
-    parser.add_argument('--no-incremental', action='store_true', help='【可选】禁用增量编译，强制重新编译所有文件。')
-    parser.add_argument(
-        '--jobs', '-j', type=int, default=None,
-        help="【可选】并行编译的任务数量 (默认: 使用所有可用的CPU核心)"
-    )
-    parser.add_argument('--font', type=str, default="Noto Serif SC", help="【可选】为 Pandoc 指定 CJK 字体 (默认: Noto Serif SC)")
-
-    args = parser.parse_args()
+    print("\n" + "="*50)
+    print(f" Running Python test script: {Path(__file__).name}")
+    print(f" Current directory: {Path.cwd()}")
+    print(f" Input data path: {config.SOURCE_DATA_PATH}")
+    print(f" Expecting processed folder: {config.PROCESSED_DATA_DIR_NAME}")
+    print("="*50 + "\n")
     
-    source_dir_to_process = SOURCE_DIRECTORY
-    output_dir_to_process = os.path.join(os.getcwd(), OUTPUT_DIRECTORY)
-
-    # --- 核心修改 2: 更新清理逻辑 ---
-    # 只有当用户明确使用 --clean 参数，或者 config 文件中设置为 True 时，才执行清理
-    if args.clean or CLEAN_OUTPUT_DEFAULT:
-        if os.path.exists(output_dir_to_process):
-            print(f"🧹 清理模式已激活，正在删除旧的输出目录: '{output_dir_to_process}'")
-            try:
-                shutil.rmtree(output_dir_to_process)
-                print("✅ 旧目录已成功删除。")
-            except OSError as e:
-                print(f"致命错误：无法删除输出目录 '{output_dir_to_process}': {e}")
-                sys.exit(1)
+    setup_environment()
     
-    try:
-        os.makedirs(output_dir_to_process, exist_ok=True)
-    except OSError as e:
-        print(f"致命错误：无法创建顶级输出目录 '{output_dir_to_process}': {e}")
-        sys.exit(1)
+    print("\n========== Starting Test Sequence ==========")
+    
+    shared_counter = TestCounter()
+    
+    common_args = {
+        "executable_to_run": config.EXECUTABLE_CLI_NAME,
+        "source_data_path": config.SOURCE_DATA_PATH,
+        "converted_text_dir_name": config.PROCESSED_DATA_DIR_NAME
+    }
 
-    if not os.path.isdir(source_dir_to_process):
-        print(f"错误：在 config.py 中配置的源路径 '{source_dir_to_process}' 不是一个有效的目录。")
-        sys.exit(1)
+    modules = [
+        PreprocessingTester(shared_counter, 1, **common_args),
+        DatabaseImportTester(shared_counter, 2, **common_args),
+        QueryTester(shared_counter, 3, 
+                    generated_db_file_name=config.GENERATED_DB_FILE_NAME, 
+                    daily_query_dates=config.DAILY_QUERY_DATES, 
+                    monthly_query_months=config.MONTHLY_QUERY_MONTHS, 
+                    period_query_days=config.PERIOD_QUERY_DAYS,
+                    test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
+                    **common_args),
+        ExportTester(shared_counter, 4, 
+                     generated_db_file_name=config.GENERATED_DB_FILE_NAME,
+                     is_bulk_mode=config.EXPORT_MODE_IS_BULK,
+                     specific_dates=config.SPECIFIC_EXPORT_DATES,
+                     specific_months=config.SPECIFIC_EXPORT_MONTHS,
+                     period_export_days=config.PERIOD_EXPORT_DAYS,
+                     test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
+                     **common_args)
+    ]
+    
+    all_tests_passed = True
+    for i, module in enumerate(modules, 1):
+        module.reports_dir.mkdir(parents=True, exist_ok=True)
+        print(f"{config.Colors.CYAN}--- {i}. Running {module.module_name} Tasks ---{config.Colors.RESET}")
         
-    # --- 将所有配置打包，传递给核心处理器 ---
-    auto_mode_args = argparse.Namespace(
-        source_dir=source_dir_to_process,
-        output_dir=output_dir_to_process,
-        font=args.font,
-        jobs=args.jobs,
-        compile_types=COMPILE_TYPES,
-        markdown_compilers=MARKDOWN_COMPILERS,
-        benchmark_loops=BENCHMARK_LOOPS,
-        incremental=not args.no_incremental and INCREMENTAL_COMPILE
-    )
-    handle_auto(auto_mode_args)
-    
-    program_end_time = time.perf_counter()
-    print(f"\n\n🚀 程序总运行时间: {format_time(program_end_time - program_start_time)}")
+        if not module.run_tests():
+            all_tests_passed = False
+            print(f"\n{config.Colors.RED}错误: 测试序列因 '{module.module_name}' 模块执行失败而中断。{config.Colors.RESET}")
+            break
 
-if __name__ == '__main__':
+    if all_tests_passed:
+        print(f"""
+{config.Colors.GREEN}✅ All test steps completed successfully!{config.Colors.RESET}
+   Check the 'output' directory for detailed logs.
+""")
+
+if __name__ == "__main__":
     main()
