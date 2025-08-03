@@ -1,17 +1,16 @@
+// time_master/file_handler/FileController.h
+
 #ifndef FILE_CONTROLLER_H
 #define FILE_CONTROLLER_H
-
-// file_handler/FileController.h
 
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "reprocessing/LogProcessor.h" // For AppConfig
+#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
 
 /**
  * @brief 一个外观类，封装了所有底层文件和配置相关的操作。
- * 
- * 这个控制器简化了与文件系统和配置文件的交互。
+ * * 这个控制器简化了与文件系统和配置文件的交互。
  * 它在创建时加载应用程序配置，并提供方法来查找文件和访问配置。
  */
 class FileController {

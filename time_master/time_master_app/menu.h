@@ -3,7 +3,7 @@
 #define MENU_H
 
 #include <string>
-#include "reprocessing/LogProcessor.h" // For AppConfig
+#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
 
 class ActionHandler; // 前向声明
 
