@@ -1,5 +1,8 @@
 #include "common/pch.h"
 #include "query_utils.h"
+#include "queries/shared/breakdown/TreeFmtFactory.h" // 引入TreeFmtFactory
+#include "queries/shared/breakdown/ITreeFmt.h"       // 引入ITreeFmt
+
 #include "common/common_utils.h"
 
 #include <iostream>
@@ -153,7 +156,32 @@ std::vector<std::string> ProjectBreakdownFormatter::_generate_sorted_output(cons
     }
     return output_lines;
 }
+// --- 【新增】新函数的实现 ---
+std::string generate_project_breakdown(
+    ReportFormat format,
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days)
+{
+    // 1. 获取父子类别映射
+    std::map<std::string, std::string> parent_map = get_parent_map(db);
 
+    // 2. 根据记录构建项目树
+    ProjectTree project_tree;
+    build_project_tree_from_records(project_tree, records, parent_map);
+
+    // 3. 使用工厂创建对应的项目明细格式化器
+    auto formatter = TreeFmtFactory::createFormatter(format);
+
+    // 4. 调用格式化器生成并返回最终的字符串
+    if (formatter) {
+        return formatter->format(project_tree, total_duration, avg_days);
+    }
+    
+    // 如果没有找到格式化器，返回空字符串或抛出异常
+    return ""; 
+}
 
 // --- Standalone Utility Functions Implementation ---
 

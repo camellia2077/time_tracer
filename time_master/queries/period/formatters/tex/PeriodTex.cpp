@@ -57,13 +57,12 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
 
 // _display_project_breakdown 方法保持不变
 void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
-    std::map<std::string, std::string> parent_map = get_parent_map(db);
-    ProjectTree project_tree;
-    build_project_tree_from_records(project_tree, data.records, parent_map);
-
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
-    if (formatter) {
-        std::string breakdown_output = formatter->format(project_tree, data.total_duration, data.actual_days);
-        ss << breakdown_output;
-    }
+    // 调用统一的工具函数来生成项目明细的 LaTeX 格式字符串
+    ss << generate_project_breakdown(
+        /*format=*/ ReportFormat::LaTeX,          // 修正语法
+        /*db=*/ db,
+        /*records=*/ data.records,
+        /*total_duration=*/ data.total_duration,
+        /*avg_days=*/ data.actual_days
+    );
 }
