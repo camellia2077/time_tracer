@@ -32,12 +32,10 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -s")
 # --- 查找外部依赖 ---
 find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(CLI11 REQUIRED) # <--- 新增：查找CLI11库
 
 # --- 收集所有源文件 ---
 file(GLOB COMMON_SOURCES "common/*.cpp")
-file(GLOB TIME_MASTER_CLI_SOURCES 
-    "time_master_cli/*.cpp"
-)
 file(GLOB TIME_MASTER_APP_SOURCES 
     "time_master_app/*.cpp"
     "time_master_app/menu_processor/*.cpp"
@@ -118,8 +116,7 @@ add_executable(
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
-    
-    ${TIME_MASTER_CLI_SOURCES}
+
     
 )
 
@@ -147,6 +144,7 @@ target_link_libraries(time_tracker_app PRIVATE
 target_link_libraries(time_tracker_cli PRIVATE
     SQLite::SQLite3
     nlohmann_json::nlohmann_json
+    CLI11::CLI11 # <--- 新增：链接CLI11库
     stdc++exp #用于支持 main_cli.cpp中的std::println
 )
 
