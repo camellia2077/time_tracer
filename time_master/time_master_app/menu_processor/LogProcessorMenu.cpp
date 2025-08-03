@@ -1,18 +1,21 @@
-// time_master_app/LogProcessorMenu.cpp
+// time_master_app/menu_processor/LogProcessorMenu.cpp
 #include "common/pch.h"
 #include "LogProcessorMenu.h"
-#include "action_handler/ActionHandler.h"
-#include "action_handler/file/FilePipelineManager.h" // [新增] 引入新的管理器
+// [修改] 引入新的处理器头文件
+#include "action_handler/FileProcessingHandler.h"
+#include "action_handler/file/FilePipelineManager.h"
 #include "common/common_utils.h"
 #include "time_master_app/menu_input/UserInputUtils.h"
 #include <iostream>
 #include <string>
-#include <memory> // [新增] 为了 std::unique_ptr
+#include <memory>
 
-LogProcessorMenu::LogProcessorMenu(ActionHandler* action_handler)
-    : action_handler_(action_handler) {}
+// [修改] 构造函数更新
+LogProcessorMenu::LogProcessorMenu(FileProcessingHandler* handler)
+    : file_processing_handler_(handler) {}
 
 void LogProcessorMenu::run() {
+    // ... 此函数保持不变 ...
     while (true) {
         print_submenu();
 
@@ -40,6 +43,7 @@ void LogProcessorMenu::run() {
 }
 
 void LogProcessorMenu::print_submenu() const {
+    // ... 此函数保持不变 ...
     std::cout << "\n--- File Processing & Validation Submenu ---\n";
     std::cout << "--- (Step 1: File Operations) ---\n";
     std::cout << "1. Validate source file(s) only\n";
@@ -53,7 +57,7 @@ void LogProcessorMenu::print_submenu() const {
     std::cout << "Enter your choice: ";
 }
 
-// [修改] handle_choice 函数的完整实现
+// [修改] handle_choice 现在调用新的处理器
 void LogProcessorMenu::handle_choice(int choice) {
     if ((choice < 1 || choice > 5) && choice != 7) {
         std::cout << YELLOW_COLOR << "Invalid choice. Please try again.\n" << RESET_COLOR;
@@ -61,28 +65,22 @@ void LogProcessorMenu::handle_choice(int choice) {
     }
 
     if (choice == 7) {
-        // 数据库导入功能仍然由 ActionHandler 负责
         std::string path = UserInputUtils::get_valid_path_input("Enter the path to the DIRECTORY containing processed files: ");
         if (!path.empty()) {
-            action_handler_->run_database_import(path);
+            file_processing_handler_->run_database_import(path);
         }
     } else {
-        // 其他所有文件处理选项都使用 FilePipelineManager
         std::string path = UserInputUtils::get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
         if (path.empty()) return;
 
-        // 为本次操作创建一个 FilePipelineManager 实例
-        // 注意：这里需要 ActionHandler 提供 AppConfig
-        // 请确保 ActionHandler 有一个 public 的 get_config() 方法
-        FilePipelineManager pipeline(action_handler_->get_config());
+        // FilePipelineManager 现在从 FileProcessingHandler 获取配置
+        FilePipelineManager pipeline(file_processing_handler_->get_config());
 
-        // 收集文件是所有选项的第一步
         if (!pipeline.collectFiles(path)) {
             std::cout << RED_COLOR << "Failed to collect files. Please check the path and try again." << RESET_COLOR << std::endl;
             return;
         }
 
-        // 根据用户的选择执行相应的步骤
         switch (choice) {
             case 1: 
                 pipeline.validateSourceFiles(); 

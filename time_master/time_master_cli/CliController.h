@@ -1,4 +1,4 @@
-// cli/CliController.h
+// time_master_cli/CliController.h
 #ifndef CLI_CONTROLLER_H
 #define CLI_CONTROLLER_H
 
@@ -7,48 +7,40 @@
 #include "queries/shared/ReportFormat.h"
 
 // 前向声明
-class ActionHandler;
 class FileController;
+class FileProcessingHandler;
+class ReportGenerationHandler;
 
 /**
  * @class CliController
- * @brief Handles all Command-Line Interface (CLI) logic.
+ * @brief 处理所有命令行界面 (CLI) 逻辑 (已重构)。
  *
- * This class parses command-line arguments and invokes the appropriate
- * ActionHandler methods based on those arguments. It serves as the main
- * business logic hub for the CLI.
+ * 该类解析命令行参数，并根据参数调用相应的处理器
+ * (FileProcessingHandler 或 ReportGenerationHandler)。
  */
 class CliController {
 public:
     explicit CliController(const std::vector<std::string>& args);
     ~CliController();
 
-    /**
-     * @brief Executes the command specified by the command-line arguments.
-     *
-     * This is the main entry point for the class. It will parse the command
-     * and dispatch to the appropriate handler function.
-     * Throws std::runtime_error on failure.
-     */
     void execute();
 
 private:
     std::vector<std::string> args_;
     std::string command_;
-    ActionHandler* action_handler_;
+    
+    // 成员变量已更新为新的、更专注的处理器
     FileController* file_controller_;
+    FileProcessingHandler* file_processing_handler_;
+    ReportGenerationHandler* report_generation_handler_;
 
-    // --- Private helper functions for handling command branches ---
+    // --- 私有辅助函数，用于处理命令分支 ---
     void handle_run_all();
     void handle_preprocess();
     void handle_database_import();
     void handle_query();
     void handle_export();
 
-    /**
-     * @brief Parses the format option (-f, --format) from the command line.
-     * @return A ReportFormat enum value. Defaults to Markdown if not specified.
-     */
     ReportFormat parse_format_option() const;
 };
 
