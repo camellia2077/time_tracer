@@ -7,6 +7,7 @@
 #include <map>
 #include <sstream>
 #include "common/common_utils.h" // For ProjectNode, ProjectTree
+#include "queries/shared/ReportFormat.h"
 
 
 // queries/report_generators/_shared/query_utils.h
@@ -61,6 +62,14 @@ private:
 
 // Fetches parent-child category mappings from the database.
 std::map<std::string, std::string> get_parent_map(sqlite3* db);
+
+std::string generate_project_breakdown(
+    ReportFormat format,
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days
+);
 
 // Builds a hierarchical project tree from a flat list of time records.
 void build_project_tree_from_records(
