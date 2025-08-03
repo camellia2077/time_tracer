@@ -1,19 +1,19 @@
-// time_master_app/LogProcessorMenu.h
+// time_master_app/menu_processor/LogProcessorMenu.h
 #ifndef LOG_PROCESSOR_MENU_H
 #define LOG_PROCESSOR_MENU_H
 
-class ActionHandler; // 前向声明
+class FileProcessingHandler; // [修改] 前向声明新的处理器
 
 class LogProcessorMenu {
 public:
-    // 构造函数接收一个 ActionHandler 指针以执行操作
-    explicit LogProcessorMenu(ActionHandler* action_handler);
+    // [修改] 构造函数现在接收 FileProcessingHandler 指针
+    explicit LogProcessorMenu(FileProcessingHandler* handler);
     
-    // 运行子菜单循环
     void run();
 
 private:
-    ActionHandler* action_handler_; // 指向主 ActionHandler 的指针
+    // [修改] 成员变量更新
+    FileProcessingHandler* file_processing_handler_;
 
     void print_submenu() const;
     void handle_choice(int choice);
