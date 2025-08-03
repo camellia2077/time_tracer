@@ -88,6 +88,7 @@ def main():
                     daily_query_dates=config.DAILY_QUERY_DATES, 
                     monthly_query_months=config.MONTHLY_QUERY_MONTHS, 
                     period_query_days=config.PERIOD_QUERY_DAYS,
+                    test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
                     **common_args),
         ExportTester(shared_counter, 4, 
                      generated_db_file_name=config.GENERATED_DB_FILE_NAME,
@@ -95,6 +96,7 @@ def main():
                      specific_dates=config.SPECIFIC_EXPORT_DATES,
                      specific_months=config.SPECIFIC_EXPORT_MONTHS,
                      period_export_days=config.PERIOD_EXPORT_DAYS,
+                     test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
                      **common_args)
     ]
     

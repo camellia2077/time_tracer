@@ -8,7 +8,8 @@ class QueryTester(BaseTester):
                  generated_db_file_name: str, 
                  daily_query_dates: list,
                  monthly_query_months: list,
-                 period_query_days: list,  # 修改: 接收列表
+                 period_query_days: list,
+                 test_formats: list,  # 新增: 接收格式列表
                  executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
         super().__init__(counter, module_order, "query",
                          executable_to_run, source_data_path, converted_text_dir_name)
@@ -16,6 +17,7 @@ class QueryTester(BaseTester):
         self.daily_query_dates = daily_query_dates
         self.monthly_query_months = monthly_query_months
         self.period_query_days = period_query_days
+        self.formats = test_formats  # 新增: 存储格式
 
     def run_tests(self) -> bool:
         """运行所有与数据查询相关的测试。"""
@@ -23,7 +25,8 @@ class QueryTester(BaseTester):
             print(f"警告: 跳过查询测试，因为数据库文件 '{self.db_file.name}' 不存在。")
             return True
 
-        formats = ["md", "tex", "typ"]
+        # 修改: 使用来自配置的格式列表
+        formats = self.formats
         tests_to_run = []
 
         # 循环遍历日期列表生成测试
@@ -42,7 +45,7 @@ class QueryTester(BaseTester):
                      ["--query", "monthly", month, "--format", fmt])
                 )
         
-        # 修改: 将整数列表转换为逗号分隔的字符串以用于命令行
+        # 将整数列表转换为逗号分隔的字符串以用于命令行
         period_days_str = ",".join(map(str, self.period_query_days))
         for fmt in formats:
             tests_to_run.append(

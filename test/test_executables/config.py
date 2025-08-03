@@ -26,17 +26,19 @@ PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
 #                      TEST PARAMETERS CONFIGURATION
 # ==============================================================================
 
+# --- 新增: 通用测试格式配置 ---
+# "md", "tex", "typ"
+# 开发者备注，rst格式暂时还没有实现
+TEST_FORMATS = ["md", "tex", "typ"]
+
 # --- Parameters for Query Tests ---
 DAILY_QUERY_DATES = ["20250501", "20250601"]
 MONTHLY_QUERY_MONTHS = ["202505", "202506"]
-# 修改: 将周期天数改为整数列表
 PERIOD_QUERY_DAYS = [7, 10, 15]
 
 # --- Parameters for Export Tests ---
 #  总开关: True -> 批量导出, False -> 按指定列表导出
 EXPORT_MODE_IS_BULK = False
-
-# 修改: 将周期天数改为整数列表
 PERIOD_EXPORT_DAYS = [7, 10, 15] 
 
 # 仅在 EXPORT_MODE_IS_BULK = False 时生效
