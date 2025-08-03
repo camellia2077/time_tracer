@@ -32,14 +32,12 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
-    std::map<std::string, std::string> parent_map = get_parent_map(db);
-    ProjectTree project_tree;
-    build_project_tree_from_records(project_tree, data.records, parent_map);
-
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Typ);
-
-    if (formatter) {
-        std::string breakdown_output = formatter->format(project_tree, data.total_duration, 1);
-        ss << breakdown_output;
-    }
+    // 直接调用新的工具函数，并指定格式为 Typ
+    ss << generate_project_breakdown(
+        ReportFormat::Typ, 
+        db, 
+        data.records, 
+        data.total_duration, 
+        1 // 日报的平均天数总是 1
+    );
 }
