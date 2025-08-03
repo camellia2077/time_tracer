@@ -52,6 +52,9 @@ public:
 
 private:
     void printTimingStatistics(const std::string& operation_name, double total_time_ms) const;
+    // --- 新增: 私有辅助函数，用于获取子管理器 ---
+    DirectQueryManager* get_direct_query_manager();
+    ReportExporter* get_report_exporter();
 
     // 子系统管理器
     std::unique_ptr<DatabaseManager> db_manager_;
