@@ -12,15 +12,24 @@ class PreprocessingTester(BaseTester):
     def run_tests(self) -> bool:
         """Runs all pre-processing related tests."""
         source_path_str = str(self.source_data_path)
+        
+        # 修正了测试以匹配新的CLI用法：preprocess <path> [options...]
         tests_to_run = [
-            ("Pre-processing Test (--convert)", ["--convert", source_path_str]),
-            ("Pre-processing Test (--validate-source)", ["--validate-source", source_path_str]),
-            ("Pre-processing Test (--convert --validate-output)", ["--convert", "--validate-output", source_path_str]),
-            ("Pre-processing Test (--convert --validate-output --enable-day-check)", ["--convert", "--validate-output", "--enable-day-check", source_path_str])
+            ("Pre-processing Test (preprocess --convert)", 
+             ["preprocess", source_path_str, "--convert"]),
+             
+            ("Pre-processing Test (preprocess --validate-source)", 
+             ["preprocess", source_path_str, "--validate-source"]),
+             
+            ("Pre-processing Test (preprocess --convert --validate-output)", 
+             ["preprocess", source_path_str, "--convert", "--validate-output"]),
+             
+            ("Pre-processing Test (preprocess --convert --validate-output --enable-day-check)", 
+             ["preprocess", source_path_str, "--convert", "--validate-output", "--enable-day-check"])
         ]
         
         for name, args in tests_to_run:
             if not self.run_command_test(name, args):
-                return False  # If any test fails, return False immediately
+                return False  # 如果任何测试失败，立即返回 False
         
-        return True # All tests passed
+        return True # 所有测试都通过了

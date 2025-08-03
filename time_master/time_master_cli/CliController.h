@@ -12,10 +12,11 @@ class FileController;
 
 /**
  * @class CliController
- * @brief 处理所有命令行接口 (CLI) 的逻辑。
+ * @brief Handles all Command-Line Interface (CLI) logic.
  *
- * 此类解析命令行参数，并根据这些参数调用相应的 ActionHandler 方法。
- * 它是 CLI 的主要业务逻辑中心。
+ * This class parses command-line arguments and invokes the appropriate
+ * ActionHandler methods based on those arguments. It serves as the main
+ * business logic hub for the CLI.
  */
 class CliController {
 public:
@@ -23,10 +24,11 @@ public:
     ~CliController();
 
     /**
-     * @brief 执行由命令行参数指定的命令。
+     * @brief Executes the command specified by the command-line arguments.
      *
-     * 这是该类的主要入口点。它将解析命令并分派给适当的处理函数。
-     * 失败时抛出 std::runtime_error。
+     * This is the main entry point for the class. It will parse the command
+     * and dispatch to the appropriate handler function.
+     * Throws std::runtime_error on failure.
      */
     void execute();
 
@@ -36,16 +38,16 @@ private:
     ActionHandler* action_handler_;
     FileController* file_controller_;
 
-    // --- 用于处理命令分支的私有辅助函数 ---
-    void handle_full_pipeline();
-    void handle_manual_preprocessing();
+    // --- Private helper functions for handling command branches ---
+    void handle_run_all();
+    void handle_preprocess();
     void handle_database_import();
     void handle_query();
     void handle_export();
 
     /**
-     * @brief 从命令行解析格式选项 (-f, --format)。
-     * @return 一个 ReportFormat 枚举值。如果未指定，则默认为 Markdown。
+     * @brief Parses the format option (-f, --format) from the command line.
+     * @return A ReportFormat enum value. Defaults to Markdown if not specified.
      */
     ReportFormat parse_format_option() const;
 };
