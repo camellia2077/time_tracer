@@ -10,26 +10,21 @@ def build_typ_command(input_path, output_path, _):
     """构建 Typst 编译命令。"""
     return ['typst', 'compile', input_path, output_path]
 
-def build_md_to_typ_command(input_path: str, output_path: str, _: Any, font: str = "Noto Serif SC") -> List[str]:
+def get_typst_template_content(font: str = "Noto Serif SC") -> str:
     """
-    构建 Pandoc (md -> typ) 转换命令。
-    (新增) 此函数现在会动态创建一个包含字体设置的模板。
+    (新增) 生成 Typst 模板的内容字符串。
     """
-    template_content = f'#set text(font: "{font}")\n$body$'
-    template_path = os.path.join(os.path.dirname(output_path), "typst_template.typ")
-    
-    # 写入模板文件
-    try:
-        with open(template_path, 'w', encoding='utf-8') as f:
-            f.write(template_content)
-    except IOError as e:
-        print(f"警告：无法写入 Typst 模板文件 '{template_path}': {e}")
-        # 如果无法写入模板，则回退到不带模板的命令
-        return ['pandoc', f'--from=gfm', '-t', 'typst', input_path, '-o', output_path]
+    return f'#set text(font: "{font}")\n$body$'
 
+# --- 修改后函数 ---
+def build_md_to_typ_command(input_path: str, output_path: str, template_path: str) -> List[str]:
+    """
+    (修改后) 构建使用指定模板路径的 Pandoc (md -> typ) 转换命令。
+    此版本不再创建文件，只负责构建命令，依赖外部传入模板路径。
+    """
     return [
         'pandoc',
-        f'--from=gfm',
+        '--from=gfm',
         '-t', 'typst',
         f'--template={template_path}',
         input_path,
