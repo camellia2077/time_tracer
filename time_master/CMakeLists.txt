@@ -18,7 +18,12 @@ if(CCACHE_EXECUTABLE)
 endif()
 
 # --- 为 Release 构建类型设置优化编译选项 ---
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -flto")
+# 开发者提示:不要把Os和flto一起使用，这样会导致编译器报错
+#本程序的代码没问题.这是一个编译器问题,和本程序没有关系 
+
+# 建议使用Os 本程序为io密集型,开启O3优化效果不明显
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -march=native")
+# set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -flto")
 
 # --- 为 Release 构建类型设置优化链接选项 ---
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -s")
