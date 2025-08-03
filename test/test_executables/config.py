@@ -1,34 +1,56 @@
 # config.py
-# 在这里配置你所有的路径和选项
+from pathlib import Path
 
-# 1. 源文件夹的父目录
-SOURCE_DIRECTORY = r"C:\Computer\my_github\github_cpp\New_time_master\my_test\exported_files"
+# --- ANSI Color Codes ---
+class Colors:
+    """A class to hold ANSI color codes for colored console output."""
+    CYAN = '\033[96m'
+    GREEN = '\033[92m'
+    RED = '\033[91m'
+    RESET = '\033[0m'
 
-# 2. 统一的输出目录
-OUTPUT_DIRECTORY = "output_pdf"
+# --- File and Directory Paths ---
+SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build")
+SOURCE_DATA_PARENT_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/my_test")
+SOURCE_DATA_FOLDER_NAME = "Date"
+SOURCE_DATA_PATH = SOURCE_DATA_PARENT_DIR / SOURCE_DATA_FOLDER_NAME
+TARGET_EXECUTABLES_DIR = Path("./") # The current directory where the script is run
 
-# 3. 指定要编译的文档类型
-# bill_master可选值: 'TeX', 'Markdown', 'RST', 'Typst'
-# time_master可选值: 'TeX', 'Markdown', 'Typst'
-COMPILE_TYPES = ['TeX', 'Markdown', 'RST', 'Typst']
+# --- Executable and Database Names ---
+EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
+EXECUTABLE_APP_NAME = "time_tracker_app.exe"
+GENERATED_DB_FILE_NAME = "time_data.db"
+PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
+
+# ==============================================================================
+#                      TEST PARAMETERS CONFIGURATION
+# ==============================================================================
+
+# --- 新增: 通用测试格式配置 ---
+# "md", "tex", "typ"
+# 开发者备注，rst格式暂时还没有实现
+TEST_FORMATS = ["md", "tex", "typ"]
+
+# --- Parameters for Query Tests ---
+DAILY_QUERY_DATES = ["20250501", "20250601"]
+MONTHLY_QUERY_MONTHS = ["202505", "202506"]
+PERIOD_QUERY_DAYS = [7, 10, 15]
+
+# --- Parameters for Export Tests ---
+#  总开关: True -> 批量导出, False -> 按指定列表导出
+EXPORT_MODE_IS_BULK = False
+PERIOD_EXPORT_DAYS = [7, 10, 15] 
+
+# 仅在 EXPORT_MODE_IS_BULK = False 时生效
+SPECIFIC_EXPORT_DATES = ["20250501", "20250601"]
+SPECIFIC_EXPORT_MONTHS = ["202505", "202506"]
+# ==============================================================================
 
 
-# === 增量编译设置 ===
-# True:  启用增量编译 (推荐)。只编译有变动的文件。
-# False: 禁用增量编译。每次都重新编译所有文件。
-INCREMENTAL_COMPILE = True
-# ========================
-
-
-# === 新增: 清理设置 ===
-# True:  每次启动时，默认清理 output_pdf 目录。
-# False: 每次启动时，默认不清理。(推荐，以便使用增量编译)
-# 这个设置可以被命令行的 --clean 参数覆盖。
-CLEAN_OUTPUT_DEFAULT = False
-# ========================
-
-
-# --- 以下为 Markdown 基准测试配置 ---
-# ... (后续内容保持不变) ...
-MARKDOWN_COMPILERS = ['typst']
-BENCHMARK_LOOPS = 3
+# --- Artifacts to be cleaned up before each test run ---
+DIRECTORIES_TO_CLEAN = [
+    PROCESSED_DATA_DIR_NAME,
+    "Processed_Date", # Legacy name, can be removed if no longer generated
+    "output",
+    "exported_files"
+]
