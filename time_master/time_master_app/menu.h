@@ -3,9 +3,12 @@
 #define MENU_H
 
 #include <string>
-#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
+#include "common/AppConfig.h"
 
-class ActionHandler; // 前向声明
+// [修改] 前向声明新的处理器类
+class FileProcessingHandler;
+class ReportGenerationHandler;
+class LogProcessorMenu; // LogProcessorMenu 也需要前向声明
 
 class Menu {
 public:
@@ -14,7 +17,9 @@ public:
     void run();
 
 private:
-    ActionHandler* action_handler_;
+    // [修改] 使用新的、职责更明确的处理器
+    FileProcessingHandler* file_processing_handler_;
+    ReportGenerationHandler* report_generation_handler_;
 
     // --- 私有辅助函数 ---
     void print_menu();
@@ -23,12 +28,12 @@ private:
     void run_full_pipeline_and_import_prompt();
     void run_period_query_prompt();
 
-    // --- 新增: 单独导出功能的函数声明 ---
+    // --- 单独导出功能的函数声明 ---
     void run_export_single_day_report_prompt();
     void run_export_single_month_report_prompt();
     void run_export_single_period_report_prompt();
 
-    // --- 批量导出方法 (保持不变) ---
+    // --- 批量导出方法 ---
     void run_export_all_period_reports_prompt();
 };
 
