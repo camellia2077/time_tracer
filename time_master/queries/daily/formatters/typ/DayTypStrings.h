@@ -17,10 +17,16 @@ namespace DayTypStrings {
     const std::string TitleFont = "Noto Serif SC";
 
     /**
+     * @brief 定义报告主标题的字体大小。(新增)
+     */
+    const std::string TitleFontSize = "14pt";
+
+    /**
      * @brief 定义报告正文内容使用的字体。
      * 这里特意选用了一个差别很大的字体以便于测试。
      */
-    const std::string ContentFont = "Noto Serif SC";
+    const std::string ContentFont = "Noto Sans SC";
+
     // --- 文本配置 (Text Configuration) ---
     const std::string TitlePrefix     = "Daily Report for";
     const std::string DateLabel       = "Date";
