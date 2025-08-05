@@ -1,4 +1,4 @@
-// queries/monthly/formatters/typ/MonthTypStrings.h (最终版)
+// queries/monthly/formatters/typ/MonthTypStrings.h
 #ifndef MONTH_TYP_STRINGS_H
 #define MONTH_TYP_STRINGS_H
 
@@ -14,13 +14,18 @@ namespace MonthTypStrings {
     /**
      * @brief 定义报告使用的全局正文字体。
      */
-    const std::string BodyFont = "Noto Serif SC";
+    const std::string BodyFont = "Noto Sans SC";
 
     /**
      * @brief 定义报告主标题使用的字体 (如果想和正文区分)。
      * 如果想和正文使用相同字体，只需将值设为和 BodyFont 一样即可。
      */
     const std::string TitleFont = "Noto Serif SC";
+
+    /**
+     * @brief 定义报告主标题的字体大小。(新增)
+     */
+    const std::string TitleFontSize = "14pt";
 
 
     // --- 文本配置 (Text Configuration) ---

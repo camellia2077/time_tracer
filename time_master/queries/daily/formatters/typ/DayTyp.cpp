@@ -1,6 +1,7 @@
 #include "common/pch.h"
 #include "DayTyp.h"
 #include <iomanip>
+#include <format>
 
 // --- 核心改动：引入所有需要的依赖 ---
 #include "common/common_utils.h"
@@ -11,8 +12,8 @@
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     
-    // 1. (修正) 根据配置，将文档的全局基础字体设置为“正文字体”
-    ss << "#set text(font: \"" << DayTypStrings::ContentFont << "\")\n\n";
+    // (修改) 为占位符加上编号 {0}
+    ss << std::format(R"(#set text(font: "{0}"))", DayTypStrings::ContentFont) << "\n\n";
 
     _display_header(ss, data);
 
@@ -26,15 +27,22 @@ std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) cons
 }
 
 void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data) const {
-    // 2. (修正) 对于大标题，局部、显式地使用“标题字体”
-    ss << "#text(font: \"" << DayTypStrings::TitleFont << "\")[= " << DayTypStrings::TitlePrefix << " " << data.date << "]\n\n";
+    // (修改) 为标题的占位符加上编号 {0}, {1}, {2}, {3}
+    std::string title = std::format(
+        R"(#text(font: "{0}", size: "{1}")[= {2} {3}])",
+        DayTypStrings::TitleFont,        // {0}
+        DayTypStrings::TitleFontSize,    // {1}
+        DayTypStrings::TitlePrefix,      // {2}
+        data.date                        // {3}
+    );
+    ss << title << "\n\n";
     
-    // 其他头部信息将自动使用全局设置的“正文字体”
-    ss << "+ *" << DayTypStrings::DateLabel << "*: " << data.date << "\n";
-    ss << "+ *" << DayTypStrings::TotalTimeLabel << "*: " << time_format_duration(data.total_duration) << "\n";
-    ss << "+ *" << DayTypStrings::StatusLabel << "*: " << data.metadata.status << "\n";
-    ss << "+ *" << DayTypStrings::GetupTimeLabel << "*: " << data.metadata.getup_time << "\n";
-    ss << "+ *" << DayTypStrings::RemarkLabel << "*:" << data.metadata.remark << "\n";
+    // (修改) 为其余部分的占位符加上编号 {0}, {1}
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::DateLabel, data.date);
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::TotalTimeLabel, time_format_duration(data.total_duration));
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::StatusLabel, data.metadata.status);
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::GetupTimeLabel, data.metadata.getup_time);
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::RemarkLabel, data.metadata.remark);
 }
 
 void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
