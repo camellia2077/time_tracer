@@ -1,6 +1,7 @@
 #include "common/pch.h"
 #include "MonthTyp.h"
 #include <iomanip>
+#include <format> // (新增) 引入 format 头文件
 
 // --- 核心改动：引入所有需要的依赖 ---
 #include "queries/shared/query_utils.h"
@@ -13,8 +14,8 @@
 std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     
-    // 2. 根据专属配置文件中的字体设置，动态生成 Preamble
-    ss << "#set text(font: \"" << MonthTypStrings::BodyFont << "\")\n\n";
+    // (修改) 使用 std::format，并使用 {0} 显式指定参数位置
+    ss << std::format(R"(#set text(font: "{0}"))", MonthTypStrings::BodyFont) << "\n\n";
 
     if (data.year_month == "INVALID") {
         ss << MonthTypStrings::InvalidFormatError << "\n";
@@ -33,13 +34,21 @@ std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) 
 }
 
 void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
-    // 3. 动态构建标题，未来可以轻松地为标题应用不同的字体
-    // 例如: ss << "#text(font: \"" << MonthTypStrings::TitleFont << "\")[= " ... "]\n\n";
-    ss << "= " << MonthTypStrings::TitlePrefix << " " << data.year_month.substr(0, 4) << "-" << data.year_month.substr(4, 2) << " \n\n";
+    // (修改) 使用 std::format 和位置参数动态构建标题
+    std::string title = std::format(
+        R"(#text(font: "{0}", size: "{1}")[= {2} {3}-{4}])", // {0}{1}为样式, {2}{3}{4}为内容
+        MonthTypStrings::TitleFont,                           // {0}
+        MonthTypStrings::TitleFontSize,                       // {1}
+        MonthTypStrings::TitlePrefix,                         // {2}
+        data.year_month.substr(0, 4),                         // {3}
+        data.year_month.substr(4, 2)                          // {4}
+    );
+    ss << title << "\n\n";
 
     if (data.actual_days > 0) {
-        ss << "+ *" << MonthTypStrings::ActualDaysLabel << "*: " << data.actual_days << "\n";
-        ss << "+ *" << MonthTypStrings::TotalTimeLabel << "*: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
+        // (修改) 其余部分也使用 std::format 和位置参数
+        ss << std::format("+ *{0}:* {1}\n", MonthTypStrings::ActualDaysLabel, data.actual_days);
+        ss << std::format("+ *{0}:* {1}\n", MonthTypStrings::TotalTimeLabel, time_format_duration(data.total_duration, data.actual_days));
     }
 }
 

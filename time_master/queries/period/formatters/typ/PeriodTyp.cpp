@@ -1,6 +1,7 @@
 #include "common/pch.h"
 #include "PeriodTyp.h"
 #include <iomanip>
+#include <format> // (新增) 引入 format 头文件
 
 // --- 核心改动：引入所有需要的依赖 ---
 #include "common/common_utils.h"
@@ -12,8 +13,8 @@
 std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {
     std::stringstream ss;
     
-    // 1. 根据配置，将文档的全局基础字体设置为“正文字体”
-    ss << "#set text(font: \"" << PeriodTypStrings::ContentFont << "\")\n\n";
+    // (修改) 使用 std::format，并使用 {0} 显式指定参数位置
+    ss << std::format(R"(#set text(font: "{0}"))", PeriodTypStrings::ContentFont) << "\n\n";
 
     if (data.days_to_query <= 0) {
         ss << PeriodTypStrings::PositiveDaysError << "\n";
@@ -32,15 +33,22 @@ std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) 
 }
 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
-    // 2. 对于大标题，局部、显式地使用“标题字体”
-    ss << "#text(font: \"" << PeriodTypStrings::TitleFont << "\")[= " 
-       << PeriodTypStrings::TitlePrefix << " " << data.days_to_query << " days ("
-       << data.start_date << " to " << data.end_date << ")]\n\n";
+    // (修改) 使用 std::format 和位置参数动态构建标题
+    std::string title = std::format(
+        R"(#text(font: "{0}", size: "{1}")[= {2} {3} days ({4} to {5})])", // {0}{1}为样式, {2}-{5}为内容
+        PeriodTypStrings::TitleFont,        // {0}
+        PeriodTypStrings::TitleFontSize,    // {1}
+        PeriodTypStrings::TitlePrefix,      // {2}
+        data.days_to_query,                 // {3}
+        data.start_date,                    // {4}
+        data.end_date                       // {5}
+    );
+    ss << title << "\n\n";
 
-    // 3. 其他信息将自动使用全局设置的“正文字体”
+    // (修改) 其余部分也使用 std::format 和位置参数
     if (data.actual_days > 0) {
-        ss << "+ *" << PeriodTypStrings::TotalTimeLabel << "*: " << time_format_duration(data.total_duration, data.actual_days) << "\n";
-        ss << "+ *" << PeriodTypStrings::ActualDaysLabel << "*: " << data.actual_days << "\n";
+        ss << std::format("+ *{0}:* {1}\n", PeriodTypStrings::TotalTimeLabel, time_format_duration(data.total_duration, data.actual_days));
+        ss << std::format("+ *{0}:* {1}\n", PeriodTypStrings::ActualDaysLabel, data.actual_days);
     }
 }
 
