@@ -35,7 +35,7 @@ std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
     // (修改) 使用 std::format 和位置参数动态构建标题
     std::string title = std::format(
-        R"(#text(font: "{0}", size: "{1}")[= {2} {3} days ({4} to {5})])", // {0}{1}为样式, {2}-{5}为内容
+        R"(#text(font: "{0}", size: {1}pt)[= {2} {3} days ({4} to {5})])", // {0}{1}为样式, {2}-{5}为内容
         PeriodTypStrings::TitleFont,        // {0}
         PeriodTypStrings::TitleFontSize,    // {1}
         PeriodTypStrings::TitlePrefix,      // {2}

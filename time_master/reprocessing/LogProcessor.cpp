@@ -5,7 +5,7 @@
 #include "reprocessing/validator/FileValidator.h"
 #include "reprocessing/validator/ValidatorUtils.h"
 
-#include "reprocessing/input_transfer/IntervalProcessor.h"
+#include "reprocessing/Converter/IntervalConverter.h"
 #include "common/common_utils.h"
 
 #include <iostream>
@@ -54,7 +54,7 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         std::cout << "--- Converting: " << source_file.string() << " -> " << output_file.string() << " ---\n";
         auto start_time = std::chrono::steady_clock::now();
 
-        IntervalProcessor processor(config_.interval_processor_config_path);
+        IntervalConverter processor(config_.interval_processor_config_path);
         std::string year_str = extractYearFromPath(source_file);
         if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
              result.success = false;

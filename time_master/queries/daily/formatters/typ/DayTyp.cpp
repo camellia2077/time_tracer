@@ -29,7 +29,7 @@ std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) cons
 void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     // (修改) 为标题的占位符加上编号 {0}, {1}, {2}, {3}
     std::string title = std::format(
-        R"(#text(font: "{0}", size: "{1}")[= {2} {3}])",
+        R"(#text(font: "{0}", size: {1}pt)[= {2} {3}])",
         DayTypStrings::TitleFont,        // {0}
         DayTypStrings::TitleFontSize,    // {1}
         DayTypStrings::TitlePrefix,      // {2}

@@ -36,7 +36,7 @@ std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) 
 void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
     // (修改) 使用 std::format 和位置参数动态构建标题
     std::string title = std::format(
-        R"(#text(font: "{0}", size: "{1}")[= {2} {3}-{4}])", // {0}{1}为样式, {2}{3}{4}为内容
+        R"(#text(font: "{0}", size: {1}pt)[= {2} {3}-{4}])", // {0}{1}为样式, {2}{3}{4}为内容
         MonthTypStrings::TitleFont,                           // {0}
         MonthTypStrings::TitleFontSize,                       // {1}
         MonthTypStrings::TitlePrefix,                         // {2}

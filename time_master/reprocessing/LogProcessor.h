@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "common/AppConfig.h" // [修改] 引入新的通用配置头文件
+#include "common/AppConfig.h" // 引入新的通用配置头文件
 
 class LogProcessor {
 public:

@@ -79,11 +79,18 @@ file(GLOB QUERIES_SOURCES
     "queries/shared/breakdown/formatters/*.cpp"
 )
 file(GLOB REPROCESSING_SOURCES
+
     "reprocessing/*.cpp"
+
+    "reprocessing/Converter/*.cpp"
+    "reprocessing/Converter/internal/*.cpp"
+    "reprocessing/Converter/model/*.cpp"
+
+
     "reprocessing/validator/*.cpp"
     "reprocessing/validator/internal/*.cpp"
-    "reprocessing/input_transfer/*.cpp"
-    "reprocessing/input_transfer/internal/*.cpp"
+
+
 )
 file(GLOB FILE_HANDLER_SOURCES "file_handler/*.cpp")
 file(GLOB ACTION_HANDLER_SOURCES 
