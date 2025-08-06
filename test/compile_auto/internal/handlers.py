@@ -16,9 +16,10 @@ def format_time(seconds):
     seconds = seconds % 60
     return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
-def handle_tex(args):
+def handle_tex(args) -> Tuple[int, int, float, List[str]]:
     """
     处理 TeX 文件编译，并在完成后清理临时文件。
+    返回 (成功数, 失败数, 耗时, 更新的文件列表)。
     """
     def cleanup_temp_files(directory: str):
         """在指定目录中查找并删除 .aux, .log, .out 文件。"""
@@ -32,16 +33,12 @@ def handle_tex(args):
                     try:
                         os.remove(path)
                         deleted_count += 1
-                        print(f"🗑️ 已删除: {path}")
                     except OSError as e:
                         print(f"❌ 错误：无法删除文件 '{path}': {e}")
-        
-        if deleted_count == 0:
-            print("没有找到需要清理的临时文件。")
-        else:
+        if deleted_count > 0:
             print(f"--- 清理完成，共删除 {deleted_count} 个文件 ---")
 
-    file_count, duration = process_directory(
+    success_count, failure_count, duration, updated_files = process_directory(
         source_dir=args.source_dir,
         base_output_dir=args.output_dir,
         file_extension='.tex',
@@ -49,35 +46,39 @@ def handle_tex(args):
         command_builder=build_tex_command,
         max_workers=args.jobs,
         post_process_hook=cleanup_temp_files,
-        incremental=args.incremental # <--- 传递开关
+        incremental=args.incremental
     )
     
-    if file_count > 0:
-        print(f"===== TeX 处理完成 (共 {file_count} 个文件) =====")
+    if (success_count + failure_count) > 0:
+        print(f"===== TeX 处理完成 (成功: {success_count}, 失败: {failure_count}) =====")
         
-    return file_count, duration
+    return success_count, failure_count, duration, updated_files
 
-def handle_rst(args):
+def handle_rst(args) -> Tuple[int, int, float, List[str]]:
+    """返回 (成功数, 失败数, 耗时, 更新的文件列表)。"""
     print(f"将使用字体: '{args.font}'")
     builder = PandocCommandBuilder(source_format='rst', font=args.font)
-    file_count, duration = process_directory(
+    success_count, failure_count, duration, updated_files = process_directory(
         source_dir=args.source_dir, base_output_dir=args.output_dir, file_extension='.rst',
         log_file_type='RST', command_builder=builder, max_workers=args.jobs,
-        incremental=args.incremental # <--- 传递开关
+        incremental=args.incremental
     )
-    if file_count > 0: print(f"===== RST 处理完成 (共 {file_count} 个文件) =====")
-    return file_count, duration
+    if (success_count + failure_count) > 0:
+        print(f"===== RST 处理完成 (成功: {success_count}, 失败: {failure_count}) =====")
+    return success_count, failure_count, duration, updated_files
 
-def handle_typ(args):
-    file_count, duration = process_directory(
+def handle_typ(args) -> Tuple[int, int, float, List[str]]:
+    """返回 (成功数, 失败数, 耗时, 更新的文件列表)。"""
+    success_count, failure_count, duration, updated_files = process_directory(
         source_dir=args.source_dir, base_output_dir=args.output_dir, file_extension='.typ',
         log_file_type='Typst', command_builder=build_typ_command, max_workers=args.jobs,
-        incremental=args.incremental # <--- 传递开关
+        incremental=args.incremental
     )
-    if file_count > 0: print(f"===== Typst 处理完成 (共 {file_count} 个文件) =====")
-    return file_count, duration
+    if (success_count + failure_count) > 0:
+        print(f"===== Typst 处理完成 (成功: {success_count}, 失败: {failure_count}) =====")
+    return success_count, failure_count, duration, updated_files
 
-def _run_benchmark(args: argparse.Namespace):
+def _run_benchmark(args: argparse.Namespace) -> Tuple[int, int, float, List[str]]:
     """执行 Markdown 编译基准测试。"""
     print("\n" + "="*50)
     print(f"🚀  启动 Markdown 编译基准测试模式  🚀")
@@ -99,13 +100,11 @@ def _run_benchmark(args: argparse.Namespace):
             duration = 0.0
             if compiler == 'pandoc':
                 builder = PandocCommandBuilder(source_format='gfm', font=args.font)
-                # 基准测试总是完全编译，所以 incremental=False
-                _, duration = process_directory(
+                _, _, duration, _ = process_directory(
                     args.source_dir, args.output_dir, '.md', 'Markdown', builder, args.jobs, quiet=True, incremental=False
                 )
             elif compiler == 'typst':
-                # 基准测试总是完全编译，所以 incremental=False
-                _, duration = process_directory_md_via_typ(
+                _, duration, _ = process_directory_md_via_typ(
                     args.source_dir, args.output_dir, font=args.font, max_workers=args.jobs, quiet=True, incremental=False
                 )
             
@@ -113,7 +112,8 @@ def _run_benchmark(args: argparse.Namespace):
             print(f"    本轮耗时: {duration:.4f} 秒")
 
     _print_benchmark_summary(benchmark_results)
-    return 1
+    return 1, 0, sum(sum(v) for v in benchmark_results.values()), []
+
 
 def _print_benchmark_summary(results: Dict[str, List[float]]):
     print("\n" + "="*50)
@@ -131,49 +131,49 @@ def _print_benchmark_summary(results: Dict[str, List[float]]):
         print(f"🏆 结论: [{best_compiler.upper()}] 性能更优！")
     print("="*50)
 
-def handle_md(args: argparse.Namespace):
-    """Markdown 处理器，根据配置选择常规编译或基准测试。"""
+def handle_md(args: argparse.Namespace) -> Tuple[int, int, float, List[str]]:
+    """Markdown 处理器，返回 (成功数, 失败数, 耗时, 更新的文件列表)。"""
     compilers = getattr(args, 'markdown_compilers', ['pandoc'])
     
     if len(compilers) > 1 and "markdown" in [t.lower() for t in args.compile_types]:
-        file_count = _run_benchmark(args)
-        return file_count, 0.0
+        return _run_benchmark(args)
     
     else:
         compiler = compilers[0] if compilers else 'pandoc'
-        file_count = 0
+        success_count = 0
+        failure_count = 0
         duration = 0.0
+        updated_files: List[str] = []
         print(f"===== 开始处理 Markdown (使用 {compiler} 方式) =====")
         print(f"将使用字体: '{args.font}'")
 
         if compiler == 'typst':
-            results, duration = process_directory_md_via_typ(
+            results, duration, updated_files = process_directory_md_via_typ(
                 source_dir=args.source_dir, base_output_dir=args.output_dir, 
                 font=args.font, max_workers=args.jobs,
-                incremental=args.incremental # <--- 传递开关
+                incremental=args.incremental
             )
-            file_count = len(results)
-            if file_count > 0:
-                success_count = sum(1 for r in results if r.get("success"))
-                conv_time = sum(r.get("conversion_time", 0) for r in results)
-                comp_time = sum(r.get("compilation_time", 0) for r in results)
+            total_files = len(results)
+            success_count = sum(1 for r in results if r.get("success") and not r.get("skipped"))
+            skipped_count = sum(1 for r in results if r.get("skipped"))
+            failure_count = total_files - success_count - skipped_count
+            
+            if total_files > 0:
                 print("\n--- Markdown (Typst 路径) 详细统计 ---")
-                print(f"成功: {success_count} / {file_count} 个文件")
-                print(f"总转换耗时 (MD->Typ): {format_time(conv_time)}")
-                print(f"总编译耗时 (Typ->PDF): {format_time(comp_time)}")
+                print(f"成功: {success_count}, 失败: {failure_count}, 跳过: {skipped_count}")
 
         else: 
             builder = PandocCommandBuilder(source_format='gfm', font=args.font)
-            file_count, duration = process_directory(
+            success_count, failure_count, duration, updated_files = process_directory(
                 source_dir=args.source_dir, base_output_dir=args.output_dir,
                 file_extension='.md', log_file_type='Markdown',
                 command_builder=builder, max_workers=args.jobs,
-                incremental=args.incremental # <--- 传递开关
+                incremental=args.incremental
             )
 
-        if file_count > 0:
-            print(f"===== Markdown ({compiler}) 处理完成 =====")
-        return file_count, duration
+        if (success_count + failure_count) > 0:
+            print(f"===== Markdown ({compiler}) 处理完成 (成功: {success_count}, 失败: {failure_count}) =====")
+        return success_count, failure_count, duration, updated_files
 
 def _discover_tasks(source_dir: str, compiler_map: Dict, types_to_compile: List[str]) -> List[Dict[str, Any]]:
     tasks = []
@@ -193,25 +193,50 @@ def _discover_tasks(source_dir: str, compiler_map: Dict, types_to_compile: List[
                 break
     return tasks
 
-def _execute_tasks(tasks: List[Dict[str, Any]], args: argparse.Namespace) -> Dict:
+def _execute_tasks(tasks: List[Dict[str, Any]], args: argparse.Namespace) -> Tuple[Dict, Dict, Dict]:
+    """执行所有任务，并返回时间和统计摘要。"""
     timing_summary = {}
+    compilation_stats = {}
+    update_summary: Dict[str, int] = {}
+    
     for task in tasks:
         task_args = argparse.Namespace(**vars(args))
         task_args.source_dir = task['source_path']
-        file_count, duration = task['handler_func'](task_args)
-        if file_count > 0 and duration > 0:
-            timing_summary[task['log_name']] = (duration, file_count)
-    return timing_summary
+        
+        success_count, failure_count, duration, updated_files = task['handler_func'](task_args)
+        
+        if duration > 0:
+            timing_summary[task['log_name']] = (duration, success_count + failure_count)
+        if (success_count + failure_count) > 0:
+            compilation_stats[task['log_name']] = {'success': success_count, 'failed': failure_count}
+        
+        if updated_files:
+            update_summary[task['log_name']] = len(updated_files)
+            
+    return timing_summary, compilation_stats, update_summary
 
-def _print_summary(timing_summary: Dict):
+def _print_time_summary(timing_summary: Dict):
+    """打印编译时间摘要。"""
     if not timing_summary: return
-    print("\n\n" + "="*35)
-    print("     常规模式编译时间摘要")
-    print("="*35)
+    print("\n\n" + "="*45)
+    print("⏱️" + " "*14 + "编译时间摘要" + " "*15 + "⏱️")
+    print("="*45)
     for format_name, (duration, count) in timing_summary.items():
         avg_time_str = f"平均: {(duration / count):.2f} 秒/文件" if count > 0 else ""
         print(f"- {format_name:<10} | 总耗时: {format_time(duration)} | {avg_time_str}")
-    print("="*35)
+    print("="*45)
+
+def _print_stats_summary(stats: Dict):
+    """【新增】打印编译的成功/失败统计。"""
+    if not stats: return
+    print("\n" + "="*45)
+    print("📊" + " "*12 + "最终编译统计报告" + " "*13 + "📊")
+    print("="*45)
+    print(f"{'语言':<12} | {'✅ 成功':<10} | {'❌ 失败':<10}")
+    print("-" * 45)
+    for lang, counts in stats.items():
+        print(f"{lang:<12} | {counts.get('success', 0):<10} | {counts.get('failed', 0):<10}")
+    print("="*45)
 
 def handle_auto(args: argparse.Namespace):
     parent_dir = args.source_dir
@@ -227,6 +252,24 @@ def handle_auto(args: argparse.Namespace):
     if not tasks_to_run:
         print(f"\n在 '{parent_dir}' 中没有找到任何需要编译的目录。 (配置类型: {args.compile_types})")
         return
-    summary = _execute_tasks(tasks_to_run, args)
-    if summary:
-        _print_summary(summary)
+        
+    time_summary, stats_summary, update_summary = _execute_tasks(tasks_to_run, args)
+    
+    if time_summary:
+        _print_time_summary(time_summary)
+    if stats_summary:
+        _print_stats_summary(stats_summary)
+    if update_summary:
+        _print_update_summary(update_summary)
+
+def _print_update_summary(update_summary: Dict):
+    """【新增】打印因源文件更新而重新编译的文件数量统计。"""
+    if not update_summary: return
+    print("\n" + "="*45)
+    print("🔄" + " "*14 + "更新文件统计" + " "*15 + "🔄")
+    print("="*45)
+    print(f"{'语言':<12} | {'更新数量':<10}")
+    print("-" * 45)
+    for lang, count in update_summary.items():
+        print(f"{lang:<12} | {count:<10}")
+    print("="*45)

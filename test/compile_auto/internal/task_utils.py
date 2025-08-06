@@ -35,17 +35,16 @@ def filter_incremental_tasks(
     tasks: List[Tuple[Any, ...]], 
     output_root_dir: str, 
     quiet: bool = False
-) -> Tuple[List[Tuple[Any, ...]], int]:
+) -> Tuple[List[Tuple[Any, ...]], int, List[str]]:
     """
-    根据增量编译规则筛选任务。
-    职责：只负责检查文件时间戳，过滤掉不需要重新编译的任务。
+    【修改后】根据增量编译规则筛选任务。
+    职责：检查文件时间戳。如果输出文件已过时，则删除它并准备重新编译。
 
     返回:
-        一个元组，包含 (需要运行的任务列表, 被跳过的文件数量)。
+        一个元组，包含 (需要运行的任务列表, 被跳过的文件数量, 被更新的源文件路径列表)。
     """
-    if not quiet: print("🔍 增量编译已启用，正在检查已存在的文件...")
+    if not quiet: print("🔍 增量编译已启用，正在检查文件状态...")
 
-    # 1. 高效预扫描：一次性获取所有输出文件的元数据
     output_file_metadata: Dict[str, float] = {}
     if os.path.exists(output_root_dir):
         for out_root, _, out_files in os.walk(output_root_dir):
@@ -55,26 +54,28 @@ def filter_incremental_tasks(
                     try:
                         output_file_metadata[pdf_path] = os.path.getmtime(pdf_path)
                     except FileNotFoundError:
-                        continue # 在扫描和获取时间之间文件可能被删除
+                        continue
 
-    # 2. 筛选任务
     final_tasks: List[Tuple[Any, ...]] = []
+    updated_source_paths: List[str] = [] # 新增：用于存储被更新的源文件
     skipped_count = 0
     for task in tasks:
         source_path, final_pdf_path = task[0], task[1]
         
-        # 使用哈希表进行 O(1) 复杂度的快速查找
         if final_pdf_path in output_file_metadata:
             try:
                 source_mtime = os.path.getmtime(source_path)
                 output_mtime = output_file_metadata[final_pdf_path]
                 
-                # 如果源文件没有更新，则跳过
                 if source_mtime < output_mtime:
                     skipped_count += 1
                     continue
-            except FileNotFoundError:
-                # 如果文件在此期间消失，则继续执行编译
+                else:
+                    if not quiet:
+                        print(f"🔄 源文件 '{os.path.basename(source_path)}' 已更新，将重新编译...")
+                    os.remove(final_pdf_path)
+                    updated_source_paths.append(source_path) # 新增：记录更新
+            except (FileNotFoundError, OSError):
                 pass
         
         final_tasks.append(task)
@@ -82,4 +83,4 @@ def filter_incremental_tasks(
     if not quiet and skipped_count > 0:
         print(f"✅ 已跳过 {skipped_count} 个未更改的文件。")
     
-    return final_tasks, skipped_count
+    return final_tasks, skipped_count, updated_source_paths
