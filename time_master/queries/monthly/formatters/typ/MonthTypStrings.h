@@ -20,12 +20,12 @@ namespace MonthTypStrings {
      * @brief 定义报告主标题使用的字体 (如果想和正文区分)。
      * 如果想和正文使用相同字体，只需将值设为和 BodyFont 一样即可。
      */
-    const std::string TitleFont = "Noto Serif SC";
+    const std::string TitleFont = "Noto Sans SC";
 
     /**
      * @brief 定义报告主标题的字体大小。(新增)
      */
-    const std::string TitleFontSize = "14pt";
+    const int TitleFontSize = 14;
 
 
     // --- 文本配置 (Text Configuration) ---
