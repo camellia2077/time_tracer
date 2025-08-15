@@ -5,6 +5,9 @@ cmake_minimum_required(VERSION 3.16) # 推荐将版本提升到3.16+以获得最
 
 # 定义项目名称和所用语言 (CXX 代表 C++)
 project(TimeTrackerApp VERSION "0.2.0" LANGUAGES CXX)
+# --- ★ 新增：设置可执行文件的输出目录到 bin 文件夹 ★ ---
+# 这会使所有 .exe 文件在构建时都生成在 build/bin 目录下
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 # 设置 C++ 标准为 C++23
 set(CMAKE_CXX_STANDARD 23)
@@ -18,10 +21,6 @@ if(CCACHE_EXECUTABLE)
 endif()
 
 # --- 为 Release 构建类型设置优化编译选项 ---
-# 开发者提示:不要把Os和flto一起使用，这样会导致编译器报错
-#本程序的代码没问题.这是一个编译器问题,和本程序没有关系 
-
-# 建议使用Os 本程序为io密集型,开启O3优化效果不明显
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -march=native")
 # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -flto")
 
@@ -99,8 +98,6 @@ file(GLOB ACTION_HANDLER_SOURCES
     "action_handler/file/*.cpp"
     "action_handler/query/*.cpp"
     "action_handler/reporting/*.cpp"
-    
-
 )
 
 # --- 定义两个独立的可执行文件目标 ---
@@ -125,9 +122,7 @@ add_executable(
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
-    
     ${TIME_MASTER_CLI_SOURCES}
-    
 )
 
 
@@ -159,21 +154,62 @@ target_link_libraries(time_tracker_cli PRIVATE
     stdc++exp #用于支持 main_cli.cpp中的std::println
 )
 
-# --- ★ 新增：直接为最终目标配置预编译头 (路径已修正) ★ ---
-# 这一步负责“预编译一次”，生成PCH文件并让CMake知道如何使用它
+# --- 配置预编译头 (PCH) ---
 target_precompile_headers(time_tracker_app PRIVATE common/pch.h)
 target_precompile_headers(time_tracker_cli PRIVATE common/pch.h)
-
 
 # --- 为每个目标分别设置通用编译选项 ---
 target_compile_options(time_tracker_app PRIVATE -Wall )
 target_compile_options(time_tracker_cli PRIVATE -Wall )
 
-# --- ★ 新增：为每个目标自动包含PCH头文件 ★ ---
-# 这一步负责“自动添加头文件”，让您无需在每个cpp文件中手动#include
-# -include 命令会强制编译器在编译每个源文件时，首先处理 common/pch.h
+# --- 为每个目标自动包含PCH头文件 ---
 target_compile_options(time_tracker_app PRIVATE -include common/pch.h)
 target_compile_options(time_tracker_cli PRIVATE -include common/pch.h)
+
+
+# ====================================================================
+# ★ 新增：构建后自动复制 DLL 到输出目录 ★
+# ====================================================================
+if(WIN32 AND CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    message(STATUS "Setting up post-build DLL copy for MinGW.")
+    
+    # 获取编译器所在的目录
+    get_filename_component(MINGW_BIN_DIR ${CMAKE_CXX_COMPILER} DIRECTORY)
+
+    # 定义需要复制的 DLL 列表
+    set(REQUIRED_DLLS
+        "libgcc_s_seh-1.dll"
+        "libstdc++-6.dll"
+        "libsqlite3-0.dll"
+        "libwinpthread-1.dll"
+    )
+
+    # 为列表中的每个 DLL 添加一个构建后复制命令
+    foreach(DLL_NAME ${REQUIRED_DLLS})
+        set(DLL_PATH "${MINGW_BIN_DIR}/${DLL_NAME}")
+        if(EXISTS ${DLL_PATH})
+            # 为 app 目标添加命令
+            add_custom_command(
+                TARGET time_tracker_app POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${DLL_PATH}"
+                "$<TARGET_FILE_DIR:time_tracker_app>"
+                COMMENT "Copying ${DLL_NAME} for time_tracker_app"
+            )
+            # 为 cli 目标添加命令
+            add_custom_command(
+                TARGET time_tracker_cli POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${DLL_PATH}"
+                "$<TARGET_FILE_DIR:time_tracker_cli>"
+                COMMENT "Copying ${DLL_NAME} for time_tracker_cli"
+            )
+        else()
+            message(WARNING "Could not find required DLL: ${DLL_PATH}")
+        endif()
+    endforeach()
+endif()
+
 
 # ====================================================================
 # 安装与打包配置 (Installation and Packaging)
@@ -186,7 +222,7 @@ if(BUILD_INSTALLER)
     )
     set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
     install(FILES
-         "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
+        "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
         "${UCRT64_BIN_PATH}/libstdc++-6.dll"
         "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
         "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
