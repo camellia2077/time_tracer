@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "AllPeriodReports.h"
 #include "queries/period/PeriodQuerier.h"
 #include <stdexcept>

@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "action_handler/FileProcessingHandler.h"
 #include "action_handler/file/FilePipelineManager.h"
 #include "db_inserter/DataImporter.h"

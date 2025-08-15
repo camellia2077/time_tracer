@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "AllMonthlyReports.h"
 #include "queries/monthly/MonthQuerier.h"
 #include <vector>

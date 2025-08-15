@@ -160,6 +160,7 @@ target_link_libraries(time_tracker_cli PRIVATE
 )
 
 # --- ★ 新增：直接为最终目标配置预编译头 (路径已修正) ★ ---
+# 这一步负责“预编译一次”，生成PCH文件并让CMake知道如何使用它
 target_precompile_headers(time_tracker_app PRIVATE common/pch.h)
 target_precompile_headers(time_tracker_cli PRIVATE common/pch.h)
 
@@ -167,6 +168,12 @@ target_precompile_headers(time_tracker_cli PRIVATE common/pch.h)
 # --- 为每个目标分别设置通用编译选项 ---
 target_compile_options(time_tracker_app PRIVATE -Wall )
 target_compile_options(time_tracker_cli PRIVATE -Wall )
+
+# --- ★ 新增：为每个目标自动包含PCH头文件 ★ ---
+# 这一步负责“自动添加头文件”，让您无需在每个cpp文件中手动#include
+# -include 命令会强制编译器在编译每个源文件时，首先处理 common/pch.h
+target_compile_options(time_tracker_app PRIVATE -include common/pch.h)
+target_compile_options(time_tracker_cli PRIVATE -include common/pch.h)
 
 # ====================================================================
 # 安装与打包配置 (Installation and Packaging)

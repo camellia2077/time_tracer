@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // PeriodTex.cpp (已修正)
 #include "PeriodTex.h"
 #include <iomanip>

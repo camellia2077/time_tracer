@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // queries/report_generators/monthly/querier/MonthQuerier.cpp
 #include "MonthQuerier.h"
 #include "queries/shared/query_utils.h" 

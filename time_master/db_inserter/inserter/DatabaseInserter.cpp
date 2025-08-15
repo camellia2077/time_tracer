@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "DatabaseInserter.h"
 #include <iostream>
 #include <stdexcept>
