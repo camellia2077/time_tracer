@@ -26,57 +26,61 @@ def main():
     """
     一个完整的C++项目构建脚本，使用Python实现。
     功能包括：
-    - 支持 'clean' 参数来清理构建目录。
-    - 支持 '--package' 或 '-p' 参数来创建安装包。
-    - 使用CMake和make进行配置和编译。
-    - 记录并显示总构建时间。
+    - 'clean': 清理构建目录。
+    - '--package' or '-p': 创建安装包。
+    - 'install': 创建并运行安装包。
     """
     start_time = time.monotonic()
+    project_dir = Path(__file__).resolve().parent
+    build_dir_name = "build"
+    installer_file = None
 
     try:
         # --- 0. 准备工作 ---
-        # 切换到脚本所在的项目根目录
-        project_dir = Path(__file__).resolve().parent
         os.chdir(project_dir)
         print_header(f"Switched to project directory: {os.getcwd()}")
 
         # --- 1. 解析命令行参数 ---
         args = sys.argv[1:]
-        should_clean = 'clean' in args
-        should_package = '--package' in args or '-p' in args
         
-        if should_clean:
-            args.remove('clean')
-        if '--package' in args:
-            args.remove('--package')
-        if '-p' in args:
-            args.remove('-p')
+        # 'install' 命令隐含了 'clean' 和 '--package'
+        should_install = 'install' in args
+        if should_install:
+            args.remove('install')
+            should_clean = True
+            should_package = True
+        else:
+            should_clean = 'clean' in args
+            should_package = '--package' in args or '-p' in args
         
-        if args: # 检查是否有未识别的参数
+        if 'clean' in args: args.remove('clean')
+        if '--package' in args: args.remove('--package')
+        if '-p' in args: args.remove('-p')
+        
+        if args:
             for arg in args:
                 print(f"{Color.WARNING}Warning: Unknown argument '{arg}' ignored.{Color.ENDC}")
 
         # --- 2. 创建并进入构建目录 ---
-        build_dir = Path("build")
+        build_dir = Path(build_dir_name)
         build_dir.mkdir(exist_ok=True)
         os.chdir(build_dir)
         
         # --- 3. 如果需要，执行清理 ---
         if should_clean:
-            print_header("'clean' argument provided. Cleaning previous build artifacts...")
-            if Path("Makefile").exists():
-                subprocess.run(["make", "clean"], check=True)
-                print("--- Cleanup complete.")
-            else:
-                print("--- Makefile not found, skipping clean (first build?).")
+            print_header("'clean' or 'install' provided. Cleaning previous build artifacts...")
+            # A more robust clean: remove the entire directory content
+            os.chdir(project_dir)
+            if build_dir.exists():
+                shutil.rmtree(build_dir)
+            build_dir.mkdir(exist_ok=True)
+            os.chdir(build_dir)
+            print("--- Cleanup complete.")
 
         # --- 4. 配置项目 (CMake) ---
         print_header("Configuring project with CMake...")
         cmake_command = [
-            "cmake",
-            "-S", "..",
-            "-B", ".",
-            "-G", "MSYS Makefiles",
+            "cmake", "-S", "..", "-B", ".", "-G", "MSYS Makefiles",
             "-D", "CMAKE_BUILD_TYPE=Release"
         ]
         if should_package:
@@ -87,7 +91,6 @@ def main():
 
         # --- 5. 执行编译 (Make) ---
         print_header("Building the project with make...")
-        # 获取CPU核心数以进行并行编译
         cpu_cores = os.cpu_count() or 1
         subprocess.run(["make", f"-j{cpu_cores}"], check=True)
         print("--- Build complete.")
@@ -97,10 +100,25 @@ def main():
             print_header("Creating the installation package with CPack...")
             subprocess.run(["cpack"], check=True)
             print("--- Packaging complete.")
+            
+            # Find the installer file for the next step
+            installers = list(Path.cwd().glob("TimeTrackerApp-*-win64.exe"))
+            if not installers:
+                raise FileNotFoundError("CPack finished, but no installer executable was found.")
+            installer_file = installers[0]
+            print(f"--- Installer found: {installer_file.name}")
+
+        # --- 7. (新增) 运行安装程序 ---
+        if should_install:
+            print_header("Launching the installer...")
+            if not installer_file:
+                 raise Exception("Cannot run installer, as it was not created.")
+            subprocess.run([installer_file], check=True)
+            print("--- Installer process has been launched.")
+
 
     except subprocess.CalledProcessError as e:
         print(f"\n{Color.FAIL}!!! A build step failed with exit code {e.returncode}.{Color.ENDC}")
-        # 如果有编译错误，打印出来
         if e.stderr:
             print(f"{Color.FAIL}Error output:\n{e.stderr}{Color.ENDC}")
         sys.exit(e.returncode)
@@ -108,16 +126,18 @@ def main():
         print(f"\n{Color.FAIL}!!! An unexpected error occurred: {e}{Color.ENDC}")
         sys.exit(1)
     finally:
-        # --- 7. 结束并报告时间 ---
+        # --- 8. 结束并报告时间 ---
         end_time = time.monotonic()
         duration = int(end_time - start_time)
         minutes, seconds = divmod(duration, 60)
 
         print("\n" + "="*60)
         print(f"{Color.OKGREEN}{Color.BOLD}Process finished successfully!{Color.ENDC}")
-        print(f"Executables are in the '{build_dir.name}' directory.")
-        if should_package:
+        print(f"Artifacts are in the '{build_dir_name}' directory.")
+        if should_package and not should_install:
             print("Installation package has also been created.")
+        if should_install:
+            print("Project has been built, packaged, and the installer was launched.")
         print("-" * 60)
         print(f"Total time elapsed: {Color.BOLD}{minutes}m {seconds}s{Color.ENDC}")
         print("="*60)
