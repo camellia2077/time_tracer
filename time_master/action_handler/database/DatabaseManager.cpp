@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "DatabaseManager.h"
 #include <sqlite3.h> // SQLite 库头文件
 

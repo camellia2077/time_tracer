@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "DayMd.h"
 #include <iomanip>
 

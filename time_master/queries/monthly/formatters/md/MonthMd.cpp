@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // queries/report_generators/monthly/formatter/month_md/MonthMd.cpp
 #include "MonthMd.h"
 #include <iomanip>

@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "ParserFactory.h"
 #include "internal/ConfigLoader.h" // 工厂内部依赖ConfigLoader来加载配置
 #include "internal/ParserConfig.h" // 工厂内部需要知道配置的数据结构

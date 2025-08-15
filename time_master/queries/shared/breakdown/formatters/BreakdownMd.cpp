@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // query/format/md/BreakdownMd.cpp
 #include "BreakdownMd.h"
 #include <vector>

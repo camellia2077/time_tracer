@@ -1,5 +1,5 @@
 // time_master_app/menu_processor/LogProcessorMenu.cpp
-#include "common/pch.h"
+
 #include "LogProcessorMenu.h"
 // [修改] 引入新的处理器头文件
 #include "action_handler/FileProcessingHandler.h"

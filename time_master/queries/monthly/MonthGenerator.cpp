@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "MonthGenerator.h"
 #include "MonthQuerier.h"
 #include "queries/shared/MonthlyReportData.h"

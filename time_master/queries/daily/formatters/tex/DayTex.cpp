@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // DayTex.cpp 
 #include "DayTex.h"
 #include <iomanip>
