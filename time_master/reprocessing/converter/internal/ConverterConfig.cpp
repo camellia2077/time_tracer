@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // reprocessing/input_transfer/internal/ConverterConfig.cpp
 #include <fstream>
 #include <iostream>

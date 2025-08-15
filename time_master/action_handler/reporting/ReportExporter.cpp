@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "ReportExporter.h"
 #include "ExportUtils.h"
 #include "queries/QueryHandler.h"

@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "PeriodTyp.h"
 #include <iomanip>
 #include <format> // (新增) 引入 format 头文件

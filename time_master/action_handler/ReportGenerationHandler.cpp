@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "action_handler/ReportGenerationHandler.h"
 #include "action_handler/database/DatabaseManager.h"
 #include "action_handler/reporting/ReportExporter.h"

@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // query/format/tex/BreakdownTex.cpp (NEW FILE)
 #include "BreakdownTex.h"
 #include "common/common_utils.h" // For time_format_duration
