@@ -10,7 +10,7 @@ class Colors:
     RESET = '\033[0m'
 
 # --- File and Directory Paths ---
-SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build")
+SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/Time_Master_cpp/time_master/build/bin")
 SOURCE_DATA_PARENT_DIR = Path("C:/Computer/my_github/github_cpp/New_time_master/my_test")
 SOURCE_DATA_FOLDER_NAME = "Date"
 SOURCE_DATA_PATH = SOURCE_DATA_PARENT_DIR / SOURCE_DATA_FOLDER_NAME
