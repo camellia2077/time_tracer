@@ -150,7 +150,9 @@ target_include_directories(time_tracker_cli PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 # --- 为每个目标分别链接库 ---
 target_link_libraries(time_tracker_app PRIVATE
     SQLite::SQLite3
-    nlohmann_json::nlohmann_json)
+    nlohmann_json::nlohmann_json
+    stdc++exp #用于支持 main.cpp中的std::println
+)
 target_link_libraries(time_tracker_cli PRIVATE
     SQLite::SQLite3
     nlohmann_json::nlohmann_json

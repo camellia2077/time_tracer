@@ -4,6 +4,7 @@
 #include <windows.h>
 #endif
 #include <iostream>
+#include <print>
 #include <string>
 
 #include "time_master_app/menu.h" 
@@ -31,7 +32,8 @@ int main(int argc, char* argv[]) {
     #endif
 
     if (argc < 1) {
-        std::cerr << RED_COLOR << "Error" << RESET_COLOR << ": Cannot determine application path." << std::endl;
+        // 修改：使用 std::println 向 std::cerr 打印错误信息
+        std::println(std::cerr, "{}{}{}{}", RED_COLOR, "Error", RESET_COLOR, ": Cannot determine application path.");
         return 1;
     }
 
@@ -51,9 +53,11 @@ int main(int argc, char* argv[]) {
         app_menu.run();
 
     } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "Fatal Error" << RESET_COLOR << " during configuration setup: " << e.what() << std::endl;
-        // 在交互模式下，可以增加一个暂停，让用户看到错误信息
-        std::cout << "Press Enter to exit...";
+        // 修改：使用 std::println 向 std::cerr 打印错误信息
+        std::println(std::cerr, "{}{}{} during configuration setup: {}", RED_COLOR, "Fatal Error", RESET_COLOR, e.what());
+        
+        // 在交互模式下，增加一个暂停，让用户看到错误信息
+        std::print("\nPress Enter to exit...");
         std::cin.get();
         return 1;
     }
