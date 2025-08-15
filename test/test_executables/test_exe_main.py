@@ -16,27 +16,36 @@ from _py_internal.module_export import ExportTester
 
 
 def setup_environment():
-    """验证路径、复制可执行文件并清理环境。"""
-    print(f"{config.Colors.CYAN}--- 1. Preparing Executable ---{config.Colors.RESET}")
+    """验证路径、复制可执行文件和DLL，并清理环境。"""
+    print(f"{config.Colors.CYAN}--- 1. Preparing Executable and DLLs ---{config.Colors.RESET}")
     
     if not config.SOURCE_EXECUTABLES_DIR.exists():
         print(f"  {config.Colors.RED}错误: 源目录不存在: {config.SOURCE_EXECUTABLES_DIR}{config.Colors.RESET}")
         sys.exit(1)
 
+    # --- 修改: 将要复制的EXE和DLL合并到一个列表中 ---
     executables_to_copy = [config.EXECUTABLE_CLI_NAME, config.EXECUTABLE_APP_NAME]
-    for exe_name in executables_to_copy:
-        source_path = config.SOURCE_EXECUTABLES_DIR / exe_name
-        target_path = config.TARGET_EXECUTABLES_DIR / exe_name
+    dlls_to_copy = [
+        "libgcc_s_seh-1.dll",
+        "libstdc++-6.dll",
+        "libsqlite3-0.dll",
+        "libwinpthread-1.dll"
+    ]
+    artifacts_to_copy = executables_to_copy + dlls_to_copy
+
+    for artifact_name in artifacts_to_copy:
+        source_path = config.SOURCE_EXECUTABLES_DIR / artifact_name
+        target_path = config.TARGET_EXECUTABLES_DIR / artifact_name
         if not source_path.exists():
-            print(f"  {config.Colors.RED}警告: 在源目录中未找到可执行文件: {exe_name}{config.Colors.RESET}")
+            print(f"  {config.Colors.RED}警告: 在源目录中未找到文件: {artifact_name}{config.Colors.RESET}")
             continue
         try:
             shutil.copy(source_path, target_path)
-            print(f"  {config.Colors.GREEN}已成功复制: {exe_name}{config.Colors.RESET}")
+            print(f"  {config.Colors.GREEN}已成功复制: {artifact_name}{config.Colors.RESET}")
         except Exception as e:
-            print(f"  {config.Colors.RED}复制文件时出错 {exe_name}: {e}{config.Colors.RESET}")
+            print(f"  {config.Colors.RED}复制文件时出错 {artifact_name}: {e}{config.Colors.RESET}")
             sys.exit(1)
-    print("  可执行文件已准备就绪。")
+    print("  可执行文件和DLL已准备就绪。")
     
     print(f"{config.Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
     for dir_name in config.DIRECTORIES_TO_CLEAN:
