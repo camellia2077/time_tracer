@@ -1,14 +1,18 @@
 {
-    "main_header": "Date:",
-    "other_headers": [
+    "header_order": [
+        "Date:",
         "Status:",
         "Sleep:",
         "Getup:",
         "Remark:"
     ],
     "remark_prefix": "r ",
+    
     "text_mappings": {
+        "f" : "meal",
+        "饭" : "meal",
         "word": "study_english_words",
+        
         "单词": "study_english_words",
         "听力": "study_english_listening",
         "文章": "study_english_article",
@@ -39,20 +43,20 @@
         "黑神话": "recreation_game_wokong",
         "指导": "other_instruction",
         "收拾" : "routine_express",
-        "饭" : "meal_long",
-        "aaa" : "meal_medium",
+
         "洗衣服" : "routine_washing"
     },
-    "text_duration_mappings": {
+
+    "text_duration_mappings":{
         "失眠": "insomnia",
         "饭": "meal",
-        "休息": "rest"
+        "休息" : "rest"
     },
     "duration_mappings": {
         "rest": [
             { "less_than_minutes": 10, "value": "rest_short" },
             { "less_than_minutes": 20, "value": "rest_medium" },
-            { "less_than_minutes": 1440, "value": "rest_long" }
+            { "less_than_minutes": 1440, "value": "rest_long" } 
         ],
         "insomnia": [
             { "less_than_minutes": 10, "value": "insomnia_short" },
