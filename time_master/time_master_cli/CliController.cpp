@@ -5,8 +5,8 @@
 #include <stdexcept>
 #include <sstream>
 #include <algorithm>
+#include <print>
 
-// [修改] 引入新的处理器头文件
 #include "action_handler/FileProcessingHandler.h"
 #include "action_handler/ReportGenerationHandler.h"
 #include "action_handler/file/FilePipelineManager.h"
@@ -58,8 +58,6 @@ void CliController::execute() {
     }
 }
 
-// --- handle_* 方法更新 ---
-
 void CliController::handle_run_all() {
     if (args_.size() != 3) {
         throw std::runtime_error("Command 'run-all' requires exactly one source directory path argument.");
@@ -69,7 +67,6 @@ void CliController::handle_run_all() {
 }
 
 void CliController::handle_preprocess() {
-    // ... 参数解析逻辑保持不变 ...
     bool convert_flag = false, validate_source_flag = false, validate_output_flag = false, day_check_flag = false;
     std::string input_path;
 
@@ -86,16 +83,10 @@ void CliController::handle_preprocess() {
     }
 
     if (input_path.empty()) throw std::runtime_error("A file or folder path argument is required for 'preprocess' command.");
-    
-    // [修改 1] 允许 --validate-output 作为独立的主要动作
+
     if (!(convert_flag || validate_source_flag || validate_output_flag)) {
         throw std::runtime_error("At least one action option (--validate-source, --convert, --validate-output) is required.");
     }
-    
-    // [修改 2] 删除 --validate-output 对 --convert 的依赖检查
-    // if (validate_output_flag && !convert_flag) throw std::runtime_error("Option '--validate-output' can only be used with '--convert'.");
-    
-    // 注意：FilePipelineManager 仍然可以独立使用，因为它封装了处理流程
     FilePipelineManager pipeline(file_controller_->get_config());
 
     if (!pipeline.collectFiles(input_path)) {
@@ -114,7 +105,13 @@ void CliController::handle_preprocess() {
 
 void CliController::handle_database_import() {
     if (args_.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
-    // ... 用户确认逻辑保持不变 ...
+    // YELLOW_COLOR RESET_COLOR 
+    // --- 新增代码 ---
+    std::println("Now inserting into the database. ");
+    std::println("Please ensure the {}data{} has been {}converted and validated{}.",YELLOW_COLOR, RESET_COLOR,YELLOW_COLOR, RESET_COLOR);
+    std::println("Are you sure you want to continue? (y/n): ");
+    // --- 结束 ---
+
     char confirmation;
     std::cin >> confirmation;
     if (confirmation != 'y' && confirmation != 'Y') {
@@ -122,10 +119,8 @@ void CliController::handle_database_import() {
         return;
     }
     std::cout << std::endl;
-    // 调用 FileProcessingHandler
     file_processing_handler_->run_database_import(args_[2]);
 }
-
 void CliController::handle_query() {
     if (args_.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
     

@@ -24,10 +24,14 @@ const AppConfig& FileProcessingHandler::get_config() const {
 
 void FileProcessingHandler::run_database_import(const std::string& processed_path_str) {
     fs::path processed_path(processed_path_str);
-    if (!fs::exists(processed_path) || !fs::is_directory(processed_path)) {
-        std::cerr << RED_COLOR << "错误: " << RESET_COLOR << "路径不存在或不是目录。导入中止。" << std::endl;
+
+    // --- 修改代码 ---
+    // 将原来的目录检查改为只检查路径是否存在
+    if (!fs::exists(processed_path)) {
+        std::cerr << RED_COLOR << "错误: " << RESET_COLOR << "路径 " << processed_path_str << " 不存在。导入中止。" << std::endl;
         return;
     }
+    // --- 结束 ---
     
     DatabaseManager db_manager(db_name_);
     db_manager.close_database();
