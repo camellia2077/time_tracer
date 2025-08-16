@@ -52,6 +52,9 @@
         "饭": "meal",
         "休息" : "rest"
     },
+
+    "wake_keywords": ["起床", "醒", "w", "wake"],
+    
     "duration_mappings": {
         "rest": [
             { "less_than_minutes": 10, "value": "rest_short" },
