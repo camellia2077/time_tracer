@@ -17,7 +17,6 @@ IntervalConverter::IntervalConverter(const std::string& config_filename) {
 }
 
 namespace {
-    // ... (匿名空间中的辅助函数 writeInputData 和 formatTime 保持不变) ...
     void writeInputData(std::ofstream& outFile, const InputData& day, const ConverterConfig& config) {
         if (day.date.empty()) return;
         for (const auto& header : config.getHeaderOrder()) {
@@ -119,9 +118,11 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
         }
     }
 
-    // [修改] 统一文件结束时的处理逻辑
-    // 最终将 currentDay 作为“待完成”的日志，并传入一个空的“下一天”对象
-    // 这会触发 finalizeAndWrite 正确处理最后一天的数据
+    // [修复] 在文件结束时，需要依次处理“前一天”和“当前天”
+    // 1. 首先处理倒数第二天 (previousDay)，并以后一天 (currentDay) 的起床时间来计算睡眠
+    finalizeAndWrite(previousDay, currentDay);
+
+    // 2. 然后处理最后一天 (currentDay)，因为没有后一天了，传入一个空的 "nextDay"
     InputData emptyNextDay; 
     finalizeAndWrite(currentDay, emptyNextDay);
     
