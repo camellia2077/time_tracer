@@ -1,17 +1,14 @@
 // reprocessing/input_transfer/IntervalConverter.cpp
 
 #include "IntervalConverter.h"
-
 #include "common/common_utils.h"
-
 #include "reprocessing/converter/model/InputData.h"
 #include "reprocessing/converter/internal/Converter.h"
-
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
-#include <unordered_set> // [修改] 1. 引入头文件
+#include <unordered_set>
 
 IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
@@ -20,7 +17,7 @@ IntervalConverter::IntervalConverter(const std::string& config_filename) {
 }
 
 namespace {
-    // 匿名空间中的辅助函数
+    // ... (匿名空间中的辅助函数 writeInputData 和 formatTime 保持不变) ...
     void writeInputData(std::ofstream& outFile, const InputData& day, const ConverterConfig& config) {
         if (day.date.empty()) return;
         for (const auto& header : config.getHeaderOrder()) {
@@ -29,10 +26,8 @@ namespace {
             } else if (header == "Status:") {
                 outFile << "Status:" << (day.hasStudyActivity ? "True" : "False") << "\n";
             } else if (header == "Sleep:") {
-                // -- FIX START --
                 bool sleepStatus = day.isContinuation ? false : day.endsWithSleepNight;
                 outFile << "Sleep:" << (sleepStatus ? "True" : "False") << "\n";
-                // -- FIX END --
             } else if (header == "Getup:") {
                 outFile << "Getup:" << (day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime)) << "\n";
             } else if (header == "Remark:") {
@@ -74,8 +69,8 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
     InputData previousDay, currentDay;
     std::string line;
 
-    // [修改] 2. 在这里也定义关键词集合
-    const std::unordered_set<std::string> wake_keywords = {"起床", "醒", "w", "wake"};
+    const auto& keywords_vec = config_.getWakeKeywords();
+    const std::unordered_set<std::string> wake_keywords(keywords_vec.begin(), keywords_vec.end());
 
     auto finalizeAndWrite = [&](InputData& dayToFinalize, InputData& nextDay) {
         if (dayToFinalize.date.empty()) return;
@@ -114,7 +109,6 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
                 std::string timeStr = line.substr(0, 4);
                 std::string desc = line.substr(4);
                 
-                // [修改] 3. 使用集合来判断，保持与 Converter.cpp 一致
                 if (wake_keywords.count(desc)) {
                     if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
                 } else {
@@ -125,12 +119,11 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
         }
     }
 
-    finalizeAndWrite(previousDay, currentDay);
-    if (!currentDay.date.empty()) {
-        InputData finalDay;
-        converter.transform(currentDay);
-        writeInputData(outFile, currentDay, config_);
-    }
+    // [修改] 统一文件结束时的处理逻辑
+    // 最终将 currentDay 作为“待完成”的日志，并传入一个空的“下一天”对象
+    // 这会触发 finalizeAndWrite 正确处理最后一天的数据
+    InputData emptyNextDay; 
+    finalizeAndWrite(currentDay, emptyNextDay);
     
     return true;
 }

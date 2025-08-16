@@ -1,4 +1,3 @@
-
 // reprocessing/input_transfer/internal/ConverterConfig.cpp
 #include <fstream>
 #include <iostream>
@@ -29,6 +28,11 @@ bool ConverterConfig::load(const std::string& filepath) {
         if (j.contains("text_mappings")) text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
         if (j.contains("text_duration_mappings")) text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
 
+        // [修改] 1. 添加加载 wake_keywords 的逻辑
+        if (j.contains("wake_keywords")) {
+            wake_keywords_ = j["wake_keywords"].get<std::vector<std::string>>();
+        }
+
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
             const auto& duration_json = j["duration_mappings"];
             for (auto& [event_key, rules_json] : duration_json.items()) {
@@ -57,3 +61,8 @@ const std::vector<std::string>& ConverterConfig::getHeaderOrder() const { return
 const std::unordered_map<std::string, std::string>& ConverterConfig::getTextMapping() const { return text_mapping_; }
 const std::unordered_map<std::string, std::string>& ConverterConfig::getTextDurationMapping() const { return text_duration_mapping_; }
 const std::unordered_map<std::string, std::vector<DurationRule>>& ConverterConfig::getDurationMappings() const { return duration_mappings_; }
+
+// [修改] 2. 实现新的getter方法
+const std::vector<std::string>& ConverterConfig::getWakeKeywords() const {
+    return wake_keywords_;
+}
