@@ -1,4 +1,3 @@
-
 // reprocessing/input_transfer/IntervalConverter.cpp
 
 #include "IntervalConverter.h"
@@ -12,6 +11,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cctype>
+#include <unordered_set> // [修改] 1. 引入头文件
 
 IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
@@ -74,6 +74,9 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
     InputData previousDay, currentDay;
     std::string line;
 
+    // [修改] 2. 在这里也定义关键词集合
+    const std::unordered_set<std::string> wake_keywords = {"起床", "醒", "w", "wake"};
+
     auto finalizeAndWrite = [&](InputData& dayToFinalize, InputData& nextDay) {
         if (dayToFinalize.date.empty()) return;
         converter.transform(dayToFinalize);
@@ -110,7 +113,9 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
              if (!currentDay.date.empty() && line.length() >= 5 && std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
                 std::string timeStr = line.substr(0, 4);
                 std::string desc = line.substr(4);
-                if (desc == "起床" || desc == "醒") {
+                
+                // [修改] 3. 使用集合来判断，保持与 Converter.cpp 一致
+                if (wake_keywords.count(desc)) {
                     if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
                 } else {
                     if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;

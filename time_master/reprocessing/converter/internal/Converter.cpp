@@ -1,7 +1,7 @@
-
 // reprocessing/input_transfer/internal/Converter.cpp
 #include "Converter.h"
 #include <stdexcept>
+#include <unordered_set> // [修改] 1. 引入 unordered_set 头文件
 
 // 辅助函数
 namespace {
@@ -43,8 +43,13 @@ void Converter::transform(InputData& day) {
     if (day.getupTime.empty() && !day.isContinuation) return;
     
     std::string startTime = day.getupTime;
+
+    // [修改] 2. 定义包含所有起床关键词的集合
+    const std::unordered_set<std::string> wake_keywords = {"起床", "醒", "w", "wake"};
+
     for (const auto& rawEvent : day.rawEvents) {
-        if (rawEvent.description == "起床" || rawEvent.description == "醒") {
+        // [修改] 3. 使用集合的 .count() 方法进行判断，替代原来的多个 "||"
+        if (wake_keywords.count(rawEvent.description)) {
             if (startTime.empty()) {
                  startTime = formatTime(rawEvent.endTimeStr);
             }
