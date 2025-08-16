@@ -38,6 +38,12 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
+    // [修改 1] 识别并处理缩写命令
+    // 在将参数传递给控制器之前，将 "pre" 替换为 "preprocess"
+    if (args[1] == "pre") {
+        args[1] = "preprocess";
+    }
+
     const std::string& command = args[1];
 
     // --- Handle simple, top-level commands directly ---
@@ -53,6 +59,7 @@ int main(int argc, char* argv[]) {
 
     // --- Delegate complex commands to the controller ---
     try {
+        // 控制器接收的是已经“翻译”好的完整命令
         CliController controller(args);
         controller.execute();
     } catch (const std::exception& e) {
@@ -76,7 +83,8 @@ void print_full_usage(const char* app_name) {
     
     std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
     std::println("  run-all <path>\t\t Execute full pipeline: validate source, convert, and import into database.");
-    std::println("  preprocess <path>\t\t Manually run pre-processing steps on source files.");
+    // [修改 2] 更新帮助文档，告知用户有缩写可用
+    std::println("  preprocess (pre) <path>\t Manually run pre-processing steps on source files.");
     std::println("  import <path>\t\t\t Import pre-processed .txt files into the database.");
     std::println("  query <type> <period>\t\t Query data from the database.");
     std::println("  export <type> <period>\t Export reports from the database.\n");
@@ -86,7 +94,6 @@ void print_full_usage(const char* app_name) {
     std::println("  Options:");
     std::println("    --validate-source, -vs\t Validates the source file format.");
     std::println("    --convert, -c\t\t Converts the source file to the processed format.");
-    // [修改 3] 更新帮助文本
     std::println("    --validate-output, -vo\t Validates the processed/output file format.");
     std::println("    --enable-day-check, -edc\t Enable check for day completeness in a month (requires -vo).");
     std::println("  Example: {} preprocess /path/to/logs --convert --validate-output\n", app_name);

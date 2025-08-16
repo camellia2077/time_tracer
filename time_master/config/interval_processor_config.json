@@ -9,24 +9,68 @@
     "remark_prefix": "r ",
     
     "text_mappings": {
+        "tm" : "code_time-master",
+        "timemaster": "code_time-master",
+
+        "bm" : "code_bills-master",
+        "billsmaster": "code_bills-master",
+
+        "pa" : "code_pics2ascii",
+        "pics2ascii": "code_pics2ascii",
+
+        "mz" : "code_maze",
+        "maze": "code_maze",
+
+        "wc" : "code_workout_calculator",
+
+        "g": "routine_grooming",
+        "grooming": "routine_grooming",
+        "洗漱": "routine_grooming",
+
+
+
         "f" : "meal",
         "饭" : "meal",
+        "吃饭" : "meal",
+        "买饭" : "meal_buy",
+
+        "feast" :"meal_feast",
+        
+        "做饭": "meal_cook",
+        "水果": "meal_fruits",
+
+        
+        "cd" : "exercise_cardio",
+        "有氧": "exercise_cardio",
+        "st": "exercise_anaerobic",
+        "无氧": "exercise_anaerobic",
+
+
+
         "word": "study_english_words",
+
+
+        "zh": "recreation_zhihu",
+        "zhihu": "recreation_zhihu",
+        "知乎": "recreation_zhihu",
+        "dy": "recreation_douyin",
+        "抖音": "recreation_douyin",
+        "鱼缸": "recreation_aquarium",
+        "龟": "recreation_aquarium",
+        "qq" : "recreation_qq",
+
         
         "单词": "study_english_words",
         "听力": "study_english_listening",
         "文章": "study_english_article",
-        "timemaster": "code_time-master",
         "refactor": "code_refactor",
-        "billmaster": "code_bills-master",
+
         "洗澡": "routine_bath",
         "快递": "routine_express",
-        "洗漱": "routine_grooming",
+
         "拉屎": "routine_toilet",
-        "zh": "recreation_zhihu",
-        "知乎": "recreation_zhihu",
-        "dy": "recreation_douyin",
-        "抖音": "recreation_douyin",
+        
+
         "守望先锋": "recreation_game_overwatch",
         "皇室": "recreation_game_clash-royale",
         "ow": "recreation_game_overwatch",
@@ -36,8 +80,7 @@
         "电影": "recreation_movie",
         "撸": "rest_masturbation",
         "school": "other_school",
-        "有氧": "exercise_cardio",
-        "无氧": "exercise_anaerobic",
+
         "运动": "exercise_both",
         "break": "break_unknown",
         "黑神话": "recreation_game_wokong",
@@ -53,7 +96,7 @@
         "休息" : "rest"
     },
 
-    "wake_keywords": ["起床", "醒", "w", "wake"],
+    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
     
     "duration_mappings": {
         "rest": [

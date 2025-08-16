@@ -4,11 +4,12 @@
       "code_time-master",
       "code_bills-master",
       "code_weibo",
-      "code_ascii",
+      "code_pics2ascii",
       "code_spider",
       "code_refactor",
       "code_binary-audio",
       "code_audio",
+      "code_workout_calculator",
       "code_maze"
     ],
     "routine": [
@@ -103,7 +104,9 @@
       "recreation_qq",
       "recreation_mix",
       "recreation_pet",
+      "recreation_aquarium",
       "recreation_movie",
+      "recreation_web",
       "recreation_other"
     ],
     "arrange": [
@@ -126,7 +129,11 @@
       "meal_short",
       "meal_medium",
       "meal_long",
+      "meal_buy",
+      "meal_cook",
+      "meal_fruits",
       "meal_feast"
+      
     ]
   }
 }
