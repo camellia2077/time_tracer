@@ -137,26 +137,43 @@ bool FilePipelineManager::convertFiles() {
 }
 
 /**
- * @brief 阶段四：检验输出文件
+ * @brief [已修改] 阶段四：检验输出文件
  */
 bool FilePipelineManager::validateOutputFiles(bool enable_day_count_check) {
     const std::string current_operation_name = "validateOutputFiles";
     std::cout << "\n--- 阶段: 检验输出文件 ---" << std::endl;
-    if (source_to_output_map_.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 没有已转换的文件可供检验。请先运行转换操作。" << RESET_COLOR << std::endl;
+
+    // 创建一个统一的列表来存放待检验的文件
+    std::vector<fs::path> files_to_validate;
+
+    if (!source_to_output_map_.empty()) {
+        // 场景1: 已执行转换，从 map 中提取输出文件
+        for (const auto& pair : source_to_output_map_) {
+            files_to_validate.push_back(pair.second);
+        }
+    } else if (!files_to_process_.empty()) {
+        // 场景2: 未执行转换，直接使用最初收集的输入文件
+        std::cout << "信息: 未执行转换，将直接检验输入文件。" << std::endl;
+        files_to_validate = files_to_process_;
+    }
+
+    // 检查最终确定的列表是否为空
+    if (files_to_validate.empty()) {
+        std::cerr << YELLOW_COLOR << "警告: 没有文件可供检验。" << RESET_COLOR << std::endl;
         return true;
     }
 
     bool all_ok = true;
     double total_validation_time_ms = 0.0;
 
-    for (const auto& pair : source_to_output_map_) {
-        const auto& output_file = pair.second;
+    // 循环遍历新的统一列表
+    for (const auto& file_to_check : files_to_validate) {
         AppOptions opts;
         opts.validate_output = true;
         opts.enable_day_count_check = enable_day_count_check;
 
-        ProcessingResult result = processor_.processFile("", output_file, opts);
+        // 第一个参数是源文件路径，在仅检验输出时不需要，传空字符串即可
+        ProcessingResult result = processor_.processFile("", file_to_check, opts);
         total_validation_time_ms += result.timings.validation_output_ms;
 
         if (!result.success) {
@@ -168,6 +185,7 @@ bool FilePipelineManager::validateOutputFiles(bool enable_day_count_check) {
     std::cout << (all_ok ? GREEN_COLOR : RED_COLOR) << "输出文件检验阶段 " << (all_ok ? "全部通过" : "存在失败项") << "。" << RESET_COLOR << std::endl;
     return all_ok;
 }
+
 
 /**
  * @brief 打印操作的计时统计
