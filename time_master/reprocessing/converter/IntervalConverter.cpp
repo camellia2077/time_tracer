@@ -1,22 +1,29 @@
-// reprocessing/input_transfer/IntervalConverter.cpp
+// reprocessing/converter/IntervalConverter.cpp
 
 #include "IntervalConverter.h"
 #include "common/common_utils.h"
-#include "reprocessing/converter/model/InputData.h"
 #include "reprocessing/converter/internal/Converter.h"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
 #include <cctype>
-#include <unordered_set>
 
-IntervalConverter::IntervalConverter(const std::string& config_filename) {
+// 辅助函数：从 vector 创建 set
+static std::unordered_set<std::string> create_keyword_set(const ConverterConfig& config) {
+    const auto& keywords_vec = config.getWakeKeywords();
+    return {keywords_vec.begin(), keywords_vec.end()};
+}
+
+// [修改] 构造函数现在先加载配置，然后用辅助函数初始化成员
+IntervalConverter::IntervalConverter(const std::string& config_filename)
+    : config_(), wake_keywords_(create_keyword_set(config_)) {
     if (!config_.load(config_filename)) {
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
 }
 
 namespace {
+    // 匿名空间中的 writeInputData 和 formatTime 保持不变
     void writeInputData(std::ofstream& outFile, const InputData& day, const ConverterConfig& config) {
         if (day.date.empty()) return;
         for (const auto& header : config.getHeaderOrder()) {
@@ -30,7 +37,7 @@ namespace {
             } else if (header == "Getup:") {
                 outFile << "Getup:" << (day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime)) << "\n";
             } else if (header == "Remark:") {
-                if (!day.generalRemarks.empty()) {
+                if (!day.generalRemarks.empty() && !day.remarksOutput.empty()) {
                     outFile << "Remark:" << day.remarksOutput[0] << "\n";
                     for (size_t i = 1; i < day.remarksOutput.size(); ++i) {
                         outFile << day.remarksOutput[i] << "\n";
@@ -45,11 +52,46 @@ namespace {
         }
         outFile << "\n";
     }
+
     std::string formatTime(const std::string& timeStrHHMM) {
         return (timeStrHHMM.length() == 4) ? timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2) : timeStrHHMM;
     }
 }
 
+// 判断是否为日期标记的辅助方法
+bool IntervalConverter::isNewDayMarker(const std::string& line) const {
+    return line.length() == 4 && std::all_of(line.begin(), line.end(), ::isdigit);
+}
+
+// 解析单行（非日期）的逻辑
+void IntervalConverter::parseLine(const std::string& line, InputData& currentDay) const {
+    const std::string& remark_prefix = config_.getRemarkPrefix();
+
+    // 解析备注
+    if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
+        if (!currentDay.date.empty()) {
+             currentDay.generalRemarks.push_back(line.substr(remark_prefix.length()));
+        }
+    // 解析事件
+    } else if (!currentDay.date.empty() && line.length() >= 5 && std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
+        std::string timeStr = line.substr(0, 4);
+        std::string desc = line.substr(4);
+        
+        if (wake_keywords_.count(desc)) {
+            if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
+        } else {
+            if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;
+        }
+        currentDay.rawEvents.push_back({timeStr, desc});
+    // 对无法识别的行给出警告
+    } else if (!line.empty()) {
+        std::cerr << YELLOW_COLOR << "Warning: Unrecognized line format for date "
+                  << (currentDay.date.empty() ? "UNKNOWN" : currentDay.date)
+                  << ": '" << line << "'" << RESET_COLOR << std::endl;
+    }
+}
+
+// 主转换逻辑被重构，更清晰
 bool IntervalConverter::executeConversion(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix) {
     std::ifstream inFile(input_filepath);
     if (!inFile.is_open()) {
@@ -64,12 +106,8 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
     }
 
     Converter converter(config_);
-    const std::string& remark_prefix = config_.getRemarkPrefix();
     InputData previousDay, currentDay;
     std::string line;
-
-    const auto& keywords_vec = config_.getWakeKeywords();
-    const std::unordered_set<std::string> wake_keywords(keywords_vec.begin(), keywords_vec.end());
 
     auto finalizeAndWrite = [&](InputData& dayToFinalize, InputData& nextDay) {
         if (dayToFinalize.date.empty()) return;
@@ -94,35 +132,18 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
         line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
         if (line.empty()) continue;
 
-        if (line.length() == 4 && std::all_of(line.begin(), line.end(), ::isdigit)) {
+        if (isNewDayMarker(line)) {
             finalizeAndWrite(previousDay, currentDay);
             previousDay = currentDay;
             currentDay.clear();
             currentDay.date = year_prefix + line;
-        } else if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
-            if (!currentDay.date.empty()) {
-                 currentDay.generalRemarks.push_back(line.substr(remark_prefix.length()));
-            }
         } else {
-             if (!currentDay.date.empty() && line.length() >= 5 && std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
-                std::string timeStr = line.substr(0, 4);
-                std::string desc = line.substr(4);
-                
-                if (wake_keywords.count(desc)) {
-                    if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
-                } else {
-                    if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;
-                }
-                currentDay.rawEvents.push_back({timeStr, desc});
-            }
+            parseLine(line, currentDay);
         }
     }
 
-    // [修复] 在文件结束时，需要依次处理“前一天”和“当前天”
-    // 1. 首先处理倒数第二天 (previousDay)，并以后一天 (currentDay) 的起床时间来计算睡眠
+    // [修复] 文件结束时的处理逻辑保持不变
     finalizeAndWrite(previousDay, currentDay);
-
-    // 2. 然后处理最后一天 (currentDay)，因为没有后一天了，传入一个空的 "nextDay"
     InputData emptyNextDay; 
     finalizeAndWrite(currentDay, emptyNextDay);
     
