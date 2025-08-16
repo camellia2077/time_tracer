@@ -1,4 +1,3 @@
-
 #include "CliController.h"
 #include "file_handler/FileController.h"
 #include "common/common_utils.h"
@@ -87,8 +86,14 @@ void CliController::handle_preprocess() {
     }
 
     if (input_path.empty()) throw std::runtime_error("A file or folder path argument is required for 'preprocess' command.");
-    if (!(convert_flag || validate_source_flag)) throw std::runtime_error("At least one action option (--validate-source, --convert) is required.");
-    if (validate_output_flag && !convert_flag) throw std::runtime_error("Option '--validate-output' can only be used with '--convert'.");
+    
+    // [修改 1] 允许 --validate-output 作为独立的主要动作
+    if (!(convert_flag || validate_source_flag || validate_output_flag)) {
+        throw std::runtime_error("At least one action option (--validate-source, --convert, --validate-output) is required.");
+    }
+    
+    // [修改 2] 删除 --validate-output 对 --convert 的依赖检查
+    // if (validate_output_flag && !convert_flag) throw std::runtime_error("Option '--validate-output' can only be used with '--convert'.");
     
     // 注意：FilePipelineManager 仍然可以独立使用，因为它封装了处理流程
     FilePipelineManager pipeline(file_controller_->get_config());
