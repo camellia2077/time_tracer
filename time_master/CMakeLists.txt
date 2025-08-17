@@ -38,8 +38,23 @@ set(ALL_TARGETS time_tracker_app time_tracker_cli)
 
 # --- 4. 为每个目标应用通用配置 ---
 foreach(TARGET_NAME ${ALL_TARGETS})
-    setup_project_target(${TARGET_NAME})
+  setup_project_target(${TARGET_NAME})
 endforeach()
+
+# ==================== 在这里添加以下代码 ====================
+#
+# 在每次构建后，无论是否为安装包，都将配置文件复制到输出目录
+# 这样可以直接从 build/bin 目录运行程序
+foreach(TARGET_NAME ${ALL_TARGETS})
+    add_custom_command(
+        TARGET ${TARGET_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/config"
+        "$<TARGET_FILE_DIR:${TARGET_NAME}>/config"
+        COMMENT "Copying config folder for ${TARGET_NAME}"
+    )
+endforeach()
+# ==========================================================
 
 # --- 5. 包含特定功能的模块 ---
 include(Win32PostBuildCopy) # 包含并执行DLL复制逻辑

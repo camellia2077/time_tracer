@@ -1,0 +1,118 @@
+{
+    "header_order": [
+        "Date:",
+        "Status:",
+        "Sleep:",
+        "Getup:",
+        "Remark:"
+    ],
+    "remark_prefix": "r ",
+    
+    "text_mappings": {
+        "tm" : "code_time-master",
+        "timemaster": "code_time-master",
+
+        "bm" : "code_bills-master",
+        "billsmaster": "code_bills-master",
+
+        "pa" : "code_pics2ascii",
+        "pics2ascii": "code_pics2ascii",
+
+        "mz" : "code_maze",
+        "maze": "code_maze",
+
+        "wc" : "code_workout_calculator",
+
+        "g": "routine_grooming",
+        "grooming": "routine_grooming",
+        "洗漱": "routine_grooming",
+
+
+
+        "f" : "meal",
+        "饭" : "meal",
+        "吃饭" : "meal",
+        "买饭" : "meal_buy",
+
+        "feast" :"meal_feast",
+        
+        "做饭": "meal_cook",
+        "水果": "meal_fruits",
+
+        
+        "cd" : "exercise_cardio",
+        "有氧": "exercise_cardio",
+        "st": "exercise_anaerobic",
+        "无氧": "exercise_anaerobic",
+
+
+
+        "word": "study_english_words",
+
+
+        "zh": "recreation_zhihu",
+        "zhihu": "recreation_zhihu",
+        "知乎": "recreation_zhihu",
+        "dy": "recreation_douyin",
+        "抖音": "recreation_douyin",
+        "鱼缸": "recreation_aquarium",
+        "龟": "recreation_aquarium",
+        "qq" : "recreation_qq",
+
+        
+        "单词": "study_english_words",
+        "听力": "study_english_listening",
+        "文章": "study_english_article",
+        "refactor": "code_refactor",
+
+        "洗澡": "routine_bath",
+        "快递": "routine_express",
+
+        "拉屎": "routine_toilet",
+        
+
+        "守望先锋": "recreation_game_overwatch",
+        "皇室": "recreation_game_clash-royale",
+        "ow": "recreation_game_overwatch",
+        "bili": "recreation_bilibili",
+        "mix": "recreation_mix",
+        "b": "recreation_bilibili",
+        "电影": "recreation_movie",
+        "撸": "rest_masturbation",
+        "school": "other_school",
+
+        "运动": "exercise_both",
+        "break": "break_unknown",
+        "黑神话": "recreation_game_wokong",
+        "指导": "other_instruction",
+        "收拾" : "routine_express",
+
+        "洗衣服" : "routine_washing"
+    },
+
+    "text_duration_mappings":{
+        "失眠": "insomnia",
+        "饭": "meal",
+        "休息" : "rest"
+    },
+
+    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
+    
+    "duration_mappings": {
+        "rest": [
+            { "less_than_minutes": 10, "value": "rest_short" },
+            { "less_than_minutes": 20, "value": "rest_medium" },
+            { "less_than_minutes": 1440, "value": "rest_long" } 
+        ],
+        "insomnia": [
+            { "less_than_minutes": 10, "value": "insomnia_short" },
+            { "less_than_minutes": 30, "value": "insomnia_medium" },
+            { "less_than_minutes": 1440, "value": "insomnia_long" }
+        ],
+        "meal": [
+            { "less_than_minutes": 25, "value": "meal_short" },
+            { "less_than_minutes": 35, "value": "meal_medium" },
+            { "less_than_minutes": 1440, "value": "meal_long" }
+        ]
+    }
+}
