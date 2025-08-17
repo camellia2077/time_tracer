@@ -16,14 +16,37 @@ from _py_internal.module_export import ExportTester
 
 
 def setup_environment():
-    """验证路径、复制可执行文件和DLL，并清理环境。"""
-    print(f"{config.Colors.CYAN}--- 1. Preparing Executable and DLLs ---{config.Colors.RESET}")
+    """验证路径、清理旧环境，然后复制可执行文件、DLL和配置。"""
+    
+    # --- 第1步: 清理上一次运行留下的所有工件 ---
+    print(f"{config.Colors.CYAN}--- 1. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
+    for dir_name in config.DIRECTORIES_TO_CLEAN:
+        dir_path = Path.cwd() / dir_name
+        if dir_path.exists():
+            try:
+                shutil.rmtree(dir_path)
+                print(f"  {config.Colors.GREEN}已移除旧目录: {dir_name}{config.Colors.RESET}")
+            except OSError as e:
+                print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
+                sys.exit(1)
+                
+    db_file = Path.cwd() / config.GENERATED_DB_FILE_NAME
+    if db_file.exists():
+        db_file.unlink()
+        print(f"  {config.Colors.GREEN}已移除旧数据库文件: {config.GENERATED_DB_FILE_NAME}{config.Colors.RESET}")
+        
+    output_dir = Path.cwd() / "output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 日志目录。{config.Colors.RESET}")
+
+    # --- 第2步: 准备本次运行所需的文件 ---
+    print(f"{config.Colors.CYAN}--- 2. Preparing Executable, DLLs and Config ---{config.Colors.RESET}")
     
     if not config.SOURCE_EXECUTABLES_DIR.exists():
         print(f"  {config.Colors.RED}错误: 源目录不存在: {config.SOURCE_EXECUTABLES_DIR}{config.Colors.RESET}")
         sys.exit(1)
 
-    # --- 修改: 将要复制的EXE和DLL合并到一个列表中 ---
+    # 复制 EXE 和 DLL 文件
     executables_to_copy = [config.EXECUTABLE_CLI_NAME, config.EXECUTABLE_APP_NAME]
     dlls_to_copy = [
         "libgcc_s_seh-1.dll",
@@ -45,25 +68,21 @@ def setup_environment():
         except Exception as e:
             print(f"  {config.Colors.RED}复制文件时出错 {artifact_name}: {e}{config.Colors.RESET}")
             sys.exit(1)
-    print("  可执行文件和DLL已准备就绪。")
     
-    print(f"{config.Colors.CYAN}--- 2. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
-    for dir_name in config.DIRECTORIES_TO_CLEAN:
-        dir_path = Path.cwd() / dir_name
-        if dir_path.exists():
-            try:
-                shutil.rmtree(dir_path)
-                print(f"  {config.Colors.GREEN}已移除旧目录: {dir_name}{config.Colors.RESET}")
-            except OSError as e:
-                print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
-                sys.exit(1)
-    db_file = Path.cwd() / config.GENERATED_DB_FILE_NAME
-    if db_file.exists():
-        db_file.unlink()
-        print(f"  {config.Colors.GREEN}已移除旧数据库文件: {config.GENERATED_DB_FILE_NAME}{config.Colors.RESET}")
-    output_dir = Path.cwd() / "output"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 日志目录。{config.Colors.RESET}")
+    # 复制 config 文件夹
+    source_config_path = config.SOURCE_EXECUTABLES_DIR / "config"
+    target_config_path = config.TARGET_EXECUTABLES_DIR / "config"
+    if source_config_path.exists() and source_config_path.is_dir():
+        try:
+            shutil.copytree(source_config_path, target_config_path)
+            print(f"  {config.Colors.GREEN}已成功复制: config 文件夹{config.Colors.RESET}")
+        except Exception as e:
+            print(f"  {config.Colors.RED}复制 config 文件夹时出错: {e}{config.Colors.RESET}")
+            sys.exit(1)
+    else:
+        print(f"  {config.Colors.RED}警告: 在源目录中未找到 config 文件夹，跳过复制。{config.Colors.RESET}")
+
+    print("  可执行文件、DLL和配置已准备就绪。")
 
 
 def main():
@@ -97,7 +116,7 @@ def main():
                     daily_query_dates=config.DAILY_QUERY_DATES, 
                     monthly_query_months=config.MONTHLY_QUERY_MONTHS, 
                     period_query_days=config.PERIOD_QUERY_DAYS,
-                    test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
+                    test_formats=config.TEST_FORMATS,
                     **common_args),
         ExportTester(shared_counter, 4, 
                      generated_db_file_name=config.GENERATED_DB_FILE_NAME,
@@ -105,7 +124,7 @@ def main():
                      specific_dates=config.SPECIFIC_EXPORT_DATES,
                      specific_months=config.SPECIFIC_EXPORT_MONTHS,
                      period_export_days=config.PERIOD_EXPORT_DAYS,
-                     test_formats=config.TEST_FORMATS, # 新增: 传递格式配置
+                     test_formats=config.TEST_FORMATS,
                      **common_args)
     ]
     
