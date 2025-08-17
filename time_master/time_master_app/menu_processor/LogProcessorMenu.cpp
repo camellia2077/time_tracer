@@ -3,17 +3,19 @@
 #include "LogProcessorMenu.h"
 // [修改] 引入新的处理器头文件
 #include "action_handler/FileProcessingHandler.h"
-#include "action_handler/file/FilePipelineManager.h"
+
 #include "common/common_utils.h"
 #include "time_master_app/menu_input/UserInputUtils.h"
 #include <iostream>
 #include <string>
 #include <memory>
+#include <stdexcept> // [新增] 用于捕获异常
 
-// [修改] 构造函数更新
+// 构造函数保持不变
 LogProcessorMenu::LogProcessorMenu(FileProcessingHandler* handler)
     : file_processing_handler_(handler) {}
 
+// run() 和 print_submenu() 方法保持不变
 void LogProcessorMenu::run() {
     // ... 此函数保持不变 ...
     while (true) {
@@ -57,52 +59,55 @@ void LogProcessorMenu::print_submenu() const {
     std::cout << "Enter your choice: ";
 }
 
-// [修改] handle_choice 现在调用新的处理器
+
+// [修改] handle_choice 现在调用封装好的 run_preprocessing 方法
 void LogProcessorMenu::handle_choice(int choice) {
     if ((choice < 1 || choice > 5) && choice != 7) {
         std::cout << YELLOW_COLOR << "Invalid choice. Please try again.\n" << RESET_COLOR;
         return;
     }
 
+    // 数据库导入逻辑保持不变
     if (choice == 7) {
         std::string path = UserInputUtils::get_valid_path_input("Enter the path to the DIRECTORY containing processed files: ");
         if (!path.empty()) {
             file_processing_handler_->run_database_import(path);
         }
-    } else {
-        std::string path = UserInputUtils::get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
-        if (path.empty()) return;
+        return; // 处理完后直接返回
+    }
+    
+    // 预处理逻辑 (choices 1-5)
+    std::string path = UserInputUtils::get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
+    if (path.empty()) return;
 
-        // FilePipelineManager 现在从 FileProcessingHandler 获取配置
-        FilePipelineManager pipeline(file_processing_handler_->get_config());
+    // 1. 根据用户选择构建 PreprocessingOptions
+    PreprocessingOptions options;
+    switch (choice) {
+        case 1: // Validate source only
+            options.validate_source = true;
+            break;
+        case 2: // Convert only
+            options.convert = true;
+            break;
+        case 3: // Validate source, then Convert
+            options.validate_source = true;
+            options.convert = true;
+            break;
+        case 4: // Convert, then Validate Output
+            options.convert = true;
+            options.validate_output = true;
+            break;
+        case 5: // Full Pre-processing
+            options.validate_source = true;
+            options.convert = true;
+            options.validate_output = true;
+            break;
+    }
 
-        if (!pipeline.collectFiles(path)) {
-            std::cout << RED_COLOR << "Failed to collect files. Please check the path and try again." << RESET_COLOR << std::endl;
-            return;
-        }
-
-        switch (choice) {
-            case 1: 
-                pipeline.validateSourceFiles(); 
-                break;
-            case 2: 
-                pipeline.convertFiles(); 
-                break;
-            case 3: 
-                if (pipeline.validateSourceFiles()) {
-                    pipeline.convertFiles();
-                }
-                break;
-            case 4: 
-                if (pipeline.convertFiles()) {
-                    pipeline.validateOutputFiles(false);
-                }
-                break;
-            case 5: 
-                if (pipeline.validateSourceFiles() && pipeline.convertFiles()) {
-                    pipeline.validateOutputFiles(false);
-                }
-                break;
-        }
+    // 2. 调用处理器执行任务，并捕获可能的错误
+    try {
+        file_processing_handler_->run_preprocessing(path, options);
+    } catch (const std::runtime_error& e) {
+        std::cerr << RED_COLOR << "An error occurred: " << e.what() << RESET_COLOR << std::endl;
     }
 }
