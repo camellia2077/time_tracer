@@ -51,21 +51,22 @@ void Menu::run() {
 void Menu::print_menu() {
     // This function remains unchanged
     std::cout << "\n" << "--- Time Tracking Menu ---"  << std::endl;
+    std::cout << " 1. Full Pipeline (Validate -> Convert -> Import)" << std::endl;
+    std::cout << "--- Reprocessing ---" << std::endl;
+    std::cout << " 2. File Processing & Validation (Submenu)" << std::endl;
     std::cout << "--- Query ---" << std::endl;
-    std::cout << " 1. Query daily statistics" << std::endl;
-    std::cout << " 2. Query Period Statistics" << std::endl;
-    std::cout << " 3. Query monthly statistics" << std::endl;
+    std::cout << " 3. Query daily statistics" << std::endl;
+    std::cout << " 4. Query Period Statistics" << std::endl;
+    std::cout << " 5. Query monthly statistics" << std::endl;
     std::cout << "--- Export (Single Report) ---" << std::endl;
-    std::cout << " 4. Export single DAY report" << std::endl;
-    std::cout << " 5. Export single MONTH report" << std::endl;
-    std::cout << " 6. Export single PERIOD report" << std::endl;
+    std::cout << " 6. Export single DAY report" << std::endl;
+    std::cout << " 7. Export single MONTH report" << std::endl;
+    std::cout << " 8. Export single PERIOD report" << std::endl;
     std::cout << "--- Export (Bulk) ---" << std::endl;
-    std::cout << " 7. Export ALL daily reports" << std::endl;
-    std::cout << " 8. Export ALL monthly reports" << std::endl;
-    std::cout << " 9. Export ALL period reports" << std::endl;
+    std::cout << " 9. Export ALL daily reports" << std::endl;
+    std::cout << " 10. Export ALL monthly reports" << std::endl;
+    std::cout << " 11. Export ALL period reports" << std::endl;
     std::cout << "--- Other ---" << std::endl;
-    std::cout << " 10. File Processing & Validation (Submenu)" << std::endl;
-    std::cout << " 11. Full Pipeline (Validate -> Convert -> Import)" << std::endl;
     std::cout << " 12. Show Version" << std::endl;
     std::cout << " 13. Exit" << std::endl;
     std::cout << "Enter your choice: ";
@@ -74,7 +75,9 @@ void Menu::print_menu() {
 // handle_user_choice remains unchanged as the -> operator works the same
 bool Menu::handle_user_choice(int choice) {
     switch (choice) {
-        case 1: { // Query Daily
+        case 1: run_full_pipeline_and_import_prompt(); break;
+        case 2: run_log_processor_submenu(); break;
+        case 3: { // Query Daily
             std::string date = UserInputUtils::get_valid_date_input();
             if (!date.empty()) {
                 ReportFormat format = UserInputUtils::get_report_format_from_user();
@@ -82,8 +85,8 @@ bool Menu::handle_user_choice(int choice) {
             }
             break;
         }
-        case 2: run_period_query_prompt(); break;
-        case 3: { // Query Monthly
+        case 4: run_period_query_prompt(); break;
+        case 5: { // Query Monthly
             std::string month = UserInputUtils::get_valid_month_input();
             if (!month.empty()) {
                 ReportFormat format = UserInputUtils::get_report_format_from_user();
@@ -91,22 +94,20 @@ bool Menu::handle_user_choice(int choice) {
             }
             break;
         }
-        case 4: run_export_single_day_report_prompt(); break;
-        case 5: run_export_single_month_report_prompt(); break;
-        case 6: run_export_single_period_report_prompt(); break;
-        case 7: { // Export ALL Daily
+        case 6: run_export_single_day_report_prompt(); break;
+        case 7: run_export_single_month_report_prompt(); break;
+        case 8: run_export_single_period_report_prompt(); break;
+        case 9: { // Export ALL Daily
             ReportFormat format = UserInputUtils::get_report_format_from_user();
             report_generation_handler_->run_export_all_daily_reports_query(format);
             break;
         }
-        case 8: { // Export ALL Monthly
+        case 10: { // Export ALL Monthly
             ReportFormat format = UserInputUtils::get_report_format_from_user();
             report_generation_handler_->run_export_all_monthly_reports_query(format);
             break;
         }
-        case 9: run_export_all_period_reports_prompt(); break;
-        case 10: run_log_processor_submenu(); break;
-        case 11: run_full_pipeline_and_import_prompt(); break;
+        case 11: run_export_all_period_reports_prompt(); break;
         case 12:
             std::cout << "TimeMaster Version: " << AppInfo::VERSION << " (Last Updated: " << AppInfo::LAST_UPDATED << ")" << std::endl;
             break;
