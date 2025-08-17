@@ -15,7 +15,7 @@ if(BUILD_INSTALLER)
         "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
         DESTINATION bin
     )
-    install(DIRECTORY config DESTINATION bin)
+    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/config" DESTINATION .)
 
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
