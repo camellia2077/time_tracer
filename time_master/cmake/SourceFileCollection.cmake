@@ -8,6 +8,8 @@ file(GLOB TIME_MASTER_CLI_SOURCES
 file(GLOB TIME_MASTER_APP_SOURCES 
     "time_master_app/*.cpp"
     "time_master_app/menu_processor/*.cpp"
+    "time_master_app/menu_export/*.cpp"
+    "time_master_app/menu_query/*.cpp"
     "time_master_app/menu_input/*.cpp"
 )
 file(GLOB DB_INSERTER_SOURCES
