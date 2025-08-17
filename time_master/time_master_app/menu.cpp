@@ -1,7 +1,6 @@
 // time_master_app/menu.cpp
 
 #include "Menu.h"
-// [修改] 引入新的处理器头文件
 #include "action_handler/FileProcessingHandler.h"
 #include "action_handler/ReportGenerationHandler.h"
 #include "common/version.h"
@@ -12,18 +11,17 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <memory> // [新增] 确保 <memory> 已包含
 
-// [修改] 构造函数现在初始化新的处理器
+// [修改] 构造函数使用 std::make_unique 初始化智能指针
 Menu::Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path) {
-    file_processing_handler_ = new FileProcessingHandler(db_name, config, main_config_path);
-    report_generation_handler_ = new ReportGenerationHandler(db_name, config);
+    file_processing_handler_ = std::make_unique<FileProcessingHandler>(db_name, config, main_config_path);
+    report_generation_handler_ = std::make_unique<ReportGenerationHandler>(db_name, config);
 }
 
-// [修改] 析构函数现在清理新的处理器
-Menu::~Menu() {
-    delete file_processing_handler_;
-    delete report_generation_handler_;
-}
+// [修改] 析构函数不再需要手动 delete，智能指针会自动处理
+// 定义一个默认的析构函数是良好实践，因为它在头文件中被声明了
+Menu::~Menu() = default;
 
 void Menu::run() {
     while (true) {
@@ -51,7 +49,7 @@ void Menu::run() {
 }
 
 void Menu::print_menu() {
-    // ... 此函数保持不变 ...
+    // This function remains unchanged
     std::cout << "\n" << "--- Time Tracking Menu ---"  << std::endl;
     std::cout << "--- Query ---" << std::endl;
     std::cout << " 1. Query daily statistics" << std::endl;
@@ -73,7 +71,7 @@ void Menu::print_menu() {
     std::cout << "Enter your choice: ";
 }
 
-// [修改] handle_user_choice 现在调用新的处理器
+// handle_user_choice remains unchanged as the -> operator works the same
 bool Menu::handle_user_choice(int choice) {
     switch (choice) {
         case 1: { // Query Daily
@@ -125,7 +123,7 @@ bool Menu::handle_user_choice(int choice) {
     return true;
 }
 
-// [修改] 所有辅助函数现在调用新的处理器
+// All helper prompt functions remain unchanged
 void Menu::run_export_single_day_report_prompt() {
     std::string date = UserInputUtils::get_valid_date_input();
     if (!date.empty()) {
@@ -179,7 +177,8 @@ void Menu::run_export_all_period_reports_prompt() {
 }
 
 void Menu::run_log_processor_submenu() {
-    LogProcessorMenu submenu(file_processing_handler_); // [修改] 传递新的处理器
+    // [修改] 使用 .get() 将 unique_ptr 作为非拥有权的原始指针传递
+    LogProcessorMenu submenu(file_processing_handler_.get());
     submenu.run();
 }
 

@@ -1,4 +1,3 @@
-
 #include "action_handler/FileProcessingHandler.h"
 #include "action_handler/file/FilePipelineManager.h"
 #include "db_inserter/DataImporter.h"
@@ -6,6 +5,7 @@
 #include "action_handler/database/DatabaseManager.h"
 #include <iostream>
 #include <optional>
+#include <stdexcept> // Required for std::runtime_error
 
 namespace fs = std::filesystem;
 
@@ -18,6 +18,29 @@ FileProcessingHandler::FileProcessingHandler(const std::string& db_name, const A
 
 FileProcessingHandler::~FileProcessingHandler() = default;
 
+// [FIXED] This method now uses std::cout instead of std::println
+void FileProcessingHandler::run_preprocessing(const std::string& input_path, const PreprocessingOptions& options) {
+    // Using std::cout for broader compatibility
+    std::cout << "\n--- 开始预处理流程 ---" << std::endl;
+    FilePipelineManager pipeline(app_config_);
+
+    if (!pipeline.collectFiles(input_path)) {
+         throw std::runtime_error("无法从指定路径收集文件，操作中止。");
+    }
+    if (options.validate_source && !pipeline.validateSourceFiles()) {
+        throw std::runtime_error("源文件验证失败。");
+    }
+    if (options.convert && !pipeline.convertFiles()) {
+        throw std::runtime_error("文件转换失败。");
+    }
+    if (options.validate_output && !pipeline.validateOutputFiles(options.enable_day_check)) {
+        throw std::runtime_error("输出文件验证失败。");
+    }
+    
+    // Using std::cout with << operator correctly handles string concatenation
+    std::cout << GREEN_COLOR << "成功: 预处理流程执行完毕。" << RESET_COLOR << std::endl;
+}
+
 const AppConfig& FileProcessingHandler::get_config() const {
     return app_config_;
 }
@@ -25,13 +48,10 @@ const AppConfig& FileProcessingHandler::get_config() const {
 void FileProcessingHandler::run_database_import(const std::string& processed_path_str) {
     fs::path processed_path(processed_path_str);
 
-    // --- 修改代码 ---
-    // 将原来的目录检查改为只检查路径是否存在
     if (!fs::exists(processed_path)) {
         std::cerr << RED_COLOR << "错误: " << RESET_COLOR << "路径 " << processed_path_str << " 不存在。导入中止。" << std::endl;
         return;
     }
-    // --- 结束 ---
     
     DatabaseManager db_manager(db_name_);
     db_manager.close_database();
