@@ -1,9 +1,9 @@
 
 // query/format/TreeFmtFactory.cpp 
 #include "TreeFmtFactory.h"
-#include "queries/shared/breakdown/formatters/BreakdownMd.h"
-#include "queries/shared/breakdown/formatters/BreakdownTex.h" 
-#include "queries/shared/breakdown/formatters/BreakdownTyp.h"
+#include "queries/shared/formatters/breakdown/md/BreakdownMd.h"
+#include "queries/shared/formatters/breakdown/tex/BreakdownTex.h" 
+#include "queries/shared/formatters/breakdown/typ/BreakdownTyp.h"
 
 std::unique_ptr<ITreeFmt> TreeFmtFactory::createFormatter(ReportFormat format) {
     switch (format) {
@@ -14,7 +14,7 @@ std::unique_ptr<ITreeFmt> TreeFmtFactory::createFormatter(ReportFormat format) {
         case ReportFormat::Typ:
             return std::make_unique<BreakdownTyp>();
         default:
-            // 默认为 Markdown 
+            // 默认返回格式为 Markdown 
             return std::make_unique<BreakdownMd>();
     }
 }

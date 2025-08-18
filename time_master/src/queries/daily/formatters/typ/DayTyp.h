@@ -3,7 +3,7 @@
 #define DAILY_REPORT_TYP_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"
-#include "queries/shared/DailyReportData.h"
+#include "queries/shared/data/DailyReportData.h"
 #include <sstream>
 
 // Forward declaration

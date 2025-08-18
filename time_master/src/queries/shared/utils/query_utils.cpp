@@ -1,7 +1,7 @@
 
 #include "query_utils.h"
-#include "queries/shared/breakdown/TreeFmtFactory.h" // 引入TreeFmtFactory
-#include "queries/shared/breakdown/ITreeFmt.h"       // 引入ITreeFmt
+#include "queries/shared/factories/TreeFmtFactory.h" // 引入TreeFmtFactory
+#include "queries/shared/interface/ITreeFmt.h"       // 引入ITreeFmt
 
 #include "common/common_utils.h"
 

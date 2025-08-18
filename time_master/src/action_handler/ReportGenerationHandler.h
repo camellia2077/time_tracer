@@ -5,7 +5,7 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
-#include "queries/shared/query_data_structs.h"
+#include "queries/shared/data/query_data_structs.h"
 #include "queries/shared/ReportFormat.h"
 #include "common/AppConfig.h"
 

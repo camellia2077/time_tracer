@@ -3,7 +3,7 @@
 #define MONTHLY_REPORT_TYP_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"
-#include "queries/shared/MonthlyReportData.h"
+#include "queries/shared/data/MonthlyReportData.h"
 #include <sstream>
 
 // Forward declaration

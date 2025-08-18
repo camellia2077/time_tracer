@@ -3,7 +3,7 @@
 #define DAILY_REPORT_MARKDOWN_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h" // 引入新的模板接口
-#include "queries/shared/DailyReportData.h"   // 引入数据类型
+#include "queries/shared/data/DailyReportData.h"   // 引入数据类型
 #include <sstream>
 
 // Forward declaration

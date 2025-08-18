@@ -1,8 +1,8 @@
 #ifndef REPORT_FMT_FACTORY_H
 #define REPORT_FMT_FACTORY_H
 
-#include "Interface/IReportFormatter.h"
-#include "ReportFormat.h"
+#include "queries/shared/Interface/IReportFormatter.h"
+#include "queries/shared/ReportFormat.h"
 #include <memory>
 #include <stdexcept>
 

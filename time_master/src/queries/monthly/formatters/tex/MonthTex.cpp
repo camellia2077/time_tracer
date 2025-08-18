@@ -5,9 +5,9 @@
 #include <string>
 
 // --- 依赖保持不变 ---
-#include "queries/shared/query_utils.h"
-#include "queries/shared/breakdown/TreeFmtFactory.h"
-#include "queries/shared/breakdown/ITreeFmt.h"
+#include "queries/shared/utils/query_utils.h"
+#include "queries/shared/factories/TreeFmtFactory.h"
+#include "queries/shared/Interface/ITreeFmt.h"
 #include "common/common_utils.h"
 
 // 1. 公开的接口现在只负责调用基类的模板方法

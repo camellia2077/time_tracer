@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <map>
 #include <string>
-#include "queries/shared/query_data_structs.h"
+#include "queries/shared/data/query_data_structs.h"
 #include "queries/shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 

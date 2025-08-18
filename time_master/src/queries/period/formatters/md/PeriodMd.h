@@ -3,7 +3,7 @@
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"  // 替换 IPeriodFmt.h
-#include "queries/shared/PeriodReportData.h"  // 为模板类型引入定义
+#include "queries/shared/data/PeriodReportData.h"  // 为模板类型引入定义
 #include <sstream>
 
 // Forward declaration
