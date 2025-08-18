@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/DailyReportData.h" 
+#include "queries/shared/data/DailyReportData.h" 
 
 /**
  * @class DayQuerier

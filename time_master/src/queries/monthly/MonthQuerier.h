@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/MonthlyReportData.h"
+#include "queries/shared/data/MonthlyReportData.h"
 
 
 // 月报查询器类

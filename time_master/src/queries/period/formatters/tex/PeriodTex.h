@@ -3,8 +3,8 @@
 #define PERIOD_REPORT_TEX_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"  // 替换 IPeriodFmt.h
-#include "queries/shared/PeriodReportData.h"  // 为模板类型引入定义
-#include "queries/shared/BaseTexFormatter.h" 
+#include "queries/shared/data/PeriodReportData.h"  // 为模板类型引入定义
+#include "queries/shared/formatters/tex/BaseTexFormatter.h" 
 
 // --- 前置声明 ---
 struct DailyReportData;

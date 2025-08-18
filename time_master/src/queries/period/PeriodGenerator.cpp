@@ -1,10 +1,10 @@
 
 #include "queries/period/PeriodGenerator.h"
 #include "queries/period/PeriodQuerier.h"
-#include "queries/shared/PeriodReportData.h"
+#include "queries/shared/data/PeriodReportData.h"
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/FmtFactory.h"
+#include "queries/shared/factories/FmtFactory.h"
 #include "queries/period/formatters/md/PeriodMd.h"
 #include "queries/period/formatters/tex/PeriodTex.h"
 #include "queries/period/formatters/typ/PeriodTyp.h"

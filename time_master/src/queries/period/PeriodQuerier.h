@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/PeriodReportData.h"
+#include "queries/shared/data/PeriodReportData.h"
 
 
 class PeriodQuerier {

@@ -6,9 +6,9 @@
 #include "common/common_utils.h"                                // 为了 ProjectTree
 
 // --- 核心改动：包含新的依赖 ---
-#include "queries/shared/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
-#include "queries/shared/breakdown/TreeFmtFactory.h" // 新的工厂
-#include "queries/shared/breakdown/ITreeFmt.h"     // 工厂返回的接口
+#include "queries/shared/utils/query_utils.h"      // 用于 build_project_tree_from_records 和 get_parent_map
+#include "queries/shared/factories/TreeFmtFactory.h" // 新的工厂
+#include "queries/shared/Interface/ITreeFmt.h"     // 工厂返回的接口
 
 
 // format_report 方法的逻辑保持不变

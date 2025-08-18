@@ -3,7 +3,7 @@
 #define PROJECT_BREAKDOWN_FORMATTER_FACTORY_H
 
 #include <memory>
-#include "ITreeFmt.h"
+#include "queries/shared/Interface/ITreeFmt.h"
 #include "queries/shared/ReportFormat.h" // The shared enum
 
 class TreeFmtFactory {

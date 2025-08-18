@@ -22,6 +22,7 @@ file(GLOB DB_INSERTER_SOURCES
 file(GLOB QUERIES_SOURCES
     "src/queries/*.cpp"
     "src/queries/export/*.cpp"
+
     "src/queries/daily/*.cpp"
     "src/queries/daily/formatters/*.cpp"
     "src/queries/daily/formatters/md/*.cpp"
@@ -32,14 +33,30 @@ file(GLOB QUERIES_SOURCES
     "src/queries/monthly/formatters/md/*.cpp"
     "src/queries/monthly/formatters/tex/*.cpp"
     "src/queries/monthly/formatters/typ/*.cpp"
+
     "src/queries/period/*.cpp"
+
     "src/queries/period/formatters/*.cpp"
     "src/queries/period/formatters/md/*.cpp"
     "src/queries/period/formatters/tex/*.cpp"
     "src/queries/period/formatters/typ/*.cpp"
-    "src/queries/shared/*.cpp"
-    "src/queries/shared/breakdown/*.cpp"
-    "src/queries/shared/breakdown/formatters/*.cpp"
+
+    "src/queries/shared/data/*.cpp"
+
+    "src/queries/shared/factories/*.cpp"
+
+    "src/queries/shared/formatters/*.cpp"
+    "src/queries/shared/formatters/breakdown/*.cpp"
+    "src/queries/shared/formatters/tex/*.cpp"
+    "src/queries/shared/formatters/breakdown/md/*.cpp"
+    "src/queries/shared/formatters/breakdown/tex/*.cpp"
+    "src/queries/shared/formatters/breakdown/typ/*.cpp"
+
+    
+
+    "src/queries/shared/formatters/Interface/*.cpp"
+
+    "src/queries/shared/utils/*.cpp"
 )
 file(GLOB REPROCESSING_SOURCES
     "src/reprocessing/*.cpp"

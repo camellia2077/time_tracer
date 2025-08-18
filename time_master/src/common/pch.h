@@ -33,19 +33,20 @@
 // =================================================================
 #include "common/common_utils.h"
 #include "queries/shared/ReportFormat.h"
-#include "queries/shared/query_data_structs.h"
+#include "queries/shared/data/query_data_structs.h"
 
 // --- 核心数据结构 (Core Data Structures) ---
 #include "common/AppConfig.h"
-#include "queries/shared/DailyReportData.h"
-#include "queries/shared/MonthlyReportData.h"
-#include "queries/shared/PeriodReportData.h"
+#include "queries/shared/data/DailyReportData.h"
+#include "queries/shared/data/MonthlyReportData.h"
+#include "queries/shared/data/PeriodReportData.h"
 
 // --- 核心接口与工具 (Core Interfaces & Utilities) ---
 #include "queries/shared/Interface/IReportFormatter.h" 
-// #include "queries/shared/query_utils.h"
-// #include "queries/shared/breakdown/ITreeFmt.h"
-// #include "queries/shared/breakdown/TreeFmtFactory.h"
-// #include "queries/shared/BaseTexFormatter.h"
+#include "queries/shared/Interface/ITreeFmt.h"
+#include "queries/shared/factories/TreeFmtFactory.h"
+
+#include "queries/shared/utils/query_utils.h"
+
 
 #endif //PCH_H

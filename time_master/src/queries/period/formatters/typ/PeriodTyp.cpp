@@ -5,9 +5,9 @@
 
 // --- 核心改动：引入所有需要的依赖 ---
 #include "common/common_utils.h"
-#include "queries/shared/query_utils.h"
-#include "queries/shared/breakdown/TreeFmtFactory.h"
-#include "queries/shared/breakdown/ITreeFmt.h"
+#include "queries/shared/utils/query_utils.h"
+#include "queries/shared/factories/TreeFmtFactory.h"
+#include "queries/shared/Interface/ITreeFmt.h"
 #include "PeriodTypStrings.h" // 唯一且专属的配置文件
 
 std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {

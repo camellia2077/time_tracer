@@ -2,10 +2,10 @@
 // queries/report_generators/daily/DayGenerator.cpp
 #include "DayGenerator.h"
 #include "DayQuerier.h"
-#include "queries/shared/query_data_structs.h"
+#include "queries/shared/data/query_data_structs.h"
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/FmtFactory.h"
+#include "queries/shared/factories/FmtFactory.h"
 #include "queries/daily/formatters/md/DayMd.h"
 #include "queries/daily/formatters/tex/DayTex.h"
 #include "queries/daily/formatters/typ/DayTyp.h"

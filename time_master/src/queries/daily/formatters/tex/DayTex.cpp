@@ -6,10 +6,10 @@
 
 #include "common/common_utils.h"
 
-#include "queries/shared/query_utils.h"
-#include "queries/shared/breakdown/TreeFmtFactory.h"
-#include "queries/shared/breakdown/ITreeFmt.h"
-#include "queries/shared/DailyReportData.h"
+#include "queries/shared/utils/query_utils.h"
+#include "queries/shared/factories/TreeFmtFactory.h"
+#include "queries/shared/Interface/ITreeFmt.h"
+#include "queries/shared/data/DailyReportData.h"
 
 
 // The 'const' keyword is added here to match the header file

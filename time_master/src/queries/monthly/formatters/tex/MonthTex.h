@@ -3,8 +3,8 @@
 #define MONTHLY_REPORT_TEX_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"  // 引入新的模板接口
-#include "queries/shared/MonthlyReportData.h" // 引入数据类型
-#include "queries/shared/BaseTexFormatter.h"
+#include "queries/shared/data/MonthlyReportData.h" // 引入数据类型
+#include "queries/shared/formatters/tex/BaseTexFormatter.h"
 
 // --- Forward Declarations ---
 struct DailyReportData;

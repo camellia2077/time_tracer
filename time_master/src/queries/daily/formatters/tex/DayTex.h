@@ -3,8 +3,8 @@
 #define DAILY_REPORT_TEX_FORMATTER_H
 
 #include "queries/shared/Interface/IReportFormatter.h"  // Replaced IDayFmt.h
-#include "queries/shared/DailyReportData.h"    // Added for the template type
-#include "queries/shared/BaseTexFormatter.h" 
+#include "queries/shared/data/DailyReportData.h"    // Added for the template type
+#include "queries/shared/formatters/tex/BaseTexFormatter.h" 
 
 // --- Forward Declarations ---
 struct DailyReportData;

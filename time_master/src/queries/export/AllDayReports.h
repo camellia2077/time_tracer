@@ -2,8 +2,8 @@
 #define ALL_REPORTS_GENERATOR_H
 
 #include <sqlite3.h>
-#include "queries/shared/query_data_structs.h"
-#include "queries/shared/ReportFormat.h" // [新增] 引入报告格式的定义
+#include "queries/shared/data/query_data_structs.h"
+#include "queries/shared/ReportFormat.h" // 引入报告格式的定义
 
 /**
  * @class AllDayReports
