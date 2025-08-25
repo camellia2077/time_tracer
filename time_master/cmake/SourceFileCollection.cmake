@@ -1,76 +1,100 @@
 # 模块1：源文件收集 (SourceFileCollection.cmake)
-# 将所有 file(GLOB ...) 命令集中到这里
+# ----------------------------------------------------
+# 最佳实践：显式列出所有源文件以确保构建系统的稳定性和可预测性。
 
-file(GLOB COMMON_SOURCES "src/common/*.cpp")
-file(GLOB TIME_MASTER_CLI_SOURCES
-    "src/time_master_cli/*.cpp"
+# --- Common Sources ---
+set(COMMON_SOURCES
+    "src/common/common_utils.cpp"
 )
-file(GLOB TIME_MASTER_APP_SOURCES
-    "src/time_master_app/*.cpp"
-    "src/time_master_app/menu_processor/*.cpp"
-    "src/time_master_app/menu_export/*.cpp"
-    "src/time_master_app/menu_query/*.cpp"
-    "src/time_master_app/menu_input/*.cpp"
+
+# --- Time Master CLI Sources ---
+set(TIME_MASTER_CLI_SOURCES
+    "src/time_master_cli/CliController.cpp"
 )
-file(GLOB DB_INSERTER_SOURCES
-    "src/db_inserter/*.cpp"
-    "src/db_inserter/model/*.cpp"
-    "src/db_inserter/inserter/*.cpp"
-    "src/db_inserter/parser/*.cpp"
-    "src/db_inserter/parser/internal/*.cpp"
+
+# --- Time Master App (GUI/TUI) Sources ---
+set(TIME_MASTER_APP_SOURCES
+    "src/time_master_app/menu.cpp"
+    "src/time_master_app/menu_export/ExportMenu.cpp"
+    "src/time_master_app/menu_input/UserInputUtils.cpp"
+    "src/time_master_app/menu_processor/LogProcessorMenu.cpp"
+    "src/time_master_app/menu_query/QueryMenu.cpp"
 )
-file(GLOB QUERIES_SOURCES
-    "src/queries/*.cpp"
-    "src/queries/export/*.cpp"
 
-    "src/queries/daily/*.cpp"
-    "src/queries/daily/formatters/*.cpp"
-    "src/queries/daily/formatters/md/*.cpp"
-    "src/queries/daily/formatters/tex/*.cpp"
-    "src/queries/daily/formatters/typ/*.cpp"
-    "src/queries/monthly/*.cpp"
-    "src/queries/monthly/formatters/*.cpp"
-    "src/queries/monthly/formatters/md/*.cpp"
-    "src/queries/monthly/formatters/tex/*.cpp"
-    "src/queries/monthly/formatters/typ/*.cpp"
-
-    "src/queries/period/*.cpp"
-
-    "src/queries/period/formatters/*.cpp"
-    "src/queries/period/formatters/md/*.cpp"
-    "src/queries/period/formatters/tex/*.cpp"
-    "src/queries/period/formatters/typ/*.cpp"
-
-    "src/queries/shared/data/*.cpp"
-
-    "src/queries/shared/factories/*.cpp"
-
-    "src/queries/shared/formatters/*.cpp"
-    "src/queries/shared/formatters/breakdown/*.cpp"
-    "src/queries/shared/formatters/tex/*.cpp"
-    "src/queries/shared/formatters/breakdown/md/*.cpp"
-    "src/queries/shared/formatters/breakdown/tex/*.cpp"
-    "src/queries/shared/formatters/breakdown/typ/*.cpp"
-
-    
-
-    "src/queries/shared/formatters/Interface/*.cpp"
-
-    "src/queries/shared/utils/*.cpp"
+# --- DB Inserter Sources ---
+set(DB_INSERTER_SOURCES
+    "src/db_inserter/DataImporter.cpp"
+    "src/db_inserter/inserter/DatabaseInserter.cpp"
+    "src/db_inserter/parser/ParserFactory.cpp"
+    "src/db_inserter/parser/internal/ConfigLoader.cpp"
+    "src/db_inserter/parser/internal/DataFileParser.cpp"
 )
-file(GLOB REPROCESSING_SOURCES
-    "src/reprocessing/*.cpp"
-    "src/reprocessing/Converter/*.cpp"
-    "src/reprocessing/Converter/internal/*.cpp"
-    "src/reprocessing/Converter/model/*.cpp"
-    "src/reprocessing/validator/*.cpp"
-    "src/reprocessing/validator/internal/*.cpp"
+
+# --- Queries Sources ---
+set(QUERIES_SOURCES
+    # Root
+    "src/queries/QueryHandler.cpp"
+    # Export
+    "src/queries/export/AllDayReports.cpp"
+    "src/queries/export/AllMonthlyReports.cpp"
+    "src/queries/export/AllPeriodReports.cpp"
+    # Daily Reports
+    "src/queries/daily/DayGenerator.cpp"
+    "src/queries/daily/DayQuerier.cpp"
+    "src/queries/daily/formatters/md/DayMd.cpp"
+    "src/queries/daily/formatters/tex/DayTex.cpp"
+    "src/queries/daily/formatters/typ/DayTyp.cpp"
+    # Monthly Reports
+    "src/queries/monthly/MonthGenerator.cpp"
+    "src/queries/monthly/MonthQuerier.cpp"
+    "src/queries/monthly/formatters/md/MonthMd.cpp"
+    "src/queries/monthly/formatters/tex/MonthTex.cpp"
+    "src/queries/monthly/formatters/typ/MonthTyp.cpp"
+    # Period Reports
+    "src/queries/period/PeriodGenerator.cpp"
+    "src/queries/period/PeriodQuerier.cpp"
+    "src/queries/period/formatters/md/PeriodMd.cpp"
+    "src/queries/period/formatters/tex/PeriodTex.cpp"
+    "src/queries/period/formatters/typ/PeriodTyp.cpp"
+    # Shared Components
+    "src/queries/shared/factories/TreeFmtFactory.cpp"
+    "src/queries/shared/formatters/breakdown/md/BreakdownMd.cpp"
+    "src/queries/shared/formatters/breakdown/tex/BreakdownTex.cpp"
+    "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"
+    "src/queries/shared/utils/query_utils.cpp"
 )
-file(GLOB FILE_HANDLER_SOURCES "src/file_handler/*.cpp")
-file(GLOB ACTION_HANDLER_SOURCES
-    "src/action_handler/*.cpp"
-    "src/action_handler/database/*.cpp"
-    "src/action_handler/file/*.cpp"
-    "src/action_handler/query/*.cpp"
-    "src/action_handler/reporting/*.cpp"
+
+# --- Reprocessing Sources ---
+set(REPROCESSING_SOURCES
+    "src/reprocessing/LogProcessor.cpp"
+    "src/reprocessing/converter/IntervalConverter.cpp"
+    "src/reprocessing/converter/internal/Converter.cpp"
+    "src/reprocessing/converter/internal/ConverterConfig.cpp"
+    "src/reprocessing/converter/internal/DayProcessor.cpp"
+    "src/reprocessing/converter/internal/InputParser.cpp"
+    "src/reprocessing/converter/internal/OutputGenerator.cpp"
+    "src/reprocessing/validator/FileValidator.cpp"
+    "src/reprocessing/validator/ValidatorUtils.cpp"
+    "src/reprocessing/validator/internal/OutputFileValidator.cpp"
+    "src/reprocessing/validator/internal/SourceFileValidator.cpp"
 )
+
+# --- File Handler Sources ---
+set(FILE_HANDLER_SOURCES
+    "src/file_handler/ConfigLoader.cpp"
+    "src/file_handler/FileController.cpp"
+    "src/file_handler/FileUtils.cpp"
+)
+
+# --- Action Handler Sources ---
+set(ACTION_HANDLER_SOURCES
+    "src/action_handler/FileProcessingHandler.cpp"
+    "src/action_handler/ReportGenerationHandler.cpp"
+    "src/action_handler/database/DatabaseManager.cpp"
+    "src/action_handler/file/FilePipelineManager.cpp"
+    "src/action_handler/query/DirectQueryManager.cpp"
+    "src/action_handler/reporting/ExportUtils.cpp"
+    "src/action_handler/reporting/ReportExporter.cpp"
+)
+
+message(STATUS "Source files collected explicitly.")
