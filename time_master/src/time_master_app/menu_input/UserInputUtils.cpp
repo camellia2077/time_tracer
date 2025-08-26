@@ -1,7 +1,7 @@
 // common/UserInputUtils.cpp
 
-#include "UserInputUtils.h"
-#include "common/common_utils.h" // For color constants
+#include "UserInputUtils.hpp"
+#include "common/common_utils.hpp" // For color constants
 #include <iostream>
 #include <filesystem>
 #include <sstream>

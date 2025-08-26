@@ -1,14 +1,13 @@
 
 // MonthTex.cpp (已更新)
-#include "MonthTex.h"
+#include "MonthTex.hpp"
 #include <iomanip>
 #include <string>
 
-// --- 依赖保持不变 ---
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h"
-#include "queries/shared/Interface/ITreeFmt.h"
-#include "common/common_utils.h"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "common/common_utils.hpp"
 
 // 1. 公开的接口现在只负责调用基类的模板方法
 std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) const {

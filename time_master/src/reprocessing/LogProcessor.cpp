@@ -1,12 +1,12 @@
 
 // reprocessing/LogProcessor.cpp
-#include "reprocessing/LogProcessor.h"
+#include "reprocessing/LogProcessor.hpp"
 
-#include "reprocessing/validator/FileValidator.h"
-#include "reprocessing/validator/ValidatorUtils.h"
+#include "reprocessing/validator/FileValidator.hpp"
+#include "reprocessing/validator/ValidatorUtils.hpp"
 
-#include "reprocessing/Converter/IntervalConverter.h"
-#include "common/common_utils.h"
+#include "reprocessing/Converter/IntervalConverter.hpp"
+#include "common/common_utils.hpp"
 
 #include <iostream>
 #include <algorithm>
@@ -20,7 +20,6 @@ namespace fs = std::filesystem;
 
 LogProcessor::LogProcessor(const AppConfig& config) : config_(config) {}
 
-// --- [MODIFIED] 函数返回类型和实现已更新 ---
 ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_file,
                                            const std::filesystem::path& output_file,
                                            const AppOptions& options)

@@ -1,10 +1,10 @@
 // converter/internal/InputParser.cpp
-#include "InputParser.h"
+#include "InputParser.hpp"
 #include <algorithm>
 #include <cctype>
 #include <iostream>
 #include <unordered_set>
-#include "common/common_utils.h" // 假设颜色宏定义在这里
+#include "common/common_utils.hpp" // 假设颜色宏定义在这里
 
 namespace {
     std::string formatTime(const std::string& timeStrHHMM) {

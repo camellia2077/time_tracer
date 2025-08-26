@@ -1,8 +1,10 @@
 // time_master_app/menu_query/QueryMenu.cpp
-#include "QueryMenu.h"
-#include "action_handler/ReportGenerationHandler.h"
-#include "time_master_app/menu_input/UserInputUtils.h"
-#include "common/common_utils.h"
+#include "QueryMenu.hpp"
+
+#include "action_handler/ReportGenerationHandler.hpp"
+#include "time_master_app/menu_input/UserInputUtils.hpp"
+#include "common/common_utils.hpp"
+
 #include <iostream>
 #include <string>
 #include <vector>

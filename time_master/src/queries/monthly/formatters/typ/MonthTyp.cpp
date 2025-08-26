@@ -1,15 +1,15 @@
 
-#include "MonthTyp.h"
+#include "MonthTyp.hpp"
 #include <iomanip>
 #include <format> // (新增) 引入 format 头文件
 
 // --- 核心改动：引入所有需要的依赖 ---
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h"
-#include "queries/shared/Interface/ITreeFmt.h"
-#include "common/common_utils.h"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "common/common_utils.hpp"
 
-#include "MonthTypStrings.h"
+#include "MonthTypStrings.hpp"
 
 std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;

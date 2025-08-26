@@ -1,7 +1,7 @@
 
 // reprocessing/validator/internal/OutputFileValidator.cpp
-#include "OutputFileValidator.h"
-#include "common/common_utils.h"
+#include "OutputFileValidator.hpp"
+#include "common/common_utils.hpp"
 #include <fstream>
 #include <iostream>
 #include <algorithm>

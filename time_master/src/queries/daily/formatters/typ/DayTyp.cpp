@@ -1,13 +1,13 @@
 
-#include "DayTyp.h"
+#include "DayTyp.hpp"
 #include <iomanip>
 #include <format>
 
 // --- 核心改动：引入所有需要的依赖 ---
-#include "common/common_utils.h"
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/data/DailyReportData.h"
-#include "DayTypStrings.h" // 唯一且专属的配置文件
+#include "common/common_utils.hpp"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/data/DailyReportData.hpp"
+#include "DayTypStrings.hpp" // 唯一且专属的配置文件
 
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;

@@ -1,7 +1,7 @@
 
 // query/format/tex/BreakdownTex.cpp (NEW FILE)
-#include "BreakdownTex.h"
-#include "common/common_utils.h" // For time_format_duration
+#include "BreakdownTex.hpp"
+#include "common/common_utils.hpp" // For time_format_duration
 #include <vector>
 #include <algorithm>
 #include <iomanip>

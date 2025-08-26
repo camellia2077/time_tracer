@@ -1,8 +1,8 @@
 
 // reprocessing/validator/internal/SourceFileValidator.cpp
-#include "SourceFileValidator.h"
+#include "SourceFileValidator.hpp"
 
-#include "common/common_utils.h"
+#include "common/common_utils.hpp"
 #include <fstream>
 #include <iostream>
 #include <algorithm>

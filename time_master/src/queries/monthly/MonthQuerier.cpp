@@ -1,7 +1,7 @@
 
 // queries/report_generators/monthly/querier/MonthQuerier.cpp
-#include "MonthQuerier.h"
-#include "queries/shared/utils/query_utils.h" 
+#include "MonthQuerier.hpp"
+#include "queries/shared/utils/query_utils.hpp" 
 #include <algorithm>
 #include <cctype>
 

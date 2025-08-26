@@ -1,15 +1,15 @@
 
 // DayTex.cpp 
-#include "DayTex.h"
+#include "DayTex.hpp"
 #include <iomanip>
 #include <string>
 
-#include "common/common_utils.h"
+#include "common/common_utils.hpp"
 
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h"
-#include "queries/shared/Interface/ITreeFmt.h"
-#include "queries/shared/data/DailyReportData.h"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "queries/shared/data/DailyReportData.hpp"
 
 
 // The 'const' keyword is added here to match the header file

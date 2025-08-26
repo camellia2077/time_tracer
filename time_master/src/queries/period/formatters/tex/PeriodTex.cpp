@@ -1,13 +1,13 @@
 
-// PeriodTex.cpp (已修正)
-#include "PeriodTex.h"
+// queries/report_generators/period/formatter/period_tex/PeriodTex.cpp
+#include "PeriodTex.hpp"
 #include <iomanip>
 #include <string>
 
 // --- 依赖 ---
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h"
-#include "common/common_utils.h"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "common/common_utils.hpp"
 
 // 1. 公开的接口现在只负责调用基类的模板方法
 std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) const {

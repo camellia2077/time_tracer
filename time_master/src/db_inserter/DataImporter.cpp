@@ -10,10 +10,10 @@
 #include <fstream>
 
 // 包含项目内其他模块的头文件
-#include "common/common_utils.h"
-#include "db_inserter/parser/ParserFactory.h"
+#include "common/common_utils.hpp"
+#include "db_inserter/parser/ParserFactory.hpp"
 
-#include "db_inserter/inserter/DatabaseInserter.h"
+#include "db_inserter/inserter/DatabaseInserter.hpp"
           
 
 namespace fs = std::filesystem;

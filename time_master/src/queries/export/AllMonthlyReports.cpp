@@ -1,16 +1,16 @@
 
-#include "AllMonthlyReports.h"
-#include "queries/monthly/MonthQuerier.h"
+#include "AllMonthlyReports.hpp"
+#include "queries/monthly/MonthQuerier.hpp"
 #include <vector>
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.h"
-#include "queries/monthly/formatters/md/MonthMd.h"
-#include "queries/monthly/formatters/tex/MonthTex.h"
-#include "queries/monthly/formatters/typ/MonthTyp.h"
+#include "queries/shared/factories/FmtFactory.hpp"
+#include "queries/monthly/formatters/md/MonthMd.hpp"
+#include "queries/monthly/formatters/tex/MonthTex.hpp"
+#include "queries/monthly/formatters/typ/MonthTyp.hpp"
 
 AllMonthlyReports::AllMonthlyReports(sqlite3* db) : m_db(db) {
     if (m_db == nullptr) {

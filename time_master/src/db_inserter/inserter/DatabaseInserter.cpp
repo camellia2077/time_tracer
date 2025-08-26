@@ -1,5 +1,5 @@
 
-#include "DatabaseInserter.h"
+#include "DatabaseInserter.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <vector>

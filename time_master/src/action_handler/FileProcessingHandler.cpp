@@ -1,8 +1,8 @@
-#include "action_handler/FileProcessingHandler.h"
-#include "action_handler/file/FilePipelineManager.h"
-#include "db_inserter/DataImporter.h"
-#include "common/common_utils.h"
-#include "action_handler/database/DatabaseManager.h"
+#include "action_handler/FileProcessingHandler.hpp"
+#include "action_handler/file/FilePipelineManager.hpp"
+#include "db_inserter/DataImporter.hpp"
+#include "common/common_utils.hpp"
+#include "action_handler/database/DatabaseManager.hpp"
 #include <iostream>
 #include <optional>
 #include <stdexcept> // Required for std::runtime_error

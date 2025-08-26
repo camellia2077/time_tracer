@@ -1,14 +1,14 @@
 
-#include "PeriodTyp.h"
+#include "PeriodTyp.hpp"
 #include <iomanip>
-#include <format> // (新增) 引入 format 头文件
+#include <format> 
 
 // --- 核心改动：引入所有需要的依赖 ---
-#include "common/common_utils.h"
-#include "queries/shared/utils/query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h"
-#include "queries/shared/Interface/ITreeFmt.h"
-#include "PeriodTypStrings.h" // 唯一且专属的配置文件
+#include "common/common_utils.hpp"
+#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "PeriodTypStrings.hpp" // 唯一且专属的配置文件
 
 std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {
     std::stringstream ss;

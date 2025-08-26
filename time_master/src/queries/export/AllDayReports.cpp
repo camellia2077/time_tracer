@@ -1,14 +1,14 @@
 
-#include "AllDayReports.h"
-#include "queries/daily/DayQuerier.h"
+#include "AllDayReports.hpp"
+#include "queries/daily/DayQuerier.hpp"
 #include <stdexcept>
 #include <vector>
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.h"
-#include "queries/daily/formatters/md/DayMd.h"
-#include "queries/daily/formatters/tex/DayTex.h"
-#include "queries/daily/formatters/typ/DayTyp.h"
+#include "queries/shared/factories/FmtFactory.hpp"
+#include "queries/daily/formatters/md/DayMd.hpp"
+#include "queries/daily/formatters/tex/DayTex.hpp"
+#include "queries/daily/formatters/typ/DayTyp.hpp"
 
 AllDayReports::AllDayReports(sqlite3* db) : m_db(db) {
     if (m_db == nullptr) {

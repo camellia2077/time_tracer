@@ -7,9 +7,9 @@
 #include <print>
 #include <string>
 
-#include "time_master_app/menu.h" 
-#include "common/common_utils.h"     // Contains color macro definitions
-#include "file_handler/FileController.h"   // 包含json读取和递归查询文件
+#include "time_master_app/menu.hpp" 
+#include "common/common_utils.hpp"     // Contains color macro definitions
+#include "file_handler/FileController.hpp"   // 包含json读取和递归查询文件
 
 // Core constant for the database name
 const std::string DATABASE_NAME = "time_data.db";

@@ -1,6 +1,6 @@
 
 // queries\report_generators\daily\querier\DayQuerier.cpp
-#include "DayQuerier.h"
+#include "DayQuerier.hpp"
 #include <stdexcept>
 
 // --- DayQuerier Class Implementation ---

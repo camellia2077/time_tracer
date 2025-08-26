@@ -1,8 +1,8 @@
 
-#include "ReportExporter.h"
-#include "ExportUtils.h"
-#include "queries/QueryHandler.h"
-#include "common/common_utils.h" // For color constants
+#include "ReportExporter.hpp"
+#include "ExportUtils.hpp"
+#include "queries/QueryHandler.hpp"
+#include "common/common_utils.hpp" // For color constants
 
 #include <iostream>
 #include <fstream>

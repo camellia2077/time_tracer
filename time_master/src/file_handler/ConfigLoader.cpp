@@ -1,5 +1,5 @@
 
-#include "ConfigLoader.h"
+#include "ConfigLoader.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
