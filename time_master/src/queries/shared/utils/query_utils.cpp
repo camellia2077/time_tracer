@@ -1,8 +1,8 @@
-#include "query_utils.h"
-#include "queries/shared/factories/TreeFmtFactory.h" // 引入TreeFmtFactory
-#include "queries/shared/interface/ITreeFmt.h"       // 引入ITreeFmt
+#include "query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp" // 引入TreeFmtFactory
+#include "queries/shared/interface/ITreeFmt.hpp"       // 引入ITreeFmt
 
-#include "common/common_utils.h"
+#include "common/common_utils.hpp"
 
 #include <iostream>
 #include <vector>

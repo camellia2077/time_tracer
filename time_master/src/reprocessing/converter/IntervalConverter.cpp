@@ -1,10 +1,10 @@
 // reprocessing/converter/IntervalConverter.cpp
-#include "IntervalConverter.h"
-#include "common/common_utils.h"
-#include "reprocessing/converter/internal/Converter.h"
-#include "reprocessing/converter/internal/InputParser.h"
-#include "reprocessing/converter/internal/DayProcessor.h"
-#include "reprocessing/converter/internal/OutputGenerator.h"
+#include "IntervalConverter.hpp"
+#include "common/common_utils.hpp"
+#include "reprocessing/converter/internal/Converter.hpp"
+#include "reprocessing/converter/internal/InputParser.hpp"
+#include "reprocessing/converter/internal/DayProcessor.hpp"
+#include "reprocessing/converter/internal/OutputGenerator.hpp"
 #include <fstream>
 #include <iostream>
 #include <stdexcept>

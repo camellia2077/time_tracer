@@ -1,9 +1,9 @@
 
-#include "action_handler/ReportGenerationHandler.h"
-#include "action_handler/database/DatabaseManager.h"
-#include "action_handler/reporting/ReportExporter.h"
-#include "action_handler/query/DirectQueryManager.h"
-#include "common/common_utils.h"
+#include "action_handler/ReportGenerationHandler.hpp"
+#include "action_handler/database/DatabaseManager.hpp"
+#include "action_handler/reporting/ReportExporter.hpp"
+#include "action_handler/query/DirectQueryManager.hpp"
+#include "common/common_utils.hpp"
 #include <iostream>
 
 namespace fs = std::filesystem;

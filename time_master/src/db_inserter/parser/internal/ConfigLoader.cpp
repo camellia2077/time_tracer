@@ -1,5 +1,5 @@
 
-#include "ConfigLoader.h"
+#include "ConfigLoader.hpp"
 #include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>

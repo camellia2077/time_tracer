@@ -1,5 +1,5 @@
 // converter/internal/OutputGenerator.cpp
-#include "OutputGenerator.h"
+#include "OutputGenerator.hpp"
 #include <fstream>
 
 void OutputGenerator::write(std::ostream& outputStream, const InputData& day, const ConverterConfig& config) {

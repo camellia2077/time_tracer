@@ -1,15 +1,15 @@
 // time_master_app/menu_processor/LogProcessorMenu.cpp
 
-#include "LogProcessorMenu.h"
-// [修改] 引入新的处理器头文件
-#include "action_handler/FileProcessingHandler.h"
+#include "LogProcessorMenu.hpp"
 
-#include "common/common_utils.h"
-#include "time_master_app/menu_input/UserInputUtils.h"
+#include "action_handler/FileProcessingHandler.hpp"
+#include "common/common_utils.hpp"
+#include "time_master_app/menu_input/UserInputUtils.hpp"
+
 #include <iostream>
 #include <string>
 #include <memory>
-#include <stdexcept> // [新增] 用于捕获异常
+#include <stdexcept>
 
 // 构造函数保持不变
 LogProcessorMenu::LogProcessorMenu(FileProcessingHandler* handler)

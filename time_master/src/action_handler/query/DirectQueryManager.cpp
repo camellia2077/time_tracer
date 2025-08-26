@@ -1,8 +1,8 @@
 // file: action_handler/query/DirectQueryManager.cpp
 
  // 项目使用预编译头文件
-#include "DirectQueryManager.h"
-#include "queries/QueryHandler.h" // 引入底层的查询处理器
+#include "DirectQueryManager.hpp"
+#include "queries/QueryHandler.hpp" // 引入底层的查询处理器
 
 /**
  * @brief 构造函数实现

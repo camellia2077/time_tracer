@@ -1,6 +1,6 @@
 
-#include "ExportUtils.h"
-#include "common/common_utils.h" // For color constants
+#include "ExportUtils.hpp"
+#include "common/common_utils.hpp" // For color constants
 #include <iostream>
 #include <filesystem>
 // action_handler/ExportUtils.cpp

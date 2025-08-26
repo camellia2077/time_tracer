@@ -1,6 +1,6 @@
 
-#include "PeriodQuerier.h"
-#include "queries/shared/utils/query_utils.h"
+#include "PeriodQuerier.hpp"
+#include "queries/shared/utils/query_utils.hpp"
 #include <iomanip>
 
 PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)

@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <nlohmann/json.hpp>
 
-#include "ConverterConfig.h"
-#include "common/common_utils.h"
+#include "ConverterConfig.hpp"
+#include "common/common_utils.hpp"
 
 bool ConverterConfig::load(const std::string& filepath) {
     std::ifstream config_ifs(filepath);

@@ -1,6 +1,4 @@
-#include "CliController.h"
-#include "file_handler/FileController.h"
-#include "common/common_utils.h"
+
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
@@ -8,18 +6,13 @@
 #include <print>
 #include <memory> // 包含 <memory> 以使用 std::make_unique
 
-#include "action_handler/FileProcessingHandler.h"
-#include "action_handler/ReportGenerationHandler.h"
-// 假设 FileProcessingHandler.h 中定义了 PreprocessingOptions
-// 如果没有，可以像这样定义：
-/*
-struct PreprocessingOptions {
-    bool convert = false;
-    bool validate_source = false;
-    bool validate_output = false;
-    bool enable_day_check = false;
-};
-*/
+
+#include "CliController.hpp"
+#include "file_handler/FileController.hpp"
+#include "common/common_utils.hpp"
+#include "action_handler/FileProcessingHandler.hpp"
+#include "action_handler/ReportGenerationHandler.hpp"
+
 
 
 const std::string DATABASE_NAME = "time_data.db";
@@ -75,7 +68,7 @@ void CliController::handle_run_all() {
 // [重构] handle_preprocess 现在只负责解析参数，并将业务逻辑委托给 FileProcessingHandler
 void CliController::handle_preprocess() {
     // 1. 解析参数并填充选项结构体
-    PreprocessingOptions options; // 假设 PreprocessingOptions 在 FileProcessingHandler.h 中定义
+    PreprocessingOptions options; // 假设 PreprocessingOptions 在 FileProcessingHandler.hpp 中定义
     std::string input_path;
 
     for (size_t i = 2; i < args_.size(); ++i) {

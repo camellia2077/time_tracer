@@ -1,7 +1,7 @@
 
-#include "FileController.h"
-#include "ConfigLoader.h" 
-#include "FileUtils.h"    
+#include "FileController.hpp"
+#include "ConfigLoader.hpp" 
+#include "FileUtils.hpp"    
 #include <iostream>
 
 // file_handler/FileController.cpp

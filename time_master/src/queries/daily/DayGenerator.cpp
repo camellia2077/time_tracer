@@ -1,14 +1,14 @@
 
 // queries/report_generators/daily/DayGenerator.cpp
-#include "DayGenerator.h"
-#include "DayQuerier.h"
-#include "queries/shared/data/query_data_structs.h"
+#include "DayGenerator.hpp"
+#include "DayQuerier.hpp"
+#include "queries/shared/data/query_data_structs.hpp"
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.h"
-#include "queries/daily/formatters/md/DayMd.h"
-#include "queries/daily/formatters/tex/DayTex.h"
-#include "queries/daily/formatters/typ/DayTyp.h"
+#include "queries/shared/factories/FmtFactory.hpp"
+#include "queries/daily/formatters/md/DayMd.hpp"
+#include "queries/daily/formatters/tex/DayTex.hpp"
+#include "queries/daily/formatters/typ/DayTyp.hpp"
 
 DayGenerator::DayGenerator(sqlite3* db) : m_db(db) {}
 

@@ -1,14 +1,14 @@
 // time_master_app/menu.cpp
 
-#include "Menu.h"
-#include "action_handler/FileProcessingHandler.h"
-#include "action_handler/ReportGenerationHandler.h"
-#include "common/version.h"
-#include "common/common_utils.h"
-#include "time_master_app/menu_processor/LogProcessorMenu.h"
-#include "time_master_app/menu_query/QueryMenu.h"
-#include "time_master_app/menu_export/ExportMenu.h"
-#include "time_master_app/menu_input/UserInputUtils.h"
+#include "Menu.hpp"
+#include "action_handler/FileProcessingHandler.hpp"
+#include "action_handler/ReportGenerationHandler.hpp"
+#include "common/version.hpp"
+#include "common/common_utils.hpp"
+#include "time_master_app/menu_processor/LogProcessorMenu.hpp"
+#include "time_master_app/menu_query/QueryMenu.hpp"
+#include "time_master_app/menu_export/ExportMenu.hpp"
+#include "time_master_app/menu_input/UserInputUtils.hpp"
 
 #include <iostream>
 #include <string>

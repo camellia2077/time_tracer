@@ -1,11 +1,11 @@
 
-#include "QueryHandler.h"
-#include "queries/daily/DayGenerator.h" 
-#include "queries/monthly/MonthGenerator.h" 
-#include "queries/period/PeriodGenerator.h"
-#include "queries/export/AllDayReports.h"
-#include "queries/export/AllMonthlyReports.h"
-#include "queries/export/AllPeriodReports.h"
+#include "QueryHandler.hpp"
+#include "queries/daily/DayGenerator.hpp" 
+#include "queries/monthly/MonthGenerator.hpp" 
+#include "queries/period/PeriodGenerator.hpp"
+#include "queries/export/AllDayReports.hpp"
+#include "queries/export/AllMonthlyReports.hpp"
+#include "queries/export/AllPeriodReports.hpp"
 
 QueryHandler::QueryHandler(sqlite3* db) : m_db(db) {}
 

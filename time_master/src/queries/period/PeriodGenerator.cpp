@@ -1,13 +1,13 @@
 
-#include "queries/period/PeriodGenerator.h"
-#include "queries/period/PeriodQuerier.h"
-#include "queries/shared/data/PeriodReportData.h"
+#include "queries/period/PeriodGenerator.hpp"
+#include "queries/period/PeriodQuerier.hpp"
+#include "queries/shared/data/PeriodReportData.hpp"
 
 // [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.h"
-#include "queries/period/formatters/md/PeriodMd.h"
-#include "queries/period/formatters/tex/PeriodTex.h"
-#include "queries/period/formatters/typ/PeriodTyp.h"
+#include "queries/shared/factories/FmtFactory.hpp"
+#include "queries/period/formatters/md/PeriodMd.hpp"
+#include "queries/period/formatters/tex/PeriodTex.hpp"
+#include "queries/period/formatters/typ/PeriodTyp.hpp"
 
 
 PeriodGenerator::PeriodGenerator(sqlite3* db) : m_db(db) {}
