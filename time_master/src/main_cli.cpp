@@ -81,22 +81,20 @@ void print_full_usage(const char* app_name) {
     std::println("{}TimeMaster{}: A command-line tool for time data pre-processing, import, and querying.\n",GREEN_COLOR,RESET_COLOR);
     std::println("Usage: {} <command>[arguments...] [options...]\n", app_name);
     
-    std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
-    std::println("  run-all <path>\t\t Execute full pipeline: validate source, convert, and import into database.");
-    // [修改 2] 更新帮助文档，告知用户有缩写可用
-    std::println("  preprocess (pre) <path>\t Manually run pre-processing steps on source files.");
-    std::println("  import <path>\t\t\t Import pre-processed .txt files into the database.");
+ std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
+    std::println("  run-pipeline <path>\t\t Run full pipeline: validate source, convert, and validate output.");
+    std::println("  import <path>\t\t\t Import processed .json files into the database.");
     std::println("  query <type> <period>\t\t Query data from the database.");
     std::println("  export <type> <period>\t Export reports from the database.\n");
 
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: preprocess ---", RESET_COLOR);
-    std::println("  Usage: {} preprocess <file_or_folder_path> [options...]", app_name);
-    std::println("  Options:");
-    std::println("    --validate-source, -vs\t Validates the source file format.");
-    std::println("    --convert, -c\t\t Converts the source file to the processed format.");
-    std::println("    --validate-output, -vo\t Validates the processed/output file format.");
-    std::println("    --enable-day-check, -edc\t Enable check for day completeness in a month (requires -vo).");
-    std::println("  Example: {} preprocess /path/to/logs --convert --validate-output\n", app_name);
+    std::println("{}{}{}", GREEN_COLOR, "--- Pre-processing Commands ---", RESET_COLOR);
+    std::println("  validate-source <path>\t Validates the source file format (e.g., .txt files).");
+    std::println("  convert <path>\t\t Converts source files to the processed JSON format.");
+    std::println("  validate-output <path>\t Validates the processed JSON file format and logic.");
+    std::println("    Options for validate-output:");
+    std::println("      --enable-day-check, -edc\t Enable check for day completeness in a month.");
+    std::println("  Example: {} convert /path/to/logs", app_name);
+    std::println("  Example: {} validate-output /path/to/processed/log.json --enable-day-check\n", app_name);
 
     std::println("{}{}{}", GREEN_COLOR, "--- Command: import ---", RESET_COLOR);
     std::println("  Usage: {} import <directory_path>", app_name);

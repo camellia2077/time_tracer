@@ -1,11 +1,10 @@
-
+// time_master_cli/CliController.cpp
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
 #include <algorithm>
 #include <print>
-#include <memory> // 包含 <memory> 以使用 std::make_unique
-
+#include <memory>
 
 #include "CliController.hpp"
 #include "file_handler/FileController.hpp"
@@ -13,11 +12,8 @@
 #include "action_handler/FileProcessingHandler.hpp"
 #include "action_handler/ReportGenerationHandler.hpp"
 
-
-
 const std::string DATABASE_NAME = "time_data.db";
 
-// [重构] 构造函数现在使用 std::make_unique 初始化智能指针
 CliController::CliController(const std::vector<std::string>& args) : args_(args) {
     if (args.size() < 2) {
         throw std::runtime_error("No command provided.");
@@ -26,7 +22,6 @@ CliController::CliController(const std::vector<std::string>& args) : args_(args)
 
     file_controller_ = std::make_unique<FileController>(args_[0]);
     
-    // 实例化处理器，所有权交给 std::unique_ptr
     file_processing_handler_ = std::make_unique<FileProcessingHandler>(
         DATABASE_NAME,
         file_controller_->get_config(),
@@ -38,15 +33,18 @@ CliController::CliController(const std::vector<std::string>& args) : args_(args)
     );
 }
 
-// [重构] 析构函数不再需要手动 delete，智能指针会自动处理
 CliController::~CliController() = default;
 
 void CliController::execute() {
-    // 命令分派结构保持不变
-    if (command_ == "run-all") {
-        handle_run_all();
-    } else if (command_ == "preprocess") {
-        handle_preprocess();
+    // [核心修改] 命令分派更新
+    if (command_ == "run-pipeline") {
+        handle_run_pipeline();
+    } else if (command_ == "validate-source") {
+        handle_validate_source();
+    } else if (command_ == "convert") {
+        handle_convert();
+    } else if (command_ == "validate-output") {
+        handle_validate_output();
     } else if (command_ == "import") {
         handle_database_import();
     } else if (command_ == "query") {
@@ -54,50 +52,66 @@ void CliController::execute() {
     } else if (command_ == "export") {
         handle_export();
     } else {
+        // 兼容旧的 preprocess 命令，并给出提示
+        if (command_ == "preprocess" || command_ == "pre") {
+             throw std::runtime_error("The 'preprocess' command is deprecated. Please use 'validate-source', 'convert', or 'validate-output' instead.");
+        }
         throw std::runtime_error("Unknown command '" + command_ + "'.");
     }
 }
 
-void CliController::handle_run_all() {
+// [修改] 旧的 run-all 重命名为 run-pipeline
+void CliController::handle_run_pipeline() {
     if (args_.size() != 3) {
-        throw std::runtime_error("Command 'run-all' requires exactly one source directory path argument.");
+        throw std::runtime_error("Command 'run-pipeline' requires exactly one source directory path argument.");
     }
+    // 注意：这里的 run_full_pipeline_and_import 名字可能需要更新，因为它现在只处理文件，不导入
     file_processing_handler_->run_full_pipeline_and_import(args_[2]);
 }
 
-// [重构] handle_preprocess 现在只负责解析参数，并将业务逻辑委托给 FileProcessingHandler
-void CliController::handle_preprocess() {
-    // 1. 解析参数并填充选项结构体
-    PreprocessingOptions options; // 假设 PreprocessingOptions 在 FileProcessingHandler.hpp 中定义
-    std::string input_path;
+// [新增] 专门处理源文件验证的函数
+void CliController::handle_validate_source() {
+    if (args_.size() != 3) {
+        throw std::runtime_error("Command 'validate-source' requires exactly one path argument.");
+    }
+    PreprocessingOptions options;
+    options.validate_source = true;
+    file_processing_handler_->run_preprocessing(args_[2], options);
+}
 
-    for (size_t i = 2; i < args_.size(); ++i) {
-        const std::string& arg = args_[i];
-        if (arg == "-c" || arg == "--convert") options.convert = true;
-        else if (arg == "-vs" || arg == "--validate-source") options.validate_source = true;
-        else if (arg == "-vo" || arg == "--validate-output") options.validate_output = true;
-        else if (arg == "-edc" || arg == "--enable-day-check") options.enable_day_check = true;
-        else if (arg.rfind("-", 0) != 0) {
-            if (!input_path.empty()) throw std::runtime_error("Multiple path arguments provided for 'preprocess' command.");
-            input_path = arg;
+// [新增] 专门处理转换的函数
+void CliController::handle_convert() {
+    if (args_.size() != 3) {
+        throw std::runtime_error("Command 'convert' requires exactly one path argument.");
+    }
+    PreprocessingOptions options;
+    options.convert = true;
+    file_processing_handler_->run_preprocessing(args_[2], options);
+}
+
+// [新增] 专门处理输出验证的函数
+void CliController::handle_validate_output() {
+    if (args_.size() < 3) {
+        throw std::runtime_error("Command 'validate-output' requires a path argument.");
+    }
+    PreprocessingOptions options;
+    options.validate_output = true;
+    
+    // 检查是否有 --enable-day-check 标志
+    for (size_t i = 3; i < args_.size(); ++i) {
+        if (args_[i] == "-edc" || args_[i] == "--enable-day-check") {
+            options.enable_day_check = true;
         }
     }
-
-    if (input_path.empty()) throw std::runtime_error("A file or folder path argument is required for 'preprocess' command.");
-
-    if (!options.convert && !options.validate_source && !options.validate_output) {
-        throw std::runtime_error("At least one action option (--validate-source, --convert, --validate-output) is required.");
-    }
-
-    // 2. 将解析好的参数和路径委托给处理器
-    file_processing_handler_->run_preprocessing(input_path, options);
+    file_processing_handler_->run_preprocessing(args_[2], options);
 }
+
 
 void CliController::handle_database_import() {
     if (args_.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
     
     std::println("Now inserting into the database. ");
-    std::println("Please ensure the {}data{} has been {}converted and validated{}.",YELLOW_COLOR, RESET_COLOR,YELLOW_COLOR, RESET_COLOR);
+    std::println("Please ensure the data has been converted and validated.");
     std::println("Are you sure you want to continue? (y/n): ");
     
     char confirmation;
@@ -110,7 +124,7 @@ void CliController::handle_database_import() {
     file_processing_handler_->run_database_import(args_[2]);
 }
 
-// handle_query 和 handle_export 方法保持不变，因为它们已经很好地委托了任务
+// handle_query 和 handle_export 方法保持不变
 void CliController::handle_query() {
     if (args_.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
     
@@ -193,7 +207,7 @@ ReportFormat CliController::parse_format_option() const {
     } else if (it_format != args_.end() && std::next(it_format) != args_.end()) {
         format_str = *std::next(it_format);
     } else {
-        return ReportFormat::Markdown; // 默认格式
+        return ReportFormat::Markdown;
     }
 
     if (format_str == "md" || format_str == "markdown") return ReportFormat::Markdown;
