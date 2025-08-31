@@ -15,6 +15,8 @@ namespace UserInputUtils {
      */
     std::string get_valid_path_input(const std::string& prompt_message);
 
+    bool get_yes_no_input(); // [新增]
+
     /**
      * @brief 提示用户输入一个有效的日期 (YYYYMMDD)。
      * @return 返回格式化的日期字符串，如果用户中止则返回空字符串。

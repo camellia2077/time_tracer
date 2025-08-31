@@ -22,6 +22,12 @@ EXECUTABLE_APP_NAME = "time_tracker_app.exe"
 GENERATED_DB_FILE_NAME = "time_data.db"
 PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
 
+# [核心修改] 新增一个变量来存储已处理好的、用于验证的JSON文件路径
+# ==============================================================================
+PROCESSED_JSON_PATH = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\Processed_Date")
+# ==============================================================================
+
+
 # ==============================================================================
 #                      TEST PARAMETERS CONFIGURATION
 # ==============================================================================
