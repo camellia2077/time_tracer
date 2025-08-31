@@ -11,13 +11,10 @@
 #include <memory>
 #include <stdexcept>
 
-// 构造函数保持不变
 LogProcessorMenu::LogProcessorMenu(FileProcessingHandler* handler)
     : file_processing_handler_(handler) {}
 
-// run() 和 print_submenu() 方法保持不变
 void LogProcessorMenu::run() {
-    // ... 此函数保持不变 ...
     while (true) {
         print_submenu();
 
@@ -32,7 +29,7 @@ void LogProcessorMenu::run() {
             continue;
         }
 
-        if (choice == 8) {
+        if (choice == 6) {
             break; // 返回主菜单
         }
         
@@ -45,66 +42,66 @@ void LogProcessorMenu::run() {
 }
 
 void LogProcessorMenu::print_submenu() const {
-    // ... 此函数保持不变 ...
-    std::cout << "\n--- File Processing & Validation Submenu ---\n";
-    std::cout << "--- (Step 1: File Operations) ---\n";
-    std::cout << "1. Validate source file(s) only\n";
-    std::cout << "2. Convert source file(s) only\n";
-    std::cout << "3. Validate source, then Convert\n";
-    std::cout << "4. Convert, then Validate Output\n";
-    std::cout << "5. Full Pre-processing (Validate Source -> Convert -> Validate Output)\n";
-    std::cout << "--- (Step 2: Database Operations) ---\n";
-    std::cout << "7. Import processed files into database\n";
-    std::cout << "8. Back to main menu\n";
+    std::cout << "\n--- File Pre-processing & Validation Submenu ---\n";
+    std::cout << "--- (Individual Steps) ---\n";
+    std::cout << "1. Validate Source Files (*.txt)\n";
+    std::cout << "2. Convert Source Files (*.txt -> *.json)\n";
+    std::cout << "3. Validate Output Files (*.json)\n";
+    std::cout << "--- (Pipelines) ---\n";
+    std::cout << "4. Run Full Pipeline (Validate Source -> Convert -> Validate Output)\n";
+    std::cout << "--- (Database) ---\n";
+    std::cout << "5. Import Processed Files (*.json) into Database\n";
+    std::cout << "6. Back to Main Menu\n";
     std::cout << "Enter your choice: ";
 }
 
-
-// [修改] handle_choice 现在调用封装好的 run_preprocessing 方法
 void LogProcessorMenu::handle_choice(int choice) {
-    if ((choice < 1 || choice > 5) && choice != 7) {
+    if ((choice < 1 || choice > 5)) {
         std::cout << YELLOW_COLOR << "Invalid choice. Please try again.\n" << RESET_COLOR;
         return;
     }
 
-    // 数据库导入逻辑保持不变
-    if (choice == 7) {
-        std::string path = UserInputUtils::get_valid_path_input("Enter the path to the DIRECTORY containing processed files: ");
+    if (choice == 5) {
+        std::string path = UserInputUtils::get_valid_path_input("Enter the path to the DIRECTORY containing processed files (*.json): ");
         if (!path.empty()) {
             file_processing_handler_->run_database_import(path);
         }
-        return; // 处理完后直接返回
+        return;
     }
     
-    // 预处理逻辑 (choices 1-5)
-    std::string path = UserInputUtils::get_valid_path_input("Enter the path to the SOURCE file or directory to process: ");
+    std::string path;
+    if (choice == 3) {
+        path = UserInputUtils::get_valid_path_input("Enter the path to the PROCESSED file or directory (*.json) to validate: ");
+    } else {
+        path = UserInputUtils::get_valid_path_input("Enter the path to the SOURCE file or directory (*.txt) to process: ");
+    }
     if (path.empty()) return;
 
-    // 1. 根据用户选择构建 PreprocessingOptions
     PreprocessingOptions options;
+    // [修复] 移除了未使用的 enable_day_check 变量
+
     switch (choice) {
-        case 1: // Validate source only
+        case 1:
             options.validate_source = true;
             break;
-        case 2: // Convert only
+        case 2:
             options.convert = true;
             break;
-        case 3: // Validate source, then Convert
+        case 3:
+            options.validate_output = true;
+            std::cout << "Enable check for day completeness in a month? (y/n) [Default: n]: ";
+            if (UserInputUtils::get_yes_no_input()) {
+                options.enable_day_check = true;
+            }
+            break;
+        case 4:
             options.validate_source = true;
-            options.convert = true;
-            break;
-        case 4: // Convert, then Validate Output
             options.convert = true;
             options.validate_output = true;
-            break;
-        case 5: // Full Pre-processing
-            options.validate_source = true;
-            options.convert = true;
-            options.validate_output = true;
+            options.enable_day_check = true;
             break;
     }
 
-    // 2. 调用处理器执行任务，并捕获可能的错误
     try {
         file_processing_handler_->run_preprocessing(path, options);
     } catch (const std::runtime_error& e) {

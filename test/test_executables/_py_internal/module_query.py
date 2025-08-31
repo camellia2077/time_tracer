@@ -1,11 +1,11 @@
-# _py_internal/module_query.py
+# module_query.py
 from pathlib import Path
 from .base_module import BaseTester, TestCounter
 
 class QueryTester(BaseTester):
-    """用于数据查询测试的模块。"""
+    """Module for database query tests."""
     def __init__(self, counter: TestCounter, module_order: int,
-                 generated_db_file_name: str, 
+                 generated_db_file_name: str,
                  daily_query_dates: list,
                  monthly_query_months: list,
                  period_query_days: list,
@@ -14,49 +14,43 @@ class QueryTester(BaseTester):
         super().__init__(counter, module_order, "query",
                          executable_to_run, source_data_path, converted_text_dir_name)
         self.db_file = Path.cwd() / generated_db_file_name
-        self.daily_query_dates = daily_query_dates
-        self.monthly_query_months = monthly_query_months
-        self.period_query_days = period_query_days
+        self.daily_dates = daily_query_dates
+        self.monthly_months = monthly_query_months
+        self.period_days = period_query_days
         self.formats = test_formats
 
     def run_tests(self) -> bool:
-        """运行所有与数据查询相关的测试。"""
+        """Runs all database query related tests."""
         if not self.db_file.exists():
-            print(f"警告: 跳过查询测试，因为数据库文件 '{self.db_file.name}' 不存在。")
-            return True
+            print(f"Warning: Skipping query tests because the database file '{self.db_file.name}' does not exist.")
+            return True # Treat skipping as success
 
-        formats = self.formats
         tests_to_run = []
-
-        # 循环遍历日期列表生成测试
-        for date in self.daily_query_dates:
-            for fmt in formats:
-                # 修正: 将 "--query" 改为 "query"
-                tests_to_run.append(
-                    (f"Data Query Test (query daily {date}) [{fmt.upper()}]", 
-                     ["query", "daily", date, "--format", fmt])
-                )
-
-        # 循环遍历月份列表生成测试
-        for month in self.monthly_query_months:
-            for fmt in formats:
-                # 修正: 将 "--query" 改为 "query"
-                tests_to_run.append(
-                    (f"Data Query Test (query monthly {month}) [{fmt.upper()}]", 
-                     ["query", "monthly", month, "--format", fmt])
-                )
         
-        # 将整数列表转换为逗号分隔的字符串以用于命令行
-        period_days_str = ",".join(map(str, self.period_query_days))
-        for fmt in formats:
-            # 修正: 将 "--query" 改为 "query"
-            tests_to_run.append(
-                (f"Data Query Test (query period) [{fmt.upper()}]", 
-                 ["query", "period", period_days_str, "--format", fmt])
-            )
+        # Build daily query tests
+        for date in self.daily_dates:
+            for fmt in self.formats:
+                test_name = f"Query Daily ({date}) [{fmt.upper()}]"
+                command_args = ["query", "daily", date, "--format", fmt]
+                tests_to_run.append((test_name, command_args))
 
+        # Build monthly query tests
+        for month in self.monthly_months:
+            for fmt in self.formats:
+                test_name = f"Query Monthly ({month}) [{fmt.upper()}]"
+                command_args = ["query", "monthly", month, "--format", fmt]
+                tests_to_run.append((test_name, command_args))
+        
+        # Build period query tests
+        for days in self.period_days:
+            for fmt in self.formats:
+                test_name = f"Query Period ({days} days) [{fmt.upper()}]"
+                command_args = ["query", "period", str(days), "--format", fmt]
+                tests_to_run.append((test_name, command_args))
+
+        # Execute all generated tests
         for name, args in tests_to_run:
             if not self.run_command_test(name, args):
-                return False
-                
-        return True
+                return False  # Stop on first failure
+        
+        return True # All tests passed
