@@ -34,7 +34,8 @@ std::optional<fs::path> FilePipelineManager::run(const std::string& input_path) 
 /**
  * @brief 阶段一：收集需要处理的文件
  */
-bool FilePipelineManager::collectFiles(const std::string& input_path) {
+// [核心修改] 更新函数定义以接收 extension 参数
+bool FilePipelineManager::collectFiles(const std::string& input_path, const std::string& extension) {
     input_root_ = fs::path(input_path);
     if (!fs::exists(input_root_)) {
         std::cerr << RED_COLOR << "错误: 输入的路径不存在: " << input_path << RESET_COLOR << std::endl;
@@ -44,15 +45,18 @@ bool FilePipelineManager::collectFiles(const std::string& input_path) {
     files_to_process_.clear();
     source_to_output_map_.clear();
 
-    files_to_process_ = FileUtils::find_files_by_extension_recursively(input_root_, ".txt");
+    // [核心修改] 使用传入的 extension 参数来查找文件
+    files_to_process_ = FileUtils::find_files_by_extension_recursively(input_root_, extension);
 
-    if (fs::is_regular_file(input_root_) && input_root_.extension() == ".txt") {
-        if (files_to_process_.empty()) {
+    // 如果输入本身就是一个符合条件的文件，也将其加入列表
+    if (fs::is_regular_file(input_root_) && input_root_.extension() == extension) {
+        // 避免重复添加
+        if (std::find(files_to_process_.begin(), files_to_process_.end(), input_root_) == files_to_process_.end()) {
             files_to_process_.push_back(input_root_);
         }
     }
 
-    std::cout << "信息: 成功收集到 " << files_to_process_.size() << " 个待处理文件。" << std::endl;
+    std::cout << "信息: 成功收集到 " << files_to_process_.size() << " 个待处理文件 (" << extension << ")." << std::endl;
     return !files_to_process_.empty();
 }
 
@@ -113,9 +117,13 @@ bool FilePipelineManager::convertFiles() {
         fs::path output_file_path;
         if (is_dir) {
             output_file_path = output_root_path / fs::relative(file, input_root_);
+            // [核心修改] 将输出文件的扩展名替换为 .json
+            output_file_path.replace_extension(".json");
             fs::create_directories(output_file_path.parent_path());
         } else {
-            output_file_path = input_root_.parent_path() / ("Processed_" + file.filename().string());
+            // [核心修改] 对单个文件也进行扩展名替换
+            fs::path temp_path = input_root_.parent_path() / ("Processed_" + file.filename().string());
+            output_file_path = temp_path.replace_extension(".json");
         }
 
         AppOptions opts;
@@ -137,7 +145,7 @@ bool FilePipelineManager::convertFiles() {
 }
 
 /**
- * @brief [已修改] 阶段四：检验输出文件
+ * @brief 阶段四：检验输出文件
  */
 bool FilePipelineManager::validateOutputFiles(bool enable_day_count_check) {
     const std::string current_operation_name = "validateOutputFiles";

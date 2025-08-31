@@ -1,11 +1,10 @@
-
 // reprocessing/LogProcessor.cpp
 #include "reprocessing/LogProcessor.hpp"
 
 #include "reprocessing/validator/FileValidator.hpp"
 #include "reprocessing/validator/ValidatorUtils.hpp"
 
-#include "reprocessing/Converter/IntervalConverter.hpp"
+#include "reprocessing/converter/IntervalConverter.hpp"
 #include "common/common_utils.hpp"
 
 #include <iostream>
@@ -13,7 +12,6 @@
 #include <set>
 #include <ctime>
 #include <filesystem>
-
 #include <chrono>
 
 namespace fs = std::filesystem;
@@ -24,20 +22,17 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
                                            const std::filesystem::path& output_file,
                                            const AppOptions& options)
 {
-    ProcessingResult result; // 初始化返回结果
-
-    FileValidator validator(
-        config_.interval_processor_config_path,
-        config_.format_validator_config_path,
-        config_.interval_processor_config_path
-    );
+    ProcessingResult result;
+    result.success = true;
 
     if (options.validate_source) {
         std::cout << "--- Validating source: " << source_file.string() << " ---\n";
         auto start_time = std::chrono::steady_clock::now();
         
+        FileValidator source_validator(config_.interval_processor_config_path);
         std::set<Error> errors;
-        if (!validator.validate(source_file.string(), ValidatorType::Source, errors)) {
+        
+        if (!source_validator.validate(source_file.string(), ValidatorType::Source, errors)) {
             printGroupedErrors(source_file.string(), errors, config_.error_log_path);
             result.success = false;
         } else {
@@ -46,32 +41,39 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         
         auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.validation_source_ms = duration.count(); // 存储时间
+        result.timings.validation_source_ms = duration.count();
     }
 
     if (result.success && options.convert) {
         std::cout << "--- Converting: " << source_file.string() << " -> " << output_file.string() << " ---\n";
         auto start_time = std::chrono::steady_clock::now();
 
-        IntervalConverter processor(config_.interval_processor_config_path);
-        std::string year_str = extractYearFromPath(source_file);
-        if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
-             result.success = false;
-        } else {
-            std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
+        try {
+            IntervalConverter processor(config_.interval_processor_config_path);
+            std::string year_str = extractYearFromPath(source_file);
+            if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
+                 result.success = false;
+            } else {
+                std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
+            }
+        } catch (const std::exception& e) {
+            std::cerr << RED_COLOR << "An error occurred during conversion: " << e.what() << RESET_COLOR << std::endl;
+            result.success = false;
         }
 
         auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.conversion_ms = duration.count(); // 存储耗时
+        result.timings.conversion_ms = duration.count();
     }
 
     if (result.success && options.validate_output) {
         std::cout << "--- Validating output: " << output_file.string() << " ---\n";
         auto start_time = std::chrono::steady_clock::now();
         
+        FileValidator output_validator(config_.interval_processor_config_path);
         std::set<Error> errors;
-        if (!validator.validate(output_file.string(), ValidatorType::Output, errors, options.enable_day_count_check)) {
+        
+        if (!output_validator.validate(output_file.string(), ValidatorType::JsonOutput, errors, options.enable_day_count_check)) {
             printGroupedErrors(output_file.string(), errors, config_.error_log_path);
             result.success = false;
         } else {
@@ -80,13 +82,12 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
 
         auto end_time = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.validation_output_ms = duration.count(); // 存储耗时
+        result.timings.validation_output_ms = duration.count();
     }
 
-    return result; // 返回包含成功标志和所有计时数据的结构体
+    return result;
 }
 
-// Corrected function signature to match the header file
 bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std::vector<fs::path>& out_files) {
     fs::path input_path(input_path_str);
     if (!fs::exists(input_path)) {
@@ -107,6 +108,7 @@ bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std:
     return true;
 }
 
+// [修复] 添加缺失的函数定义
 std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
     fs::path current_path = file_path.parent_path();
     auto is_four_digit_string = [](const std::string& s) {
@@ -118,6 +120,7 @@ std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
         }
         current_path = current_path.parent_path();
     }
+    // 如果在路径中找不到年份，则返回当前年份作为备用
     std::time_t now = std::time(nullptr);
     std::tm* ltm = std::localtime(&now);
     return std::to_string(1900 + ltm->tm_year);

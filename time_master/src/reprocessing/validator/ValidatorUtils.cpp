@@ -13,6 +13,7 @@ static std::string getErrorTypeHeader(ErrorType type) {
         case ErrorType::Source_RemarkAfterEvent:
         case ErrorType::Source_NoDateAtStart:
         case ErrorType::Source_InvalidLineFormat:
+        case ErrorType::UnrecognizedActivity:
             return "Source file format errors (源文件格式错误):";
         case ErrorType::IncorrectDayCountForMonth:
             return "Date errors(日期错误):";
