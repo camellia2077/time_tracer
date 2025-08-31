@@ -1,7 +1,8 @@
-// reprocessing/input_transfer/internal/Converter.cpp
+// reprocessing/converter/internal/Converter.cpp
 #include "Converter.hpp"
 #include <stdexcept>
 #include <unordered_set>
+#include "common/common_utils.hpp" // For split_string
 
 // 辅助函数
 namespace {
@@ -35,21 +36,16 @@ Converter::Converter(const ConverterConfig& config)
     : config_(config) {}
 
 void Converter::transform(InputData& day) {
-    day.remarksOutput.clear();
-    for (const auto& general_remark : day.generalRemarks) {
-        day.remarksOutput.push_back(general_remark);
-    }
+    day.processedActivities.clear(); // 清空，准备填充新的结构化数据
     
     if (day.getupTime.empty() && !day.isContinuation) return;
     
     std::string startTime = day.getupTime;
 
-    // [修改] 从配置对象中获取关键词列表，并用它来初始化集合
     const auto& keywords_vec = config_.getWakeKeywords();
     const std::unordered_set<std::string> wake_keywords(keywords_vec.begin(), keywords_vec.end());
 
     for (const auto& rawEvent : day.rawEvents) {
-        // 使用从配置加载的关键词集合进行判断
         if (wake_keywords.count(rawEvent.description)) {
             if (startTime.empty()) {
                  startTime = formatTime(rawEvent.endTimeStr);
@@ -82,8 +78,21 @@ void Converter::transform(InputData& day) {
         }
 
         if (mappedDescription.find("study") != std::string::npos) day.hasStudyActivity = true;
+        
         if (!startTime.empty()) {
-            day.remarksOutput.push_back(startTime + "~" + formattedEventEndTime + mappedDescription);
+            // [核心修改] 将映射后的描述符（如 game_steam_fps_overwatch）拆分为 title 和 parents
+            std::vector<std::string> parts = split_string(mappedDescription, '_');
+            if (!parts.empty()) {
+                Activity activity;
+                activity.startTime = startTime;
+                activity.endTime = formattedEventEndTime;
+                activity.title = parts[0]; // 第一个元素是 title
+                if (parts.size() > 1) {
+                    // 剩余的元素是 parents 列表
+                    activity.parents.assign(parts.begin() + 1, parts.end());
+                }
+                day.processedActivities.push_back(activity);
+            }
         }
         startTime = formattedEventEndTime;
     }

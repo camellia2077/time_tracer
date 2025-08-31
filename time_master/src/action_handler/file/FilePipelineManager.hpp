@@ -22,7 +22,8 @@ public:
     std::optional<fs::path> run(const std::string& input_path);
 
     // --- [修改] 将流水线的各个阶段设为公有，以支持分步调用 ---
-    bool collectFiles(const std::string& input_path);
+    // [核心修改] 为 collectFiles 方法添加一个扩展名参数，并提供默认值
+    bool collectFiles(const std::string& input_path, const std::string& extension = ".txt");
     bool validateSourceFiles();
     bool convertFiles();
     bool validateOutputFiles(bool enable_day_count_check);

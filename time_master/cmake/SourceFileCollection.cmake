@@ -67,15 +67,19 @@ set(QUERIES_SOURCES
 # --- Reprocessing Sources ---
 set(REPROCESSING_SOURCES
     "src/reprocessing/LogProcessor.cpp"
+
     "src/reprocessing/converter/IntervalConverter.cpp"
+
     "src/reprocessing/converter/internal/Converter.cpp"
     "src/reprocessing/converter/internal/ConverterConfig.cpp"
     "src/reprocessing/converter/internal/DayProcessor.cpp"
     "src/reprocessing/converter/internal/InputParser.cpp"
     "src/reprocessing/converter/internal/OutputGenerator.cpp"
+
     "src/reprocessing/validator/FileValidator.cpp"
     "src/reprocessing/validator/ValidatorUtils.cpp"
-    "src/reprocessing/validator/internal/OutputFileValidator.cpp"
+
+    "src/reprocessing/validator/internal/JsonValidator.cpp"
     "src/reprocessing/validator/internal/SourceFileValidator.cpp"
 )
 

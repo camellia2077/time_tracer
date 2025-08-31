@@ -1,3 +1,4 @@
+// action_handler/FileProcessingHandler.cpp
 #include "action_handler/FileProcessingHandler.hpp"
 #include "action_handler/file/FilePipelineManager.hpp"
 #include "db_inserter/DataImporter.hpp"
@@ -5,7 +6,7 @@
 #include "action_handler/database/DatabaseManager.hpp"
 #include <iostream>
 #include <optional>
-#include <stdexcept> // Required for std::runtime_error
+#include <stdexcept>
 
 namespace fs = std::filesystem;
 
@@ -18,15 +19,25 @@ FileProcessingHandler::FileProcessingHandler(const std::string& db_name, const A
 
 FileProcessingHandler::~FileProcessingHandler() = default;
 
-// [FIXED] This method now uses std::cout instead of std::println
 void FileProcessingHandler::run_preprocessing(const std::string& input_path, const PreprocessingOptions& options) {
-    // Using std::cout for broader compatibility
     std::cout << "\n--- 开始预处理流程 ---" << std::endl;
     FilePipelineManager pipeline(app_config_);
 
-    if (!pipeline.collectFiles(input_path)) {
-         throw std::runtime_error("无法从指定路径收集文件，操作中止。");
+    // [核心修改] 根据命令选项决定要收集的文件类型
+    // =================================================================
+    std::string extension_to_collect = ".txt"; // 默认为 .txt
+    
+    // 如果是独立执行 validate-output，并且没有涉及转换或源验证，则目标是 .json 文件
+    if (options.validate_output && !options.convert && !options.validate_source) {
+        extension_to_collect = ".json";
     }
+
+    if (!pipeline.collectFiles(input_path, extension_to_collect)) {
+         // 使用更明确的错误信息
+         throw std::runtime_error("无法从指定路径收集 " + extension_to_collect + " 文件，操作中止。");
+    }
+    // =================================================================
+
     if (options.validate_source && !pipeline.validateSourceFiles()) {
         throw std::runtime_error("源文件验证失败。");
     }
@@ -37,7 +48,6 @@ void FileProcessingHandler::run_preprocessing(const std::string& input_path, con
         throw std::runtime_error("输出文件验证失败。");
     }
     
-    // Using std::cout with << operator correctly handles string concatenation
     std::cout << GREEN_COLOR << "成功: 预处理流程执行完毕。" << RESET_COLOR << std::endl;
 }
 

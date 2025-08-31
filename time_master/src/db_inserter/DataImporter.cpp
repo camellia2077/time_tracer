@@ -37,7 +37,7 @@ public:
 
 class PathScanner {
 public:
-    std::vector<std::string> find_txt_files(const std::vector<std::string>& input_paths) const {
+    std::vector<std::string> find_json_files(const std::vector<std::string>& input_paths) const {
         std::vector<std::string> files_to_process;
         for (const std::string& path_str : input_paths) {
             fs::path p(path_str);
@@ -45,7 +45,8 @@ public:
                 std::cerr << "Warning: Path does not exist: " << path_str << std::endl;
                 continue;
             }
-            if (fs::is_regular_file(p) && p.extension() == ".txt") {
+            // [修改] 检查扩展名是否为 .json
+            if (fs::is_regular_file(p) && p.extension() == ".json") {
                 files_to_process.push_back(p.string());
             } else if (fs::is_directory(p)) {
                 find_in_directory(p, files_to_process);
@@ -58,7 +59,8 @@ private:
     void find_in_directory(const fs::path& dir_path, std::vector<std::string>& files) const {
         try {
             for (const auto& entry : fs::recursive_directory_iterator(dir_path)) {
-                if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".txt") {
+                // [修改] 检查扩展名是否为 .json
+                if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".json") {
                     files.push_back(entry.path().string());
                 }
             }
@@ -104,7 +106,7 @@ public:
 
     void run(const std::vector<std::string>& files_to_process) {
         if (files_to_process.empty()) {
-            std::cout << "No .txt files found to process." << std::endl;
+            std::cout << "No .json files found to process." << std::endl;
             return;
         }
         std::cout << "\nStart processing " << files_to_process.size() << " file(s)... " << std::endl;
@@ -151,19 +153,19 @@ private:
 };
 
 // --- 函数封装 (外部入口) ---
-// (These functions remain unchanged)
+// [修改] 更新这些函数以调用新的 find_json_files 方法
 void handle_process_files(const std::string& db_name, const std::string& config_path) {
     UserInteractor interactor;
     std::vector<std::string> user_paths = interactor.collect_paths_from_user();
     PathScanner scanner;
-    std::vector<std::string> files_to_process = scanner.find_txt_files(user_paths);
+    std::vector<std::string> files_to_process = scanner.find_json_files(user_paths);
     ProcessOrchestrator orchestrator(db_name, config_path);
     orchestrator.run(files_to_process);
 }
 
 void handle_process_files(const std::string& db_name, const std::string& path, const std::string& config_path) {
     PathScanner scanner;
-    std::vector<std::string> files_to_process = scanner.find_txt_files({path});
+    std::vector<std::string> files_to_process = scanner.find_json_files({path});
     ProcessOrchestrator orchestrator(db_name, config_path);
     orchestrator.run(files_to_process);
 }

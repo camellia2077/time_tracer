@@ -22,7 +22,15 @@ void DayProcessor::process(InputData& dayToFinalize, InputData& nextDay) {
     } else if (!dayToFinalize.isContinuation && !nextDay.getupTime.empty()) {
         if (!dayToFinalize.rawEvents.empty()) {
             std::string lastEventTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
-            dayToFinalize.remarksOutput.push_back(lastEventTime + "~" + nextDay.getupTime + "sleep_night");
+            
+            // [修改] 添加结构化的 sleep_night 活动，而不是拼接字符串
+            Activity sleepActivity;
+            sleepActivity.startTime = lastEventTime;
+            sleepActivity.endTime = nextDay.getupTime;
+            sleepActivity.title = "sleep";
+            sleepActivity.parents = {"night"};
+            dayToFinalize.processedActivities.push_back(sleepActivity);
+
             dayToFinalize.endsWithSleepNight = true;
         }
     }
