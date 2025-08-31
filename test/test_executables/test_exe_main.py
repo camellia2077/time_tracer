@@ -18,6 +18,7 @@ from _py_internal.module_export import ExportTester
 def setup_environment():
     """验证路径、清理旧环境，然后复制可执行文件、DLL和配置。"""
     
+    # ... (此函数内容保持不变) ...
     # --- 第1步: 清理上一次运行留下的所有工件 ---
     print(f"{config.Colors.CYAN}--- 1. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
     for dir_name in config.DIRECTORIES_TO_CLEAN:
@@ -109,7 +110,11 @@ def main():
     }
 
     modules = [
-        PreprocessingTester(shared_counter, 1, **common_args),
+        PreprocessingTester(shared_counter, 1, 
+                            # [核心修改] 直接使用从 config.py 导入的路径
+                            specific_validation_path=str(config.PROCESSED_JSON_PATH),
+                            **common_args),
+
         DatabaseImportTester(shared_counter, 2, **common_args),
         QueryTester(shared_counter, 3, 
                     generated_db_file_name=config.GENERATED_DB_FILE_NAME, 

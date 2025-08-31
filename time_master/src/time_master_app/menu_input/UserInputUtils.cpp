@@ -90,5 +90,14 @@ std::vector<int> get_integer_list_input(const std::string& prompt_message) {
     }
     return days_list;
 }
+bool get_yes_no_input() {
+    std::string line;
+    if (std::getline(std::cin, line)) {
+        if (!line.empty() && (line[0] == 'y' || line[0] == 'Y')) {
+            return true;
+        }
+    }
+    return false;
+}
 
 } // namespace UserInputUtils
