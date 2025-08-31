@@ -19,6 +19,7 @@ enum class ErrorType {
     IncorrectDayCountForMonth,
     Source_RemarkAfterEvent,
     Source_NoDateAtStart,
+    UnrecognizedActivity, // [新增] 未识别的活动关键字
     Source_InvalidLineFormat
 };
 
