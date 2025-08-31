@@ -1,4 +1,3 @@
-
 // db_inserter/DataImporter.cpp
 #include <iostream>
 #include <vector>
@@ -9,20 +8,17 @@
 #include <chrono>
 #include <fstream>
 
-// 包含项目内其他模块的头文件
 #include "common/common_utils.hpp"
-#include "db_inserter/parser/ParserFactory.hpp"
-
+// [核心修改] 引入新的JsonDataParser，不再需要旧的工厂
+#include "db_inserter/parser/JsonDataParser.hpp"
 #include "db_inserter/inserter/DatabaseInserter.hpp"
           
-
 namespace fs = std::filesystem;
 
-// 用于读取输入的txt文件
 class UserInteractor {
 public:
     std::vector<std::string> collect_paths_from_user() const {
-        std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
+        std::cout << "Enter .json file(s) or directory path(s) to process: ";
         std::string line;
         std::getline(std::cin, line);
         std::stringstream ss(line);
@@ -45,7 +41,6 @@ public:
                 std::cerr << "Warning: Path does not exist: " << path_str << std::endl;
                 continue;
             }
-            // [修改] 检查扩展名是否为 .json
             if (fs::is_regular_file(p) && p.extension() == ".json") {
                 files_to_process.push_back(p.string());
             } else if (fs::is_directory(p)) {
@@ -59,7 +54,6 @@ private:
     void find_in_directory(const fs::path& dir_path, std::vector<std::string>& files) const {
         try {
             for (const auto& entry : fs::recursive_directory_iterator(dir_path)) {
-                // [修改] 检查扩展名是否为 .json
                 if (fs::is_regular_file(entry.path()) && entry.path().extension() == ".json") {
                     files.push_back(entry.path().string());
                 }
@@ -95,14 +89,11 @@ public:
     }
 };
 
-// =================================================================
-// Class: ProcessOrchestrator
-// =================================================================
 class ProcessOrchestrator {
 public:
-    explicit ProcessOrchestrator(std::string db_name, std::string config_path) 
-        : db_name_(std::move(db_name)), 
-          config_path_(std::move(config_path)) {}
+    // [核心修改] 构造函数不再需要 config_path
+    explicit ProcessOrchestrator(std::string db_name) 
+        : db_name_(std::move(db_name)) {}
 
     void run(const std::vector<std::string>& files_to_process) {
         if (files_to_process.empty()) {
@@ -113,10 +104,9 @@ public:
         ProcessReporter::TimingResult timing;
         auto start_total = std::chrono::high_resolution_clock::now();
 
-        std::cout << "Stage 1: Parsing files into memory..." << std::endl;
-        // 直接通过工厂创建解析器，不再关心ConfigLoader和ParserConfig
-        DataFileParser parser = ParserFactory::create_parser(config_path_);
-
+        std::cout << "Stage 1: Parsing JSON files into memory..." << std::endl;
+        // [核心修改] 直接创建新的 JsonDataParser
+        JsonDataParser parser;
 
         std::vector<std::string> failed_files = parse_all_files(parser, files_to_process);
         auto end_parsing = std::chrono::high_resolution_clock::now();
@@ -137,35 +127,31 @@ public:
     }
 
 private:
-    std::vector<std::string> parse_all_files(DataFileParser& parser, const std::vector<std::string>& files) {
+    std::vector<std::string> parse_all_files(JsonDataParser& parser, const std::vector<std::string>& files) {
         std::vector<std::string> failed_files;
         for (const std::string& fname : files) {
             if (!parser.parse_file(fname)) {
                 failed_files.push_back(fname);
             }
         }
-        parser.commit_all();
         return failed_files;
     }
-
     std::string db_name_;
-    std::string config_path_;
 };
 
-// --- 函数封装 (外部入口) ---
-// [修改] 更新这些函数以调用新的 find_json_files 方法
+// [核心修改] 接口不再需要 config_path
 void handle_process_files(const std::string& db_name, const std::string& config_path) {
     UserInteractor interactor;
     std::vector<std::string> user_paths = interactor.collect_paths_from_user();
     PathScanner scanner;
     std::vector<std::string> files_to_process = scanner.find_json_files(user_paths);
-    ProcessOrchestrator orchestrator(db_name, config_path);
+    ProcessOrchestrator orchestrator(db_name);
     orchestrator.run(files_to_process);
 }
 
 void handle_process_files(const std::string& db_name, const std::string& path, const std::string& config_path) {
     PathScanner scanner;
     std::vector<std::string> files_to_process = scanner.find_json_files({path});
-    ProcessOrchestrator orchestrator(db_name, config_path);
+    ProcessOrchestrator orchestrator(db_name);
     orchestrator.run(files_to_process);
 }

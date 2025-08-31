@@ -25,9 +25,9 @@ set(TIME_MASTER_APP_SOURCES
 set(DB_INSERTER_SOURCES
     "src/db_inserter/DataImporter.cpp"
     "src/db_inserter/inserter/DatabaseInserter.cpp"
-    "src/db_inserter/parser/ParserFactory.cpp"
-    "src/db_inserter/parser/internal/ConfigLoader.cpp"
-    "src/db_inserter/parser/internal/DataFileParser.cpp"
+    # 解析json
+    "src/db_inserter/parser/JsonDataParser.cpp"
+
 )
 
 # --- Queries Sources ---
