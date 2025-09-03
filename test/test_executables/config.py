@@ -63,3 +63,20 @@ DIRECTORIES_TO_CLEAN = [
     "py_output",
     "config" 
 ]
+
+# --- Artifacts to be cleaned up before each test run ---
+# ======================= 在这里添加/修改 =======================
+FILES_TO_CLEAN = [
+    EXECUTABLE_CLI_NAME,
+    "libgcc_s_seh-1.dll",
+    "libstdc++-6.dll",
+    "libsqlite3-0.dll",
+    "libwinpthread-1.dll"
+]
+# ===============================================================
+
+DIRECTORIES_TO_CLEAN = [
+    OUTPUT_DIR_NAME,
+    "py_output",
+    "config" 
+]
