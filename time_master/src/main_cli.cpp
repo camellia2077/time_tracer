@@ -82,12 +82,11 @@ void print_full_usage(const char* app_name) {
     std::println("Usage: {} <command>[arguments...] [options...]\n", app_name);
     
     std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
-    std::println("  run-pipeline <path>\t\t Run full pipeline: validate source, convert, and validate output.");
-    std::println("  import <path>\t\t\t Import processed .json files into the database.");
+    std::println("  run-pipeline <path>\t\t Run full pipeline: validate, convert, validate output, and import to database.");
     std::println("  query <type> <period>\t\t Query data from the database.");
     std::println("  export <type> <period>\t Export reports from the database.\n");
 
-    // ======================= 核心修改 1/3 =======================
+    // 预处理
     std::println("{}{}{}", GREEN_COLOR, "--- Pre-processing Commands ---", RESET_COLOR);
     std::println("  validate-source <path>\t Validates the source file format (e.g., .txt files) (read-only).");
     std::println("  convert <path>\t\t Converts source files to the processed JSON format.");
@@ -97,24 +96,24 @@ void print_full_usage(const char* app_name) {
     std::println("    --enable-day-check, -edc\t Enable check for day completeness in a month.");
     std::println("  Example: {} convert /path/to/logs", app_name);
     std::println("  Example: {} validate-output /path/to/processed/log.json --enable-day-check\n", app_name);
-    // =========================================================
 
+    // 数据库导入
     std::println("{}{}{}", GREEN_COLOR, "--- Command: import ---", RESET_COLOR);
     std::println("  Usage: {} import <directory_path>", app_name);
     std::println("  Example: {} import /path/to/output/Processed_logs/\n", app_name);
     
+    // 查询与导出
     std::println("{}{}{}", GREEN_COLOR, "--- Command: query ---", RESET_COLOR);
     std::println("  Usage: {} query <type> <argument> [options...]", app_name);
     std::println("  Types:");
     std::println("    daily <YYYYMMDD>\t\t Query statistics for a specific day.");
     std::println("    monthly <YYYYMM>\t\t Query statistics for a specific month.");
     std::println("    period <days>\t\t Query statistics for last N days. Can be a list (e.g., 7,30).");
-    // ======================= 核心修改 2/3 =======================
     std::println("  Options (for commands that produce output):");
-    // =========================================================
     std::println("    --format, -f <format>\t Specify output format (md, tex, typ). Default: md.");
     std::println("  Example: {} query daily 20240101 --format tex\n", app_name);
     
+    // 导出
     std::println("{}{}{}", GREEN_COLOR, "--- Command: export ---", RESET_COLOR);
     std::println("  Usage: {} export <type> [argument] [options...]", app_name);
     std::println("  Types:");
@@ -124,9 +123,7 @@ void print_full_usage(const char* app_name) {
     std::println("    all-daily\t\t\t Export all daily reports.");
     std::println("    all-monthly\t\t\t Export all monthly reports.");
     std::println("    all-period <days_list>\t Export multiple period reports (e.g., 7,30,90).");
-    // ======================= 核心修改 3/3 =======================
     std::println("  Options (for commands that produce output):");
-    // =========================================================
     std::println("    --format, -f <format>\t Specify output format for query/export (md, tex, typ). Default: md.");
     std::println("    --output, -o <path>\t\t Specify the directory for formatted reports (e.g., .md, .tex).");
     std::println("\t\t\t\t All program outputs (database, converted files) will be placed");
