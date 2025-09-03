@@ -30,17 +30,17 @@ class BaseTester:
                  output_dir: Path):
         self.executable_path = Path.cwd() / executable_to_run
         self.source_data_path = source_data_path
-        # ======================= 核心修改 =======================
-        # 修改这里，让 processed_data_path 基于 output_dir 构建，而不是当前工作目录
         self.processed_data_path = output_dir / converted_text_dir_name
-        # =========================================================
         self.output_dir = output_dir
         self.test_counter = counter
         self.module_name = reports_sub_dir_name.replace('_', ' ').title()
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
         self.reports_dir = Path.cwd() / "py_output" / reports_dir_name
 
-    def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None) -> bool:
+    # ======================= 核心修改 1/2 =======================
+    # 新增 add_output_dir 参数，并默认为 True
+    def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None, add_output_dir: bool = True) -> bool:
+    # =========================================================
         """
         Runs a command, logs output, and returns True on success or False on failure.
         """
@@ -48,10 +48,19 @@ class BaseTester:
         sanitized_test_name = re.sub(r'[^a-zA-Z0-9]+', '_', test_name).lower()
         log_filename = f"{current_count}_{sanitized_test_name}.log"
         log_filepath = self.reports_dir / log_filename
+
         command = [str(self.executable_path)] + command_args
+        
+        # ======================= 核心修改 2/2 =======================
+        # 只有在需要时才添加 --output 参数
+        if add_output_dir:
+            report_specific_output_path = self.output_dir / "exported_files"
+            command.extend(["--output", str(report_specific_output_path)])
+        # =========================================================
+
         start_time = time.monotonic()
         status = "FAIL"
-        is_success = False  # <-- 默认失败
+        is_success = False
 
         try:
             result = subprocess.run(
@@ -69,7 +78,7 @@ class BaseTester:
 
             if result.returncode == 0:
                 status = "OK"
-                is_success = True # <-- 成功时设置为 True
+                is_success = True
         except Exception as e:
             with open(log_filepath, 'w', encoding='utf-8') as log_file:
                 log_file.write(f"An exception occurred while running the test: {test_name}\n")
@@ -81,4 +90,4 @@ class BaseTester:
             test_info = f" -> {test_name:<15} | Log: {log_path_str}"
             status_info = f"... {status_colored} ({duration:.2f}s)"
             print(f"{test_info:<70} {status_info}")
-            return is_success # <-- 返回最终的成功状态
+            return is_success
