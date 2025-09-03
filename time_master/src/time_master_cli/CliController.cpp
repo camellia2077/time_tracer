@@ -18,32 +18,12 @@
 namespace fs = std::filesystem;
 const std::string DATABASE_FILENAME = "time_data.db";
 
-// ======================= 核心修改 1/3 =======================
-// 新增一个辅助函数，用于从参数列表中移除全局选项，以便进行精确的参数计数
-std::vector<std::string> filter_global_options(const std::vector<std::string>& original_args) {
-    std::vector<std::string> filtered_args;
-    for (size_t i = 0; i < original_args.size(); ++i) {
-        const auto& arg = original_args[i];
-        // 如果当前参数是全局选项，则跳过它和它的值
-        if (arg == "-o" || arg == "--output" || arg == "-f" || arg == "--format") {
-            i++; 
-            continue;
-        }
-        filtered_args.push_back(arg);
-    }
-    return filtered_args;
-}
-// =========================================================
-
-CliController::CliController(const std::vector<std::string>& args) : args_(args) {
-    if (args.size() < 2) {
-        throw std::runtime_error("No command provided.");
-    }
-    command_ = args_[1];
-
+// 构造函数：初始化 parser_，并使用它来设置其他组件
+CliController::CliController(const std::vector<std::string>& args)
+    : parser_(args) {
     initialize_output_paths();
 
-    file_controller_ = std::make_unique<FileController>(args_[0]);
+    file_controller_ = std::make_unique<FileController>(parser_.get_raw_arg(0));
     
     fs::path db_path = output_root_path_ / DATABASE_FILENAME;
     file_processing_handler_ = std::make_unique<FileProcessingHandler>(
@@ -62,12 +42,13 @@ CliController::CliController(const std::vector<std::string>& args) : args_(args)
 
 CliController::~CliController() = default;
 
+// 使用 parser_ 获取输出路径选项
 void CliController::initialize_output_paths() {
-    if (auto path_opt = parse_output_option()) {
+    if (auto path_opt = parser_.get_output_path()) {
         exported_files_path_ = fs::absolute(*path_opt);
         output_root_path_ = exported_files_path_.parent_path();
     } else {
-        fs::path exe_path(args_[0]);
+        fs::path exe_path(parser_.get_raw_arg(0));
         output_root_path_ = fs::absolute(exe_path.parent_path() / "output");
         exported_files_path_ = output_root_path_ / "exported_files";
     }
@@ -75,82 +56,79 @@ void CliController::initialize_output_paths() {
     fs::create_directories(exported_files_path_);
 }
 
+// 使用 parser_ 获取命令并执行分发
 void CliController::execute() {
-    if (command_ == "run-pipeline") {
+    const std::string command = parser_.get_command();
+
+    if (command == "run-pipeline") {
         handle_run_pipeline();
-    } else if (command_ == "validate-source") {
+    } else if (command == "validate-source") {
         handle_validate_source();
-    } else if (command_ == "convert") {
+    } else if (command == "convert") {
         handle_convert();
-    } else if (command_ == "validate-output") {
+    } else if (command == "validate-output") {
         handle_validate_output();
-    } else if (command_ == "import") {
+    } else if (command == "import") {
         handle_database_import();
-    } else if (command_ == "query") {
+    } else if (command == "query") {
         handle_query();
-    } else if (command_ == "export") {
+    } else if (command == "export") {
         handle_export();
     } else {
-        if (command_ == "preprocess" || command_ == "pre") {
+        if (command == "preprocess" || command == "pre") {
              throw std::runtime_error("The 'preprocess' command is deprecated. Please use 'validate-source', 'convert', or 'validate-output' instead.");
         }
-        throw std::runtime_error("Unknown command '" + command_ + "'.");
+        throw std::runtime_error("Unknown command '" + command + "'.");
     }
 }
 
+// 所有 handle_ 函数都通过 parser_ 获取参数
 void CliController::handle_run_pipeline() {
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() != 3) {
+    if (parser_.get_filtered_args().size() != 3) {
         throw std::runtime_error("Command 'run-pipeline' requires exactly one source directory path argument.");
     }
-    file_processing_handler_->run_full_pipeline_and_import(args_[2]);
+    file_processing_handler_->run_full_pipeline_and_import(parser_.get_filtered_args()[2]);
 }
 
 void CliController::handle_validate_source() {
-    // ======================= 核心修改 2/3 =======================
-    // 使用过滤后的参数进行数量检查
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() != 3) {
+    if (parser_.get_filtered_args().size() != 3) {
         throw std::runtime_error("Command 'validate-source' requires exactly one path argument.");
     }
-    // =========================================================
     AppOptions options;
     options.validate_source = true;
-    file_processing_handler_->run_preprocessing(args_[2], options);
+    file_processing_handler_->run_preprocessing(parser_.get_filtered_args()[2], options);
 }
 
 void CliController::handle_convert() {
-    // ======================= 核心修改 3/3 =======================
-    // 使用过滤后的参数进行数量检查
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() != 3) {
+    if (parser_.get_filtered_args().size() != 3) {
         throw std::runtime_error("Command 'convert' requires exactly one path argument.");
     }
-    // =========================================================
     AppOptions options;
     options.convert = true;
-    file_processing_handler_->run_preprocessing(args_[2], options);
+    file_processing_handler_->run_preprocessing(parser_.get_filtered_args()[2], options);
 }
 
 void CliController::handle_validate_output() {
-    auto filtered_args = filter_global_options(args_);
+    const auto& filtered_args = parser_.get_filtered_args();
     if (filtered_args.size() < 3) {
         throw std::runtime_error("Command 'validate-output' requires a path argument.");
     }
     AppOptions options;
     options.validate_output = true;
     
-    for (size_t i = 3; i < args_.size(); ++i) {
-        if (args_[i] == "-edc" || args_[i] == "--enable-day-check") {
+    // 检查额外参数，这里可以直接遍历过滤后的参数
+    for (size_t i = 3; i < filtered_args.size(); ++i) {
+        if (filtered_args[i] == "-edc" || filtered_args[i] == "--enable-day-check") {
             options.enable_day_count_check = true;
         }
     }
-    file_processing_handler_->run_preprocessing(args_[2], options);
+    file_processing_handler_->run_preprocessing(filtered_args[2], options);
 }
 
 void CliController::handle_database_import() {
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
+    if (parser_.get_filtered_args().size() != 3) {
+        throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
+    }
     
     std::println("Now inserting into the database.");
     std::println("Please ensure the data has been converted and validated.");
@@ -159,20 +137,22 @@ void CliController::handle_database_import() {
     char confirmation;
     std::cin >> confirmation;
     if (confirmation != 'y' && confirmation != 'Y') {
-        std::cout << RED_COLOR << "\nOperation cancelled." << RESET_COLOR << std::endl;
+        std::cout << "\033[31m\nOperation cancelled.\033[0m" << std::endl;
         return;
     }
     std::cout << std::endl;
-    file_processing_handler_->run_database_import(args_[2]);
+    file_processing_handler_->run_database_import(parser_.get_filtered_args()[2]);
 }
 
 void CliController::handle_query() {
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
+    const auto& filtered_args = parser_.get_filtered_args();
+    if (filtered_args.size() < 4) {
+        throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
+    }
     
-    std::string sub_command = args_[2];
-    std::string query_arg = args_[3];
-    ReportFormat format = parse_format_option();
+    std::string sub_command = filtered_args[2];
+    std::string query_arg = filtered_args[3];
+    ReportFormat format = parser_.get_report_format();
 
     if (sub_command == "daily") {
         std::cout << report_generation_handler_->run_daily_query(query_arg, format);
@@ -185,7 +165,7 @@ void CliController::handle_query() {
             try {
                 std::cout << report_generation_handler_->run_period_query(std::stoi(token), format);
             } catch (const std::exception&) {
-                std::cerr << RED_COLOR << "Error: " << RESET_COLOR << "Invalid number '" << token << "' in list. Skipping.\n";
+                std::cerr << "\033[31mError: \033[0mInvalid number '" << token << "' in list. Skipping.\n";
             }
             first = false;
         }
@@ -197,15 +177,19 @@ void CliController::handle_query() {
 }
 
 void CliController::handle_export() {
-    auto filtered_args = filter_global_options(args_);
-    if (filtered_args.size() < 3) throw std::runtime_error("Command 'export' requires a type argument (e.g., export daily).");
+    const auto& filtered_args = parser_.get_filtered_args();
+    if (filtered_args.size() < 3) {
+        throw std::runtime_error("Command 'export' requires a type argument (e.g., export daily).");
+    }
 
-    std::string sub_command = args_[2];
-    ReportFormat format = parse_format_option();
+    std::string sub_command = filtered_args[2];
+    ReportFormat format = parser_.get_report_format();
 
     if (sub_command == "daily" || sub_command == "monthly" || sub_command == "period" || sub_command == "all-period") {
-        if (filtered_args.size() < 4) throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
-        std::string export_arg = args_[3];
+        if (filtered_args.size() < 4) {
+            throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
+        }
+        std::string export_arg = filtered_args[3];
 
         if (sub_command == "daily") {
             report_generation_handler_->run_export_single_day_report(export_arg, format);
@@ -238,38 +222,4 @@ void CliController::handle_export() {
     } else {
         throw std::runtime_error("Unknown export type '" + sub_command + "'.");
     }
-}
-
-std::optional<std::string> CliController::parse_output_option() const {
-    auto it_o = std::find(args_.begin(), args_.end(), "-o");
-    auto it_output = std::find(args_.begin(), args_.end(), "--output");
-
-    if (it_o != args_.end() && std::next(it_o) != args_.end()) {
-        return *std::next(it_o);
-    }
-    if (it_output != args_.end() && std::next(it_output) != args_.end()) {
-        return *std::next(it_output);
-    }
-    
-    return std::nullopt;
-}
-
-ReportFormat CliController::parse_format_option() const {
-    auto it_f = std::find(args_.begin(), args_.end(), "-f");
-    auto it_format = std::find(args_.begin(), args_.end(), "--format");
-
-    std::string format_str;
-    if (it_f != args_.end() && std::next(it_f) != args_.end()) {
-        format_str = *std::next(it_f);
-    } else if (it_format != args_.end() && std::next(it_format) != args_.end()) {
-        format_str = *std::next(it_format);
-    } else {
-        return ReportFormat::Markdown;
-    }
-
-    if (format_str == "md" || format_str == "markdown") return ReportFormat::Markdown;
-    if (format_str == "tex") return ReportFormat::LaTeX;
-    if (format_str == "typ") return ReportFormat::Typ;
-     
-    throw std::runtime_error("Unsupported format specified: '" + format_str + "'. Supported formats: md, tex, typ.");
 }
