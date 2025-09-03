@@ -9,14 +9,14 @@
 #include <filesystem>
 #include <optional>
 #include "common/AppConfig.hpp" // 通用配置头文件
-#include "reprocessing/LogProcessor.hpp" 
+#include "reprocessing/LogProcessor.hpp"
 
 
 namespace fs = std::filesystem;
 
 class FilePipelineManager {
 public:
-    explicit FilePipelineManager(const AppConfig& config);
+    explicit FilePipelineManager(const AppConfig& config, const fs::path& output_root);
 
     // --- 高层接口 ---
     std::optional<fs::path> run(const std::string& input_path);
@@ -33,11 +33,12 @@ private:
     void printTimingStatistics(const std::string& operation_name, double total_time_ms) const;
 
     // --- 状态成员 ---
+    const AppConfig& app_config_;
+    LogProcessor processor_;
+    fs::path output_root_;
     fs::path input_root_;
     std::vector<fs::path> files_to_process_;
     std::map<fs::path, fs::path> source_to_output_map_;
-    LogProcessor processor_;
-    const AppConfig& app_config_;
 };
 
 #endif // FILE_PIPELINE_MANAGER_HPP

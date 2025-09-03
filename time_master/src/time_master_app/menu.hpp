@@ -4,15 +4,19 @@
 
 #include <string>
 #include <memory>
+#include <filesystem> // 引入 filesystem
 #include "common/AppConfig.hpp"
 
 // 前向声明处理器类
 class FileProcessingHandler;
 class ReportGenerationHandler;
 
+namespace fs = std::filesystem;
+
 class Menu {
 public:
-    explicit Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path);
+    // 修改构造函数以接收路径
+    explicit Menu(const AppConfig& config, const std::string& main_config_path, const fs::path& output_root_path, const fs::path& exported_files_path);
     ~Menu();
     void run();
 

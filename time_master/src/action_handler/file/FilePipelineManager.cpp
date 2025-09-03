@@ -12,23 +12,23 @@ namespace fs = std::filesystem;
 /**
  * @brief 构造函数实现
  */
-FilePipelineManager::FilePipelineManager(const AppConfig& config)
-    : processor_(config), app_config_(config) {}
+FilePipelineManager::FilePipelineManager(const AppConfig& config, const fs::path& output_root)
+    : app_config_(config), processor_(config), output_root_(output_root) {}
 
 /**
  * @brief 运行完整的处理流水线
  */
 std::optional<fs::path> FilePipelineManager::run(const std::string& input_path) {
+    fs::path input_root_path(input_path);
     if (!collectFiles(input_path) || !validateSourceFiles() || !convertFiles() || !validateOutputFiles(true)) {
         return std::nullopt; // 如果任何一个阶段失败，则返回空
     }
 
-    // 如果成功，计算并返回输出根目录
-    if (fs::is_directory(input_root_)) {
-        return input_root_.parent_path() / ("Processed_" + input_root_.filename().string());
+    // 根据输入是目录还是文件，返回正确的处理后路径
+    if (fs::is_directory(input_root_path)) {
+        return output_root_ / ("Processed_" + input_root_path.filename().string());
     }
-    // 如果是单个文件，技术上没有 "根" 目录，但可以返回其父目录
-    return input_root_.parent_path();
+    return output_root_;
 }
 
 /**
@@ -103,27 +103,27 @@ bool FilePipelineManager::convertFiles() {
     }
 
     bool is_dir = fs::is_directory(input_root_);
-    fs::path output_root_path;
+    fs::path processed_output_dir = output_root_; // 默认输出目录
 
     if (is_dir) {
-        output_root_path = input_root_.parent_path() / ("Processed_" + input_root_.filename().string());
-        fs::create_directories(output_root_path);
+        // 如果是目录，则在输出根目录下创建一个 "Processed_..." 子目录
+        processed_output_dir /= ("Processed_" + input_root_.filename().string());
     }
+    fs::create_directories(processed_output_dir);
 
     bool all_ok = true;
     double total_conversion_time_ms = 0.0;
 
     for (const auto& file : files_to_process_) {
         fs::path output_file_path;
-        if (is_dir) {
-            output_file_path = output_root_path / fs::relative(file, input_root_);
-            // [核心修改] 将输出文件的扩展名替换为 .json
+        if (is_dir) { // 如果是目录，保持原有的相对路径结构
+            output_file_path = processed_output_dir / fs::relative(file, input_root_);
             output_file_path.replace_extension(".json");
             fs::create_directories(output_file_path.parent_path());
         } else {
-            // [核心修改] 对单个文件也进行扩展名替换
-            fs::path temp_path = input_root_.parent_path() / ("Processed_" + file.filename().string());
-            output_file_path = temp_path.replace_extension(".json");
+            // 如果是单个文件，直接在输出目录中创建
+            output_file_path = processed_output_dir / file.filename();
+            output_file_path.replace_extension(".json");
         }
 
         AppOptions opts;

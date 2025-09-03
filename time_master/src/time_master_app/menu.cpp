@@ -14,10 +14,15 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <filesystem>
 
-Menu::Menu(const std::string& db_name, const AppConfig& config, const std::string& main_config_path) {
-    file_processing_handler_ = std::make_unique<FileProcessingHandler>(db_name, config, main_config_path);
-    report_generation_handler_ = std::make_unique<ReportGenerationHandler>(db_name, config);
+namespace fs = std::filesystem;
+const std::string DATABASE_FILENAME = "time_data.db";
+
+Menu::Menu(const AppConfig& config, const std::string& main_config_path, const fs::path& output_root_path, const fs::path& exported_files_path) {
+    fs::path db_path = output_root_path / DATABASE_FILENAME;
+    file_processing_handler_ = std::make_unique<FileProcessingHandler>(db_path.string(), config, main_config_path, output_root_path);
+    report_generation_handler_ = std::make_unique<ReportGenerationHandler>(db_path.string(), config, exported_files_path);
 }
 
 Menu::~Menu() = default;

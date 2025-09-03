@@ -5,12 +5,16 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <optional>
+#include <filesystem>
 #include "queries/shared/ReportFormat.hpp"
 
 // 前向声明
 class FileController;
 class FileProcessingHandler;
 class ReportGenerationHandler;
+
+namespace fs = std::filesystem;
 
 class CliController {
 public:
@@ -27,7 +31,11 @@ private:
     std::unique_ptr<FileProcessingHandler> file_processing_handler_;
     std::unique_ptr<ReportGenerationHandler> report_generation_handler_;
 
-    // [核心修改] 更新私有辅助函数以匹配新的命令结构
+    fs::path output_root_path_;      // 新增：主输出目录 (e.g., ./output)
+    fs::path exported_files_path_; // 新增：报告专用目录 (e.g., ./output/exported_files)
+
+    // --- 辅助函数 ---
+    void initialize_output_paths(); // 修改：初始化所有输出路径的函数
     void handle_run_pipeline();
     void handle_validate_source();
     void handle_convert();
@@ -37,6 +45,7 @@ private:
     void handle_export();
 
     ReportFormat parse_format_option() const;
+    std::optional<std::string> parse_output_option() const;
 };
 
 #endif // CLI_CONTROLLER_HPP

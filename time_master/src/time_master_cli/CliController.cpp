@@ -1,18 +1,22 @@
 // time_master_cli/CliController.cpp
+#include "CliController.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <sstream>
 #include <algorithm>
 #include <print>
 #include <memory>
+#include <optional>
+#include <filesystem>
 
-#include "CliController.hpp"
 #include "file_handler/FileController.hpp"
 #include "common/common_utils.hpp"
 #include "action_handler/FileProcessingHandler.hpp"
 #include "action_handler/ReportGenerationHandler.hpp"
+#include "common/AppConfig.hpp" // For AppOptions
 
-const std::string DATABASE_NAME = "time_data.db";
+namespace fs = std::filesystem;
+const std::string DATABASE_FILENAME = "time_data.db";
 
 CliController::CliController(const std::vector<std::string>& args) : args_(args) {
     if (args.size() < 2) {
@@ -20,23 +24,41 @@ CliController::CliController(const std::vector<std::string>& args) : args_(args)
     }
     command_ = args_[1];
 
+    initialize_output_paths();
+
     file_controller_ = std::make_unique<FileController>(args_[0]);
     
+    fs::path db_path = output_root_path_ / DATABASE_FILENAME;
     file_processing_handler_ = std::make_unique<FileProcessingHandler>(
-        DATABASE_NAME,
+        db_path.string(),
         file_controller_->get_config(),
-        file_controller_->get_main_config_path()
+        file_controller_->get_main_config_path(),
+        output_root_path_
     );
+
     report_generation_handler_ = std::make_unique<ReportGenerationHandler>(
-        DATABASE_NAME,
-        file_controller_->get_config()
+        db_path.string(),
+        file_controller_->get_config(),
+        exported_files_path_
     );
 }
 
 CliController::~CliController() = default;
 
+void CliController::initialize_output_paths() {
+    if (auto path_opt = parse_output_option()) {
+        exported_files_path_ = fs::absolute(*path_opt);
+        output_root_path_ = exported_files_path_.parent_path();
+    } else {
+        fs::path exe_path(args_[0]);
+        output_root_path_ = fs::absolute(exe_path.parent_path() / "output");
+        exported_files_path_ = output_root_path_ / "exported_files";
+    }
+    fs::create_directories(output_root_path_);
+    fs::create_directories(exported_files_path_);
+}
+
 void CliController::execute() {
-    // [核心修改] 命令分派更新
     if (command_ == "run-pipeline") {
         handle_run_pipeline();
     } else if (command_ == "validate-source") {
@@ -52,7 +74,6 @@ void CliController::execute() {
     } else if (command_ == "export") {
         handle_export();
     } else {
-        // 兼容旧的 preprocess 命令，并给出提示
         if (command_ == "preprocess" || command_ == "pre") {
              throw std::runtime_error("The 'preprocess' command is deprecated. Please use 'validate-source', 'convert', or 'validate-output' instead.");
         }
@@ -60,57 +81,50 @@ void CliController::execute() {
     }
 }
 
-// [修改] 旧的 run-all 重命名为 run-pipeline
 void CliController::handle_run_pipeline() {
     if (args_.size() != 3) {
         throw std::runtime_error("Command 'run-pipeline' requires exactly one source directory path argument.");
     }
-    // 注意：这里的 run_full_pipeline_and_import 名字可能需要更新，因为它现在只处理文件，不导入
     file_processing_handler_->run_full_pipeline_and_import(args_[2]);
 }
 
-// [新增] 专门处理源文件验证的函数
 void CliController::handle_validate_source() {
     if (args_.size() != 3) {
         throw std::runtime_error("Command 'validate-source' requires exactly one path argument.");
     }
-    PreprocessingOptions options;
+    AppOptions options;
     options.validate_source = true;
     file_processing_handler_->run_preprocessing(args_[2], options);
 }
 
-// [新增] 专门处理转换的函数
 void CliController::handle_convert() {
     if (args_.size() != 3) {
         throw std::runtime_error("Command 'convert' requires exactly one path argument.");
     }
-    PreprocessingOptions options;
+    AppOptions options;
     options.convert = true;
     file_processing_handler_->run_preprocessing(args_[2], options);
 }
 
-// [新增] 专门处理输出验证的函数
 void CliController::handle_validate_output() {
     if (args_.size() < 3) {
         throw std::runtime_error("Command 'validate-output' requires a path argument.");
     }
-    PreprocessingOptions options;
+    AppOptions options;
     options.validate_output = true;
     
-    // 检查是否有 --enable-day-check 标志
     for (size_t i = 3; i < args_.size(); ++i) {
         if (args_[i] == "-edc" || args_[i] == "--enable-day-check") {
-            options.enable_day_check = true;
+            options.enable_day_count_check = true;
         }
     }
     file_processing_handler_->run_preprocessing(args_[2], options);
 }
 
-
 void CliController::handle_database_import() {
     if (args_.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
     
-    std::println("Now inserting into the database. ");
+    std::println("Now inserting into the database.");
     std::println("Please ensure the data has been converted and validated.");
     std::println("Are you sure you want to continue? (y/n): ");
     
@@ -124,7 +138,6 @@ void CliController::handle_database_import() {
     file_processing_handler_->run_database_import(args_[2]);
 }
 
-// handle_query 和 handle_export 方法保持不变
 void CliController::handle_query() {
     if (args_.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
     
@@ -159,7 +172,7 @@ void CliController::handle_export() {
 
     std::string sub_command = args_[2];
     ReportFormat format = parse_format_option();
-    
+
     if (sub_command == "daily" || sub_command == "monthly" || sub_command == "period" || sub_command == "all-period") {
         if (args_.size() < 4) throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
         std::string export_arg = args_[3];
@@ -195,6 +208,20 @@ void CliController::handle_export() {
     } else {
         throw std::runtime_error("Unknown export type '" + sub_command + "'.");
     }
+}
+
+std::optional<std::string> CliController::parse_output_option() const {
+    auto it_o = std::find(args_.begin(), args_.end(), "-o");
+    auto it_output = std::find(args_.begin(), args_.end(), "--output");
+
+    if (it_o != args_.end() && std::next(it_o) != args_.end()) {
+        return *std::next(it_o);
+    }
+    if (it_output != args_.end() && std::next(it_output) != args_.end()) {
+        return *std::next(it_output);
+    }
+    
+    return std::nullopt;
 }
 
 ReportFormat CliController::parse_format_option() const {
