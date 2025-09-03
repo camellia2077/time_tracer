@@ -11,12 +11,14 @@ class Colors:
 
 # --- File and Directory Paths ---
 SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/time_master/Time_Master_cpp/time_master/build/bin")
-SOURCE_DATA_PARENT_DIR = Path("C:/Computer/my_github/github_cpp/time_master/my_test")
-# 预处理后的json路径
-PROCESSED_JSON_PATH = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\output\Processed_Date")
-db = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\output\time_data.db")
+
+# ======================= 核心修改 =======================
+# 在这里手动指定所有 C++ 程序输出的总根目录
+OUTPUT_ROOT_DIR = Path("C:/Computer/my_github/github_cpp/time_master/my_test")
+# =========================================================
+
 SOURCE_DATA_FOLDER_NAME = "Date"
-SOURCE_DATA_PATH = SOURCE_DATA_PARENT_DIR / SOURCE_DATA_FOLDER_NAME
+SOURCE_DATA_PATH = OUTPUT_ROOT_DIR / SOURCE_DATA_FOLDER_NAME
 TARGET_EXECUTABLES_DIR = Path("./") # The current directory where the script is run
 
 # --- Executable and Database Names ---
@@ -24,11 +26,10 @@ EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
 EXECUTABLE_APP_NAME = "time_tracker_app.exe"
 GENERATED_DB_FILE_NAME = "time_data.db"
 PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
-OUTPUT_DIR_NAME = "output" # <--- 新增
+OUTPUT_DIR_NAME = "output" # 所有输出文件将存放在 OUTPUT_ROOT_DIR 下的这个子目录中
 
-
-
-
+# 预处理后的json路径 (用于特定验证)
+PROCESSED_JSON_PATH = OUTPUT_ROOT_DIR / OUTPUT_DIR_NAME / PROCESSED_DATA_DIR_NAME
 
 
 # ==============================================================================

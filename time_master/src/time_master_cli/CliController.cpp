@@ -18,6 +18,23 @@
 namespace fs = std::filesystem;
 const std::string DATABASE_FILENAME = "time_data.db";
 
+// ======================= 核心修改 1/3 =======================
+// 新增一个辅助函数，用于从参数列表中移除全局选项，以便进行精确的参数计数
+std::vector<std::string> filter_global_options(const std::vector<std::string>& original_args) {
+    std::vector<std::string> filtered_args;
+    for (size_t i = 0; i < original_args.size(); ++i) {
+        const auto& arg = original_args[i];
+        // 如果当前参数是全局选项，则跳过它和它的值
+        if (arg == "-o" || arg == "--output" || arg == "-f" || arg == "--format") {
+            i++; 
+            continue;
+        }
+        filtered_args.push_back(arg);
+    }
+    return filtered_args;
+}
+// =========================================================
+
 CliController::CliController(const std::vector<std::string>& args) : args_(args) {
     if (args.size() < 2) {
         throw std::runtime_error("No command provided.");
@@ -82,32 +99,42 @@ void CliController::execute() {
 }
 
 void CliController::handle_run_pipeline() {
-    if (args_.size() != 3) {
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() != 3) {
         throw std::runtime_error("Command 'run-pipeline' requires exactly one source directory path argument.");
     }
     file_processing_handler_->run_full_pipeline_and_import(args_[2]);
 }
 
 void CliController::handle_validate_source() {
-    if (args_.size() != 3) {
+    // ======================= 核心修改 2/3 =======================
+    // 使用过滤后的参数进行数量检查
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() != 3) {
         throw std::runtime_error("Command 'validate-source' requires exactly one path argument.");
     }
+    // =========================================================
     AppOptions options;
     options.validate_source = true;
     file_processing_handler_->run_preprocessing(args_[2], options);
 }
 
 void CliController::handle_convert() {
-    if (args_.size() != 3) {
+    // ======================= 核心修改 3/3 =======================
+    // 使用过滤后的参数进行数量检查
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() != 3) {
         throw std::runtime_error("Command 'convert' requires exactly one path argument.");
     }
+    // =========================================================
     AppOptions options;
     options.convert = true;
     file_processing_handler_->run_preprocessing(args_[2], options);
 }
 
 void CliController::handle_validate_output() {
-    if (args_.size() < 3) {
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() < 3) {
         throw std::runtime_error("Command 'validate-output' requires a path argument.");
     }
     AppOptions options;
@@ -122,7 +149,8 @@ void CliController::handle_validate_output() {
 }
 
 void CliController::handle_database_import() {
-    if (args_.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() != 3) throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
     
     std::println("Now inserting into the database.");
     std::println("Please ensure the data has been converted and validated.");
@@ -139,7 +167,8 @@ void CliController::handle_database_import() {
 }
 
 void CliController::handle_query() {
-    if (args_.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() < 4) throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
     
     std::string sub_command = args_[2];
     std::string query_arg = args_[3];
@@ -168,13 +197,14 @@ void CliController::handle_query() {
 }
 
 void CliController::handle_export() {
-    if (args_.size() < 3) throw std::runtime_error("Command 'export' requires a type argument (e.g., export daily).");
+    auto filtered_args = filter_global_options(args_);
+    if (filtered_args.size() < 3) throw std::runtime_error("Command 'export' requires a type argument (e.g., export daily).");
 
     std::string sub_command = args_[2];
     ReportFormat format = parse_format_option();
 
     if (sub_command == "daily" || sub_command == "monthly" || sub_command == "period" || sub_command == "all-period") {
-        if (args_.size() < 4) throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
+        if (filtered_args.size() < 4) throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
         std::string export_arg = args_[3];
 
         if (sub_command == "daily") {
