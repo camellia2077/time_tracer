@@ -29,6 +29,17 @@ def setup_environment():
             except OSError as e:
                 print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
                 sys.exit(1)
+
+    # --- 清理上一次运行留下的可执行文件和DLL ---
+    for file_name in config.FILES_TO_CLEAN:
+        file_path = config.TARGET_EXECUTABLES_DIR / file_name
+        if file_path.exists():
+            try:
+                file_path.unlink()
+                print(f"  {config.Colors.GREEN}已移除旧文件: {file_name}{config.Colors.RESET}")
+            except OSError as e:
+                print(f"  {config.Colors.RED}移除文件 '{file_name}' 时出错: {e}{config.Colors.RESET}")
+                sys.exit(1)
             
     # 同时创建 C++ 程序的输出目录和 Python 的日志目录
     (Path.cwd() / config.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
@@ -43,7 +54,7 @@ def setup_environment():
         sys.exit(1)
 
     # 复制 EXE 和 DLL 文件
-    executables_to_copy = [config.EXECUTABLE_CLI_NAME, config.EXECUTABLE_APP_NAME]
+    executables_to_copy = [config.EXECUTABLE_CLI_NAME]
     dlls_to_copy = [
         "libgcc_s_seh-1.dll",
         "libstdc++-6.dll",

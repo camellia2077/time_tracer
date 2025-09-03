@@ -30,11 +30,10 @@ include(SourceFileCollection) # 包含并执行源文件收集脚本
 include(TargetSetup)          # 包含并定义 setup_project_target 函数
 
 # --- 3. 定义可执行文件目标 ---
-add_executable(time_tracker_app src/main.cpp ${COMMON_SOURCES} ${DB_INSERTER_SOURCES} ${QUERIES_SOURCES} ${TIME_MASTER_APP_SOURCES} ${REPROCESSING_SOURCES} ${FILE_HANDLER_SOURCES} ${ACTION_HANDLER_SOURCES})
 add_executable(time_tracker_cli src/main_cli.cpp ${COMMON_SOURCES} ${DB_INSERTER_SOURCES} ${QUERIES_SOURCES} ${REPROCESSING_SOURCES} ${FILE_HANDLER_SOURCES} ${ACTION_HANDLER_SOURCES} ${TIME_MASTER_CLI_SOURCES})
 
 # 创建一个包含所有可执行文件目标的列表
-set(ALL_TARGETS time_tracker_app time_tracker_cli)
+set(ALL_TARGETS time_tracker_cli)
 
 # --- 4. 为每个目标应用通用配置 ---
 foreach(TARGET_NAME ${ALL_TARGETS})
