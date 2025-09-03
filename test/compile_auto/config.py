@@ -2,7 +2,7 @@
 # 在这里配置你所有的路径和选项
 
 # 1. 源文件夹的父目录
-SOURCE_DIRECTORY = r"C:\Computer\my_github\github_cpp\time_master\my_test\exported_files"
+SOURCE_DIRECTORY = r"C:\Computer\my_github\github_cpp\time_master\my_test\output\exported_files"
 
 # 2. 统一的输出目录
 OUTPUT_DIRECTORY = "output_pdf"
@@ -29,6 +29,5 @@ CLEAN_OUTPUT_DEFAULT = False
 
 
 # --- 以下为 Markdown 基准测试配置 ---
-# ... (后续内容保持不变) ...
 MARKDOWN_COMPILERS = ['typst']
 BENCHMARK_LOOPS = 3

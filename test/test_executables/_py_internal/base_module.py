@@ -26,14 +26,19 @@ class TestCounter:
 class BaseTester:
     """Base class for all test modules."""
     def __init__(self, counter: TestCounter, module_order: int, reports_sub_dir_name: str,
-                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
+                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str,
+                 output_dir: Path):
         self.executable_path = Path.cwd() / executable_to_run
         self.source_data_path = source_data_path
-        self.processed_data_path = Path.cwd() / converted_text_dir_name
+        # ======================= 核心修改 =======================
+        # 修改这里，让 processed_data_path 基于 output_dir 构建，而不是当前工作目录
+        self.processed_data_path = output_dir / converted_text_dir_name
+        # =========================================================
+        self.output_dir = output_dir
         self.test_counter = counter
         self.module_name = reports_sub_dir_name.replace('_', ' ').title()
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
-        self.reports_dir = Path.cwd() / "output" / reports_dir_name
+        self.reports_dir = Path.cwd() / "py_output" / reports_dir_name
 
     def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None) -> bool:
         """

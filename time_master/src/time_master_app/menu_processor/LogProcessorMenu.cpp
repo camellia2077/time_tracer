@@ -1,10 +1,10 @@
 // time_master_app/menu_processor/LogProcessorMenu.cpp
 
 #include "LogProcessorMenu.hpp"
-
 #include "action_handler/FileProcessingHandler.hpp"
 #include "common/common_utils.hpp"
 #include "time_master_app/menu_input/UserInputUtils.hpp"
+#include "common/AppConfig.hpp" // For AppOptions
 
 #include <iostream>
 #include <string>
@@ -30,7 +30,7 @@ void LogProcessorMenu::run() {
         }
 
         if (choice == 6) {
-            break; // 返回主菜单
+            break; 
         }
         
         handle_choice(choice);
@@ -77,8 +77,7 @@ void LogProcessorMenu::handle_choice(int choice) {
     }
     if (path.empty()) return;
 
-    PreprocessingOptions options;
-    // [修复] 移除了未使用的 enable_day_check 变量
+    AppOptions options;
 
     switch (choice) {
         case 1:
@@ -91,14 +90,14 @@ void LogProcessorMenu::handle_choice(int choice) {
             options.validate_output = true;
             std::cout << "Enable check for day completeness in a month? (y/n) [Default: n]: ";
             if (UserInputUtils::get_yes_no_input()) {
-                options.enable_day_check = true;
+                options.enable_day_count_check = true;
             }
             break;
         case 4:
             options.validate_source = true;
             options.convert = true;
             options.validate_output = true;
-            options.enable_day_check = true;
+            options.enable_day_count_check = true;
             break;
     }
 

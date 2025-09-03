@@ -1,6 +1,6 @@
 # module_query.py
 from pathlib import Path
-from .base_module import BaseTester, TestCounter
+from .base_module import BaseTester, TestCounter, Colors
 
 class QueryTester(BaseTester):
     """Module for database query tests."""
@@ -10,10 +10,12 @@ class QueryTester(BaseTester):
                  monthly_query_months: list,
                  period_query_days: list,
                  test_formats: list,
-                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
+                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str,
+                 output_dir: Path):
         super().__init__(counter, module_order, "query",
-                         executable_to_run, source_data_path, converted_text_dir_name)
-        self.db_file = Path.cwd() / generated_db_file_name
+                         executable_to_run, source_data_path, converted_text_dir_name,
+                         output_dir)
+        self.db_file = output_dir / generated_db_file_name
         self.daily_dates = daily_query_dates
         self.monthly_months = monthly_query_months
         self.period_days = period_query_days
@@ -21,9 +23,12 @@ class QueryTester(BaseTester):
 
     def run_tests(self) -> bool:
         """Runs all database query related tests."""
+        # ======================= 核心修改 =======================
+        # 如果数据库文件不存在，打印错误并返回 False，使测试失败
         if not self.db_file.exists():
-            print(f"Warning: Skipping query tests because the database file '{self.db_file.name}' does not exist.")
-            return True # Treat skipping as success
+            print(f"{Colors.RED}错误: 数据库文件 '{self.db_file.name}' 不存在，查询测试无法继续。{Colors.RESET}")
+            return False # 将测试标记为失败
+        # =========================================================
 
         tests_to_run = []
         

@@ -12,6 +12,9 @@ class Colors:
 # --- File and Directory Paths ---
 SOURCE_EXECUTABLES_DIR = Path("C:/Computer/my_github/github_cpp/time_master/Time_Master_cpp/time_master/build/bin")
 SOURCE_DATA_PARENT_DIR = Path("C:/Computer/my_github/github_cpp/time_master/my_test")
+# 预处理后的json路径
+PROCESSED_JSON_PATH = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\output\Processed_Date")
+db = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\output\time_data.db")
 SOURCE_DATA_FOLDER_NAME = "Date"
 SOURCE_DATA_PATH = SOURCE_DATA_PARENT_DIR / SOURCE_DATA_FOLDER_NAME
 TARGET_EXECUTABLES_DIR = Path("./") # The current directory where the script is run
@@ -21,11 +24,11 @@ EXECUTABLE_CLI_NAME = "time_tracker_cli.exe"
 EXECUTABLE_APP_NAME = "time_tracker_app.exe"
 GENERATED_DB_FILE_NAME = "time_data.db"
 PROCESSED_DATA_DIR_NAME = f"Processed_{SOURCE_DATA_FOLDER_NAME}"
+OUTPUT_DIR_NAME = "output" # <--- 新增
 
-# [核心修改] 新增一个变量来存储已处理好的、用于验证的JSON文件路径
-# ==============================================================================
-PROCESSED_JSON_PATH = Path(r"C:\Computer\my_github\github_cpp\time_master\my_test\Processed_Date")
-# ==============================================================================
+
+
+
 
 
 # ==============================================================================
@@ -55,9 +58,7 @@ SPECIFIC_EXPORT_MONTHS = ["202505", "202506"]
 
 # --- Artifacts to be cleaned up before each test run ---
 DIRECTORIES_TO_CLEAN = [
-    PROCESSED_DATA_DIR_NAME,
-    "Processed_Date", # Legacy name, can be removed if no longer generated
-    "output",
-    "exported_files",
-    "config" # <--- 新增: 将 config 文件夹加入清理列表
+    OUTPUT_DIR_NAME,
+    "py_output",
+    "config" 
 ]

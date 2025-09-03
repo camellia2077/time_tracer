@@ -5,9 +5,11 @@ from .base_module import BaseTester, TestCounter
 class DatabaseImportTester(BaseTester):
     """Module for database import tests."""
     def __init__(self, counter: TestCounter, module_order: int,
-                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str):
+                 executable_to_run: str, source_data_path: Path, converted_text_dir_name: str,
+                 output_dir: Path): # <--- 1. 在这里添加
         super().__init__(counter, module_order, "db_import",
-                         executable_to_run, source_data_path, converted_text_dir_name)
+                         executable_to_run, source_data_path, converted_text_dir_name,
+                         output_dir) # <--- 2. 传递给父类
 
     def run_tests(self) -> bool:
         """Runs all database import related tests."""
