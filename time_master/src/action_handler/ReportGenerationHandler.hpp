@@ -15,7 +15,8 @@ class DirectQueryManager;
 
 class ReportGenerationHandler {
 public:
-    ReportGenerationHandler(const std::string& db_name, const AppConfig& config);
+    // 修改构造函数以接收报告专用路径
+    ReportGenerationHandler(const std::string& db_path, const AppConfig& config, const std::filesystem::path& exported_files_path);
     ~ReportGenerationHandler();
 
     std::string run_daily_query(const std::string& date, ReportFormat format);
@@ -37,7 +38,7 @@ private:
     std::unique_ptr<ReportExporter> report_exporter_;
     std::unique_ptr<DirectQueryManager> direct_query_manager_;
 
-    std::filesystem::path export_root_path_;
+    std::filesystem::path export_root_path_; // 这个成员变量可以保持，但现在代表报告专用路径
 };
 
 #endif // REPORT_GENERATION_HANDLER_HPP

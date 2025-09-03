@@ -1,4 +1,3 @@
-
 // main.cpp
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
@@ -6,13 +5,13 @@
 #include <iostream>
 #include <print>
 #include <string>
+#include <filesystem> // 引入 filesystem
 
 #include "time_master_app/menu.hpp" 
-#include "common/common_utils.hpp"     // Contains color macro definitions
-#include "file_handler/FileController.hpp"   // 包含json读取和递归查询文件
+#include "common/common_utils.hpp"
+#include "file_handler/FileController.hpp"
 
-// Core constant for the database name
-const std::string DATABASE_NAME = "time_data.db";
+namespace fs = std::filesystem;
 
 #if defined(_WIN32) || defined(_WIN64)
 void EnableVirtualTerminalProcessing() {
@@ -32,31 +31,53 @@ int main(int argc, char* argv[]) {
     #endif
 
     if (argc < 1) {
-        // 修改：使用 std::println 向 std::cerr 打印错误信息
         std::println(std::cerr, "{}{}{}{}", RED_COLOR, "Error", RESET_COLOR, ": Cannot determine application path.");
         return 1;
     }
 
     try {
-        // --- 新的、简化的初始化流程 ---
+        // --- 路径初始化 ---
+        fs::path output_root_path;
+        fs::path exported_files_path;
 
-        // 1. 实例化 FileController。这一个步骤就完成了所有配置加载。
-        //    如果加载失败，其构造函数会抛出异常，由下面的 catch 块捕获。
+        std::cout << "Enter the path for exported reports (e.g., .md, .tex) or press Enter for default:\n> ";
+        std::string user_path;
+        std::getline(std::cin, user_path);
+
+        if (!user_path.empty()) {
+            // 用户指定了路径, 该路径为报告专用路径
+            exported_files_path = fs::absolute(user_path);
+            // 主输出目录是其父目录
+            output_root_path = exported_files_path.parent_path();
+        } else {
+            // 默认情况：主输出目录是程序所在位置下的 "output"
+            fs::path exe_path(argv[0]);
+            output_root_path = fs::absolute(exe_path.parent_path() / "output");
+            // 报告专用路径是主目录下的 "exported_files"
+            exported_files_path = output_root_path / "exported_files";
+        }
+
+        // 确保目录存在
+        fs::create_directories(output_root_path);
+        fs::create_directories(exported_files_path);
+
+        std::cout << "\n" << "All program outputs will be saved under: " << output_root_path << std::endl;
+        std::cout << "Exported reports (.md, .tex, etc.) will be saved in: " << exported_files_path << std::endl;
+        
+        // --- 程序初始化 ---
         FileController file_controller(argv[0]);
         
-        // 2. 实例化并运行菜单。我们直接从控制器获取所需的数据来初始化它。
+        // 实例化并运行菜单，传入已确定的路径
         Menu app_menu(
-            DATABASE_NAME,
-            file_controller.get_config(),          // 从控制器获取 AppConfig
-            file_controller.get_main_config_path() // 从控制器获取主配置路径
+            file_controller.get_config(),
+            file_controller.get_main_config_path(),
+            output_root_path,
+            exported_files_path
         );
         app_menu.run();
 
     } catch (const std::exception& e) {
-        // 修改：使用 std::println 向 std::cerr 打印错误信息
         std::println(std::cerr, "{}{}{} during configuration setup: {}", RED_COLOR, "Fatal Error", RESET_COLOR, e.what());
-        
-        // 在交互模式下，增加一个暂停，让用户看到错误信息
         std::print("\nPress Enter to exit...");
         std::cin.get();
         return 1;
