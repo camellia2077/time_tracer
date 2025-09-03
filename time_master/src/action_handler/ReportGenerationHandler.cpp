@@ -1,4 +1,3 @@
-
 #include "action_handler/ReportGenerationHandler.hpp"
 #include "action_handler/database/DatabaseManager.hpp"
 #include "action_handler/reporting/ReportExporter.hpp"
@@ -8,10 +7,12 @@
 
 namespace fs = std::filesystem;
 
-ReportGenerationHandler::ReportGenerationHandler(const std::string& db_name, const AppConfig& config)
-    : export_root_path_(config.export_path.value_or("exported_files"))
+// 修改构造函数实现
+ReportGenerationHandler::ReportGenerationHandler(const std::string& db_path, const AppConfig& config, const fs::path& exported_files_path)
+    : export_root_path_(exported_files_path) // 直接使用传入的报告专用路径
 {
-    db_manager_ = std::make_unique<DatabaseManager>(db_name);
+    // DatabaseManager 接收完整的数据库文件路径
+    db_manager_ = std::make_unique<DatabaseManager>(db_path);
 }
 
 ReportGenerationHandler::~ReportGenerationHandler() = default;
@@ -33,11 +34,13 @@ ReportExporter* ReportGenerationHandler::get_report_exporter() {
         return nullptr;
     }
     if (!report_exporter_) {
+        // ReportExporter 也直接使用传入的报告专用路径
         report_exporter_ = std::make_unique<ReportExporter>(db_manager_->get_db_connection(), export_root_path_);
     }
     return report_exporter_.get();
 }
 
+// ... (所有 run_* 方法保持不变, 因为它们依赖于 get_report_exporter() 和 get_direct_query_manager()，这两个函数现在已经配置正确)
 std::string ReportGenerationHandler::run_daily_query(const std::string& date, ReportFormat format) {
     if (auto* qm = get_direct_query_manager()) {
         return qm->run_daily_query(date, format);

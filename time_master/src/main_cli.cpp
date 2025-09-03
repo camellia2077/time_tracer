@@ -81,7 +81,7 @@ void print_full_usage(const char* app_name) {
     std::println("{}TimeMaster{}: A command-line tool for time data pre-processing, import, and querying.\n",GREEN_COLOR,RESET_COLOR);
     std::println("Usage: {} <command>[arguments...] [options...]\n", app_name);
     
- std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
+    std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
     std::println("  run-pipeline <path>\t\t Run full pipeline: validate source, convert, and validate output.");
     std::println("  import <path>\t\t\t Import processed .json files into the database.");
     std::println("  query <type> <period>\t\t Query data from the database.");
@@ -98,7 +98,7 @@ void print_full_usage(const char* app_name) {
 
     std::println("{}{}{}", GREEN_COLOR, "--- Command: import ---", RESET_COLOR);
     std::println("  Usage: {} import <directory_path>", app_name);
-    std::println("  Example: {} import /path/to/processed_logs/\n", app_name);
+    std::println("  Example: {} import /path/to/output/Processed_logs/\n", app_name);
     
     std::println("{}{}{}", GREEN_COLOR, "--- Command: query ---", RESET_COLOR);
     std::println("  Usage: {} query <type> <argument> [options...]", app_name);
@@ -119,10 +119,15 @@ void print_full_usage(const char* app_name) {
     std::println("    all-daily\t\t\t Export all daily reports.");
     std::println("    all-monthly\t\t\t Export all monthly reports.");
     std::println("    all-period <days_list>\t Export multiple period reports (e.g., 7,30,90).");
-    std::println("  Options (for all export types):");
-    std::println("    --format, -f <format>\t Specify output format (md, tex, typ). Default: md.");
-    std::println("  Example: {} export daily 20240115 --format tex", app_name);
-    std::println("  Example: {} export all-monthly --format tex\n", app_name);
+    std::println("  Options (for all commands):"); // 选项现在是全局的
+    std::println("    --format, -f <format>\t Specify output format for query/export (md, tex, typ). Default: md.");
+    // 修改下面这行
+    std::println("    --output, -o <path>\t\t Specify the directory for formatted reports (e.g., .md, .tex).");
+    std::println("\t\t\t\t All program outputs (database, converted files) will be placed");
+    std::println("\t\t\t\t in the parent directory of this path.");
+    std::println("\t\t\t\t Default: [program_location]/output/exported_files");
+    std::println("  Example: {} export daily 20240115 -f tex -o /my/reports/exported_files", app_name);
+    std::println("  Example: {} export all-monthly -f tex\n", app_name);
 
     std::println("{}{}{}", GREEN_COLOR, "--- Other Options ---", RESET_COLOR);
     std::println("  --help, -h\t\t\t Show this help message.");

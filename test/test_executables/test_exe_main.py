@@ -18,7 +18,6 @@ from _py_internal.module_export import ExportTester
 def setup_environment():
     """验证路径、清理旧环境，然后复制可执行文件、DLL和配置。"""
     
-    # ... (此函数内容保持不变) ...
     # --- 第1步: 清理上一次运行留下的所有工件 ---
     print(f"{config.Colors.CYAN}--- 1. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
     for dir_name in config.DIRECTORIES_TO_CLEAN:
@@ -30,15 +29,11 @@ def setup_environment():
             except OSError as e:
                 print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
                 sys.exit(1)
-                
-    db_file = Path.cwd() / config.GENERATED_DB_FILE_NAME
-    if db_file.exists():
-        db_file.unlink()
-        print(f"  {config.Colors.GREEN}已移除旧数据库文件: {config.GENERATED_DB_FILE_NAME}{config.Colors.RESET}")
-        
-    output_dir = Path.cwd() / "output"
-    output_dir.mkdir(parents=True, exist_ok=True)
-    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 日志目录。{config.Colors.RESET}")
+            
+    # 同时创建 C++ 程序的输出目录和 Python 的日志目录
+    (Path.cwd() / config.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
+    (Path.cwd() / "py_output").mkdir(parents=True, exist_ok=True)
+    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 和 'py_output' 目录。{config.Colors.RESET}")
 
     # --- 第2步: 准备本次运行所需的文件 ---
     print(f"{config.Colors.CYAN}--- 2. Preparing Executable, DLLs and Config ---{config.Colors.RESET}")
@@ -75,6 +70,8 @@ def setup_environment():
     target_config_path = config.TARGET_EXECUTABLES_DIR / "config"
     if source_config_path.exists() and source_config_path.is_dir():
         try:
+            if target_config_path.exists():
+                shutil.rmtree(target_config_path)
             shutil.copytree(source_config_path, target_config_path)
             print(f"  {config.Colors.GREEN}已成功复制: config 文件夹{config.Colors.RESET}")
         except Exception as e:
@@ -103,15 +100,18 @@ def main():
     
     shared_counter = TestCounter()
     
+    # 核心修改：定义统一的输出路径，并将其传递给所有测试模块
+    output_dir_path = Path.cwd() / config.OUTPUT_DIR_NAME
+    
     common_args = {
         "executable_to_run": config.EXECUTABLE_CLI_NAME,
         "source_data_path": config.SOURCE_DATA_PATH,
-        "converted_text_dir_name": config.PROCESSED_DATA_DIR_NAME
+        "converted_text_dir_name": config.PROCESSED_DATA_DIR_NAME,
+        "output_dir": output_dir_path # <--- 新增
     }
 
     modules = [
         PreprocessingTester(shared_counter, 1, 
-                            # [核心修改] 直接使用从 config.py 导入的路径
                             specific_validation_path=str(config.PROCESSED_JSON_PATH),
                             **common_args),
 
@@ -146,7 +146,8 @@ def main():
     if all_tests_passed:
         print(f"""
 {config.Colors.GREEN}✅ All test steps completed successfully!{config.Colors.RESET}
-   Check the 'output' directory for detailed logs.
+   Check the 'py_output' directory for detailed logs.
+   Check the '{config.OUTPUT_DIR_NAME}' directory for program artifacts.
 """)
 
 if __name__ == "__main__":

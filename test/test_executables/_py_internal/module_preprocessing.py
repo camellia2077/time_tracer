@@ -7,9 +7,11 @@ class PreprocessingTester(BaseTester):
     """Module for file pre-processing tests."""
     def __init__(self, counter: TestCounter, module_order: int,
                  executable_to_run: str, source_data_path: Path, converted_text_dir_name: str,
+                 output_dir: Path, # <--- 1. 在这里添加
                  specific_validation_path: Optional[str] = None):
         super().__init__(counter, module_order, "preprocessing",
-                         executable_to_run, source_data_path, converted_text_dir_name)
+                         executable_to_run, source_data_path, converted_text_dir_name,
+                         output_dir) # <--- 2. 传递给父类
         self.specific_validation_path = specific_validation_path
 
     def run_tests(self) -> bool:
