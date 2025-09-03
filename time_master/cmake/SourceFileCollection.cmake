@@ -13,15 +13,6 @@ set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliParser.cpp"
 )
 
-# --- Time Master App (GUI/TUI) Sources ---
-set(TIME_MASTER_APP_SOURCES
-    "src/time_master_app/menu.cpp"
-    "src/time_master_app/menu_export/ExportMenu.cpp"
-    "src/time_master_app/menu_input/UserInputUtils.cpp"
-    "src/time_master_app/menu_processor/LogProcessorMenu.cpp"
-    "src/time_master_app/menu_query/QueryMenu.cpp"
-)
-
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES
     "src/db_inserter/DataImporter.cpp"
