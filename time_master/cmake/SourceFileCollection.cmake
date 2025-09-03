@@ -10,6 +10,7 @@ set(COMMON_SOURCES
 # --- Time Master CLI Sources ---
 set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliController.cpp"
+    "src/time_master_cli/CliParser.cpp"
 )
 
 # --- Time Master App (GUI/TUI) Sources ---

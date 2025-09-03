@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 #include <memory>
-#include <optional>
 #include <filesystem>
 #include "queries/shared/ReportFormat.hpp"
+#include "CliParser.hpp" // 包含新的解析器头文件
 
 // 前向声明
 class FileController;
@@ -24,18 +24,17 @@ public:
     void execute();
 
 private:
-    std::vector<std::string> args_;
-    std::string command_;
-    
+    CliParser parser_; // 使用新的解析器类替换原始参数
+
     std::unique_ptr<FileController> file_controller_;
     std::unique_ptr<FileProcessingHandler> file_processing_handler_;
     std::unique_ptr<ReportGenerationHandler> report_generation_handler_;
 
-    fs::path output_root_path_;      // 新增：主输出目录 (e.g., ./output)
-    fs::path exported_files_path_; // 新增：报告专用目录 (e.g., ./output/exported_files)
+    fs::path output_root_path_;
+    fs::path exported_files_path_;
 
     // --- 辅助函数 ---
-    void initialize_output_paths(); // 修改：初始化所有输出路径的函数
+    void initialize_output_paths();
     void handle_run_pipeline();
     void handle_validate_source();
     void handle_convert();
@@ -44,8 +43,7 @@ private:
     void handle_query();
     void handle_export();
 
-    ReportFormat parse_format_option() const;
-    std::optional<std::string> parse_output_option() const;
+    // 解析函数已移至 CliParser 类
 };
 
 #endif // CLI_CONTROLLER_HPP
