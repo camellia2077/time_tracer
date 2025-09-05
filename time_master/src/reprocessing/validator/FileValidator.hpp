@@ -2,7 +2,7 @@
 #ifndef FILE_VALIDATOR_HPP
 #define FILE_VALIDATOR_HPP
 
-#include "ValidatorUtils.hpp"
+#include "reprocessing/validator/common/ValidatorUtils.hpp"
 #include <string>
 #include <set>
 
