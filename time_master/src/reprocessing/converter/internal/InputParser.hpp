@@ -11,15 +11,18 @@
 
 class InputParser {
 public:
-    InputParser(const ConverterConfig& config, const std::string& year_prefix);
+    // [修改] 构造函数不再需要 year_prefix
+    explicit InputParser(const ConverterConfig& config);
     void parse(std::istream& inputStream, std::function<void(InputData&)> onNewDay);
 
 private:
     const ConverterConfig& config_;
-    const std::string year_prefix_;
-    // [优化] 将 unordered_set 作为成员变量，避免在 parseLine 中重复创建
+    
+    std::string year_prefix_; // [修改] year_prefix_ 现在由 parse 方法在内部确定
     const std::unordered_set<std::string> wake_keywords_;
 
+    
+    bool isYearMarker(const std::string& line) const;// [新增] 用于识别年份行的辅助函数
     bool isNewDayMarker(const std::string& line) const;
     void parseLine(const std::string& line, InputData& currentDay) const;
 };
