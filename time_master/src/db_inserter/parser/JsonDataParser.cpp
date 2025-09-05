@@ -73,29 +73,28 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
     std::string title = activity_details.value("title", "unknown");
     
     std::string project_path = title;
-    std::string parent_path = title;
 
     if (activity_details.contains("parents") && activity_details["parents"].is_array()) {
         for (const auto& parent_json : activity_details["parents"]) {
             std::string parent_name = parent_json.get<std::string>();
-            std::string child_path = project_path;
-            project_path += "_" + parent_name;
-            parent_child_pairs.insert({child_path, project_path});
-        }
-    }
-    
-    // 我们需要反转路径以匹配旧的数据库结构 `child -> parent`
-    // 例如, "game_steam" 的父级是 "game"
-    std::vector<std::string> parts = split_string(project_path, '_');
-    if(parts.size() > 1){
-        for(size_t i = 0; i < parts.size() - 1; ++i){
-            std::string child = parts[0];
-            for(size_t j = 1; j <= i; ++j) child += "_" + parts[j];
-            std::string parent = child + "_" + parts[i+1];
-            parent_child_pairs.insert({child, parent});
-        }
-    }
 
+            // --- 父子关系构建逻辑 ---
+            // 在每次迭代中，我们将当前的 `project_path` 视为父级。
+            // 例如，如果当前 `project_path` 是 "game"，它就是下一级的父级。
+            std::string parent_path = project_path; 
+
+            // 然后，我们将新的部分（如 "steam"）追加到路径末尾，形成一个新的、更具体的子级路径。
+            // 例如，`project_path` 变为 "game_steam"。
+            project_path += "_" + parent_name;      
+
+            // 我们将这个关系 {子级, 父级} 存入数据库。
+            // 例如，对于 "game_steam_overwatch"，数据库会存储以下关系：
+            // 1. { "game_steam", "game" }  (game_steam 是 game 的子级)
+            // 2. { "game_steam_overwatch", "game_steam" } (game_steam_overwatch 是 game_steam 的子级)
+            // 这样就确保了层级关系的正确性：范围大的为父，范围小的为子。
+            parent_child_pairs.insert({project_path, parent_path});
+        }
+    }
 
     TimeRecordInternal record;
     record.date = date;
