@@ -21,10 +21,14 @@ LogGenerator::LogGenerator(int items_per_day,
         }
     }
 
-// MODIFIED: Returns the generated string
-std::string LogGenerator::generate_for_month(int month, int days_in_month) {
+// [修改] 函数实现新增 year 参数，并在文件开头添加年份
+std::string LogGenerator::generate_for_month(int year, int month, int days_in_month) {
     std::string log_content;
-    log_content.reserve(days_in_month * (items_per_day_ * 25 + 30)); 
+    // 预留空间时，为年份行增加一点额外容量
+    log_content.reserve(days_in_month * (items_per_day_ * 25 + 30) + 10); 
+
+    // [核心修改] 在文件最开始处添加年份信息
+    std::format_to(std::back_inserter(log_content), "y{}\n\n", year);
 
     for (int day = 1; day <= days_in_month; ++day) {
         if (day > 1) {
@@ -59,6 +63,5 @@ std::string LogGenerator::generate_for_month(int month, int days_in_month) {
             std::format_to(std::back_inserter(log_content), "{:02}{:02}{}\n", display_hour_final, event_minute_final, event_text_to_use_final);
         }
     }
-    // MODIFIED: Return the string instead of writing to a stream
     return log_content;
 }
