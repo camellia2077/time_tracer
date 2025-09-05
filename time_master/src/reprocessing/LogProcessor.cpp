@@ -10,9 +10,8 @@
 #include <iostream>
 #include <algorithm>
 #include <set>
-#include <ctime>
-#include <filesystem>
 #include <chrono>
+#include <filesystem>
 
 namespace fs = std::filesystem;
 
@@ -50,8 +49,8 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
 
         try {
             IntervalConverter processor(config_.interval_processor_config_path);
-            std::string year_str = extractYearFromPath(source_file);
-            if (!processor.executeConversion(source_file.string(), output_file.string(), year_str)) {
+            // [核心修改] 不再从路径提取年份，直接调用转换
+            if (!processor.executeConversion(source_file.string(), output_file.string())) {
                  result.success = false;
             } else {
                 std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
@@ -106,22 +105,4 @@ bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std:
         out_files.push_back(input_path);
     }
     return true;
-}
-
-// [修复] 添加缺失的函数定义
-std::string LogProcessor::extractYearFromPath(const fs::path& file_path) {
-    fs::path current_path = file_path.parent_path();
-    auto is_four_digit_string = [](const std::string& s) {
-        return s.length() == 4 && std::all_of(s.begin(), s.end(), ::isdigit);
-    };
-    while (!current_path.empty() && current_path.has_filename()) {
-        if (is_four_digit_string(current_path.filename().string())) {
-            return current_path.filename().string();
-        }
-        current_path = current_path.parent_path();
-    }
-    // 如果在路径中找不到年份，则返回当前年份作为备用
-    std::time_t now = std::time(nullptr);
-    std::tm* ltm = std::localtime(&now);
-    return std::to_string(1900 + ltm->tm_year);
 }

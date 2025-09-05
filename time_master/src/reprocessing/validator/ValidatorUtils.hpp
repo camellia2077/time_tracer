@@ -19,8 +19,9 @@ enum class ErrorType {
     IncorrectDayCountForMonth,
     Source_RemarkAfterEvent,
     Source_NoDateAtStart,
-    UnrecognizedActivity, // [新增] 未识别的活动关键字
-    Source_InvalidLineFormat
+    UnrecognizedActivity,
+    Source_InvalidLineFormat,
+    Source_MissingYearHeader // 源文件缺少年份标题,例如y2025
 };
 
 // 共享的错误结构体
