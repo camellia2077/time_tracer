@@ -8,8 +8,7 @@
 class IntervalConverter {
 public:
     explicit IntervalConverter(const std::string& config_filename);
-
-    bool executeConversion(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix);
+    bool executeConversion(const std::string& input_filepath, const std::string& output_filepath);
 
 private:
     ConverterConfig config_;

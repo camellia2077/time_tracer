@@ -1,4 +1,3 @@
-
 // time_master/reprocessing/validator/ValidatorUtils.cpp
 #include "ValidatorUtils.hpp"
 #include "common/common_utils.hpp" // 颜色宏定义在这里
@@ -14,6 +13,7 @@ static std::string getErrorTypeHeader(ErrorType type) {
         case ErrorType::Source_NoDateAtStart:
         case ErrorType::Source_InvalidLineFormat:
         case ErrorType::UnrecognizedActivity:
+        case ErrorType::Source_MissingYearHeader: // [新增]
             return "Source file format errors (源文件格式错误):";
         case ErrorType::IncorrectDayCountForMonth:
             return "Date errors(日期错误):";
@@ -35,6 +35,7 @@ static std::string getErrorTypeHeader(ErrorType type) {
     }
 }
 
+// ... (printGroupedErrors 和 trim 函数保持不变) ...
 void printGroupedErrors(const std::string& filename, const std::set<Error>& errors, const std::string& error_log_path) {
     std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
     std::map<ErrorType, std::vector<Error>> grouped_errors;

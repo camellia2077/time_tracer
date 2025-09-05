@@ -16,13 +16,14 @@ public:
 private:
     std::string remark_prefix_;
     std::unordered_set<std::string> valid_event_keywords_;
-    // [新增] 用于存储从配置文件加载的起床的关键字
     std::unordered_set<std::string> wake_keywords_;
 
     void loadConfiguration(const std::string& config_filename);
-    bool isDateLine(const std::string& line);
-    bool isRemarkLine(const std::string& line);
-    // [修改] 函数签名更新，以区分是否为当天的第一个事件
+    
+    
+    bool isYearLine(const std::string& line);// 检查年份行的辅助函数
+    bool isDateLine(const std::string& line);// 检查日期行的辅助函数
+    bool isRemarkLine(const std::string& line); // 检查备注行的辅助函数
     bool parseAndValidateEventLine(const std::string& line, std::set<Error>& errors, int line_number, bool is_first_event);
 };
 
