@@ -50,7 +50,8 @@ bool SourceFileValidator::validate(const std::string& file_path, std::set<Error>
 
     std::string line;
     int lineNumber = 0;
-    bool firstLineFound = false;
+    bool yearLineFound = false; // [修改] 新增状态，跟踪是否已找到年份行
+    bool dateLineFound = false; // [修改] 原 firstLineFound 语义改为 dateLineFound
     bool eventFoundForCurrentDay = false;
 
     while (std::getline(inFile, line)) {
@@ -58,14 +59,27 @@ bool SourceFileValidator::validate(const std::string& file_path, std::set<Error>
         std::string trimmed_line = trim(line);
         if (trimmed_line.empty()) continue;
 
+        // [核心修改] 文件第一个非空行必须是年份行
+        if (!yearLineFound) {
+            if (isYearLine(trimmed_line)) {
+                yearLineFound = true;
+                continue;
+            } else {
+                errors.insert({lineNumber, "The first non-empty line must be a year header (e.g., 'y2025'). Found: '" + trimmed_line + "'", ErrorType::Source_MissingYearHeader});
+                // 发现严重格式错误，后续校验可能无意义，直接返回
+                return false; 
+            }
+        }
+
         if (isDateLine(trimmed_line)) {
             eventFoundForCurrentDay = false;
-            if (!firstLineFound) firstLineFound = true;
+            if (!dateLineFound) dateLineFound = true;
             continue;
         }
 
-        if (!firstLineFound) {
-            errors.insert({lineNumber, "The first non-empty line must be a 4-digit date. Found: '" + trimmed_line + "'", ErrorType::Source_NoDateAtStart});
+        // [修改] 现在检查日期行是否在年份行之后
+        if (!dateLineFound) {
+            errors.insert({lineNumber, "A 4-digit date (MMDD) must follow the year header. Found: '" + trimmed_line + "'", ErrorType::Source_NoDateAtStart});
             continue;
         }
 
@@ -85,6 +99,14 @@ bool SourceFileValidator::validate(const std::string& file_path, std::set<Error>
     }
 
     return errors.empty();
+}
+
+// [新增] 检查是否为 'y' + 4位数字 的年份行
+bool SourceFileValidator::isYearLine(const std::string& line) {
+    if (line.length() != 5 || line[0] != 'y') {
+        return false;
+    }
+    return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
 bool SourceFileValidator::isDateLine(const std::string& line) {

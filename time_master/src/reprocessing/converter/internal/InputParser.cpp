@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <cctype>
 #include <iostream>
-#include <unordered_set>
-#include "common/common_utils.hpp" // 颜色宏定义在这里
+#include "common/common_utils.hpp"
+#include "reprocessing/validator/ValidatorUtils.hpp" // <-- FIX: Added this include
 
 namespace {
     std::string formatTime(const std::string& timeStrHHMM) {
@@ -12,26 +12,42 @@ namespace {
     }
 }
 
-// [优化] 在构造函数的初始化列表中创建哈希表
-InputParser::InputParser(const ConverterConfig& config, const std::string& year_prefix)
-    : config_(config), 
-      year_prefix_(year_prefix),
+// [修改] 构造函数不再接收 year_prefix
+InputParser::InputParser(const ConverterConfig& config)
+    : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
 void InputParser::parse(std::istream& inputStream, std::function<void(InputData&)> onNewDay) {
     InputData currentDay;
     std::string line;
+    bool yearFound = false;
 
     while (std::getline(inputStream, line)) {
-        line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
-        line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
+        // [修改] 使用 trim 函数简化空白字符处理
+        line = trim(line);
         if (line.empty()) continue;
+
+        // [核心修改] 首先查找年份行
+        if (!yearFound) {
+            if (isYearMarker(line)) {
+                year_prefix_ = line.substr(1); // 提取 "y" 后面的年份
+                yearFound = true;
+                continue; // 年份行处理完毕，继续下一行
+            }
+        }
+        
+        // 如果年份还未找到，但读到了其他行，可以忽略或警告
+        if (!yearFound) {
+            std::cerr << YELLOW_COLOR << "Warning: Skipping line '" << line << "' because year header (e.g., y2025) has not been found yet." << RESET_COLOR << std::endl;
+            continue;
+        }
 
         if (isNewDayMarker(line)) {
             if (!currentDay.date.empty()) {
                 onNewDay(currentDay);
             }
             currentDay.clear();
+            // [FIX] Corrected the typo from 'current' to 'currentDay'
             currentDay.date = year_prefix_ + line;
         } else {
             parseLine(line, currentDay);
@@ -42,16 +58,20 @@ void InputParser::parse(std::istream& inputStream, std::function<void(InputData&
     }
 }
 
+// [新增] 检查是否为 'y' + 4位数字 的年份行
+bool InputParser::isYearMarker(const std::string& line) const {
+    if (line.length() != 5 || line[0] != 'y') {
+        return false;
+    }
+    return std::all_of(line.begin() + 1, line.end(), ::isdigit);
+}
+
 bool InputParser::isNewDayMarker(const std::string& line) const {
     return line.length() == 4 && std::all_of(line.begin(), line.end(), ::isdigit);
 }
 
 void InputParser::parseLine(const std::string& line, InputData& currentDay) const {
     const std::string& remark_prefix = config_.getRemarkPrefix();
-    // [优化] 移除在函数内重复创建的 set
-    // const auto& wake_keywords_vec = config_.getWakeKeywords();
-    // const std::unordered_set<std::string> wake_keywords(wake_keywords_vec.begin(), wake_keywords_vec.end());
-
     if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
         if (!currentDay.date.empty()) {
              currentDay.generalRemarks.push_back(line.substr(remark_prefix.length()));
@@ -60,7 +80,6 @@ void InputParser::parseLine(const std::string& line, InputData& currentDay) cons
         std::string timeStr = line.substr(0, 4);
         std::string desc = line.substr(4);
         
-        // [优化] 直接使用成员变量 wake_keywords_
         if (wake_keywords_.count(desc)) {
             if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
         } else {
