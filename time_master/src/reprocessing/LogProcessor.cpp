@@ -2,7 +2,7 @@
 #include "reprocessing/LogProcessor.hpp"
 
 #include "reprocessing/validator/FileValidator.hpp"
-#include "reprocessing/validator/ValidatorUtils.hpp"
+#include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 #include "reprocessing/converter/IntervalConverter.hpp"
 #include "common/common_utils.hpp"
