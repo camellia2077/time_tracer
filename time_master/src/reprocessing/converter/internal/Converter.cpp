@@ -32,8 +32,10 @@ namespace {
     }
 }
 
+// [优化] 在构造函数的初始化列表中创建哈希表
 Converter::Converter(const ConverterConfig& config)
-    : config_(config) {}
+    : config_(config),
+      wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
 void Converter::transform(InputData& day) {
     day.processedActivities.clear(); // 清空，准备填充新的结构化数据
@@ -42,11 +44,9 @@ void Converter::transform(InputData& day) {
     
     std::string startTime = day.getupTime;
 
-    const auto& keywords_vec = config_.getWakeKeywords();
-    const std::unordered_set<std::string> wake_keywords(keywords_vec.begin(), keywords_vec.end());
-
     for (const auto& rawEvent : day.rawEvents) {
-        if (wake_keywords.count(rawEvent.description)) {
+        // [优化] 直接使用成员变量 wake_keywords_
+        if (wake_keywords_.count(rawEvent.description)) {
             if (startTime.empty()) {
                  startTime = formatTime(rawEvent.endTimeStr);
             }
