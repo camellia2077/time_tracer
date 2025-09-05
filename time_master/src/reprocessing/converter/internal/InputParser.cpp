@@ -4,7 +4,7 @@
 #include <cctype>
 #include <iostream>
 #include <unordered_set>
-#include "common/common_utils.hpp" // 假设颜色宏定义在这里
+#include "common/common_utils.hpp" // 颜色宏定义在这里
 
 namespace {
     std::string formatTime(const std::string& timeStrHHMM) {
@@ -12,8 +12,11 @@ namespace {
     }
 }
 
+// [优化] 在构造函数的初始化列表中创建哈希表
 InputParser::InputParser(const ConverterConfig& config, const std::string& year_prefix)
-    : config_(config), year_prefix_(year_prefix) {}
+    : config_(config), 
+      year_prefix_(year_prefix),
+      wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
 void InputParser::parse(std::istream& inputStream, std::function<void(InputData&)> onNewDay) {
     InputData currentDay;
@@ -45,8 +48,9 @@ bool InputParser::isNewDayMarker(const std::string& line) const {
 
 void InputParser::parseLine(const std::string& line, InputData& currentDay) const {
     const std::string& remark_prefix = config_.getRemarkPrefix();
-    const auto& wake_keywords_vec = config_.getWakeKeywords();
-    const std::unordered_set<std::string> wake_keywords(wake_keywords_vec.begin(), wake_keywords_vec.end());
+    // [优化] 移除在函数内重复创建的 set
+    // const auto& wake_keywords_vec = config_.getWakeKeywords();
+    // const std::unordered_set<std::string> wake_keywords(wake_keywords_vec.begin(), wake_keywords_vec.end());
 
     if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
         if (!currentDay.date.empty()) {
@@ -56,7 +60,8 @@ void InputParser::parseLine(const std::string& line, InputData& currentDay) cons
         std::string timeStr = line.substr(0, 4);
         std::string desc = line.substr(4);
         
-        if (wake_keywords.count(desc)) {
+        // [优化] 直接使用成员变量 wake_keywords_
+        if (wake_keywords_.count(desc)) {
             if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
         } else {
             if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;
