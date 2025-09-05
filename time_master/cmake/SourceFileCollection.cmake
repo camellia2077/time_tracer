@@ -68,11 +68,13 @@ set(REPROCESSING_SOURCES
     "src/reprocessing/converter/internal/InputParser.cpp"
     "src/reprocessing/converter/internal/OutputGenerator.cpp"
 
+    # 验证模块
     "src/reprocessing/validator/FileValidator.cpp"
-    "src/reprocessing/validator/ValidatorUtils.cpp"
 
-    "src/reprocessing/validator/internal/JsonValidator.cpp"
-    "src/reprocessing/validator/internal/SourceFileValidator.cpp"
+    "src/reprocessing/validator/common/ValidatorUtils.cpp"
+    "src/reprocessing/validator/output_json/JsonValidator.cpp"
+    "src/reprocessing/validator/source_txt/SourceFileValidator.cpp"
+
 )
 
 # --- File Handler Sources ---

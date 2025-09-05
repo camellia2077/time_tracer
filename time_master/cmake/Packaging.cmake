@@ -7,7 +7,7 @@ if(BUILD_INSTALLER)
         RUNTIME DESTINATION bin
     )
     
-    set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # <--- 确保这个路径是正确的
+    set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # 请确保msys64保这个路径是正确的
     install(FILES
         "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
         "${UCRT64_BIN_PATH}/libstdc++-6.dll"
