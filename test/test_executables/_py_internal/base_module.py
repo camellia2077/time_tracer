@@ -37,10 +37,7 @@ class BaseTester:
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
         self.reports_dir = Path.cwd() / "py_output" / reports_dir_name
 
-    # ======================= 核心修改 1/2 =======================
-    # 新增 add_output_dir 参数，并默认为 True
     def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None, add_output_dir: bool = True) -> bool:
-    # =========================================================
         """
         Runs a command, logs output, and returns True on success or False on failure.
         """
@@ -51,12 +48,9 @@ class BaseTester:
 
         command = [str(self.executable_path)] + command_args
         
-        # ======================= 核心修改 2/2 =======================
-        # 只有在需要时才添加 --output 参数
         if add_output_dir:
             report_specific_output_path = self.output_dir / "exported_files"
             command.extend(["--output", str(report_specific_output_path)])
-        # =========================================================
 
         start_time = time.monotonic()
         status = "FAIL"
@@ -84,10 +78,21 @@ class BaseTester:
                 log_file.write(f"An exception occurred while running the test: {test_name}\n")
                 log_file.write(str(e))
         finally:
+            # ======================= 核心修改 =======================
+            # 此处修改了打印逻辑，以显示完整的执行指令
             duration = time.monotonic() - start_time
-            log_path_str = str(log_filepath.relative_to(Path.cwd()))
+            
+            # 为了使输出更清晰，我们将可执行文件的绝对路径替换为其文件名
+            display_command_list = command.copy()
+            display_command_list[0] = self.executable_path.name
+            command_str = ' '.join(display_command_list)
+
+            # 组合状态和最终输出
             status_colored = f"{Colors.GREEN}{status}{Colors.RESET}" if status == "OK" else f"{Colors.RED}{status}{Colors.RESET}"
-            test_info = f" -> {test_name:<15} | Log: {log_path_str}"
-            status_info = f"... {status_colored} ({duration:.2f}s)"
-            print(f"{test_info:<70} {status_info}")
+            command_part = f" -> {command_str}"
+            status_part = f"... {status_colored} ({duration:.2f}s)"
+            
+            # 打印新的格式，使用左对齐填充使状态信息大致右对齐
+            print(f"{command_part:<115} {status_part}")
             return is_success
+            # =========================================================
