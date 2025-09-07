@@ -2,8 +2,10 @@
 #ifndef INTERVAL_PROCESSOR_HPP
 #define INTERVAL_PROCESSOR_HPP
 
-#include <string>
+
 #include "reprocessing/converter/internal/ConverterConfig.hpp"
+
+#include <string>
 
 class IntervalConverter {
 public:

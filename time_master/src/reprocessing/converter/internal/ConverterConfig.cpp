@@ -5,7 +5,7 @@
 #include <nlohmann/json.hpp>
 
 #include "ConverterConfig.hpp"
-#include "common/common_utils.hpp"
+#include "common/AnsiColors.hpp" // For colored console output
 
 bool ConverterConfig::load(const std::string& filepath) {
     std::ifstream config_ifs(filepath);

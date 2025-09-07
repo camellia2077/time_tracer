@@ -38,7 +38,7 @@ private:
     std::unique_ptr<ReportExporter> report_exporter_;
     std::unique_ptr<DirectQueryManager> direct_query_manager_;
 
-    std::filesystem::path export_root_path_; // 这个成员变量可以保持，但现在代表报告专用路径
+    std::filesystem::path export_root_path_;
 };
 
 #endif // REPORT_GENERATION_HANDLER_HPP

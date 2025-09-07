@@ -1,6 +1,6 @@
 // time_master/reprocessing/validator/ValidatorUtils.cpp
 #include "ValidatorUtils.hpp"
-#include "common/common_utils.hpp" // 颜色宏定义在这里
+#include "common/AnsiColors.hpp" // For colored console output
 #include <iostream>
 #include <fstream>
 #include <vector>

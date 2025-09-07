@@ -2,7 +2,7 @@
 
 
 #include "FilePipelineManager.hpp"
-#include "common/common_utils.hpp"
+#include "common/AnsiColors.hpp" // For colored console output
 #include "file_handler/FileUtils.hpp"
 #include <iostream>
 #include <iomanip>

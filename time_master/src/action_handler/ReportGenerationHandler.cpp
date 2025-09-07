@@ -2,7 +2,7 @@
 #include "action_handler/database/DatabaseManager.hpp"
 #include "action_handler/reporting/ReportExporter.hpp"
 #include "action_handler/query/DirectQueryManager.hpp"
-#include "common/common_utils.hpp"
+#include "common/AnsiColors.hpp" // For colored console output
 #include <iostream>
 
 namespace fs = std::filesystem;
@@ -39,8 +39,6 @@ ReportExporter* ReportGenerationHandler::get_report_exporter() {
     }
     return report_exporter_.get();
 }
-
-// ... (所有 run_* 方法保持不变, 因为它们依赖于 get_report_exporter() 和 get_direct_query_manager()，这两个函数现在已经配置正确)
 std::string ReportGenerationHandler::run_daily_query(const std::string& date, ReportFormat format) {
     if (auto* qm = get_direct_query_manager()) {
         return qm->run_daily_query(date, format);
