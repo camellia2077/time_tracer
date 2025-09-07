@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include "common/common_utils.hpp" // For time_str_to_seconds
+#include "common/AnsiColors.hpp" // For colored console output
 
 using json = nlohmann::json;
 

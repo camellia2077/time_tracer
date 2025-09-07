@@ -4,7 +4,7 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
-#include "common/common_utils.hpp" // 包含颜色宏定义
+#include "common/AnsiColors.hpp" // For colored console output
 
 // 前向声明
 struct sqlite3;

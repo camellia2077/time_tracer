@@ -1,9 +1,11 @@
 #ifndef ALL_REPORTS_GENERATOR_HPP
 #define ALL_REPORTS_GENERATOR_HPP
 
-#include <sqlite3.h>
+
 #include "queries/shared/data/query_data_structs.hpp"
 #include "queries/shared/ReportFormat.hpp" // 引入报告格式的定义
+
+#include <sqlite3.h>
 
 /**
  * @class AllDayReports

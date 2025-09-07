@@ -3,14 +3,13 @@
 #define OUTPUT_GENERATOR_HPP
 
 #include <ostream>
-#include <vector> // [新增]
+#include <vector> 
 #include <nlohmann/json.hpp>
 #include "reprocessing/converter/model/InputData.hpp"
 #include "reprocessing/converter/internal/ConverterConfig.hpp"
 
 class OutputGenerator {
 public:
-    // [修改] write 方法现在接收一个 InputData 的向量
     void write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& config);
 };
 

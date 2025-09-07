@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/ReportFormat.hpp" // [新增] 引入报告格式的定义
+#include "queries/shared/ReportFormat.hpp" // 报告格式的定义
 
 /**
  * @class DayGenerator
