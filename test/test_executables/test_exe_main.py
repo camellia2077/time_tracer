@@ -9,14 +9,13 @@ from typing import List
 import config
 
 # --- 内部测试模块 ---
-from _py_internal.environment_manager import EnvironmentManager # <--- 1. 导入新类
+from _py_internal.environment_manager import EnvironmentManager
 from _py_internal.base_module import BaseTester, TestCounter
 from _py_internal.module_preprocessing import PreprocessingTester
 from _py_internal.module_database import DatabaseImportTester
 from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
-
-# --- 2. 移除了旧的 setup_environment() 函数 ---
+from _py_internal.module_version import VersionChecker # <--- 1. 导入新类
 
 def print_header():
     """打印脚本的初始头部信息。"""
@@ -59,7 +58,10 @@ def initialize_test_modules() -> List[BaseTester]:
                      specific_months=config.SPECIFIC_EXPORT_MONTHS,
                      period_export_days=config.PERIOD_EXPORT_DAYS,
                      test_formats=config.TEST_FORMATS,
-                     **common_args)
+                     **common_args),
+        
+        # --- 2. 将新的版本检查器添加到测试序列的末尾 ---
+        VersionChecker(shared_counter, 5, **common_args)
     ]
     return modules
 
@@ -98,7 +100,6 @@ def main():
     
     print_header()
     
-    # --- 3. 调用新的 EnvironmentManager 类来设置环境 ---
     env_manager = EnvironmentManager(config)
     env_manager.setup()
     
