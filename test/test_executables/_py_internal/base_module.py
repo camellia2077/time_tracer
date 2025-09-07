@@ -37,7 +37,9 @@ class BaseTester:
         reports_dir_name = f"{module_order}_{reports_sub_dir_name}"
         self.reports_dir = Path.cwd() / "py_output" / reports_dir_name
 
-    def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None, add_output_dir: bool = True) -> bool:
+    # ======================= 核心修改 1/2 =======================
+    # 新增 print_stdout 参数，默认为 False
+    def run_command_test(self, test_name: str, command_args: list, stdin_input: str = None, add_output_dir: bool = True, print_stdout: bool = False) -> bool:
         """
         Runs a command, logs output, and returns True on success or False on failure.
         """
@@ -73,26 +75,32 @@ class BaseTester:
             if result.returncode == 0:
                 status = "OK"
                 is_success = True
+                # ======================= 核心修改 2/2 =======================
+                # 如果命令成功且 print_stdout 为 True，则在控制台打印其输出
+                if print_stdout and result.stdout:
+                    print(f"    {Colors.GREEN}├─ Captured Output:{Colors.RESET}")
+                    # 逐行打印，添加引导线，使其看起来更规整
+                    for line in result.stdout.strip().splitlines():
+                        print(f"    {Colors.GREEN}│{Colors.RESET} {line}")
+                # =========================================================
+
         except Exception as e:
             with open(log_filepath, 'w', encoding='utf-8') as log_file:
                 log_file.write(f"An exception occurred while running the test: {test_name}\n")
                 log_file.write(str(e))
         finally:
-            # ======================= 核心修改 =======================
-            # 此处修改了打印逻辑，以显示完整的执行指令
             duration = time.monotonic() - start_time
-            
-            # 为了使输出更清晰，我们将可执行文件的绝对路径替换为其文件名
             display_command_list = command.copy()
             display_command_list[0] = self.executable_path.name
             command_str = ' '.join(display_command_list)
 
-            # 组合状态和最终输出
             status_colored = f"{Colors.GREEN}{status}{Colors.RESET}" if status == "OK" else f"{Colors.RED}{status}{Colors.RESET}"
-            command_part = f" -> {command_str}"
+            
+            # 如果有额外输出，调整打印的箭头样式
+            arrow = " └─>" if print_stdout and is_success else " ->"
+            
+            command_part = f"{arrow} {command_str}"
             status_part = f"... {status_colored} ({duration:.2f}s)"
             
-            # 打印新的格式，使用左对齐填充使状态信息大致右对齐
             print(f"{command_part:<115} {status_part}")
             return is_success
-            # =========================================================
