@@ -3,13 +3,14 @@ import sys
 import shutil
 import os
 from pathlib import Path
-import time # <--- 1. 导入 time 模块
+import time
+from typing import List
 
 # --- 从配置文件导入所有配置 ---
 import config
 
 # --- 内部测试模块 ---
-from _py_internal.base_module import TestCounter
+from _py_internal.base_module import BaseTester, TestCounter
 from _py_internal.module_preprocessing import PreprocessingTester
 from _py_internal.module_database import DatabaseImportTester
 from _py_internal.module_query import QueryTester
@@ -19,7 +20,6 @@ from _py_internal.module_export import ExportTester
 def setup_environment():
     """验证路径、清理旧环境，然后复制可执行文件、DLL和配置。"""
     
-    # --- 第1步: 清理上一次运行留下的所有工件 ---
     print(f"{config.Colors.CYAN}--- 1. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
     for dir_name in config.DIRECTORIES_TO_CLEAN:
         dir_path = Path.cwd() / dir_name
@@ -31,7 +31,6 @@ def setup_environment():
                 print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
                 sys.exit(1)
 
-    # --- 清理上一次运行留下的可执行文件和DLL ---
     for file_name in config.FILES_TO_CLEAN:
         file_path = config.TARGET_EXECUTABLES_DIR / file_name
         if file_path.exists():
@@ -42,28 +41,17 @@ def setup_environment():
                 print(f"  {config.Colors.RED}移除文件 '{file_name}' 时出错: {e}{config.Colors.RESET}")
                 sys.exit(1)
             
-    # 同时创建 C++ 程序的输出目录和 Python 的日志目录
     (Path.cwd() / config.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
     (Path.cwd() / "py_output").mkdir(parents=True, exist_ok=True)
     print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 和 'py_output' 目录。{config.Colors.RESET}")
 
-    # --- 第2步: 准备本次运行所需的文件 ---
     print(f"{config.Colors.CYAN}--- 2. Preparing Executable, DLLs and Config ---{config.Colors.RESET}")
     
     if not config.SOURCE_EXECUTABLES_DIR.exists():
         print(f"  {config.Colors.RED}错误: 源目录不存在: {config.SOURCE_EXECUTABLES_DIR}{config.Colors.RESET}")
         sys.exit(1)
 
-    # 复制 EXE 和 DLL 文件
-    executables_to_copy = [config.EXECUTABLE_CLI_NAME]
-    dlls_to_copy = [
-        "libgcc_s_seh-1.dll",
-        "libstdc++-6.dll",
-        "libsqlite3-0.dll",
-        "libwinpthread-1.dll"
-    ]
-    artifacts_to_copy = executables_to_copy + dlls_to_copy
-
+    artifacts_to_copy = config.FILES_TO_CLEAN
     for artifact_name in artifacts_to_copy:
         source_path = config.SOURCE_EXECUTABLES_DIR / artifact_name
         target_path = config.TARGET_EXECUTABLES_DIR / artifact_name
@@ -77,7 +65,6 @@ def setup_environment():
             print(f"  {config.Colors.RED}复制文件时出错 {artifact_name}: {e}{config.Colors.RESET}")
             sys.exit(1)
     
-    # 复制 config 文件夹
     source_config_path = config.SOURCE_EXECUTABLES_DIR / "config"
     target_config_path = config.TARGET_EXECUTABLES_DIR / "config"
     if source_config_path.exists() and source_config_path.is_dir():
@@ -95,27 +82,19 @@ def setup_environment():
     print("  可执行文件、DLL和配置已准备就绪。")
 
 
-def main():
-    """运行所有测试模块的主函数。"""
-    # ======================= 核心修改 =======================
-    start_time = time.monotonic() # <--- 2. 记录开始时间
-    # =========================================================
-
-    os.system('')
-    
+def print_header():
+    """打印脚本的初始头部信息。"""
     print("\n" + "="*50)
     print(f" Running Python test script: {Path(__file__).name}")
     print(f" Current directory: {Path.cwd()}")
     print(f" Input data path: {config.SOURCE_DATA_PATH}")
     print(f" Expecting processed folder: {config.PROCESSED_DATA_DIR_NAME}")
     print("="*50 + "\n")
-    
-    setup_environment()
-    
-    print("\n========== Starting Test Sequence ==========")
-    
+
+
+def initialize_test_modules() -> List[BaseTester]:
+    """初始化并返回所有测试模块的列表。"""
     shared_counter = TestCounter()
-    
     output_dir_path = Path.cwd() / config.OUTPUT_DIR_NAME
     
     common_args = {
@@ -146,7 +125,12 @@ def main():
                      test_formats=config.TEST_FORMATS,
                      **common_args)
     ]
-    
+    return modules
+
+
+def run_test_suite(modules: List[BaseTester]) -> bool:
+    """按顺序运行所提供的测试模块列表中的所有测试。"""
+    print("\n========== Starting Test Sequence ==========")
     all_tests_passed = True
     for i, module in enumerate(modules, 1):
         module.reports_dir.mkdir(parents=True, exist_ok=True)
@@ -156,19 +140,35 @@ def main():
             all_tests_passed = False
             print(f"\n{config.Colors.RED}错误: 测试序列因 '{module.module_name}' 模块执行失败而中断。{config.Colors.RESET}")
             break
+    return all_tests_passed
 
+
+def print_summary(all_tests_passed: bool, total_duration: float):
+    """根据测试结果打印最终摘要信息和总耗时。"""
     if all_tests_passed:
         print(f"""
 {config.Colors.GREEN}✅ All test steps completed successfully!{config.Colors.RESET}
    Check the 'py_output' directory for detailed logs.
    Check the '{config.OUTPUT_DIR_NAME}' directory for program artifacts.
 """)
+    
+    print(f"\n{config.Colors.CYAN}Total execution time: {total_duration:.2f} seconds.{config.Colors.RESET}")
 
-    # ======================= 核心修改 =======================
-    end_time = time.monotonic() # <--- 3. 记录结束时间
-    total_duration = end_time - start_time
-    print(f"\n{config.Colors.CYAN}Total execution time: {total_duration:.2f} seconds.{config.Colors.RESET}") # <--- 4. 计算并打印总时间
-    # =========================================================
+
+def main():
+    """运行所有测试模块的主函数。"""
+    start_time = time.monotonic()
+    os.system('')  # 为Windows终端初始化颜色支持
+    
+    print_header()
+    setup_environment()
+    
+    test_modules = initialize_test_modules()
+    all_tests_passed = run_test_suite(test_modules)
+    
+    total_duration = time.monotonic() - start_time
+    print_summary(all_tests_passed, total_duration)
+
 
 if __name__ == "__main__":
     main()
