@@ -1,6 +1,5 @@
 # test_exe_main.py
 import sys
-import shutil
 import os
 from pathlib import Path
 import time
@@ -10,77 +9,14 @@ from typing import List
 import config
 
 # --- 内部测试模块 ---
+from _py_internal.environment_manager import EnvironmentManager # <--- 1. 导入新类
 from _py_internal.base_module import BaseTester, TestCounter
 from _py_internal.module_preprocessing import PreprocessingTester
 from _py_internal.module_database import DatabaseImportTester
 from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
 
-
-def setup_environment():
-    """验证路径、清理旧环境，然后复制可执行文件、DLL和配置。"""
-    
-    print(f"{config.Colors.CYAN}--- 1. Cleaning Artifacts & Setting up Directories ---{config.Colors.RESET}")
-    for dir_name in config.DIRECTORIES_TO_CLEAN:
-        dir_path = Path.cwd() / dir_name
-        if dir_path.exists():
-            try:
-                shutil.rmtree(dir_path)
-                print(f"  {config.Colors.GREEN}已移除旧目录: {dir_name}{config.Colors.RESET}")
-            except OSError as e:
-                print(f"  {config.Colors.RED}移除目录 '{dir_name}' 时出错: {e}{config.Colors.RESET}")
-                sys.exit(1)
-
-    for file_name in config.FILES_TO_CLEAN:
-        file_path = config.TARGET_EXECUTABLES_DIR / file_name
-        if file_path.exists():
-            try:
-                file_path.unlink()
-                print(f"  {config.Colors.GREEN}已移除旧文件: {file_name}{config.Colors.RESET}")
-            except OSError as e:
-                print(f"  {config.Colors.RED}移除文件 '{file_name}' 时出错: {e}{config.Colors.RESET}")
-                sys.exit(1)
-            
-    (Path.cwd() / config.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
-    (Path.cwd() / "py_output").mkdir(parents=True, exist_ok=True)
-    print(f"  {config.Colors.GREEN}清理完成，已创建 'output' 和 'py_output' 目录。{config.Colors.RESET}")
-
-    print(f"{config.Colors.CYAN}--- 2. Preparing Executable, DLLs and Config ---{config.Colors.RESET}")
-    
-    if not config.SOURCE_EXECUTABLES_DIR.exists():
-        print(f"  {config.Colors.RED}错误: 源目录不存在: {config.SOURCE_EXECUTABLES_DIR}{config.Colors.RESET}")
-        sys.exit(1)
-
-    artifacts_to_copy = config.FILES_TO_CLEAN
-    for artifact_name in artifacts_to_copy:
-        source_path = config.SOURCE_EXECUTABLES_DIR / artifact_name
-        target_path = config.TARGET_EXECUTABLES_DIR / artifact_name
-        if not source_path.exists():
-            print(f"  {config.Colors.RED}警告: 在源目录中未找到文件: {artifact_name}{config.Colors.RESET}")
-            continue
-        try:
-            shutil.copy(source_path, target_path)
-            print(f"  {config.Colors.GREEN}已成功复制: {artifact_name}{config.Colors.RESET}")
-        except Exception as e:
-            print(f"  {config.Colors.RED}复制文件时出错 {artifact_name}: {e}{config.Colors.RESET}")
-            sys.exit(1)
-    
-    source_config_path = config.SOURCE_EXECUTABLES_DIR / "config"
-    target_config_path = config.TARGET_EXECUTABLES_DIR / "config"
-    if source_config_path.exists() and source_config_path.is_dir():
-        try:
-            if target_config_path.exists():
-                shutil.rmtree(target_config_path)
-            shutil.copytree(source_config_path, target_config_path)
-            print(f"  {config.Colors.GREEN}已成功复制: config 文件夹{config.Colors.RESET}")
-        except Exception as e:
-            print(f"  {config.Colors.RED}复制 config 文件夹时出错: {e}{config.Colors.RESET}")
-            sys.exit(1)
-    else:
-        print(f"  {config.Colors.RED}警告: 在源目录中未找到 config 文件夹，跳过复制。{config.Colors.RESET}")
-
-    print("  可执行文件、DLL和配置已准备就绪。")
-
+# --- 2. 移除了旧的 setup_environment() 函数 ---
 
 def print_header():
     """打印脚本的初始头部信息。"""
@@ -161,7 +97,10 @@ def main():
     os.system('')  # 为Windows终端初始化颜色支持
     
     print_header()
-    setup_environment()
+    
+    # --- 3. 调用新的 EnvironmentManager 类来设置环境 ---
+    env_manager = EnvironmentManager(config)
+    env_manager.setup()
     
     test_modules = initialize_test_modules()
     all_tests_passed = run_test_suite(test_modules)
