@@ -3,6 +3,7 @@ import sys
 import shutil
 import os
 from pathlib import Path
+import time # <--- 1. 导入 time 模块
 
 # --- 从配置文件导入所有配置 ---
 import config
@@ -96,6 +97,10 @@ def setup_environment():
 
 def main():
     """运行所有测试模块的主函数。"""
+    # ======================= 核心修改 =======================
+    start_time = time.monotonic() # <--- 2. 记录开始时间
+    # =========================================================
+
     os.system('')
     
     print("\n" + "="*50)
@@ -111,21 +116,19 @@ def main():
     
     shared_counter = TestCounter()
     
-    # 核心修改：定义统一的输出路径，并将其传递给所有测试模块
     output_dir_path = Path.cwd() / config.OUTPUT_DIR_NAME
     
     common_args = {
         "executable_to_run": config.EXECUTABLE_CLI_NAME,
         "source_data_path": config.SOURCE_DATA_PATH,
         "converted_text_dir_name": config.PROCESSED_DATA_DIR_NAME,
-        "output_dir": output_dir_path # <--- 新增
+        "output_dir": output_dir_path
     }
 
     modules = [
         PreprocessingTester(shared_counter, 1, 
                             specific_validation_path=str(config.PROCESSED_JSON_PATH),
                             **common_args),
-
         DatabaseImportTester(shared_counter, 2, **common_args),
         QueryTester(shared_counter, 3, 
                     generated_db_file_name=config.GENERATED_DB_FILE_NAME, 
@@ -160,6 +163,12 @@ def main():
    Check the 'py_output' directory for detailed logs.
    Check the '{config.OUTPUT_DIR_NAME}' directory for program artifacts.
 """)
+
+    # ======================= 核心修改 =======================
+    end_time = time.monotonic() # <--- 3. 记录结束时间
+    total_duration = end_time - start_time
+    print(f"\n{config.Colors.CYAN}Total execution time: {total_duration:.2f} seconds.{config.Colors.RESET}") # <--- 4. 计算并打印总时间
+    # =========================================================
 
 if __name__ == "__main__":
     main()
