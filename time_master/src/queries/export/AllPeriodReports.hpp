@@ -4,7 +4,7 @@
 #include <sqlite3.h>
 #include <vector>
 #include "queries/shared/data/query_data_structs.hpp"
-#include "queries/shared/ReportFormat.hpp" // [新增] 引入报告格式的定义
+#include "queries/shared/ReportFormat.hpp" // 引入报告格式的定义
 
 /**
  * @class AllPeriodReports

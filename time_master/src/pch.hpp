@@ -36,7 +36,7 @@
 // =================================================================
 // 3. 项目内部稳定且常用的核心头文件 (Stable & Common Project Headers)
 // =================================================================
-#include "common/common_utils.hpp"
+// #include "common/common_utils.hpp"
 
 // --- 核心数据结构 (Core Data Structures) ---
 #include "queries/shared/data/DailyReportData.hpp"
