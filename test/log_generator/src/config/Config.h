@@ -10,10 +10,18 @@ struct DailyRemarkConfig {
     double generation_chance = 0.5;
 };
 
+// [核心修改] 添加一个枚举来表示不同的生成模式
+enum class GenerationMode {
+    YearRange, // 按时间段生成
+    SingleYear // 按单一年份生成
+};
+
 struct Config {
     int start_year;
     int end_year;
     int items_per_day;
+    // [核心修改] 添加一个字段来存储当前的生成模式
+    GenerationMode mode;
 };
 
 struct JsonConfigData {

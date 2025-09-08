@@ -16,6 +16,7 @@ find_package(nlohmann_json 3.11.3 REQUIRED)
 set(SOURCES
     src/main.cpp
     src/cli/CommandLineParser.cpp
+    src/cli/HelpPrinter.cpp       # <-- [新增] 将新文件添加到源列表
     src/config/Config.cpp
     src/file_io/FileManager.cpp
     src/generator/LogGenerator.cpp
