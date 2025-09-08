@@ -33,7 +33,7 @@ public:
      * @return 包含路径的字符串。
      */
     std::string get_main_config_path() const;
-    
+
     /**
      * @brief (新增) 递归地查找指定目录下的日志文件（.txt）。
      * @param root_path 要开始搜索的根目录。

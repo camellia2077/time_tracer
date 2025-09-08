@@ -37,7 +37,7 @@ private:
 
     // Constants defining key configuration file and directory names
     const std::string CONFIG_FILE_NAME = "config.json";
-    const std::string CONFIG_DIR_NAME = "config"; 
+    const std::string CONFIG_DIR_NAME = "config";
 };
 
 #endif // CONFIG_LOADER_HPP
