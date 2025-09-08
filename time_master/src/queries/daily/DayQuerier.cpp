@@ -33,8 +33,9 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            const unsigned char* s = sqlite3_column_text(stmt, 0);
-            if (s) data.metadata.status = reinterpret_cast<const char*>(s);
+            // 从INTEGER列读取值，并转换为字符串
+            data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
+            
             const unsigned char* r = sqlite3_column_text(stmt, 1);
             if (r) data.metadata.remark = reinterpret_cast<const char*>(r);
             const unsigned char* g = sqlite3_column_text(stmt, 2);

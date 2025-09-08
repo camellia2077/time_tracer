@@ -5,9 +5,11 @@ using json = nlohmann::json;
 
 void validateHighLevelRules(const json& day_object, std::set<Error>& errors) {
     const auto& headers = day_object.value("Headers", json::object());
-    bool sleep_status = headers.value("Sleep", false);
+    // [修改] 更改默认值类型，以匹配JSON中的整数
+    int sleep_status = headers.value("Sleep", 0);
 
-    if (sleep_status) {
+    // [修改] 检查 sleep_status 是否大于0，以匹配布尔逻辑
+    if (sleep_status > 0) {
         if (!day_object.contains("Activities") || !day_object["Activities"].is_array() || day_object["Activities"].empty()) {
              std::string date_str = headers.value("Date", "[Unknown Date]");
              errors.insert({0, "In file for date " + date_str + ": Last activity must be 'sleep' when Sleep is True, but no activities found.", ErrorType::MissingSleepNight});

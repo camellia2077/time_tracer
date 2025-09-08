@@ -1,5 +1,7 @@
-## json字段中有两个Activities，应该修改成不同命名
 
-##文本的headers内容都改为小写
-## json中的布尔值应该改为false和true
-## top_parents不要放到config.json中
+## 文本的headers内容都改为小写
+## 把布尔类型修改为0或1存储到数据库中
+JsonDataParser.cpp
+
+    day_data.status = headers.value("Status", false) ? "True" : "False";
+    day_data.sleep = headers.value("Sleep", false) ? "True" : "False";
