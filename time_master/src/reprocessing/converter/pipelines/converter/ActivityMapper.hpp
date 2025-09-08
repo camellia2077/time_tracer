@@ -3,7 +3,7 @@
 #define ACTIVITY_MAPPER_HPP
 
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/internal/ConverterConfig.hpp"
+#include "reprocessing/converter/ConverterConfig.hpp"
 #include <string>
 #include <unordered_set>
 

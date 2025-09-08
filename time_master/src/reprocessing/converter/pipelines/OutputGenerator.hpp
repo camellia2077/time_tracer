@@ -6,7 +6,7 @@
 #include <vector> 
 #include <nlohmann/json.hpp>
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/internal/ConverterConfig.hpp"
+#include "reprocessing/converter/ConverterConfig.hpp"
 
 class OutputGenerator {
 public:
