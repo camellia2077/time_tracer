@@ -1,5 +1,6 @@
 #include "DayMd.hpp"
 #include <iomanip>
+#include <format> // [新增] 引入 format 头文件
 
 #include "common/common_utils.hpp" // For ProjectTree
 
@@ -8,13 +9,14 @@
 #include "queries/shared/Interface/ITreeFmt.hpp"     // 工厂返回的接口
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/BoolToString.hpp" // 调用bool转字符串工具
+#include "DayMdStrings.hpp" // 引入文本配置文件
 
 std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     _display_header(ss, data);
 
     if (data.total_duration == 0) {
-        ss << "No time records for this day.\n";
+        ss << DayMdStrings::NoRecords << "\n"; // [修改]
         return ss.str();
     }
     
@@ -23,13 +25,16 @@ std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const
     return ss.str();
 }
 void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) const {
-    ss << "## Daily Report for " << data.date << "\n\n"; 
-    ss << "- **Date**: " << data.date << "\n";
-    ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration) << "\n";
-    ss << "- **Status**: " << bool_to_string(data.metadata.status) << "\n"; // [修改] 调用新的工具函数
-    ss << "- **Sleep**: " << bool_to_string(data.metadata.sleep) << "\n"; // [新增] 添加 Sleep 字段并转换其值
-    ss << "- **Getup Time**: " << data.metadata.getup_time << "\n";
-    ss << "- **Remark**:" << data.metadata.remark << "\n";
+    ss << std::format("## {0} {1}\n\n", 
+        DayMdStrings::TitlePrefix, // {0}
+        data.date // {1}
+    );
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::DateLabel, data.date);
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::TotalTimeLabel, time_format_duration(data.total_duration));
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::StatusLabel, bool_to_string(data.metadata.status));
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::SleepLabel, bool_to_string(data.metadata.sleep));
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::GetupTimeLabel, data.metadata.getup_time);
+    ss << std::format("- **{0}**: {1}\n", DayMdStrings::RemarkLabel, data.metadata.remark);
 }
 
 void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
