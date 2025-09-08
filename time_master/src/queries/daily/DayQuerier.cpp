@@ -29,16 +29,18 @@ DailyReportData DayQuerier::fetch_data() {
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT status, remark, getup_time FROM days WHERE date = ?;";
+    // [修改] 查询语句中新增 sleep 字段
+    std::string sql = "SELECT status, sleep, remark, getup_time FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            // 从INTEGER列读取值，并转换为字符串
             data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
+            // [新增] 读取 sleep 字段并转换为字符串
+            data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 1));
             
-            const unsigned char* r = sqlite3_column_text(stmt, 1);
+            const unsigned char* r = sqlite3_column_text(stmt, 2);
             if (r) data.metadata.remark = reinterpret_cast<const char*>(r);
-            const unsigned char* g = sqlite3_column_text(stmt, 2);
+            const unsigned char* g = sqlite3_column_text(stmt, 3);
             if (g) data.metadata.getup_time = reinterpret_cast<const char*>(g);
         }
     }

@@ -28,6 +28,7 @@ namespace DayTypStrings {
     const std::string DateLabel       = "Date";
     const std::string TotalTimeLabel  = "Total Hours"; 
     const std::string StatusLabel     = "Status";
+    const std::string SleepLabel      = "Sleep"; //  Sleep 标签
     const std::string GetupTimeLabel  = "Getup Time";
     const std::string RemarkLabel     = "Remark";
     const std::string NoRecords       = "No time records for this day.";

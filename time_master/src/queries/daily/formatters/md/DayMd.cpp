@@ -1,13 +1,13 @@
-
 #include "DayMd.hpp"
 #include <iomanip>
 
-#include "common/common_utils.hpp" // 为了 ProjectTree
+#include "common/common_utils.hpp" // For ProjectTree
 
 #include "queries/shared/utils/query_utils.hpp"   // 用于 build_project_tree_from_records 和 get_parent_map
 #include "queries/shared/factories/TreeFmtFactory.hpp" // 新的工厂
 #include "queries/shared/Interface/ITreeFmt.hpp"     // 工厂返回的接口
 #include "queries/shared/data/DailyReportData.hpp"
+#include "queries/shared/utils/BoolToString.hpp" // 调用bool转字符串工具
 
 std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
@@ -26,7 +26,8 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
     ss << "## Daily Report for " << data.date << "\n\n"; 
     ss << "- **Date**: " << data.date << "\n";
     ss << "- **Total Time Recorded**: " << time_format_duration(data.total_duration) << "\n";
-    ss << "- **Status**: " << data.metadata.status << "\n";
+    ss << "- **Status**: " << bool_to_string(data.metadata.status) << "\n"; // [修改] 调用新的工具函数
+    ss << "- **Sleep**: " << bool_to_string(data.metadata.sleep) << "\n"; // [新增] 添加 Sleep 字段并转换其值
     ss << "- **Getup Time**: " << data.metadata.getup_time << "\n";
     ss << "- **Remark**:" << data.metadata.remark << "\n";
 }

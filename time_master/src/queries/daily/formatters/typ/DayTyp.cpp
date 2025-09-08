@@ -1,10 +1,10 @@
-
 #include "DayTyp.hpp"
 #include <iomanip>
 #include <format>
 
 #include "common/common_utils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/BoolToString.hpp" // [新增] 引入新的工具头文件
 #include "queries/shared/data/DailyReportData.hpp"
 #include "DayTypStrings.hpp" // 唯一且专属的配置文件
 
@@ -39,7 +39,8 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
     // (修改) 为其余部分的占位符加上编号 {0}, {1}
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::DateLabel, data.date);
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::TotalTimeLabel, time_format_duration(data.total_duration));
-    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::StatusLabel, data.metadata.status);
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::StatusLabel, bool_to_string(data.metadata.status)); // [修改] 调用新的工具函数
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::SleepLabel, bool_to_string(data.metadata.sleep)); // [新增] 添加 Sleep 字段
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::GetupTimeLabel, data.metadata.getup_time);
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::RemarkLabel, data.metadata.remark);
 }
