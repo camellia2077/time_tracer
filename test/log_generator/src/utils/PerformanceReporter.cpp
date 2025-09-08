@@ -1,5 +1,5 @@
-#include "PerformanceReporter.h"
-#include "Utils.h" // 需要用到颜色输出
+#include "utils/PerformanceReporter.h"
+#include "common/AnsiColors.hpp" // [核心修改] 引入新的颜色头文件
 #include <iostream>
 #include <format>
 
@@ -15,7 +15,6 @@ void PerformanceReporter::add_io_time(const std::chrono::nanoseconds& duration) 
 }
 
 void PerformanceReporter::report(const Config& config, int files_generated, const std::chrono::nanoseconds& total_duration) const {
-    // 将所有时长转换为秒（double）和毫秒（long long）
     auto total_s = std::chrono::duration<double>(total_duration);
     auto total_ms = std::chrono::duration_cast<std::chrono::milliseconds>(total_duration);
 
@@ -25,9 +24,10 @@ void PerformanceReporter::report(const Config& config, int files_generated, cons
     auto io_s = std::chrono::duration<double>(total_io_duration_);
     auto io_ms = std::chrono::duration_cast<std::chrono::milliseconds>(total_io_duration_);
 
+    // [核心修改] 使用新的颜色宏
     std::cout << std::format("{}\nData generation complete.{} {} monthly log files created for years {}-{}.\n",
-                             Utils::ConsoleColors::green,
-                             Utils::ConsoleColors::reset,
+                             GREEN_COLOR,
+                             RESET_COLOR,
                              files_generated,
                              config.start_year,
                              config.end_year);
