@@ -76,15 +76,16 @@ void DayQuerier::_fetch_time_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // [新增] 查询详细的时间记录
-    std::string sql = "SELECT start, end, project_path FROM time_records WHERE date = ? ORDER BY start ASC;";
+    // [修改] 查询语句中新增 duration 字段
+    std::string sql = "SELECT start, end, project_path, duration FROM time_records WHERE date = ? ORDER BY start ASC;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             data.detailed_records.push_back({
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)),
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2))
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)),
+                sqlite3_column_int64(stmt, 3) // [新增] 读取时长
             });
         }
     }
