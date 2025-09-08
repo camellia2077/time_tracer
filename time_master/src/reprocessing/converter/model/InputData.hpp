@@ -15,7 +15,8 @@ struct RawEvent {
 struct Activity {
     std::string startTime;
     std::string endTime;
-    std::string title;
+    // [核心修改] 将 "title" 重命名为 "top_parent"
+    std::string top_parent;
     std::vector<std::string> parents;
 };
 
@@ -28,8 +29,6 @@ struct InputData {
     std::vector<std::string> generalRemarks;
     std::vector<RawEvent> rawEvents;
     
-    // [修改] 用新的结构化向量取代原来的字符串向量
-    // std::vector<std::string> remarksOutput;
     std::vector<Activity> processedActivities;
 
     bool isContinuation = false;

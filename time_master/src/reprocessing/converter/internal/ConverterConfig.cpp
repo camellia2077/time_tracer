@@ -32,9 +32,9 @@ bool ConverterConfig::load(const std::string& filepath) {
             wake_keywords_ = j["wake_keywords"].get<std::vector<std::string>>();
         }
 
-        // [核心修改] 直接从 interval_processor_config.json 加载 initial_top_parents 映射
-        if (j.contains("initial_top_parents")) {
-            initial_top_parents_mapping_ = j["initial_top_parents"].get<std::unordered_map<std::string, std::string>>();
+        // 使用新的键 "top_parent_mapping" 来加载配置
+        if (j.contains("top_parent_mapping")) {
+            top_parent_mapping_ = j["top_parent_mapping"].get<std::unordered_map<std::string, std::string>>();
         }
 
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
@@ -69,7 +69,7 @@ const std::vector<std::string>& ConverterConfig::getWakeKeywords() const {
     return wake_keywords_;
 }
 
-// Getter 保持不变
-const std::unordered_map<std::string, std::string>& ConverterConfig::getInitialTopParentsMapping() const {
-    return initial_top_parents_mapping_;
+//  Getter 的实现
+const std::unordered_map<std::string, std::string>& ConverterConfig::getTopParentMapping() const {
+    return top_parent_mapping_;
 }
