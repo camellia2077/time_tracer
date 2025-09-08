@@ -1,6 +1,9 @@
 // converter/internal/DayProcessor.cpp
 #include "DayProcessor.hpp"
 
+// [新增]
+#include "reprocessing/converter/pipelines/converter/DayStatsCalculator.hpp"
+
 namespace {
     std::string formatTime(const std::string& timeStrHHMM) {
         return (timeStrHHMM.length() == 4) ? timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2) : timeStrHHMM;
@@ -34,4 +37,8 @@ void DayProcessor::process(InputData& dayToFinalize, InputData& nextDay) {
             dayToFinalize.endsWithSleepNight = true;
         }
     }
+    
+    // [新增] 在所有活动都生成完毕后，再调用统计计算器
+    DayStatsCalculator stats_calculator;
+    stats_calculator.calculate_stats(dayToFinalize);
 }
