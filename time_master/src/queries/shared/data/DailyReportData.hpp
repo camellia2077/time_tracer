@@ -1,4 +1,3 @@
-// queries/report_generators/daily/data/DailyReportData.hpp
 #ifndef DAILY_REPORT_DATA_HPP
 #define DAILY_REPORT_DATA_HPP
 
@@ -6,10 +5,17 @@
 #include <vector>
 #include <map>
 
+// [新增] 用于单个活动的详细记录
+struct TimeRecord {
+    std::string start_time;
+    std::string end_time;
+    std::string project_path;
+};
+
 // This struct is part of the data for a daily report, so it belongs here.
 struct DayMetadata {
     std::string status = "N/A";
-    std::string sleep = "N/A"; // sleep 字段
+    std::string sleep = "N/A"; // sleep 字段 
     std::string remark = "N/A";
     std::string getup_time = "N/A";
 };
@@ -22,6 +28,7 @@ struct DailyReportData {
     DayMetadata metadata; // The compiler now sees the definition directly above
     long long total_duration = 0;
     std::vector<std::pair<std::string, long long>> records;
+    std::vector<TimeRecord> detailed_records; // [新增] 用于存储详细的活动记录
 };
 
 #endif // DAILY_REPORT_DATA_HPP
