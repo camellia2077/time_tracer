@@ -19,7 +19,9 @@ set(SOURCES
     src/cli/HelpPrinter.cpp       # <-- [新增] 将新文件添加到源列表
     src/config/Config.cpp
     src/file_io/FileManager.cpp
-    src/generator/LogGenerator.cpp
+    src/generator/_internal/RemarkGenerator.cpp # <-- [新增]
+    src/generator/_internal/EventGenerator.cpp  # <-- [新增]
+    src/generator/facade/LogGenerator.cpp
     src/utils/PerformanceReporter.cpp
     src/utils/Utils.cpp
 )

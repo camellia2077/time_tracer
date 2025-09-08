@@ -1,5 +1,5 @@
 #include "config/Config.h"
-#include "generator/LogGenerator.h"
+#include "generator/facade/LogGenerator.h"
 #include "utils/Utils.h"
 #include "file_io/FileManager.h"
 #include "utils/PerformanceReporter.h"
