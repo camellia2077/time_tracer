@@ -3,7 +3,7 @@
 #define INTERVAL_PROCESSOR_HPP
 
 
-#include "reprocessing/converter/internal/ConverterConfig.hpp"
+#include "ConverterConfig.hpp"
 #include <string>
 
 class IntervalConverter {
