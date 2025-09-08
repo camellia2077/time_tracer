@@ -17,7 +17,7 @@ namespace FileUtils {
      * @return 一个包含所有找到的文件路径的向量(std::vector)，并已按字母顺序排序。
      */
     std::vector<std::filesystem::path> find_files_by_extension_recursively(
-        const std::filesystem::path& root_path, 
+        const std::filesystem::path& root_path,
         const std::string& extension
     );
 

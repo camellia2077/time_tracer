@@ -86,7 +86,15 @@ void Converter::transform(InputData& day) {
                 Activity activity;
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
-                activity.title = parts[0]; // 第一个元素是 title
+                
+                // [核心修改] 应用 initial_top_parents 映射
+                activity.title = parts[0]; // 1. 获取原始 title
+                const auto& top_parents_map = config_.getInitialTopParentsMapping();
+                auto map_it = top_parents_map.find(activity.title);
+                if (map_it != top_parents_map.end()) {
+                    activity.title = map_it->second; // 2. 如果在映射中找到，则替换为新值
+                }
+
                 if (parts.size() > 1) {
                     // 剩余的元素是 parents 列表
                     activity.parents.assign(parts.begin() + 1, parts.end());
