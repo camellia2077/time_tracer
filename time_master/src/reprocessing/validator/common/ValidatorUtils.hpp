@@ -21,7 +21,8 @@ enum class ErrorType {
     Source_NoDateAtStart,
     UnrecognizedActivity,
     Source_InvalidLineFormat,
-    Source_MissingYearHeader // 源文件缺少年份标题,例如y2025
+    Source_MissingYearHeader, // 源文件缺少年份标题,例如y2025
+    Json_TooFewActivities // 确保一天至少有两个活动
 };
 
 // 共享的错误结构体
