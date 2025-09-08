@@ -10,6 +10,7 @@ struct TimeRecord {
     std::string start_time;
     std::string end_time;
     std::string project_path;
+    long long duration_seconds; // [新增] 存储活动时长
 };
 
 // This struct is part of the data for a daily report, so it belongs here.

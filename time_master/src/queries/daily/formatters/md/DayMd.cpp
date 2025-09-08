@@ -52,7 +52,13 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     if (!data.detailed_records.empty()) {
         ss << "\n## All Activities\n\n";
         for (const auto& record : data.detailed_records) {
-            ss << std::format("- {0} - {1}: {2}\n", record.start_time, record.end_time, record.project_path);
+            // [修改] 在格式化字符串中新增时长字段
+            ss << std::format("- {0} - {1} ({2}): {3}\n", 
+                record.start_time, 
+                record.end_time,
+                time_format_duration(record.duration_seconds), // [新增] 使用辅助函数格式化时长
+                record.project_path
+            );
         }
         ss << "\n";
     }
