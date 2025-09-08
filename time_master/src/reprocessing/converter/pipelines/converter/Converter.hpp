@@ -3,7 +3,7 @@
 #define INTERVAL_CONVERTER_HPP
 
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/internal/ConverterConfig.hpp"
+#include "reprocessing/converter/ConverterConfig.hpp"
 #include <string>
 
 // [修改] 移除不再需要的成员变量

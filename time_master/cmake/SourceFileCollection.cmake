@@ -71,18 +71,17 @@ set(QUERIES_SOURCES
 # --- Reprocessing Sources ---
 set(REPROCESSING_SOURCES
     "src/reprocessing/LogProcessor.cpp"
-
+    # 转换模块
     "src/reprocessing/converter/IntervalConverter.cpp"
+    "src/reprocessing/converter/ConverterConfig.cpp"
 
-    "src/reprocessing/converter/internal/converter/Converter.cpp"
-    "src/reprocessing/converter/internal/converter/ActivityMapper.cpp"
-    "src/reprocessing/converter/internal/converter/DayStatsCalculator.cpp"
+    "src/reprocessing/converter/pipelines/converter/ActivityMapper.cpp"
+    "src/reprocessing/converter/pipelines/converter/Converter.cpp"
+    "src/reprocessing/converter/pipelines/converter/DayStatsCalculator.cpp"
 
-
-    "src/reprocessing/converter/internal/ConverterConfig.cpp"
-    "src/reprocessing/converter/internal/DayProcessor.cpp"
-    "src/reprocessing/converter/internal/InputParser.cpp"
-    "src/reprocessing/converter/internal/OutputGenerator.cpp"
+    "src/reprocessing/converter/pipelines/DayProcessor.cpp"
+    "src/reprocessing/converter/pipelines/InputParser.cpp"
+    "src/reprocessing/converter/pipelines/OutputGenerator.cpp"
 
     # 验证模块
     "src/reprocessing/validator/FileValidator.cpp"
