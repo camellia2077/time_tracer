@@ -21,6 +21,7 @@
  * 4.  **时间连续性**：检查一天内各个活动(Activity)的起止时间是否完美衔接，没有间断或重叠。
  * 5.  **高级业务逻辑**：
  * -   如果某天的"Sleep"标记为true，那么该天的最后一个活动必须是"sleep"。
+ * -   [新增] 验证一天的活动数量是否至少为2项。
  */
 class JsonValidator {
 public:
@@ -69,6 +70,14 @@ private:
      * @note  例如，检查当 `Headers.Sleep` 为true时，最后一个活动是否为 'sleep'。
      */
     void validateHighLevelRules(const nlohmann::json& day_object, std::set<Error>& errors);
+
+    /**
+     * @brief 验证单日内的活动数量。
+     * @param day_object 代表一天的JSON对象。
+     * @param errors 用于存储错误的集合。
+     * @note  此函数检查 `Activities` 数组的大小是否至少为2。
+     */
+    void validateActivityCount(const nlohmann::json& day_object, std::set<Error>& errors); // [新增]
 };
 
 #endif // JSON_VALIDATOR_HPP

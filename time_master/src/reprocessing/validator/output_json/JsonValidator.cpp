@@ -51,6 +51,7 @@ bool JsonValidator::validate(const std::string& file_path, std::set<Error>& erro
         if (!day_object.is_object()) continue; // 跳过非对象元素
         validateTimeContinuity(day_object, errors); // 验证时间连续性
         validateHighLevelRules(day_object, errors);   // 验证高级业务规则
+        validateActivityCount(day_object, errors);    // [新增] 验证活动数量
     }
     
     // 5. 如果错误集合为空，则表示验证通过
@@ -165,5 +166,22 @@ void JsonValidator::validateHighLevelRules(const json& day_object, std::set<Erro
             std::string date_str = headers.value("Date", "[Unknown Date]");
             errors.insert({0, "In file for date " + date_str + ": The last activity must be 'sleep' when Sleep is True.", ErrorType::MissingSleepNight});
         }
+    }
+}
+
+// [新增] 验证一天的活动数量是否至少为2
+void JsonValidator::validateActivityCount(const json& day_object, std::set<Error>& errors) {
+    // 获取 Headers 中的日期，用于生成错误信息
+    const auto& headers = day_object.value("Headers", json::object());
+    std::string date_str = headers.value("Date", "[Unknown Date]");
+
+    // 检查 Activities 数组是否存在且大小是否小于2
+    if (day_object.contains("Activities") && day_object["Activities"].is_array()) {
+        if (day_object["Activities"].size() < 2) {
+            errors.insert({0, "In file for date " + date_str + ": The day has less than 2 activities. This may cause issues with 'sleep_night' generation.", ErrorType::Json_TooFewActivities});
+        }
+    } else {
+        // 如果 Activities 字段不存在或不是数组，也应视为错误
+        errors.insert({0, "In file for date " + date_str + ": 'Activities' field is missing or not an array.", ErrorType::Json_TooFewActivities});
     }
 }
