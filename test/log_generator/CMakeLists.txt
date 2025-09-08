@@ -1,42 +1,72 @@
 # --- 1. Project Configuration ---
-# ]Sets the minimum required CMake version and defines the project name and language. 
-cmake_minimum_required(VERSION 3.16) 
+cmake_minimum_required(VERSION 3.16)
 project(log_generator_project CXX)
 
 # --- 2. C++ Standard ---
-# ]Sets the C++ standard to C++20, which is required by the source code.
-set(CMAKE_CXX_STANDARD 20) 
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- 3. Dependency Handling (nlohmann/json) ---
-# We use find_package to locate the nlohmann/json library installed in the MSYS2 environment.
-find_package(nlohmann_json 3.11.3 REQUIRED) 
+find_package(nlohmann_json 3.11.3 REQUIRED)
 
 # --- 4. Executable Definition (MODIFIED) ---
-# ]Creates the executable target from ALL a project's source files.
-# ]We list all .cpp files that need to be compiled.
+# [核心修改] 更新源文件列表以反映新的目录结构。
+# 我们现在使用相对于 CMakeLists.txt 的完整路径。
 set(SOURCES
-    main.cpp
-    Config.cpp
-    LogGenerator.cpp
-    Utils.cpp             # <-- 新增
-    FileManager.cpp       # <-- 新增
-    PerformanceReporter.cpp # <-- 新增
+    src/main.cpp
+    src/cli/CommandLineParser.cpp
+    src/config/Config.cpp
+    src/file_io/FileManager.cpp
+    src/generator/LogGenerator.cpp
+    src/utils/PerformanceReporter.cpp
+    src/utils/Utils.cpp
 )
 add_executable(log_generator ${SOURCES})
 
+# [核心修改] 添加 src 目录作为头文件包含路径。
+# 这使得我们可以在代码中使用 #include "cli/CommandLineParser.h" 这样的路径，
+# 而不是复杂的相对路径。
+target_include_directories(log_generator PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
 # --- 5. Linking Dependencies ---
-# Links the executable with the nlohmann/json library. ]This does not need to be changed.
 target_link_libraries(log_generator PRIVATE nlohmann_json::nlohmann_json)
 
-# --- 6. Optimization and Version-Specific Compilation Options ---
-#  ]Adds high-performance optimizations for "Release" builds. 
-#    ]-O3: Aggressive optimization level. 
-#    ]-march=native: Optimizes the code for the build machine's CPU architecture. 
-#    ]-s: Strips symbols from the executable to reduce its size (linker option). 
-#    ]-flto: Enables Link-Time Optimization (LTO) for better global optimization. 
-#  ]Compilation options for GCC/Clang [cite: 11]
+# --- 6. Build-time Configuration File Copying (NEW) ---
+# [核心修改] 添加一个自定义命令，在构建时自动将配置文件
+# 从项目根目录下的 /config 文件夹复制到编译输出目录（例如 build/）。
+set(CONFIG_SOURCE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/config/activities_config.json)
+# CMAKE_BINARY_DIR 是CMake中指向build目录的变量
+set(CONFIG_DESTINATION_PATH ${CMAKE_BINARY_DIR}/config/activities_config.json)
+
+# 确保目标目录存在
+add_custom_command(
+    TARGET log_generator PRE_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/config
+    COMMENT "Ensuring config directory exists in build directory"
+)
+
+# 添加复制文件的命令
+add_custom_command(
+    OUTPUT ${CONFIG_DESTINATION_PATH}
+    COMMAND ${CMAKE_COMMAND} -E copy
+        ${CONFIG_SOURCE_PATH}
+        ${CONFIG_DESTINATION_PATH}
+    DEPENDS ${CONFIG_SOURCE_PATH}
+    COMMENT "Copying configuration file to build directory"
+)
+
+# 创建一个目标来代表这个复制操作
+add_custom_target(
+    copy_config ALL
+    DEPENDS ${CONFIG_DESTINATION_PATH}
+)
+
+# 确保在编译可执行文件之前，文件复制操作已完成
+add_dependencies(log_generator copy_config)
+
+
+# --- 7. Optimization and Version-Specific Compilation Options ---
 if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(log_generator PRIVATE
     $<$<CONFIG:Release>:-O3>
@@ -44,15 +74,11 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   )
 endif()
 
-# Enables Link-Time Optimization (LTO) for the Release configuration
 set_property(TARGET log_generator PROPERTY INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
-
-# Adds the strip flag (-s) to the linker flags for the Release configuration
 set_property(TARGET log_generator PROPERTY LINK_FLAGS_RELEASE "-s")
 
 
-# --- 7. Status Messages ---
-# ]Prints a helpful message after CMake configuration is complete.
-message(STATUS "Project configured. To compile, run:") 
+# --- 8. Status Messages ---
+message(STATUS "Project configured. To compile, run:")
 message(STATUS "  cmake --build . --config Release")
 message(STATUS "The executable will be found in the build directory.")
