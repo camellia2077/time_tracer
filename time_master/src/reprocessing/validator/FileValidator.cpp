@@ -2,7 +2,7 @@
 #include "FileValidator.hpp"
 
 #include "reprocessing/validator/source_txt/SourceFileValidator.hpp"
-#include "reprocessing/validator/output_json/JsonValidator.hpp"
+#include "reprocessing/validator/output_json/facade/JsonValidator.hpp"
 
 FileValidator::FileValidator(const std::string& source_config_path)
     : source_config_path_(source_config_path) {}
