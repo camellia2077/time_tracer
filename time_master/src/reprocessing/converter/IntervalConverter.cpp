@@ -12,16 +12,14 @@
 #include <stdexcept>
 #include <vector>
 
-// [修改] 更新构造函数实现
-IntervalConverter::IntervalConverter(const std::string& config_filename, const AppConfig& app_config) {
+// [恢复] 构造函数恢复原状
+IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
-    // [新增] 将从 AppConfig 中获取的映射设置到 ConverterConfig 中
-    config_.setInitialTopParentsMapping(app_config.initial_top_parents);
+    // [移除] 不再需要调用 setter 方法
 }
 
-// [修改] 移除了 year_prefix 参数
 bool IntervalConverter::executeConversion(const std::string& input_filepath, const std::string& output_filepath) {
     std::ifstream inFile(input_filepath);
     if (!inFile.is_open()) {
@@ -29,7 +27,6 @@ bool IntervalConverter::executeConversion(const std::string& input_filepath, con
         return false;
     }
 
-    // [修改] InputParser 的构造不再需要年份
     InputParser parser(config_);
     std::vector<InputData> all_days;
     parser.parse(inFile, [&](InputData& day) {

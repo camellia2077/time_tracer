@@ -1,8 +1,4 @@
 {
   "interval_processor_config_path": "interval_processor_config.json",
-  "error_log_path": "../error.log",
-
-  "initial_top_parents": {
-    "study": "mystudy"
-  }
+  "error_log_path": "../error.log"
 }

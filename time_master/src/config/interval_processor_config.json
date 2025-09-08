@@ -1,5 +1,8 @@
 {
-    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
+      "initial_top_parents": {
+        "study": "mystudy"
+    },
+   
 
     "header_order": [
         "Date:",
@@ -9,6 +12,8 @@
         "Remark:"
     ],
     "remark_prefix": "r ",
+
+    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
     
     "text_mappings": {
         "配置环境"  : "code_env-config",
@@ -130,14 +135,15 @@
         "打水" : "other_housework"
     },
 
+
+
+
+
     "text_duration_mappings":{
         "失眠": "insomnia",
         "饭": "meal",
         "休息" : "rest"
     },
-
-    
-    
     "duration_mappings": {
         "rest": [
             { "less_than_minutes": 10, "value": "rest_short" },
