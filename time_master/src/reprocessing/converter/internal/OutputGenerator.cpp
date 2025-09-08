@@ -25,7 +25,8 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         headers_obj["Status"] = static_cast<int>(day.hasStudyActivity);
         headers_obj["Sleep"] = static_cast<int>(day.isContinuation ? false : day.endsWithSleepNight);
         headers_obj["Getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
-        
+        headers_obj["ActivityCount"] = day.activityCount; // [新增] 添加计算字段
+
         if (!day.generalRemarks.empty()) {
             headers_obj["Remark"] = day.generalRemarks[0];
         } else {
@@ -42,7 +43,6 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["endTime"] = activity_data.endTime;
 
             json activity_details;
-            // [核心修改] 输出的键统一为 "top_parent"，并使用新的成员变量
             activity_details["top_parent"] = activity_data.top_parent;
             if (!activity_data.parents.empty()) {
                 activity_details["parents"] = activity_data.parents;
