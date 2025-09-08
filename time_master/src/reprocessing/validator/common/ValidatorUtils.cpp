@@ -22,6 +22,8 @@ static std::string getErrorTypeHeader(ErrorType type) {
             return "Time discontinuity errors(时间不连续):";
         case ErrorType::MissingSleepNight:
             return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
+        case ErrorType::Json_TooFewActivities: // [新增]
+            return "Activity count errors(活动数量错误):";
         case ErrorType::FileAccess:
             return "File access errors:";
         case ErrorType::Structural:
