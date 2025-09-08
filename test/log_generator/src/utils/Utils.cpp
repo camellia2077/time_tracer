@@ -40,21 +40,5 @@ namespace Utils {
         }
     }
 
-    void print_usage(const char* prog_name) {
-        std::cerr << ConsoleColors::red << "Usage: " << ConsoleColors::reset << prog_name << " <start_year> <end_year> <items_per_day>\n";
-        std::cerr << "       " << prog_name << " --version\n";
-        std::cerr << "Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.\n";
-        std::cerr << "  <start_year>      : The starting year (e.g., 1990).\n";
-        std::cerr << "  <end_year>        : The ending year (inclusive).\n";
-        std::cerr << "  <items_per_day>   : Number of log items per day (positive integer).\n";
-        std::cerr << "  --version         : Display version information and exit.\n";
-        std::cerr << "Example: " << prog_name << " 2023 2024 5\n";
-    }
 
-    void print_version() {
-        const std::string APP_VERSION = "2.2.0";
-        const std::string LAST_UPDATE = "2025-06-27";
-        std::cout << "log_generator version " << APP_VERSION << std::endl;
-        std::cout << "Last Updated: " << LAST_UPDATE << std::endl;
-    }
 } // namespace Utils
