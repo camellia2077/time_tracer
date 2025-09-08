@@ -71,7 +71,7 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
     std::string end_time = activity_json.value("endTime", "");
     
     const auto& activity_details = activity_json.value("activity", json::object());
-    std::string title = activity_details.value("title", "unknown");
+    std::string title = activity_details.value("top_parents", "unknown");
     
     std::string project_path = title;
 
