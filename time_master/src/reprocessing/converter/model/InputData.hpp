@@ -33,6 +33,8 @@ struct InputData {
 
     bool isContinuation = false;
 
+    int activityCount = 0; // [新增] 计算字段：每日活动总数
+
     void clear() {
         date.clear();
         hasStudyActivity = false;
@@ -42,6 +44,7 @@ struct InputData {
         rawEvents.clear();
         processedActivities.clear();
         isContinuation = false;
+        activityCount = 0; // [修改] 清理时重置
     }
 };
 
