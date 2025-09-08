@@ -9,14 +9,14 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
     } else {
         // 创建表结构
         const char* create_days_sql = 
-            "CREATE TABLE IF NOT EXISTS days ("
-            "date TEXT PRIMARY KEY, "
-            "year INTEGER, "
-            "month INTEGER, "
-            "status TEXT, "
-            "sleep TEXT, "
-            "remark TEXT, "
-            "getup_time TEXT);";
+                "CREATE TABLE IF NOT EXISTS days ("
+                "date TEXT PRIMARY KEY, "
+                "year INTEGER, "
+                "month INTEGER, "
+                "status INTEGER, " // [修改] 类型改为 INTEGER
+                "sleep INTEGER, "  // [修改] 类型改为 INTEGER
+                "remark TEXT, "
+                "getup_time TEXT);";
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql = 

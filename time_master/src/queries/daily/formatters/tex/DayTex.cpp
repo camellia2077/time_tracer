@@ -1,5 +1,3 @@
-
-// DayTex.cpp 
 #include "DayTex.hpp"
 #include <iomanip>
 #include <string>
@@ -7,6 +5,7 @@
 #include "common/common_utils.hpp"
 
 #include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/BoolToString.hpp" // [新增] 引入新的工具头文件
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
@@ -49,7 +48,8 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "\\begin{itemize}\n";
     ss << "    \\item \\textbf{Date}: " << escape_tex_local(data.date) << "\n";
     ss << "    \\item \\textbf{Total Time Recorded}: " << escape_tex_local(time_format_duration(data.total_duration)) << "\n";
-    ss << "    \\item \\textbf{Status}: " << escape_tex_local(data.metadata.status) << "\n";
+    ss << "    \\item \\textbf{Status}: " << escape_tex_local(bool_to_string(data.metadata.status)) << "\n"; // [修改] 调用新的工具函数
+    ss << "    \\item \\textbf{Sleep}: " << escape_tex_local(bool_to_string(data.metadata.sleep)) << "\n"; // [新增] 添加 Sleep 字段
     ss << "    \\item \\textbf{Getup Time}: " << escape_tex_local(data.metadata.getup_time) << "\n";
     ss << "    \\item \\textbf{Remark}: " << escape_tex_local(data.metadata.remark) << "\n";
     ss << "\\end{itemize}\n\n";

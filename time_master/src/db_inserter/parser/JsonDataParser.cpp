@@ -44,8 +44,8 @@ void JsonDataParser::parse_day_object(const json& day_json) {
     const auto& headers = day_json["Headers"];
     DayData day_data;
     day_data.date = headers.value("Date", "");
-    day_data.status = headers.value("Status", false) ? "True" : "False";
-    day_data.sleep = headers.value("Sleep", false) ? "True" : "False";
+    day_data.status = headers.value("Status", 0); // [修改] 直接将JSON值赋给 int
+    day_data.sleep = headers.value("Sleep", 0);   // [修改] 直接将JSON值赋给 int
     day_data.getup_time = headers.value("Getup", "00:00");
     day_data.remark = headers.value("Remark", "");
 
