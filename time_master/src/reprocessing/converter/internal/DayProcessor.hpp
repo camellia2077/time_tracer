@@ -5,7 +5,7 @@
 // 这个类将负责处理天与天之间的关联逻辑
 
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/internal/Converter.hpp"
+#include "reprocessing/converter/internal/converter/Converter.hpp"
 
 class DayProcessor {
 public:
