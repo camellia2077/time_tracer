@@ -60,10 +60,8 @@ AppConfig ConfigLoader::load_configuration() {
 
         app_config.error_log_path = (config_dir_path / error_log_relative).lexically_normal().string();
 
-        // [新增] 加载 initial_top_parents 映射
-        if (j.contains("initial_top_parents")) {
-            app_config.initial_top_parents = j.at("initial_top_parents").get<std::unordered_map<std::string, std::string>>();
-        }
+        // [移除] 不再从主 config.json 加载 initial_top_parents 映射。
+        // 这个逻辑将迁移到 ConverterConfig 类中，由它自己从 interval_processor_config.json 加载。
 
         // 检查 JSON 对象中是否存在 "export_path" 键
         if (j.contains("export_path")) {

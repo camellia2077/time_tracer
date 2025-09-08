@@ -48,9 +48,8 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         auto start_time = std::chrono::steady_clock::now();
 
         try {
-            // [修改] 调用新的构造函数，传入 config_ (即 AppConfig)
-            IntervalConverter processor(config_.interval_processor_config_path, config_);
-            // [核心修改] 不再从路径提取年份，直接调用转换
+            // [恢复] 调用原始的构造函数，不再传递 config_
+            IntervalConverter processor(config_.interval_processor_config_path);
             if (!processor.executeConversion(source_file.string(), output_file.string())) {
                  result.success = false;
             } else {
