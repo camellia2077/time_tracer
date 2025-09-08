@@ -22,6 +22,7 @@ set(DB_INSERTER_SOURCES
     "src/db_inserter/inserter/_internal/DataInserter.cpp"
     "src/db_inserter/inserter/_internal/DbConnectionManager"
     "src/db_inserter/inserter/_internal/DbStatementManager.cpp"
+    
 
     
 
@@ -62,7 +63,9 @@ set(QUERIES_SOURCES
     "src/queries/shared/formatters/breakdown/md/BreakdownMd.cpp"
     "src/queries/shared/formatters/breakdown/tex/BreakdownTex.cpp"
     "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"
+
     "src/queries/shared/utils/query_utils.cpp"
+    "src/queries/shared/utils/BoolToString.cpp"
 )
 
 # --- Reprocessing Sources ---

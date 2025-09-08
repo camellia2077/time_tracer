@@ -18,8 +18,8 @@ struct DayData {
     std::string date;
     int year;
     int month;
-    std::string status;
-    std::string sleep;
+    int status; // [修改] 使用 int 来存储布尔值
+    int sleep;  // [修改] 使用 int 来存储布尔值
     std::string remark;
     std::string getup_time;
 };

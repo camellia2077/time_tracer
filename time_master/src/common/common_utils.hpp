@@ -15,15 +15,6 @@
 #include <iomanip>
 #include <algorithm>
 
-
-/*
-#define RESET_COLOR   "\033[0m"
-#define RED_COLOR     "\033[31m"
-#define GREEN_COLOR   "\033[32m"
-#define YELLOW_COLOR  "\033[33m"
-*/
-
-
 // --- Structure Definitions ---
 
 // Represents a node in the project hierarchy for time aggregation 

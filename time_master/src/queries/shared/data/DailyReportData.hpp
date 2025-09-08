@@ -9,6 +9,7 @@
 // This struct is part of the data for a daily report, so it belongs here.
 struct DayMetadata {
     std::string status = "N/A";
+    std::string sleep = "N/A"; // sleep 字段
     std::string remark = "N/A";
     std::string getup_time = "N/A";
 };

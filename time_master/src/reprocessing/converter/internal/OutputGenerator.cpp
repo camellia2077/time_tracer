@@ -4,7 +4,6 @@
 #include <vector>
 #include <nlohmann/json.hpp>
 
-/* ... (开发者备注保持不变) ... */
 using json = nlohmann::json;
 
 void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& config) {
@@ -22,8 +21,9 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
 
         json headers_obj;
         headers_obj["Date"] = day.date;
-        headers_obj["Status"] = day.hasStudyActivity;
-        headers_obj["Sleep"] = day.isContinuation ? false : day.endsWithSleepNight;
+        // 转换成0或1
+        headers_obj["Status"] = static_cast<int>(day.hasStudyActivity);
+        headers_obj["Sleep"] = static_cast<int>(day.isContinuation ? false : day.endsWithSleepNight);
         headers_obj["Getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         
         if (!day.generalRemarks.empty()) {
