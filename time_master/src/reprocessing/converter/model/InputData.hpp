@@ -15,9 +15,9 @@ struct RawEvent {
 struct Activity {
     std::string startTime;
     std::string endTime;
-    // [核心修改] 将 "title" 重命名为 "top_parent"
     std::string top_parent;
     std::vector<std::string> parents;
+    int durationSeconds = 0;// [新增] 用于存储活动时长（以秒为单位）
 };
 
 // 代表一天所有日志数据的结构体
@@ -33,7 +33,7 @@ struct InputData {
 
     bool isContinuation = false;
 
-    int activityCount = 0; // [新增] 计算字段：每日活动总数
+    int activityCount = 0; // 计算字段：每日活动总数
 
     void clear() {
         date.clear();
@@ -44,7 +44,7 @@ struct InputData {
         rawEvents.clear();
         processedActivities.clear();
         isContinuation = false;
-        activityCount = 0; // [修改] 清理时重置
+        activityCount = 0; // 清理时重置
     }
 };
 
