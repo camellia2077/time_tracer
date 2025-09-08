@@ -42,6 +42,9 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["startTime"] = activity_data.startTime;
             activity_obj["endTime"] = activity_data.endTime;
 
+            // [新增] 添加时长字段到JSON输出
+            activity_obj["durationSeconds"] = activity_data.durationSeconds;
+
             json activity_details;
             activity_details["top_parent"] = activity_data.top_parent;
             if (!activity_data.parents.empty()) {

@@ -18,7 +18,4 @@ void Converter::transform(InputData& day) {
     ActivityMapper activity_mapper(config_);
     activity_mapper.map_activities(day);
 
-    // [新增] 调用 DayStatsCalculator 进行计算
-    DayStatsCalculator stats_calculator;
-    stats_calculator.calculate_stats(day);
 }
