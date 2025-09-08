@@ -2,13 +2,8 @@
 #include <string>
 
 namespace Utils {
-    // 负责处理控制台颜色输出
-    struct ConsoleColors {
-        static const std::string red;
-        static const std::string green;
-        static const std::string reset;
-    };
-
+    // [核心修改] 移除 ConsoleColors 结构体
+    
     // 设置控制台以支持UTF-8和颜色代码
     void setup_console();
 

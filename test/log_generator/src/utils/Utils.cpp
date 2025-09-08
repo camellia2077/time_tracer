@@ -1,4 +1,4 @@
-#include "Utils.h"
+#include "utils/Utils.h"
 #include <iostream>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -7,9 +7,7 @@
 
 namespace Utils {
 
-    const std::string ConsoleColors::red = "\033[1;31m";
-    const std::string ConsoleColors::green = "\033[1;32m";
-    const std::string ConsoleColors::reset = "\033[0m";
+    // [核心修改] 移除 ConsoleColors 的静态成员定义
 
     void setup_console() {
     #if defined(_WIN32) || defined(_WIN64)
@@ -39,6 +37,5 @@ namespace Utils {
             return 31;
         }
     }
-
 
 } // namespace Utils
