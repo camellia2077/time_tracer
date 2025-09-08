@@ -11,7 +11,7 @@
 #include "common/AnsiColors.hpp" // 获取颜色宏定义
 
 #include "db_inserter/parser/JsonDataParser.hpp"
-#include "db_inserter/inserter/DatabaseInserter.hpp"
+#include "db_inserter/inserter/facade/DatabaseInserter.hpp"
           
 namespace fs = std::filesystem;
 

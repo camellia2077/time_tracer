@@ -16,7 +16,16 @@ set(TIME_MASTER_CLI_SOURCES
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES
     "src/db_inserter/DataImporter.cpp"
-    "src/db_inserter/inserter/DatabaseInserter.cpp"
+    # 插入的封装
+    "src/db_inserter/inserter/facade/DatabaseInserter.cpp"
+    # 插入的实现
+    "src/db_inserter/inserter/_internal/DataInserter.cpp"
+    "src/db_inserter/inserter/_internal/DbConnectionManager"
+    "src/db_inserter/inserter/_internal/DbStatementManager.cpp"
+
+    
+
+
     # 解析json
     "src/db_inserter/parser/JsonDataParser.cpp"
 
