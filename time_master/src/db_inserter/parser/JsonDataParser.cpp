@@ -71,7 +71,8 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
     std::string end_time = activity_json.value("endTime", "");
     
     const auto& activity_details = activity_json.value("activity", json::object());
-    std::string title = activity_details.value("top_parents", "unknown");
+    // 注意top_parent需要为单数,以匹配json的命名
+    std::string title = activity_details.value("top_parent", "unknown_top_parent");
     
     std::string project_path = title;
 
