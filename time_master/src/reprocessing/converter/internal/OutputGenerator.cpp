@@ -46,7 +46,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["endTime"] = activity_data.endTime;
 
             json activity_details;
-            activity_details["title"] = activity_data.title;
+            activity_details["top_parents"] = activity_data.title;
             if (!activity_data.parents.empty()) {
                 activity_details["parents"] = activity_data.parents;
             }
