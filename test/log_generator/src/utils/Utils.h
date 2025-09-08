@@ -17,11 +17,5 @@ namespace Utils {
 
     // 获取指定月份的天数
     int get_days_in_month(int year, int month);
-
-    // 打印程序用法信息
-    void print_usage(const char* prog_name);
     
-    // 打印程序版本信息
-    void print_version();
-
 } // namespace Utils
