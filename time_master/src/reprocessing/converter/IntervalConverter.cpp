@@ -12,10 +12,13 @@
 #include <stdexcept>
 #include <vector>
 
-IntervalConverter::IntervalConverter(const std::string& config_filename) {
+// [修改] 更新构造函数实现
+IntervalConverter::IntervalConverter(const std::string& config_filename, const AppConfig& app_config) {
     if (!config_.load(config_filename)) {
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
+    // [新增] 将从 AppConfig 中获取的映射设置到 ConverterConfig 中
+    config_.setInitialTopParentsMapping(app_config.initial_top_parents);
 }
 
 // [修改] 移除了 year_prefix 参数
