@@ -7,7 +7,7 @@
 #include <iostream>
 #include <unordered_set>
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/internal/ConverterConfig.hpp"
+#include "reprocessing/converter/ConverterConfig.hpp"
 
 class InputParser {
 public:

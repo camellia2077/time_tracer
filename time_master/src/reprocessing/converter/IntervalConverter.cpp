@@ -2,10 +2,10 @@
 #include "IntervalConverter.hpp"
 #include "common/AnsiColors.hpp" // For colored console output
 
-#include "reprocessing/converter/internal/converter/Converter.hpp"
-#include "reprocessing/converter/internal/InputParser.hpp"
-#include "reprocessing/converter/internal/DayProcessor.hpp"
-#include "reprocessing/converter/internal/OutputGenerator.hpp"
+#include "reprocessing/converter/pipelines/converter/Converter.hpp"
+#include "reprocessing/converter/pipelines/InputParser.hpp"
+#include "reprocessing/converter/pipelines/DayProcessor.hpp"
+#include "reprocessing/converter/pipelines/OutputGenerator.hpp"
 
 #include <fstream>
 #include <iostream>
