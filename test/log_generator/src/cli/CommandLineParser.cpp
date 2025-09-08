@@ -1,80 +1,94 @@
 #include "cli/CommandLineParser.h"
-#include "common/AnsiColors.hpp" // [核心修改] 引入新的颜色头文件
-#include "version.h"
 #include <iostream>
-#include <string>
 #include <stdexcept>
 
-// ... 构造函数和 version_requested/print_version 不变 ...
+// [核心修改] 构造函数现在初始化 HelpPrinter
 CommandLineParser::CommandLineParser(int argc, char* argv[])
-    : argc_(argc), argv_(argv), prog_name_(argv[0]) {}
-
-bool CommandLineParser::version_requested() const {
-    return argc_ == 2 && std::string(argv_[1]) == "--version";
+    : printer_(argv[0]) { // 将程序名传递给 printer
+    for (int i = 1; i < argc; ++i) {
+        args_.push_back(argv[i]);
+    }
 }
 
-void CommandLineParser::print_version() const {
-    std::cout << "log_generator version " << AppVersion::APP_VERSION << std::endl;
-    std::cout << "Last Updated: " << AppVersion::LAST_UPDATE << std::endl;
-}
-
-
-void CommandLineParser::print_usage() const {
-    // [核心修改] 使用新的颜色宏
-    std::cerr << RED_COLOR << "Usage: " << RESET_COLOR << prog_name_ << " <start_year> <end_year> <items_per_day>\n";
-    std::cerr << "       " << prog_name_ << " --version\n";
-    std::cerr << "Description: Generates test log data for a given year range. Reads activities from 'activities_config.json'.\n";
-    std::cerr << "  <start_year>      : The starting year (e.g., 1990).\n";
-    std::cerr << "  <end_year>        : The ending year (inclusive).\n";
-    std::cerr << "  <items_per_day>   : Number of log items per day (must be >= 2).\n";
-    std::cerr << "  --version         : Display version information and exit.\n";
-    std::cerr << "Example: " << prog_name_ << " 2023 2024 5\n";
-}
+// [核心修改] 移除 print_version 和 print_usage 的实现
 
 std::optional<Config> CommandLineParser::parse() {
-    if (argc_ != 4) {
-        print_usage();
-        return std::nullopt;
-    }
-
     Config config;
-    try {
-        config.start_year = std::stoi(argv_[1]);
-        config.end_year = std::stoi(argv_[2]);
-        config.items_per_day = std::stoi(argv_[3]);
-    }
-    catch (const std::invalid_argument&) {
-        // [核心修改] 使用新的颜色宏
-        std::cerr << RED_COLOR << "Error" << RESET_COLOR << ": Invalid argument. All arguments must be integers.\n";
-        print_usage();
-        return std::nullopt;
-    }
-    catch (const std::out_of_range&) {
-        // [核心修改] 使用新的颜色宏
-        std::cerr << RED_COLOR << "Error" << RESET_COLOR <<": Argument out of range.\n";
-        print_usage();
-        return std::nullopt;
-    }
-
-    if (config.start_year <= 0 || config.end_year <= 0) {
-        // [核心修改] 使用新的颜色宏
-        std::cerr <<  RED_COLOR << "Error" << RESET_COLOR <<": Years must be positive integers.\n";
-        print_usage();
-        return std::nullopt;
-    }
+    config.items_per_day = 10;
     
-    if (config.items_per_day < 2) {
-        // [核心修改] 使用新的颜色宏
-        std::cerr << RED_COLOR << "Error" << RESET_COLOR <<": <items_per_day> must be 2 or greater to generate realistic sleep data.\n";
-        std::cerr << "       (A value of 1 would make 'getup' the last event of the day).\n";
-        print_usage();
-        return std::nullopt;
-    }
+    std::optional<int> single_year, start_year, end_year;
 
-    if (config.end_year < config.start_year) {
-        // [核心修改] 使用新的颜色宏
-        std::cerr << RED_COLOR << "Error" << RESET_COLOR << ": <end_year> cannot be earlier than <start_year>.\n";
-        print_usage();
+    try {
+        for (size_t i = 0; i < args_.size(); ++i) {
+            const std::string& arg = args_[i];
+
+            if (arg == "-h" || arg == "--help") {
+                printer_.print_usage(); // 委托给 printer
+                return std::nullopt;
+            }
+            if (arg == "-v" || arg == "--version") {
+                printer_.print_version(); // 委托给 printer
+                return std::nullopt;
+            }
+
+            if (arg == "-y" || arg == "--year") {
+                if (i + 1 < args_.size()) {
+                    single_year = std::stoi(args_[++i]);
+                } else { throw std::invalid_argument("--year option requires an argument."); }
+            } else if (arg == "-s" || arg == "--start") {
+                if (i + 1 < args_.size()) {
+                    start_year = std::stoi(args_[++i]);
+                } else { throw std::invalid_argument("--start option requires an argument."); }
+            } else if (arg == "-e" || arg == "--end") {
+                if (i + 1 < args_.size()) {
+                    end_year = std::stoi(args_[++i]);
+                } else { throw std::invalid_argument("--end option requires an argument."); }
+            } else if (arg == "-i" || arg == "--items") {
+                if (i + 1 < args_.size()) {
+                    config.items_per_day = std::stoi(args_[++i]);
+                } else { throw std::invalid_argument("--items option requires an argument."); }
+            } else {
+                throw std::invalid_argument("Unrecognized option: " + arg);
+            }
+        }
+
+        if (single_year.has_value() && (start_year.has_value() || end_year.has_value())) {
+            throw std::logic_error("Cannot use --year together with --start or --end.");
+        }
+
+        if (single_year.has_value()) {
+            config.mode = GenerationMode::SingleYear;
+            config.start_year = *single_year;
+            config.end_year = *single_year;
+        } else if (start_year.has_value() && end_year.has_value()) {
+            config.mode = GenerationMode::YearRange;
+            config.start_year = *start_year;
+            config.end_year = *end_year;
+        } else {
+            throw std::logic_error("You must specify either a single year with --year, or a range with --start and --end.");
+        }
+
+        if (config.start_year <= 0 || config.end_year <= 0) {
+            throw std::logic_error("Years must be positive integers.");
+        }
+        if (config.items_per_day < 2) {
+            throw std::logic_error("--items must be 2 or greater to generate realistic sleep data.");
+        }
+        if (config.end_year < config.start_year) {
+            throw std::logic_error("--end year cannot be earlier than --start year.");
+        }
+
+    } catch (const std::invalid_argument& e) {
+        printer_.print_error("Invalid argument. " + std::string(e.what())); // 委托给 printer
+        printer_.print_usage();
+        return std::nullopt;
+    } catch (const std::out_of_range&) {
+        printer_.print_error("Argument out of range."); // 委托给 printer
+        printer_.print_usage();
+        return std::nullopt;
+    } catch (const std::logic_error& e) {
+        printer_.print_error(e.what()); // 委托给 printer
+        printer_.print_usage();
         return std::nullopt;
     }
 

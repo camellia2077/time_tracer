@@ -17,17 +17,16 @@ public:
     int run(int argc, char* argv[]) {
         Utils::setup_console();
 
+        // 命令行解析的所有复杂性都被封装在 parser 中
         CommandLineParser parser(argc, argv);
-        
-        if (parser.version_requested()) {
-            parser.print_version();
-            return 0;
-        }
-
         auto config_opt = parser.parse();
+        
+        // 如果返回空，说明解析失败或用户请求了帮助/版本，直接退出
         if (!config_opt) {
-            return 1;
+            // parser 内部已经打印了所有必要信息
+            return 0; // 正常退出，因为这是用户请求的行为
         }
+        // 如果解析成功，我们肯定能拿到有效的 config
         Config config = *config_opt;
 
         std::filesystem::path exe_path = argv[0];
@@ -54,7 +53,6 @@ public:
         }
 
         int files_generated = 0;
-        // [核心修改] 修正 for 循环中的笔误，使用 config.end_year
         for (int year = config.start_year; year <= config.end_year; ++year) {
             for (int month = 1; month <= 12; ++month) {
                 std::string filename = std::format("{}_{:02}.txt", year, month);
