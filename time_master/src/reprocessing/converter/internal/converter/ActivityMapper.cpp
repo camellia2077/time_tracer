@@ -1,42 +1,40 @@
-// reprocessing/converter/internal/Converter.cpp
-#include "Converter.hpp"
-#include <stdexcept>
-#include <unordered_set>
+// reprocessing/converter/internal/converter/ActivityMapper.cpp
+#include "ActivityMapper.hpp"
 #include "common/common_utils.hpp" // For split_string
+#include <stdexcept>
 
-// 辅助函数
-namespace {
-    std::string formatTime(const std::string& timeStrHHMM) {
-        if (timeStrHHMM.length() == 4) {
-            return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
-        }
-        return timeStrHHMM;
+// [修改] 将辅助函数定义为类的成员函数
+std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) const {
+    if (timeStrHHMM.length() == 4) {
+        return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
     }
+    return timeStrHHMM;
+}
 
-    int calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) {
-        if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
-        try {
-            int startHour = std::stoi(startTimeStr.substr(0, 2));
-            int startMin = std::stoi(startTimeStr.substr(3, 2));
-            int endHour = std::stoi(endTimeStr.substr(0, 2));
-            int endMin = std::stoi(endTimeStr.substr(3, 2));
-            int startTimeInMinutes = startHour * 60 + startMin;
-            int endTimeInMinutes = endHour * 60 + endMin;
-            if (endTimeInMinutes < startTimeInMinutes) {
-                endTimeInMinutes += 24 * 60;
-            }
-            return endTimeInMinutes - startTimeInMinutes;
-        } catch (const std::exception&) {
-            return 0;
+// [修改] 将辅助函数定义为类的成员函数
+int ActivityMapper::calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) const {
+    if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
+    try {
+        int startHour = std::stoi(startTimeStr.substr(0, 2));
+        int startMin = std::stoi(startTimeStr.substr(3, 2));
+        int endHour = std::stoi(endTimeStr.substr(0, 2));
+        int endMin = std::stoi(endTimeStr.substr(3, 2));
+        int startTimeInMinutes = startHour * 60 + startMin;
+        int endTimeInMinutes = endHour * 60 + endMin;
+        if (endTimeInMinutes < startTimeInMinutes) {
+            endTimeInMinutes += 24 * 60;
         }
+        return endTimeInMinutes - startTimeInMinutes;
+    } catch (const std::exception&) {
+        return 0;
     }
 }
 
-Converter::Converter(const ConverterConfig& config)
+ActivityMapper::ActivityMapper(const ConverterConfig& config)
     : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
-void Converter::transform(InputData& day) {
+void ActivityMapper::map_activities(InputData& day) {
     day.processedActivities.clear();
     
     if (day.getupTime.empty() && !day.isContinuation) return;
@@ -74,8 +72,6 @@ void Converter::transform(InputData& day) {
                 }
             }
         }
-
-        if (mappedDescription.find("study") != std::string::npos) day.hasStudyActivity = true;
         
         if (!startTime.empty()) {
             std::vector<std::string> parts = split_string(mappedDescription, '_');
@@ -84,7 +80,6 @@ void Converter::transform(InputData& day) {
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
                 
-                // [核心修改] 使用新的成员变量和 Getter
                 activity.top_parent = parts[0];
                 const auto& top_parents_map = config_.getTopParentMapping();
                 auto map_it = top_parents_map.find(activity.top_parent);

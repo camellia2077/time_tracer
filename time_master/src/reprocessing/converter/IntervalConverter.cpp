@@ -2,7 +2,7 @@
 #include "IntervalConverter.hpp"
 #include "common/AnsiColors.hpp" // For colored console output
 
-#include "reprocessing/converter/internal/Converter.hpp"
+#include "reprocessing/converter/internal/converter/Converter.hpp"
 #include "reprocessing/converter/internal/InputParser.hpp"
 #include "reprocessing/converter/internal/DayProcessor.hpp"
 #include "reprocessing/converter/internal/OutputGenerator.hpp"
@@ -12,12 +12,11 @@
 #include <stdexcept>
 #include <vector>
 
-// [恢复] 构造函数恢复原状
+// 构造函数恢复原状
 IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
-    // [移除] 不再需要调用 setter 方法
 }
 
 bool IntervalConverter::executeConversion(const std::string& input_filepath, const std::string& output_filepath) {

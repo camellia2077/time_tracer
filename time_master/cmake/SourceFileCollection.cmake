@@ -74,7 +74,11 @@ set(REPROCESSING_SOURCES
 
     "src/reprocessing/converter/IntervalConverter.cpp"
 
-    "src/reprocessing/converter/internal/Converter.cpp"
+    "src/reprocessing/converter/internal/converter/Converter.cpp"
+    "src/reprocessing/converter/internal/converter/ActivityMapper.cpp"
+    "src/reprocessing/converter/internal/converter/DayStatsCalculator.cpp"
+
+
     "src/reprocessing/converter/internal/ConverterConfig.cpp"
     "src/reprocessing/converter/internal/DayProcessor.cpp"
     "src/reprocessing/converter/internal/InputParser.cpp"
