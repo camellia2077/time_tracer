@@ -32,20 +32,18 @@ namespace {
     }
 }
 
-// [优化] 在构造函数的初始化列表中创建哈希表
 Converter::Converter(const ConverterConfig& config)
     : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
 void Converter::transform(InputData& day) {
-    day.processedActivities.clear(); // 清空，准备填充新的结构化数据
+    day.processedActivities.clear();
     
     if (day.getupTime.empty() && !day.isContinuation) return;
     
     std::string startTime = day.getupTime;
 
     for (const auto& rawEvent : day.rawEvents) {
-        // [优化] 直接使用成员变量 wake_keywords_
         if (wake_keywords_.count(rawEvent.description)) {
             if (startTime.empty()) {
                  startTime = formatTime(rawEvent.endTimeStr);
@@ -80,23 +78,21 @@ void Converter::transform(InputData& day) {
         if (mappedDescription.find("study") != std::string::npos) day.hasStudyActivity = true;
         
         if (!startTime.empty()) {
-            // [核心修改] 将映射后的描述符（如 game_steam_fps_overwatch）拆分为 title 和 parents
             std::vector<std::string> parts = split_string(mappedDescription, '_');
             if (!parts.empty()) {
                 Activity activity;
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
                 
-                // [核心修改] 应用 initial_top_parents 映射
-                activity.title = parts[0]; // 1. 获取原始 title
-                const auto& top_parents_map = config_.getInitialTopParentsMapping();
-                auto map_it = top_parents_map.find(activity.title);
+                // [核心修改] 使用新的成员变量和 Getter
+                activity.top_parent = parts[0];
+                const auto& top_parents_map = config_.getTopParentMapping();
+                auto map_it = top_parents_map.find(activity.top_parent);
                 if (map_it != top_parents_map.end()) {
-                    activity.title = map_it->second; // 2. 如果在映射中找到，则替换为新值
+                    activity.top_parent = map_it->second;
                 }
 
                 if (parts.size() > 1) {
-                    // 剩余的元素是 parents 列表
                     activity.parents.assign(parts.begin() + 1, parts.end());
                 }
                 day.processedActivities.push_back(activity);

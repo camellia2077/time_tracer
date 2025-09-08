@@ -1,4 +1,4 @@
-// reprocessing/input_transfer/internal/ConverterConfig.cpp
+// reprocessing/input_transfer/internal/ConverterConfig.hpp
 
 #ifndef INTERVAL_PROCESSOR_CONFIG_HPP
 #define INTERVAL_PROCESSOR_CONFIG_HPP
@@ -22,7 +22,8 @@ public:
     const std::unordered_map<std::string, std::string>& getTextDurationMapping() const;
     const std::unordered_map<std::string, std::vector<DurationRule>>& getDurationMappings() const;
     const std::vector<std::string>& getWakeKeywords() const;
-    const std::unordered_map<std::string, std::string>& getInitialTopParentsMapping() const;
+    // [核心修改] 重命名 Getter
+    const std::unordered_map<std::string, std::string>& getTopParentMapping() const;
 
 private:
     std::string remark_prefix_;
@@ -32,8 +33,8 @@ private:
     std::unordered_map<std::string, std::vector<DurationRule>> duration_mappings_;
     std::vector<std::string> wake_keywords_;
 
-    // 这个成员变量保持不变，但现在由 load() 方法直接填充
-    std::unordered_map<std::string, std::string> initial_top_parents_mapping_;
+    // [核心修改] 重命名成员变量
+    std::unordered_map<std::string, std::string> top_parent_mapping_;
 };
 
 #endif // INTERVAL_PROCESSOR_CONFIG_HPP

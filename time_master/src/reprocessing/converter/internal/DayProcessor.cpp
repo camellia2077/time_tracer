@@ -23,11 +23,11 @@ void DayProcessor::process(InputData& dayToFinalize, InputData& nextDay) {
         if (!dayToFinalize.rawEvents.empty()) {
             std::string lastEventTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
             
-            // [修改] 添加结构化的 sleep_night 活动，而不是拼接字符串
             Activity sleepActivity;
             sleepActivity.startTime = lastEventTime;
             sleepActivity.endTime = nextDay.getupTime;
-            sleepActivity.title = "sleep";
+            // [核心修改] 使用新的成员变量
+            sleepActivity.top_parent = "sleep";
             sleepActivity.parents = {"night"};
             dayToFinalize.processedActivities.push_back(sleepActivity);
 

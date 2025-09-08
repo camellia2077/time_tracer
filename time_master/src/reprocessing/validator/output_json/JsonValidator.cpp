@@ -38,7 +38,7 @@ bool JsonValidator::validate(const std::string& file_path, std::set<Error>& erro
 
     // 如果文件是空的（或只包含一个空数组），视为有效
     if (days_array.empty()) {
-        return true; 
+        return true;
     }
 
     // 3. (可选) 如果启用了日期计数检查，则执行日期连续性验证
@@ -156,9 +156,12 @@ void JsonValidator::validateHighLevelRules(const json& day_object, std::set<Erro
         }
         // 获取最后一个活动
         const auto& last_activity = day_object["Activities"].back();
-        std::string title = last_activity.value("activity", json::object()).value("top_parents", "");
-        // 验证最后一个活动的标题是否为 "sleep"
-        if (title != "sleep") {
+        
+        // [核心修改] 验证器现在检查统一后的新键名 "top_parent"
+        std::string top_parent_val = last_activity.value("activity", json::object()).value("top_parent", "");
+        
+        // 验证最后一个活动的 top_parent 是否为 "sleep"
+        if (top_parent_val != "sleep") {
             std::string date_str = headers.value("Date", "[Unknown Date]");
             errors.insert({0, "In file for date " + date_str + ": The last activity must be 'sleep' when Sleep is True.", ErrorType::MissingSleepNight});
         }
