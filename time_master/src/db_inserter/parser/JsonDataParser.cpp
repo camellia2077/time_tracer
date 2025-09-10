@@ -121,13 +121,3 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
         throw std::runtime_error("Required JSON key not found in activity for date " + date_str + ": " + e.what());
     }
 }
-
-// 这个函数现在已不再使用，但保留以防止其他地方依赖它
-int JsonDataParser::calculate_duration_seconds(const std::string& start_time, const std::string& end_time) {
-    int start_seconds = time_str_to_seconds(start_time);
-    int end_seconds = time_str_to_seconds(end_time);
-    if (end_seconds < start_seconds) {
-        return (end_seconds + 24 * 3600) - start_seconds;
-    }
-    return end_seconds - start_seconds;
-}
