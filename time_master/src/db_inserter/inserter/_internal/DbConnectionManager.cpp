@@ -13,8 +13,8 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "date TEXT PRIMARY KEY, "
                 "year INTEGER, "
                 "month INTEGER, "
-                "status INTEGER, " // [修改] 类型改为 INTEGER
-                "sleep INTEGER, "  // [修改] 类型改为 INTEGER
+                "status INTEGER, "
+                "sleep INTEGER, "
                 "remark TEXT, "
                 "getup_time TEXT);";
         execute_sql(db, create_days_sql, "Create days table");
@@ -23,8 +23,18 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
         execute_sql(db, create_index_sql, "Create index on days(year, month)");
 
+        // --- [核心修改] 更新 time_records 表的结构 ---
         const char* create_records_sql =
-            "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));";
+            "CREATE TABLE IF NOT EXISTS time_records ("
+            "logical_id INTEGER PRIMARY KEY, "
+            "start_timestamp INTEGER, "
+            "end_timestamp INTEGER, "
+            "date TEXT, "
+            "start TEXT, "
+            "end TEXT, "
+            "project_path TEXT, "
+            "duration INTEGER, "
+            "FOREIGN KEY (date) REFERENCES days(date));";
         execute_sql(db, create_records_sql, "Create time_records table");
         
         const char* create_parent_child_sql = 

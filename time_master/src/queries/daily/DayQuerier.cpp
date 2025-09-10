@@ -18,24 +18,22 @@ DailyReportData DayQuerier::fetch_data() {
 
     _fetch_metadata(data);
     _fetch_total_duration(data);
-    _fetch_sleep_time(data); // [新增] 调用新函数来获取睡眠时长
+    _fetch_sleep_time(data); 
 
     if (data.total_duration > 0) {
         _fetch_time_records(data);
-        _fetch_detailed_records(data); // [新增] 调用新函数
+        _fetch_detailed_records(data); 
     }
     return data;
 }
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // [修改] 查询语句中新增 sleep 字段
     std::string sql = "SELECT status, sleep, remark, getup_time FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
-            // [新增] 读取 sleep 字段并转换为字符串
             data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 1));
             
             const unsigned char* r = sqlite3_column_text(stmt, 2);
@@ -76,8 +74,8 @@ void DayQuerier::_fetch_time_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // [修改] 查询语句中新增 duration 字段
-    std::string sql = "SELECT start, end, project_path, duration FROM time_records WHERE date = ? ORDER BY start ASC;";
+    // --- [核心修改] 将 ORDER BY 从 'start' 改为 'logical_id' ---
+    std::string sql = "SELECT start, end, project_path, duration FROM time_records WHERE date = ? ORDER BY logical_id ASC;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -85,14 +83,13 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)),
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)),
-                sqlite3_column_int64(stmt, 3) // [新增] 读取时长
+                sqlite3_column_int64(stmt, 3)
             });
         }
     }
     sqlite3_finalize(stmt);
 }
 
-// [新增] 辅助函数，用于获取睡眠时长
 void DayQuerier::_fetch_sleep_time(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT duration FROM time_records WHERE date = ? AND project_path LIKE 'sleep%';";
