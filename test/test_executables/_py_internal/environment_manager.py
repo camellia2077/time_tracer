@@ -20,11 +20,11 @@ class EnvironmentManager:
         self._clean_directories()
         self._clean_files()
         self._create_output_dirs()
-        print(f"  {self.config.Colors.GREEN}清理完成，已创建 'output' 和 'py_output' 目录。{self.config.Colors.RESET}")
+        print(f"  {self.config.Colors.GREEN}清理完成，已创建 '{self.config.Paths.OUTPUT_DIR_NAME}' 和 'py_output' 目录。{self.config.Colors.RESET}")
 
         print(f"\n{self.config.Colors.CYAN}--- 2. Preparing Executable, DLLs and Config ---{self.config.Colors.RESET}")
-        if not self.config.SOURCE_EXECUTABLES_DIR.exists():
-            print(f"  {self.config.Colors.RED}错误: 源目录不存在: {self.config.SOURCE_EXECUTABLES_DIR}{self.config.Colors.RESET}")
+        if not self.config.Paths.SOURCE_EXECUTABLES_DIR.exists():
+            print(f"  {self.config.Colors.RED}错误: 源目录不存在: {self.config.Paths.SOURCE_EXECUTABLES_DIR}{self.config.Colors.RESET}")
             sys.exit(1)
         
         self._copy_artifacts()
@@ -44,9 +44,11 @@ class EnvironmentManager:
                     sys.exit(1)
     
     def _clean_files(self):
-        """清理需要移除的旧文件（EXE, DLLs）。"""
-        for file_name in self.config.FILES_TO_CLEAN:
-            file_path = self.config.TARGET_EXECUTABLES_DIR / file_name
+        """清理需要移除的旧文件（EXE, DLLs, DB, Logs）。"""
+        # [核心修改] 合并两个列表进行清理，以确保所有旧文件都被删除
+        all_files_to_clean = self.config.FILES_TO_CLEAN + self.config.FILES_TO_COPY
+        for file_name in all_files_to_clean:
+            file_path = self.config.Paths.TARGET_EXECUTABLES_DIR / file_name
             if file_path.exists():
                 try:
                     file_path.unlink()
@@ -57,14 +59,15 @@ class EnvironmentManager:
 
     def _create_output_dirs(self):
         """创建本次运行所需的输出目录。"""
-        (self.root_dir / self.config.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
+        (self.root_dir / self.config.Paths.OUTPUT_DIR_NAME).mkdir(parents=True, exist_ok=True)
         (self.root_dir / "py_output").mkdir(parents=True, exist_ok=True)
 
     def _copy_artifacts(self):
         """复制可执行文件和所有依赖的DLL。"""
-        for artifact_name in self.config.FILES_TO_CLEAN:
-            source_path = self.config.SOURCE_EXECUTABLES_DIR / artifact_name
-            target_path = self.config.TARGET_EXECUTABLES_DIR / artifact_name
+        # [核心修改] 只遍历 FILES_TO_COPY 列表
+        for artifact_name in self.config.FILES_TO_COPY:
+            source_path = self.config.Paths.SOURCE_EXECUTABLES_DIR / artifact_name
+            target_path = self.config.Paths.TARGET_EXECUTABLES_DIR / artifact_name
             if not source_path.exists():
                 print(f"  {self.config.Colors.RED}警告: 在源目录中未找到文件: {artifact_name}{self.config.Colors.RESET}")
                 continue
@@ -72,13 +75,13 @@ class EnvironmentManager:
                 shutil.copy(source_path, target_path)
                 print(f"  {self.config.Colors.GREEN}已成功复制: {artifact_name}{self.config.Colors.RESET}")
             except Exception as e:
-                print(f"  {self.config.Colors.RED}复制文件时出错 {artifact_name}: {e}{self.config.RESET}")
+                print(f"  {self.config.Colors.RED}复制文件时出错 {artifact_name}: {e}{self.config.Colors.RESET}")
                 sys.exit(1)
 
     def _copy_config_folder(self):
         """复制配置文件所在的 'config' 文件夹。"""
-        source_config_path = self.config.SOURCE_EXECUTABLES_DIR / "config"
-        target_config_path = self.config.TARGET_EXECUTABLES_DIR / "config"
+        source_config_path = self.config.Paths.SOURCE_EXECUTABLES_DIR / "config"
+        target_config_path = self.config.Paths.TARGET_EXECUTABLES_DIR / "config"
         if source_config_path.exists() and source_config_path.is_dir():
             try:
                 if target_config_path.exists():
