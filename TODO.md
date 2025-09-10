@@ -1,18 +1,13 @@
-## 优化python的配置，现在太复杂看不懂
-
-## JsonDataParser.cpp
-这个程序的计算时间间隔没有用了，因为已经在预处理中增加了时间间隔的字段
-
 
 ## 每日报告加上时间线内容和时间间隔(时间间隔是秒，要从utils中获取TimeFormat辅助函数来把秒转换为h m)(md已经实现)
         "GeneratedStats": {
             "sleep_time": 18960
-        },这个睡眠时间也需要打印(没有任何一种格式实现，同时使用utils中获取TimeFormat辅助函数来把秒转换为h m)
+        },这个睡眠时间也需要打印(md已经实现，同时使用utils中获取TimeFormat辅助函数来把秒转换为h m)
+
+
 
 
 ## 修改测试程序，增加通宵的模拟，
-## 报告头文件中计算睡觉的时间间隔(s)
-## 文本的headers内容都改为小写
 
 
 
@@ -21,3 +16,4 @@
 
 ## 低优先级
 ### JsonDataParser拆分，之后JsonDataParser作为facade封装
+### 文本的headers内容都改为小写
