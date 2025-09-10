@@ -1,3 +1,4 @@
+// queries/shared/data/DailyReportData.hpp
 #ifndef DAILY_REPORT_DATA_HPP
 #define DAILY_REPORT_DATA_HPP
 
@@ -30,6 +31,7 @@ struct DailyReportData {
     long long total_duration = 0;
     std::vector<std::pair<std::string, long long>> records;
     std::vector<TimeRecord> detailed_records; // [新增] 用于存储详细的活动记录
+    long long sleep_time = 0; // [新增] 存储睡眠时长，以秒为单位
 };
 
 #endif // DAILY_REPORT_DATA_HPP

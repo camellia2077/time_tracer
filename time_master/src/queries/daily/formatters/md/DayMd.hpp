@@ -25,6 +25,7 @@ private:
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const; //获取活动细节
+    void _display_statistics(std::stringstream& ss, const DailyReportData& data) const; // [新增] 显示统计信息
 };
 
 #endif // DAILY_REPORT_MARKDOWN_FORMATTER_HPP

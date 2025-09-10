@@ -1,5 +1,4 @@
-
-// queries\daily\DayQuerier.cpp
+// queries/daily/DayQuerier.cpp
 #include "DayQuerier.hpp"
 #include <stdexcept>
 
@@ -19,6 +18,7 @@ DailyReportData DayQuerier::fetch_data() {
 
     _fetch_metadata(data);
     _fetch_total_duration(data);
+    _fetch_sleep_time(data); // [新增] 调用新函数来获取睡眠时长
 
     if (data.total_duration > 0) {
         _fetch_time_records(data);
@@ -87,6 +87,19 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
                 reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)),
                 sqlite3_column_int64(stmt, 3) // [新增] 读取时长
             });
+        }
+    }
+    sqlite3_finalize(stmt);
+}
+
+// [新增] 辅助函数，用于获取睡眠时长
+void DayQuerier::_fetch_sleep_time(DailyReportData& data) {
+    sqlite3_stmt* stmt;
+    std::string sql = "SELECT duration FROM time_records WHERE date = ? AND project_path LIKE 'sleep%';";
+    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            data.sleep_time = sqlite3_column_int64(stmt, 0);
         }
     }
     sqlite3_finalize(stmt);
