@@ -1,19 +1,20 @@
-// PeriodMd.hpp
+// queries/report_generators/period/formatter/period_md/PeriodMd.hpp
 #ifndef PERIOD_REPORT_MARKDOWN_FORMATTER_HPP
 #define PERIOD_REPORT_MARKDOWN_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"  // 替换 IPeriodFmt.hpp
-#include "queries/shared/data/PeriodReportData.hpp"  // 为模板类型引入定义
+#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/data/PeriodReportData.hpp"
 #include <sstream>
 
-// Forward declaration
+// Forward declarations
 struct PeriodReportData;
+struct sqlite3; // Forward-declare the opaque struct sqlite3
 
 /**
  * @class PeriodMd
- * @brief 将周期报告数据格式化为 Markdown 字符串的具体实现。
+ * @brief Concrete implementation for formatting period report data into a Markdown string.
  */
-class PeriodMd : public IReportFormatter<PeriodReportData> { // 继承自模板化通用接口
+class PeriodMd : public IReportFormatter<PeriodReportData> {
 public:
     PeriodMd() = default;
 
