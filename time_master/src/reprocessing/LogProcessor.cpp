@@ -5,88 +5,56 @@
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 #include "reprocessing/converter/IntervalConverter.hpp"
-#include "common/AnsiColors.hpp" // For colored console output
+#include "common/AnsiColors.hpp"
 
 #include <iostream>
 #include <algorithm>
 #include <set>
 #include <chrono>
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 
 namespace fs = std::filesystem;
 
 LogProcessor::LogProcessor(const AppConfig& config) : config_(config) {}
 
-ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_file,
-                                           const std::filesystem::path& output_file,
+
+// --- [核心修改] ---
+// 实现了新的 convertStreamToData 方法，它只负责转换
+std::vector<InputData> LogProcessor::convertStreamToData(std::istream& combined_stream) {
+    try {
+        IntervalConverter processor(config_.interval_processor_config_path);
+        return processor.executeConversion(combined_stream);
+    } catch (const std::exception& e) {
+        std::cerr << RED_COLOR << "An error occurred during conversion: " << e.what() << RESET_COLOR << std::endl;
+        return {}; // 返回空向量表示失败
+    }
+}
+
+
+// --- [核心修改] ---
+// processFile 现在只负责验证，不再有转换和输出验证的逻辑
+ProcessingResult LogProcessor::processFile(const fs::path& source_file,
                                            const AppOptions& options)
 {
     ProcessingResult result;
     result.success = true;
-
+    
     if (options.validate_source) {
-        std::cout << "--- Validating source: " << source_file.string() << " ---\n";
-        auto start_time = std::chrono::steady_clock::now();
-        
+        // 验证逻辑保持不变
         FileValidator source_validator(config_.interval_processor_config_path);
         std::set<Error> errors;
-        
         if (!source_validator.validate(source_file.string(), ValidatorType::Source, errors)) {
-            // [核心修改] 移除 error_log_path 参数
             printGroupedErrors(source_file.string(), errors);
             result.success = false;
-        } else {
-             std::cout << GREEN_COLOR << "Source validation successful." << RESET_COLOR << std::endl;
         }
-        
-        auto end_time = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.validation_source_ms = duration.count();
     }
 
-    if (result.success && options.convert) {
-        std::cout << "--- Converting: " << source_file.string() << " -> " << output_file.string() << " ---\n";
-        auto start_time = std::chrono::steady_clock::now();
-
-        try {
-            IntervalConverter processor(config_.interval_processor_config_path);
-            if (!processor.executeConversion(source_file.string(), output_file.string())) {
-                 result.success = false;
-            } else {
-                std::cout << GREEN_COLOR << "Conversion successful." << RESET_COLOR << std::endl;
-            }
-        } catch (const std::exception& e) {
-            std::cerr << RED_COLOR << "An error occurred during conversion: " << e.what() << RESET_COLOR << std::endl;
-            result.success = false;
-        }
-
-        auto end_time = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.conversion_ms = duration.count();
-    }
-
-    if (result.success && options.validate_output) {
-        std::cout << "--- Validating output: " << output_file.string() << " ---\n";
-        auto start_time = std::chrono::steady_clock::now();
-        
-        FileValidator output_validator(config_.interval_processor_config_path);
-        std::set<Error> errors;
-        
-        if (!output_validator.validate(output_file.string(), ValidatorType::JsonOutput, errors, options.enable_day_count_check)) {
-            // [核心修改] 移除 error_log_path 参数
-            printGroupedErrors(output_file.string(), errors);
-            result.success = false;
-        } else {
-            std::cout << GREEN_COLOR << "Output validation successful." << RESET_COLOR << std::endl;
-        }
-
-        auto end_time = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::milli> duration = end_time - start_time;
-        result.timings.validation_output_ms = duration.count();
-    }
-
+    // 转换和输出验证的逻辑已移至 FilePipelineManager
     return result;
 }
+
 
 bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std::vector<fs::path>& out_files) {
     fs::path input_path(input_path_str);

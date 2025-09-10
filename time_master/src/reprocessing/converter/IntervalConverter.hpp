@@ -2,15 +2,17 @@
 #ifndef INTERVAL_PROCESSOR_HPP
 #define INTERVAL_PROCESSOR_HPP
 
-
 #include "ConverterConfig.hpp"
+#include "reprocessing/converter/model/InputData.hpp" // [核心修改] 引入 InputData
 #include <string>
+#include <istream>
+#include <vector> // [核心修改] 引入 vector
 
 class IntervalConverter {
 public:
-    // [恢复] 构造函数恢复原状，不再需要 AppConfig
     explicit IntervalConverter(const std::string& config_filename);
-    bool executeConversion(const std::string& input_filepath, const std::string& output_filepath);
+
+    std::vector<InputData> executeConversion(std::istream& combined_input_stream);
 
 private:
     ConverterConfig config_;

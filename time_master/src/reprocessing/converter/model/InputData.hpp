@@ -31,7 +31,10 @@ struct GeneratedStats {
 struct InputData {
     std::string date;
     bool hasStudyActivity = false;
-    bool endsWithSleepNight = false;
+    // --- [核心修改] ---
+    bool hasSleepActivity = false; // 新增：标记当天是否包含睡眠活动
+    // bool endsWithSleepNight = false; // 移除：旧的逻辑标志
+
     std::string getupTime;
     std::vector<std::string> generalRemarks;
     std::vector<RawEvent> rawEvents;
@@ -46,7 +49,7 @@ struct InputData {
     void clear() {
         date.clear();
         hasStudyActivity = false;
-        endsWithSleepNight = false;
+        hasSleepActivity = false; // [核心修改]
         getupTime.clear();
         generalRemarks.clear();
         rawEvents.clear();
