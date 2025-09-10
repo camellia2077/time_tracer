@@ -10,6 +10,12 @@ typst已经实现
 
 ## InputParser.cpp中引用了 #include "reprocessing/validator/common/ValidatorUtils.hpp" 需要解耦
 
+## json中的存入数据库但是还没使用的键
+
+                "endTimestamp": 1735699680,
+                "startTimestamp": 1735693800
+
+
 
 ## 低优先级
 ### JsonDataParser拆分，之后JsonDataParser作为facade封装
