@@ -2,6 +2,33 @@
 #include "DayStatsCalculator.hpp"
 #include <string>
 #include <stdexcept>
+#include <iomanip> // Required for std::get_time
+#include <sstream> // Required for std::stringstream
+#include <ctime>   // Required for std::tm, std::mktime
+
+namespace {
+    // Helper function to convert "YYYYMMDD HH:MM" string to a Unix timestamp.
+    long long string_to_time_t(const std::string& datetime_str) {
+        if (datetime_str.length() < 14) { // Requires "YYYYMMDD HH:MM"
+            return 0;
+        }
+        
+        std::tm t = {};
+        // Create a stringstream from a formatted date string that std::get_time can parse.
+        std::string formatted_datetime = datetime_str.substr(0, 4) + "-" +
+                                         datetime_str.substr(4, 2) + "-" +
+                                         datetime_str.substr(6, 2) +
+                                         datetime_str.substr(8); // The space is at index 8
+
+        std::stringstream ss(formatted_datetime);
+        ss >> std::get_time(&t, "%Y-%m-%d %H:%M");
+
+        if (ss.fail()) {
+            return 0;
+        }
+        return std::mktime(&t);
+    }
+}
 
 int DayStatsCalculator::calculateDurationSeconds(const std::string& startTimeStr, const std::string& endTimeStr) const {
     if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
@@ -21,20 +48,49 @@ int DayStatsCalculator::calculateDurationSeconds(const std::string& startTimeStr
     }
 }
 
+long long DayStatsCalculator::timeStringToTimestamp(const std::string& date, const std::string& time, bool is_end_time, long long start_timestamp_for_end) const {
+    if (date.length() != 8 || time.length() != 5) {
+        return 0;
+    }
+    std::string datetime_str = date + " " + time;
+    long long timestamp = string_to_time_t(datetime_str);
+
+    if (is_end_time && timestamp < start_timestamp_for_end) {
+        timestamp += 24 * 60 * 60; // Add one day in seconds if it wraps around midnight
+    }
+    return timestamp;
+}
+
+
 void DayStatsCalculator::calculate_stats(InputData& day) {
     day.activityCount = day.processedActivities.size();
     day.generatedStats = {};
 
     day.hasStudyActivity = false;
+    long long activity_sequence = 1;
+    long long date_as_long = 0;
+    try {
+        date_as_long = std::stoll(day.date);
+    } catch (const std::invalid_argument& e) {
+        // Handle error if day.date is not a valid number
+        return;
+    }
+
+
     for (auto& activity : day.processedActivities) {
-        if (activity.topParent.find("study") != std::string::npos) { // [核心修改] 
+        activity.logical_id = date_as_long * 10000 + activity_sequence++;
+        activity.durationSeconds = calculateDurationSeconds(activity.startTime, activity.endTime);
+        activity.start_timestamp = timeStringToTimestamp(day.date, activity.startTime, false, 0);
+        
+        // Pass the start timestamp to correctly handle end times that cross midnight
+        activity.end_timestamp = timeStringToTimestamp(day.date, activity.endTime, true, activity.start_timestamp);
+
+        if (activity.topParent.find("study") != std::string::npos) { 
             day.hasStudyActivity = true;
         }
         
-        if (activity.topParent == "sleep") { // [核心修改]
-            day.generatedStats.sleepTime = calculateDurationSeconds(activity.startTime, activity.endTime);
+        if (activity.topParent == "sleep") {
+            day.generatedStats.sleepTime = activity.durationSeconds;
         }
-        
-        activity.durationSeconds = calculateDurationSeconds(activity.startTime, activity.endTime);
     }
 }
