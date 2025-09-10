@@ -33,7 +33,7 @@ class EnvironmentManager:
 
     def _clean_directories(self):
         """清理需要移除的目录。"""
-        for dir_name in self.config.DIRECTORIES_TO_CLEAN:
+        for dir_name in self.config.Cleanup.DIRECTORIES_TO_CLEAN:
             dir_path = self.root_dir / dir_name
             if dir_path.exists():
                 try:
@@ -45,8 +45,7 @@ class EnvironmentManager:
     
     def _clean_files(self):
         """清理需要移除的旧文件（EXE, DLLs, DB, Logs）。"""
-        # [核心修改] 合并两个列表进行清理，以确保所有旧文件都被删除
-        all_files_to_clean = self.config.FILES_TO_CLEAN + self.config.FILES_TO_COPY
+        all_files_to_clean = self.config.Cleanup.FILES_TO_CLEAN + self.config.Cleanup.FILES_TO_COPY
         for file_name in all_files_to_clean:
             file_path = self.config.Paths.TARGET_EXECUTABLES_DIR / file_name
             if file_path.exists():
@@ -64,8 +63,7 @@ class EnvironmentManager:
 
     def _copy_artifacts(self):
         """复制可执行文件和所有依赖的DLL。"""
-        # [核心修改] 只遍历 FILES_TO_COPY 列表
-        for artifact_name in self.config.FILES_TO_COPY:
+        for artifact_name in self.config.Cleanup.FILES_TO_COPY:
             source_path = self.config.Paths.SOURCE_EXECUTABLES_DIR / artifact_name
             target_path = self.config.Paths.TARGET_EXECUTABLES_DIR / artifact_name
             if not source_path.exists():

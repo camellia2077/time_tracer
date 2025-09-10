@@ -1,0 +1,63 @@
+# config.toml
+# ==============================================================================
+#                 PATH AND DIRECTORY CONFIGURATION
+# ==============================================================================
+[paths]
+source_executables_dir = "C:/Computer/my_github/github_cpp/time_master/Time_Master_cpp/time_master/build/bin"
+output_root_dir = "C:/Computer/my_github/github_cpp/time_master/my_test"
+source_data_folder_name = "Date"
+target_executables_dir = "./"
+output_dir_name = "output"
+
+# ==============================================================================
+#                      EXECUTABLE AND DATABASE CONFIGURATION
+# ==============================================================================
+[cli_names]
+executable_cli_name = "time_tracker_cli.exe"
+executable_app_name = "time_tracker_app.exe"
+generated_db_file_name = "time_data.db"
+
+# ==============================================================================
+#                      TEST PARAMETERS CONFIGURATION
+# ==============================================================================
+[test_params]
+test_formats = ["md", "tex", "typ"]
+
+daily_query_dates = ["20250501", "20250601"]
+monthly_query_months = ["202505", "202506"]
+period_query_days = [7, 10, 15]
+
+# 总开关: true -> 批量导出, false -> 按指定列表导出
+export_mode_is_bulk = false
+
+# 仅在 export_mode_is_bulk = false 时生效
+specific_export_dates = ["20250501", "20250601"]
+specific_export_months = ["202505", "202506"]
+period_export_days = [7, 10, 15]
+
+
+# ==============================================================================
+#                       CLEANUP CONFIGURATION
+# ==============================================================================
+[cleanup]
+# 需要从源目录复制的文件
+files_to_copy = [
+    "time_tracker_cli.exe",
+    "libgcc_s_seh-1.dll",
+    "libstdc++-6.dll",
+    "libsqlite3-0.dll",
+    "libwinpthread-1.dll"
+]
+
+# 需要清理的文件
+files_to_clean = [
+    "time_data.db",
+    "errors.log"
+]
+
+# 需要清理的目录
+directories_to_clean = [
+    "output",
+    "py_output",
+    "config"
+]
