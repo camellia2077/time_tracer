@@ -1,9 +1,3 @@
-
-## 每日报告加上时间线内容和时间间隔(时间间隔是秒，要从utils中获取TimeFormat辅助函数来把秒转换为h m)(md,typ已经实现)
-        "GeneratedStats": {
-            "sleep_time": 18960
-        },这个睡眠时间也需要打印(md,typ已经实现，同时使用utils中获取TimeFormat辅助函数来把秒转换为h m)
-
 ## 格式化输出，根据类型输出不同的颜色。
 
 
