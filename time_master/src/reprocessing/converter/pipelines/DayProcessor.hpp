@@ -10,7 +10,8 @@
 class DayProcessor {
 public:
     explicit DayProcessor(Converter& converter);
-    void process(InputData& dayToFinalize, InputData& nextDay);
+    // --- [核心修改] 更改函数签名以反映新的逻辑 ---
+    void process(InputData& previousDay, InputData& dayToProcess);
 
 private:
     Converter& converter_;

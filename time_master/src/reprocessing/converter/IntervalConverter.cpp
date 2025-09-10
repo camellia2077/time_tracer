@@ -1,59 +1,44 @@
 // reprocessing/converter/IntervalConverter.cpp
 #include "IntervalConverter.hpp"
-#include "common/AnsiColors.hpp" // For colored console output
+#include "common/AnsiColors.hpp"
 
 #include "reprocessing/converter/pipelines/converter/Converter.hpp"
 #include "reprocessing/converter/pipelines/InputParser.hpp"
 #include "reprocessing/converter/pipelines/DayProcessor.hpp"
-#include "reprocessing/converter/pipelines/OutputGenerator.hpp"
 
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <vector>
 
-// 构造函数恢复原状
 IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
 }
 
-bool IntervalConverter::executeConversion(const std::string& input_filepath, const std::string& output_filepath) {
-    std::ifstream inFile(input_filepath);
-    if (!inFile.is_open()) {
-        std::cerr << RED_COLOR << "Error: Could not open input file " << input_filepath << RESET_COLOR << std::endl;
-        return false;
-    }
-
+// --- [核心修改] ---
+// 实现了新的 executeConversion，它现在返回处理好的数据，而不是写入文件
+std::vector<InputData> IntervalConverter::executeConversion(std::istream& combined_input_stream) {
     InputParser parser(config_);
     std::vector<InputData> all_days;
-    parser.parse(inFile, [&](InputData& day) {
+
+    parser.parse(combined_input_stream, [&](InputData& day) {
         all_days.push_back(day);
     });
 
     if (all_days.empty()) {
-        std::ofstream outFile(output_filepath);
-        outFile << "[]" << std::endl;
-        return true;
+        return {}; // 如果没有数据，返回一个空向量
     }
 
     Converter converter(config_);
     DayProcessor processor(converter);
-    InputData empty_next_day; 
+    InputData empty_prev_day; 
+    
     for (size_t i = 0; i < all_days.size(); ++i) {
+        InputData& previous_day = (i > 0) ? all_days[i - 1] : empty_prev_day;
         InputData& current_day = all_days[i];
-        InputData& next_day = (i + 1 < all_days.size()) ? all_days[i + 1] : empty_next_day;
-        processor.process(current_day, next_day);
+        processor.process(previous_day, current_day);
     }
     
-    std::ofstream outFile(output_filepath);
-    if (!outFile.is_open()) {
-        std::cerr << RED_COLOR << "Error: Could not open output file " << output_filepath << RESET_COLOR << std::endl;
-        return false;
-    }
-    OutputGenerator generator;
-    generator.write(outFile, all_days, config_);
-
-    return true;
+    // 返回包含所有已处理天数的向量
+    return all_days;
 }
