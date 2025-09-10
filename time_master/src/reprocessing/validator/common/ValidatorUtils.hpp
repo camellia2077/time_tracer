@@ -42,7 +42,8 @@ struct Error {
 // --- 共享函数 ---
 
 // 打印分组的错误信息
-void printGroupedErrors(const std::string& filename, const std::set<Error>& errors, const std::string& error_log_path);
+// [核心修改] 移除 error_log_path 参数
+void printGroupedErrors(const std::string& filename, const std::set<Error>& errors);
 
 // 去除字符串两端的空白字符
 std::string trim(const std::string& str);
