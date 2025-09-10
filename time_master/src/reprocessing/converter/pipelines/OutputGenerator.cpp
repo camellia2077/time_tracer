@@ -20,21 +20,19 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         json day_obj;
 
         json headers_obj;
-        headers_obj["Date"] = day.date;
-        // 转换成0或1
-        headers_obj["Status"] = static_cast<int>(day.hasStudyActivity);
-        headers_obj["Sleep"] = static_cast<int>(day.isContinuation ? false : day.endsWithSleepNight);
-        headers_obj["Getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
-        headers_obj["ActivityCount"] = day.activityCount; // [新增] 添加计算字段
-        // [修改] 移除 headers_obj["sleep_time"]
+        headers_obj["date"] = day.date; // [核心修改]
+        headers_obj["status"] = static_cast<int>(day.hasStudyActivity); // [核心修改]
+        headers_obj["sleep"] = static_cast<int>(day.isContinuation ? false : day.endsWithSleepNight); // [核心修改]
+        headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime); // [核心修改]
+        headers_obj["activityCount"] = day.activityCount; // [核心修改]
 
         if (!day.generalRemarks.empty()) {
-            headers_obj["Remark"] = day.generalRemarks[0];
+            headers_obj["remark"] = day.generalRemarks[0]; // [核心修改]
         } else {
-            headers_obj["Remark"] = "";
+            headers_obj["remark"] = ""; // [核心修改]
         }
         
-        day_obj["Headers"] = headers_obj;
+        day_obj["headers"] = headers_obj; // [核心修改]
         
         json activities = json::array();
         for (const auto& activity_data : day.processedActivities) {
@@ -43,24 +41,22 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["startTime"] = activity_data.startTime;
             activity_obj["endTime"] = activity_data.endTime;
 
-            // [新增] 添加时长字段到JSON输出
             activity_obj["durationSeconds"] = activity_data.durationSeconds;
 
             json activity_details;
-            activity_details["top_parent"] = activity_data.top_parent;
+            activity_details["topParent"] = activity_data.topParent; // [核心修改]
             if (!activity_data.parents.empty()) {
                 activity_details["parents"] = activity_data.parents;
             }
             
-            activity_obj["activity"] = activity_details;
+            activity_obj["activity"] = activity_details; // [核心修改]
             activities.push_back(activity_obj);
         }
-        day_obj["Activities"] = activities;
+        day_obj["activities"] = activities; // [核心修改]
 
-        // [新增] 添加 GeneratedStats 字段
         json generated_stats_obj;
-        generated_stats_obj["sleep_time"] = day.generatedStats.sleepTime;
-        day_obj["GeneratedStats"] = generated_stats_obj;
+        generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime; // [核心修改]
+        day_obj["generatedStats"] = generated_stats_obj; // [核心修改]
 
 
         root_array.push_back(day_obj);

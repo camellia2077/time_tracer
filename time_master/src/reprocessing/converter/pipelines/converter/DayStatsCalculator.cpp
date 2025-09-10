@@ -23,21 +23,18 @@ int DayStatsCalculator::calculateDurationSeconds(const std::string& startTimeStr
 
 void DayStatsCalculator::calculate_stats(InputData& day) {
     day.activityCount = day.processedActivities.size();
-    day.generatedStats = {}; // [新增] 在计算前清空统计数据
+    day.generatedStats = {};
 
-    // 重置 hasStudyActivity，重新计算
     day.hasStudyActivity = false;
     for (auto& activity : day.processedActivities) {
-        if (activity.top_parent.find("study") != std::string::npos) {
+        if (activity.topParent.find("study") != std::string::npos) { // [核心修改] 
             day.hasStudyActivity = true;
         }
         
-        // [修改] 将 sleepTime 存储到新的 GeneratedStats 字段
-        if (activity.top_parent == "sleep") {
+        if (activity.topParent == "sleep") { // [核心修改]
             day.generatedStats.sleepTime = calculateDurationSeconds(activity.startTime, activity.endTime);
         }
         
-        // [新增] 为每个活动计算并存储时长
         activity.durationSeconds = calculateDurationSeconds(activity.startTime, activity.endTime);
     }
 }
