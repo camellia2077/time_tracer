@@ -18,8 +18,8 @@ namespace {
 void validateDateContinuity(const json& days_array, std::set<Error>& errors) {
     if (days_array.empty()) return;
     
-    const auto& first_day_headers = days_array[0].value("Headers", json::object());
-    std::string first_date = first_day_headers.value("Date", "");
+    const auto& first_day_headers = days_array[0].value("headers", json::object());
+    std::string first_date = first_day_headers.value("date", "");
     if (first_date.length() != 8) return;
     
     std::string yyyymm = first_date.substr(0, 6);
@@ -28,8 +28,8 @@ void validateDateContinuity(const json& days_array, std::set<Error>& errors) {
 
     std::map<std::string, std::set<int>> month_day_map;
     for (const auto& day : days_array) {
-        const auto& headers = day.value("Headers", json::object());
-        std::string date_str = headers.value("Date", "");
+        const auto& headers = day.value("headers", json::object());
+        std::string date_str = headers.value("date", "");
         if (date_str.rfind(yyyymm, 0) == 0 && date_str.length() == 8) {
             month_day_map[yyyymm].insert(std::stoi(date_str.substr(6, 2)));
         }

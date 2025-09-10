@@ -30,7 +30,7 @@ void DayProcessor::process(InputData& dayToFinalize, InputData& nextDay) {
             sleepActivity.startTime = lastEventTime;
             sleepActivity.endTime = nextDay.getupTime;
             // [核心修改] 使用新的成员变量
-            sleepActivity.top_parent = "sleep";
+            sleepActivity.topParent = "sleep";
             sleepActivity.parents = {"night"};
             dayToFinalize.processedActivities.push_back(sleepActivity);
 

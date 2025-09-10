@@ -32,9 +32,8 @@ bool ConverterConfig::load(const std::string& filepath) {
             wake_keywords_ = j["wake_keywords"].get<std::vector<std::string>>();
         }
 
-        // 使用新的键 "top_parent_mapping" 来加载配置
-        if (j.contains("top_parent_mapping")) {
-            top_parent_mapping_ = j["top_parent_mapping"].get<std::unordered_map<std::string, std::string>>();
+        if (j.contains("topParentMapping")) { // [核心修改] 更改 JSON Key
+            topParentMapping_ = j["topParentMapping"].get<std::unordered_map<std::string, std::string>>();
         }
 
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
@@ -69,7 +68,6 @@ const std::vector<std::string>& ConverterConfig::getWakeKeywords() const {
     return wake_keywords_;
 }
 
-//  Getter 的实现
 const std::unordered_map<std::string, std::string>& ConverterConfig::getTopParentMapping() const {
-    return top_parent_mapping_;
+    return topParentMapping_; // [核心修改]
 }

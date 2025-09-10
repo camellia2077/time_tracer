@@ -14,12 +14,11 @@ struct RawEvent {
 struct Activity {
     std::string startTime;
     std::string endTime;
-    std::string top_parent;
+    std::string topParent; // [核心修改] 将 top_parent 改为 topParent
     std::vector<std::string> parents;
     int durationSeconds = 0;
 };
 
-// [新增] 用于存储计算后的统计数据的结构体
 struct GeneratedStats {
     int sleepTime = 0;
 };
@@ -37,7 +36,6 @@ struct InputData {
     bool isContinuation = false;
 
     int activityCount = 0;
-    // [修改] 移除 sleepTime 字段，并新增 GeneratedStats
     GeneratedStats generatedStats; 
 
     void clear() {
@@ -50,7 +48,7 @@ struct InputData {
         processedActivities.clear();
         isContinuation = false;
         activityCount = 0;
-        generatedStats = {}; // 清理时重置
+        generatedStats = {};
     }
 };
 
