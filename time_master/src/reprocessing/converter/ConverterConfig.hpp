@@ -22,9 +22,8 @@ public:
     const std::unordered_map<std::string, std::string>& getTextDurationMapping() const;
     const std::unordered_map<std::string, std::vector<DurationRule>>& getDurationMappings() const;
     const std::vector<std::string>& getWakeKeywords() const;
-    // [核心修改] 重命名 Getter
-    const std::unordered_map<std::string, std::string>& getTopParentMapping() const;
-
+    const std::unordered_map<std::string, std::string>& getTopParentMapping() const; // [修改]
+    
 private:
     std::string remark_prefix_;
     std::vector<std::string> header_order_;
@@ -33,8 +32,7 @@ private:
     std::unordered_map<std::string, std::vector<DurationRule>> duration_mappings_;
     std::vector<std::string> wake_keywords_;
 
-    // [核心修改] 重命名成员变量
-    std::unordered_map<std::string, std::string> top_parent_mapping_;
+    std::unordered_map<std::string, std::string> topParentMapping_; // [核心修改]
 };
 
 #endif // INTERVAL_PROCESSOR_CONFIG_HPP

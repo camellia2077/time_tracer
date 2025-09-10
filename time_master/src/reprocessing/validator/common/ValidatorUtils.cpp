@@ -21,7 +21,7 @@ static std::string getErrorTypeHeader(ErrorType type) {
         case ErrorType::TimeDiscontinuity:
             return "Time discontinuity errors(时间不连续):";
         case ErrorType::MissingSleepNight:
-            return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
+            return "Lack of sleep activity errors(最后的活动项目缺少sleep活动):"; // [修改]
         case ErrorType::Json_TooFewActivities: // [新增]
             return "Activity count errors(活动数量错误):";
         case ErrorType::FileAccess:
@@ -37,7 +37,6 @@ static std::string getErrorTypeHeader(ErrorType type) {
     }
 }
 
-// ... (printGroupedErrors 和 trim 函数保持不变) ...
 void printGroupedErrors(const std::string& filename, const std::set<Error>& errors, const std::string& error_log_path) {
     std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
     std::map<ErrorType, std::vector<Error>> grouped_errors;
