@@ -22,45 +22,47 @@ def print_header():
     print("\n" + "="*50)
     print(f" Running Python test script: {Path(__file__).name}")
     print(f" Current directory: {Path.cwd()}")
-    print(f" Input data path: {config.SOURCE_DATA_PATH}")
-    print(f" Expecting processed folder: {config.PROCESSED_DATA_DIR_NAME}")
+    # [核心修改] 更新为使用 config.Paths.SOURCE_DATA_PATH
+    print(f" Input data path: {config.Paths.SOURCE_DATA_PATH}")
+    # [核心修改] 更新为使用 config.Paths.PROCESSED_DATA_DIR_NAME
+    print(f" Expecting processed folder: {config.Paths.PROCESSED_DATA_DIR_NAME}")
     print("="*50 + "\n")
 
 
 def initialize_test_modules() -> List[BaseTester]:
     """初始化并返回所有测试模块的列表。"""
     shared_counter = TestCounter()
-    output_dir_path = Path.cwd() / config.OUTPUT_DIR_NAME
+    output_dir_path = Path.cwd() / config.Paths.OUTPUT_DIR_NAME
     
     common_args = {
-        "executable_to_run": config.EXECUTABLE_CLI_NAME,
-        "source_data_path": config.SOURCE_DATA_PATH,
-        "converted_text_dir_name": config.PROCESSED_DATA_DIR_NAME,
+        "executable_to_run": config.CLINames.EXECUTABLE_CLI_NAME,
+        "source_data_path": config.Paths.SOURCE_DATA_PATH,
+        "converted_text_dir_name": config.Paths.PROCESSED_DATA_DIR_NAME,
         "output_dir": output_dir_path
     }
 
     modules = [
         PreprocessingTester(shared_counter, 1, 
-                            specific_validation_path=str(config.PROCESSED_JSON_PATH),
+                            # [核心修改] 更新为使用 config.Paths.PROCESSED_JSON_PATH
+                            specific_validation_path=str(config.Paths.PROCESSED_JSON_PATH),
                             **common_args),
         DatabaseImportTester(shared_counter, 2, **common_args),
         QueryTester(shared_counter, 3, 
-                    generated_db_file_name=config.GENERATED_DB_FILE_NAME, 
-                    daily_query_dates=config.DAILY_QUERY_DATES, 
-                    monthly_query_months=config.MONTHLY_QUERY_MONTHS, 
-                    period_query_days=config.PERIOD_QUERY_DAYS,
-                    test_formats=config.TEST_FORMATS,
+                    generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME, 
+                    daily_query_dates=config.TestParams.DAILY_QUERY_DATES, 
+                    monthly_query_months=config.TestParams.MONTHLY_QUERY_MONTHS, 
+                    period_query_days=config.TestParams.PERIOD_QUERY_DAYS,
+                    test_formats=config.TestParams.TEST_FORMATS,
                     **common_args),
         ExportTester(shared_counter, 4, 
-                     generated_db_file_name=config.GENERATED_DB_FILE_NAME,
-                     is_bulk_mode=config.EXPORT_MODE_IS_BULK,
-                     specific_dates=config.SPECIFIC_EXPORT_DATES,
-                     specific_months=config.SPECIFIC_EXPORT_MONTHS,
-                     period_export_days=config.PERIOD_EXPORT_DAYS,
-                     test_formats=config.TEST_FORMATS,
+                     generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME,
+                     is_bulk_mode=config.TestParams.EXPORT_MODE_IS_BULK,
+                     specific_dates=config.TestParams.SPECIFIC_EXPORT_DATES,
+                     specific_months=config.TestParams.SPECIFIC_EXPORT_MONTHS,
+                     period_export_days=config.TestParams.PERIOD_EXPORT_DAYS,
+                     test_formats=config.TestParams.TEST_FORMATS,
                      **common_args),
         
-        # --- 2. 将新的版本检查器添加到测试序列的末尾 ---
         VersionChecker(shared_counter, 5, **common_args)
     ]
     return modules
@@ -87,7 +89,7 @@ def print_summary(all_tests_passed: bool, total_duration: float):
         print(f"""
 {config.Colors.GREEN}✅ All test steps completed successfully!{config.Colors.RESET}
    Check the 'py_output' directory for detailed logs.
-   Check the '{config.OUTPUT_DIR_NAME}' directory for program artifacts.
+   Check the '{config.Paths.OUTPUT_DIR_NAME}' directory for program artifacts.
 """)
     
     print(f"\n{config.Colors.CYAN}Total execution time: {total_duration:.2f} seconds.{config.Colors.RESET}")
