@@ -5,23 +5,13 @@
 #include <string>
 
 namespace DayTypStrings {
-
-    // --- 样式配置 (Style Configuration) ---
-    /**
-     * @brief 定义报告主标题使用的字体。
-     */
+    // 定义报告主标题使用的字体
     const std::string TitleFont = "Noto Serif";
-    
-    /**
-     * @brief 定义报告主标题的字体大小。(新增)
-     */
-    const int TitleFontSize = 14;
-
-    /**
-     * @brief 定义报告正文内容使用的字体。
-     * 这里特意选用了一个差别很大的字体以便于测试。
-     */
+    // 定义报告正文内容使用的字体
     const std::string ContentFont = "Noto Serif";
+
+    // 定义报告主标题的字体大小
+    const int TitleFontSize = 14;
 
     // --- 文本配置 (Text Configuration) ---
     const std::string TitlePrefix     = "Daily Report for";
@@ -32,6 +22,9 @@ namespace DayTypStrings {
     const std::string GetupTimeLabel  = "Getup Time";
     const std::string RemarkLabel     = "Remark";
     const std::string NoRecords       = "No time records for this day.";
+    const std::string StatisticsLabel = "Statistics"; // 统计部分标题
+    const std::string AllActivitiesLabel = "All Activities"; // 所有活动部分标题
+    const std::string SleepTimeLabel = "Sleep Time"; // 睡眠时长标签
 
 }
 
