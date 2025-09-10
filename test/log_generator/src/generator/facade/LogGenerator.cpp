@@ -2,41 +2,36 @@
 #include <format>
 #include <iterator>
 
-// [核心修改] 移除了所有内部类的定义，使该文件只关注 Facade 的实现
-
 LogGenerator::LogGenerator(int items_per_day,
                          const std::vector<std::string>& activities,
                          const std::optional<DailyRemarkConfig>& remark_config)
-    : items_per_day_(items_per_day),
-      gen_(std::random_device{}())
+    : gen_(std::random_device{}())
 {
-    // Facade 创建并持有所有子系统的实例
-    remark_generator_ = std::make_unique<RemarkGenerator>(remark_config, gen_);
-    event_generator_ = std::make_unique<EventGenerator>(items_per_day, activities, gen_);
+    day_generator_ = std::make_unique<DayGenerator>(items_per_day, activities, remark_config, gen_);
 }
 
+// --- [核心修改] 更新 generate_for_month 的逻辑 ---
 std::string LogGenerator::generate_for_month(int year, int month, int days_in_month) {
     std::string log_content;
-    log_content.reserve(days_in_month * (items_per_day_ * 25 + 30) + 10);
+    log_content.reserve((days_in_month + 1) * 280); 
 
-    // 1. 生成年份标题
+    // 1. 如果是1月份，则首先生成前一年的年份标题和12月31日的内容
+    if (month == 1) {
+        // 为上一年的数据添加年份标题
+        std::format_to(std::back_inserter(log_content), "y{}\n\n", year - 1);
+        day_generator_->generate_for_day(log_content, year - 1, 12, 31);
+        log_content += '\n';
+    }
+
+    // 2. 为当前要生成的月份添加年份标题
     std::format_to(std::back_inserter(log_content), "y{}\n\n", year);
 
+    // 3. 循环委托 DayGenerator 生成当月的所有天
     for (int day = 1; day <= days_in_month; ++day) {
         if (day > 1) {
             log_content += '\n';
         }
-
-        // 2. 生成日期标题
-        std::format_to(std::back_inserter(log_content), "{:02}{:02}\n", month, day);
-
-        // 3. 委托给 RemarkGenerator
-        if (auto remark = remark_generator_->try_generate()) {
-            std::format_to(std::back_inserter(log_content), "{}\n", *remark);
-        }
-
-        // 4. 委托给 EventGenerator
-        event_generator_->generate_events_for_day(log_content);
+        day_generator_->generate_for_day(log_content, year, month, day);
     }
     return log_content;
 }
