@@ -32,7 +32,8 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         std::set<Error> errors;
         
         if (!source_validator.validate(source_file.string(), ValidatorType::Source, errors)) {
-            printGroupedErrors(source_file.string(), errors, config_.error_log_path);
+            // [核心修改] 移除 error_log_path 参数
+            printGroupedErrors(source_file.string(), errors);
             result.success = false;
         } else {
              std::cout << GREEN_COLOR << "Source validation successful." << RESET_COLOR << std::endl;
@@ -48,7 +49,6 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         auto start_time = std::chrono::steady_clock::now();
 
         try {
-            // [恢复] 调用原始的构造函数，不再传递 config_
             IntervalConverter processor(config_.interval_processor_config_path);
             if (!processor.executeConversion(source_file.string(), output_file.string())) {
                  result.success = false;
@@ -73,7 +73,8 @@ ProcessingResult LogProcessor::processFile(const std::filesystem::path& source_f
         std::set<Error> errors;
         
         if (!output_validator.validate(output_file.string(), ValidatorType::JsonOutput, errors, options.enable_day_count_check)) {
-            printGroupedErrors(output_file.string(), errors, config_.error_log_path);
+            // [核心修改] 移除 error_log_path 参数
+            printGroupedErrors(output_file.string(), errors);
             result.success = false;
         } else {
             std::cout << GREEN_COLOR << "Output validation successful." << RESET_COLOR << std::endl;
