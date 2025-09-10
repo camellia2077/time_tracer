@@ -26,6 +26,7 @@ bool JsonDataParser::parse_file(const std::string& filename) {
         return false;
     }
 
+    // 针对每个天对象进行解析，并处理可能发生的异常
     try {
         for (const auto& day_json : days_array) {
             parse_day_object(day_json);
@@ -39,48 +40,57 @@ bool JsonDataParser::parse_file(const std::string& filename) {
 }
 
 void JsonDataParser::parse_day_object(const json& day_json) {
-    if (!day_json.contains("Headers") || !day_json.contains("Activities")) return;
+    // 使用 try-catch 块来处理可能缺失的关键键
+    try {
+        const auto& headers = day_json.at("headers");
+        const auto& activities_array = day_json.at("activities");
 
-    const auto& headers = day_json["Headers"];
-    DayData day_data;
-    day_data.date = headers.value("Date", "");
-    day_data.status = headers.value("Status", 0); // [修改] 直接将JSON值赋给 int
-    day_data.sleep = headers.value("Sleep", 0);   // [修改] 直接将JSON值赋给 int
-    day_data.getup_time = headers.value("Getup", "00:00");
-    day_data.remark = headers.value("Remark", "");
+        DayData day_data;
+        day_data.date = headers.at("date");
+        day_data.status = headers.at("status");
+        day_data.sleep = headers.at("sleep");
+        day_data.getup_time = headers.value("getup", "00:00");
+        day_data.remark = headers.at("remark");
 
-    if (day_data.date.length() == 8) {
-        day_data.year = std::stoi(day_data.date.substr(0, 4));
-        day_data.month = std::stoi(day_data.date.substr(4, 2));
-    } else {
-        day_data.year = 0;
-        day_data.month = 0;
-    }
-    days.push_back(day_data);
-
-    const auto& activities = day_json["Activities"];
-    if (activities.is_array()) {
-        for (const auto& activity_json : activities) {
-            process_activity(activity_json, day_data.date);
+        if (day_data.date.length() == 8) {
+            day_data.year = std::stoi(day_data.date.substr(0, 4));
+            day_data.month = std::stoi(day_data.date.substr(4, 2));
+        } else {
+            day_data.year = 0;
+            day_data.month = 0;
         }
+        days.push_back(day_data);
+
+        if (activities_array.is_array()) {
+            for (const auto& activity_json : activities_array) {
+                process_activity(activity_json, day_data.date);
+            }
+        }
+
+    } catch (const json::out_of_range& e) {
+        // 当关键键缺失时，抛出明确的错误信息
+        std::string date_str = day_json.value("headers", json::object()).value("date", "[Unknown Date]");
+        throw std::runtime_error("Required JSON key not found for date " + date_str + ": " + e.what());
     }
 }
 
 void JsonDataParser::process_activity(const json& activity_json, const std::string& date) {
-    std::string start_time = activity_json.value("startTime", "");
-    std::string end_time = activity_json.value("endTime", "");
-    
-    const auto& activity_details = activity_json.value("activity", json::object());
-    // 注意top_parent需要为单数,以匹配json的命名
-    std::string title = activity_details.value("top_parent", "unknown_top_parent");
-    
-    std::string project_path = title;
+    try {
+        std::string start_time = activity_json.at("startTime");
+        std::string end_time = activity_json.at("endTime");
+        int duration_seconds = activity_json.at("durationSeconds");
+        
+        const auto& activity_details = activity_json.at("activity");
+        std::string title = activity_details.at("topParent");
+        
+        std::string project_path = title;
 
-    if (activity_details.contains("parents") && activity_details["parents"].is_array()) {
+    if (activity_details.contains("parents") && activity_details["parents"].is_array()) {   
         for (const auto& parent_json : activity_details["parents"]) {
             std::string parent_name = parent_json.get<std::string>();
 
             // --- 父子关系构建逻辑 ---
+            // 不要删除这些注释,这对开发者理解父子关系很重要
             // 在每次迭代中，我们将当前的 `project_path` 视为父级。
             // 例如，如果当前 `project_path` 是 "game"，它就是下一级的父级。
             std::string parent_path = project_path; 
@@ -98,15 +108,21 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
         }
     }
 
-    TimeRecordInternal record;
-    record.date = date;
-    record.start = start_time;
-    record.end = end_time;
-    record.project_path = project_path;
-    record.duration_seconds = calculate_duration_seconds(start_time, end_time);
-    records.push_back(record);
+        TimeRecordInternal record;
+        record.date = date;
+        record.start = start_time;
+        record.end = end_time;
+        record.project_path = project_path;
+        record.duration_seconds = duration_seconds;
+        records.push_back(record);
+    } catch (const json::out_of_range& e) {
+        // 当关键键缺失时，抛出明确的错误信息
+        std::string date_str = activity_json.value("date", "[Unknown Date]");
+        throw std::runtime_error("Required JSON key not found in activity for date " + date_str + ": " + e.what());
+    }
 }
 
+// 这个函数现在已不再使用，但保留以防止其他地方依赖它
 int JsonDataParser::calculate_duration_seconds(const std::string& start_time, const std::string& end_time) {
     int start_seconds = time_str_to_seconds(start_time);
     int end_seconds = time_str_to_seconds(end_time);
