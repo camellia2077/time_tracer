@@ -1,7 +1,7 @@
 #include "DayTyp.hpp"
 #include <iomanip>
 #include <format>
-#include <string> // 引入 <string> 以使用 std::string::npos
+#include <string>
 
 #include "common/common_utils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
@@ -10,9 +10,10 @@
 #include "DayTypStrings.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
 
-// format_report, _display_header, _display_project_breakdown, _display_statistics 函数保持不变...
-// (为简洁起见，这里省略了未改动的函数)
+// [移除] 不再需要在此处初始化静态 map
 
+// format_report, _display_header, 等其他函数保持不变...
+// (为简洁起见，这里省略了未改动的函数)
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     ss << std::format(R"(#set text(font: "{0}"))", DayTypStrings::ContentFont) << "\n\n";
@@ -65,9 +66,8 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
     );
 }
 
-// [修改] 新增的辅助函数实现
+// [修改] 更新辅助函数以直接使用 DayTypStrings::KeywordColors
 std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
-    // 基础的活动内容字符串
     std::string base_string = std::format("{0} - {1} ({2}): {3}",
         record.start_time,
         record.end_time,
@@ -75,17 +75,20 @@ std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
         record.project_path
     );
 
-    // 检查 project_path 是否包含 "study"
-    if (record.project_path.find("study") != std::string::npos) {
-        // 如果包含，则用绿色文本格式化输出
-        return std::format("#text(green)[+ {0}]", base_string);
-    } else {
-        // 否则，使用默认格式输出
-        return "+ " + base_string;
+    // 遍历 DayTypStrings::KeywordColors map 来查找匹配的关键字
+    for (const auto& pair : DayTypStrings::KeywordColors) {
+        const std::string& keyword = pair.first;
+        const std::string& color = pair.second;
+        
+        if (record.project_path.find(keyword) != std::string::npos) {
+            return std::format("#text({0})[+ {1}]", color, base_string);
+        }
     }
+
+    // 如果循环结束都没有找到任何关键字，则使用默认格式
+    return "+ " + base_string;
 }
 
-// [修改] _display_detailed_activities 调用新的辅助函数
 void DayTyp::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (!data.detailed_records.empty()) {
         ss << "\n= " << DayTypStrings::AllActivitiesLabel << "\n\n";
