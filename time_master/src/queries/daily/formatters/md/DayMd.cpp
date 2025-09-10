@@ -20,6 +20,8 @@ std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const
         return ss.str();
     }
     
+    // [新增] 在活动细节之前调用统计信息显示
+    _display_statistics(ss, data);
     _display_detailed_activities(ss, data);
     
     _display_project_breakdown(ss, data, db);
@@ -62,4 +64,13 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
         }
         ss << "\n";
     }
+}
+
+// [新增] 用于显示统计信息的方法
+void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
+    ss << "\n## " << DayMdStrings::StatisticsLabel << "\n\n";
+    ss << std::format("- **{0}**: {1}\n", 
+        DayMdStrings::SleepTimeLabel, 
+        time_format_duration_hm(data.sleep_time) // [新增] 调用辅助函数转换格式
+    );
 }
