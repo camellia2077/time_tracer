@@ -3,17 +3,18 @@
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
 
 #include "queries/shared/Interface/IReportFormatter.hpp"  
-#include "queries/shared/data/MonthlyReportData.hpp" // 为模板类型引入定义
+#include "queries/shared/data/MonthlyReportData.hpp"
 #include <sstream>
 
-// Forward declaration
+// Forward declarations
 struct MonthlyReportData;
+struct sqlite3; // Forward-declare the opaque struct sqlite3
 
 /**
  * @class MonthMd
- * @brief 将月报数据格式化为 Markdown 字符串的具体实现。
+ * @brief Concrete implementation for formatting monthly report data into a Markdown string.
  */
-class MonthMd : public IReportFormatter<MonthlyReportData> { // 继承自模板化通用接口
+class MonthMd : public IReportFormatter<MonthlyReportData> {
 public:
     MonthMd() = default;
 
