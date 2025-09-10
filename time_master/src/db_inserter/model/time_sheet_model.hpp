@@ -1,3 +1,4 @@
+// db_inserter/model/time_sheet_model.hpp
 #ifndef DATA_STRUCTURES_HPP
 #define DATA_STRUCTURES_HPP
 
@@ -5,8 +6,6 @@
 #include <vector>
 #include <utility>
 #include <unordered_set>
-
-// db_inserter/model/time_sheet_model.h
 
 // --- Data Structures ---
 
@@ -18,8 +17,8 @@ struct DayData {
     std::string date;
     int year;
     int month;
-    int status; // [修改] 使用 int 来存储布尔值
-    int sleep;  // [修改] 使用 int 来存储布尔值
+    int status;
+    int sleep;
     std::string remark;
     std::string getup_time;
 };
@@ -29,6 +28,11 @@ struct DayData {
  * @brief Holds data for a single time-logged activity.
  */
 struct TimeRecordInternal {
+    // --- [核心修改] 新增字段 ---
+    long long logical_id;
+    long long start_timestamp;
+    long long end_timestamp;
+    
     std::string date;
     std::string start;
     std::string end;
