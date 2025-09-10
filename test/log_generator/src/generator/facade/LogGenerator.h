@@ -1,7 +1,7 @@
 #pragma once
 #include "config/Config.h"
-#include "generator/_internal/RemarkGenerator.h" // [核心修改] 包含新的头文件
-#include "generator/_internal/EventGenerator.h"  // [核心修改] 包含新的头文件
+// [核心修改] 引入新的 DayGenerator
+#include "generator/_internal/DayGenerator.h"
 #include <vector>
 #include <string>
 #include <optional>
@@ -23,8 +23,7 @@ public:
     std::string generate_for_month(int year, int month, int days_in_month);
 
 private:
-    int items_per_day_;
+    // [核心修改] Facade 现在只持有一个 DayGenerator 实例
     std::mt19937 gen_;
-    std::unique_ptr<RemarkGenerator> remark_generator_;
-    std::unique_ptr<EventGenerator> event_generator_;
+    std::unique_ptr<DayGenerator> day_generator_;
 };
