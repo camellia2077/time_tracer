@@ -4,23 +4,26 @@
 
 #include <string>
 #include <vector>
+#include <optional>
 
-// 原始事件的最小表示
 struct RawEvent {
     std::string endTimeStr;
     std::string description;
 };
 
-// [新增] 用于存储结构化活动数据的结构体
 struct Activity {
     std::string startTime;
     std::string endTime;
     std::string top_parent;
     std::vector<std::string> parents;
-    int durationSeconds = 0;// [新增] 用于存储活动时长（以秒为单位）
+    int durationSeconds = 0;
 };
 
-// 代表一天所有日志数据的结构体
+// [新增] 用于存储计算后的统计数据的结构体
+struct GeneratedStats {
+    int sleepTime = 0;
+};
+
 struct InputData {
     std::string date;
     bool hasStudyActivity = false;
@@ -33,7 +36,9 @@ struct InputData {
 
     bool isContinuation = false;
 
-    int activityCount = 0; // 计算字段：每日活动总数
+    int activityCount = 0;
+    // [修改] 移除 sleepTime 字段，并新增 GeneratedStats
+    GeneratedStats generatedStats; 
 
     void clear() {
         date.clear();
@@ -44,7 +49,8 @@ struct InputData {
         rawEvents.clear();
         processedActivities.clear();
         isContinuation = false;
-        activityCount = 0; // 清理时重置
+        activityCount = 0;
+        generatedStats = {}; // 清理时重置
     }
 };
 
