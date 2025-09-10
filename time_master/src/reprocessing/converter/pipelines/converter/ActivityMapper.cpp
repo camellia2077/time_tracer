@@ -80,11 +80,11 @@ void ActivityMapper::map_activities(InputData& day) {
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
                 
-                activity.top_parent = parts[0];
-                const auto& top_parents_map = config_.getTopParentMapping();
-                auto map_it = top_parents_map.find(activity.top_parent);
-                if (map_it != top_parents_map.end()) {
-                    activity.top_parent = map_it->second;
+                activity.topParent = parts[0]; // [核心修改] 
+                const auto& topParentsMap = config_.getTopParentMapping(); // [修改]
+                auto map_it = topParentsMap.find(activity.topParent); // [修改]
+                if (map_it != topParentsMap.end()) {
+                    activity.topParent = map_it->second;
                 }
 
                 if (parts.size() > 1) {
