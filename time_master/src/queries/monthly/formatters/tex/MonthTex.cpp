@@ -1,42 +1,21 @@
-
-// MonthTex.cpp (已更新)
+// queries/monthly/formatters/MonthTex.cpp
 #include "MonthTex.hpp"
+#include "MonthTexConfig.hpp" // [MODIFIED] Include the new configuration file
+
 #include <iomanip>
 #include <string>
+#include <sstream>
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "common/common_utils.hpp"
 
-// 1. 公开的接口现在只负责调用基类的模板方法
-std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) const {
-    if (data.year_month == "INVALID") {
-        // 对于无效输入，直接返回错误信息，不使用模板
-        return "Invalid year_month format. Expected YYYYMM.\n";
-    }
-    return format_report_template(data, db);
-}
-
-// 2. 实现新的 format_content 方法，将所有核心内容生成逻辑移到这里
-void MonthTex::format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
-    // 步骤 A: 生成报告总结
-    _display_summary(ss, data);
-
-    // 步骤 B: 生成报告主体
-    if (data.actual_days == 0) {
-        ss << "No time records found for this month.\n";
-    } else {
-        _display_project_breakdown(ss, data, db);
-    }
-}
-
-// 3. _display_preamble 方法被彻底删除
-
-// _display_summary 方法保持不变
-void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
-    auto escape_tex_local = [](const std::string& s) {
+// Local helper function to escape special TeX characters.
+namespace {
+    std::string escape_tex_local(const std::string& s) {
         std::string escaped;
+        escaped.reserve(s.length());
         for (char c : s) {
             if (c == '&' || c == '%' || c == '$' || c == '#' || c == '_' || c == '{' || c == '}') {
                 escaped += '\\';
@@ -44,26 +23,49 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
             escaped += c;
         }
         return escaped;
-    };
+    }
+}
 
+std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) const {
+    if (data.year_month == "INVALID") {
+        // [MODIFIED] Use the configurable error message.
+        return std::string(MonthTexConfig::InvalidFormatMessage) + "\n";
+    }
+    return format_report_template(data, db);
+}
+
+void MonthTex::format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+    _display_summary(ss, data);
+
+    if (data.actual_days == 0) {
+        // [MODIFIED] Use the configurable message and add a newline.
+        ss << MonthTexConfig::NoRecordsMessage << "\n";
+    } else {
+        _display_project_breakdown(ss, data, db);
+    }
+}
+
+void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
+    // [MODIFIED] TeX syntax is now hardcoded here and combined with labels from the config file.
+    
     std::string title_month = data.year_month.substr(0, 4) + "-" + data.year_month.substr(4, 2);
-    ss << "\\section*{Monthly Summary for " << escape_tex_local(title_month) << "}\n\n";
+    ss << "\\section*{" << MonthTexConfig::ReportTitle << " " << escape_tex_local(title_month) << "}\n\n";
 
     if (data.actual_days > 0) {
         ss << "\\begin{itemize}\n";
-        ss << "    \\item \\textbf{Actual Days with Records}: " << data.actual_days << "\n";
-        ss << "    \\item \\textbf{Total Time Recorded}: " << escape_tex_local(time_format_duration(data.total_duration, data.actual_days)) << "\n";
+        ss << "    \\item \\textbf{" << MonthTexConfig::ActualDaysLabel << "}: " << data.actual_days << "\n";
+        ss << "    \\item \\textbf{" << MonthTexConfig::TotalTimeLabel  << "}: " << escape_tex_local(time_format_duration(data.total_duration, data.actual_days)) << "\n";
         ss << "\\end{itemize}\n\n";
     }
 }
 
 void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
-    // 调用统一的工具函数来生成项目明细的 LaTeX 格式字符串
+    // This function remains unchanged as it calls a separate utility.
     ss << generate_project_breakdown(
-        ReportFormat::LaTeX,     // 指定输出格式为 LaTeX
-        db,                             // 传入数据库连接，用于获取父子类别映射
-        data.records,               // 传入从月报数据中获取的时间记录
-        data.total_duration,  // 传入总时长，用于计算各项百分比
-        data.actual_days          // 对于月报，平均天数是该月实际有记录的天数
+        ReportFormat::LaTeX,
+        db,
+        data.records,
+        data.total_duration,
+        data.actual_days
     );
 }
