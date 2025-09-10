@@ -26,6 +26,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         headers_obj["Sleep"] = static_cast<int>(day.isContinuation ? false : day.endsWithSleepNight);
         headers_obj["Getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         headers_obj["ActivityCount"] = day.activityCount; // [新增] 添加计算字段
+        // [修改] 移除 headers_obj["sleep_time"]
 
         if (!day.generalRemarks.empty()) {
             headers_obj["Remark"] = day.generalRemarks[0];
@@ -55,6 +56,12 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activities.push_back(activity_obj);
         }
         day_obj["Activities"] = activities;
+
+        // [新增] 添加 GeneratedStats 字段
+        json generated_stats_obj;
+        generated_stats_obj["sleep_time"] = day.generatedStats.sleepTime;
+        day_obj["GeneratedStats"] = generated_stats_obj;
+
 
         root_array.push_back(day_obj);
     }
