@@ -23,7 +23,6 @@ private:
     // 内部辅助函数
     void parse_day_object(const nlohmann::json& day_json);
     void process_activity(const nlohmann::json& activity_json, const std::string& date);
-    int calculate_duration_seconds(const std::string& start_time, const std::string& end_time);
 };
 
 #endif // JSON_DATA_PARSER_HPP
