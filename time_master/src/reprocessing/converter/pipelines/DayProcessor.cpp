@@ -1,7 +1,6 @@
 // converter/internal/DayProcessor.cpp
 #include "DayProcessor.hpp"
 
-// [新增]
 #include "reprocessing/converter/pipelines/converter/DayStatsCalculator.hpp"
 
 namespace {
@@ -12,33 +11,38 @@ namespace {
 
 DayProcessor::DayProcessor(Converter& converter) : converter_(converter) {}
 
-void DayProcessor::process(InputData& dayToFinalize, InputData& nextDay) {
-    if (dayToFinalize.date.empty()) return;
+// --- [核心修改] 实现全新的睡眠生成逻辑 ---
+void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
+    if (dayToProcess.date.empty()) return;
     
-    converter_.transform(dayToFinalize);
+    // 1. 首先，像往常一样映射当天的所有常规活动
+    converter_.transform(dayToProcess);
 
-    if (nextDay.isContinuation) {
-        dayToFinalize.endsWithSleepNight = false;
-        if (!dayToFinalize.rawEvents.empty()) {
-            nextDay.getupTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
-        }
-    } else if (!dayToFinalize.isContinuation && !nextDay.getupTime.empty()) {
-        if (!dayToFinalize.rawEvents.empty()) {
-            std::string lastEventTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
+    // 2. 如果存在一个有效的前一天，并且当天有起床记录，则生成睡眠活动
+    if (!previousDay.date.empty() && !previousDay.rawEvents.empty() && !dayToProcess.getupTime.empty()) {
+        // 3. 睡眠的开始时间 = 前一天最后一个活动的结束时间
+        std::string lastEventTime = formatTime(previousDay.rawEvents.back().endTimeStr);
             
-            Activity sleepActivity;
-            sleepActivity.startTime = lastEventTime;
-            sleepActivity.endTime = nextDay.getupTime;
-            // [核心修改] 使用新的成员变量
-            sleepActivity.topParent = "sleep";
-            sleepActivity.parents = {"night"};
-            dayToFinalize.processedActivities.push_back(sleepActivity);
+        // 4. 创建睡眠活动
+        Activity sleepActivity;
+        sleepActivity.startTime = lastEventTime;
+        sleepActivity.endTime = dayToProcess.getupTime;
+        sleepActivity.topParent = "sleep";
+        sleepActivity.parents = {"night"};
+        
+        // 5. 将睡眠活动插入到当天活动列表的 *最前面*
+        dayToProcess.processedActivities.insert(dayToProcess.processedActivities.begin(), sleepActivity);
+        
+        // 6. 标记当天含有一个睡眠记录
+        dayToProcess.hasSleepActivity = true;
+    }
 
-            dayToFinalize.endsWithSleepNight = true;
-        }
+    // 处理“延续日”（即源文件中没有日期标记的跨天记录）
+    if (dayToProcess.isContinuation && !previousDay.rawEvents.empty()) {
+        dayToProcess.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
     }
     
-    // [新增] 在所有活动都生成完毕后，再调用统计计算器
+    // 7. 在所有活动（包括新加入的睡眠）都准备好后，再进行最终的统计计算
     DayStatsCalculator stats_calculator;
-    stats_calculator.calculate_stats(dayToFinalize);
+    stats_calculator.calculate_stats(dayToProcess);
 }
