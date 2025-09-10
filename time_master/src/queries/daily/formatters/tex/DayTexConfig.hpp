@@ -1,4 +1,4 @@
-// queries/daily/formatters/DayTexConfig.hpp
+// queries/daily/formatters/tex/DayTexConfig.hpp
 #ifndef DAILY_REPORT_TEX_CONFIG_HPP
 #define DAILY_REPORT_TEX_CONFIG_HPP
 
@@ -24,6 +24,10 @@ namespace DayTexConfig {
 
     // --- Body Content Text ---
     constexpr std::string_view NoRecordsMessage = "No time records for this day.";
+    // [新增] 新增的标签
+    constexpr std::string_view StatisticsLabel = "Statistics";
+    constexpr std::string_view AllActivitiesLabel = "All Activities";
+    constexpr std::string_view SleepTimeLabel = "Sleep Time";
 
 } // namespace DayTexConfig
 
