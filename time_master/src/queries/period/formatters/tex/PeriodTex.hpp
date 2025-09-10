@@ -1,19 +1,20 @@
-// PeriodTex.hpp
+// queries/report_generators/period/formatter/period_tex/PeriodTex.hpp
 #ifndef PERIOD_REPORT_TEX_FORMATTER_HPP
 #define PERIOD_REPORT_TEX_FORMATTER_HPP
 
 #include "queries/shared/Interface/IReportFormatter.hpp"  
-#include "queries/shared/data/PeriodReportData.hpp"  // 为模板类型引入定义
+#include "queries/shared/data/PeriodReportData.hpp"
 #include "queries/shared/formatters/tex/BaseTexFormatter.hpp" 
 
-// --- 前置声明 ---
+// --- Forward Declarations ---
 struct DailyReportData;
 struct MonthlyReportData;
 struct PeriodReportData;
+struct sqlite3; // Forward-declare the opaque struct sqlite3
 
 /**
  * @class PeriodTex
- * @brief 将周期报告数据格式化为 TeX 字符串的具体实现。
+ * @brief Concrete implementation for formatting period report data into a TeX string.
  */
 class PeriodTex : public IReportFormatter<PeriodReportData>, private BaseTexFormatter {
 public:
@@ -22,10 +23,10 @@ public:
     std::string format_report(const PeriodReportData& data, sqlite3* db) const override;
 
 private:
-    // 实现基类定义的纯虚“钩子”函数
+    // Implements the pure virtual "hook" function from the base class
     void format_content(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const override;
 
-    // -- 为满足基类的纯虚函数要求，提供空的实现 --
+    // -- Empty implementations to satisfy base class requirements --
     void format_content(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const override {}
     void format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const override {}
 
@@ -33,4 +34,4 @@ private:
     void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const;
 };
 
-#endif // PERIOD_REPORT_TEX_FORMATTER_H
+#endif // PERIOD_REPORT_TEX_FORMATTER_HPP
