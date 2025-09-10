@@ -12,9 +12,14 @@ struct RawEvent {
 };
 
 struct Activity {
+    //逻辑ID，用于报告展示排序
+    long long logical_id; // e.g., 202501010001, 202501010002...
+    // 方案二：Unix时间戳，用于精确计算和分析
+    long long start_timestamp; // e.g., 1735689600
+    long long end_timestamp;   // e.g., 1735693200
     std::string startTime;
     std::string endTime;
-    std::string topParent; // [核心修改] 将 top_parent 改为 topParent
+    std::string topParent;
     std::vector<std::string> parents;
     int durationSeconds = 0;
 };
