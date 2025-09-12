@@ -28,16 +28,19 @@ struct Activity {
 
 struct GeneratedStats {
     int sleepTime = 0;
-    int exerciseTime = 0; // 新增：运动总时间（秒）
+    // --- [核心修改] 将 exerciseTime 重命名为 totalExerciseTime ---
+    int totalExerciseTime = 0;
+    // --- [核心修改] 新增不同运动类型的统计字段 ---
+    int cardioTime = 0;
+    int anaerobicTime = 0;
+    int exerciseBothTime = 0;
 };
 
 struct InputData {
     std::string date;
     bool hasStudyActivity = false;
     bool hasExerciseActivity = false; // 新增：标记当天是否有运动
-    // --- [核心修改] ---
     bool hasSleepActivity = false; // 新增：标记当天是否包含睡眠活动
-    // bool endsWithSleepNight = false; // 移除：旧的逻辑标志
 
     std::string getupTime;
     std::vector<std::string> generalRemarks;
