@@ -47,6 +47,13 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["endTime"] = activity_data.endTime;
             activity_obj["durationSeconds"] = activity_data.durationSeconds;
 
+            // 新增：在 JSON 输出中添加备注
+            if (activity_data.activityRemark.has_value()) {
+                activity_obj["activityRemark"] = activity_data.activityRemark.value();
+            } else {
+                activity_obj["activityRemark"] = nullptr; // 对于没有备注的活动，使用 null
+            }
+
             json activity_details;
             activity_details["topParent"] = activity_data.topParent;
             if (!activity_data.parents.empty()) {

@@ -78,14 +78,37 @@ void InputParser::parseLine(const std::string& line, InputData& currentDay) cons
         }
     } else if (!currentDay.date.empty() && line.length() >= 5 && std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
         std::string timeStr = line.substr(0, 4);
-        std::string desc = line.substr(4);
+        std::string remaining_line = line.substr(4);
         
+        std::string desc;
+        std::string remark;
+
+        size_t comment_pos = std::string::npos;
+        const char* delimiters[] = {"//", "#", ";"};
+        for (const char* delim : delimiters) {
+            size_t pos = remaining_line.find(delim);
+            if (pos != std::string::npos) {
+                if (comment_pos == std::string::npos || pos < comment_pos) {
+                    comment_pos = pos;
+                }
+            }
+        }
+        
+        if (comment_pos != std::string::npos) {
+            desc = trim(remaining_line.substr(0, comment_pos));
+            // 正确处理分隔符长度
+            size_t delim_len = (remaining_line.substr(comment_pos, 2) == "//") ? 2 : 1;
+            remark = trim(remaining_line.substr(comment_pos + delim_len));
+        } else {
+            desc = trim(remaining_line);
+        }
+
         if (wake_keywords_.count(desc)) {
             if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
         } else {
             if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;
         }
-        currentDay.rawEvents.push_back({timeStr, desc});
+        currentDay.rawEvents.push_back({timeStr, desc, remark});
     } else if (!line.empty()) {
         std::cerr << YELLOW_COLOR << "Warning: Unrecognized line format for date "
                   << (currentDay.date.empty() ? "UNKNOWN" : currentDay.date)

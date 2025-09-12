@@ -136,7 +136,22 @@ bool SourceFileValidator::parseAndValidateEventLine(const std::string& line, std
         int mm = std::stoi(line.substr(2, 2));
         if (hh > 23 || mm > 59) return false;
         
-        std::string description = line.substr(4);
+        std::string remaining_line = line.substr(4);
+        std::string description;
+        
+        size_t comment_pos = std::string::npos;
+        const char* delimiters[] = {"//", "#", ";"};
+        for (const char* delim : delimiters) {
+            size_t pos = remaining_line.find(delim);
+            if (pos != std::string::npos) {
+                if (comment_pos == std::string::npos || pos < comment_pos) {
+                    comment_pos = pos;
+                }
+            }
+        }
+        
+        description = trim(remaining_line.substr(0, comment_pos));
+
         if (description.empty()) return false;
 
         if (is_first_event) {

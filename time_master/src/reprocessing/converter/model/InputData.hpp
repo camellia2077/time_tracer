@@ -9,6 +9,7 @@
 struct RawEvent {
     std::string endTimeStr;
     std::string description;
+    std::string remark; // 新增：用于存储原始备注信息
 };
 
 struct Activity {
@@ -22,6 +23,7 @@ struct Activity {
     std::string topParent;
     std::vector<std::string> parents;
     int durationSeconds = 0;
+    std::optional<std::string> activityRemark; // 用于存储活动的备注// 新增：用于存储活动的备注
 };
 
 struct GeneratedStats {
