@@ -17,6 +17,8 @@ namespace DayMdStrings {
     const std::string SleepLabel      = "Sleep";
     const std::string GetupTimeLabel  = "Getup Time";
     const std::string RemarkLabel     = "Remark";
+    // --- [核心修改] 新增 Exercise 标签 ---
+    const std::string ExerciseLabel   = "Exercise";
     const std::string NoRecords       = "No time records for this day.";
     const std::string StatisticsLabel = "Statistics";
     const std::string SleepTimeLabel  = "Sleep Time";  

@@ -29,7 +29,8 @@ DailyReportData DayQuerier::fetch_data() {
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT status, sleep, remark, getup_time FROM days WHERE date = ?;";
+    // --- [核心修改] 在查询语句中增加 exercise 字段 ---
+    std::string sql = "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -40,6 +41,9 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
             if (r) data.metadata.remark = reinterpret_cast<const char*>(r);
             const unsigned char* g = sqlite3_column_text(stmt, 3);
             if (g) data.metadata.getup_time = reinterpret_cast<const char*>(g);
+            
+            // --- [核心修改] 读取 exercise 字段值 ---
+            data.metadata.exercise = std::to_string(sqlite3_column_int(stmt, 4));
         }
     }
     sqlite3_finalize(stmt);

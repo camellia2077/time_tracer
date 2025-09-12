@@ -56,6 +56,8 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "    \\item \\textbf{" << DayTexConfig::TotalTimeLabel << "}: " << escape_tex_local(time_format_duration(data.total_duration)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::StatusLabel    << "}: " << escape_tex_local(bool_to_string(data.metadata.status)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::SleepLabel     << "}: " << escape_tex_local(bool_to_string(data.metadata.sleep)) << "\n";
+    // --- [核心修改] 新增 exercise 状态的显示 ---
+    ss << "    \\item \\textbf{" << DayTexConfig::ExerciseLabel  << "}: " << escape_tex_local(bool_to_string(data.metadata.exercise)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::GetupTimeLabel << "}: " << escape_tex_local(data.metadata.getup_time) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::RemarkLabel    << "}: " << escape_tex_local(data.metadata.remark) << "\n";
     ss << "\\end{itemize}\n\n";
