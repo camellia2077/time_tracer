@@ -17,8 +17,6 @@ public:
     std::string format_report(const DailyReportData& data, sqlite3* db) const override;
 
 private:
-    // [移除] 不再需要在这里声明 KeywordColors map
-
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const;
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
