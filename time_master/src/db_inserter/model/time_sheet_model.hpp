@@ -22,6 +22,12 @@ struct DayData {
     int sleep;
     std::string remark;
     std::string getup_time;
+    // --- [核心修改] 新增统计字段 ---
+    int exercise;
+    int total_exercise_time;
+    int cardio_time;
+    int anaerobic_time;
+    int exercise_both_time;
 };
 
 /**

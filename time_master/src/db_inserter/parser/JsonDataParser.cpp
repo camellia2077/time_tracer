@@ -42,6 +42,7 @@ void JsonDataParser::parse_day_object(const json& day_json) {
     try {
         const auto& headers = day_json.at("headers");
         const auto& activities_array = day_json.at("activities");
+        const auto& generated_stats = day_json.at("generatedStats"); // 获取 generatedStats 对象
 
         DayData day_data;
         day_data.date = headers.at("date");
@@ -49,6 +50,13 @@ void JsonDataParser::parse_day_object(const json& day_json) {
         day_data.sleep = headers.at("sleep");
         day_data.getup_time = headers.value("getup", "00:00");
         day_data.remark = headers.at("remark");
+
+        // --- [核心修改] 解析新的统计字段 ---
+        day_data.exercise = headers.value("exercise", 0);
+        day_data.total_exercise_time = generated_stats.value("totalExerciseTime", 0);
+        day_data.cardio_time = generated_stats.value("cardioTime", 0);
+        day_data.anaerobic_time = generated_stats.value("anaerobicTime", 0);
+        day_data.exercise_both_time = generated_stats.value("exerciseBothTime", 0);
 
         if (day_data.date.length() == 8) {
             day_data.year = std::stoi(day_data.date.substr(0, 4));
