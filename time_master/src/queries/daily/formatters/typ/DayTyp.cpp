@@ -40,6 +40,8 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::TotalTimeLabel, time_format_duration(data.total_duration));
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::StatusLabel, bool_to_string(data.metadata.status));
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::SleepLabel, bool_to_string(data.metadata.sleep));
+    // --- [核心修改] 新增 exercise 状态的显示 ---
+    ss << std::format("+ *{0}:* {1}\n", DayTypStrings::ExerciseLabel, bool_to_string(data.metadata.exercise));
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::GetupTimeLabel, data.metadata.getup_time);
     ss << std::format("+ *{0}:* {1}\n", DayTypStrings::RemarkLabel, data.metadata.remark);
 }

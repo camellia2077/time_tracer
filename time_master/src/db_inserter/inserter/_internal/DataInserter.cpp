@@ -20,6 +20,14 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
             sqlite3_bind_text(stmt_insert_day, 7, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
         }
 
+        // --- [核心修改] 绑定新的统计字段 ---
+        sqlite3_bind_int(stmt_insert_day, 8, day_data.exercise);
+        sqlite3_bind_int(stmt_insert_day, 9, day_data.total_exercise_time);
+        sqlite3_bind_int(stmt_insert_day, 10, day_data.cardio_time);
+        sqlite3_bind_int(stmt_insert_day, 11, day_data.anaerobic_time);
+        sqlite3_bind_int(stmt_insert_day, 12, day_data.exercise_both_time);
+
+
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
         }
