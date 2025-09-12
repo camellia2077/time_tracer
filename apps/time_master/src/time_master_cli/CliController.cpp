@@ -16,7 +16,8 @@
 #include "common/AppConfig.hpp" // For AppOptions
 
 namespace fs = std::filesystem;
-const std::string DATABASE_FILENAME = "time_data.db";
+// 数据库的命名以及数据库后缀名
+const std::string DATABASE_FILENAME = "time_data.sqlite3";
 
 // 构造函数：初始化 parser_，并使用它来设置其他组件
 CliController::CliController(const std::vector<std::string>& args)
