@@ -65,6 +65,23 @@ namespace ConfigLoader {
                 }
             }
 
+            // 新增：加载活动备注
+            if (data.contains("activity_remarks") && data["activity_remarks"].is_object()) {
+                const auto& activity_remarks_json = data["activity_remarks"];
+                ActivityRemarkConfig activity_remarks;
+                if (activity_remarks_json.contains("contents") && activity_remarks_json["contents"].is_array() && !activity_remarks_json["contents"].empty()) {
+                    activity_remarks.contents = activity_remarks_json["contents"].get<std::vector<std::string>>();
+                    
+                    if (activity_remarks_json.contains("generation_chance") && activity_remarks_json["generation_chance"].is_number()) {
+                        activity_remarks.generation_chance = activity_remarks_json["generation_chance"].get<double>();
+                    }
+                    config_data.activity_remarks.emplace(activity_remarks);
+                     std::cout << "Successfully loaded " << activity_remarks.contents.size() << " activity remarks with a " << (activity_remarks.generation_chance * 100) << "% generation chance.\n";
+                } else {
+                     std::cerr << "Warning: 'activity_remarks' object in '" << json_filename << "' is missing a non-empty 'contents' array. This feature will be disabled.\n";
+                }
+            }
+
             return config_data;
         }
         catch (const json::parse_error& e) {

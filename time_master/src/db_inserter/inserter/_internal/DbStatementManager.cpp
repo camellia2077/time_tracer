@@ -23,8 +23,8 @@ void DbStatementManager::_prepare_statements() {
 
     // --- [核心修改] 更新记录插入语句以包含新字段 ---
     const char* insert_record_sql = "INSERT OR REPLACE INTO time_records "
-        "(logical_id, start_timestamp, end_timestamp, date, start, end, project_path, duration) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
+        "(logical_id, start_timestamp, end_timestamp, date, start, end, project_path, duration, activity_remark) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);"; // 增加一个占位符
     if (sqlite3_prepare_v2(db, insert_record_sql, -1, &stmt_insert_record, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare time record insert statement.");
     }

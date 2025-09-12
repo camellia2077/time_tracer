@@ -85,6 +85,11 @@ void JsonDataParser::process_activity(const json& activity_json, const std::stri
         record.end = activity_json.at("endTime");
         record.duration_seconds = activity_json.at("durationSeconds");
         
+        // 解析 activityRemark，处理 null 的情况
+        if (activity_json.contains("activityRemark") && !activity_json["activityRemark"].is_null()) {
+            record.activityRemark = activity_json["activityRemark"].get<std::string>();
+        }
+
         const auto& activity_details = activity_json.at("activity");
         std::string title = activity_details.at("topParent");
         

@@ -20,6 +20,7 @@ namespace DayMdStrings {
     const std::string NoRecords       = "No time records for this day.";
     const std::string StatisticsLabel = "Statistics"; // [新增] 统计部分标题
     const std::string SleepTimeLabel  = "Sleep Time";   // [新增] 睡眠时长标签
+    const std::string ActivityRemarkLabel = "Activety Remark"; // 新增：活动备注的标签
 }
 
 #endif // DAY_MD_STRINGS_HPP

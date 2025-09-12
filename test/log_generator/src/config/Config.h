@@ -10,6 +10,12 @@ struct DailyRemarkConfig {
     double generation_chance = 0.5;
 };
 
+// 新增：活动备注的数据结构
+struct ActivityRemarkConfig {
+    std::vector<std::string> contents;
+    double generation_chance = 0.5;
+};
+
 // [核心修改] 添加一个枚举来表示不同的生成模式
 enum class GenerationMode {
     YearRange, // 按时间段生成
@@ -27,6 +33,7 @@ struct Config {
 struct JsonConfigData {
     std::vector<std::string> activities;
     std::optional<DailyRemarkConfig> remarks;
+    std::optional<ActivityRemarkConfig> activity_remarks; // 新增
 };
 
 

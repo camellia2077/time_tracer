@@ -5,11 +5,12 @@
 DayGenerator::DayGenerator(int items_per_day,
                            const std::vector<std::string>& activities,
                            const std::optional<DailyRemarkConfig>& remark_config,
+                           const std::optional<ActivityRemarkConfig>& activity_remark_config,
                            std::mt19937& gen)
 {
     // 创建并持有子系统的实例
     remark_generator_ = std::make_unique<RemarkGenerator>(remark_config, gen);
-    event_generator_ = std::make_unique<EventGenerator>(items_per_day, activities, gen);
+    event_generator_ = std::make_unique<EventGenerator>(items_per_day, activities, activity_remark_config, gen);
 }
 
 /**
