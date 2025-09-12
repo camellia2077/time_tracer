@@ -39,5 +39,7 @@
 #text(rgb("#AAAAAA"))[+ 12:34 - 14:03 (1h 29m): routine_toilet
   + *Activity Remark*: 先輩、好きです！ 私と付き合ってください！]
 */
+### 0.3.13.4
+tex新增颜色和注释
 
 
