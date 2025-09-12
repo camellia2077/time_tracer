@@ -43,3 +43,28 @@
 tex新增颜色和注释
 
 
+## v0.3.14.0 - 2025-09-12 - 给 JSON 新增键和值
+
+给 JSON 新增运动的键和值
+新增exerciseTime和exercise
+是否有运动以及运动时间(秒)
+
+```
+        "generatedStats": {
+            "exerciseTime": 14040,
+            "sleepTime": 17640
+        },
+        "headers": {
+            "activityCount": 10,
+            "date": "20250902",
+            "exercise": 1,
+            "getup": "06:52",
+            "remark": "minecraft真好玩",
+            "sleep": 1,
+            "status": 1
+        }
+```
+
+###
+
+
