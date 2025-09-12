@@ -65,14 +65,25 @@ private:
         std::stringstream ss;
         ss << "\\documentclass{article}\n";
         ss << "\\usepackage[a4paper, margin=1in]{geometry}\n";
+        
+        ss << "\\usepackage[dvipsnames]{xcolor}\n";
+
         ss << "\\usepackage{fontspec}\n";
         ss << "\\usepackage{ctex}\n";
-        // 将中英文字体分开设置
-        ss << "\\setmainfont{Noto Serif SC}\n";      // 用于英文、数字
-        ss << "\\setCJKmainfont{Noto Serif SC}\n\n"; // 用于中文字符
+        
+        ss << "\\definecolor{studycolor}{HTML}{2ECC40}\n";
+        ss << "\\definecolor{recreationcolor}{HTML}{FF4136}\n";
+        ss << "\\definecolor{mealcolor}{HTML}{FF851B}\n";
+        ss << "\\definecolor{exercisecolor}{HTML}{0074D9}\n";
+        ss << "\\definecolor{routinecolor}{HTML}{AAAAAA}\n";
+        ss << "\\definecolor{sleepcolor}{HTML}{B10DC9}\n";
+        ss << "\\definecolor{codecolor}{HTML}{39CCCC}\n\n";
+
+        ss << "\\setmainfont{Noto Serif SC}\n";
+        ss << "\\setCJKmainfont{Noto Serif SC}\n\n";
         ss << "\\begin{document}\n\n";
         return ss.str();
-    }
+    } // <-- This was the extra, incorrect brace that was removed.
 
     // 生成 TeX 文档的“文档尾”
     std::string get_tex_postfix() const {

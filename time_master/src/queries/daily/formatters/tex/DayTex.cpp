@@ -1,12 +1,14 @@
 // queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
 #include "DayTexConfig.hpp"
+#include "DayTexStrings.hpp"
 
 #include <iomanip>
 #include <string>
 #include <sstream>
 
 #include "common/common_utils.hpp"
+
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
@@ -80,15 +82,37 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
 
 // [新增] 显示详细活动
 void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
-    if (!data.detailed_records.empty()) {
-        ss << "\\subsection*{" << DayTexConfig::AllActivitiesLabel << "}\n\n";
-        ss << "\\begin{itemize}\n";
-        for (const auto& record : data.detailed_records) {
-            ss << "    \\item " << escape_tex_local(record.start_time) << " - "
-               << escape_tex_local(record.end_time) << " ("
-               << escape_tex_local(time_format_duration_hm(record.duration_seconds))
-               << "): " << escape_tex_local(record.project_path) << "\n";
-        }
-        ss << "\\end{itemize}\n\n";
+    if (data.detailed_records.empty()) {
+        return;
     }
+
+    ss << "\\subsection*{" << DayTexConfig::AllActivitiesLabel << "}\n\n";
+    ss << "\\begin{itemize}\n";
+
+    for (const auto& record : data.detailed_records) {
+        std::string base_string = escape_tex_local(record.start_time) + " - " +
+                                  escape_tex_local(record.end_time) + " (" +
+                                  escape_tex_local(time_format_duration_hm(record.duration_seconds)) +
+                                  "): " + escape_tex_local(record.project_path);
+        
+        std::string colorized_string = base_string;
+
+        // Check for a matching keyword and apply color if found
+        for (const auto& pair : DayTexStrings::KeywordColors) {
+            if (record.project_path.find(pair.first) != std::string::npos) {
+                colorized_string = "\\textcolor{" + pair.second + "}{" + base_string + "}";
+                break; // Exit the loop once a color is applied
+            }
+        }
+        
+        ss << "    \\item " << colorized_string << "\n";
+
+        if (record.activityRemark.has_value()) {
+            ss << "    \\begin{itemize}\n";
+            ss << "        \\item \\textbf{" << DayTexConfig::ActivityRemarkLabel << "}: " 
+               << escape_tex_local(record.activityRemark.value()) << "\n";
+            ss << "    \\end{itemize}\n";
+        }
+    }
+    ss << "\\end{itemize}\n\n";
 }
