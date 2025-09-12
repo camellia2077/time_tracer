@@ -6,7 +6,6 @@
 #include <map>
 
 namespace DayTypStrings {
-    // （フォント、カラー設定は変更なし）
     const std::string TitleFont = "Noto Serif";
     const std::string ContentFont = "Noto Serif";
     const int TitleFontSize = 14;
@@ -19,8 +18,6 @@ namespace DayTypStrings {
         {"sleep",      "rgb(\"#B10DC9\")"},
         {"code",       "rgb(\"#39CCCC\")"}
     };
-
-    // --- テキスト設定 (Text Configuration) ---
     const std::string TitlePrefix     = "Daily Report for";
     const std::string DateLabel       = "Date";
     const std::string TotalTimeLabel  = "Total Hours";
