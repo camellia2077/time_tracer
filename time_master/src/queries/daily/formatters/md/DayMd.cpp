@@ -11,8 +11,6 @@
 #include "queries/daily/formatters/md/DayMdStrings.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
 
-// format_report と _display_header は変更なし
-
 std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     _display_header(ss, data);
@@ -42,7 +40,6 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::RemarkLabel, data.metadata.remark);
 }
 
-// _display_project_breakdown と _display_statistics は変更なし
 
 void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
     ss << generate_project_breakdown(
@@ -58,14 +55,12 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     if (!data.detailed_records.empty()) {
         ss << "\n## All Activities\n\n";
         for (const auto& record : data.detailed_records) {
-            // 活動の基本情報を一行で表示
             ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 
                 record.end_time,
                 time_format_duration_hm(record.duration_seconds),
                 record.project_path
             );
-            // 注釈が存在する場合、インデントを付けたサブ項目として表示
             if (record.activityRemark.has_value()) {
                 ss << std::format("  - **{0}**: {1}\n", DayMdStrings::ActivityRemarkLabel, record.activityRemark.value());
             }

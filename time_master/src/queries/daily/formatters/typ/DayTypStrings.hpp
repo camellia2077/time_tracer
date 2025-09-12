@@ -32,7 +32,7 @@ namespace DayTypStrings {
     const std::string StatisticsLabel = "Statistics";
     const std::string AllActivitiesLabel = "All Activities";
     const std::string SleepTimeLabel = "Sleep Time";
-    const std::string ActivityRemarkLabel = "Activity Remark"; // [修正] タイポを修正
+    const std::string ActivityRemarkLabel = "Activity Remark";
 
 }
 

@@ -18,9 +18,9 @@ namespace DayMdStrings {
     const std::string GetupTimeLabel  = "Getup Time";
     const std::string RemarkLabel     = "Remark";
     const std::string NoRecords       = "No time records for this day.";
-    const std::string StatisticsLabel = "Statistics"; // [追加] 統計セクションのタイトル
-    const std::string SleepTimeLabel  = "Sleep Time";   // [追加] 睡眠時間のラベル
-    const std::string ActivityRemarkLabel = "Activity Remark"; // [修正] タイポを修正
+    const std::string StatisticsLabel = "Statistics";
+    const std::string SleepTimeLabel  = "Sleep Time";  
+    const std::string ActivityRemarkLabel = "Activity Remark"; 
 
 }
 
