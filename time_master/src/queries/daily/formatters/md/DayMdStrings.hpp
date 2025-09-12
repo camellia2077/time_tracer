@@ -5,7 +5,7 @@
 #include <string>
 
 // =================================================================
-//           DayMd 报告 UI 文本配置
+//           DayMd 報告 UI テキスト設定
 // =================================================================
 
 namespace DayMdStrings {
@@ -18,9 +18,10 @@ namespace DayMdStrings {
     const std::string GetupTimeLabel  = "Getup Time";
     const std::string RemarkLabel     = "Remark";
     const std::string NoRecords       = "No time records for this day.";
-    const std::string StatisticsLabel = "Statistics"; // [新增] 统计部分标题
-    const std::string SleepTimeLabel  = "Sleep Time";   // [新增] 睡眠时长标签
-    const std::string ActivityRemarkLabel = "Activety Remark"; // 新增：活动备注的标签
+    const std::string StatisticsLabel = "Statistics"; // [追加] 統計セクションのタイトル
+    const std::string SleepTimeLabel  = "Sleep Time";   // [追加] 睡眠時間のラベル
+    const std::string ActivityRemarkLabel = "Activity Remark"; // [修正] タイポを修正
+
 }
 
 #endif // DAY_MD_STRINGS_HPP

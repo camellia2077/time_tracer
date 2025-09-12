@@ -9,7 +9,9 @@
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/daily/formatters/md/DayMdStrings.hpp"
-#include "queries/shared/utils/TimeFormat.hpp" // [新增] 引入新的头文件
+#include "queries/shared/utils/TimeFormat.hpp"
+
+// format_report と _display_header は変更なし
 
 std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
@@ -20,7 +22,6 @@ std::string DayMd::format_report(const DailyReportData& data, sqlite3* db) const
         return ss.str();
     }
     
-    // [新增] 在活动细节之前调用统计信息显示
     _display_statistics(ss, data);
     _display_detailed_activities(ss, data);
     
@@ -41,6 +42,8 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::RemarkLabel, data.metadata.remark);
 }
 
+// _display_project_breakdown と _display_statistics は変更なし
+
 void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
     ss << generate_project_breakdown(
         ReportFormat::Markdown,
@@ -55,27 +58,26 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     if (!data.detailed_records.empty()) {
         ss << "\n## All Activities\n\n";
         for (const auto& record : data.detailed_records) {
-            std::string remark_str = "";
-            if (record.activityRemark.has_value()) {
-                remark_str = std::format(" ({0}: {1})", DayMdStrings::ActivityRemarkLabel, record.activityRemark.value());
-            }
-            ss << std::format("- {0} - {1} ({2}): {3}{4}\n", 
+            // 活動の基本情報を一行で表示
+            ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 
                 record.end_time,
                 time_format_duration_hm(record.duration_seconds),
-                record.project_path,
-                remark_str // 添加备注
+                record.project_path
             );
+            // 注釈が存在する場合、インデントを付けたサブ項目として表示
+            if (record.activityRemark.has_value()) {
+                ss << std::format("  - **{0}**: {1}\n", DayMdStrings::ActivityRemarkLabel, record.activityRemark.value());
+            }
         }
         ss << "\n";
     }
 }
 
-// [新增] 用于显示统计信息的方法
 void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\n## " << DayMdStrings::StatisticsLabel << "\n\n";
     ss << std::format("- **{0}**: {1}\n", 
         DayMdStrings::SleepTimeLabel, 
-        time_format_duration_hm(data.sleep_time) // [新增] 调用辅助函数转换格式
+        time_format_duration_hm(data.sleep_time)
     );
 }
