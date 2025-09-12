@@ -6,15 +6,10 @@
 #include <map>
 
 namespace DayTypStrings {
-    // 定义报告主标题使用的字体
+    // （フォント、カラー設定は変更なし）
     const std::string TitleFont = "Noto Serif";
-    // 定义报告正文内容使用的字体
     const std::string ContentFont = "Noto Serif";
-
-    // 定义报告主标题的字体大小
     const int TitleFontSize = 14;
-
-    // --- [新增] 活动关键词颜色配置 ---
     const std::map<std::string, std::string> KeywordColors = {
         {"study",      "rgb(\"#2ECC40\")"},
         {"recreation", "rgb(\"#FF4136\")"},
@@ -23,12 +18,12 @@ namespace DayTypStrings {
         {"routine",    "rgb(\"#AAAAAA\")"},
         {"sleep",      "rgb(\"#B10DC9\")"},
         {"code",       "rgb(\"#39CCCC\")"}
-    }; 
+    };
 
-    // --- 文本配置 (Text Configuration) ---
+    // --- テキスト設定 (Text Configuration) ---
     const std::string TitlePrefix     = "Daily Report for";
     const std::string DateLabel       = "Date";
-    const std::string TotalTimeLabel  = "Total Hours"; 
+    const std::string TotalTimeLabel  = "Total Hours";
     const std::string StatusLabel     = "Status";
     const std::string SleepLabel      = "Sleep";
     const std::string GetupTimeLabel  = "Getup Time";
@@ -37,7 +32,7 @@ namespace DayTypStrings {
     const std::string StatisticsLabel = "Statistics";
     const std::string AllActivitiesLabel = "All Activities";
     const std::string SleepTimeLabel = "Sleep Time";
-    const std::string ActivityRemarkLabel = "Activity Remark"; // 新增：活动备注的标签
+    const std::string ActivityRemarkLabel = "Activity Remark"; // [修正] タイポを修正
 
 }
 

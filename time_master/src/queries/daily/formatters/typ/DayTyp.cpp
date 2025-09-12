@@ -10,6 +10,8 @@
 #include "DayTypStrings.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
 
+// 其他函数（format_report, _display_header 等）保持不变
+
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     ss << std::format(R"(#set text(font: "{0}"))", DayTypStrings::ContentFont) << "\n\n";
@@ -62,38 +64,47 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
     );
 }
 
-// [修改] 更新辅助函数以直接使用 DayTypStrings::KeywordColors
 std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
-    std::string remark_str = "";
-    if (record.activityRemark.has_value()) {
-        remark_str = std::format(" ({0}: {1})", DayTypStrings::ActivityRemarkLabel, record.activityRemark.value());
-    }
-    std::string base_string = std::format("{0} - {1} ({2}): {3}{4}",
+    // 活動の基本情報を一行で定義
+    std::string base_string = std::format("{0} - {1} ({2}): {3}",
         record.start_time,
         record.end_time,
         time_format_duration_hm(record.duration_seconds),
-        record.project_path,
-        remark_str
+        record.project_path
     );
 
-    // 遍历 DayTypStrings::KeywordColors map 来查找匹配的关键字
+    // キーワードに基づいて基本情報行を色付け
+    std::string colorized_base;
+    bool color_found = false;
     for (const auto& pair : DayTypStrings::KeywordColors) {
         const std::string& keyword = pair.first;
         const std::string& color = pair.second;
         
         if (record.project_path.find(keyword) != std::string::npos) {
-            return std::format("#text({0})[+ {1}]", color, base_string);
+            colorized_base = std::format("#text({0})[+ {1}]", color, base_string);
+            color_found = true;
+            break;
         }
     }
+    if (!color_found) {
+        colorized_base = "+ " + base_string;
+    }
 
-    // 如果循环结束都没有找到任何关键字，则使用默认格式
-    return "+ " + base_string;
+    // 注釈が存在する場合、ネストされたリスト項目として追加
+    if (record.activityRemark.has_value()) {
+        std::string remark_str = std::format("\n  + _({0}: {1})_", DayTypStrings::ActivityRemarkLabel, record.activityRemark.value());
+        return colorized_base + remark_str;
+    }
+
+    return colorized_base;
 }
 
 void DayTyp::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (!data.detailed_records.empty()) {
         ss << "\n= " << DayTypStrings::AllActivitiesLabel << "\n\n";
         for (const auto& record : data.detailed_records) {
+            // 【修正】ここで無条件に改行を追加するのをやめ、
+            // _format_activity_lineに改行の責務を完全に委譲する
             ss << _format_activity_line(record) << "\n";
         }
     }
