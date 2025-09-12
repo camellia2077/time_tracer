@@ -1,4 +1,5 @@
 #include "config/Config.h"
+#include "config/ConfigValidator.h" // 引入新的验证模块
 #include "generator/facade/LogGenerator.h"
 #include "utils/Utils.h"
 #include "file_io/FileManager.h"
@@ -10,6 +11,7 @@
 #include <chrono>
 #include <filesystem>
 #include <format>
+#include <vector>
 
 // --- Application Runner ---
 class Application {
@@ -17,16 +19,12 @@ public:
     int run(int argc, char* argv[]) {
         Utils::setup_console();
 
-        // 命令行解析的所有复杂性都被封装在 parser 中
         CommandLineParser parser(argc, argv);
         auto config_opt = parser.parse();
         
-        // 如果返回空，说明解析失败或用户请求了帮助/版本，直接退出
         if (!config_opt) {
-            // parser 内部已经打印了所有必要信息
-            return 0; // 正常退出，因为这是用户请求的行为
+            return 0;
         }
-        // 如果解析成功，我们肯定能拿到有效的 config
         Config config = *config_opt;
 
         std::filesystem::path exe_path = argv[0];
@@ -37,12 +35,23 @@ public:
         auto json_configs_opt = ConfigLoader::load_json_configurations(activities_config_path.string(), remarks_config_path.string());
         
         if (!json_configs_opt) {
-            std::cerr << RED_COLOR << "Exiting program due to configuration loading failure." << RESET_COLOR << std::endl;
+            std::cerr << RED_COLOR << "程序因配置加载失败而退出。" << RESET_COLOR << std::endl;
             return 1;
         }
 
+        // --- 新增：配置验证步骤 ---
+        std::vector<std::string> validation_errors;
+        if (!ConfigValidator::validate(*json_configs_opt, validation_errors)) {
+            std::cerr << RED_COLOR << "配置文件验证失败:" << RESET_COLOR << std::endl;
+            for (const auto& error : validation_errors) {
+                std::cerr << "  - " << error << std::endl;
+            }
+            return 1; // 验证失败，程序退出
+        }
+        // --- 验证结束 ---
+
         auto total_start_time = std::chrono::high_resolution_clock::now();
-        std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
+        std::cout << "正在为 " << config.start_year << " 至 " << config.end_year << " 年生成数据..." << '\n';
 
         LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
         FileManager file_manager;
