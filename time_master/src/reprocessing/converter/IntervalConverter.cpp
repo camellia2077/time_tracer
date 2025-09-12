@@ -39,6 +39,32 @@ std::vector<InputData> IntervalConverter::executeConversion(std::istream& combin
         processor.process(previous_day, current_day);
     }
     
+    // --- [核心修改] 移除用于生成睡眠的占位天 ---
+    // 检查第一个元素是否为占位天（例如，y2024年的1231日，用于生成y2025年0101日的睡眠记录）
+    // 这种情况的特征是：
+    // 1. 至少有两天的数据。
+    // 2. 第一天的月份是12月，第二天的月份是1月。
+    // 3. 第二天的年份比第一天大1。
+    if (all_days.size() > 1) {
+        const auto& first_day = all_days[0];
+        const auto& second_day = all_days[1];
+
+        if (first_day.date.length() == 8 && second_day.date.length() == 8) {
+            std::string first_month = first_day.date.substr(4, 2);
+            std::string second_month = second_day.date.substr(4, 2);
+
+            if (first_month == "12" && second_month == "01") {
+                int first_year = std::stoi(first_day.date.substr(0, 4));
+                int second_year = std::stoi(second_day.date.substr(0, 4));
+
+                if (second_year == first_year + 1) {
+                    // 确认是占位天，将其从结果中移除
+                    all_days.erase(all_days.begin());
+                }
+            }
+        }
+    }
+    
     // 返回包含所有已处理天数的向量
     return all_days;
 }
