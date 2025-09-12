@@ -90,6 +90,12 @@ void ActivityMapper::map_activities(InputData& day) {
                 if (parts.size() > 1) {
                     activity.parents.assign(parts.begin() + 1, parts.end());
                 }
+
+                // 新增：处理备注
+                if (!rawEvent.remark.empty()) {
+                    activity.activityRemark = rawEvent.remark;
+                }
+                
                 day.processedActivities.push_back(activity);
             }
         }
