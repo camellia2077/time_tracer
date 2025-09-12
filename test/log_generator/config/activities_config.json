@@ -51,5 +51,12 @@
           "学习, 学习, 还是学习"
       ],
       "generation_chance": 0.5
+  },
+  "activity_remarks": {
+      "contents": [
+          "我是备注1234",
+          "先輩、好きです！ 私と付き合ってください！"
+      ],
+      "generation_chance": 0.5
   }
 }

@@ -10,10 +10,6 @@
 #include "DayTypStrings.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
 
-// [移除] 不再需要在此处初始化静态 map
-
-// format_report, _display_header, 等其他函数保持不变...
-// (为简洁起见，这里省略了未改动的函数)
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
     ss << std::format(R"(#set text(font: "{0}"))", DayTypStrings::ContentFont) << "\n\n";
@@ -68,11 +64,16 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
 
 // [修改] 更新辅助函数以直接使用 DayTypStrings::KeywordColors
 std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
-    std::string base_string = std::format("{0} - {1} ({2}): {3}",
+    std::string remark_str = "";
+    if (record.activityRemark.has_value()) {
+        remark_str = std::format(" ({0}: {1})", DayTypStrings::ActivityRemarkLabel, record.activityRemark.value());
+    }
+    std::string base_string = std::format("{0} - {1} ({2}): {3}{4}",
         record.start_time,
         record.end_time,
         time_format_duration_hm(record.duration_seconds),
-        record.project_path
+        record.project_path,
+        remark_str
     );
 
     // 遍历 DayTypStrings::KeywordColors map 来查找匹配的关键字

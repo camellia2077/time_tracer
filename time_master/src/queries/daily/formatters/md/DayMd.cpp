@@ -55,11 +55,16 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     if (!data.detailed_records.empty()) {
         ss << "\n## All Activities\n\n";
         for (const auto& record : data.detailed_records) {
-            ss << std::format("- {0} - {1} ({2}): {3}\n", 
+            std::string remark_str = "";
+            if (record.activityRemark.has_value()) {
+                remark_str = std::format(" ({0}: {1})", DayMdStrings::ActivityRemarkLabel, record.activityRemark.value());
+            }
+            ss << std::format("- {0} - {1} ({2}): {3}{4}\n", 
                 record.start_time, 
                 record.end_time,
                 time_format_duration_hm(record.duration_seconds),
-                record.project_path
+                record.project_path,
+                remark_str // 添加备注
             );
         }
         ss << "\n";
