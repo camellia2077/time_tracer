@@ -94,10 +94,21 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
             day.generatedStats.sleepTime = activity.durationSeconds;
         }
 
-        // 新增：检查运动活动并累加时间
+        // --- [核心修改] 扩展运动统计逻辑 ---
         if (activity.topParent == "exercise") {
             day.hasExerciseActivity = true;
-            day.generatedStats.exerciseTime += activity.durationSeconds;
+            day.generatedStats.totalExerciseTime += activity.durationSeconds;
+
+            if (!activity.parents.empty()) {
+                const std::string& exerciseType = activity.parents[0];
+                if (exerciseType == "cardio") {
+                    day.generatedStats.cardioTime += activity.durationSeconds;
+                } else if (exerciseType == "anaerobic") {
+                    day.generatedStats.anaerobicTime += activity.durationSeconds;
+                } else if (exerciseType == "both") {
+                    day.generatedStats.exerciseBothTime += activity.durationSeconds;
+                }
+            }
         }
     }
 }

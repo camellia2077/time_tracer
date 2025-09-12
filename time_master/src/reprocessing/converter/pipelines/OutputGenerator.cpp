@@ -66,9 +66,13 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         }
         day_obj["activities"] = activities;
 
+        // --- [核心修改] 添加新的运动统计字段到JSON ---
         json generated_stats_obj;
         generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
-        generated_stats_obj["exerciseTime"] = day.generatedStats.exerciseTime; // 新增
+        generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime; 
+        generated_stats_obj["cardioTime"] = day.generatedStats.cardioTime;
+        generated_stats_obj["anaerobicTime"] = day.generatedStats.anaerobicTime;
+        generated_stats_obj["exerciseBothTime"] = day.generatedStats.exerciseBothTime;
         day_obj["generatedStats"] = generated_stats_obj;
 
 
