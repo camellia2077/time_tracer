@@ -31,9 +31,10 @@ public:
 
         std::filesystem::path exe_path = argv[0];
         std::filesystem::path exe_dir = exe_path.parent_path();
-        std::filesystem::path config_file_path = exe_dir / "config" / "activities_config.json";
+        std::filesystem::path activities_config_path = exe_dir / "config" / "common_activities.json";
+        std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_config.json";
         
-        auto json_configs_opt = ConfigLoader::load_json_configurations(config_file_path.string());
+        auto json_configs_opt = ConfigLoader::load_json_configurations(activities_config_path.string(), remarks_config_path.string());
         
         if (!json_configs_opt) {
             std::cerr << RED_COLOR << "Exiting program due to configuration loading failure." << RESET_COLOR << std::endl;
@@ -43,7 +44,7 @@ public:
         auto total_start_time = std::chrono::high_resolution_clock::now();
         std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
 
-        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks);
+        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
         FileManager file_manager;
         PerformanceReporter reporter;
 

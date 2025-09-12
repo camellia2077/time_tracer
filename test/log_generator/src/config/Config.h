@@ -34,10 +34,11 @@ struct JsonConfigData {
     std::vector<std::string> activities;
     std::optional<DailyRemarkConfig> remarks;
     std::optional<ActivityRemarkConfig> activity_remarks; // 新增
+    std::vector<std::string> wake_keywords;
 };
 
 
 // --- 加载函数声明 ---
 namespace ConfigLoader {
-    std::optional<JsonConfigData> load_json_configurations(const std::string& json_filename);
+    std::optional<JsonConfigData> load_json_configurations(const std::string& activities_filename, const std::string& remarks_filename);
 }

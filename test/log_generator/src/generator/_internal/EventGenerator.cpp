@@ -6,13 +6,16 @@
 EventGenerator::EventGenerator(int items_per_day,
                                const std::vector<std::string>& activities,
                                const std::optional<ActivityRemarkConfig>& remark_config,
+                               const std::vector<std::string>& wake_keywords,
                                std::mt19937& gen)
     : items_per_day_(items_per_day),
       common_activities_(activities),
       remark_config_(remark_config),
+      wake_keywords_(wake_keywords),
       gen_(gen),
       dis_minute_(0, 59),
       dis_activity_selector_(0, static_cast<int>(activities.size()) - 1),
+      dis_wake_keyword_selector_(0, static_cast<int>(wake_keywords.size()) -1),
       should_generate_remark_(remark_config.has_value() ? remark_config->generation_chance : 0.0) {}
 
 void EventGenerator::generate_events_for_day(std::string& log_content) {
@@ -25,7 +28,7 @@ void EventGenerator::generate_events_for_day(std::string& log_content) {
 
         if (i == 0) {
             // 处理“起床”的特殊情况
-            text = "起床";
+            text = wake_keywords_[dis_wake_keyword_selector_(gen_)];
             hour = 6;
             is_wakeup_event = true;
         } else {
