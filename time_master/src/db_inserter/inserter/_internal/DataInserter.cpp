@@ -39,6 +39,13 @@ void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records
         sqlite3_bind_text(stmt_insert_record, 7, record_data.project_path.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_int(stmt_insert_record, 8, record_data.duration_seconds);
 
+        // 绑定 activityRemark
+        if (record_data.activityRemark.has_value()) {
+            sqlite3_bind_text(stmt_insert_record, 9, record_data.activityRemark->c_str(), -1, SQLITE_TRANSIENT);
+        } else {
+            sqlite3_bind_null(stmt_insert_record, 9);
+        }
+
         if (sqlite3_step(stmt_insert_record) != SQLITE_DONE) {
             std::cerr << "Error inserting record row: " << sqlite3_errmsg(db) << std::endl;
         }

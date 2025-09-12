@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <optional> // 新增：引入 optional
 
 // [新增] 用于单个活动的详细记录
 struct TimeRecord {
@@ -12,12 +13,13 @@ struct TimeRecord {
     std::string end_time;
     std::string project_path;
     long long duration_seconds; // [新增] 存储活动时长
+    std::optional<std::string> activityRemark; // 新增：存储活动的备注
 };
 
 // This struct is part of the data for a daily report, so it belongs here.
 struct DayMetadata {
     std::string status = "N/A";
-    std::string sleep = "N/A"; // sleep 字段 
+    std::string sleep = "N/A"; // sleep 字段
     std::string remark = "N/A";
     std::string getup_time = "N/A";
 };

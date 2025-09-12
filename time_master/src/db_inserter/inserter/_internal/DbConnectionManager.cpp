@@ -34,6 +34,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "end TEXT, "
             "project_path TEXT, "
             "duration INTEGER, "
+            "activity_remark TEXT, " // 新增列
             "FOREIGN KEY (date) REFERENCES days(date));";
         execute_sql(db, create_records_sql, "Create time_records table");
         

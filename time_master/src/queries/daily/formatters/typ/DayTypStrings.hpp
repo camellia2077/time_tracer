@@ -37,6 +37,7 @@ namespace DayTypStrings {
     const std::string StatisticsLabel = "Statistics";
     const std::string AllActivitiesLabel = "All Activities";
     const std::string SleepTimeLabel = "Sleep Time";
+    const std::string ActivityRemarkLabel = "Activity Remark"; // 新增：活动备注的标签
 
 }
 

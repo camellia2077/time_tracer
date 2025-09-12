@@ -6,6 +6,7 @@
 #include <vector>
 #include <utility>
 #include <unordered_set>
+#include <optional> // 引入 optional
 
 // --- Data Structures ---
 
@@ -38,6 +39,7 @@ struct TimeRecordInternal {
     std::string end;
     std::string project_path;
     int duration_seconds;
+    std::optional<std::string> activityRemark; // 新增：用于存储活动的备注
 };
 
 /**
