@@ -22,6 +22,8 @@ struct DayMetadata {
     std::string sleep = "N/A"; // sleep 字段
     std::string remark = "N/A";
     std::string getup_time = "N/A";
+    // --- [核心修改] 新增 exercise 字段 ---
+    std::string exercise = "N/A";
 };
 
 /**

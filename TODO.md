@@ -5,9 +5,6 @@
 ## 修改测试程序，增加通宵的模拟
 
 
-## headers中增加是否运动的bool值
-generatedStats中增加运动的总时间，秒
-
 
 ## 活动颜色映射独立成一个hpp，这样tex和typst都可以读取，复用代码
 
@@ -23,6 +20,11 @@ generatedStats中增加运动的总时间，秒
 
                 "endTimestamp": 1735699680,
                 "startTimestamp": 1735693800
+anaerobicTime //无氧
+cardioTime //有氧 
+exerciseBothTime // both包含有氧和无氧的时间
+totalExerciseTime //总时间
+
 
 
 

@@ -19,6 +19,8 @@ namespace DayTexConfig {
     constexpr std::string_view TotalTimeLabel = "Total Time Recorded";
     constexpr std::string_view StatusLabel    = "Status";
     constexpr std::string_view SleepLabel     = "Sleep";
+    // --- [核心修改] 新增 Exercise 标签 ---
+    constexpr std::string_view ExerciseLabel  = "Exercise";
     constexpr std::string_view GetupTimeLabel = "Getup Time";
     constexpr std::string_view RemarkLabel    = "Remark";
 
