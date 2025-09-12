@@ -43,7 +43,7 @@ public:
         auto total_start_time = std::chrono::high_resolution_clock::now();
         std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
 
-        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks);
+        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks);
         FileManager file_manager;
         PerformanceReporter reporter;
 

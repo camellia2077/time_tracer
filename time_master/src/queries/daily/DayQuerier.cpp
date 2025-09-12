@@ -74,17 +74,23 @@ void DayQuerier::_fetch_time_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // --- [核心修改] 将 ORDER BY 从 'start' 改为 'logical_id' ---
-    std::string sql = "SELECT start, end, project_path, duration FROM time_records WHERE date = ? ORDER BY logical_id ASC;";
+    // --- [核心修改] 在查询语句中增加 activity_remark 字段 ---
+    std::string sql = "SELECT start, end, project_path, duration, activity_remark FROM time_records WHERE date = ? ORDER BY logical_id ASC;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
-            data.detailed_records.push_back({
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1)),
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2)),
-                sqlite3_column_int64(stmt, 3)
-            });
+            TimeRecord record;
+            record.start_time = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
+            record.end_time = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+            record.project_path = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+            record.duration_seconds = sqlite3_column_int64(stmt, 3);
+
+            // 读取备注，并处理 NULL 的情况
+            const unsigned char* remark_text = sqlite3_column_text(stmt, 4);
+            if (remark_text) {
+                record.activityRemark = reinterpret_cast<const char*>(remark_text);
+            }
+            data.detailed_records.push_back(record);
         }
     }
     sqlite3_finalize(stmt);

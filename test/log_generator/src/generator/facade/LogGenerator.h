@@ -17,7 +17,8 @@ class LogGenerator {
 public:
     LogGenerator(int items_per_day,
                  const std::vector<std::string>& activities,
-                 const std::optional<DailyRemarkConfig>& remark_config);
+                 const std::optional<DailyRemarkConfig>& remark_config,
+                 const std::optional<ActivityRemarkConfig>& activity_remark_config); // 新增
 
     // Facade 方法，封装了复杂的生成流程
     std::string generate_for_month(int year, int month, int days_in_month);

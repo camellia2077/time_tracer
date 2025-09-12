@@ -1,7 +1,9 @@
 #pragma once
+#include "config/Config.h" // 引入Config头文件
 #include <vector>
 #include <string>
 #include <random>
+#include <optional>
 
 /**
  * @class EventGenerator
@@ -9,7 +11,10 @@
  */
 class EventGenerator {
 public:
-    EventGenerator(int items_per_day, const std::vector<std::string>& activities, std::mt19937& gen);
+    EventGenerator(int items_per_day,
+                   const std::vector<std::string>& activities,
+                   const std::optional<ActivityRemarkConfig>& remark_config, // 新增
+                   std::mt19937& gen);
 
     // 生成一天的所有事件
     void generate_events_for_day(std::string& log_content);
@@ -17,7 +22,14 @@ public:
 private:
     int items_per_day_;
     const std::vector<std::string>& common_activities_;
+    const std::optional<ActivityRemarkConfig>& remark_config_; // 新增
     std::mt19937& gen_;
     std::uniform_int_distribution<> dis_minute_;
     std::uniform_int_distribution<> dis_activity_selector_;
+    
+    // 新增：备注生成相关的成员
+    std::bernoulli_distribution should_generate_remark_;
+    const std::vector<std::string> remark_delimiters_ = {"//", "#", ";"};
+    size_t remark_content_idx_ = 0;
+    size_t remark_delimiter_idx_ = 0;
 };
