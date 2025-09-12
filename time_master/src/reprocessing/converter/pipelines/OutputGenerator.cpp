@@ -22,6 +22,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         json headers_obj;
         headers_obj["date"] = day.date;
         headers_obj["status"] = static_cast<int>(day.hasStudyActivity);
+        headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); // 新增
         // --- [核心修改] 使用新的 hasSleepActivity 标志 ---
         headers_obj["sleep"] = static_cast<int>(day.hasSleepActivity);
         headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
@@ -67,6 +68,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
 
         json generated_stats_obj;
         generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
+        generated_stats_obj["exerciseTime"] = day.generatedStats.exerciseTime; // 新增
         day_obj["generatedStats"] = generated_stats_obj;
 
 
