@@ -5,10 +5,11 @@
 LogGenerator::LogGenerator(int items_per_day,
                          const std::vector<std::string>& activities,
                          const std::optional<DailyRemarkConfig>& remark_config,
-                         const std::optional<ActivityRemarkConfig>& activity_remark_config)
+                         const std::optional<ActivityRemarkConfig>& activity_remark_config,
+                         const std::vector<std::string>& wake_keywords)
     : gen_(std::random_device{}())
 {
-    day_generator_ = std::make_unique<DayGenerator>(items_per_day, activities, remark_config, activity_remark_config, gen_);
+    day_generator_ = std::make_unique<DayGenerator>(items_per_day, activities, remark_config, activity_remark_config, wake_keywords, gen_);
 }
 
 // --- [核心修改] 更新 generate_for_month 的逻辑 ---

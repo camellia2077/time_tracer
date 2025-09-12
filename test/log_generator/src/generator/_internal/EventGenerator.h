@@ -14,6 +14,7 @@ public:
     EventGenerator(int items_per_day,
                    const std::vector<std::string>& activities,
                    const std::optional<ActivityRemarkConfig>& remark_config, // 新增
+                   const std::vector<std::string>& wake_keywords,
                    std::mt19937& gen);
 
     // 生成一天的所有事件
@@ -23,9 +24,11 @@ private:
     int items_per_day_;
     const std::vector<std::string>& common_activities_;
     const std::optional<ActivityRemarkConfig>& remark_config_; // 新增
+    const std::vector<std::string>& wake_keywords_;
     std::mt19937& gen_;
     std::uniform_int_distribution<> dis_minute_;
     std::uniform_int_distribution<> dis_activity_selector_;
+    std::uniform_int_distribution<> dis_wake_keyword_selector_;
     
     // 新增：备注生成相关的成员
     std::bernoulli_distribution should_generate_remark_;

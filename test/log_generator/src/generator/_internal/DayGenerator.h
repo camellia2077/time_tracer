@@ -3,6 +3,7 @@
 #include "EventGenerator.h"
 #include <string>
 #include <memory>
+#include <vector>
 
 /**
  * @class DayGenerator
@@ -16,7 +17,8 @@ public:
     DayGenerator(int items_per_day,
                  const std::vector<std::string>& activities,
                  const std::optional<DailyRemarkConfig>& remark_config,
-                 const std::optional<ActivityRemarkConfig>& activity_remark_config, // 新增
+                 const std::optional<ActivityRemarkConfig>& activity_remark_config,
+                 const std::vector<std::string>& wake_keywords, // 新增
                  std::mt19937& gen);
 
     // 生成一天的完整日志
