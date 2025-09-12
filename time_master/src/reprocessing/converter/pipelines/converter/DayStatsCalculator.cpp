@@ -67,6 +67,7 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
     day.generatedStats = {};
 
     day.hasStudyActivity = false;
+    day.hasExerciseActivity = false; // 新增：重置运动标志
     long long activity_sequence = 1;
     long long date_as_long = 0;
     try {
@@ -91,6 +92,12 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         
         if (activity.topParent == "sleep") {
             day.generatedStats.sleepTime = activity.durationSeconds;
+        }
+
+        // 新增：检查运动活动并累加时间
+        if (activity.topParent == "exercise") {
+            day.hasExerciseActivity = true;
+            day.generatedStats.exerciseTime += activity.durationSeconds;
         }
     }
 }

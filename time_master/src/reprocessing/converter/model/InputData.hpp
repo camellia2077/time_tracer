@@ -28,11 +28,13 @@ struct Activity {
 
 struct GeneratedStats {
     int sleepTime = 0;
+    int exerciseTime = 0; // 新增：运动总时间（秒）
 };
 
 struct InputData {
     std::string date;
     bool hasStudyActivity = false;
+    bool hasExerciseActivity = false; // 新增：标记当天是否有运动
     // --- [核心修改] ---
     bool hasSleepActivity = false; // 新增：标记当天是否包含睡眠活动
     // bool endsWithSleepNight = false; // 移除：旧的逻辑标志
@@ -51,6 +53,7 @@ struct InputData {
     void clear() {
         date.clear();
         hasStudyActivity = false;
+        hasExerciseActivity = false; // 新增
         hasSleepActivity = false; // [核心修改]
         getupTime.clear();
         generalRemarks.clear();

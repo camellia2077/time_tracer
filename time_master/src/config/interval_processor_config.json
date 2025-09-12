@@ -65,6 +65,7 @@
         "有氧": "exercise_cardio",
         "st": "exercise_anaerobic",
         "无氧": "exercise_anaerobic",
+        "运动": "exercise_both",
 
         "cpp" : "study_computer_cpp",
         "rust" : "study_computer_rust",
@@ -116,7 +117,7 @@
 
         "school": "other_school",
 
-        "运动": "exercise_both",
+        
         "break": "break_unknown",
         "黑神话": "recreation_game_wokong",
         "指导": "other_instruction",
