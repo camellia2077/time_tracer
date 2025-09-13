@@ -4,7 +4,7 @@ import calendar
 from typing import Dict, Any
 
 # 从新的策略模块中导入策略接口
-from strategies.heatmap_strategies import HeatmapStrategy
+from heatmap_strategies import HeatmapStrategy #
 
 class HeatmapRenderer:
     """

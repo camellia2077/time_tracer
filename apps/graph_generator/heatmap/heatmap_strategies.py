@@ -2,8 +2,6 @@
 from typing import Any, Tuple, Dict
 import datetime
 
-from core.config import app_config
-
 class HeatmapStrategy:
     """定义如何为热力图方块提供颜色和提示信息的策略接口。"""
     def get_color_and_tooltip(self, date: datetime.date, value: Any) -> Tuple[str, str]:
@@ -15,13 +13,11 @@ class HeatmapStrategy:
 
 class NumericStrategy(HeatmapStrategy):
     """用于数值（如项目时长）数据的策略。"""
-    def __init__(self, project_name: str):
+    # ✨ 核心修改: __init__ 现在接收颜色配置
+    def __init__(self, project_name: str, color_config: Dict[str, Any]):
         self.project_name = project_name
-        config = app_config.get_heatmap_config()
-        palette_name = config["DEFAULT_COLOR_PALETTE_NAME"]
-        self.color_palette = config["COLOR_PALETTES"][palette_name]
-        over_12h_ref = config["OVER_12_HOURS_COLOR_REF"]
-        self.over_12h_color = config["SINGLE_COLORS"][over_12h_ref]
+        self.color_palette = color_config['palette']
+        self.over_12h_color = color_config['over_12h']
 
     def get_color_and_tooltip(self, date: datetime.date, hours: float) -> Tuple[str, str]:
         hours = hours or 0
@@ -35,7 +31,9 @@ class NumericStrategy(HeatmapStrategy):
         return color, tooltip
 
     def get_title(self, year: int) -> str:
-        return f"{self.project_name.capitalize()} 热力图 - {year}"
+        # 将项目名首字母大写
+        display_name = self.project_name.replace("_", " ").capitalize()
+        return f"{display_name} - {year}年度活动热力图"
 
     def get_legend(self) -> str:
         boxes = "".join([f'<div class="legend-box" style="background-color: {c};"></div>' for c in self.color_palette])

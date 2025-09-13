@@ -1,0 +1,27 @@
+# =======================================
+#       年度热力图生成器 - 配置文件
+# =======================================
+
+[database]
+# 数据库文件的完整路径
+path = "C:/Computer/my_github/github_cpp/time_master/time_data.sqlite3"
+
+[heatmap]
+# 要生成热力图的年份
+year = 2025
+
+# 要查询的顶级项目名称 (例如 "study", "code", "recreation")
+# 查询将包括所有子项目 (例如 "study_english", "study_programming" 等)
+project_name = "study"
+
+# 生成的 HTML 文件名
+output_filename_annual = "mystudy_heatmap_annual.html"
+output_filename_monthly = "mystudy_heatmap_monthly.html"
+
+# --- 颜色和显示配置 ---
+# 您可以从 "GITHUB_GREEN_LIGHT", "BLUE_LIGHT", "RED_BLOOD_LIGHT" 等中选择
+# 更多选项请参见 heatmap_colors.toml 文件
+color_palette = "GITHUB_GREEN_LIGHT"
+
+# 当一天内项目时长超过12小时的醒目颜色, 来自 heatmap_colors.toml 的 [SINGLE_COLORS]
+over_12_hours_color = "ORANGE"

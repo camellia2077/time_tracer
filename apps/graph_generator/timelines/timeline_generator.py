@@ -1,7 +1,7 @@
-# timeline_generator.py (Final Version)
+# timeline_generator.py (Final Version with Generic Font)
 
 import sqlite3
-import tomllib  # 使用内置的 TOML 解析库 (适用于 Python 3.11+)
+import tomllib
 import os
 from datetime import datetime
 
@@ -32,6 +32,13 @@ def create_timeline_chart(config):
     output_dir = config["paths"]["output_directory"]
     colors = config["colors"]
     default_color = colors.get("default", "#808080")
+    
+    # ✨ 核心修改：不再从 config 读取字体，直接设置通用字体
+    # Matplotlib 会自动选择一个可用的 sans-serif 字体
+    plt.rcParams['font.family'] = 'sans-serif'
+    # ✨ 新增：指定一个通用的黑体来显示中文，以防乱码
+    plt.rcParams['font.sans-serif'] = ['SimHei'] 
+    plt.rcParams['axes.unicode_minus'] = False
 
     conn = None
     try:
@@ -65,11 +72,9 @@ def create_timeline_chart(config):
             end_num = mdates.date2num(end_dt)
             duration_num = end_num - start_num
 
-            # ✨ 根据顶级活动获取颜色
             bar_color = get_activity_color(project_path, colors, default_color)
             ax.broken_barh([(start_num, duration_num)], (i - 0.4, 0.8), facecolors=bar_color, edgecolors='grey')
             
-            # 在条形图中间添加持续时间标签
             text_x = start_num + duration_num / 2
             text_y = i
             duration_total_seconds = end_timestamp - start_timestamp
@@ -98,7 +103,6 @@ def create_timeline_chart(config):
         plt.grid(True, which='major', axis='x', linestyle='--', linewidth=0.7)
         plt.tight_layout()
 
-        # ✨ 不再预览，而是直接保存图片
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
             print(f"已创建输出目录: {output_dir}")
