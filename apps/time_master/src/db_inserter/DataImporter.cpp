@@ -151,7 +151,7 @@ private:
     std::string db_name_;
 };
 
-void handle_process_files(const std::string& db_name, const std::string& config_path) {
+void handle_process_files(const std::string& db_name) {
     UserInteractor interactor;
     std::vector<std::string> user_paths = interactor.collect_paths_from_user();
     PathScanner scanner;
@@ -160,7 +160,7 @@ void handle_process_files(const std::string& db_name, const std::string& config_
     orchestrator.run(files_to_process);
 }
 
-void handle_process_files(const std::string& db_name, const std::string& path, const std::string& config_path) {
+void handle_process_files(const std::string& db_name, const std::string& path) {
     PathScanner scanner;
     std::vector<std::string> files_to_process = scanner.find_json_files({path});
     ProcessOrchestrator orchestrator(db_name);
