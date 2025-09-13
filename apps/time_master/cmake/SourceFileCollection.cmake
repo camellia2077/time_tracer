@@ -99,7 +99,12 @@ set(REPROCESSING_SOURCES
 
 
 
-    "src/reprocessing/validator/source_txt/SourceFileValidator.cpp"
+    "src/reprocessing/validator/source_txt/facade/SourceFileValidator.cpp"
+
+    "src/reprocessing/validator/source_txt/pipelines/LineProcessor.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/SourceValidatorConfig.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/StructuralValidator.cpp"
+
 
 )
 
