@@ -1,9 +1,9 @@
 // reprocessing/converter/pipelines/ActivityMapper.cpp
 #include "ActivityMapper.hpp"
-#include "common/common_utils.hpp" // For split_string
+// --- [核心修改] 引用更具体的字符串工具头文件 ---
+#include "common/utils/StringUtils.hpp"
 #include <stdexcept>
 
-// [修改] 将辅助函数定义为类的成员函数
 std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) const {
     if (timeStrHHMM.length() == 4) {
         return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
@@ -11,7 +11,6 @@ std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) const {
     return timeStrHHMM;
 }
 
-// [修改] 将辅助函数定义为类的成员函数
 int ActivityMapper::calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) const {
     if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
     try {
@@ -74,15 +73,16 @@ void ActivityMapper::map_activities(InputData& day) {
         }
         
         if (!startTime.empty()) {
+            // split_string 函数现在来自 StringUtils.hpp
             std::vector<std::string> parts = split_string(mappedDescription, '_');
             if (!parts.empty()) {
                 Activity activity;
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
                 
-                activity.topParent = parts[0]; // [核心修改] 
-                const auto& topParentsMap = config_.getTopParentMapping(); // [修改]
-                auto map_it = topParentsMap.find(activity.topParent); // [修改]
+                activity.topParent = parts[0]; 
+                const auto& topParentsMap = config_.getTopParentMapping();
+                auto map_it = topParentsMap.find(activity.topParent);
                 if (map_it != topParentsMap.end()) {
                     activity.topParent = map_it->second;
                 }
@@ -91,7 +91,6 @@ void ActivityMapper::map_activities(InputData& day) {
                     activity.parents.assign(parts.begin() + 1, parts.end());
                 }
 
-                // 新增：处理备注
                 if (!rawEvent.remark.empty()) {
                     activity.activityRemark = rawEvent.remark;
                 }

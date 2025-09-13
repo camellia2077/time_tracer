@@ -37,7 +37,6 @@ static std::string getErrorTypeHeader(ErrorType type) {
     }
 }
 
-// [核心修改] 更改函数签名，移除 error_log_path 参数
 void printGroupedErrors(const std::string& filename, const std::set<Error>& errors) {
     std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
     std::map<ErrorType, std::vector<Error>> grouped_errors;
@@ -45,7 +44,6 @@ void printGroupedErrors(const std::string& filename, const std::set<Error>& erro
         grouped_errors[err.type].push_back(err);
     }
 
-    // [核心修改] 将错误日志的路径硬编码到 output 文件夹
     const std::string error_log_path = "./output/errors.log";
     std::ofstream err_stream(error_log_path, std::ios::app);
 
@@ -63,12 +61,4 @@ void printGroupedErrors(const std::string& filename, const std::set<Error>& erro
     }
     err_stream.close();
     std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
-}
-
-std::string trim(const std::string& str) {
-    const std::string WHITESPACE = " \n\r\t\f\v";
-    size_t first = str.find_first_not_of(WHITESPACE);
-    if (std::string::npos == first) return "";
-    size_t last = str.find_last_not_of(WHITESPACE);
-    return str.substr(first, (last - first + 1));
 }

@@ -2,7 +2,7 @@
 
 // query/format/tex/BreakdownTex.cpp (NEW FILE)
 #include "BreakdownTex.hpp"
-#include "common/common_utils.hpp" // For time_format_duration
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree" // For time_format_duration
 #include <vector>
 #include <algorithm>
 #include <iomanip>

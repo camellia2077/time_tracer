@@ -4,7 +4,8 @@
 
 # --- Common Sources ---
 set(COMMON_SOURCES
-    "src/common/common_utils.cpp"
+    "src/common/utils/StringUtils.cpp"
+    "src/common/utils/TimeUtils.cpp"
 )
 
 # --- Time Master CLI Sources ---

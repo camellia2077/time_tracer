@@ -1,5 +1,7 @@
 // reprocessing/validator/source_txt/pipelines/LineProcessor.cpp
 #include "LineProcessor.hpp"
+// --- [核心修改] 新增头文件引用 ---
+#include "common/utils/StringUtils.hpp"
 #include <algorithm>
 
 LineProcessor::LineProcessor(const SourceValidatorConfig& config) : config_(config) {}

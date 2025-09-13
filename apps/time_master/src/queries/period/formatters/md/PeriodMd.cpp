@@ -4,7 +4,7 @@
 
 #include <iomanip>
 
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
