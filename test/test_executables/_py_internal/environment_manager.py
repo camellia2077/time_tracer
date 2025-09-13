@@ -44,9 +44,14 @@ class EnvironmentManager:
                     sys.exit(1)
     
     def _clean_files(self):
-        """清理需要移除的旧文件（EXE, DLLs, DB, Logs）。"""
-        all_files_to_clean = self.config.Cleanup.FILES_TO_CLEAN + self.config.Cleanup.FILES_TO_COPY
-        for file_name in all_files_to_clean:
+        """清理需要移除的旧文件（主要是上次复制的 EXE 和 DLLs）。"""
+        # ======================= 核心修改 =======================
+        # 之前是：all_files_to_clean = self.config.Cleanup.FILES_TO_CLEAN + self.config.Cleanup.FILES_TO_COPY
+        # 现在只清理待复制的文件，以防它们已存在
+        files_to_clean_before_copy = self.config.Cleanup.FILES_TO_COPY
+        # =========================================================
+        
+        for file_name in files_to_clean_before_copy:
             file_path = self.config.Paths.TARGET_EXECUTABLES_DIR / file_name
             if file_path.exists():
                 try:

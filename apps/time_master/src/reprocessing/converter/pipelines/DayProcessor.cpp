@@ -18,8 +18,8 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
     // 1. 首先，像往常一样映射当天的所有常规活动
     converter_.transform(dayToProcess);
 
-    // 2. 如果存在一个有效的前一天，并且当天有起床记录，则生成睡眠活动
-    if (!previousDay.date.empty() && !previousDay.rawEvents.empty() && !dayToProcess.getupTime.empty()) {
+    // 2. 如果存在有效的前一天，并且当天 *以起床记录开始*（即非延续日），则生成睡眠活动
+    if (!previousDay.date.empty() && !previousDay.rawEvents.empty() && !dayToProcess.getupTime.empty() && !dayToProcess.isContinuation) {
         // 3. 睡眠的开始时间 = 前一天最后一个活动的结束时间
         std::string lastEventTime = formatTime(previousDay.rawEvents.back().endTimeStr);
             
