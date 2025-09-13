@@ -53,7 +53,7 @@ public:
         auto total_start_time = std::chrono::high_resolution_clock::now();
         std::cout << "正在为 " << config.start_year << " 至 " << config.end_year << " 年生成数据..." << '\n';
 
-        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
+        LogGenerator generator(config, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
         FileManager file_manager;
         PerformanceReporter reporter;
 

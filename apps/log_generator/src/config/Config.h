@@ -28,6 +28,7 @@ struct Config {
     int items_per_day;
     // [核心修改] 添加一个字段来存储当前的生成模式
     GenerationMode mode;
+    bool enable_nosleep = false; // 新增：是否开启通宵模式
 };
 
 struct JsonConfigData {
