@@ -2,7 +2,7 @@
 #ifndef PROJECT_BREAKDOWN_TEX_FORMAT_HPP
 #define PROJECT_BREAKDOWN_TEX_FORMAT_HPP
 
-#include "queries/shared/interface/ITreeFmt.hpp"
+#include "queries/shared/Interface/ITreeFmt.hpp"
 
 /**
  * @class BreakdownTex

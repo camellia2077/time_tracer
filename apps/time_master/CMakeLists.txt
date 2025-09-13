@@ -18,16 +18,13 @@ if(CCACHE_EXECUTABLE)
     set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
 endif()
 
-# 设置构建类型的标志
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -march=native")
-set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto -s")
-
 # --- 2. 包含模块 ---
 # 将模块路径添加到CMake的搜索路径中
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SourceFileCollection) # 包含并执行源文件收集脚本
 include(TargetSetup)          # 包含并定义 setup_project_target 函数
+include(BuildTypeFlags)       # [新增] 包含并执行构建类型标志的设置脚本
 
 # --- 3. 定义可执行文件目标 ---
 add_executable(time_tracker_cli src/main_cli.cpp ${COMMON_SOURCES} ${DB_INSERTER_SOURCES} ${QUERIES_SOURCES} ${REPROCESSING_SOURCES} ${FILE_HANDLER_SOURCES} ${ACTION_HANDLER_SOURCES} ${TIME_MASTER_CLI_SOURCES})
