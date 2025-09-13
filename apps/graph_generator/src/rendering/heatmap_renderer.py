@@ -1,97 +1,17 @@
-# modules/heatmap_generator.py
-
+# graph_generator/rendering/heatmap_renderer.py
 import datetime
-import tomllib # [核心修改] 导入 tomllib
-import calendar 
-from typing import Dict, List, Any, Callable, Tuple
+import calendar
+from typing import Dict, Any
 
-# --- 策略接口和实现 (此部分代码保持不变) ---
+# 从新的策略模块中导入策略接口
+from strategies.heatmap_strategies import HeatmapStrategy
 
-class HeatmapStrategy:
-    """定义如何为热力图方块提供颜色和提示信息的策略接口。"""
-    def get_color_and_tooltip(self, date: datetime.date, value: Any) -> Tuple[str, str]:
-        raise NotImplementedError
-    
-    def get_title(self, year: int) -> str:
-        raise NotImplementedError
-
-    def get_legend(self) -> str:
-        raise NotImplementedError
-
-def create_numeric_heatmap_strategy(config_path: str, project_name: str) -> HeatmapStrategy:
-    """工厂函数：创建用于数值（项目时长）数据的策略。"""
-    import sys
-    try:
-        # --- [核心修改] 使用 tomllib 加载配置 ---
-        with open(config_path, 'rb') as f:
-            config = tomllib.load(f)
-        palette_name = config["DEFAULT_COLOR_PALETTE_NAME"]
-        color_palette = config["COLOR_PALETTES"][palette_name]
-        over_12h_ref = config["OVER_12_HOURS_COLOR_REF"]
-        over_12h_color = config["SINGLE_COLORS"][over_12h_ref]
-    except (FileNotFoundError, KeyError, tomllib.TOMLDecodeError) as e:
-        print(f"❌ 错误: 加载或解析颜色配置 '{config_path}'失败: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    class NumericStrategy(HeatmapStrategy):
-        def get_color_and_tooltip(self, date: datetime.date, hours: float) -> Tuple[str, str]:
-            if hours is None:
-                hours = 0
-            
-            if hours > 12: color = over_12h_color
-            elif hours > 10: color = color_palette[4]
-            elif hours > 8:  color = color_palette[3]
-            elif hours > 4:  color = color_palette[2]
-            elif hours > 0:  color = color_palette[1]
-            else:            color = color_palette[0]
-
-            tooltip = f"{hours:.2f} 小时 {project_name} on {date.strftime('%Y-%m-%d')}"
-            return color, tooltip
-            
-        def get_title(self, year: int) -> str:
-            return f"{project_name.capitalize()} 热力图 - {year}"
-
-        def get_legend(self) -> str:
-            boxes_html = "".join([f'<div class="legend-box" style="background-color: {color};"></div>' for color in color_palette])
-            return f"""
-            <div class="legend">
-                <span>少</span>
-                {boxes_html}
-                <span>多</span>
-            </div>
-            """
-
-    return NumericStrategy()
-
-def create_boolean_heatmap_strategy() -> HeatmapStrategy:
-    """工厂函数：创建用于布尔（睡眠）数据的策略。"""
-    class BooleanStrategy(HeatmapStrategy):
-        def get_color_and_tooltip(self, date: datetime.date, status: str) -> Tuple[str, str]:
-            color, status_text = {
-                'True': ('#9be9a8', "Sleep: True"),
-                'False': ('#e5534b', "Sleep: False"),
-            }.get(status, ('#ebedf0', "No Data"))
-            tooltip = f"{status_text} on {date.strftime('%Y-%m-%d')}"
-            return color, tooltip
-        
-        def get_title(self, year: int) -> str:
-            return f"睡眠状态热力图 - {year}"
-
-        def get_legend(self) -> str:
-            return """
-            <div class="legend">
-                <span>Fewer</span>
-                <div class="legend-box" style="background-color: #ebedf0;"></div>
-                <div class="legend-box" style="background-color: #9be9a8;"></div>
-                <div class="legend-box" style="background-color: #e5534b;"></div>
-                <span>More</span>
-            </div>
-            """
-    return BooleanStrategy()
-
-
-# --- 通用热力图生成器 (逻辑不变) ---
-class HeatmapGenerator:
+class HeatmapRenderer:
+    """
+    通用热力图生成器，只负责渲染，不关心业务逻辑。
+    它接收一个包含颜色和提示信息决策的“策略”对象来完成工作。
+    """
+    # --- 常量定义 ---
     ANNUAL_SQUARE_SIZE, ANNUAL_SQUARE_GAP = 12, 3
     ANNUAL_LEFT_PADDING, ANNUAL_TOP_PADDING = 30, 30
     MONTHLY_SQUARE_SIZE, MONTHLY_SQUARE_GAP = 15, 4
@@ -105,6 +25,7 @@ class HeatmapGenerator:
         self.cal = calendar.Calendar()
 
     def _generate_annual_svg_content(self) -> str:
+        """生成年度视图的SVG核心内容。"""
         GRID_UNIT = self.ANNUAL_SQUARE_SIZE + self.ANNUAL_SQUARE_GAP
         start_date = datetime.date(self.year, 1, 1)
         total_days = (datetime.date(self.year, 12, 31) - start_date).days + 1
@@ -145,6 +66,7 @@ class HeatmapGenerator:
 </svg>"""
 
     def _generate_single_month_svg(self, month: int) -> str:
+        """为单个月份生成SVG内容块。"""
         GRID_UNIT = self.MONTHLY_SQUARE_SIZE + self.MONTHLY_SQUARE_GAP
         month_weeks = self.cal.monthdatescalendar(self.year, month)
         
@@ -183,6 +105,7 @@ class HeatmapGenerator:
 """
 
     def _generate_html_shell(self, content: str, custom_style: str = "") -> str:
+        """生成HTML文件的外壳模板。"""
         return f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -206,7 +129,16 @@ class HeatmapGenerator:
 </html>
 """
 
-    def save_annual_heatmap(self, filename: str) -> None:
+    def _write_file(self, filename: str, content: str):
+        """将内容写入文件，包含错误处理。"""
+        try:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(content)
+        except IOError as e:
+            print(f"写入文件时出错 '{filename}': {e}")
+
+    def save_annual_heatmap(self, filename: str):
+        """生成并保存年度热力图。"""
         svg_content = self._generate_annual_svg_content()
         container_html = f"""
 <div class="annual-container" style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 20px; background-color: #ffffff;">
@@ -214,14 +146,10 @@ class HeatmapGenerator:
     {self.strategy.get_legend()}
 </div>"""
         html_output = self._generate_html_shell(container_html)
-        try:
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(html_output)
-            print(f"成功创建年度热力图 '{filename}'.")
-        except IOError as e:
-            print(f"写入文件时出错: {e}")
+        self._write_file(filename, html_output)
 
-    def save_monthly_heatmap(self, filename: str) -> None:
+    def save_monthly_heatmap(self, filename: str):
+        """生成并保存月度热力图。"""
         all_months_svg = [self._generate_single_month_svg(m) for m in range(1, 13)]
         
         monthly_style = """
@@ -237,9 +165,4 @@ class HeatmapGenerator:
 <div style="margin-top: 20px; width: 100%; max-width: 1200px;">{self.strategy.get_legend()}</div>
 """
         html_output = self._generate_html_shell(container_html, custom_style=monthly_style)
-        try:
-            with open(filename, 'w', encoding='utf-8') as f:
-                f.write(html_output)
-            print(f"成功创建月度热力图 '{filename}'.")
-        except IOError as e:
-            print(f"写入文件时出错: {e}")
+        self._write_file(filename, html_output)

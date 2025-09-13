@@ -1,0 +1,26 @@
+# 图表生成器的配置文件
+
+[paths]
+# 数据库文件的完整路径
+# 注意：在 TOML 文件中，路径中的反斜杠 \ 是正常的，不需要像 Python 字符串中那样转义
+database = "C:/Computer/my_github/github_cpp/time_master/time_data.sqlite3"
+
+# 生成图表的输出目录
+output_directory = "./charts"
+
+[settings]
+# 您想要生成图表的日期，格式为 "YYYYMMDD"
+target_date = "20250101"
+
+[colors]
+# 顶级活动分类的颜色映射 (RGB十六进制代码)
+# 注意：Matplotlib可以直接使用 #RRGGBB 格式的颜色代码
+study = "#2ECC40"
+recreation = "#FF4136"
+meal = "#FF851B"
+exercise = "#0074D9"
+routine = "#AAAAAA"
+sleep = "#B10DC9"
+code = "#39CCCC"
+# 为未在上面定义的活动提供一个默认颜色
+default = "#808080" # 灰色

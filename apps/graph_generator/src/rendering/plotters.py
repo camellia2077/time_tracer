@@ -1,17 +1,18 @@
-# modules/plotters.py
-
+# graph_generator/rendering/plotters.py
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from .day_analyzer import LogicalDay # 相对导入
-from db_access import COLOR_GREEN, COLOR_RED, COLOR_RESET
+
+# --- [核心修改] 将相对导入改为绝对导入 ---
+from data.day_analyzer import LogicalDay
+from core.config import COLOR_RED, COLOR_RESET
 
 # 设置 matplotlib 支持中文
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
 class TimelinePlotter:
-    """从已处理的数据创建时间线可视化图表。(代码与原版 timeline_generator 中的类相同)"""
+    """从已处理的数据创建时间线可视化图表。"""
     DEFAULT_COLOR = '#CCCCCC'
 
     def __init__(self, logical_day, color_map):
@@ -49,14 +50,13 @@ class TimelinePlotter:
         
         try:
             fig.savefig(output_path, bbox_inches='tight')
-            print(f"时间线图表已成功保存至 '{output_path}'")
         except Exception as e:
             print(f"{COLOR_RED}保存图表时出错 '{output_path}': {e}{COLOR_RESET}")
         finally:
             plt.close(fig)
 
 class BarChartPlotter:
-    """生成并保存一个父项目时长统计的柱状图。(代码与原版 barchart_generator 中的类相同)"""
+    """生成并保存一个父项目时长统计的柱状图。"""
     DEFAULT_COLOR = '#CCCCCC'
     FONT_SIZES = {'title': 22, 'axis_label': 18, 'tick_label': 18, 'annotation': 16}
 
@@ -105,7 +105,6 @@ class BarChartPlotter:
 
         try:
             fig.savefig(output_path, bbox_inches='tight')
-            print(f"柱状图已成功保存至 '{output_path}'")
         except Exception as e:
             print(f"{COLOR_RED}保存图表时出错 '{output_path}': {e}{COLOR_RESET}")
         finally:
