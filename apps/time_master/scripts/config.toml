@@ -8,4 +8,4 @@ compiler = "gcc"
 # 1: 启用基础警告 (-Wall)。
 # 2: 启用扩展警告 (-Wall -Wextra -Wpedantic)。(推荐)
 # 3: 启用严格的开发者模式 (级别2 + 将所有警告视为错误)。
-warning_level = 2
+warning_level = 3
