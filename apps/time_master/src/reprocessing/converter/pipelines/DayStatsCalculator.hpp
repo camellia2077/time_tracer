@@ -1,4 +1,4 @@
-// reprocessing/converter/internal/DayStatsCalculator.hpp
+// reprocessing/converter/pipelines/DayStatsCalculator.hpp
 
 #ifndef DAY_STATS_CALCULATOR_HPP
 #define DAY_STATS_CALCULATOR_HPP

@@ -1,4 +1,4 @@
-// reprocessing/converter/internal/OutputGenerator.cpp
+// reprocessing/converter/pipelines/OutputGenerator.cpp
 #include "OutputGenerator.hpp"
 #include <fstream>
 #include <vector>
