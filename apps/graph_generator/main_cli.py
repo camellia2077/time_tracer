@@ -1,6 +1,7 @@
 import argparse
 import sys
 from datetime import datetime
+import tomllib # [核心修改] 导入 tomllib
 
 # 从重构后的模块中导入核心功能
 from modules.day_analyzer import DataProcessor
@@ -9,17 +10,17 @@ from modules.heatmap_generator import HeatmapGenerator, create_numeric_heatmap_s
 import db_access
 from db_access import COLOR_RED, COLOR_RESET, COLOR_GREEN, COLOR_YELLOW
 
-def load_json_config(path):
-    """一个通用的JSON配置加载函数。"""
-    import json
+# --- [核心修改] 将 load_json_config 替换为 load_toml_config ---
+def load_toml_config(path):
+    """一个通用的TOML配置加载函数。"""
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        with open(path, 'rb') as f: # TOML标准建议以二进制模式读取
+            return tomllib.load(f)
     except FileNotFoundError:
         print(f"{COLOR_RED}错误: 配置文件未找到 '{path}'。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"{COLOR_RED}错误: 无法解析JSON文件 '{path}'。{COLOR_RESET}", file=sys.stderr)
+    except tomllib.TOMLDecodeError:
+        print(f"{COLOR_RED}错误: 无法解析TOML文件 '{path}'。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
 
 def run_day_analysis_chart(date_str, chart_type):
@@ -28,8 +29,9 @@ def run_day_analysis_chart(date_str, chart_type):
     
     # 1. 加载颜色配置
     print(f"{COLOR_YELLOW}加载颜色配置...{COLOR_RESET}")
-    colors_path = 'configs/timeline_colors.json'
-    color_config = load_json_config(colors_path)
+    # --- [核心修改] 修改配置文件路径和加载函数 ---
+    colors_path = 'configs/timeline_colors.toml'
+    color_config = load_toml_config(colors_path)
     active_scheme_name = color_config.get('active_scheme', 'default')
     color_map = color_config.get('color_schemes', {}).get(active_scheme_name, {})
     print(f"{COLOR_GREEN}✅ 颜色配置加载成功，使用色彩方案: '{active_scheme_name}'。{COLOR_RESET}")
@@ -89,7 +91,8 @@ def run_heatmap(year, heatmap_type, project=None):
         print(f"{COLOR_GREEN}✅ 成功获取 {len(data)} 条项目数据。{COLOR_RESET}")
 
         print(f"{COLOR_YELLOW}正在创建数值型热力图的颜色策略...{COLOR_RESET}")
-        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.json', project) 
+        # --- [核心修改] 修改配置文件路径 ---
+        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.toml', project) 
         print(f"{COLOR_GREEN}✅ 颜色策略创建成功。{COLOR_RESET}")
         base_filename = f"heatmap_{project}_{year}"
 
@@ -128,7 +131,6 @@ def run_heatmap(year, heatmap_type, project=None):
 
 
 def main():
-    # 步骤 1: 在函数顶部定义版本和日期信息
     APP_VERSION = "0.0.1"
     LAST_UPDATE = "2025-06-24"
     
@@ -137,7 +139,6 @@ def main():
         formatter_class=argparse.RawTextHelpFormatter
     )
 
-    # 步骤 2: 添加 --version 参数
     parser.add_argument(
         '-v', '--version', 
         action='version', 
