@@ -9,7 +9,7 @@ SRC_PATH = os.path.join(BASE_DIRECTORY, "src")
 sys.path.insert(0, SRC_PATH)
 
 # 现在，因为 src 在路径中，Python 可以直接找到里面的 main 模块
-from main import run_timeline_generator
+from main import run_timeline_generator # type: ignore
 
 if __name__ == "__main__":
     # 我们将项目根目录传递给函数，以便它能找到 configs 文件夹
