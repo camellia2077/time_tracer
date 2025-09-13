@@ -1,4 +1,4 @@
-// db_inserter/inserter/DbStatementManager.cpp
+// db_inserter/inserter/pipelines/DbStatementManager.cpp
 #include "DbStatementManager.hpp"
 #include <stdexcept>
 

@@ -1,4 +1,4 @@
-// reprocessing/validator/output_json/JsonValidatorTime.hpp
+// reprocessing/validator/output_json/pipelines/JsonValidatorTime.hpp
 #ifndef JSON_VALIDATOR_TIME_HPP
 #define JSON_VALIDATOR_TIME_HPP
 

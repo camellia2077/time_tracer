@@ -1,4 +1,4 @@
-// queries\daily\DayQuerier.hpp
+// queries/daily/DayQuerier.hpp
 #ifndef DAILY_REPORT_QUERIER_HPP
 #define DAILY_REPORT_QUERIER_HPP
 

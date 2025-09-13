@@ -1,4 +1,4 @@
-// reprocessing/validator/output_json/JsonValidatorActivities.hpp
+// reprocessing/validator/output_json/pipelines/JsonValidatorActivities.hpp
 #ifndef JSON_VALIDATOR_ACTIVITIES_HPP
 #define JSON_VALIDATOR_ACTIVITIES_HPP
 

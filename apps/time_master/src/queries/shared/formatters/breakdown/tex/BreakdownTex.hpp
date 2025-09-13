@@ -1,4 +1,4 @@
-// query/format/tex/BreakdownTex.h 
+// queries/shared/formatters/breakdown/tex/BreakdownTex.hpp
 #ifndef PROJECT_BREAKDOWN_TEX_FORMAT_HPP
 #define PROJECT_BREAKDOWN_TEX_FORMAT_HPP
 

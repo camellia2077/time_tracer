@@ -1,4 +1,4 @@
-// db_inserter/inserter/DataInserter.hpp
+// db_inserter/inserter/pipelines/DataInserter.hpp
 #ifndef DATA_INSERTER_HPP
 #define DATA_INSERTER_HPP
 

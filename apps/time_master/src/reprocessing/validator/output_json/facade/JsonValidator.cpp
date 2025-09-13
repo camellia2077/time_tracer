@@ -1,4 +1,4 @@
-// reprocessing/validator/output_json/JsonValidator.cpp
+// reprocessing/validator/output_json/facade/JsonValidator.cpp
 #include "JsonValidator.hpp"
 #include <fstream>
 #include <iostream>

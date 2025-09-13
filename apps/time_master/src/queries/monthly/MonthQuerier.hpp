@@ -1,4 +1,4 @@
-// queries/report_generators/monthly/querier/MonthQuerier.hpp
+// queries/monthly/MonthQuerier.hpp
 #ifndef MONTHLY_REPORT_QUERIER_HPP
 #define MONTHLY_REPORT_QUERIER_HPP
 

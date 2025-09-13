@@ -1,3 +1,4 @@
+// reprocessing/validator/source_txt/pipelines/StructuralValidator.cpp
 #include "StructuralValidator.hpp"
 
 void StructuralValidator::process_year_line(int line_number, const std::string& line, std::set<Error>& errors) {

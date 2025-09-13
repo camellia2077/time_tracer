@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthMd.cpp
+// queries/monthly/formatters/md/MonthMd.cpp
 #include "MonthMd.hpp"
 #include "MonthMdConfig.hpp" // [MODIFIED] Include the new configuration file
 

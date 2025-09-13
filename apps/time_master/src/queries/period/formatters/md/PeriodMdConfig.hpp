@@ -1,4 +1,4 @@
-// queries/report_generators/period/formatter/period_md/PeriodMdConfig.hpp
+// queries/period/formatters/md/PeriodMdConfig.hpp
 #ifndef PERIOD_REPORT_MARKDOWN_CONFIG_HPP
 #define PERIOD_REPORT_MARKDOWN_CONFIG_HPP
 

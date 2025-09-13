@@ -1,4 +1,4 @@
-// reprocessing\converter\pipelines\ActivityMapper.hpp
+// reprocessing/converter/pipelines/ActivityMapper.hpp
 #ifndef ACTIVITY_MAPPER_HPP
 #define ACTIVITY_MAPPER_HPP
 

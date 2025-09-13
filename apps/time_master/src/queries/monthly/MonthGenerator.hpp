@@ -1,4 +1,4 @@
-// queries/queries/monthly/MonthGenerator.hpp
+// queries/monthly/MonthGenerator.hpp
 #ifndef MONTHLY_REPORT_GENERATOR_HPP
 #define MONTHLY_REPORT_GENERATOR_HPP
 

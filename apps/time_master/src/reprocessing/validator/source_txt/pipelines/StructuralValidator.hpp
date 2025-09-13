@@ -1,3 +1,4 @@
+// reprocessing/validator/source_txt/pipelines/StructuralValidator.hpp
 #ifndef STRUCTURAL_VALIDATOR_HPP
 #define STRUCTURAL_VALIDATOR_HPP
 

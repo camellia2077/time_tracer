@@ -1,4 +1,5 @@
-// db_inserter/inserter/DataInserter.cpp
+// db_inserter/inserter/pipelines/DataInserter.cpp
+
 #include "DataInserter.hpp"
 #include <iostream>
 

@@ -1,4 +1,4 @@
-// reprocessing\converter\pipelines\ActivityMapper.cpp
+// reprocessing/converter/pipelines/ActivityMapper.cpp
 #include "ActivityMapper.hpp"
 #include "common/common_utils.hpp" // For split_string
 #include <stdexcept>

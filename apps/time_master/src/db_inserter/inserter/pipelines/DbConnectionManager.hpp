@@ -1,4 +1,4 @@
-// db_inserter/inserter/DbConnectionManager.hpp
+// db_inserter/inserter/pipelines/DbConnectionManager.hpp
 #ifndef DB_CONNECTION_MANAGER_HPP
 #define DB_CONNECTION_MANAGER_HPP
 

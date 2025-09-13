@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthMdConfig.hpp
+// queries/monthly/formatters/md/MonthMdConfig.hpp
 #ifndef MONTHLY_REPORT_MARKDOWN_CONFIG_HPP
 #define MONTHLY_REPORT_MARKDOWN_CONFIG_HPP
 

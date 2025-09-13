@@ -1,3 +1,4 @@
+// queries/period/PeriodQuerier.hpp
 #ifndef PERIOD_REPORT_QUERIER_HPP
 #define PERIOD_REPORT_QUERIER_HPP
 

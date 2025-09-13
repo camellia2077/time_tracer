@@ -1,3 +1,4 @@
+// queries/period/PeriodGenerator.hpp
 #ifndef PERIOD_REPORT_GENERATOR_HPP
 #define PERIOD_REPORT_GENERATOR_HPP
 

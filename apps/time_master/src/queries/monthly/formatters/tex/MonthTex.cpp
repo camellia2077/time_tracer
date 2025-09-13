@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthTex.cpp
+// queries/monthly/formatters/tex/MonthTex.cpp
 #include "MonthTex.hpp"
 #include "MonthTexConfig.hpp" // [MODIFIED] Include the new configuration file
 

@@ -1,4 +1,4 @@
-// reprocessing/validator/internal/JsonValidator.hpp
+// reprocessing/validator/output_json/facade/JsonValidator.hpp
 #ifndef JSON_VALIDATOR_HPP
 #define JSON_VALIDATOR_HPP
 
