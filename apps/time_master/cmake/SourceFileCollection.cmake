@@ -89,13 +89,15 @@ set(REPROCESSING_SOURCES
 
     "src/reprocessing/validator/common/ValidatorUtils.cpp"
 
-    # 验证封装
+    # 验证json的封装
     "src/reprocessing/validator/output_json/facade/JsonValidator.cpp"
     # 验证实现
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorActivities.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorDate.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorRules.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorTime.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorActivities.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorDate.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorRules.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorTime.cpp"
+
+
 
     "src/reprocessing/validator/source_txt/SourceFileValidator.cpp"
 
