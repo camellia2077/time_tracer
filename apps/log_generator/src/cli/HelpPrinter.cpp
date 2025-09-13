@@ -23,9 +23,10 @@ void HelpPrinter::print_usage() const {
     std::cerr << "  -s, --start <year>      The starting year for a range. (Used with --end)\n";
     std::cerr << "  -e, --end <year>        The ending year for a range (inclusive). (Used with --start)\n";
     std::cerr << "  -i, --items <number>    Number of log items per day (must be >= 2). (Default: 10)\n";
+    std::cerr << "  -n, --nosleep           Enable the generation of 'no sleep' (all-nighter) days.\n"; // 新增
     std::cerr << "  -v, --version           Display version information and exit.\n";
     std::cerr << "  -h, --help              Display this help message and exit.\n\n";
     std::cerr << GREEN_COLOR << "Example:\n" << RESET_COLOR;
     std::cerr << "  " << prog_name_ << " --year 2025\n";
-    std::cerr << "  " << prog_name_ << " --start 2024 --end 2025 --items 5\n";
+    std::cerr << "  " << prog_name_ << " --start 2024 --end 2025 --items 5 --nosleep\n";
 }

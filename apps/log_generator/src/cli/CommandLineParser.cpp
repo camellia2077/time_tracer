@@ -47,7 +47,10 @@ std::optional<Config> CommandLineParser::parse() {
                 if (i + 1 < args_.size()) {
                     config.items_per_day = std::stoi(args_[++i]);
                 } else { throw std::invalid_argument("--items option requires an argument."); }
-            } else {
+            } else if (arg == "-n" || arg == "--nosleep") { // 新增：处理通宵选项
+                config.enable_nosleep = true;
+            }
+            else {
                 throw std::invalid_argument("Unrecognized option: " + arg);
             }
         }

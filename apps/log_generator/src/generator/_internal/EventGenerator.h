@@ -18,7 +18,7 @@ public:
                    std::mt19937& gen);
 
     // 生成一天的所有事件
-    void generate_events_for_day(std::string& log_content);
+    void generate_events_for_day(std::string& log_content, bool is_nosleep_day); // 修改
 
 private:
     int items_per_day_;

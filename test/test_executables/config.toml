@@ -22,6 +22,7 @@ generated_db_file_name = "time_data.sqlite3"
 [test_params]
 test_formats = ["md", "tex", "typ"]
 
+# 这个是查询，查询不把查询的内容导出到本地
 daily_query_dates = ["20250101", "20250201"]
 monthly_query_months = ["202505", "202506"]
 period_query_days = [7, 10, 15]
@@ -30,7 +31,13 @@ period_query_days = [7, 10, 15]
 export_mode_is_bulk = false
 
 # 仅在 export_mode_is_bulk = false 时生效
-specific_export_dates = ["20250101", "20250201"]
+# 这个是导出，会把查询到的内容导出为对应格式
+specific_export_dates = [
+    "20250101","20250102","20250103", "20250104","20250105",
+    "20250106","20250107","20250108","20250109","202501010",
+    
+    "20250201"
+]
 specific_export_months = ["202505", "202506"]
 period_export_days = [7, 10, 15]
 
