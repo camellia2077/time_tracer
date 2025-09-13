@@ -3,6 +3,8 @@ import shutil
 import subprocess
 from pathlib import Path
 from build_config import config
+import re
+import sys
 
 # --- 全局构建状态 ---
 # 从配置文件初始化，但可以被命令行参数覆盖
@@ -92,13 +94,47 @@ def run_cmake(should_package, cmake_args):
         
     cmake_command.extend(cmake_args)
     
-    subprocess.run(cmake_command, check=True, capture_output=True, text=True, env=cmake_env)
+    # Use Popen to stream and colorize the output
+    process = subprocess.Popen(cmake_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=cmake_env)
+    
+    # Print stdout directly
+    for line in process.stdout:
+        sys.stdout.write(line)
+
+    # Process stderr for errors
+    stderr_output = ""
+    for line in process.stderr:
+        stderr_output += line
+        sys.stderr.write(line)
+
+    process.wait()
+    if process.returncode != 0:
+        raise subprocess.CalledProcessError(process.returncode, cmake_command, output=None, stderr=stderr_output)
+        
     print("--- CMake configuration complete.")
 
 def run_build():
     """执行编译 (Ninja)"""
     print_header("Building the project with Ninja...")
-    subprocess.run(["ninja"], check=True)
+    
+    # Use Popen to stream the output
+    process = subprocess.Popen(["ninja"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, encoding='utf-8')
+
+    for line in process.stdout:
+        # Check for error and warning keywords to apply color
+        if re.search(r'error:', line, re.IGNORECASE):
+            sys.stdout.write(f"{config.FAIL}{line}{config.ENDC}")
+        elif re.search(r'warning:', line, re.IGNORECASE):
+            sys.stdout.write(f"{config.WARNING}{line}{config.ENDC}")
+        else:
+            sys.stdout.write(line)
+    
+    process.wait()
+    
+    if process.returncode != 0:
+        # The CalledProcessError will be caught by the main exception handler
+        raise subprocess.CalledProcessError(process.returncode, "ninja")
+
     print("--- Build complete.")
 
 def run_cpack():
