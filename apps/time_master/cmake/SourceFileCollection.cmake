@@ -21,7 +21,7 @@ set(DB_INSERTER_SOURCES
     "src/db_inserter/inserter/facade/DatabaseInserter.cpp"
     # 插入的实现
     "src/db_inserter/inserter/pipelines/DataInserter.cpp"
-    "src/db_inserter/inserter/pipelines/DbConnectionManager"
+    "src/db_inserter/inserter/pipelines/DbConnectionManager.cpp"
     "src/db_inserter/inserter/pipelines/DbStatementManager.cpp"
     
 

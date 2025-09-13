@@ -2,6 +2,12 @@
 
 cmake_minimum_required(VERSION 3.16)
 project(TimeTrackerApp VERSION "0.2.0" LANGUAGES CXX)
+
+# ==================== 在这里添加以下代码 ====================
+# 所有源文件都必须明确写出它们的扩展名
+cmake_policy(SET CMP0115 NEW)
+# ==========================================================
+
 # --- Find External Dependencies ---
 find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
