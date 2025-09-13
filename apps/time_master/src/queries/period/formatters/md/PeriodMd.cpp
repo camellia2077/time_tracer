@@ -1,10 +1,10 @@
-// queries/report_generators/period/formatter/period_md/PeriodMd.cpp
+// queries/period/formatters/md/PeriodMd.cpp
 #include "PeriodMd.hpp"
 #include "PeriodMdConfig.hpp" // [MODIFIED] Include the new configuration file
 
 #include <iomanip>
 
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"

@@ -4,7 +4,7 @@
 #include "reprocessing/validator/FileValidator.hpp"
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 
-#include "reprocessing/converter/IntervalConverter.hpp"
+#include "reprocessing/converter/facade/IntervalConverter.hpp"
 #include "common/AnsiColors.hpp"
 
 #include <iostream>

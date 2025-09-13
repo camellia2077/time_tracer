@@ -8,9 +8,11 @@
 #include <chrono>
 #include <fstream>
 
-#include "common/AnsiColors.hpp" // 获取颜色宏定义
+#include "common/AnsiColors.hpp"
 
-#include "db_inserter/parser/JsonDataParser.hpp"
+// --- [FIX] Updated include to the new facade and its model ---
+#include "db_inserter/parser/facade/JsonParserFacade.hpp"
+#include "db_inserter/parser/model/ParsedData.hpp"
 #include "db_inserter/inserter/facade/DatabaseInserter.hpp"
           
 namespace fs = std::filesystem;
@@ -91,7 +93,6 @@ public:
 
 class ProcessOrchestrator {
 public:
-    // [核心修改] 构造函数不再需要 config_path
     explicit ProcessOrchestrator(std::string db_name) 
         : db_name_(std::move(db_name)) {}
 
@@ -105,17 +106,20 @@ public:
         auto start_total = std::chrono::high_resolution_clock::now();
 
         std::cout << "Stage 1: Parsing JSON files into memory..." << std::endl;
-        // [核心修改] 直接创建新的 JsonDataParser
-        JsonDataParser parser;
+        
+        // --- [FIX] Use the new facade and a struct to hold all parsed data ---
+        JsonParserFacade parser;
+        ParsedData all_data;
+        std::vector<std::string> failed_files = parse_all_files(parser, files_to_process, all_data);
 
-        std::vector<std::string> failed_files = parse_all_files(parser, files_to_process);
         auto end_parsing = std::chrono::high_resolution_clock::now();
         timing.parsing_s = std::chrono::duration<double>(end_parsing - start_total).count();
 
         std::cout << "Stage 2: Importing data into the database..." << std::endl;
         DatabaseInserter inserter(db_name_);
         if (inserter.is_db_open()) {
-            inserter.import_data(parser.days, parser.records, parser.parent_child_pairs);
+            // --- [FIX] Pass the aggregated data from the ParsedData struct ---
+            inserter.import_data(all_data.days, all_data.records, all_data.parent_child_pairs);
         } else {
             std::cerr << "Inserter could not open database. Aborting import." << std::endl;
         }
@@ -127,10 +131,18 @@ public:
     }
 
 private:
-    std::vector<std::string> parse_all_files(JsonDataParser& parser, const std::vector<std::string>& files) {
+    // --- [FIX] This function now aggregates data and handles exceptions ---
+    std::vector<std::string> parse_all_files(JsonParserFacade& parser, const std::vector<std::string>& files, ParsedData& all_data) {
         std::vector<std::string> failed_files;
         for (const std::string& fname : files) {
-            if (!parser.parse_file(fname)) {
+            try {
+                ParsedData single_file_data = parser.parse_file(fname);
+                // Append data from this file to the main data object
+                all_data.days.insert(all_data.days.end(), single_file_data.days.begin(), single_file_data.days.end());
+                all_data.records.insert(all_data.records.end(), single_file_data.records.begin(), single_file_data.records.end());
+                all_data.parent_child_pairs.insert(single_file_data.parent_child_pairs.begin(), single_file_data.parent_child_pairs.end());
+            } catch (const std::exception& e) {
+                // If parse_file throws an exception, we count it as a failure.
                 failed_files.push_back(fname);
             }
         }
@@ -139,7 +151,6 @@ private:
     std::string db_name_;
 };
 
-// [核心修改] 接口不再需要 config_path
 void handle_process_files(const std::string& db_name, const std::string& config_path) {
     UserInteractor interactor;
     std::vector<std::string> user_paths = interactor.collect_paths_from_user();

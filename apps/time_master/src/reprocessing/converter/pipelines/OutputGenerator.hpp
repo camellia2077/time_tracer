@@ -1,4 +1,4 @@
-// reprocessing/converter/internal/OutputGenerator.hpp
+// reprocessing/converter/pipelines/OutputGenerator.hpp
 #ifndef OUTPUT_GENERATOR_HPP
 #define OUTPUT_GENERATOR_HPP
 
@@ -6,7 +6,7 @@
 #include <vector> 
 #include <nlohmann/json.hpp>
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/ConverterConfig.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp"
 
 class OutputGenerator {
 public:

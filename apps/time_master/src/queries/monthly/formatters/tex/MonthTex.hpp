@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthTex.hpp
+// queries/monthly/formatters/tex/MonthTex.hpp
 #ifndef MONTHLY_REPORT_TEX_FORMATTER_HPP
 #define MONTHLY_REPORT_TEX_FORMATTER_HPP
 

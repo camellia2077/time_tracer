@@ -1,3 +1,4 @@
+// queries/monthly/formatters/typ/MonthTyp.cpp
 
 #include "MonthTyp.hpp"
 #include <iomanip>
@@ -7,7 +8,7 @@
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 
 #include "MonthTypStrings.hpp"
 

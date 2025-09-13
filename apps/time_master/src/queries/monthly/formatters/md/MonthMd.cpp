@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthMd.cpp
+// queries/monthly/formatters/md/MonthMd.cpp
 #include "MonthMd.hpp"
 #include "MonthMdConfig.hpp" // [MODIFIED] Include the new configuration file
 
@@ -7,7 +7,7 @@
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 
 std::string MonthMd::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;

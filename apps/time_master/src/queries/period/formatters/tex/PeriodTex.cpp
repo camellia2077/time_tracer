@@ -1,4 +1,4 @@
-// queries/report_generators/period/formatter/period_tex/PeriodTex.cpp
+// queries/period/formatters/tex/PeriodTex.cpp
 #include "PeriodTex.hpp"
 #include "PeriodTexConfig.hpp" // [MODIFIED] Include the new configuration file
 
@@ -8,7 +8,7 @@
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 
 // Local helper function to escape special TeX characters.
 namespace {

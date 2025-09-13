@@ -1,8 +1,9 @@
+// queries/shared/utils/query_utils.cpp
 #include "query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp" // 引入TreeFmtFactory
 #include "queries/shared/interface/ITreeFmt.hpp"       // 引入ITreeFmt
 
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree
 
 #include <iostream>
 #include <vector>

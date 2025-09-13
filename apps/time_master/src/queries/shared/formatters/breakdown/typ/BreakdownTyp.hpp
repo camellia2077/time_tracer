@@ -1,4 +1,4 @@
-// queries/shared/breakdown/formatters/BreakdownTyp.h
+// queries/shared/formatters/breakdown/typ/BreakdownTyp.hpp
 #ifndef PROJECT_BREAKDOWN_TYP_FORMAT_HPP
 #define PROJECT_BREAKDOWN_TYP_FORMAT_HPP
 

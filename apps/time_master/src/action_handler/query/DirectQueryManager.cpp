@@ -1,4 +1,4 @@
-// file: action_handler/query/DirectQueryManager.cpp
+// action_handler/query/DirectQueryManager.cpp
 
  // 项目使用预编译头文件
 #include "DirectQueryManager.hpp"

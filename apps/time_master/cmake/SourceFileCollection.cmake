@@ -4,7 +4,8 @@
 
 # --- Common Sources ---
 set(COMMON_SOURCES
-    "src/common/common_utils.cpp"
+    "src/common/utils/StringUtils.cpp"
+    "src/common/utils/TimeUtils.cpp"
 )
 
 # --- Time Master CLI Sources ---
@@ -19,16 +20,16 @@ set(DB_INSERTER_SOURCES
     # 插入的封装
     "src/db_inserter/inserter/facade/DatabaseInserter.cpp"
     # 插入的实现
-    "src/db_inserter/inserter/_internal/DataInserter.cpp"
-    "src/db_inserter/inserter/_internal/DbConnectionManager"
-    "src/db_inserter/inserter/_internal/DbStatementManager.cpp"
+    "src/db_inserter/inserter/pipelines/DataInserter.cpp"
+    "src/db_inserter/inserter/pipelines/DbConnectionManager"
+    "src/db_inserter/inserter/pipelines/DbStatementManager.cpp"
     
-
-    
-
 
     # 解析json
-    "src/db_inserter/parser/JsonDataParser.cpp"
+    "src/db_inserter/parser/facade/JsonParserFacade.cpp"
+    "src/db_inserter/parser/pipelines/ActivityParser.cpp"
+    "src/db_inserter/parser/pipelines/DayParser.cpp"
+    
 
 )
 
@@ -72,15 +73,15 @@ set(QUERIES_SOURCES
 # --- Reprocessing Sources ---
 set(REPROCESSING_SOURCES
     "src/reprocessing/LogProcessor.cpp"
+
     # 转换模块
-    "src/reprocessing/converter/IntervalConverter.cpp"
-    "src/reprocessing/converter/ConverterConfig.cpp"
+    "src/reprocessing/converter/config/ConverterConfig.cpp"
 
-    "src/reprocessing/converter/pipelines/converter/ActivityMapper.cpp"
-    "src/reprocessing/converter/pipelines/converter/Converter.cpp"
-    "src/reprocessing/converter/pipelines/converter/DayStatsCalculator.cpp"
+    "src/reprocessing/converter/facade/IntervalConverter.cpp"
 
+    "src/reprocessing/converter/pipelines/ActivityMapper.cpp"
     "src/reprocessing/converter/pipelines/DayProcessor.cpp"
+    "src/reprocessing/converter/pipelines/DayStatsCalculator.cpp"    
     "src/reprocessing/converter/pipelines/InputParser.cpp"
     "src/reprocessing/converter/pipelines/OutputGenerator.cpp"
 
@@ -89,15 +90,22 @@ set(REPROCESSING_SOURCES
 
     "src/reprocessing/validator/common/ValidatorUtils.cpp"
 
-    # 验证封装
+    # 验证json的封装
     "src/reprocessing/validator/output_json/facade/JsonValidator.cpp"
     # 验证实现
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorActivities.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorDate.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorRules.cpp"
-    "src/reprocessing/validator/output_json/_internal/JsonValidatorTime.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorActivities.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorDate.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorRules.cpp"
+    "src/reprocessing/validator/output_json/pipelines/JsonValidatorTime.cpp"
 
-    "src/reprocessing/validator/source_txt/SourceFileValidator.cpp"
+
+
+    "src/reprocessing/validator/source_txt/facade/SourceFileValidator.cpp"
+
+    "src/reprocessing/validator/source_txt/pipelines/LineProcessor.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/SourceValidatorConfig.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/StructuralValidator.cpp"
+
 
 )
 

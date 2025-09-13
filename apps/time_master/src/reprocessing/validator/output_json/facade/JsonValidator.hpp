@@ -1,4 +1,4 @@
-// reprocessing/validator/internal/JsonValidator.hpp
+// reprocessing/validator/output_json/facade/JsonValidator.hpp
 #ifndef JSON_VALIDATOR_HPP
 #define JSON_VALIDATOR_HPP
 
@@ -7,10 +7,10 @@
 #include <set>
 #include <nlohmann/json.hpp>
 
-#include "reprocessing/validator/output_json/_internal/JsonValidatorDate.hpp"
-#include "reprocessing/validator/output_json/_internal/JsonValidatorTime.hpp"
-#include "reprocessing/validator/output_json/_internal/JsonValidatorRules.hpp"
-#include "reprocessing/validator/output_json/_internal/JsonValidatorActivities.hpp"
+#include "reprocessing/validator/output_json/pipelines/JsonValidatorDate.hpp"
+#include "reprocessing/validator/output_json/pipelines/JsonValidatorTime.hpp"
+#include "reprocessing/validator/output_json/pipelines/JsonValidatorRules.hpp"
+#include "reprocessing/validator/output_json/pipelines/JsonValidatorActivities.hpp"
 
 // 这个模块专门负责验证经过转换后生成的 JSON 输出文件 的数据结构和内容
 /**

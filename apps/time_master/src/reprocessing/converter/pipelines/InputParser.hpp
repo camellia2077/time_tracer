@@ -1,4 +1,4 @@
-// reprocessing/converter/internal/InputParser.hpp
+// reprocessing/converter/pipelines/InputParser.hpp
 #ifndef INPUT_PARSER_HPP
 #define INPUT_PARSER_HPP
 
@@ -7,7 +7,7 @@
 #include <iostream>
 #include <unordered_set>
 #include "reprocessing/converter/model/InputData.hpp"
-#include "reprocessing/converter/ConverterConfig.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp"
 
 class InputParser {
 public:

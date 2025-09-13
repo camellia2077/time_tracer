@@ -1,4 +1,4 @@
-// queries/shared/formatters/tex/BaseTexFormatter.h
+// queries/shared/formatters/tex/BaseTexFormatter.hpp
 #ifndef BASE_TEX_FORMATTER_HPP
 #define BASE_TEX_FORMATTER_HPP
 

@@ -1,4 +1,4 @@
-// PeriodTyp.hpp
+// queries/period/formatters/typ/PeriodTyp.hpp
 #ifndef PERIOD_REPORT_TYP_FORMATTER_HPP
 #define PERIOD_REPORT_TYP_FORMATTER_HPP
 

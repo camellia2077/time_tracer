@@ -7,14 +7,15 @@
 #include <string>
 #include <sstream>
 
-#include "common/common_utils.hpp"
+// --- [核心修改] 替换 common_utils.hpp ---
+#include "common/utils/TimeUtils.hpp" // For time_format_duration()
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
-#include "queries/shared/utils/TimeFormat.hpp" // [新增] 引入 TimeFormat.hpp
+#include "queries/shared/utils/TimeFormat.hpp" 
 
 // Local helper function to escape special TeX characters.
 namespace {
@@ -41,7 +42,6 @@ void DayTex::format_content(std::stringstream& ss, const DailyReportData& data, 
     if (data.total_duration == 0) {
         ss << DayTexConfig::NoRecordsMessage << "\n";
     } else {
-        // [修改] 调用新增的函数来显示统计和活动详情
         _display_statistics(ss, data);
         _display_detailed_activities(ss, data);
         _display_project_breakdown(ss, data, db);
@@ -56,7 +56,6 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "    \\item \\textbf{" << DayTexConfig::TotalTimeLabel << "}: " << escape_tex_local(time_format_duration(data.total_duration)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::StatusLabel    << "}: " << escape_tex_local(bool_to_string(data.metadata.status)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::SleepLabel     << "}: " << escape_tex_local(bool_to_string(data.metadata.sleep)) << "\n";
-    // --- [核心修改] 新增 exercise 状态的显示 ---
     ss << "    \\item \\textbf{" << DayTexConfig::ExerciseLabel  << "}: " << escape_tex_local(bool_to_string(data.metadata.exercise)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::GetupTimeLabel << "}: " << escape_tex_local(data.metadata.getup_time) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::RemarkLabel    << "}: " << escape_tex_local(data.metadata.remark) << "\n";
@@ -73,7 +72,6 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
     );
 }
 
-// [新增] 显示统计信息
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\\subsection*{" << DayTexConfig::StatisticsLabel << "}\n\n";
     ss << "\\begin{itemize}\n";
@@ -82,7 +80,6 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     ss << "\\end{itemize}\n\n";
 }
 
-// [新增] 显示详细活动
 void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (data.detailed_records.empty()) {
         return;
@@ -99,11 +96,10 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         
         std::string colorized_string = base_string;
 
-        // Check for a matching keyword and apply color if found
         for (const auto& pair : DayTexStrings::KeywordColors) {
             if (record.project_path.find(pair.first) != std::string::npos) {
                 colorized_string = "\\textcolor{" + pair.second + "}{" + base_string + "}";
-                break; // Exit the loop once a color is applied
+                break;
             }
         }
         

@@ -1,4 +1,4 @@
-// queries/monthly/formatters/MonthTex.cpp
+// queries/monthly/formatters/tex/MonthTex.cpp
 #include "MonthTex.hpp"
 #include "MonthTexConfig.hpp" // [MODIFIED] Include the new configuration file
 
@@ -9,7 +9,7 @@
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 
 // Local helper function to escape special TeX characters.
 namespace {

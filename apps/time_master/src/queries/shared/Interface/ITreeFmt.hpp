@@ -1,10 +1,10 @@
-// query/format/ITreeFmt.h
+// queries/shared/Interface/ITreeFmt.hpp
 #ifndef I_PROJECT_BREAKDOWN_FORMATTER_HPP
 #define I_PROJECT_BREAKDOWN_FORMATTER_HPP
 
 #include <string>
 #include <sstream>
-#include "common/common_utils.hpp" // For ProjectTree
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree" // For ProjectTree
 
 /**
  * @class ITreeFmt

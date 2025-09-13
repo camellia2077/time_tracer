@@ -1,4 +1,4 @@
-// queries/report_generators/period/formatter/period_tex/PeriodTex.hpp
+// queries/period/formatters/tex/PeriodTex.hpp
 #ifndef PERIOD_REPORT_TEX_FORMATTER_HPP
 #define PERIOD_REPORT_TEX_FORMATTER_HPP
 

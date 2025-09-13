@@ -1,4 +1,4 @@
-// queries/shared/breakdown/formatters/BreakdownMd.h 
+// queries/shared/formatters/breakdown/md/BreakdownMd.hpp
 #ifndef PROJECT_BREAKDOWN_MD_FORMAT_HPP
 #define PROJECT_BREAKDOWN_MD_FORMAT_HPP
 

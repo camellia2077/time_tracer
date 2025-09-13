@@ -1,4 +1,4 @@
-// queries/daily/formatters/tex/DayTexStrings.hpp
+// queries/daily/formatters/tex/DayTexConfig.hpp
 #ifndef DAILY_REPORT_TEX_CONFIG_HPP
 #define DAILY_REPORT_TEX_CONFIG_HPP
 

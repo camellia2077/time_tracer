@@ -149,4 +149,19 @@ y2025
 生成器就会按照“1天通宵 -> 1天正常 -> 2天通宵 -> 1天正常 -> 3天通宵...”的模式生成测试日志。
 开启通宵天数的生成,-n,--nosleep
 
+## v0.3.17.0 - 2025-09-13
+优化程序结构，写成facade和具体实现
+
+### v0.3.17.1
+SourceFileValidator拆分成facade和pipelines
+
+### v0.3.17.2
+优化converter文件夹目录
+
+### v0.3.17.3
+优化db_inserter的parser
+
+### v0.3.17.4
+拆分common_utils
+
 
