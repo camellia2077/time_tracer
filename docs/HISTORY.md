@@ -152,4 +152,7 @@ y2025
 ## v0.3.17.0 - 2025-09-13
 优化程序结构，写成facade和具体实现
 
+### v0.3.17.1
+SourceFileValidator拆分成facade和pipelines
+
 
