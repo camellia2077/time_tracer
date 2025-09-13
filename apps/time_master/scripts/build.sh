@@ -10,6 +10,6 @@ echo "--- 已切换到项目根目录: $(pwd)"
 echo "--- 正在执行 Python 构建脚本 (scripts/build.py) with GCC..."
 
 # 使用新的相对路径来调用 Python 脚本
-python scripts/build.py --gcc "$@"
+python scripts/build.py "$@"
 
 echo "--- Python 脚本执行完毕。"
