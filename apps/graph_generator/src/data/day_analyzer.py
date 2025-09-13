@@ -1,13 +1,13 @@
-# modules/day_analyzer.py
-
+# graph_generator/data/day_analyzer.py
 import pandas as pd
 from datetime import datetime, timedelta
 
-import db_access
-from db_access import COLOR_RED, COLOR_RESET
+# --- [核心修改] 将相对导入改为绝对导入 ---
+from data import db_access 
+from core.config import COLOR_RED, COLOR_RESET
 
 class LogicalDay:
-    """代表并处理单个逻辑日的所有数据。(代码与原版相同)"""
+    """代表并处理单个逻辑日的所有数据。"""
     def __init__(self, raw_records, getup_time_str, parent_lookup):
         if raw_records.empty:
             raise ValueError("不能从空的记录创建 LogicalDay。")
@@ -53,8 +53,9 @@ class LogicalDay:
         self.raw_records.loc[overnight_mask, 'end_dt'] += timedelta(days=1)
 
     def _determine_logical_end(self):
+        # 注意：原版逻辑中的 sleep_night 可能需要调整为通用的 sleep
         sleep_night_record = self.raw_records[
-            (self.raw_records['project_path'] == 'sleep_night') & 
+            (self.raw_records['project_path'] == 'sleep') & 
             (self.raw_records['start_dt'] >= self.start_time)
         ]
         if sleep_night_record.empty:
@@ -69,7 +70,7 @@ class LogicalDay:
         ].copy()
 
 class DataProcessor:
-    """使用 db_access 模块创建 LogicalDay 对象。 (代码与原版相同)"""
+    """使用 db_access 模块创建 LogicalDay 对象。"""
     def __init__(self):
         db_data = db_access.get_data_for_timeline()
         if db_data is None:
