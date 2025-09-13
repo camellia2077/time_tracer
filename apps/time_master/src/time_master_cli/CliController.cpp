@@ -10,7 +10,7 @@
 #include <filesystem>
 
 #include "file_handler/FileController.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 #include "action_handler/FileProcessingHandler.hpp"
 #include "action_handler/ReportGenerationHandler.hpp"
 #include "common/AppConfig.hpp" // For AppOptions

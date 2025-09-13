@@ -8,7 +8,7 @@
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 
 // Local helper function to escape special TeX characters.
 namespace {

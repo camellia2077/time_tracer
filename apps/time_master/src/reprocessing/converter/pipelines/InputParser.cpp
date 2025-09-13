@@ -5,7 +5,8 @@
 #include <iostream>
 #include "common/AnsiColors.hpp" 
 
-#include "reprocessing/validator/common/ValidatorUtils.hpp" 
+// --- [核心修改] 替换头文件引用以使用新的工具模块 ---
+#include "common/utils/StringUtils.hpp" 
 
 namespace {
     std::string formatTime(const std::string& timeStrHHMM) {
@@ -17,44 +18,35 @@ InputParser::InputParser(const ConverterConfig& config)
     : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
-// --- [核心修改] 调整整个解析逻辑以正确处理多个年份标记 ---
 void InputParser::parse(std::istream& inputStream, std::function<void(InputData&)> onNewDay) {
     InputData currentDay;
     std::string line;
-    std::string current_year_prefix = ""; // 用于存储当前区块的年份
+    std::string current_year_prefix = "";
 
     while (std::getline(inputStream, line)) {
-        line = trim(line);
+        line = trim(line); // trim 函数现在来自 StringUtils.hpp
         if (line.empty()) continue;
 
-        // 1. 检查是否为年份行
         if (isYearMarker(line)) {
-            // 如果是一个新的年份标记，则更新当前的年份前缀
             current_year_prefix = line.substr(1); 
-            continue; // 年份行处理完毕，继续下一行
+            continue;
         }
         
-        // 2. 如果还没有读到任何年份，就忽略所有其他行
         if (current_year_prefix.empty()) {
             std::cerr << YELLOW_COLOR << "Warning: Skipping line '" << line << "' because a year header (e.g., y2025) has not been found yet." << RESET_COLOR << std::endl;
             continue;
         }
 
-        // 3. 检查是否为日期行
         if (isNewDayMarker(line)) {
-            // 如果当前已有正在处理的天，先将其提交
             if (!currentDay.date.empty()) {
                 onNewDay(currentDay);
             }
-            // 开始新的一天，并使用当前正确的年份前缀
             currentDay.clear();
             currentDay.date = current_year_prefix + line;
         } else {
-            // 如果是其他行（备注或事件），则处理它
             parseLine(line, currentDay);
         }
     }
-    // 提交文件中的最后一天
     if (!currentDay.date.empty()) {
         onNewDay(currentDay);
     }
@@ -97,7 +89,6 @@ void InputParser::parseLine(const std::string& line, InputData& currentDay) cons
         
         if (comment_pos != std::string::npos) {
             desc = trim(remaining_line.substr(0, comment_pos));
-            // 正确处理分隔符长度
             size_t delim_len = (remaining_line.substr(comment_pos, 2) == "//") ? 2 : 1;
             remark = trim(remaining_line.substr(comment_pos + delim_len));
         } else {

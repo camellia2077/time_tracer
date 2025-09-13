@@ -3,7 +3,9 @@
 #include <iomanip>
 #include <format>
 
-#include "common/common_utils.hpp"
+// --- [核心修改] 替换 common_utils.hpp ---
+#include "common/utils/TimeUtils.hpp" // For time_format_duration()
+
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
@@ -37,7 +39,6 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::TotalTimeLabel, time_format_duration(data.total_duration));
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::StatusLabel, bool_to_string(data.metadata.status));
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::SleepLabel, bool_to_string(data.metadata.sleep));
-    // --- [核心修改] 新增 exercise 状态的显示 ---
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::ExerciseLabel, bool_to_string(data.metadata.exercise));
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::GetupTimeLabel, data.metadata.getup_time);
     ss << std::format("- **{0}**: {1}\n", DayMdStrings::RemarkLabel, data.metadata.remark);

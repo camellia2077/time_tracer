@@ -2,44 +2,53 @@
 #include "StructuralValidator.hpp"
 
 void StructuralValidator::process_year_line(int line_number, const std::string& line, std::set<Error>& errors) {
+    // --- [核心修改] 重新设计年份验证逻辑 ---
+    int current_year = 0;
+    try {
+        current_year = std::stoi(line.substr(1));
+    } catch (const std::exception&) {
+        errors.insert({line_number, "Invalid year format.", ErrorType::Structural});
+        return;
+    }
+
+    if (has_seen_year_) {
+        // 如果已经见过一个年份，只允许新的年份是上一个年份的延续
+        if (current_year != last_seen_year_ + 1) {
+            errors.insert({line_number, "Duplicate or non-sequential year header found. Only consecutive years are allowed (e.g., y2024 followed by y2025).", ErrorType::Structural});
+        }
+    }
+    
     has_seen_year_ = true;
-    has_seen_date_in_block_ = false;
-    has_seen_event_in_day_ = false;
+    last_seen_year_ = current_year;
+    has_seen_date_in_block_ = false; // 为新年份块重置状态
 }
 
 void StructuralValidator::process_date_line(int line_number, const std::string& line, std::set<Error>& errors) {
     if (!has_seen_year_) {
-        // This case is handled by the main validator loop, but we can double check.
-        errors.insert({line_number, "A date line must be preceded by a year header.", ErrorType::Source_NoDateAtStart});
+        errors.insert({line_number, "Date found before a year header.", ErrorType::Structural});
     }
     has_seen_date_in_block_ = true;
-    has_seen_event_in_day_ = false;
+    has_seen_event_in_day_ = false; // Reset for the new day
 }
 
 void StructuralValidator::process_remark_line(int line_number, const std::string& line, std::set<Error>& errors) {
     if (!has_seen_date_in_block_) {
-        errors.insert({line_number, "A remark must follow a date line.", ErrorType::Source_InvalidLineFormat});
+        errors.insert({line_number, "Remark found before a date.", ErrorType::Structural});
     }
     if (has_seen_event_in_day_) {
-        errors.insert({line_number, "Remark lines cannot appear after an event line for the same day.", ErrorType::Source_RemarkAfterEvent});
+        errors.insert({line_number, "Remark must appear before any events for the day.", ErrorType::Source_RemarkAfterEvent});
     }
 }
 
 void StructuralValidator::process_event_line(int line_number, const std::string& line, std::set<Error>& errors) {
     if (!has_seen_date_in_block_) {
-        errors.insert({line_number, "An event must follow a date line.", ErrorType::Source_InvalidLineFormat});
+        errors.insert({line_number, "Event found before a date.", ErrorType::Structural});
     }
     has_seen_event_in_day_ = true;
 }
 
 void StructuralValidator::process_unrecognized_line(int line_number, const std::string& line, std::set<Error>& errors) {
-    if (!has_seen_year_) {
-        errors.insert({line_number, "The file must start with a year header (e.g., 'y2025').", ErrorType::Source_MissingYearHeader});
-    } else if (!has_seen_date_in_block_) {
-        errors.insert({line_number, "A 4-digit date (MMDD) must follow the year header.", ErrorType::Source_NoDateAtStart});
-    } else {
-        errors.insert({line_number, "Invalid format. Must be a year (yYYYY), date (MMDD), remark, or a valid event.", ErrorType::Source_InvalidLineFormat});
-    }
+    errors.insert({line_number, "Unrecognized line format: " + line, ErrorType::Source_InvalidLineFormat});
 }
 
 bool StructuralValidator::has_seen_year() const {

@@ -5,7 +5,7 @@
 #include <format> 
 
 // --- 核心改动：引入所有需要的依赖 ---
-#include "common/common_utils.hpp"
+#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
