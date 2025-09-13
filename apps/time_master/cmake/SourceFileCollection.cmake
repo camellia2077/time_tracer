@@ -25,7 +25,10 @@ set(DB_INSERTER_SOURCES
     
 
     # 解析json
-    "src/db_inserter/parser/JsonDataParser.cpp"
+    "src/db_inserter/parser/facade/JsonParserFacade.cpp"
+    "src/db_inserter/parser/pipelines/ActivityParser.cpp"
+    "src/db_inserter/parser/pipelines/DayParser.cpp"
+    
 
 )
 
