@@ -13,7 +13,7 @@
  * @param db_name 要操作的数据库文件名。
  * @param config_path 指向包含 "initial_top_level_parents" 的主配置文件路径。
  */
-void handle_process_files(const std::string& db_name, const std::string& config_path);
+void handle_process_files(const std::string& db_name);
 
 /**
  * @brief [命令行模式] 处理单个指定的文件或目录。
@@ -22,6 +22,6 @@ void handle_process_files(const std::string& db_name, const std::string& config_
  * @param path 要处理的文件或目录路径。
  * @param config_path 指向包含 "initial_top_level_parents" 的主配置文件路径。
  */
-void handle_process_files(const std::string& db_name, const std::string& path, const std::string& config_path);
+void handle_process_files(const std::string& db_name, const std::string& path);
 
 #endif // PROCESSING_H

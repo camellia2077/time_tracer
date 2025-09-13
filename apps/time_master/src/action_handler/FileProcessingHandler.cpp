@@ -63,7 +63,7 @@ void FileProcessingHandler::run_database_import(const std::string& processed_pat
     db_manager.close_database(); 
 
     std::cout << "开始导入过程..." << std::endl;
-    handle_process_files(db_path_, processed_path.string(), main_config_path_);
+    handle_process_files(db_path_, processed_path.string());
     std::cout << "导入过程结束。" << std::endl;
 }
 

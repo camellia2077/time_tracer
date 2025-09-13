@@ -27,8 +27,8 @@ private:
     void format_content(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const override;
 
     // -- Empty implementations to satisfy base class requirements --
-    void format_content(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const override {}
-    void format_content(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const override {}
+    void format_content(std::stringstream& /*ss*/, const DailyReportData& /*data*/, sqlite3* /*db*/) const override {}
+    void format_content(std::stringstream& /*ss*/, const MonthlyReportData& /*data*/, sqlite3* /*db*/) const override {}
 
     void _display_summary(std::stringstream& ss, const PeriodReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const;
