@@ -27,3 +27,10 @@ GOLD = "#fbff24"
 ORANGE = "#f97148"
 DEEP_RED = "#8b0000"
 BRIGHT_PURPLE = "#a020f0"
+
+# --- ✨ 新增：布尔值热力图的颜色映射 ---
+[BOOLEAN_COLORS]
+# 0 -> 否/未完成
+color_false = "#ebedf0" # 灰色
+# 1 -> 是/已完成
+color_true = "#56d364" # 绿色

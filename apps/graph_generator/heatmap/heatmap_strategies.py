@@ -13,7 +13,6 @@ class HeatmapStrategy:
 
 class NumericStrategy(HeatmapStrategy):
     """用于数值（如项目时长）数据的策略。"""
-    # ✨ 核心修改: __init__ 现在接收颜色配置
     def __init__(self, project_name: str, color_config: Dict[str, Any]):
         self.project_name = project_name
         self.color_palette = color_config['palette']
@@ -31,7 +30,6 @@ class NumericStrategy(HeatmapStrategy):
         return color, tooltip
 
     def get_title(self, year: int) -> str:
-        # 将项目名首字母大写
         display_name = self.project_name.replace("_", " ").capitalize()
         return f"{display_name} - {year}年度活动热力图"
 
@@ -40,20 +38,35 @@ class NumericStrategy(HeatmapStrategy):
         return f'<div class="legend"><span>少</span>{boxes}<span>多</span></div>'
 
 class BooleanStrategy(HeatmapStrategy):
-    """用于布尔值（如睡眠状态）数据的策略。"""
-    def get_color_and_tooltip(self, date: datetime.date, status: str) -> Tuple[str, str]:
-        color, text = {'True': ('#9be9a8', "Sleep: True"), 'False': ('#e5534b', "Sleep: False")}.get(status, ('#ebedf0', "No Data"))
-        tooltip = f"{text} on {date.strftime('%Y-%m-%d')}"
+    """用于通用布尔值（0 或 1）数据的策略。"""
+    # ✨ 核心修改: __init__ 现在接收数据以进行统计
+    def __init__(self, data_type: str, color_config: Dict[str, str], data: Dict[datetime.date, int]):
+        self.data_type = data_type.capitalize()
+        self.color_true = color_config.get("color_true", "#56d364")
+        self.color_false = color_config.get("color_false", "#ebedf0")
+
+        # ✨ 新增：统计 0 和 1 的数量
+        self.count_true = sum(1 for v in data.values() if v == 1)
+        self.count_false = len(data) - self.count_true
+
+    def get_color_and_tooltip(self, date: datetime.date, value: int) -> Tuple[str, str]:
+        date_str = date.strftime('%Y-%m-%d')
+        if value == 1:
+            color = self.color_true
+            tooltip = f"{self.data_type}: 是 on {date_str}"
+        else:
+            color = self.color_false
+            tooltip = f"{self.data_type}: 否 on {date_str}"
         return color, tooltip
 
     def get_title(self, year: int) -> str:
-        return f"睡眠状态热力图 - {year}"
+        return f"{self.data_type} 状态 - {year}年度热力图"
 
+    # ✨ 核心修改: 在图例中加入统计数量
     def get_legend(self) -> str:
-        return """
+        return f"""
         <div class="legend">
-            <div class="legend-box" style="background-color: #ebedf0;"></div><span>无数据</span>
-            <div class="legend-box" style="background-color: #9be9a8;"></div><span>是</span>
-            <div class="legend-box" style="background-color: #e5534b;"></div><span>否</span>
+            <div class="legend-box" style="background-color: {self.color_false};"></div><span>否 / 无记录 ({self.count_false} 天)</span>
+            <div class="legend-box" style="background-color: {self.color_true};"></div><span>是 ({self.count_true} 天)</span>
         </div>
         """

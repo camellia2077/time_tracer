@@ -25,3 +25,21 @@ color_palette = "GITHUB_GREEN_LIGHT"
 
 # 当一天内项目时长超过12小时的醒目颜色, 来自 heatmap_colors.toml 的 [SINGLE_COLORS]
 over_12_hours_color = "ORANGE"
+
+
+
+# =======================================
+#       布尔值热力图 - 配置
+# =======================================
+[boolean_heatmaps]
+
+# 在下面的列表中添加您想要生成热力图的字段。
+# 可用选项: "sleep", "status", "exercise"
+# 例如: enabled_reports = ["sleep", "exercise"] 只会生成睡眠和锻炼的热力图。
+enabled_reports = ["sleep", "status", "exercise"]
+
+# 为每个报告类型指定输出文件名
+[boolean_heatmaps.outputs]
+sleep    = "sleep_heatmap"
+status   = "status_heatmap"
+exercise = "exercise_heatmap"
