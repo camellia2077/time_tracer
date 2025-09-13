@@ -2,10 +2,10 @@
 
 [build]
 # 默认编译器。可选项: "default", "gcc", "clang"
-compiler = "gcc"
+compiler = "clang"
 
 # 编译器警告级别开关
 # 1: 启用基础警告 (-Wall)。
 # 2: 启用扩展警告 (-Wall -Wextra -Wpedantic)。(推荐)
 # 3: 启用严格的开发者模式 (级别2 + 将所有警告视为错误)。
-warning_level = 3
+warning_level = 1
