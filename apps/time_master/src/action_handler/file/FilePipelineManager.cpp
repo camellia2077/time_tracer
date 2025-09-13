@@ -12,7 +12,7 @@
 // --- [核心修正] 新增缺失的头文件 ---
 #include "reprocessing/validator/FileValidator.hpp"
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
-#include "reprocessing/converter/ConverterConfig.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp"
 
 
 namespace fs = std::filesystem;

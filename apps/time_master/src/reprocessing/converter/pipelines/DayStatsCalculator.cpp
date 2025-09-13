@@ -1,4 +1,4 @@
-// reprocessing/converter/internal/converter/DayStatsCalculator.cpp
+// reprocessing/converter/pipelines/DayStatsCalculator.cpp
 #include "DayStatsCalculator.hpp"
 #include <string>
 #include <stdexcept>

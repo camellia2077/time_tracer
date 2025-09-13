@@ -2,12 +2,11 @@
 #include "IntervalConverter.hpp"
 #include "common/AnsiColors.hpp"
 
-#include "reprocessing/converter/pipelines/converter/Converter.hpp"
 #include "reprocessing/converter/pipelines/InputParser.hpp"
 #include "reprocessing/converter/pipelines/DayProcessor.hpp"
 
 #include <iostream>
-#include <stdexcept>
+#include <stdexcept> // <-- The 'S' at the end of this line has been removed.
 
 IntervalConverter::IntervalConverter(const std::string& config_filename) {
     if (!config_.load(config_filename)) {
@@ -15,8 +14,6 @@ IntervalConverter::IntervalConverter(const std::string& config_filename) {
     }
 }
 
-// --- [核心修改] ---
-// 实现了新的 executeConversion，它现在返回处理好的数据，而不是写入文件
 std::vector<InputData> IntervalConverter::executeConversion(std::istream& combined_input_stream) {
     InputParser parser(config_);
     std::vector<InputData> all_days;
@@ -26,13 +23,13 @@ std::vector<InputData> IntervalConverter::executeConversion(std::istream& combin
     });
 
     if (all_days.empty()) {
-        return {}; // 如果没有数据，返回一个空向量
+        return {};
     }
 
-    Converter converter(config_);
-    DayProcessor processor(converter);
-    InputData empty_prev_day; 
-    
+    // --- [核心修改] 不再创建 Converter，直接将 config_ 传递给 DayProcessor ---
+    DayProcessor processor(config_);
+    InputData empty_prev_day;
+
     for (size_t i = 0; i < all_days.size(); ++i) {
         InputData& previous_day = (i > 0) ? all_days[i - 1] : empty_prev_day;
         InputData& current_day = all_days[i];
