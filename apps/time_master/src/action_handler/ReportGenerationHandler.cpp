@@ -9,7 +9,7 @@
 namespace fs = std::filesystem;
 
 // 修改构造函数实现
-ReportGenerationHandler::ReportGenerationHandler(const std::string& db_path, const AppConfig& config, const fs::path& exported_files_path)
+ReportGenerationHandler::ReportGenerationHandler(const std::string& db_path, const AppConfig& /*config*/, const fs::path& exported_files_path)
     : export_root_path_(exported_files_path) // 直接使用传入的报告专用路径
 {
     // DatabaseManager 接收完整的数据库文件路径

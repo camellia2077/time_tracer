@@ -174,5 +174,7 @@ SourceFileValidator拆分成facade和pipelines
 本次修改通过注释掉这些空实现函数中的参数名称（例如，将 `const MonthlyReportData& data` 修改为 `const MonthlyReportData& /*data*/`），明确地将它们标记为“有意未使用”。
 
 这消除了编译警告，使项目能够成功构建，且未对现有逻辑产生任何影响。
+### v0.3.17.6
+移除没用被使用的变量
 
 
