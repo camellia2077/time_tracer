@@ -82,10 +82,17 @@ def main():
     color_config_path = os.path.join(SCRIPT_DIRECTORY, "heatmap_colors.toml")
     config = load_config(config_path)
     color_config = load_config(color_config_path)
+
+    # --- 创建输出目录 ---
+    parent_dir = os.path.join(SCRIPT_DIRECTORY, "html", "parent")
+    bool_dir = os.path.join(SCRIPT_DIRECTORY, "html", "bool")
+    os.makedirs(parent_dir, exist_ok=True)
+    os.makedirs(bool_dir, exist_ok=True)
     
     db_path = config["database"]["path"]
     year = config["heatmap"]["year"]
 
+    # --- 处理数值型热力图 ---
     project_name = config["heatmap"]["project_name"]
     heatmap_data = fetch_project_duration_data(db_path, project_name, year)
     if heatmap_data:
@@ -96,28 +103,43 @@ def main():
         numeric_strategy = NumericStrategy(project_name, strategy_color_config)
         renderer = HeatmapRenderer(year, heatmap_data, numeric_strategy)
         
-        annual_output = os.path.join(SCRIPT_DIRECTORY, config["heatmap"]["output_filename_annual"])
-        monthly_output = os.path.join(SCRIPT_DIRECTORY, config["heatmap"]["output_filename_monthly"])
+        # ✨ 核心修改：检查输出文件名是否包含任何一个 PARENT_PROJECTS 列表中的名称
+        parent_projects_list = color_config.get("PARENT_PROJECTS", [])
+        output_filename_check = config["heatmap"]["output_filename_annual"]
+        is_parent_project = any(parent in output_filename_check for parent in parent_projects_list)
+
+        if is_parent_project:
+            output_dir = parent_dir
+            print(f"输出文件名 '{output_filename_check}' 包含父项目关键字，将输出到 'html/parent/' 目录。")
+        else:
+            output_dir = SCRIPT_DIRECTORY
+            print(f"输出文件名 '{output_filename_check}' 不匹配任何父项目，将输出到脚本根目录。")
+
+        annual_output = os.path.join(output_dir, config["heatmap"]["output_filename_annual"])
+        monthly_output = os.path.join(output_dir, config["heatmap"]["output_filename_monthly"])
         
         renderer.save_annual_heatmap(annual_output)
         print(f"✅ 年度热力图已保存: {annual_output}")
         renderer.save_monthly_heatmap(monthly_output)
         print(f"✅ 月度热力图已保存: {monthly_output}")
 
+    # --- 处理布尔型热力图 ---
     bool_reports = config.get("boolean_heatmaps", {}).get("enabled_reports", [])
     if bool_reports:
+        print("\n--- 正在生成布尔型热力图，将输出到 'html/bool/' 目录 ---")
         bool_color_config = color_config.get("BOOLEAN_COLORS", {})
         
         for report_type in bool_reports:
             bool_data = fetch_boolean_data(db_path, report_type, year)
             if bool_data:
-                # ✨ 核心修改：将查询到的数据传递给策略类
                 bool_strategy = BooleanStrategy(report_type, bool_color_config, bool_data)
                 renderer = HeatmapRenderer(year, bool_data, bool_strategy)
                 
                 output_basename = config["boolean_heatmaps"]["outputs"].get(report_type, report_type)
-                annual_output = os.path.join(SCRIPT_DIRECTORY, f"{output_basename}_annual.html")
-                monthly_output = os.path.join(SCRIPT_DIRECTORY, f"{output_basename}_monthly.html")
+                
+                # 固定输出到 bool_dir 目录
+                annual_output = os.path.join(bool_dir, f"{output_basename}_annual.html")
+                monthly_output = os.path.join(bool_dir, f"{output_basename}_monthly.html")
                 
                 renderer.save_annual_heatmap(annual_output)
                 print(f"✅ 年度热力图已保存: {annual_output}")
