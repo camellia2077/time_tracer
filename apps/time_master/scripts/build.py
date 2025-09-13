@@ -18,22 +18,8 @@ class Color:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
 
-# ==================== [核心修改] ====================
-#
-#          编译器警告级别开关 (Warning Level Switch)
-#
-#   - 设置为 1: 启用基础警告 (-Wall)。
-#
-#   - 设置为 2: 启用扩展警告 (-Wall -Wextra -Wpedantic)。
-#               推荐用于常规开发。
-#
-#   - 设置为 3: 启用严格的开发者模式 (级别2 + 将所有警告视为错误)。
-#               推荐在提交代码前使用。
-#
+# (开发者模式和警告级别开关保持不变)
 WARNING_LEVEL = 1
-#
-# ====================================================
-
 
 # --- 全局构建配置 ---
 COMPILER = "default"
@@ -42,6 +28,7 @@ def print_header(message):
     """打印带有标题格式的日志消息"""
     print(f"{Color.HEADER}{Color.BOLD}--- {message} ---{Color.ENDC}")
 
+# ... (parse_arguments 函数保持不变)
 def parse_arguments(args):
     """解析命令行参数"""
     print_header("Parsing command-line arguments...")
@@ -78,6 +65,7 @@ def parse_arguments(args):
             
     return {"clean": should_clean, "package": should_package, "install": should_install}, cmake_args
 
+
 def prepare_build_directory(project_dir, build_dir_name, should_clean):
     """创建或清理构建目录"""
     build_dir = project_dir / build_dir_name
@@ -91,6 +79,7 @@ def prepare_build_directory(project_dir, build_dir_name, should_clean):
     build_dir.mkdir(exist_ok=True)
     return build_dir
 
+# ... (run_cmake, run_build, run_cpack, run_installer 函数保持不变)
 def run_cmake(should_package, cmake_args):
     """配置项目 (CMake)"""
     print_header("Configuring project with CMake for Ninja...")
@@ -112,8 +101,6 @@ def run_cmake(should_package, cmake_args):
     if should_package:
         cmake_command.append("-DBUILD_INSTALLER=ON")
     
-    # --- [核心修改] ---
-    # 根据 WARNING_LEVEL 开关自动添加对应的CMake标志
     if WARNING_LEVEL in [1, 2, 3]:
         print(f"{Color.OKBLUE}--- Setting warning level to {WARNING_LEVEL}. ---{Color.ENDC}")
         cmake_command.append(f"-DWARNING_LEVEL={WARNING_LEVEL}")
@@ -126,7 +113,6 @@ def run_cmake(should_package, cmake_args):
     result = subprocess.run(cmake_command, check=True, capture_output=True, text=True, env=cmake_env)
     print("--- CMake configuration complete.")
 
-# ... (文件的其余部分保持不变)
 def run_build():
     """执行编译 (Ninja)"""
     print_header("Building the project with Ninja...")
@@ -153,19 +139,24 @@ def run_installer(installer_file):
     subprocess.run([installer_file], check=True)
     print("--- Installer process has been launched.")
 
+
 def main():
     """主函数"""
     start_time = time.monotonic()
-    project_dir = Path(__file__).resolve().parent
+    
+    #   直接使用当前工作目录作为项目根目录，
+    #   因为 .sh 脚本已经为我们设置好了正确的路径。
+    project_dir = Path.cwd()
+    print_header(f"Working in project directory: {project_dir}")
+
     build_dir_name = "build"
     installer_file = None
-    
-    os.chdir(project_dir)
-    print_header(f"Switched to project directory: {os.getcwd()}")
     
     try:
         options, cmake_args = parse_arguments(sys.argv[1:])
         build_dir = prepare_build_directory(project_dir, build_dir_name, options["clean"])
+        
+        # 切换到构建目录以执行CMake和Ninja
         os.chdir(build_dir)
         
         run_cmake(options["package"], cmake_args)
@@ -194,6 +185,8 @@ def main():
         print(f"Artifacts are in the '{build_dir_name}' directory.")
         
         # 重新解析以获取最终状态
+        # (注意：为了简单起见，这里再次调用parse_arguments，
+        #  在复杂脚本中可能有更优的标志传递方式)
         options, _ = parse_arguments(sys.argv[1:]) 
         if options["package"] and not options["install"]:
             print("Installation package has also been created.")
