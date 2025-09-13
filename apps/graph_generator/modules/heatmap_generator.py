@@ -1,8 +1,8 @@
 # modules/heatmap_generator.py
 
 import datetime
-import json
-import calendar # 导入日历模块
+import tomllib # [核心修改] 导入 tomllib
+import calendar 
 from typing import Dict, List, Any, Callable, Tuple
 
 # --- 策略接口和实现 (此部分代码保持不变) ---
@@ -22,13 +22,14 @@ def create_numeric_heatmap_strategy(config_path: str, project_name: str) -> Heat
     """工厂函数：创建用于数值（项目时长）数据的策略。"""
     import sys
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            config = json.load(f)
+        # --- [核心修改] 使用 tomllib 加载配置 ---
+        with open(config_path, 'rb') as f:
+            config = tomllib.load(f)
         palette_name = config["DEFAULT_COLOR_PALETTE_NAME"]
         color_palette = config["COLOR_PALETTES"][palette_name]
         over_12h_ref = config["OVER_12_HOURS_COLOR_REF"]
         over_12h_color = config["SINGLE_COLORS"][over_12h_ref]
-    except (FileNotFoundError, KeyError) as e:
+    except (FileNotFoundError, KeyError, tomllib.TOMLDecodeError) as e:
         print(f"❌ 错误: 加载或解析颜色配置 '{config_path}'失败: {e}", file=sys.stderr)
         sys.exit(1)
 
@@ -89,15 +90,10 @@ def create_boolean_heatmap_strategy() -> HeatmapStrategy:
     return BooleanStrategy()
 
 
-# --- 通用热力图生成器 (已修改) ---
-
+# --- 通用热力图生成器 (逻辑不变) ---
 class HeatmapGenerator:
-    """一个通用的、用于生成年度或月度热力图HTML文件的类。"""
-    # 全年视图的常量
     ANNUAL_SQUARE_SIZE, ANNUAL_SQUARE_GAP = 12, 3
     ANNUAL_LEFT_PADDING, ANNUAL_TOP_PADDING = 30, 30
-
-    # --- 新增：月度视图的常量 ---
     MONTHLY_SQUARE_SIZE, MONTHLY_SQUARE_GAP = 15, 4
     MONTHLY_LEFT_PADDING, MONTHLY_TOP_PADDING = 15, 40
     MONTHLY_HEADER_HEIGHT = 30
@@ -108,7 +104,6 @@ class HeatmapGenerator:
         self.strategy = strategy
         self.cal = calendar.Calendar()
 
-    # --- 生成年度视图的私有方法 (逻辑不变) ---
     def _generate_annual_svg_content(self) -> str:
         GRID_UNIT = self.ANNUAL_SQUARE_SIZE + self.ANNUAL_SQUARE_GAP
         start_date = datetime.date(self.year, 1, 1)
@@ -121,12 +116,10 @@ class HeatmapGenerator:
         rects_svg, month_labels_svg, day_labels_svg = [], [], []
         last_month = -1
         
-        # Day labels
         for i, label in zip([1, 3, 5], ["Mon", "Wed", "Fri"]):
              y_pos = self.ANNUAL_TOP_PADDING + GRID_UNIT * i + self.ANNUAL_SQUARE_SIZE / 1.5
              day_labels_svg.append(f'<text x="{self.ANNUAL_LEFT_PADDING - 15}" y="{y_pos}" class="day-label">{label}</text>')
         
-        # Day rects and month labels
         for day_index in range(total_days):
             current_date = start_date + datetime.timedelta(days=day_index)
             value = self.data.get(current_date)
@@ -151,7 +144,6 @@ class HeatmapGenerator:
     </g>
 </svg>"""
 
-    # --- 新增：生成单个SVG月度视图的方法 ---
     def _generate_single_month_svg(self, month: int) -> str:
         GRID_UNIT = self.MONTHLY_SQUARE_SIZE + self.MONTHLY_SQUARE_GAP
         month_weeks = self.cal.monthdatescalendar(self.year, month)
@@ -162,16 +154,14 @@ class HeatmapGenerator:
         rects_svg, weekday_labels_svg = [], []
         month_name = datetime.date(self.year, month, 1).strftime('%B')
         
-        # Weekday labels (S, M, T, W, T, F, S)
         for i, day_name in enumerate(["S", "M", "T", "W", "T", "F", "S"]):
             x_pos = i * GRID_UNIT + self.MONTHLY_LEFT_PADDING + self.MONTHLY_SQUARE_SIZE / 2
             weekday_labels_svg.append(f'<text x="{x_pos}" y="{self.MONTHLY_TOP_PADDING - 10}" class="day-label" text-anchor="middle">{day_name}</text>')
 
-        # Day rects
         for week_index, week in enumerate(month_weeks):
             for day_index, current_date in enumerate(week):
                 if current_date.month != month:
-                    continue # Skip days from other months
+                    continue
                 
                 value = self.data.get(current_date)
                 x_pos = day_index * GRID_UNIT + self.MONTHLY_LEFT_PADDING
@@ -193,7 +183,6 @@ class HeatmapGenerator:
 """
 
     def _generate_html_shell(self, content: str, custom_style: str = "") -> str:
-        """生成HTML页面的外壳"""
         return f"""
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -218,7 +207,6 @@ class HeatmapGenerator:
 """
 
     def save_annual_heatmap(self, filename: str) -> None:
-        """生成并保存年度视图的热力图。"""
         svg_content = self._generate_annual_svg_content()
         container_html = f"""
 <div class="annual-container" style="border: 1px solid #e1e4e8; border-radius: 6px; padding: 20px; background-color: #ffffff;">
@@ -234,7 +222,6 @@ class HeatmapGenerator:
             print(f"写入文件时出错: {e}")
 
     def save_monthly_heatmap(self, filename: str) -> None:
-        """生成并保存包含12个月度视图的热力图。"""
         all_months_svg = [self._generate_single_month_svg(m) for m in range(1, 13)]
         
         monthly_style = """

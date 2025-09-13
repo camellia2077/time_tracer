@@ -1,8 +1,8 @@
 import sys
 from datetime import datetime
+import tomllib # [核心修改] 导入 tomllib
 
 # 从模块中导入核心功能
-# 确保 modules/ 文件夹与此脚本在同一目录下
 try:
     from modules.day_analyzer import DataProcessor
     from modules.plotters import TimelinePlotter, BarChartPlotter
@@ -15,17 +15,17 @@ except ImportError as e:
     sys.exit(1)
 
 
-def load_json_config(path):
-    """一个通用的JSON配置加载函数。"""
-    import json
+# --- [核心修改] 将 load_json_config 替换为 load_toml_config ---
+def load_toml_config(path):
+    """一个通用的TOML配置加载函数。"""
     try:
-        with open(path, 'r', encoding='utf-8') as f:
-            return json.load(f)
+        with open(path, 'rb') as f: # TOML标准建议以二进制模式读取
+            return tomllib.load(f)
     except FileNotFoundError:
         print(f"{COLOR_RED}错误: 配置文件未找到 '{path}'。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
-    except json.JSONDecodeError:
-        print(f"{COLOR_RED}错误: 无法解析JSON文件 '{path}'。{COLOR_RESET}", file=sys.stderr)
+    except tomllib.TOMLDecodeError:
+        print(f"{COLOR_RED}错误: 无法解析TOML文件 '{path}'。{COLOR_RESET}", file=sys.stderr)
         sys.exit(1)
 
 
@@ -33,8 +33,9 @@ def run_day_analysis_chart(date_str, chart_type):
     """运行基于“逻辑日”的图表生成（时间线或柱状图）。"""
     print(f"🚀 开始为 {date_str} 生成 {chart_type} 图表...")
     
-    colors_path = 'configs/timeline_colors.json'
-    color_config = load_json_config(colors_path)
+    # --- [核心修改] 修改配置文件路径和加载函数 ---
+    colors_path = 'configs/timeline_colors.toml'
+    color_config = load_toml_config(colors_path)
     active_scheme_name = color_config.get('active_scheme', 'default')
     color_map = color_config.get('color_schemes', {}).get(active_scheme_name, {})
     
@@ -74,7 +75,8 @@ def run_heatmap(year, heatmap_type, project=None):
 
     if heatmap_type == 'project':
         data = db_access.get_data_for_heatmap(year, project)
-        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.json', project)
+        # --- [核心修改] 修改配置文件路径 ---
+        strategy = create_numeric_heatmap_strategy('configs/heatmap_colors.toml', project)
         base_filename = f"heatmap_{project}_{year}"
 
     elif heatmap_type == 'sleep':
