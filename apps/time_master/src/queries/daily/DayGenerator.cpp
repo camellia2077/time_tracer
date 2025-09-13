@@ -1,3 +1,4 @@
+// queries/daily/DayGenerator.cpp
 
 // queries/report_generators/daily/DayGenerator.cpp
 #include "DayGenerator.hpp"

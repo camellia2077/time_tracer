@@ -1,4 +1,4 @@
-// queries/daily/formatters/DayMd.hpp
+// queries/daily/formatters/md/DayMd.hpp
 #ifndef DAILY_REPORT_MARKDOWN_FORMATTER_HPP
 #define DAILY_REPORT_MARKDOWN_FORMATTER_HPP
 

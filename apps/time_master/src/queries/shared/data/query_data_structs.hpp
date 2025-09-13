@@ -1,4 +1,4 @@
-// queries/shared/data/query_data_structs.h
+// queries/shared/data/query_data_structs.hpp
 #ifndef QUERY_DATA_STRUCTS_HPP
 #define QUERY_DATA_STRUCTS_HPP
 

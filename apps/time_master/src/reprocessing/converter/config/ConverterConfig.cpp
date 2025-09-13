@@ -1,4 +1,4 @@
-// reprocessing/input_transfer/internal/ConverterConfig.cpp
+// reprocessing/converter/config/ConverterConfig.cpp
 #include <fstream>
 #include <iostream>
 #include <algorithm>

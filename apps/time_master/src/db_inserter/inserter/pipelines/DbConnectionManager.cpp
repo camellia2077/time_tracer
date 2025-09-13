@@ -1,4 +1,4 @@
-// db_inserter/inserter/DbConnectionManager.cpp
+// db_inserter/inserter/pipelines/DbConnectionManager.cpp
 #include "DbConnectionManager.hpp"
 #include <iostream>
 

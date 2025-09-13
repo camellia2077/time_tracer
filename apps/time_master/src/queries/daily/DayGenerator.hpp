@@ -1,4 +1,4 @@
-// queries/queries/daily/DayGenerator.hpp
+// queries/daily/DayGenerator.hpp
 #ifndef DAILY_REPORT_GENERATOR_HPP
 #define DAILY_REPORT_GENERATOR_HPP
 

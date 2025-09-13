@@ -1,4 +1,4 @@
-// time_master/reprocessing/validator/ValidatorUtils.hpp
+// reprocessing/validator/common/ValidatorUtils.hpp
 #ifndef VALIDATOR_UTILS_HPP
 #define VALIDATOR_UTILS_HPP
 

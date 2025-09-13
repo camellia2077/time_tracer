@@ -1,3 +1,4 @@
+// queries/daily/formatters/typ/DayTyp.cpp
 #include "DayTyp.hpp"
 #include <iomanip>
 #include <format>

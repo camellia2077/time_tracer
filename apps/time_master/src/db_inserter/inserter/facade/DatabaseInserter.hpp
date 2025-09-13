@@ -1,7 +1,6 @@
+// db_inserter/inserter/facade/DatabaseInserter.hpp
 #ifndef DATABASE_INSERTER_HPP
 #define DATABASE_INSERTER_HPP
-
-// db_inserter/inserter/DatabaseInserter.h
 
 #include <string>
 #include <vector>

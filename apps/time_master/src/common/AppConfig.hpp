@@ -1,4 +1,4 @@
-// time_master/common/AppConfig.hpp
+// common/AppConfig.hpp
 #ifndef APP_CONFIG_HPP
 #define APP_CONFIG_HPP
 

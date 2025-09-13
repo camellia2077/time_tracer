@@ -1,3 +1,4 @@
+// queries/shared/ReportFormat.hpp
 #ifndef REPORT_FORMAT_HPP
 #define REPORT_FORMAT_HPP
 

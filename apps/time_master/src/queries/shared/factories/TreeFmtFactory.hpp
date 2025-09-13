@@ -1,4 +1,4 @@
-// query/format/TreeFmtFactory.h (NEW FILE)
+// queries/shared/factories/TreeFmtFactory.hpp
 #ifndef PROJECT_BREAKDOWN_FORMATTER_FACTORY_HPP
 #define PROJECT_BREAKDOWN_FORMATTER_FACTORY_HPP
 

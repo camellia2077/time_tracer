@@ -1,4 +1,4 @@
-// queries/report_generators/period/formatter/period_md/PeriodMd.cpp
+// queries/period/formatters/md/PeriodMd.cpp
 #include "PeriodMd.hpp"
 #include "PeriodMdConfig.hpp" // [MODIFIED] Include the new configuration file
 

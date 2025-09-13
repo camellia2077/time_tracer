@@ -1,4 +1,4 @@
-// db_inserter/inserter/DatabaseInserter.cpp
+// db_inserter/inserter/facade/DatabaseInserter.cpp
 #include "DatabaseInserter.hpp"
 #include <iostream>
 #include <stdexcept>

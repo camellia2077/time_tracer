@@ -1,4 +1,4 @@
-// time_master/file_handler/ConfigLoader.hpp
+// file_handler/ConfigLoader.hpp
 
 #ifndef CONFIG_LOADER_HPP
 #define CONFIG_LOADER_HPP

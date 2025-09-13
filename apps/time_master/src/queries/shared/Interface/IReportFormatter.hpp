@@ -1,4 +1,4 @@
-// queries/shared/Interface/IReportFormatter.h
+// queries/shared/Interface/IReportFormatter.hpp
 #ifndef I_REPORT_FORMATTER_HPP
 #define I_REPORT_FORMATTER_HPP
 

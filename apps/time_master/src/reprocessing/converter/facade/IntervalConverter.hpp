@@ -1,4 +1,4 @@
-// reprocessing/converter/IntervalConverter.hpp
+// reprocessing/converter/facade/IntervalConverter.hpp
 #ifndef INTERVAL_PROCESSOR_HPP
 #define INTERVAL_PROCESSOR_HPP
 

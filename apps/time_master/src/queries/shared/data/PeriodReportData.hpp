@@ -1,4 +1,4 @@
-// query/period/_period_data/ReportData.h
+// queries/shared/data/PeriodReportData.hpp
 #ifndef PERIOD_REPORT_DATA_HPP
 #define PERIOD_REPORT_DATA_HPP
 

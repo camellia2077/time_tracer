@@ -1,4 +1,4 @@
-// queries/report_generators/monthly/_month_data/MonthlyReportData.h
+// queries/shared/data/MonthlyReportData.hpp
 #ifndef REPORT_DATA_HPP
 #define REPORT_DATA_HPP
 

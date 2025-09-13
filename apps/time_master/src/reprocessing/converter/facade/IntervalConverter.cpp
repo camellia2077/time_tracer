@@ -1,4 +1,4 @@
-// reprocessing/converter/IntervalConverter.cpp
+// reprocessing/converter/facade/IntervalConverter.cpp
 #include "IntervalConverter.hpp"
 #include "common/AnsiColors.hpp"
 

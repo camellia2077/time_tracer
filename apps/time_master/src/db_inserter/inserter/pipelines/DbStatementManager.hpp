@@ -1,4 +1,4 @@
-// db_inserter/inserter/DbStatementManager.hpp
+// db_inserter/inserter/pipelines/DbStatementManager.hpp
 #ifndef DB_STATEMENT_MANAGER_HPP
 #define DB_STATEMENT_MANAGER_HPP
 

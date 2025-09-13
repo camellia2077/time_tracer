@@ -1,4 +1,4 @@
-// queries/report_generators/period/formatter/period_tex/PeriodTex.cpp
+// queries/period/formatters/tex/PeriodTex.cpp
 #include "PeriodTex.hpp"
 #include "PeriodTexConfig.hpp" // [MODIFIED] Include the new configuration file
 

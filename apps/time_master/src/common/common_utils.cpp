@@ -1,6 +1,6 @@
+// common/common_utils.cpp
 
 #include "common/common_utils.hpp"
-// Time_Master_cpp/time_master/common/common_utils.cpp
 
 // Helper function to convert HH:MM or HHMM time string to seconds since midnight 
 int time_str_to_seconds(const std::string& time_str_in) {

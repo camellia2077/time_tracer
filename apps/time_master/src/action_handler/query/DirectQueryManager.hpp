@@ -1,4 +1,4 @@
-// file: action_handler/query/DirectQueryManager.hpp
+// action_handler/query/DirectQueryManager.hpp
 
 #ifndef DIRECT_QUERY_MANAGER_HPP
 #define DIRECT_QUERY_MANAGER_HPP

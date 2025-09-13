@@ -1,4 +1,4 @@
-// reprocessing/validator/output_json/JsonValidatorActivities.cpp
+// reprocessing/validator/output_json/pipelines/JsonValidatorActivities.cpp
 #include "JsonValidatorActivities.hpp"
 
 using json = nlohmann::json;

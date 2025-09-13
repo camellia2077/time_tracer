@@ -1,4 +1,4 @@
-// reprocessing/input_transfer/internal/ConverterConfig.hpp
+// reprocessing/converter/config/ConverterConfig.hpp
 
 #ifndef INTERVAL_PROCESSOR_CONFIG_HPP
 #define INTERVAL_PROCESSOR_CONFIG_HPP
