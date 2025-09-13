@@ -6,7 +6,7 @@
 
 using json = nlohmann::json;
 
-void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& config) {
+void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& /*config*/) {
     if (days.empty()) {
         outputStream << "[]" << std::endl;
         return;
