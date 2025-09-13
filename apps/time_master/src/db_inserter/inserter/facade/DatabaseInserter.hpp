@@ -9,9 +9,9 @@
 #include <memory>
 #include "db_inserter/model/time_sheet_model.hpp"
 
-#include "db_inserter/inserter/_internal/DataInserter.hpp"
-#include "db_inserter/inserter/_internal/DbConnectionManager.hpp"
-#include "db_inserter/inserter/_internal/DbStatementManager.hpp"
+#include "db_inserter/inserter/pipelines/DataInserter.hpp"
+#include "db_inserter/inserter/pipelines/DbConnectionManager.hpp"
+#include "db_inserter/inserter/pipelines/DbStatementManager.hpp"
 
 
 /**

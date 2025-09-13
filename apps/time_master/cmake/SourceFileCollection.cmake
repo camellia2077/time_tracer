@@ -19,13 +19,10 @@ set(DB_INSERTER_SOURCES
     # 插入的封装
     "src/db_inserter/inserter/facade/DatabaseInserter.cpp"
     # 插入的实现
-    "src/db_inserter/inserter/_internal/DataInserter.cpp"
-    "src/db_inserter/inserter/_internal/DbConnectionManager"
-    "src/db_inserter/inserter/_internal/DbStatementManager.cpp"
+    "src/db_inserter/inserter/pipelines/DataInserter.cpp"
+    "src/db_inserter/inserter/pipelines/DbConnectionManager"
+    "src/db_inserter/inserter/pipelines/DbStatementManager.cpp"
     
-
-    
-
 
     # 解析json
     "src/db_inserter/parser/JsonDataParser.cpp"
