@@ -1,5 +1,5 @@
 #include "config/Config.h"
-#include "config/ConfigValidator.h" // 引入新的验证模块
+#include "config/ConfigValidator.h"
 #include "generator/facade/LogGenerator.h"
 #include "utils/Utils.h"
 #include "file_io/FileManager.h"
@@ -32,7 +32,9 @@ public:
         std::filesystem::path activities_config_path = exe_dir / "config" / "common_activities.json";
         std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_config.json";
         
-        auto json_configs_opt = ConfigLoader::load_json_configurations(activities_config_path.string(), remarks_config_path.string());
+        // [核心修改] 创建 ConfigLoader 的实例，然后通过该实例调用成员函数
+        ConfigLoader loader;
+        auto json_configs_opt = loader.load_json_configurations(activities_config_path.string(), remarks_config_path.string());
         
         if (!json_configs_opt) {
             std::cerr << RED_COLOR << "程序因配置加载失败而退出。" << RESET_COLOR << std::endl;
