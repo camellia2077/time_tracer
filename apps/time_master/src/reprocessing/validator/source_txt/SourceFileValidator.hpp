@@ -26,7 +26,6 @@
  * -   识别并验证事件行 (HHMMdescription)。
  * 3.  **内容逻辑**：
  * -   备注行不能出现在当天的任何事件行之后。
- * -   当天的第一个事件必须是预定义的“唤醒活动”(例如, '起床')。
  * -   所有事件的描述都必须是配置文件中定义的有效关键字。
  */
 class SourceFileValidator {
@@ -85,11 +84,10 @@ private:
      * @param line 要解析的字符串行。
      * @param errors 用于存储错误的集合。
      * @param line_number 当前的行号，用于生成错误信息。
-     * @param is_first_event 一个布尔值，指示这是否是当天的第一个事件。
      * @return 如果行格式符合事件行的基本格式 (HHMMdescription)，则返回true，即使事件内容无效。
      * 如果行格式完全不匹配，则返回false。
      */
-    bool parseAndValidateEventLine(const std::string& line, std::set<Error>& errors, int line_number, bool is_first_event);
+    bool parseAndValidateEventLine(const std::string& line, std::set<Error>& errors, int line_number);
 };
 
 #endif // SOURCE_FILE_VALIDATOR_HPP

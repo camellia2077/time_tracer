@@ -48,7 +48,9 @@ def _load_cleanup_params(toml_data, cleanup_class):
     """从 TOML 数据中加载清理参数。"""
     cleanup_data = toml_data.get("cleanup", {})
     cleanup_class.FILES_TO_COPY = cleanup_data.get("files_to_copy", [])
-    cleanup_class.FILES_TO_CLEAN = cleanup_data.get("files_to_clean", [])
+    # ======================= 核心修改 =======================
+    # cleanup_class.FILES_TO_CLEAN = cleanup_data.get("files_to_clean", []) # <--- 已移除
+    # =========================================================
     cleanup_class.DIRECTORIES_TO_CLEAN = cleanup_data.get("directories_to_clean", [])
 
 
