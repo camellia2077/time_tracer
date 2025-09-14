@@ -5,16 +5,18 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <initializer_list> // [FIX] Include required header
 
-// 定义统计规则的数据结构
+// Define the statistics rule data structure
 struct StatsRule {
     const char* key_name;
     const char* topParent;
-    std::vector<const char*> parents; // 使用vector来允许多个parent条件
+    // [FIX] Use std::initializer_list instead of std::vector for constexpr compatibility
+    std::initializer_list<const char*> parents; 
 };
 
 namespace GeneratedStatsRules {
-    // 使用constexpr确保规则在编译时确定
+    // Using constexpr ensures that the rules are determined at compile time
     constexpr StatsRule rules[] = {
         {"sleepTime", "sleep", {}},
         {"totalExerciseTime", "exercise", {}},
@@ -23,7 +25,7 @@ namespace GeneratedStatsRules {
         {"groomingTime", "routine", {"grooming"}},
         {"toiletTime", "routine", {"toilet"}},
         {"gamingTime", "recreation", {"game"}}
-        // 未来若有新规则，可直接在此处添加
+        // Future rules can be added here directly
     };
 }
 
