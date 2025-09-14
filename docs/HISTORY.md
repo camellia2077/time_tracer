@@ -178,3 +178,15 @@ SourceFileValidator拆分成facade和pipelines
 移除没用被使用的变量
 
 
+## v0.3.18.0 - 2025-09-15 generatedStats新增键
+generatedStats存储洗漱的时间,这部分数据高频出现在每天中，因为总要洗漱
+```
+"activity": {
+    "parents": [
+        "grooming"
+    ],
+    "topParent": "routine"
+},
+```
+
+

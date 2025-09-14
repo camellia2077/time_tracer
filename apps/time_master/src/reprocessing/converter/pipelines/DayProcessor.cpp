@@ -15,7 +15,6 @@ DayProcessor::DayProcessor(const ConverterConfig& config) : config_(config) {}
 void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
     if (dayToProcess.date.empty()) return;
 
-    // --- [核心修改] 移除 converter_.transform() 调用 ---
     // 1. 直接创建 ActivityMapper 并调用其 map_activities 方法
     ActivityMapper activity_mapper(config_);
     activity_mapper.map_activities(dayToProcess);
