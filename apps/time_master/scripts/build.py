@@ -8,13 +8,15 @@ import time
 from pathlib import Path
 from build_config import config
 import build_tasks
+import build_commands
+from build_ui import print_header, print_error, print_success
 
 def main():
     """主函数，负责编排整个构建流程。"""
     start_time = time.monotonic()
     
     project_dir = Path.cwd()
-    build_tasks.print_header(f"Working in project directory: {project_dir}")
+    print_header(f"Working in project directory: {project_dir}")
 
     build_dir_name = "build"
     installer_file = None
@@ -25,21 +27,21 @@ def main():
         
         os.chdir(build_dir)
         
-        build_tasks.run_cmake(options["package"], cmake_args)
-        build_tasks.run_build()
+        build_commands.run_cmake(options["package"], cmake_args, options["compiler"])
+        build_commands.run_build()
 
         if options["package"]:
-            installer_file = build_tasks.run_cpack()
+            installer_file = build_commands.run_cpack()
         if options["install"]:
-            build_tasks.run_installer(installer_file)
+            build_commands.run_installer(installer_file)
 
     except subprocess.CalledProcessError as e:
-        print(f"\n{config.FAIL}!!! A build step failed with exit code {e.returncode}.{config.ENDC}")
-        if e.stdout: print(f"{config.FAIL}Output:\n{e.stdout}{config.ENDC}")
-        if e.stderr: print(f"{config.FAIL}Error output:\n{e.stderr}{config.ENDC}")
+        print_error(f"\n!!! A build step failed with exit code {e.returncode}.")
+        if e.stdout: print_error(f"Output:\n{e.stdout}")
+        if e.stderr: print_error(f"Error output:\n{e.stderr}")
         sys.exit(e.returncode)
     except Exception as e:
-        print(f"\n{config.FAIL}!!! An unexpected error occurred: {e}{config.ENDC}")
+        print_error(f"\n!!! An unexpected error occurred: {e}")
         sys.exit(1)
     finally:
         end_time = time.monotonic()
@@ -47,7 +49,7 @@ def main():
         minutes, seconds = divmod(duration, 60)
 
         print("\n" + "="*60)
-        print(f"{config.OKGREEN}{config.BOLD}Process finished successfully!{config.ENDC}")
+        print_success(f"{config.BOLD}Process finished successfully!{config.ENDC}")
         print(f"Artifacts are in the '{build_dir_name}' directory.")
         
         # 重新解析以获取最终状态，用于打印准确的消息
