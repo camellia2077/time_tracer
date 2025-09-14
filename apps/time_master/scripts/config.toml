@@ -2,7 +2,7 @@
 
 [build]
 # 默认编译器。可选项: "default", "gcc", "clang"
-compiler = "clang"
+compiler = "gcc"
 
 # 编译器警告级别开关
 # 1: 启用基础警告 (-Wall)。

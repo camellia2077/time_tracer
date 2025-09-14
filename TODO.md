@@ -2,12 +2,8 @@
 pacman -S mingw-w64-ucrt-x86_64-lld
 
 
-## 现在需要重写写py可视化程序了，因为很多内容我们已经插入了数据库，直接查询就可以获得对应的内容
-比如是否睡觉，是否锻炼，锻炼时间
-
-
-## 把log测试程序生成部分封装成python库，用pybind
-
+## 给routine_grooming                
+增加在"generatedStats"的键和值，存储时间为秒数
 
 
 
@@ -39,3 +35,4 @@ totalExerciseTime //总时间
 ### 标记语言编译python的配置使用toml
 ### JsonDataParser拆分，之后JsonDataParser作为facade封装
 ### 输出报告的hpp使用外置的json配置文件来传入字体
+### 把log测试程序生成部分封装成python库，用pybind
