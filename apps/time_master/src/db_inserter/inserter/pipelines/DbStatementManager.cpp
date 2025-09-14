@@ -16,8 +16,8 @@ sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_i
 sqlite3_stmt* DbStatementManager::get_insert_parent_child_stmt() const { return stmt_insert_parent_child; }
 
 void DbStatementManager::_prepare_statements() {
-    // --- [核心修改] 更新 days 表的插入语句 ---
-    const char* insert_sql = 
+    // --- Statement for 'days' table ---
+    const char* insert_day_sql = 
     "INSERT INTO days (date, year, month, status, sleep, remark, getup_time, "
     "exercise, total_exercise_time, cardio_time, anaerobic_time, exercise_both_time) "
     "VALUES ("
@@ -34,20 +34,36 @@ void DbStatementManager::_prepare_statements() {
     "    ?,  /* 11: anaerobic_time */"
     "    ?   /* 12: exercise_both_time */"
     ");";
-
-    // --- [修复] 添加缺失的 prepare 调用 ---
-    if (sqlite3_prepare_v2(db, insert_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }
 
-    const char* insert_record_sql = "INSERT OR REPLACE INTO time_records "
+    // --- Statement for 'time_records' table ---
+    const char* insert_record_sql = 
+        "INSERT OR REPLACE INTO time_records "
         "(logical_id, start_timestamp, end_timestamp, date, start, end, project_path, duration, activity_remark) "
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        "VALUES ("
+        "    ?,  /* 1: logical_id */"
+        "    ?,  /* 2: start_timestamp */"
+        "    ?,  /* 3: end_timestamp */"
+        "    ?,  /* 4: date */"
+        "    ?,  /* 5: start */"
+        "    ?,  /* 6: end */"
+        "    ?,  /* 7: project_path */"
+        "    ?,  /* 8: duration */"
+        "    ?   /* 9: activity_remark */"
+        ");";
     if (sqlite3_prepare_v2(db, insert_record_sql, -1, &stmt_insert_record, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare time record insert statement.");
     }
 
-    const char* insert_parent_child_sql = "INSERT OR IGNORE INTO parent_child (child, parent) VALUES (?, ?);";
+    // --- Statement for 'parent_child' table ---
+    const char* insert_parent_child_sql = 
+        "INSERT OR IGNORE INTO parent_child (child, parent) "
+        "VALUES ("
+        "    ?,  /* 1: child */"
+        "    ?   /* 2: parent */"
+        ");";
     if (sqlite3_prepare_v2(db, insert_parent_child_sql, -1, &stmt_insert_parent_child, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare parent-child insert statement.");
     }

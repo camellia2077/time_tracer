@@ -5,6 +5,7 @@
 #include <iomanip> // Required for std::get_time
 #include <sstream> // Required for std::stringstream
 #include <ctime>   // Required for std::tm, std::mktime
+#include <algorithm> // Required for std::find
 
 namespace {
     // Helper function to convert "YYYYMMDD HH:MM" string to a Unix timestamp.
@@ -108,6 +109,14 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
                 } else if (exerciseType == "both") {
                     day.generatedStats.exerciseBothTime += activity.durationSeconds;
                 }
+            }
+        }
+        
+        // --- [新增] 累加洗漱时间 ---
+        if (activity.topParent == "routine") {
+            // 检查 "parents" 数组中是否包含 "grooming"
+            if (std::find(activity.parents.begin(), activity.parents.end(), "grooming") != activity.parents.end()) {
+                day.generatedStats.groomingTime += activity.durationSeconds;
             }
         }
     }

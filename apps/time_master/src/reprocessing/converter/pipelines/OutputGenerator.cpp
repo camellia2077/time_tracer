@@ -73,6 +73,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         generated_stats_obj["cardioTime"] = day.generatedStats.cardioTime;
         generated_stats_obj["anaerobicTime"] = day.generatedStats.anaerobicTime;
         generated_stats_obj["exerciseBothTime"] = day.generatedStats.exerciseBothTime;
+        generated_stats_obj["groomingTime"] = day.generatedStats.groomingTime; // 新增
         day_obj["generatedStats"] = generated_stats_obj;
 
 
