@@ -16,13 +16,13 @@
  */
 struct DayData {
     std::string date;
+    std::string remark;
+    std::string getup_time;
+    
     int year;
     int month;
     int status;
     int sleep;
-    std::string remark;
-    std::string getup_time;
-    // --- [核心修改] 新增统计字段 ---
     int exercise;
     int total_exercise_time;
     int cardio_time;

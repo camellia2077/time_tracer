@@ -23,7 +23,7 @@ void StructuralValidator::process_year_line(int line_number, const std::string& 
     has_seen_date_in_block_ = false; // 为新年份块重置状态
 }
 
-void StructuralValidator::process_date_line(int line_number, const std::string& line, std::set<Error>& errors) {
+void StructuralValidator::process_date_line(int line_number, const std::string& /*line*/, std::set<Error>& errors) {
     if (!has_seen_year_) {
         errors.insert({line_number, "Date found before a year header.", ErrorType::Structural});
     }
@@ -31,7 +31,7 @@ void StructuralValidator::process_date_line(int line_number, const std::string& 
     has_seen_event_in_day_ = false; // Reset for the new day
 }
 
-void StructuralValidator::process_remark_line(int line_number, const std::string& line, std::set<Error>& errors) {
+void StructuralValidator::process_remark_line(int line_number, const std::string& /*line*/, std::set<Error>& errors) {
     if (!has_seen_date_in_block_) {
         errors.insert({line_number, "Remark found before a date.", ErrorType::Structural});
     }
@@ -40,7 +40,7 @@ void StructuralValidator::process_remark_line(int line_number, const std::string
     }
 }
 
-void StructuralValidator::process_event_line(int line_number, const std::string& line, std::set<Error>& errors) {
+void StructuralValidator::process_event_line(int line_number, const std::string& /*line*/, std::set<Error>& errors) {
     if (!has_seen_date_in_block_) {
         errors.insert({line_number, "Event found before a date.", ErrorType::Structural});
     }
