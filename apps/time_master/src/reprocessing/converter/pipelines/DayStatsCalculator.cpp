@@ -112,11 +112,13 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
             }
         }
         
-        // --- [新增] 累加洗漱时间 ---
+        // --- [新增] 累加"日常"类活动的时间 ---
         if (activity.topParent == "routine") {
-            // 检查 "parents" 数组中是否包含 "grooming"
             if (std::find(activity.parents.begin(), activity.parents.end(), "grooming") != activity.parents.end()) {
                 day.generatedStats.groomingTime += activity.durationSeconds;
+            }
+            if (std::find(activity.parents.begin(), activity.parents.end(), "toilet") != activity.parents.end()) {
+                day.generatedStats.toiletTime += activity.durationSeconds;
             }
         }
     }

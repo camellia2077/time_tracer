@@ -34,7 +34,8 @@ struct GeneratedStats {
     int cardioTime = 0;
     int anaerobicTime = 0;
     int exerciseBothTime = 0;
-    int groomingTime = 0; // 新增：用于存储洗漱总时间
+    int groomingTime = 0; // 用于存储洗漱总时间
+    int toiletTime = 0; // 用于存储上厕所的时间
 };
 
 struct InputData {

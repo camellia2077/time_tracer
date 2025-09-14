@@ -188,5 +188,15 @@ generatedStats存储洗漱的时间,这部分数据高频出现在每天中，�
     "topParent": "routine"
 },
 ```
+## v0.3.18.1
+新增上厕所的时间
+```
+"activity": {
+    "parents": [
+        "toilet"
+    ],
+    "topParent": "routine"
+},
+```
 
 
