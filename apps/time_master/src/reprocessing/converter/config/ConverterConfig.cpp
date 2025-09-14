@@ -27,14 +27,8 @@ bool ConverterConfig::load(const std::string& filepath) {
         if (j.contains("header_order")) header_order_ = j["header_order"].get<std::vector<std::string>>();
         if (j.contains("text_mappings")) text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
         if (j.contains("text_duration_mappings")) text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
-
-        if (j.contains("wake_keywords")) {
-            wake_keywords_ = j["wake_keywords"].get<std::vector<std::string>>();
-        }
-
-        if (j.contains("topParentMapping")) { // [核心修改] 更改 JSON Key
-            topParentMapping_ = j["topParentMapping"].get<std::unordered_map<std::string, std::string>>();
-        }
+        if (j.contains("wake_keywords")) wake_keywords_ = j["wake_keywords"].get<std::vector<std::string>>();
+        if (j.contains("topParentMapping")) topParentMapping_ = j["topParentMapping"].get<std::unordered_map<std::string, std::string>>();
 
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
             const auto& duration_json = j["duration_mappings"];
@@ -52,6 +46,7 @@ bool ConverterConfig::load(const std::string& filepath) {
                 duration_mappings_[event_key] = rules;
             }
         }
+        
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Error processing content from " << filepath << ": " << e.what() << RESET_COLOR << std::endl;
         return false;
@@ -64,10 +59,5 @@ const std::vector<std::string>& ConverterConfig::getHeaderOrder() const { return
 const std::unordered_map<std::string, std::string>& ConverterConfig::getTextMapping() const { return text_mapping_; }
 const std::unordered_map<std::string, std::string>& ConverterConfig::getTextDurationMapping() const { return text_duration_mapping_; }
 const std::unordered_map<std::string, std::vector<DurationRule>>& ConverterConfig::getDurationMappings() const { return duration_mappings_; }
-const std::vector<std::string>& ConverterConfig::getWakeKeywords() const {
-    return wake_keywords_;
-}
-
-const std::unordered_map<std::string, std::string>& ConverterConfig::getTopParentMapping() const {
-    return topParentMapping_; // [核心修改]
-}
+const std::vector<std::string>& ConverterConfig::getWakeKeywords() const { return wake_keywords_; }
+const std::unordered_map<std::string, std::string>& ConverterConfig::getTopParentMapping() const { return topParentMapping_; }

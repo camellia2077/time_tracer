@@ -1,3 +1,10 @@
+
+## interval_processor_config.json拆分
+因为映射行数太多
+拆分完成之后，给generatedStats设置单独的配置json
+
+每天的拉屎和洗漱时间应该在日报告导出的时候添加
+
 ## clang开启连接时优化需要下载对应工具
 pacman -S mingw-w64-ucrt-x86_64-lld
 

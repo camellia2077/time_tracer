@@ -22,8 +22,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         json headers_obj;
         headers_obj["date"] = day.date;
         headers_obj["status"] = static_cast<int>(day.hasStudyActivity);
-        headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); // 新增
-        // --- [核心修改] 使用新的 hasSleepActivity 标志 ---
+        headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); 
         headers_obj["sleep"] = static_cast<int>(day.hasSleepActivity);
         headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         headers_obj["activityCount"] = day.activityCount;
@@ -48,11 +47,10 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["endTime"] = activity_data.endTime;
             activity_obj["durationSeconds"] = activity_data.durationSeconds;
 
-            // 新增：在 JSON 输出中添加备注
             if (activity_data.activityRemark.has_value()) {
                 activity_obj["activityRemark"] = activity_data.activityRemark.value();
             } else {
-                activity_obj["activityRemark"] = nullptr; // 对于没有备注的活动，使用 null
+                activity_obj["activityRemark"] = nullptr; 
             }
 
             json activity_details;
@@ -66,15 +64,15 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         }
         day_obj["activities"] = activities;
 
-        // --- [核心修改] 添加新的运动统计字段到JSON ---
+        // [核心修改] 恢复为写入固定的成员变量
         json generated_stats_obj;
         generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
-        generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime; 
+        generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime;
         generated_stats_obj["cardioTime"] = day.generatedStats.cardioTime;
         generated_stats_obj["anaerobicTime"] = day.generatedStats.anaerobicTime;
-        generated_stats_obj["exerciseBothTime"] = day.generatedStats.exerciseBothTime;
         generated_stats_obj["groomingTime"] = day.generatedStats.groomingTime;
-        generated_stats_obj["toiletTime"] = day.generatedStats.toiletTime; // 新增
+        generated_stats_obj["toiletTime"] = day.generatedStats.toiletTime;
+        generated_stats_obj["gamingTime"] = day.generatedStats.gamingTime;
         day_obj["generatedStats"] = generated_stats_obj;
 
 
