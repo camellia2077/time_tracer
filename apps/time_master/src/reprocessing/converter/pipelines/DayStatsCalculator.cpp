@@ -3,22 +3,22 @@
 #include "GeneratedStatsRules.hpp" // [核心修改] 引入硬编码的规则
 #include <string>
 #include <stdexcept>
-#include <iomanip> 
-#include <sstream> 
-#include <ctime>   
-#include <algorithm> 
+#include <iomanip>
+#include <sstream>
+#include <ctime>
+#include <algorithm>
 #include <cstring> // For strcmp
 
 namespace {
     long long string_to_time_t(const std::string& datetime_str) {
-        if (datetime_str.length() < 14) { 
+        if (datetime_str.length() < 14) {
             return 0;
         }
         std::tm t = {};
         std::string formatted_datetime = datetime_str.substr(0, 4) + "-" +
                                          datetime_str.substr(4, 2) + "-" +
                                          datetime_str.substr(6, 2) +
-                                         datetime_str.substr(8); 
+                                         datetime_str.substr(8);
 
         std::stringstream ss(formatted_datetime);
         ss >> std::get_time(&t, "%Y-%m-%d %H:%M");
@@ -80,27 +80,28 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         activity.start_timestamp = timeStringToTimestamp(day.date, activity.startTime, false, 0);
         activity.end_timestamp = timeStringToTimestamp(day.date, activity.endTime, true, activity.start_timestamp);
 
-        if (activity.topParent.find("study") != std::string::npos) { 
+        if (activity.topParent.find("study") != std::string::npos) {
             day.hasStudyActivity = true;
         }
         if (activity.topParent == "exercise") {
             day.hasExerciseActivity = true;
         }
-        
+
         // 使用硬编码的规则进行统计
         for (const auto& rule : GeneratedStatsRules::rules) {
             if (activity.topParent == rule.topParent) {
-                bool match = rule.parents.empty();
-                if (!rule.parents.empty()) {
+                // [FIX] Use .size() == 0 instead of .empty() for std::initializer_list
+                bool match = (rule.parents.size() == 0);
+                if (rule.parents.size() != 0) {
                     for (const auto& required_parent : rule.parents) {
-                        if (std::find_if(activity.parents.begin(), activity.parents.end(), 
+                        if (std::find_if(activity.parents.begin(), activity.parents.end(),
                                          [&](const std::string& p){ return p == required_parent; }) != activity.parents.end()) {
                             match = true;
                             break;
                         }
                     }
                 }
-                
+
                 if (match) {
                     if (strcmp(rule.key_name, "sleepTime") == 0) day.generatedStats.sleepTime += activity.durationSeconds;
                     else if (strcmp(rule.key_name, "totalExerciseTime") == 0) day.generatedStats.totalExerciseTime += activity.durationSeconds;
