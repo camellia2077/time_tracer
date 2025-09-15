@@ -1,13 +1,13 @@
 // reprocessing/converter/pipelines/DayStatsCalculator.cpp
 #include "DayStatsCalculator.hpp"
-#include "GeneratedStatsRules.hpp" // [核心修改] 引入硬编码的规则
+#include "GeneratedStatsRules.hpp" // 引入硬编码的规则
 #include <string>
 #include <stdexcept>
 #include <iomanip>
 #include <sstream>
 #include <ctime>
 #include <algorithm>
-#include <cstring> // For strcmp
+#include <cstring>
 
 namespace {
     long long string_to_time_t(const std::string& datetime_str) {
@@ -58,8 +58,6 @@ long long DayStatsCalculator::timeStringToTimestamp(const std::string& date, con
     return timestamp;
 }
 
-
-// [核心修改] 使用硬编码的规则进行统计
 void DayStatsCalculator::calculate_stats(InputData& day) {
     day.activityCount = day.processedActivities.size();
     day.generatedStats = {}; // 重置
@@ -90,26 +88,19 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         // 使用硬编码的规则进行统计
         for (const auto& rule : GeneratedStatsRules::rules) {
             if (activity.topParent == rule.topParent) {
-                // [FIX] Use .size() == 0 instead of .empty() for std::initializer_list
                 bool match = (rule.parents.size() == 0);
-                if (rule.parents.size() != 0) {
+                if (!match) {
                     for (const auto& required_parent : rule.parents) {
-                        if (std::find_if(activity.parents.begin(), activity.parents.end(),
-                                         [&](const std::string& p){ return p == required_parent; }) != activity.parents.end()) {
+                        if (std::find(activity.parents.begin(), activity.parents.end(), required_parent) != activity.parents.end()) {
                             match = true;
                             break;
                         }
                     }
                 }
 
+                // [核心修改] 使用成员指针直接更新对应的统计字段
                 if (match) {
-                    if (strcmp(rule.key_name, "sleepTime") == 0) day.generatedStats.sleepTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "totalExerciseTime") == 0) day.generatedStats.totalExerciseTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "cardioTime") == 0) day.generatedStats.cardioTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "anaerobicTime") == 0) day.generatedStats.anaerobicTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "groomingTime") == 0) day.generatedStats.groomingTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "toiletTime") == 0) day.generatedStats.toiletTime += activity.durationSeconds;
-                    else if (strcmp(rule.key_name, "gamingTime") == 0) day.generatedStats.gamingTime += activity.durationSeconds;
+                    (day.generatedStats.*(rule.member)) += activity.durationSeconds;
                 }
             }
         }
