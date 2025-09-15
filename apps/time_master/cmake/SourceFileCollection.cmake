@@ -64,7 +64,12 @@ set(QUERIES_SOURCES
     "src/queries/period/PeriodQuerier.cpp"
     "src/queries/period/formatters/md/PeriodMd.cpp"
     "src/queries/period/formatters/tex/PeriodTex.cpp"
+
     "src/queries/period/formatters/typ/PeriodTyp.cpp"
+    "src/queries/period/formatters/typ/PeriodTypConfig.cpp"
+
+    
+
     # Shared Components
     "src/queries/shared/factories/TreeFmtFactory.cpp"
     "src/queries/shared/formatters/breakdown/md/BreakdownMd.cpp"

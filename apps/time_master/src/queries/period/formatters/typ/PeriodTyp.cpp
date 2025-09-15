@@ -1,31 +1,29 @@
 // queries/period/formatters/typ/PeriodTyp.cpp
-
 #include "PeriodTyp.hpp"
 #include <iomanip>
-#include <format> 
-
-// --- 核心改动：引入所有需要的依赖 ---
-#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
+#include <format>
+#include "common/utils/ProjectTree.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/Interface/ITreeFmt.hpp"
-#include "PeriodTypStrings.hpp" // 唯一且专属的配置文件
+
+// [删除] #include "PeriodTypStrings.hpp"
+
+PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) {} // [新增]
 
 std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {
     std::stringstream ss;
     
-    // (修改) 使用 std::format，并使用 {0} 显式指定参数位置
-    ss << std::format(R"(#set text(font: "{0}"))", PeriodTypStrings::ContentFont) << "\n\n";
+    ss << std::format(R"(#set text(font: "{0}"))", config_->get_content_font()) << "\n\n";
 
     if (data.days_to_query <= 0) {
-        ss << PeriodTypStrings::PositiveDaysError << "\n";
+        ss << config_->get_positive_days_error() << "\n";
         return ss.str();
     }
 
     _display_summary(ss, data);
 
     if (data.actual_days == 0) {
-        ss << PeriodTypStrings::NoRecords << "\n";
+        ss << config_->get_no_records() << "\n";
         return ss.str();
     }
     
@@ -34,22 +32,20 @@ std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) 
 }
 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
-    // (修改) 使用 std::format 和位置参数动态构建标题
     std::string title = std::format(
-        R"(#text(font: "{0}", size: {1}pt)[= {2} {3} days ({4} to {5})])", // {0}{1}为样式, {2}-{5}为内容
-        PeriodTypStrings::TitleFont,        // {0}
-        PeriodTypStrings::TitleFontSize,    // {1}
-        PeriodTypStrings::TitlePrefix,      // {2}
-        data.days_to_query,                 // {3}
-        data.start_date,                    // {4}
-        data.end_date                       // {5}
+        R"(#text(font: "{0}", size: {1}pt)[= {2} {3} days ({4} to {5})])",
+        config_->get_title_font(),
+        config_->get_title_font_size(),
+        config_->get_title_prefix(),
+        data.days_to_query,
+        data.start_date,
+        data.end_date
     );
     ss << title << "\n\n";
 
-    // (修改) 其余部分也使用 std::format 和位置参数
     if (data.actual_days > 0) {
-        ss << std::format("+ *{0}:* {1}\n", PeriodTypStrings::TotalTimeLabel, time_format_duration(data.total_duration, data.actual_days));
-        ss << std::format("+ *{0}:* {1}\n", PeriodTypStrings::ActualDaysLabel, data.actual_days);
+        ss << std::format("+ *{0}:* {1}\n", config_->get_total_time_label(), time_format_duration(data.total_duration, data.actual_days));
+        ss << std::format("+ *{0}:* {1}\n", config_->get_actual_days_label(), data.actual_days);
     }
 }
 

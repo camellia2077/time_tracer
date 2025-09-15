@@ -16,11 +16,7 @@
  */
 class AllPeriodReports {
 public:
-    /**
-     * @brief 构造函数。
-     * @param db 指向数据库连接的指针。
-     */
-    explicit AllPeriodReports(sqlite3* db);
+    explicit AllPeriodReports(sqlite3* db, const std::string& period_typ_config_path);
 
     /**
      * @brief 根据提供的天数列表生成所有周期报告。
@@ -32,6 +28,7 @@ public:
 
 private:
     sqlite3* m_db;
+    std::string m_period_typ_config_path;
 };
 
 #endif // ALL_PERIOD_REPORTS_GENERATOR_HPP

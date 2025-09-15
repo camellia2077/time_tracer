@@ -24,7 +24,8 @@ std::string QueryHandler::run_monthly_query(const std::string& year_month_str, R
 }
 
 std::string QueryHandler::run_period_query(int days, ReportFormat format) const {
-    PeriodGenerator generator(m_db);
+    // [修改]
+    PeriodGenerator generator(m_db, app_config_.period_typ_config_path);
     return generator.generate_report(days, format);
 }
 
@@ -41,6 +42,7 @@ FormattedMonthlyReports QueryHandler::run_export_all_monthly_reports_query(Repor
 }
 
 FormattedPeriodReports QueryHandler::run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format) const {
-    AllPeriodReports generator(m_db);
+    // [修改]
+    AllPeriodReports generator(m_db, app_config_.period_typ_config_path);
     return generator.generate_reports(days_list, format);
 }
