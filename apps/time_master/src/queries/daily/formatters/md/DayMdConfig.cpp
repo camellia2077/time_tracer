@@ -1,0 +1,42 @@
+#include "DayMdConfig.hpp"
+#include <fstream>
+#include <stdexcept>
+
+DayMdConfig::DayMdConfig(const std::string& config_path) {
+    load_config(config_path);
+}
+
+void DayMdConfig::load_config(const std::string& config_path) {
+    std::ifstream config_file(config_path);
+    if (!config_file.is_open()) {
+        throw std::runtime_error("Could not open DayMdConfig file: " + config_path);
+    }
+    nlohmann::json config_json;
+    config_file >> config_json;
+
+    title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
+    date_label_ = config_json.at("DateLabel").get<std::string>();
+    total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
+    status_label_ = config_json.at("StatusLabel").get<std::string>();
+    sleep_label_ = config_json.at("SleepLabel").get<std::string>();
+    getup_time_label_ = config_json.at("GetupTimeLabel").get<std::string>();
+    remark_label_ = config_json.at("RemarkLabel").get<std::string>();
+    exercise_label_ = config_json.at("ExerciseLabel").get<std::string>();
+    no_records_ = config_json.at("NoRecords").get<std::string>();
+    statistics_label_ = config_json.at("StatisticsLabel").get<std::string>();
+    sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
+    activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
+}
+
+const std::string& DayMdConfig::get_title_prefix() const { return title_prefix_; }
+const std::string& DayMdConfig::get_date_label() const { return date_label_; }
+const std::string& DayMdConfig::get_total_time_label() const { return total_time_label_; }
+const std::string& DayMdConfig::get_status_label() const { return status_label_; }
+const std::string& DayMdConfig::get_sleep_label() const { return sleep_label_; }
+const std::string& DayMdConfig::get_getup_time_label() const { return getup_time_label_; }
+const std::string& DayMdConfig::get_remark_label() const { return remark_label_; }
+const std::string& DayMdConfig::get_exercise_label() const { return exercise_label_; }
+const std::string& DayMdConfig::get_no_records() const { return no_records_; }
+const std::string& DayMdConfig::get_statistics_label() const { return statistics_label_; }
+const std::string& DayMdConfig::get_sleep_time_label() const { return sleep_time_label_; }
+const std::string& DayMdConfig::get_activity_remark_label() const { return activity_remark_label_; }

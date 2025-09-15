@@ -13,7 +13,7 @@
 #include "queries/period/formatters/typ/PeriodTypConfig.hpp" // [新增] 引入周期报告Typst配置类
 
 // [修改] 构造函数，接收数据库连接和周期报告Typst配置路径
-AllPeriodReports::AllPeriodReports(sqlite3* db, const std::string& period_typ_config_path) 
+AllPeriodReports::AllPeriodReports(sqlite3* db, const std::string& period_typ_config_path)
     : m_db(db), m_period_typ_config_path(period_typ_config_path) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
@@ -22,15 +22,22 @@ AllPeriodReports::AllPeriodReports(sqlite3* db, const std::string& period_typ_co
 
 FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>& days_list, ReportFormat format) {
     FormattedPeriodReports reports;
-    
+
     std::unique_ptr<IReportFormatter<PeriodReportData>> formatter;
-    if (format == ReportFormat::Typ) {
-        // [修改] 如果格式为Typst，则使用配置路径来创建专门的格式化器
-        auto config = std::make_shared<PeriodTypConfig>(m_period_typ_config_path);
-        formatter = std::make_unique<PeriodTyp>(config);
-    } else {
-        // 对于其他格式，继续使用通用工厂
-        formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex>::create_formatter(format);
+    switch (format) {
+        case ReportFormat::Typ: {
+            auto config = std::make_shared<PeriodTypConfig>(m_period_typ_config_path);
+            formatter = std::make_unique<PeriodTyp>(config);
+            break;
+        }
+        case ReportFormat::Markdown: {
+            formatter = std::make_unique<PeriodMd>();
+            break;
+        }
+        case ReportFormat::LaTeX: {
+            formatter = std::make_unique<PeriodTex>();
+            break;
+        }
     }
 
     for (int days : days_list) {

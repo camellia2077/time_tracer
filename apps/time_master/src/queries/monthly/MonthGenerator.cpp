@@ -13,20 +13,29 @@
 #include "queries/monthly/formatters/typ/MonthTyp.hpp"
 
 // [修改] 构造函数实现
-MonthGenerator::MonthGenerator(sqlite3* db, const std::string& month_typ_config_path) 
+MonthGenerator::MonthGenerator(sqlite3* db, const std::string& month_typ_config_path)
     : m_db(db), m_month_typ_config_path(month_typ_config_path) {}
 
 std::string MonthGenerator::generate_report(const std::string& year_month, ReportFormat format) {
     MonthQuerier querier(m_db, year_month);
     MonthlyReportData report_data = querier.fetch_data();
+    std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
 
-    if (format == ReportFormat::Typ) {
-        // [修改] 使用配置路径创建 MonthTyp
-        auto config = std::make_shared<MonthTypConfig>(m_month_typ_config_path);
-        MonthTyp formatter(config);
-        return formatter.format_report(report_data, m_db);
+    switch (format) {
+        case ReportFormat::Typ: {
+            auto config = std::make_shared<MonthTypConfig>(m_month_typ_config_path);
+            formatter = std::make_unique<MonthTyp>(config);
+            break;
+        }
+        case ReportFormat::Markdown: {
+            formatter = std::make_unique<MonthMd>();
+            break;
+        }
+        case ReportFormat::LaTeX: {
+            formatter = std::make_unique<MonthTex>();
+            break;
+        }
     }
-    
-    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex>::create_formatter(format);
+
     return formatter->format_report(report_data, m_db);
 }
