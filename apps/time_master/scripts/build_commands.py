@@ -35,6 +35,14 @@ def run_cmake(should_package, cmake_args, compiler):
         print(f"{config.WARNING}--- Invalid WARNING_LEVEL '{warning_level}'. Defaulting to level 2. ---{config.ENDC}")
         cmake_command.append("-DWARNING_LEVEL=2")
         
+    # ==================== [核心修改] ====================
+    # 根据配置设置LTO选项
+    lto_option_str = "ON" if config.ENABLE_LTO else "OFF"
+    lto_status_msg = "enabled" if config.ENABLE_LTO else "disabled"
+    print(f"{config.OKBLUE}--- Link-Time Optimization (LTO) is {lto_status_msg}. ---{config.ENDC}")
+    cmake_command.append(f"-DENABLE_LTO={lto_option_str}")
+    # ====================================================
+        
     cmake_command.extend(cmake_args)
     
     process = subprocess.Popen(cmake_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, env=cmake_env)
