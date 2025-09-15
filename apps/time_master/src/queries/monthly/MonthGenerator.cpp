@@ -16,8 +16,14 @@ std::string MonthGenerator::generate_report(const std::string& year_month, Repor
     MonthQuerier querier(m_db, year_month);
     MonthlyReportData report_data = querier.fetch_data();
 
+    if (format == ReportFormat::Typ) {
+        MonthTyp formatter;
+        return formatter.format_report(report_data, m_db);
+    }
+    
     // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex, MonthTyp>::create_formatter(format);
+    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex>::create_formatter(format);
+
 
     return formatter->format_report(report_data, m_db);
 }

@@ -1,0 +1,27 @@
+{
+  "TitleFont": "Noto Serif",
+  "ContentFont": "Noto Serif",
+  "TitleFontSize": 14,
+  "KeywordColors": {
+    "study": "rgb(\"#2ECC40\")",
+    "recreation": "rgb(\"#FF4136\")",
+    "meal": "rgb(\"#FF851B\")",
+    "exercise": "rgb(\"#0074D9\")",
+    "routine": "rgb(\"#AAAAAA\")",
+    "sleep": "rgb(\"#B10DC9\")",
+    "code": "rgb(\"#39CCCC\")"
+  },
+  "TitlePrefix": "Daily Report for",
+  "DateLabel": "Date",
+  "TotalTimeLabel": "Total Hours",
+  "StatusLabel": "Status",
+  "SleepLabel": "Sleep",
+  "GetupTimeLabel": "Getup Time",
+  "RemarkLabel": "Remark",
+  "ExerciseLabel": "Exercise",
+  "NoRecords": "No time records for this day.",
+  "StatisticsLabel": "Statistics",
+  "AllActivitiesLabel": "All Activities",
+  "SleepTimeLabel": "Sleep Time",
+  "ActivityRemarkLabel": "Activity Remark"
+}

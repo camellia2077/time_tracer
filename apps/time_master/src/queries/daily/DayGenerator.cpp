@@ -10,6 +10,8 @@
 #include "queries/daily/formatters/md/DayMd.hpp"
 #include "queries/daily/formatters/tex/DayTex.hpp"
 #include "queries/daily/formatters/typ/DayTyp.hpp"
+#include "queries/daily/formatters/typ/DayTypConfig.hpp"
+#include <memory>
 
 DayGenerator::DayGenerator(sqlite3* db) : m_db(db) {}
 
@@ -17,8 +19,14 @@ std::string DayGenerator::generate_report(const std::string& date, ReportFormat 
     DayQuerier querier(m_db, date);
     DailyReportData report_data = querier.fetch_data();
 
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<DailyReportData, DayMd, DayTex, DayTyp>::create_formatter(format);
+    if (format == ReportFormat::Typ) {
+        auto config = std::make_shared<DayTypConfig>("config/queries/day/DayTypConfig.json");
+        DayTyp formatter(config);
+        return formatter.format_report(report_data, m_db);
+    }
+
+    auto formatter = ReportFmtFactory<DailyReportData, DayMd, DayTex>::create_formatter(format);
+
 
     return formatter->format_report(report_data, m_db);
 }

@@ -4,12 +4,14 @@
 #include "queries/daily/DayQuerier.hpp"
 #include <stdexcept>
 #include <vector>
+#include <memory>
 
 // [修改] 引入新的通用工厂和具体的格式化器类
 #include "queries/shared/factories/FmtFactory.hpp"
 #include "queries/daily/formatters/md/DayMd.hpp"
 #include "queries/daily/formatters/tex/DayTex.hpp"
 #include "queries/daily/formatters/typ/DayTyp.hpp"
+#include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
 AllDayReports::AllDayReports(sqlite3* db) : m_db(db) {
     if (m_db == nullptr) {
@@ -26,9 +28,15 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
     if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare statement to fetch all dates.");
     }
+    
+    std::unique_ptr<IReportFormatter<DailyReportData>> formatter;
+    if (format == ReportFormat::Typ) {
+        auto config = std::make_shared<DayTypConfig>("config/queries/day/DayTypConfig.json");
+        formatter = std::make_unique<DayTyp>(config);
+    } else {
+        formatter = ReportFmtFactory<DailyReportData, DayMd, DayTex>::create_formatter(format);
+    }
 
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<DailyReportData, DayMd, DayTex, DayTyp>::create_formatter(format);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         const char* date_cstr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));

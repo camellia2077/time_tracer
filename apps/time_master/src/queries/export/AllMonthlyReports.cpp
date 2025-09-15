@@ -28,8 +28,13 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch unique year/month pairs.");
     }
 
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex, MonthTyp>::create_formatter(format);
+    std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
+    if (format == ReportFormat::Typ) {
+        formatter = std::make_unique<MonthTyp>();
+    } else {
+        formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex>::create_formatter(format);
+    }
+
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int year = sqlite3_column_int(stmt, 0);
