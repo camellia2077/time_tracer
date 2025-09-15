@@ -58,6 +58,8 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             if (!activity_data.children.empty()) {
                 activity_details["children"] = activity_data.children;
             }
+
+            activity_obj["activity"] = activity_details;
             activities.push_back(activity_obj);
         }
         day_obj["activities"] = activities;
