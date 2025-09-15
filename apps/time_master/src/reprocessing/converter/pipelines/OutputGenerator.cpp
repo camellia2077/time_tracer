@@ -1,12 +1,10 @@
 // reprocessing/converter/pipelines/OutputGenerator.cpp
 #include "OutputGenerator.hpp"
-#include <fstream>
-#include <vector>
-#include <nlohmann/json.hpp>
-
+// ... (includes are unchanged) ...
 using json = nlohmann::json;
 
 void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& /*config*/) {
+    // ... (headers and activities loop setup is unchanged) ...
     if (days.empty()) {
         outputStream << "[]" << std::endl;
         return;
@@ -22,8 +20,7 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         json headers_obj;
         headers_obj["date"] = day.date;
         headers_obj["status"] = static_cast<int>(day.hasStudyActivity);
-        headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); // 新增
-        // --- [核心修改] 使用新的 hasSleepActivity 标志 ---
+        headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); 
         headers_obj["sleep"] = static_cast<int>(day.hasSleepActivity);
         headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         headers_obj["activityCount"] = day.activityCount;
@@ -37,9 +34,10 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         day_obj["headers"] = headers_obj;
         
         json activities = json::array();
+
         for (const auto& activity_data : day.processedActivities) {
             json activity_obj;
-            
+            // ... (other activity fields are unchanged) ...
             activity_obj["logicalId"] = activity_data.logical_id;
             activity_obj["startTimestamp"] = activity_data.start_timestamp;
             activity_obj["endTimestamp"] = activity_data.end_timestamp;
@@ -48,36 +46,36 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             activity_obj["endTime"] = activity_data.endTime;
             activity_obj["durationSeconds"] = activity_data.durationSeconds;
 
-            // 新增：在 JSON 输出中添加备注
             if (activity_data.activityRemark.has_value()) {
                 activity_obj["activityRemark"] = activity_data.activityRemark.value();
             } else {
-                activity_obj["activityRemark"] = nullptr; // 对于没有备注的活动，使用 null
+                activity_obj["activityRemark"] = nullptr; 
             }
 
             json activity_details;
-            activity_details["topParent"] = activity_data.topParent;
-            if (!activity_data.parents.empty()) {
-                activity_details["parents"] = activity_data.parents;
+            // 直接将 parent 和 children 添加到 activity_obj
+            activity_details["parent"] = activity_data.parent;
+            if (!activity_data.children.empty()) {
+                activity_details["children"] = activity_data.children;
             }
-            
+
             activity_obj["activity"] = activity_details;
             activities.push_back(activity_obj);
         }
         day_obj["activities"] = activities;
 
-        // --- [核心修改] 添加新的运动统计字段到JSON ---
         json generated_stats_obj;
         generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
-        generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime; 
+        generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime;
         generated_stats_obj["cardioTime"] = day.generatedStats.cardioTime;
         generated_stats_obj["anaerobicTime"] = day.generatedStats.anaerobicTime;
-        generated_stats_obj["exerciseBothTime"] = day.generatedStats.exerciseBothTime;
+        generated_stats_obj["groomingTime"] = day.generatedStats.groomingTime;
+        generated_stats_obj["toiletTime"] = day.generatedStats.toiletTime;
+        generated_stats_obj["gamingTime"] = day.generatedStats.gamingTime;
         day_obj["generatedStats"] = generated_stats_obj;
 
 
         root_array.push_back(day_obj);
     }
-
-    outputStream << root_array.dump(4) << std::endl;
+     outputStream << root_array.dump(4) << std::endl;
 }

@@ -1,15 +1,11 @@
 // queries/shared/formatters/breakdown/tex/BreakdownTex.cpp
-
-// query/format/tex/BreakdownTex.cpp (NEW FILE)
 #include "BreakdownTex.hpp"
-#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree" // For time_format_duration
+#include "common/utils/ProjectTree.hpp"
 #include <vector>
 #include <algorithm>
 #include <iomanip>
 
-/**
- * @brief 转义 LaTeX 中的特殊字符。
- */
+// ... escape_latex 和 format 函数保持不变 ...
 std::string BreakdownTex::escape_latex(const std::string& input) const {
     std::string output;
     output.reserve(input.size());
@@ -31,14 +27,10 @@ std::string BreakdownTex::escape_latex(const std::string& input) const {
     return output;
 }
 
-/**
- * @brief 主要的格式化函数。
- */
 std::string BreakdownTex::format(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(1);
 
-    // 1. 对顶层类别按时间降序排序
     std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
     for (const auto& pair : tree) {
         sorted_top_level.push_back(pair);
@@ -47,34 +39,28 @@ std::string BreakdownTex::format(const ProjectTree& tree, long long total_durati
         return a.second.duration > b.second.duration;
     });
 
-    // 2. 遍历并生成 LaTeX 格式的输出
     for (const auto& pair : sorted_top_level) {
         const std::string& category_name = pair.first;
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        // 使用 \section* 来创建不带编号的章节标题
         ss << "\\section*{" << escape_latex(category_name) << ": "
            << escape_latex(time_format_duration(category_node.duration, avg_days))
            << " (" << percentage << "\\%)}\n";
 
-        // 调用递归函数处理子节点
         generate_sorted_output(ss, category_node, avg_days);
-        ss << "\n"; // 在每个大类后添加一些间距
+        ss << "\n";
     }
 
     return ss.str();
 }
 
-/**
- * @brief 递归生成 itemize 列表。
- */
+
 void BreakdownTex::generate_sorted_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const {
     if (node.children.empty()) {
         return;
     }
 
-    // 对子节点按时间排序
     std::vector<std::pair<std::string, ProjectNode>> sorted_children;
     for (const auto& pair : node.children) {
         sorted_children.push_back(pair);
@@ -83,19 +69,17 @@ void BreakdownTex::generate_sorted_output(std::stringstream& ss, const ProjectNo
         return a.second.duration > b.second.duration;
     });
 
-    // 开始一个 itemize 环境
-    ss << "\\begin{itemize}\n";
+    // [核心修改] 在这里应用紧凑列表选项
+    ss << "\\begin{itemize}[topsep=0pt, itemsep=-0.5ex]\n";
 
     for (const auto& pair : sorted_children) {
         const std::string& name = pair.first;
         const ProjectNode& child_node = pair.second;
 
         if (child_node.duration > 0 || !child_node.children.empty()) {
-            // 每个项目是一个 \item
             ss << "    \\item " << escape_latex(name) << ": "
                << escape_latex(time_format_duration(child_node.duration, avg_days));
 
-            // 如果还有子节点，则递归调用以创建嵌套列表
             if (!child_node.children.empty()) {
                 ss << "\n";
                 generate_sorted_output(ss, child_node, avg_days);
@@ -104,6 +88,5 @@ void BreakdownTex::generate_sorted_output(std::stringstream& ss, const ProjectNo
         }
     }
 
-    // 结束 itemize 环境
     ss << "\\end{itemize}\n";
 }

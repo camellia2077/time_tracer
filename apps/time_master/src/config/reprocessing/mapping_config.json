@@ -1,20 +1,4 @@
 {
-      "top_parent_mapping": {
-        "study": "mystudy"
-    },
-   
-
-    "header_order": [
-        "Date:",
-        "Status:",
-        "Sleep:",
-        "Getup:",
-        "Remark:"
-    ],
-    "remark_prefix": "r ",
-
-    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
-    
     "text_mappings": {
         "配置环境"  : "code_env-config",
         "环境"  : "code_env-config",
@@ -40,13 +24,9 @@
 
         "wc" : "code_workout_calculator",
 
-
-
         "g": "routine_grooming",
         "grooming": "routine_grooming",
         "洗漱": "routine_grooming",
-
-
 
         "f" : "meal",
         "饭" : "meal",
@@ -54,12 +34,9 @@
         "买饭" : "meal_buy",
 
         "购物" : "meal_shopping",
-
         "feast" :"meal_feast",
-        
         "做饭": "meal_cook",
         "水果": "meal_fruits",
-
         
         "cd" : "exercise_cardio",
         "有氧": "exercise_cardio",
@@ -75,7 +52,6 @@
 
         "word": "study_english_words",
 
-
         "zh": "recreation_zhihu",
         "zhihu": "recreation_zhihu",
         "知乎": "recreation_zhihu",
@@ -87,7 +63,6 @@
         "冲浪" : "recreation_surf",
         "聊天" : "recreation_chat",
         "逛街" : "recreation_shopping",
-
         
         "单词": "study_english_words",
         "听力": "study_english_listening",
@@ -103,7 +78,6 @@
 
         "拉屎": "routine_toilet",
         
-
         "守望先锋": "recreation_game_overwatch",
         "皇室": "recreation_game_clash-royale",
         "ow": "recreation_game_overwatch",
@@ -114,9 +88,7 @@
         "撸": "rest_masturbation",
         "度假": "recreation_vacation",
 
-
         "school": "other_school",
-
         
         "break": "break_unknown",
         "黑神话": "recreation_game_wokong",
@@ -134,32 +106,5 @@
         "sleep" : "sleep_day",
         "睡觉" : "sleep_day",
         "打水" : "other_housework"
-    },
-
-
-
-
-
-    "text_duration_mappings":{
-        "失眠": "insomnia",
-        "饭": "meal",
-        "休息" : "rest"
-    },
-    "duration_mappings": {
-        "rest": [
-            { "less_than_minutes": 10, "value": "rest_short" },
-            { "less_than_minutes": 20, "value": "rest_medium" },
-            { "less_than_minutes": 1440, "value": "rest_long" } 
-        ],
-        "insomnia": [
-            { "less_than_minutes": 10, "value": "insomnia_short" },
-            { "less_than_minutes": 30, "value": "insomnia_medium" },
-            { "less_than_minutes": 1440, "value": "insomnia_long" }
-        ],
-        "meal": [
-            { "less_than_minutes": 25, "value": "meal_short" },
-            { "less_than_minutes": 35, "value": "meal_medium" },
-            { "less_than_minutes": 1440, "value": "meal_long" }
-        ]
     }
 }

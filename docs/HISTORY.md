@@ -178,3 +178,46 @@ SourceFileValidator拆分成facade和pipelines
 移除没用被使用的变量
 
 
+## v0.3.18.0 - 2025-09-15 generatedStats新增键
+generatedStats存储洗漱的时间,这部分数据高频出现在每天中，因为总要洗漱
+```
+"activity": {
+    "parents": [
+        "grooming"
+    ],
+    "topParent": "routine"
+},
+```
+## v0.3.18.1
+新增上厕所的时间
+```
+"activity": {
+    "parents": [
+        "toilet"
+    ],
+    "topParent": "routine"
+},
+```
+## v0.3.18.2
+generatedStats统计，提取为方法
+
+## v0.3.18.3
+预处理json配置拆分
+
+## v0.3.18.4
+用namespace存储需要计算的parent
+
+
+## v0.3.18.5
+json数据中键命名优化，不再采用 topparent和parent
+而是和数据库插入对齐，使用parent和child
+
+## v0.3.18.6
+json去除多余键
+
+
+## v0.3.19.0
+为查询新增json配置传入
+
+## v0.3.19.1
+给tex增加行间距，在hpp的namesqace硬编码

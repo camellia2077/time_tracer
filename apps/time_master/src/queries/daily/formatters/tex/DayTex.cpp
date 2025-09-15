@@ -7,9 +7,7 @@
 #include <string>
 #include <sstream>
 
-// --- [核心修改] 替换 common_utils.hpp ---
-#include "common/utils/TimeUtils.hpp" // For time_format_duration()
-
+#include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
@@ -51,7 +49,8 @@ void DayTex::format_content(std::stringstream& ss, const DailyReportData& data, 
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\\section*{" << DayTexConfig::ReportTitle << " " << escape_tex_local(data.date) << "}\n\n";
     
-    ss << "\\begin{itemize}\n";
+    // [核心修改] 使用配置变量
+    ss << "\\begin{itemize}" << DayTexConfig::CompactListOptions << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::DateLabel      << "}: " << escape_tex_local(data.date) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::TotalTimeLabel << "}: " << escape_tex_local(time_format_duration(data.total_duration)) << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::StatusLabel    << "}: " << escape_tex_local(bool_to_string(data.metadata.status)) << "\n";
@@ -74,7 +73,8 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\\subsection*{" << DayTexConfig::StatisticsLabel << "}\n\n";
-    ss << "\\begin{itemize}\n";
+    // [核心修改] 使用配置变量
+    ss << "\\begin{itemize}" << DayTexConfig::CompactListOptions << "\n";
     ss << "    \\item \\textbf{" << DayTexConfig::SleepTimeLabel << "}: "
        << escape_tex_local(time_format_duration_hm(data.sleep_time)) << "\n";
     ss << "\\end{itemize}\n\n";
@@ -86,7 +86,8 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     }
 
     ss << "\\subsection*{" << DayTexConfig::AllActivitiesLabel << "}\n\n";
-    ss << "\\begin{itemize}\n";
+    // [核心修改] 使用配置变量
+    ss << "\\begin{itemize}" << DayTexConfig::CompactListOptions << "\n";
 
     for (const auto& record : data.detailed_records) {
         std::string base_string = escape_tex_local(record.start_time) + " - " +
@@ -106,7 +107,8 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         ss << "    \\item " << colorized_string << "\n";
 
         if (record.activityRemark.has_value()) {
-            ss << "    \\begin{itemize}\n";
+            // [核心修改] 使用配置变量
+            ss << "    \\begin{itemize}" << DayTexConfig::CompactListOptions << "\n";
             ss << "        \\item \\textbf{" << DayTexConfig::ActivityRemarkLabel << "}: " 
                << escape_tex_local(record.activityRemark.value()) << "\n";
             ss << "    \\end{itemize}\n";
