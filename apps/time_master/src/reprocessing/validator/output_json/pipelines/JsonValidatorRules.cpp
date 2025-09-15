@@ -17,8 +17,7 @@ void validateHighLevelRules(const json& day_object, std::set<Error>& errors) {
         }
         const auto& last_activity = day_object["activities"].back();
         
-        // [修改] 更改字段名称为 topParent
-        std::string top_parent_val = last_activity.value("activity", json::object()).value("topParent", "");
+        std::string top_parent_val = last_activity.value("activity", json::object()).value("parent", "");
         
         if (top_parent_val != "sleep") {
             std::string date_str = headers.value("date", "[Unknown Date]");

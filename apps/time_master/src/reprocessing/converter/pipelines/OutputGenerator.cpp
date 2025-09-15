@@ -53,13 +53,11 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             }
 
             json activity_details;
-            // [核心修改]
+            // 直接将 parent 和 children 添加到 activity_obj
             activity_details["parent"] = activity_data.parent;
             if (!activity_data.children.empty()) {
                 activity_details["children"] = activity_data.children;
             }
-            
-            activity_obj["activity"] = activity_details;
             activities.push_back(activity_obj);
         }
         day_obj["activities"] = activities;
