@@ -216,3 +216,8 @@ json数据中键命名优化，不再采用 topparent和parent
 json去除多余键
 
 
+## v0.3.19.0
+为查询新增json配置传入
+
+## v0.3.19.1
+给tex增加行间距，在hpp的namesqace硬编码

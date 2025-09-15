@@ -19,18 +19,19 @@ namespace DayTexConfig {
     constexpr std::string_view TotalTimeLabel = "Total Time Recorded";
     constexpr std::string_view StatusLabel    = "Status";
     constexpr std::string_view SleepLabel     = "Sleep";
-    // --- [核心修改] 新增 Exercise 标签 ---
     constexpr std::string_view ExerciseLabel  = "Exercise";
     constexpr std::string_view GetupTimeLabel = "Getup Time";
     constexpr std::string_view RemarkLabel    = "Remark";
 
     // --- Body Content Text ---
     constexpr std::string_view NoRecordsMessage = "No time records for this day.";
-    // [新增] 新增的标签
     constexpr std::string_view StatisticsLabel = "Statistics";
     constexpr std::string_view AllActivitiesLabel = "All Activities";
     constexpr std::string_view SleepTimeLabel = "Sleep Time";
-    constexpr std::string_view ActivityRemarkLabel = "Activity Remark"; // [新增] 活动备注的标
+    constexpr std::string_view ActivityRemarkLabel = "Activity Remark";
+
+    // --- [核心修改] 新增 LaTex 列表的间距配置 ---
+    constexpr std::string_view CompactListOptions = "[topsep=0pt, itemsep=-0.5ex]";
 
 } // namespace DayTexConfig
 
