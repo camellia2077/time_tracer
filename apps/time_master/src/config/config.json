@@ -4,5 +4,6 @@
   "export_path": "exported_reports",
   "day_typ_config_path": "queries/day/DayTypConfig.json",
   "month_typ_config_path": "queries/month/MonthTypConfig.json",
-  "period_typ_config_path": "queries/period/PeriodTypConfig.json"
+  "period_typ_config_path": "queries/period/PeriodTypConfig.json",
+  "day_md_config_path": "queries/day/DayMdConfig.json"
 }

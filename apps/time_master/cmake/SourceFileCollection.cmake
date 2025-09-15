@@ -42,9 +42,14 @@ set(QUERIES_SOURCES
     "src/queries/export/AllMonthlyReports.cpp"
     "src/queries/export/AllPeriodReports.cpp"
     # Daily Reports
+    
     "src/queries/daily/DayGenerator.cpp"
     "src/queries/daily/DayQuerier.cpp"
+
+    # md
     "src/queries/daily/formatters/md/DayMd.cpp"
+    "src/queries/daily/formatters/md/DayMdConfig.cpp"
+
     "src/queries/daily/formatters/tex/DayTex.cpp"
 
     "src/queries/daily/formatters/typ/DayTyp.cpp"

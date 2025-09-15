@@ -6,6 +6,7 @@
 #include <vector>
 #include <filesystem>
 #include <optional>
+#include <unordered_map>
 
 // 应用程序的核心配置，由 config.json 加载
 struct AppConfig {
@@ -16,6 +17,7 @@ struct AppConfig {
     std::string day_typ_config_path; // 日期报告Typ配置路径
     std::string month_typ_config_path; // 月期报告Typ配置路径
     std::string period_typ_config_path; // 周期报告Typ配置路径
+    std::string day_md_config_path; // 日期报告Md配置路径
 };
 
 // 文件处理操作的选项

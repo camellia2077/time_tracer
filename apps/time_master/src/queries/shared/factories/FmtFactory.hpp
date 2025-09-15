@@ -15,8 +15,8 @@
  * @tparam TexFormatter   The concrete implementation class for the LaTeX formatter.
  */
 template<
-    typename ReportDataType, 
-    typename MdFormatter, 
+    typename ReportDataType,
+    typename MdFormatter,
     typename TexFormatter
 >
 class ReportFmtFactory {
@@ -29,7 +29,9 @@ public:
     static std::unique_ptr<IReportFormatter<ReportDataType>> create_formatter(ReportFormat format) {
         switch (format) {
             case ReportFormat::Markdown:
-                return std::make_unique<MdFormatter>();
+                // Markdown formatters that require config are now handled manually.
+                // This factory is for formatters with default constructors.
+                 throw std::invalid_argument("Markdown format with config is not supported by the generic factory.");
             case ReportFormat::LaTeX:
                 return std::make_unique<TexFormatter>();
             case ReportFormat::Typ:

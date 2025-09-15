@@ -1,0 +1,14 @@
+{
+    "TitlePrefix": "Daily Report for",
+    "DateLabel": "Date",
+    "TotalTimeLabel": "Total Time Recorded",
+    "StatusLabel": "Status",
+    "SleepLabel": "Sleep",
+    "GetupTimeLabel": "Getup Time",
+    "RemarkLabel": "Remark",
+    "ExerciseLabel": "Exercise",
+    "NoRecords": "No time records for this day.",
+    "StatisticsLabel": "Statistics",
+    "SleepTimeLabel": "Sleep Time",
+    "ActivityRemarkLabel": "Activity Remark"
+}

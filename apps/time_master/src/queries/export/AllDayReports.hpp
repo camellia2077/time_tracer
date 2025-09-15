@@ -7,6 +7,7 @@
 #include "queries/shared/ReportFormat.hpp" // 引入报告格式的定义
 
 #include <sqlite3.h>
+#include <string>
 
 /**
  * @class AllDayReports
@@ -22,8 +23,9 @@ public:
      * @brief 构造函数。
      * @param db 指向数据库连接的指针。
      * @param day_typ_config_path [新增] DayTyp 配置文件的路径。
+     * @param day_md_config_path [新增] DayMd 配置文件的路径。
      */
-    explicit AllDayReports(sqlite3* db, const std::string& day_typ_config_path);
+    explicit AllDayReports(sqlite3* db, const std::string& day_typ_config_path, const std::string& day_md_config_path);
 
     /**
      * @brief 生成所有日报并返回分类好的结果。
@@ -35,6 +37,7 @@ public:
 private:
     sqlite3* m_db;
     std::string m_day_typ_config_path; // [新增]
+    std::string m_day_md_config_path;
 };
 
 #endif // ALL_REPORTS_GENERATOR_HPP

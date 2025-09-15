@@ -19,16 +19,23 @@ PeriodGenerator::PeriodGenerator(sqlite3* db, const std::string& period_typ_conf
 std::string PeriodGenerator::generate_report(int days, ReportFormat format) {
     PeriodQuerier querier(m_db, days);
     PeriodReportData report_data = querier.fetch_data();
+    std::unique_ptr<IReportFormatter<PeriodReportData>> formatter;
 
-    if (format == ReportFormat::Typ) {
-        // [修改] 如果格式为Typst，则使用配置路径来创建专门的格式化器
-        auto config = std::make_shared<PeriodTypConfig>(m_period_typ_config_path);
-        PeriodTyp formatter(config);
-        return formatter.format_report(report_data, m_db);
+    switch (format) {
+        case ReportFormat::Typ: {
+            auto config = std::make_shared<PeriodTypConfig>(m_period_typ_config_path);
+            formatter = std::make_unique<PeriodTyp>(config);
+            break;
+        }
+        case ReportFormat::Markdown: {
+            formatter = std::make_unique<PeriodMd>();
+            break;
+        }
+        case ReportFormat::LaTeX: {
+            formatter = std::make_unique<PeriodTex>();
+            break;
+        }
     }
-
-    // 对于其他格式，继续使用通用工厂
-    auto formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex>::create_formatter(format);
 
     return formatter->format_report(report_data, m_db);
 }

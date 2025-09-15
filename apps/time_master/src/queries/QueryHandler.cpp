@@ -13,7 +13,7 @@ QueryHandler::QueryHandler(sqlite3* db, const AppConfig& config)
 
 std::string QueryHandler::run_daily_query(const std::string& date_str, ReportFormat format) const {
     // [MODIFIED] Pass the config path to the DayGenerator
-    DayGenerator generator(m_db, app_config_.day_typ_config_path);
+    DayGenerator generator(m_db, app_config_.day_typ_config_path, app_config_.day_md_config_path);
     return generator.generate_report(date_str, format);
 }
 
@@ -31,7 +31,7 @@ std::string QueryHandler::run_period_query(int days, ReportFormat format) const 
 
 FormattedGroupedReports QueryHandler::run_export_all_daily_reports_query(ReportFormat format) const {
     // [MODIFIED] Pass the config path to AllDayReports
-    AllDayReports generator(m_db, app_config_.day_typ_config_path);
+    AllDayReports generator(m_db, app_config_.day_typ_config_path, app_config_.day_md_config_path);
     return generator.generate_all_reports(format);
 }
 

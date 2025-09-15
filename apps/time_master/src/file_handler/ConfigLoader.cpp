@@ -65,13 +65,17 @@ AppConfig ConfigLoader::load_configuration() {
         std::string day_typ_config_relative = j.at("day_typ_config_path").get<std::string>();
         app_config.day_typ_config_path = (config_dir_path / day_typ_config_relative).string();
 
-        // [新增] 从 config.json 加载 MonthTyp 配置的路径
+        // 从 config.json 加载 MonthTyp 配置的路径
         std::string month_typ_config_relative = j.at("month_typ_config_path").get<std::string>();
         app_config.month_typ_config_path = (config_dir_path / month_typ_config_relative).string();
 
-        // [新增] 从 config.json 加载 PeriodTyp 配置的路径
+        // 从 config.json 加载 PeriodTyp 配置的路径
         std::string period_typ_config_relative = j.at("period_typ_config_path").get<std::string>();
         app_config.period_typ_config_path = (config_dir_path / period_typ_config_relative).string();
+
+        // [新增] 从 config.json 加载 DayMd 配置的路径
+        std::string day_md_config_relative = j.at("day_md_config_path").get<std::string>();
+        app_config.day_md_config_path = (config_dir_path / day_md_config_relative).string();
 
 
 
