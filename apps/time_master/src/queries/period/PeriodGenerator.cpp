@@ -17,8 +17,13 @@ std::string PeriodGenerator::generate_report(int days, ReportFormat format) {
     PeriodQuerier querier(m_db, days);
     PeriodReportData report_data = querier.fetch_data();
 
+    if (format == ReportFormat::Typ) {
+        PeriodTyp formatter;
+        return formatter.format_report(report_data, m_db);
+    }
+
     // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex, PeriodTyp>::create_formatter(format);
+    auto formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex>::create_formatter(format);
 
     return formatter->format_report(report_data, m_db);
 }

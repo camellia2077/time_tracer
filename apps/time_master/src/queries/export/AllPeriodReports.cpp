@@ -19,8 +19,13 @@ AllPeriodReports::AllPeriodReports(sqlite3* db) : m_db(db) {
 FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>& days_list, ReportFormat format) {
     FormattedPeriodReports reports;
     
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex, PeriodTyp>::create_formatter(format);
+    std::unique_ptr<IReportFormatter<PeriodReportData>> formatter;
+    if (format == ReportFormat::Typ) {
+        formatter = std::make_unique<PeriodTyp>();
+    } else {
+        formatter = ReportFmtFactory<PeriodReportData, PeriodMd, PeriodTex>::create_formatter(format);
+    }
+
 
     for (int days : days_list) {
         if (days > 0) {
