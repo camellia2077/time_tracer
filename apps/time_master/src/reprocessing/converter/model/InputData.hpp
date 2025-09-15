@@ -18,13 +18,12 @@ struct Activity {
     long long end_timestamp;   
     std::string startTime;
     std::string endTime;
-    std::string topParent;
-    std::vector<std::string> parents;
+    std::string parent;
+    std::vector<std::string> children;
     int durationSeconds = 0;
     std::optional<std::string> activityRemark;
 };
 
-// [核心修改] 改回使用固定的成员变量
 struct GeneratedStats {
     int sleepTime = 0;
     int totalExerciseTime = 0;

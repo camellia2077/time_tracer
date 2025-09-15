@@ -208,3 +208,8 @@ generatedStats统计，提取为方法
 用namespace存储需要计算的parent
 
 
+## v0.3.18.5
+json数据中键命名优化，不再采用 topparent和parent
+而是和数据库插入对齐，使用parent和child
+
+

@@ -1,14 +1,7 @@
 // reprocessing/converter/pipelines/DayStatsCalculator.cpp
 #include "DayStatsCalculator.hpp"
-#include "GeneratedStatsRules.hpp" // 引入硬编码的规则
-#include <string>
-#include <stdexcept>
-#include <iomanip>
-#include <sstream>
-#include <ctime>
-#include <algorithm>
-#include <cstring>
-
+#include "GeneratedStatsRules.hpp"
+// ... (includes and helper functions are unchanged) ...
 namespace {
     long long string_to_time_t(const std::string& datetime_str) {
         if (datetime_str.length() < 14) {
@@ -58,7 +51,9 @@ long long DayStatsCalculator::timeStringToTimestamp(const std::string& date, con
     return timestamp;
 }
 
+
 void DayStatsCalculator::calculate_stats(InputData& day) {
+    // ... (initialization is unchanged) ...
     day.activityCount = day.processedActivities.size();
     day.generatedStats = {}; // 重置
     day.hasStudyActivity = false;
@@ -72,33 +67,37 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         return;
     }
 
+
     for (auto& activity : day.processedActivities) {
         activity.logical_id = date_as_long * 10000 + activity_sequence++;
         activity.durationSeconds = calculateDurationSeconds(activity.startTime, activity.endTime);
         activity.start_timestamp = timeStringToTimestamp(day.date, activity.startTime, false, 0);
         activity.end_timestamp = timeStringToTimestamp(day.date, activity.endTime, true, activity.start_timestamp);
 
-        if (activity.topParent.find("study") != std::string::npos) {
+        // [核心修改]
+        if (activity.parent.find("study") != std::string::npos) { 
             day.hasStudyActivity = true;
         }
-        if (activity.topParent == "exercise") {
+        if (activity.parent == "exercise") {
             day.hasExerciseActivity = true;
         }
 
-        // 使用硬编码的规则进行统计
         for (const auto& rule : GeneratedStatsRules::rules) {
-            if (activity.topParent == rule.topParent) {
-                bool match = (rule.parents.size() == 0);
+            // [核心修改]
+            if (activity.parent == rule.parent) {
+                bool match = (rule.children.size() == 0);
                 if (!match) {
-                    for (const auto& required_parent : rule.parents) {
-                        if (std::find(activity.parents.begin(), activity.parents.end(), required_parent) != activity.parents.end()) {
-                            match = true;
-                            break;
+                    // This is the "AND" logic from our previous discussion
+                    bool all_children_found = true;
+                    for (const auto& required_child : rule.children) {
+                        if (std::find(activity.children.begin(), activity.children.end(), required_child) == activity.children.end()) {
+                            all_children_found = false;
+                            break; 
                         }
                     }
+                    match = all_children_found;
                 }
 
-                // [核心修改] 使用成员指针直接更新对应的统计字段
                 if (match) {
                     (day.generatedStats.*(rule.member)) += activity.durationSeconds;
                 }

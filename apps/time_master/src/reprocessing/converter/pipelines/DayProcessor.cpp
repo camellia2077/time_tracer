@@ -22,9 +22,10 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
 
         Activity sleepActivity;
         sleepActivity.startTime = lastEventTime;
-        sleepActivity.endTime = dayToProcess.getupTime; // Fixed typo here
-        sleepActivity.topParent = "sleep";
-        sleepActivity.parents = {"night"};
+        sleepActivity.endTime = dayToProcess.getupTime;
+        // [核心修改]
+        sleepActivity.parent = "sleep";
+        sleepActivity.children = {"night"};
 
         dayToProcess.processedActivities.insert(dayToProcess.processedActivities.begin(), sleepActivity);
         dayToProcess.hasSleepActivity = true;
@@ -34,7 +35,6 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
         dayToProcess.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
     }
     
-    // [修改] DayStatsCalculator 不再需要 config
     DayStatsCalculator stats_calculator;
     stats_calculator.calculate_stats(dayToProcess);
 }
