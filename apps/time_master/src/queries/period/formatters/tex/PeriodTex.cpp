@@ -1,6 +1,6 @@
 // queries/period/formatters/tex/PeriodTex.cpp
 #include "PeriodTex.hpp"
-#include "PeriodTexConfig.hpp" // [MODIFIED] Include the new configuration file
+#include "PeriodTexConfig.hpp"
 
 #include <iomanip>
 #include <string>
@@ -8,7 +8,7 @@
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
+#include "common/utils/ProjectTree.hpp"
 
 // Local helper function to escape special TeX characters.
 namespace {
@@ -27,7 +27,6 @@ namespace {
 
 std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) const {
     if (data.days_to_query <= 0) {
-        // [MODIFIED] Use the configurable error message.
         return std::string(PeriodTexConfig::InvalidDaysMessage) + "\n";
     }
     return format_report_template(data, db);
@@ -35,9 +34,7 @@ std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) 
 
 void PeriodTex::format_content(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
     _display_summary(ss, data);
-
     if (data.actual_days == 0) {
-        // [MODIFIED] Use the configurable message and add a newline.
         ss << PeriodTexConfig::NoRecordsMessage << "\n";
     } else {
         _display_project_breakdown(ss, data, db);
@@ -45,9 +42,6 @@ void PeriodTex::format_content(std::stringstream& ss, const PeriodReportData& da
 }
 
 void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
-    // [MODIFIED] TeX syntax is now hardcoded here, combined with labels from the config file.
-    
-    // Title: Reconstructed from configurable parts
     ss << "\\section*{"
        << PeriodTexConfig::ReportTitlePrefix << " " << data.days_to_query << " "
        << PeriodTexConfig::ReportTitleDays << " ("
@@ -55,7 +49,8 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
        << escape_tex_local(data.end_date) << ")}\n\n";
 
     if (data.actual_days > 0) {
-        ss << "\\begin{itemize}\n";
+        // [核心修改]
+        ss << "\\begin{itemize}" << PeriodTexConfig::CompactListOptions << "\n";
         ss << "    \\item \\textbf{" << PeriodTexConfig::TotalTimeLabel << "}: " 
            << escape_tex_local(time_format_duration(data.total_duration, data.actual_days)) << "\n";
         ss << "    \\item \\textbf{" << PeriodTexConfig::ActualDaysLabel << "}: " 
@@ -65,7 +60,6 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
 }
 
 void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
-    // This function remains unchanged as it calls a separate utility.
     ss << generate_project_breakdown(
         ReportFormat::LaTeX,
         db,
