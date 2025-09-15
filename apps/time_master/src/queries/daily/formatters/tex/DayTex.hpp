@@ -4,33 +4,34 @@
 
 #include "queries/shared/Interface/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
-#include "queries/shared/formatters/tex/BaseTexFormatter.hpp"
+#include "queries/daily/formatters/tex/DayTexConfig.hpp" // [修改] 引入新的配置类头文件
+#include <memory>
+#include <sstream>
 
-// --- Forward Declarations ---
-struct DailyReportData;
-// [新增] 加上对其他数据结构的前置声明
-struct MonthlyReportData;
-struct PeriodReportData;
-
-
-class DayTex : public IReportFormatter<DailyReportData>, private BaseTexFormatter {
+class DayTex : public IReportFormatter<DailyReportData> {
 public:
-    DayTex() = default;
+    /**
+     * @brief [修改] 构造函数现在接收一个指向配置对象的共享指针。
+     */
+    explicit DayTex(std::shared_ptr<DayTexConfig> config);
 
     std::string format_report(const DailyReportData& data, sqlite3* db) const override;
 
 private:
-    // 这是 DayTex 真正需要实现的函数
-    void format_content(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const override;
-    
-    // [核心修改] 删除错误的无参数版本，并为空实现另外两个纯虚函数
-    void format_content(std::stringstream& /*ss*/, const MonthlyReportData& /*data*/, sqlite3* /*db*/) const override {}
-    void format_content(std::stringstream& /*ss*/, const PeriodReportData& /*data*/, sqlite3* /*db*/) const override {}
-
+    // 私有方法保持不变
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const;
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
+    
+    // [修改] 将 TeX 的模板代码直接移入此类
+    std::string get_tex_preamble() const;
+    std::string get_tex_postfix() const;
+
+    /**
+     * @brief [新增] 用于存储配置对象的成员变量。
+     */
+    std::shared_ptr<DayTexConfig> config_;
 };
 
 #endif // DAILY_REPORT_TEX_FORMATTER_HPP

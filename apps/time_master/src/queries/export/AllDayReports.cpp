@@ -6,17 +6,16 @@
 #include <vector>
 #include <memory>
 
-// [修改] 引入新的通用工厂和具体的格式化器类
 #include "queries/shared/factories/FmtFactory.hpp"
 #include "queries/daily/formatters/md/DayMd.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include "queries/daily/formatters/tex/DayTex.hpp"
+#include "queries/daily/formatters/tex/DayTexConfig.hpp" // [新增]
 #include "queries/daily/formatters/typ/DayTyp.hpp"
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
-// [修改] 构造函数实现
-AllDayReports::AllDayReports(sqlite3* db, const std::string& day_typ_config_path, const std::string& day_md_config_path)
-    : m_db(db), m_day_typ_config_path(day_typ_config_path), m_day_md_config_path(day_md_config_path) {
+AllDayReports::AllDayReports(sqlite3* db, const std::string& day_typ_config_path, const std::string& day_md_config_path, const std::string& day_tex_config_path)
+    : m_db(db), m_day_typ_config_path(day_typ_config_path), m_day_md_config_path(day_md_config_path), m_day_tex_config_path(day_tex_config_path) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -45,7 +44,9 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
             break;
         }
         case ReportFormat::LaTeX: {
-            formatter = std::make_unique<DayTex>();
+            // [修改] 为 DayTex 加载并传递配置
+            auto config = std::make_shared<DayTexConfig>(m_day_tex_config_path);
+            formatter = std::make_unique<DayTex>(config);
             break;
         }
     }

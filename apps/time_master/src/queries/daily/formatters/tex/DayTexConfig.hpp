@@ -1,38 +1,45 @@
-// queries/daily/formatters/tex/DayTexConfig.hpp
-#ifndef DAILY_REPORT_TEX_CONFIG_HPP
-#define DAILY_REPORT_TEX_CONFIG_HPP
+#ifndef DAY_TEX_CONFIG_HPP
+#define DAY_TEX_CONFIG_HPP
 
-#include <string_view>
+#include <string>
+#include <nlohmann/json.hpp>
 
-/**
- * @brief Namespace containing user-configurable text labels for the daily report.
- * A user can edit these strings (e.g., for translation into another language)
- * without needing to understand TeX syntax or C++ code.
- */
-namespace DayTexConfig {
+class DayTexConfig {
+public:
+    explicit DayTexConfig(const std::string& config_path);
 
-    // --- Report Header Text ---
-    constexpr std::string_view ReportTitle = "Daily Report for";
+    const std::string& get_report_title() const;
+    const std::string& get_date_label() const;
+    const std::string& get_total_time_label() const;
+    const std::string& get_status_label() const;
+    const std::string& get_sleep_label() const;
+    const std::string& get_exercise_label() const;
+    const std::string& get_getup_time_label() const;
+    const std::string& get_remark_label() const;
+    const std::string& get_no_records_message() const;
+    const std::string& get_statistics_label() const;
+    const std::string& get_all_activities_label() const;
+    const std::string& get_sleep_time_label() const;
+    const std::string& get_activity_remark_label() const;
+    const std::string& get_compact_list_options() const;
 
-    // --- Metadata Item Labels ---
-    constexpr std::string_view DateLabel      = "Date";
-    constexpr std::string_view TotalTimeLabel = "Total Time Recorded";
-    constexpr std::string_view StatusLabel    = "Status";
-    constexpr std::string_view SleepLabel     = "Sleep";
-    constexpr std::string_view ExerciseLabel  = "Exercise";
-    constexpr std::string_view GetupTimeLabel = "Getup Time";
-    constexpr std::string_view RemarkLabel    = "Remark";
+private:
+    void load_config(const std::string& config_path);
 
-    // --- Body Content Text ---
-    constexpr std::string_view NoRecordsMessage = "No time records for this day.";
-    constexpr std::string_view StatisticsLabel = "Statistics";
-    constexpr std::string_view AllActivitiesLabel = "All Activities";
-    constexpr std::string_view SleepTimeLabel = "Sleep Time";
-    constexpr std::string_view ActivityRemarkLabel = "Activity Remark";
+    std::string report_title_;
+    std::string date_label_;
+    std::string total_time_label_;
+    std::string status_label_;
+    std::string sleep_label_;
+    std::string exercise_label_;
+    std::string getup_time_label_;
+    std::string remark_label_;
+    std::string no_records_message_;
+    std::string statistics_label_;
+    std::string all_activities_label_;
+    std::string sleep_time_label_;
+    std::string activity_remark_label_;
+    std::string compact_list_options_;
+};
 
-    // --- [核心修改] 新增 LaTex 列表的间距配置 ---
-    constexpr std::string_view CompactListOptions = "[topsep=0pt, itemsep=-0.5ex]";
-
-} // namespace DayTexConfig
-
-#endif // DAILY_REPORT_TEX_CONFIG_HPP
+#endif // DAY_TEX_CONFIG_HPP

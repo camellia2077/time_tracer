@@ -46,11 +46,12 @@ set(QUERIES_SOURCES
     "src/queries/daily/DayGenerator.cpp"
     "src/queries/daily/DayQuerier.cpp"
 
-    # md
+    # Daily md
     "src/queries/daily/formatters/md/DayMd.cpp"
     "src/queries/daily/formatters/md/DayMdConfig.cpp"
 
     "src/queries/daily/formatters/tex/DayTex.cpp"
+    "src/queries/daily/formatters/tex/DayTexConfig.cpp"
 
     "src/queries/daily/formatters/typ/DayTyp.cpp"
     "src/queries/daily/formatters/typ/DayTypConfig.cpp"
