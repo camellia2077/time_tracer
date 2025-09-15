@@ -212,4 +212,7 @@ generatedStats统计，提取为方法
 json数据中键命名优化，不再采用 topparent和parent
 而是和数据库插入对齐，使用parent和child
 
+## v0.3.18.6
+json去除多余键
+
 
