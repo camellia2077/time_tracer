@@ -16,7 +16,8 @@ DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
-    ss << std::format(R"(#set text(font: "{0}"))", config_->get_content_font()) << "\n\n";
+    // [MODIFIED] 移除 spacing 参数值旁边的引号
+    ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), config_->get_line_spacing()) << "\n\n";
 
     _display_header(ss, data);
 

@@ -16,8 +16,9 @@ public:
     /**
      * @brief DayGenerator 的构造函数。
      * @param db 指向 SQLite 数据库连接的指针。
+     * @param day_typ_config_path [新增] DayTyp 配置文件的路径。
      */
-    explicit DayGenerator(sqlite3* db);
+    explicit DayGenerator(sqlite3* db, const std::string& day_typ_config_path);
 
     /**
      * @brief 为指定日期生成格式化的日报。
@@ -29,6 +30,7 @@ public:
 
 private:
     sqlite3* m_db;
+    std::string m_day_typ_config_path; // [新增] 用于存储路径
 };
 
 #endif // DAILY_REPORT_GENERATOR_HPP

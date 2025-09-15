@@ -13,14 +13,16 @@
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 #include <memory>
 
-DayGenerator::DayGenerator(sqlite3* db) : m_db(db) {}
+DayGenerator::DayGenerator(sqlite3* db, const std::string& day_typ_config_path) 
+    : m_db(db), m_day_typ_config_path(day_typ_config_path) {}
 
 std::string DayGenerator::generate_report(const std::string& date, ReportFormat format) {
     DayQuerier querier(m_db, date);
     DailyReportData report_data = querier.fetch_data();
 
     if (format == ReportFormat::Typ) {
-        auto config = std::make_shared<DayTypConfig>("config/queries/day/DayTypConfig.json");
+        // [MODIFIED] 使用成员变量中存储的路径
+        auto config = std::make_shared<DayTypConfig>(m_day_typ_config_path);
         DayTyp formatter(config);
         return formatter.format_report(report_data, m_db);
     }

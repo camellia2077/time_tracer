@@ -8,11 +8,10 @@
 
 namespace fs = std::filesystem;
 
-// 修改构造函数实现
-ReportGenerationHandler::ReportGenerationHandler(const std::string& db_path, const AppConfig& /*config*/, const fs::path& exported_files_path)
-    : export_root_path_(exported_files_path) // 直接使用传入的报告专用路径
+ReportGenerationHandler::ReportGenerationHandler(const std::string& db_path, const AppConfig& config, const fs::path& exported_files_path)
+    : app_config_(config),
+      export_root_path_(exported_files_path)
 {
-    // DatabaseManager 接收完整的数据库文件路径
     db_manager_ = std::make_unique<DatabaseManager>(db_path);
 }
 
@@ -20,45 +19,46 @@ ReportGenerationHandler::~ReportGenerationHandler() = default;
 
 DirectQueryManager* ReportGenerationHandler::get_direct_query_manager() {
     if (!db_manager_->open_database_if_needed()) {
-        std::cerr << RED_COLOR << "错误: 无法打开数据库，查询操作中止。" << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: Could not open database, query operation aborted." << RESET_COLOR << std::endl;
         return nullptr;
     }
     if (!direct_query_manager_) {
-        direct_query_manager_ = std::make_unique<DirectQueryManager>(db_manager_->get_db_connection());
+        direct_query_manager_ = std::make_unique<DirectQueryManager>(db_manager_->get_db_connection(), app_config_);
     }
     return direct_query_manager_.get();
 }
 
 ReportExporter* ReportGenerationHandler::get_report_exporter() {
     if (!db_manager_->open_database_if_needed()) {
-        std::cerr << RED_COLOR << "错误: 无法打开数据库，导出操作已中止。" << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: Could not open database, export operation aborted." << RESET_COLOR << std::endl;
         return nullptr;
     }
     if (!report_exporter_) {
-        // ReportExporter 也直接使用传入的报告专用路径
-        report_exporter_ = std::make_unique<ReportExporter>(db_manager_->get_db_connection(), export_root_path_);
+        // [MODIFIED] Pass the AppConfig to the ReportExporter
+        report_exporter_ = std::make_unique<ReportExporter>(db_manager_->get_db_connection(), export_root_path_, app_config_);
     }
     return report_exporter_.get();
 }
+
 std::string ReportGenerationHandler::run_daily_query(const std::string& date, ReportFormat format) {
     if (auto* qm = get_direct_query_manager()) {
         return qm->run_daily_query(date, format);
     }
-    return std::string(RED_COLOR) + "错误: 查询失败。" + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
 }
 
 std::string ReportGenerationHandler::run_monthly_query(const std::string& month, ReportFormat format) {
     if (auto* qm = get_direct_query_manager()) {
         return qm->run_monthly_query(month, format);
     }
-    return std::string(RED_COLOR) + "错误: 查询失败。" + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
 }
 
 std::string ReportGenerationHandler::run_period_query(int days, ReportFormat format) {
     if (auto* qm = get_direct_query_manager()) {
         return qm->run_period_query(days, format);
     }
-    return std::string(RED_COLOR) + "错误: 查询失败。" + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
 }
 
 void ReportGenerationHandler::run_export_single_day_report(const std::string& date, ReportFormat format) {

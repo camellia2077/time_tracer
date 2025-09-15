@@ -2,6 +2,7 @@
   "TitleFont": "Noto Serif",
   "ContentFont": "Noto Serif",
   "TitleFontSize": 14,
+  "LineSpacing": "0.5em",
   "KeywordColors": {
     "study": "rgb(\"#2ECC40\")",
     "recreation": "rgb(\"#FF4136\")",
