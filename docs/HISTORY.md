@@ -204,4 +204,7 @@ generatedStats统计，提取为方法
 ## v0.3.18.3
 预处理json配置拆分
 
+## v0.3.18.4
+用namespace存储需要计算的parent
+
 
