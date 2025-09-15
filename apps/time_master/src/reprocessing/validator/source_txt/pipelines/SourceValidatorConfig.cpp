@@ -3,38 +3,68 @@
 #include "common/AnsiColors.hpp"
 #include <fstream>
 #include <iostream>
+#include <filesystem> 
+
+namespace fs = std::filesystem;
+
+static bool loadJsonFile(const fs::path& file_path, nlohmann::json& out_json) {
+    std::ifstream ifs(file_path);
+    if (!ifs.is_open()) {
+        std::cerr << RED_COLOR << "Error: Could not open config file: " << file_path << RESET_COLOR << std::endl;
+        return false;
+    }
+    try {
+        ifs >> out_json;
+    } catch (const std::exception& e) {
+        std::cerr << RED_COLOR << "Error parsing JSON from " << file_path << ": " << e.what() << RESET_COLOR << std::endl;
+        return false;
+    }
+    return true;
+}
 
 SourceValidatorConfig::SourceValidatorConfig(const std::string& config_filename) {
     _load(config_filename);
 }
 
-void SourceValidatorConfig::_load(const std::string& config_filename) {
-    std::ifstream ifs(config_filename);
-    if (!ifs.is_open()) {
-        std::cerr << RED_COLOR << "Error: Could not open source validator config file: " << config_filename << RESET_COLOR << std::endl;
+void SourceValidatorConfig::_load(const std::string& main_config_path) {
+    fs::path main_path = main_config_path;
+    fs::path config_dir = main_path.parent_path();
+
+    nlohmann::json main_json;
+    if (!loadJsonFile(main_path, main_json)) {
         return;
     }
+
     try {
-        nlohmann::json j;
-        ifs >> j;
-        if (j.contains("remark_prefix")) {
-            remark_prefix_ = j["remark_prefix"].get<std::string>();
+
+        if (main_json.contains("remark_prefix")) {
+            remark_prefix_ = main_json["remark_prefix"].get<std::string>();
         }
-        if (j.contains("text_mappings") && j["text_mappings"].is_object()) {
-            for (auto& [key, value] : j["text_mappings"].items()) {
-                valid_event_keywords_.insert(key);
-            }
-        }
-        if (j.contains("text_duration_mappings") && j["text_duration_mappings"].is_object()) {
-            for (auto& [key, value] : j["text_duration_mappings"].items()) {
-                valid_event_keywords_.insert(key);
-            }
-        }
-        if (j.contains("wake_keywords") && j["wake_keywords"].is_array()) {
-            for (const auto& keyword : j["wake_keywords"]) {
+        if (main_json.contains("wake_keywords") && main_json["wake_keywords"].is_array()) {
+            for (const auto& keyword : main_json["wake_keywords"]) {
                 wake_keywords_.insert(keyword.get<std::string>());
             }
         }
+        if (main_json.contains("mappings_config_path")) {
+            fs::path mappings_path = config_dir / main_json["mappings_config_path"].get<std::string>();
+            nlohmann::json mappings_json;
+            if (loadJsonFile(mappings_path, mappings_json) && mappings_json.contains("text_mappings")) {
+                for (auto& [key, value] : mappings_json["text_mappings"].items()) {
+                    valid_event_keywords_.insert(key);
+                }
+            }
+        }
+        
+        if (main_json.contains("duration_rules_config_path")) {
+            fs::path duration_path = config_dir / main_json["duration_rules_config_path"].get<std::string>();
+            nlohmann::json duration_json;
+            if (loadJsonFile(duration_path, duration_json) && duration_json.contains("text_duration_mappings")) {
+                 for (auto& [key, value] : duration_json["text_duration_mappings"].items()) {
+                    valid_event_keywords_.insert(key);
+                }
+            }
+        }
+
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Error processing source validator config JSON: " << e.what() << RESET_COLOR << std::endl;
     }
