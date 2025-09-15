@@ -57,7 +57,10 @@ set(QUERIES_SOURCES
     # Monthly Reports
     "src/queries/monthly/MonthGenerator.cpp"
     "src/queries/monthly/MonthQuerier.cpp"
+    # md
     "src/queries/monthly/formatters/md/MonthMd.cpp"
+    "src/queries/monthly/formatters/md/MonthMdConfig.cpp"
+
     "src/queries/monthly/formatters/tex/MonthTex.cpp"
 
     "src/queries/monthly/formatters/typ/MonthTyp.cpp"
@@ -68,6 +71,7 @@ set(QUERIES_SOURCES
     "src/queries/period/PeriodGenerator.cpp"
     "src/queries/period/PeriodQuerier.cpp"
     "src/queries/period/formatters/md/PeriodMd.cpp"
+    "src/queries/period/formatters/md/PeriodMdConfig.cpp"
     "src/queries/period/formatters/tex/PeriodTex.cpp"
 
     "src/queries/period/formatters/typ/PeriodTyp.cpp"

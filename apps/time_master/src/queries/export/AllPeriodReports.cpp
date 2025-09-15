@@ -5,16 +5,14 @@
 #include <stdexcept>
 #include <memory>
 
-// [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.hpp"
 #include "queries/period/formatters/md/PeriodMd.hpp"
+#include "queries/period/formatters/md/PeriodMdConfig.hpp"
 #include "queries/period/formatters/tex/PeriodTex.hpp"
 #include "queries/period/formatters/typ/PeriodTyp.hpp"
-#include "queries/period/formatters/typ/PeriodTypConfig.hpp" // [新增] 引入周期报告Typst配置类
+#include "queries/period/formatters/typ/PeriodTypConfig.hpp"
 
-// [修改] 构造函数，接收数据库连接和周期报告Typst配置路径
-AllPeriodReports::AllPeriodReports(sqlite3* db, const std::string& period_typ_config_path)
-    : m_db(db), m_period_typ_config_path(period_typ_config_path) {
+AllPeriodReports::AllPeriodReports(sqlite3* db, const std::string& period_typ_config_path, const std::string& period_md_config_path) 
+    : m_db(db), m_period_typ_config_path(period_typ_config_path), m_period_md_config_path(period_md_config_path) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -31,7 +29,8 @@ FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>
             break;
         }
         case ReportFormat::Markdown: {
-            formatter = std::make_unique<PeriodMd>();
+            auto config = std::make_shared<PeriodMdConfig>(m_period_md_config_path);
+            formatter = std::make_unique<PeriodMd>(config);
             break;
         }
         case ReportFormat::LaTeX: {
