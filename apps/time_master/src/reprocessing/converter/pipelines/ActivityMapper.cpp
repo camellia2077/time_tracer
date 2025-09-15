@@ -1,6 +1,5 @@
 // reprocessing/converter/pipelines/ActivityMapper.cpp
 #include "ActivityMapper.hpp"
-// --- [核心修改] 引用更具体的字符串工具头文件 ---
 #include "common/utils/StringUtils.hpp"
 #include <stdexcept>
 
@@ -28,6 +27,7 @@ int ActivityMapper::calculateDurationMinutes(const std::string& startTimeStr, co
         return 0;
     }
 }
+
 
 ActivityMapper::ActivityMapper(const ConverterConfig& config)
     : config_(config),
@@ -73,22 +73,23 @@ void ActivityMapper::map_activities(InputData& day) {
         }
         
         if (!startTime.empty()) {
-            // split_string 函数现在来自 StringUtils.hpp
             std::vector<std::string> parts = split_string(mappedDescription, '_');
             if (!parts.empty()) {
                 Activity activity;
                 activity.startTime = startTime;
                 activity.endTime = formattedEventEndTime;
                 
-                activity.topParent = parts[0]; 
+                // [核心修改]
+                activity.parent = parts[0]; 
                 const auto& topParentsMap = config_.getTopParentMapping();
-                auto map_it = topParentsMap.find(activity.topParent);
+                auto map_it = topParentsMap.find(activity.parent);
                 if (map_it != topParentsMap.end()) {
-                    activity.topParent = map_it->second;
+                    activity.parent = map_it->second;
                 }
 
                 if (parts.size() > 1) {
-                    activity.parents.assign(parts.begin() + 1, parts.end());
+                    // [核心修改]
+                    activity.children.assign(parts.begin() + 1, parts.end());
                 }
 
                 if (!rawEvent.remark.empty()) {

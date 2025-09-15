@@ -1,12 +1,10 @@
 // reprocessing/converter/pipelines/OutputGenerator.cpp
 #include "OutputGenerator.hpp"
-#include <fstream>
-#include <vector>
-#include <nlohmann/json.hpp>
-
+// ... (includes are unchanged) ...
 using json = nlohmann::json;
 
 void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& /*config*/) {
+    // ... (headers and activities loop setup is unchanged) ...
     if (days.empty()) {
         outputStream << "[]" << std::endl;
         return;
@@ -36,9 +34,10 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         day_obj["headers"] = headers_obj;
         
         json activities = json::array();
+
         for (const auto& activity_data : day.processedActivities) {
             json activity_obj;
-            
+            // ... (other activity fields are unchanged) ...
             activity_obj["logicalId"] = activity_data.logical_id;
             activity_obj["startTimestamp"] = activity_data.start_timestamp;
             activity_obj["endTimestamp"] = activity_data.end_timestamp;
@@ -54,9 +53,10 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
             }
 
             json activity_details;
-            activity_details["topParent"] = activity_data.topParent;
-            if (!activity_data.parents.empty()) {
-                activity_details["parents"] = activity_data.parents;
+            // [核心修改]
+            activity_details["parent"] = activity_data.parent;
+            if (!activity_data.children.empty()) {
+                activity_details["children"] = activity_data.children;
             }
             
             activity_obj["activity"] = activity_details;
@@ -64,7 +64,6 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         }
         day_obj["activities"] = activities;
 
-        // [核心修改] 恢复为写入固定的成员变量
         json generated_stats_obj;
         generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
         generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime;
@@ -78,6 +77,5 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
 
         root_array.push_back(day_obj);
     }
-
-    outputStream << root_array.dump(4) << std::endl;
+     outputStream << root_array.dump(4) << std::endl;
 }
