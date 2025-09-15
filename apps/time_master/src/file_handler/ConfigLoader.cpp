@@ -61,22 +61,26 @@ AppConfig ConfigLoader::load_configuration() {
 
         app_config.error_log_path = (config_dir_path / error_log_relative).lexically_normal().string();
 
-        // 从 config.json 加载 DayTyp 配置的路径
+        // Load Typst config paths
         std::string day_typ_config_relative = j.at("day_typ_config_path").get<std::string>();
         app_config.day_typ_config_path = (config_dir_path / day_typ_config_relative).string();
-
-        // 从 config.json 加载 MonthTyp 配置的路径
+        
         std::string month_typ_config_relative = j.at("month_typ_config_path").get<std::string>();
         app_config.month_typ_config_path = (config_dir_path / month_typ_config_relative).string();
-
-        // 从 config.json 加载 PeriodTyp 配置的路径
+        
         std::string period_typ_config_relative = j.at("period_typ_config_path").get<std::string>();
         app_config.period_typ_config_path = (config_dir_path / period_typ_config_relative).string();
 
-        // [新增] 从 config.json 加载 DayMd 配置的路径
+        // Load Markdown config paths
         std::string day_md_config_relative = j.at("day_md_config_path").get<std::string>();
         app_config.day_md_config_path = (config_dir_path / day_md_config_relative).string();
 
+        // [新增] 从 config.json 加载 MonthMd 和 PeriodMd 配置的路径
+        std::string month_md_config_relative = j.at("month_md_config_path").get<std::string>();
+        app_config.month_md_config_path = (config_dir_path / month_md_config_relative).string();
+
+        std::string period_md_config_relative = j.at("period_md_config_path").get<std::string>();
+        app_config.period_md_config_path = (config_dir_path / period_md_config_relative).string();
 
 
         // 检查 JSON 对象中是否存在 "export_path" 键

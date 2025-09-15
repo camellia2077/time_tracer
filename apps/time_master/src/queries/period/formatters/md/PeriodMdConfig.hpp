@@ -1,29 +1,31 @@
-// queries/period/formatters/md/PeriodMdConfig.hpp
-#ifndef PERIOD_REPORT_MARKDOWN_CONFIG_HPP
-#define PERIOD_REPORT_MARKDOWN_CONFIG_HPP
+#ifndef PERIOD_MD_CONFIG_HPP
+#define PERIOD_MD_CONFIG_HPP
 
-#include <string_view>
+#include <string>
+#include <nlohmann/json.hpp>
 
-/**
- * @brief Namespace containing user-configurable text labels for the period Markdown report.
- * A user can edit these strings (e.g., for translation) without needing to
- * understand Markdown syntax or C++ code.
- */
-namespace PeriodMdConfig {
+class PeriodMdConfig {
+public:
+    explicit PeriodMdConfig(const std::string& config_path);
 
-    // --- Report Title Components ---
-    constexpr std::string_view ReportTitlePrefix        = "Period Report: Last";
-    constexpr std::string_view ReportTitleDays          = "days";
-    constexpr std::string_view ReportTitleDateSeparator = "to";
+    const std::string& get_report_title_prefix() const;
+    const std::string& get_report_title_days() const;
+    const std::string& get_report_title_date_separator() const;
+    const std::string& get_total_time_label() const;
+    const std::string& get_actual_days_label() const;
+    const std::string& get_no_records_message() const;
+    const std::string& get_invalid_days_message() const;
 
-    // --- Summary Item Labels ---
-    constexpr std::string_view TotalTimeLabel  = "Total Time Recorded";
-    constexpr std::string_view ActualDaysLabel = "Actual Days with Records";
+private:
+    void load_config(const std::string& config_path);
 
-    // --- Body Content & Error Messages ---
-    constexpr std::string_view NoRecordsMessage   = "No time records found in this period.";
-    constexpr std::string_view InvalidDaysMessage = "Number of days to query must be positive.";
+    std::string report_title_prefix_;
+    std::string report_title_days_;
+    std::string report_title_date_separator_;
+    std::string total_time_label_;
+    std::string actual_days_label_;
+    std::string no_records_message_;
+    std::string invalid_days_message_;
+};
 
-} // namespace PeriodMdConfig
-
-#endif // PERIOD_REPORT_MARKDOWN_CONFIG_HPP
+#endif // PERIOD_MD_CONFIG_HPP
