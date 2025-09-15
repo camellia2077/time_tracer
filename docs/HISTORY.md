@@ -236,4 +236,4 @@ typ月报 增加json配置
 typ周期 增加json配置
 
 ## v0.3.19.6
-md月报 增加json配置
+md日报 增加json配置
