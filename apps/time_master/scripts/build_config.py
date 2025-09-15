@@ -1,6 +1,6 @@
 import tomllib
 from pathlib import Path
-from colors import AnsiColors  # [核心修改] 导入新的颜色类
+from colors import AnsiColors
 
 # 获取当前脚本文件所在的目录
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -15,8 +15,12 @@ class AppConfig:
         build_settings = config_data.get('build', {})
         self.COMPILER = build_settings.get('compiler', 'default')
         self.WARNING_LEVEL = build_settings.get('warning_level', 2)
+        # ==================== [核心修改] ====================
+        # 加载LTO设置，如果未在文件中指定，则默认为True
+        self.ENABLE_LTO = build_settings.get('enable_lto', True)
+        # ====================================================
 
-        # --- [核心修改] 直接从导入的类中赋值颜色 ---
+        # --- 直接从导入的类中赋值颜色 ---
         self.HEADER = AnsiColors.HEADER
         self.OKBLUE = AnsiColors.OKBLUE
         self.OKGREEN = AnsiColors.OKGREEN
