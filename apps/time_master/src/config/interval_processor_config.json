@@ -1,9 +1,10 @@
 {
-      "top_parent_mapping": {
+    "mappings_config_path": "mapping_config.json",
+    "duration_rules_config_path": "duration_rules.json",
+
+    "top_parent_mapping": {
         "study": "mystudy"
     },
-   
-
     "header_order": [
         "Date:",
         "Status:",
@@ -12,154 +13,5 @@
         "Remark:"
     ],
     "remark_prefix": "r ",
-
-    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"],
-    
-    "text_mappings": {
-        "配置环境"  : "code_env-config",
-        "环境"  : "code_env-config",
-        "bili爬虫" : "code_spider_bili",
-        "weibo爬虫" : "code_spider_weibo",
-        "微博爬虫" : "code_spider_weibo",
-        "avlib" : "code_avlib",
-
-        "cl" : "calorie_calculator",
-        "cal" : "calorie_calculator",
-
-        "tm" : "code_time-master",
-        "timemaster": "code_time-master",
-
-        "bm" : "code_bills-master",
-        "billsmaster": "code_bills-master",
-
-        "pa" : "code_pics2ascii",
-        "pics2ascii": "code_pics2ascii",
-
-        "mz" : "code_maze",
-        "maze": "code_maze",
-
-        "wc" : "code_workout_calculator",
-
-
-
-        "g": "routine_grooming",
-        "grooming": "routine_grooming",
-        "洗漱": "routine_grooming",
-
-
-
-        "f" : "meal",
-        "饭" : "meal",
-        "吃饭" : "meal",
-        "买饭" : "meal_buy",
-
-        "购物" : "meal_shopping",
-
-        "feast" :"meal_feast",
-        
-        "做饭": "meal_cook",
-        "水果": "meal_fruits",
-
-        
-        "cd" : "exercise_cardio",
-        "有氧": "exercise_cardio",
-        "st": "exercise_anaerobic",
-        "无氧": "exercise_anaerobic",
-        "运动": "exercise_both",
-
-        "cpp" : "study_computer_cpp",
-        "rust" : "study_computer_rust",
-        "typ" : "study_computer_typ",
-        "git" : "study_computer_git",
-        "汇编" : "study_computer_asm",
-
-        "word": "study_english_words",
-
-
-        "zh": "recreation_zhihu",
-        "zhihu": "recreation_zhihu",
-        "知乎": "recreation_zhihu",
-        "dy": "recreation_douyin",
-        "抖音": "recreation_douyin",
-        "鱼缸": "recreation_aquarium",
-        "龟": "recreation_aquarium",
-        "qq" : "recreation_qq",
-        "冲浪" : "recreation_surf",
-        "聊天" : "recreation_chat",
-        "逛街" : "recreation_shopping",
-
-        
-        "单词": "study_english_words",
-        "听力": "study_english_listening",
-        "文章": "study_english_article",
-
-        "存钱": "other_bank",
-        "银行": "other_bank",
-        
-        "refactor": "code_refactor",
-
-        "洗澡": "routine_bath",
-        "快递": "routine_express",
-
-        "拉屎": "routine_toilet",
-        
-
-        "守望先锋": "recreation_game_overwatch",
-        "皇室": "recreation_game_clash-royale",
-        "ow": "recreation_game_overwatch",
-        "bili": "recreation_bilibili",
-        "mix": "recreation_mix",
-        "b": "recreation_bilibili",
-        "电影": "recreation_movie",
-        "撸": "rest_masturbation",
-        "度假": "recreation_vacation",
-
-
-        "school": "other_school",
-
-        
-        "break": "break_unknown",
-        "黑神话": "recreation_game_wokong",
-        "指导": "other_instruction",
-        "收拾" : "routine_tidy",
-
-        "洗衣服" : "routine_washing",
-        "其他" : "other_other",
-        "理发" : "routine_haircut",
-        "drive" : "routine_drive",
-
-        "病" : "other_illness",
-        "生病" : "other_illness",
-
-        "sleep" : "sleep_day",
-        "睡觉" : "sleep_day",
-        "打水" : "other_housework"
-    },
-
-
-
-
-
-    "text_duration_mappings":{
-        "失眠": "insomnia",
-        "饭": "meal",
-        "休息" : "rest"
-    },
-    "duration_mappings": {
-        "rest": [
-            { "less_than_minutes": 10, "value": "rest_short" },
-            { "less_than_minutes": 20, "value": "rest_medium" },
-            { "less_than_minutes": 1440, "value": "rest_long" } 
-        ],
-        "insomnia": [
-            { "less_than_minutes": 10, "value": "insomnia_short" },
-            { "less_than_minutes": 30, "value": "insomnia_medium" },
-            { "less_than_minutes": 1440, "value": "insomnia_long" }
-        ],
-        "meal": [
-            { "less_than_minutes": 25, "value": "meal_short" },
-            { "less_than_minutes": 35, "value": "meal_medium" },
-            { "less_than_minutes": 1440, "value": "meal_long" }
-        ]
-    }
+    "wake_keywords": ["起床", "醒", "w", "wake","新的一天开始了A"]
 }
