@@ -69,6 +69,10 @@ AppConfig ConfigLoader::load_configuration() {
         std::string month_typ_config_relative = j.at("month_typ_config_path").get<std::string>();
         app_config.month_typ_config_path = (config_dir_path / month_typ_config_relative).string();
 
+        // [新增] 从 config.json 加载 PeriodTyp 配置的路径
+        std::string period_typ_config_relative = j.at("period_typ_config_path").get<std::string>();
+        app_config.period_typ_config_path = (config_dir_path / period_typ_config_relative).string();
+
 
 
         // 检查 JSON 对象中是否存在 "export_path" 键

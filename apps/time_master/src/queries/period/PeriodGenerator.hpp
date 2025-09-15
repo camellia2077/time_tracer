@@ -8,7 +8,7 @@
 
 class PeriodGenerator {
 public:
-    explicit PeriodGenerator(sqlite3* db);
+    explicit PeriodGenerator(sqlite3* db, const std::string& period_typ_config_path);
 
     /**
      * @brief 为指定的周期生成格式化的报告。
@@ -20,6 +20,7 @@ public:
 
 private:
     sqlite3* m_db;
+    std::string m_period_typ_config_path; // [新增] 声明缺失的成员变量
 };
 
 #endif // PERIOD_REPORT_GENERATOR_HPP
