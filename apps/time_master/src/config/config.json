@@ -1,4 +1,6 @@
 {
   "interval_processor_config_path": "reprocessing/interval_processor_config.json",
-  "error_log_path": "../error.log"
+  "error_log_path": "reprocessing/error_log.txt",
+  "export_path": "exported_reports",
+  "day_typ_config_path": "queries/day/DayTypConfig.json"
 }

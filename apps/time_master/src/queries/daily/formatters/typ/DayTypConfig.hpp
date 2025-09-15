@@ -12,6 +12,7 @@ public:
     const std::string& get_title_font() const;
     const std::string& get_content_font() const;
     int get_title_font_size() const;
+    const std::string& get_line_spacing() const; // 新增
     const std::map<std::string, std::string>& get_keyword_colors() const;
     const std::string& get_title_prefix() const;
     const std::string& get_date_label() const;
@@ -33,6 +34,7 @@ private:
     std::string title_font_;
     std::string content_font_;
     int title_font_size_;
+    std::string line_spacing_; // 新增
     std::map<std::string, std::string> keyword_colors_;
     std::string title_prefix_;
     std::string date_label_;

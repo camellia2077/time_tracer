@@ -13,7 +13,8 @@
 #include "queries/daily/formatters/typ/DayTyp.hpp"
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
-AllDayReports::AllDayReports(sqlite3* db) : m_db(db) {
+AllDayReports::AllDayReports(sqlite3* db, const std::string& day_typ_config_path) 
+    : m_db(db), m_day_typ_config_path(day_typ_config_path) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -31,7 +32,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
     
     std::unique_ptr<IReportFormatter<DailyReportData>> formatter;
     if (format == ReportFormat::Typ) {
-        auto config = std::make_shared<DayTypConfig>("config/queries/day/DayTypConfig.json");
+        // [MODIFIED] 使用成员变量中存储的路径
+        auto config = std::make_shared<DayTypConfig>(m_day_typ_config_path);
         formatter = std::make_unique<DayTyp>(config);
     } else {
         formatter = ReportFmtFactory<DailyReportData, DayMd, DayTex>::create_formatter(format);

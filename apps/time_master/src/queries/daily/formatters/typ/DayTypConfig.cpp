@@ -17,6 +17,7 @@ void DayTypConfig::load_config(const std::string& config_path) {
     title_font_ = config_json.at("TitleFont").get<std::string>();
     content_font_ = config_json.at("ContentFont").get<std::string>();
     title_font_size_ = config_json.at("TitleFontSize").get<int>();
+    line_spacing_ = config_json.at("LineSpacing").get<std::string>(); // 新增
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -36,6 +37,7 @@ void DayTypConfig::load_config(const std::string& config_path) {
 const std::string& DayTypConfig::get_title_font() const { return title_font_; }
 const std::string& DayTypConfig::get_content_font() const { return content_font_; }
 int DayTypConfig::get_title_font_size() const { return title_font_size_; }
+const std::string& DayTypConfig::get_line_spacing() const { return line_spacing_; } // 新增
 const std::map<std::string, std::string>& DayTypConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTypConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayTypConfig::get_date_label() const { return date_label_; }

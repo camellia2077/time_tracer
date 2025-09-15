@@ -13,6 +13,7 @@ struct AppConfig {
     std::string error_log_path;
     std::optional<std::string> export_path; // 用于存储自定义导出根目录路径
     std::unordered_map<std::string, std::string> initial_top_parents;// [新增] 用于存储 top_parents 映射的成员变量
+    std::string day_typ_config_path; // [ADDED] Path to the DayTyp configuration.
 };
 
 // 文件处理操作的选项
