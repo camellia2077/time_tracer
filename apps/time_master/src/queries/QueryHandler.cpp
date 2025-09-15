@@ -18,7 +18,8 @@ std::string QueryHandler::run_daily_query(const std::string& date_str, ReportFor
 }
 
 std::string QueryHandler::run_monthly_query(const std::string& year_month_str, ReportFormat format) const {
-    MonthGenerator generator(m_db);
+    // [修改] 将月报配置路径传递给 MonthGenerator
+    MonthGenerator generator(m_db, app_config_.month_typ_config_path);
     return generator.generate_report(year_month_str, format);
 }
 
@@ -34,7 +35,8 @@ FormattedGroupedReports QueryHandler::run_export_all_daily_reports_query(ReportF
 }
 
 FormattedMonthlyReports QueryHandler::run_export_all_monthly_reports_query(ReportFormat format) const {
-    AllMonthlyReports generator(m_db);
+    // [修改] 将月报配置路径传递给 AllMonthlyReports
+    AllMonthlyReports generator(m_db, app_config_.month_typ_config_path);
     return generator.generate_reports(format);
 }
 

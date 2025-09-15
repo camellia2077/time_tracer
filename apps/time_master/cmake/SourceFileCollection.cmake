@@ -54,7 +54,11 @@ set(QUERIES_SOURCES
     "src/queries/monthly/MonthQuerier.cpp"
     "src/queries/monthly/formatters/md/MonthMd.cpp"
     "src/queries/monthly/formatters/tex/MonthTex.cpp"
+
     "src/queries/monthly/formatters/typ/MonthTyp.cpp"
+    "src/queries/monthly/formatters/typ/MonthTypConfig.cpp"
+
+
     # Period Reports
     "src/queries/period/PeriodGenerator.cpp"
     "src/queries/period/PeriodQuerier.cpp"

@@ -1,0 +1,10 @@
+{
+    "BodyFont": "Noto Serif",
+    "TitleFont": "Noto Serif",
+    "TitleFontSize": 14,
+    "TitlePrefix": "Monthly Summary for",
+    "ActualDaysLabel": "Actual Days with Records",
+    "TotalTimeLabel": "Total Hours",
+    "InvalidFormatError": "Invalid year_month format. Expected YYYYMM.",
+    "NoRecords": "No time records found for this month."
+}

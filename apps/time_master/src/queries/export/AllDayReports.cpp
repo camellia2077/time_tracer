@@ -13,6 +13,7 @@
 #include "queries/daily/formatters/typ/DayTyp.hpp"
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
+// [修改] 构造函数实现
 AllDayReports::AllDayReports(sqlite3* db, const std::string& day_typ_config_path) 
     : m_db(db), m_day_typ_config_path(day_typ_config_path) {
     if (m_db == nullptr) {
@@ -32,7 +33,6 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
     
     std::unique_ptr<IReportFormatter<DailyReportData>> formatter;
     if (format == ReportFormat::Typ) {
-        // [MODIFIED] 使用成员变量中存储的路径
         auto config = std::make_shared<DayTypConfig>(m_day_typ_config_path);
         formatter = std::make_unique<DayTyp>(config);
     } else {

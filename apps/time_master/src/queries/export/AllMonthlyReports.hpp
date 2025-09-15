@@ -21,8 +21,9 @@ public:
     /**
      * @brief 构造函数。
      * @param db 指向数据库连接的指针。
+     * @param month_typ_config_path Typst月报的配置路径。
      */
-    explicit AllMonthlyReports(sqlite3* db);
+    explicit AllMonthlyReports(sqlite3* db, const std::string& month_typ_config_path);
 
     /**
      * @brief 生成所有月报并返回分类好的结果。
@@ -33,6 +34,7 @@ public:
 
 private:
     sqlite3* m_db;
+    std::string m_month_typ_config_path;
 };
 
 #endif // ALL_MONTHLY_REPORTS_GENERATOR_HPP

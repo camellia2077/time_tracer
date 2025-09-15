@@ -13,7 +13,7 @@
  */
 class MonthGenerator {
 public:
-    explicit MonthGenerator(sqlite3* db);
+    explicit MonthGenerator(sqlite3* db, const std::string& month_typ_config_path);
 
     /**
      * @brief 为指定月份生成格式化的月报。
@@ -25,6 +25,7 @@ public:
 
 private:
     sqlite3* m_db;
+    std::string m_month_typ_config_path;
 };
 
 #endif // MONTHLY_REPORT_GENERATOR_HPP

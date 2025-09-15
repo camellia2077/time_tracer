@@ -6,14 +6,18 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <memory>
 
 // [修改] 引入新的通用工厂和具体的格式化器类
 #include "queries/shared/factories/FmtFactory.hpp"
 #include "queries/monthly/formatters/md/MonthMd.hpp"
 #include "queries/monthly/formatters/tex/MonthTex.hpp"
 #include "queries/monthly/formatters/typ/MonthTyp.hpp"
+#include "queries/monthly/formatters/typ/MonthTypConfig.hpp" // [新增] 引入月报Typst配置类
 
-AllMonthlyReports::AllMonthlyReports(sqlite3* db) : m_db(db) {
+// [修改] 构造函数，接收数据库连接和月报Typst配置路径
+AllMonthlyReports::AllMonthlyReports(sqlite3* db, const std::string& month_typ_config_path) 
+    : m_db(db), m_month_typ_config_path(month_typ_config_path) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -30,11 +34,13 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
 
     std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
     if (format == ReportFormat::Typ) {
-        formatter = std::make_unique<MonthTyp>();
+        // [修改] 如果格式为Typst，则使用配置路径来创建专门的格式化器
+        auto config = std::make_shared<MonthTypConfig>(m_month_typ_config_path);
+        formatter = std::make_unique<MonthTyp>(config);
     } else {
+        // 对于其他格式，继续使用通用工厂
         formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex>::create_formatter(format);
     }
-
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int year = sqlite3_column_int(stmt, 0);
