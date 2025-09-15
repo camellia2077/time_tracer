@@ -8,6 +8,7 @@ TimeRecordInternal ActivityParser::parse(
     std::unordered_set<std::pair<std::string, std::string>, pair_hash>& parent_child_pairs) const {
     try {
         TimeRecordInternal record;
+        // ... (other fields are unchanged) ...
         record.logical_id = activity_json.at("logicalId");
         record.start_timestamp = activity_json.at("startTimestamp");
         record.end_timestamp = activity_json.at("endTimestamp");
@@ -21,15 +22,18 @@ TimeRecordInternal ActivityParser::parse(
         }
 
         const auto& activity_details = activity_json.at("activity");
-        std::string title = activity_details.at("topParent");
-        std::string project_path = title;
+        // [核心修改]
+        std::string parent_name = activity_details.at("parent");
+        std::string project_path = parent_name;
 
-        if (activity_details.contains("parents") && activity_details["parents"].is_array()) {
-            for (const auto& parent_json : activity_details["parents"]) {
-                std::string parent_name = parent_json.get<std::string>();
-                std::string parent_path = project_path;
-                project_path += "_" + parent_name;
-                parent_child_pairs.insert({project_path, parent_path});
+        // [核心修改]
+        if (activity_details.contains("children") && activity_details["children"].is_array()) {
+            for (const auto& child_json : activity_details["children"]) {
+                std::string child_name = child_json.get<std::string>();
+                std::string current_parent_path = project_path;
+                project_path += "_" + child_name;
+                // 这里的逻辑依然是 child, parent，非常清晰
+                parent_child_pairs.insert({project_path, current_parent_path});
             }
         }
 
