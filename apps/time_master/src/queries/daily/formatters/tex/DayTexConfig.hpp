@@ -25,7 +25,8 @@ public:
     const std::string& get_compact_list_options() const;
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
-    const std::map<std::string, std::string>& get_keyword_colors() const; // New
+    const std::map<std::string, std::string>& get_keyword_colors() const;
+    const std::string& get_activity_connector() const; // [新增]
 
 private:
     void load_config(const std::string& config_path);
@@ -46,7 +47,8 @@ private:
     std::string compact_list_options_;
     std::string main_font_;
     std::string cjk_main_font_;
-    std::map<std::string, std::string> keyword_colors_; // New
+    std::map<std::string, std::string> keyword_colors_;
+    std::string activity_connector_; // [新增]
 };
 
 #endif // DAY_TEX_CONFIG_HPP
