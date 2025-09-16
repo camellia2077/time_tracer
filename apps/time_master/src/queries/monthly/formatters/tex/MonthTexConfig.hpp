@@ -1,3 +1,4 @@
+// queries/monthly/formatters/tex/MonthTexConfig.hpp
 #ifndef MONTH_TEX_CONFIG_HPP
 #define MONTH_TEX_CONFIG_HPP
 

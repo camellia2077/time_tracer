@@ -1,3 +1,4 @@
+// queries/period/formatters/tex/PeriodTex.cpp
 #include "PeriodTex.hpp"
 #include <iomanip>
 #include <string>

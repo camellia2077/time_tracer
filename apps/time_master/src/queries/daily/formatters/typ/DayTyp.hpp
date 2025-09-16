@@ -1,3 +1,4 @@
+// queries/daily/formatters/typ/DayTyp.hpp
 #ifndef DAY_TYP_HPP
 #define DAY_TYP_HPP
 

@@ -1,3 +1,4 @@
+// queries/period/formatters/tex/PeriodTexConfig.hpp
 #ifndef PERIOD_TEX_CONFIG_HPP
 #define PERIOD_TEX_CONFIG_HPP
 
