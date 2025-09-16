@@ -1,5 +1,6 @@
 // queries/shared/utils/query_utils.cpp
 #include "query_utils.hpp"
+#include "common/utils/StringUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp" // 引入TreeFmtFactory
 #include "queries/shared/Interface/ITreeFmt.hpp"       // 引入ITreeFmt
 
