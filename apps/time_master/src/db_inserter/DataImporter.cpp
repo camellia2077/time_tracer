@@ -10,7 +10,6 @@
 
 #include "common/AnsiColors.hpp"
 
-// --- [FIX] Updated include to the new facade and its model ---
 #include "db_inserter/parser/facade/JsonParserFacade.hpp"
 #include "db_inserter/parser/model/ParsedData.hpp"
 #include "db_inserter/inserter/facade/DatabaseInserter.hpp"
@@ -107,7 +106,6 @@ public:
 
         std::cout << "Stage 1: Parsing JSON files into memory..." << std::endl;
         
-        // --- [FIX] Use the new facade and a struct to hold all parsed data ---
         JsonParserFacade parser;
         ParsedData all_data;
         std::vector<std::string> failed_files = parse_all_files(parser, files_to_process, all_data);
@@ -118,8 +116,9 @@ public:
         std::cout << "Stage 2: Importing data into the database..." << std::endl;
         DatabaseInserter inserter(db_name_);
         if (inserter.is_db_open()) {
-            // --- [FIX] Pass the aggregated data from the ParsedData struct ---
-            inserter.import_data(all_data.days, all_data.records, all_data.parent_child_pairs);
+            // --- [核心修改] ---
+            // 调用已简化的 import_data 方法
+            inserter.import_data(all_data.days, all_data.records);
         } else {
             std::cerr << "Inserter could not open database. Aborting import." << std::endl;
         }
@@ -131,7 +130,6 @@ public:
     }
 
 private:
-    // --- [FIX] This function now aggregates data and handles exceptions ---
     std::vector<std::string> parse_all_files(JsonParserFacade& parser, const std::vector<std::string>& files, ParsedData& all_data) {
         std::vector<std::string> failed_files;
         for (const std::string& fname : files) {
@@ -140,7 +138,7 @@ private:
                 // Append data from this file to the main data object
                 all_data.days.insert(all_data.days.end(), single_file_data.days.begin(), single_file_data.days.end());
                 all_data.records.insert(all_data.records.end(), single_file_data.records.begin(), single_file_data.records.end());
-                all_data.parent_child_pairs.insert(single_file_data.parent_child_pairs.begin(), single_file_data.parent_child_pairs.end());
+                // --- [核心修改] 移除对 parent_child_pairs 的处理 ---
             } catch (const std::exception& e) {
                 // If parse_file throws an exception, we count it as a failure.
                 failed_files.push_back(fname);

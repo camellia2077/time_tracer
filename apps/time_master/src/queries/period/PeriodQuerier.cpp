@@ -1,5 +1,4 @@
 // queries/period/PeriodQuerier.cpp
-
 #include "PeriodQuerier.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include <iomanip>
@@ -12,11 +11,11 @@ PeriodReportData PeriodQuerier::fetch_data() {
     data.days_to_query = m_days_to_query;
 
     if (!_validate_input()) {
-        data.days_to_query = -1; // Use a negative number to indicate invalid input
+        data.days_to_query = -1; // 使用负数表示无效输入
         return data;
     }
 
-    // Calculate date range
+    // 计算日期范围
     data.end_date = get_current_date_str();
     data.start_date = add_days_to_date_str(data.end_date, -(m_days_to_query - 1));
     
@@ -29,9 +28,23 @@ bool PeriodQuerier::_validate_input() const {
     return m_days_to_query > 0;
 }
 
+// --- [核心修改] 使用递归CTE重写SQL查询 ---
 void PeriodQuerier::_fetch_records_and_duration(PeriodReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT project_path, duration FROM time_records WHERE date >= ? AND date <= ?;";
+    std::string sql = R"(
+        WITH RECURSIVE project_paths(id, path) AS (
+            SELECT id, name FROM projects WHERE parent_id IS NULL
+            UNION ALL
+            SELECT p.id, pp.path || '_' || p.name
+            FROM projects p
+            JOIN project_paths pp ON p.parent_id = pp.id
+        )
+        SELECT pp.path, tr.duration 
+        FROM time_records tr
+        JOIN project_paths pp ON tr.project_id = pp.id
+        WHERE tr.date >= ? AND tr.date <= ?;
+    )";
+
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, data.start_date.c_str(), -1, SQLITE_STATIC);
         sqlite3_bind_text(stmt, 2, data.end_date.c_str(), -1, SQLITE_STATIC);

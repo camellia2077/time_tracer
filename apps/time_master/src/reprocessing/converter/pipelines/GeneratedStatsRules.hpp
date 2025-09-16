@@ -6,21 +6,21 @@
 #include <initializer_list>
 
 struct StatsRule {
-    // [核心修改]
-    const char* parent;
-    std::initializer_list<const char*> children;
+    // --- [核心修改] ---
+    // 使用一个完整的路径字符串进行匹配
+    const char* match_path;
     int GeneratedStats::*member;
 };
 
 namespace GeneratedStatsRules {
     constexpr StatsRule rules[] = {
-        {"sleep", {}, &GeneratedStats::sleepTime},
-        {"exercise", {}, &GeneratedStats::totalExerciseTime},
-        {"exercise", {"cardio"}, &GeneratedStats::cardioTime},
-        {"exercise", {"anaerobic"}, &GeneratedStats::anaerobicTime},
-        {"routine", {"grooming"}, &GeneratedStats::groomingTime},
-        {"routine", {"toilet"}, &GeneratedStats::toiletTime},
-        {"recreation", {"game"}, &GeneratedStats::gamingTime}
+        {"sleep", &GeneratedStats::sleepTime},
+        {"exercise", &GeneratedStats::totalExerciseTime},
+        {"exercise_cardio", &GeneratedStats::cardioTime},
+        {"exercise_anaerobic", &GeneratedStats::anaerobicTime},
+        {"routine_grooming", &GeneratedStats::groomingTime},
+        {"routine_toilet", &GeneratedStats::toiletTime},
+        {"recreation_game", &GeneratedStats::gamingTime}
     };
 }
 
