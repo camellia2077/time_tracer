@@ -1,3 +1,4 @@
+// queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
 
 #include <iomanip>

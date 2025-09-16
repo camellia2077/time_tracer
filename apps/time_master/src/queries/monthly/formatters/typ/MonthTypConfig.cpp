@@ -1,3 +1,4 @@
+// queries/monthly/formatters/typ/MonthTypConfig.cpp
 #include "MonthTypConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>

@@ -1,3 +1,4 @@
+// queries/period/formatters/tex/PeriodTexConfig.cpp
 #include "PeriodTexConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
