@@ -1,10 +1,26 @@
+
+## queries复用代码
+##namespace {
+    // 用于转义 TeX 特殊字符的局部辅助函数
+    std::string escape_tex_local(const std::string& s) {
+        std::string escaped;
+        escaped.reserve(s.length());
+        for (char c : s) {
+            if (c == '&' || c == '%' || c == '$' || c == '#' || c == '_' || c == '{' || c == '}') {
+                escaped += '\\';
+            }
+            escaped += c;
+        }
+        return escaped;
+    }
+}
+复用这个函数
+
+
 ## tex日报告增加行间距配置
 typ日报已经增加行间距
 
 
-## 硬编码配置写成json
-typ:日报 月报 周期报
-md:日报 月报 周期报
 
 
 ## 每天的拉屎和洗漱时间应该在日报告导出的时候添加
