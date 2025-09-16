@@ -1,5 +1,5 @@
 #include "DayTypConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // [新增] 引入辅助函数
 #include <stdexcept>
 
 DayTypConfig::DayTypConfig(const std::string& config_path) {
@@ -7,17 +7,13 @@ DayTypConfig::DayTypConfig(const std::string& config_path) {
 }
 
 void DayTypConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open Typst daily report config file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // [修改] 使用新的辅助函数来加载和解析 JSON 文件
+    nlohmann::json config_json = load_json_config(config_path, "Could not open Typst daily report config file: ");
 
     title_font_ = config_json.at("TitleFont").get<std::string>();
     content_font_ = config_json.at("ContentFont").get<std::string>();
     title_font_size_ = config_json.at("TitleFontSize").get<int>();
-    line_spacing_ = config_json.at("LineSpacing").get<std::string>(); // 新增
+    line_spacing_ = config_json.at("LineSpacing").get<std::string>();
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -34,10 +30,11 @@ void DayTypConfig::load_config(const std::string& config_path) {
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
 }
 
+
 const std::string& DayTypConfig::get_title_font() const { return title_font_; }
 const std::string& DayTypConfig::get_content_font() const { return content_font_; }
 int DayTypConfig::get_title_font_size() const { return title_font_size_; }
-const std::string& DayTypConfig::get_line_spacing() const { return line_spacing_; } // 新增
+const std::string& DayTypConfig::get_line_spacing() const { return line_spacing_; }
 const std::map<std::string, std::string>& DayTypConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTypConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayTypConfig::get_date_label() const { return date_label_; }

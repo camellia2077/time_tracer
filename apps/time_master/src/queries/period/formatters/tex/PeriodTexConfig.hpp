@@ -31,7 +31,7 @@ private:
     std::string invalid_days_message_;
     std::string compact_list_options_;
     std::string main_font_;
-    std::string cjk_main_font_;PeriodTexConfig.cpp
+    std::string cjk_main_font_;
 };
 
 #endif // PERIOD_TEX_CONFIG_HPP
