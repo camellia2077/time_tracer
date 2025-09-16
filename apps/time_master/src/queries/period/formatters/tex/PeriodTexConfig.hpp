@@ -1,19 +1,37 @@
-// queries/period/formatters/tex/PeriodTexConfig.hpp
-#ifndef PERIOD_REPORT_TEX_CONFIG_HPP
-#define PERIOD_REPORT_TEX_CONFIG_HPP
+#ifndef PERIOD_TEX_CONFIG_HPP
+#define PERIOD_TEX_CONFIG_HPP
 
-#include <string_view>
+#include <string>
+#include <nlohmann/json.hpp>
 
-namespace PeriodTexConfig {
-    constexpr std::string_view ReportTitlePrefix        = "Period Report: Last";
-    constexpr std::string_view ReportTitleDays          = "days";
-    constexpr std::string_view ReportTitleDateSeparator = "to";
-    constexpr std::string_view TotalTimeLabel  = "Total Time Recorded";
-    constexpr std::string_view ActualDaysLabel = "Actual Days with Records";
-    constexpr std::string_view NoRecordsMessage   = "No time records found in this period.";
-    constexpr std::string_view InvalidDaysMessage = "Number of days to query must be positive.";
-    // --- [核心修改] ---
-    constexpr std::string_view CompactListOptions = "[topsep=0pt, itemsep=-0.5ex]";
-}
+class PeriodTexConfig {
+public:
+    explicit PeriodTexConfig(const std::string& config_path);
 
-#endif // PERIOD_REPORT_TEX_CONFIG_HPP
+    const std::string& get_report_title_prefix() const;
+    const std::string& get_report_title_days() const;
+    const std::string& get_report_title_date_separator() const;
+    const std::string& get_total_time_label() const;
+    const std::string& get_actual_days_label() const;
+    const std::string& get_no_records_message() const;
+    const std::string& get_invalid_days_message() const;
+    const std::string& get_compact_list_options() const;
+    const std::string& get_main_font() const;
+    const std::string& get_cjk_main_font() const;
+
+private:
+    void load_config(const std::string& config_path);
+
+    std::string report_title_prefix_;
+    std::string report_title_days_;
+    std::string report_title_date_separator_;
+    std::string total_time_label_;
+    std::string actual_days_label_;
+    std::string no_records_message_;
+    std::string invalid_days_message_;
+    std::string compact_list_options_;
+    std::string main_font_;
+    std::string cjk_main_font_;PeriodTexConfig.cpp
+};
+
+#endif // PERIOD_TEX_CONFIG_HPP

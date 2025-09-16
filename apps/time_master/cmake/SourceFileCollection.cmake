@@ -42,23 +42,52 @@ set(QUERIES_SOURCES
     "src/queries/export/AllMonthlyReports.cpp"
     "src/queries/export/AllPeriodReports.cpp"
     # Daily Reports
+    
     "src/queries/daily/DayGenerator.cpp"
     "src/queries/daily/DayQuerier.cpp"
+
+    # Daily md
     "src/queries/daily/formatters/md/DayMd.cpp"
+    "src/queries/daily/formatters/md/DayMdConfig.cpp"
+
     "src/queries/daily/formatters/tex/DayTex.cpp"
+    "src/queries/daily/formatters/tex/DayTexConfig.cpp"
+
     "src/queries/daily/formatters/typ/DayTyp.cpp"
+    "src/queries/daily/formatters/typ/DayTypConfig.cpp"
     # Monthly Reports
     "src/queries/monthly/MonthGenerator.cpp"
     "src/queries/monthly/MonthQuerier.cpp"
+    # Monthly md
     "src/queries/monthly/formatters/md/MonthMd.cpp"
+    "src/queries/monthly/formatters/md/MonthMdConfig.cpp"
+
+    # Monthly tex
     "src/queries/monthly/formatters/tex/MonthTex.cpp"
+    "src/queries/monthly/formatters/tex/MonthTexConfig.cpp"
+
     "src/queries/monthly/formatters/typ/MonthTyp.cpp"
+    "src/queries/monthly/formatters/typ/MonthTypConfig.cpp"
+
+
     # Period Reports
     "src/queries/period/PeriodGenerator.cpp"
     "src/queries/period/PeriodQuerier.cpp"
+
+    # Period md
     "src/queries/period/formatters/md/PeriodMd.cpp"
+    "src/queries/period/formatters/md/PeriodMdConfig.cpp"
+
+    # Period tex
     "src/queries/period/formatters/tex/PeriodTex.cpp"
+    "src/queries/period/formatters/tex/PeriodTexConfig.cpp"
+
+    # Period typ
     "src/queries/period/formatters/typ/PeriodTyp.cpp"
+    "src/queries/period/formatters/typ/PeriodTypConfig.cpp"
+
+    
+
     # Shared Components
     "src/queries/shared/factories/TreeFmtFactory.cpp"
     "src/queries/shared/formatters/breakdown/md/BreakdownMd.cpp"

@@ -61,8 +61,39 @@ AppConfig ConfigLoader::load_configuration() {
 
         app_config.error_log_path = (config_dir_path / error_log_relative).lexically_normal().string();
 
-        // [移除] 不再从主 config.json 加载 initial_top_parents 映射。
-        // 这个逻辑将迁移到 ConverterConfig 类中，由它自己从 interval_processor_config.json 加载。
+        // Load Typst config paths
+        std::string day_typ_config_relative = j.at("day_typ_config_path").get<std::string>();
+        app_config.day_typ_config_path = (config_dir_path / day_typ_config_relative).string();
+        
+        std::string month_typ_config_relative = j.at("month_typ_config_path").get<std::string>();
+        app_config.month_typ_config_path = (config_dir_path / month_typ_config_relative).string();
+        
+        std::string period_typ_config_relative = j.at("period_typ_config_path").get<std::string>();
+        app_config.period_typ_config_path = (config_dir_path / period_typ_config_relative).string();
+
+        // 加载 DayTex 配置路径
+        std::string day_tex_config_relative = j.at("day_tex_config_path").get<std::string>();
+        app_config.day_tex_config_path = (config_dir_path / day_tex_config_relative).string();
+
+        // [新增] 加载 MonthTex 配置路径
+        std::string month_tex_config_relative = j.at("month_tex_config_path").get<std::string>();
+        app_config.month_tex_config_path = (config_dir_path / month_tex_config_relative).string();
+
+        // [New] Load PeriodTex config path
+        std::string period_tex_config_relative = j.at("period_tex_config_path").get<std::string>();
+        app_config.period_tex_config_path = (config_dir_path / period_tex_config_relative).string();
+
+        // Load Markdown config paths
+        std::string day_md_config_relative = j.at("day_md_config_path").get<std::string>();
+        app_config.day_md_config_path = (config_dir_path / day_md_config_relative).string();
+
+        // 从 config.json 加载 MonthMd 和 PeriodMd 配置的路径
+        std::string month_md_config_relative = j.at("month_md_config_path").get<std::string>();
+        app_config.month_md_config_path = (config_dir_path / month_md_config_relative).string();
+
+        std::string period_md_config_relative = j.at("period_md_config_path").get<std::string>();
+        app_config.period_md_config_path = (config_dir_path / period_md_config_relative).string();
+
 
         // 检查 JSON 对象中是否存在 "export_path" 键
         if (j.contains("export_path")) {

@@ -1,0 +1,9 @@
+{
+    "ReportTitlePrefix": "Period Report: Last",
+    "ReportTitleDays": "days",
+    "ReportTitleDateSeparator": "to",
+    "TotalTimeLabel": "Total Time Recorded",
+    "ActualDaysLabel": "Actual Days with Records",
+    "NoRecordsMessage": "No time records found in this period.",
+    "InvalidDaysMessage": "Number of days to query must be positive."
+}

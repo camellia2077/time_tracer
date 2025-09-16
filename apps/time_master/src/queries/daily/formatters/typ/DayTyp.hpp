@@ -4,15 +4,17 @@
 
 #include "queries/shared/Interface/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
+#include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
 #include <sstream>
+#include <memory>
 
 // Forward declaration
 struct DailyReportData;
 
 class DayTyp : public IReportFormatter<DailyReportData> {
 public:
-    DayTyp() = default;
+    explicit DayTyp(std::shared_ptr<DayTypConfig> config);
 
     std::string format_report(const DailyReportData& data, sqlite3* db) const override;
 
@@ -28,6 +30,8 @@ private:
      * @return 格式化后的 Typst 字符串。
      */
     std::string _format_activity_line(const TimeRecord& record) const;
+
+    std::shared_ptr<DayTypConfig> config_;
 };
 
 #endif // DAILY_REPORT_TYP_FORMATTER_H

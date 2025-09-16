@@ -6,14 +6,18 @@
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
+#include <memory>
 
-// [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.hpp"
 #include "queries/monthly/formatters/md/MonthMd.hpp"
+#include "queries/monthly/formatters/md/MonthMdConfig.hpp"
 #include "queries/monthly/formatters/tex/MonthTex.hpp"
+#include "queries/monthly/formatters/tex/MonthTexConfig.hpp"
 #include "queries/monthly/formatters/typ/MonthTyp.hpp"
+#include "queries/monthly/formatters/typ/MonthTypConfig.hpp"
+#include "common/AppConfig.hpp"
 
-AllMonthlyReports::AllMonthlyReports(sqlite3* db) : m_db(db) {
+AllMonthlyReports::AllMonthlyReports(sqlite3* db, const AppConfig& config) 
+    : m_db(db), app_config_(config) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -28,8 +32,24 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch unique year/month pairs.");
     }
 
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex, MonthTyp>::create_formatter(format);
+    std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
+    switch (format) {
+        case ReportFormat::Typ: {
+            auto config = std::make_shared<MonthTypConfig>(app_config_.month_typ_config_path);
+            formatter = std::make_unique<MonthTyp>(config);
+            break;
+        }
+        case ReportFormat::Markdown: {
+            auto config = std::make_shared<MonthMdConfig>(app_config_.month_md_config_path);
+            formatter = std::make_unique<MonthMd>(config);
+            break;
+        }
+        case ReportFormat::LaTeX: {
+            auto config = std::make_shared<MonthTexConfig>(app_config_.month_tex_config_path);
+            formatter = std::make_unique<MonthTex>(config);
+            break;
+        }
+    }
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int year = sqlite3_column_int(stmt, 0);

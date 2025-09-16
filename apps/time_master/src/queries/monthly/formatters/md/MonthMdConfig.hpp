@@ -1,27 +1,27 @@
-// queries/monthly/formatters/md/MonthMdConfig.hpp
-#ifndef MONTHLY_REPORT_MARKDOWN_CONFIG_HPP
-#define MONTHLY_REPORT_MARKDOWN_CONFIG_HPP
+#ifndef MONTH_MD_CONFIG_HPP
+#define MONTH_MD_CONFIG_HPP
 
-#include <string_view>
+#include <string>
+#include <nlohmann/json.hpp>
 
-/**
- * @brief Namespace containing user-configurable text labels for the monthly Markdown report.
- * A user can edit these strings (e.g., for translation) without needing to
- * understand Markdown syntax or C++ code.
- */
-namespace MonthMdConfig {
+class MonthMdConfig {
+public:
+    explicit MonthMdConfig(const std::string& config_path);
 
-    // --- Report Header Text ---
-    constexpr std::string_view ReportTitle = "Monthly Summary for";
+    const std::string& get_report_title() const;
+    const std::string& get_actual_days_label() const;
+    const std::string& get_total_time_label() const;
+    const std::string& get_no_records_message() const;
+    const std::string& get_invalid_format_message() const;
 
-    // --- Summary Item Labels ---
-    constexpr std::string_view ActualDaysLabel = "Actual Days with Records";
-    constexpr std::string_view TotalTimeLabel  = "Total Time Recorded";
+private:
+    void load_config(const std::string& config_path);
 
-    // --- Body Content & Error Messages ---
-    constexpr std::string_view NoRecordsMessage = "No time records found for this month.";
-    constexpr std::string_view InvalidFormatMessage = "Invalid year_month format. Expected YYYYMM.";
+    std::string report_title_;
+    std::string actual_days_label_;
+    std::string total_time_label_;
+    std::string no_records_message_;
+    std::string invalid_format_message_;
+};
 
-} // namespace MonthMdConfig
-
-#endif // MONTHLY_REPORT_MARKDOWN_CONFIG_HPP
+#endif // MONTH_MD_CONFIG_HPP
