@@ -14,5 +14,14 @@
     "ActivityRemarkLabel": "Activity Remark",
     "CompactListOptions": "[topsep=0pt, itemsep=-0.5ex]",
     "MainFont": "Noto Serif SC",
-    "CJKMainFont": "Noto Serif SC"
+    "CJKMainFont": "Noto Serif SC",
+    "KeywordColors": {
+        "study":      "2ECC40",
+        "recreation": "FF4136",
+        "meal":       "FF851B",
+        "exercise":   "0074D9",
+        "routine":    "AAAAAA",
+        "sleep":      "B10DC9",
+        "code":       "39CCCC"
+    }
 }
