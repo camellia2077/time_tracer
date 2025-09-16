@@ -18,8 +18,11 @@ struct Activity {
     long long end_timestamp;   
     std::string startTime;
     std::string endTime;
-    std::string parent;
-    std::vector<std::string> children;
+    
+    // --- [核心修改] ---
+    // 使用 project_path 替换 parent 和 children
+    std::string project_path; 
+    
     int durationSeconds = 0;
     std::optional<std::string> activityRemark;
 };

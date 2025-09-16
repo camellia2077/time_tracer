@@ -51,10 +51,12 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
 }
 
 
-void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* /*db*/) const {
+    // --- [CORE FIX] ---
+    // The 'db' parameter has been removed from the generate_project_breakdown function.
+    // The arguments have been updated to match the new function signature.
     ss << generate_project_breakdown(
         ReportFormat::Markdown,
-        db,
         data.records,
         data.total_duration,
         1
@@ -65,7 +67,6 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     if (!data.detailed_records.empty()) {
         ss << "\n## " << config_->get_all_activities_label() << "\n\n";
         for (const auto& record : data.detailed_records) {
-            // [修改] 使用新的连接符替换`_`
             std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
             ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 

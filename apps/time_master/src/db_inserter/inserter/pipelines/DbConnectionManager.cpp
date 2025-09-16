@@ -7,55 +7,56 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
         db = nullptr;
     } else {
-        // days 表：用于存储每一天的元数据和统计信息。
+        // days table definition (remains unchanged)
         const char* create_days_sql =
                 "CREATE TABLE IF NOT EXISTS days ("
-                "date TEXT PRIMARY KEY,   -- 日期，主键 (TEXT)\n"
-                "year INTEGER,            -- 年份 (INTEGER)\n"
-                "month INTEGER,           -- 月份 (INTEGER)\n"
-                "status INTEGER,          -- 当天状态 (INTEGER)\n"
-                "sleep INTEGER,           -- 睡眠质量 (INTEGER)\n"
-                "remark TEXT,             -- 当天备注 (TEXT)\n"
-                "getup_time TEXT,         -- 起床时间 (TEXT)\n"
-                "exercise INTEGER,        -- 是否锻炼 (INTEGER)\n"
-                "total_exercise_time INTEGER, -- 总锻炼时间 (INTEGER)\n"
-                "cardio_time INTEGER,     -- 有氧运动时间 (INTEGER)\n"
-                "anaerobic_time INTEGER,  -- 无氧运动时间 (INTEGER)\n"
-                "exercise_both_time INTEGER -- 有氧和无氧结合运动时间 (INTEGER)\n"
-                ");";
+                "date TEXT PRIMARY KEY, "
+                "year INTEGER, "
+                "month INTEGER, "
+                "status INTEGER, "
+                "sleep INTEGER, "
+                "remark TEXT, "
+                "getup_time TEXT, "
+                "exercise INTEGER, "
+                "total_exercise_time INTEGER, "
+                "cardio_time INTEGER, "
+                "anaerobic_time INTEGER, "
+                "exercise_both_time INTEGER);";
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql =
-            "/* 在 days 表的 year 和 month 列上创建索引以加速查询 */\n"
             "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
         execute_sql(db, create_index_sql, "Create index on days(year, month)");
 
-        // time_records 表：用于存储每一条具体的活动记录。
+        // --- [CORE FIX] ---
+        // Added the 'projects' table to store hierarchical data.
+        const char* create_projects_sql =
+            "CREATE TABLE IF NOT EXISTS projects ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+            "name TEXT NOT NULL, "
+            "parent_id INTEGER, "
+            "FOREIGN KEY (parent_id) REFERENCES projects(id));";
+        execute_sql(db, create_projects_sql, "Create projects table");
+
+        // --- [CORE FIX] ---
+        // Updated the 'time_records' table to use 'project_id' instead of 'project_path'.
         const char* create_records_sql =
             "CREATE TABLE IF NOT EXISTS time_records ("
-            "logical_id INTEGER PRIMARY KEY, -- 逻辑ID，主键 (INTEGER)\n"
-            "start_timestamp INTEGER,    -- 开始时间戳 (INTEGER)\n"
-            "end_timestamp INTEGER,      -- 结束时间戳 (INTEGER)\n"
-            "date TEXT,                  -- 记录关联的日期，外键 (TEXT)\n"
-            "start TEXT,                 -- 开始时间的文本表示 (TEXT)\n"
-            "end TEXT,                   -- 结束时间的文本表示 (TEXT)\n"
-            "project_path TEXT,          -- 项目路径 (TEXT)\n"
-            "duration INTEGER,           -- 持续时间（秒）(INTEGER)\n"
-            "activity_remark TEXT,       -- 活动备注 (TEXT)\n"
-            "FOREIGN KEY (date) REFERENCES days(date)"
-            ");";
+            "logical_id INTEGER PRIMARY KEY, "
+            "start_timestamp INTEGER, "
+            "end_timestamp INTEGER, "
+            "date TEXT, "
+            "start TEXT, "
+            "end TEXT, "
+            "project_id INTEGER, " // Changed from project_path
+            "duration INTEGER, "
+            "activity_remark TEXT, "
+            "FOREIGN KEY (date) REFERENCES days(date), "
+            "FOREIGN KEY (project_id) REFERENCES projects(id));"; // Added foreign key
         execute_sql(db, create_records_sql, "Create time_records table");
 
-        /*
-         * parent_child 表：用于存储项目层级关系，
-         * 方便后续进行项目分类查询。
-         */
-        const char* create_parent_child_sql =
-            "CREATE TABLE IF NOT EXISTS parent_child ("
-            "child TEXT PRIMARY KEY, -- 子项目，主键 (TEXT)\n"
-            "parent TEXT             -- 父项目 (TEXT)\n"
-            ");";
-        execute_sql(db, create_parent_child_sql, "Create parent_child table");
+        // --- [CORE FIX] ---
+        // Removed the now-obsolete 'parent_child' table.
     }
 }
 

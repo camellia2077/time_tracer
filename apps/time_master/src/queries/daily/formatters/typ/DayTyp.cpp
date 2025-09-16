@@ -50,10 +50,12 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << std::format("+ *{0}:* {1}\n", config_->get_remark_label(), data.metadata.remark);
 }
 
-void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* /*db*/) const {
+    // --- [CORE FIX] ---
+    // The 'db' parameter has been removed from the generate_project_breakdown function.
+    // The arguments have been updated to match the new function signature.
     ss << generate_project_breakdown(
         ReportFormat::Typ, 
-        db, 
         data.records, 
         data.total_duration, 
         1
@@ -69,7 +71,6 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
 }
 
 std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
-    // [修改] 使用新的连接符
     std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
     std::string base_string = std::format("{0} - {1} ({2}): {3}",
         record.start_time,

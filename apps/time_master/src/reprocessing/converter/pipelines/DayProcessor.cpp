@@ -23,9 +23,11 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
         Activity sleepActivity;
         sleepActivity.startTime = lastEventTime;
         sleepActivity.endTime = dayToProcess.getupTime;
-        // [核心修改]
-        sleepActivity.parent = "sleep";
-        sleepActivity.children = {"night"};
+        
+        // --- [CORE FIX] ---
+        // The struct 'Activity' no longer has 'parent' or 'children' members.
+        // Assign the combined path to the 'project_path' member instead.
+        sleepActivity.project_path = "sleep_night";
 
         dayToProcess.processedActivities.insert(dayToProcess.processedActivities.begin(), sleepActivity);
         dayToProcess.hasSleepActivity = true;

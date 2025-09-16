@@ -10,7 +10,7 @@
 struct ParsedData {
     std::vector<DayData> days;
     std::vector<TimeRecordInternal> records;
-    std::unordered_set<std::pair<std::string, std::string>, pair_hash> parent_child_pairs;
+    // --- [核心修改] 移除不再需要的 parent_child_pairs ---
 };
 
 #endif // PARSED_DATA_HPP

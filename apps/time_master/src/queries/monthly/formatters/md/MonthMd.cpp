@@ -7,6 +7,7 @@
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "common/utils/ProjectTree.hpp"
+#include "common/utils/TimeUtils.hpp"
 
 MonthMd::MonthMd(std::shared_ptr<MonthMdConfig> config) : config_(config) {}
 
@@ -41,10 +42,10 @@ void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& d
     }
 }
 
-void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* /*db*/) const {
+    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Markdown,
-        db,
         data.records,
         data.total_duration,
         data.actual_days

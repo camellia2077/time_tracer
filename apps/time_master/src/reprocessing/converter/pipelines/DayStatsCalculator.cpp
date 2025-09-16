@@ -1,7 +1,12 @@
 // reprocessing/converter/pipelines/DayStatsCalculator.cpp
 #include "DayStatsCalculator.hpp"
 #include "GeneratedStatsRules.hpp"
-// ... (includes and helper functions are unchanged) ...
+#include <iomanip>
+#include <sstream>
+#include <ctime>
+#include <stdexcept>
+#include <algorithm>
+
 namespace {
     long long string_to_time_t(const std::string& datetime_str) {
         if (datetime_str.length() < 14) {
@@ -53,7 +58,6 @@ long long DayStatsCalculator::timeStringToTimestamp(const std::string& date, con
 
 
 void DayStatsCalculator::calculate_stats(InputData& day) {
-    // ... (initialization is unchanged) ...
     day.activityCount = day.processedActivities.size();
     day.generatedStats = {}; // 重置
     day.hasStudyActivity = false;
@@ -74,33 +78,19 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         activity.start_timestamp = timeStringToTimestamp(day.date, activity.startTime, false, 0);
         activity.end_timestamp = timeStringToTimestamp(day.date, activity.endTime, true, activity.start_timestamp);
 
-        // [核心修改]
-        if (activity.parent.find("study") != std::string::npos) { 
+        // --- [核心修改] ---
+        // 基于 project_path 进行判断
+        if (activity.project_path.rfind("study", 0) == 0) { 
             day.hasStudyActivity = true;
         }
-        if (activity.parent == "exercise") {
+        if (activity.project_path.rfind("exercise", 0) == 0) {
             day.hasExerciseActivity = true;
         }
 
         for (const auto& rule : GeneratedStatsRules::rules) {
-            // [核心修改]
-            if (activity.parent == rule.parent) {
-                bool match = (rule.children.size() == 0);
-                if (!match) {
-                    // This is the "AND" logic from our previous discussion
-                    bool all_children_found = true;
-                    for (const auto& required_child : rule.children) {
-                        if (std::find(activity.children.begin(), activity.children.end(), required_child) == activity.children.end()) {
-                            all_children_found = false;
-                            break; 
-                        }
-                    }
-                    match = all_children_found;
-                }
-
-                if (match) {
-                    (day.generatedStats.*(rule.member)) += activity.durationSeconds;
-                }
+            // 使用 rfind 检查 project_path 是否以规则的路径开头
+            if (activity.project_path.rfind(rule.match_path, 0) == 0) {
+                (day.generatedStats.*(rule.member)) += activity.durationSeconds;
             }
         }
     }
