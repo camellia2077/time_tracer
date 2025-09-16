@@ -1,5 +1,5 @@
 #include "MonthMdConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 MonthMdConfig::MonthMdConfig(const std::string& config_path) {
@@ -7,12 +7,8 @@ MonthMdConfig::MonthMdConfig(const std::string& config_path) {
 }
 
 void MonthMdConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open MonthMdConfig file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // [修改] 使用新的辅助函数
+    nlohmann::json config_json = load_json_config(config_path, "Could not open MonthMdConfig file: ");
 
     report_title_ = config_json.at("ReportTitle").get<std::string>();
     actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();

@@ -1,5 +1,5 @@
 #include "MonthTypConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 MonthTypConfig::MonthTypConfig(const std::string& config_path) {
@@ -7,12 +7,8 @@ MonthTypConfig::MonthTypConfig(const std::string& config_path) {
 }
 
 void MonthTypConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open Typst monthly report config file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // [修改] 使用新的辅助函数
+    nlohmann::json config_json = load_json_config(config_path, "Could not open Typst monthly report config file: ");
 
     body_font_ = config_json.at("BodyFont").get<std::string>();
     title_font_ = config_json.at("TitleFont").get<std::string>();
