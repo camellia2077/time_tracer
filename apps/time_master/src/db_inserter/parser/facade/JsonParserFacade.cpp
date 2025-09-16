@@ -1,5 +1,5 @@
 // db_inserter/parser/facade/JsonParserFacade.cpp
-#include "JsonParserFacade.hpp" // <-- Updated include to match class name
+#include "JsonParserFacade.hpp"
 
 #include "db_inserter/parser/pipelines/ActivityParser.hpp"
 #include "db_inserter/parser/pipelines/DayParser.hpp"
@@ -9,7 +9,6 @@
 #include <nlohmann/json.hpp>
 #include "common/AnsiColors.hpp"
 
-// --- [FIX] Updated method to belong to JsonParserFacade ---
 ParsedData JsonParserFacade::parse_file(const std::string& filename) {
     std::ifstream file(filename);
     if (!file.is_open()) {
@@ -37,10 +36,11 @@ ParsedData JsonParserFacade::parse_file(const std::string& filename) {
             const auto& activities_array = day_json.at("activities");
             if (activities_array.is_array()) {
                 for (const auto& activity_json : activities_array) {
+                    // --- [核心修改] ---
+                    // 调用已简化的 parse 方法
                     TimeRecordInternal record = activity_parser.parse(
                         activity_json,
-                        day_data.date,
-                        all_parsed_data.parent_child_pairs
+                        day_data.date
                     );
                     all_parsed_data.records.push_back(record);
                 }

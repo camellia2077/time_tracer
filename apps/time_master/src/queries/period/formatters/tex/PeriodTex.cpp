@@ -6,6 +6,7 @@
 
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "common/utils/TimeUtils.hpp"
 
 namespace {
     std::string escape_tex_local(const std::string& s) {
@@ -59,10 +60,10 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
     }
 }
 
-void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
+void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::LaTeX,
-        db,
         data.records,
         data.total_duration,
         data.actual_days

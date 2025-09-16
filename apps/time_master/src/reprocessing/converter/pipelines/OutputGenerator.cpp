@@ -1,10 +1,14 @@
 // reprocessing/converter/pipelines/OutputGenerator.cpp
 #include "OutputGenerator.hpp"
-// ... (includes are unchanged) ...
+#include <iostream>
+#include <nlohmann/json.hpp>
+#include "reprocessing/converter/model/InputData.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp"
+#include <vector>
+
 using json = nlohmann::json;
 
 void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& /*config*/) {
-    // ... (headers and activities loop setup is unchanged) ...
     if (days.empty()) {
         outputStream << "[]" << std::endl;
         return;
@@ -37,7 +41,6 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
 
         for (const auto& activity_data : day.processedActivities) {
             json activity_obj;
-            // ... (other activity fields are unchanged) ...
             activity_obj["logicalId"] = activity_data.logical_id;
             activity_obj["startTimestamp"] = activity_data.start_timestamp;
             activity_obj["endTimestamp"] = activity_data.end_timestamp;
@@ -52,12 +55,10 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
                 activity_obj["activityRemark"] = nullptr; 
             }
 
+            // --- [核心修改] ---
+            // 直接输出 project_path
             json activity_details;
-            // 直接将 parent 和 children 添加到 activity_obj
-            activity_details["parent"] = activity_data.parent;
-            if (!activity_data.children.empty()) {
-                activity_details["children"] = activity_data.children;
-            }
+            activity_details["project_path"] = activity_data.project_path;
 
             activity_obj["activity"] = activity_details;
             activities.push_back(activity_obj);

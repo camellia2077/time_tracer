@@ -7,6 +7,7 @@
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
+#include "common/utils/TimeUtils.hpp"
 
 PeriodMd::PeriodMd(std::shared_ptr<PeriodMdConfig> config) : config_(config) {}
 
@@ -44,10 +45,10 @@ void PeriodMd::_display_summary(std::stringstream& ss, const PeriodReportData& d
     }
 }
 
-void PeriodMd::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
+void PeriodMd::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Markdown,
-        db,
         data.records,
         data.total_duration,
         data.actual_days

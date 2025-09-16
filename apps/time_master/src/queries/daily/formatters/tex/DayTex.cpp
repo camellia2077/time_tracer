@@ -64,10 +64,12 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "\\end{itemize}\n\n";
 }
 
-void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const {
+void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* /*db*/) const {
+    // --- [CORE FIX] ---
+    // The 'db' parameter has been removed from the generate_project_breakdown function.
+    // The arguments have been updated to match the new function signature.
     ss << generate_project_breakdown(
         ReportFormat::LaTeX, 
-        db, 
         data.records, 
         data.total_duration, 
         1 

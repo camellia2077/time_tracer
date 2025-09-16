@@ -5,10 +5,10 @@
 #include "common/utils/ProjectTree.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "common/utils/TimeUtils.hpp"
 
-// [删除] #include "PeriodTypStrings.hpp"
 
-PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) {} // [新增]
+PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) {}
 
 std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {
     std::stringstream ss;
@@ -49,10 +49,10 @@ void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& 
     }
 }
 
-void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const {
+void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Typ,
-        db,
         data.records,
         data.total_duration,
         data.actual_days
