@@ -94,6 +94,7 @@ set(QUERIES_SOURCES
     "src/queries/shared/formatters/breakdown/tex/BreakdownTex.cpp"
     "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"
 
+    "src/queries/shared/utils/ConfigUtils.cpp"
     "src/queries/shared/utils/query_utils.cpp"
     "src/queries/shared/utils/BoolToString.cpp"
     "src/queries/shared/utils/TimeFormat.cpp"
