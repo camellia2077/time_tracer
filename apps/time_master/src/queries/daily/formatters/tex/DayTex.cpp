@@ -1,6 +1,5 @@
 // queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
-#include "DayTexStrings.hpp" // 仍然用于颜色定义
 
 #include <iomanip>
 #include <string>
@@ -15,7 +14,7 @@
 #include "queries/shared/utils/TimeFormat.hpp" 
 
 namespace {
-    // 本地辅助函数，用于转义 TeX 特殊字符
+    // Local helper function to escape TeX special characters
     std::string escape_tex_local(const std::string& s) {
         std::string escaped;
         escaped.reserve(s.length());
@@ -29,7 +28,6 @@ namespace {
     }
 }
 
-// [修改] 实现新的构造函数
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
 std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) const {
@@ -39,7 +37,6 @@ std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) cons
     _display_header(ss, data);
 
     if (data.total_duration == 0) {
-        // [修改] 使用配置对象
         ss << config_->get_no_records_message() << "\n";
     } else {
         _display_statistics(ss, data);
@@ -52,7 +49,6 @@ std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) cons
 }
 
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
-    // [修改] 所有硬编码的文本都通过 config_ 对象获取
     ss << "\\section*{" << config_->get_report_title() << " " << escape_tex_local(data.date) << "}\n\n";
     
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
@@ -77,7 +73,6 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
 }
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
-    // [修改] 使用配置对象
     ss << "\\subsection*{" << config_->get_statistics_label() << "}\n\n";
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
     ss << "    \\item \\textbf{" << config_->get_sleep_time_label() << "}: "
@@ -100,12 +95,10 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
                                   "): " + escape_tex_local(record.project_path);
         
         std::string colorized_string = base_string;
-
-        // [修改] 适应新的 DayTexStrings::KeywordColors 结构
-        for (const auto& pair : DayTexStrings::KeywordColors) {
+        
+        for (const auto& pair : config_->get_keyword_colors()) {
             if (record.project_path.find(pair.first) != std::string::npos) {
-                // 从 ColorInfo 结构中获取颜色名称 (pair.second.name)
-                colorized_string = "\\textcolor{" + pair.second.name + "}{" + base_string + "}";
+                colorized_string = "\\textcolor{" + pair.first + "color}{" + base_string + "}";
                 break;
             }
         }
@@ -122,7 +115,6 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     ss << "\\end{itemize}\n\n";
 }
 
-// [新增] 将模板代码直接添加到类实现中
 std::string DayTex::get_tex_preamble() const {
     std::stringstream ss;
     ss << "\\documentclass{article}\n";
@@ -132,15 +124,11 @@ std::string DayTex::get_tex_preamble() const {
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
 
-    // [修改] 动态生成颜色定义
-    // 遍历在 DayTexStrings.hpp 中定义的 KeywordColors map
-    for (const auto& pair : DayTexStrings::KeywordColors) {
-        const auto& color_info = pair.second;
-        ss << "\\definecolor{" << color_info.name << "}{HTML}{" << color_info.hex << "}\n";
+    for (const auto& pair : config_->get_keyword_colors()) {
+        ss << "\\definecolor{" << pair.first << "color}{HTML}{" << pair.second << "}\n";
     }
     
     ss << "\n";
-    // [修改] 使用配置中的字体
     ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
     ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
     ss << "\\begin{document}\n\n";

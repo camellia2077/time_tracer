@@ -2,6 +2,7 @@
 #define DAY_TEX_CONFIG_HPP
 
 #include <string>
+#include <map>
 #include <nlohmann/json.hpp>
 
 class DayTexConfig {
@@ -22,8 +23,9 @@ public:
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_compact_list_options() const;
-    const std::string& get_main_font() const; // New
-    const std::string& get_cjk_main_font() const; // New
+    const std::string& get_main_font() const;
+    const std::string& get_cjk_main_font() const;
+    const std::map<std::string, std::string>& get_keyword_colors() const; // New
 
 private:
     void load_config(const std::string& config_path);
@@ -42,8 +44,9 @@ private:
     std::string sleep_time_label_;
     std::string activity_remark_label_;
     std::string compact_list_options_;
-    std::string main_font_; // New
-    std::string cjk_main_font_; // New
+    std::string main_font_;
+    std::string cjk_main_font_;
+    std::map<std::string, std::string> keyword_colors_; // New
 };
 
 #endif // DAY_TEX_CONFIG_HPP
