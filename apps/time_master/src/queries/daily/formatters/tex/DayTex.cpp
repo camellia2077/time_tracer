@@ -89,8 +89,7 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     if (data.detailed_records.empty()) {
         return;
     }
-
-    // [修改] 使用配置对象
+    
     ss << "\\subsection*{" << config_->get_all_activities_label() << "}\n\n";
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
 
@@ -102,9 +101,11 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         
         std::string colorized_string = base_string;
 
+        // [修改] 适应新的 DayTexStrings::KeywordColors 结构
         for (const auto& pair : DayTexStrings::KeywordColors) {
             if (record.project_path.find(pair.first) != std::string::npos) {
-                colorized_string = "\\textcolor{" + pair.second + "}{" + base_string + "}";
+                // 从 ColorInfo 结构中获取颜色名称 (pair.second.name)
+                colorized_string = "\\textcolor{" + pair.second.name + "}{" + base_string + "}";
                 break;
             }
         }
@@ -112,7 +113,6 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         ss << "    \\item " << colorized_string << "\n";
 
         if (record.activityRemark.has_value()) {
-            // [修改] 使用配置对象
             ss << "    \\begin{itemize}" << config_->get_compact_list_options() << "\n";
             ss << "        \\item \\textbf{" << config_->get_activity_remark_label() << "}: " 
                << escape_tex_local(record.activityRemark.value()) << "\n";
@@ -131,15 +131,18 @@ std::string DayTex::get_tex_preamble() const {
     ss << "\\usepackage{enumitem}\n";
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
-    ss << "\\definecolor{studycolor}{HTML}{2ECC40}\n";
-    ss << "\\definecolor{recreationcolor}{HTML}{FF4136}\n";
-    ss << "\\definecolor{mealcolor}{HTML}{FF851B}\n";
-    ss << "\\definecolor{exercisecolor}{HTML}{0074D9}\n";
-    ss << "\\definecolor{routinecolor}{HTML}{AAAAAA}\n";
-    ss << "\\definecolor{sleepcolor}{HTML}{B10DC9}\n";
-    ss << "\\definecolor{codecolor}{HTML}{39CCCC}\n\n";
-    ss << "\\setmainfont{Noto Serif SC}\n";
-    ss << "\\setCJKmainfont{Noto Serif SC}\n\n";
+
+    // [修改] 动态生成颜色定义
+    // 遍历在 DayTexStrings.hpp 中定义的 KeywordColors map
+    for (const auto& pair : DayTexStrings::KeywordColors) {
+        const auto& color_info = pair.second;
+        ss << "\\definecolor{" << color_info.name << "}{HTML}{" << color_info.hex << "}\n";
+    }
+    
+    ss << "\n";
+    // [修改] 使用配置中的字体
+    ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
+    ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
     ss << "\\begin{document}\n\n";
     return ss.str();
 }

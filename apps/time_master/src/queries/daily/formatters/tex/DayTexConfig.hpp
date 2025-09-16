@@ -22,6 +22,8 @@ public:
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_compact_list_options() const;
+    const std::string& get_main_font() const; // New
+    const std::string& get_cjk_main_font() const; // New
 
 private:
     void load_config(const std::string& config_path);
@@ -40,6 +42,8 @@ private:
     std::string sleep_time_label_;
     std::string activity_remark_label_;
     std::string compact_list_options_;
+    std::string main_font_; // New
+    std::string cjk_main_font_; // New
 };
 
 #endif // DAY_TEX_CONFIG_HPP

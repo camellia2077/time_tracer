@@ -28,6 +28,8 @@ void DayTexConfig::load_config(const std::string& config_path) {
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
     compact_list_options_ = config_json.at("CompactListOptions").get<std::string>();
+    main_font_ = config_json.at("MainFont").get<std::string>(); // New
+    cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>(); // New
 }
 
 // Getter implementations
@@ -45,3 +47,5 @@ const std::string& DayTexConfig::get_all_activities_label() const { return all_a
 const std::string& DayTexConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayTexConfig::get_activity_remark_label() const { return activity_remark_label_; }
 const std::string& DayTexConfig::get_compact_list_options() const { return compact_list_options_; }
+const std::string& DayTexConfig::get_main_font() const { return main_font_; } // New
+const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; } // New
