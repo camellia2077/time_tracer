@@ -11,13 +11,13 @@ QueryHandler::QueryHandler(sqlite3* db, const AppConfig& config)
     : m_db(db), app_config_(config) {}
 
 std::string QueryHandler::run_daily_query(const std::string& date, ReportFormat format) const {
-    // [FIXED] Add the day_tex_config_path to the constructor call
     DayGenerator generator(m_db, app_config_.day_typ_config_path, app_config_.day_md_config_path, app_config_.day_tex_config_path);
     return generator.generate_report(date, format);
 }
 
 std::string QueryHandler::run_monthly_query(const std::string& month, ReportFormat format) const {
-    MonthGenerator generator(m_db, app_config_.month_typ_config_path, app_config_.month_md_config_path);
+    // [FIXED] The constructor now correctly takes the AppConfig object.
+    MonthGenerator generator(m_db, app_config_);
     return generator.generate_report(month, format);
 }
 
@@ -27,13 +27,13 @@ std::string QueryHandler::run_period_query(int days, ReportFormat format) const 
 }
 
 FormattedGroupedReports QueryHandler::run_export_all_daily_reports_query(ReportFormat format) const {
-    // [FIXED] Add the day_tex_config_path to the constructor call
     AllDayReports generator(m_db, app_config_.day_typ_config_path, app_config_.day_md_config_path, app_config_.day_tex_config_path);
     return generator.generate_all_reports(format);
 }
 
 FormattedMonthlyReports QueryHandler::run_export_all_monthly_reports_query(ReportFormat format) const {
-    AllMonthlyReports generator(m_db, app_config_.month_typ_config_path, app_config_.month_md_config_path);
+    // [FIXED] The constructor now correctly takes the AppConfig object.
+    AllMonthlyReports generator(m_db, app_config_);
     return generator.generate_reports(format);
 }
 
