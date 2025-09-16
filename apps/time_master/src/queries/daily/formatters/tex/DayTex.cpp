@@ -12,8 +12,10 @@
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/TimeFormat.hpp" 
+#include "queries/shared/utils/ReportStringUtils.hpp"
 
 namespace {
+    // This function escapes special LaTeX characters to prevent compilation errors.
     std::string escape_tex_local(const std::string& s) {
         std::string escaped;
         escaped.reserve(s.length());
@@ -24,16 +26,6 @@ namespace {
             escaped += c;
         }
         return escaped;
-    }
-
-    // 辅助函数：替换字符串中所有匹配的子串
-    std::string replace_all(std::string str, const std::string& from, const std::string& to) {
-        size_t start_pos = 0;
-        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
-            str.replace(start_pos, from.length(), to);
-            start_pos += to.length();
-        }
-        return str;
     }
 }
 
@@ -98,7 +90,6 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
 
     for (const auto& record : data.detailed_records) {
-        // [修改] 使用新的连接符
         std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
         std::string base_string = escape_tex_local(record.start_time) + " - " +
                                   escape_tex_local(record.end_time) + " (" +

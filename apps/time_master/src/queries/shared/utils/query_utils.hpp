@@ -10,12 +10,6 @@
 #include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree" // For ProjectNode, ProjectTree
 #include "queries/shared/ReportFormat.hpp"
 
-
-// queries/report_generators/_shared/query_utils.h
-
-// This header declares the shared utility functions.
-
-
 // --- Standalone Utility Functions ---
 
 // Fetches parent-child category mappings from the database.
