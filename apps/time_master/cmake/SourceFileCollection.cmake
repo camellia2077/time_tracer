@@ -73,10 +73,16 @@ set(QUERIES_SOURCES
     # Period Reports
     "src/queries/period/PeriodGenerator.cpp"
     "src/queries/period/PeriodQuerier.cpp"
+
+    # Period md
     "src/queries/period/formatters/md/PeriodMd.cpp"
     "src/queries/period/formatters/md/PeriodMdConfig.cpp"
-    "src/queries/period/formatters/tex/PeriodTex.cpp"
 
+    # Period tex
+    "src/queries/period/formatters/tex/PeriodTex.cpp"
+    "src/queries/period/formatters/tex/PeriodTexConfig.cpp"
+
+    # Period typ
     "src/queries/period/formatters/typ/PeriodTyp.cpp"
     "src/queries/period/formatters/typ/PeriodTypConfig.cpp"
 

@@ -18,6 +18,7 @@ struct AppConfig {
     // tex
     std::string day_tex_config_path;
     std::string month_tex_config_path;
+    std::string period_tex_config_path;
 
     // Typst report config paths
     std::string day_typ_config_path;
