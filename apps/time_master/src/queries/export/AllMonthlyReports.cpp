@@ -11,11 +11,13 @@
 #include "queries/monthly/formatters/md/MonthMd.hpp"
 #include "queries/monthly/formatters/md/MonthMdConfig.hpp"
 #include "queries/monthly/formatters/tex/MonthTex.hpp"
+#include "queries/monthly/formatters/tex/MonthTexConfig.hpp"
 #include "queries/monthly/formatters/typ/MonthTyp.hpp"
 #include "queries/monthly/formatters/typ/MonthTypConfig.hpp"
+#include "common/AppConfig.hpp"
 
-AllMonthlyReports::AllMonthlyReports(sqlite3* db, const std::string& month_typ_config_path, const std::string& month_md_config_path) 
-    : m_db(db), m_month_typ_config_path(month_typ_config_path), m_month_md_config_path(month_md_config_path) {
+AllMonthlyReports::AllMonthlyReports(sqlite3* db, const AppConfig& config) 
+    : m_db(db), app_config_(config) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -33,17 +35,18 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
     std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
     switch (format) {
         case ReportFormat::Typ: {
-            auto config = std::make_shared<MonthTypConfig>(m_month_typ_config_path);
+            auto config = std::make_shared<MonthTypConfig>(app_config_.month_typ_config_path);
             formatter = std::make_unique<MonthTyp>(config);
             break;
         }
         case ReportFormat::Markdown: {
-            auto config = std::make_shared<MonthMdConfig>(m_month_md_config_path);
+            auto config = std::make_shared<MonthMdConfig>(app_config_.month_md_config_path);
             formatter = std::make_unique<MonthMd>(config);
             break;
         }
         case ReportFormat::LaTeX: {
-            formatter = std::make_unique<MonthTex>();
+            auto config = std::make_shared<MonthTexConfig>(app_config_.month_tex_config_path);
+            formatter = std::make_unique<MonthTex>(config);
             break;
         }
     }

@@ -15,8 +15,9 @@ struct AppConfig {
     std::optional<std::string> export_path; // 用于存储自定义导出根目录路径
     std::unordered_map<std::string, std::string> initial_top_parents;// [新增] 用于存储 top_parents 映射的成员变量
     
-    // md
+    // tex
     std::string day_tex_config_path;
+    std::string month_tex_config_path;
 
     // Typst report config paths
     std::string day_typ_config_path;
@@ -27,6 +28,7 @@ struct AppConfig {
     std::string day_md_config_path;
     std::string month_md_config_path; // [新增] 月报Md配置路径
     std::string period_md_config_path; // [新增] 周期报告Md配置路径
+
 };
 
 // 文件处理操作的选项

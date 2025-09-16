@@ -75,6 +75,10 @@ AppConfig ConfigLoader::load_configuration() {
         std::string day_tex_config_relative = j.at("day_tex_config_path").get<std::string>();
         app_config.day_tex_config_path = (config_dir_path / day_tex_config_relative).string();
 
+        // [新增] 加载 MonthTex 配置路径
+        std::string month_tex_config_relative = j.at("month_tex_config_path").get<std::string>();
+        app_config.month_tex_config_path = (config_dir_path / month_tex_config_relative).string();
+
         // Load Markdown config paths
         std::string day_md_config_relative = j.at("day_md_config_path").get<std::string>();
         app_config.day_md_config_path = (config_dir_path / day_md_config_relative).string();
