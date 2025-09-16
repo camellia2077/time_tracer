@@ -1,22 +1,31 @@
-// queries/daily/formatters/typ/DayTyp.cpp
 #include "DayTyp.hpp"
 #include <iomanip>
 #include <format>
 #include <string>
+#include <algorithm>
 
-// --- [核心修改] 替换 common_utils.hpp ---
-#include "common/utils/TimeUtils.hpp" // For time_format_duration()
-
+#include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
 
+namespace {
+    // 辅助函数：替换字符串中所有匹配的子串
+    std::string replace_all(std::string str, const std::string& from, const std::string& to) {
+        size_t start_pos = 0;
+        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length();
+        }
+        return str;
+    }
+}
+
 DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
 std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
     std::stringstream ss;
-    // [MODIFIED] 移除 spacing 参数值旁边的引号
     ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), config_->get_line_spacing()) << "\n\n";
 
     _display_header(ss, data);
@@ -69,11 +78,13 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
 }
 
 std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
+    // [修改] 使用新的连接符
+    std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
     std::string base_string = std::format("{0} - {1} ({2}): {3}",
         record.start_time,
         record.end_time,
         time_format_duration_hm(record.duration_seconds),
-        record.project_path
+        project_path
     );
 
     for (const auto& pair : config_->get_keyword_colors()) {

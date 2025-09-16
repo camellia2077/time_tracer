@@ -1,5 +1,5 @@
 #include "DayMdConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/ConfigUtils.hpp"
 #include <stdexcept>
 
 DayMdConfig::DayMdConfig(const std::string& config_path) {
@@ -7,7 +7,6 @@ DayMdConfig::DayMdConfig(const std::string& config_path) {
 }
 
 void DayMdConfig::load_config(const std::string& config_path) {
-    // [修改] 使用新的辅助函数
     nlohmann::json config_json = load_json_config(config_path, "Could not open DayMdConfig file: ");
 
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
@@ -23,6 +22,7 @@ void DayMdConfig::load_config(const std::string& config_path) {
     all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
+    activity_connector_ = config_json.at("ActivityConnector").get<std::string>(); // [新增]
 }
 
 const std::string& DayMdConfig::get_title_prefix() const { return title_prefix_; }
@@ -38,3 +38,4 @@ const std::string& DayMdConfig::get_statistics_label() const { return statistics
 const std::string& DayMdConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayMdConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayMdConfig::get_activity_remark_label() const { return activity_remark_label_; }
+const std::string& DayMdConfig::get_activity_connector() const { return activity_connector_; } // [新增]

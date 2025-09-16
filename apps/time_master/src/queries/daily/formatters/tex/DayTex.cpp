@@ -1,9 +1,9 @@
-// queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
 
 #include <iomanip>
 #include <string>
 #include <sstream>
+#include <algorithm>
 
 #include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
@@ -14,7 +14,6 @@
 #include "queries/shared/utils/TimeFormat.hpp" 
 
 namespace {
-    // 用于转义 TeX 特殊字符的局部辅助函数
     std::string escape_tex_local(const std::string& s) {
         std::string escaped;
         escaped.reserve(s.length());
@@ -25,6 +24,16 @@ namespace {
             escaped += c;
         }
         return escaped;
+    }
+
+    // 辅助函数：替换字符串中所有匹配的子串
+    std::string replace_all(std::string str, const std::string& from, const std::string& to) {
+        size_t start_pos = 0;
+        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length();
+        }
+        return str;
     }
 }
 
@@ -89,10 +98,12 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
 
     for (const auto& record : data.detailed_records) {
+        // [修改] 使用新的连接符
+        std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
         std::string base_string = escape_tex_local(record.start_time) + " - " +
                                   escape_tex_local(record.end_time) + " (" +
                                   escape_tex_local(time_format_duration_hm(record.duration_seconds)) +
-                                  "): " + escape_tex_local(record.project_path);
+                                  "): " + escape_tex_local(project_path);
         
         std::string colorized_string = base_string;
         
@@ -124,13 +135,11 @@ std::string DayTex::get_tex_preamble() const {
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
 
-    // 从配置动态定义颜色
     for (const auto& pair : config_->get_keyword_colors()) {
         ss << "\\definecolor{" << pair.first << "color}{HTML}{" << pair.second << "}\n";
     }
     
     ss << "\n";
-    // 从配置设置字体
     ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
     ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
     ss << "\\begin{document}\n\n";

@@ -24,5 +24,6 @@
   "StatisticsLabel": "Statistics",
   "AllActivitiesLabel": "All Activities",
   "SleepTimeLabel": "Sleep Time",
-  "ActivityRemarkLabel": "Activity Remark"
+  "ActivityRemarkLabel": "Activity Remark",
+      "ActivityConnector": "😅"
 }

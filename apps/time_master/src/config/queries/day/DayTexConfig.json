@@ -1,4 +1,5 @@
 {
+    
     "ReportTitle": "Daily Report for",
     "DateLabel": "Date",
     "TotalTimeLabel": "Total Time Recorded",
@@ -23,5 +24,6 @@
         "routine":    "AAAAAA",
         "sleep":      "B10DC9",
         "code":       "39CCCC"
-    }
+    },
+        "ActivityConnector": "+"
 }
