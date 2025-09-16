@@ -1,7 +1,8 @@
-// queries/daily/formatters/md/DayMd.cpp
 #include "DayMd.hpp"
 #include <iomanip>
 #include <format>
+#include <string>
+#include <algorithm>
 
 #include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
@@ -11,6 +12,18 @@
 #include "queries/shared/utils/BoolToString.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include "queries/shared/utils/TimeFormat.hpp"
+
+namespace {
+    // 辅助函数：替换字符串中所有匹配的子串
+    std::string replace_all(std::string str, const std::string& from, const std::string& to) {
+        size_t start_pos = 0;
+        while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length();
+        }
+        return str;
+    }
+}
 
 DayMd::DayMd(std::shared_ptr<DayMdConfig> config) : config_(config) {}
 
@@ -57,14 +70,15 @@ void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportD
 
 void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (!data.detailed_records.empty()) {
-        // [修改] 使用配置中的 "AllActivitiesLabel"
         ss << "\n## " << config_->get_all_activities_label() << "\n\n";
         for (const auto& record : data.detailed_records) {
+            // [修改] 使用新的连接符替换`_`
+            std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
             ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 
                 record.end_time,
                 time_format_duration_hm(record.duration_seconds),
-                record.project_path
+                project_path
             );
             if (record.activityRemark.has_value()) {
                 ss << std::format("  - **{0}**: {1}\n", config_->get_activity_remark_label(), record.activityRemark.value());

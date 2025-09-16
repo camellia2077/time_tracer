@@ -18,9 +18,10 @@ public:
     const std::string& get_exercise_label() const;
     const std::string& get_no_records() const;
     const std::string& get_statistics_label() const;
-    const std::string& get_all_activities_label() const; // [新增]
+    const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
+    const std::string& get_activity_connector() const; // [新增]
 
 private:
     void load_config(const std::string& config_path);
@@ -35,9 +36,10 @@ private:
     std::string exercise_label_;
     std::string no_records_;
     std::string statistics_label_;
-    std::string all_activities_label_; // [新增]
+    std::string all_activities_label_;
     std::string sleep_time_label_;
     std::string activity_remark_label_;
+    std::string activity_connector_; // [新增]
 };
 
 #endif // DAY_MD_CONFIG_HPP

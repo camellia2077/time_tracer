@@ -14,7 +14,6 @@ void DayTexConfig::load_config(const std::string& config_path) {
     nlohmann::json config_json;
     config_file >> config_json;
 
-    // ... (existing JSON loading remains the same)
     report_title_ = config_json.at("ReportTitle").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
     total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
@@ -31,9 +30,8 @@ void DayTexConfig::load_config(const std::string& config_path) {
     compact_list_options_ = config_json.at("CompactListOptions").get<std::string>();
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
-    
-    // [New] Load the keyword colors
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
+    activity_connector_ = config_json.at("ActivityConnector").get<std::string>(); // [新增]
 }
 
 const std::string& DayTexConfig::get_report_title() const { return report_title_; }
@@ -52,6 +50,5 @@ const std::string& DayTexConfig::get_activity_remark_label() const { return acti
 const std::string& DayTexConfig::get_compact_list_options() const { return compact_list_options_; }
 const std::string& DayTexConfig::get_main_font() const { return main_font_; }
 const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
-
-// [New] Getter for keyword colors
 const std::map<std::string, std::string>& DayTexConfig::get_keyword_colors() const { return keyword_colors_; }
+const std::string& DayTexConfig::get_activity_connector() const { return activity_connector_; } // [新增]

@@ -1,5 +1,5 @@
 #include "DayTypConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增] 引入辅助函数
+#include "queries/shared/utils/ConfigUtils.hpp"
 #include <stdexcept>
 
 DayTypConfig::DayTypConfig(const std::string& config_path) {
@@ -7,7 +7,6 @@ DayTypConfig::DayTypConfig(const std::string& config_path) {
 }
 
 void DayTypConfig::load_config(const std::string& config_path) {
-    // [修改] 使用新的辅助函数来加载和解析 JSON 文件
     nlohmann::json config_json = load_json_config(config_path, "Could not open Typst daily report config file: ");
 
     title_font_ = config_json.at("TitleFont").get<std::string>();
@@ -28,8 +27,8 @@ void DayTypConfig::load_config(const std::string& config_path) {
     all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
+    activity_connector_ = config_json.at("ActivityConnector").get<std::string>(); // [ADD THIS]
 }
-
 
 const std::string& DayTypConfig::get_title_font() const { return title_font_; }
 const std::string& DayTypConfig::get_content_font() const { return content_font_; }
@@ -49,3 +48,4 @@ const std::string& DayTypConfig::get_statistics_label() const { return statistic
 const std::string& DayTypConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayTypConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayTypConfig::get_activity_remark_label() const { return activity_remark_label_; }
+const std::string& DayTypConfig::get_activity_connector() const { return activity_connector_; } // [ADD THIS]
