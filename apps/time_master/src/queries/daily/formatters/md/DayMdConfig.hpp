@@ -18,6 +18,7 @@ public:
     const std::string& get_exercise_label() const;
     const std::string& get_no_records() const;
     const std::string& get_statistics_label() const;
+    const std::string& get_all_activities_label() const; // [新增]
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
 
@@ -34,6 +35,7 @@ private:
     std::string exercise_label_;
     std::string no_records_;
     std::string statistics_label_;
+    std::string all_activities_label_; // [新增]
     std::string sleep_time_label_;
     std::string activity_remark_label_;
 };

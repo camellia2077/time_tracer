@@ -3,9 +3,7 @@
 #include <iomanip>
 #include <format>
 
-// --- [核心修改] 替换 common_utils.hpp ---
-#include "common/utils/TimeUtils.hpp" // For time_format_duration()
-
+#include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
@@ -59,7 +57,8 @@ void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportD
 
 void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (!data.detailed_records.empty()) {
-        ss << "\n## All Activities\n\n";
+        // [修改] 使用配置中的 "AllActivitiesLabel"
+        ss << "\n## " << config_->get_all_activities_label() << "\n\n";
         for (const auto& record : data.detailed_records) {
             ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 

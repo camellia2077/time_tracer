@@ -24,6 +24,7 @@ void DayMdConfig::load_config(const std::string& config_path) {
     exercise_label_ = config_json.at("ExerciseLabel").get<std::string>();
     no_records_ = config_json.at("NoRecords").get<std::string>();
     statistics_label_ = config_json.at("StatisticsLabel").get<std::string>();
+    all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>(); // [新增]
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
 }
@@ -38,5 +39,6 @@ const std::string& DayMdConfig::get_remark_label() const { return remark_label_;
 const std::string& DayMdConfig::get_exercise_label() const { return exercise_label_; }
 const std::string& DayMdConfig::get_no_records() const { return no_records_; }
 const std::string& DayMdConfig::get_statistics_label() const { return statistics_label_; }
+const std::string& DayMdConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayMdConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayMdConfig::get_activity_remark_label() const { return activity_remark_label_; }
