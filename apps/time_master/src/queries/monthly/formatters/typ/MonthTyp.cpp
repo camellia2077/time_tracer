@@ -4,10 +4,10 @@
 #include <format>
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
+#include "common/utils/TimeUtils.hpp"
 
-// [删除] #include "MonthTypStrings.hpp"
 
-MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} // [新增] 构造函数实现
+MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} 
 
 std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) const {
     std::stringstream ss;
@@ -47,10 +47,10 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     }
 }
 
-void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const {
+void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* /*db*/) const {
+    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Typ,
-        db,
         data.records,
         data.total_duration,
         data.actual_days

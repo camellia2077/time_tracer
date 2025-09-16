@@ -1,10 +1,9 @@
 // queries/shared/utils/query_utils.cpp
 #include "query_utils.hpp"
 #include "common/utils/StringUtils.hpp"
-#include "queries/shared/factories/TreeFmtFactory.hpp" // 引入TreeFmtFactory
-#include "queries/shared/Interface/ITreeFmt.hpp"       // 引入ITreeFmt
-
-#include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree
+#include "queries/shared/factories/TreeFmtFactory.hpp" 
+#include "queries/shared/Interface/ITreeFmt.hpp"       
+#include "common/utils/ProjectTree.hpp" 
 
 #include <iostream>
 #include <vector>
@@ -16,57 +15,35 @@
 #include <chrono>
 #include <ctime>
 
-// --- 【核心函数】 ---
+// --- 【核心函数修改】 ---
+// 不再需要 db 参数，因为父子关系由调用者（Querier）通过SQL查询重建。
 std::string generate_project_breakdown(
     ReportFormat format,
-    sqlite3* db,
     const std::vector<std::pair<std::string, long long>>& records,
     long long total_duration,
     int avg_days)
 {
-    // 1. 获取父子类别映射
-    std::map<std::string, std::string> parent_map = get_parent_map(db);
-
-    // 2. 根据记录构建项目树
+    // 1. 根据记录直接构建项目树
     ProjectTree project_tree;
-    build_project_tree_from_records(project_tree, records, parent_map);
+    build_project_tree_from_records(project_tree, records);
 
-    // 3. 使用工厂创建对应的项目明细格式化器
+    // 2. 使用工厂创建对应的项目明细格式化器
     auto formatter = TreeFmtFactory::createFormatter(format);
 
-    // 4. 调用格式化器生成并返回最终的字符串
+    // 3. 调用格式化器生成并返回最终的字符串
     if (formatter) {
         return formatter->format(project_tree, total_duration, avg_days);
     }
     
-    // 如果没有找到格式化器，返回空字符串或抛出异常
     return ""; 
 }
 
-// --- 独立的工具函数实现 ---
+// --- [核心修改] 移除 get_parent_map 函数 ---
 
-// 获取父子类别映射
-std::map<std::string, std::string> get_parent_map(sqlite3* db) {
-    std::map<std::string, std::string> parent_map;
-    sqlite3_stmt* stmt;
-    const char* sql = "SELECT child, parent FROM parent_child;";
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            parent_map[reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))] =
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-        }
-    } else {
-        std::cerr << "Failed to prepare statement (get_parent_map): " << sqlite3_errmsg(db) << std::endl;
-    }
-    sqlite3_finalize(stmt);
-    return parent_map;
-}
-
-// 从记录构建项目树
+// --- [核心修改] build_project_tree_from_records 不再需要 parent_map ---
 void build_project_tree_from_records(
     ProjectTree& tree,
-    const std::vector<std::pair<std::string, long long>>& records,
-    const std::map<std::string, std::string>& parent_map)
+    const std::vector<std::pair<std::string, long long>>& records)
 {
     for (const auto& record : records) {
         const std::string& project_path = record.first;
@@ -76,17 +53,10 @@ void build_project_tree_from_records(
         if (parts.empty()) continue;
 
         std::string top_level_category_key = parts[0];
-        std::string top_level_display_name;
 
-        auto it_parent = parent_map.find(top_level_category_key);
-        if (it_parent != parent_map.end()) {
-            top_level_display_name = it_parent->second;
-        } else {
-            top_level_display_name = top_level_category_key;
-        }
-
-        tree[top_level_display_name].duration += duration;
-        ProjectNode* current_node = &tree[top_level_display_name];
+        // 直接使用第一部分作为顶级类别
+        tree[top_level_category_key].duration += duration;
+        ProjectNode* current_node = &tree[top_level_category_key];
 
         for (size_t i = 1; i < parts.size(); ++i) {
             current_node->children[parts[i]].duration += duration;
@@ -94,6 +64,9 @@ void build_project_tree_from_records(
         }
     }
 }
+
+
+// --- 其他辅助函数保持不变 ---
 
 // 增减日期字符串中的天数
 std::string add_days_to_date_str(std::string date_str, int days) {

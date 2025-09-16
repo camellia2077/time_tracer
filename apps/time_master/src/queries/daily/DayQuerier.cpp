@@ -27,9 +27,9 @@ DailyReportData DayQuerier::fetch_data() {
     return data;
 }
 
+// _fetch_metadata 和 _fetch_total_duration 保持不变
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // --- [核心修改] 在查询语句中增加 exercise 字段 ---
     std::string sql = "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
@@ -42,7 +42,6 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
             const unsigned char* g = sqlite3_column_text(stmt, 3);
             if (g) data.metadata.getup_time = reinterpret_cast<const char*>(g);
             
-            // --- [核心修改] 读取 exercise 字段值 ---
             data.metadata.exercise = std::to_string(sqlite3_column_int(stmt, 4));
         }
     }
@@ -61,9 +60,24 @@ void DayQuerier::_fetch_total_duration(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
+
+// --- [核心修改] 重写 _fetch_time_records 使用递归CTE ---
 void DayQuerier::_fetch_time_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT project_path, duration FROM time_records WHERE date = ?;";
+    std::string sql = R"(
+        WITH RECURSIVE project_paths(id, path) AS (
+            SELECT id, name FROM projects WHERE parent_id IS NULL
+            UNION ALL
+            SELECT p.id, pp.path || '_' || p.name
+            FROM projects p
+            JOIN project_paths pp ON p.parent_id = pp.id
+        )
+        SELECT pp.path, tr.duration 
+        FROM time_records tr
+        JOIN project_paths pp ON tr.project_id = pp.id
+        WHERE tr.date = ?;
+    )";
+
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -76,10 +90,23 @@ void DayQuerier::_fetch_time_records(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
+// --- [核心修改] 重写 _fetch_detailed_records 使用递归CTE ---
 void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // --- [核心修改] 在查询语句中增加 activity_remark 字段 ---
-    std::string sql = "SELECT start, end, project_path, duration, activity_remark FROM time_records WHERE date = ? ORDER BY logical_id ASC;";
+    std::string sql = R"(
+        WITH RECURSIVE project_paths(id, path) AS (
+            SELECT id, name FROM projects WHERE parent_id IS NULL
+            UNION ALL
+            SELECT p.id, pp.path || '_' || p.name
+            FROM projects p
+            JOIN project_paths pp ON p.parent_id = pp.id
+        )
+        SELECT tr.start, tr.end, pp.path, tr.duration, tr.activity_remark 
+        FROM time_records tr
+        JOIN project_paths pp ON tr.project_id = pp.id
+        WHERE tr.date = ? 
+        ORDER BY tr.logical_id ASC;
+    )";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -89,7 +116,6 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
             record.project_path = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
             record.duration_seconds = sqlite3_column_int64(stmt, 3);
 
-            // 读取备注，并处理 NULL 的情况
             const unsigned char* remark_text = sqlite3_column_text(stmt, 4);
             if (remark_text) {
                 record.activityRemark = reinterpret_cast<const char*>(remark_text);
@@ -100,12 +126,18 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
+// --- [核心修改] 重写 _fetch_sleep_time 使用 JOIN ---
 void DayQuerier::_fetch_sleep_time(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT duration FROM time_records WHERE date = ? AND project_path LIKE 'sleep%';";
+    std::string sql = R"(
+        SELECT SUM(tr.duration) 
+        FROM time_records tr
+        JOIN projects p ON tr.project_id = p.id
+        WHERE tr.date = ? AND p.name = 'sleep';
+    )";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_date.c_str(), -1, SQLITE_STATIC);
-        if (sqlite3_step(stmt) == SQLITE_ROW) {
+        if (sqlite3_step(stmt) == SQLITE_ROW && sqlite3_column_type(stmt, 0) != SQLITE_NULL) {
             data.sleep_time = sqlite3_column_int64(stmt, 0);
         }
     }

@@ -4,14 +4,14 @@
 
 #include "db_inserter/model/time_sheet_model.hpp"
 #include <nlohmann/json.hpp>
-#include <unordered_set>
 
 class ActivityParser {
 public:
+    // --- [核心修改] ---
+    // 移除 parent_child_pairs 参数，简化接口
     TimeRecordInternal parse(
         const nlohmann::json& activity_json,
-        const std::string& date,
-        std::unordered_set<std::pair<std::string, std::string>, pair_hash>& parent_child_pairs) const;
+        const std::string& date) const;
 };
 
 #endif // ACTIVITY_PARSER_HPP
