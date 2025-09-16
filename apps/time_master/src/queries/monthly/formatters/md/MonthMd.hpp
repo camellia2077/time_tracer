@@ -4,11 +4,13 @@
 
 #include "queries/shared/Interface/IReportFormatter.hpp"  
 #include "queries/shared/data/MonthlyReportData.hpp"
+#include "queries/monthly/formatters/md/MonthMdConfig.hpp"
 #include <sstream>
+#include <memory>
 
 // Forward declarations
 struct MonthlyReportData;
-struct sqlite3; // Forward-declare the opaque struct sqlite3
+struct sqlite3;
 
 /**
  * @class MonthMd
@@ -16,13 +18,15 @@ struct sqlite3; // Forward-declare the opaque struct sqlite3
  */
 class MonthMd : public IReportFormatter<MonthlyReportData> {
 public:
-    MonthMd() = default;
+    explicit MonthMd(std::shared_ptr<MonthMdConfig> config);
 
     std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const MonthlyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const;
+
+    std::shared_ptr<MonthMdConfig> config_;
 };
 
 #endif // MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP

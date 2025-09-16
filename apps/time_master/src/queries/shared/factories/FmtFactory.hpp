@@ -9,33 +9,35 @@
 
 /**
  * @class ReportFmtFactory
- * @brief 一个通用的、模板化的工厂，用于创建各种类型的报告格式化器。
- * * @tparam ReportDataType 报告所依赖的数据结构 (例如 DailyReportData)。
- * @tparam MdFormatter    Markdown 格式化器的具体实现类。
- * @tparam TexFormatter   LaTeX 格式化器的具体实现类。
- * @tparam TypFormatter   Typst 格式化器的具体实现类。
+ * @brief A generic, templated factory for creating various report formatters.
+ * @tparam ReportDataType The data structure the report depends on (e.g., DailyReportData).
+ * @tparam MdFormatter    The concrete implementation class for the Markdown formatter.
+ * @tparam TexFormatter   The concrete implementation class for the LaTeX formatter.
  */
 template<
-    typename ReportDataType, 
-    typename MdFormatter, 
-    typename TexFormatter, 
-    typename TypFormatter
+    typename ReportDataType,
+    typename MdFormatter,
+    typename TexFormatter
 >
 class ReportFmtFactory {
 public:
     /**
-     * @brief 根据指定的格式创建一个格式化器实例。
-     * @param format 期望的报告格式。
-     * @return 一个指向 IReportFormatter<ReportDataType> 接口的智能指针。
+     * @brief Creates a formatter instance based on the specified format.
+     * @param format The desired report format.
+     * @return A smart pointer to the IReportFormatter<ReportDataType> interface.
      */
     static std::unique_ptr<IReportFormatter<ReportDataType>> create_formatter(ReportFormat format) {
         switch (format) {
             case ReportFormat::Markdown:
-                return std::make_unique<MdFormatter>();
+                // Markdown formatters that require config are now handled manually.
+                // This factory is for formatters with default constructors.
+                 throw std::invalid_argument("Markdown format with config is not supported by the generic factory.");
             case ReportFormat::LaTeX:
                 return std::make_unique<TexFormatter>();
             case ReportFormat::Typ:
-                return std::make_unique<TypFormatter>();
+                // Typst formatter requires special handling due to its config file dependency.
+                // It should be created manually in the generator class.
+                throw std::invalid_argument("Typst format is not supported by the generic factory.");
             default:
                 throw std::invalid_argument("Unsupported report format requested.");
         }

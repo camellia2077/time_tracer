@@ -1,17 +1,33 @@
-// queries/monthly/formatters/tex/MonthTexConfig.hpp
-#ifndef MONTHLY_REPORT_TEX_CONFIG_HPP
-#define MONTHLY_REPORT_TEX_CONFIG_HPP
+#ifndef MONTH_TEX_CONFIG_HPP
+#define MONTH_TEX_CONFIG_HPP
 
-#include <string_view>
+#include <string>
+#include <nlohmann/json.hpp>
 
-namespace MonthTexConfig {
-    constexpr std::string_view ReportTitle = "Monthly Summary for";
-    constexpr std::string_view ActualDaysLabel = "Actual Days with Records";
-    constexpr std::string_view TotalTimeLabel  = "Total Time Recorded";
-    constexpr std::string_view NoRecordsMessage = "No time records found for this month.";
-    constexpr std::string_view InvalidFormatMessage = "Invalid year_month format. Expected YYYYMM.";
-    // --- [核心修改] ---
-    constexpr std::string_view CompactListOptions = "[topsep=0pt, itemsep=-0.5ex]";
-} 
+class MonthTexConfig {
+public:
+    explicit MonthTexConfig(const std::string& config_path);
 
-#endif // MONTHLY_REPORT_TEX_CONFIG_HPP
+    const std::string& get_report_title() const;
+    const std::string& get_actual_days_label() const;
+    const std::string& get_total_time_label() const;
+    const std::string& get_no_records_message() const;
+    const std::string& get_invalid_format_message() const;
+    const std::string& get_compact_list_options() const;
+    const std::string& get_main_font() const;
+    const std::string& get_cjk_main_font() const;
+
+private:
+    void load_config(const std::string& config_path);
+
+    std::string report_title_;
+    std::string actual_days_label_;
+    std::string total_time_label_;
+    std::string no_records_message_;
+    std::string invalid_format_message_;
+    std::string compact_list_options_;
+    std::string main_font_;
+    std::string cjk_main_font_;
+};
+
+#endif // MONTH_TEX_CONFIG_HPP

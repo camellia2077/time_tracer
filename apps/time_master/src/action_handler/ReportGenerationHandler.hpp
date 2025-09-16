@@ -16,7 +16,7 @@ class DirectQueryManager;
 
 class ReportGenerationHandler {
 public:
-    // 修改构造函数以接收报告专用路径
+    // Modify constructor to receive and store the AppConfig
     ReportGenerationHandler(const std::string& db_path, const AppConfig& config, const std::filesystem::path& exported_files_path);
     ~ReportGenerationHandler();
 
@@ -35,6 +35,7 @@ private:
     DirectQueryManager* get_direct_query_manager();
     ReportExporter* get_report_exporter();
 
+    const AppConfig& app_config_; // [ADDED] Store a reference to the config
     std::unique_ptr<DatabaseManager> db_manager_;
     std::unique_ptr<ReportExporter> report_exporter_;
     std::unique_ptr<DirectQueryManager> direct_query_manager_;

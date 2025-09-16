@@ -3,21 +3,41 @@
 #include "MonthGenerator.hpp"
 #include "MonthQuerier.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
+#include "common/AppConfig.hpp"
 
-// [修改] 引入新的通用工厂和具体的格式化器类
-#include "queries/shared/factories/FmtFactory.hpp"
+#include "queries/monthly/formatters/typ/MonthTypConfig.hpp"
+#include "queries/monthly/formatters/md/MonthMdConfig.hpp"
+#include "queries/monthly/formatters/tex/MonthTexConfig.hpp"
 #include "queries/monthly/formatters/md/MonthMd.hpp"
 #include "queries/monthly/formatters/tex/MonthTex.hpp"
 #include "queries/monthly/formatters/typ/MonthTyp.hpp"
+#include <memory>
 
-MonthGenerator::MonthGenerator(sqlite3* db) : m_db(db) {}
+MonthGenerator::MonthGenerator(sqlite3* db, const AppConfig& config)
+    : m_db(db), app_config_(config) {}
 
 std::string MonthGenerator::generate_report(const std::string& year_month, ReportFormat format) {
     MonthQuerier querier(m_db, year_month);
     MonthlyReportData report_data = querier.fetch_data();
+    std::unique_ptr<IReportFormatter<MonthlyReportData>> formatter;
 
-    // [修改] 使用新的模板工厂创建格式化器
-    auto formatter = ReportFmtFactory<MonthlyReportData, MonthMd, MonthTex, MonthTyp>::create_formatter(format);
+    switch (format) {
+        case ReportFormat::Typ: {
+            auto config = std::make_shared<MonthTypConfig>(app_config_.month_typ_config_path);
+            formatter = std::make_unique<MonthTyp>(config);
+            break;
+        }
+        case ReportFormat::Markdown: {
+            auto config = std::make_shared<MonthMdConfig>(app_config_.month_md_config_path);
+            formatter = std::make_unique<MonthMd>(config);
+            break;
+        }
+        case ReportFormat::LaTeX: {
+            auto config = std::make_shared<MonthTexConfig>(app_config_.month_tex_config_path);
+            formatter = std::make_unique<MonthTex>(config);
+            break;
+        }
+    }
 
     return formatter->format_report(report_data, m_db);
 }

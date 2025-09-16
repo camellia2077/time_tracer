@@ -5,33 +5,27 @@
 #include <sqlite3.h>
 #include <vector>
 #include "queries/shared/data/query_data_structs.hpp"
-#include "queries/shared/ReportFormat.hpp" // 引入报告格式的定义
+#include "queries/shared/ReportFormat.hpp"
+#include "common/AppConfig.hpp" // [新增] 引入 AppConfig
 
-/**
- * @class AllPeriodReports
- * @brief 生成所有指定天数的周期报告。
- *
- * 该类接收一个包含多个天数的列表，为每个天数生成一个周期报告，
- * 并返回一个包含所有报告内容的 map。
- */
 class AllPeriodReports {
 public:
     /**
-     * @brief 构造函数。
-     * @param db 指向数据库连接的指针。
+     * @brief [修改] 构造函数现在接收一个指向 AppConfig 对象的常量引用。
      */
-    explicit AllPeriodReports(sqlite3* db);
+    explicit AllPeriodReports(sqlite3* db, const AppConfig& config);
 
     /**
-     * @brief 根据提供的天数列表生成所有周期报告。
-     * @param days_list 一个包含多个天数的 vector，例如 {7, 30, 90}。
-     * @param format [修改] 需要生成的报告格式。
-     * @return 一个 map，键是天数，值是格式化后的报告字符串。
+     * @brief 为指定的周期列表生成所有报告。
+     * @param days_list 一个包含要查询天数的整数向量 (例如 {7, 30})。
+     * @param format 需要生成的报告格式。
+     * @return 一个将天数映射到其对应格式化报告字符串的 map。
      */
     FormattedPeriodReports generate_reports(const std::vector<int>& days_list, ReportFormat format);
 
 private:
     sqlite3* m_db;
+    const AppConfig& app_config_; // [修改] 保存 AppConfig 的引用
 };
 
 #endif // ALL_PERIOD_REPORTS_GENERATOR_HPP

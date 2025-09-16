@@ -1,0 +1,10 @@
+{
+    "TitleFont": "Noto Serif",
+    "TitleFontSize": 14,
+    "ContentFont": "Noto Serif",
+    "TitlePrefix": "Period Report: Last",
+    "TotalTimeLabel": "Total Time Recorded",
+    "ActualDaysLabel": "Actual Days with Records",
+    "PositiveDaysError": "Number of days to query must be positive.",
+    "NoRecords": "No time records found in this period."
+}
