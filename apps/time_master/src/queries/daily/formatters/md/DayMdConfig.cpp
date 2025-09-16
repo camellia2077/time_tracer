@@ -1,5 +1,5 @@
 #include "DayMdConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 DayMdConfig::DayMdConfig(const std::string& config_path) {
@@ -7,12 +7,8 @@ DayMdConfig::DayMdConfig(const std::string& config_path) {
 }
 
 void DayMdConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open DayMdConfig file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // [修改] 使用新的辅助函数
+    nlohmann::json config_json = load_json_config(config_path, "Could not open DayMdConfig file: ");
 
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -24,7 +20,7 @@ void DayMdConfig::load_config(const std::string& config_path) {
     exercise_label_ = config_json.at("ExerciseLabel").get<std::string>();
     no_records_ = config_json.at("NoRecords").get<std::string>();
     statistics_label_ = config_json.at("StatisticsLabel").get<std::string>();
-    all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>(); // [新增]
+    all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
 }

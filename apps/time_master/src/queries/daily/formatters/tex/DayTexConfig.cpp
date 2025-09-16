@@ -36,7 +36,6 @@ void DayTexConfig::load_config(const std::string& config_path) {
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
 }
 
-// ... (existing getters remain the same)
 const std::string& DayTexConfig::get_report_title() const { return report_title_; }
 const std::string& DayTexConfig::get_date_label() const { return date_label_; }
 const std::string& DayTexConfig::get_total_time_label() const { return total_time_label_; }

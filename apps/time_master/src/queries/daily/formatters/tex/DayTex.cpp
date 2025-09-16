@@ -14,7 +14,7 @@
 #include "queries/shared/utils/TimeFormat.hpp" 
 
 namespace {
-    // Local helper function to escape TeX special characters
+    // 用于转义 TeX 特殊字符的局部辅助函数
     std::string escape_tex_local(const std::string& s) {
         std::string escaped;
         escaped.reserve(s.length());
@@ -124,11 +124,13 @@ std::string DayTex::get_tex_preamble() const {
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
 
+    // 从配置动态定义颜色
     for (const auto& pair : config_->get_keyword_colors()) {
         ss << "\\definecolor{" << pair.first << "color}{HTML}{" << pair.second << "}\n";
     }
     
     ss << "\n";
+    // 从配置设置字体
     ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
     ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
     ss << "\\begin{document}\n\n";
