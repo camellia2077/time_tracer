@@ -1,5 +1,5 @@
 #include "PeriodTexConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 PeriodTexConfig::PeriodTexConfig(const std::string& config_path) {
@@ -7,12 +7,8 @@ PeriodTexConfig::PeriodTexConfig(const std::string& config_path) {
 }
 
 void PeriodTexConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open PeriodTexConfig file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // [修改] 使用新的辅助函数
+    nlohmann::json config_json = load_json_config(config_path, "Could not open PeriodTexConfig file: ");
 
     report_title_prefix_ = config_json.at("ReportTitlePrefix").get<std::string>();
     report_title_days_ = config_json.at("ReportTitleDays").get<std::string>();
