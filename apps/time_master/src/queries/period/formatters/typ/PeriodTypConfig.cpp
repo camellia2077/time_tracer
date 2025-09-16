@@ -1,3 +1,4 @@
+// queries/period/formatters/typ/PeriodTypConfig.cpp
 #include "PeriodTypConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>

@@ -1,3 +1,4 @@
+// queries/period/formatters/md/PeriodMdConfig.cpp
 #include "PeriodMdConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>

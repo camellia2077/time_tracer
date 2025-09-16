@@ -1,3 +1,4 @@
+// queries/monthly/formatters/tex/MonthTexConfig.cpp
 #include "MonthTexConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp" // [新增]
 #include <stdexcept>

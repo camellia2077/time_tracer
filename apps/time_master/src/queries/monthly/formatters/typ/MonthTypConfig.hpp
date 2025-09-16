@@ -1,3 +1,4 @@
+// queries/monthly/formatters/typ/MonthTypConfig.hpp
 #ifndef MONTH_TYP_CONFIG_HPP
 #define MONTH_TYP_CONFIG_HPP
 

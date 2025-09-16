@@ -1,3 +1,4 @@
+// queries/daily/formatters/typ/DayTypConfig.cpp
 #include "DayTypConfig.hpp"
 #include "queries/shared/utils/ConfigUtils.hpp"
 #include <stdexcept>

@@ -1,3 +1,4 @@
+// queries/daily/formatters/tex/DayTexConfig.cpp
 #include "DayTexConfig.hpp"
 #include <fstream>
 #include <stdexcept>

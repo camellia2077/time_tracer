@@ -1,3 +1,4 @@
+// queries/period/PeriodGenerator.cpp
 #include "queries/period/PeriodGenerator.hpp"
 #include "queries/period/PeriodQuerier.hpp"
 #include "queries/shared/data/PeriodReportData.hpp"

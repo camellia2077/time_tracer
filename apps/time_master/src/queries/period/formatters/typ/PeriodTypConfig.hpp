@@ -1,3 +1,4 @@
+// queries/period/formatters/typ/PeriodTypConfig.hpp
 #ifndef PERIOD_TYP_CONFIG_HPP
 #define PERIOD_TYP_CONFIG_HPP
 
