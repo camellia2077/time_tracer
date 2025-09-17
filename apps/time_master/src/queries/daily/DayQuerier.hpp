@@ -5,35 +5,23 @@
 #include <sqlite3.h>
 #include <string>
 #include "queries/shared/data/DailyReportData.hpp" 
+#include "queries/shared/queriers/BaseQuerier.hpp"
 
-/**
- * @class DayQuerier
- * @brief Fetches daily report data from the SQLite database for a specific date.
- */
-class DayQuerier {
+class DayQuerier : public BaseQuerier<DailyReportData, const std::string&> {
 public:
-    /**
-     * @brief Constructs a DayQuerier.
-     * @param db A pointer to the SQLite database connection.
-     * @param date The date for which to query the report (YYYYMMDD format).
-     */
     explicit DayQuerier(sqlite3* db, const std::string& date);
 
-    /**
-     * @brief Executes queries to fetch all data for the daily report.
-     * @return A DailyReportData struct populated with the fetched data.
-     */
-    DailyReportData fetch_data();
+    DailyReportData fetch_data() override;
+
+protected:
+    std::string get_date_condition_sql() const override;
+    void bind_sql_parameters(sqlite3_stmt* stmt) const override;
+    void _prepare_data(DailyReportData& data) const override;
 
 private:
     void _fetch_metadata(DailyReportData& data);
-    void _fetch_total_duration(DailyReportData& data);
-    void _fetch_time_records(DailyReportData& data);
-    void _fetch_detailed_records(DailyReportData& data); // 获取每日活动的细节
-    void _fetch_sleep_time(DailyReportData& data); // [新增] 获取睡眠时长
-
-    sqlite3* m_db; // 指向 SQLite 数据库连接的指针，用于执行数据库查询
-    const std::string m_date; // 表示要查询日报的日期，格式为 YYYYMMDD
+    void _fetch_detailed_records(DailyReportData& data);
+    void _fetch_sleep_time(DailyReportData& data);
 };
 
 #endif // DAILY_REPORT_QUERIER_HPP
