@@ -5,20 +5,26 @@
 #include <sqlite3.h>
 #include <string>
 #include "queries/shared/data/PeriodReportData.hpp"
+#include "queries/shared/queriers/BaseQuerier.hpp"
 
-
-class PeriodQuerier {
+class PeriodQuerier : public BaseQuerier<PeriodReportData, int> {
 public:
     explicit PeriodQuerier(sqlite3* db, int days_to_query);
-    PeriodReportData fetch_data();
+    
+    // [FIX] Overriding fetch_data to add the actual_days calculation
+    PeriodReportData fetch_data() override;
+
+protected:
+    // [FIX] Corrected typo from std.string to std::string
+    std::string get_date_condition_sql() const override;
+    void bind_sql_parameters(sqlite3_stmt* stmt) const override;
+    bool _validate_input() const override;
+    void _handle_invalid_input(PeriodReportData& data) const override;
+    void _prepare_data(PeriodReportData& data) const override;
 
 private:
-    bool _validate_input() const;
-    void _fetch_records_and_duration(PeriodReportData& data);
-    void _fetch_actual_days(PeriodReportData& data);
-
-    sqlite3* m_db;
-    const int m_days_to_query;
+    mutable std::string m_start_date;
+    mutable std::string m_end_date;
 };
 
 #endif // PERIOD_REPORT_QUERIER_HPP

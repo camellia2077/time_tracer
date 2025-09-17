@@ -5,21 +5,21 @@
 #include <sqlite3.h>
 #include <string>
 #include "queries/shared/data/MonthlyReportData.hpp"
+#include "queries/shared/queriers/BaseQuerier.hpp"
 
-
-// 月报查询器类
-class MonthQuerier {
+class MonthQuerier : public BaseQuerier<MonthlyReportData, const std::string&> {
 public:
     explicit MonthQuerier(sqlite3* db, const std::string& year_month);
-    MonthlyReportData fetch_data();
 
-private:
-    bool _validate_input() const;
-    void _fetch_records_and_duration(MonthlyReportData& data);
-    void _fetch_actual_days(MonthlyReportData& data);
+    // [FIX] Add the override for fetch_data
+    MonthlyReportData fetch_data() override;
 
-    sqlite3* m_db;
-    const std::string m_year_month;
+protected:
+    std::string get_date_condition_sql() const override;
+    void bind_sql_parameters(sqlite3_stmt* stmt) const override;
+    bool _validate_input() const override;
+    void _handle_invalid_input(MonthlyReportData& data) const override;
+    void _prepare_data(MonthlyReportData& data) const override;
 };
 
 #endif // MONTHLY_REPORT_QUERIER_HPP

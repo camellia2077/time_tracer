@@ -4,71 +4,41 @@
 #include <iomanip>
 
 PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
-    : m_db(db), m_days_to_query(days_to_query) {}
+    : BaseQuerier(db, days_to_query) {}
 
+// [FIX] Overriding fetch_data to add the call to _fetch_actual_days.
 PeriodReportData PeriodQuerier::fetch_data() {
-    PeriodReportData data;
-    data.days_to_query = m_days_to_query;
+    // Call the base implementation to get records and total duration
+    PeriodReportData data = BaseQuerier::fetch_data();
 
-    if (!_validate_input()) {
-        data.days_to_query = -1; // 使用负数表示无效输入
-        return data;
-    }
-
-    // 计算日期范围
-    data.end_date = get_current_date_str();
-    data.start_date = add_days_to_date_str(data.end_date, -(m_days_to_query - 1));
-    
-    _fetch_records_and_duration(data);
+    // Now call the method specific to this querier type
     _fetch_actual_days(data);
+
     return data;
 }
 
 bool PeriodQuerier::_validate_input() const {
-    return m_days_to_query > 0;
+    return m_param > 0;
 }
 
-// --- [核心修改] 使用递归CTE重写SQL查询 ---
-void PeriodQuerier::_fetch_records_and_duration(PeriodReportData& data) {
-    sqlite3_stmt* stmt;
-    std::string sql = R"(
-        WITH RECURSIVE project_paths(id, path) AS (
-            SELECT id, name FROM projects WHERE parent_id IS NULL
-            UNION ALL
-            SELECT p.id, pp.path || '_' || p.name
-            FROM projects p
-            JOIN project_paths pp ON p.parent_id = pp.id
-        )
-        SELECT pp.path, tr.duration 
-        FROM time_records tr
-        JOIN project_paths pp ON tr.project_id = pp.id
-        WHERE tr.date >= ? AND tr.date <= ?;
-    )";
-
-    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, data.start_date.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, data.end_date.c_str(), -1, SQLITE_STATIC);
-        while (sqlite3_step(stmt) == SQLITE_ROW) {
-            long long duration = sqlite3_column_int64(stmt, 1);
-            data.records.push_back({
-                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
-                duration
-            });
-            data.total_duration += duration;
-        }
-    }
-    sqlite3_finalize(stmt);
+void PeriodQuerier::_handle_invalid_input(PeriodReportData& data) const {
+    data.days_to_query = -1;
 }
 
-void PeriodQuerier::_fetch_actual_days(PeriodReportData& data) {
-    sqlite3_stmt* stmt;
-    std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE date >= ? AND date <= ?;";
-    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, data.start_date.c_str(), -1, SQLITE_STATIC);
-        sqlite3_bind_text(stmt, 2, data.end_date.c_str(), -1, SQLITE_STATIC);
-        if (sqlite3_step(stmt) == SQLITE_ROW) {
-            data.actual_days = sqlite3_column_int(stmt, 0);
-        }
-    }
-    sqlite3_finalize(stmt);
+void PeriodQuerier::_prepare_data(PeriodReportData& data) const {
+    m_end_date = get_current_date_str();
+    m_start_date = add_days_to_date_str(m_end_date, -(m_param - 1));
+
+    data.days_to_query = m_param;
+    data.end_date = m_end_date;
+    data.start_date = m_start_date;
+}
+
+std::string PeriodQuerier::get_date_condition_sql() const {
+    return "date >= ? AND date <= ?";
+}
+
+void PeriodQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
+    sqlite3_bind_text(stmt, 1, m_start_date.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, m_end_date.c_str(), -1, SQLITE_TRANSIENT);
 }
