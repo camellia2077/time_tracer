@@ -18,9 +18,6 @@ private:
     void _display_summary(std::stringstream& ss, const MonthlyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const;
     
-    std::string get_tex_preamble() const;
-    std::string get_tex_postfix() const;
-
     std::shared_ptr<MonthTexConfig> config_; // [新增]
 };
 

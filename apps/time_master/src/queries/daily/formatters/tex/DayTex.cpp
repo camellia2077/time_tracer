@@ -14,6 +14,7 @@
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/TimeFormat.hpp" 
 #include "queries/shared/utils/ReportStringUtils.hpp"
+#include "queries/shared/utils/TexUtils.hpp" // [新增] 引入新的共享工具
 
 namespace {
     // This function escapes special LaTeX characters to prevent compilation errors.
@@ -34,7 +35,12 @@ DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
 std::string DayTex::format_report(const DailyReportData& data) const {
     std::stringstream ss;
-    ss << get_tex_preamble();
+    // [核心修改] 调用共享工具函数生成 Preamble
+    ss << TexUtils::get_tex_preamble(
+        config_->get_main_font(), 
+        config_->get_cjk_main_font(), 
+        config_->get_keyword_colors()
+    );
 
     _display_header(ss, data);
 
@@ -46,7 +52,8 @@ std::string DayTex::format_report(const DailyReportData& data) const {
         _display_project_breakdown(ss, data);
     }
     
-    ss << get_tex_postfix();
+    // [核心修改] 调用共享工具函数生成 Postfix
+    ss << TexUtils::get_tex_postfix();
     return ss.str();
 }
 
@@ -118,28 +125,4 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         }
     }
     ss << "\\end{itemize}\n\n";
-}
-
-std::string DayTex::get_tex_preamble() const {
-    std::stringstream ss;
-    ss << "\\documentclass{article}\n";
-    ss << "\\usepackage[a4paper, margin=1in]{geometry}\n";
-    ss << "\\usepackage[dvipsnames]{xcolor}\n";
-    ss << "\\usepackage{enumitem}\n";
-    ss << "\\usepackage{fontspec}\n";
-    ss << "\\usepackage{ctex}\n";
-
-    for (const auto& pair : config_->get_keyword_colors()) {
-        ss << "\\definecolor{" << pair.first << "color}{HTML}{" << pair.second << "}\n";
-    }
-    
-    ss << "\n";
-    ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
-    ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
-    ss << "\\begin{document}\n\n";
-    return ss.str();
-}
-
-std::string DayTex::get_tex_postfix() const {
-    return "\n\\end{document}\n";
 }

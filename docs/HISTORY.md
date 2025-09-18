@@ -293,3 +293,6 @@ tex周期 新增json配置
 
 ## v0.3.20.2
 统一格式化器 (Formatter) 的创建逻辑
+
+## v0.3.20.3
+TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工具 TexUtils
