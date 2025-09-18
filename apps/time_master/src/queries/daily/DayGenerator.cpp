@@ -7,7 +7,7 @@
 #include "queries/daily/formatters/md/DayMd.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include "queries/daily/formatters/tex/DayTex.hpp"
-#include "queries/daily/formatters/tex/DayTexConfig.hpp" // [新增] 引入新的TeX配置类
+#include "queries/daily/formatters/tex/DayTexConfig.hpp"
 #include "queries/daily/formatters/typ/DayTyp.hpp"
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 #include <memory>
@@ -40,5 +40,5 @@ std::string DayGenerator::generate_report(const std::string& date, ReportFormat 
         }
     }
 
-    return formatter->format_report(report_data, m_db);
+    return formatter->format_report(report_data);
 }

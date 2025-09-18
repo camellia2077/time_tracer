@@ -15,7 +15,7 @@
 
 DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
-std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) const {
+std::string DayTyp::format_report(const DailyReportData& data) const {
     std::stringstream ss;
     ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), config_->get_line_spacing()) << "\n\n";
 
@@ -28,7 +28,7 @@ std::string DayTyp::format_report(const DailyReportData& data, sqlite3* db) cons
     
     _display_statistics(ss, data);
     _display_detailed_activities(ss, data);
-    _display_project_breakdown(ss, data, db);
+    _display_project_breakdown(ss, data);
     return ss.str();
 }
 
@@ -50,7 +50,7 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << std::format("+ *{0}:* {1}\n", config_->get_remark_label(), data.metadata.remark);
 }
 
-void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* /*db*/) const {
+void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
     // --- [CORE FIX] ---
     // The 'db' parameter has been removed from the generate_project_breakdown function.
     // The arguments have been updated to match the new function signature.

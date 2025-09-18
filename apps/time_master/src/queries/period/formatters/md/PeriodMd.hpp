@@ -20,11 +20,11 @@ class PeriodMd : public IReportFormatter<PeriodReportData> {
 public:
     explicit PeriodMd(std::shared_ptr<PeriodMdConfig> config);
 
-    std::string format_report(const PeriodReportData& data, sqlite3* db) const override;
+    std::string format_report(const PeriodReportData& data) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const PeriodReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const;
+    void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const;
 
     std::shared_ptr<PeriodMdConfig> config_;
 };

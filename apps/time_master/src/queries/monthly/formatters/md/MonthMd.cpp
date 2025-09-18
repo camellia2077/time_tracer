@@ -11,7 +11,7 @@
 
 MonthMd::MonthMd(std::shared_ptr<MonthMdConfig> config) : config_(config) {}
 
-std::string MonthMd::format_report(const MonthlyReportData& data, sqlite3* db) const {
+std::string MonthMd::format_report(const MonthlyReportData& data) const {
     std::stringstream ss;
     if (data.year_month == "INVALID") {
         ss << config_->get_invalid_format_message() << "\n";
@@ -25,7 +25,7 @@ std::string MonthMd::format_report(const MonthlyReportData& data, sqlite3* db) c
         return ss.str();
     }
     
-    _display_project_breakdown(ss, data, db);
+    _display_project_breakdown(ss, data);
     return ss.str();
 }
 
@@ -42,7 +42,7 @@ void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& d
     }
 }
 
-void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* /*db*/) const {
+void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Markdown,

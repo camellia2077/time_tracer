@@ -25,7 +25,7 @@ namespace {
 
 MonthTex::MonthTex(std::shared_ptr<MonthTexConfig> config) : config_(config) {}
 
-std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) const {
+std::string MonthTex::format_report(const MonthlyReportData& data) const {
     if (data.year_month == "INVALID") {
         return config_->get_invalid_format_message() + "\n";
     }
@@ -37,7 +37,7 @@ std::string MonthTex::format_report(const MonthlyReportData& data, sqlite3* db) 
     if (data.actual_days == 0) {
         ss << config_->get_no_records_message() << "\n";
     } else {
-        _display_project_breakdown(ss, data, db);
+        _display_project_breakdown(ss, data);
     }
     
     ss << get_tex_postfix();
@@ -56,7 +56,7 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     }
 }
 
-void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* /*db*/) const {
+void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::LaTeX,

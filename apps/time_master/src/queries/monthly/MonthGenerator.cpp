@@ -39,5 +39,5 @@ std::string MonthGenerator::generate_report(const std::string& year_month, Repor
         }
     }
 
-    return formatter->format_report(report_data, m_db);
+    return formatter->format_report(report_data);
 }

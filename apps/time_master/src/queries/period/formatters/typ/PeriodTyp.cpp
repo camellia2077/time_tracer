@@ -10,7 +10,7 @@
 
 PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) {}
 
-std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) const {
+std::string PeriodTyp::format_report(const PeriodReportData& data) const {
     std::stringstream ss;
     
     ss << std::format(R"(#set text(font: "{0}"))", config_->get_content_font()) << "\n\n";
@@ -27,7 +27,7 @@ std::string PeriodTyp::format_report(const PeriodReportData& data, sqlite3* db) 
         return ss.str();
     }
     
-    _display_project_breakdown(ss, data, db);
+    _display_project_breakdown(ss, data);
     return ss.str();
 }
 
@@ -49,7 +49,7 @@ void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& 
     }
 }
 
-void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Typ,

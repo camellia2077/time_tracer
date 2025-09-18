@@ -10,7 +10,7 @@
 #include "queries/daily/formatters/md/DayMd.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include "queries/daily/formatters/tex/DayTex.hpp"
-#include "queries/daily/formatters/tex/DayTexConfig.hpp" // [新增]
+#include "queries/daily/formatters/tex/DayTexConfig.hpp"
 #include "queries/daily/formatters/typ/DayTyp.hpp"
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 
@@ -63,7 +63,7 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
         DayQuerier querier(m_db, date);
         DailyReportData report_data = querier.fetch_data();
 
-        std::string formatted_report = formatter->format_report(report_data, m_db);
+        std::string formatted_report = formatter->format_report(report_data);
         grouped_reports[year][month].push_back({date, formatted_report});
     }
 

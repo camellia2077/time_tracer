@@ -24,7 +24,7 @@ namespace {
 
 PeriodTex::PeriodTex(std::shared_ptr<PeriodTexConfig> config) : config_(config) {}
 
-std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) const {
+std::string PeriodTex::format_report(const PeriodReportData& data) const {
     if (data.days_to_query <= 0) {
         return config_->get_invalid_days_message() + "\n";
     }
@@ -36,7 +36,7 @@ std::string PeriodTex::format_report(const PeriodReportData& data, sqlite3* db) 
     if (data.actual_days == 0) {
         ss << config_->get_no_records_message() << "\n";
     } else {
-        _display_project_breakdown(ss, data, db);
+        _display_project_breakdown(ss, data);
     }
 
     ss << get_tex_postfix();
@@ -60,7 +60,7 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
     }
 }
 
-void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::LaTeX,

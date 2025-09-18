@@ -11,7 +11,7 @@
 
 PeriodMd::PeriodMd(std::shared_ptr<PeriodMdConfig> config) : config_(config) {}
 
-std::string PeriodMd::format_report(const PeriodReportData& data, sqlite3* db) const {
+std::string PeriodMd::format_report(const PeriodReportData& data) const {
     std::stringstream ss;
     if (data.days_to_query <= 0) {
         ss << config_->get_invalid_days_message() << "\n";
@@ -25,7 +25,7 @@ std::string PeriodMd::format_report(const PeriodReportData& data, sqlite3* db) c
         return ss.str();
     }
     
-    _display_project_breakdown(ss, data, db);
+    _display_project_breakdown(ss, data);
     return ss.str();
 }
 
@@ -45,7 +45,7 @@ void PeriodMd::_display_summary(std::stringstream& ss, const PeriodReportData& d
     }
 }
 
-void PeriodMd::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* /*db*/) const {
+void PeriodMd::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Markdown,

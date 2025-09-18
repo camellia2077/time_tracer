@@ -37,5 +37,5 @@ std::string PeriodGenerator::generate_report(int days, ReportFormat format) {
         }
     }
 
-    return formatter->format_report(report_data, m_db);
+    return formatter->format_report(report_data);
 }
