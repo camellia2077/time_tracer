@@ -32,7 +32,7 @@ namespace {
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
-std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) const {
+std::string DayTex::format_report(const DailyReportData& data) const {
     std::stringstream ss;
     ss << get_tex_preamble();
 
@@ -43,7 +43,7 @@ std::string DayTex::format_report(const DailyReportData& data, sqlite3* db) cons
     } else {
         _display_statistics(ss, data);
         _display_detailed_activities(ss, data);
-        _display_project_breakdown(ss, data, db);
+        _display_project_breakdown(ss, data);
     }
     
     ss << get_tex_postfix();
@@ -64,7 +64,7 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "\\end{itemize}\n\n";
 }
 
-void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* /*db*/) const {
+void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
     // --- [CORE FIX] ---
     // The 'db' parameter has been removed from the generate_project_breakdown function.
     // The arguments have been updated to match the new function signature.

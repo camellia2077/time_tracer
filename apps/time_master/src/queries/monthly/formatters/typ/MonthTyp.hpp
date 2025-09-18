@@ -12,11 +12,11 @@ class MonthTyp : public IReportFormatter<MonthlyReportData> {
 public:
     explicit MonthTyp(std::shared_ptr<MonthTypConfig> config); // [修改] 构造函数接收配置
 
-    std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;
+    std::string format_report(const MonthlyReportData& data) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const MonthlyReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* db) const;
+    void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const;
 
     std::shared_ptr<MonthTypConfig> config_; // [新增] 保存配置的智能指针
 };

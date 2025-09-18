@@ -19,10 +19,9 @@ public:
     /**
      * @brief 格式化报告数据的纯虚函数。
      * @param data 从 Querier 获取的报告数据。
-     * @param db 数据库连接指针。
      * @return 格式化后的报告字符串。
      */
-    virtual std::string format_report(const ReportDataType& data, sqlite3* db) const = 0;
+    virtual std::string format_report(const ReportDataType& data) const = 0;
 };
 
 #endif // I_REPORT_FORMATTER_HPP

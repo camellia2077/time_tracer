@@ -9,7 +9,7 @@
 
 MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} 
 
-std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) const {
+std::string MonthTyp::format_report(const MonthlyReportData& data) const {
     std::stringstream ss;
     
     ss << std::format(R"(#set text(font: "{0}"))", config_->get_body_font()) << "\n\n";
@@ -26,7 +26,7 @@ std::string MonthTyp::format_report(const MonthlyReportData& data, sqlite3* db) 
         return ss.str();
     }
 
-    _display_project_breakdown(ss, data, db);
+    _display_project_breakdown(ss, data);
     return ss.str();
 }
 
@@ -47,7 +47,7 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     }
 }
 
-void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data, sqlite3* /*db*/) const {
+void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
     // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Typ,

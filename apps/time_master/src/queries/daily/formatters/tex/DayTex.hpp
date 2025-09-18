@@ -15,12 +15,12 @@ public:
      */
     explicit DayTex(std::shared_ptr<DayTexConfig> config);
 
-    std::string format_report(const DailyReportData& data, sqlite3* db) const override;
+    std::string format_report(const DailyReportData& data) const override;
 
 private:
     // 私有方法保持不变
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const;
+    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     
