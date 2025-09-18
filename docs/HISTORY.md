@@ -296,3 +296,6 @@ tex周期 新增json配置
 
 ## v0.3.20.3
 TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工具 TexUtils
+
+## v0.3.20.4
+把 escape_latex 函数移至共享的 TexUtils 文件中
