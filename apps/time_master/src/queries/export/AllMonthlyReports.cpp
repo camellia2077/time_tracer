@@ -63,7 +63,7 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         MonthlyReportData data = querier.fetch_data();
 
         if (data.total_duration > 0) {
-            std::string formatted_report = formatter->format_report(data, m_db);
+            std::string formatted_report = formatter->format_report(data);
             reports[year][month] = formatted_report;
         }
     }

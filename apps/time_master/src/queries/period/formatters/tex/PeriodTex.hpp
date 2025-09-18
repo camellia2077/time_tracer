@@ -12,11 +12,11 @@ class PeriodTex : public IReportFormatter<PeriodReportData> {
 public:
     explicit PeriodTex(std::shared_ptr<PeriodTexConfig> config);
 
-    std::string format_report(const PeriodReportData& data, sqlite3* db) const override;
+    std::string format_report(const PeriodReportData& data) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const PeriodReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data, sqlite3* db) const;
+    void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const;
 
     std::string get_tex_preamble() const;
     std::string get_tex_postfix() const;

@@ -11,11 +11,11 @@
 class DayTyp : public IReportFormatter<DailyReportData> {
 public:
     explicit DayTyp(std::shared_ptr<DayTypConfig> config);
-    std::string format_report(const DailyReportData& data, sqlite3* db) const override;
+    std::string format_report(const DailyReportData& data) const override;
 
 private:
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data, sqlite3* db) const;
+    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     std::string _format_activity_line(const TimeRecord& record) const;
