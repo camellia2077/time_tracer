@@ -15,22 +15,17 @@
 #include <chrono>
 #include <ctime>
 
-// --- 【核心函数修改】 ---
-// 不再需要 db 参数，因为父子关系由调用者（Querier）通过SQL查询重建。
 std::string generate_project_breakdown(
     ReportFormat format,
     const std::vector<std::pair<std::string, long long>>& records,
     long long total_duration,
     int avg_days)
 {
-    // 1. 根据记录直接构建项目树
     ProjectTree project_tree;
     build_project_tree_from_records(project_tree, records);
 
-    // 2. 使用工厂创建对应的项目明细格式化器
     auto formatter = TreeFmtFactory::createFormatter(format);
 
-    // 3. 调用格式化器生成并返回最终的字符串
     if (formatter) {
         return formatter->format(project_tree, total_duration, avg_days);
     }
@@ -38,9 +33,6 @@ std::string generate_project_breakdown(
     return ""; 
 }
 
-// --- [核心修改] 移除 get_parent_map 函数 ---
-
-// --- [核心修改] build_project_tree_from_records 不再需要 parent_map ---
 void build_project_tree_from_records(
     ProjectTree& tree,
     const std::vector<std::pair<std::string, long long>>& records)
@@ -54,7 +46,6 @@ void build_project_tree_from_records(
 
         std::string top_level_category_key = parts[0];
 
-        // 直接使用第一部分作为顶级类别
         tree[top_level_category_key].duration += duration;
         ProjectNode* current_node = &tree[top_level_category_key];
 
@@ -65,10 +56,6 @@ void build_project_tree_from_records(
     }
 }
 
-
-// --- 其他辅助函数保持不变 ---
-
-// 增减日期字符串中的天数
 std::string add_days_to_date_str(std::string date_str, int days) {
     int year = std::stoi(date_str.substr(0, 4));
     int month = std::stoi(date_str.substr(4, 2));
@@ -85,7 +72,6 @@ std::string add_days_to_date_str(std::string date_str, int days) {
     return ss.str();
 }
 
-// 获取当前日期字符串
 std::string get_current_date_str() {
     auto now = std::chrono::system_clock::now();
     auto in_time_t = std::chrono::system_clock::to_time_t(now);

@@ -1,21 +1,13 @@
 // queries/export/AllDayReports.cpp
-
 #include "AllDayReports.hpp"
 #include "queries/daily/DayQuerier.hpp"
+#include "queries/shared/factories/FormatterFactory.hpp" // [修改] 引入新的统一工厂
 #include <stdexcept>
 #include <vector>
 #include <memory>
 
-#include "queries/shared/factories/FmtFactory.hpp"
-#include "queries/daily/formatters/md/DayMd.hpp"
-#include "queries/daily/formatters/md/DayMdConfig.hpp"
-#include "queries/daily/formatters/tex/DayTex.hpp"
-#include "queries/daily/formatters/tex/DayTexConfig.hpp"
-#include "queries/daily/formatters/typ/DayTyp.hpp"
-#include "queries/daily/formatters/typ/DayTypConfig.hpp"
-
-AllDayReports::AllDayReports(sqlite3* db, const std::string& day_typ_config_path, const std::string& day_md_config_path, const std::string& day_tex_config_path)
-    : m_db(db), m_day_typ_config_path(day_typ_config_path), m_day_md_config_path(day_md_config_path), m_day_tex_config_path(day_tex_config_path) {
+AllDayReports::AllDayReports(sqlite3* db, const AppConfig& config)
+    : m_db(db), app_config_(config) {
     if (m_db == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -31,26 +23,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch all dates.");
     }
 
-    std::unique_ptr<IReportFormatter<DailyReportData>> formatter;
-    switch (format) {
-        case ReportFormat::Typ: {
-            auto config = std::make_shared<DayTypConfig>(m_day_typ_config_path);
-            formatter = std::make_unique<DayTyp>(config);
-            break;
-        }
-        case ReportFormat::Markdown: {
-            auto config = std::make_shared<DayMdConfig>(m_day_md_config_path);
-            formatter = std::make_unique<DayMd>(config);
-            break;
-        }
-        case ReportFormat::LaTeX: {
-            // [修改] 为 DayTex 加载并传递配置
-            auto config = std::make_shared<DayTexConfig>(m_day_tex_config_path);
-            formatter = std::make_unique<DayTex>(config);
-            break;
-        }
-    }
-
+    // [核心修改] 使用统一工厂创建格式化器
+    auto formatter = FormatterFactory::create_day_formatter(format, app_config_);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         const char* date_cstr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));

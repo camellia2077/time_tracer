@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 #include <string>
 #include "queries/shared/ReportFormat.hpp" // 报告格式的定义
+#include "common/AppConfig.hpp"
 
 /**
  * @class DayGenerator
@@ -16,11 +17,9 @@ public:
     /**
      * @brief DayGenerator 的构造函数。
      * @param db 指向 SQLite 数据库连接的指针。
-     * @param day_typ_config_path DayTyp 配置文件的路径。
-     * @param day_md_config_path DayMd 配置文件的路径。
-     * @param day_tex_config_path [新增] DayTex 配置文件的路径。
+     * @param config 应用程序配置对象的引用。
      */
-    explicit DayGenerator(sqlite3* db, const std::string& day_typ_config_path, const std::string& day_md_config_path, const std::string& day_tex_config_path);
+    explicit DayGenerator(sqlite3* db, const AppConfig& config);
 
     /**
      * @brief 为指定日期生成格式化的日报。
@@ -32,9 +31,7 @@ public:
 
 private:
     sqlite3* m_db;
-    std::string m_day_typ_config_path;
-    std::string m_day_md_config_path;
-    std::string m_day_tex_config_path; // [新增] 用于存储TeX配置路径
+    const AppConfig& app_config_; // [修改] 现在只存储 AppConfig 的引用
 };
 
 #endif // DAILY_REPORT_GENERATOR_HPP
