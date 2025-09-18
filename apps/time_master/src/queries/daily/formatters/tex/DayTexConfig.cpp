@@ -1,6 +1,6 @@
 // queries/daily/formatters/tex/DayTexConfig.cpp
 #include "DayTexConfig.hpp"
-#include <fstream>
+#include "queries/shared/utils/ConfigUtils.hpp" // 引入共享的配置工具
 #include <stdexcept>
 
 DayTexConfig::DayTexConfig(const std::string& config_path) {
@@ -8,12 +8,8 @@ DayTexConfig::DayTexConfig(const std::string& config_path) {
 }
 
 void DayTexConfig::load_config(const std::string& config_path) {
-    std::ifstream config_file(config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open DayTexConfig file: " + config_path);
-    }
-    nlohmann::json config_json;
-    config_file >> config_json;
+    // 使用新的辅助函数来加载和解析 JSON 文件
+    nlohmann::json config_json = load_json_config(config_path, "Could not open DayTexConfig file: ");
 
     report_title_ = config_json.at("ReportTitle").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -32,7 +28,7 @@ void DayTexConfig::load_config(const std::string& config_path) {
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
-    activity_connector_ = config_json.at("ActivityConnector").get<std::string>(); // [新增]
+    activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
 }
 
 const std::string& DayTexConfig::get_report_title() const { return report_title_; }
@@ -52,4 +48,4 @@ const std::string& DayTexConfig::get_compact_list_options() const { return compa
 const std::string& DayTexConfig::get_main_font() const { return main_font_; }
 const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
 const std::map<std::string, std::string>& DayTexConfig::get_keyword_colors() const { return keyword_colors_; }
-const std::string& DayTexConfig::get_activity_connector() const { return activity_connector_; } // [新增]
+const std::string& DayTexConfig::get_activity_connector() const { return activity_connector_; }
