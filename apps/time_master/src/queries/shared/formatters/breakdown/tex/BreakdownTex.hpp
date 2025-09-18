@@ -23,13 +23,6 @@ private:
      * @param avg_days 用于格式化时间的平均天数。
      */
     void generate_sorted_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const;
-
-    /**
-     * @brief 转义 LaTeX 特殊字符，以防止编译错误。
-     * @param input 需要转义的原始字符串。
-     * @return 转义后的字符串。
-     */
-    std::string escape_latex(const std::string& input) const;
 };
 
 #endif // PROJECT_BREAKDOWN_TEX_FORMAT_HPP
