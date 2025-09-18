@@ -7,6 +7,7 @@
 #include "queries/shared/utils/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "common/utils/TimeUtils.hpp"
+#include "queries/shared/utils/TexUtils.hpp" // [新增] 引入新的共享工具
 
 namespace {
     std::string escape_tex_local(const std::string& s) {
@@ -30,7 +31,8 @@ std::string PeriodTex::format_report(const PeriodReportData& data) const {
     }
 
     std::stringstream ss;
-    ss << get_tex_preamble();
+    // [核心修改] 调用共享工具函数生成 Preamble
+    ss << TexUtils::get_tex_preamble(config_->get_main_font(), config_->get_cjk_main_font());
     
     _display_summary(ss, data);
     if (data.actual_days == 0) {
@@ -39,7 +41,8 @@ std::string PeriodTex::format_report(const PeriodReportData& data) const {
         _display_project_breakdown(ss, data);
     }
 
-    ss << get_tex_postfix();
+    // [核心修改] 调用共享工具函数生成 Postfix
+    ss << TexUtils::get_tex_postfix();
     return ss.str();
 }
 
@@ -68,22 +71,4 @@ void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodRe
         data.total_duration,
         data.actual_days
     );
-}
-
-std::string PeriodTex::get_tex_preamble() const {
-    std::stringstream ss;
-    ss << "\\documentclass{article}\n";
-    ss << "\\usepackage[a4paper, margin=1in]{geometry}\n";
-    ss << "\\usepackage[dvipsnames]{xcolor}\n";
-    ss << "\\usepackage{enumitem}\n";
-    ss << "\\usepackage{fontspec}\n";
-    ss << "\\usepackage{ctex}\n\n";
-    ss << "\\setmainfont{" << config_->get_main_font() << "}\n";
-    ss << "\\setCJKmainfont{" << config_->get_cjk_main_font() << "}\n\n";
-    ss << "\\begin{document}\n\n";
-    return ss.str();
-}
-
-std::string PeriodTex::get_tex_postfix() const {
-    return "\n\\end{document}\n";
 }
