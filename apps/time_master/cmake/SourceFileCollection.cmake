@@ -89,7 +89,9 @@ set(QUERIES_SOURCES
     
 
     # Shared Components
+    "src/queries/shared/factories/FormatterFactory.cpp"
     "src/queries/shared/factories/TreeFmtFactory.cpp"
+
     "src/queries/shared/formatters/breakdown/md/BreakdownMd.cpp"
     "src/queries/shared/formatters/breakdown/tex/BreakdownTex.cpp"
     "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"

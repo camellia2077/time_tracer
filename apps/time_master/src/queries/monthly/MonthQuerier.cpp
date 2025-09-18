@@ -7,12 +7,9 @@
 MonthQuerier::MonthQuerier(sqlite3* db, const std::string& year_month)
     : BaseQuerier(db, year_month) {}
 
-// [FIX] Overriding fetch_data to add the call to _fetch_actual_days.
 MonthlyReportData MonthQuerier::fetch_data() {
-    // Call the base implementation to get records and total duration
     MonthlyReportData data = BaseQuerier::fetch_data();
 
-    // Now call the method specific to this querier type
     _fetch_actual_days(data);
     
     return data;
