@@ -100,7 +100,10 @@ set(QUERIES_SOURCES
     "src/queries/shared/utils/query_utils.cpp"
     "src/queries/shared/utils/BoolToString.cpp"
     "src/queries/shared/utils/ReportStringUtils.cpp"
+    "src/queries/shared/utils/TexUtils.cpp"
+
     "src/queries/shared/utils/TimeFormat.cpp"
+
 )
 
 # --- Reprocessing Sources ---
