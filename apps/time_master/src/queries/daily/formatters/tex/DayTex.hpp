@@ -24,10 +24,6 @@ private:
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     
-    // [修改] 将 TeX 的模板代码直接移入此类
-    std::string get_tex_preamble() const;
-    std::string get_tex_postfix() const;
-
     /**
      * @brief [新增] 用于存储配置对象的成员变量。
      */
