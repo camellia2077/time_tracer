@@ -1,31 +1,10 @@
 // queries/shared/formatters/breakdown/tex/BreakdownTex.cpp
 #include "BreakdownTex.hpp"
 #include "common/utils/ProjectTree.hpp"
+#include "queries/shared/utils/TexUtils.hpp" // [新增]
 #include <vector>
 #include <algorithm>
 #include <iomanip>
-
-// ... escape_latex 和 format 函数保持不变 ...
-std::string BreakdownTex::escape_latex(const std::string& input) const {
-    std::string output;
-    output.reserve(input.size());
-    for (const char c : input) {
-        switch (c) {
-            case '&':  output += "\\&";        break;
-            case '%':  output += "\\%";        break;
-            case '$':  output += "\\$";        break;
-            case '#':  output += "\\#";        break;
-            case '_':  output += "\\_";        break;
-            case '{':  output += "\\{";        break;
-            case '}':  output += "\\}";        break;
-            case '~':  output += "\\textasciitilde{}"; break;
-            case '^':  output += "\\textasciicircum{}"; break;
-            case '\\': output += "\\textbackslash{}"; break;
-            default:   output += c;            break;
-        }
-    }
-    return output;
-}
 
 std::string BreakdownTex::format(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
@@ -44,8 +23,8 @@ std::string BreakdownTex::format(const ProjectTree& tree, long long total_durati
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        ss << "\\section*{" << escape_latex(category_name) << ": "
-           << escape_latex(time_format_duration(category_node.duration, avg_days))
+        ss << "\\section*{" << TexUtils::escape_latex(category_name) << ": "
+           << TexUtils::escape_latex(time_format_duration(category_node.duration, avg_days))
            << " (" << percentage << "\\%)}\n";
 
         generate_sorted_output(ss, category_node, avg_days);
@@ -77,8 +56,8 @@ void BreakdownTex::generate_sorted_output(std::stringstream& ss, const ProjectNo
         const ProjectNode& child_node = pair.second;
 
         if (child_node.duration > 0 || !child_node.children.empty()) {
-            ss << "    \\item " << escape_latex(name) << ": "
-               << escape_latex(time_format_duration(child_node.duration, avg_days));
+            ss << "    \\item " << TexUtils::escape_latex(name) << ": "
+               << TexUtils::escape_latex(time_format_duration(child_node.duration, avg_days));
 
             if (!child_node.children.empty()) {
                 ss << "\n";

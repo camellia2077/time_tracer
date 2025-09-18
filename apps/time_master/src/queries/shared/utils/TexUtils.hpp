@@ -27,6 +27,13 @@ std::string get_tex_preamble(
  */
 std::string get_tex_postfix();
 
+/**
+ * @brief 转义 LaTeX 特殊字符，以防止编译错误。
+ * @param input 需要转义的原始字符串。
+ * @return 转义后的字符串。
+ */
+std::string escape_latex(const std::string& input);
+
 } // namespace TexUtils
 
 #endif // TEX_UTILS_HPP
