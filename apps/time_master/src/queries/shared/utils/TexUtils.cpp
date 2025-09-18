@@ -35,4 +35,25 @@ std::string get_tex_postfix() {
     return "\n\\end{document}\n";
 }
 
+std::string escape_latex(const std::string& input) {
+    std::string output;
+    output.reserve(input.size());
+    for (const char c : input) {
+        switch (c) {
+            case '&':  output += "\\&";        break;
+            case '%':  output += "\\%";        break;
+            case '$':  output += "\\$";        break;
+            case '#':  output += "\\#";        break;
+            case '_':  output += "\\_";        break;
+            case '{':  output += "\\{";        break;
+            case '}':  output += "\\}";        break;
+            case '~':  output += "\\textasciitilde{}"; break;
+            case '^':  output += "\\textasciicircum{}"; break;
+            case '\\': output += "\\textbackslash{}"; break;
+            default:   output += c;            break;
+        }
+    }
+    return output;
+}
+
 } // namespace TexUtils

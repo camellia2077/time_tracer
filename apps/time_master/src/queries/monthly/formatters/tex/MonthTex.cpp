@@ -8,21 +8,7 @@
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/Interface/ITreeFmt.hpp"
 #include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/TexUtils.hpp" // [新增] 引入新的共享工具
-
-namespace {
-    std::string escape_tex_local(const std::string& s) {
-        std::string escaped;
-        escaped.reserve(s.length());
-        for (char c : s) {
-            if (c == '&' || c == '%' || c == '$' || c == '#' || c == '_' || c == '{' || c == '}') {
-                escaped += '\\';
-            }
-            escaped += c;
-        }
-        return escaped;
-    }
-}
+#include "queries/shared/utils/TexUtils.hpp"
 
 MonthTex::MonthTex(std::shared_ptr<MonthTexConfig> config) : config_(config) {}
 
@@ -32,7 +18,6 @@ std::string MonthTex::format_report(const MonthlyReportData& data) const {
     }
 
     std::stringstream ss;
-    // [核心修改] 调用共享工具函数生成 Preamble
     ss << TexUtils::get_tex_preamble(config_->get_main_font(), config_->get_cjk_main_font());
 
     _display_summary(ss, data);
@@ -42,25 +27,23 @@ std::string MonthTex::format_report(const MonthlyReportData& data) const {
         _display_project_breakdown(ss, data);
     }
     
-    // [核心修改] 调用共享工具函数生成 Postfix
     ss << TexUtils::get_tex_postfix();
     return ss.str();
 }
 
 void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
     std::string title_month = data.year_month.substr(0, 4) + "-" + data.year_month.substr(4, 2);
-    ss << "\\section*{" << config_->get_report_title() << " " << escape_tex_local(title_month) << "}\n\n";
+    ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(title_month) << "}\n\n";
 
     if (data.actual_days > 0) {
         ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
         ss << "    \\item \\textbf{" << config_->get_actual_days_label() << "}: " << data.actual_days << "\n";
-        ss << "    \\item \\textbf{" << config_->get_total_time_label()  << "}: " << escape_tex_local(time_format_duration(data.total_duration, data.actual_days)) << "\n";
+        ss << "    \\item \\textbf{" << config_->get_total_time_label()  << "}: " << TexUtils::escape_latex(time_format_duration(data.total_duration, data.actual_days)) << "\n";
         ss << "\\end{itemize}\n\n";
     }
 }
 
 void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::LaTeX,
         data.records,
