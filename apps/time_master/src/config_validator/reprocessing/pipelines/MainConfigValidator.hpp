@@ -1,4 +1,4 @@
-// config_validator/pipelines/MainConfigValidator.hpp
+// config_validator/reprocessing/pipelines/MainConfigValidator.hpp
 #ifndef MAIN_CONFIG_VALIDATOR_HPP
 #define MAIN_CONFIG_VALIDATOR_HPP
 

@@ -10,12 +10,19 @@ set(COMMON_SOURCES
 
 
 set(CONFIG_VALIDATOR
-    "src/config_validator/ConfigValidator.cpp"
-    "src/config_validator/ConfigValidator.cpp"
-    
-    "src/config_validator/pipelines/MainConfigValidator.cpp"
-    "src/config_validator/pipelines/MappingsConfigValidator.cpp"
-    "src/config_validator/pipelines/DurationRulesConfigValidator.cpp"
+    # 顶层外观
+    "src/config_validator/facade/ConfigValidator.cpp"
+
+    # Reprocessing 领域的 Facade 和 Pipelines
+    "src/config_validator/reprocessing/facade/ReprocessingValidatorFacade.cpp"
+
+    "src/config_validator/reprocessing/pipelines/MappingsConfigValidator.cpp"
+    "src/config_validator/reprocessing/pipelines/MainConfigValidator.cpp"
+    "src/config_validator/reprocessing/pipelines/DurationRulesConfigValidator.cpp"
+
+    # Queries 领域的 Facade 和 Pipelines
+    "src/config_validator/queries/facade/QueryValidatorFacade.cpp"
+    "src/config_validator/queries/pipelines/QueryConfigValidator.cpp"
 )
 
 # --- Time Master CLI Sources ---
@@ -65,6 +72,7 @@ set(QUERIES_SOURCES
 
     "src/queries/daily/formatters/typ/DayTyp.cpp"
     "src/queries/daily/formatters/typ/DayTypConfig.cpp"
+    "src/queries/daily/formatters/typ/DayTypUtils.cpp"
     # Monthly Reports
     "src/queries/monthly/MonthGenerator.cpp"
     "src/queries/monthly/MonthQuerier.cpp"
