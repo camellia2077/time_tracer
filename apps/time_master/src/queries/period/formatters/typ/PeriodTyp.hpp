@@ -2,7 +2,7 @@
 #ifndef PERIOD_REPORT_TYP_FORMATTER_HPP
 #define PERIOD_REPORT_TYP_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/PeriodReportData.hpp"
 #include "queries/period/formatters/typ/PeriodTypConfig.hpp"
 #include <sstream>
