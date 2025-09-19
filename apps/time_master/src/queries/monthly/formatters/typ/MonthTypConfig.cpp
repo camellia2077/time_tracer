@@ -12,6 +12,7 @@ void MonthTypConfig::load_config(const std::string& config_path) {
 
     base_font_ = config_json.at("BaseFont").get<std::string>();
     title_font_ = config_json.at("TitleFont").get<std::string>();
+    category_title_font_ = config_json.at("CategoryTitleFont").get<std::string>();
     base_font_size_ = config_json.at("BaseFontSize").get<int>();
     report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
     category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
@@ -30,6 +31,7 @@ void MonthTypConfig::load_config(const std::string& config_path) {
 // Getters
 const std::string& MonthTypConfig::get_base_font() const { return base_font_; }
 const std::string& MonthTypConfig::get_title_font() const { return title_font_; }
+const std::string& MonthTypConfig::get_category_title_font() const { return category_title_font_; }
 int MonthTypConfig::get_base_font_size() const { return base_font_size_; }
 int MonthTypConfig::get_report_title_font_size() const { return report_title_font_size_; }
 int MonthTypConfig::get_category_title_font_size() const { return category_title_font_size_; }

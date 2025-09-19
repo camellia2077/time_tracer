@@ -1,6 +1,7 @@
 {
-  "TitleFont": "Noto Serif",
   "BaseFont": "Noto Serif",
+  "TitleFont": "Noto Serif",
+  "CategoryTitleFont": "Noto Serif",
   "BaseFontSize": 10,
   "ReportTitleFontSize": 14,
   "CategoryTitleFontSize": 12,

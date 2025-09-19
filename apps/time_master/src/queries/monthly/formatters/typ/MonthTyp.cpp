@@ -43,7 +43,7 @@ std::string MonthTyp::format_report(const MonthlyReportData& data) const {
 
 void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
     std::string title = std::format(
-        R"(#text(font: "{0}", size: {1}pt)[= {2} {3}-{4}])",
+        R"(#text(font: "{}", size: {}pt)[= {} {}-{}])",
         config_->get_title_font(),
         config_->get_report_title_font_size(),
         config_->get_title_prefix(),
@@ -53,8 +53,8 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     ss << title << "\n\n";
 
     if (data.actual_days > 0) {
-        ss << std::format("+ *{0}:* {1}\n", config_->get_actual_days_label(), data.actual_days);
-        ss << std::format("+ *{0}:* {1}\n", config_->get_total_time_label(), time_format_duration(data.total_duration, data.actual_days));
+        ss << std::format("+ *{}:* {}\n", config_->get_actual_days_label(), data.actual_days);
+        ss << std::format("+ *{}:* {}\n", config_->get_total_time_label(), time_format_duration(data.total_duration, data.actual_days));
     }
 }
 
@@ -99,7 +99,8 @@ std::string MonthTyp::_format_project_tree(const ProjectTree& tree, long long to
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        ss << std::format(R"(#text(size: {}pt)[= {}])", 
+        ss << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
+            config_->get_category_title_font(),
             config_->get_category_title_font_size(),
             std::format("{}: {} ({:.1f}%)", 
                 category_name, 
