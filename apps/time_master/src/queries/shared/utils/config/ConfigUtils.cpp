@@ -1,4 +1,4 @@
-// queries/shared/utils/ConfigUtils.cpp
+// queries/shared/utils/config/ConfigUtils.cpp
 #include "ConfigUtils.hpp"
 #include <fstream>
 #include <stdexcept>

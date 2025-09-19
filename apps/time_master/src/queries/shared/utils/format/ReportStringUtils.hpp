@@ -1,4 +1,4 @@
-// queries/shared/utils/ReportStringUtils.hpp
+// queries/shared/utils/format/ReportStringUtils.hpp
 #ifndef REPORT_STRING_UTILS_HPP
 #define REPORT_STRING_UTILS_HPP
 

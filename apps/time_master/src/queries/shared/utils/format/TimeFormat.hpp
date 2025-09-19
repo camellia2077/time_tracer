@@ -5,11 +5,12 @@
 #include <string>
 
 /**
- * @brief 将秒数转换为 "h m" 格式的字符串。
- * @param duration_seconds 持续时间，以秒为单位。
- * @return 格式化后的字符串。
+ * @brief 将总秒数格式化为 "XhYYm" 或 "YYm" 的字符串，并可选择计算平均值。
+ * @param total_seconds 总秒数。
+ * @param avg_days 用于计算平均值的天数，默认为1。
+ * @return 格式化后的时长字符串。
  */
-std::string time_format_duration_hm(long long duration_seconds);
+std::string time_format_duration(long long total_seconds, int avg_days = 1);
 
 /**
  * @brief 为指定的日期字符串增加或减少天数。

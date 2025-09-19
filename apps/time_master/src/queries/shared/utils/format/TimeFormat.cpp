@@ -5,24 +5,36 @@
 #include <chrono>
 #include <ctime>
 
-std::string time_format_duration_hm(long long duration_seconds) {
-    long long hours = duration_seconds / 3600;
-    long long minutes = (duration_seconds % 3600) / 60;
+std::string time_format_duration(long long total_seconds, int avg_days) {
+    if (total_seconds == 0) {
+        if (avg_days > 1) return "0m (average: 0m/day)";
+        return "0m";
+    }
 
-    std::stringstream ss;
-    if (hours > 0) {
-        ss << hours << "h";
-        if (minutes > 0) {
-            ss << " ";
+    long long seconds_per_day = (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
+
+    auto format_single_duration = [](long long s) {
+        if (s == 0) return std::string("0m");
+        long long h = s / 3600;
+        long long m = (s % 3600) / 60;
+        std::stringstream ss;
+        if (h > 0) {
+            ss << h << "h";
         }
+        if (m > 0 || h == 0) {
+            if (h > 0) ss << " "; // Add space between h and m
+            ss << m << "m";
+        }
+        return ss.str();
+    };
+
+    std::string main_duration_str = format_single_duration(total_seconds);
+
+    if (avg_days > 1) {
+        std::string avg_duration_str = format_single_duration(seconds_per_day);
+        main_duration_str += " (average: " + avg_duration_str + "/day)";
     }
-    if (minutes > 0) {
-        ss << minutes << "m";
-    }
-    if (hours == 0 && minutes == 0) {
-        ss << "0m";
-    }
-    return ss.str();
+    return main_duration_str;
 }
 
 std::string add_days_to_date_str(std::string date_str, int days) {

@@ -71,7 +71,7 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
             ss << std::format("- {0} - {1} ({2}): {3}\n", 
                 record.start_time, 
                 record.end_time,
-                time_format_duration_hm(record.duration_seconds),
+                time_format_duration(record.duration_seconds),
                 project_path
             );
             if (record.activityRemark.has_value()) {
@@ -86,6 +86,6 @@ void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& da
     ss << "\n## " << config_->get_statistics_label() << "\n\n";
     ss << std::format("- **{0}**: {1}\n", 
         config_->get_sleep_time_label(), 
-        time_format_duration_hm(data.sleep_time)
+        time_format_duration(data.sleep_time)
     );
 }
