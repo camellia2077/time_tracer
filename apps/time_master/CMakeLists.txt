@@ -33,7 +33,16 @@ include(TargetSetup)          # 包含并定义 setup_project_target 函数
 include(BuildTypeFlags)       # [新增] 包含并执行构建类型标志的设置脚本
 
 # --- 3. 定义可执行文件目标 ---
-add_executable(time_tracker_cli src/main_cli.cpp ${COMMON_SOURCES} ${DB_INSERTER_SOURCES} ${QUERIES_SOURCES} ${REPROCESSING_SOURCES} ${FILE_HANDLER_SOURCES} ${ACTION_HANDLER_SOURCES} ${TIME_MASTER_CLI_SOURCES})
+add_executable(time_tracker_cli src/main_cli.cpp 
+    ${COMMON_SOURCES} 
+    ${CONFIG_VALIDATOR}
+    ${DB_INSERTER_SOURCES} 
+    ${QUERIES_SOURCES} 
+    ${REPROCESSING_SOURCES} 
+    ${FILE_HANDLER_SOURCES} 
+    ${ACTION_HANDLER_SOURCES} 
+    ${TIME_MASTER_CLI_SOURCES}
+    )
 
 # 创建一个包含所有可执行文件目标的列表
 set(ALL_TARGETS time_tracker_cli)
