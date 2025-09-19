@@ -20,7 +20,7 @@ std::string PeriodTex::format_report(const PeriodReportData& data) const {
     ss << TexUtils::get_tex_preamble(
         config_->get_main_font(), 
         config_->get_cjk_main_font(),
-        config_->get_font_size(),
+        config_->get_base_font_size(),
         config_->get_margin_in()
     );
     
@@ -36,11 +36,15 @@ std::string PeriodTex::format_report(const PeriodReportData& data) const {
 }
 
 void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
+    int title_size = config_->get_report_title_font_size();
+    ss << "{";
+    ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
     ss << "\\section*{"
        << config_->get_report_title_prefix() << " " << data.days_to_query << " "
        << config_->get_report_title_days() << " ("
        << TexUtils::escape_latex(data.start_date) << " " << config_->get_report_title_date_separator() << " "
-       << TexUtils::escape_latex(data.end_date) << ")}\n\n";
+       << TexUtils::escape_latex(data.end_date) << ")}";
+    ss << "}\n\n";
 
     if (data.actual_days > 0) {
         std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
@@ -115,9 +119,13 @@ std::string PeriodTex::_format_project_tree(const ProjectTree& tree, long long t
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
+        int category_size = config_->get_category_title_font_size();
+        ss << "{";
+        ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
         ss << "\\section*{" << TexUtils::escape_latex(category_name) << ": "
            << TexUtils::escape_latex(time_format_duration(category_node.duration, avg_days))
-           << " (" << percentage << "\\%)}\n";
+           << " (" << percentage << "\\%)}";
+        ss << "}\n";
 
         _generate_sorted_tex_output(ss, category_node, avg_days);
         ss << "\n";
