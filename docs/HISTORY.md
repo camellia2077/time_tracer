@@ -314,3 +314,6 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 
 ## v0.3.21.0
 新增独立的json配置验证模块
+
+## v0.3.21.1
+去除reprocessing模块的对于json配置的检验
