@@ -8,6 +8,16 @@ set(COMMON_SOURCES
     "src/common/utils/TimeUtils.cpp"
 )
 
+
+set(CONFIG_VALIDATOR
+    "src/config_validator/ConfigValidator.cpp"
+    "src/config_validator/ConfigValidator.cpp"
+    
+    "src/config_validator/pipelines/MainConfigValidator.cpp"
+    "src/config_validator/pipelines/MappingsConfigValidator.cpp"
+    "src/config_validator/pipelines/DurationRulesConfigValidator.cpp"
+)
+
 # --- Time Master CLI Sources ---
 set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliController.cpp"
@@ -90,7 +100,7 @@ set(QUERIES_SOURCES
 
     # Shared Components
     "src/queries/shared/factories/FormatterFactory.cpp"
-    
+
     "src/queries/shared/utils/config/ConfigUtils.cpp"
     "src/queries/shared/utils/report/ReportDataUtils.cpp"
 
