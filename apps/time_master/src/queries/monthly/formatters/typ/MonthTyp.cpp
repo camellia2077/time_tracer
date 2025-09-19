@@ -1,11 +1,11 @@
 // queries/monthly/formatters/typ/MonthTyp.cpp
+
 #include "MonthTyp.hpp"
 #include <iomanip>
 #include <format>
-#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "common/utils/TimeUtils.hpp"
-
+#include "queries/shared/utils/format/TimeFormat.hpp"    
 
 MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} 
 

@@ -1,4 +1,4 @@
-// queries/shared/utils/ReportStringUtils.cpp
+// queries/shared/utils/format/ReportStringUtils.cpp
 #include "ReportStringUtils.hpp"
 
 std::string replace_all(std::string str, const std::string& from, const std::string& to) {

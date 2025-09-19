@@ -1,12 +1,13 @@
 // queries/period/formatters/tex/PeriodTex.cpp
+
 #include "PeriodTex.hpp"
 #include <iomanip>
 #include <string>
 #include <sstream>
 
-#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "common/utils/TimeUtils.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"    
 #include "queries/shared/utils/tex/TexUtils.hpp"
 
 PeriodTex::PeriodTex(std::shared_ptr<PeriodTexConfig> config) : config_(config) {}

@@ -33,34 +33,3 @@ int time_str_to_seconds(const std::string& time_str_in) {
         return 0;
     }
 }
-
-std::string time_format_duration(long long total_seconds, int avg_days) {
-    if (total_seconds == 0) {
-        if (avg_days > 1) return "0m (average: 0m/day)";
-        return "0m";
-    }
-
-    long long seconds_per_day = (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
-
-    auto format_single_duration = [](long long s) {
-        if (s == 0) return std::string("0m");
-        long long h = s / 3600;
-        long long m = (s % 3600) / 60;
-        std::stringstream ss;
-        if (h > 0) {
-            ss << h << "h";
-        }
-        if (m > 0 || h == 0) {
-            ss << m << "m";
-        }
-        return ss.str();
-    };
-
-    std::string main_duration_str = format_single_duration(total_seconds);
-
-    if (avg_days > 1) {
-        std::string avg_duration_str = format_single_duration(seconds_per_day);
-        main_duration_str += " (average: " + avg_duration_str + "/day)";
-    }
-    return main_duration_str;
-}
