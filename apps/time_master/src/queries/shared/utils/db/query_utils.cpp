@@ -1,4 +1,4 @@
-// queries/shared/utils/query_utils.cpp
+// queries/shared/utils/db/query_utils.cpp
 #include "query_utils.hpp"
 #include "common/utils/StringUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp" 

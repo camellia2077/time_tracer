@@ -66,7 +66,7 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
     ss << "\n= " << config_->get_statistics_label() << "\n\n";
     ss << std::format("+ *{0}:* {1}\n", 
         config_->get_sleep_time_label(), 
-        time_format_duration_hm(data.sleep_time)
+        time_format_duration(data.sleep_time)
     );
 }
 
@@ -75,7 +75,7 @@ std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
     std::string base_string = std::format("{0} - {1} ({2}): {3}",
         record.start_time,
         record.end_time,
-        time_format_duration_hm(record.duration_seconds),
+        time_format_duration(record.duration_seconds),
         project_path
     );
 

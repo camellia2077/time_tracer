@@ -1,4 +1,4 @@
-// queries/shared/Interface/ITreeFmt.hpp
+// queries/shared/interface/ITreeFmt.hpp
 #ifndef I_PROJECT_BREAKDOWN_FORMATTER_HPP
 #define I_PROJECT_BREAKDOWN_FORMATTER_HPP
 

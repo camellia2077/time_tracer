@@ -67,7 +67,7 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     ss << "\\subsection*{" << config_->get_statistics_label() << "}\n\n";
     ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
     ss << "    \\item \\textbf{" << config_->get_sleep_time_label() << "}: "
-       << TexUtils::escape_latex(time_format_duration_hm(data.sleep_time)) << "\n";
+       << TexUtils::escape_latex(time_format_duration(data.sleep_time)) << "\n";
     ss << "\\end{itemize}\n\n";
 }
 
@@ -83,7 +83,7 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
         std::string base_string = TexUtils::escape_latex(record.start_time) + " - " +
                                   TexUtils::escape_latex(record.end_time) + " (" +
-                                  TexUtils::escape_latex(time_format_duration_hm(record.duration_seconds)) +
+                                  TexUtils::escape_latex(time_format_duration(record.duration_seconds)) +
                                   "): " + TexUtils::escape_latex(project_path);
         
         std::string colorized_string = base_string;

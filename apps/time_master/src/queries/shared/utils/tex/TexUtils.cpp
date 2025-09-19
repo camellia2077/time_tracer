@@ -1,4 +1,4 @@
-// queries/shared/utils/TexUtils.cpp
+// queries/shared/utils/tex/TexUtils.cpp
 #include "TexUtils.hpp"
 #include <sstream>
 
