@@ -6,7 +6,7 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 #include "CliParser.hpp" // 包含新的解析器头文件
 
 // 前向声明

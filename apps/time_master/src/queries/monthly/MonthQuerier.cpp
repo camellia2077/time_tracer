@@ -1,6 +1,6 @@
 // queries/monthly/MonthQuerier.cpp
 #include "MonthQuerier.hpp"
-#include "queries/shared/utils/query_utils.hpp" 
+#include "queries/shared/utils/db/query_utils.hpp" 
 #include <algorithm>
 #include <cctype>
 

@@ -7,7 +7,7 @@
 #include <memory>
 #include <filesystem>
 #include "queries/shared/data/query_data_structs.hpp"
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
 
 class DatabaseManager;

@@ -1,6 +1,6 @@
 // queries/period/formatters/tex/PeriodTexConfig.cpp
 #include "PeriodTexConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 PeriodTexConfig::PeriodTexConfig(const std::string& config_path) {

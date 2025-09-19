@@ -3,7 +3,7 @@
 #define FORMATTER_FACTORY_HPP
 
 #include <memory>
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 #include "queries/shared/Interface/IReportFormatter.hpp"
 #include "common/AppConfig.hpp"
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <optional>
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 
 class CliParser {
 public:

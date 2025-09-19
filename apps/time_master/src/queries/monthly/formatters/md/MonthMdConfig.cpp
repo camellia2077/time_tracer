@@ -1,6 +1,6 @@
 // queries/monthly/formatters/md/MonthMdConfig.cpp
 #include "MonthMdConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 MonthMdConfig::MonthMdConfig(const std::string& config_path) {

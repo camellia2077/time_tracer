@@ -3,9 +3,9 @@
 #include <iomanip>
 #include <format>
 
-#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "queries/shared/interface/ITreeFmt.hpp"
 #include "common/utils/ProjectTree.hpp"
 #include "common/utils/TimeUtils.hpp"
 

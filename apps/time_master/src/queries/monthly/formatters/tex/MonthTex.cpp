@@ -4,11 +4,11 @@
 #include <string>
 #include <sstream>
 
-#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "queries/shared/interface/ITreeFmt.hpp"
 #include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/TexUtils.hpp"
+#include "queries/shared/utils/tex/TexUtils.hpp"
 
 MonthTex::MonthTex(std::shared_ptr<MonthTexConfig> config) : config_(config) {}
 

@@ -7,14 +7,14 @@
 #include <algorithm>
 
 #include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/query_utils.hpp"
-#include "queries/shared/utils/BoolToString.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/Interface/ITreeFmt.hpp"
+#include "queries/shared/interface/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
-#include "queries/shared/utils/TimeFormat.hpp"
-#include "queries/shared/utils/ReportStringUtils.hpp"
-#include "queries/shared/utils/TexUtils.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
+#include "queries/shared/utils/format/ReportStringUtils.hpp"
+#include "queries/shared/utils/tex/TexUtils.hpp"
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 

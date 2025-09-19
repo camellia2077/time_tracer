@@ -2,7 +2,7 @@
 #include "query_utils.hpp"
 #include "common/utils/StringUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp" 
-#include "queries/shared/Interface/ITreeFmt.hpp"       
+#include "queries/shared/interface/ITreeFmt.hpp"       
 #include "common/utils/ProjectTree.hpp" 
 
 #include <iostream>
