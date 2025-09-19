@@ -4,21 +4,24 @@
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
-#include "queries/monthly/formatters/typ/MonthTypConfig.hpp" // [新增]
+#include "queries/monthly/formatters/typ/MonthTypConfig.hpp"
 #include <sstream>
-#include <memory> // [新增]
+#include <memory>
 
 class MonthTyp : public IReportFormatter<MonthlyReportData> {
 public:
-    explicit MonthTyp(std::shared_ptr<MonthTypConfig> config); // [修改] 构造函数接收配置
-
+    explicit MonthTyp(std::shared_ptr<MonthTypConfig> config);
     std::string format_report(const MonthlyReportData& data) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const MonthlyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const;
 
-    std::shared_ptr<MonthTypConfig> config_; // [新增] 保存配置的智能指针
+    // [新增] 内部方法，用于格式化项目树
+    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
+    void _generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const;
+
+    std::shared_ptr<MonthTypConfig> config_;
 };
 
 #endif // MONTHLY_REPORT_TYP_FORMATTER_HPP

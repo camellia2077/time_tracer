@@ -4,9 +4,7 @@
 #include <string>
 #include <sstream>
 #include <algorithm>
-#include "queries/shared/factories/TreeFmtFactory.hpp" // [新增]
-#include "queries/shared/interfaces/ITreeFmt.hpp"       // [新增]
-#include "queries/shared/data/DailyReportData.hpp"
+#include <vector>
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
@@ -51,11 +49,8 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
-    if (formatter) {
-        ss << formatter->format(data.project_tree, data.total_duration, 1);
-    }
+    // [核心修改] 调用内部方法直接格式化
+    ss << _format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
@@ -100,4 +95,68 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         }
     }
     ss << "\\end{itemize}\n\n";
+}
+
+// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
+void DayTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const {
+    if (node.children.empty()) {
+        return;
+    }
+
+    std::vector<std::pair<std::string, ProjectNode>> sorted_children;
+    for (const auto& pair : node.children) {
+        sorted_children.push_back(pair);
+    }
+    std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    ss << "\\begin{itemize}[topsep=0pt, itemsep=-0.5ex]\n";
+
+    for (const auto& pair : sorted_children) {
+        const std::string& name = pair.first;
+        const ProjectNode& child_node = pair.second;
+
+        if (child_node.duration > 0 || !child_node.children.empty()) {
+            ss << "    \\item " << TexUtils::escape_latex(name) << ": "
+               << TexUtils::escape_latex(time_format_duration(child_node.duration, avg_days));
+
+            if (!child_node.children.empty()) {
+                ss << "\n";
+                _generate_sorted_tex_output(ss, child_node, avg_days);
+            }
+            ss << "\n";
+        }
+    }
+
+    ss << "\\end{itemize}\n";
+}
+
+// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
+std::string DayTex::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(1);
+
+    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
+    for (const auto& pair : tree) {
+        sorted_top_level.push_back(pair);
+    }
+    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    for (const auto& pair : sorted_top_level) {
+        const std::string& category_name = pair.first;
+        const ProjectNode& category_node = pair.second;
+        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
+
+        ss << "\\section*{" << TexUtils::escape_latex(category_name) << ": "
+           << TexUtils::escape_latex(time_format_duration(category_node.duration, avg_days))
+           << " (" << percentage << "\\%)}\n";
+
+        _generate_sorted_tex_output(ss, category_node, avg_days);
+        ss << "\n";
+    }
+
+    return ss.str();
 }

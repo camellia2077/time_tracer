@@ -20,6 +20,10 @@ private:
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     std::string _format_activity_line(const TimeRecord& record) const;
 
+    // [新增] 内部方法，用于格式化项目树
+    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
+    void _generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const;
+
     std::shared_ptr<DayTypConfig> config_;
 };
 
