@@ -1,6 +1,6 @@
 // queries/daily/formatters/tex/DayTexConfig.cpp
 #include "DayTexConfig.hpp"
-#include "queries/shared/utils/config/ConfigUtils.hpp" // 引入共享的配置工具
+#include "queries/shared/utils/config/ConfigUtils.hpp"
 #include <stdexcept>
 
 DayTexConfig::DayTexConfig(const std::string& config_path) {
@@ -8,7 +8,6 @@ DayTexConfig::DayTexConfig(const std::string& config_path) {
 }
 
 void DayTexConfig::load_config(const std::string& config_path) {
-    // 使用新的辅助函数来加载和解析 JSON 文件
     nlohmann::json config_json = load_json_config(config_path, "Could not open DayTexConfig file: ");
 
     report_title_ = config_json.at("ReportTitle").get<std::string>();
@@ -24,9 +23,12 @@ void DayTexConfig::load_config(const std::string& config_path) {
     all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
-    compact_list_options_ = config_json.at("CompactListOptions").get<std::string>();
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
+    font_size_ = config_json.at("FontSize").get<int>();
+    margin_in_ = config_json.at("Margin_in").get<double>(); // [新增]
+    list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>(); // [新增]
+    list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>(); // [新增]
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
 }
@@ -44,8 +46,11 @@ const std::string& DayTexConfig::get_statistics_label() const { return statistic
 const std::string& DayTexConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayTexConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayTexConfig::get_activity_remark_label() const { return activity_remark_label_; }
-const std::string& DayTexConfig::get_compact_list_options() const { return compact_list_options_; }
 const std::string& DayTexConfig::get_main_font() const { return main_font_; }
 const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
+int DayTexConfig::get_font_size() const { return font_size_; }
+double DayTexConfig::get_margin_in() const { return margin_in_; } // [新增]
+double DayTexConfig::get_list_top_sep_pt() const { return list_top_sep_pt_; } // [新增]
+double DayTexConfig::get_list_item_sep_ex() const { return list_item_sep_ex_; } // [新增]
 const std::map<std::string, std::string>& DayTexConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTexConfig::get_activity_connector() const { return activity_connector_; }

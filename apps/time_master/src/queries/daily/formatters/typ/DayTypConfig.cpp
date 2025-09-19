@@ -13,7 +13,7 @@ void DayTypConfig::load_config(const std::string& config_path) {
     title_font_ = config_json.at("TitleFont").get<std::string>();
     content_font_ = config_json.at("ContentFont").get<std::string>();
     title_font_size_ = config_json.at("TitleFontSize").get<int>();
-    line_spacing_ = config_json.at("LineSpacing").get<std::string>();
+    line_spacing_em_ = config_json.at("LineSpacing_em").get<double>(); // [修改]
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -28,13 +28,13 @@ void DayTypConfig::load_config(const std::string& config_path) {
     all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
-    activity_connector_ = config_json.at("ActivityConnector").get<std::string>(); // [ADD THIS]
+    activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
 }
 
 const std::string& DayTypConfig::get_title_font() const { return title_font_; }
 const std::string& DayTypConfig::get_content_font() const { return content_font_; }
 int DayTypConfig::get_title_font_size() const { return title_font_size_; }
-const std::string& DayTypConfig::get_line_spacing() const { return line_spacing_; }
+double DayTypConfig::get_line_spacing_em() const { return line_spacing_em_; } // [修改]
 const std::map<std::string, std::string>& DayTypConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTypConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayTypConfig::get_date_label() const { return date_label_; }
@@ -49,4 +49,4 @@ const std::string& DayTypConfig::get_statistics_label() const { return statistic
 const std::string& DayTypConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayTypConfig::get_sleep_time_label() const { return sleep_time_label_; }
 const std::string& DayTypConfig::get_activity_remark_label() const { return activity_remark_label_; }
-const std::string& DayTypConfig::get_activity_connector() const { return activity_connector_; } // [ADD THIS]
+const std::string& DayTypConfig::get_activity_connector() const { return activity_connector_; }
