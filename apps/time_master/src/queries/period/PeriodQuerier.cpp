@@ -1,18 +1,24 @@
 // queries/period/PeriodQuerier.cpp
 #include "PeriodQuerier.hpp"
 #include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp" // [新增] 引入此头文件以使用 build_project_tree_from_records
 #include <iomanip>
 
 PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
     : BaseQuerier(db, days_to_query) {}
 
-// [FIX] Overriding fetch_data to add the call to _fetch_actual_days.
 PeriodReportData PeriodQuerier::fetch_data() {
-    // Call the base implementation to get records and total duration
+    // 调用基类实现获取 records 和 total_duration
     PeriodReportData data = BaseQuerier::fetch_data();
 
-    // Now call the method specific to this querier type
+    // 调用此查询器特有的方法
     _fetch_actual_days(data);
+
+    // [核心修正] 在数据获取阶段构建项目树
+    // 如果有记录，就从 records 中构建 project_tree
+    if (data.total_duration > 0) {
+        build_project_tree_from_records(data.project_tree, data.records);
+    }
 
     return data;
 }
