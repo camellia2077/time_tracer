@@ -15,7 +15,7 @@ public:
     PeriodReportData fetch_data() override;
 
 protected:
-    // [FIX] Corrected typo from std.string to std::string
+    // [FIX] Corrected typo from std::string to std::string
     std::string get_date_condition_sql() const override;
     void bind_sql_parameters(sqlite3_stmt* stmt) const override;
     bool _validate_input() const override;

@@ -4,14 +4,12 @@
 #include <format>
 #include <string>
 #include <algorithm>
-
-#include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/db/query_utils.hpp"
-#include "queries/shared/utils/format/BoolToString.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp" // [新增]
+#include "queries/shared/interfaces/ITreeFmt.hpp"       // [新增]
 #include "queries/shared/data/DailyReportData.hpp"
+#include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
-
-#include "queries/shared/utils/format/ReportStringUtils.hpp" // for replace_all
+#include "queries/shared/utils/format/ReportStringUtils.hpp"
 
 DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
@@ -51,15 +49,11 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // --- [CORE FIX] ---
-    // The 'db' parameter has been removed from the generate_project_breakdown function.
-    // The arguments have been updated to match the new function signature.
-    ss << generate_project_breakdown(
-        ReportFormat::Typ, 
-        data.records, 
-        data.total_duration, 
-        1
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Typ);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, 1);
+    }
 }
 
 void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {

@@ -1,6 +1,6 @@
 // queries/monthly/MonthQuerier.cpp
 #include "MonthQuerier.hpp"
-#include "queries/shared/utils/db/query_utils.hpp" 
+#include "queries/shared/utils/report/ReportDataUtils.hpp" // [新增] 为构建项目树
 #include <algorithm>
 #include <cctype>
 
@@ -11,6 +11,11 @@ MonthlyReportData MonthQuerier::fetch_data() {
     MonthlyReportData data = BaseQuerier::fetch_data();
 
     _fetch_actual_days(data);
+
+    if (data.total_duration > 0) {
+        // [核心修改] 在数据获取阶段构建项目树
+        build_project_tree_from_records(data.project_tree, data.records);
+    }
     
     return data;
 }

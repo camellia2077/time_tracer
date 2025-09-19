@@ -5,7 +5,6 @@
 #include <string>
 #include <sstream>
 
-#include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/interfaces/ITreeFmt.hpp"  
 #include "queries/shared/utils/format/TimeFormat.hpp"     
@@ -45,10 +44,9 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
 }
 
 void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    ss << generate_project_breakdown(
-        ReportFormat::LaTeX,
-        data.records,
-        data.total_duration,
-        data.actual_days
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, data.actual_days);
+    }
 }
