@@ -8,23 +8,18 @@
 #include <sstream>
 #include <memory>
 
-// Forward declarations
-struct MonthlyReportData;
-struct sqlite3;
-
-/**
- * @class MonthMd
- * @brief Concrete implementation for formatting monthly report data into a Markdown string.
- */
 class MonthMd : public IReportFormatter<MonthlyReportData> {
 public:
     explicit MonthMd(std::shared_ptr<MonthMdConfig> config);
-
     std::string format_report(const MonthlyReportData& data) const override;
 
 private:
     void _display_summary(std::stringstream& ss, const MonthlyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const;
+
+    // [新增] 内部方法，用于格式化项目树
+    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
+    void _generate_sorted_md_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const;
 
     std::shared_ptr<MonthMdConfig> config_;
 };

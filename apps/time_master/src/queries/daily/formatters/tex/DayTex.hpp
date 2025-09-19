@@ -4,29 +4,25 @@
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
-#include "queries/daily/formatters/tex/DayTexConfig.hpp" // [修改] 引入新的配置类头文件
+#include "queries/daily/formatters/tex/DayTexConfig.hpp"
 #include <memory>
 #include <sstream>
 
 class DayTex : public IReportFormatter<DailyReportData> {
 public:
-    /**
-     * @brief [修改] 构造函数现在接收一个指向配置对象的共享指针。
-     */
     explicit DayTex(std::shared_ptr<DayTexConfig> config);
-
     std::string format_report(const DailyReportData& data) const override;
 
 private:
-    // 私有方法保持不变
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     
-    /**
-     * @brief [新增] 用于存储配置对象的成员变量。
-     */
+    // [新增] 内部方法，用于格式化项目树
+    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
+    void _generate_sorted_tex_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const;
+
     std::shared_ptr<DayTexConfig> config_;
 };
 
