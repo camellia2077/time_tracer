@@ -97,7 +97,7 @@ set(QUERIES_SOURCES
     "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"
 
     "src/queries/shared/utils/config/ConfigUtils.cpp"
-    "src/queries/shared/utils/db/query_utils.cpp"
+    "src/queries/shared/utils/report/ReportDataUtils.cpp"
 
     "src/queries/shared/utils/format/BoolToString.cpp"
     "src/queries/shared/utils/format/ReportStringUtils.cpp"
