@@ -13,10 +13,11 @@ DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
 std::string DayTyp::format_report(const DailyReportData& data) const {
     std::stringstream ss;
-    
-    // [核心修改] 在这里拼接行距字符串
     std::string spacing_str = std::to_string(config_->get_line_spacing_em()) + "em";
-    ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), spacing_str) << "\n\n";
+    ss << std::format(R"(#set text(font: "{0}", size: {1}pt, spacing: {2}))", 
+        config_->get_base_font(), 
+        config_->get_base_font_size(),
+        spacing_str) << "\n\n";
 
     _display_header(ss, data);
 
@@ -35,7 +36,7 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
     std::string title = std::format(
         R"(#text(font: "{0}", size: {1}pt)[= {2} {3}])",
         config_->get_title_font(),
-        config_->get_title_font_size(),
+        config_->get_report_title_font_size(),
         config_->get_title_prefix(),
         data.date
     );
@@ -50,12 +51,13 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 调用内部方法直接格式化
     ss << _format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
 void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
-    ss << "\n= " << config_->get_statistics_label() << "\n\n";
+    ss << std::format(R"(#text(size: {}pt)[= {}])", 
+        config_->get_category_title_font_size(), 
+        config_->get_statistics_label()) << "\n\n";
     ss << std::format("+ *{0}:* {1}\n", 
         config_->get_sleep_time_label(), 
         time_format_duration(data.sleep_time)
@@ -73,7 +75,6 @@ std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
 
     for (const auto& pair : config_->get_keyword_colors()) {
         if (record.project_path.find(pair.first) != std::string::npos) {
-            // [核心修改] 读取十六进制值并动态构建 rgb() 字符串
             const std::string& hex_color = pair.second;
             std::string typst_color_format = std::format(R"(rgb("{}"))", hex_color);
             std::string final_output = std::format("+ #text({0})[{1}]", typst_color_format, base_string);
@@ -95,14 +96,15 @@ std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
 
 void DayTyp::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
     if (!data.detailed_records.empty()) {
-        ss << "\n= " << config_->get_all_activities_label() << "\n\n";
+        ss << std::format(R"(#text(size: {}pt)[= {}])", 
+            config_->get_category_title_font_size(), 
+            config_->get_all_activities_label()) << "\n\n";
         for (const auto& record : data.detailed_records) {
             ss << _format_activity_line(record) << "\n";
         }
     }
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 void DayTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
     std::vector<std::pair<std::string, ProjectNode>> sorted_children;
     for (const auto& pair : node.children) {
@@ -125,7 +127,6 @@ void DayTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNod
     }
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 std::string DayTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
@@ -141,9 +142,14 @@ std::string DayTyp::_format_project_tree(const ProjectTree& tree, long long tota
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        ss << "\n= " << category_name << ": "
-           << time_format_duration(category_node.duration, avg_days)
-           << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n";
+        ss << std::format(R"(#text(size: {}pt)[= {}])", 
+            config_->get_category_title_font_size(),
+            std::format("{}: {} ({:.1f}%)", 
+                category_name, 
+                time_format_duration(category_node.duration, avg_days), 
+                percentage
+            )
+        ) << "\n";
 
         _generate_sorted_typ_output(ss, category_node, 0, avg_days);
     }
