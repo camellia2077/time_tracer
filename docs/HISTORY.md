@@ -299,4 +299,6 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 
 ## v0.3.20.4
 把 escape_latex 函数移至共享的 TexUtils 文件中
+
+## v0.3.20.5
 优化shared文件夹目录
