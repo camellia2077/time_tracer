@@ -23,11 +23,14 @@ public:
     const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
-    const std::string& get_compact_list_options() const;
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
+    int get_font_size() const;
+    double get_margin_in() const; // [新增]
+    double get_list_top_sep_pt() const; // [新增]
+    double get_list_item_sep_ex() const; // [新增]
     const std::map<std::string, std::string>& get_keyword_colors() const;
-    const std::string& get_activity_connector() const; // [新增]
+    const std::string& get_activity_connector() const;
 
 private:
     void load_config(const std::string& config_path);
@@ -45,11 +48,14 @@ private:
     std::string all_activities_label_;
     std::string sleep_time_label_;
     std::string activity_remark_label_;
-    std::string compact_list_options_;
     std::string main_font_;
     std::string cjk_main_font_;
+    int font_size_;
+    double margin_in_; // [新增]
+    double list_top_sep_pt_; // [新增]
+    double list_item_sep_ex_; // [新增]
     std::map<std::string, std::string> keyword_colors_;
-    std::string activity_connector_; // [新增]
+    std::string activity_connector_;
 };
 
 #endif // DAY_TEX_CONFIG_HPP

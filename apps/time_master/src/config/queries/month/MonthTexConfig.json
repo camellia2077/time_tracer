@@ -4,7 +4,10 @@
     "TotalTimeLabel": "Total Time Recorded",
     "NoRecordsMessage": "No time records found for this month.",
     "InvalidFormatMessage": "Invalid year_month format. Expected YYYYMM.",
-    "CompactListOptions": "[topsep=0pt, itemsep=-0.5ex]",
     "MainFont": "Noto Serif SC",
-    "CJKMainFont": "Noto Serif SC"
+    "CJKMainFont": "Noto Serif SC",
+    "FontSize": 12,
+    "Margin_in": 1.0,
+    "ListTopSep_pt": 0,
+    "ListItemSep_ex": -0.5
 }

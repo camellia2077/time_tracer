@@ -5,6 +5,7 @@
 #include <sstream>
 #include <algorithm>
 #include <vector>
+#include <format>
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
@@ -17,6 +18,8 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     ss << TexUtils::get_tex_preamble(
         config_->get_main_font(),
         config_->get_cjk_main_font(),
+        config_->get_font_size(),
+        config_->get_margin_in(),
         config_->get_keyword_colors()
     );
 
@@ -37,7 +40,12 @@ std::string DayTex::format_report(const DailyReportData& data) const {
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(data.date) << "}\n\n";
     
-    ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
+        config_->get_list_top_sep_pt(), 
+        config_->get_list_item_sep_ex()
+    );
+
+    ss << "\\begin{itemize}" << compact_list_options << "\n";
     ss << "    \\item \\textbf{" << config_->get_date_label()      << "}: " << TexUtils::escape_latex(data.date) << "\n";
     ss << "    \\item \\textbf{" << config_->get_total_time_label() << "}: " << TexUtils::escape_latex(time_format_duration(data.total_duration)) << "\n";
     ss << "    \\item \\textbf{" << config_->get_status_label()    << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.status)) << "\n";
@@ -49,13 +57,16 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 调用内部方法直接格式化
     ss << _format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
+        config_->get_list_top_sep_pt(), 
+        config_->get_list_item_sep_ex()
+    );
     ss << "\\subsection*{" << config_->get_statistics_label() << "}\n\n";
-    ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
+    ss << "\\begin{itemize}" << compact_list_options << "\n";
     ss << "    \\item \\textbf{" << config_->get_sleep_time_label() << "}: "
        << TexUtils::escape_latex(time_format_duration(data.sleep_time)) << "\n";
     ss << "\\end{itemize}\n\n";
@@ -66,8 +77,13 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         return;
     }
     
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
+        config_->get_list_top_sep_pt(), 
+        config_->get_list_item_sep_ex()
+    );
+
     ss << "\\subsection*{" << config_->get_all_activities_label() << "}\n\n";
-    ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
+    ss << "\\begin{itemize}" << compact_list_options << "\n";
 
     for (const auto& record : data.detailed_records) {
         std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
@@ -88,7 +104,7 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         ss << "    \\item " << colorized_string << "\n";
 
         if (record.activityRemark.has_value()) {
-            ss << "    \\begin{itemize}" << config_->get_compact_list_options() << "\n";
+            ss << "    \\begin{itemize}" << compact_list_options << "\n";
             ss << "        \\item \\textbf{" << config_->get_activity_remark_label() << "}: "
                << TexUtils::escape_latex(record.activityRemark.value()) << "\n";
             ss << "    \\end{itemize}\n";
@@ -97,7 +113,6 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     ss << "\\end{itemize}\n\n";
 }
 
-// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
 void DayTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const {
     if (node.children.empty()) {
         return;
@@ -110,8 +125,12 @@ void DayTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectNod
     std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
         return a.second.duration > b.second.duration;
     });
-
-    ss << "\\begin{itemize}[topsep=0pt, itemsep=-0.5ex]\n";
+    
+    std::string itemize_options = std::format("[topsep={}pt, itemsep={}ex]",
+        config_->get_list_top_sep_pt(),
+        config_->get_list_item_sep_ex()
+    );
+    ss << "\\begin{itemize}" << itemize_options << "\n";
 
     for (const auto& pair : sorted_children) {
         const std::string& name = pair.first;
@@ -132,7 +151,6 @@ void DayTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectNod
     ss << "\\end{itemize}\n";
 }
 
-// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
 std::string DayTex::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(1);

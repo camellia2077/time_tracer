@@ -5,6 +5,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <format>
 #include "queries/shared/utils/format/TimeFormat.hpp"     
 #include "queries/shared/utils/tex/TexUtils.hpp"
 
@@ -16,7 +17,12 @@ std::string MonthTex::format_report(const MonthlyReportData& data) const {
     }
 
     std::stringstream ss;
-    ss << TexUtils::get_tex_preamble(config_->get_main_font(), config_->get_cjk_main_font());
+    ss << TexUtils::get_tex_preamble(
+        config_->get_main_font(), 
+        config_->get_cjk_main_font(),
+        config_->get_font_size(),
+        config_->get_margin_in()
+    );
 
     _display_summary(ss, data);
     if (data.actual_days == 0) {
@@ -34,7 +40,11 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(title_month) << "}\n\n";
 
     if (data.actual_days > 0) {
-        ss << "\\begin{itemize}" << config_->get_compact_list_options() << "\n";
+        std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
+            config_->get_list_top_sep_pt(), 
+            config_->get_list_item_sep_ex()
+        );
+        ss << "\\begin{itemize}" << compact_list_options << "\n";
         ss << "    \\item \\textbf{" << config_->get_actual_days_label() << "}: " << data.actual_days << "\n";
         ss << "    \\item \\textbf{" << config_->get_total_time_label()  << "}: " << TexUtils::escape_latex(time_format_duration(data.total_duration, data.actual_days)) << "\n";
         ss << "\\end{itemize}\n\n";
@@ -42,11 +52,9 @@ void MonthTex::_display_summary(std::stringstream& ss, const MonthlyReportData& 
 }
 
 void MonthTex::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 调用内部方法直接格式化
     ss << _format_project_tree(data.project_tree, data.total_duration, data.actual_days);
 }
 
-// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
 void MonthTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const {
     if (node.children.empty()) {
         return;
@@ -59,8 +67,12 @@ void MonthTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectN
     std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
         return a.second.duration > b.second.duration;
     });
-
-    ss << "\\begin{itemize}[topsep=0pt, itemsep=-0.5ex]\n";
+    
+    std::string itemize_options = std::format("[topsep={}pt, itemsep={}ex]",
+        config_->get_list_top_sep_pt(),
+        config_->get_list_item_sep_ex()
+    );
+    ss << "\\begin{itemize}" << itemize_options << "\n";
 
     for (const auto& pair : sorted_children) {
         const std::string& name = pair.first;
@@ -81,7 +93,6 @@ void MonthTex::_generate_sorted_tex_output(std::stringstream& ss, const ProjectN
     ss << "\\end{itemize}\n";
 }
 
-// [新增] 从 BreakdownTex.cpp 迁移而来的逻辑
 std::string MonthTex::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(1);

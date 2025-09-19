@@ -13,7 +13,10 @@ DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
 std::string DayTyp::format_report(const DailyReportData& data) const {
     std::stringstream ss;
-    ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), config_->get_line_spacing()) << "\n\n";
+    
+    // [核心修改] 在这里拼接行距字符串
+    std::string spacing_str = std::to_string(config_->get_line_spacing_em()) + "em";
+    ss << std::format(R"(#set text(font: "{0}", size: 12pt, spacing: {1}))", config_->get_content_font(), spacing_str) << "\n\n";
 
     _display_header(ss, data);
 
