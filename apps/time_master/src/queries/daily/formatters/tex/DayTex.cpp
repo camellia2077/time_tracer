@@ -18,7 +18,7 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     ss << TexUtils::get_tex_preamble(
         config_->get_main_font(),
         config_->get_cjk_main_font(),
-        config_->get_font_size(),
+        config_->get_base_font_size(),
         config_->get_margin_in(),
         config_->get_keyword_colors()
     );
@@ -38,7 +38,11 @@ std::string DayTex::format_report(const DailyReportData& data) const {
 }
 
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
-    ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(data.date) << "}\n\n";
+    int title_size = config_->get_report_title_font_size();
+    ss << "{";
+    ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
+    ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(data.date) << "}";
+    ss << "}\n\n";
     
     std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
         config_->get_list_top_sep_pt(), 
@@ -61,11 +65,16 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
 }
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
+    int category_size = config_->get_category_title_font_size();
+    ss << "{";
+    ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
+    ss << "\\subsection*{" << config_->get_statistics_label() << "}";
+    ss << "}\n\n";
+
     std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
         config_->get_list_top_sep_pt(), 
         config_->get_list_item_sep_ex()
     );
-    ss << "\\subsection*{" << config_->get_statistics_label() << "}\n\n";
     ss << "\\begin{itemize}" << compact_list_options << "\n";
     ss << "    \\item \\textbf{" << config_->get_sleep_time_label() << "}: "
        << TexUtils::escape_latex(time_format_duration(data.sleep_time)) << "\n";
@@ -77,12 +86,16 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
         return;
     }
     
+    int category_size = config_->get_category_title_font_size();
+    ss << "{";
+    ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
+    ss << "\\subsection*{" << config_->get_all_activities_label() << "}";
+    ss << "}\n\n";
+
     std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
         config_->get_list_top_sep_pt(), 
         config_->get_list_item_sep_ex()
     );
-
-    ss << "\\subsection*{" << config_->get_all_activities_label() << "}\n\n";
     ss << "\\begin{itemize}" << compact_list_options << "\n";
 
     for (const auto& record : data.detailed_records) {
@@ -167,10 +180,14 @@ std::string DayTex::_format_project_tree(const ProjectTree& tree, long long tota
         const std::string& category_name = pair.first;
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
-
+        
+        int category_size = config_->get_category_title_font_size();
+        ss << "{";
+        ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
         ss << "\\section*{" << TexUtils::escape_latex(category_name) << ": "
            << TexUtils::escape_latex(time_format_duration(category_node.duration, avg_days))
-           << " (" << percentage << "\\%)}\n";
+           << " (" << percentage << "\\%)}";
+        ss << "}\n";
 
         _generate_sorted_tex_output(ss, category_node, avg_days);
         ss << "\n";

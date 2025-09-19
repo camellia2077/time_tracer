@@ -25,14 +25,17 @@ void DayTexConfig::load_config(const std::string& config_path) {
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
-    font_size_ = config_json.at("FontSize").get<int>();
-    margin_in_ = config_json.at("Margin_in").get<double>(); // [新增]
-    list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>(); // [新增]
-    list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>(); // [新增]
+    base_font_size_ = config_json.at("BaseFontSize").get<int>();
+    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
+    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
+    margin_in_ = config_json.at("Margin_in").get<double>();
+    list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>();
+    list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>();
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
 }
 
+// Getters
 const std::string& DayTexConfig::get_report_title() const { return report_title_; }
 const std::string& DayTexConfig::get_date_label() const { return date_label_; }
 const std::string& DayTexConfig::get_total_time_label() const { return total_time_label_; }
@@ -48,9 +51,11 @@ const std::string& DayTexConfig::get_sleep_time_label() const { return sleep_tim
 const std::string& DayTexConfig::get_activity_remark_label() const { return activity_remark_label_; }
 const std::string& DayTexConfig::get_main_font() const { return main_font_; }
 const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
-int DayTexConfig::get_font_size() const { return font_size_; }
-double DayTexConfig::get_margin_in() const { return margin_in_; } // [新增]
-double DayTexConfig::get_list_top_sep_pt() const { return list_top_sep_pt_; } // [新增]
-double DayTexConfig::get_list_item_sep_ex() const { return list_item_sep_ex_; } // [新增]
+int DayTexConfig::get_base_font_size() const { return base_font_size_; }
+int DayTexConfig::get_report_title_font_size() const { return report_title_font_size_; }
+int DayTexConfig::get_category_title_font_size() const { return category_title_font_size_; }
+double DayTexConfig::get_margin_in() const { return margin_in_; }
+double DayTexConfig::get_list_top_sep_pt() const { return list_top_sep_pt_; }
+double DayTexConfig::get_list_item_sep_ex() const { return list_item_sep_ex_; }
 const std::map<std::string, std::string>& DayTexConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTexConfig::get_activity_connector() const { return activity_connector_; }
