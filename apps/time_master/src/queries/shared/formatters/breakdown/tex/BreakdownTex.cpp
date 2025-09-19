@@ -1,7 +1,9 @@
 // queries/shared/formatters/breakdown/tex/BreakdownTex.cpp
+
 #include "BreakdownTex.hpp"
 #include "common/utils/ProjectTree.hpp"
-#include "queries/shared/utils/tex/TexUtils.hpp" // [新增]
+#include "queries/shared/utils/tex/TexUtils.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 #include <vector>
 #include <algorithm>
 #include <iomanip>

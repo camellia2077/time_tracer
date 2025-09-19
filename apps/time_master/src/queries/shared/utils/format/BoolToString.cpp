@@ -1,4 +1,4 @@
-// queries/shared/utils/BoolToString.cpp
+// queries/shared/utils/format/BoolToString.cpp
 #include "BoolToString.hpp"
 
 std::string bool_to_string(const std::string& val) {

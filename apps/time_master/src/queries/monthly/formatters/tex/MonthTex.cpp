@@ -1,13 +1,14 @@
 // queries/monthly/formatters/tex/MonthTex.cpp
+
 #include "MonthTex.hpp"
 #include <iomanip>
 #include <string>
 #include <sstream>
 
-#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"
-#include "common/utils/TimeUtils.hpp"
+#include "queries/shared/interface/ITreeFmt.hpp"  
+#include "queries/shared/utils/format/TimeFormat.hpp"     
 #include "queries/shared/utils/tex/TexUtils.hpp"
 
 MonthTex::MonthTex(std::shared_ptr<MonthTexConfig> config) : config_(config) {}

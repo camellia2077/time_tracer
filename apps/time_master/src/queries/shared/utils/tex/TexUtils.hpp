@@ -1,4 +1,4 @@
-// queries/shared/utils/TexUtils.hpp
+// queries/shared/utils/tex/TexUtils.hpp
 #ifndef TEX_UTILS_HPP
 #define TEX_UTILS_HPP
 

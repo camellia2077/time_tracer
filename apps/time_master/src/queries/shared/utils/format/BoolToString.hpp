@@ -1,4 +1,4 @@
-// queries/shared/utils/BoolToString.hpp
+// queries/shared/utils/format/BoolToString.hpp
 #ifndef BOOL_TO_STRING_HPP
 #define BOOL_TO_STRING_HPP
 

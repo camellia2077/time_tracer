@@ -1,4 +1,4 @@
-// queries/shared/utils/ConfigUtils.hpp
+// queries/shared/utils/config/ConfigUtils.hpp
 #ifndef CONFIG_UTILS_HPP
 #define CONFIG_UTILS_HPP
 

@@ -2,6 +2,7 @@
 
 // query/format/md/BreakdownTyp.cpp
 #include "BreakdownTyp.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 #include <vector>
 #include <algorithm>
 #include <iomanip>

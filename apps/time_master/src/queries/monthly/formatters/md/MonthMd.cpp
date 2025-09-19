@@ -1,13 +1,14 @@
 // queries/monthly/formatters/md/MonthMd.cpp
+
 #include "MonthMd.hpp"
 #include <iomanip>
 #include <format>
 
-#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "queries/shared/interface/ITreeFmt.hpp"
 #include "common/utils/ProjectTree.hpp"
-#include "common/utils/TimeUtils.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 
 MonthMd::MonthMd(std::shared_ptr<MonthMdConfig> config) : config_(config) {}
 
@@ -43,7 +44,6 @@ void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& d
 }
 
 void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 移除 db 参数
     ss << generate_project_breakdown(
         ReportFormat::Markdown,
         data.records,

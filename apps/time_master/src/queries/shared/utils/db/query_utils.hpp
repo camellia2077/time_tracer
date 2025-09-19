@@ -1,4 +1,4 @@
-// queries/shared/utils/query_utils.hpp
+// queries/shared/utils/db/query_utils.hpp
 #ifndef QUERY_UTILS_HPP
 #define QUERY_UTILS_HPP
 

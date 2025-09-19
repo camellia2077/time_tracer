@@ -1,13 +1,14 @@
 // queries/period/formatters/md/PeriodMd.cpp
+
 #include "PeriodMd.hpp"
 #include <iomanip>
 #include <format>
 
 #include "common/utils/ProjectTree.hpp"
-#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"
-#include "common/utils/TimeUtils.hpp"
+#include "queries/shared/interface/ITreeFmt.hpp"   
+#include "queries/shared/utils/format/TimeFormat.hpp"   
 
 PeriodMd::PeriodMd(std::shared_ptr<PeriodMdConfig> config) : config_(config) {}
 
