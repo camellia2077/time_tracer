@@ -1,6 +1,6 @@
 // queries/period/formatters/md/PeriodMdConfig.cpp
 #include "PeriodMdConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 PeriodMdConfig::PeriodMdConfig(const std::string& config_path) {

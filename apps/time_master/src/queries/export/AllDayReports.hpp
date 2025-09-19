@@ -3,7 +3,7 @@
 #define ALL_REPORTS_GENERATOR_HPP 
 
 #include "queries/shared/data/query_data_structs.hpp"
-#include "queries/shared/ReportFormat.hpp" 
+#include "queries/shared/types/ReportFormat.hpp" 
 #include "common/AppConfig.hpp" // [新增]
 
 #include <sqlite3.h>
