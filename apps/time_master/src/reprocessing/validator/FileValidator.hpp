@@ -3,10 +3,11 @@
 #define FILE_VALIDATOR_HPP
 
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp" // [新增]
 #include <string>
 #include <set>
+#include <memory> // [新增]
 
-// [修改] 更新枚举以反映新的验证目标
 enum class ValidatorType {
     Source,
     JsonOutput 
@@ -14,8 +15,8 @@ enum class ValidatorType {
 
 class FileValidator {
 public:
-    // [修改] 构造函数参数简化，不再需要 output_header_config
-    FileValidator(const std::string& source_config_path);
+    // [修改] 构造函数仍然接收主配置文件路径
+    FileValidator(const std::string& main_config_path);
 
     bool validate(const std::string& file_path, 
                   ValidatorType type, 
@@ -23,7 +24,8 @@ public:
                   bool enable_day_count_check_for_output = false);
 
 private:
-    std::string source_config_path_;
+    // [修改] 存储加载好的 ConverterConfig
+    std::unique_ptr<ConverterConfig> converter_config_;
 };
 
 #endif // FILE_VALIDATOR_HPP

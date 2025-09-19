@@ -4,8 +4,13 @@
 #include "reprocessing/validator/source_txt/facade/SourceFileValidator.hpp"
 #include "reprocessing/validator/output_json/facade/JsonValidator.hpp"
 
-FileValidator::FileValidator(const std::string& source_config_path)
-    : source_config_path_(source_config_path) {}
+// [修改] 构造函数现在加载并存储 ConverterConfig
+FileValidator::FileValidator(const std::string& main_config_path) {
+    converter_config_ = std::make_unique<ConverterConfig>();
+    // 如果加载失败，converter_config_ 将处于未完全初始化的状态，
+    // 后续的验证会因为缺少关键字而自然失败。
+    converter_config_->load(main_config_path);
+}
 
 bool FileValidator::validate(const std::string& file_path, 
                              ValidatorType type, 
@@ -15,7 +20,8 @@ bool FileValidator::validate(const std::string& file_path,
 
     switch (type) {
         case ValidatorType::Source: {
-            SourceFileValidator source_validator(source_config_path_);
+            // [修改] 使用存储的 converter_config_ 来初始化 SourceFileValidator
+            SourceFileValidator source_validator(*converter_config_);
             return source_validator.validate(file_path, errors);
         }
         case ValidatorType::JsonOutput: {
