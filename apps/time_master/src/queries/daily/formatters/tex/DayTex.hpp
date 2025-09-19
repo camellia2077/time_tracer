@@ -2,7 +2,7 @@
 #ifndef DAILY_REPORT_TEX_FORMATTER_HPP
 #define DAILY_REPORT_TEX_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/daily/formatters/tex/DayTexConfig.hpp" // [修改] 引入新的配置类头文件
 #include <memory>

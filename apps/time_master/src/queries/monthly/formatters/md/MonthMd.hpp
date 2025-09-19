@@ -2,7 +2,7 @@
 #ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
 #define MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"  
+#include "queries/shared/interfaces/IReportFormatter.hpp"  
 #include "queries/shared/data/MonthlyReportData.hpp"
 #include "queries/monthly/formatters/md/MonthMdConfig.hpp"
 #include <sstream>

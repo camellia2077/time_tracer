@@ -2,7 +2,7 @@
 #ifndef DAILY_REPORT_MARKDOWN_FORMATTER_HPP
 #define DAILY_REPORT_MARKDOWN_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp" // 引入新的模板接口
+#include "queries/shared/interfaces/IReportFormatter.hpp" // 引入新的模板接口
 #include "queries/shared/data/DailyReportData.hpp"   // 引入数据类型
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include <sstream>
