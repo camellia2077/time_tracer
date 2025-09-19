@@ -1,4 +1,4 @@
-// config_validator/pipelines/DurationRulesConfigValidator.hpp
+// config_validator/reprocessing/pipelines/DurationRulesConfigValidator.hpp
 #ifndef DURATION_RULES_CONFIG_VALIDATOR_HPP
 #define DURATION_RULES_CONFIG_VALIDATOR_HPP
 

@@ -1,4 +1,4 @@
-// config_validator/pipelines/MappingsConfigValidator.hpp
+// config_validator/reprocessing/pipelines/MappingsConfigValidator.hpp
 #ifndef MAPPINGS_CONFIG_VALIDATOR_HPP
 #define MAPPINGS_CONFIG_VALIDATOR_HPP
 
