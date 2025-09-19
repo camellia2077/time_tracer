@@ -4,7 +4,7 @@
 
 #include <memory>
 #include "queries/shared/types/ReportFormat.hpp"
-#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "common/AppConfig.hpp"
 
 // Forward declare data types to avoid including heavy headers

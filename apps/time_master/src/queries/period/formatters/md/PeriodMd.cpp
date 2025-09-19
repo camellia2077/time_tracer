@@ -7,7 +7,7 @@
 #include "common/utils/ProjectTree.hpp"
 #include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"   
+#include "queries/shared/interfaces/ITreeFmt.hpp"   
 #include "queries/shared/utils/format/TimeFormat.hpp"   
 
 PeriodMd::PeriodMd(std::shared_ptr<PeriodMdConfig> config) : config_(config) {}

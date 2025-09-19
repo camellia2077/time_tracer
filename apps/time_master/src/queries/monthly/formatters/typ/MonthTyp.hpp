@@ -2,7 +2,7 @@
 #ifndef MONTHLY_REPORT_TYP_FORMATTER_HPP
 #define MONTHLY_REPORT_TYP_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
 #include "queries/monthly/formatters/typ/MonthTypConfig.hpp" // [新增]
 #include <sstream>

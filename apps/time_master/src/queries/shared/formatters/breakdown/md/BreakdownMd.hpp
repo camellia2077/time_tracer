@@ -2,7 +2,7 @@
 #ifndef PROJECT_BREAKDOWN_MD_FORMAT_HPP
 #define PROJECT_BREAKDOWN_MD_FORMAT_HPP
 
-#include "queries/shared/interface/ITreeFmt.hpp"
+#include "queries/shared/interfaces/ITreeFmt.hpp"
 
 class BreakdownMd : public ITreeFmt {
 public:

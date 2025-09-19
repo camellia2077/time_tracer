@@ -2,7 +2,7 @@
 #ifndef MONTHLY_REPORT_TEX_FORMATTER_HPP
 #define MONTHLY_REPORT_TEX_FORMATTER_HPP
 
-#include "queries/shared/Interface/IReportFormatter.hpp"
+#include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
 #include "queries/monthly/formatters/tex/MonthTexConfig.hpp" // [修改] 引入新的配置类
 #include <memory>
