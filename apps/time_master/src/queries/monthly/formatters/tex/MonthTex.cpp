@@ -7,7 +7,7 @@
 
 #include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"  
+#include "queries/shared/interfaces/ITreeFmt.hpp"  
 #include "queries/shared/utils/format/TimeFormat.hpp"     
 #include "queries/shared/utils/tex/TexUtils.hpp"
 

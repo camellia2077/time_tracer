@@ -8,7 +8,7 @@
 #include "common/utils/TimeUtils.hpp"
 #include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"
+#include "queries/shared/interfaces/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"

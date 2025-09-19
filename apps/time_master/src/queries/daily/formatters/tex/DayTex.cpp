@@ -10,7 +10,7 @@
 #include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interface/ITreeFmt.hpp"
+#include "queries/shared/interfaces/ITreeFmt.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
