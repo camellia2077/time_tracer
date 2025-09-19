@@ -1,8 +1,10 @@
 {
   "TitleFont": "Noto Serif",
-  "ContentFont": "Noto Serif",
-  "TitleFontSize": 14,
-  "LineSpacing_em": 0.5,
+  "BaseFont": "Noto Serif",
+  "BaseFontSize": 10,
+  "ReportTitleFontSize": 14,
+  "CategoryTitleFontSize": 12,
+  "LineSpacing_em": 0.6,
   "KeywordColors": {
     "study": "#2ECC40",
     "recreation": "#FF4136",

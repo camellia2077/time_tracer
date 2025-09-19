@@ -1,10 +1,19 @@
 {
+    "BaseFont": "Noto Serif",
     "TitleFont": "Noto Serif",
-    "TitleFontSize": 14,
-    "ContentFont": "Noto Serif",
+    "BaseFontSize": 10,
+    "ReportTitleFontSize": 14,
+    "CategoryTitleFontSize": 12,
+    "LineSpacing_em": 0.6,
+    "Margin_top_cm": 2.5,
+    "Margin_bottom_cm": 2.5,
+    "Margin_left_cm": 2.0,
+    "Margin_right_cm": 2.0,
     "TitlePrefix": "Period Report: Last",
+    "TitleDaysUnit": "days",
+    "TitleDateSeparator": "to",
     "TotalTimeLabel": "Total Time Recorded",
     "ActualDaysLabel": "Actual Days with Records",
-    "PositiveDaysError": "Number of days to query must be positive.",
+    "InvalidDaysMessage": "Number of days to query must be positive.",
     "NoRecords": "No time records found in this period."
 }

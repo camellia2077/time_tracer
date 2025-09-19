@@ -11,9 +11,11 @@ void DayTypConfig::load_config(const std::string& config_path) {
     nlohmann::json config_json = load_json_config(config_path, "Could not open Typst daily report config file: ");
 
     title_font_ = config_json.at("TitleFont").get<std::string>();
-    content_font_ = config_json.at("ContentFont").get<std::string>();
-    title_font_size_ = config_json.at("TitleFontSize").get<int>();
-    line_spacing_em_ = config_json.at("LineSpacing_em").get<double>(); // [修改]
+    base_font_ = config_json.at("BaseFont").get<std::string>();
+    base_font_size_ = config_json.at("BaseFontSize").get<int>();
+    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
+    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
+    line_spacing_em_ = config_json.at("LineSpacing_em").get<double>();
     keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     date_label_ = config_json.at("DateLabel").get<std::string>();
@@ -31,10 +33,13 @@ void DayTypConfig::load_config(const std::string& config_path) {
     activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
 }
 
+// Getters
 const std::string& DayTypConfig::get_title_font() const { return title_font_; }
-const std::string& DayTypConfig::get_content_font() const { return content_font_; }
-int DayTypConfig::get_title_font_size() const { return title_font_size_; }
-double DayTypConfig::get_line_spacing_em() const { return line_spacing_em_; } // [修改]
+const std::string& DayTypConfig::get_base_font() const { return base_font_; }
+int DayTypConfig::get_base_font_size() const { return base_font_size_; }
+int DayTypConfig::get_report_title_font_size() const { return report_title_font_size_; }
+int DayTypConfig::get_category_title_font_size() const { return category_title_font_size_; }
+double DayTypConfig::get_line_spacing_em() const { return line_spacing_em_; }
 const std::map<std::string, std::string>& DayTypConfig::get_keyword_colors() const { return keyword_colors_; }
 const std::string& DayTypConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayTypConfig::get_date_label() const { return date_label_; }

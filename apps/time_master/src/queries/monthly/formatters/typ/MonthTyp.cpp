@@ -10,11 +10,23 @@ MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {}
 
 std::string MonthTyp::format_report(const MonthlyReportData& data) const {
     std::stringstream ss;
+
+    ss << std::format(R"(#set page(margin: (top: {}cm, bottom: {}cm, left: {}cm, right: {}cm)))",
+        config_->get_margin_top_cm(),
+        config_->get_margin_bottom_cm(),
+        config_->get_margin_left_cm(),
+        config_->get_margin_right_cm()
+    ) << "\n";
     
-    ss << std::format(R"(#set text(font: "{0}"))", config_->get_body_font()) << "\n\n";
+    std::string spacing_str = std::to_string(config_->get_line_spacing_em()) + "em";
+    ss << std::format(R"(#set text(font: "{}", size: {}pt, spacing: {}))", 
+        config_->get_base_font(),
+        config_->get_base_font_size(),
+        spacing_str
+    ) << "\n\n";
 
     if (data.year_month == "INVALID") {
-        ss << config_->get_invalid_format_error() << "\n";
+        ss << config_->get_invalid_format_message() << "\n";
         return ss.str();
     }
 
@@ -33,7 +45,7 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
     std::string title = std::format(
         R"(#text(font: "{0}", size: {1}pt)[= {2} {3}-{4}])",
         config_->get_title_font(),
-        config_->get_title_font_size(),
+        config_->get_report_title_font_size(),
         config_->get_title_prefix(),
         data.year_month.substr(0, 4),
         data.year_month.substr(4, 2)
@@ -47,11 +59,9 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
 }
 
 void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 调用内部方法直接格式化
     ss << _format_project_tree(data.project_tree, data.total_duration, data.actual_days);
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 void MonthTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
     std::vector<std::pair<std::string, ProjectNode>> sorted_children;
     for (const auto& pair : node.children) {
@@ -74,7 +84,6 @@ void MonthTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectN
     }
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 std::string MonthTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
@@ -90,9 +99,14 @@ std::string MonthTyp::_format_project_tree(const ProjectTree& tree, long long to
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        ss << "\n= " << category_name << ": "
-           << time_format_duration(category_node.duration, avg_days)
-           << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n";
+        ss << std::format(R"(#text(size: {}pt)[= {}])", 
+            config_->get_category_title_font_size(),
+            std::format("{}: {} ({:.1f}%)", 
+                category_name, 
+                time_format_duration(category_node.duration, avg_days), 
+                percentage
+            )
+        ) << "\n";
 
         _generate_sorted_typ_output(ss, category_node, 0, avg_days);
     }
