@@ -317,3 +317,7 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 
 ## v0.3.21.1
 去除reprocessing模块的对于json配置的检验
+
+## v0.3.21.2
+日报告tex和typ颜色使用十六进制
+例如#000000
