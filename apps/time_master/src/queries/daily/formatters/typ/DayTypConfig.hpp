@@ -11,9 +11,11 @@ public:
     DayTypConfig(const std::string& config_path);
 
     const std::string& get_title_font() const;
-    const std::string& get_content_font() const;
-    int get_title_font_size() const;
-    double get_line_spacing_em() const; // [修改]
+    const std::string& get_base_font() const;
+    int get_base_font_size() const;
+    int get_report_title_font_size() const;
+    int get_category_title_font_size() const;
+    double get_line_spacing_em() const;
     const std::map<std::string, std::string>& get_keyword_colors() const;
     const std::string& get_title_prefix() const;
     const std::string& get_date_label() const;
@@ -34,9 +36,11 @@ private:
     void load_config(const std::string& config_path);
 
     std::string title_font_;
-    std::string content_font_;
-    int title_font_size_;
-    double line_spacing_em_; // [修改]
+    std::string base_font_;
+    int base_font_size_;
+    int report_title_font_size_;
+    int category_title_font_size_;
+    double line_spacing_em_;
     std::map<std::string, std::string> keyword_colors_;
     std::string title_prefix_;
     std::string date_label_;

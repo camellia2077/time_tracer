@@ -1,6 +1,6 @@
 // queries/monthly/formatters/typ/MonthTypConfig.cpp
 #include "MonthTypConfig.hpp"
-#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp"
 #include <stdexcept>
 
 MonthTypConfig::MonthTypConfig(const std::string& config_path) {
@@ -8,24 +8,38 @@ MonthTypConfig::MonthTypConfig(const std::string& config_path) {
 }
 
 void MonthTypConfig::load_config(const std::string& config_path) {
-    // [修改] 使用新的辅助函数
     nlohmann::json config_json = load_json_config(config_path, "Could not open Typst monthly report config file: ");
 
-    body_font_ = config_json.at("BodyFont").get<std::string>();
+    base_font_ = config_json.at("BaseFont").get<std::string>();
     title_font_ = config_json.at("TitleFont").get<std::string>();
-    title_font_size_ = config_json.at("TitleFontSize").get<int>();
+    base_font_size_ = config_json.at("BaseFontSize").get<int>();
+    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
+    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
+    line_spacing_em_ = config_json.at("LineSpacing_em").get<double>();
+    margin_top_cm_ = config_json.at("Margin_top_cm").get<double>();
+    margin_bottom_cm_ = config_json.at("Margin_bottom_cm").get<double>();
+    margin_left_cm_ = config_json.at("Margin_left_cm").get<double>();
+    margin_right_cm_ = config_json.at("Margin_right_cm").get<double>();
     title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
     actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
     total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
-    invalid_format_error_ = config_json.at("InvalidFormatError").get<std::string>();
+    invalid_format_message_ = config_json.at("InvalidFormatMessage").get<std::string>();
     no_records_ = config_json.at("NoRecords").get<std::string>();
 }
 
-const std::string& MonthTypConfig::get_body_font() const { return body_font_; }
+// Getters
+const std::string& MonthTypConfig::get_base_font() const { return base_font_; }
 const std::string& MonthTypConfig::get_title_font() const { return title_font_; }
-int MonthTypConfig::get_title_font_size() const { return title_font_size_; }
+int MonthTypConfig::get_base_font_size() const { return base_font_size_; }
+int MonthTypConfig::get_report_title_font_size() const { return report_title_font_size_; }
+int MonthTypConfig::get_category_title_font_size() const { return category_title_font_size_; }
+double MonthTypConfig::get_line_spacing_em() const { return line_spacing_em_; }
+double MonthTypConfig::get_margin_top_cm() const { return margin_top_cm_; }
+double MonthTypConfig::get_margin_bottom_cm() const { return margin_bottom_cm_; }
+double MonthTypConfig::get_margin_left_cm() const { return margin_left_cm_; }
+double MonthTypConfig::get_margin_right_cm() const { return margin_right_cm_; }
 const std::string& MonthTypConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& MonthTypConfig::get_actual_days_label() const { return actual_days_label_; }
 const std::string& MonthTypConfig::get_total_time_label() const { return total_time_label_; }
-const std::string& MonthTypConfig::get_invalid_format_error() const { return invalid_format_error_; }
+const std::string& MonthTypConfig::get_invalid_format_message() const { return invalid_format_message_; }
 const std::string& MonthTypConfig::get_no_records() const { return no_records_; }

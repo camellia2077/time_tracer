@@ -10,11 +10,23 @@ PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) 
 
 std::string PeriodTyp::format_report(const PeriodReportData& data) const {
     std::stringstream ss;
+
+    ss << std::format(R"(#set page(margin: (top: {}cm, bottom: {}cm, left: {}cm, right: {}cm)))",
+        config_->get_margin_top_cm(),
+        config_->get_margin_bottom_cm(),
+        config_->get_margin_left_cm(),
+        config_->get_margin_right_cm()
+    ) << "\n";
     
-    ss << std::format(R"(#set text(font: "{0}"))", config_->get_content_font()) << "\n\n";
+    std::string spacing_str = std::to_string(config_->get_line_spacing_em()) + "em";
+    ss << std::format(R"(#set text(font: "{}", size: {}pt, spacing: {}))", 
+        config_->get_base_font(),
+        config_->get_base_font_size(),
+        spacing_str
+    ) << "\n\n";
 
     if (data.days_to_query <= 0) {
-        ss << config_->get_positive_days_error() << "\n";
+        ss << config_->get_invalid_days_message() << "\n";
         return ss.str();
     }
 
@@ -31,12 +43,14 @@ std::string PeriodTyp::format_report(const PeriodReportData& data) const {
 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
     std::string title = std::format(
-        R"(#text(font: "{0}", size: {1}pt)[= {2} {3} days ({4} to {5})])",
+        R"(#text(font: "{0}", size: {1}pt)[= {2} {3} {4} ({5} {6} {7})])",
         config_->get_title_font(),
-        config_->get_title_font_size(),
+        config_->get_report_title_font_size(),
         config_->get_title_prefix(),
         data.days_to_query,
+        config_->get_title_days_unit(),
         data.start_date,
+        config_->get_title_date_separator(),
         data.end_date
     );
     ss << title << "\n\n";
@@ -48,11 +62,9 @@ void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& 
 }
 
 void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
-    // [核心修改] 调用内部方法直接格式化
     ss << _format_project_tree(data.project_tree, data.total_duration, data.actual_days);
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 void PeriodTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
     std::vector<std::pair<std::string, ProjectNode>> sorted_children;
     for (const auto& pair : node.children) {
@@ -75,7 +87,6 @@ void PeriodTyp::_generate_sorted_typ_output(std::stringstream& ss, const Project
     }
 }
 
-// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
 std::string PeriodTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
     std::stringstream ss;
     std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
@@ -91,9 +102,14 @@ std::string PeriodTyp::_format_project_tree(const ProjectTree& tree, long long t
         const ProjectNode& category_node = pair.second;
         double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
 
-        ss << "\n= " << category_name << ": "
-           << time_format_duration(category_node.duration, avg_days)
-           << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n";
+        ss << std::format(R"(#text(size: {}pt)[= {}])", 
+            config_->get_category_title_font_size(),
+            std::format("{}: {} ({:.1f}%)", 
+                category_name, 
+                time_format_duration(category_node.duration, avg_days), 
+                percentage
+            )
+        ) << "\n";
 
         _generate_sorted_typ_output(ss, category_node, 0, avg_days);
     }

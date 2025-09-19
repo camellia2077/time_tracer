@@ -1,10 +1,17 @@
 {
-    "BodyFont": "Noto Serif",
+    "BaseFont": "Noto Serif",
     "TitleFont": "Noto Serif",
-    "TitleFontSize": 14,
+    "BaseFontSize": 10,
+    "ReportTitleFontSize": 14,
+    "CategoryTitleFontSize": 12,
+    "LineSpacing_em": 0.6,
+    "Margin_top_cm": 2.5,
+    "Margin_bottom_cm": 2.5,
+    "Margin_left_cm": 2.0,
+    "Margin_right_cm": 2.0,
     "TitlePrefix": "Monthly Summary for",
     "ActualDaysLabel": "Actual Days with Records",
     "TotalTimeLabel": "Total Hours",
-    "InvalidFormatError": "Invalid year_month format. Expected YYYYMM.",
+    "InvalidFormatMessage": "Invalid year_month format. Expected YYYYMM.",
     "NoRecords": "No time records found for this month."
 }
