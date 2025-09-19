@@ -58,6 +58,3 @@ totalExerciseTime //总时间
 ### 输出报告的hpp使用外置的json配置文件来传入字体
 ### 把log测试程序生成部分封装成python库，用pybind
 
-### 活动链接符号如果用emoji
-typst不能正确转换为pdf，但是在vscode预览的时候可以
-latex可以正确打印emoji

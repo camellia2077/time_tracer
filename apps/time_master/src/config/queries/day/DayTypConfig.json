@@ -4,13 +4,13 @@
   "TitleFontSize": 14,
   "LineSpacing": "0.5em",
   "KeywordColors": {
-    "study": "rgb(\"#2ECC40\")",
-    "recreation": "rgb(\"#FF4136\")",
-    "meal": "rgb(\"#FF851B\")",
-    "exercise": "rgb(\"#0074D9\")",
-    "routine": "rgb(\"#AAAAAA\")",
-    "sleep": "rgb(\"#B10DC9\")",
-    "code": "rgb(\"#39CCCC\")"
+    "study": "#2ECC40",
+    "recreation": "#FF4136",
+    "meal": "#FF851B",
+    "exercise": "#0074D9",
+    "routine": "#AAAAAA",
+    "sleep": "#B10DC9",
+    "code": "#39CCCC"
   },
   "TitlePrefix": "Daily Report for",
   "DateLabel": "Date",
@@ -25,5 +25,5 @@
   "AllActivitiesLabel": "All Activities",
   "SleepTimeLabel": "Sleep Time",
   "ActivityRemarkLabel": "Activity Remark",
-      "ActivityConnector": "😅"
+  "ActivityConnector": "😅"
 }
