@@ -16,9 +16,12 @@ public:
     const std::string& get_actual_days_label() const;
     const std::string& get_no_records_message() const;
     const std::string& get_invalid_days_message() const;
-    const std::string& get_compact_list_options() const;
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
+    int get_font_size() const;
+    double get_margin_in() const;
+    double get_list_top_sep_pt() const;
+    double get_list_item_sep_ex() const;
 
 private:
     void load_config(const std::string& config_path);
@@ -30,9 +33,12 @@ private:
     std::string actual_days_label_;
     std::string no_records_message_;
     std::string invalid_days_message_;
-    std::string compact_list_options_;
     std::string main_font_;
     std::string cjk_main_font_;
+    int font_size_;
+    double margin_in_;
+    double list_top_sep_pt_;
+    double list_item_sep_ex_;
 };
 
 #endif // PERIOD_TEX_CONFIG_HPP
