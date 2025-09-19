@@ -19,7 +19,9 @@ void PeriodTexConfig::load_config(const std::string& config_path) {
     invalid_days_message_ = config_json.at("InvalidDaysMessage").get<std::string>();
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
-    font_size_ = config_json.at("FontSize").get<int>();
+    base_font_size_ = config_json.at("BaseFontSize").get<int>();
+    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
+    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
     margin_in_ = config_json.at("Margin_in").get<double>();
     list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>();
     list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>();
@@ -35,7 +37,9 @@ const std::string& PeriodTexConfig::get_no_records_message() const { return no_r
 const std::string& PeriodTexConfig::get_invalid_days_message() const { return invalid_days_message_; }
 const std::string& PeriodTexConfig::get_main_font() const { return main_font_; }
 const std::string& PeriodTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
-int PeriodTexConfig::get_font_size() const { return font_size_; }
+int PeriodTexConfig::get_base_font_size() const { return base_font_size_; }
+int PeriodTexConfig::get_report_title_font_size() const { return report_title_font_size_; }
+int PeriodTexConfig::get_category_title_font_size() const { return category_title_font_size_; }
 double PeriodTexConfig::get_margin_in() const { return margin_in_; }
 double PeriodTexConfig::get_list_top_sep_pt() const { return list_top_sep_pt_; }
 double PeriodTexConfig::get_list_item_sep_ex() const { return list_item_sep_ex_; }
