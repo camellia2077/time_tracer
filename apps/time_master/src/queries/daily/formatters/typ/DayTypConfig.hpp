@@ -12,6 +12,7 @@ public:
 
     const std::string& get_title_font() const;
     const std::string& get_base_font() const;
+    const std::string& get_category_title_font() const;
     int get_base_font_size() const;
     int get_report_title_font_size() const;
     int get_category_title_font_size() const;
@@ -37,6 +38,7 @@ private:
 
     std::string title_font_;
     std::string base_font_;
+    std::string category_title_font_;
     int base_font_size_;
     int report_title_font_size_;
     int category_title_font_size_;
