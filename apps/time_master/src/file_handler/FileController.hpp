@@ -18,7 +18,7 @@ public:
     /**
      * @brief 构造 FileController 并加载应用程序配置。
      * @param exe_path_str 应用程序可执行文件的路径 (通常是 argv[0])。
-     * @throws std::runtime_error 如果配置加载失败。
+     * @throws std::runtime_error 如果配置加载或验证失败。
      */
     explicit FileController(const std::string& exe_path_str);
 
@@ -42,6 +42,12 @@ public:
     std::vector<std::filesystem::path> find_log_files(const std::filesystem::path& root_path) const;
 
 private:
+    /**
+     * @brief [新增] 在配置加载后执行对预处理相关配置文件的验证。
+     * @throws std::runtime_error 如果验证失败。
+     */
+    void perform_preprocessing_config_validation() const;
+
     AppConfig app_config_;
     std::string main_config_path_string_;
 };
