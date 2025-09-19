@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/facade/SourceFileValidator.cpp
 #include "SourceFileValidator.hpp"
-#include "reprocessing/validator/source_txt/pipelines/SourceValidatorConfig.hpp"
+// [移除] 不再需要 #include "reprocessing/validator/source_txt/pipelines/SourceValidatorConfig.hpp"
 #include "reprocessing/validator/source_txt/pipelines/LineProcessor.hpp"
 #include "reprocessing/validator/source_txt/pipelines/StructuralValidator.hpp"
 #include "common/utils/StringUtils.hpp" // For trim()
@@ -9,21 +9,20 @@
 #include <iostream>
 #include <memory>
 
-// PImpl struct definition, encapsulating all internal components
+// [修改] PImpl 结构体更新
 struct SourceFileValidator::PImpl {
-    SourceValidatorConfig config;
     LineProcessor line_processor;
     StructuralValidator structural_validator;
 
-    PImpl(const std::string& config_filename)
-        : config(config_filename),
-          line_processor(config)
+    // [修改] PImpl 的构造函数现在接收 ConverterConfig
+    PImpl(const ConverterConfig& config)
+        : line_processor(config)
     {}
 };
 
-// Constructor and Destructor
-SourceFileValidator::SourceFileValidator(const std::string& config_filename)
-    : pimpl_(std::make_unique<PImpl>(config_filename)) {}
+// [修改] 更新构造函数和析构函数
+SourceFileValidator::SourceFileValidator(const ConverterConfig& config)
+    : pimpl_(std::make_unique<PImpl>(config)) {}
 
 SourceFileValidator::~SourceFileValidator() = default;
 
