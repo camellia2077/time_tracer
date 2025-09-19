@@ -1,11 +1,10 @@
 // queries/monthly/formatters/typ/MonthTyp.cpp
-
 #include "MonthTyp.hpp"
 #include <iomanip>
 #include <format>
-#include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/utils/format/TimeFormat.hpp"    
+#include "queries/shared/interfaces/ITreeFmt.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 
 MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} 
 
@@ -48,11 +47,9 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
 }
 
 void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 移除 db 参数
-    ss << generate_project_breakdown(
-        ReportFormat::Typ,
-        data.records,
-        data.total_duration,
-        data.actual_days
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Typ);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, data.actual_days);
+    }
 }

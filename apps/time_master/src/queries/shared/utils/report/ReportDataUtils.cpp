@@ -1,26 +1,8 @@
 // queries/shared/utils/report/ReportDataUtils.cpp
 #include "ReportDataUtils.hpp"
 #include "common/utils/StringUtils.hpp"
-#include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interfaces/ITreeFmt.hpp"
 
-std::string generate_project_breakdown(
-    ReportFormat format,
-    const std::vector<std::pair<std::string, long long>>& records,
-    long long total_duration,
-    int avg_days)
-{
-    ProjectTree project_tree;
-    build_project_tree_from_records(project_tree, records);
-
-    auto formatter = TreeFmtFactory::createFormatter(format);
-
-    if (formatter) {
-        return formatter->format(project_tree, total_duration, avg_days);
-    }
-    
-    return ""; 
-}
+// [核心修改] generate_project_breakdown 函数已被移除
 
 void build_project_tree_from_records(
     ProjectTree& tree,

@@ -1,14 +1,10 @@
 // queries/period/formatters/md/PeriodMd.cpp
-
 #include "PeriodMd.hpp"
 #include <iomanip>
 #include <format>
-
-#include "common/utils/ProjectTree.hpp"
-#include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interfaces/ITreeFmt.hpp"   
-#include "queries/shared/utils/format/TimeFormat.hpp"   
+#include "queries/shared/interfaces/ITreeFmt.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 
 PeriodMd::PeriodMd(std::shared_ptr<PeriodMdConfig> config) : config_(config) {}
 
@@ -47,11 +43,9 @@ void PeriodMd::_display_summary(std::stringstream& ss, const PeriodReportData& d
 }
 
 void PeriodMd::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
-    // [核心修改] 移除 db 参数
-    ss << generate_project_breakdown(
-        ReportFormat::Markdown,
-        data.records,
-        data.total_duration,
-        data.actual_days
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Markdown);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, data.actual_days);
+    }
 }
