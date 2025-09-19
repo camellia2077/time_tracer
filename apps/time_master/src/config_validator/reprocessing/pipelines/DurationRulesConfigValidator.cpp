@@ -1,4 +1,4 @@
-// config_validator/pipelines/DurationRulesConfigValidator.cpp
+// config_validator/reprocessing/pipelines/DurationRulesConfigValidator.cpp
 #include "DurationRulesConfigValidator.hpp"
 #include <iostream>
 

@@ -1,4 +1,4 @@
-// config_validator/pipelines/MappingsConfigValidator.cpp
+// config_validator/reprocessing/pipelines/MappingsConfigValidator.cpp
 #include "MappingsConfigValidator.hpp"
 #include <iostream>
 
