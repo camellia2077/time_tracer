@@ -1,13 +1,11 @@
 // queries/period/formatters/tex/PeriodTex.cpp
-
 #include "PeriodTex.hpp"
 #include <iomanip>
 #include <string>
 #include <sstream>
-
-#include "queries/shared/utils/report/ReportDataUtils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/utils/format/TimeFormat.hpp"    
+#include "queries/shared/interfaces/ITreeFmt.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/tex/TexUtils.hpp"
 
 PeriodTex::PeriodTex(std::shared_ptr<PeriodTexConfig> config) : config_(config) {}
@@ -49,10 +47,9 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
 }
 
 void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
-    ss << generate_project_breakdown(
-        ReportFormat::LaTeX,
-        data.records,
-        data.total_duration,
-        data.actual_days
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, data.actual_days);
+    }
 }

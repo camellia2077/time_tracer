@@ -1,21 +1,23 @@
 // queries/daily/DayQuerier.cpp
 #include "DayQuerier.hpp"
+#include "queries/shared/utils/report/ReportDataUtils.hpp" // [新增] 为构建项目树
 #include <stdexcept>
 
 DayQuerier::DayQuerier(sqlite3* db, const std::string& date)
     : BaseQuerier(db, date) {}
 
-// [FIX] Simplified fetch_data logic to properly use the base class.
 DailyReportData DayQuerier::fetch_data() {
-    // Call the base class implementation first to get records and total_duration
+    // 调用基类实现获取 records 和 total_duration
     DailyReportData data = BaseQuerier::fetch_data();
 
-    // Now, fetch the data specific to the daily report
+    // 获取日报特有的数据
     _fetch_metadata(data);
     
     if (data.total_duration > 0) {
         _fetch_detailed_records(data); 
         _fetch_sleep_time(data); 
+        // [核心修改] 在数据获取阶段构建项目树
+        build_project_tree_from_records(data.project_tree, data.records);
     }
     
     return data;

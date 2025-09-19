@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
 
 // 用于周期报告的数据
 struct PeriodReportData {
@@ -13,6 +14,7 @@ struct PeriodReportData {
     long long total_duration = 0;
     int actual_days = 0;
     std::vector<std::pair<std::string, long long>> records;
+    ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
 };
 
 
