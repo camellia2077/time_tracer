@@ -13,7 +13,7 @@ public:
     const std::string& get_title_font() const;
     const std::string& get_content_font() const;
     int get_title_font_size() const;
-    const std::string& get_line_spacing() const;
+    double get_line_spacing_em() const; // [修改]
     const std::map<std::string, std::string>& get_keyword_colors() const;
     const std::string& get_title_prefix() const;
     const std::string& get_date_label() const;
@@ -28,7 +28,7 @@ public:
     const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
     const std::string& get_activity_remark_label() const;
-    const std::string& get_activity_connector() const; // [ADD THIS]
+    const std::string& get_activity_connector() const;
 
 private:
     void load_config(const std::string& config_path);
@@ -36,7 +36,7 @@ private:
     std::string title_font_;
     std::string content_font_;
     int title_font_size_;
-    std::string line_spacing_;
+    double line_spacing_em_; // [修改]
     std::map<std::string, std::string> keyword_colors_;
     std::string title_prefix_;
     std::string date_label_;
@@ -51,7 +51,7 @@ private:
     std::string all_activities_label_;
     std::string sleep_time_label_;
     std::string activity_remark_label_;
-    std::string activity_connector_; // [ADD THIS]
+    std::string activity_connector_;
 };
 
 #endif // DAY_TYP_CONFIG_HPP

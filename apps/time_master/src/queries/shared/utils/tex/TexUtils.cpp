@@ -1,27 +1,28 @@
 // queries/shared/utils/tex/TexUtils.cpp
 #include "TexUtils.hpp"
 #include <sstream>
+#include <string>
 
 namespace TexUtils {
 
 std::string get_tex_preamble(
     const std::string& main_font,
     const std::string& cjk_main_font,
+    int font_size,
+    double margin_in,
     const std::map<std::string, std::string>& keyword_colors)
 {
     std::stringstream ss;
-    ss << "\\documentclass{article}\n";
-    ss << "\\usepackage[a4paper, margin=1in]{geometry}\n";
+    ss << "\\documentclass[" << font_size << "pt]{article}\n";
+    ss << "\\usepackage[a4paper, margin=" << margin_in << "in]{geometry}\n";
     ss << "\\usepackage[dvipsnames]{xcolor}\n";
     ss << "\\usepackage{enumitem}\n";
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
 
-    // 如果提供了颜色定义，则添加它们
     if (!keyword_colors.empty()) {
         for (const auto& pair : keyword_colors) {
             std::string hex_color = pair.second;
-            // [核心修改] 如果颜色值以 '#' 开头，则去除它
             if (!hex_color.empty() && hex_color[0] == '#') {
                 hex_color = hex_color.substr(1);
             }
