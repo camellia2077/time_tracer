@@ -4,9 +4,7 @@
 #include <format>
 #include <string>
 #include <algorithm>
-#include "queries/shared/factories/TreeFmtFactory.hpp" // [新增]
-#include "queries/shared/interfaces/ITreeFmt.hpp"       // [新增]
-#include "queries/shared/data/DailyReportData.hpp"
+#include <vector>
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
@@ -49,11 +47,8 @@ void DayTyp::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTyp::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Typ);
-    if (formatter) {
-        ss << formatter->format(data.project_tree, data.total_duration, 1);
-    }
+    // [核心修改] 调用内部方法直接格式化
+    ss << _format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
 void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
@@ -100,4 +95,53 @@ void DayTyp::_display_detailed_activities(std::stringstream& ss, const DailyRepo
             ss << _format_activity_line(record) << "\n";
         }
     }
+}
+
+// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
+void DayTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
+    std::vector<std::pair<std::string, ProjectNode>> sorted_children;
+    for (const auto& pair : node.children) {
+        sorted_children.push_back(pair);
+    }
+    std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    std::string indent_str(indent * 2, ' ');
+
+    for (const auto& pair : sorted_children) {
+        const std::string& name = pair.first;
+        const ProjectNode& child_node = pair.second;
+
+        if (child_node.duration > 0 || !child_node.children.empty()) {
+            ss << indent_str << "+ " << name << ": " << time_format_duration(child_node.duration, avg_days) << "\n";
+            _generate_sorted_typ_output(ss, child_node, indent + 1, avg_days);
+        }
+    }
+}
+
+// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
+std::string DayTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
+    std::stringstream ss;
+    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
+    for (const auto& pair : tree) {
+        sorted_top_level.push_back(pair);
+    }
+    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    for (const auto& pair : sorted_top_level) {
+        const std::string& category_name = pair.first;
+        const ProjectNode& category_node = pair.second;
+        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
+
+        ss << "\n= " << category_name << ": "
+           << time_format_duration(category_node.duration, avg_days)
+           << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n";
+
+        _generate_sorted_typ_output(ss, category_node, 0, avg_days);
+    }
+
+    return ss.str();
 }

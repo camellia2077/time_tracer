@@ -2,9 +2,9 @@
 #include "MonthTyp.hpp"
 #include <iomanip>
 #include <format>
-#include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interfaces/ITreeFmt.hpp"
-#include "queries/shared/utils/format/TimeFormat.hpp"
+#include <vector>
+#include <algorithm>
+#include "queries/shared/utils/format/TimeFormat.hpp"    
 
 MonthTyp::MonthTyp(std::shared_ptr<MonthTypConfig> config) : config_(config) {} 
 
@@ -47,9 +47,55 @@ void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& 
 }
 
 void MonthTyp::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
-    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::Typ);
-    if (formatter) {
-        ss << formatter->format(data.project_tree, data.total_duration, data.actual_days);
+    // [核心修改] 调用内部方法直接格式化
+    ss << _format_project_tree(data.project_tree, data.total_duration, data.actual_days);
+}
+
+// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
+void MonthTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
+    std::vector<std::pair<std::string, ProjectNode>> sorted_children;
+    for (const auto& pair : node.children) {
+        sorted_children.push_back(pair);
     }
+    std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    std::string indent_str(indent * 2, ' ');
+
+    for (const auto& pair : sorted_children) {
+        const std::string& name = pair.first;
+        const ProjectNode& child_node = pair.second;
+
+        if (child_node.duration > 0 || !child_node.children.empty()) {
+            ss << indent_str << "+ " << name << ": " << time_format_duration(child_node.duration, avg_days) << "\n";
+            _generate_sorted_typ_output(ss, child_node, indent + 1, avg_days);
+        }
+    }
+}
+
+// [新增] 从 BreakdownTyp.cpp 迁移而来的逻辑
+std::string MonthTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
+    std::stringstream ss;
+    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
+    for (const auto& pair : tree) {
+        sorted_top_level.push_back(pair);
+    }
+    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
+        return a.second.duration > b.second.duration;
+    });
+
+    for (const auto& pair : sorted_top_level) {
+        const std::string& category_name = pair.first;
+        const ProjectNode& category_node = pair.second;
+        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
+
+        ss << "\n= " << category_name << ": "
+           << time_format_duration(category_node.duration, avg_days)
+           << " (" << std::fixed << std::setprecision(1) << percentage << "%)\n";
+
+        _generate_sorted_typ_output(ss, category_node, 0, avg_days);
+    }
+
+    return ss.str();
 }
