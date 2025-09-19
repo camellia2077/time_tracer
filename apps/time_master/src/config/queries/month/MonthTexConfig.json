@@ -6,7 +6,9 @@
     "InvalidFormatMessage": "Invalid year_month format. Expected YYYYMM.",
     "MainFont": "Noto Serif SC",
     "CJKMainFont": "Noto Serif SC",
-    "FontSize": 12,
+    "BaseFontSize": 12,
+    "ReportTitleFontSize": 18,
+    "CategoryTitleFontSize": 16,
     "Margin_in": 1.0,
     "ListTopSep_pt": 0,
     "ListItemSep_ex": -0.5

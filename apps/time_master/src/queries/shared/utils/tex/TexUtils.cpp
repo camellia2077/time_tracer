@@ -13,12 +13,18 @@ std::string get_tex_preamble(
     const std::map<std::string, std::string>& keyword_colors)
 {
     std::stringstream ss;
-    ss << "\\documentclass[" << font_size << "pt]{article}\n";
+    // [FIX] Corrected the order: \documentclass must be the first command.
+    ss << "\\documentclass[" << font_size << "pt]{extarticle}\n"; // Using extarticle from extsizes
     ss << "\\usepackage[a4paper, margin=" << margin_in << "in]{geometry}\n";
     ss << "\\usepackage[dvipsnames]{xcolor}\n";
     ss << "\\usepackage{enumitem}\n";
     ss << "\\usepackage{fontspec}\n";
     ss << "\\usepackage{ctex}\n";
+    ss << "\\usepackage{titlesec}\n\n";
+    
+    // Customize section formatting to be independent of default styles
+    ss << "\\titleformat{\\section}{\\normalfont\\bfseries}{}{0em}{}\n";
+    ss << "\\titleformat{\\subsection}{\\normalfont\\bfseries}{}{0em}{}\n\n";
 
     if (!keyword_colors.empty()) {
         for (const auto& pair : keyword_colors) {
