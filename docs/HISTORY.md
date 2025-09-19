@@ -305,3 +305,6 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 
 ## v0.3.20.6
 把common中的辅助函数移到queries/utils中
+
+## v0.3.20.7
+把common中的辅助函数移到queries/utils中

@@ -1,17 +1,13 @@
 // queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
-
 #include <iomanip>
 #include <string>
 #include <sstream>
 #include <algorithm>
-
-#include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/db/query_utils.hpp"
-#include "queries/shared/utils/format/BoolToString.hpp"
-#include "queries/shared/factories/TreeFmtFactory.hpp"
-#include "queries/shared/interfaces/ITreeFmt.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp" // [新增]
+#include "queries/shared/interfaces/ITreeFmt.hpp"       // [新增]
 #include "queries/shared/data/DailyReportData.hpp"
+#include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
 #include "queries/shared/utils/tex/TexUtils.hpp"
@@ -55,12 +51,11 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    ss << generate_project_breakdown(
-        ReportFormat::LaTeX,
-        data.records,
-        data.total_duration,
-        1
-    );
+    // [核心修改] 直接使用 data 中的 project_tree 进行格式化
+    auto formatter = TreeFmtFactory::createFormatter(ReportFormat::LaTeX);
+    if (formatter) {
+        ss << formatter->format(data.project_tree, data.total_duration, 1);
+    }
 }
 
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {

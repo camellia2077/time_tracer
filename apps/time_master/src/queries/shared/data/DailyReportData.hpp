@@ -5,24 +5,24 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <optional> // 新增：引入 optional
+#include <optional>
+#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
 
 // [新增] 用于单个活动的详细记录
 struct TimeRecord {
     std::string start_time;
     std::string end_time;
     std::string project_path;
-    long long duration_seconds; // [新增] 存储活动时长
-    std::optional<std::string> activityRemark; // 新增：存储活动的备注
+    long long duration_seconds;
+    std::optional<std::string> activityRemark;
 };
 
 // This struct is part of the data for a daily report, so it belongs here.
 struct DayMetadata {
     std::string status = "N/A";
-    std::string sleep = "N/A"; // sleep 字段
+    std::string sleep = "N/A";
     std::string remark = "N/A";
     std::string getup_time = "N/A";
-    // --- [核心修改] 新增 exercise 字段 ---
     std::string exercise = "N/A";
 };
 
@@ -31,11 +31,12 @@ struct DayMetadata {
  */
 struct DailyReportData {
     std::string date;
-    DayMetadata metadata; // The compiler now sees the definition directly above
+    DayMetadata metadata;
     long long total_duration = 0;
     std::vector<std::pair<std::string, long long>> records;
-    std::vector<TimeRecord> detailed_records; // [新增] 用于存储详细的活动记录
-    long long sleep_time = 0; // [新增] 存储睡眠时长，以秒为单位
+    std::vector<TimeRecord> detailed_records;
+    long long sleep_time = 0;
+    ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
 };
 
 #endif // DAILY_REPORT_DATA_HPP
