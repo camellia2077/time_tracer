@@ -1,6 +1,6 @@
 // queries/monthly/formatters/typ/MonthTypConfig.cpp
 #include "MonthTypConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 MonthTypConfig::MonthTypConfig(const std::string& config_path) {

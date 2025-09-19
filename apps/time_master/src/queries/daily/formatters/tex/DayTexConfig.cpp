@@ -1,6 +1,6 @@
 // queries/daily/formatters/tex/DayTexConfig.cpp
 #include "DayTexConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // 引入共享的配置工具
+#include "queries/shared/utils/config/ConfigUtils.hpp" // 引入共享的配置工具
 #include <stdexcept>
 
 DayTexConfig::DayTexConfig(const std::string& config_path) {

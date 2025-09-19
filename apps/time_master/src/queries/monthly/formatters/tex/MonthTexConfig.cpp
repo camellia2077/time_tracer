@@ -1,6 +1,6 @@
 // queries/monthly/formatters/tex/MonthTexConfig.cpp
 #include "MonthTexConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 MonthTexConfig::MonthTexConfig(const std::string& config_path) {

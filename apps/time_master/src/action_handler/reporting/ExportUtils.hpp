@@ -9,7 +9,7 @@
 #include <filesystem>
 #include <functional>
 #include <optional>
-#include "queries/shared/ReportFormat.hpp"  
+#include "queries/shared/types/ReportFormat.hpp"  
 
 // 定义导出工具的命名空间
 namespace ExportUtils {

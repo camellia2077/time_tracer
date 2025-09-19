@@ -8,7 +8,7 @@
 #include <map>
 #include <sstream>
 #include "common/utils/ProjectTree.hpp" 
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 
 // --- Standalone Utility Functions ---
 

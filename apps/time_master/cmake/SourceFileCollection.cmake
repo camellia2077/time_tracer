@@ -96,13 +96,14 @@ set(QUERIES_SOURCES
     "src/queries/shared/formatters/breakdown/tex/BreakdownTex.cpp"
     "src/queries/shared/formatters/breakdown/typ/BreakdownTyp.cpp"
 
-    "src/queries/shared/utils/ConfigUtils.cpp"
-    "src/queries/shared/utils/query_utils.cpp"
-    "src/queries/shared/utils/BoolToString.cpp"
-    "src/queries/shared/utils/ReportStringUtils.cpp"
-    "src/queries/shared/utils/TexUtils.cpp"
+    "src/queries/shared/utils/config/ConfigUtils.cpp"
+    "src/queries/shared/utils/db/query_utils.cpp"
 
-    "src/queries/shared/utils/TimeFormat.cpp"
+    "src/queries/shared/utils/format/BoolToString.cpp"
+    "src/queries/shared/utils/format/ReportStringUtils.cpp"
+    "src/queries/shared/utils/format/TimeFormat.cpp"
+
+    "src/queries/shared/utils/tex/TexUtils.cpp"
 
 )
 

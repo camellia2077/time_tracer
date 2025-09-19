@@ -3,8 +3,8 @@
 #define PROJECT_BREAKDOWN_FORMATTER_FACTORY_HPP
 
 #include <memory>
-#include "queries/shared/Interface/ITreeFmt.hpp"
-#include "queries/shared/ReportFormat.hpp" // The shared enum
+#include "queries/shared/interface/ITreeFmt.hpp"
+#include "queries/shared/types/ReportFormat.hpp" // The shared enum
 
 class TreeFmtFactory {
 public:

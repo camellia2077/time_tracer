@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/ReportFormat.hpp" // 报告格式的定义
+#include "queries/shared/types/ReportFormat.hpp" // 报告格式的定义
 #include "common/AppConfig.hpp"
 
 /**

@@ -1,6 +1,6 @@
 // queries/daily/formatters/md/DayMdConfig.cpp
 #include "DayMdConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp"
+#include "queries/shared/utils/config/ConfigUtils.hpp"
 #include <stdexcept>
 
 DayMdConfig::DayMdConfig(const std::string& config_path) {
