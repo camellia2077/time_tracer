@@ -20,7 +20,12 @@ std::string get_tex_preamble(
     // 如果提供了颜色定义，则添加它们
     if (!keyword_colors.empty()) {
         for (const auto& pair : keyword_colors) {
-            ss << "\\definecolor{" << pair.first << "color}{HTML}{" << pair.second << "}\n";
+            std::string hex_color = pair.second;
+            // [核心修改] 如果颜色值以 '#' 开头，则去除它
+            if (!hex_color.empty() && hex_color[0] == '#') {
+                hex_color = hex_color.substr(1);
+            }
+            ss << "\\definecolor{" << pair.first << "color}{HTML}{" << hex_color << "}\n";
         }
     }
     

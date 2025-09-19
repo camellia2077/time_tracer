@@ -1,5 +1,4 @@
 {
-    
     "ReportTitle": "Daily Report for",
     "DateLabel": "Date",
     "TotalTimeLabel": "Total Time Recorded",
@@ -17,13 +16,13 @@
     "MainFont": "Noto Serif SC",
     "CJKMainFont": "Noto Serif SC",
     "KeywordColors": {
-        "study":      "2ECC40",
-        "recreation": "FF4136",
-        "meal":       "FF851B",
-        "exercise":   "0074D9",
-        "routine":    "AAAAAA",
-        "sleep":      "B10DC9",
-        "code":       "39CCCC"
+        "study":      "#2ECC40",
+        "recreation": "#FF4136",
+        "meal":       "#FF851B",
+        "exercise":   "#0074D9",
+        "routine":    "#AAAAAA",
+        "sleep":      "#B10DC9",
+        "code":       "#39CCCC"
     },
-        "ActivityConnector": "+"
+    "ActivityConnector": "+"
 }

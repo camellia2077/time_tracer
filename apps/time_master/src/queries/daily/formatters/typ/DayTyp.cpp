@@ -70,8 +70,10 @@ std::string DayTyp::_format_activity_line(const TimeRecord& record) const {
 
     for (const auto& pair : config_->get_keyword_colors()) {
         if (record.project_path.find(pair.first) != std::string::npos) {
-            const std::string& color = pair.second;
-            std::string final_output = std::format("+ #text({0})[{1}]", color, base_string);
+            // [核心修改] 读取十六进制值并动态构建 rgb() 字符串
+            const std::string& hex_color = pair.second;
+            std::string typst_color_format = std::format(R"(rgb("{}"))", hex_color);
+            std::string final_output = std::format("+ #text({0})[{1}]", typst_color_format, base_string);
             
             if (record.activityRemark.has_value()) {
                 final_output += std::format("\n  + *{0}*: {1}", config_->get_activity_remark_label(), record.activityRemark.value());
