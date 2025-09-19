@@ -1,6 +1,6 @@
 // queries/daily/formatters/typ/DayTypConfig.cpp
 #include "DayTypConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp"
+#include "queries/shared/utils/config/ConfigUtils.hpp"
 #include <stdexcept>
 
 DayTypConfig::DayTypConfig(const std::string& config_path) {

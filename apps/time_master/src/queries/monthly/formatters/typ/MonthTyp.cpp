@@ -2,7 +2,7 @@
 #include "MonthTyp.hpp"
 #include <iomanip>
 #include <format>
-#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "common/utils/TimeUtils.hpp"
 

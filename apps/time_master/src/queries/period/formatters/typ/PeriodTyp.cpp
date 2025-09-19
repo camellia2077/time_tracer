@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <format>
 #include "common/utils/ProjectTree.hpp"
-#include "queries/shared/utils/query_utils.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
 #include "queries/shared/factories/TreeFmtFactory.hpp"
 #include "common/utils/TimeUtils.hpp"
 

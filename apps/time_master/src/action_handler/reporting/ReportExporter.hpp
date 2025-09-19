@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp" // [ADDED] Include AppConfig
 
 // Forward declaration

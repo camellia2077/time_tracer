@@ -1,6 +1,6 @@
 // queries/period/formatters/typ/PeriodTypConfig.cpp
 #include "PeriodTypConfig.hpp"
-#include "queries/shared/utils/ConfigUtils.hpp" // [新增]
+#include "queries/shared/utils/config/ConfigUtils.hpp" // [新增]
 #include <stdexcept>
 
 PeriodTypConfig::PeriodTypConfig(const std::string& config_path) {

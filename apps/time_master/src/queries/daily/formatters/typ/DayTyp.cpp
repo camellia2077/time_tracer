@@ -6,12 +6,12 @@
 #include <algorithm>
 
 #include "common/utils/TimeUtils.hpp"
-#include "queries/shared/utils/query_utils.hpp"
-#include "queries/shared/utils/BoolToString.hpp"
+#include "queries/shared/utils/db/query_utils.hpp"
+#include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
-#include "queries/shared/utils/TimeFormat.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 
-#include "queries/shared/utils/ReportStringUtils.hpp" // for replace_all
+#include "queries/shared/utils/format/ReportStringUtils.hpp" // for replace_all
 
 DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 

@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "queries/shared/ReportFormat.hpp"
+#include "queries/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
 
 class PeriodGenerator {
