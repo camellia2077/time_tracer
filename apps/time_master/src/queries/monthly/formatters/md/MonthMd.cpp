@@ -5,7 +5,25 @@
 #include <vector>
 #include <algorithm>
 #include "queries/shared/utils/format/TimeFormat.hpp"
-#include "queries/shared/utils/format/MarkdownUtils.hpp" // [新增] 引入新的工具类
+#include "queries/shared/utils/format/MarkdownUtils.hpp"
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/monthly/formatters/md/MonthMdConfig.hpp"      // [新增]
+#include "queries/shared/data/MonthlyReportData.hpp"           // [新增]
+
+// [新增] 自我注册逻辑
+namespace {
+    struct MonthMdRegister {
+        MonthMdRegister() {
+            GenericFormatterFactory<MonthlyReportData>::regist(ReportFormat::Markdown, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
+                    auto md_config = std::make_shared<MonthMdConfig>(cfg.month_md_config_path);
+                    return std::make_unique<MonthMd>(md_config);
+                });
+        }
+    };
+    const MonthMdRegister registrar;
+}
+
 
 MonthMd::MonthMd(std::shared_ptr<MonthMdConfig> config) : config_(config) {}
 
@@ -41,6 +59,5 @@ void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& d
 }
 
 void MonthMd::_display_project_breakdown(std::stringstream& ss, const MonthlyReportData& data) const {
-    // [核心修改] 调用共享的 MarkdownUtils 来格式化项目树
     ss << MarkdownUtils::format_project_tree(data.project_tree, data.total_duration, data.actual_days);
 }

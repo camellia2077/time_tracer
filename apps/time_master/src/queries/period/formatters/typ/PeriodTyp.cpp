@@ -4,7 +4,26 @@
 #include <format>
 #include <vector>
 #include <algorithm>
-#include "queries/shared/utils/format/TimeFormat.hpp"     
+#include "queries/shared/utils/format/TimeFormat.hpp"
+#include "queries/shared/utils/format/TypUtils.hpp"      // [新增]
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/period/formatters/typ/PeriodTypConfig.hpp"    // [新增]
+#include "queries/shared/data/PeriodReportData.hpp"            // [新增]
+
+// [新增] 自我注册逻辑
+namespace {
+    struct PeriodTypRegister {
+        PeriodTypRegister() {
+            GenericFormatterFactory<PeriodReportData>::regist(ReportFormat::Typ, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<PeriodReportData>> {
+                    auto typ_config = std::make_shared<PeriodTypConfig>(cfg.period_typ_config_path);
+                    return std::make_unique<PeriodTyp>(typ_config);
+                });
+        }
+    };
+    const PeriodTypRegister registrar;
+}
+
 
 PeriodTyp::PeriodTyp(std::shared_ptr<PeriodTypConfig> config) : config_(config) {}
 
@@ -42,16 +61,15 @@ std::string PeriodTyp::format_report(const PeriodReportData& data) const {
 }
 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
-    // --- [核心修改] ---
     std::string title = std::format(
         R"(#text(font: "{}", size: {}pt)[= {} {} {} ({} {} {})])",
         config_->get_title_font(),
         config_->get_report_title_font_size(),
-        config_->get_report_title_prefix(), // 修正函数调用
+        config_->get_report_title_prefix(),
         data.days_to_query,
-        config_->get_report_title_days(), // 修正函数调用
+        config_->get_report_title_days(),
         data.start_date,
-        config_->get_report_title_date_separator(), // 修正函数调用
+        config_->get_report_title_date_separator(),
         data.end_date
     );
     ss << title << "\n\n";
@@ -63,58 +81,12 @@ void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& 
 }
 
 void PeriodTyp::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
-    ss << _format_project_tree(data.project_tree, data.total_duration, data.actual_days);
-}
-
-void PeriodTyp::_generate_sorted_typ_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const {
-    std::vector<std::pair<std::string, ProjectNode>> sorted_children;
-    for (const auto& pair : node.children) {
-        sorted_children.push_back(pair);
-    }
-    std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
-        return a.second.duration > b.second.duration;
-    });
-
-    std::string indent_str(indent * 2, ' ');
-
-    for (const auto& pair : sorted_children) {
-        const std::string& name = pair.first;
-        const ProjectNode& child_node = pair.second;
-
-        if (child_node.duration > 0 || !child_node.children.empty()) {
-            ss << indent_str << "+ " << name << ": " << time_format_duration(child_node.duration, avg_days) << "\n";
-            _generate_sorted_typ_output(ss, child_node, indent + 1, avg_days);
-        }
-    }
-}
-
-std::string PeriodTyp::_format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const {
-    std::stringstream ss;
-    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
-    for (const auto& pair : tree) {
-        sorted_top_level.push_back(pair);
-    }
-    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
-        return a.second.duration > b.second.duration;
-    });
-
-    for (const auto& pair : sorted_top_level) {
-        const std::string& category_name = pair.first;
-        const ProjectNode& category_node = pair.second;
-        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
-
-        ss << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
-            config_->get_category_title_font(),
-            config_->get_category_title_font_size(),
-            std::format("{}: {} ({:.1f}%)", 
-                category_name, 
-                time_format_duration(category_node.duration, avg_days), 
-                percentage
-            )
-        ) << "\n";
-
-        _generate_sorted_typ_output(ss, category_node, 0, avg_days);
-    }
-
-    return ss.str();
+    // [核心修改] 调用共享的 TypUtils 来格式化项目树
+    ss << TypUtils::format_project_tree(
+        data.project_tree,
+        data.total_duration,
+        data.actual_days,
+        config_->get_category_title_font(),
+        config_->get_category_title_font_size()
+    );
 }

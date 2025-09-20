@@ -1,4 +1,3 @@
-// queries/daily/formatters/md/DayMd.cpp
 #include "DayMd.hpp"
 #include <iomanip>
 #include <format>
@@ -8,7 +7,24 @@
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
-#include "queries/shared/utils/format/MarkdownUtils.hpp" 
+#include "queries/shared/utils/format/MarkdownUtils.hpp"
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增] 引入新工厂
+#include "queries/daily/formatters/md/DayMdConfig.hpp"
+#include "queries/shared/data/DailyReportData.hpp"
+
+// [新增] 自我注册逻辑
+namespace {
+    struct DayMdRegister {
+        DayMdRegister() {
+            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::Markdown, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<DailyReportData>> {
+                    auto md_config = std::make_shared<DayMdConfig>(cfg.day_md_config_path);
+                    return std::make_unique<DayMd>(md_config);
+                });
+        }
+    };
+    const DayMdRegister registrar;
+}
 
 DayMd::DayMd(std::shared_ptr<DayMdConfig> config) : config_(config) {}
 
@@ -61,8 +77,6 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     }
 }
 
-// --- [ 核心修改 ] ---
-// 在统计信息部分增加了新字段的显示。
 void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\n## " << config_->get_statistics_label() << "\n\n";
     ss << std::format("- **{0}**: {1}\n", 

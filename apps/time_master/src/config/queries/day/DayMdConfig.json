@@ -15,5 +15,5 @@
     "CardioTimeLabel": "Cardio Exercise",
     "GroomingTimeLabel": "Grooming Time",
     "ActivityRemarkLabel": "Activity Remark",
-    "ActivityConnector": "+"
+    "ActivityConnector": "->"
 }

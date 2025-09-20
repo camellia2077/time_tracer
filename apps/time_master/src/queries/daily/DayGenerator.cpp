@@ -1,7 +1,6 @@
-// queries/daily/DayGenerator.cpp
 #include "DayGenerator.hpp"
 #include "DayQuerier.hpp"
-#include "queries/shared/factories/FormatterFactory.hpp" // [修改] 引入新的统一工厂
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改] 引入新工厂
 #include <memory>
 
 DayGenerator::DayGenerator(sqlite3* db, const AppConfig& config)
@@ -11,8 +10,8 @@ std::string DayGenerator::generate_report(const std::string& date, ReportFormat 
     DayQuerier querier(m_db, date);
     DailyReportData report_data = querier.fetch_data();
 
-    // [核心修改] 使用统一工厂创建格式化器
-    auto formatter = FormatterFactory::create_day_formatter(format, app_config_);
+    // [核心修改] 使用新的通用工厂
+    auto formatter = GenericFormatterFactory<DailyReportData>::create(format, app_config_);
 
     return formatter->format_report(report_data);
 }

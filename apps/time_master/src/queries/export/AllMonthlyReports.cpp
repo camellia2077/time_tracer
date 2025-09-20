@@ -1,7 +1,6 @@
-// queries/export/AllMonthlyReports.cpp
 #include "AllMonthlyReports.hpp"
 #include "queries/monthly/MonthQuerier.hpp"
-#include "queries/shared/factories/FormatterFactory.hpp" // [修改] 引入新的统一工厂
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
 #include <vector>
 #include <iomanip>
 #include <sstream>
@@ -24,8 +23,8 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch unique year/month pairs.");
     }
 
-    // [核心修改] 使用统一工厂创建格式化器
-    auto formatter = FormatterFactory::create_month_formatter(format, app_config_);
+    // [核心修改]
+    auto formatter = GenericFormatterFactory<MonthlyReportData>::create(format, app_config_);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         int year = sqlite3_column_int(stmt, 0);
