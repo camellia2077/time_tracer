@@ -23,5 +23,9 @@ class TestParams:
 class Cleanup:
     pass
 
+class RunControl:
+    """此类用于存放运行控制相关的配置。"""
+    pass
+
 # 调用加载函数，填充类
-load_config(Paths, CLINames, TestParams, Cleanup)
+load_config(Paths, CLINames, TestParams, Cleanup, RunControl)
