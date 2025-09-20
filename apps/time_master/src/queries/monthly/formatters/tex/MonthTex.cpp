@@ -1,3 +1,4 @@
+
 // queries/monthly/formatters/tex/MonthTex.cpp
 #include "MonthTex.hpp"
 #include <iomanip>
@@ -7,7 +8,7 @@
 #include <algorithm>
 #include <format>
 #include "queries/shared/utils/format/TimeFormat.hpp"     
-#include "queries/shared/utils/tex/TexUtils.hpp"
+#include "queries/shared/formatters/latex/TexUtils.hpp" // [FIX] Changed from .cpp to .hpp
 
 MonthTex::MonthTex(std::shared_ptr<MonthTexConfig> config) : config_(config) {}
 

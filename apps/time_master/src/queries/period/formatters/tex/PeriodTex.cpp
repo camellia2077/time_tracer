@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <format>
 #include "queries/shared/utils/format/TimeFormat.hpp"    
-#include "queries/shared/utils/tex/TexUtils.hpp"
+#include "queries/shared/formatters/latex/TexUtils.hpp" // [FIX] Changed from .cpp to .hpp
 
 PeriodTex::PeriodTex(std::shared_ptr<PeriodTexConfig> config) : config_(config) {}
 

@@ -1,3 +1,4 @@
+
 // queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
 #include <iomanip>
@@ -9,7 +10,7 @@
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
-#include "queries/shared/utils/tex/TexUtils.hpp"
+#include "queries/shared/formatters/latex/TexUtils.hpp" // [FIX] Changed from .cpp to .hpp
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
