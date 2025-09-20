@@ -22,6 +22,10 @@ void DayTexConfig::load_config(const std::string& config_path) {
     statistics_label_ = config_json.at("StatisticsLabel").get<std::string>();
     all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
     sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
+    // --- [核心修改] 加载新配置 ---
+    anaerobic_time_label_ = config_json.at("AnaerobicTimeLabel").get<std::string>();
+    cardio_time_label_ = config_json.at("CardioTimeLabel").get<std::string>();
+    grooming_time_label_ = config_json.at("GroomingTimeLabel").get<std::string>();
     activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
     main_font_ = config_json.at("MainFont").get<std::string>();
     cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
@@ -48,6 +52,10 @@ const std::string& DayTexConfig::get_no_records_message() const { return no_reco
 const std::string& DayTexConfig::get_statistics_label() const { return statistics_label_; }
 const std::string& DayTexConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayTexConfig::get_sleep_time_label() const { return sleep_time_label_; }
+// --- [核心修改] 新增 Getter 实现 ---
+const std::string& DayTexConfig::get_anaerobic_time_label() const { return anaerobic_time_label_; }
+const std::string& DayTexConfig::get_cardio_time_label() const { return cardio_time_label_; }
+const std::string& DayTexConfig::get_grooming_time_label() const { return grooming_time_label_; }
 const std::string& DayTexConfig::get_activity_remark_label() const { return activity_remark_label_; }
 const std::string& DayTexConfig::get_main_font() const { return main_font_; }
 const std::string& DayTexConfig::get_cjk_main_font() const { return cjk_main_font_; }

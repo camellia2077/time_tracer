@@ -10,7 +10,7 @@
     "Margin_bottom_cm": 2.5,
     "Margin_left_cm": 2.0,
     "Margin_right_cm": 2.0,
-    "TitlePrefix": "Monthly Summary for",
+    "ReportTitle": "Monthly Summary for",
     "ActualDaysLabel": "Actual Days with Records",
     "TotalTimeLabel": "Total Hours",
     "InvalidFormatMessage": "Invalid year_month format. Expected YYYYMM.",

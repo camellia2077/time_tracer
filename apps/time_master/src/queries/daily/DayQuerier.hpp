@@ -21,7 +21,8 @@ protected:
 private:
     void _fetch_metadata(DailyReportData& data);
     void _fetch_detailed_records(DailyReportData& data);
-    void _fetch_sleep_time(DailyReportData& data);
+    // --- [核心修改] 方法重命名，功能扩展 ---
+    void _fetch_generated_stats(DailyReportData& data);
 };
 
 #endif // DAILY_REPORT_QUERIER_HPP

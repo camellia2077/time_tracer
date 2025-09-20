@@ -22,6 +22,10 @@ public:
     const std::string& get_statistics_label() const;
     const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
+    // --- [核心修改] 新增 Getter ---
+    const std::string& get_anaerobic_time_label() const;
+    const std::string& get_cardio_time_label() const;
+    const std::string& get_grooming_time_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
@@ -49,6 +53,10 @@ private:
     std::string statistics_label_;
     std::string all_activities_label_;
     std::string sleep_time_label_;
+    // --- [核心修改] 新增成员变量 ---
+    std::string anaerobic_time_label_;
+    std::string cardio_time_label_;
+    std::string grooming_time_label_;
     std::string activity_remark_label_;
     std::string main_font_;
     std::string cjk_main_font_;

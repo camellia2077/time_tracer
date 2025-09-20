@@ -15,7 +15,6 @@ static std::vector<std::string> split_string(const std::string& s, char delimite
     return tokens;
 }
 
-// --- Updated Constructor ---
 DataInserter::DataInserter(sqlite3* db,
                            sqlite3_stmt* stmt_day,
                            sqlite3_stmt* stmt_record,
@@ -27,7 +26,7 @@ DataInserter::DataInserter(sqlite3* db,
       stmt_select_project_id(stmt_select_project),
       stmt_insert_project(stmt_insert_project) {}
 
-// --- Updated data binding in the insert_days method ---
+// --- [核心修改] 更新 insert_days 中的数据绑定 ---
 void DataInserter::insert_days(const std::vector<DayData>& days) {
     for (const auto& day_data : days) {
         sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
@@ -48,11 +47,14 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
         sqlite3_bind_int(stmt_insert_day, 10, day_data.cardio_time);
         sqlite3_bind_int(stmt_insert_day, 11, day_data.anaerobic_time);
 
-        // [New] Bind new stats data
         sqlite3_bind_int(stmt_insert_day, 12, day_data.gaming_time);
         sqlite3_bind_int(stmt_insert_day, 13, day_data.grooming_time);
         sqlite3_bind_int(stmt_insert_day, 14, day_data.toilet_time);
 
+        // 绑定新的睡眠统计数据
+        sqlite3_bind_int(stmt_insert_day, 15, day_data.sleep_night_time);
+        sqlite3_bind_int(stmt_insert_day, 16, day_data.sleep_day_time);
+        sqlite3_bind_int(stmt_insert_day, 17, day_data.sleep_total_time);
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
@@ -61,23 +63,17 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
     }
 }
 
-// --- Rewritten insert_records method ---
 void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records) {
     for (const auto& record_data : records) {
-        // 1. Get project_id
         long long project_id = get_or_create_project_id(record_data.project_path);
 
-        // 2. Bind data to statement
         sqlite3_bind_int64(stmt_insert_record, 1, record_data.logical_id);
         sqlite3_bind_int64(stmt_insert_record, 2, record_data.start_timestamp);
         sqlite3_bind_int64(stmt_insert_record, 3, record_data.end_timestamp);
         sqlite3_bind_text(stmt_insert_record, 4, record_data.date.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 5, record_data.start.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_record, 6, record_data.end.c_str(), -1, SQLITE_TRANSIENT);
-
-        // Bind project_id
         sqlite3_bind_int64(stmt_insert_record, 7, project_id);
-
         sqlite3_bind_int(stmt_insert_record, 8, record_data.duration_seconds);
 
         if (record_data.activityRemark.has_value()) {
@@ -86,7 +82,6 @@ void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records
             sqlite3_bind_null(stmt_insert_record, 9);
         }
 
-        // 3. Execute
         if (sqlite3_step(stmt_insert_record) != SQLITE_DONE) {
             std::cerr << "Error inserting record row: " << sqlite3_errmsg(db) << std::endl;
         }
@@ -94,16 +89,13 @@ void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records
     }
 }
 
-// --- New get_or_create_project_id method ---
 long long DataInserter::get_or_create_project_id(const std::string& project_path) {
-    // Check cache
     if (project_path_cache_.count(project_path)) {
         return project_path_cache_[project_path];
     }
 
     std::vector<std::string> parts = split_string(project_path, '_');
-    long long current_parent_id = 0; // Initial parent_id is 0 (represents NULL)
-
+    long long current_parent_id = 0; 
     std::string current_path = "";
     for (const auto& part : parts) {
         if (!current_path.empty()) {
@@ -111,13 +103,11 @@ long long DataInserter::get_or_create_project_id(const std::string& project_path
         }
         current_path += part;
 
-        // Check cache for subpath again
         if (project_path_cache_.count(current_path)) {
             current_parent_id = project_path_cache_[current_path];
             continue;
         }
 
-        // Query database
         sqlite3_reset(stmt_select_project_id);
         sqlite3_bind_text(stmt_select_project_id, 1, part.c_str(), -1, SQLITE_TRANSIENT);
         if (current_parent_id == 0) {
@@ -134,7 +124,6 @@ long long DataInserter::get_or_create_project_id(const std::string& project_path
         if (found_id > 0) {
             current_parent_id = found_id;
         } else {
-            // Not found, insert new entry
             sqlite3_reset(stmt_insert_project);
             sqlite3_bind_text(stmt_insert_project, 1, part.c_str(), -1, SQLITE_TRANSIENT);
             if (current_parent_id == 0) {
@@ -145,11 +134,10 @@ long long DataInserter::get_or_create_project_id(const std::string& project_path
 
             if (sqlite3_step(stmt_insert_project) != SQLITE_DONE) {
                 std::cerr << "Error inserting project: " << sqlite3_errmsg(db) << std::endl;
-                return 0; // or throw exception
+                return 0; 
             }
             current_parent_id = sqlite3_last_insert_rowid(db);
         }
-        // Update cache
         project_path_cache_[current_path] = current_parent_id;
     }
 

@@ -20,9 +20,10 @@ public:
     double get_margin_bottom_cm() const;
     double get_margin_left_cm() const;
     double get_margin_right_cm() const;
-    const std::string& get_title_prefix() const;
-    const std::string& get_title_days_unit() const;
-    const std::string& get_title_date_separator() const;
+    const std::string& get_report_title_prefix() const;
+    // --- [核心修改] ---
+    const std::string& get_report_title_days() const; // 重命名
+    const std::string& get_report_title_date_separator() const; // 重命名
     const std::string& get_total_time_label() const;
     const std::string& get_actual_days_label() const;
     const std::string& get_invalid_days_message() const;
@@ -42,9 +43,10 @@ private:
     double margin_bottom_cm_;
     double margin_left_cm_;
     double margin_right_cm_;
-    std::string title_prefix_;
-    std::string title_days_unit_;
-    std::string title_date_separator_;
+    std::string report_title_prefix_;
+    // --- [核心修改] ---
+    std::string report_title_days_; // 重命名
+    std::string report_title_date_separator_; // 重命名
     std::string total_time_label_;
     std::string actual_days_label_;
     std::string invalid_days_message_;

@@ -21,9 +21,10 @@ void PeriodTypConfig::load_config(const std::string& config_path) {
     margin_bottom_cm_ = config_json.at("Margin_bottom_cm").get<double>();
     margin_left_cm_ = config_json.at("Margin_left_cm").get<double>();
     margin_right_cm_ = config_json.at("Margin_right_cm").get<double>();
-    title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
-    title_days_unit_ = config_json.at("TitleDaysUnit").get<std::string>();
-    title_date_separator_ = config_json.at("TitleDateSeparator").get<std::string>();
+    // --- [核心修改] ---
+    report_title_prefix_ = config_json.at("ReportTitlePrefix").get<std::string>();
+    report_title_days_ = config_json.at("ReportTitleDays").get<std::string>();
+    report_title_date_separator_ = config_json.at("ReportTitleDateSeparator").get<std::string>();
     total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
     actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
     invalid_days_message_ = config_json.at("InvalidDaysMessage").get<std::string>();
@@ -42,9 +43,10 @@ double PeriodTypConfig::get_margin_top_cm() const { return margin_top_cm_; }
 double PeriodTypConfig::get_margin_bottom_cm() const { return margin_bottom_cm_; }
 double PeriodTypConfig::get_margin_left_cm() const { return margin_left_cm_; }
 double PeriodTypConfig::get_margin_right_cm() const { return margin_right_cm_; }
-const std::string& PeriodTypConfig::get_title_prefix() const { return title_prefix_; }
-const std::string& PeriodTypConfig::get_title_days_unit() const { return title_days_unit_; }
-const std::string& PeriodTypConfig::get_title_date_separator() const { return title_date_separator_; }
+// --- [核心修改] ---
+const std::string& PeriodTypConfig::get_report_title_prefix() const { return report_title_prefix_; }
+const std::string& PeriodTypConfig::get_report_title_days() const { return report_title_days_; }
+const std::string& PeriodTypConfig::get_report_title_date_separator() const { return report_title_date_separator_; }
 const std::string& PeriodTypConfig::get_total_time_label() const { return total_time_label_; }
 const std::string& PeriodTypConfig::get_actual_days_label() const { return actual_days_label_; }
 const std::string& PeriodTypConfig::get_invalid_days_message() const { return invalid_days_message_; }

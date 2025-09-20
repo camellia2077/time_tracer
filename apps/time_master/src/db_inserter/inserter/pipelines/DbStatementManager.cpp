@@ -19,22 +19,21 @@ DbStatementManager::~DbStatementManager() {
 sqlite3_stmt* DbStatementManager::get_insert_day_stmt() const { return stmt_insert_day; }
 sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_insert_record; }
 
-// --- [FIX] Added implementations for the new getter functions ---
 sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return stmt_select_project_id; }
 sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project; }
 
 void DbStatementManager::_prepare_statements() {
-    // --- [核心修改] 更新 'days' 表的插入语句 ---
+    // --- [核心修改] 更新 'days' 表的插入语句以包含新字段 ---
     const char* insert_day_sql = 
     "INSERT INTO days (date, year, month, status, sleep, remark, getup_time, "
     "exercise, total_exercise_time, cardio_time, anaerobic_time, "
-    "gaming_time, grooming_time, toilet_time) " // [新增]
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"; // 调整了参数数量
+    "gaming_time, grooming_time, toilet_time, "
+    "sleepNightTime, sleepDayTime, sleepTotalTime) "
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"; // 调整了参数数量
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }
 
-    // --- [FIX] Updated statement for 'time_records' table to use project_id ---
     const char* insert_record_sql = 
         "INSERT OR REPLACE INTO time_records "
         "(logical_id, start_timestamp, end_timestamp, date, start, end, project_id, duration, activity_remark) "
@@ -43,7 +42,6 @@ void DbStatementManager::_prepare_statements() {
         throw std::runtime_error("Failed to prepare time record insert statement.");
     }
 
-    // --- [FIX] Added statements for the new 'projects' table ---
     const char* select_project_id_sql = 
         "SELECT id FROM projects WHERE name = ? AND parent_id IS ?";
     if (sqlite3_prepare_v2(db, select_project_id_sql, -1, &stmt_select_project_id, nullptr) != SQLITE_OK) {
@@ -60,7 +58,6 @@ void DbStatementManager::_prepare_statements() {
 void DbStatementManager::_finalize_statements() {
     if (stmt_insert_day) sqlite3_finalize(stmt_insert_day);
     if (stmt_insert_record) sqlite3_finalize(stmt_insert_record);
-    // --- [FIX] Finalize the new statements ---
     if (stmt_select_project_id) sqlite3_finalize(stmt_select_project_id);
     if (stmt_insert_project) sqlite3_finalize(stmt_insert_project);
 }

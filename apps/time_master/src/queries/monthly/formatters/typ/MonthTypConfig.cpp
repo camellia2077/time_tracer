@@ -21,7 +21,8 @@ void MonthTypConfig::load_config(const std::string& config_path) {
     margin_bottom_cm_ = config_json.at("Margin_bottom_cm").get<double>();
     margin_left_cm_ = config_json.at("Margin_left_cm").get<double>();
     margin_right_cm_ = config_json.at("Margin_right_cm").get<double>();
-    title_prefix_ = config_json.at("TitlePrefix").get<std::string>();
+    // --- [核心修改] ---
+    report_title_ = config_json.at("ReportTitle").get<std::string>(); // 修正键名
     actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
     total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
     invalid_format_message_ = config_json.at("InvalidFormatMessage").get<std::string>();
@@ -40,7 +41,8 @@ double MonthTypConfig::get_margin_top_cm() const { return margin_top_cm_; }
 double MonthTypConfig::get_margin_bottom_cm() const { return margin_bottom_cm_; }
 double MonthTypConfig::get_margin_left_cm() const { return margin_left_cm_; }
 double MonthTypConfig::get_margin_right_cm() const { return margin_right_cm_; }
-const std::string& MonthTypConfig::get_title_prefix() const { return title_prefix_; }
+// --- [核心修改] ---
+const std::string& MonthTypConfig::get_report_title() const { return report_title_; } // 修正 Getter
 const std::string& MonthTypConfig::get_actual_days_label() const { return actual_days_label_; }
 const std::string& MonthTypConfig::get_total_time_label() const { return total_time_label_; }
 const std::string& MonthTypConfig::get_invalid_format_message() const { return invalid_format_message_; }
