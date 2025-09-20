@@ -105,6 +105,8 @@
 
         "sleep" : "sleep_day",
         "睡觉" : "sleep_day",
+        "白天睡觉" : "sleep_day",
+        
         "打水" : "other_housework"
     }
 }

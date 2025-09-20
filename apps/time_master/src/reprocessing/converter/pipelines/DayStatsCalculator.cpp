@@ -86,6 +86,12 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         if (activity.project_path.rfind("exercise", 0) == 0) {
             day.hasExerciseActivity = true;
         }
+        if (activity.project_path == "sleep_night") {
+            day.generatedStats.sleepNightTime += activity.durationSeconds;
+        }
+        if (activity.project_path == "sleep_day") {
+            day.generatedStats.sleepDayTime += activity.durationSeconds;
+        }
 
         for (const auto& rule : GeneratedStatsRules::rules) {
             // 使用 rfind 检查 project_path 是否以规则的路径开头
@@ -94,4 +100,6 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
             }
         }
     }
+
+    day.generatedStats.sleepTotalTime = day.generatedStats.sleepNightTime + day.generatedStats.sleepDayTime;
 }
