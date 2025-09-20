@@ -1,4 +1,4 @@
-// queries/shared/utils/tex/TexUtils.hpp
+// queries/shared/formatters/latex/TexUtils.hpp
 #ifndef TEX_UTILS_HPP
 #define TEX_UTILS_HPP
 
