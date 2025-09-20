@@ -1,7 +1,6 @@
-// queries/export/AllDayReports.cpp
 #include "AllDayReports.hpp"
 #include "queries/daily/DayQuerier.hpp"
-#include "queries/shared/factories/FormatterFactory.hpp" // [修改] 引入新的统一工厂
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
 #include <stdexcept>
 #include <vector>
 #include <memory>
@@ -23,8 +22,8 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch all dates.");
     }
 
-    // [核心修改] 使用统一工厂创建格式化器
-    auto formatter = FormatterFactory::create_day_formatter(format, app_config_);
+    // [核心修改]
+    auto formatter = GenericFormatterFactory<DailyReportData>::create(format, app_config_);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
         const char* date_cstr = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));

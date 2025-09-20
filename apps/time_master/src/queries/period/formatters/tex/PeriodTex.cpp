@@ -8,6 +8,24 @@
 #include <format>
 #include "queries/shared/utils/format/TimeFormat.hpp"    
 #include "queries/shared/formatters/latex/TexUtils.hpp"
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/period/formatters/tex/PeriodTexConfig.hpp"    // [新增]
+#include "queries/shared/data/PeriodReportData.hpp"            // [新增]
+
+// [新增] 自我注册逻辑
+namespace {
+    struct PeriodTexRegister {
+        PeriodTexRegister() {
+            GenericFormatterFactory<PeriodReportData>::regist(ReportFormat::LaTeX, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<PeriodReportData>> {
+                    auto tex_config = std::make_shared<PeriodTexConfig>(cfg.period_tex_config_path);
+                    return std::make_unique<PeriodTex>(tex_config);
+                });
+        }
+    };
+    const PeriodTexRegister registrar;
+}
+
 
 PeriodTex::PeriodTex(std::shared_ptr<PeriodTexConfig> config) : config_(config) {}
 
@@ -61,7 +79,6 @@ void PeriodTex::_display_summary(std::stringstream& ss, const PeriodReportData& 
 }
 
 void PeriodTex::_display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const {
-    // [核心修改] 调用共享的 TexUtils 来格式化项目树
     ss << TexUtils::format_project_tree(
         data.project_tree,
         data.total_duration,

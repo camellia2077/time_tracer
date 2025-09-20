@@ -1,4 +1,3 @@
-// queries/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
 #include <iomanip>
 #include <string>
@@ -10,6 +9,23 @@
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
 #include "queries/shared/formatters/latex/TexUtils.hpp"
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/daily/formatters/tex/DayTexConfig.hpp"
+#include "queries/shared/data/DailyReportData.hpp"
+
+// [新增] 自我注册逻辑
+namespace {
+    struct DayTexRegister {
+        DayTexRegister() {
+            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::LaTeX, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<DailyReportData>> {
+                    auto tex_config = std::make_shared<DayTexConfig>(cfg.day_tex_config_path);
+                    return std::make_unique<DayTex>(tex_config);
+                });
+        }
+    };
+    const DayTexRegister registrar;
+}
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
@@ -37,6 +53,7 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     return ss.str();
 }
 
+// ... (其余函数实现保持不变)
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     int title_size = config_->get_report_title_font_size();
     ss << "{";
@@ -61,7 +78,6 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
 }
 
 void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 调用共享的 TexUtils 来格式化项目树
     ss << TexUtils::format_project_tree(
         data.project_tree,
         data.total_duration,
