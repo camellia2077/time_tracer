@@ -32,5 +32,5 @@
         "sleep":      "#B10DC9",
         "code":       "#39CCCC"
     },
-    "ActivityConnector": "+"
+    "ActivityConnector": "->"
 }

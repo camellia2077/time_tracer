@@ -1,7 +1,6 @@
-// queries/monthly/MonthGenerator.cpp
 #include "MonthGenerator.hpp"
 #include "MonthQuerier.hpp"
-#include "queries/shared/factories/FormatterFactory.hpp"
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
 #include <memory>
 
 MonthGenerator::MonthGenerator(sqlite3* db, const AppConfig& config)
@@ -11,7 +10,8 @@ std::string MonthGenerator::generate_report(const std::string& year_month, Repor
     MonthQuerier querier(m_db, year_month);
     MonthlyReportData report_data = querier.fetch_data();
     
-    auto formatter = FormatterFactory::create_month_formatter(format, app_config_);
+    // [核心修改]
+    auto formatter = GenericFormatterFactory<MonthlyReportData>::create(format, app_config_);
 
     return formatter->format_report(report_data);
 }

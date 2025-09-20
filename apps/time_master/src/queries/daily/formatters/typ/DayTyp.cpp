@@ -1,9 +1,26 @@
-// queries/daily/formatters/typ/DayTyp.cpp
 #include "DayTyp.hpp"
 #include "DayTypUtils.hpp"
-#include "queries/shared/utils/format/TypUtils.hpp" // [新增] 引入新的通用工具
+#include "queries/shared/utils/format/TypUtils.hpp"
 #include <format>
 #include <string>
+#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/daily/formatters/typ/DayTypConfig.hpp"
+#include "queries/shared/data/DailyReportData.hpp"
+
+// [新增] 自我注册逻辑
+namespace {
+    struct DayTypRegister {
+        DayTypRegister() {
+            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::Typ, 
+                [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<DailyReportData>> {
+                    auto typ_config = std::make_shared<DayTypConfig>(cfg.day_typ_config_path);
+                    return std::make_unique<DayTyp>(typ_config);
+                });
+        }
+    };
+    const DayTypRegister registrar;
+}
+
 
 DayTyp::DayTyp(std::shared_ptr<DayTypConfig> config) : config_(config) {}
 
@@ -25,7 +42,6 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
     DayTypUtils::display_statistics(ss, data, config_);
     DayTypUtils::display_detailed_activities(ss, data, config_);
 
-    // [核心修改] 使用新的通用工具函数
     ss << TypUtils::format_project_tree(
         data.project_tree,
         data.total_duration,

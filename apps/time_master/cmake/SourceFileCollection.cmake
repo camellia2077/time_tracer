@@ -107,7 +107,6 @@ set(QUERIES_SOURCES
     
 
     # Shared Components
-    "src/queries/shared/factories/FormatterFactory.cpp"
 
     "src/queries/shared/utils/config/ConfigUtils.cpp"
     "src/queries/shared/utils/report/ReportDataUtils.cpp"
