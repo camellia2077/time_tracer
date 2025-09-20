@@ -15,16 +15,14 @@ from _py_internal.module_preprocessing import PreprocessingTester
 from _py_internal.module_database import DatabaseImportTester
 from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
-from _py_internal.module_version import VersionChecker # <--- 1. 导入新类
+from _py_internal.module_version import VersionChecker
 
 def print_header():
     """打印脚本的初始头部信息。"""
     print("\n" + "="*50)
     print(f" Running Python test script: {Path(__file__).name}")
     print(f" Current directory: {Path.cwd()}")
-    # [核心修改] 更新为使用 config.Paths.SOURCE_DATA_PATH
     print(f" Input data path: {config.Paths.SOURCE_DATA_PATH}")
-    # [核心修改] 更新为使用 config.Paths.PROCESSED_DATA_DIR_NAME
     print(f" Expecting processed folder: {config.Paths.PROCESSED_DATA_DIR_NAME}")
     print("="*50 + "\n")
 
@@ -43,7 +41,6 @@ def initialize_test_modules() -> List[BaseTester]:
 
     modules = [
         PreprocessingTester(shared_counter, 1, 
-                            # [核心修改] 更新为使用 config.Paths.PROCESSED_JSON_PATH
                             specific_validation_path=str(config.Paths.PROCESSED_JSON_PATH),
                             **common_args),
         DatabaseImportTester(shared_counter, 2, **common_args),
@@ -101,15 +98,40 @@ def main():
     os.system('')  # 为Windows终端初始化颜色支持
     
     print_header()
-    
-    env_manager = EnvironmentManager(config)
-    env_manager.setup()
-    
-    test_modules = initialize_test_modules()
-    all_tests_passed = run_test_suite(test_modules)
-    
+
+    # ======================= 核心修改 =======================
+    # 从配置中读取执行控制标志
+    setup_enabled = config.RunControl.ENABLE_FILE_SETUP
+    tests_enabled = config.RunControl.ENABLE_TEST_EXECUTION
+
+    # 如果两者都禁用，则提前退出
+    if not setup_enabled and not tests_enabled:
+        print(f"{config.Colors.CYAN}--- 在 config.toml 中，文件准备和测试执行均被禁用。脚本退出。 ---{config.Colors.RESET}")
+        return
+
+    # 根据标志决定是否执行环境设置
+    if setup_enabled:
+        env_manager = EnvironmentManager(config)
+        env_manager.setup()
+    else:
+        print(f"{config.Colors.CYAN}--- 根据 config.toml 的设置，跳过文件准备阶段。 ---{config.Colors.RESET}")
+
+    # 根据标志决定是否执行测试
+    all_tests_passed = True
+    if tests_enabled:
+        test_modules = initialize_test_modules()
+        all_tests_passed = run_test_suite(test_modules)
+    else:
+        print(f"\n{config.Colors.CYAN}--- 根据 config.toml 的设置，跳过测试执行阶段。 ---{config.Colors.RESET}")
+    # =========================================================
+
     total_duration = time.monotonic() - start_time
-    print_summary(all_tests_passed, total_duration)
+    
+    # 只有在运行了测试的情况下才打印完整的摘要
+    if tests_enabled:
+        print_summary(all_tests_passed, total_duration)
+    else:
+        print(f"\n{config.Colors.CYAN}Total execution time: {total_duration:.2f} seconds.{config.Colors.RESET}")
 
 
 if __name__ == "__main__":
