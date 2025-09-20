@@ -1,0 +1,22 @@
+# ==============================================================================
+#                 PATH AND DIRECTORY CONFIGURATION
+# ==============================================================================
+[paths]
+source_directory = "C:/Computer/my_github/github_cpp/time_master/my_test/output/exported_files"
+output_directory = "output_pdf"
+
+# ==============================================================================
+#                      COMPILATION SETTINGS
+# ==============================================================================
+[compilation]
+# 可选值: "TeX", "Markdown", "Typst"
+types = ["TeX", "Markdown", "Typst"]
+incremental = true
+clean_output_default = false
+
+# ==============================================================================
+#                 MARKDOWN BENCHMARK CONFIGURATION
+# ==============================================================================
+[benchmark]
+compilers = ["typst"]
+loops = 3

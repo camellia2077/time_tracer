@@ -4,7 +4,9 @@ from typing import List,Any
 
 def build_tex_command(input_path, _, target_dir):
     """构建 TeX 编译命令。"""
-    return ['xelatex', '-interaction=nonstopmode', f'-output-directory={target_dir}', input_path]
+    # 核心修改：将输入路径中的反斜杠替换为正斜杠，以兼容 TeX
+    safe_input_path = input_path.replace('\\', '/')
+    return ['xelatex', '-interaction=nonstopmode', f'-output-directory={target_dir}', safe_input_path]
 
 def build_typ_command(input_path, output_path, _):
     """构建 Typst 编译命令。"""

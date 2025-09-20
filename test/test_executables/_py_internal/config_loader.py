@@ -39,7 +39,12 @@ def _load_test_params(toml_data, test_params_class):
     test_params_class.DAILY_QUERY_DATES = test_params_data.get("daily_query_dates", [])
     test_params_class.MONTHLY_QUERY_MONTHS = test_params_data.get("monthly_query_months", [])
     test_params_class.PERIOD_QUERY_DAYS = test_params_data.get("period_query_days", [])
-    test_params_class.EXPORT_MODE_IS_BULK = test_params_data.get("export_mode_is_bulk", False)
+    
+    # ======================= 核心修改 1/2 =======================
+    # 使用 bool() 进行转换，使其能识别 0/1
+    test_params_class.EXPORT_MODE_IS_BULK = bool(test_params_data.get("export_mode_is_bulk", False))
+    # =========================================================
+
     test_params_class.SPECIFIC_EXPORT_DATES = test_params_data.get("specific_export_dates", [])
     test_params_class.SPECIFIC_EXPORT_MONTHS = test_params_data.get("specific_export_months", [])
     test_params_class.PERIOD_EXPORT_DAYS = test_params_data.get("period_export_days", [])
@@ -48,13 +53,20 @@ def _load_cleanup_params(toml_data, cleanup_class):
     """从 TOML 数据中加载清理参数。"""
     cleanup_data = toml_data.get("cleanup", {})
     cleanup_class.FILES_TO_COPY = cleanup_data.get("files_to_copy", [])
-    # ======================= 核心修改 =======================
-    # cleanup_class.FILES_TO_CLEAN = cleanup_data.get("files_to_clean", []) # <--- 已移除
-    # =========================================================
     cleanup_class.DIRECTORIES_TO_CLEAN = cleanup_data.get("directories_to_clean", [])
 
+def _load_run_control(toml_data, run_control_class):
+    """从 TOML 数据中加载运行控制参数。"""
+    run_control_data = toml_data.get("run_control", {})
+    
+    # ======================= 核心修改 2/2 =======================
+    # 使用 bool() 进行转换，使其能识别 0/1
+    run_control_class.ENABLE_FILE_SETUP = bool(run_control_data.get("enable_file_setup", True))
+    run_control_class.ENABLE_TEST_EXECUTION = bool(run_control_data.get("enable_test_execution", True))
+    # =========================================================
 
-def load_config(paths_class, cli_names_class, test_params_class, cleanup_class):
+
+def load_config(paths_class, cli_names_class, test_params_class, cleanup_class, run_control_class):
     """
     主加载函数，协调所有配置的加载。
     """
@@ -66,6 +78,7 @@ def load_config(paths_class, cli_names_class, test_params_class, cleanup_class):
         _load_cli_names(toml_data, cli_names_class)
         _load_test_params(toml_data, test_params_class)
         _load_cleanup_params(toml_data, cleanup_class)
+        _load_run_control(toml_data, run_control_class)
         
     except FileNotFoundError:
         raise FileNotFoundError("config.toml not found. Please create one.")
