@@ -7,7 +7,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
         db = nullptr;
     } else {
-        // days table definition (remains unchanged)
+        // [核心修改] 更新 days 表的定义
         const char* create_days_sql =
                 "CREATE TABLE IF NOT EXISTS days ("
                 "date TEXT PRIMARY KEY, "
@@ -21,7 +21,11 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "total_exercise_time INTEGER, "
                 "cardio_time INTEGER, "
                 "anaerobic_time INTEGER, "
-                "exercise_both_time INTEGER);";
+                // "exercise_both_time INTEGER);" // [删除]
+                // [新增]
+                "gaming_time INTEGER, "
+                "grooming_time INTEGER, "
+                "toilet_time INTEGER);";
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql =

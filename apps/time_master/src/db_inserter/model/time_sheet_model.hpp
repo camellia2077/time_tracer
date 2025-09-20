@@ -27,7 +27,11 @@ struct DayData {
     int total_exercise_time;
     int cardio_time;
     int anaerobic_time;
-    int exercise_both_time;
+    // [删除] int exercise_both_time;
+    // [新增] 新增字段
+    int gaming_time;
+    int grooming_time;
+    int toilet_time;
 };
 
 /**
