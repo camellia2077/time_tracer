@@ -1,3 +1,4 @@
+// generator/_internal/EventGenerator.cpp
 #include "EventGenerator.h"
 #include <format>
 #include <cmath>

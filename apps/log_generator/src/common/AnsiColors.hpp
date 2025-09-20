@@ -1,3 +1,4 @@
+// common/AnsiColors.hpp
 #ifndef ANSI_COLORS_HPP
 #define ANSI_COLORS_HPP
 
