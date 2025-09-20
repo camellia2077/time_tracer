@@ -8,7 +8,7 @@
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
-#include "queries/shared/utils/format/MarkdownUtils.hpp" // [新增] 引入新的工具类
+#include "queries/shared/utils/format/MarkdownUtils.hpp" 
 
 DayMd::DayMd(std::shared_ptr<DayMdConfig> config) : config_(config) {}
 
@@ -39,7 +39,6 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
 }
 
 void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    // [核心修改] 调用共享的 MarkdownUtils 来格式化项目树
     ss << MarkdownUtils::format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
@@ -62,10 +61,24 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
     }
 }
 
+// --- [ 核心修改 ] ---
+// 在统计信息部分增加了新字段的显示。
 void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     ss << "\n## " << config_->get_statistics_label() << "\n\n";
     ss << std::format("- **{0}**: {1}\n", 
         config_->get_sleep_time_label(), 
         time_format_duration(data.sleep_time)
+    );
+    ss << std::format("- **{0}**: {1}\n", 
+        config_->get_anaerobic_time_label(), 
+        time_format_duration(data.anaerobic_time)
+    );
+    ss << std::format("- **{0}**: {1}\n", 
+        config_->get_cardio_time_label(), 
+        time_format_duration(data.cardio_time)
+    );
+    ss << std::format("- **{0}**: {1}\n", 
+        config_->get_grooming_time_label(), 
+        time_format_duration(data.grooming_time)
     );
 }

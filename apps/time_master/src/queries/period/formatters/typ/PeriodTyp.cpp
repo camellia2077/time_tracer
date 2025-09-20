@@ -42,15 +42,16 @@ std::string PeriodTyp::format_report(const PeriodReportData& data) const {
 }
 
 void PeriodTyp::_display_summary(std::stringstream& ss, const PeriodReportData& data) const {
+    // --- [核心修改] ---
     std::string title = std::format(
         R"(#text(font: "{}", size: {}pt)[= {} {} {} ({} {} {})])",
         config_->get_title_font(),
         config_->get_report_title_font_size(),
-        config_->get_title_prefix(),
+        config_->get_report_title_prefix(), // 修正函数调用
         data.days_to_query,
-        config_->get_title_days_unit(),
+        config_->get_report_title_days(), // 修正函数调用
         data.start_date,
-        config_->get_title_date_separator(),
+        config_->get_report_title_date_separator(), // 修正函数调用
         data.end_date
     );
     ss << title << "\n\n";

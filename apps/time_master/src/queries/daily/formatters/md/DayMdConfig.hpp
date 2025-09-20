@@ -21,8 +21,12 @@ public:
     const std::string& get_statistics_label() const;
     const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
+    // --- [核心修改] 新增标签 ---
+    const std::string& get_anaerobic_time_label() const;
+    const std::string& get_cardio_time_label() const;
+    const std::string& get_grooming_time_label() const;
     const std::string& get_activity_remark_label() const;
-    const std::string& get_activity_connector() const; // [新增]
+    const std::string& get_activity_connector() const; 
 
 private:
     void load_config(const std::string& config_path);
@@ -39,8 +43,12 @@ private:
     std::string statistics_label_;
     std::string all_activities_label_;
     std::string sleep_time_label_;
+    // --- [核心修改] 新增成员变量 ---
+    std::string anaerobic_time_label_;
+    std::string cardio_time_label_;
+    std::string grooming_time_label_;
     std::string activity_remark_label_;
-    std::string activity_connector_; // [新增]
+    std::string activity_connector_; 
 };
 
 #endif // DAY_MD_CONFIG_HPP

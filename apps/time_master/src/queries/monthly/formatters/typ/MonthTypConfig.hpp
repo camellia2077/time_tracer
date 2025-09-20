@@ -20,7 +20,8 @@ public:
     double get_margin_bottom_cm() const;
     double get_margin_left_cm() const;
     double get_margin_right_cm() const;
-    const std::string& get_title_prefix() const;
+    // --- [核心修改] ---
+    const std::string& get_report_title() const; // 重命名
     const std::string& get_actual_days_label() const;
     const std::string& get_total_time_label() const;
     const std::string& get_invalid_format_message() const;
@@ -40,7 +41,8 @@ private:
     double margin_bottom_cm_;
     double margin_left_cm_;
     double margin_right_cm_;
-    std::string title_prefix_;
+    // --- [核心修改] ---
+    std::string report_title_; // 重命名
     std::string actual_days_label_;
     std::string total_time_label_;
     std::string invalid_format_message_;
