@@ -118,6 +118,8 @@ set(QUERIES_SOURCES
 
     "src/queries/shared/formatters/base/ProjectTreeFormatter.cpp"
     "src/queries/shared/formatters/latex/TexUtils.cpp"
+    "src/queries/shared/formatters/latex/TexProjectTreeFormatter.cpp"
+
     "src/queries/shared/formatters/markdown/MarkdownUtils.cpp"
     "src/queries/shared/formatters/typst/TypUtils.cpp"
 )
