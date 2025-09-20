@@ -28,7 +28,9 @@ struct Activity {
 };
 
 struct GeneratedStats {
-    int sleepTime = 0;
+    int sleepNightTime = 0;
+    int sleepDayTime = 0;
+    int sleepTotalTime = 0;
     int totalExerciseTime = 0;
     int cardioTime = 0;
     int anaerobicTime = 0;

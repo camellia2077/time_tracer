@@ -347,3 +347,13 @@ src/queries/shared/format/MarkdownUtils.cpp
 数据库插入json中更多字段
 
 把exerciseBothTime改为totalExerciseTime，并且插入gamingTime，groomingTime，toiletTime
+
+## v0.3.21.10
+新增json字段 sleepDayTime sleepNightTime  sleepTotalTime 
+sleepDayTime 统计sleep_day
+
+sleepNightTime统计sleep_night
+
+sleepTotalTime  = sleep_day + sleep_night
+
+
