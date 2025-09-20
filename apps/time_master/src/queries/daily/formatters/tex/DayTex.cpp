@@ -64,6 +64,8 @@ void DayTex::_display_project_breakdown(std::stringstream& ss, const DailyReport
     ss << _format_project_tree(data.project_tree, data.total_duration, 1);
 }
 
+// --- [ 核心修改 ] ---
+// 在统计信息列表中增加了新字段的显示。
 void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     int category_size = config_->get_category_title_font_size();
     ss << "{";
@@ -78,6 +80,12 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     ss << "\\begin{itemize}" << compact_list_options << "\n";
     ss << "    \\item \\textbf{" << config_->get_sleep_time_label() << "}: "
        << TexUtils::escape_latex(time_format_duration(data.sleep_time)) << "\n";
+    ss << "    \\item \\textbf{" << config_->get_anaerobic_time_label() << "}: "
+       << TexUtils::escape_latex(time_format_duration(data.anaerobic_time)) << "\n";
+    ss << "    \\item \\textbf{" << config_->get_cardio_time_label() << "}: "
+       << TexUtils::escape_latex(time_format_duration(data.cardio_time)) << "\n";
+    ss << "    \\item \\textbf{" << config_->get_grooming_time_label() << "}: "
+       << TexUtils::escape_latex(time_format_duration(data.grooming_time)) << "\n";
     ss << "\\end{itemize}\n\n";
 }
 

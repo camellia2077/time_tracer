@@ -1,3 +1,7 @@
+## 给预处理json中加入recreation的数据秒数生成
+
+
+
 ## 将 query_utils.cpp 和 query_utils.hpp 放在 queries/shared/utils/db 文件夹中是不太合适的。
 
 原因如下：
@@ -42,10 +46,16 @@ pacman -S mingw-w64-ucrt-x86_64-lld
 
                 "endTimestamp": 1735699680,
                 "startTimestamp": 1735693800
-anaerobicTime //无氧
-cardioTime //有氧 
-exerciseBothTime // both包含有氧和无氧的时间
-totalExerciseTime //总时间
+
+            "anaerobicTime": 8220,// 已经在日报告中实现
+            "cardioTime": 0,// 已经在日报告中实现
+            "gamingTime": 12540,
+            "groomingTime": 0,// 已经在日报告中实现
+            "sleepDayTime": 8460,
+            "sleepNightTime": 19380,
+            "sleepTotalTime": 27840, // 已经在日报告中实现
+            "toiletTime": 0,
+            "totalExerciseTime": 16140
 
 
 

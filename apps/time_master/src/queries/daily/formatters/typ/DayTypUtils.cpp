@@ -116,6 +116,8 @@ namespace DayTypUtils {
         ss << std::format("+ *{}:* {}\n", config->get_remark_label(), data.metadata.remark);
     }
 
+    // --- [ 核心修改 ] ---
+    // 在统计信息部分增加了新字段的显示。
     void display_statistics(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
         ss << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
             config->get_category_title_font(),
@@ -124,6 +126,18 @@ namespace DayTypUtils {
         ss << std::format("+ *{}:* {}\n", 
             config->get_sleep_time_label(), 
             time_format_duration(data.sleep_time)
+        );
+        ss << std::format("+ *{}:* {}\n", 
+            config->get_anaerobic_time_label(), 
+            time_format_duration(data.anaerobic_time)
+        );
+        ss << std::format("+ *{}:* {}\n", 
+            config->get_cardio_time_label(), 
+            time_format_duration(data.cardio_time)
+        );
+        ss << std::format("+ *{}:* {}\n", 
+            config->get_grooming_time_label(), 
+            time_format_duration(data.grooming_time)
         );
     }
 
