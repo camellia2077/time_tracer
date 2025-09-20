@@ -119,6 +119,7 @@ set(QUERIES_SOURCES
     "src/queries/shared/utils/tex/TexUtils.cpp"
 
     "src/queries/shared/utils/format/MarkdownUtils.cpp"
+    "src/queries/shared/utils/format/TypUtils.cpp"
 
 )
 
