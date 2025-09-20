@@ -66,7 +66,9 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         day_obj["activities"] = activities;
 
         json generated_stats_obj;
-        generated_stats_obj["sleepTime"] = day.generatedStats.sleepTime;
+        generated_stats_obj["sleepNightTime"] = day.generatedStats.sleepNightTime;
+        generated_stats_obj["sleepDayTime"] = day.generatedStats.sleepDayTime;
+        generated_stats_obj["sleepTotalTime"] = day.generatedStats.sleepTotalTime;
         generated_stats_obj["totalExerciseTime"] = day.generatedStats.totalExerciseTime;
         generated_stats_obj["cardioTime"] = day.generatedStats.cardioTime;
         generated_stats_obj["anaerobicTime"] = day.generatedStats.anaerobicTime;
