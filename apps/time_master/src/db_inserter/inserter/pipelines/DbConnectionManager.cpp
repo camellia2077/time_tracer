@@ -7,7 +7,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
         db = nullptr;
     } else {
-        // [核心修改] 更新 days 表的定义
+        // --- [核心修改] 更新 days 表的定义以包含新的睡眠统计字段 ---
         const char* create_days_sql =
                 "CREATE TABLE IF NOT EXISTS days ("
                 "date TEXT PRIMARY KEY, "
@@ -21,11 +21,12 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "total_exercise_time INTEGER, "
                 "cardio_time INTEGER, "
                 "anaerobic_time INTEGER, "
-                // "exercise_both_time INTEGER);" // [删除]
-                // [新增]
                 "gaming_time INTEGER, "
                 "grooming_time INTEGER, "
-                "toilet_time INTEGER);";
+                "toilet_time INTEGER, "
+                "sleepNightTime INTEGER, "
+                "sleepDayTime INTEGER, "
+                "sleepTotalTime INTEGER);";
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql =
@@ -58,9 +59,6 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "FOREIGN KEY (date) REFERENCES days(date), "
             "FOREIGN KEY (project_id) REFERENCES projects(id));"; // Added foreign key
         execute_sql(db, create_records_sql, "Create time_records table");
-
-        // --- [CORE FIX] ---
-        // Removed the now-obsolete 'parent_child' table.
     }
 }
 

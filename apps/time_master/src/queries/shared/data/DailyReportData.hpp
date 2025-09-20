@@ -36,6 +36,10 @@ struct DailyReportData {
     std::vector<std::pair<std::string, long long>> records;
     std::vector<TimeRecord> detailed_records;
     long long sleep_time = 0;
+    // --- [核心修改] 新增统计字段 ---
+    long long anaerobic_time = 0;
+    long long cardio_time = 0;
+    long long grooming_time = 0;
     ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
 };
 

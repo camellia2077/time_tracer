@@ -357,3 +357,13 @@ sleepNightTime统计sleep_night
 sleepTotalTime  = sleep_day + sleep_night
 
 
+## v0.3.21.11
+日报告增加更多数据统计
+```
+Sleep Time
+Anaerobic Exercise
+Cardio Exercise
+Grooming Time
+```
+
+
