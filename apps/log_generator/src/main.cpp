@@ -1,3 +1,4 @@
+// main.cpp
 #include "config/Config.h"
 #include "config/ConfigValidator.h"
 #include "generator/facade/LogGenerator.h"
