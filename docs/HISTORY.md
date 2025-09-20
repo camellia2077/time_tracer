@@ -336,3 +336,9 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 
 ## v0.3.21.7
 对格式化报告的配置进行验证
+
+
+## v0.3.21.8
+提取md报告共同代码到
+
+src/queries/shared/format/MarkdownUtils.cpp

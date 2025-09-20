@@ -17,10 +17,6 @@ private:
     void _display_summary(std::stringstream& ss, const PeriodReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const;
 
-    // [新增] 内部方法，用于格式化项目树
-    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
-    void _generate_sorted_md_output(std::stringstream& ss, const ProjectNode& node, int indent, int avg_days) const;
-
     std::shared_ptr<PeriodMdConfig> config_;
 };
 
