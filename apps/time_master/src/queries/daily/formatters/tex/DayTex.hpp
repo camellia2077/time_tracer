@@ -19,10 +19,6 @@ private:
     void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
     
-    // [新增] 内部方法，用于格式化项目树
-    std::string _format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days) const;
-    void _generate_sorted_tex_output(std::stringstream& ss, const ProjectNode& node, int avg_days) const;
-
     std::shared_ptr<DayTexConfig> config_;
 };
 

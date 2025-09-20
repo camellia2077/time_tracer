@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
 
 namespace TexUtils {
 
@@ -37,6 +38,25 @@ std::string get_tex_postfix();
  * @return 转义后的字符串。
  */
 std::string escape_latex(const std::string& input);
+
+/**
+ * @brief [新增] 将项目树格式化为 LaTeX 字符串。
+ * @param tree 要格式化的项目树。
+ * @param total_duration 所有项目的总时长，用于计算百分比。
+ * @param avg_days 用于计算平均时长的天数。
+ * @param category_title_font_size 类别标题的字体大小。
+ * @param list_top_sep_pt 列表顶部的额外间距。
+ * @param list_item_sep_ex 列表项之间的额外间距。
+ * @return 格式化后的 LaTeX 字符串。
+ */
+std::string format_project_tree(
+    const ProjectTree& tree,
+    long long total_duration,
+    int avg_days,
+    int category_title_font_size,
+    double list_top_sep_pt,
+    double list_item_sep_ex
+);
 
 } // namespace TexUtils
 
