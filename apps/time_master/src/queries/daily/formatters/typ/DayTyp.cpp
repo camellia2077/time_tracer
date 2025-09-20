@@ -1,6 +1,7 @@
 // queries/daily/formatters/typ/DayTyp.cpp
 #include "DayTyp.hpp"
-#include "DayTypUtils.hpp" // [新增] 引入新的工具类
+#include "DayTypUtils.hpp"
+#include "queries/shared/utils/format/TypUtils.hpp" // [新增] 引入新的通用工具
 #include <format>
 #include <string>
 
@@ -14,17 +15,24 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
         config_->get_base_font_size(),
         spacing_str) << "\n\n";
 
-    // 使用工具类来构建报告的各个部分
     DayTypUtils::display_header(ss, data, config_);
 
     if (data.total_duration == 0) {
         ss << config_->get_no_records() << "\n";
         return ss.str();
     }
-    
+
     DayTypUtils::display_statistics(ss, data, config_);
     DayTypUtils::display_detailed_activities(ss, data, config_);
-    DayTypUtils::display_project_breakdown(ss, data, config_);
-    
+
+    // [核心修改] 使用新的通用工具函数
+    ss << TypUtils::format_project_tree(
+        data.project_tree,
+        data.total_duration,
+        1, // avg_days for daily report is 1
+        config_->get_category_title_font(),
+        config_->get_category_title_font_size()
+    );
+
     return ss.str();
 }

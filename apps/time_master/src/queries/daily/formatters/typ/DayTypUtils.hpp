@@ -25,11 +25,6 @@ namespace DayTypUtils {
      */
     void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config);
 
-    /**
-     * @brief 显示项目时间的分解报告。
-     */
-    void display_project_breakdown(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config);
-
 } // namespace DayTypUtils
 
 #endif // DAY_TYP_UTILS_HPP
