@@ -91,11 +91,18 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_sleep_time(DailyReportData& data) {
     sqlite3_stmt* stmt;
+    // 使用递归查询来获取 'sleep' 及其所有子项目的总时长
     std::string sql = R"(
+        WITH RECURSIVE sleep_project_ids(id) AS (
+            -- 基础查询：找到名为 'sleep' 的顶级项目ID
+            SELECT id FROM projects WHERE name = 'sleep' AND parent_id IS NULL
+            UNION ALL
+            -- 递归查询：查找所有子项目
+            SELECT p.id FROM projects p JOIN sleep_project_ids sp ON p.parent_id = sp.id
+        )
         SELECT SUM(tr.duration) 
         FROM time_records tr
-        JOIN projects p ON tr.project_id = p.id
-        WHERE tr.date = ? AND p.name = 'sleep';
+        WHERE tr.date = ? AND tr.project_id IN (SELECT id FROM sleep_project_ids);
     )";
     if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);

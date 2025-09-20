@@ -17,7 +17,13 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         day_data.total_exercise_time = generated_stats.value("totalExerciseTime", 0);
         day_data.cardio_time = generated_stats.value("cardioTime", 0);
         day_data.anaerobic_time = generated_stats.value("anaerobicTime", 0);
-        day_data.exercise_both_time = generated_stats.value("exerciseBothTime", 0);
+        // [删除] day_data.exercise_both_time = generated_stats.value("exerciseBothTime", 0);
+        
+        // [新增] 解析新的统计数据
+        day_data.gaming_time = generated_stats.value("gamingTime", 0);
+        day_data.grooming_time = generated_stats.value("groomingTime", 0);
+        day_data.toilet_time = generated_stats.value("toiletTime", 0);
+
 
         if (day_data.date.length() == 8) {
             day_data.year = std::stoi(day_data.date.substr(0, 4));

@@ -24,11 +24,12 @@ sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return st
 sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project; }
 
 void DbStatementManager::_prepare_statements() {
-    // --- Statement for 'days' table (unchanged) ---
+    // --- [核心修改] 更新 'days' 表的插入语句 ---
     const char* insert_day_sql = 
     "INSERT INTO days (date, year, month, status, sleep, remark, getup_time, "
-    "exercise, total_exercise_time, cardio_time, anaerobic_time, exercise_both_time) "
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    "exercise, total_exercise_time, cardio_time, anaerobic_time, "
+    "gaming_time, grooming_time, toilet_time) " // [新增]
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"; // 调整了参数数量
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }

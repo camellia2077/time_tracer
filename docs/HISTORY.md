@@ -342,3 +342,8 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 提取md报告共同代码到
 
 src/queries/shared/format/MarkdownUtils.cpp
+
+## v0.3.21.9
+数据库插入json中更多字段
+
+把exerciseBothTime改为totalExerciseTime，并且插入gamingTime，groomingTime，toiletTime
