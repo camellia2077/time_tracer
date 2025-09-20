@@ -1,62 +1,9 @@
 // queries/shared/formatters/latex/TexUtils.cpp
 #include "TexUtils.hpp"
+#include "TexProjectTreeFormatter.hpp" // [新增] 引入新的实现模块
 #include <sstream>
 #include <string>
-#include <vector>
-#include <algorithm>
-#include <iomanip>
-#include <format>
-#include "queries/shared/utils/format/TimeFormat.hpp"
-
-namespace { // 匿名命名空间
-
-/**
- * @brief 递归函数，用于生成排序后的 LaTeX itemize 列表。
- * @param ss 字符串流，用于构建输出。
- * @param node 当前正在处理的 ProjectNode。
- * @param avg_days 用于计算平均值的天数。
- * @param itemize_options 传递给 itemize 环境的选项。
- */
-void generate_sorted_tex_output(
-    std::stringstream& ss,
-    const ProjectNode& node,
-    int avg_days,
-    const std::string& itemize_options
-) {
-    if (node.children.empty()) {
-        return;
-    }
-
-    std::vector<std::pair<std::string, ProjectNode>> sorted_children;
-    for (const auto& pair : node.children) {
-        sorted_children.push_back(pair);
-    }
-    std::sort(sorted_children.begin(), sorted_children.end(), [](const auto& a, const auto& b) {
-        return a.second.duration > b.second.duration;
-    });
-
-    ss << "\\begin{itemize}" << itemize_options << "\n";
-
-    for (const auto& pair : sorted_children) {
-        const std::string& name = pair.first;
-        const ProjectNode& child_node = pair.second;
-
-        if (child_node.duration > 0 || !child_node.children.empty()) {
-            ss << "    \\item " << TexUtils::escape_latex(name) << ": "
-               << TexUtils::escape_latex(time_format_duration(child_node.duration, avg_days));
-
-            if (!child_node.children.empty()) {
-                ss << "\n";
-                generate_sorted_tex_output(ss, child_node, avg_days, itemize_options);
-            }
-            ss << "\n";
-        }
-    }
-
-    ss << "\\end{itemize}\n";
-}
-
-} // 匿名命名空间结束
+#include <map>
 
 namespace TexUtils {
 
@@ -68,8 +15,7 @@ std::string get_tex_preamble(
     const std::map<std::string, std::string>& keyword_colors)
 {
     std::stringstream ss;
-    // [FIX] Corrected the order: \documentclass must be the first command.
-    ss << "\\documentclass[" << font_size << "pt]{extarticle}\n"; // Using extarticle from extsizes
+    ss << "\\documentclass[" << font_size << "pt]{extarticle}\n";
     ss << "\\usepackage[a4paper, margin=" << margin_in << "in]{geometry}\n";
     ss << "\\usepackage[dvipsnames]{xcolor}\n";
     ss << "\\usepackage{enumitem}\n";
@@ -77,7 +23,6 @@ std::string get_tex_preamble(
     ss << "\\usepackage{ctex}\n";
     ss << "\\usepackage{titlesec}\n\n";
 
-    // Customize section formatting to be independent of default styles
     ss << "\\titleformat{\\section}{\\normalfont\\bfseries}{}{0em}{}\n";
     ss << "\\titleformat{\\subsection}{\\normalfont\\bfseries}{}{0em}{}\n\n";
 
@@ -123,7 +68,8 @@ std::string escape_latex(const std::string& input) {
     return output;
 }
 
-// [新增]
+// [核心修改] 函数实现被移至 TexProjectTreeFormatter.cpp
+// 此处只保留接口，并将调用委托给新的实现函数
 std::string format_project_tree(
     const ProjectTree& tree,
     long long total_duration,
@@ -132,40 +78,14 @@ std::string format_project_tree(
     double list_top_sep_pt,
     double list_item_sep_ex
 ) {
-    std::stringstream ss;
-    ss << std::fixed << std::setprecision(1);
-
-    std::vector<std::pair<std::string, ProjectNode>> sorted_top_level;
-    for (const auto& pair : tree) {
-        sorted_top_level.push_back(pair);
-    }
-    std::sort(sorted_top_level.begin(), sorted_top_level.end(), [](const auto& a, const auto& b) {
-        return a.second.duration > b.second.duration;
-    });
-
-    std::string itemize_options = std::format("[topsep={}pt, itemsep={}ex]",
+    return Internal::format_project_tree_impl(
+        tree,
+        total_duration,
+        avg_days,
+        category_title_font_size,
         list_top_sep_pt,
         list_item_sep_ex
     );
-
-    for (const auto& pair : sorted_top_level) {
-        const std::string& category_name = pair.first;
-        const ProjectNode& category_node = pair.second;
-        double percentage = (total_duration > 0) ? (static_cast<double>(category_node.duration) / total_duration * 100.0) : 0.0;
-
-        ss << "{";
-        ss << "\\fontsize{" << category_title_font_size << "}{" << category_title_font_size * 1.2 << "}\\selectfont";
-        ss << "\\section*{" << escape_latex(category_name) << ": "
-           << escape_latex(time_format_duration(category_node.duration, avg_days))
-           << " (" << percentage << "\\%)}";
-        ss << "}\n";
-
-        generate_sorted_tex_output(ss, category_node, avg_days, itemize_options);
-        ss << "\n";
-    }
-
-    return ss.str();
 }
-
 
 } // namespace TexUtils
