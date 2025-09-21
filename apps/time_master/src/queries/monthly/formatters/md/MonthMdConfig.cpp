@@ -11,11 +11,11 @@ void MonthMdConfig::load_config(const std::string& config_path) {
     // [修改] 使用新的辅助函数
     nlohmann::json config_json = load_json_config(config_path, "Could not open MonthMdConfig file: ");
 
-    report_title_ = config_json.at("ReportTitle").get<std::string>();
-    actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
-    total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
-    no_records_message_ = config_json.at("NoRecordsMessage").get<std::string>();
-    invalid_format_message_ = config_json.at("InvalidFormatMessage").get<std::string>();
+    report_title_ = config_json.at("report_title").get<std::string>();
+    actual_days_label_ = config_json.at("actual_days_label").get<std::string>();
+    total_time_label_ = config_json.at("total_time_label").get<std::string>();
+    no_records_message_ = config_json.at("no_records_message").get<std::string>();
+    invalid_format_message_ = config_json.at("invalid_format_message").get<std::string>();
 }
 
 const std::string& MonthMdConfig::get_report_title() const { return report_title_; }

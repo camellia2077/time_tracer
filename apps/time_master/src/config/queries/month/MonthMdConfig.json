@@ -1,7 +1,7 @@
 {
-    "ReportTitle": "Monthly Summary for",
-    "ActualDaysLabel": "Actual Days with Records",
-    "TotalTimeLabel": "Total Time Recorded",
-    "NoRecordsMessage": "No time records found for this month.",
-    "InvalidFormatMessage": "Invalid year_month format. Expected YYYYMM."
+    "report_title": "Monthly Summary for",
+    "actual_days_label": "Actual Days with Records",
+    "total_time_label": "Total Time Recorded",
+    "no_records_message": "No time records found for this month.",
+    "invalid_format_message": "Invalid year_month format. Expected YYYYMM."
 }
