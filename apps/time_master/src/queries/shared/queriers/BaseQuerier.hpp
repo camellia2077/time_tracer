@@ -11,8 +11,8 @@ template<typename ReportDataType, typename QueryParamType>
 class BaseQuerier {
 public:
     explicit BaseQuerier(sqlite3* db, QueryParamType param)
-        : m_db(db), m_param(param) {
-        if (m_db == nullptr) {
+        : db_(db), param_(param) {
+        if (db_ == nullptr) {
             throw std::invalid_argument("Database connection cannot be null.");
         }
     }
@@ -34,8 +34,8 @@ public:
     }
 
 protected:
-    sqlite3* m_db;
-    QueryParamType m_param;
+    sqlite3* db_;
+    QueryParamType param_;
 
     virtual std::string get_date_condition_sql() const = 0;
     virtual void bind_sql_parameters(sqlite3_stmt* stmt) const = 0;
@@ -69,7 +69,7 @@ protected:
             JOIN project_paths pp ON tr.project_id = pp.id
             WHERE )" + get_date_condition_sql() + ";";
 
-        if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             bind_sql_parameters(stmt);
             while (sqlite3_step(stmt) == SQLITE_ROW) {
                 long long duration = sqlite3_column_int64(stmt, 1);
@@ -88,7 +88,7 @@ protected:
         sqlite3_stmt* stmt;
         std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE " + get_date_condition_sql() + ";";
         
-        if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             bind_sql_parameters(stmt);
             if (sqlite3_step(stmt) == SQLITE_ROW) {
                 data.actual_days = sqlite3_column_int(stmt, 0);

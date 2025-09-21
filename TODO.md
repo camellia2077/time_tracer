@@ -1,3 +1,12 @@
+
+## json键的命名改成snake命名法
+同时更新配置检验模块，更新程序检验的键名称
+
+## 成员变量后缀 _
+符合 Google C++ Style Guide
+
+
+
 ## 给预处理json中加入recreation的数据秒数生成
 
 

@@ -23,8 +23,8 @@ protected:
     void _prepare_data(PeriodReportData& data) const override;
 
 private:
-    mutable std::string m_start_date;
-    mutable std::string m_end_date;
+    mutable std::string start_date_;
+    mutable std::string end_date_;
 };
 
 #endif // PERIOD_REPORT_QUERIER_HPP

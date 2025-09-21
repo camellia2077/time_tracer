@@ -1,3 +1,4 @@
+// queries/export/AllDayReports.cpp
 #include "AllDayReports.hpp"
 #include "queries/daily/DayQuerier.hpp"
 #include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
@@ -6,8 +7,8 @@
 #include <memory>
 
 AllDayReports::AllDayReports(sqlite3* db, const AppConfig& config)
-    : m_db(db), app_config_(config) {
-    if (m_db == nullptr) {
+    : db_(db), app_config_(config) {
+    if (db_ == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
 }
@@ -18,7 +19,7 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
 
     const char* sql = "SELECT date, year, month FROM days ORDER BY date ASC;";
 
-    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare statement to fetch all dates.");
     }
 
@@ -33,7 +34,7 @@ FormattedGroupedReports AllDayReports::generate_all_reports(ReportFormat format)
         int year = sqlite3_column_int(stmt, 1);
         int month = sqlite3_column_int(stmt, 2);
 
-        DayQuerier querier(m_db, date);
+        DayQuerier querier(db_, date);
         DailyReportData report_data = querier.fetch_data();
 
         std::string formatted_report = formatter->format_report(report_data);
