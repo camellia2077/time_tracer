@@ -21,7 +21,7 @@ MonthlyReportData MonthQuerier::fetch_data() {
 }
 
 bool MonthQuerier::_validate_input() const {
-    return m_param.length() == 6 && std::all_of(m_param.begin(), m_param.end(), ::isdigit);
+    return this->param_.length() == 6 && std::all_of(this->param_.begin(), this->param_.end(), ::isdigit);
 }
 
 void MonthQuerier::_handle_invalid_input(MonthlyReportData& data) const {
@@ -29,7 +29,7 @@ void MonthQuerier::_handle_invalid_input(MonthlyReportData& data) const {
 }
 
 void MonthQuerier::_prepare_data(MonthlyReportData& data) const {
-    data.year_month = m_param;
+    data.year_month = param_;
 }
 
 std::string MonthQuerier::get_date_condition_sql() const {
@@ -37,5 +37,5 @@ std::string MonthQuerier::get_date_condition_sql() const {
 }
 
 void MonthQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-    sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
 }

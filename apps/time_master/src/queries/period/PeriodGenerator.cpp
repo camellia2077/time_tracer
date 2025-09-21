@@ -1,13 +1,14 @@
+// queries/period/PeriodGenerator.cpp
 #include "queries/period/PeriodGenerator.hpp"
 #include "queries/period/PeriodQuerier.hpp"
 #include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
 #include <memory>
 
 PeriodGenerator::PeriodGenerator(sqlite3* db, const AppConfig& config)
-    : m_db(db), app_config_(config) {}
+    : db_(db), app_config_(config) {}
 
 std::string PeriodGenerator::generate_report(int days, ReportFormat format) {
-    PeriodQuerier querier(m_db, days);
+    PeriodQuerier querier(db_, days);
     PeriodReportData report_data = querier.fetch_data();
 
     // [核心修改]
