@@ -1,9 +1,9 @@
 {
-    "ReportTitlePrefix": "Period Report: Last",
-    "ReportTitleDays": "days",
-    "ReportTitleDateSeparator": "to",
-    "TotalTimeLabel": "Total Time Recorded",
-    "ActualDaysLabel": "Actual Days with Records",
-    "NoRecordsMessage": "No time records found in this period.",
-    "InvalidDaysMessage": "Number of days to query must be positive."
+    "report_title_prefix": "Period Report: Last",
+    "report_title_days": "days",
+    "report_title_date_separator": "to",
+    "total_time_label": "Total Time Recorded",
+    "actual_days_label": "Actual Days with Records",
+    "no_records_message": "No time records found in this period.",
+    "invalid_days_message": "Number of days to query must be positive."
 }

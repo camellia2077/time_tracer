@@ -10,33 +10,33 @@ DayTexConfig::DayTexConfig(const std::string& config_path) {
 void DayTexConfig::load_config(const std::string& config_path) {
     nlohmann::json config_json = load_json_config(config_path, "Could not open DayTexConfig file: ");
 
-    report_title_ = config_json.at("ReportTitle").get<std::string>();
-    date_label_ = config_json.at("DateLabel").get<std::string>();
-    total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
-    status_label_ = config_json.at("StatusLabel").get<std::string>();
-    sleep_label_ = config_json.at("SleepLabel").get<std::string>();
-    exercise_label_ = config_json.at("ExerciseLabel").get<std::string>();
-    getup_time_label_ = config_json.at("GetupTimeLabel").get<std::string>();
-    remark_label_ = config_json.at("RemarkLabel").get<std::string>();
-    no_records_message_ = config_json.at("NoRecordsMessage").get<std::string>();
-    statistics_label_ = config_json.at("StatisticsLabel").get<std::string>();
-    all_activities_label_ = config_json.at("AllActivitiesLabel").get<std::string>();
-    sleep_time_label_ = config_json.at("SleepTimeLabel").get<std::string>();
+    report_title_ = config_json.at("report_title").get<std::string>();
+    date_label_ = config_json.at("date_label").get<std::string>();
+    total_time_label_ = config_json.at("total_time_label").get<std::string>();
+    status_label_ = config_json.at("status_label").get<std::string>();
+    sleep_label_ = config_json.at("sleep_label").get<std::string>();
+    exercise_label_ = config_json.at("exercise_label").get<std::string>();
+    getup_time_label_ = config_json.at("getup_time_label").get<std::string>();
+    remark_label_ = config_json.at("remark_label").get<std::string>();
+    no_records_message_ = config_json.at("no_records_message").get<std::string>();
+    statistics_label_ = config_json.at("statistics_label").get<std::string>();
+    all_activities_label_ = config_json.at("all_activities_label").get<std::string>();
+    sleep_time_label_ = config_json.at("sleep_time_label").get<std::string>();
     // --- [核心修改] 加载新配置 ---
-    anaerobic_time_label_ = config_json.at("AnaerobicTimeLabel").get<std::string>();
-    cardio_time_label_ = config_json.at("CardioTimeLabel").get<std::string>();
-    grooming_time_label_ = config_json.at("GroomingTimeLabel").get<std::string>();
-    activity_remark_label_ = config_json.at("ActivityRemarkLabel").get<std::string>();
-    main_font_ = config_json.at("MainFont").get<std::string>();
-    cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
-    base_font_size_ = config_json.at("BaseFontSize").get<int>();
-    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
-    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
-    margin_in_ = config_json.at("Margin_in").get<double>();
-    list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>();
-    list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>();
-    keyword_colors_ = config_json.at("KeywordColors").get<std::map<std::string, std::string>>();
-    activity_connector_ = config_json.at("ActivityConnector").get<std::string>();
+    anaerobic_time_label_ = config_json.at("anaerobic_time_label").get<std::string>();
+    cardio_time_label_ = config_json.at("cardio_time_label").get<std::string>();
+    grooming_time_label_ = config_json.at("grooming_time_label").get<std::string>();
+    activity_remark_label_ = config_json.at("activity_remark_label").get<std::string>();
+    main_font_ = config_json.at("main_font").get<std::string>();
+    cjk_main_font_ = config_json.at("cjk_main_font").get<std::string>();
+    base_font_size_ = config_json.at("base_font_size").get<int>();
+    report_title_font_size_ = config_json.at("report_title_font_size").get<int>();
+    category_title_font_size_ = config_json.at("category_title_font_size").get<int>();
+    margin_in_ = config_json.at("margin_in").get<double>();
+    list_top_sep_pt_ = config_json.at("list_top_sep_pt").get<double>();
+    list_item_sep_ex_ = config_json.at("list_item_sep_ex").get<double>();
+    keyword_colors_ = config_json.at("keyword_colors").get<std::map<std::string, std::string>>();
+    activity_connector_ = config_json.at("activity_connector").get<std::string>();
 }
 
 // Getters

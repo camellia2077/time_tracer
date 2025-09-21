@@ -11,13 +11,13 @@ void PeriodMdConfig::load_config(const std::string& config_path) {
     // [修改] 使用新的辅助函数
     nlohmann::json config_json = load_json_config(config_path, "Could not open PeriodMdConfig file: ");
 
-    report_title_prefix_ = config_json.at("ReportTitlePrefix").get<std::string>();
-    report_title_days_ = config_json.at("ReportTitleDays").get<std::string>();
-    report_title_date_separator_ = config_json.at("ReportTitleDateSeparator").get<std::string>();
-    total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
-    actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
-    no_records_message_ = config_json.at("NoRecordsMessage").get<std::string>();
-    invalid_days_message_ = config_json.at("InvalidDaysMessage").get<std::string>();
+    report_title_prefix_ = config_json.at("report_title_prefix").get<std::string>();
+    report_title_days_ = config_json.at("report_title_days").get<std::string>();
+    report_title_date_separator_ = config_json.at("report_title_date_separator").get<std::string>();
+    total_time_label_ = config_json.at("total_time_label").get<std::string>();
+    actual_days_label_ = config_json.at("actual_days_label").get<std::string>();
+    no_records_message_ = config_json.at("no_records_message").get<std::string>();
+    invalid_days_message_ = config_json.at("invalid_days_message").get<std::string>();
 }
 
 const std::string& PeriodMdConfig::get_report_title_prefix() const { return report_title_prefix_; }
