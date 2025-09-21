@@ -1,3 +1,4 @@
+// queries/export/AllPeriodReports.cpp
 #include "AllPeriodReports.hpp"
 #include "queries/period/PeriodQuerier.hpp"
 #include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
@@ -5,8 +6,8 @@
 #include <memory>
 
 AllPeriodReports::AllPeriodReports(sqlite3* db, const AppConfig& config) 
-    : m_db(db), app_config_(config) {
-    if (m_db == nullptr) {
+    : db_(db), app_config_(config) {
+    if (db_ == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
 }
@@ -19,7 +20,7 @@ FormattedPeriodReports AllPeriodReports::generate_reports(const std::vector<int>
 
     for (int days : days_list) {
         if (days > 0) {
-            PeriodQuerier querier(m_db, days);
+            PeriodQuerier querier(db_, days);
             PeriodReportData report_data = querier.fetch_data();
 
             std::string formatted_report = formatter->format_report(report_data);

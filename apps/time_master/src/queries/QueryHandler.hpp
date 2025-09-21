@@ -25,7 +25,7 @@ public:
     FormattedPeriodReports run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format = ReportFormat::Markdown) const;
 
 private:
-    sqlite3* m_db;
+    sqlite3* db_;
     const AppConfig& app_config_; // [ADDED] Store a reference to the config
 };
 

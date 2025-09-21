@@ -29,18 +29,18 @@ std::string DayQuerier::get_date_condition_sql() const {
 }
 
 void DayQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-    sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
 }
 
 void DayQuerier::_prepare_data(DailyReportData& data) const {
-    data.date = m_param;
+    data.date = this->param_;
 }
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date = ?;";
-    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
             data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 1));
@@ -70,8 +70,8 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
         WHERE tr.date = ? 
         ORDER BY tr.logical_id ASC;
     )";
-    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
         while (sqlite3_step(stmt) == SQLITE_ROW) {
             TimeRecord record;
             record.start_time = reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
@@ -95,8 +95,8 @@ void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     // SQL查询已扩展并修正，以包含所有需要的统计字段
     std::string sql = "SELECT sleepTotalTime, anaerobic_time, cardio_time, grooming_time FROM days WHERE date = ?;";
 
-    if (sqlite3_prepare_v2(m_db, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-        sqlite3_bind_text(stmt, 1, m_param.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+        sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
             if (sqlite3_column_type(stmt, 0) != SQLITE_NULL) data.sleep_time = sqlite3_column_int64(stmt, 0);
             if (sqlite3_column_type(stmt, 1) != SQLITE_NULL) data.anaerobic_time = sqlite3_column_int64(stmt, 1);
