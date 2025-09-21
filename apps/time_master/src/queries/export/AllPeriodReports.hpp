@@ -24,7 +24,7 @@ public:
     FormattedPeriodReports generate_reports(const std::vector<int>& days_list, ReportFormat format);
 
 private:
-    sqlite3* m_db;
+    sqlite3* db_;
     const AppConfig& app_config_; // [修改] 保存 AppConfig 的引用
 };
 

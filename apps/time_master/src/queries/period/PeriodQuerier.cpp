@@ -24,7 +24,7 @@ PeriodReportData PeriodQuerier::fetch_data() {
 }
 
 bool PeriodQuerier::_validate_input() const {
-    return m_param > 0;
+    return param_ > 0;
 }
 
 void PeriodQuerier::_handle_invalid_input(PeriodReportData& data) const {
@@ -32,12 +32,12 @@ void PeriodQuerier::_handle_invalid_input(PeriodReportData& data) const {
 }
 
 void PeriodQuerier::_prepare_data(PeriodReportData& data) const {
-    m_end_date = get_current_date_str();
-    m_start_date = add_days_to_date_str(m_end_date, -(m_param - 1));
+    end_date_ = get_current_date_str();
+    start_date_ = add_days_to_date_str(end_date_, -(this->param_ - 1));
 
-    data.days_to_query = m_param;
-    data.end_date = m_end_date;
-    data.start_date = m_start_date;
+    data.days_to_query = this->param_;
+    data.end_date = end_date_;
+    data.start_date = start_date_;
 }
 
 std::string PeriodQuerier::get_date_condition_sql() const {
@@ -45,6 +45,6 @@ std::string PeriodQuerier::get_date_condition_sql() const {
 }
 
 void PeriodQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-    sqlite3_bind_text(stmt, 1, m_start_date.c_str(), -1, SQLITE_TRANSIENT);
-    sqlite3_bind_text(stmt, 2, m_end_date.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 1, start_date_.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, end_date_.c_str(), -1, SQLITE_TRANSIENT);
 }

@@ -1,3 +1,4 @@
+// queries/export/AllMonthlyReports.cpp
 #include "AllMonthlyReports.hpp"
 #include "queries/monthly/MonthQuerier.hpp"
 #include "queries/shared/factories/GenericFormatterFactory.hpp" // [修改]
@@ -8,8 +9,8 @@
 #include <memory>
 
 AllMonthlyReports::AllMonthlyReports(sqlite3* db, const AppConfig& config) 
-    : m_db(db), app_config_(config) {
-    if (m_db == nullptr) {
+    : db_(db), app_config_(config) {
+    if (db_ == nullptr) {
         throw std::invalid_argument("Database connection cannot be null.");
     }
 }
@@ -19,7 +20,7 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
     sqlite3_stmt* stmt;
 
     const char* sql = "SELECT DISTINCT year, month FROM days ORDER BY year, month;";
-    if (sqlite3_prepare_v2(m_db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare statement to fetch unique year/month pairs.");
     }
 
@@ -34,7 +35,7 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         year_month_ss << year << std::setw(2) << std::setfill('0') << month;
         std::string year_month_str = year_month_ss.str();
 
-        MonthQuerier querier(m_db, year_month_str);
+        MonthQuerier querier(db_, year_month_str);
         MonthlyReportData data = querier.fetch_data();
 
         if (data.total_duration > 0) {

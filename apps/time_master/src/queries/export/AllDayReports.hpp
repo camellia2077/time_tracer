@@ -26,7 +26,7 @@ public:
     FormattedGroupedReports generate_all_reports(ReportFormat format);
 
 private:
-    sqlite3* m_db;
+    sqlite3* db_;
     const AppConfig& app_config_; // [修改]
 };
 

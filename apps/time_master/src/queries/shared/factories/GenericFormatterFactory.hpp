@@ -1,3 +1,4 @@
+// queries/shared/factories/GenericFormatterFactory.hpp
 #ifndef GENERIC_FORMATTER_FACTORY_HPP
 #define GENERIC_FORMATTER_FACTORY_HPP
 
