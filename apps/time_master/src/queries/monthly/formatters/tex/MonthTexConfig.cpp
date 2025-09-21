@@ -10,19 +10,19 @@ MonthTexConfig::MonthTexConfig(const std::string& config_path) {
 void MonthTexConfig::load_config(const std::string& config_path) {
     nlohmann::json config_json = load_json_config(config_path, "Could not open MonthTexConfig file: ");
 
-    report_title_ = config_json.at("ReportTitle").get<std::string>();
-    actual_days_label_ = config_json.at("ActualDaysLabel").get<std::string>();
-    total_time_label_ = config_json.at("TotalTimeLabel").get<std::string>();
-    no_records_message_ = config_json.at("NoRecordsMessage").get<std::string>();
-    invalid_format_message_ = config_json.at("InvalidFormatMessage").get<std::string>();
-    main_font_ = config_json.at("MainFont").get<std::string>();
-    cjk_main_font_ = config_json.at("CJKMainFont").get<std::string>();
-    base_font_size_ = config_json.at("BaseFontSize").get<int>();
-    report_title_font_size_ = config_json.at("ReportTitleFontSize").get<int>();
-    category_title_font_size_ = config_json.at("CategoryTitleFontSize").get<int>();
-    margin_in_ = config_json.at("Margin_in").get<double>();
-    list_top_sep_pt_ = config_json.at("ListTopSep_pt").get<double>();
-    list_item_sep_ex_ = config_json.at("ListItemSep_ex").get<double>();
+    report_title_ = config_json.at("report_title").get<std::string>();
+    actual_days_label_ = config_json.at("actual_days_label").get<std::string>();
+    total_time_label_ = config_json.at("total_time_label").get<std::string>();
+    no_records_message_ = config_json.at("no_records_message").get<std::string>();
+    invalid_format_message_ = config_json.at("invalid_format_message").get<std::string>();
+    main_font_ = config_json.at("main_font").get<std::string>();
+    cjk_main_font_ = config_json.at("cjk_main_font").get<std::string>();
+    base_font_size_ = config_json.at("base_font_size").get<int>();
+    report_title_font_size_ = config_json.at("report_title_font_size").get<int>();
+    category_title_font_size_ = config_json.at("category_title_font_size").get<int>();
+    margin_in_ = config_json.at("margin_in").get<double>();
+    list_top_sep_pt_ = config_json.at("list_top_sep_pt").get<double>();
+    list_item_sep_ex_ = config_json.at("list_item_sep_ex").get<double>();
 }
 
 // Getters

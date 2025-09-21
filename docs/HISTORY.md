@@ -386,4 +386,7 @@ tex报告重复函数移入TexUtils
 成员变量命名修改为 后缀 _
 符合 Google C++ Style Guide
 
+## v0.3.22.2
+json queries配置文件使用蛇形命名法
+
 
