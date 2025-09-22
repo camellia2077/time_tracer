@@ -389,4 +389,7 @@ tex报告重复函数移入TexUtils
 ## v0.3.22.2
 json queries配置文件使用蛇形命名法
 
+## v0.3.22.3
+扩展 IFormattingStrategy 接口，将 LaTeX 的实现也统一到 ProjectTreeFormatter 中
+
 

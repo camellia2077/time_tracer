@@ -62,6 +62,12 @@ void ProjectTreeFormatter::generate_sorted_output(
         return a.second.duration > b.second.duration;
     });
 
+    if (sorted_children.empty()) {
+        return;
+    }
+
+    ss << m_strategy->start_children_list(); // [修改] 调用前置钩子
+
     for (const auto& pair : sorted_children) {
         const std::string& name = pair.first;
         const ProjectNode& child_node = pair.second;
@@ -76,6 +82,8 @@ void ProjectTreeFormatter::generate_sorted_output(
             generate_sorted_output(ss, child_node, indent + 1, avg_days);
         }
     }
+
+    ss << m_strategy->end_children_list(); // [修改] 调用后置钩子
 }
 
 } // namespace reporting
