@@ -1,21 +1,5 @@
 
-## json键的命名改成snake命名法
-同时更新配置检验模块，更新程序检验的键名称
-
-## 成员变量后缀 _
-符合 Google C++ Style Guide
-
-
-
 ## 给预处理json中加入recreation的数据秒数生成
-
-
-
-## 将 query_utils.cpp 和 query_utils.hpp 放在 queries/shared/utils/db 文件夹中是不太合适的。
-
-原因如下：
-
-功能不匹配：query_utils.hpp 和 query_utils.cpp 中的函数，add_days_to_date_str 和 get_current_date_str，是通用的日期计算辅助函数。它们的功能是处理日期字符串和获取当前日期，与数据库查询本身没有直接关联。将它们放在 db（数据库）文件夹中，会使项目结构产生误导，因为它暗示这些函数是专门用于数据库操作的。
 
 
 

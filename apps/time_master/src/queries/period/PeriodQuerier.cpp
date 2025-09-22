@@ -1,7 +1,7 @@
 // queries/period/PeriodQuerier.cpp
 #include "PeriodQuerier.hpp"
-#include "queries/shared/utils/db/query_utils.hpp"
-#include "queries/shared/utils/report/ReportDataUtils.hpp" // [新增] 引入此头文件以使用 build_project_tree_from_records
+#include "queries/shared/utils/format/TimeFormat.hpp"      // [修改] 引用了功能更匹配的头文件
+#include "queries/shared/utils/report/ReportDataUtils.hpp" 
 #include <iomanip>
 
 PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
