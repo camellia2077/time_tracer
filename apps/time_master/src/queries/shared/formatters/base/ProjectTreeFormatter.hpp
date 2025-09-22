@@ -42,6 +42,18 @@ public:
         const std::string& project_name,
         const std::string& formatted_duration,
         int indent_level) const = 0;
+
+    /**
+     * @brief [新增] 在开始处理一个节点的子节点列表前调用。
+     * @return 在子节点列表前需要添加的字符串（例如 LaTeX 的 \\begin{itemize}）。
+     */
+    virtual std::string start_children_list() const { return ""; }
+
+    /**
+     * @brief [新增] 在处理完一个节点的子节点列表后调用。
+     * @return 在子节点列表后需要添加的字符串（例如 LaTeX 的 \\end{itemize}）。
+     */
+    virtual std::string end_children_list() const { return ""; }
 };
 
 
