@@ -24,13 +24,13 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "gaming_time INTEGER, "
                 "grooming_time INTEGER, "
                 "toilet_time INTEGER, "
-                "sleepNightTime INTEGER, "
-                "sleepDayTime INTEGER, "
-                "sleepTotalTime INTEGER, "
-                "recreationTime INTEGER, " // 新增
-                "recreationZhihuTime INTEGER, " // 新增
-                "recreationBilibiliTime INTEGER, " // 新增
-                "recreationDouyinTime INTEGER);"; // 新增
+                "sleep_night_time INTEGER, "
+                "sleep_day_time INTEGER, "
+                "sleep_total_time INTEGER, "
+                "recreation_time INTEGER, " // 新增
+                "recreation_zhihu_time INTEGER, " // 新增
+                "recreation_bilibili_time INTEGER, " // 新增
+                "recreation_douyin_time INTEGER);"; // 新增
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql =
