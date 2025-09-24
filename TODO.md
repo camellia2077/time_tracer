@@ -1,8 +1,23 @@
 
 ## 给预处理json中加入recreation的数据秒数生成
 generatedStats的数据在日报告中用json选择是否开启
+md已经实现
 
-给DayMd新增recreationTime，recreationZhihuTime、recreationBilibiliTime 和 recreationDouyinTime的格式化打印
+检验这些bool值
+            "show": true
+        },
+        "cardio_time": {
+            "label": "Cardio Exercise",
+            "show": true
+        },
+        "grooming_time": {
+            "label": "Grooming Time",
+            "show": true
+        },
+        "recreation_time": {
+            "label": "Recreation Time",
+            "show": true
+        },
 
 
 

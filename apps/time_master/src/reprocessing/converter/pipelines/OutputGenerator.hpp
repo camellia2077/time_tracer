@@ -8,6 +8,8 @@
 #include "reprocessing/converter/model/InputData.hpp"
 #include "reprocessing/converter/config/ConverterConfig.hpp"
 
+// 用于管理json的键的命名
+
 class OutputGenerator {
 public:
     void write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& config);

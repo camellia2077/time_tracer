@@ -92,8 +92,8 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 // 扩展SQL查询以包含所有新的娱乐时间统计字段。
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT sleepTotalTime, anaerobic_time, cardio_time, grooming_time, "
-                      "recreationTime, recreationZhihuTime, recreationBilibiliTime, recreationDouyinTime "
+    std::string sql = "SELECT sleep_total_time, anaerobic_time, cardio_time, grooming_time, "
+                      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time "
                       "FROM days WHERE date = ?;";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
