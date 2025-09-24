@@ -395,5 +395,8 @@ json queries配置文件使用蛇形命名法
 ## v0.3.22.4
 移除query_utils，功能合并到TimeFormat
 
+## v0.3.22.5
+新增recreation相关字段数据生成
+
 
 
