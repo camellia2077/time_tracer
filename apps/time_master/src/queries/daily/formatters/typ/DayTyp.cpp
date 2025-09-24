@@ -7,6 +7,7 @@
 #include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
 #include "queries/daily/formatters/typ/DayTypConfig.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
+#include "queries/shared/utils/format/TimeFormat.hpp"
 
 // [新增] 自我注册逻辑
 namespace {
@@ -40,7 +41,7 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
         return ss.str();
     }
 
-    DayTypUtils::display_statistics(ss, data, config_);
+    _display_statistics(ss, data);
     DayTypUtils::display_detailed_activities(ss, data, config_);
 
     ss << TypUtils::format_project_tree(
@@ -52,4 +53,54 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
     );
 
     return ss.str();
+}
+
+void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
+    const auto& items_config = config_->get_statistics_items();
+    std::vector<std::string> lines_to_print;
+
+    // 为了保证输出顺序，我们按固定顺序迭代
+    const std::vector<std::string> ordered_keys = {"sleep_time", "anaerobic_time", "cardio_time", "grooming_time", "recreation_time"};
+
+    for (const auto& key : ordered_keys) {
+        auto it = items_config.find(key);
+        if (it == items_config.end() || !it->second.show) continue;
+        
+        long long duration = 0;
+        if (key == "sleep_time") duration = data.sleep_time;
+        else if (key == "anaerobic_time") duration = data.anaerobic_time;
+        else if (key == "cardio_time") duration = data.cardio_time;
+        else if (key == "grooming_time") duration = data.grooming_time;
+        else if (key == "recreation_time") duration = data.recreation_time;
+
+        if (duration > 0) {
+            lines_to_print.push_back(std::format("- *{0}*: {1}", it->second.label, time_format_duration(duration)));
+        }
+
+        // 特殊处理娱乐时间的子项
+        if (key == "recreation_time" && duration > 0) {
+            if (data.recreation_zhihu_time > 0 && items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
+            }
+            if (data.recreation_bilibili_time > 0 && items_config.count("bilibili_time") && items_config.at("bilibili_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("bilibili_time").label, time_format_duration(data.recreation_bilibili_time)));
+            }
+            if (data.recreation_douyin_time > 0 && items_config.count("douyin_time") && items_config.at("douyin_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("douyin_time").label, time_format_duration(data.recreation_douyin_time)));
+            }
+        }
+    }
+
+    if (lines_to_print.empty()) {
+        return;
+    }
+
+    ss << std::format("#let statistic_font_size = {}pt\n", config_->get_statistic_font_size());
+    ss << std::format("#let statistic_title_font_size = {}pt\n", config_->get_statistic_title_font_size());
+    ss << "#set text(size: statistic_font_size)\n";
+    ss << std::format("#align(center)[#text(size: statistic_title_font_size)[={0}]]\n\n", config_->get_statistics_label());
+
+    for(const auto& line : lines_to_print) {
+        ss << line << "\n";
+    }
 }

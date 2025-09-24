@@ -26,17 +26,15 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
     const std::set<std::string> daily_tex_keys = {
         "report_title", "date_label", "total_time_label", "status_label", "sleep_label", "exercise_label",
         "getup_time_label", "remark_label", "no_records_message", "statistics_label",
-        "all_activities_label", "sleep_time_label", "anaerobic_time_label", "cardio_time_label",
-        "grooming_time_label", "activity_remark_label", "activity_connector", "recreation_time_label",
-        "zhihu_time_label", "bilibili_time_label", "douyin_time_label", "keyword_colors"
+        "all_activities_label", "activity_remark_label", "activity_connector", "keyword_colors",
+        "statistics_items"
     };
 
     const std::set<std::string> daily_typ_keys = {
         "title_prefix", "date_label", "total_time_label", "status_label", "sleep_label",
         "getup_time_label", "remark_label", "exercise_label", "no_records", "statistics_label",
-        "all_activities_label", "sleep_time_label", "anaerobic_time_label", "cardio_time_label",
-        "grooming_time_label", "activity_remark_label", "activity_connector", "recreation_time_label",
-        "zhihu_time_label", "bilibili_time_label", "douyin_time_label", "keyword_colors"
+        "all_activities_label", "activity_remark_label", "activity_connector", "keyword_colors",
+        "statistics_items"
     };
 
     const std::set<std::string> monthly_keys = {
@@ -90,8 +88,7 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
         return false; // Stop validation if required keys are missing
     }
     
-    // --- [核心修改] 仅对 DayMdConfig.json 验证 statistics_items 结构 ---
-    if (file_name.find("DayMd") != std::string::npos) {
+    if (file_name.find("DayMd") != std::string::npos || file_name.find("DayTex") != std::string::npos || file_name.find("DayTyp") != std::string::npos) {
         const auto& stats_items = query_json["statistics_items"];
         if (!stats_items.is_object()) {
             std::cerr << "[Validator] Error in " << file_name << ": 'statistics_items' must be an object." << std::endl;

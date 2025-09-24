@@ -63,56 +63,7 @@ namespace DayTypUtils {
         ss << std::format("+ *{}:* {}\n", config->get_remark_label(), data.metadata.remark);
     }
 
-    void display_statistics(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
-        ss << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
-            config->get_category_title_font(),
-            config->get_category_title_font_size(), 
-            config->get_statistics_label()) << "\n\n";
-        ss << std::format("+ *{}:* {}\n", 
-            config->get_sleep_time_label(), 
-            time_format_duration(data.sleep_time)
-        );
-        ss << std::format("+ *{}:* {}\n", 
-            config->get_anaerobic_time_label(), 
-            time_format_duration(data.anaerobic_time)
-        );
-        ss << std::format("+ *{}:* {}\n", 
-            config->get_cardio_time_label(), 
-            time_format_duration(data.cardio_time)
-        );
-        ss << std::format("+ *{}:* {}\n", 
-            config->get_grooming_time_label(), 
-            time_format_duration(data.grooming_time)
-        );
-        // --- [核心修改] 新增娱乐时间格式化逻辑 ---
-        if (data.recreation_time > 0) {
-            ss << std::format("+ *{}:* {}\n", 
-                config->get_recreation_time_label(), 
-                time_format_duration(data.recreation_time)
-            );
-            // 检查是否有子项，并以层级结构显示
-            if (data.recreation_zhihu_time > 0 || data.recreation_bilibili_time > 0 || data.recreation_douyin_time > 0) {
-                if (data.recreation_zhihu_time > 0) {
-                    ss << std::format("  + *{}:* {}\n", 
-                        config->get_zhihu_time_label(), 
-                        time_format_duration(data.recreation_zhihu_time)
-                    );
-                }
-                if (data.recreation_bilibili_time > 0) {
-                    ss << std::format("  + *{}:* {}\n", 
-                        config->get_bilibili_time_label(), 
-                        time_format_duration(data.recreation_bilibili_time)
-                    );
-                }
-                if (data.recreation_douyin_time > 0) {
-                    ss << std::format("  + *{}:* {}\n", 
-                        config->get_douyin_time_label(), 
-                        time_format_duration(data.recreation_douyin_time)
-                    );
-                }
-            }
-        }
-    }
+
 
     void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
         if (!data.detailed_records.empty()) {

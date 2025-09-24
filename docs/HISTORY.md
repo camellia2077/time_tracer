@@ -410,4 +410,10 @@ json queries配置文件使用蛇形命名法
 
 ## v0.3.23.1
 json新增开关控制输出哪些Statistics输出
+md
+
+
+## v0.3.23.2
+json新增开关控制输出哪些Statistics输出
+tex typ
 
