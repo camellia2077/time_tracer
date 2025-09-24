@@ -1,23 +1,16 @@
 
-## 给预处理json中加入recreation的数据秒数生成
-generatedStats的数据在日报告中用json选择是否开启
+## 给日报告增加运动总时间
 md已经实现
 
-检验这些bool值
-            "show": true
-        },
-        "cardio_time": {
-            "label": "Cardio Exercise",
-            "show": true
-        },
-        "grooming_time": {
-            "label": "Grooming Time",
-            "show": true
-        },
-        "recreation_time": {
-            "label": "Recreation Time",
-            "show": true
-        },
+还没有给json验证模块验证total_exercise_time
+
+
+## 拆分
+按照职责拆分
+QueryConfigValidator.cpp
+
+
+
 
 
 

@@ -37,6 +37,7 @@ struct DailyReportData {
     std::vector<TimeRecord> detailed_records;
     long long sleep_time = 0;
     // --- [核心修改] 新增统计字段 ---
+    long long total_exercise_time = 0; // [新增]
     long long anaerobic_time = 0;
     long long cardio_time = 0;
     long long grooming_time = 0;

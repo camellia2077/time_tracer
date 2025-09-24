@@ -35,6 +35,10 @@
       "label": "Sleep Time",
       "show": true
     },
+    "total_exercise_time": {
+        "label": "Total Exercise Time",
+        "show": true
+    },
     "anaerobic_time": {
       "label": "Anaerobic Exercise",
       "show": true
