@@ -12,15 +12,15 @@ DailyReportData DayQuerier::fetch_data() {
 
     // 获取日报特有的数据
     _fetch_metadata(data);
-    
+
     if (data.total_duration > 0) {
-        _fetch_detailed_records(data); 
+        _fetch_detailed_records(data);
         // --- [核心修改] 调用更新后的函数 ---
-        _fetch_generated_stats(data); 
+        _fetch_generated_stats(data);
         // [核心修改] 在数据获取阶段构建项目树
         build_project_tree_from_records(data.project_tree, data.records);
     }
-    
+
     return data;
 }
 
@@ -64,10 +64,10 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
             FROM projects p
             JOIN project_paths pp ON p.parent_id = pp.id
         )
-        SELECT tr.start, tr.end, pp.path, tr.duration, tr.activity_remark 
+        SELECT tr.start, tr.end, pp.path, tr.duration, tr.activity_remark
         FROM time_records tr
         JOIN project_paths pp ON tr.project_id = pp.id
-        WHERE tr.date = ? 
+        WHERE tr.date = ?
         ORDER BY tr.logical_id ASC;
     )";
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -89,11 +89,12 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 }
 
 // --- [ 核心修改 ] ---
-// 扩展SQL查询以包含所有新的娱乐时间统计字段。
+// 扩展SQL查询以包含 total_exercise_time
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT sleep_total_time, anaerobic_time, cardio_time, grooming_time, "
-                      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time "
+                      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time, "
+                      "total_exercise_time " // [新增]
                       "FROM days WHERE date = ?;";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -107,6 +108,7 @@ void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
             if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) data.recreation_zhihu_time = sqlite3_column_int64(stmt, 5);
             if (sqlite3_column_type(stmt, 6) != SQLITE_NULL) data.recreation_bilibili_time = sqlite3_column_int64(stmt, 6);
             if (sqlite3_column_type(stmt, 7) != SQLITE_NULL) data.recreation_douyin_time = sqlite3_column_int64(stmt, 7);
+            if (sqlite3_column_type(stmt, 8) != SQLITE_NULL) data.total_exercise_time = sqlite3_column_int64(stmt, 8); // [新增]
         }
     }
     sqlite3_finalize(stmt);

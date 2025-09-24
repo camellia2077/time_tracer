@@ -58,9 +58,9 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
 void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
     const auto& items_config = config_->get_statistics_items();
     std::vector<std::string> lines_to_print;
-    std::vector<std::string> sub_lines_to_print;
-
-    const std::vector<std::string> ordered_keys = {"sleep_time", "anaerobic_time", "cardio_time", "grooming_time", "recreation_time"};
+    
+    // [核心修改] 更新 ordered_keys
+    const std::vector<std::string> ordered_keys = {"sleep_time", "total_exercise_time", "grooming_time", "recreation_time"};
 
     for (const auto& key : ordered_keys) {
         auto it = items_config.find(key);
@@ -68,24 +68,32 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
 
         long long duration = 0;
         if (key == "sleep_time") duration = data.sleep_time;
-        else if (key == "anaerobic_time") duration = data.anaerobic_time;
-        else if (key == "cardio_time") duration = data.cardio_time;
+        else if (key == "total_exercise_time") duration = data.total_exercise_time;
         else if (key == "grooming_time") duration = data.grooming_time;
         else if (key == "recreation_time") duration = data.recreation_time;
 
-        // [核心修改] 移除 if (duration > 0) 条件
         lines_to_print.push_back(std::format("- *{0}*: {1}", it->second.label, time_format_duration(duration)));
 
+        // [核心修改] 新增对 total_exercise_time 子项的处理
+        if (key == "total_exercise_time") {
+            if (items_config.count("anaerobic_time") && items_config.at("anaerobic_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("anaerobic_time").label, time_format_duration(data.anaerobic_time)));
+            }
+            if (items_config.count("cardio_time") && items_config.at("cardio_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("cardio_time").label, time_format_duration(data.cardio_time)));
+            }
+        }
+        
         // 特殊处理娱乐时间的子项
         if (key == "recreation_time") {
-            if (data.recreation_zhihu_time > 0 && items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
-                sub_lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
+            if (items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
             }
-            if (data.recreation_bilibili_time > 0 && items_config.count("bilibili_time") && items_config.at("bilibili_time").show) {
-                sub_lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("bilibili_time").label, time_format_duration(data.recreation_bilibili_time)));
+            if (items_config.count("bilibili_time") && items_config.at("bilibili_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("bilibili_time").label, time_format_duration(data.recreation_bilibili_time)));
             }
-            if (data.recreation_douyin_time > 0 && items_config.count("douyin_time") && items_config.at("douyin_time").show) {
-                sub_lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("douyin_time").label, time_format_duration(data.recreation_douyin_time)));
+            if (items_config.count("douyin_time") && items_config.at("douyin_time").show) {
+                lines_to_print.push_back(std::format("  - *{0}*: {1}", items_config.at("douyin_time").label, time_format_duration(data.recreation_douyin_time)));
             }
         }
     }
@@ -101,11 +109,5 @@ void DayTyp::_display_statistics(std::stringstream& ss, const DailyReportData& d
 
     for(const auto& line : lines_to_print) {
         ss << line << "\n";
-    }
-
-    if (!sub_lines_to_print.empty()) {
-        for(const auto& line : sub_lines_to_print) {
-            ss << line << "\n";
-        }
     }
 }

@@ -88,12 +88,26 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
         return false; // Stop validation if required keys are missing
     }
     
+    // [核心修改] 将 total_exercise_time 加入验证
     if (file_name.find("DayMd") != std::string::npos || file_name.find("DayTex") != std::string::npos || file_name.find("DayTyp") != std::string::npos) {
         const auto& stats_items = query_json["statistics_items"];
         if (!stats_items.is_object()) {
             std::cerr << "[Validator] Error in " << file_name << ": 'statistics_items' must be an object." << std::endl;
             all_valid = false;
         } else {
+            // [新增] 为日报验证 statistics_items 是否包含所有必需的键
+            const std::set<std::string> required_stats_keys = {
+                "sleep_time", "total_exercise_time", "anaerobic_time", "cardio_time",
+                "grooming_time", "recreation_time", "zhihu_time", "bilibili_time", "douyin_time"
+            };
+
+            for(const auto& required_key : required_stats_keys) {
+                if(stats_items.find(required_key) == stats_items.end()) {
+                    std::cerr << "[Validator] Error in " << file_name << ": 'statistics_items' is missing required key '" << required_key << "'." << std::endl;
+                    all_valid = false;
+                }
+            }
+
             for (const auto& [key, item] : stats_items.items()) {
                 if (!item.is_object()) {
                     std::cerr << "[Validator] Error in " << file_name << ": Item '" << key << "' in 'statistics_items' must be an object." << std::endl;
