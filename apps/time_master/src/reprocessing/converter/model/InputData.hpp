@@ -18,9 +18,6 @@ struct Activity {
     long long end_timestamp;   
     std::string startTime;
     std::string endTime;
-    
-    // --- [核心修改] ---
-    // 使用 project_path 替换 parent 和 children
     std::string project_path; 
     
     int durationSeconds = 0;
@@ -37,6 +34,11 @@ struct GeneratedStats {
     int groomingTime = 0;
     int toiletTime = 0;
     int gamingTime = 0;
+    int recreationTime = 0;
+    // --- [新增字段] ---
+    int recreationZhihuTime = 0;
+    int recreationBilibiliTime = 0;
+    int recreationDouyinTime = 0;
 };
 
 struct InputData {

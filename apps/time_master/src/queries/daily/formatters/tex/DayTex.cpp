@@ -10,7 +10,7 @@
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
 #include "queries/shared/formatters/latex/TexUtils.hpp"
-#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "queries/shared/factories/GenericFormatterFactory.hpp"
 #include "queries/daily/formatters/tex/DayTexConfig.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 
@@ -54,7 +54,6 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     return ss.str();
 }
 
-// ... (其余函数实现保持不变)
 void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data) const {
     int title_size = config_->get_report_title_font_size();
     ss << "{";
@@ -109,6 +108,29 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
        << TexUtils::escape_latex(time_format_duration(data.cardio_time)) << "\n";
     ss << "    \\item \\textbf{" << config_->get_grooming_time_label() << "}: "
        << TexUtils::escape_latex(time_format_duration(data.grooming_time)) << "\n";
+
+    // --- [核心修改] 新增娱乐时间格式化逻辑 ---
+    if (data.recreation_time > 0) {
+        ss << "    \\item \\textbf{" << config_->get_recreation_time_label() << "}: "
+           << TexUtils::escape_latex(time_format_duration(data.recreation_time)) << "\n";
+        
+        if (data.recreation_zhihu_time > 0 || data.recreation_bilibili_time > 0 || data.recreation_douyin_time > 0) {
+            ss << "    \\begin{itemize}" << compact_list_options << "\n";
+            if (data.recreation_zhihu_time > 0) {
+                ss << "        \\item \\textbf{" << config_->get_zhihu_time_label() << "}: "
+                   << TexUtils::escape_latex(time_format_duration(data.recreation_zhihu_time)) << "\n";
+            }
+            if (data.recreation_bilibili_time > 0) {
+                ss << "        \\item \\textbf{" << config_->get_bilibili_time_label() << "}: "
+                   << TexUtils::escape_latex(time_format_duration(data.recreation_bilibili_time)) << "\n";
+            }
+            if (data.recreation_douyin_time > 0) {
+                ss << "        \\item \\textbf{" << config_->get_douyin_time_label() << "}: "
+                   << TexUtils::escape_latex(time_format_duration(data.recreation_douyin_time)) << "\n";
+            }
+            ss << "    \\end{itemize}\n";
+        }
+    }
     ss << "\\end{itemize}\n\n";
 }
 

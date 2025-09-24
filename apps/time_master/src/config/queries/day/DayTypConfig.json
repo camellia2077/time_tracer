@@ -1,7 +1,7 @@
 {
-  "base_font": "Noto Serif",
-  "title_font": "Noto Serif",
-  "category_title_font": "Noto Serif",
+  "base_font": "Noto Serif SC",
+  "title_font": "Noto Serif SC",
+  "category_title_font": "Noto Serif SC",
   "base_font_size": 10,
   "report_title_font_size": 14,
   "category_title_font_size": 12,
@@ -31,5 +31,9 @@
   "cardio_time_label": "Cardio Exercise",
   "grooming_time_label": "Grooming Time",
   "activity_remark_label": "Activity Remark",
-  "activity_connector": "😅->"
+  "activity_connector": "->",
+  "recreation_time_label": "Recreation Time",
+  "zhihu_time_label": "Zhihu",
+  "bilibili_time_label": "Bilibili",
+  "douyin_time_label": "Douyin"
 }

@@ -19,7 +19,11 @@ namespace GeneratedStatsRules {
         {"exercise_anaerobic", &GeneratedStats::anaerobicTime},
         {"routine_grooming", &GeneratedStats::groomingTime},
         {"routine_toilet", &GeneratedStats::toiletTime},
-        {"recreation_game", &GeneratedStats::gamingTime}
+        {"recreation_game", &GeneratedStats::gamingTime},
+        {"recreation", &GeneratedStats::recreationTime},
+        {"recreation_zhihu", &GeneratedStats::recreationZhihuTime},
+        {"recreation_bilibili", &GeneratedStats::recreationBilibiliTime},
+        {"recreation_douyin", &GeneratedStats::recreationDouyinTime}
     };
 }
 
