@@ -9,16 +9,16 @@ TimeRecordInternal ActivityParser::parse(
     const std::string& date) const {
     try {
         TimeRecordInternal record;
-        record.logical_id = activity_json.at("logicalId");
-        record.start_timestamp = activity_json.at("startTimestamp");
-        record.end_timestamp = activity_json.at("endTimestamp");
+        record.logical_id = activity_json.at("logical_id");
+        record.start_timestamp = activity_json.at("start_timestamp");
+        record.end_timestamp = activity_json.at("end_timestamp");
         record.date = date;
-        record.start = activity_json.at("startTime");
-        record.end = activity_json.at("endTime");
-        record.duration_seconds = activity_json.at("durationSeconds");
+        record.start = activity_json.at("start_time");
+        record.end = activity_json.at("end_time");
+        record.duration_seconds = activity_json.at("duration_seconds");
 
-        if (activity_json.contains("activityRemark") && !activity_json["activityRemark"].is_null()) {
-            record.activityRemark = activity_json["activityRemark"].get<std::string>();
+        if (activity_json.contains("activity_remark") && !activity_json["activity_remark"].is_null()) {
+            record.activityRemark = activity_json["activity_remark"].get<std::string>();
         }
 
         const auto& activity_details = activity_json.at("activity");

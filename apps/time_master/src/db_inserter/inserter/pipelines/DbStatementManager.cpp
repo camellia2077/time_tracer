@@ -27,8 +27,8 @@ void DbStatementManager::_prepare_statements() {
     "INSERT INTO days (date, year, month, status, sleep, remark, getup_time, "
     "exercise, total_exercise_time, cardio_time, anaerobic_time, "
     "gaming_time, grooming_time, toilet_time, "
-    "sleepNightTime, sleepDayTime, sleepTotalTime, "
-    "recreationTime, recreationZhihuTime, recreationBilibiliTime, recreationDouyinTime) "
+    "sleep_night_time, sleep_day_time, sleep_total_time, "
+    "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time) "
     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");

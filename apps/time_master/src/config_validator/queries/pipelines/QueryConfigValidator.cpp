@@ -16,14 +16,27 @@ bool QueryConfigValidator::is_valid_hex_color(const std::string& color_string) c
 bool QueryConfigValidator::validate(const json& query_json, const std::string& file_name) const {
     bool all_valid = true;
 
-    // --- [核心修改] ---
-    // 将新的 recreation 相关的键添加到 daily_keys 集合中
-    const std::set<std::string> daily_keys = {
-        "date_label", "total_time_label", "status_label", "sleep_label", "exercise_label", 
-        "getup_time_label", "remark_label", "statistics_label", "all_activities_label", 
-        "sleep_time_label", "activity_remark_label", "activity_connector", 
-        "anaerobic_time_label", "cardio_time_label", "grooming_time_label",
-        "recreation_time_label", "zhihu_time_label", "bilibili_time_label", "douyin_time_label"
+    // --- [核心修改] 为不同类型的日报配置文件定义独立的验证规则 ---
+    const std::set<std::string> daily_md_keys = {
+        "title_prefix", "date_label", "total_time_label", "status_label", "sleep_label", "exercise_label",
+        "getup_time_label", "remark_label", "statistics_label", "all_activities_label",
+        "activity_remark_label", "activity_connector", "statistics_items", "no_records"
+    };
+
+    const std::set<std::string> daily_tex_keys = {
+        "report_title", "date_label", "total_time_label", "status_label", "sleep_label", "exercise_label",
+        "getup_time_label", "remark_label", "no_records_message", "statistics_label",
+        "all_activities_label", "sleep_time_label", "anaerobic_time_label", "cardio_time_label",
+        "grooming_time_label", "activity_remark_label", "activity_connector", "recreation_time_label",
+        "zhihu_time_label", "bilibili_time_label", "douyin_time_label", "keyword_colors"
+    };
+
+    const std::set<std::string> daily_typ_keys = {
+        "title_prefix", "date_label", "total_time_label", "status_label", "sleep_label",
+        "getup_time_label", "remark_label", "exercise_label", "no_records", "statistics_label",
+        "all_activities_label", "sleep_time_label", "anaerobic_time_label", "cardio_time_label",
+        "grooming_time_label", "activity_remark_label", "activity_connector", "recreation_time_label",
+        "zhihu_time_label", "bilibili_time_label", "douyin_time_label", "keyword_colors"
     };
 
     const std::set<std::string> monthly_keys = {
@@ -31,27 +44,32 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
     };
 
     const std::set<std::string> periodic_keys = {
-        "report_title_prefix", "report_title_days", "report_title_date_separator", 
+        "report_title_prefix", "report_title_days", "report_title_date_separator",
         "total_time_label", "actual_days_label", "invalid_days_message"
     };
 
-    // Rule 1: Check for the presence of required keys based on file name
-    if (file_name.find("Day") != std::string::npos) {
-        for (const auto& key : daily_keys) {
+    // --- [核心修改] 根据文件名应用不同的验证规则 ---
+    if (file_name.find("DayMd") != std::string::npos) {
+        for (const auto& key : daily_md_keys) {
             if (!query_json.contains(key)) {
                 std::cerr << "[Validator] Error in " << file_name << ": Missing daily report key '" << key << "'." << std::endl;
                 all_valid = false;
             }
         }
-        // Day-specific file checks
-        if (file_name.find("Tex") != std::string::npos && !query_json.contains("no_records_message")) {
-             std::cerr << "[Validator] Error in " << file_name << ": Missing key 'no_records_message'." << std::endl;
-             all_valid = false;
-        } else if (file_name.find("Md") != std::string::npos && !query_json.contains("no_records")) {
-             std::cerr << "[Validator] Error in " << file_name << ": Missing key 'no_records'." << std::endl;
-             all_valid = false;
+    } else if (file_name.find("DayTex") != std::string::npos) {
+        for (const auto& key : daily_tex_keys) {
+            if (!query_json.contains(key)) {
+                std::cerr << "[Validator] Error in " << file_name << ": Missing daily report key '" << key << "'." << std::endl;
+                all_valid = false;
+            }
         }
-
+    } else if (file_name.find("DayTyp") != std::string::npos) {
+        for (const auto& key : daily_typ_keys) {
+            if (!query_json.contains(key)) {
+                std::cerr << "[Validator] Error in " << file_name << ": Missing daily report key '" << key << "'." << std::endl;
+                all_valid = false;
+            }
+        }
     } else if (file_name.find("Month") != std::string::npos) {
         for (const auto& key : monthly_keys) {
             if (!query_json.contains(key)) {
@@ -70,6 +88,31 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
 
     if (!all_valid) {
         return false; // Stop validation if required keys are missing
+    }
+    
+    // --- [核心修改] 仅对 DayMdConfig.json 验证 statistics_items 结构 ---
+    if (file_name.find("DayMd") != std::string::npos) {
+        const auto& stats_items = query_json["statistics_items"];
+        if (!stats_items.is_object()) {
+            std::cerr << "[Validator] Error in " << file_name << ": 'statistics_items' must be an object." << std::endl;
+            all_valid = false;
+        } else {
+            for (const auto& [key, item] : stats_items.items()) {
+                if (!item.is_object()) {
+                    std::cerr << "[Validator] Error in " << file_name << ": Item '" << key << "' in 'statistics_items' must be an object." << std::endl;
+                    all_valid = false;
+                    continue;
+                }
+                if (!item.contains("label") || !item["label"].is_string()) {
+                    std::cerr << "[Validator] Error in " << file_name << ": Item '" << key << "' in 'statistics_items' must have a 'label' of type string." << std::endl;
+                    all_valid = false;
+                }
+                if (!item.contains("show") || !item["show"].is_boolean()) {
+                    std::cerr << "[Validator] Error in " << file_name << ": Item '" << key << "' in 'statistics_items' must have a 'show' of type boolean." << std::endl;
+                    all_valid = false;
+                }
+            }
+        }
     }
 
     // Further checks for non-string values and formats
@@ -103,8 +146,11 @@ bool QueryConfigValidator::validate(const json& query_json, const std::string& f
                 }
             }
         } else if (value.is_string() && value.get<std::string>().empty()) {
-            std::cerr << "[Validator] Error in " << file_name << ": Key '" << key << "' has an empty string value." << std::endl;
-            all_valid = false;
+            // "remark" is allowed to be empty
+            if (key != "remark") {
+                std::cerr << "[Validator] Error in " << file_name << ": Key '" << key << "' has an empty string value." << std::endl;
+                all_valid = false;
+            }
         }
     }
 

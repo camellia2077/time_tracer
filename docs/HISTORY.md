@@ -405,3 +405,9 @@ json queries配置文件使用蛇形命名法
 新增recreation相关字段存储以及日报告tex,typ导出
 新增对于json的配置新增的recreation相关的验证
 
+## v0.3.23.0
+修改json命名为蛇形命名
+
+## v0.3.23.1
+json新增开关控制输出哪些Statistics输出
+

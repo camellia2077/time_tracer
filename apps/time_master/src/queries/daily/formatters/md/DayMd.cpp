@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <map>
 #include "queries/shared/utils/format/BoolToString.hpp"
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
@@ -79,50 +80,48 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
 }
 
 void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& data) const {
-    ss << "\n## " << config_->get_statistics_label() << "\n\n";
-    ss << std::format("- **{0}**: {1}\n", 
-        config_->get_sleep_time_label(), 
-        time_format_duration(data.sleep_time)
-    );
-    ss << std::format("- **{0}**: {1}\n", 
-        config_->get_anaerobic_time_label(), 
-        time_format_duration(data.anaerobic_time)
-    );
-    ss << std::format("- **{0}**: {1}\n", 
-        config_->get_cardio_time_label(), 
-        time_format_duration(data.cardio_time)
-    );
-    ss << std::format("- **{0}**: {1}\n", 
-        config_->get_grooming_time_label(), 
-        time_format_duration(data.grooming_time)
-    );
+    const auto& items_config = config_->get_statistics_items();
+    std::vector<std::string> lines_to_print;
 
-    // --- [核心修改] 新增娱乐时间格式化逻辑 ---
-    if (data.recreation_time > 0) {
-        ss << std::format("- **{0}**: {1}\n", 
-            config_->get_recreation_time_label(), 
-            time_format_duration(data.recreation_time)
-        );
-        // 检查是否有子项，并以层级结构显示
-        if (data.recreation_zhihu_time > 0 || data.recreation_bilibili_time > 0 || data.recreation_douyin_time > 0) {
-            if (data.recreation_zhihu_time > 0) {
-                ss << std::format("  - **{0}**: {1}\n", 
-                    config_->get_zhihu_time_label(), 
-                    time_format_duration(data.recreation_zhihu_time)
-                );
+    // 为了保证输出顺序，我们按固定顺序迭代
+    const std::vector<std::string> ordered_keys = {"sleep_time", "anaerobic_time", "cardio_time", "grooming_time", "recreation_time"};
+
+    for (const auto& key : ordered_keys) {
+        auto it = items_config.find(key);
+        if (it == items_config.end() || !it->second.show) continue;
+        
+        // C++中没有简单的方法通过字符串名访问成员，所以我们用一个查找来代替
+        long long duration = 0;
+        if (key == "sleep_time") duration = data.sleep_time;
+        else if (key == "anaerobic_time") duration = data.anaerobic_time;
+        else if (key == "cardio_time") duration = data.cardio_time;
+        else if (key == "grooming_time") duration = data.grooming_time;
+        else if (key == "recreation_time") duration = data.recreation_time;
+
+        if (duration > 0) {
+            lines_to_print.push_back(std::format("- **{0}**: {1}", it->second.label, time_format_duration(duration)));
+        }
+
+        // 特殊处理娱乐时间的子项
+        if (key == "recreation_time" && duration > 0) {
+            if (data.recreation_zhihu_time > 0 && items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
+                lines_to_print.push_back(std::format("  - **{0}**: {1}", items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
             }
-            if (data.recreation_bilibili_time > 0) {
-                ss << std::format("  - **{0}**: {1}\n", 
-                    config_->get_bilibili_time_label(), 
-                    time_format_duration(data.recreation_bilibili_time)
-                );
+            if (data.recreation_bilibili_time > 0 && items_config.count("bilibili_time") && items_config.at("bilibili_time").show) {
+                lines_to_print.push_back(std::format("  - **{0}**: {1}", items_config.at("bilibili_time").label, time_format_duration(data.recreation_bilibili_time)));
             }
-            if (data.recreation_douyin_time > 0) {
-                ss << std::format("  - **{0}**: {1}\n", 
-                    config_->get_douyin_time_label(), 
-                    time_format_duration(data.recreation_douyin_time)
-                );
+            if (data.recreation_douyin_time > 0 && items_config.count("douyin_time") && items_config.at("douyin_time").show) {
+                lines_to_print.push_back(std::format("  - **{0}**: {1}", items_config.at("douyin_time").label, time_format_duration(data.recreation_douyin_time)));
             }
         }
+    }
+
+    if (lines_to_print.empty()) {
+        return;
+    }
+
+    ss << "\n## " << config_->get_statistics_label() << "\n\n";
+    for(const auto& line : lines_to_print) {
+        ss << line << "\n";
     }
 }
