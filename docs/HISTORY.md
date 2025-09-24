@@ -398,5 +398,8 @@ json queries配置文件使用蛇形命名法
 ## v0.3.22.5
 新增recreation相关字段数据生成
 
+## v0.3.22.6
+新增recreation相关字段存储以及导出
+
 
 

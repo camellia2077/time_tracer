@@ -15,5 +15,9 @@
     "cardio_time_label": "Cardio Exercise",
     "grooming_time_label": "Grooming Time",
     "activity_remark_label": "Activity Remark",
-    "activity_connector": "->"
+    "activity_connector": "->",
+    "recreation_time_label": "Recreation Time",
+    "zhihu_time_label": "Zhihu",
+    "bilibili_time_label": "Bilibili",
+    "douyin_time_label": "Douyin"
 }

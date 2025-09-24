@@ -34,6 +34,11 @@ struct DayData {
     int sleep_night_time;
     int sleep_day_time;
     int sleep_total_time;
+    // --- [新增字段] ---
+    int recreation_time;
+    int recreation_zhihu_time;
+    int recreation_bilibili_time;
+    int recreation_douyin_time;
 };
 
 /**
