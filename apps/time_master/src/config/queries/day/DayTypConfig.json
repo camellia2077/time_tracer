@@ -5,6 +5,8 @@
   "base_font_size": 10,
   "report_title_font_size": 14,
   "category_title_font_size": 12,
+  "statistic_font_size": 10,
+  "statistic_title_font_size": 12,
   "line_spacing_em": 0.6,
   "keyword_colors": {
     "study": "#2ECC40",
@@ -26,14 +28,40 @@
   "no_records": "No time records for this day.",
   "statistics_label": "Statistics",
   "all_activities_label": "All Activities",
-  "sleep_time_label": "Sleep Time",
-  "anaerobic_time_label": "Anaerobic Exercise",
-  "cardio_time_label": "Cardio Exercise",
-  "grooming_time_label": "Grooming Time",
   "activity_remark_label": "Activity Remark",
   "activity_connector": "->",
-  "recreation_time_label": "Recreation Time",
-  "zhihu_time_label": "Zhihu",
-  "bilibili_time_label": "Bilibili",
-  "douyin_time_label": "Douyin"
+  "statistics_items": {
+    "sleep_time": {
+      "label": "Sleep Time",
+      "show": true
+    },
+    "anaerobic_time": {
+      "label": "Anaerobic Exercise",
+      "show": false
+    },
+    "cardio_time": {
+      "label": "Cardio Exercise",
+      "show": true
+    },
+    "grooming_time": {
+      "label": "Grooming Time",
+      "show": true
+    },
+    "recreation_time": {
+      "label": "Recreation Time",
+      "show": true
+    },
+    "zhihu_time": {
+      "label": "Zhihu",
+      "show": true
+    },
+    "bilibili_time": {
+      "label": "Bilibili",
+      "show": true
+    },
+    "douyin_time": {
+      "label": "Douyin",
+      "show": true
+    }
+  }
 }

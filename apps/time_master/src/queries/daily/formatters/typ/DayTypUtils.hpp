@@ -15,10 +15,7 @@ namespace DayTypUtils {
      */
     void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config);
 
-    /**
-     * @brief 显示统计信息。
-     */
-    void display_statistics(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config);
+
 
     /**
      * @brief 显示详细的活动记录。

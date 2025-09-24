@@ -6,6 +6,12 @@
 #include <map>
 #include <nlohmann/json.hpp>
 
+// [新增] 用于存储单个统计项配置的结构体
+struct StatisticItemConfig {
+    std::string label;
+    bool show = true;
+};
+
 class DayTexConfig {
 public:
     explicit DayTexConfig(const std::string& config_path);
@@ -21,10 +27,6 @@ public:
     const std::string& get_no_records_message() const;
     const std::string& get_statistics_label() const;
     const std::string& get_all_activities_label() const;
-    const std::string& get_sleep_time_label() const;
-    const std::string& get_anaerobic_time_label() const;
-    const std::string& get_cardio_time_label() const;
-    const std::string& get_grooming_time_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
@@ -36,11 +38,8 @@ public:
     double get_list_item_sep_ex() const;
     const std::map<std::string, std::string>& get_keyword_colors() const;
     const std::string& get_activity_connector() const;
-    // --- [新增 Getter] ---
-    const std::string& get_recreation_time_label() const;
-    const std::string& get_zhihu_time_label() const;
-    const std::string& get_bilibili_time_label() const;
-    const std::string& get_douyin_time_label() const;
+    
+    const std::map<std::string, StatisticItemConfig>& get_statistics_items() const;
 
 private:
     void load_config(const std::string& config_path);
@@ -56,10 +55,6 @@ private:
     std::string no_records_message_;
     std::string statistics_label_;
     std::string all_activities_label_;
-    std::string sleep_time_label_;
-    std::string anaerobic_time_label_;
-    std::string cardio_time_label_;
-    std::string grooming_time_label_;
     std::string activity_remark_label_;
     std::string main_font_;
     std::string cjk_main_font_;
@@ -71,11 +66,8 @@ private:
     double list_item_sep_ex_;
     std::map<std::string, std::string> keyword_colors_;
     std::string activity_connector_;
-    // --- [新增成员变量] ---
-    std::string recreation_time_label_;
-    std::string zhihu_time_label_;
-    std::string bilibili_time_label_;
-    std::string douyin_time_label_;
+
+    std::map<std::string, StatisticItemConfig> statistics_items_;
 };
 
 #endif // DAY_TEX_CONFIG_HPP
