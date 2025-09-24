@@ -55,8 +55,6 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
                 activity_obj["activityRemark"] = nullptr; 
             }
 
-            // --- [核心修改] ---
-            // 直接输出 project_path
             json activity_details;
             activity_details["project_path"] = activity_data.project_path;
 
@@ -75,8 +73,13 @@ void OutputGenerator::write(std::ostream& outputStream, const std::vector<InputD
         generated_stats_obj["groomingTime"] = day.generatedStats.groomingTime;
         generated_stats_obj["toiletTime"] = day.generatedStats.toiletTime;
         generated_stats_obj["gamingTime"] = day.generatedStats.gamingTime;
+        generated_stats_obj["recreationTime"] = day.generatedStats.recreationTime;
+        // --- [新增字段] ---
+        generated_stats_obj["recreationZhihuTime"] = day.generatedStats.recreationZhihuTime;
+        generated_stats_obj["recreationBilibiliTime"] = day.generatedStats.recreationBilibiliTime;
+        generated_stats_obj["recreationDouyinTime"] = day.generatedStats.recreationDouyinTime;
+        
         day_obj["generatedStats"] = generated_stats_obj;
-
 
         root_array.push_back(day_obj);
     }

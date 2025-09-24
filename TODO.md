@@ -1,5 +1,8 @@
 
 ## 给预处理json中加入recreation的数据秒数生成
+generatedStats的数据在日报告中用json选择是否开启
+
+给DayMd新增recreationTime，recreationZhihuTime、recreationBilibiliTime 和 recreationDouyinTime的格式化打印
 
 
 
@@ -20,20 +23,9 @@ typ全格式已经实现
 pacman -S mingw-w64-ucrt-x86_64-lld
 
 
-## 给routine_grooming                
-增加在"generatedStats"的键和值，存储时间为秒数
-
-
-
-## 活动颜色映射独立成一个hpp，这样tex和typst都可以读取，复用代码
-
 ## 格式化输出，根据类型输出不同的颜色背景。
 没有任何一个实现
 
-
-
-
-## InputParser.cpp中引用了 #include "reprocessing/validator/common/ValidatorUtils.hpp" 需要解耦
 
 ## json中的存入数据库但是还没使用的键
 
@@ -57,7 +49,7 @@ pacman -S mingw-w64-ucrt-x86_64-lld
 ### dll放入plugs文件夹再读取
 
 ### 标记语言编译python的配置使用toml
-### JsonDataParser拆分，之后JsonDataParser作为facade封装
+
 ### 输出报告的hpp使用外置的json配置文件来传入字体
 ### 把log测试程序生成部分封装成python库，用pybind
 
