@@ -40,6 +40,12 @@ struct DailyReportData {
     long long anaerobic_time = 0;
     long long cardio_time = 0;
     long long grooming_time = 0;
+    // --- [新增字段] ---
+    long long recreation_time = 0;
+    long long recreation_zhihu_time = 0;
+    long long recreation_bilibili_time = 0;
+    long long recreation_douyin_time = 0;
+
     ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
 };
 

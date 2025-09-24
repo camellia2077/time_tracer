@@ -7,7 +7,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
         db = nullptr;
     } else {
-        // --- [核心修改] 更新 days 表的定义以包含新的睡眠统计字段 ---
+        // --- [核心修改] 更新 days 表的定义 ---
         const char* create_days_sql =
                 "CREATE TABLE IF NOT EXISTS days ("
                 "date TEXT PRIMARY KEY, "
@@ -26,15 +26,17 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "toilet_time INTEGER, "
                 "sleepNightTime INTEGER, "
                 "sleepDayTime INTEGER, "
-                "sleepTotalTime INTEGER);";
+                "sleepTotalTime INTEGER, "
+                "recreationTime INTEGER, " // 新增
+                "recreationZhihuTime INTEGER, " // 新增
+                "recreationBilibiliTime INTEGER, " // 新增
+                "recreationDouyinTime INTEGER);"; // 新增
         execute_sql(db, create_days_sql, "Create days table");
 
         const char* create_index_sql =
             "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
         execute_sql(db, create_index_sql, "Create index on days(year, month)");
 
-        // --- [CORE FIX] ---
-        // Added the 'projects' table to store hierarchical data.
         const char* create_projects_sql =
             "CREATE TABLE IF NOT EXISTS projects ("
             "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -43,8 +45,6 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "FOREIGN KEY (parent_id) REFERENCES projects(id));";
         execute_sql(db, create_projects_sql, "Create projects table");
 
-        // --- [CORE FIX] ---
-        // Updated the 'time_records' table to use 'project_id' instead of 'project_path'.
         const char* create_records_sql =
             "CREATE TABLE IF NOT EXISTS time_records ("
             "logical_id INTEGER PRIMARY KEY, "
@@ -53,11 +53,11 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "date TEXT, "
             "start TEXT, "
             "end TEXT, "
-            "project_id INTEGER, " // Changed from project_path
+            "project_id INTEGER, "
             "duration INTEGER, "
             "activity_remark TEXT, "
             "FOREIGN KEY (date) REFERENCES days(date), "
-            "FOREIGN KEY (project_id) REFERENCES projects(id));"; // Added foreign key
+            "FOREIGN KEY (project_id) REFERENCES projects(id));";
         execute_sql(db, create_records_sql, "Create time_records table");
     }
 }
