@@ -18,7 +18,7 @@
 namespace {
     struct DayMdRegister {
         DayMdRegister() {
-            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::Markdown, 
+            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::Markdown,
                 [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<DailyReportData>> {
                     auto md_config = std::make_shared<DayMdConfig>(cfg.day_md_config_path);
                     return std::make_unique<DayMd>(md_config);
@@ -38,7 +38,7 @@ std::string DayMd::format_report(const DailyReportData& data) const {
         ss << config_->get_no_records() << "\n";
         return ss.str();
     }
-    
+
     _display_statistics(ss, data);
     _display_detailed_activities(ss, data);
     _display_project_breakdown(ss, data);
@@ -65,8 +65,8 @@ void DayMd::_display_detailed_activities(std::stringstream& ss, const DailyRepor
         ss << "\n## " << config_->get_all_activities_label() << "\n\n";
         for (const auto& record : data.detailed_records) {
             std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
-            ss << std::format("- {0} - {1} ({2}): {3}\n", 
-                record.start_time, 
+            ss << std::format("- {0} - {1} ({2}): {3}\n",
+                record.start_time,
                 record.end_time,
                 time_format_duration(record.duration_seconds),
                 project_path
@@ -83,14 +83,12 @@ void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& da
     const auto& items_config = config_->get_statistics_items();
     std::vector<std::string> lines_to_print;
 
-    // 为了保证输出顺序，我们按固定顺序迭代
     const std::vector<std::string> ordered_keys = {"sleep_time", "anaerobic_time", "cardio_time", "grooming_time", "recreation_time"};
 
     for (const auto& key : ordered_keys) {
         auto it = items_config.find(key);
         if (it == items_config.end() || !it->second.show) continue;
-        
-        // C++中没有简单的方法通过字符串名访问成员，所以我们用一个查找来代替
+
         long long duration = 0;
         if (key == "sleep_time") duration = data.sleep_time;
         else if (key == "anaerobic_time") duration = data.anaerobic_time;
@@ -98,12 +96,11 @@ void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& da
         else if (key == "grooming_time") duration = data.grooming_time;
         else if (key == "recreation_time") duration = data.recreation_time;
 
-        if (duration > 0) {
-            lines_to_print.push_back(std::format("- **{0}**: {1}", it->second.label, time_format_duration(duration)));
-        }
+        // [核心修改] 移除 if (duration > 0) 条件，始终添加统计行
+        lines_to_print.push_back(std::format("- **{0}**: {1}", it->second.label, time_format_duration(duration)));
 
         // 特殊处理娱乐时间的子项
-        if (key == "recreation_time" && duration > 0) {
+        if (key == "recreation_time") {
             if (data.recreation_zhihu_time > 0 && items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
                 lines_to_print.push_back(std::format("  - **{0}**: {1}", items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
             }
