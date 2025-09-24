@@ -89,11 +89,12 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 }
 
 // --- [ 核心修改 ] ---
-// 修正了SQL查询中的列名，以匹配数据库表的定义（例如，anaerobic_time）。
+// 扩展SQL查询以包含所有新的娱乐时间统计字段。
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // SQL查询已扩展并修正，以包含所有需要的统计字段
-    std::string sql = "SELECT sleepTotalTime, anaerobic_time, cardio_time, grooming_time FROM days WHERE date = ?;";
+    std::string sql = "SELECT sleepTotalTime, anaerobic_time, cardio_time, grooming_time, "
+                      "recreationTime, recreationZhihuTime, recreationBilibiliTime, recreationDouyinTime "
+                      "FROM days WHERE date = ?;";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
@@ -102,6 +103,10 @@ void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
             if (sqlite3_column_type(stmt, 1) != SQLITE_NULL) data.anaerobic_time = sqlite3_column_int64(stmt, 1);
             if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) data.cardio_time = sqlite3_column_int64(stmt, 2);
             if (sqlite3_column_type(stmt, 3) != SQLITE_NULL) data.grooming_time = sqlite3_column_int64(stmt, 3);
+            if (sqlite3_column_type(stmt, 4) != SQLITE_NULL) data.recreation_time = sqlite3_column_int64(stmt, 4);
+            if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) data.recreation_zhihu_time = sqlite3_column_int64(stmt, 5);
+            if (sqlite3_column_type(stmt, 6) != SQLITE_NULL) data.recreation_bilibili_time = sqlite3_column_int64(stmt, 6);
+            if (sqlite3_column_type(stmt, 7) != SQLITE_NULL) data.recreation_douyin_time = sqlite3_column_int64(stmt, 7);
         }
     }
     sqlite3_finalize(stmt);

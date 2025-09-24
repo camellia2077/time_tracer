@@ -16,13 +16,14 @@ bool QueryConfigValidator::is_valid_hex_color(const std::string& color_string) c
 bool QueryConfigValidator::validate(const json& query_json, const std::string& file_name) const {
     bool all_valid = true;
 
-    // --- [CORE FIX] ---
-    // Define separate sets of required keys for each report type. This is the main fix.
+    // --- [核心修改] ---
+    // 将新的 recreation 相关的键添加到 daily_keys 集合中
     const std::set<std::string> daily_keys = {
         "date_label", "total_time_label", "status_label", "sleep_label", "exercise_label", 
         "getup_time_label", "remark_label", "statistics_label", "all_activities_label", 
         "sleep_time_label", "activity_remark_label", "activity_connector", 
-        "anaerobic_time_label", "cardio_time_label", "grooming_time_label"
+        "anaerobic_time_label", "cardio_time_label", "grooming_time_label",
+        "recreation_time_label", "zhihu_time_label", "bilibili_time_label", "douyin_time_label"
     };
 
     const std::set<std::string> monthly_keys = {

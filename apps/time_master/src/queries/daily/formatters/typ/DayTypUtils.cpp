@@ -84,6 +84,34 @@ namespace DayTypUtils {
             config->get_grooming_time_label(), 
             time_format_duration(data.grooming_time)
         );
+        // --- [核心修改] 新增娱乐时间格式化逻辑 ---
+        if (data.recreation_time > 0) {
+            ss << std::format("+ *{}:* {}\n", 
+                config->get_recreation_time_label(), 
+                time_format_duration(data.recreation_time)
+            );
+            // 检查是否有子项，并以层级结构显示
+            if (data.recreation_zhihu_time > 0 || data.recreation_bilibili_time > 0 || data.recreation_douyin_time > 0) {
+                if (data.recreation_zhihu_time > 0) {
+                    ss << std::format("  + *{}:* {}\n", 
+                        config->get_zhihu_time_label(), 
+                        time_format_duration(data.recreation_zhihu_time)
+                    );
+                }
+                if (data.recreation_bilibili_time > 0) {
+                    ss << std::format("  + *{}:* {}\n", 
+                        config->get_bilibili_time_label(), 
+                        time_format_duration(data.recreation_bilibili_time)
+                    );
+                }
+                if (data.recreation_douyin_time > 0) {
+                    ss << std::format("  + *{}:* {}\n", 
+                        config->get_douyin_time_label(), 
+                        time_format_duration(data.recreation_douyin_time)
+                    );
+                }
+            }
+        }
     }
 
     void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {

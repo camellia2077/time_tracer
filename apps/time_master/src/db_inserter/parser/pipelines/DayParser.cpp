@@ -22,10 +22,15 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         day_data.grooming_time = generated_stats.value("groomingTime", 0);
         day_data.toilet_time = generated_stats.value("toiletTime", 0);
 
-        // --- [核心修改] 解析新的睡眠统计数据 ---
         day_data.sleep_night_time = generated_stats.value("sleepNightTime", 0);
         day_data.sleep_day_time = generated_stats.value("sleepDayTime", 0);
         day_data.sleep_total_time = generated_stats.value("sleepTotalTime", 0);
+
+        // --- [新增] 解析娱乐时间数据 ---
+        day_data.recreation_time = generated_stats.value("recreationTime", 0);
+        day_data.recreation_zhihu_time = generated_stats.value("recreationZhihuTime", 0);
+        day_data.recreation_bilibili_time = generated_stats.value("recreationBilibiliTime", 0);
+        day_data.recreation_douyin_time = generated_stats.value("recreationDouyinTime", 0);
 
         if (day_data.date.length() == 8) {
             day_data.year = std::stoi(day_data.date.substr(0, 4));

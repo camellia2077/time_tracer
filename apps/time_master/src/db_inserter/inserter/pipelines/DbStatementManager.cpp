@@ -6,7 +6,7 @@ DbStatementManager::DbStatementManager(sqlite3* db)
     : db(db), 
       stmt_insert_day(nullptr), 
       stmt_insert_record(nullptr),
-      stmt_select_project_id(nullptr), // Initialize new members
+      stmt_select_project_id(nullptr),
       stmt_insert_project(nullptr)
 {
     _prepare_statements();
@@ -18,18 +18,18 @@ DbStatementManager::~DbStatementManager() {
 
 sqlite3_stmt* DbStatementManager::get_insert_day_stmt() const { return stmt_insert_day; }
 sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_insert_record; }
-
 sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return stmt_select_project_id; }
 sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project; }
 
 void DbStatementManager::_prepare_statements() {
-    // --- [核心修改] 更新 'days' 表的插入语句以包含新字段 ---
+    // --- [核心修改] 更新 'days' 表的插入语句 ---
     const char* insert_day_sql = 
     "INSERT INTO days (date, year, month, status, sleep, remark, getup_time, "
     "exercise, total_exercise_time, cardio_time, anaerobic_time, "
     "gaming_time, grooming_time, toilet_time, "
-    "sleepNightTime, sleepDayTime, sleepTotalTime) "
-    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);"; // 调整了参数数量
+    "sleepNightTime, sleepDayTime, sleepTotalTime, "
+    "recreationTime, recreationZhihuTime, recreationBilibiliTime, recreationDouyinTime) "
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }

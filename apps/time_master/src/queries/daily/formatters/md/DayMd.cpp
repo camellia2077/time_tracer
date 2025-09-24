@@ -9,7 +9,7 @@
 #include "queries/shared/utils/format/TimeFormat.hpp"
 #include "queries/shared/utils/format/ReportStringUtils.hpp"
 #include "queries/shared/utils/format/MarkdownUtils.hpp"
-#include "queries/shared/factories/GenericFormatterFactory.hpp" // [新增] 引入新工厂
+#include "queries/shared/factories/GenericFormatterFactory.hpp"
 #include "queries/daily/formatters/md/DayMdConfig.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
 
@@ -96,4 +96,33 @@ void DayMd::_display_statistics(std::stringstream& ss, const DailyReportData& da
         config_->get_grooming_time_label(), 
         time_format_duration(data.grooming_time)
     );
+
+    // --- [核心修改] 新增娱乐时间格式化逻辑 ---
+    if (data.recreation_time > 0) {
+        ss << std::format("- **{0}**: {1}\n", 
+            config_->get_recreation_time_label(), 
+            time_format_duration(data.recreation_time)
+        );
+        // 检查是否有子项，并以层级结构显示
+        if (data.recreation_zhihu_time > 0 || data.recreation_bilibili_time > 0 || data.recreation_douyin_time > 0) {
+            if (data.recreation_zhihu_time > 0) {
+                ss << std::format("  - **{0}**: {1}\n", 
+                    config_->get_zhihu_time_label(), 
+                    time_format_duration(data.recreation_zhihu_time)
+                );
+            }
+            if (data.recreation_bilibili_time > 0) {
+                ss << std::format("  - **{0}**: {1}\n", 
+                    config_->get_bilibili_time_label(), 
+                    time_format_duration(data.recreation_bilibili_time)
+                );
+            }
+            if (data.recreation_douyin_time > 0) {
+                ss << std::format("  - **{0}**: {1}\n", 
+                    config_->get_douyin_time_label(), 
+                    time_format_duration(data.recreation_douyin_time)
+                );
+            }
+        }
+    }
 }

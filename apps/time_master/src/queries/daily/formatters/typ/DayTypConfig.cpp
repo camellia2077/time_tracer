@@ -30,12 +30,16 @@ void DayTypConfig::load_config(const std::string& config_path) {
     statistics_label_ = config_json.at("statistics_label").get<std::string>();
     all_activities_label_ = config_json.at("all_activities_label").get<std::string>();
     sleep_time_label_ = config_json.at("sleep_time_label").get<std::string>();
-    // --- [核心修改] 加载新配置 ---
     anaerobic_time_label_ = config_json.at("anaerobic_time_label").get<std::string>();
     cardio_time_label_ = config_json.at("cardio_time_label").get<std::string>();
     grooming_time_label_ = config_json.at("grooming_time_label").get<std::string>();
     activity_remark_label_ = config_json.at("activity_remark_label").get<std::string>();
     activity_connector_ = config_json.at("activity_connector").get<std::string>();
+    // --- [新增] 加载娱乐时间配置 ---
+    recreation_time_label_ = config_json.value("recreation_time_label", "Recreation Time");
+    zhihu_time_label_ = config_json.value("zhihu_time_label", "Zhihu");
+    bilibili_time_label_ = config_json.value("bilibili_time_label", "Bilibili");
+    douyin_time_label_ = config_json.value("douyin_time_label", "Douyin");
 }
 
 // Getters
@@ -59,9 +63,13 @@ const std::string& DayTypConfig::get_no_records() const { return no_records_; }
 const std::string& DayTypConfig::get_statistics_label() const { return statistics_label_; }
 const std::string& DayTypConfig::get_all_activities_label() const { return all_activities_label_; }
 const std::string& DayTypConfig::get_sleep_time_label() const { return sleep_time_label_; }
-// --- [核心修改] 新增 Getter 实现 ---
 const std::string& DayTypConfig::get_anaerobic_time_label() const { return anaerobic_time_label_; }
 const std::string& DayTypConfig::get_cardio_time_label() const { return cardio_time_label_; }
 const std::string& DayTypConfig::get_grooming_time_label() const { return grooming_time_label_; }
 const std::string& DayTypConfig::get_activity_remark_label() const { return activity_remark_label_; }
 const std::string& DayTypConfig::get_activity_connector() const { return activity_connector_; }
+// --- [新增 Getter 实现] ---
+const std::string& DayTypConfig::get_recreation_time_label() const { return recreation_time_label_; }
+const std::string& DayTypConfig::get_zhihu_time_label() const { return zhihu_time_label_; }
+const std::string& DayTypConfig::get_bilibili_time_label() const { return bilibili_time_label_; }
+const std::string& DayTypConfig::get_douyin_time_label() const { return douyin_time_label_; }

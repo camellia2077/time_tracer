@@ -3,6 +3,7 @@
 #include <format>
 #include <cmath>
 #include <iterator>
+#include <algorithm> // 为 std::max 添加此头文件
 
 EventGenerator::EventGenerator(int items_per_day,
                                const std::vector<std::string>& activities,
@@ -20,26 +21,56 @@ EventGenerator::EventGenerator(int items_per_day,
       should_generate_remark_(remark_config.has_value() ? remark_config->generation_chance : 0.0) {}
 
 void EventGenerator::generate_events_for_day(std::string& log_content, bool is_nosleep_day) {
+    // 以总分钟数来跟踪上一个事件的时间，初始值设为第一个可能事件（06:00）之前
+    int last_total_minutes = 5 * 60 + 59; 
+
     for (int i = 0; i < items_per_day_; ++i) {
         int hour;
-        int minute = dis_minute_(gen_);
+        int minute;
         std::string text;
         
         bool is_wakeup_event = false;
 
-        // [核心修改]
         if (i == 0 && !is_nosleep_day) {
-            // 正常天：处理“起床”的特殊情况
+            // 正常天的第一个事件是“起床”
             text = wake_keywords_[dis_wake_keyword_selector_(gen_)];
             hour = 6;
+            minute = dis_minute_(gen_);
             is_wakeup_event = true;
+
+            last_total_minutes = hour * 60 + minute;
         } else {
-            // 通宵天或非第一项活动：处理其他随机事件
+            // 通宵天或正常天的后续事件
             text = common_activities_[dis_activity_selector_(gen_)];
-            double progress_ratio = (items_per_day_ > 1) ? static_cast<double>(i) / (items_per_day_ - 1) : 1.0;
-            int logical_hour = 6 + static_cast<int>(std::round(progress_ratio * 19.0));
-            if (logical_hour > 25) logical_hour = 25;
+            
+            // 为当前事件计算一个目标时间范围，以保持事件在一天中的大致分布
+            double slot_size = (19.0 * 60.0) / items_per_day_; // 活动时间共19小时
+            int slot_start = static_cast<int>((6 * 60) + i * slot_size);
+            int slot_end = static_cast<int>((6 * 60) + (i + 1) * slot_size) - 1;
+
+            // 随机生成的开始时间必须晚于上一个事件的时间!!!
+            int effective_start = std::max(slot_start, last_total_minutes + 1);
+
+            // 确保时间范围的结束点有效
+            if (slot_end <= effective_start) {
+                slot_end = effective_start + 5; // 给一个小的随机窗口
+            }
+
+            // 在计算出的有效时间窗口内生成一个随机时间
+            std::uniform_int_distribution<> time_dist(effective_start, slot_end);
+            int current_total_minutes = time_dist(gen_);
+            
+            // 最终保障措施：如果出现任何意外（如取整问题），强制时间递增
+            if (current_total_minutes <= last_total_minutes) {
+                current_total_minutes = last_total_minutes + 1;
+            }
+            
+            // 将总分钟数转换回小时和分钟
+            int logical_hour = current_total_minutes / 60;
+            minute = current_total_minutes % 60;
             hour = (logical_hour >= 24) ? logical_hour - 24 : logical_hour;
+
+            last_total_minutes = current_total_minutes;
         }
         
         // 尝试添加备注
@@ -49,7 +80,7 @@ void EventGenerator::generate_events_for_day(std::string& log_content, bool is_n
             const std::string& content = remark_config_->contents[remark_content_idx_];
             remark_str = std::format(" {}{}", delimiter, content);
 
-            // 更新索引以实现循环
+            // 轮换使用分隔符和备注内容
             remark_delimiter_idx_ = (remark_delimiter_idx_ + 1) % remark_delimiters_.size();
             remark_content_idx_ = (remark_content_idx_ + 1) % remark_config_->contents.size();
         }

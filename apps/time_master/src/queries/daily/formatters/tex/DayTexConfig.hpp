@@ -22,7 +22,6 @@ public:
     const std::string& get_statistics_label() const;
     const std::string& get_all_activities_label() const;
     const std::string& get_sleep_time_label() const;
-    // --- [核心修改] 新增 Getter ---
     const std::string& get_anaerobic_time_label() const;
     const std::string& get_cardio_time_label() const;
     const std::string& get_grooming_time_label() const;
@@ -37,6 +36,11 @@ public:
     double get_list_item_sep_ex() const;
     const std::map<std::string, std::string>& get_keyword_colors() const;
     const std::string& get_activity_connector() const;
+    // --- [新增 Getter] ---
+    const std::string& get_recreation_time_label() const;
+    const std::string& get_zhihu_time_label() const;
+    const std::string& get_bilibili_time_label() const;
+    const std::string& get_douyin_time_label() const;
 
 private:
     void load_config(const std::string& config_path);
@@ -53,7 +57,6 @@ private:
     std::string statistics_label_;
     std::string all_activities_label_;
     std::string sleep_time_label_;
-    // --- [核心修改] 新增成员变量 ---
     std::string anaerobic_time_label_;
     std::string cardio_time_label_;
     std::string grooming_time_label_;
@@ -68,6 +71,11 @@ private:
     double list_item_sep_ex_;
     std::map<std::string, std::string> keyword_colors_;
     std::string activity_connector_;
+    // --- [新增成员变量] ---
+    std::string recreation_time_label_;
+    std::string zhihu_time_label_;
+    std::string bilibili_time_label_;
+    std::string douyin_time_label_;
 };
 
 #endif // DAY_TEX_CONFIG_HPP

@@ -4,7 +4,6 @@
 #include <sstream>
 #include <vector>
 
-// --- Auxiliary function for splitting strings ---
 static std::vector<std::string> split_string(const std::string& s, char delimiter) {
     std::vector<std::string> tokens;
     std::string token;
@@ -26,7 +25,6 @@ DataInserter::DataInserter(sqlite3* db,
       stmt_select_project_id(stmt_select_project),
       stmt_insert_project(stmt_insert_project) {}
 
-// --- [核心修改] 更新 insert_days 中的数据绑定 ---
 void DataInserter::insert_days(const std::vector<DayData>& days) {
     for (const auto& day_data : days) {
         sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
@@ -51,10 +49,15 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
         sqlite3_bind_int(stmt_insert_day, 13, day_data.grooming_time);
         sqlite3_bind_int(stmt_insert_day, 14, day_data.toilet_time);
 
-        // 绑定新的睡眠统计数据
         sqlite3_bind_int(stmt_insert_day, 15, day_data.sleep_night_time);
         sqlite3_bind_int(stmt_insert_day, 16, day_data.sleep_day_time);
         sqlite3_bind_int(stmt_insert_day, 17, day_data.sleep_total_time);
+
+        // --- [新增] 绑定娱乐时间数据 ---
+        sqlite3_bind_int(stmt_insert_day, 18, day_data.recreation_time);
+        sqlite3_bind_int(stmt_insert_day, 19, day_data.recreation_zhihu_time);
+        sqlite3_bind_int(stmt_insert_day, 20, day_data.recreation_bilibili_time);
+        sqlite3_bind_int(stmt_insert_day, 21, day_data.recreation_douyin_time);
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
