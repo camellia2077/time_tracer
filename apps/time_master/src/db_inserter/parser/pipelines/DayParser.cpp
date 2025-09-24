@@ -15,8 +15,8 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         day_data.remark = headers.at("remark");
         day_data.exercise = headers.value("exercise", 0);
         day_data.total_exercise_time = generated_stats.value("total_exercise_time", 0);
-        day_data.cardio_time = generated_stats.value("cardio_time", 0);
         day_data.anaerobic_time = generated_stats.value("anaerobic_time", 0);
+        day_data.cardio_time = generated_stats.value("cardio_time", 0);
         
         day_data.gaming_time = generated_stats.value("gaming_time", 0);
         day_data.grooming_time = generated_stats.value("grooming_time", 0);

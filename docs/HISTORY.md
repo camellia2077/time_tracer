@@ -417,3 +417,6 @@ md
 json新增开关控制输出哪些Statistics输出
 tex typ
 
+## v0.3.23.3
+如果Statistics中数据为0，也打印
+

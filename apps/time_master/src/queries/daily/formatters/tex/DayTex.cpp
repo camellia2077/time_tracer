@@ -18,7 +18,7 @@
 namespace {
     struct DayTexRegister {
         DayTexRegister() {
-            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::LaTeX, 
+            GenericFormatterFactory<DailyReportData>::regist(ReportFormat::LaTeX,
                 [](const AppConfig& cfg) -> std::unique_ptr<IReportFormatter<DailyReportData>> {
                     auto tex_config = std::make_shared<DayTexConfig>(cfg.day_tex_config_path);
                     return std::make_unique<DayTex>(tex_config);
@@ -49,7 +49,7 @@ std::string DayTex::format_report(const DailyReportData& data) const {
         _display_detailed_activities(ss, data);
         _display_project_breakdown(ss, data);
     }
-    
+
     ss << TexUtils::get_tex_postfix();
     return ss.str();
 }
@@ -60,9 +60,9 @@ void DayTex::_display_header(std::stringstream& ss, const DailyReportData& data)
     ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
     ss << "\\section*{" << config_->get_report_title() << " " << TexUtils::escape_latex(data.date) << "}";
     ss << "}\n\n";
-    
-    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
-        config_->get_list_top_sep_pt(), 
+
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]",
+        config_->get_list_top_sep_pt(),
         config_->get_list_item_sep_ex()
     );
 
@@ -98,7 +98,7 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     for (const auto& key : ordered_keys) {
         auto it = items_config.find(key);
         if (it == items_config.end() || !it->second.show) continue;
-        
+
         long long duration = 0;
         if (key == "sleep_time") duration = data.sleep_time;
         else if (key == "anaerobic_time") duration = data.anaerobic_time;
@@ -106,11 +106,10 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
         else if (key == "grooming_time") duration = data.grooming_time;
         else if (key == "recreation_time") duration = data.recreation_time;
 
-        if (duration > 0) {
-            lines_to_print.push_back(std::format("    \\item \\textbf{{{}}}: {}", it->second.label, TexUtils::escape_latex(time_format_duration(duration))));
-        }
+        // [核心修改] 移除 if (duration > 0) 条件
+        lines_to_print.push_back(std::format("    \\item \\textbf{{{}}}: {}", it->second.label, TexUtils::escape_latex(time_format_duration(duration))));
 
-        if (key == "recreation_time" && duration > 0) {
+        if (key == "recreation_time") {
             if (data.recreation_zhihu_time > 0 && items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
                 sub_lines_to_print.push_back(std::format("        \\item \\textbf{{{}}}: {}", items_config.at("zhihu_time").label, TexUtils::escape_latex(time_format_duration(data.recreation_zhihu_time))));
             }
@@ -133,8 +132,8 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     ss << "\\subsection*{" << config_->get_statistics_label() << "}";
     ss << "}\n\n";
 
-    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
-        config_->get_list_top_sep_pt(), 
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]",
+        config_->get_list_top_sep_pt(),
         config_->get_list_item_sep_ex()
     );
     ss << "\\begin{itemize}" << compact_list_options << "\n";
@@ -155,15 +154,15 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
     if (data.detailed_records.empty()) {
         return;
     }
-    
+
     int category_size = config_->get_category_title_font_size();
     ss << "{";
     ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
     ss << "\\subsection*{" << config_->get_all_activities_label() << "}";
     ss << "}\n\n";
 
-    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]", 
-        config_->get_list_top_sep_pt(), 
+    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]",
+        config_->get_list_top_sep_pt(),
         config_->get_list_item_sep_ex()
     );
     ss << "\\begin{itemize}" << compact_list_options << "\n";
@@ -174,16 +173,16 @@ void DayTex::_display_detailed_activities(std::stringstream& ss, const DailyRepo
                                   TexUtils::escape_latex(record.end_time) + " (" +
                                   TexUtils::escape_latex(time_format_duration(record.duration_seconds)) +
                                   "): " + TexUtils::escape_latex(project_path);
-        
+
         std::string colorized_string = base_string;
-        
+
         for (const auto& pair : config_->get_keyword_colors()) {
             if (record.project_path.find(pair.first) != std::string::npos) {
                 colorized_string = "\\textcolor{" + pair.first + "color}{" + base_string + "}";
                 break;
             }
         }
-        
+
         ss << "    \\item " << colorized_string << "\n";
 
         if (record.activityRemark.has_value()) {

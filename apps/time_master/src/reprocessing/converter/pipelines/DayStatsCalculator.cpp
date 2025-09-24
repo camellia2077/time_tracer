@@ -94,8 +94,8 @@ void DayStatsCalculator::calculate_stats(InputData& day) {
         }
 
         for (const auto& rule : GeneratedStatsRules::rules) {
-            // 使用 rfind 检查 project_path 是否以规则的路径开头
-            if (activity.project_path.rfind(rule.match_path, 0) == 0) {
+            // 使用 find 检查 project_path 是否以规则的路径开头
+            if (activity.project_path.find(rule.match_path) == 0) {
                 (day.generatedStats.*(rule.member)) += activity.durationSeconds;
             }
         }
