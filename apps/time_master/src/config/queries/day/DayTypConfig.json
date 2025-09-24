@@ -37,7 +37,7 @@
     },
     "anaerobic_time": {
       "label": "Anaerobic Exercise",
-      "show": false
+      "show": true
     },
     "cardio_time": {
       "label": "Cardio Exercise",

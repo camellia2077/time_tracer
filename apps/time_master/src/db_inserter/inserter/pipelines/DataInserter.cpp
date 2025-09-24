@@ -44,7 +44,6 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
         sqlite3_bind_int(stmt_insert_day, 9, day_data.total_exercise_time);
         sqlite3_bind_int(stmt_insert_day, 10, day_data.cardio_time);
         sqlite3_bind_int(stmt_insert_day, 11, day_data.anaerobic_time);
-
         sqlite3_bind_int(stmt_insert_day, 12, day_data.gaming_time);
         sqlite3_bind_int(stmt_insert_day, 13, day_data.grooming_time);
         sqlite3_bind_int(stmt_insert_day, 14, day_data.toilet_time);
