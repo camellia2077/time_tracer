@@ -38,8 +38,16 @@ set(CONFIG_VALIDATOR
 set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliController.cpp"
     "src/time_master_cli/CliParser.cpp"
-)
 
+    # Add all new command implementation files
+    "src/time_master_cli/commands/ConvertCommand.cpp"
+    "src/time_master_cli/commands/DatabaseImportCommand.cpp"
+    "src/time_master_cli/commands/ExportCommand.cpp"
+    "src/time_master_cli/commands/QueryCommand.cpp"
+    "src/time_master_cli/commands/RunPipelineCommand.cpp"
+    "src/time_master_cli/commands/ValidateOutputCommand.cpp"
+    "src/time_master_cli/commands/ValidateSourceCommand.cpp"
+)
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES
     "src/db_inserter/DataImporter.cpp"

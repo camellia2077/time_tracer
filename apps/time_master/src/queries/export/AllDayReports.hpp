@@ -1,6 +1,6 @@
 // queries/export/AllDayReports.hpp
-#ifndef ALL_REPORTS_GENERATOR_HPP
-#define ALL_REPORTS_GENERATOR_HPP 
+#ifndef ALL_DAY_REPORTS_HPP
+#define ALL_DAY_REPORTS_HPP 
 
 #include "queries/shared/data/query_data_structs.hpp"
 #include "queries/shared/types/ReportFormat.hpp" 
@@ -30,4 +30,4 @@ private:
     const AppConfig& app_config_; // [修改]
 };
 
-#endif // ALL_REPORTS_GENERATOR_HPP
+#endif // ALL_DAY_REPORTS_HPP

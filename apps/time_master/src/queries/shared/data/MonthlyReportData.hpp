@@ -1,6 +1,6 @@
 // queries/shared/data/MonthlyReportData.hpp
-#ifndef REPORT_DATA_HPP
-#define REPORT_DATA_HPP
+#ifndef MONTHLY_REPORT_DATA_HPP
+#define MONTHLY_REPORT_DATA_HPP
 
 #include <string>
 #include <vector>
@@ -15,4 +15,4 @@ struct MonthlyReportData {
     ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
 };
 
-#endif // REPORT_DATA_HPP
+#endif // MONTHLY_REPORT_DATA_HPP

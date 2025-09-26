@@ -1,6 +1,6 @@
 // action_handler/file/PipelineManager.hpp
-#ifndef FILE_PIPELINE_MANAGER_HPP
-#define FILE_PIPELINE_MANAGER_HPP
+#ifndef PIPELINE_MANAGER_HPP
+#define PIPELINE_MANAGER_HPP
 
 #include <string>
 #include <vector>
@@ -40,4 +40,4 @@ private:
     std::vector<fs::path> generated_output_files_; 
 };
 
-#endif // FILE_PIPELINE_MANAGER_HPP
+#endif // PIPELINE_MANAGER_HPP

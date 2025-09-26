@@ -1,6 +1,6 @@
 // action_handler/ReportHandler.hpp
-#ifndef REPORT_GENERATION_HANDLER_HPP
-#define REPORT_GENERATION_HANDLER_HPP
+#ifndef REPORT_HANDLER_HPP
+#define REPORT_HANDLER_HPP
 
 #include <string>
 #include <vector>
@@ -8,18 +8,22 @@
 #include <filesystem>
 #include "queries/shared/data/query_data_structs.hpp"
 #include "queries/shared/types/ReportFormat.hpp"
-#include "common/AppConfig.hpp"
 
-class DBManager;
+
+// Forward declaration of dependencies
 class Exporter;
 class QueryManager;
 
 class ReportHandler {
 public:
-    // Modify constructor to receive and store the AppConfig
-    ReportHandler(const std::string& db_path, const AppConfig& config, const std::filesystem::path& exported_files_path);
+    // Constructor for dependency injection
+    ReportHandler(
+        std::unique_ptr<QueryManager> query_manager,
+        std::unique_ptr<Exporter> exporter
+    );
     ~ReportHandler();
 
+    // --- Public API remains unchanged ---
     std::string run_daily_query(const std::string& date, ReportFormat format);
     std::string run_monthly_query(const std::string& month, ReportFormat format);
     std::string run_period_query(int days, ReportFormat format);
@@ -32,15 +36,9 @@ public:
     void run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format);
 
 private:
-    QueryManager* get_direct_query_manager();
-    Exporter* get_report_exporter();
-
-    const AppConfig& app_config_; // [ADDED] Store a reference to the config
-    std::unique_ptr<DBManager> db_manager_;
-    std::unique_ptr<Exporter> report_exporter_;
+    // [FIX] Reordered members to match the constructor's initialization list
     std::unique_ptr<QueryManager> direct_query_manager_;
-
-    std::filesystem::path export_root_path_;
+    std::unique_ptr<Exporter> report_exporter_;
 };
 
-#endif // REPORT_GENERATION_HANDLER_HPP
+#endif // REPORT_HANDLER_HPP

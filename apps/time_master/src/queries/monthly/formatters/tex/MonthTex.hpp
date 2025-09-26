@@ -1,6 +1,6 @@
 // queries/monthly/formatters/tex/MonthTex.hpp
-#ifndef MONTHLY_REPORT_TEX_FORMATTER_HPP
-#define MONTHLY_REPORT_TEX_FORMATTER_HPP
+#ifndef MONTH_TEX_HPP
+#define MONTH_TEX_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
@@ -20,4 +20,4 @@ private:
     std::shared_ptr<MonthTexConfig> config_;
 };
 
-#endif // MONTHLY_REPORT_TEX_FORMATTER_HPP
+#endif // MONTH_TEX_HPP

@@ -1,6 +1,6 @@
 // queries/daily/DayQuerier.hpp
-#ifndef DAILY_REPORT_QUERIER_HPP
-#define DAILY_REPORT_QUERIER_HPP
+#ifndef DAY_QUERIER_HPP
+#define DAY_QUERIER_HPP
 
 #include <sqlite3.h>
 #include <string>
@@ -25,4 +25,4 @@ private:
     void _fetch_generated_stats(DailyReportData& data);
 };
 
-#endif // DAILY_REPORT_QUERIER_HPP
+#endif // DAY_QUERIER_HPP

@@ -6,13 +6,15 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
-#include "queries/shared/types/ReportFormat.hpp"
-#include "CliParser.hpp" // 包含新的解析器头文件
+#include <map>
+#include "time_master_cli/CliParser.hpp"
+#include "time_master_cli/commands/ICommand.hpp" // [修改] 引入命令接口
 
 // 前向声明
 class FileController;
 class FileHandler;
 class ReportHandler;
+class DBManager;
 
 namespace fs = std::filesystem;
 
@@ -24,26 +26,23 @@ public:
     void execute();
 
 private:
-    CliParser parser_; // 使用新的解析器类替换原始参数
+    CliParser parser_;
 
+    // --- 依赖的服务 ---
     std::unique_ptr<FileController> file_controller_;
+    std::unique_ptr<DBManager> db_manager_;
     std::unique_ptr<FileHandler> file_processing_handler_;
     std::unique_ptr<ReportHandler> report_generation_handler_;
 
+    // --- [核心修改] 使用 map 来存储和分发命令 ---
+    std::map<std::string, std::unique_ptr<ICommand>> commands_;
+    
     fs::path output_root_path_;
     fs::path exported_files_path_;
 
-    // --- 辅助函数 ---
     void initialize_output_paths();
-    void handle_run_pipeline();
-    void handle_validate_source();
-    void handle_convert();
-    void handle_validate_output();
-    void handle_database_import();
-    void handle_query();
-    void handle_export();
-
-    // 解析函数已移至 CliParser 类
+    
+    // [移除] 所有 handle_* 私有方法
 };
 
 #endif // CLI_CONTROLLER_HPP

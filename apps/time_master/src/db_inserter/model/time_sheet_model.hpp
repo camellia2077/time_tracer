@@ -1,6 +1,6 @@
 // db_inserter/model/time_sheet_model.hpp
-#ifndef DATA_STRUCTURES_HPP
-#define DATA_STRUCTURES_HPP
+#ifndef TIME_SHEET_MODEL_HPP
+#define TIME_SHEET_MODEL_HPP
 
 #include <string>
 #include <vector>
@@ -73,4 +73,4 @@ struct pair_hash {
     }
 };
 
-#endif // DATA_STRUCTURES_HPP
+#endif // TIME_SHEET_MODEL_HPP

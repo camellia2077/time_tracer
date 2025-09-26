@@ -1,6 +1,6 @@
 // queries/export/AllMonthlyReports.hpp
-#ifndef ALL_MONTHLY_REPORTS_GENERATOR_HPP
-#define ALL_MONTHLY_REPORTS_GENERATOR_HPP
+#ifndef ALL_MONTHLY_REPORTS_HPP
+#define ALL_MONTHLY_REPORTS_HPP
 
 #include <sqlite3.h>
 #include <map>
@@ -20,4 +20,4 @@ private:
     const AppConfig& app_config_;
 };
 
-#endif // ALL_MONTHLY_REPORTS_GENERATOR_HPP
+#endif // ALL_MONTHLY_REPORTS_HPP

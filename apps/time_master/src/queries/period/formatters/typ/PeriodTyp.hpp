@@ -1,6 +1,6 @@
 // queries/period/formatters/typ/PeriodTyp.hpp
-#ifndef PERIOD_REPORT_TYP_FORMATTER_HPP
-#define PERIOD_REPORT_TYP_FORMATTER_HPP
+#ifndef PERIOD_TYP_HPP
+#define PERIOD_TYP_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/PeriodReportData.hpp"
@@ -24,4 +24,4 @@ private:
     std::shared_ptr<PeriodTypConfig> config_;
 };
 
-#endif // PERIOD_REPORT_TYP_FORMATTER_HPP
+#endif // PERIOD_TYP_HPP
