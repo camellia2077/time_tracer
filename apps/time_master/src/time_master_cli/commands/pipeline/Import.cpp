@@ -1,12 +1,12 @@
-// time_master_cli/commands/DatabaseImportCommand.cpp
-#include "DatabaseImportCommand.hpp"
+// time_master_cli/commands/pipeline/Import.cpp
+#include "Import.hpp"
 #include <stdexcept>
 #include <iostream>
 
-DatabaseImportCommand::DatabaseImportCommand(FileHandler& file_handler)
+Import::Import(FileHandler& file_handler)
     : file_handler_(file_handler) {}
 
-void DatabaseImportCommand::execute(const CliParser& parser) {
+void Import::execute(const CliParser& parser) {
     if (parser.get_filtered_args().size() != 3) {
         throw std::runtime_error("Command 'import' requires exactly one directory path argument.");
     }
