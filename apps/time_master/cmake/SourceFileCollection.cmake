@@ -11,18 +11,18 @@ set(COMMON_SOURCES
 
 set(CONFIG_VALIDATOR
     # 顶层外观
-    "src/config_validator/facade/ConfigValidator.cpp"
+    "src/config_validator/facade/ConfigFacade.cpp"
 
     # Reprocessing 领域的 Facade 和 Pipelines
-    "src/config_validator/reprocessing/facade/ReprocessingValidatorFacade.cpp"
+    "src/config_validator/reprocessing/facade/ReprocFacade.cpp"
 
-    "src/config_validator/reprocessing/pipelines/MappingsConfigValidator.cpp"
-    "src/config_validator/reprocessing/pipelines/MainConfigValidator.cpp"
-    "src/config_validator/reprocessing/pipelines/DurationRulesConfigValidator.cpp"
+    "src/config_validator/reprocessing/pipelines/MappingRules.cpp"
+    "src/config_validator/reprocessing/pipelines/MainRules.cpp"
+    "src/config_validator/reprocessing/pipelines/DurationRules.cpp"
 
     # Queries 领域的 Facade 和 Pipelines
-    "src/config_validator/queries/facade/QueryValidatorFacade.cpp"
-    "src/config_validator/queries/pipelines/QueryConfigValidator.cpp"
+    "src/config_validator/queries/facade/QueryFacade.cpp"
+    "src/config_validator/queries/pipelines/QueryRules.cpp"
 )
 
 # --- Time Master CLI Sources ---
@@ -133,9 +133,9 @@ set(REPROCESSING_SOURCES
 
     "src/reprocessing/converter/pipelines/ActivityMapper.cpp"
     "src/reprocessing/converter/pipelines/DayProcessor.cpp"
-    "src/reprocessing/converter/pipelines/DayStatsCalculator.cpp"    
+    "src/reprocessing/converter/pipelines/DayStats.cpp"    
     "src/reprocessing/converter/pipelines/InputParser.cpp"
-    "src/reprocessing/converter/pipelines/OutputGenerator.cpp"
+    "src/reprocessing/converter/pipelines/Output.cpp"
 
     # 验证模块
     "src/reprocessing/validator/FileValidator.cpp"
@@ -145,18 +145,18 @@ set(REPROCESSING_SOURCES
     # 验证json的封装
     "src/reprocessing/validator/output_json/facade/JsonValidator.cpp"
     # 验证实现
-    "src/reprocessing/validator/output_json/pipelines/JsonValidatorActivities.cpp"
-    "src/reprocessing/validator/output_json/pipelines/JsonValidatorDate.cpp"
-    "src/reprocessing/validator/output_json/pipelines/JsonValidatorRules.cpp"
-    "src/reprocessing/validator/output_json/pipelines/JsonValidatorTime.cpp"
+    "src/reprocessing/validator/output_json/pipelines/ActivityRules.cpp"
+    "src/reprocessing/validator/output_json/pipelines/DateRules.cpp"
+    "src/reprocessing/validator/output_json/pipelines/BusinessRules.cpp"
+    "src/reprocessing/validator/output_json/pipelines/TimeRules.cpp"
 
 
 
-    "src/reprocessing/validator/source_txt/facade/SourceFileValidator.cpp"
+    "src/reprocessing/validator/source_txt/facade/SourceFacade.cpp"
 
-    "src/reprocessing/validator/source_txt/pipelines/LineProcessor.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/LineRules.cpp"
 
-    "src/reprocessing/validator/source_txt/pipelines/StructuralValidator.cpp"
+    "src/reprocessing/validator/source_txt/pipelines/StructureRules.cpp"
 
 
 )
@@ -170,13 +170,13 @@ set(FILE_HANDLER_SOURCES
 
 # --- Action Handler Sources ---
 set(ACTION_HANDLER_SOURCES
-    "src/action_handler/FileProcessingHandler.cpp"
-    "src/action_handler/ReportGenerationHandler.cpp"
-    "src/action_handler/database/DatabaseManager.cpp"
-    "src/action_handler/file/FilePipelineManager.cpp"
-    "src/action_handler/query/DirectQueryManager.cpp"
+    "src/action_handler/FileHandler.cpp"
+    "src/action_handler/ReportHandler.cpp"
+    "src/action_handler/database/DBManager.cpp"
+    "src/action_handler/file/PipelineManager.cpp"
+    "src/action_handler/query/QueryManager.cpp"
     "src/action_handler/reporting/ExportUtils.cpp"
-    "src/action_handler/reporting/ReportExporter.cpp"
+    "src/action_handler/reporting/Exporter.cpp"
 )
 
 message(STATUS "Source files collected explicitly.")

@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-namespace ConfigValidator {
+namespace ConfigFacade {
     /**
      * @brief 验证加载后的JSON配置数据。
      * @param config_data 要验证的配置数据。
