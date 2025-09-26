@@ -7,10 +7,10 @@
 #include <set>
 #include <nlohmann/json.hpp>
 
-#include "reprocessing/validator/output_json/pipelines/JsonValidatorDate.hpp"
-#include "reprocessing/validator/output_json/pipelines/JsonValidatorTime.hpp"
-#include "reprocessing/validator/output_json/pipelines/JsonValidatorRules.hpp"
-#include "reprocessing/validator/output_json/pipelines/JsonValidatorActivities.hpp"
+#include "reprocessing/validator/output_json/pipelines/DateRules.hpp"
+#include "reprocessing/validator/output_json/pipelines/TimeRules.hpp"
+#include "reprocessing/validator/output_json/pipelines/BusinessRules.hpp"
+#include "reprocessing/validator/output_json/pipelines/ActivityRules.hpp"
 
 // 这个模块专门负责验证经过转换后生成的 JSON 输出文件 的数据结构和内容
 /**

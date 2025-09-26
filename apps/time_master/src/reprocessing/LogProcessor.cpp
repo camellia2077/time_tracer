@@ -51,7 +51,7 @@ ProcessingResult LogProcessor::processFile(const fs::path& source_file,
         }
     }
 
-    // 转换和输出验证的逻辑已移至 FilePipelineManager
+    // 转换和输出验证的逻辑已移至 PipelineManager
     return result;
 }
 

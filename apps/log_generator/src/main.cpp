@@ -1,6 +1,6 @@
 // main.cpp
 #include "config/Config.h"
-#include "config/ConfigValidator.h"
+#include "config/ConfigFacade.h"
 #include "generator/facade/LogGenerator.h"
 #include "utils/Utils.h"
 #include "file_io/FileManager.h"
@@ -44,7 +44,7 @@ public:
 
         // --- 新增：配置验证步骤 ---
         std::vector<std::string> validation_errors;
-        if (!ConfigValidator::validate(*json_configs_opt, validation_errors)) {
+        if (!ConfigFacade::validate(*json_configs_opt, validation_errors)) {
             std::cerr << RED_COLOR << "配置文件验证失败:" << RESET_COLOR << std::endl;
             for (const auto& error : validation_errors) {
                 std::cerr << "  - " << error << std::endl;

@@ -156,8 +156,8 @@ time_master/
 │       └── internal/                   # 验证内部实现文件夹
 │           ├── OutputFileValidator.cpp
 │           ├── OutputFileValidator.h
-│           ├── SourceFileValidator.cpp
-│           └── SourceFileValidator.h
+│           ├── SourceFacade.cpp
+│           └── SourceFacade.h
 │
 └── resources/ # 编译用的图标资源,不是代码
     ├── app_icon.rc

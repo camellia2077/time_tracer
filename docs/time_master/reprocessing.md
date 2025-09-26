@@ -19,6 +19,6 @@ txt是要被转换为json的，因为json作为中间数据方便解析。而且
 
 2.  **动态存储 (Dynamic Storage)**: 修改 `InputData.hpp` 中的 `GeneratedStats` 结构体。不再使用固定的 `int` 成员（如 `groomingTime`, `toiletTime`），而是改用一个 `std::map<std::string, int>`。这样，我们可以动态地存储任意数量的统计数据。
 
-3.  **规则处理器 (Rule Processor)**: 重构 `DayStatsCalculator` 类。它将接收 `ConverterConfig` 的引用，并根据 `generated_stats_rules` 中的规则来处理活动列表。它会遍历所有活动，再遍历所有规则，如果一个活动符合某个规则，就将其时长累加到 `GeneratedStats` 的map中对应的 `key_name` 上。
+3.  **规则处理器 (Rule Processor)**: 重构 `DayStats` 类。它将接收 `ConverterConfig` 的引用，并根据 `generated_stats_rules` 中的规则来处理活动列表。它会遍历所有活动，再遍历所有规则，如果一个活动符合某个规则，就将其时长累加到 `GeneratedStats` 的map中对应的 `key_name` 上。
 
-4.  **动态输出 (Dynamic Output)**: 修改 `OutputGenerator.cpp`，让它在生成 `generatedStats` 对象时，遍历 `GeneratedStats` 的map，而不是去访问固定的成员变量。
+4.  **动态输出 (Dynamic Output)**: 修改 `Output.cpp`，让它在生成 `generatedStats` 对象时，遍历 `GeneratedStats` 的map，而不是去访问固定的成员变量。

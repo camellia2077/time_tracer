@@ -7,7 +7,7 @@ md已经实现
 
 ## 拆分
 按照职责拆分
-QueryConfigValidator.cpp
+QueryRules.cpp
 
 
 
