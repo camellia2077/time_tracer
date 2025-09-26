@@ -40,13 +40,23 @@ set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliParser.cpp"
 
     # Add all new command implementation files
-    "src/time_master_cli/commands/ConvertCommand.cpp"
-    "src/time_master_cli/commands/DatabaseImportCommand.cpp"
-    "src/time_master_cli/commands/ExportCommand.cpp"
-    "src/time_master_cli/commands/QueryCommand.cpp"
-    "src/time_master_cli/commands/RunPipelineCommand.cpp"
-    "src/time_master_cli/commands/ValidateOutputCommand.cpp"
-    "src/time_master_cli/commands/ValidateSourceCommand.cpp"
+    "src/time_master_cli/commands/export/Export.cpp"
+
+    "src/time_master_cli/commands/query/Query.cpp"
+
+    "src/time_master_cli/commands/pipeline/Convert.cpp"
+    "src/time_master_cli/commands/pipeline/Import.cpp"
+    "src/time_master_cli/commands/pipeline/Run.cpp"
+    "src/time_master_cli/commands/pipeline/ValidateOutput.cpp"
+    "src/time_master_cli/commands/pipeline/ValidateSource.cpp"
+
+
+   
+    
+    
+    
+    
+
 )
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES

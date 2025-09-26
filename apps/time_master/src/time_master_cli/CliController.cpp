@@ -15,13 +15,15 @@
 #include "action_handler/reporting/Exporter.hpp"
 
 // --- [核心修改] 引入所有具体的命令类 ---
-#include "time_master_cli/commands/RunPipelineCommand.hpp"
-#include "time_master_cli/commands/QueryCommand.hpp"
-#include "time_master_cli/commands/ExportCommand.hpp"
-#include "time_master_cli/commands/ValidateSourceCommand.hpp"
-#include "time_master_cli/commands/ConvertCommand.hpp"
-#include "time_master_cli/commands/ValidateOutputCommand.hpp"
-#include "time_master_cli/commands/DatabaseImportCommand.hpp"
+
+#include "time_master_cli/commands/query/Query.hpp"
+#include "time_master_cli/commands/export/Export.hpp"
+
+#include "time_master_cli/commands/pipeline/Run.hpp"
+#include "time_master_cli/commands/pipeline/ValidateSource.hpp"
+#include "time_master_cli/commands/pipeline/Convert.hpp"
+#include "time_master_cli/commands/pipeline/ValidateOutput.hpp"
+#include "time_master_cli/commands/pipeline/Import.hpp"
 
 
 namespace fs = std::filesystem;
@@ -62,14 +64,14 @@ CliController::CliController(const std::vector<std::string>& args)
     );
 
     // 3. 注册所有命令
-    commands_["run-pipeline"] = std::make_unique<RunPipelineCommand>(*file_processing_handler_);
-    commands_["validate-source"] = std::make_unique<ValidateSourceCommand>(*file_processing_handler_);
-    commands_["convert"] = std::make_unique<ConvertCommand>(*file_processing_handler_);
-    commands_["validate-output"] = std::make_unique<ValidateOutputCommand>(*file_processing_handler_);
-    commands_["import"] = std::make_unique<DatabaseImportCommand>(*file_processing_handler_);
+    commands_["run-pipeline"] = std::make_unique<Run>(*file_processing_handler_);
+    commands_["validate-source"] = std::make_unique<ValidateSource>(*file_processing_handler_);
+    commands_["convert"] = std::make_unique<Convert>(*file_processing_handler_);
+    commands_["validate-output"] = std::make_unique<ValidateOutput>(*file_processing_handler_);
+    commands_["import"] = std::make_unique<Import>(*file_processing_handler_);
     
-    commands_["query"] = std::make_unique<QueryCommand>(*report_generation_handler_);
-    commands_["export"] = std::make_unique<ExportCommand>(*report_generation_handler_);
+    commands_["query"] = std::make_unique<Query>(*report_generation_handler_);
+    commands_["export"] = std::make_unique<Export>(*report_generation_handler_);
 }
 
 CliController::~CliController() = default;

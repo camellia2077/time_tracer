@@ -1,12 +1,12 @@
-// time_master_cli/commands/ConvertCommand.cpp
-#include "ConvertCommand.hpp"
+// time_master_cli/commands/pipeline/Convert.cpp
+#include "Convert.hpp"
 #include "common/AppConfig.hpp"
 #include <stdexcept>
 
-ConvertCommand::ConvertCommand(FileHandler& file_handler)
+Convert::Convert(FileHandler& file_handler)
     : file_handler_(file_handler) {}
 
-void ConvertCommand::execute(const CliParser& parser) {
+void Convert::execute(const CliParser& parser) {
     if (parser.get_filtered_args().size() != 3) {
         throw std::runtime_error("Command 'convert' requires exactly one path argument.");
     }

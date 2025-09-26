@@ -1,13 +1,13 @@
-// time_master_cli/commands/QueryCommand.cpp
-#include "QueryCommand.hpp"
+// time_master_cli/commands/query/Query.cpp
+#include "Query.hpp"
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 
-QueryCommand::QueryCommand(ReportHandler& report_handler)
+Query::Query(ReportHandler& report_handler)
     : report_handler_(report_handler) {}
 
-void QueryCommand::execute(const CliParser& parser) {
+void Query::execute(const CliParser& parser) {
     const auto& filtered_args = parser.get_filtered_args();
     if (filtered_args.size() < 4) {
         throw std::runtime_error("Command 'query' requires a type and a period argument (e.g., query daily 20240101).");
