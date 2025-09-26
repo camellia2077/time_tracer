@@ -1,7 +1,7 @@
 // reprocessing/validator/FileValidator.cpp
 #include "FileValidator.hpp"
 
-#include "reprocessing/validator/source_txt/facade/SourceFileValidator.hpp"
+#include "reprocessing/validator/source_txt/facade/SourceFacade.hpp"
 #include "reprocessing/validator/output_json/facade/JsonValidator.hpp"
 
 // [修改] 构造函数现在加载并存储 ConverterConfig
@@ -20,8 +20,8 @@ bool FileValidator::validate(const std::string& file_path,
 
     switch (type) {
         case ValidatorType::Source: {
-            // [修改] 使用存储的 converter_config_ 来初始化 SourceFileValidator
-            SourceFileValidator source_validator(*converter_config_);
+            // [修改] 使用存储的 converter_config_ 来初始化 SourceFacade
+            SourceFacade source_validator(*converter_config_);
             return source_validator.validate(file_path, errors);
         }
         case ValidatorType::JsonOutput: {

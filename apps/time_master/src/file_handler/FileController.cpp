@@ -2,7 +2,7 @@
 #include "FileController.hpp"
 #include "ConfigLoader.hpp"
 #include "FileUtils.hpp"
-#include "config_validator/facade/ConfigValidator.hpp" // [修改] 更新为facade的路径
+#include "config_validator/facade/ConfigFacade.hpp" // [修改] 更新为facade的路径
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
@@ -73,7 +73,7 @@ void FileController::perform_preprocessing_config_validation() const {
         throw std::runtime_error("无法加载映射或时长规则配置文件，操作中止。");
     }
 
-    ConfigValidator validator;
+    ConfigFacade validator;
     // [修改] 调用更新后的方法
     if (!validator.validate_preprocessing_configs(main_json, mappings_json, duration_rules_json)) {
         throw std::runtime_error("预处理配置文件验证失败。请检查上面的错误信息。");
@@ -84,7 +84,7 @@ void FileController::perform_preprocessing_config_validation() const {
 void FileController::perform_query_config_validation() const {
     std::cout << "正在验证查询配置文件..." << std::endl;
 
-    ConfigValidator validator;
+    ConfigFacade validator;
     std::vector<std::pair<std::string, nlohmann::json>> query_jsons;
 
     const std::vector<std::string> query_config_paths = {

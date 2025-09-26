@@ -11,8 +11,8 @@
 
 #include "file_handler/FileController.hpp"
 #include "common/utils/ProjectTree.hpp" // For ProjectNode, ProjectTree"
-#include "action_handler/FileProcessingHandler.hpp"
-#include "action_handler/ReportGenerationHandler.hpp"
+#include "action_handler/FileHandler.hpp"
+#include "action_handler/ReportHandler.hpp"
 #include "common/AppConfig.hpp" // For AppOptions
 
 namespace fs = std::filesystem;
@@ -27,14 +27,14 @@ CliController::CliController(const std::vector<std::string>& args)
     file_controller_ = std::make_unique<FileController>(parser_.get_raw_arg(0));
     
     fs::path db_path = output_root_path_ / DATABASE_FILENAME;
-    file_processing_handler_ = std::make_unique<FileProcessingHandler>(
+    file_processing_handler_ = std::make_unique<FileHandler>(
         db_path.string(),
         file_controller_->get_config(),
         file_controller_->get_main_config_path(),
         output_root_path_
     );
 
-    report_generation_handler_ = std::make_unique<ReportGenerationHandler>(
+    report_generation_handler_ = std::make_unique<ReportHandler>(
         db_path.string(),
         file_controller_->get_config(),
         exported_files_path_
