@@ -18,7 +18,7 @@ set(SOURCES
     src/cli/CommandLineParser.cpp
     src/cli/HelpPrinter.cpp       
     src/config/Config.cpp
-    src/config/ConfigValidator.cpp
+    src/config/ConfigFacade.cpp
     src/file_io/FileManager.cpp
     src/generator/_internal/RemarkGenerator.cpp 
     src/generator/_internal/EventGenerator.cpp

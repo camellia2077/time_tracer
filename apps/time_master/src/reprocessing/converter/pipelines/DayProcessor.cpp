@@ -1,6 +1,6 @@
 // reprocessing/converter/pipelines/DayProcessor.cpp
 #include "DayProcessor.hpp"
-#include "DayStatsCalculator.hpp"
+#include "DayStats.hpp"
 #include "ActivityMapper.hpp" 
 
 namespace {
@@ -37,6 +37,6 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
         dayToProcess.getupTime = formatTime(previousDay.rawEvents.back().endTimeStr);
     }
     
-    DayStatsCalculator stats_calculator;
+    DayStats stats_calculator;
     stats_calculator.calculate_stats(dayToProcess);
 }

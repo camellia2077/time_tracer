@@ -1,9 +1,9 @@
-// config/ConfigValidator.cpp
-#include "ConfigValidator.h"
+// config/ConfigFacade.cpp
+#include "ConfigFacade.h"
 #include <set>
 #include <iostream>
 
-namespace ConfigValidator {
+namespace ConfigFacade {
     bool validate(const JsonConfigData& config_data, std::vector<std::string>& errors) {
         errors.clear();
 

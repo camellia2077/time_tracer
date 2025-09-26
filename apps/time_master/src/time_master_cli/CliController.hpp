@@ -11,8 +11,8 @@
 
 // 前向声明
 class FileController;
-class FileProcessingHandler;
-class ReportGenerationHandler;
+class FileHandler;
+class ReportHandler;
 
 namespace fs = std::filesystem;
 
@@ -27,8 +27,8 @@ private:
     CliParser parser_; // 使用新的解析器类替换原始参数
 
     std::unique_ptr<FileController> file_controller_;
-    std::unique_ptr<FileProcessingHandler> file_processing_handler_;
-    std::unique_ptr<ReportGenerationHandler> report_generation_handler_;
+    std::unique_ptr<FileHandler> file_processing_handler_;
+    std::unique_ptr<ReportHandler> report_generation_handler_;
 
     fs::path output_root_path_;
     fs::path exported_files_path_;
