@@ -1,6 +1,6 @@
 // queries/daily/formatters/tex/DayTex.hpp
-#ifndef DAILY_REPORT_TEX_FORMATTER_HPP
-#define DAILY_REPORT_TEX_FORMATTER_HPP
+#ifndef DAY_TEX_HPP
+#define DAY_TEX_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
@@ -22,4 +22,4 @@ private:
     std::shared_ptr<DayTexConfig> config_;
 };
 
-#endif // DAILY_REPORT_TEX_FORMATTER_HPP
+#endif // DAY_TEX_HPP

@@ -1,6 +1,6 @@
 // config_validator/facade/ConfigFacade.hpp
-#ifndef CONFIG_VALIDATOR_HPP
-#define CONFIG_VALIDATOR_HPP
+#ifndef CONFIG_FACADE_HPP
+#define CONFIG_FACADE_HPP
 
 #include <string>
 #include <vector>
@@ -29,4 +29,4 @@ public:
     ) const;
 };
 
-#endif // CONFIG_VALIDATOR_HPP
+#endif // CONFIG_FACADE_HPP

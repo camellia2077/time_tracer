@@ -1,6 +1,6 @@
 // queries/monthly/MonthGenerator.hpp
-#ifndef MONTHLY_REPORT_GENERATOR_HPP
-#define MONTHLY_REPORT_GENERATOR_HPP
+#ifndef MONTH_GENERATOR_HPP
+#define MONTH_GENERATOR_HPP
 // ...
 #include "common/AppConfig.hpp" // [新增]
 
@@ -15,4 +15,4 @@ private:
     const AppConfig& app_config_; // [修改]
 };
 
-#endif // MONTHLY_REPORT_GENERATOR_HPP
+#endif // MONTH_GENERATOR_HPP

@@ -1,6 +1,6 @@
 // action_handler/database/DBManager.hpp
-#ifndef DATABASE_MANAGER_HPP
-#define DATABASE_MANAGER_HPP
+#ifndef D_B_MANAGER_HPP
+#define D_B_MANAGER_HPP
 
 #include <string>
 #include <filesystem>
@@ -57,4 +57,4 @@ private:
     sqlite3* db_;
 };
 
-#endif // DATABASE_MANAGER_HPP
+#endif // D_B_MANAGER_HPP
