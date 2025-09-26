@@ -1,6 +1,6 @@
 // queries/export/AllPeriodReports.hpp
-#ifndef ALL_PERIOD_REPORTS_GENERATOR_HPP
-#define ALL_PERIOD_REPORTS_GENERATOR_HPP
+#ifndef ALL_PERIOD_REPORTS_HPP
+#define ALL_PERIOD_REPORTS_HPP
 
 #include <sqlite3.h>
 #include <vector>
@@ -28,4 +28,4 @@ private:
     const AppConfig& app_config_; // [修改] 保存 AppConfig 的引用
 };
 
-#endif // ALL_PERIOD_REPORTS_GENERATOR_HPP
+#endif // ALL_PERIOD_REPORTS_HPP

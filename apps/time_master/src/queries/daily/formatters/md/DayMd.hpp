@@ -1,6 +1,6 @@
 // queries/daily/formatters/md/DayMd.hpp
-#ifndef DAILY_REPORT_MARKDOWN_FORMATTER_HPP
-#define DAILY_REPORT_MARKDOWN_FORMATTER_HPP
+#ifndef DAY_MD_HPP
+#define DAY_MD_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
@@ -22,4 +22,4 @@ private:
     std::shared_ptr<DayMdConfig> config_;
 };
 
-#endif // DAILY_REPORT_MARKDOWN_FORMATTER_HPP
+#endif // DAY_MD_HPP

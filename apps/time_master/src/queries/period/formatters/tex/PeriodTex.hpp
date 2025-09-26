@@ -1,6 +1,6 @@
 // queries/period/formatters/tex/PeriodTex.hpp
-#ifndef PERIOD_REPORT_TEX_FORMATTER_HPP
-#define PERIOD_REPORT_TEX_FORMATTER_HPP
+#ifndef PERIOD_TEX_HPP
+#define PERIOD_TEX_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"  
 #include "queries/shared/data/PeriodReportData.hpp"
@@ -20,4 +20,4 @@ private:
     std::shared_ptr<PeriodTexConfig> config_;
 };
 
-#endif // PERIOD_REPORT_TEX_FORMATTER_HPP
+#endif // PERIOD_TEX_HPP

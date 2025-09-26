@@ -1,6 +1,6 @@
 // queries/daily/DayGenerator.hpp
-#ifndef DAILY_REPORT_GENERATOR_HPP
-#define DAILY_REPORT_GENERATOR_HPP
+#ifndef DAY_GENERATOR_HPP
+#define DAY_GENERATOR_HPP
 
 #include <sqlite3.h>
 #include <string>
@@ -34,4 +34,4 @@ private:
     const AppConfig& app_config_; // [修改] 现在只存储 AppConfig 的引用
 };
 
-#endif // DAILY_REPORT_GENERATOR_HPP
+#endif // DAY_GENERATOR_HPP

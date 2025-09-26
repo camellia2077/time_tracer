@@ -1,6 +1,6 @@
 // config_validator/reprocessing/facade/ReprocFacade.hpp
-#ifndef REPROCESSING_VALIDATOR_FACADE_HPP
-#define REPROCESSING_VALIDATOR_FACADE_HPP
+#ifndef REPROC_FACADE_HPP
+#define REPROC_FACADE_HPP
 
 #include <nlohmann/json.hpp>
 
@@ -13,4 +13,4 @@ public:
     ) const;
 };
 
-#endif // REPROCESSING_VALIDATOR_FACADE_HPP
+#endif // REPROC_FACADE_HPP

@@ -1,6 +1,6 @@
 // queries/period/PeriodGenerator.hpp
-#ifndef PERIOD_REPORT_GENERATOR_HPP
-#define PERIOD_REPORT_GENERATOR_HPP
+#ifndef PERIOD_GENERATOR_HPP
+#define PERIOD_GENERATOR_HPP
 
 #include <sqlite3.h>
 #include <string>
@@ -18,4 +18,4 @@ private:
     const AppConfig& app_config_;
 };
 
-#endif // PERIOD_REPORT_GENERATOR_HPP
+#endif // PERIOD_GENERATOR_HPP

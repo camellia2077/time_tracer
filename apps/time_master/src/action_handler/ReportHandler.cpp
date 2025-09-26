@@ -1,98 +1,88 @@
 // action_handler/ReportHandler.cpp
 #include "action_handler/ReportHandler.hpp"
-#include "action_handler/database/DBManager.hpp"
 #include "action_handler/reporting/Exporter.hpp"
 #include "action_handler/query/QueryManager.hpp"
-#include "common/AnsiColors.hpp" // For colored console output
+#include "common/AnsiColors.hpp"
 #include <iostream>
 
-namespace fs = std::filesystem;
-
-ReportHandler::ReportHandler(const std::string& db_path, const AppConfig& config, const fs::path& exported_files_path)
-    : app_config_(config),
-      export_root_path_(exported_files_path)
+// [核心修改] 构造函数接收依赖项的所有权 (std::move)
+ReportHandler::ReportHandler(
+    std::unique_ptr<QueryManager> query_manager,
+    std::unique_ptr<Exporter> exporter)
+    : direct_query_manager_(std::move(query_manager)),
+      report_exporter_(std::move(exporter))
 {
-    db_manager_ = std::make_unique<DBManager>(db_path);
 }
 
 ReportHandler::~ReportHandler() = default;
 
-QueryManager* ReportHandler::get_direct_query_manager() {
-    if (!db_manager_->open_database_if_needed()) {
-        std::cerr << RED_COLOR << "Error: Could not open database, query operation aborted." << RESET_COLOR << std::endl;
-        return nullptr;
-    }
-    if (!direct_query_manager_) {
-        direct_query_manager_ = std::make_unique<QueryManager>(db_manager_->get_db_connection(), app_config_);
-    }
-    return direct_query_manager_.get();
-}
-
-Exporter* ReportHandler::get_report_exporter() {
-    if (!db_manager_->open_database_if_needed()) {
-        std::cerr << RED_COLOR << "Error: Could not open database, export operation aborted." << RESET_COLOR << std::endl;
-        return nullptr;
-    }
-    if (!report_exporter_) {
-        // [MODIFIED] Pass the AppConfig to the Exporter
-        report_exporter_ = std::make_unique<Exporter>(db_manager_->get_db_connection(), export_root_path_, app_config_);
-    }
-    return report_exporter_.get();
-}
+// --- 所有公共方法的实现都得到简化 ---
 
 std::string ReportHandler::run_daily_query(const std::string& date, ReportFormat format) {
-    if (auto* qm = get_direct_query_manager()) {
-        return qm->run_daily_query(date, format);
+    if (direct_query_manager_) {
+        return direct_query_manager_->run_daily_query(date, format);
     }
-    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
 }
 
 std::string ReportHandler::run_monthly_query(const std::string& month, ReportFormat format) {
-    if (auto* qm = get_direct_query_manager()) {
-        return qm->run_monthly_query(month, format);
+    if (direct_query_manager_) {
+        return direct_query_manager_->run_monthly_query(month, format);
     }
-    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
 }
 
 std::string ReportHandler::run_period_query(int days, ReportFormat format) {
-    if (auto* qm = get_direct_query_manager()) {
-        return qm->run_period_query(days, format);
+    if (direct_query_manager_) {
+        return direct_query_manager_->run_period_query(days, format);
     }
-    return std::string(RED_COLOR) + "Error: Query failed." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
 }
 
 void ReportHandler::run_export_single_day_report(const std::string& date, ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_single_day_report(date, format);
+    if (report_exporter_) {
+        report_exporter_->run_export_single_day_report(date, format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }
 
 void ReportHandler::run_export_single_month_report(const std::string& month, ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_single_month_report(month, format);
+    if (report_exporter_) {
+        report_exporter_->run_export_single_month_report(month, format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }
 
 void ReportHandler::run_export_single_period_report(int days, ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_single_period_report(days, format);
+    if (report_exporter_) {
+        report_exporter_->run_export_single_period_report(days, format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }
 
 void ReportHandler::run_export_all_daily_reports_query(ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_all_daily_reports_query(format);
+    if (report_exporter_) {
+        report_exporter_->run_export_all_daily_reports_query(format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }
 
 void ReportHandler::run_export_all_monthly_reports_query(ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_all_monthly_reports_query(format);
+    if (report_exporter_) {
+        report_exporter_->run_export_all_monthly_reports_query(format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }
 
 void ReportHandler::run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format) {
-    if (auto* exporter = get_report_exporter()) {
-        exporter->run_export_all_period_reports_query(days_list, format);
+    if (report_exporter_) {
+        report_exporter_->run_export_all_period_reports_query(days_list, format);
+    } else {
+        std::cerr << RED_COLOR << "Error: Exporter not available." << RESET_COLOR << std::endl;
     }
 }

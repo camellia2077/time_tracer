@@ -1,6 +1,6 @@
 // queries/monthly/formatters/md/MonthMd.hpp
-#ifndef MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
-#define MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
+#ifndef MONTH_MD_HPP
+#define MONTH_MD_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"  
 #include "queries/shared/data/MonthlyReportData.hpp"
@@ -20,4 +20,4 @@ private:
     std::shared_ptr<MonthMdConfig> config_;
 };
 
-#endif // MONTHLY_REPORT_MARKDOWN_FORMATTER_HPP
+#endif // MONTH_MD_HPP

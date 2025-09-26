@@ -1,6 +1,6 @@
 // action_handler/reporting/Exporter.hpp
-#ifndef REPORT_EXPORTER_HPP
-#define REPORT_EXPORTER_HPP
+#ifndef EXPORTER_HPP
+#define EXPORTER_HPP
 
 #include <string>
 #include <vector>
@@ -33,4 +33,4 @@ private:
     const AppConfig& app_config_; // [ADDED] Store a reference to the AppConfig
 };
 
-#endif // REPORT_EXPORTER_HPP
+#endif // EXPORTER_HPP

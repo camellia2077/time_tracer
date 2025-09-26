@@ -1,6 +1,6 @@
 // action_handler/FileHandler.hpp
-#ifndef FILE_PROCESSING_HANDLER_HPP
-#define FILE_PROCESSING_HANDLER_HPP
+#ifndef FILE_HANDLER_HPP
+#define FILE_HANDLER_HPP
 
 #include <string>
 #include <filesystem>
@@ -25,4 +25,4 @@ private:
     fs::path output_root_path_;
 };
 
-#endif // FILE_PROCESSING_HANDLER_HPP
+#endif // FILE_HANDLER_HPP

@@ -1,7 +1,7 @@
 // action_handler/query/QueryManager.hpp
 
-#ifndef DIRECT_QUERY_MANAGER_HPP
-#define DIRECT_QUERY_MANAGER_HPP
+#ifndef QUERY_MANAGER_HPP
+#define QUERY_MANAGER_HPP
 
 #include <sqlite3.h>
 #include <string>
@@ -26,4 +26,4 @@ private:
     std::unique_ptr<QueryHandler> query_handler_;
 };
 
-#endif // DIRECT_QUERY_MANAGER_HPP
+#endif // QUERY_MANAGER_HPP

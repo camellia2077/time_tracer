@@ -1,6 +1,6 @@
 // queries/monthly/formatters/typ/MonthTyp.hpp
-#ifndef MONTHLY_REPORT_TYP_FORMATTER_HPP
-#define MONTHLY_REPORT_TYP_FORMATTER_HPP
+#ifndef MONTH_TYP_HPP
+#define MONTH_TYP_HPP
 
 #include "queries/shared/interfaces/IReportFormatter.hpp"
 #include "queries/shared/data/MonthlyReportData.hpp"
@@ -24,4 +24,4 @@ private:
     std::shared_ptr<MonthTypConfig> config_;
 };
 
-#endif // MONTHLY_REPORT_TYP_FORMATTER_HPP
+#endif // MONTH_TYP_HPP

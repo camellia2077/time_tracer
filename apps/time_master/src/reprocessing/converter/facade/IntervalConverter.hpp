@@ -3,7 +3,7 @@
 #define INTERVAL_CONVERTER_HPP
 
 #include "reprocessing/converter/config/ConverterConfig.hpp"
-#include "reprocessing/converter/model/InputData.hpp" /
+#include "reprocessing/converter/model/InputData.hpp"
 #include <string>
 #include <istream>
 #include <vector> 
