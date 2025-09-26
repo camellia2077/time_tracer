@@ -1,6 +1,6 @@
 // config_validator/queries/strategies/IQueryStrategy.hpp
-#ifndef I_QUERY_VALIDATION_STRATEGY_HPP
-#define I_QUERY_VALIDATION_STRATEGY_HPP
+#ifndef I_QUERY_STRATEGY_HPP
+#define I_QUERY_STRATEGY_HPP
 
 #include <nlohmann/json.hpp>
 #include <string>
@@ -22,4 +22,4 @@ public:
     virtual bool validate(const nlohmann::json& query_json, const std::string& file_name) const = 0;
 };
 
-#endif // I_QUERY_VALIDATION_STRATEGY_HPP
+#endif // I_QUERY_STRATEGY_HPP

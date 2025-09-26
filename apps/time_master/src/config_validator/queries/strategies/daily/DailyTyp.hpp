@@ -1,6 +1,6 @@
 // config_validator/queries/strategies/daily/DailyTyp.hpp
-#ifndef DAILY_TYP_VALIDATION_STRATEGY_HPP
-#define DAILY_TYP_VALIDATION_STRATEGY_HPP
+#ifndef DAILY_TYP_HPP
+#define DAILY_TYP_HPP
 
 #include "config_validator/queries/strategies/BaseStrategy.hpp"
 
@@ -14,4 +14,4 @@ protected:
     bool validate_specific_keys(const nlohmann::json& query_json, const std::string& file_name) const override;
 };
 
-#endif // DAILY_TYP_VALIDATION_STRATEGY_HPP
+#endif // DAILY_TYP_HPP

@@ -1,6 +1,6 @@
 // config_validator/queries/strategies/BaseStrategy.hpp
-#ifndef BASE_VALIDATION_STRATEGY_HPP
-#define BASE_VALIDATION_STRATEGY_HPP
+#ifndef BASE_STRATEGY_HPP
+#define BASE_STRATEGY_HPP
 
 #include "IQueryStrategy.hpp"
 
@@ -29,4 +29,4 @@ private:
     bool is_valid_hex_color(const std::string& color_string) const;
 };
 
-#endif // BASE_VALIDATION_STRATEGY_HPP
+#endif // BASE_STRATEGY_HPP

@@ -1,6 +1,6 @@
 // config_validator/queries/strategies/monthly/Monthly.hpp
-#ifndef MONTHLY_VALIDATION_STRATEGY_HPP
-#define MONTHLY_VALIDATION_STRATEGY_HPP
+#ifndef MONTHLY_HPP
+#define MONTHLY_HPP
 
 #include "config_validator/queries/strategies/BaseStrategy.hpp" // [修改] 继承自基类
 
@@ -14,4 +14,4 @@ protected:
     bool validate_specific_keys(const nlohmann::json& query_json, const std::string& file_name) const override;
 };
 
-#endif // MONTHLY_VALIDATION_STRATEGY_HPP
+#endif // MONTHLY_HPP

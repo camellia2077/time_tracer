@@ -1,11 +1,12 @@
-// config_validator/reprocessing/pipelines/MainRules.cpp
-#include "MainRules.hpp"
+// config_validator/reprocessing/rules/MainRule.cpp
+#include "MainRule.hpp"
 #include <iostream>
 #include <set>
 
 using json = nlohmann::json;
 
-bool MainRules::validate(const json& main_json, std::string& out_mappings_path, std::string& out_duration_rules_path) {
+// [修改] 方法归属到 MainRule 类
+bool MainRule::validate(const json& main_json, std::string& out_mappings_path, std::string& out_duration_rules_path) const {
     const std::set<std::string> required_keys = {
         "mappings_config_path", "duration_rules_config_path", "top_parent_mapping",
         "header_order", "remark_prefix", "wake_keywords"
@@ -18,6 +19,7 @@ bool MainRules::validate(const json& main_json, std::string& out_mappings_path, 
         }
     }
 
+    // ... (其余逻辑不变)
     if (!main_json["mappings_config_path"].is_string() || !main_json["duration_rules_config_path"].is_string()) {
         std::cerr << "[Validator] Error: 'mappings_config_path' and 'duration_rules_config_path' must be strings." << std::endl;
         return false;

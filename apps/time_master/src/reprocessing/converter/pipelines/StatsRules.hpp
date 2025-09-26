@@ -1,6 +1,6 @@
 // reprocessing/converter/pipelines/StatsRules.hpp
-#ifndef GENERATED_STATS_RULES_HPP
-#define GENERATED_STATS_RULES_HPP
+#ifndef STATS_RULES_HPP
+#define STATS_RULES_HPP
 
 #include "reprocessing/converter/model/InputData.hpp"
 #include <initializer_list>
@@ -27,4 +27,4 @@ namespace StatsRules {
     };
 }
 
-#endif // GENERATED_STATS_RULES_HPP
+#endif // STATS_RULES_HPP

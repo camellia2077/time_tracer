@@ -15,9 +15,9 @@ set(CONFIG_VALIDATOR
 
     # Reprocessing 领域的 Facade 和 Pipelines
     "src/config_validator/reprocessing/facade/ReprocFacade.cpp"
-    "src/config_validator/reprocessing/pipelines/DurationRules.cpp"
-    "src/config_validator/reprocessing/pipelines/MainRules.cpp"
-    "src/config_validator/reprocessing/pipelines/MappingRules.cpp"
+    "src/config_validator/reprocessing/rules/DurationRule.cpp"
+    "src/config_validator/reprocessing/rules/MainRule.cpp"
+    "src/config_validator/reprocessing/rules/MappingRule.cpp"
 
     # Queries 领域的 Facade
     "src/config_validator/queries/facade/QueryFacade.cpp"
