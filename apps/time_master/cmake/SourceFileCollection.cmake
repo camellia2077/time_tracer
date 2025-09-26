@@ -15,14 +15,23 @@ set(CONFIG_VALIDATOR
 
     # Reprocessing 领域的 Facade 和 Pipelines
     "src/config_validator/reprocessing/facade/ReprocFacade.cpp"
-
-    "src/config_validator/reprocessing/pipelines/MappingRules.cpp"
-    "src/config_validator/reprocessing/pipelines/MainRules.cpp"
     "src/config_validator/reprocessing/pipelines/DurationRules.cpp"
+    "src/config_validator/reprocessing/pipelines/MainRules.cpp"
+    "src/config_validator/reprocessing/pipelines/MappingRules.cpp"
 
-    # Queries 领域的 Facade 和 Pipelines
+    # Queries 领域的 Facade
     "src/config_validator/queries/facade/QueryFacade.cpp"
-    "src/config_validator/queries/pipelines/QueryRules.cpp"
+
+    # Queries 领域的 Strategies (核心)
+    "src/config_validator/queries/strategies/BaseStrategy.cpp"
+    "src/config_validator/queries/strategies/StrategyFactory.cpp"
+
+    # Queries 领域的 Strategies (具体实现)
+    "src/config_validator/queries/strategies/daily/DailyMd.cpp"
+    "src/config_validator/queries/strategies/daily/DailyTex.cpp"
+    "src/config_validator/queries/strategies/daily/DailyTyp.cpp"
+    "src/config_validator/queries/strategies/monthly/Monthly.cpp"
+    "src/config_validator/queries/strategies/periodic/Periodic.cpp"
 )
 
 # --- Time Master CLI Sources ---
