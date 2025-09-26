@@ -426,3 +426,6 @@ tex typ
 ## v0.3.23.5
 缩短cpp hpp命名
 
+## v0.3.23.6
+优化config_validator/queries程序结构
+
