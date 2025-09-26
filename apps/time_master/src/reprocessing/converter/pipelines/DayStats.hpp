@@ -1,7 +1,7 @@
 // reprocessing/converter/pipelines/DayStats.hpp
 
-#ifndef DAY_STATS_CALCULATOR_HPP
-#define DAY_STATS_CALCULATOR_HPP
+#ifndef DAY_STATS_HPP
+#define DAY_STATS_HPP
 
 #include "reprocessing/converter/model/InputData.hpp"
 #include <string>
@@ -15,4 +15,4 @@ private:
     long long timeStringToTimestamp(const std::string& date, const std::string& time, bool is_end_time, long long start_timestamp_for_end) const;
 };
 
-#endif // DAY_STATS_CALCULATOR_HPP
+#endif // DAY_STATS_HPP

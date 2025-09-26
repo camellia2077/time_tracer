@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/pipelines/LineRules.hpp
-#ifndef LINE_PROCESSOR_HPP
-#define LINE_PROCESSOR_HPP
+#ifndef LINE_RULES_HPP
+#define LINE_RULES_HPP
 
 #include "reprocessing/converter/config/ConverterConfig.hpp" // [修改] 引用 ConverterConfig
 #include "reprocessing/validator/common/ValidatorUtils.hpp"

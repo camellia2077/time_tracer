@@ -1,8 +1,9 @@
 // config_validator/reprocessing/facade/ReprocFacade.cpp
 #include "ReprocFacade.hpp"
-#include "config_validator/reprocessing/pipelines/MainRules.hpp"
-#include "config_validator/reprocessing/pipelines/MappingRules.hpp"
-#include "config_validator/reprocessing/pipelines/DurationRules.hpp"
+// [修改] 更新 include 路径和头文件名
+#include "config_validator/reprocessing/rules/MainRule.hpp"
+#include "config_validator/reprocessing/rules/MappingRule.hpp"
+#include "config_validator/reprocessing/rules/DurationRule.hpp"
 
 #include <iostream>
 
@@ -14,17 +15,21 @@ bool ReprocFacade::validate(
     const json& duration_rules_json
 ) const {
     std::string mappings_path_str, duration_rules_path_str;
-    MainRules main_validator;
+    
+    // [修改] 使用新的类名
+    MainRule main_validator;
     if (!main_validator.validate(main_json, mappings_path_str, duration_rules_path_str)) {
         return false;
     }
 
-    MappingRules mappings_validator;
+    // [修改] 使用新的类名
+    MappingRule mappings_validator;
     if (!mappings_validator.validate(mappings_json)) {
         return false;
     }
 
-    DurationRules duration_rules_validator;
+    // [修改] 使用新的类名
+    DurationRule duration_rules_validator;
     if (!duration_rules_validator.validate(duration_rules_json)) {
         return false;
     }

@@ -429,3 +429,6 @@ tex typ
 ## v0.3.23.6
 优化config_validator/queries程序结构
 
+## v0.3.23.7
+config_validator/reprocessing也使用策略模式
+
