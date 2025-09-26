@@ -1,14 +1,14 @@
-// time_master_cli/commands/ExportCommand.cpp
-#include "ExportCommand.hpp"
+// time_master_cli/commands/export/Export.cpp
+#include "Export.hpp"
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-ExportCommand::ExportCommand(ReportHandler& report_handler)
+Export::Export(ReportHandler& report_handler)
     : report_handler_(report_handler) {}
 
-void ExportCommand::execute(const CliParser& parser) {
+void Export::execute(const CliParser& parser) {
     const auto& filtered_args = parser.get_filtered_args();
     if (filtered_args.size() < 3) {
         throw std::runtime_error("Command 'export' requires a type argument (e.g., export daily).");
