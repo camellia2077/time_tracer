@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/pipelines/StructureRules.hpp
-#ifndef STRUCTURAL_VALIDATOR_HPP
-#define STRUCTURAL_VALIDATOR_HPP
+#ifndef STRUCTURE_RULES_HPP
+#define STRUCTURE_RULES_HPP
 
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 #include <string>

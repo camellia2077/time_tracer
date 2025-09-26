@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/facade/SourceFacade.hpp
-#ifndef SOURCE_FILE_VALIDATOR_FACADE_HPP
-#define SOURCE_FILE_VALIDATOR_FACADE_HPP
+#ifndef SOURCE_FACADE_HPP
+#define SOURCE_FACADE_HPP
 
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 #include "reprocessing/converter/config/ConverterConfig.hpp" // [新增]
@@ -29,4 +29,4 @@ private:
     std::unique_ptr<PImpl> pimpl_;
 };
 
-#endif // SOURCE_FILE_VALIDATOR_FACADE_HPP
+#endif // SOURCE_FACADE_HPP

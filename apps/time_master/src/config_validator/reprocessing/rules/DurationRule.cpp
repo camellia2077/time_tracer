@@ -1,10 +1,11 @@
-// config_validator/reprocessing/pipelines/DurationRules.cpp
-#include "DurationRules.hpp"
+// config_validator/reprocessing/rules/DurationRule.cpp
+#include "DurationRule.hpp"
 #include <iostream>
 
 using json = nlohmann::json;
 
-bool DurationRules::validate(const json& duration_json) {
+// [修改] 方法归属到 DurationRule 类
+bool DurationRule::validate(const json& duration_json) const {
     if (!duration_json.contains("text_duration_mappings") || !duration_json["text_duration_mappings"].is_object()) {
         std::cerr << "[Validator] Error: Duration rules config must contain a 'text_duration_mappings' object." << std::endl;
         return false;

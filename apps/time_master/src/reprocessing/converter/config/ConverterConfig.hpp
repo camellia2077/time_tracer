@@ -1,7 +1,7 @@
 // reprocessing/converter/config/ConverterConfig.hpp
 
-#ifndef INTERVAL_PROCESSOR_CONFIG_HPP
-#define INTERVAL_PROCESSOR_CONFIG_HPP
+#ifndef CONVERTER_CONFIG_HPP
+#define CONVERTER_CONFIG_HPP
 
 #include <string>
 #include <vector>
@@ -35,4 +35,4 @@ private:
     std::unordered_map<std::string, std::string> topParentMapping_;
 };
 
-#endif // INTERVAL_PROCESSOR_CONFIG_HPP
+#endif // CONVERTER_CONFIG_HPP

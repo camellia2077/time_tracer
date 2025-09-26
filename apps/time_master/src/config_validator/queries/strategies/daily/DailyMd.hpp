@@ -1,6 +1,6 @@
 // config_validator/queries/strategies/daily/DailyMd.hpp
-#ifndef DAILY_MD_VALIDATION_STRATEGY_HPP
-#define DAILY_MD_VALIDATION_STRATEGY_HPP
+#ifndef DAILY_MD_HPP
+#define DAILY_MD_HPP
 
 #include "config_validator/queries/strategies/BaseStrategy.hpp" // [修改] 继承自基类
 
@@ -10,4 +10,4 @@ protected:
     bool validate_specific_keys(const nlohmann::json& query_json, const std::string& file_name) const override;
 };
 
-#endif // DAILY_MD_VALIDATION_STRATEGY_HPP
+#endif // DAILY_MD_HPP

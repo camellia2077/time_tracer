@@ -1,6 +1,6 @@
 // reprocessing/converter/pipelines/Output.hpp
-#ifndef OUTPUT_GENERATOR_HPP
-#define OUTPUT_GENERATOR_HPP
+#ifndef OUTPUT_HPP
+#define OUTPUT_HPP
 
 #include <ostream>
 #include <vector> 
@@ -15,4 +15,4 @@ public:
     void write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& config);
 };
 
-#endif // OUTPUT_GENERATOR_HPP
+#endif // OUTPUT_HPP
