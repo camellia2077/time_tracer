@@ -1,3 +1,4 @@
+// action_handler/reporting/Exporter.hpp
 #ifndef EXPORTER_HPP
 #define EXPORTER_HPP
 
@@ -5,8 +6,8 @@
 #include <vector>
 #include <filesystem>
 #include <memory>
-#include "queries/shared/types/ReportFormat.hpp"
-#include "queries/shared/data/query_data_structs.hpp"
+#include "reports/shared/types/ReportFormat.hpp"
+#include "reports/shared/data/query_data_structs.hpp"
 
 namespace fs = std::filesystem;
 class ReportFileManager;

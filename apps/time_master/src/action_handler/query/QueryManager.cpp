@@ -1,7 +1,7 @@
 // action_handler/query/QueryManager.cpp
 
 #include "QueryManager.hpp"
-#include "queries/QueryHandler.hpp" // Include the underlying query processor
+#include "reports/QueryHandler.hpp" // Include the underlying query processor
 
 QueryManager::QueryManager(sqlite3* db, const AppConfig& config) 
     : app_config_(config) { // [MODIFIED] Initialize the config reference

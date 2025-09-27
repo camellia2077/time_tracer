@@ -1,10 +1,11 @@
+// action_handler/reporting/ReportFileManager.hpp
 #ifndef REPORT_FILE_MANAGER_HPP
 #define REPORT_FILE_MANAGER_HPP
 
 #include <filesystem>
 #include <string>
 #include <vector>
-#include "queries/shared/types/ReportFormat.hpp"
+#include "reports/shared/types/ReportFormat.hpp"
 
 namespace fs = std::filesystem;
 
