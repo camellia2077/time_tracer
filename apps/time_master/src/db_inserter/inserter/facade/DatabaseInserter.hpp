@@ -35,9 +35,9 @@ public:
     );
 
 private:
-    std::unique_ptr<DbConnectionManager> connection_manager;
-    std::unique_ptr<DbStatementManager> statement_manager;
-    std::unique_ptr<DataInserter> data_inserter;
+    std::unique_ptr<DbConnectionManager> connection_manager_; // MODIFIED
+    std::unique_ptr<DbStatementManager> statement_manager_; // MODIFIED
+    std::unique_ptr<DataInserter> data_inserter_; // MODIFIED
 };
 
 #endif // DATABASE_INSERTER_HPP

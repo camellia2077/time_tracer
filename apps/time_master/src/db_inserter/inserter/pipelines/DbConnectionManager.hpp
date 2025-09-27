@@ -16,7 +16,7 @@ public:
     void rollback_transaction();
 
 private:
-    sqlite3* db;
+    sqlite3* db_; // MODIFIED
 };
 
 bool execute_sql(sqlite3* db, const std::string& sql, const std::string& context_msg = "");
