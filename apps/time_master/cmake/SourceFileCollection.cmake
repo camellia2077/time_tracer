@@ -200,7 +200,6 @@ set(ACTION_HANDLER_SOURCES
     "src/action_handler/ReportHandler.cpp"
     "src/action_handler/database/DBManager.cpp"
     "src/action_handler/file/PipelineManager.cpp"
-    "src/action_handler/query/QueryManager.cpp"
 
     "src/action_handler/reporting/Exporter.cpp"
     "src/action_handler/reporting/ExportUtils.cpp"

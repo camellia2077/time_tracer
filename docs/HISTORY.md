@@ -444,3 +444,6 @@ config_validator/reprocessing也使用策略模式
 ## v0.3.23.11
 文件夹命名queries修改为reports
 
+## v0.3.23.12
+QueryManager 和 ReportGenerator 的合并
+
