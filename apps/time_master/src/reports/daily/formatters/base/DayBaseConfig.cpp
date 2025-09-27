@@ -3,16 +3,12 @@
 #include <stdexcept>
 
 DayBaseConfig::DayBaseConfig(const std::string& config_path) {
-    // 加载JSON文件，并存储以供子类使用
     config_json_ = load_json_config(config_path, "Could not open Day config file: ");
     load_base_config();
 }
 
 void DayBaseConfig::load_base_config() {
-    // 从json对象中加载通用配置
-    // [修正] 使用 .value() 代替 .at()，以允许 title_prefix 键是可选的
     title_prefix_ = config_json_.value("title_prefix", ""); 
-
     date_label_ = config_json_.at("date_label").get<std::string>();
     total_time_label_ = config_json_.at("total_time_label").get<std::string>();
     status_label_ = config_json_.at("status_label").get<std::string>();
@@ -21,12 +17,8 @@ void DayBaseConfig::load_base_config() {
     remark_label_ = config_json_.at("remark_label").get<std::string>();
     exercise_label_ = config_json_.at("exercise_label").get<std::string>();
     
-    // 兼容 "no_records" 和 "no_records_message" 两种键名
-    if (config_json_.contains("no_records")) {
-        no_records_ = config_json_.at("no_records").get<std::string>();
-    } else if (config_json_.contains("no_records_message")) {
-        no_records_ = config_json_.at("no_records_message").get<std::string>();
-    }
+    // [核心修改] 不再兼容旧的键名，直接加载 "no_records_message"
+    no_records_ = config_json_.at("no_records_message").get<std::string>();
 
     statistics_label_ = config_json_.at("statistics_label").get<std::string>();
     all_activities_label_ = config_json_.at("all_activities_label").get<std::string>();
@@ -43,7 +35,7 @@ void DayBaseConfig::load_base_config() {
     }
 }
 
-// --- Getters 实现 ---
+// --- Getters 实现保持不变 ---
 const std::string& DayBaseConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayBaseConfig::get_date_label() const { return date_label_; }
 const std::string& DayBaseConfig::get_total_time_label() const { return total_time_label_; }

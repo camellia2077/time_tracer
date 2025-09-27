@@ -5,10 +5,11 @@
 
 using json = nlohmann::json;
 
-// [修改] 实现了 validate_specific_keys，移除了所有通用逻辑
 bool Monthly::validate_specific_keys(const json& query_json, const std::string& file_name) const {
+    // [核心修改] "no_records_message" 现在是必需的
     const std::set<std::string> monthly_keys = {
-        "report_title", "actual_days_label", "total_time_label", "invalid_format_message"
+        "report_title", "actual_days_label", "total_time_label", 
+        "invalid_format_message", "no_records_message"
     };
 
     for (const auto& key : monthly_keys) {
@@ -17,5 +18,6 @@ bool Monthly::validate_specific_keys(const json& query_json, const std::string& 
             return false;
         }
     }
+
     return true;
 }
