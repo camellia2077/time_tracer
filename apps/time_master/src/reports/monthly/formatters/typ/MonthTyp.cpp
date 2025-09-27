@@ -5,10 +5,10 @@
 #include <vector>
 #include <algorithm>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include "reports/shared/utils/format/TypUtils.hpp"      // [修改] 引入共享的TypUtils
-#include "reports/shared/factories/GenericFormatterFactory.hpp" // [新增]
-#include "reports/monthly/formatters/typ/MonthTypConfig.hpp"    // [新增]
-#include "reports/shared/data/MonthlyReportData.hpp"         // [新增]
+#include "reports/shared/utils/format/TypUtils.hpp"      
+#include "reports/shared/factories/GenericFormatterFactory.hpp" 
+#include "reports/monthly/formatters/typ/MonthTypConfig.hpp"   
+#include "reports/shared/data/MonthlyReportData.hpp"       
 
 // [新增] 自我注册逻辑
 namespace {

@@ -14,9 +14,7 @@ public:
     std::string format_report(const PeriodReportData& data) const override;
 
 private:
-    void _display_summary(std::stringstream& ss, const PeriodReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const PeriodReportData& data) const;
-
+    // [修改] 私有的 display 方法已被移除，逻辑已移至 PeriodTexUtils
     std::shared_ptr<PeriodTexConfig> config_;
 };
 
