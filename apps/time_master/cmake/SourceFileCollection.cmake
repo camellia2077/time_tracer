@@ -2,7 +2,7 @@
 # ----------------------------------------------------
 # 最佳实践：显式列出所有源文件以确保构建系统的稳定性和可预测性。
 
-# --- Common Sources ---
+# --- Common  ---
 set(COMMON_SOURCES
     "src/common/utils/StringUtils.cpp"
     "src/common/utils/TimeUtils.cpp"
@@ -202,8 +202,13 @@ set(ACTION_HANDLER_SOURCES
     "src/action_handler/database/DBManager.cpp"
     "src/action_handler/file/PipelineManager.cpp"
     "src/action_handler/query/QueryManager.cpp"
-    "src/action_handler/reporting/ExportUtils.cpp"
+
     "src/action_handler/reporting/Exporter.cpp"
+    "src/action_handler/reporting/ExportUtils.cpp"
+    "src/action_handler/reporting/ReportFileManager.cpp"
+    "src/action_handler/reporting/ReportGenerator.cpp"
+    
+
 )
 
 message(STATUS "Source files collected explicitly.")

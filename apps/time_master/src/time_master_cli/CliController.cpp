@@ -13,12 +13,11 @@
 #include "action_handler/database/DBManager.hpp"
 #include "action_handler/query/QueryManager.hpp"
 #include "action_handler/reporting/Exporter.hpp"
+#include "action_handler/reporting/ReportGenerator.hpp" // [ADDED] 引入 ReportGenerator
 
-// --- [核心修改] 引入所有具体的命令类 ---
-
+// 引入所有具体的命令类
 #include "time_master_cli/commands/query/Query.hpp"
 #include "time_master_cli/commands/export/Export.hpp"
-
 #include "time_master_cli/commands/pipeline/Run.hpp"
 #include "time_master_cli/commands/pipeline/ValidateSource.hpp"
 #include "time_master_cli/commands/pipeline/Convert.hpp"
@@ -44,23 +43,34 @@ CliController::CliController(const std::vector<std::string>& args)
     
     db_manager_ = std::make_unique<DBManager>(db_path.string());
     
-    // --- [核心修复] ---
-    // 在将数据库连接传递出去之前，必须先尝试打开它。
-    // 对于查询和导出等只读操作，如果连接失败（例如，数据库文件不存在），则应立即报错。
+    // 在将数据库连接传递出去之前，必须先尝试打开它
     const std::string command = parser_.get_command();
     if (command == "query" || command == "export") {
         if (!db_manager_->open_database_if_needed()) {
-            // 如果连接失败，抛出异常，因为后续操作无法进行
             throw std::runtime_error("Failed to open database. Please ensure data has been imported first.");
         }
     }
     
-    // 现在 get_db_connection() 将返回一个有效的连接（如果成功的话）
-    auto query_manager = std::make_unique<QueryManager>(db_manager_->get_db_connection(), config);
-    auto exporter = std::make_unique<Exporter>(db_manager_->get_db_connection(), exported_files_path_, config);
+    // --- [ 核心修复 ] ---
+    // 根据重构后的类，正确地实例化服务
     
+    // a. 获取数据库连接
+    sqlite3* db_connection = db_manager_->get_db_connection();
+
+    // b. 创建 QueryManager
+    auto query_manager = std::make_unique<QueryManager>(db_connection, config);
+
+    // c. 创建新的 ReportGenerator
+    auto report_generator = std::make_unique<ReportGenerator>(db_connection, config);
+
+    // d. 创建 Exporter (现在只需要导出路径)
+    auto exporter = std::make_unique<Exporter>(exported_files_path_);
+    
+    // e. 创建 ReportHandler (现在需要三个依赖项)
     report_generation_handler_ = std::make_unique<ReportHandler>(
-        std::move(query_manager), std::move(exporter)
+        std::move(query_manager), 
+        std::move(report_generator), 
+        std::move(exporter)
     );
 
     // 3. 注册所有命令
@@ -76,16 +86,13 @@ CliController::CliController(const std::vector<std::string>& args)
 
 CliController::~CliController() = default;
 
-// [核心修改] execute 方法变得极其简洁
 void CliController::execute() {
     const std::string command_name = parser_.get_command();
 
     auto it = commands_.find(command_name);
     if (it != commands_.end()) {
-        // 找到命令并执行
         it->second->execute(parser_);
     } else {
-        // 特殊处理旧命令的提示
         if (command_name == "preprocess" || command_name == "pre") {
              throw std::runtime_error("The 'preprocess' command is deprecated. Please use 'validate-source', 'convert', or 'validate-output' instead.");
         }
