@@ -11,9 +11,9 @@
 #include "action_handler/FileHandler.hpp"
 #include "action_handler/ReportHandler.hpp"
 #include "action_handler/database/DBManager.hpp"
-#include "action_handler/query/QueryManager.hpp"
+// #include "action_handler/query/QueryManager.hpp" // [REMOVED] QueryManager 已被移除
 #include "action_handler/reporting/Exporter.hpp"
-#include "action_handler/reporting/ReportGenerator.hpp" // [ADDED] 引入 ReportGenerator
+#include "action_handler/reporting/ReportGenerator.hpp"
 
 // 引入所有具体的命令类
 #include "time_master_cli/commands/query/Query.hpp"
@@ -51,24 +51,20 @@ CliController::CliController(const std::vector<std::string>& args)
         }
     }
     
-    // --- [ 核心修复 ] ---
-    // 根据重构后的类，正确地实例化服务
+    // --- [ 核心修改 ] ---
+    // 根據合併後的邏輯，正確地實例化服務
     
     // a. 获取数据库连接
     sqlite3* db_connection = db_manager_->get_db_connection();
 
-    // b. 创建 QueryManager
-    auto query_manager = std::make_unique<QueryManager>(db_connection, config);
-
-    // c. 创建新的 ReportGenerator
+    // b. 创建 ReportGenerator (不再需要 QueryManager)
     auto report_generator = std::make_unique<ReportGenerator>(db_connection, config);
 
-    // d. 创建 Exporter (现在只需要导出路径)
+    // c. 创建 Exporter (现在只需要导出路径)
     auto exporter = std::make_unique<Exporter>(exported_files_path_);
     
-    // e. 创建 ReportHandler (现在需要三个依赖项)
+    // d. 创建 ReportHandler (现在只需要两个依赖项)
     report_generation_handler_ = std::make_unique<ReportHandler>(
-        std::move(query_manager), 
         std::move(report_generator), 
         std::move(exporter)
     );
