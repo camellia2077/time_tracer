@@ -13,13 +13,38 @@ struct StatisticItemConfig {
     bool show = true;
 };
 
+/**
+ * @class DayBaseConfig
+ * @brief 日报配置的基类，封装了所有日报格式共享的配置项。
+ *
+ * 这个类负责从 JSON 配置文件中加载所有通用的标签、消息和设置。
+ * 子类（如 DayMdConfig, DayTexConfig）继承自此类，并只加载它们特有的配置。
+ *
+ * @note 
+ * 对应的 JSON 配置文件必须包含以下通用键：
+ * - "date_label": (string) "日期"标签
+ * - "total_time_label": (string) "总时长"标签
+ * - "status_label": (string) "状态"标签
+ * - "sleep_label": (string) "睡眠"标签
+ * - "getup_time_label": (string) "起床时间"标签
+ * - "remark_label": (string) "备注"标签
+ * - "exercise_label": (string) "锻炼"标签
+ * - "no_records" / "no_records_message": (string) 无记录时的提示信息
+ * - "statistics_label": (string) "统计数据"部分的标题
+ * - "all_activities_label": (string) "所有活动"部分的标题
+ * - "activity_remark_label": (string) 单个活动备注的标签
+ * - "activity_connector": (string) 活动路径中用于连接的字符串
+ * - "statistics_items": (object) 一个包含多个统计项配置的对象
+ *
+ * @note 
+ * 键 "title_prefix" (string) 是可选的，主要用于 Markdown 和 Typst 报告。
+ */
 class DayBaseConfig {
 public:
-    // 构造函数接收配置文件路径
     explicit DayBaseConfig(const std::string& config_path);
     virtual ~DayBaseConfig() = default;
 
-    // 提供对通用配置项的访问
+    // --- 通用配置项的 Getters ---
     const std::string& get_title_prefix() const;
     const std::string& get_date_label() const;
     const std::string& get_total_time_label() const;

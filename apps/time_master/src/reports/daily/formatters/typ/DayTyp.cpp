@@ -4,7 +4,7 @@
 #include "reports/shared/utils/format/TypUtils.hpp"
 #include <format>
 #include <string>
-#include "reports/shared/factories/GenericFormatterFactory.hpp" // [新增]
+#include "reports/shared/factories/GenericFormatterFactory.hpp"
 #include "reports/daily/formatters/typ/DayTypConfig.hpp"
 #include "reports/shared/data/DailyReportData.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
