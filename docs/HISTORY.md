@@ -453,6 +453,9 @@ QueryManager 和 ReportGenerator 的合并
 ## v0.3.23.14
 提取日配置重复逻辑为DayBaseConfig
 
+## v0.3.23.15
+tex优化程序结构
+
 
 DayBaseConfig
 

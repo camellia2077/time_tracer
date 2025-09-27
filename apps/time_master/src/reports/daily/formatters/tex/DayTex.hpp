@@ -6,7 +6,6 @@
 #include "reports/shared/data/DailyReportData.hpp"
 #include "reports/daily/formatters/tex/DayTexConfig.hpp"
 #include <memory>
-#include <sstream>
 
 class DayTex : public IReportFormatter<DailyReportData> {
 public:
@@ -14,11 +13,7 @@ public:
     std::string format_report(const DailyReportData& data) const override;
 
 private:
-    void _display_header(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
-    
+    // [修改] 所有私有 _display_* 方法都将被移除
     std::shared_ptr<DayTexConfig> config_;
 };
 

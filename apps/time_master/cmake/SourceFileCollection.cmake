@@ -97,6 +97,7 @@ set(REPORTS_SOURCES
 
     "src/reports/daily/formatters/tex/DayTex.cpp"
     "src/reports/daily/formatters/tex/DayTexConfig.cpp"
+    "src/reports/daily/formatters/tex/DayTexUtils.cpp"
 
     "src/reports/daily/formatters/typ/DayTyp.cpp"
     "src/reports/daily/formatters/typ/DayTypConfig.cpp"
@@ -110,6 +111,7 @@ set(REPORTS_SOURCES
 
     # Monthly tex
     "src/reports/monthly/formatters/tex/MonthTex.cpp"
+    "src/reports/monthly/formatters/tex/MonthTexUtils.cpp"
     "src/reports/monthly/formatters/tex/MonthTexConfig.cpp"
 
     "src/reports/monthly/formatters/typ/MonthTyp.cpp"
@@ -126,6 +128,7 @@ set(REPORTS_SOURCES
 
     # Period tex
     "src/reports/period/formatters/tex/PeriodTex.cpp"
+    "src/reports/period/formatters/tex/PeriodTexUtils.cpp"
     "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
 
     # Period typ
