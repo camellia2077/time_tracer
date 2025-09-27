@@ -18,7 +18,7 @@ TimeRecordInternal ActivityParser::parse(
         record.duration_seconds = activity_json.at("duration_seconds");
 
         if (activity_json.contains("activity_remark") && !activity_json["activity_remark"].is_null()) {
-            record.activityRemark = activity_json["activity_remark"].get<std::string>();
+            record.activity_remark = activity_json["activity_remark"].get<std::string>(); // MODIFIED
         }
 
         const auto& activity_details = activity_json.at("activity");

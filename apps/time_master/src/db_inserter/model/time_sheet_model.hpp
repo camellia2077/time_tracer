@@ -56,7 +56,7 @@ struct TimeRecordInternal {
     std::string end;
     std::string project_path;
     int duration_seconds;
-    std::optional<std::string> activityRemark; // 新增：用于存储活动的备注
+    std::optional<std::string> activity_remark; // MODIFIED: Renamed from activityRemark
 };
 
 /**

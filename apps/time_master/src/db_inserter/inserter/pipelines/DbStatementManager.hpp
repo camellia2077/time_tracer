@@ -17,13 +17,13 @@ public:
     sqlite3_stmt* get_insert_project_stmt() const;
 
 private:
-    sqlite3* db;
-    sqlite3_stmt* stmt_insert_day;
-    sqlite3_stmt* stmt_insert_record;
+    sqlite3* db_; // MODIFIED
+    sqlite3_stmt* stmt_insert_day_; // MODIFIED
+    sqlite3_stmt* stmt_insert_record_; // MODIFIED
     
     // --- [FIX] Added new statement handles and removed the old one ---
-    sqlite3_stmt* stmt_select_project_id;
-    sqlite3_stmt* stmt_insert_project;
+    sqlite3_stmt* stmt_select_project_id_; // MODIFIED
+    sqlite3_stmt* stmt_insert_project_; // MODIFIED
 
     void _prepare_statements();
     void _finalize_statements();

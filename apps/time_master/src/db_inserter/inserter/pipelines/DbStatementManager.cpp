@@ -3,11 +3,11 @@
 #include <stdexcept>
 
 DbStatementManager::DbStatementManager(sqlite3* db)
-    : db(db), 
-      stmt_insert_day(nullptr), 
-      stmt_insert_record(nullptr),
-      stmt_select_project_id(nullptr),
-      stmt_insert_project(nullptr)
+    : db_(db),  // MODIFIED
+      stmt_insert_day_(nullptr),  // MODIFIED
+      stmt_insert_record_(nullptr), // MODIFIED
+      stmt_select_project_id_(nullptr), // MODIFIED
+      stmt_insert_project_(nullptr) // MODIFIED
 {
     _prepare_statements();
 }
@@ -16,10 +16,10 @@ DbStatementManager::~DbStatementManager() {
     _finalize_statements();
 }
 
-sqlite3_stmt* DbStatementManager::get_insert_day_stmt() const { return stmt_insert_day; }
-sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_insert_record; }
-sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return stmt_select_project_id; }
-sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project; }
+sqlite3_stmt* DbStatementManager::get_insert_day_stmt() const { return stmt_insert_day_; } // MODIFIED
+sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_insert_record_; } // MODIFIED
+sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return stmt_select_project_id_; } // MODIFIED
+sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project_; } // MODIFIED
 
 void DbStatementManager::_prepare_statements() {
     // --- [核心修改] 更新 'days' 表的插入语句 ---
@@ -30,7 +30,7 @@ void DbStatementManager::_prepare_statements() {
     "sleep_night_time, sleep_day_time, sleep_total_time, "
     "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time) "
     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
-    if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, insert_day_sql, -1, &stmt_insert_day_, nullptr) != SQLITE_OK) { // MODIFIED
         throw std::runtime_error("Failed to prepare day insert statement.");
     }
 
@@ -38,26 +38,26 @@ void DbStatementManager::_prepare_statements() {
         "INSERT OR REPLACE INTO time_records "
         "(logical_id, start_timestamp, end_timestamp, date, start, end, project_id, duration, activity_remark) "
         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);";
-    if (sqlite3_prepare_v2(db, insert_record_sql, -1, &stmt_insert_record, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, insert_record_sql, -1, &stmt_insert_record_, nullptr) != SQLITE_OK) { // MODIFIED
         throw std::runtime_error("Failed to prepare time record insert statement.");
     }
 
     const char* select_project_id_sql = 
         "SELECT id FROM projects WHERE name = ? AND parent_id IS ?";
-    if (sqlite3_prepare_v2(db, select_project_id_sql, -1, &stmt_select_project_id, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, select_project_id_sql, -1, &stmt_select_project_id_, nullptr) != SQLITE_OK) { // MODIFIED
         throw std::runtime_error("Failed to prepare project select statement.");
     }
 
     const char* insert_project_sql =
         "INSERT INTO projects (name, parent_id) VALUES (?, ?);";
-    if (sqlite3_prepare_v2(db, insert_project_sql, -1, &stmt_insert_project, nullptr) != SQLITE_OK) {
+    if (sqlite3_prepare_v2(db_, insert_project_sql, -1, &stmt_insert_project_, nullptr) != SQLITE_OK) { // MODIFIED
         throw std::runtime_error("Failed to prepare project insert statement.");
     }
 }
 
 void DbStatementManager::_finalize_statements() {
-    if (stmt_insert_day) sqlite3_finalize(stmt_insert_day);
-    if (stmt_insert_record) sqlite3_finalize(stmt_insert_record);
-    if (stmt_select_project_id) sqlite3_finalize(stmt_select_project_id);
-    if (stmt_insert_project) sqlite3_finalize(stmt_insert_project);
+    if (stmt_insert_day_) sqlite3_finalize(stmt_insert_day_); // MODIFIED
+    if (stmt_insert_record_) sqlite3_finalize(stmt_insert_record_); // MODIFIED
+    if (stmt_select_project_id_) sqlite3_finalize(stmt_select_project_id_); // MODIFIED
+    if (stmt_insert_project_) sqlite3_finalize(stmt_insert_project_); // MODIFIED
 }

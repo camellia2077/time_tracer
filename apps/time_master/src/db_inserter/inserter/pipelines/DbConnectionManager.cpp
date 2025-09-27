@@ -2,10 +2,10 @@
 #include "DbConnectionManager.hpp"
 #include <iostream>
 
-DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullptr) {
-    if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK) {
-        std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db) << std::endl;
-        db = nullptr;
+DbConnectionManager::DbConnectionManager(const std::string& db_path) : db_(nullptr) { // MODIFIED
+    if (sqlite3_open(db_path.c_str(), &db_) != SQLITE_OK) { // MODIFIED
+        std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db_) << std::endl; // MODIFIED
+        db_ = nullptr; // MODIFIED
     } else {
         // --- [核心修改] 更新 days 表的定义 ---
         const char* create_days_sql =
@@ -31,11 +31,11 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
                 "recreation_zhihu_time INTEGER, " // 新增
                 "recreation_bilibili_time INTEGER, " // 新增
                 "recreation_douyin_time INTEGER);"; // 新增
-        execute_sql(db, create_days_sql, "Create days table");
+        execute_sql(db_, create_days_sql, "Create days table"); // MODIFIED
 
         const char* create_index_sql =
             "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
-        execute_sql(db, create_index_sql, "Create index on days(year, month)");
+        execute_sql(db_, create_index_sql, "Create index on days(year, month)"); // MODIFIED
 
         const char* create_projects_sql =
             "CREATE TABLE IF NOT EXISTS projects ("
@@ -43,7 +43,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "name TEXT NOT NULL, "
             "parent_id INTEGER, "
             "FOREIGN KEY (parent_id) REFERENCES projects(id));";
-        execute_sql(db, create_projects_sql, "Create projects table");
+        execute_sql(db_, create_projects_sql, "Create projects table"); // MODIFIED
 
         const char* create_records_sql =
             "CREATE TABLE IF NOT EXISTS time_records ("
@@ -58,30 +58,30 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db(nullpt
             "activity_remark TEXT, "
             "FOREIGN KEY (date) REFERENCES days(date), "
             "FOREIGN KEY (project_id) REFERENCES projects(id));";
-        execute_sql(db, create_records_sql, "Create time_records table");
+        execute_sql(db_, create_records_sql, "Create time_records table"); // MODIFIED
     }
 }
 
 DbConnectionManager::~DbConnectionManager() {
-    if (db) {
-        sqlite3_close(db);
+    if (db_) { // MODIFIED
+        sqlite3_close(db_); // MODIFIED
     }
 }
 
 sqlite3* DbConnectionManager::get_db() const {
-    return db;
+    return db_; // MODIFIED
 }
 
 bool DbConnectionManager::begin_transaction() {
-    return execute_sql(db, "BEGIN TRANSACTION;", "Begin transaction");
+    return execute_sql(db_, "BEGIN TRANSACTION;", "Begin transaction"); // MODIFIED
 }
 
 bool DbConnectionManager::commit_transaction() {
-    return execute_sql(db, "COMMIT;", "Commit transaction");
+    return execute_sql(db_, "COMMIT;", "Commit transaction"); // MODIFIED
 }
 
 void DbConnectionManager::rollback_transaction() {
-    execute_sql(db, "ROLLBACK;", "Rollback transaction");
+    execute_sql(db_, "ROLLBACK;", "Rollback transaction"); // MODIFIED
 }
 
 bool execute_sql(sqlite3* db, const std::string& sql, const std::string& context_msg) {
