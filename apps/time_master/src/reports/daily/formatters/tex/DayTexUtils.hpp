@@ -9,19 +9,10 @@
 
 namespace DayTexUtils {
 
-    /**
-     * @brief 显示报告的头部信息。
-     */
     void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config);
-
-    /**
-     * @brief 显示统计数据部分。
-     */
-    void display_statistics(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config);
-
-    /**
-     * @brief 显示详细的活动记录。
-     */
+    
+    // [核心修改] display_statistics 声明已被移除
+    
     void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config);
 
 } // namespace DayTexUtils

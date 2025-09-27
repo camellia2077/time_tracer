@@ -17,8 +17,8 @@ private:
     void _display_header(std::stringstream& ss, const DailyReportData& data) const;
     void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
 
+    // [核心修改] _display_statistics 方法已被移除
     std::shared_ptr<DayMdConfig> config_;
 };
 
