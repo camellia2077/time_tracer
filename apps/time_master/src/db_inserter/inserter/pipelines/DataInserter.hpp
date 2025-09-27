@@ -22,12 +22,12 @@ public:
     // --- [核心修改] 移除 insert_parent_child_pairs ---
 
 private:
-    sqlite3* db;
-    sqlite3_stmt* stmt_insert_day;
-    sqlite3_stmt* stmt_insert_record;
+    sqlite3* db_; // MODIFIED
+    sqlite3_stmt* stmt_insert_day_; // MODIFIED
+    sqlite3_stmt* stmt_insert_record_; // MODIFIED
     // --- [核心修改] 新增 projects 表相关的语句句柄 ---
-    sqlite3_stmt* stmt_select_project_id;
-    sqlite3_stmt* stmt_insert_project;
+    sqlite3_stmt* stmt_select_project_id_; // MODIFIED
+    sqlite3_stmt* stmt_insert_project_; // MODIFIED
 
     // --- [核心修改] 新增用于缓存和处理项目ID的成员 ---
     std::map<std::string, long long> project_path_cache_;
