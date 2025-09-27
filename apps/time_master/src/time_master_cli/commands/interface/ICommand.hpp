@@ -1,4 +1,4 @@
-// time_master_cli/commands/ICommand.hpp
+// time_master_cli/commands/interface/ICommand.hpp
 #ifndef I_COMMAND_HPP
 #define I_COMMAND_HPP
 
