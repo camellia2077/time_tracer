@@ -19,19 +19,19 @@ set(CONFIG_VALIDATOR
     "src/config_validator/reprocessing/rules/MainRule.cpp"
     "src/config_validator/reprocessing/rules/MappingRule.cpp"
 
-    # Queries 领域的 Facade
-    "src/config_validator/queries/facade/QueryFacade.cpp"
+    # reports 领域的 Facade
+    "src/config_validator/reports/facade/QueryFacade.cpp"
 
-    # Queries 领域的 Strategies (核心)
-    "src/config_validator/queries/strategies/BaseStrategy.cpp"
-    "src/config_validator/queries/strategies/StrategyFactory.cpp"
+    # reports 领域的 Strategies (核心)
+    "src/config_validator/reports/strategies/BaseStrategy.cpp"
+    "src/config_validator/reports/strategies/StrategyFactory.cpp"
 
-    # Queries 领域的 Strategies (具体实现)
-    "src/config_validator/queries/strategies/daily/DailyMd.cpp"
-    "src/config_validator/queries/strategies/daily/DailyTex.cpp"
-    "src/config_validator/queries/strategies/daily/DailyTyp.cpp"
-    "src/config_validator/queries/strategies/monthly/Monthly.cpp"
-    "src/config_validator/queries/strategies/periodic/Periodic.cpp"
+    # reports 领域的 Strategies (具体实现)
+    "src/config_validator/reports/strategies/daily/DailyMd.cpp"
+    "src/config_validator/reports/strategies/daily/DailyTex.cpp"
+    "src/config_validator/reports/strategies/daily/DailyTyp.cpp"
+    "src/config_validator/reports/strategies/monthly/Monthly.cpp"
+    "src/config_validator/reports/strategies/periodic/Periodic.cpp"
 )
 
 # --- Time Master CLI Sources ---
@@ -77,76 +77,75 @@ set(DB_INSERTER_SOURCES
 
 )
 
-# --- Queries Sources ---
-set(QUERIES_SOURCES
+set(REPORTS_SOURCES
     # Root
-    "src/queries/QueryHandler.cpp"
+    "src/reports/QueryHandler.cpp"
     # Export
-    "src/queries/export/AllDayReports.cpp"
-    "src/queries/export/AllMonthlyReports.cpp"
-    "src/queries/export/AllPeriodReports.cpp"
+    "src/reports/export/AllDayReports.cpp"
+    "src/reports/export/AllMonthlyReports.cpp"
+    "src/reports/export/AllPeriodReports.cpp"
     # Daily Reports
     
-    "src/queries/daily/DayGenerator.cpp"
-    "src/queries/daily/DayQuerier.cpp"
+    "src/reports/daily/DayGenerator.cpp"
+    "src/reports/daily/DayQuerier.cpp"
 
     # Daily md
-    "src/queries/daily/formatters/md/DayMd.cpp"
-    "src/queries/daily/formatters/md/DayMdConfig.cpp"
+    "src/reports/daily/formatters/md/DayMd.cpp"
+    "src/reports/daily/formatters/md/DayMdConfig.cpp"
 
-    "src/queries/daily/formatters/tex/DayTex.cpp"
-    "src/queries/daily/formatters/tex/DayTexConfig.cpp"
+    "src/reports/daily/formatters/tex/DayTex.cpp"
+    "src/reports/daily/formatters/tex/DayTexConfig.cpp"
 
-    "src/queries/daily/formatters/typ/DayTyp.cpp"
-    "src/queries/daily/formatters/typ/DayTypConfig.cpp"
-    "src/queries/daily/formatters/typ/DayTypUtils.cpp"
+    "src/reports/daily/formatters/typ/DayTyp.cpp"
+    "src/reports/daily/formatters/typ/DayTypConfig.cpp"
+    "src/reports/daily/formatters/typ/DayTypUtils.cpp"
     # Monthly Reports
-    "src/queries/monthly/MonthGenerator.cpp"
-    "src/queries/monthly/MonthQuerier.cpp"
+    "src/reports/monthly/MonthGenerator.cpp"
+    "src/reports/monthly/MonthQuerier.cpp"
     # Monthly md
-    "src/queries/monthly/formatters/md/MonthMd.cpp"
-    "src/queries/monthly/formatters/md/MonthMdConfig.cpp"
+    "src/reports/monthly/formatters/md/MonthMd.cpp"
+    "src/reports/monthly/formatters/md/MonthMdConfig.cpp"
 
     # Monthly tex
-    "src/queries/monthly/formatters/tex/MonthTex.cpp"
-    "src/queries/monthly/formatters/tex/MonthTexConfig.cpp"
+    "src/reports/monthly/formatters/tex/MonthTex.cpp"
+    "src/reports/monthly/formatters/tex/MonthTexConfig.cpp"
 
-    "src/queries/monthly/formatters/typ/MonthTyp.cpp"
-    "src/queries/monthly/formatters/typ/MonthTypConfig.cpp"
+    "src/reports/monthly/formatters/typ/MonthTyp.cpp"
+    "src/reports/monthly/formatters/typ/MonthTypConfig.cpp"
 
 
     # Period Reports
-    "src/queries/period/PeriodGenerator.cpp"
-    "src/queries/period/PeriodQuerier.cpp"
+    "src/reports/period/PeriodGenerator.cpp"
+    "src/reports/period/PeriodQuerier.cpp"
 
     # Period md
-    "src/queries/period/formatters/md/PeriodMd.cpp"
-    "src/queries/period/formatters/md/PeriodMdConfig.cpp"
+    "src/reports/period/formatters/md/PeriodMd.cpp"
+    "src/reports/period/formatters/md/PeriodMdConfig.cpp"
 
     # Period tex
-    "src/queries/period/formatters/tex/PeriodTex.cpp"
-    "src/queries/period/formatters/tex/PeriodTexConfig.cpp"
+    "src/reports/period/formatters/tex/PeriodTex.cpp"
+    "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
 
     # Period typ
-    "src/queries/period/formatters/typ/PeriodTyp.cpp"
-    "src/queries/period/formatters/typ/PeriodTypConfig.cpp"
+    "src/reports/period/formatters/typ/PeriodTyp.cpp"
+    "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 
     
 
     # Shared Components
 
-    "src/queries/shared/utils/config/ConfigUtils.cpp"
-    "src/queries/shared/utils/report/ReportDataUtils.cpp"
+    "src/reports/shared/utils/config/ConfigUtils.cpp"
+    "src/reports/shared/utils/report/ReportDataUtils.cpp"
 
-    "src/queries/shared/utils/format/BoolToString.cpp"
-    "src/queries/shared/utils/format/ReportStringUtils.cpp"
-    "src/queries/shared/utils/format/TimeFormat.cpp"
+    "src/reports/shared/utils/format/BoolToString.cpp"
+    "src/reports/shared/utils/format/ReportStringUtils.cpp"
+    "src/reports/shared/utils/format/TimeFormat.cpp"
 
-    "src/queries/shared/formatters/base/ProjectTreeFormatter.cpp"
-    "src/queries/shared/formatters/latex/TexUtils.cpp"
+    "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
+    "src/reports/shared/formatters/latex/TexUtils.cpp"
 
-    "src/queries/shared/formatters/markdown/MarkdownUtils.cpp"
-    "src/queries/shared/formatters/typst/TypUtils.cpp"
+    "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
+    "src/reports/shared/formatters/typst/TypUtils.cpp"
 )
 
 # --- Reprocessing Sources ---

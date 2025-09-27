@@ -1,5 +1,6 @@
+// action_handler/reporting/ReportGenerator.cpp
 #include "ReportGenerator.hpp"
-#include "queries/QueryHandler.hpp"
+#include "reports/QueryHandler.hpp"
 
 ReportGenerator::ReportGenerator(sqlite3* db, const AppConfig& config) {
     query_handler_ = std::make_unique<QueryHandler>(db, config);

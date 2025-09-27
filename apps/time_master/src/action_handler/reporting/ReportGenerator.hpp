@@ -1,11 +1,12 @@
+// action_handler/reporting/ReportGenerator.hpp
 #ifndef REPORT_GENERATOR_HPP
 #define REPORT_GENERATOR_HPP
 
 #include <memory>
 #include <string>
 #include <vector>
-#include "queries/shared/data/query_data_structs.hpp"
-#include "queries/shared/types/ReportFormat.hpp"
+#include "reports/shared/data/query_data_structs.hpp"
+#include "reports/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
 
 struct sqlite3;

@@ -1,7 +1,7 @@
 // config_validator/facade/ConfigFacade.cpp
 #include "ConfigFacade.hpp"
 #include "config_validator/reprocessing/facade/ReprocFacade.hpp" // [修改]
-#include "config_validator/queries/facade/QueryFacade.hpp"           // [修改]
+#include "config_validator/reports/facade/QueryFacade.hpp"           // [修改]
 
 using json = nlohmann::json;
 
