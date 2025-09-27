@@ -79,14 +79,14 @@ set(DB_INSERTER_SOURCES
 
 set(REPORTS_SOURCES
     # Root
-    "src/reports/QueryHandler.cpp"
+    "src/reports/facade/QueryHandler.cpp"
     # Export
     "src/reports/export/AllDayReports.cpp"
     "src/reports/export/AllMonthlyReports.cpp"
     "src/reports/export/AllPeriodReports.cpp"
     # Daily Reports
     
-    "src/reports/daily/DayGenerator.cpp"
+
     "src/reports/daily/DayQuerier.cpp"
     # Daily formatters
     # base
@@ -108,7 +108,7 @@ set(REPORTS_SOURCES
     "src/reports/daily/formatters/typ/DayTypConfig.cpp"
     "src/reports/daily/formatters/typ/DayTypUtils.cpp"
     # Monthly Reports
-    "src/reports/monthly/MonthGenerator.cpp"
+
     "src/reports/monthly/MonthQuerier.cpp"
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     # Monthly md
@@ -125,7 +125,7 @@ set(REPORTS_SOURCES
 
 
     # Period Reports
-    "src/reports/period/PeriodGenerator.cpp"
+
     "src/reports/period/PeriodQuerier.cpp"
 
     "src/reports/period/formatters/base/PeriodBaseConfig.cpp"

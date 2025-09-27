@@ -475,5 +475,9 @@ json中键名修改为get_no_records_message
 通过这次重构，我们将原来分散在三处的复杂逻辑集中到了一个地方，使得 DayMd、DayTex 和 DayTyp 的代码被大大简化，现在它们只需调用 StatisticsFormatter 即可完成整个统计部分的渲染。这显著提高了代码的可维护性和复用性。
 
 
+## v0.3.23.18
+各报告的Generator提取为BaseGenerator.hpp
+
+
 
 
