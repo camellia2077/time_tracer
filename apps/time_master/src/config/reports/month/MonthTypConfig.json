@@ -14,5 +14,5 @@
     "actual_days_label": "Actual Days with Records",
     "total_time_label": "Total Hours",
     "invalid_format_message": "Invalid year_month format. Expected YYYYMM.",
-    "no_records": "No time records found for this month."
+    "no_records_message": "No time records found for this month."
 }
