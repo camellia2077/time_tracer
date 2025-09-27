@@ -25,7 +25,7 @@
   "getup_time_label": "Getup Time",
   "remark_label": "Remark",
   "exercise_label": "Exercise",
-  "no_records": "No time records for this day.",
+  "no_records_message": "No time records for this day.",
   "statistics_label": "Statistics",
   "all_activities_label": "All Activities",
   "activity_remark_label": "Activity Remark",

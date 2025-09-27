@@ -52,7 +52,7 @@ std::string MonthTyp::format_report(const MonthlyReportData& data) const {
     _display_summary(ss, data);
 
     if (data.actual_days == 0) {
-        ss << config_->get_no_records() << "\n";
+        ss << config_->get_no_records_message() << "\n";
         return ss.str();
     }
 

@@ -455,7 +455,10 @@ QueryManager 和 ReportGenerator 的合并
 
 ## v0.3.23.15
 tex优化程序结构
+## v0.3.23.16
+月,周期报告重复配置读取逻辑提取到base
+json中键名修改为get_no_records_message
 
 
-DayBaseConfig
+
 

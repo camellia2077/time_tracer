@@ -88,9 +88,11 @@ set(REPORTS_SOURCES
     
     "src/reports/daily/DayGenerator.cpp"
     "src/reports/daily/DayQuerier.cpp"
+    # Daily base
+    "src/reports/daily/formatters/base/DayBaseConfig.cpp"
 
     # Daily md
-    "src/reports/daily/formatters/base/DayBaseConfig.cpp"
+    
 
     "src/reports/daily/formatters/md/DayMd.cpp"
     "src/reports/daily/formatters/md/DayMdConfig.cpp"
@@ -105,6 +107,7 @@ set(REPORTS_SOURCES
     # Monthly Reports
     "src/reports/monthly/MonthGenerator.cpp"
     "src/reports/monthly/MonthQuerier.cpp"
+    "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     # Monthly md
     "src/reports/monthly/formatters/md/MonthMd.cpp"
     "src/reports/monthly/formatters/md/MonthMdConfig.cpp"
@@ -121,6 +124,8 @@ set(REPORTS_SOURCES
     # Period Reports
     "src/reports/period/PeriodGenerator.cpp"
     "src/reports/period/PeriodQuerier.cpp"
+
+    "src/reports/period/formatters/base/PeriodBaseConfig.cpp"
 
     # Period md
     "src/reports/period/formatters/md/PeriodMd.cpp"
