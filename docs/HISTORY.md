@@ -447,3 +447,6 @@ config_validator/reprocessing也使用策略模式
 ## v0.3.23.12
 QueryManager 和 ReportGenerator 的合并
 
+## v0.3.23.13
+补全Exporter的批量导出功能
+
