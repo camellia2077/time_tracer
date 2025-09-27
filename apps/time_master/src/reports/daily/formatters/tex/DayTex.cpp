@@ -1,10 +1,12 @@
 // reports/daily/formatters/tex/DayTex.cpp
 #include "DayTex.hpp"
-#include "DayTexUtils.hpp" // [修改] 引入新的辅助工具
+#include "DayTexUtils.hpp"
 #include "reports/shared/formatters/latex/TexUtils.hpp"
 #include "reports/shared/factories/GenericFormatterFactory.hpp"
 #include "reports/daily/formatters/tex/DayTexConfig.hpp"
 #include "reports/shared/data/DailyReportData.hpp"
+#include "reports/daily/formatters/statistics/StatFormatter.hpp"
+#include "reports/daily/formatters/statistics/LatexStrategy.hpp"
 #include <sstream>
 #include <memory>
 
@@ -24,7 +26,6 @@ namespace {
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
 
-// [核心修改] format_report 方法现在只负责流程控制
 std::string DayTex::format_report(const DailyReportData& data) const {
     std::stringstream ss;
     ss << TexUtils::get_tex_preamble(
@@ -35,16 +36,18 @@ std::string DayTex::format_report(const DailyReportData& data) const {
         config_->get_keyword_colors()
     );
 
-    // 调用辅助函数来处理各个部分的格式化
     DayTexUtils::display_header(ss, data, config_);
 
     if (data.total_duration == 0) {
         ss << config_->get_no_records() << "\n";
     } else {
-        DayTexUtils::display_statistics(ss, data, config_);
+        // [核心修改] 使用新的 StatFormatter
+        auto strategy = std::make_unique<LatexStrategy>(config_);
+        StatFormatter stats_formatter(std::move(strategy));
+        ss << stats_formatter.format(data, config_);
+        
         DayTexUtils::display_detailed_activities(ss, data, config_);
         
-        // 项目分解的逻辑比较简单，直接调用共享工具函数
         ss << TexUtils::format_project_tree(
             data.project_tree,
             data.total_duration,

@@ -8,9 +8,6 @@
 #include <memory>
 #include <sstream>
 
-#include <sstream>
-#include "reports/shared/data/DailyReportData.hpp"
-
 class DayTyp : public IReportFormatter<DailyReportData> {
 public:
     explicit DayTyp(std::shared_ptr<DayTypConfig> config);
@@ -18,7 +15,7 @@ public:
 
 private:
     std::shared_ptr<DayTypConfig> config_;
-    void _display_statistics(std::stringstream& ss, const DailyReportData& data) const;
+    // [核心修改] _display_statistics 方法已被移除
 };
 
 #endif // DAY_TYP_HPP

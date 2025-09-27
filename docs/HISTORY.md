@@ -459,6 +459,21 @@ tex优化程序结构
 月,周期报告重复配置读取逻辑提取到base
 json中键名修改为get_no_records_message
 
+## v0.3.23.16
+重构日报统计模块，消除重复的格式化逻辑
+
+本次修改的核心目标是解决在 DayMd、DayTex 和 DayTyp 三个日报格式化器中存在的重复代码问题。原先，每个格式化器都独立实现了一套几乎完全相同的逻辑来处理和显示统计数据（如睡眠时间、锻炼时间及其子项等）。
+
+为了解决这个问题，我们引入了策略设计模式（Strategy Design Pattern）：
+
+提取通用逻辑：我们创建了一个核心的 StatisticsFormatter 类，它封装了所有与具体格式无关的通用业务逻辑，例如：决定显示哪些统计项、它们的排列顺序、以及如何处理嵌套的子项（如“总锻炼时间”下的“无氧”和“有氧”）。
+
+定义策略接口：我们定义了一个 IStatisticsFormattingStrategy 接口，它规定了所有具体格式化策略必须实现的方法，如如何格式化标题、主列表项和子列表项。
+
+实现具体策略：我们为 Markdown、LaTeX 和 Typst 分别创建了具体的策略类 (MarkdownStatisticsStrategy.hpp, LatexStatisticsStrategy.hpp, TypstStatisticsStrategy.hpp)，这些类负责将统计数据转换为特定格式的字符串。
+
+通过这次重构，我们将原来分散在三处的复杂逻辑集中到了一个地方，使得 DayMd、DayTex 和 DayTyp 的代码被大大简化，现在它们只需调用 StatisticsFormatter 即可完成整个统计部分的渲染。这显著提高了代码的可维护性和复用性。
+
 
 
 
