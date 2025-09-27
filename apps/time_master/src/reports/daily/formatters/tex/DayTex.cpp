@@ -43,7 +43,8 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     _display_header(ss, data);
 
     if (data.total_duration == 0) {
-        ss << config_->get_no_records_message() << "\n";
+        // [FIX] Corrected the function name to match the base class getter
+        ss << config_->get_no_records() << "\n";
     } else {
         _display_statistics(ss, data);
         _display_detailed_activities(ss, data);
@@ -92,7 +93,6 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
     const auto& items_config = config_->get_statistics_items();
     std::vector<std::string> lines_to_print;
     
-    // [核心修改] 更新 ordered_keys
     const std::vector<std::string> ordered_keys = {"sleep_time", "total_exercise_time", "grooming_time", "recreation_time"};
 
     for (const auto& key : ordered_keys) {
@@ -109,7 +109,6 @@ void DayTex::_display_statistics(std::stringstream& ss, const DailyReportData& d
         line_ss << "    \\item \\textbf{" << it->second.label << "}: " << TexUtils::escape_latex(time_format_duration(duration));
         lines_to_print.push_back(line_ss.str());
 
-        // [核心修改] 新增对 total_exercise_time 子项的处理
         if (key == "total_exercise_time") {
             std::vector<std::string> sub_exercise_lines;
             if (items_config.count("anaerobic_time") && items_config.at("anaerobic_time").show) {
