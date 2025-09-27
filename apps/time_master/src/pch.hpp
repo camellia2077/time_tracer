@@ -42,7 +42,7 @@
 // #include "common/utils/StringUtils.hpp"            
 #include "common/utils/TimeUtils.hpp"         
 
-#include "queries/shared/types/ReportFormat.hpp"    // 使用次数: 16
+#include "reports/shared/types/ReportFormat.hpp"    // 使用次数: 16
 #include "common/AnsiColors.hpp"              // 使用次数: 15
 
 #endif //PCH_HPP

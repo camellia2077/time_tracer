@@ -30,14 +30,14 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(SourceFileCollection) # 包含并执行源文件收集脚本
 include(TargetSetup)          # 包含并定义 setup_project_target 函数
-include(BuildTypeFlags)       # [新增] 包含并执行构建类型标志的设置脚本
+include(BuildTypeFlags)       # 包含并执行构建类型标志的设置脚本
 
 # --- 3. 定义可执行文件目标 ---
 add_executable(time_tracker_cli src/main_cli.cpp 
     ${COMMON_SOURCES} 
     ${CONFIG_VALIDATOR}
     ${DB_INSERTER_SOURCES} 
-    ${QUERIES_SOURCES} 
+    ${REPORTS_SOURCES} 
     ${REPROCESSING_SOURCES} 
     ${FILE_HANDLER_SOURCES} 
     ${ACTION_HANDLER_SOURCES} 

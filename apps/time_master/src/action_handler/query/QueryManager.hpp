@@ -6,8 +6,10 @@
 #include <sqlite3.h>
 #include <string>
 #include <memory> // For std::unique_ptr
-#include "queries/shared/types/ReportFormat.hpp" // Include ReportFormat
-#include "common/AppConfig.hpp" // [ADDED] Include AppConfig
+#include "reports/shared/types/ReportFormat.hpp" 
+#include "common/AppConfig.hpp" 
+
+
 
 // Forward Declaration
 class QueryHandler;

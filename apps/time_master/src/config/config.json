@@ -2,13 +2,13 @@
   "interval_processor_config_path": "reprocessing/interval_processor_config.json",
   "error_log_path": "../output/error_log.txt",
   "export_path": "exported_reports",
-  "day_typ_config_path": "queries/day/DayTypConfig.json",
-  "month_typ_config_path": "queries/month/MonthTypConfig.json",
-  "period_typ_config_path": "queries/period/PeriodTypConfig.json",
-  "day_tex_config_path": "queries/day/DayTexConfig.json",
-  "month_tex_config_path": "queries/month/MonthTexConfig.json",
-  "period_tex_config_path": "queries/period/PeriodTexConfig.json",
-  "day_md_config_path": "queries/day/DayMdConfig.json",
-  "month_md_config_path": "queries/month/MonthMdConfig.json",
-  "period_md_config_path": "queries/period/PeriodMdConfig.json"
+  "day_typ_config_path": "reports/day/DayTypConfig.json",
+  "month_typ_config_path": "reports/month/MonthTypConfig.json",
+  "period_typ_config_path": "reports/period/PeriodTypConfig.json",
+  "day_tex_config_path": "reports/day/DayTexConfig.json",
+  "month_tex_config_path": "reports/month/MonthTexConfig.json",
+  "period_tex_config_path": "reports/period/PeriodTexConfig.json",
+  "day_md_config_path": "reports/day/DayMdConfig.json",
+  "month_md_config_path": "reports/month/MonthMdConfig.json",
+  "period_md_config_path": "reports/period/PeriodMdConfig.json"
 }

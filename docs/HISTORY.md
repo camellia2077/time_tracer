@@ -341,7 +341,7 @@ TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工�
 ## v0.3.21.8
 提取md报告共同代码到
 
-src/queries/shared/format/MarkdownUtils.cpp
+src/reports/shared/format/MarkdownUtils.cpp
 
 ## v0.3.21.9
 数据库插入json中更多字段
@@ -440,4 +440,7 @@ config_validator/reprocessing也使用策略模式
 
 ## v0.3.23.10
 拆分Exporter
+
+## v0.3.23.11
+文件夹命名queries修改为reports
 
