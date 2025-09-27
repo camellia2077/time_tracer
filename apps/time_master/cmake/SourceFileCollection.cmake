@@ -88,8 +88,11 @@ set(REPORTS_SOURCES
     
     "src/reports/daily/DayGenerator.cpp"
     "src/reports/daily/DayQuerier.cpp"
-    # Daily base
+    # Daily formatters
+    # base
     "src/reports/daily/formatters/base/DayBaseConfig.cpp"
+    # statistics
+    "src/reports/daily/formatters/statistics/StatFormatter.cpp"
 
     # Daily md
     
