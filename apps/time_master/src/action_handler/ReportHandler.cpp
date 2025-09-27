@@ -1,42 +1,54 @@
 // action_handler/ReportHandler.cpp
 #include "action_handler/ReportHandler.hpp"
 #include "action_handler/reporting/Exporter.hpp"
-#include "action_handler/query/QueryManager.hpp"
+// 移除了 #include "action_handler/query/QueryManager.hpp"
 #include "action_handler/reporting/ReportGenerator.hpp"
 #include "common/AnsiColors.hpp"
 #include <iostream>
 
+/**
+ * @brief [修改] 构造函数不再接收 QueryManager。
+ */
 ReportHandler::ReportHandler(
-    std::unique_ptr<QueryManager> query_manager,
     std::unique_ptr<ReportGenerator> report_generator,
     std::unique_ptr<Exporter> exporter)
-    : direct_query_manager_(std::move(query_manager)),
-      report_generator_(std::move(report_generator)),
+    : report_generator_(std::move(report_generator)),
       report_exporter_(std::move(exporter))
 {}
 
 ReportHandler::~ReportHandler() = default;
 
+/**
+ * @brief [修改] 实现已从 QueryManager 迁移到 ReportGenerator。
+ */
 std::string ReportHandler::run_daily_query(const std::string& date, ReportFormat format) {
-    if (direct_query_manager_) {
-        return direct_query_manager_->run_daily_query(date, format);
+    if (report_generator_) {
+        return report_generator_->generate_daily_report(date, format);
     }
-    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: ReportGenerator not available." + RESET_COLOR;
 }
 
+/**
+ * @brief [修改] 实现已从 QueryManager 迁移到 ReportGenerator。
+ */
 std::string ReportHandler::run_monthly_query(const std::string& month, ReportFormat format) {
-    if (direct_query_manager_) {
-        return direct_query_manager_->run_monthly_query(month, format);
+    if (report_generator_) {
+        return report_generator_->generate_monthly_report(month, format);
     }
-    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: ReportGenerator not available." + RESET_COLOR;
 }
 
+/**
+ * @brief [修改] 实现已从 QueryManager 迁移到 ReportGenerator。
+ */
 std::string ReportHandler::run_period_query(int days, ReportFormat format) {
-    if (direct_query_manager_) {
-        return direct_query_manager_->run_period_query(days, format);
+    if (report_generator_) {
+        return report_generator_->generate_period_report(days, format);
     }
-    return std::string(RED_COLOR) + "Error: QueryManager not available." + RESET_COLOR;
+    return std::string(RED_COLOR) + "Error: ReportGenerator not available." + RESET_COLOR;
 }
+
+// --- 导出相关方法保持不变，它们已经在使用正确的依赖 ---
 
 void ReportHandler::run_export_single_day_report(const std::string& date, ReportFormat format) {
     if (report_generator_ && report_exporter_) {
