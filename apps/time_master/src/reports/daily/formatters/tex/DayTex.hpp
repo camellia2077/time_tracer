@@ -13,7 +13,6 @@ public:
     std::string format_report(const DailyReportData& data) const override;
 
 private:
-    // [修改] 所有私有 _display_* 方法都将被移除
     std::shared_ptr<DayTexConfig> config_;
 };
 
