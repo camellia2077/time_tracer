@@ -55,7 +55,7 @@ time_master/
 │   ├── menu.h           
 │   └── menu.cpp         
 │
-├── queries
+├── reports
 │   ├── format/                   # 负责报告内部“项目明细”部分的格式化 (策略模式)
 │   │   ├── ITreeFmt.h  # 定义项目明细格式化器的通用接口(抽象基类)
 │   │   ├── md/                                  # Markdown格式的具体实现
@@ -184,8 +184,8 @@ graph TD
         Reproc["reprocessing/<br/><i>验证与转换文本</i>"]
         %% db_inserter/是解析并且插入数据库
         DBInsert["db_inserter/<br/><i>解析并插入数据库</i>"]
-        %% queries/是查询数据库
-        Query["queries/<br/><i>查询数据库</i>"]
+        %% reports/是查询数据库
+        Query["reports/<br/><i>查询数据库</i>"]
     end
 
     subgraph "通用工具/配置 (Common & Config)"

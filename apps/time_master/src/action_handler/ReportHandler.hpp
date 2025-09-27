@@ -1,10 +1,11 @@
+// action_handler/ReportHandler.hpp
 #ifndef REPORT_HANDLER_HPP
 #define REPORT_HANDLER_HPP
 
 #include <string>
 #include <vector>
 #include <memory>
-#include "queries/shared/types/ReportFormat.hpp"
+#include "reports/shared/types/ReportFormat.hpp"
 
 class Exporter;
 class QueryManager;
