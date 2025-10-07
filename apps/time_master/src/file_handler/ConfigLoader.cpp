@@ -51,6 +51,12 @@ AppConfig ConfigLoader::load_configuration() {
 
     // 5. Create an AppConfig instance and populate it from the parsed JSON
     AppConfig app_config;
+
+    // ==================== [核心修改] ====================
+    // 填充可执行文件所在的目录路径
+    app_config.exe_dir_path = exe_path.string();
+    // ====================================================
+
     try {
         // Read relative paths from JSON and join them with the config directory's path
         // to create absolute paths for the other configuration files.

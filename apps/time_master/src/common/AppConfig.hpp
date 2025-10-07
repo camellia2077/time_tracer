@@ -10,6 +10,11 @@
 
 // 应用程序的核心配置，由 config.json 加载
 struct AppConfig {
+    // ==================== [核心修改] ====================
+    // 新增成员，用于存储可执行文件所在的目录路径
+    std::string exe_dir_path;
+    // ====================================================
+
     std::string interval_processor_config_path;
     std::string error_log_path;
     std::optional<std::string> export_path; // 用于存储自定义导出根目录路径
