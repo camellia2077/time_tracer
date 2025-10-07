@@ -480,4 +480,9 @@ json中键名修改为get_no_records_message
 
 
 
+## v0.3.24.0 - 2025-10-07
+1. 优化reports文件夹内的结构
+
+
+
 

@@ -1,9 +1,9 @@
 // action_handler/reporting/ReportGenerator.cpp
 #include "ReportGenerator.hpp"
-#include "reports/facade/QueryHandler.hpp"
+#include "reports/ReportService.hpp"
 
 ReportGenerator::ReportGenerator(sqlite3* db, const AppConfig& config) {
-    query_handler_ = std::make_unique<QueryHandler>(db, config);
+    query_handler_ = std::make_unique<ReportService>(db, config);
 }
 
 ReportGenerator::~ReportGenerator() = default;
