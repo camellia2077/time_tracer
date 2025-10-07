@@ -1,5 +1,4 @@
 // file_handler/FileController.hpp
-
 #ifndef FILE_CONTROLLER_HPP
 #define FILE_CONTROLLER_HPP
 
@@ -31,11 +30,16 @@ private:
     void perform_preprocessing_config_validation() const;
 
     /**
-     * @brief [新增] 执行对所有查询报告相关配置文件的验证。
+     * @brief 执行对所有查询报告相关配置文件的验证。
      * @throws std::runtime_error 如果验证失败。
      */
     void perform_query_config_validation() const;
 
+    /**
+     * @brief [新增] 执行对所有插件DLL文件的验证。
+     * @throws std::runtime_error 如果验证失败。
+     */
+    void perform_plugin_validation() const;
 
     AppConfig app_config_;
     std::string main_config_path_string_;

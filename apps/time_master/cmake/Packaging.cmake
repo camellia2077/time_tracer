@@ -3,11 +3,21 @@
 option(BUILD_INSTALLER "Build a CPack installer package" OFF)
 
 if(BUILD_INSTALLER)
+    # 安装主程序到 bin 目录
     install(TARGETS ${ALL_TARGETS}
         RUNTIME DESTINATION bin
     )
-    
+
+    # ==================== [核心修改] ====================
+    # 安装 DayMdFormatter.dll 到 bin/plugins 目录
+    install(TARGETS DayMdFormatter
+        RUNTIME DESTINATION bin/plugins
+        LIBRARY DESTINATION bin/plugins
+    )
+    # ====================================================
+
     set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # 请确保msys64保这个路径是正确的
+    # 安装依赖的运行时 DLL 到 bin 目录
     install(FILES
         "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
         "${UCRT64_BIN_PATH}/libstdc++-6.dll"
@@ -15,7 +25,8 @@ if(BUILD_INSTALLER)
         "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
         DESTINATION bin
     )
-    install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/src/config" DESTINATION .)
+    # 安装配置文件
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/config" DESTINATION .)
 
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
@@ -23,13 +34,13 @@ if(BUILD_INSTALLER)
     set(CPACK_PACKAGE_VENDOR "camellia")
     set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
     set(CPACK_GENERATOR "NSIS")
-    
+
     if(CPACK_GENERATOR STREQUAL "NSIS")
       set(CPACK_NSIS_PACKAGE_NAME "${CPACK_PACKAGE_NAME} ${CPACK_PACKAGE_VERSION}")
       set(CPACK_NSIS_INSTALL_ROOT "$PROGRAMFILES")
       set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     endif()
-    
+
     include(CPack)
     message(STATUS "CPack packaging is enabled.")
 else()
