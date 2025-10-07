@@ -1,4 +1,6 @@
+# cmake/SourceFileCollection.cmake
 # 模块1：源文件收集 (SourceFileCollection.cmake)
+
 # ----------------------------------------------------
 # 最佳实践：显式列出所有源文件以确保构建系统的稳定性和可预测性。
 
@@ -18,6 +20,8 @@ set(CONFIG_VALIDATOR
     "src/config_validator/reprocessing/rules/DurationRule.cpp"
     "src/config_validator/reprocessing/rules/MainRule.cpp"
     "src/config_validator/reprocessing/rules/MappingRule.cpp"
+
+    "src/config_validator/plugins/facade/PluginValidator.cpp"
 
     # reports 领域的 Facade
     "src/config_validator/reports/facade/QueryFacade.cpp"
@@ -95,10 +99,12 @@ set(REPORTS_SOURCES
     "src/reports/daily/formatters/statistics/StatFormatter.cpp"
 
     # Daily md
-    
+    # Daily md
+    # ==================== [核心修改] ====================
+    # 移除了 "src/reports/daily/formatters/md/DayMd.cpp"
+    # 移除了 "src/reports/daily/formatters/md/DayMdConfig.cpp"
+    # 这两个文件现在由 src/reports/daily/formatters/md/CMakeLists.txt 处理
 
-    "src/reports/daily/formatters/md/DayMd.cpp"
-    "src/reports/daily/formatters/md/DayMdConfig.cpp"
 
     "src/reports/daily/formatters/tex/DayTex.cpp"
     "src/reports/daily/formatters/tex/DayTexConfig.cpp"

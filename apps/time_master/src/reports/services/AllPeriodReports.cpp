@@ -1,4 +1,4 @@
-// reports/export/AllPeriodReports.cpp
+// reports/services/AllPeriodReports.cpp
 #include "AllPeriodReports.hpp"
 #include "reports/period/PeriodQuerier.hpp"
 #include "reports/shared/factories/GenericFormatterFactory.hpp" // [修改]

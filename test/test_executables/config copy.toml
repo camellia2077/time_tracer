@@ -1,0 +1,75 @@
+# ==============================================================================
+#                       RUN CONTROL
+# ==============================================================================
+[run_control]
+# 设置为 1 来执行环境准备 (清理、复制可执行文件和DLL)
+enable_file_setup = 1
+# 设置为 1 来执行测试套件
+enable_test_execution = 1
+
+
+# ==============================================================================
+#                 PATH AND DIRECTORY CONFIGURATION
+# ==============================================================================
+[paths]
+source_executables_dir = "C:/Computer/my_github/github_cpp/time_master/Time_Master_cpp/apps/time_master/build/bin"
+output_root_dir = "C:/Computer/my_github/github_cpp/time_master/my_test"
+source_data_folder_name = "Date"
+target_executables_dir = "./"
+output_dir_name = "output"
+
+# ==============================================================================
+#                      EXECUTABLE AND DATABASE CONFIGURATION
+# ==============================================================================
+[cli_names]
+executable_cli_name = "time_tracker_cli.exe"
+executable_app_name = "time_tracker_app.exe"
+generated_db_file_name = "time_data.sqlite3"
+
+# ==============================================================================
+#                      TEST PARAMETERS CONFIGURATION
+# ==============================================================================
+[test_params]
+test_formats = ["md", "tex", "typ"]
+
+# 这个是查询，查询不把查询的内容导出到本地
+daily_query_dates = ["20250101", "20250201"]
+monthly_query_months = ["202505", "202506"]
+period_query_days = [7, 10, 15]
+
+# 总开关: true -> 批量导出, false -> 按指定列表导出
+export_mode_is_bulk = false
+
+# 仅在 export_mode_is_bulk = false 时生效
+# 这个是导出，会把查询到的内容导出为对应格式
+specific_export_dates = [
+    "20250101","20250102","20250103", "20250104","20250105",
+    "20250106","20250107","20250108","20250109","202501010",
+    
+    "20250201"
+]
+specific_export_months = ["202505", "202506"]
+period_export_days = [7, 10, 15]
+
+
+# ==============================================================================
+#                       CLEANUP CONFIGURATION
+# ==============================================================================
+[cleanup]
+# 需要从源目录复制的文件
+files_to_copy = [
+    "time_tracker_cli.exe",
+    "libgcc_s_seh-1.dll",
+    "libstdc++-6.dll",
+    "libsqlite3-0.dll",
+    "libwinpthread-1.dll"
+]
+
+# 需要清理的目录
+directories_to_clean = [
+    "output",
+    "py_output",
+    "config",
+    "plugins"
+]
+

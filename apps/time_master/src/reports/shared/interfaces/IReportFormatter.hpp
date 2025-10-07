@@ -4,6 +4,8 @@
 
 #include <string>
 #include <sqlite3.h>
+#include "reports/shared/data/DailyReportData.hpp"
+#include "common/AppConfig.hpp"
 
 /**
  * @class IReportFormatter
@@ -23,5 +25,24 @@ public:
      */
     virtual std::string format_report(const ReportDataType& data) const = 0;
 };
+
+
+// [新增] C-style interface for DLLs
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Define a handle for the formatter instance
+typedef void* FormatterHandle;
+
+// Function pointer types for the DLL functions
+typedef FormatterHandle (*CreateFormatterFunc)(const AppConfig&);
+typedef void (*DestroyFormatterFunc)(FormatterHandle);
+typedef const char* (*FormatReportFunc)(FormatterHandle, const DailyReportData&);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // I_REPORT_FORMATTER_HPP

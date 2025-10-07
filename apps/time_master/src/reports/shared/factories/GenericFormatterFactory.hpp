@@ -6,24 +6,57 @@
 #include <map>
 #include <memory>
 #include <stdexcept>
+#include <filesystem>
 #include "reports/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
+#include "reports/shared/factories/DllFormatterWrapper.hpp" // [新增] 引入包装类
+
+namespace fs = std::filesystem;
 
 template<typename ReportDataType>
 class GenericFormatterFactory {
 public:
-    // 定义一个创建者函数的类型别名
     using Creator = std::function<std::unique_ptr<IReportFormatter<ReportDataType>>(const AppConfig&)>;
 
-    /**
-     * @brief 根据指定的格式创建一个格式化器实例。
-     * @param format 报告格式。
-     * @param config 应用程序配置。
-     * @return 一个指向创建的格式化器的 unique_ptr。
-     * @throws std::invalid_argument 如果格式不被支持。
-     */
     static std::unique_ptr<IReportFormatter<ReportDataType>> create(ReportFormat format, const AppConfig& config) {
+        // ==================== [核心修改] ====================
+        // 仅当数据类型是 DailyReportData 且格式是 Markdown 时，才执行DLL加载
+        if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+            if (format == ReportFormat::Markdown) {
+                try {
+                    fs::path exe_dir(config.exe_dir_path);
+                    fs::path plugin_dir = exe_dir / "plugins";
+
+#ifdef _WIN32
+                    // 在 Windows 上，动态库通常是 .dll 文件
+                    // CMake 生成的库文件可能带有 "lib" 前缀
+                    fs::path dll_path = plugin_dir / "libDayMdFormatter.dll";
+                    if (!fs::exists(dll_path)) {
+                        // 如果没有lib前缀，再试一次
+                        dll_path = plugin_dir / "DayMdFormatter.dll";
+                    }
+#else
+                    // 在 Linux 上是 .so，macOS 上是 .dylib
+                    fs::path dll_path = plugin_dir / "libDayMdFormatter.so";
+#endif
+                    if (!fs::exists(dll_path)) {
+                         throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
+                    }
+
+                    // 创建并返回包装器实例
+                    return std::make_unique<DllFormatterWrapper<DailyReportData>>(dll_path.string(), config);
+
+                } catch (const std::exception& e) {
+                    std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;
+                    // 如果加载失败，可以抛出异常或返回nullptr
+                    throw;
+                }
+            }
+        }
+        // ====================================================
+
+        // 对于所有其他情况，使用现有的静态注册逻辑
         auto& creators = get_creators();
         auto it = creators.find(format);
         if (it == creators.end()) {
@@ -32,21 +65,11 @@ public:
         return it->second(config);
     }
 
-    /**
-     * @brief 注册一个新的格式化器创建者。
-     * @param format 要注册的报告格式。
-     * @param creator 用于创建格式化器实例的 lambda 函数或函数对象。
-     */
     static void regist(ReportFormat format, Creator creator) {
         get_creators()[format] = std::move(creator);
     }
 
 private:
-    /**
-     * @brief 获取存储创建者的静态 map 的引用。
-     * 使用函数静态变量确保线程安全的初始化。
-     * @return 一个从 ReportFormat 映射到创建者函数的 map。
-     */
     static std::map<ReportFormat, Creator>& get_creators() {
         static std::map<ReportFormat, Creator> creators;
         return creators;

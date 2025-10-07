@@ -2,7 +2,7 @@
 #include "FileController.hpp"
 #include "ConfigLoader.hpp"
 #include "FileUtils.hpp"
-#include "config_validator/facade/ConfigFacade.hpp" // [修改] 更新为facade的路径
+#include "config_validator/facade/ConfigFacade.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <fstream>
@@ -34,9 +34,12 @@ FileController::FileController(const std::string& exe_path_str) {
 
     std::cout << "主应用配置加载成功。" << std::endl;
 
-    // 依次执行两种类型的配置验证
+    // ==================== [核心修改] ====================
+    // 依次执行所有类型的配置验证
     perform_preprocessing_config_validation();
-    perform_query_config_validation(); // [新增] 调用查询配置验证
+    perform_query_config_validation();
+    perform_plugin_validation(); // 新增了对插件的验证调用
+    // ====================================================
 }
 
 const AppConfig& FileController::get_config() const {
@@ -74,13 +77,11 @@ void FileController::perform_preprocessing_config_validation() const {
     }
 
     ConfigFacade validator;
-    // [修改] 调用更新后的方法
     if (!validator.validate_preprocessing_configs(main_json, mappings_json, duration_rules_json)) {
         throw std::runtime_error("预处理配置文件验证失败。请检查上面的错误信息。");
     }
 }
 
-// [新增] 实现查询配置的验证逻辑
 void FileController::perform_query_config_validation() const {
     std::cout << "正在验证查询配置文件..." << std::endl;
 
@@ -94,19 +95,31 @@ void FileController::perform_query_config_validation() const {
     };
 
     for (const auto& path_str : query_config_paths) {
-        if (path_str.empty()) continue; // 如果路径为空则跳过
+        if (path_str.empty()) continue; 
 
         std::filesystem::path p(path_str);
         nlohmann::json q_json;
         if (load_json_from_file(p.string(), q_json)) {
             query_jsons.push_back({p.filename().string(), q_json});
         } else {
-            // 如果任何一个文件加载失败，则立即终止
             throw std::runtime_error("无法加载查询配置文件 '" + p.filename().string() + "'，操作中止。");
         }
     }
 
     if (!validator.validate_query_configs(query_jsons)) {
         throw std::runtime_error("查询配置文件验证失败。请检查上面的错误信息。");
+    }
+}
+
+// ==================== [核心修改] ====================
+// 新增插件验证的实现
+void FileController::perform_plugin_validation() const {
+    std::cout << "正在验证插件..." << std::endl;
+    ConfigFacade validator;
+    // 从 app_config 中获取可执行文件目录，并拼接 "plugins" 构成插件目录的完整路径
+    std::filesystem::path plugins_dir = std::filesystem::path(app_config_.exe_dir_path) / "plugins";
+    if (!validator.validate_plugins(plugins_dir)) {
+        // 如果验证失败，抛出异常终止程序
+        throw std::runtime_error("插件验证失败，必需的DLL文件缺失。");
     }
 }
