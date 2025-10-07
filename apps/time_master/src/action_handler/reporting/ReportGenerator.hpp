@@ -10,7 +10,7 @@
 #include "common/AppConfig.hpp"
 
 struct sqlite3;
-class QueryHandler;
+class ReportService;
 
 class ReportGenerator {
 public:
@@ -27,7 +27,7 @@ public:
 
 
 private:
-    std::unique_ptr<QueryHandler> query_handler_;
+    std::unique_ptr<ReportService> query_handler_;
 };
 
 #endif // REPORT_GENERATOR_HPP

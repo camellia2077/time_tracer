@@ -79,11 +79,11 @@ set(DB_INSERTER_SOURCES
 
 set(REPORTS_SOURCES
     # Root
-    "src/reports/facade/QueryHandler.cpp"
+    "src/reports/ReportService.cpp"
     # Export
-    "src/reports/export/AllDayReports.cpp"
-    "src/reports/export/AllMonthlyReports.cpp"
-    "src/reports/export/AllPeriodReports.cpp"
+    "src/reports/services/AllDayReports.cpp"
+    "src/reports/services/AllMonthlyReports.cpp"
+    "src/reports/services/AllPeriodReports.cpp"
     # Daily Reports
     
 

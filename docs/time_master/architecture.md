@@ -66,8 +66,8 @@ time_master/
 │   │   └── tex/                                 # LaTeX格式的具体实现
 │   │       ├── BreakdownTex.cpp
 │   │       └── BreakdownTex.h
-│   ├── QueryHandler.cpp                          # 负责解析用户输入的查询命令
-│   ├── QueryHandler.h
+│   ├── ReportService.cpp                          # 负责解析用户输入的查询命令
+│   ├── ReportService.h
 │   └── report_generators                         # 包含所有高级报告的生成逻辑
 │       ├── _shared/                     # -存放被所有报告类型共享的通用代码
 │       │   ├── BaseTexFormatter.h              # TeX报告的基类，定义通用文档框架 (模板方法模式)
