@@ -483,7 +483,7 @@ json中键名修改为get_no_records_message
 ## v0.3.24.0 - 2025-10-07
 1. 优化reports文件夹内的结构
 
-## v0.3.24.2 - 2025-10-07
+## v0.3.24.1 - 2025-10-07
 1. DayMd编译成dll动态链接
 2. 修改测试程序，复制build/bin文件夹内的plugins文件夹
 3. 修改config_validator,检验dll命名是否正确
