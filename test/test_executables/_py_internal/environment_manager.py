@@ -29,7 +29,11 @@ class EnvironmentManager:
         
         self._copy_artifacts()
         self._copy_config_folder()
-        print("  可执行文件、DLL和配置已准备就绪。")
+        # ======================= 核心修改 =======================
+        # 调用新添加的方法来复制 plugins 文件夹
+        self._copy_plugins_folder()
+        # =========================================================
+        print("  可执行文件、DLL、插件和配置已准备就绪。")
 
     def _clean_directories(self):
         """清理需要移除的目录。"""
@@ -45,11 +49,7 @@ class EnvironmentManager:
     
     def _clean_files(self):
         """清理需要移除的旧文件（主要是上次复制的 EXE 和 DLLs）。"""
-        # ======================= 核心修改 =======================
-        # 之前是：all_files_to_clean = self.config.Cleanup.FILES_TO_CLEAN + self.config.Cleanup.FILES_TO_COPY
-        # 现在只清理待复制的文件，以防它们已存在
         files_to_clean_before_copy = self.config.Cleanup.FILES_TO_COPY
-        # =========================================================
         
         for file_name in files_to_clean_before_copy:
             file_path = self.config.Paths.TARGET_EXECUTABLES_DIR / file_name
@@ -96,3 +96,24 @@ class EnvironmentManager:
                 sys.exit(1)
         else:
             print(f"  {self.config.Colors.RED}警告: 在源目录中未找到 config 文件夹，跳过复制。{self.config.Colors.RESET}")
+
+    # ======================= 核心修改 =======================
+    # 新增一个方法来复制 plugins 文件夹
+    def _copy_plugins_folder(self):
+        """复制包含插件DLL的 'plugins' 文件夹。"""
+        source_plugins_path = self.config.Paths.SOURCE_EXECUTABLES_DIR / "plugins"
+        target_plugins_path = self.config.Paths.TARGET_EXECUTABLES_DIR / "plugins"
+        
+        if source_plugins_path.exists() and source_plugins_path.is_dir():
+            try:
+                # 如果目标已存在，先删除再复制，确保是最新内容
+                if target_plugins_path.exists():
+                    shutil.rmtree(target_plugins_path)
+                shutil.copytree(source_plugins_path, target_plugins_path)
+                print(f"  {self.config.Colors.GREEN}已成功复制: plugins 文件夹{self.config.Colors.RESET}")
+            except Exception as e:
+                print(f"  {self.config.Colors.RED}复制 plugins 文件夹时出错: {e}{self.config.Colors.RESET}")
+                sys.exit(1)
+        else:
+            print(f"  {self.config.Colors.YELLOW}警告: 在源目录中未找到 plugins 文件夹，跳过复制。{self.config.Colors.RESET}")
+    # =========================================================

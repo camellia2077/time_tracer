@@ -5,9 +5,7 @@ md已经实现
 还没有给json验证模块验证total_exercise_time
 
 
-## 拆分
-按照职责拆分
-QueryRules.cpp
+
 
 
 

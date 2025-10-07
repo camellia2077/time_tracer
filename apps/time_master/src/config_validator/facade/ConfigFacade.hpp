@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+#include <filesystem> // [新增] 包含 C++17 filesystem 头文件
 #include <nlohmann/json.hpp>
 
 /**
@@ -27,6 +28,13 @@ public:
     bool validate_query_configs(
         const std::vector<std::pair<std::string, nlohmann::json>>& query_configs
     ) const;
+
+    /**
+     * @brief [新增] 验证所有必需的插件是否存在。
+     * @param plugins_path 指向 'plugins' 目录的路径。
+     * @return 如果验证成功则返回 true，否则返回 false。
+     */
+    bool validate_plugins(const std::filesystem::path& plugins_path) const;
 };
 
 #endif // CONFIG_FACADE_HPP

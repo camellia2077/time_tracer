@@ -1,6 +1,6 @@
-// reports/facade/ReportService.hpp
-#ifndef QUERY_HANDLER_HPP
-#define QUERY_HANDLER_HPP
+// reports/ReportService.hpp
+#ifndef REPORT_SERVICE_HPP
+#define REPORT_SERVICE_HPP
 
 #include <sqlite3.h>
 #include <string>
@@ -29,4 +29,4 @@ private:
     const AppConfig& app_config_; // [ADDED] Store a reference to the config
 };
 
-#endif // QUERY_HANDLER_HPP
+#endif // REPORT_SERVICE_HPP
