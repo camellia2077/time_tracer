@@ -1,3 +1,5 @@
+## 让tex支持生成的字体从本地获取
+\setCJKmainfont[Path=C:/]{NotoSerifSC-VariableFont_wght.ttf}
 
 ## 给日报告增加运动总时间
 md已经实现

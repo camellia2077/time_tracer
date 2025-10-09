@@ -1,4 +1,4 @@
-// src/config_validator/plugins/facade/PluginValidator.cpp
+// config_validator/plugins/facade/PluginValidator.cpp
 #include "PluginValidator.hpp"
 #include <iostream>
 #include <vector>
