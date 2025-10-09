@@ -11,6 +11,7 @@
 #include "common/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 #include "reports/shared/factories/DllFormatterWrapper.hpp"
+#include "reports/shared/data/PeriodReportData.hpp" // [新增]
 
 namespace fs = std::filesystem;
 
@@ -20,7 +21,6 @@ public:
     using Creator = std::function<std::unique_ptr<IReportFormatter<ReportDataType>>(const AppConfig&)>;
 
     static std::unique_ptr<IReportFormatter<ReportDataType>> create(ReportFormat format, const AppConfig& config) {
-        // --- 使用 std::map 进行重构，代替 if-else if ---
         std::string base_name;
         bool is_dll_format = false;
 
@@ -51,6 +51,20 @@ public:
                 is_dll_format = true;
             }
         }
+        
+        // --- [新增] 周期报告 DLL 映射 ---
+        if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+            static const std::map<ReportFormat, std::string> period_format_map = {
+                {ReportFormat::Markdown, "PeriodMdFormatter"},
+                {ReportFormat::LaTeX,    "PeriodTexFormatter"},
+                {ReportFormat::Typ,      "PeriodTypFormatter"}
+            };
+            auto it = period_format_map.find(format);
+            if (it != period_format_map.end()) {
+                base_name = it->second;
+                is_dll_format = true;
+            }
+        }
 
         // --- 通用的 DLL 加载逻辑 ---
         if (is_dll_format) {
@@ -71,7 +85,6 @@ public:
                      throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
                 }
 
-                // 根据模板参数实例化正确的包装器
                 return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), config);
 
             } catch (const std::exception& e) {
