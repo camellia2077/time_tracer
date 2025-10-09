@@ -492,6 +492,10 @@ json中键名修改为get_no_records_message
 1. reports/daily中,tex,typ格式化报告编译成dll
 2. reports/monthly中,md,tex,typ格式化报告编译成dll
 
+## v0.3.24.3 - 2025-10-09
+1. reports/period中,md,tex,typ格式化报告编译成dll
+2. config_validator/facade/ConfigFacade.cpp对所有的dll进行名称检验
+
 
 
 

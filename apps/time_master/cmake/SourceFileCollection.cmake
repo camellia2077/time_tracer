@@ -1,4 +1,4 @@
-# cmake/SourceFileCollection.cmake
+# src/cmake/SourceFileCollection.cmake
 # 模块1：源文件收集 (SourceFileCollection.cmake)
 
 # ----------------------------------------------------
@@ -24,8 +24,8 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/formatters/latex/TexUtils.cpp"
     "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
     "src/reports/shared/formatters/typst/TypUtils.cpp"
-
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
+    "src/reports/period/formatters/base/PeriodBaseConfig.cpp" 
 )
 add_library(reports_shared STATIC ${REPORTS_SHARED_SOURCES})
 # 为这个新的库目标应用通用的编译设置 (头文件路径, 警告等)
@@ -62,8 +62,6 @@ set(CONFIG_VALIDATOR
 set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/CliController.cpp"
     "src/time_master_cli/CliParser.cpp"
-
-    # Add all new command implementation files
     "src/time_master_cli/commands/export/Export.cpp"
 
     "src/time_master_cli/commands/query/Query.cpp"
@@ -110,34 +108,21 @@ set(REPORTS_SOURCES
     "src/reports/services/AllPeriodReports.cpp"
     # Daily Reports
     "src/reports/daily/DayQuerier.cpp"
-    "src/reports/daily/formatters/tex/DayTex.cpp"
-    "src/reports/daily/formatters/tex/DayTexConfig.cpp"
-    "src/reports/daily/formatters/tex/DayTexUtils.cpp"
     # Monthly Reports
     "src/reports/monthly/MonthQuerier.cpp"
-    "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     
-    # [核心修改] 所有月报格式化器都已被移出
-    # "src/reports/monthly/formatters/md/MonthMd.cpp"
-    # "src/reports/monthly/formatters/md/MonthMdConfig.cpp"
-
-    #"src/reports/monthly/formatters/tex/MonthTex.cpp"
-    #"src/reports/monthly/formatters/tex/MonthTexUtils.cpp"
-    #"src/reports/monthly/formatters/tex/MonthTexConfig.cpp"
-
-    # "src/reports/monthly/formatters/typ/MonthTyp.cpp"
-    # "src/reports/monthly/formatters/typ/MonthTypConfig.cpp"
     # Period Reports
     "src/reports/period/PeriodQuerier.cpp"
-    "src/reports/period/formatters/base/PeriodBaseConfig.cpp"
-    "src/reports/period/formatters/md/PeriodMd.cpp"
-    "src/reports/period/formatters/md/PeriodMdConfig.cpp"
-    "src/reports/period/formatters/tex/PeriodTex.cpp"
-    "src/reports/period/formatters/tex/PeriodTexUtils.cpp"
-    "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
-    "src/reports/period/formatters/typ/PeriodTyp.cpp"
-    "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 
+    # [核心修改] 所有 period 格式化器的源文件都已被移除
+    # 因为它们现在是独立的 DLL 目标
+    # "src/reports/period/formatters/md/PeriodMd.cpp"
+    # "src/reports/period/formatters/md/PeriodMdConfig.cpp"
+    # "src/reports/period/formatters/tex/PeriodTex.cpp"
+    # "src/reports/period/formatters/tex/PeriodTexUtils.cpp"
+    # "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
+    # "src/reports/period/formatters/typ/PeriodTyp.cpp"
+    # "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 )
 
 # --- Reprocessing Sources ---

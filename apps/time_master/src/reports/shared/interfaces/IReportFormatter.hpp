@@ -5,7 +5,8 @@
 #include <string>
 #include <sqlite3.h>
 #include "reports/shared/data/DailyReportData.hpp"
-#include "reports/shared/data/MonthlyReportData.hpp" // [新增] 引入月报数据结构
+#include "reports/shared/data/MonthlyReportData.hpp"
+#include "reports/shared/data/PeriodReportData.hpp"
 #include "common/AppConfig.hpp"
 
 template<typename ReportDataType>
@@ -24,9 +25,10 @@ typedef void* FormatterHandle;
 typedef FormatterHandle (*CreateFormatterFunc)(const AppConfig&);
 typedef void (*DestroyFormatterFunc)(FormatterHandle);
 
-// [核心修改] 为不同数据类型定义不同的 format 函数指针
+// 为不同数据类型定义不同的 format 函数指针
 typedef const char* (*FormatReportFunc_Day)(FormatterHandle, const DailyReportData&);
 typedef const char* (*FormatReportFunc_Month)(FormatterHandle, const MonthlyReportData&);
+typedef const char* (*FormatReportFunc_Period)(FormatterHandle, const PeriodReportData&);
 
 #ifdef __cplusplus
 }

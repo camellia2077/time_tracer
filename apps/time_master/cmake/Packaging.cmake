@@ -1,3 +1,4 @@
+# src/cmake/Packaging.cmake
 # 模块4：打包配置 (Packaging.cmake)
 
 option(BUILD_INSTALLER "Build a CPack installer package" OFF)
@@ -9,11 +10,16 @@ if(BUILD_INSTALLER)
     )
 
     # --- [核心修改] 安装所有 DLL 到 bin/plugins 目录 ---
-    install(TARGETS 
+    install(TARGETS
         DayMdFormatter
         DayTypFormatter
-        DayTexFormatter     # [新增]
-        MonthMdFormatter    # [新增]
+        DayTexFormatter
+        MonthMdFormatter
+        MonthTypFormatter    
+        MonthTexFormatter    
+        PeriodMdFormatter    
+        PeriodTypFormatter
+        PeriodTexFormatter
         RUNTIME DESTINATION bin/plugins
         LIBRARY DESTINATION bin/plugins
     )

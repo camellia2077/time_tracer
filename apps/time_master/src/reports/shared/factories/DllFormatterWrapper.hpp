@@ -6,6 +6,7 @@
 #include "common/AppConfig.hpp"
 #include "reports/shared/data/DailyReportData.hpp"
 #include "reports/shared/data/MonthlyReportData.hpp"
+#include "reports/shared/data/PeriodReportData.hpp"
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -14,7 +15,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <dlfcn.h>
+#include <dlfcn.h> // [新增] 引入 POSIX dlfcn.h 头文件
 #endif
 
 template<typename ReportDataType>
@@ -32,23 +33,40 @@ public:
         create_func_ = (CreateFormatterFunc)GetProcAddress(dll_handle_, "create_formatter");
         destroy_func_ = (DestroyFormatterFunc)GetProcAddress(dll_handle_, "destroy_formatter");
 
-        // [核心修改] 根据模板类型加载正确的 format_report 函数
         if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
             format_func_day_ = (FormatReportFunc_Day)GetProcAddress(dll_handle_, "format_report");
         } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
             format_func_month_ = (FormatReportFunc_Month)GetProcAddress(dll_handle_, "format_report");
+        } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+            format_func_period_ = (FormatReportFunc_Period)GetProcAddress(dll_handle_, "format_report");
         }
 
         #pragma GCC diagnostic pop
 #else
-        // ... (Linux/macOS implementation remains the same)
+        dll_handle_ = dlopen(dll_path.c_str(), RTLD_LAZY);
+        if (!dll_handle_) {
+            throw std::runtime_error("Failed to load shared library: " + dll_path + " (Error: " + dlerror() + ")");
+        }
+
+        create_func_ = (CreateFormatterFunc)dlsym(dll_handle_, "create_formatter");
+        destroy_func_ = (DestroyFormatterFunc)dlsym(dll_handle_, "destroy_formatter");
+
+        if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+            format_func_day_ = (FormatReportFunc_Day)dlsym(dll_handle_, "format_report");
+        } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+            format_func_month_ = (FormatReportFunc_Month)dlsym(dll_handle_, "format_report");
+        } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+            format_func_period_ = (FormatReportFunc_Period)dlsym(dll_handle_, "format_report");
+        }
+        // --- 实现结束 ---
 #endif
-        // [核心修改] 检查对应的 format 函数指针是否加载成功
         bool format_func_loaded = false;
         if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
             format_func_loaded = (format_func_day_ != nullptr);
         } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
             format_func_loaded = (format_func_month_ != nullptr);
+        } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+            format_func_loaded = (format_func_period_ != nullptr);
         }
 
         if (!create_func_ || !destroy_func_ || !format_func_loaded) {
@@ -62,11 +80,21 @@ public:
     }
 
     ~DllFormatterWrapper() override {
-        // ... (destructor remains the same)
+        if (formatter_handle_ && destroy_func_) {
+            destroy_func_(formatter_handle_);
+        }
+#ifdef _WIN32
+        if (dll_handle_) {
+            FreeLibrary(dll_handle_);
+        }
+#else
+        if (dll_handle_) {
+            dlclose(dll_handle_);
+        }
+#endif
     }
 
     std::string format_report(const ReportDataType& data) const override {
-        // [核心修改] 根据模板类型调用正确的 format 函数
         if (formatter_handle_) {
             if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
                 if (format_func_day_) {
@@ -78,6 +106,11 @@ public:
                     const char* result_cstr = format_func_month_(formatter_handle_, data);
                     return (result_cstr) ? std::string(result_cstr) : "";
                 }
+            } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+                if (format_func_period_) {
+                    const char* result_cstr = format_func_period_(formatter_handle_, data);
+                    return (result_cstr) ? std::string(result_cstr) : "";
+                }
             }
         }
         return "Error: Formatter handle or format function is null.";
@@ -87,15 +120,15 @@ private:
 #ifdef _WIN32
     HINSTANCE dll_handle_ = nullptr;
 #else
-    void* dll_handle_ = nullptr;
+    void* dll_handle_ = nullptr; // [修改] POSIX API 使用 void* 作为句柄
 #endif
     FormatterHandle formatter_handle_ = nullptr;
     CreateFormatterFunc create_func_ = nullptr;
     DestroyFormatterFunc destroy_func_ = nullptr;
     
-    // [核心修改] 为不同数据类型分别存储函数指针
     FormatReportFunc_Day format_func_day_ = nullptr;
     FormatReportFunc_Month format_func_month_ = nullptr;
+    FormatReportFunc_Period format_func_period_ = nullptr;
 };
 
 #endif // DLL_FORMATTER_WRAPPER_HPP
