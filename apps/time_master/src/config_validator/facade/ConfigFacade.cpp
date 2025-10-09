@@ -2,7 +2,7 @@
 #include "ConfigFacade.hpp"
 #include "config_validator/reprocessing/facade/ReprocFacade.hpp"
 #include "config_validator/reports/facade/QueryFacade.hpp"
-#include "config_validator/plugins/facade/PluginValidator.hpp" // [Corrected] Was missing
+#include "config_validator/plugins/facade/PluginValidator.hpp"
 
 using json = nlohmann::json;
 
@@ -24,7 +24,15 @@ bool ConfigFacade::validate_query_configs(
 
 bool ConfigFacade::validate_plugins(const std::filesystem::path& plugins_path) const {
     const std::vector<std::string> expected_plugins = {
-        "DayMdFormatter"
+        "DayMdFormatter",
+        "DayTexFormatter",
+        "DayTypFormatter",
+        "MonthMdFormatter",
+        "MonthTexFormatter",
+        "MonthTypFormatter",
+        "PeriodMdFormatter",
+        "PeriodTexFormatter",
+        "PeriodTypFormatter"
     };
 
     PluginValidator validator;

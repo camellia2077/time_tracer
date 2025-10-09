@@ -66,6 +66,10 @@ add_subdirectory(src/reports/monthly/formatters/md)
 add_subdirectory(src/reports/monthly/formatters/typ)
 add_subdirectory(src/reports/monthly/formatters/tex)
 
+add_subdirectory(src/reports/period/formatters/md)
+add_subdirectory(src/reports/period/formatters/tex)
+add_subdirectory(src/reports/period/formatters/typ)
+
 # 创建一个包含所有可执行文件目标的列表
 set(ALL_TARGETS time_tracker_cli)
 
