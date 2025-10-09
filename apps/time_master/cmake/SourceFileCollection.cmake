@@ -9,7 +9,27 @@ set(COMMON_SOURCES
     "src/common/utils/StringUtils.cpp"
     "src/common/utils/TimeUtils.cpp"
 )
+# [新增] --- Shared Reports Library ---
+# 创建一个静态库，包含所有报告生成器共享的源文件
+# 这样可以避免在主程序和多个DLL中重复编译相同的代码
+set(REPORTS_SHARED_SOURCES
+    "src/reports/daily/formatters/base/DayBaseConfig.cpp"
+    "src/reports/daily/formatters/statistics/StatFormatter.cpp"
+    "src/reports/shared/utils/config/ConfigUtils.cpp"
+    "src/reports/shared/utils/report/ReportDataUtils.cpp"
+    "src/reports/shared/utils/format/BoolToString.cpp"
+    "src/reports/shared/utils/format/ReportStringUtils.cpp"
+    "src/reports/shared/utils/format/TimeFormat.cpp"
+    "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
+    "src/reports/shared/formatters/latex/TexUtils.cpp"
+    "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
+    "src/reports/shared/formatters/typst/TypUtils.cpp"
 
+    "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
+)
+add_library(reports_shared STATIC ${REPORTS_SHARED_SOURCES})
+# 为这个新的库目标应用通用的编译设置 (头文件路径, 警告等)
+setup_project_target(reports_shared)
 
 set(CONFIG_VALIDATOR
     # 顶层外观
@@ -89,82 +109,35 @@ set(REPORTS_SOURCES
     "src/reports/services/AllMonthlyReports.cpp"
     "src/reports/services/AllPeriodReports.cpp"
     # Daily Reports
-    
-
     "src/reports/daily/DayQuerier.cpp"
-    # Daily formatters
-    # base
-    "src/reports/daily/formatters/base/DayBaseConfig.cpp"
-    # statistics
-    "src/reports/daily/formatters/statistics/StatFormatter.cpp"
-
-    # Daily md
-    # Daily md
-    # ==================== [核心修改] ====================
-    # 移除了 "src/reports/daily/formatters/md/DayMd.cpp"
-    # 移除了 "src/reports/daily/formatters/md/DayMdConfig.cpp"
-    # 这两个文件现在由 src/reports/daily/formatters/md/CMakeLists.txt 处理
-
-
     "src/reports/daily/formatters/tex/DayTex.cpp"
     "src/reports/daily/formatters/tex/DayTexConfig.cpp"
     "src/reports/daily/formatters/tex/DayTexUtils.cpp"
-
-    "src/reports/daily/formatters/typ/DayTyp.cpp"
-    "src/reports/daily/formatters/typ/DayTypConfig.cpp"
-    "src/reports/daily/formatters/typ/DayTypUtils.cpp"
     # Monthly Reports
-
     "src/reports/monthly/MonthQuerier.cpp"
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
-    # Monthly md
-    "src/reports/monthly/formatters/md/MonthMd.cpp"
-    "src/reports/monthly/formatters/md/MonthMdConfig.cpp"
+    
+    # [核心修改] 所有月报格式化器都已被移出
+    # "src/reports/monthly/formatters/md/MonthMd.cpp"
+    # "src/reports/monthly/formatters/md/MonthMdConfig.cpp"
 
-    # Monthly tex
-    "src/reports/monthly/formatters/tex/MonthTex.cpp"
-    "src/reports/monthly/formatters/tex/MonthTexUtils.cpp"
-    "src/reports/monthly/formatters/tex/MonthTexConfig.cpp"
+    #"src/reports/monthly/formatters/tex/MonthTex.cpp"
+    #"src/reports/monthly/formatters/tex/MonthTexUtils.cpp"
+    #"src/reports/monthly/formatters/tex/MonthTexConfig.cpp"
 
-    "src/reports/monthly/formatters/typ/MonthTyp.cpp"
-    "src/reports/monthly/formatters/typ/MonthTypConfig.cpp"
-
-
+    # "src/reports/monthly/formatters/typ/MonthTyp.cpp"
+    # "src/reports/monthly/formatters/typ/MonthTypConfig.cpp"
     # Period Reports
-
     "src/reports/period/PeriodQuerier.cpp"
-
     "src/reports/period/formatters/base/PeriodBaseConfig.cpp"
-
-    # Period md
     "src/reports/period/formatters/md/PeriodMd.cpp"
     "src/reports/period/formatters/md/PeriodMdConfig.cpp"
-
-    # Period tex
     "src/reports/period/formatters/tex/PeriodTex.cpp"
     "src/reports/period/formatters/tex/PeriodTexUtils.cpp"
     "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
-
-    # Period typ
     "src/reports/period/formatters/typ/PeriodTyp.cpp"
     "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 
-    
-
-    # Shared Components
-
-    "src/reports/shared/utils/config/ConfigUtils.cpp"
-    "src/reports/shared/utils/report/ReportDataUtils.cpp"
-
-    "src/reports/shared/utils/format/BoolToString.cpp"
-    "src/reports/shared/utils/format/ReportStringUtils.cpp"
-    "src/reports/shared/utils/format/TimeFormat.cpp"
-
-    "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
-    "src/reports/shared/formatters/latex/TexUtils.cpp"
-
-    "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
-    "src/reports/shared/formatters/typst/TypUtils.cpp"
 )
 
 # --- Reprocessing Sources ---

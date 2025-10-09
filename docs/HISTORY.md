@@ -488,6 +488,10 @@ json中键名修改为get_no_records_message
 2. 修改测试程序，复制build/bin文件夹内的plugins文件夹
 3. 修改config_validator,检验dll命名是否正确
 
+## v0.3.24.1 - 2025-10-08
+1. reports/daily中,tex,typ格式化报告编译成dll
+2. reports/monthly中,md,tex,typ格式化报告编译成dll
+
 
 
 

@@ -8,8 +8,8 @@
 namespace AppInfo {
     // 使用 constexpr 和 string_view 可以在编译期确定字符串，效率更高
     // 这也是现代C++的推荐做法
-    constexpr std::string_view VERSION = "0.3.24.1";
-    constexpr std::string_view LAST_UPDATED = "2025-10-07";
+    constexpr std::string_view VERSION = "0.3.24.2";
+    constexpr std::string_view LAST_UPDATED = "2025-10-08";
 }
 
 #endif // VERSION_HPP
