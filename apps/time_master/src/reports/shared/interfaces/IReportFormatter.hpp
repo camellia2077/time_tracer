@@ -5,44 +5,31 @@
 #include <string>
 #include <sqlite3.h>
 #include "reports/shared/data/DailyReportData.hpp"
+#include "reports/shared/data/MonthlyReportData.hpp" // [新增] 引入月报数据结构
 #include "common/AppConfig.hpp"
 
-/**
- * @class IReportFormatter
- * @brief 通用的报告格式化器模板接口（策略接口）。
- * @tparam ReportDataType 报告所依赖的数据结构类型
- * (例如 DailyReportData, MonthlyReportData, PeriodReportData)。
- */
 template<typename ReportDataType>
 class IReportFormatter {
 public:
     virtual ~IReportFormatter() = default;
-
-    /**
-     * @brief 格式化报告数据的纯虚函数。
-     * @param data 从 Querier 获取的报告数据。
-     * @return 格式化后的报告字符串。
-     */
     virtual std::string format_report(const ReportDataType& data) const = 0;
 };
 
-
-// [新增] C-style interface for DLLs
+// C-style interface for DLLs
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// Define a handle for the formatter instance
 typedef void* FormatterHandle;
-
-// Function pointer types for the DLL functions
 typedef FormatterHandle (*CreateFormatterFunc)(const AppConfig&);
 typedef void (*DestroyFormatterFunc)(FormatterHandle);
-typedef const char* (*FormatReportFunc)(FormatterHandle, const DailyReportData&);
+
+// [核心修改] 为不同数据类型定义不同的 format 函数指针
+typedef const char* (*FormatReportFunc_Day)(FormatterHandle, const DailyReportData&);
+typedef const char* (*FormatReportFunc_Month)(FormatterHandle, const MonthlyReportData&);
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif // I_REPORT_FORMATTER_HPP

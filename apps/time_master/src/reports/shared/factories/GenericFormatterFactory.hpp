@@ -10,7 +10,7 @@
 #include "reports/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
-#include "reports/shared/factories/DllFormatterWrapper.hpp" // [新增] 引入包装类
+#include "reports/shared/factories/DllFormatterWrapper.hpp"
 
 namespace fs = std::filesystem;
 
@@ -20,43 +20,67 @@ public:
     using Creator = std::function<std::unique_ptr<IReportFormatter<ReportDataType>>(const AppConfig&)>;
 
     static std::unique_ptr<IReportFormatter<ReportDataType>> create(ReportFormat format, const AppConfig& config) {
-        // ==================== [核心修改] ====================
-        // 仅当数据类型是 DailyReportData 且格式是 Markdown 时，才执行DLL加载
+        // --- 使用 std::map 进行重构，代替 if-else if ---
+        std::string base_name;
+        bool is_dll_format = false;
+
+        // --- 日报 DLL 映射 ---
         if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-            if (format == ReportFormat::Markdown) {
-                try {
-                    fs::path exe_dir(config.exe_dir_path);
-                    fs::path plugin_dir = exe_dir / "plugins";
-
-#ifdef _WIN32
-                    // 在 Windows 上，动态库通常是 .dll 文件
-                    // CMake 生成的库文件可能带有 "lib" 前缀
-                    fs::path dll_path = plugin_dir / "libDayMdFormatter.dll";
-                    if (!fs::exists(dll_path)) {
-                        // 如果没有lib前缀，再试一次
-                        dll_path = plugin_dir / "DayMdFormatter.dll";
-                    }
-#else
-                    // 在 Linux 上是 .so，macOS 上是 .dylib
-                    fs::path dll_path = plugin_dir / "libDayMdFormatter.so";
-#endif
-                    if (!fs::exists(dll_path)) {
-                         throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
-                    }
-
-                    // 创建并返回包装器实例
-                    return std::make_unique<DllFormatterWrapper<DailyReportData>>(dll_path.string(), config);
-
-                } catch (const std::exception& e) {
-                    std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;
-                    // 如果加载失败，可以抛出异常或返回nullptr
-                    throw;
-                }
+            static const std::map<ReportFormat, std::string> daily_format_map = {
+                {ReportFormat::Markdown, "DayMdFormatter"},
+                {ReportFormat::Typ,      "DayTypFormatter"},
+                {ReportFormat::LaTeX,    "DayTexFormatter"}
+            };
+            auto it = daily_format_map.find(format);
+            if (it != daily_format_map.end()) {
+                base_name = it->second;
+                is_dll_format = true;
             }
         }
-        // ====================================================
+        
+        // --- 月报 DLL 映射 ---
+        if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+            static const std::map<ReportFormat, std::string> monthly_format_map = {
+                {ReportFormat::Markdown, "MonthMdFormatter"},
+                {ReportFormat::Typ,      "MonthTypFormatter"},
+                {ReportFormat::LaTeX,    "MonthTexFormatter"}
+            };
+            auto it = monthly_format_map.find(format);
+            if (it != monthly_format_map.end()) {
+                base_name = it->second;
+                is_dll_format = true;
+            }
+        }
 
-        // 对于所有其他情况，使用现有的静态注册逻辑
+        // --- 通用的 DLL 加载逻辑 ---
+        if (is_dll_format) {
+            try {
+                fs::path exe_dir(config.exe_dir_path);
+                fs::path plugin_dir = exe_dir / "plugins";
+                fs::path dll_path;
+
+#ifdef _WIN32
+                dll_path = plugin_dir / ("lib" + base_name + ".dll");
+                if (!fs::exists(dll_path)) {
+                    dll_path = plugin_dir / (base_name + ".dll");
+                }
+#else
+                dll_path = plugin_dir / ("lib" + base_name + ".so");
+#endif
+                if (!fs::exists(dll_path)) {
+                     throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
+                }
+
+                // 根据模板参数实例化正确的包装器
+                return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), config);
+
+            } catch (const std::exception& e) {
+                std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;
+                throw;
+            }
+        }
+
+        // --- 回退到静态注册的格式化器 ---
         auto& creators = get_creators();
         auto it = creators.find(format);
         if (it == creators.end()) {

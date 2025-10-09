@@ -8,13 +8,16 @@ if(BUILD_INSTALLER)
         RUNTIME DESTINATION bin
     )
 
-    # ==================== [核心修改] ====================
-    # 安装 DayMdFormatter.dll 到 bin/plugins 目录
-    install(TARGETS DayMdFormatter
+    # --- [核心修改] 安装所有 DLL 到 bin/plugins 目录 ---
+    install(TARGETS 
+        DayMdFormatter
+        DayTypFormatter
+        DayTexFormatter     # [新增]
+        MonthMdFormatter    # [新增]
         RUNTIME DESTINATION bin/plugins
         LIBRARY DESTINATION bin/plugins
     )
-    # ====================================================
+    # ---------------------------------------------------
 
     set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # 请确保msys64保这个路径是正确的
     # 安装依赖的运行时 DLL 到 bin 目录
@@ -30,7 +33,10 @@ if(BUILD_INSTALLER)
 
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
-    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "一个用于时间管理的工具")
+    
+    # 将描述改为纯英文，以避免CPack在生成安装包脚本时出现编码问题
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A tool for time management.")
+
     set(CPACK_PACKAGE_VENDOR "camellia")
     set(CPACK_PACKAGE_CONTACT "https://github.com/camellia2077")
     set(CPACK_GENERATOR "NSIS")
