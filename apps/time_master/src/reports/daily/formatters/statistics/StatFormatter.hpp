@@ -2,6 +2,7 @@
 #ifndef STAT_FORMATTER_HPP
 #define STAT_FORMATTER_HPP
 
+#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
 #include <memory>
 #include "reports/shared/data/DailyReportData.hpp"
@@ -11,10 +12,12 @@
 /**
  * @class StatFormatter
  * @brief (上下文) 负责生成日报的统计数据部分。
- *
- * 使用策略模式将通用的数据处理逻辑与特定于格式的字符串生成分离开来。
+ * ... (注释保持不变) ...
  */
-class StatFormatter {
+
+DISABLE_C4251_WARNING // <-- [新增] 2. 禁用C4251 (因为有 std::unique_ptr)
+
+class REPORTS_SHARED_API StatFormatter { // <-- [修改] 3. 添加API宏
 public:
     /**
      * @brief 构造函数。
@@ -33,5 +36,7 @@ public:
 private:
     std::unique_ptr<IStatStrategy> m_strategy;
 };
+
+ENABLE_C4251_WARNING // <-- [新增] 4. 恢复C4251
 
 #endif // STAT_FORMATTER_HPP

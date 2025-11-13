@@ -3,6 +3,7 @@
 #define REPORT_STRING_UTILS_HPP
 
 #include <string>
+#include "reports/shared/shared_api.hpp" // <--- [新增]
 
 /**
  * @brief 替换字符串中所有匹配的子串。
@@ -11,6 +12,6 @@
  * @param to 用于替换的子串。
  * @return 返回替换后的新字符串。
  */
-std::string replace_all(std::string str, const std::string& from, const std::string& to);
+REPORTS_SHARED_API std::string replace_all(std::string str, const std::string& from, const std::string& to);
 
 #endif // REPORT_STRING_UTILS_HPP

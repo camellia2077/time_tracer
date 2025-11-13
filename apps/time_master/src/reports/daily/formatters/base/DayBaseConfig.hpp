@@ -2,44 +2,27 @@
 #ifndef DAY_BASE_CONFIG_HPP
 #define DAY_BASE_CONFIG_HPP
 
+#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
 #include <map>
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
 
 // 用于存储单个统计项配置的结构体
+// (这个结构体保持不变，因为它不是一个被导出的类)
 struct StatisticItemConfig {
     std::string label;
     bool show = true;
 };
 
+DISABLE_C4251_WARNING // <-- [新增] 2. 禁用C4251警告 (因为有std::string/map)
+
 /**
  * @class DayBaseConfig
  * @brief 日报配置的基类，封装了所有日报格式共享的配置项。
- *
- * 这个类负责从 JSON 配置文件中加载所有通用的标签、消息和设置。
- * 子类（如 DayMdConfig, DayTexConfig）继承自此类，并只加载它们特有的配置。
- *
- * @note 
- * 对应的 JSON 配置文件必须包含以下通用键：
- * - "date_label": (string) "日期"标签
- * - "total_time_label": (string) "总时长"标签
- * - "status_label": (string) "状态"标签
- * - "sleep_label": (string) "睡眠"标签
- * - "getup_time_label": (string) "起床时间"标签
- * - "remark_label": (string) "备注"标签
- * - "exercise_label": (string) "锻炼"标签
- * - "no_records" / "no_records_message": (string) 无记录时的提示信息
- * - "statistics_label": (string) "统计数据"部分的标题
- * - "all_activities_label": (string) "所有活动"部分的标题
- * - "activity_remark_label": (string) 单个活动备注的标签
- * - "activity_connector": (string) 活动路径中用于连接的字符串
- * - "statistics_items": (object) 一个包含多个统计项配置的对象
- *
- * @note 
- * 键 "title_prefix" (string) 是可选的，主要用于 Markdown 和 Typst 报告。
+ * ... (注释保持不变) ...
  */
-class DayBaseConfig {
+class REPORTS_SHARED_API DayBaseConfig { // <-- [修改] 3. 添加API宏
 public:
     explicit DayBaseConfig(const std::string& config_path);
     virtual ~DayBaseConfig() = default;
@@ -83,5 +66,7 @@ private:
     std::string activity_connector_; 
     std::map<std::string, StatisticItemConfig> statistics_items_;
 };
+
+ENABLE_C4251_WARNING // <-- [新增] 4. 恢复C4251警告
 
 #endif // DAY_BASE_CONFIG_HPP

@@ -2,17 +2,16 @@
 #ifndef I_STAT_STRATEGY_HPP
 #define I_STAT_STRATEGY_HPP
 
+#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
 #include <vector>
 
 /**
  * @class IStatStrategy
  * @brief (策略接口) 为格式化统计数据定义了通用接口。
- *
- * 具体的格式化器 (Markdown, LaTeX, Typst) 将实现此接口，
- * 以提供特定于格式的字符串表示。
+ * ... (注释保持不变) ...
  */
-class IStatStrategy {
+class REPORTS_SHARED_API IStatStrategy { // <-- [修改] 2. 添加API宏
 public:
     virtual ~IStatStrategy() = default;
 

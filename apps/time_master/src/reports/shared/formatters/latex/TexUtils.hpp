@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
+#include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
 
 namespace TexUtils {
 
@@ -18,7 +19,7 @@ namespace TexUtils {
  * @param keyword_colors 一个 map，包含用于语法高亮的关键字和对应的十六进制颜色值。
  * @return 包含完整 Preamble 的字符串。
  */
-std::string get_tex_preamble(
+REPORTS_SHARED_API std::string get_tex_preamble(
     const std::string& main_font,
     const std::string& cjk_main_font,
     int font_size,
@@ -30,14 +31,14 @@ std::string get_tex_preamble(
  * @brief 生成 LaTeX 文档的 Postfix（结尾部分）。
  * @return 包含 "\\end{document}" 的字符串。
  */
-std::string get_tex_postfix();
+REPORTS_SHARED_API std::string get_tex_postfix();
 
 /**
  * @brief 转义 LaTeX 特殊字符，以防止编译错误。
  * @param input 需要转义的原始字符串。
  * @return 转义后的字符串。
  */
-std::string escape_latex(const std::string& input);
+REPORTS_SHARED_API std::string escape_latex(const std::string& input);
 
 /**
  * @brief [新增] 将项目树格式化为 LaTeX 字符串。
@@ -49,7 +50,7 @@ std::string escape_latex(const std::string& input);
  * @param list_item_sep_ex 列表项之间的额外间距。
  * @return 格式化后的 LaTeX 字符串。
  */
-std::string format_project_tree(
+REPORTS_SHARED_API std::string format_project_tree(
     const ProjectTree& tree,
     long long total_duration,
     int avg_days,
