@@ -6,13 +6,13 @@
 
 # --- Common  ---
 set(COMMON_SOURCES
-    "src/common/utils/StringUtils.cpp"
     "src/common/utils/TimeUtils.cpp"
 )
 # [新增] --- Shared Reports Library ---
 # 创建一个静态库，包含所有报告生成器共享的源文件
 # 这样可以避免在主程序和多个DLL中重复编译相同的代码
 set(REPORTS_SHARED_SOURCES
+    "src/common/utils/StringUtils.cpp"
     "src/reports/daily/formatters/base/DayBaseConfig.cpp"
     "src/reports/daily/formatters/statistics/StatFormatter.cpp"
     "src/reports/shared/utils/config/ConfigUtils.cpp"
@@ -27,8 +27,24 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     "src/reports/period/formatters/base/PeriodBaseConfig.cpp" 
 )
-add_library(reports_shared STATIC ${REPORTS_SHARED_SOURCES})
+
+
+# --- 关键修改 1: 将 STATIC 改为 SHARED ---
+add_library(reports_shared SHARED ${REPORTS_SHARED_SOURCES})
+
+
+# --- 关键修改 2: 添加此定义以触发 __declspec(dllexport) ---
+target_compile_definitions(reports_shared PRIVATE REPORTS_SHARED_EXPORTS)
+
+# --- 关键修改 3: 确保 .dll 文件输出到插件目录 ---
+# (这个 PLUGIN_OUTPUT_DIR 变量应在您的根 CMakeLists.txt 中定义)
+set_target_properties(reports_shared PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
+)
+
 # 为这个新的库目标应用通用的编译设置 (头文件路径, 警告等)
+# [保持不变] 这行是正确的，它会链接 nlohmann_json 等
 setup_project_target(reports_shared)
 
 set(CONFIG_VALIDATOR
@@ -71,14 +87,6 @@ set(TIME_MASTER_CLI_SOURCES
     "src/time_master_cli/commands/pipeline/Run.cpp"
     "src/time_master_cli/commands/pipeline/ValidateOutput.cpp"
     "src/time_master_cli/commands/pipeline/ValidateSource.cpp"
-
-
-   
-    
-    
-    
-    
-
 )
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES

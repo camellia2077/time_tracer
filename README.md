@@ -1,3 +1,4 @@
+[English Version](README.en.md)
 # Time Master
 
 **Time Master** 
@@ -70,17 +71,17 @@ time_tracker_cli -q m 202506 -f tex
 关于本项目的**详细架构图**、**完整的命令参考**、**API文档**和**各模块使用示例**，请查阅docs/
 ```
 docs/
-├── compilation_guide.md          # 详细的编译步骤 (从原1.4节迁移)
+├── compilation_guide.md          # 详细的编译步骤 
 │
 ├── time_master/                  # Time_Master主程序的专属文档
-│   ├── architecture.md           # 包含目录结构和架构图 (从原1.1, 1.2节迁移)
-│   └── usage.md                  # 包含完整的命令行参数表格和说明 (从原1.3节迁移)
+│   ├── architecture.md           # 包含目录结构和架构图 
+│   └── usage.md                  # 包含完整的命令行参数表格和说明
 │
 ├── graph_generator/              # 图表生成器的专属文档
-│   └── usage.md                  # 包含其结构、命令和使用示例 (从原第2大点迁移)
+│   └── usage.md                  # 包含其结构、命令和使用示例 
 │
 └── log_generator/                # 日志生成器的专属文档
-    └── usage.md                  # 包含其结构、用法和示例 (从原第3大点迁移)
+    └── usage.md                  # 包含其结构、用法和示例 
 ```
 
 -----

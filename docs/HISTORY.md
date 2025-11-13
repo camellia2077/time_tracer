@@ -1,500 +1,116 @@
-## v0.3.8.1 - 2025-08-31
+# 开发历史 (HISTORY.md)
 
-**核心更新：解析流程重构，引入 JSON 作为中间数据**
+本文档记录了项目开发的主要里程碑和重构。
+详细的、逐步的开发日志（包括所有子版本）已被归档到 `docs/history/` 目录中。
 
-以前是对txt进行格式的合法性验证后，把时间段转换为时间间隔，但仍然是txt，这不利于解析。
+---
 
-**主要变化：**
+## [0.3.24] - 2025-10-09
+**里程碑：插件架构（第一阶段）- DLL 拆分**
+* 将所有9个报表格式化器（日报、月报、周期报的 `md`, `tex`, `typ` 格式）从主程序中分离，编译为独立的动态链接库（DLL）。
+* 更新了 `config_validator`（配置验证器）和 Python 测试脚本，以支持新的 `plugins` 目录结构和 DLL 命名规范。
 
-* **引入 JSON 作为中间数据格式**：项目现在将纯文本 (`.txt`) 数据首先转换为 **JSON** 格式，然后再进行解析和数据库存储。同时验证数据的合法性也是用json进行验证，而不是验证txt。这样验证也更高效。
-* **优化解析逻辑**：旧版本直接解析复杂的纯文本数据，导致解析器实现复杂且难以维护。新版本利用 JSON 结构清晰的优势，使解析逻辑变得更加简单、稳定。
+---
 
-## v0.3.13.0 - 2025-09-12
+## [0.3.23] - 2025-09-21
+**里程碑：报表模块大规模重构**
+* **引入策略模式**：创建 `StatisticsFormatter` 和 `IStatStrategy` 接口，彻底消除了日报格式化器（Md, Tex, Typ）中重复的统计数据格式化逻辑。
+* **提取通用基类**：创建了 `DayBaseConfig`、`MonthBaseConfig`、`PeriodBaseConfig` 和 `BaseGenerator`，统一了所有报告的配置加载和生成流程。
+* **新增配置开关**：JSON 配置中新增了 `show` 开关，允许用户自定义显示哪些统计项。
+* **代码结构优化**：合并了 `QueryManager` 和 `ReportGenerator`，并将 `queries` 目录重命名为 `reports`。
 
-**核心更新：活动支持备注**
+---
 
-支持; // #来对活动进行备注，只完成了转换为json这一步骤
-### 0.3.13.1
-完成数据库插入以及格式化输出(md,typst)
-完成log生成备注
+## [0.3.22] - 2025-09-21
+**里程碑：功能扩展与代码规范**
+* **新增 "娱乐" 统计**：在 `generatedStats` 和数据库中新增了 `recreation` 相关字段，并在所有日报格式中支持其统计和导出。
+* **重构工厂模式**：使用基于注册的工厂模式替换了 `switch` 语句，使其更符合开闭原则。
+* **统一代码风格**：成员变量命名全部添加 `_` 后缀，使其符合 Google C++ 风格指南。
+* **统一 `ProjectTree` 格式化**：扩展了 `IFormattingStrategy` 接口，将 LaTeX 的项目树格式化逻辑也并入了 `ProjectTreeFormatter`。
 
-### 0.3.13.2
-优化md备注输出格式
+---
 
-### 0.3.13.3
-优化typ格式颜色
-// 【Typst格式化关键点】开发者备注,不要删除我
-// Typst的 #text(...) 块会将其中的所有内容视为一个不可分割的整体进行渲染。
-// 为了让备注作为子列表项正确地换行和缩进，必须满足以下两个条件：
-// 1. 将活动行和备注行拼接成一个包含换行符(\n)的多行字符串。
-// 2. 在这个字符串内部，使用空格精确地控制好每一行的缩进级别。
-// 最后，将这个构造好的多行字符串完整地放入 #text(...) 的内容区域 `[...]` 中。
-// 这样，Typst才能在应用颜色的同时，正确解析内部的列表层级结构。例如
-/*
-#text(rgb("#AAAAAA"))[
-+ 12:34 - 14:03 (1h 29m): routine_toilet
-    + *Activity Remark*: 先輩、好きです！ 私と付き合ってください！
-]
-而不是
-#text(rgb("#AAAAAA"))[+ 12:34 - 14:03 (1h 29m): routine_toilet
-  + *Activity Remark*: 先輩、好きです！ 私と付き合ってください！]
-*/
-### 0.3.13.4
-tex新增颜色和注释
+## [0.3.21] - 2025-09-19
+**里程碑：新增配置验证器并扩展数据模型**
+* 新增了一个独立的模块，用于验证所有报告格式化器的 `.json` 配置文件。
+* 扩展了数据库和 `.json` 的数据模型，增加了 `totalExerciseTime`、`gamingTime`、`groomingTime` 和 `toiletTime` 等字段。
+* 日报统计中新增了更详细的分类，如“无氧运动”、“有氧运动”和“洗漱时间”。
+* 提取了通用的 `MarkdownUtils` 和 `TexUtils`，以复用代码。
 
+---
 
-## v0.3.14.0 - 2025-09-12 - 给 JSON 新增键和值
+## [0.3.20] - 2025-09-21
+**里程碑：查询器 (Querier) 架构重构**
+* 创建了 `BaseQuerier` 模板基类，统一了 `DayQuerier`、`MonthQuerier` 和 `PeriodQuerier` 的通用查询逻辑。
+* 将数据查询与报告格式化完全解耦，并统一了格式化器的创建逻辑。
+* 将所有 TeX 相关的辅助函数（如 Preamble、escape）整合到 `TexUtils`。
 
-给 JSON 新增运动的键和值
-新增exerciseTime和exercise
-是否有运动以及运动时间(秒)
+---
 
-```
-        "generatedStats": {
-            "exerciseTime": 14040,
-            "sleepTime": 17640
-        },
-        "headers": {
-            "activityCount": 10,
-            "date": "20250902",
-            "exercise": 1,
-            "getup": "06:52",
-            "remark": "minecraft真好玩",
-            "sleep": 1,
-            "status": 1
-        }
-```
+## [0.3.19] - 2025-09-15
+**里程碑：全面转向 JSON 配置**
+* 为所有报告查询器（日报、月报、周期报）新增了 JSON 配置文件支持。
+* 移除了 `md`、`tex` 和 `typ` 格式化器中的硬编码设置（如字体、行距、颜色等），全部改为从 JSON 文件动态读取。
 
-### 0.3.14.1
-更新插入和查询，支持exercise输出,支持的格式md,typ,tex
+---
 
+## [0.3.18] - 2025-09-15
+**里程碑：数据模型扩展与规范化**
+* 扩展了 `generatedStats` 以追踪新的日常活动，如 `grooming`（洗漱） 和 `toilet`（上厕所）。
+* 统一了 `.json` 文件中的键名（例如 `topparent`/`parent` 改为 `parent`/`child`），使其与数据库的 schema 保持一致。
 
-## v0.3.15.0 - 2025-09-13 - 小修改
-给每年第一月第一天生成睡眠键的活动天，不进行json转换
+---
 
-因为这个天的唯一作用就是给第一月第一天生成睡眠时间
+## [0.3.17] - 2025-09-13
+**里程碑：代码结构优化（Facade 模式）**
+* 引入 Facade（外观）设计模式，重构了 `SourceFileValidator`、`converter` 和 `db_inserter` 模块。
+* 拆分了 `common_utils`，提高了模块的内聚性。
+* 修复了因 `-Werror` 导致的“未使用参数”编译错误。
 
+---
 
+## [0.3.16] - 2025-09-13
+**里程碑：功能 - 支持通宵情况的处理**
+* 通过检测一天的第一行是否存在起床条目来判断“通宵”状态。
+* 在通宵情况下，程序会将 `headers` 中的 `sleep` 设为 false，并将 `generatedStats` 中的 `sleepTime` 设为 0。
+* 测试日志生成器已支持按 `-n` (`--nosleep`) 参数，按特定模式（1天通宵 -> 1天正常 -> 2天通宵...）生成通宵数据。
 
-例如
+---
 
+## [0.3.15] - 2025-09-13
+**里程碑：优化 - 清理 JSON 输出**
+* 在数据转换阶段，过滤掉了仅用于计算跨年睡眠的“衔接日”（例如 12-31）。
+* 此修改确保了输出的 `.json` 文件只包含其所代表月份的有效天数数据，使中间数据更纯粹。
 
+---
 
-y2024
+## [0.3.14] - 2025-09-12
+**里程碑：功能 - 新增“锻炼”状态统计**
+* 在 `.json` 的 `headers` 中新增了 `exercise` 字段（判断当天是否锻炼）。
+* 在 `generatedStats` 中新增了 `exerciseTime` 字段，用于统计总锻炼秒数。
+* 数据库插入和所有报告格式（md, typ, tex）均已支持 `exercise` 字段的输出。
 
+---
 
+## [0.3.13] - 2025-09-12
+**里程碑：功能 - 支持活动备注**
+* 支持使用 `;`、`//` 或 `#` 符号为 `.txt` 中的单行活动添加备注。
+* 更新了 JSON 格式、数据库插入流程以及所有报表格式 (md, typ, tex) 以正确解析和显示备注。
 
-1231
+---
 
-0634w
+## [0.3.8] - 2025-08-31
+**里程碑：架构 - 引入 JSON 作为中间数据**
+* 重构了核心解析流程，建立了 `.txt` -> `JSON` -> `Database` 的标准处理管线。
+* 将所有的数据合法性验证逻辑从 `.txt` 文件转移到了 `.json` 文件，极大地简化了验证和解析的复杂度。
 
-1119饭 //我是备注1234
+---
 
-1607dy
 
-2053无氧
 
-0133饭 #先輩、好きです！ 私と付き合ってください！
 
 
 
-y2025
-
-
-
-0101
-
-0652wake
-
-1128洗澡 ;我是备注1234
-
-1625f
-
-2012单词
-
-0147ow
-
-
-
-这个例子中，1231就是用来给0101提供最后一项内容，来提供睡眠时间转换的，因此没有必要给1231生成json
-
-
-1231 这样的“衔接日”只是一个技术手段，用来为下一年的 0101 提供睡眠数据，它本身不应该作为一天的数据出现在最终的JSON输出中。
-
-这是一个非常合理的要求，可以让输出的JSON文件更纯粹，只包含它所代表的那个月份的数据。
-
-为了实现这个功能，我们只需要在转换流程的最后一步，也就是在 IntervalConverter 模块返回所有处理好的天数据之前，把这个“衔接日”过滤掉即可。
-
-
-
-## v0.3.16.0 - 2025-09-13
-支持通宵情况的处理
-
-以第一行内容是否有起床相关字段来判断，这一天是否通宵。因为如果通宵，逻辑上就不存在起床时间，用户也不会记录。
-
-如果是通宵，则不利用上一天的最后一项内容和当前天的第一项起床内容来生成睡眠时间。
-而且headers中的sleep为false
-"generatedStats"中的"sleepTime"为 0,
-
-### v0.3.16.1
-日志生成程序支持通宵的生成
-
-通过硬编码来生成通宵的天数。
-
-如果是通宵，当前天的第一行就不能为起床相关字段。
-
-每年的第一个月的第一天不能为通宵。因为要测试第一个月的第一天能否与上一年的最后一天生成睡眠时间。
-
-第一次通宵天数为1天，之后1天不通宵，第二次通宵天数为2天，之后1天不通宵，第三次通宵为3天，之后1天不通宵。通过命令行来传递是否
-生成器就会按照“1天通宵 -> 1天正常 -> 2天通宵 -> 1天正常 -> 3天通宵...”的模式生成测试日志。
-开启通宵天数的生成,-n,--nosleep
-
-## v0.3.17.0 - 2025-09-13
-优化程序结构，写成facade和具体实现
-
-### v0.3.17.1
-SourceFileValidator拆分成facade和pipelines
-
-### v0.3.17.2
-优化converter文件夹目录
-
-### v0.3.17.3
-优化db_inserter的parser
-
-### v0.3.17.4
-拆分common_utils
-
-### v0.3.17.5
-通过标记未使用参数修复编译错误
-
-修复了因 `-Werror` 编译选项将“未使用参数”警告视为错误而导致的构建失败问题。
-
-这些警告主要出现在 TeX 格式化器 (`DayTex`, `MonthTex`, `PeriodTex`) 中。这些类为了满足 `BaseTexFormatter` 接口的要求，需要为空实现其不处理的报告类型的 `format_content` 函数。由于函数体为空，其参数（如 `ss`, `data`, `db`）未被使用，从而引发了编译器警告。
-
-本次修改通过注释掉这些空实现函数中的参数名称（例如，将 `const MonthlyReportData& data` 修改为 `const MonthlyReportData& /*data*/`），明确地将它们标记为“有意未使用”。
-
-这消除了编译警告，使项目能够成功构建，且未对现有逻辑产生任何影响。
-### v0.3.17.6
-移除没用被使用的变量
-
-
-## v0.3.18.0 - 2025-09-15 generatedStats新增键
-generatedStats存储洗漱的时间,这部分数据高频出现在每天中，因为总要洗漱
-```
-"activity": {
-    "parents": [
-        "grooming"
-    ],
-    "topParent": "routine"
-},
-```
-## v0.3.18.1
-新增上厕所的时间
-```
-"activity": {
-    "parents": [
-        "toilet"
-    ],
-    "topParent": "routine"
-},
-```
-## v0.3.18.2
-generatedStats统计，提取为方法
-
-## v0.3.18.3
-预处理json配置拆分
-
-## v0.3.18.4
-用namespace存储需要计算的parent
-
-
-## v0.3.18.5
-json数据中键命名优化，不再采用 topparent和parent
-而是和数据库插入对齐，使用parent和child
-
-## v0.3.18.6
-json去除多余键
-
-
-## v0.3.19.0
-为查询新增json配置传入
-
-## v0.3.19.1
-给tex增加行间距，在hpp的namesqace硬编码
-
-
-## v0.3.19.2
-typ的日报配置从json中读取
-
-## v0.3.19.3
-typ日报 增加行间距配置
-
-## v0.3.19.4
-typ月报 增加json配置
-
-## v0.3.19.5
-typ周期报  增加json配置
-
-## v0.3.19.6
-md日报 增加json配置
-
-## v0.3.19.7
-md月报 周期报 增加json配置
-
-## v0.3.19.8
-tex日报 增加json配置
-
-## v0.3.19.9
-tex日报 增加json字体配置
-
-## v0.3.19.10
-md日报 json增补全配置
-
-## v0.3.19.11
-tex月报 新增json配置
-
-## v0.3.19.12
-tex周期 新增json配置
-
-## v0.3.19.13
-日查询复用配置读取代码
-
-## v0.3.19.14
-月 周期查询复用读取json代码
-
-## v0.3.19.15
-日查询自定义活动链接符号
-
-## v0.3.19.16
-日查询替换符号代码复用
-
-## v0.3.19.17
-数据库存储规范化
-
-## v0.3.20.0
-优化queries，复用代码
-
-### 优先级 1：创建 `BaseQuerier` 抽象基类 (最高优先级)
-
-**问题**:
-`DayQuerier`, `MonthQuerier`, 和 `PeriodQuerier` 三个类的结构和功能高度相似。它们都执行以下操作：
-
-1.  接收一个数据库连接和查询参数（日期、月份、天数）。
-2.  有一个公开的 `fetch_data()` 方法作为入口。
-3.  内部有私有方法来分别获取记录、总时长和统计天数。
-4.  执行的SQL查询语句逻辑也非常相似（只是 `WHERE` 条件不同）。
-
-**复用方案**:
-创建一个通用的 `BaseQuerier` 模板类，将所有通用的查询逻辑封装起来。
-
-
-## v0.3.20.1
-解耦数据查询与报告格式化
-
-## v0.3.20.2
-统一格式化器 (Formatter) 的创建逻辑
-
-## v0.3.20.3
-TeX 模板（Preamble 和 Postfix）逻辑被整合到了一个新的共享工具 TexUtils
-
-## v0.3.20.4
-把 escape_latex 函数移至共享的 TexUtils 文件中
-
-## v0.3.20.5
-优化shared文件夹目录
-
-## v0.3.20.6
-把common中的辅助函数移到queries/utils中
-
-## v0.3.20.7
-把common中的辅助函数移到queries/utils中
-
-## v0.3.20.8
-简化工厂和接口
-
-## v0.3.21.0
-新增独立的json配置验证模块
-
-## v0.3.21.1
-去除reprocessing模块的对于json配置的检验
-
-## v0.3.21.2
-日报告tex和typ颜色使用十六进制
-例如#000000
-
-## v0.3.21.3
-日报告 月报告 周期报告的tex新增配置
-
-## v0.3.21.4
-日报告 月报告 周期报告的tex新增更多字体大小支持
-
-## v0.3.21.5
-日报告 月报告 周期报告的typ新增更多字体大小支持
-
-## v0.3.21.6
-所有报告typ新增更多字体类型控制
-
-## v0.3.21.7
-对格式化报告的配置进行验证
-
-
-## v0.3.21.8
-提取md报告共同代码到
-
-src/reports/shared/format/MarkdownUtils.cpp
-
-## v0.3.21.9
-数据库插入json中更多字段
-
-把exerciseBothTime改为totalExerciseTime，并且插入gamingTime，groomingTime，toiletTime
-
-## v0.3.21.10
-新增json字段 sleepDayTime sleepNightTime  sleepTotalTime 
-sleepDayTime 统计sleep_day
-
-sleepNightTime统计sleep_night
-
-sleepTotalTime  = sleep_day + sleep_night
-
-
-## v0.3.21.11
-日报告增加更多数据统计
-```
-Sleep Time
-Anaerobic Exercise
-Cardio Exercise
-Grooming Time
-```
-
-## v0.3.21.12
-typ提取共同逻辑
-
-
-## v0.3.21.13
-优化format文件夹目录
-
-## v0.3.21.14
-tex报告重复函数移入TexUtils
-
-## v0.3.21.15
-优化TexUtils
-
-## v0.3.22.0
-基于注册的工厂模式来消除 switch 语句，使代码更符合开闭原则
-
-## v0.3.22.1
-成员变量命名修改为 后缀 _
-符合 Google C++ Style Guide
-
-## v0.3.22.2
-json queries配置文件使用蛇形命名法
-
-## v0.3.22.3
-扩展 IFormattingStrategy 接口，将 LaTeX 的实现也统一到 ProjectTreeFormatter 中
-
-## v0.3.22.4
-移除query_utils，功能合并到TimeFormat
-
-## v0.3.22.5
-新增recreation相关字段数据生成
-
-## v0.3.22.6
-新增recreation相关字段存储以及日报告md导出
-
-## v0.3.22.7
-新增recreation相关字段存储以及日报告tex,typ导出
-新增对于json的配置新增的recreation相关的验证
-
-## v0.3.23.0
-修改json命名为蛇形命名
-
-## v0.3.23.1
-json新增开关控制输出哪些Statistics输出
-md
-
-
-## v0.3.23.2
-json新增开关控制输出哪些Statistics输出
-tex typ
-
-## v0.3.23.3
-如果Statistics中数据为0，也打印
-
-## v0.3.23.4
-日报告新增运动总时间
-
-## v0.3.23.5
-缩短cpp hpp命名
-
-## v0.3.23.6
-优化config_validator/queries程序结构
-
-## v0.3.23.7
-config_validator/reprocessing也使用策略模式
-
-## v0.3.23.8
-优化time_master_cli模块
-
-## v0.3.23.9
-优化time_master_cli目录结构
-
-## v0.3.23.10
-拆分Exporter
-
-## v0.3.23.11
-文件夹命名queries修改为reports
-
-## v0.3.23.12
-QueryManager 和 ReportGenerator 的合并
-
-## v0.3.23.13
-补全Exporter的批量导出功能
-
-## v0.3.23.14
-提取日配置重复逻辑为DayBaseConfig
-
-## v0.3.23.15
-tex优化程序结构
-## v0.3.23.16
-月,周期报告重复配置读取逻辑提取到base
-json中键名修改为get_no_records_message
-
-## v0.3.23.17
-重构日报统计模块，消除重复的格式化逻辑
-
-本次修改的核心目标是解决在 DayMd、DayTex 和 DayTyp 三个日报格式化器中存在的重复代码问题。原先，每个格式化器都独立实现了一套几乎完全相同的逻辑来处理和显示统计数据（如睡眠时间、锻炼时间及其子项等）。
-
-为了解决这个问题，我们引入了策略设计模式（Strategy Design Pattern）：
-
-提取通用逻辑：我们创建了一个核心的 StatisticsFormatter 类，它封装了所有与具体格式无关的通用业务逻辑，例如：决定显示哪些统计项、它们的排列顺序、以及如何处理嵌套的子项（如“总锻炼时间”下的“无氧”和“有氧”）。
-
-定义策略接口：我们定义了一个 IStatisticsFormattingStrategy 接口，它规定了所有具体格式化策略必须实现的方法，如如何格式化标题、主列表项和子列表项。
-
-实现具体策略：我们为 Markdown、LaTeX 和 Typst 分别创建了具体的策略类 (MarkdownStatisticsStrategy.hpp, LatexStatisticsStrategy.hpp, TypstStatisticsStrategy.hpp)，这些类负责将统计数据转换为特定格式的字符串。
-
-通过这次重构，我们将原来分散在三处的复杂逻辑集中到了一个地方，使得 DayMd、DayTex 和 DayTyp 的代码被大大简化，现在它们只需调用 StatisticsFormatter 即可完成整个统计部分的渲染。这显著提高了代码的可维护性和复用性。
-
-
-## v0.3.23.18
-各报告的Generator提取为BaseGenerator.hpp
-
-
-
-## v0.3.24.0 - 2025-10-07
-1. 优化reports文件夹内的结构
-
-## v0.3.24.1 - 2025-10-07
-1. DayMd编译成dll动态链接
-2. 修改测试程序，复制build/bin文件夹内的plugins文件夹
-3. 修改config_validator,检验dll命名是否正确
-
-## v0.3.24.2 - 2025-10-08
-1. reports/daily中,tex,typ格式化报告编译成dll
-2. reports/monthly中,md,tex,typ格式化报告编译成dll
-
-## v0.3.24.3 - 2025-10-09
-1. reports/period中,md,tex,typ格式化报告编译成dll
-2. config_validator/facade/ConfigFacade.cpp对所有的dll进行名称检验
 
 
 

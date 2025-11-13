@@ -4,6 +4,7 @@
 
 #include <string>
 #include "common/utils/ProjectTree.hpp"
+#include "reports/shared/shared_api.hpp" // <--- [新增]
 
 namespace MarkdownUtils {
 
@@ -15,7 +16,7 @@ namespace MarkdownUtils {
  * @param avg_days 用于计算平均时长的天数。
  * @return 格式化后的 Markdown 字符串。
  */
-std::string format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days);
+REPORTS_SHARED_API std::string format_project_tree(const ProjectTree& tree, long long total_duration, int avg_days); // <--- [修改]
 
 } // namespace MarkdownUtils
 

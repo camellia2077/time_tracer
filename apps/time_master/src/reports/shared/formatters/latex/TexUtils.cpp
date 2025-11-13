@@ -90,6 +90,11 @@ std::string get_tex_preamble(
     }
 
     ss << "\n";
+    // [新增] 添加关于如何使用绝对路径字体的注释，方便用户修改
+    ss << "% To use an absolute font path, comment out the following two lines and uncomment the two after.\n";
+    ss << "%\\setmainfont[Path=C:/your/font/path/]{MiSansVF.ttf}\n";
+    ss << "%\\setCJKmainfont[Path=C:/your/font/path/]{MiSansVF.ttf}\n\n";
+    
     ss << "\\setmainfont{" << main_font << "}\n";
     ss << "\\setCJKmainfont{" << cjk_main_font << "}\n\n";
     ss << "\\begin{document}\n\n";

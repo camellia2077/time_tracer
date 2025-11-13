@@ -88,14 +88,12 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
     sqlite3_finalize(stmt);
 }
 
-// --- [ 核心修改 ] ---
-// 扩展SQL查询以包含 total_exercise_time
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT sleep_total_time, anaerobic_time, cardio_time, grooming_time, "
+    std::string sql = "SELECT sleep_total_time AS sleep_time, anaerobic_time, cardio_time, grooming_time, "
                       "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time, "
-                      "total_exercise_time " // [新增]
-                      "FROM days WHERE date = ?;";
+                      "total_exercise_time "
+                      "FROM days WHERE date = ?;";//    // [核心修改] 使用 "AS" 关键字为 "sleep_total_time" 列设置别名 "sleep_time"
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);

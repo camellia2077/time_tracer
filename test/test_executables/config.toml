@@ -58,6 +58,7 @@ period_export_days = [7, 10, 15]
 [cleanup]
 # 需要从源目录复制的文件
 files_to_copy = [
+    "reports_shared.dll",
     "time_tracker_cli.exe",
     "libgcc_s_seh-1.dll",
     "libstdc++-6.dll",

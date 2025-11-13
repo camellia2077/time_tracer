@@ -208,3 +208,6 @@ graph TD
     DBInsert --> DB
     Query --> DB
 ```
+
+## 添加新的格式化器或规则
+如果别人要给格式化加入新的规则，需要修改config中的代码(如果需要)，修改reports中相关的代码，修改config_validator的验证规则(如果增加了json的配置)
