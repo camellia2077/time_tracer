@@ -2,11 +2,14 @@
 #ifndef PERIOD_BASE_CONFIG_HPP
 #define PERIOD_BASE_CONFIG_HPP
 
+#include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
 #include <string>
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
 
-class PeriodBaseConfig {
+DISABLE_C4251_WARNING // <--- [新增] 2. 禁用C4251警告 (因为有 std::string)
+
+class REPORTS_SHARED_API PeriodBaseConfig { // <--- [修改] 3. 添加API宏
 public:
     explicit PeriodBaseConfig(const std::string& config_path);
     virtual ~PeriodBaseConfig() = default;
@@ -35,5 +38,7 @@ private:
     std::string no_records_message_;
     std::string invalid_days_message_;
 };
+
+ENABLE_C4251_WARNING // <--- [新增] 4. 恢复C4251警告
 
 #endif // PERIOD_BASE_CONFIG_HPP

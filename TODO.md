@@ -1,3 +1,11 @@
+
+
+StringUtils.hpp不应该放到common文件夹中，应该放到reports文件夹中，高内聚原则
+
+libreports_shared.dll在测试程序中被重复地复制了两次，一个放到和exe同程序目录，一个放到了plugins文件夹中
+作为程序的核心，libreports_shared.dll只应该和exe同程序目录，不应该放入plugins文件夹
+
+
 ## 让tex支持生成的字体从本地获取
 \setCJKmainfont[Path=C:/]{NotoSerifSC-VariableFont_wght.ttf}
 
