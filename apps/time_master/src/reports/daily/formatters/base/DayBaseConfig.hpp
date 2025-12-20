@@ -2,27 +2,28 @@
 #ifndef DAY_BASE_CONFIG_HPP
 #define DAY_BASE_CONFIG_HPP
 
-#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
+#include "reports/shared/shared_api.hpp"
 #include <string>
 #include <map>
+#include <vector> // [新增]
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
 
-// 用于存储单个统计项配置的结构体
-// (这个结构体保持不变，因为它不是一个被导出的类)
+// [修改] 升级结构体以支持递归和数据库映射
 struct StatisticItemConfig {
     std::string label;
+    std::string db_column; // [新增] 对应的数据库列名
     bool show = true;
+    std::vector<StatisticItemConfig> sub_items; // [新增] 支持无限层级嵌套
 };
 
-DISABLE_C4251_WARNING // <-- [新增] 2. 禁用C4251警告 (因为有std::string/map)
+DISABLE_C4251_WARNING
 
 /**
  * @class DayBaseConfig
  * @brief 日报配置的基类，封装了所有日报格式共享的配置项。
- * ... (注释保持不变) ...
  */
-class REPORTS_SHARED_API DayBaseConfig { // <-- [修改] 3. 添加API宏
+class REPORTS_SHARED_API DayBaseConfig {
 public:
     explicit DayBaseConfig(const std::string& config_path);
     virtual ~DayBaseConfig() = default;
@@ -41,16 +42,16 @@ public:
     const std::string& get_all_activities_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_activity_connector() const;
-    const std::map<std::string, StatisticItemConfig>& get_statistics_items() const;
+    
+    // [修改] 返回类型改为 vector 以保持 JSON 数组的顺序
+    const std::vector<StatisticItemConfig>& get_statistics_items() const;
 
 protected:
-    // 子类可以访问解析后的JSON对象来加载自己的特有配置
     nlohmann::json config_json_; 
 
 private:
-    void load_base_config(); // 私有方法，用于加载所有通用配置
+    void load_base_config();
 
-    // --- 所有共享的成员变量 ---
     std::string title_prefix_;
     std::string date_label_;
     std::string total_time_label_;
@@ -64,9 +65,11 @@ private:
     std::string all_activities_label_;
     std::string activity_remark_label_;
     std::string activity_connector_; 
-    std::map<std::string, StatisticItemConfig> statistics_items_;
+    
+    // [修改] 存储结构改为 vector
+    std::vector<StatisticItemConfig> statistics_items_;
 };
 
-ENABLE_C4251_WARNING // <-- [新增] 4. 恢复C4251警告
+ENABLE_C4251_WARNING
 
 #endif // DAY_BASE_CONFIG_HPP

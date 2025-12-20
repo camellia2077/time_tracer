@@ -1,40 +1,26 @@
 // reports/daily/DayQuerier.cpp
 #include "DayQuerier.hpp"
-#include "reports/shared/utils/report/ReportDataUtils.hpp" // [新增] 为构建项目树
+#include "reports/shared/utils/report/ReportDataUtils.hpp"
 #include <stdexcept>
 
 DayQuerier::DayQuerier(sqlite3* db, const std::string& date)
     : BaseQuerier(db, date) {}
 
 DailyReportData DayQuerier::fetch_data() {
-    // 调用基类实现获取 records 和 total_duration
     DailyReportData data = BaseQuerier::fetch_data();
-
-    // 获取日报特有的数据
     _fetch_metadata(data);
 
     if (data.total_duration > 0) {
         _fetch_detailed_records(data);
-        // --- [核心修改] 调用更新后的函数 ---
         _fetch_generated_stats(data);
-        // [核心修改] 在数据获取阶段构建项目树
         build_project_tree_from_records(data.project_tree, data.records);
     }
-
     return data;
 }
 
-std::string DayQuerier::get_date_condition_sql() const {
-    return "date = ?";
-}
-
-void DayQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
-}
-
-void DayQuerier::_prepare_data(DailyReportData& data) const {
-    data.date = this->param_;
-}
+std::string DayQuerier::get_date_condition_sql() const { return "date = ?"; }
+void DayQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const { sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC); }
+void DayQuerier::_prepare_data(DailyReportData& data) const { data.date = this->param_; }
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
     sqlite3_stmt* stmt;
@@ -90,23 +76,31 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT sleep_total_time AS sleep_time, anaerobic_time, cardio_time, grooming_time, "
-                      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time, "
-                      "total_exercise_time "
-                      "FROM days WHERE date = ?;";//    // [核心修改] 使用 "AS" 关键字为 "sleep_total_time" 列设置别名 "sleep_time"
+    // [核心修改]
+    // 1. 移除了 AS 别名，确保列名与数据库一致，以便 data.stats 中的 key 与 JSON config 中的 db_column 对应。
+    // 2. 选择所有可能用到的统计字段。
+    std::string sql = "SELECT "
+                      "sleep_total_time, "
+                      "total_exercise_time, anaerobic_time, cardio_time, "
+                      "grooming_time, "
+                      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time "
+                      "FROM days WHERE date = ?;";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
         sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
         if (sqlite3_step(stmt) == SQLITE_ROW) {
-            if (sqlite3_column_type(stmt, 0) != SQLITE_NULL) data.sleep_time = sqlite3_column_int64(stmt, 0);
-            if (sqlite3_column_type(stmt, 1) != SQLITE_NULL) data.anaerobic_time = sqlite3_column_int64(stmt, 1);
-            if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) data.cardio_time = sqlite3_column_int64(stmt, 2);
-            if (sqlite3_column_type(stmt, 3) != SQLITE_NULL) data.grooming_time = sqlite3_column_int64(stmt, 3);
-            if (sqlite3_column_type(stmt, 4) != SQLITE_NULL) data.recreation_time = sqlite3_column_int64(stmt, 4);
-            if (sqlite3_column_type(stmt, 5) != SQLITE_NULL) data.recreation_zhihu_time = sqlite3_column_int64(stmt, 5);
-            if (sqlite3_column_type(stmt, 6) != SQLITE_NULL) data.recreation_bilibili_time = sqlite3_column_int64(stmt, 6);
-            if (sqlite3_column_type(stmt, 7) != SQLITE_NULL) data.recreation_douyin_time = sqlite3_column_int64(stmt, 7);
-            if (sqlite3_column_type(stmt, 8) != SQLITE_NULL) data.total_exercise_time = sqlite3_column_int64(stmt, 8); // [新增]
+            int col_count = sqlite3_column_count(stmt);
+            for (int i = 0; i < col_count; ++i) {
+                const char* col_name = sqlite3_column_name(stmt, i);
+                if (col_name) {
+                    long long val = 0;
+                    if (sqlite3_column_type(stmt, i) != SQLITE_NULL) {
+                        val = sqlite3_column_int64(stmt, i);
+                    }
+                    // [核心修改] 动态将数据库列名映射到 stats Map 中
+                    data.stats[std::string(col_name)] = val;
+                }
+            }
         }
     }
     sqlite3_finalize(stmt);

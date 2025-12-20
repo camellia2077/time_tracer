@@ -10,45 +10,46 @@ StatFormatter::StatFormatter(std::unique_ptr<IStatStrategy> strategy)
     }
 }
 
+// [新增] 递归处理统计项的辅助函数
+void process_stat_items(
+    const std::vector<StatisticItemConfig>& items,
+    const DailyReportData& data,
+    const IStatStrategy* strategy,
+    std::vector<std::string>& lines,
+    int level)
+{
+    for (const auto& item : items) {
+        if (!item.show) continue;
+
+        // 1. 从 data.stats 中获取数据
+        long long duration = 0;
+        if (!item.db_column.empty() && data.stats.count(item.db_column)) {
+            duration = data.stats.at(item.db_column);
+        }
+
+        // 2. 格式化当前行
+        // 注意：目前 IStatStrategy 只定义了 main_item 和 sub_item。
+        // 这里做一个简单的映射：Level 0 为 Main，Level > 0 为 Sub。
+        if (level == 0) {
+            lines.push_back(strategy->format_main_item(item.label, time_format_duration(duration)));
+        } else {
+            lines.push_back(strategy->format_sub_item(item.label, time_format_duration(duration)));
+        }
+
+        // 3. 递归处理子项
+        if (!item.sub_items.empty()) {
+            process_stat_items(item.sub_items, data, strategy, lines, level + 1);
+        }
+    }
+}
+
 std::string StatFormatter::format(const DailyReportData& data, const std::shared_ptr<DayBaseConfig>& config) const {
-    const auto& items_config = config->get_statistics_items();
+    const auto& items_config = config->get_statistics_items(); // 现在这是一个 vector
     std::vector<std::string> lines_to_print;
 
-    const std::vector<std::string> ordered_keys = {"sleep_time", "total_exercise_time", "grooming_time", "recreation_time"};
-
-    for (const auto& key : ordered_keys) {
-        auto it = items_config.find(key);
-        if (it == items_config.end() || !it->second.show) continue;
-
-        long long duration = 0;
-        if (key == "sleep_time") duration = data.sleep_time;
-        else if (key == "total_exercise_time") duration = data.total_exercise_time;
-        else if (key == "grooming_time") duration = data.grooming_time;
-        else if (key == "recreation_time") duration = data.recreation_time;
-
-        lines_to_print.push_back(m_strategy->format_main_item(it->second.label, time_format_duration(duration)));
-
-        // --- 嵌套逻辑的通用处理 ---
-        if (key == "total_exercise_time") {
-            if (items_config.count("anaerobic_time") && items_config.at("anaerobic_time").show) {
-                lines_to_print.push_back(m_strategy->format_sub_item(items_config.at("anaerobic_time").label, time_format_duration(data.anaerobic_time)));
-            }
-            if (items_config.count("cardio_time") && items_config.at("cardio_time").show) {
-                lines_to_print.push_back(m_strategy->format_sub_item(items_config.at("cardio_time").label, time_format_duration(data.cardio_time)));
-            }
-        }
-        
-        if (key == "recreation_time") {
-            if (items_config.count("zhihu_time") && items_config.at("zhihu_time").show) {
-                lines_to_print.push_back(m_strategy->format_sub_item(items_config.at("zhihu_time").label, time_format_duration(data.recreation_zhihu_time)));
-            }
-            if (items_config.count("bilibili_time") && items_config.at("bilibili_time").show) {
-                lines_to_print.push_back(m_strategy->format_sub_item(items_config.at("bilibili_time").label, time_format_duration(data.recreation_bilibili_time)));
-            }
-            if (items_config.count("douyin_time") && items_config.at("douyin_time").show) {
-                lines_to_print.push_back(m_strategy->format_sub_item(items_config.at("douyin_time").label, time_format_duration(data.recreation_douyin_time)));
-            }
-        }
+    // [核心修改] 使用递归函数替代硬编码的遍历逻辑
+    if (!items_config.empty()) {
+        process_stat_items(items_config, data, m_strategy.get(), lines_to_print, 0);
     }
 
     if (lines_to_print.empty()) {

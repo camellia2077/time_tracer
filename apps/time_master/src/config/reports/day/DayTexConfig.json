@@ -29,42 +29,55 @@
         "code":       "#39CCCC"
     },
     "activity_connector": "->",
-    "statistics_items": {
-        "sleep_time": {
+    "statistics_items": [
+        {
             "label": "Sleep Time",
+            "db_column": "sleep_total_time",
             "show": true
         },
-        "total_exercise_time": {
+        {
             "label": "Total Exercise Time",
-            "show": true
+            "db_column": "total_exercise_time",
+            "show": true,
+            "sub_items": [
+                {
+                    "label": "Anaerobic Exercise",
+                    "db_column": "anaerobic_time",
+                    "show": true
+                },
+                {
+                    "label": "Cardio Exercise",
+                    "db_column": "cardio_time",
+                    "show": true
+                }
+            ]
         },
-        "anaerobic_time": {
-            "label": "Anaerobic Exercise",
-            "show": true
-        },
-        "cardio_time": {
-            "label": "Cardio Exercise",
-            "show": true
-        },
-        "grooming_time": {
+        {
             "label": "Grooming Time",
+            "db_column": "grooming_time",
             "show": true
         },
-        "recreation_time": {
+        {
             "label": "Recreation Time",
-            "show": true
-        },
-        "zhihu_time": {
-            "label": "Zhihu",
-            "show": true
-        },
-        "bilibili_time": {
-            "label": "Bilibili",
-            "show": true
-        },
-        "douyin_time": {
-            "label": "Douyin",
-            "show": true
+            "db_column": "recreation_time",
+            "show": true,
+            "sub_items": [
+                {
+                    "label": "Zhihu",
+                    "db_column": "recreation_zhihu_time",
+                    "show": true
+                },
+                {
+                    "label": "Bilibili",
+                    "db_column": "recreation_bilibili_time",
+                    "show": true
+                },
+                {
+                    "label": "Douyin",
+                    "db_column": "recreation_douyin_time",
+                    "show": true
+                }
+            ]
         }
-    }
+    ]
 }
