@@ -36,15 +36,16 @@ add_library(reports_shared SHARED ${REPORTS_SHARED_SOURCES})
 # --- 关键修改 2: 添加此定义以触发 __declspec(dllexport) ---
 target_compile_definitions(reports_shared PRIVATE REPORTS_SHARED_EXPORTS)
 
-# --- 关键修改 3: 确保 .dll 文件输出到插件目录 ---
-# (这个 PLUGIN_OUTPUT_DIR 变量应在您的根 CMakeLists.txt 中定义)
+# reports_shared 是主程序直接链接的库 ，
+# 它不应该被视为“插件”，而应作为“核心组件”。建议将其输出到主程序同级目录
 set_target_properties(reports_shared PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
-    RUNTIME_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
+    # 将 LIBRARY 和 RUNTIME 的输出路径都指向可执行文件所在的 bin 目录
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
 
 # 为这个新的库目标应用通用的编译设置 (头文件路径, 警告等)
-# [保持不变] 这行是正确的，它会链接 nlohmann_json 等
+# 它会链接 nlohmann_json 等
 setup_project_target(reports_shared)
 
 set(CONFIG_VALIDATOR

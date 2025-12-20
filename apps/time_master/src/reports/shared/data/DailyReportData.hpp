@@ -6,9 +6,9 @@
 #include <vector>
 #include <map>
 #include <optional>
-#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
+#include "common/utils/ProjectTree.hpp" 
 
-// [新增] 用于单个活动的详细记录
+//用于单个活动的详细记录
 struct TimeRecord {
     std::string start_time;
     std::string end_time;
@@ -35,19 +35,12 @@ struct DailyReportData {
     long long total_duration = 0;
     std::vector<std::pair<std::string, long long>> records;
     std::vector<TimeRecord> detailed_records;
-    long long sleep_time = 0;
-    // --- [核心修改] 新增统计字段 ---
-    long long total_exercise_time = 0; // [新增]
-    long long anaerobic_time = 0;
-    long long cardio_time = 0;
-    long long grooming_time = 0;
-    // --- [新增字段] ---
-    long long recreation_time = 0;
-    long long recreation_zhihu_time = 0;
-    long long recreation_bilibili_time = 0;
-    long long recreation_douyin_time = 0;
 
-    ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
+    // [核心修改] 使用 Map 存储动态统计数据
+    // Key: 数据库列名 (例如 "sleep_total_time", "anaerobic_time")
+    // Value: 时长 (秒)
+    std::map<std::string, long long> stats; 
+    ProjectTree project_tree;
 };
 
 #endif // DAILY_REPORT_DATA_HPP

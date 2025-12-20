@@ -1,4 +1,7 @@
 {
+  "mappings_config_path": "config/reprocessing/mapping_config.json",
+  "duration_rules_config_path": "config/reprocessing/duration_rules.json",
+  
   "interval_processor_config_path": "reprocessing/interval_processor_config.json",
   "error_log_path": "../output/error_log.txt",
   "export_path": "exported_reports",
