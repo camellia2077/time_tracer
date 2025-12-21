@@ -13,18 +13,18 @@ namespace MarkdownUtils {
  */
 class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
 public:
-    std::string format_category_header(
+std::string format_category_header(
         const std::string& category_name,
         const std::string& formatted_duration,
         double percentage) const override
     {
         std::stringstream ss;
-        ss << "\n## " << category_name << ": "
+        // [修改] 将 ## 改为 ###
+        ss << "\n### " << category_name << ": "
            << formatted_duration
-           << " (" << std::fixed << std::setprecision(1) << percentage << "%) ##\n";
+           << " (" << std::fixed << std::setprecision(1) << percentage << "%) ###\n";
         return ss.str();
     }
-
     std::string format_tree_node(
         const std::string& project_name,
         const std::string& formatted_duration,

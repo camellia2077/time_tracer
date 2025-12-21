@@ -2,7 +2,9 @@
     "text_duration_mappings":{
         "失眠": "insomnia",
         "饭": "meal",
-        "休息" : "rest"
+        "休息" : "rest",
+        "r" : "rest",
+        "rest" : "rest"
     },
     "duration_mappings": {
         "rest": [

@@ -42,6 +42,9 @@ public:
     const std::string& get_all_activities_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_activity_connector() const;
+
+    // [新增] 通用的项目统计标题 getter
+    const std::string& get_project_breakdown_label() const;
     
     // [修改] 返回类型改为 vector 以保持 JSON 数组的顺序
     const std::vector<StatisticItemConfig>& get_statistics_items() const;
@@ -65,8 +68,11 @@ private:
     std::string all_activities_label_;
     std::string activity_remark_label_;
     std::string activity_connector_; 
+
+    // 通用的项目统计标题变量
+    std::string project_breakdown_label_;
     
-    // [修改] 存储结构改为 vector
+    // 存储结构改为 vector
     std::vector<StatisticItemConfig> statistics_items_;
 };
 

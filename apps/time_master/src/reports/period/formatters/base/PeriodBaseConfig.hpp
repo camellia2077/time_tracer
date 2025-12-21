@@ -2,26 +2,29 @@
 #ifndef PERIOD_BASE_CONFIG_HPP
 #define PERIOD_BASE_CONFIG_HPP
 
-#include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
+#include "reports/shared/shared_api.hpp"
 #include <string>
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
 
-DISABLE_C4251_WARNING // <--- [新增] 2. 禁用C4251警告 (因为有 std::string)
+DISABLE_C4251_WARNING
 
-class REPORTS_SHARED_API PeriodBaseConfig { // <--- [修改] 3. 添加API宏
+class REPORTS_SHARED_API PeriodBaseConfig {
 public:
     explicit PeriodBaseConfig(const std::string& config_path);
     virtual ~PeriodBaseConfig() = default;
 
-    // --- 通用配置项的 Getters ---
+    // --- Getters ---
+    // [修复] 补回丢失的标题配置 Getter
     const std::string& get_report_title_prefix() const;
     const std::string& get_report_title_days() const;
     const std::string& get_report_title_date_separator() const;
-    const std::string& get_total_time_label() const;
+
     const std::string& get_actual_days_label() const;
+    const std::string& get_total_time_label() const;
     const std::string& get_no_records_message() const;
     const std::string& get_invalid_days_message() const;
+    const std::string& get_project_breakdown_label() const;
 
 protected:
     nlohmann::json config_json_;
@@ -29,16 +32,17 @@ protected:
 private:
     void load_base_config();
 
-    // --- 共享的成员变量 ---
     std::string report_title_prefix_;
     std::string report_title_days_;
     std::string report_title_date_separator_;
-    std::string total_time_label_;
+
     std::string actual_days_label_;
+    std::string total_time_label_;
     std::string no_records_message_;
     std::string invalid_days_message_;
+    std::string project_breakdown_label_;
 };
 
-ENABLE_C4251_WARNING // <--- [新增] 4. 恢复C4251警告
+ENABLE_C4251_WARNING
 
 #endif // PERIOD_BASE_CONFIG_HPP
