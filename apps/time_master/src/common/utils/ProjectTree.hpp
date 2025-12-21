@@ -1,17 +1,21 @@
-// common/utils/ProjectTree.hpp
 #ifndef PROJECT_TREE_HPP
 #define PROJECT_TREE_HPP
 
-#include <map>
+#include <unordered_map> // [修改] 引入 unordered_map
 #include <string>
 
-// 用于时间聚合的项目层级节点
+
 struct ProjectNode {
     long long duration = 0;
-    std::map<std::string, ProjectNode> children;
+    // [优化] 使用 unordered_map 提升构建速度
+    // 在生成报告时（如 ProjectTreeFormatter），
+    // 程序显式地按 duration（时长）进行了重新排序。
+    // 这意味着 std::map 在构建时的排序工作是完全浪费的。
+    // 改用 std::unordered_map
+    // 插入和查找的平均时间复杂度从 O(log N) 降低到 O(1)。
+    std::unordered_map<std::string, ProjectNode> children; 
 };
 
-// 项目树结构的别名
-using ProjectTree = std::map<std::string, ProjectNode>;
+using ProjectTree = std::unordered_map<std::string, ProjectNode>;
 
 #endif // PROJECT_TREE_HPP

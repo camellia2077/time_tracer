@@ -1,7 +1,4 @@
 // reports/daily/formatters/statistics/TypstStrategy.hpp
-#ifndef TYPST_STRATEGY_HPP
-#define TYPST_STRATEGY_HPP
-
 #include "IStatStrategy.hpp"
 #include "reports/daily/formatters/typ/DayTypConfig.hpp"
 #include <format>
@@ -16,7 +13,9 @@ public:
         header += std::format("#let statistic_font_size = {}pt\n", config_->get_statistic_font_size());
         header += std::format("#let statistic_title_font_size = {}pt\n", config_->get_statistic_title_font_size());
         header += "#set text(size: statistic_font_size)\n";
-        header += std::format("#align(center)[#text(size: statistic_title_font_size)[={0}]]\n\n", title);
+        // 注意必须是 = {0}而不是={0}，不然会没法正确渲染标题
+        header += std::format("#text(size: statistic_title_font_size)[= {0}]\n\n", title);
+        
         return header;
     }
 
@@ -39,5 +38,3 @@ public:
 private:
     std::shared_ptr<DayTypConfig> config_;
 };
-
-#endif // TYPST_STRATEGY_HPP

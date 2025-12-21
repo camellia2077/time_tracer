@@ -6,7 +6,7 @@
 #include "reports/shared/factories/GenericFormatterFactory.hpp"
 #include "reports/monthly/formatters/tex/MonthTexConfig.hpp"
 #include "reports/shared/data/MonthlyReportData.hpp"
-#include "common/AppConfig.hpp" // [新增] 为导出函数引入 AppConfig
+#include "common/AppConfig.hpp" 
 #include <sstream>
 #include <memory>
 
@@ -31,6 +31,13 @@ std::string MonthTex::format_report(const MonthlyReportData& data) const {
     if (data.actual_days == 0) {
         ss << config_->get_no_records_message() << "\n";
     } else {
+        // [新增] 添加 Project Breakdown 统领性标题
+        int title_size = config_->get_category_title_font_size();
+        ss << "{";
+        ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
+        ss << "\\section*{" << TexUtils::escape_latex(config_->get_project_breakdown_label()) << "}";
+        ss << "}\n\n";
+
         ss << TexUtils::format_project_tree(
             data.project_tree,
             data.total_duration,
@@ -45,7 +52,6 @@ std::string MonthTex::format_report(const MonthlyReportData& data) const {
     return ss.str();
 }
 
-// [新增] C-style functions to be exported from the DLL
 extern "C" {
     __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
         auto tex_config = std::make_shared<MonthTexConfig>(cfg.month_tex_config_path);

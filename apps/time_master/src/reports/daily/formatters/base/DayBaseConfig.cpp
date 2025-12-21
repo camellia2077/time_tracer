@@ -49,6 +49,9 @@ void DayBaseConfig::load_base_config() {
     all_activities_label_ = config_json_.at("all_activities_label").get<std::string>();
     activity_remark_label_ = config_json_.at("activity_remark_label").get<std::string>();
     activity_connector_ = config_json_.at("activity_connector").get<std::string>();
+
+    // [新增] 加载通用的项目统计标题，提供默认值
+    project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
     
     // [核心修改] 调用递归解析函数加载统计配置
     if (config_json_.contains("statistics_items")) {
@@ -70,3 +73,6 @@ const std::string& DayBaseConfig::get_all_activities_label() const { return all_
 const std::string& DayBaseConfig::get_activity_remark_label() const { return activity_remark_label_; }
 const std::string& DayBaseConfig::get_activity_connector() const { return activity_connector_; }
 const std::vector<StatisticItemConfig>& DayBaseConfig::get_statistics_items() const { return statistics_items_; }
+
+// [新增] 实现 Getter
+const std::string& DayBaseConfig::get_project_breakdown_label() const { return project_breakdown_label_; }
