@@ -7,11 +7,9 @@
 #include "reports/shared/data/DailyReportData.hpp"
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/LatexStrategy.hpp"
-#include "common/AppConfig.hpp" // [新增] 为导出函数引入 AppConfig
+#include "common/AppConfig.hpp" 
 #include <sstream>
 #include <memory>
-
-// 移除了静态注册逻辑
 
 
 DayTex::DayTex(std::shared_ptr<DayTexConfig> config) : config_(config) {}
@@ -37,6 +35,13 @@ std::string DayTex::format_report(const DailyReportData& data) const {
         
         DayTexUtils::display_detailed_activities(ss, data, config_);
         
+        // [新增] 添加 Project Breakdown 统领性标题
+        int title_size = config_->get_category_title_font_size();
+        ss << "{";
+        ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
+        ss << "\\section*{" << TexUtils::escape_latex(config_->get_project_breakdown_label()) << "}";
+        ss << "}\n\n";
+
         ss << TexUtils::format_project_tree(
             data.project_tree,
             data.total_duration,
@@ -51,7 +56,6 @@ std::string DayTex::format_report(const DailyReportData& data) const {
     return ss.str();
 }
 
-// [新增] C-style functions to be exported from the DLL
 extern "C" {
     __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
         auto tex_config = std::make_shared<DayTexConfig>(cfg.day_tex_config_path);

@@ -11,7 +11,7 @@
 
 namespace TexUtils {
 
-namespace { // 匿名命名空间
+namespace {
 
 class LatexFormattingStrategy : public reporting::IFormattingStrategy {
 public:
@@ -28,9 +28,13 @@ public:
         std::stringstream ss;
         ss << "{";
         ss << "\\fontsize{" << m_category_font_size << "}{" << m_category_font_size * 1.2 << "}\\selectfont";
-        ss << "\\section*{" << TexUtils::escape_latex(category_name) << ": "
+        
+        // [核心修改] 将 \section* 改为 \subsection*
+        // 这样它们就会成为 "Project Breakdown" 的子章节
+        ss << "\\subsection*{" << TexUtils::escape_latex(category_name) << ": "
            << TexUtils::escape_latex(formatted_duration)
            << " (" << std::fixed << std::setprecision(1) << percentage << "\\%)}";
+           
         ss << "}\n";
         return ss.str();
     }
@@ -58,7 +62,7 @@ private:
     std::string m_itemize_options;
 };
 
-} // 匿名命名空间结束
+}
 
 std::string get_tex_preamble(
     const std::string& main_font,
@@ -90,7 +94,7 @@ std::string get_tex_preamble(
     }
 
     ss << "\n";
-    // [新增] 添加关于如何使用绝对路径字体的注释，方便用户修改
+    // 添加关于如何使用绝对路径字体的注释，方便用户修改
     ss << "% To use an absolute font path, comment out the following two lines and uncomment the two after.\n";
     ss << "%\\setmainfont[Path=C:/your/font/path/]{MiSansVF.ttf}\n";
     ss << "%\\setCJKmainfont[Path=C:/your/font/path/]{MiSansVF.ttf}\n\n";

@@ -22,8 +22,8 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/utils/format/TimeFormat.cpp"
     "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
     "src/reports/shared/formatters/latex/TexUtils.cpp"
-    "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
-    "src/reports/shared/formatters/typst/TypUtils.cpp"
+    # "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
+    # "src/reports/shared/formatters/typst/TypUtils.cpp"
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     "src/reports/period/formatters/base/PeriodBaseConfig.cpp" 
 )

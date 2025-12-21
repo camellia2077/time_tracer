@@ -7,10 +7,6 @@
 
 namespace TypUtils {
 
-/**
- * @class TypstFormattingStrategy
- * @brief 实现了 IFormattingStrategy 接口，用于生成 Typst 格式的字符串。
- */
 class TypstFormattingStrategy : public reporting::IFormattingStrategy {
 public:
     TypstFormattingStrategy(std::string font, int font_size)
@@ -21,7 +17,9 @@ public:
         const std::string& formatted_duration,
         double percentage) const override
     {
-        return std::format(R"(#text(font: "{}", size: {}pt)[= {}])",
+        // [核心修改] 将 = (Level 1) 改为 == (Level 2)
+        // 这样它们就会成为 "Project Breakdown" 的子项
+        return std::format(R"(#text(font: "{}", size: {}pt)[== {}])",
             m_font,
             m_font_size,
             std::format("{}: {} ({:.1f}%)",
