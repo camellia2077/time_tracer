@@ -6,25 +6,22 @@
 #include <vector>
 #include <optional>
 #include "reports/shared/types/ReportFormat.hpp"
+// [新增] 引入 ValidatorUtils 以使用 DateCheckMode
+#include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 class CliParser {
 public:
     explicit CliParser(const std::vector<std::string>& args);
 
-    // 获取主命令
     std::string get_command() const;
-
-    // 获取过滤掉全局选项后的参数列表
     const std::vector<std::string>& get_filtered_args() const;
-
-    // 获取特定位置的原始参数
     std::string get_raw_arg(size_t index) const;
 
-    // 解析输出路径选项
     std::optional<std::string> get_output_path() const;
-
-    // 解析报告格式选项
     ReportFormat get_report_format() const;
+
+    // [核心修改] 新增解析日期检查模式的方法
+    DateCheckMode get_date_check_mode() const;
 
 private:
     std::vector<std::string> raw_args_;

@@ -14,10 +14,9 @@ void ValidateOutput::execute(const CliParser& parser) {
     AppOptions options;
     options.validate_output = true;
 
-    for (size_t i = 3; i < filtered_args.size(); ++i) {
-        if (filtered_args[i] == "-edc" || filtered_args[i] == "--enable-day-check") {
-            options.enable_day_count_check = true;
-        }
-    }
+    // [核心修改] 使用新的参数解析逻辑
+    // 旧的 -edc 逻辑被替换
+    options.date_check_mode = parser.get_date_check_mode();
+
     file_handler_.run_preprocessing(filtered_args[2], options);
 }

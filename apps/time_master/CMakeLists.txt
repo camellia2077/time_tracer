@@ -1,7 +1,7 @@
 # --- START OF FILE CMakeLists.txt ---
 # src/CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
-project(TimeTrackerApp VERSION "0.2.0" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.3.25.3" LANGUAGES CXX)
 
 # ==================== [核心修改] ====================
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
