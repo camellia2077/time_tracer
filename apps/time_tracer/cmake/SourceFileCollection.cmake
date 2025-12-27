@@ -161,10 +161,6 @@ set(REPROCESSING_SOURCES
     # 验证实现
     "src/reprocessing/validator/output_json/pipelines/ActivityRules.cpp"
     "src/reprocessing/validator/output_json/pipelines/DateRules.cpp"
-    "src/reprocessing/validator/output_json/pipelines/BusinessRules.cpp"
-    "src/reprocessing/validator/output_json/pipelines/TimeRules.cpp"
-
-
 
     "src/reprocessing/validator/source_txt/facade/SourceFacade.cpp"
 
