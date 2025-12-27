@@ -22,8 +22,7 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/utils/format/TimeFormat.cpp"
     "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
     "src/reports/shared/formatters/latex/TexUtils.cpp"
-    # "src/reports/shared/formatters/markdown/MarkdownUtils.cpp"
-    # "src/reports/shared/formatters/typst/TypUtils.cpp"
+
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
     "src/reports/period/formatters/base/PeriodBaseConfig.cpp" 
 )
@@ -77,9 +76,12 @@ set(CONFIG_VALIDATOR
 
 # --- Time Master CLI Sources ---
 set(TIME_MASTER_CLI_SOURCES
+    "src/time_master_cli/CliHelp.cpp"
+
     "src/time_master_cli/CliController.cpp"
     "src/time_master_cli/CliParser.cpp"
     "src/time_master_cli/commands/export/Export.cpp"
+    
 
     "src/time_master_cli/commands/query/Query.cpp"
 

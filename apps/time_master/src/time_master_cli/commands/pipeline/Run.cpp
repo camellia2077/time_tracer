@@ -10,9 +10,14 @@ void Run::execute(const CliParser& parser) {
     if (args.size() != 3) {
         throw std::runtime_error("Command 'run-pipeline' requires exactly one source directory path argument.");
     }
-    file_handler_.run_full_pipeline_and_import(args[2]);
+
+    // [核心修改] 获取用户指定的检查模式，传递给 FileHandler
+    // 默认为 None (由 Parser 决定)，不再强制 Full
+    DateCheckMode mode = parser.get_date_check_mode();
+    
+    file_handler_.run_full_pipeline_and_import(args[2], mode);
 }
 
 std::string Run::get_help() const {
-    return "run-pipeline <path>\t\t Run full pipeline: validate, convert, validate output, and import to database.";
+    return "run-pipeline <path> [--date-check <mode>]\t Run full pipeline. Mode: continuity, full.";
 }

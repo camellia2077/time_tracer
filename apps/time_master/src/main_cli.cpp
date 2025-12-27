@@ -1,23 +1,20 @@
-// main_cli.cpp
-
-#include <iostream> // 为使用 std::cerr 添加
+// src/main_cli.cpp
+#include <iostream> 
 #include <print>
 #include <string>
 #include <vector>
 #include <stdexcept>
-
 
 // --- Windows-specific include for console functions ---
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
 
-#include "common/AnsiColors.hpp" // 使用宏定义的颜色代码
+#include "common/AnsiColors.hpp"
 #include "common/version.hpp"
 #include "time_master_cli/CliController.hpp"
-
-// --- Function Declarations ---
-void print_full_usage(const char* app_name);
+// [新增] 引入帮助模块头文件
+#include "time_master_cli/CliHelp.hpp"
 
 int main(int argc, char* argv[]) {
     // --- Console Setup (Windows Only) ---
@@ -34,20 +31,21 @@ int main(int argc, char* argv[]) {
     #endif
 
     std::vector<std::string> args(argv, argv + argc);
+    
+    // 如果没有参数，打印帮助
     if (args.size() < 2) {
         print_full_usage(args[0].c_str());
         return 1;
     }
 
-    // [修改 1] 识别并处理缩写命令
-    // 在将参数传递给控制器之前，将 "pre" 替换为 "preprocess"
+    // 处理缩写命令
     if (args[1] == "pre") {
         args[1] = "preprocess";
     }
 
     const std::string& command = args[1];
 
-    // --- Handle simple, top-level commands directly ---
+    // 处理全局 help/version 参数
     if (command == "-h" || command == "--help") {
         print_full_usage(args[0].c_str());
         return 0;
@@ -58,16 +56,13 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    // --- Delegate complex commands to the controller ---
+    // 将复杂命令委托给控制器
     try {
-        // 控制器接收的是已经“翻译”好的完整命令
         CliController controller(args);
         controller.execute();
     } catch (const std::exception& e) {
-        // 使用 std::println 将格式化的错误信息输出到 std::cerr
         std::println(std::cerr, "{}{}{}{}", RED_COLOR, "Error: ", RESET_COLOR, e.what());
         
-        // Optionally show usage for command-related errors
         if (std::string(e.what()).find("command") != std::string::npos || 
             std::string(e.what()).find("argument") != std::string::npos) {
              std::println("\nUse '{}' for more information.", args[0]);
@@ -76,64 +71,4 @@ int main(int argc, char* argv[]) {
     }
 
     return 0;
-}
-
-void print_full_usage(const char* app_name) {
-    std::println("{}TimeMaster{}: A command-line tool for time data pre-processing, import, and querying.\n",GREEN_COLOR,RESET_COLOR);
-    std::println("Usage: {} <command>[arguments...] [options...]\n", app_name);
-    
-    std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
-    std::println("  run-pipeline <path>\t\t Run full pipeline: validate, convert, validate output, and import to database.");
-    std::println("  query <type> <period>\t\t Query data from the database.");
-    std::println("  export <type> <period>\t Export reports from the database.\n");
-
-    // 预处理
-    std::println("{}{}{}", GREEN_COLOR, "--- Pre-processing Commands ---", RESET_COLOR);
-    std::println("  validate-source <path>\t Validates the source file format (e.g., .txt files) (read-only).");
-    std::println("  convert <path>\t\t Converts source files to the processed JSON format.");
-    std::println("  validate-output <path>\t Validates the processed JSON file format and logic (read-only).");
-    std::println("  \tNote: Validation commands do not produce output; the --output option has no effect on them.");
-    std::println("  Options for validate-output:");
-    std::println("    --enable-day-check, -edc\t Enable check for day completeness in a month.");
-    std::println("  Example: {} convert /path/to/logs", app_name);
-    std::println("  Example: {} validate-output /path/to/processed/log.json --enable-day-check\n", app_name);
-
-    // 数据库导入
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: import ---", RESET_COLOR);
-    std::println("  Usage: {} import <directory_path>", app_name);
-    std::println("  Example: {} import /path/to/output/Processed_logs/\n", app_name);
-    
-    // 查询与导出
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: query ---", RESET_COLOR);
-    std::println("  Usage: {} query <type> <argument> [options...]", app_name);
-    std::println("  Types:");
-    std::println("    daily <YYYYMMDD>\t\t Query statistics for a specific day.");
-    std::println("    monthly <YYYYMM>\t\t Query statistics for a specific month.");
-    std::println("    period <days>\t\t Query statistics for last N days. Can be a list (e.g., 7,30).");
-    std::println("  Options (for commands that produce output):");
-    std::println("    --format, -f <format>\t Specify output format (md, tex, typ). Default: md.");
-    std::println("  Example: {} query daily 20240101 --format tex\n", app_name);
-    
-    // 导出
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: export ---", RESET_COLOR);
-    std::println("  Usage: {} export <type> [argument] [options...]", app_name);
-    std::println("  Types:");
-    std::println("    daily <YYYYMMDD>\t\t Export a single daily report.");
-    std::println("    monthly <YYYYMM>\t\t Export a single monthly report.");
-    std::println("    period <days>\t\t Export a single period report (e.g., 7).");
-    std::println("    all-daily\t\t\t Export all daily reports.");
-    std::println("    all-monthly\t\t\t Export all monthly reports.");
-    std::println("    all-period <days_list>\t Export multiple period reports (e.g., 7,30,90).");
-    std::println("  Options (for commands that produce output):");
-    std::println("    --format, -f <format>\t Specify output format for query/export (md, tex, typ). Default: md.");
-    std::println("    --output, -o <path>\t\t Specify the directory for formatted reports (e.g., .md, .tex).");
-    std::println("\t\t\t\t All program outputs (database, converted files) will be placed");
-    std::println("\t\t\t\t in the parent directory of this path.");
-    std::println("\t\t\t\t Default: [program_location]/output/exported_files");
-    std::println("  Example: {} export daily 20240115 -f tex -o /my/reports/exported_files", app_name);
-    std::println("  Example: {} export all-monthly -f tex\n", app_name);
-
-    std::println("{}{}{}", GREEN_COLOR, "--- Other Options ---", RESET_COLOR);
-    std::println("  --help, -h\t\t\t Show this help message.");
-    std::println("  --version, -v\t\t\t Show program version.");
 }

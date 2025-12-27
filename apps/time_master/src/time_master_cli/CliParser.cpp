@@ -27,18 +27,17 @@ std::string CliParser::get_raw_arg(size_t index) const {
 }
 
 void CliParser::parse() {
-    // 这个辅助函数现在是 CliParser 的一部分
     filtered_args_ = filter_global_options(raw_args_);
 }
 
-// 核心修改：所有与参数解析相关的函数都移动到这里
 std::vector<std::string> CliParser::filter_global_options(const std::vector<std::string>& original_args) {
     std::vector<std::string> filtered_args;
     for (size_t i = 0; i < original_args.size(); ++i) {
         const auto& arg = original_args[i];
-        if (arg == "-o" || arg == "--output" || arg == "-f" || arg == "--format") {
+        // [修改] 增加 --date-check 到全局过滤列表，防止它干扰主参数
+        if (arg == "-o" || arg == "--output" || arg == "-f" || arg == "--format" || arg == "--date-check") {
             if (i + 1 < original_args.size()) {
-                i++; // 跳过选项的值
+                i++; 
             }
             continue;
         }
@@ -71,7 +70,7 @@ ReportFormat CliParser::get_report_format() const {
         if (it_format != raw_args_.end() && std::next(it_format) != raw_args_.end()) {
             format_str = *std::next(it_format);
         } else {
-            return ReportFormat::Markdown; // 默认值
+            return ReportFormat::Markdown; 
         }
     }
 
@@ -80,4 +79,21 @@ ReportFormat CliParser::get_report_format() const {
     if (format_str == "typ") return ReportFormat::Typ;
      
     throw std::runtime_error("Unsupported format specified: '" + format_str + "'. Supported formats: md, tex, typ.");
+}
+
+// [核心修改] 实现获取日期检查模式的逻辑
+DateCheckMode CliParser::get_date_check_mode() const {
+    auto it = std::find(raw_args_.begin(), raw_args_.end(), "--date-check");
+    if (it != raw_args_.end() && std::next(it) != raw_args_.end()) {
+        std::string mode_str = *std::next(it);
+        if (mode_str == "continuity") {
+            return DateCheckMode::Continuity;
+        } else if (mode_str == "full" || mode_str == "strict") {
+            return DateCheckMode::Full;
+        } else {
+             throw std::runtime_error("Invalid argument for --date-check: '" + mode_str + "'. Expected 'continuity' or 'full'.");
+        }
+    }
+    // 默认不开启检查
+    return DateCheckMode::None;
 }

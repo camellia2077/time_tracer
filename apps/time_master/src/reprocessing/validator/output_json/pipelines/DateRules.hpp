@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 // 独立函数，负责验证日期的连续性
-void validateDateContinuity(const nlohmann::json& days_array, std::set<Error>& errors);
+// [核心修改] 增加 mode 参数
+void validateDateContinuity(const nlohmann::json& days_array, std::set<Error>& errors, DateCheckMode mode);
 
 #endif // DATE_RULES_HPP

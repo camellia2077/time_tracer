@@ -1,31 +1,37 @@
 // reprocessing/validator/FileValidator.cpp
 #include "FileValidator.hpp"
-
 #include "reprocessing/validator/source_txt/facade/SourceFacade.hpp"
 #include "reprocessing/validator/output_json/facade/JsonValidator.hpp"
+#include "reprocessing/converter/config/ConverterConfig.hpp" 
 
-// [修改] 构造函数现在加载并存储 ConverterConfig
-FileValidator::FileValidator(const std::string& main_config_path) {
-    converter_config_ = std::make_unique<ConverterConfig>();
-    // 如果加载失败，converter_config_ 将处于未完全初始化的状态，
-    // 后续的验证会因为缺少关键字而自然失败。
+// [修复] 必须完整实现构造函数，不能省略
+FileValidator::FileValidator(const std::string& main_config_path) 
+    : converter_config_(std::make_unique<ConverterConfig>()) {
+    // 加载配置
     converter_config_->load(main_config_path);
 }
 
+// [核心修改] 参数类型变更
 bool FileValidator::validate(const std::string& file_path, 
                              ValidatorType type, 
                              std::set<Error>& errors, 
-                             bool enable_day_count_check_for_output) {
+                             DateCheckMode date_check_mode_for_output) {
     errors.clear();
 
     switch (type) {
         case ValidatorType::Source: {
-            // [修改] 使用存储的 converter_config_ 来初始化 SourceFacade
-            SourceFacade source_validator(*converter_config_);
-            return source_validator.validate(file_path, errors);
+            // SourceFacade 需要 ConverterConfig 的引用
+            if (converter_config_) {
+                SourceFacade source_validator(*converter_config_);
+                return source_validator.validate(file_path, errors);
+            } else {
+                 errors.insert({0, "Internal Error: Converter configuration not initialized.", ErrorType::Logical});
+                 return false;
+            }
         }
         case ValidatorType::JsonOutput: {
-            JsonValidator json_validator(enable_day_count_check_for_output);
+            // [核心修改] 传递枚举值
+            JsonValidator json_validator(date_check_mode_for_output);
             return json_validator.validate(file_path, errors);
         }
         default:

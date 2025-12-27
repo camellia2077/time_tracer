@@ -7,6 +7,13 @@
 #include <set>
 #include <map>
 
+// --- [核心修改] 新增日期检查模式枚举 ---
+enum class DateCheckMode {
+    None,       // 不检查
+    Continuity, // 只检查连续性 (1号到当前存在的最大日期)
+    Full        // 检查完整性 (1号到月底)
+};
+
 // 共享的错误类型枚举
 enum class ErrorType {
     FileAccess,
@@ -21,8 +28,8 @@ enum class ErrorType {
     Source_NoDateAtStart,
     UnrecognizedActivity,
     Source_InvalidLineFormat,
-    Source_MissingYearHeader, // 源文件缺少年份标题,例如y2025
-    Json_TooFewActivities // 确保一天至少有两个活动
+    Source_MissingYearHeader, 
+    Json_TooFewActivities 
 };
 
 // 共享的错误结构体
@@ -31,7 +38,6 @@ struct Error {
     std::string message;
     ErrorType type;
 
-    // 重载小于运算符，以便放入 std::set 中
     bool operator<(const Error& other) const {
         if (line_number != other.line_number) return line_number < other.line_number;
         if (type != other.type) return type < other.type;
@@ -39,11 +45,6 @@ struct Error {
     }
 };
 
-// --- 共享函数 ---
-
-// 打印分组的错误信息
 void printGroupedErrors(const std::string& filename, const std::set<Error>& errors);
-
-// --- [核心修改] trim 函数的声明已从此文件移除 ---
 
 #endif // VALIDATOR_UTILS_HPP

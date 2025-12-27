@@ -1,8 +1,32 @@
-tex文件无法编译，看看tex的结构有什么问题
+高优先级
+0 apps/time_master改名time_tracer
+
+1 
+convert命令中，应该把json从内存中保存到本地，以及转化为json这两个解耦，让action_handler来决定是否要保存到本地。
+
+2 json自定义格式化输出的标题，输出为true ,不输出为false
+
+3 看一下每个活动的解析，存储，以及数据库中的数据结构有没有可以优化的地方
+    gemini对话"递归转迭代优化项目树格式化"
+    
+4 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
+gemini "CMake 自动编译日期实现"
 
 
-写文档，mapping_config.json只支持替换同义词。
 
+中优先级
+-1
+import的时候要检查是否为所需的 json文件，以免用户import了txt文件
+
+0
+支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
+这个功能应该只在全流程命令下实现？
+
+1 写文档，mapping_config.json只支持替换同义词。
+interval_processor_config.json不要和mapping_config.json搞混了。
+写文档，说明怎么用
+
+2
 如何把检验dll这些的结果，用符合编程规范的方式输出，以便以后编写gui的时候也能后台看见
 检验dll是否缺失的环节，是否可以默认不打印，出问题才打印？
 例如这些内容
@@ -28,42 +52,77 @@ tex文件无法编译，看看tex的结构有什么问题
 [Validator] -- Found required plugin: reports_shared
 [Validator] All required plugins were found.
 
-
-interval_processor_config.json不要和mapping_config.json搞混了。
-
-
-写文档，说明怎么用
-输入数据
-1先对txt进行数据验证
-    time_tracker_cli.exe validate-source c:\Base1\my_program\my_time_master\data\2025\2025_12.txt
-
-2 convert(json)
-3 import
-
-导出
-time_master_cli export daily 20240101 -o /你的/自定义/路径
-
-
-修改，检查每个月时间是否连续，完整的功能放到json中，同时支持命令行，命令行优先级＞json配置
-命令行增加是否生成中间数据json文件，json配置中增加这个功能
-
-
-"根据提供的代码实现，目前 run-pipeline 命令无法通过命令行参数直接关闭日期检查。"
-
-
-import的时候要检查是否为所需的 json文件，以免用户import了txt文件
-
-
+3 
 根据你提供的代码逻辑，目前的程序设计不支持通过一个命令一次性导出多种格式（例如同时导出 typ 和 md）。
 比如日查询的时候。
 
 
-看一下每个活动的解析，存储，以及数据库中的数据结构有没有可以优化的地方
+4
+修改，检查每个月时间是否连续，完整的功能放到json配置中，
+同时支持命令行来修改，每个月时间是否连续，让全流程支持是否启动日期连续性检查
+命令行优先级＞json配置
+
+5
+命令行增加是否生成中间数据json文件，json配置中增加这个功能
+这个功能是是否把txt转换为json后，把json存储到本地
+
+6
+gemini "项目目录与json配置改进建议"
+
+
+7
+导出的时候
+time_master_cli export daily 20240101 -o /你的/自定义/路径
+不知道这个功能有没有实现
+
+
+8
+支持某个关键词的查询？不知道有没有实现
 
 
 
 
-支持某个关键词的查询
+
+低优先级
+1
+tex文件无法编译，看看tex的结构有什么问题
+
+
+未来
+1 
+第一步（必须做）： 将所有 std::cout/cerr 替换为 ILogger 回调。这能解决“其他平台看不见日志”的问题。
+
+第二步（优化）： 将“业务结果”（如错误列表、耗时统计）作为函数的返回值返回，而不是在函数内部处理（打印）。让调用者决定如何展示这些数据。
+
+这会使你的 reprocessing 模块变成一个纯粹的库（Library），可以被任何程序调用。
+
+
+为了实现彻底的模块化并支持多平台（如手机 App、GUI、后台服务），核心业务逻辑模块（如 reprocessing 和 PipelineManager）绝对不能包含 std::cout、std::cerr 或 printf。
+
+当前代码中的 std::cout 是硬编码的控制台输出，这在手机 App（没有控制台）或 GUI（需要弹窗或进度条）中是完全不可见的，甚至会导致崩溃或资源浪费。
+
+如何解耦？（架构改造方案）
+你需要将“发生什么（Logic）”与“如何通知用户（Presentation）”分离开。通常有两种互补的方法来实现这一点：
+
+方法 1：引入抽象日志接口 (Dependency Injection)
+这是最标准的方法。让 reprocessing 模块不依赖具体的 iostream，而是依赖一个抽象的接口。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 支持txt多行注释(c++风格和python风格)
 
