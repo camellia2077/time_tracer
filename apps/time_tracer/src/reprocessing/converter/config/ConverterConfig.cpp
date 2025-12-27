@@ -37,10 +37,14 @@ bool ConverterConfig::load(const std::string& main_config_path) {
 
     try {
         // 从主配置文件加载基本设置
-        if (main_json.contains("remark_prefix")) remark_prefix_ = main_json["remark_prefix"].get<std::string>();
-        if (main_json.contains("header_order")) header_order_ = main_json["header_order"].get<std::vector<std::string>>();
-        if (main_json.contains("wake_keywords")) wake_keywords_ = main_json["wake_keywords"].get<std::vector<std::string>>();
-        if (main_json.contains("topParentMapping")) topParentMapping_ = main_json["topParentMapping"].get<std::unordered_map<std::string, std::string>>();
+        if (main_json.contains("remark_prefix")) 
+            remark_prefix_ = main_json["remark_prefix"].get<std::string>();
+        if (main_json.contains("header_order")) 
+            header_order_ = main_json["header_order"].get<std::vector<std::string>>();
+        if (main_json.contains("wake_keywords")) 
+            wake_keywords_ = main_json["wake_keywords"].get<std::vector<std::string>>();
+        if (main_json.contains("top_parent_mapping")) 
+            topParentMapping_ = main_json["top_parent_mapping"].get<std::unordered_map<std::string, std::string>>();
 
         // [核心修改] 加载拆分出去的配置文件
         if (main_json.contains("mappings_config_path")) {
