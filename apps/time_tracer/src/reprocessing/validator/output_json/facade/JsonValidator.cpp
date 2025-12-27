@@ -4,10 +4,8 @@
 #include <iostream>
 #include "common/AnsiColors.hpp"
 
-// [核心修正] 引入所有独立的验证模块
 #include "reprocessing/validator/output_json/pipelines/DateRules.hpp"
-#include "reprocessing/validator/output_json/pipelines/TimeRules.hpp"
-#include "reprocessing/validator/output_json/pipelines/BusinessRules.hpp"
+// [删除] #include "reprocessing/validator/output_json/pipelines/TimeRules.hpp" 
 #include "reprocessing/validator/output_json/pipelines/ActivityRules.hpp"
 
 using json = nlohmann::json;
@@ -36,13 +34,9 @@ bool JsonValidator::validate(const std::string& file_path, std::set<Error>& erro
         return false;
     }
 
-
     validateDateContinuity(days_array, errors, date_check_mode_);
 
-
     for (const auto& day_object : days_array) {
-        validateTimeContinuity(day_object, errors);
-        validateHighLevelRules(day_object, errors);
         validateActivityCount(day_object, errors);
     }
 
