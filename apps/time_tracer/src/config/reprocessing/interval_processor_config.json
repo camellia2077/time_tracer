@@ -3,7 +3,7 @@
     "duration_rules_config_path": "duration_rules.json",
 
     "top_parent_mapping": {
-        "study": "mystudy"
+        "study": "study"
     },
     "header_order": [
         "Date:",
