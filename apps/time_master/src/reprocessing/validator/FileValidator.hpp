@@ -3,10 +3,10 @@
 #define FILE_VALIDATOR_HPP
 
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
-#include "reprocessing/converter/config/ConverterConfig.hpp" // [新增]
+#include "reprocessing/converter/config/ConverterConfig.hpp"
 #include <string>
 #include <set>
-#include <memory> // [新增]
+#include <memory>
 
 enum class ValidatorType {
     Source,
@@ -15,16 +15,15 @@ enum class ValidatorType {
 
 class FileValidator {
 public:
-    // [修改] 构造函数仍然接收主配置文件路径
     FileValidator(const std::string& main_config_path);
 
+    // [核心修改] 最后一个参数类型变更为 DateCheckMode
     bool validate(const std::string& file_path, 
                   ValidatorType type, 
                   std::set<Error>& errors, 
-                  bool enable_day_count_check_for_output = false);
+                  DateCheckMode date_check_mode_for_output = DateCheckMode::None);
 
 private:
-    // [修改] 存储加载好的 ConverterConfig
     std::unique_ptr<ConverterConfig> converter_config_;
 };
 

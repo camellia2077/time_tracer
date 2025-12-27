@@ -37,10 +37,12 @@ void FileHandler::run_preprocessing(const std::string& input_path, const AppOpti
     if (options.validate_source && !pipeline.validateSourceFiles()) {
         throw std::runtime_error("源文件验证失败。");
     }
-    if (options.convert && !pipeline.convertFiles()) { // Assuming convertFiles doesn't need a path
+    if (options.convert && !pipeline.convertFiles()) { 
         throw std::runtime_error("文件转换失败。");
     }
-    if (options.validate_output && !pipeline.validateOutputFiles(options.enable_day_count_check)) {
+    
+    // [核心修改] 使用 options.date_check_mode
+    if (options.validate_output && !pipeline.validateOutputFiles(options.date_check_mode)) {
         throw std::runtime_error("输出文件验证失败。");
     }
     
@@ -67,7 +69,8 @@ void FileHandler::run_database_import(const std::string& processed_path_str) {
     std::cout << "导入过程结束。" << std::endl;
 }
 
-void FileHandler::run_full_pipeline_and_import(const std::string& source_path) {
+// [核心修改] 接收并传递 date_check_mode
+void FileHandler::run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode) {
     std::cout << "\n--- 开始完整流水线处理 ---" << std::endl;
     
     DBManager db_manager(db_path_);
@@ -75,7 +78,8 @@ void FileHandler::run_full_pipeline_and_import(const std::string& source_path) {
 
     PipelineManager pipeline(app_config_, output_root_path_);
     
-    if (auto processed_path = pipeline.run(source_path)) {
+    // 传递参数到 pipeline.run
+    if (auto processed_path = pipeline.run(source_path, date_check_mode)) {
         run_database_import(processed_path->string());
         std::cout << GREEN_COLOR << "\n成功: 完整流水线处理完毕并已导入数据。" << RESET_COLOR << std::endl;
         std::cout << "所有输出文件位于: " << fs::absolute(output_root_path_) << std::endl;

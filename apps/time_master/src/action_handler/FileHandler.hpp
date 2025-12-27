@@ -4,7 +4,9 @@
 
 #include <string>
 #include <filesystem>
-#include "common/AppConfig.hpp" // For AppConfig and AppOptions
+#include "common/AppConfig.hpp" 
+// [新增] 引入 ValidatorUtils
+#include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 namespace fs = std::filesystem;
 
@@ -15,7 +17,10 @@ public:
 
     void run_preprocessing(const std::string& input_path, const AppOptions& options);
     void run_database_import(const std::string& processed_path_str);
-    void run_full_pipeline_and_import(const std::string& source_path);
+    
+    // [核心修改] 增加 DateCheckMode 参数
+    void run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode);
+    
     const AppConfig& get_config() const;
 
 private:

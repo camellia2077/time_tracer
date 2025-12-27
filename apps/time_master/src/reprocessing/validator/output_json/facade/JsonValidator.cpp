@@ -12,8 +12,8 @@
 
 using json = nlohmann::json;
 
-JsonValidator::JsonValidator(bool enable_day_count_check)
-    : check_day_count_enabled_(enable_day_count_check) {}
+JsonValidator::JsonValidator(DateCheckMode date_check_mode)
+    : date_check_mode_(date_check_mode) {}
 
 bool JsonValidator::validate(const std::string& file_path, std::set<Error>& errors) {
     errors.clear();
@@ -36,10 +36,9 @@ bool JsonValidator::validate(const std::string& file_path, std::set<Error>& erro
         return false;
     }
 
-    // [核心逻辑] 依次调用各个独立的验证函数
-    if (check_day_count_enabled_) {
-        validateDateContinuity(days_array, errors);
-    }
+
+    validateDateContinuity(days_array, errors, date_check_mode_);
+
 
     for (const auto& day_object : days_array) {
         validateTimeContinuity(day_object, errors);
