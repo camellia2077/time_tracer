@@ -1,3 +1,4 @@
+﻿// reports/period/formatters/md/PeriodMdConfig.hpp
 #ifndef PERIOD_MD_CONFIG_HPP
 #define PERIOD_MD_CONFIG_HPP
 

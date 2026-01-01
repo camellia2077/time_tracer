@@ -78,6 +78,7 @@ void Output::write(std::ostream& outputStream, const std::vector<InputData>& day
         generated_stats_obj["recreation_zhihu_time"] = day.generatedStats.recreationZhihuTime;
         generated_stats_obj["recreation_bilibili_time"] = day.generatedStats.recreationBilibiliTime;
         generated_stats_obj["recreation_douyin_time"] = day.generatedStats.recreationDouyinTime;
+        generated_stats_obj["total_study_time"] = day.generatedStats.studyTime;
         
         day_obj["generated_stats"] = generated_stats_obj;
 

@@ -36,6 +36,11 @@
             "show": true
         },
         {
+            "label": "Study Time", 
+            "db_column": "study_time",  
+            "show": true
+        },
+        {
             "label": "Total Exercise Time",
             "db_column": "total_exercise_time",
             "show": true,

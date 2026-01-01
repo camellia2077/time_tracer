@@ -31,7 +31,11 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         day_data.recreation_zhihu_time = generated_stats.value("recreation_zhihu_time", 0);
         day_data.recreation_bilibili_time = generated_stats.value("recreation_bilibili_time", 0);
         day_data.recreation_douyin_time = generated_stats.value("recreation_douyin_time", 0);
+        
+        // [新增] 从 JSON 解析学习时间
+        day_data.study_time = generated_stats.value("total_study_time", 0);
 
+        
         if (day_data.date.length() == 8) {
             day_data.year = std::stoi(day_data.date.substr(0, 4));
             day_data.month = std::stoi(day_data.date.substr(4, 2));

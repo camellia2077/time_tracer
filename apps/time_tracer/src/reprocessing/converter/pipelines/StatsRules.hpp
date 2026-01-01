@@ -14,6 +14,7 @@ struct StatsRule {
 
 namespace StatsRules {
     constexpr StatsRule rules[] = {
+        {"study", &GeneratedStats::studyTime},
         {"exercise", &GeneratedStats::totalExerciseTime},
         {"exercise_cardio", &GeneratedStats::cardioTime},
         {"exercise_anaerobic", &GeneratedStats::anaerobicTime},
