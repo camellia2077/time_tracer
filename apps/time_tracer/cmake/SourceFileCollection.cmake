@@ -47,7 +47,7 @@ set_target_properties(reports_shared PROPERTIES
 # 它会链接 nlohmann_json 等
 setup_project_target(reports_shared)
 
-set(CONFIG_VALIDATOR
+set(CONFIG_VALIDATOR_SOURCES
     # 顶层外观
     "src/config_validator/facade/ConfigFacade.cpp"
 
@@ -75,21 +75,21 @@ set(CONFIG_VALIDATOR
 )
 
 # --- Time Master CLI Sources ---
-set(TIME_MASTER_CLI_SOURCES
-    "src/time_master_cli/CliHelp.cpp"
+set(CLI_SOURCES
+    "src/cli/CliHelp.cpp"
 
-    "src/time_master_cli/CliController.cpp"
-    "src/time_master_cli/CliParser.cpp"
-    "src/time_master_cli/commands/export/Export.cpp"
+    "src/cli/CliController.cpp"
+    "src/cli/CliParser.cpp"
+    "src/cli/commands/export/Export.cpp"
     
 
-    "src/time_master_cli/commands/query/Query.cpp"
+    "src/cli/commands/query/Query.cpp"
 
-    "src/time_master_cli/commands/pipeline/Convert.cpp"
-    "src/time_master_cli/commands/pipeline/Import.cpp"
-    "src/time_master_cli/commands/pipeline/Run.cpp"
-    "src/time_master_cli/commands/pipeline/ValidateOutput.cpp"
-    "src/time_master_cli/commands/pipeline/ValidateSource.cpp"
+    "src/cli/commands/pipeline/Convert.cpp"
+    "src/cli/commands/pipeline/Import.cpp"
+    "src/cli/commands/pipeline/Run.cpp"
+    "src/cli/commands/pipeline/ValidateOutput.cpp"
+    "src/cli/commands/pipeline/ValidateSource.cpp"
 )
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES
@@ -185,12 +185,16 @@ set(ACTION_HANDLER_SOURCES
     "src/action_handler/database/DBManager.cpp"
     "src/action_handler/file/PipelineManager.cpp"
 
+    # Pipeline steps文件
+    "src/action_handler/file/steps/FileCollector.cpp"
+    "src/action_handler/file/steps/SourceValidatorStep.cpp"
+    "src/action_handler/file/steps/ConverterStep.cpp"
+    "src/action_handler/file/steps/OutputValidatorStep.cpp"
+
     "src/action_handler/reporting/Exporter.cpp"
     "src/action_handler/reporting/ExportUtils.cpp"
     "src/action_handler/reporting/ReportFileManager.cpp"
     "src/action_handler/reporting/ReportGenerator.cpp"
-    
-
 )
 
 message(STATUS "Source files collected explicitly.")

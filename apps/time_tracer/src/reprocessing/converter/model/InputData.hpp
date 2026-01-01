@@ -39,6 +39,7 @@ struct GeneratedStats {
     int recreationZhihuTime = 0;
     int recreationBilibiliTime = 0;
     int recreationDouyinTime = 0;
+    int studyTime = 0;//study的时间
 };
 
 struct InputData {

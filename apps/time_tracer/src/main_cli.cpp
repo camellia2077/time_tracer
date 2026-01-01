@@ -1,4 +1,4 @@
-// src/main_cli.cpp
+﻿// main_cli.cpp
 #include <iostream> 
 #include <print>
 #include <string>
@@ -12,9 +12,9 @@
 
 #include "common/AnsiColors.hpp"
 #include "common/version.hpp"
-#include "time_master_cli/CliController.hpp"
+#include "cli/CliController.hpp"
 // [新增] 引入帮助模块头文件
-#include "time_master_cli/CliHelp.hpp"
+#include "cli/CliHelp.hpp"
 
 int main(int argc, char* argv[]) {
     // --- Console Setup (Windows Only) ---
@@ -31,6 +31,19 @@ int main(int argc, char* argv[]) {
     #endif
 
     std::vector<std::string> args(argv, argv + argc);
+
+    // 彩蛋逻辑：输入 tracer 时触发
+    if (args.size() > 1 && args[1] == "tracer") {
+        // 使用 std::println 配合 ANSI 颜色宏保持风格一致
+        std::println("\n{}{}{}\n", CYAN_COLOR, "  \"Cheers, love! The timetracer is here.\"", RESET_COLOR);
+        return 0;
+    }
+    if (args.size() > 1 && (args[1] == "motto" || args[1] == "zen")) {
+        // 使用引用块的样式打印，更有格调
+        std::println(""); // 空一行
+        std::println("{}  \"Trace your time, log your life.\"{}\n", CYAN_COLOR, RESET_COLOR);
+        return 0;
+    }
     
     // 如果没有参数，打印帮助
     if (args.size() < 2) {
@@ -41,6 +54,11 @@ int main(int argc, char* argv[]) {
     // 处理缩写命令
     if (args[1] == "pre") {
         args[1] = "preprocess";
+    }
+
+    // [新增] 为 run-pipeline 添加 blink 别名
+    if (args[1] == "blink") {
+        args[1] = "run-pipeline";
     }
 
     const std::string& command = args[1];

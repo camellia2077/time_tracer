@@ -76,13 +76,12 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
     sqlite3_stmt* stmt;
-    // [核心修改]
-    // 1. 移除了 AS 别名，确保列名与数据库一致，以便 data.stats 中的 key 与 JSON config 中的 db_column 对应。
-    // 2. 选择所有可能用到的统计字段。
+    // [核心修改] 在 SELECT 列表中加入 study_time
     std::string sql = "SELECT "
                       "sleep_total_time, "
                       "total_exercise_time, anaerobic_time, cardio_time, "
                       "grooming_time, "
+                      "study_time, " // <--- 新增查询字段
                       "recreation_time, recreation_zhihu_time, recreation_bilibili_time, recreation_douyin_time "
                       "FROM days WHERE date = ?;";
 
@@ -97,7 +96,7 @@ void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
                     if (sqlite3_column_type(stmt, i) != SQLITE_NULL) {
                         val = sqlite3_column_int64(stmt, i);
                     }
-                    // [核心修改] 动态将数据库列名映射到 stats Map 中
+                    // 自动存入 data.stats Map，Key 为列名 (如 "study_time")
                     data.stats[std::string(col_name)] = val;
                 }
             }

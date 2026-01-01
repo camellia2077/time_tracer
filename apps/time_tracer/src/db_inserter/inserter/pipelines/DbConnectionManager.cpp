@@ -24,6 +24,7 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db_(nullp
                 "gaming_time INTEGER, "
                 "grooming_time INTEGER, "
                 "toilet_time INTEGER, "
+                "study_time INTEGER, "
                 "sleep_night_time INTEGER, "
                 "sleep_day_time INTEGER, "
                 "sleep_total_time INTEGER, "
