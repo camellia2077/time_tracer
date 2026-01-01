@@ -1,210 +1,52 @@
 // action_handler/file/PipelineManager.cpp
 #include "PipelineManager.hpp"
+#include "action_handler/file/PipelineContext.hpp"
+#include "steps/FileCollector.hpp"
+#include "steps/SourceValidatorStep.hpp"
+#include "steps/ConverterStep.hpp"
+#include "steps/OutputValidatorStep.hpp"
+#include <iostream> 
 #include "common/AnsiColors.hpp"
-#include "file_handler/FileUtils.hpp"
-#include "reprocessing/converter/pipelines/Output.hpp"
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <map>
-
-#include "reprocessing/validator/FileValidator.hpp"
-#include "reprocessing/validator/common/ValidatorUtils.hpp"
-#include "reprocessing/converter/config/ConverterConfig.hpp"
-
-
-namespace fs = std::filesystem;
 
 PipelineManager::PipelineManager(const AppConfig& config, const fs::path& output_root)
-    : app_config_(config), processor_(config), output_root_(output_root) {}
+    : app_config_(config), output_root_(output_root) {}
 
-// [核心修改] 接收并传递 date_check_mode
-std::optional<fs::path> PipelineManager::run(const std::string& input_path, DateCheckMode date_check_mode) {
-    fs::path input_root_path(input_path);
+// [核心修改] 根据 options 动态决定执行哪些步骤
+std::optional<fs::path> PipelineManager::run(const std::string& input_path, const AppOptions& options) {
+    // 1. 初始化上下文
+    PipelineContext context(app_config_, output_root_);
+    context.input_root = input_path;
+    context.date_check_mode = options.date_check_mode;
 
-    // 将 date_check_mode 传给 validateOutputFiles
-    if (!collectFiles(input_path) || !validateSourceFiles() || !convertFiles() || !validateOutputFiles(date_check_mode)) {
-        return std::nullopt;
+    // 2. 确定要收集的文件扩展名
+    std::string extension = ".txt";
+    // 逻辑复刻自原本的 FileHandler：如果只验证输出且不转换，则收集 .json
+    if (options.validate_output && !options.convert && !options.validate_source) {
+        extension = ".json";
     }
 
-    return output_root_ / "Processed_Date";
-}
+    // 3. 执行：收集文件
+    FileCollector collector;
+    if (!collector.execute(context, extension)) return std::nullopt;
 
-bool PipelineManager::collectFiles(const std::string& input_path, const std::string& extension) {
-    input_root_ = fs::path(input_path);
-    if (!fs::exists(input_root_)) {
-        std::cerr << RED_COLOR << "错误: 输入的路径不存在: " << input_path << RESET_COLOR << std::endl;
-        return false;
-    }
-    files_to_process_.clear();
-    generated_output_files_.clear();
-    files_to_process_ = FileUtils::find_files_by_extension_recursively(input_root_, extension);
-
-    // [逻辑确认] 如果输入本身就是一个符合后缀的文件，也加入列表
-    if (fs::is_regular_file(input_root_) && input_root_.extension() == extension) {
-        // 避免重复添加（find_files_by_extension_recursively 有时可能不包含根文件，取决于实现细节，这里做个双保险）
-        if (std::find(files_to_process_.begin(), files_to_process_.end(), input_root_) == files_to_process_.end()) {
-            files_to_process_.push_back(input_root_);
-        }
-    }
-    if (files_to_process_.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 在指定路径下没有找到 " << extension << " 文件。" << RESET_COLOR << std::endl;
-        return false;
-    }
-    std::cout << "信息: 成功收集到 " << files_to_process_.size() << " 个待处理文件 (" << extension << ")." << std::endl;
-    return true;
-}
-
-bool PipelineManager::validateSourceFiles() {
-    const std::string current_operation_name = "validateSourceFiles";
-    std::cout << "\n--- 阶段: 检验源文件 ---" << std::endl;
-    if (files_to_process_.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供检验。" << RESET_COLOR << std::endl;
-        return true;
-    }
-    bool all_ok = true;
-    double total_validation_time_ms = 0.0;
-
-    for (const auto& file : files_to_process_) {
-        // [修改 1] 开始计时
-        auto start_time = std::chrono::steady_clock::now();
-
-        AppOptions opts;
-        opts.validate_source = true;
-        
-        // 执行处理
-        ProcessingResult result = processor_.processFile(file, opts);
-        
-        // [修改 2] 结束计时并累加，不再使用 result.timings
-        auto end_time = std::chrono::steady_clock::now();
-        total_validation_time_ms += std::chrono::duration<double, std::milli>(end_time - start_time).count();
-
-        if (!result.success) all_ok = false;
+    // 4. 执行：源文件验证 (按需)
+    if (options.validate_source) {
+        SourceValidatorStep source_validator;
+        if (!source_validator.execute(context)) return std::nullopt;
     }
 
-    printTimingStatistics(current_operation_name, total_validation_time_ms);
-    std::cout << (all_ok ? GREEN_COLOR : RED_COLOR) << "源文件检验阶段 " << (all_ok ? "全部通过" : "存在失败项") << "。" << RESET_COLOR << std::endl;
-    return all_ok;
-}
-
-bool PipelineManager::convertFiles() {
-    const std::string current_operation_name = "convertFiles";
-    std::cout << "\n--- 阶段: 转换文件 ---" << std::endl;
-    if (files_to_process_.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供转换。" << RESET_COLOR << std::endl;
-        return false;
+    // 5. 执行：转换 (按需)
+    if (options.convert) {
+        ConverterStep converter(app_config_);
+        if (!converter.execute(context)) return std::nullopt;
     }
 
-    auto start_time = std::chrono::steady_clock::now();
-
-    std::stringstream combined_stream;
-    for (const auto& source_file : files_to_process_) {
-        std::ifstream file_stream(source_file);
-        if (file_stream) {
-            combined_stream << file_stream.rdbuf();
-        }
-    }
-    
-    std::vector<InputData> all_processed_days = processor_.convertStreamToData(combined_stream);
-    if (all_processed_days.empty()) {
-        std::cerr << RED_COLOR << "文件转换失败，没有生成任何数据。" << RESET_COLOR << std::endl;
-        return false;
+    // 6. 执行：输出文件验证 (按需)
+    // OutputValidatorStep 内部已经有逻辑：如果没有生成新文件(未转换)，则验证收集到的源文件
+    if (options.validate_output) {
+        OutputValidatorStep output_validator;
+        if (!output_validator.execute(context)) return std::nullopt;
     }
 
-    std::map<std::string, std::vector<InputData>> monthly_data;
-    for (const auto& day : all_processed_days) {
-        if (day.date.length() >= 6) {
-            std::string year_month = day.date.substr(0, 4) + "_" + day.date.substr(4, 2);
-            monthly_data[year_month].push_back(day);
-        }
-    }
-
-    ConverterConfig converter_config;
-    if (!converter_config.load(app_config_.interval_processor_config_path)) {
-        std::cerr << RED_COLOR << "错误: 无法加载转换器配置，文件写入中止。" << RESET_COLOR << std::endl;
-        return false;
-    }
-    
-    Output generator;
-    fs::path output_dir_base = output_root_ / "Processed_Date";
-
-    for (const auto& pair : monthly_data) {
-        const std::string& year_month = pair.first;
-        const std::vector<InputData>& month_days = pair.second;
-        
-        std::string year = year_month.substr(0, 4);
-        fs::path month_output_dir = output_dir_base / year;
-        fs::create_directories(month_output_dir);
-
-        fs::path output_file_path = month_output_dir / (year_month + ".json");
-        std::ofstream outFile(output_file_path);
-        if (!outFile.is_open()) {
-            std::cerr << RED_COLOR << "错误: 无法创建输出文件: " << output_file_path << RESET_COLOR << std::endl;
-            continue;
-        }
-        
-        generator.write(outFile, month_days, converter_config); 
-        generated_output_files_.push_back(output_file_path);
-    }
-    
-    auto end_time = std::chrono::steady_clock::now();
-    std::chrono::duration<double, std::milli> duration = end_time - start_time;
-    printTimingStatistics(current_operation_name, duration.count());
-    
-    std::cout << GREEN_COLOR << "文件转换阶段 全部成功。" << RESET_COLOR << std::endl;
-    return true;
-}
-
-// [核心修改] 
-// 实现逻辑：如果 generated_output_files_ 存在（说明刚刚进行了转换），则验证它们。
-// 否则（说明是单独运行 validate-output），验证 files_to_process_（这些文件已经在 collectFiles 阶段被收集，且后缀已由 FileHandler 指定为 .json）。
-bool PipelineManager::validateOutputFiles(DateCheckMode date_check_mode) {
-    const std::string current_operation_name = "validateOutputFiles";
-    std::cout << "\n--- 阶段: 检验输出文件 ---" << std::endl;
-
-    // 确定要验证的文件列表指针
-    const std::vector<fs::path>* files_ptr = &generated_output_files_;
-    
-    // 如果没有生成新文件，尝试使用收集到的原始文件
-    if (generated_output_files_.empty()) {
-        if (!files_to_process_.empty()) {
-            files_ptr = &files_to_process_;
-        } else {
-             std::cerr << YELLOW_COLOR << "警告: 没有找到可供检验的文件 (未生成新文件，且未收集到目标文件)。" << RESET_COLOR << std::endl;
-             return true; // 没有文件通常不算验证失败，只是无事可做
-        }
-    }
-    
-    const auto& files_to_validate = *files_ptr;
-    
-    bool all_ok = true;
-    double total_validation_time_ms = 0.0;
-    FileValidator output_validator(app_config_.interval_processor_config_path);
-
-    for (const auto& file_to_validate : files_to_validate) {
-        auto start_time = std::chrono::steady_clock::now();
-        std::set<Error> errors;
-        
-        // 传递 date_check_mode
-        if (!output_validator.validate(file_to_validate.string(), ValidatorType::JsonOutput, errors, date_check_mode)) {
-            printGroupedErrors(file_to_validate.string(), errors);
-            all_ok = false;
-        }
-        auto end_time = std::chrono::steady_clock::now();
-        total_validation_time_ms += std::chrono::duration<double, std::milli>(end_time - start_time).count();
-    }
-
-    printTimingStatistics(current_operation_name, total_validation_time_ms);
-    std::cout << (all_ok ? GREEN_COLOR : RED_COLOR) << "输出文件检验阶段 " << (all_ok ? "全部通过" : "存在失败项") << "。" << RESET_COLOR << std::endl;
-    return all_ok;
-}
-
-void PipelineManager::printTimingStatistics(const std::string& operation_name, double total_time_ms) const {
-    double total_time_s = total_time_ms / 1000.0;
-    std::cout << "--------------------------------------\n";
-    std::cout << "Timing Statistics for: " << operation_name << "\n\n";
-    std::cout << "Total time: " << std::fixed << std::setprecision(4) << total_time_s
-              << " seconds (" << total_time_ms << " ms)\n";
-    std::cout << "--------------------------------------\n";
+    return context.output_root / "Processed_Date";
 }

@@ -44,13 +44,13 @@ include(BuildTypeFlags)
 # --- 3. 定义可执行文件目标 ---
 add_executable(time_tracker_cli src/main_cli.cpp
     ${COMMON_SOURCES}
-    ${CONFIG_VALIDATOR}
+    ${CONFIG_VALIDATOR_SOURCES}
     ${DB_INSERTER_SOURCES}
     ${REPORTS_SOURCES}
     ${REPROCESSING_SOURCES}
     ${FILE_HANDLER_SOURCES}
     ${ACTION_HANDLER_SOURCES}
-    ${TIME_MASTER_CLI_SOURCES}
+    ${CLI_SOURCES}
 )
 
 # 链接到新的共享库

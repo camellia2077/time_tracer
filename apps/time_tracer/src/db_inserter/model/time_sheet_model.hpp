@@ -31,14 +31,15 @@ struct DayData {
     int grooming_time;
     int toilet_time;
     // --- [核心修改] 新增睡眠统计字段 ---
-    int sleep_night_time;
+    int sleep_night_time;//sleep_night时间
     int sleep_day_time;
-    int sleep_total_time;
+    int sleep_total_time;//sleep总时间
     // --- [新增字段] ---
     int recreation_time;
     int recreation_zhihu_time;
     int recreation_bilibili_time;
     int recreation_douyin_time;
+    int study_time;//study时间
 };
 
 /**

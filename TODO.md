@@ -1,8 +1,4 @@
 高优先级
--1 "generated_stats"中加入学习时间统计
-并且插入到数据库中
-
-0 apps/time_master改名time_tracer
 
 1 
 convert命令中，应该把json从内存中保存到本地，以及转化为json这两个解耦，让action_handler来决定是否要保存到本地。
@@ -99,6 +95,36 @@ time_master_cli export daily 20240101 -o /你的/自定义/路径
 
 
 低优先级
+gemini "主要模块剥离逻辑和定义 C 接口。"
+0. 核心逻辑库 (Core Library) 的接口设计
+
+不要局限于“现在就编译成 DLL”，而是应该关注 “核心逻辑库 (Core Library) 的接口设计”。
+
+核心就是这两件事：主要模块剥离逻辑和定义 C 接口。
+
+代码解耦（现在做）： 将 Data Preprocessing、DB Insertion、Export 三个部分的代码从 CLI 的 main 逻辑中剥离出来，放入独立的库项目（Library Project）中。
+
+定义 C-API 边界（关键）： 为这三个模块设计一层纯 C 的头文件接口。无论内部是用 C++ 还是未来用 Rust 实现，对外都只暴露这一层 C 接口。
+
+示例： 不要传递 std::string，而是传递 const char* 和长度。
+
+构建系统配置（CMake/Meson）： 配置你的构建脚本，使其支持通过开关切换 静态链接 (Static Lib) 和 动态链接 (Shared Lib/DLL)。
+
+CLI 阶段： 建议优先使用静态链接。这样生成的 EXE 单文件便于分发，且编译器能进行全局优化 (LTO)。
+
+移动端/Rust 替换阶段： 基于之前定义的 C-API，你可以随时用 Rust 编写实现，并编译成对应平台的动态库（.dll/.so）或静态库（.a），供上层调用。
+
+4. 移动端复用路径
+如果采用上述架构，未来在手机上复用的路径如下：
+
+Android (JNI): Java/Kotlin 层通过 JNI 调用你的 C/C++ (或 Rust) 编译出的 .so 库。
+
+iOS (FFI): Swift/Obj-C 直接调用编译出的静态库 .a 或 Framework。
+
+Flutter/React Native: 通过 FFI (Foreign Function Interface) 调用 C 接口。
+
+
+
 1
 tex文件无法编译，看看tex的结构有什么问题
 
