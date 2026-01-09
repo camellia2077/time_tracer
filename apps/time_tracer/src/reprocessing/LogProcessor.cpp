@@ -45,9 +45,9 @@ ProcessingResult LogProcessor::processFile(const fs::path& source_file,
         // 验证逻辑保持不变
         FileValidator source_validator(config_.interval_processor_config_path);
         std::set<Error> errors;
-        if (!source_validator.validate(source_file.string(), ValidatorType::Source, errors)) {
-            printGroupedErrors(source_file.string(), errors);
-            result.success = false;
+        if (!source_validator.validate(source_file, ValidatorType::Source, errors)) {
+
+         printGroupedErrors(source_file.string(), errors); 
         }
     }
 
@@ -56,10 +56,12 @@ ProcessingResult LogProcessor::processFile(const fs::path& source_file,
 }
 
 
-bool LogProcessor::collectFilesToProcess(const std::string& input_path_str, std::vector<fs::path>& out_files) {
-    fs::path input_path(input_path_str);
+
+bool LogProcessor::collectFilesToProcess(const std::filesystem::path& input_path, std::vector<fs::path>& out_files) {
+
+
     if (!fs::exists(input_path)) {
-        std::cerr << RED_COLOR << "Error: Input path does not exist: " << input_path_str << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error: Input path does not exist: " << input_path.string() << RESET_COLOR << std::endl;
         return false;
     }
 

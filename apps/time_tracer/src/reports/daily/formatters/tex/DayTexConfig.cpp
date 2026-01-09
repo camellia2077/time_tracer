@@ -2,7 +2,7 @@
 #include "DayTexConfig.hpp"
 
 // [修改] 构造函数调用基类构造函数，然后只加载自己的特有项
-DayTexConfig::DayTexConfig(const std::string& config_path)
+DayTexConfig::DayTexConfig(const std::filesystem::path& config_path)
     : DayBaseConfig(config_path) // 调用基类构造函数，加载所有通用配置
 {
     // 使用基类中已加载的 config_json_ 来加载本类特有的配置项

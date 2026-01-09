@@ -3,17 +3,16 @@
 #define MONTH_MD_CONFIG_HPP
 
 #include "reports/monthly/formatters/base/MonthBaseConfig.hpp"
-#include <string> // [新增]
+#include <string> 
+#include <filesystem>
 
 class MonthMdConfig : public MonthBaseConfig {
 public:
-    explicit MonthMdConfig(const std::string& config_path);
+    explicit MonthMdConfig(const std::filesystem::path& config_path);
     
-    // [新增] Getter 方法
     const std::string& get_project_breakdown_label() const;
 
 private:
-    // [新增] 成员变量
     std::string project_breakdown_label_;
 };
 

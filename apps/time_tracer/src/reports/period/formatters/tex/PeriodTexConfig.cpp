@@ -1,10 +1,9 @@
 // reports/period/formatters/tex/PeriodTexConfig.cpp
 #include "PeriodTexConfig.hpp"
 
-PeriodTexConfig::PeriodTexConfig(const std::string& config_path)
-    : PeriodBaseConfig(config_path) // 调用基类构造函数
+PeriodTexConfig::PeriodTexConfig(const std::filesystem::path& config_path)
+    : PeriodBaseConfig(config_path)
 {
-    // 只加载本类特有的配置项
     main_font_ = config_json_.at("main_font").get<std::string>();
     cjk_main_font_ = config_json_.at("cjk_main_font").get<std::string>();
     base_font_size_ = config_json_.at("base_font_size").get<int>();
@@ -15,7 +14,6 @@ PeriodTexConfig::PeriodTexConfig(const std::string& config_path)
     list_item_sep_ex_ = config_json_.at("list_item_sep_ex").get<double>();
 }
 
-// --- 特有 Getters 的实现 ---
 const std::string& PeriodTexConfig::get_main_font() const { return main_font_; }
 const std::string& PeriodTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
 int PeriodTexConfig::get_base_font_size() const { return base_font_size_; }

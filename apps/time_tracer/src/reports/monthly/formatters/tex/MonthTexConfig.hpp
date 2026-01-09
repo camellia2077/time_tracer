@@ -4,12 +4,12 @@
 
 #include "reports/monthly/formatters/base/MonthBaseConfig.hpp"
 #include <string>
+#include <filesystem>
 
 class MonthTexConfig : public MonthBaseConfig {
 public:
-    explicit MonthTexConfig(const std::string& config_path);
+    explicit MonthTexConfig(const std::filesystem::path& config_path);
 
-    // --- 特有的 Getters ---
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
     int get_base_font_size() const;
@@ -20,7 +20,6 @@ public:
     double get_list_item_sep_ex() const;
 
 private:
-    // --- 特有的成员变量 ---
     std::string main_font_;
     std::string cjk_main_font_;
     int base_font_size_;

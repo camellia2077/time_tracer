@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/facade/SourceFacade.cpp
 #include "SourceFacade.hpp"
-// [移除] 不再需要 #include "reprocessing/validator/source_txt/pipelines/SourceValidatorConfig.hpp"
+
 #include "reprocessing/validator/source_txt/pipelines/LineRules.hpp"
 #include "reprocessing/validator/source_txt/pipelines/StructureRules.hpp"
 #include "common/utils/StringUtils.hpp" // For trim()
@@ -9,28 +9,26 @@
 #include <iostream>
 #include <memory>
 
-// [修改] PImpl 结构体更新
 struct SourceFacade::PImpl {
     LineRules line_processor;
     StructureRules structural_validator;
 
-    // [修改] PImpl 的构造函数现在接收 ConverterConfig
+    // PImpl 的构造函数现在接收 ConverterConfig
     PImpl(const ConverterConfig& config)
         : line_processor(config)
     {}
 };
 
-// [修改] 更新构造函数和析构函数
 SourceFacade::SourceFacade(const ConverterConfig& config)
     : pimpl_(std::make_unique<PImpl>(config)) {}
 
 SourceFacade::~SourceFacade() = default;
 
 
-bool SourceFacade::validate(const std::string& file_path, std::set<Error>& errors) {
+bool SourceFacade::validate(const std::filesystem::path& file_path, std::set<Error>& errors) {
     std::ifstream inFile(file_path);
     if (!inFile.is_open()) {
-        errors.insert({0, "Could not open file: " + file_path, ErrorType::FileAccess});
+        errors.insert({0, "Could not open file: " + file_path.string(), ErrorType::FileAccess}); // 修正：添加 .string()
         return false;
     }
 

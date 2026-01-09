@@ -1,3 +1,4 @@
+﻿// action_handler/file/PipelineContext.hpp
 #ifndef PIPELINE_CONTEXT_HPP
 #define PIPELINE_CONTEXT_HPP
 

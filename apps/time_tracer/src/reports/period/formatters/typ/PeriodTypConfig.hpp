@@ -4,12 +4,13 @@
 
 #include "reports/period/formatters/base/PeriodBaseConfig.hpp"
 #include <string>
+#include <filesystem>
 
 class PeriodTypConfig : public PeriodBaseConfig {
 public:
-    explicit PeriodTypConfig(const std::string& config_path);
+    explicit PeriodTypConfig(const std::filesystem::path& config_path);
 
-    // --- 特有的 Getters ---
+    // Getters 保持不变
     const std::string& get_base_font() const;
     const std::string& get_title_font() const;
     const std::string& get_category_title_font() const;
@@ -23,7 +24,6 @@ public:
     double get_margin_right_cm() const;
 
 private:
-    // --- 特有的成员变量 ---
     std::string base_font_;
     std::string title_font_;
     std::string category_title_font_;

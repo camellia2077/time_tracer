@@ -10,7 +10,7 @@
 
 class IntervalConverter {
 public:
-    explicit IntervalConverter(const std::string& config_filename);
+    explicit IntervalConverter(const std::filesystem::path& config_path);
 
     std::vector<InputData> executeConversion(std::istream& combined_input_stream);
 

@@ -21,7 +21,7 @@ public:
     ProcessingResult processFile(const std::filesystem::path& source_file, 
                                  const AppOptions& options);
     
-    bool collectFilesToProcess(const std::string& input_path, std::vector<std::filesystem::path>& out_files);
+    bool collectFilesToProcess(const std::filesystem::path& input_path, std::vector<std::filesystem::path>& out_files);
 
 
 private:

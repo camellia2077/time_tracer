@@ -5,9 +5,10 @@
 #include "reports/shared/shared_api.hpp"
 #include <string>
 #include <map>
-#include <vector> // [新增]
+#include <vector> 
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
+#include <filesystem>
 
 // [修改] 升级结构体以支持递归和数据库映射
 struct StatisticItemConfig {
@@ -25,7 +26,7 @@ DISABLE_C4251_WARNING
  */
 class REPORTS_SHARED_API DayBaseConfig {
 public:
-    explicit DayBaseConfig(const std::string& config_path);
+    explicit DayBaseConfig(const std::filesystem::path& config_path);
     virtual ~DayBaseConfig() = default;
 
     // --- 通用配置项的 Getters ---

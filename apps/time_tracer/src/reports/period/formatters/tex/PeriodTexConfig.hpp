@@ -4,12 +4,13 @@
 
 #include "reports/period/formatters/base/PeriodBaseConfig.hpp"
 #include <string>
+#include <filesystem> 
 
 class PeriodTexConfig : public PeriodBaseConfig {
 public:
-    explicit PeriodTexConfig(const std::string& config_path);
+    explicit PeriodTexConfig(const std::filesystem::path& config_path);
 
-    // --- 特有的 Getters ---
+    // Getters 保持不变
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;
     int get_base_font_size() const;
@@ -20,7 +21,6 @@ public:
     double get_list_item_sep_ex() const;
 
 private:
-    // --- 特有的成员变量 ---
     std::string main_font_;
     std::string cjk_main_font_;
     int base_font_size_;

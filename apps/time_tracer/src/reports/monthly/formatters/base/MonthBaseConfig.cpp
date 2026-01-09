@@ -2,7 +2,8 @@
 #include "MonthBaseConfig.hpp"
 #include <stdexcept>
 
-MonthBaseConfig::MonthBaseConfig(const std::string& config_path) {
+// [修改] 实现更新
+MonthBaseConfig::MonthBaseConfig(const std::filesystem::path& config_path) {
     config_json_ = load_json_config(config_path, "Could not open Monthly report config file: ");
     load_base_config();
 }
@@ -12,20 +13,14 @@ void MonthBaseConfig::load_base_config() {
     actual_days_label_ = config_json_.at("actual_days_label").get<std::string>();
     total_time_label_ = config_json_.at("total_time_label").get<std::string>();
     invalid_format_message_ = config_json_.at("invalid_format_message").get<std::string>();
-
-    // [核心修改] 移除兼容代码，直接加载 "no_records_message"
     no_records_message_ = config_json_.at("no_records_message").get<std::string>();
-
-    // [新增] 加载通用的项目统计标题，提供默认值 "Project Breakdown"
     project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
 }
 
-// --- Getters 实现 ---
+// ... Getters 实现保持不变 ...
 const std::string& MonthBaseConfig::get_report_title() const { return report_title_; }
 const std::string& MonthBaseConfig::get_actual_days_label() const { return actual_days_label_; }
 const std::string& MonthBaseConfig::get_total_time_label() const { return total_time_label_; }
 const std::string& MonthBaseConfig::get_no_records_message() const { return no_records_message_; }
 const std::string& MonthBaseConfig::get_invalid_format_message() const { return invalid_format_message_; }
-
-// [新增] 实现 Getter
-const std::string& MonthBaseConfig::get_project_breakdown_label() const { return project_breakdown_label_; }// reports/period/formatters/base/PeriodBaseConfig.hpp
+const std::string& MonthBaseConfig::get_project_breakdown_label() const { return project_breakdown_label_; }
