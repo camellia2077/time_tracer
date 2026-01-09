@@ -6,10 +6,10 @@
 #include "reprocessing/converter/pipelines/DayProcessor.hpp"
 
 #include <iostream>
-#include <stdexcept> // <-- The 'S' at the end of this line has been removed.
+#include <stdexcept> 
 
-IntervalConverter::IntervalConverter(const std::string& config_filename) {
-    if (!config_.load(config_filename)) {
+IntervalConverter::IntervalConverter(const std::filesystem::path& config_path) {
+    if (!config_.load(config_path)) { 
         throw std::runtime_error("Failed to load IntervalConverter configuration.");
     }
 }

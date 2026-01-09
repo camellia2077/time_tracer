@@ -19,7 +19,7 @@ public:
     // [核心修改] 参数类型变更
     explicit JsonValidator(DateCheckMode date_check_mode = DateCheckMode::None);
 
-    bool validate(const std::string& file_path, std::set<Error>& errors);
+    bool validate(const std::filesystem::path& file_path, std::set<Error>& errors);
 
 private:
     /// @brief 存储检查模式

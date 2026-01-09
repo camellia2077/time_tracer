@@ -6,6 +6,7 @@
 #include "reports/shared/data/DailyReportData.hpp"
 #include "reports/daily/formatters/typ/DayTypConfig.hpp"
 #include <memory>
+
 #include <sstream>
 
 class DayTyp : public IReportFormatter<DailyReportData> {

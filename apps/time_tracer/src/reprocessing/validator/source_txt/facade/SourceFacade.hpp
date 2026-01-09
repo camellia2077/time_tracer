@@ -22,7 +22,7 @@ public:
     explicit SourceFacade(const ConverterConfig& config);
     ~SourceFacade();
 
-    bool validate(const std::string& file_path, std::set<Error>& errors);
+    bool validate(const std::filesystem::path& file_path, std::set<Error>& errors);
 
 private:
     struct PImpl;

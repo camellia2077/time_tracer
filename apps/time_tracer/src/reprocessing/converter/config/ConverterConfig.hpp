@@ -7,6 +7,7 @@
 #include <vector>
 #include <unordered_map>
 #include <optional>
+#include <filesystem>
 
 struct DurationRule {
     int less_than_minutes;
@@ -15,7 +16,7 @@ struct DurationRule {
 
 class ConverterConfig {
 public:
-    bool load(const std::string& filepath);
+    bool load(const std::filesystem::path& filepath);
 
     const std::string& getRemarkPrefix() const;
     const std::vector<std::string>& getHeaderOrder() const;

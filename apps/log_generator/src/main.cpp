@@ -31,9 +31,9 @@ public:
         std::filesystem::path exe_path = argv[0];
         std::filesystem::path exe_dir = exe_path.parent_path();
         std::filesystem::path activities_config_path = exe_dir / "config" / "common_activities.json";
-        std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_config.json";
+        std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_ConfigLoader";
         
-        // [核心修改] 创建 ConfigLoader 的实例，然后通过该实例调用成员函数
+        //  创建 ConfigLoader 的实例，然后通过该实例调用成员函数
         ConfigLoader loader;
         auto json_configs_opt = loader.load_json_configurations(activities_config_path.string(), remarks_config_path.string());
         

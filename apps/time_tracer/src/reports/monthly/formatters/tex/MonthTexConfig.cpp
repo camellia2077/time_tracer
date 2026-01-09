@@ -1,10 +1,9 @@
 // reports/monthly/formatters/tex/MonthTexConfig.cpp
 #include "MonthTexConfig.hpp"
 
-MonthTexConfig::MonthTexConfig(const std::string& config_path)
-    : MonthBaseConfig(config_path) // 调用基类构造函数
+MonthTexConfig::MonthTexConfig(const std::filesystem::path& config_path)
+    : MonthBaseConfig(config_path)
 {
-    // 只加载本类特有的配置项
     main_font_ = config_json_.at("main_font").get<std::string>();
     cjk_main_font_ = config_json_.at("cjk_main_font").get<std::string>();
     base_font_size_ = config_json_.at("base_font_size").get<int>();
@@ -15,7 +14,7 @@ MonthTexConfig::MonthTexConfig(const std::string& config_path)
     list_item_sep_ex_ = config_json_.at("list_item_sep_ex").get<double>();
 }
 
-// --- 特有 Getters 的实现 ---
+// ... Getters 实现保持不变 ...
 const std::string& MonthTexConfig::get_main_font() const { return main_font_; }
 const std::string& MonthTexConfig::get_cjk_main_font() const { return cjk_main_font_; }
 int MonthTexConfig::get_base_font_size() const { return base_font_size_; }

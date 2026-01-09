@@ -28,7 +28,8 @@ static std::vector<StatisticItemConfig> parse_statistics_items_recursive(const n
     return items;
 }
 
-DayBaseConfig::DayBaseConfig(const std::string& config_path) {
+DayBaseConfig::DayBaseConfig(const std::filesystem::path& config_path) {
+    // 这里的 config_path 现在直接传给 load_json_config (假设你已经修改了 shared 模块)
     config_json_ = load_json_config(config_path, "Could not open Day config file: ");
     load_base_config();
 }

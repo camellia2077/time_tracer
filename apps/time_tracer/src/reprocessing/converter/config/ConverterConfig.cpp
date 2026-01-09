@@ -9,7 +9,7 @@
 
 namespace fs = std::filesystem;
 
-// [新增] 辅助函数，用于加载一个 JSON 文件
+// 辅助函数，用于加载一个 JSON 文件
 static bool loadJsonFile(const fs::path& file_path, nlohmann::json& out_json) {
     std::ifstream ifs(file_path);
     if (!ifs.is_open()) {
@@ -26,12 +26,11 @@ static bool loadJsonFile(const fs::path& file_path, nlohmann::json& out_json) {
 }
 
 
-bool ConverterConfig::load(const std::string& main_config_path) {
-    fs::path main_path = main_config_path;
-    fs::path config_dir = main_path.parent_path();
+bool ConverterConfig::load(const std::filesystem::path& main_config_path) {
+    fs::path config_dir = main_config_path.parent_path();
 
     nlohmann::json main_json;
-    if (!loadJsonFile(main_path, main_json)) {
+    if (!loadJsonFile(main_config_path, main_json)) {
         return false;
     }
 
