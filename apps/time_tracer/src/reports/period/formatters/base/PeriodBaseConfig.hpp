@@ -6,16 +6,15 @@
 #include <string>
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"
+#include <filesystem>
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API PeriodBaseConfig {
 public:
-    explicit PeriodBaseConfig(const std::string& config_path);
+    explicit PeriodBaseConfig(const std::filesystem::path& config_path);
     virtual ~PeriodBaseConfig() = default;
 
-    // --- Getters ---
-    // [修复] 补回丢失的标题配置 Getter
     const std::string& get_report_title_prefix() const;
     const std::string& get_report_title_days() const;
     const std::string& get_report_title_date_separator() const;

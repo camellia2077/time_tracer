@@ -3,7 +3,7 @@
 #define CONFIG_UTILS_HPP
 
 #include <nlohmann/json.hpp>
-#include <string>
+#include <filesystem>
 
 /**
  * @brief 从指定路径加载并解析 JSON 配置文件。
@@ -12,6 +12,6 @@
  * @return 解析后的 nlohmann::json 对象。
  * @throws std::runtime_error 如果无法打开或解析文件。
  */
-nlohmann::json load_json_config(const std::string& config_path, const std::string& error_message_prefix);
+nlohmann::json load_json_config(const std::filesystem::path& config_path, const std::string& error_message_prefix);
 
 #endif // CONFIG_UTILS_HPP

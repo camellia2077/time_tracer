@@ -15,13 +15,13 @@ enum class ValidatorType {
 
 class FileValidator {
 public:
-    FileValidator(const std::string& main_config_path);
+    FileValidator(const std::filesystem::path& main_config_path);
 
     // [核心修改] 最后一个参数类型变更为 DateCheckMode
-    bool validate(const std::string& file_path, 
-                  ValidatorType type, 
-                  std::set<Error>& errors, 
-                  DateCheckMode date_check_mode_for_output = DateCheckMode::None);
+    bool validate(const std::filesystem::path& file_path, 
+              ValidatorType type, 
+              std::set<Error>& errors, 
+              DateCheckMode date_check_mode_for_output = DateCheckMode::None);
 
 private:
     std::unique_ptr<ConverterConfig> converter_config_;

@@ -4,14 +4,15 @@
 
 #include "reports/daily/formatters/base/DayBaseConfig.hpp" // [修改] 引入基类
 #include <string>
+#include <filesystem>
 #include <map>
 
 // DayTexConfig 继承 DayBaseConfig
 class DayTexConfig : public DayBaseConfig {
 public:
-    explicit DayTexConfig(const std::string& config_path);
+    explicit DayTexConfig(const std::filesystem::path& config_path);
 
-    // --- [修改] 只保留特有的 getter ---
+
     const std::string& get_report_title() const; // Tex 特有的 report_title
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;

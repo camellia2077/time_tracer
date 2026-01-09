@@ -2,14 +2,15 @@
 #ifndef DAY_TYP_CONFIG_HPP
 #define DAY_TYP_CONFIG_HPP
 
-#include "reports/daily/formatters/base/DayBaseConfig.hpp" // [修改] 引入基类
+#include "reports/daily/formatters/base/DayBaseConfig.hpp" // 引入基类
 #include <string>
 #include <map>
+#include <filesystem>
 
 // DayTypConfig 继承 DayBaseConfig
 class DayTypConfig : public DayBaseConfig {
 public:
-    explicit DayTypConfig(const std::string& config_path);
+   explicit DayTypConfig(const std::filesystem::path& config_path);
 
     // --- [修改] 只保留特有的 getter ---
     const std::string& get_title_font() const;
