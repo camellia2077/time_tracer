@@ -91,13 +91,13 @@ std::string MonthTyp::format_report(const MonthlyReportData& data) const {
 }
 
 void MonthTyp::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
+    // [修正] 移除 {}-{} 的拼接，直接放一个 {} 给 data.year_month
     std::string title = std::format(
-        R"(#text(font: "{}", size: {}pt)[= {} {}-{}])",
+        R"(#text(font: "{}", size: {}pt)[= {} {}])",
         config_->get_title_font(),
         config_->get_report_title_font_size(),
         config_->get_report_title(),
-        data.year_month.substr(0, 4),
-        data.year_month.substr(4, 2)
+        data.year_month // 直接传入 "2025-01"
     );
     ss << title << "\n\n";
 

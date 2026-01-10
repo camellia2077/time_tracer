@@ -35,16 +35,23 @@ std::vector<std::string> CliParser::filter_global_options(const std::vector<std:
     std::vector<std::string> filtered_args;
     for (size_t i = 0; i < original_args.size(); ++i) {
         const auto& arg = original_args[i];
-        // [修改] 增加 --date-check 到全局过滤列表，防止它干扰主参数
+        // [修改] 增加 --save-processed 到过滤列表
         if (arg == "-o" || arg == "--output" || arg == "-f" || arg == "--format" || arg == "--date-check") {
             if (i + 1 < original_args.size()) {
                 i++; 
             }
             continue;
         }
+        // [新增] 单独处理不需要参数的 flag
+        if (arg == "--save-processed") {
+            continue;
+        }
         filtered_args.push_back(arg);
     }
     return filtered_args;
+}
+bool CliParser::should_save_processed() const {
+    return std::find(raw_args_.begin(), raw_args_.end(), "--save-processed") != raw_args_.end();
 }
 
 std::optional<std::string> CliParser::get_output_path() const {

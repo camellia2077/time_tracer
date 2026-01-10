@@ -47,6 +47,8 @@ struct AppOptions {
     bool validate_output = false;
     // [核心修改] 新增枚举类型的日期检查模式，默认为 None (不检查)
     DateCheckMode date_check_mode = DateCheckMode::None;
+    // [新增] 是否将转换后的 JSON 保存到磁盘
+    bool save_processed_output = false;
 };
 
 // 用于记录各处理阶段耗时的结构体
