@@ -35,7 +35,7 @@ if(BUILD_INSTALLER)
         DESTINATION bin
     )
     # 安装配置文件
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/src/config" DESTINATION .)
+    install(DIRECTORY "${CMAKE_SOURCE_DIR}/config" DESTINATION .)
 
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")

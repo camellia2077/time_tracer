@@ -4,7 +4,7 @@
 #include "db_inserter/DataImporter.hpp"
 #include "common/AnsiColors.hpp"
 #include "core/database/DBManager.hpp"
-#include "file_handler/FileUtils.hpp"
+#include "io/utils/FileUtils.hpp"
 #include <iostream>
 #include <stdexcept>
 

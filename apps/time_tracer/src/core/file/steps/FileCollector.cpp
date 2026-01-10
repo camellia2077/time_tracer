@@ -1,7 +1,7 @@
 ﻿// core/file/steps/FileCollector.cpp
 #include "FileCollector.hpp"
-#include "file_handler/FileUtils.hpp"
-#include "file_handler/FileSystemHelper.hpp" // [New]
+#include "io/utils/FileUtils.hpp"
+#include "io/core/FileSystemHelper.hpp" // [New]
 #include "common/AnsiColors.hpp"
 #include <iostream>
 #include <algorithm>
