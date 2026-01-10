@@ -2,6 +2,7 @@
 #include "CliParser.hpp"
 #include <stdexcept>
 #include <algorithm>
+#include <sstream> // [新增] 用于字符串分割
 
 CliParser::CliParser(const std::vector<std::string>& args) : raw_args_(args) {
     if (args.size() < 2) {
@@ -60,7 +61,8 @@ std::optional<std::string> CliParser::get_output_path() const {
     return std::nullopt;
 }
 
-ReportFormat CliParser::get_report_format() const {
+// [核心修改] 将原 get_report_format 替换为支持多格式的 get_report_formats
+std::vector<ReportFormat> CliParser::get_report_formats() const {
     std::string format_str;
     auto it_f = std::find(raw_args_.begin(), raw_args_.end(), "-f");
     if (it_f != raw_args_.end() && std::next(it_f) != raw_args_.end()) {
@@ -70,15 +72,40 @@ ReportFormat CliParser::get_report_format() const {
         if (it_format != raw_args_.end() && std::next(it_format) != raw_args_.end()) {
             format_str = *std::next(it_format);
         } else {
-            return ReportFormat::Markdown; 
+            // 默认只返回 Markdown
+            return {ReportFormat::Markdown}; 
         }
     }
 
-    if (format_str == "md" || format_str == "markdown") return ReportFormat::Markdown;
-    if (format_str == "tex") return ReportFormat::LaTeX;
-    if (format_str == "typ") return ReportFormat::Typ;
-     
-    throw std::runtime_error("Unsupported format specified: '" + format_str + "'. Supported formats: md, tex, typ.");
+    std::vector<ReportFormat> formats;
+    std::stringstream ss(format_str);
+    std::string segment;
+
+    while (std::getline(ss, segment, ',')) {
+        // 1. 去除首尾空白字符
+        size_t first = segment.find_first_not_of(" \t\n\r");
+        if (first == std::string::npos) continue; // 跳过空片段
+        
+        size_t last = segment.find_last_not_of(" \t\n\r");
+        std::string trimmed = segment.substr(first, (last - first + 1));
+
+        // 2. 解析格式
+        if (trimmed == "md" || trimmed == "markdown") {
+            formats.push_back(ReportFormat::Markdown);
+        } else if (trimmed == "tex" || trimmed == "latex") {
+            formats.push_back(ReportFormat::LaTeX);
+        } else if (trimmed == "typ" || trimmed == "typst") {
+            formats.push_back(ReportFormat::Typ);
+        } else {
+            throw std::runtime_error("Unsupported format specified: '" + trimmed + "'. Supported formats: md, tex, typ.");
+        }
+    }
+
+    if (formats.empty()) {
+        return {ReportFormat::Markdown};
+    }
+
+    return formats;
 }
 
 // [核心修改] 实现获取日期检查模式的逻辑

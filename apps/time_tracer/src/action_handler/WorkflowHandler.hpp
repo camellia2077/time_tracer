@@ -1,33 +1,31 @@
-// action_handler/FileHandler.hpp
-#ifndef FILE_HANDLER_HPP
-#define FILE_HANDLER_HPP
+// action_handler/WorkflowHandler.hpp
+#ifndef WORKFLOW_HANDLER_HPP
+#define WORKFLOW_HANDLER_HPP
 
 #include <string>
 #include <filesystem>
 #include "common/AppConfig.hpp" 
-// [新增] 引入 ValidatorUtils
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 namespace fs = std::filesystem;
 
-class FileHandler {
+class WorkflowHandler { // [修改] 类名变更
 public:
-    FileHandler(const std::string& db_path, const AppConfig& config, const std::string& main_config_path, const fs::path& output_root_path);
-    ~FileHandler();
+    // [修改] 构造函数名变更
+    WorkflowHandler(const std::string& db_path, const AppConfig& config, const fs::path& output_root_path);
+    ~WorkflowHandler();
 
     void run_preprocessing(const std::string& input_path, const AppOptions& options);
     void run_database_import(const std::string& processed_path_str);
     
-    // [核心修改] 增加 DateCheckMode 参数
     void run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode);
     
     const AppConfig& get_config() const;
 
 private:
     const AppConfig& app_config_;
-    std::string main_config_path_;
     std::string db_path_;
     fs::path output_root_path_;
 };
 
-#endif // FILE_HANDLER_HPP
+#endif // WORKFLOW_HANDLER_HPP

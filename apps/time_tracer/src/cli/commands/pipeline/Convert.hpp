@@ -3,14 +3,16 @@
 #define CONVERT_HPP
 
 #include "cli/commands/interface/ICommand.hpp"
-#include "action_handler/FileHandler.hpp"
+#include "action_handler/WorkflowHandler.hpp" // [修改] 引用新头文件
 
 class Convert : public ICommand {
 public:
-    explicit Convert(FileHandler& file_handler);
+    // [修改] 参数类型变更为 WorkflowHandler
+    explicit Convert(WorkflowHandler& workflow_handler);
     void execute(const CliParser& parser) override;
 private:
-    FileHandler& file_handler_;
+    // [修改] 成员变量类型变更为 WorkflowHandler
+    WorkflowHandler& workflow_handler_;
 };
 
 #endif // CONVERT_HPP

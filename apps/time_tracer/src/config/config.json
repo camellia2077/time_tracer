@@ -1,17 +1,28 @@
 {
-  "mappings_config_path": "config/reprocessing/mapping_config.json",
-  "duration_rules_config_path": "config/reprocessing/duration_rules.json",
+  "system": {
+    "error_log": "../output/error_log.txt",
+    "export_root": "exported_reports"
+  },
+
+  "processing": {
+    "interval_config": "reprocessing/interval_processor_config.json"
+  },
   
-  "interval_processor_config_path": "reprocessing/interval_processor_config.json",
-  "error_log_path": "../output/error_log.txt",
-  "export_path": "exported_reports",
-  "day_typ_config_path": "reports/day/DayTypConfig.json",
-  "month_typ_config_path": "reports/month/MonthTypConfig.json",
-  "period_typ_config_path": "reports/period/PeriodTypConfig.json",
-  "day_tex_config_path": "reports/day/DayTexConfig.json",
-  "month_tex_config_path": "reports/month/MonthTexConfig.json",
-  "period_tex_config_path": "reports/period/PeriodTexConfig.json",
-  "day_md_config_path": "reports/day/DayMdConfig.json",
-  "month_md_config_path": "reports/month/MonthMdConfig.json",
-  "period_md_config_path": "reports/period/PeriodMdConfig.json"
+  "reports": {
+    "typst": {
+      "day": "reports/day/DayTypConfig.json",
+      "month": "reports/month/MonthTypConfig.json",
+      "period": "reports/period/PeriodTypConfig.json"
+    },
+    "latex": {
+      "day": "reports/day/DayTexConfig.json",
+      "month": "reports/month/MonthTexConfig.json",
+      "period": "reports/period/PeriodTexConfig.json"
+    },
+    "markdown": {
+      "day": "reports/day/DayMdConfig.json",
+      "month": "reports/month/MonthMdConfig.json",
+      "period": "reports/period/PeriodMdConfig.json"
+    }
+  }
 }

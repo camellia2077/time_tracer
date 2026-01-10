@@ -77,6 +77,7 @@ set(CONFIG_VALIDATOR_SOURCES
 # --- Time Master CLI Sources ---
 set(CLI_SOURCES
     "src/cli/CliHelp.cpp"
+    "src/cli/CommandRegistry.cpp"
 
     "src/cli/CliController.cpp"
     "src/cli/CliParser.cpp"
@@ -91,6 +92,11 @@ set(CLI_SOURCES
     "src/cli/commands/pipeline/ValidateOutput.cpp"
     "src/cli/commands/pipeline/ValidateSource.cpp"
 )
+# --- DB Inserter Sources ---
+set(DB_BOOTSTRAP_SOURCES
+    "src/bootstrap/StartupValidator.cpp"
+)
+
 # --- DB Inserter Sources ---
 set(DB_INSERTER_SOURCES
     "src/db_inserter/DataImporter.cpp"
@@ -180,7 +186,7 @@ set(FILE_HANDLER_SOURCES
 
 # --- Action Handler Sources ---
 set(ACTION_HANDLER_SOURCES
-    "src/action_handler/FileHandler.cpp"
+    "src/action_handler/WorkflowHandler.cpp"
     "src/action_handler/ReportHandler.cpp"
     "src/action_handler/database/DBManager.cpp"
     "src/action_handler/file/PipelineManager.cpp"
