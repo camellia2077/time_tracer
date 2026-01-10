@@ -1,10 +1,17 @@
 ﻿// cli/commands/pipeline/ValidateOutput.cpp
 #include "ValidateOutput.hpp"
 #include "common/AppConfig.hpp"
+#include "cli/CommandRegistry.hpp" 
 #include <stdexcept>
 
-ValidateOutput::ValidateOutput(FileHandler& file_handler)
-    : file_handler_(file_handler) {}
+// [修改] 静态注册：使用 workflow_handler
+static CommandRegistrar registrar("validate-output", [](CliContext& ctx) {
+    return std::make_unique<ValidateOutput>(*ctx.workflow_handler);
+});
+
+// [修改] 构造函数
+ValidateOutput::ValidateOutput(WorkflowHandler& workflow_handler)
+    : workflow_handler_(workflow_handler) {}
 
 void ValidateOutput::execute(const CliParser& parser) {
     const auto& filtered_args = parser.get_filtered_args();
@@ -14,9 +21,9 @@ void ValidateOutput::execute(const CliParser& parser) {
     AppOptions options;
     options.validate_output = true;
 
-    // [核心修改] 使用新的参数解析逻辑
-    // 旧的 -edc 逻辑被替换
+    // 获取用户指定的检查模式
     options.date_check_mode = parser.get_date_check_mode();
 
-    file_handler_.run_preprocessing(filtered_args[2], options);
+    // [修改] 调用 workflow_handler_
+    workflow_handler_.run_preprocessing(filtered_args[2], options);
 }

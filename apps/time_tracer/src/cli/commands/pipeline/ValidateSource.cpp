@@ -1,10 +1,18 @@
 ﻿// cli/commands/pipeline/ValidateSource.cpp
 #include "ValidateSource.hpp"
 #include "common/AppConfig.hpp"
+#include "cli/CommandRegistry.hpp" 
 #include <stdexcept>
 
-ValidateSource::ValidateSource(FileHandler& file_handler)
-    : file_handler_(file_handler) {}
+// [修改] 静态注册：使用 workflow_handler
+static CommandRegistrar registrar("validate-source", [](CliContext& ctx) {
+    // 确保 CliContext 已更新成员变量名为 workflow_handler
+    return std::make_unique<ValidateSource>(*ctx.workflow_handler);
+});
+
+// [修改] 构造函数
+ValidateSource::ValidateSource(WorkflowHandler& workflow_handler)
+    : workflow_handler_(workflow_handler) {}
 
 void ValidateSource::execute(const CliParser& parser) {
     if (parser.get_filtered_args().size() != 3) {
@@ -12,5 +20,7 @@ void ValidateSource::execute(const CliParser& parser) {
     }
     AppOptions options;
     options.validate_source = true;
-    file_handler_.run_preprocessing(parser.get_filtered_args()[2], options);
+    
+    // [修改] 调用 workflow_handler_
+    workflow_handler_.run_preprocessing(parser.get_filtered_args()[2], options);
 }

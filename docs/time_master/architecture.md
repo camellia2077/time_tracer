@@ -1,5 +1,30 @@
 # 架构与模块 (Architecture & Modules)
 
+## 0. 系统分层与职责边界 (System Layers & Responsibilities)
+
+为了确保系统的健壮性与可维护性，系统采用了严格的分层架构，各层职责互不越界。
+
+### 0.1 启动引导层 (Bootstrap Layer)
+* **核心组件**: `bootstrap/StartupValidator`
+* **职责**: 系统的“门卫”。
+    * **环境完整性检查**: 确保所有必要的依赖（如 `reports_shared.dll` 等插件）已就绪。
+    * **配置文件加载**: 读取物理配置文件，但不进行深入的业务规则校验。
+    * **生命周期控制**: 如果环境不满足运行条件，直接终止程序启动，防止核心业务在不稳定环境中运行。
+
+### 0.2 配置校验层 (Validation Layer)
+* **核心组件**: `config_validator/facade/ConfigFacade`
+* **职责**: 纯粹的规则验证引擎。
+    * **业务规则检查**: 验证加载的 JSON 配置是否符合业务规范（如必填字段、数值范围、颜色格式）。
+    * **无状态性**: 只接收数据对象进行判断，不负责 I/O 操作。
+
+### 0.3 核心业务编排层 (Core Orchestration Layer)
+* **核心组件**: `action_handler` (计划重命名为 `core`)
+* **组件示例**: `WorkflowHandler`, `PipelineManager`
+* **职责**: 
+    * **信任原则**: 该层**假设**环境是健康的、配置是合法的（由上层保证）。
+    * **流程编排**: 专注于调度预处理、数据库转换、报表生成等核心业务逻辑。
+    * **数据校验**: 仅关注**用户数据**（如日志内容）的合法性，不关注**系统配置**的合法性。
+
 ## 1. 系统概览与数据流 (System Overview & Data Flow)
 
 本系统的核心工作流由两个单向流动的阶段组成：**数据入库 (Data Ingestion)** 与 **报告生成 (Report Generation)**。
