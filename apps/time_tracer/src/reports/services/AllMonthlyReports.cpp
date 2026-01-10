@@ -1,7 +1,7 @@
 // reports/services/AllMonthlyReports.cpp
 #include "AllMonthlyReports.hpp"
 #include "reports/monthly/MonthQuerier.hpp"
-#include "reports/shared/factories/GenericFormatterFactory.hpp" // [修改]
+#include "reports/shared/factories/GenericFormatterFactory.hpp" 
 #include <vector>
 #include <iomanip>
 #include <sstream>
@@ -24,7 +24,6 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         throw std::runtime_error("Failed to prepare statement to fetch unique year/month pairs.");
     }
 
-    // [核心修改]
     auto formatter = GenericFormatterFactory<MonthlyReportData>::create(format, app_config_);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -32,7 +31,10 @@ FormattedMonthlyReports AllMonthlyReports::generate_reports(ReportFormat format)
         int month = sqlite3_column_int(stmt, 1);
 
         std::stringstream year_month_ss;
-        year_month_ss << year << std::setw(2) << std::setfill('0') << month;
+        // [核心修改] 添加 "-" 以构造 "YYYY-MM" 格式
+        // 之前是: 202501 -> 现在是: 2025-01
+        // 这样 MonthQuerier 在执行 SQL LIKE '2025-01%' 时才能正确匹配 '2025-01-01'
+        year_month_ss << year << "-" << std::setw(2) << std::setfill('0') << month;
         std::string year_month_str = year_month_ss.str();
 
         MonthQuerier querier(db_, year_month_str);
