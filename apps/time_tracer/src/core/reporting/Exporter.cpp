@@ -3,8 +3,8 @@
 #include "ExportUtils.hpp"
 #include "ReportFileManager.hpp"
 #include "common/AnsiColors.hpp"
-#include "file_handler/FileWriter.hpp"       // [New]
-#include "file_handler/FileSystemHelper.hpp" // [New]
+#include "io/core/FileWriter.hpp"       
+#include "io/core/FileSystemHelper.hpp" 
 #include <iostream>
 
 Exporter::Exporter(const fs::path& export_root_path) {

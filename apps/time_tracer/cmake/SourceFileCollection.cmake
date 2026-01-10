@@ -181,14 +181,13 @@ set(REPROCESSING_SOURCES
 )
 
 # --- File Handler Sources ---
-set(FILE_HANDLER_SOURCES
-    "src/file_handler/ConfigLoader.cpp"
-    "src/file_handler/FileController.cpp"
-    "src/file_handler/FileUtils.cpp"
-    "src/file_handler/FileReader.cpp"
-    "src/file_handler/FileWriter.cpp"
-    "src/file_handler/FileSystemHelper.cpp"
-    
+set(IO_SOURCES
+    "src/io/FileController.cpp"
+    "src/io/config/ConfigLoader.cpp"
+    "src/io/core/FileReader.cpp"
+    "src/io/core/FileWriter.cpp"
+    "src/io/core/FileSystemHelper.cpp"
+    "src/io/utils/FileUtils.cpp"
 )
 
 # --- Core Sources ---

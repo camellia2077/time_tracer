@@ -3,9 +3,9 @@
 #include "common/AnsiColors.hpp"
 #include "reprocessing/converter/pipelines/Output.hpp"
 #include "reprocessing/converter/config/ConverterConfig.hpp"
-#include "file_handler/FileReader.hpp"       // [New]
-#include "file_handler/FileWriter.hpp"       // [New]
-#include "file_handler/FileSystemHelper.hpp" // [New]
+#include "io/core/FileReader.hpp"      
+#include "io/core/FileWriter.hpp"      
+#include "io/core/FileSystemHelper.hpp"
 #include <iostream>
 #include <sstream>
 #include <map>
