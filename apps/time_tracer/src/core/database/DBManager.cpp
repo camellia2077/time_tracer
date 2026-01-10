@@ -1,7 +1,7 @@
 ﻿// core/database/DBManager.cpp
 
 #include "DBManager.hpp"
-#include "file_handler/FileSystemHelper.hpp" // [New]
+#include "io/core/FileSystemHelper.hpp" // [New]
 #include <sqlite3.h> 
 
 DBManager::DBManager(const std::string& db_name)
