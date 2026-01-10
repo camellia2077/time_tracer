@@ -1,5 +1,4 @@
 高优先级
-
 1 
 convert命令中，应该把json从内存中保存到本地，以及转化为json这两个解耦，让action_handler来决定是否要保存到本地。
 
@@ -11,6 +10,9 @@ convert命令中，应该把json从内存中保存到本地，以及转化为jso
     
 4 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
 gemini "CMake 自动编译日期实现"
+
+5
+看看cli的输入以及实现是否符合变成规范
 
 
 

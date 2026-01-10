@@ -6,13 +6,10 @@
 #include <vector>
 #include <memory>
 #include <filesystem>
-#include <map>
 #include "cli/CliParser.hpp"
-#include "cli/commands/interface/ICommand.hpp"
 
-// 前向声明
 class FileController;
-class FileHandler;
+class WorkflowHandler; // [修改] 类名变更 FileHandler -> WorkflowHandler
 class ReportHandler;
 class DBManager;
 
@@ -31,18 +28,15 @@ private:
     // --- 依赖的服务 ---
     std::unique_ptr<FileController> file_controller_;
     std::unique_ptr<DBManager> db_manager_;
-    std::unique_ptr<FileHandler> file_processing_handler_;
+    
+    // [修改] 类型和变量名变更
+    std::unique_ptr<WorkflowHandler> workflow_handler_; 
     std::unique_ptr<ReportHandler> report_generation_handler_;
 
-    // --- [核心修改] 使用 map 来存储和分发命令 ---
-    std::map<std::string, std::unique_ptr<ICommand>> commands_;
-    
     fs::path output_root_path_;
     fs::path exported_files_path_;
 
     void initialize_output_paths();
-    
-    // [移除] 所有 handle_* 私有方法
 };
 
 #endif // CLI_CONTROLLER_HPP

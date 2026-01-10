@@ -3,14 +3,16 @@
 #define VALIDATE_OUTPUT_HPP
 
 #include "cli/commands/interface/ICommand.hpp"
-#include "action_handler/FileHandler.hpp"
+#include "action_handler/WorkflowHandler.hpp" // [修改] 引用新头文件
 
 class ValidateOutput : public ICommand {
 public:
-    explicit ValidateOutput(FileHandler& file_handler);
+    // [修改] 参数类型变更
+    explicit ValidateOutput(WorkflowHandler& workflow_handler);
     void execute(const CliParser& parser) override;
 private:
-    FileHandler& file_handler_;
+    // [修改] 成员变量类型变更
+    WorkflowHandler& workflow_handler_;
 };
 
 #endif // VALIDATE_OUTPUT_HPP

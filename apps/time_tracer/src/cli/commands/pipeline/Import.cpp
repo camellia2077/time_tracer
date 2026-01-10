@@ -1,10 +1,17 @@
 ﻿// cli/commands/pipeline/Import.cpp
 #include "Import.hpp"
+#include "cli/CommandRegistry.hpp"
 #include <stdexcept>
 #include <iostream>
 
-Import::Import(FileHandler& file_handler)
-    : file_handler_(file_handler) {}
+// [修改] 静态注册：使用 workflow_handler
+static CommandRegistrar registrar("import", [](CliContext& ctx) {
+    return std::make_unique<Import>(*ctx.workflow_handler);
+});
+
+// [修改] 构造函数
+Import::Import(WorkflowHandler& workflow_handler)
+    : workflow_handler_(workflow_handler) {}
 
 void Import::execute(const CliParser& parser) {
     if (parser.get_filtered_args().size() != 3) {
@@ -22,5 +29,7 @@ void Import::execute(const CliParser& parser) {
         return;
     }
     std::cout << std::endl;
-    file_handler_.run_database_import(parser.get_filtered_args()[2]);
+    
+    // [修改] 调用 workflow_handler_
+    workflow_handler_.run_database_import(parser.get_filtered_args()[2]);
 }

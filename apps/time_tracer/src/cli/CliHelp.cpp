@@ -48,7 +48,9 @@ void print_full_usage(const char* app_name) {
     std::println("    monthly <YYYYMM>\t\t Query statistics for a specific month.");
     std::println("    period <days>\t\t Query statistics for last N days. Can be a list (e.g., 7,30).");
     std::println("  Options (for commands that produce output):");
-    std::println("    --format, -f <format>\t Specify output format (md, tex, typ). Default: md.");
+    std::println("    --format, -f <format>\t Specify output format (md, tex, typ).");
+    std::println("                         \t Can specify multiple formats separated by comma (e.g., \"md,typ\").");
+    std::println("                         \t Default: md.");
     std::println("  Example: {} query daily 20240101 --format tex\n", app_name);
     
     // 导出

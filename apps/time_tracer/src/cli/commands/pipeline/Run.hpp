@@ -3,18 +3,19 @@
 #define RUN_HPP
 
 #include "cli/commands/interface/ICommand.hpp"
-#include "action_handler/FileHandler.hpp" // 该命令依赖 FileHandler
+#include "action_handler/WorkflowHandler.hpp" // [修改] 引用新头文件
 
 class Run : public ICommand {
 public:
-    // 通过构造函数注入它所需要的依赖
-    explicit Run(FileHandler& file_handler);
+    // [修改] 参数类型变更为 WorkflowHandler
+    explicit Run(WorkflowHandler& workflow_handler);
 
     void execute(const CliParser& parser) override;
     std::string get_help() const override;
 
 private:
-    FileHandler& file_handler_;
+    // [修改] 成员变量类型变更为 WorkflowHandler
+    WorkflowHandler& workflow_handler_;
 };
 
 #endif // RUN_HPP
