@@ -1,6 +1,6 @@
 // reports/monthly/MonthQuerier.cpp
 #include "MonthQuerier.hpp"
-#include "reports/shared/utils/report/ReportDataUtils.hpp" // [新增] 为构建项目树
+#include "reports/shared/utils/report/ReportDataUtils.hpp"
 #include <algorithm>
 #include <cctype>
 
@@ -13,7 +13,6 @@ MonthlyReportData MonthQuerier::fetch_data() {
     _fetch_actual_days(data);
 
     if (data.total_duration > 0) {
-        // [核心修改] 在数据获取阶段构建项目树
         build_project_tree_from_records(data.project_tree, data.records);
     }
     
@@ -21,7 +20,14 @@ MonthlyReportData MonthQuerier::fetch_data() {
 }
 
 bool MonthQuerier::_validate_input() const {
-    return this->param_.length() == 6 && std::all_of(this->param_.begin(), this->param_.end(), ::isdigit);
+    // [核心修改] 验证格式改为 YYYY-MM (长度7, 第5位是横杠)
+    if (this->param_.length() != 7) return false;
+    if (this->param_[4] != '-') return false;
+    
+    // 检查其余位是否为数字
+    return std::isdigit(this->param_[0]) && std::isdigit(this->param_[1]) &&
+           std::isdigit(this->param_[2]) && std::isdigit(this->param_[3]) &&
+           std::isdigit(this->param_[5]) && std::isdigit(this->param_[6]);
 }
 
 void MonthQuerier::_handle_invalid_input(MonthlyReportData& data) const {
@@ -33,7 +39,9 @@ void MonthQuerier::_prepare_data(MonthlyReportData& data) const {
 }
 
 std::string MonthQuerier::get_date_condition_sql() const {
-    return "SUBSTR(date, 1, 6) = ?";
+    // [核心修改] 数据库存的是 YYYY-MM-DD
+    // 我们需要匹配前7位 (YYYY-MM)
+    return "SUBSTR(date, 1, 7) = ?";
 }
 
 void MonthQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {

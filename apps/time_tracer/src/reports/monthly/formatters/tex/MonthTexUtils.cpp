@@ -8,11 +8,13 @@
 namespace MonthTexUtils {
 
 void display_summary(std::stringstream& ss, const MonthlyReportData& data, const std::shared_ptr<MonthTexConfig>& config) {
-    std::string title_month = data.year_month.substr(0, 4) + "-" + data.year_month.substr(4, 2);
+    // [修正] 直接使用
+    std::string title_month = data.year_month;
     
     int title_size = config->get_report_title_font_size();
     ss << "{";
     ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
+    // 记得转义，虽然日期里通常没有特殊字符，但保持习惯一致性
     ss << "\\section*{" << config->get_report_title() << " " << TexUtils::escape_latex(title_month) << "}";
     ss << "}\n\n";
 

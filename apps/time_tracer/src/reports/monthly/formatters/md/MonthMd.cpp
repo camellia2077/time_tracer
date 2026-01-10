@@ -4,10 +4,8 @@
 #include <format>
 #include <vector>
 #include <algorithm>
-#include <memory> // [新增]
+#include <memory>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-// [删除] #include "reports/shared/utils/format/MarkdownUtils.hpp"
-// [新增] 引入 ProjectTreeFormatter
 #include "reports/shared/formatters/base/ProjectTreeFormatter.hpp"
 
 #include "reports/shared/factories/GenericFormatterFactory.hpp"
@@ -64,10 +62,10 @@ std::string MonthMd::format_report(const MonthlyReportData& data) const {
 }
 
 void MonthMd::_display_summary(std::stringstream& ss, const MonthlyReportData& data) const {
-    ss << std::format("## {0} {1}-{2}\n\n", 
+    // [修正] 直接使用 data.year_month (它已经是 "2025-01")
+    ss << std::format("## {0} {1}\n\n", 
         config_->get_report_title(), 
-        data.year_month.substr(0, 4), 
-        data.year_month.substr(4, 2)
+        data.year_month 
     );
 
     if (data.actual_days > 0) {

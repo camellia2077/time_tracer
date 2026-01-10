@@ -1,3 +1,16 @@
+cli模块目录太乱
+
+看看action_handler是不是完全由file_handler来实现读写，action_handlre是否和读写解耦
+
+
+md文档加入convert的特殊机制，即使没用输入指令，也会把转换后的json存储到本地
+md文档说明db_insert现在是接受内存中的结构
+
+问一下cmake是如何把print库链接到某个库的
+gcc和clang是否不一样
+
+
+
 高优先级
 0
 把python的热力图相关代码看看还能不能用
@@ -24,6 +37,10 @@ gemini "CMake 自动编译日期实现"
 
 
 中优先级
+-4
+因为现在blink或者run-pipeline程序会把json存储到内存中
+但是python还是一步一步的测试，你需要给python加入一个blink模式
+用toml来选择如何开启测试
 -3
 anction_handler命名修改为core
 
