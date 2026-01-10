@@ -8,11 +8,11 @@
 // 引入服务头文件
 #include "file_handler/FileController.hpp"
 #include "common/AppConfig.hpp"
-#include "action_handler/WorkflowHandler.hpp" // [确认] 引入 WorkflowHandler
-#include "action_handler/ReportHandler.hpp"
-#include "action_handler/database/DBManager.hpp"
-#include "action_handler/reporting/Exporter.hpp"
-#include "action_handler/reporting/ReportGenerator.hpp"
+#include "core/WorkflowHandler.hpp" // [确认] 引入 WorkflowHandler
+#include "core/ReportHandler.hpp"
+#include "core/database/DBManager.hpp"
+#include "core/reporting/Exporter.hpp"
+#include "core/reporting/ReportGenerator.hpp"
 
 // 引入注册中心和上下文
 #include "cli/CommandRegistry.hpp"

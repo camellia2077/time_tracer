@@ -2,7 +2,7 @@
 #include "Run.hpp"
 #include "cli/CliParser.hpp"
 #include "cli/CommandRegistry.hpp"
-#include "action_handler/WorkflowHandler.hpp"
+#include "core/WorkflowHandler.hpp"
 #include <iostream>
 #include <stdexcept>
 
