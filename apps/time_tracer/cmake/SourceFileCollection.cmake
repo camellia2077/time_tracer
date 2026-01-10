@@ -78,7 +78,7 @@ set(CONFIG_VALIDATOR_SOURCES
 set(CLI_SOURCES
     "src/cli/CliHelp.cpp"
     "src/cli/CommandRegistry.cpp"
-
+    "src/cli/InputPrompter.cpp"
     "src/cli/CliController.cpp"
     "src/cli/CliParser.cpp"
     "src/cli/commands/export/Export.cpp"
@@ -107,9 +107,12 @@ set(DB_INSERTER_SOURCES
     "src/db_inserter/inserter/pipelines/DbConnectionManager.cpp"
     "src/db_inserter/inserter/pipelines/DbStatementManager.cpp"
     
+    "src/db_inserter/service/ImportService.cpp"
 
     # 解析json
     "src/db_inserter/parser/facade/JsonParserFacade.cpp"
+    "src/db_inserter/parser/facade/MemoryParserFacade.cpp"
+    
     "src/db_inserter/parser/pipelines/ActivityParser.cpp"
     "src/db_inserter/parser/pipelines/DayParser.cpp"
     

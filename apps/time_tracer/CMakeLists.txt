@@ -1,13 +1,11 @@
 # --- START OF FILE CMakeLists.txt ---
 # src/CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
-project(TimeTrackerApp VERSION "0.3.25.3" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.3.26.1" LANGUAGES CXX)
 
-# ==================== [核心修改] ====================
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
 # 这可以从根本上解决在 Windows GBK 环境下因中文字符导致的编码错误
 set(CMAKE_CLI_FORCE_UTF8 ON)
-# ====================================================
 
 # 所有源文件都必须明确写出它们的扩展名
 cmake_policy(SET CMP0115 NEW)
@@ -56,7 +54,6 @@ add_executable(time_tracker_cli src/main_cli.cpp
 
 # 链接到新的共享库
 target_link_libraries(time_tracker_cli PRIVATE reports_shared)
-
 
 # 添加子目录以构建所有日报格式化器的 DLL
 add_subdirectory(src/reports/daily/formatters/md)

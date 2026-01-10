@@ -6,23 +6,21 @@
 #include <vector>
 #include <filesystem>
 #include "common/AppConfig.hpp"
-#include "reprocessing/converter/model/InputData.hpp" // [核心修改]
+#include "reprocessing/converter/model/InputData.hpp" 
 
 class LogProcessor {
 public:
     explicit LogProcessor(const AppConfig& config);
 
-    // --- [核心修改] ---
-    // 这个方法现在只负责调用转换器并返回内存中的数据
+    // 纯业务逻辑：将流转换为数据对象
     std::vector<InputData> convertStreamToData(std::istream& combined_stream);
 
-    // --- [核心修改] ---
-    // 保持 processFile 接口，但其实现将被简化，不再写入文件
+    // 纯业务逻辑：验证单个文件（虽然它打开了文件，但主要关注验证规则）
     ProcessingResult processFile(const std::filesystem::path& source_file, 
                                  const AppOptions& options);
     
-    bool collectFilesToProcess(const std::filesystem::path& input_path, std::vector<std::filesystem::path>& out_files);
-
+    // [删除] 文件查找职责不属于 Processor，已由 FileCollector/FileUtils 接管
+    // bool collectFilesToProcess(const std::filesystem::path& input_path, std::vector<std::filesystem::path>& out_files);
 
 private:
     AppConfig config_;
