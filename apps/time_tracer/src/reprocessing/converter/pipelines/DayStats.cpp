@@ -5,20 +5,19 @@
 #include <sstream>
 #include <ctime>
 #include <stdexcept>
-#include <algorithm>
+#include <algorithm> // 必须包含，用于 std::remove
 
 namespace {
+    // [核心修改] 这里的逻辑大大简化，因为输入已经是标准格式
     long long string_to_time_t(const std::string& datetime_str) {
-        if (datetime_str.length() < 14) {
+        // datetime_str 格式预期: "YYYY-MM-DD HH:MM" (长度 16)
+        if (datetime_str.length() < 16) {
             return 0;
         }
         std::tm t = {};
-        std::string formatted_datetime = datetime_str.substr(0, 4) + "-" +
-                                         datetime_str.substr(4, 2) + "-" +
-                                         datetime_str.substr(6, 2) +
-                                         datetime_str.substr(8);
-
-        std::stringstream ss(formatted_datetime);
+        
+        // 直接解析，不需要 substr 拼接
+        std::stringstream ss(datetime_str);
         ss >> std::get_time(&t, "%Y-%m-%d %H:%M");
 
         if (ss.fail()) {
@@ -47,9 +46,12 @@ int DayStats::calculateDurationSeconds(const std::string& startTimeStr, const st
 }
 
 long long DayStats::timeStringToTimestamp(const std::string& date, const std::string& time, bool is_end_time, long long start_timestamp_for_end) const {
-    if (date.length() != 8 || time.length() != 5) return 0;
-    std::string datetime_str = date + " " + time;
+    // date 格式现在是 YYYY-MM-DD (10 chars), time 是 HH:MM (5 chars)
+    if (date.length() != 10 || time.length() != 5) return 0;
+    
+    std::string datetime_str = date + " " + time; // "2025-01-01 07:00"
     long long timestamp = string_to_time_t(datetime_str);
+    
     if (is_end_time && timestamp < start_timestamp_for_end) {
         timestamp += 24 * 60 * 60;
     }
@@ -59,27 +61,29 @@ long long DayStats::timeStringToTimestamp(const std::string& date, const std::st
 
 void DayStats::calculate_stats(InputData& day) {
     day.activityCount = day.processedActivities.size();
-    day.generatedStats = {}; // 重置
+    day.generatedStats = {}; 
     day.hasStudyActivity = false;
     day.hasExerciseActivity = false;
 
     long long activity_sequence = 1;
     long long date_as_long = 0;
     try {
-        date_as_long = std::stoll(day.date);
+        // [核心修改] 为了生成 logical_id，需要去掉连字符
+        std::string temp_date = day.date; // "2025-01-01"
+        temp_date.erase(std::remove(temp_date.begin(), temp_date.end(), '-'), temp_date.end());
+        // 变成 "20250101"，用于数据库 ID
+        date_as_long = std::stoll(temp_date); 
     } catch (const std::invalid_argument&) {
         return;
     }
 
-
     for (auto& activity : day.processedActivities) {
+        // ID 格式保持: 202501010001
         activity.logical_id = date_as_long * 10000 + activity_sequence++;
         activity.durationSeconds = calculateDurationSeconds(activity.startTime, activity.endTime);
         activity.start_timestamp = timeStringToTimestamp(day.date, activity.startTime, false, 0);
         activity.end_timestamp = timeStringToTimestamp(day.date, activity.endTime, true, activity.start_timestamp);
 
-        // --- [核心修改] ---
-        // 基于 project_path 进行判断
         if (activity.project_path.rfind("study", 0) == 0) { 
             day.hasStudyActivity = true;
         }
@@ -94,7 +98,6 @@ void DayStats::calculate_stats(InputData& day) {
         }
 
         for (const auto& rule : StatsRules::rules) {
-            // 使用 find 检查 project_path 是否以规则的路径开头
             if (activity.project_path.find(rule.match_path) == 0) {
                 (day.generatedStats.*(rule.member)) += activity.durationSeconds;
             }

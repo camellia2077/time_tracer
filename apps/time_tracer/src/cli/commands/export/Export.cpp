@@ -1,12 +1,12 @@
 ﻿// cli/commands/export/Export.cpp
 #include "Export.hpp"
-#include "cli/CommandRegistry.hpp" // [新增]
+#include "cli/CommandRegistry.hpp"
+#include "common/utils/TimeUtils.hpp" // [新增]
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 #include <vector>
 
-// [新增] 静态注册
 static CommandRegistrar registrar("export", [](CliContext& ctx) {
     return std::make_unique<Export>(*ctx.report_handler);
 });
@@ -21,20 +21,22 @@ void Export::execute(const CliParser& parser) {
     }
 
     std::string sub_command = filtered_args[2];
-    
-    // [修改] 获取格式列表
     std::vector<ReportFormat> formats = parser.get_report_formats();
 
-    // [修改] 遍历所有格式执行导出
     for (const auto& format : formats) {
-        // 可选：打印当前正在导出的格式，增加用户体验
-        // std::cout << "Exporting format: " << (int)format << "..." << std::endl;
-
         if (sub_command == "daily" || sub_command == "monthly" || sub_command == "period" || sub_command == "all-period") {
             if (filtered_args.size() < 4) {
                 throw std::runtime_error("Argument required for export type '" + sub_command + "'.");
             }
             std::string export_arg = filtered_args[3];
+
+            // --- [新增] 自动格式化日期输入 ---
+            if (sub_command == "daily") {
+                export_arg = normalize_to_date_format(export_arg);
+            } else if (sub_command == "monthly") {
+                export_arg = normalize_to_month_format(export_arg);
+            }
+            // -------------------------------
 
             if (sub_command == "daily") {
                 report_handler_.run_export_single_day_report(export_arg, format);

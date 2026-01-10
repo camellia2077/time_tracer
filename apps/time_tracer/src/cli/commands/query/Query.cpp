@@ -1,11 +1,11 @@
 ﻿// cli/commands/query/Query.cpp
 #include "Query.hpp"
-#include "cli/CommandRegistry.hpp" // [新增]
+#include "cli/CommandRegistry.hpp" 
+#include "common/utils/TimeUtils.hpp" // [新增] 引入工具头文件
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 
-// [新增] 静态注册
 static CommandRegistrar registrar("query", [](CliContext& ctx) {
     return std::make_unique<Query>(*ctx.report_handler);
 });
@@ -22,14 +22,19 @@ void Query::execute(const CliParser& parser) {
     std::string sub_command = filtered_args[2];
     std::string query_arg = filtered_args[3];
     
-    // [修改] 获取格式列表
     std::vector<ReportFormat> formats = parser.get_report_formats();
 
-    // [修改] 遍历格式
+    // --- [新增] 自动格式化日期输入 ---
+    if (sub_command == "daily") {
+        query_arg = normalize_to_date_format(query_arg);
+    } else if (sub_command == "monthly") {
+        query_arg = normalize_to_month_format(query_arg);
+    }
+    // -------------------------------
+
     for (size_t i = 0; i < formats.size(); ++i) {
         ReportFormat format = formats[i];
         
-        // 如果输出多种格式，打印分隔符
         if (i > 0) {
             std::cout << "\n" << std::string(40, '=') << "\n";
         }
@@ -37,6 +42,7 @@ void Query::execute(const CliParser& parser) {
         if (sub_command == "daily") {
             std::cout << report_handler_.run_daily_query(query_arg, format);
         } else if (sub_command == "period") {
+            // period 接收的是整数天数，无需格式化
             std::string token;
             std::istringstream tokenStream(query_arg);
             bool first = true;

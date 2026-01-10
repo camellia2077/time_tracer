@@ -8,6 +8,7 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         const auto& generated_stats = day_json.at("generated_stats");
 
         DayData day_data;
+        // 这里获取到的现在是 "YYYY-MM-DD" 格式
         day_data.date = headers.at("date");
         day_data.status = headers.at("status");
         day_data.sleep = headers.at("sleep");
@@ -35,11 +36,15 @@ DayData DayParser::parse(const nlohmann::json& day_json) const {
         // [新增] 从 JSON 解析学习时间
         day_data.study_time = generated_stats.value("total_study_time", 0);
 
-        
-        if (day_data.date.length() == 8) {
+        // --- [核心修改] 适配 YYYY-MM-DD 格式 ---
+        if (day_data.date.length() == 10) {
+            // YYYY-MM-DD
+            // 0123456789
             day_data.year = std::stoi(day_data.date.substr(0, 4));
-            day_data.month = std::stoi(day_data.date.substr(4, 2));
+            // 月份从索引 5 开始，取 2 位
+            day_data.month = std::stoi(day_data.date.substr(5, 2));
         } else {
+            // 如果日期格式不符合预期，保留为0（或者可以抛出异常）
             day_data.year = 0;
             day_data.month = 0;
         }

@@ -23,25 +23,31 @@ void validateDateContinuity(const json& days_array, std::set<Error>& errors, Dat
     
     const auto& first_day_headers = days_array[0].value("headers", json::object());
     std::string first_date = first_day_headers.value("date", "");
-    if (first_date.length() != 8) return;
     
-    std::string yyyymm = first_date.substr(0, 6);
-    int year = std::stoi(yyyymm.substr(0, 4));
-    int month = std::stoi(yyyymm.substr(4, 2));
+    // [修改] 检查长度：YYYY-MM-DD 长度为 10
+    if (first_date.length() != 10) return;
+    
+    // [修改] 提取 YYYY-MM ("2025-01")
+    std::string yyyy_mm = first_date.substr(0, 7);
+    int year = std::stoi(first_date.substr(0, 4));
+    // [修改] 月份索引变为 5
+    int month = std::stoi(first_date.substr(5, 2));
 
     std::map<std::string, std::set<int>> month_day_map;
     for (const auto& day : days_array) {
         const auto& headers = day.value("headers", json::object());
         std::string date_str = headers.value("date", "");
-        if (date_str.rfind(yyyymm, 0) == 0 && date_str.length() == 8) {
-            month_day_map[yyyymm].insert(std::stoi(date_str.substr(6, 2)));
+        
+        // [修改] 匹配 YYYY-MM 前缀，长度 10
+        if (date_str.rfind(yyyy_mm, 0) == 0 && date_str.length() == 10) {
+            // [修改] 日期索引变为 8 (2025-01-01)
+            month_day_map[yyyy_mm].insert(std::stoi(date_str.substr(8, 2)));
         }
     }
 
-    const auto& days_found = month_day_map[yyyymm];
+    const auto& days_found = month_day_map[yyyy_mm];
     int num_days_in_this_month = days_in_month(year, month);
     
-    // [核心逻辑变化]
     int check_until = num_days_in_this_month; // 默认为 Full 模式：检查到月底
 
     if (mode == DateCheckMode::Continuity) {
@@ -52,10 +58,10 @@ void validateDateContinuity(const json& days_array, std::set<Error>& errors, Dat
 
     for (int d = 1; d <= check_until; ++d) {
         if (days_found.find(d) == days_found.end()) {
-            std::string missing_date_str = yyyymm + (d < 10 ? "0" : "") + std::to_string(d);
-            std::string error_msg = "Missing date detected in month " + yyyymm.substr(0,4) + "-" + yyyymm.substr(4,2) + ": " + missing_date_str;
+            // [修改] 构造缺失日期的字符串 YYYY-MM-DD
+            std::string missing_date_str = yyyy_mm + "-" + (d < 10 ? "0" : "") + std::to_string(d);
+            std::string error_msg = "Missing date detected in month " + yyyy_mm + ": " + missing_date_str;
             
-            // 稍微区分一下报错信息，方便调试
             if (mode == DateCheckMode::Continuity) {
                 error_msg += " (Continuity Check)";
             } else {
