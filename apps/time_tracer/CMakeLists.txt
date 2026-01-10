@@ -1,7 +1,7 @@
 # --- START OF FILE CMakeLists.txt ---
 # src/CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
-project(TimeTrackerApp VERSION "0.3.26.1" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.3.26.5" LANGUAGES CXX)
 
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
 # 这可以从根本上解决在 Windows GBK 环境下因中文字符导致的编码错误
@@ -47,7 +47,7 @@ add_executable(time_tracker_cli src/main_cli.cpp
     ${DB_INSERTER_SOURCES}
     ${REPORTS_SOURCES}
     ${REPROCESSING_SOURCES}
-    ${FILE_HANDLER_SOURCES}
+    ${IO_SOURCES}
     ${CORE_SOURCES}
     ${CLI_SOURCES}
 )
@@ -82,7 +82,7 @@ foreach(TARGET_NAME ${ALL_TARGETS})
     add_custom_command(
         TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/config"
+        "${CMAKE_CURRENT_SOURCE_DIR}/config"         # [修改] 从 src/config 改为 config
         "$<TARGET_FILE_DIR:${TARGET_NAME}>/config"
         COMMENT "Copying config folder for ${TARGET_NAME}"
     )
