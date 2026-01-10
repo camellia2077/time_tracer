@@ -1,32 +1,31 @@
 高优先级
+0
+把python的热力图相关代码看看还能不能用
+
 1 
-convert命令中，应该把json从内存中保存到本地，以及转化为json这两个解耦，让action_handler来决定是否要保存到本地。
+convert命令中，应该加入是否把json从内存中保存到本地，，让action_handler来决定是否要保存到本地。
 
-2 json自定义格式化输出的标题，输出为true ,不输出为false
+2 对于日期检查，是否把预处理过程中生成的中间文件json保存到本地。类的命令，是不是可以先从json中读取，如果没有则查看命令行是否传入
+让命令行优先级大于json优先级
+
+3
 自定义标题的输出顺序
+reports文件夹中json自定义格式化输出的标题，输出为true ,不输出为false
 
-3 看一下每个活动的解析，存储，以及数据库中的数据结构有没有可以优化的地方
+4 看一下每个活动的解析，存储，以及数据库中的数据结构有没有可以优化的地方
     gemini对话"递归转迭代优化项目树格式化"
     
-4 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
+5 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
 gemini "CMake 自动编译日期实现"
 
-5
+6
 看看cli的输入以及实现是否符合变成规范
 
 
 
 中优先级
--2
-我们要把日期修改为标准的，例如2025-12-01
-因此要修改reprocessing中的json生成
-同时--date-check continuity的算法需要修改，因为之前是20251201这种格式
-
-插入数据库需要修改？查询的时候，用数据库自带的对于标准日期的方法进行查询，而不是
-获取像20251201这种数据后，手动拆分字符串
-
-然后把程序中手动拆分字符串获取日期的相关代码都删除
-
+-3
+anction_handler命名修改为core
 
 -1
 import的时候要检查是否为所需的 json文件，以免用户import了txt文件
@@ -131,6 +130,8 @@ Flutter/React Native: 通过 FFI (Foreign Function Interface) 调用 C 接口。
 tex文件无法编译，看看tex的结构有什么问题
 
 
+
+
 未来
 1 
 第一步（必须做）： 将所有 std::cout/cerr 替换为 ILogger 回调。这能解决“其他平台看不见日志”的问题。
@@ -150,7 +151,7 @@ tex文件无法编译，看看tex的结构有什么问题
 方法 1：引入抽象日志接口 (Dependency Injection)
 这是最标准的方法。让 reprocessing 模块不依赖具体的 iostream，而是依赖一个抽象的接口。
 
-
+2. 和sliqte解耦，采取注册模式?支持多种数据库
 
 
 
@@ -230,11 +231,6 @@ pacman -S mingw-w64-ucrt-x86_64-lld
 
 
 
-## 低优先级
-### dll放入plugs文件夹再读取
-
-### 标记语言编译python的配置使用toml
-
 ### 输出报告的hpp使用外置的json配置文件来传入字体
-### 把log测试程序生成部分封装成python库，用pybind
+
 

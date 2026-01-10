@@ -4,8 +4,6 @@
 #include <cctype>
 #include <iostream>
 #include "common/AnsiColors.hpp" 
-
-// --- [核心修改] 替换头文件引用以使用新的工具模块 ---
 #include "common/utils/StringUtils.hpp" 
 
 namespace {
@@ -24,7 +22,7 @@ void InputParser::parse(std::istream& inputStream, std::function<void(InputData&
     std::string current_year_prefix = "";
 
     while (std::getline(inputStream, line)) {
-        line = trim(line); // trim 函数现在来自 StringUtils.hpp
+        line = trim(line);
         if (line.empty()) continue;
 
         if (isYearMarker(line)) {
@@ -42,7 +40,12 @@ void InputParser::parse(std::istream& inputStream, std::function<void(InputData&
                 onNewDay(currentDay);
             }
             currentDay.clear();
-            currentDay.date = current_year_prefix + line;
+            
+            // [核心修改] 这里直接构造标准格式 YYYY-MM-DD
+            // line 是 "0101" (MMDD)
+            // 结果: "2025-01-01"
+            currentDay.date = current_year_prefix + "-" + line.substr(0, 2) + "-" + line.substr(2, 2);
+            
         } else {
             parseLine(line, currentDay);
         }
