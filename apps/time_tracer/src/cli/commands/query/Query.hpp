@@ -3,7 +3,7 @@
 #define QUERY_HPP
 
 #include "cli/commands/interface/ICommand.hpp"
-#include "action_handler/ReportHandler.hpp"
+#include "core/ReportHandler.hpp"
 
 class Query : public ICommand {
 public:

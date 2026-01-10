@@ -18,7 +18,7 @@
     * **无状态性**: 只接收数据对象进行判断，不负责 I/O 操作。
 
 ### 0.3 核心业务编排层 (Core Orchestration Layer)
-* **核心组件**: `action_handler` (计划重命名为 `core`)
+* **核心组件**: `core` 
 * **组件示例**: `WorkflowHandler`, `PipelineManager`
 * **职责**: 
     * **信任原则**: 该层**假设**环境是健康的、配置是合法的（由上层保证）。
