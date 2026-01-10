@@ -1,7 +1,5 @@
 cli模块目录太乱
 
-看看action_handler是不是完全由file_handler来实现读写，action_handlre是否和读写解耦
-
 
 md文档加入convert的特殊机制，即使没用输入指令，也会把转换后的json存储到本地
 md文档说明db_insert现在是接受内存中的结构
@@ -15,8 +13,7 @@ gcc和clang是否不一样
 0
 把python的热力图相关代码看看还能不能用
 
-1 
-convert命令中，应该加入是否把json从内存中保存到本地，，让action_handler来决定是否要保存到本地。
+
 
 2 对于日期检查，是否把预处理过程中生成的中间文件json保存到本地。类的命令，是不是可以先从json中读取，如果没有则查看命令行是否传入
 让命令行优先级大于json优先级

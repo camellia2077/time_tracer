@@ -185,25 +185,29 @@ set(FILE_HANDLER_SOURCES
     "src/file_handler/ConfigLoader.cpp"
     "src/file_handler/FileController.cpp"
     "src/file_handler/FileUtils.cpp"
+    "src/file_handler/FileReader.cpp"
+    "src/file_handler/FileWriter.cpp"
+    "src/file_handler/FileSystemHelper.cpp"
+    
 )
 
-# --- Action Handler Sources ---
-set(ACTION_HANDLER_SOURCES
-    "src/action_handler/WorkflowHandler.cpp"
-    "src/action_handler/ReportHandler.cpp"
-    "src/action_handler/database/DBManager.cpp"
-    "src/action_handler/file/PipelineManager.cpp"
+# --- Core Sources ---
+set(CORE_SOURCES
+    "src/core/WorkflowHandler.cpp"
+    "src/core/ReportHandler.cpp"
+    "src/core/database/DBManager.cpp"
+    "src/core/file/PipelineManager.cpp"
 
     # Pipeline steps文件
-    "src/action_handler/file/steps/FileCollector.cpp"
-    "src/action_handler/file/steps/SourceValidatorStep.cpp"
-    "src/action_handler/file/steps/ConverterStep.cpp"
-    "src/action_handler/file/steps/OutputValidatorStep.cpp"
+    "src/core/file/steps/FileCollector.cpp"
+    "src/core/file/steps/SourceValidatorStep.cpp"
+    "src/core/file/steps/ConverterStep.cpp"
+    "src/core/file/steps/OutputValidatorStep.cpp"
 
-    "src/action_handler/reporting/Exporter.cpp"
-    "src/action_handler/reporting/ExportUtils.cpp"
-    "src/action_handler/reporting/ReportFileManager.cpp"
-    "src/action_handler/reporting/ReportGenerator.cpp"
+    "src/core/reporting/Exporter.cpp"
+    "src/core/reporting/ExportUtils.cpp"
+    "src/core/reporting/ReportFileManager.cpp"
+    "src/core/reporting/ReportGenerator.cpp"
 )
 
 message(STATUS "Source files collected explicitly.")
