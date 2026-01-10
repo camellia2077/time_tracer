@@ -11,6 +11,14 @@
 bool OutputValidatorStep::execute(PipelineContext& context) {
     std::cout << "\n--- 阶段: 检验输出文件 ---" << std::endl;
 
+    // [新增] 特殊检查：如果选择了不保存输出，且没有生成文件，则跳过验证并提示
+    // 这里的逻辑是：如果用户跑了转换(context中有转换后的数据但没落地)，验证器(目前基于文件)无法工作。
+    // 除非您编写基于内存数据的验证器，否则这里必须跳过。
+    if (!context.save_processed_output && context.generated_files.empty()) {
+        std::cout << YELLOW_COLOR << "信息: 由于未保存中间 JSON 文件，跳过基于文件的输出验证。" << RESET_COLOR << std::endl;
+        return true; 
+    }
+
     // 确定要验证的文件列表
     const std::vector<fs::path>* files_ptr = &context.generated_files;
     

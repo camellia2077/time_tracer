@@ -11,7 +11,6 @@ public:
     explicit Run(WorkflowHandler& workflow_handler);
 
     void execute(const CliParser& parser) override;
-    std::string get_help() const override;
 
 private:
     // [修改] 成员变量类型变更为 WorkflowHandler

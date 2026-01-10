@@ -1,7 +1,6 @@
 // action_handler/ReportHandler.cpp
 #include "action_handler/ReportHandler.hpp"
 #include "action_handler/reporting/Exporter.hpp"
-// 移除了 #include "action_handler/query/QueryManager.hpp"
 #include "action_handler/reporting/ReportGenerator.hpp"
 #include "common/AnsiColors.hpp"
 #include <iostream>

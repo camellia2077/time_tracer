@@ -13,6 +13,7 @@ void print_full_usage(const char* app_name) {
 
     std::println("                                  Options:");
     std::println("                                    --date-check <mode>  Set date check mode: 'continuity' (check gaps) or 'full' (strict).");
+    // 注意：--save-processed 目前作为高级/调试选项，未在帮助文档中显式列出，符合保持简洁的原则
 
     std::println("  query <type> <period>\t\t Query data from the database.");
     std::println("  export <type> <period>\t Export reports from the database.\n");

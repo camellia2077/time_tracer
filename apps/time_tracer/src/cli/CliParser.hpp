@@ -22,6 +22,8 @@ public:
     std::vector<ReportFormat> get_report_formats() const;
 
     DateCheckMode get_date_check_mode() const;
+    // 检查是否包含保存参数
+    bool should_save_processed() const;
 
 private:
     std::vector<std::string> raw_args_;
