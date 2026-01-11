@@ -1,8 +1,8 @@
-// db_inserter/parser/pipelines/ActivityParser.hpp
+﻿// importer/parser/details/ActivityParser.hpp
 #ifndef ACTIVITY_PARSER_HPP
 #define ACTIVITY_PARSER_HPP
 
-#include "db_inserter/model/time_sheet_model.hpp"
+#include "importer/model/TimeSheetData.hpp"
 #include <nlohmann/json.hpp>
 
 class ActivityParser {

@@ -1,13 +1,12 @@
-// db_inserter/inserter/pipelines/DbConnectionManager.cpp
-#include "DbConnectionManager.hpp"
+﻿// importer/storage/sqlite/Connection.cpp
+#include "Connection.hpp"
 #include <iostream>
 
-DbConnectionManager::DbConnectionManager(const std::string& db_path) : db_(nullptr) { // MODIFIED
+Connection::Connection(const std::string& db_path) : db_(nullptr) { // MODIFIED
     if (sqlite3_open(db_path.c_str(), &db_) != SQLITE_OK) { // MODIFIED
         std::cerr << "Error: Cannot open database: " << sqlite3_errmsg(db_) << std::endl; // MODIFIED
         db_ = nullptr; // MODIFIED
     } else {
-        // --- [核心修改] 更新 days 表的定义 ---
         const char* create_days_sql =
                 "CREATE TABLE IF NOT EXISTS days ("
                 "date TEXT PRIMARY KEY, "
@@ -63,25 +62,25 @@ DbConnectionManager::DbConnectionManager(const std::string& db_path) : db_(nullp
     }
 }
 
-DbConnectionManager::~DbConnectionManager() {
+Connection::~Connection() {
     if (db_) { // MODIFIED
         sqlite3_close(db_); // MODIFIED
     }
 }
 
-sqlite3* DbConnectionManager::get_db() const {
+sqlite3* Connection::get_db() const {
     return db_; // MODIFIED
 }
 
-bool DbConnectionManager::begin_transaction() {
+bool Connection::begin_transaction() {
     return execute_sql(db_, "BEGIN TRANSACTION;", "Begin transaction"); // MODIFIED
 }
 
-bool DbConnectionManager::commit_transaction() {
+bool Connection::commit_transaction() {
     return execute_sql(db_, "COMMIT;", "Commit transaction"); // MODIFIED
 }
 
-void DbConnectionManager::rollback_transaction() {
+void Connection::rollback_transaction() {
     execute_sql(db_, "ROLLBACK;", "Rollback transaction"); // MODIFIED
 }
 

@@ -1,4 +1,4 @@
-// db_inserter/parser/pipelines/ActivityParser.cpp
+﻿// importer/parser/details/ActivityParser.cpp
 #include "ActivityParser.hpp"
 #include <stdexcept>
 

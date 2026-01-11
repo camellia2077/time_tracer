@@ -1,5 +1,5 @@
-// db_inserter/inserter/pipelines/DataInserter.cpp
-#include "DataInserter.hpp"
+﻿// importer/storage/sqlite/Writer.cpp
+#include "Writer.hpp"
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -14,7 +14,7 @@ static std::vector<std::string> split_string(const std::string& s, char delimite
     return tokens;
 }
 
-DataInserter::DataInserter(sqlite3* db,
+Writer::Writer(sqlite3* db,
                            sqlite3_stmt* stmt_day,
                            sqlite3_stmt* stmt_record,
                            sqlite3_stmt* stmt_select_project,
@@ -25,7 +25,7 @@ DataInserter::DataInserter(sqlite3* db,
       stmt_select_project_id_(stmt_select_project),
       stmt_insert_project_(stmt_insert_project) {}
 
-void DataInserter::insert_days(const std::vector<DayData>& days) {
+void Writer::insert_days(const std::vector<DayData>& days) {
     for (const auto& day_data : days) {
         sqlite3_bind_text(stmt_insert_day_, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT); 
         sqlite3_bind_int(stmt_insert_day_, 2, day_data.year); 
@@ -66,7 +66,7 @@ void DataInserter::insert_days(const std::vector<DayData>& days) {
     }
 }
 
-void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records) {
+void Writer::insert_records(const std::vector<TimeRecordInternal>& records) {
     for (const auto& record_data : records) {
         long long project_id = get_or_create_project_id(record_data.project_path);
 
@@ -92,7 +92,7 @@ void DataInserter::insert_records(const std::vector<TimeRecordInternal>& records
     }
 }
 
-long long DataInserter::get_or_create_project_id(const std::string& project_path) {
+long long Writer::get_or_create_project_id(const std::string& project_path) {
     if (project_path_cache_.count(project_path)) {
         return project_path_cache_[project_path];
     }

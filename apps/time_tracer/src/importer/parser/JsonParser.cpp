@@ -1,28 +1,23 @@
-// db_inserter/parser/facade/JsonParserFacade.cpp
-#include "JsonParserFacade.hpp"
+﻿// importer/parser/JsonParser.cpp
+#include "JsonParser.hpp"
 
-#include "db_inserter/parser/pipelines/ActivityParser.hpp"
-#include "db_inserter/parser/pipelines/DayParser.hpp"
+#include "importer/parser/details/ActivityParser.hpp"
+#include "importer/parser/details/DayParser.hpp"
 
-#include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include "common/AnsiColors.hpp"
 
-ParsedData JsonParserFacade::parse_file(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Cannot open JSON file " + filename);
-    }
-
+ParsedData JsonParser::parse_content(const std::string& json_content, const std::string& context_name) {
+    // [核心修改] 不再打开文件，直接解析字符串
     nlohmann::json days_array;
     try {
-        file >> days_array;
+        days_array = nlohmann::json::parse(json_content);
         if (!days_array.is_array()) {
-            throw std::runtime_error("JSON root in " + filename + " is not an array.");
+            throw std::runtime_error("JSON root in " + context_name + " is not an array.");
         }
     } catch (const nlohmann::json::parse_error& e) {
-        throw std::runtime_error("Error parsing JSON from " + filename + ": " + e.what());
+        throw std::runtime_error("Error parsing JSON from " + context_name + ": " + e.what());
     }
 
     ParsedData all_parsed_data;
@@ -36,8 +31,6 @@ ParsedData JsonParserFacade::parse_file(const std::string& filename) {
             const auto& activities_array = day_json.at("activities");
             if (activities_array.is_array()) {
                 for (const auto& activity_json : activities_array) {
-                    // --- [核心修改] ---
-                    // 调用已简化的 parse 方法
                     TimeRecordInternal record = activity_parser.parse(
                         activity_json,
                         day_data.date
@@ -48,7 +41,7 @@ ParsedData JsonParserFacade::parse_file(const std::string& filename) {
             all_parsed_data.days.push_back(day_data);
         }
     } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "Error processing data in " << filename << ": " << e.what() << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error processing data in " << context_name << ": " << e.what() << RESET_COLOR << std::endl;
         throw;
     }
 

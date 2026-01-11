@@ -1,8 +1,8 @@
-// db_inserter/parser/pipelines/DayParser.hpp
+﻿// importer/parser/details/DayParser.hpp
 #ifndef DAY_PARSER_HPP
 #define DAY_PARSER_HPP
 
-#include "db_inserter/model/time_sheet_model.hpp"
+#include "importer/model/TimeSheetData.hpp"
 #include <nlohmann/json.hpp>
 
 class DayParser {

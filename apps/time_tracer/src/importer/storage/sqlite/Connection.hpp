@@ -1,14 +1,14 @@
-// db_inserter/inserter/pipelines/DbConnectionManager.hpp
-#ifndef DB_CONNECTION_MANAGER_HPP
-#define DB_CONNECTION_MANAGER_HPP
+﻿// importer/storage/sqlite/Connection.hpp
+#ifndef CONNECTION_HPP
+#define CONNECTION_HPP
 
 #include <string>
 #include <sqlite3.h>
 
-class DbConnectionManager {
+class Connection {
 public:
-    explicit DbConnectionManager(const std::string& db_path);
-    ~DbConnectionManager();
+    explicit Connection(const std::string& db_path);
+    ~Connection();
 
     sqlite3* get_db() const;
     bool begin_transaction();
@@ -21,4 +21,4 @@ private:
 
 bool execute_sql(sqlite3* db, const std::string& sql, const std::string& context_msg = "");
 
-#endif // DB_CONNECTION_MANAGER_HPP
+#endif // CONNECTION_HPP

@@ -1,8 +1,8 @@
-// db_inserter/inserter/pipelines/DbStatementManager.cpp
-#include "DbStatementManager.hpp"
+﻿// importer/storage/sqlite/Statement.cpp
+#include "Statement.hpp"
 #include <stdexcept>
 
-DbStatementManager::DbStatementManager(sqlite3* db)
+Statement::Statement(sqlite3* db)
     : db_(db),  
       stmt_insert_day_(nullptr),  
       stmt_insert_record_(nullptr), 
@@ -12,16 +12,16 @@ DbStatementManager::DbStatementManager(sqlite3* db)
     _prepare_statements();
 }
 
-DbStatementManager::~DbStatementManager() {
+Statement::~Statement() {
     _finalize_statements();
 }
 
-sqlite3_stmt* DbStatementManager::get_insert_day_stmt() const { return stmt_insert_day_; } 
-sqlite3_stmt* DbStatementManager::get_insert_record_stmt() const { return stmt_insert_record_; } 
-sqlite3_stmt* DbStatementManager::get_select_project_id_stmt() const { return stmt_select_project_id_; } 
-sqlite3_stmt* DbStatementManager::get_insert_project_stmt() const { return stmt_insert_project_; }
+sqlite3_stmt* Statement::get_insert_day_stmt() const { return stmt_insert_day_; } 
+sqlite3_stmt* Statement::get_insert_record_stmt() const { return stmt_insert_record_; } 
+sqlite3_stmt* Statement::get_select_project_id_stmt() const { return stmt_select_project_id_; } 
+sqlite3_stmt* Statement::get_insert_project_stmt() const { return stmt_insert_project_; }
 
-void DbStatementManager::_prepare_statements() {
+void Statement::_prepare_statements() {
     const char* insert_day_sql = 
     "INSERT INTO days ("
         // [1-7] 基础信息
@@ -70,7 +70,7 @@ void DbStatementManager::_prepare_statements() {
     }
 }
 
-void DbStatementManager::_finalize_statements() {
+void Statement::_finalize_statements() {
     if (stmt_insert_day_) sqlite3_finalize(stmt_insert_day_); 
     if (stmt_insert_record_) sqlite3_finalize(stmt_insert_record_); 
     if (stmt_select_project_id_) sqlite3_finalize(stmt_select_project_id_); 

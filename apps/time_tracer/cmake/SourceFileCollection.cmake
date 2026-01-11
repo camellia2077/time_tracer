@@ -93,30 +93,27 @@ set(CLI_SOURCES
     "src/cli/commands/pipeline/ValidateSource.cpp"
 )
 # --- DB Inserter Sources ---
-set(DB_BOOTSTRAP_SOURCES
+set(BOOTSTRAP_SOURCES
     "src/bootstrap/StartupValidator.cpp"
 )
 
-# --- DB Inserter Sources ---
-set(DB_INSERTER_SOURCES
-    "src/db_inserter/DataImporter.cpp"
-    # 插入的封装
-    "src/db_inserter/inserter/facade/DatabaseInserter.cpp"
-    # 插入的实现
-    "src/db_inserter/inserter/pipelines/DataInserter.cpp"
-    "src/db_inserter/inserter/pipelines/DbConnectionManager.cpp"
-    "src/db_inserter/inserter/pipelines/DbStatementManager.cpp"
-    
-    "src/db_inserter/service/ImportService.cpp"
+# --- Importer Sources (Database Ingestion Module) ---
+set(IMPORTER_SOURCES
+    # Top-level Facade & Service
+    "src/importer/DataImporter.cpp"
+    "src/importer/ImportService.cpp"
 
-    # 解析json
-    "src/db_inserter/parser/facade/JsonParserFacade.cpp"
-    "src/db_inserter/parser/facade/MemoryParserFacade.cpp"
-    
-    "src/db_inserter/parser/pipelines/ActivityParser.cpp"
-    "src/db_inserter/parser/pipelines/DayParser.cpp"
-    
+    # Parser Layer (Parsing logic)
+    "src/importer/parser/JsonParser.cpp"
+    "src/importer/parser/MemoryParser.cpp"
+    "src/importer/parser/details/DayParser.cpp"
+    "src/importer/parser/details/ActivityParser.cpp"
 
+    # Storage Layer (Database persistence)
+    "src/importer/storage/Repository.cpp"
+    "src/importer/storage/sqlite/Writer.cpp"
+    "src/importer/storage/sqlite/Connection.cpp"
+    "src/importer/storage/sqlite/Statement.cpp"
 )
 
 set(REPORTS_SOURCES

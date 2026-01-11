@@ -1,8 +1,8 @@
-// db_inserter/parser/facade/MemoryParserFacade.cpp
-#include "MemoryParserFacade.hpp"
+﻿// importer/parser/MemoryParser.cpp
+#include "MemoryParser.hpp"
 #include <iostream>
 
-ParsedData MemoryParserFacade::parse(const std::map<std::string, std::vector<InputData>>& data_map) {
+ParsedData MemoryParser::parse(const std::map<std::string, std::vector<InputData>>& data_map) {
     ParsedData all_data;
     
     for (const auto& [month_str, days] : data_map) {
@@ -34,7 +34,7 @@ ParsedData MemoryParserFacade::parse(const std::map<std::string, std::vector<Inp
             for (size_t i = 0; i < input_day.generalRemarks.size(); ++i) {
                 merged_remark += input_day.generalRemarks[i];
                 if (i < input_day.generalRemarks.size() - 1) {
-                    merged_remark += "\n"; // 使用换行符保留源文件的行结构
+                    merged_remark += "\n"; // 使用换行符保留日备注的的行结构
                 }
             }
             day_data.remark = merged_remark;
