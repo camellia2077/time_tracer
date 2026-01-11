@@ -3,7 +3,7 @@
 #define CONVERTER_STEP_HPP
 
 #include "core/file/PipelineContext.hpp"
-#include "reprocessing/LogProcessor.hpp"
+#include "converter/LogProcessor.hpp"
 
 class ConverterStep {
 public:
@@ -11,7 +11,7 @@ public:
     bool execute(PipelineContext& context);
 
 private:
-    LogProcessor processor_; 
+    const AppConfig& app_config_; // [修改] 只持有 AppConfig
     void printTiming(double ms) const;
 };
 

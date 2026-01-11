@@ -46,7 +46,7 @@ add_executable(time_tracker_cli src/main_cli.cpp
     ${CONFIG_VALIDATOR_SOURCES}
     ${IMPORTER_SOURCES}
     ${REPORTS_SOURCES}
-    ${REPROCESSING_SOURCES}
+    ${CONVERTER_SOURCES}
     ${IO_SOURCES}
     ${CORE_SOURCES}
     ${CLI_SOURCES}
