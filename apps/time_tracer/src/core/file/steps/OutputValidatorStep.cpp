@@ -3,7 +3,7 @@
 #include "converter/validator/FileValidator.hpp"
 #include "converter/validator/common/ValidatorUtils.hpp"
 #include "common/AnsiColors.hpp"
-#include "io/core/FileReader.hpp" // [New]
+#include "io/core/FileReader.hpp"
 #include <iostream>
 #include <chrono>
 #include <iomanip>
@@ -13,15 +13,16 @@
 bool OutputValidatorStep::execute(PipelineContext& context) {
     std::cout << "\n--- 阶段: 检验输出文件 ---" << std::endl;
 
-    if (!context.save_processed_output && context.generated_files.empty()) {
+    // [修正] config.save_processed_output 和 state.generated_files
+    if (!context.config.save_processed_output && context.state.generated_files.empty()) {
         std::cout << YELLOW_COLOR << "信息: 由于未保存中间 JSON 文件，跳过基于文件的输出验证。" << RESET_COLOR << std::endl;
         return true; 
     }
 
-    const std::vector<fs::path>* files_ptr = &context.generated_files;
-    if (context.generated_files.empty()) {
-        if (!context.source_files.empty()) {
-            files_ptr = &context.source_files;
+    const std::vector<fs::path>* files_ptr = &context.state.generated_files;
+    if (context.state.generated_files.empty()) {
+        if (!context.state.source_files.empty()) {
+            files_ptr = &context.state.source_files;
         } else {
              std::cerr << YELLOW_COLOR << "警告: 没有找到可供检验的文件。" << RESET_COLOR << std::endl;
              return true; 
@@ -31,21 +32,19 @@ bool OutputValidatorStep::execute(PipelineContext& context) {
     bool all_ok = true;
     double total_ms = 0.0;
     
-    // OutputValidatorStep 不需要 ConverterConfig，或者使用 Context 中的空 Config (如果JsonValidator不依赖它)
-    // FileValidator 需要 Config 构造，即使只用 validate_json
-    // 这里使用 Context 中的 config
-    FileValidator output_validator(context.converter_config);
+    // [修正] state.converter_config
+    FileValidator output_validator(context.state.converter_config);
 
     for (const auto& file_to_validate : *files_ptr) {
         auto start_time = std::chrono::steady_clock::now();
         std::set<Error> errors;
         
         try {
-            // [核心修改] 读取文件并解析 JSON
             std::string content = FileReader::read_content(file_to_validate);
             nlohmann::json json_content = nlohmann::json::parse(content);
 
-            if (!output_validator.validate_json(file_to_validate.string(), json_content, errors, context.date_check_mode)) {
+            // [修正] config.date_check_mode
+            if (!output_validator.validate_json(file_to_validate.string(), json_content, errors, context.config.date_check_mode)) {
                 printGroupedErrors(file_to_validate.string(), errors);
                 all_ok = false;
             }

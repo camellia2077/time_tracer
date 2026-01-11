@@ -29,13 +29,12 @@ void Output::write(std::ostream& outputStream, const std::vector<InputData>& day
         headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         headers_obj["activity_count"] = day.activityCount;
 
-        // [核心修改] 将多行备注拼接为一个完整的字符串
         if (!day.generalRemarks.empty()) {
             std::string full_remark;
             for (size_t i = 0; i < day.generalRemarks.size(); ++i) {
                 full_remark += day.generalRemarks[i];
                 if (i < day.generalRemarks.size() - 1) {
-                    full_remark += "\n"; // 使用换行符连接
+                    full_remark += "\n"; 
                 }
             }
             headers_obj["remark"] = full_remark;
@@ -49,16 +48,17 @@ void Output::write(std::ostream& outputStream, const std::vector<InputData>& day
 
         for (const auto& activity_data : day.processedActivities) {
             json activity_obj;
+            // [适配] BaseActivityRecord 字段
             activity_obj["logical_id"] = activity_data.logical_id;
             activity_obj["start_timestamp"] = activity_data.start_timestamp;
             activity_obj["end_timestamp"] = activity_data.end_timestamp;
 
-            activity_obj["start_time"] = activity_data.startTime;
-            activity_obj["end_time"] = activity_data.endTime;
-            activity_obj["duration_seconds"] = activity_data.durationSeconds;
+            activity_obj["start_time"] = activity_data.start_time_str; // [Modified]
+            activity_obj["end_time"] = activity_data.end_time_str;     // [Modified]
+            activity_obj["duration_seconds"] = activity_data.duration_seconds; // [Modified]
 
-            if (activity_data.activityRemark.has_value()) {
-                activity_obj["activity_remark"] = activity_data.activityRemark.value();
+            if (activity_data.remark.has_value()) {
+                activity_obj["activity_remark"] = activity_data.remark.value(); // [Modified]
             } else {
                 activity_obj["activity_remark"] = nullptr; 
             }
@@ -72,21 +72,22 @@ void Output::write(std::ostream& outputStream, const std::vector<InputData>& day
         day_obj["activities"] = activities;
 
         json generated_stats_obj;
-        generated_stats_obj["sleep_night_time"] = day.generatedStats.sleepNightTime;
-        generated_stats_obj["sleep_day_time"] = day.generatedStats.sleepDayTime;
-        generated_stats_obj["sleep_total_time"] = day.generatedStats.sleepTotalTime;
-        generated_stats_obj["total_exercise_time"] = day.generatedStats.totalExerciseTime;
-        generated_stats_obj["cardio_time"] = day.generatedStats.cardioTime;
-        generated_stats_obj["anaerobic_time"] = day.generatedStats.anaerobicTime;
-        generated_stats_obj["grooming_time"] = day.generatedStats.groomingTime;
-        generated_stats_obj["toilet_time"] = day.generatedStats.toiletTime;
-        generated_stats_obj["gaming_time"] = day.generatedStats.gamingTime;
-        generated_stats_obj["recreation_time"] = day.generatedStats.recreationTime;
-        // --- [新增字段] ---
-        generated_stats_obj["recreation_zhihu_time"] = day.generatedStats.recreationZhihuTime;
-        generated_stats_obj["recreation_bilibili_time"] = day.generatedStats.recreationBilibiliTime;
-        generated_stats_obj["recreation_douyin_time"] = day.generatedStats.recreationDouyinTime;
-        generated_stats_obj["total_study_time"] = day.generatedStats.studyTime;
+        // [适配] GeneratedStats -> ActivityStats (day.stats) 以及字段名
+        generated_stats_obj["sleep_night_time"] = day.stats.sleep_night_time;
+        generated_stats_obj["sleep_day_time"] = day.stats.sleep_day_time;
+        generated_stats_obj["sleep_total_time"] = day.stats.sleep_total_time;
+        generated_stats_obj["total_exercise_time"] = day.stats.total_exercise_time;
+        generated_stats_obj["cardio_time"] = day.stats.cardio_time;
+        generated_stats_obj["anaerobic_time"] = day.stats.anaerobic_time;
+        generated_stats_obj["grooming_time"] = day.stats.grooming_time;
+        generated_stats_obj["toilet_time"] = day.stats.toilet_time;
+        generated_stats_obj["gaming_time"] = day.stats.gaming_time;
+        generated_stats_obj["recreation_time"] = day.stats.recreation_time;
+        
+        generated_stats_obj["recreation_zhihu_time"] = day.stats.recreation_zhihu_time;
+        generated_stats_obj["recreation_bilibili_time"] = day.stats.recreation_bilibili_time;
+        generated_stats_obj["recreation_douyin_time"] = day.stats.recreation_douyin_time;
+        generated_stats_obj["total_study_time"] = day.stats.study_time;
         
         day_obj["generated_stats"] = generated_stats_obj;
 

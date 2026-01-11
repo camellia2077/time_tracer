@@ -41,23 +41,24 @@ void Writer::insert_days(const std::vector<DayData>& days) {
         }
 
         sqlite3_bind_int(stmt_insert_day_, 8, day_data.exercise); 
-        sqlite3_bind_int(stmt_insert_day_, 9, day_data.total_exercise_time); 
-        sqlite3_bind_int(stmt_insert_day_, 10, day_data.cardio_time); 
-        sqlite3_bind_int(stmt_insert_day_, 11, day_data.anaerobic_time); 
-        sqlite3_bind_int(stmt_insert_day_, 12, day_data.gaming_time); 
-        sqlite3_bind_int(stmt_insert_day_, 13, day_data.grooming_time); 
-        sqlite3_bind_int(stmt_insert_day_, 14, day_data.toilet_time); 
+        
+        // [核心修改] 访问 stats 子结构
+        sqlite3_bind_int(stmt_insert_day_, 9, day_data.stats.total_exercise_time); 
+        sqlite3_bind_int(stmt_insert_day_, 10, day_data.stats.cardio_time); 
+        sqlite3_bind_int(stmt_insert_day_, 11, day_data.stats.anaerobic_time); 
+        sqlite3_bind_int(stmt_insert_day_, 12, day_data.stats.gaming_time); 
+        sqlite3_bind_int(stmt_insert_day_, 13, day_data.stats.grooming_time); 
+        sqlite3_bind_int(stmt_insert_day_, 14, day_data.stats.toilet_time); 
 
-        sqlite3_bind_int(stmt_insert_day_, 15, day_data.sleep_night_time); 
-        sqlite3_bind_int(stmt_insert_day_, 16, day_data.sleep_day_time); 
-        sqlite3_bind_int(stmt_insert_day_, 17, day_data.sleep_total_time); 
+        sqlite3_bind_int(stmt_insert_day_, 15, day_data.stats.sleep_night_time); 
+        sqlite3_bind_int(stmt_insert_day_, 16, day_data.stats.sleep_day_time); 
+        sqlite3_bind_int(stmt_insert_day_, 17, day_data.stats.sleep_total_time); 
 
-        // --- [新增] 绑定娱乐时间数据 ---
-        sqlite3_bind_int(stmt_insert_day_, 18, day_data.recreation_time); 
-        sqlite3_bind_int(stmt_insert_day_, 19, day_data.recreation_zhihu_time); 
-        sqlite3_bind_int(stmt_insert_day_, 20, day_data.recreation_bilibili_time); 
-        sqlite3_bind_int(stmt_insert_day_, 21, day_data.recreation_douyin_time); 
-        sqlite3_bind_int(stmt_insert_day_, 22, day_data.study_time);
+        sqlite3_bind_int(stmt_insert_day_, 18, day_data.stats.recreation_time); 
+        sqlite3_bind_int(stmt_insert_day_, 19, day_data.stats.recreation_zhihu_time); 
+        sqlite3_bind_int(stmt_insert_day_, 20, day_data.stats.recreation_bilibili_time); 
+        sqlite3_bind_int(stmt_insert_day_, 21, day_data.stats.recreation_douyin_time); 
+        sqlite3_bind_int(stmt_insert_day_, 22, day_data.stats.study_time);
 
         if (sqlite3_step(stmt_insert_day_) != SQLITE_DONE) { 
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db_) << std::endl; 
@@ -74,13 +75,17 @@ void Writer::insert_records(const std::vector<TimeRecordInternal>& records) {
         sqlite3_bind_int64(stmt_insert_record_, 2, record_data.start_timestamp);
         sqlite3_bind_int64(stmt_insert_record_, 3, record_data.end_timestamp);
         sqlite3_bind_text(stmt_insert_record_, 4, record_data.date.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_record_, 5, record_data.start.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_record_, 6, record_data.end.c_str(), -1, SQLITE_TRANSIENT);
+        
+        // [核心修改] 字段名变更 start -> start_time_str
+        sqlite3_bind_text(stmt_insert_record_, 5, record_data.start_time_str.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_record_, 6, record_data.end_time_str.c_str(), -1, SQLITE_TRANSIENT);
+        
         sqlite3_bind_int64(stmt_insert_record_, 7, project_id);
         sqlite3_bind_int(stmt_insert_record_, 8, record_data.duration_seconds);
 
-        if (record_data.activity_remark.has_value()) { 
-            sqlite3_bind_text(stmt_insert_record_, 9, record_data.activity_remark->c_str(), -1, SQLITE_TRANSIENT); 
+        // [核心修改] 字段名变更 activity_remark -> remark
+        if (record_data.remark.has_value()) { 
+            sqlite3_bind_text(stmt_insert_record_, 9, record_data.remark->c_str(), -1, SQLITE_TRANSIENT); 
         } else {
             sqlite3_bind_null(stmt_insert_record_, 9);
         }
