@@ -7,8 +7,8 @@
 #include <map>
 #include <vector>
 #include "common/AppConfig.hpp" 
-#include "reprocessing/validator/common/ValidatorUtils.hpp"
-#include "reprocessing/converter/model/InputData.hpp" 
+#include "converter/validator/common/ValidatorUtils.hpp"
+#include "converter/convert/model/InputData.hpp" 
 
 namespace fs = std::filesystem;
 
