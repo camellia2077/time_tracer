@@ -6,7 +6,8 @@
 #include <vector>
 #include <utility>
 #include <unordered_set>
-#include <optional> // 引入 optional
+#include <optional>
+#include "common/model/TimeDataModels.hpp" // [核心修改] 引入公共模型
 
 // --- Data Structures ---
 
@@ -24,40 +25,24 @@ struct DayData {
     int status;
     int sleep;
     int exercise;
-    int total_exercise_time;
-    int cardio_time;
-    int anaerobic_time;
-    int gaming_time;
-    int grooming_time;
-    int toilet_time;
-
-    int sleep_night_time;//sleep_night时间
-    int sleep_day_time;
-    int sleep_total_time;//sleep总时间
-
-    int recreation_time;
-    int recreation_zhihu_time;
-    int recreation_bilibili_time;
-    int recreation_douyin_time;
-    int study_time;//study时间
+    
+    // [核心修改] 统计数据聚合到 stats 中
+    ActivityStats stats;
 };
 
 /**
  * @struct TimeRecordInternal
  * @brief Holds data for a single time-logged activity.
  */
-struct TimeRecordInternal {
-    // --- [核心修改] 新增字段 ---
-    long long logical_id;
-    long long start_timestamp;
-    long long end_timestamp;
-    
-    std::string date;
-    std::string start;
-    std::string end;
-    std::string project_path;
-    int duration_seconds;
-    std::optional<std::string> activity_remark; 
+// [核心修改] 继承 BaseActivityRecord 复用字段
+struct TimeRecordInternal : public BaseActivityRecord {
+    // BaseActivityRecord 包含: 
+    // logical_id, start_timestamp, end_timestamp, 
+    // start_time_str, end_time_str, project_path, 
+    // duration_seconds, remark
+
+    // Importer 特有的附加字段
+    std::string date; // 用于外键关联
 };
 
 /**
@@ -69,7 +54,6 @@ struct pair_hash {
     std::size_t operator () (const std::pair<T1,T2> &p) const {
         auto h1 = std::hash<T1>{}(p.first);
         auto h2 = std::hash<T2>{}(p.second);
-        // A simple way to combine hashes
         return h1 ^ (h2 << 1);
     }
 };

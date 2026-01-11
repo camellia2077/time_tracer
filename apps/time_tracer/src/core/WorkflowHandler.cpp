@@ -2,14 +2,11 @@
 #include "core/WorkflowHandler.hpp"
 #include "core/file/PipelineManager.hpp" 
 #include "importer/DataImporter.hpp"
-#include "common/AnsiColors.hpp"
+#include "core/importer/FileImportReader.hpp"
 #include "core/database/DBManager.hpp"
-#include "io/utils/FileUtils.hpp"
-#include "io/core/FileReader.hpp"
+#include "common/AnsiColors.hpp"
 #include <iostream>
 #include <stdexcept>
-#include <vector>
-#include <utility>
 
 namespace fs = std::filesystem;
 
@@ -36,66 +33,27 @@ const AppConfig& WorkflowHandler::get_config() const {
     return app_config_;
 }
 
-// [核心重构] 传统的基于文件的导入
-// 现在由 Core 负责读取 IO，DB Inserter 只负责处理数据
 void WorkflowHandler::run_database_import(const std::string& processed_path_str) {
-    // 1. 准备文件列表
-    std::cout << "正在扫描待导入文件..." << std::endl;
-    std::vector<std::string> input_paths = {processed_path_str};
-    std::vector<std::string> json_files = FileUtils::resolve_files(input_paths, ".json");
-
-    if (json_files.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 在路径 " << processed_path_str << " 下未找到 .json 文件。" << RESET_COLOR << std::endl;
-        return;
-    }
-
-    // 2. [新增步骤] 使用 IO 模块读取所有文件内容
-    std::cout << "正在读取 " << json_files.size() << " 个文件的内容..." << std::endl;
-    std::vector<std::pair<std::string, std::string>> import_payload;
-    import_payload.reserve(json_files.size());
-
-    int read_failure_count = 0;
-    for (const auto& file_path : json_files) {
-        try {
-            // 使用 io 模块读取
-            std::string content = FileReader::read_content(file_path);
-            // 记录文件名作为标识符 (context_name)
-            import_payload.push_back({file_path, std::move(content)});
-        } catch (const std::exception& e) {
-            std::cerr << RED_COLOR << "读取失败: " << file_path << " - " << e.what() << RESET_COLOR << std::endl;
-            read_failure_count++;
-        }
-    }
+    auto import_payload = FileImportReader::read_json_files(processed_path_str);
 
     if (import_payload.empty()) {
-        std::cerr << RED_COLOR << "错误: 没有成功读取到任何文件内容，导入终止。" << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "错误: 没有可导入的文件内容，导入终止。" << RESET_COLOR << std::endl;
         return;
     }
 
-    if (read_failure_count > 0) {
-        std::cout << YELLOW_COLOR << "警告: 有 " << read_failure_count << " 个文件读取失败，将跳过这些文件。" << RESET_COLOR << std::endl;
-    }
-
-    // 3. 准备数据库
     DBManager db_manager(db_path_);
     db_manager.close_database(); 
     
     std::cout << "开始将数据导入数据库..." << std::endl;
-    
-    // 4. [修改] 调用 DataImporter 的新接口 (传入内容列表)
     handle_import_json_content(db_path_, import_payload);
-    
     std::cout << "导入过程结束。" << std::endl;
 }
 
-// 基于内存数据的导入
 void WorkflowHandler::run_database_import_from_memory(const std::map<std::string, std::vector<InputData>>& data_map) {
     DBManager db_manager(db_path_);
     db_manager.close_database(); 
     std::cout << "开始从内存数据导入过程..." << std::endl;
-    
     handle_process_memory_data(db_path_, data_map); 
-    
     std::cout << "内存导入过程结束。" << std::endl;
 }
 
@@ -114,22 +72,21 @@ void WorkflowHandler::run_full_pipeline_and_import(const std::string& source_pat
     full_options.date_check_mode = date_check_mode;
     full_options.save_processed_output = save_processed;
 
-    // 获取执行结果上下文
     auto result_context_opt = pipeline.run(source_path, full_options);
 
     if (result_context_opt) {
         const auto& context = *result_context_opt;
 
-        // 优先尝试从内存导入 (最高效路径)
-        if (!context.processed_data_memory.empty()) {
-            run_database_import_from_memory(context.processed_data_memory);
+        // [修正] processed_data_memory -> result.processed_data
+        if (!context.result.processed_data.empty()) {
+            run_database_import_from_memory(context.result.processed_data);
             std::cout << GREEN_COLOR << "\n成功: 数据已通过内存直连导入数据库。" << RESET_COLOR << std::endl;
         } 
-        // 内存为空但文件已保存 (回退路径)
-        else if (save_processed && !context.generated_files.empty()) {
+        // [修正] generated_files -> state.generated_files
+        else if (save_processed && !context.state.generated_files.empty()) {
             std::cout << YELLOW_COLOR << "\n注意: 内存数据为空，尝试回退到文件导入..." << RESET_COLOR << std::endl;
-            // 这里会调用上面重构过的 run_database_import
-            run_database_import(context.output_root.string() + "/Processed_Date");
+            // [修正] output_root -> config.output_root
+            run_database_import(context.config.output_root.string() + "/Processed_Date");
         }
         else {
              std::cout << YELLOW_COLOR << "\n警告: 没有产生可导入的数据。" << RESET_COLOR << std::endl;

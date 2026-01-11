@@ -12,34 +12,28 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-// 辅助函数：组装配置
-// 注意：为了不重复代码，这个函数可以在某处共享，但基于目前修改范围，在Step中实现是合理的
+// 辅助函数保持不变
 static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
+    // ... (代码同前，略)
     using json = nlohmann::json;
     ConverterConfig config;
     try {
-        // 1. 读取主配置
         std::string main_content = FileReader::read_content(main_config_path);
         json main_json = json::parse(main_content);
         fs::path config_dir = main_config_path.parent_path();
 
-        // 2. 合并 mappings
         if (main_json.contains("mappings_config_path")) {
             fs::path map_path = config_dir / main_json["mappings_config_path"].get<std::string>();
             std::string map_content = FileReader::read_content(map_path);
             json map_json = json::parse(map_content);
-            // 合并 text_mappings
             if (map_json.contains("text_mappings")) {
                 main_json["text_mappings"] = map_json["text_mappings"];
             }
         }
-
-        // 3. 合并 duration rules
         if (main_json.contains("duration_rules_config_path")) {
             fs::path dur_path = config_dir / main_json["duration_rules_config_path"].get<std::string>();
             std::string dur_content = FileReader::read_content(dur_path);
             json dur_json = json::parse(dur_content);
-            
             if (dur_json.contains("text_duration_mappings")) {
                 main_json["text_duration_mappings"] = dur_json["text_duration_mappings"];
             }
@@ -47,10 +41,7 @@ static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
                 main_json["duration_mappings"] = dur_json["duration_mappings"];
             }
         }
-
-        // 4. 加载到 Config 对象
         config.load(main_json);
-
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Error assembling converter config: " << e.what() << RESET_COLOR << std::endl;
     }
@@ -62,20 +53,22 @@ ConverterStep::ConverterStep(const AppConfig& config) : app_config_(config) {}
 bool ConverterStep::execute(PipelineContext& context) {
     std::cout << "\n--- 阶段: 转换文件 ---" << std::endl;
     
-    if (context.source_files.empty()) {
+    // [修正] source_files -> state.source_files
+    if (context.state.source_files.empty()) {
         std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供转换。" << RESET_COLOR << std::endl;
         return false;
     }
 
     auto start_time = std::chrono::steady_clock::now();
 
-    // 1. 准备配置 (IO 操作)
-    context.converter_config = loadAndAssembleConfig(app_config_.interval_processor_config_path);
-    LogProcessor processor(context.converter_config);
+    // 1. 准备配置
+    // [修正] converter_config -> state.converter_config
+    context.state.converter_config = loadAndAssembleConfig(app_config_.interval_processor_config_path);
+    LogProcessor processor(context.state.converter_config);
 
-    // 2. 合并文件流 (IO 操作)
+    // 2. 合并文件流
     std::stringstream combined_stream;
-    for (const auto& source_file : context.source_files) {
+    for (const auto& source_file : context.state.source_files) {
         try {
             std::string content = FileReader::read_content(source_file);
             combined_stream << content;
@@ -84,7 +77,7 @@ bool ConverterStep::execute(PipelineContext& context) {
         }
     }
     
-    // 3. 执行转换 (纯内存操作)
+    // 3. 执行转换
     std::vector<InputData> all_processed_days = processor.convertStreamToData(combined_stream);
     
     if (all_processed_days.empty()) {
@@ -101,12 +94,15 @@ bool ConverterStep::execute(PipelineContext& context) {
         }
     }
 
-    context.processed_data_memory = monthly_data;
+    // [修正] processed_data_memory -> result.processed_data
+    context.result.processed_data = monthly_data;
 
-    // 5. 写入输出 (IO 操作)
-    if (context.save_processed_output) {
+    // 5. 写入输出
+    // [修正] save_processed_output -> config.save_processed_output
+    if (context.config.save_processed_output) {
         Output generator;
-        fs::path output_dir_base = context.output_root / "Processed_Date";
+        // [修正] output_root -> config.output_root
+        fs::path output_dir_base = context.config.output_root / "Processed_Date";
 
         for (const auto& pair : monthly_data) {
             const std::string& year_month = pair.first;
@@ -119,9 +115,12 @@ bool ConverterStep::execute(PipelineContext& context) {
             try {
                 FileSystemHelper::create_directories(month_output_dir);
                 std::stringstream buffer;
-                generator.write(buffer, month_days, context.converter_config); 
+                // [修正] converter_config -> state.converter_config
+                generator.write(buffer, month_days, context.state.converter_config); 
                 FileWriter::write_content(output_file_path, buffer.str());
-                context.generated_files.push_back(output_file_path);
+                
+                // [修正] generated_files -> state.generated_files
+                context.state.generated_files.push_back(output_file_path);
             } catch (const std::exception& e) {
                  std::cerr << RED_COLOR << "错误: 无法写入输出文件: " << output_file_path << " - " << e.what() << RESET_COLOR << std::endl;
                  continue;
