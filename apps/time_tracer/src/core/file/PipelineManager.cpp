@@ -1,7 +1,5 @@
 ﻿// core/file/PipelineManager.cpp
 #include "PipelineManager.hpp"
-// PipelineContext.hpp 已在头文件包含，但如果为了保险可以再包含
-// #include "core/file/PipelineContext.hpp" 
 #include "steps/FileCollector.hpp"
 #include "steps/SourceValidatorStep.hpp"
 #include "steps/ConverterStep.hpp"
@@ -15,9 +13,11 @@ PipelineManager::PipelineManager(const AppConfig& config, const fs::path& output
 std::optional<PipelineContext> PipelineManager::run(const std::string& input_path, const AppOptions& options) {
     // 1. 初始化上下文
     PipelineContext context(app_config_, output_root_);
-    context.input_root = input_path;
-    context.date_check_mode = options.date_check_mode;
-    context.save_processed_output = options.save_processed_output; // [新增] 传递参数
+    
+    // [修正] 访问 config 子结构
+    context.config.input_root = input_path;
+    context.config.date_check_mode = options.date_check_mode;
+    context.config.save_processed_output = options.save_processed_output;
 
     // 2. 确定要收集的文件扩展名
     std::string extension = ".txt";
@@ -47,6 +47,5 @@ std::optional<PipelineContext> PipelineManager::run(const std::string& input_pat
         if (!output_validator.execute(context)) return std::nullopt;
     }
 
-    // [核心修改] 返回整个 context
     return context;
 }

@@ -20,13 +20,11 @@ void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
     if (!previousDay.date.empty() && !previousDay.rawEvents.empty() && !dayToProcess.getupTime.empty() && !dayToProcess.isContinuation) {
         std::string lastEventTime = formatTime(previousDay.rawEvents.back().endTimeStr);
 
-        Activity sleepActivity;
-        sleepActivity.startTime = lastEventTime;
-        sleepActivity.endTime = dayToProcess.getupTime;
-        
-        // --- [CORE FIX] ---
-        // The struct 'Activity' no longer has 'parent' or 'children' members.
-        // Assign the combined path to the 'project_path' member instead.
+        // [核心修改] 使用 BaseActivityRecord
+        BaseActivityRecord sleepActivity;
+        // [适配] 字段名变更
+        sleepActivity.start_time_str = lastEventTime;
+        sleepActivity.end_time_str = dayToProcess.getupTime;
         sleepActivity.project_path = "sleep_night";
 
         dayToProcess.processedActivities.insert(dayToProcess.processedActivities.begin(), sleepActivity);

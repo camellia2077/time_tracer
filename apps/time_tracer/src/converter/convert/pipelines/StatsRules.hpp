@@ -6,25 +6,25 @@
 #include <initializer_list>
 
 struct StatsRule {
-    // --- [核心修改] ---
-    // 使用一个完整的路径字符串进行匹配
     const char* match_path;
-    int GeneratedStats::*member;
+    // [核心修改] 指向 ActivityStats 的成员
+    int ActivityStats::*member;
 };
 
 namespace StatsRules {
+    // [核心修改] 字段名变更适配 (CamelCase -> snake_case)
     constexpr StatsRule rules[] = {
-        {"study", &GeneratedStats::studyTime},
-        {"exercise", &GeneratedStats::totalExerciseTime},
-        {"exercise_cardio", &GeneratedStats::cardioTime},
-        {"exercise_anaerobic", &GeneratedStats::anaerobicTime},
-        {"routine_grooming", &GeneratedStats::groomingTime},
-        {"routine_toilet", &GeneratedStats::toiletTime},
-        {"recreation_game", &GeneratedStats::gamingTime},
-        {"recreation", &GeneratedStats::recreationTime},
-        {"recreation_zhihu", &GeneratedStats::recreationZhihuTime},
-        {"recreation_bilibili", &GeneratedStats::recreationBilibiliTime},
-        {"recreation_douyin", &GeneratedStats::recreationDouyinTime}
+        {"study", &ActivityStats::study_time},
+        {"exercise", &ActivityStats::total_exercise_time},
+        {"exercise_cardio", &ActivityStats::cardio_time},
+        {"exercise_anaerobic", &ActivityStats::anaerobic_time},
+        {"routine_grooming", &ActivityStats::grooming_time},
+        {"routine_toilet", &ActivityStats::toilet_time},
+        {"recreation_game", &ActivityStats::gaming_time},
+        {"recreation", &ActivityStats::recreation_time},
+        {"recreation_zhihu", &ActivityStats::recreation_zhihu_time},
+        {"recreation_bilibili", &ActivityStats::recreation_bilibili_time},
+        {"recreation_douyin", &ActivityStats::recreation_douyin_time}
     };
 }
 

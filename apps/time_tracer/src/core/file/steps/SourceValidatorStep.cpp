@@ -1,17 +1,15 @@
 ﻿// core/file/steps/SourceValidatorStep.cpp
 #include "SourceValidatorStep.hpp"
 #include "common/AnsiColors.hpp"
-#include "io/core/FileReader.hpp" // [New]
+#include "io/core/FileReader.hpp"
 #include <iostream>
 #include <chrono>
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-// 复制 Config 组装逻辑，或将其放入 Context 中 (如果 ConverterStep 先运行)
-// 假设 Pipeline 顺序不确定，这里我们简单地再次加载。
-// 在实际优化中，应该将 loadAndAssembleConfig 提取到 Utils 或 Context 初始化中。
+// 静态辅助函数保持不变...
 static ConverterConfig loadConfig(const fs::path& main_config_path) {
-    // 简化的副本：实际建议放在 common helper 中
+    // ... (同原代码)
     using json = nlohmann::json;
     ConverterConfig config;
     try {
@@ -42,26 +40,26 @@ static ConverterConfig loadConfig(const fs::path& main_config_path) {
 bool SourceValidatorStep::execute(PipelineContext& context) {
     std::cout << "\n--- 阶段: 检验源文件 ---" << std::endl;
     
-    if (context.source_files.empty()) {
+    // [修正] context.source_files -> context.state.source_files
+    if (context.state.source_files.empty()) {
         std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供检验。" << RESET_COLOR << std::endl;
         return true;
     }
 
-    // 确保 Context 中有 config，如果没有则加载
-    // 这里我们先重新加载一份本地的
-    ConverterConfig config = loadConfig(context.config.interval_processor_config_path);
-    // 也可以赋值给 context.converter_config 供后续使用
-    context.converter_config = config;
+    // [修正] context.config 现在是 PipelineConfig，其中的 app_config 持有原始 AppConfig
+    ConverterConfig config = loadConfig(context.config.app_config.interval_processor_config_path);
+    
+    // [修正] context.converter_config -> context.state.converter_config
+    context.state.converter_config = config;
 
     bool all_ok = true;
     double total_ms = 0.0;
     
     LogProcessor processor(config);
 
-    for (const auto& file_path : context.source_files) {
+    for (const auto& file_path : context.state.source_files) {
         auto start_time = std::chrono::steady_clock::now();
 
-        // [核心修改] 使用 IO 读取内容，传给 Processor
         try {
             std::string content = FileReader::read_content(file_path);
             ProcessingResult result = processor.processSourceContent(file_path.string(), content);
