@@ -5,42 +5,16 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include "common/model/TimeDataModels.hpp" // [核心修改] 引入公共模型
 
+// RawEvent 属于 Converter 解析阶段的中间产物，保留在此
 struct RawEvent {
     std::string endTimeStr;
     std::string description;
     std::string remark; 
 };
 
-struct Activity {
-    long long logical_id; 
-    long long start_timestamp; 
-    long long end_timestamp;   
-    std::string startTime;
-    std::string endTime;
-    std::string project_path; 
-    
-    int durationSeconds = 0;
-    std::optional<std::string> activityRemark;
-};
-
-struct GeneratedStats {
-    int sleepNightTime = 0;
-    int sleepDayTime = 0;
-    int sleepTotalTime = 0;
-    int totalExerciseTime = 0;
-    int cardioTime = 0;
-    int anaerobicTime = 0;
-    int groomingTime = 0;
-    int toiletTime = 0;
-    int gamingTime = 0;
-    int recreationTime = 0;
-    // --- [新增字段] ---
-    int recreationZhihuTime = 0;
-    int recreationBilibiliTime = 0;
-    int recreationDouyinTime = 0;
-    int studyTime = 0;//study的时间
-};
+// [核心修改] 移除 Activity 和 GeneratedStats 的定义
 
 struct InputData {
     std::string date;
@@ -52,12 +26,15 @@ struct InputData {
     std::vector<std::string> generalRemarks;
     std::vector<RawEvent> rawEvents;
     
-    std::vector<Activity> processedActivities;
+    // [核心修改] 使用 BaseActivityRecord
+    std::vector<BaseActivityRecord> processedActivities;
 
     bool isContinuation = false;
 
     int activityCount = 0;
-    GeneratedStats generatedStats; 
+    
+    // [核心修改] 使用 ActivityStats，并重命名为 stats
+    ActivityStats stats; 
 
     void clear() {
         date.clear();
@@ -70,7 +47,7 @@ struct InputData {
         processedActivities.clear();
         isContinuation = false;
         activityCount = 0;
-        generatedStats = {}; // 重置为默认值
+        stats = {}; // 重置为默认值
     }
 };
 

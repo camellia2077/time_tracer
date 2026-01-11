@@ -2,7 +2,7 @@
 #include "ActivityMapper.hpp"
 #include "common/utils/StringUtils.hpp"
 #include <stdexcept>
-#include <sstream> // 用于拼接字符串
+#include <sstream> 
 
 std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) const {
     if (timeStrHHMM.length() == 4) {
@@ -74,22 +74,20 @@ void ActivityMapper::map_activities(InputData& day) {
         }
         
         if (!startTime.empty()) {
-            // --- [核心修改] ---
-            // 直接生成 project_path，不再拆分为 parent 和 children
             std::vector<std::string> parts = split_string(mappedDescription, '_');
             if (!parts.empty()) {
-                Activity activity;
-                activity.startTime = startTime;
-                activity.endTime = formattedEventEndTime;
+                // [核心修改] 使用 BaseActivityRecord
+                BaseActivityRecord activity;
+                // [适配] startTime -> start_time_str
+                activity.start_time_str = startTime;
+                activity.end_time_str = formattedEventEndTime;
                 
-                // 应用顶层父级映射
                 const auto& topParentsMap = config_.getTopParentMapping();
                 auto map_it = topParentsMap.find(parts[0]);
                 if (map_it != topParentsMap.end()) {
                     parts[0] = map_it->second;
                 }
                 
-                // 将所有部分重新拼接成 project_path
                 std::stringstream ss;
                 for (size_t i = 0; i < parts.size(); ++i) {
                     ss << parts[i] << (i < parts.size() - 1 ? "_" : "");
@@ -97,7 +95,8 @@ void ActivityMapper::map_activities(InputData& day) {
                 activity.project_path = ss.str();
 
                 if (!rawEvent.remark.empty()) {
-                    activity.activityRemark = rawEvent.remark;
+                    // [适配] activityRemark -> remark
+                    activity.remark = rawEvent.remark;
                 }
                 
                 day.processedActivities.push_back(activity);
