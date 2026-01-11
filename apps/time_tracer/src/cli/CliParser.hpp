@@ -6,7 +6,7 @@
 #include <vector>
 #include <optional>
 #include "reports/shared/types/ReportFormat.hpp"
-#include "reprocessing/validator/common/ValidatorUtils.hpp"
+#include "converter/validator/common/ValidatorUtils.hpp"
 
 class CliParser {
 public:

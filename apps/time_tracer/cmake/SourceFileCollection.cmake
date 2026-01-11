@@ -51,11 +51,11 @@ set(CONFIG_VALIDATOR_SOURCES
     # 顶层外观
     "src/config_validator/facade/ConfigFacade.cpp"
 
-    # Reprocessing 领域的 Facade 和 Pipelines
-    "src/config_validator/reprocessing/facade/ReprocFacade.cpp"
-    "src/config_validator/reprocessing/rules/DurationRule.cpp"
-    "src/config_validator/reprocessing/rules/MainRule.cpp"
-    "src/config_validator/reprocessing/rules/MappingRule.cpp"
+    # converter 领域的 Facade 和 Pipelines
+    "src/config_validator/converter/facade/ReprocFacade.cpp"
+    "src/config_validator/converter/rules/DurationRule.cpp"
+    "src/config_validator/converter/rules/MainRule.cpp"
+    "src/config_validator/converter/rules/MappingRule.cpp"
 
     "src/config_validator/plugins/facade/PluginValidator.cpp"
 
@@ -142,39 +142,31 @@ set(REPORTS_SOURCES
     # "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 )
 
-# --- Reprocessing Sources ---
-set(REPROCESSING_SOURCES
-    "src/reprocessing/LogProcessor.cpp"
+# --- converter Sources ---
+set(CONVERTER_SOURCES
+    "src/converter/LogProcessor.cpp"
 
     # 转换模块
-    "src/reprocessing/converter/config/ConverterConfig.cpp"
-
-    "src/reprocessing/converter/facade/IntervalConverter.cpp"
-
-    "src/reprocessing/converter/pipelines/ActivityMapper.cpp"
-    "src/reprocessing/converter/pipelines/DayProcessor.cpp"
-    "src/reprocessing/converter/pipelines/DayStats.cpp"    
-    "src/reprocessing/converter/pipelines/InputParser.cpp"
-    "src/reprocessing/converter/pipelines/Output.cpp"
+    "src/converter/convert/config/ConverterConfig.cpp"             
+    "src/converter/convert/facade/IntervalConverter.cpp"         
+    "src/converter/convert/pipelines/ActivityMapper.cpp"           
+    "src/converter/convert/pipelines/DayProcessor.cpp"            
+    "src/converter/convert/pipelines/DayStats.cpp"                
+    "src/converter/convert/pipelines/InputParser.cpp"             
+    "src/converter/convert/pipelines/Output.cpp"                   
 
     # 验证模块
-    "src/reprocessing/validator/FileValidator.cpp"
-
-    "src/reprocessing/validator/common/ValidatorUtils.cpp"
+    "src/converter/validator/FileValidator.cpp"
+    "src/converter/validator/common/ValidatorUtils.cpp"
 
     # 验证json的封装
-    "src/reprocessing/validator/output_json/facade/JsonValidator.cpp"
-    # 验证实现
-    "src/reprocessing/validator/output_json/pipelines/ActivityRules.cpp"
-    "src/reprocessing/validator/output_json/pipelines/DateRules.cpp"
+    "src/converter/validator/output_json/facade/JsonValidator.cpp"
+    "src/converter/validator/output_json/pipelines/ActivityRules.cpp"
+    "src/converter/validator/output_json/pipelines/DateRules.cpp"
 
-    "src/reprocessing/validator/source_txt/facade/SourceFacade.cpp"
-
-    "src/reprocessing/validator/source_txt/pipelines/LineRules.cpp"
-
-    "src/reprocessing/validator/source_txt/pipelines/StructureRules.cpp"
-
-
+    "src/converter/validator/source_txt/facade/SourceFacade.cpp"
+    "src/converter/validator/source_txt/pipelines/LineRules.cpp"
+    "src/converter/validator/source_txt/pipelines/StructureRules.cpp"
 )
 
 # --- File Handler Sources ---

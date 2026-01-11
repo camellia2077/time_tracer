@@ -7,7 +7,7 @@
 #include <map>
 #include <utility> // for std::pair
 #include "importer/model/ImportStats.hpp"
-#include "reprocessing/converter/model/InputData.hpp" 
+#include "converter/convert/model/InputData.hpp" 
 
 // 负责编排 "解析 -> 转换 -> 入库" 的具体业务逻辑
 class ImportService {
