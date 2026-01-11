@@ -29,8 +29,16 @@ void Output::write(std::ostream& outputStream, const std::vector<InputData>& day
         headers_obj["getup"] = day.isContinuation ? "Null" : (day.getupTime.empty() ? "00:00" : day.getupTime);
         headers_obj["activity_count"] = day.activityCount;
 
+        // [核心修改] 将多行备注拼接为一个完整的字符串
         if (!day.generalRemarks.empty()) {
-            headers_obj["remark"] = day.generalRemarks[0];
+            std::string full_remark;
+            for (size_t i = 0; i < day.generalRemarks.size(); ++i) {
+                full_remark += day.generalRemarks[i];
+                if (i < day.generalRemarks.size() - 1) {
+                    full_remark += "\n"; // 使用换行符连接
+                }
+            }
+            headers_obj["remark"] = full_remark;
         } else {
             headers_obj["remark"] = "";
         }

@@ -28,7 +28,17 @@ ParsedData MemoryParserFacade::parse(const std::map<std::string, std::vector<Inp
             day_data.exercise = input_day.hasExerciseActivity ? 1 : 0;
             
             day_data.getup_time = input_day.getupTime.empty() ? "00:00" : input_day.getupTime;
-            day_data.remark = input_day.generalRemarks.empty() ? "" : input_day.generalRemarks[0];
+
+            // --- [修改部分] 拼接多行备注 ---
+            std::string merged_remark;
+            for (size_t i = 0; i < input_day.generalRemarks.size(); ++i) {
+                merged_remark += input_day.generalRemarks[i];
+                if (i < input_day.generalRemarks.size() - 1) {
+                    merged_remark += "\n"; // 使用换行符保留源文件的行结构
+                }
+            }
+            day_data.remark = merged_remark;
+            // ------------------------------
             
             // 统计数据映射
             const auto& stats = input_day.generatedStats;
