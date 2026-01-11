@@ -83,7 +83,6 @@ std::string DayTyp::format_report(const DailyReportData& data) const {
         config_->get_project_breakdown_label()
     ) << "\n\n";
 
-    // [核心修改] 使用 ProjectTreeFormatter 替代旧的 TypUtils 调用
     // 1. 创建策略
     auto tree_strategy = std::make_unique<TypstFormattingStrategy>(
         config_->get_category_title_font(),

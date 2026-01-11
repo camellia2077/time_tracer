@@ -20,6 +20,7 @@ namespace { // 使用匿名命名空间来隐藏内部辅助函数
             project_path
         );
 
+        // 1. 尝试匹配颜色关键字
         for (const auto& pair : config->get_keyword_colors()) {
             if (record.project_path.find(pair.first) != std::string::npos) {
                 const std::string& hex_color = pair.second;
@@ -27,15 +28,28 @@ namespace { // 使用匿名命名空间来隐藏内部辅助函数
                 std::string final_output = std::format("+ #text({})[{}]", typst_color_format, base_string);
                 
                 if (record.activityRemark.has_value()) {
-                    final_output += std::format("\n  + *{}:* {}", config->get_activity_remark_label(), record.activityRemark.value());
+                    // [核心修改] 传入 " \\" 作为后缀，强制 Typst 换行
+                    std::string formatted_activity_remark = format_multiline_for_list(
+                        record.activityRemark.value(), 
+                        4,     // 缩进 4 个空格
+                        " \\"  // 行尾追加 " \"
+                    );
+                    final_output += std::format("\n  + *{}:* {}", config->get_activity_remark_label(), formatted_activity_remark);
                 }
                 return final_output;
             }
         }
 
+        // 2. 默认格式（无颜色）
         std::string final_output = "+ " + base_string;
         if (record.activityRemark.has_value()) {
-            final_output += std::format("\n  + *{}:* {}", config->get_activity_remark_label(), record.activityRemark.value());
+            // [核心修改] 传入 " \\" 作为后缀，强制 Typst 换行
+            std::string formatted_activity_remark = format_multiline_for_list(
+                record.activityRemark.value(), 
+                4,     // 缩进 4 个空格
+                " \\"  // 行尾追加 " \"
+            );
+            final_output += std::format("\n  + *{}:* {}", config->get_activity_remark_label(), formatted_activity_remark);
         }
         
         return final_output;
@@ -60,10 +74,16 @@ namespace DayTypUtils {
         ss << std::format("+ *{}:* {}\n", config->get_sleep_label(), bool_to_string(data.metadata.sleep));
         ss << std::format("+ *{}:* {}\n", config->get_exercise_label(), bool_to_string(data.metadata.exercise));
         ss << std::format("+ *{}:* {}\n", config->get_getup_time_label(), data.metadata.getup_time);
-        ss << std::format("+ *{}:* {}\n", config->get_remark_label(), data.metadata.remark);
+
+        // [核心修改] 传入 " \\" 作为后缀，强制 Typst 换行
+        // 缩进 2 个空格以适配一级列表
+        std::string formatted_remark = format_multiline_for_list(
+            data.metadata.remark, 
+            2, 
+            " \\"
+        );
+        ss << std::format("+ *{}:* {}\n", config->get_remark_label(), formatted_remark);
     }
-
-
 
     void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
         if (!data.detailed_records.empty()) {

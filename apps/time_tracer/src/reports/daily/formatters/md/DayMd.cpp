@@ -76,7 +76,10 @@ void DayMd::_display_header(std::stringstream& ss, const DailyReportData& data) 
     ss << std::format("- **{0}**: {1}\n", config_->get_sleep_label(), bool_to_string(data.metadata.sleep));
     ss << std::format("- **{0}**: {1}\n", config_->get_exercise_label(), bool_to_string(data.metadata.exercise));
     ss << std::format("- **{0}**: {1}\n", config_->get_getup_time_label(), data.metadata.getup_time);
-    ss << std::format("- **{0}**: {1}\n", config_->get_remark_label(), data.metadata.remark);
+
+    // 使用工具函数处理多行备注
+    std::string formatted_remark = format_multiline_for_list(data.metadata.remark, 2, "  ");
+    ss << std::format("- **{0}**: {1}\n", config_->get_remark_label(), formatted_remark);
 }
 
 void DayMd::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {

@@ -5,7 +5,7 @@
 #include <format>
 #include "reports/shared/utils/format/BoolToString.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include "reports/shared/utils/format/ReportStringUtils.hpp"
+#include "reports/shared/utils/format/ReportStringUtils.hpp" // [新增] 引入工具函数
 #include "reports/shared/formatters/latex/TexUtils.hpp"
 
 namespace DayTexUtils {
@@ -29,7 +29,12 @@ void display_header(std::stringstream& ss, const DailyReportData& data, const st
     ss << "    \\item \\textbf{" << config->get_sleep_label()     << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.sleep)) << "\n";
     ss << "    \\item \\textbf{" << config->get_exercise_label()  << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.exercise)) << "\n";
     ss << "    \\item \\textbf{" << config->get_getup_time_label() << "}: " << TexUtils::escape_latex(data.metadata.getup_time) << "\n";
-    ss << "    \\item \\textbf{" << config->get_remark_label()    << "}: " << TexUtils::escape_latex(data.metadata.remark) << "\n";
+    
+    // [核心修改] 处理多行备注：先转义，再添加 LaTeX 换行符 (\\)
+    std::string safe_remark = TexUtils::escape_latex(data.metadata.remark);
+    std::string formatted_remark = format_multiline_for_list(safe_remark, 0, "\\\\");
+    
+    ss << "    \\item \\textbf{" << config->get_remark_label()    << "}: " << formatted_remark << "\n";
     ss << "\\end{itemize}\n\n";
 }
 
@@ -70,8 +75,13 @@ void display_detailed_activities(std::stringstream& ss, const DailyReportData& d
 
         if (record.activityRemark.has_value()) {
             ss << "    \\begin{itemize}" << compact_list_options << "\n";
+            
+            // [核心修改] 对活动备注同样应用多行处理
+            std::string safe_activity_remark = TexUtils::escape_latex(record.activityRemark.value());
+            std::string formatted_activity_remark = format_multiline_for_list(safe_activity_remark, 0, "\\\\");
+
             ss << "        \\item \\textbf{" << config->get_activity_remark_label() << "}: "
-               << TexUtils::escape_latex(record.activityRemark.value()) << "\n";
+               << formatted_activity_remark << "\n";
             ss << "    \\end{itemize}\n";
         }
     }
