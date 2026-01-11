@@ -1,7 +1,7 @@
-// db_inserter/DataImporter.cpp
-#include "db_inserter/DataImporter.hpp"
-#include "db_inserter/service/ImportService.hpp" // 只依赖 Service
-#include "common/AnsiColors.hpp" // 只依赖 UI 相关的库
+﻿// importer/DataImporter.cpp
+#include "importer/DataImporter.hpp"
+#include "importer/ImportService.hpp" 
+#include "common/AnsiColors.hpp" 
 #include <iostream>
 #include <iomanip>
 
@@ -37,21 +37,17 @@ void print_report(const ImportStats& stats, const std::string& title) {
 // Facade Implementation
 // ---------------------------------------------------------
 
-void handle_process_files(const std::string& db_name, const std::vector<std::string>& files) {
-    std::cout << "Task: Batch Import (" << files.size() << " files)..." << std::endl;
+void handle_import_json_content(const std::string& db_name, const std::vector<std::pair<std::string, std::string>>& inputs) {
+    std::cout << "Task: JSON Content Import (" << inputs.size() << " items)..." << std::endl;
     
     // 1. 创建服务
     ImportService service(db_name);
     
-    // 2. 执行业务
-    ImportStats stats = service.import_from_files(files);
+    // 2. 执行业务 (调用新的 content 接口)
+    ImportStats stats = service.import_json_data(inputs);
     
     // 3. 展示结果
-    print_report(stats, "File Import");
-}
-
-void handle_process_files(const std::string& db_name, const std::string& path) {
-    handle_process_files(db_name, std::vector<std::string>{path});
+    print_report(stats, "Content Import");
 }
 
 void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<InputData>>& data) {

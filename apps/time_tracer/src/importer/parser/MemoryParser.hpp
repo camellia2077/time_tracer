@@ -1,21 +1,21 @@
-// db_inserter/parser/facade/MemoryParserFacade.hpp
-#ifndef MEMORY_PARSER_FACADE_HPP
-#define MEMORY_PARSER_FACADE_HPP
+﻿// importer/parser/MemoryParser.hpp
+#ifndef MEMORY_PARSER_HPP
+#define MEMORY_PARSER_HPP
 
 #include <map>
 #include <string>
 #include <vector>
-#include "db_inserter/parser/model/ParsedData.hpp"
+#include "importer/parser/ParsedData.hpp"
 #include "reprocessing/converter/model/InputData.hpp"
 
 /**
- * @class MemoryParserFacade
+ * @class MemoryParser
  * @brief 负责将内存中的转换层数据模型 (InputData) 转换为 数据库层数据模型 (ParsedData)。
  * 充当 reprocessing 模块与 db_inserter 模块之间的适配器。
  */
-class MemoryParserFacade {
+class MemoryParser {
 public:
-    MemoryParserFacade() = default;
+    MemoryParser() = default;
 
     /**
      * @brief 执行转换。
@@ -25,4 +25,4 @@ public:
     ParsedData parse(const std::map<std::string, std::vector<InputData>>& data_map);
 };
 
-#endif // MEMORY_PARSER_FACADE_HPP
+#endif // MEMORY_PARSER_HPP
