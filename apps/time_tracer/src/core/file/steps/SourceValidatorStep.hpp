@@ -3,7 +3,7 @@
 #define SOURCE_VALIDATOR_STEP_HPP
 
 #include "core/file/PipelineContext.hpp"
-#include "reprocessing/LogProcessor.hpp"
+#include "converter/LogProcessor.hpp"
 
 class SourceValidatorStep {
 public:

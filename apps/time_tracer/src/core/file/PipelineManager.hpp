@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <optional>
 #include "common/AppConfig.hpp"
-#include "reprocessing/validator/common/ValidatorUtils.hpp"
+#include "converter/validator/common/ValidatorUtils.hpp"
 // [新增] 必须包含 PipelineContext 定义（或前向声明），因为返回值变了
 #include "core/file/PipelineContext.hpp"
 

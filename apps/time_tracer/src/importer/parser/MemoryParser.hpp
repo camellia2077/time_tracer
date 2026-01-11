@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include "importer/parser/ParsedData.hpp"
-#include "reprocessing/converter/model/InputData.hpp"
+#include "converter/convert/model/InputData.hpp"
 
 /**
  * @class MemoryParser
