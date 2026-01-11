@@ -1,13 +1,13 @@
-// db_inserter/inserter/pipelines/DbStatementManager.hpp
-#ifndef DB_STATEMENT_MANAGER_HPP
-#define DB_STATEMENT_MANAGER_HPP
+﻿// importer/storage/sqlite/Statement.hpp
+#ifndef STATEMENT_HPP
+#define STATEMENT_HPP
 
 #include <sqlite3.h>
 
-class DbStatementManager {
+class Statement {
 public:
-    explicit DbStatementManager(sqlite3* db);
-    ~DbStatementManager();
+    explicit Statement(sqlite3* db);
+    ~Statement();
 
     sqlite3_stmt* get_insert_day_stmt() const;
     sqlite3_stmt* get_insert_record_stmt() const;
@@ -28,4 +28,4 @@ private:
     void _finalize_statements();
 };
 
-#endif // DB_STATEMENT_MANAGER_HPP
+#endif // STATEMENT_HPP

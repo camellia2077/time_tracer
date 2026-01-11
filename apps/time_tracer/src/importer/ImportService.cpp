@@ -1,30 +1,34 @@
-// db_inserter/service/ImportService.cpp
-#include "db_inserter/service/ImportService.hpp"
-#include "db_inserter/parser/facade/JsonParserFacade.hpp"
-#include "db_inserter/parser/facade/MemoryParserFacade.hpp"
-#include "db_inserter/inserter/facade/DatabaseInserter.hpp"
+﻿// importer/ImportService.cpp
+#include "importer/ImportService.hpp"
+#include "importer/parser/JsonParser.hpp"
+#include "importer/parser/MemoryParser.hpp"
+#include "importer/storage/Repository.hpp"
 #include <chrono>
 
 ImportService::ImportService(const std::string& db_path) : db_path_(db_path) {}
 
-ImportStats ImportService::import_from_files(const std::vector<std::string>& files) {
+ImportStats ImportService::import_json_data(const std::vector<std::pair<std::string, std::string>>& inputs) {
     ImportStats stats;
-    stats.total_files = files.size();
-    if (files.empty()) return stats;
+    stats.total_files = inputs.size();
+    if (inputs.empty()) return stats;
 
     auto start_total = std::chrono::high_resolution_clock::now();
 
-    // 1. 解析
-    JsonParserFacade parser;
+    // 1. 解析 (使用纯内存解析器)
+    JsonParser parser;
     ParsedData all_data;
     
-    for (const std::string& fname : files) {
+    for (const auto& item : inputs) {
+        const std::string& context_name = item.first;
+        const std::string& json_content = item.second;
         try {
-            ParsedData single = parser.parse_file(fname);
+            // [核心修改] 传入内容而非路径
+            ParsedData single = parser.parse_content(json_content, context_name);
             all_data.days.insert(all_data.days.end(), single.days.begin(), single.days.end());
             all_data.records.insert(all_data.records.end(), single.records.begin(), single.records.end());
         } catch (...) {
-            stats.failed_files.push_back(fname);
+            // 记录失败的标识符
+            stats.failed_files.push_back(context_name);
         }
     }
     stats.successful_files = stats.total_files - stats.failed_files.size();
@@ -32,8 +36,8 @@ ImportStats ImportService::import_from_files(const std::vector<std::string>& fil
     auto end_parsing = std::chrono::high_resolution_clock::now();
     stats.parsing_duration_s = std::chrono::duration<double>(end_parsing - start_total).count();
 
-    // 2. 入库
-    DatabaseInserter inserter(db_path_);
+    // 2. 入库 (保持不变)
+    Repository inserter(db_path_);
     if (inserter.is_db_open()) {
         stats.db_open_success = true;
         try {
@@ -64,14 +68,14 @@ ImportStats ImportService::import_from_memory(const std::map<std::string, std::v
     auto start = std::chrono::high_resolution_clock::now();
 
     // 1. 转换
-    MemoryParserFacade parser;
+    MemoryParser parser;
     ParsedData all_data = parser.parse(data_map);
 
     auto end_parsing = std::chrono::high_resolution_clock::now();
     stats.parsing_duration_s = std::chrono::duration<double>(end_parsing - start).count();
 
     // 2. 入库
-    DatabaseInserter inserter(db_path_);
+    Repository inserter(db_path_);
     if (inserter.is_db_open()) {
         stats.db_open_success = true;
         try {

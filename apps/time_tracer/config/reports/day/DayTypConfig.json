@@ -1,7 +1,7 @@
 {
-  "base_font": "Noto Serif SC",
-  "title_font": "Noto Serif SC",
-  "category_title_font": "Noto Serif SC",
+  "base_font": "MiSans VF",
+  "title_font": "MiSans VF",
+  "category_title_font": "MiSans VF",
   "base_font_size": 10,
   "report_title_font_size": 14,
   "category_title_font_size": 12,

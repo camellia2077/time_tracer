@@ -1,17 +1,17 @@
-// db_inserter/inserter/pipelines/DataInserter.hpp
-#ifndef DATA_INSERTER_HPP
-#define DATA_INSERTER_HPP
+﻿// importer/storage/sqlite/Writer.hpp
+#ifndef WRITER_HPP
+#define WRITER_HPP
 
 #include <vector>
 #include <string>
 #include <sqlite3.h>
-#include <map> // 新增
-#include "db_inserter/model/time_sheet_model.hpp"
+#include <map>
+#include "importer/model/TimeSheetData.hpp"
 
-class DataInserter {
+class Writer {
 public:
     // --- [核心修改] 更新构造函数签名 ---
-    explicit DataInserter(sqlite3* db, 
+    explicit Writer(sqlite3* db, 
                           sqlite3_stmt* stmt_day, 
                           sqlite3_stmt* stmt_record, 
                           sqlite3_stmt* stmt_select_project, 
@@ -34,4 +34,4 @@ private:
     long long get_or_create_project_id(const std::string& project_path);
 };
 
-#endif // DATA_INSERTER_HPP
+#endif // WRITER_HPP

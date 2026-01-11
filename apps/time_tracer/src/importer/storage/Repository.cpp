@@ -1,12 +1,15 @@
-// db_inserter/inserter/facade/DatabaseInserter.cpp
-#include "DatabaseInserter.hpp"
+﻿// importer/storage/Repository.cpp
+#include "Repository.hpp"
 #include <iostream>
 
-DatabaseInserter::DatabaseInserter(const std::string& db_path) {
-    connection_manager_ = std::make_unique<DbConnectionManager>(db_path); 
+Repository::Repository(const std::string& db_path) {
+    connection_manager_ = std::make_unique<Connection>(db_path); 
+    
     if (connection_manager_->get_db()) { 
-        statement_manager_ = std::make_unique<DbStatementManager>(connection_manager_->get_db()); 
-        data_inserter_ = std::make_unique<DataInserter>( 
+
+        statement_manager_ = std::make_unique<Statement>(connection_manager_->get_db()); 
+
+        data_inserter_ = std::make_unique<Writer>( 
             connection_manager_->get_db(), 
             statement_manager_->get_insert_day_stmt(), 
             statement_manager_->get_insert_record_stmt(), 
@@ -16,11 +19,11 @@ DatabaseInserter::DatabaseInserter(const std::string& db_path) {
     }
 }
 
-bool DatabaseInserter::is_db_open() const {
+bool Repository::is_db_open() const {
     return connection_manager_ && connection_manager_->get_db(); 
 }
 
-void DatabaseInserter::import_data(
+void Repository::import_data(
     const std::vector<DayData>& days,
     const std::vector<TimeRecordInternal>& records)
 {
@@ -30,7 +33,7 @@ void DatabaseInserter::import_data(
     }
 
     if (!connection_manager_->begin_transaction()) { 
-        return; // Error message is printed inside
+        return; 
     }
 
     try {
