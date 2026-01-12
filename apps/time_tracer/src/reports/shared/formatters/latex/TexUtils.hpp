@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
+#include "reports/shared/model/ProjectTree.hpp" // [新增] 引入 ProjectTree
 #include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
 
 namespace TexUtils {
@@ -51,7 +51,7 @@ REPORTS_SHARED_API std::string escape_latex(const std::string& input);
  * @return 格式化后的 LaTeX 字符串。
  */
 REPORTS_SHARED_API std::string format_project_tree(
-    const ProjectTree& tree,
+    const reporting::ProjectTree& tree, // [修改] 加上 reporting:: 命名空间
     long long total_duration,
     int avg_days,
     int category_title_font_size,

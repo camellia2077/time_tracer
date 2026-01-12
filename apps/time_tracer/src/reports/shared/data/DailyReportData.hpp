@@ -6,9 +6,8 @@
 #include <vector>
 #include <map>
 #include <optional>
-#include "common/utils/ProjectTree.hpp" 
+#include "reports/shared/model/ProjectTree.hpp" 
 
-//用于单个活动的详细记录
 struct TimeRecord {
     std::string start_time;
     std::string end_time;
@@ -17,7 +16,6 @@ struct TimeRecord {
     std::optional<std::string> activityRemark;
 };
 
-// This struct is part of the data for a daily report, so it belongs here.
 struct DayMetadata {
     std::string status = "N/A";
     std::string sleep = "N/A";
@@ -26,21 +24,23 @@ struct DayMetadata {
     std::string exercise = "N/A";
 };
 
-/**
- * @brief 日查询的结构体
- */
 struct DailyReportData {
     std::string date;
     DayMetadata metadata;
     long long total_duration = 0;
+    
+    // 旧的字符串记录 (为了兼容性暂时保留)
     std::vector<std::pair<std::string, long long>> records;
-    std::vector<TimeRecord> detailed_records;
+    
+    // [新增] 聚合后的统计数据 (ID -> Duration)
+    // 这是 BaseQuerier 现在填充的数据源
+    std::vector<std::pair<long long, long long>> project_stats;
 
-    // [核心修改] 使用 Map 存储动态统计数据
-    // Key: 数据库列名 (例如 "sleep_total_time", "anaerobic_time")
-    // Value: 时长 (秒)
+    std::vector<TimeRecord> detailed_records;
     std::map<std::string, long long> stats; 
-    ProjectTree project_tree;
+
+    // [修改点] 加上命名空间 reporting::
+    reporting::ProjectTree project_tree;
 };
 
 #endif // DAILY_REPORT_DATA_HPP

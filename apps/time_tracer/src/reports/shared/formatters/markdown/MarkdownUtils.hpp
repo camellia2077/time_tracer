@@ -3,7 +3,7 @@
 #define MARKDOWN_UTILS_HPP
 
 #include <string>
-#include "common/utils/ProjectTree.hpp"
+#include "reports/shared/model/ProjectTree.hpp"
 #include "reports/shared/shared_api.hpp" // <--- [新增]
 
 namespace MarkdownUtils {

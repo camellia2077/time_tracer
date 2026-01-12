@@ -4,18 +4,23 @@
 
 #include <string>
 #include <vector>
-#include "common/utils/ProjectTree.hpp"
-#include "reports/shared/shared_api.hpp" // <--- [新增]
+#include <sqlite3.h>
+#include "reports/shared/model/ProjectTree.hpp"
+#include "reports/shared/shared_api.hpp"
 
-REPORTS_SHARED_API void build_project_tree_from_records( // <--- [修改]
-    ProjectTree& tree,
+// [修改] 加上命名空间前缀 reporting::
+
+// 旧接口
+REPORTS_SHARED_API void build_project_tree_from_records(
+    reporting::ProjectTree& tree,
     const std::vector<std::pair<std::string, long long>>& records
 );
 
-#endif // REPORT_DATA_UTILS_HPP
 
-/**
- * @brief 从记录中构建项目层级树。
- * @param tree 一个 ProjectTree 对象的引用，用于构建树状结构。
- * @param records 包含项目路径和时长的原始记录。
- */
+REPORTS_SHARED_API void build_project_tree_from_ids(
+    reporting::ProjectTree& tree,
+    const std::vector<std::pair<long long, long long>>& id_records,
+    sqlite3* db
+);
+
+#endif // REPORT_DATA_UTILS_HPP

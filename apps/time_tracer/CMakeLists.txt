@@ -1,7 +1,7 @@
 # --- START OF FILE CMakeLists.txt ---
 # src/CMakeLists.txt
 cmake_minimum_required(VERSION 3.16)
-project(TimeTrackerApp VERSION "0.3.26.5" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.4.0.1" LANGUAGES CXX)
 
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
 # 这可以从根本上解决在 Windows GBK 环境下因中文字符导致的编码错误

@@ -1,10 +1,11 @@
-﻿// common/utils/ProjectTree.hpp
+﻿// reports/shared/model/ProjectTree.hpp
 #ifndef PROJECT_TREE_HPP
 #define PROJECT_TREE_HPP
 
 #include <unordered_map> // [修改] 引入 unordered_map
 #include <string>
 
+namespace reporting {
 
 struct ProjectNode {
     long long duration = 0;
@@ -18,5 +19,7 @@ struct ProjectNode {
 };
 
 using ProjectTree = std::unordered_map<std::string, ProjectNode>;
+
+} // namespace reporting
 
 #endif // PROJECT_TREE_HPP
