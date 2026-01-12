@@ -8,7 +8,7 @@
 #include <utility> // for std::pair
 
 // 前置声明，避免暴露内部模型细节
-struct InputData; 
+struct DailyLog; 
 
 // ==========================================
 // Facade Interface (UI/CLI Layer Entry Points)
@@ -22,6 +22,6 @@ struct InputData;
 void handle_import_json_content(const std::string& db_name, const std::vector<std::pair<std::string, std::string>>& inputs);
 
 // 保持不变
-void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<InputData>>& data_map);
+void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<DailyLog>>& data_map);
 
 #endif // DATA_IMPORTER_HPP

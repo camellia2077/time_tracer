@@ -1,4 +1,4 @@
-﻿// converter/convert/pipelines/DayProcessor.cpp
+﻿// converter/convert/core/DayProcessor.cpp
 #include "DayProcessor.hpp"
 #include "DayStats.hpp"
 #include "ActivityMapper.hpp" 
@@ -11,7 +11,7 @@ namespace {
 
 DayProcessor::DayProcessor(const ConverterConfig& config) : config_(config) {}
 
-void DayProcessor::process(InputData& previousDay, InputData& dayToProcess) {
+void DayProcessor::process(DailyLog& previousDay, DailyLog& dayToProcess) {
     if (dayToProcess.date.empty()) return;
 
     ActivityMapper activity_mapper(config_);

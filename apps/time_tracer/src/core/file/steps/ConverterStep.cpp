@@ -1,7 +1,7 @@
 ﻿// core/file/steps/ConverterStep.cpp
 #include "ConverterStep.hpp"
 #include "common/AnsiColors.hpp"
-#include "converter/convert/pipelines/Output.hpp"
+#include "converter/convert/io/JsonWriter.hpp"
 #include "io/core/FileReader.hpp"      
 #include "io/core/FileWriter.hpp"      
 #include "io/core/FileSystemHelper.hpp"
@@ -76,9 +76,9 @@ bool ConverterStep::execute(PipelineContext& context) {
     
     // 3. 执行转换 (Callback 模式)
     // Core 层负责决定如何组织这些数据 (这里选择按月分组存入 Map)
-    std::map<std::string, std::vector<InputData>> monthly_data;
+    std::map<std::string, std::vector<DailyLog>> monthly_data;
     
-    processor.convertStreamToData(combined_stream, [&](InputData&& day) {
+    processor.convertStreamToData(combined_stream, [&](DailyLog&& day) {
         if (day.date.length() == 10) {
             std::string year_month = day.date.substr(0, 4) + "_" + day.date.substr(5, 2);
             // 使用 std::move 将数据所有权转移进 map，避免拷贝
@@ -96,12 +96,12 @@ bool ConverterStep::execute(PipelineContext& context) {
 
     // 5. 写入输出文件 (如果需要)
     if (context.config.save_processed_output) {
-        Output generator;
+        JsonWriter generator;
         fs::path output_dir_base = context.config.output_root / "Processed_Date";
 
         for (const auto& pair : monthly_data) {
             const std::string& year_month = pair.first;
-            const std::vector<InputData>& month_days = pair.second;
+            const std::vector<DailyLog>& month_days = pair.second;
             
             std::string year = year_month.substr(0, 4);
             fs::path month_output_dir = output_dir_base / year;
@@ -110,7 +110,7 @@ bool ConverterStep::execute(PipelineContext& context) {
             try {
                 FileSystemHelper::create_directories(month_output_dir);
                 std::stringstream buffer;
-                // 使用 Output 类将 vector 转为 JSON 字符串
+                // 使用 JsonWriter 类将 vector 转为 JSON 字符串
                 generator.write(buffer, month_days, context.state.converter_config); 
                 FileWriter::write_content(output_file_path, buffer.str());
                 

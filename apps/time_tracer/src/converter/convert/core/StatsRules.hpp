@@ -1,8 +1,8 @@
-﻿// converter/convert/pipelines/StatsRules.hpp
+﻿// converter/convert/core/StatsRules.hpp
 #ifndef STATS_RULES_HPP
 #define STATS_RULES_HPP
 
-#include "converter/convert/model/InputData.hpp"
+#include "common/model/DailyLog.hpp"
 #include <initializer_list>
 
 struct StatsRule {

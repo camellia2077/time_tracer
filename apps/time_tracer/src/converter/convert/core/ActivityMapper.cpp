@@ -1,4 +1,4 @@
-﻿// converter/convert/pipelines/ActivityMapper.cpp
+﻿// converter/convert/core/ActivityMapper.cpp
 #include "ActivityMapper.hpp"
 #include "common/utils/StringUtils.hpp"
 #include <stdexcept>
@@ -34,7 +34,7 @@ ActivityMapper::ActivityMapper(const ConverterConfig& config)
     : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
-void ActivityMapper::map_activities(InputData& day) {
+void ActivityMapper::map_activities(DailyLog& day) {
     day.processedActivities.clear();
     
     if (day.getupTime.empty() && !day.isContinuation) return;

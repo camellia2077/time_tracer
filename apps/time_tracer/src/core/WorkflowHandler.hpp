@@ -8,7 +8,7 @@
 #include <vector>
 #include "common/AppConfig.hpp" 
 #include "converter/validator/common/ValidatorUtils.hpp"
-#include "converter/convert/model/InputData.hpp" 
+#include "common/model/DailyLog.hpp" 
 
 namespace fs = std::filesystem;
 
@@ -24,7 +24,7 @@ public:
     void run_database_import(const std::string& processed_path_str);
 
     // 基于内存数据的导入
-    void run_database_import_from_memory(const std::map<std::string, std::vector<InputData>>& data_map);
+    void run_database_import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map);
     
     // 完整流程
     void run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode, bool save_processed = false);

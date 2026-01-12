@@ -2,7 +2,7 @@
 #include "MemoryParser.hpp"
 #include <iostream>
 
-ParsedData MemoryParser::parse(const std::map<std::string, std::vector<InputData>>& data_map) {
+ParsedData MemoryParser::parse(const std::map<std::string, std::vector<DailyLog>>& data_map) {
     ParsedData all_data;
     
     for (const auto& [month_str, days] : data_map) {

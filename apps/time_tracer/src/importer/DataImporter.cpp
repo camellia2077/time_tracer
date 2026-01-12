@@ -50,7 +50,7 @@ void handle_import_json_content(const std::string& db_name, const std::vector<st
     print_report(stats, "Content Import");
 }
 
-void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<InputData>>& data) {
+void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<DailyLog>>& data) {
     std::cout << "Task: Memory Import..." << std::endl;
     
     ImportService service(db_name);
