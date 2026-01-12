@@ -17,7 +17,7 @@ PeriodReportData PeriodQuerier::fetch_data() {
     // [核心修正] 在数据获取阶段构建项目树
     // 如果有记录，就从 records 中构建 project_tree
     if (data.total_duration > 0) {
-        build_project_tree_from_records(data.project_tree, data.records);
+        build_project_tree_from_ids(data.project_tree, data.project_stats, db_);
     }
 
     return data;

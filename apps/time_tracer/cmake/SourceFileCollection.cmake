@@ -112,6 +112,7 @@ set(IMPORTER_SOURCES
     # Storage Layer (Database persistence)
     "src/importer/storage/Repository.cpp"
     "src/importer/storage/sqlite/Writer.cpp"
+    "src/importer/storage/sqlite/ProjectResolver.cpp"
     "src/importer/storage/sqlite/Connection.cpp"
     "src/importer/storage/sqlite/Statement.cpp"
 )

@@ -4,50 +4,62 @@
 #include "converter/convert/pipelines/InputParser.hpp"
 #include "converter/convert/pipelines/DayProcessor.hpp"
 
-// [核心修改] 构造函数
 IntervalConverter::IntervalConverter(const ConverterConfig& config) 
     : config_(config) {}
 
-std::vector<InputData> IntervalConverter::executeConversion(std::istream& combined_input_stream) {
+void IntervalConverter::executeConversion(std::istream& combined_input_stream, std::function<void(InputData&&)> data_consumer) {
     InputParser parser(config_);
-    std::vector<InputData> all_days;
+    DayProcessor processor(config_);
+    
+    // 滑动窗口：只在内存中保留前一天
+    InputData previous_day;
+    bool has_previous = false;
 
-    parser.parse(combined_input_stream, [&](InputData& day) {
-        all_days.push_back(day);
+    parser.parse(combined_input_stream, [&](InputData& current_day) {
+        // [流式流水线逻辑]
+        
+        // 1. 初始化 / 跨天逻辑处理
+        if (!has_previous) {
+             InputData empty_day; 
+             processor.process(empty_day, current_day);
+        } else {
+             // 利用 current_day 完善 previous_day 的睡眠逻辑
+             processor.process(previous_day, current_day);
+             
+             // 2. 去重逻辑 (例如跨年重复的 12-31 和 01-01)
+             bool skip_previous = false;
+             if (previous_day.date.length() == 10 && current_day.date.length() == 10) {
+                 std::string prev_month = previous_day.date.substr(5, 2);
+                 std::string curr_month = current_day.date.substr(5, 2);
+                 if (prev_month == "12" && curr_month == "01") {
+                      int prev_year = std::stoi(previous_day.date.substr(0, 4));
+                      int curr_year = std::stoi(current_day.date.substr(0, 4));
+                      if (curr_year == prev_year + 1) {
+                          skip_previous = true; 
+                      }
+                 }
+             }
+
+             // 3. [关键点] 将 previous_day 移交给回调函数
+             if (!skip_previous) {
+                 if (data_consumer) {
+                     data_consumer(std::move(previous_day));
+                 }
+             }
+        }
+
+        // 4. 滑动窗口：current_day 变为 previous_day
+        // 使用 std::move 避免拷贝
+        previous_day = std::move(current_day);
+        has_previous = true;
     });
 
-    if (all_days.empty()) {
-        return {};
-    }
-
-    DayProcessor processor(config_);
-    InputData empty_prev_day;
-
-    for (size_t i = 0; i < all_days.size(); ++i) {
-        InputData& previous_day = (i > 0) ? all_days[i - 1] : empty_prev_day;
-        InputData& current_day = all_days[i];
-        processor.process(previous_day, current_day);
-    }
-    
-    // 移除跨年的重复月份逻辑 (保持原样)
-    if (all_days.size() > 1) {
-        const auto& first_day = all_days[0];
-        const auto& second_day = all_days[1];
-
-        if (first_day.date.length() == 10 && second_day.date.length() == 10) {
-            std::string first_month = first_day.date.substr(5, 2);
-            std::string second_month = second_day.date.substr(5, 2);
-
-            if (first_month == "12" && second_month == "01") {
-                int first_year = std::stoi(first_day.date.substr(0, 4));
-                int second_year = std::stoi(second_day.date.substr(0, 4));
-
-                if (second_year == first_year + 1) {
-                    all_days.erase(all_days.begin());
-                }
-            }
+    // 5. 处理最后一天 (Flush)
+    if (has_previous) {
+        InputData empty_next_day;
+        processor.process(previous_day, empty_next_day);
+        if (data_consumer) {
+            data_consumer(std::move(previous_day));
         }
     }
-    
-    return all_days;
 }

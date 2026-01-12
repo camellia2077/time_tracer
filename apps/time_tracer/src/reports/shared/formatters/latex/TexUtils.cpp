@@ -131,7 +131,7 @@ std::string escape_latex(const std::string& input) {
 }
 
 std::string format_project_tree(
-    const ProjectTree& tree,
+    const reporting::ProjectTree& tree, // [修改] 加上 reporting:: 命名空间
     long long total_duration,
     int avg_days,
     int category_title_font_size,

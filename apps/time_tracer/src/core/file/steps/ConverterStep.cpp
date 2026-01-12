@@ -12,9 +12,8 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-// 辅助函数保持不变
+// 辅助函数 (保持不变)
 static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
-    // ... (代码同前，略)
     using json = nlohmann::json;
     ConverterConfig config;
     try {
@@ -53,7 +52,6 @@ ConverterStep::ConverterStep(const AppConfig& config) : app_config_(config) {}
 bool ConverterStep::execute(PipelineContext& context) {
     std::cout << "\n--- 阶段: 转换文件 ---" << std::endl;
     
-    // [修正] source_files -> state.source_files
     if (context.state.source_files.empty()) {
         std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供转换。" << RESET_COLOR << std::endl;
         return false;
@@ -62,7 +60,6 @@ bool ConverterStep::execute(PipelineContext& context) {
     auto start_time = std::chrono::steady_clock::now();
 
     // 1. 准备配置
-    // [修正] converter_config -> state.converter_config
     context.state.converter_config = loadAndAssembleConfig(app_config_.interval_processor_config_path);
     LogProcessor processor(context.state.converter_config);
 
@@ -77,31 +74,29 @@ bool ConverterStep::execute(PipelineContext& context) {
         }
     }
     
-    // 3. 执行转换
-    std::vector<InputData> all_processed_days = processor.convertStreamToData(combined_stream);
+    // 3. 执行转换 (Callback 模式)
+    // Core 层负责决定如何组织这些数据 (这里选择按月分组存入 Map)
+    std::map<std::string, std::vector<InputData>> monthly_data;
     
-    if (all_processed_days.empty()) {
+    processor.convertStreamToData(combined_stream, [&](InputData&& day) {
+        if (day.date.length() == 10) {
+            std::string year_month = day.date.substr(0, 4) + "_" + day.date.substr(5, 2);
+            // 使用 std::move 将数据所有权转移进 map，避免拷贝
+            monthly_data[year_month].push_back(std::move(day));
+        }
+    });
+    
+    if (monthly_data.empty()) {
         std::cerr << RED_COLOR << "文件转换失败，没有生成任何数据。" << RESET_COLOR << std::endl;
         return false;
     }
 
-    // 4. 按月分组
-    std::map<std::string, std::vector<InputData>> monthly_data;
-    for (const auto& day : all_processed_days) {
-        if (day.date.length() == 10) {
-            std::string year_month = day.date.substr(0, 4) + "_" + day.date.substr(5, 2);
-            monthly_data[year_month].push_back(day);
-        }
-    }
-
-    // [修正] processed_data_memory -> result.processed_data
+    // 4. 更新 Context (用于 DB 内存直连)
     context.result.processed_data = monthly_data;
 
-    // 5. 写入输出
-    // [修正] save_processed_output -> config.save_processed_output
+    // 5. 写入输出文件 (如果需要)
     if (context.config.save_processed_output) {
         Output generator;
-        // [修正] output_root -> config.output_root
         fs::path output_dir_base = context.config.output_root / "Processed_Date";
 
         for (const auto& pair : monthly_data) {
@@ -115,11 +110,10 @@ bool ConverterStep::execute(PipelineContext& context) {
             try {
                 FileSystemHelper::create_directories(month_output_dir);
                 std::stringstream buffer;
-                // [修正] converter_config -> state.converter_config
+                // 使用 Output 类将 vector 转为 JSON 字符串
                 generator.write(buffer, month_days, context.state.converter_config); 
                 FileWriter::write_content(output_file_path, buffer.str());
                 
-                // [修正] generated_files -> state.generated_files
                 context.state.generated_files.push_back(output_file_path);
             } catch (const std::exception& e) {
                  std::cerr << RED_COLOR << "错误: 无法写入输出文件: " << output_file_path << " - " << e.what() << RESET_COLOR << std::endl;

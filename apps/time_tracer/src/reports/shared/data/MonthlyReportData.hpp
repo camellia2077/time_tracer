@@ -4,15 +4,19 @@
 
 #include <string>
 #include <vector>
-#include "common/utils/ProjectTree.hpp" // [新增] 引入 ProjectTree
+#include "reports/shared/model/ProjectTree.hpp"
 
-// 用于月报的数据
 struct MonthlyReportData {
     std::string year_month;
     long long total_duration = 0;
     int actual_days = 0;
+    
     std::vector<std::pair<std::string, long long>> records;
-    ProjectTree project_tree; // [新增] 项目树现在是数据的一部分
+    
+    // [新增] 用于存储 BaseQuerier 聚合查询的结果 (Project ID -> Duration)
+    std::vector<std::pair<long long, long long>> project_stats;
+
+    reporting::ProjectTree project_tree;
 };
 
 #endif // MONTHLY_REPORT_DATA_HPP
