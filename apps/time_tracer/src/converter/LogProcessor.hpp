@@ -5,18 +5,23 @@
 #include <string>
 #include <vector>
 #include <istream> 
-#include "common/AppConfig.hpp" // ProcessingResult 已经在此头文件中定义
+#include <functional> 
+#include "common/AppConfig.hpp"
 #include "converter/convert/model/InputData.hpp" 
 #include "converter/convert/config/ConverterConfig.hpp"
 
 class LogProcessor {
 public:
-    // 接收已加载的 ConverterConfig
     explicit LogProcessor(const ConverterConfig& config);
 
-    std::vector<InputData> convertStreamToData(std::istream& combined_stream);
+    /**
+     * @brief 将输入流转换为数据对象
+     * * [I/O 边界说明]
+     * 此函数不执行磁盘写入。它将转换后的 InputData 通过 data_consumer 回调传出。
+     * 调用者 (Core 层) 负责在回调中实现具体的存储逻辑 (例如调用 Output 类生成 JSON 并写入文件)。
+     */
+    void convertStreamToData(std::istream& combined_stream, std::function<void(InputData&&)> data_consumer);
 
-    // 接收内容字符串进行验证
     ProcessingResult processSourceContent(const std::string& filename, 
                                           const std::string& content);
 
