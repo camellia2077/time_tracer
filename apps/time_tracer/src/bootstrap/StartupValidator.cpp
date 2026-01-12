@@ -8,7 +8,7 @@
 #include <nlohmann/json.hpp>
 
 // 引入核心验证外观类
-#include "config_validator/facade/ConfigFacade.hpp"
+#include "config/validator/facade/ConfigFacade.hpp"
 // 引入颜色输出
 #include "common/AnsiColors.hpp"
 
