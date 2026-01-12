@@ -43,7 +43,7 @@ include(BuildTypeFlags)
 add_executable(time_tracker_cli src/main_cli.cpp
     ${COMMON_SOURCES}
     ${BOOTSTRAP_SOURCES}
-    ${CONFIG_VALIDATOR_SOURCES}
+    ${CONFIG_SOURCES}
     ${IMPORTER_SOURCES}
     ${REPORTS_SOURCES}
     ${CONVERTER_SOURCES}
