@@ -1,12 +1,12 @@
-﻿// converter/validator/source_txt/facade/SourceFacade.cpp
-#include "SourceFacade.hpp"
-#include "converter/validator/source_txt/pipelines/LineRules.hpp"
-#include "converter/validator/source_txt/pipelines/StructureRules.hpp"
+﻿// converter/validator/source_txt/facade/TextValidator.cpp
+#include "TextValidator.hpp"
+#include "converter/validator/source_txt/rules/LineRules.hpp"
+#include "converter/validator/source_txt/rules/StructureRules.hpp"
 #include "common/utils/StringUtils.hpp" 
-#include <sstream> // [New]
+#include <sstream> 
 #include <iostream>
 
-struct SourceFacade::PImpl {
+struct TextValidator::PImpl {
     LineRules line_processor;
     StructureRules structural_validator;
 
@@ -14,12 +14,12 @@ struct SourceFacade::PImpl {
         : line_processor(config) {}
 };
 
-SourceFacade::SourceFacade(const ConverterConfig& config)
+TextValidator::TextValidator(const ConverterConfig& config)
     : pimpl_(std::make_unique<PImpl>(config)) {}
 
-SourceFacade::~SourceFacade() = default;
+TextValidator::~TextValidator() = default;
 
-bool SourceFacade::validate(const std::string& /*filename*/, const std::string& content, std::set<Error>& errors) {
+bool TextValidator::validate(const std::string& /*filename*/, const std::string& content, std::set<Error>& errors) {
     // 使用 stringstream 替代 ifstream
     std::stringstream ss(content);
     std::string line;

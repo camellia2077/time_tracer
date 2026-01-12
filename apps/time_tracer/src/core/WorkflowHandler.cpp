@@ -49,7 +49,7 @@ void WorkflowHandler::run_database_import(const std::string& processed_path_str)
     std::cout << "导入过程结束。" << std::endl;
 }
 
-void WorkflowHandler::run_database_import_from_memory(const std::map<std::string, std::vector<InputData>>& data_map) {
+void WorkflowHandler::run_database_import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map) {
     DBManager db_manager(db_path_);
     db_manager.close_database(); 
     std::cout << "开始从内存数据导入过程..." << std::endl;

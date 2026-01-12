@@ -1,14 +1,14 @@
-﻿// converter/convert/pipelines/DayStats.hpp
+﻿// converter/convert/core/DayStats.hpp
 
 #ifndef DAY_STATS_HPP
 #define DAY_STATS_HPP
 
-#include "converter/convert/model/InputData.hpp"
+#include "common/model/DailyLog.hpp"
 #include <string>
 
 class DayStats {
 public:
-    void calculate_stats(InputData& day);
+    void calculate_stats(DailyLog& day);
 
 private:
     int calculateDurationSeconds(const std::string& startTimeStr, const std::string& endTimeStr) const;

@@ -1,26 +1,26 @@
-﻿// converter/convert/facade/IntervalConverter.cpp
-#include "IntervalConverter.hpp"
+﻿// converter/convert/facade/ConverterService.cpp
+#include "ConverterService.hpp"
 #include "common/AnsiColors.hpp"
-#include "converter/convert/pipelines/InputParser.hpp"
-#include "converter/convert/pipelines/DayProcessor.hpp"
+#include "converter/convert/io/TextParser.hpp"
+#include "converter/convert/core/DayProcessor.hpp"
 
-IntervalConverter::IntervalConverter(const ConverterConfig& config) 
+ConverterService::ConverterService(const ConverterConfig& config) 
     : config_(config) {}
 
-void IntervalConverter::executeConversion(std::istream& combined_input_stream, std::function<void(InputData&&)> data_consumer) {
-    InputParser parser(config_);
+void ConverterService::executeConversion(std::istream& combined_input_stream, std::function<void(DailyLog&&)> data_consumer) {
+    TextParser parser(config_);
     DayProcessor processor(config_);
     
     // 滑动窗口：只在内存中保留前一天
-    InputData previous_day;
+    DailyLog previous_day;
     bool has_previous = false;
 
-    parser.parse(combined_input_stream, [&](InputData& current_day) {
+    parser.parse(combined_input_stream, [&](DailyLog& current_day) {
         // [流式流水线逻辑]
         
         // 1. 初始化 / 跨天逻辑处理
         if (!has_previous) {
-             InputData empty_day; 
+             DailyLog empty_day; 
              processor.process(empty_day, current_day);
         } else {
              // 利用 current_day 完善 previous_day 的睡眠逻辑
@@ -56,7 +56,7 @@ void IntervalConverter::executeConversion(std::istream& combined_input_stream, s
 
     // 5. 处理最后一天 (Flush)
     if (has_previous) {
-        InputData empty_next_day;
+        DailyLog empty_next_day;
         processor.process(previous_day, empty_next_day);
         if (data_consumer) {
             data_consumer(std::move(previous_day));

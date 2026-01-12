@@ -1,4 +1,4 @@
-﻿// converter/convert/pipelines/DayStats.cpp
+﻿// converter/convert/core/DayStats.cpp
 #include "DayStats.hpp"
 #include "StatsRules.hpp"
 #include <iomanip>
@@ -54,7 +54,7 @@ long long DayStats::timeStringToTimestamp(const std::string& date, const std::st
 }
 
 
-void DayStats::calculate_stats(InputData& day) {
+void DayStats::calculate_stats(DailyLog& day) {
     day.activityCount = day.processedActivities.size();
     day.stats = {}; // [适配] generatedStats -> stats
     day.hasStudyActivity = false;

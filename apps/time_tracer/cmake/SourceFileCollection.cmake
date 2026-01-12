@@ -122,27 +122,35 @@ set(REPORTS_SOURCES
 set(CONVERTER_SOURCES
     "src/converter/LogProcessor.cpp"
 
-    # 转换模块
-    "src/converter/convert/config/ConverterConfig.cpp"             
-    "src/converter/convert/facade/IntervalConverter.cpp"         
-    "src/converter/convert/pipelines/ActivityMapper.cpp"           
-    "src/converter/convert/pipelines/DayProcessor.cpp"            
-    "src/converter/convert/pipelines/DayStats.cpp"                
-    "src/converter/convert/pipelines/InputParser.cpp"             
-    "src/converter/convert/pipelines/Output.cpp"                   
+    # --- 配置模块 (Config) [Moved] ---
+    "src/converter/config/ConverterConfig.cpp"
 
-    # 验证模块
+    # --- 转换模块 (Convert) ---
+    # Facade
+    "src/converter/convert/facade/ConverterService.cpp"
+    
+    # Core (原 pipelines 中的算法部分) [New Path]
+    "src/converter/convert/core/ActivityMapper.cpp"
+    "src/converter/convert/core/DayProcessor.cpp"
+    "src/converter/convert/core/DayStats.cpp"
+
+    # IO (原 pipelines 中的解析与输出部分) [New Path]
+    "src/converter/convert/io/TextParser.cpp"
+    "src/converter/convert/io/JsonWriter.cpp"
+
+    # --- 验证模块 (Validator) ---
     "src/converter/validator/FileValidator.cpp"
     "src/converter/validator/common/ValidatorUtils.cpp"
 
-    # 验证json的封装
+    # Json 验证
     "src/converter/validator/output_json/facade/JsonValidator.cpp"
-    "src/converter/validator/output_json/pipelines/ActivityRules.cpp"
-    "src/converter/validator/output_json/pipelines/DateRules.cpp"
+    "src/converter/validator/output_json/rules/ActivityRules.cpp"
+    "src/converter/validator/output_json/rules/DateRules.cpp"
 
-    "src/converter/validator/source_txt/facade/SourceFacade.cpp"
-    "src/converter/validator/source_txt/pipelines/LineRules.cpp"
-    "src/converter/validator/source_txt/pipelines/StructureRules.cpp"
+    # Source 文本验证
+    "src/converter/validator/source_txt/facade/TextValidator.cpp"
+    "src/converter/validator/source_txt/rules/LineRules.cpp"
+    "src/converter/validator/source_txt/rules/StructureRules.cpp"
 )
 
 # --- File Handler Sources ---

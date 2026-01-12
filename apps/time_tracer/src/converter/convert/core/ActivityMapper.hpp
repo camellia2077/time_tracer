@@ -1,17 +1,18 @@
-﻿// converter/convert/pipelines/ActivityMapper.hpp
+﻿// converter/convert/core/ActivityMapper.hpp
 #ifndef ACTIVITY_MAPPER_HPP
 #define ACTIVITY_MAPPER_HPP
 
-#include "converter/convert/model/InputData.hpp"
+#include "common/model/DailyLog.hpp"
 
-#include "converter/convert/config/ConverterConfig.hpp"
+#include "converter/config/ConverterConfig.hpp"
+
 #include <string>
 #include <unordered_set>
 
 class ActivityMapper {
 public:
     explicit ActivityMapper(const ConverterConfig& config);
-    void map_activities(InputData& day);
+    void map_activities(DailyLog& day);
 
 private:
     const ConverterConfig& config_;
