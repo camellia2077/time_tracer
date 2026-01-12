@@ -7,13 +7,12 @@
 
 LogProcessor::LogProcessor(const ConverterConfig& config) : config_(config) {}
 
-std::vector<InputData> LogProcessor::convertStreamToData(std::istream& combined_stream) {
+void LogProcessor::convertStreamToData(std::istream& combined_stream, std::function<void(InputData&&)> data_consumer) {
     try {
         IntervalConverter processor(config_);
-        return processor.executeConversion(combined_stream);
+        processor.executeConversion(combined_stream, data_consumer);
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "An error occurred during conversion: " << e.what() << RESET_COLOR << std::endl;
-        return {}; 
     }
 }
 

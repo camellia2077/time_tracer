@@ -5,7 +5,7 @@
 #include <string>
 #include <sstream>
 #include <memory> 
-#include "common/utils/ProjectTree.hpp"
+#include "reports/shared/model/ProjectTree.hpp"
 #include "reports/shared/shared_api.hpp"
 
 namespace reporting {

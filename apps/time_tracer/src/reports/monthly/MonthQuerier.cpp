@@ -13,7 +13,7 @@ MonthlyReportData MonthQuerier::fetch_data() {
     _fetch_actual_days(data);
 
     if (data.total_duration > 0) {
-        build_project_tree_from_records(data.project_tree, data.records);
+        build_project_tree_from_ids(data.project_tree, data.project_stats, db_);
     }
     
     return data;
@@ -39,11 +39,19 @@ void MonthQuerier::_prepare_data(MonthlyReportData& data) const {
 }
 
 std::string MonthQuerier::get_date_condition_sql() const {
-    // [核心修改] 数据库存的是 YYYY-MM-DD
-    // 我们需要匹配前7位 (YYYY-MM)
-    return "SUBSTR(date, 1, 7) = ?";
+    // [优化] 使用范围查询以利用数据库索引 (Index Range Scan)
+    // 替代原来的 SUBSTR(date, 1, 7) = ? (Full Table Scan)
+    return "date >= ? AND date <= ?";
 }
 
 void MonthQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
+    // 构造日期范围: "YYYY-MM-01" 到 "YYYY-MM-31"
+    // 注意：使用 "-31" 进行字符串比较对于任何月份都是安全的上界，
+    // 因为数据库中的有效日期(如 2025-02-28)在字典序上永远小于 2025-02-31。
+    std::string start_date = param_ + "-01";
+    std::string end_date = param_ + "-31";
+
+    // 使用 SQLITE_TRANSIENT 告知 SQLite 立即拷贝字符串，因为 start_date/end_date 是局部变量
+    sqlite3_bind_text(stmt, 1, start_date.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_text(stmt, 2, end_date.c_str(), -1, SQLITE_TRANSIENT);
 }

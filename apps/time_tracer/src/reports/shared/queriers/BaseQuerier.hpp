@@ -56,28 +56,25 @@ protected:
 
     void _fetch_records_and_duration(ReportDataType& data) {
         sqlite3_stmt* stmt;
-        std::string sql = R"(
-            WITH RECURSIVE project_paths(id, path) AS (
-                SELECT id, name FROM projects WHERE parent_id IS NULL
-                UNION ALL
-                SELECT p.id, pp.path || '_' || p.name
-                FROM projects p
-                JOIN project_paths pp ON p.parent_id = pp.id
-            )
-            SELECT pp.path, tr.duration 
-            FROM time_records tr
-            JOIN project_paths pp ON tr.project_id = pp.id
-            WHERE )" + get_date_condition_sql() + ";";
+        
+        // [核心优化]：
+        // 1. 移除 WITH RECURSIVE (CTE)
+        // 2. 使用 GROUP BY project_id 进行数据库级聚合
+        std::string sql = "SELECT project_id, SUM(duration) FROM time_records WHERE " 
+                          + get_date_condition_sql() 
+                          + " GROUP BY project_id;";
 
         if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
             bind_sql_parameters(stmt);
             while (sqlite3_step(stmt) == SQLITE_ROW) {
-                long long duration = sqlite3_column_int64(stmt, 1);
-                data.records.push_back({
-                    reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0)),
-                    duration
-                });
-                data.total_duration += duration;
+                long long project_id = sqlite3_column_int64(stmt, 0);
+                long long total_duration = sqlite3_column_int64(stmt, 1);
+                
+                // 假设你在 ReportDataType (如 DailyReportData) 中加了一个新字段：
+                // std::vector<std::pair<long long, long long>> project_stats;
+                data.project_stats.push_back({project_id, total_duration});
+
+                data.total_duration += total_duration;
             }
         }
         sqlite3_finalize(stmt);
