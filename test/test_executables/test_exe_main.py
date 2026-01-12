@@ -11,11 +11,12 @@ import config
 # --- 内部测试模块 ---
 from _py_internal.environment_manager import EnvironmentManager
 from _py_internal.base_module import BaseTester, TestCounter
-from _py_internal.module_preprocessing import PreprocessingTester
-from _py_internal.module_database import DatabaseImportTester
+from _py_internal.module_converter import ConverterTester  # [修改] 已更新
+from _py_internal.module_importer import ImporterTester    # [修改] 已更新
 from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
 from _py_internal.module_version import VersionChecker
+
 
 def print_header():
     """打印脚本的初始头部信息。"""
@@ -40,10 +41,14 @@ def initialize_test_modules() -> List[BaseTester]:
     }
 
     modules = [
-        PreprocessingTester(shared_counter, 1, 
-                            specific_validation_path=str(config.Paths.PROCESSED_JSON_PATH),
-                            **common_args),
-        DatabaseImportTester(shared_counter, 2, **common_args),
+        # [修改] 使用 ConverterTester 替代 PreprocessingTester
+        ConverterTester(shared_counter, 1, 
+                        specific_validation_path=str(config.Paths.PROCESSED_JSON_PATH),
+                        **common_args),
+        
+        # [修改] 使用 ImporterTester 替代 DatabaseImportTester
+        ImporterTester(shared_counter, 2, **common_args),
+        
         QueryTester(shared_counter, 3, 
                     generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME, 
                     daily_query_dates=config.TestParams.DAILY_QUERY_DATES, 
@@ -51,6 +56,7 @@ def initialize_test_modules() -> List[BaseTester]:
                     period_query_days=config.TestParams.PERIOD_QUERY_DAYS,
                     test_formats=config.TestParams.TEST_FORMATS,
                     **common_args),
+        
         ExportTester(shared_counter, 4, 
                      generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME,
                      is_bulk_mode=config.TestParams.EXPORT_MODE_IS_BULK,
@@ -99,7 +105,6 @@ def main():
     
     print_header()
 
-    # ======================= 核心修改 =======================
     # 从配置中读取执行控制标志
     setup_enabled = config.RunControl.ENABLE_FILE_SETUP
     tests_enabled = config.RunControl.ENABLE_TEST_EXECUTION
@@ -123,7 +128,6 @@ def main():
         all_tests_passed = run_test_suite(test_modules)
     else:
         print(f"\n{config.Colors.CYAN}--- 根据 config.toml 的设置，跳过测试执行阶段。 ---{config.Colors.RESET}")
-    # =========================================================
 
     total_duration = time.monotonic() - start_time
     

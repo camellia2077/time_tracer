@@ -7,9 +7,10 @@
 #include <memory>
 #include <filesystem>
 #include "cli/CliParser.hpp"
+#include "common/AppConfig.hpp" // [新增] 需要引入 AppConfig 定义
 
 class FileController;
-class WorkflowHandler; // [修改] 类名变更 FileHandler -> WorkflowHandler
+class WorkflowHandler;
 class ReportHandler;
 class DBManager;
 
@@ -24,12 +25,13 @@ public:
 
 private:
     CliParser parser_;
+    
+    // [新增] 将 AppConfig 提升为成员变量，确保其生命周期
+    AppConfig app_config_;
 
     // --- 依赖的服务 ---
     std::unique_ptr<FileController> file_controller_;
     std::unique_ptr<DBManager> db_manager_;
-    
-    // [修改] 类型和变量名变更
     std::unique_ptr<WorkflowHandler> workflow_handler_; 
     std::unique_ptr<ReportHandler> report_generation_handler_;
 

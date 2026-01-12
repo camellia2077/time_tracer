@@ -47,32 +47,7 @@ set_target_properties(reports_shared PROPERTIES
 # 它会链接 nlohmann_json 等
 setup_project_target(reports_shared)
 
-set(CONFIG_VALIDATOR_SOURCES
-    # 顶层外观
-    "src/config_validator/facade/ConfigFacade.cpp"
 
-    # converter 领域的 Facade 和 Pipelines
-    "src/config_validator/converter/facade/ReprocFacade.cpp"
-    "src/config_validator/converter/rules/DurationRule.cpp"
-    "src/config_validator/converter/rules/MainRule.cpp"
-    "src/config_validator/converter/rules/MappingRule.cpp"
-
-    "src/config_validator/plugins/facade/PluginValidator.cpp"
-
-    # reports 领域的 Facade
-    "src/config_validator/reports/facade/QueryFacade.cpp"
-
-    # reports 领域的 Strategies (核心)
-    "src/config_validator/reports/strategies/BaseStrategy.cpp"
-    "src/config_validator/reports/strategies/StrategyFactory.cpp"
-
-    # reports 领域的 Strategies (具体实现)
-    "src/config_validator/reports/strategies/daily/DailyMd.cpp"
-    "src/config_validator/reports/strategies/daily/DailyTex.cpp"
-    "src/config_validator/reports/strategies/daily/DailyTyp.cpp"
-    "src/config_validator/reports/strategies/monthly/Monthly.cpp"
-    "src/config_validator/reports/strategies/periodic/Periodic.cpp"
-)
 
 # --- Time Master CLI Sources ---
 set(CLI_SOURCES
@@ -173,12 +148,41 @@ set(CONVERTER_SOURCES
 # --- File Handler Sources ---
 set(IO_SOURCES
     "src/io/FileController.cpp"
-    "src/io/config/ConfigLoader.cpp"
     "src/io/core/FileReader.cpp"
     "src/io/core/FileWriter.cpp"
     "src/io/core/FileSystemHelper.cpp"
     "src/io/utils/FileUtils.cpp"
 )
+
+set(CONFIG_SOURCES
+    "src/config/ConfigLoader.cpp"
+    # 顶层外观
+    "src/config/validator/facade/ConfigFacade.cpp"
+
+    # converter 领域的 Facade 和 Pipelines
+    "src/config/validator/converter/facade/ReprocFacade.cpp"
+    "src/config/validator/converter/rules/DurationRule.cpp"
+    "src/config/validator/converter/rules/MainRule.cpp"
+    "src/config/validator/converter/rules/MappingRule.cpp"
+
+    "src/config/validator/plugins/facade/PluginValidator.cpp"
+
+    # reports 领域的 Facade
+    "src/config/validator/reports/facade/QueryFacade.cpp"
+
+    # reports 领域的 Strategies (核心)
+    "src/config/validator/reports/strategies/BaseStrategy.cpp"
+    "src/config/validator/reports/strategies/StrategyFactory.cpp"
+
+    # reports 领域的 Strategies (具体实现)
+    "src/config/validator/reports/strategies/daily/DailyMd.cpp"
+    "src/config/validator/reports/strategies/daily/DailyTex.cpp"
+    "src/config/validator/reports/strategies/daily/DailyTyp.cpp"
+    "src/config/validator/reports/strategies/monthly/Monthly.cpp"
+    "src/config/validator/reports/strategies/periodic/Periodic.cpp"
+)
+
+
 
 # --- Core Sources ---
 set(CORE_SOURCES
