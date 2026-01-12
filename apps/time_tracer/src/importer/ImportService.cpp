@@ -58,7 +58,7 @@ ImportStats ImportService::import_json_data(const std::vector<std::pair<std::str
     return stats;
 }
 
-ImportStats ImportService::import_from_memory(const std::map<std::string, std::vector<InputData>>& data_map) {
+ImportStats ImportService::import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map) {
     ImportStats stats;
     for(const auto& p : data_map) stats.total_files += p.second.size();
     stats.successful_files = stats.total_files;

@@ -1,11 +1,11 @@
-﻿// converter/convert/model/InputData.hpp
-#ifndef INPUT_DATA_HPP
-#define INPUT_DATA_HPP
+﻿// common/model/DailyLog.hpp
+#ifndef DAILY_LOG_HPP
+#define DAILY_LOG_HPP
 
 #include <string>
 #include <vector>
 #include <optional>
-#include "common/model/TimeDataModels.hpp" // [核心修改] 引入公共模型
+#include "TimeDataModels.hpp" // 引入公共模型
 
 // RawEvent 属于 Converter 解析阶段的中间产物，保留在此
 struct RawEvent {
@@ -16,7 +16,7 @@ struct RawEvent {
 
 // [核心修改] 移除 Activity 和 GeneratedStats 的定义
 
-struct InputData {
+struct DailyLog {
     std::string date;
     bool hasStudyActivity = false;
     bool hasExerciseActivity = false; 
@@ -51,4 +51,4 @@ struct InputData {
     }
 };
 
-#endif // INPUT_DATA_HPP
+#endif // DAILY_LOG_HPP

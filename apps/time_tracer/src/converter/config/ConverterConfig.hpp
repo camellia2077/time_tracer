@@ -1,4 +1,4 @@
-﻿// converter/convert/config/ConverterConfig.hpp
+﻿// converter/config/ConverterConfig.hpp
 
 #ifndef CONVERTER_CONFIG_HPP
 #define CONVERTER_CONFIG_HPP

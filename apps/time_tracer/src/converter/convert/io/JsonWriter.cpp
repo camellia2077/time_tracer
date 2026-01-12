@@ -1,15 +1,16 @@
-﻿// converter/convert/pipelines/Output.cpp
-#include "Output.hpp"
+﻿// converter/convert/io/JsonWriter.cpp
+#include "JsonWriter.hpp"
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include "converter/convert/model/InputData.hpp"
-#include "converter/convert/config/ConverterConfig.hpp"
+#include "common/model/DailyLog.hpp"
+#include "converter/config/ConverterConfig.hpp"
+
 #include <vector>
 
 using json = nlohmann::json;
 
-// [辅助函数] 将单天 InputData 转换为 JSON 对象 (逻辑复用)
-json Output::convertDayToJson(const InputData& day) {
+// [辅助函数] 将单天 DailyLog 转换为 JSON 对象 (逻辑复用)
+json JsonWriter::convertDayToJson(const DailyLog& day) {
     if (day.date.empty()) return json{};
 
     json day_obj;
@@ -81,23 +82,23 @@ json Output::convertDayToJson(const InputData& day) {
 }
 
 // [Legacy] 批量写入
-void Output::write(std::ostream& outputStream, const std::vector<InputData>& days, const ConverterConfig& /*config*/) {
-    beginOutput(outputStream);
+void JsonWriter::write(std::ostream& outputStream, const std::vector<DailyLog>& days, const ConverterConfig& /*config*/) {
+    beginJsonWriter(outputStream);
     bool isFirst = true;
     for (const auto& day : days) {
         if (day.date.empty()) continue;
         writeDay(outputStream, day, isFirst);
         isFirst = false;
     }
-    endOutput(outputStream);
+    endJsonWriter(outputStream);
 }
 
 // [New] 流式写入实现
-void Output::beginOutput(std::ostream& outputStream) {
+void JsonWriter::beginJsonWriter(std::ostream& outputStream) {
     outputStream << "[\n";
 }
 
-void Output::writeDay(std::ostream& outputStream, const InputData& day, bool isFirstDay) {
+void JsonWriter::writeDay(std::ostream& outputStream, const DailyLog& day, bool isFirstDay) {
     if (day.date.empty()) return;
     
     if (!isFirstDay) {
@@ -108,6 +109,6 @@ void Output::writeDay(std::ostream& outputStream, const InputData& day, bool isF
     outputStream << day_json.dump(4);
 }
 
-void Output::endOutput(std::ostream& outputStream) {
+void JsonWriter::endJsonWriter(std::ostream& outputStream) {
     outputStream << "\n]" << std::endl;
 }

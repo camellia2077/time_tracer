@@ -1,4 +1,4 @@
-﻿// converter/convert/config/ConverterConfig.cpp
+﻿// converter/config/ConverterConfig.cpp
 #include "ConverterConfig.hpp"
 #include <iostream>
 #include <algorithm>

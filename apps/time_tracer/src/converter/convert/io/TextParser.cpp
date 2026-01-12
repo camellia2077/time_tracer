@@ -1,5 +1,5 @@
-﻿// converter/convert/pipelines/InputParser.cpp
-#include "InputParser.hpp"
+﻿// converter/convert/io/TextParser.cpp
+#include "TextParser.hpp"
 #include <algorithm>
 #include <cctype>
 #include <iostream>
@@ -12,12 +12,12 @@ namespace {
     }
 }
 
-InputParser::InputParser(const ConverterConfig& config)
+TextParser::TextParser(const ConverterConfig& config)
     : config_(config),
       wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
 
-void InputParser::parse(std::istream& inputStream, std::function<void(InputData&)> onNewDay) {
-    InputData currentDay;
+void TextParser::parse(std::istream& inputStream, std::function<void(DailyLog&)> onNewDay) {
+    DailyLog currentDay;
     std::string line;
     std::string current_year_prefix = "";
 
@@ -55,18 +55,18 @@ void InputParser::parse(std::istream& inputStream, std::function<void(InputData&
     }
 }
 
-bool InputParser::isYearMarker(const std::string& line) const {
+bool TextParser::isYearMarker(const std::string& line) const {
     if (line.length() != 5 || line[0] != 'y') {
         return false;
     }
     return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
-bool InputParser::isNewDayMarker(const std::string& line) const {
+bool TextParser::isNewDayMarker(const std::string& line) const {
     return line.length() == 4 && std::all_of(line.begin(), line.end(), ::isdigit);
 }
 
-void InputParser::parseLine(const std::string& line, InputData& currentDay) const {
+void TextParser::parseLine(const std::string& line, DailyLog& currentDay) const {
     const std::string& remark_prefix = config_.getRemarkPrefix();
     if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
         if (!currentDay.date.empty()) {

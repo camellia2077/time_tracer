@@ -2,7 +2,8 @@
 #ifndef LINE_RULES_HPP
 #define LINE_RULES_HPP
 
-#include "converter/convert/config/ConverterConfig.hpp" // [修改] 引用 ConverterConfig
+#include "converter/config/ConverterConfig.hpp"
+ // [修改] 引用 ConverterConfig
 #include "converter/validator/common/ValidatorUtils.hpp"
 #include <string>
 #include <set>

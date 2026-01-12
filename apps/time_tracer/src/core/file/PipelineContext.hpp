@@ -7,8 +7,9 @@
 #include <map>
 #include "common/AppConfig.hpp"
 #include "converter/validator/common/ValidatorUtils.hpp"
-#include "converter/convert/model/InputData.hpp"
-#include "converter/convert/config/ConverterConfig.hpp"
+#include "common/model/DailyLog.hpp"
+#include "converter/config/ConverterConfig.hpp"
+
 
 namespace fs = std::filesystem;
 
@@ -47,7 +48,7 @@ struct PipelineState {
  */
 struct PipelineResult {
     // 转换后的核心业务数据
-    std::map<std::string, std::vector<InputData>> processed_data;
+    std::map<std::string, std::vector<DailyLog>> processed_data;
 
     bool has_data() const {
         return !processed_data.empty();

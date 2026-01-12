@@ -3,7 +3,8 @@
 #define FILE_VALIDATOR_HPP
 
 #include "converter/validator/common/ValidatorUtils.hpp"
-#include "converter/convert/config/ConverterConfig.hpp"
+#include "converter/config/ConverterConfig.hpp"
+
 #include <string>
 #include <set>
 #include <nlohmann/json.hpp> 

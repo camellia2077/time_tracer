@@ -7,7 +7,7 @@
 #include <map>
 #include <utility> // for std::pair
 #include "importer/model/ImportStats.hpp"
-#include "converter/convert/model/InputData.hpp" 
+#include "common/model/DailyLog.hpp" 
 
 // 负责编排 "解析 -> 转换 -> 入库" 的具体业务逻辑
 class ImportService {
@@ -21,7 +21,7 @@ public:
     ImportStats import_json_data(const std::vector<std::pair<std::string, std::string>>& inputs);
 
     // 处理内存数据导入 (保持不变)
-    ImportStats import_from_memory(const std::map<std::string, std::vector<InputData>>& data_map);
+    ImportStats import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map);
 
 private:
     std::string db_path_;
