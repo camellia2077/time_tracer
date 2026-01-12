@@ -14,7 +14,8 @@
 // --- 核心模块 ---
 #include "bootstrap/StartupValidator.hpp"  // 引入验证器
 #include "common/AppConfig.hpp"
-#include "io/FileController.hpp"
+#include "config/ConfigLoader.hpp"         // [新增] 引入新的配置加载器
+// #include "io/FileController.hpp"        // [移除] main不再直接使用 FileController
 
 // --- 工具与信息 ---
 #include "cli/CliController.hpp"
@@ -77,9 +78,9 @@ int main(int argc, char* argv[]) {
   // --- 启动流程：加载配置 -> 验证环境 -> 执行业务 ---
   try {
     // 1. 加载配置
-    // 实例化一个临时的 FileController 仅用于获取配置，不负责验证
-    FileController boot_loader(args[0]);
-    const AppConfig& config = boot_loader.get_config();
+    // [修改] 使用 ConfigLoader 代替 FileController 加载配置
+    ConfigLoader boot_loader(args[0]);
+    AppConfig config = boot_loader.load_configuration();
 
     // 2. 验证环境 (委托给 StartupValidator)
     if (!StartupValidator::validate_environment(config)) {
