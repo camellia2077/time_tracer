@@ -56,17 +56,17 @@ add_executable(time_tracker_cli src/main_cli.cpp
 target_link_libraries(time_tracker_cli PRIVATE reports_shared)
 
 # 添加子目录以构建所有日报格式化器的 DLL
-add_subdirectory(src/reports/daily/formatters/md)
-add_subdirectory(src/reports/daily/formatters/typ)
-add_subdirectory(src/reports/daily/formatters/tex)
+add_subdirectory(src/reports/daily/formatters/markdown)
+add_subdirectory(src/reports/daily/formatters/typst)
+add_subdirectory(src/reports/daily/formatters/latex)
 
-add_subdirectory(src/reports/monthly/formatters/md)
-add_subdirectory(src/reports/monthly/formatters/typ)
-add_subdirectory(src/reports/monthly/formatters/tex)
+add_subdirectory(src/reports/monthly/formatters/markdown)
+add_subdirectory(src/reports/monthly/formatters/typst)
+add_subdirectory(src/reports/monthly/formatters/latex)
 
-add_subdirectory(src/reports/period/formatters/md)
-add_subdirectory(src/reports/period/formatters/tex)
-add_subdirectory(src/reports/period/formatters/typ)
+add_subdirectory(src/reports/period/formatters/markdown)
+add_subdirectory(src/reports/period/formatters/typst)
+add_subdirectory(src/reports/period/formatters/latex)
 
 # 创建一个包含所有可执行文件目标的列表
 set(ALL_TARGETS time_tracker_cli)

@@ -18,15 +18,16 @@ WorkflowHandler::WorkflowHandler(const std::string& db_path, const AppConfig& co
 
 WorkflowHandler::~WorkflowHandler() = default;
 
-void WorkflowHandler::run_preprocessing(const std::string& input_path, const AppOptions& options) {
-    std::cout << "\n--- 开始预处理流程 ---" << std::endl;
+void WorkflowHandler::run_converter(const std::string& input_path, const AppOptions& options) {
+    std::cout << "\n--- 开始转换流程 (Converter) ---" << std::endl; 
+    
     PipelineManager pipeline(app_config_, output_root_path_);
     
     if (!pipeline.run(input_path, options)) {
-        throw std::runtime_error("预处理流程执行失败，请检查上方错误日志。");
+        throw std::runtime_error("转换流程执行失败，请检查上方错误日志。");
     }
     
-    std::cout << GREEN_COLOR << "成功: 预处理流程执行完毕。" << RESET_COLOR << std::endl;
+    std::cout << GREEN_COLOR << "成功: 转换流程执行完毕。" << RESET_COLOR << std::endl;
 }
 
 const AppConfig& WorkflowHandler::get_config() const {

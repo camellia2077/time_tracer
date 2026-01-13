@@ -4,9 +4,9 @@
 
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 #include "common/AppConfig.hpp"
-#include "reports/shared/data/DailyReportData.hpp"
-#include "reports/shared/data/MonthlyReportData.hpp"
-#include "reports/shared/data/PeriodReportData.hpp"
+#include "reports/shared/model/DailyReportData.hpp"
+#include "reports/shared/model/MonthlyReportData.hpp"
+#include "reports/shared/model/PeriodReportData.hpp"
 #include <string>
 #include <memory>
 #include <stdexcept>

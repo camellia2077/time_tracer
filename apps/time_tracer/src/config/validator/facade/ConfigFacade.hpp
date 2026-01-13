@@ -16,7 +16,7 @@ public:
     /**
      * @brief 验证预处理相关的配置文件。
      */
-    bool validate_preprocessing_configs(
+    bool validate_converter_configs(
         const nlohmann::json& main_json,
         const nlohmann::json& mappings_json,
         const nlohmann::json& duration_rules_json

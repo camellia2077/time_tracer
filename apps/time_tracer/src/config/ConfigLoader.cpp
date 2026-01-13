@@ -55,11 +55,11 @@ AppConfig ConfigLoader::load_configuration() {
              throw std::runtime_error("Missing 'system' configuration block.");
         }
 
-        if (j.contains("processing")) {
-            const auto& proc = j.at("processing");
-            app_config.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
+        if (j.contains("converter")) { 
+            const auto& proc = j.at("converter");
+                app_config.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
         } else {
-             throw std::runtime_error("Missing 'processing' configuration block.");
+            throw std::runtime_error("Missing 'converter' configuration block."); 
         }
 
         if (j.contains("reports")) {

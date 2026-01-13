@@ -2,7 +2,7 @@
 #ifndef ALL_DAY_REPORTS_HPP
 #define ALL_DAY_REPORTS_HPP 
 
-#include "reports/shared/data/query_data_structs.hpp"
+#include "reports/shared/model/query_data_structs.hpp"
 #include "reports/shared/types/ReportFormat.hpp" 
 #include "common/AppConfig.hpp" // [新增]
 

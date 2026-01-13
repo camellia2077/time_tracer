@@ -24,6 +24,5 @@ void ValidateOutput::execute(const CliParser& parser) {
     // 获取用户指定的检查模式
     options.date_check_mode = parser.get_date_check_mode();
 
-    // [修改] 调用 workflow_handler_
-    workflow_handler_.run_preprocessing(filtered_args[2], options);
+    workflow_handler_.run_converter(filtered_args[2], options);
 }

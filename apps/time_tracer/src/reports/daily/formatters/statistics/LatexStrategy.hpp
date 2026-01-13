@@ -3,7 +3,7 @@
 #define LATEX_STRATEGY_HPP
 
 #include "IStatStrategy.hpp"
-#include "reports/daily/formatters/tex/DayTexConfig.hpp"
+#include "reports/daily/formatters/latex/DayTexConfig.hpp"
 #include "reports/shared/formatters/latex/TexUtils.hpp"
 #include <format>
 #include <vector>
