@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from ..core.config import AppConfig
 from ..data.sqlite_source import SQLiteSource
 from ..rendering.heatmap_renderer import HeatmapRenderer
@@ -6,14 +7,17 @@ from ..rendering.heatmap_strategies import NumericStrategy, BooleanStrategy
 
 class GeneratorService:
     """核心服务，负责编排热力图的生成流程。"""
-    def __init__(self, config: AppConfig, data_source: SQLiteSource, base_dir: str):
+    def __init__(self, config: AppConfig, data_source: SQLiteSource, base_dir: Path):
         self.config = config
         self.data_source = data_source
-        self.base_dir = base_dir
-        self.parent_dir = os.path.join(base_dir, "html", "parent")
-        self.bool_dir = os.path.join(base_dir, "html", "bool")
-        os.makedirs(self.parent_dir, exist_ok=True)
-        os.makedirs(self.bool_dir, exist_ok=True)
+        self.base_dir = Path(base_dir) # 确保是 Path
+        
+        self.parent_dir = self.base_dir / "html" / "parent"
+        self.bool_dir = self.base_dir / "html" / "bool"
+        
+        # 使用 pathlib 创建目录
+        self.parent_dir.mkdir(parents=True, exist_ok=True)
+        self.bool_dir.mkdir(parents=True, exist_ok=True)
 
     def generate_all(self):
         """生成所有配置的热力图。"""
@@ -29,6 +33,7 @@ class GeneratorService:
         
         heatmap_data = self.data_source.fetch_project_duration_data(project_name, year)
         if not heatmap_data:
+            print(f"⚠️ 未找到项目 '{project_name}' 在 {year} 年的数据。")
             return
 
         strategy_color_config = {
@@ -38,17 +43,27 @@ class GeneratorService:
         strategy = NumericStrategy(project_name, strategy_color_config)
         renderer = HeatmapRenderer(year, heatmap_data, strategy)
         
-        # 决定输出目录
+        # --- [核心修改开始] ---
+        
+        # 1. 获取父项目列表
         parent_projects = self.config.color_settings.get("PARENT_PROJECTS", [])
-        output_filename = cfg["output_filename_annual"]
-        is_parent = any(parent in output_filename for parent in parent_projects)
+        
+        # 2. 动态构建文件名：{project_name}_heatmap_annual.html
+        # 例如: "study" -> "study_heatmap_annual.html"
+        basename = f"{project_name}_heatmap"
+        
+        # 3. 决定输出目录
+        # 直接判断当前项目名称是否在父项目列表中
+        is_parent = project_name in parent_projects
         output_dir = self.parent_dir if is_parent else self.base_dir
         
-        print(f"输出目录决策: '{output_filename}' -> '{'parent' if is_parent else 'root'}'")
+        print(f"输出策略: 项目='{project_name}', 是否父项目={is_parent} -> 目录='{output_dir.name}'")
 
-        # 保存文件
-        annual_output = os.path.join(output_dir, cfg["output_filename_annual"])
-        monthly_output = os.path.join(output_dir, cfg["output_filename_monthly"])
+        # 4. 拼接完整路径
+        annual_output = output_dir / f"{basename}_annual.html"
+        monthly_output = output_dir / f"{basename}_monthly.html"
+        
+        # --- [核心修改结束] ---
         
         renderer.save_annual_heatmap(annual_output)
         print(f"✅ 年度热力图已保存: {annual_output}")
@@ -76,8 +91,8 @@ class GeneratorService:
             renderer = HeatmapRenderer(year, bool_data, strategy)
             
             basename = cfg["outputs"].get(report_type, report_type)
-            annual_output = os.path.join(self.bool_dir, f"{basename}_annual.html")
-            monthly_output = os.path.join(self.bool_dir, f"{basename}_monthly.html")
+            annual_output = self.bool_dir / f"{basename}_annual.html"
+            monthly_output = self.bool_dir / f"{basename}_monthly.html"
             
             renderer.save_annual_heatmap(annual_output)
             print(f"✅ 年度热力图已保存: {annual_output}")

@@ -1,4 +1,4 @@
-﻿// converter/validator/output_json/pipelines/ActivityRules.hpp
+﻿// converter/validator/output_json/rules/ActivityRules.hpp
 #ifndef ACTIVITY_RULES_HPP
 #define ACTIVITY_RULES_HPP
 

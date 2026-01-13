@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="annual-container">
+    <svg width="{{ svg_width }}" height="{{ svg_height }}">
+        <g>
+            {% for label in month_labels %}
+            <text x="{{ label.x }}" y="{{ label.y }}" class="month">{{ label.text }}</text>
+            {% endfor %}
+
+            {% for label in day_labels %}
+            <text x="{{ label.x }}" y="{{ label.y }}" class="day-label">{{ label.text }}</text>
+            {% endfor %}
+
+            {% for rect in rects %}
+            <rect width="{{ rect.width }}" height="{{ rect.height }}" 
+                  x="{{ rect.x }}" y="{{ rect.y }}" 
+                  fill="{{ rect.fill }}" rx="2" ry="2">
+                <title>{{ rect.tooltip }}</title>
+            </rect>
+            {% endfor %}
+        </g>
+    </svg>
+    {{ legend | safe }}
+</div>
+{% endblock %}

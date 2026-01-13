@@ -4,7 +4,7 @@
 
 [database]
 # 数据库文件的完整路径
-path = "C:/Computer/my_github/github_cpp/time_master/time_data.sqlite3"
+path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/output/time_data.sqlite3"
 
 [heatmap]
 # 要生成热力图的年份
@@ -14,9 +14,6 @@ year = 2025
 # 查询将包括所有子项目 (例如 "study_english", "study_programming" 等)
 project_name = "study"
 
-# 生成的 HTML 文件名
-output_filename_annual = "mystudy_heatmap_annual.html"
-output_filename_monthly = "mystudy_heatmap_monthly.html"
 
 # --- 颜色和显示配置 ---
 # 您可以从 "GITHUB_GREEN_LIGHT", "BLUE_LIGHT", "RED_BLOOD_LIGHT" 等中选择

@@ -2,10 +2,12 @@
 
 [paths]
 # 数据库文件的完整路径
-database = "C:/Computer/my_github/github_cpp/time_master/time_data.sqlite3"
+database = "C:/Computer/my_github/github_cpp/time_tracer/my_test/output/time_data.sqlite3"
+
 
 # 生成图表的输出目录
-output_directory = "./charts"
+# 如果留空 ""，将默认输出到程序根目录下的 output 文件夹
+output_directory = ""
 
 [settings]
 # 您想要生成图表的日期，格式为 "YYYYMMDD"

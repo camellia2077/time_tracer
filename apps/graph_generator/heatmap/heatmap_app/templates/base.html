@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; flex-direction: column; align-items: center; margin: 2em; background-color: #f6f8fa; }
+        h1 { font-weight: 400; text-align: center; }
+        .month, .day-label { font-size: 10px; fill: #586069; }
+        rect:hover { stroke: #24292e; stroke-width: 1.5px; }
+        .legend { display: flex; justify-content: flex-end; align-items: center; gap: 5px; margin-top: 10px; font-size: 12px; }
+        .legend-box { width: 12px; height: 12px; border-radius: 2px; }
+        
+        /* 针对月度视图的额外样式 */
+        .months-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; max-width: 1200px; }
+        .month-container { border: 1px solid #e1e4e8; border-radius: 6px; padding: 15px; background-color: #ffffff; }
+        .month-title { text-align: center; margin-top: 0; margin-bottom: 15px; font-weight: 500; }
+        .annual-container { border: 1px solid #e1e4e8; border-radius: 6px; padding: 20px; background-color: #ffffff; }
+    </style>
+</head>
+<body>
+    <h1>{{ title }}</h1>
+    {% block content %}{% endblock %}
+</body>
+</html>
