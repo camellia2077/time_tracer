@@ -2,47 +2,33 @@
 #include "DayMdFormatter.hpp"
 #include <iomanip>
 #include <format>
-#include <string>
-#include <algorithm>
-#include <vector>
-#include <map>
 #include <memory>
+
 #include "reports/shared/utils/format/BoolToString.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
 #include "reports/shared/utils/format/ReportStringUtils.hpp"
 
-#include "reports/shared/formatters/base/ProjectTreeFormatter.hpp" 
-
-// [修正] 确保包含正确的 Config 头文件
-#include "reports/daily/formatters/markdown/DayMdConfig.hpp"
-#include "reports/shared/model/DailyReportData.hpp"
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/MarkdownStatStrategy.hpp"
-#include "reports/shared/formatters/markdown/MarkdownFormatter.hpp"
 #include "common/AppConfig.hpp"
 
-// [修正] 构造函数参数类型改为 DayMdConfig
-DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config) : config_(config) {}
+DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config) 
+    : BaseMdFormatter(config) {}
 
-std::string DayMdFormatter::format_report(const DailyReportData& data) const {
-    std::stringstream ss;
-    _display_header(ss, data);
-
-    if (data.total_duration == 0) {
-        ss << config_->get_no_records() << "\n";
-        return ss.str();
-    }
-
-    auto strategy = std::make_unique<MarkdownStatStrategy>();
-    StatFormatter stats_formatter(std::move(strategy));
-    ss << stats_formatter.format(data, config_);
-
-    _display_detailed_activities(ss, data);
-    _display_project_breakdown(ss, data);
-    return ss.str();
+bool DayMdFormatter::is_empty_data(const DailyReportData& data) const {
+    return data.total_duration == 0;
 }
 
-void DayMdFormatter::_display_header(std::stringstream& ss, const DailyReportData& data) const {
+// [修改] 注释掉未使用的参数 data
+int DayMdFormatter::get_avg_days(const DailyReportData& /*data*/) const {
+    return 1;
+}
+
+std::string DayMdFormatter::get_no_records_msg() const {
+    return config_->get_no_records();
+}
+
+void DayMdFormatter::format_header_content(std::stringstream& ss, const DailyReportData& data) const {
     ss << std::format("## {0} {1}\n\n", config_->get_title_prefix(), data.date);
     ss << std::format("- **{0}**: {1}\n", config_->get_date_label(), data.date);
     ss << std::format("- **{0}**: {1}\n", config_->get_total_time_label(), time_format_duration(data.total_duration));
@@ -55,14 +41,14 @@ void DayMdFormatter::_display_header(std::stringstream& ss, const DailyReportDat
     ss << std::format("- **{0}**: {1}\n", config_->get_remark_label(), formatted_remark);
 }
 
-void DayMdFormatter::_display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const {
-    ss << "\n## " << config_->get_project_breakdown_label() << "\n";
+void DayMdFormatter::format_extra_content(std::stringstream& ss, const DailyReportData& data) const {
+    // 1. 统计信息
+    auto strategy = std::make_unique<MarkdownStatStrategy>();
+    StatFormatter stats_formatter(std::move(strategy));
+    ss << stats_formatter.format(data, config_);
 
-    ss << MarkdownFormatter::format_project_tree(
-        data.project_tree, 
-        data.total_duration, 
-        1 
-    );
+    // 2. 详细活动记录
+    _display_detailed_activities(ss, data);
 }
 
 void DayMdFormatter::_display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const {
@@ -84,9 +70,9 @@ void DayMdFormatter::_display_detailed_activities(std::stringstream& ss, const D
     }
 }
 
+// DLL 导出部分保持不变
 extern "C" {
     __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        // [修正] 这里也要改用 DayMdConfig
         auto md_config = std::make_shared<DayMdConfig>(cfg.day_md_config_path);
         auto formatter = new DayMdFormatter(md_config);
         return static_cast<FormatterHandle>(formatter);

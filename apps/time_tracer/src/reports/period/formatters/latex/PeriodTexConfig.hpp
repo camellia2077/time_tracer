@@ -2,7 +2,7 @@
 #ifndef PERIOD_TEX_CONFIG_HPP
 #define PERIOD_TEX_CONFIG_HPP
 
-#include "reports/period/formatters/base/PeriodBaseConfig.hpp"
+#include "reports/period/common/PeriodBaseConfig.hpp"
 #include <string>
 #include <filesystem> 
 

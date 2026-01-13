@@ -2,7 +2,7 @@
 
 # --- 1. 定义共享库（DLL）目标 ---
 add_library(PeriodTypFormatter SHARED
-    PeriodTyp.cpp
+    PeriodTypFormatter.cpp
     PeriodTypConfig.cpp
 )
 

@@ -1,6 +1,6 @@
 // reports/daily/formatters/statistics/MarkdownStatStrategy.hpp
-#ifndef MARKDOWN_STRATEGY_HPP
-#define MARKDOWN_STRATEGY_HPP
+#ifndef MARKDOWN_STAT_STRATEGY_HPP
+#define MARKDOWN_STAT_STRATEGY_HPP
 
 #include "IStatStrategy.hpp"
 #include <format>
@@ -29,4 +29,4 @@ public:
     }
 };
 
-#endif // MARKDOWN_STRATEGY_HPP
+#endif // MARKDOWN_STAT_STRATEGY_HPP
