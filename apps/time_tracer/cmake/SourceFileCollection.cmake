@@ -22,11 +22,14 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/utils/format/ReportStringUtils.cpp"
     "src/reports/shared/utils/format/TimeFormat.cpp"
     "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
-    
-    # [修复] 添加缺失的格式化器实现
+
+    "src/reports/shared/config/TexStyleConfig.cpp"
+    "src/reports/shared/config/TypstStyleConfig.cpp"
+
     "src/reports/shared/formatters/markdown/MarkdownFormatter.cpp" 
     "src/reports/shared/formatters/typst/TypUtils.cpp"
     "src/reports/shared/formatters/latex/TexUtils.cpp"
+    "src/reports/shared/formatters/latex/TexCommonUtils.cpp"
 
     "src/reports/monthly/common/MonthBaseConfig.cpp"
     "src/reports/period/common/PeriodBaseConfig.cpp" 

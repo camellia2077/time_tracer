@@ -5,37 +5,34 @@
 #include <format>
 #include "reports/shared/utils/format/BoolToString.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include "reports/shared/utils/format/ReportStringUtils.hpp" // [新增] 引入工具函数
+#include "reports/shared/utils/format/ReportStringUtils.hpp"
 #include "reports/shared/formatters/latex/TexUtils.hpp"
+#include "reports/shared/formatters/latex/TexCommonUtils.hpp" // [新增]
 
 namespace DayTexUtils {
 
 void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config) {
-    int title_size = config->get_report_title_font_size();
-    ss << "{";
-    ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
-    ss << "\\section*{" << config->get_report_title() << " " << TexUtils::escape_latex(data.date) << "}";
-    ss << "}\n\n";
+    // 1. 渲染标题
+    std::string title_content = config->get_report_title() + " " + TexUtils::escape_latex(data.date);
+    TexCommonUtils::render_title(ss, title_content, config->get_report_title_font_size());
 
-    std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]",
-        config->get_list_top_sep_pt(),
-        config->get_list_item_sep_ex()
-    );
-
-    ss << "\\begin{itemize}" << compact_list_options << "\n";
-    ss << "    \\item \\textbf{" << config->get_date_label()      << "}: " << TexUtils::escape_latex(data.date) << "\n";
-    ss << "    \\item \\textbf{" << config->get_total_time_label() << "}: " << TexUtils::escape_latex(time_format_duration(data.total_duration)) << "\n";
-    ss << "    \\item \\textbf{" << config->get_status_label()    << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.status)) << "\n";
-    ss << "    \\item \\textbf{" << config->get_sleep_label()     << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.sleep)) << "\n";
-    ss << "    \\item \\textbf{" << config->get_exercise_label()  << "}: " << TexUtils::escape_latex(bool_to_string(data.metadata.exercise)) << "\n";
-    ss << "    \\item \\textbf{" << config->get_getup_time_label() << "}: " << TexUtils::escape_latex(data.metadata.getup_time) << "\n";
-    
-    // [核心修改] 处理多行备注：先转义，再添加 LaTeX 换行符 (\\)
+    // 2. 准备列表数据
+    // 处理多行备注：先转义，再添加 LaTeX 换行符 (\\)
     std::string safe_remark = TexUtils::escape_latex(data.metadata.remark);
     std::string formatted_remark = format_multiline_for_list(safe_remark, 0, "\\\\");
-    
-    ss << "    \\item \\textbf{" << config->get_remark_label()    << "}: " << formatted_remark << "\n";
-    ss << "\\end{itemize}\n\n";
+
+    std::vector<TexCommonUtils::SummaryItem> items = {
+        {config->get_date_label(),       TexUtils::escape_latex(data.date)},
+        {config->get_total_time_label(), TexUtils::escape_latex(time_format_duration(data.total_duration))},
+        {config->get_status_label(),     TexUtils::escape_latex(bool_to_string(data.metadata.status))},
+        {config->get_sleep_label(),      TexUtils::escape_latex(bool_to_string(data.metadata.sleep))},
+        {config->get_exercise_label(),   TexUtils::escape_latex(bool_to_string(data.metadata.exercise))},
+        {config->get_getup_time_label(), TexUtils::escape_latex(data.metadata.getup_time)},
+        {config->get_remark_label(),     formatted_remark}
+    };
+
+    // 3. 渲染列表
+    TexCommonUtils::render_summary_list(ss, items, config->get_list_top_sep_pt(), config->get_list_item_sep_ex());
 }
 
 void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config) {
@@ -43,11 +40,13 @@ void display_detailed_activities(std::stringstream& ss, const DailyReportData& d
         return;
     }
 
-    int category_size = config->get_category_title_font_size();
-    ss << "{";
-    ss << "\\fontsize{" << category_size << "}{" << category_size * 1.2 << "}\\selectfont";
-    ss << "\\subsection*{" << config->get_all_activities_label() << "}";
-    ss << "}\n\n";
+    // [优化] 使用通用函数渲染子标题
+    TexCommonUtils::render_title(
+        ss, 
+        config->get_all_activities_label(), 
+        config->get_category_title_font_size(), 
+        true // is_subsection
+    );
 
     std::string compact_list_options = std::format("[topsep={}pt, itemsep={}ex]",
         config->get_list_top_sep_pt(),
@@ -76,7 +75,6 @@ void display_detailed_activities(std::stringstream& ss, const DailyReportData& d
         if (record.activityRemark.has_value()) {
             ss << "    \\begin{itemize}" << compact_list_options << "\n";
             
-            // [核心修改] 对活动备注同样应用多行处理
             std::string safe_activity_remark = TexUtils::escape_latex(record.activityRemark.value());
             std::string formatted_activity_remark = format_multiline_for_list(safe_activity_remark, 0, "\\\\");
 

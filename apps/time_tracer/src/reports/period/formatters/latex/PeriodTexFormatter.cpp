@@ -1,55 +1,45 @@
-﻿// reports/period/formatters/latex/PeriodTexFormatter.cpp
-#include "PeriodTexFormatter.hpp"
+﻿// reports/period/formatters/latex/PeriodTexUtils.cpp
 #include "PeriodTexUtils.hpp"
-#include "common/AppConfig.hpp"
+#include <iomanip>
+#include <format>
+#include <vector>
+#include "reports/shared/utils/format/TimeFormat.hpp"
+#include "reports/shared/formatters/latex/TexUtils.hpp"
+#include "reports/shared/formatters/latex/TexCommonUtils.hpp" // [新增] 引入通用工具
 
-PeriodTexFormatter::PeriodTexFormatter(std::shared_ptr<PeriodTexConfig> config) 
-    : BaseTexFormatter(config) {}
+namespace PeriodTexUtils {
 
-std::string PeriodTexFormatter::validate_data(const PeriodReportData& data) const {
-    if (data.days_to_query <= 0) {
-        return config_->get_invalid_days_message() + "\n";
-    }
-    return "";
-}
+void display_summary(std::stringstream& ss, const PeriodReportData& data, const std::shared_ptr<PeriodTexConfig>& config) {
+    // 1. 构建标题内容
+    // 格式示例: "Report for last 30 days (2023-01-01 - 2023-01-31)"
+    std::string title_content = std::format("{} {} {} ({} {} {})",
+       config->get_report_title_prefix(),
+       data.days_to_query,
+       config->get_report_title_days(),
+       TexUtils::escape_latex(data.start_date),
+       config->get_report_title_date_separator(),
+       TexUtils::escape_latex(data.end_date)
+    );
+    
+    // 使用通用工具渲染标题
+    TexCommonUtils::render_title(ss, title_content, config->get_report_title_font_size());
 
-bool PeriodTexFormatter::is_empty_data(const PeriodReportData& data) const {
-    return data.actual_days == 0;
-}
+    // 2. 渲染摘要列表
+    if (data.actual_days > 0) {
+        std::vector<TexCommonUtils::SummaryItem> items = {
+            // 注意保持原有的顺序：先 Total Time，后 Actual Days
+            {config->get_total_time_label(), TexUtils::escape_latex(time_format_duration(data.total_duration, data.actual_days))},
+            {config->get_actual_days_label(), std::to_string(data.actual_days)}
+        };
 
-int PeriodTexFormatter::get_avg_days(const PeriodReportData& data) const {
-    return data.actual_days;
-}
-
-std::string PeriodTexFormatter::get_no_records_msg() const {
-    return config_->get_no_records_message();
-}
-
-void PeriodTexFormatter::format_header_content(std::stringstream& ss, const PeriodReportData& data) const {
-    PeriodTexUtils::display_summary(ss, data, config_);
-}
-
-extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        auto tex_config = std::make_shared<PeriodTexConfig>(cfg.period_tex_config_path);
-        auto formatter = new PeriodTexFormatter(tex_config);
-        return static_cast<FormatterHandle>(formatter);
-    }
-
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
-        if (handle) {
-            delete static_cast<PeriodTexFormatter*>(handle);
-        }
-    }
-
-    static std::string report_buffer;
-
-    __declspec(dllexport) const char* format_report(FormatterHandle handle, const PeriodReportData& data) {
-        if (handle) {
-            auto* formatter = static_cast<PeriodTexFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
-            return report_buffer.c_str();
-        }
-        return "";
+        // 使用通用工具渲染列表
+        TexCommonUtils::render_summary_list(
+            ss, 
+            items, 
+            config->get_list_top_sep_pt(), 
+            config->get_list_item_sep_ex()
+        );
     }
 }
+
+} // namespace PeriodTexUtils
