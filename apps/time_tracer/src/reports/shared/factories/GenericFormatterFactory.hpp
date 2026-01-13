@@ -11,7 +11,7 @@
 #include "common/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 #include "reports/shared/factories/DllFormatterWrapper.hpp"
-#include "reports/shared/data/PeriodReportData.hpp" // [新增]
+#include "reports/shared/model/PeriodReportData.hpp" // [新增]
 
 namespace fs = std::filesystem;
 

@@ -20,12 +20,11 @@ void Convert::execute(const CliParser& parser) {
     AppOptions options;
     options.convert = true;
 
-    // [核心修改]
     // 对于 convert 命令，"保存文件"是其核心使命，所以默认为 true。
     // 只有当用户显式不想要保存时（如果未来有这种需求），我们才考虑处理。
     // 目前逻辑：只要是 convert 命令，就落地文件。
     options.save_processed_output = true;
     
     // [修改] 调用 workflow_handler_
-    workflow_handler_.run_preprocessing(parser.get_filtered_args()[2], options);
+    workflow_handler_.run_converter(parser.get_filtered_args()[2], options);
 }

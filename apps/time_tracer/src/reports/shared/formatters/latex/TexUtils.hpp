@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 #include "reports/shared/model/ProjectTree.hpp" // [新增] 引入 ProjectTree
-#include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
+#include "reports/shared/api/shared_api.hpp" // <--- [新增] 1. 包含API宏
 
 namespace TexUtils {
 

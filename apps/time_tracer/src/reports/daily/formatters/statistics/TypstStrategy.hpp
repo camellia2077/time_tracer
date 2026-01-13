@@ -1,6 +1,6 @@
 // reports/daily/formatters/statistics/TypstStrategy.hpp
 #include "IStatStrategy.hpp"
-#include "reports/daily/formatters/typ/DayTypConfig.hpp"
+#include "reports/daily/formatters/typst/DayTypConfig.hpp"
 #include <format>
 #include <vector>
 

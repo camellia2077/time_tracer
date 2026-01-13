@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "reports/shared/data/MonthlyReportData.hpp"
+#include "reports/shared/model/MonthlyReportData.hpp"
 #include "reports/shared/queriers/BaseQuerier.hpp"
 
 class MonthQuerier : public BaseQuerier<MonthlyReportData, const std::string&> {

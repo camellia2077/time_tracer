@@ -4,7 +4,7 @@
 
 #include <string>
 #include <vector>
-#include "reports/shared/shared_api.hpp" // <--- [新增]
+#include "reports/shared/api/shared_api.hpp" // <--- [新增]
 
 /**
  * @brief 去除字符串两端的空白字符。

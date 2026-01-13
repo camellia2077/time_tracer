@@ -2,12 +2,12 @@
 #include "ReportService.hpp"
 
 #include "reports/shared/generators/BaseGenerator.hpp"
-#include "reports/daily/DayQuerier.hpp"
+#include "reports/daily/queriers/DayQuerier.hpp"
 #include "reports/monthly/MonthQuerier.hpp"
 #include "reports/period/PeriodQuerier.hpp"
-#include "reports/shared/data/DailyReportData.hpp"
-#include "reports/shared/data/MonthlyReportData.hpp"
-#include "reports/shared/data/PeriodReportData.hpp"
+#include "reports/shared/model/DailyReportData.hpp"
+#include "reports/shared/model/MonthlyReportData.hpp"
+#include "reports/shared/model/PeriodReportData.hpp"
 
 #include "reports/services/AllDayReports.hpp"
 #include "reports/services/AllMonthlyReports.hpp"
