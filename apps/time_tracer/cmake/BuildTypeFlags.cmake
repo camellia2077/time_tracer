@@ -12,6 +12,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Os -march=native")
 # --- 2. 设置通用的 Release 模式链接器标志 ---
 # -s:          剔除可执行文件中的符号信息，减小最终文件大小
 set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
+# 这个是剔除libreports_shared.dll中的符号信息
+set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -s")
 
 # ==================== [核心修改] ====================
 # 添加一个选项来控制LTO，可以由Python脚本通过 -DENABLE_LTO=ON/OFF 来设置
