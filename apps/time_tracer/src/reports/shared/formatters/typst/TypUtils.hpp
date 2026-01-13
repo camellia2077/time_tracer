@@ -4,7 +4,7 @@
 
 #include <string>
 #include "reports/shared/model/ProjectTree.hpp"
-#include "reports/shared/shared_api.hpp" // <--- [新增] 1. 包含API宏
+#include "reports/shared/api/shared_api.hpp" 
 
 namespace TypUtils {
 
@@ -18,8 +18,9 @@ namespace TypUtils {
  * @param category_title_font_size 类别标题字体大小。
  * @return 格式化后的 Typst 字符串。
  */
+// [修正] 添加 reporting:: 命名空间前缀
 REPORTS_SHARED_API std::string format_project_tree(
-    const ProjectTree& tree,
+    const reporting::ProjectTree& tree,
     long long total_duration,
     int avg_days,
     const std::string& category_title_font,

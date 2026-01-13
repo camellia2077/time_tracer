@@ -2,7 +2,7 @@
 #ifndef MONTH_BASE_CONFIG_HPP
 #define MONTH_BASE_CONFIG_HPP
 
-#include "reports/shared/shared_api.hpp"
+#include "reports/shared/api/shared_api.hpp"
 #include <string>
 #include <nlohmann/json.hpp>
 #include "reports/shared/utils/config/ConfigUtils.hpp"

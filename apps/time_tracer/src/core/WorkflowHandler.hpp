@@ -18,17 +18,13 @@ public:
     ~WorkflowHandler();
 
     // 运行预处理流水线
-    void run_preprocessing(const std::string& input_path, const AppOptions& options);
-    
-    // [重构] 传统的基于文件的导入 (现在只负责编排，不再负责 IO)
+    void run_converter(const std::string& input_path, const AppOptions& options);
+    // 传统的基于文件的导入 (现在只负责编排，不再负责 IO)
     void run_database_import(const std::string& processed_path_str);
-
     // 基于内存数据的导入
     void run_database_import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map);
-    
     // 完整流程
     void run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode, bool save_processed = false);
-    
     const AppConfig& get_config() const;
 
 private:

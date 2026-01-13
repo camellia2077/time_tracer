@@ -21,6 +21,5 @@ void ValidateSource::execute(const CliParser& parser) {
     AppOptions options;
     options.validate_source = true;
     
-    // [修改] 调用 workflow_handler_
-    workflow_handler_.run_preprocessing(parser.get_filtered_args()[2], options);
+    workflow_handler_.run_converter(parser.get_filtered_args()[2], options);
 }

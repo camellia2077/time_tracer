@@ -4,8 +4,8 @@
     "export_root": "exported_reports"
   },
 
-  "processing": {
-    "interval_config": "reprocessing/interval_processor_config.json"
+  "converter": {
+    "interval_config": "converter/interval_processor_config.json"
   },
   
   "reports": {
