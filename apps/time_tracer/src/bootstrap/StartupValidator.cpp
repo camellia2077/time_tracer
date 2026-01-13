@@ -40,7 +40,7 @@ bool StartupValidator::validate_environment(const AppConfig& config) {
         return false; // 插件缺失通常是致命错误，直接返回
     }
 
-    // 2. 验证预处理配置 (Preprocessing Configs)
+    // 2. 验证转换器配置 (Converter Configs)
     // ---------------------------------------------------------
     nlohmann::json main_json, mappings_json, duration_rules_json;
     
@@ -59,9 +59,9 @@ bool StartupValidator::validate_environment(const AppConfig& config) {
             load_json_helper(base_dir / duration_file, duration_rules_json);
         }
 
-        // 调用验证器进行逻辑检查
-        if (!validator.validate_preprocessing_configs(main_json, mappings_json, duration_rules_json)) {
-             std::cerr << RED_COLOR << "Error: Preprocessing configuration is invalid." << RESET_COLOR << std::endl;
+        // [修正] 调用新的方法名 validate_converter_configs
+        if (!validator.validate_converter_configs(main_json, mappings_json, duration_rules_json)) {
+             std::cerr << RED_COLOR << "Error: Converter configuration is invalid." << RESET_COLOR << std::endl;
              all_valid = false;
         }
     } else {
@@ -88,9 +88,6 @@ bool StartupValidator::validate_environment(const AppConfig& config) {
         if (load_json_helper(p, q_json)) {
             query_configs.push_back({p.filename().string(), q_json});
         }
-        // 注意：这里我们只收集能加载的文件。如果文件路径配置了但文件不存在，
-        // FileController/ConfigLoader 阶段可能没报错，但在这里就会被跳过。
-        // 如果需要严格检查“文件必须存在”，可以在这里添加 else 分支报错。
     }
 
     if (!validator.validate_query_configs(query_configs)) {

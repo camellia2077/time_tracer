@@ -3,7 +3,7 @@
 #define BOOL_TO_STRING_HPP
 
 #include <string>
-#include "reports/shared/shared_api.hpp" // <--- [新增]
+#include "reports/shared/api/shared_api.hpp" // <--- [新增]
 
 /**
  * @brief 将表示布尔值的字符串 ("0" 或 "1") 转换为相应的文本形式 ("false" 或 "true")。

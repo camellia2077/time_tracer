@@ -2,7 +2,7 @@
 #ifndef I_STAT_STRATEGY_HPP
 #define I_STAT_STRATEGY_HPP
 
-#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
+#include "reports/shared/api/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
 #include <vector>
 

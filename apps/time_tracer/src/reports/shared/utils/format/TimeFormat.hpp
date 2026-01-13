@@ -3,7 +3,7 @@
 #define TIME_FORMAT_HPP
 
 #include <string>
-#include "reports/shared/shared_api.hpp" // <--- [新增]
+#include "reports/shared/api/shared_api.hpp" // <--- [新增]
 
 /**
  * @brief 将总秒数格式化为 "XhYYm" 或 "YYm" 的字符串，并可选择计算平均值。

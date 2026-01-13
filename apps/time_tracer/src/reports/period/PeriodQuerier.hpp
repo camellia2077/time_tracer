@@ -4,7 +4,7 @@
 
 #include <sqlite3.h>
 #include <string>
-#include "reports/shared/data/PeriodReportData.hpp"
+#include "reports/shared/model/PeriodReportData.hpp"
 #include "reports/shared/queriers/BaseQuerier.hpp"
 
 class PeriodQuerier : public BaseQuerier<PeriodReportData, int> {

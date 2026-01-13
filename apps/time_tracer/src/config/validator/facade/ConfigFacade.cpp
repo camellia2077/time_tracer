@@ -1,17 +1,17 @@
 ﻿// config/validator/facade/ConfigFacade.cpp
 #include "ConfigFacade.hpp"
-#include "config/validator/converter/facade/ReprocFacade.hpp"
+#include "config/validator/converter/facade/ConverterFacade.hpp"
 #include "config/validator/reports/facade/QueryFacade.hpp"
 #include "config/validator/plugins/facade/PluginValidator.hpp"
 
 using json = nlohmann::json;
 
-bool ConfigFacade::validate_preprocessing_configs(
+bool ConfigFacade::validate_converter_configs(
     const json& main_json,
     const json& mappings_json,
     const json& duration_rules_json
 ) const {
-    ReprocFacade reprocessing_validator;
+    ConverterFacade reprocessing_validator;
     return reprocessing_validator.validate(main_json, mappings_json, duration_rules_json);
 }
 

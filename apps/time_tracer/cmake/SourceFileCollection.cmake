@@ -13,14 +13,19 @@ set(COMMON_SOURCES
 # 这样可以避免在主程序和多个DLL中重复编译相同的代码
 set(REPORTS_SHARED_SOURCES
     "src/common/utils/StringUtils.cpp"
-    "src/reports/daily/formatters/base/DayBaseConfig.cpp"
+    "src/reports/daily/common/DayBaseConfig.cpp"
     "src/reports/daily/formatters/statistics/StatFormatter.cpp"
     "src/reports/shared/utils/config/ConfigUtils.cpp"
-    "src/reports/shared/utils/report/ReportDataUtils.cpp"
+    "src/reports/shared/utils/tree/ProjectTreeBuilder.cpp"
+
     "src/reports/shared/utils/format/BoolToString.cpp"
     "src/reports/shared/utils/format/ReportStringUtils.cpp"
     "src/reports/shared/utils/format/TimeFormat.cpp"
     "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
+    
+    # [修复] 添加缺失的格式化器实现
+    "src/reports/shared/formatters/markdown/MarkdownFormatter.cpp" 
+    "src/reports/shared/formatters/typst/TypUtils.cpp"
     "src/reports/shared/formatters/latex/TexUtils.cpp"
 
     "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
@@ -100,22 +105,12 @@ set(REPORTS_SOURCES
     "src/reports/services/AllMonthlyReports.cpp"
     "src/reports/services/AllPeriodReports.cpp"
     # Daily Reports
-    "src/reports/daily/DayQuerier.cpp"
+    "src/reports/daily/queriers/DayQuerier.cpp"
     # Monthly Reports
     "src/reports/monthly/MonthQuerier.cpp"
     
     # Period Reports
     "src/reports/period/PeriodQuerier.cpp"
-
-    # [核心修改] 所有 period 格式化器的源文件都已被移除
-    # 因为它们现在是独立的 DLL 目标
-    # "src/reports/period/formatters/md/PeriodMd.cpp"
-    # "src/reports/period/formatters/md/PeriodMdConfig.cpp"
-    # "src/reports/period/formatters/tex/PeriodTex.cpp"
-    # "src/reports/period/formatters/tex/PeriodTexUtils.cpp"
-    # "src/reports/period/formatters/tex/PeriodTexConfig.cpp"
-    # "src/reports/period/formatters/typ/PeriodTyp.cpp"
-    # "src/reports/period/formatters/typ/PeriodTypConfig.cpp"
 )
 
 # --- converter Sources ---
@@ -168,7 +163,7 @@ set(CONFIG_SOURCES
     "src/config/validator/facade/ConfigFacade.cpp"
 
     # converter 领域的 Facade 和 Pipelines
-    "src/config/validator/converter/facade/ReprocFacade.cpp"
+    "src/config/validator/converter/facade/ConverterFacade.cpp"
     "src/config/validator/converter/rules/DurationRule.cpp"
     "src/config/validator/converter/rules/MainRule.cpp"
     "src/config/validator/converter/rules/MappingRule.cpp"

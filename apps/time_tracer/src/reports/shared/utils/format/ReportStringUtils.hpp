@@ -3,7 +3,7 @@
 #define REPORT_STRING_UTILS_HPP
 
 #include <string>
-#include "reports/shared/shared_api.hpp"
+#include "reports/shared/api/shared_api.hpp"
 
 /**
  * @brief 替换字符串中所有匹配的子串。

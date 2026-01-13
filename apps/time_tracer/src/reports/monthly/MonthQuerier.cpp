@@ -1,6 +1,6 @@
 // reports/monthly/MonthQuerier.cpp
 #include "MonthQuerier.hpp"
-#include "reports/shared/utils/report/ReportDataUtils.hpp"
+#include "reports/shared/utils/tree/ProjectTreeBuilder.hpp"
 #include <algorithm>
 #include <cctype>
 

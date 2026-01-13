@@ -2,11 +2,11 @@
 #ifndef STAT_FORMATTER_HPP
 #define STAT_FORMATTER_HPP
 
-#include "reports/shared/shared_api.hpp" // <-- [新增] 1. 包含API宏
+#include "reports/shared/api/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
 #include <memory>
-#include "reports/shared/data/DailyReportData.hpp"
-#include "reports/daily/formatters/base/DayBaseConfig.hpp"
+#include "reports/shared/model/DailyReportData.hpp"
+#include "reports/daily/common/DayBaseConfig.hpp"
 #include "IStatStrategy.hpp"
 
 /**
