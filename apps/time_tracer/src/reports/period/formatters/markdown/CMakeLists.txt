@@ -3,7 +3,7 @@
 # --- 1. 定义共享库（DLL）目标 ---
 # 源文件列表只包含此模块特有的文件。
 add_library(PeriodMdFormatter SHARED
-    PeriodMd.cpp
+    PeriodMdFormatter.cpp
     PeriodMdConfig.cpp
 )
 

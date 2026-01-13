@@ -1,21 +1,25 @@
-﻿// reports/daily/formatters/typst/DayTyp.hpp
-#ifndef DAY_TYP_HPP
-#define DAY_TYP_HPP
+﻿// reports/daily/formatters/typst/DayTypFormatter.hpp
+#ifndef DAY_TYP_FORMATTER_HPP
+#define DAY_TYP_FORMATTER_HPP
 
-#include "reports/shared/interfaces/IReportFormatter.hpp"
+#include "reports/shared/formatters/templates/BaseTypFormatter.hpp"
 #include "reports/shared/model/DailyReportData.hpp"
 #include "reports/daily/formatters/typst/DayTypConfig.hpp"
-#include <memory>
 
-#include <sstream>
-
-class DayTypFormatter : public IReportFormatter<DailyReportData> {
+class DayTypFormatter : public BaseTypFormatter<DailyReportData, DayTypConfig> {
 public:
     explicit DayTypFormatter(std::shared_ptr<DayTypConfig> config);
-    std::string format_report(const DailyReportData& data) const override;
 
-private:
-    std::shared_ptr<DayTypConfig> config_;
+protected:
+    // --- 实现基类钩子 ---
+    bool is_empty_data(const DailyReportData& data) const override;
+    int get_avg_days(const DailyReportData& data) const override;
+    
+    void format_header_content(std::stringstream& ss, const DailyReportData& data) const override;
+    void format_extra_content(std::stringstream& ss, const DailyReportData& data) const override;
+    
+    // 适配接口
+    std::string get_no_records_msg() const override;
 };
 
-#endif // DAY_TYP_HPP
+#endif // DAY_TYP_FORMATTER_HPP

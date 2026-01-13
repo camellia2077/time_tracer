@@ -2,25 +2,28 @@
 #ifndef DAY_MD_FORMATTER_HPP
 #define DAY_MD_FORMATTER_HPP
 
-#include "reports/shared/interfaces/IReportFormatter.hpp"
+#include "reports/shared/formatters/templates/BaseMdFormatter.hpp"
 #include "reports/shared/model/DailyReportData.hpp"
-#include "DayMdConfig.hpp" // 包含正确的头文件
-#include <sstream>
-#include <memory>
+#include "reports/daily/formatters/markdown/DayMdConfig.hpp"
 
-class DayMdFormatter : public IReportFormatter<DailyReportData> {
+class DayMdFormatter : public BaseMdFormatter<DailyReportData, DayMdConfig> {
 public:
-    // [修正] 使用 DayMdConfig
     explicit DayMdFormatter(std::shared_ptr<DayMdConfig> config);
-    std::string format_report(const DailyReportData& data) const override;
+
+protected:
+    // --- 实现基类钩子 ---
+    bool is_empty_data(const DailyReportData& data) const override;
+    int get_avg_days(const DailyReportData& data) const override;
+    
+    void format_header_content(std::stringstream& ss, const DailyReportData& data) const override;
+    void format_extra_content(std::stringstream& ss, const DailyReportData& data) const override;
+
+    // 适配接口：DayConfig 使用 get_no_records() 而非 get_no_records_message()
+    std::string get_no_records_msg() const override;
 
 private:
-    void _display_header(std::stringstream& ss, const DailyReportData& data) const;
-    void _display_project_breakdown(std::stringstream& ss, const DailyReportData& data) const;
+    //原本的私有辅助函数现在变成了钩子函数的具体实现，或者被内联
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
-
-    // [修正] 使用 DayMdConfig
-    std::shared_ptr<DayMdConfig> config_;
 };
 
 #endif // DAY_MD_FORMATTER_HPP

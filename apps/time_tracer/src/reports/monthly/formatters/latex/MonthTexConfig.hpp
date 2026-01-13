@@ -2,7 +2,7 @@
 #ifndef MONTH_TEX_CONFIG_HPP
 #define MONTH_TEX_CONFIG_HPP
 
-#include "reports/monthly/formatters/base/MonthBaseConfig.hpp"
+#include "reports/monthly/common/MonthBaseConfig.hpp"
 #include <string>
 #include <filesystem>
 
