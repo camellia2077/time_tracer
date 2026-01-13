@@ -1,14 +1,22 @@
-# ✨ 核心修改：将所有相对导入 ".." 改为从 src 根目录开始的绝对导入
 from core.config import TimelineConfig
 from data.sqlite_source import TimelineSQLiteSource
 from rendering.chart_renderer import ChartRenderer
 
 class TimelineService:
     """核心服务，负责编排时间线图表的生成流程。"""
-    def __init__(self, config: TimelineConfig):
+    
+    # ✨ 核心修改：增加 default_output_dir 参数
+    def __init__(self, config: TimelineConfig, default_output_dir: str = ""):
         self.config = config
+        
         self.data_source = TimelineSQLiteSource(config.get_path("database"))
-        self.renderer = ChartRenderer(config.get_path("output_directory"))
+        
+        # ✨ 核心修改：获取输出路径时传入默认值
+        # 如果 toml 中 output_directory 为空，就会使用 default_output_dir
+        final_output_dir = config.get_path("output_directory", default=default_output_dir)
+        
+        print(f"输出目录: {final_output_dir}") # 打印一下确认路径
+        self.renderer = ChartRenderer(final_output_dir)
 
     def generate_timeline(self):
         """生成时间线图表。"""

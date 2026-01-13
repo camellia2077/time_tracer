@@ -1,16 +1,17 @@
+from pathlib import Path
 from .core.config import AppConfig
 from .data.sqlite_source import SQLiteSource
 from .services.generator_service import GeneratorService
 
-def run_generator(base_dir: str):
+def run_generator(base_dir_str: str):
     """
     初始化并运行热力图生成器。
-    
     Args:
-        base_dir (str): 项目的根目录路径。
+        base_dir_str (str): 项目的根目录路径。
     """
+    base_dir = Path(base_dir_str)
     print("--- 初始化热力图生成器 ---")
-    config_dir = f"{base_dir}/configs"
+    config_dir = base_dir / "configs"
     
     # 1. 加载配置
     config = AppConfig(config_dir)

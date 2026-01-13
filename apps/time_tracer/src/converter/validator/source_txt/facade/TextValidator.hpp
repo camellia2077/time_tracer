@@ -1,6 +1,6 @@
 ﻿// converter/validator/source_txt/facade/TextValidator.hpp
-#ifndef SOURCE_FACADE_HPP
-#define SOURCE_FACADE_HPP
+#ifndef TEXT_VALIDATOR_HPP
+#define TEXT_VALIDATOR_HPP
 
 #include "converter/validator/common/ValidatorUtils.hpp"
 #include "converter/config/ConverterConfig.hpp"
@@ -22,4 +22,4 @@ private:
     std::unique_ptr<PImpl> pimpl_;
 };
 
-#endif // SOURCE_FACADE_HPP
+#endif // TEXT_VALIDATOR_HPP
