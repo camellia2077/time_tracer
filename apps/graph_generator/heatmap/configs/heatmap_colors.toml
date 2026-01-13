@@ -7,7 +7,7 @@ DEFAULT_COLOR_PALETTE_NAME = "GITHUB_GREEN_LIGHT"
 OVER_12_HOURS_COLOR_REF = "ORANGE"
 
 # 需要应用这些调色板的父项目列表
-PARENT_PROJECTS = ["mystudy"]
+PARENT_PROJECTS = ["study"]
 
 # --- 调色板定义 ---
 [COLOR_PALETTES]
@@ -28,7 +28,7 @@ ORANGE = "#f97148"
 DEEP_RED = "#8b0000"
 BRIGHT_PURPLE = "#a020f0"
 
-# --- ✨ 新增：布尔值热力图的颜色映射 ---
+# --- 布尔值热力图的颜色映射 ---
 [BOOLEAN_COLORS]
 # 0 -> 否/未完成
 color_false = "#ebedf0" # 灰色

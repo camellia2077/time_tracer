@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="months-grid">
+    {% for month in months %}
+    <div class="month-container">
+        <h3 class="month-title">{{ month.name }}</h3>
+        <svg width="{{ month.svg_width }}" height="{{ month.svg_height }}">
+            <g>
+                {% for label in month.day_labels %}
+                <text x="{{ label.x }}" y="{{ label.y }}" class="day-label" text-anchor="middle">{{ label.text }}</text>
+                {% endfor %}
+
+                {% for rect in month.rects %}
+                <rect width="{{ rect.width }}" height="{{ rect.height }}" 
+                      x="{{ rect.x }}" y="{{ rect.y }}" 
+                      fill="{{ rect.fill }}" rx="3" ry="3">
+                    <title>{{ rect.tooltip }}</title>
+                </rect>
+                {% endfor %}
+            </g>
+        </svg>
+    </div>
+    {% endfor %}
+</div>
+<div style="margin-top: 20px; width: 100%; max-width: 1200px;">
+    {{ legend | safe }}
+</div>
+{% endblock %}

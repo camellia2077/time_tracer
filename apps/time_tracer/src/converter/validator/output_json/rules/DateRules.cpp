@@ -1,4 +1,4 @@
-﻿// converter/validator/output_json/pipelines/DateRules.cpp
+﻿// converter/validator/output_json/rules/DateRules.cpp
 #include "DateRules.hpp"
 #include <map>
 #include <string>

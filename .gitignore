@@ -2,5 +2,4 @@ build/
 __pycache__/
 html/
 
-*.html
 *.exe

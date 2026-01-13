@@ -1,4 +1,4 @@
-﻿// converter/validator/output_json/pipelines/ActivityRules.cpp
+﻿// converter/validator/output_json/rules/ActivityRules.cpp
 #include "ActivityRules.hpp"
 
 using json = nlohmann::json;

@@ -1,3 +1,6 @@
+config中的json文件夹命名，需要修改
+reprocessing修改为converter,并且在io中需要修改，在config检验也需要更新
+
 
 cli模块目录太乱
 

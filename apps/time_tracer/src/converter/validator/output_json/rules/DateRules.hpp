@@ -1,4 +1,4 @@
-﻿// converter/validator/output_json/pipelines/DateRules.hpp
+﻿// converter/validator/output_json/rules/DateRules.hpp
 #ifndef DATE_RULES_HPP
 #define DATE_RULES_HPP
 

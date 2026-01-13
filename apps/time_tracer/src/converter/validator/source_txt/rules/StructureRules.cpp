@@ -1,4 +1,4 @@
-﻿// converter/validator/source_txt/pipelines/StructureRules.cpp
+﻿// converter/validator/source_txt/rules/StructureRules.cpp
 #include "StructureRules.hpp"
 
 void StructureRules::process_year_line(int line_number, const std::string& line, std::set<Error>& errors) {

@@ -1,4 +1,4 @@
-﻿// converter/validator/source_txt/pipelines/LineRules.hpp
+﻿// converter/validator/source_txt/rules/LineRules.hpp
 #ifndef LINE_RULES_HPP
 #define LINE_RULES_HPP
 

@@ -1,4 +1,4 @@
-﻿// converter/validator/source_txt/pipelines/StructureRules.hpp
+﻿// converter/validator/source_txt/rules/StructureRules.hpp
 #ifndef STRUCTURE_RULES_HPP
 #define STRUCTURE_RULES_HPP
 
