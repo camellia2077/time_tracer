@@ -1,21 +1,22 @@
-﻿// reports/period/formatters/latex/PeriodTexFormatter.hpp
-#ifndef PERIOD_TEX_FORMATTER_HPP
-#define PERIOD_TEX_FORMATTER_HPP
+﻿// reports/period/formatters/latex/PeriodTexUtils.hpp
+#ifndef PERIOD_TEX_UTILS_HPP
+#define PERIOD_TEX_UTILS_HPP
 
-#include "reports/shared/formatters/templates/BaseTexFormatter.hpp"
-#include "reports/period/formatters/latex/PeriodTexConfig.hpp"
+#include <sstream>
+#include <memory>
 #include "reports/shared/model/PeriodReportData.hpp"
+#include "reports/period/formatters/latex/PeriodTexConfig.hpp"
 
-class PeriodTexFormatter : public BaseTexFormatter<PeriodReportData, PeriodTexConfig> {
-public:
-    explicit PeriodTexFormatter(std::shared_ptr<PeriodTexConfig> config);
+namespace PeriodTexUtils {
 
-protected:
-    std::string validate_data(const PeriodReportData& data) const override;
-    bool is_empty_data(const PeriodReportData& data) const override;
-    int get_avg_days(const PeriodReportData& data) const override;
-    std::string get_no_records_msg() const override;
-    void format_header_content(std::stringstream& ss, const PeriodReportData& data) const override;
-};
+    /**
+     * @brief 为周期报告生成 LaTeX 格式的摘要（标题和总结信息）。
+     * @param ss stringstream 用于写入输出。
+     * @param data 包含报告数据的 PeriodReportData 对象。
+     * @param config 指向 PeriodTexConfig 的共享指针。
+     */
+    void display_summary(std::stringstream& ss, const PeriodReportData& data, const std::shared_ptr<PeriodTexConfig>& config);
 
-#endif // PERIOD_TEX_FORMATTER_HPP
+} // namespace PeriodTexUtils
+
+#endif // PERIOD_TEX_UTILS_HPP
