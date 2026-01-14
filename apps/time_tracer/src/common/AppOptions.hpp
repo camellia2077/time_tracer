@@ -3,7 +3,8 @@
 #define APP_OPTIONS_HPP
 
 #include <filesystem>
-#include "converter/validator/common/ValidatorUtils.hpp" // 需要 DateCheckMode
+// [架构优化] 不再依赖 converter 层的 ValidatorUtils，改为依赖 common 层的类型定义
+#include "common/types/DateCheckMode.hpp"
 
 namespace fs = std::filesystem;
 

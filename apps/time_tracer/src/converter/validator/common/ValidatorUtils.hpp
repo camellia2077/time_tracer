@@ -7,12 +7,8 @@
 #include <set>
 #include <map>
 
-// --- [核心修改] 新增日期检查模式枚举 ---
-enum class DateCheckMode {
-    None,       // 不检查
-    Continuity, // 只检查连续性 (1号到当前存在的最大日期)
-    Full        // 检查完整性 (1号到月底)
-};
+// [架构优化] 引入位于 common 的枚举定义，解耦定义权
+#include "common/types/DateCheckMode.hpp"
 
 // 共享的错误类型枚举
 enum class ErrorType {

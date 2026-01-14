@@ -1,7 +1,9 @@
 {
   "system": {
     "error_log": "../output/error_log.txt",
-    "export_root": "exported_reports"
+    "export_root": "exported_reports",
+    "save_processed_output": true,
+    "date_check_continuity": true
   },
 
   "converter": {
