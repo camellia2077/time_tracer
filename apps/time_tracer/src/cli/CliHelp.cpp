@@ -12,8 +12,10 @@ void print_full_usage(const char* app_name) {
     std::println("   run-pipeline, blink <path>\t Run full pipeline: validate, convert, validate output, and import to database.");
 
     std::println("                                  Options:");
-    std::println("                                    --date-check <mode>  Set date check mode: 'continuity' (check gaps) or 'full' (strict).");
-    // 注意：--save-processed 目前作为高级/调试选项，未在帮助文档中显式列出，符合保持简洁的原则
+    std::println("                                    --date-check <mode>     Set date check mode: 'continuity' or 'full'.");
+    std::println("                                    --no-date-check         Disable date checking (overrides config)."); // [新增]
+    std::println("                                    --save-processed        Force save intermediate JSON files.");
+    std::println("                                    --no-save               Force NOT to save intermediate JSON files (overrides config).");
 
     std::println("  query <type> <period>\t\t Query data from the database.");
     std::println("  export <type> <period>\t Export reports from the database.\n");
@@ -25,15 +27,14 @@ void print_full_usage(const char* app_name) {
     std::println("  validate-output <path>\t Validates the processed JSON file format and logic (read-only).");
     std::println("  \tNote: Validation commands do not produce output; the --output option has no effect on them.");
     
-    // [修改] 更新 validate-output 的选项说明
     std::println("  Options for validate-output:");
     std::println("    --date-check <mode>\t\t Check date logic. Modes:");
     std::println("                                    continuity : Check for missing dates between records.");
     std::println("                                    full       : Check for all dates in the month (completeness).");
-    std::println("                                    (Default: No check)");
+    std::println("                                    none       : Disable check explicitly."); // [新增]
+    std::println("                                    (Default: Reads from config.json)");
 
     std::println("  Example: {} convert /path/to/logs", app_name);
-    // [修改] 更新示例以反映新的参数
     std::println("  Example: {} validate-output /path/to/processed/log.json --date-check full\n", app_name);
 
     // 数据库导入

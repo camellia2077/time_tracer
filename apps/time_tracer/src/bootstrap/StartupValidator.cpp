@@ -19,14 +19,26 @@ namespace fs = std::filesystem;
 // --- 内部静态辅助函数：读取 JSON 文件 ---
 static bool load_json_helper(const fs::path& path, nlohmann::json& out_json) {
     // [修改] 使用 FileSystemHelper 检查
-    if (!FileSystemHelper::exists(path)) return false;
+    if (!FileSystemHelper::exists(path)) {
+        // 如果文件不存在，外层调用者通常会打印 "Could not load..."，所以这里可以直接返回
+        // 或者也可以在这里打印更详细的 "File not found"
+        return false;
+    }
     
     try {
         // [修改] 使用 FileReader 读取
         std::string content = FileReader::read_content(path);
         out_json = nlohmann::json::parse(content);
         return true;
+    } catch (const std::exception& e) {
+        // [修改] 捕获具体异常并打印文件名和错误详情
+        std::cerr << RED_COLOR << "Error loading/parsing file [" << path.string() << "]: " 
+                  << e.what() << RESET_COLOR << std::endl;
+        return false;
     } catch (...) {
+        // [新增] 捕获未知异常
+        std::cerr << RED_COLOR << "Unknown error occurred while processing file [" 
+                  << path.string() << "]" << RESET_COLOR << std::endl;
         return false;
     }
 }
