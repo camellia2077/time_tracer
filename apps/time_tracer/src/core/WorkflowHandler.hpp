@@ -6,7 +6,12 @@
 #include <filesystem>
 #include <map>
 #include <vector>
-#include "common/AppConfig.hpp" 
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
+// [修复] 新增 AppOptions 引用，因为 run_converter 方法使用了它
+#include "common/AppOptions.hpp"
+
 #include "converter/validator/common/ValidatorUtils.hpp"
 #include "common/model/DailyLog.hpp" 
 

@@ -2,7 +2,8 @@
 #ifndef STARTUP_VALIDATOR_HPP
 #define STARTUP_VALIDATOR_HPP
 
-#include "common/AppConfig.hpp"
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 
 /**
  * @class StartupValidator

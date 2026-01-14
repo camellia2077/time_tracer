@@ -1,4 +1,6 @@
 ﻿// core/file/PipelineManager.hpp
+
+// core/file/PipelineManager.hpp
 #ifndef PIPELINE_MANAGER_HPP
 #define PIPELINE_MANAGER_HPP
 
@@ -6,9 +8,13 @@
 #include <vector>
 #include <filesystem>
 #include <optional>
-#include "common/AppConfig.hpp"
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
+// [修复] 新增 AppOptions 引用，因为 run 方法使用了它
+#include "common/AppOptions.hpp"
+
 #include "converter/validator/common/ValidatorUtils.hpp"
-// [新增] 必须包含 PipelineContext 定义（或前向声明），因为返回值变了
 #include "core/file/PipelineContext.hpp"
 
 namespace fs = std::filesystem;
