@@ -2,7 +2,7 @@
 #include "PeriodTypFormatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include "common/AppConfig.hpp"
+#include <nlohmann/json.hpp>
 
 PeriodTypFormatter::PeriodTypFormatter(std::shared_ptr<PeriodTypConfig> config) 
     : BaseTypFormatter(config) {}
@@ -56,10 +56,16 @@ void PeriodTypFormatter::format_header_content(std::stringstream& ss, const Peri
 }
 
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        auto typ_config = std::make_shared<PeriodTypConfig>(cfg.period_typ_config_path);
-        auto formatter = new PeriodTypFormatter(typ_config);
-        return static_cast<FormatterHandle>(formatter);
+    // [核心修改] 接收 config_json 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+        try {
+            auto json_obj = nlohmann::json::parse(config_json);
+            auto typ_config = std::make_shared<PeriodTypConfig>(json_obj);
+            auto formatter = new PeriodTypFormatter(typ_config);
+            return static_cast<FormatterHandle>(formatter);
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {

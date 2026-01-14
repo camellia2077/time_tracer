@@ -5,11 +5,19 @@
 #include <string>
 #include <vector>
 #include <istream> 
-#include <functional> 
-#include "common/AppConfig.hpp"
+#include <functional>
+#include <map> 
+// [修复] 移除 AppConfig 依赖，解耦 Lib 和 App
+// #include "common/AppConfig.hpp" 
 #include "common/model/DailyLog.hpp" 
 #include "converter/config/ConverterConfig.hpp"
 
+// [修复] 定义专门的返回结果结构体，包含数据
+struct LogProcessingResult {
+    bool success = true;
+    // 包含转换后的数据：Key=YYYY-MM, Value=List of Logs
+    std::map<std::string, std::vector<DailyLog>> processed_data;
+};
 
 class LogProcessor {
 public:
@@ -23,8 +31,9 @@ public:
      */
     void convertStreamToData(std::istream& combined_stream, std::function<void(DailyLog&&)> data_consumer);
 
-    ProcessingResult processSourceContent(const std::string& filename, 
-                                          const std::string& content);
+    // [修复] 返回类型改为 LogProcessingResult
+    LogProcessingResult processSourceContent(const std::string& filename, 
+                                             const std::string& content);
 
 private:
     const ConverterConfig& config_;

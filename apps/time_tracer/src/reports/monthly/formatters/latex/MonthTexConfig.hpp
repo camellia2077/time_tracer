@@ -3,15 +3,16 @@
 #define MONTH_TEX_CONFIG_HPP
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
-#include "reports/shared/config/TexStyleConfig.hpp" // [新增]
+#include "reports/shared/config/TexStyleConfig.hpp"
 #include <string>
-#include <filesystem>
+#include <nlohmann/json.hpp>
 
 class MonthTexConfig : public MonthBaseConfig {
 public:
-    explicit MonthTexConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit MonthTexConfig(const nlohmann::json& config);
 
-    // --- 代理给 style_ 的样式配置 ---
+    // 代理
     const std::string& get_main_font() const { return style_.get_main_font(); }
     const std::string& get_cjk_main_font() const { return style_.get_cjk_main_font(); }
     int get_base_font_size() const { return style_.get_base_font_size(); }
@@ -22,7 +23,7 @@ public:
     double get_list_item_sep_ex() const { return style_.get_list_item_sep_ex(); }
 
 private:
-    TexStyleConfig style_; // [组合]
+    TexStyleConfig style_;
 };
 
 #endif // MONTH_TEX_CONFIG_HPP

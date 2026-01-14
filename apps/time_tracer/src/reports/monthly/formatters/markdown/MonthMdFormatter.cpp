@@ -2,7 +2,7 @@
 #include "MonthMdFormatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include "common/AppConfig.hpp"
+#include <nlohmann/json.hpp>
 
 MonthMdFormatter::MonthMdFormatter(std::shared_ptr<MonthMdConfig> config) 
     : BaseMdFormatter(config) {}
@@ -39,10 +39,16 @@ void MonthMdFormatter::format_header_content(std::stringstream& ss, const Monthl
 }
 
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        auto md_config = std::make_shared<MonthMdConfig>(cfg.month_md_config_path);
-        auto formatter = new MonthMdFormatter(md_config);
-        return static_cast<FormatterHandle>(formatter);
+    // [核心修改] 接收 config_json 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+        try {
+            auto json_obj = nlohmann::json::parse(config_json);
+            auto md_config = std::make_shared<MonthMdConfig>(json_obj);
+            auto formatter = new MonthMdFormatter(md_config);
+            return static_cast<FormatterHandle>(formatter);
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {

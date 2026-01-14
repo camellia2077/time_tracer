@@ -4,11 +4,12 @@
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include <string> 
-#include <filesystem>
+#include <nlohmann/json.hpp>
 
 class MonthMdConfig : public MonthBaseConfig {
 public:
-    explicit MonthMdConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit MonthMdConfig(const nlohmann::json& config);
     
     const std::string& get_project_breakdown_label() const;
 

@@ -12,7 +12,7 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 
-// 辅助函数 (保持不变)
+// 辅助函数
 static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
     using json = nlohmann::json;
     ConverterConfig config;
@@ -29,10 +29,14 @@ static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
                 main_json["text_mappings"] = map_json["text_mappings"];
             }
         }
+        
+        // [修复] 正确加载 duration_rules.json 中的字段
         if (main_json.contains("duration_rules_config_path")) {
             fs::path dur_path = config_dir / main_json["duration_rules_config_path"].get<std::string>();
             std::string dur_content = FileReader::read_content(dur_path);
             json dur_json = json::parse(dur_content);
+            
+            // 修复：分别合并 text_duration_mappings 和 duration_mappings
             if (dur_json.contains("text_duration_mappings")) {
                 main_json["text_duration_mappings"] = dur_json["text_duration_mappings"];
             }
@@ -40,9 +44,10 @@ static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
                 main_json["duration_mappings"] = dur_json["duration_mappings"];
             }
         }
+
         config.load(main_json);
     } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "Error assembling converter config: " << e.what() << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error loading converter config: " << e.what() << RESET_COLOR << std::endl;
     }
     return config;
 }
@@ -50,73 +55,58 @@ static ConverterConfig loadAndAssembleConfig(const fs::path& main_config_path) {
 ConverterStep::ConverterStep(const AppConfig& config) : app_config_(config) {}
 
 bool ConverterStep::execute(PipelineContext& context) {
-    std::cout << "\n--- 阶段: 转换文件 ---" << std::endl;
-    
-    if (context.state.source_files.empty()) {
-        std::cerr << YELLOW_COLOR << "警告: 没有已收集的文件可供转换。" << RESET_COLOR << std::endl;
-        return false;
-    }
-
+    // ... (后续代码保持不变) ...
+    std::cout << "Step: Converting files..." << std::endl;
     auto start_time = std::chrono::steady_clock::now();
 
-    // 1. 准备配置
-    context.state.converter_config = loadAndAssembleConfig(app_config_.interval_processor_config_path);
+    context.state.converter_config = loadAndAssembleConfig(app_config_.pipeline.interval_processor_config_path);
+    
+    // 手动转换 path map 到 string map
+    for (const auto& [path_key, path_val] : app_config_.pipeline.initial_top_parents) {
+        context.state.converter_config.initial_top_parents[path_key.string()] = path_val.string();
+    }
+
     LogProcessor processor(context.state.converter_config);
+    bool all_success = true;
 
-    // 2. 合并文件流
-    std::stringstream combined_stream;
-    for (const auto& source_file : context.state.source_files) {
+    // 处理每个源文件
+    for (const auto& file_path : context.state.source_files) {
         try {
-            std::string content = FileReader::read_content(source_file);
-            combined_stream << content;
-        } catch (const std::exception& e) {
-            std::cerr << YELLOW_COLOR << "警告: 读取文件失败 " << source_file << ": " << e.what() << RESET_COLOR << std::endl;
-        }
-    }
-    
-    // 3. 执行转换 (Callback 模式)
-    // Core 层负责决定如何组织这些数据 (这里选择按月分组存入 Map)
-    std::map<std::string, std::vector<DailyLog>> monthly_data;
-    
-    processor.convertStreamToData(combined_stream, [&](DailyLog&& day) {
-        if (day.date.length() == 10) {
-            std::string year_month = day.date.substr(0, 4) + "_" + day.date.substr(5, 2);
-            // 使用 std::move 将数据所有权转移进 map，避免拷贝
-            monthly_data[year_month].push_back(std::move(day));
-        }
-    });
-    
-    if (monthly_data.empty()) {
-        std::cerr << RED_COLOR << "文件转换失败，没有生成任何数据。" << RESET_COLOR << std::endl;
-        return false;
-    }
-
-    // 4. 更新 Context (用于 DB 内存直连)
-    context.result.processed_data = monthly_data;
-
-    // 5. 写入输出文件 (如果需要)
-    if (context.config.save_processed_output) {
-        JsonWriter generator;
-        fs::path output_dir_base = context.config.output_root / "Processed_Date";
-
-        for (const auto& pair : monthly_data) {
-            const std::string& year_month = pair.first;
-            const std::vector<DailyLog>& month_days = pair.second;
+            std::string content = FileReader::read_content(file_path);
+            LogProcessingResult result = processor.processSourceContent(file_path.string(), content);
             
-            std::string year = year_month.substr(0, 4);
-            fs::path month_output_dir = output_dir_base / year;
-            fs::path output_file_path = month_output_dir / (year_month + ".json");
+            if (!result.success) {
+                std::cerr << RED_COLOR << "处理失败: " << file_path << RESET_COLOR << std::endl;
+                all_success = false;
+                continue;
+            }
+
+            // 存入内存结果集
+            context.result.processed_data.insert(result.processed_data.begin(), result.processed_data.end());
+
+        } catch (const std::exception& e) {
+             std::cerr << RED_COLOR << "错误: 处理文件时发生异常: " << file_path << " - " << e.what() << RESET_COLOR << std::endl;
+             all_success = false;
+        }
+    }
+
+    // 如果配置要求保存到磁盘
+    if (context.config.save_processed_output) {
+         JsonWriter generator;
+         for (const auto& [month_key, month_days] : context.result.processed_data) {
+            fs::path output_file_path = context.config.output_root / "Processed_Date" / (month_key + ".json");
+            fs::path month_output_dir = output_file_path.parent_path();
 
             try {
                 FileSystemHelper::create_directories(month_output_dir);
                 std::stringstream buffer;
-                // 使用 JsonWriter 类将 vector 转为 JSON 字符串
                 generator.write(buffer, month_days, context.state.converter_config); 
                 FileWriter::write_content(output_file_path, buffer.str());
                 
                 context.state.generated_files.push_back(output_file_path);
             } catch (const std::exception& e) {
                  std::cerr << RED_COLOR << "错误: 无法写入输出文件: " << output_file_path << " - " << e.what() << RESET_COLOR << std::endl;
+                 all_success = false; 
                  continue;
             }
         }
@@ -128,15 +118,18 @@ bool ConverterStep::execute(PipelineContext& context) {
     double duration = std::chrono::duration<double, std::milli>(end_time - start_time).count();
     printTiming(duration);
     
-    std::cout << GREEN_COLOR << "文件转换阶段 全部成功。" << RESET_COLOR << std::endl;
-    return true;
+    if (all_success) {
+        std::cout << GREEN_COLOR << "文件转换阶段 全部成功。" << RESET_COLOR << std::endl;
+    } else {
+        std::cout << YELLOW_COLOR << "文件转换阶段 完成，但存在部分错误。" << RESET_COLOR << std::endl;
+    }
+
+    return all_success;
 }
 
 void ConverterStep::printTiming(double total_time_ms) const {
     double total_time_s = total_time_ms / 1000.0;
     std::cout << "--------------------------------------\n";
-    std::cout << "Timing Statistics for: convertFiles\n\n";
-    std::cout << "Total time: " << std::fixed << std::setprecision(4) << total_time_s
-              << " seconds (" << total_time_ms << " ms)\n";
+    std::cout << "转换耗时: " << std::fixed << std::setprecision(3) << total_time_s << " 秒 (" << total_time_ms << " ms)\n";
     std::cout << "--------------------------------------\n";
 }
