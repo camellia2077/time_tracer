@@ -18,12 +18,13 @@ public:
 
     std::optional<std::string> get_output_path() const;
     
-    // 现在返回格式列表
     std::vector<ReportFormat> get_report_formats() const;
 
-    DateCheckMode get_date_check_mode() const;
-    // 检查是否包含保存参数
+    // [修改] 返回 optional 以区分"未指定"和"指定为None"
+    std::optional<DateCheckMode> get_date_check_mode() const;
+    
     bool should_save_processed() const;
+    bool should_skip_save() const;
 
 private:
     std::vector<std::string> raw_args_;

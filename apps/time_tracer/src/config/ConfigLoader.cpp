@@ -4,7 +4,7 @@
 #include <stdexcept>
 #include <nlohmann/json.hpp>
 
-// [新增] 引入 IO 模块
+// 引入 IO 模块
 #include "io/core/FileReader.hpp"
 #include "io/core/FileSystemHelper.hpp"
 
@@ -26,12 +26,12 @@ std::string ConfigLoader::get_main_config_path() const {
 }
 
 AppConfig ConfigLoader::load_configuration() {
-    // [修改] 使用 FileSystemHelper 检查文件存在性
+    // 使用 FileSystemHelper 检查文件存在性
     if (!FileSystemHelper::exists(main_config_path)) {
         throw std::runtime_error("Configuration file not found: " + main_config_path.string());
     }
 
-    // [修改] 使用 FileReader 读取文件内容，彻底解耦 std::ifstream
+    // 使用 FileReader 读取文件内容
     std::string config_content;
     try {
         config_content = FileReader::read_content(main_config_path);
@@ -49,18 +49,34 @@ AppConfig ConfigLoader::load_configuration() {
     AppConfig app_config;
     app_config.exe_dir_path = exe_path;
 
-    // 1. General Settings
-    if (j.contains("general")) {
-        const auto& gen = j.at("general");
-        if (gen.contains("error_log")) {
-            app_config.error_log_path = exe_path / gen.at("error_log").get<std::string>();
+    // 1. General/System Settings
+    // 优先读取 "system" 节点 (匹配 config.json)，兼容旧的 "general"
+    const nlohmann::json* sys_node = nullptr;
+    if (j.contains("system")) {
+        sys_node = &j["system"];
+    } else if (j.contains("general")) {
+        sys_node = &j["general"];
+    }
+
+    if (sys_node) {
+        if (sys_node->contains("error_log")) {
+            app_config.error_log_path = exe_path / sys_node->at("error_log").get<std::string>();
         } else {
             app_config.error_log_path = exe_path / "error.log";
         }
         
-        if (gen.contains("export_path")) {
-             app_config.export_path = gen.at("export_path").get<std::string>();
+        // 兼容 export_root (config.json) 和 export_path (代码旧称)
+        if (sys_node->contains("export_root")) {
+             app_config.export_path = sys_node->at("export_root").get<std::string>();
+        } else if (sys_node->contains("export_path")) {
+             app_config.export_path = sys_node->at("export_path").get<std::string>();
         }
+
+        // 读取 save_processed_output 配置
+        if (sys_node->contains("save_processed_output")) {
+            app_config.default_save_processed_output = sys_node->at("save_processed_output").get<bool>();
+        }
+
     } else {
          app_config.error_log_path = exe_path / "error.log";
     }
