@@ -13,7 +13,9 @@
 
 // --- 核心模块 ---
 #include "bootstrap/StartupValidator.hpp"  // 引入验证器
-#include "common/AppConfig.hpp"
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 #include "config/ConfigLoader.hpp"         // [新增] 引入新的配置加载器
 // #include "io/FileController.hpp"        // [移除] main不再直接使用 FileController
 

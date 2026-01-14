@@ -7,7 +7,8 @@
 #include <memory>
 #include <filesystem>
 #include "cli/CliParser.hpp"
-#include "common/AppConfig.hpp" // [新增] 需要引入 AppConfig 定义
+// [修复] 更新 AppConfig 路径
+#include "common/config/AppConfig.hpp" 
 
 class FileController;
 class WorkflowHandler;

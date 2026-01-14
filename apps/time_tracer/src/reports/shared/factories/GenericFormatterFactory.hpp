@@ -13,7 +13,8 @@
 #include <sstream>
 
 #include "reports/shared/types/ReportFormat.hpp"
-#include "common/AppConfig.hpp"
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 #include "reports/shared/factories/DllFormatterWrapper.hpp"
 
