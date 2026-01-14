@@ -1,9 +1,12 @@
 ﻿// config/ConfigLoader.cpp
 #include "ConfigLoader.hpp"
 #include <iostream>
-#include <fstream>
 #include <stdexcept>
 #include <nlohmann/json.hpp>
+
+// [新增] 引入 IO 模块
+#include "io/core/FileReader.hpp"
+#include "io/core/FileSystemHelper.hpp"
 
 namespace fs = std::filesystem;
 
@@ -23,18 +26,22 @@ std::string ConfigLoader::get_main_config_path() const {
 }
 
 AppConfig ConfigLoader::load_configuration() {
-    if (!fs::exists(main_config_path)) {
+    // [修改] 使用 FileSystemHelper 检查文件存在性
+    if (!FileSystemHelper::exists(main_config_path)) {
         throw std::runtime_error("Configuration file not found: " + main_config_path.string());
     }
 
-    std::ifstream config_file(main_config_path);
-    if (!config_file.is_open()) {
-        throw std::runtime_error("Could not open configuration file: " + main_config_path.string());
+    // [修改] 使用 FileReader 读取文件内容，彻底解耦 std::ifstream
+    std::string config_content;
+    try {
+        config_content = FileReader::read_content(main_config_path);
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Could not read configuration file: " + std::string(e.what()));
     }
 
     nlohmann::json j;
     try {
-        config_file >> j;
+        j = nlohmann::json::parse(config_content);
     } catch (const nlohmann::json::parse_error& e) {
         throw std::runtime_error("JSON parsing error in config.json: " + std::string(e.what()));
     }
@@ -61,11 +68,14 @@ AppConfig ConfigLoader::load_configuration() {
     // 2. Converter / Pipeline Settings
     if (j.contains("converter")) {
         const auto& proc = j.at("converter");
-        // [修复] 更新为 pipeline.interval_processor_config_path
         app_config.pipeline.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
         
-        // 如果 config.json 中有初始父节点映射，也需要在此处加载到 app_config.pipeline.initial_top_parents
-        // (假设你的 ConfigLoader 有这部分逻辑，如果没有可忽略)
+        // 加载 initial_top_parents (如果有)
+        if (proc.contains("initial_top_parents")) {
+            for (const auto& [key, val] : proc["initial_top_parents"].items()) {
+                app_config.pipeline.initial_top_parents[fs::path(key)] = fs::path(val.get<std::string>());
+            }
+        }
     } else {
         throw std::runtime_error("Missing 'converter' configuration block."); 
     }
@@ -83,7 +93,6 @@ AppConfig ConfigLoader::load_configuration() {
             }
         };
 
-        // [修复] 更新为 reports.xxx_config_path
         load_report_paths("typst", 
             app_config.reports.day_typ_config_path, 
             app_config.reports.month_typ_config_path, 
