@@ -1,6 +1,7 @@
 ﻿// cli/commands/pipeline/Convert.cpp
 #include "Convert.hpp"
-#include "common/AppConfig.hpp"
+// [修复] AppOptions 现在独立在 common/AppOptions.hpp
+#include "common/AppOptions.hpp"
 #include "cli/CommandRegistry.hpp"
 #include <stdexcept>
 

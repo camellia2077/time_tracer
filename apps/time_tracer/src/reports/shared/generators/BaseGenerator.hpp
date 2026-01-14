@@ -4,7 +4,8 @@
 
 #include <memory>
 #include <string>
-#include "common/AppConfig.hpp"
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 #include "reports/shared/factories/GenericFormatterFactory.hpp"
 #include "reports/shared/types/ReportFormat.hpp"
 

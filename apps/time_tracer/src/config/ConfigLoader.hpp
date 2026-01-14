@@ -1,11 +1,11 @@
 ﻿// config/ConfigLoader.hpp
-
 #ifndef CONFIG_LOADER_HPP
 #define CONFIG_LOADER_HPP
 
 #include <string>
 #include <filesystem>
-#include "common/AppConfig.hpp"
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 
 class ConfigLoader {
 public:
