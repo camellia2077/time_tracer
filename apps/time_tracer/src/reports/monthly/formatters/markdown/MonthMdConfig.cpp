@@ -1,8 +1,9 @@
 ﻿// reports/monthly/formatters/markdown/MonthMdConfig.cpp
 #include "MonthMdConfig.hpp"
 
-MonthMdConfig::MonthMdConfig(const std::filesystem::path& config_path)
-    : MonthBaseConfig(config_path) 
+// [修改] 接收 JSON
+MonthMdConfig::MonthMdConfig(const nlohmann::json& config)
+    : MonthBaseConfig(config) 
 {
     project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
 }

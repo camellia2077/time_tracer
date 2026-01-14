@@ -29,6 +29,10 @@ public:
     const std::vector<std::string>& getWakeKeywords() const;
     const std::unordered_map<std::string, std::string>& getTopParentMapping() const;
 
+    // [修复] 新增公有成员，允许 Core 层注入外部定义的初始父节点映射
+    // 使用 string 作为键值，因为 JSON 配置也是基于字符串的
+    std::unordered_map<std::string, std::string> initial_top_parents;
+
 private:
     std::string remark_prefix_;
     std::vector<std::string> header_order_;

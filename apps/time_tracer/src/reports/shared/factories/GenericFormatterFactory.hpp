@@ -9,6 +9,8 @@
 #include <filesystem>
 #include <iostream>
 #include <string>
+#include <fstream>
+#include <sstream>
 
 #include "reports/shared/types/ReportFormat.hpp"
 #include "common/AppConfig.hpp"
@@ -22,10 +24,6 @@ class GenericFormatterFactory {
 public:
     using Creator = std::function<std::unique_ptr<IReportFormatter<ReportDataType>>(const AppConfig&)>;
 
-    /**
-     * @brief 创建格式化器实例。
-     * 现在它不再包含硬编码逻辑，而是直接从注册表中查找。
-     */
     static std::unique_ptr<IReportFormatter<ReportDataType>> create(ReportFormat format, const AppConfig& config) {
         auto& creators = get_creators();
         auto it = creators.find(format);
@@ -37,55 +35,82 @@ public:
         return it->second(config);
     }
 
-    /**
-     * @brief 注册一个自定义的创建函数（适用于静态链接的格式化器）。
-     */
     static void register_creator(ReportFormat format, Creator creator) {
         get_creators()[format] = std::move(creator);
     }
 
-    /**
-     * @brief [新增] 注册基于 DLL 的格式化器。
-     * 这是对 register_creator 的封装，专门用于处理动态库加载逻辑。
-     * * @param format 报告格式枚举
-     * @param dll_base_name DLL 的基础名称（不带 .dll/.so 后缀和 lib 前缀），例如 "DayMdFormatter"
-     */
     static void register_dll_formatter(ReportFormat format, std::string dll_base_name) {
-        // 注册一个 lambda，当 create 被调用时，这个 lambda 会执行并加载 DLL
-        register_creator(format, [dll_base_name](const AppConfig& config) {
-            return load_from_dll(dll_base_name, config);
+        register_creator(format, [dll_base_name, format](const AppConfig& config) {
+            fs::path config_path;
+
+            // [核心修改] 更新路径访问：config.reports.xxx
+            if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+                switch(format) {
+                    case ReportFormat::Markdown: config_path = config.reports.day_md_config_path; break;
+                    case ReportFormat::LaTeX:    config_path = config.reports.day_tex_config_path; break;
+                    case ReportFormat::Typ:      config_path = config.reports.day_typ_config_path; break;
+                }
+            } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+                switch(format) {
+                    case ReportFormat::Markdown: config_path = config.reports.month_md_config_path; break;
+                    case ReportFormat::LaTeX:    config_path = config.reports.month_tex_config_path; break;
+                    case ReportFormat::Typ:      config_path = config.reports.month_typ_config_path; break;
+                }
+            } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+                switch(format) {
+                    case ReportFormat::Markdown: config_path = config.reports.period_md_config_path; break;
+                    case ReportFormat::LaTeX:    config_path = config.reports.period_tex_config_path; break;
+                    case ReportFormat::Typ:      config_path = config.reports.period_typ_config_path; break;
+                }
+            }
+
+            std::string json_content = "{}";
+            if (!config_path.empty() && fs::exists(config_path)) {
+                try {
+                    std::ifstream file(config_path);
+                    if (file) {
+                        std::stringstream buffer;
+                        buffer << file.rdbuf();
+                        json_content = buffer.str();
+                    }
+                } catch (const std::exception& e) {
+                    std::cerr << "Error reading config file: " << config_path << " - " << e.what() << std::endl;
+                }
+            }
+
+            return load_from_dll(dll_base_name, config, json_content);
         });
     }
 
 private:
-    // 单例注册表
     static std::map<ReportFormat, Creator>& get_creators() {
         static std::map<ReportFormat, Creator> creators;
         return creators;
     }
 
-    // [重构] 将 DLL 路径查找和加载逻辑提取为私有辅助函数
-    static std::unique_ptr<IReportFormatter<ReportDataType>> load_from_dll(const std::string& base_name, const AppConfig& config) {
+    static std::unique_ptr<IReportFormatter<ReportDataType>> load_from_dll(
+        const std::string& base_name, 
+        const AppConfig& config,
+        const std::string& json_content) 
+    {
         try {
             fs::path exe_dir(config.exe_dir_path);
             fs::path plugin_dir = exe_dir / "plugins";
             fs::path dll_path;
 
 #ifdef _WIN32
-            // 尝试加载 libName.dll 或 Name.dll
             dll_path = plugin_dir / ("lib" + base_name + ".dll");
             if (!fs::exists(dll_path)) {
                 dll_path = plugin_dir / (base_name + ".dll");
             }
 #else
-            // Linux/Unix 假设为 libName.so
             dll_path = plugin_dir / ("lib" + base_name + ".so");
 #endif
             if (!fs::exists(dll_path)) {
                  throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
             }
 
-            return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), config);
+            return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), json_content);
 
         } catch (const std::exception& e) {
             std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;
