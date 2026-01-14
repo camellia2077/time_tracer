@@ -7,7 +7,8 @@
 #include "reports/shared/model/DailyReportData.hpp"
 #include "reports/shared/model/MonthlyReportData.hpp"
 #include "reports/shared/model/PeriodReportData.hpp"
-#include "common/AppConfig.hpp"
+// [修改] 不再需要 AppConfig，因为配置内容直接通过字符串传入
+// #include "common/AppConfig.hpp" 
 
 template<typename ReportDataType>
 class IReportFormatter {
@@ -22,7 +23,11 @@ extern "C" {
 #endif
 
 typedef void* FormatterHandle;
-typedef FormatterHandle (*CreateFormatterFunc)(const AppConfig&);
+
+// [核心修改] 创建函数现在接收配置的 JSON 字符串内容，而不是 AppConfig 对象
+// 外部模块负责读取文件，将内容传给这里
+typedef FormatterHandle (*CreateFormatterFunc)(const char* config_json);
+
 typedef void (*DestroyFormatterFunc)(FormatterHandle);
 
 // 为不同数据类型定义不同的 format 函数指针

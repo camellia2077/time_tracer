@@ -2,9 +2,10 @@
 #include "MonthBaseConfig.hpp"
 #include <stdexcept>
 
-// [修改] 实现更新
-MonthBaseConfig::MonthBaseConfig(const std::filesystem::path& config_path) {
-    config_json_ = load_json_config(config_path, "Could not open Monthly report config file: ");
+// [修改] 接收 JSON，不再 IO
+MonthBaseConfig::MonthBaseConfig(const nlohmann::json& config) 
+    : config_json_(config)
+{
     load_base_config();
 }
 
@@ -17,7 +18,6 @@ void MonthBaseConfig::load_base_config() {
     project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
 }
 
-// ... Getters 实现保持不变 ...
 const std::string& MonthBaseConfig::get_report_title() const { return report_title_; }
 const std::string& MonthBaseConfig::get_actual_days_label() const { return actual_days_label_; }
 const std::string& MonthBaseConfig::get_total_time_label() const { return total_time_label_; }

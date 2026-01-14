@@ -5,17 +5,17 @@
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
 #include <nlohmann/json.hpp>
-#include "reports/shared/utils/config/ConfigUtils.hpp"
-#include <filesystem>
+// [修改] 移除 IO 工具依赖
+// #include "reports/shared/utils/config/ConfigUtils.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API MonthBaseConfig {
 public:
-    explicit MonthBaseConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit MonthBaseConfig(const nlohmann::json& config);
     virtual ~MonthBaseConfig() = default;
 
-    // --- 通用配置项的 Getters ---
     const std::string& get_report_title() const;
     const std::string& get_actual_days_label() const;
     const std::string& get_total_time_label() const;

@@ -4,8 +4,8 @@
 
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/TypstStrategy.hpp"
-#include "common/AppConfig.hpp"
 #include <memory>
+#include <nlohmann/json.hpp>
 
 DayTypFormatter::DayTypFormatter(std::shared_ptr<DayTypConfig> config) 
     : BaseTypFormatter(config) {}
@@ -14,7 +14,6 @@ bool DayTypFormatter::is_empty_data(const DailyReportData& data) const {
     return data.total_duration == 0;
 }
 
-// [修改] 注释掉未使用参数
 int DayTypFormatter::get_avg_days(const DailyReportData& /*data*/) const {
     return 1;
 }
@@ -28,21 +27,24 @@ void DayTypFormatter::format_header_content(std::stringstream& ss, const DailyRe
 }
 
 void DayTypFormatter::format_extra_content(std::stringstream& ss, const DailyReportData& data) const {
-    // 1. 统计信息
     auto strategy = std::make_unique<TypstStrategy>(config_);
     StatFormatter stats_formatter(std::move(strategy));
     ss << stats_formatter.format(data, config_);
 
-    // 2. 详细活动记录
     DayTypUtils::display_detailed_activities(ss, data, config_);
 }
 
-// DLL 导出部分保持不变
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        auto typ_config = std::make_shared<DayTypConfig>(cfg.day_typ_config_path);
-        auto formatter = new DayTypFormatter(typ_config);
-        return static_cast<FormatterHandle>(formatter);
+    // [核心修改] 接收 config_json 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+        try {
+            auto json_obj = nlohmann::json::parse(config_json);
+            auto typ_config = std::make_shared<DayTypConfig>(json_obj);
+            auto formatter = new DayTypFormatter(typ_config);
+            return static_cast<FormatterHandle>(formatter);
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {

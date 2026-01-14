@@ -1,9 +1,10 @@
 ﻿// reports/period/formatters/typst/PeriodTypConfig.cpp
 #include "PeriodTypConfig.hpp"
 
-PeriodTypConfig::PeriodTypConfig(const std::filesystem::path& config_path)
-    : PeriodBaseConfig(config_path),
-      style_(config_json_)
+// [修改] 接收 JSON
+PeriodTypConfig::PeriodTypConfig(const nlohmann::json& config)
+    : PeriodBaseConfig(config),
+      style_(config)
 {
     margin_top_cm_ = config_json_.at("margin_top_cm").get<double>();
     margin_bottom_cm_ = config_json_.at("margin_bottom_cm").get<double>();

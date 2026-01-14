@@ -1,13 +1,14 @@
 ﻿// reports/daily/formatters/markdown/DayMdConfig.hpp
 #ifndef DAY_MD_CONFIG_HPP
 #define DAY_MD_CONFIG_HPP
-#include <filesystem>
-#include "reports/daily/common/DayBaseConfig.hpp"
 
-// DayMdConfig 现在直接继承 DayBaseConfig，无需添加额外成员
+#include "reports/daily/common/DayBaseConfig.hpp"
+#include <nlohmann/json.hpp>
+
 class DayMdConfig : public DayBaseConfig {
 public:
-    explicit DayMdConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit DayMdConfig(const nlohmann::json& config);
 };
 
 #endif // DAY_MD_CONFIG_HPP

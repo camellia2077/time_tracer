@@ -1,8 +1,9 @@
 ﻿// reports/period/formatters/latex/PeriodTexConfig.cpp
 #include "PeriodTexConfig.hpp"
 
-PeriodTexConfig::PeriodTexConfig(const std::filesystem::path& config_path)
-    : PeriodBaseConfig(config_path),
-      style_(config_json_)
+// [修改] 接收 JSON
+PeriodTexConfig::PeriodTexConfig(const nlohmann::json& config)
+    : PeriodBaseConfig(config),
+      style_(config)
 {
 }

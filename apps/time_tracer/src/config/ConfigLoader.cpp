@@ -1,5 +1,5 @@
 ﻿// config/ConfigLoader.cpp
-#include "ConfigLoader.hpp" // [修正] 引用同级头文件
+#include "ConfigLoader.hpp"
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
@@ -36,54 +36,74 @@ AppConfig ConfigLoader::load_configuration() {
     try {
         config_file >> j;
     } catch (const nlohmann::json::parse_error& e) {
-        throw std::runtime_error("Failed to parse JSON from config file: " + std::string(e.what()));
+        throw std::runtime_error("JSON parsing error in config.json: " + std::string(e.what()));
     }
 
     AppConfig app_config;
-    app_config.exe_dir_path = exe_path.string();
+    app_config.exe_dir_path = exe_path;
 
-    // 仅做 JSON 到 AppConfig 结构体的映射
-    // 不检查子配置文件的内容
-    try {
-        if (j.contains("system")) {
-            const auto& sys = j.at("system");
-            app_config.error_log_path = (config_dir_path / sys.at("error_log").get<std::string>()).lexically_normal();
-            if (sys.contains("export_root")) {
-                app_config.export_path = sys.at("export_root").get<std::string>();
+    // 1. General Settings
+    if (j.contains("general")) {
+        const auto& gen = j.at("general");
+        if (gen.contains("error_log")) {
+            app_config.error_log_path = exe_path / gen.at("error_log").get<std::string>();
+        } else {
+            app_config.error_log_path = exe_path / "error.log";
+        }
+        
+        if (gen.contains("export_path")) {
+             app_config.export_path = gen.at("export_path").get<std::string>();
+        }
+    } else {
+         app_config.error_log_path = exe_path / "error.log";
+    }
+
+    // 2. Converter / Pipeline Settings
+    if (j.contains("converter")) {
+        const auto& proc = j.at("converter");
+        // [修复] 更新为 pipeline.interval_processor_config_path
+        app_config.pipeline.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
+        
+        // 如果 config.json 中有初始父节点映射，也需要在此处加载到 app_config.pipeline.initial_top_parents
+        // (假设你的 ConfigLoader 有这部分逻辑，如果没有可忽略)
+    } else {
+        throw std::runtime_error("Missing 'converter' configuration block."); 
+    }
+
+    // 3. Reports Settings
+    if (j.contains("reports")) {
+        const auto& reports = j.at("reports");
+        
+        auto load_report_paths = [&](const std::string& key, fs::path& day, fs::path& month, fs::path& period) {
+            if (reports.contains(key)) {
+                const auto& section = reports.at(key);
+                day = config_dir_path / section.at("day").get<std::string>();
+                month = config_dir_path / section.at("month").get<std::string>();
+                period = config_dir_path / section.at("period").get<std::string>();
             }
-        } else {
-             throw std::runtime_error("Missing 'system' configuration block.");
-        }
+        };
 
-        if (j.contains("converter")) { 
-            const auto& proc = j.at("converter");
-                app_config.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
-        } else {
-            throw std::runtime_error("Missing 'converter' configuration block."); 
-        }
+        // [修复] 更新为 reports.xxx_config_path
+        load_report_paths("typst", 
+            app_config.reports.day_typ_config_path, 
+            app_config.reports.month_typ_config_path, 
+            app_config.reports.period_typ_config_path
+        );
+        
+        load_report_paths("latex", 
+            app_config.reports.day_tex_config_path, 
+            app_config.reports.month_tex_config_path, 
+            app_config.reports.period_tex_config_path
+        );
+        
+        load_report_paths("markdown", 
+            app_config.reports.day_md_config_path, 
+            app_config.reports.month_md_config_path, 
+            app_config.reports.period_md_config_path
+        );
 
-        if (j.contains("reports")) {
-            const auto& reports = j.at("reports");
-            
-            auto load_report_paths = [&](const std::string& key, fs::path& day, fs::path& month, fs::path& period) {
-                if (reports.contains(key)) {
-                    const auto& section = reports.at(key);
-                    day = config_dir_path / section.at("day").get<std::string>();
-                    month = config_dir_path / section.at("month").get<std::string>();
-                    period = config_dir_path / section.at("period").get<std::string>();
-                }
-            };
-
-            load_report_paths("typst", app_config.day_typ_config_path, app_config.month_typ_config_path, app_config.period_typ_config_path);
-            load_report_paths("latex", app_config.day_tex_config_path, app_config.month_tex_config_path, app_config.period_tex_config_path);
-            load_report_paths("markdown", app_config.day_md_config_path, app_config.month_md_config_path, app_config.period_md_config_path);
-
-        } else {
-            throw std::runtime_error("Missing 'reports' configuration block.");
-        }
-
-    } catch (const nlohmann::json::exception& e) {
-        throw std::runtime_error("Configuration structure error: " + std::string(e.what()));
+    } else {
+        throw std::runtime_error("Missing 'reports' configuration block.");
     }
 
     return app_config;

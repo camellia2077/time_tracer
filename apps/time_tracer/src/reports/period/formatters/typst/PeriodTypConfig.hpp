@@ -5,13 +5,14 @@
 #include "reports/period/common/PeriodBaseConfig.hpp"
 #include "reports/shared/config/TypstStyleConfig.hpp"
 #include <string>
-#include <filesystem>
+#include <nlohmann/json.hpp>
 
 class PeriodTypConfig : public PeriodBaseConfig {
 public:
-    explicit PeriodTypConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit PeriodTypConfig(const nlohmann::json& config);
 
-    // --- 代理 ---
+    // 代理
     const std::string& get_base_font() const { return style_.get_base_font(); }
     const std::string& get_title_font() const { return style_.get_title_font(); }
     const std::string& get_category_title_font() const { return style_.get_category_title_font(); }
@@ -20,7 +21,6 @@ public:
     int get_category_title_font_size() const { return style_.get_category_title_font_size(); }
     double get_line_spacing_em() const { return style_.get_line_spacing_em(); }
 
-    // --- 特有的边距 ---
     double get_margin_top_cm() const;
     double get_margin_bottom_cm() const;
     double get_margin_left_cm() const;

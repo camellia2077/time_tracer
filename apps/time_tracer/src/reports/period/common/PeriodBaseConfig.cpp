@@ -2,13 +2,14 @@
 #include "PeriodBaseConfig.hpp"
 #include <stdexcept>
 
-PeriodBaseConfig::PeriodBaseConfig(const std::filesystem::path& config_path) {
-    config_json_ = load_json_config(config_path, "Could not open Period report config file: ");
+// [修改] 接收 JSON
+PeriodBaseConfig::PeriodBaseConfig(const nlohmann::json& config) 
+    : config_json_(config)
+{
     load_base_config();
 }
 
 void PeriodBaseConfig::load_base_config() {
-    // 加载逻辑保持不变
     report_title_prefix_ = config_json_.value("report_title_prefix", "Report for last");
     report_title_days_ = config_json_.value("report_title_days", "days");
     report_title_date_separator_ = config_json_.value("report_title_date_separator", "-");
@@ -21,7 +22,6 @@ void PeriodBaseConfig::load_base_config() {
     project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
 }
 
-// Getters 实现保持不变
 const std::string& PeriodBaseConfig::get_report_title_prefix() const { return report_title_prefix_; }
 const std::string& PeriodBaseConfig::get_report_title_days() const { return report_title_days_; }
 const std::string& PeriodBaseConfig::get_report_title_date_separator() const { return report_title_date_separator_; }
