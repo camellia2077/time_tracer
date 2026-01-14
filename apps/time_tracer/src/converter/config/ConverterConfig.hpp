@@ -1,13 +1,12 @@
 ﻿// converter/config/ConverterConfig.hpp
-
 #ifndef CONVERTER_CONFIG_HPP
 #define CONVERTER_CONFIG_HPP
 
 #include <string>
 #include <vector>
 #include <unordered_map>
-#include <nlohmann/json.hpp> 
 
+// 保持 DurationRule 结构定义
 struct DurationRule {
     int less_than_minutes;
     std::string value;
@@ -15,12 +14,10 @@ struct DurationRule {
 
 class ConverterConfig {
 public:
-    /**
-     * @brief 从 JSON 对象加载配置。
-     * @details 调用者负责将主配置和子配置（如 mappings）合并到一个 JSON 对象中传入。
-     */
-    bool load(const nlohmann::json& config_json);
+    // [架构优化] 移除 load 方法和 json 依赖
+    // bool load(const nlohmann::json& config_json); <--- 已移除
 
+    // Getters (保持不变)
     const std::string& getRemarkPrefix() const;
     const std::vector<std::string>& getHeaderOrder() const;
     const std::unordered_map<std::string, std::string>& getTextMapping() const;
@@ -29,9 +26,17 @@ public:
     const std::vector<std::string>& getWakeKeywords() const;
     const std::unordered_map<std::string, std::string>& getTopParentMapping() const;
 
-    // [修复] 新增公有成员，允许 Core 层注入外部定义的初始父节点映射
-    // 使用 string 作为键值，因为 JSON 配置也是基于字符串的
+    // Public member (保持不变)
     std::unordered_map<std::string, std::string> initial_top_parents;
+
+    // [新增] Setters (供 Loader 使用)
+    void setRemarkPrefix(const std::string& prefix);
+    void setHeaderOrder(const std::vector<std::string>& order);
+    void setTextMapping(const std::unordered_map<std::string, std::string>& mapping);
+    void setTextDurationMapping(const std::unordered_map<std::string, std::string>& mapping);
+    void setDurationMappings(const std::unordered_map<std::string, std::vector<DurationRule>>& mappings);
+    void setWakeKeywords(const std::vector<std::string>& keywords);
+    void setTopParentMapping(const std::unordered_map<std::string, std::string>& mapping);
 
 private:
     std::string remark_prefix_;

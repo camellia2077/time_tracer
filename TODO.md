@@ -9,38 +9,8 @@ md中写一下当前程序的设计思路，比如core只设计业务逻辑的�
 自定义标题的输出顺序
 reports文件夹中json自定义格式化输出的标题，输出为true ,不输出为false
 
-4 看一下每个活动的解析，存储，以及数据库中的数据结构有没有可以优化的地方
-    gemini对话"递归转迭代优化项目树格式化"
-    
 5 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
 gemini "CMake 自动编译日期实现"
-
-6
-看看cli的输入以及实现是否符合变成规范
-
-
-
-中优先级
--4
-因为现在blink或者run-pipeline程序会把json存储到内存中
-但是python还是一步一步的测试，你需要给python加入一个blink模式
-用toml来选择如何开启测试
--3
-anction_handler命名修改为core
-
--1
-import的时候要检查是否为所需的 json文件，以免用户import了txt文件
-
-0
-支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
-这个功能应该只在全流程命令下实现？
-
-1 写文档，mapping_config.json只支持替换同义词。
-interval_processor_config.json不要和mapping_config.json搞混了。
-写文档，说明怎么用
-
-2
-如何把检验dll这些的结果，用符合编程规范的方式输出，以便以后编写gui的时候也能后台看见
 检验dll是否缺失的环节，是否可以默认不打印，出问题才打印？
 例如这些内容
 正在初始化文件控制器...
@@ -65,23 +35,14 @@ interval_processor_config.json不要和mapping_config.json搞混了。
 [Validator] -- Found required plugin: reports_shared
 [Validator] All required plugins were found.
 
-3 
-根据你提供的代码逻辑，目前的程序设计不支持通过一个命令一次性导出多种格式（例如同时导出 typ 和 md）。
-比如日查询的时候。
 
+中优先级
+-1
+import的时候要检查是否为所需的 json文件，以免用户import了txt文件
 
-4
-修改，检查每个月时间是否连续，完整的功能放到json配置中，
-同时支持命令行来修改，每个月时间是否连续，让全流程支持是否启动日期连续性检查
-命令行优先级＞json配置
-
-5
-命令行增加是否生成中间数据json文件，json配置中增加这个功能
-这个功能是是否把txt转换为json后，把json存储到本地
-
-6
-gemini "项目目录与json配置改进建议"
-
+0
+支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
+这个功能应该只在全流程命令下实现？
 
 7
 使用字体的时候注意，可变字体必须是当前字体支持的语言

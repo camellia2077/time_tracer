@@ -128,6 +128,7 @@ set(CONVERTER_SOURCES
 
     # --- 配置模块 (Config) [Moved] ---
     "src/converter/config/ConverterConfig.cpp"
+    "src/converter/config/JsonConverterConfigLoader.cpp"
 
     # --- 转换模块 (Convert) ---
     # Facade
@@ -168,6 +169,13 @@ set(IO_SOURCES
 
 set(CONFIG_SOURCES
     "src/config/ConfigLoader.cpp"
+
+    "src/config/internal/ConfigParserUtils.cpp"
+    
+    "src/config/loader/JsonLoaderUtils.cpp"
+    "src/config/loader/ReportConfigLoader.cpp"
+
+
     # 顶层外观
     "src/config/validator/facade/ConfigFacade.cpp"
 
@@ -208,6 +216,9 @@ set(CORE_SOURCES
     "src/core/file/steps/SourceValidatorStep.cpp"
     "src/core/file/steps/ConverterStep.cpp"
     "src/core/file/steps/OutputValidatorStep.cpp"
+
+    "src/core/file/utils/ConverterConfigFactory.cpp"
+    "src/core/file/utils/ProcessedDataWriter.cpp"
 
     "src/core/reporting/Exporter.cpp"
     "src/core/reporting/ExportUtils.cpp"
