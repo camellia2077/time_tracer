@@ -1,8 +1,9 @@
 // reports/services/MonthlyReportService.cpp
 #include "MonthlyReportService.hpp"
-#include "reports/monthly/queriers/BatchMonthDataFetcher.hpp" // [新增]
+#include "reports/monthly/queriers/BatchMonthDataFetcher.hpp"
 #include "reports/shared/factories/GenericFormatterFactory.hpp"
 #include "reports/shared/utils/tree/ProjectTreeBuilder.hpp"
+#include "reports/shared/cache/ProjectNameCache.hpp" // [新增]
 #include <stdexcept>
 
 // 辅助函数保持不变
@@ -29,8 +30,11 @@ MonthlyReportService::MonthlyReportService(sqlite3* db, const AppConfig& config)
 FormattedMonthlyReports MonthlyReportService::generate_reports(ReportFormat format) {
     FormattedMonthlyReports reports;
 
-    // 1. 委托 Fetcher 获取所有数据 (核心解耦)
-    //    这里不再包含 SQL 代码
+    // [新增] 准备项目名称缓存
+    auto& name_cache = ProjectNameCache::instance();
+    name_cache.ensure_loaded(db_);
+
+    // 1. 委托 Fetcher 获取所有数据
     BatchMonthDataFetcher fetcher(db_);
     auto all_months_data = fetcher.fetch_all_data();
 
@@ -40,9 +44,9 @@ FormattedMonthlyReports MonthlyReportService::generate_reports(ReportFormat form
     // 3. 遍历并格式化
     for (auto& [ym, data] : all_months_data) {
         if (data.total_duration > 0) {
-            // 3.1 构建项目树 (纯内存操作，依赖缓存)
-            // 注意: data.project_stats 已经在 Fetcher 里填充好了
-            build_project_tree_from_ids(data.project_tree, data.project_stats, db_);
+            // 3.1 构建项目树
+            // [修改] 传入 name_cache 替代 db_
+            build_project_tree_from_ids(data.project_tree, data.project_stats, name_cache);
             
             // 3.2 格式化
             std::string formatted_report = formatter->format_report(data);

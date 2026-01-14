@@ -8,21 +8,23 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include "reports/shared/interfaces/IProjectInfoProvider.hpp" // [新增]
 
 struct ProjectInfo {
     std::string name;
     long long parent_id;
 };
 
-class ProjectNameCache {
+// [修改] 继承 IProjectInfoProvider
+class ProjectNameCache : public IProjectInfoProvider {
 public:
     static ProjectNameCache& instance() {
         static ProjectNameCache instance;
         return instance;
     }
 
-    // 确保缓存已加载 (懒加载模式)
-    void ensure_loaded(sqlite3* db) {
+    // [修改] 添加 override 关键字
+    void ensure_loaded(sqlite3* db) override {
         if (loaded_) return;
         
         const char* sql = "SELECT id, name, parent_id FROM projects";
@@ -45,11 +47,10 @@ public:
         loaded_ = true;
     }
 
-    // 从 ID 获取完整的路径部分 ["study", "code", "cpp"]
-    std::vector<std::string> get_path_parts(long long project_id) const {
+    // [修改] 添加 override 关键字
+    std::vector<std::string> get_path_parts(long long project_id) const override {
         std::vector<std::string> parts;
         long long curr = project_id;
-        // 防止死循环 (curr != 0) 且 ID 必须存在
         while (curr != 0 && cache_.count(curr)) {
             const auto& info = cache_.at(curr);
             parts.push_back(info.name);

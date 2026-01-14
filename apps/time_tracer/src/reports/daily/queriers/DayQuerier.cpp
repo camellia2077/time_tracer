@@ -1,23 +1,26 @@
 ﻿// reports/daily/queriers/DayQuerier.cpp
 #include "DayQuerier.hpp"
 #include "reports/shared/utils/tree/ProjectTreeBuilder.hpp"
+#include "reports/shared/cache/ProjectNameCache.hpp" // [新增]
 #include <stdexcept>
 
 DayQuerier::DayQuerier(sqlite3* db, const std::string& date)
     : BaseQuerier(db, date) {}
 
 DailyReportData DayQuerier::fetch_data() {
-    DailyReportData data = BaseQuerier::fetch_data(); // 这里 BaseQuerier 已经填充了 data.project_stats
+    DailyReportData data = BaseQuerier::fetch_data(); // BaseQuerier 填充 data.project_stats
     _fetch_metadata(data);
 
     if (data.total_duration > 0) {
         _fetch_detailed_records(data);
         _fetch_generated_stats(data);
         
-        // [核心修改] 改为从 ID 构建树
-        // 原来是: build_project_tree_from_records(data.project_tree, data.records);
-        // data.records 现在是空的(因为BaseQuerier改了)，必须用 project_stats
-        build_project_tree_from_ids(data.project_tree, data.project_stats, db_);
+        // [新增] 获取并确保缓存加载
+        auto& name_cache = ProjectNameCache::instance();
+        name_cache.ensure_loaded(db_);
+
+        // [核心修改] 传入 name_cache 替代 db_
+        build_project_tree_from_ids(data.project_tree, data.project_stats, name_cache);
     }
     return data;
 }
@@ -27,7 +30,6 @@ void DayQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const { sqlite3_bind_te
 void DayQuerier::_prepare_data(DailyReportData& data) const { data.date = this->param_; }
 
 void DayQuerier::_fetch_metadata(DailyReportData& data) {
-    // ... 保持不变 ...
     sqlite3_stmt* stmt;
     std::string sql = "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date = ?;";
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
@@ -46,7 +48,6 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
 }
 
 void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
-    // ... 保持不变 ...
     sqlite3_stmt* stmt;
     std::string sql = R"(
         WITH RECURSIVE project_paths(id, path) AS (
@@ -81,7 +82,6 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
 }
 
 void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
-    // ... 保持不变 ...
     sqlite3_stmt* stmt;
     std::string sql = "SELECT "
                       "sleep_total_time, "

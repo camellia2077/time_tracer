@@ -13,28 +13,55 @@
 #include "reports/services/MonthlyReportService.hpp"
 #include "reports/services/PeriodReportService.hpp"
 
+// [新增] 引入工厂头文件以便进行注册
+#include "reports/shared/factories/GenericFormatterFactory.hpp"
+
+// [新增] 静态注册逻辑
+// 使用匿名命名空间和立即执行的 lambda 来确保只注册一次
+namespace {
+    bool register_formatters() {
+        // --- 注册日报格式 (DailyReportData) ---
+        using DayFactory = GenericFormatterFactory<DailyReportData>;
+        DayFactory::register_dll_formatter(ReportFormat::Markdown, "DayMdFormatter");
+        DayFactory::register_dll_formatter(ReportFormat::Typ,      "DayTypFormatter");
+        DayFactory::register_dll_formatter(ReportFormat::LaTeX,    "DayTexFormatter");
+
+        // --- 注册月报格式 (MonthlyReportData) ---
+        using MonthFactory = GenericFormatterFactory<MonthlyReportData>;
+        MonthFactory::register_dll_formatter(ReportFormat::Markdown, "MonthMdFormatter");
+        MonthFactory::register_dll_formatter(ReportFormat::Typ,      "MonthTypFormatter");
+        MonthFactory::register_dll_formatter(ReportFormat::LaTeX,    "MonthTexFormatter");
+
+        // --- 注册周期报告格式 (PeriodReportData) ---
+        using PeriodFactory = GenericFormatterFactory<PeriodReportData>;
+        PeriodFactory::register_dll_formatter(ReportFormat::Markdown, "PeriodMdFormatter");
+        PeriodFactory::register_dll_formatter(ReportFormat::LaTeX,    "PeriodTexFormatter");
+        PeriodFactory::register_dll_formatter(ReportFormat::Typ,      "PeriodTypFormatter");
+
+        return true;
+    }
+
+    // 静态变量初始化会触发上面的函数执行
+    bool is_registered = register_formatters();
+}
+
 ReportService::ReportService(sqlite3* db, const AppConfig& config)
     : db_(db), app_config_(config) {}
 
 std::string ReportService::run_daily_query(const std::string& date, ReportFormat format) const {
-    // [核心修改] 直接使用 BaseGenerator
     BaseGenerator<DailyReportData, DayQuerier, const std::string&> generator(db_, app_config_);
     return generator.generate_report(date, format);
 }
 
 std::string ReportService::run_monthly_query(const std::string& month, ReportFormat format) const {
-    // [核心修改] 直接使用 BaseGenerator
     BaseGenerator<MonthlyReportData, MonthQuerier, const std::string&> generator(db_, app_config_);
     return generator.generate_report(month, format);
 }
 
 std::string ReportService::run_period_query(int days, ReportFormat format) const {
-    // [核心修改] 直接使用 BaseGenerator
     BaseGenerator<PeriodReportData, PeriodQuerier, int> generator(db_, app_config_);
     return generator.generate_report(days, format);
 }
-
-// --- 批量导出的部分保持不变 ---
 
 FormattedGroupedReports ReportService::run_export_all_daily_reports_query(ReportFormat format) const {
     DailyReportService generator(db_, app_config_);

@@ -1,23 +1,25 @@
 ﻿// reports/period/queriers/PeriodQuerier.cpp
 #include "PeriodQuerier.hpp"
-#include "reports/shared/utils/format/TimeFormat.hpp"      // [修改] 引用了功能更匹配的头文件
+#include "reports/shared/utils/format/TimeFormat.hpp"
 #include "reports/shared/utils/tree/ProjectTreeBuilder.hpp" 
+#include "reports/shared/cache/ProjectNameCache.hpp" // [新增]
 #include <iomanip>
 
 PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
     : BaseQuerier(db, days_to_query) {}
 
 PeriodReportData PeriodQuerier::fetch_data() {
-    // 调用基类实现获取 records 和 total_duration
     PeriodReportData data = BaseQuerier::fetch_data();
 
-    // 调用此查询器特有的方法
     _fetch_actual_days(data);
 
-    // [核心修正] 在数据获取阶段构建项目树
-    // 如果有记录，就从 records 中构建 project_tree
     if (data.total_duration > 0) {
-        build_project_tree_from_ids(data.project_tree, data.project_stats, db_);
+        // [新增] 获取并确保缓存加载
+        auto& name_cache = ProjectNameCache::instance();
+        name_cache.ensure_loaded(db_);
+
+        // [核心修改] 传入 name_cache 替代 db_
+        build_project_tree_from_ids(data.project_tree, data.project_stats, name_cache);
     }
 
     return data;

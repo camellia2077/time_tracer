@@ -8,26 +8,25 @@
 #include <string>
 #include <tuple>
 #include "reports/shared/model/DailyReportData.hpp"
+#include "reports/shared/interfaces/IProjectInfoProvider.hpp" // [新增]
 
-// 定义返回的数据包，包含映射表和顺序
+// 结构体定义保持不变 ...
 struct BatchDataResult {
-    // Date -> Data
     std::map<std::string, DailyReportData> data_map;
-    // 保持原始日期的顺序 <Date, Year, Month>
     std::vector<std::tuple<std::string, int, int>> date_order;
 };
 
 class BatchDayDataFetcher {
 public:
-    explicit BatchDayDataFetcher(sqlite3* db);
+    // [修改] 构造函数注入 provider
+    explicit BatchDayDataFetcher(sqlite3* db, IProjectInfoProvider& provider);
     
-    // 执行批量查询，返回组装好的数据对象
     BatchDataResult fetch_all_data();
 
 private:
     sqlite3* db_;
+    IProjectInfoProvider& provider_; // [新增] 引用成员
 
-    // 内部辅助方法
     void fetch_days_metadata(BatchDataResult& result);
     void fetch_time_records(BatchDataResult& result);
 };
