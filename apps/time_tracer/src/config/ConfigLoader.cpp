@@ -8,7 +8,40 @@
 #include "io/core/FileReader.hpp"
 #include "io/core/FileSystemHelper.hpp"
 
+// 引入加载器和解析工具
+#include "config/loader/ReportConfigLoader.hpp"
+#include "config/internal/ConfigParserUtils.hpp"
+
 namespace fs = std::filesystem;
+
+namespace {
+    // 内部辅助函数：根据路径加载具体的报表配置内容
+    void load_detailed_reports(AppConfig& config) {
+        // --- Typst ---
+        if (!config.reports.day_typ_config_path.empty())
+            config.loaded_reports.typst.day = ReportConfigLoader::loadDailyTypConfig(config.reports.day_typ_config_path);
+        if (!config.reports.month_typ_config_path.empty())
+            config.loaded_reports.typst.month = ReportConfigLoader::loadMonthlyTypConfig(config.reports.month_typ_config_path);
+        if (!config.reports.period_typ_config_path.empty())
+            config.loaded_reports.typst.period = ReportConfigLoader::loadPeriodTypConfig(config.reports.period_typ_config_path);
+
+        // --- LaTeX ---
+        if (!config.reports.day_tex_config_path.empty())
+            config.loaded_reports.latex.day = ReportConfigLoader::loadDailyTexConfig(config.reports.day_tex_config_path);
+        if (!config.reports.month_tex_config_path.empty())
+            config.loaded_reports.latex.month = ReportConfigLoader::loadMonthlyTexConfig(config.reports.month_tex_config_path);
+        if (!config.reports.period_tex_config_path.empty())
+            config.loaded_reports.latex.period = ReportConfigLoader::loadPeriodTexConfig(config.reports.period_tex_config_path);
+
+        // --- Markdown ---
+        if (!config.reports.day_md_config_path.empty())
+            config.loaded_reports.markdown.day = ReportConfigLoader::loadDailyMdConfig(config.reports.day_md_config_path);
+        if (!config.reports.month_md_config_path.empty())
+            config.loaded_reports.markdown.month = ReportConfigLoader::loadMonthlyMdConfig(config.reports.month_md_config_path);
+        if (!config.reports.period_md_config_path.empty())
+            config.loaded_reports.markdown.period = ReportConfigLoader::loadPeriodMdConfig(config.reports.period_md_config_path);
+    }
+}
 
 ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
     try {
@@ -26,109 +59,34 @@ std::string ConfigLoader::get_main_config_path() const {
 }
 
 AppConfig ConfigLoader::load_configuration() {
-    // 使用 FileSystemHelper 检查文件存在性
+    // 1. 检查文件
     if (!FileSystemHelper::exists(main_config_path)) {
         throw std::runtime_error("Configuration file not found: " + main_config_path.string());
     }
 
-    // 使用 FileReader 读取文件内容
-    std::string config_content;
-    try {
-        config_content = FileReader::read_content(main_config_path);
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Could not read configuration file: " + std::string(e.what()));
-    }
-
+    // 2. 读取并解析 JSON
     nlohmann::json j;
     try {
+        std::string config_content = FileReader::read_content(main_config_path);
         j = nlohmann::json::parse(config_content);
-    } catch (const nlohmann::json::parse_error& e) {
-        throw std::runtime_error("JSON parsing error in config.json: " + std::string(e.what()));
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to read/parse config.json: " + std::string(e.what()));
     }
 
     AppConfig app_config;
     app_config.exe_dir_path = exe_path;
 
-    // 1. General/System Settings
-    // 优先读取 "system" 节点 (匹配 config.json)，兼容旧的 "general"
-    const nlohmann::json* sys_node = nullptr;
-    if (j.contains("system")) {
-        sys_node = &j["system"];
-    } else if (j.contains("general")) {
-        sys_node = &j["general"];
-    }
+    // 3. 解析基础结构 (System, Pipeline, Paths)
+    // 委托给 ConfigParserUtils
+    ConfigParserUtils::parse_system_settings(j, exe_path, app_config);
+    ConfigParserUtils::parse_pipeline_settings(j, config_dir_path, app_config);
+    ConfigParserUtils::parse_report_paths(j, config_dir_path, app_config);
 
-    if (sys_node) {
-        if (sys_node->contains("error_log")) {
-            app_config.error_log_path = exe_path / sys_node->at("error_log").get<std::string>();
-        } else {
-            app_config.error_log_path = exe_path / "error.log";
-        }
-        
-        // 兼容 export_root (config.json) 和 export_path (代码旧称)
-        if (sys_node->contains("export_root")) {
-             app_config.export_path = sys_node->at("export_root").get<std::string>();
-        } else if (sys_node->contains("export_path")) {
-             app_config.export_path = sys_node->at("export_path").get<std::string>();
-        }
-
-        // 读取 save_processed_output 配置
-        if (sys_node->contains("save_processed_output")) {
-            app_config.default_save_processed_output = sys_node->at("save_processed_output").get<bool>();
-        }
-
-    } else {
-         app_config.error_log_path = exe_path / "error.log";
-    }
-
-    // 2. Converter / Pipeline Settings
-    if (j.contains("converter")) {
-        const auto& proc = j.at("converter");
-        app_config.pipeline.interval_processor_config_path = config_dir_path / proc.at("interval_config").get<std::string>();
-        
-        // 加载 initial_top_parents (如果有)
-        if (proc.contains("initial_top_parents")) {
-            for (const auto& [key, val] : proc["initial_top_parents"].items()) {
-                app_config.pipeline.initial_top_parents[fs::path(key)] = fs::path(val.get<std::string>());
-            }
-        }
-    } else {
-        throw std::runtime_error("Missing 'converter' configuration block."); 
-    }
-
-    // 3. Reports Settings
-    if (j.contains("reports")) {
-        const auto& reports = j.at("reports");
-        
-        auto load_report_paths = [&](const std::string& key, fs::path& day, fs::path& month, fs::path& period) {
-            if (reports.contains(key)) {
-                const auto& section = reports.at(key);
-                day = config_dir_path / section.at("day").get<std::string>();
-                month = config_dir_path / section.at("month").get<std::string>();
-                period = config_dir_path / section.at("period").get<std::string>();
-            }
-        };
-
-        load_report_paths("typst", 
-            app_config.reports.day_typ_config_path, 
-            app_config.reports.month_typ_config_path, 
-            app_config.reports.period_typ_config_path
-        );
-        
-        load_report_paths("latex", 
-            app_config.reports.day_tex_config_path, 
-            app_config.reports.month_tex_config_path, 
-            app_config.reports.period_tex_config_path
-        );
-        
-        load_report_paths("markdown", 
-            app_config.reports.day_md_config_path, 
-            app_config.reports.month_md_config_path, 
-            app_config.reports.period_md_config_path
-        );
-
-    } else {
-        throw std::runtime_error("Missing 'reports' configuration block.");
+    // 4. 加载报表详情 (Structs)
+    try {
+        load_detailed_reports(app_config);
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to load report configuration details: " + std::string(e.what()));
     }
 
     return app_config;
