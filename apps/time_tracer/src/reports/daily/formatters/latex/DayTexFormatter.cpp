@@ -1,61 +1,47 @@
 ﻿// reports/daily/formatters/latex/DayTexFormatter.cpp
 #include "DayTexFormatter.hpp"
 #include "DayTexUtils.hpp"
-#include "reports/shared/formatters/latex/TexUtils.hpp"
-#include "reports/shared/factories/GenericFormatterFactory.hpp"
-#include "reports/daily/formatters/latex/DayTexConfig.hpp"
-#include "reports/shared/model/DailyReportData.hpp"
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/LatexStrategy.hpp"
 #include "common/AppConfig.hpp" 
-#include <sstream>
 #include <memory>
 
+DayTexFormatter::DayTexFormatter(std::shared_ptr<DayTexConfig> config) 
+    : BaseTexFormatter(config) {}
 
-DayTexFormatter::DayTexFormatter(std::shared_ptr<DayTexConfig> config) : config_(config) {}
-
-std::string DayTexFormatter::format_report(const DailyReportData& data) const {
-    std::stringstream ss;
-    ss << TexUtils::get_tex_preamble(
-        config_->get_main_font(),
-        config_->get_cjk_main_font(),
-        config_->get_base_font_size(),
-        config_->get_margin_in(),
-        config_->get_keyword_colors()
-    );
-
-    DayTexUtils::display_header(ss, data, config_);
-
-    if (data.total_duration == 0) {
-        ss << config_->get_no_records() << "\n";
-    } else {
-        auto strategy = std::make_unique<LatexStrategy>(config_);
-        StatFormatter stats_formatter(std::move(strategy));
-        ss << stats_formatter.format(data, config_);
-        
-        DayTexUtils::display_detailed_activities(ss, data, config_);
-        
-        // [新增] 添加 Project Breakdown 统领性标题
-        int title_size = config_->get_category_title_font_size();
-        ss << "{";
-        ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2 << "}\\selectfont";
-        ss << "\\section*{" << TexUtils::escape_latex(config_->get_project_breakdown_label()) << "}";
-        ss << "}\n\n";
-
-        ss << TexUtils::format_project_tree(
-            data.project_tree,
-            data.total_duration,
-            1, // 日报的 avg_days 总是 1
-            config_->get_category_title_font_size(),
-            config_->get_list_top_sep_pt(),
-            config_->get_list_item_sep_ex()
-        );
-    }
-
-    ss << TexUtils::get_tex_postfix();
-    return ss.str();
+bool DayTexFormatter::is_empty_data(const DailyReportData& data) const {
+    return data.total_duration == 0;
 }
 
+// [修改] 注释掉未使用参数
+int DayTexFormatter::get_avg_days(const DailyReportData& /*data*/) const {
+    return 1;
+}
+
+// [新增] 实现适配
+std::string DayTexFormatter::get_no_records_msg() const {
+    return config_->get_no_records(); // DayConfig 只有 get_no_records
+}
+
+std::map<std::string, std::string> DayTexFormatter::get_keyword_colors() const {
+    return config_->get_keyword_colors();
+}
+
+void DayTexFormatter::format_header_content(std::stringstream& ss, const DailyReportData& data) const {
+    DayTexUtils::display_header(ss, data, config_);
+}
+
+void DayTexFormatter::format_extra_content(std::stringstream& ss, const DailyReportData& data) const {
+    // 1. 统计信息
+    auto strategy = std::make_unique<LatexStrategy>(config_);
+    StatFormatter stats_formatter(std::move(strategy));
+    ss << stats_formatter.format(data, config_);
+    
+    // 2. 详细活动记录
+    DayTexUtils::display_detailed_activities(ss, data, config_);
+}
+
+// DLL 导出部分保持不变
 extern "C" {
     __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
         auto tex_config = std::make_shared<DayTexConfig>(cfg.day_tex_config_path);

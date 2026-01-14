@@ -22,14 +22,17 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/utils/format/ReportStringUtils.cpp"
     "src/reports/shared/utils/format/TimeFormat.cpp"
     "src/reports/shared/formatters/base/ProjectTreeFormatter.cpp"
-    
-    # [修复] 添加缺失的格式化器实现
+
+    "src/reports/shared/config/TexStyleConfig.cpp"
+    "src/reports/shared/config/TypstStyleConfig.cpp"
+
     "src/reports/shared/formatters/markdown/MarkdownFormatter.cpp" 
     "src/reports/shared/formatters/typst/TypUtils.cpp"
     "src/reports/shared/formatters/latex/TexUtils.cpp"
+    "src/reports/shared/formatters/latex/TexCommonUtils.cpp"
 
-    "src/reports/monthly/formatters/base/MonthBaseConfig.cpp"
-    "src/reports/period/formatters/base/PeriodBaseConfig.cpp" 
+    "src/reports/monthly/common/MonthBaseConfig.cpp"
+    "src/reports/period/common/PeriodBaseConfig.cpp" 
 )
 
 
@@ -101,16 +104,22 @@ set(REPORTS_SOURCES
     # Root
     "src/reports/ReportService.cpp"
     # Export
-    "src/reports/services/AllDayReports.cpp"
-    "src/reports/services/AllMonthlyReports.cpp"
-    "src/reports/services/AllPeriodReports.cpp"
+    "src/reports/services/DailyReportService.cpp"
+    "src/reports/services/MonthlyReportService.cpp"
+    "src/reports/services/PeriodReportService.cpp"
     # Daily Reports
     "src/reports/daily/queriers/DayQuerier.cpp"
+    "src/reports/daily/queriers/DayQuerier.cpp"
+    "src/reports/daily/queriers/BatchDayDataFetcher.cpp"
     # Monthly Reports
-    "src/reports/monthly/MonthQuerier.cpp"
+    "src/reports/monthly/queriers/MonthQuerier.cpp"
+    "src/reports/monthly/queriers/BatchMonthDataFetcher.cpp"
+    
     
     # Period Reports
-    "src/reports/period/PeriodQuerier.cpp"
+    "src/reports/period/queriers/PeriodQuerier.cpp"
+    "src/reports/period/queriers/BatchPeriodDataFetcher.cpp"
+
 )
 
 # --- converter Sources ---

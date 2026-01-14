@@ -13,6 +13,8 @@ function(setup_project_target TARGET_NAME)
     target_include_directories(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src")
 
     # 链接库
+    # TODO: 2026年后关注 std::format 兼容性。
+    # 目前强制链接 stdc++exp 是为了支持实验性 format，
     target_link_libraries(${TARGET_NAME} PRIVATE
         SQLite::SQLite3
         nlohmann_json::nlohmann_json
