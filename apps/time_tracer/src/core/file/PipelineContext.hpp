@@ -1,11 +1,16 @@
 ﻿// core/file/PipelineContext.hpp
+
+// core/file/PipelineContext.hpp
 #ifndef PIPELINE_CONTEXT_HPP
 #define PIPELINE_CONTEXT_HPP
 
 #include <vector>
 #include <filesystem>
 #include <map>
-#include "common/AppConfig.hpp"
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
+
 #include "converter/validator/common/ValidatorUtils.hpp"
 #include "common/model/DailyLog.hpp"
 #include "converter/config/ConverterConfig.hpp"

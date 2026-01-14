@@ -1,4 +1,6 @@
 ﻿// core/reporting/ReportGenerator.hpp
+
+// core/reporting/ReportGenerator.hpp
 #ifndef REPORT_GENERATOR_HPP
 #define REPORT_GENERATOR_HPP
 
@@ -7,7 +9,9 @@
 #include <vector>
 #include "reports/shared/model/query_data_structs.hpp"
 #include "reports/shared/types/ReportFormat.hpp"
-#include "common/AppConfig.hpp"
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 
 struct sqlite3;
 class ReportService;

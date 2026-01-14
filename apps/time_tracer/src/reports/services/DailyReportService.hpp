@@ -4,7 +4,9 @@
 
 #include "reports/shared/model/query_data_structs.hpp"
 #include "reports/shared/types/ReportFormat.hpp" 
-#include "common/AppConfig.hpp"
+
+// [修复] 更新包含路径
+#include "common/config/AppConfig.hpp"
 
 #include <sqlite3.h>
 #include <string>
