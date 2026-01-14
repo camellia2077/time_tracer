@@ -1,6 +1,8 @@
 // reports/period/queriers/BatchPeriodDataFetcher.cpp
 #include "BatchPeriodDataFetcher.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp" // 需要用到 add_days_to_date_str
+#include "reports/shared/utils/tree/ProjectTreeBuilder.hpp" // [新增] 引入树构建器
+#include "reports/shared/cache/ProjectNameCache.hpp"        // [新增] 引入名称缓存作为 Provider
 #include <algorithm>
 #include <stdexcept>
 #include <set>
@@ -23,6 +25,10 @@ std::map<int, PeriodReportData> BatchPeriodDataFetcher::fetch_all_data(const std
     std::string today_str = get_current_date_str();
     // 计算最大范围的起始日期（包含今天，所以是 max_days - 1）
     std::string max_start_date = add_days_to_date_str(today_str, -(max_days - 1));
+
+    // [新增] 确保项目名称缓存已加载 (构建树需要用到)
+    auto& name_cache = ProjectNameCache::instance();
+    name_cache.ensure_loaded(db_);
 
     // 2. 执行一次 SQL 查询，获取最大范围内的所有数据
     std::vector<RawRecord> raw_records;
@@ -75,6 +81,12 @@ std::map<int, PeriodReportData> BatchPeriodDataFetcher::fetch_all_data(const std
         data.project_stats.reserve(project_agg.size());
         for (const auto& [pid, dur] : project_agg) {
             data.project_stats.push_back({pid, dur});
+        }
+
+        // [核心修正] 构建项目树
+        // 使用 updated 后的 build_project_tree_from_ids，传入 name_cache
+        if (data.total_duration > 0) {
+            build_project_tree_from_ids(data.project_tree, data.project_stats, name_cache);
         }
     }
 
