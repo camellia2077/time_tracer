@@ -2,7 +2,6 @@
 #include "StartupValidator.hpp"
 
 #include <iostream>
-#include <fstream>
 #include <filesystem>
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -11,15 +10,21 @@
 #include "config/validator/facade/ConfigFacade.hpp"
 // 引入颜色输出
 #include "common/AnsiColors.hpp"
+// [新增] 引入 IO 模块
+#include "io/core/FileReader.hpp"
+#include "io/core/FileSystemHelper.hpp"
 
 namespace fs = std::filesystem;
 
 // --- 内部静态辅助函数：读取 JSON 文件 ---
 static bool load_json_helper(const fs::path& path, nlohmann::json& out_json) {
-    std::ifstream ifs(path);
-    if (!ifs.is_open()) return false;
+    // [修改] 使用 FileSystemHelper 检查
+    if (!FileSystemHelper::exists(path)) return false;
+    
     try {
-        ifs >> out_json;
+        // [修改] 使用 FileReader 读取
+        std::string content = FileReader::read_content(path);
+        out_json = nlohmann::json::parse(content);
         return true;
     } catch (...) {
         return false;
