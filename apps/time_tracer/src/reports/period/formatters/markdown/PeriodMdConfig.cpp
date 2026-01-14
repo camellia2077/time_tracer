@@ -1,9 +1,9 @@
 ﻿// reports/period/formatters/markdown/PeriodMdConfig.cpp
 #include "PeriodMdConfig.hpp"
 
-
-PeriodMdConfig::PeriodMdConfig(const std::filesystem::path& config_path)
-    : PeriodBaseConfig(config_path) 
+// [修改] 接收 JSON
+PeriodMdConfig::PeriodMdConfig(const nlohmann::json& config)
+    : PeriodBaseConfig(config) 
 {
     project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
 }

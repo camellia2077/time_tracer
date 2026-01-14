@@ -1,9 +1,10 @@
 ﻿// reports/daily/formatters/typst/DayTypConfig.cpp
 #include "DayTypConfig.hpp"
 
-DayTypConfig::DayTypConfig(const std::filesystem::path& config_path)
-    : DayBaseConfig(config_path),
-      style_(config_json_) // [核心修改]
+// [修改] 接收 JSON
+DayTypConfig::DayTypConfig(const nlohmann::json& config)
+    : DayBaseConfig(config),
+      style_(config)
 {
     statistic_font_size_ = config_json_.at("statistic_font_size").get<int>();
     statistic_title_font_size_ = config_json_.at("statistic_title_font_size").get<int>();

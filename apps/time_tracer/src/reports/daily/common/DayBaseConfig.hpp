@@ -7,15 +7,15 @@
 #include <map>
 #include <vector> 
 #include <nlohmann/json.hpp>
-#include "reports/shared/utils/config/ConfigUtils.hpp"
-#include <filesystem>
+// [修改] 不再依赖 ConfigUtils 进行 IO 操作
+// #include "reports/shared/utils/config/ConfigUtils.hpp"
 
 // [修改] 升级结构体以支持递归和数据库映射
 struct StatisticItemConfig {
     std::string label;
-    std::string db_column; // [新增] 对应的数据库列名
+    std::string db_column;
     bool show = true;
-    std::vector<StatisticItemConfig> sub_items; // [新增] 支持无限层级嵌套
+    std::vector<StatisticItemConfig> sub_items;
 };
 
 DISABLE_C4251_WARNING
@@ -23,10 +23,12 @@ DISABLE_C4251_WARNING
 /**
  * @class DayBaseConfig
  * @brief 日报配置的基类，封装了所有日报格式共享的配置项。
+ * * [架构变更] 此类不再负责文件读取。配置数据由外部模块读取后注入。
  */
 class REPORTS_SHARED_API DayBaseConfig {
 public:
-    explicit DayBaseConfig(const std::filesystem::path& config_path);
+    // [修改] 构造函数接收 JSON 对象
+    explicit DayBaseConfig(const nlohmann::json& config);
     virtual ~DayBaseConfig() = default;
 
     // --- 通用配置项的 Getters ---
@@ -44,10 +46,8 @@ public:
     const std::string& get_activity_remark_label() const;
     const std::string& get_activity_connector() const;
 
-    // [新增] 通用的项目统计标题 getter
     const std::string& get_project_breakdown_label() const;
     
-    // [修改] 返回类型改为 vector 以保持 JSON 数组的顺序
     const std::vector<StatisticItemConfig>& get_statistics_items() const;
 
 protected:
@@ -70,10 +70,8 @@ private:
     std::string activity_remark_label_;
     std::string activity_connector_; 
 
-    // 通用的项目统计标题变量
     std::string project_breakdown_label_;
     
-    // 存储结构改为 vector
     std::vector<StatisticItemConfig> statistics_items_;
 };
 

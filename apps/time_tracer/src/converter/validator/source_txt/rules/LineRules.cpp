@@ -1,24 +1,39 @@
 ﻿// converter/validator/source_txt/rules/LineRules.cpp
 #include "LineRules.hpp"
-// --- [核心修改] 新增头文件引用 ---
 #include "common/utils/StringUtils.hpp"
 #include <algorithm>
+#include <iostream>
 
-// [修改] 构造函数实现已更新
 LineRules::LineRules(const ConverterConfig& config) : config_(config) {
-    // 从 ConverterConfig 中提取并构建验证所需的关键字集合
+    // 1. 加载 text_mappings (例如: "失眠" -> "Sleep")
+    // 允许用户在源文件中使用 "失眠"
     const auto& text_map = config.getTextMapping();
     for(const auto& pair : text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
+    // 2. 加载 text_duration_mappings
     const auto& dur_text_map = config.getTextDurationMapping();
     for(const auto& pair : dur_text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
+    // 3. 加载 wake_keywords
     const auto& wake_vec = config.getWakeKeywords();
     wake_keywords_.insert(wake_vec.begin(), wake_vec.end());
+
+    // [核心修复] 4. 加载 topParentMapping (JSON配置中的 top_parents)
+    // 允许用户直接使用标准名称 (例如 "Sleep", "Work")
+    const auto& top_map = config.getTopParentMapping();
+    for(const auto& pair : top_map) {
+        valid_event_keywords_.insert(pair.first);
+    }
+
+    // [核心修复] 5. 加载 initial_top_parents (AppConfig 注入的)
+    // 这是 ConverterStep 动态注入的映射，必须包含
+    for(const auto& pair : config.initial_top_parents) {
+        valid_event_keywords_.insert(pair.first);
+    }
 }
 
 bool LineRules::is_year(const std::string& line) const {
@@ -33,7 +48,6 @@ bool LineRules::is_date(const std::string& line) const {
 }
 
 bool LineRules::is_remark(const std::string& line) const {
-    // [修改] 从 ConverterConfig 获取 remark_prefix
     const std::string& prefix = config_.getRemarkPrefix();
     if (prefix.empty() || line.rfind(prefix, 0) != 0) return false;
     return !trim(line.substr(prefix.length())).empty();
@@ -63,7 +77,6 @@ bool LineRules::is_valid_event_line(const std::string& line, int line_number, st
         description = trim(remaining_line.substr(0, comment_pos));
         if (description.empty()) return false;
 
-        // [修改] 使用内部构建好的关键字集合进行验证
         if (wake_keywords_.count(description) == 0 && valid_event_keywords_.count(description) == 0) {
              errors.insert({line_number, "Unrecognized activity '" + description + "'. Please check spelling or update config file.", ErrorType::UnrecognizedActivity});
         }

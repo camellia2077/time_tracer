@@ -1,9 +1,10 @@
 ﻿// reports/monthly/formatters/typst/MonthTypConfig.cpp
 #include "MonthTypConfig.hpp"
 
-MonthTypConfig::MonthTypConfig(const std::filesystem::path& config_path)
-    : MonthBaseConfig(config_path),
-      style_(config_json_)
+// [修改] 接收 JSON
+MonthTypConfig::MonthTypConfig(const nlohmann::json& config)
+    : MonthBaseConfig(config),
+      style_(config)
 {
     margin_top_cm_ = config_json_.at("margin_top_cm").get<double>();
     margin_bottom_cm_ = config_json_.at("margin_bottom_cm").get<double>();

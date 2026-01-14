@@ -4,11 +4,12 @@
 
 #include "reports/period/common/PeriodBaseConfig.hpp"
 #include <string>
-#include <filesystem>
+#include <nlohmann/json.hpp>
 
 class PeriodMdConfig : public PeriodBaseConfig {
 public:
-    explicit PeriodMdConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit PeriodMdConfig(const nlohmann::json& config);
 
     const std::string& get_project_breakdown_label() const;
 

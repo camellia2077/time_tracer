@@ -14,10 +14,11 @@
 namespace fs = std::filesystem;
 
 /**
- * @brief Pipeline 任务的静态配置 (Read-Only)
- * 初始化后不应修改
+ * @brief Pipeline 任务的运行时配置 (Runtime Config)
+ * [修复] 重命名为 PipelineRunConfig 以避免与 AppConfig.hpp 中的 PipelineConfig 冲突
+ * 包含本次运行特有的路径（如 input/output root）和全局配置的引用
  */
-struct PipelineConfig {
+struct PipelineRunConfig {
     const AppConfig& app_config;
     
     fs::path input_root;
@@ -26,7 +27,7 @@ struct PipelineConfig {
     DateCheckMode date_check_mode = DateCheckMode::None;
     bool save_processed_output = false;
 
-    PipelineConfig(const AppConfig& cfg, fs::path out) 
+    PipelineRunConfig(const AppConfig& cfg, fs::path out) 
         : app_config(cfg), output_root(std::move(out)) {}
 };
 
@@ -49,22 +50,20 @@ struct PipelineState {
 struct PipelineResult {
     // 转换后的核心业务数据
     std::map<std::string, std::vector<DailyLog>> processed_data;
-
-    bool has_data() const {
-        return !processed_data.empty();
-    }
 };
 
 /**
- * @brief Pipeline 上下文容器
- * 聚合配置、状态和结果，作为 Step 间传递信息的载体
+ * @brief Pipeline 上下文
+ * 贯穿整个处理流程，持有配置、状态和结果
  */
-struct PipelineContext {
-    PipelineConfig config;
+class PipelineContext {
+public:
+    // [修复] 类型更新为 PipelineRunConfig
+    PipelineRunConfig config;
     PipelineState state;
     PipelineResult result;
-    
-    explicit PipelineContext(const AppConfig& cfg, const fs::path& out_root) 
+
+    PipelineContext(const AppConfig& cfg, const fs::path& out_root)
         : config(cfg, out_root) {}
 };
 

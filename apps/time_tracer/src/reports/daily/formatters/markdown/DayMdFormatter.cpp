@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <format>
 #include <memory>
+#include <nlohmann/json.hpp> // [新增]
 
 #include "reports/shared/utils/format/BoolToString.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
@@ -10,7 +11,8 @@
 
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/MarkdownStatStrategy.hpp"
-#include "common/AppConfig.hpp"
+// [修改] 不需要 AppConfig 
+// #include "common/AppConfig.hpp"
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config) 
     : BaseMdFormatter(config) {}
@@ -19,7 +21,6 @@ bool DayMdFormatter::is_empty_data(const DailyReportData& data) const {
     return data.total_duration == 0;
 }
 
-// [修改] 注释掉未使用的参数 data
 int DayMdFormatter::get_avg_days(const DailyReportData& /*data*/) const {
     return 1;
 }
@@ -42,12 +43,9 @@ void DayMdFormatter::format_header_content(std::stringstream& ss, const DailyRep
 }
 
 void DayMdFormatter::format_extra_content(std::stringstream& ss, const DailyReportData& data) const {
-    // 1. 统计信息
     auto strategy = std::make_unique<MarkdownStatStrategy>();
     StatFormatter stats_formatter(std::move(strategy));
     ss << stats_formatter.format(data, config_);
-
-    // 2. 详细活动记录
     _display_detailed_activities(ss, data);
 }
 
@@ -70,12 +68,17 @@ void DayMdFormatter::_display_detailed_activities(std::stringstream& ss, const D
     }
 }
 
-// DLL 导出部分保持不变
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        auto md_config = std::make_shared<DayMdConfig>(cfg.day_md_config_path);
-        auto formatter = new DayMdFormatter(md_config);
-        return static_cast<FormatterHandle>(formatter);
+    // [核心修改] 接收 config_json 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+        try {
+            auto json_obj = nlohmann::json::parse(config_json);
+            auto md_config = std::make_shared<DayMdConfig>(json_obj);
+            auto formatter = new DayMdFormatter(md_config);
+            return static_cast<FormatterHandle>(formatter);
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {

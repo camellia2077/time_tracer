@@ -1,8 +1,9 @@
 ﻿// reports/monthly/formatters/latex/MonthTexConfig.cpp
 #include "MonthTexConfig.hpp"
 
-MonthTexConfig::MonthTexConfig(const std::filesystem::path& config_path)
-    : MonthBaseConfig(config_path),
-      style_(config_json_) // [核心修改]
+// [修改] 接收 JSON
+MonthTexConfig::MonthTexConfig(const nlohmann::json& config)
+    : MonthBaseConfig(config),
+      style_(config)
 {
 }

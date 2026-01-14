@@ -1,10 +1,9 @@
 ﻿// reports/period/formatters/latex/PeriodTexFormatter.cpp
 #include "PeriodTexFormatter.hpp"
 #include <format>
-#include "reports/period/formatters/latex/PeriodTexUtils.hpp" // [关键] 引入工具类声明，而不是实现
-#include "common/AppConfig.hpp"
+#include "reports/period/formatters/latex/PeriodTexUtils.hpp"
+#include <nlohmann/json.hpp>
 
-// 构造函数
 PeriodTexFormatter::PeriodTexFormatter(std::shared_ptr<PeriodTexConfig> config) 
     : BaseTexFormatter(config) {}
 
@@ -28,17 +27,20 @@ std::string PeriodTexFormatter::get_no_records_msg() const {
 }
 
 void PeriodTexFormatter::format_header_content(std::stringstream& ss, const PeriodReportData& data) const {
-    // [关键] 调用 PeriodTexUtils 中的实现，避免代码重复和链接错误
     PeriodTexUtils::display_summary(ss, data, config_);
 }
 
-// DLL 导出接口
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const AppConfig& cfg) {
-        // 假设 AppConfig 中有 period_tex_config_path，参考了 Md/Typ 的命名规律
-        auto tex_config = std::make_shared<PeriodTexConfig>(cfg.period_tex_config_path);
-        auto formatter = new PeriodTexFormatter(tex_config);
-        return static_cast<FormatterHandle>(formatter);
+    // [核心修改] 接收 config_json 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+        try {
+            auto json_obj = nlohmann::json::parse(config_json);
+            auto tex_config = std::make_shared<PeriodTexConfig>(json_obj);
+            auto formatter = new PeriodTexFormatter(tex_config);
+            return static_cast<FormatterHandle>(formatter);
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {

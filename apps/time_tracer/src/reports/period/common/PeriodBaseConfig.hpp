@@ -5,14 +5,15 @@
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
 #include <nlohmann/json.hpp>
-#include "reports/shared/utils/config/ConfigUtils.hpp"
-#include <filesystem>
+// [修改] 移除 IO
+// #include "reports/shared/utils/config/ConfigUtils.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API PeriodBaseConfig {
 public:
-    explicit PeriodBaseConfig(const std::filesystem::path& config_path);
+    // [修改] 接收 JSON
+    explicit PeriodBaseConfig(const nlohmann::json& config);
     virtual ~PeriodBaseConfig() = default;
 
     const std::string& get_report_title_prefix() const;

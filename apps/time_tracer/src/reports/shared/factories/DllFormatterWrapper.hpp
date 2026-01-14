@@ -3,10 +3,7 @@
 #define DLL_FORMATTER_WRAPPER_HPP
 
 #include "reports/shared/interfaces/IReportFormatter.hpp"
-#include "common/AppConfig.hpp"
-#include "reports/shared/model/DailyReportData.hpp"
-#include "reports/shared/model/MonthlyReportData.hpp"
-#include "reports/shared/model/PeriodReportData.hpp"
+// [修改] 不再依赖 AppConfig，改为依赖 string
 #include <string>
 #include <memory>
 #include <stdexcept>
@@ -15,13 +12,14 @@
 #ifdef _WIN32
 #include <windows.h>
 #else
-#include <dlfcn.h> // [新增] 引入 POSIX dlfcn.h 头文件
+#include <dlfcn.h> 
 #endif
 
 template<typename ReportDataType>
 class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
 public:
-    DllFormatterWrapper(const std::string& dll_path, const AppConfig& config) {
+    // [核心修改] 构造函数现在接收 config_json 字符串
+    DllFormatterWrapper(const std::string& dll_path, const std::string& config_json) {
 #ifdef _WIN32
         dll_handle_ = LoadLibraryA(dll_path.c_str());
         if (!dll_handle_) {
@@ -58,7 +56,6 @@ public:
         } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
             format_func_period_ = (FormatReportFunc_Period)dlsym(dll_handle_, "format_report");
         }
-        // --- 实现结束 ---
 #endif
         bool format_func_loaded = false;
         if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
@@ -73,7 +70,8 @@ public:
             throw std::runtime_error("Failed to get function pointers from DLL: " + dll_path);
         }
 
-        formatter_handle_ = create_func_(config);
+        // [核心修改] 传递 JSON 字符串的 C 风格指针
+        formatter_handle_ = create_func_(config_json.c_str());
         if (!formatter_handle_) {
             throw std::runtime_error("create_formatter from DLL returned null.");
         }
@@ -120,7 +118,7 @@ private:
 #ifdef _WIN32
     HINSTANCE dll_handle_ = nullptr;
 #else
-    void* dll_handle_ = nullptr; // [修改] POSIX API 使用 void* 作为句柄
+    void* dll_handle_ = nullptr;
 #endif
     FormatterHandle formatter_handle_ = nullptr;
     CreateFormatterFunc create_func_ = nullptr;
