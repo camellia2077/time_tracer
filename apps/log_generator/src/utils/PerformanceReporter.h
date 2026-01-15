@@ -1,5 +1,7 @@
-#pragma once
-#include "config/Config.h"
+﻿#ifndef UTILS_PERFORMANCEREPORTER_H
+#define UTILS_PERFORMANCEREPORTER_H
+
+#include "common/ConfigTypes.hpp" // [修改] 仅引入纯数据结构
 #include <chrono>
 
 class PerformanceReporter {
@@ -18,3 +20,5 @@ private:
     std::chrono::nanoseconds total_generation_duration_;
     std::chrono::nanoseconds total_io_duration_;
 };
+
+#endif // UTILS_PERFORMANCEREPORTER_H

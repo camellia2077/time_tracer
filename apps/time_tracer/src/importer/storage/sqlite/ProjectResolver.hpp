@@ -1,5 +1,5 @@
 // importer/storage/sqlite/ProjectResolver.hpp
-#pragma once
+
 #include <string>
 #include <vector>
 #include <unordered_map>

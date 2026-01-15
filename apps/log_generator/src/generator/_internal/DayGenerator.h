@@ -1,4 +1,6 @@
-#pragma once
+﻿// generator/_internal/DayGenerator.h
+#ifndef GENERATOR_INTERNAL_DAYGENERATOR_H
+#define GENERATOR_INTERNAL_DAYGENERATOR_H
 #include "RemarkGenerator.h"
 #include "EventGenerator.h"
 #include <string>
@@ -22,10 +24,12 @@ public:
                  std::mt19937& gen);
 
     // 生成一天的完整日志
-    void generate_for_day(std::string& log_content, int year, int month, int day, bool is_nosleep_day); // 修改
+    void generate_for_day(std::string& log_content, int month, int day, bool is_nosleep_day);
 
 private:
     // DayGenerator 持有其他子生成器的所有权
     std::unique_ptr<RemarkGenerator> remark_generator_;
     std::unique_ptr<EventGenerator> event_generator_;
 };
+
+#endif // GENERATOR_INTERNAL_DAYGENERATOR_H
