@@ -1,4 +1,7 @@
-#pragma once
+﻿// utils/Utils.h
+#ifndef UTILS_UTILS_H
+#define UTILS_UTILS_H
+
 #include <string>
 
 namespace Utils {
@@ -14,3 +17,4 @@ namespace Utils {
     int get_days_in_month(int year, int month);
     
 } // namespace Utils
+#endif // UTILS_UTILS_H

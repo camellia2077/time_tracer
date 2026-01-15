@@ -37,7 +37,8 @@ std::string LogGenerator::generate_for_month(int year, int month, int days_in_mo
     if (month == 1) {
         // 为上一年的数据添加年份标题
         std::format_to(std::back_inserter(log_content), "y{}\n\n", year - 1);
-        day_generator_->generate_for_day(log_content, year - 1, 12, 31, false); // 上一年最后一天强制为非通宵
+        // [修复] 删除 year - 1 参数，只传 (log_content, 12, 31, false)
+        day_generator_->generate_for_day(log_content, 12, 31, false); 
         log_content += '\n';
     }
 
@@ -82,8 +83,7 @@ std::string LogGenerator::generate_for_month(int year, int month, int days_in_mo
                 }
             }
         }
-        
-        day_generator_->generate_for_day(log_content, year, month, day, is_nosleep_day);
+        day_generator_->generate_for_day(log_content, month, day, is_nosleep_day);
     }
     return log_content;
 }
