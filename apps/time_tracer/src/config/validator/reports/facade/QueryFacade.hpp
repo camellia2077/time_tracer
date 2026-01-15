@@ -4,12 +4,13 @@
 
 #include <vector>
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class QueryFacade {
 public:
+    // [修改] 参数类型改为 toml::table
     bool validate(
-        const std::vector<std::pair<std::string, nlohmann::json>>& query_configs
+        const std::vector<std::pair<std::string, toml::table>>& query_configs
     ) const;
 };
 

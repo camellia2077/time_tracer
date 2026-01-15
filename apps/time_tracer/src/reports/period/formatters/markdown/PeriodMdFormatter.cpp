@@ -2,7 +2,7 @@
 #include "PeriodMdFormatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 PeriodMdFormatter::PeriodMdFormatter(std::shared_ptr<PeriodMdConfig> config) 
     : BaseMdFormatter(config) {}
@@ -43,11 +43,11 @@ void PeriodMdFormatter::format_header_content(std::stringstream& ss, const Perio
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 使用 toml::parse
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto md_config = std::make_shared<PeriodMdConfig>(json_obj);
+            auto config_tbl = toml::parse(config_toml);
+            auto md_config = std::make_shared<PeriodMdConfig>(config_tbl);
             auto formatter = new PeriodMdFormatter(md_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

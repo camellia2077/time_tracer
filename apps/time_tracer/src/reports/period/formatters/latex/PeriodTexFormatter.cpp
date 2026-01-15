@@ -2,7 +2,7 @@
 #include "PeriodTexFormatter.hpp"
 #include <format>
 #include "reports/period/formatters/latex/PeriodTexUtils.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 PeriodTexFormatter::PeriodTexFormatter(std::shared_ptr<PeriodTexConfig> config) 
     : BaseTexFormatter(config) {}
@@ -31,11 +31,11 @@ void PeriodTexFormatter::format_header_content(std::stringstream& ss, const Peri
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 使用 toml::parse
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto tex_config = std::make_shared<PeriodTexConfig>(json_obj);
+            auto config_tbl = toml::parse(config_toml);
+            auto tex_config = std::make_shared<PeriodTexConfig>(config_tbl);
             auto formatter = new PeriodTexFormatter(tex_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

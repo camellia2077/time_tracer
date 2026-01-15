@@ -3,12 +3,12 @@
 #define DAY_MD_CONFIG_HPP
 
 #include "reports/daily/common/DayBaseConfig.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h>
 
 class DayMdConfig : public DayBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit DayMdConfig(const nlohmann::json& config);
+    // [修改] 接收 TOML
+    explicit DayMdConfig(const toml::table& config);
 };
 
 #endif // DAY_MD_CONFIG_HPP

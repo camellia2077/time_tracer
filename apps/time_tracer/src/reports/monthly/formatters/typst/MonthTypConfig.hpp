@@ -5,12 +5,12 @@
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include "reports/shared/config/TypstStyleConfig.hpp"
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class MonthTypConfig : public MonthBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit MonthTypConfig(const nlohmann::json& config);
+    // [修改] 接收 toml::table
+    explicit MonthTypConfig(const toml::table& config);
 
     // 代理
     const std::string& get_base_font() const { return style_.get_base_font(); }

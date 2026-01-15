@@ -126,9 +126,9 @@ set(REPORTS_SOURCES
 set(CONVERTER_SOURCES
     "src/converter/LogProcessor.cpp"
 
-    # --- 配置模块 (Config) [Moved] ---
+    # --- 配置模块 (Config)  ---
     "src/converter/config/ConverterConfig.cpp"
-    "src/converter/config/JsonConverterConfigLoader.cpp"
+    "src/converter/config/TomlConverterConfigLoader.cpp"
 
     # --- 转换模块 (Convert) ---
     # Facade
@@ -171,9 +171,8 @@ set(CONFIG_SOURCES
     "src/config/ConfigLoader.cpp"
 
     "src/config/internal/ConfigParserUtils.cpp"
-    
-    "src/config/loader/JsonLoaderUtils.cpp"
     "src/config/loader/ReportConfigLoader.cpp"
+    "src/config/loader/TomlLoaderUtils.cpp"
 
 
     # 顶层外观

@@ -2,7 +2,7 @@
 #ifndef I_QUERY_STRATEGY_HPP
 #define I_QUERY_STRATEGY_HPP
 
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改] 引入 toml++
 #include <string>
 
 /**
@@ -14,12 +14,12 @@ public:
     virtual ~IQueryStrategy() = default;
 
     /**
-     * @brief 对给定的JSON对象执行特定于策略的验证规则。
-     * @param query_json 要验证的JSON对象。
-     * @param file_name 从中加载此JSON的原始文件名，用于错误报告。
+     * @brief 对给定的 TOML 表对象执行特定于策略的验证规则。
+     * @param query_config 要验证的 TOML 表对象。
+     * @param file_name 从中加载此配置的原始文件名，用于错误报告。
      * @return 如果配置有效，则返回 true；否则返回 false。
      */
-    virtual bool validate(const nlohmann::json& query_json, const std::string& file_name) const = 0;
+    virtual bool validate(const toml::table& query_config, const std::string& file_name) const = 0;
 };
 
 #endif // I_QUERY_STRATEGY_HPP

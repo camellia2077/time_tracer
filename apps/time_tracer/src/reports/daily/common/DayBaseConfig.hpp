@@ -6,11 +6,8 @@
 #include <string>
 #include <map>
 #include <vector> 
-#include <nlohmann/json.hpp>
-// [修改] 不再依赖 ConfigUtils 进行 IO 操作
-// #include "reports/shared/utils/config/ConfigUtils.hpp"
+#include <toml++/toml.h> // [修改] 引入 toml++
 
-// [修改] 升级结构体以支持递归和数据库映射
 struct StatisticItemConfig {
     std::string label;
     std::string db_column;
@@ -20,18 +17,12 @@ struct StatisticItemConfig {
 
 DISABLE_C4251_WARNING
 
-/**
- * @class DayBaseConfig
- * @brief 日报配置的基类，封装了所有日报格式共享的配置项。
- * * [架构变更] 此类不再负责文件读取。配置数据由外部模块读取后注入。
- */
 class REPORTS_SHARED_API DayBaseConfig {
 public:
-    // [修改] 构造函数接收 JSON 对象
-    explicit DayBaseConfig(const nlohmann::json& config);
+    // [修改] 构造函数接收 TOML Table
+    explicit DayBaseConfig(const toml::table& config);
     virtual ~DayBaseConfig() = default;
 
-    // --- 通用配置项的 Getters ---
     const std::string& get_title_prefix() const;
     const std::string& get_date_label() const;
     const std::string& get_total_time_label() const;
@@ -45,13 +36,12 @@ public:
     const std::string& get_all_activities_label() const;
     const std::string& get_activity_remark_label() const;
     const std::string& get_activity_connector() const;
-
     const std::string& get_project_breakdown_label() const;
     
     const std::vector<StatisticItemConfig>& get_statistics_items() const;
 
 protected:
-    nlohmann::json config_json_; 
+    toml::table config_table_; 
 
 private:
     void load_base_config();
@@ -69,7 +59,6 @@ private:
     std::string all_activities_label_;
     std::string activity_remark_label_;
     std::string activity_connector_; 
-
     std::string project_breakdown_label_;
     
     std::vector<StatisticItemConfig> statistics_items_;

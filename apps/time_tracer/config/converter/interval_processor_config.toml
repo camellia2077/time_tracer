@@ -1,0 +1,18 @@
+# converter/interval_processor_config.toml
+
+mappings_config_path = "mapping_config.toml"
+duration_rules_config_path = "duration_rules.toml"
+
+header_order = [
+    "Date:",
+    "Status:",
+    "Sleep:",
+    "Getup:",
+    "Remark:"
+]
+
+remark_prefix = "r "
+wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了A"]
+
+[top_parent_mapping]
+study = "study"

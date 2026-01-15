@@ -1,39 +1,33 @@
 ﻿// config/validator/converter/facade/ConverterFacade.cpp
 #include "ConverterFacade.hpp"
-// [修改] 更新 include 路径和头文件名
 #include "config/validator/converter/rules/MainRule.hpp"
 #include "config/validator/converter/rules/MappingRule.hpp"
 #include "config/validator/converter/rules/DurationRule.hpp"
 
 #include <iostream>
 
-using json = nlohmann::json;
-
 bool ConverterFacade::validate(
-    const json& main_json,
-    const json& mappings_json,
-    const json& duration_rules_json
+    const toml::table& main_tbl,
+    const toml::table& mappings_tbl,
+    const toml::table& duration_rules_tbl
 ) const {
     std::string mappings_path_str, duration_rules_path_str;
     
-    // [修改] 使用新的类名
     MainRule main_validator;
-    if (!main_validator.validate(main_json, mappings_path_str, duration_rules_path_str)) {
+    if (!main_validator.validate(main_tbl, mappings_path_str, duration_rules_path_str)) {
         return false;
     }
 
-    // [修改] 使用新的类名
     MappingRule mappings_validator;
-    if (!mappings_validator.validate(mappings_json)) {
+    if (!mappings_validator.validate(mappings_tbl)) {
         return false;
     }
 
-    // [修改] 使用新的类名
     DurationRule duration_rules_validator;
-    if (!duration_rules_validator.validate(duration_rules_json)) {
+    if (!duration_rules_validator.validate(duration_rules_tbl)) {
         return false;
     }
 
-    std::cout << "[Validator] All preprocessing configuration data is valid." << std::endl;
+    std::cout << "[Validator] All preprocessing configuration data (TOML) is valid." << std::endl;
     return true;
 }
