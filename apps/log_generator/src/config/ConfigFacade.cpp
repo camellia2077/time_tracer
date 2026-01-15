@@ -4,7 +4,7 @@
 #include <iostream>
 
 namespace ConfigFacade {
-    bool validate(const JsonConfigData& config_data, std::vector<std::string>& errors) {
+    bool validate(const TomlConfigData& config_data, std::vector<std::string>& errors) {
         errors.clear();
 
         // 使用 std::set 来检查 common_activities 中的重复项

@@ -1,4 +1,7 @@
-#pragma once
+﻿// generator/_internal/RemarkGenerator.h
+#ifndef GENERATOR_INTERNAL_REMARKGENERATOR_H
+#define GENERATOR_INTERNAL_REMARKGENERATOR_H
+
 #include "config/Config.h" // 依赖Config中的数据结构
 #include <optional>
 #include <string>
@@ -22,3 +25,5 @@ private:
     std::unique_ptr<std::uniform_int_distribution<>> selector_;
     std::unique_ptr<std::bernoulli_distribution> should_generate_;
 };
+
+#endif // GENERATOR_INTERNAL_REMARKGENERATOR_H

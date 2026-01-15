@@ -1,102 +1,10 @@
-// main.cpp
-#include "config/Config.h"
-#include "config/ConfigFacade.h"
-#include "generator/facade/LogGenerator.h"
-#include "utils/Utils.h"
-#include "file_io/FileManager.h"
-#include "utils/PerformanceReporter.h"
-#include "cli/CommandLineParser.h"
-#include "common/AnsiColors.hpp"
+﻿// main.cpp
+#include "core/Application.h"
 
-#include <iostream>
-#include <chrono>
-#include <filesystem>
-#include <format>
-#include <vector>
-
-// --- Application Runner ---
-class Application {
-public:
-    int run(int argc, char* argv[]) {
-        Utils::setup_console();
-
-        CommandLineParser parser(argc, argv);
-        auto config_opt = parser.parse();
-        
-        if (!config_opt) {
-            return 0;
-        }
-        Config config = *config_opt;
-
-        std::filesystem::path exe_path = argv[0];
-        std::filesystem::path exe_dir = exe_path.parent_path();
-        std::filesystem::path activities_config_path = exe_dir / "config" / "common_activities.json";
-        std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_ConfigLoader";
-        
-        //  创建 ConfigLoader 的实例，然后通过该实例调用成员函数
-        ConfigLoader loader;
-        auto json_configs_opt = loader.load_json_configurations(activities_config_path.string(), remarks_config_path.string());
-        
-        if (!json_configs_opt) {
-            std::cerr << RED_COLOR << "程序因配置加载失败而退出。" << RESET_COLOR << std::endl;
-            return 1;
-        }
-
-        // --- 新增：配置验证步骤 ---
-        std::vector<std::string> validation_errors;
-        if (!ConfigFacade::validate(*json_configs_opt, validation_errors)) {
-            std::cerr << RED_COLOR << "配置文件验证失败:" << RESET_COLOR << std::endl;
-            for (const auto& error : validation_errors) {
-                std::cerr << "  - " << error << std::endl;
-            }
-            return 1; // 验证失败，程序退出
-        }
-        // --- 验证结束 ---
-
-        auto total_start_time = std::chrono::high_resolution_clock::now();
-        std::cout << "正在为 " << config.start_year << " 至 " << config.end_year << " 年生成数据..." << '\n';
-
-        LogGenerator generator(config, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
-        FileManager file_manager;
-        PerformanceReporter reporter;
-
-        const std::string master_dir_name = "Date";
-        if (!file_manager.setup_directories(master_dir_name, config.start_year, config.end_year)) {
-            return 1;
-        }
-
-        int files_generated = 0;
-        for (int year = config.start_year; year <= config.end_year; ++year) {
-            for (int month = 1; month <= 12; ++month) {
-                std::string filename = std::format("{}_{:02}.txt", year, month);
-                std::filesystem::path full_path = std::filesystem::path(master_dir_name) / std::to_string(year) / filename;
-
-                auto gen_start = std::chrono::high_resolution_clock::now();
-                int days_in_month = Utils::get_days_in_month(year, month);
-                std::string month_log = generator.generate_for_month(year, month, days_in_month);
-                auto gen_end = std::chrono::high_resolution_clock::now();
-                reporter.add_generation_time(gen_end - gen_start);
-
-                auto io_start = std::chrono::high_resolution_clock::now();
-                if (!file_manager.write_log_file(full_path, month_log)) {
-                    continue;
-                }
-                auto io_end = std::chrono::high_resolution_clock::now();
-                reporter.add_io_time(io_end - io_start);
-
-                files_generated++;
-            }
-        }
-
-        auto total_end_time = std::chrono::high_resolution_clock::now();
-        reporter.report(config, files_generated, total_end_time - total_start_time);
-        
-        return 0;
-    }
-};
-
-// --- Main Entry Point ---
 int main(int argc, char* argv[]) {
-    Application app;
+    // 实例化 Core 模块中的 Application 类
+    Core::Application app;
+    
+    // 将控制权移交给 Application
     return app.run(argc, argv);
 }

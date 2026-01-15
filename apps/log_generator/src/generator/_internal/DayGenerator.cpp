@@ -23,7 +23,7 @@ DayGenerator::DayGenerator(int items_per_day,
  * @param day 日期。
  * @param is_nosleep_day 是否为通宵日。
  */
-void DayGenerator::generate_for_day(std::string& log_content, int year, int month, int day, bool is_nosleep_day) {
+void DayGenerator::generate_for_day(std::string& log_content, int month, int day, bool is_nosleep_day) {
     // 1. 生成日期标题
     std::format_to(std::back_inserter(log_content), "{:02}{:02}\n", month, day);
 

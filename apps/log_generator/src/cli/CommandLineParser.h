@@ -1,6 +1,8 @@
-#pragma once
-#include "config/Config.h"
-#include "cli/HelpPrinter.h" // [核心修改] 引入 HelpPrinter
+﻿// cli/CommandLineParser.h
+#ifndef CLI_COMMANDLINEPARSER_H
+#define CLI_COMMANDLINEPARSER_H
+#include "common/ConfigTypes.hpp" // [修改] 仅引入纯数据结构，不再依赖 Config.h
+#include "cli/HelpPrinter.h"
 #include <optional>
 #include <string>
 #include <vector>
@@ -26,7 +28,8 @@ public:
     std::optional<Config> parse();
 
 private:
-    // [核心修改] 移除 print_* 方法，用 HelpPrinter 实例代替
     std::vector<std::string> args_;
     HelpPrinter printer_;
 };
+
+#endif // CLI_COMMANDLINEPARSER_H

@@ -1,4 +1,6 @@
-#pragma once
+﻿// generator/_internal/EventGenerator.h
+#ifndef GENERATOR_INTERNAL_EVENTGENERATOR_H
+#define GENERATOR_INTERNAL_EVENTGENERATOR_H
 #include "config/Config.h" // 引入Config头文件
 #include <vector>
 #include <string>
@@ -36,3 +38,5 @@ private:
     size_t remark_content_idx_ = 0;
     size_t remark_delimiter_idx_ = 0;
 };
+
+#endif // GENERATOR_INTERNAL_EVENTGENERATOR_H
