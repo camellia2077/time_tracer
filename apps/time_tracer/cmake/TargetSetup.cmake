@@ -49,12 +49,13 @@ function(setup_project_target TARGET_NAME)
     target_compile_options(${TARGET_NAME} PRIVATE -include "${CMAKE_SOURCE_DIR}/src/pch.hpp")
 
     # 为 Windows 平台添加图标资源
-    if(WIN32 AND CMAKE_RC_COMPILER)
-        # [修改] 增加一个判断，只为可执行文件（EXECUTABLE）添加图标
+    # [修改] 增加 ENABLE_APP_ICON 的判断
+    if(WIN32 AND CMAKE_RC_COMPILER AND ENABLE_APP_ICON)
         get_target_property(TARGET_TYPE ${TARGET_NAME} TYPE)
         if(TARGET_TYPE STREQUAL "EXECUTABLE")
-            # [修改] 使用 CMAKE_SOURCE_DIR 确保路径始终从项目根目录开始
+            # 使用 CMAKE_SOURCE_DIR 确保路径正确
             target_sources(${TARGET_NAME} PRIVATE "${CMAKE_SOURCE_DIR}/src/resources/app_icon.rc")
+            message(STATUS "Icon resource added to target: ${TARGET_NAME}")
         endif()
     endif()
 endfunction()

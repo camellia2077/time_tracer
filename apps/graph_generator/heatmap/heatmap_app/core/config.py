@@ -36,6 +36,14 @@ class AppConfig:
         self.db_path = Path(db_path_str)
         
         self.heatmap_settings = main_config.get("heatmap", {})
+        # 建议添加一个兼容性处理
+        p_names = self.heatmap_settings.get("project_names")
+        if p_names is None:
+            # 如果没有列表，尝试取单个 project_name 并包装成列表
+            single_name = self.heatmap_settings.get("project_name")
+            self.heatmap_settings["project_names"] = [single_name] if single_name else []
+        else:
+            self.heatmap_settings["project_names"] = p_names
         self.bool_heatmap_settings = main_config.get("boolean_heatmaps", {})
 
         if not str(self.db_path):
@@ -44,6 +52,7 @@ class AppConfig:
 
         # --- [新增] 检查数据库文件是否存在 ---
         if not self.db_path.exists():
+            print(f"错误：无法找到数据库文件: {self.db_path}")
             # 如果是相对路径，为了清晰可以打印绝对路径
             print(f"错误：无法找到数据库文件: {self.db_path.resolve()}") 
             sys.exit(1)
