@@ -76,6 +76,13 @@ void ConfigLoader::_load_daily_remarks(const toml::table& data, TomlConfigData& 
         DailyRemarkConfig remarks;
         remarks.prefix = (*node)["prefix"].value_or("");
         remarks.generation_chance = (*node)["generation_chance"].value_or(0.5);
+        
+        // [新增] 读取 max_lines 配置
+        // toml++ 的整数通常读取为 int64_t，我们需要转换并验证
+        int64_t lines = (*node)["max_lines"].value_or(1);
+        // 确保至少为 1
+        remarks.max_lines = static_cast<int>(lines < 1 ? 1 : lines);
+
         if (auto arr = (*node).get_as<toml::array>("contents")) {
             for (auto&& v : *arr) remarks.contents.push_back(v.value_or(""));
             config.remarks.emplace(remarks);

@@ -10,6 +10,8 @@ contents = [
     "今天吃自助"
 ]
 generation_chance = 0.8
+# [新增] 这里设置为 3，表示将随机生成 1 到 4 行备注
+max_lines = 4
 
 [activity_remarks]
 contents = [
