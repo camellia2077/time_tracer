@@ -1,4 +1,6 @@
-#pragma once
+﻿// cli/HelpPrinter.h
+#ifndef CLI_HELPPRINTER_H
+#define CLI_HELPPRINTER_H
 #include <string>
 
 /**
@@ -35,3 +37,5 @@ public:
 private:
     std::string prog_name_;
 };
+
+#endif // CLI_HELPPRINTER_H
