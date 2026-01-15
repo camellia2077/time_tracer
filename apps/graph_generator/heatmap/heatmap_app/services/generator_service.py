@@ -26,49 +26,47 @@ class GeneratorService:
         print("\n所有热力图生成完毕！")
 
     def _generate_numeric_heatmap(self):
-        """处理数值型热力图。"""
+        """处理数值型热力图（现支持多个项目）。"""
         cfg = self.config.heatmap_settings
         year = cfg.get("year", 2025)
-        project_name = cfg.get("project_name")
+        # 获取项目列表
+        project_names = cfg.get("project_names", [])
         
-        heatmap_data = self.data_source.fetch_project_duration_data(project_name, year)
-        if not heatmap_data:
-            print(f"⚠️ 未找到项目 '{project_name}' 在 {year} 年的数据。")
+        if not project_names:
+            print("⚠️ 配置中未发现 project_names。")
             return
 
+        # 颜色配置（共享或根据需要扩展）
         strategy_color_config = {
             'palette': self.config.color_settings["COLOR_PALETTES"][cfg["color_palette"]],
             'over_12h': self.config.color_settings["SINGLE_COLORS"][cfg["over_12_hours_color"]]
         }
-        strategy = NumericStrategy(project_name, strategy_color_config)
-        renderer = HeatmapRenderer(year, heatmap_data, strategy)
-        
-        # --- [核心修改开始] ---
-        
-        # 1. 获取父项目列表
         parent_projects = self.config.color_settings.get("PARENT_PROJECTS", [])
-        
-        # 2. 动态构建文件名：{project_name}_heatmap_annual.html
-        # 例如: "study" -> "study_heatmap_annual.html"
-        basename = f"{project_name}_heatmap"
-        
-        # 3. 决定输出目录
-        # 直接判断当前项目名称是否在父项目列表中
-        is_parent = project_name in parent_projects
-        output_dir = self.parent_dir if is_parent else self.base_dir
-        
-        print(f"输出策略: 项目='{project_name}', 是否父项目={is_parent} -> 目录='{output_dir.name}'")
 
-        # 4. 拼接完整路径
-        annual_output = output_dir / f"{basename}_annual.html"
-        monthly_output = output_dir / f"{basename}_monthly.html"
-        
-        # --- [核心修改结束] ---
-        
-        renderer.save_annual_heatmap(annual_output)
-        print(f"✅ 年度热力图已保存: {annual_output}")
-        renderer.save_monthly_heatmap(monthly_output)
-        print(f"✅ 月度热力图已保存: {monthly_output}")
+        # --- 核心修改：进入循环 ---
+        for project_name in project_names:
+            print(f"\n>>> 正在处理项目: {project_name}")
+            
+            heatmap_data = self.data_source.fetch_project_duration_data(project_name, year)
+            if not heatmap_data:
+                print(f"⚠️ 未找到项目 '{project_name}' 在 {year} 年的数据，跳过。")
+                continue
+
+            strategy = NumericStrategy(project_name, strategy_color_config)
+            renderer = HeatmapRenderer(year, heatmap_data, strategy)
+            
+            # 动态构建文件名和目录
+            basename = f"{project_name}_heatmap"
+            is_parent = project_name in parent_projects
+            output_dir = self.parent_dir if is_parent else self.base_dir
+            
+            annual_output = output_dir / f"{basename}_annual.html"
+            monthly_output = output_dir / f"{basename}_monthly.html"
+            
+            renderer.save_annual_heatmap(annual_output)
+            print(f"✅ 年度热力图已保存: {annual_output}")
+            renderer.save_monthly_heatmap(monthly_output)
+            print(f"✅ 月度热力图已保存: {monthly_output}")
 
     def _generate_boolean_heatmaps(self):
         """处理所有布尔型热力图。"""

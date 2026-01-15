@@ -11,8 +11,8 @@ path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/output/time_data.sq
 year = 2025
 
 # 要查询的顶级项目名称 (例如 "study", "code", "recreation")
-# 查询将包括所有子项目 (例如 "study_english", "study_programming" 等)
-project_name = "study"
+# 不能这样写(例如 "study_english", "study_programming" 等)要写"english","programming"
+project_names = ["study", "english", "code","math"]
 
 
 # --- 颜色和显示配置 ---

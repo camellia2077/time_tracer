@@ -20,6 +20,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# [新增] 添加开关：是否为可执行文件编译图标资源（默认为 ON）关闭 OFF
+option(ENABLE_APP_ICON "Enable application icon for Windows executables" OFF)
+
 set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
 
 # 设置编译器启动器（如ccache）
