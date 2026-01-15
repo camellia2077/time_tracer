@@ -18,6 +18,7 @@ function(setup_project_target TARGET_NAME)
     target_link_libraries(${TARGET_NAME} PRIVATE
         SQLite::SQLite3
         nlohmann_json::nlohmann_json
+        tomlplusplus::tomlplusplus
         stdc++exp
     )
 

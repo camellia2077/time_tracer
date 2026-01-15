@@ -1,15 +1,19 @@
 // reports/shared/config/TexStyleConfig.cpp
 #include "TexStyleConfig.hpp"
 
-TexStyleConfig::TexStyleConfig(const nlohmann::json& json) {
-    main_font_ = json.at("main_font").get<std::string>();
-    cjk_main_font_ = json.at("cjk_main_font").get<std::string>();
-    base_font_size_ = json.at("base_font_size").get<int>();
-    report_title_font_size_ = json.at("report_title_font_size").get<int>();
-    category_title_font_size_ = json.at("category_title_font_size").get<int>();
-    margin_in_ = json.at("margin_in").get<double>();
-    list_top_sep_pt_ = json.at("list_top_sep_pt").get<double>();
-    list_item_sep_ex_ = json.at("list_item_sep_ex").get<double>();
+// [修改] 使用 toml::table 解析
+TexStyleConfig::TexStyleConfig(const toml::table& tbl) {
+    // [修复] 移除 value_or 后面的 <std::string>，让编译器自动推导类型
+    // 这样就可以传递 main_font_ (左值) 作为默认值了
+    main_font_ = tbl["main_font"].value_or(""); 
+    cjk_main_font_ = tbl["cjk_main_font"].value_or(main_font_); 
+    
+    base_font_size_ = tbl["base_font_size"].value_or(10);
+    report_title_font_size_ = tbl["report_title_font_size"].value_or(14);
+    category_title_font_size_ = tbl["category_title_font_size"].value_or(12);
+    margin_in_ = tbl["margin_in"].value_or(1.0);
+    list_top_sep_pt_ = tbl["list_top_sep_pt"].value_or(0.0);
+    list_item_sep_ex_ = tbl["list_item_sep_ex"].value_or(0.0);
 }
 
 const std::string& TexStyleConfig::get_main_font() const { return main_font_; }

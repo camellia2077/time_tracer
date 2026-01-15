@@ -1,64 +1,99 @@
 // core/file/utils/ConverterConfigFactory.cpp
 #include "ConverterConfigFactory.hpp"
-#include "converter/config/JsonConverterConfigLoader.hpp"
+#include "converter/config/TomlConverterConfigLoader.hpp" // [修改] 使用 TOML Loader
 #include "io/core/FileReader.hpp"
 #include "common/AnsiColors.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改] 引入 toml++
 #include <iostream>
 
 namespace fs = std::filesystem;
 
-// 将原有的 loadMergedJson 移入作为私有静态函数或匿名空间函数
-static nlohmann::json loadMergedJson(const fs::path& main_config_path) {
-    using json = nlohmann::json;
-    json main_json;
+// [新增] 辅助函数：合并源 table 到目标 table (支持递归合并)
+static void merge_toml_table(toml::table& target, const toml::table& source) {
+    for (const auto& [key, val] : source) {
+        if (target.contains(key)) {
+            // 如果两个都是 table，尝试深度合并（主要针对 text_mappings 等）
+            if (target[key].is_table() && val.is_table()) {
+                merge_toml_table(*target[key].as_table(), *val.as_table());
+            } else {
+                // 否则直接覆盖
+                target.insert_or_assign(key, val);
+            }
+        } else {
+            target.insert(key, val);
+        }
+    }
+}
+
+// [新增] 加载并合并 TOML 配置
+static toml::table loadMergedToml(const fs::path& main_config_path) {
+    toml::table main_tbl;
     try {
-        std::string main_content = FileReader::read_content(main_config_path);
-        main_json = json::parse(main_content);
+        // 1. 解析主文件
+        main_tbl = toml::parse_file(main_config_path.string());
         fs::path config_dir = main_config_path.parent_path();
 
-        if (main_json.contains("mappings_config_path")) {
-            fs::path map_path = config_dir / main_json["mappings_config_path"].get<std::string>();
-            std::string map_content = FileReader::read_content(map_path);
-            json map_json = json::parse(map_content);
-            if (map_json.contains("text_mappings")) {
-                main_json["text_mappings"] = map_json["text_mappings"];
+        // 2. 合并 mappings_config_path
+        if (auto path_node = main_tbl["mappings_config_path"].value<std::string>()) {
+            fs::path map_path = config_dir / *path_node;
+            if (fs::exists(map_path)) {
+                toml::table map_tbl = toml::parse_file(map_path.string());
+                // 仅合并 text_mappings 部分
+                if (map_tbl.contains("text_mappings")) {
+                    if (!main_tbl.contains("text_mappings")) {
+                        main_tbl.insert("text_mappings", toml::table{});
+                    }
+                    merge_toml_table(*main_tbl["text_mappings"].as_table(), *map_tbl["text_mappings"].as_table());
+                }
             }
         }
         
-        if (main_json.contains("duration_rules_config_path")) {
-            fs::path dur_path = config_dir / main_json["duration_rules_config_path"].get<std::string>();
-            std::string dur_content = FileReader::read_content(dur_path);
-            json dur_json = json::parse(dur_content);
-            
-            if (dur_json.contains("text_duration_mappings")) {
-                main_json["text_duration_mappings"] = dur_json["text_duration_mappings"];
-            }
-            if (dur_json.contains("duration_mappings")) {
-                main_json["duration_mappings"] = dur_json["duration_mappings"];
+        // 3. 合并 duration_rules_config_path
+        if (auto path_node = main_tbl["duration_rules_config_path"].value<std::string>()) {
+            fs::path dur_path = config_dir / *path_node;
+            if (fs::exists(dur_path)) {
+                toml::table dur_tbl = toml::parse_file(dur_path.string());
+                
+                // 合并 text_duration_mappings
+                if (dur_tbl.contains("text_duration_mappings")) {
+                    if (!main_tbl.contains("text_duration_mappings")) {
+                        main_tbl.insert("text_duration_mappings", toml::table{});
+                    }
+                    merge_toml_table(*main_tbl["text_duration_mappings"].as_table(), *dur_tbl["text_duration_mappings"].as_table());
+                }
+
+                // 合并 duration_mappings
+                if (dur_tbl.contains("duration_mappings")) {
+                    if (!main_tbl.contains("duration_mappings")) {
+                         main_tbl.insert("duration_mappings", toml::table{});
+                    }
+                    merge_toml_table(*main_tbl["duration_mappings"].as_table(), *dur_tbl["duration_mappings"].as_table());
+                }
             }
         }
+    } catch (const toml::parse_error& e) {
+        std::cerr << RED_COLOR << "TOML Parse Error: " << e.description() << " (" << e.source().begin << ")" << RESET_COLOR << std::endl;
+        throw; 
     } catch (const std::exception& e) {
         std::cerr << RED_COLOR << "Config Merge Error: " << e.what() << RESET_COLOR << std::endl;
-        // 根据策略，这里可以选择抛出异常阻断流程
         throw; 
     }
-    return main_json;
+    return main_tbl;
 }
 
 ConverterConfig ConverterConfigFactory::create(const fs::path& interval_config_path, 
                                              const AppConfig& app_config) {
-    // 1. 加载并合并 JSON
-    nlohmann::json merged_json = loadMergedJson(interval_config_path);
+    // 1. 加载并合并 TOML
+    toml::table merged_toml = loadMergedToml(interval_config_path);
 
-    // 2. 使用 Loader 填充基础配置
+    // 2. 使用 TomlLoader 填充配置
     ConverterConfig config;
-    JsonConverterConfigLoader loader(merged_json);
+    TomlConverterConfigLoader loader(merged_toml);
     if (!loader.load(config)) {
-        throw std::runtime_error("Failed to populate ConverterConfig from JSON.");
+        throw std::runtime_error("Failed to populate ConverterConfig from TOML.");
     }
 
-    // 3. 注入运行时参数 (initial_top_parents)
+    // 3. 注入运行时参数
     for (const auto& [path_key, path_val] : app_config.pipeline.initial_top_parents) {
         config.initial_top_parents[path_key.string()] = path_val.string();
     }

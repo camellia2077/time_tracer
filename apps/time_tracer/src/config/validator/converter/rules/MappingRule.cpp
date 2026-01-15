@@ -2,12 +2,11 @@
 #include "MappingRule.hpp"
 #include <iostream>
 
-using json = nlohmann::json;
-
-// [修改] 方法归属到 MappingRule 类
-bool MappingRule::validate(const json& mappings_json) const {
-    if (!mappings_json.contains("text_mappings") || !mappings_json["text_mappings"].is_object()) {
-        std::cerr << "[Validator] Error: Mappings config must contain a 'text_mappings' object." << std::endl;
+// [修复] 参数类型改为 const toml::table&
+bool MappingRule::validate(const toml::table& mappings_tbl) const {
+    // [修复] 使用 toml++ API
+    if (!mappings_tbl.contains("text_mappings") || !mappings_tbl["text_mappings"].is_table()) {
+        std::cerr << "[Validator] Error: Mappings config must contain a 'text_mappings' table." << std::endl;
         return false;
     }
     return true;

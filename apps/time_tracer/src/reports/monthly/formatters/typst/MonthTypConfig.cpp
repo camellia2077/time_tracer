@@ -1,15 +1,15 @@
 ﻿// reports/monthly/formatters/typst/MonthTypConfig.cpp
 #include "MonthTypConfig.hpp"
 
-// [修改] 接收 JSON
-MonthTypConfig::MonthTypConfig(const nlohmann::json& config)
+// [修改] 接收 toml::table
+MonthTypConfig::MonthTypConfig(const toml::table& config)
     : MonthBaseConfig(config),
       style_(config)
 {
-    margin_top_cm_ = config_json_.at("margin_top_cm").get<double>();
-    margin_bottom_cm_ = config_json_.at("margin_bottom_cm").get<double>();
-    margin_left_cm_ = config_json_.at("margin_left_cm").get<double>();
-    margin_right_cm_ = config_json_.at("margin_right_cm").get<double>();
+    margin_top_cm_ = config_table_["margin_top_cm"].value_or<double>(2.5);
+    margin_bottom_cm_ = config_table_["margin_bottom_cm"].value_or<double>(2.5);
+    margin_left_cm_ = config_table_["margin_left_cm"].value_or<double>(2.0);
+    margin_right_cm_ = config_table_["margin_right_cm"].value_or<double>(2.0);
 }
 
 double MonthTypConfig::get_margin_top_cm() const { return margin_top_cm_; }

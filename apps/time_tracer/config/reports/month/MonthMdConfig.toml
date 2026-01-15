@@ -1,0 +1,6 @@
+report_title = "Monthly Summary for"
+project_breakdown_label = "Project Breakdown"
+actual_days_label = "Actual Days with Records"
+total_time_label = "Total Time Recorded"
+no_records_message = "No time records found for this month."
+invalid_format_message = "Invalid year_month format. Expected YYYYMM."

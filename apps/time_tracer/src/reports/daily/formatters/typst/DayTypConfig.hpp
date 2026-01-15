@@ -6,12 +6,12 @@
 #include "reports/shared/config/TypstStyleConfig.hpp"
 #include <string>
 #include <map>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class DayTypConfig : public DayBaseConfig {
 public:
-   // [修改] 接收 JSON
-   explicit DayTypConfig(const nlohmann::json& config);
+   // [修改] 接收 TOML
+   explicit DayTypConfig(const toml::table& config);
 
     int get_statistic_font_size() const;
     int get_statistic_title_font_size() const;

@@ -3,10 +3,7 @@
 #include <iostream>
 #include <set>
 
-using json = nlohmann::json;
-
-bool DailyTyp::validate_specific_keys(const json& query_json, const std::string& file_name) const {
-    // [核心修改] 将 "no_records" 替换为 "no_records_message"
+bool DailyTyp::validate_specific_keys(const toml::table& query_config, const std::string& file_name) const {
     const std::set<std::string> daily_typ_keys = {
         "title_prefix", "date_label", "total_time_label", "status_label", "sleep_label",
         "getup_time_label", "remark_label", "exercise_label", "no_records_message", "statistics_label",
@@ -15,7 +12,7 @@ bool DailyTyp::validate_specific_keys(const json& query_json, const std::string&
     };
     
     for (const auto& key : daily_typ_keys) {
-        if (!query_json.contains(key)) {
+        if (!query_config.contains(key)) {
             std::cerr << "[Validator] Error in " << file_name << ": Missing daily report key '" << key << "'." << std::endl;
             return false;
         }

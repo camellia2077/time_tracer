@@ -5,7 +5,7 @@
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/TypstStrategy.hpp"
 #include <memory>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 DayTypFormatter::DayTypFormatter(std::shared_ptr<DayTypConfig> config) 
     : BaseTypFormatter(config) {}
@@ -35,11 +35,11 @@ void DayTypFormatter::format_extra_content(std::stringstream& ss, const DailyRep
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 解析 TOML 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_content) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto typ_config = std::make_shared<DayTypConfig>(json_obj);
+            auto config_tbl = toml::parse(config_content);
+            auto typ_config = std::make_shared<DayTypConfig>(config_tbl);
             auto formatter = new DayTypFormatter(typ_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

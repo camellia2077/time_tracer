@@ -3,15 +3,15 @@
 #define TEX_STYLE_CONFIG_HPP
 
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改] 引入 toml++
 #include "reports/shared/api/shared_api.hpp"
 
-// 禁用 C4251 警告，因为我们将导出带有 STL 成员的类
 DISABLE_C4251_WARNING
-// 这个类封装了 LaTeX 报告共有的字体、边距和列表间距设置
+
 class REPORTS_SHARED_API TexStyleConfig {
 public:
-    explicit TexStyleConfig(const nlohmann::json& json);
+    // [修改] 接收 toml::table
+    explicit TexStyleConfig(const toml::table& config);
 
     const std::string& get_main_font() const;
     const std::string& get_cjk_main_font() const;

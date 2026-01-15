@@ -6,6 +6,7 @@
 #include "reports/monthly/formatters/latex/MonthTexConfig.hpp"
 #include "reports/shared/model/MonthlyReportData.hpp"
 
+// [修复] 还原正确的类声明
 class MonthTexFormatter : public BaseTexFormatter<MonthlyReportData, MonthTexConfig> {
 public:
     explicit MonthTexFormatter(std::shared_ptr<MonthTexConfig> config);

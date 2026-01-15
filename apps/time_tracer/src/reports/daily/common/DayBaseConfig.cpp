@@ -2,21 +2,24 @@
 #include "DayBaseConfig.hpp"
 #include <stdexcept>
 
-// 递归解析统计项的辅助函数
-static std::vector<StatisticItemConfig> parse_statistics_items_recursive(const nlohmann::json& json_array) {
+// [修改] 递归解析 TOML 数组
+static std::vector<StatisticItemConfig> parse_statistics_items_recursive(const toml::array* arr) {
     std::vector<StatisticItemConfig> items;
-    if (!json_array.is_array()) {
+    if (!arr) {
         return items;
     }
 
-    for (const auto& item_json : json_array) {
-        StatisticItemConfig item;
-        item.label = item_json.at("label").get<std::string>();
-        item.db_column = item_json.value("db_column", ""); 
-        item.show = item_json.value("show", true);
+    for (const auto& node : *arr) {
+        if (!node.is_table()) continue;
+        const auto& item_tbl = *node.as_table();
 
-        if (item_json.contains("sub_items")) {
-            item.sub_items = parse_statistics_items_recursive(item_json["sub_items"]);
+        StatisticItemConfig item;
+        item.label = item_tbl["label"].value_or<std::string>("");
+        item.db_column = item_tbl["db_column"].value_or<std::string>(""); 
+        item.show = item_tbl["show"].value_or(true);
+
+        if (const toml::array* sub_arr = item_tbl["sub_items"].as_array()) {
+            item.sub_items = parse_statistics_items_recursive(sub_arr);
         }
 
         items.push_back(item);
@@ -24,39 +27,45 @@ static std::vector<StatisticItemConfig> parse_statistics_items_recursive(const n
     return items;
 }
 
-// [修改] 构造函数直接接收 JSON，不再进行 IO
-DayBaseConfig::DayBaseConfig(const nlohmann::json& config) 
-    : config_json_(config) 
+// [修改] 构造函数
+DayBaseConfig::DayBaseConfig(const toml::table& config) 
+    : config_table_(config) 
 {
     load_base_config();
 }
 
 void DayBaseConfig::load_base_config() {
-    // 从 config_json_ 中加载数据
-    title_prefix_ = config_json_.value("title_prefix", ""); 
-    date_label_ = config_json_.at("date_label").get<std::string>();
-    total_time_label_ = config_json_.at("total_time_label").get<std::string>();
-    status_label_ = config_json_.at("status_label").get<std::string>();
-    sleep_label_ = config_json_.at("sleep_label").get<std::string>();
-    getup_time_label_ = config_json_.at("getup_time_label").get<std::string>();
-    remark_label_ = config_json_.at("remark_label").get<std::string>();
-    exercise_label_ = config_json_.at("exercise_label").get<std::string>();
-    
-    no_records_ = config_json_.at("no_records_message").get<std::string>();
+    // [修改] 使用 TOML++ API
+    if (auto val = config_table_["title_prefix"].value<std::string>()) {
+        title_prefix_ = *val;
+    } else {
+        // 兼容 report_title
+        title_prefix_ = config_table_["report_title"].value_or("Daily Report for");
+    }
 
-    statistics_label_ = config_json_.at("statistics_label").get<std::string>();
-    all_activities_label_ = config_json_.at("all_activities_label").get<std::string>();
-    activity_remark_label_ = config_json_.at("activity_remark_label").get<std::string>();
-    activity_connector_ = config_json_.at("activity_connector").get<std::string>();
-
-    project_breakdown_label_ = config_json_.value("project_breakdown_label", "Project Breakdown");
+    date_label_ = config_table_["date_label"].value_or("");
+    total_time_label_ = config_table_["total_time_label"].value_or("");
+    status_label_ = config_table_["status_label"].value_or("Status");
+    sleep_label_ = config_table_["sleep_label"].value_or("Sleep");
+    getup_time_label_ = config_table_["getup_time_label"].value_or("Getup Time");
+    remark_label_ = config_table_["remark_label"].value_or("Remark");
+    exercise_label_ = config_table_["exercise_label"].value_or("Exercise");
     
-    if (config_json_.contains("statistics_items")) {
-        statistics_items_ = parse_statistics_items_recursive(config_json_["statistics_items"]);
+    no_records_ = config_table_["no_records_message"].value_or("No records.");
+
+    statistics_label_ = config_table_["statistics_label"].value_or("Statistics");
+    all_activities_label_ = config_table_["all_activities_label"].value_or("All Activities");
+    activity_remark_label_ = config_table_["activity_remark_label"].value_or("Remark");
+    activity_connector_ = config_table_["activity_connector"].value_or("->");
+
+    project_breakdown_label_ = config_table_["project_breakdown_label"].value_or("Project Breakdown");
+    
+    if (const toml::array* arr = config_table_["statistics_items"].as_array()) {
+        statistics_items_ = parse_statistics_items_recursive(arr);
     }
 }
 
-// Getters 实现保持不变
+// Getters 保持不变
 const std::string& DayBaseConfig::get_title_prefix() const { return title_prefix_; }
 const std::string& DayBaseConfig::get_date_label() const { return date_label_; }
 const std::string& DayBaseConfig::get_total_time_label() const { return total_time_label_; }

@@ -13,7 +13,6 @@
 #include <sstream>
 
 #include "reports/shared/types/ReportFormat.hpp"
-// [修复] 更新包含路径
 #include "common/config/AppConfig.hpp"
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 #include "reports/shared/factories/DllFormatterWrapper.hpp"
@@ -44,7 +43,6 @@ public:
         register_creator(format, [dll_base_name, format](const AppConfig& config) {
             fs::path config_path;
 
-            // [核心修改] 更新路径访问：config.reports.xxx
             if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
                 switch(format) {
                     case ReportFormat::Markdown: config_path = config.reports.day_md_config_path; break;
@@ -65,21 +63,23 @@ public:
                 }
             }
 
-            std::string json_content = "{}";
+            // [修改] 默认为空字符串，不再是 "{}"
+            std::string config_content = "";
             if (!config_path.empty() && fs::exists(config_path)) {
                 try {
                     std::ifstream file(config_path);
                     if (file) {
                         std::stringstream buffer;
                         buffer << file.rdbuf();
-                        json_content = buffer.str();
+                        config_content = buffer.str();
                     }
                 } catch (const std::exception& e) {
                     std::cerr << "Error reading config file: " << config_path << " - " << e.what() << std::endl;
                 }
             }
 
-            return load_from_dll(dll_base_name, config, json_content);
+            // [修改] 传递 config_content
+            return load_from_dll(dll_base_name, config, config_content);
         });
     }
 
@@ -92,7 +92,7 @@ private:
     static std::unique_ptr<IReportFormatter<ReportDataType>> load_from_dll(
         const std::string& base_name, 
         const AppConfig& config,
-        const std::string& json_content) 
+        const std::string& config_content) 
     {
         try {
             fs::path exe_dir(config.exe_dir_path);
@@ -111,7 +111,7 @@ private:
                  throw std::runtime_error("Formatter plugin not found at: " + dll_path.string());
             }
 
-            return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), json_content);
+            return std::make_unique<DllFormatterWrapper<ReportDataType>>(dll_path.string(), config_content);
 
         } catch (const std::exception& e) {
             std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;

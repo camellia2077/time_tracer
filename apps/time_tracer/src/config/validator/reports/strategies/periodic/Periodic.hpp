@@ -2,16 +2,11 @@
 #ifndef PERIODIC_HPP
 #define PERIODIC_HPP
 
-#include "config/validator/reports/strategies/BaseStrategy.hpp" // [修改] 继承自基类
+#include "config/validator/reports/strategies/BaseStrategy.hpp"
 
-/**
- * @class Periodic
- * @brief (具体策略) 实现了针对周期性报表配置的验证逻辑。
- */
-class Periodic : public BaseStrategy { // [修改]
+class Periodic : public BaseStrategy {
 protected:
-    // [修改] 实现基类的抽象方法，只负责检查特定于 Period 的 key
-    bool validate_specific_keys(const nlohmann::json& query_json, const std::string& file_name) const override;
+    bool validate_specific_keys(const toml::table& query_config, const std::string& file_name) const override;
 };
 
 #endif // PERIODIC_HPP

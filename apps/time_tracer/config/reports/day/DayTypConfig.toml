@@ -1,0 +1,81 @@
+base_font = "MiSans VF"
+title_font = "MiSans VF"
+category_title_font = "MiSans VF"
+base_font_size = 10
+report_title_font_size = 14
+category_title_font_size = 12
+statistic_font_size = 10
+statistic_title_font_size = 12
+line_spacing_em = 0.6
+title_prefix = "Daily Report for"
+date_label = "Date"
+total_time_label = "Total Hours"
+status_label = "Status"
+sleep_label = "Sleep"
+getup_time_label = "Getup Time"
+remark_label = "Remark"
+exercise_label = "Exercise"
+no_records_message = "No time records for this day."
+statistics_label = "Statistics"
+all_activities_label = "All Activities"
+activity_remark_label = "Activity Remark"
+activity_connector = "->"
+
+[keyword_colors]
+study = "#2ECC40"
+recreation = "#FF4136"
+meal = "#FF851B"
+exercise = "#0074D9"
+routine = "#AAAAAA"
+sleep = "#B10DC9"
+code = "#39CCCC"
+
+[[statistics_items]]
+label = "Sleep Time"
+db_column = "sleep_total_time"
+show = true
+
+[[statistics_items]]
+label = "Study Time"
+db_column = "study_time"
+show = true
+
+[[statistics_items]]
+label = "Total Exercise Time"
+db_column = "total_exercise_time"
+show = true
+
+[[statistics_items.sub_items]]
+label = "Anaerobic Exercise"
+db_column = "anaerobic_time"
+show = true
+
+[[statistics_items.sub_items]]
+label = "Cardio Exercise"
+db_column = "cardio_time"
+show = true
+
+[[statistics_items]]
+label = "Grooming Time"
+db_column = "grooming_time"
+show = true
+
+[[statistics_items]]
+label = "Recreation Time"
+db_column = "recreation_time"
+show = true
+
+[[statistics_items.sub_items]]
+label = "Zhihu"
+db_column = "recreation_zhihu_time"
+show = true
+
+[[statistics_items.sub_items]]
+label = "Bilibili"
+db_column = "recreation_bilibili_time"
+show = true
+
+[[statistics_items.sub_items]]
+label = "Douyin"
+db_column = "recreation_douyin_time"
+show = true

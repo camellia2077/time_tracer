@@ -2,7 +2,7 @@
 #include "MonthTypFormatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [FIX] Include toml++
 
 MonthTypFormatter::MonthTypFormatter(std::shared_ptr<MonthTypConfig> config) 
     : BaseTypFormatter(config) {}
@@ -52,11 +52,11 @@ void MonthTypFormatter::format_header_content(std::stringstream& ss, const Month
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto typ_config = std::make_shared<MonthTypConfig>(json_obj);
+            // [FIX] 使用 toml::parse
+            auto config_tbl = toml::parse(config_toml);
+            auto typ_config = std::make_shared<MonthTypConfig>(config_tbl);
             auto formatter = new MonthTypFormatter(typ_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

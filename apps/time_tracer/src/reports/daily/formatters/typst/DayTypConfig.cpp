@@ -1,14 +1,22 @@
 ﻿// reports/daily/formatters/typst/DayTypConfig.cpp
 #include "DayTypConfig.hpp"
 
-// [修改] 接收 JSON
-DayTypConfig::DayTypConfig(const nlohmann::json& config)
+// [修改] 接收 TOML
+DayTypConfig::DayTypConfig(const toml::table& config)
     : DayBaseConfig(config),
       style_(config)
 {
-    statistic_font_size_ = config_json_.at("statistic_font_size").get<int>();
-    statistic_title_font_size_ = config_json_.at("statistic_title_font_size").get<int>();
-    keyword_colors_ = config_json_.at("keyword_colors").get<std::map<std::string, std::string>>();
+    statistic_font_size_ = config_table_["statistic_font_size"].value_or(10);
+    statistic_title_font_size_ = config_table_["statistic_title_font_size"].value_or(12);
+    
+    if (const toml::table* kw_tbl = config_table_["keyword_colors"].as_table()) {
+        for (const auto& [key, val] : *kw_tbl) {
+            if (auto s = val.value<std::string>()) {
+                // [FIX] 显式转换为 std::string 以匹配 map 键类型
+                keyword_colors_[std::string(key.str())] = *s;
+            }
+        }
+    }
 }
 
 int DayTypConfig::get_statistic_font_size() const { return statistic_font_size_; }
