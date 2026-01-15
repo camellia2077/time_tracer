@@ -1,14 +1,14 @@
 [English Version](README.en.md)
-# Time Master
+# time tracer
 
-**Time Master** 
+**time tracer** 
 轻量级的标记语言解释器
 
 是一套功能强大的个人时间管理与数据可视化工具集，旨在帮助您精确追踪、分析并优化您的时间利用。
 
 本套件包含三个核心组件：
 
-  * **`Time_Master` (C++)**: 核心命令行程序，负责解析原始日志、将数据存入数据库，并提供丰富的查询与报告导出功能。
+  * **`time_taster` (C++)**: 核心命令行程序，负责解析原始日志、将数据存入数据库，并提供丰富的查询与报告导出功能。
   * **`graph_generator` (Python)**: 数据可视化工具，能够读取 `Time_Master` 生成的数据库，并创建多种图表，如每日时间线、活动热力图等。
   * **`log_generator` (C++)**: 一个便捷的测试数据生成器，用于快速创建符合格式的日志文件。
 
@@ -34,11 +34,11 @@
 
 我们为所有C++组件提供了详细的编译指南，包括如何配置MSYS2 UCRT64环境和安装必要的库。
 
-➡️ **详细步骤请参考：[编译指南](https://www.google.com/search?q=./docs/COMPILING.md)** *(您之后需要创建这个文件)*
+➡️ **详细步骤请参考：暂时还没有
 
 ### 3\. 基本使用示例
 
-以下是 `Time_Master` 命令行工具的一些常用命令，让您快速感受其功能。
+以下是 `time_taster` 命令行工具的一些常用命令，让您快速感受其功能。
 
 **示例 1：完整处理数据**
 (检验源文件 -\> 转换 -\> 检验输出 -\> 存入数据库)
@@ -90,6 +90,7 @@ docs/
 
 本项目的实现离不开以下这些出色的开源库。我向这些项目的开发者们表示感谢！
 
-  * **[SQLite C Library](https://www.sqlite.org/index.html)**: 用于数据存储 (Public Domain)。
-  * **[nlohmann/json](https://github.com/nlohmann/json)**: 用于读取配置 (MIT License)。
-  * **[Matplotlib](https://matplotlib.org/)**: 用于数据可视化 (BSD-style License)。
+* **[SQLite C Library](https://www.sqlite.org/index.html)**: 用于数据存储 (Public Domain)。
+* **[nlohmann/json](https://github.com/nlohmann/json)**: 用于读取配置 (MIT License)。
+* **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: 用于解析 TOML 配置文件 (MIT License)。
+* **[Matplotlib](https://matplotlib.org/)**: 用于数据可视化 (BSD-style License)。
