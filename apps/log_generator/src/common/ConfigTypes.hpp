@@ -1,4 +1,4 @@
-﻿// common/ConfigTypes.hpp
+﻿// src/common/ConfigTypes.hpp
 #ifndef CONFIG_TYPES_HPP
 #define CONFIG_TYPES_HPP
 
@@ -17,6 +17,8 @@ struct DailyRemarkConfig {
     std::string prefix;
     std::vector<std::string> contents;
     double generation_chance = 0.5;
+    // [新增] 最大行数，默认为 1
+    int max_lines = 1; 
 };
 
 // 活动备注配置

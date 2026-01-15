@@ -3,7 +3,19 @@
 #include <format>
 #include <cmath>
 #include <iterator>
-#include <algorithm> // 为 std::max 添加此头文件
+#include <algorithm>
+#include <array> 
+
+// [修复] 移除 Lambda 中的 static 变量，直接通过列表初始化。
+// 字符串字面量（如 "00"）本身具有静态存储期，std::string_view 在编译期可以直接引用它们。
+static constexpr std::array<std::string_view, 60> DIGITS = {
+    "00", "01", "02", "03", "04", "05", "06", "07", "08", "09",
+    "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+    "20", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+    "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+    "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+    "50", "51", "52", "53", "54", "55", "56", "57", "58", "59"
+};
 
 EventGenerator::EventGenerator(int items_per_day,
                                const std::vector<std::string>& activities,
@@ -18,73 +30,67 @@ EventGenerator::EventGenerator(int items_per_day,
       dis_minute_(0, 59),
       dis_activity_selector_(0, static_cast<int>(activities.size()) - 1),
       dis_wake_keyword_selector_(0, static_cast<int>(wake_keywords.size()) -1),
-      should_generate_remark_(remark_config.has_value() ? remark_config->generation_chance : 0.0) {}
+      should_generate_remark_(remark_config.has_value() ? remark_config->generation_chance : 0.0) 
+{
+    slot_size_minutes_ = 1140.0 / items_per_day_;
+}
 
 void EventGenerator::generate_events_for_day(std::string& log_content, bool is_nosleep_day) {
-    // 以总分钟数来跟踪上一个事件的时间，初始值设为第一个可能事件（06:00）之前
     int last_total_minutes = 5 * 60 + 59; 
+    int start_index = 0;
 
-    for (int i = 0; i < items_per_day_; ++i) {
-        int hour;
-        int minute;
-        std::string text;
+    if (!is_nosleep_day) {
+        std::string_view text = wake_keywords_[dis_wake_keyword_selector_(gen_)];
+        int hour = 6;
+        int minute = dis_minute_(gen_);
+        last_total_minutes = hour * 60 + minute;
+
+        // 使用查找表快速拼接
+        log_content.append(DIGITS[hour]);
+        log_content.append(DIGITS[minute]);
+        log_content.append(text);
+        log_content.push_back('\n');
         
-        bool is_wakeup_event = false;
+        start_index = 1; 
+    }
 
-        if (i == 0 && !is_nosleep_day) {
-            // 正常天的第一个事件是“起床”
-            text = wake_keywords_[dis_wake_keyword_selector_(gen_)];
-            hour = 6;
-            minute = dis_minute_(gen_);
-            is_wakeup_event = true;
-
-            last_total_minutes = hour * 60 + minute;
-        } else {
-            // 通宵天或正常天的后续事件
-            text = common_activities_[dis_activity_selector_(gen_)];
-            
-            // 为当前事件计算一个目标时间范围，以保持事件在一天中的大致分布
-            double slot_size = (19.0 * 60.0) / items_per_day_; // 活动时间共19小时
-            int slot_start = static_cast<int>((6 * 60) + i * slot_size);
-            int slot_end = static_cast<int>((6 * 60) + (i + 1) * slot_size) - 1;
-
-            // 随机生成的开始时间必须晚于上一个事件的时间!!!
-            int effective_start = std::max(slot_start, last_total_minutes + 1);
-
-            // 确保时间范围的结束点有效
-            if (slot_end <= effective_start) {
-                slot_end = effective_start + 5; // 给一个小的随机窗口
-            }
-
-            // 在计算出的有效时间窗口内生成一个随机时间
-            std::uniform_int_distribution<> time_dist(effective_start, slot_end);
-            int current_total_minutes = time_dist(gen_);
-            
-            // 最终保障措施：如果出现任何意外（如取整问题），强制时间递增
-            if (current_total_minutes <= last_total_minutes) {
-                current_total_minutes = last_total_minutes + 1;
-            }
-            
-            // 将总分钟数转换回小时和分钟
-            int logical_hour = current_total_minutes / 60;
-            minute = current_total_minutes % 60;
-            hour = (logical_hour >= 24) ? logical_hour - 24 : logical_hour;
-
-            last_total_minutes = current_total_minutes;
-        }
+    for (int i = start_index; i < items_per_day_; ++i) {
+        std::string_view text = common_activities_[dis_activity_selector_(gen_)];
         
-        // 尝试添加备注
-        std::string remark_str;
-        if (remark_config_ && !is_wakeup_event && should_generate_remark_(gen_)) {
-            const std::string& delimiter = remark_delimiters_[remark_delimiter_idx_];
-            const std::string& content = remark_config_->contents[remark_content_idx_];
-            remark_str = std::format(" {}{}", delimiter, content);
+        int slot_start = static_cast<int>(360 + i * slot_size_minutes_);
+        int slot_end = static_cast<int>(360 + (i + 1) * slot_size_minutes_) - 1;
+        int effective_start = std::max(slot_start, last_total_minutes + 1);
 
-            // 轮换使用分隔符和备注内容
+        if (slot_end <= effective_start) slot_end = effective_start + 5; 
+
+        std::uniform_int_distribution<> time_dist(effective_start, slot_end);
+        int current_total_minutes = time_dist(gen_);
+        
+        if (current_total_minutes <= last_total_minutes) current_total_minutes = last_total_minutes + 1;
+        
+        int logical_hour = current_total_minutes / 60;
+        int minute = current_total_minutes % 60;
+        int hour = (logical_hour >= 24) ? logical_hour - 24 : logical_hour;
+
+        last_total_minutes = current_total_minutes;
+        
+        // 手动拼接，避免 std::format 解析开销
+        log_content.append(DIGITS[hour]);
+        log_content.append(DIGITS[minute]);
+        log_content.append(text);
+
+        if (remark_config_ && should_generate_remark_(gen_)) {
+            std::string_view delimiter = remark_delimiters_[remark_delimiter_idx_];
+            std::string_view content = remark_config_->contents[remark_content_idx_];
+            
+            log_content.push_back(' ');
+            log_content.append(delimiter);
+            log_content.append(content);
+
             remark_delimiter_idx_ = (remark_delimiter_idx_ + 1) % remark_delimiters_.size();
             remark_content_idx_ = (remark_content_idx_ + 1) % remark_config_->contents.size();
         }
 
-        std::format_to(std::back_inserter(log_content), "{:02}{:02}{}{}\n", hour, minute, text, remark_str);
+        log_content.push_back('\n');
     }
 }

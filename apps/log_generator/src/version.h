@@ -5,7 +5,7 @@
 
 
 namespace AppVersion {
-    const std::string APP_VERSION = "0.1.2.0";
+    const std::string APP_VERSION = "0.1.0.1";
     const std::string LAST_UPDATE = "2026-01-15";
 }
 

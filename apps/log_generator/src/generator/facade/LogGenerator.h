@@ -4,6 +4,7 @@
 #include "ILogGenerator.h"
 #include "config/Config.h"
 #include "generator/_internal/DayGenerator.h"
+#include "generator/_internal/SleepScheduler.h" // [新增] 引入策略类
 #include <vector>
 #include <string>
 #include <optional>
@@ -18,19 +19,18 @@ public:
                  const std::optional<ActivityRemarkConfig>& activity_remark_config,
                  const std::vector<std::string>& wake_keywords);
 
-    std::string generate_for_month(int year, int month, int days_in_month) override;
+    // 接口保持不变，支持内存复用
+    void generate_for_month(int year, int month, int days_in_month, std::string& buffer) override;
 
 private:
     std::mt19937 gen_;
+    
+    // 子组件：负责具体的单日内容生成
     std::unique_ptr<DayGenerator> day_generator_;
 
-    bool enable_nosleep_;
-    int current_sequence_length_ = 1;
-    int days_into_sequence_ = 0;
-    bool is_in_nosleep_block_ = true;
-
-    std::uniform_int_distribution<> nosleep_length_dist_;
-    std::uniform_int_distribution<> normal_length_dist_;
+    // [新增] 子组件：负责通宵/睡眠调度策略
+    // 所有的状态变量（enable_nosleep_, sequence_length 等）都移入了这个类
+    std::unique_ptr<SleepScheduler> sleep_scheduler_;
 };
 
 #endif // GENERATOR_FACADE_LOGGENERATOR_H
