@@ -28,6 +28,7 @@ set(SOURCES
     src/generator/_internal/EventGenerator.cpp
     src/generator/_internal/DayGenerator.cpp
     src/generator/facade/LogGenerator.cpp
+    src/generator/_internal/SleepScheduler.cpp
     
     # Utils 工具模块
     src/utils/PerformanceReporter.cpp
