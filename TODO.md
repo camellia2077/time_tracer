@@ -1,13 +1,4 @@
 高优先级
-0converter和config.json使用toml库
-
-1reports使用toml库
-
-22 
-加入是否编译图标选项
-
-
-
 2导出的日报告的时候，没用按照年份文件夹，月份文件夹来分类
 
 3
@@ -16,6 +7,9 @@ reports文件夹中json自定义格式化输出的标题，输出为true ,不输
 
 5 constexpr std::string_view LAST_UPDATED 使用编译器自动确定编译时间，而不是手动输入
 gemini "CMake 自动编译日期实现"
+
+
+6
 检验dll是否缺失的环节，是否可以默认不打印，出问题才打印？
 例如这些内容
 正在初始化文件控制器...
@@ -42,6 +36,10 @@ gemini "CMake 自动编译日期实现"
 
 
 中优先级
+
+0
+cli使用非模板库
+
 -1
 import的时候要检查是否为所需的 json文件，以免用户import了txt文件
 
@@ -59,13 +57,6 @@ tex无法编译是因为不支持当前的可变字体，tex内容由加粗
 解决方法就是代码中取消注释，手动指定字体的目录，但是这样只能编译，无法正确渲染字体加粗
 
 
-
-7
-导出的时候
-time_master_cli export daily 20240101 -o /你的/自定义/路径
-不知道这个功能有没有实现
-
-
 8
 支持某个关键词的查询？不知道有没有实现
 
@@ -74,7 +65,7 @@ time_master_cli export daily 20240101 -o /你的/自定义/路径
 
 
 低优先级
-gemini "主要模块剥离逻辑和定义 C 接口。"
+
 0. 核心逻辑库 (Core Library) 的接口设计
 
 不要局限于“现在就编译成 DLL”，而是应该关注 “核心逻辑库 (Core Library) 的接口设计”。
@@ -102,10 +93,14 @@ iOS (FFI): Swift/Obj-C 直接调用编译出的静态库 .a 或 Framework。
 
 Flutter/React Native: 通过 FFI (Foreign Function Interface) 调用 C 接口。
 
-
-
 1
-tex文件无法编译，看看tex的结构有什么问题
+感觉没什么必要，程序主要是在生成报告的时候使用次数多
+转换和插入慢一点就也没什么，反正一个人一天最多也就几百行
+converter里面json使用yyjson
+inserter里面json插入使用yyjson
+yyjson在pacman没有包，你需要手动放入程序目录
+
+
 
 
 

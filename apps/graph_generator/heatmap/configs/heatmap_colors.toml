@@ -7,7 +7,7 @@ DEFAULT_COLOR_PALETTE_NAME = "GITHUB_GREEN_LIGHT"
 OVER_12_HOURS_COLOR_REF = "ORANGE"
 
 # 需要应用这些调色板的父项目列表
-PARENT_PROJECTS = ["study"]
+PARENT_PROJECTS = ["study", "english", "code","math"]
 
 # --- 调色板定义 ---
 [COLOR_PALETTES]
