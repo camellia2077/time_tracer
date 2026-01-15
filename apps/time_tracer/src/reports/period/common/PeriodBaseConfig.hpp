@@ -4,16 +4,14 @@
 
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
-#include <nlohmann/json.hpp>
-// [修改] 移除 IO
-// #include "reports/shared/utils/config/ConfigUtils.hpp"
+#include <toml++/toml.h> // [修改] 使用 toml++
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API PeriodBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit PeriodBaseConfig(const nlohmann::json& config);
+    // [修改] 接收 toml::table
+    explicit PeriodBaseConfig(const toml::table& config);
     virtual ~PeriodBaseConfig() = default;
 
     const std::string& get_report_title_prefix() const;
@@ -27,7 +25,8 @@ public:
     const std::string& get_project_breakdown_label() const;
 
 protected:
-    nlohmann::json config_json_;
+    // [修改] 存储 toml::table
+    toml::table config_table_;
 
 private:
     void load_base_config();

@@ -1,14 +1,18 @@
 // reports/shared/config/TypstStyleConfig.cpp
 #include "TypstStyleConfig.hpp"
 
-TypstStyleConfig::TypstStyleConfig(const nlohmann::json& json) {
-    base_font_ = json.at("base_font").get<std::string>();
-    title_font_ = json.at("title_font").get<std::string>();
-    category_title_font_ = json.at("category_title_font").get<std::string>();
-    base_font_size_ = json.at("base_font_size").get<int>();
-    report_title_font_size_ = json.at("report_title_font_size").get<int>();
-    category_title_font_size_ = json.at("category_title_font_size").get<int>();
-    line_spacing_em_ = json.at("line_spacing_em").get<double>();
+// [修改] 使用 toml::table 解析
+TypstStyleConfig::TypstStyleConfig(const toml::table& tbl) {
+    // [修复] 移除 value_or 后的 <std::string>
+    // toml++ 会根据传入参数自动推导返回类型，并支持左值引用
+    base_font_ = tbl["base_font"].value_or("");
+    title_font_ = tbl["title_font"].value_or(base_font_);
+    category_title_font_ = tbl["category_title_font"].value_or(base_font_);
+    
+    base_font_size_ = tbl["base_font_size"].value_or(10);
+    report_title_font_size_ = tbl["report_title_font_size"].value_or(14);
+    category_title_font_size_ = tbl["category_title_font_size"].value_or(12);
+    line_spacing_em_ = tbl["line_spacing_em"].value_or(0.65);
 }
 
 const std::string& TypstStyleConfig::get_base_font() const { return base_font_; }

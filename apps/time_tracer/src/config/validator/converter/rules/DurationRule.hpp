@@ -2,12 +2,12 @@
 #ifndef DURATION_RULE_HPP
 #define DURATION_RULE_HPP
 
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
-// [修改] 类名从 DurationRules 改为 DurationRule
 class DurationRule {
 public:
-    bool validate(const nlohmann::json& duration_json) const;
+    // [修改] 参数类型改为 toml::table
+    bool validate(const toml::table& duration_tbl) const;
 };
 
 #endif // DURATION_RULE_HPP

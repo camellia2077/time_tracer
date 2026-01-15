@@ -4,12 +4,12 @@
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include <string> 
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class MonthMdConfig : public MonthBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit MonthMdConfig(const nlohmann::json& config);
+    // [修改] 接收 toml::table
+    explicit MonthMdConfig(const toml::table& config);
     
     const std::string& get_project_breakdown_label() const;
 

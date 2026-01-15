@@ -1,13 +1,23 @@
 ﻿// reports/daily/formatters/latex/DayTexConfig.cpp
 #include "DayTexConfig.hpp"
 
-// [修改] 接收 JSON，并用来初始化基类和成员
-DayTexConfig::DayTexConfig(const nlohmann::json& config)
-    : DayBaseConfig(config), // 传递给基类
-      style_(config)         // 传递给 TexStyleConfig (它本身也接受 json)
+// [修改] 接收 TOML，初始化基类和 style_
+DayTexConfig::DayTexConfig(const toml::table& config)
+    : DayBaseConfig(config), 
+      style_(config)
 {
-    report_title_ = config_json_.at("report_title").get<std::string>();
-    keyword_colors_ = config_json_.at("keyword_colors").get<std::map<std::string, std::string>>();
+    // config_table_ 在基类中是 protected，也可以直接用
+    report_title_ = config_table_["report_title"].value_or("");
+    
+    if (const toml::table* kw_tbl = config_table_["keyword_colors"].as_table()) {
+        for (const auto& [key, val] : *kw_tbl) {
+            if (auto s = val.value<std::string>()) {
+                // [修复] key.str() 返回的是 string_view，需要显式转换为 std::string
+                // 才能作为 std::map<std::string, ...> 的键
+                keyword_colors_[std::string(key.str())] = *s;
+            }
+        }
+    }
 }
 
 const std::string& DayTexConfig::get_report_title() const { return report_title_; }

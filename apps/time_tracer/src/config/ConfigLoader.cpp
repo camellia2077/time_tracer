@@ -2,10 +2,9 @@
 #include "ConfigLoader.hpp"
 #include <iostream>
 #include <stdexcept>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // 引入 toml++
 
 // 引入 IO 模块
-#include "io/core/FileReader.hpp"
 #include "io/core/FileSystemHelper.hpp"
 
 // 引入加载器和解析工具
@@ -15,7 +14,7 @@
 namespace fs = std::filesystem;
 
 namespace {
-    // 内部辅助函数：根据路径加载具体的报表配置内容
+    // 报表加载逻辑保持不变，因为它们仍然指向 JSON 文件
     void load_detailed_reports(AppConfig& config) {
         // --- Typst ---
         if (!config.reports.day_typ_config_path.empty())
@@ -51,7 +50,8 @@ ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
     }
 
     config_dir_path = exe_path / CONFIG_DIR_NAME;
-    main_config_path = config_dir_path / CONFIG_FILE_NAME;
+    // [修改] 更改为 config.toml
+    main_config_path = config_dir_path / "config.toml";
 }
 
 std::string ConfigLoader::get_main_config_path() const {
@@ -64,25 +64,23 @@ AppConfig ConfigLoader::load_configuration() {
         throw std::runtime_error("Configuration file not found: " + main_config_path.string());
     }
 
-    // 2. 读取并解析 JSON
-    nlohmann::json j;
+    // 2. 读取并解析 TOML
+    toml::table tbl;
     try {
-        std::string config_content = FileReader::read_content(main_config_path);
-        j = nlohmann::json::parse(config_content);
-    } catch (const std::exception& e) {
-        throw std::runtime_error("Failed to read/parse config.json: " + std::string(e.what()));
+        tbl = toml::parse_file(main_config_path.string());
+    } catch (const toml::parse_error& err) {
+        throw std::runtime_error("Failed to parse config.toml: " + std::string(err.description()));
     }
 
     AppConfig app_config;
     app_config.exe_dir_path = exe_path;
 
-    // 3. 解析基础结构 (System, Pipeline, Paths)
-    // 委托给 ConfigParserUtils
-    ConfigParserUtils::parse_system_settings(j, exe_path, app_config);
-    ConfigParserUtils::parse_pipeline_settings(j, config_dir_path, app_config);
-    ConfigParserUtils::parse_report_paths(j, config_dir_path, app_config);
+    // 3. 解析基础结构 (使用 TOML 版的 ParserUtils)
+    ConfigParserUtils::parse_system_settings(tbl, exe_path, app_config);
+    ConfigParserUtils::parse_pipeline_settings(tbl, config_dir_path, app_config);
+    ConfigParserUtils::parse_report_paths(tbl, config_dir_path, app_config);
 
-    // 4. 加载报表详情 (Structs)
+    // 4. 加载报表详情 (内部仍加载 JSON，路径由 config.toml 提供)
     try {
         load_detailed_reports(app_config);
     } catch (const std::exception& e) {

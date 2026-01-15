@@ -1,4 +1,5 @@
 ﻿// reports/daily/formatters/latex/DayTexConfig.hpp
+// reports/daily/formatters/latex/DayTexConfig.hpp
 #ifndef DAY_TEX_CONFIG_HPP
 #define DAY_TEX_CONFIG_HPP
 
@@ -6,12 +7,12 @@
 #include "reports/shared/config/TexStyleConfig.hpp"
 #include <string>
 #include <map>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class DayTexConfig : public DayBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit DayTexConfig(const nlohmann::json& config);
+    // [修改] 接收 TOML
+    explicit DayTexConfig(const toml::table& config);
 
     const std::string& get_report_title() const;
     const std::map<std::string, std::string>& get_keyword_colors() const;
