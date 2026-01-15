@@ -3,12 +3,12 @@
 #define MAIN_RULE_HPP
 
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
-// [修改] 类名从 MainRules 改为 MainRule
 class MainRule {
 public:
-    bool validate(const nlohmann::json& main_json, std::string& out_mappings_path, std::string& out_duration_rules_path) const;
+    // [修改] 参数类型改为 toml::table
+    bool validate(const toml::table& main_tbl, std::string& out_mappings_path, std::string& out_duration_rules_path) const;
 };
 
 #endif // MAIN_RULE_HPP

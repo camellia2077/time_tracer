@@ -30,6 +30,7 @@ if(BUILD_INSTALLER)
     install(FILES
         "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
         "${UCRT64_BIN_PATH}/libstdc++-6.dll"
+        "${UCRT64_BIN_PATH}/libtomlplusplus-3.dll" # [修改] 加上版本后缀 -3
         "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
         "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
         DESTINATION bin

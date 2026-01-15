@@ -4,7 +4,7 @@
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/LatexStrategy.hpp"
 #include <memory>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 DayTexFormatter::DayTexFormatter(std::shared_ptr<DayTexConfig> config) 
     : BaseTexFormatter(config) {}
@@ -37,11 +37,11 @@ void DayTexFormatter::format_extra_content(std::stringstream& ss, const DailyRep
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 解析 TOML 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_content) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto tex_config = std::make_shared<DayTexConfig>(json_obj);
+            auto config_tbl = toml::parse(config_content);
+            auto tex_config = std::make_shared<DayTexConfig>(config_tbl);
             auto formatter = new DayTexFormatter(tex_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

@@ -5,14 +5,14 @@
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include "reports/shared/config/TexStyleConfig.hpp"
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class MonthTexConfig : public MonthBaseConfig {
 public:
-    // [修改] 接收 JSON
-    explicit MonthTexConfig(const nlohmann::json& config);
+    // [修改] 接收 toml::table
+    explicit MonthTexConfig(const toml::table& config);
 
-    // 代理
+    // 代理 (TexStyleConfig 已经在 shared 中更新为 TOML 支持)
     const std::string& get_main_font() const { return style_.get_main_font(); }
     const std::string& get_cjk_main_font() const { return style_.get_cjk_main_font(); }
     int get_base_font_size() const { return style_.get_base_font_size(); }

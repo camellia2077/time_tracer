@@ -71,6 +71,7 @@ files_to_copy = [
     "libgcc_s_seh-1.dll",
     "libstdc++-6.dll",
     "libsqlite3-0.dll",
+    "libtomlplusplus-3.dll",
     "libwinpthread-1.dll"
 ]
 

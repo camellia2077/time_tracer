@@ -1,7 +1,7 @@
 ﻿// reports/monthly/formatters/latex/MonthTexFormatter.cpp
 #include "MonthTexFormatter.hpp"
 #include "MonthTexUtils.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h>
 
 MonthTexFormatter::MonthTexFormatter(std::shared_ptr<MonthTexConfig> config) 
     : BaseTexFormatter(config) {}
@@ -30,11 +30,13 @@ void MonthTexFormatter::format_header_content(std::stringstream& ss, const Month
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto tex_config = std::make_shared<MonthTexConfig>(json_obj);
+            // [FIX] 直接使用 parse 结果作为 table
+            auto config_tbl = toml::parse(config_toml);
+            
+            // [FIX] 移除解引用
+            auto tex_config = std::make_shared<MonthTexConfig>(config_tbl);
             auto formatter = new MonthTexFormatter(tex_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

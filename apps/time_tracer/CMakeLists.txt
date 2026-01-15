@@ -13,6 +13,7 @@ cmake_policy(SET CMP0115 NEW)
 # --- Find External Dependencies ---
 find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(tomlplusplus REQUIRED)
 
 # --- 1. 项目范围的设置 ---
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

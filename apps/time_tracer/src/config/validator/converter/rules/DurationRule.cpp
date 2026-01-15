@@ -2,36 +2,42 @@
 #include "DurationRule.hpp"
 #include <iostream>
 
-using json = nlohmann::json;
-
-// [修改] 方法归属到 DurationRule 类
-bool DurationRule::validate(const json& duration_json) const {
-    if (!duration_json.contains("text_duration_mappings") || !duration_json["text_duration_mappings"].is_object()) {
-        std::cerr << "[Validator] Error: Duration rules config must contain a 'text_duration_mappings' object." << std::endl;
+bool DurationRule::validate(const toml::table& duration_tbl) const {
+    if (!duration_tbl.contains("text_duration_mappings") || !duration_tbl["text_duration_mappings"].is_table()) {
+        std::cerr << "[Validator] Error: Duration rules config must contain a 'text_duration_mappings' table." << std::endl;
         return false;
     }
 
-    if (!duration_json.contains("duration_mappings") || !duration_json["duration_mappings"].is_object()) {
-        std::cerr << "[Validator] Error: Duration rules config must contain a 'duration_mappings' object." << std::endl;
+    if (!duration_tbl.contains("duration_mappings") || !duration_tbl["duration_mappings"].is_table()) {
+        std::cerr << "[Validator] Error: Duration rules config must contain a 'duration_mappings' table." << std::endl;
         return false;
     }
 
-    for (const auto& [key, rules_array] : duration_json["duration_mappings"].items()) {
-        if (!rules_array.is_array()) {
-            std::cerr << "[Validator] Error: In duration rules, the value for key '" << key << "' must be an array." << std::endl;
+    const auto* mappings = duration_tbl["duration_mappings"].as_table();
+    for (const auto& [key, node] : *mappings) {
+        if (!node.is_array()) {
+            std::cerr << "[Validator] Error: In duration rules, the value for key '" << key.str() << "' must be an array." << std::endl;
             return false;
         }
-        for (const auto& rule : rules_array) {
-            if (!rule.is_object() || !rule.contains("less_than_minutes") || !rule.contains("value")) {
-                std::cerr << "[Validator] Error: In duration rules for '" << key << "', each rule must be an object with 'less_than_minutes' and 'value' keys." << std::endl;
+        
+        const auto& rules_array = *node.as_array();
+        for (const auto& rule_node : rules_array) {
+            if (!rule_node.is_table()) {
+                std::cerr << "[Validator] Error: In duration rules for '" << key.str() << "', each rule must be an inline table." << std::endl;
                 return false;
             }
-            if (!rule["less_than_minutes"].is_number_integer()) {
-                std::cerr << "[Validator] Error: 'less_than_minutes' must be an integer for a rule in '" << key << "'." << std::endl;
+            const auto& rule = *rule_node.as_table();
+            
+            if (!rule.contains("less_than_minutes") || !rule.contains("value")) {
+                std::cerr << "[Validator] Error: Rules must have 'less_than_minutes' and 'value'." << std::endl;
+                return false;
+            }
+            if (!rule["less_than_minutes"].is_integer()) {
+                std::cerr << "[Validator] Error: 'less_than_minutes' must be an integer." << std::endl;
                 return false;
             }
             if (!rule["value"].is_string()) {
-                std::cerr << "[Validator] Error: 'value' must be a string for a rule in '" << key << "'." << std::endl;
+                std::cerr << "[Validator] Error: 'value' must be a string." << std::endl;
                 return false;
             }
         }

@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <format>
 #include <memory>
-#include <nlohmann/json.hpp> // [新增]
+#include <toml++/toml.h> // [修改] 引入 toml++
 
 #include "reports/shared/utils/format/BoolToString.hpp"
 #include "reports/shared/utils/format/TimeFormat.hpp"
@@ -11,8 +11,6 @@
 
 #include "reports/daily/formatters/statistics/StatFormatter.hpp"
 #include "reports/daily/formatters/statistics/MarkdownStatStrategy.hpp"
-// [修改] 不需要 AppConfig 
-// #include "common/AppConfig.hpp"
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config) 
     : BaseMdFormatter(config) {}
@@ -69,11 +67,11 @@ void DayMdFormatter::_display_detailed_activities(std::stringstream& ss, const D
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 解析 TOML 字符串
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_content) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto md_config = std::make_shared<DayMdConfig>(json_obj);
+            auto config_tbl = toml::parse(config_content);
+            auto md_config = std::make_shared<DayMdConfig>(config_tbl);
             auto formatter = new DayMdFormatter(md_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

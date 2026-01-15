@@ -1,0 +1,26 @@
+# config/config.toml
+
+[system]
+error_log = "../output/error_log.txt"
+export_root = "exported_reports"
+save_processed_output = true
+date_check_continuity = true
+
+[converter]
+# 指向新的 TOML 格式的转换器配置
+interval_config = "converter/interval_processor_config.toml"
+
+[reports.typst]
+day = "reports/day/DayTypConfig.toml"
+month = "reports/month/MonthTypConfig.toml"
+period = "reports/period/PeriodTypConfig.toml"
+
+[reports.latex]
+day = "reports/day/DayTexConfig.toml"
+month = "reports/month/MonthTexConfig.toml"
+period = "reports/period/PeriodTexConfig.toml"
+
+[reports.markdown]
+day = "reports/day/DayMdConfig.toml"
+month = "reports/month/MonthMdConfig.toml"
+period = "reports/period/PeriodMdConfig.toml"

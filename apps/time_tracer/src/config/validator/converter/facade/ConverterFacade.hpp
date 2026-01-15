@@ -2,14 +2,15 @@
 #ifndef CONVERTER_FACADE_HPP
 #define CONVERTER_FACADE_HPP
 
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 class ConverterFacade {
 public:
+    // [修改] 参数类型改为 toml::table
     bool validate(
-        const nlohmann::json& main_json,
-        const nlohmann::json& mappings_json,
-        const nlohmann::json& duration_rules_json
+        const toml::table& main_tbl,
+        const toml::table& mappings_tbl,
+        const toml::table& duration_rules_tbl
     ) const;
 };
 

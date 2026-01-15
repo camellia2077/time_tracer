@@ -2,7 +2,7 @@
 #include "PeriodTypFormatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/TimeFormat.hpp"
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 
 PeriodTypFormatter::PeriodTypFormatter(std::shared_ptr<PeriodTypConfig> config) 
     : BaseTypFormatter(config) {}
@@ -56,11 +56,16 @@ void PeriodTypFormatter::format_header_content(std::stringstream& ss, const Peri
 }
 
 extern "C" {
-    // [核心修改] 接收 config_json 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_json) {
+    // [核心修改] 使用 toml::parse
+    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
         try {
-            auto json_obj = nlohmann::json::parse(config_json);
-            auto typ_config = std::make_shared<PeriodTypConfig>(json_obj);
+            // [FIX] toml::parse 可能返回 parse_result，但在某些上下文中编译器可能将其视为 table
+            // 这里我们使用 auto 并直接将其作为 table 传递，移除 ! 和 * 操作符以匹配编译器行为
+            auto config_tbl = toml::parse(config_toml);
+            
+            // 假设 config_tbl 是一个 table 或可以隐式转换/行为像 table
+            // 如果它是 parse_result，它包含 table。
+            auto typ_config = std::make_shared<PeriodTypConfig>(config_tbl);
             auto formatter = new PeriodTypFormatter(typ_config);
             return static_cast<FormatterHandle>(formatter);
         } catch (...) {

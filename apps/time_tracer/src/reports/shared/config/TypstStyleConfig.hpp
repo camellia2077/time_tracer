@@ -3,14 +3,15 @@
 #define TYPST_STYLE_CONFIG_HPP
 
 #include <string>
-#include <nlohmann/json.hpp>
+#include <toml++/toml.h> // [修改]
 #include "reports/shared/api/shared_api.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API TypstStyleConfig {
 public:
-    explicit TypstStyleConfig(const nlohmann::json& json);
+    // [修改] 接收 toml::table
+    explicit TypstStyleConfig(const toml::table& config);
 
     const std::string& get_base_font() const;
     const std::string& get_title_font() const;
