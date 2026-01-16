@@ -4,27 +4,28 @@ from .base_module import BaseTester, TestCounter
 
 class ImporterTester(BaseTester):
     """
-    [Refactored] Module for database import tests.
-    Formerly DatabaseImportTester (db_inserter).
+    [Refactored] Module for standalone database import tests.
+    Tests the 'import' command which reads JSON files from disk and inserts them into DB.
     """
     def __init__(self, counter: TestCounter, module_order: int,
                  executable_to_run: str, source_data_path: Path, converted_text_dir_name: str,
                  output_dir: Path):
-        # [修改] 将内部名称从 "db_import" 改为 "importer"
         super().__init__(counter, module_order, "importer",
                          executable_to_run, source_data_path, converted_text_dir_name,
                          output_dir)
 
     def run_tests(self) -> bool:
-        """Runs all database import related tests."""
+        """Runs standalone database import test."""
+        # 确保输入目录存在（该目录应由 ConverterTester 的 'convert' 步骤生成）
         if not self.processed_data_path.exists():
             print(f"Warning: Skipping Importer tests because the input directory '{self.processed_data_path.name}' does not exist.")
-            return True # 跳过测试被视为成功
+            # 注意：如果 convert 步骤失败，这里也会被跳过
+            return True 
 
-        # 使用 'import' 命令：import <path>
-        # 这里的 CLI 命令名称已经是 "import" 了，所以只需要改类名和模块ID即可
+        # 测试 'import' 命令: 读取磁盘上的 JSON -> 解析 -> 入库
+        # 这验证了系统的"数据恢复"能力，即使不运行完整 blink 也能从 JSON 重建数据库
         return self.run_command_test(
-            "Database Import Test (import)", 
+            "Standalone File Import (import command)", 
             ["import", str(self.processed_data_path)], 
-            stdin_input="y\n" # 自动确认交互提示
+            stdin_input="y\n" # 自动确认 "Are you sure?" 提示
         )

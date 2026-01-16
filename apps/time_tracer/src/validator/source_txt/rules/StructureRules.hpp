@@ -1,12 +1,11 @@
-﻿// converter/validator/source_txt/rules/StructureRules.hpp
+// validator/source_txt/rules/StructureRules.hpp
 #ifndef STRUCTURE_RULES_HPP
 #define STRUCTURE_RULES_HPP
 
-#include "converter/validator/common/ValidatorUtils.hpp"
+#include "validator/common/ValidatorUtils.hpp"
 #include <string>
 #include <set>
-// 负责跟踪验证进度并强制执行文件结构规则
-// 负责管理验证状态并检查文件结构/逻辑顺序
+
 class StructureRules {
 public:
     StructureRules() = default;
@@ -23,8 +22,7 @@ private:
     bool has_seen_year_ = false;
     bool has_seen_date_in_block_ = false;
     bool has_seen_event_in_day_ = false;
-    // --- [核心修改] 新增成员，用于记录上一个年份 ---
     int last_seen_year_ = 0; 
 };
 
-#endif // STRUCTURAL_VALIDATOR_HPP
+#endif // STRUCTURE_RULES_HPP

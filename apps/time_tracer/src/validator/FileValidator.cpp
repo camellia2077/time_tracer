@@ -1,7 +1,7 @@
-﻿// converter/validator/FileValidator.cpp
+// validator/FileValidator.cpp
 #include "FileValidator.hpp"
-#include "converter/validator/source_txt/facade/TextValidator.hpp"
-#include "converter/validator/output_json/facade/JsonValidator.hpp"
+#include "validator/source_txt/facade/TextValidator.hpp"
+#include "validator/output_json/facade/JsonValidator.hpp"
 
 FileValidator::FileValidator(const ConverterConfig& config) 
     : converter_config_(config) {}

@@ -1,8 +1,8 @@
-﻿// converter/validator/source_txt/facade/TextValidator.hpp
+// validator/source_txt/facade/TextValidator.hpp
 #ifndef TEXT_VALIDATOR_HPP
 #define TEXT_VALIDATOR_HPP
 
-#include "converter/validator/common/ValidatorUtils.hpp"
+#include "validator/common/ValidatorUtils.hpp"
 #include "converter/config/ConverterConfig.hpp"
 
 #include <string>
@@ -14,7 +14,6 @@ public:
     explicit TextValidator(const ConverterConfig& config);
     ~TextValidator();
 
-    // [核心修改] 接收文件名(仅用于日志)和内容字符串
     bool validate(const std::string& filename, const std::string& content, std::set<Error>& errors);
 
 private:

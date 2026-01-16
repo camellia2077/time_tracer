@@ -1,10 +1,8 @@
-﻿// converter/validator/output_json/rules/ActivityRules.cpp
+// validator/output_json/rules/ActivityRules.cpp
 #include "ActivityRules.hpp"
 
 using json = nlohmann::json;
-// 因为程序依靠前一天的最后一项内容的时间,与当前天的起床时间来生成sleep_night
-// 如果一天只有一项,那生成逻辑就会错乱
-// 验证一天的活动数量是否至少为2
+
 void validateActivityCount(const json& day_object, std::set<Error>& errors) {
     const auto& headers = day_object.value("headers", json::object());
     std::string date_str = headers.value("date", "[Unknown Date]");

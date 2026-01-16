@@ -14,7 +14,7 @@
 // [修复] 新增 AppOptions 引用，因为 run 方法使用了它
 #include "common/AppOptions.hpp"
 
-#include "converter/validator/common/ValidatorUtils.hpp"
+#include "validator/common/ValidatorUtils.hpp"
 #include "core/file/PipelineContext.hpp"
 
 namespace fs = std::filesystem;

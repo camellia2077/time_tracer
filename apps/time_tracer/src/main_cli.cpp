@@ -62,7 +62,8 @@ int main(int argc, char* argv[]) {
 
   // 处理缩写命令
   if (args[1] == "pre") args[1] = "preprocess";
-  if (args[1] == "blink") args[1] = "run-pipeline";
+  // 输入 "blink" 时，视为 "ingest"
+  if (args[1] == "blink") args[1] = "ingest";
 
   const std::string& command = args[1];
 
