@@ -1,4 +1,4 @@
-﻿// src/common/ConfigTypes.hpp
+﻿// common/ConfigTypes.hpp
 #ifndef CONFIG_TYPES_HPP
 #define CONFIG_TYPES_HPP
 
@@ -38,8 +38,12 @@ struct Config {
 
 // TOML 文件对应的原始数据结构
 struct TomlConfigData {
-    std::vector<std::string> activities;
+    // 为了保证生成的数据能被下游 ETL 程序准确识别并入库，
+    // 我们不再允许使用未定义的通用活动。
+    // 唯一的活动来源必须是 mapping_config.toml 中定义的 Keys。
+    // 这是从 mapping_config.toml 左侧键名解析出的活动列表，是合法的活动全集。
     std::vector<std::string> mapped_activities;
+    
     std::optional<DailyRemarkConfig> remarks;
     std::optional<ActivityRemarkConfig> activity_remarks;
     std::vector<std::string> wake_keywords;

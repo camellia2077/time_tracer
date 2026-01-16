@@ -1,7 +1,7 @@
 // cli/HelpPrinter.cpp
-#include "cli/HelpPrinter.h"
+#include "cli/HelpPrinter.hpp"
 #include "common/AnsiColors.hpp"
-#include "version.h" // 需要访问版本信息
+#include "version.hpp" // 需要访问版本信息
 #include <iostream>
 
 HelpPrinter::HelpPrinter(const std::string& prog_name) : prog_name_(prog_name) {}

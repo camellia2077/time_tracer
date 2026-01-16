@@ -1,12 +1,12 @@
-// generator/_internal/EventGenerator.cpp
-#include "EventGenerator.h"
+﻿// generator/components/EventGenerator.cpp
+#include "EventGenerator.hpp"
 #include <format>
 #include <cmath>
 #include <iterator>
 #include <algorithm>
 #include <array> 
 
-// [修复] 移除 Lambda 中的 static 变量，直接通过列表初始化。
+// 移除 Lambda 中的 static 变量，直接通过列表初始化。
 // 字符串字面量（如 "00"）本身具有静态存储期，std::string_view 在编译期可以直接引用它们。
 static constexpr std::array<std::string_view, 60> DIGITS = {
     "00", "01", "02", "03", "04", "05", "06", "07", "08", "09",

@@ -1,11 +1,12 @@
-﻿
-#include "IFileSystem.h" // 引入接口
+﻿// io/FileManager.hpp
+
+#include "FileSystem.hpp" // 引入接口
 #include <string>
 #include <filesystem>
 #include <optional>
 
-// [修改] 继承自 IFileSystem
-class FileManager : public IFileSystem {
+// [修改] 继承自 FileSystem
+class FileManager : public FileSystem {
 public:
     bool setup_directories(const std::string& master_dir, int start_year, int end_year) override;
     

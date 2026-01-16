@@ -1,5 +1,6 @@
-﻿#ifndef CORE_APPLICATION_H
-#define CORE_APPLICATION_H
+﻿// core/Application.hpp
+#ifndef APPLICATION_HPP
+#define APPLICATION_HPP
 
 namespace Core {
     class Application {
@@ -8,4 +9,4 @@ namespace Core {
     };
 }
 
-#endif // CORE_APPLICATION_H
+#endif // APPLICATION_HPP

@@ -1,3 +1,12 @@
+wake_keywords = [
+    "起床",
+    "醒",
+    "w",
+    "wake",
+    "新的一天开始了A"
+]
+
+
 [daily_remarks]
 prefix = "r "
 contents = [
@@ -21,12 +30,3 @@ contents = [
 ]
 generation_chance = 0.5
 
-wake_keywords = [
-    "起床",
-    "醒",
-    "w",
-    "wake",
-    "新的一天开始了A"
-]
-
-common_activities = ["工作", "阅读", "休息"]

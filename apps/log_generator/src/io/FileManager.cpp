@@ -2,7 +2,7 @@
 #ifndef IO_FILEMANAGER_H
 #define IO_FILEMANAGER_H
 
-#include "io/FileManager.h"
+#include "io/FileManager.hpp"
 #include "common/AnsiColors.hpp"
 #include <iostream>
 #include <fstream>

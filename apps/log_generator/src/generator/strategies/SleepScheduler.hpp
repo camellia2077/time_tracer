@@ -1,5 +1,6 @@
-#ifndef GENERATOR_INTERNAL_SLEEPSCHEDULER_H
-#define GENERATOR_INTERNAL_SLEEPSCHEDULER_H
+﻿// generator/strategies/SleepScheduler.hpp
+#ifndef SLEEP_SCHEDULER_HPP
+#define SLEEP_SCHEDULER_HPP
 
 #include <random>
 
@@ -26,4 +27,4 @@ private:
     std::uniform_int_distribution<> normal_length_dist_;
 };
 
-#endif // GENERATOR_INTERNAL_SLEEPSCHEDULER_H
+#endif // SLEEP_SCHEDULER_HPP

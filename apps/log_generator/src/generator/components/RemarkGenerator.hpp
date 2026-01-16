@@ -1,8 +1,8 @@
-﻿// src/generator/_internal/RemarkGenerator.h
-#ifndef GENERATOR_INTERNAL_REMARKGENERATOR_H
-#define GENERATOR_INTERNAL_REMARKGENERATOR_H
+﻿// generator/components/RemarkGenerator.hpp
+#ifndef REMARK_GENERATOR_HPP
+#define REMARK_GENERATOR_HPP
 
-#include "config/Config.h"
+#include "config/Config.hpp"
 #include <optional>
 #include <string>
 #include <random>
@@ -28,4 +28,4 @@ private:
     std::optional<std::uniform_int_distribution<>> lines_count_dist_;
 };
 
-#endif // GENERATOR_INTERNAL_REMARKGENERATOR_H
+#endif // REMARK_GENERATOR_HPP

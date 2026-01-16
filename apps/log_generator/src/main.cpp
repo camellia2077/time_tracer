@@ -1,5 +1,5 @@
 ﻿// main.cpp
-#include "core/Application.h"
+#include "core/Application.hpp"
 
 int main(int argc, char* argv[]) {
     // 实例化 Core 模块中的 Application 类

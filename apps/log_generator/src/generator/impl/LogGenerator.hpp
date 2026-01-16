@@ -1,10 +1,11 @@
-﻿#ifndef GENERATOR_FACADE_LOGGENERATOR_H
-#define GENERATOR_FACADE_LOGGENERATOR_H
+﻿// generator/impl/LogGenerator.hpp
+#ifndef LOG_GENERATOR_HPP
+#define LOG_GENERATOR_HPP
 
-#include "ILogGenerator.h"
-#include "config/Config.h"
-#include "generator/_internal/DayGenerator.h"
-#include "generator/_internal/SleepScheduler.h" // [新增] 引入策略类
+#include "generator/api/ILogGenerator.hpp"
+#include "config/Config.hpp"
+#include "generator/components/DayGenerator.hpp"
+#include "generator/strategies/SleepScheduler.hpp" 
 #include <vector>
 #include <string>
 #include <optional>
@@ -33,4 +34,4 @@ private:
     std::unique_ptr<SleepScheduler> sleep_scheduler_;
 };
 
-#endif // GENERATOR_FACADE_LOGGENERATOR_H
+#endif // LOG_GENERATOR_HPP
