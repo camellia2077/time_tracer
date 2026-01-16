@@ -1,6 +1,8 @@
 # --- START OF FILE CMakeLists.txt ---
 # src/CMakeLists.txt
-cmake_minimum_required(VERSION 3.16)
+# [修改] 升级最低版本以更好地支持 C++23 和现代 CMake 特性
+cmake_minimum_required(VERSION 3.25)
+
 project(TimeTrackerApp VERSION "0.4.0.1" LANGUAGES CXX)
 
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
@@ -36,16 +38,24 @@ endif()
 # 将模块路径添加到CMake的搜索路径中
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-# 1. 首先包含 TargetSetup，因为它定义了 setup_project_target 函数。
+# 1. 基础工具
 include(TargetSetup)
-# 2. 然后包含 SourceFileCollection，因为它需要使用上面定义的函数。
+
+# 2. 变量定义 (纯数据)
 include(SourceFileCollection)
-# 3. 最后包含 BuildTypeFlags。
+
+# 3. [新增] 库目标定义 (逻辑)
+# 这一步会使用上一步定义的 REPORTS_SHARED_SOURCES 变量来创建 add_library
+include(AddReportsLibrary)
+
+# 4. 编译标志
 include(BuildTypeFlags)
 
 # --- 3. 定义可执行文件目标 ---
 add_executable(time_tracker_cli src/main_cli.cpp
     ${COMMON_SOURCES}
+    ${SERIALIZER_SOURCES}
+    ${VALIDATOR_SOURCES}
     ${BOOTSTRAP_SOURCES}
     ${CONFIG_SOURCES}
     ${IMPORTER_SOURCES}
@@ -86,7 +96,7 @@ foreach(TARGET_NAME ${ALL_TARGETS})
     add_custom_command(
         TARGET ${TARGET_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/config"         # [修改] 从 src/config 改为 config
+        "${CMAKE_CURRENT_SOURCE_DIR}/config"
         "$<TARGET_FILE_DIR:${TARGET_NAME}>/config"
         COMMENT "Copying config folder for ${TARGET_NAME}"
     )

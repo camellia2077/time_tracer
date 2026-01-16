@@ -11,8 +11,10 @@ import config
 # --- 内部测试模块 ---
 from _py_internal.environment_manager import EnvironmentManager
 from _py_internal.base_module import BaseTester, TestCounter
-from _py_internal.module_converter import ConverterTester  # [修改] 已更新
-from _py_internal.module_importer import ImporterTester    # [修改] 已更新
+
+
+from _py_internal.module_ingest import IngestTester
+
 from _py_internal.module_query import QueryTester
 from _py_internal.module_export import ExportTester
 from _py_internal.module_version import VersionChecker
@@ -41,15 +43,15 @@ def initialize_test_modules() -> List[BaseTester]:
     }
 
     modules = [
-        # [修改] 使用 ConverterTester 替代 PreprocessingTester
-        ConverterTester(shared_counter, 1, 
+        # [修改] IngestTester 内部已精简，只运行 blink
+        IngestTester(shared_counter, 1, 
                         specific_validation_path=str(config.Paths.PROCESSED_JSON_PATH),
                         **common_args),
         
-        # [修改] 使用 ImporterTester 替代 DatabaseImportTester
-        ImporterTester(shared_counter, 2, **common_args),
+        # [修改] ImporterTester 已被移除，因为它原本的功能已被 blink 取代或取消
         
-        QueryTester(shared_counter, 3, 
+        # 顺序前移，QueryTester 变为 2
+        QueryTester(shared_counter, 2, 
                     generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME, 
                     daily_query_dates=config.TestParams.DAILY_QUERY_DATES, 
                     monthly_query_months=config.TestParams.MONTHLY_QUERY_MONTHS, 
@@ -57,7 +59,8 @@ def initialize_test_modules() -> List[BaseTester]:
                     test_formats=config.TestParams.TEST_FORMATS,
                     **common_args),
         
-        ExportTester(shared_counter, 4, 
+        # ExportTester 变为 3
+        ExportTester(shared_counter, 3, 
                      generated_db_file_name=config.CLINames.GENERATED_DB_FILE_NAME,
                      is_bulk_mode=config.TestParams.EXPORT_MODE_IS_BULK,
                      specific_dates=config.TestParams.SPECIFIC_EXPORT_DATES,
@@ -66,7 +69,8 @@ def initialize_test_modules() -> List[BaseTester]:
                      test_formats=config.TestParams.TEST_FORMATS,
                      **common_args),
         
-        VersionChecker(shared_counter, 5, **common_args)
+        # VersionChecker 变为 4
+        VersionChecker(shared_counter, 4, **common_args)
     ]
     return modules
 

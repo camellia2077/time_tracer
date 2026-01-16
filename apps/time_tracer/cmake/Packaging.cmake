@@ -9,7 +9,7 @@ if(BUILD_INSTALLER)
         RUNTIME DESTINATION bin
     )
 
-    # --- [核心修改] 安装所有 DLL 到 bin/plugins 目录 ---
+    # 安装所有 DLL 插件到 bin/plugins 目录
     install(TARGETS
         DayMdFormatter
         DayTypFormatter
@@ -23,20 +23,23 @@ if(BUILD_INSTALLER)
         RUNTIME DESTINATION bin/plugins
         LIBRARY DESTINATION bin/plugins
     )
-    # ---------------------------------------------------
 
-    set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") # 请确保msys64保这个路径是正确的
+    # 注意：这里的路径仍然是硬编码的，后续可以进一步优化为自动查找或变量配置
+    set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin") 
+
     # 安装依赖的运行时 DLL 到 bin 目录
     install(FILES
         "${UCRT64_BIN_PATH}/libsqlite3-0.dll"
         "${UCRT64_BIN_PATH}/libstdc++-6.dll"
-        "${UCRT64_BIN_PATH}/libtomlplusplus-3.dll" # [修改] 加上版本后缀 -3
+        "${UCRT64_BIN_PATH}/libtomlplusplus-3.dll"
         "${UCRT64_BIN_PATH}/libgcc_s_seh-1.dll"
         "${UCRT64_BIN_PATH}/libwinpthread-1.dll"
         DESTINATION bin
     )
+
     # 安装配置文件
-    install(DIRECTORY "${CMAKE_SOURCE_DIR}/config" DESTINATION .)
+    # [修改] 使用 PROJECT_SOURCE_DIR 替代 CMAKE_SOURCE_DIR，确保在子项目模式下也能找到 config
+    install(DIRECTORY "${PROJECT_SOURCE_DIR}/config" DESTINATION .)
 
     set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
     set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")

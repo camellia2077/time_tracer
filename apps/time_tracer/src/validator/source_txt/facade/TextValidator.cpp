@@ -1,7 +1,7 @@
-﻿// converter/validator/source_txt/facade/TextValidator.cpp
+// validator/source_txt/facade/TextValidator.cpp
 #include "TextValidator.hpp"
-#include "converter/validator/source_txt/rules/LineRules.hpp"
-#include "converter/validator/source_txt/rules/StructureRules.hpp"
+#include "validator/source_txt/rules/LineRules.hpp"
+#include "validator/source_txt/rules/StructureRules.hpp"
 #include "common/utils/StringUtils.hpp" 
 #include <sstream> 
 #include <iostream>
@@ -20,7 +20,6 @@ TextValidator::TextValidator(const ConverterConfig& config)
 TextValidator::~TextValidator() = default;
 
 bool TextValidator::validate(const std::string& /*filename*/, const std::string& content, std::set<Error>& errors) {
-    // 使用 stringstream 替代 ifstream
     std::stringstream ss(content);
     std::string line;
     int line_number = 0;

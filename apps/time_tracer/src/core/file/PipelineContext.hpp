@@ -11,7 +11,7 @@
 // [修复] 更新包含路径
 #include "common/config/AppConfig.hpp"
 
-#include "converter/validator/common/ValidatorUtils.hpp"
+#include "validator/common/ValidatorUtils.hpp"
 #include "common/model/DailyLog.hpp"
 #include "converter/config/ConverterConfig.hpp"
 

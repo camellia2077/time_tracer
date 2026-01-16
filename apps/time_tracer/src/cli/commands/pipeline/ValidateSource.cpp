@@ -4,16 +4,13 @@
 #include "cli/CommandRegistry.hpp" 
 #include <stdexcept>
 
-// [修复] 注册正确的命令字符串 "validate-source" 和类 ValidateSource
 static CommandRegistrar registrar("validate-source", [](CliContext& ctx) {
     return std::make_unique<ValidateSource>(*ctx.workflow_handler);
 });
 
-// [修复] 实现 ValidateSource 的构造函数
 ValidateSource::ValidateSource(WorkflowHandler& workflow_handler)
     : workflow_handler_(workflow_handler) {}
 
-// [修复] 实现 ValidateSource 的 execute 方法
 void ValidateSource::execute(const CliParser& parser) {
     const auto& filtered_args = parser.get_filtered_args();
     if (filtered_args.size() < 3) {
@@ -21,10 +18,21 @@ void ValidateSource::execute(const CliParser& parser) {
     }
     
     AppOptions options;
-    // 设置只运行源文件验证
+    
+    // 1. 开启源文件结构验证
     options.validate_source = true;
+    
+    // 2. 开启转换 (Text -> Struct)，以便进行后续逻辑验证
+    options.convert = true;
 
-    // 注意：validate-source 通常只检查 .txt 格式，不需要 date_check_mode（那是针对 JSON 输出的）
+    // 3. 开启输出逻辑验证 (Struct -> JSON -> Validate)
+    options.validate_output = true;
+
+    // 4. [关键] 强制关闭文件保存，确保全流程在内存中进行
+    options.save_processed_output = false;
+
+    // 5. 设置默认的日期检查模式 (Continuity 检查连续性)
+    options.date_check_mode = DateCheckMode::Continuity; 
     
     workflow_handler_.run_converter(filtered_args[2], options);
 }

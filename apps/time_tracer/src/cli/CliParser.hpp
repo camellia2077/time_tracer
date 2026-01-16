@@ -6,7 +6,8 @@
 #include <vector>
 #include <optional>
 #include "reports/shared/types/ReportFormat.hpp"
-#include "converter/validator/common/ValidatorUtils.hpp"
+// [修改] 更新为新的 Validator 路径
+#include "validator/common/ValidatorUtils.hpp"
 
 class CliParser {
 public:
@@ -20,7 +21,6 @@ public:
     
     std::vector<ReportFormat> get_report_formats() const;
 
-    // [修改] 返回 optional 以区分"未指定"和"指定为None"
     std::optional<DateCheckMode> get_date_check_mode() const;
     
     bool should_save_processed() const;

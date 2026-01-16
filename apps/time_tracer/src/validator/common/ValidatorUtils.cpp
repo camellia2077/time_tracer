@@ -1,12 +1,11 @@
-﻿// converter/validator/common/ValidatorUtils.cpp
+// validator/common/ValidatorUtils.cpp
 #include "ValidatorUtils.hpp"
-#include "common/AnsiColors.hpp" // For colored console output
+#include "common/AnsiColors.hpp" 
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <map>
 
-// 根据错误类型获取分组标题
 static std::string getErrorTypeHeader(ErrorType type) {
     switch (type) {
         case ErrorType::Source_RemarkAfterEvent:
@@ -15,18 +14,12 @@ static std::string getErrorTypeHeader(ErrorType type) {
         case ErrorType::UnrecognizedActivity:
         case ErrorType::Source_MissingYearHeader:
             return "Source file format errors (源文件格式错误):";
-            
         case ErrorType::IncorrectDayCountForMonth:
             return "Date Logic errors(日期逻辑错误):";
-
-        // [修改] 将 DateContinuity 单独分出来
         case ErrorType::DateContinuity:
             return "Date Continuity errors (日期中断/缺失):";
-
-        // [修改] TimeDiscontinuity 专指一天内的活动时间
         case ErrorType::TimeDiscontinuity:
             return "Activity Time Discontinuity errors (活动时间不连续):";
-
         case ErrorType::MissingSleepNight:
             return "Lack of sleep activity errors(最后的活动项目缺少sleep活动):";
         case ErrorType::Json_TooFewActivities:

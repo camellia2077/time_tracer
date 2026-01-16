@@ -1,20 +1,15 @@
-﻿// converter/convert/io/JsonWriter.cpp
-#include "JsonWriter.hpp"
-#include <iostream>
-#include <nlohmann/json.hpp>
-#include "common/model/DailyLog.hpp"
-#include "converter/config/ConverterConfig.hpp"
+﻿// serializer/core/LogSerializer.cpp
+#include "LogSerializer.hpp"
 
-#include <vector>
+namespace serializer::core {
 
-using json = nlohmann::json;
+nlohmann::json LogSerializer::serialize(const DailyLog& day) {
+    if (day.date.empty()) return nlohmann::json{};
 
-// [辅助函数] 将单天 DailyLog 转换为 JSON 对象 (逻辑复用)
-json JsonWriter::convertDayToJson(const DailyLog& day) {
-    if (day.date.empty()) return json{};
-
-    json day_obj;
-    json headers_obj;
+    nlohmann::json day_obj;
+    
+    // 1. Headers
+    nlohmann::json headers_obj;
     headers_obj["date"] = day.date;
     headers_obj["status"] = static_cast<int>(day.hasStudyActivity);
     headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity); 
@@ -34,12 +29,12 @@ json JsonWriter::convertDayToJson(const DailyLog& day) {
     } else {
         headers_obj["remark"] = "";
     }
-    
     day_obj["headers"] = headers_obj;
     
-    json activities = json::array();
+    // 2. Activities
+    nlohmann::json activities = nlohmann::json::array();
     for (const auto& activity_data : day.processedActivities) {
-        json activity_obj;
+        nlohmann::json activity_obj;
         activity_obj["logical_id"] = activity_data.logical_id;
         activity_obj["start_timestamp"] = activity_data.start_timestamp;
         activity_obj["end_timestamp"] = activity_data.end_timestamp;
@@ -53,14 +48,15 @@ json JsonWriter::convertDayToJson(const DailyLog& day) {
             activity_obj["activity_remark"] = nullptr; 
         }
 
-        json activity_details;
+        nlohmann::json activity_details;
         activity_details["project_path"] = activity_data.project_path;
         activity_obj["activity"] = activity_details;
         activities.push_back(activity_obj);
     }
     day_obj["activities"] = activities;
 
-    json generated_stats_obj;
+    // 3. Generated Stats
+    nlohmann::json generated_stats_obj;
     generated_stats_obj["sleep_night_time"] = day.stats.sleep_night_time;
     generated_stats_obj["sleep_day_time"] = day.stats.sleep_day_time;
     generated_stats_obj["sleep_total_time"] = day.stats.sleep_total_time;
@@ -81,34 +77,4 @@ json JsonWriter::convertDayToJson(const DailyLog& day) {
     return day_obj;
 }
 
-// [Legacy] 批量写入
-void JsonWriter::write(std::ostream& outputStream, const std::vector<DailyLog>& days, const ConverterConfig& /*config*/) {
-    beginJsonWriter(outputStream);
-    bool isFirst = true;
-    for (const auto& day : days) {
-        if (day.date.empty()) continue;
-        writeDay(outputStream, day, isFirst);
-        isFirst = false;
-    }
-    endJsonWriter(outputStream);
-}
-
-// [New] 流式写入实现
-void JsonWriter::beginJsonWriter(std::ostream& outputStream) {
-    outputStream << "[\n";
-}
-
-void JsonWriter::writeDay(std::ostream& outputStream, const DailyLog& day, bool isFirstDay) {
-    if (day.date.empty()) return;
-    
-    if (!isFirstDay) {
-        outputStream << ",\n";
-    }
-    
-    json day_json = convertDayToJson(day);
-    outputStream << day_json.dump(4);
-}
-
-void JsonWriter::endJsonWriter(std::ostream& outputStream) {
-    outputStream << "\n]" << std::endl;
-}
+} // namespace serializer::core
