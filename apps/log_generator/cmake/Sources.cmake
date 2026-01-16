@@ -6,11 +6,11 @@ set(SOURCES
     # 入口
     src/main.cpp
     
-    # Core 核心模块 (包含拆分后的 Handler)
+    # Core 核心模块
     src/core/Application.cpp
-    src/core/config/ConfigHandler.cpp      # [新]
-    src/core/workflow/WorkflowHandler.cpp  # [新]
-    src/core/reporting/ReportHandler.cpp   # [新]
+    src/core/config/ConfigHandler.cpp      
+    src/core/workflow/WorkflowHandler.cpp 
+    src/core/reporting/ReportHandler.cpp
     
     # CLI 命令行模块
     src/cli/CommandLineParser.cpp
@@ -24,11 +24,15 @@ set(SOURCES
     src/io/FileManager.cpp
     
     # Generator 生成器模块
-    src/generator/_internal/RemarkGenerator.cpp 
-    src/generator/_internal/EventGenerator.cpp
-    src/generator/_internal/DayGenerator.cpp
-    src/generator/facade/LogGenerator.cpp
-    src/generator/_internal/SleepScheduler.cpp
+    src/generator/components/RemarkGenerator.cpp
+    src/generator/components/EventGenerator.cpp
+    src/generator/components/DayGenerator.cpp
+
+    # Impl (核心实现)
+    src/generator/impl/LogGenerator.cpp
+
+    # Strategies (策略/算法)
+    src/generator/strategies/SleepScheduler.cpp
     
     # Utils 工具模块
     src/utils/PerformanceReporter.cpp

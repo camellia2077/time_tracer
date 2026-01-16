@@ -1,11 +1,10 @@
-﻿// utils/Utils.h
-#ifndef UTILS_UTILS_H
-#define UTILS_UTILS_H
+﻿// utils/Utils.hpp
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <string>
 
 namespace Utils {
-    // [核心修改] 移除 ConsoleColors 结构体
     
     // 设置控制台以支持UTF-8和颜色代码
     void setup_console();
@@ -17,4 +16,4 @@ namespace Utils {
     int get_days_in_month(int year, int month);
     
 } // namespace Utils
-#endif // UTILS_UTILS_H
+#endif // UTILS_HPP

@@ -1,15 +1,17 @@
-﻿#include "WorkflowHandler.h"
-#include "utils/Utils.h"
+﻿// core/workflow/WorkflowHandler.cpp
+#include "WorkflowHandler.hpp"
+#include "utils/Utils.hpp"
 #include <format>
 #include <filesystem>
 #include <iostream>
 #include <vector>
 #include <future>
 #include <thread>
+#include <algorithm> // for std::remove_if
 
 namespace Core {
 
-    WorkflowHandler::WorkflowHandler(IFileSystem& file_system, ILogGeneratorFactory& generator_factory)
+    WorkflowHandler::WorkflowHandler(FileSystem& file_system, ILogGeneratorFactory& generator_factory)
         : file_system_(file_system), generator_factory_(generator_factory) {}
 
     int WorkflowHandler::run(const AppContext& context, ReportHandler& report_handler) {
@@ -22,23 +24,44 @@ namespace Core {
 
         auto& reporter = report_handler.get_reporter();
         
-        // 任务列表：使用 std::future 获取每个并行任务的结果（生成文件数）
-        std::vector<std::future<int>> tasks;
+        // [优化] 1. 确定并发度 (使用硬件核心数，兜底为 4)
+        unsigned int max_concurrent = std::thread::hardware_concurrency();
+        if (max_concurrent == 0) max_concurrent = 4;
+        
+        // 打印提示，让用户知道当前的并行力度
+        std::cout << "Starting generation with " << max_concurrent << " concurrent threads...\n";
 
-        // [逻辑] 并行粒度：以“年”为单位。
+        // 任务列表：存储正在运行的 future
+        std::vector<std::future<int>> active_tasks;
+        int total_files_generated = 0;
+
         for (int year = context.config.start_year; year <= context.config.end_year; ++year) {
             
-            // [修复] 在捕获列表中显式添加 'this'
-            // C++20 之前 [=] 会隐式捕获 this，C++20 要求显式写出 [=, this, ...] 以表明意图
-            tasks.push_back(std::async(std::launch::async, [=, this, &context, &reporter, &master_dir_name]() {
+            // [优化] 2. 检查任务队列，如果满了就清理已完成的任务
+            // 使用 remove_if 惯用语清理已经 ready 的任务
+            auto it = std::remove_if(active_tasks.begin(), active_tasks.end(), 
+                [&total_files_generated](std::future<int>& f) {
+                    if (f.wait_for(std::chrono::seconds(0)) == std::future_status::ready) {
+                        total_files_generated += f.get(); // 获取结果并累加
+                        return true; // 标记为可删除
+                    }
+                    return false;
+                });
+            active_tasks.erase(it, active_tasks.end());
+
+            // [优化] 3. 如果清理后仍然达到上限，强制等待最早的一个任务完成 (Backpressure)
+            if (active_tasks.size() >= max_concurrent) {
+                total_files_generated += active_tasks.front().get();
+                active_tasks.erase(active_tasks.begin());
+            }
+
+            // [逻辑] 启动新任务 (代码逻辑保持不变，只是被放入了受控循环中)
+            active_tasks.push_back(std::async(std::launch::async, [=, this, &context, &reporter, &master_dir_name]() {
                 
-                // [线程局部] 1. 创建独立的生成器实例 (Thread Safety)
-                // 这里使用了成员变量 generator_factory_，所以需要捕获 this
                 auto generator = generator_factory_.create(context);
                 
-                // [线程局部] 2. 预分配复用缓冲区 (Memory Reuse)
                 std::string buffer;
-                buffer.reserve(1024 * 1024); // 预估 1MB，足够容纳单月数据
+                buffer.reserve(1024 * 1024); // 预估 1MB
 
                 int local_files_generated = 0;
 
@@ -48,14 +71,11 @@ namespace Core {
 
                     // 计算
                     auto gen_start = std::chrono::high_resolution_clock::now();
-                    // 传入 buffer 进行复用
                     generator->generate_for_month(year, month, Utils::get_days_in_month(year, month), buffer);
                     reporter.add_generation_time(std::chrono::high_resolution_clock::now() - gen_start);
 
                     // IO
                     auto io_start = std::chrono::high_resolution_clock::now();
-                    // 写入 (FileManager 应当是无状态或线程安全的)
-                    // 这里使用了成员变量 file_system_，所以需要捕获 this
                     if (file_system_.write_log_file(full_path, buffer)) {
                         local_files_generated++;
                     }
@@ -66,10 +86,9 @@ namespace Core {
             }));
         }
 
-        // 等待所有任务完成并汇总结果
-        int total_files_generated = 0;
-        for (auto& task : tasks) {
-            total_files_generated += task.get(); // get() 会阻塞直到任务完成
+        // [优化] 4. 循环结束后，等待所有剩余任务完成
+        for (auto& task : active_tasks) {
+            total_files_generated += task.get();
         }
 
         return total_files_generated;

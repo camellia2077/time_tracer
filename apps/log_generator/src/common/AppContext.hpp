@@ -1,6 +1,6 @@
-﻿// common/AppContext.h
-#ifndef COMMON_APPCONTEXT_H
-#define COMMON_APPCONTEXT_H
+﻿// common/AppContext.hpp
+#ifndef APP_CONTEXT_HPP
+#define APP_CONTEXT_HPP
 
 #include "common/ConfigTypes.hpp" // [修改] 不再依赖 config/Config.h
 #include <vector>
@@ -22,4 +22,4 @@ namespace Core {
     };
 
 }
-#endif // COMMON_APPCONTEXT_H
+#endif // APP_CONTEXT_HPP

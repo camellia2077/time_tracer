@@ -1,13 +1,13 @@
 ﻿// core/Application.cpp
-#include "core/Application.h"
-#include "core/config/ConfigHandler.h"
-#include "core/workflow/WorkflowHandler.h"
-#include "core/reporting/ReportHandler.h"
-#include "utils/Utils.h"
+#include "core/Application.hpp"
+#include "core/config/ConfigHandler.hpp"
+#include "core/workflow/WorkflowHandler.hpp"
+#include "core/reporting/ReportHandler.hpp"
+#include "utils/Utils.hpp"
 
 // [新增] 引入依赖的头文件
-#include "io/FileManager.h"
-#include "generator/facade/LogGeneratorFactory.h"
+#include "io/FileManager.hpp"
+#include "generator/api/LogGeneratorFactory.hpp"
 
 namespace Core {
 

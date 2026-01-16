@@ -1,5 +1,6 @@
-#ifndef GENERATOR_FACADE_ILOGGENERATOR_H
-#define GENERATOR_FACADE_ILOGGENERATOR_H
+﻿// generator/api/ILogGenerator.hpp
+#ifndef I_LOG_GENERATOR_HPP
+#define I_LOG_GENERATOR_HPP
 
 #include <string>
 
@@ -10,4 +11,4 @@ public:
     virtual void generate_for_month(int year, int month, int days_in_month, std::string& buffer) = 0;
 };
 
-#endif // GENERATOR_FACADE_ILOGGENERATOR_H
+#endif // I_LOG_GENERATOR_HPP

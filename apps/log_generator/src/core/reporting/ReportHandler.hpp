@@ -1,8 +1,8 @@
-﻿// core/reporting/ReportHandler.h
-#ifndef CORE_REPORTING_REPORTHANDLER_H
-#define CORE_REPORTING_REPORTHANDLER_H
+﻿// core/reporting/ReportHandler.hpp
+#ifndef REPORT_HANDLER_HPP
+#define REPORT_HANDLER_HPP
 
-#include "utils/PerformanceReporter.h"
+#include "utils/PerformanceReporter.hpp"
 #include <chrono>
 
 namespace Core {
@@ -24,4 +24,4 @@ namespace Core {
 
 }
 
-#endif // CORE_REPORTING_REPORTHANDLER_H
+#endif // REPORT_HANDLER_HPP

@@ -1,8 +1,8 @@
-﻿// cli/CommandLineParser.h
-#ifndef CLI_COMMANDLINEPARSER_H
-#define CLI_COMMANDLINEPARSER_H
+﻿// cli/CommandLineParser.hpp
+#ifndef COMMAND_LINE_PARSER_HPP
+#define COMMAND_LINE_PARSER_HPP
 #include "common/ConfigTypes.hpp" // [修改] 仅引入纯数据结构，不再依赖 Config.h
-#include "cli/HelpPrinter.h"
+#include "cli/HelpPrinter.hpp"
 #include <optional>
 #include <string>
 #include <vector>
@@ -32,4 +32,4 @@ private:
     HelpPrinter printer_;
 };
 
-#endif // CLI_COMMANDLINEPARSER_H
+#endif // COMMAND_LINE_PARSER_HPP
