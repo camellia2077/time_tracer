@@ -1,5 +1,6 @@
 # src/cmake/SourceFileCollection.cmake
-# 模块1：源文件收集 (SourceFileCollection.cmake)
+# 模块1：源文件收集
+# 职责：仅定义源文件列表变量，不创建任何构建目标。
 
 # ----------------------------------------------------
 # 最佳实践：显式列出所有源文件以确保构建系统的稳定性和可预测性。
@@ -8,9 +9,35 @@
 set(COMMON_SOURCES
     "src/common/utils/TimeUtils.cpp"
 )
-# [新增] --- Shared Reports Library ---
+set(SERIALIZER_SOURCES
+    "src/serializer/JsonSerializer.cpp"
+    "src/serializer/core/LogDeserializer.cpp"
+    "src/serializer/core/LogSerializer.cpp"
+)
+
+set(VALIDATOR_SOURCES
+    # 根目录文件
+    "src/validator/FileValidator.cpp"
+
+    # common 模块
+    "src/validator/common/ValidatorUtils.cpp"
+
+    # output_json 模块
+    "src/validator/output_json/facade/JsonValidator.cpp"
+    "src/validator/output_json/rules/ActivityRules.cpp"
+    "src/validator/output_json/rules/DateRules.cpp"
+
+    # source_txt 模块
+    "src/validator/source_txt/facade/TextValidator.cpp"
+    "src/validator/source_txt/rules/LineRules.cpp"
+    "src/validator/source_txt/rules/StructureRules.cpp"
+)
+
+
+# --- Shared Reports Library ---
 # 创建一个静态库，包含所有报告生成器共享的源文件
 # 这样可以避免在主程序和多个DLL中重复编译相同的代码
+
 set(REPORTS_SHARED_SOURCES
     "src/common/utils/StringUtils.cpp"
     "src/reports/daily/common/DayBaseConfig.cpp"
@@ -34,27 +61,6 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/monthly/common/MonthBaseConfig.cpp"
     "src/reports/period/common/PeriodBaseConfig.cpp" 
 )
-
-
-# --- 关键修改 1: 将 STATIC 改为 SHARED ---
-add_library(reports_shared SHARED ${REPORTS_SHARED_SOURCES})
-
-
-# --- 关键修改 2: 添加此定义以触发 __declspec(dllexport) ---
-target_compile_definitions(reports_shared PRIVATE REPORTS_SHARED_EXPORTS)
-
-# reports_shared 是主程序直接链接的库 ，
-# 它不应该被视为“插件”，而应作为“核心组件”。建议将其输出到主程序同级目录
-set_target_properties(reports_shared PROPERTIES
-    # 将 LIBRARY 和 RUNTIME 的输出路径都指向可执行文件所在的 bin 目录
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-)
-
-# 为这个新的库目标应用通用的编译设置 (头文件路径, 警告等)
-# 它会链接 nlohmann_json 等
-setup_project_target(reports_shared)
-
 
 
 # --- Time Master CLI Sources ---
@@ -134,30 +140,13 @@ set(CONVERTER_SOURCES
     # Facade
     "src/converter/convert/facade/ConverterService.cpp"
     
-    # Core (原 pipelines 中的算法部分) [New Path]
+    # Core
     "src/converter/convert/core/ActivityMapper.cpp"
     "src/converter/convert/core/DayProcessor.cpp"
     "src/converter/convert/core/DayStats.cpp"
-
-    # IO (原 pipelines 中的解析与输出部分) [New Path]
+    # IO
     "src/converter/convert/io/TextParser.cpp"
-    "src/converter/convert/io/JsonWriter.cpp"
-
-    # --- 验证模块 (Validator) ---
-    "src/converter/validator/FileValidator.cpp"
-    "src/converter/validator/common/ValidatorUtils.cpp"
-
-    # Json 验证
-    "src/converter/validator/output_json/facade/JsonValidator.cpp"
-    "src/converter/validator/output_json/rules/ActivityRules.cpp"
-    "src/converter/validator/output_json/rules/DateRules.cpp"
-
-    # Source 文本验证
-    "src/converter/validator/source_txt/facade/TextValidator.cpp"
-    "src/converter/validator/source_txt/rules/LineRules.cpp"
-    "src/converter/validator/source_txt/rules/StructureRules.cpp"
 )
-
 # --- File Handler Sources ---
 set(IO_SOURCES
     "src/io/FileController.cpp"

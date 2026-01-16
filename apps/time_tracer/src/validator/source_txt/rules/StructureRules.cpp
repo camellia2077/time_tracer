@@ -1,8 +1,7 @@
-﻿// converter/validator/source_txt/rules/StructureRules.cpp
+// validator/source_txt/rules/StructureRules.cpp
 #include "StructureRules.hpp"
 
 void StructureRules::process_year_line(int line_number, const std::string& line, std::set<Error>& errors) {
-    // --- [核心修改] 重新设计年份验证逻辑 ---
     int current_year = 0;
     try {
         current_year = std::stoi(line.substr(1));
@@ -12,15 +11,18 @@ void StructureRules::process_year_line(int line_number, const std::string& line,
     }
 
     if (has_seen_year_) {
-        // 如果已经见过一个年份，只允许新的年份是上一个年份的延续
-        if (current_year != last_seen_year_ + 1) {
-            errors.insert({line_number, "Duplicate or non-sequential year header found. Only consecutive years are allowed (e.g., y2024 followed by y2025).", ErrorType::Structural});
+        // [修改] 允许相同的年份重复出现 (current_year == last_seen_year_)
+        // [修改] 允许年份递增 (current_year == last_seen_year_ + 1)
+        if (current_year != last_seen_year_ && current_year != last_seen_year_ + 1) {
+            errors.insert({line_number, "Non-sequential year header found. Years must be consecutive or identical (e.g., y2024 followed by y2025 or another y2024).", ErrorType::Structural});
         }
     }
     
     has_seen_year_ = true;
     last_seen_year_ = current_year;
-    has_seen_date_in_block_ = false; // 为新年份块重置状态
+    
+    // 重置日期块状态，因为新的一年（或新的年份块）开始了
+    has_seen_date_in_block_ = false;
 }
 
 void StructureRules::process_date_line(int line_number, const std::string& /*line*/, std::set<Error>& errors) {
@@ -28,7 +30,7 @@ void StructureRules::process_date_line(int line_number, const std::string& /*lin
         errors.insert({line_number, "Date found before a year header.", ErrorType::Structural});
     }
     has_seen_date_in_block_ = true;
-    has_seen_event_in_day_ = false; // Reset for the new day
+    has_seen_event_in_day_ = false;
 }
 
 void StructureRules::process_remark_line(int line_number, const std::string& /*line*/, std::set<Error>& errors) {

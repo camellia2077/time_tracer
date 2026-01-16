@@ -1,36 +1,28 @@
-﻿// converter/validator/source_txt/rules/LineRules.cpp
+// validator/source_txt/rules/LineRules.cpp
 #include "LineRules.hpp"
 #include "common/utils/StringUtils.hpp"
 #include <algorithm>
 #include <iostream>
 
 LineRules::LineRules(const ConverterConfig& config) : config_(config) {
-    // 1. 加载 text_mappings (例如: "失眠" -> "Sleep")
-    // 允许用户在源文件中使用 "失眠"
     const auto& text_map = config.getTextMapping();
     for(const auto& pair : text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
-    // 2. 加载 text_duration_mappings
     const auto& dur_text_map = config.getTextDurationMapping();
     for(const auto& pair : dur_text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
-    // 3. 加载 wake_keywords
     const auto& wake_vec = config.getWakeKeywords();
     wake_keywords_.insert(wake_vec.begin(), wake_vec.end());
 
-    // [核心修复] 4. 加载 topParentMapping (JSON配置中的 top_parents)
-    // 允许用户直接使用标准名称 (例如 "Sleep", "Work")
     const auto& top_map = config.getTopParentMapping();
     for(const auto& pair : top_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
-    // [核心修复] 5. 加载 initial_top_parents (AppConfig 注入的)
-    // 这是 ConverterStep 动态注入的映射，必须包含
     for(const auto& pair : config.initial_top_parents) {
         valid_event_keywords_.insert(pair.first);
     }

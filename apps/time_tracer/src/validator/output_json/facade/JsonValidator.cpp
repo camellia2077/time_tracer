@@ -1,8 +1,8 @@
-﻿// converter/validator/output_json/facade/JsonValidator.cpp
+// validator/output_json/facade/JsonValidator.cpp
 #include "JsonValidator.hpp"
 #include <iostream>
-#include "converter/validator/output_json/rules/DateRules.hpp"
-#include "converter/validator/output_json/rules/ActivityRules.hpp"
+#include "validator/output_json/rules/DateRules.hpp"
+#include "validator/output_json/rules/ActivityRules.hpp"
 
 using json = nlohmann::json;
 
