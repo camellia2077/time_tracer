@@ -1,8 +1,8 @@
-﻿// generator/_internal/DayGenerator.h
-#ifndef GENERATOR_INTERNAL_DAYGENERATOR_H
-#define GENERATOR_INTERNAL_DAYGENERATOR_H
-#include "RemarkGenerator.h"
-#include "EventGenerator.h"
+﻿// generator/components/DayGenerator.hpp
+#ifndef DAY_GENERATOR_HPP
+#define DAY_GENERATOR_HPP
+#include "RemarkGenerator.hpp"
+#include "EventGenerator.hpp"
 #include <string>
 #include <memory>
 #include <vector>
@@ -32,4 +32,4 @@ private:
     std::unique_ptr<EventGenerator> event_generator_;
 };
 
-#endif // GENERATOR_INTERNAL_DAYGENERATOR_H
+#endif // DAY_GENERATOR_HPP

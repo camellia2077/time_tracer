@@ -1,8 +1,8 @@
-﻿// config/ConfigFacade.h
-#ifndef CONFIG_CONFIGFACADE_H
-#define CONFIG_CONFIGFACADE_H
+﻿// config/ConfigFacade.hpp
+#ifndef CONFIG_FACADE_HPP
+#define CONFIG_FACADE_HPP
 
-#include "Config.h"
+#include "Config.hpp"
 #include <vector>
 #include <string>
 
@@ -16,4 +16,4 @@ namespace ConfigFacade {
     bool validate(const TomlConfigData& config_data, std::vector<std::string>& errors);
 }
 
-#endif // CONFIG_CONFIGFACADE_H
+#endif // CONFIG_FACADE_HPP

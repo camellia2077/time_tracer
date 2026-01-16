@@ -1,4 +1,5 @@
-#include "SleepScheduler.h"
+﻿// generator/strategies/SleepScheduler.cpp
+#include "SleepScheduler.hpp"
 
 SleepScheduler::SleepScheduler(bool enabled, std::mt19937& gen)
     : enabled_(enabled), gen_(gen),

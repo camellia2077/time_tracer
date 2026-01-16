@@ -1,34 +1,31 @@
 ﻿// config/Config.cpp
-#include "Config.h"
+#include "Config.hpp"
 #include <iostream>
 
 // --- Public Method Implementation ---
 
 std::optional<TomlConfigData> ConfigLoader::load_from_content(
-    const std::string& activities_content, 
     const std::string& settings_content,
     const std::string& mapping_content) {
     
     TomlConfigData config_data;
     
-    // 解析顺序：映射 -> 设置 -> 活动
+    // 解析顺序：映射 -> 设置
     if (!_parse_mapping_keys(mapping_content, config_data) || 
         !_parse_settings(settings_content, config_data)) { 
         return std::nullopt;
     }
     
-    _parse_activities(activities_content, config_data); 
-
     return config_data;
 }
 
 bool ConfigLoader::_parse_mapping_keys(const std::string& content, TomlConfigData& config_data) {
     try {
-        // [修改] 使用 parse 解析内存字符串
         toml::table tbl = toml::parse(content);
         
         if (auto mapping_node = tbl.get_as<toml::table>("text_mappings")) {
             for (auto&& [key, value] : *mapping_node) {
+                // [设计说明] 收集 Key 作为生成器的活动种子
                 config_data.mapped_activities.push_back(std::string(key.str()));
             }
             return true;
@@ -42,19 +39,6 @@ bool ConfigLoader::_parse_mapping_keys(const std::string& content, TomlConfigDat
     }
 }
 
-bool ConfigLoader::_parse_activities(const std::string& content, TomlConfigData& config_data) {
-    try {
-        toml::table tbl = toml::parse(content);
-        if (auto arr = tbl.get_as<toml::array>("common_activities")) {
-            for (auto&& elem : *arr) {
-                config_data.activities.push_back(elem.value_or(std::string("")));
-            }
-        }
-    } catch (...) {
-        // 解析失败或内容为空时，保持 activities 列表不变，非致命错误
-    }
-    return true; 
-}
 
 bool ConfigLoader::_parse_settings(const std::string& content, TomlConfigData& config_data) {
     try {
@@ -64,7 +48,6 @@ bool ConfigLoader::_parse_settings(const std::string& content, TomlConfigData& c
         _load_wake_keywords(tbl, config_data);
         return true;
     } catch (const toml::parse_error& e) {
-        // 设置文件解析失败视为错误
         std::cerr << "TOML Parse Error in settings config: " << e.description() << "\n";
         return false;
     }

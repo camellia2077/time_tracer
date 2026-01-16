@@ -1,9 +1,10 @@
-﻿#ifndef UTILS_PERFORMANCEREPORTER_H
-#define UTILS_PERFORMANCEREPORTER_H
+﻿// utils/PerformanceReporter.hpp
+#ifndef PERFORMANCE_REPORTER_HPP
+#define PERFORMANCE_REPORTER_HPP
 
 #include "common/ConfigTypes.hpp"
 #include <chrono>
-#include <mutex> // [新增]
+#include <mutex>
 
 class PerformanceReporter {
 public:
@@ -20,4 +21,4 @@ private:
     mutable std::mutex mutex_; // [新增] 保护累加操作
 };
 
-#endif // UTILS_PERFORMANCEREPORTER_H
+#endif // PERFORMANCE_REPORTER_HPP

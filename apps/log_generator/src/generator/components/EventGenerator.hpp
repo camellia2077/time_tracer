@@ -1,10 +1,10 @@
-﻿// generator/_internal/EventGenerator.h
-#ifndef GENERATOR_INTERNAL_EVENTGENERATOR_H
-#define GENERATOR_INTERNAL_EVENTGENERATOR_H
-#include "config/Config.h"
+﻿// generator/components/EventGenerator.hpp
+#ifndef EVENT_GENERATOR_HPP
+#define EVENT_GENERATOR_HPP
+#include "config/Config.hpp"
 #include <vector>
 #include <string>
-#include <string_view> // [新增] C++17/20/23 标准库
+#include <string_view> 
 #include <random>
 #include <optional>
 
@@ -41,4 +41,4 @@ private:
     double slot_size_minutes_; 
 };
 
-#endif // GENERATOR_INTERNAL_EVENTGENERATOR_H
+#endif // EVENT_GENERATOR_HPP

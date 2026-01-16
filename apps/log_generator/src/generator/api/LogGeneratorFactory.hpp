@@ -1,9 +1,10 @@
-#ifndef GENERATOR_FACADE_LOGGENERATORFACTORY_H
-#define GENERATOR_FACADE_LOGGENERATORFACTORY_H
+﻿// generator/api/LogGeneratorFactory.hpp
+#ifndef LOG_GENERATOR_FACTORY_HPP
+#define LOG_GENERATOR_FACTORY_HPP
 
-#include "ILogGenerator.h"
-#include "common/AppContext.h"
-#include "LogGenerator.h"
+#include "ILogGenerator.hpp"
+#include "common/AppContext.hpp"
+#include "generator/impl/LogGenerator.hpp"
 #include <memory>
 
 class ILogGeneratorFactory {
@@ -25,4 +26,4 @@ public:
     }
 };
 
-#endif // GENERATOR_FACADE_LOGGENERATORFACTORY_H
+#endif // LOG_GENERATOR_FACTORY_HPP

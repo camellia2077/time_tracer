@@ -1,4 +1,5 @@
-#include "LogGenerator.h"
+﻿// generator/impl/LogGenerator.cpp
+#include "LogGenerator.hpp"
 #include <format>
 #include <iterator>
 

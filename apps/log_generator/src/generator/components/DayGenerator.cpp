@@ -1,5 +1,5 @@
-// generator/_internal/DayGenerator.cpp
-#include "DayGenerator.h"
+﻿// generator/components/DayGenerator.cpp
+#include "DayGenerator.hpp"
 #include <format>
 #include <iterator>
 

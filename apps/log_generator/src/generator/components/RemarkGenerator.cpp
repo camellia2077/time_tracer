@@ -1,5 +1,5 @@
-// src/generator/_internal/RemarkGenerator.cpp
-#include "RemarkGenerator.h"
+﻿// generator/components/RemarkGenerator.cpp
+#include "RemarkGenerator.hpp"
 #include <format>
 
 RemarkGenerator::RemarkGenerator(const std::optional<DailyRemarkConfig>& config, std::mt19937& gen)

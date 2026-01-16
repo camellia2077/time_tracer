@@ -14,6 +14,6 @@ set_property(TARGET log_generator PROPERTY LINK_FLAGS_RELEASE "-s")
 
 # --- [新增] Precompiled Headers (PCH) 配置 ---
 # 指定 PCH 头文件路径
-target_precompile_headers(log_generator PRIVATE "${CMAKE_SOURCE_DIR}/src/pch.h")
+target_precompile_headers(log_generator PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/src/pch.hpp")
 
-message(STATUS "Precompiled Headers enabled: src/pch.h")
+message(STATUS "Precompiled Headers enabled: src/pch.hpp")
