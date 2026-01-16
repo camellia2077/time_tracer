@@ -1,6 +1,6 @@
-﻿// cli/HelpPrinter.h
-#ifndef CLI_HELPPRINTER_H
-#define CLI_HELPPRINTER_H
+﻿// cli/HelpPrinter.hpp
+#ifndef HELP_PRINTER_HPP
+#define HELP_PRINTER_HPP
 #include <string>
 
 /**
@@ -38,4 +38,4 @@ private:
     std::string prog_name_;
 };
 
-#endif // CLI_HELPPRINTER_H
+#endif // HELP_PRINTER_HPP

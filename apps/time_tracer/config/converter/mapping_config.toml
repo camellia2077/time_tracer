@@ -16,8 +16,8 @@
 "知乎" = "recreation_zonline-platforms_zhihu"
 "douyin" = "recreation_zonline-platforms_douyin"
 "抖音" = "recreation_zonline-platforms_douyin"
-"biliili" = "recreation_zonline-platforms_biliili"
-"哔哩哔哩" = "recreation_zonline-platforms_biliili"
+"bilibili" = "recreation_zonline-platforms_bilibili"
+"哔哩哔哩" = "recreation_zonline-platforms_bilibili"
 
 "minecraft" = "recreation_game_minecraft"
     
@@ -32,7 +32,7 @@
 "有氧训练" = "exercise_cardio"
 "无氧训练" = "exercise_anaerobic"
 
-"英语单词" = "study_english_wordss"
+"英语单词" = "study_english_words"
 "英语写作" = "study_english_writing"
 "英语听力" = "study_english_listening"
 "英语文章" = "study_english_article"
@@ -40,8 +40,8 @@
 "高等数学" = "study_math_calculus"
 "高等数学二重积分" = "study_math_calculus_double-integral"
 
-"线性代数" = "study_math_calculus"
-"线性代数矩阵" = "study_math_calculus_matrix"
+"线性代数" = "study_math_linear-algebra"
+"线性代数矩阵" = "study_math_linear-algebra_matrix"
 
 "概率统计" = "study_math_probability-theory"
 
@@ -49,9 +49,3 @@
 "数据结构" = "study_computer_data structure"
 "数据结构二叉树" = "study_computer_data-structure_trees"
 "数据结构图" = "study_computer_data-structure_graphs"
-
-
-
-
-
-

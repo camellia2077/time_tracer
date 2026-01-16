@@ -1,8 +1,8 @@
-﻿// core/config/ConfigHandler.h
-#ifndef CORE_CONFIG_CONFIGHANDLER_H
-#define CORE_CONFIG_CONFIGHANDLER_H
+﻿// core/config/ConfigHandler.hpp
+#ifndef CONFIG_HANDLER_HPP
+#define CONFIG_HANDLER_HPP
 
-#include "common/AppContext.h"
+#include "common/AppContext.hpp"
 #include <optional>
 
 namespace Core {
@@ -19,4 +19,4 @@ namespace Core {
 
 }
 
-#endif // CORE_CONFIG_CONFIGHANDLER_H
+#endif // CONFIG_HANDLER_HPP
