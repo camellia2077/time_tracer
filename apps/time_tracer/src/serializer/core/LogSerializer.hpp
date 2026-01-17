@@ -1,6 +1,6 @@
 ﻿// serializer/core/LogSerializer.hpp
-#ifndef LOG_SERIALIZER_HPP
-#define LOG_SERIALIZER_HPP
+#ifndef SERIALIZER_CORE_LOG_SERIALIZER_HPP_
+#define SERIALIZER_CORE_LOG_SERIALIZER_HPP_
 
 #include <nlohmann/json.hpp>
 #include "common/model/DailyLog.hpp"
@@ -17,4 +17,4 @@ public:
 
 } // namespace serializer::core
 
-#endif // LOG_SERIALIZER_HPP
+#endif // SERIALIZER_CORE_LOG_SERIALIZER_HPP_

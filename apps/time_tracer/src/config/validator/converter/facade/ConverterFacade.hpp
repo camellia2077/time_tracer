@@ -1,6 +1,6 @@
 ﻿// config/validator/converter/facade/ConverterFacade.hpp
-#ifndef CONVERTER_FACADE_HPP
-#define CONVERTER_FACADE_HPP
+#ifndef CONFIG_VALIDATOR_CONVERTER_FACADE_CONVERTER_FACADE_HPP_
+#define CONFIG_VALIDATOR_CONVERTER_FACADE_CONVERTER_FACADE_HPP_
 
 #include <toml++/toml.h> // [修改]
 
@@ -14,4 +14,4 @@ public:
     ) const;
 };
 
-#endif // CONVERTER_FACADE_HPP
+#endif // CONFIG_VALIDATOR_CONVERTER_FACADE_CONVERTER_FACADE_HPP_

@@ -1,6 +1,6 @@
 ﻿// core/ReportHandler.hpp
-#ifndef REPORT_HANDLER_HPP
-#define REPORT_HANDLER_HPP
+#ifndef CORE_REPORT_HANDLER_HPP_
+#define CORE_REPORT_HANDLER_HPP_
 
 #include <string>
 #include <vector>
@@ -41,4 +41,4 @@ private:
     std::unique_ptr<Exporter> report_exporter_;
 };
 
-#endif // REPORT_HANDLER_HPP
+#endif // CORE_REPORT_HANDLER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/shared/model/MonthlyReportData.hpp
-#ifndef MONTHLY_REPORT_DATA_HPP
-#define MONTHLY_REPORT_DATA_HPP
+#ifndef REPORTS_SHARED_MODEL_MONTHLY_REPORT_DATA_HPP_
+#define REPORTS_SHARED_MODEL_MONTHLY_REPORT_DATA_HPP_
 
 #include <string>
 #include <vector>
@@ -19,4 +19,4 @@ struct MonthlyReportData {
     reporting::ProjectTree project_tree;
 };
 
-#endif // MONTHLY_REPORT_DATA_HPP
+#endif // REPORTS_SHARED_MODEL_MONTHLY_REPORT_DATA_HPP_

@@ -1,6 +1,6 @@
 // reports/shared/config/TypstStyleConfig.hpp
-#ifndef TYPST_STYLE_CONFIG_HPP
-#define TYPST_STYLE_CONFIG_HPP
+#ifndef REPORTS_SHARED_CONFIG_TYPST_STYLE_CONFIG_HPP_
+#define REPORTS_SHARED_CONFIG_TYPST_STYLE_CONFIG_HPP_
 
 #include <string>
 #include <toml++/toml.h> // [修改]
@@ -33,4 +33,4 @@ private:
 
 ENABLE_C4251_WARNING
 
-#endif // TYPST_STYLE_CONFIG_HPP
+#endif // REPORTS_SHARED_CONFIG_TYPST_STYLE_CONFIG_HPP_

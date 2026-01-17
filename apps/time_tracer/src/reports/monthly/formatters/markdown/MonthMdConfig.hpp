@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/markdown/MonthMdConfig.hpp
-#ifndef MONTH_MD_CONFIG_HPP
-#define MONTH_MD_CONFIG_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_CONFIG_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_CONFIG_HPP_
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include <string> 
@@ -17,4 +17,4 @@ private:
     std::string project_breakdown_label_;
 };
 
-#endif // MONTH_MD_CONFIG_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_CONFIG_HPP_

@@ -1,6 +1,6 @@
 ﻿// config/validator/converter/rules/MappingRule.hpp
-#ifndef MAPPING_RULE_HPP
-#define MAPPING_RULE_HPP
+#ifndef CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_
+#define CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_
 
 #include <toml++/toml.h> // [修改]
 
@@ -10,4 +10,4 @@ public:
     bool validate(const toml::table& mappings_tbl) const;
 };
 
-#endif // MAPPING_RULE_HPP
+#endif // CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_

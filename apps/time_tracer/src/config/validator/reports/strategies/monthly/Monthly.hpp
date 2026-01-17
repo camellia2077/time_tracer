@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/strategies/monthly/Monthly.hpp
-#ifndef MONTHLY_HPP
-#define MONTHLY_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_MONTHLY_MONTHLY_HPP_
+#define CONFIG_VALIDATOR_REPORTS_STRATEGIES_MONTHLY_MONTHLY_HPP_
 
 #include "config/validator/reports/strategies/BaseStrategy.hpp"
 
@@ -9,4 +9,4 @@ protected:
     bool validate_specific_keys(const toml::table& query_config, const std::string& file_name) const override;
 };
 
-#endif // MONTHLY_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_STRATEGIES_MONTHLY_MONTHLY_HPP_

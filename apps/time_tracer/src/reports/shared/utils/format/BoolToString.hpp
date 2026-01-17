@@ -1,6 +1,6 @@
 // reports/shared/utils/format/BoolToString.hpp
-#ifndef BOOL_TO_STRING_HPP
-#define BOOL_TO_STRING_HPP
+#ifndef REPORTS_SHARED_UTILS_FORMAT_BOOL_TO_STRING_HPP_
+#define REPORTS_SHARED_UTILS_FORMAT_BOOL_TO_STRING_HPP_
 
 #include <string>
 #include "reports/shared/api/shared_api.hpp" // <--- [新增]
@@ -12,4 +12,4 @@
  */
 REPORTS_SHARED_API std::string bool_to_string(const std::string& val);
 
-#endif // BOOL_TO_STRING_HPP
+#endif // REPORTS_SHARED_UTILS_FORMAT_BOOL_TO_STRING_HPP_

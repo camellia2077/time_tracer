@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/latex/PeriodTexUtils.hpp
-#ifndef PERIOD_TEX_UTILS_HPP
-#define PERIOD_TEX_UTILS_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_UTILS_HPP_
+#define REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_UTILS_HPP_
 
 #include <sstream>
 #include <memory>
@@ -19,4 +19,4 @@ namespace PeriodTexUtils {
 
 } // namespace PeriodTexUtils
 
-#endif // PERIOD_TEX_UTILS_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_UTILS_HPP_

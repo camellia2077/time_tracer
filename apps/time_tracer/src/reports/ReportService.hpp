@@ -1,6 +1,6 @@
 // reports/ReportService.hpp
-#ifndef REPORT_SERVICE_HPP
-#define REPORT_SERVICE_HPP
+#ifndef REPORTS_REPORT_SERVICE_HPP_
+#define REPORTS_REPORT_SERVICE_HPP_
 
 #include <sqlite3.h>
 #include <string>
@@ -30,4 +30,4 @@ private:
     const AppConfig& app_config_; // [ADDED] Store a reference to the config
 };
 
-#endif // REPORT_SERVICE_HPP
+#endif // REPORTS_REPORT_SERVICE_HPP_

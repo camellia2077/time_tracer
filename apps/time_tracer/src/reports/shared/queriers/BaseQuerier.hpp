@@ -1,6 +1,6 @@
 // reports/shared/queriers/BaseQuerier.hpp
-#ifndef BASE_QUERIER_HPP
-#define BASE_QUERIER_HPP
+#ifndef REPORTS_SHARED_QUERIERS_BASE_QUERIER_HPP_
+#define REPORTS_SHARED_QUERIERS_BASE_QUERIER_HPP_
 
 #include <sqlite3.h>
 #include <string>
@@ -95,4 +95,4 @@ protected:
     }
 };
 
-#endif // BASE_QUERIER_HPP
+#endif // REPORTS_SHARED_QUERIERS_BASE_QUERIER_HPP_

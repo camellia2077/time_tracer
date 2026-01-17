@@ -1,6 +1,6 @@
 // reports/monthly/queriers/BatchMonthDataFetcher.hpp
-#ifndef BATCH_MONTH_DATA_FETCHER_HPP
-#define BATCH_MONTH_DATA_FETCHER_HPP
+#ifndef REPORTS_MONTHLY_QUERIERS_BATCH_MONTH_DATA_FETCHER_HPP_
+#define REPORTS_MONTHLY_QUERIERS_BATCH_MONTH_DATA_FETCHER_HPP_
 
 #include <sqlite3.h>
 #include <map>
@@ -30,4 +30,4 @@ private:
     void fetch_actual_days(std::map<std::string, MonthlyReportData>& all_months_data);
 };
 
-#endif // BATCH_MONTH_DATA_FETCHER_HPP
+#endif // REPORTS_MONTHLY_QUERIERS_BATCH_MONTH_DATA_FETCHER_HPP_

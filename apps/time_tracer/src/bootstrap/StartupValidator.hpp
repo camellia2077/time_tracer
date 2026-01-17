@@ -1,6 +1,6 @@
 ﻿// bootstrap/StartupValidator.hpp
-#ifndef STARTUP_VALIDATOR_HPP
-#define STARTUP_VALIDATOR_HPP
+#ifndef BOOTSTRAP_STARTUP_VALIDATOR_HPP_
+#define BOOTSTRAP_STARTUP_VALIDATOR_HPP_
 
 #include "common/config/AppConfig.hpp"
 
@@ -20,4 +20,4 @@ public:
     static bool validate_environment(const AppConfig& config);
 };
 
-#endif // STARTUP_VALIDATOR_HPP
+#endif // BOOTSTRAP_STARTUP_VALIDATOR_HPP_

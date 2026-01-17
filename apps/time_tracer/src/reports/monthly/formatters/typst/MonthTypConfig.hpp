@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/typst/MonthTypConfig.hpp
-#ifndef MONTH_TYP_CONFIG_HPP
-#define MONTH_TYP_CONFIG_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_CONFIG_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_CONFIG_HPP_
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include "reports/shared/config/TypstStyleConfig.hpp"
@@ -34,4 +34,4 @@ private:
     double margin_right_cm_;
 };
 
-#endif // MONTH_TYP_CONFIG_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_CONFIG_HPP_

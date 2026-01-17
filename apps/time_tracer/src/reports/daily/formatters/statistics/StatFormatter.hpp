@@ -1,6 +1,6 @@
 // reports/daily/formatters/statistics/StatFormatter.hpp
-#ifndef STAT_FORMATTER_HPP
-#define STAT_FORMATTER_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_STATISTICS_STAT_FORMATTER_HPP_
+#define REPORTS_DAILY_FORMATTERS_STATISTICS_STAT_FORMATTER_HPP_
 
 #include "reports/shared/api/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
@@ -39,4 +39,4 @@ private:
 
 ENABLE_C4251_WARNING // <-- [新增] 4. 恢复C4251
 
-#endif // STAT_FORMATTER_HPP
+#endif // REPORTS_DAILY_FORMATTERS_STATISTICS_STAT_FORMATTER_HPP_

@@ -1,6 +1,6 @@
 ﻿// core/importer/FileImportReader.hpp
-#ifndef FILE_IMPORT_READER_HPP
-#define FILE_IMPORT_READER_HPP
+#ifndef CORE_IMPORTER_FILE_IMPORT_READER_HPP_
+#define CORE_IMPORTER_FILE_IMPORT_READER_HPP_
 
 #include <string>
 #include <vector>
@@ -50,4 +50,4 @@ public:
     }
 };
 
-#endif // FILE_IMPORT_READER_HPP
+#endif // CORE_IMPORTER_FILE_IMPORT_READER_HPP_

@@ -1,0 +1,34 @@
+# test/infrastructure/environment.py
+from pathlib import Path
+from typing import List, Optional
+
+# [变更] 导入拆分后的组件
+from infrastructure.workspace import Workspace
+from infrastructure.deployer import ArtifactDeployer
+
+class EnvironmentManager:
+    """
+    Facade: 供 Engine 调用。
+    负责组装 Workspace 和 Deployer 来完成具体的测试环境准备任务。
+    """
+    def __init__(self, source_exe_dir: Path, files_to_copy: List[str], folders_to_copy: List[str], use_temp: bool = True):
+        self.source_dir = source_exe_dir
+        self.files = files_to_copy
+        self.folders = folders_to_copy
+        
+        # 组合 Workspace
+        self.workspace = Workspace(use_temp=use_temp)
+        self.target_root = None
+
+    def setup(self, target_dir_override: Optional[Path] = None) -> Path:
+        # 1. 准备地皮
+        self.target_root = self.workspace.setup(target_dir_override)
+        
+        # 2. 搬运物资
+        deployer = ArtifactDeployer(self.source_dir, self.target_root)
+        deployer.deploy(self.files, self.folders)
+        
+        return self.target_root
+
+    def teardown(self):
+        self.workspace.teardown()

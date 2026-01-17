@@ -1,6 +1,6 @@
 // common/utils/StringUtils.hpp
-#ifndef STRING_UTILS_HPP
-#define STRING_UTILS_HPP
+#ifndef COMMON_UTILS_STRING_UTILS_HPP_
+#define COMMON_UTILS_STRING_UTILS_HPP_
 
 #include <string>
 #include <vector>
@@ -21,4 +21,4 @@ REPORTS_SHARED_API std::string trim(const std::string& str);
  */
 REPORTS_SHARED_API std::vector<std::string> split_string(const std::string& str, char delimiter);
 
-#endif // STRING_UTILS_HPP
+#endif // COMMON_UTILS_STRING_UTILS_HPP_

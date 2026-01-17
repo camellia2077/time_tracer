@@ -1,6 +1,6 @@
 // reports/shared/formatters/markdown/MarkdownFormatter.hpp
-#ifndef MARKDOWN_FORMATTER_HPP
-#define MARKDOWN_FORMATTER_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_
+#define REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_
 
 #include <string>
 #include "reports/shared/model/ProjectTree.hpp"
@@ -21,4 +21,4 @@ REPORTS_SHARED_API std::string format_project_tree(const reporting::ProjectTree&
 
 } // namespace MarkdownFormatter
 
-#endif // MARKDOWN_FORMATTER_HPP
+#endif // REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/daily/common/DayBaseConfig.hpp
-#ifndef DAY_BASE_CONFIG_HPP
-#define DAY_BASE_CONFIG_HPP
+#ifndef REPORTS_DAILY_COMMON_DAY_BASE_CONFIG_HPP_
+#define REPORTS_DAILY_COMMON_DAY_BASE_CONFIG_HPP_
 
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
@@ -66,4 +66,4 @@ private:
 
 ENABLE_C4251_WARNING
 
-#endif // DAY_BASE_CONFIG_HPP
+#endif // REPORTS_DAILY_COMMON_DAY_BASE_CONFIG_HPP_

@@ -1,6 +1,6 @@
 // reports/shared/utils/format/ReportStringUtils.hpp
-#ifndef REPORT_STRING_UTILS_HPP
-#define REPORT_STRING_UTILS_HPP
+#ifndef REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_HPP_
+#define REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_HPP_
 
 #include <string>
 #include "reports/shared/api/shared_api.hpp"
@@ -23,4 +23,4 @@ REPORTS_SHARED_API std::string format_multiline_for_list(
     const std::string& line_suffix = ""
 );
 
-#endif // REPORT_STRING_UTILS_HPP
+#endif // REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_HPP_

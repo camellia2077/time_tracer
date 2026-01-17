@@ -1,6 +1,6 @@
 // core/file/utils/ConverterConfigFactory.hpp
-#ifndef CONVERTER_CONFIG_FACTORY_HPP
-#define CONVERTER_CONFIG_FACTORY_HPP
+#ifndef CORE_FILE_UTILS_CONVERTER_CONFIG_FACTORY_HPP_
+#define CORE_FILE_UTILS_CONVERTER_CONFIG_FACTORY_HPP_
 
 #include <filesystem>
 #include "converter/config/ConverterConfig.hpp"
@@ -18,4 +18,4 @@ public:
                                   const AppConfig& app_config);
 };
 
-#endif // CONVERTER_CONFIG_FACTORY_HPP
+#endif // CORE_FILE_UTILS_CONVERTER_CONFIG_FACTORY_HPP_

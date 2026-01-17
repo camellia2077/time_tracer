@@ -1,6 +1,6 @@
 ﻿// reports/shared/model/DailyReportData.hpp
-#ifndef DAILY_REPORT_DATA_HPP
-#define DAILY_REPORT_DATA_HPP
+#ifndef REPORTS_SHARED_MODEL_DAILY_REPORT_DATA_HPP_
+#define REPORTS_SHARED_MODEL_DAILY_REPORT_DATA_HPP_
 
 #include <string>
 #include <vector>
@@ -43,4 +43,4 @@ struct DailyReportData {
     reporting::ProjectTree project_tree;
 };
 
-#endif // DAILY_REPORT_DATA_HPP
+#endif // REPORTS_SHARED_MODEL_DAILY_REPORT_DATA_HPP_

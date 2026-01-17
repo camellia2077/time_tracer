@@ -1,6 +1,6 @@
 // reports/shared/interfaces/IReportFormatter.hpp
-#ifndef I_REPORT_FORMATTER_HPP
-#define I_REPORT_FORMATTER_HPP
+#ifndef REPORTS_SHARED_INTERFACES_I_REPORT_FORMATTER_HPP_
+#define REPORTS_SHARED_INTERFACES_I_REPORT_FORMATTER_HPP_
 
 #include <string>
 #include <sqlite3.h>
@@ -39,4 +39,4 @@ typedef const char* (*FormatReportFunc_Period)(FormatterHandle, const PeriodRepo
 }
 #endif
 
-#endif // I_REPORT_FORMATTER_HPP
+#endif // REPORTS_SHARED_INTERFACES_I_REPORT_FORMATTER_HPP_

@@ -1,6 +1,6 @@
 ﻿// importer/storage/Repository.hpp
-#ifndef REPOSITORY_HPP
-#define REPOSITORY_HPP
+#ifndef IMPORTER_STORAGE_REPOSITORY_HPP_
+#define IMPORTER_STORAGE_REPOSITORY_HPP_
 
 #include <string>
 #include <vector>
@@ -34,4 +34,4 @@ private:
     std::unique_ptr<Writer> data_inserter_;        
 };
 
-#endif // REPOSITORY_HPP
+#endif // IMPORTER_STORAGE_REPOSITORY_HPP_

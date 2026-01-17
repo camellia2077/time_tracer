@@ -1,6 +1,6 @@
 ﻿// core/reporting/Exporter.hpp
-#ifndef EXPORTER_HPP
-#define EXPORTER_HPP
+#ifndef CORE_REPORTING_EXPORTER_HPP_
+#define CORE_REPORTING_EXPORTER_HPP_
 
 #include <string>
 #include <vector>
@@ -29,4 +29,4 @@ private:
     void write_report_to_file(const std::string& report_content, const fs::path& output_path) const;
     std::unique_ptr<ReportFileManager> file_manager_;
 };
-#endif // EXPORTER_HPP
+#endif // CORE_REPORTING_EXPORTER_HPP_

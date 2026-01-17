@@ -1,6 +1,6 @@
 // serializer/JsonSerializer.hpp
-#ifndef JSON_SERIALIZER_HPP
-#define JSON_SERIALIZER_HPP
+#ifndef SERIALIZER_JSON_SERIALIZER_HPP_
+#define SERIALIZER_JSON_SERIALIZER_HPP_
 
 #include <vector>
 #include <nlohmann/json.hpp>
@@ -25,4 +25,4 @@ public:
 
 } // namespace serializer
 
-#endif // JSON_SERIALIZER_HPP
+#endif // SERIALIZER_JSON_SERIALIZER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/typst/MonthTypFormatter.hpp
-#ifndef MONTH_TYP_FORMATTER_HPP
-#define MONTH_TYP_FORMATTER_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTypFormatter.hpp"
 #include "reports/monthly/formatters/typst/MonthTypConfig.hpp"
@@ -19,4 +19,4 @@ protected:
     void format_page_setup(std::stringstream& ss) const override;
 };
 
-#endif // MONTH_TYP_FORMATTER_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_HPP_

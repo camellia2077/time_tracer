@@ -1,6 +1,6 @@
 ﻿// converter/convert/core/DayProcessor.hpp
-#ifndef DAY_PROCESSOR_HPP
-#define DAY_PROCESSOR_HPP
+#ifndef CONVERTER_CONVERT_CORE_DAY_PROCESSOR_HPP_
+#define CONVERTER_CONVERT_CORE_DAY_PROCESSOR_HPP_
 
 // 这个类将负责处理天与天之间的关联逻辑
 
@@ -20,4 +20,4 @@ private:
     const ConverterConfig& config_;
 };
 
-#endif // DAY_PROCESSOR_HPP
+#endif // CONVERTER_CONVERT_CORE_DAY_PROCESSOR_HPP_

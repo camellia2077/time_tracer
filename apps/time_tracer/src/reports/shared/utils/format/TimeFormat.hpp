@@ -1,6 +1,6 @@
 // reports/shared/utils/format/TimeFormat.hpp
-#ifndef TIME_FORMAT_HPP
-#define TIME_FORMAT_HPP
+#ifndef REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_HPP_
+#define REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_HPP_
 
 #include <string>
 #include "reports/shared/api/shared_api.hpp" // <--- [新增]
@@ -27,7 +27,7 @@ REPORTS_SHARED_API std::string add_days_to_date_str(std::string date_str, int da
  */
 REPORTS_SHARED_API std::string get_current_date_str();
 
-#endif // TIME_FORMAT_HPP
+#endif // REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_HPP_
 
 
 

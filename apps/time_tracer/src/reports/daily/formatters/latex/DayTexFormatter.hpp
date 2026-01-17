@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/latex/DayTexFormatter.hpp
-#ifndef DAY_TEX_FORMATTER_HPP
-#define DAY_TEX_FORMATTER_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_HPP_
+#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTexFormatter.hpp"
 #include "reports/shared/model/DailyReportData.hpp"
@@ -24,4 +24,4 @@ protected:
     std::string get_no_records_msg() const override;
 };
 
-#endif // DAY_TEX_FORMATTER_HPP
+#endif // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_HPP_

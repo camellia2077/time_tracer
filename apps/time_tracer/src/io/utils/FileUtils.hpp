@@ -1,6 +1,6 @@
 ﻿// io/utils/FileUtils.hpp
-#ifndef FILE_UTILS_HPP
-#define FILE_UTILS_HPP
+#ifndef IO_UTILS_FILE_UTILS_HPP_
+#define IO_UTILS_FILE_UTILS_HPP_
 
 #include <vector>
 #include <filesystem>
@@ -33,4 +33,4 @@ namespace FileUtils {
 
 } // namespace FileUtils
 
-#endif // FILE_UTILS_HPP
+#endif // IO_UTILS_FILE_UTILS_HPP_

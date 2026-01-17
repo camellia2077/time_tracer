@@ -1,6 +1,6 @@
 ﻿// importer/parser/MemoryParser.hpp
-#ifndef MEMORY_PARSER_HPP
-#define MEMORY_PARSER_HPP
+#ifndef IMPORTER_PARSER_MEMORY_PARSER_HPP_
+#define IMPORTER_PARSER_MEMORY_PARSER_HPP_
 
 #include <map>
 #include <string>
@@ -25,4 +25,4 @@ public:
     ParsedData parse(const std::map<std::string, std::vector<DailyLog>>& data_map);
 };
 
-#endif // MEMORY_PARSER_HPP
+#endif // IMPORTER_PARSER_MEMORY_PARSER_HPP_

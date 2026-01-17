@@ -1,6 +1,6 @@
 ﻿// core/file/steps/SourceValidatorStep.hpp
-#ifndef SOURCE_VALIDATOR_STEP_HPP
-#define SOURCE_VALIDATOR_STEP_HPP
+#ifndef CORE_FILE_STEPS_SOURCE_VALIDATOR_STEP_HPP_
+#define CORE_FILE_STEPS_SOURCE_VALIDATOR_STEP_HPP_
 
 #include "core/file/PipelineContext.hpp"
 #include "converter/LogProcessor.hpp"
@@ -13,4 +13,4 @@ private:
     void printTiming(double ms) const;
 };
 
-#endif // SOURCE_VALIDATOR_STEP_HPP
+#endif // CORE_FILE_STEPS_SOURCE_VALIDATOR_STEP_HPP_

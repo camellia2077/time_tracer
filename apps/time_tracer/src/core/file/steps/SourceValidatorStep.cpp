@@ -7,22 +7,16 @@
 #include <chrono>
 #include <iomanip>
 
-// [路径修正] 不再需要包含 FileValidator，因为验证逻辑已移至 LogProcessor (如果 LogProcessor 内部处理)
-// 或者如果 SourceValidatorStep 显式调用 TextValidator，则需包含
-// 根据你之前的代码，Processor 负责处理。但为了保持一致性，如果这里将来直接调用 Validator，路径应为:
-// #include "validator/FileValidator.hpp" 
+// [修改] 引用新的头文件
+#include "validator/txt/facade/TextValidator.hpp" 
 
-// 目前 LogProcessor 负责转换，但在 SourceValidatorStep 中我们实际上应该调用 TextValidator
-// 让我们查看原有代码，它调用了 LogProcessor.processSourceContent。
-// 在之前的重构中，LogProcessor 移除了验证逻辑。
-// 所以 SourceValidatorStep 必须直接调用 TextValidator！
-
-#include "validator/source_txt/facade/TextValidator.hpp" // [新增] 直接调用验证器
+// [新增] 命名空间引用
+using namespace validator;
+using namespace validator::txt;
 
 bool SourceValidatorStep::execute(PipelineContext& context) {
     std::cout << "Step: Validating source files..." << std::endl;
 
-    // 1. 加载配置
     ConverterConfig config;
     try {
         config = ConverterConfigFactory::create(
@@ -37,20 +31,18 @@ bool SourceValidatorStep::execute(PipelineContext& context) {
     bool all_ok = true;
     double total_ms = 0.0;
     
-    // [核心修改] 直接使用 TextValidator 而不是 LogProcessor
+    // [修改] 类在 namespace validator::txt 中
     TextValidator validator(config);
 
-    // 2. 执行验证
     for (const auto& file_path : context.state.source_files) {
         auto start_time = std::chrono::steady_clock::now();
-        std::set<Error> errors; // [新增]
+        std::set<Error> errors; // [修改] 在 namespace validator 中
 
         try {
             std::string content = FileReader::read_content(file_path);
             
-            // 调用 TextValidator
             if (!validator.validate(file_path.string(), content, errors)) {
-                printGroupedErrors(file_path.string(), errors); // 使用 ValidatorUtils 中的打印函数
+                printGroupedErrors(file_path.string(), errors); // [修改] 在 namespace validator 中
                 all_ok = false;
             }
             

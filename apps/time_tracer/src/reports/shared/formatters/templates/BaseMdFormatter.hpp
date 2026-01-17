@@ -1,6 +1,6 @@
 ﻿// reports/shared/formatters/templates/BaseMdFormatter.hpp
-#ifndef BASE_MD_FORMATTER_HPP
-#define BASE_MD_FORMATTER_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_MD_FORMATTER_HPP_
+#define REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_MD_FORMATTER_HPP_
 
 #include <string>
 #include <sstream>
@@ -68,4 +68,4 @@ protected:
     }
 };
 
-#endif // BASE_MD_FORMATTER_HPP
+#endif // REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_MD_FORMATTER_HPP_

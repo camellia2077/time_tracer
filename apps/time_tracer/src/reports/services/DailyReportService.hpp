@@ -1,6 +1,6 @@
 // reports/services/DailyReportService.hpp
-#ifndef DAILY_REPORT_SERVICE_HPP
-#define DAILY_REPORT_SERVICE_HPP 
+#ifndef REPORTS_SERVICES_DAILY_REPORT_SERVICE_HPP_
+#define REPORTS_SERVICES_DAILY_REPORT_SERVICE_HPP_ 
 
 #include "reports/shared/model/query_data_structs.hpp"
 #include "reports/shared/types/ReportFormat.hpp" 
@@ -32,4 +32,4 @@ private:
     const AppConfig& app_config_;
 };
 
-#endif // DAILY_REPORT_SERVICE_HPP
+#endif // REPORTS_SERVICES_DAILY_REPORT_SERVICE_HPP_

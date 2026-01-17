@@ -1,6 +1,6 @@
 // reports/shared/types/ReportFormat.hpp
-#ifndef REPORT_FORMAT_HPP
-#define REPORT_FORMAT_HPP
+#ifndef REPORTS_SHARED_TYPES_REPORT_FORMAT_HPP_
+#define REPORTS_SHARED_TYPES_REPORT_FORMAT_HPP_
 
 // reports/shared/ReportFormat.h
 
@@ -14,4 +14,4 @@ enum class ReportFormat {
     Typ
 };
 
-#endif // REPORT_FORMAT_HPP
+#endif // REPORTS_SHARED_TYPES_REPORT_FORMAT_HPP_

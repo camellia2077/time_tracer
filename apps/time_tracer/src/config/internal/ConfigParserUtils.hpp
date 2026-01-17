@@ -1,6 +1,6 @@
 // config/internal/ConfigParserUtils.hpp
-#ifndef CONFIG_PARSER_UTILS_HPP
-#define CONFIG_PARSER_UTILS_HPP
+#ifndef CONFIG_INTERNAL_CONFIG_PARSER_UTILS_HPP_
+#define CONFIG_INTERNAL_CONFIG_PARSER_UTILS_HPP_
 
 #include <filesystem>
 #include <toml++/toml.h> // 需要引入 toml++
@@ -25,4 +25,4 @@ namespace ConfigParserUtils {
 
 } // namespace ConfigParserUtils
 
-#endif // CONFIG_PARSER_UTILS_HPP
+#endif // CONFIG_INTERNAL_CONFIG_PARSER_UTILS_HPP_

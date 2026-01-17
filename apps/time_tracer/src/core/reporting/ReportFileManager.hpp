@@ -1,6 +1,6 @@
 ﻿// core/reporting/ReportFileManager.hpp
-#ifndef REPORT_FILE_MANAGER_HPP
-#define REPORT_FILE_MANAGER_HPP
+#ifndef CORE_REPORTING_REPORT_FILE_MANAGER_HPP_
+#define CORE_REPORTING_REPORT_FILE_MANAGER_HPP_
 
 #include <filesystem>
 #include <string>
@@ -25,4 +25,4 @@ private:
     fs::path export_root_path_;
 };
 
-#endif // REPORT_FILE_MANAGER_HPP
+#endif // CORE_REPORTING_REPORT_FILE_MANAGER_HPP_

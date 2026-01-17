@@ -1,6 +1,6 @@
 ﻿// importer/ImportService.hpp
-#ifndef IMPORT_SERVICE_HPP
-#define IMPORT_SERVICE_HPP
+#ifndef IMPORTER_IMPORT_SERVICE_HPP_
+#define IMPORTER_IMPORT_SERVICE_HPP_
 
 #include <string>
 #include <vector>
@@ -27,4 +27,4 @@ private:
     std::string db_path_;
 };
 
-#endif // IMPORT_SERVICE_HPP
+#endif // IMPORTER_IMPORT_SERVICE_HPP_
