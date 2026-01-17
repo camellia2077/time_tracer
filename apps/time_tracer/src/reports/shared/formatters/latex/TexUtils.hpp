@@ -1,6 +1,6 @@
 // reports/shared/formatters/latex/TexUtils.hpp
-#ifndef TEX_UTILS_HPP
-#define TEX_UTILS_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_
+#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_
 
 #include <string>
 #include <vector>
@@ -61,4 +61,4 @@ REPORTS_SHARED_API std::string format_project_tree(
 
 } // namespace TexUtils
 
-#endif // TEX_UTILS_HPP
+#endif // REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_

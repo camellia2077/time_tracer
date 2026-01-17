@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/latex/MonthTexUtils.hpp
-#ifndef MONTH_TEX_UTILS_HPP
-#define MONTH_TEX_UTILS_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_HPP_
 
 #include <sstream>
 #include <memory>
@@ -16,4 +16,4 @@ namespace MonthTexUtils {
 
 } // namespace MonthTexUtils
 
-#endif // MONTH_TEX_UTILS_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_HPP_

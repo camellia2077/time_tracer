@@ -16,21 +16,19 @@ set(SERIALIZER_SOURCES
 )
 
 set(VALIDATOR_SOURCES
-    # 根目录文件
-    "src/validator/FileValidator.cpp"
 
     # common 模块
     "src/validator/common/ValidatorUtils.cpp"
 
-    # output_json 模块
-    "src/validator/output_json/facade/JsonValidator.cpp"
-    "src/validator/output_json/rules/ActivityRules.cpp"
-    "src/validator/output_json/rules/DateRules.cpp"
+    # json 模块
+    "src/validator/json/facade/JsonValidator.cpp"
+    "src/validator/json/rules/ActivityRules.cpp"
+    "src/validator/json/rules/DateRules.cpp"
 
     # source_txt 模块
-    "src/validator/source_txt/facade/TextValidator.cpp"
-    "src/validator/source_txt/rules/LineRules.cpp"
-    "src/validator/source_txt/rules/StructureRules.cpp"
+    "src/validator/txt/facade/TextValidator.cpp"
+    "src/validator/txt/rules/LineRules.cpp"
+    "src/validator/txt/rules/StructureRules.cpp"
 )
 
 
@@ -65,21 +63,22 @@ set(REPORTS_SHARED_SOURCES
 
 # --- Time Master CLI Sources ---
 set(CLI_SOURCES
-    "src/cli/CliHelp.cpp"
-    "src/cli/CommandRegistry.cpp"
-    "src/cli/InputPrompter.cpp"
-    "src/cli/CliController.cpp"
-    "src/cli/CliParser.cpp"
-    "src/cli/commands/export/Export.cpp"
-    
+    # --- Framework (Core Logic) ---
+    "src/cli/framework/core/command_parser.cpp"
+    "src/cli/framework/io/console_input.cpp"
 
-    "src/cli/commands/query/Query.cpp"
+    "src/cli/impl/app/cli_application.cpp"
+    "src/cli/impl/utils/help_formatter.cpp"
 
-    "src/cli/commands/pipeline/Convert.cpp"
-    "src/cli/commands/pipeline/Import.cpp"
-    "src/cli/commands/pipeline/Run.cpp"
-    "src/cli/commands/pipeline/ValidateOutput.cpp"
-    "src/cli/commands/pipeline/ValidateSource.cpp"
+    "src/cli/impl/commands/export/export_command.cpp"
+
+    "src/cli/impl/commands/query/query_command.cpp"
+
+    "src/cli/impl/commands/pipeline/convert_command.cpp"
+    "src/cli/impl/commands/pipeline/import_command.cpp"
+    "src/cli/impl/commands/pipeline/ingest_command.cpp"
+    "src/cli/impl/commands/pipeline/validate_output_command.cpp"
+    "src/cli/impl/commands/pipeline/validate_source_command.cpp"
 )
 # --- DB Inserter Sources ---
 set(BOOTSTRAP_SOURCES

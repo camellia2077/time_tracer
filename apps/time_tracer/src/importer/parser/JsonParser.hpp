@@ -1,6 +1,6 @@
 ﻿// importer/parser/JsonParser.hpp
-#ifndef JSON_PARSER_HPP
-#define JSON_PARSER_HPP
+#ifndef IMPORTER_PARSER_JSON_PARSER_HPP_
+#define IMPORTER_PARSER_JSON_PARSER_HPP_
 
 #include <string>
 #include "importer/parser/ParsedData.hpp"
@@ -19,4 +19,4 @@ public:
     ParsedData parse_content(const std::string& json_content, const std::string& context_name = "memory_content");
 };
 
-#endif // JSON_PARSER_HPP
+#endif // IMPORTER_PARSER_JSON_PARSER_HPP_

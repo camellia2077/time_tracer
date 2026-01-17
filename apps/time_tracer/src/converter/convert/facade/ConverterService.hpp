@@ -1,6 +1,6 @@
 ﻿// converter/convert/facade/ConverterService.hpp
-#ifndef CONVERTER_SERVICE_HPP
-#define CONVERTER_SERVICE_HPP
+#ifndef CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_
+#define CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_
 
 #include "converter/config/ConverterConfig.hpp"
 
@@ -31,4 +31,4 @@ private:
     const ConverterConfig& config_;
 };
 
-#endif // CONVERTER_SERVICE_HPP
+#endif // CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_

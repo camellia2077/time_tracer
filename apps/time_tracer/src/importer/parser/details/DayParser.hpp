@@ -1,6 +1,6 @@
 ﻿// importer/parser/details/DayParser.hpp
-#ifndef DAY_PARSER_HPP
-#define DAY_PARSER_HPP
+#ifndef IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_
+#define IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_
 
 #include "importer/model/TimeSheetData.hpp"
 #include <nlohmann/json.hpp>
@@ -10,4 +10,4 @@ public:
     DayData parse(const nlohmann::json& day_json) const;
 };
 
-#endif // DAY_PARSER_HPP
+#endif // IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/shared/cache/ProjectNameCache.hpp
-#ifndef PROJECT_NAME_CACHE_HPP
-#define PROJECT_NAME_CACHE_HPP
+#ifndef REPORTS_SHARED_CACHE_PROJECT_NAME_CACHE_HPP_
+#define REPORTS_SHARED_CACHE_PROJECT_NAME_CACHE_HPP_
 
 #include <sqlite3.h>
 #include <string>
@@ -66,4 +66,4 @@ private:
     std::unordered_map<long long, ProjectInfo> cache_;
 };
 
-#endif // PROJECT_NAME_CACHE_HPP
+#endif // REPORTS_SHARED_CACHE_PROJECT_NAME_CACHE_HPP_

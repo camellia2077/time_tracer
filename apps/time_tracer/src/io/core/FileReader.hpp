@@ -1,6 +1,6 @@
 ﻿// io/core/FileReader.hpp
-#ifndef FILE_READER_HPP
-#define FILE_READER_HPP
+#ifndef IO_CORE_FILE_READER_HPP_
+#define IO_CORE_FILE_READER_HPP_
 
 #include <string>
 #include <filesystem>
@@ -19,4 +19,4 @@ public:
     static std::string read_content(const std::filesystem::path& path);
 };
 
-#endif // FILE_READER_HPP
+#endif // IO_CORE_FILE_READER_HPP_

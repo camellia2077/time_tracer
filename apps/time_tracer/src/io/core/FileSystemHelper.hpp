@@ -1,6 +1,6 @@
 ﻿// io/core/FileSystemHelper.hpp
-#ifndef FILE_SYSTEM_HELPER_HPP
-#define FILE_SYSTEM_HELPER_HPP
+#ifndef IO_CORE_FILE_SYSTEM_HELPER_HPP_
+#define IO_CORE_FILE_SYSTEM_HELPER_HPP_
 
 #include <filesystem>
 
@@ -35,4 +35,4 @@ public:
     static void create_directories(const std::filesystem::path& path);
 };
 
-#endif // FILE_SYSTEM_HELPER_HPP
+#endif // IO_CORE_FILE_SYSTEM_HELPER_HPP_

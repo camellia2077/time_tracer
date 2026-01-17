@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/markdown/PeriodMdFormatter.hpp
-#ifndef PERIOD_MD_FORMATTER_HPP
-#define PERIOD_MD_FORMATTER_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_FORMATTER_HPP_
+#define REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseMdFormatter.hpp"
 #include "reports/period/formatters/markdown/PeriodMdConfig.hpp"
@@ -18,4 +18,4 @@ protected:
     void format_header_content(std::stringstream& ss, const PeriodReportData& data) const override;
 };
 
-#endif // PERIOD_MD_FORMATTER_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_FORMATTER_HPP_

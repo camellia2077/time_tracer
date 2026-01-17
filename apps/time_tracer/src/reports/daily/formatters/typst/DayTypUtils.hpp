@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/typst/DayTypUtils.hpp
-#ifndef DAY_TYP_UTILS_HPP
-#define DAY_TYP_UTILS_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_HPP_
+#define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_HPP_
 
 #include <sstream>
 #include <memory>
@@ -24,4 +24,4 @@ namespace DayTypUtils {
 
 } // namespace DayTypUtils
 
-#endif // DAY_TYP_UTILS_HPP
+#endif // REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_HPP_

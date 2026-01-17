@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/latex/PeriodTexFormatter.hpp
-#ifndef PERIOD_TEX_FORMATTER_HPP
-#define PERIOD_TEX_FORMATTER_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_FORMATTER_HPP_
+#define REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTexFormatter.hpp"
 #include "reports/period/formatters/latex/PeriodTexConfig.hpp"
@@ -20,4 +20,4 @@ protected:
     void format_header_content(std::stringstream& ss, const PeriodReportData& data) const override;
 };
 
-#endif // PERIOD_TEX_FORMATTER_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_FORMATTER_HPP_

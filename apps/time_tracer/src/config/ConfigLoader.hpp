@@ -1,6 +1,6 @@
 ﻿// config/ConfigLoader.hpp
-#ifndef CONFIG_LOADER_HPP
-#define CONFIG_LOADER_HPP
+#ifndef CONFIG_CONFIG_LOADER_HPP_
+#define CONFIG_CONFIG_LOADER_HPP_
 
 #include <string>
 #include <filesystem>
@@ -40,4 +40,4 @@ private:
     const std::string CONFIG_DIR_NAME = "config";
 };
 
-#endif // CONFIG_LOADER_HPP
+#endif // CONFIG_CONFIG_LOADER_HPP_

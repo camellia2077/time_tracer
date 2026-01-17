@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/latex/DayTexUtils.hpp
-#ifndef DAY_TEX_UTILS_HPP
-#define DAY_TEX_UTILS_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_
+#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_
 
 #include <sstream>
 #include <memory>
@@ -17,4 +17,4 @@ namespace DayTexUtils {
 
 } // namespace DayTexUtils
 
-#endif // DAY_TEX_UTILS_HPP
+#endif // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_

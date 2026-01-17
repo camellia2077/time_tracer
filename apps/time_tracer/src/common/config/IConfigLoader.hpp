@@ -1,6 +1,6 @@
 // common/config/IConfigLoader.hpp
-#ifndef I_CONFIG_LOADER_HPP
-#define I_CONFIG_LOADER_HPP
+#ifndef COMMON_CONFIG_I_CONFIG_LOADER_HPP_
+#define COMMON_CONFIG_I_CONFIG_LOADER_HPP_
 
 /**
  * @brief 配置加载器抽象接口
@@ -19,4 +19,4 @@ public:
     virtual bool load(T& config_object) = 0;
 };
 
-#endif // I_CONFIG_LOADER_HPP
+#endif // COMMON_CONFIG_I_CONFIG_LOADER_HPP_

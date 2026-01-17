@@ -1,6 +1,6 @@
 // config/loader/ReportConfigLoader.hpp
-#ifndef REPORT_CONFIG_LOADER_HPP
-#define REPORT_CONFIG_LOADER_HPP
+#ifndef CONFIG_LOADER_REPORT_CONFIG_LOADER_HPP_
+#define CONFIG_LOADER_REPORT_CONFIG_LOADER_HPP_
 
 #include <filesystem>
 #include <string>
@@ -30,4 +30,4 @@ public:
     static PeriodMdConfig  loadPeriodMdConfig(const std::filesystem::path& path);
 };
 
-#endif // REPORT_CONFIG_LOADER_HPP
+#endif // CONFIG_LOADER_REPORT_CONFIG_LOADER_HPP_

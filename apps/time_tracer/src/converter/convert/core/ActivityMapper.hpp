@@ -1,6 +1,6 @@
 ﻿// converter/convert/core/ActivityMapper.hpp
-#ifndef ACTIVITY_MAPPER_HPP
-#define ACTIVITY_MAPPER_HPP
+#ifndef CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_HPP_
+#define CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_HPP_
 
 #include "common/model/DailyLog.hpp"
 
@@ -23,4 +23,4 @@ private:
     int calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) const;
 };
 
-#endif // ACTIVITY_MAPPER_HPP
+#endif // CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_HPP_

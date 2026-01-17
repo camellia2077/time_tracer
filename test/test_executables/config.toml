@@ -1,10 +1,17 @@
+# test/config.toml
+
 # ==============================================================================
 #                       RUN CONTROL
 # ==============================================================================
 [run_control]
-# 设置为 1 来执行环境准备 (清理、复制可执行文件和DLL)
-enable_file_setup = 1
-# 设置为 1 来执行测试套件
+
+# 设置为 1 来清空测试环境目录 (保留根文件夹，删除内部内容)
+enable_environment_clean = 1
+
+# 设置为 1 来从源目录复制最新的 exe, dll, config, plugins 到测试环境
+enable_environment_prepare = 1
+
+# 设置为 1 来执行具体的测试用例
 enable_test_execution = 1
 
 
@@ -12,11 +19,26 @@ enable_test_execution = 1
 #                 PATH AND DIRECTORY CONFIGURATION
 # ==============================================================================
 [paths]
+# 从这里复制exe和exe运行需要的文件
 source_executables_dir = "C:/Computer/my_github/github_cpp/time_tracer/Time_Master_cpp/apps/time_tracer/build/bin"
-output_root_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test"
-source_data_folder_name = "Date"
-target_executables_dir = "./"
-output_dir_name = "output"
+
+# 存放 txt 源文件的文件夹
+test_data_path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/Date"
+
+# 测试环境的文件夹 (存放 exe/dll)
+target_executables_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test"
+
+# 定义exe输出的格式化内容的地址--output <path>
+output_dir_name = "C:/Computer/my_github/github_cpp/time_tracer/my_test"
+
+# 明确指定数据库文件的存放路径
+db_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test/output/time_data.sqlite3"
+
+# 导出文件的存放路径
+export_output_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test/output"
+
+# 明确指定 Python 测试日志的输出文件夹地址
+py_output_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test/py_output"
 
 # ==============================================================================
 #                      EXECUTABLE AND DATABASE CONFIGURATION
@@ -32,14 +54,6 @@ generated_db_file_name = "time_data.sqlite3"
 [test_params]
 test_formats = ["md", "tex", "typ"]
 
-# 日期检查配置 (validate-output)
-# ------------------------------------------------------------------------------
-# check_date_continuity:   开启连续性检查 (检查是否有断档) -> --date-check continuity
-# check_date_completeness: 开启完整性检查 (检查整月是否完整) -> --date-check full
-# 如果两者都为 true，完整性检查优先 (因为它包含了连续性)
-# check_date_continuity = true
-# check_date_completeness = true
-
 # 这个是查询，只查询，不把查询的内容保存到本地
 daily_query_dates = ["20260101", "20260201"]
 monthly_query_months = ["202605", "202606"]
@@ -49,11 +63,9 @@ period_query_days = [7, 10, 15]
 export_mode_is_bulk = false
 
 # 仅在 export_mode_is_bulk = false 时生效
-# 这个是导出，会把查询到的内容导出为对应格式
 specific_export_dates = [
     "20260101","20260102","20260103", "20260104","20260105",
     "20260106","20260107","20260108","20260109","202601010",
-    
     "20260201"
 ]
 specific_export_months = ["202605", "202606"]
@@ -64,7 +76,6 @@ period_export_days = [7, 10, 15]
 #                       CLEANUP CONFIGURATION
 # ==============================================================================
 [cleanup]
-# 需要从源目录复制的文件
 files_to_copy = [
     "libreports_shared.dll",
     "time_tracker_cli.exe",
@@ -74,11 +85,5 @@ files_to_copy = [
     "libtomlplusplus-3.dll",
     "libwinpthread-1.dll"
 ]
-
-# 需要清理的目录
-directories_to_clean = [
-    "output",
-    "py_output",
-    "config",
-    "plugins"
-]
+# [新增] 明确定义需要从源目录复制的文件夹
+folders_to_copy = ["config", "plugins"]

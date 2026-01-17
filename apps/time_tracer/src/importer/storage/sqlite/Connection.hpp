@@ -1,6 +1,6 @@
 ﻿// importer/storage/sqlite/Connection.hpp
-#ifndef CONNECTION_HPP
-#define CONNECTION_HPP
+#ifndef IMPORTER_STORAGE_SQLITE_CONNECTION_HPP_
+#define IMPORTER_STORAGE_SQLITE_CONNECTION_HPP_
 
 #include <string>
 #include <sqlite3.h>
@@ -21,4 +21,4 @@ private:
 
 bool execute_sql(sqlite3* db, const std::string& sql, const std::string& context_msg = "");
 
-#endif // CONNECTION_HPP
+#endif // IMPORTER_STORAGE_SQLITE_CONNECTION_HPP_

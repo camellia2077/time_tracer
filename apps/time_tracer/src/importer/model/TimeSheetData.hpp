@@ -1,6 +1,6 @@
 ﻿// importer/model/TimeSheetData.hpp
-#ifndef TIME_SHEET_DATA_HPP
-#define TIME_SHEET_DATA_HPP
+#ifndef IMPORTER_MODEL_TIME_SHEET_DATA_HPP_
+#define IMPORTER_MODEL_TIME_SHEET_DATA_HPP_
 
 #include <string>
 #include <vector>
@@ -58,4 +58,4 @@ struct pair_hash {
     }
 };
 
-#endif // TIME_SHEET_DATA_HPP
+#endif // IMPORTER_MODEL_TIME_SHEET_DATA_HPP_

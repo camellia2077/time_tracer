@@ -1,6 +1,6 @@
 ﻿// reports/shared/model/query_data_structs.hpp
-#ifndef QUERY_DATA_STRUCTS_HPP
-#define QUERY_DATA_STRUCTS_HPP
+#ifndef REPORTS_SHARED_MODEL_QUERY_DATA_STRUCTS_HPP_
+#define REPORTS_SHARED_MODEL_QUERY_DATA_STRUCTS_HPP_
 
 #include <string>
 #include <vector>
@@ -13,4 +13,4 @@ using FormattedMonthlyReports = std::map<int, std::map<int, std::string>>;
 // 用于导出所有周期报告的数据结构
 using FormattedPeriodReports = std::map<int, std::string>;
 
-#endif // QUERY_DATA_STRUCTS_HPP
+#endif // REPORTS_SHARED_MODEL_QUERY_DATA_STRUCTS_HPP_

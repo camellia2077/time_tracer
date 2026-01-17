@@ -14,14 +14,15 @@
 // --- 核心模块 ---
 #include "bootstrap/StartupValidator.hpp"  // 引入验证器
 
-// [修复] 更新包含路径
 #include "common/config/AppConfig.hpp"
-#include "config/ConfigLoader.hpp"         // [新增] 引入新的配置加载器
-// #include "io/FileController.hpp"        // [移除] main不再直接使用 FileController
+#include "config/ConfigLoader.hpp"         
 
+#include "cli/impl/app/cli_application.hpp"
 // --- 工具与信息 ---
-#include "cli/CliController.hpp"
-#include "cli/CliHelp.hpp"
+#include "cli/framework/interfaces/i_command.hpp"
+#include "cli/impl/utils/help_formatter.hpp"
+
+
 #include "common/AnsiColors.hpp"
 #include "common/version.hpp"
 
@@ -81,7 +82,6 @@ int main(int argc, char* argv[]) {
   // --- 启动流程：加载配置 -> 验证环境 -> 执行业务 ---
   try {
     // 1. 加载配置
-    // [修改] 使用 ConfigLoader 代替 FileController 加载配置
     ConfigLoader boot_loader(args[0]);
     AppConfig config = boot_loader.load_configuration();
 
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
 
     // 3. 执行业务
     // 验证通过，启动 CLI 控制器处理具体命令
-    CliController controller(args);
+    CliApplication controller(args);
     controller.execute();
 
   } catch (const std::exception& e) {

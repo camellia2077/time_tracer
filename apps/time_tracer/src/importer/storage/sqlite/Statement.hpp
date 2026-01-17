@@ -1,6 +1,6 @@
 ﻿// importer/storage/sqlite/Statement.hpp
-#ifndef STATEMENT_HPP
-#define STATEMENT_HPP
+#ifndef IMPORTER_STORAGE_SQLITE_STATEMENT_HPP_
+#define IMPORTER_STORAGE_SQLITE_STATEMENT_HPP_
 
 #include <sqlite3.h>
 
@@ -28,4 +28,4 @@ private:
     void _finalize_statements();
 };
 
-#endif // STATEMENT_HPP
+#endif // IMPORTER_STORAGE_SQLITE_STATEMENT_HPP_

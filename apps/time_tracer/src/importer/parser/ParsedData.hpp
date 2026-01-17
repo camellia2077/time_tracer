@@ -1,6 +1,6 @@
 ﻿// importer/parser/ParsedData.hpp
-#ifndef PARSED_DATA_HPP
-#define PARSED_DATA_HPP
+#ifndef IMPORTER_PARSER_PARSED_DATA_HPP_
+#define IMPORTER_PARSER_PARSED_DATA_HPP_
 
 #include <vector>
 #include <unordered_set>
@@ -13,4 +13,4 @@ struct ParsedData {
     std::vector<TimeRecordInternal> records;
 };
 
-#endif // PARSED_DATA_HPP
+#endif // IMPORTER_PARSER_PARSED_DATA_HPP_

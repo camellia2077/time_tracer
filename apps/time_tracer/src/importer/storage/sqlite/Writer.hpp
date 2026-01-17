@@ -1,6 +1,6 @@
 ﻿// importer/storage/sqlite/Writer.hpp
-#ifndef WRITER_HPP
-#define WRITER_HPP
+#ifndef IMPORTER_STORAGE_SQLITE_WRITER_HPP_
+#define IMPORTER_STORAGE_SQLITE_WRITER_HPP_
 
 #include <vector>
 #include <string>
@@ -35,4 +35,4 @@ private:
     std::unique_ptr<ProjectResolver> project_resolver_;
 };
 
-#endif // WRITER_HPP
+#endif // IMPORTER_STORAGE_SQLITE_WRITER_HPP_

@@ -1,6 +1,6 @@
 // core/file/utils/ProcessedDataWriter.hpp
-#ifndef PROCESSED_DATA_WRITER_HPP
-#define PROCESSED_DATA_WRITER_HPP
+#ifndef CORE_FILE_UTILS_PROCESSED_DATA_WRITER_HPP_
+#define CORE_FILE_UTILS_PROCESSED_DATA_WRITER_HPP_
 
 #include <filesystem>
 #include <map>

@@ -1,6 +1,6 @@
 ﻿// reports/period/common/PeriodBaseConfig.hpp
-#ifndef PERIOD_BASE_CONFIG_HPP
-#define PERIOD_BASE_CONFIG_HPP
+#ifndef REPORTS_PERIOD_COMMON_PERIOD_BASE_CONFIG_HPP_
+#define REPORTS_PERIOD_COMMON_PERIOD_BASE_CONFIG_HPP_
 
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
@@ -44,4 +44,4 @@ private:
 
 ENABLE_C4251_WARNING
 
-#endif // PERIOD_BASE_CONFIG_HPP
+#endif // REPORTS_PERIOD_COMMON_PERIOD_BASE_CONFIG_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/typst/DayTypFormatter.hpp
-#ifndef DAY_TYP_FORMATTER_HPP
-#define DAY_TYP_FORMATTER_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_FORMATTER_HPP_
+#define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTypFormatter.hpp"
 #include "reports/shared/model/DailyReportData.hpp"
@@ -22,4 +22,4 @@ protected:
     std::string get_no_records_msg() const override;
 };
 
-#endif // DAY_TYP_FORMATTER_HPP
+#endif // REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_FORMATTER_HPP_

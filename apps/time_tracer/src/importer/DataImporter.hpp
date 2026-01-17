@@ -1,6 +1,6 @@
 ﻿// importer/DataImporter.hpp
-#ifndef DATA_IMPORTER_HPP
-#define DATA_IMPORTER_HPP
+#ifndef IMPORTER_DATA_IMPORTER_HPP_
+#define IMPORTER_DATA_IMPORTER_HPP_
 
 #include <string>
 #include <vector>
@@ -24,4 +24,4 @@ void handle_import_json_content(const std::string& db_name, const std::vector<st
 // 保持不变
 void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<DailyLog>>& data_map);
 
-#endif // DATA_IMPORTER_HPP
+#endif // IMPORTER_DATA_IMPORTER_HPP_

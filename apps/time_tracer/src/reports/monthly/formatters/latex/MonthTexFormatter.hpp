@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/latex/MonthTexFormatter.hpp
-#ifndef MONTH_TEX_FORMATTER_HPP
-#define MONTH_TEX_FORMATTER_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_FORMATTER_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTexFormatter.hpp"
 #include "reports/monthly/formatters/latex/MonthTexConfig.hpp"
@@ -19,4 +19,4 @@ protected:
     void format_header_content(std::stringstream& ss, const MonthlyReportData& data) const override;
 };
 
-#endif // MONTH_TEX_FORMATTER_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_FORMATTER_HPP_

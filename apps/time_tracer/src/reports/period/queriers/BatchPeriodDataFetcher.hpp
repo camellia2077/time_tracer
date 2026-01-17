@@ -1,6 +1,6 @@
 // reports/period/queriers/BatchPeriodDataFetcher.hpp
-#ifndef BATCH_PERIOD_DATA_FETCHER_HPP
-#define BATCH_PERIOD_DATA_FETCHER_HPP
+#ifndef REPORTS_PERIOD_QUERIERS_BATCH_PERIOD_DATA_FETCHER_HPP_
+#define REPORTS_PERIOD_QUERIERS_BATCH_PERIOD_DATA_FETCHER_HPP_
 
 #include <sqlite3.h>
 #include <vector>
@@ -36,4 +36,4 @@ private:
     };
 };
 
-#endif // BATCH_PERIOD_DATA_FETCHER_HPP
+#endif // REPORTS_PERIOD_QUERIERS_BATCH_PERIOD_DATA_FETCHER_HPP_

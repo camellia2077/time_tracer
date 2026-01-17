@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/strategies/IQueryStrategy.hpp
-#ifndef I_QUERY_STRATEGY_HPP
-#define I_QUERY_STRATEGY_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_I_QUERY_STRATEGY_HPP_
+#define CONFIG_VALIDATOR_REPORTS_STRATEGIES_I_QUERY_STRATEGY_HPP_
 
 #include <toml++/toml.h> // [修改] 引入 toml++
 #include <string>
@@ -22,4 +22,4 @@ public:
     virtual bool validate(const toml::table& query_config, const std::string& file_name) const = 0;
 };
 
-#endif // I_QUERY_STRATEGY_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_STRATEGIES_I_QUERY_STRATEGY_HPP_

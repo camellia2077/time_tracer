@@ -1,6 +1,6 @@
 ﻿// reports/monthly/queriers/MonthQuerier.hpp
-#ifndef MONTH_QUERIER_HPP
-#define MONTH_QUERIER_HPP
+#ifndef REPORTS_MONTHLY_QUERIERS_MONTH_QUERIER_HPP_
+#define REPORTS_MONTHLY_QUERIERS_MONTH_QUERIER_HPP_
 
 #include <sqlite3.h>
 #include <string>
@@ -22,4 +22,4 @@ protected:
     void _prepare_data(MonthlyReportData& data) const override;
 };
 
-#endif // MONTH_QUERIER_HPP
+#endif // REPORTS_MONTHLY_QUERIERS_MONTH_QUERIER_HPP_
