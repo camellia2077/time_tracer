@@ -1,8 +1,8 @@
 ﻿// core/reporting/ReportGenerator.hpp
 
 // core/reporting/ReportGenerator.hpp
-#ifndef REPORT_GENERATOR_HPP
-#define REPORT_GENERATOR_HPP
+#ifndef CORE_REPORTING_REPORT_GENERATOR_HPP_
+#define CORE_REPORTING_REPORT_GENERATOR_HPP_
 
 #include <memory>
 #include <string>
@@ -34,4 +34,4 @@ private:
     std::unique_ptr<ReportService> query_handler_;
 };
 
-#endif // REPORT_GENERATOR_HPP
+#endif // CORE_REPORTING_REPORT_GENERATOR_HPP_

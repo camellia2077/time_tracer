@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/facade/QueryFacade.hpp
-#ifndef QUERY_FACADE_HPP
-#define QUERY_FACADE_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_
+#define CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_
 
 #include <vector>
 #include <string>
@@ -14,4 +14,4 @@ public:
     ) const;
 };
 
-#endif // QUERY_FACADE_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_

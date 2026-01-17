@@ -1,6 +1,6 @@
 ﻿// core/file/steps/ConverterStep.hpp
-#ifndef CONVERTER_STEP_HPP
-#define CONVERTER_STEP_HPP
+#ifndef CORE_FILE_STEPS_CONVERTER_STEP_HPP_
+#define CORE_FILE_STEPS_CONVERTER_STEP_HPP_
 
 #include "core/file/PipelineContext.hpp"
 #include "converter/LogProcessor.hpp"
@@ -15,4 +15,4 @@ private:
     void printTiming(double ms) const;
 };
 
-#endif // CONVERTER_STEP_HPP
+#endif // CORE_FILE_STEPS_CONVERTER_STEP_HPP_

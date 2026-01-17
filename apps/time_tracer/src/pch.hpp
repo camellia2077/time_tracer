@@ -1,6 +1,6 @@
 // pch.hpp
-#ifndef PCH_HPP
-#define PCH_HPP
+#ifndef PCH_HPP_
+#define PCH_HPP_
 
 // =================================================================
 // 1. C++ 标准库 (Frequently Used Standard Library Headers)
@@ -45,4 +45,4 @@
 #include "reports/shared/types/ReportFormat.hpp"    // 使用次数: 16
 #include "common/AnsiColors.hpp"              // 使用次数: 15
 
-#endif //PCH_HPP
+#endif //PCH_HPP_

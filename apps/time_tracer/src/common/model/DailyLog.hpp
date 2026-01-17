@@ -1,6 +1,6 @@
 ﻿// common/model/DailyLog.hpp
-#ifndef DAILY_LOG_HPP
-#define DAILY_LOG_HPP
+#ifndef COMMON_MODEL_DAILY_LOG_HPP_
+#define COMMON_MODEL_DAILY_LOG_HPP_
 
 #include <string>
 #include <vector>
@@ -51,4 +51,4 @@ struct DailyLog {
     }
 };
 
-#endif // DAILY_LOG_HPP
+#endif // COMMON_MODEL_DAILY_LOG_HPP_

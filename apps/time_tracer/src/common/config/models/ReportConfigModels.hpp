@@ -1,6 +1,6 @@
 ﻿// common/config/models/ReportConfigModels.hpp
-#ifndef REPORT_CONFIG_MODELS_HPP
-#define REPORT_CONFIG_MODELS_HPP
+#ifndef COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_HPP_
+#define COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_HPP_
 
 #include <map>
 #include <string>
@@ -73,4 +73,4 @@ struct PeriodMdConfig {
     PeriodReportLabels labels;
 };
 
-#endif // REPORT_CONFIG_MODELS_HPP
+#endif // COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_HPP_

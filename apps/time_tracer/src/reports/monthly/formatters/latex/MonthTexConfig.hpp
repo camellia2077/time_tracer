@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/latex/MonthTexConfig.hpp
-#ifndef MONTH_TEX_CONFIG_HPP
-#define MONTH_TEX_CONFIG_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_CONFIG_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_CONFIG_HPP_
 
 #include "reports/monthly/common/MonthBaseConfig.hpp"
 #include "reports/shared/config/TexStyleConfig.hpp"
@@ -26,4 +26,4 @@ private:
     TexStyleConfig style_;
 };
 
-#endif // MONTH_TEX_CONFIG_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_CONFIG_HPP_

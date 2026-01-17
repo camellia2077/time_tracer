@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/strategies/BaseStrategy.hpp
-#ifndef BASE_STRATEGY_HPP
-#define BASE_STRATEGY_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_BASE_STRATEGY_HPP_
+#define CONFIG_VALIDATOR_REPORTS_STRATEGIES_BASE_STRATEGY_HPP_
 
 #include "IQueryStrategy.hpp"
 #include <toml++/toml.h>
@@ -27,4 +27,4 @@ private:
     bool is_valid_hex_color(const std::string& color_string) const;
 };
 
-#endif // BASE_STRATEGY_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_STRATEGIES_BASE_STRATEGY_HPP_

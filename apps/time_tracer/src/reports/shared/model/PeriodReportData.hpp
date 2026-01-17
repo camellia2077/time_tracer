@@ -1,6 +1,6 @@
 ﻿// reports/shared/model/PeriodReportData.hpp
-#ifndef PERIOD_REPORT_DATA_HPP
-#define PERIOD_REPORT_DATA_HPP
+#ifndef REPORTS_SHARED_MODEL_PERIOD_REPORT_DATA_HPP_
+#define REPORTS_SHARED_MODEL_PERIOD_REPORT_DATA_HPP_
 
 #include <string>
 #include <vector>
@@ -21,4 +21,4 @@ struct PeriodReportData {
     reporting::ProjectTree project_tree;
 };
 
-#endif // PERIOD_REPORT_DATA_HPP
+#endif // REPORTS_SHARED_MODEL_PERIOD_REPORT_DATA_HPP_

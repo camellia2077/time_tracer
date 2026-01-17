@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/typst/PeriodTypFormatter.hpp
-#ifndef PERIOD_TYP_FORMATTER_HPP
-#define PERIOD_TYP_FORMATTER_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_FORMATTER_HPP_
+#define REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseTypFormatter.hpp"
 #include "reports/period/formatters/typst/PeriodTypConfig.hpp"
@@ -19,4 +19,4 @@ protected:
     void format_page_setup(std::stringstream& ss) const override;
 };
 
-#endif // PERIOD_TYP_FORMATTER_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_FORMATTER_HPP_

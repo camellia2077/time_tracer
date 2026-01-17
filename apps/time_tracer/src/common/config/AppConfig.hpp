@@ -1,6 +1,6 @@
 ﻿// common/config/AppConfig.hpp
-#ifndef APP_CONFIG_HPP
-#define APP_CONFIG_HPP
+#ifndef COMMON_CONFIG_APP_CONFIG_HPP_
+#define COMMON_CONFIG_APP_CONFIG_HPP_
 
 #include <string>
 #include <filesystem>
@@ -71,4 +71,4 @@ struct AppConfig {
     LoadedReportConfigs loaded_reports; 
 };
 
-#endif // APP_CONFIG_HPP
+#endif // COMMON_CONFIG_APP_CONFIG_HPP_

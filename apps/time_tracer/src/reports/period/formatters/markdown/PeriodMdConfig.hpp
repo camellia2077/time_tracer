@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/markdown/PeriodMdConfig.hpp
-#ifndef PERIOD_MD_CONFIG_HPP
-#define PERIOD_MD_CONFIG_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_CONFIG_HPP_
+#define REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_CONFIG_HPP_
 
 #include "reports/period/common/PeriodBaseConfig.hpp"
 #include <string>
@@ -17,4 +17,4 @@ private:
     std::string project_breakdown_label_;
 };
 
-#endif // PERIOD_MD_CONFIG_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_MARKDOWN_PERIOD_MD_CONFIG_HPP_

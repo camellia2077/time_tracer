@@ -1,6 +1,6 @@
 ﻿// io/core/FileWriter.hpp
-#ifndef FILE_WRITER_HPP
-#define FILE_WRITER_HPP
+#ifndef IO_CORE_FILE_WRITER_HPP_
+#define IO_CORE_FILE_WRITER_HPP_
 
 #include <string>
 #include <filesystem>
@@ -20,4 +20,4 @@ public:
     static void write_content(const std::filesystem::path& path, const std::string& content);
 };
 
-#endif // FILE_WRITER_HPP
+#endif // IO_CORE_FILE_WRITER_HPP_

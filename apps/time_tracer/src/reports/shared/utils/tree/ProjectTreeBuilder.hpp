@@ -1,6 +1,6 @@
 ﻿// reports/shared/utils/tree/ProjectTreeBuilder.hpp
-#ifndef PROJECT_TREE_BUILDER_HPP
-#define PROJECT_TREE_BUILDER_HPP
+#ifndef REPORTS_SHARED_UTILS_TREE_PROJECT_TREE_BUILDER_HPP_
+#define REPORTS_SHARED_UTILS_TREE_PROJECT_TREE_BUILDER_HPP_
 
 #include <string>
 #include <vector>
@@ -21,4 +21,4 @@ REPORTS_SHARED_API void build_project_tree_from_ids(
     const IProjectInfoProvider& provider // [修改]
 );
 
-#endif // PROJECT_TREE_BUILDER_HPP
+#endif // REPORTS_SHARED_UTILS_TREE_PROJECT_TREE_BUILDER_HPP_

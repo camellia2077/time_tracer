@@ -1,6 +1,6 @@
 // common/utils/TimeUtils.hpp
-#ifndef TIME_UTILS_HPP
-#define TIME_UTILS_HPP
+#ifndef COMMON_UTILS_TIME_UTILS_HPP_
+#define COMMON_UTILS_TIME_UTILS_HPP_
 
 #include <string>
 
@@ -22,4 +22,4 @@ std::string normalize_to_date_format(const std::string& input);
  */
 std::string normalize_to_month_format(const std::string& input);
 
-#endif // TIME_UTILS_HPP
+#endif // COMMON_UTILS_TIME_UTILS_HPP_

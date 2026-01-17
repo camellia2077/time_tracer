@@ -1,8 +1,8 @@
 ﻿// core/file/PipelineManager.hpp
 
 // core/file/PipelineManager.hpp
-#ifndef PIPELINE_MANAGER_HPP
-#define PIPELINE_MANAGER_HPP
+#ifndef CORE_FILE_PIPELINE_MANAGER_HPP_
+#define CORE_FILE_PIPELINE_MANAGER_HPP_
 
 #include <string>
 #include <vector>
@@ -31,4 +31,4 @@ private:
     fs::path output_root_;
 };
 
-#endif // PIPELINE_MANAGER_HPP
+#endif // CORE_FILE_PIPELINE_MANAGER_HPP_

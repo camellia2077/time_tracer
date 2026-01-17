@@ -1,6 +1,6 @@
 ﻿// config/validator/facade/ConfigFacade.hpp
-#ifndef CONFIG_FACADE_HPP
-#define CONFIG_FACADE_HPP
+#ifndef CONFIG_VALIDATOR_FACADE_CONFIG_FACADE_HPP_
+#define CONFIG_VALIDATOR_FACADE_CONFIG_FACADE_HPP_
 
 #include <string>
 #include <vector>
@@ -23,4 +23,4 @@ public:
     bool validate_plugins(const std::filesystem::path& plugins_path) const;
 };
 
-#endif // CONFIG_FACADE_HPP
+#endif // CONFIG_VALIDATOR_FACADE_CONFIG_FACADE_HPP_

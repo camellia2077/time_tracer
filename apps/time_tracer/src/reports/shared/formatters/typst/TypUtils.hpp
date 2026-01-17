@@ -1,6 +1,6 @@
 // reports/shared/formatters/typst/TypUtils.hpp
-#ifndef TYP_UTILS_HPP
-#define TYP_UTILS_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
+#define REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
 
 #include <string>
 #include "reports/shared/model/ProjectTree.hpp"
@@ -29,4 +29,4 @@ REPORTS_SHARED_API std::string format_project_tree(
 
 } // namespace TypUtils
 
-#endif // TYP_UTILS_HPP
+#endif // REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_

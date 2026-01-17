@@ -1,6 +1,6 @@
 ﻿// core/WorkflowHandler.hpp
-#ifndef WORKFLOW_HANDLER_HPP
-#define WORKFLOW_HANDLER_HPP
+#ifndef CORE_WORKFLOW_HANDLER_HPP_
+#define CORE_WORKFLOW_HANDLER_HPP_
 
 #include <string>
 #include <filesystem>
@@ -38,4 +38,4 @@ private:
     fs::path output_root_path_;
 };
 
-#endif // WORKFLOW_HANDLER_HPP
+#endif // CORE_WORKFLOW_HANDLER_HPP_

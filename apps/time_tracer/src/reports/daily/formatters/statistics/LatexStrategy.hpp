@@ -1,6 +1,6 @@
 // reports/daily/formatters/statistics/LatexStrategy.hpp
-#ifndef LATEX_STRATEGY_HPP
-#define LATEX_STRATEGY_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_STATISTICS_LATEX_STRATEGY_HPP_
+#define REPORTS_DAILY_FORMATTERS_STATISTICS_LATEX_STRATEGY_HPP_
 
 #include "IStatStrategy.hpp"
 #include "reports/daily/formatters/latex/DayTexConfig.hpp"
@@ -66,4 +66,4 @@ private:
     std::shared_ptr<DayTexConfig> config_;
 };
 
-#endif // LATEX_STRATEGY_HPP
+#endif // REPORTS_DAILY_FORMATTERS_STATISTICS_LATEX_STRATEGY_HPP_

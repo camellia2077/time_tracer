@@ -1,6 +1,6 @@
 // common/types/DateCheckMode.hpp
-#ifndef DATE_CHECK_MODE_HPP
-#define DATE_CHECK_MODE_HPP
+#ifndef COMMON_TYPES_DATE_CHECK_MODE_HPP_
+#define COMMON_TYPES_DATE_CHECK_MODE_HPP_
 
 // --- [架构优化] 将枚举定义下沉至 Common 层 ---
 // 这样 Converter(业务层) 和 AppConfig(配置层) 都可以引用它，
@@ -12,4 +12,4 @@ enum class DateCheckMode {
     Full        // 检查完整性 (1号到月底)
 };
 
-#endif // DATE_CHECK_MODE_HPP
+#endif // COMMON_TYPES_DATE_CHECK_MODE_HPP_

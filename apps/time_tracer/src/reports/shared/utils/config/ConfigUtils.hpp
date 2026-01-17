@@ -1,6 +1,6 @@
 // reports/shared/utils/config/ConfigUtils.hpp
-#ifndef CONFIG_UTILS_HPP
-#define CONFIG_UTILS_HPP
+#ifndef REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_HPP_
+#define REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_HPP_
 
 #include <nlohmann/json.hpp>
 #include <filesystem>
@@ -14,4 +14,4 @@
  */
 nlohmann::json load_json_config(const std::filesystem::path& config_path, const std::string& error_message_prefix);
 
-#endif // CONFIG_UTILS_HPP
+#endif // REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_HPP_

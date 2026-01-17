@@ -1,6 +1,6 @@
 ﻿// converter/LogProcessor.hpp
-#ifndef LOG_PROCESSOR_HPP
-#define LOG_PROCESSOR_HPP
+#ifndef CONVERTER_LOG_PROCESSOR_HPP_
+#define CONVERTER_LOG_PROCESSOR_HPP_
 
 #include <string>
 #include <vector>
@@ -36,4 +36,4 @@ private:
     const ConverterConfig& config_;
 };
 
-#endif // LOG_PROCESSOR_HPP
+#endif // CONVERTER_LOG_PROCESSOR_HPP_

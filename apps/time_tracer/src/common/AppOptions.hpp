@@ -1,6 +1,6 @@
 // common/AppOptions.hpp
-#ifndef APP_OPTIONS_HPP
-#define APP_OPTIONS_HPP
+#ifndef COMMON_APP_OPTIONS_HPP_
+#define COMMON_APP_OPTIONS_HPP_
 
 #include <filesystem>
 // [架构优化] 不再依赖 converter 层的 ValidatorUtils，改为依赖 common 层的类型定义
@@ -18,4 +18,4 @@ struct AppOptions {
     bool save_processed_output = false;
 };
 
-#endif // APP_OPTIONS_HPP
+#endif // COMMON_APP_OPTIONS_HPP_

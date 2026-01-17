@@ -1,6 +1,6 @@
 ﻿// io/FileController.hpp
-#ifndef FILE_CONTROLLER_HPP
-#define FILE_CONTROLLER_HPP
+#ifndef IO_FILE_CONTROLLER_HPP_
+#define IO_FILE_CONTROLLER_HPP_
 
 #include <string>
 #include <vector>
@@ -32,4 +32,4 @@ public:
     void prepare_output_directories(const std::filesystem::path& output_root, const std::filesystem::path& export_root) const;
 };
 
-#endif // FILE_CONTROLLER_HPP
+#endif // IO_FILE_CONTROLLER_HPP_

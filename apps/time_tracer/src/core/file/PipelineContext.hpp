@@ -1,8 +1,8 @@
 ﻿// core/file/PipelineContext.hpp
 
 // core/file/PipelineContext.hpp
-#ifndef PIPELINE_CONTEXT_HPP
-#define PIPELINE_CONTEXT_HPP
+#ifndef CORE_FILE_PIPELINE_CONTEXT_HPP_
+#define CORE_FILE_PIPELINE_CONTEXT_HPP_
 
 #include <vector>
 #include <filesystem>
@@ -72,4 +72,4 @@ public:
         : config(cfg, out_root) {}
 };
 
-#endif // PIPELINE_CONTEXT_HPP
+#endif // CORE_FILE_PIPELINE_CONTEXT_HPP_

@@ -1,6 +1,6 @@
 ﻿// converter/convert/core/StatsRules.hpp
-#ifndef STATS_RULES_HPP
-#define STATS_RULES_HPP
+#ifndef CONVERTER_CONVERT_CORE_STATS_RULES_HPP_
+#define CONVERTER_CONVERT_CORE_STATS_RULES_HPP_
 
 #include "common/model/DailyLog.hpp"
 #include <initializer_list>
@@ -28,4 +28,4 @@ namespace StatsRules {
     };
 }
 
-#endif // STATS_RULES_HPP
+#endif // CONVERTER_CONVERT_CORE_STATS_RULES_HPP_
