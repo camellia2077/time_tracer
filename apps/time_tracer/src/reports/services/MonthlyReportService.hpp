@@ -1,6 +1,6 @@
 // reports/services/MonthlyReportService.hpp
-#ifndef MONTHLY_REPORT_SERVICE_HPP
-#define MONTHLY_REPORT_SERVICE_HPP
+#ifndef REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_HPP_
+#define REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_HPP_
 
 #include <sqlite3.h>
 #include <map>
@@ -27,4 +27,4 @@ private:
     const AppConfig& app_config_;
 };
 
-#endif // MONTHLY_REPORT_SERVICE_HPP
+#endif // REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_HPP_

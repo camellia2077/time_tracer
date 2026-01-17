@@ -1,5 +1,6 @@
-#ifndef VALIDATOR_UTILS_HPP
-#define VALIDATOR_UTILS_HPP
+﻿// validator/common/ValidatorUtils.hpp
+#ifndef VALIDATOR_COMMON_VALIDATOR_UTILS_HPP_
+#define VALIDATOR_COMMON_VALIDATOR_UTILS_HPP_
 
 #include <string>
 #include <vector>
@@ -7,6 +8,9 @@
 #include <map>
 
 #include "common/types/DateCheckMode.hpp"
+
+// [新增] 包裹在 validator 命名空间中
+namespace validator {
 
 enum class ErrorType {
     FileAccess,
@@ -39,6 +43,6 @@ struct Error {
 
 void printGroupedErrors(const std::string& filename, const std::set<Error>& errors);
 
-#endif // VALIDATOR_UTILS_HPP
+} // namespace validator
 
-
+#endif // VALIDATOR_COMMON_VALIDATOR_UTILS_HPP_

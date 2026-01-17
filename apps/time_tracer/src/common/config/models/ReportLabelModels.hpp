@@ -1,6 +1,6 @@
 ﻿// common/config/models/ReportLabelModels.hpp
-#ifndef REPORT_LABEL_MODELS_HPP
-#define REPORT_LABEL_MODELS_HPP
+#ifndef COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_HPP_
+#define COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_HPP_
 
 #include <string>
 
@@ -39,4 +39,4 @@ struct PeriodReportLabels {
     std::string invalid_days_message;
 };
 
-#endif // REPORT_LABEL_MODELS_HPP
+#endif // COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_HPP_

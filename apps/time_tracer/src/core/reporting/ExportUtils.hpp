@@ -1,6 +1,6 @@
 ﻿// core/reporting/ExportUtils.hpp
-#ifndef EXPORT_UTILS_HPP
-#define EXPORT_UTILS_HPP
+#ifndef CORE_REPORTING_EXPORT_UTILS_HPP_
+#define CORE_REPORTING_EXPORT_UTILS_HPP_
 
 // core/ExportUtils.hpp
 
@@ -41,4 +41,4 @@ void execute_export_task(
 
 } // namespace ExportUtils
 
-#endif // EXPORT_UTILS_HPP
+#endif // CORE_REPORTING_EXPORT_UTILS_HPP_

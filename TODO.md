@@ -1,6 +1,18 @@
+validate-source
+调用验证txt
+
+validate-output是
+和先调用converter转化为strcut
+再调用serializer把strcut转化为json
+再调用json检验
+
 和ai讨论一下更新架构后，应该怎么处理跨月，跨年的sleep生成
+目标设计成，不在txt中存储上一个月的最后一天就能处理跨年，跨月
 
+所有log_generator也要更新，不再往当前月生成上一个月的最后一天
 
+validate_output_command修改为validate_json_logic_command或者validate_logic_command
+validate_source_command修改为validate_content_structure或者validate_structure
 
 python测试程序需要有一个一步一步插入的模式validate->convert->import
 

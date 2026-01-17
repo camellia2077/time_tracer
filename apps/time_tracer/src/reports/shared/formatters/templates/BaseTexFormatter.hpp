@@ -1,6 +1,6 @@
 ﻿// reports/shared/formatters/templates/BaseTexFormatter.hpp
-#ifndef BASE_TEX_FORMATTER_HPP
-#define BASE_TEX_FORMATTER_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_TEX_FORMATTER_HPP_
+#define REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_TEX_FORMATTER_HPP_
 
 #include <string>
 #include <sstream>
@@ -100,4 +100,4 @@ protected:
     }
 };
 
-#endif // BASE_TEX_FORMATTER_HPP
+#endif // REPORTS_SHARED_FORMATTERS_TEMPLATES_BASE_TEX_FORMATTER_HPP_

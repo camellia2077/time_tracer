@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/strategies/daily/DailyMd.hpp
-#ifndef DAILY_MD_HPP
-#define DAILY_MD_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_DAILY_DAILY_MD_HPP_
+#define CONFIG_VALIDATOR_REPORTS_STRATEGIES_DAILY_DAILY_MD_HPP_
 
 #include "config/validator/reports/strategies/BaseStrategy.hpp"
 
@@ -9,4 +9,4 @@ protected:
     bool validate_specific_keys(const toml::table& query_config, const std::string& file_name) const override;
 };
 
-#endif // DAILY_MD_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_STRATEGIES_DAILY_DAILY_MD_HPP_

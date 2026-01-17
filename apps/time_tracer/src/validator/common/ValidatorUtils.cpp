@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+namespace validator {
+
 static std::string getErrorTypeHeader(ErrorType type) {
     switch (type) {
         case ErrorType::Source_RemarkAfterEvent:
@@ -44,7 +46,7 @@ void printGroupedErrors(const std::string& filename, const std::set<Error>& erro
         grouped_errors[err.type].push_back(err);
     }
 
-    const std::string error_log_path = "./output/errors.log";
+    const std::string error_log_path = "./output/errors.log"; // 建议后续改为可配置路径
     std::ofstream err_stream(error_log_path, std::ios::app);
 
     err_stream << "\n文件 " << filename << " 的检验错误\n--------------------------------------------------\n\n";
@@ -62,3 +64,5 @@ void printGroupedErrors(const std::string& filename, const std::set<Error>& erro
     err_stream.close();
     std::cout << "\n详细的错误日志已保存至: " << YELLOW_COLOR << error_log_path << RESET_COLOR << std::endl;
 }
+
+} // namespace validator

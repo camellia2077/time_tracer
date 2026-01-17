@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/typst/DayTypConfig.hpp
-#ifndef DAY_TYP_CONFIG_HPP
-#define DAY_TYP_CONFIG_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_HPP_
+#define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_HPP_
 
 #include "reports/daily/common/DayBaseConfig.hpp"
 #include "reports/shared/config/TypstStyleConfig.hpp"
@@ -33,4 +33,4 @@ private:
     std::map<std::string, std::string> keyword_colors_;
 };
 
-#endif // DAY_TYP_CONFIG_HPP
+#endif // REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_HPP_

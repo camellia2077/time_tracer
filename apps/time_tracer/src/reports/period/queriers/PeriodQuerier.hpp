@@ -1,6 +1,6 @@
 ﻿// reports/period/queriers/PeriodQuerier.hpp
-#ifndef PERIOD_QUERIER_HPP
-#define PERIOD_QUERIER_HPP
+#ifndef REPORTS_PERIOD_QUERIERS_PERIOD_QUERIER_HPP_
+#define REPORTS_PERIOD_QUERIERS_PERIOD_QUERIER_HPP_
 
 #include <sqlite3.h>
 #include <string>
@@ -27,4 +27,4 @@ private:
     mutable std::string end_date_;
 };
 
-#endif // PERIOD_QUERIER_HPP
+#endif // REPORTS_PERIOD_QUERIERS_PERIOD_QUERIER_HPP_

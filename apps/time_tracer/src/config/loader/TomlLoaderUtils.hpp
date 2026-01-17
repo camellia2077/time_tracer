@@ -1,6 +1,6 @@
 // config/loader/TomlLoaderUtils.hpp
-#ifndef TOML_LOADER_UTILS_HPP
-#define TOML_LOADER_UTILS_HPP
+#ifndef CONFIG_LOADER_TOML_LOADER_UTILS_HPP_
+#define CONFIG_LOADER_TOML_LOADER_UTILS_HPP_
 
 #include <filesystem>
 #include <string>
@@ -59,4 +59,4 @@ namespace TomlLoaderUtils {
     void fill_keyword_colors(const toml::table& tbl, std::map<std::string, std::string>& colors);
 }
 
-#endif // TOML_LOADER_UTILS_HPP
+#endif // CONFIG_LOADER_TOML_LOADER_UTILS_HPP_

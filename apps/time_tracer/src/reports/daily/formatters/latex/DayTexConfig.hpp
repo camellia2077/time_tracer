@@ -1,7 +1,7 @@
 ﻿// reports/daily/formatters/latex/DayTexConfig.hpp
 // reports/daily/formatters/latex/DayTexConfig.hpp
-#ifndef DAY_TEX_CONFIG_HPP
-#define DAY_TEX_CONFIG_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_HPP_
+#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_HPP_
 
 #include "reports/daily/common/DayBaseConfig.hpp"
 #include "reports/shared/config/TexStyleConfig.hpp"
@@ -33,4 +33,4 @@ private:
     std::map<std::string, std::string> keyword_colors_;
 };
 
-#endif // DAY_TEX_CONFIG_HPP
+#endif // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_HPP_

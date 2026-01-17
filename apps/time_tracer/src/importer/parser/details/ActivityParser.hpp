@@ -1,6 +1,6 @@
 ﻿// importer/parser/details/ActivityParser.hpp
-#ifndef ACTIVITY_PARSER_HPP
-#define ACTIVITY_PARSER_HPP
+#ifndef IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_
+#define IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_
 
 #include "importer/model/TimeSheetData.hpp"
 #include <nlohmann/json.hpp>
@@ -14,4 +14,4 @@ public:
         const std::string& date) const;
 };
 
-#endif // ACTIVITY_PARSER_HPP
+#endif // IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/markdown/DayMdFormatter.hpp
-#ifndef DAY_MD_FORMATTER_HPP
-#define DAY_MD_FORMATTER_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_HPP_
+#define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseMdFormatter.hpp"
 #include "reports/shared/model/DailyReportData.hpp"
@@ -26,4 +26,4 @@ private:
     void _display_detailed_activities(std::stringstream& ss, const DailyReportData& data) const;
 };
 
-#endif // DAY_MD_FORMATTER_HPP
+#endif // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_HPP_

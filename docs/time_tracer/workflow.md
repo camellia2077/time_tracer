@@ -16,7 +16,7 @@
     4. **决策**: 如果上述任一环节失败，程序将立即终止并打印错误，**绝对不会**进入业务层。
 
 ### 1.2 阶段二：核心初始化 (Core Initialization Phase)
-* **执行者**: `cli::CliController`
+* **执行者**: `cli::Controller`
 * **动作**: 环境验证通过后，控制器实例化核心服务。
     * **IO 设施**: 初始化 `FileController`。
     * **业务编排**: 初始化 `WorkflowHandler`（原 FileHandler），此时注入已验证的配置对象。

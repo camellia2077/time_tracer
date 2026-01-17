@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/typst/PeriodTypConfig.hpp
-#ifndef PERIOD_TYP_CONFIG_HPP
-#define PERIOD_TYP_CONFIG_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_CONFIG_HPP_
+#define REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_CONFIG_HPP_
 
 #include "reports/period/common/PeriodBaseConfig.hpp"
 #include "reports/shared/config/TypstStyleConfig.hpp"
@@ -34,4 +34,4 @@ private:
     double margin_right_cm_;
 };
 
-#endif // PERIOD_TYP_CONFIG_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_TYPST_PERIOD_TYP_CONFIG_HPP_

@@ -1,6 +1,6 @@
 ﻿// importer/model/ImportStats.hpp
-#ifndef IMPORT_STATS_HPP
-#define IMPORT_STATS_HPP
+#ifndef IMPORTER_MODEL_IMPORT_STATS_HPP_
+#define IMPORTER_MODEL_IMPORT_STATS_HPP_
 
 #include <vector>
 #include <string>
@@ -21,4 +21,4 @@ struct ImportStats {
     std::string error_message; // 全局错误信息
 };
 
-#endif // IMPORT_STATS_HPP
+#endif // IMPORTER_MODEL_IMPORT_STATS_HPP_

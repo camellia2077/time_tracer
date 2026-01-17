@@ -1,6 +1,6 @@
 ﻿// reports/daily/queriers/BatchDayDataFetcher.hpp
-#ifndef BATCH_DAY_DATA_FETCHER_HPP
-#define BATCH_DAY_DATA_FETCHER_HPP
+#ifndef REPORTS_DAILY_QUERIERS_BATCH_DAY_DATA_FETCHER_HPP_
+#define REPORTS_DAILY_QUERIERS_BATCH_DAY_DATA_FETCHER_HPP_
 
 #include <sqlite3.h>
 #include <map>
@@ -31,4 +31,4 @@ private:
     void fetch_time_records(BatchDataResult& result);
 };
 
-#endif // BATCH_DAY_DATA_FETCHER_HPP
+#endif // REPORTS_DAILY_QUERIERS_BATCH_DAY_DATA_FETCHER_HPP_

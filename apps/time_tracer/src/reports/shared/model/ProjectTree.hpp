@@ -1,6 +1,6 @@
 ﻿// reports/shared/model/ProjectTree.hpp
-#ifndef PROJECT_TREE_HPP
-#define PROJECT_TREE_HPP
+#ifndef REPORTS_SHARED_MODEL_PROJECT_TREE_HPP_
+#define REPORTS_SHARED_MODEL_PROJECT_TREE_HPP_
 
 #include <unordered_map> // [修改] 引入 unordered_map
 #include <string>
@@ -22,4 +22,4 @@ using ProjectTree = std::unordered_map<std::string, ProjectNode>;
 
 } // namespace reporting
 
-#endif // PROJECT_TREE_HPP
+#endif // REPORTS_SHARED_MODEL_PROJECT_TREE_HPP_

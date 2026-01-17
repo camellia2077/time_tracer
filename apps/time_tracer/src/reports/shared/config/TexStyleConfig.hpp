@@ -1,6 +1,6 @@
 // reports/shared/config/TexStyleConfig.hpp
-#ifndef TEX_STYLE_CONFIG_HPP
-#define TEX_STYLE_CONFIG_HPP
+#ifndef REPORTS_SHARED_CONFIG_TEX_STYLE_CONFIG_HPP_
+#define REPORTS_SHARED_CONFIG_TEX_STYLE_CONFIG_HPP_
 
 #include <string>
 #include <toml++/toml.h> // [修改] 引入 toml++
@@ -35,4 +35,4 @@ private:
 
 ENABLE_C4251_WARNING
 
-#endif // TEX_STYLE_CONFIG_HPP
+#endif // REPORTS_SHARED_CONFIG_TEX_STYLE_CONFIG_HPP_

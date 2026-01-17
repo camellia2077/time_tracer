@@ -1,6 +1,6 @@
 // common/model/ProcessingResult.hpp
-#ifndef PROCESSING_RESULT_HPP
-#define PROCESSING_RESULT_HPP
+#ifndef COMMON_MODEL_PROCESSING_RESULT_HPP_
+#define COMMON_MODEL_PROCESSING_RESULT_HPP_
 
 struct ProcessingTimings {
     double validation_source_ms = 0.0;
@@ -13,4 +13,4 @@ struct ProcessingResult {
     ProcessingTimings timings;
 };
 
-#endif // PROCESSING_RESULT_HPP
+#endif // COMMON_MODEL_PROCESSING_RESULT_HPP_

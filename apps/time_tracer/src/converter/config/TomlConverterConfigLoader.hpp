@@ -1,6 +1,6 @@
 // converter/config/TomlConverterConfigLoader.hpp
-#ifndef TOML_CONVERTER_CONFIG_LOADER_HPP
-#define TOML_CONVERTER_CONFIG_LOADER_HPP
+#ifndef CONVERTER_CONFIG_TOML_CONVERTER_CONFIG_LOADER_HPP_
+#define CONVERTER_CONFIG_TOML_CONVERTER_CONFIG_LOADER_HPP_
 
 #include "common/config/IConfigLoader.hpp"
 #include "converter/config/ConverterConfig.hpp"
@@ -15,4 +15,4 @@ private:
     const toml::table& toml_source_;
 };
 
-#endif // TOML_CONVERTER_CONFIG_LOADER_HPP
+#endif // CONVERTER_CONFIG_TOML_CONVERTER_CONFIG_LOADER_HPP_

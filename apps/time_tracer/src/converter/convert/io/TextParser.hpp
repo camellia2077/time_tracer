@@ -1,6 +1,6 @@
 ﻿// converter/convert/io/TextParser.hpp
-#ifndef TEXT_PARSER_HPP
-#define TEXT_PARSER_HPP
+#ifndef CONVERTER_CONVERT_IO_TEXT_PARSER_HPP_
+#define CONVERTER_CONVERT_IO_TEXT_PARSER_HPP_
 
 #include <string>
 #include <functional>
@@ -28,4 +28,4 @@ private:
     void parseLine(const std::string& line, DailyLog& currentDay) const;
 };
 
-#endif // TEXT_PARSER_HPP
+#endif // CONVERTER_CONVERT_IO_TEXT_PARSER_HPP_

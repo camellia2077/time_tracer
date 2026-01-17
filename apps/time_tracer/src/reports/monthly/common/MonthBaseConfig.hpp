@@ -1,6 +1,6 @@
 ﻿// reports/monthly/common/MonthBaseConfig.hpp
-#ifndef MONTH_BASE_CONFIG_HPP
-#define MONTH_BASE_CONFIG_HPP
+#ifndef REPORTS_MONTHLY_COMMON_MONTH_BASE_CONFIG_HPP_
+#define REPORTS_MONTHLY_COMMON_MONTH_BASE_CONFIG_HPP_
 
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
@@ -39,4 +39,4 @@ private:
 
 ENABLE_C4251_WARNING
 
-#endif // MONTH_BASE_CONFIG_HPP
+#endif // REPORTS_MONTHLY_COMMON_MONTH_BASE_CONFIG_HPP_

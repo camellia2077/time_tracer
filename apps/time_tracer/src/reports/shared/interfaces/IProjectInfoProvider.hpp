@@ -1,6 +1,6 @@
 // reports/shared/interfaces/IProjectInfoProvider.hpp
-#ifndef I_PROJECT_INFO_PROVIDER_HPP
-#define I_PROJECT_INFO_PROVIDER_HPP
+#ifndef REPORTS_SHARED_INTERFACES_I_PROJECT_INFO_PROVIDER_HPP_
+#define REPORTS_SHARED_INTERFACES_I_PROJECT_INFO_PROVIDER_HPP_
 
 #include <vector>
 #include <string>
@@ -18,4 +18,4 @@ public:
     virtual std::vector<std::string> get_path_parts(long long project_id) const = 0;
 };
 
-#endif // I_PROJECT_INFO_PROVIDER_HPP
+#endif // REPORTS_SHARED_INTERFACES_I_PROJECT_INFO_PROVIDER_HPP_

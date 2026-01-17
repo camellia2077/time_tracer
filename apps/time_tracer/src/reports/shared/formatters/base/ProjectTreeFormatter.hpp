@@ -1,6 +1,6 @@
 // reports/shared/formatters/base/ProjectTreeFormatter.hpp
-#ifndef PROJECT_TREE_FORMATTER_HPP
-#define PROJECT_TREE_FORMATTER_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_BASE_PROJECT_TREE_FORMATTER_HPP_
+#define REPORTS_SHARED_FORMATTERS_BASE_PROJECT_TREE_FORMATTER_HPP_
 
 #include <string>
 #include <sstream>
@@ -63,4 +63,4 @@ private:
 
 } // namespace reporting
 
-#endif // PROJECT_TREE_FORMATTER_HPP
+#endif // REPORTS_SHARED_FORMATTERS_BASE_PROJECT_TREE_FORMATTER_HPP_

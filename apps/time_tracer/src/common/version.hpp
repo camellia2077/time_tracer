@@ -1,6 +1,6 @@
 // common/version.hpp
-#ifndef VERSION_HPP
-#define VERSION_HPP
+#ifndef COMMON_VERSION_HPP_
+#define COMMON_VERSION_HPP_
 
 #include <string_view>
 
@@ -8,8 +8,8 @@
 namespace AppInfo {
     // 使用 constexpr 和 string_view 可以在编译期确定字符串，效率更高
     // 这也是现代C++的推荐做法
-    constexpr std::string_view VERSION = "0.4.2.0";
-    constexpr std::string_view LAST_UPDATED = "2025-01-16";
+    constexpr std::string_view VERSION = "0.4.2.1";
+    constexpr std::string_view LAST_UPDATED = "2025-01-17";
 }
 
-#endif // VERSION_HPP
+#endif // COMMON_VERSION_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/shared/api/shared_api.hpp
-#ifndef SHARED_API_HPP
-#define SHARED_API_HPP
+#ifndef REPORTS_SHARED_API_SHARED_API_HPP_
+#define REPORTS_SHARED_API_SHARED_API_HPP_
 
 // ----------------------------------------------------------------------
 // 定义导入/导出宏 (适用于 Windows/MSVC 和 MinGW)
@@ -40,4 +40,4 @@
     #define ENABLE_C4251_WARNING
 #endif
 
-#endif // SHARED_API_HPP
+#endif // REPORTS_SHARED_API_SHARED_API_HPP_

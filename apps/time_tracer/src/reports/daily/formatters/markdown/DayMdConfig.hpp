@@ -1,6 +1,6 @@
 ﻿// reports/daily/formatters/markdown/DayMdConfig.hpp
-#ifndef DAY_MD_CONFIG_HPP
-#define DAY_MD_CONFIG_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_HPP_
+#define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_HPP_
 
 #include "reports/daily/common/DayBaseConfig.hpp"
 #include <toml++/toml.h>
@@ -11,4 +11,4 @@ public:
     explicit DayMdConfig(const toml::table& config);
 };
 
-#endif // DAY_MD_CONFIG_HPP
+#endif // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_HPP_

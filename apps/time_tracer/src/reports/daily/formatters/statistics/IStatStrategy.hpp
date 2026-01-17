@@ -1,6 +1,6 @@
 // reports/daily/formatters/statistics/IStatStrategy.hpp
-#ifndef I_STAT_STRATEGY_HPP
-#define I_STAT_STRATEGY_HPP
+#ifndef REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_HPP_
+#define REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_HPP_
 
 #include "reports/shared/api/shared_api.hpp" // <-- [新增] 1. 包含API宏
 #include <string>
@@ -46,4 +46,4 @@ public:
     virtual std::string build_output(const std::vector<std::string>& lines) const = 0;
 };
 
-#endif // I_STAT_STRATEGY_HPP
+#endif // REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_HPP_

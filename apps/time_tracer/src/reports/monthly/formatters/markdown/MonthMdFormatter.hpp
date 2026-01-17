@@ -1,6 +1,6 @@
 ﻿// reports/monthly/formatters/markdown/MonthMdFormatter.hpp
-#ifndef MONTH_MD_FORMATTER_HPP
-#define MONTH_MD_FORMATTER_HPP
+#ifndef REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_HPP_
+#define REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/BaseMdFormatter.hpp"
 #include "reports/monthly/formatters/markdown/MonthMdConfig.hpp"
@@ -18,4 +18,4 @@ protected:
     void format_header_content(std::stringstream& ss, const MonthlyReportData& data) const override;
 };
 
-#endif // MONTH_MD_FORMATTER_HPP
+#endif // REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/period/formatters/latex/PeriodTexConfig.hpp
-#ifndef PERIOD_TEX_CONFIG_HPP
-#define PERIOD_TEX_CONFIG_HPP
+#ifndef REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_CONFIG_HPP_
+#define REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_CONFIG_HPP_
 
 #include "reports/period/common/PeriodBaseConfig.hpp"
 #include "reports/shared/config/TexStyleConfig.hpp"
@@ -25,4 +25,4 @@ private:
     TexStyleConfig style_;
 };
 
-#endif // PERIOD_TEX_CONFIG_HPP
+#endif // REPORTS_PERIOD_FORMATTERS_LATEX_PERIOD_TEX_CONFIG_HPP_

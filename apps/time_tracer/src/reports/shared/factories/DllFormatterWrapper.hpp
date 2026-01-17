@@ -1,6 +1,6 @@
 // reports/shared/factories/DllFormatterWrapper.hpp
-#ifndef DLL_FORMATTER_WRAPPER_HPP
-#define DLL_FORMATTER_WRAPPER_HPP
+#ifndef REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_HPP_
+#define REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_HPP_
 
 #include "reports/shared/interfaces/IReportFormatter.hpp"
 // [修改] 不再依赖 AppConfig，改为依赖 string
@@ -129,4 +129,4 @@ private:
     FormatReportFunc_Period format_func_period_ = nullptr;
 };
 
-#endif // DLL_FORMATTER_WRAPPER_HPP
+#endif // REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_HPP_

@@ -1,6 +1,6 @@
 ﻿// reports/shared/formatters/latex/TexCommonUtils.hpp
-#ifndef TEX_COMMON_UTILS_HPP
-#define TEX_COMMON_UTILS_HPP
+#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_HPP_
+#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_HPP_
 
 #include <string>
 #include <vector>
@@ -41,4 +41,4 @@ REPORTS_SHARED_API void render_summary_list(
 
 } // namespace TexCommonUtils
 
-#endif // TEX_COMMON_UTILS_HPP
+#endif // REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_HPP_

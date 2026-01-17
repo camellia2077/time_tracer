@@ -1,6 +1,6 @@
 ﻿// config/validator/reports/strategies/StrategyFactory.hpp
-#ifndef STRATEGY_FACTORY_HPP
-#define STRATEGY_FACTORY_HPP
+#ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_STRATEGY_FACTORY_HPP_
+#define CONFIG_VALIDATOR_REPORTS_STRATEGIES_STRATEGY_FACTORY_HPP_
 
 #include "IQueryStrategy.hpp"
 #include <string>
@@ -21,4 +21,4 @@ public:
     static std::unique_ptr<IQueryStrategy> createStrategy(const std::string& file_name);
 };
 
-#endif // STRATEGY_FACTORY_HPP
+#endif // CONFIG_VALIDATOR_REPORTS_STRATEGIES_STRATEGY_FACTORY_HPP_

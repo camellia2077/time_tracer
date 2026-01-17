@@ -1,6 +1,6 @@
 ﻿// converter/config/ConverterConfig.hpp
-#ifndef CONVERTER_CONFIG_HPP
-#define CONVERTER_CONFIG_HPP
+#ifndef CONVERTER_CONFIG_CONVERTER_CONFIG_HPP_
+#define CONVERTER_CONFIG_CONVERTER_CONFIG_HPP_
 
 #include <string>
 #include <vector>
@@ -48,4 +48,4 @@ private:
     std::unordered_map<std::string, std::string> topParentMapping_;
 };
 
-#endif // CONVERTER_CONFIG_HPP
+#endif // CONVERTER_CONFIG_CONVERTER_CONFIG_HPP_

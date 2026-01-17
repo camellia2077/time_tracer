@@ -1,6 +1,6 @@
 // reports/shared/generators/BaseGenerator.hpp
-#ifndef BASE_GENERATOR_HPP
-#define BASE_GENERATOR_HPP
+#ifndef REPORTS_SHARED_GENERATORS_BASE_GENERATOR_HPP_
+#define REPORTS_SHARED_GENERATORS_BASE_GENERATOR_HPP_
 
 #include <memory>
 #include <string>
@@ -56,4 +56,4 @@ protected:
     const AppConfig& app_config_;
 };
 
-#endif // BASE_GENERATOR_HPP
+#endif // REPORTS_SHARED_GENERATORS_BASE_GENERATOR_HPP_

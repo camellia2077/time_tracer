@@ -1,6 +1,6 @@
 ﻿// common/config/models/ReportBaseModels.hpp
-#ifndef REPORT_BASE_MODELS_HPP
-#define REPORT_BASE_MODELS_HPP
+#ifndef COMMON_CONFIG_MODELS_REPORT_BASE_MODELS_HPP_
+#define COMMON_CONFIG_MODELS_REPORT_BASE_MODELS_HPP_
 
 #include <string>
 #include <vector>
@@ -41,4 +41,4 @@ struct LayoutConfig {
     double margin_right_cm = 2.0;
 };
 
-#endif // REPORT_BASE_MODELS_HPP
+#endif // COMMON_CONFIG_MODELS_REPORT_BASE_MODELS_HPP_
