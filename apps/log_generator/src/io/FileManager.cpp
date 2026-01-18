@@ -3,7 +3,7 @@
 #define IO_FILEMANAGER_H
 
 #include "io/FileManager.hpp"
-#include "common/AnsiColors.hpp"
+#include "common/ansi_colors.hpp"
 #include <iostream>
 #include <fstream>
 #include <sstream>

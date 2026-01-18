@@ -1,4 +1,4 @@
-﻿// validator/json/facade/JsonValidator.hpp
+// validator/json/facade/JsonValidator.hpp
 #ifndef VALIDATOR_JSON_FACADE_JSON_VALIDATOR_HPP_
 #define VALIDATOR_JSON_FACADE_JSON_VALIDATOR_HPP_
 

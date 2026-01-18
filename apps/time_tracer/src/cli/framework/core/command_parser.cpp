@@ -1,4 +1,4 @@
-﻿// cli/framework/core/command_parser.cpp
+// cli/framework/core/command_parser.cpp
 #include "command_parser.hpp"
 #include <stdexcept>
 #include <algorithm>

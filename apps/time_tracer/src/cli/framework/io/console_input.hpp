@@ -1,4 +1,4 @@
-﻿// cli/framework/io/console_input.hpp
+// cli/framework/io/console_input.hpp
 #ifndef CLI_FRAMEWORK_IO_CONSOLE_INPUT_HPP_
 #define CLI_FRAMEWORK_IO_CONSOLE_INPUT_HPP_
 

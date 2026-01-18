@@ -1,4 +1,4 @@
-﻿// cli/framework/interfaces/i_command.hpp
+// cli/framework/interfaces/i_command.hpp
 #ifndef CLI_FRAMEWORK_INTERFACES_I_COMMAND_HPP_
 #define CLI_FRAMEWORK_INTERFACES_I_COMMAND_HPP_
 

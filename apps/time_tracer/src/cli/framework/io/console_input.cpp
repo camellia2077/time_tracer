@@ -1,9 +1,9 @@
-﻿// cli/framework/io/console_input.cpp
+// cli/framework/io/console_input.cpp
 #include "console_input.hpp"
 #include <iostream>
 #include <sstream>
 #include <limits> // for numeric_limits
-#include "common/AnsiColors.hpp"
+#include "common/ansi_colors.hpp"
 
 std::vector<std::string> ConsoleInput::prompt_for_paths(const std::string& message) const {
     std::cout << message;

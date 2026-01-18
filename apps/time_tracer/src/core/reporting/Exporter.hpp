@@ -1,4 +1,4 @@
-﻿// core/reporting/Exporter.hpp
+// core/reporting/exporter.hpp
 #ifndef CORE_REPORTING_EXPORTER_HPP_
 #define CORE_REPORTING_EXPORTER_HPP_
 
@@ -6,7 +6,7 @@
 #include <vector>
 #include <filesystem>
 #include <memory>
-#include "reports/shared/types/ReportFormat.hpp"
+#include "reports/shared/types/report_format.hpp"
 #include "reports/shared/model/query_data_structs.hpp"
 
 namespace fs = std::filesystem;

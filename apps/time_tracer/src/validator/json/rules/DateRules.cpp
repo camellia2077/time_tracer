@@ -1,10 +1,8 @@
-﻿// validator/json/rules/DateRules.cpp
+// validator/json/rules/DateRules.cpp
 #include "DateRules.hpp"
 #include <map>
 #include <string>
 #include <iostream>
-
-// [移除] using json = nlohmann::json;
 
 namespace validator {
 namespace json {

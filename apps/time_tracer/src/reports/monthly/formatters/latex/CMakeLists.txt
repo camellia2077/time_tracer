@@ -2,9 +2,9 @@
 
 # --- 1. 定义共享库（DLL）目标 ---
 add_library(MonthTexFormatter SHARED
-    MonthTexFormatter.cpp
-    MonthTexConfig.cpp
-    MonthTexUtils.cpp
+    month_tex_formatter.cpp
+    month_tex_config.cpp
+    month_tex_utils.cpp
 )
 
 # --- 2. 设置目标属性 ---

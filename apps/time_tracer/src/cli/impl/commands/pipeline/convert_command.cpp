@@ -1,6 +1,6 @@
-﻿// cli/impl/commands/pipeline/convert_command.cpp
+// cli/impl/commands/pipeline/convert_command.cpp
 #include "convert_command.hpp"
-#include "common/AppOptions.hpp"
+#include "common/app_options.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/impl/app/app_context.hpp"
 #include <stdexcept>

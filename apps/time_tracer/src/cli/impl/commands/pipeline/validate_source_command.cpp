@@ -1,8 +1,8 @@
-﻿// cli/impl/commands/pipeline/validate_source_command.cpp
+// cli/impl/commands/pipeline/validate_source_command.cpp
 #include "validate_source_command.hpp"
-#include "common/AppOptions.hpp"
+#include "common/app_options.hpp"
 #include "cli/framework/core/command_registry.hpp" 
-#include "cli/impl/app/app_context.hpp" // [新增]
+#include "cli/impl/app/app_context.hpp"
 #include <stdexcept>
 #include <memory>
 

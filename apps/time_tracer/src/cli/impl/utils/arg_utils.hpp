@@ -1,4 +1,4 @@
-﻿// cli/impl/utils/arg_utils.hpp
+// cli/impl/utils/arg_utils.hpp
 #ifndef CLI_IMPL_UTILS_ARG_UTILS_HPP_
 #define CLI_IMPL_UTILS_ARG_UTILS_HPP_
 
@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm> // for std::find if needed
-#include "reports/shared/types/ReportFormat.hpp"
+#include "reports/shared/types/report_format.hpp"
 #include "validator/common/ValidatorUtils.hpp" // DateCheckMode definition
 
 class ArgUtils {

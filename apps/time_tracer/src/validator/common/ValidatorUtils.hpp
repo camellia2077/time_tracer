@@ -1,4 +1,4 @@
-﻿// validator/common/ValidatorUtils.hpp
+// validator/common/ValidatorUtils.hpp
 #ifndef VALIDATOR_COMMON_VALIDATOR_UTILS_HPP_
 #define VALIDATOR_COMMON_VALIDATOR_UTILS_HPP_
 
@@ -7,9 +7,8 @@
 #include <set>
 #include <map>
 
-#include "common/types/DateCheckMode.hpp"
+#include "common/types/date_check_mode.hpp"
 
-// [新增] 包裹在 validator 命名空间中
 namespace validator {
 
 enum class ErrorType {

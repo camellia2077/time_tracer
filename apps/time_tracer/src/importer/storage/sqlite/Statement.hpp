@@ -1,4 +1,4 @@
-﻿// importer/storage/sqlite/Statement.hpp
+// importer/storage/sqlite/statement.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_STATEMENT_HPP_
 #define IMPORTER_STORAGE_SQLITE_STATEMENT_HPP_
 

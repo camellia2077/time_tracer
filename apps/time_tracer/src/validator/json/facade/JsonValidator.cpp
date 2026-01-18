@@ -1,10 +1,8 @@
-﻿// validator/json/facade/JsonValidator.cpp
+// validator/json/facade/JsonValidator.cpp
 #include "JsonValidator.hpp"
 #include <iostream>
 #include "validator/json/rules/DateRules.hpp"
 #include "validator/json/rules/ActivityRules.hpp"
-
-// [移除] using json = nlohmann::json;
 
 namespace validator {
 namespace json {

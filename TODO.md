@@ -1,3 +1,12 @@
+importer/parser/json_parser.cpp调用了
+#include "serializer/json_serializer.hpp"
+来将json转化为struct来插入数据库，但是importer和serializer应该使完全解耦的
+在import命令的时候，应该由core来调用json_serializer将json转化为struct，然后传递给importer
+
+#include "config/validator/plugins/facade/PluginValidator.hpp"
+config检验的是报表的dll吗
+
+
 validate-source
 调用验证txt
 

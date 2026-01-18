@@ -1,6 +1,6 @@
 // cli/HelpPrinter.cpp
 #include "cli/HelpPrinter.hpp"
-#include "common/AnsiColors.hpp"
+#include "common/ansi_colors.hpp"
 #include "version.hpp" // 需要访问版本信息
 #include <iostream>
 

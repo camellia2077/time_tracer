@@ -1,4 +1,4 @@
-﻿// cli/impl/app/cli_application.cpp
+// cli/impl/app/cli_application.cpp
 #include "cli/impl/app/cli_application.hpp"
 
 #include "cli/framework/interfaces/i_command.hpp"
@@ -8,13 +8,13 @@
 #include <filesystem>
 
 #include "cli/framework/core/command_registry.hpp"
-#include "config/ConfigLoader.hpp"
-#include "io/FileController.hpp"
-#include "core/WorkflowHandler.hpp" 
-#include "core/ReportHandler.hpp"
-#include "core/database/DBManager.hpp"
-#include "core/reporting/Exporter.hpp"
-#include "core/reporting/ReportGenerator.hpp"
+#include "config/config_loader.hpp"
+#include "io/file_controller.hpp"
+#include "core/workflow_handler.hpp" 
+#include "core/report_handler.hpp"
+#include "core/database/db_manager.hpp"
+#include "core/reporting/exporter.hpp"
+#include "core/reporting/report_generator.hpp"
 #include "cli/impl/app/app_context.hpp" // 为模板参数
 
 namespace fs = std::filesystem;

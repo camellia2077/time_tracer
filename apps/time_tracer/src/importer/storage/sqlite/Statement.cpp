@@ -1,5 +1,5 @@
-﻿// importer/storage/sqlite/Statement.cpp
-#include "Statement.hpp"
+// importer/storage/sqlite/statement.cpp
+#include "statement.hpp"
 #include <stdexcept>
 
 Statement::Statement(sqlite3* db)

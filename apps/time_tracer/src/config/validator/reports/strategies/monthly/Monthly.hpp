@@ -1,8 +1,8 @@
-﻿// config/validator/reports/strategies/monthly/Monthly.hpp
+// config/validator/reports/strategies/monthly/monthly.hpp
 #ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_MONTHLY_MONTHLY_HPP_
 #define CONFIG_VALIDATOR_REPORTS_STRATEGIES_MONTHLY_MONTHLY_HPP_
 
-#include "config/validator/reports/strategies/BaseStrategy.hpp"
+#include "config/validator/reports/strategies/base_strategy.hpp"
 
 class Monthly : public BaseStrategy {
 protected:

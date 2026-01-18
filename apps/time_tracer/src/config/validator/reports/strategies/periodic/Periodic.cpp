@@ -1,5 +1,5 @@
-﻿// config/validator/reports/strategies/periodic/Periodic.cpp
-#include "Periodic.hpp"
+// config/validator/reports/strategies/periodic/periodic.cpp
+#include "periodic.hpp"
 #include <iostream>
 #include <set>
 

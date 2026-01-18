@@ -1,4 +1,4 @@
-﻿// importer/storage/sqlite/Writer.hpp
+// importer/storage/sqlite/writer.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_WRITER_HPP_
 #define IMPORTER_STORAGE_SQLITE_WRITER_HPP_
 
@@ -6,8 +6,8 @@
 #include <string>
 #include <sqlite3.h>
 #include <memory>
-#include "importer/model/TimeSheetData.hpp"
-#include "ProjectResolver.hpp" // 引入新头文件
+#include "importer/model/time_sheet_data.hpp"
+#include "project_resolver.hpp" 
 
 class Writer {
 public:

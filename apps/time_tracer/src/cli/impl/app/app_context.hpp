@@ -1,4 +1,4 @@
-﻿// cli/impl/app/app_context.hpp
+// cli/impl/app/app_context.hpp
 #ifndef CLI_IMPL_APP_APP_CONTEXT_HPP_
 #define CLI_IMPL_APP_APP_CONTEXT_HPP_
 

@@ -1,13 +1,11 @@
-﻿// validator/json/rules/ActivityRules.cpp
+// validator/json/rules/ActivityRules.cpp
 #include "ActivityRules.hpp"
 
-// [移除] using json = nlohmann::json; 防止与 namespace json 冲突
 
 namespace validator {
 namespace json {
 
 void validateActivityCount(const nlohmann::json& day_object, std::set<Error>& errors) {
-    // [修改] json::object() -> nlohmann::json::object()
     const auto& headers = day_object.value("headers", nlohmann::json::object());
     std::string date_str = headers.value("date", "[Unknown Date]");
 

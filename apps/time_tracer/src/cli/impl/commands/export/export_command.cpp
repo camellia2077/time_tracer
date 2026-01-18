@@ -1,8 +1,8 @@
-﻿// cli/impl/commands/export/export_command.cpp
+// cli/impl/commands/export/export_command.cpp
 #include "export_command.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/impl/utils/arg_utils.hpp"
-#include "common/utils/TimeUtils.hpp"
+#include "common/utils/time_utils.hpp"
 #include "cli/impl/app/app_context.hpp"
 #include <stdexcept>
 #include <iostream>
