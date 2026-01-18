@@ -2,7 +2,7 @@
 #include "TextValidator.hpp"
 #include "validator/txt/rules/LineRules.hpp"
 #include "validator/txt/rules/StructureRules.hpp"
-#include "common/utils/StringUtils.hpp" 
+#include "common/utils/string_utils.hpp" 
 #include <sstream> 
 #include <iostream>
 

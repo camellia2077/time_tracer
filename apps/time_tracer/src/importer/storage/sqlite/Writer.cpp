@@ -1,5 +1,5 @@
-﻿// importer/storage/sqlite/Writer.cpp
-#include "Writer.hpp"
+// importer/storage/sqlite/writer.cpp
+#include "writer.hpp"
 #include <iostream>
 
 Writer::Writer(sqlite3* db,

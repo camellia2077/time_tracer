@@ -1,8 +1,8 @@
-﻿// config/validator/reports/strategies/periodic/Periodic.hpp
+// config/validator/reports/strategies/periodic/periodic.hpp
 #ifndef CONFIG_VALIDATOR_REPORTS_STRATEGIES_PERIODIC_PERIODIC_HPP_
 #define CONFIG_VALIDATOR_REPORTS_STRATEGIES_PERIODIC_PERIODIC_HPP_
 
-#include "config/validator/reports/strategies/BaseStrategy.hpp"
+#include "config/validator/reports/strategies/base_strategy.hpp"
 
 class Periodic : public BaseStrategy {
 protected:

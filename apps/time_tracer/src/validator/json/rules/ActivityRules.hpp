@@ -1,4 +1,4 @@
-﻿// validator/json/rules/ActivityRules.hpp
+// validator/json/rules/ActivityRules.hpp
 #ifndef VALIDATOR_JSON_RULES_ACTIVITY_RULES_HPP_
 #define VALIDATOR_JSON_RULES_ACTIVITY_RULES_HPP_
 

@@ -1,4 +1,4 @@
-﻿// reports/shared/model/query_data_structs.hpp
+// reports/shared/model/query_data_structs.hpp
 #ifndef REPORTS_SHARED_MODEL_QUERY_DATA_STRUCTS_HPP_
 #define REPORTS_SHARED_MODEL_QUERY_DATA_STRUCTS_HPP_
 

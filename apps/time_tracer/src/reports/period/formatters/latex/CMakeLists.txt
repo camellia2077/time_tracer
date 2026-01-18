@@ -2,9 +2,9 @@
 
 # --- 1. 定义共享库（DLL）目标 ---
 add_library(PeriodTexFormatter SHARED
-    PeriodTexFormatter.cpp
-    PeriodTexConfig.cpp
-    PeriodTexUtils.cpp
+    period_tex_formatter.cpp
+    period_tex_config.cpp
+    period_tex_utils.cpp
 )
 
 # --- 2. 设置目标属性 ---

@@ -1,4 +1,4 @@
-﻿// reports/shared/api/shared_api.hpp
+// reports/shared/api/shared_api.hpp
 #ifndef REPORTS_SHARED_API_SHARED_API_HPP_
 #define REPORTS_SHARED_API_SHARED_API_HPP_
 

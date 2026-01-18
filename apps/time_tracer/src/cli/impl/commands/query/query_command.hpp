@@ -1,9 +1,9 @@
-﻿// cli/impl/commands/query/query_command.hpp
+// cli/impl/commands/query/query_command.hpp
 #ifndef CLI_IMPL_COMMANDS_QUERY_QUERY_COMMAND_HPP_
 #define CLI_IMPL_COMMANDS_QUERY_QUERY_COMMAND_HPP_
 
 #include "cli/framework/interfaces/i_command.hpp"
-#include "core/ReportHandler.hpp"
+#include "core/report_handler.hpp"
 
 class QueryCommand : public ICommand {
 public:

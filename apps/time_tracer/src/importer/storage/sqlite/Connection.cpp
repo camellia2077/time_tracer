@@ -1,5 +1,5 @@
-﻿// importer/storage/sqlite/Connection.cpp
-#include "Connection.hpp"
+// importer/storage/sqlite/connection.cpp
+#include "connection.hpp"
 #include <iostream>
 
 Connection::Connection(const std::string& db_path) : db_(nullptr) { // MODIFIED

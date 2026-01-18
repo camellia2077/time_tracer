@@ -1,7 +1,7 @@
-﻿// cli/impl/commands/pipeline/ingest_command.cpp
+// cli/impl/commands/pipeline/ingest_command.cpp
 #include "ingest_command.hpp"
 #include "cli/framework/core/command_registry.hpp"
-#include "common/AppOptions.hpp"
+#include "common/app_options.hpp"
 #include "cli/impl/app/app_context.hpp" 
 #include <stdexcept>
 #include <iostream>

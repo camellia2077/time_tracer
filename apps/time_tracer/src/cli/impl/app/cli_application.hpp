@@ -1,4 +1,4 @@
-﻿// cli/impl/app/cli_application.hpp
+// cli/impl/app/cli_application.hpp
 #ifndef CLI_IMPL_APP_CLI_APPLICATION_HPP_
 #define CLI_IMPL_APP_CLI_APPLICATION_HPP_
 
@@ -7,7 +7,7 @@
 #include <memory>
 #include <filesystem>
 #include "cli/framework/core/command_parser.hpp"
-#include "common/config/AppConfig.hpp" 
+#include "common/config/app_config.hpp" 
 
 class FileController;
 class WorkflowHandler;
