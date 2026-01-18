@@ -1,8 +1,8 @@
-﻿// cli/impl/utils/help_formatter.cpp
+// cli/impl/utils/help_formatter.cpp
 #include "help_formatter.hpp"
 #include <iostream>
 #include <print>
-#include "common/AnsiColors.hpp"
+#include "common/ansi_colors.hpp"
 
 void print_full_usage(const char* app_name) {
     std::println("{}TimeTracer{}: A command-line tool for time data pre-processing, import, and querying.\n",GREEN_COLOR,RESET_COLOR);

@@ -1,4 +1,4 @@
-﻿// cli/framework/core/command_parser.hpp
+// cli/framework/core/command_parser.hpp
 #ifndef CLI_FRAMEWORK_CORE_COMMAND_PARSER_HPP_
 #define CLI_FRAMEWORK_CORE_COMMAND_PARSER_HPP_
 

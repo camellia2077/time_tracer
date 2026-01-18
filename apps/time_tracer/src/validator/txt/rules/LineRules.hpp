@@ -2,7 +2,7 @@
 #ifndef VALIDATOR_TXT_RULES_LINE_RULES_HPP_
 #define VALIDATOR_TXT_RULES_LINE_RULES_HPP_
 
-#include "converter/config/ConverterConfig.hpp"
+#include "converter/config/converter_config.hpp"
 #include "validator/common/ValidatorUtils.hpp"
 #include <string>
 #include <set>

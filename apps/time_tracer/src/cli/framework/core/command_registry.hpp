@@ -1,4 +1,4 @@
-﻿// cli/framework/core/command_registry.hpp
+// cli/framework/core/command_registry.hpp
 #ifndef CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_HPP_
 #define CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_HPP_
 

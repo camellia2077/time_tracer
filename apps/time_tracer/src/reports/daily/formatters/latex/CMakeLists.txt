@@ -3,9 +3,9 @@
 # --- 1. 定义共享库（DLL）目标 ---
 # 源文件列表只包含此模块特有的文件。
 add_library(DayTexFormatter SHARED
-    DayTexFormatter.cpp
-    DayTexConfig.cpp
-    DayTexUtils.cpp
+    day_tex_formatter.cpp
+     day_tex_config.cpp
+    day_tex_utils.cpp
 )
 
 # --- 2. 设置目标属性 ---

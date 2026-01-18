@@ -3,7 +3,7 @@
 #define VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_HPP_
 
 #include "validator/common/ValidatorUtils.hpp"
-#include "converter/config/ConverterConfig.hpp"
+#include "converter/config/converter_config.hpp"
 
 #include <string>
 #include <set>

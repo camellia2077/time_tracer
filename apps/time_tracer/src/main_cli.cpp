@@ -1,4 +1,4 @@
-﻿// main_cli.cpp
+// main_cli.cpp
 #include <filesystem>
 #include <iostream>
 #include <print>
@@ -12,10 +12,10 @@
 #endif
 
 // --- 核心模块 ---
-#include "bootstrap/StartupValidator.hpp"  // 引入验证器
+#include "bootstrap/startup_validator.hpp"  // 引入验证器
 
-#include "common/config/AppConfig.hpp"
-#include "config/ConfigLoader.hpp"         
+#include "common/config/app_config.hpp"
+#include "config/config_loader.hpp"         
 
 #include "cli/impl/app/cli_application.hpp"
 // --- 工具与信息 ---
@@ -23,7 +23,7 @@
 #include "cli/impl/utils/help_formatter.hpp"
 
 
-#include "common/AnsiColors.hpp"
+#include "common/ansi_colors.hpp"
 #include "common/version.hpp"
 
 int main(int argc, char* argv[]) {

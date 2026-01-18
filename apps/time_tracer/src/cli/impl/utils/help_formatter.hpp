@@ -1,4 +1,4 @@
-﻿// cli/impl/utils/help_formatter.hpp
+// cli/impl/utils/help_formatter.hpp
 #ifndef CLI_IMPL_UTILS_HELP_FORMATTER_HPP_
 #define CLI_IMPL_UTILS_HELP_FORMATTER_HPP_
 
