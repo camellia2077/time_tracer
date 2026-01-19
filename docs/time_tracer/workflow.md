@@ -6,6 +6,34 @@ This document outlines the internal data flows and execution logic for the prima
 
 `run-pipeline` (alias: `blink`) executes the complete data processing flow, from raw text ingestion to database storage.
 
+
+#### 1.3 Configuration Loading & Injection Flow
+
+To decouple configuration formats (TOML) from business logic (Converter), the system employs a "Parse -> Intermediate Struct -> Inject" pattern.
+
+**Data Flow:**
+`FileSystem (.toml)` -> **[Config Module: ConverterConfigLoader]** -> `ConverterConfig (Struct)` -> **[Core: ConverterConfigFactory]** -> `PipelineContext` -> **[Converter Module]**
+
+**Key Logic Phases:**
+
+1. **Parsing & Merging (Config Layer)**:
+   * `ConverterConfigLoader` reads the main `config.toml` and recursively merges external files for `text_mappings` and `duration_mappings`.
+   * The TOML data is mapped into a pure C++ `ConverterConfig` struct, ensuring the business modules have zero dependency on `toml++` or other parsing libraries.
+
+2. **Runtime Parameter Injection (Core Layer)**:
+   * `PipelineManager` triggers `ConverterConfigFactory` to prepare the configuration.
+   * **Dynamic Injection**: The factory injects runtime-specific data (e.g., `initial_top_parents` from `AppConfig`) directly into the `ConverterConfig` struct.
+   * This keeps the Converter stateless and unaware of high-level application paths or environment settings.
+
+3. **Contextual Isolation & Propagation**:
+   * The finalized `ConverterConfig` is stored in `PipelineContext.state`.
+   * Each Pipeline Step (e.g., `SourceValidatorStep`, `ConverterStep`) extracts this struct and passes it as a `const` reference to the underlying worker classes (`TextValidator`, `LogProcessor`).
+
+4. **In-Memory Execution**:
+   * The Converter components (like `ActivityMapper`) consume the pre-filled maps and vectors in the struct to perform translations.
+   * The process is entirely memory-based and agnostic of the original persistent format.
+
+
 ### Workflow A: With JSON Persistence (Default)
 Used when `--save-processed` is enabled or configured in `config.toml`.
 

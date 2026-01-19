@@ -8,11 +8,11 @@
 #include <filesystem>
 #include "cli/framework/core/command_parser.hpp"
 #include "common/config/app_config.hpp" 
+#include "cli/impl/app/app_context.hpp" // 包含 AppContext 定义
 
 class FileController;
-class WorkflowHandler;
-class ReportHandler;
 class DBManager;
+// 移除 WorkflowHandler 和 ReportHandler 的前向声明，因为成员变量已经移除了
 
 namespace fs = std::filesystem;
 
@@ -25,15 +25,17 @@ public:
 
 private:
     CommandParser parser_;
-    
-    // [新增] 将 AppConfig 提升为成员变量，确保其生命周期
     AppConfig app_config_;
 
-    // --- 依赖的服务 ---
+    // --- 服务容器 ---
+    // AppContext 现在负责持有核心逻辑服务 (Workflow, Report)
+    std::shared_ptr<AppContext> app_context_;
+
+    // --- 基础设施 ---
+    // FileController 和 DBManager 属于基础设施，CliApp 仍需负责它们的初始化
+    // (注：如果 DBManager 未来也需要注入到 Context，也可以改为 shared_ptr 并放入 Context)
     std::unique_ptr<FileController> file_controller_;
     std::unique_ptr<DBManager> db_manager_;
-    std::unique_ptr<WorkflowHandler> workflow_handler_; 
-    std::unique_ptr<ReportHandler> report_generation_handler_;
 
     fs::path output_root_path_;
     fs::path exported_files_path_;

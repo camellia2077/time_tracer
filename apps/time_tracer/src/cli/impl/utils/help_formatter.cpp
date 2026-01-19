@@ -1,80 +1,83 @@
 // cli/impl/utils/help_formatter.cpp
 #include "help_formatter.hpp"
-#include <iostream>
-#include <print>
+#include "cli/framework/interfaces/i_command.hpp"
+#include "cli/framework/core/arg_definitions.hpp"
 #include "common/ansi_colors.hpp"
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+#include <algorithm>
 
-void print_full_usage(const char* app_name) {
-    std::println("{}TimeTracer{}: A command-line tool for time data pre-processing, import, and querying.\n",GREEN_COLOR,RESET_COLOR);
-    std::println("Usage: {} <command>[arguments...] [options...]\n", app_name);
+void print_full_usage(const char* app_name, const std::vector<std::pair<std::string, std::unique_ptr<ICommand>>>& commands) {
+    std::cout << GREEN_COLOR << "TimeTracer" << RESET_COLOR << ": A command-line tool for time data processing.\n\n";
+    std::cout << "Usage: " << app_name << " <command> [arguments...] [options...]\n\n";
     
-    std::println("{}{}{}", GREEN_COLOR, "--- Core Commands ---", RESET_COLOR);
-    std::println("   run-pipeline, blink <path>\t Run full pipeline: validate, convert, validate output, and import to database.");
+    std::cout << "Available Commands:\n";
 
-    std::println("                                  Options:");
-    std::println("                                    --date-check <mode>     Set date check mode: 'continuity' or 'full'.");
-    std::println("                                    --no-date-check         Disable date checking (overrides config).");
-    std::println("                                    --save-processed        Force save intermediate JSON files.");
-    std::println("                                    --no-save               Force NOT to save intermediate JSON files (overrides config).");
+    for (const auto& [name, cmd] : commands) {
+        if (!cmd) continue;
 
-    std::println("  query <type> <period>\t\t Query data from the database.");
-    std::println("  export <type> <period>\t Export reports from the database.\n");
+        auto defs = cmd->get_definitions();
+        
+        // 1. 构建 Usage 字符串
+        std::stringstream usage_ss;
+        usage_ss << "  " << GREEN_COLOR << std::left << std::setw(15) << name << RESET_COLOR;
+        
+        // 分离位置参数和选项
+        std::vector<ArgDef> positionals;
+        std::vector<ArgDef> options;
+        
+        for (const auto& def : defs) {
+            if (def.type == ArgType::Positional) {
+                positionals.push_back(def);
+            } else {
+                options.push_back(def);
+            }
+        }
+        
+        // 按索引排序位置参数
+        std::sort(positionals.begin(), positionals.end(), [](const ArgDef& a, const ArgDef& b){
+            return a.position_index < b.position_index;
+        });
 
-    // 预处理
-    std::println("{}{}{}", GREEN_COLOR, "--- Pre-processing Commands ---", RESET_COLOR);
-    std::println("  validate-source <path>\t Validates the source file format (e.g., .txt files) (read-only).");
-    std::println("  convert <path>\t\t Converts source files to the processed JSON format.");
-    std::println("  validate-output <path>\t Validates the processed JSON file format and logic (read-only).");
-    std::println("  \tNote: Validation commands do not produce output; the --output option has no effect on them.");
-    
-    std::println("  Options for validate-output:");
-    std::println("    --date-check <mode>\t\t Check date logic. Modes:");
-    std::println("                                    continuity : Check for missing dates between records.");
-    std::println("                                    full       : Check for all dates in the month (completeness).");
-    std::println("                                    none       : Disable check explicitly.");
+        // 打印简短描述 (如果有)
+        // 注意：建议在 ICommand 子类中覆盖 get_help() 返回单行描述
+        std::string description = cmd->get_help();
+        if (description == "Auto generated help...") description = ""; 
+        std::cout << usage_ss.str() << " " << description << "\n";
 
-    std::println("  Example: {} convert /path/to/logs", app_name);
-    std::println("  Example: {} validate-output /path/to/processed/log.json --date-check full\n", app_name);
+        // 2. 打印详细参数格式
+        std::cout << "    Usage: " << name;
+        for (const auto& pos : positionals) {
+            std::cout << " <" << pos.name << ">";
+        }
+        if (!options.empty()) {
+            std::cout << " [options]";
+        }
+        std::cout << "\n";
 
-    // 数据库导入
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: import ---", RESET_COLOR);
-    std::println("  Usage: {} import <directory_path>", app_name);
-    std::println("  Example: {} import /path/to/output/Processed_logs/\n", app_name);
-    
-    // 查询与导出
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: query ---", RESET_COLOR);
-    std::println("  Usage: {} query <type> <argument> [options...]", app_name);
-    std::println("  Types:");
-    std::println("    daily <YYYYMMDD>\t\t Query statistics for a specific day.");
-    std::println("    monthly <YYYYMM>\t\t Query statistics for a specific month.");
-    std::println("    period <days>\t\t Query statistics for last N days. Can be a list (e.g., 7,30).");
-    std::println("  Options:");
-    std::println("    --format, -f <format>\t Specify output format (md, tex, typ).");
-    std::println("    --db, --database <path>\t Specify the database file to query."); // [新增]
-    std::println("                         \t Default: [program_location]/output/time_data.sqlite3");
-    std::println("  Example: {} query daily 20240101 --db ./my_data.sqlite3\n", app_name);
-    
-    // 导出
-    std::println("{}{}{}", GREEN_COLOR, "--- Command: export ---", RESET_COLOR);
-    std::println("  Usage: {} export <type> [argument] [options...]", app_name);
-    std::println("  Types:");
-    std::println("    daily <YYYYMMDD>\t\t Export a single daily report.");
-    std::println("    monthly <YYYYMM>\t\t Export a single monthly report.");
-    std::println("    period <days>\t\t Export a single period report (e.g., 7).");
-    std::println("    all-daily\t\t\t Export all daily reports.");
-    std::println("    all-monthly\t\t\t Export all monthly reports.");
-    std::println("    all-period <days_list>\t Export multiple period reports (e.g., 7,30,90).");
-    std::println("  Options:");
-    std::println("    --format, -f <format>\t Specify output format for query/export (md, tex, typ). Default: md.");
-    std::println("    --output, -o <path>\t\t Specify the directory for generated report files."); // [修改]
-    std::println("                         \t Default: [program_location]/output/exported_files");
-    std::println("    --db, --database <path>\t Specify the database file to read data from."); // [新增]
-    std::println("                         \t Default: [program_location]/output/time_data.sqlite3");
-    
-    std::println("  Example: {} export daily 20240115 -f tex -o /my/reports", app_name);
-    std::println("  Example: {} export all-monthly --db /backups/2024.sqlite3\n", app_name);
+        // 3. 打印详细参数列表
+        if (!positionals.empty()) {
+            for (const auto& def : positionals) {
+                std::cout << "      " << std::left << std::setw(20) << ("<" + def.name + ">") 
+                          << ": " << def.help << (def.required ? " (Required)" : "") << "\n";
+            }
+        }
+        
+        if (!options.empty()) {
+            for (const auto& def : options) {
+                std::stringstream keys_ss;
+                for (size_t i = 0; i < def.keys.size(); ++i) {
+                    keys_ss << def.keys[i] << (i < def.keys.size() - 1 ? ", " : "");
+                }
+                std::cout << "      " << std::left << std::setw(20) << keys_ss.str() 
+                          << ": " << def.help << "\n";
+            }
+        }
+        std::cout << "\n";
+    }
 
-    std::println("{}{}{}", GREEN_COLOR, "--- Other Options ---", RESET_COLOR);
-    std::println("  --help, -h\t\t\t Show this help message.");
-    std::println("  --version, -v\t\t\t Show program version.");
+    std::cout << "Global Options:\n";
+    std::cout << "  --help, -h          Show this help message.\n";
+    std::cout << "  --version, -v       Show program version.\n";
 }

@@ -1,10 +1,12 @@
 // cli/framework/core/command_parser.cpp
-#include "command_parser.hpp"
+#include "cli/framework/core/command_parser.hpp"
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
 
-CommandParser::CommandParser(const std::vector<std::string>& args) : raw_args_(args) {
+// [修改] 初始化配置
+CommandParser::CommandParser(const std::vector<std::string>& args, const ParserConfig& config) 
+    : raw_args_(args), config_(config) {
     if (args.size() < 2) {
         throw std::runtime_error("No command provided.");
     }
@@ -50,34 +52,24 @@ void CommandParser::parse() {
     filtered_args_ = filter_global_options(raw_args_);
 }
 
+// [修改] 使用 config_ 中的定义进行过滤，彻底移除硬编码
 std::vector<std::string> CommandParser::filter_global_options(const std::vector<std::string>& original_args) {
     std::vector<std::string> filtered;
     
-    // 定义已知需要跳过值的选项（纯字符串匹配，无业务含义）
-    const std::vector<std::string> value_options = {
-        "-o", "--output", 
-        "-f", "--format", 
-        "--date-check", 
-        "--db", "--database"
-    };
-
-    // 定义已知的布尔选项
-    const std::vector<std::string> flag_options = {
-        "--save-processed", "--no-save", "--no-date-check"
-    };
-
     for (size_t i = 0; i < original_args.size(); ++i) {
         const auto& arg = original_args[i];
         
-        // 检查是否是带值选项
-        if (std::find(value_options.begin(), value_options.end(), arg) != value_options.end()) {
-            i++; // 跳过下一个参数（值）
+        // 1. 检查是否是带值选项 (Value Options)
+        if (std::find(config_.global_value_options.begin(), config_.global_value_options.end(), arg) 
+            != config_.global_value_options.end()) {
+            i++; // 跳过 key 和 value
             continue;
         }
         
-        // 检查是否是布尔选项
-        if (std::find(flag_options.begin(), flag_options.end(), arg) != flag_options.end()) {
-            continue;
+        // 2. 检查是否是布尔选项 (Flags)
+        if (std::find(config_.global_flag_options.begin(), config_.global_flag_options.end(), arg) 
+            != config_.global_flag_options.end()) {
+            continue; // 仅跳过 key
         }
         
         filtered.push_back(arg);
