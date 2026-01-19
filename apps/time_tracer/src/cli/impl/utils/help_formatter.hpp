@@ -2,7 +2,15 @@
 #ifndef CLI_IMPL_UTILS_HELP_FORMATTER_HPP_
 #define CLI_IMPL_UTILS_HELP_FORMATTER_HPP_
 
-// 声明帮助打印函数
-void print_full_usage(const char* app_name);
+#include <vector>
+#include <string>
+#include <memory>
+#include <utility>
+
+// 前向声明
+class ICommand;
+
+// [修改] 接收命令列表以动态生成帮助
+void print_full_usage(const char* app_name, const std::vector<std::pair<std::string, std::unique_ptr<ICommand>>>& commands);
 
 #endif // CLI_IMPL_UTILS_HELP_FORMATTER_HPP_

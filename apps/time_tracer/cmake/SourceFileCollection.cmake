@@ -97,6 +97,7 @@ set(REPORTS_SHARED_SOURCES
 set(CLI_SOURCES
     # --- Framework (Core Logic) ---
     "src/cli/framework/core/command_parser.cpp"
+    "src/cli/framework/core/arg_definitions.cpp"
     "src/cli/framework/io/console_input.cpp"
 
     "src/cli/impl/app/cli_application.cpp"
@@ -108,7 +109,7 @@ set(CLI_SOURCES
 
     "src/cli/impl/commands/pipeline/convert_command.cpp"
     "src/cli/impl/commands/pipeline/import_command.cpp"
-    "src/cli/impl/commands/pipeline/run_pipeline_command.cpp"
+    "src/cli/impl/commands/pipeline/ingest_command.cpp"
     "src/cli/impl/commands/pipeline/validate_output_command.cpp"
     "src/cli/impl/commands/pipeline/validate_source_command.cpp"
 )

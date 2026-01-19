@@ -1,16 +1,18 @@
-// cli/impl/commands/pipeline/validate_source_command.hpp
 #ifndef CLI_IMPL_COMMANDS_PIPELINE_VALIDATE_SOURCE_COMMAND_HPP_
 #define CLI_IMPL_COMMANDS_PIPELINE_VALIDATE_SOURCE_COMMAND_HPP_
 
 #include "cli/framework/interfaces/i_command.hpp"
-#include "core/workflow_handler.hpp"
+#include "core/interfaces/i_workflow_handler.hpp"
 
 class ValidateSourceCommand : public ICommand {
 public:
-    explicit ValidateSourceCommand(WorkflowHandler& workflow_handler);
+    explicit ValidateSourceCommand(IWorkflowHandler& workflow_handler);
+    
+    std::vector<ArgDef> get_definitions() const override;
+    std::string get_help() const override;
     void execute(const CommandParser& parser) override;
 private:
-    WorkflowHandler& workflow_handler_;
+    IWorkflowHandler& workflow_handler_;
 };
 
-#endif // CLI_IMPL_COMMANDS_PIPELINE_VALIDATE_SOURCE_COMMAND_HPP_
+#endif
