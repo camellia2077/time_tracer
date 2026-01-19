@@ -5,22 +5,13 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <utility> // for std::pair
 #include "importer/model/import_stats.hpp"
-#include "common/model/daily_log.hpp" 
+#include "common/model/daily_log.hpp"
 
-// 负责编排 "解析 -> 转换 -> 入库" 的具体业务逻辑
 class ImportService {
 public:
     explicit ImportService(const std::string& db_path);
-
-    /**
-     * @brief 批量处理 JSON 字符串数据导入。
-     * @param inputs 输入数据列表，每个元素为 pair<标识符(如文件名), JSON内容>。
-     */
-    ImportStats import_json_data(const std::vector<std::pair<std::string, std::string>>& inputs);
-
-    // 处理内存数据导入 (保持不变)
+    // [保留] 仅保留处理内存对象（结构体）的接口
     ImportStats import_from_memory(const std::map<std::string, std::vector<DailyLog>>& data_map);
 
 private:

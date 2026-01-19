@@ -9,6 +9,8 @@
 #include <unordered_map>
 #include "common/types/date_check_mode.hpp"
 #include "common/config/report_config_models.hpp"
+// [新增] 引入 Converter 配置模型
+#include "common/config/models/converter_config_models.hpp"
 
 namespace fs = std::filesystem;
 
@@ -36,6 +38,10 @@ struct LoadedReportConfigs {
 struct PipelineConfig {
     fs::path interval_processor_config_path;
     std::unordered_map<fs::path, fs::path> initial_top_parents;
+    
+    // [新增] 加载完成的 Converter 配置
+    // Core 层将直接使用此对象初始化 Converter，而无需 Core 自己去解析 TOML
+    ConverterConfig loaded_converter_config;
 };
 
 struct ReportConfigPaths {
@@ -64,9 +70,8 @@ struct AppConfig {
     DateCheckMode default_date_check_mode = DateCheckMode::None;
 
     PipelineConfig pipeline;
-    ReportConfigPaths reports; // 只有路径
+    ReportConfigPaths reports; 
     
-    // [新增] 运行时持有的已解析配置对象
     LoadedReportConfigs loaded_reports; 
 };
 

@@ -37,19 +37,6 @@ void print_report(const ImportStats& stats, const std::string& title) {
 // Facade Implementation
 // ---------------------------------------------------------
 
-void handle_import_json_content(const std::string& db_name, const std::vector<std::pair<std::string, std::string>>& inputs) {
-    std::cout << "Task: JSON Content Import (" << inputs.size() << " items)..." << std::endl;
-    
-    // 1. 创建服务
-    ImportService service(db_name);
-    
-    // 2. 执行业务 (调用新的 content 接口)
-    ImportStats stats = service.import_json_data(inputs);
-    
-    // 3. 展示结果
-    print_report(stats, "Content Import");
-}
-
 void handle_process_memory_data(const std::string& db_name, const std::map<std::string, std::vector<DailyLog>>& data) {
     std::cout << "Task: Memory Import..." << std::endl;
     

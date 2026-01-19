@@ -1,4 +1,7 @@
 // reports/daily/formatters/statistics/typst_strategy.hpp
+#ifndef REPORTS_DAILY_FORMATTERS_STATISTICS_TYPST_STRATEGY_HPP_
+#define REPORTS_DAILY_FORMATTERS_STATISTICS_TYPST_STRATEGY_HPP_
+
 #include "i_stat_strategy.hpp"
 #include "reports/daily/formatters/typst/day_typ_config.hpp"
 #include <format>
@@ -38,3 +41,4 @@ public:
 private:
     std::shared_ptr<DayTypConfig> config_;
 };
+#endif // REPORTS_DAILY_FORMATTERS_STATISTICS_TYPST_STRATEGY_HPP_

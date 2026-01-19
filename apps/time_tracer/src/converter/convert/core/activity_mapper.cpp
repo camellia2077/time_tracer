@@ -3,6 +3,7 @@
 #include "common/utils/string_utils.hpp"
 #include <stdexcept>
 #include <sstream> 
+#include <algorithm> // for std::find
 
 std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) const {
     if (timeStrHHMM.length() == 4) {
@@ -29,10 +30,10 @@ int ActivityMapper::calculateDurationMinutes(const std::string& startTimeStr, co
     }
 }
 
-
 ActivityMapper::ActivityMapper(const ConverterConfig& config)
     : config_(config),
-      wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
+      wake_keywords_(config.wake_keywords) // 直接绑定引用
+{}
 
 void ActivityMapper::map_activities(DailyLog& day) {
     day.processedActivities.clear();
@@ -42,7 +43,10 @@ void ActivityMapper::map_activities(DailyLog& day) {
     std::string startTime = day.getupTime;
 
     for (const auto& rawEvent : day.rawEvents) {
-        if (wake_keywords_.count(rawEvent.description)) {
+        // [修复] vector 没有 count 方法，使用 std::find
+        bool is_wake = std::find(wake_keywords_.begin(), wake_keywords_.end(), rawEvent.description) != wake_keywords_.end();
+        
+        if (is_wake) {
             if (startTime.empty()) {
                  startTime = formatTime(rawEvent.endTimeStr);
             }
@@ -52,21 +56,21 @@ void ActivityMapper::map_activities(DailyLog& day) {
         std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
         std::string mappedDescription = rawEvent.description;
         
-        auto mapIt = config_.getTextMapping().find(mappedDescription);
-        if (mapIt != config_.getTextMapping().end()) {
+        // [修复] 直接访问 public 成员
+        auto mapIt = config_.text_mapping.find(mappedDescription);
+        if (mapIt != config_.text_mapping.end()) {
             mappedDescription = mapIt->second;
         }
 
-        auto durMapIt = config_.getTextDurationMapping().find(mappedDescription);
-        if (durMapIt != config_.getTextDurationMapping().end()) {
+        auto durMapIt = config_.text_duration_mapping.find(mappedDescription);
+        if (durMapIt != config_.text_duration_mapping.end()) {
             mappedDescription = durMapIt->second;
         }
         
-        auto durationRulesIt = config_.getDurationMappings().find(mappedDescription);
-        if (durationRulesIt != config_.getDurationMappings().end()) {
+        auto durationRulesIt = config_.duration_mappings.find(mappedDescription);
+        if (durationRulesIt != config_.duration_mappings.end()) {
             int duration = calculateDurationMinutes(startTime, formattedEventEndTime);
             for (const auto& rule : durationRulesIt->second) {
-                // 'rule' type is now DurationMappingRule, but member names are the same
                 if (duration < rule.less_than_minutes) {
                     mappedDescription = rule.value; 
                     break; 
@@ -81,10 +85,17 @@ void ActivityMapper::map_activities(DailyLog& day) {
                 activity.start_time_str = startTime;
                 activity.end_time_str = formattedEventEndTime;
                 
-                const auto& topParentsMap = config_.getTopParentMapping();
+                // [修复] 直接访问 public 成员
+                const auto& topParentsMap = config_.top_parent_mapping;
                 auto map_it = topParentsMap.find(parts[0]);
                 if (map_it != topParentsMap.end()) {
                     parts[0] = map_it->second;
+                } else {
+                    // 检查运行时注入的配置 (Initial Top Parents)
+                    auto init_map_it = config_.initial_top_parents.find(parts[0]);
+                    if (init_map_it != config_.initial_top_parents.end()) {
+                        parts[0] = init_map_it->second;
+                    }
                 }
                 
                 std::stringstream ss;
