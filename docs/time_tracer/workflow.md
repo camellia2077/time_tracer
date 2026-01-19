@@ -1,54 +1,176 @@
-# 核心程序流程 (Core Workflows)
+# Core Workflows
 
-本文档描述了系统在运行时的关键控制流，包括启动引导、依赖验证以及核心业务数据的处理流水线。
+This document outlines the internal data flows and execution logic for the primary commands in the TimeTracer application.
 
-## 1. 应用程序启动流程 (Application Startup Flow)
+## 1. End-to-End Pipeline (`run-pipeline` / `blink`)
 
-启动过程遵循**“先验证，后执行”**的原则。程序在进入核心业务逻辑之前，会先通过一个严格的引导层（Bootstrap Layer）。
+`run-pipeline` (alias: `blink`) executes the complete data processing flow, from raw text ingestion to database storage.
 
-### 1.1 阶段一：环境引导 (Bootstrap Phase)
-* **入口**: `main.cpp`
-* **执行者**: `bootstrap::StartupValidator`
-* **关键动作**:
-    1. **加载配置**: 从磁盘读取 `config.json`。
-    2. **环境自检**: 检查必要的 DLL 插件（如 `reports_shared.dll`）是否存在。
-    3. **配置校验**: 调用 `config_validator` 对配置文件的逻辑（字段存在性、数值范围）进行深度检查。
-    4. **决策**: 如果上述任一环节失败，程序将立即终止并打印错误，**绝对不会**进入业务层。
+### Workflow A: With JSON Persistence (Default)
+Used when `--save-processed` is enabled or configured in `config.toml`.
 
-### 1.2 阶段二：核心初始化 (Core Initialization Phase)
-* **执行者**: `cli::Controller`
-* **动作**: 环境验证通过后，控制器实例化核心服务。
-    * **IO 设施**: 初始化 `FileController`。
-    * **业务编排**: 初始化 `WorkflowHandler`（原 FileHandler），此时注入已验证的配置对象。
-
-### 1.3 流程可视化
+**Data Flow:**
 ```mermaid
-sequenceDiagram
-    participant Main as Main Entry
-    participant Boot as Bootstrap (StartupValidator)
-    participant Cfg as Config Validator
-    participant CLI as CLI Controller
-    participant Core as WorkflowHandler (Core)
-
-    Note over Main: 程序启动
-    Main->>Boot: 1. validate_environment(config)
+flowchart LR
+    TXT[Text File] --> ValSrc{Source Validator}
+    ValSrc -- Pass --> Conv[Converter]
+    Conv --> Struct[Struct: DailyLog]
+    Struct --> ValOut{Output Validator}
     
-    rect rgb(240, 248, 255)
-        Note right of Boot: 🛡️ 安全区：环境检查
-        Boot->>Boot: 检查 Plugins/DLL
-        Boot->>Cfg: 2. validate_configs()
-        Note right of Cfg: 纯逻辑校验
-        Cfg-->>Boot: 结果 (Pass/Fail)
-    end
+    ValOut -- Serializes --> JSON_Mem[JSON Memory]
+    JSON_Mem -- Validates --> ValOut
+    
+    ValOut -- Pass --> Save[Save to Disk]
+    Save --> JSON_Disk[JSON File]
+    Save --> Import[Importer]
+    
+    Struct -.-> Import
+    Import --> DB[(SQLite)]
 
-    alt 校验失败
-        Boot-->>Main: 返回 False
-        Main->>Main: ❌ 打印错误并退出
-    else 校验通过
-        Boot-->>Main: 返回 True
-        Main->>CLI: 3. 初始化控制器
-        CLI->>Core: 4. 实例化业务核心 (WorkflowHandler)
-        Note right of Core: ✅ 假设环境已就绪\n直接执行业务
-        CLI->>Core: 5. 执行命令 (e.g., run_pipeline)
-    end
 ```
+
+**Execution Steps:**
+
+1. **Ingestion**: Core reads raw text files (`.txt`).
+2. **Source Validation**: Core calls **Validator (Text)** to check the structure/syntax.
+* *Checkpoint*: If failed, the pipeline aborts.
+
+
+3. **Conversion**: Core calls **Converter** to transform Text into **Structs** (`DailyLog` Domain Models).
+4. **Output Validation**:
+* Core calls **Serializer** to convert **Structs** -> **JSON (Memory)**.
+* Core calls **Validator (JSON)** to check logical integrity (e.g., date continuity).
+* *Memory Management*: The temporary JSON object is destroyed after validation.
+
+
+5. **Persistence (File)**:
+* Core converts **Structs** -> **JSON** again.
+* Writes JSON files to disk (`output/Processed_Date/`).
+* *Memory Management*: The JSON content is released from memory.
+
+
+6. **Import**:
+* Core passes the **Structs** directly to the **Importer**.
+* Importer writes data to the SQLite database.
+
+
+7. **Cleanup**: The **Structs** are released from memory.
+
+### Workflow B: Without JSON Persistence
+
+Used when `--no-save` is specified.
+
+**Data Flow:**
+`FileSystem (.txt)` -> **[Source Validator]** -> **[Converter]** -> `Struct` -> **[Output Validator]** -> **[Importer]** -> `SQLite`
+
+**Execution Steps:**
+
+1. **Ingestion**: Core reads raw text files.
+2. **Source Validation**: Checks syntax.
+3. **Conversion**: Transforms Text -> **Structs**.
+4. **Output Validation**:
+* Structs are temporarily serialized to JSON for validation rules.
+* JSON is destroyed immediately after validation passes.
+
+
+5. **Import**:
+* Core passes **Structs** directly to **Importer**.
+* Importer writes to SQLite.
+
+
+6. **Cleanup**: Structs are released.
+
+> **Key Design Principle**: The `Struct` (`DailyLog`) is the single source of truth throughout the pipeline. JSON is treated as either a transient format for validation or a final artifact for archiving, but it is **not** used to transfer data to the Importer.
+
+---
+
+## 2. Utility Command Workflows
+
+### Convert Command (`convert`)
+
+Transforms raw text logs into structured JSON data. Unlike the full pipeline, its primary goal is to produce intermediate artifacts for debugging or manual inspection.
+
+**Key Characteristic:**
+
+* **Forced Persistence**: Unlike `run-pipeline`, this command **always** writes the result to disk. Without this, the command would perform work in RAM and discard it immediately.
+
+**Data Flow:**
+`FileSystem (.txt)` -> **[Core]** -> `String` -> **[Converter]** -> `Struct (DailyLog)` -> **[ProcessedDataWriter]** -> `FileSystem (.json)`
+
+**Execution Steps:**
+
+1. **Initialization**: `ConvertCommand` forces `AppOptions.save_processed_output = true`.
+2. **Collection & Source Validation**: `.txt` files are collected and syntactically validated.
+3. **Conversion (In-Memory)**:
+* **ConverterService** parses text line-by-line.
+* **ActivityMapper** maps keywords/durations.
+* **DayStats** generates statistics.
+* **Result**: A collection of `DailyLog` structs held in memory.
+
+
+4. **Output Validation**: Checks the logic of the in-memory structs.
+5. **Persistence**: `ProcessedDataWriter` uses `JsonSerializer` to write structs to `output/Processed_Data/YYYY-MM.json`.
+
+### Import Command (`import`)
+
+Imports existing JSON files into the database. It follows a decoupled pipeline where the Importer module is isolated from file formats.
+
+**Data Flow:**
+`FileSystem (.json)` -> **[Core]** -> `String` -> **[Serializer]** -> `Struct (DailyLog)` -> **[Importer]** -> `SQLite`
+
+**Execution Steps:**
+
+1. **Core Layer**: Scans directory and reads `.json` files into strings.
+2. **Serializer Layer**:
+* Calls `JsonSerializer::deserializeDays(content)`.
+* Converts JSON strings into `std::vector<DailyLog>` domain models.
+
+
+3. **Importer Layer**:
+* Calls `ImportService::import_from_memory(models)`.
+* Importer receives pure structs and persists them to `time_data.sqlite3`.
+* *Note: Importer has zero dependency on JSON logic.*
+
+
+
+---
+
+## 3. Validation Processes
+
+Quality assurance is divided into two stages: Format checking (Source) and Logic checking (Output).
+
+### Source Validation (`validate-source`)
+
+Checks if the raw text files adhere to the syntax rules defined in the configuration (e.g., correct keywords, time formats, header structures).
+
+**Data Flow:**
+`FileSystem (.txt)` -> **[Core: FileReader]** -> `std::string` -> **[Validator: TextValidator]** -> `Console Report`
+
+**Key Steps:**
+
+1. **IO**: Core reads raw file content.
+2. **Validation**: `TextValidator` runs two sets of rules:
+* `LineRules`: Checks specific line syntax (e.g., "0800 getup").
+* `StructureRules`: Checks block structure (Year header -> Date -> Events).
+
+
+
+### Output Validation (`validate-output`)
+
+Checks the logical integrity of the data *after* it has been parsed into domain models. This ensures data consistency (e.g., date continuity, minimum activity counts) before storage.
+
+**Data Flow (Memory Mode):**
+`Memory (Structs)` -> **[Serializer]** -> `JSON Object` -> **[Validator: JsonValidator]** -> `Console Report`
+
+**Key Steps:**
+
+1. **Serialization**: `OutputValidatorStep` uses `JsonSerializer` to convert internal `DailyLog` structs into a JSON object representation.
+* *Reasoning*: The Validator layer operates on standard JSON objects to allow rule reuse for both in-memory data and physical JSON files.
+
+
+2. **Validation**: `JsonValidator` applies logic rules:
+* `DateRules`: Checks for missing dates (Continuity vs Completeness modes).
+* `ActivityRules`: Checks for logical constraints (e.g., missing sleep records).
+
+
+

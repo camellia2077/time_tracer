@@ -3,11 +3,10 @@
 #define CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_HPP_
 
 #include "common/model/daily_log.hpp"
-
-#include "converter/config/converter_config.hpp"
+#include "common/config/models/converter_config_models.hpp"
 
 #include <string>
-#include <unordered_set>
+#include <vector>
 
 class ActivityMapper {
 public:
@@ -16,9 +15,9 @@ public:
 
 private:
     const ConverterConfig& config_;
-    const std::unordered_set<std::string> wake_keywords_;
+    // 保持引用以避免拷贝，或者拷贝 vector (取决于数据量，引用通常更高效)
+    const std::vector<std::string>& wake_keywords_;
 
-    // 私有辅助函数
     std::string formatTime(const std::string& timeStrHHMM) const;
     int calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) const;
 };

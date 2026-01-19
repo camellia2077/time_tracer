@@ -93,13 +93,22 @@ def _load_run_control(toml_data) -> RunControl:
     run_inst.ENABLE_TEST_EXECUTION = bool(run_control_data.get("enable_test_execution", True))
     return run_inst
 
-def load_config() -> GlobalConfig:
+# [修改] 增加 config_path 参数，默认值为 None
+def load_config(config_path: Path = None) -> GlobalConfig:
     """加载 config.toml 并返回统一的 GlobalConfig 对象。"""
     try:
-        with open("config.toml", "rb") as f:
+        # 1. 确定配置文件路径
+        if config_path:
+            target_path = config_path
+        else:
+            # 如果没传路径，尝试在当前目录找 (回退兼容)
+            target_path = Path("config.toml")
+
+        print(f"Loading config from: {target_path.absolute()}") # 调试用
+
+        with open(target_path, "rb") as f:
             toml_data = tomllib.load(f)
 
-        # [修改] 不再返回元组，而是返回 GlobalConfig 实例
         return GlobalConfig(
             paths=_load_paths(toml_data),
             cli_names=_load_cli_names(toml_data),
@@ -109,7 +118,8 @@ def load_config() -> GlobalConfig:
         )
         
     except FileNotFoundError:
-        raise FileNotFoundError("config.toml not found. Please create one in the root directory.")
+        # [修改] 提示信息带上尝试寻找的路径，方便排错
+        raise FileNotFoundError(f"config.toml not found at: {target_path.absolute()}")
     except Exception as e:
         raise RuntimeError(f"Error loading config.toml: {e}")
 

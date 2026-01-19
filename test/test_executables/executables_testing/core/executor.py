@@ -1,16 +1,8 @@
 import subprocess
 import time
 import re
-from dataclasses import dataclass
-
-@dataclass
-class ExecutionResult:
-    command: list
-    return_code: int
-    stdout: str
-    stderr: str
-    duration: float
-    error: str = None
+# [修改] 从 definitions 导入 ExecutionResult
+from ..conf.definitions import ExecutionResult
 
 class CommandExecutor:
     """专注负责子进程的调用与结果捕获"""
@@ -24,7 +16,6 @@ class CommandExecutor:
     def run(self, command: list, cwd=None, input_str: str = None) -> ExecutionResult:
         start_time = time.monotonic()
         try:
-            # 纯粹的执行逻辑
             result = subprocess.run(
                 command,
                 input=input_str,

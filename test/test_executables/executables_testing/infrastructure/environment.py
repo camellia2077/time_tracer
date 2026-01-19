@@ -19,13 +19,15 @@ class EnvironmentManager:
         self.workspace = Workspace(use_temp=use_temp)
         self.target_root = None
 
-    def setup(self, target_dir_override: Optional[Path] = None) -> Path:
-        # 1. 准备地皮
-        self.target_root = self.workspace.setup(target_dir_override)
+    # [修改] 增加 should_deploy 参数，默认为 True
+    def setup(self, target_dir_override: Optional[Path] = None, should_clean: bool = False, should_deploy: bool = True) -> Path:
+        # 1. 准备地皮 (清理)
+        self.target_root = self.workspace.setup(target_dir_override, should_clean=should_clean)
         
-        # 2. 搬运物资
-        deployer = ArtifactDeployer(self.source_dir, self.target_root)
-        deployer.deploy(self.files, self.folders)
+        # 2. 搬运物资 (受控执行)
+        if should_deploy:
+            deployer = ArtifactDeployer(self.source_dir, self.target_root)
+            deployer.deploy(self.files, self.folders)
         
         return self.target_root
 

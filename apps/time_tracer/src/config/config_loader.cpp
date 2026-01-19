@@ -4,17 +4,15 @@
 #include <stdexcept>
 #include <toml++/toml.h>
 
-// 引入 IO 模块
 #include "io/core/file_system_helper.hpp"
-
-// 引入加载器和解析工具
 #include "config/loader/report_config_loader.hpp"
 #include "config/internal/config_parser_utils.hpp"
+// [新增]
+#include "config/loader/converter_config_loader.hpp" 
 
 namespace fs = std::filesystem;
 
 namespace {
-    // 报表加载逻辑保持不变，因为它们仍然指向 JSON 文件
     void load_detailed_reports(AppConfig& config) {
         // --- Typst ---
         if (!config.reports.day_typ_config_path.empty())
@@ -50,7 +48,6 @@ ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
     }
 
     config_dir_path = exe_path / CONFIG_DIR_NAME;
-    // [修改] 更改为 config.toml
     main_config_path = config_dir_path / "config.toml";
 }
 
@@ -59,12 +56,10 @@ std::string ConfigLoader::get_main_config_path() const {
 }
 
 AppConfig ConfigLoader::load_configuration() {
-    // 1. 检查文件
     if (!FileSystemHelper::exists(main_config_path)) {
         throw std::runtime_error("Configuration file not found: " + main_config_path.string());
     }
 
-    // 2. 读取并解析 TOML
     toml::table tbl;
     try {
         tbl = toml::parse_file(main_config_path.string());
@@ -75,12 +70,28 @@ AppConfig ConfigLoader::load_configuration() {
     AppConfig app_config;
     app_config.exe_dir_path = exe_path;
 
-    // 3. 解析基础结构 (使用 TOML 版的 ParserUtils)
+    // 1. 解析基础路径和设置
     ConfigParserUtils::parse_system_settings(tbl, exe_path, app_config);
     ConfigParserUtils::parse_pipeline_settings(tbl, config_dir_path, app_config);
     ConfigParserUtils::parse_report_paths(tbl, config_dir_path, app_config);
 
-    // 4. 加载报表详情 (内部仍加载 JSON，路径由 config.toml 提供)
+    // 2. [新增] 加载 Converter 配置 (文件合并 + 解析逻辑现在在此处执行)
+    try {
+        if (!app_config.pipeline.interval_processor_config_path.empty()) {
+            app_config.pipeline.loaded_converter_config = 
+                ConverterConfigLoader::load_from_file(app_config.pipeline.interval_processor_config_path);
+            
+            // 将 initial_top_parents 从 AppConfig 注入到 ConverterConfig 中
+            // 确保 Core 模块不需要再手动处理这个合并
+            for (const auto& [key, val] : app_config.pipeline.initial_top_parents) {
+                app_config.pipeline.loaded_converter_config.initial_top_parents[key.string()] = val.string();
+            }
+        }
+    } catch (const std::exception& e) {
+        throw std::runtime_error("Failed to load converter configuration: " + std::string(e.what()));
+    }
+
+    // 3. 加载报表配置
     try {
         load_detailed_reports(app_config);
     } catch (const std::exception& e) {

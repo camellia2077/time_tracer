@@ -3,7 +3,7 @@
 #define CLI_IMPL_COMMANDS_QUERY_QUERY_COMMAND_HPP_
 
 #include "cli/framework/interfaces/i_command.hpp"
-#include "core/report_handler.hpp"
+#include "core/reporting/report_handler.hpp"
 
 class QueryCommand : public ICommand {
 public:

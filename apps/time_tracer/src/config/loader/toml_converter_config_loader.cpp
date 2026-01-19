@@ -11,80 +11,83 @@ bool TomlConverterConfigLoader::load(ConverterConfig& config) {
     try {
         // remark_prefix
         if (auto val = toml_source_["remark_prefix"].value<std::string>()) {
-            config.setRemarkPrefix(*val);
+            config.remark_prefix = *val;
         }
         
         // header_order (Array of strings)
         if (const toml::array* arr = toml_source_["header_order"].as_array()) {
-            std::vector<std::string> vec;
+            config.header_order.clear(); // 清空默认值（如果有）
             for (const auto& elem : *arr) {
-                if (auto s = elem.value<std::string>()) vec.push_back(*s);
+                if (auto s = elem.value<std::string>()) {
+                    config.header_order.push_back(*s);
+                }
             }
-            config.setHeaderOrder(vec);
         }
         
         // wake_keywords (Array of strings)
         if (const toml::array* arr = toml_source_["wake_keywords"].as_array()) {
-            std::vector<std::string> vec;
+            config.wake_keywords.clear();
             for (const auto& elem : *arr) {
-                if (auto s = elem.value<std::string>()) vec.push_back(*s);
+                if (auto s = elem.value<std::string>()) {
+                    config.wake_keywords.push_back(*s);
+                }
             }
-            config.setWakeKeywords(vec);
         }
         
         // top_parent_mapping (Table: key -> string)
         if (const toml::table* tbl = toml_source_["top_parent_mapping"].as_table()) {
-            std::unordered_map<std::string, std::string> mapping;
             for (const auto& [k, v] : *tbl) {
-                if (auto s = v.value<std::string>()) mapping[k.str()] = *s;
+                if (auto s = v.value<std::string>()) {
+                    // [修复] 显式转换为 std::string
+                    config.top_parent_mapping[std::string(k.str())] = *s;
+                }
             }
-            config.setTopParentMapping(mapping);
         }
 
         // text_mappings
         if (const toml::table* tbl = toml_source_["text_mappings"].as_table()) {
-            std::unordered_map<std::string, std::string> mapping;
             for (const auto& [k, v] : *tbl) {
-                if (auto s = v.value<std::string>()) mapping[k.str()] = *s;
+                if (auto s = v.value<std::string>()) {
+                    config.text_mapping[std::string(k.str())] = *s;
+                }
             }
-            config.setTextMapping(mapping);
         }
         
         // text_duration_mappings
         if (const toml::table* tbl = toml_source_["text_duration_mappings"].as_table()) {
-            std::unordered_map<std::string, std::string> mapping;
             for (const auto& [k, v] : *tbl) {
-                if (auto s = v.value<std::string>()) mapping[k.str()] = *s;
+                if (auto s = v.value<std::string>()) {
+                    // [修复] 成员变量名为 text_duration_mapping (单数)
+                    config.text_duration_mapping[std::string(k.str())] = *s;
+                }
             }
-            config.setTextDurationMapping(mapping);
         }
 
         // duration_mappings (Table of Arrays of Inline Tables)
-        // TOML 结构: 
-        // [duration_mappings]
-        // rest = [ { less_than_minutes = 10, value = "rest_short" }, ... ]
         if (const toml::table* duration_tbl = toml_source_["duration_mappings"].as_table()) {
-            std::unordered_map<std::string, std::vector<DurationRule>> loaded_rules;
             
             for (const auto& [event_key, rules_node] : *duration_tbl) {
                 if (const toml::array* rules_arr = rules_node.as_array()) {
-                    std::vector<DurationRule> rules;
+                    // [修复] 使用正确的结构体名称 DurationMappingRule
+                    std::vector<DurationMappingRule> rules;
+                    
                     for (const auto& rule_node : *rules_arr) {
                         if (const toml::table* rule_tbl = rule_node.as_table()) {
-                             DurationRule rule;
+                             DurationMappingRule rule;
                              rule.less_than_minutes = rule_tbl->get("less_than_minutes")->value_or(0);
                              rule.value = rule_tbl->get("value")->value_or("");
                              rules.push_back(rule);
                         }
                     }
                     // 排序逻辑
-                    std::sort(rules.begin(), rules.end(), [](const DurationRule& a, const DurationRule& b) {
+                    std::sort(rules.begin(), rules.end(), [](const DurationMappingRule& a, const DurationMappingRule& b) {
                         return a.less_than_minutes < b.less_than_minutes;
                     });
-                    loaded_rules[event_key.str()] = rules;
+                    
+                    // [修复] 直接赋值给 map
+                    config.duration_mappings[std::string(event_key.str())] = rules;
                 }
             }
-            config.setDurationMappings(loaded_rules);
         }
 
     } catch (const std::exception& e) {

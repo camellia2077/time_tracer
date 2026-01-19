@@ -1,19 +1,3 @@
-importer/parser/json_parser.cpp调用了
-#include "serializer/json_serializer.hpp"
-来将json转化为struct来插入数据库，但是importer和serializer应该使完全解耦的
-在import命令的时候，应该由core来调用json_serializer将json转化为struct，然后传递给importer
-
-#include "config/validator/plugins/facade/PluginValidator.hpp"
-config检验的是报表的dll吗
-
-
-validate-source
-调用验证txt
-
-validate-output是
-和先调用converter转化为strcut
-再调用serializer把strcut转化为json
-再调用json检验
 
 和ai讨论一下更新架构后，应该怎么处理跨月，跨年的sleep生成
 目标设计成，不在txt中存储上一个月的最后一天就能处理跨年，跨月
@@ -36,6 +20,16 @@ cpp要增加一个插入并且导出全部日期全部格式的命令
 
 
 高优先级
+
+0reports模块还没有被core精细化调度
+
+目前的 Reports (报表) 和 Export (导出) 模块大多是自包含的（Vertical Slices），即 Daily 模块自己负责“查库+处理+生成字符串”。这种方式在初期开发很快，但会导致逻辑复用困难，且难以统一调度。
+
+重构的核心目标确实应该是：实现“数据获取 (Query)”与“数据展示 (Formatting)”的彻底分离，并由 Core 统一编排。
+
+让 shared 模块专注于“如何从数据库拿到数据并填入 Struct”。它不应该知道 Markdown 或 LaTeX 的存在。
+将所有报表需要的数据结构定义在 common 模块中，作为各模块通信的“通用语言”。
+格式化器应该变成“无状态的转换函数”。给定一个 Struct，吐出一个 String。
 
 1
 日报告的typ中 出现\正常吗

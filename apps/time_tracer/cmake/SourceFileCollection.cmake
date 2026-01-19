@@ -4,6 +4,38 @@
 
 # ----------------------------------------------------
 # 最佳实践：显式列出所有源文件以确保构建系统的稳定性和可预测性。
+# --- Core Sources ---
+set(CORE_SOURCES
+    # Root
+    "src/core/workflow_handler.cpp"
+
+    # Database
+    "src/core/database/db_manager.cpp"
+
+    # Pipeline
+    "src/core/pipeline/pipeline_manager.cpp"
+    
+    # Pipeline - Steps
+    "src/core/pipeline/steps/converter_step.cpp"
+    "src/core/pipeline/steps/file_collector.cpp"
+    "src/core/pipeline/steps/output_validator_step.cpp"
+    "src/core/pipeline/steps/source_validator_step.cpp"
+
+    # Pipeline - Utils
+    "src/core/pipeline/utils/converter_config_factory.cpp"
+    "src/core/pipeline/utils/processed_data_writer.cpp"
+
+    # Reporting
+    "src/core/reporting/report_handler.cpp"
+    
+    # Reporting - Export
+    "src/core/reporting/export/export_utils.cpp"
+    "src/core/reporting/export/exporter.cpp"
+    
+    # Reporting - Generator
+    "src/core/reporting/generator/report_file_manager.cpp"
+    "src/core/reporting/generator/report_generator.cpp"
+)
 
 # --- Common  ---
 set(COMMON_SOURCES
@@ -76,7 +108,7 @@ set(CLI_SOURCES
 
     "src/cli/impl/commands/pipeline/convert_command.cpp"
     "src/cli/impl/commands/pipeline/import_command.cpp"
-    "src/cli/impl/commands/pipeline/ingest_command.cpp"
+    "src/cli/impl/commands/pipeline/run_pipeline_command.cpp"
     "src/cli/impl/commands/pipeline/validate_output_command.cpp"
     "src/cli/impl/commands/pipeline/validate_source_command.cpp"
 )
@@ -92,7 +124,6 @@ set(IMPORTER_SOURCES
     "src/importer/import_service.cpp"
 
     # Parser Layer (Parsing logic)
-    "src/importer/parser/json_parser.cpp"
     "src/importer/parser/memory_parser.cpp"
     "src/importer/parser/details/day_parser.cpp"
     "src/importer/parser/details/activity_parser.cpp"
@@ -130,21 +161,11 @@ set(REPORTS_SOURCES
 # --- converter Sources ---
 set(CONVERTER_SOURCES
     "src/converter/log_processor.cpp"
-
-    # --- 配置模块 (Config)  ---
-    "src/converter/config/converter_config.cpp"
-    "src/converter/config/toml_converter_config_loader.cpp"
-
     # --- 转换模块 (Convert) ---
-    # Facade
     "src/converter/convert/facade/converter_service.cpp"
-    
-    # Core
     "src/converter/convert/core/activity_mapper.cpp"
     "src/converter/convert/core/day_processor.cpp"
     "src/converter/convert/core/day_stats.cpp"
-
-    # IO
     "src/converter/convert/io/text_parser.cpp"
 )
 # --- File Handler Sources ---
@@ -161,6 +182,10 @@ set(CONFIG_SOURCES
 
     "src/config/internal/config_parser_utils.cpp"
     "src/config/loader/report_config_loader.cpp"
+    # [修复] 添加缺失的 Converter 配置加载器实现
+    "src/config/loader/converter_config_loader.cpp"
+    "src/config/loader/toml_converter_config_loader.cpp"
+    
     "src/config/loader/toml_loader_utils.cpp"
 
 
@@ -192,27 +217,5 @@ set(CONFIG_SOURCES
 
 
 
-# --- Core Sources ---
-set(CORE_SOURCES
-    "src/core/Workflow_handler.cpp"
-    "src/core/report_handler.cpp"
-    "src/core/database/db_manager.cpp"
-    
-
-    "src/core/file/pipeline_manager.cpp"
-
-    "src/core/file/steps/file_collector.cpp"
-    "src/core/file/steps/source_validator_step.cpp"
-    "src/core/file/steps/converter_step.cpp"
-    "src/core/file/steps/output_validator_step.cpp"
-
-    "src/core/file/utils/converter_config_factory.cpp"
-    "src/core/file/utils/processed_data_writer.cpp"
-
-    "src/core/reporting/exporter.cpp"
-    "src/core/reporting/export_utils.cpp"
-    "src/core/reporting/report_file_manager.cpp"
-    "src/core/reporting/report_generator.cpp"
-)
 
 message(STATUS "Source files collected explicitly.")
