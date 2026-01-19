@@ -3,7 +3,9 @@
 #define VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_HPP_
 
 #include "validator/common/ValidatorUtils.hpp"
-#include "converter/config/converter_config.hpp"
+
+// [Fix] 修改头文件路径：指向重构后的位置
+#include "common/config/models/converter_config_models.hpp" 
 
 #include <string>
 #include <set>

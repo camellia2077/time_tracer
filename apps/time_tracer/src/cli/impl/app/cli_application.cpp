@@ -11,10 +11,10 @@
 #include "config/config_loader.hpp"
 #include "io/file_controller.hpp"
 #include "core/workflow_handler.hpp" 
-#include "core/report_handler.hpp"
+#include "core/reporting/report_handler.hpp"
 #include "core/database/db_manager.hpp"
-#include "core/reporting/exporter.hpp"
-#include "core/reporting/report_generator.hpp"
+#include "core/reporting/export/exporter.hpp"
+#include "core/reporting/generator/report_generator.hpp"
 #include "cli/impl/app/app_context.hpp" // 为模板参数
 
 namespace fs = std::filesystem;

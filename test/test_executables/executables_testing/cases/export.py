@@ -1,7 +1,8 @@
-# cases/export.py
+# test/cases/export.py
 from pathlib import Path
+from typing import List, Tuple
 from ..core.base import BaseTester, TestCounter
-from ..conf.definitions import Colors, TestContext
+from ..conf.definitions import Colors, TestContext, TestReport, SingleTestResult
 
 class ExportTester(BaseTester):
     def __init__(self, counter: TestCounter, module_order: int, context: TestContext,
@@ -13,13 +14,9 @@ class ExportTester(BaseTester):
                  test_formats: list,
                  export_output_path: Path):
                  
-        # 1. 将 context 传递给父类 BaseTester 
         super().__init__(counter, module_order, "export", context)
         
-        # 2. 从 context 或传入参数中提取属性
-        # 数据库路径优先使用 context.db_path，如果未定义则推导
         self.db_file = context.db_path if context.db_path else context.exe_path.parent / generated_db_file_name
-        
         self.export_output_path = export_output_path
         self.is_bulk_mode = is_bulk_mode
         self.specific_dates = specific_dates
@@ -27,51 +24,107 @@ class ExportTester(BaseTester):
         self.period_days_to_export = period_export_days
         self.formats = test_formats
 
-    def run_tests(self) -> bool:
-        if not self.db_file.exists():
-            print(f"{Colors.RED}错误: 数据库文件不存在: {self.db_file}{Colors.RESET}")
-            return False
+    def run_tests(self) -> TestReport:
+        """主入口：逻辑清晰，只负责流程控制"""
+        report = TestReport(module_name=self.module_name)
+        
+        # 1. 前置检查
+        if not self._check_db_exists(report):
+            return report
 
+        # 2. 规划测试用例 (Planning)
+        # 获取所有要跑的测试 (name, args) 列表
+        test_cases = self._plan_test_cases()
+
+        # 3. 执行测试用例 (Execution)
+        for name, args in test_cases:
+            # add_output_dir=False 因为我们在 common_args 里已经指定了
+            res = self.run_command_test(name, args, add_output_dir=False)
+            report.results.append(res)
+                
+        return report
+
+    # --- 辅助方法 (Helpers) ---
+
+    def _check_db_exists(self, report: TestReport) -> bool:
+        """检查数据库是否存在，若不存在则填充失败报告"""
+        if not self.db_file.exists():
+            fail_res = SingleTestResult(
+                name="Database Existence Check",
+                status="FAIL",
+                messages=[f"{Colors.RED}错误: 数据库文件不存在: {self.db_file}{Colors.RESET}"]
+            )
+            report.results.append(fail_res)
+            return False
+        return True
+
+    def _plan_test_cases(self) -> List[Tuple[str, List[str]]]:
+        """根据配置生成测试计划"""
         common_args = [
             "--database", str(self.db_file),
             "--output", str(self.export_output_path)
         ]
 
-        formats = self.formats
-        tests_to_run = []
-
         if self.is_bulk_mode:
-            daily_cmd = ["export", "all-daily"]
-            monthly_cmd = ["export", "all-monthly"]
-            for fmt in formats:
-                tests_to_run.append((f"Bulk Export All Daily [{fmt.upper()}]", daily_cmd + ["--format", fmt] + common_args))
-                tests_to_run.append((f"Bulk Export All Monthly [{fmt.upper()}]", monthly_cmd + ["--format", fmt] + common_args))
+            return self._build_bulk_cases(common_args)
         else:
-            for date in self.specific_dates:
-                daily_cmd = ["export", "daily", date]
-                for fmt in formats:
-                    tests_to_run.append((f"Specific Export Daily ({date}) [{fmt.upper()}]", daily_cmd + ["--format", fmt] + common_args))
+            return self._build_specific_cases(common_args)
 
-            for month in self.specific_months:
-                monthly_cmd = ["export", "monthly", month]
-                for fmt in formats:
-                    tests_to_run.append((f"Specific Export Monthly ({month}) [{fmt.upper()}]", monthly_cmd + ["--format", fmt] + common_args))
-
-        period_days_str = ",".join(map(str, self.period_days_to_export))
-        if self.is_bulk_mode:
-            period_cmd = ["export", "all-period", period_days_str]
-            for fmt in formats:
-                tests_to_run.append((f"Bulk Period Export ({period_days_str}) [{fmt.upper()}]", period_cmd + ["--format", fmt] + common_args))
-        else:
-            for days in self.period_days_to_export:
-                period_cmd = ["export", "period", str(days)]
-                for fmt in formats:
-                    tests_to_run.append((f"Specific Period Export ({days} days) [{fmt.upper()}]", period_cmd + ["--format", fmt] + common_args))
+    def _build_bulk_cases(self, common_args: List[str]) -> List[Tuple[str, List[str]]]:
+        """构建批量导出模式的测试用例"""
+        cases = []
         
-        all_passed = True
-        for name, args in tests_to_run:
-            # add_output_dir=False 避免基类重复添加默认输出路径
-            if not self.run_command_test(name, args, add_output_dir=False):
-                all_passed = False # 记录失败但继续执行后续指令以保存日志
-                
-        return all_passed
+        # 1. Daily & Monthly
+        cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-daily"], common_args))
+        cases.extend(self._make_cases("Bulk Export All Monthly", ["export", "all-monthly"], common_args))
+
+        # 2. Period
+        if self.period_days_to_export:
+            period_days_str = ",".join(map(str, self.period_days_to_export))
+            cases.extend(self._make_cases(
+                f"Bulk Period Export ({period_days_str})", 
+                ["export", "all-period", period_days_str], 
+                common_args
+            ))
+        return cases
+
+    def _build_specific_cases(self, common_args: List[str]) -> List[Tuple[str, List[str]]]:
+        """构建指定导出模式的测试用例"""
+        cases = []
+
+        # 1. Specific Daily
+        for date in self.specific_dates:
+            cases.extend(self._make_cases(
+                f"Specific Export Daily ({date})", 
+                ["export", "daily", date], 
+                common_args
+            ))
+
+        # 2. Specific Monthly
+        for month in self.specific_months:
+            cases.extend(self._make_cases(
+                f"Specific Export Monthly ({month})", 
+                ["export", "monthly", month], 
+                common_args
+            ))
+            
+        # 3. Specific Period
+        for days in self.period_days_to_export:
+            cases.extend(self._make_cases(
+                f"Specific Period Export ({days} days)", 
+                ["export", "period", str(days)], 
+                common_args
+            ))
+            
+        return cases
+
+    def _make_cases(self, base_name: str, base_cmd: List[str], common_args: List[str]) -> List[Tuple[str, List[str]]]:
+        """
+        微型工厂：为每个 format 生成一个测试用例
+        """
+        cases = []
+        for fmt in self.formats:
+            full_name = f"{base_name} [{fmt.upper()}]"
+            full_cmd = base_cmd + ["--format", fmt] + common_args
+            cases.append((full_name, full_cmd))
+        return cases

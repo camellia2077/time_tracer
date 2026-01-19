@@ -8,24 +8,26 @@ namespace validator {
 namespace txt {
 
 LineRules::LineRules(const ConverterConfig& config) : config_(config) {
-    const auto& text_map = config.getTextMapping();
+    // [Fix] 直接访问 public 成员变量，不再使用 Getter
+    const auto& text_map = config.text_mapping;
     for(const auto& pair : text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
-    const auto& dur_text_map = config.getTextDurationMapping();
+    const auto& dur_text_map = config.text_duration_mapping;
     for(const auto& pair : dur_text_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
-    const auto& wake_vec = config.getWakeKeywords();
+    const auto& wake_vec = config.wake_keywords;
     wake_keywords_.insert(wake_vec.begin(), wake_vec.end());
 
-    const auto& top_map = config.getTopParentMapping();
+    const auto& top_map = config.top_parent_mapping;
     for(const auto& pair : top_map) {
         valid_event_keywords_.insert(pair.first);
     }
 
+    // 这部分是对运行时注入的配置进行处理，保持不变
     for(const auto& pair : config.initial_top_parents) {
         valid_event_keywords_.insert(pair.first);
     }
@@ -43,7 +45,9 @@ bool LineRules::is_date(const std::string& line) const {
 }
 
 bool LineRules::is_remark(const std::string& line) const {
-    const std::string& prefix = config_.getRemarkPrefix();
+    // [Fix] 直接访问 public 成员变量
+    const std::string& prefix = config_.remark_prefix;
+    
     if (prefix.empty() || line.rfind(prefix, 0) != 0) return false;
     return !trim(line.substr(prefix.length())).empty();
 }

@@ -14,7 +14,8 @@ namespace {
 
 TextParser::TextParser(const ConverterConfig& config)
     : config_(config),
-      wake_keywords_(config.getWakeKeywords().begin(), config.getWakeKeywords().end()) {}
+      // [重构] 直接使用 public 成员
+      wake_keywords_(config.wake_keywords) {}
 
 void TextParser::parse(std::istream& inputStream, std::function<void(DailyLog&)> onNewDay) {
     DailyLog currentDay;
@@ -40,10 +41,6 @@ void TextParser::parse(std::istream& inputStream, std::function<void(DailyLog&)>
                 onNewDay(currentDay);
             }
             currentDay.clear();
-            
-            // [核心修改] 这里直接构造标准格式 YYYY-MM-DD
-            // line 是 "0101" (MMDD)
-            // 结果: "2025-01-01"
             currentDay.date = current_year_prefix + "-" + line.substr(0, 2) + "-" + line.substr(2, 2);
             
         } else {
@@ -67,7 +64,9 @@ bool TextParser::isNewDayMarker(const std::string& line) const {
 }
 
 void TextParser::parseLine(const std::string& line, DailyLog& currentDay) const {
-    const std::string& remark_prefix = config_.getRemarkPrefix();
+    // [重构] 直接访问 public 成员 config_.remark_prefix
+    const std::string& remark_prefix = config_.remark_prefix;
+    
     if (!remark_prefix.empty() && line.rfind(remark_prefix, 0) == 0) {
         if (!currentDay.date.empty()) {
              currentDay.generalRemarks.push_back(line.substr(remark_prefix.length()));
@@ -98,7 +97,16 @@ void TextParser::parseLine(const std::string& line, DailyLog& currentDay) const 
             desc = trim(remaining_line);
         }
 
-        if (wake_keywords_.count(desc)) {
+        // [重构] wake_keywords_ 现在是 vector，使用 std::find
+        bool is_wake = false;
+        for(const auto& kw : wake_keywords_) {
+            if (kw == desc) {
+                is_wake = true;
+                break;
+            }
+        }
+
+        if (is_wake) {
             if (currentDay.getupTime.empty()) currentDay.getupTime = formatTime(timeStr);
         } else {
             if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) currentDay.isContinuation = true;

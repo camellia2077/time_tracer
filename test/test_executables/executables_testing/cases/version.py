@@ -1,45 +1,41 @@
 # test/cases/version.py
-from pathlib import Path
 from ..core.base  import BaseTester, TestCounter
-from ..conf.definitions import Colors, TestContext
+from ..conf.definitions import Colors, TestContext, TestReport
 from ..utils.file_ops import get_folder_size, format_size
 
-# 用于查看exe的version
 class VersionChecker(BaseTester):
-    """Executes --version command and checks for artifacts."""
-
     def __init__(self, counter: TestCounter, module_order: int, context: TestContext):
-        # 显式接收 context 并传递给父类
         super().__init__(counter, module_order, "version_check", context)
 
-    def run_tests(self) -> bool:
-        version_check_success = self.run_command_test(
+    def run_tests(self) -> TestReport:
+        report = TestReport(module_name=self.module_name)
+        
+        # 1. 执行命令
+        # 注意：这里 print_stdout 参数在 BaseTester 中不再直接打印，
+        # 但我们可以保留它作为 tag 或者在 ExecutionResult 中处理，或者完全移除
+        res = self.run_command_test(
             test_name="Application Version Check",
             command_args=["--version"],
-            add_output_dir=False,
-            print_stdout=True
+            add_output_dir=False
         )
+        
+        # 2. 附加额外信息 (File Sizes) 到 messages
+        if res.status == "PASS":
+            try:
+                if self.ctx.exe_path.exists():
+                    sz = self.ctx.exe_path.stat().st_size
+                    res.messages.append(f"{Colors.GREEN}├─{Colors.RESET} Executable size: {format_size(sz)}")
+                
+                plugins_path = self.ctx.exe_path.parent / "plugins"
+                if plugins_path.exists() and plugins_path.is_dir():
+                    psz = get_folder_size(plugins_path)
+                    res.messages.append(f"{Colors.GREEN}└─{Colors.RESET} Plugins folder size: {format_size(psz)}")
+            except Exception as e:
+                res.messages.append(f"Error checking sizes: {e}")
 
-        if not version_check_success:
-            return False
+            # 也可以把 version 的 stdout 附加上去
+            if res.execution_result.stdout:
+                 res.messages.append(f"{Colors.CYAN}Version Output:{Colors.RESET}\n{res.execution_result.stdout.strip()}")
 
-        try:
-            # [修复] 使用 self.ctx.exe_path 替换原有的 self.executable_path
-            if self.ctx.exe_path.exists():
-                exe_size = self.ctx.exe_path.stat().st_size
-                print(f"    {Colors.GREEN}├─{Colors.RESET} Executable size: {format_size(exe_size)}")
-            else:
-                print(f"    {Colors.RED}├─{Colors.RESET} Executable not found at: {self.ctx.exe_path}")
-
-            plugins_path = self.ctx.exe_path.parent / "plugins"
-            if plugins_path.exists() and plugins_path.is_dir():
-                plugins_size = get_folder_size(plugins_path)
-                print(f"    {Colors.GREEN}└─{Colors.RESET} Plugins folder size: {format_size(plugins_size)}")
-            else:
-                print(f"    {Colors.GREEN}└─{Colors.RESET} Plugins folder not found (optional).")
-
-        except Exception as e:
-            print(f"    {Colors.RED}Error getting file/folder sizes: {e}{Colors.RESET}")
-            pass
-
-        return True
+        report.results.append(res)
+        return report

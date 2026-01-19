@@ -3,7 +3,8 @@
 #define CONFIG_LOADER_TOML_CONVERTER_CONFIG_LOADER_HPP_
 
 #include "common/config/i_config_loader.hpp"
-#include "converter/config/converter_config.hpp"
+// [Fix] 修改头文件路径：指向重构后的位置
+#include "common/config/models/converter_config_models.hpp"
 #include <toml++/toml.h>
 
 /**
