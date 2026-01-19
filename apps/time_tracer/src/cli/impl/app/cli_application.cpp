@@ -1,5 +1,6 @@
 // cli/impl/app/cli_application.cpp
 #include "cli/impl/app/cli_application.hpp"
+#include "cli/impl/utils/help_formatter.hpp"
 
 #include "cli/framework/interfaces/i_command.hpp"
 #include <iostream>
@@ -15,14 +16,35 @@
 #include "core/database/db_manager.hpp"
 #include "core/reporting/export/exporter.hpp"
 #include "core/reporting/generator/report_generator.hpp"
-#include "cli/impl/app/app_context.hpp" // 为模板参数
 
 namespace fs = std::filesystem;
 const std::string DATABASE_FILENAME = "time_data.sqlite3";
 
+// [新增] 辅助函数，定义应用特定的全局参数规则
+static ParserConfig get_app_parser_config() {
+    return {
+        // global_value_options: 这些选项后面跟着一个值，需要从位置参数中剔除
+        {
+            "-o", "--output", 
+            "-f", "--format", 
+            "--date-check", 
+            "--db", "--database"
+        },
+        // global_flag_options: 这些是布尔开关
+        {
+            "--save-processed", 
+            "--no-save", 
+            "--no-date-check"
+        }
+    };
+}
+// [修改] 在初始化列表中调用 get_app_parser_config()
 CliApplication::CliApplication(const std::vector<std::string>& args)
-    : parser_(args) {
+    : parser_(args, get_app_parser_config()) {
     
+    // 0. 初始化服务容器
+    app_context_ = std::make_shared<AppContext>();
+
     // 1. 路径初始化
     fs::path exe_path(parser_.get_raw_arg(0));
     fs::path default_output_root = fs::absolute(exe_path.parent_path() / "output");
@@ -44,54 +66,78 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
     ConfigLoader config_loader(parser_.get_raw_arg(0));
     app_config_ = config_loader.load_configuration(); 
 
+    // 2. 初始化基础设施
     file_controller_ = std::make_unique<FileController>();
     file_controller_->prepare_output_directories(output_root_path_, exported_files_path_);
+    
+    db_manager_ = std::make_unique<DBManager>(db_path.string());
 
-    workflow_handler_ = std::make_unique<WorkflowHandler>(
+    // 3. 初始化并注入核心服务到 Context
+    // [WorkflowHandler]
+    auto workflow_impl = std::make_shared<WorkflowHandler>(
         db_path.string(), 
         app_config_, 
         output_root_path_
     );
-    
-    db_manager_ = std::make_unique<DBManager>(db_path.string());
-    
+    app_context_->workflow_handler = workflow_impl; // 注入接口
+
+    // 数据库连接检查 (逻辑保持不变)
     const std::string command = parser_.get_command();
     if (command == "query" || command == "export") {
         if (!db_manager_->open_database_if_needed()) {
             throw std::runtime_error("Failed to open database at: " + db_path.string() + "\nPlease ensure data has been imported or check the path.");
         }
     }
-    
     sqlite3* db_connection = db_manager_->get_db_connection();
     
+    // [ReportHandler]
     auto report_generator = std::make_unique<ReportGenerator>(db_connection, app_config_);
     auto exporter = std::make_unique<Exporter>(exported_files_path_);
     
-    report_generation_handler_ = std::make_unique<ReportHandler>(
+    auto report_impl = std::make_shared<ReportHandler>(
         std::move(report_generator), 
         std::move(exporter)
     );
+    app_context_->report_handler = report_impl; // 注入接口
 }
 
 CliApplication::~CliApplication() = default;
 
 void CliApplication::execute() {
-    const std::string command_name = parser_.get_command();
+    // [新增] 处理 Help 全局标记
+    // 检查是否仅请求帮助，或者没有提供命令
+    bool request_help = parser_.has_flag({"--help", "-h"});
+    std::string command_name;
+    try {
+        command_name = parser_.get_command();
+    } catch (...) {
+        // 如果无法解析命令（例如只有 ./timetracer），默认为 help
+        request_help = true;
+    }
 
-    AppContext ctx;
-    ctx.workflow_handler = workflow_handler_.get(); 
-    ctx.report_handler = report_generation_handler_.get();
+    if (request_help) {
+        // 使用 Registry 批量创建所有命令以提取其元数据
+        // 注意：这里我们利用已经初始化的 app_context_
+        auto commands = CommandRegistry<AppContext>::Instance().CreateAllCommands(*app_context_);
+        print_full_usage(parser_.get_raw_arg(0).c_str(), commands);
+        return;
+    }
 
-    // [修改] 显式指定模板参数 <AppContext>
-    auto command = CommandRegistry<AppContext>::Instance().CreateCommand(command_name, ctx);
+    // [原有逻辑] 执行具体命令
+    // 注意：这里不再需要手动检查 app_context_ 的完整性，因为我们在构造函数里已经保证了
+    auto command = CommandRegistry<AppContext>::Instance().CreateCommand(command_name, *app_context_);
 
     if (command) {
-        command->execute(parser_);
-    } else {
-        if (command_name == "preprocess" || command_name == "pre") {
-             throw std::runtime_error("The 'preprocess' command is deprecated. Please use 'validate-source', 'convert', or 'validate-output' instead.");
+        try {
+            command->execute(parser_);
+        } catch (const std::exception& e) {
+            std::cerr << RED_COLOR << "Error executing command '" << command_name << "': " << e.what() << RESET_COLOR << std::endl;
+            // 可选：出错时打印该特定命令的帮助
+            // print_command_usage(command_name, *command); 
         }
-        throw std::runtime_error("Unknown command '" + command_name + "'.");
+    } else {
+        std::cerr << RED_COLOR << "Unknown command '" << command_name << "'." << RESET_COLOR << std::endl;
+        std::cout << "Run with --help to see available commands." << std::endl;
     }
 }
 
