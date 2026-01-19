@@ -3,9 +3,9 @@
 ---
 > *Note: This document was translated from the original Chinese version by Gemini 2.5 Pro.*
 
-# Time Master
+# time tracer
 
-**Time Master** A lightweight markup language interpreter
+**time tracer** A lightweight markup language interpreter
 
 A powerful toolset for personal time management and data visualization, designed to help you accurately track, analyze, and optimize your time.
 
@@ -77,7 +77,7 @@ For detailed architecture diagrams, full command references, API documentation, 
 docs/
 ├── compilation_guide.md          # Detailed compilation steps 
 │
-├── time_master/                  # Documentation for the main Time_Master program
+├── time_tracer/                  # Documentation for the main Time_Master program
 │   ├── architecture.md           # Includes directory structure and architecture diagrams 
 │   └── usage.md                  # Includes a complete table of command-line arguments and descriptions
 │

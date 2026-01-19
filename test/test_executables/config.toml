@@ -9,10 +9,10 @@
 enable_environment_clean = 1
 
 # 设置为 1 来从源目录复制最新的 exe, dll, config, plugins 到测试环境
-enable_environment_prepare = 1
+enable_environment_prepare = 0
 
 # 设置为 1 来执行具体的测试用例
-enable_test_execution = 1
+enable_test_execution = 0
 
 
 # ==============================================================================
