@@ -6,6 +6,36 @@
 
 `run-pipeline` (别名: `blink`) 执行从原始文本摄取到数据库存储的完整数据处理流程。
 
+
+#### 1.3 配置加载与注入流程 (Configuration Loading & Injection Flow)
+
+为了实现配置格式（TOML）与业务逻辑（Converter）的解耦，系统采用了“解析 -> 中间结构体 -> 注入”的模式。
+
+**数据流向：**
+`文件系统 (.toml)` -> **[Config 模块: ConverterConfigLoader]** -> `ConverterConfig (结构体)` -> **[Core 模块: ConverterConfigFactory]** -> `PipelineContext` -> **[Converter 模块]**
+
+**关键逻辑阶段：**
+
+1. **解析与合并 (Config 层)**：
+* `ConverterConfigLoader` 读取主配置文件 `config.toml`，并递归合并外部的 `text_mappings`（文本映射）和 `duration_mappings`（时长规则）文件。
+* TOML 数据被映射到纯 C++ 结构体 `ConverterConfig` 中，确保业务模块对 `toml++` 等解析库实现零依赖。
+
+
+2. **运行时参数注入 (Core 层)**：
+* `PipelineManager` 触发 `ConverterConfigFactory` 来准备配置实例。
+* **动态注入**：工厂类将运行时确定的参数（例如来自 `AppConfig` 的 `initial_top_parents`）直接注入到 `ConverterConfig` 结构体中。
+* 这使得转换器保持无状态，无需关心高层应用程序的路径或环境设置。
+
+
+3. **上下文隔离与传播**：
+* 最终确定的 `ConverterConfig` 存储在 `PipelineContext.state` 中。
+* 每个流水线步骤（如 `SourceValidatorStep`、`ConverterStep`）从上下文中提取此结构体，并以 `const` 引用的方式传递给底层的执行类（如 `TextValidator`、`LogProcessor`）。
+
+
+4. **内存化执行**：
+* 转换器组件（如 `ActivityMapper`）直接消耗结构体预填充的 Map 和 Vector 来执行转换逻辑。
+* 整个过程完全基于内存，与原始的持久化格式（TOML）无关。
+
 ### 流程 A: 包含 JSON 持久化 (默认)
 当启用 `--save-processed` 或在 `config.toml` 中配置了保存选项时使用此流程。
 

@@ -20,7 +20,8 @@
 #include "cli/impl/app/cli_application.hpp"
 // --- 工具与信息 ---
 #include "cli/framework/interfaces/i_command.hpp"
-#include "cli/impl/utils/help_formatter.hpp"
+// [修改] 移除 help_formatter.hpp 的直接引用，因为不再直接调用 print_full_usage
+// #include "cli/impl/utils/help_formatter.hpp"
 
 
 #include "common/ansi_colors.hpp"
@@ -42,37 +43,41 @@ int main(int argc, char* argv[]) {
 
   std::vector<std::string> args(argv, argv + argc);
 
+  // [新增] 如果没有参数，自动追加 --help 以便进入 CliApplication 的帮助流程
+  if (args.size() < 2) {
+      args.push_back("--help");
+  }
+
+  // 此时 args.size() 肯定 >= 2
+  // 检查是否是帮助模式 (跳过部分验证)
+  bool is_help_mode = (args[1] == "-h" || args[1] == "--help");
+
   // 彩蛋逻辑
-  if (args.size() > 1 && args[1] == "tracer") {
+  if (args[1] == "tracer") {
     std::println("\n{}{}{}\n", CYAN_COLOR,
                  "  \"Cheers, love! The timetracer is here.\"", RESET_COLOR);
     return 0;
   }
-  if (args.size() > 1 && (args[1] == "motto" || args[1] == "zen")) {
+  if (args[1] == "motto" || args[1] == "zen") {
     std::println("");
     std::println("{}  \"Trace your time, log your life.\"{}\n", CYAN_COLOR,
                  RESET_COLOR);
     return 0;
   }
 
-  // 如果没有参数，打印帮助
-  if (args.size() < 2) {
-    print_full_usage(args[0].c_str());
-    return 1;
-  }
+  // [修改] 移除了直接调用 print_full_usage 的代码，改为委托给 CliApplication
+  // 原来的 if (args.size() < 2) 检查已在上方处理
 
   // 处理缩写命令
-  if (args[1] == "pre") args[1] = "preprocess";
-  // 输入 "blink" 时，视为 "ingest"
-  if (args[1] == "blink") args[1] = "ingest";
+  if (!is_help_mode) {
+      if (args[1] == "pre") args[1] = "preprocess";
+      // 输入 "blink" 时，视为 "ingest"
+      if (args[1] == "blink") args[1] = "ingest";
+  }
 
   const std::string& command = args[1];
 
-  // 处理全局 help/version 参数
-  if (command == "-h" || command == "--help") {
-    print_full_usage(args[0].c_str());
-    return 0;
-  }
+  // 处理全局 version 参数 (help 参数已移交 CliApplication)
   if (command == "-v" || command == "--version") {
     std::println("TimeMaster Command Version: {}", AppInfo::VERSION);
     std::println("Last Updated:  {}", AppInfo::LAST_UPDATED);
@@ -86,16 +91,20 @@ int main(int argc, char* argv[]) {
     AppConfig config = boot_loader.load_configuration();
 
     // 2. 验证环境 (委托给 StartupValidator)
-    if (!StartupValidator::validate_environment(config)) {
-      std::println(std::cerr,
-                   "\n{}Configuration validation failed. Please check the "
-                   "errors above.{}\n",
-                   RED_COLOR, RESET_COLOR);
-      return 1;  // 验证失败，直接退出
+    // [修改] 如果是帮助模式，跳过环境验证，避免因配置错误导致无法查看帮助
+    if (!is_help_mode) {
+        if (!StartupValidator::validate_environment(config)) {
+          std::println(std::cerr,
+                       "\n{}Configuration validation failed. Please check the "
+                       "errors above.{}\n",
+                       RED_COLOR, RESET_COLOR);
+          return 1;  // 验证失败，直接退出
+        }
     }
 
     // 3. 执行业务
     // 验证通过，启动 CLI 控制器处理具体命令
+    // [说明] CliApplication 内部会检测 --help 标记并使用正确的上下文生成动态帮助
     CliApplication controller(args);
     controller.execute();
 
@@ -106,7 +115,7 @@ int main(int argc, char* argv[]) {
 
     if (std::string(e.what()).find("command") != std::string::npos ||
         std::string(e.what()).find("argument") != std::string::npos) {
-      std::println("\nUse '{}' for more information.", args[0]);
+      std::println("\nUse '{} --help' for more information.", args[0]);
     }
     return 1;
   }

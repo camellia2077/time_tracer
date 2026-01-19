@@ -74,14 +74,15 @@ void WorkflowHandler::run_database_import_from_memory(const std::map<std::string
      handle_process_memory_data(db_path_, data_map);
 }
 
-void WorkflowHandler::run_full_pipeline_and_import(const std::string& source_path, DateCheckMode date_check_mode, bool save_processed) {
-    std::cout << "\n--- 启动全流程流水线 (Blink) ---" << std::endl;
+void WorkflowHandler::run_ingest(const std::string& source_path, DateCheckMode date_check_mode, bool save_processed) {
+    std::cout << "\n--- 启动数据摄入 (Ingest) ---" << std::endl;
     
     // RAII 检查数据库连接
     {
         DBManager db_manager(db_path_);
     } 
 
+    // 这里依然使用 PipelineManager，因为这是内部实现机制，没问题
     PipelineManager pipeline(app_config_, output_root_path_);
     
     AppOptions full_options;
@@ -99,12 +100,12 @@ void WorkflowHandler::run_full_pipeline_and_import(const std::string& source_pat
         if (!context.result.processed_data.empty()) {
             std::cout << "\n--- 流水线验证通过，准备入库 ---" << std::endl;
             run_database_import_from_memory(context.result.processed_data);
-            std::cout << GREEN_COLOR << "\n=== 全流程执行成功 ===" << RESET_COLOR << std::endl;
+            std::cout << GREEN_COLOR << "\n=== Ingest 执行成功 ===" << RESET_COLOR << std::endl;
         } else {
-             std::cout << YELLOW_COLOR << "\n=== 流水线完成但无数据产生 ===" << RESET_COLOR << std::endl;
+             std::cout << YELLOW_COLOR << "\n=== Ingest 完成但无数据产生 ===" << RESET_COLOR << std::endl;
         }
     } else {
-        std::cerr << RED_COLOR << "\n=== 流水线执行失败 ===" << RESET_COLOR << std::endl;
-        throw std::runtime_error("Pipeline execution failed.");
+        std::cerr << RED_COLOR << "\n=== Ingest 执行失败 ===" << RESET_COLOR << std::endl;
+        throw std::runtime_error("Ingestion process failed.");
     }
 }
