@@ -2,12 +2,15 @@
 #include "report_service.hpp"
 
 #include "reports/shared/generators/base_generator.hpp"
-#include "reports/daily/queriers/day_querier.hpp"
-#include "reports/monthly/queriers/month_querier.hpp"
-#include "reports/period/queriers/period_querier.hpp"
-#include "reports/shared/model/daily_report_data.hpp"
-#include "reports/shared/model/monthly_report_data.hpp"
-#include "reports/shared/model/period_report_data.hpp"
+
+// [修改] 指向新的 data 模块路径
+#include "reports/data/queriers/daily/day_querier.hpp"
+#include "reports/data/queriers/monthly/month_querier.hpp"
+#include "reports/data/queriers/period/period_querier.hpp"
+
+#include "reports/data/model/daily_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
+#include "reports/data/model/period_report_data.hpp"
 
 #include "reports/services/daily_report_service.hpp"
 #include "reports/services/monthly_report_service.hpp"

@@ -3,7 +3,7 @@
 #define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/base_md_formatter.hpp"
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/formatters/markdown/day_md_Config.hpp"
 
 class DayMdFormatter : public BaseMdFormatter<DailyReportData, DayMdConfig> {

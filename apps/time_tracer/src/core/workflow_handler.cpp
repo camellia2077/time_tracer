@@ -86,9 +86,9 @@ void WorkflowHandler::run_ingest(const std::string& source_path, DateCheckMode d
     PipelineManager pipeline(app_config_, output_root_path_);
     
     AppOptions full_options;
-    full_options.validate_source = true;
+    full_options.validate_structure = true;
     full_options.convert = true;
-    full_options.validate_output = true;
+    full_options.validate_logic = true;
     full_options.date_check_mode = date_check_mode;
     full_options.save_processed_output = save_processed;
 

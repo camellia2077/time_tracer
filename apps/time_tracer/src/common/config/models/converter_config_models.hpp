@@ -22,6 +22,10 @@ struct ConverterConfig {
     std::string remark_prefix;
     std::vector<std::string> header_order;
     std::vector<std::string> wake_keywords;
+
+    // [新增] 自动生成活动的项目路径配置
+    // 默认为 "sleep_night"，但可以通过配置文件覆盖
+    std::string generated_sleep_project_path = "sleep_night";
     
     // 映射表
     std::unordered_map<std::string, std::string> top_parent_mapping;

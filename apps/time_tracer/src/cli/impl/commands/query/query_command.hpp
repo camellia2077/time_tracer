@@ -1,3 +1,4 @@
+// cli/impl/commands/query/query_command.hpp
 #ifndef CLI_IMPL_COMMANDS_QUERY_QUERY_COMMAND_HPP_
 #define CLI_IMPL_COMMANDS_QUERY_QUERY_COMMAND_HPP_
 

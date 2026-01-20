@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <memory>
 #include "reports/shared/types/report_format.hpp"
-#include "reports/shared/model/query_data_structs.hpp"
+#include "reports/data/model/query_data_structs.hpp"
 
 namespace fs = std::filesystem;
 class ReportFileManager;

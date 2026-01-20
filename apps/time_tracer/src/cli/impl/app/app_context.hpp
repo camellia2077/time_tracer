@@ -3,6 +3,7 @@
 #define CLI_IMPL_APP_APP_CONTEXT_HPP_
 
 #include <memory>
+#include "common/config/app_config.hpp" // [新增] 必须包含此头文件
 
 // 前向声明接口
 class IWorkflowHandler;
@@ -16,9 +17,8 @@ struct AppContext {
     std::shared_ptr<IWorkflowHandler> workflow_handler;
     std::shared_ptr<IReportHandler> report_handler;
     
-    // [扩展建议] 未来可以在此添加:
-    // std::shared_ptr<IUserInterface> ui;
-    // std::shared_ptr<AppConfig> config;
+    // [修复] 添加 config 成员，供 Command 使用
+    AppConfig config; 
 };
 
 #endif // CLI_IMPL_APP_APP_CONTEXT_HPP_

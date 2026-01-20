@@ -4,9 +4,9 @@
 
 #include <string>
 #include <sqlite3.h>
-#include "reports/shared/model/daily_report_data.hpp"
-#include "reports/shared/model/monthly_report_data.hpp"
-#include "reports/shared/model/period_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
+#include "reports/data/model/period_report_data.hpp"
 
 template<typename ReportDataType>
 class IReportFormatter {

@@ -4,7 +4,7 @@
 
 #include "reports/shared/formatters/templates/base_tex_formatter.hpp"
 #include "reports/monthly/formatters/latex/month_tex_config.hpp"
-#include "reports/shared/model/monthly_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
 
 class MonthTexFormatter : public BaseTexFormatter<MonthlyReportData, MonthTexConfig> {
 public:

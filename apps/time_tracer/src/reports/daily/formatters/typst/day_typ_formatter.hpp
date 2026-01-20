@@ -3,7 +3,7 @@
 #define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/base_typ_formatter.hpp"
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/formatters/typst/day_typ_config.hpp"
 
 class DayTypFormatter : public BaseTypFormatter<DailyReportData, DayTypConfig> {

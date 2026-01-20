@@ -2,7 +2,7 @@
 #ifndef REPORTS_SERVICES_DAILY_REPORT_SERVICE_HPP_
 #define REPORTS_SERVICES_DAILY_REPORT_SERVICE_HPP_ 
 
-#include "reports/shared/model/query_data_structs.hpp"
+#include "reports/data/model/query_data_structs.hpp"
 #include "reports/shared/types/report_format.hpp" 
 
 #include "common/config/app_config.hpp"

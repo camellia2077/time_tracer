@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "reports/shared/model/query_data_structs.hpp"
+#include "reports/data/model/query_data_structs.hpp"
 #include "reports/shared/types/report_format.hpp"
 
 // [修复] 更新包含路径

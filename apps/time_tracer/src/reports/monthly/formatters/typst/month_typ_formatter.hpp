@@ -4,7 +4,7 @@
 
 #include "reports/shared/formatters/templates/base_typ_formatter.hpp"
 #include "reports/monthly/formatters/typst/month_typ_config.hpp"
-#include "reports/shared/model/monthly_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
 
 class MonthTypFormatter : public BaseTypFormatter<MonthlyReportData, MonthTypConfig> {
 public:
