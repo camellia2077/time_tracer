@@ -1,0 +1,83 @@
+// converter/convert/core/log_linker.cpp
+#include "log_linker.hpp"
+#include "day_stats.hpp"
+#include "common/ansi_colors.hpp"
+#include <iostream>
+#include <algorithm>
+
+LogLinker::LogLinker(const ConverterConfig& config) : config_(config) {}
+
+void LogLinker::link_logs(std::map<std::string, std::vector<DailyLog>>& data_map) {
+    std::cout << "[Debug] LogLinker::link_logs start. Map size: " << data_map.size() << std::endl; 
+
+    DailyLog* prev_month_last_day = nullptr;
+    int linked_count = 0;
+
+    for (auto& [month_key, days] : data_map) {
+        if (days.empty()) continue;
+
+        DailyLog& current_first_day = days.front();
+        
+        // 调试日志 (可选保留)
+        // std::cout << "[Debug] Checking Month: " << month_key << ", First Day: " << current_first_day.date << std::endl; 
+
+        if (prev_month_last_day != nullptr) {
+            // [规则修正] 严格遵守 "无起床关键词即通宵" 规则
+            // 只要有明确的起床时间，且还没生成睡眠活动，就应该尝试链接。
+            bool has_valid_getup = !current_first_day.getupTime.empty() && current_first_day.getupTime != "00:00";
+            bool missing_sleep = !current_first_day.hasSleepActivity;
+
+            if (has_valid_getup && missing_sleep) {
+                // std::cout << "  -> [MATCH] Linking triggered!" << std::endl; 
+                process_cross_day(current_first_day, *prev_month_last_day);
+                linked_count++;
+            }
+        }
+
+        prev_month_last_day = &days.back();
+    }
+
+    if (linked_count > 0) {
+        std::cout << GREEN_COLOR << "  [LogLinker] 已根据配置修复 " << linked_count << " 处跨月睡眠记录。" << RESET_COLOR << std::endl;
+    }
+}
+
+void LogLinker::process_cross_day(DailyLog& current_day, const DailyLog& prev_day) {
+    if (prev_day.rawEvents.empty()) return;
+
+    // 1. 获取上个月最后时刻 (作为入睡时间)
+    std::string last_end_time_raw = prev_day.rawEvents.back().endTimeStr;
+    std::string sleep_start_time = format_time(last_end_time_raw);
+
+    // 2. 获取当前月起床时刻 (作为醒来时间)
+    std::string sleep_end_time = current_day.getupTime;
+
+    // 3. 构造睡眠活动
+    BaseActivityRecord sleepActivity;
+    sleepActivity.start_time_str = sleep_start_time;
+    sleepActivity.end_time_str = sleep_end_time;
+    
+    // 使用配置注入的项目路径，移除硬编码 "sleep_night"
+    // 如果配置为空（通常 Loader 会保证默认值），则降级使用默认值
+    sleepActivity.project_path = config_.generated_sleep_project_path.empty() 
+                                 ? "sleep_night" 
+                                 : config_.generated_sleep_project_path;
+    // 4. 插入记录并更新状态
+    current_day.processedActivities.insert(current_day.processedActivities.begin(), sleepActivity);
+    current_day.hasSleepActivity = true;
+    
+    // 5. 重新计算统计数据 (刷新时长)
+    recalculate_stats(current_day);
+}
+
+void LogLinker::recalculate_stats(DailyLog& day) {
+    DayStats stats_calculator;
+    stats_calculator.calculate_stats(day);
+}
+
+std::string LogLinker::format_time(const std::string& timeStr) const {
+    if (timeStr.length() == 4) {
+        return timeStr.substr(0, 2) + ":" + timeStr.substr(2, 2);
+    }
+    return timeStr;
+}

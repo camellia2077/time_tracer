@@ -3,7 +3,7 @@
 #define REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
 
 #include <string>
-#include "reports/shared/model/project_tree.hpp"
+#include "reports/data/model/project_tree.hpp"
 #include "reports/shared/api/shared_api.hpp" 
 
 namespace TypUtils {

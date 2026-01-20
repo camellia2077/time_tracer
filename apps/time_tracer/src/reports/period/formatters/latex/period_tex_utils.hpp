@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <memory>
-#include "reports/shared/model/period_report_data.hpp"
+#include "reports/data/model/period_report_data.hpp"
 #include "reports/period/formatters/latex/period_tex_config.hpp"
 
 namespace PeriodTexUtils {

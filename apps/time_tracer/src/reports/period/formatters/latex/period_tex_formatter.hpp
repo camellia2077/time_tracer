@@ -4,7 +4,7 @@
 
 #include "reports/shared/formatters/templates/base_tex_formatter.hpp"
 #include "reports/period/formatters/latex/period_tex_config.hpp"
-#include "reports/shared/model/period_report_data.hpp"
+#include "reports/data/model/period_report_data.hpp"
 
 namespace reporting {
 

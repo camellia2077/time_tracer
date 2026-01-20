@@ -41,9 +41,9 @@ toml::table ConverterConfigLoader::load_merged_toml(const fs::path& main_config_
                 if (!main_tbl.contains("text_mappings")) main_tbl.insert("text_mappings", toml::table{});
                 merge_toml_table(*main_tbl["text_mappings"].as_table(), *mapping_tbl["text_mappings"].as_table());
             }
-            if (mapping_tbl.contains("text_duration_mappings")) { // 修正key名
+            if (mapping_tbl.contains("text_duration_mappings")) { 
                 if (!main_tbl.contains("text_duration_mappings")) main_tbl.insert("text_duration_mappings", toml::table{});
-                merge_toml_table(*main_tbl["text_duration_mappings"].as_table(), *mapping_tbl["text_duration_mappings"].as_table()); // 修正合并目标
+                merge_toml_table(*main_tbl["text_duration_mappings"].as_table(), *mapping_tbl["text_duration_mappings"].as_table());
             }
         }
     }
@@ -57,7 +57,6 @@ toml::table ConverterConfigLoader::load_merged_toml(const fs::path& main_config_
                 if (!main_tbl.contains("duration_mappings")) main_tbl.insert("duration_mappings", toml::table{});
                 merge_toml_table(*main_tbl["duration_mappings"].as_table(), *rules_tbl["duration_mappings"].as_table());
             }
-             // 有些规则文件可能也包含 text_duration_mappings
             if (rules_tbl.contains("text_duration_mappings")) {
                 if (!main_tbl.contains("text_duration_mappings")) main_tbl.insert("text_duration_mappings", toml::table{});
                 merge_toml_table(*main_tbl["text_duration_mappings"].as_table(), *rules_tbl["text_duration_mappings"].as_table());
@@ -69,6 +68,7 @@ toml::table ConverterConfigLoader::load_merged_toml(const fs::path& main_config_
 }
 
 void ConverterConfigLoader::parse_toml_to_struct(const toml::table& tbl, ConverterConfig& config) {
+    // 1. 基础配置
     if (auto val = tbl["remark_prefix"].value<std::string>()) {
         config.remark_prefix = *val;
     }
@@ -85,6 +85,14 @@ void ConverterConfigLoader::parse_toml_to_struct(const toml::table& tbl, Convert
         }
     }
 
+    // 2. [新增] 自动生成活动的配置
+    if (const toml::table* gen_tbl = tbl["generated_activities"].as_table()) {
+        if (auto val = gen_tbl->get("sleep_project_path")->value<std::string>()) {
+            config.generated_sleep_project_path = *val;
+        }
+    }
+
+    // 3. 映射表
     auto load_map = [&](const std::string& key, std::unordered_map<std::string, std::string>& target) {
         if (const toml::table* map_tbl = tbl[key].as_table()) {
             for (const auto& [k, v] : *map_tbl) {
@@ -95,8 +103,9 @@ void ConverterConfigLoader::parse_toml_to_struct(const toml::table& tbl, Convert
 
     load_map("top_parent_mapping", config.top_parent_mapping);
     load_map("text_mappings", config.text_mapping);
-    load_map("text_duration_mappings", config.text_duration_mapping); // 注意 TOML key 是复数 s
+    load_map("text_duration_mappings", config.text_duration_mapping);
 
+    // 4. 时长规则
     if (const toml::table* duration_tbl = tbl["duration_mappings"].as_table()) {
         for (const auto& [event_key, rules_node] : *duration_tbl) {
             if (const toml::array* rules_arr = rules_node.as_array()) {

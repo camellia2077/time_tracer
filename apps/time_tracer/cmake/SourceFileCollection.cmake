@@ -15,11 +15,14 @@ set(CORE_SOURCES
     # Pipeline
     "src/core/pipeline/pipeline_manager.cpp"
     
+    
     # Pipeline - Steps
+    "src/core/pipeline/steps/logic_linker_step.cpp"
     "src/core/pipeline/steps/converter_step.cpp"
     "src/core/pipeline/steps/file_collector.cpp"
-    "src/core/pipeline/steps/output_validator_step.cpp"
-    "src/core/pipeline/steps/source_validator_step.cpp"
+
+    "src/core/pipeline/steps/structure_validator_step.cpp"
+    "src/core/pipeline/steps/logic_validator_step.cpp"
 
     # Pipeline - Utils
     "src/core/pipeline/utils/converter_config_factory.cpp"
@@ -69,27 +72,60 @@ set(VALIDATOR_SOURCES
 # 这样可以避免在主程序和多个DLL中重复编译相同的代码
 
 set(REPORTS_SHARED_SOURCES
+    # 外部依赖或通用工具
     "src/common/utils/string_utils.cpp"
+    
+    # 基础配置 (原有的)
     "src/reports/daily/common/day_base_config.cpp"
+    "src/reports/monthly/common/month_base_config.cpp"
+    "src/reports/period/common/period_base_config.cpp"
     "src/reports/daily/formatters/statistics/stat_formatter.cpp"
-    "src/reports/shared/utils/config/config_utils.cpp"
-    "src/reports/shared/utils/tree/project_tree_builder.cpp"
 
+    # Shared - 内部工具与配置
+    "src/reports/shared/utils/config/config_utils.cpp"
     "src/reports/shared/utils/format/bool_to_string.cpp"
     "src/reports/shared/utils/format/report_string_utils.cpp"
     "src/reports/shared/utils/format/time_format.cpp"
-    "src/reports/shared/formatters/base/project_tree_formatter.cpp"
-
+    
+    # Shared - 样式配置
     "src/reports/shared/config/tex_style_config.cpp"
     "src/reports/shared/config/typst_style_config.cpp"
 
+    # Shared - 格式化器实现
+    "src/reports/shared/formatters/base/project_tree_formatter.cpp"
     "src/reports/shared/formatters/markdown/markdown_formatter.cpp" 
     "src/reports/shared/formatters/typst/typ_utils.cpp"
     "src/reports/shared/formatters/latex/tex_utils.cpp"
     "src/reports/shared/formatters/latex/tex_common_utils.cpp"
+)
 
-    "src/reports/monthly/common/month_base_config.cpp"
-    "src/reports/period/common/period_base_config.cpp" 
+# ==========================================
+# REPORTS_DATA_SOURCES (数据获取、查询逻辑、树构建)
+# ==========================================
+set(REPORTS_DATA_SOURCES
+    # 工具类 (根据目录结构 project_tree_builder 在这里)
+    "src/reports/data/utils/project_tree_builder.cpp"
+
+    # Daily Queriers
+    "src/reports/data/queriers/daily/day_querier.cpp"
+    "src/reports/data/queriers/daily/batch_day_data_fetcher.cpp"
+
+    # Monthly Queriers
+    "src/reports/data/queriers/monthly/month_querier.cpp"
+    "src/reports/data/queriers/monthly/batch_month_data_fetcher.cpp"
+
+    # Period Queriers
+    "src/reports/data/queriers/period/period_querier.cpp"
+    "src/reports/data/queriers/period/batch_period_data_fetcher.cpp"
+)
+
+set(REPORTS_SOURCES
+    # Root
+    "src/reports/report_service.cpp"
+    # Export
+    "src/reports/services/daily_report_service.cpp"
+    "src/reports/services/monthly_report_service.cpp"
+    "src/reports/services/period_report_service.cpp"
 )
 
 
@@ -110,8 +146,8 @@ set(CLI_SOURCES
     "src/cli/impl/commands/pipeline/convert_command.cpp"
     "src/cli/impl/commands/pipeline/import_command.cpp"
     "src/cli/impl/commands/pipeline/ingest_command.cpp"
-    "src/cli/impl/commands/pipeline/validate_output_command.cpp"
-    "src/cli/impl/commands/pipeline/validate_source_command.cpp"
+    "src/cli/impl/commands/pipeline/validate_logic_command.cpp"
+    "src/cli/impl/commands/pipeline/validate_structure_command.cpp"
 )
 # --- DB Inserter Sources ---
 set(BOOTSTRAP_SOURCES
@@ -137,33 +173,14 @@ set(IMPORTER_SOURCES
     "src/importer/storage/sqlite/statement.cpp"
 )
 
-set(REPORTS_SOURCES
-    # Root
-    "src/reports/report_service.cpp"
-    # Export
-    "src/reports/services/daily_report_service.cpp"
-    "src/reports/services/monthly_report_service.cpp"
-    "src/reports/services/period_report_service.cpp"
-    # Daily Reports
-    "src/reports/daily/queriers/day_querier.cpp"
-    "src/reports/daily/queriers/day_querier.cpp"
-    "src/reports/daily/queriers/batch_day_data_fetcher.cpp"
-    # Monthly Reports
-    "src/reports/monthly/queriers/month_querier.cpp"
-    "src/reports/monthly/queriers/batch_month_data_fetcher.cpp"
-    
-    
-    # Period Reports
-    "src/reports/period/queriers/period_querier.cpp"
-    "src/reports/period/queriers/batch_period_data_fetcher.cpp"
 
-)
 
 # --- converter Sources ---
 set(CONVERTER_SOURCES
     "src/converter/log_processor.cpp"
     # --- 转换模块 (Convert) ---
     "src/converter/convert/facade/converter_service.cpp"
+    "src/converter/convert/core/log_linker.cpp"
     "src/converter/convert/core/activity_mapper.cpp"
     "src/converter/convert/core/day_processor.cpp"
     "src/converter/convert/core/day_stats.cpp"

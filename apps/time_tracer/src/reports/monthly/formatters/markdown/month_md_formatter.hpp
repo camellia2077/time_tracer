@@ -4,7 +4,7 @@
 
 #include "reports/shared/formatters/templates/base_md_formatter.hpp"
 #include "reports/monthly/formatters/markdown/month_md_config.hpp"
-#include "reports/shared/model/monthly_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
 
 class MonthMdFormatter : public BaseMdFormatter<MonthlyReportData, MonthMdConfig> {
 public:

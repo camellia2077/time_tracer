@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <memory>
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/formatters/typst/day_typ_config.hpp"
 
 
