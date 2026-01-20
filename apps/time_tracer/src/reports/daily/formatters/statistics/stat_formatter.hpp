@@ -5,7 +5,7 @@
 #include "reports/shared/api/shared_api.hpp"
 #include <string>
 #include <memory>
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/common/day_base_config.hpp"
 #include "i_stat_strategy.hpp"
 

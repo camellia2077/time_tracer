@@ -1,19 +1,6 @@
-
-和ai讨论一下更新架构后，应该怎么处理跨月，跨年的sleep生成
-目标设计成，不在txt中存储上一个月的最后一天就能处理跨年，跨月
-
-所有log_generator也要更新，不再往当前月生成上一个月的最后一天
-
-validate_output_command修改为validate_json_logic_command或者validate_logic_command
-validate_source_command修改为validate_content_structure或者validate_structure
-
-python测试程序需要有一个一步一步插入的模式validate->convert->import
-
 cpp要增加一个插入并且导出全部日期全部格式的命令
 
 在core中提取时间统计输出格式，复用代码
-
-无论是blink还是run-pipeline都应该实现插入全流程，用哪一个效果都是一样的，只不过这个插入全流程有个两个别名
 
 导出的时候也要统计时间，成功: 共创建 1827 个日报文件，已保存至: C:\Computer\my_github\github_cpp\time_tracer\my_test\output\exported_files\Typst_logs\days
 
@@ -21,16 +8,9 @@ cpp要增加一个插入并且导出全部日期全部格式的命令
 
 高优先级
 
-0reports模块还没有被core精细化调度
-
-目前的 Reports (报表) 和 Export (导出) 模块大多是自包含的（Vertical Slices），即 Daily 模块自己负责“查库+处理+生成字符串”。这种方式在初期开发很快，但会导致逻辑复用困难，且难以统一调度。
-
-重构的核心目标确实应该是：实现“数据获取 (Query)”与“数据展示 (Formatting)”的彻底分离，并由 Core 统一编排。
-
-让 shared 模块专注于“如何从数据库拿到数据并填入 Struct”。它不应该知道 Markdown 或 LaTeX 的存在。
-将所有报表需要的数据结构定义在 common 模块中，作为各模块通信的“通用语言”。
-格式化器应该变成“无状态的转换函数”。给定一个 Struct，吐出一个 String。
-
+0
+支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
+这个功能应该只在全流程命令下实现？
 1
 日报告的typ中 出现\正常吗
 + *Remark:* 没有背叛小到可以容忍 \
@@ -83,8 +63,17 @@ gemini "CMake 自动编译日期实现"
 [Validator] -- Found required plugin: reports_shared
 [Validator] All required plugins were found.
 
+7
+converter里面json使用yyjson
+inserter里面json插入使用yyjson
+yyjson在pacman没有包，你需要手动放入程序目录
+
 
 中优先级
+toml配置重写修改命名和键名，以适配现在的程序
+
+-3
+python测试程序需要有一个一步一步插入的模式validate->convert->import
 
 -2 新建创建一个独立的 analytics（或 query）模块
 
@@ -160,7 +149,11 @@ gemini "CMake 自动编译日期实现"
 
 应用场景: 你的文本中有 #我是备注1234 这种 Tag。可以统计带有特定 Tag 的任务总耗时。
 
+
 技术点: 需要解析 activity_remark 字段中的 # 标签。
+
+
+-1. 给txt文本记录要求写上规则(文档)
 
 
 
@@ -170,15 +163,9 @@ gemini "CMake 自动编译日期实现"
 输出: 数据实体对象 (vector<TimeRecord>, vector<DayEntry>) 或 统计数值。
 
 
-0
-cli使用非模板库
 
 -1
 import的时候要检查是否为所需的 json文件，以免用户import了txt文件
-
-0
-支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
-这个功能应该只在全流程命令下实现？
 
 7
 使用字体的时候注意，可变字体必须是当前字体支持的语言
@@ -190,14 +177,12 @@ tex无法编译是因为不支持当前的可变字体，tex内容由加粗
 解决方法就是代码中取消注释，手动指定字体的目录，但是这样只能编译，无法正确渲染字体加粗
 
 
-8
-支持某个关键词的查询？不知道有没有实现
-
-
-
 
 
 低优先级
+
+
+
 
 0. 核心逻辑库 (Core Library) 的接口设计
 
@@ -226,12 +211,7 @@ iOS (FFI): Swift/Obj-C 直接调用编译出的静态库 .a 或 Framework。
 
 Flutter/React Native: 通过 FFI (Foreign Function Interface) 调用 C 接口。
 
-1
-感觉没什么必要，程序主要是在生成报告的时候使用次数多
-转换和插入慢一点就也没什么，反正一个人一天最多也就几百行
-converter里面json使用yyjson
-inserter里面json插入使用yyjson
-yyjson在pacman没有包，你需要手动放入程序目录
+
 
 
 
@@ -274,15 +254,7 @@ yyjson在pacman没有包，你需要手动放入程序目录
 
 
 
-支持txt多行注释(c++风格和python风格)
 
-给txt文本记录要求写上规则(文档)
-
-
-StringUtils.hpp不应该放到common文件夹中，应该放到reports文件夹中，高内聚原则
-
-libreports_shared.dll在测试程序中被重复地复制了两次，一个放到和exe同程序目录，一个放到了plugins文件夹中
-作为程序的核心，libreports_shared.dll只应该和exe同程序目录，不应该放入plugins文件夹
 
 
 ## 让tex支持生成的字体从本地获取
@@ -301,14 +273,6 @@ libreports_shared.dll在测试程序中被重复地复制了两次，一个放�
 
 ## tex格式增加更细致的字体控制
 typ全格式已经实现
-
-
-
-
-## 每天的拉屎和洗漱时间应该在日报告导出的时候添加
-
-## 给编译程序加上fonts文件夹
-存放免费开源的字体
 
 
 ## clang开启连接时优化需要下载对应工具
@@ -333,10 +297,4 @@ pacman -S mingw-w64-ucrt-x86_64-lld
             "sleepTotalTime": 27840, // 已经在日报告中实现
             "toiletTime": 0,
             "totalExerciseTime": 16140
-
-
-
-
-### 输出报告的hpp使用外置的json配置文件来传入字体
-
 

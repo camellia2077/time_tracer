@@ -1,14 +1,16 @@
+// cli/impl/commands/query/query_command.cpp
 #include "query_command.hpp"
 #include "cli/framework/core/command_parser.hpp" 
 #include "cli/framework/core/command_registry.hpp" 
 #include "cli/framework/core/command_validator.hpp" 
 #include "cli/impl/utils/arg_utils.hpp"
-#include "common/utils/time_utils.hpp" // [修复] 添加此行以解决 normalize_to_* 报错
+#include "common/utils/time_utils.hpp"
 #include "cli/impl/app/app_context.hpp"
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <vector>
 
 static CommandRegistrar<AppContext> registrar("query", [](AppContext& ctx) {
     if (!ctx.report_handler) throw std::runtime_error("ReportHandler not initialized");
@@ -18,19 +20,10 @@ static CommandRegistrar<AppContext> registrar("query", [](AppContext& ctx) {
 QueryCommand::QueryCommand(IReportHandler& report_handler)
     : report_handler_(report_handler) {}
 
-// [新增] 定义该命令需要的参数结构
 std::vector<ArgDef> QueryCommand::get_definitions() const {
     return {
-        // 位置参数 1 (filtered_args[2]): 查询类型
-        // 对应: query <type>
         {"type", ArgType::Positional, {}, "Query type (daily, monthly, period)", true, "", 0},
-        
-        // 位置参数 2 (filtered_args[3]): 查询参数
-        // 对应: query <type> <argument>
         {"argument", ArgType::Positional, {}, "Date (YYYYMMDD) or Period (days)", true, "", 1},
-        
-        // 选项: 输出格式
-        // 对应: --format md
         {"format", ArgType::Option, {"-f", "--format"}, "Output format (md, tex, typ)", false, "md"}
     };
 }
@@ -71,22 +64,28 @@ void QueryCommand::execute(const CommandParser& parser) {
         } else if (sub_command == "monthly") {
             std::cout << report_handler_.run_monthly_query(query_arg, format);
         } else if (sub_command == "period") {
-            // 处理可能的逗号分隔列表 (e.g. query period 7,30)
+            // [修改] 解析逗号分隔列表，但将循环逻辑下沉到 Core
+            std::vector<int> periods;
             std::string token;
             std::istringstream tokenStream(query_arg);
-            bool first = true;
+            
             while (std::getline(tokenStream, token, ',')) {
-                if (!first) std::cout << "\n" << std::string(40, '-') << "\n";
                 try {
-                    // 去除可能存在的首尾空格 (简单的健壮性处理)
+                    // 简单的去空格处理
                     token.erase(0, token.find_first_not_of(" \t\n\r"));
                     token.erase(token.find_last_not_of(" \t\n\r") + 1);
                     
-                    std::cout << report_handler_.run_period_query(std::stoi(token), format);
+                    if (!token.empty()) {
+                        periods.push_back(std::stoi(token));
+                    }
                 } catch (const std::exception&) {
                     std::cerr << "\033[31mError: \033[0mInvalid number '" << token << "' in list. Skipping.\n";
                 }
-                first = false;
+            }
+
+            if (!periods.empty()) {
+                // 一次性调用 Core
+                std::cout << report_handler_.run_period_queries(periods, format);
             }
         } else {
             throw std::runtime_error("Unknown query type '" + sub_command + "'. Supported: daily, monthly, period.");

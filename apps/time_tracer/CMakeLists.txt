@@ -45,8 +45,8 @@ include(TargetSetup)
 include(SourceFileCollection)
 
 # 3. [新增] 库目标定义 (逻辑)
-# 这一步会使用上一步定义的 REPORTS_SHARED_SOURCES 变量来创建 add_library
-include(AddReportsLibrary)
+include(AddReportsLibrary)      # 定义 reports_shared (Shared, 接口与插件公用)
+include(AddReportsDataLibrary)  # 定义 reports_data (Static, 数据层依赖隔离)
 
 # 4. 编译标志
 include(BuildTypeFlags)
@@ -67,7 +67,10 @@ add_executable(time_tracker_cli src/main_cli.cpp
 )
 
 # 链接到新的共享库
-target_link_libraries(time_tracker_cli PRIVATE reports_shared)
+target_link_libraries(time_tracker_cli PRIVATE 
+    reports_shared
+    reports_data
+)
 
 # 添加子目录以构建所有日报格式化器的 DLL
 add_subdirectory(src/reports/daily/formatters/markdown)

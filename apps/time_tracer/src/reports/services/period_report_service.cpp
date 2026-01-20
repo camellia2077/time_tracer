@@ -1,9 +1,10 @@
 // reports/services/period_report_service.cpp
 #include "period_report_service.hpp"
-#include "reports/period/queriers/batch_period_data_fetcher.hpp"
+// [修改] 指向新的 data 模块路径
+#include "reports/data/queriers/period/batch_period_data_fetcher.hpp"
 #include "reports/shared/factories/generic_formatter_factory.hpp"
-#include "reports/shared/utils/tree/project_tree_builder.hpp"
-#include "reports/shared/cache/project_name_cache.hpp"
+#include "reports/data/utils/project_tree_builder.hpp"
+#include "reports/data/cache/project_name_cache.hpp"
 #include <stdexcept>
 #include <memory>
 

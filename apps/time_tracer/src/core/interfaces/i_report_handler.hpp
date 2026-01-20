@@ -1,3 +1,4 @@
+// core/interfaces/i_report_handler.hpp
 #ifndef CORE_INTERFACES_I_REPORT_HANDLER_HPP_
 #define CORE_INTERFACES_I_REPORT_HANDLER_HPP_
 
@@ -13,6 +14,9 @@ public:
     virtual std::string run_daily_query(const std::string& date, ReportFormat format) = 0;
     virtual std::string run_monthly_query(const std::string& month, ReportFormat format) = 0;
     virtual std::string run_period_query(int days, ReportFormat format) = 0;
+    
+    // [新增] 批量周期查询接口
+    virtual std::string run_period_queries(const std::vector<int>& days_list, ReportFormat format) = 0;
 
     // 导出方法
     virtual void run_export_single_day_report(const std::string& date, ReportFormat format) = 0;

@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <memory>
-#include "reports/shared/model/monthly_report_data.hpp"
+#include "reports/data/model/monthly_report_data.hpp"
 #include "reports/monthly/formatters/latex/month_tex_config.hpp"
 
 namespace MonthTexUtils {

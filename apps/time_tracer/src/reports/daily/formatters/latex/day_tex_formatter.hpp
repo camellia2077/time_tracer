@@ -3,7 +3,7 @@
 #define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_HPP_
 
 #include "reports/shared/formatters/templates/base_tex_formatter.hpp"
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/formatters/latex/day_tex_config.hpp"
 
 class DayTexFormatter : public BaseTexFormatter<DailyReportData, DayTexConfig> {

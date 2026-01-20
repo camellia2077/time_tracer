@@ -4,7 +4,7 @@
 
 #include <sstream>
 #include <memory>
-#include "reports/shared/model/daily_report_data.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 #include "reports/daily/formatters/latex/day_tex_config.hpp"
 
 namespace DayTexUtils {

@@ -1,9 +1,10 @@
 // reports/services/daily_report_service.cpp
 #include "daily_report_service.hpp"
-#include "reports/daily/queriers/batch_day_data_fetcher.hpp"
+// [修改] 指向新的 data 模块路径
+#include "reports/data/queriers/daily/batch_day_data_fetcher.hpp"
 #include "reports/shared/factories/generic_formatter_factory.hpp"
-#include "reports/shared/utils/tree/project_tree_builder.hpp"
-#include "reports/shared/cache/project_name_cache.hpp"
+#include "reports/data/utils/project_tree_builder.hpp"
+#include "reports/data/cache/project_name_cache.hpp"
 #include <stdexcept>
 
 DailyReportService::DailyReportService(sqlite3* db, const AppConfig& config)
@@ -21,7 +22,7 @@ FormattedGroupedReports DailyReportService::generate_all_reports(ReportFormat fo
     name_cache.ensure_loaded(db_);
 
     // 1. 委托 Fetcher 获取所有准备好的数据
-    // [修改] 根据编译器报错，构造函数需要传入 provider
+    // [注意] BatchDayDataFetcher 的构造函数现在需要 IProjectInfoProvider
     BatchDayDataFetcher fetcher(db_, name_cache);
     BatchDataResult batch_data = fetcher.fetch_all_data();
 

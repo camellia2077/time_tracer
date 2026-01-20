@@ -1,3 +1,4 @@
+// cli/impl/commands/pipeline/convert_command.cpp
 #include "convert_command.hpp"
 #include "cli/framework/core/command_parser.hpp"
 #include "cli/framework/core/command_validator.hpp" // [新增]
@@ -30,10 +31,10 @@ void ConvertCommand::execute(const CommandParser& parser) {
     
     // 2. 配置选项
     AppOptions options;
-    options.validate_source = true;
+    options.validate_structure = true;
     options.convert = true;
     options.save_processed_output = true;
-    options.validate_output = true;
+    options.validate_logic = true;
     options.date_check_mode = DateCheckMode::Continuity;
 
     // 3. 执行

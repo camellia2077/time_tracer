@@ -38,6 +38,7 @@ static ParserConfig get_app_parser_config() {
         }
     };
 }
+
 // [修改] 在初始化列表中调用 get_app_parser_config()
 CliApplication::CliApplication(const std::vector<std::string>& args)
     : parser_(args, get_app_parser_config()) {
@@ -65,6 +66,9 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
 
     ConfigLoader config_loader(parser_.get_raw_arg(0));
     app_config_ = config_loader.load_configuration(); 
+    
+    // [修复] 将加载的配置注入到 Context 中
+    app_context_->config = app_config_;
 
     // 2. 初始化基础设施
     file_controller_ = std::make_unique<FileController>();
@@ -105,26 +109,20 @@ CliApplication::~CliApplication() = default;
 
 void CliApplication::execute() {
     // [新增] 处理 Help 全局标记
-    // 检查是否仅请求帮助，或者没有提供命令
     bool request_help = parser_.has_flag({"--help", "-h"});
     std::string command_name;
     try {
         command_name = parser_.get_command();
     } catch (...) {
-        // 如果无法解析命令（例如只有 ./timetracer），默认为 help
         request_help = true;
     }
 
     if (request_help) {
-        // 使用 Registry 批量创建所有命令以提取其元数据
-        // 注意：这里我们利用已经初始化的 app_context_
         auto commands = CommandRegistry<AppContext>::Instance().CreateAllCommands(*app_context_);
         print_full_usage(parser_.get_raw_arg(0).c_str(), commands);
         return;
     }
 
-    // [原有逻辑] 执行具体命令
-    // 注意：这里不再需要手动检查 app_context_ 的完整性，因为我们在构造函数里已经保证了
     auto command = CommandRegistry<AppContext>::Instance().CreateCommand(command_name, *app_context_);
 
     if (command) {
@@ -132,8 +130,6 @@ void CliApplication::execute() {
             command->execute(parser_);
         } catch (const std::exception& e) {
             std::cerr << RED_COLOR << "Error executing command '" << command_name << "': " << e.what() << RESET_COLOR << std::endl;
-            // 可选：出错时打印该特定命令的帮助
-            // print_command_usage(command_name, *command); 
         }
     } else {
         std::cerr << RED_COLOR << "Unknown command '" << command_name << "'." << RESET_COLOR << std::endl;

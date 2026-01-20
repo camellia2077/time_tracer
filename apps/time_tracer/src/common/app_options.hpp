@@ -11,8 +11,8 @@ struct AppOptions {
     fs::path input_path;
     bool run_all = false;
     bool convert = false;
-    bool validate_source = false;
-    bool validate_output = false;
+    bool validate_structure = false;
+    bool validate_logic = false;
     DateCheckMode date_check_mode = DateCheckMode::None;
     bool save_processed_output = false;
 };
