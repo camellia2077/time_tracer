@@ -18,6 +18,7 @@ find_package(nlohmann_json REQUIRED)
 find_package(tomlplusplus REQUIRED)
 
 # --- 1. 项目范围的设置 ---
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -104,7 +105,9 @@ foreach(TARGET_NAME ${ALL_TARGETS})
         COMMENT "Copying config folder for ${TARGET_NAME}"
     )
 endforeach()
-
+# --- 代码格式化工具 ---
+include(AddFormatTarget)
+include(AddTidyFixTarget)
 # --- 5. 包含特定功能的模块 ---
 include(Win32PostBuildCopy) # 包含并执行DLL复制逻辑 
 include(Packaging)          # 包含并执行打包逻辑 

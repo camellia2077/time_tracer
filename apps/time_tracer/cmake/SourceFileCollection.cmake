@@ -7,42 +7,42 @@
 # --- Core Sources ---
 set(CORE_SOURCES
     # Root
-    "src/core/workflow_handler.cpp"
+    "src/application/workflow_handler.cpp"
 
     # Database
-    "src/core/database/db_manager.cpp"
+    "src/infrastructure/persistence/sqlite/db_manager.cpp"
 
     # Pipeline
-    "src/core/pipeline/pipeline_manager.cpp"
+    "src/application/pipeline/pipeline_manager.cpp"
     
     
     # Pipeline - Steps
-    "src/core/pipeline/steps/logic_linker_step.cpp"
-    "src/core/pipeline/steps/converter_step.cpp"
-    "src/core/pipeline/steps/file_collector.cpp"
+    "src/application/pipeline/steps/logic_linker_step.cpp"
+    "src/application/pipeline/steps/converter_step.cpp"
+    "src/application/pipeline/steps/file_collector.cpp"
 
-    "src/core/pipeline/steps/structure_validator_step.cpp"
-    "src/core/pipeline/steps/logic_validator_step.cpp"
+    "src/application/pipeline/steps/structure_validator_step.cpp"
+    "src/application/pipeline/steps/logic_validator_step.cpp"
 
     # Pipeline - Utils
-    "src/core/pipeline/utils/converter_config_factory.cpp"
-    "src/core/pipeline/utils/processed_data_writer.cpp"
+    "src/application/pipeline/utils/converter_config_factory.cpp"
+    "src/infrastructure/io/processed_data_writer.cpp"
 
     # Reporting
-    "src/core/reporting/report_handler.cpp"
+    "src/application/reporting/report_handler.cpp"
     
     # Reporting - Export
-    "src/core/reporting/export/export_utils.cpp"
-    "src/core/reporting/export/exporter.cpp"
+    "src/infrastructure/reports/export_utils.cpp"
+    "src/infrastructure/reports/exporter.cpp"
     
     # Reporting - Generator
-    "src/core/reporting/generator/report_file_manager.cpp"
-    "src/core/reporting/generator/report_generator.cpp"
+    "src/application/reporting/generator/report_file_manager.cpp"
+    "src/application/reporting/generator/report_generator.cpp"
 )
 
 # --- Common  ---
 set(COMMON_SOURCES
-    "src/common/utils/time_utils.cpp"
+    "src/domain/utils/time_utils.cpp"
 )
 set(SERIALIZER_SOURCES
     "src/serializer/json_serializer.cpp"
@@ -184,7 +184,7 @@ set(CONVERTER_SOURCES
     "src/converter/convert/core/activity_mapper.cpp"
     "src/converter/convert/core/day_processor.cpp"
     "src/converter/convert/core/day_stats.cpp"
-    "src/converter/convert/io/text_parser.cpp"
+    "src/adapters/input/parser/text_parser.cpp"
 )
 # --- File Handler Sources ---
 set(IO_SOURCES

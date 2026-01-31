@@ -1,10 +1,11 @@
 // serializer/json_serializer.hpp
-#ifndef SERIALIZER_JSON_SERIALIZER_HPP_
-#define SERIALIZER_JSON_SERIALIZER_HPP_
+#ifndef SERIALIZER_JSON_SERIALIZER_H_
+#define SERIALIZER_JSON_SERIALIZER_H_
 
-#include <vector>
 #include <nlohmann/json.hpp>
-#include "common/model/daily_log.hpp"
+#include <vector>
+
+#include "domain/model/daily_log.hpp"
 
 namespace serializer {
 
@@ -13,16 +14,17 @@ namespace serializer {
  * 负责调度内部核心组件 (LogSerializer, LogDeserializer) 完成转换任务。
  */
 class JsonSerializer {
-public:
-    // Struct -> JSON
-    static nlohmann::json serializeDay(const DailyLog& day);
-    static nlohmann::json serializeDays(const std::vector<DailyLog>& days);
+ public:
+  // Struct -> JSON
+  static nlohmann::json serializeDay(const DailyLog& day);
+  static nlohmann::json serializeDays(const std::vector<DailyLog>& days);
 
-    // JSON -> Struct
-    static DailyLog deserializeDay(const nlohmann::json& day_json);
-    static std::vector<DailyLog> deserializeDays(const nlohmann::json& json_array);
+  // JSON -> Struct
+  static DailyLog deserializeDay(const nlohmann::json& day_json);
+  static std::vector<DailyLog> deserializeDays(
+      const nlohmann::json& json_array);
 };
 
-} // namespace serializer
+}  // namespace serializer
 
-#endif // SERIALIZER_JSON_SERIALIZER_HPP_
+#endif  // SERIALIZER_JSON_SERIALIZER_H_

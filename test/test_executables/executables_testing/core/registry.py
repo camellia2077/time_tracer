@@ -28,7 +28,7 @@ def create_test_suite(config: GlobalConfig, context: TestContext, counter: TestC
         generated_db_file_name=config.cli_names.GENERATED_DB_FILE_NAME,
         daily_query_dates=config.test_params.DAILY_QUERY_DATES,
         monthly_query_months=config.test_params.MONTHLY_QUERY_MONTHS,
-        period_query_days=config.test_params.PERIOD_QUERY_DAYS,
+        recent_query_days=config.test_params.RECENT_QUERY_DAYS,
         test_formats=config.test_params.TEST_FORMATS
     ))
 
@@ -41,7 +41,7 @@ def create_test_suite(config: GlobalConfig, context: TestContext, counter: TestC
         is_bulk_mode=config.test_params.EXPORT_MODE_IS_BULK,
         specific_dates=config.test_params.SPECIFIC_EXPORT_DATES,
         specific_months=config.test_params.SPECIFIC_EXPORT_MONTHS,
-        period_export_days=config.test_params.PERIOD_EXPORT_DAYS,
+        recent_export_days=config.test_params.RECENT_EXPORT_DAYS,
         test_formats=config.test_params.TEST_FORMATS,
         export_output_path=config.paths.EXPORT_OUTPUT_DIR
     ))
