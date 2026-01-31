@@ -68,12 +68,12 @@ def _load_test_params(toml_data) -> TestParams:
     params_inst.TEST_FORMATS = test_params_data.get("test_formats", [])
     params_inst.DAILY_QUERY_DATES = test_params_data.get("daily_query_dates", [])
     params_inst.MONTHLY_QUERY_MONTHS = test_params_data.get("monthly_query_months", [])
-    params_inst.PERIOD_QUERY_DAYS = test_params_data.get("period_query_days", [])
+    params_inst.RECENT_QUERY_DAYS = test_params_data.get("recent_query_days", [])
     
     params_inst.EXPORT_MODE_IS_BULK = bool(test_params_data.get("export_mode_is_bulk", False))
     params_inst.SPECIFIC_EXPORT_DATES = test_params_data.get("specific_export_dates", [])
     params_inst.SPECIFIC_EXPORT_MONTHS = test_params_data.get("specific_export_months", [])
-    params_inst.PERIOD_EXPORT_DAYS = test_params_data.get("period_export_days", [])
+    params_inst.RECENT_EXPORT_DAYS = test_params_data.get("recent_export_days", [])
     return params_inst
 
 def _load_cleanup_params(toml_data) -> Cleanup:

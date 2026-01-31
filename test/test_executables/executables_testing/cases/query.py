@@ -5,12 +5,12 @@ from ..conf.definitions import TestContext, TestReport, Colors
 class QueryTester(BaseTester):
     def __init__(self, counter: TestCounter, module_order: int, context: TestContext,
                  generated_db_file_name: str, daily_query_dates: list, monthly_query_months: list,
-                 period_query_days: list, test_formats: list):
+                 recent_query_days: list, test_formats: list):
         super().__init__(counter, module_order, "query", context)
         self.db_file = context.db_path if context.db_path else context.exe_path.parent / generated_db_file_name
         self.daily_dates = daily_query_dates
         self.monthly_months = monthly_query_months
-        self.period_days = period_query_days
+        self.recent_days = recent_query_days
         self.formats = test_formats
 
     def run_tests(self) -> TestReport:
@@ -31,9 +31,9 @@ class QueryTester(BaseTester):
         for month in self.monthly_months:
             for fmt in self.formats:
                 tests_to_run.append((f"Query Monthly ({month}) [{fmt}]", ["query", "monthly", month, "--format", fmt] + db_arg))
-        for days in self.period_days:
+        for days in self.recent_days:
             for fmt in self.formats:
-                tests_to_run.append((f"Query Period ({days}) [{fmt}]", ["query", "period", str(days), "--format", fmt] + db_arg))
+                tests_to_run.append((f"Query Recent ({days}) [{fmt}]", ["query", "recent", str(days), "--format", fmt] + db_arg))
 
         for name, args in tests_to_run:
             res = self.run_command_test(name, args)

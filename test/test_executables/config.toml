@@ -9,10 +9,10 @@
 enable_environment_clean = 1
 
 # 设置为 1 来从源目录复制最新的 exe, dll, config, plugins 到测试环境
-enable_environment_prepare = 0
+enable_environment_prepare = 1
 
 # 设置为 1 来执行具体的测试用例
-enable_test_execution = 0
+enable_test_execution = 1
 
 
 # ==============================================================================
@@ -20,10 +20,10 @@ enable_test_execution = 0
 # ==============================================================================
 [paths]
 # 从这里复制exe和exe运行需要的文件
-source_executables_dir = "C:/Computer/my_github/github_cpp/time_tracer/Time_Master_cpp/apps/time_tracer/build/bin"
+source_executables_dir = "C:/Computer/my_github/github_cpp/time_tracer/time_tracer_cpp/apps/time_tracer/build/bin"
 
 # 存放 txt 源文件的文件夹
-test_data_path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/Date"
+test_data_path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/logs"
 
 # 测试环境的文件夹 (存放 exe/dll)
 target_executables_dir = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test"
@@ -57,7 +57,7 @@ test_formats = ["md", "tex", "typ"]
 # 这个是查询，只查询，不把查询的内容保存到本地
 daily_query_dates = ["20260101", "20260201"]
 monthly_query_months = ["202605", "202606"]
-period_query_days = [7, 10, 15]
+recent_query_days = [7, 10, 15]
 
 # 全部导出总开关: true -> 批量导出, false -> 按指定列表导出
 export_mode_is_bulk = false
@@ -69,7 +69,7 @@ specific_export_dates = [
     "20260201"
 ]
 specific_export_months = ["202605", "202606"]
-period_export_days = [7, 10, 15]
+recent_export_days = [7, 10, 15]
 
 
 # ==============================================================================

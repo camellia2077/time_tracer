@@ -1,10 +1,11 @@
 // reports/shared/formatters/typst/typ_utils.hpp
-#ifndef REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
-#define REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
+#ifndef REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
+#define REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
 
 #include <string>
+
 #include "reports/data/model/project_tree.hpp"
-#include "reports/shared/api/shared_api.hpp" 
+#include "reports/shared/api/shared_api.hpp"
 
 namespace TypUtils {
 
@@ -20,13 +21,9 @@ namespace TypUtils {
  */
 // [修正] 添加 reporting:: 命名空间前缀
 REPORTS_SHARED_API std::string format_project_tree(
-    const reporting::ProjectTree& tree,
-    long long total_duration,
-    int avg_days,
-    const std::string& category_title_font,
-    int category_title_font_size
-);
+    const reporting::ProjectTree& tree, long long total_duration, int avg_days,
+    const std::string& category_title_font, int category_title_font_size);
 
-} // namespace TypUtils
+}  // namespace TypUtils
 
-#endif // REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_HPP_
+#endif  // REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_

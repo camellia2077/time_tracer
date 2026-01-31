@@ -5,20 +5,11 @@ import time
 import os
 from pathlib import Path
 
-# ==================== [核心修改] ====================
 # 更新导入路径以匹配新的分包结构
-
-# 1. 配置类现在位于 builder.conf.settings
 from .conf.settings import AppConfig
-
-# 2. 任务和命令模块现在位于 builder.steps 包中
 from .steps import tasks, commands
-
-# 3. UI 函数现在位于 builder.ui.console
-# 4. 颜色类现在位于 builder.ui.colors
 from .ui.console import print_header, print_error, print_success
 from .ui.colors import AnsiColors
-# ====================================================
 
 class BuildPipeline:
     """构建流水线核心控制器"""
@@ -41,7 +32,6 @@ class BuildPipeline:
             self._load_config()
 
             # 2. 解析参数
-            # 注意：argv[0] 通常是脚本名，调用者应传入 sys.argv[1:]
             self.options, cmake_args = tasks.parse_arguments(
                 argv, 
                 default_compiler=self.config.COMPILER
@@ -54,7 +44,7 @@ class BuildPipeline:
                 self.options["clean"]
             )
             
-            # 切换工作目录 (这是构建系统的常见行为)
+            # 切换工作目录
             os.chdir(build_dir)
 
             # 4. 执行核心构建步骤
@@ -81,7 +71,9 @@ class BuildPipeline:
             self.options["package"], 
             cmake_args, 
             self.options["compiler"], 
-            config=self.config
+            config=self.config,
+            no_opt=self.options.get("no_opt", False),
+            no_tidy=self.options.get("no_tidy", False)  # [新增] 传递 no_tidy 参数
         )
         
         # 编译
