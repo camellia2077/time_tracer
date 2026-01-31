@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "reports/data/model/range_report_data.hpp"
 #include "reports/shared/api/shared_api.hpp"
 
 /**
@@ -24,5 +25,13 @@ REPORTS_SHARED_API std::string replace_all(std::string str,
 REPORTS_SHARED_API std::string format_multiline_for_list(
     const std::string& text, int indent_spaces,
     const std::string& line_suffix = "");
+
+/**
+ * @brief 使用模板渲染 Range 标题。
+ * 支持占位符: {range_label}, {start_date}, {end_date}, {requested_days},
+ * {year_month}, {days_to_query}
+ */
+REPORTS_SHARED_API std::string format_title_template(
+    std::string title_template, const RangeReportData& data);
 
 #endif  // REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_

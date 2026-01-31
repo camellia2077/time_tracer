@@ -75,8 +75,8 @@ class ExportTester(BaseTester):
         cases = []
         
         # 1. Daily & Monthly
-        cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-daily"], common_args))
-        cases.extend(self._make_cases("Bulk Export All Monthly", ["export", "all-monthly"], common_args))
+        cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-day"], common_args))
+        cases.extend(self._make_cases("Bulk Export All Monthly", ["export", "all-month"], common_args))
 
         # 2. Period
         if self.recent_days_to_export:
@@ -96,7 +96,7 @@ class ExportTester(BaseTester):
         for date in self.specific_dates:
             cases.extend(self._make_cases(
                 f"Specific Export Daily ({date})", 
-                ["export", "daily", date], 
+                ["export", "day", date], 
                 common_args
             ))
 
@@ -104,7 +104,7 @@ class ExportTester(BaseTester):
         for month in self.specific_months:
             cases.extend(self._make_cases(
                 f"Specific Export Monthly ({month})", 
-                ["export", "monthly", month], 
+                ["export", "month", month], 
                 common_args
             ))
             

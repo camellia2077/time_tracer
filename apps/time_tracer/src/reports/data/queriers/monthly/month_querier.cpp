@@ -45,11 +45,14 @@ auto MonthQuerier::_validate_input() const -> bool {
 }
 
 void MonthQuerier::_handle_invalid_input(MonthlyReportData& data) const {
-  data.year_month = "INVALID";
+  data.is_valid = false;
 }
 
 void MonthQuerier::_prepare_data(MonthlyReportData& data) const {
-  data.year_month = param_;
+  data.range_label = param_;
+  data.start_date = param_ + "-01";
+  data.end_date = param_ + "-31";
+  data.requested_days = 0;
 }
 
 auto MonthQuerier::get_date_condition_sql() const -> std::string {
