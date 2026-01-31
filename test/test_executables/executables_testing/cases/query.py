@@ -27,10 +27,10 @@ class QueryTester(BaseTester):
         tests_to_run = []
         for date in self.daily_dates:
             for fmt in self.formats:
-                tests_to_run.append((f"Query Daily ({date}) [{fmt}]", ["query", "daily", date, "--format", fmt] + db_arg))
+                tests_to_run.append((f"Query Daily ({date}) [{fmt}]", ["query", "day", date, "--format", fmt] + db_arg))
         for month in self.monthly_months:
             for fmt in self.formats:
-                tests_to_run.append((f"Query Monthly ({month}) [{fmt}]", ["query", "monthly", month, "--format", fmt] + db_arg))
+                tests_to_run.append((f"Query Monthly ({month}) [{fmt}]", ["query", "month", month, "--format", fmt] + db_arg))
         for days in self.recent_days:
             for fmt in self.formats:
                 tests_to_run.append((f"Query Recent ({days}) [{fmt}]", ["query", "recent", str(days), "--format", fmt] + db_arg))

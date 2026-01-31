@@ -108,29 +108,25 @@ void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels) {
   labels.activity_connector = tbl["activity_connector"].value_or("->");
 }
 
-void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels) {
-  labels.report_title = get_required<std::string>(tbl, "report_title");
+void fill_range_labels(const toml::table& tbl, RangeReportLabels& labels) {
+  labels.title_template = get_required<std::string>(tbl, "title_template");
   labels.total_time_label = get_required<std::string>(tbl, "total_time_label");
   labels.actual_days_label =
       get_required<std::string>(tbl, "actual_days_label");
   labels.no_records_message =
       get_required<std::string>(tbl, "no_records_message");
+  labels.invalid_range_message =
+      tbl["invalid_range_message"].value_or("Invalid range.");
+  labels.project_breakdown_label =
+      tbl["project_breakdown_label"].value_or("Project Breakdown");
+}
+
+void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels) {
+  fill_range_labels(tbl, labels);
 }
 
 void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels) {
-  labels.report_title_prefix =
-      get_required<std::string>(tbl, "report_title_prefix");
-  labels.report_title_days =
-      get_required<std::string>(tbl, "report_title_days");
-  labels.report_title_date_separator =
-      tbl["report_title_date_separator"].value_or("to");
-  labels.total_time_label = get_required<std::string>(tbl, "total_time_label");
-  labels.actual_days_label =
-      get_required<std::string>(tbl, "actual_days_label");
-  labels.no_records_message =
-      get_required<std::string>(tbl, "no_records_message");
-  labels.invalid_days_message =
-      tbl["invalid_days_message"].value_or("Invalid days.");
+  fill_range_labels(tbl, labels);
 }
 
 void fill_keyword_colors(const toml::table& tbl,

@@ -79,6 +79,7 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/daily/common/day_base_config.cpp"
     "src/reports/monthly/common/month_base_config.cpp"
     "src/reports/period/common/period_base_config.cpp"
+    "src/reports/range/common/range_base_config.cpp"
     "src/reports/daily/formatters/statistics/stat_formatter.cpp"
 
     # Shared - 内部工具与配置

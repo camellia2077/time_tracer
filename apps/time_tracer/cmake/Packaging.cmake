@@ -14,12 +14,9 @@ if(BUILD_INSTALLER)
         DayMdFormatter
         DayTypFormatter
         DayTexFormatter
-        MonthMdFormatter
-        MonthTypFormatter    
-        MonthTexFormatter    
-        PeriodMdFormatter    
-        PeriodTypFormatter
-        PeriodTexFormatter
+        RangeMdFormatter
+        RangeTypFormatter
+        RangeTexFormatter
         RUNTIME DESTINATION bin/plugins
         LIBRARY DESTINATION bin/plugins
     )

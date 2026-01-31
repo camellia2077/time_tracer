@@ -29,7 +29,7 @@ auto QueryCommand::get_definitions() const -> std::vector<ArgDef> {
   return {{"type",
            ArgType::Positional,
            {},
-           "Query type (daily, monthly, period)",
+           "Query type (day, month, recent)",
            true,
            "",
            0},
@@ -49,7 +49,7 @@ auto QueryCommand::get_definitions() const -> std::vector<ArgDef> {
 }
 
 auto QueryCommand::get_help() const -> std::string {
-  return "Queries statistics (daily, monthly, recent) from the database.";
+  return "Queries statistics (day, month, recent) from the database.";
 }
 
 void QueryCommand::execute(const CommandParser& parser) {
@@ -66,9 +66,9 @@ void QueryCommand::execute(const CommandParser& parser) {
       ArgUtils::parse_report_formats(format_str);
 
   // 预处理日期格式
-  if (sub_command == "daily") {
+  if (sub_command == "day") {
     query_arg = normalize_to_date_format(query_arg);
-  } else if (sub_command == "monthly") {
+  } else if (sub_command == "month") {
     query_arg = normalize_to_month_format(query_arg);
   }
 
@@ -80,11 +80,11 @@ void QueryCommand::execute(const CommandParser& parser) {
       std::cout << "\n" << std::string(40, '=') << "\n";
     }
 
-    if (sub_command == "daily") {
+    if (sub_command == "day") {
       std::cout << report_handler_.run_daily_query(query_arg, format);
-    } else if (sub_command == "monthly") {
+    } else if (sub_command == "month") {
       std::cout << report_handler_.run_monthly_query(query_arg, format);
-    } else if (sub_command == "period") {
+    } else if (sub_command == "recent") {
       // [修改] 解析逗号分隔列表，但将循环逻辑下沉到 Core
       std::vector<int> periods;
       std::string token;
@@ -111,7 +111,7 @@ void QueryCommand::execute(const CommandParser& parser) {
       }
     } else {
       throw std::runtime_error("Unknown query type '" + sub_command +
-                               "'. Supported: daily, monthly, recent.");
+                               "'. Supported: day, month, recent.");
     }
   }
 }
