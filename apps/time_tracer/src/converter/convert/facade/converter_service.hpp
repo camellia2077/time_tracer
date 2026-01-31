@@ -1,27 +1,28 @@
 // converter/convert/facade/converter_service.hpp
-#ifndef CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_
-#define CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_
+#ifndef CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_H_
+#define CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_H_
 
 // [重构] 引用 Common 定义的配置结构体
-#include "common/config/models/converter_config_models.hpp"
-
-#include "common/model/daily_log.hpp"
-#include <string>
+#include <functional>
 #include <istream>
-#include <functional> 
+#include <string>
+
+#include "common/config/models/converter_config_models.hpp"
+#include "domain/model/daily_log.hpp"
 
 /**
  * @brief 核心转换调度器 (Facade)
  * 负责协调 Parser 和 Processor，将输入流转换为 DailyLog 对象。
  */
 class ConverterService {
-public:
-    explicit ConverterService(const ConverterConfig& config);
+ public:
+  explicit ConverterService(const ConverterConfig& config);
 
-    void executeConversion(std::istream& combined_input_stream, std::function<void(DailyLog&&)> data_consumer);
+  void executeConversion(std::istream& combined_input_stream,
+                         std::function<void(DailyLog&&)> data_consumer);
 
-private:
-    const ConverterConfig& config_;
+ private:
+  const ConverterConfig& config_;
 };
 
-#endif // CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_HPP_
+#endif  // CONVERTER_CONVERT_FACADE_CONVERTER_SERVICE_H_

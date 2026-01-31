@@ -1,16 +1,16 @@
 // config/validator/reports/facade/query_facade.hpp
-#ifndef CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_
-#define CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_
+#ifndef CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_H_
+#define CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_H_
 
-#include <vector>
+#include <toml++/toml.h>
+
 #include <string>
-#include <toml++/toml.h> 
+#include <vector>
 
 class QueryFacade {
-public:
-    bool validate(
-        const std::vector<std::pair<std::string, toml::table>>& query_configs
-    ) const;
+ public:
+  static bool validate(
+      const std::vector<std::pair<std::string, toml::table>>& query_configs);
 };
 
-#endif // CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_HPP_
+#endif  // CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_H_

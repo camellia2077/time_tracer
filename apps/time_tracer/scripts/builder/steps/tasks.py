@@ -37,13 +37,26 @@ def parse_arguments(args, default_compiler='default'):
         args.remove('--clang')
         print("--- Compiler override: Clang will be used.")
 
+    # --- 处理优化开关 ---
+    should_no_opt = '--no-opt' in args
+    if should_no_opt:
+        args.remove('--no-opt')
+        print("--- Optimization override: Optimizations will be disabled for faster compilation.")
+
+    # --- [新增] 处理 Clang-Tidy 开关 ---
+    should_no_tidy = '--no-tidy' in args
+    if should_no_tidy:
+        args.remove('--no-tidy')
+        print("--- Static Analysis override: Clang-Tidy will be disabled.")
+
     # --- 提取 CMake 参数 (-D 开头) ---
     cmake_args = [arg for arg in args if arg.startswith('-D')]
     if cmake_args:
         print(f"--- Found manual CMake arguments: {' '.join(cmake_args)}")
     
     # --- 检查是否有未知参数 ---
-    known_args = {'clean', '--package', '-p', 'install', '--gcc', '--clang'}
+    # [修改] 将 --no-tidy 加入已知参数列表
+    known_args = {'clean', '--package', '-p', 'install', '--gcc', '--clang', '--no-opt', '--no-tidy'}
     # 过滤掉已知参数和 CMake 参数，剩下的就是未知的
     remaining_args = [arg for arg in args if arg not in known_args and not arg.startswith('-D')]
     
@@ -55,7 +68,9 @@ def parse_arguments(args, default_compiler='default'):
         "clean": should_clean, 
         "package": should_package, 
         "install": should_install, 
-        "compiler": compiler
+        "compiler": compiler,
+        "no_opt": should_no_opt,
+        "no_tidy": should_no_tidy  # [新增] 返回 no_tidy 状态
     }, cmake_args
 
 def prepare_build_directory(project_dir: Path, build_dir_name: str, should_clean: bool):

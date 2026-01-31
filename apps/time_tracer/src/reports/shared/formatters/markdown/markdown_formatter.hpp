@@ -1,10 +1,11 @@
 // reports/shared/formatters/markdown/markdown_formatter.hpp
-#ifndef REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_
-#define REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_
+#ifndef REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_H_
+#define REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_H_
 
 #include <string>
+
 #include "reports/data/model/project_tree.hpp"
-#include "reports/shared/api/shared_api.hpp" 
+#include "reports/shared/api/shared_api.hpp"
 
 namespace MarkdownFormatter {
 
@@ -17,8 +18,9 @@ namespace MarkdownFormatter {
  * @return 格式化后的 Markdown 字符串。
  */
 // [修正] 添加 reporting:: 命名空间前缀
-REPORTS_SHARED_API std::string format_project_tree(const reporting::ProjectTree& tree, long long total_duration, int avg_days); 
+REPORTS_SHARED_API std::string format_project_tree(
+    const reporting::ProjectTree& tree, long long total_duration, int avg_days);
 
-} // namespace MarkdownFormatter
+}  // namespace MarkdownFormatter
 
-#endif // REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_HPP_
+#endif  // REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_H_

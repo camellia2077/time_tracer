@@ -1,6 +1,6 @@
 // config/validator/plugins/facade/plugin_validator.hpp
-#ifndef CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_HPP_
-#define CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_HPP_
+#ifndef CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
+#define CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
 
 #include <filesystem>
 #include <string>
@@ -9,8 +9,9 @@
 namespace fs = std::filesystem;
 
 class PluginValidator {
-public:
-    bool validate(const fs::path& plugins_path, const std::vector<std::string>& expected_plugins) const;
+ public:
+  static bool validate(const fs::path& plugins_path,
+                       const std::vector<std::string>& expected_plugins);
 };
 
-#endif // CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_HPP_
+#endif  // CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_

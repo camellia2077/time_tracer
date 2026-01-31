@@ -1,10 +1,11 @@
 // reports/shared/formatters/latex/tex_utils.hpp
-#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_
-#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_
+#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
+#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
+
 #include "reports/data/model/project_tree.hpp"
 #include "reports/shared/api/shared_api.hpp"
 
@@ -16,16 +17,14 @@ namespace TexUtils {
  * @param cjk_main_font 中日韩字体名称。
  * @param font_size 字体大小。
  * @param margin_in 页边距（单位：英寸）。
- * @param keyword_colors 一个 map，包含用于语法高亮的关键字和对应的十六进制颜色值。
+ * @param keyword_colors 一个
+ * map，包含用于语法高亮的关键字和对应的十六进制颜色值。
  * @return 包含完整 Preamble 的字符串。
  */
 REPORTS_SHARED_API std::string get_tex_preamble(
-    const std::string& main_font,
-    const std::string& cjk_main_font,
-    int font_size,
-    double margin_in,
-    const std::map<std::string, std::string>& keyword_colors = {}
-);
+    const std::string& main_font, const std::string& cjk_main_font,
+    int font_size, double margin_in,
+    const std::map<std::string, std::string>& keyword_colors = {});
 
 /**
  * @brief 生成 LaTeX 文档的 Postfix（结尾部分）。
@@ -51,14 +50,10 @@ REPORTS_SHARED_API std::string escape_latex(const std::string& input);
  * @return 格式化后的 LaTeX 字符串。
  */
 REPORTS_SHARED_API std::string format_project_tree(
-    const reporting::ProjectTree& tree, // [修改] 加上 reporting:: 命名空间
-    long long total_duration,
-    int avg_days,
-    int category_title_font_size,
-    double list_top_sep_pt,
-    double list_item_sep_ex
-);
+    const reporting::ProjectTree& tree,  // [修改] 加上 reporting:: 命名空间
+    long long total_duration, int avg_days, int category_title_font_size,
+    double list_top_sep_pt, double list_item_sep_ex);
 
-} // namespace TexUtils
+}  // namespace TexUtils
 
-#endif // REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_HPP_
+#endif  // REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_

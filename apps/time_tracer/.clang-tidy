@@ -1,0 +1,50 @@
+Checks: >
+  -*,
+  # 基础 Google 与通用规范
+  google-*,
+  readability-*,
+  modernize-*,
+  bugprone-*,
+  -google-runtime-references, # Google 现已允许在某些情况下使用非常量引用
+  
+  # C++23 特定与现代化增强
+  modernize-use-std-print,
+  modernize-use-nullptr,
+  modernize-use-override,
+  modernize-pass-by-value,
+  readability-identifier-naming
+
+CheckOptions:
+  # 命名逻辑修正
+  - key:             readability-identifier-naming.FunctionCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.VariableCase
+    value:           lower_case
+  
+  # 覆盖所有类成员后缀 
+  - key:             readability-identifier-naming.ClassMemberSuffix
+    value:           _
+  - key:             readability-identifier-naming.PrivateMemberSuffix
+    value:           _
+  - key:             readability-identifier-naming.ProtectedMemberSuffix
+    value:           _
+
+  # 常量与枚举 
+  - key:             readability-identifier-naming.ConstantPrefix
+    value:           k
+  - key:             readability-identifier-naming.ConstantCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.EnumConstantPrefix
+    value:           k
+  - key:             readability-identifier-naming.EnumConstantCase
+    value:           CamelCase
+
+  # 宏定义逻辑修正：允许全大写，不仅限于 _H_ 
+  - key:             readability-identifier-naming.MacroDefinitionCase
+    value:           UPPER_CASE
+
+  # 类型规范
+  - key:             readability-identifier-naming.ClassCase
+    value:           CamelCase
+  - key:             readability-identifier-naming.StructCase
+    value:           CamelCase

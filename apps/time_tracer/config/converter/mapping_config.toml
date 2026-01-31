@@ -6,7 +6,7 @@
 
 "洗澡" = "routine_body-hygiene_bathing"
 "洗漱" = "routine_personal-hygiene_oral-hygiene"
-"拉屎" = "routine_toilet"
+"上厕所" = "routine_toilet"
 "快递" =  "routine_express"
 
 "睡觉" = "sleep_day"

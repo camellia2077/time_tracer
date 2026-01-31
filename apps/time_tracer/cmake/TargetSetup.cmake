@@ -7,6 +7,21 @@
 set(WARNING_LEVEL 2 CACHE STRING "Set compiler warning level (0-3)")
 # ====================================================
 
+
+# [在文件顶部添加]
+# 定义开关，默认开启（Release模式下可能希望关闭以加快速度，视情况而定）
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+
+# 查找 clang-tidy 程序 (只查找一次)
+if(ENABLE_CLANG_TIDY)
+    find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
+    if(NOT CLANG_TIDY_EXE)
+        message(WARNING "clang-tidy not found. Static analysis will be disabled.")
+    else()
+        message(STATUS "Found clang-tidy: ${CLANG_TIDY_EXE}")
+    endif()
+endif()
+
 function(setup_project_target TARGET_NAME)
     # 添加头文件搜索路径
     # 使用 PROJECT_SOURCE_DIR 确保路径始终从项目根目录开始，支持作为子项目构建
@@ -27,6 +42,12 @@ function(setup_project_target TARGET_NAME)
     # target_precompile_headers 会自动处理 -include 标志，无需手动添加 target_compile_options
     target_precompile_headers(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/pch.hpp")
 
+    if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
+        set_target_properties(${TARGET_NAME} PROPERTIES 
+            CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
+        )
+    endif()
+    
     # ==================== [警告等级] ====================
     # 根据 WARNING_LEVEL 的值来分级设置警告
     if(WARNING_LEVEL GREATER_EQUAL 1)

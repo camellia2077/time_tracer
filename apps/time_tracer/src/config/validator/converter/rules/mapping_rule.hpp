@@ -1,12 +1,12 @@
 // config/validator/converter/rules/mapping_rule.hpp
-#ifndef CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_
-#define CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_
+#ifndef CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_H_
+#define CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_H_
 
-#include <toml++/toml.h> 
+#include <toml++/toml.h>
 
 class MappingRule {
-public:
-    bool validate(const toml::table& mappings_tbl) const;
+ public:
+  static bool validate(const toml::table& mappings_tbl);
 };
 
-#endif // CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_HPP_
+#endif  // CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_H_
