@@ -23,3 +23,25 @@ auto format_multiline_for_list(const std::string& text, int indent_spaces,
 
   return replace_all(text, "\n", replacement);
 }
+
+auto format_title_template(std::string title_template,
+                           const RangeReportData& data) -> std::string {
+  const std::string requested_days =
+      (data.requested_days > 0) ? std::to_string(data.requested_days) : "";
+
+  title_template =
+      replace_all(title_template, "{range_label}", data.range_label);
+  title_template =
+      replace_all(title_template, "{start_date}", data.start_date);
+  title_template = replace_all(title_template, "{end_date}", data.end_date);
+  title_template =
+      replace_all(title_template, "{requested_days}", requested_days);
+
+  // Backward-compatible aliases
+  title_template =
+      replace_all(title_template, "{year_month}", data.range_label);
+  title_template =
+      replace_all(title_template, "{days_to_query}", requested_days);
+
+  return title_template;
+}

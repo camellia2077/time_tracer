@@ -78,13 +78,9 @@ add_subdirectory(src/reports/daily/formatters/markdown)
 add_subdirectory(src/reports/daily/formatters/typst)
 add_subdirectory(src/reports/daily/formatters/latex)
 
-add_subdirectory(src/reports/monthly/formatters/markdown)
-add_subdirectory(src/reports/monthly/formatters/typst)
-add_subdirectory(src/reports/monthly/formatters/latex)
-
-add_subdirectory(src/reports/period/formatters/markdown)
-add_subdirectory(src/reports/period/formatters/typst)
-add_subdirectory(src/reports/period/formatters/latex)
+add_subdirectory(src/reports/range/formatters/markdown)
+add_subdirectory(src/reports/range/formatters/typst)
+add_subdirectory(src/reports/range/formatters/latex)
 
 # 创建一个包含所有可执行文件目标的列表
 set(ALL_TARGETS time_tracker_cli)

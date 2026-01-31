@@ -39,11 +39,11 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
       format_func_day_ =
           (FormatReportFunc_Day)GetProcAddress(dll_handle_, "format_report");
     } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      format_func_month_ =
-          (FormatReportFunc_Month)GetProcAddress(dll_handle_, "format_report");
+      format_func_range_ =
+          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_period_ =
-          (FormatReportFunc_Period)GetProcAddress(dll_handle_, "format_report");
+      format_func_range_ =
+          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
     }
 
 #pragma GCC diagnostic pop
@@ -62,20 +62,20 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
       format_func_day_ =
           (FormatReportFunc_Day)dlsym(dll_handle_, "format_report");
     } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      format_func_month_ =
-          (FormatReportFunc_Month)dlsym(dll_handle_, "format_report");
+      format_func_range_ =
+          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_period_ =
-          (FormatReportFunc_Period)dlsym(dll_handle_, "format_report");
+      format_func_range_ =
+          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
     }
 #endif
     bool format_func_loaded = false;
     if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
       format_func_loaded = (format_func_day_ != nullptr);
     } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      format_func_loaded = (format_func_month_ != nullptr);
+      format_func_loaded = (format_func_range_ != nullptr);
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_loaded = (format_func_period_ != nullptr);
+      format_func_loaded = (format_func_range_ != nullptr);
     }
 
     if (!create_func_ || !destroy_func_ || !format_func_loaded) {
@@ -113,14 +113,14 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
           return (result_cstr) ? std::string(result_cstr) : "";
         }
       } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-        if (format_func_month_) {
-          const char* result_cstr = format_func_month_(formatter_handle_, data);
+        if (format_func_range_) {
+          const char* result_cstr = format_func_range_(formatter_handle_, data);
           return (result_cstr) ? std::string(result_cstr) : "";
         }
       } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-        if (format_func_period_) {
+        if (format_func_range_) {
           const char* result_cstr =
-              format_func_period_(formatter_handle_, data);
+              format_func_range_(formatter_handle_, data);
           return (result_cstr) ? std::string(result_cstr) : "";
         }
       }
@@ -139,8 +139,7 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
   DestroyFormatterFunc destroy_func_ = nullptr;
 
   FormatReportFunc_Day format_func_day_ = nullptr;
-  FormatReportFunc_Month format_func_month_ = nullptr;
-  FormatReportFunc_Period format_func_period_ = nullptr;
+  FormatReportFunc_Range format_func_range_ = nullptr;
 };
 
 #endif  // REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_

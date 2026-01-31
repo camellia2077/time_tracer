@@ -29,7 +29,7 @@ auto ExportCommand::get_definitions() const -> std::vector<ArgDef> {
   return {{"type",
            ArgType::Positional,
            {},
-           "Export type (daily, monthly, period, all-daily...)",
+           "Export type (day, month, recent, all-day, all-month...)",
            true,
            "",
            0},
@@ -56,7 +56,7 @@ auto ExportCommand::get_definitions() const -> std::vector<ArgDef> {
 }
 
 auto ExportCommand::get_help() const -> std::string {
-  return "Exports reports (daily, monthly, recent, etc.) to specified formats "
+  return "Exports reports (day, month, recent, etc.) to specified formats "
          "(md, tex, typ).";
 }
 
@@ -76,7 +76,7 @@ void ExportCommand::execute(const CommandParser& parser) {
 
   // 2. 遍历所有请求的格式进行导出
   for (const auto& format : formats) {
-    if (sub_command == "daily" || sub_command == "monthly" ||
+    if (sub_command == "day" || sub_command == "month" ||
         sub_command == "recent" || sub_command == "all-recent") {
       // 这些命令必须要有 argument
       if (export_arg.empty()) {
@@ -84,10 +84,10 @@ void ExportCommand::execute(const CommandParser& parser) {
                                  sub_command + "'.");
       }
 
-      if (sub_command == "daily") {
+      if (sub_command == "day") {
         std::string date_str = normalize_to_date_format(export_arg);
         report_handler_.run_export_single_day_report(date_str, format);
-      } else if (sub_command == "monthly") {
+      } else if (sub_command == "month") {
         std::string month_str = normalize_to_month_format(export_arg);
         report_handler_.run_export_single_month_report(month_str, format);
       } else if (sub_command == "recent") {
@@ -113,9 +113,9 @@ void ExportCommand::execute(const CommandParser& parser) {
         }
         report_handler_.run_export_all_period_reports_query(days_list, format);
       }
-    } else if (sub_command == "all-daily") {
+    } else if (sub_command == "all-day") {
       report_handler_.run_export_all_daily_reports_query(format);
-    } else if (sub_command == "all-monthly") {
+    } else if (sub_command == "all-month") {
       report_handler_.run_export_all_monthly_reports_query(format);
     } else {
       throw std::runtime_error("Unknown export type '" + sub_command + "'.");

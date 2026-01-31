@@ -17,21 +17,21 @@ namespace TomlLoaderUtils {
 
 // --- IO ---
 /**
- * @brief è¯»å–å¹¶è§£æ TOML æ–‡ä»¶
- * @throws std::runtime_error å¦‚æœæ–‡ä»¶ä¸å­˜åœ¨æˆ–è§£æå¤±è´¥
+ * @brief ¶ÁÈ¡²¢½âÎö TOML ÎÄ¼ş
+ * @throws std::runtime_error Èç¹ûÎÄ¼ş²»´æÔÚ»ò½âÎöÊ§°Ü
  */
 toml::table read_toml(const fs::path& path);
 
-// --- æ¨¡æ¿è¾…åŠ©å‡½æ•° ---
+// --- Ä£°å¸¨Öúº¯Êı ---
 
-// è·å–å¯é€‰å€¼
+// »ñÈ¡¿ÉÑ¡Öµ
 template <typename T>
 T get_optional(const toml::node_view<const toml::node>& node,
                const T& default_value) {
   return node.value_or(default_value);
 }
 
-// è·å–å¿…éœ€å€¼
+// »ñÈ¡±ØĞëÖµ
 template <typename T>
 T get_required(const toml::table& tbl, const std::string& key) {
   if (!tbl.contains(key)) {
@@ -44,24 +44,25 @@ T get_required(const toml::table& tbl, const std::string& key) {
   return *val;
 }
 
-// --- é€»è¾‘å¡«å……è¾…åŠ©å‡½æ•° ---
+// --- Âß¼­Ìî³ä¸¨Öúº¯Êı ---
 
-// è§£æç»Ÿè®¡é¡¹ (æ”¯æŒé€’å½’)
+// ½âÎöÍ³¼ÆÏî(Ö§³Öµİ¹é)
 void parse_statistics_items(const toml::array* arr,
                             std::vector<ReportStatisticsItem>& out_items);
 
-// è§£ææ ·å¼ (Tex / Typst)
+// ½âÎöÑùÊ½ (Tex / Typst)
 void fill_tex_style(const toml::table& tbl, FontConfig& fonts,
                     LayoutConfig& layout);
 void fill_typ_style(const toml::table& tbl, FontConfig& fonts,
                     LayoutConfig& layout);
 
-// è§£ææ ‡ç­¾ (Daily / Monthly / Period)
+// ½âÎö±êÇ© (Daily / Range)
 void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels);
+void fill_range_labels(const toml::table& tbl, RangeReportLabels& labels);
 void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels);
 void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels);
 
-// è§£æé€šç”¨éƒ¨åˆ†
+// ½âÎöÍ¨ÓÃ²¿·Ö
 void fill_keyword_colors(const toml::table& tbl,
                          std::map<std::string, std::string>& colors);
 }  // namespace TomlLoaderUtils

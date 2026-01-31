@@ -9,6 +9,7 @@
 #include "reports/data/model/daily_report_data.hpp"
 #include "reports/data/model/monthly_report_data.hpp"
 #include "reports/data/model/period_report_data.hpp"
+#include "reports/data/model/range_report_data.hpp"
 
 template <typename ReportDataType>
 class IReportFormatter {
@@ -37,6 +38,8 @@ typedef const char* (*FormatReportFunc_Month)(FormatterHandle,
                                               const MonthlyReportData&);
 typedef const char* (*FormatReportFunc_Period)(FormatterHandle,
                                                const PeriodReportData&);
+typedef const char* (*FormatReportFunc_Range)(FormatterHandle,
+                                              const RangeReportData&);
 
 #ifdef __cplusplus
 }

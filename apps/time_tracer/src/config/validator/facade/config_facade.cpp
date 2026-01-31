@@ -22,9 +22,8 @@ bool ConfigFacade::validate_query_configs(
 bool ConfigFacade::validate_plugins(const std::filesystem::path& plugins_path) {
   // 逻辑保持不变...
   const std::vector<std::string> kExpectedPlugins = {
-      "DayMdFormatter",    "DayTexFormatter",    "DayTypFormatter",
-      "MonthMdFormatter",  "MonthTexFormatter",  "MonthTypFormatter",
-      "PeriodMdFormatter", "PeriodTexFormatter", "PeriodTypFormatter"};
+      "DayMdFormatter", "DayTexFormatter", "DayTypFormatter",
+      "RangeMdFormatter", "RangeTexFormatter", "RangeTypFormatter"};
 
   PluginValidator validator;
   bool plugins_ok = validator.validate(plugins_path, kExpectedPlugins);

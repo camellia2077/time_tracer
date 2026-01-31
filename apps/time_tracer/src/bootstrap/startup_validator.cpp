@@ -16,9 +16,8 @@ auto StartupValidator::validate_environment(const AppConfig& config) -> bool {
   // (原本这些列表是在 ConfigFacade
   // 中定义的，现在移到这里，因为这是启动环境检查的一部分)
   const std::vector<std::string> kExpectedPlugins = {
-      "DayMdFormatter",    "DayTexFormatter",    "DayTypFormatter",
-      "MonthMdFormatter",  "MonthTexFormatter",  "MonthTypFormatter",
-      "PeriodMdFormatter", "PeriodTexFormatter", "PeriodTypFormatter"};
+      "DayMdFormatter", "DayTexFormatter", "DayTypFormatter",
+      "RangeMdFormatter", "RangeTexFormatter", "RangeTypFormatter"};
 
   // 2. 准备路径
   fs::path plugins_dir = fs::path(config.exe_dir_path) / "plugins";

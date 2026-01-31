@@ -1,67 +1,70 @@
-# 架构与模块 (Architecture & Modules)
+# 系统架构与模块设计 (Architecture & Modules)
 
-## 0. 系统分层与职责边界 (System Layers & Responsibilities)
+本文档详细介绍了 **TimeTracer** 的结构设计。项目采用 **整洁架构 (Clean Architecture)** 原则，通过分层设计确保代码的高度解耦、可测试性和可维护性。
 
-为了确保系统的健壮性与可维护性，系统采用了严格的分层架构，各层职责互不越界。
+## 0. 整洁架构分层
 
-### 0.1 启动引导层 (Bootstrap Layer)
-* **核心组件**: `bootstrap/StartupValidator`
-* **职责**: 系统的“门卫”。
-    * **环境完整性检查**: 确保所有必要的依赖（如 `reports_shared.dll` 等插件）已就绪。
-    * **配置文件加载**: 读取物理配置文件，但不进行深入的业务规则校验。
-    * **生命周期控制**: 如果环境不满足运行条件，直接终止程序启动，防止核心业务在不稳定环境中运行。
+系统被组织为四个同心层级。核心原则是 **依赖规则 (Dependency Rule)**：依赖关系只能由外层指向内层。
 
-### 0.2 配置校验层 (Validation Layer)
-* **核心组件**: `config_validator/facade/ConfigFacade`
-* **职责**: 纯粹的规则验证引擎。
-    * **业务规则检查**: 验证加载的 JSON 配置是否符合业务规范（如必填字段、数值范围、颜色格式）。
-    * **无状态性**: 只接收数据对象进行判断，不负责 I/O 操作。
+```mermaid
+graph TD
+    Infra[基础设施层 Infrastructure] --> Adapters[适配器层 Adapters]
+    Adapters --> App[应用层 Application]
+    App --> Domain[领域层 Domain]
+    
+    subgraph "核心层"
+    Domain
+    end
+```
 
-### 0.3 核心业务编排层 (Core Orchestration Layer)
-* **核心组件**: `core` 
-* **组件示例**: `WorkflowHandler`, `PipelineManager`
-* **职责**: 
-    * **信任原则**: 该层**假设**环境是健康的、配置是合法的（由上层保证）。
-    * **流程编排**: 专注于调度预处理、数据库转换、报表生成等核心业务逻辑。
-    * **数据校验**: 仅关注**用户数据**（如日志内容）的合法性，不关注**系统配置**的合法性。
+### 0.1 领域层 (Domain Layer) - `src/domain`
+*   **职责**: 包含核心业务逻辑和实体。这是系统最稳定的部分，其代码**严禁依赖**任何外部库或其他层。
+*   **核心实体**:
+    *   **`DailyLog`**: 代表单日时间记录的核心数据结构。
+    *   **`TimeRecord`**: 代表单条活动，包含时长、起始时间及元数据。
+    *   **`DomainModels`**: 用于内部处理和序列化的纯数据结构。
+*   **逻辑**: 包含纯函数，如时长计算、状态判断及基础工具函数。
 
-## 1. 系统概览与数据流 (System Overview & Data Flow)
+### 0.2 应用层 (Application Layer) - `src/application`
+*   **职责**: 协调用例并定义数据流向。
+*   **核心组件**:
+    *   **`PipelineManager`**: 负责调度数据摄取的 **管道模式 (Pipeline Pattern)**。
+    *   **`Steps`**: 管道中的原子操作（如 `ConverterStep`、`LogicLinkerStep`）。
+    *   **`Context`**: `PipelineContext` 负责在各步骤之间传递状态与数据。
+*   **接口**: 定义资源访问接口（如 Repository 接口），由基础设施层实现。
 
-本系统的核心工作流由两个单向流动的阶段组成：**数据入库 (Data Ingestion)** 与 **报告生成 (Report Generation)**。
+### 0.3 适配器层 (Adapters Layer) - `src/adapters`
+*   **职责**: 连接应用层与外部交付机制（如 CLI 或特定解析器）。
+*   **核心组件**:
+    *   **`input/parser`**: 将原始文本输入适配为领域层实体。
+    *   **`CliApplication`**: (`src/cli`) 处理 CLI 参数解析并调用对应的应用层服务。
 
-### 1.1 第一阶段：数据入库 (Ingestion Phase)
+### 0.4 基础设施层 (Infrastructure Layer) - `src/infrastructure`
+*   **职责**: 实现技术细节，如数据库持久化、文件 IO 及外部报告生成。
+*   **核心组件**:
+    *   **`persistence`**: 实现应用层定义的接口，负责 SQLite 数据库操作。
+    *   **`io`**: 提供底层的物理文件访问工具。
+    *   **`reports`**: 管理外部 DLL 插件，用于生成 LaTeX、Typst 等特定格式报告。
 
-此阶段负责将用户用txt记录的的非结构化内容，转换为结构化数据(json)，并持久化存储到关系型数据库中。
+---
 
-流程：`txt` -> `json` -> `Structs` -> `SQLite`
+## 1. 核心设计模式
 
-* **原始解析 (Raw Processing)**:
-* **输入**: 用户编写的原始时间日志文本文件 (`.txt`)。
-* **处理**: 系统按行读取文本，应用解析规则识别时间戳、活动名称及备注。在此过程中，系统会自动处理业务逻辑（如跨天睡眠的分割、活动时长的计算），并将每日数据标准化。
-* **中间产物**: 生成包含完整元数据和统计信息的标准化 **JSON** 对象。
+### 1.1 管道模式 (Pipeline Pattern)
+数据摄取（从文本到数据库）采用线性管道处理：
+1.  **文件收集 (`FileCollector`)**: 定位并读取输入文件。
+2.  **结构验证 (`StructureValidator`)**: 校验文本语法与格式。
+3.  **数据转换 (`Converter`)**: 将文本映射为 `DailyLog` 领域实体。
+4.  **逻辑链接 (`LogicLinker`)**: 处理跨天逻辑（如生成深夜睡眠记录）。
+5.  **业务验证 (`LogicValidator`)**: 确保数据逻辑的一致性（如时间单调递增）。
+6.  **数据持久化 (`Persistence`)**: 存入 SQLite 数据库。
 
+### 1.2 策略模式 (Strategy Pattern)
+报告系统使用策略模式支持多格式输出（Markdown, LaTeX, Typst）。重构项目树的逻辑保持通用，而具体的渲染细节外包给不同的策略实现（DLL 插件）。
 
-* **持久化 (Persistence)**:
-* **处理**: 系统反序列化中间层的 JSON 数据，将其映射为关系模型。
-* **存储**: 将结构化数据（日期、项目关系、时间记录）写入 **SQLite** 数据库。项目层级关系在此处以“邻接表”形式存储（父子节点 ID 关联）。
+---
 
-
-
-### 1.2 第二阶段：报告生成 (Reporting Phase)
-
-此阶段负责从数据库中提取数据，重建业务模型，并渲染为用户所需的最终格式。
-
-流程：`SQLite` -> `Flat Records` -> `ProjectTree (Memory)` -> `Formatted String(md tex typ)`
-
-* **数据查询与重建 (Query & Reconstruction)**:
-* **输入**: 用户的查询请求（如“生成某月月报”）。
-* **处理**: 系统根据时间范围查询 SQLite 数据库，获取扁平化的记录列表。随后，系统在内存中将这些零散的记录**动态聚合**，重建为一棵带有统计数据的 **项目树 (Project Tree)**。这棵树在逻辑上等同于一个多层嵌套的 JSON 对象。
-
-
-* **渲染输出 (Rendering)**:
-* **处理**: 渲染引擎遍历内存中的项目树。
-* **策略应用**: 根据用户指定的格式（Markdown, Typst, LaTeX），系统加载对应的**格式化策略**。在遍历树节点的同时，策略模块将节点数据转换为目标格式的字符串。
-* **输出**: 生成最终的可视化报告文本。
-
-
-
+## 2. 工程实践
+*   **C++23**: 采用现代特性（如 `std::expected`）优化错误处理。
+*   **绝对路径引用**: 内部依赖使用基于 `src/` 的绝对路径，提升代码清晰度。
+*   **轻量化依赖**: 核心仅依赖 `sqlite3`、`toml++` 和 `nlohmann/json`。

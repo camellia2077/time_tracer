@@ -22,21 +22,16 @@ struct DailyReportLabels {
   std::string activity_connector;
 };
 
-struct MonthlyReportLabels {
-  std::string report_title;
+struct RangeReportLabels {
+  std::string title_template;
   std::string total_time_label;
   std::string actual_days_label;
   std::string no_records_message;
+  std::string invalid_range_message;
+  std::string project_breakdown_label;
 };
 
-struct PeriodReportLabels {
-  std::string report_title_prefix;
-  std::string report_title_days;
-  std::string report_title_date_separator;
-  std::string total_time_label;
-  std::string actual_days_label;
-  std::string no_records_message;
-  std::string invalid_days_message;
-};
+using MonthlyReportLabels = RangeReportLabels;
+using PeriodReportLabels = RangeReportLabels;
 
 #endif  // COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_H_

@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <stdexcept>
+#include <string>
 
 #include "reports/data/cache/project_name_cache.hpp"  // 引入名称缓存作为 Provider
 #include "reports/data/utils/project_tree_builder.hpp"  // 引入树构建器
@@ -70,9 +71,10 @@ auto BatchPeriodDataFetcher::fetch_all_data(const std::vector<int>& days_list)
     }
 
     PeriodReportData& data = results[days];
-    data.days_to_query = days;
+    data.requested_days = days;
     data.end_date = today_str;
     data.start_date = add_days_to_date_str(today_str, -(days - 1));
+    data.range_label = std::to_string(days) + " days";
 
     // 临时聚合容器: Project ID -> Duration
     std::map<long long, long long> project_agg;
