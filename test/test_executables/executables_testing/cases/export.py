@@ -10,7 +10,7 @@ class ExportTester(BaseTester):
                  is_bulk_mode: bool,
                  specific_dates: list,
                  specific_months: list,
-                 period_export_days: list,
+                 recent_export_days: list,
                  test_formats: list,
                  export_output_path: Path):
                  
@@ -21,7 +21,7 @@ class ExportTester(BaseTester):
         self.is_bulk_mode = is_bulk_mode
         self.specific_dates = specific_dates
         self.specific_months = specific_months
-        self.period_days_to_export = period_export_days
+        self.recent_days_to_export = recent_export_days
         self.formats = test_formats
 
     def run_tests(self) -> TestReport:
@@ -79,11 +79,11 @@ class ExportTester(BaseTester):
         cases.extend(self._make_cases("Bulk Export All Monthly", ["export", "all-monthly"], common_args))
 
         # 2. Period
-        if self.period_days_to_export:
-            period_days_str = ",".join(map(str, self.period_days_to_export))
+        if self.recent_days_to_export:
+            recent_days_str = ",".join(map(str, self.recent_days_to_export))
             cases.extend(self._make_cases(
-                f"Bulk Period Export ({period_days_str})", 
-                ["export", "all-period", period_days_str], 
+                f"Bulk Recent Export ({recent_days_str})", 
+                ["export", "all-recent", recent_days_str], 
                 common_args
             ))
         return cases
@@ -108,11 +108,11 @@ class ExportTester(BaseTester):
                 common_args
             ))
             
-        # 3. Specific Period
-        for days in self.period_days_to_export:
+        # 3. Specific Recent
+        for days in self.recent_days_to_export:
             cases.extend(self._make_cases(
-                f"Specific Period Export ({days} days)", 
-                ["export", "period", str(days)], 
+                f"Specific Recent Export ({days} days)", 
+                ["export", "recent", str(days)], 
                 common_args
             ))
             

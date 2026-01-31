@@ -1,15 +1,15 @@
 // importer/parser/details/activity_parser.hpp
-#ifndef IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_
-#define IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_
+#ifndef IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_H_
+#define IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_H_
 
-#include "importer/model/time_sheet_data.hpp"
 #include <nlohmann/json.hpp>
 
+#include "importer/model/time_sheet_data.hpp"
+
 class ActivityParser {
-public:
-    TimeRecordInternal parse(
-        const nlohmann::json& activity_json,
-        const std::string& date) const;
+ public:
+  static TimeRecordInternal parse(const nlohmann::json& activity_json,
+                                  const std::string& date);
 };
 
-#endif // IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_HPP_
+#endif  // IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_H_

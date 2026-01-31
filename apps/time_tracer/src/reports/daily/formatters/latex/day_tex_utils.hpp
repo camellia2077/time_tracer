@@ -1,18 +1,22 @@
 // reports/daily/formatters/latex/day_tex_utils.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_
-#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_
+#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
+#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
 
-#include <sstream>
 #include <memory>
-#include "reports/data/model/daily_report_data.hpp"
+#include <sstream>
+
 #include "reports/daily/formatters/latex/day_tex_config.hpp"
+#include "reports/data/model/daily_report_data.hpp"
 
 namespace DayTexUtils {
 
-    void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config);
-    
-    void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config);
+void display_header(std::stringstream& ss, const DailyReportData& data,
+                    const std::shared_ptr<DayTexConfig>& config);
 
-} // namespace DayTexUtils
+void display_detailed_activities(std::stringstream& ss,
+                                 const DailyReportData& data,
+                                 const std::shared_ptr<DayTexConfig>& config);
 
-#endif // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_HPP_
+}  // namespace DayTexUtils
+
+#endif  // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_

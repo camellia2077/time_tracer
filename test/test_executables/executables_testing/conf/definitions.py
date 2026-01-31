@@ -81,11 +81,11 @@ class TestParams:
     TEST_FORMATS: List[str] = field(default_factory=list)
     DAILY_QUERY_DATES: List[str] = field(default_factory=list)
     MONTHLY_QUERY_MONTHS: List[str] = field(default_factory=list)
-    PERIOD_QUERY_DAYS: List[int] = field(default_factory=list)
+    RECENT_QUERY_DAYS: List[int] = field(default_factory=list)
     EXPORT_MODE_IS_BULK: bool = False
     SPECIFIC_EXPORT_DATES: List[str] = field(default_factory=list)
     SPECIFIC_EXPORT_MONTHS: List[str] = field(default_factory=list)
-    PERIOD_EXPORT_DAYS: List[int] = field(default_factory=list)
+    RECENT_EXPORT_DAYS: List[int] = field(default_factory=list)
 
 @dataclass
 class Cleanup:

@@ -1,10 +1,11 @@
 // common/utils/string_utils.hpp
-#ifndef COMMON_UTILS_STRING_UTILS_HPP_
-#define COMMON_UTILS_STRING_UTILS_HPP_
+#ifndef COMMON_UTILS_STRING_UTILS_H_
+#define COMMON_UTILS_STRING_UTILS_H_
 
 #include <string>
 #include <vector>
-#include "reports/shared/api/shared_api.hpp" // <--- [新增]
+
+#include "reports/shared/api/shared_api.hpp"  // <--- [新增]
 
 /**
  * @brief 去除字符串两端的空白字符。
@@ -19,6 +20,7 @@ REPORTS_SHARED_API std::string trim(const std::string& str);
  * @param delimiter 分隔符。
  * @return 包含所有子字符串的向量。
  */
-REPORTS_SHARED_API std::vector<std::string> split_string(const std::string& str, char delimiter);
+REPORTS_SHARED_API std::vector<std::string> split_string(const std::string& str,
+                                                         char delimiter);
 
-#endif // COMMON_UTILS_STRING_UTILS_HPP_
+#endif  // COMMON_UTILS_STRING_UTILS_H_

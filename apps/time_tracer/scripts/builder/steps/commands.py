@@ -6,15 +6,11 @@ import subprocess
 import sys
 from pathlib import Path
 
-# ==================== [核心修改] ====================
-# 使用 .. 回退到 builder 包，再进入 ui 包
 from ..ui.console import print_header
 from ..ui.colors import AnsiColors 
-# ====================================================
 
-# 注意：这里不再 import config
-
-def run_cmake(should_package, cmake_args, compiler, config):
+# [修改] 增加 no_tidy 参数，默认为 False
+def run_cmake(should_package, cmake_args, compiler, config, no_opt=False, no_tidy=False):
     """
     config: AppConfig 实例，通过参数传入
     """
@@ -31,6 +27,12 @@ def run_cmake(should_package, cmake_args, compiler, config):
     if should_package:
         cmake_command.append("-DBUILD_INSTALLER=ON")
     
+    if no_opt:
+        print(f"{AnsiColors.WARNING}--- Optimizations are DISABLED for faster compilation. ---{AnsiColors.ENDC}")
+        cmake_command.append("-DDISABLE_OPTIMIZATION=ON")
+    else:
+        cmake_command.append("-DDISABLE_OPTIMIZATION=OFF")
+
     # 使用传入的 config 对象
     warning_level = config.WARNING_LEVEL
     cmake_command.append(f"-DWARNING_LEVEL={warning_level}")
@@ -39,11 +41,18 @@ def run_cmake(should_package, cmake_args, compiler, config):
     lto_option = "ON" if config.ENABLE_LTO else "OFF"
     print(f"{AnsiColors.OKBLUE}--- LTO is {'enabled' if config.ENABLE_LTO else 'disabled'}. ---{AnsiColors.ENDC}")
     cmake_command.append(f"-DENABLE_LTO={lto_option}")
+    
+    # [新增] Clang-Tidy 控制逻辑
+    if no_tidy:
+        print(f"{AnsiColors.WARNING}--- Clang-Tidy static analysis is DISABLED. ---{AnsiColors.ENDC}")
+        cmake_command.append("-DENABLE_CLANG_TIDY=OFF")
+    else:
+        # 显式开启，或者依赖 CMakeLists.txt 的默认值 (通常为了明确起见，建议显式传 ON)
+        cmake_command.append("-DENABLE_CLANG_TIDY=ON")
         
     cmake_command.extend(cmake_args)
     
     # 执行 CMake
-    # 强制使用 utf-8 解码，遇到无法解码的字符用 ? 代替 (replace)
     process = subprocess.Popen(
         cmake_command, 
         stdout=subprocess.PIPE, 

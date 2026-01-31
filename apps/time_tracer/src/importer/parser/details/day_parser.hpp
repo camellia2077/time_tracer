@@ -1,13 +1,14 @@
 // importer/parser/details/day_parser.hpp
-#ifndef IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_
-#define IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_
+#ifndef IMPORTER_PARSER_DETAILS_DAY_PARSER_H_
+#define IMPORTER_PARSER_DETAILS_DAY_PARSER_H_
 
-#include "importer/model/time_sheet_data.hpp"
 #include <nlohmann/json.hpp>
 
+#include "importer/model/time_sheet_data.hpp"
+
 class DayParser {
-public:
-    DayData parse(const nlohmann::json& day_json) const;
+ public:
+  static DayData parse(const nlohmann::json& day_json);
 };
 
-#endif // IMPORTER_PARSER_DETAILS_DAY_PARSER_HPP_
+#endif  // IMPORTER_PARSER_DETAILS_DAY_PARSER_H_
