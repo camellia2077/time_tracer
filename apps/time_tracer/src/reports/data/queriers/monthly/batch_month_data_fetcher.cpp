@@ -63,8 +63,11 @@ void BatchMonthDataFetcher::fetch_project_stats(
     long long duration = sqlite3_column_int64(stmt, 2);
 
     MonthlyReportData& data = all_months_data[ym];
-    if (data.year_month.empty()) {
-      data.year_month = ym;
+    if (data.range_label.empty()) {
+      data.range_label = ym;
+      data.start_date = ym + "-01";
+      data.end_date = ym + "-31";
+      data.requested_days = 0;
     }
 
     // 存储原始 ID 统计，供后续构建树使用

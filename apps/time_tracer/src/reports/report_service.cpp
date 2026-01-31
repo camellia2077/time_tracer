@@ -30,19 +30,19 @@ auto RegisterFormatters() -> bool {
   // --- 注册月报格式 (MonthlyReportData) ---
   using MonthFactory = GenericFormatterFactory<MonthlyReportData>;
   MonthFactory::register_dll_formatter(ReportFormat::Markdown,
-                                       "MonthMdFormatter");
-  MonthFactory::register_dll_formatter(ReportFormat::Typ, "MonthTypFormatter");
+                                       "RangeMdFormatter");
+  MonthFactory::register_dll_formatter(ReportFormat::Typ, "RangeTypFormatter");
   MonthFactory::register_dll_formatter(ReportFormat::LaTeX,
-                                       "MonthTexFormatter");
+                                       "RangeTexFormatter");
 
   // --- 注册周期报告格式 (PeriodReportData) ---
   using PeriodFactory = GenericFormatterFactory<PeriodReportData>;
   PeriodFactory::register_dll_formatter(ReportFormat::Markdown,
-                                        "PeriodMdFormatter");
+                                        "RangeMdFormatter");
   PeriodFactory::register_dll_formatter(ReportFormat::LaTeX,
-                                        "PeriodTexFormatter");
+                                        "RangeTexFormatter");
   PeriodFactory::register_dll_formatter(ReportFormat::Typ,
-                                        "PeriodTypFormatter");
+                                        "RangeTypFormatter");
 
   return true;
 }

@@ -1,204 +1,60 @@
-# Core Workflows
+# 核心程序流程 (Core Workflows)
 
-This document outlines the internal data flows and execution logic for the primary commands in the TimeTracer application.
+本文档通过剖析内部数据流向与执行步骤，详细展示了 TimeTracer 关键命令的运作机制。
 
-## 1. End-to-End Pipeline (`run-pipeline` / `blink`)
+## 1. 全链路摄取流水线 (`run-pipeline` / `blink`)
 
-`run-pipeline` (alias: `blink`) executes the complete data processing flow, from raw text ingestion to database storage.
+`run-pipeline` (别名: `blink`) 是系统的核心命令，负责执行从原始日志文本读取到数据库持久化存储的完整闭环。
 
+### 1.1 管道化执行架构
+摄取过程由 **`PipelineManager`** 统一驱动，按照预定义序列执行一系列原子步骤。
 
-#### 1.3 Configuration Loading & Injection Flow
-
-To decouple configuration formats (TOML) from business logic (Converter), the system employs a "Parse -> Intermediate Struct -> Inject" pattern.
-
-**Data Flow:**
-`FileSystem (.toml)` -> **[Config Module: ConverterConfigLoader]** -> `ConverterConfig (Struct)` -> **[Core: ConverterConfigFactory]** -> `PipelineContext` -> **[Converter Module]**
-
-**Key Logic Phases:**
-
-1. **Parsing & Merging (Config Layer)**:
-   * `ConverterConfigLoader` reads the main `config.toml` and recursively merges external files for `text_mappings` and `duration_mappings`.
-   * The TOML data is mapped into a pure C++ `ConverterConfig` struct, ensuring the business modules have zero dependency on `toml++` or other parsing libraries.
-
-2. **Runtime Parameter Injection (Core Layer)**:
-   * `PipelineManager` triggers `ConverterConfigFactory` to prepare the configuration.
-   * **Dynamic Injection**: The factory injects runtime-specific data (e.g., `initial_top_parents` from `AppConfig`) directly into the `ConverterConfig` struct.
-   * This keeps the Converter stateless and unaware of high-level application paths or environment settings.
-
-3. **Contextual Isolation & Propagation**:
-   * The finalized `ConverterConfig` is stored in `PipelineContext.state`.
-   * Each Pipeline Step (e.g., `SourceValidatorStep`, `ConverterStep`) extracts this struct and passes it as a `const` reference to the underlying worker classes (`TextValidator`, `LogProcessor`).
-
-4. **In-Memory Execution**:
-   * The Converter components (like `ActivityMapper`) consume the pre-filled maps and vectors in the struct to perform translations.
-   * The process is entirely memory-based and agnostic of the original persistent format.
-
-
-### Workflow A: With JSON Persistence (Default)
-Used when `--save-processed` is enabled or configured in `config.toml`.
-
-**Data Flow:**
+**数据流向图:**
 ```mermaid
 flowchart LR
-    TXT[Text File] --> ValSrc{Source Validator}
-    ValSrc -- Pass --> Conv[Converter]
-    Conv --> Struct[Struct: DailyLog]
-    Struct --> ValOut{Output Validator}
-    
-    ValOut -- Serializes --> JSON_Mem[JSON Memory]
-    JSON_Mem -- Validates --> ValOut
-    
-    ValOut -- Pass --> Save[Save to Disk]
-    Save --> JSON_Disk[JSON File]
-    Save --> Import[Importer]
-    
-    Struct -.-> Import
-    Import --> DB[(SQLite)]
-
+    TXT[原始文本] --> collector[文件收集器]
+    collector --> ValSrc{结构验证器}
+    ValSrc -- 通过 --> Conv[转换器]
+    Conv --> LogicLink[逻辑链接器]
+    LogicLink --> ValLog{逻辑验证器}
+    ValLog -- 通过 --> Persist[持久化层]
+    Persist --> DB[(SQLite 数据库)]
 ```
 
-**Execution Steps:**
-
-1. **Ingestion**: Core reads raw text files (`.txt`).
-2. **Source Validation**: Core calls **Validator (Text)** to check the structure/syntax.
-* *Checkpoint*: If failed, the pipeline aborts.
-
-
-3. **Conversion**: Core calls **Converter** to transform Text into **Structs** (`DailyLog` Domain Models).
-4. **Output Validation**:
-* Core calls **Serializer** to convert **Structs** -> **JSON (Memory)**.
-* Core calls **Validator (JSON)** to check logical integrity (e.g., date continuity).
-* *Memory Management*: The temporary JSON object is destroyed after validation.
-
-
-5. **Persistence (File)**:
-* Core converts **Structs** -> **JSON** again.
-* Writes JSON files to disk (`output/Processed_Date/`).
-* *Memory Management*: The JSON content is released from memory.
-
-
-6. **Import**:
-* Core passes the **Structs** directly to the **Importer**.
-* Importer writes data to the SQLite database.
-
-
-7. **Cleanup**: The **Structs** are released from memory.
-
-### Workflow B: Without JSON Persistence
-
-Used when `--no-save` is specified.
-
-**Data Flow:**
-`FileSystem (.txt)` -> **[Source Validator]** -> **[Converter]** -> `Struct` -> **[Output Validator]** -> **[Importer]** -> `SQLite`
-
-**Execution Steps:**
-
-1. **Ingestion**: Core reads raw text files.
-2. **Source Validation**: Checks syntax.
-3. **Conversion**: Transforms Text -> **Structs**.
-4. **Output Validation**:
-* Structs are temporarily serialized to JSON for validation rules.
-* JSON is destroyed immediately after validation passes.
-
-
-5. **Import**:
-* Core passes **Structs** directly to **Importer**.
-* Importer writes to SQLite.
-
-
-6. **Cleanup**: Structs are released.
-
-> **Key Design Principle**: The `Struct` (`DailyLog`) is the single source of truth throughout the pipeline. JSON is treated as either a transient format for validation or a final artifact for archiving, but it is **not** used to transfer data to the Importer.
+**关键执行步骤:**
+1.  **文件收集 (Collection)**: `FileCollector` 递归扫描目标目录，将所有匹配的 `.txt` 日志读入内存。
+2.  **结构验证 (Structural Validation)**: `StructureValidatorStep` 检查文本是否符合年份/日期块嵌套规则。若语法错误，流水线将执行 **快速失败 (Fail-fast)** 并终止任务。
+3.  **核心转换 (Conversion)**: `ConverterStep` 利用 `ActivityMapper` 将原始文本映射为带有语义路径的领域实体 (`DailyLog`)。
+4.  **跨天链接 (Logical Linking)**: `LogicLinkerStep` 分析连续日期的衔接关系，自动推导并补全深夜睡眠记录。
+5.  **业务校验 (Logical Validation)**: `LogicValidatorStep` 确保时间轴无重叠、无“穿越”，且满足最小活动密度等业务约束。
+6.  **数据落盘 (Persistence)**: `PersistenceStep` 调用 `ImportService` 将校验后的实体模型批量提交至 SQLite 数据库。
 
 ---
 
-## 2. Utility Command Workflows
+## 2. 工具辅助工作流
 
-### Convert Command (`convert`)
+### 2.1 转换命令 (`convert`)
+旨在将原始文本转化为结构化的 JSON 归档。此流程常用于数据备份、调试或人工审核转换结果。
 
-Transforms raw text logs into structured JSON data. Unlike the full pipeline, its primary goal is to produce intermediate artifacts for debugging or manual inspection.
+**执行路径:**
+`物理硬盘 (.txt)` -> **[摄取管道: 转换器]** -> `领域实体 (DailyLog)` -> **[序列化器: JsonSerializer]** -> `物理硬盘 (.json)`
 
-**Key Characteristic:**
+### 2.2 导入命令 (`import`)
+支持将已有的 JSON 归档文件批量快速导入数据库。
 
-* **Forced Persistence**: Unlike `run-pipeline`, this command **always** writes the result to disk. Without this, the command would perform work in RAM and discard it immediately.
-
-**Data Flow:**
-`FileSystem (.txt)` -> **[Core]** -> `String` -> **[Converter]** -> `Struct (DailyLog)` -> **[ProcessedDataWriter]** -> `FileSystem (.json)`
-
-**Execution Steps:**
-
-1. **Initialization**: `ConvertCommand` forces `AppOptions.save_processed_output = true`.
-2. **Collection & Source Validation**: `.txt` files are collected and syntactically validated.
-3. **Conversion (In-Memory)**:
-* **ConverterService** parses text line-by-line.
-* **ActivityMapper** maps keywords/durations.
-* **DayStats** generates statistics.
-* **Result**: A collection of `DailyLog` structs held in memory.
-
-
-4. **Output Validation**: Checks the logic of the in-memory structs.
-5. **Persistence**: `ProcessedDataWriter` uses `JsonSerializer` to write structs to `output/Processed_Data/YYYY-MM.json`.
-
-### Import Command (`import`)
-
-Imports existing JSON files into the database. It follows a decoupled pipeline where the Importer module is isolated from file formats.
-
-**Data Flow:**
-`FileSystem (.json)` -> **[Core]** -> `String` -> **[Serializer]** -> `Struct (DailyLog)` -> **[Importer]** -> `SQLite`
-
-**Execution Steps:**
-
-1. **Core Layer**: Scans directory and reads `.json` files into strings.
-2. **Serializer Layer**:
-* Calls `JsonSerializer::deserializeDays(content)`.
-* Converts JSON strings into `std::vector<DailyLog>` domain models.
-
-
-3. **Importer Layer**:
-* Calls `ImportService::import_from_memory(models)`.
-* Importer receives pure structs and persists them to `time_data.sqlite3`.
-* *Note: Importer has zero dependency on JSON logic.*
-
-
+**执行路径:**
+`物理硬盘 (.json)` -> **[适配器: 解析器]** -> `领域实体 (DailyLog)` -> **[应用层: 导入服务]** -> `基础设施: SQLite`
 
 ---
 
-## 3. Validation Processes
+## 3. 报表生成工作流
 
-Quality assurance is divided into two stages: Format checking (Source) and Logic checking (Output).
+该流程由 `query` 或 `export` 指令触发，专注于从结构化存储中重构人类可读的多维报告。
 
-### Source Validation (`validate-source`)
+**执行路径:**
+`SQLite` -> **[基础设施: 持久化]** -> `扁平记录条目` -> **[应用层: 树重构器]** -> `项目树 (内存模型)` -> **[基础设施: 格式化策略]** -> `可视化报表 (MD, Tex, Typ)`
 
-Checks if the raw text files adhere to the syntax rules defined in the configuration (e.g., correct keywords, time formats, header structures).
-
-**Data Flow:**
-`FileSystem (.txt)` -> **[Core: FileReader]** -> `std::string` -> **[Validator: TextValidator]** -> `Console Report`
-
-**Key Steps:**
-
-1. **IO**: Core reads raw file content.
-2. **Validation**: `TextValidator` runs two sets of rules:
-* `LineRules`: Checks specific line syntax (e.g., "0800 getup").
-* `StructureRules`: Checks block structure (Year header -> Date -> Events).
-
-
-
-### Output Validation (`validate-output`)
-
-Checks the logical integrity of the data *after* it has been parsed into domain models. This ensures data consistency (e.g., date continuity, minimum activity counts) before storage.
-
-**Data Flow (Memory Mode):**
-`Memory (Structs)` -> **[Serializer]** -> `JSON Object` -> **[Validator: JsonValidator]** -> `Console Report`
-
-**Key Steps:**
-
-1. **Serialization**: `OutputValidatorStep` uses `JsonSerializer` to convert internal `DailyLog` structs into a JSON object representation.
-* *Reasoning*: The Validator layer operates on standard JSON objects to allow rule reuse for both in-memory data and physical JSON files.
-
-
-2. **Validation**: `JsonValidator` applies logic rules:
-* `DateRules`: Checks for missing dates (Continuity vs Completeness modes).
-* `ActivityRules`: Checks for logical constraints (e.g., missing sleep records).
-
-
-
+**核心逻辑阶段:**
+1.  **数据提取 (Fetch)**: 从数据库中按时间范围检索所有相关的原始活动记录。
+2.  **树形重构 (Reconstruction)**: `TreeReconstructor` 根据项目路径（如 `study/coding/cpp`）将零散的扁平记录重新聚合为一颗层级化的项目树，并计算每一层级的累计时长。
+3.  **动态渲染 (Transformation)**: 系统根据用户指定的格式加载对应的 DLL 插件。具体的渲染策略遍历内存项目树，将其转换为格式化的字符串流。

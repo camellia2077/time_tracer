@@ -1,8 +1,9 @@
-report_title = "Monthly Summary for"
+title_template = "Monthly Summary for {range_label}"
 actual_days_label = "Actual Days with Records"
 total_time_label = "Total Time Recorded"
 no_records_message = "No time records found for this month."
-invalid_format_message = "Invalid year_month format. Expected YYYYMM."
+invalid_range_message = "Invalid year_month format. Expected YYYY-MM."
+project_breakdown_label = "Project Breakdown"
 main_font = "Noto Serif SC"
 cjk_main_font = "Noto Serif SC"
 base_font_size = 12

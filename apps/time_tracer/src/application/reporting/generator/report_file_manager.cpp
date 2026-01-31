@@ -13,7 +13,7 @@ auto ReportFileManager::get_single_day_report_path(const std::string& date,
                                                    ReportFormat format) const
     -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
-  return export_root_path_ / details.dir_name / "daily" /
+  return export_root_path_ / details.dir_name / "day" /
          (date + details.extension);
 }
 
@@ -21,7 +21,7 @@ auto ReportFileManager::get_single_month_report_path(const std::string& month,
                                                      ReportFormat format) const
     -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
-  return export_root_path_ / details.dir_name / "monthly" /
+  return export_root_path_ / details.dir_name / "month" /
          (month + details.extension);
 }
 
@@ -36,13 +36,13 @@ auto ReportFileManager::get_single_period_report_path(int days,
 auto ReportFileManager::get_all_daily_reports_base_dir(
     ReportFormat format) const -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
-  return export_root_path_ / details.dir_name / "days";
+  return export_root_path_ / details.dir_name / "day";
 }
 
 auto ReportFileManager::get_all_monthly_reports_base_dir(
     ReportFormat format) const -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
-  return export_root_path_ / details.dir_name / "monthly";
+  return export_root_path_ / details.dir_name / "month";
 }
 
 auto ReportFileManager::get_all_period_reports_base_dir(
