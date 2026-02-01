@@ -11,16 +11,14 @@
 
 class PeriodQuerier : public BaseQuerier<PeriodReportData, int> {
  public:
-  explicit PeriodQuerier(sqlite3* db, int days_to_query);
+  explicit PeriodQuerier(sqlite3* sqlite_db, int days_to_query);
 
-  // [FIX] Overriding fetch_data to add the actual_days calculation
-  PeriodReportData fetch_data() override;
+  [[nodiscard]] auto fetch_data() -> PeriodReportData override;
 
  protected:
-  // [FIX] Corrected typo from std::string to std::string
-  std::string get_date_condition_sql() const override;
+  [[nodiscard]] auto get_date_condition_sql() const -> std::string override;
   void bind_sql_parameters(sqlite3_stmt* stmt) const override;
-  bool _validate_input() const override;
+  [[nodiscard]] auto _validate_input() const -> bool override;
   void _handle_invalid_input(PeriodReportData& data) const override;
   void _prepare_data(PeriodReportData& data) const override;
 

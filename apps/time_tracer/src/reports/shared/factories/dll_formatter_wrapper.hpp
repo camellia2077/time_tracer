@@ -44,6 +44,12 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
       format_func_range_ =
           (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
+    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+      format_func_range_ =
+          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
+    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+      format_func_range_ =
+          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
     }
 
 #pragma GCC diagnostic pop
@@ -67,6 +73,12 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
       format_func_range_ =
           (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
+    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+      format_func_range_ =
+          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
+    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+      format_func_range_ =
+          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
     }
 #endif
     bool format_func_loaded = false;
@@ -75,6 +87,10 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
     } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
       format_func_loaded = (format_func_range_ != nullptr);
     } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+      format_func_loaded = (format_func_range_ != nullptr);
+    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+      format_func_loaded = (format_func_range_ != nullptr);
+    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
       format_func_loaded = (format_func_range_ != nullptr);
     }
 
@@ -119,8 +135,17 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
         }
       } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
         if (format_func_range_) {
-          const char* result_cstr =
-              format_func_range_(formatter_handle_, data);
+          const char* result_cstr = format_func_range_(formatter_handle_, data);
+          return (result_cstr) ? std::string(result_cstr) : "";
+        }
+      } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+        if (format_func_range_) {
+          const char* result_cstr = format_func_range_(formatter_handle_, data);
+          return (result_cstr) ? std::string(result_cstr) : "";
+        }
+      } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+        if (format_func_range_) {
+          const char* result_cstr = format_func_range_(formatter_handle_, data);
           return (result_cstr) ? std::string(result_cstr) : "";
         }
       }

@@ -21,9 +21,10 @@ struct BatchDataResult {
 class BatchDayDataFetcher {
  public:
   // [修改] 构造函数注入 provider
-  explicit BatchDayDataFetcher(sqlite3* db, IProjectInfoProvider& provider);
+  explicit BatchDayDataFetcher(sqlite3* sqlite_db,
+                               IProjectInfoProvider& provider);
 
-  BatchDataResult fetch_all_data();
+  [[nodiscard]] auto fetch_all_data() -> BatchDataResult;
 
  private:
   sqlite3* db_;

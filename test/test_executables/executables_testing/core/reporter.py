@@ -29,15 +29,10 @@ class Reporter:
         
         print(f" -> {res.name} ({cmd_name}) ... {status_color}{res.status}{Colors.RESET} ({duration:.2f}s)")
 
-        # 2. 如果成功且要求打印输出 (通过 messages 传递需要打印的内容，或者逻辑判断)
-        # 这里我们假设 PASS 时只打印 messages (如 version check 的大小)，FAIL 时打印部分 stderr
-        if res.status == "PASS":
-            if res.messages:
-                for msg in res.messages:
-                    print(f"    {msg}")
-            # 只有在特定情况下打印 stdout 片段? (可根据需求定制)
-            # if res.execution_result and res.execution_result.stdout:
-            #     pass 
+        # 2. 输出 messages (PASS/FAIL 均显示，方便定位断言失败)
+        if res.messages:
+            for msg in res.messages:
+                print(f"    {msg}")
 
         # 3. 如果失败，打印错误信息
         if res.status == "FAIL" and res.execution_result:

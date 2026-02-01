@@ -10,35 +10,59 @@
 #include "stats_rules.hpp"
 
 namespace {
-auto StringToTimeT(const std::string& datetime_str) -> long long {
-  if (datetime_str.length() < 16) {
-    return 0;
-  }
-  std::tm t = {};
-  std::stringstream ss(datetime_str);
-  ss >> std::get_time(&t, "%Y-%m-%d %H:%M");
+// logical_id layout: (YYYYMMDD) as high bits, daily sequence as low bits.
+// Example: date 20210101, sequence 42 -> 20210101000042.
+constexpr long long kDailySequenceBase = 1000000;
+constexpr size_t kDateTimeMinLength = 16;
+constexpr size_t kDateStringLength = 10;
+constexpr size_t kTimeStringLength = 5;
+constexpr size_t kTimeHourOffset = 0;
+constexpr size_t kTimeHourLength = 2;
+constexpr size_t kTimeMinuteOffset = 3;
+constexpr size_t kTimeMinuteLength = 2;
+constexpr int kHoursPerDay = 24;
+constexpr int kMinutesPerHour = 60;
+constexpr int kSecondsPerMinute = 60;
+constexpr int kSecondsPerDay =
+    kHoursPerDay * kMinutesPerHour * kSecondsPerMinute;
 
-  if (ss.fail()) {
+auto StringToTimeT(const std::string& datetime_str) -> long long {
+  if (datetime_str.length() < kDateTimeMinLength) {
     return 0;
   }
-  return std::mktime(&t);
+  std::tm time_info = {};
+  std::stringstream time_stream(datetime_str);
+  time_stream >> std::get_time(&time_info, "%Y-%m-%d %H:%M");
+
+  if (time_stream.fail()) {
+    return 0;
+  }
+  return static_cast<long long>(std::mktime(&time_info));
 }
 }  // namespace
 
-int DayStats::calculateDurationSeconds(const std::string& startTimeStr,
-                                       const std::string& endTimeStr) {
-  if (startTimeStr.length() != 5 || endTimeStr.length() != 5) {
+auto DayStats::calculateDurationSeconds(const std::string& start_time_str,
+                                        const std::string& end_time_str)
+    -> int {
+  if (start_time_str.length() != kTimeStringLength ||
+      end_time_str.length() != kTimeStringLength) {
     return 0;
   }
   try {
-    int start_hour = std::stoi(startTimeStr.substr(0, 2));
-    int start_min = std::stoi(startTimeStr.substr(3, 2));
-    int end_hour = std::stoi(endTimeStr.substr(0, 2));
-    int end_min = std::stoi(endTimeStr.substr(3, 2));
-    int start_time_in_seconds = (start_hour * 60 + start_min) * 60;
-    int end_time_in_seconds = (end_hour * 60 + end_min) * 60;
+    int start_hour =
+        std::stoi(start_time_str.substr(kTimeHourOffset, kTimeHourLength));
+    int start_min =
+        std::stoi(start_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    int end_hour =
+        std::stoi(end_time_str.substr(kTimeHourOffset, kTimeHourLength));
+    int end_min =
+        std::stoi(end_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    int start_time_in_seconds =
+        (start_hour * kMinutesPerHour + start_min) * kSecondsPerMinute;
+    int end_time_in_seconds =
+        (end_hour * kMinutesPerHour + end_min) * kSecondsPerMinute;
     if (end_time_in_seconds < start_time_in_seconds) {
-      end_time_in_seconds += 24 * 60 * 60;
+      end_time_in_seconds += kSecondsPerDay;
     }
     return end_time_in_seconds - start_time_in_seconds;
   } catch (const std::exception&) {
@@ -46,11 +70,12 @@ int DayStats::calculateDurationSeconds(const std::string& startTimeStr,
   }
 }
 
-long long DayStats::timeStringToTimestamp(const std::string& date,
-                                          const std::string& time,
-                                          bool is_end_time,
-                                          long long start_timestamp_for_end) {
-  if (date.length() != 10 || time.length() != 5) {
+auto DayStats::timeStringToTimestamp(const std::string& date,
+                                     const std::string& time, bool is_end_time,
+                                     long long start_timestamp_for_end)
+    -> long long {
+  if (date.length() != kDateStringLength ||
+      time.length() != kTimeStringLength) {
     return 0;
   }
 
@@ -58,13 +83,13 @@ long long DayStats::timeStringToTimestamp(const std::string& date,
   long long timestamp = StringToTimeT(datetime_str);
 
   if (is_end_time && timestamp < start_timestamp_for_end) {
-    timestamp += 24 * 60 * 60;
+    timestamp += static_cast<long long>(kSecondsPerDay);
   }
   return timestamp;
 }
 
 void DayStats::calculate_stats(DailyLog& day) {
-  day.activityCount = day.processedActivities.size();
+  day.activityCount = static_cast<int>(day.processedActivities.size());
   day.stats = {};  // [适配] generatedStats -> stats
   day.hasStudyActivity = false;
   day.hasExerciseActivity = false;
@@ -81,7 +106,8 @@ void DayStats::calculate_stats(DailyLog& day) {
   }
 
   for (auto& activity : day.processedActivities) {
-    activity.logical_id = (date_as_long * 10000) + activity_sequence++;
+    activity.logical_id =
+        (date_as_long * kDailySequenceBase) + activity_sequence++;
     // [适配] startTime/endTime -> start_time_str/end_time_str
     activity.duration_seconds = calculateDurationSeconds(
         activity.start_time_str, activity.end_time_str);

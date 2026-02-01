@@ -1,4 +1,4 @@
-// importer/storage/sqlite/writer.hpp
+// importer/storage/sqlite/Writer.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_WRITER_H_
 #define IMPORTER_STORAGE_SQLITE_WRITER_H_
 
@@ -13,8 +13,10 @@
 
 class Writer {
  public:
-  explicit Writer(sqlite3* db, sqlite3_stmt* stmt_day,
+  // NOLINTBEGIN(bugprone-easily-swappable-parameters)
+  explicit Writer(sqlite3* sqlite_db, sqlite3_stmt* stmt_day,
                   sqlite3_stmt* stmt_record, sqlite3_stmt* stmt_insert_project);
+  // NOLINTEND(bugprone-easily-swappable-parameters)
 
   ~Writer();
 

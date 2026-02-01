@@ -6,6 +6,15 @@
 #include <iomanip>
 #include <sstream>
 
+namespace {
+constexpr long long kSecondsInHour = 3600;
+constexpr long long kSecondsInMinute = 60;
+constexpr int kDateStringLength = 10;
+constexpr int kMonthOffset = 5;
+constexpr int kDayOffset = 8;
+constexpr int kTmYearBase = 1900;
+}  // namespace
+
 auto time_format_duration(long long total_seconds, int avg_days)
     -> std::string {
   if (total_seconds == 0) {
@@ -18,23 +27,24 @@ auto time_format_duration(long long total_seconds, int avg_days)
   long long seconds_per_day =
       (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
 
-  auto format_single_duration = [](long long s) -> std::basic_string<char> {
-    if (s == 0) {
-      return std::string("0m");
+  auto format_single_duration =
+      [](long long total_seconds) -> std::basic_string<char> {
+    if (total_seconds == 0) {
+      return {"0m"};
     }
-    long long h = s / 3600;
-    long long m = (s % 3600) / 60;
-    std::stringstream ss;
-    if (h > 0) {
-      ss << h << "h";
+    long long hours = total_seconds / kSecondsInHour;
+    long long minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
+    std::stringstream formatted_ss;
+    if (hours > 0) {
+      formatted_ss << hours << "h";
     }
-    if (m > 0 || h == 0) {
-      if (h > 0) {
-        ss << " ";  // Add space between h and m
+    if (minutes > 0 || hours == 0) {
+      if (hours > 0) {
+        formatted_ss << " ";  // Add space between h and m
       }
-      ss << m << "m";
+      formatted_ss << minutes << "m";
     }
-    return ss.str();
+    return formatted_ss.str();
   };
 
   std::string main_duration_str = format_single_duration(total_seconds);
@@ -49,35 +59,35 @@ auto time_format_duration(long long total_seconds, int avg_days)
 // [核心修改] 适配 YYYY-MM-DD 格式
 auto add_days_to_date_str(std::string date_str, int days) -> std::string {
   // 预期输入: "2025-01-01" (10 chars)
-  if (date_str.length() != 10) {
+  if (date_str.length() != static_cast<size_t>(kDateStringLength)) {
     return date_str;
   }
 
   // YYYY-MM-DD
   // 0123456789
   int year = std::stoi(date_str.substr(0, 4));
-  int month = std::stoi(date_str.substr(5, 2));  // 跳过索引4的 '-'
-  int day = std::stoi(date_str.substr(8, 2));    // 跳过索引7的 '-'
+  int month = std::stoi(date_str.substr(kMonthOffset, 2));  // 跳过索引4的 '-'
+  int day = std::stoi(date_str.substr(kDayOffset, 2));      // 跳过索引7的 '-'
 
-  std::tm t{};
-  t.tm_year = year - 1900;
-  t.tm_mon = month - 1;
-  t.tm_mday = day + days;
+  std::tm time_info{};
+  time_info.tm_year = year - kTmYearBase;
+  time_info.tm_mon = month - 1;
+  time_info.tm_mday = day + days;
   // 标准化时间结构，自动处理进位/借位（例如1月32日变成2月1日）
-  std::mktime(&t);
+  std::mktime(&time_info);
 
-  std::stringstream ss;
+  std::stringstream formatted_ss;
   // [修改] 输出格式化为标准格式
-  ss << std::put_time(&t, "%Y-%m-%d");
-  return ss.str();
+  formatted_ss << std::put_time(&time_info, "%Y-%m-%d");
+  return formatted_ss.str();
 }
 
 // [核心修改] 适配 YYYY-MM-DD 格式
 auto get_current_date_str() -> std::string {
   auto now = std::chrono::system_clock::now();
   auto in_time_t = std::chrono::system_clock::to_time_t(now);
-  std::stringstream ss;
+  std::stringstream formatted_ss;
   // [修改] 输出格式化为标准格式
-  ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d");
-  return ss.str();
+  formatted_ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d");
+  return formatted_ss.str();
 }

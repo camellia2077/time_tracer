@@ -6,63 +6,80 @@
 #include <memory>
 #include <toml++/toml.h>
 
-DayTexFormatter::DayTexFormatter(std::shared_ptr<DayTexConfig> config) 
+DayTexFormatter::DayTexFormatter(std::shared_ptr<DayTexConfig> config)
     : BaseTexFormatter(config) {}
 
-bool DayTexFormatter::is_empty_data(const DailyReportData& data) const {
+auto DayTexFormatter::is_empty_data(const DailyReportData& data) const -> bool {
     return data.total_duration == 0;
 }
 
-int DayTexFormatter::get_avg_days(const DailyReportData& /*data*/) const {
+auto DayTexFormatter::get_avg_days(const DailyReportData& /*data*/) const -> int {
     return 1;
 }
 
-std::string DayTexFormatter::get_no_records_msg() const {
-    return config_->get_no_records(); 
+auto DayTexFormatter::get_no_records_msg() const -> std::string {
+    return config_->get_no_records();
 }
 
-std::map<std::string, std::string> DayTexFormatter::get_keyword_colors() const {
+auto DayTexFormatter::get_keyword_colors() const
+    -> std::map<std::string, std::string> {
     return config_->get_keyword_colors();
 }
 
-void DayTexFormatter::format_header_content(std::stringstream& ss, const DailyReportData& data) const {
-    DayTexUtils::display_header(ss, data, config_);
+void DayTexFormatter::format_header_content(std::stringstream& report_stream,
+                                            const DailyReportData& data) const {
+    DayTexUtils::display_header(report_stream, data, config_);
 }
 
-void DayTexFormatter::format_extra_content(std::stringstream& ss, const DailyReportData& data) const {
+void DayTexFormatter::format_extra_content(std::stringstream& report_stream,
+                                           const DailyReportData& data) const {
     auto strategy = std::make_unique<LatexStrategy>(config_);
     StatFormatter stats_formatter(std::move(strategy));
-    ss << stats_formatter.format(data, config_);
-    DayTexUtils::display_detailed_activities(ss, data, config_);
+    report_stream << stats_formatter.format(data, config_);
+    DayTexUtils::display_detailed_activities(report_stream, data, config_);
 }
+
+namespace {
+constexpr const char* kEmptyReport = "";
+}  // namespace
 
 extern "C" {
     // [核心修改] 解析 TOML 字符串
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_content) {
+    // Public API: keep symbol name stable for dynamic loading.
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    __declspec(dllexport) auto create_formatter(const char* config_content)
+        -> FormatterHandle {
         try {
             auto config_tbl = toml::parse(config_content);
             auto tex_config = std::make_shared<DayTexConfig>(config_tbl);
-            auto formatter = new DayTexFormatter(tex_config);
-            return static_cast<FormatterHandle>(formatter);
+            auto formatter = std::make_unique<DayTexFormatter>(tex_config);
+            return static_cast<FormatterHandle>(formatter.release());
         } catch (...) {
             return nullptr;
         }
     }
 
+    // Public API: keep symbol name stable for dynamic loading.
+    // NOLINTNEXTLINE(readability-identifier-naming)
     __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
-        if (handle) {
-            delete static_cast<DayTexFormatter*>(handle);
+        if (handle != nullptr) {
+            std::unique_ptr<DayTexFormatter>{
+                static_cast<DayTexFormatter*>(handle)};
         }
     }
 
     static std::string report_buffer;
 
-    __declspec(dllexport) const char* format_report(FormatterHandle handle, const DailyReportData& data) {
-        if (handle) {
+    // Public API: keep symbol name stable for dynamic loading.
+    // NOLINTNEXTLINE(readability-identifier-naming)
+    __declspec(dllexport) auto format_report(FormatterHandle handle,
+                                              const DailyReportData& data)
+        -> const char* {
+        if (handle != nullptr) {
             auto* formatter = static_cast<DayTexFormatter*>(handle);
             report_buffer = formatter->format_report(data);
             return report_buffer.c_str();
         }
-        return "";
+        return kEmptyReport;
     }
 }

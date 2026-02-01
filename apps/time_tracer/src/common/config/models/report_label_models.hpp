@@ -33,5 +33,7 @@ struct RangeReportLabels {
 
 using MonthlyReportLabels = RangeReportLabels;
 using PeriodReportLabels = RangeReportLabels;
+using WeeklyReportLabels = RangeReportLabels;
+using YearlyReportLabels = RangeReportLabels;
 
 #endif  // COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_H_

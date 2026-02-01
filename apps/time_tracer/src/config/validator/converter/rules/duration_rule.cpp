@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-bool DurationRule::validate(const toml::table& duration_tbl) {
+auto DurationRule::validate(const toml::table& duration_tbl) -> bool {
   if (!duration_tbl.contains("text_duration_mappings") ||
       !duration_tbl["text_duration_mappings"].is_table()) {
     std::cerr << "[Validator] Error: Duration rules config must contain a "

@@ -1,10 +1,10 @@
-// importer/storage/sqlite/statement.cpp
+// importer/storage/sqlite/Statement.cpp
 #include "statement.hpp"
 
 #include <stdexcept>
 
-Statement::Statement(sqlite3* db)
-    : db_(db),
+Statement::Statement(sqlite3* sqlite_db)
+    : db_(sqlite_db),
       stmt_insert_day_(nullptr),
       stmt_insert_record_(nullptr),
       stmt_insert_project_(nullptr) {

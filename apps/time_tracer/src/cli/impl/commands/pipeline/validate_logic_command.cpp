@@ -3,13 +3,13 @@
 
 #include <utility>
 
+#include "application/pipeline/pipeline_manager.hpp"
 #include "cli/framework/core/command_parser.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/framework/core/command_validator.hpp"
 #include "cli/impl/app/app_context.hpp"
 #include "cli/impl/utils/arg_utils.hpp"
 #include "common/app_options.hpp"
-#include "application/pipeline/pipeline_manager.hpp"
 
 // 注册命令：validate-logic
 static CommandRegistrar<AppContext> registrar(

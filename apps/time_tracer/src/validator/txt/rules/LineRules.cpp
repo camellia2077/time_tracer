@@ -34,15 +34,18 @@ LineRules::LineRules(const ConverterConfig& config) : config_(config) {
   }
 }
 
-bool LineRules::is_year(const std::string& line) {
-  if (line.length() != 5 || line[0] != 'y') {
+auto LineRules::is_year(const std::string& line) -> bool {
+  constexpr size_t kYearStringLength = 5;
+  if (line.length() != kYearStringLength || line[0] != 'y') {
     return false;
   }
   return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
-bool LineRules::is_date(const std::string& line) {
-  return line.length() == 4 && std::ranges::all_of(line, ::isdigit);
+auto LineRules::is_date(const std::string& line) -> bool {
+  constexpr size_t kDateStringLength = 4;
+  return line.length() == kDateStringLength &&
+         std::ranges::all_of(line, ::isdigit);
 }
 
 auto LineRules::is_remark(const std::string& line) const -> bool {
@@ -57,23 +60,28 @@ auto LineRules::is_remark(const std::string& line) const -> bool {
 
 auto LineRules::is_valid_event_line(const std::string& line, int line_number,
                                     std::set<Error>& errors) const -> bool {
-  if (line.length() < 5 ||
-      !std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
+  constexpr size_t kMinimumEventLineLength = 5;
+  constexpr size_t kTimePrefixLength = 4;
+  constexpr int kMaxHours = 23;
+  constexpr int kMaxMinutes = 59;
+
+  if (line.length() < kMinimumEventLineLength ||
+      !std::all_of(line.begin(), line.begin() + kTimePrefixLength, ::isdigit)) {
     return false;
   }
   try {
-    int hh = std::stoi(line.substr(0, 2));
-    int mm = std::stoi(line.substr(2, 2));
-    if (hh > 23 || mm > 59) {
+    int hours = std::stoi(line.substr(0, 2));
+    int minutes = std::stoi(line.substr(2, 2));
+    if (hours > kMaxHours || minutes > kMaxMinutes) {
       return false;
     }
 
-    std::string remaining_line = line.substr(4);
+    std::string remaining_line = line.substr(kTimePrefixLength);
     std::string description;
 
     size_t comment_pos = std::string::npos;
-    const char* delimiters[] = {"//", "#", ";"};
-    for (const char* delim : delimiters) {
+    constexpr std::array<const char*, 3> kDelimiters = {"//", "#", ";"};
+    for (const char* delim : kDelimiters) {
       size_t pos = remaining_line.find(delim);
       if (pos != std::string::npos &&
           (comment_pos == std::string::npos || pos < comment_pos)) {

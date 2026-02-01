@@ -11,10 +11,13 @@
 
 namespace DayTexUtils {
 
-void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config) {
+void display_header(std::stringstream& report_stream,
+                    const DailyReportData& data,
+                    const std::shared_ptr<DayTexConfig>& config) {
     // 1. 渲染标题
     std::string title_content = config->get_report_title() + " " + TexUtils::escape_latex(data.date);
-    TexCommonUtils::render_title(ss, title_content, config->get_report_title_font_size());
+    TexCommonUtils::render_title(report_stream, title_content,
+                                 config->get_report_title_font_size());
 
     // 2. 准备列表数据
     // 处理多行备注：先转义，再添加 LaTeX 换行符 (\\)
@@ -32,19 +35,23 @@ void display_header(std::stringstream& ss, const DailyReportData& data, const st
     };
 
     // 3. 渲染列表
-    TexCommonUtils::render_summary_list(ss, items, config->get_list_top_sep_pt(), config->get_list_item_sep_ex());
+    TexCommonUtils::render_summary_list(report_stream, items,
+                                        config->get_list_top_sep_pt(),
+                                        config->get_list_item_sep_ex());
 }
 
-void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTexConfig>& config) {
+void display_detailed_activities(std::stringstream& report_stream,
+                                 const DailyReportData& data,
+                                 const std::shared_ptr<DayTexConfig>& config) {
     if (data.detailed_records.empty()) {
         return;
     }
 
     // [优化] 使用通用函数渲染子标题
     TexCommonUtils::render_title(
-        ss, 
-        config->get_all_activities_label(), 
-        config->get_category_title_font_size(), 
+        report_stream,
+        config->get_all_activities_label(),
+        config->get_category_title_font_size(),
         true // is_subsection
     );
 
@@ -52,7 +59,7 @@ void display_detailed_activities(std::stringstream& ss, const DailyReportData& d
         config->get_list_top_sep_pt(),
         config->get_list_item_sep_ex()
     );
-    ss << "\\begin{itemize}" << compact_list_options << "\n";
+    report_stream << "\\begin{itemize}" << compact_list_options << "\n";
 
     for (const auto& record : data.detailed_records) {
         std::string project_path = replace_all(record.project_path, "_", config->get_activity_connector());
@@ -70,20 +77,25 @@ void display_detailed_activities(std::stringstream& ss, const DailyReportData& d
             }
         }
 
-        ss << "    \\item " << colorized_string << "\n";
+        report_stream << "    \\item " << colorized_string << "\n";
 
         if (record.activityRemark.has_value()) {
-            ss << "    \\begin{itemize}" << compact_list_options << "\n";
+            report_stream << "    \\begin{itemize}" << compact_list_options
+                          << "\n";
             
-            std::string safe_activity_remark = TexUtils::escape_latex(record.activityRemark.value());
-            std::string formatted_activity_remark = format_multiline_for_list(safe_activity_remark, 0, "\\\\");
+            const std::string& activity_remark = record.activityRemark.value();
+            std::string safe_activity_remark =
+                TexUtils::escape_latex(activity_remark);
+            std::string formatted_activity_remark =
+                format_multiline_for_list(safe_activity_remark, 0, "\\\\");
 
-            ss << "        \\item \\textbf{" << config->get_activity_remark_label() << "}: "
-               << formatted_activity_remark << "\n";
-            ss << "    \\end{itemize}\n";
+            report_stream << "        \\item \\textbf{"
+                          << config->get_activity_remark_label() << "}: "
+                          << formatted_activity_remark << "\n";
+            report_stream << "    \\end{itemize}\n";
         }
     }
-    ss << "\\end{itemize}\n\n";
+    report_stream << "\\end{itemize}\n\n";
 }
 
 } // namespace DayTexUtils

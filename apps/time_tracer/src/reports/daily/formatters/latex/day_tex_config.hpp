@@ -14,8 +14,8 @@ class DayTexConfig : public DayBaseConfig {
  public:
   explicit DayTexConfig(const toml::table& config);
 
-  const std::string& get_report_title() const;
-  const std::map<std::string, std::string>& get_keyword_colors() const;
+  auto get_report_title() const -> const std::string&;
+  auto get_keyword_colors() const -> const std::map<std::string, std::string>&;
 
   // 代理给 style_ 的方法
   const std::string& get_main_font() const { return style_.get_main_font(); }

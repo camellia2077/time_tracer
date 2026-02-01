@@ -1,4 +1,4 @@
-// importer/storage/sqlite/connection.hpp
+// importer/storage/sqlite/Connection.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_CONNECTION_H_
 #define IMPORTER_STORAGE_SQLITE_CONNECTION_H_
 
@@ -20,7 +20,9 @@ class Connection {
   sqlite3* db_;  // MODIFIED
 };
 
-bool execute_sql(sqlite3* db, const std::string& sql,
-                 const std::string& context_msg = "");
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+bool execute_sql(sqlite3* sqlite_db, const std::string& sql_query,
+                 const std::string& error_context = "");
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 #endif  // IMPORTER_STORAGE_SQLITE_CONNECTION_H_

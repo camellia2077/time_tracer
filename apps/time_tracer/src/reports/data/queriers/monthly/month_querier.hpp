@@ -11,15 +11,20 @@
 
 class MonthQuerier : public BaseQuerier<MonthlyReportData, const std::string&> {
  public:
-  explicit MonthQuerier(sqlite3* db, const std::string& year_month);
+  static constexpr int kYearMonthLength = 7;
+  static constexpr int kDashPosition = 4;
+  static constexpr int kYearEndPosition = 3;
+  static constexpr int kMonthStartPosition = 5;
+  static constexpr int kMonthEndPosition = 6;
 
-  // [FIX] Add the override for fetch_data
-  MonthlyReportData fetch_data() override;
+  explicit MonthQuerier(sqlite3* sqlite_db, const std::string& year_month);
+
+  [[nodiscard]] auto fetch_data() -> MonthlyReportData override;
 
  protected:
-  std::string get_date_condition_sql() const override;
+  [[nodiscard]] auto get_date_condition_sql() const -> std::string override;
   void bind_sql_parameters(sqlite3_stmt* stmt) const override;
-  bool _validate_input() const override;
+  [[nodiscard]] auto _validate_input() const -> bool override;
   void _handle_invalid_input(MonthlyReportData& data) const override;
   void _prepare_data(MonthlyReportData& data) const override;
 };

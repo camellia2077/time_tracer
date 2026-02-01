@@ -7,8 +7,8 @@
 #include "reports/data/cache/project_name_cache.hpp"
 #include "reports/data/utils/project_tree_builder.hpp"
 
-MonthQuerier::MonthQuerier(sqlite3* db, const std::string& year_month)
-    : BaseQuerier(db, year_month) {}
+MonthQuerier::MonthQuerier(sqlite3* sqlite_db, const std::string& year_month)
+    : BaseQuerier(sqlite_db, year_month) {}
 
 auto MonthQuerier::fetch_data() -> MonthlyReportData {
   MonthlyReportData data = BaseQuerier::fetch_data();
@@ -29,10 +29,10 @@ auto MonthQuerier::fetch_data() -> MonthlyReportData {
 }
 
 auto MonthQuerier::_validate_input() const -> bool {
-  if (this->param_.length() != 7) {
+  if (this->param_.length() != static_cast<size_t>(kYearMonthLength)) {
     return false;
   }
-  if (this->param_[4] != '-') {
+  if (this->param_[kDashPosition] != '-') {
     return false;
   }
 
@@ -40,8 +40,8 @@ auto MonthQuerier::_validate_input() const -> bool {
          (std::isdigit(this->param_[1]) != 0) &&
          (std::isdigit(this->param_[2]) != 0) &&
          (std::isdigit(this->param_[3]) != 0) &&
-         (std::isdigit(this->param_[5]) != 0) &&
-         (std::isdigit(this->param_[6]) != 0);
+         (std::isdigit(this->param_[kMonthStartPosition]) != 0) &&
+         (std::isdigit(this->param_[kMonthEndPosition]) != 0);
 }
 
 void MonthQuerier::_handle_invalid_input(MonthlyReportData& data) const {

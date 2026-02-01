@@ -13,8 +13,8 @@
 class TextParser {
  public:
   explicit TextParser(const ConverterConfig& config);
-  void parse(std::istream& inputStream,
-             std::function<void(DailyLog&)> onNewDay);
+  void parse(std::istream& input_stream,
+             std::function<void(DailyLog&)> on_new_day);
 
  private:
   const ConverterConfig& config_;
@@ -26,7 +26,7 @@ class TextParser {
   static bool isYearMarker(const std::string& line);
   static bool isNewDayMarker(const std::string& line);
   void parseLine(const std::string& line, int line_number,
-                 DailyLog& currentDay) const;
+                 DailyLog& current_day) const;
 };
 
 #endif  // ADAPTERS_INPUT_PARSER_TEXT_PARSER_H_

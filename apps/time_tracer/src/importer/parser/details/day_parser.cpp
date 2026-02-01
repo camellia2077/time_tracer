@@ -3,7 +3,14 @@
 
 #include <stdexcept>
 
-DayData DayParser::parse(const nlohmann::json& day_json) {
+namespace {
+constexpr size_t kFullDateStrLen = 10;
+constexpr size_t kDateStrYearEnd = 4;
+constexpr size_t kDateStrMonthStart = 5;
+constexpr size_t kDateStrMonthLen = 2;
+}  // namespace
+
+auto DayParser::parse(const nlohmann::json& day_json) -> DayData {
   try {
     const auto& headers = day_json.at("headers");
     const auto& generated_stats = day_json.at("generated_stats");
@@ -44,9 +51,10 @@ DayData DayParser::parse(const nlohmann::json& day_json) {
 
     day_data.stats.study_time = generated_stats.value("total_study_time", 0);
 
-    if (day_data.date.length() == 10) {
-      day_data.year = std::stoi(day_data.date.substr(0, 4));
-      day_data.month = std::stoi(day_data.date.substr(5, 2));
+    if (day_data.date.length() == kFullDateStrLen) {
+      day_data.year = std::stoi(day_data.date.substr(0, kDateStrYearEnd));
+      day_data.month =
+          std::stoi(day_data.date.substr(kDateStrMonthStart, kDateStrMonthLen));
     } else {
       day_data.year = 0;
       day_data.month = 0;
