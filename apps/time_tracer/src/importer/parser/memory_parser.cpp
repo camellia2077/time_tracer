@@ -3,6 +3,41 @@
 
 #include <iostream>
 
+namespace {
+constexpr size_t kDateStrMinLen = 7;
+constexpr size_t kDateStrYearEnd = 4;
+constexpr size_t kDateStrMonthStart = 5;
+constexpr size_t kDateStrMonthLen = 2;
+
+auto ProcessDayDate(const std::string& date_str, DayData& day_data) -> void {
+  if (date_str.length() >= kDateStrMinLen) {
+    try {
+      day_data.year = std::stoi(date_str.substr(0, kDateStrYearEnd));
+      day_data.month =
+          std::stoi(date_str.substr(kDateStrMonthStart, kDateStrMonthLen));
+    } catch (...) {
+      day_data.year = 0;
+      day_data.month = 0;
+    }
+  } else {
+    day_data.year = 0;
+    day_data.month = 0;
+  }
+}
+
+auto ProcessDayRemarks(const std::vector<std::string>& remarks_vec)
+    -> std::string {
+  std::string merged_remark;
+  for (size_t i = 0; i < remarks_vec.size(); ++i) {
+    merged_remark += remarks_vec[i];
+    if (i < remarks_vec.size() - 1) {
+      merged_remark += "\n";
+    }
+  }
+  return merged_remark;
+}
+}  // namespace
+
 auto MemoryParser::parse(
     const std::map<std::string, std::vector<DailyLog>>& data_map)
     -> ParsedData {
@@ -13,33 +48,12 @@ auto MemoryParser::parse(
       DayData day_data;
       day_data.date = input_day.date;
 
-      if (input_day.date.length() >= 7) {
-        try {
-          day_data.year = std::stoi(input_day.date.substr(0, 4));
-          day_data.month = std::stoi(input_day.date.substr(5, 2));
-        } catch (...) {
-          day_data.year = 0;
-          day_data.month = 0;
-        }
-      } else {
-        day_data.year = 0;
-        day_data.month = 0;
-      }
+      ProcessDayDate(input_day.date, day_data);
 
       day_data.status = input_day.hasStudyActivity ? 1 : 0;
       day_data.sleep = input_day.hasSleepActivity ? 1 : 0;
       day_data.exercise = input_day.hasExerciseActivity ? 1 : 0;
-      day_data.getup_time =
-          input_day.getupTime.empty() ? "00:00" : input_day.getupTime;
-
-      std::string merged_remark;
-      for (size_t i = 0; i < input_day.generalRemarks.size(); ++i) {
-        merged_remark += input_day.generalRemarks[i];
-        if (i < input_day.generalRemarks.size() - 1) {
-          merged_remark += "\n";
-        }
-      }
-      day_data.remark = merged_remark;
+      day_data.remark = ProcessDayRemarks(input_day.generalRemarks);
 
       // [核心修改] 直接赋值统计数据！
       day_data.stats = input_day.stats;

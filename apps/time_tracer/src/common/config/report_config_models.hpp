@@ -76,4 +76,40 @@ struct PeriodMdConfig {
   PeriodReportLabels labels;
 };
 
+// --- Weekly Configs ---
+
+struct WeeklyTexConfig {
+  FontConfig fonts;
+  LayoutConfig layout;
+  WeeklyReportLabels labels;
+};
+
+struct WeeklyTypConfig {
+  FontConfig fonts;
+  LayoutConfig layout;
+  WeeklyReportLabels labels;
+};
+
+struct WeeklyMdConfig {
+  WeeklyReportLabels labels;
+};
+
+// --- Yearly Configs ---
+
+struct YearlyTexConfig {
+  FontConfig fonts;
+  LayoutConfig layout;
+  YearlyReportLabels labels;
+};
+
+struct YearlyTypConfig {
+  FontConfig fonts;
+  LayoutConfig layout;
+  YearlyReportLabels labels;
+};
+
+struct YearlyMdConfig {
+  YearlyReportLabels labels;
+};
+
 #endif  // COMMON_CONFIG_REPORT_CONFIG_MODELS_H_

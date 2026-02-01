@@ -4,8 +4,8 @@
 #include <iostream>
 
 #include "common/ansi_colors.hpp"
-#include "io/core/file_system_helper.hpp"
-#include "io/core/file_writer.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
+#include "infrastructure/io/core/file_writer.hpp"
 #include "serializer/json_serializer.hpp"
 
 namespace fs = std::filesystem;
@@ -19,8 +19,7 @@ auto ProcessedDataWriter::write(
   std::vector<fs::path> written_files;
 
   for (const auto& [month_key, month_days] : data) {
-    fs::path output_file_path =
-        output_root / "data" / (month_key + ".json");
+    fs::path output_file_path = output_root / "data" / (month_key + ".json");
     fs::path month_output_dir = output_file_path.parent_path();
 
     try {

@@ -8,8 +8,9 @@
 #include "reports/data/utils/project_tree_builder.hpp"
 #include "reports/shared/factories/generic_formatter_factory.hpp"
 
-DailyReportService::DailyReportService(sqlite3* db, const AppConfig& config)
-    : db_(db), app_config_(config) {
+DailyReportService::DailyReportService(sqlite3* sqlite_db,
+                                       const AppConfig& config)
+    : db_(sqlite_db), app_config_(config) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }

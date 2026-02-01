@@ -30,8 +30,11 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
                                       const std::string& formatted_duration,
                                       int indent_level) const
       -> std::string override {
-    return std::string(indent_level * 2, ' ') + "+ " + project_name + ": " +
-           formatted_duration + "\n";
+    constexpr int kIndentMultiplier = 2;
+    return std::string(static_cast<size_t>(indent_level) *
+                           static_cast<size_t>(kIndentMultiplier),
+                       ' ') +
+           "+ " + project_name + ": " + formatted_duration + "\n";
   }
 
  private:
@@ -42,6 +45,8 @@ class TypstFormattingStrategy : public reporting::IFormattingStrategy {
 // --- Public API ---
 
 // [修正] 添加 reporting:: 命名空间前缀
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto format_project_tree(const reporting::ProjectTree& tree,
                          long long total_duration, int avg_days,
                          const std::string& category_title_font,
@@ -51,5 +56,6 @@ auto format_project_tree(const reporting::ProjectTree& tree,
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
   return formatter.format_project_tree(tree, total_duration, avg_days);
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TypUtils

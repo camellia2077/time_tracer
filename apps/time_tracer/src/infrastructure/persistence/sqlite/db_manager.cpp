@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "io/core/file_system_helper.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
 
 DBManager::DBManager(std::string db_name)
     : db_name_(std::move(db_name)), db_(nullptr) {}

@@ -61,6 +61,8 @@ void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels);
 void fill_range_labels(const toml::table& tbl, RangeReportLabels& labels);
 void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels);
 void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels);
+void fill_weekly_labels(const toml::table& tbl, WeeklyReportLabels& labels);
+void fill_yearly_labels(const toml::table& tbl, YearlyReportLabels& labels);
 
 // 解析通用部分
 void fill_keyword_colors(const toml::table& tbl,

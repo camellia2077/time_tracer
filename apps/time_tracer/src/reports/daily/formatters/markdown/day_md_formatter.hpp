@@ -12,20 +12,20 @@ class DayMdFormatter : public BaseMdFormatter<DailyReportData, DayMdConfig> {
 
  protected:
   // --- 实现基类钩子 ---
-  bool is_empty_data(const DailyReportData& data) const override;
-  int get_avg_days(const DailyReportData& data) const override;
+  auto is_empty_data(const DailyReportData& data) const -> bool override;
+  auto get_avg_days(const DailyReportData& data) const -> int override;
 
-  void format_header_content(std::stringstream& ss,
+  void format_header_content(std::stringstream& report_stream,
                              const DailyReportData& data) const override;
-  void format_extra_content(std::stringstream& ss,
+  void format_extra_content(std::stringstream& report_stream,
                             const DailyReportData& data) const override;
 
   // 适配接口：DayConfig 使用 get_no_records() 而非 get_no_records_message()
-  std::string get_no_records_msg() const override;
+  auto get_no_records_msg() const -> std::string override;
 
  private:
   // 原本的私有辅助函数现在变成了钩子函数的具体实现，或者被内联
-  void _display_detailed_activities(std::stringstream& ss,
+  void _display_detailed_activities(std::stringstream& report_stream,
                                     const DailyReportData& data) const;
 };
 

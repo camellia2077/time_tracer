@@ -7,27 +7,49 @@
 
 #include "common/utils/string_utils.hpp"
 
-std::string ActivityMapper::formatTime(const std::string& timeStrHHMM) {
-  if (timeStrHHMM.length() == 4) {
-    return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
+namespace {
+constexpr size_t kTimeDigitsLength = 4;
+constexpr size_t kTimeStringLength = 5;
+constexpr size_t kTimeHourOffset = 0;
+constexpr size_t kTimeHourLength = 2;
+constexpr size_t kTimeDigitsMinuteOffset = 2;
+constexpr size_t kTimeMinuteOffset = 3;
+constexpr size_t kTimeMinuteLength = 2;
+constexpr int kMinutesPerHour = 60;
+constexpr int kHoursPerDay = 24;
+}  // namespace
+
+auto ActivityMapper::formatTime(const std::string& time_str_hhmm)
+    -> std::string {
+  // Example: "0614" -> "06:14".
+  if (time_str_hhmm.length() == kTimeDigitsLength) {
+    return time_str_hhmm.substr(kTimeHourOffset, kTimeHourLength) + ":" +
+           time_str_hhmm.substr(kTimeDigitsMinuteOffset, kTimeMinuteLength);
   }
-  return timeStrHHMM;
+  return time_str_hhmm;
 }
 
-int ActivityMapper::calculateDurationMinutes(const std::string& startTimeStr,
-                                             const std::string& endTimeStr) {
-  if (startTimeStr.length() != 5 || endTimeStr.length() != 5) {
+auto ActivityMapper::calculateDurationMinutes(const std::string& start_time_str,
+                                              const std::string& end_time_str)
+    -> int {
+  // Example: "06:14" -> minutes offset 6*60 + 14.
+  if (start_time_str.length() != kTimeStringLength ||
+      end_time_str.length() != kTimeStringLength) {
     return 0;
   }
   try {
-    int start_hour = std::stoi(startTimeStr.substr(0, 2));
-    int start_min = std::stoi(startTimeStr.substr(3, 2));
-    int end_hour = std::stoi(endTimeStr.substr(0, 2));
-    int end_min = std::stoi(endTimeStr.substr(3, 2));
-    int start_time_in_minutes = (start_hour * 60) + start_min;
-    int end_time_in_minutes = (end_hour * 60) + end_min;
+    int start_hour =
+        std::stoi(start_time_str.substr(kTimeHourOffset, kTimeHourLength));
+    int start_min =
+        std::stoi(start_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    int end_hour =
+        std::stoi(end_time_str.substr(kTimeHourOffset, kTimeHourLength));
+    int end_min =
+        std::stoi(end_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    int start_time_in_minutes = (start_hour * kMinutesPerHour) + start_min;
+    int end_time_in_minutes = (end_hour * kMinutesPerHour) + end_min;
     if (end_time_in_minutes < start_time_in_minutes) {
-      end_time_in_minutes += 24 * 60;
+      end_time_in_minutes += kHoursPerDay * kMinutesPerHour;
     }
     return end_time_in_minutes - start_time_in_minutes;
   } catch (const std::exception&) {
@@ -40,6 +62,102 @@ ActivityMapper::ActivityMapper(const ConverterConfig& config)
       wake_keywords_(config.wake_keywords)  // 直接绑定引用
 {}
 
+auto ActivityMapper::is_wake_event(const RawEvent& raw_event) const -> bool {
+  return std::ranges::find(wake_keywords_, raw_event.description) !=
+         wake_keywords_.end();
+}
+
+auto ActivityMapper::map_description(const std::string& description) const
+    -> std::string {
+  std::string mapped_description = description;
+
+  auto map_it = config_.text_mapping.find(mapped_description);
+  if (map_it != config_.text_mapping.end()) {
+    mapped_description = map_it->second;
+  }
+
+  auto duration_map_it = config_.text_duration_mapping.find(mapped_description);
+  if (duration_map_it != config_.text_duration_mapping.end()) {
+    mapped_description = duration_map_it->second;
+  }
+
+  return mapped_description;
+}
+
+auto ActivityMapper::apply_duration_rules(const std::string& mapped_description,
+                                          const std::string& start_time,
+                                          const std::string& end_time) const
+    -> std::string {
+  auto duration_rules_it = config_.duration_mappings.find(mapped_description);
+  if (duration_rules_it == config_.duration_mappings.end()) {
+    return mapped_description;
+  }
+
+  int duration = calculateDurationMinutes(start_time, end_time);
+  for (const auto& rule : duration_rules_it->second) {
+    if (duration < rule.less_than_minutes) {
+      return rule.value;
+    }
+  }
+
+  return mapped_description;
+}
+
+void ActivityMapper::apply_top_parent_mapping(
+    std::vector<std::string>& parts) const {
+  if (parts.empty()) {
+    return;
+  }
+
+  const auto& top_parents_map = config_.top_parent_mapping;
+  auto map_it = top_parents_map.find(parts.front());
+  if (map_it != top_parents_map.end()) {
+    parts.front() = map_it->second;
+    return;
+  }
+
+  // 检查运行时注入的配置 (Initial Top Parents)
+  auto init_map_it = config_.initial_top_parents.find(parts.front());
+  if (init_map_it != config_.initial_top_parents.end()) {
+    parts.front() = init_map_it->second;
+  }
+}
+
+auto ActivityMapper::build_project_path(const std::vector<std::string>& parts)
+    -> std::string {
+  std::stringstream path_stream;
+  for (size_t i = 0; i < parts.size(); ++i) {
+    path_stream << parts[i] << (i + 1 < parts.size() ? "_" : "");
+  }
+  return path_stream.str();
+}
+
+void ActivityMapper::append_activity(
+    DailyLog& day, const RawEvent& raw_event, const std::string& start_time,
+    const std::string& end_time, const std::string& mapped_description) const {
+  if (start_time.empty()) {
+    return;
+  }
+
+  std::vector<std::string> parts = split_string(mapped_description, '_');
+  if (parts.empty()) {
+    return;
+  }
+
+  BaseActivityRecord activity;
+  activity.start_time_str = start_time;
+  activity.end_time_str = end_time;
+
+  apply_top_parent_mapping(parts);
+  activity.project_path = build_project_path(parts);
+
+  if (!raw_event.remark.empty()) {
+    activity.remark = raw_event.remark;
+  }
+
+  day.processedActivities.push_back(activity);
+}
+
 void ActivityMapper::map_activities(DailyLog& day) {
   day.processedActivities.clear();
 
@@ -50,9 +168,7 @@ void ActivityMapper::map_activities(DailyLog& day) {
   std::string start_time = day.getupTime;
 
   for (const auto& raw_event : day.rawEvents) {
-    // [修复] vector 没有 count 方法，使用 std::find
-    bool is_wake = std::ranges::find(wake_keywords_, raw_event.description) !=
-                   wake_keywords_.end();
+    bool is_wake = is_wake_event(raw_event);
 
     if (is_wake) {
       if (start_time.empty()) {
@@ -62,64 +178,11 @@ void ActivityMapper::map_activities(DailyLog& day) {
     }
 
     std::string formatted_event_end_time = formatTime(raw_event.endTimeStr);
-    std::string mapped_description = raw_event.description;
-
-    // [修复] 直接访问 public 成员
-    auto map_it = config_.text_mapping.find(mapped_description);
-    if (map_it != config_.text_mapping.end()) {
-      mapped_description = map_it->second;
-    }
-
-    auto dur_map_it = config_.text_duration_mapping.find(mapped_description);
-    if (dur_map_it != config_.text_duration_mapping.end()) {
-      mapped_description = dur_map_it->second;
-    }
-
-    auto duration_rules_it = config_.duration_mappings.find(mapped_description);
-    if (duration_rules_it != config_.duration_mappings.end()) {
-      int duration =
-          calculateDurationMinutes(start_time, formatted_event_end_time);
-      for (const auto& rule : duration_rules_it->second) {
-        if (duration < rule.less_than_minutes) {
-          mapped_description = rule.value;
-          break;
-        }
-      }
-    }
-
-    if (!start_time.empty()) {
-      std::vector<std::string> parts = split_string(mapped_description, '_');
-      if (!parts.empty()) {
-        BaseActivityRecord activity;
-        activity.start_time_str = start_time;
-        activity.end_time_str = formatted_event_end_time;
-
-        // [修复] 直接访问 public 成员
-        const auto& top_parents_map = config_.top_parent_mapping;
-        auto map_it = top_parents_map.find(parts[0]);
-        if (map_it != top_parents_map.end()) {
-          parts[0] = map_it->second;
-        } else {
-          // 检查运行时注入的配置 (Initial Top Parents)
-          auto init_map_it = config_.initial_top_parents.find(parts[0]);
-          if (init_map_it != config_.initial_top_parents.end()) {
-            parts[0] = init_map_it->second;
-          }
-        }
-
-        std::stringstream ss;
-        for (size_t i = 0; i < parts.size(); ++i) {
-          ss << parts[i] << (i < parts.size() - 1 ? "_" : "");
-        }
-        activity.project_path = ss.str();
-
-        if (!raw_event.remark.empty()) {
-          activity.remark = raw_event.remark;
-        }
-
-        day.processedActivities.push_back(activity);
-      }
-    }
+    std::string mapped_description = map_description(raw_event.description);
+    mapped_description = apply_duration_rules(mapped_description, start_time,
+                                              formatted_event_end_time);
+    append_activity(day, raw_event, start_time, formatted_event_end_time,
+                    mapped_description);
     start_time = formatted_event_end_time;
   }
 }

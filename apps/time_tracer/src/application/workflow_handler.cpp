@@ -6,11 +6,11 @@
 #include <stdexcept>
 #include <utility>
 
-#include "common/ansi_colors.hpp"
-#include "infrastructure/persistence/sqlite/db_manager.hpp"
-#include "infrastructure/io/file_import_reader.hpp"
 #include "application/pipeline/pipeline_manager.hpp"
-#include "importer/data_importer.hpp"      // 包含 handle_process_memory_data
+#include "common/ansi_colors.hpp"
+#include "importer/data_importer.hpp"  // 包含 handle_process_memory_data
+#include "infrastructure/io/file_import_reader.hpp"
+#include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "serializer/json_serializer.hpp"  // 包含 JsonSerializer
 
 namespace fs = std::filesystem;
@@ -42,7 +42,8 @@ auto WorkflowHandler::get_config() const -> const AppConfig& {
 void WorkflowHandler::run_database_import(
     const std::string& processed_path_str) {
   // 1. 使用 Helper 读取文件内容
-  auto import_payload = infrastructure::io::FileImportReader::read_json_files(processed_path_str);
+  auto import_payload =
+      infrastructure::io::FileImportReader::read_json_files(processed_path_str);
 
   if (import_payload.empty()) {
     return;

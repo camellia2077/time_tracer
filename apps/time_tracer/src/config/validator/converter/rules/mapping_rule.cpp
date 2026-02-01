@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-bool MappingRule::validate(const toml::table& mappings_tbl) {
+auto MappingRule::validate(const toml::table& mappings_tbl) -> bool {
   if (!mappings_tbl.contains("text_mappings") ||
       !mappings_tbl["text_mappings"].is_table()) {
     std::cerr << "[Validator] Error: Mappings config must contain a "

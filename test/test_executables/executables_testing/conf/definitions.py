@@ -52,9 +52,23 @@ class TestContext:
     source_data_path: Path
     output_dir: Path
     db_path: Path
+    export_output_dir: Optional[Path]
+    processed_json_dir: Optional[Path]
     py_output_base_dir: Path
     processed_dir_name: str
     processed_json_path: Optional[Path] = None
+
+@dataclass
+class CommandSpec:
+    name: str
+    args: List[str]
+    stage: str = "commands"
+    expect_exit: int = 0
+    add_output_dir: bool = False
+    stdin_input: Optional[str] = None
+    expect_files: List[str] = field(default_factory=list)
+    expect_stdout_contains: List[str] = field(default_factory=list)
+    expect_stderr_contains: List[str] = field(default_factory=list)
     
 @dataclass
 class Paths:
@@ -69,6 +83,7 @@ class Paths:
     OUTPUT_DIR_NAME: Optional[str] = None
     PROCESSED_DATA_DIR_NAME: Optional[str] = None
     PROCESSED_JSON_PATH: Optional[Path] = None
+    PROCESSED_JSON_DIR: Optional[Path] = None
 
 @dataclass
 class CLINames:
@@ -81,10 +96,14 @@ class TestParams:
     TEST_FORMATS: List[str] = field(default_factory=list)
     DAILY_QUERY_DATES: List[str] = field(default_factory=list)
     MONTHLY_QUERY_MONTHS: List[str] = field(default_factory=list)
+    WEEKLY_QUERY_WEEKS: List[str] = field(default_factory=list)
+    YEARLY_QUERY_YEARS: List[str] = field(default_factory=list)
     RECENT_QUERY_DAYS: List[int] = field(default_factory=list)
     EXPORT_MODE_IS_BULK: bool = False
     SPECIFIC_EXPORT_DATES: List[str] = field(default_factory=list)
     SPECIFIC_EXPORT_MONTHS: List[str] = field(default_factory=list)
+    SPECIFIC_EXPORT_WEEKS: List[str] = field(default_factory=list)
+    SPECIFIC_EXPORT_YEARS: List[str] = field(default_factory=list)
     RECENT_EXPORT_DAYS: List[int] = field(default_factory=list)
 
 @dataclass
@@ -98,6 +117,12 @@ class RunControl:
     ENABLE_ENVIRONMENT_CLEAN: bool = False
     ENABLE_ENVIRONMENT_PREPARE: bool = False
     ENABLE_TEST_EXECUTION: bool = False
+    STOP_ON_FAILURE: bool = True
+
+@dataclass
+class PipelineConfig:
+    MODE: str = "ingest"  # "ingest" or "staged"
+    IMPORT_CONFIRM: str = "y\n"
 
 @dataclass
 class GlobalConfig:
@@ -106,3 +131,5 @@ class GlobalConfig:
     test_params: TestParams
     cleanup: Cleanup
     run_control: RunControl
+    pipeline: PipelineConfig
+    commands: List[CommandSpec] = field(default_factory=list)

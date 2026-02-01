@@ -4,9 +4,10 @@
 #include <iostream>
 #include <set>
 
-bool MainRule::validate(const toml::table& main_tbl,
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+auto MainRule::validate(const toml::table& main_tbl,
                         std::string& out_mappings_path,
-                        std::string& out_duration_rules_path) {
+                        std::string& out_duration_rules_path) -> bool {
   const std::set<std::string> kRequiredKeys = {
       "mappings_config_path", "duration_rules_config_path",
       "top_parent_mapping",   "header_order",
@@ -47,8 +48,14 @@ bool MainRule::validate(const toml::table& main_tbl,
   }
 
   // [修复] 提取值 (value<T>() 返回 std::optional)
-  out_mappings_path = *main_tbl["mappings_config_path"].value<std::string>();
-  out_duration_rules_path =
-      *main_tbl["duration_rules_config_path"].value<std::string>();
+  if (auto mappings_val =
+          main_tbl["mappings_config_path"].value<std::string>()) {
+    out_mappings_path = *mappings_val;
+  }
+  if (auto duration_val =
+          main_tbl["duration_rules_config_path"].value<std::string>()) {
+    out_duration_rules_path = *duration_val;
+  }
   return true;
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)

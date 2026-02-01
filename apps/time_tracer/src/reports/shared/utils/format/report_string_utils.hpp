@@ -12,7 +12,7 @@
  */
 REPORTS_SHARED_API std::string replace_all(std::string str,
                                            const std::string& from,
-                                           const std::string& to);
+                                           const std::string& replacement_str);
 
 /**
  * @brief [新增] 为列表项中的多行文本进行格式化。
@@ -28,8 +28,10 @@ REPORTS_SHARED_API std::string format_multiline_for_list(
 
 /**
  * @brief 使用模板渲染 Range 标题。
- * 支持占位符: {range_label}, {start_date}, {end_date}, {requested_days},
+ * 支持占位符: {range_label},
+ * {start_date}, {end_date}, {requested_days},
  * {year_month}, {days_to_query}
+ *
  */
 REPORTS_SHARED_API std::string format_title_template(
     std::string title_template, const RangeReportData& data);

@@ -6,8 +6,8 @@
 #include "reports/data/cache/project_name_cache.hpp"
 #include "reports/data/utils/project_tree_builder.hpp"
 
-DayQuerier::DayQuerier(sqlite3* db, const std::string& date)
-    : BaseQuerier(db, date) {}
+DayQuerier::DayQuerier(sqlite3* sqlite_db, const std::string& date)
+    : BaseQuerier(sqlite_db, date) {}
 
 auto DayQuerier::fetch_data() -> DailyReportData {
   DailyReportData data =
@@ -49,13 +49,13 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
     if (sqlite3_step(stmt) == SQLITE_ROW) {
       data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
       data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 1));
-      const unsigned char* r = sqlite3_column_text(stmt, 2);
-      if (r != nullptr) {
-        data.metadata.remark = reinterpret_cast<const char*>(r);
+      const unsigned char* remark_ptr = sqlite3_column_text(stmt, 2);
+      if (remark_ptr != nullptr) {
+        data.metadata.remark = reinterpret_cast<const char*>(remark_ptr);
       }
-      const unsigned char* g = sqlite3_column_text(stmt, 3);
-      if (g != nullptr) {
-        data.metadata.getup_time = reinterpret_cast<const char*>(g);
+      const unsigned char* getup_ptr = sqlite3_column_text(stmt, 3);
+      if (getup_ptr != nullptr) {
+        data.metadata.getup_time = reinterpret_cast<const char*>(getup_ptr);
       }
       data.metadata.exercise = std::to_string(sqlite3_column_int(stmt, 4));
     }

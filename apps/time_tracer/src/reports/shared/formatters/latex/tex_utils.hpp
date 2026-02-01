@@ -21,10 +21,13 @@ namespace TexUtils {
  * map，包含用于语法高亮的关键字和对应的十六进制颜色值。
  * @return 包含完整 Preamble 的字符串。
  */
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API std::string get_tex_preamble(
     const std::string& main_font, const std::string& cjk_main_font,
     int font_size, double margin_in,
     const std::map<std::string, std::string>& keyword_colors = {});
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 /**
  * @brief 生成 LaTeX 文档的 Postfix（结尾部分）。
@@ -49,10 +52,13 @@ REPORTS_SHARED_API std::string escape_latex(const std::string& input);
  * @param list_item_sep_ex 列表项之间的额外间距。
  * @return 格式化后的 LaTeX 字符串。
  */
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API std::string format_project_tree(
     const reporting::ProjectTree& tree,  // [修改] 加上 reporting:: 命名空间
     long long total_duration, int avg_days, int category_title_font_size,
     double list_top_sep_pt, double list_item_sep_ex);
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TexUtils
 

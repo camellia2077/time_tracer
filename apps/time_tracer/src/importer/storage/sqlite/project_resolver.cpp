@@ -13,8 +13,9 @@ struct ImportProjectNode {
   std::string name;
   std::unordered_map<std::string, std::unique_ptr<ImportProjectNode>> children;
 };
-ProjectResolver::ProjectResolver(sqlite3* db, sqlite3_stmt* stmt_insert_project)
-    : db_(db), stmt_insert_project_(stmt_insert_project) {}
+ProjectResolver::ProjectResolver(sqlite3* sqlite_db,
+                                 sqlite3_stmt* stmt_insert_project)
+    : db_(sqlite_db), stmt_insert_project_(stmt_insert_project) {}
 
 ProjectResolver::~ProjectResolver() = default;
 
@@ -38,7 +39,7 @@ void ProjectResolver::load_from_db() {
   std::vector<Row> all_rows;
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    long long id = sqlite3_column_int64(stmt, 0);
+    long long project_id = sqlite3_column_int64(stmt, 0);
     const unsigned char* name_ptr = sqlite3_column_text(stmt, 1);
     std::string name =
         (name_ptr != nullptr) ? reinterpret_cast<const char*>(name_ptr) : "";
@@ -46,7 +47,7 @@ void ProjectResolver::load_from_db() {
     if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) {
       parent_id = sqlite3_column_int64(stmt, 2);
     }
-    all_rows.push_back({id, name, parent_id});
+    all_rows.push_back({project_id, name, parent_id});
   }
   sqlite3_finalize(stmt);
 
@@ -70,7 +71,7 @@ void ProjectResolver::load_from_db() {
       continue;
     }
 
-    if (adjacency_list.contains(current_parent_id) != 0u) {
+    if (adjacency_list.contains(current_parent_id)) {
       for (const auto& child_row : adjacency_list[current_parent_id]) {
         auto new_node = std::make_unique<ImportProjectNode>();
         new_node->id = child_row.id;
@@ -93,10 +94,10 @@ auto ProjectResolver::ensure_path(const std::string& full_path) -> long long {
   long long current_parent_id = 0;
 
   for (const auto& part_name : parts) {
-    auto it = current_node->children.find(part_name);
+    auto child_it = current_node->children.find(part_name);
 
-    if (it != current_node->children.end()) {
-      current_node = it->second.get();
+    if (child_it != current_node->children.end()) {
+      current_node = child_it->second.get();
       current_parent_id = current_node->id;
     } else {
       // Insert into DB
@@ -140,17 +141,17 @@ void ProjectResolver::preload_and_resolve(
   }
   for (const auto& path : project_paths) {
     if (!cache_.contains(path)) {
-      long long id = ensure_path(path);
-      cache_[path] = id;
+      long long project_id = ensure_path(path);
+      cache_[path] = project_id;
     }
   }
 }
 
 auto ProjectResolver::get_id(const std::string& project_path) const
     -> long long {
-  auto it = cache_.find(project_path);
-  if (it != cache_.end()) {
-    return it->second;
+  auto cache_it = cache_.find(project_path);
+  if (cache_it != cache_.end()) {
+    return cache_it->second;
   }
   return 0;  // Should usually be preloaded
 }

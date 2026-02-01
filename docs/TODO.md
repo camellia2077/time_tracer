@@ -1,0 +1,235 @@
+增加一个插入并且导出全部日期全部格式的命令
+
+
+高优先级
+
+
+
+
+3
+自定义标题的输出顺序
+reports文件夹中json自定义格式化输出的标题，输出为true ,不输出为false
+
+
+6
+检验dll是否缺失的环节，是否可以默认不打印，出问题才打印？
+例如这些内容
+正在初始化文件控制器...
+主应用配置加载成功。
+正在验证预处理配置文件...
+[Validator] All preprocessing configuration data is valid.
+正在验证查询配置文件...
+[Validator] All query configuration files are valid.
+正在验证插件...
+[Validator] Validating required plugins in: C:\Base1\my_program\my_time_master\tm\plugins
+[Validator] -- Found required plugin: DayMdFormatter
+[Validator] -- Found required plugin: DayTexFormatter
+[Validator] -- Found required plugin: DayTypFormatter
+[Validator] -- Found required plugin: MonthMdFormatter
+
+
+
+中优先级
+toml配置重写修改命名和键名，以适配现在的程序
+
+-3
+
+-2 新建创建一个独立的 analytics模块
+
+1活动查询，可以设计一个命令列出当前有的日，月，年
+查询每日的活动的时候，按照namespace {
+// logical_id layout: (YYYYMMDD) as high bits, daily sequence as low bits.
+// Example: date 20210101, sequence 42 -> 20210101000042.
+这个来，在json中具体的是"logical_id": 20271101000001,
+也就是说一天最多支持999 999个活动，如果有1 000 000个活动，
+就进位到日期的高位了
+
+模块一：基础检索与回顾 (Basic Search & Review)
+1. 全局备注搜索
+目标：快速找到“那一天”或“那一件事”。
+应用场景: "我哪天在备注里提到了 'minecraft'？" 或 "查找包含 '#我是备注1234' 的所有活动。"
+
+2. 专注块过滤器
+功能描述: 查找单次时长超过 N 小时的活动记录。
+
+应用场景: "上个月我有多少次超过 3 小时的连续 '数据结构' 学习？"
+
+3. 特定项目历史回顾 (Project History)
+功能描述: 列出某个项目（如“高等数学”）在指定时间段内的所有记录。
+
+应用场景: "我想看这周所有的英语文章阅读记录。"
+
+
+模块二：习惯与趋势分析 (Habits & Trends)
+
+4. 作息规律分析 (Sleep & Wake-up Trends)
+
+功能描述: 绘制起床时间 (getup_time) 和入睡时间曲线。
+
+应用场景: "最近是否越来越晚睡了？" "我有几天是 6:30 之前起床的？"
+
+技术点: days.getup_time 是字符串，需要转化为分钟数以便绘图或计算平均值。
+
+5. 熬夜/健康预警 (Health Alerts)
+
+功能描述: 查找睡眠不足或作息异常的日子。
+
+应用场景: "列出所有睡眠总时间 (sleep_total_time) 小于 6 小时的日子。" (你的需求之一)
+
+6. 娱乐/学习比率 (Life Balance Ratio)
+
+功能描述: 计算某段时间内“学习时长”与“娱乐时长”的比例。
+
+应用场景: "这个月我的学习时间是否超过了刷抖音+B站的时间？"
+
+模块三：连胜与打卡 (Streaks & Heatmaps)
+目标：游戏化你的时间记录，提供正向反馈。
+
+7. 连续打卡统计 (Streaks)
+
+功能描述: 计算连续多少天进行了某项活动（如“英语文章”或“背单词”）。
+
+应用场景: "我已经连续学了多少天英语了？"
+
+技术点: 这是一个经典的 SQL "Gaps and Islands" 问题，需要在 C++ 层处理逻辑，查询所有包含该项目 ID 的日期并计算连续性。
+
+8. 年度热力图数据 (GitHub-style Heatmap)
+
+功能描述: 获取一年中每一天的特定指标强度。
+
+应用场景: 生成类似 GitHub 贡献图的“学习热力图”或“运动热力图”。
+
+模块四：关联洞察 (Correlation Insights)
+目标：发现数据背后的隐性逻辑。
+
+9. "(Correlation Analysis)
+
+功能描述: 分析某项娱乐活动时长与当天学习时长的相关性。
+
+应用场景: "是不是我白天打《守望先锋》的时间越长，晚上的学习效率越低？"
+
+
+10. 关键词画像 (Tag Profiling)
+
+功能描述: 基于备注标签统计时间。
+
+应用场景: 你的文本中有 #我是备注1234 这种 Tag。可以统计带有特定 Tag 的任务总耗时。
+
+
+
+
+-1. 给txt文本记录要求写上规则(文档)
+
+
+
+
+-1
+import的时候要检查是否为所需的 json文件，以免用户import了txt文件
+
+7
+使用字体的时候注意，可变字体必须是当前字体支持的语言
+你用新罗马那肯定不能显示中文字体
+用宋体也是不支持西文字体可变
+用新罗马才支持西文字体可变
+
+tex无法编译是因为不支持当前的可变字体，tex内容由加粗
+解决方法就是代码中取消注释，手动指定字体的目录，但是这样只能编译，无法正确渲染字体加粗
+
+
+2导出的日报告的时候，没用按照年份文件夹，月份文件夹来分类
+
+
+低优先级
+
+
+0
+支持txt增量插入，存储已经存入sqlite的txt的哈希值，如果哈希值改变，则说明txt有改动，则需要重新插入
+这个功能应该只在全流程命令下实现？
+
+
+
+
+
+
+
+
+未来
+1 
+第一步（必须做）： 将所有 std::cout/cerr 替换为 ILogger 回调。这能解决“其他平台看不见日志”的问题。
+
+第二步（优化）： 将“业务结果”（如错误列表、耗时统计）作为函数的返回值返回，而不是在函数内部处理（打印）。让调用者决定如何展示这些数据。
+
+这会使你的 reprocessing 模块变成一个纯粹的库（Library），可以被任何程序调用。
+
+
+为了实现彻底的模块化并支持多平台（如手机 App、GUI、后台服务），核心业务逻辑模块（如 reprocessing 和 PipelineManager）绝对不能包含 std::cout、std::cerr 或 printf。
+
+当前代码中的 std::cout 是硬编码的控制台输出，这在手机 App（没有控制台）或 GUI（需要弹窗或进度条）中是完全不可见的，甚至会导致崩溃或资源浪费。
+
+如何解耦？（架构改造方案）
+你需要将“发生什么（Logic）”与“如何通知用户（Presentation）”分离开。通常有两种互补的方法来实现这一点：
+
+方法 1：引入抽象日志接口 (Dependency Injection)
+这是最标准的方法。让 reprocessing 模块不依赖具体的 iostream，而是依赖一个抽象的接口。
+
+2. 和sliqte解耦，采取注册模式?支持多种数据库
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 让tex支持生成的字体从本地获取
+\setCJKmainfont[Path=C:/]{NotoSerifSC-VariableFont_wght.ttf}
+
+还没有给json验证模块验证total_exercise_time
+
+
+
+
+
+
+
+
+
+
+## tex格式增加更细致的字体控制
+typ全格式已经实现
+
+
+## clang开启连接时优化需要下载对应工具
+pacman -S mingw-w64-ucrt-x86_64-lld
+
+
+## 格式化输出，根据类型输出不同的颜色背景。
+没有任何一个实现
+
+
+## json中的存入数据库但是还没使用的键
+
+                "endTimestamp": 1735699680,
+                "startTimestamp": 1735693800
+
+            "anaerobicTime": 8220,// 已经在日报告中实现
+            "cardioTime": 0,// 已经在日报告中实现
+            "gamingTime": 12540,
+            "groomingTime": 0,// 已经在日报告中实现
+            "sleepDayTime": 8460,
+            "sleepNightTime": 19380,
+            "sleepTotalTime": 27840, // 已经在日报告中实现
+            "toiletTime": 0,
+            "totalExerciseTime": 16140
+

@@ -22,6 +22,13 @@ class TomlConverterConfigLoader : public IConfigLoader<ConverterConfig> {
   bool load(ConverterConfig& config_object) override;
 
  private:
+  void parse_header_order(ConverterConfig& config);
+  void parse_wake_keywords(ConverterConfig& config);
+  void parse_top_parent_mapping(ConverterConfig& config);
+  void parse_text_mappings(ConverterConfig& config);
+  void parse_text_duration_mappings(ConverterConfig& config);
+  void parse_duration_mappings(ConverterConfig& config);
+
   const toml::table& toml_source_;
 };
 

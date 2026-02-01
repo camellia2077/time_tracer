@@ -42,8 +42,8 @@ auto JsonSerializer::deserializeDays(const nlohmann::json& json_array)
   if (!json_array.is_array()) {
     return days;
   }
-  for (const auto& j : json_array) {
-    days.push_back(LogDeserializer::deserialize(j));
+  for (const auto& json_item : json_array) {
+    days.push_back(LogDeserializer::deserialize(json_item));
   }
   return days;
 }

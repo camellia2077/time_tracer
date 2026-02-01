@@ -25,8 +25,7 @@ void ProcessStatItems(const std::vector<StatisticItemConfig>& items,
 
     // 1. 从 data.stats 中获取数据
     long long duration = 0;
-    if (!item.db_column.empty() &&
-        (data.stats.contains(item.db_column) != 0u)) {
+    if (!item.db_column.empty() && data.stats.contains(item.db_column)) {
       duration = data.stats.at(item.db_column);
     }
 

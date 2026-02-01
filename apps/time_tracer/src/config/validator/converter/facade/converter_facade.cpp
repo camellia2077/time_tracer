@@ -7,25 +7,24 @@
 #include "config/validator/converter/rules/main_rule.hpp"
 #include "config/validator/converter/rules/mapping_rule.hpp"
 
-bool ConverterFacade::validate(const toml::table& main_tbl,
-                               const toml::table& mappings_tbl,
-                               const toml::table& duration_rules_tbl) {
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+auto ConverterFacade::validate(const toml::table& main_config,
+                               const toml::table& mappings_config,
+                               const toml::table& duration_rules_config)
+    -> bool {
   std::string mappings_path_str;
   std::string duration_rules_path_str;
 
-  MainRule main_validator;
-  if (!main_validator.validate(main_tbl, mappings_path_str,
-                               duration_rules_path_str)) {
+  if (!MainRule::validate(main_config, mappings_path_str,
+                          duration_rules_path_str)) {
     return false;
   }
 
-  MappingRule mappings_validator;
-  if (!mappings_validator.validate(mappings_tbl)) {
+  if (!MappingRule::validate(mappings_config)) {
     return false;
   }
 
-  DurationRule duration_rules_validator;
-  if (!duration_rules_validator.validate(duration_rules_tbl)) {
+  if (!DurationRule::validate(duration_rules_config)) {
     return false;
   }
 
@@ -34,3 +33,4 @@ bool ConverterFacade::validate(const toml::table& main_tbl,
       << std::endl;
   return true;
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)

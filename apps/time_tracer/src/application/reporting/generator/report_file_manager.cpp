@@ -33,6 +33,22 @@ auto ReportFileManager::get_single_period_report_path(int days,
          ("last_" + std::to_string(days) + "_days_report" + details.extension);
 }
 
+auto ReportFileManager::get_single_week_report_path(const std::string& iso_week,
+                                                    ReportFormat format) const
+    -> fs::path {
+  auto details = ExportUtils::get_report_format_details(format).value();
+  return export_root_path_ / details.dir_name / "week" /
+         (iso_week + details.extension);
+}
+
+auto ReportFileManager::get_single_year_report_path(const std::string& year,
+                                                    ReportFormat format) const
+    -> fs::path {
+  auto details = ExportUtils::get_report_format_details(format).value();
+  return export_root_path_ / details.dir_name / "year" /
+         (year + details.extension);
+}
+
 auto ReportFileManager::get_all_daily_reports_base_dir(
     ReportFormat format) const -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
@@ -49,4 +65,16 @@ auto ReportFileManager::get_all_period_reports_base_dir(
     ReportFormat format) const -> fs::path {
   auto details = ExportUtils::get_report_format_details(format).value();
   return export_root_path_ / details.dir_name / "recent";
+}
+
+auto ReportFileManager::get_all_weekly_reports_base_dir(
+    ReportFormat format) const -> fs::path {
+  auto details = ExportUtils::get_report_format_details(format).value();
+  return export_root_path_ / details.dir_name / "week";
+}
+
+auto ReportFileManager::get_all_yearly_reports_base_dir(
+    ReportFormat format) const -> fs::path {
+  auto details = ExportUtils::get_report_format_details(format).value();
+  return export_root_path_ / details.dir_name / "year";
 }

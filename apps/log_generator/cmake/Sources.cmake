@@ -1,40 +1,39 @@
-
-# 负责管理源文件列表
-# --- Source Files Definition ---
+# Source Files Definition
 
 set(SOURCES
-    # 入口
+    # Entry
     src/main.cpp
     
-    # Core 核心模块
-    src/core/Application.cpp
-    src/core/config/ConfigHandler.cpp      
-    src/core/workflow/WorkflowHandler.cpp 
-    src/core/reporting/ReportHandler.cpp
+    # Application
+    src/application/application.cpp
+    src/application/config/config_handler.cpp
+    src/application/workflow/workflow_handler.cpp
+    src/application/reporting/report_handler.cpp
     
-    # CLI 命令行模块
-    src/cli/CommandLineParser.cpp
-    src/cli/HelpPrinter.cpp       
+    # CLI
+    src/cli/framework/command_line_parser.cpp
+    src/cli/commands/help_command.cpp
+    src/cli/commands/version_command.cpp
     
-    # Config 配置模块 (旧有的类)
-    src/config/Config.cpp
-    src/config/ConfigFacade.cpp 
+    # Infrastructure - Config
+    src/infrastructure/config/config.cpp
+    src/infrastructure/config/config_facade.cpp
     
-    # FileIO 文件模块
-    src/io/FileManager.cpp
+    # Infrastructure - IO
+    src/infrastructure/io/file_manager.cpp
     
-    # Generator 生成器模块
-    src/generator/components/RemarkGenerator.cpp
-    src/generator/components/EventGenerator.cpp
-    src/generator/components/DayGenerator.cpp
+    # Domain - Components
+    src/domain/components/remark_generator.cpp
+    src/domain/components/event_generator.cpp
+    src/domain/components/day_generator.cpp
 
-    # Impl (核心实现)
-    src/generator/impl/LogGenerator.cpp
+    # Domain - Impl
+    src/domain/impl/log_generator.cpp
 
-    # Strategies (策略/算法)
-    src/generator/strategies/SleepScheduler.cpp
+    # Domain - Strategies
+    src/domain/strategies/sleep_scheduler.cpp
     
-    # Utils 工具模块
-    src/utils/PerformanceReporter.cpp
-    src/utils/Utils.cpp
+    # Utils
+    src/utils/performance_reporter.cpp
+    src/utils/utils.cpp
 )

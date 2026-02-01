@@ -41,7 +41,7 @@ class BaseTester:
         
         # 2. 构建命令
         full_cmd = [str(self.ctx.exe_path)] + command_args
-        if kwargs.get('add_output_dir', True):
+        if kwargs.get('add_output_dir', False):
              full_cmd.extend(["--output", str(self.ctx.output_dir / "exported_files")])
 
         # 3. 执行
@@ -55,10 +55,38 @@ class BaseTester:
         # 4. 记录日志 (只写文件)
         self.logger.log_result(test_name, log_file, result)
 
-        # 5. 返回结构化结果
-        status = "PASS" if result.return_code == 0 else "FAIL"
+        # 5. 评估结果
+        messages = []
+        status = "PASS"
+
+        expect_exit = kwargs.get('expect_exit', 0)
+        if expect_exit is not None and result.return_code != expect_exit:
+            status = "FAIL"
+            messages.append(
+                f"Expected exit {expect_exit}, got {result.return_code}."
+            )
+
+        stdout_text = CommandExecutor.strip_ansi_codes(result.stdout or "")
+        stderr_text = CommandExecutor.strip_ansi_codes(result.stderr or "")
+
+        for needle in kwargs.get('expect_stdout_contains', []) or []:
+            if needle not in stdout_text:
+                status = "FAIL"
+                messages.append(f"Missing stdout text: {needle}")
+
+        for needle in kwargs.get('expect_stderr_contains', []) or []:
+            if needle not in stderr_text:
+                status = "FAIL"
+                messages.append(f"Missing stderr text: {needle}")
+
+        for path_str in kwargs.get('expect_files', []) or []:
+            if not Path(path_str).exists():
+                status = "FAIL"
+                messages.append(f"Missing file: {path_str}")
+
         return SingleTestResult(
             name=test_name,
             status=status,
-            execution_result=result
+            execution_result=result,
+            messages=messages
         )

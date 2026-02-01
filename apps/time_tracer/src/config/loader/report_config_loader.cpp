@@ -123,3 +123,75 @@ auto ReportConfigLoader::loadPeriodMdConfig(const fs::path& path)
 
   return config;
 }
+
+// ==========================================
+// Weekly Loaders
+// ==========================================
+
+auto ReportConfigLoader::loadWeeklyTexConfig(const fs::path& path)
+    -> WeeklyTexConfig {
+  toml::table tbl = read_toml(path);
+  WeeklyTexConfig config;
+
+  fill_tex_style(tbl, config.fonts, config.layout);
+  fill_weekly_labels(tbl, config.labels);
+
+  return config;
+}
+
+auto ReportConfigLoader::loadWeeklyTypConfig(const fs::path& path)
+    -> WeeklyTypConfig {
+  toml::table tbl = read_toml(path);
+  WeeklyTypConfig config;
+
+  fill_typ_style(tbl, config.fonts, config.layout);
+  fill_weekly_labels(tbl, config.labels);
+
+  return config;
+}
+
+auto ReportConfigLoader::loadWeeklyMdConfig(const fs::path& path)
+    -> WeeklyMdConfig {
+  toml::table tbl = read_toml(path);
+  WeeklyMdConfig config;
+
+  fill_weekly_labels(tbl, config.labels);
+
+  return config;
+}
+
+// ==========================================
+// Yearly Loaders
+// ==========================================
+
+auto ReportConfigLoader::loadYearlyTexConfig(const fs::path& path)
+    -> YearlyTexConfig {
+  toml::table tbl = read_toml(path);
+  YearlyTexConfig config;
+
+  fill_tex_style(tbl, config.fonts, config.layout);
+  fill_yearly_labels(tbl, config.labels);
+
+  return config;
+}
+
+auto ReportConfigLoader::loadYearlyTypConfig(const fs::path& path)
+    -> YearlyTypConfig {
+  toml::table tbl = read_toml(path);
+  YearlyTypConfig config;
+
+  fill_typ_style(tbl, config.fonts, config.layout);
+  fill_yearly_labels(tbl, config.labels);
+
+  return config;
+}
+
+auto ReportConfigLoader::loadYearlyMdConfig(const fs::path& path)
+    -> YearlyMdConfig {
+  toml::table tbl = read_toml(path);
+  YearlyMdConfig config;
+
+  fill_yearly_labels(tbl, config.labels);
+
+  return config;
+}

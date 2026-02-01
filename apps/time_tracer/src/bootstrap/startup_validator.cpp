@@ -16,7 +16,7 @@ auto StartupValidator::validate_environment(const AppConfig& config) -> bool {
   // (原本这些列表是在 ConfigFacade
   // 中定义的，现在移到这里，因为这是启动环境检查的一部分)
   const std::vector<std::string> kExpectedPlugins = {
-      "DayMdFormatter", "DayTexFormatter", "DayTypFormatter",
+      "DayMdFormatter",   "DayTexFormatter",   "DayTypFormatter",
       "RangeMdFormatter", "RangeTexFormatter", "RangeTypFormatter"};
 
   // 2. 准备路径
@@ -25,14 +25,12 @@ auto StartupValidator::validate_environment(const AppConfig& config) -> bool {
   fs::path bin_dir = config.exe_dir_path;
 
   // 3. 执行验证
-  PluginValidator validator;
-
   // 3.1 验证格式化器插件
-  bool plugins_ok = validator.validate(plugins_dir, kExpectedPlugins);
+  bool plugins_ok = PluginValidator::validate(plugins_dir, kExpectedPlugins);
 
   // 3.2 验证核心共享库 (reports_shared.dll)
   // 这是一个关键依赖，必须存在
-  bool core_ok = validator.validate(bin_dir, {"reports_shared"});
+  bool core_ok = PluginValidator::validate(bin_dir, {"reports_shared"});
 
   if (!plugins_ok || !core_ok) {
     std::cerr << RED_COLOR

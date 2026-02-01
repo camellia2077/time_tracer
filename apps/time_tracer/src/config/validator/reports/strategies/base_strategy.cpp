@@ -6,8 +6,9 @@
 #include <set>
 #include <string>
 
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static auto ValidateStatsRecursive(const toml::array& items_array,
-                                   const std::string& file_name,
+                                   const std::string& config_file_name,
                                    const std::string& context = "root")
     -> bool {
   for (size_t i = 0; i < items_array.size(); ++i) {
@@ -15,7 +16,7 @@ static auto ValidateStatsRecursive(const toml::array& items_array,
     std::string current_context = context + "[" + std::to_string(i) + "]";
 
     if (!item_node.is_table()) {
-      std::cerr << "[Validator] Error in " << file_name << ": Item "
+      std::cerr << "[Validator] Error in " << config_file_name << ": Item "
                 << current_context << " must be a table." << std::endl;
       return false;
     }
@@ -25,7 +26,7 @@ static auto ValidateStatsRecursive(const toml::array& items_array,
     // 1. 验证必需字段: label (string), show (bool/optional - TOML defaults
     // apply but strict check here if needed)
     if (!item.contains("label") || !item["label"].is_string()) {
-      std::cerr << "[Validator] Error in " << file_name << ": Item "
+      std::cerr << "[Validator] Error in " << config_file_name << ": Item "
                 << current_context << " must contain a string 'label'."
                 << std::endl;
       return false;
@@ -33,34 +34,37 @@ static auto ValidateStatsRecursive(const toml::array& items_array,
     // show 是可选的在Loader中，但在Validator中如果存在必须是bool?
     // 或者这里放宽检查
     if (item.contains("show") && !item["show"].is_boolean()) {
-      std::cerr << "[Validator] Error in " << file_name << ": Item "
+      std::cerr << "[Validator] Error in " << config_file_name << ": Item "
                 << current_context << " 'show' must be a boolean." << std::endl;
       return false;
     }
 
     // 2. 验证可选字段: db_column (string)
     if (item.contains("db_column") && !item["db_column"].is_string()) {
-      std::cerr << "[Validator] Error in " << file_name << ": 'db_column' in "
-                << current_context << " must be a string." << std::endl;
+      std::cerr << "[Validator] Error in " << config_file_name
+                << ": 'db_column' in " << current_context
+                << " must be a string." << std::endl;
       return false;
     }
 
     // 3. 递归验证 sub_items
     if (item.contains("sub_items")) {
       if (const toml::array* sub_arr = item["sub_items"].as_array()) {
-        if (!ValidateStatsRecursive(*sub_arr, file_name,
+        if (!ValidateStatsRecursive(*sub_arr, config_file_name,
                                     current_context + ".sub_items")) {
           return false;
         }
       } else {
-        std::cerr << "[Validator] Error in " << file_name << ": 'sub_items' in "
-                  << current_context << " must be an array." << std::endl;
+        std::cerr << "[Validator] Error in " << config_file_name
+                  << ": 'sub_items' in " << current_context
+                  << " must be an array." << std::endl;
         return false;
       }
     }
   }
   return true;
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 // --- 模板方法实现 ---
 auto BaseStrategy::validate(const toml::table& query_config,
@@ -83,8 +87,7 @@ auto BaseStrategy::validate(const toml::table& query_config,
 }
 
 auto BaseStrategy::validate_common_rules(const toml::table& query_config,
-                                         const std::string& file_name) const
-    -> bool {
+                                         const std::string& file_name) -> bool {
   const std::set<std::string> kNumericKeys = {
       "base_font_size",   "report_title_font_size", "category_title_font_size",
       "margin_in",        "margin_top_cm",          "margin_bottom_cm",
@@ -100,7 +103,7 @@ auto BaseStrategy::validate_common_rules(const toml::table& query_config,
     }
 
     // TOML++ node 检查
-    if ((kNumericKeys.contains(key_str) != 0u) && !node.is_number()) {
+    if (kNumericKeys.contains(key_str) && !node.is_number()) {
       std::cerr << "[Validator] Error in " << file_name << ": Key '" << key_str
                 << "' must have a numeric value." << std::endl;
       return false;
@@ -136,7 +139,7 @@ auto BaseStrategy::validate_common_rules(const toml::table& query_config,
 }
 
 auto BaseStrategy::validate_statistics_items(const toml::table& query_config,
-                                             const std::string& file_name) const
+                                             const std::string& file_name)
     -> bool {
   if (!query_config.contains("statistics_items")) {
     return true;
@@ -152,8 +155,7 @@ auto BaseStrategy::validate_statistics_items(const toml::table& query_config,
   return ValidateStatsRecursive(*items_node.as_array(), file_name);
 }
 
-auto BaseStrategy::is_valid_hex_color(const std::string& color_string) const
-    -> bool {
+auto BaseStrategy::is_valid_hex_color(const std::string& color_string) -> bool {
   static const std::regex kHexColorRegex(R"(^#[0-9a-fA-F]{6}$)");
   return std::regex_match(color_string, kHexColorRegex);
 }
