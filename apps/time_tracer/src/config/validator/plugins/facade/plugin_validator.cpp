@@ -4,13 +4,13 @@
 #include <iostream>
 #include <vector>
 
-#include "io/core/file_system_helper.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
 
 namespace fs = std::filesystem;
 
-bool PluginValidator::validate(
-    const fs::path& plugins_path,
-    const std::vector<std::string>& expected_plugins) {
+auto PluginValidator::validate(const fs::path& plugins_path,
+                               const std::vector<std::string>& expected_plugins)
+    -> bool {
   // [修改] 使用 FileSystemHelper
   if (!FileSystemHelper::exists(plugins_path) ||
       !FileSystemHelper::is_directory(plugins_path)) {

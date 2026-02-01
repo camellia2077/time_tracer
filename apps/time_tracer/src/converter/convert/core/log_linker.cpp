@@ -84,11 +84,10 @@ void LogLinker::process_cross_day(DailyLog& current_day,
 }
 
 void LogLinker::recalculate_stats(DailyLog& day) {
-  DayStats stats_calculator;
-  stats_calculator.calculate_stats(day);
+  DayStats::calculate_stats(day);
 }
 
-std::string LogLinker::format_time(const std::string& timeStr) {
+auto LogLinker::format_time(const std::string& timeStr) -> std::string {
   if (timeStr.length() == 4) {
     return timeStr.substr(0, 2) + ":" + timeStr.substr(2, 2);
   }

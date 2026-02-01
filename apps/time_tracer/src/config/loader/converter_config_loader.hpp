@@ -5,6 +5,8 @@
 #include <toml++/toml.h>
 
 #include <filesystem>
+#include <initializer_list>
+#include <string_view>
 
 #include "common/config/models/converter_config_models.hpp"
 
@@ -23,10 +25,26 @@ class ConverterConfigLoader {
 
  private:
   static void merge_toml_table(toml::table& target, const toml::table& source);
+  static void merge_section_if_present(toml::table& main_tbl,
+                                       const toml::table& source_tbl,
+                                       std::string_view section_key);
+  static void merge_optional_sections(
+      toml::table& main_tbl, const std::filesystem::path& config_dir,
+      std::string_view path_key,
+      std::initializer_list<std::string_view> section_keys);
   static toml::table load_merged_toml(
       const std::filesystem::path& main_config_path);
   static void parse_toml_to_struct(const toml::table& tbl,
                                    ConverterConfig& out_config);
+
+ private:
+  static void parse_basic_config(const toml::table& tbl,
+                                 ConverterConfig& config);
+  static void parse_generated_activities(const toml::table& tbl,
+                                         ConverterConfig& config);
+  static void parse_mappings(const toml::table& tbl, ConverterConfig& config);
+  static void parse_duration_mappings(const toml::table& tbl,
+                                      ConverterConfig& config);
 };
 
 #endif  // CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_

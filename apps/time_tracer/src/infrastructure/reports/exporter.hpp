@@ -26,12 +26,22 @@ class Exporter {
                                   ReportFormat format) const;
   void export_single_period_report(int days, const std::string& content,
                                    ReportFormat format) const;
+  void export_single_week_report(const std::string& iso_week,
+                                 const std::string& content,
+                                 ReportFormat format) const;
+  void export_single_year_report(const std::string& year,
+                                 const std::string& content,
+                                 ReportFormat format) const;
 
   void export_all_daily_reports(const FormattedGroupedReports& reports,
                                 ReportFormat format) const;
   void export_all_monthly_reports(const FormattedMonthlyReports& reports,
                                   ReportFormat format) const;
   void export_all_period_reports(const FormattedPeriodReports& reports,
+                                 ReportFormat format) const;
+  void export_all_weekly_reports(const FormattedWeeklyReports& reports,
+                                 ReportFormat format) const;
+  void export_all_yearly_reports(const FormattedYearlyReports& reports,
                                  ReportFormat format) const;
 
  private:

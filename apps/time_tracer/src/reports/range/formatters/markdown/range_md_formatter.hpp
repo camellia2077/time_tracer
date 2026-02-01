@@ -15,11 +15,14 @@ class RangeMdFormatter
   explicit RangeMdFormatter(std::shared_ptr<RangeMdConfig> config);
 
  private:
-  std::string validate_data(const RangeReportData& data) const override;
-  bool is_empty_data(const RangeReportData& data) const override;
-  int get_avg_days(const RangeReportData& data) const override;
-  std::string get_no_records_msg() const override;
-  void format_header_content(std::stringstream& ss,
+  [[nodiscard]] auto validate_data(const RangeReportData& data) const
+      -> std::string override;
+  [[nodiscard]] auto is_empty_data(const RangeReportData& data) const
+      -> bool override;
+  [[nodiscard]] auto get_avg_days(const RangeReportData& data) const
+      -> int override;
+  [[nodiscard]] auto get_no_records_msg() const -> std::string override;
+  void format_header_content(std::stringstream& report_stream,
                              const RangeReportData& data) const override;
 };
 

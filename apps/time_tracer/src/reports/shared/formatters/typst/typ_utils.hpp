@@ -20,9 +20,12 @@ namespace TypUtils {
  * @return 格式化后的 Typst 字符串。
  */
 // [修正] 添加 reporting:: 命名空间前缀
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API std::string format_project_tree(
     const reporting::ProjectTree& tree, long long total_duration, int avg_days,
     const std::string& category_title_font, int category_title_font_size);
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TypUtils
 

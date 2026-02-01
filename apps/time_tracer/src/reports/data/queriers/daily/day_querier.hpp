@@ -11,12 +11,12 @@
 
 class DayQuerier : public BaseQuerier<DailyReportData, const std::string&> {
  public:
-  explicit DayQuerier(sqlite3* db, const std::string& date);
+  explicit DayQuerier(sqlite3* sqlite_db, const std::string& date);
 
-  DailyReportData fetch_data() override;
+  [[nodiscard]] auto fetch_data() -> DailyReportData override;
 
  protected:
-  std::string get_date_condition_sql() const override;
+  [[nodiscard]] auto get_date_condition_sql() const -> std::string override;
   void bind_sql_parameters(sqlite3_stmt* stmt) const override;
   void _prepare_data(DailyReportData& data) const override;
 

@@ -14,8 +14,8 @@ auto ImportService::import_from_memory(
     const std::map<std::string, std::vector<DailyLog>>& data_map)
     -> ImportStats {
   ImportStats stats;
-  for (const auto& p : data_map) {
-    stats.total_files += p.second.size();
+  for (const auto& data_pair : data_map) {
+    stats.total_files += data_pair.second.size();
   }
   stats.successful_files = stats.total_files;
 
@@ -25,9 +25,8 @@ auto ImportService::import_from_memory(
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  // 1. 转换
-  MemoryParser parser;
-  ParsedData all_data = parser.parse(data_map);
+  // 1. 转换 (MemoryParser::parse is a static method)
+  ParsedData all_data = MemoryParser::parse(data_map);
 
   auto end_parsing = std::chrono::high_resolution_clock::now();
   stats.parsing_duration_s =

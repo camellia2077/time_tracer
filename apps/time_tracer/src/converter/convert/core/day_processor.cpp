@@ -44,6 +44,5 @@ void DayProcessor::process(DailyLog& previousDay, DailyLog& dayToProcess) {
         FormatTime(previousDay.rawEvents.back().endTimeStr);
   }
 
-  DayStats stats_calculator;
-  stats_calculator.calculate_stats(dayToProcess);
+  DayStats::calculate_stats(dayToProcess);
 }

@@ -1,4 +1,4 @@
-// importer/storage/sqlite/statement.hpp
+// importer/storage/sqlite/Statement.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_STATEMENT_H_
 #define IMPORTER_STORAGE_SQLITE_STATEMENT_H_
 
@@ -6,7 +6,7 @@
 
 class Statement {
  public:
-  explicit Statement(sqlite3* db);
+  explicit Statement(sqlite3* sqlite_db);
   ~Statement();
 
   sqlite3_stmt* get_insert_day_stmt() const;

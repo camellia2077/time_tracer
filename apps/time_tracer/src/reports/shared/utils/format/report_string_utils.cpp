@@ -2,11 +2,11 @@
 #include "report_string_utils.hpp"
 
 auto replace_all(std::string str, const std::string& from,
-                 const std::string& to) -> std::string {
+                 const std::string& replacement) -> std::string {
   size_t start_pos = 0;
   while ((start_pos = str.find(from, start_pos)) != std::string::npos) {
-    str.replace(start_pos, from.length(), to);
-    start_pos += to.length();
+    str.replace(start_pos, from.length(), replacement);
+    start_pos += replacement.length();
   }
   return str;
 }
@@ -26,22 +26,21 @@ auto format_multiline_for_list(const std::string& text, int indent_spaces,
 
 auto format_title_template(std::string title_template,
                            const RangeReportData& data) -> std::string {
-  const std::string requested_days =
+  const std::string kRequestedDays =
       (data.requested_days > 0) ? std::to_string(data.requested_days) : "";
 
   title_template =
       replace_all(title_template, "{range_label}", data.range_label);
-  title_template =
-      replace_all(title_template, "{start_date}", data.start_date);
+  title_template = replace_all(title_template, "{start_date}", data.start_date);
   title_template = replace_all(title_template, "{end_date}", data.end_date);
   title_template =
-      replace_all(title_template, "{requested_days}", requested_days);
+      replace_all(title_template, "{requested_days}", kRequestedDays);
 
   // Backward-compatible aliases
   title_template =
       replace_all(title_template, "{year_month}", data.range_label);
   title_template =
-      replace_all(title_template, "{days_to_query}", requested_days);
+      replace_all(title_template, "{days_to_query}", kRequestedDays);
 
   return title_template;
 }

@@ -8,9 +8,11 @@
 
 class MainRule {
  public:
+  // NOLINTBEGIN(bugprone-easily-swappable-parameters)
   static bool validate(const toml::table& main_tbl,
                        std::string& out_mappings_path,
                        std::string& out_duration_rules_path);
+  // NOLINTEND(bugprone-easily-swappable-parameters)
 };
 
 #endif  // CONFIG_VALIDATOR_CONVERTER_RULES_MAIN_RULE_H_

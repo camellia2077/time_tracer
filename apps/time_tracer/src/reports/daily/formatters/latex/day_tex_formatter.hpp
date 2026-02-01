@@ -12,18 +12,19 @@ class DayTexFormatter : public BaseTexFormatter<DailyReportData, DayTexConfig> {
 
  protected:
   // --- 实现基类钩子 ---
-  bool is_empty_data(const DailyReportData& data) const override;
-  int get_avg_days(const DailyReportData& data) const override;
+  auto is_empty_data(const DailyReportData& data) const -> bool override;
+  auto get_avg_days(const DailyReportData& data) const -> int override;
 
-  void format_header_content(std::stringstream& ss,
+  void format_header_content(std::stringstream& report_stream,
                              const DailyReportData& data) const override;
-  void format_extra_content(std::stringstream& ss,
+  void format_extra_content(std::stringstream& report_stream,
                             const DailyReportData& data) const override;
 
-  std::map<std::string, std::string> get_keyword_colors() const override;
+  auto get_keyword_colors() const
+      -> std::map<std::string, std::string> override;
 
   // [新增] 实现基类定义的纯虚函数
-  std::string get_no_records_msg() const override;
+  auto get_no_records_msg() const -> std::string override;
 };
 
 #endif  // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_

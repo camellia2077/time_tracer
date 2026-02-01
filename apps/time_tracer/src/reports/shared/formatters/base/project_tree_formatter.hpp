@@ -44,14 +44,19 @@ class REPORTS_SHARED_API ProjectTreeFormatter {  // [新增] 必须添加 API �
    */
   explicit ProjectTreeFormatter(std::unique_ptr<IFormattingStrategy> strategy);
 
+  // Public API: keep parameter order and naming for ABI compatibility.
+  // NOLINTBEGIN(bugprone-easily-swappable-parameters)
   std::string format_project_tree(const ProjectTree& tree,
                                   long long total_duration, int avg_days) const;
+  // NOLINTEND(bugprone-easily-swappable-parameters)
 
  private:
   std::unique_ptr<IFormattingStrategy> m_strategy;
 
+  // NOLINTBEGIN(bugprone-easily-swappable-parameters)
   void generate_sorted_output(std::stringstream& ss, const ProjectNode& node,
                               int indent, int avg_days) const;
+  // NOLINTEND(bugprone-easily-swappable-parameters)
 };
 
 }  // namespace reporting

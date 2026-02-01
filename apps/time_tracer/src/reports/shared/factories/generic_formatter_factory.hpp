@@ -85,6 +85,30 @@ class GenericFormatterFactory {
             config_path = config.reports.period_typ_config_path;
             break;
         }
+      } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+        switch (format) {
+          case ReportFormat::Markdown:
+            config_path = config.reports.week_md_config_path;
+            break;
+          case ReportFormat::LaTeX:
+            config_path = config.reports.week_tex_config_path;
+            break;
+          case ReportFormat::Typ:
+            config_path = config.reports.week_typ_config_path;
+            break;
+        }
+      } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+        switch (format) {
+          case ReportFormat::Markdown:
+            config_path = config.reports.year_md_config_path;
+            break;
+          case ReportFormat::LaTeX:
+            config_path = config.reports.year_tex_config_path;
+            break;
+          case ReportFormat::Typ:
+            config_path = config.reports.year_typ_config_path;
+            break;
+        }
       }
 
       // [修改] 默认为空字符串，不再是 "{}"

@@ -23,7 +23,7 @@ class BuildPipeline:
     def run(self, argv: list):
         """执行构建流水线"""
         start_time = time.monotonic()
-        build_dir_name = "build"
+        build_dir_name = os.environ.get("TIME_TRACER_BUILD_DIR", "build")
         
         print_header(f"Working in project directory: {self.project_dir}")
 

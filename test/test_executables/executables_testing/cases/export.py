@@ -10,6 +10,8 @@ class ExportTester(BaseTester):
                  is_bulk_mode: bool,
                  specific_dates: list,
                  specific_months: list,
+                 specific_weeks: list,
+                 specific_years: list,
                  recent_export_days: list,
                  test_formats: list,
                  export_output_path: Path):
@@ -21,6 +23,8 @@ class ExportTester(BaseTester):
         self.is_bulk_mode = is_bulk_mode
         self.specific_dates = specific_dates
         self.specific_months = specific_months
+        self.specific_weeks = specific_weeks
+        self.specific_years = specific_years
         self.recent_days_to_export = recent_export_days
         self.formats = test_formats
 
@@ -77,6 +81,8 @@ class ExportTester(BaseTester):
         # 1. Daily & Monthly
         cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-day"], common_args))
         cases.extend(self._make_cases("Bulk Export All Monthly", ["export", "all-month"], common_args))
+        cases.extend(self._make_cases("Bulk Export All Weekly", ["export", "all-week"], common_args))
+        cases.extend(self._make_cases("Bulk Export All Yearly", ["export", "all-year"], common_args))
 
         # 2. Period
         if self.recent_days_to_export:
@@ -107,8 +113,24 @@ class ExportTester(BaseTester):
                 ["export", "month", month], 
                 common_args
             ))
+
+        # 3. Specific Weekly
+        for week in self.specific_weeks:
+            cases.extend(self._make_cases(
+                f"Specific Export Weekly ({week})",
+                ["export", "week", week],
+                common_args
+            ))
+
+        # 4. Specific Yearly
+        for year in self.specific_years:
+            cases.extend(self._make_cases(
+                f"Specific Export Yearly ({year})",
+                ["export", "year", year],
+                common_args
+            ))
             
-        # 3. Specific Recent
+        # 5. Specific Recent
         for days in self.recent_days_to_export:
             cases.extend(self._make_cases(
                 f"Specific Recent Export ({days} days)", 

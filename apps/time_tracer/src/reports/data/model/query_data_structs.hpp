@@ -14,5 +14,7 @@ using FormattedGroupedReports =
 using FormattedMonthlyReports = std::map<int, std::map<int, std::string>>;
 // 用于导出所有周期报告的数据结构
 using FormattedPeriodReports = std::map<int, std::string>;
+using FormattedWeeklyReports = std::map<int, std::map<int, std::string>>;
+using FormattedYearlyReports = std::map<int, std::string>;
 
 #endif  // REPORTS_DATA_MODEL_QUERY_DATA_STRUCTS_H_

@@ -10,7 +10,7 @@
 #include "reports/shared/utils/format/report_string_utils.hpp"
 
 namespace {
-    std::string format_activity_line(const TimeRecord& record, const std::shared_ptr<DayTypConfig>& config) {
+    auto FormatActivityLine(const TimeRecord& record, const std::shared_ptr<DayTypConfig>& config) -> std::string {
         std::string project_path = replace_all(record.project_path, "_", config->get_activity_connector());
         std::string base_string = std::format("{} - {} ({}): {}",
             record.start_time,
@@ -58,7 +58,7 @@ namespace {
 
 namespace DayTypUtils {
 
-    void display_header(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
+    void DisplayHeader(std::stringstream& report_stream, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
         std::string title = std::format(
             R"(#text(font: "{}", size: {}pt)[= {} {}])",
             config->get_title_font(),
@@ -66,13 +66,13 @@ namespace DayTypUtils {
             config->get_title_prefix(),
             data.date
         );
-        ss << title << "\n\n";
-        ss << std::format("+ *{}:* {}\n", config->get_date_label(), data.date);
-        ss << std::format("+ *{}:* {}\n", config->get_total_time_label(), time_format_duration(data.total_duration));
-        ss << std::format("+ *{}:* {}\n", config->get_status_label(), bool_to_string(data.metadata.status));
-        ss << std::format("+ *{}:* {}\n", config->get_sleep_label(), bool_to_string(data.metadata.sleep));
-        ss << std::format("+ *{}:* {}\n", config->get_exercise_label(), bool_to_string(data.metadata.exercise));
-        ss << std::format("+ *{}:* {}\n", config->get_getup_time_label(), data.metadata.getup_time);
+        report_stream << title << "\n\n";
+        report_stream << std::format("+ *{}:* {}\n", config->get_date_label(), data.date);
+        report_stream << std::format("+ *{}:* {}\n", config->get_total_time_label(), time_format_duration(data.total_duration));
+        report_stream << std::format("+ *{}:* {}\n", config->get_status_label(), bool_to_string(data.metadata.status));
+        report_stream << std::format("+ *{}:* {}\n", config->get_sleep_label(), bool_to_string(data.metadata.sleep));
+        report_stream << std::format("+ *{}:* {}\n", config->get_exercise_label(), bool_to_string(data.metadata.exercise));
+        report_stream << std::format("+ *{}:* {}\n", config->get_getup_time_label(), data.metadata.getup_time);
 
         // [核心修改] 传入 " \\" 作为后缀，强制 Typst 换行
         // 缩进 2 个空格以适配一级列表
@@ -81,17 +81,17 @@ namespace DayTypUtils {
             2, 
             " \\"
         );
-        ss << std::format("+ *{}:* {}\n", config->get_remark_label(), formatted_remark);
+        report_stream << std::format("+ *{}:* {}\n", config->get_remark_label(), formatted_remark);
     }
 
-    void display_detailed_activities(std::stringstream& ss, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
+    void DisplayDetailedActivities(std::stringstream& report_stream, const DailyReportData& data, const std::shared_ptr<DayTypConfig>& config) {
         if (!data.detailed_records.empty()) {
-            ss << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
+            report_stream << std::format(R"(#text(font: "{}", size: {}pt)[= {}])", 
                 config->get_category_title_font(),
                 config->get_category_title_font_size(), 
                 config->get_all_activities_label()) << "\n\n";
             for (const auto& record : data.detailed_records) {
-                ss << format_activity_line(record, config) << "\n";
+                report_stream << FormatActivityLine(record, config) << "\n";
             }
         }
     }

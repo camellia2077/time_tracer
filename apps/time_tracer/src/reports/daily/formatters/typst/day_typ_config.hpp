@@ -12,26 +12,38 @@
 
 class DayTypConfig : public DayBaseConfig {
  public:
+  static constexpr int kDefaultStatFontSize = 10;
+  static constexpr int kDefaultStatTitleFontSize = 12;
+
   explicit DayTypConfig(const toml::table& config);
 
-  int get_statistic_font_size() const;
-  int get_statistic_title_font_size() const;
-  const std::map<std::string, std::string>& get_keyword_colors() const;
+  [[nodiscard]] auto get_statistic_font_size() const -> int;
+  [[nodiscard]] auto get_statistic_title_font_size() const -> int;
+  [[nodiscard]] auto get_keyword_colors() const
+      -> const std::map<std::string, std::string>&;
 
   // 代理
-  const std::string& get_title_font() const { return style_.get_title_font(); }
-  const std::string& get_base_font() const { return style_.get_base_font(); }
-  const std::string& get_category_title_font() const {
+  [[nodiscard]] auto get_title_font() const -> const std::string& {
+    return style_.get_title_font();
+  }
+  [[nodiscard]] auto get_base_font() const -> const std::string& {
+    return style_.get_base_font();
+  }
+  [[nodiscard]] auto get_category_title_font() const -> const std::string& {
     return style_.get_category_title_font();
   }
-  int get_base_font_size() const { return style_.get_base_font_size(); }
-  int get_report_title_font_size() const {
+  [[nodiscard]] auto get_base_font_size() const -> int {
+    return style_.get_base_font_size();
+  }
+  [[nodiscard]] auto get_report_title_font_size() const -> int {
     return style_.get_report_title_font_size();
   }
-  int get_category_title_font_size() const {
+  [[nodiscard]] auto get_category_title_font_size() const -> int {
     return style_.get_category_title_font_size();
   }
-  double get_line_spacing_em() const { return style_.get_line_spacing_em(); }
+  [[nodiscard]] auto get_line_spacing_em() const -> double {
+    return style_.get_line_spacing_em();
+  }
 
  private:
   TypstStyleConfig style_;
