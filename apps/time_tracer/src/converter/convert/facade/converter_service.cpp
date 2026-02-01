@@ -1,9 +1,16 @@
 ﻿// converter/convert/facade/converter_service.cpp
 #include "converter_service.hpp"
 
+#include "adapters/input/parser/text_parser.hpp"
 #include "common/ansi_colors.hpp"
 #include "converter/convert/core/day_processor.hpp"
-#include "adapters/input/parser/text_parser.hpp"
+
+namespace {
+constexpr size_t kIsoDateLength = 10;
+constexpr size_t kIsoYearLength = 4;
+constexpr size_t kIsoMonthOffset = 5;
+constexpr size_t kIsoMonthLength = 2;
+}  // namespace
 
 ConverterService::ConverterService(const ConverterConfig& config)
     : config_(config) {}
@@ -31,12 +38,17 @@ void ConverterService::executeConversion(
 
       // 2. 去重逻辑 (例如跨年重复的 12-31 和 01-01)
       bool skip_previous = false;
-      if (previous_day.date.length() == 10 && current_day.date.length() == 10) {
-        std::string prev_month = previous_day.date.substr(5, 2);
-        std::string curr_month = current_day.date.substr(5, 2);
+      if (previous_day.date.length() == kIsoDateLength &&
+          current_day.date.length() == kIsoDateLength) {
+        // Example: "2021-01-02" -> month "01", year "2021".
+        std::string prev_month =
+            previous_day.date.substr(kIsoMonthOffset, kIsoMonthLength);
+        std::string curr_month =
+            current_day.date.substr(kIsoMonthOffset, kIsoMonthLength);
         if (prev_month == "12" && curr_month == "01") {
-          int prev_year = std::stoi(previous_day.date.substr(0, 4));
-          int curr_year = std::stoi(current_day.date.substr(0, 4));
+          int prev_year =
+              std::stoi(previous_day.date.substr(0, kIsoYearLength));
+          int curr_year = std::stoi(current_day.date.substr(0, kIsoYearLength));
           if (curr_year == prev_year + 1) {
             skip_previous = true;
           }

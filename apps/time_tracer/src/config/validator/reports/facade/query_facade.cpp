@@ -6,8 +6,9 @@
 
 #include "config/validator/reports/strategies/strategy_factory.hpp"
 
-bool QueryFacade::validate(
-    const std::vector<std::pair<std::string, toml::table>>& query_configs) {
+auto QueryFacade::validate(
+    const std::vector<std::pair<std::string, toml::table>>& query_configs)
+    -> bool {
   bool all_ok = true;
 
   if (query_configs.empty()) {

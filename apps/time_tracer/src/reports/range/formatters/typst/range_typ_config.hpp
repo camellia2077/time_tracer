@@ -27,10 +27,10 @@ class RangeTypConfig : public RangeBaseConfig {
 
   double get_line_spacing_em() const { return style_.get_line_spacing_em(); }
 
-  double get_margin_top_cm() const;
-  double get_margin_bottom_cm() const;
-  double get_margin_left_cm() const;
-  double get_margin_right_cm() const;
+  auto get_margin_top_cm() const -> double;
+  auto get_margin_bottom_cm() const -> double;
+  auto get_margin_left_cm() const -> double;
+  auto get_margin_right_cm() const -> double;
 
  private:
   TypstStyleConfig style_;

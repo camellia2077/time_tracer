@@ -21,18 +21,24 @@ struct LoadedReportConfigs {
     DailyTexConfig day;
     MonthlyTexConfig month;
     PeriodTexConfig period;
+    WeeklyTexConfig week;
+    YearlyTexConfig year;
   } latex;
 
   struct {
     DailyTypConfig day;
     MonthlyTypConfig month;
     PeriodTypConfig period;
+    WeeklyTypConfig week;
+    YearlyTypConfig year;
   } typst;
 
   struct {
     DailyMdConfig day;
     MonthlyMdConfig month;
     PeriodMdConfig period;
+    WeeklyMdConfig week;
+    YearlyMdConfig year;
   } markdown;
 };
 
@@ -50,16 +56,22 @@ struct ReportConfigPaths {
   fs::path day_typ_config_path;
   fs::path month_typ_config_path;
   fs::path period_typ_config_path;
+  fs::path week_typ_config_path;
+  fs::path year_typ_config_path;
 
   // LaTeX Report Configs
   fs::path day_tex_config_path;
   fs::path month_tex_config_path;
   fs::path period_tex_config_path;
+  fs::path week_tex_config_path;
+  fs::path year_tex_config_path;
 
   // Markdown Report Configs
   fs::path day_md_config_path;
   fs::path month_md_config_path;
   fs::path period_md_config_path;
+  fs::path week_md_config_path;
+  fs::path year_md_config_path;
 };
 
 struct AppConfig {

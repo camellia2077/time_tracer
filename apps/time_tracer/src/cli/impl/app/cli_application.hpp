@@ -11,7 +11,6 @@
 #include "cli/impl/app/app_context.hpp"  // 包含 AppContext 定义
 #include "common/config/app_config.hpp"
 
-class FileController;
 class DBManager;
 // 移除 WorkflowHandler 和 ReportHandler 的前向声明，因为成员变量已经移除了
 
@@ -22,7 +21,7 @@ class CliApplication {
   explicit CliApplication(const std::vector<std::string>& args);
   ~CliApplication();
 
-  void execute();
+  [[nodiscard]] auto execute() -> int;
 
  private:
   CommandParser parser_;
@@ -33,10 +32,9 @@ class CliApplication {
   std::shared_ptr<AppContext> app_context_;
 
   // --- 基础设施 ---
-  // FileController 和 DBManager 属于基础设施，CliApp 仍需负责它们的初始化
+  // DBManager 属于基础设施，CliApp 仍需负责初始化
   // (注：如果 DBManager 未来也需要注入到 Context，也可以改为 shared_ptr 并放入
   // Context)
-  std::unique_ptr<FileController> file_controller_;
   std::unique_ptr<DBManager> db_manager_;
 
   fs::path output_root_path_;

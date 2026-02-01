@@ -14,8 +14,7 @@ auto get_report_format_details(ReportFormat format)
     -> std::optional<ReportFormatDetails> {
   switch (format) {
     case ReportFormat::Markdown:
-      return ReportFormatDetails{.dir_name = "markdown",
-                                 .extension = ".md"};
+      return ReportFormatDetails{.dir_name = "markdown", .extension = ".md"};
     case ReportFormat::LaTeX:
       return ReportFormatDetails{.dir_name = "latex", .extension = ".tex"};
     case ReportFormat::Typ:

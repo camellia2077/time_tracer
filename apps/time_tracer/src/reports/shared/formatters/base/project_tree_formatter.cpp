@@ -30,11 +30,13 @@ ProjectTreeFormatter::ProjectTreeFormatter(
   }
 }
 
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
                                                long long total_duration,
                                                int avg_days) const
     -> std::string {
-  std::stringstream ss;
+  std::stringstream output_ss;
 
   // [优化 1]：顶层节点也使用指针，避免深拷贝整个树
   using NodePair = std::pair<const std::string, ProjectNode>;
@@ -47,8 +49,8 @@ auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
 
   // 对指针进行排序
   std::ranges::sort(sorted_top_level,
-                    [](const NodePair* a, const NodePair* b) -> bool {
-                      return a->second.duration > b->second.duration;
+                    [](const NodePair* lhs, const NodePair* rhs) -> bool {
+                      return lhs->second.duration > rhs->second.duration;
                     });
 
   for (const auto* pair_ptr : sorted_top_level) {
@@ -57,23 +59,25 @@ auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
 
     double percentage = (total_duration > 0)
                             ? (static_cast<double>(category_node.duration) /
-                               total_duration * 100.0)
+                               static_cast<double>(total_duration) * 100.0)
                             : 0.0;
 
     // 格式化分类标题
-    ss << m_strategy->format_category_header(
+    output_ss << m_strategy->format_category_header(
         category_name, time_format_duration(category_node.duration, avg_days),
         percentage);
 
     // 调用迭代函数生成子树
-    generate_sorted_output(ss, category_node, 0, avg_days);
+    generate_sorted_output(output_ss, category_node, 0, avg_days);
   }
 
-  return ss.str();
+  return output_ss.str();
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 // [优化 2]：使用迭代（Stack）替代递归，防止深层级导致的栈溢出
-void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+void ProjectTreeFormatter::generate_sorted_output(std::stringstream& output_ss,
                                                   const ProjectNode& root_node,
                                                   int root_indent,
                                                   int avg_days) const {
@@ -97,8 +101,8 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
   }
   std::ranges::sort(root_frame.sorted_children,
 
-                    [](const ChildPair* a, const ChildPair* b) -> bool {
-                      return a->second.duration > b->second.duration;
+                    [](const ChildPair* lhs, const ChildPair* rhs) -> bool {
+                      return lhs->second.duration > rhs->second.duration;
                     });
 
   stack.push(std::move(root_frame));
@@ -108,7 +112,7 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
 
     // 1. 处理列表开始钩子 (对应递归前的逻辑)
     if (!frame.list_started) {
-      ss << m_strategy->start_children_list();
+      output_ss << m_strategy->start_children_list();
       frame.list_started = true;
     }
 
@@ -125,7 +129,7 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
 
       if (child_node.duration > 0 || !child_node.children.empty()) {
         // 输出当前节点
-        ss << m_strategy->format_tree_node(
+        output_ss << m_strategy->format_tree_node(
             name, time_format_duration(child_node.duration, avg_days),
             frame.indent);
 
@@ -140,11 +144,12 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
           for (const auto& child_pair : child_node.children) {
             child_frame.sorted_children.push_back(&child_pair);
           }
-          std::ranges::sort(child_frame.sorted_children,
+          std::ranges::sort(
+              child_frame.sorted_children,
 
-                            [](const ChildPair* a, const ChildPair* b) -> bool {
-                              return a->second.duration > b->second.duration;
-                            });
+              [](const ChildPair* lhs, const ChildPair* rhs) -> bool {
+                return lhs->second.duration > rhs->second.duration;
+              });
 
           stack.push(std::move(child_frame));
           pushed_new_frame = true;
@@ -158,9 +163,10 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& ss,
     }
 
     // 3. 处理列表结束钩子 (对应递归后的逻辑)
-    ss << m_strategy->end_children_list();
+    output_ss << m_strategy->end_children_list();
     stack.pop();  // 弹出当前帧，回溯到上一层
   }
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace reporting

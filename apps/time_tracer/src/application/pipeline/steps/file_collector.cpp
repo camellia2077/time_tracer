@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include "common/ansi_colors.hpp"
-#include "io/core/file_system_helper.hpp"
-#include "io/utils/file_utils.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
+#include "infrastructure/io/utils/file_utils.hpp"
 
 namespace core::pipeline {
 

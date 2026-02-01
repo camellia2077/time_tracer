@@ -8,7 +8,7 @@
 
 #include "config/internal/config_parser_utils.hpp"
 #include "config/loader/report_config_loader.hpp"
-#include "io/core/file_system_helper.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
 // [新增]
 #include "config/loader/converter_config_loader.hpp"
 
@@ -31,6 +31,14 @@ void LoadDetailedReports(AppConfig& config) {
         ReportConfigLoader::loadPeriodTypConfig(
             config.reports.period_typ_config_path);
   }
+  if (!config.reports.week_typ_config_path.empty()) {
+    config.loaded_reports.typst.week = ReportConfigLoader::loadWeeklyTypConfig(
+        config.reports.week_typ_config_path);
+  }
+  if (!config.reports.year_typ_config_path.empty()) {
+    config.loaded_reports.typst.year = ReportConfigLoader::loadYearlyTypConfig(
+        config.reports.year_typ_config_path);
+  }
 
   // --- LaTeX ---
   if (!config.reports.day_tex_config_path.empty()) {
@@ -47,6 +55,14 @@ void LoadDetailedReports(AppConfig& config) {
         ReportConfigLoader::loadPeriodTexConfig(
             config.reports.period_tex_config_path);
   }
+  if (!config.reports.week_tex_config_path.empty()) {
+    config.loaded_reports.latex.week = ReportConfigLoader::loadWeeklyTexConfig(
+        config.reports.week_tex_config_path);
+  }
+  if (!config.reports.year_tex_config_path.empty()) {
+    config.loaded_reports.latex.year = ReportConfigLoader::loadYearlyTexConfig(
+        config.reports.year_tex_config_path);
+  }
 
   // --- Markdown ---
   if (!config.reports.day_md_config_path.empty()) {
@@ -62,6 +78,16 @@ void LoadDetailedReports(AppConfig& config) {
     config.loaded_reports.markdown.period =
         ReportConfigLoader::loadPeriodMdConfig(
             config.reports.period_md_config_path);
+  }
+  if (!config.reports.week_md_config_path.empty()) {
+    config.loaded_reports.markdown.week =
+        ReportConfigLoader::loadWeeklyMdConfig(
+            config.reports.week_md_config_path);
+  }
+  if (!config.reports.year_md_config_path.empty()) {
+    config.loaded_reports.markdown.year =
+        ReportConfigLoader::loadYearlyMdConfig(
+            config.reports.year_md_config_path);
   }
 }
 }  // namespace

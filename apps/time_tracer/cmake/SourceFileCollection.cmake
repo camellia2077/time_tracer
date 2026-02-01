@@ -78,7 +78,6 @@ set(REPORTS_SHARED_SOURCES
     # 基础配置 (原有的)
     "src/reports/daily/common/day_base_config.cpp"
     "src/reports/monthly/common/month_base_config.cpp"
-    "src/reports/period/common/period_base_config.cpp"
     "src/reports/range/common/range_base_config.cpp"
     "src/reports/daily/formatters/statistics/stat_formatter.cpp"
 
@@ -86,6 +85,8 @@ set(REPORTS_SHARED_SOURCES
     "src/reports/shared/utils/config/config_utils.cpp"
     "src/reports/shared/utils/format/bool_to_string.cpp"
     "src/reports/shared/utils/format/report_string_utils.cpp"
+    "src/reports/shared/utils/format/iso_week_utils.cpp"
+    "src/reports/shared/utils/format/year_utils.cpp"
     "src/reports/shared/utils/format/time_format.cpp"
     
     # Shared - 样式配置
@@ -118,6 +119,14 @@ set(REPORTS_DATA_SOURCES
     # Period Queriers
     "src/reports/data/queriers/period/period_querier.cpp"
     "src/reports/data/queriers/period/batch_period_data_fetcher.cpp"
+
+    # Weekly Queriers
+    "src/reports/data/queriers/weekly/week_querier.cpp"
+    "src/reports/data/queriers/weekly/batch_week_data_fetcher.cpp"
+
+    # Yearly Queriers
+    "src/reports/data/queriers/yearly/year_querier.cpp"
+    "src/reports/data/queriers/yearly/batch_year_data_fetcher.cpp"
 )
 
 set(REPORTS_SOURCES
@@ -126,7 +135,8 @@ set(REPORTS_SOURCES
     # Export
     "src/reports/services/daily_report_service.cpp"
     "src/reports/services/monthly_report_service.cpp"
-    "src/reports/services/period_report_service.cpp"
+    "src/reports/services/weekly_report_service.cpp"
+    "src/reports/services/yearly_report_service.cpp"
 )
 
 
@@ -189,11 +199,11 @@ set(CONVERTER_SOURCES
 )
 # --- File Handler Sources ---
 set(IO_SOURCES
-    "src/io/file_controller.cpp"
-    "src/io/core/file_reader.cpp"
-    "src/io/core/file_writer.cpp"
-    "src/io/core/file_system_helper.cpp"
-    "src/io/utils/file_utils.cpp"
+    "src/infrastructure/io/file_controller.cpp"
+    "src/infrastructure/io/core/file_reader.cpp"
+    "src/infrastructure/io/core/file_writer.cpp"
+    "src/infrastructure/io/core/file_system_helper.cpp"
+    "src/infrastructure/io/utils/file_utils.cpp"
 )
 
 set(CONFIG_SOURCES
@@ -231,7 +241,8 @@ set(CONFIG_SOURCES
     "src/config/validator/reports/strategies/daily/daily_tex.cpp"
     "src/config/validator/reports/strategies/daily/daily_typ.cpp"
     "src/config/validator/reports/strategies/monthly/monthly.cpp"
-    "src/config/validator/reports/strategies/periodic/periodic.cpp"
+    "src/config/validator/reports/strategies/weekly/weekly.cpp"
+    "src/config/validator/reports/strategies/yearly/yearly.cpp"
 )
 
 

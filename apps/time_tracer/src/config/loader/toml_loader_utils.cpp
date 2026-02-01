@@ -4,7 +4,13 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "io/core/file_reader.hpp"
+#include "infrastructure/io/core/file_reader.hpp"
+
+namespace {
+constexpr double kTypLineSpacingEm = 0.65;
+constexpr double kTypMarginTopBottomCm = 2.5;
+constexpr double kTypMarginLeftRightCm = 2.0;
+}  // namespace
 
 namespace TomlLoaderUtils {
 
@@ -73,11 +79,13 @@ void fill_typ_style(const toml::table& tbl, FontConfig& fonts,
   fonts.category_title_font_size =
       get_required<int>(tbl, "category_title_font_size");
 
-  layout.line_spacing_em = tbl["line_spacing_em"].value_or(0.65);
-  layout.margin_top_cm = tbl["margin_top_cm"].value_or(2.5);
-  layout.margin_bottom_cm = tbl["margin_bottom_cm"].value_or(2.5);
-  layout.margin_left_cm = tbl["margin_left_cm"].value_or(2.0);
-  layout.margin_right_cm = tbl["margin_right_cm"].value_or(2.0);
+  layout.line_spacing_em = tbl["line_spacing_em"].value_or(kTypLineSpacingEm);
+  layout.margin_top_cm = tbl["margin_top_cm"].value_or(kTypMarginTopBottomCm);
+  layout.margin_bottom_cm =
+      tbl["margin_bottom_cm"].value_or(kTypMarginTopBottomCm);
+  layout.margin_left_cm = tbl["margin_left_cm"].value_or(kTypMarginLeftRightCm);
+  layout.margin_right_cm =
+      tbl["margin_right_cm"].value_or(kTypMarginLeftRightCm);
 }
 
 void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels) {
@@ -129,13 +137,21 @@ void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels) {
   fill_range_labels(tbl, labels);
 }
 
+void fill_weekly_labels(const toml::table& tbl, WeeklyReportLabels& labels) {
+  fill_range_labels(tbl, labels);
+}
+
+void fill_yearly_labels(const toml::table& tbl, YearlyReportLabels& labels) {
+  fill_range_labels(tbl, labels);
+}
+
 void fill_keyword_colors(const toml::table& tbl,
                          std::map<std::string, std::string>& colors) {
   if (const toml::table* color_tbl = tbl["keyword_colors"].as_table()) {
-    for (const auto& [key, val] : *color_tbl) {
-      if (auto s = val.value<std::string>()) {
+    for (const auto& [color_key, color_val] : *color_tbl) {
+      if (auto hex_color = color_val.value<std::string>()) {
         // [修复] 显式转换为 std::string
-        colors[std::string(key.str())] = *s;
+        colors[std::string(color_key.str())] = *hex_color;
       }
     }
   }

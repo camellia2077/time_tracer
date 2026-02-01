@@ -2,8 +2,8 @@
 #ifndef CLI_IMPL_COMMANDS_EXPORT_EXPORT_COMMAND_H_
 #define CLI_IMPL_COMMANDS_EXPORT_EXPORT_COMMAND_H_
 
-#include "cli/framework/interfaces/i_command.hpp"
 #include "application/interfaces/i_report_handler.hpp"
+#include "cli/framework/interfaces/i_command.hpp"
 
 class ExportCommand : public ICommand {
  public:

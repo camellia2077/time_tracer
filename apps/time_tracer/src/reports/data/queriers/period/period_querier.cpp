@@ -8,8 +8,8 @@
 #include "reports/data/utils/project_tree_builder.hpp"
 #include "reports/shared/utils/format/time_format.hpp"
 
-PeriodQuerier::PeriodQuerier(sqlite3* db, int days_to_query)
-    : BaseQuerier(db, days_to_query) {}
+PeriodQuerier::PeriodQuerier(sqlite3* sqlite_db, int days_to_query)
+    : BaseQuerier(sqlite_db, days_to_query) {}
 
 auto PeriodQuerier::fetch_data() -> PeriodReportData {
   PeriodReportData data = BaseQuerier::fetch_data();

@@ -10,9 +10,13 @@
 
 #include "common/ansi_colors.hpp"
 #include "converter/log_processor.hpp"
-#include "io/core/file_reader.hpp"
+#include "infrastructure/io/core/file_reader.hpp"
 
 namespace core::pipeline {
+
+namespace {
+constexpr double kMillisPerSecond = 1000.0;
+}  // namespace
 
 ConverterStep::ConverterStep(const AppConfig& /*unused*/) {}
 
@@ -48,8 +52,8 @@ auto ConverterStep::execute(PipelineContext& context) -> bool {
   bool all_success = true;
   int processed_count = 0;
 
-  for (auto& f : futures) {
-    LogProcessingResult result = f.get();
+  for (auto& future : futures) {
+    LogProcessingResult result = future.get();
     processed_count++;
 
     if (!result.success) {
@@ -78,7 +82,7 @@ auto ConverterStep::execute(PipelineContext& context) -> bool {
 }
 
 void ConverterStep::printTiming(double total_time_ms) {
-  double total_time_s = total_time_ms / 1000.0;
+  double total_time_s = total_time_ms / kMillisPerSecond;
   std::cout << "--------------------------------------\n";
   std::cout << "转换耗时: " << std::fixed << std::setprecision(3)
             << total_time_s << " 秒 (" << total_time_ms << " ms)\n";

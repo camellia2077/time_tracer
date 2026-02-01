@@ -1,5 +1,8 @@
 build/
+build_debug/
 __pycache__/
 html/
-
+temp/
 *.exe
+*.log
+

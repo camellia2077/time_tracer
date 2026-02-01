@@ -10,6 +10,8 @@
 #include "reports/data/model/monthly_report_data.hpp"
 #include "reports/data/model/period_report_data.hpp"
 #include "reports/data/model/range_report_data.hpp"
+#include "reports/data/model/weekly_report_data.hpp"
+#include "reports/data/model/yearly_report_data.hpp"
 
 template <typename ReportDataType>
 class IReportFormatter {

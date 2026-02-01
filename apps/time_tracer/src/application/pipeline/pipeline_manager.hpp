@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "application/pipeline/context/pipeline_context.hpp"
 #include "common/app_options.hpp"
 #include "common/config/app_config.hpp"
-#include "application/pipeline/context/pipeline_context.hpp"
 
 namespace fs = std::filesystem;
 

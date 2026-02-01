@@ -11,7 +11,8 @@
 #include "reports/data/utils/project_tree_builder.hpp"  // 引入树构建器
 #include "reports/shared/utils/format/time_format.hpp"  // 需要用到 add_days_to_date_str
 
-BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* db) : db_(db) {
+BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* sqlite_db)
+    : db_(sqlite_db) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }

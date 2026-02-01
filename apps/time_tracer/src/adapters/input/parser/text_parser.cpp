@@ -2,44 +2,68 @@
 #include "text_parser.hpp"
 
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <iostream>
 #include <regex>
 #include <stdexcept>
+#include <string_view>
 
 #include "common/ansi_colors.hpp"
 #include "common/utils/string_utils.hpp"
 
 namespace {
-auto FormatTime(const std::string& timeStrHHMM) -> std::string {
-  return (timeStrHHMM.length() == 4)
-             ? timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2)
-             : timeStrHHMM;
+constexpr size_t kYearMarkerLength = 5;
+constexpr char kYearMarkerPrefix = 'y';
+constexpr size_t kDayMarkerLength = 4;
+constexpr size_t kMonthDigitsLength = 2;
+constexpr size_t kDayDigitsLength = 2;
+constexpr size_t kMonthStartOffset = 0;
+constexpr size_t kDayStartOffset = 2;
+constexpr size_t kTimeDigitsLength = 4;
+constexpr size_t kTimeHourOffset = 0;
+constexpr size_t kTimeHourLength = 2;
+constexpr size_t kTimeMinuteOffset = 2;
+constexpr size_t kTimeMinuteLength = 2;
+constexpr int kMaxHour = 23;
+constexpr int kMaxMinute = 59;
+constexpr size_t kEventMatchSize = 4;
+constexpr size_t kDoubleSlashLength = 2;
+constexpr size_t kSingleCharDelimiterLength = 1;
+constexpr std::string_view kDoubleSlashDelimiter = "//";
+constexpr size_t kRemarkDelimiterCount = 3;
+// Inline remark delimiters. Example: "1026math //note" -> remark "note".
+constexpr std::array<std::string_view, kRemarkDelimiterCount>
+    kRemarkDelimiters = {"//", "#", ";"};
+
+auto FormatTime(const std::string& time_str_hhmm) -> std::string {
+  return (time_str_hhmm.length() == kTimeDigitsLength)
+             ? time_str_hhmm.substr(kTimeHourOffset, kTimeHourLength) + ":" +
+                   time_str_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)
+             : time_str_hhmm;
 }
 
-[[noreturn]] void ThrowParseError(int line_number,
-                                 const std::string& line,
-                                 const std::string& message) {
-  throw std::runtime_error("Parse error at line " + std::to_string(line_number) +
-                           ": " + message + " => '" + line + "'");
+[[noreturn]] void ThrowParseError(int line_number, const std::string& line,
+                                  const std::string& message) {
+  throw std::runtime_error("Parse error at line " +
+                           std::to_string(line_number) + ": " + message +
+                           " => '" + line + "'");
 }
 
 const std::regex kEventPattern(R"(^(\d{2})(\d{2})(.*)$)");
 }  // namespace
 
 TextParser::TextParser(const ConverterConfig& config)
-    : config_(config),
-      // [??] ???? public ??
-      wake_keywords_(config.wake_keywords) {}
+    : config_(config), wake_keywords_(config.wake_keywords) {}
 
-void TextParser::parse(std::istream& inputStream,
-                       std::function<void(DailyLog&)> onNewDay) {
+void TextParser::parse(std::istream& input_stream,
+                       std::function<void(DailyLog&)> on_new_day) {
   DailyLog current_day;
   std::string line;
   std::string current_year_prefix;
   int line_number = 0;
 
-  while (std::getline(inputStream, line)) {
+  while (std::getline(input_stream, line)) {
     ++line_number;
     line = trim(line);
     if (line.empty()) {
@@ -61,77 +85,77 @@ void TextParser::parse(std::istream& inputStream,
 
     if (isNewDayMarker(line)) {
       if (!current_day.date.empty()) {
-        onNewDay(current_day);
+        on_new_day(current_day);
       }
       current_day.clear();
-      current_day.date = current_year_prefix + "-" + line.substr(0, 2) + "-" +
-                         line.substr(2, 2);
+      current_day.date = current_year_prefix + "-" +
+                         line.substr(kMonthStartOffset, kMonthDigitsLength) +
+                         "-" + line.substr(kDayStartOffset, kDayDigitsLength);
 
     } else {
       parseLine(line, line_number, current_day);
     }
   }
   if (!current_day.date.empty()) {
-    onNewDay(current_day);
+    on_new_day(current_day);
   }
 }
 
-bool TextParser::isYearMarker(const std::string& line) {
-  if (line.length() != 5 || line[0] != 'y') {
+auto TextParser::isYearMarker(const std::string& line) -> bool {
+  if (line.length() != kYearMarkerLength || line[0] != kYearMarkerPrefix) {
     return false;
   }
   return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
-bool TextParser::isNewDayMarker(const std::string& line) {
-  return line.length() == 4 && std::ranges::all_of(line, ::isdigit);
+auto TextParser::isNewDayMarker(const std::string& line) -> bool {
+  return line.length() == kDayMarkerLength &&
+         std::ranges::all_of(line, ::isdigit);
 }
 
-void TextParser::parseLine(const std::string& line,
-                           int line_number,
-                           DailyLog& currentDay) const {
-  // [??] ???? public ?? config_.remark_prefix
+void TextParser::parseLine(const std::string& line, int line_number,
+                           DailyLog& current_day) const {
   const std::string& remark_prefix = config_.remark_prefix;
 
   if (!remark_prefix.empty() && line.starts_with(remark_prefix)) {
-    if (!currentDay.date.empty()) {
-      currentDay.generalRemarks.push_back(line.substr(remark_prefix.length()));
+    if (!current_day.date.empty()) {
+      current_day.generalRemarks.push_back(line.substr(remark_prefix.length()));
     }
     return;
   }
 
-  if (currentDay.date.empty()) {
+  if (current_day.date.empty()) {
     ThrowParseError(line_number, line, "Event line appears before date");
   }
 
   std::smatch match;
-  if (!std::regex_match(line, match, kEventPattern) || match.size() != 4) {
+  if (!std::regex_match(line, match, kEventPattern) ||
+      match.size() != kEventMatchSize) {
     ThrowParseError(line_number, line, "Invalid event line format");
   }
 
-  int hh = 0;
-  int mm = 0;
+  int hour = 0;
+  int minute = 0;
   try {
-    hh = std::stoi(match[1].str());
-    mm = std::stoi(match[2].str());
+    hour = std::stoi(match[1].str());
+    minute = std::stoi(match[2].str());
   } catch (const std::exception&) {
     ThrowParseError(line_number, line, "Failed to parse time");
   }
 
-  if (hh > 23 || mm > 59) {
+  if (hour > kMaxHour || minute > kMaxMinute) {
     ThrowParseError(line_number, line, "Time out of range");
   }
 
-  std::string time_str = match[1].str() + match[2].str();
+  std::string time_str_hhmm = match[1].str() + match[2].str();
   std::string remaining_line = match[3].str();
 
-  std::string desc;
-  std::string remark;
+  std::string description;
+  std::string remark_text;
 
   size_t comment_pos = std::string::npos;
-  const char* delimiters[] = {"//", "#", ";"};
-  for (const char* delim : delimiters) {
-    size_t pos = remaining_line.find(delim);
+  for (std::string_view delimiter : kRemarkDelimiters) {
+    size_t pos = remaining_line.find(delimiter);
     if (pos != std::string::npos) {
       if (comment_pos == std::string::npos || pos < comment_pos) {
         comment_pos = pos;
@@ -140,35 +164,37 @@ void TextParser::parseLine(const std::string& line,
   }
 
   if (comment_pos != std::string::npos) {
-    desc = trim(remaining_line.substr(0, comment_pos));
-    size_t delim_len =
-        (remaining_line.substr(comment_pos, 2) == "//") ? 2 : 1;
-    remark = trim(remaining_line.substr(comment_pos + delim_len));
+    description = trim(remaining_line.substr(0, comment_pos));
+    size_t delimiter_length =
+        (remaining_line.substr(comment_pos, kDoubleSlashLength) ==
+         kDoubleSlashDelimiter)
+            ? kDoubleSlashLength
+            : kSingleCharDelimiterLength;
+    remark_text = trim(remaining_line.substr(comment_pos + delimiter_length));
   } else {
-    desc = trim(remaining_line);
+    description = trim(remaining_line);
   }
 
-  if (desc.empty()) {
+  if (description.empty()) {
     ThrowParseError(line_number, line, "Missing activity description");
   }
 
-  // [??] wake_keywords_ ??? vector??? std::find
   bool is_wake = false;
-  for (const auto& kw : wake_keywords_) {
-    if (kw == desc) {
+  for (const auto& keyword : wake_keywords_) {
+    if (keyword == description) {
       is_wake = true;
       break;
     }
   }
 
   if (is_wake) {
-    if (currentDay.getupTime.empty()) {
-      currentDay.getupTime = FormatTime(time_str);
+    if (current_day.getupTime.empty()) {
+      current_day.getupTime = FormatTime(time_str_hhmm);
     }
   } else {
-    if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) {
-      currentDay.isContinuation = true;
+    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
+      current_day.isContinuation = true;
     }
   }
-  currentDay.rawEvents.push_back({time_str, desc, remark});
+  current_day.rawEvents.push_back({time_str_hhmm, description, remark_text});
 }

@@ -7,7 +7,8 @@
 #include "reports/data/cache/project_name_cache.hpp"
 #include "reports/data/utils/project_tree_builder.hpp"
 
-BatchMonthDataFetcher::BatchMonthDataFetcher(sqlite3* db) : db_(db) {
+BatchMonthDataFetcher::BatchMonthDataFetcher(sqlite3* sqlite_db)
+    : db_(sqlite_db) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -28,9 +29,9 @@ auto BatchMonthDataFetcher::fetch_all_data()
   fetch_actual_days(all_months_data);
 
   // [新增] 3. 为每个月份构建项目树
-  for (auto& [ym, data] : all_months_data) {
+  for (auto& [year_month, data] : all_months_data) {
     if (data.total_duration > 0) {
-      // 使用 ID 列表和名称缓存构建树
+      // 使用 ID 列表 and 名称缓存构建树
       build_project_tree_from_ids(data.project_tree, data.project_stats,
                                   name_cache);
     }
@@ -58,15 +59,15 @@ void BatchMonthDataFetcher::fetch_project_stats(
       continue;
     }
 
-    std::string ym = reinterpret_cast<const char*>(ym_ptr);
+    std::string year_month = reinterpret_cast<const char*>(ym_ptr);
     long long project_id = sqlite3_column_int64(stmt, 1);
     long long duration = sqlite3_column_int64(stmt, 2);
 
-    MonthlyReportData& data = all_months_data[ym];
+    MonthlyReportData& data = all_months_data[year_month];
     if (data.range_label.empty()) {
-      data.range_label = ym;
-      data.start_date = ym + "-01";
-      data.end_date = ym + "-31";
+      data.range_label = year_month;
+      data.start_date = year_month + "-01";
+      data.end_date = year_month + "-31";
       data.requested_days = 0;
     }
 
@@ -96,11 +97,11 @@ void BatchMonthDataFetcher::fetch_actual_days(
       continue;
     }
 
-    std::string ym = reinterpret_cast<const char*>(ym_ptr);
+    std::string year_month = reinterpret_cast<const char*>(ym_ptr);
     int days = sqlite3_column_int(stmt, 1);
 
-    if (all_months_data.contains(ym) != 0u) {
-      all_months_data[ym].actual_days = days;
+    if (all_months_data.contains(year_month)) {
+      all_months_data[year_month].actual_days = days;
     }
   }
   sqlite3_finalize(stmt);

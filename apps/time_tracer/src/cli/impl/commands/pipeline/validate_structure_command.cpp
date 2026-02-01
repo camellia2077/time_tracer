@@ -4,12 +4,12 @@
 #include <iostream>
 #include <utility>
 
+#include "application/pipeline/pipeline_manager.hpp"  // 直接调用 Pipeline
 #include "cli/framework/core/command_parser.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/framework/core/command_validator.hpp"
 #include "cli/impl/app/app_context.hpp"
 #include "common/app_options.hpp"
-#include "application/pipeline/pipeline_manager.hpp"  // 直接调用 Pipeline
 
 // 注册命令：validate-structure
 static CommandRegistrar<AppContext> registrar(

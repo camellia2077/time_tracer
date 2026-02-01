@@ -34,8 +34,8 @@ void PrintReport(const ImportStats& stats, const std::string& title) {
     std::cout << YELLOW_COLOR << "[Partial] Success: " << stats.successful_files
               << ", Failed: " << stats.failed_files.size() << RESET_COLOR
               << std::endl;
-    for (const auto& f : stats.failed_files) {
-      std::cerr << "  Failed: " << f << std::endl;
+    for (const auto& failed_file : stats.failed_files) {
+      std::cerr << "  Failed: " << failed_file << std::endl;
     }
   }
 

@@ -25,11 +25,11 @@ class BaseStrategy : public IQueryStrategy {
 
  private:
   // 通用验证规则
-  bool validate_common_rules(const toml::table& query_config,
-                             const std::string& file_name) const;
-  bool validate_statistics_items(const toml::table& query_config,
-                                 const std::string& file_name) const;
-  bool is_valid_hex_color(const std::string& color_string) const;
+  static bool validate_common_rules(const toml::table& query_config,
+                                    const std::string& file_name);
+  static bool validate_statistics_items(const toml::table& query_config,
+                                        const std::string& file_name);
+  static bool is_valid_hex_color(const std::string& color_string);
 };
 
 #endif  // CONFIG_VALIDATOR_REPORTS_STRATEGIES_BASE_STRATEGY_H_

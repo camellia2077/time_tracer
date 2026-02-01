@@ -1,4 +1,4 @@
-// importer/storage/sqlite/connection.cpp
+// importer/storage/sqlite/Connection.cpp
 #include "connection.hpp"
 
 #include <iostream>
@@ -89,13 +89,17 @@ void Connection::rollback_transaction() {
   execute_sql(db_, "ROLLBACK;", "Rollback transaction");  // MODIFIED
 }
 
-auto execute_sql(sqlite3* db, const std::string& sql,
-                 const std::string& context_msg) -> bool {
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+auto execute_sql(sqlite3* sqlite_db, const std::string& sql_query,
+                 const std::string& error_context) -> bool {
   char* err_msg = nullptr;
-  if (sqlite3_exec(db, sql.c_str(), nullptr, nullptr, &err_msg) != SQLITE_OK) {
-    std::cerr << "SQL Error (" << context_msg << "): " << err_msg << std::endl;
+  if (sqlite3_exec(sqlite_db, sql_query.c_str(), nullptr, nullptr, &err_msg) !=
+      SQLITE_OK) {
+    std::cerr << "SQL Error (" << error_context << "): " << err_msg
+              << std::endl;
     sqlite3_free(err_msg);
     return false;
   }
   return true;
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)

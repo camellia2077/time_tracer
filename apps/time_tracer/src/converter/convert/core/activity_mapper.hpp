@@ -18,9 +18,21 @@ class ActivityMapper {
   // 保持引用以避免拷贝，或者拷贝 vector (取决于数据量，引用通常更高效)
   const std::vector<std::string>& wake_keywords_;
 
-  static std::string formatTime(const std::string& timeStrHHMM);
-  static int calculateDurationMinutes(const std::string& startTimeStr,
-                                      const std::string& endTimeStr);
+  bool is_wake_event(const RawEvent& raw_event) const;
+  std::string map_description(const std::string& description) const;
+  std::string apply_duration_rules(const std::string& mapped_description,
+                                   const std::string& start_time,
+                                   const std::string& end_time) const;
+  void apply_top_parent_mapping(std::vector<std::string>& parts) const;
+  static std::string build_project_path(const std::vector<std::string>& parts);
+  void append_activity(DailyLog& day, const RawEvent& raw_event,
+                       const std::string& start_time,
+                       const std::string& end_time,
+                       const std::string& mapped_description) const;
+
+  static std::string formatTime(const std::string& time_str_hhmm);
+  static int calculateDurationMinutes(const std::string& start_time_str,
+                                      const std::string& end_time_str);
 };
 
 #endif  // CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_H_

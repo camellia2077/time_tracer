@@ -16,9 +16,11 @@ auto LogSerializer::serialize(const DailyLog& day) -> nlohmann::json {
   headers_obj["status"] = static_cast<int>(day.hasStudyActivity);
   headers_obj["exercise"] = static_cast<int>(day.hasExerciseActivity);
   headers_obj["sleep"] = static_cast<int>(day.hasSleepActivity);
-  headers_obj["getup"] =
-      day.isContinuation ? "Null"
-                         : (day.getupTime.empty() ? "00:00" : day.getupTime);
+  std::string getup_time = "Null";
+  if (!day.isContinuation) {
+    getup_time = day.getupTime.empty() ? "00:00" : day.getupTime;
+  }
+  headers_obj["getup"] = getup_time;
   headers_obj["activity_count"] = day.activityCount;
 
   if (!day.generalRemarks.empty()) {

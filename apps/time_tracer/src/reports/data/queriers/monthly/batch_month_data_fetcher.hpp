@@ -17,13 +17,14 @@
  */
 class BatchMonthDataFetcher {
  public:
-  explicit BatchMonthDataFetcher(sqlite3* db);
+  explicit BatchMonthDataFetcher(sqlite3* sqlite_db);
 
   /**
    * @brief 获取所有月份的数据。
    * @return map<"YYYY-MM", MonthlyReportData>
    */
-  std::map<std::string, MonthlyReportData> fetch_all_data();
+  [[nodiscard]] auto fetch_all_data()
+      -> std::map<std::string, MonthlyReportData>;
 
  private:
   sqlite3* db_;

@@ -13,19 +13,19 @@ JsonValidator::JsonValidator(DateCheckMode date_check_mode)
 
 // [修改] 参数类型 json -> nlohmann::json
 auto JsonValidator::validate(const std::string& filename,
-                             const nlohmann::json& days_array,
+                             const nlohmann::json& json_content,
                              std::set<Error>& errors) -> bool {
   errors.clear();
 
-  if (!days_array.is_array()) {
+  if (!json_content.is_array()) {
     errors.insert({0, "JSON root is not an array in file: " + filename,
                    ErrorType::Structural});
     return false;
   }
 
-  validateDateContinuity(days_array, errors, date_check_mode_);
+  validateDateContinuity(json_content, errors, date_check_mode_);
 
-  for (const auto& day_object : days_array) {
+  for (const auto& day_object : json_content) {
     validateActivityCount(day_object, errors);
   }
 

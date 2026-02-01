@@ -27,10 +27,11 @@ auto LogProcessor::processSourceContent(const std::string& /*filename*/,
   // 前置步骤）验证过了。 它只专注于 "Content -> Struct" 的转换。
 
   try {
-    std::stringstream ss(content);
+    std::stringstream string_stream(content);
     // 使用 lambda 捕获 result 并填充数据
-    convertStreamToData(ss, [&](DailyLog&& log) -> void {
-      std::string key = log.date.substr(0, 7);  // YYYY-MM
+    convertStreamToData(string_stream, [&](DailyLog&& log) -> void {
+      constexpr size_t kYearMonthLen = 7;
+      std::string key = log.date.substr(0, kYearMonthLen);  // YYYY-MM
       result.processed_data[key].push_back(std::move(log));
     });
   } catch (const std::exception& e) {

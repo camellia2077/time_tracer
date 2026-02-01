@@ -8,11 +8,11 @@
 
 class DayStats {
  public:
-  void calculate_stats(DailyLog& day);
+  static void calculate_stats(DailyLog& day);
 
  private:
-  static int calculateDurationSeconds(const std::string& startTimeStr,
-                                      const std::string& endTimeStr);
+  static int calculateDurationSeconds(const std::string& start_time_str,
+                                      const std::string& end_time_str);
   static long long timeStringToTimestamp(const std::string& date,
                                          const std::string& time,
                                          bool is_end_time,

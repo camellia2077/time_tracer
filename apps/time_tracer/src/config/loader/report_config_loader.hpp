@@ -31,6 +31,16 @@ class ReportConfigLoader {
   static PeriodTexConfig loadPeriodTexConfig(const std::filesystem::path& path);
   static PeriodTypConfig loadPeriodTypConfig(const std::filesystem::path& path);
   static PeriodMdConfig loadPeriodMdConfig(const std::filesystem::path& path);
+
+  // --- Weekly Loaders ---
+  static WeeklyTexConfig loadWeeklyTexConfig(const std::filesystem::path& path);
+  static WeeklyTypConfig loadWeeklyTypConfig(const std::filesystem::path& path);
+  static WeeklyMdConfig loadWeeklyMdConfig(const std::filesystem::path& path);
+
+  // --- Yearly Loaders ---
+  static YearlyTexConfig loadYearlyTexConfig(const std::filesystem::path& path);
+  static YearlyTypConfig loadYearlyTypConfig(const std::filesystem::path& path);
+  static YearlyMdConfig loadYearlyMdConfig(const std::filesystem::path& path);
 };
 
 #endif  // CONFIG_LOADER_REPORT_CONFIG_LOADER_H_

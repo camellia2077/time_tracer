@@ -7,8 +7,8 @@
 
 #include "common/ansi_colors.hpp"
 
-std::vector<std::string> ConsoleInput::prompt_for_paths(
-    const std::string& message) {
+auto ConsoleInput::prompt_for_paths(const std::string& message)
+    -> std::vector<std::string> {
   std::cout << message;
 
   std::string line;
@@ -27,7 +27,7 @@ std::vector<std::string> ConsoleInput::prompt_for_paths(
   return user_inputs;
 }
 
-bool ConsoleInput::prompt_confirmation(const std::string& message) {
+auto ConsoleInput::prompt_confirmation(const std::string& message) -> bool {
   std::cout << message << " (y/n): ";
   char confirmation;
   std::cin >> confirmation;

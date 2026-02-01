@@ -4,9 +4,9 @@
 #include <iostream>
 #include <stdexcept>
 
-BatchDayDataFetcher::BatchDayDataFetcher(sqlite3* db,
+BatchDayDataFetcher::BatchDayDataFetcher(sqlite3* sqlite_db,
                                          IProjectInfoProvider& provider)
-    : db_(db), provider_(provider) {
+    : db_(sqlite_db), provider_(provider) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -79,18 +79,28 @@ void BatchDayDataFetcher::fetch_days_metadata(BatchDataResult& result) {
     result.date_order.emplace_back(date, year, month);
     DailyReportData& data = result.data_map[date];
     data.date = date;
-    data.metadata.status = std::to_string(sqlite3_column_int(stmt, 3));
-    data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 4));
-    const unsigned char* rem = sqlite3_column_text(stmt, 5);
-    data.metadata.remark =
-        (rem != nullptr) ? reinterpret_cast<const char*>(rem) : "N/A";
-    const unsigned char* getup = sqlite3_column_text(stmt, 6);
-    data.metadata.getup_time =
-        (getup != nullptr) ? reinterpret_cast<const char*>(getup) : "N/A";
-    data.metadata.exercise = std::to_string(sqlite3_column_int(stmt, 7));
+    constexpr int kColStatus = 3;
+    constexpr int kColSleep = 4;
+    constexpr int kColRemark = 5;
+    constexpr int kColGetup = 6;
+    constexpr int kColExercise = 7;
+    constexpr int kColStatsStart = 8;
+
+    data.metadata.status = std::to_string(sqlite3_column_int(stmt, kColStatus));
+    data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, kColSleep));
+    const unsigned char* remark_ptr = sqlite3_column_text(stmt, kColRemark);
+    data.metadata.remark = (remark_ptr != nullptr)
+                               ? reinterpret_cast<const char*>(remark_ptr)
+                               : "N/A";
+    const unsigned char* getup_ptr = sqlite3_column_text(stmt, kColGetup);
+    data.metadata.getup_time = (getup_ptr != nullptr)
+                                   ? reinterpret_cast<const char*>(getup_ptr)
+                                   : "N/A";
+    data.metadata.exercise =
+        std::to_string(sqlite3_column_int(stmt, kColExercise));
     for (size_t i = 0; i < kStatCols.size(); ++i) {
       data.stats[kStatCols[i]] =
-          sqlite3_column_int64(stmt, 8 + static_cast<int>(i));
+          sqlite3_column_int64(stmt, kColStatsStart + static_cast<int>(i));
     }
   }
   sqlite3_finalize(stmt);
@@ -118,23 +128,30 @@ void BatchDayDataFetcher::fetch_time_records(BatchDataResult& result) {
     }
     std::string date(date_cstr);
 
-    auto it = result.data_map.find(date);
-    if (it == result.data_map.end()) {
+    auto data_it = result.data_map.find(date);
+    if (data_it == result.data_map.end()) {
       continue;
     }
 
-    DailyReportData& data = it->second;
+    DailyReportData& data = data_it->second;
 
     TimeRecord record;
+    constexpr int kColStart = 1;
+    constexpr int kColEnd = 2;
+    constexpr int kColProjectId = 3;
+    constexpr int kColDuration = 4;
+    constexpr int kColActivityRemark = 5;
+
     record.start_time =
-        reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColStart));
     record.end_time =
-        reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
-    long long project_id = sqlite3_column_int64(stmt, 3);
-    record.duration_seconds = sqlite3_column_int64(stmt, 4);
-    const unsigned char* ar = sqlite3_column_text(stmt, 5);
-    if (ar != nullptr) {
-      record.activityRemark = reinterpret_cast<const char*>(ar);
+        reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColEnd));
+    long long project_id = sqlite3_column_int64(stmt, kColProjectId);
+    record.duration_seconds = sqlite3_column_int64(stmt, kColDuration);
+    const unsigned char* remark_ptr =
+        sqlite3_column_text(stmt, kColActivityRemark);
+    if (remark_ptr != nullptr) {
+      record.activityRemark = reinterpret_cast<const char*>(remark_ptr);
     }
 
     // [修改] 使用 provider_.get_path_parts
@@ -151,8 +168,8 @@ void BatchDayDataFetcher::fetch_time_records(BatchDataResult& result) {
   for (auto& [date, proj_map] : temp_aggregation) {
     auto& data = result.data_map[date];
     data.project_stats.reserve(proj_map.size());
-    for (const auto& kv : proj_map) {
-      data.project_stats.emplace_back(kv);
+    for (const auto& project_entry : proj_map) {
+      data.project_stats.emplace_back(project_entry);
     }
   }
 }

@@ -21,6 +21,10 @@ class ReportHandler : public IReportHandler {
   std::string run_monthly_query(const std::string& month,
                                 ReportFormat format) override;
   std::string run_period_query(int days, ReportFormat format) override;
+  std::string run_weekly_query(const std::string& iso_week,
+                               ReportFormat format) override;
+  std::string run_yearly_query(const std::string& year,
+                               ReportFormat format) override;
 
   // [新增] 批量周期查询实现
   std::string run_period_queries(const std::vector<int>& days_list,
@@ -32,10 +36,16 @@ class ReportHandler : public IReportHandler {
   void run_export_single_month_report(const std::string& month,
                                       ReportFormat format) override;
   void run_export_single_period_report(int days, ReportFormat format) override;
+  void run_export_single_week_report(const std::string& iso_week,
+                                     ReportFormat format) override;
+  void run_export_single_year_report(const std::string& year,
+                                     ReportFormat format) override;
   void run_export_all_daily_reports_query(ReportFormat format) override;
   void run_export_all_monthly_reports_query(ReportFormat format) override;
   void run_export_all_period_reports_query(const std::vector<int>& days_list,
                                            ReportFormat format) override;
+  void run_export_all_weekly_reports_query(ReportFormat format) override;
+  void run_export_all_yearly_reports_query(ReportFormat format) override;
 
  private:
   std::unique_ptr<ReportGenerator> generator_;

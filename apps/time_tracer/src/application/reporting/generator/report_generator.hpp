@@ -25,11 +25,17 @@ class ReportGenerator {
   std::string generate_monthly_report(const std::string& month,
                                       ReportFormat format);
   std::string generate_period_report(int days, ReportFormat format);
+  std::string generate_weekly_report(const std::string& iso_week,
+                                     ReportFormat format);
+  std::string generate_yearly_report(const std::string& year,
+                                     ReportFormat format);
 
   FormattedGroupedReports generate_all_daily_reports(ReportFormat format);
   FormattedMonthlyReports generate_all_monthly_reports(ReportFormat format);
   FormattedPeriodReports generate_all_period_reports(
       const std::vector<int>& days_list, ReportFormat format);
+  FormattedWeeklyReports generate_all_weekly_reports(ReportFormat format);
+  FormattedYearlyReports generate_all_yearly_reports(ReportFormat format);
 
  private:
   std::unique_ptr<ReportService> query_handler_;

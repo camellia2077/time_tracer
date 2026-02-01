@@ -4,8 +4,8 @@
 #include <iostream>
 #include <sstream>
 
-#include "infrastructure/reports/exporter.hpp"
 #include "application/reporting/generator/report_generator.hpp"
+#include "infrastructure/reports/exporter.hpp"
 
 ReportHandler::ReportHandler(std::unique_ptr<ReportGenerator> generator,
                              std::unique_ptr<Exporter> exporter)
@@ -26,6 +26,16 @@ auto ReportHandler::run_monthly_query(const std::string& month,
 auto ReportHandler::run_period_query(int days, ReportFormat format)
     -> std::string {
   return generator_->generate_period_report(days, format);
+}
+
+auto ReportHandler::run_weekly_query(const std::string& iso_week,
+                                     ReportFormat format) -> std::string {
+  return generator_->generate_weekly_report(iso_week, format);
+}
+
+auto ReportHandler::run_yearly_query(const std::string& year,
+                                     ReportFormat format) -> std::string {
+  return generator_->generate_yearly_report(year, format);
 }
 
 // [新增] 批量查询逻辑下沉至 Core
@@ -68,6 +78,18 @@ void ReportHandler::run_export_single_period_report(int days,
   exporter_->export_single_period_report(days, content, format);
 }
 
+void ReportHandler::run_export_single_week_report(const std::string& iso_week,
+                                                  ReportFormat format) {
+  auto content = generator_->generate_weekly_report(iso_week, format);
+  exporter_->export_single_week_report(iso_week, content, format);
+}
+
+void ReportHandler::run_export_single_year_report(const std::string& year,
+                                                  ReportFormat format) {
+  auto content = generator_->generate_yearly_report(year, format);
+  exporter_->export_single_year_report(year, content, format);
+}
+
 void ReportHandler::run_export_all_daily_reports_query(ReportFormat format) {
   // [修复] 获取整个集合
   auto reports = generator_->generate_all_daily_reports(format);
@@ -90,4 +112,14 @@ void ReportHandler::run_export_all_period_reports_query(
   // 提供的统一日志和目录管理
   auto reports = generator_->generate_all_period_reports(days_list, format);
   exporter_->export_all_period_reports(reports, format);
+}
+
+void ReportHandler::run_export_all_weekly_reports_query(ReportFormat format) {
+  auto reports = generator_->generate_all_weekly_reports(format);
+  exporter_->export_all_weekly_reports(reports, format);
+}
+
+void ReportHandler::run_export_all_yearly_reports_query(ReportFormat format) {
+  auto reports = generator_->generate_all_yearly_reports(format);
+  exporter_->export_all_yearly_reports(reports, format);
 }

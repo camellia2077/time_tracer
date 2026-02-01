@@ -6,16 +6,16 @@
 #include <memory>
 #include <stdexcept>
 
+#include "application/reporting/generator/report_generator.hpp"
+#include "application/reporting/report_handler.hpp"
+#include "application/workflow_handler.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/framework/interfaces/i_command.hpp"
 #include "cli/impl/utils/help_formatter.hpp"
 #include "config/config_loader.hpp"
+#include "infrastructure/io/file_controller.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/reports/exporter.hpp"
-#include "application/reporting/generator/report_generator.hpp"
-#include "application/reporting/report_handler.hpp"
-#include "application/workflow_handler.hpp"
-#include "io/file_controller.hpp"
 
 namespace fs = std::filesystem;
 const std::string kDatabaseFilename = "time_data.sqlite3";
@@ -40,18 +40,20 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   fs::path exe_path(parser_.get_raw_arg(0));
   fs::path default_output_root =
       fs::absolute(exe_path.parent_path() / "output");
+  fs::path default_db_path = default_output_root / "db" / kDatabaseFilename;
+  fs::path default_reports_root = default_output_root / "reports";
 
   fs::path db_path;
   if (auto user_db_path = parser_.get_option({"--db", "--database"})) {
     db_path = fs::absolute(*user_db_path);
   } else {
-    db_path = default_output_root / kDatabaseFilename;
+    db_path = default_db_path;
   }
 
   if (auto path_opt = parser_.get_option({"-o", "--output"})) {
     exported_files_path_ = fs::absolute(*path_opt);
   } else {
-    exported_files_path_ = default_output_root / "exported_files";
+    exported_files_path_ = default_reports_root;
   }
   output_root_path_ = default_output_root;
 
@@ -62,9 +64,8 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   app_context_->config = app_config_;
 
   // 2. 初始化基础设施
-  file_controller_ = std::make_unique<FileController>();
-  file_controller_->prepare_output_directories(output_root_path_,
-                                               exported_files_path_);
+  FileController::prepare_output_directories(output_root_path_,
+                                             exported_files_path_);
 
   db_manager_ = std::make_unique<DBManager>(db_path.string());
 
@@ -97,7 +98,7 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
 
 CliApplication::~CliApplication() = default;
 
-void CliApplication::execute() {
+auto CliApplication::execute() -> int {
   // [新增] 处理 Help 全局标记
   bool request_help = parser_.has_flag({"--help", "-h"});
   std::string command_name;
@@ -111,7 +112,7 @@ void CliApplication::execute() {
     auto commands = CommandRegistry<AppContext>::Instance().CreateAllCommands(
         *app_context_);
     print_full_usage(parser_.get_raw_arg(0).c_str(), commands);
-    return;
+    return 0;
   }
 
   auto command = CommandRegistry<AppContext>::Instance().CreateCommand(
@@ -123,12 +124,16 @@ void CliApplication::execute() {
     } catch (const std::exception& e) {
       std::cerr << RED_COLOR << "Error executing command '" << command_name
                 << "': " << e.what() << RESET_COLOR << std::endl;
+      return 1;
     }
   } else {
     std::cerr << RED_COLOR << "Unknown command '" << command_name << "'."
               << RESET_COLOR << std::endl;
     std::cout << "Run with --help to see available commands." << std::endl;
+    return 1;
   }
+
+  return 0;
 }
 
 void CliApplication::initialize_output_paths() {}
