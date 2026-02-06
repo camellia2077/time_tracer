@@ -14,17 +14,19 @@ class FileSystemHelper {
   /**
    * @brief 检查路径是否存在。
    */
-  static bool exists(const std::filesystem::path& path);
+  [[nodiscard]] static auto Exists(const std::filesystem::path& path) -> bool;
 
   /**
    * @brief 检查路径是否为普通文件。
    */
-  static bool is_regular_file(const std::filesystem::path& path);
+  [[nodiscard]] static auto IsRegularFile(const std::filesystem::path& path)
+      -> bool;
 
   /**
    * @brief 检查路径是否为目录。
    */
-  static bool is_directory(const std::filesystem::path& path);
+  [[nodiscard]] static auto IsDirectory(const std::filesystem::path& path)
+      -> bool;
 
   /**
    * @brief 递归创建目录。
@@ -32,7 +34,7 @@ class FileSystemHelper {
    * @param path 要创建的目录路径。
    * @throws std::runtime_error 如果创建失败。
    */
-  static void create_directories(const std::filesystem::path& path);
+  static auto CreateDirectories(const std::filesystem::path& path) -> void;
 };
 
 #endif  // INFRASTRUCTURE_IO_CORE_FILE_SYSTEM_HELPER_H_

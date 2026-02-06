@@ -1,12 +1,13 @@
 // config/validator/reports/strategies/daily/daily_typ.cpp
-#include "daily_typ.hpp"
+#include "config/validator/reports/strategies/daily/daily_typ.hpp"
 
 #include <iostream>
 #include <set>
 
-auto DailyTyp::validate_specific_keys(const toml::table& query_config,
+auto DailyTyp::ValidateSpecificKeys(const toml::table& query_config,
                                       const std::string& file_name) const
     -> bool {
+
   const std::set<std::string> kDailyTypKeys = {
       "title_prefix",       "date_label",           "total_time_label",
       "status_label",       "sleep_label",          "getup_time_label",

@@ -1,6 +1,6 @@
 // reports/daily/formatters/typst/day_typ_formatter.cpp
-#include "day_typ_formatter.hpp"
-#include "day_typ_utils.hpp"
+#include "reports/daily/formatters/typst/day_typ_formatter.hpp"
+#include "reports/daily/formatters/typst/day_typ_utils.hpp"
 
 #include "reports/daily/formatters/statistics/stat_formatter.hpp"
 #include "reports/daily/formatters/statistics/typst_strategy.hpp"
@@ -10,26 +10,26 @@
 DayTypFormatter::DayTypFormatter(std::shared_ptr<DayTypConfig> config) 
     : BaseTypFormatter(config) {}
 
-auto DayTypFormatter::is_empty_data(const DailyReportData& data) const -> bool {
+auto DayTypFormatter::IsEmptyData(const DailyReportData& data) const -> bool {
     return data.total_duration == 0;
 }
 
-auto DayTypFormatter::get_avg_days(const DailyReportData& /*data*/) const -> int {
+auto DayTypFormatter::GetAvgDays(const DailyReportData& /*data*/) const -> int {
     return 1;
 }
 
-auto DayTypFormatter::get_no_records_msg() const -> std::string {
-    return config_->get_no_records();
+auto DayTypFormatter::GetNoRecordsMsg() const -> std::string {
+    return config_->GetNoRecords();
 }
 
-void DayTypFormatter::format_header_content(std::stringstream& report_stream, const DailyReportData& data) const {
+void DayTypFormatter::FormatHeaderContent(std::stringstream& report_stream, const DailyReportData& data) const {
     DayTypUtils::DisplayHeader(report_stream, data, config_);
 }
 
-void DayTypFormatter::format_extra_content(std::stringstream& report_stream, const DailyReportData& data) const {
+void DayTypFormatter::FormatExtraContent(std::stringstream& report_stream, const DailyReportData& data) const {
     auto strategy = std::make_unique<TypstStrategy>(config_);
     StatFormatter stats_formatter(std::move(strategy));
-    report_stream << stats_formatter.format(data, config_);
+    report_stream << stats_formatter.Format(data, config_);
 
     DayTypUtils::DisplayDetailedActivities(report_stream, data, config_);
 }
@@ -37,8 +37,7 @@ void DayTypFormatter::format_extra_content(std::stringstream& report_stream, con
 extern "C" {
     // Required exports: create_formatter / destroy_formatter / format_report (lowercase)
     // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) auto create_formatter(const char* config_content) -> FormatterHandle {
+    __declspec(dllexport) auto CreateFormatter(const char* config_content) -> FormatterHandle { // NOLINT
         try {
             auto config_tbl = toml::parse(config_content);
             auto typ_config = std::make_shared<DayTypConfig>(config_tbl);
@@ -50,8 +49,7 @@ extern "C" {
     }
 
     // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
         if (handle != nullptr) {
             delete static_cast<DayTypFormatter*>(handle);
         }
@@ -60,26 +58,25 @@ extern "C" {
     static std::string report_buffer;
 
     // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) auto format_report(FormatterHandle handle, const DailyReportData& data) -> const char* {
+    __declspec(dllexport) auto FormatReport(FormatterHandle handle, const DailyReportData& data) -> const char* { // NOLINT
         if (handle != nullptr) {
             auto* formatter = static_cast<DayTypFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
+            report_buffer = formatter->FormatReport(data);
             return report_buffer.c_str();
         }
         return "";
     }
 
     // Backward-compatible exports (legacy symbol names)
-    __declspec(dllexport) auto CreateFormatter(const char* config_content) -> FormatterHandle {
-        return create_formatter(config_content);
+    __declspec(dllexport) auto createFormatter_Legacy(const char* config_content) -> FormatterHandle { // NOLINT
+        return CreateFormatter(config_content);
     }
 
-    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) {
-        destroy_formatter(handle);
+    __declspec(dllexport) void destroyFormatter_Legacy(FormatterHandle handle) { // NOLINT
+        DestroyFormatter(handle);
     }
 
-    __declspec(dllexport) auto FormatReport(FormatterHandle handle, const DailyReportData& data) -> const char* {
-        return format_report(handle, data);
+    __declspec(dllexport) auto formatReport_Legacy(FormatterHandle handle, const DailyReportData& data) -> const char* { // NOLINT
+        return FormatReport(handle, data);
     }
 }

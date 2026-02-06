@@ -26,24 +26,24 @@ WorkflowHandler::WorkflowHandler(std::string db_path, const AppConfig& config,
 
 WorkflowHandler::~WorkflowHandler() = default;
 
-void WorkflowHandler::run_converter(const std::string& input_path,
-                                    const AppOptions& options) {
+auto WorkflowHandler::RunConverter(const std::string& input_path,
+                                    const AppOptions& options) -> void {
   PipelineManager pipeline(app_config_, output_root_path_);
-  if (!pipeline.run(input_path, options)) {
+  if (!pipeline.Run(input_path, options)) {
     throw std::runtime_error("Converter Pipeline Failed.");
   }
 }
 
-auto WorkflowHandler::get_config() const -> const AppConfig& {
+auto WorkflowHandler::GetConfig() const -> const AppConfig& {
   return app_config_;
 }
 
 // [关键修复] 重写此函数：读取文件 -> 解析 JSON -> 传递 Struct 给 Importer
-void WorkflowHandler::run_database_import(
+void WorkflowHandler::RunDatabaseImport(
     const std::string& processed_path_str) {
   // 1. 使用 Helper 读取文件内容
   auto import_payload =
-      infrastructure::io::FileImportReader::read_json_files(processed_path_str);
+      infrastructure::io::FileImportReader::ReadJsonFiles(processed_path_str);
 
   if (import_payload.empty()) {
     return;
@@ -58,35 +58,36 @@ void WorkflowHandler::run_database_import(
     try {
       auto json_obj = nlohmann::json::parse(content);
       std::vector<DailyLog> logs =
-          serializer::JsonSerializer::deserializeDays(json_obj);
+          serializer::JsonSerializer::DeserializeDays(json_obj);
 
       // 使用文件路径作为 key (仅用于日志/批次区分)
       memory_data[filepath] = logs;
 
     } catch (const std::exception& e) {
-      std::cerr << RED_COLOR << "解析文件失败 " << filepath << ": " << e.what()
-                << RESET_COLOR << std::endl;
+      std::cerr << time_tracer::common::colors::kRed << "解析文件失败 " << filepath << ": " << e.what()
+                << time_tracer::common::colors::kReset << std::endl;
     }
   }
 
   if (memory_data.empty()) {
-    std::cout << YELLOW_COLOR << "没有有效的 JSON 数据可供导入。" << RESET_COLOR
+    std::cout << time_tracer::common::colors::kYellow << "没有有效的 JSON 数据可供导入。" << time_tracer::common::colors::kReset
               << std::endl;
     return;
   }
 
   // 3. 调用内存导入接口 (Importer 不再依赖 JSON)
-  run_database_import_from_memory(memory_data);
+  RunDatabaseImportFromMemory(memory_data);
 }
 
-void WorkflowHandler::run_database_import_from_memory(
-    const std::map<std::string, std::vector<DailyLog>>& data_map) {
-  handle_process_memory_data(db_path_, data_map);
+auto WorkflowHandler::RunDatabaseImportFromMemory(
+    const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
+  HandleProcessMemoryData(db_path_, data_map);
+
 }
 
-void WorkflowHandler::run_ingest(const std::string& source_path,
+auto WorkflowHandler::RunIngest(const std::string& source_path,
                                  DateCheckMode date_check_mode,
-                                 bool save_processed) {
+                                 bool save_processed) -> void {
   std::cout << "\n--- 启动数据摄入 (Ingest) ---" << std::endl;
 
   // RAII 检查数据库连接
@@ -104,23 +105,23 @@ void WorkflowHandler::run_ingest(const std::string& source_path,
   full_options.date_check_mode = date_check_mode;
   full_options.save_processed_output = save_processed;
 
-  auto result_context_opt = pipeline.run(source_path, full_options);
+  auto result_context_opt = pipeline.Run(source_path, full_options);
 
   if (result_context_opt) {
     const auto& context = *result_context_opt;
 
     if (!context.result.processed_data.empty()) {
       std::cout << "\n--- 流水线验证通过，准备入库 ---" << std::endl;
-      run_database_import_from_memory(context.result.processed_data);
-      std::cout << GREEN_COLOR << "\n=== Ingest 执行成功 ===" << RESET_COLOR
+      RunDatabaseImportFromMemory(context.result.processed_data);
+      std::cout << time_tracer::common::colors::kGreen << "\n=== Ingest 执行成功 ===" << time_tracer::common::colors::kReset
                 << std::endl;
     } else {
-      std::cout << YELLOW_COLOR
-                << "\n=== Ingest 完成但无数据产生 ===" << RESET_COLOR
+      std::cout << time_tracer::common::colors::kYellow
+                << "\n=== Ingest 完成但无数据产生 ===" << time_tracer::common::colors::kReset
                 << std::endl;
     }
   } else {
-    std::cerr << RED_COLOR << "\n=== Ingest 执行失败 ===" << RESET_COLOR
+    std::cerr << time_tracer::common::colors::kRed << "\n=== Ingest 执行失败 ===" << time_tracer::common::colors::kReset
               << std::endl;
     throw std::runtime_error("Ingestion process failed.");
   }

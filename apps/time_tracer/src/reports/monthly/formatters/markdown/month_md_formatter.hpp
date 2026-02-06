@@ -12,12 +12,13 @@ class MonthMdFormatter
   explicit MonthMdFormatter(std::shared_ptr<MonthMdConfig> config);
 
  protected:
-  std::string validate_data(const MonthlyReportData& data) const override;
-  bool is_empty_data(const MonthlyReportData& data) const override;
-  int get_avg_days(const MonthlyReportData& data) const override;
-  std::string get_no_records_msg() const override;
-  void format_header_content(std::stringstream& ss,
-                             const MonthlyReportData& data) const override;
+  auto ValidateData(const MonthlyReportData& data) const
+      -> std::string override;
+  auto IsEmptyData(const MonthlyReportData& data) const -> bool override;
+  auto GetAvgDays(const MonthlyReportData& data) const -> int override;
+  auto GetNoRecordsMsg() const -> std::string override;
+  void FormatHeaderContent(std::stringstream& ss,
+                           const MonthlyReportData& data) const override;
 };
 
 #endif  // REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_

@@ -1,12 +1,13 @@
 // config/validator/reports/strategies/daily/daily_tex.cpp
-#include "daily_tex.hpp"
+#include "config/validator/reports/strategies/daily/daily_tex.hpp"
 
 #include <iostream>
 #include <set>
 
-auto DailyTex::validate_specific_keys(const toml::table& query_config,
+auto DailyTex::ValidateSpecificKeys(const toml::table& query_config,
                                       const std::string& file_name) const
     -> bool {
+
   const std::set<std::string> kDailyTexKeys = {
       "report_title",       "date_label",           "total_time_label",
       "status_label",       "sleep_label",          "exercise_label",

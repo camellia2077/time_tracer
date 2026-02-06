@@ -1,5 +1,5 @@
 // reports/monthly/formatters/markdown/month_md_formatter.cpp
-#include "month_md_formatter.hpp"
+#include "reports/monthly/formatters/markdown/month_md_formatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/time_format.hpp"
 #include <toml++/toml.h>
@@ -7,39 +7,39 @@
 MonthMdFormatter::MonthMdFormatter(std::shared_ptr<MonthMdConfig> config) 
     : BaseMdFormatter(config) {}
 
-std::string MonthMdFormatter::validate_data(const MonthlyReportData& data) const {
+auto MonthMdFormatter::ValidateData(const MonthlyReportData& data) const -> std::string {
     if (data.year_month == "INVALID") {
-        return config_->get_invalid_format_message();
+        return config_->GetInvalidFormatMessage();
     }
     return "";
 }
 
-bool MonthMdFormatter::is_empty_data(const MonthlyReportData& data) const {
+auto MonthMdFormatter::IsEmptyData(const MonthlyReportData& data) const -> bool {
     return data.actual_days == 0;
 }
 
-int MonthMdFormatter::get_avg_days(const MonthlyReportData& data) const {
+auto MonthMdFormatter::GetAvgDays(const MonthlyReportData& data) const -> int {
     return data.actual_days;
 }
 
-std::string MonthMdFormatter::get_no_records_msg() const {
-    return config_->get_no_records_message();
+auto MonthMdFormatter::GetNoRecordsMsg() const -> std::string {
+    return config_->GetNoRecordsMessage();
 }
 
-void MonthMdFormatter::format_header_content(std::stringstream& ss, const MonthlyReportData& data) const {
+void MonthMdFormatter::FormatHeaderContent(std::stringstream& ss, const MonthlyReportData& data) const {
     ss << std::format("## {0} {1}\n\n", 
-        config_->get_report_title(), 
+        config_->GetReportTitle(), 
         data.year_month 
     );
 
     if (data.actual_days > 0) {
-        ss << std::format("- **{0}**: {1}\n", config_->get_actual_days_label(), data.actual_days);
-        ss << std::format("- **{0}**: {1}\n", config_->get_total_time_label(), time_format_duration(data.total_duration, data.actual_days));
+        ss << std::format("- **{0}**: {1}\n", config_->GetActualDaysLabel(), data.actual_days);
+        ss << std::format("- **{0}**: {1}\n", config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration, data.actual_days));
     }
 }
 
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
+    __declspec(dllexport) FormatterHandle CreateFormatter(const char* config_toml) { // NOLINT
         try {
             // [FIX] 使用 toml::parse
             auto config_tbl = toml::parse(config_toml);
@@ -51,7 +51,7 @@ extern "C" {
         }
     }
 
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
         if (handle) {
             delete static_cast<MonthMdFormatter*>(handle);
         }
@@ -59,10 +59,10 @@ extern "C" {
 
     static std::string report_buffer;
 
-    __declspec(dllexport) const char* format_report(FormatterHandle handle, const MonthlyReportData& data) {
+    __declspec(dllexport) const char* FormatReport(FormatterHandle handle, const MonthlyReportData& data) { // NOLINT
         if (handle) {
             auto* formatter = static_cast<MonthMdFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
+            report_buffer = formatter->FormatReport(data);
             return report_buffer.c_str();
         }
         return "";

@@ -9,9 +9,10 @@ class ImportCommand : public ICommand {
  public:
   explicit ImportCommand(IWorkflowHandler& workflow_handler);
 
-  std::vector<ArgDef> get_definitions() const override;
-  std::string get_help() const override;
-  void execute(const CommandParser& parser) override;
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+
+  auto Execute(const CommandParser& parser) -> void override;
 
  private:
   IWorkflowHandler& workflow_handler_;

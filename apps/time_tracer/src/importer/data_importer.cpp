@@ -13,26 +13,27 @@ void PrintReport(const ImportStats& stats, const std::string& title) {
   double total_time = stats.parsing_duration_s + stats.db_insertion_duration_s;
   std::cout << "\n--- " << title << " Report ---" << std::endl;
 
+  namespace colors = time_tracer::common::colors;
   if (!stats.db_open_success) {
-    std::cerr << RED_COLOR << "[Fatal] DB Error: "
+    std::cerr << colors::kRed << "[Fatal] DB Error: "
               << (stats.error_message.empty() ? "Unknown" : stats.error_message)
-              << RESET_COLOR << std::endl;
+              << colors::kReset << std::endl;
     return;
   }
 
   if (!stats.transaction_success) {
-    std::cerr << RED_COLOR
+    std::cerr << colors::kRed
               << "[Fatal] Transaction Failed: " << stats.error_message
-              << RESET_COLOR << std::endl;
+              << colors::kReset << std::endl;
     return;
   }
 
   if (stats.failed_files.empty()) {
-    std::cout << GREEN_COLOR << "[Success] Processed " << stats.successful_files
-              << " items." << RESET_COLOR << std::endl;
+    std::cout << colors::kGreen << "[Success] Processed " << stats.successful_files
+              << " items." << colors::kReset << std::endl;
   } else {
-    std::cout << YELLOW_COLOR << "[Partial] Success: " << stats.successful_files
-              << ", Failed: " << stats.failed_files.size() << RESET_COLOR
+    std::cout << colors::kYellow << "[Partial] Success: " << stats.successful_files
+              << ", Failed: " << stats.failed_files.size() << colors::kReset
               << std::endl;
     for (const auto& failed_file : stats.failed_files) {
       std::cerr << "  Failed: " << failed_file << std::endl;
@@ -50,13 +51,14 @@ void PrintReport(const ImportStats& stats, const std::string& title) {
 // Facade Implementation
 // ---------------------------------------------------------
 
-void handle_process_memory_data(
+void HandleProcessMemoryData(
+
     const std::string& db_name,
     const std::map<std::string, std::vector<DailyLog>>& data) {
   std::cout << "Task: Memory Import..." << std::endl;
 
   ImportService service(db_name);
-  ImportStats stats = service.import_from_memory(data);
+  ImportStats stats = service.ImportFromMemory(data);
 
   PrintReport(stats, "Memory Import");
 }

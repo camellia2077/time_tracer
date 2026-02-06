@@ -25,28 +25,29 @@ class REPORTS_SHARED_API DayBaseConfig {
   explicit DayBaseConfig(toml::table config);
   virtual ~DayBaseConfig() = default;
 
-  const std::string& get_title_prefix() const;
-  const std::string& get_date_label() const;
-  const std::string& get_total_time_label() const;
-  const std::string& get_status_label() const;
-  const std::string& get_sleep_label() const;
-  const std::string& get_getup_time_label() const;
-  const std::string& get_remark_label() const;
-  const std::string& get_exercise_label() const;
-  const std::string& get_no_records() const;
-  const std::string& get_statistics_label() const;
-  const std::string& get_all_activities_label() const;
-  const std::string& get_activity_remark_label() const;
-  const std::string& get_activity_connector() const;
-  const std::string& get_project_breakdown_label() const;
+  [[nodiscard]] auto GetTitlePrefix() const -> const std::string&;
+  [[nodiscard]] auto GetDateLabel() const -> const std::string&;
+  [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetStatusLabel() const -> const std::string&;
+  [[nodiscard]] auto GetSleepLabel() const -> const std::string&;
+  [[nodiscard]] auto GetGetupTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetRemarkLabel() const -> const std::string&;
+  [[nodiscard]] auto GetExerciseLabel() const -> const std::string&;
+  [[nodiscard]] auto GetNoRecords() const -> const std::string&;
+  [[nodiscard]] auto GetStatisticsLabel() const -> const std::string&;
+  [[nodiscard]] auto GetAllActivitiesLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActivityRemarkLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActivityConnector() const -> const std::string&;
+  [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
-  const std::vector<StatisticItemConfig>& get_statistics_items() const;
+  [[nodiscard]] auto GetStatisticsItems() const
+      -> const std::vector<StatisticItemConfig>&;
 
  protected:
   toml::table config_table_;
 
  private:
-  void load_base_config();
+  void LoadBaseConfig();
 
   std::string title_prefix_;
   std::string date_label_;

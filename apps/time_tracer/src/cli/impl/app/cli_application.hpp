@@ -21,7 +21,7 @@ class CliApplication {
   explicit CliApplication(const std::vector<std::string>& args);
   ~CliApplication();
 
-  [[nodiscard]] auto execute() -> int;
+  [[nodiscard]] auto Execute() -> int;
 
  private:
   CommandParser parser_;
@@ -40,7 +40,7 @@ class CliApplication {
   fs::path output_root_path_;
   fs::path exported_files_path_;
 
-  void initialize_output_paths();
+  void InitializeOutputPaths();
 };
 
 #endif  // CLI_IMPL_APP_CLI_APPLICATION_H_

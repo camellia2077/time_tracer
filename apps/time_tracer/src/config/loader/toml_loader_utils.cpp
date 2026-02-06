@@ -1,8 +1,9 @@
 // config/loader/toml_loader_utils.cpp
-#include "toml_loader_utils.hpp"
+#include "config/loader/toml_loader_utils.hpp"
 
 #include <iostream>
 #include <stdexcept>
+#include <string_view>
 
 #include "infrastructure/io/core/file_reader.hpp"
 
@@ -10,11 +11,9 @@ namespace {
 constexpr double kTypLineSpacingEm = 0.65;
 constexpr double kTypMarginTopBottomCm = 2.5;
 constexpr double kTypMarginLeftRightCm = 2.0;
-}  // namespace
+constexpr std::string_view kStyleSourceKey = "style_source";
 
-namespace TomlLoaderUtils {
-
-auto read_toml(const fs::path& path) -> toml::table {
+auto ParseTomlFile(const fs::path& path) -> toml::table {
   try {
     return toml::parse_file(path.string());
   } catch (const toml::parse_error& e) {
@@ -26,7 +25,43 @@ auto read_toml(const fs::path& path) -> toml::table {
   }
 }
 
-void parse_statistics_items(const toml::array* arr,
+void MergeTomlTable(toml::table& target, const toml::table& source) {
+  for (const auto& [key, val] : source) {
+    if (target.contains(key)) {
+      if (target[key].is_table() && val.is_table()) {
+        MergeTomlTable(*target[key].as_table(), *val.as_table());
+      } else {
+        target.insert_or_assign(key, val);
+      }
+    } else {
+      target.insert(key, val);
+    }
+  }
+}
+
+auto MergeStyleSource(const fs::path& path, toml::table config_tbl)
+    -> toml::table {
+  auto style_path = config_tbl[kStyleSourceKey].value<std::string>();
+  if (!style_path) {
+    return config_tbl;
+  }
+
+  fs::path style_file = path.parent_path() / *style_path;
+  toml::table style_tbl = ParseTomlFile(style_file);
+  MergeTomlTable(style_tbl, config_tbl);
+  style_tbl.erase(std::string{kStyleSourceKey});
+  return style_tbl;
+}
+}  // namespace
+
+namespace TomlLoaderUtils {
+
+auto ReadToml(const fs::path& path) -> toml::table {
+  toml::table config_tbl = ParseTomlFile(path);
+  return MergeStyleSource(path, std::move(config_tbl));
+}
+
+void ParseStatisticsItems(const toml::array* arr,
                             std::vector<ReportStatisticsItem>& out_items) {
   if (arr == nullptr) {
     return;
@@ -39,45 +74,45 @@ void parse_statistics_items(const toml::array* arr,
     const auto& tbl = *node.as_table();
 
     ReportStatisticsItem item;
-    item.label = get_required<std::string>(tbl, "label");
+    item.label = GetRequired<std::string>(tbl, "label");
     item.show = tbl["show"].value_or(true);
     item.db_column = tbl["db_column"].value_or<std::string>("");
 
     if (const toml::array* sub_arr = tbl["sub_items"].as_array()) {
-      parse_statistics_items(sub_arr, item.sub_items);
+      ParseStatisticsItems(sub_arr, item.sub_items);
     }
     out_items.push_back(item);
   }
 }
 
-void fill_tex_style(const toml::table& tbl, FontConfig& fonts,
+void FillTexStyle(const toml::table& tbl, FontConfig& fonts,
                     LayoutConfig& layout) {
-  fonts.main_font = get_required<std::string>(tbl, "main_font");
+  fonts.main_font = GetRequired<std::string>(tbl, "main_font");
   fonts.cjk_main_font = tbl["cjk_main_font"].value_or(fonts.main_font);
 
-  fonts.base_font_size = get_required<int>(tbl, "base_font_size");
+  fonts.base_font_size = GetRequired<int>(tbl, "base_font_size");
   fonts.report_title_font_size =
-      get_required<int>(tbl, "report_title_font_size");
+      GetRequired<int>(tbl, "report_title_font_size");
   fonts.category_title_font_size =
-      get_required<int>(tbl, "category_title_font_size");
+      GetRequired<int>(tbl, "category_title_font_size");
 
   layout.margin_in = tbl["margin_in"].value_or(1.0);
   layout.list_top_sep_pt = tbl["list_top_sep_pt"].value_or(0.0);
   layout.list_item_sep_ex = tbl["list_item_sep_ex"].value_or(0.0);
 }
 
-void fill_typ_style(const toml::table& tbl, FontConfig& fonts,
+void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
                     LayoutConfig& layout) {
-  fonts.base_font = get_required<std::string>(tbl, "base_font");
+  fonts.base_font = GetRequired<std::string>(tbl, "base_font");
   fonts.title_font = tbl["title_font"].value_or(fonts.base_font);
   fonts.category_title_font =
       tbl["category_title_font"].value_or(fonts.base_font);
 
-  fonts.base_font_size = get_required<int>(tbl, "base_font_size");
+  fonts.base_font_size = GetRequired<int>(tbl, "base_font_size");
   fonts.report_title_font_size =
-      get_required<int>(tbl, "report_title_font_size");
+      GetRequired<int>(tbl, "report_title_font_size");
   fonts.category_title_font_size =
-      get_required<int>(tbl, "category_title_font_size");
+      GetRequired<int>(tbl, "category_title_font_size");
 
   layout.line_spacing_em = tbl["line_spacing_em"].value_or(kTypLineSpacingEm);
   layout.margin_top_cm = tbl["margin_top_cm"].value_or(kTypMarginTopBottomCm);
@@ -88,7 +123,7 @@ void fill_typ_style(const toml::table& tbl, FontConfig& fonts,
       tbl["margin_right_cm"].value_or(kTypMarginLeftRightCm);
 }
 
-void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels) {
+void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
   if (auto val = tbl["title_prefix"].value<std::string>()) {
     labels.report_title_prefix = *val;
   } else {
@@ -96,8 +131,8 @@ void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels) {
         tbl["report_title"].value_or("Daily Report for");
   }
 
-  labels.date_label = get_required<std::string>(tbl, "date_label");
-  labels.total_time_label = get_required<std::string>(tbl, "total_time_label");
+  labels.date_label = GetRequired<std::string>(tbl, "date_label");
+  labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
 
   labels.status_label = tbl["status_label"].value_or("Status");
   labels.sleep_label = tbl["sleep_label"].value_or("Sleep");
@@ -116,36 +151,36 @@ void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels) {
   labels.activity_connector = tbl["activity_connector"].value_or("->");
 }
 
-void fill_range_labels(const toml::table& tbl, RangeReportLabels& labels) {
-  labels.title_template = get_required<std::string>(tbl, "title_template");
-  labels.total_time_label = get_required<std::string>(tbl, "total_time_label");
+void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
+  labels.title_template = GetRequired<std::string>(tbl, "title_template");
+  labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
   labels.actual_days_label =
-      get_required<std::string>(tbl, "actual_days_label");
+      GetRequired<std::string>(tbl, "actual_days_label");
   labels.no_records_message =
-      get_required<std::string>(tbl, "no_records_message");
+      GetRequired<std::string>(tbl, "no_records_message");
   labels.invalid_range_message =
       tbl["invalid_range_message"].value_or("Invalid range.");
   labels.project_breakdown_label =
       tbl["project_breakdown_label"].value_or("Project Breakdown");
 }
 
-void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels) {
-  fill_range_labels(tbl, labels);
+void FillMonthlyLabels(const toml::table& tbl, MonthlyReportLabels& labels) {
+  FillRangeLabels(tbl, labels);
 }
 
-void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels) {
-  fill_range_labels(tbl, labels);
+void FillPeriodLabels(const toml::table& tbl, PeriodReportLabels& labels) {
+  FillRangeLabels(tbl, labels);
 }
 
-void fill_weekly_labels(const toml::table& tbl, WeeklyReportLabels& labels) {
-  fill_range_labels(tbl, labels);
+void FillWeeklyLabels(const toml::table& tbl, WeeklyReportLabels& labels) {
+  FillRangeLabels(tbl, labels);
 }
 
-void fill_yearly_labels(const toml::table& tbl, YearlyReportLabels& labels) {
-  fill_range_labels(tbl, labels);
+void FillYearlyLabels(const toml::table& tbl, YearlyReportLabels& labels) {
+  FillRangeLabels(tbl, labels);
 }
 
-void fill_keyword_colors(const toml::table& tbl,
+void FillKeywordColors(const toml::table& tbl,
                          std::map<std::string, std::string>& colors) {
   if (const toml::table* color_tbl = tbl["keyword_colors"].as_table()) {
     for (const auto& [color_key, color_val] : *color_tbl) {

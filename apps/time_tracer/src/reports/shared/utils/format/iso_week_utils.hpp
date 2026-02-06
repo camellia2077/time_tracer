@@ -12,10 +12,11 @@ struct IsoWeek {
   int week = 0;
 };
 
-REPORTS_SHARED_API bool parse_iso_week(std::string_view input, IsoWeek& out);
-REPORTS_SHARED_API std::string format_iso_week(const IsoWeek& week);
-REPORTS_SHARED_API IsoWeek iso_week_from_date(std::string_view date_str);
-REPORTS_SHARED_API std::string iso_week_start_date(const IsoWeek& week);
-REPORTS_SHARED_API std::string iso_week_end_date(const IsoWeek& week);
+REPORTS_SHARED_API auto ParseIsoWeek(std::string_view input, IsoWeek& out)
+    -> bool;
+REPORTS_SHARED_API auto FormatIsoWeek(const IsoWeek& week) -> std::string;
+REPORTS_SHARED_API auto IsoWeekFromDate(std::string_view date_str) -> IsoWeek;
+REPORTS_SHARED_API auto IsoWeekStartDate(const IsoWeek& week) -> std::string;
+REPORTS_SHARED_API auto IsoWeekEndDate(const IsoWeek& week) -> std::string;
 
 #endif  // REPORTS_SHARED_UTILS_FORMAT_ISO_WEEK_UTILS_H_

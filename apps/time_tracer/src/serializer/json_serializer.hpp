@@ -16,13 +16,15 @@ namespace serializer {
 class JsonSerializer {
  public:
   // Struct -> JSON
-  static nlohmann::json serializeDay(const DailyLog& day);
-  static nlohmann::json serializeDays(const std::vector<DailyLog>& days);
+  [[nodiscard]] static auto SerializeDay(const DailyLog& day) -> nlohmann::json;
+  [[nodiscard]] static auto SerializeDays(const std::vector<DailyLog>& days)
+      -> nlohmann::json;
 
   // JSON -> Struct
-  static DailyLog deserializeDay(const nlohmann::json& day_json);
-  static std::vector<DailyLog> deserializeDays(
-      const nlohmann::json& json_array);
+  [[nodiscard]] static auto DeserializeDay(const nlohmann::json& day_json)
+      -> DailyLog;
+  [[nodiscard]] static auto DeserializeDays(const nlohmann::json& json_array)
+      -> std::vector<DailyLog>;
 };
 
 }  // namespace serializer

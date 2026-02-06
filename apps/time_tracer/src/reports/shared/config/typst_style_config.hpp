@@ -14,13 +14,13 @@ class REPORTS_SHARED_API TypstStyleConfig {
  public:
   explicit TypstStyleConfig(const toml::table& config);
 
-  const std::string& get_base_font() const;
-  const std::string& get_title_font() const;
-  const std::string& get_category_title_font() const;
-  int get_base_font_size() const;
-  int get_report_title_font_size() const;
-  int get_category_title_font_size() const;
-  double get_line_spacing_em() const;
+  [[nodiscard]] auto GetBaseFont() const -> const std::string&;
+  [[nodiscard]] auto GetTitleFont() const -> const std::string&;
+  [[nodiscard]] auto GetCategoryTitleFont() const -> const std::string&;
+  [[nodiscard]] auto GetBaseFontSize() const -> int;
+  [[nodiscard]] auto GetReportTitleFontSize() const -> int;
+  [[nodiscard]] auto GetCategoryTitleFontSize() const -> int;
+  [[nodiscard]] auto GetLineSpacingEm() const -> double;
 
  private:
   std::string base_font_;

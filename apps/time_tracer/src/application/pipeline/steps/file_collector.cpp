@@ -1,5 +1,5 @@
 // application/pipeline/steps/file_collector.cpp
-#include "file_collector.hpp"
+#include "application/pipeline/steps/file_collector.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -10,22 +10,26 @@
 
 namespace core::pipeline {
 
-auto FileCollector::execute(PipelineContext& context,
+auto FileCollector::Execute(PipelineContext& context,
                             const std::string& extension) -> bool {
-  if (!FileSystemHelper::exists(context.config.input_root)) {
-    std::cerr << RED_COLOR
+
+  if (!FileSystemHelper::Exists(context.config.input_root)) {
+    std::cerr << time_tracer::common::colors::kRed
               << "错误: 输入的路径不存在: " << context.config.input_root
-              << RESET_COLOR << std::endl;
+              << time_tracer::common::colors::kReset << std::endl;
     return false;
   }
 
   context.state.source_files.clear();
   context.state.generated_files.clear();
 
-  context.state.source_files = FileUtils::find_files_by_extension_recursively(
+
+
+
+  context.state.source_files = FileUtils::FindFilesByExtensionRecursively(
       context.config.input_root, extension);
 
-  if (FileSystemHelper::is_regular_file(context.config.input_root) &&
+  if (FileSystemHelper::IsRegularFile(context.config.input_root) &&
       context.config.input_root.extension() == extension) {
     if (std::ranges::find(context.state.source_files,
 
@@ -36,8 +40,8 @@ auto FileCollector::execute(PipelineContext& context,
   }
 
   if (context.state.source_files.empty()) {
-    std::cerr << YELLOW_COLOR << "警告: 在指定路径下没有找到 " << extension
-              << " 文件。" << RESET_COLOR << std::endl;
+    std::cerr << time_tracer::common::colors::kYellow << "警告: 在指定路径下没有找到 " << extension
+              << " 文件。" << time_tracer::common::colors::kReset << std::endl;
     return false;
   }
 

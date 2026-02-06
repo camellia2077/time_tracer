@@ -8,7 +8,7 @@
 
 class ActivityParser {
  public:
-  static auto parse(const nlohmann::json& activity_json) -> TimeRecordInternal;
+  static auto Parse(const nlohmann::json& activity_json) -> TimeRecordInternal;
 };
 
 #endif  // IMPORTER_PARSER_DETAILS_ACTIVITY_PARSER_H_

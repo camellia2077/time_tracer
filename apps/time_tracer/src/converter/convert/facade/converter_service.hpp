@@ -18,10 +18,14 @@ class ConverterService {
  public:
   explicit ConverterService(const ConverterConfig& config);
 
-  void executeConversion(std::istream& combined_input_stream,
-                         std::function<void(DailyLog&&)> data_consumer);
+  auto ExecuteConversion(std::istream& combined_input_stream,
+                         std::function<void(DailyLog&&)> data_consumer) -> void;
 
  private:
+  [[nodiscard]] static auto IsDuplicateAcrossYear(const DailyLog& previous_day,
+                                                  const DailyLog& current_day)
+      -> bool;
+
   const ConverterConfig& config_;
 };
 

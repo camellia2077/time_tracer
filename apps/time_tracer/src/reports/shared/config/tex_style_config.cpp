@@ -1,5 +1,5 @@
 // reports/shared/config/tex_style_config.cpp
-#include "tex_style_config.hpp"
+#include "reports/shared/config/tex_style_config.hpp"
 
 TexStyleConfig::TexStyleConfig(const toml::table& config) {
   constexpr int kDefaultBaseFontSize = 10;
@@ -22,27 +22,27 @@ TexStyleConfig::TexStyleConfig(const toml::table& config) {
   list_item_sep_ex_ = config["list_item_sep_ex"].value_or(0.0);
 }
 
-auto TexStyleConfig::get_main_font() const -> const std::string& {
+auto TexStyleConfig::GetMainFont() const -> const std::string& {
   return main_font_;
 }
-auto TexStyleConfig::get_cjk_main_font() const -> const std::string& {
+auto TexStyleConfig::GetCjkMainFont() const -> const std::string& {
   return cjk_main_font_;
 }
-auto TexStyleConfig::get_base_font_size() const -> int {
+auto TexStyleConfig::GetBaseFontSize() const -> int {
   return base_font_size_;
 }
-auto TexStyleConfig::get_report_title_font_size() const -> int {
+auto TexStyleConfig::GetReportTitleFontSize() const -> int {
   return report_title_font_size_;
 }
-auto TexStyleConfig::get_category_title_font_size() const -> int {
+auto TexStyleConfig::GetCategoryTitleFontSize() const -> int {
   return category_title_font_size_;
 }
-auto TexStyleConfig::get_margin_in() const -> double {
+auto TexStyleConfig::GetMarginIn() const -> double {
   return margin_in_;
 }
-auto TexStyleConfig::get_list_top_sep_pt() const -> double {
+auto TexStyleConfig::GetListTopSepPt() const -> double {
   return list_top_sep_pt_;
 }
-auto TexStyleConfig::get_list_item_sep_ex() const -> double {
+auto TexStyleConfig::GetListItemSepEx() const -> double {
   return list_item_sep_ex_;
 }

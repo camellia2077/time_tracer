@@ -9,7 +9,7 @@
 class DayProcessor {
  public:
   explicit DayProcessor(const ConverterConfig& config);
-  void process(DailyLog& previousDay, DailyLog& dayToProcess);
+  void Process(DailyLog& previousDay, DailyLog& dayToProcess);
 
  private:
   const ConverterConfig& config_;

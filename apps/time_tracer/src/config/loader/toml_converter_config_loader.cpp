@@ -1,5 +1,5 @@
 // config/loader/toml_converter_config_loader.cpp
-#include "toml_converter_config_loader.hpp"
+#include "config/loader/toml_converter_config_loader.hpp"
 
 #include <algorithm>
 #include <iostream>
@@ -10,7 +10,8 @@ TomlConverterConfigLoader::TomlConverterConfigLoader(
     const toml::table& config_table)
     : toml_source_(config_table) {}
 
-auto TomlConverterConfigLoader::load(ConverterConfig& config) -> bool {
+auto TomlConverterConfigLoader::Load(ConverterConfig& config) -> bool {
+
   try {
     // remark_prefix
     if (auto val = toml_source_["remark_prefix"].value<std::string>()) {
@@ -25,9 +26,10 @@ auto TomlConverterConfigLoader::load(ConverterConfig& config) -> bool {
     parse_duration_mappings(config);
 
   } catch (const std::exception& e) {
-    std::cerr << RED_COLOR
+    namespace colors = time_tracer::common::colors;
+    std::cerr << colors::kRed
               << "Error parsing configuration TOML via Loader: " << e.what()
-              << RESET_COLOR << std::endl;
+              << colors::kReset << std::endl;
     return false;
   }
   return true;

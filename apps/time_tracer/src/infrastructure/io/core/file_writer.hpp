@@ -17,8 +17,9 @@ class FileWriter {
    * @param content 要写入的内容。
    * @throws std::runtime_error 如果文件无法打开或写入失败。
    */
-  static void write_content(const std::filesystem::path& path,
-                            const std::string& content);
+  static void WriteContent(const std::filesystem::path& path,
+
+                           const std::string& content);
 };
 
 #endif  // INFRASTRUCTURE_IO_CORE_FILE_WRITER_H_

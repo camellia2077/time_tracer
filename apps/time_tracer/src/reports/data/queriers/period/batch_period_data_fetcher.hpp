@@ -18,15 +18,15 @@
  */
 class BatchPeriodDataFetcher {
  public:
-  explicit BatchPeriodDataFetcher(sqlite3* db);
+  explicit BatchPeriodDataFetcher(sqlite3* db_connection);
 
   /**
    * @brief 为给定的天数列表获取聚合后的报告数据。
    * @param days_list 天数列表 (e.g., {7, 30, 90})
    * @return map<days, PeriodReportData>
    */
-  std::map<int, PeriodReportData> fetch_all_data(
-      const std::vector<int>& days_list);
+  auto FetchAllData(const std::vector<int>& days_list)
+      -> std::map<int, PeriodReportData>;
 
  private:
   sqlite3* db_;

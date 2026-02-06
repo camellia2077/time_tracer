@@ -1,10 +1,11 @@
 // importer/parser/details/activity_parser.cpp
-#include "activity_parser.hpp"
+#include "importer/parser/details/activity_parser.hpp"
 
 #include <stdexcept>
 
-auto ActivityParser::parse(const nlohmann::json& activity_json)
+auto ActivityParser::Parse(const nlohmann::json& activity_json)
     -> TimeRecordInternal {
+
   try {
     TimeRecordInternal record;
     record.logical_id = activity_json.at("logical_id");

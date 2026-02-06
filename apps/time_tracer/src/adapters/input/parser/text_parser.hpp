@@ -13,8 +13,8 @@
 class TextParser {
  public:
   explicit TextParser(const ConverterConfig& config);
-  void parse(std::istream& input_stream,
-             std::function<void(DailyLog&)> on_new_day);
+  auto Parse(std::istream& input_stream,
+             std::function<void(DailyLog&)> on_new_day) -> void;
 
  private:
   const ConverterConfig& config_;
@@ -23,10 +23,26 @@ class TextParser {
   const std::vector<std::string>&
       wake_keywords_;  // [优化] 直接引用 vector，避免拷贝 set
 
-  static bool isYearMarker(const std::string& line);
-  static bool isNewDayMarker(const std::string& line);
-  void parseLine(const std::string& line, int line_number,
-                 DailyLog& current_day) const;
+  static auto IsYearMarker(const std::string& line) -> bool;
+  static auto IsNewDayMarker(const std::string& line) -> bool;
+  auto ParseLine(const std::string& line, int line_number,
+                 DailyLog& current_day) const -> void;
+
+  struct RemarkResult {
+    std::string description;
+    std::string remark;
+  };
+
+  struct EventInput {
+    std::string_view description;
+    std::string_view time_str_hhmm;
+  };
+
+  [[nodiscard]] static auto ExtractRemark(std::string_view remaining_line)
+      -> RemarkResult;
+
+  auto ProcessEventContext(DailyLog& current_day, EventInput input) const
+      -> bool;
 };
 
 #endif  // ADAPTERS_INPUT_PARSER_TEXT_PARSER_H_

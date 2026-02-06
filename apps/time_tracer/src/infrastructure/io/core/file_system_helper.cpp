@@ -1,23 +1,23 @@
 // infrastructure/io/core/file_system_helper.cpp
-#include "file_system_helper.hpp"
+#include "infrastructure/io/core/file_system_helper.hpp"
 
 #include <stdexcept>
 
 namespace fs = std::filesystem;
 
-auto FileSystemHelper::exists(const fs::path& path) -> bool {
+auto FileSystemHelper::Exists(const fs::path& path) -> bool {
   return fs::exists(path);
 }
 
-auto FileSystemHelper::is_regular_file(const fs::path& path) -> bool {
+auto FileSystemHelper::IsRegularFile(const fs::path& path) -> bool {
   return fs::is_regular_file(path);
 }
 
-auto FileSystemHelper::is_directory(const fs::path& path) -> bool {
+auto FileSystemHelper::IsDirectory(const fs::path& path) -> bool {
   return fs::is_directory(path);
 }
 
-void FileSystemHelper::create_directories(const fs::path& path) {
+auto FileSystemHelper::CreateDirectories(const fs::path& path) -> void {
   try {
     fs::create_directories(path);
   } catch (const fs::filesystem_error& e) {

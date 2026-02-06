@@ -1,15 +1,101 @@
 // config/internal/config_parser_utils.cpp
-#include "config_parser_utils.hpp"
+#include "config/internal/config_parser_utils.hpp"
 
 #include <iostream>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 
 namespace fs = std::filesystem;
 
 namespace ConfigParserUtils {
 
-void parse_system_settings(const toml::table& tbl, const fs::path& exe_path,
-                           AppConfig& config) {
+namespace {
+auto ResolveDefaultPath(const fs::path& exe_path, const std::string& path_value)
+    -> fs::path {
+  fs::path path = path_value;
+  if (path.is_relative()) {
+    return exe_path / path;
+  }
+  return path;
+}
+
+auto ParseDateCheckMode(std::string_view mode_str) -> DateCheckMode {
+  if (mode_str == "none") {
+    return DateCheckMode::kNone;
+  }
+  if (mode_str == "continuity") {
+    return DateCheckMode::kContinuity;
+  }
+  if (mode_str == "full") {
+    return DateCheckMode::kFull;
+  }
+  throw std::runtime_error("Invalid date_check mode: " + std::string(mode_str));
+}
+auto ParseGlobalDefaults(const toml::table& defaults_tbl, const fs::path& exe_path,
+                         AppConfig& config) -> void {
+  if (auto val = defaults_tbl.get("db_path")->value<std::string>()) {
+    config.defaults.db_path = ResolveDefaultPath(exe_path, *val);
+  }
+  if (auto val = defaults_tbl.get("output_root")->value<std::string>()) {
+    config.defaults.output_root = ResolveDefaultPath(exe_path, *val);
+  }
+  if (auto val = defaults_tbl.get("default_format")->value<std::string>()) {
+    config.defaults.default_format = *val;
+  }
+}
+
+auto ParseExportDefaults(const toml::table& export_tbl, AppConfig& config)
+    -> void {
+  if (auto val = export_tbl.get("format")->value<std::string>()) {
+    config.command_defaults.export_format = *val;
+  }
+}
+
+auto ParseConvertDefaults(const toml::table& convert_tbl, AppConfig& config)
+    -> void {
+  if (auto val = convert_tbl.get("date_check")->value<std::string>()) {
+    config.command_defaults.convert_date_check_mode = ParseDateCheckMode(*val);
+  }
+  if (auto val = convert_tbl.get("save_processed_output")->value<bool>()) {
+    config.command_defaults.convert_save_processed_output = val;
+  }
+  if (auto val = convert_tbl.get("validate_logic")->value<bool>()) {
+    config.command_defaults.convert_validate_logic = val;
+  }
+  if (auto val = convert_tbl.get("validate_structure")->value<bool>()) {
+    config.command_defaults.convert_validate_structure = val;
+  }
+}
+
+auto ParseQueryDefaults(const toml::table& query_tbl, AppConfig& config)
+    -> void {
+  if (auto val = query_tbl.get("format")->value<std::string>()) {
+    config.command_defaults.query_format = *val;
+  }
+}
+
+auto ParseIngestDefaults(const toml::table& ingest_tbl, AppConfig& config)
+    -> void {
+  if (auto val = ingest_tbl.get("date_check")->value<std::string>()) {
+    config.command_defaults.ingest_date_check_mode = ParseDateCheckMode(*val);
+  }
+  if (auto val = ingest_tbl.get("save_processed_output")->value<bool>()) {
+    config.command_defaults.ingest_save_processed_output = val;
+  }
+}
+
+auto ParseValidateLogicDefaults(const toml::table& validate_logic_tbl,
+                                AppConfig& config) -> void {
+  if (auto val = validate_logic_tbl.get("date_check")->value<std::string>()) {
+    config.command_defaults.validate_logic_date_check_mode =
+        ParseDateCheckMode(*val);
+  }
+}
+}  // namespace
+
+void ParseSystemSettings(const toml::table& tbl, const fs::path& exe_path,
+                         AppConfig& config) {
   const toml::node_view<const toml::node> kSysNode = tbl["system"];
 
   // 如果 [system] 不存在，尝试 [general]
@@ -30,7 +116,7 @@ void parse_system_settings(const toml::table& tbl, const fs::path& exe_path,
           kGenNode["save_processed_output"].value_or(false);
       bool check = kGenNode["date_check_continuity"].value_or(false);
       config.default_date_check_mode =
-          check ? DateCheckMode::Continuity : DateCheckMode::None;
+          check ? DateCheckMode::kContinuity : DateCheckMode::kNone;
       return;
     }
   }
@@ -51,14 +137,56 @@ void parse_system_settings(const toml::table& tbl, const fs::path& exe_path,
 
     bool check = kSysNode["date_check_continuity"].value_or(false);
     config.default_date_check_mode =
-        check ? DateCheckMode::Continuity : DateCheckMode::None;
+        check ? DateCheckMode::kContinuity : DateCheckMode::kNone;
   } else {
     config.error_log_path = exe_path / "error.log";
   }
 }
 
-void parse_pipeline_settings(const toml::table& tbl, const fs::path& config_dir,
-                             AppConfig& config) {
+void ParseCliDefaults(const toml::table& tbl, const fs::path& exe_path,
+                      AppConfig& config) {
+  if (const toml::table* defaults_tbl = tbl["defaults"].as_table()) {
+    ParseGlobalDefaults(*defaults_tbl, exe_path, config);
+  }
+
+  const toml::table* commands_tbl = tbl["commands"].as_table();
+  if (commands_tbl == nullptr) {
+    return;
+  }
+
+  if (const toml::node* node = commands_tbl->get("export")) {
+    if (const toml::table* sub_tbl = node->as_table()) {
+      ParseExportDefaults(*sub_tbl, config);
+    }
+  }
+
+  if (const toml::node* node = commands_tbl->get("convert")) {
+    if (const toml::table* sub_tbl = node->as_table()) {
+      ParseConvertDefaults(*sub_tbl, config);
+    }
+  }
+
+  if (const toml::node* node = commands_tbl->get("query")) {
+    if (const toml::table* sub_tbl = node->as_table()) {
+      ParseQueryDefaults(*sub_tbl, config);
+    }
+  }
+
+  if (const toml::node* node = commands_tbl->get("ingest")) {
+    if (const toml::table* sub_tbl = node->as_table()) {
+      ParseIngestDefaults(*sub_tbl, config);
+    }
+  }
+
+  if (const toml::node* node = commands_tbl->get("validate-logic")) {
+    if (const toml::table* sub_tbl = node->as_table()) {
+      ParseValidateLogicDefaults(*sub_tbl, config);
+    }
+  }
+}
+
+void ParsePipelineSettings(const toml::table& tbl, const fs::path& config_dir,
+                           AppConfig& config) {
   if (tbl.contains("converter")) {
     const auto& proc = tbl["converter"];
 
@@ -82,8 +210,8 @@ void parse_pipeline_settings(const toml::table& tbl, const fs::path& config_dir,
   }
 }
 
-void parse_report_paths(const toml::table& tbl, const fs::path& config_dir,
-                        AppConfig& config) {
+void ParseReportPaths(const toml::table& tbl, const fs::path& config_dir,
+                      AppConfig& config) {
   if (tbl.contains("reports")) {
     const auto& reports = tbl["reports"];
 

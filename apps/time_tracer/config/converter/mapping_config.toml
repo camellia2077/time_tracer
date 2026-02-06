@@ -12,12 +12,12 @@
 "睡觉" = "sleep_day"
 "白天睡觉"= "sleep_day"
 
-"zhihu" = "recreation_zonline-platforms_zhihu"
-"知乎" = "recreation_zonline-platforms_zhihu"
-"douyin" = "recreation_zonline-platforms_douyin"
-"抖音" = "recreation_zonline-platforms_douyin"
-"bilibili" = "recreation_zonline-platforms_bilibili"
-"哔哩哔哩" = "recreation_zonline-platforms_bilibili"
+"zhihu" = "recreation_online-platforms_zhihu"
+"知乎" = "recreation_online-platforms_zhihu"
+"douyin" = "recreation_online-platforms_douyin"
+"抖音" = "recreation_online-platforms_douyin"
+"bilibili" = "recreation_online-platforms_bilibili"
+"哔哩哔哩" = "recreation_online-platforms_bilibili"
 
 "minecraft" = "recreation_game_minecraft"
     
@@ -46,6 +46,6 @@
 "概率统计" = "study_math_probability-theory"
 
 
-"数据结构" = "study_computer_data structure"
+"数据结构" = "study_computer_data_structure"
 "数据结构二叉树" = "study_computer_data-structure_trees"
 "数据结构图" = "study_computer_data-structure_graphs"

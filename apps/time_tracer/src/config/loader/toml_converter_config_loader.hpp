@@ -19,7 +19,7 @@ class TomlConverterConfigLoader : public IConfigLoader<ConverterConfig> {
    */
   explicit TomlConverterConfigLoader(const toml::table& config_table);
 
-  bool load(ConverterConfig& config_object) override;
+  bool Load(ConverterConfig& config_object) override;
 
  private:
   void parse_header_order(ConverterConfig& config);

@@ -15,13 +15,15 @@ class ICommand {
   virtual ~ICommand() = default;
 
   // 子类必须实现此方法，描述它需要的参数
-  virtual std::vector<ArgDef> get_definitions() const = 0;
+  [[nodiscard]] virtual auto GetDefinitions() const -> std::vector<ArgDef> = 0;
 
   // [关键修复 1 的配套] 这里使用 CommandParser& 引用，配合前向声明即可编译
-  virtual void execute(const CommandParser& parser) = 0;
+  virtual auto Execute(const CommandParser& parser) -> void = 0;
 
-  // 默认的 get_help
-  virtual std::string get_help() const { return "Auto generated help..."; }
+  // 默认的 GetHelp
+  [[nodiscard]] virtual auto GetHelp() const -> std::string {
+    return "Auto generated help...";
+  }
 };
 
 #endif  // CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_

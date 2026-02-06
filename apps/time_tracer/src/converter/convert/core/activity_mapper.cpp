@@ -1,5 +1,5 @@
 // converter/convert/core/activity_mapper.cpp
-#include "activity_mapper.hpp"
+#include "converter/convert/core/activity_mapper.hpp"
 
 #include <algorithm>  // for std::find
 #include <sstream>
@@ -19,33 +19,33 @@ constexpr int kMinutesPerHour = 60;
 constexpr int kHoursPerDay = 24;
 }  // namespace
 
-auto ActivityMapper::formatTime(const std::string& time_str_hhmm)
-    -> std::string {
+auto ActivityMapper::formatTime(std::string_view time_str_hhmm) -> std::string {
   // Example: "0614" -> "06:14".
   if (time_str_hhmm.length() == kTimeDigitsLength) {
-    return time_str_hhmm.substr(kTimeHourOffset, kTimeHourLength) + ":" +
-           time_str_hhmm.substr(kTimeDigitsMinuteOffset, kTimeMinuteLength);
+    return std::string(time_str_hhmm.substr(kTimeHourOffset, kTimeHourLength)) +
+           ":" +
+           std::string(time_str_hhmm.substr(kTimeDigitsMinuteOffset,
+                                            kTimeMinuteLength));
   }
-  return time_str_hhmm;
+  return std::string(time_str_hhmm);
 }
 
-auto ActivityMapper::calculateDurationMinutes(const std::string& start_time_str,
-                                              const std::string& end_time_str)
+auto ActivityMapper::calculateDurationMinutes(const TimeRange& time_range)
     -> int {
   // Example: "06:14" -> minutes offset 6*60 + 14.
-  if (start_time_str.length() != kTimeStringLength ||
-      end_time_str.length() != kTimeStringLength) {
+  if (time_range.start_hhmm.length() != kTimeStringLength ||
+      time_range.end_hhmm.length() != kTimeStringLength) {
     return 0;
   }
   try {
-    int start_hour =
-        std::stoi(start_time_str.substr(kTimeHourOffset, kTimeHourLength));
-    int start_min =
-        std::stoi(start_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
-    int end_hour =
-        std::stoi(end_time_str.substr(kTimeHourOffset, kTimeHourLength));
-    int end_min =
-        std::stoi(end_time_str.substr(kTimeMinuteOffset, kTimeMinuteLength));
+    int start_hour = std::stoi(
+        std::string(time_range.start_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+    int start_min = std::stoi(std::string(
+        time_range.start_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
+    int end_hour = std::stoi(
+        std::string(time_range.end_hhmm.substr(kTimeHourOffset, kTimeHourLength)));
+    int end_min = std::stoi(std::string(
+        time_range.end_hhmm.substr(kTimeMinuteOffset, kTimeMinuteLength)));
     int start_time_in_minutes = (start_hour * kMinutesPerHour) + start_min;
     int end_time_in_minutes = (end_hour * kMinutesPerHour) + end_min;
     if (end_time_in_minutes < start_time_in_minutes) {
@@ -67,9 +67,10 @@ auto ActivityMapper::is_wake_event(const RawEvent& raw_event) const -> bool {
          wake_keywords_.end();
 }
 
-auto ActivityMapper::map_description(const std::string& description) const
+auto ActivityMapper::map_description(std::string_view description) const
     -> std::string {
-  std::string mapped_description = description;
+  std::string description_str(description);
+  std::string mapped_description = description_str;
 
   auto map_it = config_.text_mapping.find(mapped_description);
   if (map_it != config_.text_mapping.end()) {
@@ -84,23 +85,22 @@ auto ActivityMapper::map_description(const std::string& description) const
   return mapped_description;
 }
 
-auto ActivityMapper::apply_duration_rules(const std::string& mapped_description,
-                                          const std::string& start_time,
-                                          const std::string& end_time) const
+auto ActivityMapper::apply_duration_rules(std::string_view mapped_description,
+                                          int duration_minutes) const
     -> std::string {
-  auto duration_rules_it = config_.duration_mappings.find(mapped_description);
+  std::string description_str(mapped_description);
+  auto duration_rules_it = config_.duration_mappings.find(description_str);
   if (duration_rules_it == config_.duration_mappings.end()) {
-    return mapped_description;
+    return description_str;
   }
 
-  int duration = calculateDurationMinutes(start_time, end_time);
   for (const auto& rule : duration_rules_it->second) {
-    if (duration < rule.less_than_minutes) {
+    if (duration_minutes < rule.less_than_minutes) {
       return rule.value;
     }
   }
 
-  return mapped_description;
+  return description_str;
 }
 
 void ActivityMapper::apply_top_parent_mapping(
@@ -133,20 +133,21 @@ auto ActivityMapper::build_project_path(const std::vector<std::string>& parts)
 }
 
 void ActivityMapper::append_activity(
-    DailyLog& day, const RawEvent& raw_event, const std::string& start_time,
-    const std::string& end_time, const std::string& mapped_description) const {
-  if (start_time.empty()) {
+    DailyLog& day, const RawEvent& raw_event, const TimeRange& time_range,
+    std::string_view mapped_description) const {
+  if (time_range.start_hhmm.empty()) {
     return;
   }
 
-  std::vector<std::string> parts = split_string(mapped_description, '_');
+  std::string description_str(mapped_description);
+  std::vector<std::string> parts = SplitString(description_str, '_');
   if (parts.empty()) {
     return;
   }
 
   BaseActivityRecord activity;
-  activity.start_time_str = start_time;
-  activity.end_time_str = end_time;
+  activity.start_time_str = time_range.start_hhmm;
+  activity.end_time_str = time_range.end_hhmm;
 
   apply_top_parent_mapping(parts);
   activity.project_path = build_project_path(parts);
@@ -160,6 +161,8 @@ void ActivityMapper::append_activity(
 
 void ActivityMapper::map_activities(DailyLog& day) {
   day.processedActivities.clear();
+
+
 
   if (day.getupTime.empty() && !day.isContinuation) {
     return;
@@ -178,11 +181,14 @@ void ActivityMapper::map_activities(DailyLog& day) {
     }
 
     std::string formatted_event_end_time = formatTime(raw_event.endTimeStr);
+    TimeRange range{.start_hhmm = start_time,
+                    .end_hhmm = formatted_event_end_time};
+
     std::string mapped_description = map_description(raw_event.description);
-    mapped_description = apply_duration_rules(mapped_description, start_time,
-                                              formatted_event_end_time);
-    append_activity(day, raw_event, start_time, formatted_event_end_time,
-                    mapped_description);
+    int duration = calculateDurationMinutes(range);
+
+    mapped_description = apply_duration_rules(mapped_description, duration);
+    append_activity(day, raw_event, range, mapped_description);
     start_time = formatted_event_end_time;
   }
 }

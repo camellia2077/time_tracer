@@ -10,9 +10,10 @@
 
 namespace RangeTexUtils {
 
-void display_summary(std::stringstream& report_stream,
-                     const RangeReportData& data,
-                     const std::shared_ptr<RangeTexConfig>& config);
+void DisplaySummary(std::stringstream& report_stream,
+
+                    const RangeReportData& data,
+                    const std::shared_ptr<RangeTexConfig>& config);
 
 }  // namespace RangeTexUtils
 

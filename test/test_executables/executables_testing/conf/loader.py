@@ -58,9 +58,19 @@ def _load_paths(toml_data) -> Paths:
     paths_data = toml_data.get("paths", {})
     paths_inst = Paths()
     
+    # 项目应用程序根目录
+    project_apps_root = paths_data.get("project_apps_root")
+    paths_inst.PROJECT_APPS_ROOT = Path(project_apps_root) if project_apps_root else None
+
     # 源执行文件目录
     source_exe_dir = paths_data.get("source_executables_dir")
     paths_inst.SOURCE_EXECUTABLES_DIR = Path(source_exe_dir) if source_exe_dir else None
+    
+    # [新增] 如果提供了 build_dir_name 且有项目根目录，则动态重写
+    build_dir_name = toml_data.get("_build_dir_name") # 内部传递
+    if build_dir_name and paths_inst.PROJECT_APPS_ROOT:
+        paths_inst.SOURCE_EXECUTABLES_DIR = paths_inst.PROJECT_APPS_ROOT / build_dir_name / "bin"
+        print(f"  - Build Folder override active: Using {build_dir_name}")
     
     # 源数据路径（强制要求）
     test_data_path_str = paths_data.get("test_data_path")
@@ -151,8 +161,7 @@ def _load_pipeline(toml_data) -> PipelineConfig:
     if mode not in {"ingest", "staged"}:
         raise ValueError("Config error: [pipeline].mode must be 'ingest' or 'staged'.")
 
-    import_confirm = pipeline_data.get("import_confirm", "y\n")
-    return PipelineConfig(MODE=mode, IMPORT_CONFIRM=str(import_confirm))
+    return PipelineConfig(MODE=mode)
 
 def _normalize_list(value):
     if value is None:
@@ -265,8 +274,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             name="Import",
             stage="pipeline",
             args=["import", "{processed_json_dir}"],
-            expect_exit=0,
-            stdin_input=pipeline_cfg.IMPORT_CONFIRM
+            expect_exit=0
         ))
     else:
         commands.insert(0, CommandSpec(
@@ -280,7 +288,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
     return commands
 
 # [修改] 增加 config_path 参数，默认值为 None
-def load_config(config_path: Path = None) -> GlobalConfig:
+def load_config(config_path: Path = None, build_dir_name: str = None) -> GlobalConfig:
     """加载 config.toml 并返回统一的 GlobalConfig 对象。"""
     try:
         # 1. 确定配置文件路径
@@ -292,6 +300,10 @@ def load_config(config_path: Path = None) -> GlobalConfig:
 
         print(f"Loading config from: {target_path.absolute()}") # 调试用
         toml_data = _load_toml_with_includes(target_path)
+
+        # 将 build_dir_name 注入 toml_data 方便 _load_paths 读取
+        if build_dir_name:
+            toml_data["_build_dir_name"] = build_dir_name
 
         pipeline_cfg = _load_pipeline(toml_data)
         paths_cfg = _load_paths(toml_data)

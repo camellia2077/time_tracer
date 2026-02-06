@@ -1,51 +1,53 @@
 // reports/data/queriers/daily/day_querier.cpp
-#include "day_querier.hpp"
+#include "reports/data/queriers/daily/day_querier.hpp"
 
 #include <stdexcept>
 
 #include "reports/data/cache/project_name_cache.hpp"
 #include "reports/data/utils/project_tree_builder.hpp"
 
-DayQuerier::DayQuerier(sqlite3* sqlite_db, const std::string& date)
+DayQuerier::DayQuerier(sqlite3* sqlite_db, std::string_view date)
     : BaseQuerier(sqlite_db, date) {}
 
-auto DayQuerier::fetch_data() -> DailyReportData {
+auto DayQuerier::FetchData() -> DailyReportData {
   DailyReportData data =
-      BaseQuerier::fetch_data();  // BaseQuerier 填充 data.project_stats
-  _fetch_metadata(data);
+      BaseQuerier::FetchData();  // BaseQuerier 填充 data.project_stats
+  FetchMetadata(data);
 
   if (data.total_duration > 0) {
-    _fetch_detailed_records(data);
-    _fetch_generated_stats(data);
+    FetchDetailedRecords(data);
+    FetchGeneratedStats(data);
 
     // [新增] 获取并确保缓存加载
-    auto& name_cache = ProjectNameCache::instance();
-    name_cache.ensure_loaded(db_);
+    auto& name_cache = ProjectNameCache::Instance();
+    name_cache.EnsureLoaded(db_);
 
     // [核心修改] 传入 name_cache 替代 db_
-    build_project_tree_from_ids(data.project_tree, data.project_stats,
+    BuildProjectTreeFromIds(data.project_tree, data.project_stats,
                                 name_cache);
   }
   return data;
 }
 
-auto DayQuerier::get_date_condition_sql() const -> std::string {
+auto DayQuerier::GetDateConditionSql() const -> std::string {
   return "date = ?";
 }
-void DayQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
-  sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
+void DayQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {
+  sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
+                    SQLITE_TRANSIENT);
 }
-void DayQuerier::_prepare_data(DailyReportData& data) const {
-  data.date = this->param_;
+void DayQuerier::PrepareData(DailyReportData& data) const {
+  data.date = std::string(this->param_);
 }
 
-void DayQuerier::_fetch_metadata(DailyReportData& data) {
+void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
   std::string sql =
       "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date "
       "= ?;";
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
+                      SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
       data.metadata.status = std::to_string(sqlite3_column_int(stmt, 0));
       data.metadata.sleep = std::to_string(sqlite3_column_int(stmt, 1));
@@ -63,7 +65,7 @@ void DayQuerier::_fetch_metadata(DailyReportData& data) {
   sqlite3_finalize(stmt);
 }
 
-void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
+void DayQuerier::FetchDetailedRecords(DailyReportData& data) {
   sqlite3_stmt* stmt;
   std::string sql = R"(
         WITH RECURSIVE project_paths(id, path) AS (
@@ -80,7 +82,8 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
         ORDER BY tr.logical_id ASC;
     )";
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
+                      SQLITE_TRANSIENT);
     while (sqlite3_step(stmt) == SQLITE_ROW) {
       TimeRecord record;
       record.start_time =
@@ -100,7 +103,7 @@ void DayQuerier::_fetch_detailed_records(DailyReportData& data) {
   sqlite3_finalize(stmt);
 }
 
-void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
+void DayQuerier::FetchGeneratedStats(DailyReportData& data) {
   sqlite3_stmt* stmt;
   std::string sql =
       "SELECT "
@@ -113,7 +116,8 @@ void DayQuerier::_fetch_generated_stats(DailyReportData& data) {
       "FROM days WHERE date = ?;";
 
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-    sqlite3_bind_text(stmt, 1, param_.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
+                      SQLITE_TRANSIENT);
     if (sqlite3_step(stmt) == SQLITE_ROW) {
       int col_count = sqlite3_column_count(stmt);
       for (int i = 0; i < col_count; ++i) {

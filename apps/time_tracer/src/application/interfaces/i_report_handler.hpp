@@ -12,37 +12,37 @@ class IReportHandler {
   virtual ~IReportHandler() = default;
 
   // 查询方法
-  virtual std::string run_daily_query(const std::string& date,
-                                      ReportFormat format) = 0;
-  virtual std::string run_monthly_query(const std::string& month,
-                                        ReportFormat format) = 0;
-  virtual std::string run_period_query(int days, ReportFormat format) = 0;
-  virtual std::string run_weekly_query(const std::string& iso_week,
-                                       ReportFormat format) = 0;
-  virtual std::string run_yearly_query(const std::string& year,
-                                       ReportFormat format) = 0;
+  virtual auto RunDailyQuery(std::string_view date, ReportFormat format)
+      -> std::string = 0;
+  virtual auto RunMonthlyQuery(std::string_view month, ReportFormat format)
+      -> std::string = 0;
+  virtual auto RunPeriodQuery(int days, ReportFormat format) -> std::string = 0;
+  virtual auto RunWeeklyQuery(std::string_view iso_week, ReportFormat format)
+      -> std::string = 0;
+  virtual auto RunYearlyQuery(std::string_view year, ReportFormat format)
+      -> std::string = 0;
 
   // [新增] 批量周期查询接口
-  virtual std::string run_period_queries(const std::vector<int>& days_list,
-                                         ReportFormat format) = 0;
+  virtual auto RunPeriodQueries(const std::vector<int>& days_list,
+                                ReportFormat format) -> std::string = 0;
 
   // 导出方法
-  virtual void run_export_single_day_report(const std::string& date,
-                                            ReportFormat format) = 0;
-  virtual void run_export_single_month_report(const std::string& month,
-                                              ReportFormat format) = 0;
-  virtual void run_export_single_period_report(int days,
-                                               ReportFormat format) = 0;
-  virtual void run_export_single_week_report(const std::string& iso_week,
-                                             ReportFormat format) = 0;
-  virtual void run_export_single_year_report(const std::string& year,
-                                             ReportFormat format) = 0;
-  virtual void run_export_all_daily_reports_query(ReportFormat format) = 0;
-  virtual void run_export_all_monthly_reports_query(ReportFormat format) = 0;
-  virtual void run_export_all_period_reports_query(
-      const std::vector<int>& days_list, ReportFormat format) = 0;
-  virtual void run_export_all_weekly_reports_query(ReportFormat format) = 0;
-  virtual void run_export_all_yearly_reports_query(ReportFormat format) = 0;
+  virtual auto RunExportSingleDayReport(std::string_view date,
+                                        ReportFormat format) -> void = 0;
+  virtual auto RunExportSingleMonthReport(std::string_view month,
+                                          ReportFormat format) -> void = 0;
+  virtual auto RunExportSinglePeriodReport(int days, ReportFormat format)
+      -> void = 0;
+  virtual auto RunExportSingleWeekReport(std::string_view iso_week,
+                                         ReportFormat format) -> void = 0;
+  virtual auto RunExportSingleYearReport(std::string_view year,
+                                         ReportFormat format) -> void = 0;
+  virtual auto RunExportAllDailyReportsQuery(ReportFormat format) -> void = 0;
+  virtual auto RunExportAllMonthlyReportsQuery(ReportFormat format) -> void = 0;
+  virtual auto RunExportAllPeriodReportsQuery(const std::vector<int>& days_list,
+                                              ReportFormat format) -> void = 0;
+  virtual auto RunExportAllWeeklyReportsQuery(ReportFormat format) -> void = 0;
+  virtual auto RunExportAllYearlyReportsQuery(ReportFormat format) -> void = 0;
 };
 
 #endif  // APPLICATION_INTERFACES_I_REPORT_HANDLER_H_

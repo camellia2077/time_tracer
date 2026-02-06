@@ -10,9 +10,9 @@
 /**
  * @brief 替换字符串中所有匹配的子串。
  */
-REPORTS_SHARED_API std::string replace_all(std::string str,
-                                           const std::string& from,
-                                           const std::string& replacement_str);
+REPORTS_SHARED_API auto ReplaceAll(std::string str, const std::string& from,
+                                   const std::string& replacement_str)
+    -> std::string;
 
 /**
  * @brief [新增] 为列表项中的多行文本进行格式化。
@@ -22,9 +22,9 @@ REPORTS_SHARED_API std::string replace_all(std::string str,
  * @param line_suffix 可选，每行结尾添加的字符（例如 LaTeX 需要 "\\"）。
  * @return 格式化后的字符串。
  */
-REPORTS_SHARED_API std::string format_multiline_for_list(
+REPORTS_SHARED_API auto FormatMultilineForList(
     const std::string& text, int indent_spaces,
-    const std::string& line_suffix = "");
+    const std::string& line_suffix = "") -> std::string;
 
 /**
  * @brief 使用模板渲染 Range 标题。
@@ -33,7 +33,8 @@ REPORTS_SHARED_API std::string format_multiline_for_list(
  * {year_month}, {days_to_query}
  *
  */
-REPORTS_SHARED_API std::string format_title_template(
-    std::string title_template, const RangeReportData& data);
+REPORTS_SHARED_API auto FormatTitleTemplate(std::string title_template,
+                                            const RangeReportData& data)
+    -> std::string;
 
 #endif  // REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_

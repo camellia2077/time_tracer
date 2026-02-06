@@ -6,7 +6,7 @@
 
 class MappingRule {
  public:
-  static bool validate(const toml::table& mappings_tbl);
+  static auto Validate(const toml::table& mappings_tbl) -> bool;
 };
 
 #endif  // CONFIG_VALIDATOR_CONVERTER_RULES_MAPPING_RULE_H_

@@ -12,21 +12,22 @@ class DayMdFormatter : public BaseMdFormatter<DailyReportData, DayMdConfig> {
 
  protected:
   // --- 实现基类钩子 ---
-  auto is_empty_data(const DailyReportData& data) const -> bool override;
-  auto get_avg_days(const DailyReportData& data) const -> int override;
+  [[nodiscard]] auto IsEmptyData(const DailyReportData& data) const
+      -> bool override;
+  [[nodiscard]] auto GetAvgDays(const DailyReportData& data) const
+      -> int override;
+  [[nodiscard]] auto GetNoRecordsMsg() const -> std::string override;
 
-  void format_header_content(std::stringstream& report_stream,
-                             const DailyReportData& data) const override;
-  void format_extra_content(std::stringstream& report_stream,
-                            const DailyReportData& data) const override;
-
-  // 适配接口：DayConfig 使用 get_no_records() 而非 get_no_records_message()
-  auto get_no_records_msg() const -> std::string override;
+  void FormatHeaderContent(std::stringstream& report_stream,
+                           const DailyReportData& data) const override;
+  void FormatExtraContent(std::stringstream& report_stream,
+                          const DailyReportData& data) const override;
 
  private:
   // 原本的私有辅助函数现在变成了钩子函数的具体实现，或者被内联
-  void _display_detailed_activities(std::stringstream& report_stream,
-                                    const DailyReportData& data) const;
+  // 原本的私有辅助函数现在变成了钩子函数的具体实现，或者被内联
+  void DisplayDetailedActivities(std::stringstream& report_stream,
+                                 const DailyReportData& data) const;
 };
 
 #endif  // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_

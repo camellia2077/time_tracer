@@ -15,7 +15,7 @@ class CommandRegistry {
  public:
   using ICommandCreator = std::function<std::unique_ptr<ICommand>(ContextT&)>;
 
-  static CommandRegistry& Instance() {
+  static auto Instance() -> CommandRegistry& {
     static CommandRegistry inst;
     return inst;
   }
@@ -24,18 +24,19 @@ class CommandRegistry {
     creators_[name] = creator;
   }
 
-  std::unique_ptr<ICommand> CreateCommand(const std::string& name,
-                                          ContextT& ctx) {
-    auto it = creators_.find(name);
-    if (it != creators_.end()) {
-      return it->second(ctx);
+  auto CreateCommand(const std::string& name, ContextT& ctx)
+      -> std::unique_ptr<ICommand> {
+    auto iter = creators_.find(name);
+    if (iter != creators_.end()) {
+      return iter->second(ctx);
     }
     return nullptr;
   }
 
   // [新增] 批量创建所有已注册的命令实例，用于生成帮助文档
-  std::vector<std::pair<std::string, std::unique_ptr<ICommand>>>
-  CreateAllCommands(ContextT& ctx) {
+  // [新增] 批量创建所有已注册的命令实例，用于生成帮助文档
+  auto CreateAllCommands(ContextT& ctx)
+      -> std::vector<std::pair<std::string, std::unique_ptr<ICommand>>> {
     std::vector<std::pair<std::string, std::unique_ptr<ICommand>>> commands;
     for (const auto& pair : creators_) {
       if (pair.second) {
@@ -45,7 +46,7 @@ class CommandRegistry {
     return commands;
   }
 
-  std::vector<std::string> GetRegisteredCommands() const {
+  [[nodiscard]] auto GetRegisteredCommands() const -> std::vector<std::string> {
     std::vector<std::string> names;
     for (const auto& pair : creators_) {
       names.push_back(pair.first);

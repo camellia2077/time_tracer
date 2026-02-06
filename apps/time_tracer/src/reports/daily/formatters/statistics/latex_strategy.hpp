@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "i_stat_strategy.hpp"
 #include "reports/daily/formatters/latex/day_tex_config.hpp"
+#include "reports/daily/formatters/statistics/i_stat_strategy.hpp"
 #include "reports/shared/formatters/latex/tex_utils.hpp"
 
 class LatexStrategy : public IStatStrategy {
@@ -18,36 +18,36 @@ class LatexStrategy : public IStatStrategy {
   /**
    * @brief [核心修正] 修正 std::format 字符串以生成正确的 LaTeX 命令。
    */
-  std::string format_header(const std::string& title) const override {
-    int category_size = config_->get_category_title_font_size();
+  std::string FormatHeader(const std::string& title) const override {
+    int category_size = config_->GetCategoryTitleFontSize();
     return std::format(
         "{{ \\fontsize{{{}}}{{{}}}\\selectfont \\subsection*{{{}}}}}\n\n",
         category_size, category_size * 1.2, title);
   }
 
-  std::string format_main_item(const std::string& label,
-                               const std::string& value) const override {
+  std::string FormatMainItem(const std::string& label,
+                             const std::string& value) const override {
     return std::format("    \\item \\textbf{{{}}}: {}",
-                       TexUtils::escape_latex(label),
-                       TexUtils::escape_latex(value));
+                       TexUtils::EscapeLatex(label),
+                       TexUtils::EscapeLatex(value));
   }
 
-  std::string format_sub_item(const std::string& label,
-                              const std::string& value) const override {
+  std::string FormatSubItem(const std::string& label,
+                            const std::string& value) const override {
     return std::format("        \\item \\textbf{{{}}}: {}",
-                       TexUtils::escape_latex(label),
-                       TexUtils::escape_latex(value));
+                       TexUtils::EscapeLatex(label),
+                       TexUtils::EscapeLatex(value));
   }
 
-  std::string build_output(
+  std::string BuildOutput(
       const std::vector<std::string>& lines) const override {
     if (lines.empty()) {
       return "";
     }
 
-    std::string compact_list_options = std::format(
-        "[topsep={}pt, itemsep={}ex]", config_->get_list_top_sep_pt(),
-        config_->get_list_item_sep_ex());
+    std::string compact_list_options =
+        std::format("[topsep={}pt, itemsep={}ex]", config_->GetListTopSepPt(),
+                    config_->GetListItemSepEx());
 
     std::string result = "\\begin{itemize}" + compact_list_options + "\n";
     bool in_sublist = false;

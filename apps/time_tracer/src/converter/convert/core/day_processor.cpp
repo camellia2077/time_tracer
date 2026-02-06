@@ -1,8 +1,8 @@
 ﻿// converter/convert/core/day_processor.cpp
-#include "day_processor.hpp"
+#include "converter/convert/core/day_processor.hpp"
 
-#include "activity_mapper.hpp"
-#include "day_stats.hpp"
+#include "converter/convert/core/activity_mapper.hpp"
+#include "converter/convert/core/day_stats.hpp"
 
 namespace {
 auto FormatTime(const std::string& timeStrHHMM) -> std::string {
@@ -14,7 +14,8 @@ auto FormatTime(const std::string& timeStrHHMM) -> std::string {
 
 DayProcessor::DayProcessor(const ConverterConfig& config) : config_(config) {}
 
-void DayProcessor::process(DailyLog& previousDay, DailyLog& dayToProcess) {
+void DayProcessor::Process(DailyLog& previousDay, DailyLog& dayToProcess) {
+
   if (dayToProcess.date.empty()) {
     return;
   }
@@ -44,5 +45,6 @@ void DayProcessor::process(DailyLog& previousDay, DailyLog& dayToProcess) {
         FormatTime(previousDay.rawEvents.back().endTimeStr);
   }
 
-  DayStats::calculate_stats(dayToProcess);
+  DayStats::CalculateStats(dayToProcess);
+
 }

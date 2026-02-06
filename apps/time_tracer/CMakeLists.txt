@@ -1,15 +1,11 @@
 # --- START OF FILE CMakeLists.txt ---
-# src/CMakeLists.txt
-# [修改] 升级最低版本以更好地支持 C++23 和现代 CMake 特性
 cmake_minimum_required(VERSION 3.25)
 
-project(TimeTrackerApp VERSION "0.4.0.1" LANGUAGES CXX)
+project(TimeTrackerApp VERSION "0.5.5" LANGUAGES CXX)
 
 # [新增] 强制 CMake 的命令行输出使用 UTF-8 编码
-# 这可以从根本上解决在 Windows GBK 环境下因中文字符导致的编码错误
 set(CMAKE_CLI_FORCE_UTF8 ON)
 
-# 所有源文件都必须明确写出它们的扩展名
 cmake_policy(SET CMP0115 NEW)
 
 # --- Find External Dependencies ---
@@ -23,7 +19,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# [新增] 添加开关：是否为可执行文件编译图标资源（默认为 ON）关闭 OFF
 option(ENABLE_APP_ICON "Enable application icon for Windows executables" OFF)
 
 set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
@@ -36,77 +31,41 @@ if(CCACHE_EXECUTABLE)
 endif()
 
 # --- 2. 包含模块 ---
-# 将模块路径添加到CMake的搜索路径中
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # 1. 基础工具
 include(TargetSetup)
-
-# 2. 变量定义 (纯数据)
-include(SourceFileCollection)
-
-# 3. [新增] 库目标定义 (逻辑)
-include(AddReportsLibrary)      # 定义 reports_shared (Shared, 接口与插件公用)
-include(AddReportsDataLibrary)  # 定义 reports_data (Static, 数据层依赖隔离)
+# include(SourceFileCollection) # REMOVED: Replaced by modular CMakeLists.txt
+# include(AddReportsLibrary)      # REMOVED: Moved to src/reports/CMakeLists.txt
+# include(AddReportsDataLibrary)  # REMOVED: Moved to src/reports/CMakeLists.txt
 
 # 4. 编译标志
 include(BuildTypeFlags)
 
-# --- 3. 定义可执行文件目标 ---
-add_executable(time_tracker_cli src/main_cli.cpp
-    ${COMMON_SOURCES}
-    ${SERIALIZER_SOURCES}
-    ${VALIDATOR_SOURCES}
-    ${BOOTSTRAP_SOURCES}
-    ${CONFIG_SOURCES}
-    ${IMPORTER_SOURCES}
-    ${REPORTS_SOURCES}
-    ${CONVERTER_SOURCES}
-    ${IO_SOURCES}
-    ${CORE_SOURCES}
-    ${CLI_SOURCES}
-)
-
-# 链接到新的共享库
-target_link_libraries(time_tracker_cli PRIVATE 
-    reports_shared
-    reports_data
-)
+# --- 3. 添加源码子目录 ---
+add_subdirectory(src)
 
 # 添加子目录以构建所有日报格式化器的 DLL
 add_subdirectory(src/reports/daily/formatters/markdown)
 add_subdirectory(src/reports/daily/formatters/typst)
 add_subdirectory(src/reports/daily/formatters/latex)
-
 add_subdirectory(src/reports/range/formatters/markdown)
 add_subdirectory(src/reports/range/formatters/typst)
 add_subdirectory(src/reports/range/formatters/latex)
 
-# 创建一个包含所有可执行文件目标的列表
 set(ALL_TARGETS time_tracker_cli)
 
-# --- 4. 为每个目标应用通用配置 ---
-foreach(TARGET_NAME ${ALL_TARGETS})
-  setup_project_target(${TARGET_NAME})
-endforeach()
+# 在每次构建后，复制配置文件
+# 在每次构建后，复制配置文件 (Moved to src/CMakeLists.txt)
+# foreach(TARGET_NAME ${ALL_TARGETS})
+#    ...
+# endforeach()
 
-# 在每次构建后，无论是否为安装包，都将配置文件复制到输出目录
-# 这样可以直接从 build/bin 目录运行程序
-foreach(TARGET_NAME ${ALL_TARGETS})
-    add_custom_command(
-        TARGET ${TARGET_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_CURRENT_SOURCE_DIR}/config"
-        "$<TARGET_FILE_DIR:${TARGET_NAME}>/config"
-        COMMENT "Copying config folder for ${TARGET_NAME}"
-    )
-endforeach()
 # --- 代码格式化工具 ---
 include(AddFormatTarget)
 include(AddTidyFixTarget)
 # --- 5. 包含特定功能的模块 ---
-include(Win32PostBuildCopy) # 包含并执行DLL复制逻辑 
-include(Packaging)          # 包含并执行打包逻辑 
+# include(Win32PostBuildCopy) # Moved to src/CMakeLists.txt 
+include(Packaging)        
 
-# --- 6. 结束语 ---
 message(STATUS "CMake configuration finished. Targets are ready to be built.")

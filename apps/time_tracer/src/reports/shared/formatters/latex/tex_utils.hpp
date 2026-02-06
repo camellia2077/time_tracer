@@ -23,24 +23,25 @@ namespace TexUtils {
  */
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-REPORTS_SHARED_API std::string get_tex_preamble(
+[[nodiscard]] REPORTS_SHARED_API auto GetTexPreamble(
     const std::string& main_font, const std::string& cjk_main_font,
     int font_size, double margin_in,
-    const std::map<std::string, std::string>& keyword_colors = {});
+    const std::map<std::string, std::string>& keyword_colors) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 /**
  * @brief 生成 LaTeX 文档的 Postfix（结尾部分）。
  * @return 包含 "\\end{document}" 的字符串。
  */
-REPORTS_SHARED_API std::string get_tex_postfix();
+[[nodiscard]] REPORTS_SHARED_API auto GetTexPostfix() -> std::string;
 
 /**
  * @brief 转义 LaTeX 特殊字符，以防止编译错误。
  * @param input 需要转义的原始字符串。
  * @return 转义后的字符串。
  */
-REPORTS_SHARED_API std::string escape_latex(const std::string& input);
+[[nodiscard]] REPORTS_SHARED_API auto EscapeLatex(const std::string& input)
+    -> std::string;
 
 /**
  * @brief [新增] 将项目树格式化为 LaTeX 字符串。
@@ -54,10 +55,10 @@ REPORTS_SHARED_API std::string escape_latex(const std::string& input);
  */
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-REPORTS_SHARED_API std::string format_project_tree(
-    const reporting::ProjectTree& tree,  // [修改] 加上 reporting:: 命名空间
-    long long total_duration, int avg_days, int category_title_font_size,
-    double list_top_sep_pt, double list_item_sep_ex);
+[[nodiscard]] REPORTS_SHARED_API auto FormatProjectTree(
+    const reporting::ProjectTree& tree, long long total_duration, int avg_days,
+    int category_title_font_size, double list_top_sep_pt,
+    double list_item_sep_ex) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TexUtils

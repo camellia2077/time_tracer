@@ -19,16 +19,17 @@ This suite includes three core components:
 
 ## 🚀 Quick Start
 
-### 1. Dependencies
+### 1. Dependencies & Build Tools
 
-Before you begin, please ensure your system has the following dependencies installed:
+Before you begin, please ensure your system has the following dependencies and build tools installed:
 
   * **C++ Components (`Time_Master`, `log_generator`)**:
       * **MSYS2 UCRT64** environment (Recommended for Windows)
-      * **CMake** \>= 3.10
-      * **GCC** (with C++23 support)
-      * **SQLite3** library
-      * **nlohmann/json** library
+      * **CMake** >= 3.25 (Required for C++23 support)
+      * **Compiler**: **GCC** or **Clang** (Must support C++23)
+      * **Build System**: **Ninja** (Recommended for faster builds) or **Make**
+      * **Build Cache**: **ccache** (Optional, recommended for accelerating re-compilation)
+      * **Core Libraries**: **SQLite3**, **nlohmann/json**, **tomlplusplus**
   * **Python Component (`graph_generator`)**:
       * **Python** \>= 3.8
       * **Matplotlib** library
@@ -90,10 +91,22 @@ docs/
 
 -----
 
-## Acknowledgements & License
+## Developers & Acknowledgements
 
-The implementation of this project would not be possible without these excellent open-source libraries. My thanks to their developers\!
+### Lead Developer
+* **[camellia2077](https://github.com/camellia2077)**: Project creator and primary developer.
 
-  * **[SQLite C Library](https://www.sqlite.org/index.html)**: Used for data storage (Public Domain).
-  * **[nlohmann/json](https://github.com/nlohmann/json)**: Used for reading configurations (MIT License).
-  * **[Matplotlib](https://matplotlib.org/)**: Used for data visualization (BSD-style License).
+### AI Collaborators
+Special thanks to the following AI models for their core assistance in coding, architectural design, and documentation optimization:
+* **Gemini 2.5 Pro**
+* **Gemini 3 Pro**
+* **GPT 5.2-Codex**
+
+---
+
+## License & Open Source Libraries
+The implementation of this project would not be possible without these excellent open-source libraries. My thanks to their developers!
+
+* **[SQLite C Library](https://www.sqlite.org/index.html)**: Used for data storage (Public Domain).
+* **[nlohmann/json](https://github.com/nlohmann/json)**: Used for reading configurations (MIT License).
+* **[Matplotlib](https://matplotlib.org/)**: Used for data visualization (BSD-style License).

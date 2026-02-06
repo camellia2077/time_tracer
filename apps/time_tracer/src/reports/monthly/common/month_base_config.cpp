@@ -1,18 +1,18 @@
 // reports/monthly/common/month_base_config.cpp
-#include "month_base_config.hpp"
+#include "reports/monthly/common/month_base_config.hpp"
 
 #include <stdexcept>
 #include <utility>
 
 MonthBaseConfig::MonthBaseConfig(toml::table config)
     : config_table_(std::move(config)) {
-  load_base_config();
+  LoadBaseConfig();
 }
 
-void MonthBaseConfig::load_base_config() {
+void MonthBaseConfig::LoadBaseConfig() {
   // 使用 toml++ API 获取值
   // value_or 对于必填项如果不提供默认值会比较麻烦，这里假设配置文件是完整的
-  // 或者提供默认空字符串以避免崩溃
+  // 提供默认空字符串以避免崩溃
   report_title_ = config_table_["report_title"].value_or<std::string>("");
   actual_days_label_ =
       config_table_["actual_days_label"].value_or<std::string>("");
@@ -27,22 +27,22 @@ void MonthBaseConfig::load_base_config() {
           "Project Breakdown");
 }
 
-auto MonthBaseConfig::get_report_title() const -> const std::string& {
+auto MonthBaseConfig::GetReportTitle() const -> const std::string& {
   return report_title_;
 }
-auto MonthBaseConfig::get_actual_days_label() const -> const std::string& {
+auto MonthBaseConfig::GetActualDaysLabel() const -> const std::string& {
   return actual_days_label_;
 }
-auto MonthBaseConfig::get_total_time_label() const -> const std::string& {
+auto MonthBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
 }
-auto MonthBaseConfig::get_no_records_message() const -> const std::string& {
+auto MonthBaseConfig::GetNoRecordsMessage() const -> const std::string& {
   return no_records_message_;
 }
-auto MonthBaseConfig::get_invalid_format_message() const -> const std::string& {
+auto MonthBaseConfig::GetInvalidFormatMessage() const -> const std::string& {
   return invalid_format_message_;
 }
-auto MonthBaseConfig::get_project_breakdown_label() const
+auto MonthBaseConfig::GetProjectBreakdownLabel() const
     -> const std::string& {
   return project_breakdown_label_;
 }

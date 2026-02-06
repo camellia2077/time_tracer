@@ -1,5 +1,5 @@
 // reports/shared/config/typst_style_config.cpp
-#include "typst_style_config.hpp"
+#include "reports/shared/config/typst_style_config.hpp"
 
 TypstStyleConfig::TypstStyleConfig(const toml::table& config) {
   constexpr int kDefaultBaseFontSize = 10;
@@ -21,24 +21,24 @@ TypstStyleConfig::TypstStyleConfig(const toml::table& config) {
   line_spacing_em_ = config["line_spacing_em"].value_or(kDefaultLineSpacingEm);
 }
 
-auto TypstStyleConfig::get_base_font() const -> const std::string& {
+auto TypstStyleConfig::GetBaseFont() const -> const std::string& {
   return base_font_;
 }
-auto TypstStyleConfig::get_title_font() const -> const std::string& {
+auto TypstStyleConfig::GetTitleFont() const -> const std::string& {
   return title_font_;
 }
-auto TypstStyleConfig::get_category_title_font() const -> const std::string& {
+auto TypstStyleConfig::GetCategoryTitleFont() const -> const std::string& {
   return category_title_font_;
 }
-auto TypstStyleConfig::get_base_font_size() const -> int {
+auto TypstStyleConfig::GetBaseFontSize() const -> int {
   return base_font_size_;
 }
-auto TypstStyleConfig::get_report_title_font_size() const -> int {
+auto TypstStyleConfig::GetReportTitleFontSize() const -> int {
   return report_title_font_size_;
 }
-auto TypstStyleConfig::get_category_title_font_size() const -> int {
+auto TypstStyleConfig::GetCategoryTitleFontSize() const -> int {
   return category_title_font_size_;
 }
-auto TypstStyleConfig::get_line_spacing_em() const -> double {
+auto TypstStyleConfig::GetLineSpacingEm() const -> double {
   return line_spacing_em_;
 }

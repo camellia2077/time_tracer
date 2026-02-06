@@ -1,5 +1,5 @@
 // reports/range/formatters/markdown/range_md_formatter.cpp
-#include "range_md_formatter.hpp"
+#include "reports/range/formatters/markdown/range_md_formatter.hpp"
 
 #include <format>
 
@@ -15,36 +15,36 @@ constexpr const char* kEmptyReport = "";
 RangeMdFormatter::RangeMdFormatter(std::shared_ptr<RangeMdConfig> config)
     : BaseMdFormatter(config) {}
 
-auto RangeMdFormatter::validate_data(const RangeReportData& data) const -> std::string {
+auto RangeMdFormatter::ValidateData(const RangeReportData& data) const -> std::string {
   if (!data.is_valid) {
-    return config_->get_invalid_range_message();
+    return config_->GetInvalidRangeMessage();
   }
   return std::string{};
 }
 
-auto RangeMdFormatter::is_empty_data(const RangeReportData& data) const -> bool {
+auto RangeMdFormatter::IsEmptyData(const RangeReportData& data) const -> bool {
   return data.actual_days == 0;
 }
 
-auto RangeMdFormatter::get_avg_days(const RangeReportData& data) const -> int {
+auto RangeMdFormatter::GetAvgDays(const RangeReportData& data) const -> int {
   return data.actual_days;
 }
 
-auto RangeMdFormatter::get_no_records_msg() const -> std::string {
-  return config_->get_no_records_message();
+auto RangeMdFormatter::GetNoRecordsMsg() const -> std::string {
+  return config_->GetNoRecordsMessage();
 }
 
-void RangeMdFormatter::format_header_content(
+void RangeMdFormatter::FormatHeaderContent(
     std::stringstream& report_stream, const RangeReportData& data) const {
   std::string title =
-      format_title_template(config_->get_title_template(), data);
+      FormatTitleTemplate(config_->GetTitleTemplate(), data);
   report_stream << std::format("## {}\n\n", title);
 
   if (data.actual_days > 0) {
-    report_stream << std::format("- **{0}**: {1}\n", config_->get_total_time_label(),
-                      time_format_duration(data.total_duration,
+    report_stream << std::format("- **{0}**: {1}\n", config_->GetTotalTimeLabel(),
+                      TimeFormatDuration(data.total_duration,
                                             data.actual_days));
-    report_stream << std::format("- **{0}**: {1}\n", config_->get_actual_days_label(),
+    report_stream << std::format("- **{0}**: {1}\n", config_->GetActualDaysLabel(),
                       data.actual_days);
   }
 }
@@ -52,9 +52,8 @@ void RangeMdFormatter::format_header_content(
 extern "C" {
   // Required exports: create_formatter / destroy_formatter / format_report (lowercase)
   // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) auto create_formatter(
-      const char* config_toml) -> FormatterHandle {
+  __declspec(dllexport) auto CreateFormatter(
+      const char* config_toml) -> FormatterHandle { // NOLINT
     try {
       auto config_tbl = toml::parse(config_toml);
       auto md_config = std::make_shared<RangeMdConfig>(config_tbl);
@@ -66,8 +65,7 @@ extern "C" {
   }
 
   // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+  __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
     if (handle != nullptr) {
       std::unique_ptr<RangeMdFormatter>{
           static_cast<RangeMdFormatter*>(handle)};
@@ -77,29 +75,28 @@ extern "C" {
   static std::string report_buffer;
 
   // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) auto format_report(FormatterHandle handle,
-                                           const RangeReportData& data) -> const char* {
+  __declspec(dllexport) auto FormatReport(FormatterHandle handle,
+                                           const RangeReportData& data) -> const char* { // NOLINT
     if (handle != nullptr) {
       auto* formatter = static_cast<RangeMdFormatter*>(handle);
-      report_buffer = formatter->format_report(data);
+      report_buffer = formatter->FormatReport(data);
       return report_buffer.c_str();
     }
     return kEmptyReport;
   }
 
   // Backward-compatible exports (legacy symbol names)
-  __declspec(dllexport) auto CreateFormatter(
-      const char* config_toml) -> FormatterHandle {
-    return create_formatter(config_toml);
+  __declspec(dllexport) auto createFormatter_Legacy(
+      const char* config_toml) -> FormatterHandle { // NOLINT
+    return CreateFormatter(config_toml);
   }
 
-  __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) {
-    destroy_formatter(handle);
+  __declspec(dllexport) void destroyFormatter_Legacy(FormatterHandle handle) { // NOLINT
+    DestroyFormatter(handle);
   }
 
-  __declspec(dllexport) auto FormatReport(FormatterHandle handle,
-                                          const RangeReportData& data) -> const char* {
-    return format_report(handle, data);
+  __declspec(dllexport) auto formatReport_Legacy(FormatterHandle handle,
+                                          const RangeReportData& data) -> const char* { // NOLINT
+    return FormatReport(handle, data);
   }
 }
