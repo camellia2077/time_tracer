@@ -7,9 +7,10 @@
 class ConverterFacade {
  public:
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-  static bool validate(const toml::table& main_config,
+  static auto Validate(const toml::table& main_config,
                        const toml::table& mappings_config,
-                       const toml::table& duration_rules_config);
+                       const toml::table& duration_rules_config) -> bool;
+
   // NOLINTEND(bugprone-easily-swappable-parameters)
 };
 

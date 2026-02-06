@@ -17,23 +17,23 @@ namespace TomlLoaderUtils {
 
 // --- IO ---
 /**
- * @brief ¶ÁÈ¡²¢½âÎö TOML ÎÄ¼ş
- * @throws std::runtime_error Èç¹ûÎÄ¼ş²»´æÔÚ»ò½âÎöÊ§°Ü
+ * @brief è¯»å–å¹¶è§£æ TOML æ–‡ä»¶
+ * @throws std::runtime_error å¦‚æœæ–‡ä»¶ä¸å­˜åœ¨æˆ–è§£æå¤±è´¥
  */
-toml::table read_toml(const fs::path& path);
+auto ReadToml(const fs::path& path) -> toml::table;
 
-// --- Ä£°å¸¨Öúº¯Êı ---
+// --- æ¨¡æ¿è¾…åŠ©å‡½æ•° ---
 
-// »ñÈ¡¿ÉÑ¡Öµ
+// è·å–å¯é€‰å€¼
 template <typename T>
-T get_optional(const toml::node_view<const toml::node>& node,
-               const T& default_value) {
+auto GetOptional(const toml::node_view<const toml::node>& node,
+                 const T& default_value) -> T {
   return node.value_or(default_value);
 }
 
-// »ñÈ¡±ØĞëÖµ
+// è·å–å¿…é¡»å€¼
 template <typename T>
-T get_required(const toml::table& tbl, const std::string& key) {
+auto GetRequired(const toml::table& tbl, const std::string& key) -> T {
   if (!tbl.contains(key)) {
     throw std::runtime_error("Missing required config key: " + key);
   }
@@ -44,29 +44,29 @@ T get_required(const toml::table& tbl, const std::string& key) {
   return *val;
 }
 
-// --- Âß¼­Ìî³ä¸¨Öúº¯Êı ---
+// --- é€»è¾‘å¡«å……è¾…åŠ©å‡½æ•° ---
 
-// ½âÎöÍ³¼ÆÏî(Ö§³Öµİ¹é)
-void parse_statistics_items(const toml::array* arr,
-                            std::vector<ReportStatisticsItem>& out_items);
+// è§£æç»Ÿè®¡é¡¹(æ”¯æŒé€’å½’)
+void ParseStatisticsItems(const toml::array* arr,
+                          std::vector<ReportStatisticsItem>& out_items);
 
-// ½âÎöÑùÊ½ (Tex / Typst)
-void fill_tex_style(const toml::table& tbl, FontConfig& fonts,
-                    LayoutConfig& layout);
-void fill_typ_style(const toml::table& tbl, FontConfig& fonts,
-                    LayoutConfig& layout);
+// è§£ææ ·å¼ (Tex / Typst)
+void FillTexStyle(const toml::table& tbl, FontConfig& fonts,
+                  LayoutConfig& layout);
+void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
+                  LayoutConfig& layout);
 
-// ½âÎö±êÇ© (Daily / Range)
-void fill_daily_labels(const toml::table& tbl, DailyReportLabels& labels);
-void fill_range_labels(const toml::table& tbl, RangeReportLabels& labels);
-void fill_monthly_labels(const toml::table& tbl, MonthlyReportLabels& labels);
-void fill_period_labels(const toml::table& tbl, PeriodReportLabels& labels);
-void fill_weekly_labels(const toml::table& tbl, WeeklyReportLabels& labels);
-void fill_yearly_labels(const toml::table& tbl, YearlyReportLabels& labels);
+// è§£ææ ‡ç­¾ (Daily / Range)
+void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels);
+void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels);
+void FillMonthlyLabels(const toml::table& tbl, MonthlyReportLabels& labels);
+void FillPeriodLabels(const toml::table& tbl, PeriodReportLabels& labels);
+void FillWeeklyLabels(const toml::table& tbl, WeeklyReportLabels& labels);
+void FillYearlyLabels(const toml::table& tbl, YearlyReportLabels& labels);
 
-// ½âÎöÍ¨ÓÃ²¿·Ö
-void fill_keyword_colors(const toml::table& tbl,
-                         std::map<std::string, std::string>& colors);
+// è§£æé€šç”¨éƒ¨åˆ†
+void FillKeywordColors(const toml::table& tbl,
+                       std::map<std::string, std::string>& colors);
 }  // namespace TomlLoaderUtils
 
 #endif  // CONFIG_LOADER_TOML_LOADER_UTILS_H_

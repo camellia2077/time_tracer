@@ -1,5 +1,5 @@
 // reports/daily/formatters/markdown/day_md_formatter.cpp
-#include "day_md_formatter.hpp"
+#include "reports/daily/formatters/markdown/day_md_formatter.hpp"
 #include <iomanip>
 #include <format>
 #include <memory>
@@ -22,72 +22,74 @@ constexpr const char* kEmptyReport = "";
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config) 
     : BaseMdFormatter(config) {}
 
-auto DayMdFormatter::is_empty_data(const DailyReportData& data) const -> bool {
+auto DayMdFormatter::IsEmptyData(const DailyReportData& data) const -> bool {
     return data.total_duration == 0;
 }
 
-auto DayMdFormatter::get_avg_days(const DailyReportData& /*data*/) const -> int {
+auto DayMdFormatter::GetAvgDays(const DailyReportData& /*data*/) const -> int {
     return 1;
 }
 
-auto DayMdFormatter::get_no_records_msg() const -> std::string {
-    return config_->get_no_records();
+auto DayMdFormatter::GetNoRecordsMsg() const -> std::string {
+    return config_->GetNoRecords();
 }
 
-void DayMdFormatter::format_header_content(std::stringstream& report_stream,
+void DayMdFormatter::FormatHeaderContent(std::stringstream& report_stream,
                                            const DailyReportData& data) const {
     report_stream << std::format("## {0} {1}\n\n",
-                                 config_->get_title_prefix(),
+                                 config_->GetTitlePrefix(),
                                  data.date);
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_date_label(),
+                                 config_->GetDateLabel(),
                                  data.date);
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_total_time_label(),
-                                 time_format_duration(data.total_duration));
+                                 config_->GetTotalTimeLabel(),
+                                 TimeFormatDuration(data.total_duration));
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_status_label(),
-                                 bool_to_string(data.metadata.status));
+                                 config_->GetStatusLabel(),
+                                 BoolToString(data.metadata.status));
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_sleep_label(),
-                                 bool_to_string(data.metadata.sleep));
+                                 config_->GetSleepLabel(),
+                                 BoolToString(data.metadata.sleep));
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_exercise_label(),
-                                 bool_to_string(data.metadata.exercise));
+                                 config_->GetExerciseLabel(),
+                                 BoolToString(data.metadata.exercise));
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_getup_time_label(),
+                                 config_->GetGetupTimeLabel(),
                                  data.metadata.getup_time);
 
-    std::string formatted_remark = format_multiline_for_list(
+    std::string formatted_remark = FormatMultilineForList(
         data.metadata.remark, kRemarkIndent, kRemarkIndentPrefix);
     report_stream << std::format("- **{0}**: {1}\n",
-                                 config_->get_remark_label(),
+                                 config_->GetRemarkLabel(),
                                  formatted_remark);
 }
 
-void DayMdFormatter::format_extra_content(std::stringstream& report_stream,
+void DayMdFormatter::FormatExtraContent(std::stringstream& report_stream,
                                           const DailyReportData& data) const {
     auto strategy = std::make_unique<MarkdownStatStrategy>();
     StatFormatter stats_formatter(std::move(strategy));
-    report_stream << stats_formatter.format(data, config_);
-    _display_detailed_activities(report_stream, data);
+    report_stream << stats_formatter.Format(data, config_);
+    DisplayDetailedActivities(report_stream, data);
+
 }
 
-void DayMdFormatter::_display_detailed_activities(
+void DayMdFormatter::DisplayDetailedActivities(
     std::stringstream& report_stream, const DailyReportData& data) const {
+
     if (!data.detailed_records.empty()) {
-        report_stream << "\n## " << config_->get_all_activities_label() << "\n\n";
+        report_stream << "\n## " << config_->GetAllActivitiesLabel() << "\n\n";
         for (const auto& record : data.detailed_records) {
-            std::string project_path = replace_all(record.project_path, "_", config_->get_activity_connector());
+            std::string project_path = ReplaceAll(record.project_path, "_", config_->GetActivityConnector());
             report_stream << std::format("- {0} - {1} ({2}): {3}\n",
                                          record.start_time,
                                          record.end_time,
-                                         time_format_duration(record.duration_seconds),
+                                         TimeFormatDuration(record.duration_seconds),
                                          project_path);
             if (record.activityRemark.has_value()) {
                 report_stream << std::format(
                     "  - **{0}**: {1}\n",
-                    config_->get_activity_remark_label(),
+                    config_->GetActivityRemarkLabel(),
                     record.activityRemark.value());
             }
         }
@@ -98,9 +100,8 @@ void DayMdFormatter::_display_detailed_activities(
 extern "C" {
     // [核心修改] 解析 TOML 字符串
     // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) auto create_formatter(const char* config_content)
-        -> FormatterHandle {
+    __declspec(dllexport) auto CreateFormatter(const char* config_content)
+        -> FormatterHandle { // NOLINT
         try {
             auto config_tbl = toml::parse(config_content);
             auto md_config = std::make_shared<DayMdConfig>(config_tbl);
@@ -111,9 +112,7 @@ extern "C" {
         }
     }
 
-    // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
         if (handle != nullptr) {
             std::unique_ptr<DayMdFormatter>{
                 static_cast<DayMdFormatter*>(handle)};
@@ -122,14 +121,12 @@ extern "C" {
 
     static std::string report_buffer;
 
-    // Public API: keep symbol name stable for dynamic loading.
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    __declspec(dllexport) auto format_report(FormatterHandle handle,
+    __declspec(dllexport) auto FormatReport(FormatterHandle handle,
                                              const DailyReportData& data)
-        -> const char* {
+        -> const char* { // NOLINT
         if (handle != nullptr) {
             auto* formatter = static_cast<DayMdFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
+            report_buffer = formatter->FormatReport(data);
             return report_buffer.c_str();
         }
         return kEmptyReport;

@@ -1,3 +1,18 @@
+## 2026-02-04 更新说明
+
+### 技术改进/重构 (Refactor)
+*   **构建系统优化**: 新增 `--build-dir` 参数支持，实现 `build`、`build_fast` 与 `build_tidy` 目录的彻底物理隔离。
+*   **脚本同步**: 更新 `build.sh`、`build_fast.sh` 与 `build_tidy.sh`，采用显式参数传递，消除环境变量依赖。
+*   **测试环境动态化**: 在 `env.toml` 中引入 `project_apps_root`，支持通过 `run.py --build-dir` 一键切换测试目标。
+*   **终端兼容性优化**: 移除测试输出中的 Unicode 字符（如 `checkmark`, `bullseye`），统一使用 ASCII 字符，并引入 `flush=True` 以增强 Windows 终端稳定性。
+
+### 新增功能 (Added)
+*   **一键启动脚本**: 新增 `run.bat`、`run_fast.bat` 及其 `.sh` 版本，简化不同构建模式下的测试流程。
+*   **增强型摘要**: 在 **TEST SUMMARY** 中直接展示程序版本号及关键组件（`exe`, `dll`, `plugins`）的文件大小。
+
+### 修复 (Fixed)
+*   **逻辑恢复**: 修复了 **VersionChecker** 与新版测试引擎的集成问题，恢复了版本号及大小信息的捕获展示。
+
 ## 2026-01-18 更新说明
 
 ### 核心变更摘要

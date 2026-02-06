@@ -23,8 +23,9 @@ class MemoryParser {
    * @param data_map 内存中的按月分组数据。
    * @return 可直接用于入库的 ParsedData 结构。
    */
-  static ParsedData parse(
-      const std::map<std::string, std::vector<DailyLog>>& data_map);
+  static auto Parse(
+      const std::map<std::string, std::vector<DailyLog>>& data_map)
+      -> ParsedData;
 };
 
 #endif  // IMPORTER_PARSER_MEMORY_PARSER_H_

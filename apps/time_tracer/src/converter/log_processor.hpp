@@ -21,11 +21,11 @@ class LogProcessor {
  public:
   explicit LogProcessor(const ConverterConfig& config);
 
-  void convertStreamToData(std::istream& combined_stream,
+  void ConvertStreamToData(std::istream& combined_stream,
                            std::function<void(DailyLog&&)> data_consumer);
 
-  LogProcessingResult processSourceContent(const std::string& filename,
-                                           const std::string& content);
+  auto ProcessSourceContent(const std::string& filename,
+                            const std::string& content) -> LogProcessingResult;
 
  private:
   const ConverterConfig& config_;

@@ -3,81 +3,125 @@
 
 #include <algorithm>
 #include <iterator>
+#include <span>
 #include <stdexcept>
+#include <utility>
+
+#include "cli/framework/core/arg_definitions.hpp"
+
+namespace {
+constexpr size_t kMinArgsForCommand = 2;
+constexpr size_t kCommandArgIndex = 1;
+}  // namespace
 
 // [修改] 初始化配置
-CommandParser::CommandParser(const std::vector<std::string>& args,
-                             const ParserConfig& config)
-    : raw_args_(args), config_(config) {
-  if (args.size() < 2) {
+CommandParser::CommandParser(std::vector<std::string> args,
+                             ParserConfig config)
+    : raw_args_(std::move(args)), config_(std::move(config)) {
+  if (raw_args_.size() < kMinArgsForCommand) {
     throw std::runtime_error("No command provided.");
   }
-  command_ = raw_args_[1];
-  parse();
+  command_ = raw_args_[kCommandArgIndex];
+  Parse();
 }
 
-auto CommandParser::get_command() const -> std::string {
+auto CommandParser::GetCommand() const -> std::string {
   return command_;
 }
 
-auto CommandParser::get_filtered_args() const
+auto CommandParser::GetFilteredArgs() const
     -> const std::vector<std::string>& {
   return filtered_args_;
 }
 
-auto CommandParser::get_raw_arg(size_t index) const -> std::string {
+auto CommandParser::GetPositionalArgs() const -> std::vector<std::string> {
+  std::vector<std::string> positionals;
+  for (const auto& arg : filtered_args_) {
+    if (!arg.empty() && arg[0] != '-') {
+      positionals.push_back(arg);
+    }
+  }
+  return positionals;
+}
+
+auto CommandParser::GetPositionalArgs(std::span<const ArgDef> definitions) const
+    -> std::vector<std::string> {
+  // 收集所有 Option 类型的 keys
+  std::vector<std::string> option_keys;
+  for (const auto& def : definitions) {
+    if (def.type == ArgType::kOption) {
+      for (const auto& key : def.keys) {
+        option_keys.push_back(key);
+      }
+    }
+  }
+
+  std::vector<std::string> positionals;
+  for (size_t i = 0; i < filtered_args_.size(); ++i) {
+    const auto& arg = filtered_args_[i];
+
+    // 检查是否是 Option key
+    bool is_option_key = std::ranges::find(option_keys, arg) != option_keys.end();
+    if (is_option_key) {
+      // 跳过选项本身和它的值
+      ++i;
+      continue;
+    }
+
+    // 跳过以 '-' 开头的参数 (flags)
+    if (!arg.empty() && arg[0] == '-') {
+      continue;
+    }
+
+    positionals.push_back(arg);
+  }
+  return positionals;
+}
+
+auto CommandParser::GetRawArg(size_t index) const -> std::string {
   if (index >= raw_args_.size()) {
     throw std::out_of_range("Argument index out of range.");
   }
   return raw_args_[index];
 }
 
-auto CommandParser::get_option(const std::vector<std::string>& keys) const
+auto CommandParser::GetOption(const std::vector<std::string>& keys) const
     -> std::optional<std::string> {
   for (const auto& key : keys) {
-    auto it = std::ranges::find(raw_args_, key);
-    if (it != raw_args_.end() && std::next(it) != raw_args_.end()) {
-      return *std::next(it);
+    auto found_it = std::ranges::find(raw_args_, key);
+    if (found_it != raw_args_.end() && std::next(found_it) != raw_args_.end()) {
+      return *std::next(found_it);
     }
   }
   return std::nullopt;
 }
 
-auto CommandParser::has_flag(const std::vector<std::string>& keys) const
-    -> bool {
-  for (const auto& key : keys) {
-    if (std::ranges::find(raw_args_, key) != raw_args_.end()) {
-      return true;
-    }
-  }
-  return false;
+auto CommandParser::HasFlag(const std::vector<std::string>& keys) const -> bool {
+  return std::ranges::any_of(keys, [this](const std::string& key) -> bool {
+    return std::ranges::find(raw_args_, key) != raw_args_.end();
+  });
 }
 
-void CommandParser::parse() {
-  filtered_args_ = filter_global_options(raw_args_);
+void CommandParser::Parse() {
+  filtered_args_ = FilterGlobalOptions(raw_args_);
 }
 
-// [修改] 使用 config_ 中的定义进行过滤，彻底移除硬编码
-auto CommandParser::filter_global_options(
+auto CommandParser::FilterGlobalOptions(
     const std::vector<std::string>& original_args) -> std::vector<std::string> {
   std::vector<std::string> filtered;
 
   for (size_t i = 0; i < original_args.size(); ++i) {
     const auto& arg = original_args[i];
 
-    // 1. 检查是否是带值选项 (Value Options)
-    if (std::ranges::find(config_.global_value_options,
-
-                          arg) != config_.global_value_options.end()) {
-      i++;  // 跳过 key 和 value
+    if (std::ranges::find(config_.global_value_options, arg) !=
+        config_.global_value_options.end()) {
+      i++;
       continue;
     }
 
-    // 2. 检查是否是布尔选项 (Flags)
-    if (std::ranges::find(config_.global_flag_options,
-
-                          arg) != config_.global_flag_options.end()) {
-      continue;  // 仅跳过 key
+    if (std::ranges::find(config_.global_flag_options, arg) !=
+        config_.global_flag_options.end()) {
+      continue;
     }
 
     filtered.push_back(arg);

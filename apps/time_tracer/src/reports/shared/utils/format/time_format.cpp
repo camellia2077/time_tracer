@@ -1,5 +1,5 @@
 // reports/shared/utils/format/time_format.cpp
-#include "time_format.hpp"
+#include "reports/shared/utils/format/time_format.hpp"
 
 #include <chrono>
 #include <ctime>
@@ -15,7 +15,7 @@ constexpr int kDayOffset = 8;
 constexpr int kTmYearBase = 1900;
 }  // namespace
 
-auto time_format_duration(long long total_seconds, int avg_days)
+auto TimeFormatDuration(long long total_seconds, int avg_days)
     -> std::string {
   if (total_seconds == 0) {
     if (avg_days > 1) {
@@ -57,7 +57,7 @@ auto time_format_duration(long long total_seconds, int avg_days)
 }
 
 // [核心修改] 适配 YYYY-MM-DD 格式
-auto add_days_to_date_str(std::string date_str, int days) -> std::string {
+auto AddDaysToDateStr(std::string date_str, int days) -> std::string {
   // 预期输入: "2025-01-01" (10 chars)
   if (date_str.length() != static_cast<size_t>(kDateStringLength)) {
     return date_str;
@@ -83,7 +83,7 @@ auto add_days_to_date_str(std::string date_str, int days) -> std::string {
 }
 
 // [核心修改] 适配 YYYY-MM-DD 格式
-auto get_current_date_str() -> std::string {
+auto GetCurrentDateStr() -> std::string {
   auto now = std::chrono::system_clock::now();
   auto in_time_t = std::chrono::system_clock::to_time_t(now);
   std::stringstream formatted_ss;

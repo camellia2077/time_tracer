@@ -1,5 +1,5 @@
 // application/pipeline/utils/converter_config_factory.cpp
-#include "converter_config_factory.hpp"
+#include "application/pipeline/utils/converter_config_factory.hpp"
 
 #include <iostream>
 
@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 namespace core::pipeline {
 
-auto ConverterConfigFactory::create(const fs::path& interval_config_path,
+auto ConverterConfigFactory::Create(const fs::path& interval_config_path,
                                     const AppConfig& app_config)
     -> ConverterConfig {
   std::cout << "Loading Converter Config from: "
@@ -17,7 +17,8 @@ auto ConverterConfigFactory::create(const fs::path& interval_config_path,
 
   // 1. 委托 Config 模块加载 (文件读取、合并、Struct填充)
   ConverterConfig config =
-      ConverterConfigLoader::load_from_file(interval_config_path);
+      ConverterConfigLoader::LoadFromFile(interval_config_path);
+
 
   // 2. 注入运行时参数 (Initial Top Parents)
   for (const auto& [path_key, path_val] :

@@ -5,10 +5,10 @@
 
 RangeBaseConfig::RangeBaseConfig(toml::table config)
     : config_table_(std::move(config)) {
-  load_base_config();
+  LoadBaseConfig();
 }
 
-void RangeBaseConfig::load_base_config() {
+void RangeBaseConfig::LoadBaseConfig() {
   title_template_ = config_table_["title_template"].value_or<std::string>("");
   total_time_label_ =
       config_table_["total_time_label"].value_or<std::string>("");
@@ -23,27 +23,27 @@ void RangeBaseConfig::load_base_config() {
           "Project Breakdown");
 }
 
-auto RangeBaseConfig::get_title_template() const -> const std::string& {
+auto RangeBaseConfig::GetTitleTemplate() const -> const std::string& {
   return title_template_;
 }
 
-auto RangeBaseConfig::get_total_time_label() const -> const std::string& {
+auto RangeBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
 }
 
-auto RangeBaseConfig::get_actual_days_label() const -> const std::string& {
+auto RangeBaseConfig::GetActualDaysLabel() const -> const std::string& {
   return actual_days_label_;
 }
 
-auto RangeBaseConfig::get_no_records_message() const -> const std::string& {
+auto RangeBaseConfig::GetNoRecordsMessage() const -> const std::string& {
   return no_records_message_;
 }
 
-auto RangeBaseConfig::get_invalid_range_message() const -> const std::string& {
+auto RangeBaseConfig::GetInvalidRangeMessage() const -> const std::string& {
   return invalid_range_message_;
 }
 
-auto RangeBaseConfig::get_project_breakdown_label() const
+auto RangeBaseConfig::GetProjectBreakdownLabel() const
     -> const std::string& {
   return project_breakdown_label_;
 }

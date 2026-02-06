@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <sstream>
 
-auto parse_gregorian_year(std::string_view input, int& gregorian_year) -> bool {
+auto ParseGregorianYear(std::string_view input, int& gregorian_year) -> bool {
   constexpr int kYearLength = 4;
   constexpr int kDecimalBase = 10;
   if (input.size() != static_cast<size_t>(kYearLength)) {
@@ -25,7 +25,7 @@ auto parse_gregorian_year(std::string_view input, int& gregorian_year) -> bool {
   return true;
 }
 
-auto format_gregorian_year(int gregorian_year) -> std::string {
+auto FormatGregorianYear(int gregorian_year) -> std::string {
   std::ostringstream oss;
   oss << std::setw(4) << std::setfill('0') << gregorian_year;
   return oss.str();

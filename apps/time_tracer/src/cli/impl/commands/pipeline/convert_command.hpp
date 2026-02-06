@@ -4,17 +4,26 @@
 
 #include "application/interfaces/i_workflow_handler.hpp"
 #include "cli/framework/interfaces/i_command.hpp"
+#include "domain/types/date_check_mode.hpp"
 
 class ConvertCommand : public ICommand {
  public:
-  explicit ConvertCommand(IWorkflowHandler& workflow_handler);
+  ConvertCommand(IWorkflowHandler& workflow_handler,
+                 DateCheckMode default_date_check_mode,
+                 bool default_save_processed_output,
+                 bool default_validate_logic, bool default_validate_structure);
 
-  std::vector<ArgDef> get_definitions() const override;
-  std::string get_help() const override;
-  void execute(const CommandParser& parser) override;
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+
+  auto Execute(const CommandParser& parser) -> void override;
 
  private:
   IWorkflowHandler& workflow_handler_;
+  DateCheckMode default_date_check_mode_;
+  bool default_save_processed_output_;
+  bool default_validate_logic_;
+  bool default_validate_structure_;
 };
 
 #endif

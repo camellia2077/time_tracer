@@ -15,18 +15,18 @@ class REPORTS_SHARED_API RangeBaseConfig {
   explicit RangeBaseConfig(toml::table config);
   virtual ~RangeBaseConfig() = default;
 
-  const std::string& get_title_template() const;
-  const std::string& get_total_time_label() const;
-  const std::string& get_actual_days_label() const;
-  const std::string& get_no_records_message() const;
-  const std::string& get_invalid_range_message() const;
-  const std::string& get_project_breakdown_label() const;
+  [[nodiscard]] auto GetTitleTemplate() const -> const std::string&;
+  [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
+  [[nodiscard]] auto GetActualDaysLabel() const -> const std::string&;
+  [[nodiscard]] auto GetNoRecordsMessage() const -> const std::string&;
+  [[nodiscard]] auto GetInvalidRangeMessage() const -> const std::string&;
+  [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
  protected:
   toml::table config_table_;
 
  private:
-  void load_base_config();
+  void LoadBaseConfig();
 
   std::string title_template_;
   std::string total_time_label_;

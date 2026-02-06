@@ -13,40 +13,41 @@
 namespace fs = std::filesystem;
 class ReportFileManager;
 
+struct SingleExportTask {
+  std::string_view id;
+  std::string_view content;
+};
+
 class Exporter {
  public:
   explicit Exporter(const fs::path& export_root_path);
   ~Exporter();
 
-  void export_single_day_report(const std::string& date,
-                                const std::string& content,
+  void ExportSingleDayReport(const SingleExportTask& task,
+                             ReportFormat format) const;
+  void ExportSingleMonthReport(const SingleExportTask& task,
+                               ReportFormat format) const;
+  void ExportSinglePeriodReport(int days, std::string_view content,
                                 ReportFormat format) const;
-  void export_single_month_report(const std::string& month,
-                                  const std::string& content,
-                                  ReportFormat format) const;
-  void export_single_period_report(int days, const std::string& content,
-                                   ReportFormat format) const;
-  void export_single_week_report(const std::string& iso_week,
-                                 const std::string& content,
-                                 ReportFormat format) const;
-  void export_single_year_report(const std::string& year,
-                                 const std::string& content,
-                                 ReportFormat format) const;
+  void ExportSingleWeekReport(const SingleExportTask& task,
+                              ReportFormat format) const;
+  void ExportSingleYearReport(const SingleExportTask& task,
+                              ReportFormat format) const;
 
-  void export_all_daily_reports(const FormattedGroupedReports& reports,
-                                ReportFormat format) const;
-  void export_all_monthly_reports(const FormattedMonthlyReports& reports,
-                                  ReportFormat format) const;
-  void export_all_period_reports(const FormattedPeriodReports& reports,
-                                 ReportFormat format) const;
-  void export_all_weekly_reports(const FormattedWeeklyReports& reports,
-                                 ReportFormat format) const;
-  void export_all_yearly_reports(const FormattedYearlyReports& reports,
-                                 ReportFormat format) const;
+  void ExportAllDailyReports(const FormattedGroupedReports& reports,
+                             ReportFormat format) const;
+  void ExportAllMonthlyReports(const FormattedMonthlyReports& reports,
+                               ReportFormat format) const;
+  void ExportAllPeriodReports(const FormattedPeriodReports& reports,
+                              ReportFormat format) const;
+  void ExportAllWeeklyReports(const FormattedWeeklyReports& reports,
+                              ReportFormat format) const;
+  void ExportAllYearlyReports(const FormattedYearlyReports& reports,
+                              ReportFormat format) const;
 
  private:
-  static void write_report_to_file(const std::string& report_content,
-                                   const fs::path& output_path);
+  static void WriteReportToFile(std::string_view report_content,
+                                const fs::path& output_path);
   std::unique_ptr<ReportFileManager> file_manager_;
 };
 #endif  // INFRASTRUCTURE_REPORTS_EXPORTER_H_

@@ -6,7 +6,7 @@
 
 class DurationRule {
  public:
-  static bool validate(const toml::table& duration_tbl);
+  static auto Validate(const toml::table& duration_tbl) -> bool;
 };
 
 #endif  // CONFIG_VALIDATOR_CONVERTER_RULES_DURATION_RULE_H_

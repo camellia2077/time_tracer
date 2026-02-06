@@ -10,8 +10,8 @@ namespace core::pipeline {
 
 class FileCollector {
  public:
-  static bool execute(PipelineContext& context,
-                      const std::string& extension = ".txt");
+  static auto Execute(PipelineContext& context,
+                      const std::string& extension = ".txt") -> bool;
 };
 
 }  // namespace core::pipeline

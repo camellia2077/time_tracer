@@ -7,6 +7,7 @@ from ..conf.definitions import GlobalConfig, TestContext, Colors, CommandSpec, T
 from ..infrastructure.environment import EnvironmentManager
 from .base import BaseTester, TestCounter
 from .reporter import Reporter
+from ..cases.version import VersionChecker
 
 class TableTester(BaseTester):
     def __init__(self, counter: TestCounter, module_order: int, stage: str,
@@ -129,14 +130,21 @@ class TestEngine:
 
         modules: List[BaseTester] = []
         for idx, (stage, commands) in enumerate(stages, 1):
-            modules.append(TableTester(
-                counter=counter,
-                module_order=idx,
-                stage=stage,
-                context=ctx,
-                commands=self._expand_commands(ctx, commands),
-                stop_on_failure=self.run_control.STOP_ON_FAILURE
-            ))
+            if stage == "version":
+                modules.append(VersionChecker(
+                    counter=counter,
+                    module_order=idx,
+                    context=ctx
+                ))
+            else:
+                modules.append(TableTester(
+                    counter=counter,
+                    module_order=idx,
+                    stage=stage,
+                    context=ctx,
+                    commands=self._expand_commands(ctx, commands),
+                    stop_on_failure=self.run_control.STOP_ON_FAILURE
+                ))
         return modules
 
     def _expand_commands(self, ctx: TestContext, commands: List[CommandSpec]) -> List[CommandSpec]:

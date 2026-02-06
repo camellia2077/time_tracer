@@ -10,7 +10,8 @@
 
 struct DailyLog;
 
-void handle_process_memory_data(
+void HandleProcessMemoryData(
+
     const std::string& db_name,
     const std::map<std::string, std::vector<DailyLog>>& data_map);
 

@@ -9,7 +9,7 @@
 #include "reports/data/model/monthly_report_data.hpp"
 #include "reports/data/queriers/base_querier.hpp"
 
-class MonthQuerier : public BaseQuerier<MonthlyReportData, const std::string&> {
+class MonthQuerier : public BaseQuerier<MonthlyReportData, std::string_view> {
  public:
   static constexpr int kYearMonthLength = 7;
   static constexpr int kDashPosition = 4;
@@ -17,16 +17,16 @@ class MonthQuerier : public BaseQuerier<MonthlyReportData, const std::string&> {
   static constexpr int kMonthStartPosition = 5;
   static constexpr int kMonthEndPosition = 6;
 
-  explicit MonthQuerier(sqlite3* sqlite_db, const std::string& year_month);
+  explicit MonthQuerier(sqlite3* sqlite_db, std::string_view year_month);
 
-  [[nodiscard]] auto fetch_data() -> MonthlyReportData override;
+  [[nodiscard]] auto FetchData() -> MonthlyReportData override;
 
  protected:
-  [[nodiscard]] auto get_date_condition_sql() const -> std::string override;
-  void bind_sql_parameters(sqlite3_stmt* stmt) const override;
-  [[nodiscard]] auto _validate_input() const -> bool override;
-  void _handle_invalid_input(MonthlyReportData& data) const override;
-  void _prepare_data(MonthlyReportData& data) const override;
+  [[nodiscard]] auto GetDateConditionSql() const -> std::string override;
+  void BindSqlParameters(sqlite3_stmt* stmt) const override;
+  [[nodiscard]] auto ValidateInput() const -> bool override;
+  void HandleInvalidInput(MonthlyReportData& data) const override;
+  void PrepareData(MonthlyReportData& data) const override;
 };
 
 #endif  // REPORTS_DATA_QUERIERS_MONTHLY_MONTH_QUERIER_H_

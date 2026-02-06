@@ -10,19 +10,19 @@
 #include "reports/data/queriers/base_querier.hpp"
 #include "reports/shared/utils/format/iso_week_utils.hpp"
 
-class WeekQuerier : public BaseQuerier<WeeklyReportData, std::string> {
+class WeekQuerier : public BaseQuerier<WeeklyReportData, std::string_view> {
  public:
-  WeekQuerier(sqlite3* sqlite_db, const std::string& iso_week);
+  WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week);
 
-  WeeklyReportData fetch_data() override;
+  [[nodiscard]] auto FetchData() -> WeeklyReportData override;
 
  protected:
-  std::string get_date_condition_sql() const override;
-  void bind_sql_parameters(sqlite3_stmt* stmt) const override;
+  [[nodiscard]] auto GetDateConditionSql() const -> std::string override;
+  void BindSqlParameters(sqlite3_stmt* stmt) const override;
 
-  bool _validate_input() const override;
-  void _handle_invalid_input(WeeklyReportData& data) const override;
-  void _prepare_data(WeeklyReportData& data) const override;
+  [[nodiscard]] auto ValidateInput() const -> bool override;
+  void HandleInvalidInput(WeeklyReportData& data) const override;
+  void PrepareData(WeeklyReportData& data) const override;
 
  private:
   mutable std::string start_date_;

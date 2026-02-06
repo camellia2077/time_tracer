@@ -1,5 +1,5 @@
 // config/validator/reports/strategies/strategy_factory.cpp
-#include "strategy_factory.hpp"
+#include "config/validator/reports/strategies/strategy_factory.hpp"
 
 #include <memory>
 #include <string>
@@ -11,8 +11,9 @@
 #include "config/validator/reports/strategies/weekly/weekly.hpp"
 #include "config/validator/reports/strategies/yearly/yearly.hpp"
 
-auto StrategyFactory::createStrategy(const std::string& file_name)
+auto StrategyFactory::CreateStrategy(const std::string& file_name)
     -> std::unique_ptr<IQueryStrategy> {
+
   if (file_name.find("DayMd") != std::string::npos) {
     return std::make_unique<DailyMd>();
   }

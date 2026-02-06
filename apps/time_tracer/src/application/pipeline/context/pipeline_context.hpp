@@ -8,7 +8,7 @@
 
 #include "common/config/app_config.hpp"
 #include "domain/model/daily_log.hpp"
-#include "validator/common/ValidatorUtils.hpp"
+#include "validator/common/validator_utils.hpp"
 
 // [重构] 引用 Common 定义的配置结构体
 #include <nlohmann/json.hpp>
@@ -28,7 +28,7 @@ struct PipelineRunConfig {
   fs::path input_root;
   fs::path output_root;
 
-  DateCheckMode date_check_mode = DateCheckMode::None;
+  DateCheckMode date_check_mode = DateCheckMode::kNone;
   bool save_processed_output = false;
 
   PipelineRunConfig(const AppConfig& cfg, fs::path out)

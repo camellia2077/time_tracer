@@ -18,7 +18,7 @@ constexpr int kDayOffset = 6;
 constexpr int kMonthFormatLength = 6;
 }  // namespace
 
-auto time_str_to_seconds(const std::string& time_str_in) -> int {
+auto TimeStrToSeconds(const std::string& time_str_in) -> int {
   std::string time_str = time_str_in;
   if (time_str.length() == static_cast<size_t>(kTimeFormatLength - 1) &&
       time_str.find(':') == std::string::npos) {
@@ -53,7 +53,7 @@ auto time_str_to_seconds(const std::string& time_str_in) -> int {
 
 // --- [新增实现] ---
 
-auto normalize_to_date_format(const std::string& input) -> std::string {
+auto NormalizeToDateFormat(const std::string& input) -> std::string {
   // 如果是 8 位纯数字 (20250101)，转换为 2025-01-01
   if (input.length() == static_cast<size_t>(kDateStringLength) &&
       std::ranges::all_of(input, ::isdigit)) {
@@ -64,7 +64,7 @@ auto normalize_to_date_format(const std::string& input) -> std::string {
   return input;
 }
 
-auto normalize_to_month_format(const std::string& input) -> std::string {
+auto NormalizeToMonthFormat(const std::string& input) -> std::string {
   // 如果是 6 位纯数字 (202501)，转换为 2025-01
   if (input.length() == static_cast<size_t>(kMonthFormatLength) &&
       std::ranges::all_of(input, ::isdigit)) {

@@ -8,7 +8,7 @@ namespace core::pipeline {
 
 class LogicValidatorStep {
  public:
-  static bool execute(PipelineContext& context);
+  static auto Execute(PipelineContext& context) -> bool;
 };
 
 }  // namespace core::pipeline

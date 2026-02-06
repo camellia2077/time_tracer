@@ -17,32 +17,32 @@ class DayTypConfig : public DayBaseConfig {
 
   explicit DayTypConfig(const toml::table& config);
 
-  [[nodiscard]] auto get_statistic_font_size() const -> int;
-  [[nodiscard]] auto get_statistic_title_font_size() const -> int;
-  [[nodiscard]] auto get_keyword_colors() const
+  [[nodiscard]] auto GetStatisticFontSize() const -> int;
+  [[nodiscard]] auto GetStatisticTitleFontSize() const -> int;
+  [[nodiscard]] auto GetKeywordColors() const
       -> const std::map<std::string, std::string>&;
 
   // 代理
-  [[nodiscard]] auto get_title_font() const -> const std::string& {
-    return style_.get_title_font();
+  [[nodiscard]] auto GetTitleFont() const -> const std::string& {
+    return style_.GetTitleFont();
   }
-  [[nodiscard]] auto get_base_font() const -> const std::string& {
-    return style_.get_base_font();
+  [[nodiscard]] auto GetBaseFont() const -> const std::string& {
+    return style_.GetBaseFont();
   }
-  [[nodiscard]] auto get_category_title_font() const -> const std::string& {
-    return style_.get_category_title_font();
+  [[nodiscard]] auto GetCategoryTitleFont() const -> const std::string& {
+    return style_.GetCategoryTitleFont();
   }
-  [[nodiscard]] auto get_base_font_size() const -> int {
-    return style_.get_base_font_size();
+  [[nodiscard]] auto GetBaseFontSize() const -> int {
+    return style_.GetBaseFontSize();
   }
-  [[nodiscard]] auto get_report_title_font_size() const -> int {
-    return style_.get_report_title_font_size();
+  [[nodiscard]] auto GetReportTitleFontSize() const -> int {
+    return style_.GetReportTitleFontSize();
   }
-  [[nodiscard]] auto get_category_title_font_size() const -> int {
-    return style_.get_category_title_font_size();
+  [[nodiscard]] auto GetCategoryTitleFontSize() const -> int {
+    return style_.GetCategoryTitleFontSize();
   }
-  [[nodiscard]] auto get_line_spacing_em() const -> double {
-    return style_.get_line_spacing_em();
+  [[nodiscard]] auto GetLineSpacingEm() const -> double {
+    return style_.GetLineSpacingEm();
   }
 
  private:

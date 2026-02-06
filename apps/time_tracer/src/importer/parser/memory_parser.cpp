@@ -1,5 +1,5 @@
 // importer/parser/memory_parser.cpp
-#include "memory_parser.hpp"
+#include "importer/parser/memory_parser.hpp"
 
 #include <iostream>
 
@@ -36,11 +36,21 @@ auto ProcessDayRemarks(const std::vector<std::string>& remarks_vec)
   }
   return merged_remark;
 }
+
+auto ResolveGetupTime(const DailyLog& day) -> std::string {
+  if (day.isContinuation) {
+    return "Null";
+  }
+  if (day.getupTime.empty()) {
+    return "00:00";
+  }
+  return day.getupTime;
+}
 }  // namespace
 
-auto MemoryParser::parse(
-    const std::map<std::string, std::vector<DailyLog>>& data_map)
-    -> ParsedData {
+auto MemoryParser::Parse(
+    const std::map<std::string, std::vector<DailyLog>>& data_map) -> ParsedData {
+
   ParsedData all_data;
 
   for (const auto& [month_str, days] : data_map) {
@@ -54,6 +64,7 @@ auto MemoryParser::parse(
       day_data.sleep = input_day.hasSleepActivity ? 1 : 0;
       day_data.exercise = input_day.hasExerciseActivity ? 1 : 0;
       day_data.remark = ProcessDayRemarks(input_day.generalRemarks);
+      day_data.getup_time = ResolveGetupTime(input_day);
 
       // [核心修改] 直接赋值统计数据！
       day_data.stats = input_day.stats;

@@ -1,11 +1,10 @@
 // reports/services/daily_report_service.cpp
-#include "daily_report_service.hpp"
+#include "reports/services/daily_report_service.hpp"
 // [修改] 指向新的 data 模块路径
 #include <stdexcept>
 
-#include "reports/data/cache/project_name_cache.hpp"
 #include "reports/data/queriers/daily/batch_day_data_fetcher.hpp"
-#include "reports/data/utils/project_tree_builder.hpp"
+#include "reports/services/batch_export_helpers.hpp"
 #include "reports/shared/factories/generic_formatter_factory.hpp"
 
 DailyReportService::DailyReportService(sqlite3* sqlite_db,
@@ -21,17 +20,16 @@ auto DailyReportService::generate_all_reports(ReportFormat format)
   FormattedGroupedReports grouped_reports;
 
   // [新增] 准备项目名称缓存
-  auto& name_cache = ProjectNameCache::instance();
-  name_cache.ensure_loaded(db_);
+  auto& name_cache = reports::services::EnsureProjectNameCache(db_);
 
   // 1. 委托 Fetcher 获取所有准备好的数据
   // [注意] BatchDayDataFetcher 的构造函数现在需要 IProjectInfoProvider
   BatchDayDataFetcher fetcher(db_, name_cache);
-  BatchDataResult batch_data = fetcher.fetch_all_data();
+  BatchDataResult batch_data = fetcher.FetchAllData();
 
   // 2. 创建格式化器
   auto formatter =
-      GenericFormatterFactory<DailyReportData>::create(format, app_config_);
+      GenericFormatterFactory<DailyReportData>::Create(format, app_config_);
 
   // 3. 遍历并格式化
   for (const auto& [date, year, month] : batch_data.date_order) {
@@ -39,11 +37,10 @@ auto DailyReportService::generate_all_reports(ReportFormat format)
 
     if (data.total_duration > 0) {
       // [修改] 传入 name_cache 替代 db_
-      build_project_tree_from_ids(data.project_tree, data.project_stats,
-                                  name_cache);
+      reports::services::EnsureProjectTree(data, name_cache);
 
       // 格式化
-      std::string formatted_report = formatter->format_report(data);
+      std::string formatted_report = formatter->FormatReport(data);
       grouped_reports[year][month].emplace_back(date, formatted_report);
     }
   }

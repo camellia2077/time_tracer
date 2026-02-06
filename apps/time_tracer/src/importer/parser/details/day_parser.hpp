@@ -8,7 +8,7 @@
 
 class DayParser {
  public:
-  static DayData parse(const nlohmann::json& day_json);
+  static auto Parse(const nlohmann::json& day_json) -> DayData;
 };
 
 #endif  // IMPORTER_PARSER_DETAILS_DAY_PARSER_H_

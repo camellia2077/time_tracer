@@ -10,19 +10,19 @@
 #include "reports/data/queriers/base_querier.hpp"
 #include "reports/shared/utils/format/year_utils.hpp"
 
-class YearQuerier : public BaseQuerier<YearlyReportData, std::string> {
+class YearQuerier : public BaseQuerier<YearlyReportData, std::string_view> {
  public:
-  YearQuerier(sqlite3* sqlite_db, const std::string& year_str);
+  YearQuerier(sqlite3* sqlite_db, std::string_view year_str);
 
-  YearlyReportData fetch_data() override;
+  [[nodiscard]] auto FetchData() -> YearlyReportData override;
 
  protected:
-  std::string get_date_condition_sql() const override;
-  void bind_sql_parameters(sqlite3_stmt* stmt) const override;
+  [[nodiscard]] auto GetDateConditionSql() const -> std::string override;
+  void BindSqlParameters(sqlite3_stmt* stmt) const override;
 
-  bool _validate_input() const override;
-  void _handle_invalid_input(YearlyReportData& data) const override;
-  void _prepare_data(YearlyReportData& data) const override;
+  [[nodiscard]] auto ValidateInput() const -> bool override;
+  void HandleInvalidInput(YearlyReportData& data) const override;
+  void PrepareData(YearlyReportData& data) const override;
 
  private:
   mutable std::string start_date_;

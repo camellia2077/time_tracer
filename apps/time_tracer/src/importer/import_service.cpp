@@ -10,9 +10,10 @@
 ImportService::ImportService(std::string db_path)
     : db_path_(std::move(db_path)) {}
 
-auto ImportService::import_from_memory(
+auto ImportService::ImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map)
     -> ImportStats {
+
   ImportStats stats;
   for (const auto& data_pair : data_map) {
     stats.total_files += data_pair.second.size();
@@ -25,8 +26,9 @@ auto ImportService::import_from_memory(
 
   auto start = std::chrono::high_resolution_clock::now();
 
-  // 1. 转换 (MemoryParser::parse is a static method)
-  ParsedData all_data = MemoryParser::parse(data_map);
+  // 1. 转换 (MemoryParser::Parse is a static method)
+  ParsedData all_data = MemoryParser::Parse(data_map);
+
 
   auto end_parsing = std::chrono::high_resolution_clock::now();
   stats.parsing_duration_s =
@@ -34,10 +36,10 @@ auto ImportService::import_from_memory(
 
   // 2. 入库
   Repository inserter(db_path_);
-  if (inserter.is_db_open()) {
+  if (inserter.IsDbOpen()) {
     stats.db_open_success = true;
     try {
-      inserter.import_data(all_data.days, all_data.records);
+      inserter.ImportData(all_data.days, all_data.records);
       stats.transaction_success = true;
     } catch (const std::exception& e) {
       stats.transaction_success = false;

@@ -3,7 +3,7 @@ wake_keywords = [
     "醒",
     "w",
     "wake",
-    "新的一天开始了A"
+    "新的一天开始了"
 ]
 
 
@@ -11,22 +11,24 @@ wake_keywords = [
 prefix = "r "
 contents = [
     "守望先锋真好玩",
-    "minecraft真好玩",
-    "皇室战争真好玩",
-    "今天天气真好",
+    "烤肉自助",
     "没有牺牲大到无法接受",
     "没有背叛小到可以容忍",
-    "今天吃自助"
+    "alpha",
+    "beta"
 ]
 generation_chance = 0.8
 # [新增] 这里设置为 3，表示将随机生成 1 到 4 行备注
-max_lines = 4
+max_lines = 3
 
 [activity_remarks]
 contents = [
-    "我是备注",
-    "我是备注1234",
-    "我是备注abcd"
+    "remark",
+    "备注",
+    "apple",
+    "banana",
+    "cherry",
+    "date",
 ]
 generation_chance = 0.5
 

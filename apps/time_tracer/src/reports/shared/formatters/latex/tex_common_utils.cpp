@@ -1,13 +1,13 @@
 // reports/shared/formatters/latex/tex_common_utils.cpp
-#include "tex_common_utils.hpp"
+#include "reports/shared/formatters/latex/tex_common_utils.hpp"
 
 #include <format>
 #include <map>  // Added for std::map
 
 namespace TexCommonUtils {
 
-void render_title(std::stringstream& output_ss, const std::string& content,
-                  int font_size, bool is_subsection) {
+void RenderTitle(std::stringstream& output_ss, const std::string& content,
+                   int font_size, bool is_subsection) {
   constexpr double kFontSizeMultiplier = 1.2;
   output_ss << "{";
   output_ss << "\\fontsize{" << font_size << "}{"
@@ -18,7 +18,7 @@ void render_title(std::stringstream& output_ss, const std::string& content,
   output_ss << "}\n\n";
 }
 
-void render_summary_list(std::stringstream& output_ss,
+void RenderSummaryList(std::stringstream& output_ss,
                          const std::vector<SummaryItem>& items,
                          double top_sep_pt, double item_sep_ex) {
   if (items.empty()) {

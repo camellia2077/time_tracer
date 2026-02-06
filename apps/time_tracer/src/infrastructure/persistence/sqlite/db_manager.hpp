@@ -32,26 +32,26 @@ class DBManager {
 
   // 禁止拷贝和赋值，因为该类管理着一个唯一的资源（数据库连接）。
   DBManager(const DBManager&) = delete;
-  DBManager& operator=(const DBManager&) = delete;
+  auto operator=(const DBManager&) -> DBManager& = delete;
 
   /**
    * @brief 如果需要，则打开数据库连接。
    * * 如果连接已打开，则此方法不执行任何操作。
    * @return 如果连接成功打开或已打开，则返回 true；否则返回 false。
    */
-  bool open_database_if_needed();
+  [[nodiscard]] auto OpenDatabaseIfNeeded() -> bool;
 
   /**
    * @brief 关闭数据库连接。
    * * 如果连接已打开，则关闭它并释放资源。
    */
-  void close_database();
+  auto CloseDatabase() -> void;
 
   /**
    * @brief 获取底层的 sqlite3 连接句柄。
    * @return sqlite3 连接指针。
    */
-  sqlite3* get_db_connection() const;
+  [[nodiscard]] auto GetDbConnection() const -> sqlite3*;
 
  private:
   std::string db_name_;

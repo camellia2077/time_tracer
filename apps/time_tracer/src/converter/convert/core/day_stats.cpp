@@ -1,5 +1,5 @@
 ﻿// converter/convert/core/day_stats.cpp
-#include "day_stats.hpp"
+#include "converter/convert/core/day_stats.hpp"
 
 #include <algorithm>
 #include <ctime>
@@ -7,7 +7,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "stats_rules.hpp"
+#include "converter/convert/core/stats_rules.hpp"
 
 namespace {
 // logical_id layout: (YYYYMMDD) as high bits, daily sequence as low bits.
@@ -41,7 +41,7 @@ auto StringToTimeT(const std::string& datetime_str) -> long long {
 }
 }  // namespace
 
-auto DayStats::calculateDurationSeconds(const std::string& start_time_str,
+auto DayStats::CalculateDurationSeconds(const std::string& start_time_str,
                                         const std::string& end_time_str)
     -> int {
   if (start_time_str.length() != kTimeStringLength ||
@@ -70,7 +70,7 @@ auto DayStats::calculateDurationSeconds(const std::string& start_time_str,
   }
 }
 
-auto DayStats::timeStringToTimestamp(const std::string& date,
+auto DayStats::TimeStringToTimestamp(const std::string& date,
                                      const std::string& time, bool is_end_time,
                                      long long start_timestamp_for_end)
     -> long long {
@@ -88,7 +88,9 @@ auto DayStats::timeStringToTimestamp(const std::string& date,
   return timestamp;
 }
 
-void DayStats::calculate_stats(DailyLog& day) {
+void DayStats::CalculateStats(DailyLog& day) {
+
+
   day.activityCount = static_cast<int>(day.processedActivities.size());
   day.stats = {};  // [适配] generatedStats -> stats
   day.hasStudyActivity = false;
@@ -109,12 +111,12 @@ void DayStats::calculate_stats(DailyLog& day) {
     activity.logical_id =
         (date_as_long * kDailySequenceBase) + activity_sequence++;
     // [适配] startTime/endTime -> start_time_str/end_time_str
-    activity.duration_seconds = calculateDurationSeconds(
+    activity.duration_seconds = CalculateDurationSeconds(
         activity.start_time_str, activity.end_time_str);
 
     activity.start_timestamp =
-        timeStringToTimestamp(day.date, activity.start_time_str, false, 0);
-    activity.end_timestamp = timeStringToTimestamp(
+        TimeStringToTimestamp(day.date, activity.start_time_str, false, 0);
+    activity.end_timestamp = TimeStringToTimestamp(
         day.date, activity.end_time_str, true, activity.start_timestamp);
 
     if (activity.project_path.starts_with("study")) {
@@ -133,7 +135,7 @@ void DayStats::calculate_stats(DailyLog& day) {
     }
 
     // 使用规则反射进行统计
-    for (const auto& rule : StatsRules::rules) {
+    for (const auto& rule : StatsRules::kRules) {
       if (activity.project_path.starts_with(rule.match_path)) {
         (day.stats.*(rule.member)) += activity.duration_seconds;
       }

@@ -12,7 +12,7 @@ class MonthMdConfig : public MonthBaseConfig {
  public:
   explicit MonthMdConfig(const toml::table& config);
 
-  const std::string& get_project_breakdown_label() const;
+  [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
  private:
   std::string project_breakdown_label_;

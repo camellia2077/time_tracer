@@ -1,9 +1,9 @@
 // reports/data/utils/project_tree_builder.cpp
-#include "project_tree_builder.hpp"
+#include "reports/data/utils/project_tree_builder.hpp"
 
 #include "common/utils/string_utils.hpp"
 
-void build_project_tree_from_records(
+void BuildProjectTreeFromRecords(
     reporting::ProjectTree& tree,
     const std::vector<std::pair<std::string, long long>>& records) {
   // ... 保持不变 ...
@@ -11,7 +11,7 @@ void build_project_tree_from_records(
     const std::string& project_path = record.first;
     long long duration = record.second;
 
-    std::vector<std::string> parts = split_string(project_path, '_');
+    std::vector<std::string> parts = SplitString(project_path, '_');
     if (parts.empty()) {
       continue;
     }
@@ -29,7 +29,7 @@ void build_project_tree_from_records(
 }
 
 // [修改] 实现变更
-void build_project_tree_from_ids(
+void BuildProjectTreeFromIds(
     reporting::ProjectTree& tree,
     const std::vector<std::pair<long long, long long>>& id_records,
     const IProjectInfoProvider& provider)  // [修改] 参数
@@ -43,7 +43,7 @@ void build_project_tree_from_ids(
     long long duration = record.second;
 
     // [修改] 使用 provider 接口调用
-    std::vector<std::string> parts = provider.get_path_parts(project_id);
+    std::vector<std::string> parts = provider.GetPathParts(project_id);
     if (parts.empty()) {
       continue;
     }

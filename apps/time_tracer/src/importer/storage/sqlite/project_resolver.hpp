@@ -13,14 +13,14 @@ struct ImportProjectNode;  // Forward declaration
 
 class ProjectResolver {
  public:
-  explicit ProjectResolver(sqlite3* db, sqlite3_stmt* stmt_insert_project);
+  explicit ProjectResolver(sqlite3* db_ptr, sqlite3_stmt* stmt_insert_project);
   ~ProjectResolver();
 
   // Batch preload and resolve
-  void preload_and_resolve(const std::vector<std::string>& project_paths);
+  void PreloadAndResolve(const std::vector<std::string>& project_paths);
 
   // Get ID from cache
-  long long get_id(const std::string& project_path) const;
+  [[nodiscard]] auto GetId(const std::string& project_path) const -> long long;
 
  private:
   sqlite3* db_;
@@ -29,8 +29,8 @@ class ProjectResolver {
   std::unique_ptr<ImportProjectNode> root_;
   std::unordered_map<std::string, long long> cache_;
 
-  void load_from_db();
-  long long ensure_path(const std::string& path);
+  void LoadFromDb();
+  [[nodiscard]] auto EnsurePath(const std::string& path) -> long long;
 };
 
 #endif  // IMPORTER_STORAGE_SQLITE_PROJECT_RESOLVER_H_

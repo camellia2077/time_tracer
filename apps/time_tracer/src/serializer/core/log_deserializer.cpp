@@ -1,5 +1,5 @@
 // serializer/core/log_deserializer.cpp
-#include "log_deserializer.hpp"
+#include "serializer/core/log_deserializer.hpp"
 
 #include <iostream>
 
@@ -30,7 +30,7 @@ auto LogDeserializer::deserialize(const nlohmann::json& day_json) -> DailyLog {
 
     std::string remark = headers.value("remark", "");
     if (!remark.empty()) {
-      day.generalRemarks = split_string(remark, '\n');
+      day.generalRemarks = SplitString(remark, '\n');
     }
 
     day.activityCount = headers.value("activity_count", 0);

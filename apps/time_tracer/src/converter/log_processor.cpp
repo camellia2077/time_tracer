@@ -1,5 +1,5 @@
 // converter/log_processor.cpp
-#include "log_processor.hpp"
+#include "converter/log_processor.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -9,16 +9,18 @@
 
 LogProcessor::LogProcessor(const ConverterConfig& config) : config_(config) {}
 
-void LogProcessor::convertStreamToData(
+void LogProcessor::ConvertStreamToData(
     std::istream& combined_stream,
     std::function<void(DailyLog&&)> data_consumer) {
   ConverterService processor(config_);
-  processor.executeConversion(combined_stream, data_consumer);
+  processor.ExecuteConversion(combined_stream, data_consumer);
 }
 
-auto LogProcessor::processSourceContent(const std::string& /*filename*/,
+
+auto LogProcessor::ProcessSourceContent(const std::string& /*filename*/,
                                         const std::string& content)
     -> LogProcessingResult {
+
   LogProcessingResult result;
   result.success = true;
 
@@ -29,15 +31,18 @@ auto LogProcessor::processSourceContent(const std::string& /*filename*/,
   try {
     std::stringstream string_stream(content);
     // 使用 lambda 捕获 result 并填充数据
-    convertStreamToData(string_stream, [&](DailyLog&& log) -> void {
+    ConvertStreamToData(string_stream, [&](DailyLog&& log) -> void {
+
+
       constexpr size_t kYearMonthLen = 7;
       std::string key = log.date.substr(0, kYearMonthLen);  // YYYY-MM
       result.processed_data[key].push_back(std::move(log));
     });
   } catch (const std::exception& e) {
-    std::cerr << RED_COLOR
+    namespace colors = time_tracer::common::colors;
+    std::cerr << colors::kRed
               << "An error occurred during conversion: " << e.what()
-              << RESET_COLOR << std::endl;
+              << colors::kReset << std::endl;
     result.success = false;
   } catch (...) {
     result.success = false;

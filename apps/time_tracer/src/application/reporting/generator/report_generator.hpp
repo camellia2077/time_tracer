@@ -17,25 +17,26 @@ class ReportService;
 
 class ReportGenerator {
  public:
-  ReportGenerator(sqlite3* db, const AppConfig& config);
+  ReportGenerator(sqlite3* sqlite_db, const AppConfig& config);
   ~ReportGenerator();
 
-  std::string generate_daily_report(const std::string& date,
-                                    ReportFormat format);
-  std::string generate_monthly_report(const std::string& month,
-                                      ReportFormat format);
-  std::string generate_period_report(int days, ReportFormat format);
-  std::string generate_weekly_report(const std::string& iso_week,
-                                     ReportFormat format);
-  std::string generate_yearly_report(const std::string& year,
-                                     ReportFormat format);
+  auto GenerateDailyReport(std::string_view date, ReportFormat format)
+      -> std::string;
+  auto GenerateMonthlyReport(std::string_view month, ReportFormat format)
+      -> std::string;
+  auto GeneratePeriodReport(int days, ReportFormat format) -> std::string;
+  auto GenerateWeeklyReport(std::string_view iso_week, ReportFormat format)
+      -> std::string;
+  auto GenerateYearlyReport(std::string_view year, ReportFormat format)
+      -> std::string;
 
-  FormattedGroupedReports generate_all_daily_reports(ReportFormat format);
-  FormattedMonthlyReports generate_all_monthly_reports(ReportFormat format);
-  FormattedPeriodReports generate_all_period_reports(
-      const std::vector<int>& days_list, ReportFormat format);
-  FormattedWeeklyReports generate_all_weekly_reports(ReportFormat format);
-  FormattedYearlyReports generate_all_yearly_reports(ReportFormat format);
+  auto GenerateAllDailyReports(ReportFormat format) -> FormattedGroupedReports;
+  auto GenerateAllMonthlyReports(ReportFormat format)
+      -> FormattedMonthlyReports;
+  auto GenerateAllPeriodReports(const std::vector<int>& days_list,
+                                ReportFormat format) -> FormattedPeriodReports;
+  auto GenerateAllWeeklyReports(ReportFormat format) -> FormattedWeeklyReports;
+  auto GenerateAllYearlyReports(ReportFormat format) -> FormattedYearlyReports;
 
  private:
   std::unique_ptr<ReportService> query_handler_;

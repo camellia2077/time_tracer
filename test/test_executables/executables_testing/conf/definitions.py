@@ -72,6 +72,7 @@ class CommandSpec:
     
 @dataclass
 class Paths:
+    PROJECT_APPS_ROOT: Optional[Path] = None
     SOURCE_EXECUTABLES_DIR: Optional[Path] = None
     SOURCE_DATA_PATH: Optional[Path] = None
     TEST_DATA_ROOT: Optional[Path] = None
@@ -122,7 +123,6 @@ class RunControl:
 @dataclass
 class PipelineConfig:
     MODE: str = "ingest"  # "ingest" or "staged"
-    IMPORT_CONFIRM: str = "y\n"
 
 @dataclass
 class GlobalConfig:

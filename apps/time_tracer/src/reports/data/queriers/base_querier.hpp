@@ -11,8 +11,8 @@
 template <typename ReportDataType, typename QueryParamType>
 class BaseQuerier {
  public:
-  explicit BaseQuerier(sqlite3* db, QueryParamType param)
-      : db_(db), param_(param) {
+  explicit BaseQuerier(sqlite3* sqlite_db, QueryParamType param)
+      : db_(sqlite_db), param_(param) {
     if (db_ == nullptr) {
       throw std::invalid_argument("Database connection cannot be null.");
     }
@@ -20,16 +20,16 @@ class BaseQuerier {
 
   virtual ~BaseQuerier() = default;
 
-  virtual ReportDataType fetch_data() {
+  virtual ReportDataType FetchData() {
     ReportDataType data;
-    if (!_validate_input()) {
-      _handle_invalid_input(data);
+    if (!ValidateInput()) {
+      HandleInvalidInput(data);
       return data;
     }
 
-    _prepare_data(data);
-    // [FIX] Moved _fetch_actual_days to subclasses that actually need it.
-    _fetch_records_and_duration(data);
+    PrepareData(data);
+    // [FIX] Moved FetchActualDays to subclasses that actually need it.
+    FetchRecordsAndDuration(data);
 
     return data;
   }
@@ -38,22 +38,22 @@ class BaseQuerier {
   sqlite3* db_;
   QueryParamType param_;
 
-  virtual std::string get_date_condition_sql() const = 0;
-  virtual void bind_sql_parameters(sqlite3_stmt* stmt) const = 0;
+  [[nodiscard]] virtual std::string GetDateConditionSql() const = 0;
+  virtual void BindSqlParameters(sqlite3_stmt* stmt) const = 0;
 
-  virtual bool _validate_input() const { return true; }
+  [[nodiscard]] virtual bool ValidateInput() const { return true; }
 
   // [FIX] Silenced unused parameter warning which was treated as an error.
-  virtual void _handle_invalid_input(ReportDataType& /*data*/) const {
+  virtual void HandleInvalidInput(ReportDataType& /*data*/) const {
     // Default implementation does nothing.
   }
 
   // [FIX] Silenced unused parameter warning.
-  virtual void _prepare_data(ReportDataType& /*data*/) const {
+  virtual void PrepareData(ReportDataType& /*data*/) const {
     // Default implementation does nothing.
   }
 
-  void _fetch_records_and_duration(ReportDataType& data) {
+  void FetchRecordsAndDuration(ReportDataType& data) {
     sqlite3_stmt* stmt;
 
     // [核心优化]：
@@ -61,10 +61,10 @@ class BaseQuerier {
     // 2. 使用 GROUP BY project_id 进行数据库级聚合
     std::string sql =
         "SELECT project_id, SUM(duration) FROM time_records WHERE " +
-        get_date_condition_sql() + " GROUP BY project_id;";
+        GetDateConditionSql() + " GROUP BY project_id;";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
-      bind_sql_parameters(stmt);
+      BindSqlParameters(stmt);
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         long long project_id = sqlite3_column_int64(stmt, 0);
         long long total_duration = sqlite3_column_int64(stmt, 1);
@@ -79,16 +79,16 @@ class BaseQuerier {
     sqlite3_finalize(stmt);
   }
 
-  // [FIX] This is now a helper for subclasses, not part of the main fetch_data
+  // [FIX] This is now a helper for subclasses, not part of the main FetchData
   // flow.
-  void _fetch_actual_days(ReportDataType& data) {
+  void FetchActualDays(ReportDataType& data) {
     sqlite3_stmt* stmt;
     std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE " +
-                      get_date_condition_sql() + ";";
+                      GetDateConditionSql() + ";";
 
     if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {
-      bind_sql_parameters(stmt);
+      BindSqlParameters(stmt);
       if (sqlite3_step(stmt) == SQLITE_ROW) {
         data.actual_days = sqlite3_column_int(stmt, 0);
       }

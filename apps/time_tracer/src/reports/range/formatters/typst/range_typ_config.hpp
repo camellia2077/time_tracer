@@ -11,26 +11,34 @@ class RangeTypConfig : public RangeBaseConfig {
  public:
   explicit RangeTypConfig(const toml::table& config);
 
-  const std::string& get_base_font() const { return style_.get_base_font(); }
-  const std::string& get_title_font() const { return style_.get_title_font(); }
-  const std::string& get_category_title_font() const {
-    return style_.get_category_title_font();
+  [[nodiscard]] auto GetBaseFont() const -> const std::string& {
+    return style_.GetBaseFont();
+  }
+  [[nodiscard]] auto GetTitleFont() const -> const std::string& {
+    return style_.GetTitleFont();
+  }
+  [[nodiscard]] auto GetCategoryTitleFont() const -> const std::string& {
+    return style_.GetCategoryTitleFont();
   }
 
-  int get_base_font_size() const { return style_.get_base_font_size(); }
-  int get_report_title_font_size() const {
-    return style_.get_report_title_font_size();
+  [[nodiscard]] auto GetBaseFontSize() const -> int {
+    return style_.GetBaseFontSize();
   }
-  int get_category_title_font_size() const {
-    return style_.get_category_title_font_size();
+  [[nodiscard]] auto GetReportTitleFontSize() const -> int {
+    return style_.GetReportTitleFontSize();
+  }
+  [[nodiscard]] auto GetCategoryTitleFontSize() const -> int {
+    return style_.GetCategoryTitleFontSize();
   }
 
-  double get_line_spacing_em() const { return style_.get_line_spacing_em(); }
+  [[nodiscard]] auto GetLineSpacingEm() const -> double {
+    return style_.GetLineSpacingEm();
+  }
 
-  auto get_margin_top_cm() const -> double;
-  auto get_margin_bottom_cm() const -> double;
-  auto get_margin_left_cm() const -> double;
-  auto get_margin_right_cm() const -> double;
+  [[nodiscard]] auto GetMarginTopCm() const -> double;
+  [[nodiscard]] auto GetMarginBottomCm() const -> double;
+  [[nodiscard]] auto GetMarginLeftCm() const -> double;
+  [[nodiscard]] auto GetMarginRightCm() const -> double;
 
  private:
   TypstStyleConfig style_;

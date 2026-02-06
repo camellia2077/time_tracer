@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include "i_stat_strategy.hpp"
 #include "reports/daily/common/day_base_config.hpp"
+#include "reports/daily/formatters/statistics/i_stat_strategy.hpp"
 #include "reports/data/model/daily_report_data.hpp"
 #include "reports/shared/api/shared_api.hpp"
 
@@ -31,11 +31,12 @@ DISABLE_C4251_WARNING  // <-- [新增] 2. 禁用C4251 (因为有 std::unique_ptr
    * @param config 指向日报基础配置的共享指针。
    * @return 格式化后的完整统计部分字符串。
    */
-  std::string format(const DailyReportData& data,
-                     const std::shared_ptr<DayBaseConfig>& config) const;
+  [[nodiscard]] auto Format(const DailyReportData& data,
+                            const std::shared_ptr<DayBaseConfig>& config) const
+      -> std::string;
 
  private:
-  std::unique_ptr<IStatStrategy> m_strategy;
+  std::unique_ptr<IStatStrategy> m_strategy_;
 };
 
 ENABLE_C4251_WARNING  // <-- [新增] 4. 恢复C4251

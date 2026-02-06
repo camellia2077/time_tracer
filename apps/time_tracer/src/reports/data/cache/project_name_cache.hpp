@@ -20,30 +20,32 @@ struct ProjectInfo {
 // [修改] 继承 IProjectInfoProvider
 class ProjectNameCache : public IProjectInfoProvider {
  public:
-  static ProjectNameCache& instance() {
+  static ProjectNameCache& Instance() {
     static ProjectNameCache instance;
     return instance;
   }
 
   // [修改] 添加 override 关键字
-  void ensure_loaded(sqlite3* db) override {
+  void EnsureLoaded(sqlite3* sqlite_db) override {
     if (loaded_) return;
 
+    // Use sqlite_db instead of db
     const char* sql = "SELECT id, name, parent_id FROM projects";
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(sqlite_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
       while (sqlite3_step(stmt) == SQLITE_ROW) {
-        long long id = sqlite3_column_int64(stmt, 0);
+        long long project_id = sqlite3_column_int64(stmt, 0);
         const unsigned char* txt = sqlite3_column_text(stmt, 1);
-        std::string name = txt ? reinterpret_cast<const char*>(txt) : "";
+        std::string name =
+            (txt != nullptr) ? reinterpret_cast<const char*>(txt) : "";
         long long parent = 0;
         if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) {
           parent = sqlite3_column_int64(stmt, 2);
         }
-        cache_[id] = {std::move(name), parent};
+        cache_[project_id] = {.name = std::move(name), .parent_id = parent};
       }
     } else {
-      std::cerr << "Failed to load projects: " << sqlite3_errmsg(db)
+      std::cerr << "Failed to load projects: " << sqlite3_errmsg(sqlite_db)
                 << std::endl;
     }
     sqlite3_finalize(stmt);
@@ -51,15 +53,16 @@ class ProjectNameCache : public IProjectInfoProvider {
   }
 
   // [修改] 添加 override 关键字
-  std::vector<std::string> get_path_parts(long long project_id) const override {
+  [[nodiscard]] auto GetPathParts(long long project_id) const
+      -> std::vector<std::string> override {
     std::vector<std::string> parts;
     long long curr = project_id;
-    while (curr != 0 && cache_.count(curr)) {
+    while (curr != 0 && cache_.contains(curr)) {
       const auto& info = cache_.at(curr);
       parts.push_back(info.name);
       curr = info.parent_id;
     }
-    std::reverse(parts.begin(), parts.end());
+    std::ranges::reverse(parts);
     return parts;
   }
 

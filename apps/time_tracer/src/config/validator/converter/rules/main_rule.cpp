@@ -1,13 +1,14 @@
 // config/validator/converter/rules/main_rule.cpp
-#include "main_rule.hpp"
+#include "config/validator/converter/rules/main_rule.hpp"
 
 #include <iostream>
 #include <set>
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto MainRule::validate(const toml::table& main_tbl,
+auto MainRule::Validate(const toml::table& main_tbl,
                         std::string& out_mappings_path,
                         std::string& out_duration_rules_path) -> bool {
+
   const std::set<std::string> kRequiredKeys = {
       "mappings_config_path", "duration_rules_config_path",
       "top_parent_mapping",   "header_order",

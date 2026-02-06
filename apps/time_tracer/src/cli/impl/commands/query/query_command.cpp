@@ -1,5 +1,5 @@
 // cli/impl/commands/query/query_command.cpp
-#include "query_command.hpp"
+#include "cli/impl/commands/query/query_command.hpp"
 
 #include <iostream>
 #include <memory>
@@ -20,40 +20,44 @@ namespace {
 constexpr std::size_t kSeparatorWidth = 40U;
 constexpr const char* kTrimChars = " \t\n\r";
 
-auto NormalizeQueryArgument(const std::string& sub_command,
-                            const std::string& query_arg) -> std::string {
-  if (sub_command == "day") {
-    return normalize_to_date_format(query_arg);
+struct NormalizedQueryArgs {
+  std::string_view sub_command;
+  std::string_view query_arg;
+};
+
+auto NormalizeQueryArgument(const NormalizedQueryArgs& args) -> std::string {
+  if (args.sub_command == "day") {
+    return NormalizeToDateFormat(std::string(args.query_arg));
   }
-  if (sub_command == "month") {
-    return normalize_to_month_format(query_arg);
+  if (args.sub_command == "month") {
+    return NormalizeToMonthFormat(std::string(args.query_arg));
   }
-  if (sub_command == "week") {
+  if (args.sub_command == "week") {
     IsoWeek week{};
-    if (!parse_iso_week(query_arg, week)) {
+    if (!ParseIsoWeek(std::string(args.query_arg), week)) {
       throw std::runtime_error(
           "Invalid ISO week format. Use YYYY-Www (e.g., 2026-W05).");
     }
-    return format_iso_week(week);
+    return FormatIsoWeek(week);
   }
-  if (sub_command == "year") {
+  if (args.sub_command == "year") {
     int gregorian_year = 0;
-    if (!parse_gregorian_year(query_arg, gregorian_year)) {
+    if (!ParseGregorianYear(std::string(args.query_arg), gregorian_year)) {
       throw std::runtime_error(
           "Invalid year format. Use Gregorian YYYY (e.g., 2026).");
     }
-    return format_gregorian_year(gregorian_year);
+    return FormatGregorianYear(gregorian_year);
   }
-  return query_arg;
+  return std::string(args.query_arg);
 }
 
 auto TrimToken(std::string token) -> std::string {
-  const size_t first = token.find_first_not_of(kTrimChars);
-  if (first == std::string::npos) {
+  const size_t kFirst = token.find_first_not_of(kTrimChars);
+  if (kFirst == std::string::npos) {
     return std::string{};
   }
-  const size_t last = token.find_last_not_of(kTrimChars);
-  return token.substr(first, last - first + 1);
+  const size_t kLast = token.find_last_not_of(kTrimChars);
+  return token.substr(kFirst, kLast - kFirst + 1);
 }
 
 auto ParseRecentPeriods(const std::string& query_arg) -> std::vector<int> {
@@ -77,23 +81,27 @@ auto ParseRecentPeriods(const std::string& query_arg) -> std::vector<int> {
 }
 
 void RunQueryForFormat(IReportHandler& report_handler,
-                       const std::string& sub_command,
-                       const std::string& query_arg, ReportFormat format) {
-  if (sub_command == "day") {
-    std::cout << report_handler.run_daily_query(query_arg, format);
-  } else if (sub_command == "month") {
-    std::cout << report_handler.run_monthly_query(query_arg, format);
-  } else if (sub_command == "recent") {
-    std::vector<int> periods = ParseRecentPeriods(query_arg);
+                       const NormalizedQueryArgs& args, ReportFormat format) {
+  if (args.sub_command == "day") {
+    std::cout << report_handler.RunDailyQuery(std::string(args.query_arg),
+                                              format);
+  } else if (args.sub_command == "month") {
+    std::cout << report_handler.RunMonthlyQuery(std::string(args.query_arg),
+                                                format);
+  } else if (args.sub_command == "recent") {
+    std::vector<int> periods = ParseRecentPeriods(std::string(args.query_arg));
     if (!periods.empty()) {
-      std::cout << report_handler.run_period_queries(periods, format);
+      std::cout << report_handler.RunPeriodQueries(periods, format);
     }
-  } else if (sub_command == "week") {
-    std::cout << report_handler.run_weekly_query(query_arg, format);
-  } else if (sub_command == "year") {
-    std::cout << report_handler.run_yearly_query(query_arg, format);
+  } else if (args.sub_command == "week") {
+    std::cout << report_handler.RunWeeklyQuery(std::string(args.query_arg),
+                                               format);
+  } else if (args.sub_command == "year") {
+    std::cout << report_handler.RunYearlyQuery(std::string(args.query_arg),
+                                               format);
   } else {
-    throw std::runtime_error("Unknown query type '" + sub_command +
+    throw std::runtime_error("Unknown query type '" +
+                             std::string(args.sub_command) +
                              "'. Supported: day, month, week, year, recent.");
   }
 }
@@ -104,22 +112,27 @@ static CommandRegistrar<AppContext> registrar(
       if (!ctx.report_handler) {
         throw std::runtime_error("ReportHandler not initialized");
       }
-      return std::make_unique<QueryCommand>(*ctx.report_handler);
+      std::string format_value =
+          ctx.config.command_defaults.query_format.value_or(
+              ctx.config.defaults.default_format.value_or("md"));
+      return std::make_unique<QueryCommand>(*ctx.report_handler, format_value);
     });
 
-QueryCommand::QueryCommand(IReportHandler& report_handler)
-    : report_handler_(report_handler) {}
+QueryCommand::QueryCommand(IReportHandler& report_handler,
+                           std::string default_format)
+    : report_handler_(report_handler),
+      default_format_(std::move(default_format)) {}
 
-auto QueryCommand::get_definitions() const -> std::vector<ArgDef> {
+auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {{"type",
-           ArgType::Positional,
+           ArgType::kPositional,
            {},
            "Query type (day, month, week, year, recent)",
            true,
            "",
            0},
           {"argument",
-           ArgType::Positional,
+           ArgType::kPositional,
            {},
            "Date (YYYYMMDD), Month (YYYYMM), Week (YYYY-Www), Year (YYYY), or "
            "Recent range (days)",
@@ -127,40 +140,49 @@ auto QueryCommand::get_definitions() const -> std::vector<ArgDef> {
            "",
            1},
           {"format",
-           ArgType::Option,
+           ArgType::kOption,
            {"-f", "--format"},
            "Output format (md, tex, typ)",
            false,
-           "md"}};
+           ""}};
 }
 
-auto QueryCommand::get_help() const -> std::string {
+auto QueryCommand::GetHelp() const -> std::string {
   return "Queries statistics (day, month, week, year, recent) from the "
          "database.";
 }
 
-void QueryCommand::execute(const CommandParser& parser) {
+void QueryCommand::Execute(const CommandParser& parser) {
   // 1. 统一验证与解析
-  ParsedArgs args = CommandValidator::validate(parser, get_definitions());
+  ParsedArgs args = CommandValidator::Validate(parser, GetDefinitions());
 
   // 2. 获取清洗后的参数
-  const std::string sub_command = args.get("type");
-  const std::string query_arg = args.get("argument");
-  const std::string format_str = args.get("format");
+  const std::string kSubCommand = args.Get("type");
+  const std::string kQueryArg = args.Get("argument");
+  std::string format_str;
+  if (args.Has("format")) {
+    format_str = args.Get("format");
+  } else {
+    format_str = default_format_;
+  }
 
   // 3. 业务逻辑
-  const std::vector<ReportFormat> formats =
-      ArgUtils::parse_report_formats(format_str);
+  const std::vector<ReportFormat> kFormats =
+      ArgUtils::ParseReportFormats(format_str);
 
-  const std::string normalized_arg =
-      NormalizeQueryArgument(sub_command, query_arg);
+  const NormalizedQueryArgs kNormalizedArgs = {.sub_command = kSubCommand,
+                                               .query_arg = kQueryArg};
+  const std::string kNormalizedArgValue =
+      NormalizeQueryArgument(kNormalizedArgs);
 
   // 执行查询
-  for (size_t index = 0; index < formats.size(); ++index) {
+  for (size_t index = 0; index < kFormats.size(); ++index) {
     if (index > 0) {
       std::cout << "\n" << std::string(kSeparatorWidth, '=') << "\n";
     }
-    RunQueryForFormat(report_handler_, sub_command, normalized_arg,
-                      formats[index]);
+    RunQueryForFormat(report_handler_,
+                      {.sub_command = kSubCommand,
+                       .query_arg = kNormalizedArgValue},
+                      kFormats[index]);
   }
 }

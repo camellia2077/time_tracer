@@ -24,18 +24,30 @@ class VersionChecker(BaseTester):
             try:
                 if self.ctx.exe_path.exists():
                     sz = self.ctx.exe_path.stat().st_size
-                    res.messages.append(f"{Colors.GREEN}├─{Colors.RESET} Executable size: {format_size(sz)}")
+                    res.messages.append(f"{Colors.GREEN}|--{Colors.RESET} Executable size: {format_size(sz)}")
                 
-                plugins_path = self.ctx.exe_path.parent / "plugins"
+                # 计算同级目录下的 DLL 大小
+                exe_dir = self.ctx.exe_path.parent
+                dll_size = 0
+                dll_count = 0
+                for item in exe_dir.glob("*.dll"):
+                    dll_size += item.stat().st_size
+                    dll_count += 1
+                
+                if dll_count > 0:
+                    res.messages.append(f"{Colors.GREEN}|--{Colors.RESET} DLLs size ({dll_count} files): {format_size(dll_size)}")
+
+                plugins_path = exe_dir / "plugins"
                 if plugins_path.exists() and plugins_path.is_dir():
                     psz = get_folder_size(plugins_path)
-                    res.messages.append(f"{Colors.GREEN}└─{Colors.RESET} Plugins folder size: {format_size(psz)}")
+                    res.messages.append(f"{Colors.GREEN}\\--{Colors.RESET} Plugins folder size: {format_size(psz)}")
             except Exception as e:
                 res.messages.append(f"Error checking sizes: {e}")
 
             # 也可以把 version 的 stdout 附加上去
             if res.execution_result.stdout:
-                 res.messages.append(f"{Colors.CYAN}Version Output:{Colors.RESET}\n{res.execution_result.stdout.strip()}")
+                 version_text = res.execution_result.stdout.strip()
+                 res.messages.append(f"{Colors.CYAN}[Version Output]{Colors.RESET}\n{version_text}")
 
         report.results.append(res)
         return report

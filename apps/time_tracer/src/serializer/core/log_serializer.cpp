@@ -1,5 +1,5 @@
 // serializer/core/log_serializer.cpp
-#include "log_serializer.hpp"
+#include "serializer/core/log_serializer.hpp"
 
 namespace serializer::core {
 

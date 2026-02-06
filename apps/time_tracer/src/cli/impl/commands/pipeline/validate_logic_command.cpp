@@ -1,6 +1,7 @@
 // cli/impl/commands/pipeline/validate_logic_command.cpp
-#include "validate_logic_command.hpp"
+#include "cli/impl/commands/pipeline/validate_logic_command.hpp"
 
+#include <filesystem>
 #include <utility>
 
 #include "application/pipeline/pipeline_manager.hpp"
@@ -15,41 +16,54 @@
 static CommandRegistrar<AppContext> registrar(
     "validate-logic",
     [](AppContext& ctx) -> std::unique_ptr<ValidateLogicCommand> {
-      return std::make_unique<ValidateLogicCommand>(
-          ctx.config, ctx.config.export_path.value_or("./"));
+      DateCheckMode default_date_check = ctx.config.default_date_check_mode;
+      if (ctx.config.command_defaults.validate_logic_date_check_mode) {
+        default_date_check =
+            *ctx.config.command_defaults.validate_logic_date_check_mode;
+      }
+
+      std::filesystem::path output_root =
+          ctx.config.defaults.output_root.value_or(
+              ctx.config.export_path.value_or("./"));
+
+      return std::make_unique<ValidateLogicCommand>(ctx.config, output_root,
+                                                    default_date_check);
     });
 
-ValidateLogicCommand::ValidateLogicCommand(const AppConfig& config,
-                                           std::filesystem::path output_root)
-    : app_config_(config), output_root_(std::move(output_root)) {}
+ValidateLogicCommand::ValidateLogicCommand(
+    const AppConfig& config, std::filesystem::path output_root,
+    DateCheckMode default_date_check_mode)
+    : app_config_(config),
+      output_root_(std::move(output_root)),
+      default_date_check_mode_(default_date_check_mode) {}
 
-auto ValidateLogicCommand::get_definitions() const -> std::vector<ArgDef> {
+auto ValidateLogicCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {
-      {"path", ArgType::Positional, {}, "Source directory path", true, "", 0},
+      {"path", ArgType::kPositional, {}, "Source directory path", true, "", 0},
       {"date_check",
-       ArgType::Option,
+       ArgType::kOption,
        {"--date-check"},
        "Date check mode (none/continuity/full)",
        false,
-       "none"},
+       ""},
       {"no_date_check",
-       ArgType::Flag,
+       ArgType::kFlag,
        {"--no-date-check"},
        "Disable date check",
        false,
        ""}};
 }
 
-auto ValidateLogicCommand::get_help() const -> std::string {
+auto ValidateLogicCommand::GetHelp() const -> std::string {
   return "Validates business logic (e.g., date continuity, sleep cycles). "
          "Requires conversion but won't save output.";
 }
 
-void ValidateLogicCommand::execute(const CommandParser& parser) {
-  auto args = CommandValidator::validate(parser, get_definitions());
+void ValidateLogicCommand::Execute(const CommandParser& parser) {
+  auto args = CommandValidator::Validate(parser, GetDefinitions());
 
   AppOptions options;
-  options.input_path = args.get("path");
+  options.input_path = args.Get("path");
 
   // [关键] 逻辑验证需要先转换数据(convert)，但不保存(save=false)
   options.validate_structure =
@@ -57,15 +71,16 @@ void ValidateLogicCommand::execute(const CommandParser& parser) {
   options.convert = true;                 // 必须开启，否则没有数据来验证逻辑
   options.validate_logic = true;          // 开启本功能
   options.save_processed_output = false;  // 只验证，不生成文件
+  options.date_check_mode = default_date_check_mode_;
 
   // 解析日期检查模式
-  if (args.has("date_check")) {
+  if (args.Has("date_check")) {
     options.date_check_mode =
-        ArgUtils::parse_date_check_mode(args.get("date_check"));
-  } else if (args.has("no_date_check")) {
-    options.date_check_mode = DateCheckMode::None;
+        ArgUtils::ParseDateCheckMode(args.Get("date_check"));
+  } else if (args.Has("no_date_check")) {
+    options.date_check_mode = DateCheckMode::kNone;
   }
 
   core::pipeline::PipelineManager manager(app_config_, output_root_);
-  manager.run(options.input_path.string(), options);
+  (void)manager.Run(options.input_path.string(), options);
 }

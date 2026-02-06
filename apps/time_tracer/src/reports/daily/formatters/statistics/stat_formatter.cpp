@@ -1,13 +1,13 @@
 // reports/daily/formatters/statistics/stat_formatter.cpp
-#include "stat_formatter.hpp"
+#include "reports/daily/formatters/statistics/stat_formatter.hpp"
 
 #include <vector>
 
 #include "reports/shared/utils/format/time_format.hpp"
 
 StatFormatter::StatFormatter(std::unique_ptr<IStatStrategy> strategy)
-    : m_strategy(std::move(strategy)) {
-  if (!m_strategy) {
+    : m_strategy_(std::move(strategy)) {
+  if (!m_strategy_) {
     throw std::invalid_argument(
         "Formatting strategy for StatFormatter cannot be null.");
   }
@@ -33,11 +33,11 @@ void ProcessStatItems(const std::vector<StatisticItemConfig>& items,
     // 注意：目前 IStatStrategy 只定义了 main_item 和 sub_item。
     // 这里做一个简单的映射：Level 0 为 Main，Level > 0 为 Sub。
     if (level == 0) {
-      lines.push_back(strategy->format_main_item(
-          item.label, time_format_duration(duration)));
+      lines.push_back(strategy->FormatMainItem(
+          item.label, TimeFormatDuration(duration)));
     } else {
-      lines.push_back(strategy->format_sub_item(
-          item.label, time_format_duration(duration)));
+      lines.push_back(strategy->FormatSubItem(
+          item.label, TimeFormatDuration(duration)));
     }
 
     // 3. 递归处理子项
@@ -47,16 +47,16 @@ void ProcessStatItems(const std::vector<StatisticItemConfig>& items,
   }
 }
 
-auto StatFormatter::format(const DailyReportData& data,
+auto StatFormatter::Format(const DailyReportData& data,
                            const std::shared_ptr<DayBaseConfig>& config) const
     -> std::string {
   const auto& items_config =
-      config->get_statistics_items();  // 现在这是一个 vector
+      config->GetStatisticsItems();  // 现在这是一个 vector
   std::vector<std::string> lines_to_print;
 
   // [核心修改] 使用递归函数替代硬编码的遍历逻辑
   if (!items_config.empty()) {
-    ProcessStatItems(items_config, data, m_strategy.get(), lines_to_print, 0);
+    ProcessStatItems(items_config, data, m_strategy_.get(), lines_to_print, 0);
   }
 
   if (lines_to_print.empty()) {
@@ -64,8 +64,8 @@ auto StatFormatter::format(const DailyReportData& data,
   }
 
   std::string header =
-      m_strategy->format_header(config->get_statistics_label());
-  std::string body = m_strategy->build_output(lines_to_print);
+      m_strategy_->FormatHeader(config->GetStatisticsLabel());
+  std::string body = m_strategy_->BuildOutput(lines_to_print);
 
   return header + body;
 }

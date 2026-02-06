@@ -47,15 +47,15 @@ struct TimeRecordInternal : public BaseActivityRecord {
 };
 
 /**
- * @struct pair_hash
+ * @struct PairHash
  * @brief A custom hash function for using std::pair in an unordered_set.
  */
-struct pair_hash {
+struct PairHash {
   template <class T1, class T2>
-  std::size_t operator()(const std::pair<T1, T2>& p) const {
-    auto h1 = std::hash<T1>{}(p.first);
-    auto h2 = std::hash<T2>{}(p.second);
-    return h1 ^ (h2 << 1);
+  auto operator()(const std::pair<T1, T2>& pair) const -> std::size_t {
+    auto hash1 = std::hash<T1>{}(pair.first);
+    auto hash2 = std::hash<T2>{}(pair.second);
+    return hash1 ^ (hash2 << 1);
   }
 };
 

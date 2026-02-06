@@ -24,7 +24,7 @@ class LogLinker {
    * 遍历 Map（按时间顺序），将上个月的最后一天与下个月的第一天进行逻辑衔接。
    * @param data_map 按 Key (YYYY-MM) 排序的日志数据集合
    */
-  void link_logs(std::map<std::string, std::vector<DailyLog>>& data_map);
+  void LinkLogs(std::map<std::string, std::vector<DailyLog>>& data_map);
 
  private:
   const ConverterConfig& config_;
@@ -34,16 +34,16 @@ class LogLinker {
    * @param current_day 需要被修复的当前日期（通常是月初第一天）
    * @param prev_day 前置日期（通常是上月末最后一天）
    */
-  void process_cross_day(DailyLog& current_day, const DailyLog& prev_day);
+  void ProcessCrossDay(DailyLog& current_day, const DailyLog& prev_day);
 
   /**
    * @brief 调用 DayStats 重新计算单日统计数据
    * 当插入了新的睡眠活动后，该天的统计数据需要刷新。
    */
-  static void recalculate_stats(DailyLog& day);
+  static void RecalculateStats(DailyLog& day);
 
   // 辅助工具：格式化时间字符串 (HHMM -> HH:MM)
-  static std::string format_time(const std::string& timeStr);
+  static auto FormatTime(const std::string& timeStr) -> std::string;
 };
 
 #endif  // CONVERTER_CONVERT_CORE_LOG_LINKER_H_

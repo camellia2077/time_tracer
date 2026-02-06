@@ -1,6 +1,7 @@
 // cli/impl/commands/pipeline/validate_structure_command.cpp
-#include "validate_structure_command.hpp"
+#include "cli/impl/commands/pipeline/validate_structure_command.hpp"
 
+#include <filesystem>
 #include <iostream>
 #include <utility>
 
@@ -15,17 +16,20 @@
 static CommandRegistrar<AppContext> registrar(
     "validate-structure",
     [](AppContext& ctx) -> std::unique_ptr<ValidateStructureCommand> {
-      return std::make_unique<ValidateStructureCommand>(
-          ctx.config, ctx.config.export_path.value_or("./"));
+      std::filesystem::path output_root =
+          ctx.config.defaults.output_root.value_or(
+              ctx.config.export_path.value_or("./"));
+      return std::make_unique<ValidateStructureCommand>(ctx.config,
+                                                        output_root);
     });
 
 ValidateStructureCommand::ValidateStructureCommand(
     const AppConfig& config, std::filesystem::path output_root)
     : app_config_(config), output_root_(std::move(output_root)) {}
 
-auto ValidateStructureCommand::get_definitions() const -> std::vector<ArgDef> {
+auto ValidateStructureCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {{"path",
-           ArgType::Positional,
+           ArgType::kPositional,
            {},
            "Source directory or file path",
            true,
@@ -33,15 +37,15 @@ auto ValidateStructureCommand::get_definitions() const -> std::vector<ArgDef> {
            0}};
 }
 
-auto ValidateStructureCommand::get_help() const -> std::string {
+auto ValidateStructureCommand::GetHelp() const -> std::string {
   return "Validates the syntax and structure of source TXT files (Read-only).";
 }
 
-void ValidateStructureCommand::execute(const CommandParser& parser) {
-  auto args = CommandValidator::validate(parser, get_definitions());
+void ValidateStructureCommand::Execute(const CommandParser& parser) {
+  auto args = CommandValidator::Validate(parser, GetDefinitions());
 
   AppOptions options;
-  options.input_path = args.get("path");
+  options.input_path = args.Get("path");
 
   // [关键] 只开启结构验证
   options.validate_structure = true;
@@ -51,5 +55,5 @@ void ValidateStructureCommand::execute(const CommandParser& parser) {
 
   // 委托给 Core 执行
   core::pipeline::PipelineManager manager(app_config_, output_root_);
-  manager.run(options.input_path.string(), options);
+  (void)manager.Run(options.input_path.string(), options);
 }

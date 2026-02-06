@@ -21,10 +21,12 @@ class ProcessedDataWriter {
    * @param output_root 输出根目录
    * @return 成功写入的文件列表
    */
-  static std::vector<std::filesystem::path> write(
+  static auto Write(
+
       const std::map<std::string, std::vector<DailyLog>>& data,
       const std::map<std::string, nlohmann::json>& cached_json_outputs,
-      const std::filesystem::path& output_root);
+      const std::filesystem::path& output_root)
+      -> std::vector<std::filesystem::path>;
 };
 
 }  // namespace infrastructure::io

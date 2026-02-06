@@ -8,9 +8,9 @@ set(WARNING_LEVEL 2 CACHE STRING "Set compiler warning level (0-3)")
 # ====================================================
 
 
-# [在文件顶部添加]
 # 定义开关，默认开启（Release模式下可能希望关闭以加快速度，视情况而定）
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+option(ENABLE_PCH "Enable Precompiled Headers" ON)
 
 # 查找 clang-tidy 程序 (只查找一次)
 if(ENABLE_CLANG_TIDY)
@@ -40,7 +40,9 @@ function(setup_project_target TARGET_NAME)
     # 配置预编译头 (PCH) - 使用绝对路径
     # 使用 PROJECT_SOURCE_DIR
     # target_precompile_headers 会自动处理 -include 标志，无需手动添加 target_compile_options
-    target_precompile_headers(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/pch.hpp")
+    if(ENABLE_PCH)
+        target_precompile_headers(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/pch.hpp")
+    endif()
 
     if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
         set_target_properties(${TARGET_NAME} PROPERTIES 

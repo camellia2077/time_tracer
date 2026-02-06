@@ -14,12 +14,15 @@ class RangeTexFormatter
   explicit RangeTexFormatter(std::shared_ptr<RangeTexConfig> config);
 
  private:
-  auto validate_data(const RangeReportData& data) const -> std::string override;
-  auto is_empty_data(const RangeReportData& data) const -> bool override;
-  auto get_avg_days(const RangeReportData& data) const -> int override;
-  auto get_no_records_msg() const -> std::string override;
-  void format_header_content(std::stringstream& report_stream,
-                             const RangeReportData& data) const override;
+  [[nodiscard]] auto ValidateData(const RangeReportData& data) const
+      -> std::string override;
+  [[nodiscard]] auto IsEmptyData(const RangeReportData& data) const
+      -> bool override;
+  [[nodiscard]] auto GetAvgDays(const RangeReportData& data) const
+      -> int override;
+  [[nodiscard]] auto GetNoRecordsMsg() const -> std::string override;
+  void FormatHeaderContent(std::stringstream& report_stream,
+                           const RangeReportData& data) const override;
 };
 
 #endif  // REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_FORMATTER_H_

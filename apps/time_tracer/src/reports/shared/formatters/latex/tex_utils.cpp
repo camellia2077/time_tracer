@@ -1,5 +1,5 @@
 // reports/shared/formatters/latex/tex_utils.cpp
-#include "tex_utils.hpp"
+#include "reports/shared/formatters/latex/tex_utils.hpp"
 
 #include <format>
 #include <iomanip>
@@ -25,7 +25,7 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
             std::format("[topsep={}pt, itemsep={}ex]", top_sep, item_sep)) {}
   // NOLINTEND(bugprone-easily-swappable-parameters)
 
-  [[nodiscard]] auto format_category_header(
+  [[nodiscard]] auto FormatCategoryHeader(
       const std::string& category_name, const std::string& formatted_duration,
       double percentage) const -> std::string override {
     std::stringstream output_ss;
@@ -36,28 +36,28 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
 
     // [核心修改] 将 \section* 改为 \subsection*
     // 这样它们就会成为 "Project Breakdown" 的子章节
-    output_ss << "\\subsection*{" << TexUtils::escape_latex(category_name)
-              << ": " << TexUtils::escape_latex(formatted_duration) << " ("
+    output_ss << "\\subsection*{" << TexUtils::EscapeLatex(category_name)
+              << ": " << TexUtils::EscapeLatex(formatted_duration) << " ("
               << std::fixed << std::setprecision(1) << percentage << "\\%)}";
 
     output_ss << "}\n";
     return output_ss.str();
   }
 
-  [[nodiscard]] auto format_tree_node(const std::string& project_name,
-                                      const std::string& formatted_duration,
-                                      int /*indent_level*/) const
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
+                                       const std::string& formatted_duration,
+                                       int /*indent_level*/) const
       -> std::string override {
     // indent_level is not used in LaTeX as itemize handles nesting
-    return "    \\item " + TexUtils::escape_latex(project_name) + ": " +
-           TexUtils::escape_latex(formatted_duration) + "\n";
-  }
+    return "    \\item " + TexUtils::EscapeLatex(project_name) + ": " +
+           TexUtils::EscapeLatex(formatted_duration) + "\n";
+}
 
-  [[nodiscard]] auto start_children_list() const -> std::string override {
+  [[nodiscard]] auto StartChildrenList() const -> std::string override {
     return "\\begin{itemize}" + m_itemize_options_ + "\n";
   }
 
-  [[nodiscard]] auto end_children_list() const -> std::string override {
+  [[nodiscard]] auto EndChildrenList() const -> std::string override {
     return "\\end{itemize}\n";
   }
 
@@ -70,7 +70,7 @@ class LatexFormattingStrategy : public reporting::IFormattingStrategy {
 
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto get_tex_preamble(const std::string& main_font,
+auto GetTexPreamble(const std::string& main_font,
                       const std::string& cjk_main_font, int font_size,
                       double margin_in,
                       const std::map<std::string, std::string>& keyword_colors)
@@ -115,11 +115,11 @@ auto get_tex_preamble(const std::string& main_font,
 }
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
-auto get_tex_postfix() -> std::string {
+auto GetTexPostfix() -> std::string {
   return "\n\\end{document}\n";
 }
 
-auto escape_latex(const std::string& input) -> std::string {
+auto EscapeLatex(const std::string& input) -> std::string {
   std::string output;
   output.reserve(input.size());
   for (char current_char : input) {
@@ -164,14 +164,14 @@ auto escape_latex(const std::string& input) -> std::string {
 
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto format_project_tree(
+auto FormatProjectTree(
     const reporting::ProjectTree& tree,  // [修改] 加上 reporting:: 命名空间
     long long total_duration, int avg_days, int category_title_font_size,
     double list_top_sep_pt, double list_item_sep_ex) -> std::string {
   auto strategy = std::make_unique<LatexFormattingStrategy>(
       category_title_font_size, list_top_sep_pt, list_item_sep_ex);
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
-  return formatter.format_project_tree(tree, total_duration, avg_days);
+  return formatter.FormatProjectTree(tree, total_duration, avg_days);
 }
 // NOLINTEND(bugprone-easily-swappable-parameters)
 

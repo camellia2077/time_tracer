@@ -10,13 +10,13 @@
 
 namespace DayTexUtils {
 
-void display_header(std::stringstream& report_stream,
-                    const DailyReportData& data,
-                    const std::shared_ptr<DayTexConfig>& config);
+void DisplayHeader(std::stringstream& report_stream,
+                   const DailyReportData& data,
+                   const std::shared_ptr<DayTexConfig>& config);
 
-void display_detailed_activities(std::stringstream& report_stream,
-                                 const DailyReportData& data,
-                                 const std::shared_ptr<DayTexConfig>& config);
+void DisplayDetailedActivities(std::stringstream& report_stream,
+                               const DailyReportData& data,
+                               const std::shared_ptr<DayTexConfig>& config);
 
 }  // namespace DayTexUtils
 

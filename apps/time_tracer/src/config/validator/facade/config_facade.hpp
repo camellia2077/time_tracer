@@ -10,15 +10,18 @@
 
 class ConfigFacade {
  public:
-  static bool validate_converter_configs(const toml::table& main_tbl,
-                                         const toml::table& mappings_tbl,
-                                         const toml::table& duration_rules_tbl);
+  static auto ValidateConverterConfigs(const toml::table& main_tbl,
+                                       const toml::table& mappings_tbl,
+                                       const toml::table& duration_rules_tbl)
+      -> bool;
 
   // [修改] Reports 验证现在也是 TOML
-  static bool validate_query_configs(
-      const std::vector<std::pair<std::string, toml::table>>& query_configs);
+  static auto ValidateQueryConfigs(
+      const std::vector<std::pair<std::string, toml::table>>& query_configs)
+      -> bool;
 
-  static bool validate_plugins(const std::filesystem::path& plugins_path);
+  static auto ValidatePlugins(const std::filesystem::path& plugins_path)
+      -> bool;
 };
 
 #endif  // CONFIG_VALIDATOR_FACADE_CONFIG_FACADE_H_
