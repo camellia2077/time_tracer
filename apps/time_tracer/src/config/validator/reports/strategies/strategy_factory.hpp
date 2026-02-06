@@ -5,7 +5,7 @@
 #include <memory>
 #include <string>
 
-#include "i_query_strategy.hpp"
+#include "config/validator/reports/strategies/i_query_strategy.hpp"
 
 /**
  * @class StrategyFactory
@@ -19,8 +19,8 @@ class StrategyFactory {
    * @return 返回一个指向 IQueryStrategy 的 unique_ptr；
    * 如果找不到匹配的策略，则返回 nullptr。
    */
-  static std::unique_ptr<IQueryStrategy> createStrategy(
-      const std::string& file_name);
+  static auto CreateStrategy(const std::string& file_name)
+      -> std::unique_ptr<IQueryStrategy>;
 };
 
 #endif  // CONFIG_VALIDATOR_REPORTS_STRATEGIES_STRATEGY_FACTORY_H_

@@ -1,9 +1,10 @@
 // config/validator/converter/rules/mapping_rule.cpp
-#include "mapping_rule.hpp"
+#include "config/validator/converter/rules/mapping_rule.hpp"
 
 #include <iostream>
 
-auto MappingRule::validate(const toml::table& mappings_tbl) -> bool {
+auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
+
   if (!mappings_tbl.contains("text_mappings") ||
       !mappings_tbl["text_mappings"].is_table()) {
     std::cerr << "[Validator] Error: Mappings config must contain a "

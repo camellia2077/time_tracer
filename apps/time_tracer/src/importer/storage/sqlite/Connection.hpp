@@ -1,4 +1,4 @@
-// importer/storage/sqlite/Connection.hpp
+// importer/storage/sqlite/connection.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_CONNECTION_H_
 #define IMPORTER_STORAGE_SQLITE_CONNECTION_H_
 

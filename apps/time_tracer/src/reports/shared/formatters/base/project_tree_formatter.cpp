@@ -1,5 +1,5 @@
 // reports/shared/formatters/base/project_tree_formatter.cpp
-#include "project_tree_formatter.hpp"
+#include "reports/shared/formatters/base/project_tree_formatter.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -32,7 +32,7 @@ ProjectTreeFormatter::ProjectTreeFormatter(
 
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
+auto ProjectTreeFormatter::FormatProjectTree(const ProjectTree& tree,
                                                long long total_duration,
                                                int avg_days) const
     -> std::string {
@@ -63,12 +63,12 @@ auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
                             : 0.0;
 
     // 格式化分类标题
-    output_ss << m_strategy->format_category_header(
-        category_name, time_format_duration(category_node.duration, avg_days),
+    output_ss << m_strategy->FormatCategoryHeader(
+        category_name, TimeFormatDuration(category_node.duration, avg_days),
         percentage);
 
     // 调用迭代函数生成子树
-    generate_sorted_output(output_ss, category_node, 0, avg_days);
+    GenerateSortedOutput(output_ss, category_node, 0, avg_days);
   }
 
   return output_ss.str();
@@ -77,10 +77,10 @@ auto ProjectTreeFormatter::format_project_tree(const ProjectTree& tree,
 
 // [优化 2]：使用迭代（Stack）替代递归，防止深层级导致的栈溢出
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-void ProjectTreeFormatter::generate_sorted_output(std::stringstream& output_ss,
-                                                  const ProjectNode& root_node,
-                                                  int root_indent,
-                                                  int avg_days) const {
+void ProjectTreeFormatter::GenerateSortedOutput(std::stringstream& output_ss,
+                                                   const ProjectNode& root_node,
+                                                   int root_indent,
+                                                   int avg_days) const {
   // 如果根节点没有子节点，直接返回，避免建立栈的开销
   if (root_node.children.empty()) {
     return;
@@ -112,7 +112,7 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& output_ss,
 
     // 1. 处理列表开始钩子 (对应递归前的逻辑)
     if (!frame.list_started) {
-      output_ss << m_strategy->start_children_list();
+      output_ss << m_strategy->StartChildrenList();
       frame.list_started = true;
     }
 
@@ -129,8 +129,8 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& output_ss,
 
       if (child_node.duration > 0 || !child_node.children.empty()) {
         // 输出当前节点
-        output_ss << m_strategy->format_tree_node(
-            name, time_format_duration(child_node.duration, avg_days),
+        output_ss << m_strategy->FormatTreeNode(
+            name, TimeFormatDuration(child_node.duration, avg_days),
             frame.indent);
 
         // 如果该节点有子节点，则压入新栈帧（模拟递归深入）
@@ -163,7 +163,7 @@ void ProjectTreeFormatter::generate_sorted_output(std::stringstream& output_ss,
     }
 
     // 3. 处理列表结束钩子 (对应递归后的逻辑)
-    output_ss << m_strategy->end_children_list();
+    output_ss << m_strategy->EndChildrenList();
     stack.pop();  // 弹出当前帧，回溯到上一层
   }
 }

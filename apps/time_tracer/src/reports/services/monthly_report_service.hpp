@@ -13,7 +13,8 @@
 
 class MonthlyReportService {
  public:
-  explicit MonthlyReportService(sqlite3* db, const AppConfig& config);
+  explicit MonthlyReportService(sqlite3* database_connection,
+                                const AppConfig& config);
 
   /**
    * @brief 生成所有历史月份的报告。
@@ -21,7 +22,8 @@ class MonthlyReportService {
    * 内部不再循环调用 MonthQuerier，而是使用 SQL 聚合查询一次性获取所有数据，
    * 避免了 N+1 查询问题，显著提升生成速度。
    */
-  FormattedMonthlyReports generate_reports(ReportFormat format);
+  [[nodiscard]] auto GenerateReports(ReportFormat format)
+      -> FormattedMonthlyReports;
 
  private:
   sqlite3* db_;

@@ -21,8 +21,8 @@ class FileController {
   /**
    * @brief 递归查找指定目录下的日志文件(.txt)。
    */
-  static std::vector<std::filesystem::path> find_log_files(
-      const std::filesystem::path& root_path);
+  static auto FindLogFiles(const std::filesystem::path& root_path)
+      -> std::vector<std::filesystem::path>;
 
   /**
    * @brief 准备输出环境（创建必要的目录）。
@@ -30,7 +30,7 @@ class FileController {
    * @param output_root 根输出目录。
    * @param export_root 导出文件目录。
    */
-  static void prepare_output_directories(
+  static void PrepareOutputDirectories(
       const std::filesystem::path& output_root,
       const std::filesystem::path& export_root);
 };

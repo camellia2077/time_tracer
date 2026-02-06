@@ -1,5 +1,5 @@
 // cli/impl/commands/pipeline/import_command.cpp
-#include "import_command.hpp"
+#include "cli/impl/commands/pipeline/import_command.hpp"
 
 #include <iostream>
 #include <memory>
@@ -8,7 +8,6 @@
 #include "cli/framework/core/command_parser.hpp"
 #include "cli/framework/core/command_registry.hpp"
 #include "cli/framework/core/command_validator.hpp"  // [新增]
-#include "cli/framework/io/console_input.hpp"
 #include "cli/impl/app/app_context.hpp"
 
 static CommandRegistrar<AppContext> registrar(
@@ -22,9 +21,9 @@ static CommandRegistrar<AppContext> registrar(
 ImportCommand::ImportCommand(IWorkflowHandler& workflow_handler)
     : workflow_handler_(workflow_handler) {}
 
-auto ImportCommand::get_definitions() const -> std::vector<ArgDef> {
+auto ImportCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {{"path",
-           ArgType::Positional,
+           ArgType::kPositional,
            {},
            "Directory path containing JSON files",
            true,
@@ -32,25 +31,17 @@ auto ImportCommand::get_definitions() const -> std::vector<ArgDef> {
            0}};
 }
 
-auto ImportCommand::get_help() const -> std::string {
+auto ImportCommand::GetHelp() const -> std::string {
   return "Imports processed JSON data into the database.";
 }
 
-void ImportCommand::execute(const CommandParser& parser) {
-  ParsedArgs args = CommandValidator::validate(parser, get_definitions());
+void ImportCommand::Execute(const CommandParser& parser) {
+  ParsedArgs args = CommandValidator::Validate(parser, GetDefinitions());
 
-  const std::string kInputPath = args.get("path");
+  const std::string kInputPath = args.Get("path");
 
   std::cout << "You are about to import JSON data from: " << kInputPath
             << std::endl;
   std::cout << "Please ensure the data has been validated." << std::endl;
-
-  if (!ConsoleInput::prompt_confirmation(
-          "Are you sure you want to write to the database?")) {
-    std::cout << "\033[31mOperation cancelled.\033[0m" << std::endl;
-    return;
-  }
-
-  std::cout << std::endl;
-  workflow_handler_.run_database_import(kInputPath);
+  workflow_handler_.RunDatabaseImport(kInputPath);
 }

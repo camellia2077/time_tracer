@@ -1,5 +1,5 @@
 // reports/data/queriers/period/period_querier.cpp
-#include "period_querier.hpp"
+#include "reports/data/queriers/period/period_querier.hpp"
 
 #include <iomanip>
 #include <string>
@@ -11,35 +11,35 @@
 PeriodQuerier::PeriodQuerier(sqlite3* sqlite_db, int days_to_query)
     : BaseQuerier(sqlite_db, days_to_query) {}
 
-auto PeriodQuerier::fetch_data() -> PeriodReportData {
-  PeriodReportData data = BaseQuerier::fetch_data();
+auto PeriodQuerier::FetchData() -> PeriodReportData {
+  PeriodReportData data = BaseQuerier::FetchData();
 
-  _fetch_actual_days(data);
+  FetchActualDays(data);
 
   if (data.total_duration > 0) {
     // [新增] 获取并确保缓存加载
-    auto& name_cache = ProjectNameCache::instance();
-    name_cache.ensure_loaded(db_);
+    auto& name_cache = ProjectNameCache::Instance();
+    name_cache.EnsureLoaded(db_);
 
     // [核心修改] 传入 name_cache 替代 db_
-    build_project_tree_from_ids(data.project_tree, data.project_stats,
+    BuildProjectTreeFromIds(data.project_tree, data.project_stats,
                                 name_cache);
   }
 
   return data;
 }
 
-auto PeriodQuerier::_validate_input() const -> bool {
+auto PeriodQuerier::ValidateInput() const -> bool {
   return param_ > 0;
 }
 
-void PeriodQuerier::_handle_invalid_input(PeriodReportData& data) const {
+void PeriodQuerier::HandleInvalidInput(PeriodReportData& data) const {
   data.is_valid = false;
 }
 
-void PeriodQuerier::_prepare_data(PeriodReportData& data) const {
-  end_date_ = get_current_date_str();
-  start_date_ = add_days_to_date_str(end_date_, -(this->param_ - 1));
+void PeriodQuerier::PrepareData(PeriodReportData& data) const {
+  end_date_ = GetCurrentDateStr();
+  start_date_ = AddDaysToDateStr(end_date_, -(this->param_ - 1));
 
   data.requested_days = this->param_;
   data.end_date = end_date_;
@@ -47,11 +47,11 @@ void PeriodQuerier::_prepare_data(PeriodReportData& data) const {
   data.range_label = std::to_string(this->param_) + " days";
 }
 
-auto PeriodQuerier::get_date_condition_sql() const -> std::string {
+auto PeriodQuerier::GetDateConditionSql() const -> std::string {
   return "date >= ? AND date <= ?";
 }
 
-void PeriodQuerier::bind_sql_parameters(sqlite3_stmt* stmt) const {
+void PeriodQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {
   sqlite3_bind_text(stmt, 1, start_date_.c_str(), -1, SQLITE_TRANSIENT);
   sqlite3_bind_text(stmt, 2, end_date_.c_str(), -1, SQLITE_TRANSIENT);
 }

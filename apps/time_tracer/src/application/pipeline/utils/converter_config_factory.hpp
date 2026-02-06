@@ -4,7 +4,7 @@
 
 #include <filesystem>
 // [修复] 移除错误的自包含
-// #include "converter_config_factory.hpp"
+// #include "application/pipeline/utils/converter_config_factory.hpp"
 
 #include "common/config/app_config.hpp"
 #include "common/config/models/converter_config_models.hpp"
@@ -13,9 +13,8 @@ namespace core::pipeline {
 
 class ConverterConfigFactory {
  public:
-  static ConverterConfig create(
-      const std::filesystem::path& interval_config_path,
-      const AppConfig& app_config);
+  static auto Create(const std::filesystem::path& interval_config_path,
+                     const AppConfig& app_config) -> ConverterConfig;
 };
 
 }  // namespace core::pipeline

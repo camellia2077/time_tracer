@@ -1,4 +1,4 @@
-// importer/storage/sqlite/Writer.hpp
+// importer/storage/sqlite/writer.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_WRITER_H_
 #define IMPORTER_STORAGE_SQLITE_WRITER_H_
 
@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "importer/model/time_sheet_data.hpp"
-#include "project_resolver.hpp"
+#include "importer/storage/sqlite/project_resolver.hpp"
 
 class Writer {
  public:
@@ -20,8 +20,8 @@ class Writer {
 
   ~Writer();
 
-  void insert_days(const std::vector<DayData>& days);
-  void insert_records(const std::vector<TimeRecordInternal>& records);
+  void InsertDays(const std::vector<DayData>& days);
+  void InsertRecords(const std::vector<TimeRecordInternal>& records);
 
  private:
   sqlite3* db_;

@@ -1,5 +1,5 @@
 // reports/shared/formatters/markdown/markdown_formatter.cpp
-#include "markdown_formatter.hpp"
+#include "reports/shared/formatters/markdown/markdown_formatter.hpp"
 
 #include <iomanip>
 #include <memory>
@@ -15,7 +15,7 @@ namespace MarkdownFormatter {
  */
 class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
  public:
-  [[nodiscard]] auto format_category_header(
+  [[nodiscard]] auto FormatCategoryHeader(
       const std::string& category_name, const std::string& formatted_duration,
       double percentage) const -> std::string override {
     std::stringstream output_ss;
@@ -24,7 +24,7 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
               << std::fixed << std::setprecision(1) << percentage << "%) ###\n";
     return output_ss.str();
   }
-  [[nodiscard]] auto format_tree_node(const std::string& project_name,
+  [[nodiscard]] auto FormatTreeNode(const std::string& project_name,
                                       const std::string& formatted_duration,
                                       int indent_level) const
       -> std::string override {
@@ -43,12 +43,12 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
 // [修正] 添加 reporting:: 命名空间前缀
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto format_project_tree(const reporting::ProjectTree& tree,
+auto FormatProjectTree(const reporting::ProjectTree& tree,
                          long long total_duration, int avg_days)
     -> std::string {
   auto strategy = std::make_unique<MarkdownFormattingStrategy>();
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
-  return formatter.format_project_tree(tree, total_duration, avg_days);
+  return formatter.FormatProjectTree(tree, total_duration, avg_days);
 }
 // NOLINTEND(bugprone-easily-swappable-parameters)
 

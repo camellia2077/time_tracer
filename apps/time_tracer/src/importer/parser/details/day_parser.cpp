@@ -1,5 +1,5 @@
 // importer/parser/details/day_parser.cpp
-#include "day_parser.hpp"
+#include "importer/parser/details/day_parser.hpp"
 
 #include <stdexcept>
 
@@ -10,7 +10,8 @@ constexpr size_t kDateStrMonthStart = 5;
 constexpr size_t kDateStrMonthLen = 2;
 }  // namespace
 
-auto DayParser::parse(const nlohmann::json& day_json) -> DayData {
+auto DayParser::Parse(const nlohmann::json& day_json) -> DayData {
+
   try {
     const auto& headers = day_json.at("headers");
     const auto& generated_stats = day_json.at("generated_stats");

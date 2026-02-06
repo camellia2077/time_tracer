@@ -1,12 +1,12 @@
 // reports/data/queriers/weekly/batch_week_data_fetcher.cpp
-#include "batch_week_data_fetcher.hpp"
+#include "reports/data/queriers/weekly/batch_week_data_fetcher.hpp"
 
 #include <map>
 #include <set>
 #include <stdexcept>
 
 #include "reports/data/cache/project_name_cache.hpp"
-#include "reports/data/utils/project_tree_builder.hpp"
+#include "reports/data/queriers/utils/batch_aggregation.hpp"
 #include "reports/shared/utils/format/iso_week_utils.hpp"
 
 BatchWeekDataFetcher::BatchWeekDataFetcher(sqlite3* sqlite_db)
@@ -16,12 +16,13 @@ BatchWeekDataFetcher::BatchWeekDataFetcher(sqlite3* sqlite_db)
   }
 }
 
-auto BatchWeekDataFetcher::fetch_all_data()
+auto BatchWeekDataFetcher::FetchAllData()
     -> std::map<std::string, WeeklyReportData> {
+
   std::map<std::string, WeeklyReportData> results;
 
-  auto& name_cache = ProjectNameCache::instance();
-  name_cache.ensure_loaded(db_);
+  auto& name_cache = ProjectNameCache::Instance();
+  name_cache.EnsureLoaded(db_);
 
   sqlite3_stmt* stmt = nullptr;
   const char* sql =
@@ -44,12 +45,12 @@ auto BatchWeekDataFetcher::fetch_all_data()
     }
 
     std::string date = reinterpret_cast<const char*>(date_ptr);
-    IsoWeek week = iso_week_from_date(date);
+    IsoWeek week = IsoWeekFromDate(date);
     if (week.year <= 0 || week.week <= 0) {
       continue;
     }
 
-    std::string week_label = format_iso_week(week);
+    std::string week_label = FormatIsoWeek(week);
     long long project_id = sqlite3_column_int64(stmt, 1);
     long long duration = sqlite3_column_int64(stmt, 2);
 
@@ -58,8 +59,8 @@ auto BatchWeekDataFetcher::fetch_all_data()
       constexpr int kDaysInWeek = 7;
       data.range_label = week_label;
       data.requested_days = kDaysInWeek;
-      data.start_date = iso_week_start_date(week);
-      data.end_date = iso_week_end_date(week);
+      data.start_date = IsoWeekStartDate(week);
+      data.end_date = IsoWeekEndDate(week);
       data.is_valid = true;
     }
 
@@ -69,20 +70,8 @@ auto BatchWeekDataFetcher::fetch_all_data()
   }
   sqlite3_finalize(stmt);
 
-  for (auto& [week_label, data] : results) {
-    data.actual_days = static_cast<int>(distinct_dates[week_label].size());
-    const auto& agg = project_agg[week_label];
-
-    data.project_stats.reserve(agg.size());
-    for (const auto& [project_id, duration] : agg) {
-      data.project_stats.emplace_back(project_id, duration);
-    }
-
-    if (data.total_duration > 0) {
-      build_project_tree_from_ids(data.project_tree, data.project_stats,
-                                  name_cache);
-    }
-  }
+  reports::data::batch::FinalizeGroupedAggregation(results, project_agg,
+                                                   distinct_dates, name_cache);
 
   return results;
 }

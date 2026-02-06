@@ -2,19 +2,23 @@
 #ifndef CLI_IMPL_COMMANDS_EXPORT_EXPORT_COMMAND_H_
 #define CLI_IMPL_COMMANDS_EXPORT_EXPORT_COMMAND_H_
 
+#include <string>
+
 #include "application/interfaces/i_report_handler.hpp"
 #include "cli/framework/interfaces/i_command.hpp"
 
 class ExportCommand : public ICommand {
  public:
-  explicit ExportCommand(IReportHandler& report_handler);
+  ExportCommand(IReportHandler& report_handler, std::string default_format);
 
-  std::vector<ArgDef> get_definitions() const override;
-  std::string get_help() const override;
-  void execute(const CommandParser& parser) override;
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+
+  auto Execute(const CommandParser& parser) -> void override;
 
  private:
   IReportHandler& report_handler_;
+  std::string default_format_;
 };
 
 #endif

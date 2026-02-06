@@ -10,10 +10,10 @@ namespace core::pipeline {
 class ConverterStep {
  public:
   explicit ConverterStep(const AppConfig& config);
-  static bool execute(PipelineContext& context);
+  static auto Execute(PipelineContext& context) -> bool;
 
  private:
-  static void printTiming(double total_time_ms);
+  static void PrintTiming(double total_time_ms);
 };
 
 }  // namespace core::pipeline

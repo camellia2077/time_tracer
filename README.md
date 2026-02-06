@@ -9,23 +9,24 @@
 本套件包含三个核心组件：
 
   * **`time_taster` (C++)**: 核心命令行程序，负责解析原始日志、将数据存入数据库，并提供丰富的查询与报告导出功能。
-  * **`graph_generator` (Python)**: 数据可视化工具，能够读取 `Time_Master` 生成的数据库，并创建多种图表，如每日时间线、活动热力图等。
+  * **`graph_generator` (Python)**: 数据可视化工具，能够读取 `time_tracer` 生成的数据库，并创建多种图表，如每日时间线、活动热力图等。
   * **`log_generator` (C++)**: 一个便捷的测试数据生成器，用于快速创建符合格式的日志文件。
 
 -----
 
 ## 🚀 快速开始
 
-### 1\. 依赖项
+### 1. 依赖项与构建工具
 
-在开始之前，请确保您的系统已安装以下依赖：
+在开始之前，请确保您的系统已安装以下依赖和构建工具：
 
   * **C++ 部分 (`Time_Master`, `log_generator`)**:
       * **MSYS2 UCRT64** 环境 (推荐用于 Windows)
-      * **CMake** \>= 3.10
-      * **GCC** (支持 C++23)
-      * **SQLite3** 库
-      * **nlohmann/json** 库
+      * **CMake** >= 3.25 (必须支持 C++23)
+      * **编译器**: **GCC** 或 **Clang** (必须支持 C++23)
+      * **构建系统**: **Ninja** (推荐，比 Make 更快)
+      * **构建缓存**: **ccache** (可选，用于加速重复编译)
+      * **核心库**: **SQLite3**, **nlohmann/json**, **tomlplusplus**
   * **Python 部分 (`graph_generator`)**:
       * **Python** \>= 3.8
       * **Matplotlib** 库
@@ -86,8 +87,20 @@ docs/
 
 -----
 
-## 致谢与许可证
+## 开发者与致谢
 
+### 核心开发者
+* **[camellia2077](https://github.com/camellia2077)**: 项目发起者与主要开发者。
+
+### AI 合作开发者
+在此特别鸣谢以下 AI 模型在代码编写、架构设计及文档优化方面提供的核心协助：
+* **Gemini 2.5 Pro**
+* **Gemini 3 Pro**
+* **GPT 5.2-Codex**
+
+---
+
+## 许可证与开源库
 本项目的实现离不开以下这些出色的开源库。我向这些项目的开发者们表示感谢！
 
 * **[SQLite C Library](https://www.sqlite.org/index.html)**: 用于数据存储 (Public Domain)。

@@ -3,8 +3,11 @@
 #define CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
 
 #include <optional>
+#include <span>
 #include <string>
 #include <vector>
+
+#include "cli/framework/core/arg_definitions.hpp"
 
 /**
  * @brief 解析器配置，用于定义哪些选项是全局的，需要在过滤阶段剔除或特殊处理。
@@ -18,37 +21,38 @@ struct ParserConfig {
 
 class CommandParser {
  public:
-  // [修改] 构造函数增加 config 参数，默认为空
-  explicit CommandParser(const std::vector<std::string>& args,
-                         const ParserConfig& config = {});
+  explicit CommandParser(std::vector<std::string> args,
+                         ParserConfig config = {});
 
-  std::string get_command() const;
+  [[nodiscard]] auto GetCommand() const -> std::string;
+  [[nodiscard]] auto GetFilteredArgs() const -> const std::vector<std::string>&;
 
-  // 获取过滤了全局选项后的参数列表（主要用于 Command 内部获取位置参数）
-  const std::vector<std::string>& get_filtered_args() const;
+  // 简单版本：只过滤以 '-' 开头的参数（不推荐，可能包含选项值）
+  [[nodiscard]] auto GetPositionalArgs() const -> std::vector<std::string>;
 
-  std::string get_raw_arg(size_t index) const;
+  // 智能版本：根据参数定义跳过 Option 类型的值
+  [[nodiscard]] auto GetPositionalArgs(
+      std::span<const ArgDef> definitions) const -> std::vector<std::string>;
 
-  // 获取带值的选项 (如 -o path)，基于原始参数搜索
-  std::optional<std::string> get_option(
-      const std::vector<std::string>& keys) const;
+  [[nodiscard]] auto GetRawArg(size_t index) const -> std::string;
 
-  // 检查布尔开关 (如 --no-save)，基于原始参数搜索
-  bool has_flag(const std::vector<std::string>& keys) const;
+  [[nodiscard]] auto GetOption(const std::vector<std::string>& keys) const
+      -> std::optional<std::string>;
+
+  [[nodiscard]] auto HasFlag(const std::vector<std::string>& keys) const
+      -> bool;
 
  private:
   std::vector<std::string> raw_args_;
   std::string command_;
   std::vector<std::string> filtered_args_;
 
-  // [新增] 保存配置
   ParserConfig config_;
 
-  void parse();
+  void Parse();
 
-  // [修改] 不再是静态方法，依赖实例的 config_
-  std::vector<std::string> filter_global_options(
-      const std::vector<std::string>& original_args);
+  auto FilterGlobalOptions(const std::vector<std::string>& original_args)
+      -> std::vector<std::string>;
 };
 
 #endif  // CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_

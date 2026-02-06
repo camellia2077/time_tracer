@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "time_data_models.hpp"
+#include "domain/model/time_data_models.hpp"
 
 // RawEvent 属于 Converter 解析阶段的中间产物，保留在此
 struct RawEvent {
@@ -37,7 +37,7 @@ struct DailyLog {
   // [核心修改] 使用 ActivityStats，并重命名为 stats
   ActivityStats stats;
 
-  void clear() {
+  void Clear() {
     date.clear();
     hasStudyActivity = false;
     hasExerciseActivity = false;

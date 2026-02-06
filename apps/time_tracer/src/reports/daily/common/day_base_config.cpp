@@ -1,5 +1,5 @@
 // reports/daily/common/day_base_config.cpp
-#include "day_base_config.hpp"
+#include "reports/daily/common/day_base_config.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -34,10 +34,10 @@ static auto ParseStatisticsItemsRecursive(const toml::array* arr)
 // [修改] 构造函数
 DayBaseConfig::DayBaseConfig(toml::table config)
     : config_table_(std::move(config)) {
-  load_base_config();
+  LoadBaseConfig();
 }
 
-void DayBaseConfig::load_base_config() {
+void DayBaseConfig::LoadBaseConfig() {
   // [修改] 使用 TOML++ API
   if (auto val = config_table_["title_prefix"].value<std::string>()) {
     title_prefix_ = *val;
@@ -72,49 +72,49 @@ void DayBaseConfig::load_base_config() {
 }
 
 // Getters 保持不变
-auto DayBaseConfig::get_title_prefix() const -> const std::string& {
+auto DayBaseConfig::GetTitlePrefix() const -> const std::string& {
   return title_prefix_;
 }
-auto DayBaseConfig::get_date_label() const -> const std::string& {
+auto DayBaseConfig::GetDateLabel() const -> const std::string& {
   return date_label_;
 }
-auto DayBaseConfig::get_total_time_label() const -> const std::string& {
+auto DayBaseConfig::GetTotalTimeLabel() const -> const std::string& {
   return total_time_label_;
 }
-auto DayBaseConfig::get_status_label() const -> const std::string& {
+auto DayBaseConfig::GetStatusLabel() const -> const std::string& {
   return status_label_;
 }
-auto DayBaseConfig::get_sleep_label() const -> const std::string& {
+auto DayBaseConfig::GetSleepLabel() const -> const std::string& {
   return sleep_label_;
 }
-auto DayBaseConfig::get_getup_time_label() const -> const std::string& {
+auto DayBaseConfig::GetGetupTimeLabel() const -> const std::string& {
   return getup_time_label_;
 }
-auto DayBaseConfig::get_remark_label() const -> const std::string& {
+auto DayBaseConfig::GetRemarkLabel() const -> const std::string& {
   return remark_label_;
 }
-auto DayBaseConfig::get_exercise_label() const -> const std::string& {
+auto DayBaseConfig::GetExerciseLabel() const -> const std::string& {
   return exercise_label_;
 }
-auto DayBaseConfig::get_no_records() const -> const std::string& {
+auto DayBaseConfig::GetNoRecords() const -> const std::string& {
   return no_records_;
 }
-auto DayBaseConfig::get_statistics_label() const -> const std::string& {
+auto DayBaseConfig::GetStatisticsLabel() const -> const std::string& {
   return statistics_label_;
 }
-auto DayBaseConfig::get_all_activities_label() const -> const std::string& {
+auto DayBaseConfig::GetAllActivitiesLabel() const -> const std::string& {
   return all_activities_label_;
 }
-auto DayBaseConfig::get_activity_remark_label() const -> const std::string& {
+auto DayBaseConfig::GetActivityRemarkLabel() const -> const std::string& {
   return activity_remark_label_;
 }
-auto DayBaseConfig::get_activity_connector() const -> const std::string& {
+auto DayBaseConfig::GetActivityConnector() const -> const std::string& {
   return activity_connector_;
 }
-auto DayBaseConfig::get_statistics_items() const
+auto DayBaseConfig::GetStatisticsItems() const
     -> const std::vector<StatisticItemConfig>& {
   return statistics_items_;
 }
-auto DayBaseConfig::get_project_breakdown_label() const -> const std::string& {
+auto DayBaseConfig::GetProjectBreakdownLabel() const -> const std::string& {
   return project_breakdown_label_;
 }

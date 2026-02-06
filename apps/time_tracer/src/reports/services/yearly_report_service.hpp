@@ -13,9 +13,9 @@
 
 class YearlyReportService {
  public:
-  explicit YearlyReportService(sqlite3* db, const AppConfig& config);
+  explicit YearlyReportService(sqlite3* sqlite_db, const AppConfig& config);
 
-  FormattedYearlyReports generate_reports(ReportFormat format);
+  auto GenerateReports(ReportFormat format) -> FormattedYearlyReports;
 
  private:
   sqlite3* db_;

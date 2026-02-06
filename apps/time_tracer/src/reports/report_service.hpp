@@ -16,28 +16,31 @@ class ReportService {
   explicit ReportService(sqlite3* sqlite_db, const AppConfig& config);
 
   // --- Single Queries ---
-  std::string run_daily_query(const std::string& date_str,
-                              ReportFormat format) const;
-  std::string run_period_query(int days, ReportFormat format) const;
-  std::string run_monthly_query(const std::string& year_month_str,
-                                ReportFormat format) const;
-  std::string run_weekly_query(const std::string& iso_week_str,
-                               ReportFormat format) const;
-  std::string run_yearly_query(const std::string& year_str,
-                               ReportFormat format) const;
+  [[nodiscard]] auto RunDailyQuery(std::string_view date_str,
+                                   ReportFormat format) const -> std::string;
+  [[nodiscard]] auto RunPeriodQuery(int days, ReportFormat format) const
+      -> std::string;
+  [[nodiscard]] auto RunMonthlyQuery(std::string_view year_month_str,
+                                     ReportFormat format) const -> std::string;
+  [[nodiscard]] auto RunWeeklyQuery(std::string_view iso_week_str,
+                                    ReportFormat format) const -> std::string;
+  [[nodiscard]] auto RunYearlyQuery(std::string_view year_str,
+                                    ReportFormat format) const -> std::string;
 
   // --- Bulk Export Queries ---
-  FormattedGroupedReports run_export_all_daily_reports_query(
-      ReportFormat format) const;
-  FormattedMonthlyReports run_export_all_monthly_reports_query(
-      ReportFormat format) const;
-  FormattedPeriodReports run_export_all_period_reports_query(
+  [[nodiscard]] auto RunExportAllDailyReportsQuery(ReportFormat format) const
+      -> FormattedGroupedReports;
+  [[nodiscard]] auto RunExportAllMonthlyReportsQuery(ReportFormat format) const
+      -> FormattedMonthlyReports;
+  [[nodiscard]] auto RunExportAllPeriodReportsQuery(
       const std::vector<int>& days_list,
-      ReportFormat format = ReportFormat::Markdown) const;
-  FormattedWeeklyReports run_export_all_weekly_reports_query(
-      ReportFormat format) const;
-  FormattedYearlyReports run_export_all_yearly_reports_query(
-      ReportFormat format) const;
+      ReportFormat format = ReportFormat::kMarkdown) const
+
+      -> FormattedPeriodReports;
+  [[nodiscard]] auto RunExportAllWeeklyReportsQuery(ReportFormat format) const
+      -> FormattedWeeklyReports;
+  [[nodiscard]] auto RunExportAllYearlyReportsQuery(ReportFormat format) const
+      -> FormattedYearlyReports;
 
  private:
   sqlite3* db_;

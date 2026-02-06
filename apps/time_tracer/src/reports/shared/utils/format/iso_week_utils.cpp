@@ -78,7 +78,7 @@ auto FormatDate(const sys_days& date) -> std::string {
 }
 }  // namespace
 
-auto parse_iso_week(std::string_view input, IsoWeek& out) -> bool {
+auto ParseIsoWeek(std::string_view input, IsoWeek& out) -> bool {
   if (input.size() != static_cast<size_t>(kIsoWeekLength8) &&
       input.size() != static_cast<size_t>(kIsoWeekLength7)) {
     return false;
@@ -118,8 +118,8 @@ auto parse_iso_week(std::string_view input, IsoWeek& out) -> bool {
   }
 
   IsoWeek candidate{.year = year_val, .week = week_val};
-  std::string start_date = iso_week_start_date(candidate);
-  IsoWeek validated = iso_week_from_date(start_date);
+  std::string start_date = IsoWeekStartDate(candidate);
+  IsoWeek validated = IsoWeekFromDate(start_date);
   if (validated.year != candidate.year || validated.week != candidate.week) {
     return false;
   }
@@ -128,14 +128,14 @@ auto parse_iso_week(std::string_view input, IsoWeek& out) -> bool {
   return true;
 }
 
-auto format_iso_week(const IsoWeek& week) -> std::string {
+auto FormatIsoWeek(const IsoWeek& week) -> std::string {
   std::ostringstream oss;
   oss << std::setw(4) << std::setfill('0') << week.year << "-W" << std::setw(2)
       << std::setfill('0') << week.week;
   return oss.str();
 }
 
-auto iso_week_from_date(std::string_view date_str) -> IsoWeek {
+auto IsoWeekFromDate(std::string_view date_str) -> IsoWeek {
   auto date_opt = ParseDate(date_str);
   if (!date_opt) {
     return {};
@@ -158,7 +158,7 @@ auto iso_week_from_date(std::string_view date_str) -> IsoWeek {
   return {.year = iso_year, .week = week};
 }
 
-auto iso_week_start_date(const IsoWeek& week) -> std::string {
+auto IsoWeekStartDate(const IsoWeek& week) -> std::string {
   sys_days jan4 = sys_days{year{week.year} / January / kJan4Day};
   int jan4_weekday = static_cast<int>(weekday{jan4}.iso_encoding());
   sys_days first_thursday = jan4 + days{kThursdayOffset - jan4_weekday};
@@ -168,8 +168,8 @@ auto iso_week_start_date(const IsoWeek& week) -> std::string {
   return FormatDate(start);
 }
 
-auto iso_week_end_date(const IsoWeek& week) -> std::string {
-  auto start_date = ParseDate(iso_week_start_date(week));
+auto IsoWeekEndDate(const IsoWeek& week) -> std::string {
+  auto start_date = ParseDate(IsoWeekStartDate(week));
   if (!start_date) {
     return "";
   }

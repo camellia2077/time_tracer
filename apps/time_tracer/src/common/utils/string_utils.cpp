@@ -1,9 +1,10 @@
 // common/utils/string_utils.cpp
-#include "string_utils.hpp"
+#include "common/utils/string_utils.hpp"
 
 #include <sstream>
 
-auto trim(const std::string& str) -> std::string {
+auto Trim(const std::string& str) -> std::string {
+
   const std::string kWhitespace = " \n\r\t\f\v";
   size_t first = str.find_first_not_of(kWhitespace);
   if (std::string::npos == first) {
@@ -13,8 +14,9 @@ auto trim(const std::string& str) -> std::string {
   return str.substr(first, (last - first + 1));
 }
 
-auto split_string(const std::string& str, char delimiter)
+auto SplitString(const std::string& str, char delimiter)
     -> std::vector<std::string> {
+
   std::vector<std::string> tokens;
   std::string token;
   std::istringstream token_stream(str);

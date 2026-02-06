@@ -16,31 +16,44 @@
 class ReportConfigLoader {
  public:
   // --- 日报加载器 ---
-  static DailyTexConfig loadDailyTexConfig(const std::filesystem::path& path);
-  static DailyTypConfig loadDailyTypConfig(const std::filesystem::path& path);
-  static DailyMdConfig loadDailyMdConfig(const std::filesystem::path& path);
+  static auto LoadDailyTexConfig(const std::filesystem::path& path)
+      -> DailyTexConfig;
+  static auto LoadDailyTypConfig(const std::filesystem::path& path)
+      -> DailyTypConfig;
+  static auto LoadDailyMdConfig(const std::filesystem::path& path)
+      -> DailyMdConfig;
 
   // --- 月报加载器 ---
-  static MonthlyTexConfig loadMonthlyTexConfig(
-      const std::filesystem::path& path);
-  static MonthlyTypConfig loadMonthlyTypConfig(
-      const std::filesystem::path& path);
-  static MonthlyMdConfig loadMonthlyMdConfig(const std::filesystem::path& path);
+  static auto LoadMonthlyTexConfig(const std::filesystem::path& path)
+      -> MonthlyTexConfig;
+  static auto LoadMonthlyTypConfig(const std::filesystem::path& path)
+      -> MonthlyTypConfig;
+  static auto LoadMonthlyMdConfig(const std::filesystem::path& path)
+      -> MonthlyMdConfig;
 
   // --- 周期报告加载器 ---
-  static PeriodTexConfig loadPeriodTexConfig(const std::filesystem::path& path);
-  static PeriodTypConfig loadPeriodTypConfig(const std::filesystem::path& path);
-  static PeriodMdConfig loadPeriodMdConfig(const std::filesystem::path& path);
+  static auto LoadPeriodTexConfig(const std::filesystem::path& path)
+      -> PeriodTexConfig;
+  static auto LoadPeriodTypConfig(const std::filesystem::path& path)
+      -> PeriodTypConfig;
+  static auto LoadPeriodMdConfig(const std::filesystem::path& path)
+      -> PeriodMdConfig;
 
   // --- Weekly Loaders ---
-  static WeeklyTexConfig loadWeeklyTexConfig(const std::filesystem::path& path);
-  static WeeklyTypConfig loadWeeklyTypConfig(const std::filesystem::path& path);
-  static WeeklyMdConfig loadWeeklyMdConfig(const std::filesystem::path& path);
+  static auto LoadWeeklyTexConfig(const std::filesystem::path& path)
+      -> WeeklyTexConfig;
+  static auto LoadWeeklyTypConfig(const std::filesystem::path& path)
+      -> WeeklyTypConfig;
+  static auto LoadWeeklyMdConfig(const std::filesystem::path& path)
+      -> WeeklyMdConfig;
 
   // --- Yearly Loaders ---
-  static YearlyTexConfig loadYearlyTexConfig(const std::filesystem::path& path);
-  static YearlyTypConfig loadYearlyTypConfig(const std::filesystem::path& path);
-  static YearlyMdConfig loadYearlyMdConfig(const std::filesystem::path& path);
+  static auto LoadYearlyTexConfig(const std::filesystem::path& path)
+      -> YearlyTexConfig;
+  static auto LoadYearlyTypConfig(const std::filesystem::path& path)
+      -> YearlyTypConfig;
+  static auto LoadYearlyMdConfig(const std::filesystem::path& path)
+      -> YearlyMdConfig;
 };
 
 #endif  // CONFIG_LOADER_REPORT_CONFIG_LOADER_H_

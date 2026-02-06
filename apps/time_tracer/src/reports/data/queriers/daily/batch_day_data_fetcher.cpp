@@ -1,5 +1,5 @@
 // reports/data/queriers/daily/batch_day_data_fetcher.cpp
-#include "batch_day_data_fetcher.hpp"
+#include "reports/data/queriers/daily/batch_day_data_fetcher.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -24,23 +24,23 @@ static auto JoinPathParts(const std::vector<std::string>& parts)
   return path;
 }
 
-auto BatchDayDataFetcher::fetch_all_data() -> BatchDataResult {
+auto BatchDayDataFetcher::FetchAllData() -> BatchDataResult {
   BatchDataResult result;
 
   // 1. [修改] 使用注入的 provider 加载缓存
-  provider_.ensure_loaded(db_);
+  provider_.EnsureLoaded(db_);
 
   // 2. 获取天数据
-  fetch_days_metadata(result);
+  FetchDaysMetadata(result);
 
-  // 3. 获取记录数据并聚合
-  fetch_time_records(result);
+  // 2. 获取具体时长数据
+  FetchTimeRecords(result);
 
   return result;
 }
 
 // fetch_days_metadata 保持不变 ...
-void BatchDayDataFetcher::fetch_days_metadata(BatchDataResult& result) {
+void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
   sqlite3_stmt* stmt;
   const char* sql =
       "SELECT date, year, month, "
@@ -106,7 +106,7 @@ void BatchDayDataFetcher::fetch_days_metadata(BatchDataResult& result) {
   sqlite3_finalize(stmt);
 }
 
-void BatchDayDataFetcher::fetch_time_records(BatchDataResult& result) {
+void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
   sqlite3_stmt* stmt;
   const char* sql =
       "SELECT date, start, end, project_id, duration, activity_remark "
@@ -155,7 +155,7 @@ void BatchDayDataFetcher::fetch_time_records(BatchDataResult& result) {
     }
 
     // [修改] 使用 provider_.get_path_parts
-    std::vector<std::string> parts = provider_.get_path_parts(project_id);
+    std::vector<std::string> parts = provider_.GetPathParts(project_id);
     record.project_path = JoinPathParts(parts);
 
     data.detailed_records.push_back(record);

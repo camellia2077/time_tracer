@@ -1,5 +1,5 @@
 // reports/daily/formatters/latex/day_tex_config.cpp
-#include "day_tex_config.hpp"
+#include "reports/daily/formatters/latex/day_tex_config.hpp"
 
 DayTexConfig::DayTexConfig(const toml::table& config)
     : DayBaseConfig(config),
@@ -19,10 +19,10 @@ DayTexConfig::DayTexConfig(const toml::table& config)
     }
 }
 
-auto DayTexConfig::get_report_title() const -> const std::string& {
+auto DayTexConfig::GetReportTitle() const -> const std::string& {
     return report_title_;
 }
-auto DayTexConfig::get_keyword_colors() const
+auto DayTexConfig::GetKeywordColors() const
     -> const std::map<std::string, std::string>& {
     return keyword_colors_;
 }

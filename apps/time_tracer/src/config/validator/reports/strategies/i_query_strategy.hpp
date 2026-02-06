@@ -20,8 +20,9 @@ class IQueryStrategy {
    * @param file_name 从中加载此配置的原始文件名，用于错误报告。
    * @return 如果配置有效，则返回 true；否则返回 false。
    */
-  virtual bool validate(const toml::table& query_config,
-                        const std::string& file_name) const = 0;
+  [[nodiscard]] virtual auto Validate(const toml::table& query_config,
+                                      const std::string& file_name) const
+      -> bool = 0;
 };
 
 #endif  // CONFIG_VALIDATOR_REPORTS_STRATEGIES_I_QUERY_STRATEGY_H_

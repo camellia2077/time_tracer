@@ -1,13 +1,9 @@
-// importer/storage/sqlite/Statement.cpp
-#include "statement.hpp"
+// importer/storage/sqlite/statement.cpp
+#include "importer/storage/sqlite/statement.hpp"
 
 #include <stdexcept>
 
-Statement::Statement(sqlite3* sqlite_db)
-    : db_(sqlite_db),
-      stmt_insert_day_(nullptr),
-      stmt_insert_record_(nullptr),
-      stmt_insert_project_(nullptr) {
+Statement::Statement(sqlite3* sqlite_db) : db_(sqlite_db) {
   _prepare_statements();
 }
 
@@ -15,13 +11,13 @@ Statement::~Statement() {
   _finalize_statements();
 }
 
-auto Statement::get_insert_day_stmt() const -> sqlite3_stmt* {
+auto Statement::GetInsertDayStmt() const -> sqlite3_stmt* {
   return stmt_insert_day_;
 }
-auto Statement::get_insert_record_stmt() const -> sqlite3_stmt* {
+auto Statement::GetInsertRecordStmt() const -> sqlite3_stmt* {
   return stmt_insert_record_;
 }
-auto Statement::get_insert_project_stmt() const -> sqlite3_stmt* {
+auto Statement::GetInsertProjectStmt() const -> sqlite3_stmt* {
   return stmt_insert_project_;
 }
 

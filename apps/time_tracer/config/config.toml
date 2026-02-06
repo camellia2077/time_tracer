@@ -6,27 +6,51 @@ export_root = "exported_reports"
 save_processed_output = true
 date_check_continuity = true
 
+[defaults]
+db_path = "output/db/time_data.sqlite3"
+output_root = "output"
+default_format = "md"
+
+[commands.export]
+format = "md"
+
+[commands.convert]
+date_check = "continuity"
+save_processed_output = true
+validate_logic = true
+validate_structure = true
+
+[commands.query]
+format = "md"
+
+[commands.ingest]
+date_check = "continuity"
+save_processed_output = true
+
+[commands.validate-logic]
+date_check = "none"
+
 [converter]
 # 指向新的 TOML 格式的转换器配置
 interval_config = "converter/interval_processor_config.toml"
 
 [reports.typst]
-day = "reports/day/DayTypConfig.toml"
-month = "reports/month/MonthTypConfig.toml"
-period = "reports/period/PeriodTypConfig.toml"
-week = "reports/week/WeekTypConfig.toml"
-year = "reports/year/YearTypConfig.toml"
+day = "reports/typst/day.toml"
+month = "reports/typst/month.toml"
+period = "reports/typst/period.toml"
+week = "reports/typst/week.toml"
+year = "reports/typst/year.toml"
 
 [reports.latex]
-day = "reports/day/DayTexConfig.toml"
-month = "reports/month/MonthTexConfig.toml"
-period = "reports/period/PeriodTexConfig.toml"
-week = "reports/week/WeekTexConfig.toml"
-year = "reports/year/YearTexConfig.toml"
+day = "reports/latex/day.toml"
+month = "reports/latex/month.toml"
+period = "reports/latex/period.toml"
+week = "reports/latex/week.toml"
+year = "reports/latex/year.toml"
 
 [reports.markdown]
-day = "reports/day/DayMdConfig.toml"
-month = "reports/month/MonthMdConfig.toml"
-period = "reports/period/PeriodMdConfig.toml"
-week = "reports/week/WeekMdConfig.toml"
-year = "reports/year/YearMdConfig.toml"
+day = "reports/markdown/day.toml"
+month = "reports/markdown/month.toml"
+period = "reports/markdown/period.toml"
+week = "reports/markdown/week.toml"
+year = "reports/markdown/year.toml"

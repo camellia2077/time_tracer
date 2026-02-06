@@ -21,16 +21,16 @@ class REPORTS_SHARED_API IFormattingStrategy {
  public:
   virtual ~IFormattingStrategy() = default;
 
-  virtual std::string format_category_header(
-      const std::string& category_name, const std::string& formatted_duration,
-      double percentage) const = 0;
+  virtual auto FormatCategoryHeader(const std::string& category_name,
+                                    const std::string& formatted_duration,
+                                    double percentage) const -> std::string = 0;
 
-  virtual std::string format_tree_node(const std::string& project_name,
-                                       const std::string& formatted_duration,
-                                       int indent_level) const = 0;
+  virtual auto FormatTreeNode(const std::string& project_name,
+                              const std::string& formatted_duration,
+                              int indent_level) const -> std::string = 0;
 
-  virtual std::string start_children_list() const { return ""; }
-  virtual std::string end_children_list() const { return ""; }
+  virtual auto StartChildrenList() const -> std::string { return ""; }
+  virtual auto EndChildrenList() const -> std::string { return ""; }
 };
 
 /**
@@ -46,16 +46,17 @@ class REPORTS_SHARED_API ProjectTreeFormatter {  // [新增] 必须添加 API �
 
   // Public API: keep parameter order and naming for ABI compatibility.
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-  std::string format_project_tree(const ProjectTree& tree,
-                                  long long total_duration, int avg_days) const;
+  [[nodiscard]] auto FormatProjectTree(const ProjectTree& tree,
+                                       long long total_duration,
+                                       int avg_days) const -> std::string;
   // NOLINTEND(bugprone-easily-swappable-parameters)
 
  private:
   std::unique_ptr<IFormattingStrategy> m_strategy;
 
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-  void generate_sorted_output(std::stringstream& ss, const ProjectNode& node,
-                              int indent, int avg_days) const;
+  void GenerateSortedOutput(std::stringstream& ss, const ProjectNode& node,
+                            int indent, int avg_days) const;
   // NOLINTEND(bugprone-easily-swappable-parameters)
 };
 

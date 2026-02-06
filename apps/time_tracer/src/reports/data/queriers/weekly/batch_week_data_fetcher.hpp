@@ -13,7 +13,7 @@ class BatchWeekDataFetcher {
  public:
   explicit BatchWeekDataFetcher(sqlite3* sqlite_db);
 
-  std::map<std::string, WeeklyReportData> fetch_all_data();
+  [[nodiscard]] auto FetchAllData() -> std::map<std::string, WeeklyReportData>;
 
  private:
   sqlite3* db_;

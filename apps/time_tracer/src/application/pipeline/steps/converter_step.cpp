@@ -1,5 +1,5 @@
 // application/pipeline/steps/converter_step.cpp
-#include "converter_step.hpp"
+#include "application/pipeline/steps/converter_step.hpp"
 
 #include <chrono>
 #include <future>
@@ -20,7 +20,8 @@ constexpr double kMillisPerSecond = 1000.0;
 
 ConverterStep::ConverterStep(const AppConfig& /*unused*/) {}
 
-auto ConverterStep::execute(PipelineContext& context) -> bool {
+auto ConverterStep::Execute(PipelineContext& context) -> bool {
+
   std::cout << "Step: Converting files (Parallel)..." << std::endl;
   auto start_time = std::chrono::steady_clock::now();
 
@@ -34,15 +35,16 @@ auto ConverterStep::execute(PipelineContext& context) -> bool {
     futures.push_back(std::async(
         std::launch::async, [&context, file_path]() -> LogProcessingResult {
           try {
-            std::string content = FileReader::read_content(file_path);
+            std::string content = FileReader::ReadContent(file_path);
 
             // LogProcessor 构造函数接收 const ConverterConfig& (Struct)
             LogProcessor processor(context.state.converter_config);
-            return processor.processSourceContent(file_path.string(), content);
+            return processor.ProcessSourceContent(file_path.string(), content);
+
 
           } catch (const std::exception& e) {
-            std::cerr << RED_COLOR << "Thread Error [" << file_path.filename()
-                      << "]: " << e.what() << RESET_COLOR << std::endl;
+            std::cerr << time_tracer::common::colors::kRed << "Thread Error [" << file_path.filename()
+                      << "]: " << e.what() << time_tracer::common::colors::kReset << std::endl;
             return LogProcessingResult{.success = false, .processed_data = {}};
           }
         }));
@@ -68,20 +70,22 @@ auto ConverterStep::execute(PipelineContext& context) -> bool {
   auto end_time = std::chrono::steady_clock::now();
   double duration =
       std::chrono::duration<double, std::milli>(end_time - start_time).count();
-  printTiming(duration);
+  PrintTiming(duration);
+
 
   if (all_success) {
-    std::cout << GREEN_COLOR << "内存转换阶段 全部成功 (" << processed_count
-              << " files)." << RESET_COLOR << std::endl;
+    std::cout << time_tracer::common::colors::kGreen << "内存转换阶段 全部成功 (" << processed_count
+              << " files)." << time_tracer::common::colors::kReset << std::endl;
   } else {
-    std::cout << YELLOW_COLOR << "内存转换阶段 完成，但存在部分错误。"
-              << RESET_COLOR << std::endl;
+    std::cout << time_tracer::common::colors::kYellow << "内存转换阶段 完成，但存在部分错误。"
+              << time_tracer::common::colors::kReset << std::endl;
   }
 
   return all_success;
 }
 
-void ConverterStep::printTiming(double total_time_ms) {
+void ConverterStep::PrintTiming(double total_time_ms) {
+
   double total_time_s = total_time_ms / kMillisPerSecond;
   std::cout << "--------------------------------------\n";
   std::cout << "转换耗时: " << std::fixed << std::setprecision(3)

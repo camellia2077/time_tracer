@@ -1,5 +1,5 @@
-// importer/storage/sqlite/Writer.cpp
-#include "writer.hpp"
+// importer/storage/sqlite/writer.cpp
+#include "importer/storage/sqlite/writer.hpp"
 
 #include <iostream>
 
@@ -55,7 +55,7 @@ Writer::Writer(sqlite3* sqlite_db, sqlite3_stmt* stmt_day,
 
 Writer::~Writer() = default;
 
-void Writer::insert_days(const std::vector<DayData>& days) {
+void Writer::InsertDays(const std::vector<DayData>& days) {
   // 这部分逻辑未变，保持原样即可
   for (const auto& day_data : days) {
     sqlite3_bind_text(stmt_insert_day_, kDayIdxDate, day_data.date.c_str(), -1,
@@ -112,7 +112,7 @@ void Writer::insert_days(const std::vector<DayData>& days) {
   }
 }
 
-void Writer::insert_records(const std::vector<TimeRecordInternal>& records) {
+void Writer::InsertRecords(const std::vector<TimeRecordInternal>& records) {
   if (records.empty()) {
     return;
   }
@@ -125,12 +125,12 @@ void Writer::insert_records(const std::vector<TimeRecordInternal>& records) {
   }
 
   // 2. 委托 Resolver 批量预处理 (建立缓存)
-  project_resolver_->preload_and_resolve(paths);
+  project_resolver_->PreloadAndResolve(paths);
 
   // 3. 极速插入循环
   for (const auto& record_data : records) {
     // 直接从 Resolver 获取 ID
-    long long project_id = project_resolver_->get_id(record_data.project_path);
+    long long project_id = project_resolver_->GetId(record_data.project_path);
 
     sqlite3_bind_int64(stmt_insert_record_, kRecordIdxLogicalId,
                        record_data.logical_id);

@@ -8,15 +8,15 @@
 
 class DayStats {
  public:
-  static void calculate_stats(DailyLog& day);
+  static void CalculateStats(DailyLog& day);
 
  private:
-  static int calculateDurationSeconds(const std::string& start_time_str,
-                                      const std::string& end_time_str);
-  static long long timeStringToTimestamp(const std::string& date,
-                                         const std::string& time,
-                                         bool is_end_time,
-                                         long long start_timestamp_for_end);
+  static auto CalculateDurationSeconds(const std::string& start_time_str,
+                                       const std::string& end_time_str) -> int;
+  static auto TimeStringToTimestamp(const std::string& date,
+                                    const std::string& time, bool is_end_time,
+                                    long long start_timestamp_for_end)
+      -> long long;
 };
 
 #endif  // CONVERTER_CONVERT_CORE_DAY_STATS_H_

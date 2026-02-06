@@ -1,5 +1,5 @@
 // config/validator/reports/strategies/base_strategy.cpp
-#include "base_strategy.hpp"
+#include "config/validator/reports/strategies/base_strategy.hpp"
 
 #include <iostream>
 #include <regex>
@@ -67,27 +67,27 @@ static auto ValidateStatsRecursive(const toml::array& items_array,
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 // --- 模板方法实现 ---
-auto BaseStrategy::validate(const toml::table& query_config,
+auto BaseStrategy::Validate(const toml::table& query_config,
                             const std::string& file_name) const -> bool {
   // 步骤1：执行子类实现的特定key验证
-  if (!validate_specific_keys(query_config, file_name)) {
+  if (!ValidateSpecificKeys(query_config, file_name)) {
     return false;
   }
   // 步骤2：执行通用的验证规则
-  if (!validate_common_rules(query_config, file_name)) {
+  if (!ValidateCommonRules(query_config, file_name)) {
     return false;
   }
   // 步骤3：对日报类型执行 statistics_items 的验证
   if (file_name.find("Day") != std::string::npos) {
-    if (!validate_statistics_items(query_config, file_name)) {
+    if (!ValidateStatisticsItems(query_config, file_name)) {
       return false;
     }
   }
   return true;
 }
 
-auto BaseStrategy::validate_common_rules(const toml::table& query_config,
-                                         const std::string& file_name) -> bool {
+auto BaseStrategy::ValidateCommonRules(const toml::table& query_config,
+                                       const std::string& file_name) -> bool {
   const std::set<std::string> kNumericKeys = {
       "base_font_size",   "report_title_font_size", "category_title_font_size",
       "margin_in",        "margin_top_cm",          "margin_bottom_cm",
@@ -118,7 +118,7 @@ auto BaseStrategy::validate_common_rules(const toml::table& query_config,
       const auto& colors = *node.as_table();
       for (const auto& [color_key, color_val] : colors) {
         if (!color_val.is_string() ||
-            !is_valid_hex_color(color_val.value<std::string>().value_or(""))) {
+            !IsValidHexColor(color_val.value<std::string>().value_or(""))) {
           std::cerr << "[Validator] Error in " << file_name << ": Color for '"
                     << color_key.str()
                     << "' is not a valid hex string (e.g., #RRGGBB)."
@@ -138,8 +138,8 @@ auto BaseStrategy::validate_common_rules(const toml::table& query_config,
   return true;
 }
 
-auto BaseStrategy::validate_statistics_items(const toml::table& query_config,
-                                             const std::string& file_name)
+auto BaseStrategy::ValidateStatisticsItems(const toml::table& query_config,
+                                           const std::string& file_name)
     -> bool {
   if (!query_config.contains("statistics_items")) {
     return true;
@@ -155,7 +155,7 @@ auto BaseStrategy::validate_statistics_items(const toml::table& query_config,
   return ValidateStatsRecursive(*items_node.as_array(), file_name);
 }
 
-auto BaseStrategy::is_valid_hex_color(const std::string& color_string) -> bool {
+auto BaseStrategy::IsValidHexColor(const std::string& color_string) -> bool {
   static const std::regex kHexColorRegex(R"(^#[0-9a-fA-F]{6}$)");
   return std::regex_match(color_string, kHexColorRegex);
 }

@@ -27,11 +27,11 @@ class BaseGenerator {
  public:
   /**
    * @brief 构造函数。
-   * @param db 指向 SQLite 数据库连接的指针。
+   * @param database_connection 指向 SQLite 数据库连接的指针。
    * @param config 应用程序配置对象的常量引用。
    */
-  BaseGenerator(sqlite3* db, const AppConfig& config)
-      : db_(db), app_config_(config) {}
+  BaseGenerator(sqlite3* database_connection, const AppConfig& config)
+      : db_(database_connection), app_config_(config) {}
 
   virtual ~BaseGenerator() = default;
 
@@ -41,17 +41,18 @@ class BaseGenerator {
    * @param format 需要生成的报告格式。
    * @return 包含格式化报告的字符串。
    */
-  std::string generate_report(QueryParamType param, ReportFormat format) const {
+  [[nodiscard]] auto GenerateReport(QueryParamType param,
+                                    ReportFormat format) const -> std::string {
     // 1. 创建具体的查询器并获取数据
     QuerierType querier(db_, param);
-    ReportDataType report_data = querier.fetch_data();
+    ReportDataType report_data = querier.FetchData();
 
     // 2. 使用通用工厂创建格式化器
     auto formatter =
-        GenericFormatterFactory<ReportDataType>::create(format, app_config_);
+        GenericFormatterFactory<ReportDataType>::Create(format, app_config_);
 
     // 3. 格式化并返回报告
-    return formatter->format_report(report_data);
+    return formatter->FormatReport(report_data);
   }
 
  protected:

@@ -13,13 +13,13 @@ struct ImportProjectNode {
   std::string name;
   std::unordered_map<std::string, std::unique_ptr<ImportProjectNode>> children;
 };
-ProjectResolver::ProjectResolver(sqlite3* sqlite_db,
+ProjectResolver::ProjectResolver(sqlite3* db_ptr,
                                  sqlite3_stmt* stmt_insert_project)
-    : db_(sqlite_db), stmt_insert_project_(stmt_insert_project) {}
+    : db_(db_ptr), stmt_insert_project_(stmt_insert_project) {}
 
 ProjectResolver::~ProjectResolver() = default;
 
-void ProjectResolver::load_from_db() {
+auto ProjectResolver::LoadFromDb() -> void {
   root_ = std::make_unique<ImportProjectNode>();
   root_->id = 0;
 
@@ -86,9 +86,9 @@ void ProjectResolver::load_from_db() {
   }
 }
 
-auto ProjectResolver::ensure_path(const std::string& full_path) -> long long {
+auto ProjectResolver::EnsurePath(const std::string& full_path) -> long long {
   // [Fix] Uses the shared split_string from StringUtils.hpp
-  std::vector<std::string> parts = split_string(full_path, '_');
+  std::vector<std::string> parts = SplitString(full_path, '_');
 
   ImportProjectNode* current_node = root_.get();
   long long current_parent_id = 0;
@@ -134,20 +134,21 @@ auto ProjectResolver::ensure_path(const std::string& full_path) -> long long {
   return current_parent_id;
 }
 
-void ProjectResolver::preload_and_resolve(
-    const std::vector<std::string>& project_paths) {
-  if (!root_) {
-    load_from_db();
+auto ProjectResolver::PreloadAndResolve(
+    const std::vector<std::string>& project_paths) -> void {
+  if (cache_.empty()) {
+    LoadFromDb();
   }
+
   for (const auto& path : project_paths) {
-    if (!cache_.contains(path)) {
-      long long project_id = ensure_path(path);
+    if (cache_.find(path) == cache_.end()) {
+      long long project_id = EnsurePath(path);
       cache_[path] = project_id;
     }
   }
 }
 
-auto ProjectResolver::get_id(const std::string& project_path) const
+auto ProjectResolver::GetId(const std::string& project_path) const
     -> long long {
   auto cache_it = cache_.find(project_path);
   if (cache_it != cache_.end()) {

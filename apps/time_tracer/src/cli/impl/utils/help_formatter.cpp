@@ -1,5 +1,5 @@
 // cli/impl/utils/help_formatter.cpp
-#include "help_formatter.hpp"
+#include "cli/impl/utils/help_formatter.hpp"
 
 #include <algorithm>
 #include <iomanip>
@@ -24,7 +24,7 @@ struct ArgGroups {
 auto SplitArgDefinitions(const std::vector<ArgDef>& definitions) -> ArgGroups {
   ArgGroups groups;
   for (const auto& def : definitions) {
-    if (def.type == ArgType::Positional) {
+    if (def.type == ArgType::kPositional) {
       groups.positionals.push_back(def);
     } else {
       groups.options.push_back(def);
@@ -42,8 +42,8 @@ auto SplitArgDefinitions(const std::vector<ArgDef>& definitions) -> ArgGroups {
 
 auto BuildUsagePrefix(const std::string& name) -> std::string {
   std::stringstream usage_stream;
-  usage_stream << "  " << GREEN_COLOR << std::left << std::setw(kUsageNameWidth)
-               << name << RESET_COLOR;
+  usage_stream << "  " << time_tracer::common::colors::kGreen << std::left << std::setw(kUsageNameWidth)
+               << name << time_tracer::common::colors::kReset;
   return usage_stream.str();
 }
 
@@ -105,11 +105,12 @@ void PrintOptions(const std::vector<ArgDef>& options) {
 }
 }  // namespace
 
-void print_full_usage(
+void PrintFullUsage(
+
     const char* app_name,
     const std::vector<std::pair<std::string, std::unique_ptr<ICommand>>>&
         commands) {
-  std::cout << GREEN_COLOR << "TimeTracer" << RESET_COLOR
+  std::cout << time_tracer::common::colors::kGreen << "TimeTracer" << time_tracer::common::colors::kReset
             << ": A command-line tool for time data processing.\n\n";
   std::cout << "Usage: " << app_name
             << " <command> [arguments...] [options...]\n\n";
@@ -121,8 +122,8 @@ void print_full_usage(
       continue;
     }
 
-    ArgGroups groups = SplitArgDefinitions(cmd->get_definitions());
-    std::string description = NormalizeDescription(cmd->get_help());
+    ArgGroups groups = SplitArgDefinitions(cmd->GetDefinitions());
+    std::string description = NormalizeDescription(cmd->GetHelp());
     std::string usage_prefix = BuildUsagePrefix(name);
 
     PrintUsageLine(usage_prefix, description);
@@ -135,4 +136,23 @@ void print_full_usage(
   std::cout << "Global Options:\n";
   std::cout << "  --help, -h          Show this help message.\n";
   std::cout << "  --version, -v       Show program version.\n";
+}
+
+void PrintCommandUsage(const char* app_name, const std::string& command_name,
+
+                         const ICommand& command) {
+  std::cout << time_tracer::common::colors::kGreen << "Command: " << command_name << time_tracer::common::colors::kReset
+            << "\n\n";
+
+  ArgGroups groups = SplitArgDefinitions(command.GetDefinitions());
+  std::string description = NormalizeDescription(command.GetHelp());
+
+  if (!description.empty()) {
+    std::cout << "  " << description << "\n\n";
+  }
+
+  PrintUsageSignature(command_name, groups);
+  PrintPositionals(groups.positionals);
+  PrintOptions(groups.options);
+  std::cout << "\n";
 }

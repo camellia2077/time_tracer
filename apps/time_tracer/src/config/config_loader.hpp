@@ -23,22 +23,22 @@ class ConfigLoader {
    * @throws std::runtime_error on file-not-found, parsing, or permission
    * errors.
    */
-  AppConfig load_configuration();
+  auto LoadConfiguration() -> AppConfig;
 
   /**
    * @brief Gets the absolute path to the main config.json file.
    * @return A string containing the full path.
    */
-  std::string get_main_config_path() const;
+  [[nodiscard]] auto GetMainConfigPath() const -> std::string;
 
  private:
-  std::filesystem::path exe_path;
-  std::filesystem::path config_dir_path;
-  std::filesystem::path main_config_path;
+  std::filesystem::path exe_path_;
+  std::filesystem::path config_dir_path_;
+  std::filesystem::path main_config_path_;
 
   // Constants defining key configuration file and directory names
-  const std::string CONFIG_FILE_NAME = "config.json";
-  const std::string CONFIG_DIR_NAME = "config";
+  const std::string kConfigFileName = "config.toml";
+  const std::string kConfigDirName = "config";
 };
 
 #endif  // CONFIG_CONFIG_LOADER_H_

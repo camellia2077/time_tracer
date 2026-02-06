@@ -13,8 +13,9 @@ namespace MonthTexUtils {
 /**
  * @brief 为月报生成 LaTeX 格式的摘要（标题和总结信息）。
  */
-void display_summary(std::stringstream& ss, const MonthlyReportData& data,
-                     const std::shared_ptr<MonthTexConfig>& config);
+void DisplaySummary(std::stringstream& report_stream,
+                    const MonthlyReportData& data,
+                    const std::shared_ptr<MonthTexConfig>& config);
 
 }  // namespace MonthTexUtils
 

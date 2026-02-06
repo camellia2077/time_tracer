@@ -8,16 +8,18 @@
 #ifdef _WIN32
 #ifdef REPORTS_SHARED_EXPORTS
 // 正在构建 reports_shared.dll 本身，我们需要导出 (export)
-#define REPORTS_SHARED_API __declspec(dllexport)
+#define REPORTS_SHARED_API /* NOLINT(readability-identifier-naming) */ \
+  __declspec(dllexport)
 #else
 // 正在构建 *依赖* reports_shared.dll 的代码 (例如插件DLL)，
 // 我们需要导入 (import)
-#define REPORTS_SHARED_API __declspec(dllimport)
+#define REPORTS_SHARED_API /* NOLINT(readability-identifier-naming) */ \
+  __declspec(dllimport)
 #endif
 #else
 // 对于非 Windows 平台 (Linux, macOS), 默认设为空
 // (GCC/Clang 使用 -fvisibility=hidden 属性, 但这里简化处理)
-#define REPORTS_SHARED_API
+#define REPORTS_SHARED_API  // NOLINT(readability-identifier-naming)
 #endif
 
 // ----------------------------------------------------------------------
@@ -29,13 +31,15 @@
 // 在导出类之前暂时禁用此警告。
 // ----------------------------------------------------------------------
 #ifdef _MSC_VER
-#define DISABLE_C4251_WARNING \
-  __pragma(warning(push)) __pragma(warning(disable : 4251))
+#define DISABLE_C4251_WARNING       \
+  __pragma(warning(push)) __pragma( \
+      warning(disable : 4251))  // NOLINT(readability-identifier-naming)
 
-#define ENABLE_C4251_WARNING __pragma(warning(pop))
+#define ENABLE_C4251_WARNING \
+  __pragma(warning(pop))  // NOLINT(readability-identifier-naming)
 #else
-#define DISABLE_C4251_WARNING
-#define ENABLE_C4251_WARNING
+#define DISABLE_C4251_WARNING  // NOLINT(readability-identifier-naming)
+#define ENABLE_C4251_WARNING   // NOLINT(readability-identifier-naming)
 #endif
 
 #endif  // REPORTS_SHARED_API_SHARED_API_H_

@@ -11,12 +11,12 @@
 #include "reports/data/model/project_tree.hpp"
 
 // [修改] 移除 REPORTS_DATA_API 宏，直接声明函数
-void build_project_tree_from_records(
+void BuildProjectTreeFromRecords(
     reporting::ProjectTree& tree,
     const std::vector<std::pair<std::string, long long>>& records);
 
 // [修改] 移除 REPORTS_DATA_API 宏，直接声明函数
-void build_project_tree_from_ids(
+void BuildProjectTreeFromIds(
     reporting::ProjectTree& tree,
     const std::vector<std::pair<long long, long long>>& id_records,
     const IProjectInfoProvider& provider);

@@ -17,57 +17,62 @@
 template <typename ReportDataT, typename ConfigT>
 class BaseMdFormatter : public IReportFormatter<ReportDataT> {
  public:
-  explicit BaseMdFormatter(std::shared_ptr<ConfigT> config) : config_(config) {}
+  explicit BaseMdFormatter(std::shared_ptr<ConfigT> config)
+      : config_(std::move(config)) {}
 
-  std::string format_report(const ReportDataT& data) const override {
+  [[nodiscard]] auto FormatReport(const ReportDataT& data) const
+      -> std::string override {
     // 1. 数据有效性检查
-    if (std::string err = validate_data(data); !err.empty()) {
+    if (std::string err = ValidateData(data); !err.empty()) {
       return err + "\n";  // Markdown 通常多加个换行比较安全
     }
 
-    std::stringstream ss;
+    std::stringstream report_stream;
 
     // 2. 头部 / 摘要
-    format_header_content(ss, data);
+    FormatHeaderContent(report_stream, data);
 
     // 3. 主体内容
-    if (is_empty_data(data)) {
+    if (IsEmptyData(data)) {
       // [修改] 调用纯虚函数，由子类负责适配具体的 Config 接口
-      ss << get_no_records_msg() << "\n";
+      report_stream << GetNoRecordsMsg() << "\n";
     } else {
-      format_extra_content(ss, data);
-      format_project_tree_section(ss, data);
+      FormatExtraContent(report_stream, data);
+      FormatProjectTreeSection(report_stream, data);
     }
 
-    return ss.str();
+    return report_stream.str();
   }
 
  protected:
   std::shared_ptr<ConfigT> config_;
 
   // [修改] 注释掉未使用参数以消除警告
-  virtual std::string validate_data(const ReportDataT& /*data*/) const {
+  [[nodiscard]] virtual auto ValidateData(const ReportDataT& /*data*/) const
+      -> std::string {
     return "";
   }
 
-  virtual bool is_empty_data(const ReportDataT& data) const = 0;
-  virtual int get_avg_days(const ReportDataT& data) const = 0;
+  [[nodiscard]] virtual auto IsEmptyData(const ReportDataT& data) const
+      -> bool = 0;
+  [[nodiscard]] virtual auto GetAvgDays(const ReportDataT& data) const
+      -> int = 0;
 
-  virtual void format_header_content(std::stringstream& ss,
-                                     const ReportDataT& data) const = 0;
+  virtual void FormatHeaderContent(std::stringstream& report_stream,
+                                   const ReportDataT& data) const = 0;
 
   // [修改] 注释掉未使用参数
-  virtual void format_extra_content(std::stringstream& /*ss*/,
-                                    const ReportDataT& /*data*/) const {}
+  virtual void FormatExtraContent(std::stringstream& /*report_stream*/,
+                                  const ReportDataT& /*data*/) const {}
 
   // [修改] 改为纯虚函数，移除导致编译错误的默认实现
-  virtual std::string get_no_records_msg() const = 0;
+  [[nodiscard]] virtual auto GetNoRecordsMsg() const -> std::string = 0;
 
-  virtual void format_project_tree_section(std::stringstream& ss,
-                                           const ReportDataT& data) const {
-    ss << "\n## " << config_->get_project_breakdown_label() << "\n";
-    ss << MarkdownFormatter::format_project_tree(
-        data.project_tree, data.total_duration, get_avg_days(data));
+  virtual void FormatProjectTreeSection(std::stringstream& report_stream,
+                                        const ReportDataT& data) const {
+    report_stream << "\n## " << config_->GetProjectBreakdownLabel() << "\n";
+    report_stream << MarkdownFormatter::FormatProjectTree(
+        data.project_tree, data.total_duration, GetAvgDays(data));
   }
 };
 

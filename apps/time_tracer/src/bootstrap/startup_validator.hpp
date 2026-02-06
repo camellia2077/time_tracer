@@ -17,7 +17,7 @@ class StartupValidator {
    * @param config 应用程序配置对象，用于获取插件目录路径。
    * @return true 如果环境依赖（DLL）完整。
    */
-  static bool validate_environment(const AppConfig& config);
+  static auto ValidateEnvironment(const AppConfig& config) -> bool;
 };
 
 #endif  // BOOTSTRAP_STARTUP_VALIDATOR_H_

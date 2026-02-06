@@ -16,36 +16,37 @@ class ReportHandler : public IReportHandler {
   ~ReportHandler() override;
 
   // 查询方法
-  std::string run_daily_query(const std::string& date,
-                              ReportFormat format) override;
-  std::string run_monthly_query(const std::string& month,
-                                ReportFormat format) override;
-  std::string run_period_query(int days, ReportFormat format) override;
-  std::string run_weekly_query(const std::string& iso_week,
-                               ReportFormat format) override;
-  std::string run_yearly_query(const std::string& year,
-                               ReportFormat format) override;
+  auto RunDailyQuery(std::string_view date, ReportFormat format)
+      -> std::string override;
+  auto RunMonthlyQuery(std::string_view month, ReportFormat format)
+      -> std::string override;
+  auto RunPeriodQuery(int days, ReportFormat format) -> std::string override;
+  auto RunWeeklyQuery(std::string_view iso_week, ReportFormat format)
+      -> std::string override;
+  auto RunYearlyQuery(std::string_view year, ReportFormat format)
+      -> std::string override;
 
   // [新增] 批量周期查询实现
-  std::string run_period_queries(const std::vector<int>& days_list,
-                                 ReportFormat format) override;
+  auto RunPeriodQueries(const std::vector<int>& days_list, ReportFormat format)
+      -> std::string override;
 
   // 导出方法
-  void run_export_single_day_report(const std::string& date,
-                                    ReportFormat format) override;
-  void run_export_single_month_report(const std::string& month,
-                                      ReportFormat format) override;
-  void run_export_single_period_report(int days, ReportFormat format) override;
-  void run_export_single_week_report(const std::string& iso_week,
-                                     ReportFormat format) override;
-  void run_export_single_year_report(const std::string& year,
-                                     ReportFormat format) override;
-  void run_export_all_daily_reports_query(ReportFormat format) override;
-  void run_export_all_monthly_reports_query(ReportFormat format) override;
-  void run_export_all_period_reports_query(const std::vector<int>& days_list,
-                                           ReportFormat format) override;
-  void run_export_all_weekly_reports_query(ReportFormat format) override;
-  void run_export_all_yearly_reports_query(ReportFormat format) override;
+  auto RunExportSingleDayReport(std::string_view date, ReportFormat format)
+      -> void override;
+  auto RunExportSingleMonthReport(std::string_view month, ReportFormat format)
+      -> void override;
+  auto RunExportSinglePeriodReport(int days, ReportFormat format)
+      -> void override;
+  auto RunExportSingleWeekReport(std::string_view iso_week, ReportFormat format)
+      -> void override;
+  auto RunExportSingleYearReport(std::string_view year, ReportFormat format)
+      -> void override;
+  auto RunExportAllDailyReportsQuery(ReportFormat format) -> void override;
+  auto RunExportAllMonthlyReportsQuery(ReportFormat format) -> void override;
+  auto RunExportAllPeriodReportsQuery(const std::vector<int>& days_list,
+                                      ReportFormat format) -> void override;
+  auto RunExportAllWeeklyReportsQuery(ReportFormat format) -> void override;
+  auto RunExportAllYearlyReportsQuery(ReportFormat format) -> void override;
 
  private:
   std::unique_ptr<ReportGenerator> generator_;

@@ -18,19 +18,19 @@ def print_header(paths):
     
     # 打印关键路径信息 (从 paths 对象中读取)
     print(f" {Colors.GREEN}[Configuration Summary]{Colors.RESET}")
-    print(f"  • Source Binaries : {paths.SOURCE_EXECUTABLES_DIR}")
-    print(f"  • Source Data     : {paths.SOURCE_DATA_PATH}")
-    print(f"  • Test Environment: {paths.TARGET_EXECUTABLES_DIR}")
-    print(f"  • Database File   : {paths.DB_DIR}")
-    print(f"  • Export Output   : {paths.EXPORT_OUTPUT_DIR}")
-    print(f"  • Python Logs     : {paths.PY_OUTPUT_DIR}")
+    print(f"  - Source Binaries : {paths.SOURCE_EXECUTABLES_DIR}")
+    print(f"  - Source Data     : {paths.SOURCE_DATA_PATH}")
+    print(f"  - Test Environment: {paths.TARGET_EXECUTABLES_DIR}")
+    print(f"  - Database File   : {paths.DB_DIR}")
+    print(f"  - Export Output   : {paths.EXPORT_OUTPUT_DIR}")
+    print(f"  - Python Logs     : {paths.PY_OUTPUT_DIR}")
     print(f"{Colors.CYAN}" + "-"*80 + f"{Colors.RESET}\n")
 
-def main(config_path: Path = None):
+def main(config_path: Path = None, build_dir_name: str = None):
     # 1. 加载配置
-    # 接收从 run.py 传入的绝对路径，解决 "找不到 config.toml" 的问题
+    # 接收从 run.py 传入的参数
     try:
-        config = load_config(config_path)
+        config = load_config(config_path, build_dir_name=build_dir_name)
     except Exception as e:
         print(f"{Colors.RED}Config Error: {e}{Colors.RESET}")
         return 1  # 返回错误码
@@ -39,7 +39,10 @@ def main(config_path: Path = None):
     print_header(config.paths)
 
     # 3. 初始化并运行测试引擎
-    engine = TestEngine(config)
-    success = engine.run()
-
-    return 0 if success else 1
+    try:
+        engine = TestEngine(config)
+        success = engine.run()
+        return 0 if success else 1
+    except Exception as e:
+        print(f"{Colors.RED}Runtime Error: {e}{Colors.RESET}")
+        return 1

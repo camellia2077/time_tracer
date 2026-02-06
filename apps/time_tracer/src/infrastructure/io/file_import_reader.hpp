@@ -19,17 +19,18 @@ class FileImportReader {
    * @brief 扫描指定路径下的 .json 文件并读取内容
    * @return pair 列表: <文件名, 文件内容>
    */
-  static std::vector<std::pair<std::string, std::string>> read_json_files(
-      const std::string& path_str) {
+  static auto ReadJsonFiles(const std::string& path_str)
+      -> std::vector<std::pair<std::string, std::string>> {
     std::cout << "正在扫描待导入文件..." << std::endl;
     std::vector<std::string> input_paths = {path_str};
     // 职责分离：调用现有的工具类
     std::vector<std::string> json_files =
-        FileUtils::resolve_files(input_paths, ".json");
+        FileUtils::ResolveFiles(input_paths, ".json");
 
     if (json_files.empty()) {
-      std::cerr << YELLOW_COLOR << "警告: 在路径 " << path_str
-                << " 下未找到 .json 文件。" << RESET_COLOR << std::endl;
+      std::cerr << time_tracer::common::colors::kYellow << "警告: 在路径 "
+                << path_str << " 下未找到 .json 文件。"
+                << time_tracer::common::colors::kReset << std::endl;
       return {};
     }
 
@@ -41,19 +42,20 @@ class FileImportReader {
     int read_failure_count = 0;
     for (const auto& file_path : json_files) {
       try {
-        std::string content = FileReader::read_content(file_path);
-        payload.push_back({file_path, std::move(content)});
+        std::string content = FileReader::ReadContent(file_path);
+        payload.emplace_back(file_path, std::move(content));
       } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "读取失败: " << file_path << " - " << e.what()
-                  << RESET_COLOR << std::endl;
+        std::cerr << time_tracer::common::colors::kRed
+                  << "读取失败: " << file_path << " - " << e.what()
+                  << time_tracer::common::colors::kReset << std::endl;
         read_failure_count++;
       }
     }
 
     if (read_failure_count > 0) {
-      std::cout << YELLOW_COLOR << "警告: 有 " << read_failure_count
-                << " 个文件读取失败，将跳过这些文件。" << RESET_COLOR
-                << std::endl;
+      std::cout << time_tracer::common::colors::kYellow << "警告: 有 "
+                << read_failure_count << " 个文件读取失败，将跳过这些文件。"
+                << time_tracer::common::colors::kReset << std::endl;
     }
 
     return payload;

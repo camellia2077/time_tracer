@@ -10,20 +10,30 @@
 class RangeTexConfig : public RangeBaseConfig {
  public:
   explicit RangeTexConfig(const toml::table& config);
-  const std::string& get_main_font() const { return style_.get_main_font(); }
-  const std::string& get_cjk_main_font() const {
-    return style_.get_cjk_main_font();
+  [[nodiscard]] auto GetMainFont() const -> const std::string& {
+    return style_.GetMainFont();
   }
-  int get_base_font_size() const { return style_.get_base_font_size(); }
-  int get_report_title_font_size() const {
-    return style_.get_report_title_font_size();
+  [[nodiscard]] auto GetCjkMainFont() const -> const std::string& {
+    return style_.GetCjkMainFont();
   }
-  int get_category_title_font_size() const {
-    return style_.get_category_title_font_size();
+  [[nodiscard]] auto GetBaseFontSize() const -> int {
+    return style_.GetBaseFontSize();
   }
-  double get_margin_in() const { return style_.get_margin_in(); }
-  double get_list_top_sep_pt() const { return style_.get_list_top_sep_pt(); }
-  double get_list_item_sep_ex() const { return style_.get_list_item_sep_ex(); }
+  [[nodiscard]] auto GetReportTitleFontSize() const -> int {
+    return style_.GetReportTitleFontSize();
+  }
+  [[nodiscard]] auto GetCategoryTitleFontSize() const -> int {
+    return style_.GetCategoryTitleFontSize();
+  }
+  [[nodiscard]] auto GetMarginIn() const -> double {
+    return style_.GetMarginIn();
+  }
+  [[nodiscard]] auto GetListTopSepPt() const -> double {
+    return style_.GetListTopSepPt();
+  }
+  [[nodiscard]] auto GetListItemSepEx() const -> double {
+    return style_.GetListItemSepEx();
+  }
 
  private:
   TexStyleConfig style_;

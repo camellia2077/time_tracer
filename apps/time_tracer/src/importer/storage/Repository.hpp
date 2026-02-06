@@ -1,4 +1,4 @@
-// importer/storage/Repository.hpp
+// importer/storage/repository.hpp
 #ifndef IMPORTER_STORAGE_REPOSITORY_H_
 #define IMPORTER_STORAGE_REPOSITORY_H_
 
@@ -23,10 +23,10 @@ class Repository {
   explicit Repository(const std::string& db_path);
   ~Repository() = default;
 
-  bool is_db_open() const;
+  [[nodiscard]] auto IsDbOpen() const -> bool;
 
-  void import_data(const std::vector<DayData>& days,
-                   const std::vector<TimeRecordInternal>& records);
+  void ImportData(const std::vector<DayData>& days,
+                  const std::vector<TimeRecordInternal>& records);
 
  private:
   std::unique_ptr<Connection> connection_manager_;
