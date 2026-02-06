@@ -1,5 +1,5 @@
 // serializer/json_serializer.cpp
-#include "json_serializer.hpp"
+#include "serializer/json_serializer.hpp"
 
 #include <iostream>
 
@@ -14,11 +14,11 @@ using core::LogSerializer;
 
 // --- Serialization Facade ---
 
-auto JsonSerializer::serializeDay(const DailyLog& day) -> nlohmann::json {
+auto JsonSerializer::SerializeDay(const DailyLog& day) -> nlohmann::json {
   return LogSerializer::serialize(day);
 }
 
-auto JsonSerializer::serializeDays(const std::vector<DailyLog>& days)
+auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days)
     -> nlohmann::json {
   nlohmann::json j_array = nlohmann::json::array();
   for (const auto& day : days) {
@@ -31,12 +31,12 @@ auto JsonSerializer::serializeDays(const std::vector<DailyLog>& days)
 
 // --- Deserialization Facade ---
 
-auto JsonSerializer::deserializeDay(const nlohmann::json& day_json)
+auto JsonSerializer::DeserializeDay(const nlohmann::json& day_json)
     -> DailyLog {
   return LogDeserializer::deserialize(day_json);
 }
 
-auto JsonSerializer::deserializeDays(const nlohmann::json& json_array)
+auto JsonSerializer::DeserializeDays(const nlohmann::json& json_array)
     -> std::vector<DailyLog> {
   std::vector<DailyLog> days;
   if (!json_array.is_array()) {

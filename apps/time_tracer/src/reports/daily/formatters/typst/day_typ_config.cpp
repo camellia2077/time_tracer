@@ -1,5 +1,5 @@
 // reports/daily/formatters/typst/day_typ_config.cpp
-#include "day_typ_config.hpp"
+#include "reports/daily/formatters/typst/day_typ_config.hpp"
 
 DayTypConfig::DayTypConfig(const toml::table& config)
     : DayBaseConfig(config),
@@ -18,9 +18,9 @@ DayTypConfig::DayTypConfig(const toml::table& config)
     }
 }
 
-auto DayTypConfig::get_statistic_font_size() const -> int { return statistic_font_size_; }
-auto DayTypConfig::get_statistic_title_font_size() const -> int { return statistic_title_font_size_; }
-auto DayTypConfig::get_keyword_colors() const
+auto DayTypConfig::GetStatisticFontSize() const -> int { return statistic_font_size_; }
+auto DayTypConfig::GetStatisticTitleFontSize() const -> int { return statistic_title_font_size_; }
+auto DayTypConfig::GetKeywordColors() const
     -> const std::map<std::string, std::string>& {
     return keyword_colors_;
 }

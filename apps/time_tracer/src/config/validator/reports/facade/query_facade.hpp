@@ -9,8 +9,9 @@
 
 class QueryFacade {
  public:
-  static bool validate(
-      const std::vector<std::pair<std::string, toml::table>>& query_configs);
+  static auto Validate(
+      const std::vector<std::pair<std::string, toml::table>>& query_configs)
+      -> bool;
 };
 
 #endif  // CONFIG_VALIDATOR_REPORTS_FACADE_QUERY_FACADE_H_

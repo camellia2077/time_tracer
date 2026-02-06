@@ -9,9 +9,10 @@
 class MainRule {
  public:
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-  static bool validate(const toml::table& main_tbl,
+  static auto Validate(const toml::table& main_tbl,
                        std::string& out_mappings_path,
-                       std::string& out_duration_rules_path);
+                       std::string& out_duration_rules_path) -> bool;
+
   // NOLINTEND(bugprone-easily-swappable-parameters)
 };
 

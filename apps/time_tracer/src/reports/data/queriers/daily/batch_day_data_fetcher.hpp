@@ -24,14 +24,14 @@ class BatchDayDataFetcher {
   explicit BatchDayDataFetcher(sqlite3* sqlite_db,
                                IProjectInfoProvider& provider);
 
-  [[nodiscard]] auto fetch_all_data() -> BatchDataResult;
+  [[nodiscard]] auto FetchAllData() -> BatchDataResult;
 
  private:
   sqlite3* db_;
   IProjectInfoProvider& provider_;  // [新增] 引用成员
 
-  void fetch_days_metadata(BatchDataResult& result);
-  void fetch_time_records(BatchDataResult& result);
+  void FetchDaysMetadata(BatchDataResult& result);
+  void FetchTimeRecords(BatchDataResult& result);
 };
 
 #endif  // REPORTS_DATA_QUERIERS_DAILY_BATCH_DAY_DATA_FETCHER_H_

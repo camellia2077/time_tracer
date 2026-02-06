@@ -23,33 +23,26 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
                       const std::string& config_json) {
 #ifdef _WIN32
     dll_handle_ = LoadLibraryA(dll_path.c_str());
-    if (!dll_handle_) {
+    if (dll_handle_ == nullptr) {
       throw std::runtime_error("Failed to load DLL: " + dll_path + " (Error: " +
                                std::to_string(GetLastError()) + ")");
     }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wcast-function-type"
-    create_func_ =
-        (CreateFormatterFunc)GetProcAddress(dll_handle_, "create_formatter");
-    destroy_func_ =
-        (DestroyFormatterFunc)GetProcAddress(dll_handle_, "destroy_formatter");
+    create_func_ = (CreateFormatterFunc)GetProcAddress(
+        dll_handle_, "CreateFormatter");  // NOLINT
+    destroy_func_ = (DestroyFormatterFunc)GetProcAddress(
+        dll_handle_, "DestroyFormatter");  // NOLINT
 
     if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-      format_func_day_ =
-          (FormatReportFunc_Day)GetProcAddress(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)GetProcAddress(dll_handle_, "format_report");
+      format_func_day_ = (FormatReportFunc_Day)GetProcAddress(
+          dll_handle_, "FormatReport");  // NOLINT
+    } else {
+      // For all other types (Monthly, Period, Weekly, Yearly), they use the
+      // same RangeReportData structure interface or compatible signature.
+      format_func_range_ = (FormatReportFunc_Range)GetProcAddress(
+          dll_handle_, "FormatReport");  // NOLINT
     }
 
 #pragma GCC diagnostic pop
@@ -60,93 +53,67 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
                                " (Error: " + dlerror() + ")");
     }
 
-    create_func_ = (CreateFormatterFunc)dlsym(dll_handle_, "create_formatter");
+    create_func_ =
+        (CreateFormatterFunc)dlsym(dll_handle_, "CreateFormatter");  // NOLINT
     destroy_func_ =
-        (DestroyFormatterFunc)dlsym(dll_handle_, "destroy_formatter");
+        (DestroyFormatterFunc)dlsym(dll_handle_, "DestroyFormatter");  // NOLINT
 
     if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
       format_func_day_ =
-          (FormatReportFunc_Day)dlsym(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+          (FormatReportFunc_Day)dlsym(dll_handle_, "FormatReport");  // NOLINT
+    } else {
       format_func_range_ =
-          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
-    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
-      format_func_range_ =
-          (FormatReportFunc_Range)dlsym(dll_handle_, "format_report");
+          (FormatReportFunc_Range)dlsym(dll_handle_, "FormatReport");  // NOLINT
     }
 #endif
+
     bool format_func_loaded = false;
     if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
       format_func_loaded = (format_func_day_ != nullptr);
-    } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      format_func_loaded = (format_func_range_ != nullptr);
-    } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      format_func_loaded = (format_func_range_ != nullptr);
-    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
-      format_func_loaded = (format_func_range_ != nullptr);
-    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+    } else {
       format_func_loaded = (format_func_range_ != nullptr);
     }
 
-    if (!create_func_ || !destroy_func_ || !format_func_loaded) {
+    if (create_func_ == nullptr || destroy_func_ == nullptr ||
+        !format_func_loaded) {
       throw std::runtime_error("Failed to get function pointers from DLL: " +
                                dll_path);
     }
 
     // [核心修改] 传递 JSON 字符串的 C 风格指针
     formatter_handle_ = create_func_(config_json.c_str());
-    if (!formatter_handle_) {
+    if (formatter_handle_ == nullptr) {
       throw std::runtime_error("create_formatter from DLL returned null.");
     }
   }
 
   ~DllFormatterWrapper() override {
-    if (formatter_handle_ && destroy_func_) {
+    if ((formatter_handle_ != nullptr) && (destroy_func_ != nullptr)) {
       destroy_func_(formatter_handle_);
     }
 #ifdef _WIN32
-    if (dll_handle_) {
+    if (dll_handle_ != nullptr) {
       FreeLibrary(dll_handle_);
     }
 #else
-    if (dll_handle_) {
+    if (dll_handle_ != nullptr) {
       dlclose(dll_handle_);
     }
 #endif
   }
 
-  std::string format_report(const ReportDataType& data) const override {
-    if (formatter_handle_) {
+  [[nodiscard]] auto FormatReport(const ReportDataType& data) const
+      -> std::string override {
+    if (formatter_handle_ != nullptr) {
       if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-        if (format_func_day_) {
+        if (format_func_day_ != nullptr) {
           const char* result_cstr = format_func_day_(formatter_handle_, data);
-          return (result_cstr) ? std::string(result_cstr) : "";
+          return (result_cstr != nullptr) ? std::string(result_cstr) : "";
         }
-      } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-        if (format_func_range_) {
+      } else {
+        if (format_func_range_ != nullptr) {
           const char* result_cstr = format_func_range_(formatter_handle_, data);
-          return (result_cstr) ? std::string(result_cstr) : "";
-        }
-      } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-        if (format_func_range_) {
-          const char* result_cstr = format_func_range_(formatter_handle_, data);
-          return (result_cstr) ? std::string(result_cstr) : "";
-        }
-      } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
-        if (format_func_range_) {
-          const char* result_cstr = format_func_range_(formatter_handle_, data);
-          return (result_cstr) ? std::string(result_cstr) : "";
-        }
-      } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
-        if (format_func_range_) {
-          const char* result_cstr = format_func_range_(formatter_handle_, data);
-          return (result_cstr) ? std::string(result_cstr) : "";
+          return (result_cstr != nullptr) ? std::string(result_cstr) : "";
         }
       }
     }

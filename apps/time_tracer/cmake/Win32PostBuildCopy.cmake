@@ -26,6 +26,8 @@ if(WIN32)
         # Clang 运行时的 DLL，通常位于 LLVM 安装目录
         # 这里的路径需要根据实际情况调整，通常在 LLVM/bin 目录下
         list(APPEND REQUIRED_DLLS
+            "libgcc_s_seh-1.dll"
+            "libstdc++-6.dll"
             "libwinpthread-1.dll"
         )
         # TODO: 根据你的 Clang 安装路径来设置 COMPILER_BIN_DIR

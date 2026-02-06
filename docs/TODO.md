@@ -11,26 +11,6 @@
 reports文件夹中json自定义格式化输出的标题，输出为true ,不输出为false
 
 
-6
-检验dll是否缺失的环节，是否可以默认不打印，出问题才打印？
-例如这些内容
-正在初始化文件控制器...
-主应用配置加载成功。
-正在验证预处理配置文件...
-[Validator] All preprocessing configuration data is valid.
-正在验证查询配置文件...
-[Validator] All query configuration files are valid.
-正在验证插件...
-[Validator] Validating required plugins in: C:\Base1\my_program\my_time_master\tm\plugins
-[Validator] -- Found required plugin: DayMdFormatter
-[Validator] -- Found required plugin: DayTexFormatter
-[Validator] -- Found required plugin: DayTypFormatter
-[Validator] -- Found required plugin: MonthMdFormatter
-
-
-
-中优先级
-toml配置重写修改命名和键名，以适配现在的程序
 
 -3
 
@@ -117,12 +97,6 @@ toml配置重写修改命名和键名，以适配现在的程序
 
 
 
-
--1. 给txt文本记录要求写上规则(文档)
-
-
-
-
 -1
 import的时候要检查是否为所需的 json文件，以免用户import了txt文件
 
@@ -172,23 +146,6 @@ tex无法编译是因为不支持当前的可变字体，tex内容由加粗
 方法 1：引入抽象日志接口 (Dependency Injection)
 这是最标准的方法。让 reprocessing 模块不依赖具体的 iostream，而是依赖一个抽象的接口。
 
-2. 和sliqte解耦，采取注册模式?支持多种数据库
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -210,26 +167,7 @@ tex无法编译是因为不支持当前的可变字体，tex内容由加粗
 typ全格式已经实现
 
 
-## clang开启连接时优化需要下载对应工具
-pacman -S mingw-w64-ucrt-x86_64-lld
 
 
 ## 格式化输出，根据类型输出不同的颜色背景。
 没有任何一个实现
-
-
-## json中的存入数据库但是还没使用的键
-
-                "endTimestamp": 1735699680,
-                "startTimestamp": 1735693800
-
-            "anaerobicTime": 8220,// 已经在日报告中实现
-            "cardioTime": 0,// 已经在日报告中实现
-            "gamingTime": 12540,
-            "groomingTime": 0,// 已经在日报告中实现
-            "sleepDayTime": 8460,
-            "sleepNightTime": 19380,
-            "sleepTotalTime": 27840, // 已经在日报告中实现
-            "toiletTime": 0,
-            "totalExerciseTime": 16140
-

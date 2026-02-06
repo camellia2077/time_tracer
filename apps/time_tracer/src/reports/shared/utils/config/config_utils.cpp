@@ -1,5 +1,5 @@
 // reports/shared/utils/config/config_utils.cpp
-#include "config_utils.hpp"
+#include "reports/shared/utils/config/config_utils.hpp"
 
 #include <fstream>
 #include <stdexcept>

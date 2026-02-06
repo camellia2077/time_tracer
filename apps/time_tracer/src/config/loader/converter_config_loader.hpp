@@ -20,31 +20,32 @@ class ConverterConfigLoader {
    * @brief 从指定的主配置文件路径加载完整的 Converter 配置。
    * 自动处理 mappings_config_path 的合并。
    */
-  static ConverterConfig load_from_file(
-      const std::filesystem::path& main_config_path);
+  static auto LoadFromFile(const std::filesystem::path& main_config_path)
+      -> ConverterConfig;
 
  private:
-  static void merge_toml_table(toml::table& target, const toml::table& source);
-  static void merge_section_if_present(toml::table& main_tbl,
-                                       const toml::table& source_tbl,
-                                       std::string_view section_key);
-  static void merge_optional_sections(
+  static auto MergeTomlTable(toml::table& target, const toml::table& source)
+      -> void;
+  static auto MergeSectionIfPresent(toml::table& main_tbl,
+                                    const toml::table& source_tbl,
+                                    std::string_view section_key) -> void;
+  static auto MergeOptionalSections(
       toml::table& main_tbl, const std::filesystem::path& config_dir,
       std::string_view path_key,
-      std::initializer_list<std::string_view> section_keys);
-  static toml::table load_merged_toml(
-      const std::filesystem::path& main_config_path);
-  static void parse_toml_to_struct(const toml::table& tbl,
-                                   ConverterConfig& out_config);
+      std::initializer_list<std::string_view> section_keys) -> void;
+  static auto LoadMergedToml(const std::filesystem::path& main_config_path)
+      -> toml::table;
+  static auto ParseTomlToStruct(const toml::table& tbl,
+                                ConverterConfig& out_config) -> void;
 
- private:
-  static void parse_basic_config(const toml::table& tbl,
-                                 ConverterConfig& config);
-  static void parse_generated_activities(const toml::table& tbl,
-                                         ConverterConfig& config);
-  static void parse_mappings(const toml::table& tbl, ConverterConfig& config);
-  static void parse_duration_mappings(const toml::table& tbl,
-                                      ConverterConfig& config);
+  static auto ParseBasicConfig(const toml::table& tbl, ConverterConfig& config)
+      -> void;
+  static auto ParseGeneratedActivities(const toml::table& tbl,
+                                       ConverterConfig& config) -> void;
+  static auto ParseMappings(const toml::table& tbl, ConverterConfig& config)
+      -> void;
+  static auto ParseDurationMappings(const toml::table& tbl,
+                                    ConverterConfig& config) -> void;
 };
 
 #endif  // CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_

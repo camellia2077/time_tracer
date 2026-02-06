@@ -13,8 +13,6 @@ stop_on_failure = 1
 [pipeline]
 # mode: "ingest" or "staged"
 mode = "ingest"
-# Confirmation input for import (only used in staged mode)
-import_confirm = "y\n"
 
 # ==============================================================================
 #                 PATH AND DIRECTORY CONFIGURATION
@@ -65,7 +63,7 @@ name = "Export Daily"
 stage = "export"
 name_template = "Export Daily ({date}) [{fmt}]"
 template = ["export", "day", "{date}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
-matrix = { date = ["20260101", "20260102", "20260103", "20260104", "20260105", "20260106", "20260107", "20260108", "20260109", "202601010", "20260201"], fmt = ["md", "tex", "typ"] }
+matrix = { date = ["20210103", "20260101", "20260102", "20260103", "20260104", "20260105", "20260106", "20260107", "20260108", "20260109", "202601010", "20260201"], fmt = ["md", "tex", "typ"] }
 
 [[command_groups]]
 name = "Export Monthly"
@@ -99,4 +97,35 @@ matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
 name = "Version Check"
 stage = "version"
 args = ["--version"]
+expect_exit = 0
+
+# Tree command tests
+[[commands]]
+name = "Tree Full"
+stage = "tree"
+args = ["tree", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Roots"
+stage = "tree"
+args = ["tree", "--roots", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 0"
+stage = "tree"
+args = ["tree", "-l", "0", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 1"
+stage = "tree"
+args = ["tree", "-l", "1", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 3"
+stage = "tree"
+args = ["tree", "-l", "3", "--database", "{db_path}"]
 expect_exit = 0

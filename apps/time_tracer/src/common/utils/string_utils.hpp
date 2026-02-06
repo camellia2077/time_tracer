@@ -12,7 +12,7 @@
  * @param str 输入的字符串。
  * @return 返回去除两端空白字符后的新字符串。
  */
-REPORTS_SHARED_API std::string trim(const std::string& str);
+REPORTS_SHARED_API auto Trim(const std::string& str) -> std::string;
 
 /**
  * @brief 根据指定的分隔符拆分字符串。
@@ -20,7 +20,7 @@ REPORTS_SHARED_API std::string trim(const std::string& str);
  * @param delimiter 分隔符。
  * @return 包含所有子字符串的向量。
  */
-REPORTS_SHARED_API std::vector<std::string> split_string(const std::string& str,
-                                                         char delimiter);
+REPORTS_SHARED_API auto SplitString(const std::string& str, char delimiter)
+    -> std::vector<std::string>;
 
 #endif  // COMMON_UTILS_STRING_UTILS_H_

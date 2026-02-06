@@ -15,7 +15,9 @@
 #include "config/config_loader.hpp"
 #include "infrastructure/io/file_controller.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
+#include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
 #include "infrastructure/reports/exporter.hpp"
+#include "common/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 const std::string kDatabaseFilename = "time_data.sqlite3";
@@ -37,34 +39,41 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   app_context_ = std::make_shared<AppContext>();
 
   // 1. 路径初始化
-  fs::path exe_path(parser_.get_raw_arg(0));
+  fs::path exe_path(parser_.GetRawArg(0));
+  ConfigLoader config_loader(parser_.GetRawArg(0));
+  app_config_ = config_loader.LoadConfiguration();
+  app_context_->config = app_config_;
+
   fs::path default_output_root =
       fs::absolute(exe_path.parent_path() / "output");
+  if (app_config_.defaults.output_root) {
+    default_output_root = fs::absolute(*app_config_.defaults.output_root);
+  }
+
   fs::path default_db_path = default_output_root / "db" / kDatabaseFilename;
+  if (app_config_.defaults.db_path) {
+    default_db_path = fs::absolute(*app_config_.defaults.db_path);
+  }
+
   fs::path default_reports_root = default_output_root / "reports";
 
   fs::path db_path;
-  if (auto user_db_path = parser_.get_option({"--db", "--database"})) {
+  if (auto user_db_path = parser_.GetOption({"--db", "--database"})) {
     db_path = fs::absolute(*user_db_path);
   } else {
     db_path = default_db_path;
   }
+  app_context_->db_path = db_path;
 
-  if (auto path_opt = parser_.get_option({"-o", "--output"})) {
+  if (auto path_opt = parser_.GetOption({"-o", "--output"})) {
     exported_files_path_ = fs::absolute(*path_opt);
   } else {
     exported_files_path_ = default_reports_root;
   }
   output_root_path_ = default_output_root;
 
-  ConfigLoader config_loader(parser_.get_raw_arg(0));
-  app_config_ = config_loader.load_configuration();
-
-  // [修复] 将加载的配置注入到 Context 中
-  app_context_->config = app_config_;
-
   // 2. 初始化基础设施
-  FileController::prepare_output_directories(output_root_path_,
+  FileController::PrepareOutputDirectories(output_root_path_,
                                              exported_files_path_);
 
   db_manager_ = std::make_unique<DBManager>(db_path.string());
@@ -76,15 +85,15 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   app_context_->workflow_handler = workflow_impl;  // 注入接口
 
   // 数据库连接检查 (逻辑保持不变)
-  const std::string kCommand = parser_.get_command();
+  const std::string kCommand = parser_.GetCommand();
   if (kCommand == "query" || kCommand == "export") {
-    if (!db_manager_->open_database_if_needed()) {
+    if (!db_manager_->OpenDatabaseIfNeeded()) {
       throw std::runtime_error(
           "Failed to open database at: " + db_path.string() +
           "\nPlease ensure data has been imported or check the path.");
     }
   }
-  sqlite3* db_connection = db_manager_->get_db_connection();
+  sqlite3* db_connection = db_manager_->GetDbConnection();
 
   // [ReportHandler]
   auto report_generator =
@@ -94,24 +103,41 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   auto report_impl = std::make_shared<ReportHandler>(
       std::move(report_generator), std::move(exporter));
   app_context_->report_handler = report_impl;  // 注入接口
+
+  // [Repository]
+  app_context_->project_repository =
+      std::make_shared<SqliteProjectRepository>(db_path.string());
 }
 
 CliApplication::~CliApplication() = default;
 
-auto CliApplication::execute() -> int {
+auto CliApplication::Execute() -> int {
   // [新增] 处理 Help 全局标记
-  bool request_help = parser_.has_flag({"--help", "-h"});
+  bool request_help = parser_.HasFlag({"--help", "-h"});
   std::string command_name;
   try {
-    command_name = parser_.get_command();
+    command_name = parser_.GetCommand();
   } catch (...) {
     request_help = true;
   }
 
   if (request_help) {
+    // [修改] 如果指定了具体的命令，只显示该命令的帮助
+    if (!command_name.empty()) {
+      auto command = CommandRegistry<AppContext>::Instance().CreateCommand(
+          command_name, *app_context_);
+      if (command) {
+        PrintCommandUsage(parser_.GetRawArg(0).c_str(), command_name,
+                            *command);
+
+        return 0;
+      }
+    }
+
     auto commands = CommandRegistry<AppContext>::Instance().CreateAllCommands(
         *app_context_);
-    print_full_usage(parser_.get_raw_arg(0).c_str(), commands);
+    PrintFullUsage(parser_.GetRawArg(0).c_str(), commands);
+
     return 0;
   }
 
@@ -120,15 +146,17 @@ auto CliApplication::execute() -> int {
 
   if (command) {
     try {
-      command->execute(parser_);
+      command->Execute(parser_);
     } catch (const std::exception& e) {
-      std::cerr << RED_COLOR << "Error executing command '" << command_name
-                << "': " << e.what() << RESET_COLOR << std::endl;
+      namespace colors = time_tracer::common::colors;
+      std::cerr << colors::kRed << "Error executing command '" << command_name
+                << "': " << e.what() << colors::kReset << std::endl;
       return 1;
     }
   } else {
-    std::cerr << RED_COLOR << "Unknown command '" << command_name << "'."
-              << RESET_COLOR << std::endl;
+    namespace colors = time_tracer::common::colors;
+    std::cerr << colors::kRed << "Unknown command '" << command_name << "'."
+              << colors::kReset << std::endl;
     std::cout << "Run with --help to see available commands." << std::endl;
     return 1;
   }
@@ -136,4 +164,5 @@ auto CliApplication::execute() -> int {
   return 0;
 }
 
-void CliApplication::initialize_output_paths() {}
+void CliApplication::InitializeOutputPaths() {}
+

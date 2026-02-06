@@ -1,16 +1,18 @@
 // application/pipeline/steps/structure_validator_step.cpp
-#include "structure_validator_step.hpp"
+#include "application/pipeline/steps/structure_validator_step.hpp"
 
 #include <iostream>
 
 #include "common/ansi_colors.hpp"
 #include "infrastructure/io/file_import_reader.hpp"
-#include "validator/txt/facade/TextValidator.hpp"
+#include "validator/txt/facade/text_validator.hpp"
 
 namespace core::pipeline {
 
-auto StructureValidatorStep::execute(PipelineContext& context) -> bool {
+auto StructureValidatorStep::Execute(PipelineContext& context) -> bool {
+
   std::cout << "Step: Validating Source Structure (TXT)..." << std::endl;
+
 
   // 使用上下文中的配置初始化验证器
   validator::txt::TextValidator validator(context.state.converter_config);
@@ -23,25 +25,26 @@ auto StructureValidatorStep::execute(PipelineContext& context) -> bool {
     std::string filename = file_path.filename().string();
 
     // 读取文件内容
-    std::string content = FileReader::read_content(file_path);
+    std::string content = FileReader::ReadContent(file_path);
 
     std::set<validator::Error> errors;
 
     // 执行验证
-    if (!validator.validate(filename, content, errors)) {
+    if (!validator.Validate(filename, content, errors)) {
+
       all_valid = false;
       // 打印错误 (复用 ValidatorUtils)
-      validator::printGroupedErrors(filename, errors);
+      validator::PrintGroupedErrors(filename, errors);
     }
   }
 
   if (all_valid) {
-    std::cout << GREEN_COLOR << "Structure validation passed for "
-              << files_checked << " files." << RESET_COLOR << std::endl;
+    std::cout << time_tracer::common::colors::kGreen << "Structure validation passed for "
+              << files_checked << " files." << time_tracer::common::colors::kReset << std::endl;
   } else {
-    std::cerr << RED_COLOR
+    std::cerr << time_tracer::common::colors::kRed
               << "Structure validation failed. Please fix the errors above."
-              << RESET_COLOR << std::endl;
+              << time_tracer::common::colors::kReset << std::endl;
   }
 
   return all_valid;

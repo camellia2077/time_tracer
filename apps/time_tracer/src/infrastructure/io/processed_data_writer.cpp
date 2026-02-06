@@ -12,10 +12,11 @@ namespace fs = std::filesystem;
 
 namespace infrastructure::io {
 
-auto ProcessedDataWriter::write(
+auto ProcessedDataWriter::Write(
     const std::map<std::string, std::vector<DailyLog>>& data,
     const std::map<std::string, nlohmann::json>& cached_json_outputs,
     const fs::path& output_root) -> std::vector<fs::path> {
+
   std::vector<fs::path> written_files;
 
   for (const auto& [month_key, month_days] : data) {
@@ -23,7 +24,7 @@ auto ProcessedDataWriter::write(
     fs::path month_output_dir = output_file_path.parent_path();
 
     try {
-      FileSystemHelper::create_directories(month_output_dir);
+      FileSystemHelper::CreateDirectories(month_output_dir);
 
       std::string content_to_write;
 
@@ -34,16 +35,17 @@ auto ProcessedDataWriter::write(
       } else {
         // 如果没有缓存（比如跳过了验证步骤），则执行序列化
         nlohmann::json json_content =
-            serializer::JsonSerializer::serializeDays(month_days);
+            serializer::JsonSerializer::SerializeDays(month_days);
         content_to_write = json_content.dump(4);
       }
 
-      FileWriter::write_content(output_file_path, content_to_write);
+      FileWriter::WriteContent(output_file_path, content_to_write);
+
 
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
-      std::cerr << RED_COLOR << "错误: 无法写入输出文件: " << output_file_path
-                << " - " << e.what() << RESET_COLOR << std::endl;
+      std::cerr << time_tracer::common::colors::kRed << "错误: 无法写入输出文件: " << output_file_path
+                << " - " << e.what() << time_tracer::common::colors::kReset << std::endl;
     }
   }
   return written_files;

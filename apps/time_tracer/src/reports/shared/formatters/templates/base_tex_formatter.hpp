@@ -20,34 +20,35 @@ class BaseTexFormatter : public IReportFormatter<ReportDataT> {
   explicit BaseTexFormatter(std::shared_ptr<ConfigT> config)
       : config_(config) {}
 
-  std::string format_report(const ReportDataT& data) const override {
+  [[nodiscard]] auto FormatReport(const ReportDataT& data) const
+      -> std::string override {
     // 1. 数据有效性检查
-    if (std::string err = validate_data(data); !err.empty()) {
+    if (std::string err = ValidateData(data); !err.empty()) {
       return err;
     }
 
     std::stringstream ss;
 
     // 2. Preamble
-    ss << generate_preamble();
+    ss << GeneratePreamble();
 
     // 3. 头部 / 摘要
-    format_header_content(ss, data);
+    FormatHeaderContent(ss, data);
 
     // 4. 主体内容
-    if (is_empty_data(data)) {
-      // [修改] 统一使用 get_no_records_msg() 钩子
-      ss << get_no_records_msg() << "\n";
+    if (IsEmptyData(data)) {
+      // [修改] 统一使用 GetNoRecordsMsg() 钩子
+      ss << GetNoRecordsMsg() << "\n";
     } else {
       // 钩子：用于 Daily 报告插入统计信息和详细活动记录
-      format_extra_content(ss, data);
+      FormatExtraContent(ss, data);
 
       // 项目树部分
-      format_project_tree_section(ss, data);
+      FormatProjectTreeSection(ss, data);
     }
 
     // 5. Postfix
-    ss << generate_postfix();
+    ss << GeneratePostfix();
     return ss.str();
   }
 
@@ -55,52 +56,55 @@ class BaseTexFormatter : public IReportFormatter<ReportDataT> {
   std::shared_ptr<ConfigT> config_;
 
   // [修改] 注释掉未使用参数
-  virtual std::string validate_data(const ReportDataT& /*data*/) const {
+  [[nodiscard]] virtual auto ValidateData(const ReportDataT& /*data*/) const
+      -> std::string {
     return "";
   }
 
-  virtual bool is_empty_data(const ReportDataT& data) const = 0;
-  virtual int get_avg_days(const ReportDataT& data) const = 0;
+  [[nodiscard]] virtual auto IsEmptyData(const ReportDataT& data) const
+      -> bool = 0;
+  [[nodiscard]] virtual auto GetAvgDays(const ReportDataT& data) const
+      -> int = 0;
 
   // [新增] 纯虚函数，强制子类适配 Config 接口
-  virtual std::string get_no_records_msg() const = 0;
+  [[nodiscard]] virtual auto GetNoRecordsMsg() const -> std::string = 0;
 
-  virtual void format_header_content(std::stringstream& ss,
-                                     const ReportDataT& data) const = 0;
+  virtual void FormatHeaderContent(std::stringstream& ss,
+                                   const ReportDataT& data) const = 0;
 
   // [修改] 注释掉未使用参数
-  virtual void format_extra_content(std::stringstream& /*ss*/,
-                                    const ReportDataT& /*data*/) const {}
+  virtual void FormatExtraContent(std::stringstream& /*ss*/,
+                                  const ReportDataT& /*data*/) const {}
 
-  virtual std::map<std::string, std::string> get_keyword_colors() const {
-    return {};
+  [[nodiscard]] virtual auto GetKeywordColors() const
+      -> std::map<std::string, std::string> {
+    return std::map<std::string, std::string>{};
   }
 
-  virtual std::string generate_preamble() const {
-    return TexUtils::get_tex_preamble(
-        config_->get_main_font(), config_->get_cjk_main_font(),
-        config_->get_base_font_size(), config_->get_margin_in(),
-        get_keyword_colors());
+  [[nodiscard]] virtual auto GeneratePreamble() const -> std::string {
+    return TexUtils::GetTexPreamble(
+        config_->GetMainFont(), config_->GetCjkMainFont(),
+        config_->GetBaseFontSize(), config_->GetMarginIn(), GetKeywordColors());
   }
 
-  virtual void format_project_tree_section(std::stringstream& ss,
-                                           const ReportDataT& data) const {
-    int title_size = config_->get_category_title_font_size();
+  virtual void FormatProjectTreeSection(std::stringstream& ss,
+                                        const ReportDataT& data) const {
+    int title_size = config_->GetCategoryTitleFontSize();
     ss << "{";
     ss << "\\fontsize{" << title_size << "}{" << title_size * 1.2
        << "}\\selectfont";
     ss << "\\section*{"
-       << TexUtils::escape_latex(config_->get_project_breakdown_label()) << "}";
+       << TexUtils::EscapeLatex(config_->GetProjectBreakdownLabel()) << "}";
     ss << "}\n\n";
 
-    ss << TexUtils::format_project_tree(
-        data.project_tree, data.total_duration, get_avg_days(data),
-        config_->get_category_title_font_size(), config_->get_list_top_sep_pt(),
-        config_->get_list_item_sep_ex());
+    ss << TexUtils::FormatProjectTree(
+        data.project_tree, data.total_duration, GetAvgDays(data),
+        config_->GetCategoryTitleFontSize(), config_->GetListTopSepPt(),
+        config_->GetListItemSepEx());
   }
 
-  virtual std::string generate_postfix() const {
-    return TexUtils::get_tex_postfix();
+  [[nodiscard]] virtual auto GeneratePostfix() const -> std::string {
+    return TexUtils::GetTexPostfix();
   }
 };
 

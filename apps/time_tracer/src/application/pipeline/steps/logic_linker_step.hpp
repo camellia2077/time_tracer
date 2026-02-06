@@ -17,7 +17,7 @@ namespace core::pipeline {
 class LogicLinkerStep {
  public:
   // 执行链接逻辑
-  static bool execute(PipelineContext& context);
+  static auto Execute(PipelineContext& context) -> bool;
 };
 
 }  // namespace core::pipeline

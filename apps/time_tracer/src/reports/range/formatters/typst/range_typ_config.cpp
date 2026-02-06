@@ -1,5 +1,5 @@
 // reports/range/formatters/typst/range_typ_config.cpp
-#include "range_typ_config.hpp"
+#include "reports/range/formatters/typst/range_typ_config.hpp"
 
 namespace {
 constexpr double kDefaultMarginTopCm = 2.5;
@@ -21,18 +21,10 @@ RangeTypConfig::RangeTypConfig(const toml::table& config)
         static_cast<double>(kDefaultMarginRightCm));
 }
 
-auto RangeTypConfig::get_margin_top_cm() const -> double {
-    return margin_top_cm_;
-}
+auto RangeTypConfig::GetMarginTopCm() const -> double { return margin_top_cm_; }
 
-auto RangeTypConfig::get_margin_bottom_cm() const -> double {
-    return margin_bottom_cm_;
-}
+auto RangeTypConfig::GetMarginBottomCm() const -> double { return margin_bottom_cm_; }
 
-auto RangeTypConfig::get_margin_left_cm() const -> double {
-    return margin_left_cm_;
-}
+auto RangeTypConfig::GetMarginLeftCm() const -> double { return margin_left_cm_; }
 
-auto RangeTypConfig::get_margin_right_cm() const -> double {
-    return margin_right_cm_;
-}
+auto RangeTypConfig::GetMarginRightCm() const -> double { return margin_right_cm_; }

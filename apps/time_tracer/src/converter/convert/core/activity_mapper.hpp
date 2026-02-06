@@ -11,28 +11,30 @@
 class ActivityMapper {
  public:
   explicit ActivityMapper(const ConverterConfig& config);
-  void map_activities(DailyLog& day);
+  auto map_activities(DailyLog& day) -> void;
 
  private:
+  struct TimeRange {
+    std::string_view start_hhmm;
+    std::string_view end_hhmm;
+  };
+
   const ConverterConfig& config_;
-  // 保持引用以避免拷贝，或者拷贝 vector (取决于数据量，引用通常更高效)
   const std::vector<std::string>& wake_keywords_;
 
-  bool is_wake_event(const RawEvent& raw_event) const;
-  std::string map_description(const std::string& description) const;
-  std::string apply_duration_rules(const std::string& mapped_description,
-                                   const std::string& start_time,
-                                   const std::string& end_time) const;
-  void apply_top_parent_mapping(std::vector<std::string>& parts) const;
-  static std::string build_project_path(const std::vector<std::string>& parts);
-  void append_activity(DailyLog& day, const RawEvent& raw_event,
-                       const std::string& start_time,
-                       const std::string& end_time,
-                       const std::string& mapped_description) const;
+  auto is_wake_event(const RawEvent& raw_event) const -> bool;
+  auto map_description(std::string_view description) const -> std::string;
+  auto apply_duration_rules(std::string_view mapped_description,
+                            int duration_minutes) const -> std::string;
+  auto apply_top_parent_mapping(std::vector<std::string>& parts) const -> void;
+  static auto build_project_path(const std::vector<std::string>& parts)
+      -> std::string;
+  auto append_activity(DailyLog& day, const RawEvent& raw_event,
+                       const TimeRange& time_range,
+                       std::string_view mapped_description) const -> void;
 
-  static std::string formatTime(const std::string& time_str_hhmm);
-  static int calculateDurationMinutes(const std::string& start_time_str,
-                                      const std::string& end_time_str);
+  static auto formatTime(std::string_view time_str_hhmm) -> std::string;
+  static auto calculateDurationMinutes(const TimeRange& time_range) -> int;
 };
 
 #endif  // CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_H_

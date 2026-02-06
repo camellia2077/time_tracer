@@ -19,8 +19,9 @@ class PipelineManager {
  public:
   explicit PipelineManager(const AppConfig& config, fs::path output_root);
 
-  std::optional<PipelineContext> run(const std::string& input_path,
-                                     const AppOptions& options);
+  [[nodiscard]] auto Run(const std::string& input_path,
+                         const AppOptions& options)
+      -> std::optional<PipelineContext>;
 
  private:
   const AppConfig& app_config_;

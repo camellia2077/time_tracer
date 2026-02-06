@@ -14,14 +14,14 @@ class REPORTS_SHARED_API TexStyleConfig {
  public:
   explicit TexStyleConfig(const toml::table& config);
 
-  const std::string& get_main_font() const;
-  const std::string& get_cjk_main_font() const;
-  int get_base_font_size() const;
-  int get_report_title_font_size() const;
-  int get_category_title_font_size() const;
-  double get_margin_in() const;
-  double get_list_top_sep_pt() const;
-  double get_list_item_sep_ex() const;
+  [[nodiscard]] auto GetMainFont() const -> const std::string&;
+  [[nodiscard]] auto GetCjkMainFont() const -> const std::string&;
+  [[nodiscard]] auto GetBaseFontSize() const -> int;
+  [[nodiscard]] auto GetReportTitleFontSize() const -> int;
+  [[nodiscard]] auto GetCategoryTitleFontSize() const -> int;
+  [[nodiscard]] auto GetMarginIn() const -> double;
+  [[nodiscard]] auto GetListTopSepPt() const -> double;
+  [[nodiscard]] auto GetListItemSepEx() const -> double;
 
  private:
   std::string main_font_;

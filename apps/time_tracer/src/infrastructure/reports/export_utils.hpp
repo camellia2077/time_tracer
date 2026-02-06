@@ -25,8 +25,8 @@ struct ReportFormatDetails {
  * @param format 报告格式枚举。
  * @return 包含格式细节的 std::optional 对象，如果格式不支持则为空。
  */
-std::optional<ReportFormatDetails> get_report_format_details(
-    ReportFormat format);
+auto GetReportFormatDetails(ReportFormat format)
+    -> std::optional<ReportFormatDetails>;
 
 /**
  * @brief 执行文件导出任务的通用执行器。
@@ -34,9 +34,9 @@ std::optional<ReportFormatDetails> get_report_format_details(
  * @param export_root_path 导出的根路径。
  * @param file_writing_lambda 执行文件写入并返回创建文件数的函数。
  */
-void execute_export_task(const std::string& report_type_name_singular,
-                         const std::filesystem::path& export_root_path,
-                         const std::function<int()>& file_writing_lambda);
+void ExecuteExportTask(const std::string& report_type_name_singular,
+                       const std::filesystem::path& export_root_path,
+                       const std::function<int()>& file_writing_lambda);
 
 }  // namespace ExportUtils
 

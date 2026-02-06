@@ -16,7 +16,7 @@ class IConfigLoader {
    * @param config_object 需要被填充的配置对象引用
    * @return 加载是否成功
    */
-  virtual bool load(T& config_object) = 0;
+  virtual bool Load(T& config_object) = 0;
 };
 
 #endif  // COMMON_CONFIG_I_CONFIG_LOADER_H_

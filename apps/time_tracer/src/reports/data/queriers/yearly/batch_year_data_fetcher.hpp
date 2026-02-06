@@ -13,7 +13,7 @@ class BatchYearDataFetcher {
  public:
   explicit BatchYearDataFetcher(sqlite3* sqlite_db);
 
-  std::map<std::string, YearlyReportData> fetch_all_data();
+  auto FetchAllData() -> std::map<std::string, YearlyReportData>;
 
  private:
   sqlite3* db_;

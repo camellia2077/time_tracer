@@ -1,12 +1,12 @@
 // infrastructure/io/core/file_reader.cpp
 
-#include "file_reader.hpp"
+#include "infrastructure/io/core/file_reader.hpp"
 
 #include <fstream>
 #include <sstream>
 #include <stdexcept>
 
-auto FileReader::read_content(const std::filesystem::path& path)
+auto FileReader::ReadContent(const std::filesystem::path& path)
     -> std::string {
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error("File not found: " + path.string());

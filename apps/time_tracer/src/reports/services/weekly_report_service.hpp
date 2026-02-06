@@ -13,9 +13,11 @@
 
 class WeeklyReportService {
  public:
-  explicit WeeklyReportService(sqlite3* db, const AppConfig& config);
+  explicit WeeklyReportService(sqlite3* database_connection,
+                               const AppConfig& config);
 
-  FormattedWeeklyReports generate_reports(ReportFormat format);
+  [[nodiscard]] auto GenerateReports(ReportFormat format)
+      -> FormattedWeeklyReports;
 
  private:
   sqlite3* db_;

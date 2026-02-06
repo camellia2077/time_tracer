@@ -23,17 +23,16 @@ class BatchMonthDataFetcher {
    * @brief 获取所有月份的数据。
    * @return map<"YYYY-MM", MonthlyReportData>
    */
-  [[nodiscard]] auto fetch_all_data()
-      -> std::map<std::string, MonthlyReportData>;
+  [[nodiscard]] auto FetchAllData() -> std::map<std::string, MonthlyReportData>;
 
  private:
   sqlite3* db_;
 
   // 内部辅助方法
-  void fetch_project_stats(
-      std::map<std::string, MonthlyReportData>& all_months_data);
-  void fetch_actual_days(
-      std::map<std::string, MonthlyReportData>& all_months_data);
+  void FetchProjectStats(
+      std::map<std::string, MonthlyReportData>& all_months_data,
+      std::map<std::string, std::map<long long, long long>>& project_agg);
+  void FetchActualDays(std::map<std::string, int>& actual_days);
 };
 
 #endif  // REPORTS_DATA_QUERIERS_MONTHLY_BATCH_MONTH_DATA_FETCHER_H_

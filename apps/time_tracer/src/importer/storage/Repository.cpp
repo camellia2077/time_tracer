@@ -1,5 +1,5 @@
-// importer/storage/Repository.cpp
-#include "repository.hpp"
+// importer/storage/repository.cpp
+#include "importer/storage/repository.hpp"
 
 #include <iostream>
 
@@ -12,19 +12,19 @@ Repository::Repository(const std::string& db_path) {
 
     data_inserter_ =
         std::make_unique<Writer>(connection_manager_->get_db(),
-                                 statement_manager_->get_insert_day_stmt(),
-                                 statement_manager_->get_insert_record_stmt(),
-                                 statement_manager_->get_insert_project_stmt());
+                                 statement_manager_->GetInsertDayStmt(),
+                                 statement_manager_->GetInsertRecordStmt(),
+                                 statement_manager_->GetInsertProjectStmt());
   }
 }
 
-auto Repository::is_db_open() const -> bool {
+auto Repository::IsDbOpen() const -> bool {
   return connection_manager_ && (connection_manager_->get_db() != nullptr);
 }
 
-void Repository::import_data(const std::vector<DayData>& days,
+void Repository::ImportData(const std::vector<DayData>& days,
                              const std::vector<TimeRecordInternal>& records) {
-  if (!is_db_open()) {
+  if (!IsDbOpen()) {
     std::cerr << "Database is not open. Cannot import data." << std::endl;
     return;
   }
@@ -34,8 +34,8 @@ void Repository::import_data(const std::vector<DayData>& days,
   }
 
   try {
-    data_inserter_->insert_days(days);
-    data_inserter_->insert_records(records);
+    data_inserter_->InsertDays(days);
+    data_inserter_->InsertRecords(records);
 
     if (!connection_manager_->commit_transaction()) {
       throw std::runtime_error("Failed to commit transaction.");

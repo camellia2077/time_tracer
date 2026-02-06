@@ -12,7 +12,7 @@ header_order = [
 ]
 
 remark_prefix = "r "
-wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了A"]
+wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
 
 [generated_activities]
 # 当 LogLinker 自动补全跨月/跨天睡眠时，使用此项目路径来生成睡觉的活动名

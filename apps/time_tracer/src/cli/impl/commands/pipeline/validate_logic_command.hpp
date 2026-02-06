@@ -10,16 +10,19 @@
 // [重命名] ValidateOutputCommand -> ValidateLogicCommand
 class ValidateLogicCommand : public ICommand {
  public:
-  explicit ValidateLogicCommand(const AppConfig& config,
-                                std::filesystem::path output_root);
+  ValidateLogicCommand(const AppConfig& config,
+                       std::filesystem::path output_root,
+                       DateCheckMode default_date_check_mode);
 
-  std::vector<ArgDef> get_definitions() const override;
-  std::string get_help() const override;
-  void execute(const CommandParser& parser) override;
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+
+  auto Execute(const CommandParser& parser) -> void override;
 
  private:
   const AppConfig& app_config_;
   std::filesystem::path output_root_;
+  DateCheckMode default_date_check_mode_;
 };
 
 #endif

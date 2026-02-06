@@ -1,0 +1,11 @@
+base_font = "MiSans VF"
+title_font = "MiSans VF"
+category_title_font = "MiSans VF"
+base_font_size = 10
+report_title_font_size = 14
+category_title_font_size = 12
+line_spacing_em = 0.6
+margin_top_cm = 2.5
+margin_bottom_cm = 2.5
+margin_left_cm = 2.0
+margin_right_cm = 2.0

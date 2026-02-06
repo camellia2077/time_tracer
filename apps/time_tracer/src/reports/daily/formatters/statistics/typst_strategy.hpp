@@ -5,7 +5,7 @@
 #include <format>
 #include <vector>
 
-#include "i_stat_strategy.hpp"
+#include "reports/daily/formatters/statistics/i_stat_strategy.hpp"
 #include "reports/daily/formatters/typst/day_typ_config.hpp"
 
 class TypstStrategy : public IStatStrategy {
@@ -13,12 +13,13 @@ class TypstStrategy : public IStatStrategy {
   explicit TypstStrategy(const std::shared_ptr<DayTypConfig>& config)
       : config_(config) {}
 
-  std::string format_header(const std::string& title) const override {
+  [[nodiscard]] auto FormatHeader(const std::string& title) const
+      -> std::string override {
     std::string header;
     header += std::format("#let statistic_font_size = {}pt\n",
-                          config_->get_statistic_font_size());
+                          config_->GetStatisticFontSize());
     header += std::format("#let statistic_title_font_size = {}pt\n",
-                          config_->get_statistic_title_font_size());
+                          config_->GetStatisticTitleFontSize());
     header += "#set text(size: statistic_font_size)\n";
     // 注意必须是 = {0}而不是={0}，不然会没法正确渲染标题
     header +=
@@ -27,18 +28,20 @@ class TypstStrategy : public IStatStrategy {
     return header;
   }
 
-  std::string format_main_item(const std::string& label,
-                               const std::string& value) const override {
+  [[nodiscard]] auto FormatMainItem(const std::string& label,
+                                    const std::string& value) const
+      -> std::string override {
     return std::format("- *{0}*: {1}", label, value);
   }
 
-  std::string format_sub_item(const std::string& label,
-                              const std::string& value) const override {
+  [[nodiscard]] auto FormatSubItem(const std::string& label,
+                                   const std::string& value) const
+      -> std::string override {
     return std::format("  - *{0}*: {1}", label, value);
   }
 
-  std::string build_output(
-      const std::vector<std::string>& lines) const override {
+  [[nodiscard]] auto BuildOutput(const std::vector<std::string>& lines) const
+      -> std::string override {
     std::string result;
     for (const auto& line : lines) {
       result += line + "\n";

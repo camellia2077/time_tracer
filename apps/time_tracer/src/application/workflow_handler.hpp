@@ -11,7 +11,7 @@
 #include "common/app_options.hpp"
 #include "common/config/app_config.hpp"
 #include "domain/model/daily_log.hpp"
-#include "validator/common/ValidatorUtils.hpp"
+#include "validator/common/validator_utils.hpp"
 
 namespace fs = std::filesystem;
 
@@ -22,14 +22,16 @@ class WorkflowHandler : public IWorkflowHandler {
                   fs::path output_root_path);
   ~WorkflowHandler() override;
 
-  void run_converter(const std::string& input_path,
-                     const AppOptions& options) override;
-  void run_database_import(const std::string& processed_path_str) override;
-  void run_database_import_from_memory(
-      const std::map<std::string, std::vector<DailyLog>>& data_map) override;
-  void run_ingest(const std::string& source_path, DateCheckMode date_check_mode,
-                  bool save_processed = false) override;
-  const AppConfig& get_config() const override;
+  auto RunConverter(const std::string& input_path, const AppOptions& options)
+      -> void override;
+  auto RunDatabaseImport(const std::string& processed_path_str)
+      -> void override;
+  auto RunDatabaseImportFromMemory(
+      const std::map<std::string, std::vector<DailyLog>>& data_map)
+      -> void override;
+  auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
+                 bool save_processed = false) -> void override;
+  [[nodiscard]] auto GetConfig() const -> const AppConfig& override;
 
  private:
   const AppConfig& app_config_;

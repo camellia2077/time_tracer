@@ -1,36 +1,36 @@
 // reports/monthly/formatters/latex/month_tex_formatter.cpp
-#include "month_tex_formatter.hpp"
-#include "month_tex_utils.hpp"
+#include "reports/monthly/formatters/latex/month_tex_formatter.hpp"
+#include "reports/monthly/formatters/latex/month_tex_utils.hpp"
 #include <toml++/toml.h>
 
 MonthTexFormatter::MonthTexFormatter(std::shared_ptr<MonthTexConfig> config) 
     : BaseTexFormatter(config) {}
 
-std::string MonthTexFormatter::validate_data(const MonthlyReportData& data) const {
+auto MonthTexFormatter::ValidateData(const MonthlyReportData& data) const -> std::string {
     if (data.year_month == "INVALID") {
-        return config_->get_invalid_format_message() + "\n";
+        return config_->GetInvalidFormatMessage() + "\n";
     }
     return "";
 }
 
-bool MonthTexFormatter::is_empty_data(const MonthlyReportData& data) const {
-    return data.actual_days == 0;
+auto MonthTexFormatter::IsEmptyData(const MonthlyReportData& data) const -> bool {
+    return data.total_duration <= 0;
 }
 
-int MonthTexFormatter::get_avg_days(const MonthlyReportData& data) const {
+auto MonthTexFormatter::GetAvgDays(const MonthlyReportData& data) const -> int {
     return data.actual_days;
 }
 
-std::string MonthTexFormatter::get_no_records_msg() const {
-    return config_->get_no_records_message();
+auto MonthTexFormatter::GetNoRecordsMsg() const -> std::string {
+    return config_->GetNoRecordsMessage();
 }
 
-void MonthTexFormatter::format_header_content(std::stringstream& ss, const MonthlyReportData& data) const {
-    MonthTexUtils::display_summary(ss, data, config_);
+void MonthTexFormatter::FormatHeaderContent(std::stringstream& ss, const MonthlyReportData& data) const {
+    MonthTexUtils::DisplayHeader(ss, data, config_);
 }
 
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
+    __declspec(dllexport) FormatterHandle CreateFormatter(const char* config_toml) { // NOLINT
         try {
             // [FIX] 直接使用 parse 结果作为 table
             auto config_tbl = toml::parse(config_toml);
@@ -44,7 +44,7 @@ extern "C" {
         }
     }
 
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
         if (handle) {
             delete static_cast<MonthTexFormatter*>(handle);
         }
@@ -52,10 +52,10 @@ extern "C" {
 
     static std::string report_buffer;
 
-    __declspec(dllexport) const char* format_report(FormatterHandle handle, const MonthlyReportData& data) {
+    __declspec(dllexport) const char* FormatReport(FormatterHandle handle, const MonthlyReportData& data) { // NOLINT
         if (handle) {
             auto* formatter = static_cast<MonthTexFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
+            report_buffer = formatter->FormatReport(data);
             return report_buffer.c_str();
         }
         return "";

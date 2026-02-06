@@ -16,7 +16,7 @@ class FileReader {
    * @return 文件内容字符串。
    * @throws std::runtime_error 如果文件不存在或无法打开。
    */
-  static std::string read_content(const std::filesystem::path& path);
+  static auto ReadContent(const std::filesystem::path& path) -> std::string;
 };
 
 #endif  // INFRASTRUCTURE_IO_CORE_FILE_READER_H_

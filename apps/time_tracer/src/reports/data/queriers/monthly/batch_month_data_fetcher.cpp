@@ -1,11 +1,11 @@
 // reports/data/queriers/monthly/batch_month_data_fetcher.cpp
-#include "batch_month_data_fetcher.hpp"
+#include "reports/data/queriers/monthly/batch_month_data_fetcher.hpp"
 
 #include <iostream>
 #include <stdexcept>
 
 #include "reports/data/cache/project_name_cache.hpp"
-#include "reports/data/utils/project_tree_builder.hpp"
+#include "reports/data/queriers/utils/batch_aggregation.hpp"
 
 BatchMonthDataFetcher::BatchMonthDataFetcher(sqlite3* sqlite_db)
     : db_(sqlite_db) {
@@ -14,34 +14,32 @@ BatchMonthDataFetcher::BatchMonthDataFetcher(sqlite3* sqlite_db)
   }
 }
 
-auto BatchMonthDataFetcher::fetch_all_data()
+auto BatchMonthDataFetcher::FetchAllData()
     -> std::map<std::string, MonthlyReportData> {
   std::map<std::string, MonthlyReportData> all_months_data;
 
   // [新增] 确保项目名称缓存已加载
-  auto& name_cache = ProjectNameCache::instance();
-  name_cache.ensure_loaded(db_);
+  auto& name_cache = ProjectNameCache::Instance();
+  name_cache.EnsureLoaded(db_);
 
-  // 1. 获取项目统计 (填充 project_stats 和 total_duration)
-  fetch_project_stats(all_months_data);
+  // 1. 获取项目统计 (填充 total_duration)
+  std::map<std::string, std::map<long long, long long>> project_agg;
+  FetchProjectStats(all_months_data, project_agg);
 
-  // 2. 获取实际天数 (填充 actual_days)
-  fetch_actual_days(all_months_data);
+  // 2. 获取实际天数
+  std::map<std::string, int> actual_days;
+  FetchActualDays(actual_days);
 
-  // [新增] 3. 为每个月份构建项目树
-  for (auto& [year_month, data] : all_months_data) {
-    if (data.total_duration > 0) {
-      // 使用 ID 列表 and 名称缓存构建树
-      build_project_tree_from_ids(data.project_tree, data.project_stats,
-                                  name_cache);
-    }
-  }
+  // [新增] 3. 为每个月份构建项目树（统一 helper）
+  reports::data::batch::FinalizeGroupedAggregationWithDays(
+      all_months_data, project_agg, actual_days, name_cache);
 
   return all_months_data;
 }
 
-void BatchMonthDataFetcher::fetch_project_stats(
-    std::map<std::string, MonthlyReportData>& all_months_data) {
+void BatchMonthDataFetcher::FetchProjectStats(
+    std::map<std::string, MonthlyReportData>& all_months_data,
+    std::map<std::string, std::map<long long, long long>>& project_agg) {
   sqlite3_stmt* stmt = nullptr;
   const char* sql =
       "SELECT strftime('%Y-%m', date) as ym, project_id, SUM(duration) "
@@ -71,15 +69,14 @@ void BatchMonthDataFetcher::fetch_project_stats(
       data.requested_days = 0;
     }
 
-    // 存储原始 ID 统计，供后续构建树使用
-    data.project_stats.emplace_back(project_id, duration);
+    project_agg[year_month][project_id] += duration;
     data.total_duration += duration;
   }
   sqlite3_finalize(stmt);
 }
 
-void BatchMonthDataFetcher::fetch_actual_days(
-    std::map<std::string, MonthlyReportData>& all_months_data) {
+void BatchMonthDataFetcher::FetchActualDays(
+    std::map<std::string, int>& actual_days) {
   sqlite3_stmt* stmt = nullptr;
   const char* sql =
       "SELECT strftime('%Y-%m', date) as ym, COUNT(DISTINCT date) "
@@ -100,9 +97,7 @@ void BatchMonthDataFetcher::fetch_actual_days(
     std::string year_month = reinterpret_cast<const char*>(ym_ptr);
     int days = sqlite3_column_int(stmt, 1);
 
-    if (all_months_data.contains(year_month)) {
-      all_months_data[year_month].actual_days = days;
-    }
+    actual_days[year_month] = days;
   }
   sqlite3_finalize(stmt);
 }

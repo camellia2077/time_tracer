@@ -1,5 +1,5 @@
 // adapters/input/parser/text_parser.cpp
-#include "text_parser.hpp"
+#include "adapters/input/parser/text_parser.hpp"
 
 #include <algorithm>
 #include <array>
@@ -56,8 +56,8 @@ const std::regex kEventPattern(R"(^(\d{2})(\d{2})(.*)$)");
 TextParser::TextParser(const ConverterConfig& config)
     : config_(config), wake_keywords_(config.wake_keywords) {}
 
-void TextParser::parse(std::istream& input_stream,
-                       std::function<void(DailyLog&)> on_new_day) {
+auto TextParser::Parse(std::istream& input_stream,
+                       std::function<void(DailyLog&)> on_new_day) -> void {
   DailyLog current_day;
   std::string line;
   std::string current_year_prefix;
@@ -65,35 +65,35 @@ void TextParser::parse(std::istream& input_stream,
 
   while (std::getline(input_stream, line)) {
     ++line_number;
-    line = trim(line);
+    line = Trim(line);
     if (line.empty()) {
       continue;
     }
 
-    if (isYearMarker(line)) {
+    if (IsYearMarker(line)) {
       current_year_prefix = line.substr(1);
       continue;
     }
 
     if (current_year_prefix.empty()) {
       std::cerr
-          << YELLOW_COLOR << "Warning: Skipping line '" << line
+          << time_tracer::common::colors::kYellow << "Warning: Skipping line '" << line
           << "' because a year header (e.g., y2025) has not been found yet."
-          << RESET_COLOR << std::endl;
+          << time_tracer::common::colors::kReset << std::endl;
       continue;
     }
 
-    if (isNewDayMarker(line)) {
+    if (IsNewDayMarker(line)) {
       if (!current_day.date.empty()) {
         on_new_day(current_day);
       }
-      current_day.clear();
+      current_day.Clear();
       current_day.date = current_year_prefix + "-" +
                          line.substr(kMonthStartOffset, kMonthDigitsLength) +
                          "-" + line.substr(kDayStartOffset, kDayDigitsLength);
 
     } else {
-      parseLine(line, line_number, current_day);
+      ParseLine(line, line_number, current_day);
     }
   }
   if (!current_day.date.empty()) {
@@ -101,20 +101,73 @@ void TextParser::parse(std::istream& input_stream,
   }
 }
 
-auto TextParser::isYearMarker(const std::string& line) -> bool {
+
+auto TextParser::IsYearMarker(const std::string& line) -> bool {
   if (line.length() != kYearMarkerLength || line[0] != kYearMarkerPrefix) {
     return false;
   }
   return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
-auto TextParser::isNewDayMarker(const std::string& line) -> bool {
+auto TextParser::IsNewDayMarker(const std::string& line) -> bool {
   return line.length() == kDayMarkerLength &&
          std::ranges::all_of(line, ::isdigit);
 }
 
-void TextParser::parseLine(const std::string& line, int line_number,
-                           DailyLog& current_day) const {
+
+auto TextParser::ExtractRemark(std::string_view remaining_line) -> RemarkResult {
+  size_t comment_pos = std::string::npos;
+  std::string_view chosen_delimiter;
+
+  for (std::string_view delimiter : kRemarkDelimiters) {
+    size_t pos = remaining_line.find(delimiter);
+    if (pos != std::string::npos) {
+      if (comment_pos == std::string::npos || pos < comment_pos) {
+        comment_pos = pos;
+        chosen_delimiter = delimiter;
+      }
+    }
+  }
+
+  if (comment_pos != std::string::npos) {
+    std::string description =
+        Trim(std::string(remaining_line.substr(0, comment_pos)));
+    std::string remark = Trim(std::string(
+        remaining_line.substr(comment_pos + chosen_delimiter.length())));
+    return {.description = description, .remark = remark};
+  }
+
+  return {.description = Trim(std::string(remaining_line)), .remark = ""};
+}
+
+
+auto TextParser::ProcessEventContext(DailyLog& current_day,
+                                     EventInput input) const
+
+    -> bool {
+  bool is_wake = false;
+  for (const auto& keyword : wake_keywords_) {
+    if (keyword == input.description) {
+      is_wake = true;
+      break;
+    }
+  }
+
+  if (is_wake) {
+    if (current_day.getupTime.empty()) {
+      current_day.getupTime = FormatTime(std::string(input.time_str_hhmm));
+    }
+
+  } else {
+    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
+      current_day.isContinuation = true;
+    }
+  }
+  return is_wake;
+}
+
+auto TextParser::ParseLine(const std::string& line, int line_number,
+                           DailyLog& current_day) const -> void {
   const std::string& remark_prefix = config_.remark_prefix;
 
   if (!remark_prefix.empty() && line.starts_with(remark_prefix)) {
@@ -148,53 +201,16 @@ void TextParser::parseLine(const std::string& line, int line_number,
   }
 
   std::string time_str_hhmm = match[1].str() + match[2].str();
-  std::string remaining_line = match[3].str();
+  RemarkResult remark_data = ExtractRemark(match[3].str());
 
-  std::string description;
-  std::string remark_text;
-
-  size_t comment_pos = std::string::npos;
-  for (std::string_view delimiter : kRemarkDelimiters) {
-    size_t pos = remaining_line.find(delimiter);
-    if (pos != std::string::npos) {
-      if (comment_pos == std::string::npos || pos < comment_pos) {
-        comment_pos = pos;
-      }
-    }
-  }
-
-  if (comment_pos != std::string::npos) {
-    description = trim(remaining_line.substr(0, comment_pos));
-    size_t delimiter_length =
-        (remaining_line.substr(comment_pos, kDoubleSlashLength) ==
-         kDoubleSlashDelimiter)
-            ? kDoubleSlashLength
-            : kSingleCharDelimiterLength;
-    remark_text = trim(remaining_line.substr(comment_pos + delimiter_length));
-  } else {
-    description = trim(remaining_line);
-  }
-
-  if (description.empty()) {
+  if (remark_data.description.empty()) {
     ThrowParseError(line_number, line, "Missing activity description");
   }
 
-  bool is_wake = false;
-  for (const auto& keyword : wake_keywords_) {
-    if (keyword == description) {
-      is_wake = true;
-      break;
-    }
-  }
+  ProcessEventContext(current_day, {.description = remark_data.description,
+                                     .time_str_hhmm = time_str_hhmm});
 
-  if (is_wake) {
-    if (current_day.getupTime.empty()) {
-      current_day.getupTime = FormatTime(time_str_hhmm);
-    }
-  } else {
-    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
-      current_day.isContinuation = true;
-    }
-  }
-  current_day.rawEvents.push_back({time_str_hhmm, description, remark_text});
+
+  current_day.rawEvents.push_back(
+      {time_str_hhmm, remark_data.description, remark_data.remark});
 }

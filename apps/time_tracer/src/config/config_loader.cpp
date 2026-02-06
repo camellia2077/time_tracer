@@ -1,5 +1,5 @@
 // config/config_loader.cpp
-#include "config_loader.hpp"
+#include "config/config_loader.hpp"
 
 #include <toml++/toml.h>
 
@@ -18,75 +18,75 @@ namespace {
 void LoadDetailedReports(AppConfig& config) {
   // --- Typst ---
   if (!config.reports.day_typ_config_path.empty()) {
-    config.loaded_reports.typst.day = ReportConfigLoader::loadDailyTypConfig(
+    config.loaded_reports.typst.day = ReportConfigLoader::LoadDailyTypConfig(
         config.reports.day_typ_config_path);
   }
   if (!config.reports.month_typ_config_path.empty()) {
     config.loaded_reports.typst.month =
-        ReportConfigLoader::loadMonthlyTypConfig(
+        ReportConfigLoader::LoadMonthlyTypConfig(
             config.reports.month_typ_config_path);
   }
   if (!config.reports.period_typ_config_path.empty()) {
     config.loaded_reports.typst.period =
-        ReportConfigLoader::loadPeriodTypConfig(
+        ReportConfigLoader::LoadPeriodTypConfig(
             config.reports.period_typ_config_path);
   }
   if (!config.reports.week_typ_config_path.empty()) {
-    config.loaded_reports.typst.week = ReportConfigLoader::loadWeeklyTypConfig(
+    config.loaded_reports.typst.week = ReportConfigLoader::LoadWeeklyTypConfig(
         config.reports.week_typ_config_path);
   }
   if (!config.reports.year_typ_config_path.empty()) {
-    config.loaded_reports.typst.year = ReportConfigLoader::loadYearlyTypConfig(
+    config.loaded_reports.typst.year = ReportConfigLoader::LoadYearlyTypConfig(
         config.reports.year_typ_config_path);
   }
 
   // --- LaTeX ---
   if (!config.reports.day_tex_config_path.empty()) {
-    config.loaded_reports.latex.day = ReportConfigLoader::loadDailyTexConfig(
+    config.loaded_reports.latex.day = ReportConfigLoader::LoadDailyTexConfig(
         config.reports.day_tex_config_path);
   }
   if (!config.reports.month_tex_config_path.empty()) {
     config.loaded_reports.latex.month =
-        ReportConfigLoader::loadMonthlyTexConfig(
+        ReportConfigLoader::LoadMonthlyTexConfig(
             config.reports.month_tex_config_path);
   }
   if (!config.reports.period_tex_config_path.empty()) {
     config.loaded_reports.latex.period =
-        ReportConfigLoader::loadPeriodTexConfig(
+        ReportConfigLoader::LoadPeriodTexConfig(
             config.reports.period_tex_config_path);
   }
   if (!config.reports.week_tex_config_path.empty()) {
-    config.loaded_reports.latex.week = ReportConfigLoader::loadWeeklyTexConfig(
+    config.loaded_reports.latex.week = ReportConfigLoader::LoadWeeklyTexConfig(
         config.reports.week_tex_config_path);
   }
   if (!config.reports.year_tex_config_path.empty()) {
-    config.loaded_reports.latex.year = ReportConfigLoader::loadYearlyTexConfig(
+    config.loaded_reports.latex.year = ReportConfigLoader::LoadYearlyTexConfig(
         config.reports.year_tex_config_path);
   }
 
   // --- Markdown ---
   if (!config.reports.day_md_config_path.empty()) {
-    config.loaded_reports.markdown.day = ReportConfigLoader::loadDailyMdConfig(
+    config.loaded_reports.markdown.day = ReportConfigLoader::LoadDailyMdConfig(
         config.reports.day_md_config_path);
   }
   if (!config.reports.month_md_config_path.empty()) {
     config.loaded_reports.markdown.month =
-        ReportConfigLoader::loadMonthlyMdConfig(
+        ReportConfigLoader::LoadMonthlyMdConfig(
             config.reports.month_md_config_path);
   }
   if (!config.reports.period_md_config_path.empty()) {
     config.loaded_reports.markdown.period =
-        ReportConfigLoader::loadPeriodMdConfig(
+        ReportConfigLoader::LoadPeriodMdConfig(
             config.reports.period_md_config_path);
   }
   if (!config.reports.week_md_config_path.empty()) {
     config.loaded_reports.markdown.week =
-        ReportConfigLoader::loadWeeklyMdConfig(
+        ReportConfigLoader::LoadWeeklyMdConfig(
             config.reports.week_md_config_path);
   }
   if (!config.reports.year_md_config_path.empty()) {
     config.loaded_reports.markdown.year =
-        ReportConfigLoader::loadYearlyMdConfig(
+        ReportConfigLoader::LoadYearlyMdConfig(
             config.reports.year_md_config_path);
   }
 }
@@ -94,48 +94,50 @@ void LoadDetailedReports(AppConfig& config) {
 
 ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
   try {
-    exe_path = fs::canonical(fs::path(exe_path_str)).parent_path();
+    exe_path_ = fs::canonical(fs::path(exe_path_str)).parent_path();
   } catch (const fs::filesystem_error& e) {
     throw std::runtime_error("Failed to determine executable directory: " +
                              std::string(e.what()));
   }
 
-  config_dir_path = exe_path / CONFIG_DIR_NAME;
-  main_config_path = config_dir_path / "config.toml";
+  config_dir_path_ = exe_path_ / kConfigDirName;
+  main_config_path_ = config_dir_path_ / kConfigFileName;
 }
 
-auto ConfigLoader::get_main_config_path() const -> std::string {
-  return main_config_path.string();
+auto ConfigLoader::GetMainConfigPath() const -> std::string {
+  return main_config_path_.string();
 }
 
-auto ConfigLoader::load_configuration() -> AppConfig {
-  if (!FileSystemHelper::exists(main_config_path)) {
+auto ConfigLoader::LoadConfiguration() -> AppConfig {
+  if (!FileSystemHelper::Exists(main_config_path_)) {
     throw std::runtime_error("Configuration file not found: " +
-                             main_config_path.string());
+                             main_config_path_.string());
   }
 
   toml::table tbl;
   try {
-    tbl = toml::parse_file(main_config_path.string());
+    tbl = toml::parse_file(main_config_path_.string());
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse config.toml: " +
                              std::string(err.description()));
   }
 
   AppConfig app_config;
-  app_config.exe_dir_path = exe_path;
+  app_config.exe_dir_path = exe_path_;
 
   // 1. 解析基础路径和设置
-  ConfigParserUtils::parse_system_settings(tbl, exe_path, app_config);
-  ConfigParserUtils::parse_pipeline_settings(tbl, config_dir_path, app_config);
-  ConfigParserUtils::parse_report_paths(tbl, config_dir_path, app_config);
+  ConfigParserUtils::ParseSystemSettings(tbl, exe_path_, app_config);
+  ConfigParserUtils::ParseCliDefaults(tbl, exe_path_, app_config);
+  ConfigParserUtils::ParsePipelineSettings(tbl, config_dir_path_, app_config);
+  ConfigParserUtils::ParseReportPaths(tbl, config_dir_path_, app_config);
 
   // 2. [新增] 加载 Converter 配置 (文件合并 + 解析逻辑现在在此处执行)
   try {
     if (!app_config.pipeline.interval_processor_config_path.empty()) {
       app_config.pipeline.loaded_converter_config =
-          ConverterConfigLoader::load_from_file(
+          ConverterConfigLoader::LoadFromFile(
               app_config.pipeline.interval_processor_config_path);
+
 
       // 将 initial_top_parents 从 AppConfig 注入到 ConverterConfig 中
       // 确保 Core 模块不需要再手动处理这个合并

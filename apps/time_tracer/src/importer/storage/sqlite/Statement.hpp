@@ -1,4 +1,4 @@
-// importer/storage/sqlite/Statement.hpp
+// importer/storage/sqlite/statement.hpp
 #ifndef IMPORTER_STORAGE_SQLITE_STATEMENT_H_
 #define IMPORTER_STORAGE_SQLITE_STATEMENT_H_
 
@@ -9,18 +9,18 @@ class Statement {
   explicit Statement(sqlite3* sqlite_db);
   ~Statement();
 
-  sqlite3_stmt* get_insert_day_stmt() const;
-  sqlite3_stmt* get_insert_record_stmt() const;
+  [[nodiscard]] auto GetInsertDayStmt() const -> sqlite3_stmt*;
+  [[nodiscard]] auto GetInsertRecordStmt() const -> sqlite3_stmt*;
 
   // --- [FIX] Added missing function declarations and removed the old one ---
-  sqlite3_stmt* get_insert_project_stmt() const;
+  [[nodiscard]] auto GetInsertProjectStmt() const -> sqlite3_stmt*;
 
  private:
   sqlite3* db_;
-  sqlite3_stmt* stmt_insert_day_;
-  sqlite3_stmt* stmt_insert_record_;
+  sqlite3_stmt* stmt_insert_day_ = nullptr;
+  sqlite3_stmt* stmt_insert_record_ = nullptr;
 
-  sqlite3_stmt* stmt_insert_project_;
+  sqlite3_stmt* stmt_insert_project_ = nullptr;
 
   void _prepare_statements();
   void _finalize_statements();

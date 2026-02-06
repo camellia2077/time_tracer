@@ -1,57 +1,57 @@
 // reports/monthly/formatters/typst/month_typ_formatter.cpp
-#include "month_typ_formatter.hpp"
+#include "reports/monthly/formatters/typst/month_typ_formatter.hpp"
 #include <format>
 #include "reports/shared/utils/format/time_format.hpp"
 #include <toml++/toml.h>
 MonthTypFormatter::MonthTypFormatter(std::shared_ptr<MonthTypConfig> config) 
     : BaseTypFormatter(config) {}
 
-std::string MonthTypFormatter::validate_data(const MonthlyReportData& data) const {
+auto MonthTypFormatter::ValidateData(const MonthlyReportData& data) const -> std::string {
     if (data.year_month == "INVALID") {
-        return config_->get_invalid_format_message();
+        return config_->GetInvalidFormatMessage();
     }
     return "";
 }
 
-bool MonthTypFormatter::is_empty_data(const MonthlyReportData& data) const {
+auto MonthTypFormatter::IsEmptyData(const MonthlyReportData& data) const -> bool {
     return data.actual_days == 0;
 }
 
-int MonthTypFormatter::get_avg_days(const MonthlyReportData& data) const {
+auto MonthTypFormatter::GetAvgDays(const MonthlyReportData& data) const -> int {
     return data.actual_days;
 }
 
-std::string MonthTypFormatter::get_no_records_msg() const {
-    return config_->get_no_records_message();
+auto MonthTypFormatter::GetNoRecordsMsg() const -> std::string {
+    return config_->GetNoRecordsMessage();
 }
 
-void MonthTypFormatter::format_page_setup(std::stringstream& ss) const {
+void MonthTypFormatter::FormatPageSetup(std::stringstream& ss) const {
     ss << std::format(R"(#set page(margin: (top: {}cm, bottom: {}cm, left: {}cm, right: {}cm)))",
-        config_->get_margin_top_cm(),
-        config_->get_margin_bottom_cm(),
-        config_->get_margin_left_cm(),
-        config_->get_margin_right_cm()
+        config_->GetMarginTopCm(),
+        config_->GetMarginBottomCm(),
+        config_->GetMarginLeftCm(),
+        config_->GetMarginRightCm()
     ) << "\n";
 }
 
-void MonthTypFormatter::format_header_content(std::stringstream& ss, const MonthlyReportData& data) const {
+void MonthTypFormatter::FormatHeaderContent(std::stringstream& ss, const MonthlyReportData& data) const {
     std::string title = std::format(
         R"(#text(font: "{}", size: {}pt)[= {} {}])",
-        config_->get_title_font(),
-        config_->get_report_title_font_size(),
-        config_->get_report_title(),
+        config_->GetTitleFont(),
+        config_->GetReportTitleFontSize(),
+        config_->GetReportTitle(),
         data.year_month 
     );
     ss << title << "\n\n";
 
     if (data.actual_days > 0) {
-        ss << std::format("+ *{}:* {}\n", config_->get_actual_days_label(), data.actual_days);
-        ss << std::format("+ *{}:* {}\n", config_->get_total_time_label(), time_format_duration(data.total_duration, data.actual_days));
+        ss << std::format("+ *{}:* {}\n", config_->GetActualDaysLabel(), data.actual_days);
+        ss << std::format("+ *{}:* {}\n", config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration, data.actual_days));
     }
 }
 
 extern "C" {
-    __declspec(dllexport) FormatterHandle create_formatter(const char* config_toml) {
+    __declspec(dllexport) FormatterHandle CreateFormatter(const char* config_toml) { // NOLINT
         try {
             // [FIX] 使用 toml::parse
             auto config_tbl = toml::parse(config_toml);
@@ -63,7 +63,7 @@ extern "C" {
         }
     }
 
-    __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+    __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
         if (handle) {
             delete static_cast<MonthTypFormatter*>(handle);
         }
@@ -71,10 +71,10 @@ extern "C" {
 
     static std::string report_buffer;
 
-    __declspec(dllexport) const char* format_report(FormatterHandle handle, const MonthlyReportData& data) {
+    __declspec(dllexport) const char* FormatReport(FormatterHandle handle, const MonthlyReportData& data) { // NOLINT
         if (handle) {
             auto* formatter = static_cast<MonthTypFormatter*>(handle);
-            report_buffer = formatter->format_report(data);
+            report_buffer = formatter->FormatReport(data);
             return report_buffer.c_str();
         }
         return "";

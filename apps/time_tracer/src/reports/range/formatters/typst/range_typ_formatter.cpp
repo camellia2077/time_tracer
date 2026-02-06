@@ -1,5 +1,5 @@
 // reports/range/formatters/typst/range_typ_formatter.cpp
-#include "range_typ_formatter.hpp"
+#include "reports/range/formatters/typst/range_typ_formatter.hpp"
 
 #include <format>
 
@@ -15,61 +15,60 @@ constexpr const char* kEmptyReport = "";
 RangeTypFormatter::RangeTypFormatter(std::shared_ptr<RangeTypConfig> config)
     : BaseTypFormatter(config) {}
 
-auto RangeTypFormatter::validate_data(const RangeReportData& data) const
+auto RangeTypFormatter::ValidateData(const RangeReportData& data) const
     -> std::string {
   if (!data.is_valid) {
-    return config_->get_invalid_range_message();
+    return config_->GetInvalidRangeMessage();
   }
   return std::string{};
 }
 
-auto RangeTypFormatter::is_empty_data(const RangeReportData& data) const
+auto RangeTypFormatter::IsEmptyData(const RangeReportData& data) const
     -> bool {
   return data.actual_days == 0;
 }
 
-auto RangeTypFormatter::get_avg_days(const RangeReportData& data) const -> int {
+auto RangeTypFormatter::GetAvgDays(const RangeReportData& data) const -> int {
   return data.actual_days;
 }
 
-auto RangeTypFormatter::get_no_records_msg() const -> std::string {
-  return config_->get_no_records_message();
+auto RangeTypFormatter::GetNoRecordsMsg() const -> std::string {
+  return config_->GetNoRecordsMessage();
 }
 
-void RangeTypFormatter::format_page_setup(
+void RangeTypFormatter::FormatPageSetup(
     std::stringstream& report_stream) const {
   report_stream << std::format(
             R"(#set page(margin: (top: {}cm, bottom: {}cm, left: {}cm, right: {}cm)))",
-            config_->get_margin_top_cm(), config_->get_margin_bottom_cm(),
-            config_->get_margin_left_cm(), config_->get_margin_right_cm())
+            config_->GetMarginTopCm(), config_->GetMarginBottomCm(),
+            config_->GetMarginLeftCm(), config_->GetMarginRightCm())
      << "\n";
 }
 
-void RangeTypFormatter::format_header_content(
+void RangeTypFormatter::FormatHeaderContent(
     std::stringstream& report_stream, const RangeReportData& data) const {
   std::string title =
-      format_title_template(config_->get_title_template(), data);
+      FormatTitleTemplate(config_->GetTitleTemplate(), data);
   std::string title_line = std::format(
-      R"(#text(font: "{}", size: {}pt)[= {}])", config_->get_title_font(),
-      config_->get_report_title_font_size(), title);
+      R"(#text(font: "{}", size: {}pt)[= {}])", config_->GetTitleFont(),
+      config_->GetReportTitleFontSize(), title);
   report_stream << title_line << "\n\n";
 
   if (data.actual_days > 0) {
     report_stream << std::format("+ *{}:* {}\n",
-                                 config_->get_total_time_label(),
-                      time_format_duration(data.total_duration,
+                                 config_->GetTotalTimeLabel(),
+                      TimeFormatDuration(data.total_duration,
                                             data.actual_days));
     report_stream << std::format("+ *{}:* {}\n",
-                                 config_->get_actual_days_label(),
+                                 config_->GetActualDaysLabel(),
                                  data.actual_days);
   }
 }
 
 extern "C" {
   // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) auto create_formatter(const char* config_toml)
-      -> FormatterHandle {
+  __declspec(dllexport) auto CreateFormatter(const char* config_toml)
+      -> FormatterHandle { // NOLINT
     try {
       auto config_tbl = toml::parse(config_toml);
       auto typ_config = std::make_shared<RangeTypConfig>(config_tbl);
@@ -81,8 +80,7 @@ extern "C" {
   }
 
   // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) void destroy_formatter(FormatterHandle handle) {
+  __declspec(dllexport) void DestroyFormatter(FormatterHandle handle) { // NOLINT
     if (handle != nullptr) {
       std::unique_ptr<RangeTypFormatter>{
           static_cast<RangeTypFormatter*>(handle)};
@@ -91,14 +89,12 @@ extern "C" {
 
   static std::string report_buffer;
 
-  // Public API: keep symbol name stable for dynamic loading.
-  // NOLINTNEXTLINE(readability-identifier-naming)
-  __declspec(dllexport) auto format_report(FormatterHandle handle,
+  __declspec(dllexport) auto FormatReport(FormatterHandle handle,
                                            const RangeReportData& data)
-      -> const char* {
+      -> const char* { // NOLINT
     if (handle != nullptr) {
       auto* formatter = static_cast<RangeTypFormatter*>(handle);
-      report_buffer = formatter->format_report(data);
+      report_buffer = formatter->FormatReport(data);
       return report_buffer.c_str();
     }
     return kEmptyReport;

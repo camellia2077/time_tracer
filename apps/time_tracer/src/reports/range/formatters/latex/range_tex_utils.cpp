@@ -1,5 +1,5 @@
 // reports/range/formatters/latex/range_tex_utils.cpp
-#include "range_tex_utils.hpp"
+#include "reports/range/formatters/latex/range_tex_utils.hpp"
 
 #include <string>
 #include <vector>
@@ -11,26 +11,27 @@
 
 namespace RangeTexUtils {
 
-void display_summary(std::stringstream& report_stream,
+void DisplaySummary(std::stringstream& report_stream,
+
                      const RangeReportData& data,
                      const std::shared_ptr<RangeTexConfig>& config) {
   std::string title =
-      format_title_template(config->get_title_template(), data);
-  std::string title_content = TexUtils::escape_latex(title);
+      FormatTitleTemplate(config->GetTitleTemplate(), data);
+  std::string title_content = TexUtils::EscapeLatex(title);
 
-  TexCommonUtils::render_title(report_stream, title_content,
-                               config->get_report_title_font_size());
+  TexCommonUtils::RenderTitle(report_stream, title_content,
+                               config->GetReportTitleFontSize());
 
   if (data.actual_days > 0) {
     std::vector<TexCommonUtils::SummaryItem> items = {
-        {config->get_total_time_label(),
-         TexUtils::escape_latex(
-             time_format_duration(data.total_duration, data.actual_days))},
-        {config->get_actual_days_label(), std::to_string(data.actual_days)}};
+        {config->GetTotalTimeLabel(),
+         TexUtils::EscapeLatex(
+             TimeFormatDuration(data.total_duration, data.actual_days))},
+        {config->GetActualDaysLabel(), std::to_string(data.actual_days)}};
 
-    TexCommonUtils::render_summary_list(report_stream, items,
-                                        config->get_list_top_sep_pt(),
-                                        config->get_list_item_sep_ex());
+    TexCommonUtils::RenderSummaryList(report_stream, items,
+                                        config->GetListTopSepPt(),
+                                        config->GetListItemSepEx());
   }
 }
 
