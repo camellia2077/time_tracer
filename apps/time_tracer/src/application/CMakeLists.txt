@@ -19,45 +19,40 @@ add_library(time_tracker_application STATIC
     # Tree
     "reporting/tree/project_tree_viewer.cpp"
 
-    # Importer (Moved here or keep in importer module?)
-    # Importer seems like Application/Domain logic. 
-    # Let's include 'importer' sources here or make a separate module.
-    # The SourceFileCollection had IMPORTER_SOURCES.
-    "../importer/data_importer.cpp"
-    "../importer/import_service.cpp"
-    "../importer/parser/memory_parser.cpp"
-    "../importer/parser/details/day_parser.cpp"
-    "../importer/parser/details/activity_parser.cpp"
-    "../importer/storage/repository.cpp"
-    "../importer/storage/sqlite/writer.cpp"
-    "../importer/storage/sqlite/project_resolver.cpp"
-    "../importer/storage/sqlite/connection.cpp"
-    "../importer/storage/sqlite/statement.cpp"
+    # Importer
+    "importer/data_importer.cpp"
+    "importer/import_service.cpp"
+    "parser/memory_parser.cpp"
+    "parser/day_parser.cpp"
+    "parser/activity_parser.cpp"
+    "importer/storage/repository.cpp"
+    "importer/storage/sqlite/writer.cpp"
+    "importer/storage/sqlite/project_resolver.cpp"
+    "importer/storage/sqlite/connection.cpp"
+    "importer/storage/sqlite/statement.cpp"
 
-    # Converter (Moved here)
-    "../converter/log_processor.cpp"
-    "../converter/convert/facade/converter_service.cpp"
-    "../converter/convert/core/log_linker.cpp"
-    "../converter/convert/core/activity_mapper.cpp"
-    "../converter/convert/core/day_processor.cpp"
-    "../converter/convert/core/day_stats.cpp"
-    "../adapters/input/parser/text_parser.cpp"
+    # Converter & Service (Moved to application/parser or service)
+    "../domain/logic/converter/log_processor.cpp"
+    "service/converter_service.cpp"
+    "../domain/logic/converter/convert/core/log_linker.cpp"
+    "../domain/logic/converter/convert/core/activity_mapper.cpp"
+    "../domain/logic/converter/convert/core/day_processor.cpp"
+    "../domain/logic/converter/convert/core/day_stats.cpp"
+    "parser/text_parser.cpp"
     
-    # Validator sources (Business rules)
-    "../validator/common/validator_utils.cpp"
-    "../validator/json/facade/json_validator.cpp"
-    "../validator/json/rules/activity_rules.cpp"
-    "../validator/json/rules/date_rules.cpp"
-    "../validator/txt/facade/text_validator.cpp"
-    "../validator/txt/rules/line_rules.cpp"
-    "../validator/txt/rules/structure_rules.cpp"
+    # Validator sources (Business rules, Moved to domain/logic)
+    "../domain/logic/validator/common/validator_utils.cpp"
+    "../domain/logic/validator/json/rules/activity_rules.cpp"
+    "../domain/logic/validator/json/rules/date_rules.cpp"
+    "../domain/logic/validator/txt/facade/text_validator.cpp"
+    "../domain/logic/validator/txt/rules/line_rules.cpp"
+    "../domain/logic/validator/txt/rules/structure_rules.cpp"
 
-    # Report Services
-    "../reports/report_service.cpp"
-    "../reports/services/daily_report_service.cpp"
-    "../reports/services/monthly_report_service.cpp"
-    "../reports/services/weekly_report_service.cpp"
-    "../reports/services/yearly_report_service.cpp"
+    # Struct Validator
+    "../domain/logic/validator/structure/facade/struct_validator.cpp"
+    "../domain/logic/validator/structure/rules/activity_rules.cpp"
+    "../domain/logic/validator/structure/rules/date_rules.cpp"
+
 )
 
 setup_project_target(time_tracker_application)

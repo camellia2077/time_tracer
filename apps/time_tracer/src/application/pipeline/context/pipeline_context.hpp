@@ -6,14 +6,14 @@
 #include <map>
 #include <vector>
 
-#include "common/config/app_config.hpp"
+#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
-#include "validator/common/validator_utils.hpp"
+#include "infrastructure/config/models/app_config.hpp"
 
 // [重构] 引用 Common 定义的配置结构体
 #include <nlohmann/json.hpp>
 
-#include "common/config/models/converter_config_models.hpp"
+#include "infrastructure/config/models/converter_config_models.hpp"
 
 namespace fs = std::filesystem;
 

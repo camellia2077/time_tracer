@@ -3,13 +3,12 @@
 
 #include <iostream>
 
-#include "common/ansi_colors.hpp"
-#include "converter/convert/core/log_linker.hpp"
+#include "domain/logic/converter/convert/core/log_linker.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace core::pipeline {
 
 auto LogicLinkerStep::Execute(PipelineContext& context) -> bool {
-
   // 如果没有转换数据，直接跳过
   if (context.result.processed_data.empty()) {
     return true;
@@ -24,9 +23,9 @@ auto LogicLinkerStep::Execute(PipelineContext& context) -> bool {
     // 2. 执行链接 (原地修改 processed_data)
     linker.LinkLogs(context.result.processed_data);
 
-
   } catch (const std::exception& e) {
-    std::cerr << time_tracer::common::colors::kRed << "[Pipeline] Logic Linker Error: " << e.what()
+    std::cerr << time_tracer::common::colors::kRed
+              << "[Pipeline] Logic Linker Error: " << e.what()
               << time_tracer::common::colors::kReset << std::endl;
     // 链接失败通常不致命（只是缺睡眠数据），可以选择返回 true 继续，或者 false
     // 终止 这里选择从宽处理，确保后续步骤能继续输出已有的数据

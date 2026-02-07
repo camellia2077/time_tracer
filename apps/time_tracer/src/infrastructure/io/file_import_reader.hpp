@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 
-#include "common/ansi_colors.hpp"
 #include "infrastructure/io/core/file_reader.hpp"
 #include "infrastructure/io/utils/file_utils.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace infrastructure::io {
 

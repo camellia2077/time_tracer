@@ -6,8 +6,7 @@
 #include <sstream>
 #include <stdexcept>
 
-auto FileReader::ReadContent(const std::filesystem::path& path)
-    -> std::string {
+auto FileReader::ReadContent(const std::filesystem::path& path) -> std::string {
   if (!std::filesystem::exists(path)) {
     throw std::runtime_error("File not found: " + path.string());
   }

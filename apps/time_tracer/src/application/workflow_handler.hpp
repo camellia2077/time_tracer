@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "application/interfaces/i_workflow_handler.hpp"  // [新增]
-#include "common/app_options.hpp"
-#include "common/config/app_config.hpp"
+#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
-#include "validator/common/validator_utils.hpp"
+#include "domain/types/app_options.hpp"
+#include "infrastructure/config/models/app_config.hpp"
 
 namespace fs = std::filesystem;
 

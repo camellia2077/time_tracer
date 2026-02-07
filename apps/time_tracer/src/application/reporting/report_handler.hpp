@@ -7,12 +7,12 @@
 #include "application/interfaces/i_report_handler.hpp"
 
 class ReportGenerator;
-class Exporter;
+class IReportExporter;
 
 class ReportHandler : public IReportHandler {
  public:
   ReportHandler(std::unique_ptr<ReportGenerator> generator,
-                std::unique_ptr<Exporter> exporter);
+                std::unique_ptr<IReportExporter> exporter);
   ~ReportHandler() override;
 
   // 查询方法
@@ -50,7 +50,7 @@ class ReportHandler : public IReportHandler {
 
  private:
   std::unique_ptr<ReportGenerator> generator_;
-  std::unique_ptr<Exporter> exporter_;
+  std::unique_ptr<IReportExporter> exporter_;
 };
 
 #endif

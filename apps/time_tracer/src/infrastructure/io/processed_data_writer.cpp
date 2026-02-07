@@ -3,10 +3,10 @@
 
 #include <iostream>
 
-#include "common/ansi_colors.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/core/file_writer.hpp"
-#include "serializer/json_serializer.hpp"
+#include "infrastructure/serialization/json_serializer.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 
@@ -16,7 +16,6 @@ auto ProcessedDataWriter::Write(
     const std::map<std::string, std::vector<DailyLog>>& data,
     const std::map<std::string, nlohmann::json>& cached_json_outputs,
     const fs::path& output_root) -> std::vector<fs::path> {
-
   std::vector<fs::path> written_files;
 
   for (const auto& [month_key, month_days] : data) {
@@ -41,11 +40,11 @@ auto ProcessedDataWriter::Write(
 
       FileWriter::WriteContent(output_file_path, content_to_write);
 
-
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
-      std::cerr << time_tracer::common::colors::kRed << "错误: 无法写入输出文件: " << output_file_path
-                << " - " << e.what() << time_tracer::common::colors::kReset << std::endl;
+      std::cerr << time_tracer::common::colors::kRed
+                << "错误: 无法写入输出文件: " << output_file_path << " - "
+                << e.what() << time_tracer::common::colors::kReset << std::endl;
     }
   }
   return written_files;
