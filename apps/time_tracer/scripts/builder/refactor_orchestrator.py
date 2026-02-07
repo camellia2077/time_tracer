@@ -131,20 +131,20 @@ class RefactorOrchestrator:
         else:
              print("⚠ No report generated (possibly no issues found)")
 
-        # Step 4: Auto Fix
+        # Step 4: Auto Fix (DEPRECATED - Moved to AI Agent)
         print("\n" + "=" * 60)
-        print("Step 4/4: Automated Fix...")
+        print("Step 4/4: Automated Fix (Skipping - Handled by Agent)")
         print("=" * 60)
         
-        try:
-            self.run_fix()
-            print("✓ Auto-fix completed")
-            print("\nSuggested Next Steps:")
-            print("  1. Check code changes (git diff)")
-            print("  2. Re-run verification: sh/refactor/build_tidy.sh")
-            print("  3. Run regression tests")
-        except Exception as e:
-            print(f"⚠ Auto-fix failed: {e}")
+        # try:
+        #     self.run_fix()
+        #     print("✓ Auto-fix completed")
+        #     print("\nSuggested Next Steps:")
+        #     print("  1. Check code changes (git diff)")
+        #     print("  2. Re-run verification: sh/refactor/build_tidy.sh")
+        #     print("  3. Run regression tests")
+        # except Exception as e:
+        #     print(f"⚠ Auto-fix failed: {e}")
 
         print("\n" + "=" * 60)
         print("✓ Static Analysis Workflow Complete")

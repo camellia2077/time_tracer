@@ -2,9 +2,9 @@
 #include <string>
 #include <vector>
 
-#include "cli/impl/app/app_runner.hpp"
-#include "cli/impl/utils/console_helper.hpp"
-#include "common/ansi_colors.hpp"
+#include "api/cli/impl/app/app_runner.hpp"
+#include "api/cli/impl/utils/console_helper.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 using namespace ConsoleHelper;
 
@@ -12,6 +12,8 @@ auto main(int argc, char* argv[]) -> int {
   try {
 #if defined(_WIN32) || defined(_WIN64)
     SetupConsole();
+    (void)argc;
+    (void)argv;
     std::vector<std::string> args = GetUtf8Args();
 #else
     std::vector<std::string> args(argv, argv + argc);

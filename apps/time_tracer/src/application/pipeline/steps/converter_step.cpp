@@ -8,9 +8,9 @@
 #include <mutex>
 #include <vector>
 
-#include "common/ansi_colors.hpp"
-#include "converter/log_processor.hpp"
+#include "domain/logic/converter/log_processor.hpp"
 #include "infrastructure/io/core/file_reader.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace core::pipeline {
 
@@ -21,7 +21,6 @@ constexpr double kMillisPerSecond = 1000.0;
 ConverterStep::ConverterStep(const AppConfig& /*unused*/) {}
 
 auto ConverterStep::Execute(PipelineContext& context) -> bool {
-
   std::cout << "Step: Converting files (Parallel)..." << std::endl;
   auto start_time = std::chrono::steady_clock::now();
 
@@ -41,10 +40,10 @@ auto ConverterStep::Execute(PipelineContext& context) -> bool {
             LogProcessor processor(context.state.converter_config);
             return processor.ProcessSourceContent(file_path.string(), content);
 
-
           } catch (const std::exception& e) {
-            std::cerr << time_tracer::common::colors::kRed << "Thread Error [" << file_path.filename()
-                      << "]: " << e.what() << time_tracer::common::colors::kReset << std::endl;
+            std::cerr << time_tracer::common::colors::kRed << "Thread Error ["
+                      << file_path.filename() << "]: " << e.what()
+                      << time_tracer::common::colors::kReset << std::endl;
             return LogProcessingResult{.success = false, .processed_data = {}};
           }
         }));
@@ -72,12 +71,13 @@ auto ConverterStep::Execute(PipelineContext& context) -> bool {
       std::chrono::duration<double, std::milli>(end_time - start_time).count();
   PrintTiming(duration);
 
-
   if (all_success) {
-    std::cout << time_tracer::common::colors::kGreen << "内存转换阶段 全部成功 (" << processed_count
-              << " files)." << time_tracer::common::colors::kReset << std::endl;
+    std::cout << time_tracer::common::colors::kGreen
+              << "内存转换阶段 全部成功 (" << processed_count << " files)."
+              << time_tracer::common::colors::kReset << std::endl;
   } else {
-    std::cout << time_tracer::common::colors::kYellow << "内存转换阶段 完成，但存在部分错误。"
+    std::cout << time_tracer::common::colors::kYellow
+              << "内存转换阶段 完成，但存在部分错误。"
               << time_tracer::common::colors::kReset << std::endl;
   }
 
@@ -85,7 +85,6 @@ auto ConverterStep::Execute(PipelineContext& context) -> bool {
 }
 
 void ConverterStep::PrintTiming(double total_time_ms) {
-
   double total_time_s = total_time_ms / kMillisPerSecond;
   std::cout << "--------------------------------------\n";
   std::cout << "转换耗时: " << std::fixed << std::setprecision(3)

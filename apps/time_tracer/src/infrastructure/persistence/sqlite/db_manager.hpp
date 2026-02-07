@@ -6,7 +6,7 @@
 #include <iostream>
 #include <string>
 
-#include "common/ansi_colors.hpp"  // For colored console output
+#include "shared/types/ansi_colors.hpp"  // For colored console output
 
 // 前向声明
 struct sqlite3;

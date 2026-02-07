@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from typing import Optional
 
-from ..conf.definitions import TestContext, TestReport, SingleTestResult
+from ..conf.definitions import TestContext, TestReport, SingleTestResult, AppExitCode
 from .executor import CommandExecutor
 from .logger import TestLogger
 
@@ -62,8 +62,9 @@ class BaseTester:
         expect_exit = kwargs.get('expect_exit', 0)
         if expect_exit is not None and result.return_code != expect_exit:
             status = "FAIL"
+            err_msg = AppExitCode.to_string(result.return_code)
             messages.append(
-                f"Expected exit {expect_exit}, got {result.return_code}."
+                f"Expected exit {expect_exit}, got {result.return_code} ({err_msg})."
             )
 
         stdout_text = CommandExecutor.strip_ansi_codes(result.stdout or "")

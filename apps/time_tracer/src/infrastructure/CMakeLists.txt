@@ -1,4 +1,6 @@
 # src/infrastructure/CMakeLists.txt
+add_subdirectory(reports)
+
 add_library(time_tracker_infrastructure STATIC
     # Persistence
     "persistence/sqlite/db_manager.cpp"
@@ -16,37 +18,40 @@ add_library(time_tracker_infrastructure STATIC
     "reports/export_utils.cpp"
     "reports/exporter.cpp"
     "reports/report_file_manager.cpp"
+    "reports/formatter_registry.cpp"
+    "reports/report_service.cpp"
+    "reports/services/daily_report_service.cpp"
+    "reports/services/monthly_report_service.cpp"
+    "reports/services/weekly_report_service.cpp"
+    "reports/services/yearly_report_service.cpp"
 
-    # Serializer (Moved logic here via .. reference or just include them if they verify as infra)
-    "../serializer/json_serializer.cpp"
-    "../serializer/core/log_deserializer.cpp"
-    "../serializer/core/log_serializer.cpp"
+    # Serializer
+    "serialization/json_serializer.cpp"
+    "serialization/core/log_deserializer.cpp"
+    "serialization/core/log_serializer.cpp"
 
-    # Config (Loaders are infra)
-    "../config/config_loader.cpp"
-    "../config/internal/config_parser_utils.cpp"
-    "../config/loader/report_config_loader.cpp"
-    "../config/loader/converter_config_loader.cpp"
-    "../config/loader/toml_converter_config_loader.cpp"
-    "../config/loader/toml_loader_utils.cpp"
-    "../config/validator/facade/config_facade.cpp"
-    "../config/validator/converter/facade/converter_facade.cpp"
-    "../config/validator/converter/rules/duration_rule.cpp"
-    "../config/validator/converter/rules/main_rule.cpp"
-    "../config/validator/converter/rules/mapping_rule.cpp"
-    "../config/validator/plugins/facade/plugin_validator.cpp"
-    "../config/validator/reports/facade/query_facade.cpp"
-    "../config/validator/reports/strategies/base_strategy.cpp"
-    "../config/validator/reports/strategies/strategy_factory.cpp"
-    "../config/validator/reports/strategies/daily/daily_md.cpp"
-    "../config/validator/reports/strategies/daily/daily_tex.cpp"
-    "../config/validator/reports/strategies/daily/daily_typ.cpp"
-    "../config/validator/reports/strategies/monthly/monthly.cpp"
-    "../config/validator/reports/strategies/weekly/weekly.cpp"
-    "../config/validator/reports/strategies/yearly/yearly.cpp"
+    # Config
+    "config/config_loader.cpp"
+    "config/internal/config_parser_utils.cpp"
+    "config/loader/report_config_loader.cpp"
+    "config/loader/converter_config_loader.cpp"
+    "config/loader/toml_converter_config_loader.cpp"
+    "config/loader/toml_loader_utils.cpp"
+    "config/validator/converter/rules/duration_rule.cpp"
+    "config/validator/converter/rules/main_rule.cpp"
+    "config/validator/converter/rules/mapping_rule.cpp"
+    "config/validator/plugins/facade/plugin_validator.cpp"
+    "config/validator/reports/strategies/base_strategy.cpp"
+    "config/validator/reports/strategies/strategy_factory.cpp"
+    "config/validator/reports/strategies/daily/daily_md.cpp"
+    "config/validator/reports/strategies/daily/daily_tex.cpp"
+    "config/validator/reports/strategies/daily/daily_typ.cpp"
+    "config/validator/reports/strategies/monthly/monthly.cpp"
+    "config/validator/reports/strategies/weekly/weekly.cpp"
+    "config/validator/reports/strategies/yearly/yearly.cpp"
 
     # Bootstrap
-    "../bootstrap/startup_validator.cpp"
+    "../application/bootstrap/startup_validator.cpp"
 )
 
 setup_project_target(time_tracker_infrastructure)
@@ -56,5 +61,6 @@ target_link_libraries(time_tracker_infrastructure PUBLIC
     SQLite3
     tomlplusplus::tomlplusplus
     nlohmann_json::nlohmann_json
+    reports_data
     reports_shared # Config validator needs style config from reports_shared? Yes.
 )

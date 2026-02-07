@@ -6,9 +6,9 @@
 #include <string>
 #include <vector>
 
-#include "common/app_options.hpp"
+#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
-#include "validator/common/validator_utils.hpp"
+#include "domain/types/app_options.hpp"
 
 // 前向声明，减少头文件依赖
 struct AppConfig;

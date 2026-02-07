@@ -4,20 +4,16 @@
 
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "reports/data/model/query_data_structs.hpp"
-#include "reports/shared/types/report_format.hpp"
-
-// [修复] 更新包含路径
-#include "common/config/app_config.hpp"
-
-struct sqlite3;
-class ReportService;
+#include "application/interfaces/i_report_query_service.hpp"
+#include "domain/reports/models/query_data_structs.hpp"
+#include "domain/reports/types/report_format.hpp"
 
 class ReportGenerator {
  public:
-  ReportGenerator(sqlite3* sqlite_db, const AppConfig& config);
+  explicit ReportGenerator(std::unique_ptr<IReportQueryService> query_service);
   ~ReportGenerator();
 
   auto GenerateDailyReport(std::string_view date, ReportFormat format)
@@ -39,7 +35,7 @@ class ReportGenerator {
   auto GenerateAllYearlyReports(ReportFormat format) -> FormattedYearlyReports;
 
  private:
-  std::unique_ptr<ReportService> query_handler_;
+  std::unique_ptr<IReportQueryService> query_service_;
 };
 
 #endif  // APPLICATION_REPORTING_GENERATOR_REPORT_GENERATOR_H_

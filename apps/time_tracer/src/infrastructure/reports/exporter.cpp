@@ -5,11 +5,11 @@
 #include <iostream>
 #include <sstream>
 
-#include "infrastructure/reports/report_file_manager.hpp"
-#include "common/ansi_colors.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/core/file_writer.hpp"
 #include "infrastructure/reports/export_utils.hpp"
+#include "infrastructure/reports/report_file_manager.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 Exporter::Exporter(const fs::path& export_root_path) {
   file_manager_ = std::make_unique<ReportFileManager>(export_root_path);
@@ -36,10 +36,10 @@ void Exporter::WriteReportToFile(std::string_view report_content,
     // [New] 使用 FileWriter 写入文件
     FileWriter::WriteContent(output_path, std::string(report_content));
 
-
   } catch (const std::exception& e) {
-    std::cerr << time_tracer::common::colors::kRed << "Error: Failed to write report to " << output_path
-              << ": " << e.what() << time_tracer::common::colors::kReset << std::endl;
+    std::cerr << time_tracer::common::colors::kRed
+              << "Error: Failed to write report to " << output_path << ": "
+              << e.what() << time_tracer::common::colors::kReset << std::endl;
   }
 }
 
@@ -49,8 +49,9 @@ void Exporter::ExportSingleDayReport(const SingleExportTask& task,
                                      ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleDayReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen << "Success: Report exported to "
-            << fs::absolute(path) << time_tracer::common::colors::kReset << std::endl;
+  std::cout << time_tracer::common::colors::kGreen
+            << "Success: Report exported to " << fs::absolute(path)
+            << time_tracer::common::colors::kReset << std::endl;
   WriteReportToFile(task.content, path);
 }
 
@@ -58,16 +59,18 @@ void Exporter::ExportSingleMonthReport(const SingleExportTask& task,
                                        ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleMonthReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen << "Success: Report exported to "
-            << fs::absolute(path) << time_tracer::common::colors::kReset << std::endl;
+  std::cout << time_tracer::common::colors::kGreen
+            << "Success: Report exported to " << fs::absolute(path)
+            << time_tracer::common::colors::kReset << std::endl;
   WriteReportToFile(task.content, path);
 }
 
 void Exporter::ExportSinglePeriodReport(int days, std::string_view content,
                                         ReportFormat format) const {
   fs::path path = file_manager_->GetSinglePeriodReportPath(days, format);
-  std::cout << time_tracer::common::colors::kGreen << "Success: Report exported to "
-            << fs::absolute(path) << time_tracer::common::colors::kReset << std::endl;
+  std::cout << time_tracer::common::colors::kGreen
+            << "Success: Report exported to " << fs::absolute(path)
+            << time_tracer::common::colors::kReset << std::endl;
   WriteReportToFile(content, path);
 }
 
@@ -75,8 +78,9 @@ void Exporter::ExportSingleWeekReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleWeekReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen << "Success: Report exported to "
-            << fs::absolute(path) << time_tracer::common::colors::kReset << std::endl;
+  std::cout << time_tracer::common::colors::kGreen
+            << "Success: Report exported to " << fs::absolute(path)
+            << time_tracer::common::colors::kReset << std::endl;
   WriteReportToFile(task.content, path);
 }
 
@@ -84,8 +88,9 @@ void Exporter::ExportSingleYearReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleYearReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen << "Success: Report exported to "
-            << fs::absolute(path) << time_tracer::common::colors::kReset << std::endl;
+  std::cout << time_tracer::common::colors::kGreen
+            << "Success: Report exported to " << fs::absolute(path)
+            << time_tracer::common::colors::kReset << std::endl;
   WriteReportToFile(task.content, path);
 }
 
@@ -113,8 +118,8 @@ void Exporter::ExportAllDailyReports(const FormattedGroupedReports& reports,
   });
 }
 
-void Exporter::ExportAllMonthlyReports(
-    const FormattedMonthlyReports& reports, ReportFormat format) const {
+void Exporter::ExportAllMonthlyReports(const FormattedMonthlyReports& reports,
+                                       ReportFormat format) const {
   fs::path base_dir = file_manager_->GetAllMonthlyReportsBaseDir(format);
 
   ExportUtils::ExecuteExportTask("月报", base_dir, [&]() -> int {
@@ -142,7 +147,7 @@ void Exporter::ExportAllMonthlyReports(
 }
 
 void Exporter::ExportAllPeriodReports(const FormattedPeriodReports& reports,
-                                         ReportFormat format) const {
+                                      ReportFormat format) const {
   fs::path base_dir = file_manager_->GetAllPeriodReportsBaseDir(format);
 
   ExportUtils::ExecuteExportTask("周期报告", base_dir, [&]() -> int {
@@ -162,7 +167,7 @@ void Exporter::ExportAllPeriodReports(const FormattedPeriodReports& reports,
 }
 
 void Exporter::ExportAllWeeklyReports(const FormattedWeeklyReports& reports,
-                                         ReportFormat format) const {
+                                      ReportFormat format) const {
   fs::path base_dir = file_manager_->GetAllWeeklyReportsBaseDir(format);
 
   ExportUtils::ExecuteExportTask("鍛ㄦ姤", base_dir, [&]() -> int {
@@ -190,7 +195,7 @@ void Exporter::ExportAllWeeklyReports(const FormattedWeeklyReports& reports,
 }
 
 void Exporter::ExportAllYearlyReports(const FormattedYearlyReports& reports,
-                                         ReportFormat format) const {
+                                      ReportFormat format) const {
   fs::path base_dir = file_manager_->GetAllYearlyReportsBaseDir(format);
 
   ExportUtils::ExecuteExportTask("骞存姤", base_dir, [&]() -> int {

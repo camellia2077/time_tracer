@@ -1,0 +1,24 @@
+#ifndef APPLICATION_SERVICE_CONVERTER_SERVICE_H_
+#define APPLICATION_SERVICE_CONVERTER_SERVICE_H_
+
+#include <functional>
+#include <iostream>
+
+#include "domain/model/daily_log.hpp"
+#include "infrastructure/config/models/converter_config_models.hpp"
+
+class ConverterService {
+ public:
+  explicit ConverterService(const ConverterConfig& config);
+
+  auto ExecuteConversion(std::istream& combined_input_stream,
+                         std::function<void(DailyLog&&)> data_consumer) -> void;
+
+ private:
+  const ConverterConfig& config_;
+
+  static auto IsDuplicateAcrossYear(const DailyLog& previous_day,
+                                    const DailyLog& current_day) -> bool;
+};
+
+#endif  // APPLICATION_SERVICE_CONVERTER_SERVICE_H_

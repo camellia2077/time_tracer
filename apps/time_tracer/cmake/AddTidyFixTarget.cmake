@@ -12,9 +12,9 @@ if(CLANG_TIDY_EXE)
         message(STATUS "Clang-tidy fail-fast mode (warnings-as-errors) ENABLED.")
     endif()
 
-    # 1. 汇总源文件 (直接复用 SourceFileCollection.cmake 中的变量)
+    # 1. 汇总源文件
+    # 逻辑修补：采用递归扫描以匹配项目新的分层架构（api, application, domain, infrastructure, shared）。
     # 注意：我们只对 .cpp 进行 Tidy 检查，因为头文件会被包含在 .cpp 中一同分析。
-    # 如果单独检查 .hpp，往往因为缺乏上下文而报错。
     file(GLOB_RECURSE ALL_TIDY_SOURCES LIST_DIRECTORIES false RELATIVE "${CMAKE_SOURCE_DIR}" "src/*.cpp")
 
     # 2. 创建顶层目标
