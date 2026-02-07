@@ -6,12 +6,12 @@
 #include <stdexcept>
 #include <utility>
 
+#include "application/importer/data_importer.hpp"  // 包含 handle_process_memory_data
 #include "application/pipeline/pipeline_manager.hpp"
-#include "common/ansi_colors.hpp"
-#include "importer/data_importer.hpp"  // 包含 handle_process_memory_data
 #include "infrastructure/io/file_import_reader.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
-#include "serializer/json_serializer.hpp"  // 包含 JsonSerializer
+#include "infrastructure/serialization/json_serializer.hpp"  // 包含 JsonSerializer
+#include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 
@@ -27,7 +27,7 @@ WorkflowHandler::WorkflowHandler(std::string db_path, const AppConfig& config,
 WorkflowHandler::~WorkflowHandler() = default;
 
 auto WorkflowHandler::RunConverter(const std::string& input_path,
-                                    const AppOptions& options) -> void {
+                                   const AppOptions& options) -> void {
   PipelineManager pipeline(app_config_, output_root_path_);
   if (!pipeline.Run(input_path, options)) {
     throw std::runtime_error("Converter Pipeline Failed.");
@@ -39,8 +39,7 @@ auto WorkflowHandler::GetConfig() const -> const AppConfig& {
 }
 
 // [关键修复] 重写此函数：读取文件 -> 解析 JSON -> 传递 Struct 给 Importer
-void WorkflowHandler::RunDatabaseImport(
-    const std::string& processed_path_str) {
+void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
   // 1. 使用 Helper 读取文件内容
   auto import_payload =
       infrastructure::io::FileImportReader::ReadJsonFiles(processed_path_str);
@@ -64,14 +63,16 @@ void WorkflowHandler::RunDatabaseImport(
       memory_data[filepath] = logs;
 
     } catch (const std::exception& e) {
-      std::cerr << time_tracer::common::colors::kRed << "解析文件失败 " << filepath << ": " << e.what()
+      std::cerr << time_tracer::common::colors::kRed << "解析文件失败 "
+                << filepath << ": " << e.what()
                 << time_tracer::common::colors::kReset << std::endl;
     }
   }
 
   if (memory_data.empty()) {
-    std::cout << time_tracer::common::colors::kYellow << "没有有效的 JSON 数据可供导入。" << time_tracer::common::colors::kReset
-              << std::endl;
+    std::cout << time_tracer::common::colors::kYellow
+              << "没有有效的 JSON 数据可供导入。"
+              << time_tracer::common::colors::kReset << std::endl;
     return;
   }
 
@@ -82,12 +83,11 @@ void WorkflowHandler::RunDatabaseImport(
 auto WorkflowHandler::RunDatabaseImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
   HandleProcessMemoryData(db_path_, data_map);
-
 }
 
 auto WorkflowHandler::RunIngest(const std::string& source_path,
-                                 DateCheckMode date_check_mode,
-                                 bool save_processed) -> void {
+                                DateCheckMode date_check_mode,
+                                bool save_processed) -> void {
   std::cout << "\n--- 启动数据摄入 (Ingest) ---" << std::endl;
 
   // RAII 检查数据库连接
@@ -113,16 +113,18 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
     if (!context.result.processed_data.empty()) {
       std::cout << "\n--- 流水线验证通过，准备入库 ---" << std::endl;
       RunDatabaseImportFromMemory(context.result.processed_data);
-      std::cout << time_tracer::common::colors::kGreen << "\n=== Ingest 执行成功 ===" << time_tracer::common::colors::kReset
-                << std::endl;
+      std::cout << time_tracer::common::colors::kGreen
+                << "\n=== Ingest 执行成功 ==="
+                << time_tracer::common::colors::kReset << std::endl;
     } else {
       std::cout << time_tracer::common::colors::kYellow
-                << "\n=== Ingest 完成但无数据产生 ===" << time_tracer::common::colors::kReset
-                << std::endl;
+                << "\n=== Ingest 完成但无数据产生 ==="
+                << time_tracer::common::colors::kReset << std::endl;
     }
   } else {
-    std::cerr << time_tracer::common::colors::kRed << "\n=== Ingest 执行失败 ===" << time_tracer::common::colors::kReset
-              << std::endl;
+    std::cerr << time_tracer::common::colors::kRed
+              << "\n=== Ingest 执行失败 ==="
+              << time_tracer::common::colors::kReset << std::endl;
     throw std::runtime_error("Ingestion process failed.");
   }
 }

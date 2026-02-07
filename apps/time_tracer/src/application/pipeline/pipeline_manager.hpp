@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "application/pipeline/context/pipeline_context.hpp"
-#include "common/app_options.hpp"
-#include "common/config/app_config.hpp"
+#include "domain/types/app_options.hpp"
+#include "infrastructure/config/models/app_config.hpp"
 
 namespace fs = std::filesystem;
 

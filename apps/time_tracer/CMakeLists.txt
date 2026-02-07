@@ -36,8 +36,8 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # 1. 基础工具
 include(TargetSetup)
 # include(SourceFileCollection) # REMOVED: Replaced by modular CMakeLists.txt
-# include(AddReportsLibrary)      # REMOVED: Moved to src/reports/CMakeLists.txt
-# include(AddReportsDataLibrary)  # REMOVED: Moved to src/reports/CMakeLists.txt
+# include(AddReportsLibrary)      # REMOVED: Moved to src/infrastructure/reports/CMakeLists.txt
+# include(AddReportsDataLibrary)  # REMOVED: Moved to src/infrastructure/reports/CMakeLists.txt
 
 # 4. 编译标志
 include(BuildTypeFlags)
@@ -46,12 +46,15 @@ include(BuildTypeFlags)
 add_subdirectory(src)
 
 # 添加子目录以构建所有日报格式化器的 DLL
-add_subdirectory(src/reports/daily/formatters/markdown)
-add_subdirectory(src/reports/daily/formatters/typst)
-add_subdirectory(src/reports/daily/formatters/latex)
-add_subdirectory(src/reports/range/formatters/markdown)
-add_subdirectory(src/reports/range/formatters/typst)
-add_subdirectory(src/reports/range/formatters/latex)
+add_subdirectory(src/infrastructure/reports/daily/formatters/markdown)
+add_subdirectory(src/infrastructure/reports/daily/formatters/typst)
+add_subdirectory(src/infrastructure/reports/daily/formatters/latex)
+add_subdirectory(src/infrastructure/reports/range/formatters/markdown)
+add_subdirectory(src/infrastructure/reports/range/formatters/typst)
+add_subdirectory(src/infrastructure/reports/range/formatters/latex)
+add_subdirectory(src/infrastructure/reports/monthly/formatters/markdown)
+add_subdirectory(src/infrastructure/reports/monthly/formatters/typst)
+add_subdirectory(src/infrastructure/reports/monthly/formatters/latex)
 
 set(ALL_TARGETS time_tracker_cli)
 

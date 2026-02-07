@@ -4,15 +4,14 @@
 #include <algorithm>
 #include <iostream>
 
-#include "common/ansi_colors.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/utils/file_utils.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace core::pipeline {
 
 auto FileCollector::Execute(PipelineContext& context,
                             const std::string& extension) -> bool {
-
   if (!FileSystemHelper::Exists(context.config.input_root)) {
     std::cerr << time_tracer::common::colors::kRed
               << "错误: 输入的路径不存在: " << context.config.input_root
@@ -22,9 +21,6 @@ auto FileCollector::Execute(PipelineContext& context,
 
   context.state.source_files.clear();
   context.state.generated_files.clear();
-
-
-
 
   context.state.source_files = FileUtils::FindFilesByExtensionRecursively(
       context.config.input_root, extension);
@@ -40,8 +36,9 @@ auto FileCollector::Execute(PipelineContext& context,
   }
 
   if (context.state.source_files.empty()) {
-    std::cerr << time_tracer::common::colors::kYellow << "警告: 在指定路径下没有找到 " << extension
-              << " 文件。" << time_tracer::common::colors::kReset << std::endl;
+    std::cerr << time_tracer::common::colors::kYellow
+              << "警告: 在指定路径下没有找到 " << extension << " 文件。"
+              << time_tracer::common::colors::kReset << std::endl;
     return false;
   }
 

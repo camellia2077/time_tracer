@@ -12,6 +12,36 @@ class Colors:
     YELLOW: str = '\033[93m'
     RESET: str = '\033[0m'
 
+class AppExitCode:
+    """Mapping of C++ AppExitCode to human-readable messages (Matches shared/types/exit_codes.hpp)"""
+    SUCCESS = 0
+    GENERIC_ERROR = 1
+    COMMAND_NOT_FOUND = 2
+    INVALID_ARGUMENTS = 3
+    DATABASE_ERROR = 4
+    IO_ERROR = 5
+    LOGIC_ERROR = 6
+    CONFIG_ERROR = 7
+    MEMORY_ERROR = 8
+    UNKNOWN_ERROR = 9
+
+    _MAPPING = {
+        SUCCESS: "Success",
+        GENERIC_ERROR: "Generic Error (Check logs)",
+        COMMAND_NOT_FOUND: "Unknown Command",
+        INVALID_ARGUMENTS: "Invalid Arguments",
+        DATABASE_ERROR: "Database Access Error",
+        IO_ERROR: "File I/O Error",
+        LOGIC_ERROR: "Internal Logic Error",
+        CONFIG_ERROR: "Configuration Error",
+        MEMORY_ERROR: "Memory Allocation Error",
+        UNKNOWN_ERROR: "Unknown/Unexpected Error"
+    }
+
+    @classmethod
+    def to_string(cls, code: int) -> str:
+        return cls._MAPPING.get(code, f"Undefined Error ({code})")
+
 # --- Execution & Report Structures (New) ---
 @dataclass
 class ExecutionResult:

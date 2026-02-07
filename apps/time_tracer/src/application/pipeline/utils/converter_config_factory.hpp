@@ -6,8 +6,8 @@
 // [修复] 移除错误的自包含
 // #include "application/pipeline/utils/converter_config_factory.hpp"
 
-#include "common/config/app_config.hpp"
-#include "common/config/models/converter_config_models.hpp"
+#include "infrastructure/config/models/app_config.hpp"
+#include "infrastructure/config/models/converter_config_models.hpp"
 
 namespace core::pipeline {
 

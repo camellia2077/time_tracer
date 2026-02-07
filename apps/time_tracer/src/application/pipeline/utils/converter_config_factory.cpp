@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include "config/loader/converter_config_loader.hpp"
+#include "infrastructure/config/loader/converter_config_loader.hpp"
 
 namespace fs = std::filesystem;
 
@@ -18,7 +18,6 @@ auto ConverterConfigFactory::Create(const fs::path& interval_config_path,
   // 1. 委托 Config 模块加载 (文件读取、合并、Struct填充)
   ConverterConfig config =
       ConverterConfigLoader::LoadFromFile(interval_config_path);
-
 
   // 2. 注入运行时参数 (Initial Top Parents)
   for (const auto& [path_key, path_val] :

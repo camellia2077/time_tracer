@@ -5,15 +5,15 @@
 #include <sstream>
 #include <string>
 
+#include "application/interfaces/i_report_exporter.hpp"
 #include "application/reporting/generator/report_generator.hpp"
-#include "infrastructure/reports/exporter.hpp"
 
 namespace {
 constexpr int kSeparatorLength = 40;
 }
 
 ReportHandler::ReportHandler(std::unique_ptr<ReportGenerator> generator,
-                             std::unique_ptr<Exporter> exporter)
+                             std::unique_ptr<IReportExporter> exporter)
     : generator_(std::move(generator)), exporter_(std::move(exporter)) {}
 
 ReportHandler::~ReportHandler() = default;
@@ -121,12 +121,14 @@ auto ReportHandler::RunExportAllPeriodReportsQuery(
   exporter_->ExportAllPeriodReports(reports, format);
 }
 
-auto ReportHandler::RunExportAllWeeklyReportsQuery(ReportFormat format) -> void {
+auto ReportHandler::RunExportAllWeeklyReportsQuery(ReportFormat format)
+    -> void {
   auto reports = generator_->GenerateAllWeeklyReports(format);
   exporter_->ExportAllWeeklyReports(reports, format);
 }
 
-auto ReportHandler::RunExportAllYearlyReportsQuery(ReportFormat format) -> void {
+auto ReportHandler::RunExportAllYearlyReportsQuery(ReportFormat format)
+    -> void {
   auto reports = generator_->GenerateAllYearlyReports(format);
   exporter_->ExportAllYearlyReports(reports, format);
 }

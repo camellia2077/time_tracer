@@ -10,7 +10,7 @@ ReportFileManager::ReportFileManager(fs::path export_root)
     : export_root_path_(std::move(export_root)) {}
 
 auto ReportFileManager::GetSingleDayReportPath(const std::string& date,
-                                              ReportFormat format) const
+                                               ReportFormat format) const
     -> fs::path {
   auto details_opt = ExportUtils::GetReportFormatDetails(format);
   if (!details_opt.has_value()) {

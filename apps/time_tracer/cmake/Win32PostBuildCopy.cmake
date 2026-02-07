@@ -6,7 +6,7 @@ if(WIN32)
     # 定义一个变量来存储需要复制的DLL列表
     set(REQUIRED_DLLS
         "libsqlite3-0.dll"
-        "libtomlplusplus-3.dll" # [修改] 加上版本后缀 -3
+        "libtomlplusplus-3.dll"
     )
 
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

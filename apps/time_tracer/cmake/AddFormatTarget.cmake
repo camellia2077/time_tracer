@@ -6,43 +6,58 @@ find_program(CLANG_FORMAT_EXE NAMES "clang-format")
 if(CLANG_FORMAT_EXE)
     message(STATUS "Found clang-format: ${CLANG_FORMAT_EXE}")
 
-    # 2. 自动扫描所有头文件
-    # 逻辑修补：原配置只包含了 .cpp 文件，这里补充扫描 src 目录下所有的头文件
-    file(GLOB_RECURSE ALL_HEADERS
+    # 2. 自动扫描所有源文件与头文件
+    # 逻辑修补：由于项目采用了 Clean Architecture，源文件分布在 src/ 下的多个层级中。
+    # 采用递归扫描以确保所有新层（api, application, domain, infrastructure, shared）都能被覆盖。
+    file(GLOB_RECURSE ALL_FORMAT_SOURCES
+        "src/*.cpp"
         "src/*.hpp"
         "src/*.h"
-        # 如果有单独的 include 目录，也可以在这里添加，例如: "include/*.hpp"
+        # 排除外部生成的或不需要格式化的文件（如有需要可在下面添加 EXCLUDE 逻辑）
     )
 
-    # 3. 汇总所有需要格式化的文件
-    # 注意：这里结合了自动扫描的头文件和 SourceFileCollection.cmake 中定义的源文件
-    set(ALL_FORMAT_SOURCES
-        ${ALL_HEADERS}            # [新增] 包含头文件
-        ${CORE_SOURCES}
-        ${COMMON_SOURCES}
-        ${SERIALIZER_SOURCES}
-        ${VALIDATOR_SOURCES}
-        ${BOOTSTRAP_SOURCES}
-        ${CONFIG_SOURCES}
-        ${IMPORTER_SOURCES}
-        ${REPORTS_SOURCES}
-        ${CONVERTER_SOURCES}
-        ${IO_SOURCES}
-        ${CLI_SOURCES}
-        ${REPORTS_DATA_SOURCES}
-        ${REPORTS_SHARED_SOURCES}
-        "src/main_cli.cpp"
-    )
+    # 4. 建立单独的任务以绕过 Windows 命令行长度限制
+    set(CHECK_DEP_TARGETS "")
+    set(PREV_FORMAT_TARGET "")
+    set(COUNTER 0)
 
-    # 4. 定义自定义目标 'format'
-    # 使用 -style=file 让 clang-format 读取项目根目录下的 .clang-format 配置文件
-    # 逻辑优化：添加 WORKING_DIRECTORY 确保 .clang-format 能被正确找到
-    add_custom_target(format
-        COMMAND ${CLANG_FORMAT_EXE} -i -style=file ${ALL_FORMAT_SOURCES}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        COMMENT "Running clang-format on all source (.cpp) and header (.hpp) files..."
-        VERBATIM
-    )
+    foreach(FILE_PATH ${ALL_FORMAT_SOURCES})
+        math(EXPR COUNTER "${COUNTER} + 1")
+        
+        # --- 目标 A: 格式化 (串行链条以防止头文件并发读写冲突) ---
+        set(FILE_FORMAT_TARGET "format_step_${COUNTER}")
+        add_custom_target(${FILE_FORMAT_TARGET}
+            COMMAND ${CLANG_FORMAT_EXE} -i -style=file "${FILE_PATH}"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "[${COUNTER}/FORMAT] Formatting: ${FILE_PATH}"
+            VERBATIM
+        )
+        if(PREV_FORMAT_TARGET)
+            add_dependencies(${FILE_FORMAT_TARGET} ${PREV_FORMAT_TARGET})
+        endif()
+        set(PREV_FORMAT_TARGET ${FILE_FORMAT_TARGET})
+
+        # --- 目标 B: 检查格式 (并行执行以提升速度) ---
+        set(FILE_CHECK_TARGET "check_format_step_${COUNTER}")
+        add_custom_target(${FILE_CHECK_TARGET}
+            COMMAND ${CLANG_FORMAT_EXE} --dry-run --Werror -style=file "${FILE_PATH}"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            COMMENT "[${COUNTER}/CHECK-FORMAT] Checking: ${FILE_PATH}"
+            VERBATIM
+        )
+        list(APPEND CHECK_DEP_TARGETS ${FILE_CHECK_TARGET})
+    endforeach()
+
+    # 5. 定义顶层汇总目标
+    add_custom_target(format)
+    if(PREV_FORMAT_TARGET)
+        add_dependencies(format ${PREV_FORMAT_TARGET})
+    endif()
+
+    add_custom_target(check-format)
+    if(CHECK_DEP_TARGETS)
+        add_dependencies(check-format ${CHECK_DEP_TARGETS})
+    endif()
 else()
     message(WARNING "clang-format not found. 'format' target will not be available.")
 endif()
