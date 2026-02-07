@@ -3,9 +3,10 @@
 #define APPLICATION_INTERFACES_I_REPORT_HANDLER_H_
 
 #include <string>
+#include <string_view>
 #include <vector>
 
-#include "reports/shared/types/report_format.hpp"
+#include "domain/reports/types/report_format.hpp"
 
 class IReportHandler {
  public:

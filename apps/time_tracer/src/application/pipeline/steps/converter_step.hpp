@@ -3,7 +3,7 @@
 #define APPLICATION_PIPELINE_STEPS_CONVERTER_STEP_H_
 
 #include "application/pipeline/context/pipeline_context.hpp"
-#include "common/config/app_config.hpp"
+#include "infrastructure/config/models/app_config.hpp"
 
 namespace core::pipeline {
 

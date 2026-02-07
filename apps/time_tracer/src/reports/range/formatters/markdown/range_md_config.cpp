@@ -1,5 +1,0 @@
-// reports/range/formatters/markdown/range_md_config.cpp
-#include "reports/range/formatters/markdown/range_md_config.hpp"
-
-RangeMdConfig::RangeMdConfig(const toml::table& config)
-    : RangeBaseConfig(config) {}

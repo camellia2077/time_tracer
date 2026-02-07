@@ -3,16 +3,14 @@
 
 #include <iostream>
 
-#include "common/ansi_colors.hpp"
+#include "domain/logic/validator/txt/facade/text_validator.hpp"
 #include "infrastructure/io/file_import_reader.hpp"
-#include "validator/txt/facade/text_validator.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace core::pipeline {
 
 auto StructureValidatorStep::Execute(PipelineContext& context) -> bool {
-
   std::cout << "Step: Validating Source Structure (TXT)..." << std::endl;
-
 
   // 使用上下文中的配置初始化验证器
   validator::txt::TextValidator validator(context.state.converter_config);
@@ -31,7 +29,6 @@ auto StructureValidatorStep::Execute(PipelineContext& context) -> bool {
 
     // 执行验证
     if (!validator.Validate(filename, content, errors)) {
-
       all_valid = false;
       // 打印错误 (复用 ValidatorUtils)
       validator::PrintGroupedErrors(filename, errors);
@@ -39,8 +36,9 @@ auto StructureValidatorStep::Execute(PipelineContext& context) -> bool {
   }
 
   if (all_valid) {
-    std::cout << time_tracer::common::colors::kGreen << "Structure validation passed for "
-              << files_checked << " files." << time_tracer::common::colors::kReset << std::endl;
+    std::cout << time_tracer::common::colors::kGreen
+              << "Structure validation passed for " << files_checked
+              << " files." << time_tracer::common::colors::kReset << std::endl;
   } else {
     std::cerr << time_tracer::common::colors::kRed
               << "Structure validation failed. Please fix the errors above."

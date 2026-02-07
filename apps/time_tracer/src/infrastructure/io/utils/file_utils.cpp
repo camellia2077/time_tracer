@@ -4,14 +4,14 @@
 #include <algorithm>
 #include <iostream>
 
-#include "common/ansi_colors.hpp"
+#include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 
 namespace FileUtils {
 
 auto FindFilesByExtensionRecursively(const fs::path& root_path,
-                                         const std::string& extension)
+                                     const std::string& extension)
     -> std::vector<fs::path> {
   std::vector<fs::path> files_found;
   if (!fs::exists(root_path) || !fs::is_directory(root_path)) {
@@ -33,14 +33,15 @@ auto FindFilesByExtensionRecursively(const fs::path& root_path,
 
 // [新增] 实现
 auto ResolveFiles(const std::vector<std::string>& input_paths,
-                   const std::string& extension) -> std::vector<std::string> {
+                  const std::string& extension) -> std::vector<std::string> {
   std::vector<std::string> resolved_files;
 
   for (const std::string& path_str : input_paths) {
     fs::path input_path(path_str);
     if (!fs::exists(input_path)) {
       // 使用 std::cerr 打印警告，如果不想依赖 AnsiColors 可以去掉颜色代码
-      std::cerr << time_tracer::common::colors::kYellow << "Warning: Path does not exist: " << path_str
+      std::cerr << time_tracer::common::colors::kYellow
+                << "Warning: Path does not exist: " << path_str
                 << time_tracer::common::colors::kReset << std::endl;
       continue;
     }

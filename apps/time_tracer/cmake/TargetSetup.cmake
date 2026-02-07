@@ -24,17 +24,16 @@ endif()
 
 function(setup_project_target TARGET_NAME)
     # 添加头文件搜索路径
-    # 使用 PROJECT_SOURCE_DIR 确保路径始终从项目根目录开始，支持作为子项目构建
+    # 使用 PROJECT_SOURCE_DIR 确保路径始终从项目根目录开始。
+    # 所有内部引用均应基于 src/ 根路径进行绝对搜索（如 #include "domain/logic/..."）。
     target_include_directories(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
-    # 链接库
-    # TODO: 2026年后关注 std::format 兼容性。
-    # 目前强制链接 stdc++exp 是为了支持实验性 format
+    # 链接核心依赖库
     target_link_libraries(${TARGET_NAME} PRIVATE
         SQLite::SQLite3
         nlohmann_json::nlohmann_json
         tomlplusplus::tomlplusplus
-        stdc++exp
+        stdc++exp # 依然需要该库以支持 C++23 的实验性功能（如 std::expected/std::println 的部分实现）
     )
 
     # 配置预编译头 (PCH) - 使用绝对路径

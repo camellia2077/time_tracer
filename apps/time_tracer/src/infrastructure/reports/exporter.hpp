@@ -7,43 +7,37 @@
 #include <string>
 #include <vector>
 
-#include "reports/data/model/query_data_structs.hpp"
-#include "reports/shared/types/report_format.hpp"
+#include "application/interfaces/i_report_exporter.hpp"
 
 namespace fs = std::filesystem;
 class ReportFileManager;
 
-struct SingleExportTask {
-  std::string_view id;
-  std::string_view content;
-};
-
-class Exporter {
+class Exporter : public IReportExporter {
  public:
   explicit Exporter(const fs::path& export_root_path);
-  ~Exporter();
+  ~Exporter() override;
 
-  void ExportSingleDayReport(const SingleExportTask& task,
-                             ReportFormat format) const;
-  void ExportSingleMonthReport(const SingleExportTask& task,
-                               ReportFormat format) const;
-  void ExportSinglePeriodReport(int days, std::string_view content,
-                                ReportFormat format) const;
-  void ExportSingleWeekReport(const SingleExportTask& task,
-                              ReportFormat format) const;
-  void ExportSingleYearReport(const SingleExportTask& task,
-                              ReportFormat format) const;
+  auto ExportSingleDayReport(const SingleExportTask& task,
+                             ReportFormat format) const -> void override;
+  auto ExportSingleMonthReport(const SingleExportTask& task,
+                               ReportFormat format) const -> void override;
+  auto ExportSinglePeriodReport(int days, std::string_view content,
+                                ReportFormat format) const -> void override;
+  auto ExportSingleWeekReport(const SingleExportTask& task,
+                              ReportFormat format) const -> void override;
+  auto ExportSingleYearReport(const SingleExportTask& task,
+                              ReportFormat format) const -> void override;
 
-  void ExportAllDailyReports(const FormattedGroupedReports& reports,
-                             ReportFormat format) const;
-  void ExportAllMonthlyReports(const FormattedMonthlyReports& reports,
-                               ReportFormat format) const;
-  void ExportAllPeriodReports(const FormattedPeriodReports& reports,
-                              ReportFormat format) const;
-  void ExportAllWeeklyReports(const FormattedWeeklyReports& reports,
-                              ReportFormat format) const;
-  void ExportAllYearlyReports(const FormattedYearlyReports& reports,
-                              ReportFormat format) const;
+  auto ExportAllDailyReports(const FormattedGroupedReports& reports,
+                             ReportFormat format) const -> void override;
+  auto ExportAllMonthlyReports(const FormattedMonthlyReports& reports,
+                               ReportFormat format) const -> void override;
+  auto ExportAllPeriodReports(const FormattedPeriodReports& reports,
+                              ReportFormat format) const -> void override;
+  auto ExportAllWeeklyReports(const FormattedWeeklyReports& reports,
+                              ReportFormat format) const -> void override;
+  auto ExportAllYearlyReports(const FormattedYearlyReports& reports,
+                              ReportFormat format) const -> void override;
 
  private:
   static void WriteReportToFile(std::string_view report_content,

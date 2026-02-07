@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "reports/shared/types/report_format.hpp"
+#include "domain/reports/types/report_format.hpp"
 
 namespace fs = std::filesystem;
 

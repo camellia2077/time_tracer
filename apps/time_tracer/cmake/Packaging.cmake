@@ -14,6 +14,9 @@ if(BUILD_INSTALLER)
         DayMdFormatter
         DayTypFormatter
         DayTexFormatter
+        MonthMdFormatter
+        MonthTypFormatter
+        MonthTexFormatter
         RangeMdFormatter
         RangeTypFormatter
         RangeTexFormatter
