@@ -54,7 +54,8 @@ TextParser::TextParser(const ConverterConfig& config)
     : config_(config), wake_keywords_(config.wake_keywords) {}
 
 auto TextParser::Parse(std::istream& input_stream,
-                       std::function<void(DailyLog&)> on_new_day) -> void {
+                       std::function<void(DailyLog&)> on_new_day,
+                       std::string_view source_file) -> void {
   DailyLog current_day;
   std::string line;
   std::string current_year_prefix;
@@ -89,9 +90,16 @@ auto TextParser::Parse(std::istream& input_stream,
       current_day.date = current_year_prefix + "-" +
                          line.substr(kMonthStartOffset, kMonthDigitsLength) +
                          "-" + line.substr(kDayStartOffset, kDayDigitsLength);
+      current_day.source_span = SourceSpan{
+          .file_path = std::string(source_file),
+          .line_start = line_number,
+          .line_end = line_number,
+          .column_start = 1,
+          .column_end = static_cast<int>(line.length()),
+          .raw_text = line};
 
     } else {
-      ParseLine(line, line_number, current_day);
+      ParseLine(line, line_number, current_day, source_file);
     }
   }
   if (!current_day.date.empty()) {
@@ -163,7 +171,8 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
 }
 
 auto TextParser::ParseLine(const std::string& line, int line_number,
-                           DailyLog& current_day) const -> void {
+                           DailyLog& current_day,
+                           std::string_view source_file) const -> void {
   const std::string& remark_prefix = config_.remark_prefix;
 
   if (!remark_prefix.empty() && line.starts_with(remark_prefix)) {
@@ -207,5 +216,13 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                                     .time_str_hhmm = time_str_hhmm});
 
   current_day.rawEvents.push_back(
-      {time_str_hhmm, remark_data.description, remark_data.remark});
+      {time_str_hhmm,
+       remark_data.description,
+       remark_data.remark,
+       SourceSpan{.file_path = std::string(source_file),
+                  .line_start = line_number,
+                  .line_end = line_number,
+                  .column_start = 1,
+                  .column_end = static_cast<int>(line.length()),
+                  .raw_text = line}});
 }

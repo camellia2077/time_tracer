@@ -1,7 +1,16 @@
 title_template = "Monthly Summary for {range_label}"
 actual_days_label = "Actual Days with Records"
+
+status_days_label = "Status Days (True)"
+sleep_days_label = "Sleep Days (True)"
+exercise_days_label = "Exercise Days (True)"
+
+cardio_days_label = "Cardio Days (True)"
+anaerobic_days_label = "Anaerobic Days (True)"
 total_time_label = "Total Time Recorded"
 no_records_message = "No time records found for this month."
 invalid_range_message = "Invalid year_month format. Expected YYYY-MM."
 project_breakdown_label = "Project Breakdown"
 style_source = "common_style.toml"
+
+

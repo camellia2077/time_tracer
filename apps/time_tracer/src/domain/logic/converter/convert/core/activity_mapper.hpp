@@ -2,6 +2,7 @@
 #ifndef CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_H_
 #define CONVERTER_CONVERT_CORE_ACTIVITY_MAPPER_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -31,7 +32,9 @@ class ActivityMapper {
       -> std::string;
   auto append_activity(DailyLog& day, const RawEvent& raw_event,
                        const TimeRange& time_range,
-                       std::string_view mapped_description) const -> void;
+                       std::string_view mapped_description,
+                       const std::optional<SourceSpan>& start_span) const
+      -> void;
 
   static auto formatTime(std::string_view time_str_hhmm) -> std::string;
   static auto calculateDurationMinutes(const TimeRange& time_range) -> int;

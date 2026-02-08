@@ -6,6 +6,11 @@
 
 namespace Utils {
 
+struct YearMonth {
+  int year;
+  int month;
+};
+
 // 设置控制台以支持UTF-8和颜色代码
 void setup_console();
 
@@ -13,7 +18,7 @@ void setup_console();
 bool is_leap(int year);
 
 // 获取指定月份的天数
-int get_days_in_month(int year, int month);
+int get_days_in_month(const YearMonth& year_month);
 
 }  // namespace Utils
 #endif  // UTILS_UTILS_H_

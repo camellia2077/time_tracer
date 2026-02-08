@@ -6,6 +6,7 @@
 #include <string>
 
 #include "domain/logic/validator/common/validator_utils.hpp"
+#include "domain/model/source_span.hpp"
 
 namespace validator {
 namespace txt {
@@ -18,16 +19,18 @@ class StructureRules {
   void reset();
 
   void process_year_line(int line_number, const std::string& line,
-                         std::set<Error>& errors);
+                         std::set<Error>& errors, const SourceSpan& span);
   void process_date_line(int line_number, const std::string& line,
-                         std::set<Error>& errors);
+                         std::set<Error>& errors, const SourceSpan& span);
   void process_remark_line(int line_number, const std::string& line,
-                           std::set<Error>& errors) const;
+                           std::set<Error>& errors,
+                           const SourceSpan& span) const;
   void process_event_line(int line_number, const std::string& line,
-                          std::set<Error>& errors);
+                          std::set<Error>& errors, const SourceSpan& span);
   static void process_unrecognized_line(int line_number,
                                         const std::string& line,
-                                        std::set<Error>& errors);
+                                        std::set<Error>& errors,
+                                        const SourceSpan& span);
 
   bool has_seen_year() const;
 

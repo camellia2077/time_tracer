@@ -6,21 +6,24 @@ trigger: always_on
 
  -OS: Windows (Primary shell for Agent is MSYS2 UCRT64 BASH).
  -Toolchain: GCC/Clang (MinGW-w64), CMake, Ninja.
+ -Git repo root: `time_tracer_cpp` (run git commands from this directory).
  -**CRITICAL**: The Agent MUST NOT run `.sh` or `bash` commands directly in PowerShell (pwsh). Avoid using the default Windows `bash.exe` (System32) which triggers WSL errors.
 
 [WORKFLOW RULES]
 
- -TASK: Compile success required. SKIP runtime/testing.
- -PREP: Analyze context deeply. Clarify ambiguities BEFORE coding.
- -INTERACTION: Correct user errors directly. Do not follow flawed logic; provide constructive correction based on facts.
- -CODE_PHILOSOPHY: Keep simple & maintainable. AVOID over-defensive logic. Use physical separation for logic (keep files 100-300 lines) but avoid over-engineering.
- -**SHELL_RESTRICTION**:
- -All script executions (.sh) and build commands (CMake, Ninja) MUST be wrapped for UCRT64.
- -If the Agent MUST run commands via PowerShell, it MUST use the explicit path: `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "your_command"`.
+ -TASK: Prefer compile success. SKIP runtime/testing unless requested.
+ -PREP: Analyze context and clarify ambiguities when they affect correctness.
+ -INTERACTION: Correct user errors directly and propose a fix.
+ -CODE_PHILOSOPHY: Keep simple & maintainable. Avoid over-defensive logic. Use physical separation for logic (keep files 100-300 lines) but avoid over-engineering.
+ -**SHELL_RESTRICTION (Flexible)**:
+ -Prefer running script/build commands in UCRT64.
+ -If UCRT64 fails (e.g., MSYS2 errors), ask the user and fall back to PowerShell-native commands or Python scripts.
+ -Only run `.sh` via a shell when needed; otherwise prefer Python entrypoints.
+ -Recommended UCRT64 wrapper: `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "your_command"`.
 
 
  -**PATH_LOGIC**:
- -Use POSIX-style paths (e.g., `/c/Computer/my_github/...`) for all shell-based operations.
+ -Prefer POSIX-style paths for UCRT64 shell commands. Use native Windows paths for PowerShell commands.
 
 
 
@@ -50,8 +53,6 @@ SAFETY:
 STRUCTURE:
 
  -Headers: Use absolute path from src/.
-
-
 
 
 

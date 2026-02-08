@@ -1,12 +1,14 @@
 // infrastructure/reports/data/queriers/period/period_querier.cpp
 #include "infrastructure/reports/data/queriers/period/period_querier.hpp"
 
+#include <format>
 #include <iomanip>
 #include <string>
 
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
+#include "infrastructure/schema/day_schema.hpp"
 
 PeriodQuerier::PeriodQuerier(sqlite3* sqlite_db, int days_to_query)
     : BaseQuerier(sqlite_db, days_to_query) {}
@@ -15,6 +17,12 @@ auto PeriodQuerier::FetchData() -> PeriodReportData {
   PeriodReportData data = BaseQuerier::FetchData();
 
   FetchActualDays(data);
+  auto flag_counts = FetchDayFlagCounts();
+  data.status_true_days = flag_counts.status_true_days;
+  data.sleep_true_days = flag_counts.sleep_true_days;
+  data.exercise_true_days = flag_counts.exercise_true_days;
+  data.cardio_true_days = flag_counts.cardio_true_days;
+  data.anaerobic_true_days = flag_counts.anaerobic_true_days;
 
   if (data.total_duration > 0) {
     // [新增] 获取并确保缓存加载
@@ -47,7 +55,8 @@ void PeriodQuerier::PrepareData(PeriodReportData& data) const {
 }
 
 auto PeriodQuerier::GetDateConditionSql() const -> std::string {
-  return "date >= ? AND date <= ?";
+  return std::format("{} >= ? AND {} <= ?", schema::day::db::kDate,
+                     schema::day::db::kDate);
 }
 
 void PeriodQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {

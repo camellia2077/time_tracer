@@ -1,5 +1,6 @@
 // main.cpp
 #include <filesystem>
+#include <span>
 
 #include "application/application.hpp"
 #include "cli/commands/help_command.hpp"
@@ -9,7 +10,8 @@
 #include "infrastructure/io/file_manager.hpp"
 
 auto main(int argc, char* argv[]) -> int {
-  CommandLineParser parser(argc, argv);
+  CommandLineParser parser(
+      std::span<char* const>(argv, static_cast<size_t>(argc)));
   CliRequest request = parser.parse();
 
   if (request.action == CliAction::kHelp) {

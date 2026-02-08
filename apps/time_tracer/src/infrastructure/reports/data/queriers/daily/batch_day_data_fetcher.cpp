@@ -1,8 +1,12 @@
 // infrastructure/reports/data/queriers/daily/batch_day_data_fetcher.cpp
 #include "infrastructure/reports/data/queriers/daily/batch_day_data_fetcher.hpp"
 
+#include <format>
 #include <iostream>
 #include <stdexcept>
+
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 BatchDayDataFetcher::BatchDayDataFetcher(sqlite3* sqlite_db,
                                          IProjectInfoProvider& provider)
@@ -42,29 +46,41 @@ auto BatchDayDataFetcher::FetchAllData() -> BatchDataResult {
 // fetch_days_metadata 保持不变 ...
 void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
   sqlite3_stmt* stmt;
-  const char* sql =
-      "SELECT date, year, month, "
-      "status, sleep, remark, getup_time, exercise, "
-      "sleep_total_time, total_exercise_time, anaerobic_time, cardio_time, "
-      "grooming_time, "
-      "study_time, recreation_time, recreation_zhihu_time, "
-      "recreation_bilibili_time, recreation_douyin_time "
-      "FROM days ORDER BY date ASC;";
+  const std::string sql = std::format(
+      "SELECT {1}, {2}, {3}, "
+      "{4}, {5}, {6}, {7}, {8}, "
+      "{9}, {10}, {11}, {12}, "
+      "{13}, "
+      "{14}, {15}, {16}, "
+      "{17}, {18} "
+      "FROM {0} ORDER BY {1} ASC;",
+      schema::day::db::kTable, schema::day::db::kDate,
+      schema::day::db::kYear, schema::day::db::kMonth,
+      schema::day::db::kStatus, schema::day::db::kSleep,
+      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      schema::day::db::kExercise, schema::day::db::kSleepTotalTime,
+      schema::day::db::kTotalExerciseTime, schema::day::db::kAnaerobicTime,
+      schema::day::db::kCardioTime, schema::day::db::kGroomingTime,
+      schema::day::db::kStudyTime, schema::day::db::kRecreationTime,
+      schema::day::db::kRecreationZhihuTime,
+      schema::day::db::kRecreationBilibiliTime,
+      schema::day::db::kRecreationDouyinTime);
 
-  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for days metadata.");
   }
 
-  const std::vector<std::string> kStatCols = {"sleep_total_time",
-                                              "total_exercise_time",
-                                              "anaerobic_time",
-                                              "cardio_time",
-                                              "grooming_time",
-                                              "study_time",
-                                              "recreation_time",
-                                              "recreation_zhihu_time",
-                                              "recreation_bilibili_time",
-                                              "recreation_douyin_time"};
+  const std::vector<std::string> kStatCols = {
+      std::string(schema::day::db::kSleepTotalTime),
+      std::string(schema::day::db::kTotalExerciseTime),
+      std::string(schema::day::db::kAnaerobicTime),
+      std::string(schema::day::db::kCardioTime),
+      std::string(schema::day::db::kGroomingTime),
+      std::string(schema::day::db::kStudyTime),
+      std::string(schema::day::db::kRecreationTime),
+      std::string(schema::day::db::kRecreationZhihuTime),
+      std::string(schema::day::db::kRecreationBilibiliTime),
+      std::string(schema::day::db::kRecreationDouyinTime)};
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     // ... (保持原逻辑不变) ...
@@ -108,11 +124,17 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
 
 void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
   sqlite3_stmt* stmt;
-  const char* sql =
-      "SELECT date, start, end, project_id, duration, activity_remark "
-      "FROM time_records ORDER BY date ASC, logical_id ASC;";
+  const std::string sql = std::format(
+      "SELECT {1}, {2}, {3}, {4}, {5}, {6} "
+      "FROM {0} ORDER BY {1} ASC, {7} ASC;",
+      schema::time_records::db::kTable, schema::time_records::db::kDate,
+      schema::time_records::db::kStart, schema::time_records::db::kEnd,
+      schema::time_records::db::kProjectId,
+      schema::time_records::db::kDuration,
+      schema::time_records::db::kActivityRemark,
+      schema::time_records::db::kLogicalId);
 
-  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for time records.");
   }
 

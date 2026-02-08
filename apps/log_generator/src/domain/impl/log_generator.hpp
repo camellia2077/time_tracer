@@ -21,7 +21,7 @@ class LogGenerator : public ILogGenerator {
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
       const std::vector<std::string>& wake_keywords);
 
-  void generate_for_month(int year, int month, int days_in_month,
+  void generate_for_month(const MonthContext& month_context,
                           std::string& buffer) override;
 
  private:

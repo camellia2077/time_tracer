@@ -9,6 +9,17 @@
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
 namespace {
+auto FormatRatio(int count, int total_days) -> std::string {
+  if (total_days <= 0) {
+    return std::to_string(count);
+  }
+  double percent =
+      100.0 * static_cast<double>(count) / static_cast<double>(total_days);
+  return std::format("{} ({:.2f}%)", count, percent);
+}
+}  // namespace
+
+namespace {
 constexpr const char* kEmptyReport = "";
 }  // namespace
 
@@ -59,6 +70,23 @@ void RangeTypFormatter::FormatHeaderContent(std::stringstream& report_stream,
         TimeFormatDuration(data.total_duration, data.actual_days));
     report_stream << std::format("+ *{}:* {}\n", config_->GetActualDaysLabel(),
                                  data.actual_days);
+    report_stream << std::format("+ *{}:* {}\n", config_->GetStatusDaysLabel(),
+                                 FormatRatio(data.status_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n", config_->GetSleepDaysLabel(),
+                                 FormatRatio(data.sleep_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n",
+                                 config_->GetExerciseDaysLabel(),
+                                 FormatRatio(data.exercise_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n", config_->GetCardioDaysLabel(),
+                                 FormatRatio(data.cardio_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n",
+                                 config_->GetAnaerobicDaysLabel(),
+                                 FormatRatio(data.anaerobic_true_days,
+                                             data.actual_days));
   }
 }
 
