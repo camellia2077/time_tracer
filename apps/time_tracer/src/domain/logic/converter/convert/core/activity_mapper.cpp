@@ -17,6 +17,32 @@ constexpr size_t kTimeMinuteOffset = 3;
 constexpr size_t kTimeMinuteLength = 2;
 constexpr int kMinutesPerHour = 60;
 constexpr int kHoursPerDay = 24;
+
+auto MergeSpans(const std::optional<SourceSpan>& start_span,
+                const std::optional<SourceSpan>& end_span)
+    -> std::optional<SourceSpan> {
+  if (start_span.has_value() && end_span.has_value()) {
+    SourceSpan merged = *start_span;
+    if (!end_span->file_path.empty()) {
+      merged.file_path = end_span->file_path;
+    }
+    if (end_span->line_start > 0 &&
+        (merged.line_start == 0 || end_span->line_start < merged.line_start)) {
+      merged.line_start = end_span->line_start;
+    }
+    if (end_span->line_end > merged.line_end) {
+      merged.line_end = end_span->line_end;
+    }
+    return merged;
+  }
+  if (start_span.has_value()) {
+    return start_span;
+  }
+  if (end_span.has_value()) {
+    return end_span;
+  }
+  return std::nullopt;
+}
 }  // namespace
 
 auto ActivityMapper::formatTime(std::string_view time_str_hhmm) -> std::string {
@@ -134,7 +160,8 @@ auto ActivityMapper::build_project_path(const std::vector<std::string>& parts)
 
 void ActivityMapper::append_activity(
     DailyLog& day, const RawEvent& raw_event, const TimeRange& time_range,
-    std::string_view mapped_description) const {
+    std::string_view mapped_description,
+    const std::optional<SourceSpan>& start_span) const {
   if (time_range.start_hhmm.empty()) {
     return;
   }
@@ -155,6 +182,7 @@ void ActivityMapper::append_activity(
   if (!raw_event.remark.empty()) {
     activity.remark = raw_event.remark;
   }
+  activity.source_span = MergeSpans(start_span, raw_event.source_span);
 
   day.processedActivities.push_back(activity);
 }
@@ -167,6 +195,7 @@ void ActivityMapper::map_activities(DailyLog& day) {
   }
 
   std::string start_time = day.getupTime;
+  std::optional<SourceSpan> start_span;
 
   for (const auto& raw_event : day.rawEvents) {
     bool is_wake = is_wake_event(raw_event);
@@ -174,6 +203,7 @@ void ActivityMapper::map_activities(DailyLog& day) {
     if (is_wake) {
       if (start_time.empty()) {
         start_time = formatTime(raw_event.endTimeStr);
+        start_span = raw_event.source_span;
       }
       continue;
     }
@@ -186,7 +216,8 @@ void ActivityMapper::map_activities(DailyLog& day) {
     int duration = calculateDurationMinutes(range);
 
     mapped_description = apply_duration_rules(mapped_description, duration);
-    append_activity(day, raw_event, range, mapped_description);
+    append_activity(day, raw_event, range, mapped_description, start_span);
     start_time = formatted_event_end_time;
+    start_span = raw_event.source_span;
   }
 }

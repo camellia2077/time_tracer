@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "domain/model/source_span.hpp"
 #include "domain/model/time_data_models.hpp"
 
 // RawEvent 属于 Converter 解析阶段的中间产物，保留在此
@@ -13,6 +14,7 @@ struct RawEvent {
   std::string endTimeStr;
   std::string description;
   std::string remark;
+  std::optional<SourceSpan> source_span;
 };
 
 // [核心修改] 移除 Activity 和 GeneratedStats 的定义
@@ -26,6 +28,7 @@ struct DailyLog {
   std::string getupTime;
   std::vector<std::string> generalRemarks;
   std::vector<RawEvent> rawEvents;
+  std::optional<SourceSpan> source_span;
 
   // [核心修改] 使用 BaseActivityRecord
   std::vector<BaseActivityRecord> processedActivities;
@@ -45,6 +48,7 @@ struct DailyLog {
     getupTime.clear();
     generalRemarks.clear();
     rawEvents.clear();
+    source_span.reset();
     processedActivities.clear();
     isContinuation = false;
     activityCount = 0;

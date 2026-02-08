@@ -6,6 +6,7 @@
 #include <istream>
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "domain/model/daily_log.hpp"
@@ -22,7 +23,8 @@ class LogProcessor {
   explicit LogProcessor(const ConverterConfig& config);
 
   void ConvertStreamToData(std::istream& combined_stream,
-                           std::function<void(DailyLog&&)> data_consumer);
+                           std::function<void(DailyLog&&)> data_consumer,
+                           std::string_view source_file);
 
   auto ProcessSourceContent(const std::string& filename,
                             const std::string& content) -> LogProcessingResult;

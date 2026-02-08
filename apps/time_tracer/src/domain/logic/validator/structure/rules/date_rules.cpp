@@ -2,6 +2,7 @@
 #include "domain/logic/validator/structure/rules/date_rules.hpp"
 
 #include <map>
+#include <optional>
 #include <string>
 
 namespace validator::structure {
@@ -54,7 +55,8 @@ auto DaysInMonth(int year, int month) -> int {
 }  // namespace
 
 void validateDateContinuity(const std::vector<DailyLog>& days,
-                            std::set<Error>& errors, DateCheckMode mode) {
+                            std::vector<Diagnostic>& diagnostics,
+                            DateCheckMode mode) {
   if (mode == DateCheckMode::kNone || days.empty()) {
     return;
   }
@@ -102,7 +104,10 @@ void validateDateContinuity(const std::vector<DailyLog>& days,
         error_msg += " (Completeness Check)";
       }
 
-      errors.insert({0, error_msg, ErrorType::kDateContinuity});
+      diagnostics.push_back({.severity = DiagnosticSeverity::kError,
+                             .code = "date.continuity.missing",
+                             .message = error_msg,
+                             .source_span = std::nullopt});
     }
   }
 }

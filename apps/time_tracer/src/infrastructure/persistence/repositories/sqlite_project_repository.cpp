@@ -1,9 +1,11 @@
 // infrastructure/persistence/repositories/sqlite_project_repository.cpp
 #include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
 
+#include <format>
 #include <iostream>
 #include <stdexcept>
 
+#include "infrastructure/schema/time_records_schema.hpp"
 SqliteProjectRepository::SqliteProjectRepository(std::string db_path)
     : db_path_(std::move(db_path)) {}
 
@@ -18,9 +20,13 @@ auto SqliteProjectRepository::GetAllProjects() -> std::vector<ProjectEntity> {
   }
   sqlite3* db_connection = db_manager.GetDbConnection();
 
-  const char* sql = "SELECT id, parent_id, name FROM projects ORDER BY name";
+  const std::string sql = std::format(
+      "SELECT {0}, {1}, {2} FROM {3} ORDER BY {2}",
+      schema::projects::db::kId, schema::projects::db::kParentId,
+      schema::projects::db::kName, schema::projects::db::kTable);
   sqlite3_stmt* stmt;
-  if (sqlite3_prepare_v2(db_connection, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_connection, sql.c_str(), -1, &stmt, nullptr) !=
+      SQLITE_OK) {
     throw std::runtime_error(std::string("Failed to prepare query: ") +
                              sqlite3_errmsg(db_connection));
   }

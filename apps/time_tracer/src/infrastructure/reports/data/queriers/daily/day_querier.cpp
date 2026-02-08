@@ -1,8 +1,11 @@
 // infrastructure/reports/data/queriers/daily/day_querier.cpp
 #include "infrastructure/reports/data/queriers/daily/day_querier.hpp"
 
+#include <format>
 #include <stdexcept>
 
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
 
@@ -29,7 +32,7 @@ auto DayQuerier::FetchData() -> DailyReportData {
 }
 
 auto DayQuerier::GetDateConditionSql() const -> std::string {
-  return "date = ?";
+  return std::format("{} = ?", schema::day::db::kDate);
 }
 void DayQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {
   sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
@@ -41,9 +44,12 @@ void DayQuerier::PrepareData(DailyReportData& data) const {
 
 void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
-  std::string sql =
-      "SELECT status, sleep, remark, getup_time, exercise FROM days WHERE date "
-      "= ?;";
+  std::string sql = std::format(
+      "SELECT {}, {}, {}, {}, {} FROM {} WHERE {} = ?;",
+      schema::day::db::kStatus, schema::day::db::kSleep,
+      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      schema::day::db::kExercise, schema::day::db::kTable,
+      schema::day::db::kDate);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);
@@ -66,20 +72,29 @@ void DayQuerier::FetchMetadata(DailyReportData& data) {
 
 void DayQuerier::FetchDetailedRecords(DailyReportData& data) {
   sqlite3_stmt* stmt;
-  std::string sql = R"(
-        WITH RECURSIVE project_paths(id, path) AS (
-            SELECT id, name FROM projects WHERE parent_id IS NULL
+  std::string sql = std::format(
+      R"(
+        WITH RECURSIVE {12}({0}, {13}) AS (
+            SELECT {0}, {1} FROM {10} p WHERE {2} IS NULL
             UNION ALL
-            SELECT p.id, pp.path || '_' || p.name
-            FROM projects p
-            JOIN project_paths pp ON p.parent_id = pp.id
+            SELECT p.{0}, pp.{13} || '_' || p.{1}
+            FROM {10} p
+            JOIN {12} pp ON p.{2} = pp.{0}
         )
-        SELECT tr.start, tr.end, pp.path, tr.duration, tr.activity_remark
-        FROM time_records tr
-        JOIN project_paths pp ON tr.project_id = pp.id
-        WHERE tr.date = ?
-        ORDER BY tr.logical_id ASC;
-    )";
+        SELECT tr.{3}, tr.{4}, pp.{13}, tr.{5}, tr.{6}
+        FROM {11} tr
+        JOIN {12} pp ON tr.{7} = pp.{0}
+        WHERE tr.{8} = ?
+        ORDER BY tr.{9} ASC;
+    )",
+      schema::projects::db::kId, schema::projects::db::kName,
+      schema::projects::db::kParentId, schema::time_records::db::kStart,
+      schema::time_records::db::kEnd, schema::time_records::db::kDuration,
+      schema::time_records::db::kActivityRemark,
+      schema::time_records::db::kProjectId, schema::time_records::db::kDate,
+      schema::time_records::db::kLogicalId, schema::projects::db::kTable,
+      schema::time_records::db::kTable, schema::projects::cte::kProjectPaths,
+      schema::projects::cte::kPath);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);
@@ -104,15 +119,22 @@ void DayQuerier::FetchDetailedRecords(DailyReportData& data) {
 
 void DayQuerier::FetchGeneratedStats(DailyReportData& data) {
   sqlite3_stmt* stmt;
-  std::string sql =
+  std::string sql = std::format(
       "SELECT "
-      "sleep_total_time, "
-      "total_exercise_time, anaerobic_time, cardio_time, "
-      "grooming_time, "
-      "study_time, "
-      "recreation_time, recreation_zhihu_time, recreation_bilibili_time, "
-      "recreation_douyin_time "
-      "FROM days WHERE date = ?;";
+      "{}, "
+      "{}, {}, {}, "
+      "{}, "
+      "{}, "
+      "{}, {}, {}, "
+      "{} "
+      "FROM {} WHERE {} = ?;",
+      schema::day::db::kSleepTotalTime, schema::day::db::kTotalExerciseTime,
+      schema::day::db::kAnaerobicTime, schema::day::db::kCardioTime,
+      schema::day::db::kGroomingTime, schema::day::db::kStudyTime,
+      schema::day::db::kRecreationTime, schema::day::db::kRecreationZhihuTime,
+      schema::day::db::kRecreationBilibiliTime,
+      schema::day::db::kRecreationDouyinTime, schema::day::db::kTable,
+      schema::day::db::kDate);
 
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),

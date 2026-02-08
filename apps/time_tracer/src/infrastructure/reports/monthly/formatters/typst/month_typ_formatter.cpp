@@ -6,7 +6,19 @@
 #include <format>
 #include <memory>
 
+#include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
+
+namespace {
+auto FormatRatio(int count, int total_days) -> std::string {
+  if (total_days <= 0) {
+    return std::to_string(count);
+  }
+  double percent =
+      100.0 * static_cast<double>(count) / static_cast<double>(total_days);
+  return std::format("{} ({:.2f}%)", count, percent);
+}
+}  // namespace
 MonthTypFormatter::MonthTypFormatter(std::shared_ptr<MonthTypConfig> config)
     : BaseTypFormatter(config) {}
 
@@ -43,10 +55,12 @@ void MonthTypFormatter::FormatPageSetup(
 
 void MonthTypFormatter::FormatHeaderContent(
     std::stringstream& report_stream, const MonthlyReportData& data) const {
+  std::string title_text =
+      FormatTitleTemplate(config_->GetTitleTemplate(), data);
   std::string title =
-      std::format(R"(#text(font: "{}", size: {}pt)[= {} {}])",
+      std::format(R"(#text(font: "{}", size: {}pt)[= {}])",
                   config_->GetTitleFont(), config_->GetReportTitleFontSize(),
-                  config_->GetReportTitle(), data.range_label);
+                  title_text);
   report_stream << title << "\n\n";
 
   if (data.actual_days > 0) {
@@ -55,6 +69,23 @@ void MonthTypFormatter::FormatHeaderContent(
     report_stream << std::format(
         "+ *{}:* {}\n", config_->GetTotalTimeLabel(),
         TimeFormatDuration(data.total_duration, data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n", config_->GetStatusDaysLabel(),
+                                 FormatRatio(data.status_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n", config_->GetSleepDaysLabel(),
+                                 FormatRatio(data.sleep_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n",
+                                 config_->GetExerciseDaysLabel(),
+                                 FormatRatio(data.exercise_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n", config_->GetCardioDaysLabel(),
+                                 FormatRatio(data.cardio_true_days,
+                                             data.actual_days));
+    report_stream << std::format("+ *{}:* {}\n",
+                                 config_->GetAnaerobicDaysLabel(),
+                                 FormatRatio(data.anaerobic_true_days,
+                                             data.actual_days));
   }
 }
 

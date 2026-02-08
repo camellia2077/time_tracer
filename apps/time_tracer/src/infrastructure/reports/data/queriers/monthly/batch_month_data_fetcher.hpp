@@ -33,6 +33,11 @@ class BatchMonthDataFetcher {
       std::map<std::string, MonthlyReportData>& all_months_data,
       std::map<std::string, std::map<long long, long long>>& project_agg);
   void FetchActualDays(std::map<std::string, int>& actual_days);
+  void FetchDayFlagCounts(std::map<std::string, int>& status_days,
+                          std::map<std::string, int>& sleep_days,
+                          std::map<std::string, int>& exercise_days,
+                          std::map<std::string, int>& cardio_days,
+                          std::map<std::string, int>& anaerobic_days);
 };
 
 #endif  // REPORTS_DATA_QUERIERS_MONTHLY_BATCH_MONTH_DATA_FETCHER_H_

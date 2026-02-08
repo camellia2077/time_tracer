@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <iostream>
+#include <string_view>
 
 #include "domain/model/daily_log.hpp"
 #include "infrastructure/config/models/converter_config_models.hpp"
@@ -12,7 +13,8 @@ class ConverterService {
   explicit ConverterService(const ConverterConfig& config);
 
   auto ExecuteConversion(std::istream& combined_input_stream,
-                         std::function<void(DailyLog&&)> data_consumer) -> void;
+                         std::function<void(DailyLog&&)> data_consumer,
+                         std::string_view source_file) -> void;
 
  private:
   const ConverterConfig& config_;

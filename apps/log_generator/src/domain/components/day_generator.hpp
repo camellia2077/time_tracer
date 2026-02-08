@@ -18,7 +18,7 @@ class DayGenerator {
       const std::optional<ActivityRemarkConfig>& activity_remark_config,
       const std::vector<std::string>& wake_keywords, std::mt19937& gen);
 
-  void generate_for_day(std::string& buffer, int month, int day,
+  void generate_for_day(std::string& log_content, int month, int day,
                         bool is_nosleep_day);
 
  private:
