@@ -4,10 +4,16 @@
 
 #include <string>
 
+struct MonthContext {
+  int year;
+  int month;
+  int days_in_month;
+};
+
 class ILogGenerator {
  public:
   virtual ~ILogGenerator() = default;
-  virtual void generate_for_month(int year, int month, int days_in_month,
+  virtual void generate_for_month(const MonthContext& month_context,
                                   std::string& buffer) = 0;
 };
 

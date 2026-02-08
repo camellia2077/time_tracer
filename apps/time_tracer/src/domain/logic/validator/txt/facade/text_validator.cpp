@@ -22,7 +22,7 @@ TextValidator::TextValidator(const ConverterConfig& config)
 
 TextValidator::~TextValidator() = default;
 
-auto TextValidator::Validate(const std::string& /*filename*/,
+auto TextValidator::Validate(const std::string& filename,
                              const std::string& content,
                              std::set<Error>& errors) -> bool {
   // [关键修复] 每次验证新文件前，必须重置结构验证器的状态
@@ -40,23 +40,30 @@ auto TextValidator::Validate(const std::string& /*filename*/,
     if (trimmed_line.empty()) {
       continue;
     }
+    SourceSpan span{.file_path = filename,
+                    .line_start = line_number,
+                    .line_end = line_number,
+                    .column_start = 1,
+                    .column_end = static_cast<int>(line.length()),
+                    .raw_text = line};
 
     if (LineRules::is_year(trimmed_line)) {
       pimpl_->structural_validator.process_year_line(line_number, trimmed_line,
-                                                     errors);
+                                                     errors, span);
     } else if (LineRules::is_date(trimmed_line)) {
       pimpl_->structural_validator.process_date_line(line_number, trimmed_line,
-                                                     errors);
+                                                     errors, span);
     } else if (pimpl_->line_processor.is_remark(trimmed_line)) {
       pimpl_->structural_validator.process_remark_line(line_number,
-                                                       trimmed_line, errors);
+                                                       trimmed_line, errors,
+                                                       span);
     } else if (pimpl_->line_processor.is_valid_event_line(
-                   trimmed_line, line_number, errors)) {
+                   trimmed_line, line_number, errors, span)) {
       pimpl_->structural_validator.process_event_line(line_number, trimmed_line,
-                                                      errors);
+                                                      errors, span);
     } else {
       StructureRules::process_unrecognized_line(line_number, trimmed_line,
-                                                errors);
+                                                errors, span);
     }
 
     // 检查文件头是否缺失年份
@@ -66,7 +73,8 @@ auto TextValidator::Validate(const std::string& /*filename*/,
         !LineRules::is_year(trimmed_line)) {
       errors.insert({line_number,
                      "The file must start with a year header (e.g., 'y2025').",
-                     ErrorType::kSourceMissingYearHeader});
+                     ErrorType::kSourceMissingYearHeader,
+                     span});
       return false;  // 严重错误，停止解析
     }
   }

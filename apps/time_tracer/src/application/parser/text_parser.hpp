@@ -5,6 +5,7 @@
 #include <functional>
 #include <iostream>
 #include <string>
+#include <string_view>
 #include <unordered_set>
 
 #include "domain/model/daily_log.hpp"
@@ -14,7 +15,8 @@ class TextParser {
  public:
   explicit TextParser(const ConverterConfig& config);
   auto Parse(std::istream& input_stream,
-             std::function<void(DailyLog&)> on_new_day) -> void;
+             std::function<void(DailyLog&)> on_new_day,
+             std::string_view source_file) -> void;
 
  private:
   const ConverterConfig& config_;
@@ -26,7 +28,8 @@ class TextParser {
   static auto IsYearMarker(const std::string& line) -> bool;
   static auto IsNewDayMarker(const std::string& line) -> bool;
   auto ParseLine(const std::string& line, int line_number,
-                 DailyLog& current_day) const -> void;
+                 DailyLog& current_day, std::string_view source_file) const
+      -> void;
 
   struct RemarkResult {
     std::string description;

@@ -2,14 +2,17 @@
 #ifndef VALIDATOR_STRUCTURE_RULES_ACTIVITY_RULES_H_
 #define VALIDATOR_STRUCTURE_RULES_ACTIVITY_RULES_H_
 
-#include <set>
+#include <vector>
 
-#include "domain/logic/validator/common/validator_utils.hpp"
+#include "domain/logic/validator/common/diagnostic.hpp"
 #include "domain/model/daily_log.hpp"
 
 namespace validator::structure {
 
-void validateActivityCount(const DailyLog& day, std::set<Error>& errors);
+void validateActivityCount(const DailyLog& day,
+                           std::vector<Diagnostic>& diagnostics);
+void validateActivityDuration(const DailyLog& day,
+                              std::vector<Diagnostic>& diagnostics);
 
 }  // namespace validator::structure
 

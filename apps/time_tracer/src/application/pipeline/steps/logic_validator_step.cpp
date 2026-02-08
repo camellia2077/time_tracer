@@ -3,6 +3,7 @@
 
 #include <iostream>
 
+#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/logic/validator/structure/facade/struct_validator.hpp"
 #include "shared/types/ansi_colors.hpp"
 
@@ -38,11 +39,11 @@ auto LogicValidatorStep::Execute(PipelineContext& context) -> bool {
     // 构造一个虚拟文件名用于报错显示
     std::string pseudo_filename = "ProcessedData[" + month_key + "]";
 
-    std::set<validator::Error> errors;
+    std::vector<validator::Diagnostic> diagnostics;
     // 直接验证 Struct 数据
-    if (!validator.Validate(pseudo_filename, days, errors)) {
+    if (!validator.Validate(pseudo_filename, days, diagnostics)) {
       all_valid = false;
-      validator::PrintGroupedErrors(pseudo_filename, errors);
+      validator::PrintDiagnostics(pseudo_filename, diagnostics);
     }
   }
 

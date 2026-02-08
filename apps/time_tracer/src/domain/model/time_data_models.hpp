@@ -5,6 +5,8 @@
 #include <optional>
 #include <string>
 
+#include "domain/model/source_span.hpp"
+
 // 统一的统计结构 (对应原 GeneratedStats，但字段名为 snake_case)
 struct ActivityStats {
   int sleep_night_time = 0;
@@ -39,6 +41,7 @@ struct BaseActivityRecord {
 
   int duration_seconds = 0;           // 原 durationSeconds
   std::optional<std::string> remark;  // 原 activityRemark
+  std::optional<SourceSpan> source_span;
 };
 
 #endif  // DOMAIN_MODEL_TIME_DATA_MODELS_H_

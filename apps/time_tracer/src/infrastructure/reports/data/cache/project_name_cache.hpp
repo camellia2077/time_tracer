@@ -5,12 +5,14 @@
 #include <sqlite3.h>
 
 #include <algorithm>
+#include <format>
 #include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
 #include "domain/reports/interfaces/i_project_info_provider.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 struct ProjectInfo {
   std::string name;
@@ -30,9 +32,13 @@ class ProjectNameCache : public IProjectInfoProvider {
     if (loaded_) return;
 
     // Use sqlite_db instead of db
-    const char* sql = "SELECT id, name, parent_id FROM projects";
+    const std::string sql = std::format(
+        "SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
+        schema::projects::db::kName, schema::projects::db::kParentId,
+        schema::projects::db::kTable);
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(sqlite_db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(sqlite_db, sql.c_str(), -1, &stmt, nullptr) ==
+        SQLITE_OK) {
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         long long project_id = sqlite3_column_int64(stmt, 0);
         const unsigned char* txt = sqlite3_column_text(stmt, 1);

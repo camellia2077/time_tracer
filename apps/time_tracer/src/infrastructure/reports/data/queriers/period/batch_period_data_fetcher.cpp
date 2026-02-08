@@ -2,6 +2,7 @@
 #include "infrastructure/reports/data/queriers/period/batch_period_data_fetcher.hpp"
 
 #include <algorithm>
+#include <format>
 #include <map>
 #include <set>
 #include <stdexcept>
@@ -10,6 +11,8 @@
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"  // 引入名称缓存作为 Provider
 #include "infrastructure/reports/data/queriers/utils/batch_aggregation.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"  // 需要用到 AddDaysToDateStr
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* db_connection)
     : db_(db_connection) {
@@ -41,13 +44,24 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
 
   // 2. 执行一次 SQL 查询，获取最大范围内的所有数据
   std::vector<RawRecord> raw_records;
+  struct RawDayFlag {
+    std::string date;
+    int status = 0;
+    int sleep = 0;
+    int exercise = 0;
+    int cardio_time = 0;
+    int anaerobic_time = 0;
+  };
+  std::vector<RawDayFlag> raw_day_flags;
   sqlite3_stmt* stmt = nullptr;
 
   // 查询：日期 >= max_start_date
-  const char* sql =
-      "SELECT date, project_id, duration FROM time_records WHERE date >= ?";
+  const std::string sql = std::format(
+      "SELECT {0}, {1}, {2} FROM {3} WHERE {0} >= ?",
+      schema::time_records::db::kDate, schema::time_records::db::kProjectId,
+      schema::time_records::db::kDuration, schema::time_records::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, max_start_date.c_str(), -1, SQLITE_TRANSIENT);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -63,6 +77,37 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
   } else {
     throw std::runtime_error(
         "Failed to prepare statement for batch period data.");
+  }
+
+  sqlite3_stmt* flag_stmt = nullptr;
+  const std::string flag_sql = std::format(
+      "SELECT {0}, {1}, {2}, {3}, {4}, {5} FROM {6} WHERE {0} >= ?",
+      schema::day::db::kDate, schema::day::db::kStatus,
+      schema::day::db::kSleep, schema::day::db::kExercise,
+      schema::day::db::kCardioTime, schema::day::db::kAnaerobicTime,
+      schema::day::db::kTable);
+  if (sqlite3_prepare_v2(db_, flag_sql.c_str(), -1, &flag_stmt, nullptr) ==
+      SQLITE_OK) {
+    sqlite3_bind_text(flag_stmt, 1, max_start_date.c_str(), -1,
+                      SQLITE_TRANSIENT);
+    while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
+      const unsigned char* date_ptr = sqlite3_column_text(flag_stmt, 0);
+      std::string date =
+          (date_ptr != nullptr) ? reinterpret_cast<const char*>(date_ptr) : "";
+      int status = sqlite3_column_int(flag_stmt, 1);
+      int sleep = sqlite3_column_int(flag_stmt, 2);
+      int exercise = sqlite3_column_int(flag_stmt, 3);
+      int cardio_time = sqlite3_column_int(flag_stmt, 4);
+      int anaerobic_time = sqlite3_column_int(flag_stmt, 5);
+      raw_day_flags.push_back(
+          {std::move(date), status, sleep, exercise, cardio_time,
+           anaerobic_time});
+    }
+    sqlite3_finalize(flag_stmt);
+  } else {
+    sqlite3_finalize(flag_stmt);
+    throw std::runtime_error(
+        "Failed to prepare statement for batch period flags.");
   }
 
   // 3. 在内存中为每个 requested_days 进行聚合
@@ -87,6 +132,26 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
         project_agg[record.project_id] += record.duration;
         data.total_duration += record.duration;
         distinct_dates.insert(record.date);
+      }
+    }
+
+    for (const auto& flag : raw_day_flags) {
+      if (flag.date >= data.start_date) {
+        if (flag.status != 0) {
+          data.status_true_days++;
+        }
+        if (flag.sleep != 0) {
+          data.sleep_true_days++;
+        }
+        if (flag.exercise != 0) {
+          data.exercise_true_days++;
+        }
+        if (flag.cardio_time > 0) {
+          data.cardio_true_days++;
+        }
+        if (flag.anaerobic_time > 0) {
+          data.anaerobic_true_days++;
+        }
       }
     }
 

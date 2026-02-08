@@ -1,7 +1,11 @@
 // importer/storage/sqlite/connection.cpp
 #include "application/importer/storage/sqlite/connection.hpp"
 
+#include <format>
 #include <iostream>
+
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 Connection::Connection(const std::string& db_path) {       // MODIFIED
   if (sqlite3_open(db_path.c_str(), &db_) != SQLITE_OK) {  // MODIFIED
@@ -9,59 +13,86 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
               << std::endl;  // MODIFIED
     db_ = nullptr;           // MODIFIED
   } else {
-    const char* create_days_sql =
-        "CREATE TABLE IF NOT EXISTS days ("
-        "date TEXT PRIMARY KEY, "
-        "year INTEGER, "
-        "month INTEGER, "
-        "status INTEGER, "
-        "sleep INTEGER, "
-        "remark TEXT, "
-        "getup_time TEXT, "
-        "exercise INTEGER, "
-        "total_exercise_time INTEGER, "
-        "cardio_time INTEGER, "
-        "anaerobic_time INTEGER, "
-        "gaming_time INTEGER, "
-        "grooming_time INTEGER, "
-        "toilet_time INTEGER, "
-        "study_time INTEGER, "
-        "sleep_night_time INTEGER, "
-        "sleep_day_time INTEGER, "
-        "sleep_total_time INTEGER, "
-        "recreation_time INTEGER, "                         // 新增
-        "recreation_zhihu_time INTEGER, "                   // 新增
-        "recreation_bilibili_time INTEGER, "                // 新增
-        "recreation_douyin_time INTEGER);";                 // 新增
+    const std::string create_days_sql = std::format(
+        "CREATE TABLE IF NOT EXISTS {0} ("
+        "{1} TEXT PRIMARY KEY, "
+        "{2} INTEGER, "
+        "{3} INTEGER, "
+        "{4} INTEGER, "
+        "{5} INTEGER, "
+        "{6} TEXT, "
+        "{7} TEXT, "
+        "{8} INTEGER, "
+        "{9} INTEGER, "
+        "{10} INTEGER, "
+        "{11} INTEGER, "
+        "{12} INTEGER, "
+        "{13} INTEGER, "
+        "{14} INTEGER, "
+        "{15} INTEGER, "
+        "{16} INTEGER, "
+        "{17} INTEGER, "
+        "{18} INTEGER, "
+        "{19} INTEGER, "
+        "{20} INTEGER, "
+        "{21} INTEGER, "
+        "{22} INTEGER);",
+        schema::day::db::kTable, schema::day::db::kDate,
+        schema::day::db::kYear,
+        schema::day::db::kMonth, schema::day::db::kStatus,
+        schema::day::db::kSleep, schema::day::db::kRemark,
+        schema::day::db::kGetupTime, schema::day::db::kExercise,
+        schema::day::db::kTotalExerciseTime, schema::day::db::kCardioTime,
+        schema::day::db::kAnaerobicTime, schema::day::db::kGamingTime,
+        schema::day::db::kGroomingTime, schema::day::db::kToiletTime,
+        schema::day::db::kStudyTime, schema::day::db::kSleepNightTime,
+        schema::day::db::kSleepDayTime, schema::day::db::kSleepTotalTime,
+        schema::day::db::kRecreationTime,
+        schema::day::db::kRecreationZhihuTime,
+        schema::day::db::kRecreationBilibiliTime,
+        schema::day::db::kRecreationDouyinTime);
     ExecuteSql(db_, create_days_sql, "Create days table");  // MODIFIED
 
-    const char* create_index_sql =
-        "CREATE INDEX IF NOT EXISTS idx_year_month ON days (year, month);";
+    const std::string create_index_sql = std::format(
+        "CREATE INDEX IF NOT EXISTS {0} ON {1} ({2}, {3});",
+        schema::day::db::kIndexYearMonth, schema::day::db::kTable,
+        schema::day::db::kYear, schema::day::db::kMonth);
     ExecuteSql(db_, create_index_sql,
                "Create index on days(year, month)");  // MODIFIED
 
-    const char* create_projects_sql =
-        "CREATE TABLE IF NOT EXISTS projects ("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-        "name TEXT NOT NULL, "
-        "parent_id INTEGER, "
-        "FOREIGN KEY (parent_id) REFERENCES projects(id));";
+    const std::string create_projects_sql = std::format(
+        "CREATE TABLE IF NOT EXISTS {0} ("
+        "{1} INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "{2} TEXT NOT NULL, "
+        "{3} INTEGER, "
+        "FOREIGN KEY ({3}) REFERENCES {0}({1}));",
+        schema::projects::db::kTable, schema::projects::db::kId,
+        schema::projects::db::kName, schema::projects::db::kParentId);
     ExecuteSql(db_, create_projects_sql,
                "Create projects table");  // MODIFIED
 
-    const char* create_records_sql =
-        "CREATE TABLE IF NOT EXISTS time_records ("
-        "logical_id INTEGER PRIMARY KEY, "
-        "start_timestamp INTEGER, "
-        "end_timestamp INTEGER, "
-        "date TEXT, "
-        "start TEXT, "
-        "end TEXT, "
-        "project_id INTEGER, "
-        "duration INTEGER, "
-        "activity_remark TEXT, "
-        "FOREIGN KEY (date) REFERENCES days(date), "
-        "FOREIGN KEY (project_id) REFERENCES projects(id));";
+    const std::string create_records_sql = std::format(
+        "CREATE TABLE IF NOT EXISTS {0} ("
+        "{1} INTEGER PRIMARY KEY, "
+        "{2} INTEGER, "
+        "{3} INTEGER, "
+        "{4} TEXT, "
+        "{5} TEXT, "
+        "{6} TEXT, "
+        "{7} INTEGER, "
+        "{8} INTEGER, "
+        "{9} TEXT, "
+        "FOREIGN KEY ({4}) REFERENCES {10}({11}), "
+        "FOREIGN KEY ({7}) REFERENCES {12}({13}));",
+        schema::time_records::db::kTable, schema::time_records::db::kLogicalId,
+        schema::time_records::db::kStartTimestamp,
+        schema::time_records::db::kEndTimestamp,
+        schema::time_records::db::kDate, schema::time_records::db::kStart,
+        schema::time_records::db::kEnd, schema::time_records::db::kProjectId,
+        schema::time_records::db::kDuration,
+        schema::time_records::db::kActivityRemark, schema::day::db::kTable,
+        schema::day::db::kDate, schema::projects::db::kTable,
+        schema::projects::db::kId);
     ExecuteSql(db_, create_records_sql,
                "Create time_records table");  // MODIFIED
   }

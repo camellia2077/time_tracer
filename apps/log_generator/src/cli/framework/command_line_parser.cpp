@@ -1,101 +1,167 @@
 // cli/framework/command_line_parser.cpp
 #include "cli/framework/command_line_parser.hpp"
 
+#include <optional>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 
-CommandLineParser::CommandLineParser(int argc, char* argv[]) {
-  if (argc > 0 && argv != nullptr) {
-    prog_name_ = argv[0];
+namespace {
+
+constexpr int kDefaultItemsPerDay = 10;
+constexpr int kMinItemsPerDay = 2;
+constexpr int kMinYear = 1;
+
+enum class OptionType {
+  kHelp,
+  kVersion,
+  kYear,
+  kStart,
+  kEnd,
+  kItems,
+  kNoSleep
+};
+
+struct ParsedOptions {
+  Config config{};
+  std::optional<int> single_year;
+  std::optional<int> start_year;
+  std::optional<int> end_year;
+  std::optional<CliAction> immediate_action;
+};
+
+auto ClassifyOption(const std::string& arg) -> OptionType {
+  if (arg == "-h" || arg == "--help") {
+    return OptionType::kHelp;
   }
-  for (int i = 1; i < argc; ++i) {
+  if (arg == "-v" || arg == "--version") {
+    return OptionType::kVersion;
+  }
+  if (arg == "-y" || arg == "--year") {
+    return OptionType::kYear;
+  }
+  if (arg == "-s" || arg == "--start") {
+    return OptionType::kStart;
+  }
+  if (arg == "-e" || arg == "--end") {
+    return OptionType::kEnd;
+  }
+  if (arg == "-i" || arg == "--items") {
+    return OptionType::kItems;
+  }
+  if (arg == "-n" || arg == "--nosleep") {
+    return OptionType::kNoSleep;
+  }
+  throw std::invalid_argument("Unrecognized option: " + arg);
+}
+
+auto ParseNextInt(const std::vector<std::string>& args, size_t& index,
+                  std::string_view option_name) -> int {
+  if (index + 1 >= args.size()) {
+    throw std::invalid_argument(std::string(option_name) +
+                                " option requires an argument.");
+  }
+  return std::stoi(args[++index]);
+}
+
+auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
+  ParsedOptions parsed;
+  parsed.config.items_per_day = kDefaultItemsPerDay;
+
+  for (size_t i = 0; i < args.size(); ++i) {
+    const std::string& arg = args[i];
+    switch (ClassifyOption(arg)) {
+      case OptionType::kHelp:
+        parsed.immediate_action = CliAction::kHelp;
+        return parsed;
+      case OptionType::kVersion:
+        parsed.immediate_action = CliAction::kVersion;
+        return parsed;
+      case OptionType::kYear:
+        parsed.single_year = ParseNextInt(args, i, "--year");
+        break;
+      case OptionType::kStart:
+        parsed.start_year = ParseNextInt(args, i, "--start");
+        break;
+      case OptionType::kEnd:
+        parsed.end_year = ParseNextInt(args, i, "--end");
+        break;
+      case OptionType::kItems:
+        parsed.config.items_per_day = ParseNextInt(args, i, "--items");
+        break;
+      case OptionType::kNoSleep:
+        parsed.config.enable_nosleep = true;
+        break;
+    }
+  }
+
+  return parsed;
+}
+
+void ApplyYearSelection(ParsedOptions& parsed) {
+  if (parsed.single_year.has_value() &&
+      (parsed.start_year.has_value() || parsed.end_year.has_value())) {
+    throw std::logic_error(
+        "Cannot use --year together with --start or --end.");
+  }
+
+  if (parsed.single_year.has_value()) {
+    parsed.config.mode = GenerationMode::SingleYear;
+    parsed.config.start_year = *parsed.single_year;
+    parsed.config.end_year = *parsed.single_year;
+    return;
+  }
+
+  if (parsed.start_year.has_value() && parsed.end_year.has_value()) {
+    parsed.config.mode = GenerationMode::YearRange;
+    parsed.config.start_year = *parsed.start_year;
+    parsed.config.end_year = *parsed.end_year;
+    return;
+  }
+
+  throw std::logic_error(
+      "You must specify either a single year with --year, or a range with "
+      "--start and --end.");
+}
+
+void ValidateConfig(const Config& config) {
+  if (config.start_year < kMinYear || config.end_year < kMinYear) {
+    throw std::logic_error("Years must be positive integers.");
+  }
+  if (config.items_per_day < kMinItemsPerDay) {
+    throw std::logic_error(
+        "--items must be 2 or greater to generate realistic sleep data.");
+  }
+  if (config.end_year < config.start_year) {
+    throw std::logic_error("--end year cannot be earlier than --start year.");
+  }
+}
+
+}  // namespace
+
+CommandLineParser::CommandLineParser(std::span<char* const> argv) {
+  if (!argv.empty() && argv.front() != nullptr) {
+    prog_name_ = argv.front();
+  }
+  for (size_t i = 1; i < argv.size(); ++i) {
     args_.emplace_back(argv[i]);
   }
 }
 
 auto CommandLineParser::parse() -> CliRequest {
-  Config config;
-  config.items_per_day = 10;
-
-  std::optional<int> single_year;
-  std::optional<int> start_year;
-  std::optional<int> end_year;
-
   try {
-    for (size_t i = 0; i < args_.size(); ++i) {
-      const std::string& arg = args_[i];
-
-      if (arg == "-h" || arg == "--help") {
-        return CliRequest{.action = CliAction::kHelp,
-                          .config = std::nullopt,
-                          .error_message = {}};
-      }
-      if (arg == "-v" || arg == "--version") {
-        return CliRequest{.action = CliAction::kVersion,
-                          .config = std::nullopt,
-                          .error_message = {}};
-      }
-
-      if (arg == "-y" || arg == "--year") {
-        if (i + 1 < args_.size()) {
-          single_year = std::stoi(args_[++i]);
-        } else {
-          throw std::invalid_argument("--year option requires an argument.");
-        }
-      } else if (arg == "-s" || arg == "--start") {
-        if (i + 1 < args_.size()) {
-          start_year = std::stoi(args_[++i]);
-        } else {
-          throw std::invalid_argument("--start option requires an argument.");
-        }
-      } else if (arg == "-e" || arg == "--end") {
-        if (i + 1 < args_.size()) {
-          end_year = std::stoi(args_[++i]);
-        } else {
-          throw std::invalid_argument("--end option requires an argument.");
-        }
-      } else if (arg == "-i" || arg == "--items") {
-        if (i + 1 < args_.size()) {
-          config.items_per_day = std::stoi(args_[++i]);
-        } else {
-          throw std::invalid_argument("--items option requires an argument.");
-        }
-      } else if (arg == "-n" || arg == "--nosleep") {
-        config.enable_nosleep = true;
-      } else {
-        throw std::invalid_argument("Unrecognized option: " + arg);
-      }
+    ParsedOptions parsed = ParseOptions(args_);
+    if (parsed.immediate_action.has_value()) {
+      return CliRequest{.action = *parsed.immediate_action,
+                        .config = std::nullopt,
+                        .error_message = {}};
     }
 
-    if (single_year.has_value() &&
-        (start_year.has_value() || end_year.has_value())) {
-      throw std::logic_error(
-          "Cannot use --year together with --start or --end.");
-    }
+    ApplyYearSelection(parsed);
+    ValidateConfig(parsed.config);
 
-    if (single_year.has_value()) {
-      config.mode = GenerationMode::SingleYear;
-      config.start_year = *single_year;
-      config.end_year = *single_year;
-    } else if (start_year.has_value() && end_year.has_value()) {
-      config.mode = GenerationMode::YearRange;
-      config.start_year = *start_year;
-      config.end_year = *end_year;
-    } else {
-      throw std::logic_error(
-          "You must specify either a single year with --year, or a range with "
-          "--start and --end.");
-    }
-
-    if (config.start_year <= 0 || config.end_year <= 0) {
-      throw std::logic_error("Years must be positive integers.");
-    }
-    if (config.items_per_day < 2) {
-      throw std::logic_error(
-          "--items must be 2 or greater to generate realistic sleep data.");
-    }
-    if (config.end_year < config.start_year) {
-      throw std::logic_error("--end year cannot be earlier than --start year.");
-    }
+    return CliRequest{
+        .action = CliAction::kRun, .config = parsed.config, .error_message = {}};
   } catch (const std::invalid_argument& e) {
     return CliRequest{
         .action = CliAction::kError,
@@ -110,9 +176,6 @@ auto CommandLineParser::parse() -> CliRequest {
                       .config = std::nullopt,
                       .error_message = e.what()};
   }
-
-  return CliRequest{
-      .action = CliAction::kRun, .config = config, .error_message = {}};
 }
 
 auto CommandLineParser::prog_name() const -> std::string_view {

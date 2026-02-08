@@ -10,8 +10,8 @@
 
 class FileManager : public FileSystem {
  public:
-  bool setup_directories(const std::string& master_dir, int start_year,
-                         int end_year) override;
+  bool setup_directories(const std::string& master_dir,
+                         const YearRange& year_range) override;
   bool write_log_file(const std::filesystem::path& file_path,
                       const std::string& content) override;
   std::optional<std::string> read_file(

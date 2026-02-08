@@ -7,11 +7,19 @@
 #include <format>
 #include <future>
 #include <iostream>
+#include <ranges>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include "utils/utils.hpp"
+
+namespace {
+constexpr unsigned int kDefaultMaxConcurrent = 4;
+constexpr size_t kBytesPerKibibyte = 1024U;
+constexpr size_t kInitialBufferSize = kBytesPerKibibyte * kBytesPerKibibyte;
+constexpr int kMonthsPerYear = 12;
+}  // namespace
 
 namespace App {
 
@@ -23,8 +31,9 @@ auto WorkflowHandler::run(const Core::AppContext& context,
                           ReportHandler& report_handler) -> int {
   const std::string kMasterDirName = "dates";
 
-  if (!file_system_.setup_directories(kMasterDirName, context.config.start_year,
-                                      context.config.end_year)) {
+  const YearRange kYearRange{.start_year = context.config.start_year,
+                             .end_year = context.config.end_year};
+  if (!file_system_.setup_directories(kMasterDirName, kYearRange)) {
     return -1;
   }
 
@@ -32,7 +41,7 @@ auto WorkflowHandler::run(const Core::AppContext& context,
 
   unsigned int max_concurrent = std::thread::hardware_concurrency();
   if (max_concurrent == 0) {
-    max_concurrent = 4;
+    max_concurrent = kDefaultMaxConcurrent;
   }
 
   std::cout << "Starting generation with " << max_concurrent
@@ -43,18 +52,17 @@ auto WorkflowHandler::run(const Core::AppContext& context,
 
   for (int year = context.config.start_year; year <= context.config.end_year;
        ++year) {
-    auto it = std::remove_if(
-        active_tasks.begin(),
-        active_tasks.end(),
-        [&total_files_generated](std::future<int>& f) -> bool {
-          if (f.wait_for(std::chrono::seconds(0)) ==
+    auto completed_tasks = std::ranges::remove_if(
+        active_tasks,
+        [&total_files_generated](std::future<int>& task_future) -> bool {
+          if (task_future.wait_for(std::chrono::seconds(0)) ==
               std::future_status::ready) {
-            total_files_generated += f.get();
+            total_files_generated += task_future.get();
             return true;
           }
           return false;
         });
-    active_tasks.erase(it, active_tasks.end());
+    active_tasks.erase(completed_tasks.begin(), active_tasks.end());
 
     if (active_tasks.size() >= max_concurrent) {
       total_files_generated += active_tasks.front().get();
@@ -67,19 +75,22 @@ auto WorkflowHandler::run(const Core::AppContext& context,
           auto generator = generator_factory_.create(context);
 
           std::string buffer;
-          buffer.reserve(1024 * 1024);
+          buffer.reserve(kInitialBufferSize);
 
           int local_files_generated = 0;
 
-          for (int month = 1; month <= 12; ++month) {
+          for (int month = 1; month <= kMonthsPerYear; ++month) {
             std::string filename = std::format("{}_{:02}.txt", year, month);
             std::filesystem::path full_path =
                 std::filesystem::path(kMasterDirName) / std::to_string(year) /
                 filename;
 
             auto gen_start = std::chrono::high_resolution_clock::now();
-            generator->generate_for_month(
-                year, month, Utils::get_days_in_month(year, month), buffer);
+            const Utils::YearMonth kYearMonth{.year = year, .month = month};
+            const int kDaysInMonth = Utils::get_days_in_month(kYearMonth);
+            const MonthContext kMonthContext{
+                .year = year, .month = month, .days_in_month = kDaysInMonth};
+            generator->generate_for_month(kMonthContext, buffer);
             reporter.add_generation_time(
                 std::chrono::high_resolution_clock::now() - gen_start);
 

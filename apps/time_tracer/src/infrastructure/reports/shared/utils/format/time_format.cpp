@@ -18,9 +18,9 @@ constexpr int kTmYearBase = 1900;
 auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
   if (total_seconds == 0) {
     if (avg_days > 1) {
-      return "0m (average: 0m/day)";
+      return "0h 0m (average: 0h 0m/day)";
     }
-    return "0m";
+    return "0h 0m";
   }
 
   long long seconds_per_day =
@@ -28,21 +28,10 @@ auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
 
   auto format_single_duration =
       [](long long total_seconds) -> std::basic_string<char> {
-    if (total_seconds == 0) {
-      return {"0m"};
-    }
     long long hours = total_seconds / kSecondsInHour;
     long long minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
     std::stringstream formatted_ss;
-    if (hours > 0) {
-      formatted_ss << hours << "h";
-    }
-    if (minutes > 0 || hours == 0) {
-      if (hours > 0) {
-        formatted_ss << " ";  // Add space between h and m
-      }
-      formatted_ss << minutes << "m";
-    }
+    formatted_ss << hours << "h " << minutes << "m";
     return formatted_ss.str();
   };
 

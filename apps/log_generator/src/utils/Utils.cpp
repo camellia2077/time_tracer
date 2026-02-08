@@ -11,6 +11,23 @@ namespace Utils {
 
 // [核心修改] 移除 ConsoleColors 的静态成员定义
 
+namespace {
+constexpr int kLeapYearDivisor = 4;
+constexpr int kCenturyDivisor = 100;
+constexpr int kLeapCenturyDivisor = 400;
+constexpr int kMinMonth = 1;
+constexpr int kMaxMonth = 12;
+constexpr int kFebruary = 2;
+constexpr int kDaysInFebruaryLeap = 29;
+constexpr int kDaysInFebruaryCommon = 28;
+constexpr int kThirtyDayMonth = 30;
+constexpr int kThirtyOneDayMonth = 31;
+constexpr int kApril = 4;
+constexpr int kJune = 6;
+constexpr int kSeptember = 9;
+constexpr int kNovember = 11;
+}  // namespace
+
 void setup_console() {
 #if defined(_WIN32) || defined(_WIN64)
   SetConsoleOutputCP(CP_UTF8);
@@ -26,21 +43,23 @@ void setup_console() {
 }
 
 auto is_leap(int year) -> bool {
-  return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+  return (year % kLeapYearDivisor == 0 && year % kCenturyDivisor != 0) ||
+         (year % kLeapCenturyDivisor == 0);
 }
 
-auto get_days_in_month(int year, int month) -> int {
-  if (month < 1 || month > 12) {
+auto get_days_in_month(const YearMonth& year_month) -> int {
+  if (year_month.month < kMinMonth || year_month.month > kMaxMonth) {
     return 0;
   }
-  if (month == 2) {
-    return is_leap(year) ? 29 : 28;
+  if (year_month.month == kFebruary) {
+    return is_leap(year_month.year) ? kDaysInFebruaryLeap
+                                    : kDaysInFebruaryCommon;
   }
-  if (month == 4 || month == 6 || month == 9 || month == 11) {
-    return 30;
-  } else {
-    return 31;
+  if (year_month.month == kApril || year_month.month == kJune ||
+      year_month.month == kSeptember || year_month.month == kNovember) {
+    return kThirtyDayMonth;
   }
+  return kThirtyOneDayMonth;
 }
 
 }  // namespace Utils

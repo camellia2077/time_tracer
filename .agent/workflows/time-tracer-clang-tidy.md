@@ -4,6 +4,12 @@ description: Safe Clang-Tidy Refactoring Workflow
 
 This workflow guides the process of applying Clang-Tidy fixes and verifying them using the fast build/test pipeline.
 
+0. **Generate Tasks (Python Only)**:
+   - Run the tidy workflow to generate `build.log`, split tasks, and summary files.
+   - **Command**:
+     // turbo
+     `python ./time_tracer_cpp/apps/time_tracer/scripts/workflow.py tidy`
+
 1. **Select Refactoring Tasks (Batch Strategy)**:
    - Check the `time_tracer_cpp/apps/time_tracer/build_tidy/tasks/` directory.
    - **Bulk Trivial Strategy**: For highly uniform, low-risk changes (e.g., `[[nodiscard]]`, `trailing return type` across many files), select **10+ task logs** to process in one go.
@@ -27,7 +33,7 @@ This workflow guides the process of applying Clang-Tidy fixes and verifying them
      - **Use ONLY for**: Changes in `.cpp` files, or changes to `private` members/methods in `.hpp` files.
      - **Command**:
        // turbo
-       `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "./time_tracer_cpp/apps/time_tracer/scripts/build_fast.sh"`
+     `python ./time_tracer_cpp/apps/time_tracer/scripts/build.py --build-dir build_fast --no-opt --no-lto --no-tidy --no-warn`
      
    - **Level 2: Full Regression Test (Mandatory for Public Headers)**:
      - **Use for**: ANY change to a `.hpp` file (unless strictly private), and all logic changes.
@@ -39,8 +45,8 @@ This workflow guides the process of applying Clang-Tidy fixes and verifying them
      - Ensure the script returns exit code 0 and "SUCCESS".
 
 5. **Cleanup**:
-   - Only if verification passes, use the cleaning script to remove processed logs.
+   - Only if verification passes, use the workflow cleaner to remove processed logs.
    - **Command**:
      // turbo
-     `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "./time_tracer_cpp/apps/time_tracer/scripts/tidy_clean.sh <ID1> <ID2> ..."`
-   - *Example*: `./time_tracer_cpp/apps/time_tracer/scripts/tidy_clean.sh 020 021 022`
+     `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "python ./time_tracer_cpp/apps/time_tracer/scripts/workflow.py clean <ID1> <ID2> ..."`
+   - *Example*: `python ./time_tracer_cpp/apps/time_tracer/scripts/workflow.py clean 020 021 022`
