@@ -40,7 +40,8 @@ auto ConverterService::IsDuplicateAcrossYear(const DailyLog& previous_day,
 
 auto ConverterService::ExecuteConversion(
     std::istream& combined_input_stream,
-    std::function<void(DailyLog&&)> data_consumer) -> void {
+    std::function<void(DailyLog&&)> data_consumer,
+    std::string_view source_file) -> void {
   TextParser parser(config_);
   DayProcessor processor(config_);
 
@@ -69,7 +70,7 @@ auto ConverterService::ExecuteConversion(
     // 3. 滑动窗口：current_day 变为 previous_day
     previous_day = std::move(current_day);
     has_previous = true;
-  });
+  }, source_file);
 
   // 4. 处理最后一天 (Flush)
   if (has_previous) {

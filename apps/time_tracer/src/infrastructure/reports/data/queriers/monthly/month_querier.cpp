@@ -3,9 +3,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <format>
 
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
+#include "infrastructure/schema/day_schema.hpp"
 
 MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month)
     : BaseQuerier(sqlite_db, year_month) {}
@@ -14,6 +16,12 @@ auto MonthQuerier::FetchData() -> MonthlyReportData {
   MonthlyReportData data = BaseQuerier::FetchData();
 
   FetchActualDays(data);
+  auto flag_counts = FetchDayFlagCounts();
+  data.status_true_days = flag_counts.status_true_days;
+  data.sleep_true_days = flag_counts.sleep_true_days;
+  data.exercise_true_days = flag_counts.exercise_true_days;
+  data.cardio_true_days = flag_counts.cardio_true_days;
+  data.anaerobic_true_days = flag_counts.anaerobic_true_days;
 
   if (data.total_duration > 0) {
     // [新增] 获取并确保缓存加载
@@ -55,7 +63,8 @@ void MonthQuerier::PrepareData(MonthlyReportData& data) const {
 }
 
 auto MonthQuerier::GetDateConditionSql() const -> std::string {
-  return "date >= ? AND date <= ?";
+  return std::format("{} >= ? AND {} <= ?", schema::day::db::kDate,
+                     schema::day::db::kDate);
 }
 
 void MonthQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {

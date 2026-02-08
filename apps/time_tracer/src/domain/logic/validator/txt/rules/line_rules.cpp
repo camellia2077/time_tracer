@@ -59,7 +59,9 @@ auto LineRules::is_remark(const std::string& line) const -> bool {
 }
 
 auto LineRules::is_valid_event_line(const std::string& line, int line_number,
-                                    std::set<Error>& errors) const -> bool {
+                                    std::set<Error>& errors,
+                                    const std::optional<SourceSpan>& span) const
+    -> bool {
   constexpr size_t kMinimumEventLineLength = 5;
   constexpr size_t kTimePrefixLength = 4;
   constexpr int kMaxHours = 23;
@@ -99,7 +101,8 @@ auto LineRules::is_valid_event_line(const std::string& line, int line_number,
       errors.insert({line_number,
                      "Unrecognized activity '" + description +
                          "'. Please check spelling or update config file.",
-                     ErrorType::kUnrecognizedActivity});
+                     ErrorType::kUnrecognizedActivity,
+                     span});
     }
     return true;
   } catch (const std::exception&) {

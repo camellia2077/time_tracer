@@ -4,9 +4,13 @@
 
 #include <sqlite3.h>
 
+#include <format>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 template <typename ReportDataType, typename QueryParamType>
 class BaseQuerier {
@@ -35,6 +39,14 @@ class BaseQuerier {
   }
 
  protected:
+  struct DayFlagCounts {
+    int status_true_days = 0;
+    int sleep_true_days = 0;
+    int exercise_true_days = 0;
+    int cardio_true_days = 0;
+    int anaerobic_true_days = 0;
+  };
+
   sqlite3* db_;
   QueryParamType param_;
 
@@ -59,9 +71,11 @@ class BaseQuerier {
     // [核心优化]：
     // 1. 移除 WITH RECURSIVE (CTE)
     // 2. 使用 GROUP BY project_id 进行数据库级聚合
-    std::string sql =
-        "SELECT project_id, SUM(duration) FROM time_records WHERE " +
-        GetDateConditionSql() + " GROUP BY project_id;";
+    std::string sql = std::format(
+        "SELECT {0}, SUM({1}) FROM {2} WHERE {3} GROUP BY {0};",
+        schema::time_records::db::kProjectId,
+        schema::time_records::db::kDuration,
+        schema::time_records::db::kTable, GetDateConditionSql());
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
       BindSqlParameters(stmt);
@@ -83,8 +97,10 @@ class BaseQuerier {
   // flow.
   void FetchActualDays(ReportDataType& data) {
     sqlite3_stmt* stmt;
-    std::string sql = "SELECT COUNT(DISTINCT date) FROM time_records WHERE " +
-                      GetDateConditionSql() + ";";
+    std::string sql = std::format(
+        "SELECT COUNT(DISTINCT {0}) FROM {1} WHERE {2};",
+        schema::time_records::db::kDate, schema::time_records::db::kTable,
+        GetDateConditionSql());
 
     if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {
@@ -94,6 +110,37 @@ class BaseQuerier {
       }
     }
     sqlite3_finalize(stmt);
+  }
+
+  [[nodiscard]] auto FetchDayFlagCounts() const -> DayFlagCounts {
+    DayFlagCounts counts{};
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = std::format(
+        "SELECT "
+        "SUM(CASE WHEN {0} != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN {1} != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN {2} != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN {3} > 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN {4} > 0 THEN 1 ELSE 0 END) "
+        "FROM {5} WHERE {6};",
+        schema::day::db::kStatus, schema::day::db::kSleep,
+        schema::day::db::kExercise, schema::day::db::kCardioTime,
+        schema::day::db::kAnaerobicTime, schema::day::db::kTable,
+        GetDateConditionSql());
+
+    if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
+        SQLITE_OK) {
+      BindSqlParameters(stmt);
+      if (sqlite3_step(stmt) == SQLITE_ROW) {
+        counts.status_true_days = sqlite3_column_int(stmt, 0);
+        counts.sleep_true_days = sqlite3_column_int(stmt, 1);
+        counts.exercise_true_days = sqlite3_column_int(stmt, 2);
+        counts.cardio_true_days = sqlite3_column_int(stmt, 3);
+        counts.anaerobic_true_days = sqlite3_column_int(stmt, 4);
+      }
+    }
+    sqlite3_finalize(stmt);
+    return counts;
   }
 };
 

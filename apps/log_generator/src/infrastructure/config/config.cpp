@@ -3,6 +3,10 @@
 
 #include <iostream>
 
+namespace {
+constexpr double kDefaultGenerationChance = 0.5;
+}  // namespace
+
 // --- Public Method Implementation ---
 
 auto ConfigLoader::load_from_content(const std::string& settings_content,
@@ -62,17 +66,18 @@ void ConfigLoader::_load_daily_remarks(const toml::table& data,
   if (const auto* node = data.get_as<toml::table>("daily_remarks")) {
     DailyRemarkConfig remarks;
     remarks.prefix = (*node)["prefix"].value_or("");
-    remarks.generation_chance = (*node)["generation_chance"].value_or(0.5);
+    remarks.generation_chance =
+        (*node)["generation_chance"].value_or(kDefaultGenerationChance);
 
     // [新增] 读取 max_lines 配置
     // toml++ 的整数通常读取为 int64_t，我们需要转换并验证
-    int64_t lines = (*node)["max_lines"].value_or(1);
+    int64_t lines_value = (*node)["max_lines"].value_or(1);
     // 确保至少为 1
-    remarks.max_lines = static_cast<int>(lines < 1 ? 1 : lines);
+    remarks.max_lines = static_cast<int>(lines_value < 1 ? 1 : lines_value);
 
     if (const auto* arr = (*node).get_as<toml::array>("contents")) {
-      for (auto&& v : *arr) {
-        remarks.contents.emplace_back(v.value_or(""));
+      for (auto&& value_node : *arr) {
+        remarks.contents.emplace_back(value_node.value_or(""));
       }
       config.remarks.emplace(remarks);
     }
@@ -82,13 +87,14 @@ void ConfigLoader::_load_daily_remarks(const toml::table& data,
 void ConfigLoader::_load_activity_remarks(const toml::table& data,
                                           TomlConfigData& config) {
   if (const auto* node = data.get_as<toml::table>("activity_remarks")) {
-    ActivityRemarkConfig ar;
-    ar.generation_chance = (*node)["generation_chance"].value_or(0.5);
+    ActivityRemarkConfig activity_remarks;
+    activity_remarks.generation_chance =
+        (*node)["generation_chance"].value_or(kDefaultGenerationChance);
     if (const auto* arr = (*node).get_as<toml::array>("contents")) {
-      for (auto&& v : *arr) {
-        ar.contents.emplace_back(v.value_or(""));
+      for (auto&& value_node : *arr) {
+        activity_remarks.contents.emplace_back(value_node.value_or(""));
       }
-      config.activity_remarks.emplace(ar);
+      config.activity_remarks.emplace(activity_remarks);
     }
   }
 }
@@ -96,8 +102,8 @@ void ConfigLoader::_load_activity_remarks(const toml::table& data,
 void ConfigLoader::_load_wake_keywords(const toml::table& data,
                                        TomlConfigData& config) {
   if (const auto* arr = data.get_as<toml::array>("wake_keywords")) {
-    for (auto&& v : *arr) {
-      config.wake_keywords.emplace_back(v.value_or(""));
+    for (auto&& value_node : *arr) {
+      config.wake_keywords.emplace_back(value_node.value_or(""));
     }
   } else {
     config.wake_keywords.emplace_back("起床");

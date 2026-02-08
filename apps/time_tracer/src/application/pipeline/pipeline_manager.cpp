@@ -30,11 +30,7 @@ auto PipelineManager::Run(const std::string& input_path,
   std::cout << "\n"
             << time_tracer::common::colors::kBrightCyan
             << time_tracer::common::colors::kBold
-            << "╔════════════════════════════════════════════════════════════╗"
-            << "\n"
-            << "║                🚀 Pipeline Execution Started               ║"
-            << "\n"
-            << "╚════════════════════════════════════════════════════════════╝"
+            << "--- Pipeline Execution Started ---"
             << time_tracer::common::colors::kReset << std::endl;
 
   // 2. 执行：收集文件
@@ -45,7 +41,7 @@ auto PipelineManager::Run(const std::string& input_path,
   // 2.5 统一加载配置
   if (options.validate_structure || options.convert) {
     try {
-      std::cout << time_tracer::common::colors::kGray << "[➜] "
+      std::cout << time_tracer::common::colors::kGray << "[INFO] "
                 << time_tracer::common::colors::kReset
                 << "Loading Configuration..." << std::endl;
       context.state.converter_config = ConverterConfigFactory::Create(
@@ -61,7 +57,7 @@ auto PipelineManager::Run(const std::string& input_path,
 
   // 3. 执行：结构验证 (Structure Validation)
   if (options.validate_structure) {
-    std::cout << time_tracer::common::colors::kCyan << "[➜] "
+    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
               << time_tracer::common::colors::kReset
               << "Step: Validating File Structure..." << std::endl;
     if (!core::pipeline::StructureValidatorStep::Execute(context)) {
@@ -92,7 +88,7 @@ auto PipelineManager::Run(const std::string& input_path,
 
   // [重命名] 5. 执行：逻辑验证 (Logic Validation)
   if (options.validate_logic) {
-    std::cout << time_tracer::common::colors::kCyan << "[➜] "
+    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
               << time_tracer::common::colors::kReset
               << "Step: Validating Business Logic..." << std::endl;
     if (!core::pipeline::LogicValidatorStep::Execute(context)) {
@@ -104,7 +100,7 @@ auto PipelineManager::Run(const std::string& input_path,
 
   // 6. 执行：保存
   if (options.convert && options.save_processed_output) {
-    std::cout << time_tracer::common::colors::kCyan << "[➜] "
+    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
               << time_tracer::common::colors::kReset
               << "Step: Saving Validated JSON..." << std::endl;
     auto new_files = infrastructure::io::ProcessedDataWriter::Write(
@@ -117,12 +113,12 @@ auto PipelineManager::Run(const std::string& input_path,
     if (new_files.empty() && !context.result.processed_data.empty()) {
       std::cerr << time_tracer::common::colors::kYellow
                 << time_tracer::common::colors::kBold
-                << "[⚠] WARNING: " << time_tracer::common::colors::kReset
+                << "[WARN] " << time_tracer::common::colors::kReset
                 << time_tracer::common::colors::kYellow
                 << "Data exists but no files were generated (flush failed)."
                 << time_tracer::common::colors::kReset << std::endl;
     } else {
-      std::cout << time_tracer::common::colors::kBrightGreen << "[✓] "
+      std::cout << time_tracer::common::colors::kBrightGreen << "[OK] "
                 << time_tracer::common::colors::kReset
                 << "JSON data safely persisted to disk." << std::endl;
     }
@@ -131,11 +127,7 @@ auto PipelineManager::Run(const std::string& input_path,
   std::cout << "\n"
             << time_tracer::common::colors::kBrightGreen
             << time_tracer::common::colors::kBold
-            << "╔════════════════════════════════════════════════════════════╗"
-            << "\n"
-            << "║                ✅ Pipeline Finished Successfully            ║"
-            << "\n"
-            << "╚════════════════════════════════════════════════════════════╝"
+            << "--- Pipeline Finished Successfully ---"
             << time_tracer::common::colors::kReset << std::endl;
   return context;
 }
