@@ -2,18 +2,16 @@
 #ifndef REPORTS_MONTHLY_COMMON_MONTH_BASE_CONFIG_H_
 #define REPORTS_MONTHLY_COMMON_MONTH_BASE_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <string>
 
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API MonthBaseConfig {
  public:
-  // [修改] 接收 toml::table
-  explicit MonthBaseConfig(toml::table config);
+  explicit MonthBaseConfig(const TtMonthLabelsConfigV1& labels);
   virtual ~MonthBaseConfig() = default;
 
   [[nodiscard]] auto GetReportTitle() const -> const std::string&;
@@ -27,15 +25,10 @@ class REPORTS_SHARED_API MonthBaseConfig {
   [[nodiscard]] auto GetTotalTimeLabel() const -> const std::string&;
   [[nodiscard]] auto GetNoRecordsMessage() const -> const std::string&;
   [[nodiscard]] auto GetInvalidFormatMessage() const -> const std::string&;
-
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
- protected:
-  // [修改] 存储 TOML table
-  toml::table config_table_;
-
  private:
-  void LoadBaseConfig();
+  void LoadBaseConfig(const TtMonthLabelsConfigV1& labels);
 
   std::string report_title_;
   std::string title_template_;

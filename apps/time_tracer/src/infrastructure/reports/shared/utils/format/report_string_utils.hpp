@@ -37,4 +37,19 @@ REPORTS_SHARED_API auto FormatTitleTemplate(std::string title_template,
                                             const RangeReportData& data)
     -> std::string;
 
+/**
+ * @brief Format a count with percentage text, e.g. "3 (12.50%)".
+ * If
+ * total_count <= 0, returns the count only.
+ *
+ * @param count Current count
+ * value.
+ * @param total_count Denominator for percentage calculation.
+ *
+ * @param percent_suffix Percentage symbol (e.g. "%" or "\\%").
+ */
+REPORTS_SHARED_API auto FormatCountWithPercentage(
+    int count, int total_count, const std::string& percent_suffix = "%")
+    -> std::string;
+
 #endif  // REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_

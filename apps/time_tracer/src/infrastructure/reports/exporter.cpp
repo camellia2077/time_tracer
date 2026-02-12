@@ -103,8 +103,8 @@ void Exporter::ExportAllDailyReports(const FormattedGroupedReports& reports,
     for (const auto& year_pair : reports) {
       for (const auto& month_pair : year_pair.second) {
         for (const auto& day_report : month_pair.second) {
-          const std::string& date = day_report.first;
-          const std::string& content = day_report.second;
+          const std::string& date = day_report.report_id;
+          const std::string& content = day_report.content;
           fs::path report_path =
               file_manager_->GetSingleDayReportPath(date, format);
           WriteReportToFile(content, report_path);

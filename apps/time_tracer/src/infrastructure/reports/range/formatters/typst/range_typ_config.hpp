@@ -2,14 +2,15 @@
 #ifndef REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
 #define REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
 
-#include <toml++/toml.h>
+#include <string>
 
 #include "infrastructure/reports/range/common/range_base_config.hpp"
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class RangeTypConfig : public RangeBaseConfig {
  public:
-  explicit RangeTypConfig(const toml::table& config);
+  explicit RangeTypConfig(const TtRangeTypConfigV1& config);
 
   [[nodiscard]] auto GetBaseFont() const -> const std::string& {
     return style_.GetBaseFont();
@@ -30,7 +31,6 @@ class RangeTypConfig : public RangeBaseConfig {
   [[nodiscard]] auto GetCategoryTitleFontSize() const -> int {
     return style_.GetCategoryTitleFontSize();
   }
-
   [[nodiscard]] auto GetLineSpacingEm() const -> double {
     return style_.GetLineSpacingEm();
   }

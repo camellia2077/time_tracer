@@ -3,6 +3,7 @@
 
 #include <map>
 #include <optional>
+#include <set>
 #include <string>
 
 namespace validator::structure {
@@ -54,7 +55,7 @@ auto DaysInMonth(int year, int month) -> int {
 // NOLINTEND(bugprone-easily-swappable-parameters)
 }  // namespace
 
-void validateDateContinuity(const std::vector<DailyLog>& days,
+void ValidateDateContinuity(const std::vector<DailyLog>& days,
                             std::vector<Diagnostic>& diagnostics,
                             DateCheckMode mode) {
   if (mode == DateCheckMode::kNone || days.empty()) {

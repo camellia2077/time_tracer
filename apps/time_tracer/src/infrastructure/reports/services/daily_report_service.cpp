@@ -15,7 +15,7 @@ DailyReportService::DailyReportService(sqlite3* sqlite_db,
   }
 }
 
-auto DailyReportService::generate_all_reports(ReportFormat format)
+auto DailyReportService::GenerateAllReports(ReportFormat format)
     -> FormattedGroupedReports {
   FormattedGroupedReports grouped_reports;
 
@@ -41,7 +41,7 @@ auto DailyReportService::generate_all_reports(ReportFormat format)
 
       // 格式化
       std::string formatted_report = formatter->FormatReport(data);
-      grouped_reports[year][month].emplace_back(date, formatted_report);
+      grouped_reports[year][month].push_back({date, formatted_report});
     }
   }
 

@@ -12,20 +12,19 @@
 #include "domain/model/source_span.hpp"
 #include "infrastructure/config/models/converter_config_models.hpp"
 
-namespace validator {
-namespace txt {
+namespace validator::txt {
 
 class LineRules {
  public:
   explicit LineRules(const ConverterConfig& config);
 
-  static bool is_year(const std::string& line);
-  static bool is_date(const std::string& line);
-  bool is_remark(const std::string& line) const;
+  static auto IsYear(const std::string& line) -> bool;
+  static auto IsDate(const std::string& line) -> bool;
+  auto IsRemark(const std::string& line) const -> bool;
 
-  bool is_valid_event_line(const std::string& line, int line_number,
-                           std::set<Error>& errors,
-                           const std::optional<SourceSpan>& span) const;
+  auto IsValidEventLine(const std::string& line, int line_number,
+                        std::set<Error>& errors,
+                        const std::optional<SourceSpan>& span) const -> bool;
 
  private:
   const ConverterConfig& config_;
@@ -33,7 +32,6 @@ class LineRules {
   std::unordered_set<std::string> wake_keywords_;
 };
 
-}  // namespace txt
-}  // namespace validator
+}  // namespace validator::txt
 
 #endif  // VALIDATOR_TXT_RULES_LINE_RULES_H_

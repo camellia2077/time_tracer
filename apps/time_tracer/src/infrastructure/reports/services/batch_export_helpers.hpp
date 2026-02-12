@@ -10,9 +10,9 @@
 
 namespace reports::services {
 
-inline auto EnsureProjectNameCache(sqlite3* db) -> ProjectNameCache& {
+inline auto EnsureProjectNameCache(sqlite3* sqlite_db) -> ProjectNameCache& {
   auto& cache = ProjectNameCache::Instance();
-  cache.EnsureLoaded(db);
+  cache.EnsureLoaded(sqlite_db);
   return cache;
 }
 

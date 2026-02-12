@@ -1,77 +1,124 @@
 // infrastructure/reports/daily/common/day_base_config.cpp
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 
+#include <algorithm>
+#include <map>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
-static auto ParseStatisticsItemsRecursive(const toml::array* arr)
-    -> std::vector<StatisticItemConfig> {
-  std::vector<StatisticItemConfig> items;
-  if (arr == nullptr) {
-    return items;
+#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
+
+namespace {
+
+auto BuildStatisticItemTree(const std::vector<StatisticItemConfig>& flat_items,
+                            const std::vector<std::vector<uint32_t>>& children,
+                            uint32_t index) -> StatisticItemConfig {
+  StatisticItemConfig item = flat_items[index];
+  item.sub_items.clear();
+  item.sub_items.reserve(children[index].size());
+
+  for (uint32_t child_index : children[index]) {
+    item.sub_items.push_back(
+        BuildStatisticItemTree(flat_items, children, child_index));
+  }
+  return item;
+}
+
+}  // namespace
+
+DayBaseConfig::DayBaseConfig(
+    const TtDayLabelsConfigV1& labels,
+    const TtFormatterStatisticItemNodeV1* statistics_items,
+    uint32_t statistics_item_count)
+    : statistics_items_(
+          BuildStatisticsItems(statistics_items, statistics_item_count)) {
+  LoadBaseConfig(labels);
+}
+
+auto DayBaseConfig::BuildStatisticsItems(
+    const TtFormatterStatisticItemNodeV1* statistics_items,
+    uint32_t statistics_item_count) -> std::vector<StatisticItemConfig> {
+  if (statistics_item_count == 0U) {
+    return {};
+  }
+  if (statistics_items == nullptr) {
+    throw std::invalid_argument(
+        "statistics_items is null while statistics_item_count > 0.");
   }
 
-  for (const auto& node : *arr) {
-    if (!node.is_table()) {
+  std::vector<StatisticItemConfig> flat_items;
+  flat_items.reserve(statistics_item_count);
+  std::vector<std::vector<uint32_t>> children(statistics_item_count);
+  std::vector<uint32_t> roots;
+  roots.reserve(statistics_item_count);
+
+  for (uint32_t index = 0; index < statistics_item_count; ++index) {
+    const auto& source = statistics_items[index];
+    StatisticItemConfig item{};
+    item.label = formatter_c_string_view_utils::ToString(
+        source.label, "statistics_items.label");
+    item.db_column = formatter_c_string_view_utils::ToString(
+        source.dbColumn, "statistics_items.db_column");
+    item.show = source.show != 0U;
+    flat_items.push_back(std::move(item));
+
+    const int32_t kParentIndex = source.parentIndex;
+    if (kParentIndex < -1) {
+      throw std::invalid_argument(
+          "statistics_items.parentIndex must be >= -1.");
+    }
+    if (kParentIndex == -1) {
+      roots.push_back(index);
       continue;
     }
-    const auto& item_tbl = *node.as_table();
-
-    StatisticItemConfig item;
-    item.label = item_tbl["label"].value_or<std::string>("");
-    item.db_column = item_tbl["db_column"].value_or<std::string>("");
-    item.show = item_tbl["show"].value_or(true);
-
-    if (const toml::array* sub_arr = item_tbl["sub_items"].as_array()) {
-      item.sub_items = ParseStatisticsItemsRecursive(sub_arr);
+    if (std::cmp_greater_equal(kParentIndex, statistics_item_count) ||
+        std::cmp_greater_equal(kParentIndex, index)) {
+      throw std::invalid_argument("Invalid statistics_items.parentIndex.");
     }
-
-    items.push_back(item);
-  }
-  return items;
-}
-
-// [修改] 构造函数
-DayBaseConfig::DayBaseConfig(toml::table config)
-    : config_table_(std::move(config)) {
-  LoadBaseConfig();
-}
-
-void DayBaseConfig::LoadBaseConfig() {
-  // [修改] 使用 TOML++ API
-  if (auto val = config_table_["title_prefix"].value<std::string>()) {
-    title_prefix_ = *val;
-  } else {
-    // 兼容 report_title
-    title_prefix_ = config_table_["report_title"].value_or("Daily Report for");
+    children[static_cast<uint32_t>(kParentIndex)].push_back(index);
   }
 
-  date_label_ = config_table_["date_label"].value_or("");
-  total_time_label_ = config_table_["total_time_label"].value_or("");
-  status_label_ = config_table_["status_label"].value_or("Status");
-  sleep_label_ = config_table_["sleep_label"].value_or("Sleep");
-  getup_time_label_ = config_table_["getup_time_label"].value_or("Getup Time");
-  remark_label_ = config_table_["remark_label"].value_or("Remark");
-  exercise_label_ = config_table_["exercise_label"].value_or("Exercise");
-
-  no_records_ = config_table_["no_records_message"].value_or("No records.");
-
-  statistics_label_ = config_table_["statistics_label"].value_or("Statistics");
-  all_activities_label_ =
-      config_table_["all_activities_label"].value_or("All Activities");
-  activity_remark_label_ =
-      config_table_["activity_remark_label"].value_or("Remark");
-  activity_connector_ = config_table_["activity_connector"].value_or("->");
-
-  project_breakdown_label_ =
-      config_table_["project_breakdown_label"].value_or("Project Breakdown");
-
-  if (const toml::array* arr = config_table_["statistics_items"].as_array()) {
-    statistics_items_ = ParseStatisticsItemsRecursive(arr);
+  std::vector<StatisticItemConfig> tree_items;
+  tree_items.reserve(roots.size());
+  for (uint32_t root_index : roots) {
+    tree_items.push_back(
+        BuildStatisticItemTree(flat_items, children, root_index));
   }
+  return tree_items;
 }
 
-// Getters 保持不变
+void DayBaseConfig::LoadBaseConfig(const TtDayLabelsConfigV1& labels) {
+  title_prefix_ = formatter_c_string_view_utils::ToString(labels.titlePrefix,
+                                                          "labels.titlePrefix");
+  date_label_ = formatter_c_string_view_utils::ToString(labels.dateLabel,
+                                                        "labels.dateLabel");
+  total_time_label_ = formatter_c_string_view_utils::ToString(
+      labels.totalTimeLabel, "labels.totalTimeLabel");
+  status_label_ = formatter_c_string_view_utils::ToString(labels.statusLabel,
+                                                          "labels.statusLabel");
+  sleep_label_ = formatter_c_string_view_utils::ToString(labels.sleepLabel,
+                                                         "labels.sleepLabel");
+  getup_time_label_ = formatter_c_string_view_utils::ToString(
+      labels.getupTimeLabel, "labels.getupTimeLabel");
+  remark_label_ = formatter_c_string_view_utils::ToString(labels.remarkLabel,
+                                                          "labels.remarkLabel");
+  exercise_label_ = formatter_c_string_view_utils::ToString(
+      labels.exerciseLabel, "labels.exerciseLabel");
+  no_records_ = formatter_c_string_view_utils::ToString(
+      labels.noRecordsMessage, "labels.noRecordsMessage");
+  statistics_label_ = formatter_c_string_view_utils::ToString(
+      labels.statisticsLabel, "labels.statisticsLabel");
+  all_activities_label_ = formatter_c_string_view_utils::ToString(
+      labels.allActivitiesLabel, "labels.allActivitiesLabel");
+  activity_remark_label_ = formatter_c_string_view_utils::ToString(
+      labels.activityRemarkLabel, "labels.activityRemarkLabel");
+  activity_connector_ = formatter_c_string_view_utils::ToString(
+      labels.activityConnector, "labels.activityConnector");
+  project_breakdown_label_ = formatter_c_string_view_utils::ToString(
+      labels.projectBreakdownLabel, "labels.projectBreakdownLabel");
+}
+
 auto DayBaseConfig::GetTitlePrefix() const -> const std::string& {
   return title_prefix_;
 }

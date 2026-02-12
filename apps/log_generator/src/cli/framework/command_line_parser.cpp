@@ -19,7 +19,8 @@ enum class OptionType {
   kStart,
   kEnd,
   kItems,
-  kNoSleep
+  kNoSleep,
+  kOutput
 };
 
 struct ParsedOptions {
@@ -52,6 +53,9 @@ auto ClassifyOption(const std::string& arg) -> OptionType {
   if (arg == "-n" || arg == "--nosleep") {
     return OptionType::kNoSleep;
   }
+  if (arg == "-o" || arg == "--output") {
+    return OptionType::kOutput;
+  }
   throw std::invalid_argument("Unrecognized option: " + arg);
 }
 
@@ -62,6 +66,15 @@ auto ParseNextInt(const std::vector<std::string>& args, size_t& index,
                                 " option requires an argument.");
   }
   return std::stoi(args[++index]);
+}
+
+auto ParseNextString(const std::vector<std::string>& args, size_t& index,
+                     std::string_view option_name) -> std::string {
+  if (index + 1 >= args.size()) {
+    throw std::invalid_argument(std::string(option_name) +
+                                " option requires an argument.");
+  }
+  return args[++index];
 }
 
 auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
@@ -92,6 +105,9 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
       case OptionType::kNoSleep:
         parsed.config.enable_nosleep = true;
         break;
+      case OptionType::kOutput:
+        parsed.config.output_directory = ParseNextString(args, i, "--output");
+        break;
     }
   }
 
@@ -101,8 +117,7 @@ auto ParseOptions(const std::vector<std::string>& args) -> ParsedOptions {
 void ApplyYearSelection(ParsedOptions& parsed) {
   if (parsed.single_year.has_value() &&
       (parsed.start_year.has_value() || parsed.end_year.has_value())) {
-    throw std::logic_error(
-        "Cannot use --year together with --start or --end.");
+    throw std::logic_error("Cannot use --year together with --start or --end.");
   }
 
   if (parsed.single_year.has_value()) {
@@ -135,6 +150,9 @@ void ValidateConfig(const Config& config) {
   if (config.end_year < config.start_year) {
     throw std::logic_error("--end year cannot be earlier than --start year.");
   }
+  if (config.output_directory.empty()) {
+    throw std::logic_error("--output directory cannot be empty.");
+  }
 }
 
 }  // namespace
@@ -160,8 +178,9 @@ auto CommandLineParser::parse() -> CliRequest {
     ApplyYearSelection(parsed);
     ValidateConfig(parsed.config);
 
-    return CliRequest{
-        .action = CliAction::kRun, .config = parsed.config, .error_message = {}};
+    return CliRequest{.action = CliAction::kRun,
+                      .config = parsed.config,
+                      .error_message = {}};
   } catch (const std::invalid_argument& e) {
     return CliRequest{
         .action = CliAction::kError,

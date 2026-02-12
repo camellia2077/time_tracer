@@ -4,55 +4,54 @@ trigger: always_on
 
 [ENVIRONMENT]
 
- -OS: Windows (Primary shell for Agent is MSYS2 UCRT64 BASH).
- -Toolchain: GCC/Clang (MinGW-w64), CMake, Ninja.
- -Git repo root: `time_tracer_cpp` (run git commands from this directory).
- -**CRITICAL**: The Agent MUST NOT run `.sh` or `bash` commands directly in PowerShell (pwsh). Avoid using the default Windows `bash.exe` (System32) which triggers WSL errors.
+- OS: Windows (primary shell: PowerShell).
+- Toolchain: GCC/Clang (MinGW-w64), CMake, Ninja.
+- Repo root: `time_tracer_cpp` (run git commands here).
+- PATH hint (PowerShell): prepend `C:\msys64\ucrt64\bin;C:\msys64\usr\bin` before `cmake`/`ninja`.
 
 [WORKFLOW RULES]
 
- -TASK: Prefer compile success. SKIP runtime/testing unless requested.
- -PREP: Analyze context and clarify ambiguities when they affect correctness.
- -INTERACTION: Correct user errors directly and propose a fix.
- -CODE_PHILOSOPHY: Keep simple & maintainable. Avoid over-defensive logic. Use physical separation for logic (keep files 100-300 lines) but avoid over-engineering.
- -**SHELL_RESTRICTION (Flexible)**:
- -Prefer running script/build commands in UCRT64.
- -If UCRT64 fails (e.g., MSYS2 errors), ask the user and fall back to PowerShell-native commands or Python scripts.
- -Only run `.sh` via a shell when needed; otherwise prefer Python entrypoints.
- -Recommended UCRT64 wrapper: `C:\msys64\msys2_shell.cmd -ucrt64 -defterm -no-start -where . -c "your_command"`.
-
-
- -**PATH_LOGIC**:
- -Prefer POSIX-style paths for UCRT64 shell commands. Use native Windows paths for PowerShell commands.
+- HARD_GATES (MUST): requested behavior must be correct; target app must configure/build after changes.
+- TEST_POLICY: run tests when workflow/user requires, or when needed to validate behavior.
+- STYLE_SCOPE (MUST_FOR_NEW_OR_TOUCHED_CODE): enforce naming/style/format only on new or modified code.
+- LEGACY_POLICY: avoid large style-only cleanup on untouched legacy code unless requested.
+- ON_UNCERTAIN: make minimal safe changes, get build green, then iterate.
+- PREP: clarify ambiguities that affect correctness.
+- INTERACTION: directly correct user mistakes and propose fixes.
+- CODE_PHILOSOPHY: prefer simple, maintainable solutions; avoid over-engineering; keep files ~100-300 lines when practical.
+- MANDATORY_BUILD_SYSTEM: use `python scripts/run.py configure/build --app <app>`.
+- MANDATORY_BUILD_DIR: always use `build_agent`.
+- AGENT_CONFIGURE_COMMAND: time_tracer=`python scripts/run.py configure --app time_tracer`; log_generator=`python scripts/run.py configure --app log_generator`.
+- AGENT_BUILD_COMMAND: time_tracer=`python scripts/run.py build --app time_tracer`; log_generator=`python scripts/run.py build --app log_generator`.
+- AGENT_TEST_COMMAND: time_tracer=`python test/run.py --suite time_tracer --agent --build-dir build_agent --concise`; log_generator=`python test/run.py --suite log_generator --agent --build-dir build_agent --concise`.
+- AFTER_CODE_CHANGE: run corresponding app configure/build.
+- STYLE_AUTOMATION: prefer `clang-tidy`, `clang-format`, and project Python scripts for repeatable cleanup.
+- SHELL_RESTRICTION:
+  - default build shell is PowerShell with `scripts/run.py`.
+  - avoid `msys2_shell.cmd` unless user explicitly asks.
+  - do not use ad-hoc compile wrappers outside `scripts/run.py`.
+  - run `.sh` only when user explicitly asks shell-script flow.
+- PATH_LOGIC: use POSIX paths in UCRT64 shell commands; use native Windows paths in PowerShell.
 
 
 
 [C++23 STYLE CONFIG]
-NAMING:
-- Types/Funcs=PascalCase; (MANDATORY: NEVER use camelCase or snake_case for functions. e.g., 'Validate', NOT 'validate' or 'validate_all').
-- Vars/Params: snake_case (MIN_LEN: 3, except i/j/k in loops).
-- Members=snake_case_ (MUST end with underscore, e.g., 'is_valid_').
-- Consts: kPascalCase (MUST start with 'k', e.g., 'kMaxRetry').
-- Macros=AVOID.
+- TOOL_ENFORCEMENT: Naming/safety/style checks are enforced by `.clang-tidy`; formatting is enforced by `.clang-format`.
 
 IDIOMS:
 
-- Inputs: std::string_view(str), std::span(vec).
- -Outputs: std::expected(error), std::optional(maybe), T&(mutable).
- -IO: std::println.
- -Compile: consteval(strict).
+- Inputs: prefer `std::string_view` / `std::span`.
+- Outputs: prefer `std::expected`, `std::optional`, `T&` (mutable out).
+- I/O: prefer `std::println`.
+- Compile-time: use `consteval` where strict compile-time evaluation is required.
 
 SAFETY:
 
- -Types: NO IMPLICIT CONVERSIONS (use static_cast or std::bit_cast).
- -Logic: Explicit null checks (ptr != nullptr).
- -Memory: No new/delete/C-casts.
- -Pointers: unique_ptr(own), T*(view only).
- -Defaults: nullptr, [[nodiscard]], explicit, override, in-class-init.
+- Ownership: `std::unique_ptr`; raw `T*` is non-owning view only.
 
 STRUCTURE:
 
- -Headers: Use absolute path from src/.
+- Headers: use absolute include path from `src/`.
 
 
 

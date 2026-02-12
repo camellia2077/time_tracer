@@ -124,11 +124,12 @@ void FillTypStyle(const toml::table& tbl, FontConfig& fonts,
 }
 
 void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
+  labels.report_title = tbl["report_title"].value_or("Daily Report for");
+
   if (auto val = tbl["title_prefix"].value<std::string>()) {
     labels.report_title_prefix = *val;
   } else {
-    labels.report_title_prefix =
-        tbl["report_title"].value_or("Daily Report for");
+    labels.report_title_prefix = labels.report_title;
   }
 
   labels.date_label = GetRequired<std::string>(tbl, "date_label");
@@ -152,11 +153,20 @@ void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
 }
 
 void FillRangeLabels(const toml::table& tbl, RangeReportLabels& labels) {
+  labels.report_title = tbl["report_title"].value_or("Monthly Report");
   labels.title_template = GetRequired<std::string>(tbl, "title_template");
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
   labels.actual_days_label = GetRequired<std::string>(tbl, "actual_days_label");
+  labels.status_days_label = tbl["status_days_label"].value_or("Status Days");
+  labels.sleep_days_label = tbl["sleep_days_label"].value_or("Sleep Days");
+  labels.exercise_days_label =
+      tbl["exercise_days_label"].value_or("Exercise Days");
+  labels.cardio_days_label = tbl["cardio_days_label"].value_or("Cardio Days");
+  labels.anaerobic_days_label =
+      tbl["anaerobic_days_label"].value_or("Anaerobic Days");
   labels.no_records_message =
       GetRequired<std::string>(tbl, "no_records_message");
+  labels.invalid_format_message = tbl["invalid_format_message"].value_or("");
   labels.invalid_range_message =
       tbl["invalid_range_message"].value_or("Invalid range.");
   labels.project_breakdown_label =

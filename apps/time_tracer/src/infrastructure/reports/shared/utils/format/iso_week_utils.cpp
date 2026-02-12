@@ -2,9 +2,8 @@
 #include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"
 
 #include <chrono>
-#include <iomanip>
 #include <optional>
-#include <sstream>
+#include <string>
 
 namespace {
 using std::chrono::days;
@@ -33,6 +32,15 @@ constexpr int kThursdayOffset = 4;
 constexpr int kJan4Day = 4;
 constexpr int kFirstMondayOffset = 3;
 }  // namespace
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void AppendPaddedNumber(std::string& output, int value, int width) {
+  std::string digits = std::to_string(value);
+  if (digits.size() < static_cast<size_t>(width)) {
+    output.append(static_cast<size_t>(width) - digits.size(), '0');
+  }
+  output += digits;
+}
 
 auto ParseDate(std::string_view date_str) -> std::optional<sys_days> {
   if (date_str.size() != static_cast<size_t>(kDateStringLength) ||
@@ -70,11 +78,14 @@ auto ParseDate(std::string_view date_str) -> std::optional<sys_days> {
 
 auto FormatDate(const sys_days& date) -> std::string {
   year_month_day ymd = date;
-  std::ostringstream oss;
-  oss << std::setw(4) << std::setfill('0') << int(ymd.year()) << "-"
-      << std::setw(2) << std::setfill('0') << unsigned(ymd.month()) << "-"
-      << std::setw(2) << std::setfill('0') << unsigned(ymd.day());
-  return oss.str();
+  std::string output;
+  output.reserve(kDateStringLength);
+  AppendPaddedNumber(output, int(ymd.year()), 4);
+  output += "-";
+  AppendPaddedNumber(output, static_cast<int>(unsigned(ymd.month())), 2);
+  output += "-";
+  AppendPaddedNumber(output, static_cast<int>(unsigned(ymd.day())), 2);
+  return output;
 }
 }  // namespace
 
@@ -129,10 +140,12 @@ auto ParseIsoWeek(std::string_view input, IsoWeek& out) -> bool {
 }
 
 auto FormatIsoWeek(const IsoWeek& week) -> std::string {
-  std::ostringstream oss;
-  oss << std::setw(4) << std::setfill('0') << week.year << "-W" << std::setw(2)
-      << std::setfill('0') << week.week;
-  return oss.str();
+  std::string output;
+  output.reserve(static_cast<size_t>(kIsoWeekLength8));
+  AppendPaddedNumber(output, week.year, 4);
+  output += "-W";
+  AppendPaddedNumber(output, week.week, 2);
+  return output;
 }
 
 auto IsoWeekFromDate(std::string_view date_str) -> IsoWeek {

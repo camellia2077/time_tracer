@@ -1,8 +1,6 @@
 // infrastructure/reports/daily/formatters/latex/day_tex_utils.cpp
 #include "infrastructure/reports/daily/formatters/latex/day_tex_utils.hpp"
 
-#include <format>
-#include <iomanip>
 #include <vector>
 
 #include "infrastructure/reports/shared/formatters/latex/tex_common_utils.hpp"
@@ -13,8 +11,7 @@
 
 namespace DayTexUtils {
 
-void DisplayHeader(std::stringstream& report_stream,
-                   const DailyReportData& data,
+void DisplayHeader(std::string& report_stream, const DailyReportData& data,
                    const std::shared_ptr<DayTexConfig>& config) {
   // 1. 渲染标题
   std::string title_content =
@@ -47,7 +44,7 @@ void DisplayHeader(std::stringstream& report_stream,
                                     config->GetListItemSepEx());
 }
 
-void DisplayDetailedActivities(std::stringstream& report_stream,
+void DisplayDetailedActivities(std::string& report_stream,
                                const DailyReportData& data,
                                const std::shared_ptr<DayTexConfig>& config) {
   if (data.detailed_records.empty()) {
@@ -60,10 +57,11 @@ void DisplayDetailedActivities(std::stringstream& report_stream,
                               true  // is_subsection
   );
 
-  std::string compact_list_options =
-      std::format("[topsep={}pt, itemsep={}ex]", config->GetListTopSepPt(),
-                  config->GetListItemSepEx());
-  report_stream << "\\begin{itemize}" << compact_list_options << "\n";
+  std::string compact_list_options = TexCommonUtils::BuildCompactListOptions(
+      config->GetListTopSepPt(), config->GetListItemSepEx());
+  report_stream += "\\begin{itemize}";
+  report_stream += compact_list_options;
+  report_stream += "\n";
 
   for (const auto& record : data.detailed_records) {
     std::string project_path =
@@ -84,11 +82,15 @@ void DisplayDetailedActivities(std::stringstream& report_stream,
       }
     }
 
-    report_stream << "    \\item " << colorized_string << "\n";
+    report_stream += "    \\item ";
+    report_stream += colorized_string;
+    report_stream += "\n";
 
     const auto& activity_remark_opt = record.activityRemark;
     if (activity_remark_opt.has_value()) {
-      report_stream << "    \\begin{itemize}" << compact_list_options << "\n";
+      report_stream += "    \\begin{itemize}";
+      report_stream += compact_list_options;
+      report_stream += "\n";
 
       const std::string& activity_remark = activity_remark_opt.value();
 
@@ -96,13 +98,15 @@ void DisplayDetailedActivities(std::stringstream& report_stream,
       std::string formatted_activity_remark =
           FormatMultilineForList(safe_activity_remark, 0, "\\\\");
 
-      report_stream << "        \\item \\textbf{"
-                    << config->GetActivityRemarkLabel()
-                    << "}: " << formatted_activity_remark << "\n";
-      report_stream << "    \\end{itemize}\n";
+      report_stream += "        \\item \\textbf{";
+      report_stream += config->GetActivityRemarkLabel();
+      report_stream += "}: ";
+      report_stream += formatted_activity_remark;
+      report_stream += "\n";
+      report_stream += "    \\end{itemize}\n";
     }
   }
-  report_stream << "\\end{itemize}\n\n";
+  report_stream += "\\end{itemize}\n\n";
 }
 
 }  // namespace DayTexUtils

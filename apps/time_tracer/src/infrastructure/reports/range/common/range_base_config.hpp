@@ -2,17 +2,16 @@
 #ifndef REPORTS_RANGE_COMMON_RANGE_BASE_CONFIG_H_
 #define REPORTS_RANGE_COMMON_RANGE_BASE_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <string>
 
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API RangeBaseConfig {
  public:
-  explicit RangeBaseConfig(toml::table config);
+  explicit RangeBaseConfig(const TtRangeLabelsConfigV1& labels);
   virtual ~RangeBaseConfig() = default;
 
   [[nodiscard]] auto GetTitleTemplate() const -> const std::string&;
@@ -27,11 +26,8 @@ class REPORTS_SHARED_API RangeBaseConfig {
   [[nodiscard]] auto GetInvalidRangeMessage() const -> const std::string&;
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
- protected:
-  toml::table config_table_;
-
  private:
-  void LoadBaseConfig();
+  void LoadBaseConfig(const TtRangeLabelsConfigV1& labels);
 
   std::string title_template_;
   std::string total_time_label_;

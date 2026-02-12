@@ -13,7 +13,7 @@ class LogSerializer {
   /**
    * @brief 将单个 DailyLog 结构体序列化为 JSON 对象
    */
-  static nlohmann::json serialize(const DailyLog& day);
+  static auto Serialize(const DailyLog& day) -> nlohmann::json;
 };
 
 }  // namespace serializer::core

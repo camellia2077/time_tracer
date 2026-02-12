@@ -4,7 +4,6 @@
 
 #include <sqlite3.h>
 
-#include <format>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -24,7 +23,7 @@ class BaseQuerier {
 
   virtual ~BaseQuerier() = default;
 
-  virtual ReportDataType FetchData() {
+  virtual auto FetchData() -> ReportDataType {
     ReportDataType data;
     if (!ValidateInput()) {
       HandleInvalidInput(data);
@@ -50,10 +49,10 @@ class BaseQuerier {
   sqlite3* db_;
   QueryParamType param_;
 
-  [[nodiscard]] virtual std::string GetDateConditionSql() const = 0;
+  [[nodiscard]] virtual auto GetDateConditionSql() const -> std::string = 0;
   virtual void BindSqlParameters(sqlite3_stmt* stmt) const = 0;
 
-  [[nodiscard]] virtual bool ValidateInput() const { return true; }
+  [[nodiscard]] virtual auto ValidateInput() const -> bool { return true; }
 
   // [FIX] Silenced unused parameter warning which was treated as an error.
   virtual void HandleInvalidInput(ReportDataType& /*data*/) const {
@@ -71,11 +70,17 @@ class BaseQuerier {
     // [核心优化]：
     // 1. 移除 WITH RECURSIVE (CTE)
     // 2. 使用 GROUP BY project_id 进行数据库级聚合
-    std::string sql = std::format(
-        "SELECT {0}, SUM({1}) FROM {2} WHERE {3} GROUP BY {0};",
-        schema::time_records::db::kProjectId,
-        schema::time_records::db::kDuration,
-        schema::time_records::db::kTable, GetDateConditionSql());
+    std::string sql = "SELECT ";
+    sql += schema::time_records::db::kProjectId;
+    sql += ", SUM(";
+    sql += schema::time_records::db::kDuration;
+    sql += ") FROM ";
+    sql += schema::time_records::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += " GROUP BY ";
+    sql += schema::time_records::db::kProjectId;
+    sql += ";";
 
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
       BindSqlParameters(stmt);
@@ -97,10 +102,13 @@ class BaseQuerier {
   // flow.
   void FetchActualDays(ReportDataType& data) {
     sqlite3_stmt* stmt;
-    std::string sql = std::format(
-        "SELECT COUNT(DISTINCT {0}) FROM {1} WHERE {2};",
-        schema::time_records::db::kDate, schema::time_records::db::kTable,
-        GetDateConditionSql());
+    std::string sql = "SELECT COUNT(DISTINCT ";
+    sql += schema::time_records::db::kDate;
+    sql += ") FROM ";
+    sql += schema::time_records::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += ";";
 
     if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {
@@ -115,18 +123,27 @@ class BaseQuerier {
   [[nodiscard]] auto FetchDayFlagCounts() const -> DayFlagCounts {
     DayFlagCounts counts{};
     sqlite3_stmt* stmt = nullptr;
-    std::string sql = std::format(
-        "SELECT "
-        "SUM(CASE WHEN {0} != 0 THEN 1 ELSE 0 END), "
-        "SUM(CASE WHEN {1} != 0 THEN 1 ELSE 0 END), "
-        "SUM(CASE WHEN {2} != 0 THEN 1 ELSE 0 END), "
-        "SUM(CASE WHEN {3} > 0 THEN 1 ELSE 0 END), "
-        "SUM(CASE WHEN {4} > 0 THEN 1 ELSE 0 END) "
-        "FROM {5} WHERE {6};",
-        schema::day::db::kStatus, schema::day::db::kSleep,
-        schema::day::db::kExercise, schema::day::db::kCardioTime,
-        schema::day::db::kAnaerobicTime, schema::day::db::kTable,
-        GetDateConditionSql());
+    std::string sql = "SELECT "
+                      "SUM(CASE WHEN ";
+    sql += schema::day::db::kStatus;
+    sql += " != 0 THEN 1 ELSE 0 END), "
+           "SUM(CASE WHEN ";
+    sql += schema::day::db::kSleep;
+    sql += " != 0 THEN 1 ELSE 0 END), "
+           "SUM(CASE WHEN ";
+    sql += schema::day::db::kExercise;
+    sql += " != 0 THEN 1 ELSE 0 END), "
+           "SUM(CASE WHEN ";
+    sql += schema::day::db::kCardioTime;
+    sql += " > 0 THEN 1 ELSE 0 END), "
+           "SUM(CASE WHEN ";
+    sql += schema::day::db::kAnaerobicTime;
+    sql += " > 0 THEN 1 ELSE 0 END) "
+           "FROM ";
+    sql += schema::day::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += ";";
 
     if (sqlite3_prepare_v2(this->db_, sql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {

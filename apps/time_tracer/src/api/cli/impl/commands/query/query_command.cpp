@@ -1,10 +1,12 @@
 // api/cli/impl/commands/query/query_command.cpp
 #include "api/cli/impl/commands/query/query_command.hpp"
 
+#include <array>
 #include <iostream>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
+#include <string_view>
+#include <utility>
 #include <vector>
 
 #include "api/cli/framework/core/command_parser.hpp"
@@ -22,37 +24,73 @@ using namespace time_tracer::cli::impl::utils;
 
 namespace {
 constexpr std::size_t kSeparatorWidth = 40U;
+constexpr std::string_view kSupportedQueryTypes =
+    "day, month, week, year, recent, data";
 
 struct NormalizedQueryArgs {
   std::string_view sub_command;
   std::string_view query_arg;
 };
 
+using QueryDispatchHandler = void (*)(IReportHandler&, std::string_view,
+                                      ReportFormat);
+
+void RunDayQuery(IReportHandler& report_handler, std::string_view query_arg,
+                 ReportFormat format) {
+  std::cout << report_handler.RunDailyQuery(std::string(query_arg), format);
+}
+
+void RunMonthQuery(IReportHandler& report_handler, std::string_view query_arg,
+                   ReportFormat format) {
+  std::cout << report_handler.RunMonthlyQuery(std::string(query_arg), format);
+}
+
+void RunRecentQuery(IReportHandler& report_handler, std::string_view query_arg,
+                    ReportFormat format) {
+  std::vector<int> periods = ArgUtils::ParseNumberList(std::string(query_arg));
+  if (!periods.empty()) {
+    std::cout << report_handler.RunPeriodQueries(periods, format);
+  }
+}
+
+void RunWeekQuery(IReportHandler& report_handler, std::string_view query_arg,
+                  ReportFormat format) {
+  std::cout << report_handler.RunWeeklyQuery(std::string(query_arg), format);
+}
+
+void RunYearQuery(IReportHandler& report_handler, std::string_view query_arg,
+                  ReportFormat format) {
+  std::cout << report_handler.RunYearlyQuery(std::string(query_arg), format);
+}
+
+constexpr std::array<std::pair<std::string_view, QueryDispatchHandler>, 5>
+    kQueryDispatchTable = {{
+        {"day", &RunDayQuery},
+        {"month", &RunMonthQuery},
+        {"recent", &RunRecentQuery},
+        {"week", &RunWeekQuery},
+        {"year", &RunYearQuery},
+    }};
+
+[[nodiscard]] auto FindQueryHandler(std::string_view sub_command)
+    -> QueryDispatchHandler {
+  for (const auto& [name, kHandler] : kQueryDispatchTable) {
+    if (name == sub_command) {
+      return kHandler;
+    }
+  }
+  return nullptr;
+}
+
 void RunQueryForFormat(IReportHandler& report_handler,
                        const NormalizedQueryArgs& args, ReportFormat format) {
-  if (args.sub_command == "day") {
-    std::cout << report_handler.RunDailyQuery(std::string(args.query_arg),
-                                              format);
-  } else if (args.sub_command == "month") {
-    std::cout << report_handler.RunMonthlyQuery(std::string(args.query_arg),
-                                                format);
-  } else if (args.sub_command == "recent") {
-    std::vector<int> periods =
-        ArgUtils::ParseNumberList(std::string(args.query_arg));
-    if (!periods.empty()) {
-      std::cout << report_handler.RunPeriodQueries(periods, format);
-    }
-  } else if (args.sub_command == "week") {
-    std::cout << report_handler.RunWeeklyQuery(std::string(args.query_arg),
-                                               format);
-  } else if (args.sub_command == "year") {
-    std::cout << report_handler.RunYearlyQuery(std::string(args.query_arg),
-                                               format);
-  } else {
+  const auto kHandler = FindQueryHandler(args.sub_command);
+  if (kHandler == nullptr) {
     throw std::runtime_error(
         "Unknown query type '" + std::string(args.sub_command) +
-        "'. Supported: day, month, week, year, recent, data.");
+        "'. Supported: " + std::string(kSupportedQueryTypes) + ".");
   }
+  kHandler(report_handler, args.query_arg, format);
 }
 }  // namespace
 
@@ -87,7 +125,8 @@ auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
       {"argument",
        ArgType::kPositional,
        {},
-       "Date/Range arg OR Data Action (years/months/days/days-duration/days-stats/search)",
+       "Date/Range arg OR Data Action "
+       "(years/months/days/days-duration/days-stats/search)",
        true,
        "",
        1},

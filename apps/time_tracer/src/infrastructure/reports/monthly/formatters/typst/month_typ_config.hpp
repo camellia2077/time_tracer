@@ -2,16 +2,15 @@
 #ifndef REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_CONFIG_H_
 #define REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <string>
 
 #include "infrastructure/reports/monthly/common/month_base_config.hpp"
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class MonthTypConfig : public MonthBaseConfig {
  public:
-  explicit MonthTypConfig(const toml::table& config);
+  explicit MonthTypConfig(const TtMonthTypConfigV1& config);
 
   [[nodiscard]] auto GetBaseFont() const -> const std::string& {
     return style_.GetBaseFont();

@@ -30,9 +30,7 @@ auto MergeSpans(const std::optional<SourceSpan>& start_span,
         (merged.line_start == 0 || end_span->line_start < merged.line_start)) {
       merged.line_start = end_span->line_start;
     }
-    if (end_span->line_end > merged.line_end) {
-      merged.line_end = end_span->line_end;
-    }
+    merged.line_end = std::max(end_span->line_end, merged.line_end);
     return merged;
   }
   if (start_span.has_value()) {
@@ -45,7 +43,7 @@ auto MergeSpans(const std::optional<SourceSpan>& start_span,
 }
 }  // namespace
 
-auto ActivityMapper::formatTime(std::string_view time_str_hhmm) -> std::string {
+auto ActivityMapper::FormatTime(std::string_view time_str_hhmm) -> std::string {
   // Example: "0614" -> "06:14".
   if (time_str_hhmm.length() == kTimeDigitsLength) {
     return std::string(time_str_hhmm.substr(kTimeHourOffset, kTimeHourLength)) +
@@ -56,7 +54,7 @@ auto ActivityMapper::formatTime(std::string_view time_str_hhmm) -> std::string {
   return std::string(time_str_hhmm);
 }
 
-auto ActivityMapper::calculateDurationMinutes(const TimeRange& time_range)
+auto ActivityMapper::CalculateDurationMinutes(const TimeRange& time_range)
     -> int {
   // Example: "06:14" -> minutes offset 6*60 + 14.
   if (time_range.start_hhmm.length() != kTimeStringLength ||
@@ -88,12 +86,12 @@ ActivityMapper::ActivityMapper(const ConverterConfig& config)
       wake_keywords_(config.wake_keywords)  // 直接绑定引用
 {}
 
-auto ActivityMapper::is_wake_event(const RawEvent& raw_event) const -> bool {
+auto ActivityMapper::IsWakeEvent(const RawEvent& raw_event) const -> bool {
   return std::ranges::find(wake_keywords_, raw_event.description) !=
          wake_keywords_.end();
 }
 
-auto ActivityMapper::map_description(std::string_view description) const
+auto ActivityMapper::MapDescription(std::string_view description) const
     -> std::string {
   std::string description_str(description);
   std::string mapped_description = description_str;
@@ -111,8 +109,8 @@ auto ActivityMapper::map_description(std::string_view description) const
   return mapped_description;
 }
 
-auto ActivityMapper::apply_duration_rules(std::string_view mapped_description,
-                                          int duration_minutes) const
+auto ActivityMapper::ApplyDurationRules(std::string_view mapped_description,
+                                        int duration_minutes) const
     -> std::string {
   std::string description_str(mapped_description);
   auto duration_rules_it = config_.duration_mappings.find(description_str);
@@ -129,7 +127,7 @@ auto ActivityMapper::apply_duration_rules(std::string_view mapped_description,
   return description_str;
 }
 
-void ActivityMapper::apply_top_parent_mapping(
+void ActivityMapper::ApplyTopParentMapping(
     std::vector<std::string>& parts) const {
   if (parts.empty()) {
     return;
@@ -149,7 +147,7 @@ void ActivityMapper::apply_top_parent_mapping(
   }
 }
 
-auto ActivityMapper::build_project_path(const std::vector<std::string>& parts)
+auto ActivityMapper::BuildProjectPath(const std::vector<std::string>& parts)
     -> std::string {
   std::stringstream path_stream;
   for (size_t i = 0; i < parts.size(); ++i) {
@@ -158,7 +156,7 @@ auto ActivityMapper::build_project_path(const std::vector<std::string>& parts)
   return path_stream.str();
 }
 
-void ActivityMapper::append_activity(
+void ActivityMapper::AppendActivity(
     DailyLog& day, const RawEvent& raw_event, const TimeRange& time_range,
     std::string_view mapped_description,
     const std::optional<SourceSpan>& start_span) const {
@@ -176,8 +174,8 @@ void ActivityMapper::append_activity(
   activity.start_time_str = time_range.start_hhmm;
   activity.end_time_str = time_range.end_hhmm;
 
-  apply_top_parent_mapping(parts);
-  activity.project_path = build_project_path(parts);
+  ApplyTopParentMapping(parts);
+  activity.project_path = BuildProjectPath(parts);
 
   if (!raw_event.remark.empty()) {
     activity.remark = raw_event.remark;
@@ -187,7 +185,7 @@ void ActivityMapper::append_activity(
   day.processedActivities.push_back(activity);
 }
 
-void ActivityMapper::map_activities(DailyLog& day) {
+void ActivityMapper::MapActivities(DailyLog& day) {
   day.processedActivities.clear();
 
   if (day.getupTime.empty() && !day.isContinuation) {
@@ -198,25 +196,25 @@ void ActivityMapper::map_activities(DailyLog& day) {
   std::optional<SourceSpan> start_span;
 
   for (const auto& raw_event : day.rawEvents) {
-    bool is_wake = is_wake_event(raw_event);
+    bool is_wake = IsWakeEvent(raw_event);
 
     if (is_wake) {
       if (start_time.empty()) {
-        start_time = formatTime(raw_event.endTimeStr);
+        start_time = FormatTime(raw_event.endTimeStr);
         start_span = raw_event.source_span;
       }
       continue;
     }
 
-    std::string formatted_event_end_time = formatTime(raw_event.endTimeStr);
+    std::string formatted_event_end_time = FormatTime(raw_event.endTimeStr);
     TimeRange range{.start_hhmm = start_time,
                     .end_hhmm = formatted_event_end_time};
 
-    std::string mapped_description = map_description(raw_event.description);
-    int duration = calculateDurationMinutes(range);
+    std::string mapped_description = MapDescription(raw_event.description);
+    int duration = CalculateDurationMinutes(range);
 
-    mapped_description = apply_duration_rules(mapped_description, duration);
-    append_activity(day, raw_event, range, mapped_description, start_span);
+    mapped_description = ApplyDurationRules(mapped_description, duration);
+    AppendActivity(day, raw_event, range, mapped_description, start_span);
     start_time = formatted_event_end_time;
     start_span = raw_event.source_span;
   }

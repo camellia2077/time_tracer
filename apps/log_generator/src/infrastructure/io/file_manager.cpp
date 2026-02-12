@@ -10,17 +10,14 @@
 auto FileManager::setup_directories(const std::string& master_dir,
                                     const YearRange& year_range) -> bool {
   try {
-    if (!std::filesystem::exists(master_dir)) {
-      std::filesystem::create_directory(master_dir);
+    if (std::filesystem::create_directories(master_dir)) {
       std::cout << "Created master directory: '" << master_dir << "'\n";
     }
     for (int year = year_range.start_year; year <= year_range.end_year;
          ++year) {
       std::filesystem::path year_dir_path =
           std::filesystem::path(master_dir) / std::to_string(year);
-      if (!std::filesystem::exists(year_dir_path)) {
-        std::filesystem::create_directory(year_dir_path);
-      }
+      std::filesystem::create_directories(year_dir_path);
     }
   } catch (const std::filesystem::filesystem_error& e) {
     std::cerr << RED_COLOR << "Error creating directories. Detail: " << e.what()

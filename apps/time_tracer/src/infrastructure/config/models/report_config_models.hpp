@@ -16,6 +16,9 @@
 
 // --- Daily Configs ---
 
+inline constexpr int kDefaultDailyTypStatisticFontSize = 10;
+inline constexpr int kDefaultDailyTypStatisticTitleFontSize = 12;
+
 struct DailyTexConfig {
   FontConfig fonts;
   LayoutConfig layout;
@@ -30,6 +33,8 @@ struct DailyTypConfig {
   DailyReportLabels labels;
   std::map<std::string, std::string> keyword_colors;
   std::vector<ReportStatisticsItem> statistics_items;
+  int statistic_font_size = kDefaultDailyTypStatisticFontSize;
+  int statistic_title_font_size = kDefaultDailyTypStatisticTitleFontSize;
 };
 
 struct DailyMdConfig {

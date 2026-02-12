@@ -3,40 +3,36 @@
 
 #include <filesystem>
 #include <iostream>
+#include <string>
 #include <vector>
 
-// [修改] 直接引入 PluginValidator
 #include "infrastructure/config/validator/plugins/facade/plugin_validator.hpp"
+#include "infrastructure/reports/plugin_manifest.hpp"
 #include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 
 auto StartupValidator::ValidateEnvironment(const AppConfig& config) -> bool {
-  // 1. 定义需要检查的插件列表
-  // (原本这些列表是在 ConfigFacade
-  // 中定义的，现在移到这里，因为这是启动环境检查的一部分)
-  const std::vector<std::string> kExpectedPlugins = {
-      "DayMdFormatter",   "DayTexFormatter",   "DayTypFormatter",
-      "MonthMdFormatter", "MonthTexFormatter", "MonthTypFormatter",
-      "RangeMdFormatter", "RangeTexFormatter", "RangeTypFormatter"};
+  const fs::path kPluginsDir = fs::path(config.exe_dir_path) / "plugins";
+  const fs::path kBinDir = config.exe_dir_path;
 
-  // 2. 准备路径
-  fs::path plugins_dir = fs::path(config.exe_dir_path) / "plugins";
-  // 核心库通常在 bin 目录（exe 同级）
-  fs::path bin_dir = config.exe_dir_path;
+  const std::vector<std::string> kExpectedFormatterPlugins =
+      reports::plugin_manifest::GetExpectedFormatterPluginNames();
+  const bool kPluginsOk =
+      PluginValidator::Validate(kPluginsDir, kExpectedFormatterPlugins);
 
-  // 3. 执行验证
-  // 3.1 验证格式化器插件
-  bool plugins_ok = PluginValidator::Validate(plugins_dir, kExpectedPlugins);
+  std::vector<std::string> core_runtime_libraries = {
+      std::string(reports::plugin_manifest::kCoreRuntimeLibraryName)};
+  PluginValidationOptions core_validation_options{};
+  core_validation_options.require_formatter_abi = false;
+  const bool kCoreOk = PluginValidator::Validate(
+      kBinDir, core_runtime_libraries, core_validation_options);
 
-  // 3.2 验证核心共享库 (reports_shared.dll)
-  // 这是一个关键依赖，必须存在
-  bool core_ok = PluginValidator::Validate(bin_dir, {"reports_shared"});
-
-  if (!plugins_ok || !core_ok) {
+  if (!kPluginsOk || !kCoreOk) {
     namespace colors = time_tracer::common::colors;
     std::cerr << colors::kRed
-              << "Fatal: Runtime environment validation failed (Missing DLLs)."
+              << "Fatal: Runtime environment validation failed "
+                 "(missing or incompatible runtime DLLs)."
               << colors::kReset << std::endl;
     return false;
   }

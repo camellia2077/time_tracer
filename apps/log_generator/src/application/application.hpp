@@ -7,12 +7,13 @@
 #include "application/ports/file_system.hpp"
 #include "application/ports/log_generator_factory.hpp"
 #include "common/config_types.hpp"
+#include "common/exit_code.hpp"
 
 namespace App {
 class Application {
  public:
   Application(FileSystem& file_system, ILogGeneratorFactory& generator_factory);
-  int run(const Config& config, const std::filesystem::path& exe_dir);
+  ExitCode run(const Config& config, const std::filesystem::path& exe_dir);
 
  private:
   FileSystem& file_system_;

@@ -25,12 +25,12 @@ auto ProjectResolver::LoadFromDb() -> void {
   root_ = std::make_unique<ImportProjectNode>();
   root_->id = 0;
 
-  const std::string sql = std::format(
-      "SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
-      schema::projects::db::kName, schema::projects::db::kParentId,
-      schema::projects::db::kTable);
+  const std::string kSql =
+      std::format("SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
+                  schema::projects::db::kName, schema::projects::db::kParentId,
+                  schema::projects::db::kTable);
   sqlite3_stmt* stmt;
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     std::cerr << "Error preparing load projects sql: " << sqlite3_errmsg(db_)
               << std::endl;
     return;

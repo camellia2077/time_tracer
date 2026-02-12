@@ -10,7 +10,7 @@
 
 namespace validator::structure {
 
-void validateDateContinuity(const std::vector<DailyLog>& days,
+void ValidateDateContinuity(const std::vector<DailyLog>& days,
                             std::vector<Diagnostic>& diagnostics,
                             DateCheckMode mode);
 
