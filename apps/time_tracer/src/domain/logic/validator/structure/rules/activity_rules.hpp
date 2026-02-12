@@ -9,9 +9,9 @@
 
 namespace validator::structure {
 
-void validateActivityCount(const DailyLog& day,
+void ValidateActivityCount(const DailyLog& day,
                            std::vector<Diagnostic>& diagnostics);
-void validateActivityDuration(const DailyLog& day,
+void ValidateActivityDuration(const DailyLog& day,
                               std::vector<Diagnostic>& diagnostics);
 
 }  // namespace validator::structure

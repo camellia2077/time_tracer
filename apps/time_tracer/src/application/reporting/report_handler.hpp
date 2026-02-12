@@ -6,16 +6,15 @@
 
 #include "application/interfaces/i_report_handler.hpp"
 
-class ReportGenerator;
 class IReportExporter;
+class IReportQueryService;
 
 class ReportHandler : public IReportHandler {
  public:
-  ReportHandler(std::unique_ptr<ReportGenerator> generator,
+  ReportHandler(std::unique_ptr<IReportQueryService> query_service,
                 std::unique_ptr<IReportExporter> exporter);
   ~ReportHandler() override;
 
-  // 查询方法
   auto RunDailyQuery(std::string_view date, ReportFormat format)
       -> std::string override;
   auto RunMonthlyQuery(std::string_view month, ReportFormat format)
@@ -25,12 +24,9 @@ class ReportHandler : public IReportHandler {
       -> std::string override;
   auto RunYearlyQuery(std::string_view year, ReportFormat format)
       -> std::string override;
-
-  // [新增] 批量周期查询实现
   auto RunPeriodQueries(const std::vector<int>& days_list, ReportFormat format)
       -> std::string override;
 
-  // 导出方法
   auto RunExportSingleDayReport(std::string_view date, ReportFormat format)
       -> void override;
   auto RunExportSingleMonthReport(std::string_view month, ReportFormat format)
@@ -49,8 +45,8 @@ class ReportHandler : public IReportHandler {
   auto RunExportAllYearlyReportsQuery(ReportFormat format) -> void override;
 
  private:
-  std::unique_ptr<ReportGenerator> generator_;
+  std::unique_ptr<IReportQueryService> query_service_;
   std::unique_ptr<IReportExporter> exporter_;
 };
 
-#endif
+#endif  // APPLICATION_REPORTING_REPORT_HANDLER_H_

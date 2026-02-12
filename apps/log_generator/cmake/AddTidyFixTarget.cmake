@@ -14,9 +14,10 @@ if(CLANG_TIDY_EXE)
     foreach(FILE_PATH ${SOURCES})
         math(EXPR COUNTER "${COUNTER} + 1")
         set(CURRENT_TARGET "tidy_check_step_${COUNTER}")
+        set(TIDY_TASK_MARKER "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}")
 
         add_custom_target(${CURRENT_TARGET}
-            COMMAND ${CMAKE_COMMAND} -E echo "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
+            COMMAND ${CMAKE_COMMAND} -E echo "${TIDY_TASK_MARKER}"
             COMMAND ${CLANG_TIDY_EXE}
                 -p ${CMAKE_BINARY_DIR}
                 --format-style=file
@@ -43,9 +44,10 @@ if(CLANG_TIDY_EXE)
     foreach(FILE_PATH ${SOURCES})
         math(EXPR COUNTER "${COUNTER} + 1")
         set(CURRENT_TARGET "tidy_fix_step_${COUNTER}")
+        set(TIDY_TASK_MARKER "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}")
 
         add_custom_target(${CURRENT_TARGET}
-            COMMAND ${CMAKE_COMMAND} -E echo "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
+            COMMAND ${CMAKE_COMMAND} -E echo "${TIDY_TASK_MARKER}"
             COMMAND ${CLANG_TIDY_EXE}
                 -p ${CMAKE_BINARY_DIR}
                 --fix

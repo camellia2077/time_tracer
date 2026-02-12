@@ -1,134 +1,124 @@
 // application/reporting/report_handler.cpp
 #include "application/reporting/report_handler.hpp"
 
-#include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "application/interfaces/i_report_exporter.hpp"
-#include "application/reporting/generator/report_generator.hpp"
+#include "application/interfaces/i_report_query_service.hpp"
 
 namespace {
 constexpr int kSeparatorLength = 40;
 }
 
-ReportHandler::ReportHandler(std::unique_ptr<ReportGenerator> generator,
+ReportHandler::ReportHandler(std::unique_ptr<IReportQueryService> query_service,
                              std::unique_ptr<IReportExporter> exporter)
-    : generator_(std::move(generator)), exporter_(std::move(exporter)) {}
+    : query_service_(std::move(query_service)),
+      exporter_(std::move(exporter)) {}
 
 ReportHandler::~ReportHandler() = default;
 
 auto ReportHandler::RunDailyQuery(std::string_view date, ReportFormat format)
     -> std::string {
-  return generator_->GenerateDailyReport(date, format);
+  return query_service_->RunDailyQuery(date, format);
 }
 
 auto ReportHandler::RunMonthlyQuery(std::string_view month, ReportFormat format)
     -> std::string {
-  return generator_->GenerateMonthlyReport(month, format);
+  return query_service_->RunMonthlyQuery(month, format);
 }
 
 auto ReportHandler::RunPeriodQuery(int days, ReportFormat format)
     -> std::string {
-  return generator_->GeneratePeriodReport(days, format);
+  return query_service_->RunPeriodQuery(days, format);
 }
 
 auto ReportHandler::RunWeeklyQuery(std::string_view iso_week,
                                    ReportFormat format) -> std::string {
-  return generator_->GenerateWeeklyReport(iso_week, format);
+  return query_service_->RunWeeklyQuery(iso_week, format);
 }
 
 auto ReportHandler::RunYearlyQuery(std::string_view year, ReportFormat format)
     -> std::string {
-  return generator_->GenerateYearlyReport(year, format);
+  return query_service_->RunYearlyQuery(year, format);
 }
 
-// [新增] 批量查询逻辑下沉至 Core
 auto ReportHandler::RunPeriodQueries(const std::vector<int>& days_list,
                                      ReportFormat format) -> std::string {
-  std::ostringstream oss;
-  for (size_t i = 0; i < days_list.size(); ++i) {
-    if (i > 0) {
-      oss << "\n" << std::string(kSeparatorLength, '-') << "\n";
+  std::ostringstream output;
+  for (size_t index = 0; index < days_list.size(); ++index) {
+    if (index > 0) {
+      output << "\n" << std::string(kSeparatorLength, '-') << "\n";
     }
     try {
-      oss << RunPeriodQuery(days_list[i], format);
-    } catch (const std::exception& e) {
-      oss << "Error querying period " << days_list[i] << " days: " << e.what();
+      output << RunPeriodQuery(days_list[index], format);
+    } catch (const std::exception& exception) {
+      output << "Error querying period " << days_list[index]
+             << " days: " << exception.what();
     }
   }
-  return oss.str();
+  return output.str();
 }
 
 auto ReportHandler::RunExportSingleDayReport(std::string_view date,
                                              ReportFormat format) -> void {
-  auto content = generator_->GenerateDailyReport(date, format);
-  // [修复] 调用 ExportSingleDayReport (之前错误调用了
-  // export_all_daily_reports)
-  exporter_->ExportSingleDayReport({.id = date, .content = content}, format);
+  const auto kContent = query_service_->RunDailyQuery(date, format);
+  exporter_->ExportSingleDayReport({.id = date, .content = kContent}, format);
 }
 
 auto ReportHandler::RunExportSingleMonthReport(std::string_view month,
                                                ReportFormat format) -> void {
-  auto content = generator_->GenerateMonthlyReport(month, format);
-  // [修复] 调用 ExportSingleMonthReport
-  exporter_->ExportSingleMonthReport({.id = month, .content = content}, format);
+  const auto kContent = query_service_->RunMonthlyQuery(month, format);
+  exporter_->ExportSingleMonthReport({.id = month, .content = kContent},
+                                     format);
 }
 
 auto ReportHandler::RunExportSinglePeriodReport(int days, ReportFormat format)
     -> void {
-  auto content = generator_->GeneratePeriodReport(days, format);
-  // [修复] 调用 ExportSinglePeriodReport (之前拼写错误或不存在
-  // 这个函数)
-  exporter_->ExportSinglePeriodReport(days, content, format);
+  const auto kContent = query_service_->RunPeriodQuery(days, format);
+  exporter_->ExportSinglePeriodReport(days, kContent, format);
 }
 
 auto ReportHandler::RunExportSingleWeekReport(std::string_view iso_week,
                                               ReportFormat format) -> void {
-  auto content = generator_->GenerateWeeklyReport(iso_week, format);
-  exporter_->ExportSingleWeekReport({.id = iso_week, .content = content},
+  const auto kContent = query_service_->RunWeeklyQuery(iso_week, format);
+  exporter_->ExportSingleWeekReport({.id = iso_week, .content = kContent},
                                     format);
 }
 
 auto ReportHandler::RunExportSingleYearReport(std::string_view year,
                                               ReportFormat format) -> void {
-  auto content = generator_->GenerateYearlyReport(year, format);
-  exporter_->ExportSingleYearReport({.id = year, .content = content}, format);
+  const auto kContent = query_service_->RunYearlyQuery(year, format);
+  exporter_->ExportSingleYearReport({.id = year, .content = kContent}, format);
 }
 
 auto ReportHandler::RunExportAllDailyReportsQuery(ReportFormat format) -> void {
-  // [修复] 获取整个集合
-  auto reports = generator_->GenerateAllDailyReports(format);
-  // [修复] 直接传递集合给 Exporter，不要手动遍历，Exporter
-  // 内部会处理遍历和目录结构
-  exporter_->ExportAllDailyReports(reports, format);
+  const auto kReports = query_service_->RunExportAllDailyReportsQuery(format);
+  exporter_->ExportAllDailyReports(kReports, format);
 }
 
 auto ReportHandler::RunExportAllMonthlyReportsQuery(ReportFormat format)
     -> void {
-  // [修复] 获取整个集合
-  auto reports = generator_->GenerateAllMonthlyReports(format);
-  // [修复] 直接传递集合
-  exporter_->ExportAllMonthlyReports(reports, format);
+  const auto kReports = query_service_->RunExportAllMonthlyReportsQuery(format);
+  exporter_->ExportAllMonthlyReports(kReports, format);
 }
 
 auto ReportHandler::RunExportAllPeriodReportsQuery(
     const std::vector<int>& days_list, ReportFormat format) -> void {
-  // 针对 Period，我们也可以优化为使用 Generator 和 Exporter 的批量接口
-  // 这样可以利用 Exporter 中的 ExportUtils::execute_export_task
-  // 提供的统一日志 and 目录管理
-  auto reports = generator_->GenerateAllPeriodReports(days_list, format);
-  exporter_->ExportAllPeriodReports(reports, format);
+  const auto kReports =
+      query_service_->RunExportAllPeriodReportsQuery(days_list, format);
+  exporter_->ExportAllPeriodReports(kReports, format);
 }
 
 auto ReportHandler::RunExportAllWeeklyReportsQuery(ReportFormat format)
     -> void {
-  auto reports = generator_->GenerateAllWeeklyReports(format);
-  exporter_->ExportAllWeeklyReports(reports, format);
+  const auto kReports = query_service_->RunExportAllWeeklyReportsQuery(format);
+  exporter_->ExportAllWeeklyReports(kReports, format);
 }
 
 auto ReportHandler::RunExportAllYearlyReportsQuery(ReportFormat format)
     -> void {
-  auto reports = generator_->GenerateAllYearlyReports(format);
-  exporter_->ExportAllYearlyReports(reports, format);
+  const auto kReports = query_service_->RunExportAllYearlyReportsQuery(format);
+  exporter_->ExportAllYearlyReports(kReports, format);
 }

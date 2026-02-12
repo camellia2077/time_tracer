@@ -6,6 +6,7 @@
 
 struct DailyReportLabels {
   std::string report_title_prefix;
+  std::string report_title;
   std::string date_label;
   std::string total_time_label;
   std::string status_label;
@@ -23,10 +24,17 @@ struct DailyReportLabels {
 };
 
 struct RangeReportLabels {
+  std::string report_title;
   std::string title_template;
   std::string total_time_label;
   std::string actual_days_label;
+  std::string status_days_label;
+  std::string sleep_days_label;
+  std::string exercise_days_label;
+  std::string cardio_days_label;
+  std::string anaerobic_days_label;
   std::string no_records_message;
+  std::string invalid_format_message;
   std::string invalid_range_message;
   std::string project_breakdown_label;
 };

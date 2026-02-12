@@ -22,22 +22,25 @@ struct ProjectInfo {
 // [修改] 继承 IProjectInfoProvider
 class ProjectNameCache : public IProjectInfoProvider {
  public:
-  static ProjectNameCache& Instance() {
+  static auto Instance() -> ProjectNameCache& {
     static ProjectNameCache instance;
     return instance;
   }
 
   // [修改] 添加 override 关键字
-  void EnsureLoaded(sqlite3* sqlite_db) override {
-    if (loaded_) return;
+  auto EnsureLoaded(sqlite3* sqlite_db)
+      -> void override {  // NOLINT(readability-function-cognitive-complexity)
+    if (loaded_) {
+      return;
+    }
 
     // Use sqlite_db instead of db
-    const std::string sql = std::format(
+    const std::string kSql = std::format(
         "SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
         schema::projects::db::kName, schema::projects::db::kParentId,
         schema::projects::db::kTable);
     sqlite3_stmt* stmt;
-    if (sqlite3_prepare_v2(sqlite_db, sql.c_str(), -1, &stmt, nullptr) ==
+    if (sqlite3_prepare_v2(sqlite_db, kSql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {
       while (sqlite3_step(stmt) == SQLITE_ROW) {
         long long project_id = sqlite3_column_int64(stmt, 0);

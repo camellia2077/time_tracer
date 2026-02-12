@@ -41,9 +41,10 @@ auto ReportService::RunMonthlyQuery(std::string_view year_month_str,
 
 auto ReportService::RunPeriodQuery(int days, ReportFormat format) const
     -> std::string {
-  BaseGenerator<PeriodReportData, PeriodQuerier, int> generator(db_,
-                                                                app_config_);
-  return generator.GenerateReport(days, format);
+  PeriodQuerier querier(db_, days);
+  PeriodReportData report_data = querier.FetchData();
+  auto& formatter = GetOrCreatePeriodFormatter(format);
+  return formatter.FormatReport(report_data);
 }
 
 auto ReportService::RunWeeklyQuery(std::string_view iso_week_str,
@@ -63,7 +64,7 @@ auto ReportService::RunYearlyQuery(std::string_view year_str,
 auto ReportService::RunExportAllDailyReportsQuery(ReportFormat format) const
     -> FormattedGroupedReports {
   DailyReportService generator(db_, app_config_);
-  return generator.generate_all_reports(format);
+  return generator.GenerateAllReports(format);
 }
 
 auto ReportService::RunExportAllMonthlyReportsQuery(ReportFormat format) const
@@ -109,4 +110,23 @@ auto ReportService::RunExportAllYearlyReportsQuery(ReportFormat format) const
     -> FormattedYearlyReports {
   YearlyReportService generator(db_, app_config_);
   return generator.GenerateReports(format);
+}
+
+auto ReportService::GetOrCreatePeriodFormatter(ReportFormat format) const
+    -> IReportFormatter<PeriodReportData>& {
+  if (auto formatter_iter = period_formatter_cache_.find(format);
+      formatter_iter != period_formatter_cache_.end()) {
+    return *(formatter_iter->second);
+  }
+
+  auto formatter =
+      GenericFormatterFactory<PeriodReportData>::Create(format, app_config_);
+  auto [inserted_iter, inserted] =
+      period_formatter_cache_.emplace(format, std::move(formatter));
+  if (!inserted || !(inserted_iter->second)) {
+    throw std::runtime_error(
+        "Failed to cache period formatter for selected report format.");
+  }
+
+  return *(inserted_iter->second);
 }

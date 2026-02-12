@@ -1,20 +1,16 @@
 // infrastructure/reports/daily/formatters/latex/day_tex_config.cpp
 #include "infrastructure/reports/daily/formatters/latex/day_tex_config.hpp"
 
-DayTexConfig::DayTexConfig(const toml::table& config)
-    : DayBaseConfig(config), style_(config) {
-  // config_table_ 在基类中是 protected，也可以直接用
-  report_title_ = config_table_["report_title"].value_or("");
+#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
 
-  if (const toml::table* kw_tbl = config_table_["keyword_colors"].as_table()) {
-    for (const auto& [key, val] : *kw_tbl) {
-      if (auto value_str = val.value<std::string>()) {
-        // key.str() 返回的是 string_view，需要显式转换为 std::string
-        // 才能作为 std::map<std::string, ...> 的键
-        keyword_colors_[std::string(key.str())] = *value_str;
-      }
-    }
-  }
+DayTexConfig::DayTexConfig(const TtDayTexConfigV1& config)
+    : DayBaseConfig(config.labels, config.statisticsItems,
+                    config.statisticsItemCount),
+      style_(config.style) {
+  report_title_ = formatter_c_string_view_utils::ToString(
+      config.labels.reportTitle, "day.labels.reportTitle");
+  keyword_colors_ = formatter_c_string_view_utils::BuildKeywordColorsMap(
+      config.keywordColors, config.keywordColorCount, "day.keywordColors");
 }
 
 auto DayTexConfig::GetReportTitle() const -> const std::string& {

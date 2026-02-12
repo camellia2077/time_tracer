@@ -30,6 +30,7 @@ static auto GetErrorTypeHeader(ErrorType type) -> std::string {
       return "Lack of sleep activity errors(最后的活动项目缺少sleep活动):";
     case ErrorType::kJsonTooFewActivities:
       return "Activity count errors(活动数量错误):";
+    // NOLINTNEXTLINE(bugprone-branch-clone)
     case ErrorType::kZeroDurationActivity:
       return "Activity duration errors(活动时长错误):";
     case ErrorType::kActivityDurationTooLong:
@@ -47,6 +48,7 @@ static auto GetErrorTypeHeader(ErrorType type) -> std::string {
   }
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void PrintGroupedErrors(const std::string& filename,
                         const std::set<Error>& errors) {
   std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
@@ -79,16 +81,15 @@ void PrintGroupedErrors(const std::string& filename,
         }
         if (err.source_span->line_end > err.source_span->line_start &&
             err.source_span->line_start > 0) {
-          location_prefix +=
-              std::to_string(err.source_span->line_start) + "-" +
-              std::to_string(err.source_span->line_end) + ": Line " +
-              std::to_string(err.source_span->line_start) + "-" +
-              std::to_string(err.source_span->line_end) + ": ";
+          location_prefix += std::to_string(err.source_span->line_start) + "-" +
+                             std::to_string(err.source_span->line_end) +
+                             ": Line " +
+                             std::to_string(err.source_span->line_start) + "-" +
+                             std::to_string(err.source_span->line_end) + ": ";
         } else {
           location_prefix += std::to_string(err.source_span->line_start) +
                              ": Line " +
-                             std::to_string(err.source_span->line_start) +
-                             ": ";
+                             std::to_string(err.source_span->line_start) + ": ";
         }
       } else if (err.line_number > 0) {
         location_prefix = "Line " + std::to_string(err.line_number) + ": ";
@@ -98,8 +99,7 @@ void PrintGroupedErrors(const std::string& filename,
       std::cerr << "  " << error_message << std::endl;
       err_stream << "  " << error_message << "\n";
 
-      if (err.source_span.has_value() &&
-          !err.source_span->raw_text.empty()) {
+      if (err.source_span.has_value() && !err.source_span->raw_text.empty()) {
         std::string raw_line = "    > " + err.source_span->raw_text;
         std::cerr << raw_line << std::endl;
         err_stream << raw_line << "\n";
@@ -126,6 +126,7 @@ static auto GetDiagnosticHeader(const std::string& code) -> std::string {
   return "Other errors:";
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void PrintDiagnostics(const std::string& fallback_filename,
                       const std::vector<Diagnostic>& diagnostics) {
   if (diagnostics.empty()) {
@@ -170,10 +171,9 @@ void PrintDiagnostics(const std::string& fallback_filename,
               std::to_string(diag.source_span->line_start) + "-" +
               std::to_string(diag.source_span->line_end) + ": ";
         } else {
-          location_prefix += std::to_string(diag.source_span->line_start) +
-                             ": Line " +
-                             std::to_string(diag.source_span->line_start) +
-                             ": ";
+          location_prefix +=
+              std::to_string(diag.source_span->line_start) + ": Line " +
+              std::to_string(diag.source_span->line_start) + ": ";
         }
       } else if (!fallback_filename.empty()) {
         location_prefix = fallback_filename + ": ";
@@ -183,8 +183,7 @@ void PrintDiagnostics(const std::string& fallback_filename,
       std::cerr << "  " << error_message << std::endl;
       err_stream << "  " << error_message << "\n";
 
-      if (diag.source_span.has_value() &&
-          !diag.source_span->raw_text.empty()) {
+      if (diag.source_span.has_value() && !diag.source_span->raw_text.empty()) {
         std::string raw_line = "    > " + diag.source_span->raw_text;
         std::cerr << raw_line << std::endl;
         err_stream << raw_line << "\n";

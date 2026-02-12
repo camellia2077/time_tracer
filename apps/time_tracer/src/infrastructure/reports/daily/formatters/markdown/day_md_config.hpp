@@ -2,13 +2,12 @@
 #ifndef REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
 #define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class DayMdConfig : public DayBaseConfig {
  public:
-  explicit DayMdConfig(const toml::table& config);
+  explicit DayMdConfig(const TtDayMdConfigV1& config);
 };
 
 #endif  // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_

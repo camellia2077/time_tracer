@@ -3,7 +3,7 @@
 #define REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
 
 #include <memory>
-#include <sstream>
+#include <string>
 
 #include "domain/reports/models/monthly_report_data.hpp"
 #include "infrastructure/reports/monthly/formatters/latex/month_tex_config.hpp"
@@ -15,8 +15,7 @@ namespace MonthTexUtils {
  * 格式的摘要（标题和总结信息）。
 
  */
-void DisplayHeader(std::stringstream& report_stream,
-                   const MonthlyReportData& data,
+void DisplayHeader(std::string& report_stream, const MonthlyReportData& data,
                    const std::shared_ptr<MonthTexConfig>& config);
 
 }  // namespace MonthTexUtils

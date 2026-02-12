@@ -1,23 +1,17 @@
 // infrastructure/reports/daily/formatters/typst/day_typ_config.cpp
 #include "infrastructure/reports/daily/formatters/typst/day_typ_config.hpp"
 
-DayTypConfig::DayTypConfig(const toml::table& config)
-    : DayBaseConfig(config), style_(config) {
-  statistic_font_size_ =
-      config_table_["statistic_font_size"].value_or(kDefaultStatFontSize);
-  statistic_title_font_size_ =
-      config_table_["statistic_title_font_size"].value_or(
-          kDefaultStatTitleFontSize);
+#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
 
-  if (const toml::table* kw_tbl = config_table_["keyword_colors"].as_table()) {
-    for (const auto& [key, val] : *kw_tbl) {
-      if (auto color_val = val.value<std::string>()) {
-        // 显式转换为 std::string 以匹配 map 键类型
-        keyword_colors_[std::string(key.str())] = *color_val;
-      }
-    }
-  }
-}
+DayTypConfig::DayTypConfig(const TtDayTypConfigV1& config)
+    : DayBaseConfig(config.labels, config.statisticsItems,
+                    config.statisticsItemCount),
+      style_(config.style),
+      statistic_font_size_(config.statisticFontSize),
+      statistic_title_font_size_(config.statisticTitleFontSize),
+      keyword_colors_(formatter_c_string_view_utils::BuildKeywordColorsMap(
+          config.keywordColors, config.keywordColorCount,
+          "day.keywordColors")) {}
 
 auto DayTypConfig::GetStatisticFontSize() const -> int {
   return statistic_font_size_;

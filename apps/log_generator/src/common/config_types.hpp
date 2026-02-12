@@ -31,6 +31,7 @@ struct Config {
   int items_per_day;
   GenerationMode mode;
   bool enable_nosleep = false;
+  std::string output_directory = "dates";
 };
 
 // TOML 文件对应的原始数据结构

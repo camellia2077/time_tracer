@@ -8,31 +8,28 @@
 #include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/source_span.hpp"
 
-namespace validator {
-namespace txt {
+namespace validator::txt {
 
 class StructureRules {
  public:
   StructureRules() = default;
 
   // [新增] 重置状态，用于处理新文件
-  void reset();
+  void Reset();
 
-  void process_year_line(int line_number, const std::string& line,
-                         std::set<Error>& errors, const SourceSpan& span);
-  void process_date_line(int line_number, const std::string& line,
-                         std::set<Error>& errors, const SourceSpan& span);
-  void process_remark_line(int line_number, const std::string& line,
-                           std::set<Error>& errors,
-                           const SourceSpan& span) const;
-  void process_event_line(int line_number, const std::string& line,
-                          std::set<Error>& errors, const SourceSpan& span);
-  static void process_unrecognized_line(int line_number,
-                                        const std::string& line,
-                                        std::set<Error>& errors,
-                                        const SourceSpan& span);
+  void ProcessYearLine(int line_number, const std::string& line,
+                       std::set<Error>& errors, const SourceSpan& span);
+  void ProcessDateLine(int line_number, const std::string& line,
+                       std::set<Error>& errors, const SourceSpan& span);
+  void ProcessRemarkLine(int line_number, const std::string& line,
+                         std::set<Error>& errors, const SourceSpan& span) const;
+  void ProcessEventLine(int line_number, const std::string& line,
+                        std::set<Error>& errors, const SourceSpan& span);
+  static void ProcessUnrecognizedLine(int line_number, const std::string& line,
+                                      std::set<Error>& errors,
+                                      const SourceSpan& span);
 
-  bool has_seen_year() const;
+  [[nodiscard]] auto HasSeenYear() const -> bool;
 
  private:
   bool has_seen_year_ = false;
@@ -45,7 +42,6 @@ class StructureRules {
   int last_seen_year_ = 0;
 };
 
-}  // namespace txt
-}  // namespace validator
+}  // namespace validator::txt
 
 #endif  // VALIDATOR_TXT_RULES_STRUCTURE_RULES_H_

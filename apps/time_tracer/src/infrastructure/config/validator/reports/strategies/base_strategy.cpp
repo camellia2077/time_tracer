@@ -1,10 +1,17 @@
 // infrastructure/config/validator/reports/strategies/base_strategy.cpp
 #include "infrastructure/config/validator/reports/strategies/base_strategy.hpp"
 
+#include <algorithm>
 #include <iostream>
-#include <regex>
 #include <set>
 #include <string>
+
+namespace {
+[[nodiscard]] auto IsHexDigit(char value) -> bool {
+  return (value >= '0' && value <= '9') || (value >= 'a' && value <= 'f') ||
+         (value >= 'A' && value <= 'F');
+}
+}  // namespace
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 static auto ValidateStatsRecursive(const toml::array& items_array,
@@ -156,6 +163,10 @@ auto BaseStrategy::ValidateStatisticsItems(const toml::table& query_config,
 }
 
 auto BaseStrategy::IsValidHexColor(const std::string& color_string) -> bool {
-  static const std::regex kHexColorRegex(R"(^#[0-9a-fA-F]{6}$)");
-  return std::regex_match(color_string, kHexColorRegex);
+  constexpr size_t kHexColorLength = 7;
+  if (color_string.size() != kHexColorLength || color_string[0] != '#') {
+    return false;
+  }
+  return std::all_of(color_string.begin() + 1, color_string.end(),
+                     [](char value) { return IsHexDigit(value); });
 }

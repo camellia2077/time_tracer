@@ -14,12 +14,12 @@ auto StructValidator::Validate(const std::string& /*filename*/,
   bool is_valid = true;
 
   // 1. Validate Date Continuity (Structure)
-  validateDateContinuity(days, diagnostics, date_check_mode_);
+  ValidateDateContinuity(days, diagnostics, date_check_mode_);
 
   // 2. Validate content of each day (Activity rules)
   for (const auto& day : days) {
-    validateActivityCount(day, diagnostics);
-    validateActivityDuration(day, diagnostics);
+    ValidateActivityCount(day, diagnostics);
+    ValidateActivityDuration(day, diagnostics);
   }
 
   if (!diagnostics.empty()) {

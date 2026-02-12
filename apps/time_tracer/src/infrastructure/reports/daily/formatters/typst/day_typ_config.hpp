@@ -2,27 +2,22 @@
 #ifndef REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_H_
 #define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <map>
 #include <string>
 
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class DayTypConfig : public DayBaseConfig {
  public:
-  static constexpr int kDefaultStatFontSize = 10;
-  static constexpr int kDefaultStatTitleFontSize = 12;
-
-  explicit DayTypConfig(const toml::table& config);
+  explicit DayTypConfig(const TtDayTypConfigV1& config);
 
   [[nodiscard]] auto GetStatisticFontSize() const -> int;
   [[nodiscard]] auto GetStatisticTitleFontSize() const -> int;
   [[nodiscard]] auto GetKeywordColors() const
       -> const std::map<std::string, std::string>&;
 
-  // 代理
   [[nodiscard]] auto GetTitleFont() const -> const std::string& {
     return style_.GetTitleFont();
   }

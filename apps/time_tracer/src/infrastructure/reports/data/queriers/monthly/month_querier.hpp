@@ -7,9 +7,10 @@
 #include <string>
 
 #include "domain/reports/models/monthly_report_data.hpp"
-#include "infrastructure/reports/data/queriers/base_querier.hpp"
+#include "infrastructure/reports/data/queriers/range_querier_base.hpp"
 
-class MonthQuerier : public BaseQuerier<MonthlyReportData, std::string_view> {
+class MonthQuerier
+    : public RangeQuerierBase<MonthlyReportData, std::string_view> {
  public:
   static constexpr int kYearMonthLength = 7;
   static constexpr int kDashPosition = 4;
@@ -18,8 +19,6 @@ class MonthQuerier : public BaseQuerier<MonthlyReportData, std::string_view> {
   static constexpr int kMonthEndPosition = 6;
 
   explicit MonthQuerier(sqlite3* sqlite_db, std::string_view year_month);
-
-  [[nodiscard]] auto FetchData() -> MonthlyReportData override;
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

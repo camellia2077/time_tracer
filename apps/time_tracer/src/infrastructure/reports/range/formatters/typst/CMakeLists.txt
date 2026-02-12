@@ -1,34 +1,33 @@
-# src/reports/range/formatters/typst/CMakeLists.txt
+Ôªø# src/reports/range/formatters/typst/CMakeLists.txt
 
-# --- 1. ∂®“Âπ≤œÌø‚(DLL)ƒø±Í ---
 add_library(RangeTypFormatter SHARED
     range_typ_formatter.cpp
     range_typ_config.cpp
 )
 
-# --- 2. …Ë÷√ƒø±Í Ù–‘ ---
-setup_project_target(RangeTypFormatter)
-
-# --- 3. ¡¥Ω”µΩπ≤œÌø‚ ---
+setup_plugin_target(RangeTypFormatter NO_STDCXXEXP)
 target_link_libraries(RangeTypFormatter PRIVATE reports_shared)
 
-# --- 4. ÃÌº”ÃÂª˝”≈ªØ—°œÓ ---
-target_compile_options(RangeTypFormatter PRIVATE
-    -Os
-    -ffunction-sections
-    -fdata-sections
-)
+if(NOT DISABLE_OPTIMIZATION)
+    target_compile_options(RangeTypFormatter PRIVATE
+        -Os
+        -ffunction-sections
+        -fdata-sections
+    )
 
-target_link_options(RangeTypFormatter PRIVATE
-    -s
-    -Wl,--gc-sections
-)
+    target_link_options(RangeTypFormatter PRIVATE
+        -s
+        -Wl,--gc-sections
+    )
+endif()
 
-# --- 5. …Ë÷√ ‰≥ˆƒø¬º ---
 set_target_properties(RangeTypFormatter PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
 )
 
-# --- 6. Ω· ¯”Ô ---
-message(STATUS "Configured shared library target: RangeTypFormatter with maximum size optimization")
+if(DISABLE_OPTIMIZATION)
+    message(STATUS "Configured shared library target: RangeTypFormatter with size optimization disabled (--no-opt)")
+else()
+    message(STATUS "Configured shared library target: RangeTypFormatter with maximum size optimization")
+endif()

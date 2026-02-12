@@ -1,37 +1,35 @@
 // infrastructure/reports/range/common/range_base_config.cpp
 #include "infrastructure/reports/range/common/range_base_config.hpp"
 
-#include <utility>
+#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
 
-RangeBaseConfig::RangeBaseConfig(toml::table config)
-    : config_table_(std::move(config)) {
-  LoadBaseConfig();
+RangeBaseConfig::RangeBaseConfig(const TtRangeLabelsConfigV1& labels) {
+  LoadBaseConfig(labels);
 }
 
-void RangeBaseConfig::LoadBaseConfig() {
-  title_template_ = config_table_["title_template"].value_or<std::string>("");
-  total_time_label_ =
-      config_table_["total_time_label"].value_or<std::string>("");
-  actual_days_label_ =
-      config_table_["actual_days_label"].value_or<std::string>("");
-  status_days_label_ =
-      config_table_["status_days_label"].value_or<std::string>("Status Days");
-  sleep_days_label_ =
-      config_table_["sleep_days_label"].value_or<std::string>("Sleep Days");
-  exercise_days_label_ =
-      config_table_["exercise_days_label"].value_or<std::string>(
-          "Exercise Days");
-  cardio_days_label_ =
-      config_table_["cardio_days_label"].value_or<std::string>("Cardio Days");
-  anaerobic_days_label_ = config_table_["anaerobic_days_label"]
-                              .value_or<std::string>("Anaerobic Days");
-  no_records_message_ =
-      config_table_["no_records_message"].value_or<std::string>("");
-  invalid_range_message_ =
-      config_table_["invalid_range_message"].value_or<std::string>("");
-  project_breakdown_label_ =
-      config_table_["project_breakdown_label"].value_or<std::string>(
-          "Project Breakdown");
+void RangeBaseConfig::LoadBaseConfig(const TtRangeLabelsConfigV1& labels) {
+  title_template_ = formatter_c_string_view_utils::ToString(
+      labels.titleTemplate, "labels.titleTemplate");
+  total_time_label_ = formatter_c_string_view_utils::ToString(
+      labels.totalTimeLabel, "labels.totalTimeLabel");
+  actual_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.actualDaysLabel, "labels.actualDaysLabel");
+  status_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.statusDaysLabel, "labels.statusDaysLabel");
+  sleep_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.sleepDaysLabel, "labels.sleepDaysLabel");
+  exercise_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.exerciseDaysLabel, "labels.exerciseDaysLabel");
+  cardio_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.cardioDaysLabel, "labels.cardioDaysLabel");
+  anaerobic_days_label_ = formatter_c_string_view_utils::ToString(
+      labels.anaerobicDaysLabel, "labels.anaerobicDaysLabel");
+  no_records_message_ = formatter_c_string_view_utils::ToString(
+      labels.noRecordsMessage, "labels.noRecordsMessage");
+  invalid_range_message_ = formatter_c_string_view_utils::ToString(
+      labels.invalidRangeMessage, "labels.invalidRangeMessage");
+  project_breakdown_label_ = formatter_c_string_view_utils::ToString(
+      labels.projectBreakdownLabel, "labels.projectBreakdownLabel");
 }
 
 auto RangeBaseConfig::GetTitleTemplate() const -> const std::string& {

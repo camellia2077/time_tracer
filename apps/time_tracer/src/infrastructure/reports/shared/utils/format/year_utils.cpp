@@ -2,8 +2,6 @@
 #include "infrastructure/reports/shared/utils/format/year_utils.hpp"
 
 #include <cctype>
-#include <iomanip>
-#include <sstream>
 
 auto ParseGregorianYear(std::string_view input, int& gregorian_year) -> bool {
   constexpr int kYearLength = 4;
@@ -26,7 +24,9 @@ auto ParseGregorianYear(std::string_view input, int& gregorian_year) -> bool {
 }
 
 auto FormatGregorianYear(int gregorian_year) -> std::string {
-  std::ostringstream oss;
-  oss << std::setw(4) << std::setfill('0') << gregorian_year;
-  return oss.str();
+  std::string output = std::to_string(gregorian_year);
+  if (output.size() < 4U) {
+    output.insert(output.begin(), static_cast<size_t>(4U - output.size()), '0');
+  }
+  return output;
 }

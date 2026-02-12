@@ -2,13 +2,12 @@
 #ifndef REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_CONFIG_H_
 #define REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include "infrastructure/reports/range/common/range_base_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class RangeMdConfig : public RangeBaseConfig {
  public:
-  explicit RangeMdConfig(const toml::table& config);
+  explicit RangeMdConfig(const TtRangeMdConfigV1& config);
 };
 
 #endif  // REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_CONFIG_H_

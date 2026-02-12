@@ -2,17 +2,16 @@
 #ifndef REPORTS_SHARED_CONFIG_TYPST_STYLE_CONFIG_H_
 #define REPORTS_SHARED_CONFIG_TYPST_STYLE_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <string>
 
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API TypstStyleConfig {
  public:
-  explicit TypstStyleConfig(const toml::table& config);
+  explicit TypstStyleConfig(const TtTypstStyleConfigV1& config);
 
   [[nodiscard]] auto GetBaseFont() const -> const std::string&;
   [[nodiscard]] auto GetTitleFont() const -> const std::string&;

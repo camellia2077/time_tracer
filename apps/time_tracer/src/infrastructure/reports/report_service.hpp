@@ -4,12 +4,16 @@
 
 #include <sqlite3.h>
 
+#include <map>
+#include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
 #include "application/interfaces/i_report_query_service.hpp"
+#include "domain/reports/models/period_report_data.hpp"
 #include "infrastructure/config/models/app_config.hpp"
+#include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
 class ReportService : public IReportQueryService {
  public:
@@ -46,8 +50,14 @@ class ReportService : public IReportQueryService {
       -> FormattedYearlyReports override;
 
  private:
+  [[nodiscard]] auto GetOrCreatePeriodFormatter(ReportFormat format) const
+      -> IReportFormatter<PeriodReportData>&;
+
   sqlite3* db_;
   const AppConfig& app_config_;  // [ADDED] Store a reference to the config
+  mutable std::map<ReportFormat,
+                   std::unique_ptr<IReportFormatter<PeriodReportData>>>
+      period_formatter_cache_;
 };
 
 #endif  // REPORTS_REPORT_SERVICE_H_

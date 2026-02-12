@@ -40,8 +40,8 @@ auto ConverterService::IsDuplicateAcrossYear(const DailyLog& previous_day,
 
 auto ConverterService::ExecuteConversion(
     std::istream& combined_input_stream,
-    std::function<void(DailyLog&&)> data_consumer,
-    std::string_view source_file) -> void {
+    std::function<void(DailyLog&&)> data_consumer, std::string_view source_file)
+    -> void {
   TextParser parser(config_);
   DayProcessor processor(config_);
 
@@ -49,28 +49,31 @@ auto ConverterService::ExecuteConversion(
   DailyLog previous_day;
   bool has_previous = false;
 
-  parser.Parse(combined_input_stream, [&](DailyLog& current_day) -> void {
-    // 1. 初始化 / 跨天逻辑处理
-    if (!has_previous) {
-      DailyLog empty_day;
-      processor.Process(empty_day, current_day);
+  parser.Parse(
+      combined_input_stream,
+      [&](DailyLog& current_day) -> void {
+        // 1. 初始化 / 跨天逻辑处理
+        if (!has_previous) {
+          DailyLog empty_day;
+          processor.Process(empty_day, current_day);
 
-    } else {
-      // 利用 current_day 完善 previous_day 的睡眠逻辑
-      processor.Process(previous_day, current_day);
+        } else {
+          // 利用 current_day 完善 previous_day 的睡眠逻辑
+          processor.Process(previous_day, current_day);
 
-      // 2. 去重逻辑与回调移交
-      if (!IsDuplicateAcrossYear(previous_day, current_day)) {
-        if (data_consumer != nullptr) {
-          data_consumer(std::move(previous_day));
+          // 2. 去重逻辑与回调移交
+          if (!IsDuplicateAcrossYear(previous_day, current_day)) {
+            if (data_consumer != nullptr) {
+              data_consumer(std::move(previous_day));
+            }
+          }
         }
-      }
-    }
 
-    // 3. 滑动窗口：current_day 变为 previous_day
-    previous_day = std::move(current_day);
-    has_previous = true;
-  }, source_file);
+        // 3. 滑动窗口：current_day 变为 previous_day
+        previous_day = std::move(current_day);
+        has_previous = true;
+      },
+      source_file);
 
   // 4. 处理最后一天 (Flush)
   if (has_previous) {

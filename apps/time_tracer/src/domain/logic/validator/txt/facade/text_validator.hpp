@@ -16,6 +16,7 @@ class TextValidator {
   explicit TextValidator(const ConverterConfig& config);
   ~TextValidator();
 
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
   auto Validate(const std::string& filename, const std::string& content,
                 std::set<Error>& errors) -> bool;
 

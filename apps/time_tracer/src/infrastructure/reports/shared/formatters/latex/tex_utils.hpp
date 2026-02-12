@@ -8,6 +8,7 @@
 
 #include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 namespace TexUtils {
 
@@ -59,6 +60,10 @@ namespace TexUtils {
     const reporting::ProjectTree& tree, long long total_duration, int avg_days,
     int category_title_font_size, double list_top_sep_pt,
     double list_item_sep_ex) -> std::string;
+[[nodiscard]] REPORTS_SHARED_API auto FormatProjectTree(
+    const TtProjectTreeNodeV1* nodes, uint32_t node_count,
+    long long total_duration, int avg_days, int category_title_font_size,
+    double list_top_sep_pt, double list_item_sep_ex) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TexUtils

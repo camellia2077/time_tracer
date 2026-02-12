@@ -110,7 +110,7 @@ void ParseSystemSettings(const toml::table& tbl, const fs::path& exe_path,
         config.error_log_path = exe_path / "error.log";
       }
       if (auto val = kGenNode["export_root"].value<std::string>()) {
-        config.export_path = *val;
+        config.export_path = ResolveDefaultPath(exe_path, *val);
       }
       config.default_save_processed_output =
           kGenNode["save_processed_output"].value_or(false);
@@ -129,7 +129,7 @@ void ParseSystemSettings(const toml::table& tbl, const fs::path& exe_path,
     }
 
     if (auto val = kSysNode["export_root"].value<std::string>()) {
-      config.export_path = *val;
+      config.export_path = ResolveDefaultPath(exe_path, *val);
     }
 
     config.default_save_processed_output =
