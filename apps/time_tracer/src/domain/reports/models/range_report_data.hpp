@@ -21,11 +21,7 @@ struct RangeReportData {
   int anaerobic_true_days = 0;
   bool is_valid = true;
 
-  std::vector<std::pair<std::string, long long>> records;
-
-  // [新增] 用于存储 BaseQuerier 聚合查询的结果(Project ID -> Duration)
   std::vector<std::pair<long long, long long>> project_stats;
-
   reporting::ProjectTree project_tree;
 };
 

@@ -1,9 +1,6 @@
 // infrastructure/reports/monthly/formatters/latex/month_tex_utils.cpp
 #include "infrastructure/reports/monthly/formatters/latex/month_tex_utils.hpp"
 
-#include <format>
-#include <iomanip>
-
 #include "infrastructure/reports/shared/formatters/latex/tex_common_utils.hpp"
 #include "infrastructure/reports/shared/formatters/latex/tex_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
@@ -13,21 +10,14 @@ namespace MonthTexUtils {
 
 namespace {
 auto FormatRatio(int count, int total_days) -> std::string {
-  if (total_days <= 0) {
-    return std::to_string(count);
-  }
-  double percent =
-      100.0 * static_cast<double>(count) / static_cast<double>(total_days);
-  return std::format("{} ({:.2f}\\%)", count, percent);
+  return FormatCountWithPercentage(count, total_days, "\\%");
 }
 }  // namespace
 
-void DisplayHeader(std::stringstream& report_stream,
-                   const MonthlyReportData& data,
+void DisplayHeader(std::string& report_stream, const MonthlyReportData& data,
                    const std::shared_ptr<MonthTexConfig>& config) {
   // 1. 渲染标题
-  std::string title =
-      FormatTitleTemplate(config->GetTitleTemplate(), data);
+  std::string title = FormatTitleTemplate(config->GetTitleTemplate(), data);
   std::string title_content = TexUtils::EscapeLatex(title);
 
   TexCommonUtils::RenderTitle(report_stream, title_content,

@@ -3,16 +3,55 @@
 
 #include <chrono>
 #include <ctime>
-#include <iomanip>
-#include <sstream>
+#include <string>
 
 namespace {
 constexpr long long kSecondsInHour = 3600;
 constexpr long long kSecondsInMinute = 60;
 constexpr int kDateStringLength = 10;
+constexpr std::size_t kDurationBufferSize = 32U;
 constexpr int kMonthOffset = 5;
 constexpr int kDayOffset = 8;
 constexpr int kTmYearBase = 1900;
+constexpr int kYearWidth = 4;
+constexpr int kMonthDayWidth = 2;
+}  // namespace
+
+namespace {
+
+auto BuildDurationText(long long total_seconds) -> std::string {
+  long long hours = total_seconds / kSecondsInHour;
+  long long minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
+
+  std::string output;
+  output.reserve(kDurationBufferSize);
+  output += std::to_string(hours);
+  output += "h ";
+  output += std::to_string(minutes);
+  output += "m";
+  return output;
+}
+
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+void AppendPaddedNumber(std::string& output, int value, int width) {
+  std::string digits = std::to_string(value);
+  if (digits.size() < static_cast<size_t>(width)) {
+    output.append(static_cast<size_t>(width) - digits.size(), '0');
+  }
+  output += digits;
+}
+
+auto FormatDateTm(const std::tm& time_info) -> std::string {
+  std::string output;
+  output.reserve(kDateStringLength);
+  AppendPaddedNumber(output, time_info.tm_year + kTmYearBase, kYearWidth);
+  output += "-";
+  AppendPaddedNumber(output, time_info.tm_mon + 1, kMonthDayWidth);
+  output += "-";
+  AppendPaddedNumber(output, time_info.tm_mday, kMonthDayWidth);
+  return output;
+}
+
 }  // namespace
 
 auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
@@ -26,56 +65,41 @@ auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
   long long seconds_per_day =
       (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
 
-  auto format_single_duration =
-      [](long long total_seconds) -> std::basic_string<char> {
-    long long hours = total_seconds / kSecondsInHour;
-    long long minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
-    std::stringstream formatted_ss;
-    formatted_ss << hours << "h " << minutes << "m";
-    return formatted_ss.str();
-  };
-
-  std::string main_duration_str = format_single_duration(total_seconds);
+  std::string main_duration_str = BuildDurationText(total_seconds);
 
   if (avg_days > 1) {
-    std::string avg_duration_str = format_single_duration(seconds_per_day);
+    std::string avg_duration_str = BuildDurationText(seconds_per_day);
     main_duration_str += " (average: " + avg_duration_str + "/day)";
   }
   return main_duration_str;
 }
 
-// [核心修改] 适配 YYYY-MM-DD 格式
 auto AddDaysToDateStr(std::string date_str, int days) -> std::string {
-  // 预期输入: "2025-01-01" (10 chars)
   if (date_str.length() != static_cast<size_t>(kDateStringLength)) {
     return date_str;
   }
 
-  // YYYY-MM-DD
-  // 0123456789
   int year = std::stoi(date_str.substr(0, 4));
-  int month = std::stoi(date_str.substr(kMonthOffset, 2));  // 跳过索引4的 '-'
-  int day = std::stoi(date_str.substr(kDayOffset, 2));      // 跳过索引7的 '-'
+  int month = std::stoi(date_str.substr(kMonthOffset, 2));
+  int day = std::stoi(date_str.substr(kDayOffset, 2));
 
   std::tm time_info{};
   time_info.tm_year = year - kTmYearBase;
   time_info.tm_mon = month - 1;
   time_info.tm_mday = day + days;
-  // 标准化时间结构，自动处理进位/借位（例如1月32日变成2月1日）
   std::mktime(&time_info);
 
-  std::stringstream formatted_ss;
-  // [修改] 输出格式化为标准格式
-  formatted_ss << std::put_time(&time_info, "%Y-%m-%d");
-  return formatted_ss.str();
+  return FormatDateTm(time_info);
 }
 
-// [核心修改] 适配 YYYY-MM-DD 格式
 auto GetCurrentDateStr() -> std::string {
   auto now = std::chrono::system_clock::now();
   auto in_time_t = std::chrono::system_clock::to_time_t(now);
-  std::stringstream formatted_ss;
-  // [修改] 输出格式化为标准格式
-  formatted_ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d");
-  return formatted_ss.str();
+
+  const std::tm* time_info = std::localtime(&in_time_t);
+  if (time_info == nullptr) {
+    return "";
+  }
+
+  return FormatDateTm(*time_info);
 }

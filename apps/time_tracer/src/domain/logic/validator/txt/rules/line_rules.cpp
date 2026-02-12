@@ -34,7 +34,7 @@ LineRules::LineRules(const ConverterConfig& config) : config_(config) {
   }
 }
 
-auto LineRules::is_year(const std::string& line) -> bool {
+auto LineRules::IsYear(const std::string& line) -> bool {
   constexpr size_t kYearStringLength = 5;
   if (line.length() != kYearStringLength || line[0] != 'y') {
     return false;
@@ -42,13 +42,13 @@ auto LineRules::is_year(const std::string& line) -> bool {
   return std::all_of(line.begin() + 1, line.end(), ::isdigit);
 }
 
-auto LineRules::is_date(const std::string& line) -> bool {
+auto LineRules::IsDate(const std::string& line) -> bool {
   constexpr size_t kDateStringLength = 4;
   return line.length() == kDateStringLength &&
          std::ranges::all_of(line, ::isdigit);
 }
 
-auto LineRules::is_remark(const std::string& line) const -> bool {
+auto LineRules::IsRemark(const std::string& line) const -> bool {
   // [Fix] 直接访问 public 成员变量
   const std::string& prefix = config_.remark_prefix;
 
@@ -58,9 +58,9 @@ auto LineRules::is_remark(const std::string& line) const -> bool {
   return !Trim(line.substr(prefix.length())).empty();
 }
 
-auto LineRules::is_valid_event_line(const std::string& line, int line_number,
-                                    std::set<Error>& errors,
-                                    const std::optional<SourceSpan>& span) const
+auto LineRules::IsValidEventLine(const std::string& line, int line_number,
+                                 std::set<Error>& errors,
+                                 const std::optional<SourceSpan>& span) const
     -> bool {
   constexpr size_t kMinimumEventLineLength = 5;
   constexpr size_t kTimePrefixLength = 4;
@@ -101,8 +101,7 @@ auto LineRules::is_valid_event_line(const std::string& line, int line_number,
       errors.insert({line_number,
                      "Unrecognized activity '" + description +
                          "'. Please check spelling or update config file.",
-                     ErrorType::kUnrecognizedActivity,
-                     span});
+                     ErrorType::kUnrecognizedActivity, span});
     }
     return true;
   } catch (const std::exception&) {

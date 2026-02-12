@@ -27,6 +27,8 @@ void PrintUsage(std::string_view prog_name) {
                "(inclusive). (Used with --start)\n";
   std::cerr << "  -i, --items <number>    Number of log items per day (must be "
                ">= 2). (Default: 10)\n";
+  std::cerr << "  -o, --output <dir>      Output directory for generated "
+               "files. (Default: dates)\n";
   std::cerr << "  -n, --nosleep           Enable the generation of 'no sleep' "
                "(all-nighter) days.\n";
   std::cerr
@@ -37,6 +39,8 @@ void PrintUsage(std::string_view prog_name) {
   std::cerr << "  " << prog_name << " --year 2025\n";
   std::cerr << "  " << prog_name
             << " --start 2024 --end 2025 --items 5 --nosleep\n";
+  std::cerr << "  " << prog_name
+            << " --year 2025 --output \"custom_output/dates\"\n";
 }
 
 }  // namespace CliCommands

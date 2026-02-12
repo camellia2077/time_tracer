@@ -14,7 +14,6 @@ add_library(time_tracker_application STATIC
 
     # Reporting
     "reporting/report_handler.cpp"
-    "reporting/generator/report_generator.cpp"
     
     # Tree
     "reporting/tree/project_tree_viewer.cpp"
@@ -55,7 +54,7 @@ add_library(time_tracker_application STATIC
 
 )
 
-setup_project_target(time_tracker_application)
+setup_app_target(time_tracker_application)
 
 target_link_libraries(time_tracker_application PUBLIC
     time_tracker_infrastructure # Application uses Infra (Repository/IO)

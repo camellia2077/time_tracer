@@ -19,15 +19,15 @@ class TomlConverterConfigLoader : public IConfigLoader<ConverterConfig> {
    */
   explicit TomlConverterConfigLoader(const toml::table& config_table);
 
-  bool Load(ConverterConfig& config_object) override;
+  auto Load(ConverterConfig& config_object) -> bool override;
 
  private:
-  void parse_header_order(ConverterConfig& config);
-  void parse_wake_keywords(ConverterConfig& config);
-  void parse_top_parent_mapping(ConverterConfig& config);
-  void parse_text_mappings(ConverterConfig& config);
-  void parse_text_duration_mappings(ConverterConfig& config);
-  void parse_duration_mappings(ConverterConfig& config);
+  void ParseHeaderOrder(ConverterConfig& config);
+  void ParseWakeKeywords(ConverterConfig& config);
+  void ParseTopParentMapping(ConverterConfig& config);
+  void ParseTextMappings(ConverterConfig& config);
+  void ParseTextDurationMappings(ConverterConfig& config);
+  void ParseDurationMappings(ConverterConfig& config);
 
   const toml::table& toml_source_;
 };

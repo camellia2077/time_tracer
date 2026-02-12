@@ -6,24 +6,52 @@
 
 #include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 namespace TypUtils {
 
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] REPORTS_SHARED_API auto BuildTextSetup(
+    const std::string& base_font, int base_font_size, double line_spacing_em)
+    -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] REPORTS_SHARED_API auto BuildPageSetup(double margin_top_cm,
+                                                     double margin_bottom_cm,
+                                                     double margin_left_cm,
+                                                     double margin_right_cm)
+    -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
+// Public API: keep parameter order and naming for ABI compatibility.
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
+[[nodiscard]] REPORTS_SHARED_API auto BuildTitleText(
+    const std::string& category_title_font, int category_title_font_size,
+    const std::string& title_text) -> std::string;
+// NOLINTEND(bugprone-easily-swappable-parameters)
+
 /**
- * @brief 将项目树格式化为 Typst 字符串。
+ * @brief Format a project tree as Typst content.
  *
- * @param tree 要格式化的项目树。
- * @param total_duration 所有项目的总时长，用于计算百分比。
- * @param avg_days 用于计算平均时长的天数。
- * @param category_title_font 类别标题字体。
- * @param category_title_font_size 类别标题字体大小。
- * @return 格式化后的 Typst 字符串。
+ * @param tree Project tree to format.
+ * @param total_duration Total duration of all projects.
+ * @param avg_days Days count used for averaging.
+ * @param category_title_font Category title font.
+ * @param category_title_font_size Category title font size.
+ * @return Formatted Typst content.
  */
-// [修正] 添加 reporting:: 命名空间前缀
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API auto FormatProjectTree(
     const reporting::ProjectTree& tree, long long total_duration, int avg_days,
+    const std::string& category_title_font, int category_title_font_size)
+    -> std::string;
+REPORTS_SHARED_API auto FormatProjectTree(
+    const TtProjectTreeNodeV1* nodes, uint32_t node_count,
+    long long total_duration, int avg_days,
     const std::string& category_title_font, int category_title_font_size)
     -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)

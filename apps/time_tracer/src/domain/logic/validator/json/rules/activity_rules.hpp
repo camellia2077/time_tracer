@@ -6,13 +6,11 @@
 
 #include "domain/logic/validator/common/validator_utils.hpp"
 
-namespace validator {
-namespace json {
+namespace validator::json {
 
-void validateActivityCount(const nlohmann::json& day_object,
+void ValidateActivityCount(const nlohmann::json& day_object,
                            std::set<Error>& errors);
 
-}  // namespace json
-}  // namespace validator
+}  // namespace validator::json
 
 #endif  // VALIDATOR_JSON_RULES_ACTIVITY_RULES_H_

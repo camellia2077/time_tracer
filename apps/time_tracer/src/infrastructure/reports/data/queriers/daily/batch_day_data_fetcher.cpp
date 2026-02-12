@@ -46,7 +46,7 @@ auto BatchDayDataFetcher::FetchAllData() -> BatchDataResult {
 // fetch_days_metadata 保持不变 ...
 void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
   sqlite3_stmt* stmt;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT {1}, {2}, {3}, "
       "{4}, {5}, {6}, {7}, {8}, "
       "{9}, {10}, {11}, {12}, "
@@ -54,19 +54,18 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
       "{14}, {15}, {16}, "
       "{17}, {18} "
       "FROM {0} ORDER BY {1} ASC;",
-      schema::day::db::kTable, schema::day::db::kDate,
-      schema::day::db::kYear, schema::day::db::kMonth,
-      schema::day::db::kStatus, schema::day::db::kSleep,
-      schema::day::db::kRemark, schema::day::db::kGetupTime,
-      schema::day::db::kExercise, schema::day::db::kSleepTotalTime,
-      schema::day::db::kTotalExerciseTime, schema::day::db::kAnaerobicTime,
-      schema::day::db::kCardioTime, schema::day::db::kGroomingTime,
-      schema::day::db::kStudyTime, schema::day::db::kRecreationTime,
-      schema::day::db::kRecreationZhihuTime,
+      schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
+      schema::day::db::kMonth, schema::day::db::kStatus,
+      schema::day::db::kSleep, schema::day::db::kRemark,
+      schema::day::db::kGetupTime, schema::day::db::kExercise,
+      schema::day::db::kSleepTotalTime, schema::day::db::kTotalExerciseTime,
+      schema::day::db::kAnaerobicTime, schema::day::db::kCardioTime,
+      schema::day::db::kGroomingTime, schema::day::db::kStudyTime,
+      schema::day::db::kRecreationTime, schema::day::db::kRecreationZhihuTime,
       schema::day::db::kRecreationBilibiliTime,
       schema::day::db::kRecreationDouyinTime);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for days metadata.");
   }
 
@@ -124,17 +123,16 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
 
 void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
   sqlite3_stmt* stmt;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT {1}, {2}, {3}, {4}, {5}, {6} "
       "FROM {0} ORDER BY {1} ASC, {7} ASC;",
       schema::time_records::db::kTable, schema::time_records::db::kDate,
       schema::time_records::db::kStart, schema::time_records::db::kEnd,
-      schema::time_records::db::kProjectId,
-      schema::time_records::db::kDuration,
+      schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
       schema::time_records::db::kActivityRemark,
       schema::time_records::db::kLogicalId);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for time records.");
   }
 

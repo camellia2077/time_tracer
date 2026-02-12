@@ -18,12 +18,14 @@ add_library(time_tracker_infrastructure STATIC
     "reports/export_utils.cpp"
     "reports/exporter.cpp"
     "reports/report_file_manager.cpp"
+    "reports/plugin_manifest.cpp"
     "reports/formatter_registry.cpp"
     "reports/report_service.cpp"
     "reports/services/daily_report_service.cpp"
     "reports/services/monthly_report_service.cpp"
     "reports/services/weekly_report_service.cpp"
     "reports/services/yearly_report_service.cpp"
+    "reports/shared/factories/formatter_config_payload.cpp"
 
     # Serializer
     "serialization/json_serializer.cpp"
@@ -54,7 +56,7 @@ add_library(time_tracker_infrastructure STATIC
     "../application/bootstrap/startup_validator.cpp"
 )
 
-setup_project_target(time_tracker_infrastructure)
+setup_app_target(time_tracker_infrastructure)
 
 target_link_libraries(time_tracker_infrastructure PUBLIC
     time_tracker_domain

@@ -2,14 +2,15 @@
 #ifndef REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_CONFIG_H_
 #define REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_CONFIG_H_
 
-#include <toml++/toml.h>
+#include <string>
 
 #include "infrastructure/reports/range/common/range_base_config.hpp"
 #include "infrastructure/reports/shared/config/tex_style_config.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class RangeTexConfig : public RangeBaseConfig {
  public:
-  explicit RangeTexConfig(const toml::table& config);
+  explicit RangeTexConfig(const TtRangeTexConfigV1& config);
   [[nodiscard]] auto GetMainFont() const -> const std::string& {
     return style_.GetMainFont();
   }

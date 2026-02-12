@@ -47,6 +47,14 @@ class LogicError : public AppError {
   using AppError::AppError;
 };
 
+/**
+ * @brief Exception thrown for plugin ABI mismatch/incompatibility.
+ */
+class DllCompatibilityError : public LogicError {
+ public:
+  using LogicError::LogicError;
+};
+
 }  // namespace time_tracer::common
 
 #endif  // SHARED_TYPES_EXCEPTIONS_H_

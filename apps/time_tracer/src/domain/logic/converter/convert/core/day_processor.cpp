@@ -20,7 +20,7 @@ void DayProcessor::Process(DailyLog& previousDay, DailyLog& dayToProcess) {
   }
 
   ActivityMapper activity_mapper(config_);
-  activity_mapper.map_activities(dayToProcess);
+  activity_mapper.MapActivities(dayToProcess);
 
   if (!previousDay.date.empty() && !previousDay.rawEvents.empty() &&
       !dayToProcess.getupTime.empty() && !dayToProcess.isContinuation) {

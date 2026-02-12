@@ -5,19 +5,24 @@
 #include "domain/reports/models/monthly_report_data.hpp"
 #include "infrastructure/reports/monthly/formatters/markdown/month_md_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_md_formatter.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class MonthMdFormatter
     : public BaseMdFormatter<MonthlyReportData, MonthMdConfig> {
  public:
   explicit MonthMdFormatter(std::shared_ptr<MonthMdConfig> config);
+  [[nodiscard]] auto FormatReportFromView(
+      const TtRangeReportDataV1& data_view) const -> std::string;
 
  protected:
-  auto ValidateData(const MonthlyReportData& data) const
+  [[nodiscard]] auto ValidateData(const MonthlyReportData& data) const
       -> std::string override;
-  auto IsEmptyData(const MonthlyReportData& data) const -> bool override;
-  auto GetAvgDays(const MonthlyReportData& data) const -> int override;
-  auto GetNoRecordsMsg() const -> std::string override;
-  void FormatHeaderContent(std::stringstream& report_stream,
+  [[nodiscard]] auto IsEmptyData(const MonthlyReportData& data) const
+      -> bool override;
+  [[nodiscard]] auto GetAvgDays(const MonthlyReportData& data) const
+      -> int override;
+  [[nodiscard]] auto GetNoRecordsMsg() const -> std::string override;
+  void FormatHeaderContent(std::string& report_stream,
                            const MonthlyReportData& data) const override;
 };
 

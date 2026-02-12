@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_SCHEMA_DAY_SCHEMA_H_
 #define INFRASTRUCTURE_SCHEMA_DAY_SCHEMA_H_
 
+#include <algorithm>
 #include <array>
 #include <span>
 #include <string_view>
@@ -83,8 +84,16 @@ inline constexpr std::string_view kRecreationDouyinTime =
 }  // namespace db
 
 struct FieldMapping {
-  std::string_view json_key;
-  std::string_view db_column;
+  std::string_view json_key_;
+  std::string_view db_column_;
+};
+
+struct DbColumnSet {
+  std::span<const std::string_view> values;
+};
+
+struct JsonOnlyKeySet {
+  std::span<const std::string_view> values;
 };
 
 inline constexpr std::array<std::string_view, 22> kDaysTableColumns = {
@@ -113,65 +122,59 @@ inline constexpr std::array<std::string_view, 22> kDaysTableColumns = {
 };
 
 inline constexpr std::array<std::string_view, 9> kHeaderJsonKeys = {
-    json::kDate,
-    json::kStatus,
-    json::kExercise,
-    json::kSleep,
-    json::kCardio,
-    json::kAnaerobic,
-    json::kGetup,
-    json::kActivityCount,
-    json::kRemark};
+    json::kDate,  json::kStatus,        json::kExercise,
+    json::kSleep, json::kCardio,        json::kAnaerobic,
+    json::kGetup, json::kActivityCount, json::kRemark};
 
 inline constexpr std::array<std::string_view, 14> kGeneratedStatsJsonKeys = {
-    json::kSleepNightTime,      json::kSleepDayTime,
-    json::kSleepTotalTime,      json::kTotalExerciseTime,
-    json::kCardioTime,          json::kAnaerobicTime,
-    json::kGroomingTime,        json::kToiletTime,
-    json::kGamingTime,          json::kRecreationTime,
-    json::kRecreationZhihuTime, json::kRecreationBilibiliTime,
+    json::kSleepNightTime,       json::kSleepDayTime,
+    json::kSleepTotalTime,       json::kTotalExerciseTime,
+    json::kCardioTime,           json::kAnaerobicTime,
+    json::kGroomingTime,         json::kToiletTime,
+    json::kGamingTime,           json::kRecreationTime,
+    json::kRecreationZhihuTime,  json::kRecreationBilibiliTime,
     json::kRecreationDouyinTime, json::kTotalStudyTime};
 
 inline constexpr std::array<std::string_view, 1> kHeaderJsonOnlyKeys = {
     json::kActivityCount};
 
 inline constexpr std::array<FieldMapping, 9> kHeaderFieldMappings = {{
-    {json::kDate, db::kDate},
-    {json::kStatus, db::kStatus},
-    {json::kExercise, db::kExercise},
-    {json::kSleep, db::kSleep},
-    {json::kCardio, db::kCardioTime},
-    {json::kAnaerobic, db::kAnaerobicTime},
-    {json::kGetup, db::kGetupTime},
-    {json::kRemark, db::kRemark},
-    {json::kActivityCount, ""},
+    {.json_key_ = json::kDate, .db_column_ = db::kDate},
+    {.json_key_ = json::kStatus, .db_column_ = db::kStatus},
+    {.json_key_ = json::kExercise, .db_column_ = db::kExercise},
+    {.json_key_ = json::kSleep, .db_column_ = db::kSleep},
+    {.json_key_ = json::kCardio, .db_column_ = db::kCardioTime},
+    {.json_key_ = json::kAnaerobic, .db_column_ = db::kAnaerobicTime},
+    {.json_key_ = json::kGetup, .db_column_ = db::kGetupTime},
+    {.json_key_ = json::kRemark, .db_column_ = db::kRemark},
+    {.json_key_ = json::kActivityCount, .db_column_ = ""},
 }};
 
 inline constexpr std::array<FieldMapping, 14> kGeneratedStatsMappings = {{
-    {json::kSleepNightTime, db::kSleepNightTime},
-    {json::kSleepDayTime, db::kSleepDayTime},
-    {json::kSleepTotalTime, db::kSleepTotalTime},
-    {json::kTotalExerciseTime, db::kTotalExerciseTime},
-    {json::kCardioTime, db::kCardioTime},
-    {json::kAnaerobicTime, db::kAnaerobicTime},
-    {json::kGroomingTime, db::kGroomingTime},
-    {json::kToiletTime, db::kToiletTime},
-    {json::kGamingTime, db::kGamingTime},
-    {json::kRecreationTime, db::kRecreationTime},
-    {json::kRecreationZhihuTime, db::kRecreationZhihuTime},
-    {json::kRecreationBilibiliTime, db::kRecreationBilibiliTime},
-    {json::kRecreationDouyinTime, db::kRecreationDouyinTime},
-    {json::kTotalStudyTime, db::kStudyTime},
+    {.json_key_ = json::kSleepNightTime, .db_column_ = db::kSleepNightTime},
+    {.json_key_ = json::kSleepDayTime, .db_column_ = db::kSleepDayTime},
+    {.json_key_ = json::kSleepTotalTime, .db_column_ = db::kSleepTotalTime},
+    {.json_key_ = json::kTotalExerciseTime,
+     .db_column_ = db::kTotalExerciseTime},
+    {.json_key_ = json::kCardioTime, .db_column_ = db::kCardioTime},
+    {.json_key_ = json::kAnaerobicTime, .db_column_ = db::kAnaerobicTime},
+    {.json_key_ = json::kGroomingTime, .db_column_ = db::kGroomingTime},
+    {.json_key_ = json::kToiletTime, .db_column_ = db::kToiletTime},
+    {.json_key_ = json::kGamingTime, .db_column_ = db::kGamingTime},
+    {.json_key_ = json::kRecreationTime, .db_column_ = db::kRecreationTime},
+    {.json_key_ = json::kRecreationZhihuTime,
+     .db_column_ = db::kRecreationZhihuTime},
+    {.json_key_ = json::kRecreationBilibiliTime,
+     .db_column_ = db::kRecreationBilibiliTime},
+    {.json_key_ = json::kRecreationDouyinTime,
+     .db_column_ = db::kRecreationDouyinTime},
+    {.json_key_ = json::kTotalStudyTime, .db_column_ = db::kStudyTime},
 }};
 
 constexpr auto ContainsValue(std::span<const std::string_view> items,
                              std::string_view value) -> bool {
-  for (size_t idx = 0; idx < items.size(); ++idx) {
-    if (items[idx] == value) {
-      return true;
-    }
-  }
-  return false;
+  return std::ranges::any_of(
+      items, [value](std::string_view item) -> bool { return item == value; });
 }
 
 constexpr auto HasDuplicateKeys(std::span<const std::string_view> items)
@@ -190,7 +193,7 @@ constexpr auto HasDuplicateMappingJsonKeys(
     std::span<const FieldMapping> mappings) -> bool {
   for (size_t idx = 0; idx < mappings.size(); ++idx) {
     for (size_t jdx = idx + 1; jdx < mappings.size(); ++jdx) {
-      if (mappings[idx].json_key == mappings[jdx].json_key) {
+      if (mappings[idx].json_key_ == mappings[jdx].json_key_) {
         return true;
       }
     }
@@ -202,8 +205,8 @@ constexpr auto HasDuplicateMappingDbColumns(
     std::span<const FieldMapping> mappings) -> bool {
   for (size_t idx = 0; idx < mappings.size(); ++idx) {
     for (size_t jdx = idx + 1; jdx < mappings.size(); ++jdx) {
-      if (!mappings[idx].db_column.empty() &&
-          mappings[idx].db_column == mappings[jdx].db_column) {
+      if (!mappings[idx].db_column_.empty() &&
+          mappings[idx].db_column_ == mappings[jdx].db_column_) {
         return true;
       }
     }
@@ -213,10 +216,10 @@ constexpr auto HasDuplicateMappingDbColumns(
 
 constexpr auto AllKeysCovered(std::span<const std::string_view> keys,
                               std::span<const FieldMapping> mappings) -> bool {
-  for (size_t idx = 0; idx < keys.size(); ++idx) {
+  for (const auto kKey : keys) {
     bool found = false;
-    for (size_t jdx = 0; jdx < mappings.size(); ++jdx) {
-      if (mappings[jdx].json_key == keys[idx]) {
+    for (const auto& mapping : mappings) {
+      if (mapping.json_key_ == kKey) {
         found = true;
         break;
       }
@@ -229,24 +232,18 @@ constexpr auto AllKeysCovered(std::span<const std::string_view> keys,
 }
 
 constexpr auto AllMappingsValid(std::span<const FieldMapping> mappings,
-                                std::span<const std::string_view> db_columns,
-                                std::span<const std::string_view> json_only)
-    -> bool {
-  for (size_t idx = 0; idx < mappings.size(); ++idx) {
-    if (mappings[idx].json_key.empty()) {
-      return false;
-    }
-    if (mappings[idx].db_column.empty()) {
-      if (!ContainsValue(json_only, mappings[idx].json_key)) {
-        return false;
-      }
-      continue;
-    }
-    if (!ContainsValue(db_columns, mappings[idx].db_column)) {
-      return false;
-    }
-  }
-  return true;
+                                DbColumnSet db_columns,
+                                JsonOnlyKeySet json_only_keys) -> bool {
+  return std::ranges::all_of(
+      mappings, [&](const FieldMapping& mapping) -> bool {
+        if (mapping.json_key_.empty()) {
+          return false;
+        }
+        if (mapping.db_column_.empty()) {
+          return ContainsValue(json_only_keys.values, mapping.json_key_);
+        }
+        return ContainsValue(db_columns.values, mapping.db_column_);
+      });
 }
 
 static_assert(!HasDuplicateKeys(kHeaderJsonKeys),
@@ -265,12 +262,16 @@ static_assert(AllKeysCovered(kHeaderJsonKeys, kHeaderFieldMappings),
               "Header JSON keys missing in header mappings.");
 static_assert(AllKeysCovered(kGeneratedStatsJsonKeys, kGeneratedStatsMappings),
               "Stats JSON keys missing in stats mappings.");
-static_assert(AllMappingsValid(kHeaderFieldMappings, kDaysTableColumns,
-                               kHeaderJsonOnlyKeys),
+static_assert(AllMappingsValid(kHeaderFieldMappings,
+                               DbColumnSet{.values = kDaysTableColumns},
+                               JsonOnlyKeySet{.values = kHeaderJsonOnlyKeys}),
               "Invalid header JSON->DB mappings detected.");
-static_assert(AllMappingsValid(kGeneratedStatsMappings, kDaysTableColumns,
-                               std::span<const std::string_view>{}),
-              "Invalid stats JSON->DB mappings detected.");
+static_assert(
+    AllMappingsValid(kGeneratedStatsMappings,
+                     DbColumnSet{.values = kDaysTableColumns},
+                     JsonOnlyKeySet{
+                         .values = std::span<const std::string_view>{}}),
+    "Invalid stats JSON->DB mappings detected.");
 
 }  // namespace schema::day
 

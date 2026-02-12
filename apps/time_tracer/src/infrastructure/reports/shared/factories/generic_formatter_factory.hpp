@@ -7,14 +7,14 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
 
 #include "domain/reports/types/report_format.hpp"
-#include "infrastructure/config/loader/toml_loader_utils.hpp"
 #include "infrastructure/config/models/app_config.hpp"
 #include "infrastructure/reports/shared/factories/dll_formatter_wrapper.hpp"
+#include "infrastructure/reports/shared/factories/formatter_config_payload.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
 namespace fs = std::filesystem;
@@ -50,90 +50,19 @@ class GenericFormatterFactory {
         format,
         [dll_base_name, format](const AppConfig& config)
             -> std::unique_ptr<IReportFormatter<ReportDataType>> {
-          fs::path config_path;
-
-          if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-            switch (format) {
-              case ReportFormat::kMarkdown:
-                config_path = config.reports.day_md_config_path;
-                break;
-              case ReportFormat::kLaTeX:
-                config_path = config.reports.day_tex_config_path;
-                break;
-              case ReportFormat::kTyp:
-                config_path = config.reports.day_typ_config_path;
-                break;
-            }
-          } else if constexpr (std::is_same_v<ReportDataType,
-                                              MonthlyReportData>) {
-            switch (format) {
-              case ReportFormat::kMarkdown:
-                config_path = config.reports.month_md_config_path;
-                break;
-              case ReportFormat::kLaTeX:
-                config_path = config.reports.month_tex_config_path;
-                break;
-              case ReportFormat::kTyp:
-                config_path = config.reports.month_typ_config_path;
-                break;
-            }
-          } else if constexpr (std::is_same_v<ReportDataType,
-                                              PeriodReportData>) {
-            switch (format) {
-              case ReportFormat::kMarkdown:
-                config_path = config.reports.period_md_config_path;
-                break;
-              case ReportFormat::kLaTeX:
-                config_path = config.reports.period_tex_config_path;
-                break;
-              case ReportFormat::kTyp:
-                config_path = config.reports.period_typ_config_path;
-                break;
-            }
-          } else if constexpr (std::is_same_v<ReportDataType,
-                                              WeeklyReportData>) {
-            switch (format) {
-              case ReportFormat::kMarkdown:
-                config_path = config.reports.week_md_config_path;
-                break;
-              case ReportFormat::kLaTeX:
-                config_path = config.reports.week_tex_config_path;
-                break;
-              case ReportFormat::kTyp:
-                config_path = config.reports.week_typ_config_path;
-                break;
-            }
-          } else if constexpr (std::is_same_v<ReportDataType,
-                                              YearlyReportData>) {
-            switch (format) {
-              case ReportFormat::kMarkdown:
-                config_path = config.reports.year_md_config_path;
-                break;
-              case ReportFormat::kLaTeX:
-                config_path = config.reports.year_tex_config_path;
-                break;
-              case ReportFormat::kTyp:
-                config_path = config.reports.year_typ_config_path;
-                break;
-            }
+          const uint32_t kConfigKind = GetFormatterConfigKind(format);
+          if (kConfigKind == TT_FORMATTER_CONFIG_KIND_UNKNOWN) {
+            throw std::invalid_argument(
+                "Unsupported formatter config kind for selected report "
+                "format.");
           }
+          FormatterConfigPayload config_payload =
+              BuildConfigPayloadFromLoaded(format, config);
 
-          // [修改] 默认为空字符串，不再是 "{}"
-          std::string config_content;
-          if (!config_path.empty() && fs::exists(config_path)) {
-            try {
-              toml::table config_tbl = TomlLoaderUtils::ReadToml(config_path);
-              std::stringstream buffer;
-              buffer << config_tbl;
-              config_content = buffer.str();
-            } catch (const std::exception& e) {
-              std::cerr << "Error reading config file: " << config_path << " - "
-                        << e.what() << std::endl;
-            }
-          }
-
-          // [修改] 传递 config_content
-          return LoadFromDll(dll_base_name, config, config_content);
+          // Pass payload by const reference all the way through.
+          // The ABI config view points to payload-owned string buffers, so a
+          // move here may invalidate pointer addresses before DLL init.
+          return LoadFromDll(dll_base_name, config, config_payload);
         });
   }
 
@@ -142,9 +71,178 @@ class GenericFormatterFactory {
     return creators;
   }
 
-  [[nodiscard]] static auto LoadFromDll(const std::string& base_name,
-                                        const AppConfig& config,
-                                        const std::string& config_content)
+  [[nodiscard]] static auto GetFormatterConfigKind(ReportFormat format)
+      -> uint32_t {
+    if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          return TT_FORMATTER_CONFIG_KIND_DAY_MD;
+        case ReportFormat::kLaTeX:
+          return TT_FORMATTER_CONFIG_KIND_DAY_TEX;
+        case ReportFormat::kTyp:
+          return TT_FORMATTER_CONFIG_KIND_DAY_TYP;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          return TT_FORMATTER_CONFIG_KIND_MONTH_MD;
+        case ReportFormat::kLaTeX:
+          return TT_FORMATTER_CONFIG_KIND_MONTH_TEX;
+        case ReportFormat::kTyp:
+          return TT_FORMATTER_CONFIG_KIND_MONTH_TYP;
+      }
+    }
+
+    if constexpr ((std::is_same_v<ReportDataType, PeriodReportData>) ||
+                  (std::is_same_v<ReportDataType, WeeklyReportData>) ||
+                  (std::is_same_v<ReportDataType, YearlyReportData>) ||
+                  (std::is_same_v<ReportDataType, RangeReportData>)) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          return TT_FORMATTER_CONFIG_KIND_RANGE_MD;
+        case ReportFormat::kLaTeX:
+          return TT_FORMATTER_CONFIG_KIND_RANGE_TEX;
+        case ReportFormat::kTyp:
+          return TT_FORMATTER_CONFIG_KIND_RANGE_TYP;
+      }
+    }
+
+    return TT_FORMATTER_CONFIG_KIND_UNKNOWN;
+  }
+
+  [[nodiscard]] static auto BuildConfigPayloadFromLoaded(
+      ReportFormat format, const AppConfig& config) -> FormatterConfigPayload {
+    FormatterConfigPayload payload{};
+
+    if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedDailyMdConfig(
+              config.loaded_reports.markdown.day);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedDailyTexConfig(
+              config.loaded_reports.latex.day);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedDailyTypConfig(
+              config.loaded_reports.typst.day);
+          return payload;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedMonthMdConfig(
+              config.loaded_reports.markdown.month);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedMonthTexConfig(
+              config.loaded_reports.latex.month);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedMonthTypConfig(
+              config.loaded_reports.typst.month);
+          return payload;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedRangeMdConfig(
+              config.loaded_reports.markdown.period.labels);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedRangeTexConfig(
+              config.loaded_reports.latex.period.labels,
+              config.loaded_reports.latex.period.fonts,
+              config.loaded_reports.latex.period.layout);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedRangeTypConfig(
+              config.loaded_reports.typst.period.labels,
+              config.loaded_reports.typst.period.fonts,
+              config.loaded_reports.typst.period.layout);
+          return payload;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedRangeMdConfig(
+              config.loaded_reports.markdown.week.labels);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedRangeTexConfig(
+              config.loaded_reports.latex.week.labels,
+              config.loaded_reports.latex.week.fonts,
+              config.loaded_reports.latex.week.layout);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedRangeTypConfig(
+              config.loaded_reports.typst.week.labels,
+              config.loaded_reports.typst.week.fonts,
+              config.loaded_reports.typst.week.layout);
+          return payload;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedRangeMdConfig(
+              config.loaded_reports.markdown.year.labels);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedRangeTexConfig(
+              config.loaded_reports.latex.year.labels,
+              config.loaded_reports.latex.year.fonts,
+              config.loaded_reports.latex.year.layout);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedRangeTypConfig(
+              config.loaded_reports.typst.year.labels,
+              config.loaded_reports.typst.year.fonts,
+              config.loaded_reports.typst.year.layout);
+          return payload;
+      }
+    }
+
+    if constexpr (std::is_same_v<ReportDataType, RangeReportData>) {
+      switch (format) {
+        case ReportFormat::kMarkdown:
+          payload.BuildFromLoadedRangeMdConfig(
+              config.loaded_reports.markdown.period.labels);
+          return payload;
+        case ReportFormat::kLaTeX:
+          payload.BuildFromLoadedRangeTexConfig(
+              config.loaded_reports.latex.period.labels,
+              config.loaded_reports.latex.period.fonts,
+              config.loaded_reports.latex.period.layout);
+          return payload;
+        case ReportFormat::kTyp:
+          payload.BuildFromLoadedRangeTypConfig(
+              config.loaded_reports.typst.period.labels,
+              config.loaded_reports.typst.period.fonts,
+              config.loaded_reports.typst.period.layout);
+          return payload;
+      }
+    }
+
+    throw std::invalid_argument(
+        "Unsupported report format or report data type for formatter payload.");
+  }
+
+  // Must take const reference, not by value:
+  // moving FormatterConfigPayload can break C-view string pointer stability.
+  [[nodiscard]] static auto LoadFromDll(
+      const std::string& base_name, const AppConfig& config,
+      const FormatterConfigPayload& config_payload)
       -> std::unique_ptr<IReportFormatter<ReportDataType>> {
     try {
       fs::path exe_dir(config.exe_dir_path);
@@ -165,10 +263,11 @@ class GenericFormatterFactory {
       }
 
       return std::make_unique<DllFormatterWrapper<ReportDataType>>(
-          dll_path.string(), config_content);
+          dll_path.string(), config_payload);
 
-    } catch (const std::exception& e) {
-      std::cerr << "Error loading dynamic formatter: " << e.what() << std::endl;
+    } catch (const std::exception& exception) {
+      std::cerr << "Error loading dynamic formatter: " << exception.what()
+                << std::endl;
       throw;
     }
   }

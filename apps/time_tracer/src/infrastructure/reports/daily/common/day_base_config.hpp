@@ -2,13 +2,11 @@
 #ifndef REPORTS_DAILY_COMMON_DAY_BASE_CONFIG_H_
 #define REPORTS_DAILY_COMMON_DAY_BASE_CONFIG_H_
 
-#include <toml++/toml.h>
-
-#include <map>
 #include <string>
 #include <vector>
 
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 struct StatisticItemConfig {
   std::string label;
@@ -21,8 +19,9 @@ DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API DayBaseConfig {
  public:
-  // [修改] 构造函数接收 TOML Table
-  explicit DayBaseConfig(toml::table config);
+  DayBaseConfig(const TtDayLabelsConfigV1& labels,
+                const TtFormatterStatisticItemNodeV1* statistics_items,
+                uint32_t statistics_item_count);
   virtual ~DayBaseConfig() = default;
 
   [[nodiscard]] auto GetTitlePrefix() const -> const std::string&;
@@ -39,15 +38,16 @@ class REPORTS_SHARED_API DayBaseConfig {
   [[nodiscard]] auto GetActivityRemarkLabel() const -> const std::string&;
   [[nodiscard]] auto GetActivityConnector() const -> const std::string&;
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
-
   [[nodiscard]] auto GetStatisticsItems() const
       -> const std::vector<StatisticItemConfig>&;
 
  protected:
-  toml::table config_table_;
+  static auto BuildStatisticsItems(
+      const TtFormatterStatisticItemNodeV1* statistics_items,
+      uint32_t statistics_item_count) -> std::vector<StatisticItemConfig>;
 
  private:
-  void LoadBaseConfig();
+  void LoadBaseConfig(const TtDayLabelsConfigV1& labels);
 
   std::string title_prefix_;
   std::string date_label_;

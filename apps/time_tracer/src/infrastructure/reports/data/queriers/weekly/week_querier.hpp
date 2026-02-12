@@ -7,14 +7,13 @@
 #include <string>
 
 #include "domain/reports/models/weekly_report_data.hpp"
-#include "infrastructure/reports/data/queriers/base_querier.hpp"
+#include "infrastructure/reports/data/queriers/range_querier_base.hpp"
 #include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"
 
-class WeekQuerier : public BaseQuerier<WeeklyReportData, std::string_view> {
+class WeekQuerier
+    : public RangeQuerierBase<WeeklyReportData, std::string_view> {
  public:
   WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week);
-
-  [[nodiscard]] auto FetchData() -> WeeklyReportData override;
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

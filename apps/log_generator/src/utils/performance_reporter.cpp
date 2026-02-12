@@ -41,6 +41,8 @@ void PerformanceReporter::report(
       "{}-{}.\n",
       GREEN_COLOR, RESET_COLOR, files_generated, config.start_year,
       config.end_year);
+  std::cout << std::format("Output Directory:    {}\n",
+                           config.output_directory);
 
   std::cout << "--------------------------------------------------\n";
   // 使用更准确的时间统计术语

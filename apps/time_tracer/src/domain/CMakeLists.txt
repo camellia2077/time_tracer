@@ -5,4 +5,4 @@ add_library(time_tracker_domain STATIC
     "repositories/i_project_repository.hpp"
 )
 
-setup_project_target(time_tracker_domain)
+setup_plugin_target(time_tracker_domain NO_STDCXXEXP)

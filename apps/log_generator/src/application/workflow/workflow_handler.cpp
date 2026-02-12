@@ -29,11 +29,11 @@ WorkflowHandler::WorkflowHandler(FileSystem& file_system,
 
 auto WorkflowHandler::run(const Core::AppContext& context,
                           ReportHandler& report_handler) -> int {
-  const std::string kMasterDirName = "dates";
+  const std::filesystem::path kOutputRoot = context.config.output_directory;
 
   const YearRange kYearRange{.start_year = context.config.start_year,
                              .end_year = context.config.end_year};
-  if (!file_system_.setup_directories(kMasterDirName, kYearRange)) {
+  if (!file_system_.setup_directories(kOutputRoot.string(), kYearRange)) {
     return -1;
   }
 
@@ -69,9 +69,8 @@ auto WorkflowHandler::run(const Core::AppContext& context,
       active_tasks.erase(active_tasks.begin());
     }
 
-    active_tasks.push_back(std::async(
-        std::launch::async,
-        [=, this, &context, &reporter, &kMasterDirName]() -> int {
+    active_tasks.push_back(
+        std::async(std::launch::async, [=, this, &context, &reporter]() -> int {
           auto generator = generator_factory_.create(context);
 
           std::string buffer;
@@ -82,8 +81,7 @@ auto WorkflowHandler::run(const Core::AppContext& context,
           for (int month = 1; month <= kMonthsPerYear; ++month) {
             std::string filename = std::format("{}_{:02}.txt", year, month);
             std::filesystem::path full_path =
-                std::filesystem::path(kMasterDirName) / std::to_string(year) /
-                filename;
+                kOutputRoot / std::to_string(year) / filename;
 
             auto gen_start = std::chrono::high_resolution_clock::now();
             const Utils::YearMonth kYearMonth{.year = year, .month = month};

@@ -2,17 +2,16 @@
 #ifndef REPORTS_SHARED_CONFIG_TEX_STYLE_CONFIG_H_
 #define REPORTS_SHARED_CONFIG_TEX_STYLE_CONFIG_H_
 
-#include <toml++/toml.h>
-
 #include <string>
 
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API TexStyleConfig {
  public:
-  explicit TexStyleConfig(const toml::table& config);
+  explicit TexStyleConfig(const TtTexStyleConfigV1& config);
 
   [[nodiscard]] auto GetMainFont() const -> const std::string&;
   [[nodiscard]] auto GetCjkMainFont() const -> const std::string&;

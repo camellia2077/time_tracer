@@ -1,34 +1,33 @@
 # src/reports/monthly/formatters/latex/CMakeLists.txt
 
-# --- 1. 定义共享库（DLL）目标 ---
 add_library(MonthTexFormatter SHARED
     month_tex_formatter.cpp
     month_tex_config.cpp
     month_tex_utils.cpp
 )
 
-# --- 2. 设置目标属性 ---
-setup_project_target(MonthTexFormatter)
-
-# --- 3. 链接到共享库 ---
+setup_plugin_target(MonthTexFormatter NO_STDCXXEXP)
 target_link_libraries(MonthTexFormatter PRIVATE reports_shared)
 
-# --- 4. 添加体积优化选项 ---
-target_compile_options(MonthTexFormatter PRIVATE
-    -Os
-    -ffunction-sections
-    -fdata-sections
-)
-target_link_options(MonthTexFormatter PRIVATE
-    -s
-    -Wl,--gc-sections
-)
+if(NOT DISABLE_OPTIMIZATION)
+    target_compile_options(MonthTexFormatter PRIVATE
+        -Os
+        -ffunction-sections
+        -fdata-sections
+    )
+    target_link_options(MonthTexFormatter PRIVATE
+        -s
+        -Wl,--gc-sections
+    )
+endif()
 
-# --- 5. 设置输出目录 ---
 set_target_properties(MonthTexFormatter PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
     RUNTIME_OUTPUT_DIRECTORY "${PLUGIN_OUTPUT_DIR}"
 )
 
-# --- 6. 结束语 ---
-message(STATUS "Configured shared library target: MonthTexFormatter with maximum size optimization")
+if(DISABLE_OPTIMIZATION)
+    message(STATUS "Configured shared library target: MonthTexFormatter with size optimization disabled (--no-opt)")
+else()
+    message(STATUS "Configured shared library target: MonthTexFormatter with maximum size optimization")
+endif()

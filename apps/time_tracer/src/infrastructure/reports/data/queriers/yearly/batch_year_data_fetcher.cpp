@@ -22,13 +22,15 @@ BatchYearDataFetcher::BatchYearDataFetcher(sqlite3* sqlite_db)
 
 auto BatchYearDataFetcher::FetchAllData()
     -> std::map<std::string, YearlyReportData> {
+  constexpr int kAnaerobicTrueDaysColumn = 5;
+
   std::map<std::string, YearlyReportData> results;
 
   auto& name_cache = ProjectNameCache::Instance();
   name_cache.EnsureLoaded(db_);
 
   sqlite3_stmt* stmt = nullptr;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT strftime('%Y', {0}) as yy, {0}, {1}, SUM({2}) "
       "FROM {3} "
       "GROUP BY yy, {0}, {1} "
@@ -36,7 +38,7 @@ auto BatchYearDataFetcher::FetchAllData()
       schema::time_records::db::kDate, schema::time_records::db::kProjectId,
       schema::time_records::db::kDuration, schema::time_records::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for yearly stats.");
   }
 
@@ -80,7 +82,7 @@ auto BatchYearDataFetcher::FetchAllData()
                                                    distinct_dates, name_cache);
 
   sqlite3_stmt* flag_stmt = nullptr;
-  const std::string flag_sql = std::format(
+  const std::string kFlagSql = std::format(
       "SELECT strftime('%Y', {0}) as yy, "
       "SUM(CASE WHEN {1} != 0 THEN 1 ELSE 0 END), "
       "SUM(CASE WHEN {2} != 0 THEN 1 ELSE 0 END), "
@@ -89,13 +91,12 @@ auto BatchYearDataFetcher::FetchAllData()
       "SUM(CASE WHEN {5} > 0 THEN 1 ELSE 0 END) "
       "FROM {6} "
       "GROUP BY yy;",
-      schema::day::db::kDate, schema::day::db::kStatus,
-      schema::day::db::kSleep, schema::day::db::kExercise,
-      schema::day::db::kCardioTime, schema::day::db::kAnaerobicTime,
-      schema::day::db::kTable);
+      schema::day::db::kDate, schema::day::db::kStatus, schema::day::db::kSleep,
+      schema::day::db::kExercise, schema::day::db::kCardioTime,
+      schema::day::db::kAnaerobicTime, schema::day::db::kTable);
   std::map<std::string, std::tuple<int, int, int, int, int>> flag_counts;
 
-  if (sqlite3_prepare_v2(db_, flag_sql.c_str(), -1, &flag_stmt, nullptr) ==
+  if (sqlite3_prepare_v2(db_, kFlagSql.c_str(), -1, &flag_stmt, nullptr) ==
       SQLITE_OK) {
     while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
       const unsigned char* yy_ptr = sqlite3_column_text(flag_stmt, 0);
@@ -106,7 +107,7 @@ auto BatchYearDataFetcher::FetchAllData()
       flag_counts[year_str] = {
           sqlite3_column_int(flag_stmt, 1), sqlite3_column_int(flag_stmt, 2),
           sqlite3_column_int(flag_stmt, 3), sqlite3_column_int(flag_stmt, 4),
-          sqlite3_column_int(flag_stmt, 5)};
+          sqlite3_column_int(flag_stmt, kAnaerobicTrueDaysColumn)};
     }
   } else {
     sqlite3_finalize(flag_stmt);

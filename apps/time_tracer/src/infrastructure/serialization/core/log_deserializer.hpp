@@ -14,7 +14,7 @@ class LogDeserializer {
    * @brief 将 JSON 对象反序列化为 DailyLog 结构体
    * @throws nlohmann::json::exception 解析错误时抛出
    */
-  static DailyLog deserialize(const nlohmann::json& day_json);
+  static auto Deserialize(const nlohmann::json& day_json) -> DailyLog;
 };
 
 }  // namespace serializer::core

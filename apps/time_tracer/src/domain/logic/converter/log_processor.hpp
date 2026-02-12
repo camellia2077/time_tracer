@@ -26,8 +26,11 @@ class LogProcessor {
                            std::function<void(DailyLog&&)> data_consumer,
                            std::string_view source_file);
 
-  auto ProcessSourceContent(const std::string& filename,
-                            const std::string& content) -> LogProcessingResult;
+  auto ProcessSourceContent(
+      const std::string& filename,
+      const std::string&
+          content)  // NOLINT(bugprone-easily-swappable-parameters)
+      -> LogProcessingResult;
 
  private:
   const ConverterConfig& config_;

@@ -112,8 +112,8 @@ auto PipelineManager::Run(const std::string& input_path,
 
     if (new_files.empty() && !context.result.processed_data.empty()) {
       std::cerr << time_tracer::common::colors::kYellow
-                << time_tracer::common::colors::kBold
-                << "[WARN] " << time_tracer::common::colors::kReset
+                << time_tracer::common::colors::kBold << "[WARN] "
+                << time_tracer::common::colors::kReset
                 << time_tracer::common::colors::kYellow
                 << "Data exists but no files were generated (flush failed)."
                 << time_tracer::common::colors::kReset << std::endl;

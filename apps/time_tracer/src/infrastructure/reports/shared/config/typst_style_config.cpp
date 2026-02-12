@@ -1,24 +1,19 @@
 // infrastructure/reports/shared/config/typst_style_config.cpp
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
 
-TypstStyleConfig::TypstStyleConfig(const toml::table& config) {
-  constexpr int kDefaultBaseFontSize = 10;
-  constexpr int kDefaultReportTitleFontSize = 14;
-  constexpr int kDefaultCategoryTitleFontSize = 12;
-  constexpr double kDefaultLineSpacingEm = 0.65;
+#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
 
-  // 移除 value_or 后的 <std::string>
-  // toml++ 会根据传入参数自动推导返回类型，并支持左值引用
-  base_font_ = config["base_font"].value_or("");
-  title_font_ = config["title_font"].value_or(base_font_);
-  category_title_font_ = config["category_title_font"].value_or(base_font_);
-
-  base_font_size_ = config["base_font_size"].value_or(kDefaultBaseFontSize);
-  report_title_font_size_ =
-      config["report_title_font_size"].value_or(kDefaultReportTitleFontSize);
-  category_title_font_size_ = config["category_title_font_size"].value_or(
-      kDefaultCategoryTitleFontSize);
-  line_spacing_em_ = config["line_spacing_em"].value_or(kDefaultLineSpacingEm);
+TypstStyleConfig::TypstStyleConfig(const TtTypstStyleConfigV1& config) {
+  base_font_ = formatter_c_string_view_utils::ToString(config.baseFont,
+                                                       "style.baseFont");
+  title_font_ = formatter_c_string_view_utils::ToString(config.titleFont,
+                                                        "style.titleFont");
+  category_title_font_ = formatter_c_string_view_utils::ToString(
+      config.categoryTitleFont, "style.categoryTitleFont");
+  base_font_size_ = config.baseFontSize;
+  report_title_font_size_ = config.reportTitleFontSize;
+  category_title_font_size_ = config.categoryTitleFontSize;
+  line_spacing_em_ = config.lineSpacingEm;
 }
 
 auto TypstStyleConfig::GetBaseFont() const -> const std::string& {

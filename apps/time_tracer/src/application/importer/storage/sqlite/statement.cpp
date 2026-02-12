@@ -26,7 +26,7 @@ auto Statement::GetInsertProjectStmt() const -> sqlite3_stmt* {
 }
 
 void Statement::PrepareStatements() {
-  const std::string insert_day_sql = std::format(
+  const std::string kInsertDaySql = std::format(
       "INSERT INTO {0} ("
       "{1}, {2}, {3}, {4}, {5}, {6}, {7}, "
       "{8}, {9}, {10}, {11}, "
@@ -43,8 +43,7 @@ void Statement::PrepareStatements() {
       "?, ?, ?, ?, "
       "?"
       ");",
-      schema::day::db::kTable, schema::day::db::kDate,
-      schema::day::db::kYear,
+      schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
       schema::day::db::kMonth, schema::day::db::kStatus,
       schema::day::db::kSleep, schema::day::db::kRemark,
       schema::day::db::kGetupTime, schema::day::db::kExercise,
@@ -56,36 +55,31 @@ void Statement::PrepareStatements() {
       schema::day::db::kRecreationZhihuTime,
       schema::day::db::kRecreationBilibiliTime,
       schema::day::db::kRecreationDouyinTime, schema::day::db::kStudyTime);
-  if (sqlite3_prepare_v2(db_, insert_day_sql.c_str(), -1, &stmt_insert_day_,
-                         nullptr) !=
-      SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kInsertDaySql.c_str(), -1, &stmt_insert_day_,
+                         nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare day insert statement.");
   }
 
-  const std::string insert_record_sql = std::format(
+  const std::string kInsertRecordSql = std::format(
       "INSERT OR REPLACE INTO {0} "
       "({1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}) "
       "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
       schema::time_records::db::kTable, schema::time_records::db::kLogicalId,
       schema::time_records::db::kStartTimestamp,
-      schema::time_records::db::kEndTimestamp,
-      schema::time_records::db::kDate, schema::time_records::db::kStart,
-      schema::time_records::db::kEnd, schema::time_records::db::kProjectId,
-      schema::time_records::db::kDuration,
+      schema::time_records::db::kEndTimestamp, schema::time_records::db::kDate,
+      schema::time_records::db::kStart, schema::time_records::db::kEnd,
+      schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
       schema::time_records::db::kActivityRemark);
-  if (sqlite3_prepare_v2(db_, insert_record_sql.c_str(), -1,
-                         &stmt_insert_record_,
-                         nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kInsertRecordSql.c_str(), -1,
+                         &stmt_insert_record_, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare time record insert statement.");
   }
 
-  const std::string insert_project_sql = std::format(
-      "INSERT INTO {0} ({1}, {2}) VALUES (?, ?);",
-      schema::projects::db::kTable, schema::projects::db::kName,
-      schema::projects::db::kParentId);
-  if (sqlite3_prepare_v2(db_, insert_project_sql.c_str(), -1,
-                         &stmt_insert_project_,
-                         nullptr) != SQLITE_OK) {
+  const std::string kInsertProjectSql = std::format(
+      "INSERT INTO {0} ({1}, {2}) VALUES (?, ?);", schema::projects::db::kTable,
+      schema::projects::db::kName, schema::projects::db::kParentId);
+  if (sqlite3_prepare_v2(db_, kInsertProjectSql.c_str(), -1,
+                         &stmt_insert_project_, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare project insert statement.");
   }
 }

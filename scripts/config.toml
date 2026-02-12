@@ -1,0 +1,72 @@
+[apps.time_tracer]
+path = "apps/time_tracer"
+cmake_flags = [
+    "-G", "Ninja",
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF"
+]
+
+[apps.log_generator]
+path = "apps/log_generator"
+cmake_flags = [
+    "-G", "Ninja",
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF"
+]
+
+[build]
+# Toolchain selector used by scripts/run.py configure.
+# Values: "default" | "clang" | "gcc"
+# NOTE:
+# Main executable LTO can fail on some toolchains, so build scripts
+# keep `-DENABLE_LTO=OFF` by default for program targets.
+# DLL targets may enable LTO in project-specific scripts where supported.
+compiler = "clang"
+
+# Optional explicit overrides. When both are set, they take precedence over `compiler`.
+# c_compiler = "clang"
+# cxx_compiler = "clang++"
+
+[tidy]
+# Granular task splitting limits to prevent AI agent overload
+max_lines = 150
+max_diags = 12
+# Store tasks by folder batches to reduce agent context scope.
+batch_size = 20
+# Ninja parallelism (0 = build tool default, equivalent to `-j` without a value).
+jobs = 0
+# Log parser worker count (0 = auto).
+parse_workers = 0
+# User preference: keep going through as many tidy checks as possible.
+# This maps to Ninja `-k 0` behind `cmake --build`.
+keep_going = true
+# Run one tidy-fix pass before tidy task generation in tidy-flow.
+run_fix_before_tidy = true
+# Controllable tidy-fix scope:
+# 0 = run full `tidy-fix`; N>0 = run `tidy_fix_step_N` (prefix range).
+fix_limit = 0
+
+[rename]
+engine = "clangd"
+check_name = "readability-identifier-naming"
+clangd_path = "clangd"
+clangd_background_index = true
+clangd_warmup_seconds = 1.0
+skip_header_single_edit = true
+max_candidates_per_run = 300
+dry_run_default = false
+allowed_kinds = [
+    "constant",
+    "variable",
+    "function",
+    "method",
+    "parameter",
+    "member",
+    "class member",
+    "private member",
+    "protected member"
+]

@@ -3,7 +3,7 @@
 
 namespace validator::txt {
 
-void StructureRules::reset() {
+void StructureRules::Reset() {
   has_seen_year_ = false;
   has_seen_date_in_block_ = false;
   has_seen_event_in_day_ = false;
@@ -11,16 +11,15 @@ void StructureRules::reset() {
   last_seen_year_ = 0;
 }
 
-void StructureRules::process_year_line(int line_number, const std::string& line,
-                                       std::set<Error>& errors,
-                                       const SourceSpan& span) {
+void StructureRules::ProcessYearLine(int line_number, const std::string& line,
+                                     std::set<Error>& errors,
+                                     const SourceSpan& span) {
   // [规则 1] 单文件只允许一个年份头
   if (has_seen_year_) {
     errors.insert({line_number,
                    "Multiple year headers found. Only one year header is "
                    "allowed per file (single month/year per file).",
-                   ErrorType::kStructural,
-                   span});
+                   ErrorType::kStructural, span});
     return;
   }
 
@@ -38,14 +37,12 @@ void StructureRules::process_year_line(int line_number, const std::string& line,
   has_seen_date_in_block_ = false;
 }
 
-void StructureRules::process_date_line(int line_number, const std::string& line,
-                                       std::set<Error>& errors,
-                                       const SourceSpan& span) {
+void StructureRules::ProcessDateLine(int line_number, const std::string& line,
+                                     std::set<Error>& errors,
+                                     const SourceSpan& span) {
   if (!has_seen_year_) {
-    errors.insert({line_number,
-                   "Date found before a year header.",
-                   ErrorType::kStructural,
-                   span});
+    errors.insert({line_number, "Date found before a year header.",
+                   ErrorType::kStructural, span});
   }
 
   // [规则 2] 文件的第一个日期必须是该月的第一天 (MM01)
@@ -58,8 +55,7 @@ void StructureRules::process_date_line(int line_number, const std::string& line,
                        "The first date in the file must be the 1st day of the "
                        "month (e.g., 0101). Found: " +
                            line,
-                       ErrorType::kDateContinuity,
-                       span});
+                       ErrorType::kDateContinuity, span});
       }
     }
     has_seen_any_date_ = true;
@@ -69,48 +65,41 @@ void StructureRules::process_date_line(int line_number, const std::string& line,
   has_seen_event_in_day_ = false;
 }
 
-void StructureRules::process_remark_line(int line_number,
-                                         const std::string& /*line*/,
-                                         std::set<Error>& errors,
-                                         const SourceSpan& span) const {
+void StructureRules::ProcessRemarkLine(int line_number,
+                                       const std::string& /*line*/,
+                                       std::set<Error>& errors,
+                                       const SourceSpan& span) const {
   if (!has_seen_date_in_block_) {
-    errors.insert({line_number,
-                   "Remark found before a date.",
-                   ErrorType::kStructural,
-                   span});
+    errors.insert({line_number, "Remark found before a date.",
+                   ErrorType::kStructural, span});
   }
   if (has_seen_event_in_day_) {
     errors.insert({line_number,
                    "Remark must appear before any events for the day.",
-                   ErrorType::kSourceRemarkAfterEvent,
-                   span});
+                   ErrorType::kSourceRemarkAfterEvent, span});
   }
 }
 
-void StructureRules::process_event_line(int line_number,
-                                        const std::string& /*line*/,
-                                        std::set<Error>& errors,
-                                        const SourceSpan& span) {
+void StructureRules::ProcessEventLine(int line_number,
+                                      const std::string& /*line*/,
+                                      std::set<Error>& errors,
+                                      const SourceSpan& span) {
   if (!has_seen_date_in_block_) {
-    errors.insert({line_number,
-                   "Event found before a date.",
-                   ErrorType::kStructural,
-                   span});
+    errors.insert({line_number, "Event found before a date.",
+                   ErrorType::kStructural, span});
   }
   has_seen_event_in_day_ = true;
 }
 
-void StructureRules::process_unrecognized_line(int line_number,
-                                               const std::string& line,
-                                               std::set<Error>& errors,
-                                               const SourceSpan& span) {
-  errors.insert({line_number,
-                 "Unrecognized line format: " + line,
-                 ErrorType::kSourceInvalidLineFormat,
-                 span});
+void StructureRules::ProcessUnrecognizedLine(int line_number,
+                                             const std::string& line,
+                                             std::set<Error>& errors,
+                                             const SourceSpan& span) {
+  errors.insert({line_number, "Unrecognized line format: " + line,
+                 ErrorType::kSourceInvalidLineFormat, span});
 }
 
-auto StructureRules::has_seen_year() const -> bool {
+auto StructureRules::HasSeenYear() const -> bool {
   return has_seen_year_;
 }
 

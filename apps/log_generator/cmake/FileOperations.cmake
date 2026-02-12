@@ -1,36 +1,35 @@
+# Build-time output/copy rules:
+# 1) Place executable under build/bin
+# 2) Copy config files under build/bin/config
 
-# 负责配置文件复制等辅助任务
-# --- Build-time Configuration File Copying ---
+set(APP_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
+set(CONFIG_DEST_DIR "${APP_BIN_DIR}/config")
 
-# 定义需要复制的文件
-set(CONFIG_FILES 
+set_target_properties(log_generator PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY "${APP_BIN_DIR}"
+)
+
+set(CONFIG_FILES
     "activities_config.toml"
     "mapping_config.toml"
 )
 
-# 确保输出目录存在
-add_custom_command(
-    TARGET log_generator PRE_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/config
-    COMMENT "Ensuring config directory exists in build directory"
-)
-
 set(CONFIG_DEST_FILES "")
 
-# 遍历并创建复制命令
 foreach(FILENAME ${CONFIG_FILES})
     set(SRC "${CMAKE_CURRENT_SOURCE_DIR}/config/${FILENAME}")
-    set(DEST "${CMAKE_BINARY_DIR}/config/${FILENAME}")
-    
+    set(DEST "${CONFIG_DEST_DIR}/${FILENAME}")
+
     add_custom_command(
-        OUTPUT ${DEST}
-        COMMAND ${CMAKE_COMMAND} -E copy ${SRC} ${DEST}
-        DEPENDS ${SRC}
-        COMMENT "Copying ${FILENAME} to build directory"
+        OUTPUT "${DEST}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CONFIG_DEST_DIR}"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${SRC}" "${DEST}"
+        DEPENDS "${SRC}"
+        COMMENT "Copying ${FILENAME} to ${CONFIG_DEST_DIR}"
+        VERBATIM
     )
-    list(APPEND CONFIG_DEST_FILES ${DEST})
+    list(APPEND CONFIG_DEST_FILES "${DEST}")
 endforeach()
 
-# 创建自定义目标以触发复制
 add_custom_target(copy_configs ALL DEPENDS ${CONFIG_DEST_FILES})
 add_dependencies(log_generator copy_configs)

@@ -7,13 +7,11 @@
 #include <string>
 
 #include "domain/reports/models/period_report_data.hpp"
-#include "infrastructure/reports/data/queriers/base_querier.hpp"
+#include "infrastructure/reports/data/queriers/range_querier_base.hpp"
 
-class PeriodQuerier : public BaseQuerier<PeriodReportData, int> {
+class PeriodQuerier : public RangeQuerierBase<PeriodReportData, int> {
  public:
   explicit PeriodQuerier(sqlite3* sqlite_db, int days_to_query);
-
-  [[nodiscard]] auto FetchData() -> PeriodReportData override;
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

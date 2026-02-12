@@ -91,9 +91,8 @@ void EventGenerator::generate_events_for_day(std::string& log_content,
 
     int logical_hour = current_total_minutes / kMinutesPerHour;
     int minute = current_total_minutes % kMinutesPerHour;
-    int hour =
-        (logical_hour >= kHoursPerDay) ? logical_hour - kHoursPerDay
-                                       : logical_hour;
+    int hour = (logical_hour >= kHoursPerDay) ? logical_hour - kHoursPerDay
+                                              : logical_hour;
 
     last_total_minutes = current_total_minutes;
 
