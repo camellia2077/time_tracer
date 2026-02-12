@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{{ title }}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f7;
+      --panel: #ffffff;
+      --border: #e1e1e1;
+      --text: #1f2933;
+      --muted: #6b7280;
+      --accent: #2b5bff;
+    }
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 20px;
+    }
+    main {
+      padding: 24px;
+    }
+    .root-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+    }
+    .root-card {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .root-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+    }
+    .root-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .root-meta {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .hidden {
+      display: none;
+    }
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--panel);
+      border-radius: 8px;
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    .tree {
+      list-style: none;
+      padding-left: 16px;
+      margin: 0;
+    }
+    .node-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 4px 0;
+    }
+    .toggle {
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      width: 20px;
+      height: 20px;
+      color: var(--muted);
+    }
+    .leaf-spacer {
+      width: 20px;
+      height: 20px;
+      display: inline-block;
+    }
+    .node-name {
+      font-size: 14px;
+    }
+    .node-duration {
+      color: var(--muted);
+      font-size: 12px;
+      margin-left: 6px;
+    }
+    .collapsed {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>{{ title }}</h1>
+  </header>
+  <main>
+    <section id="root-view">
+      <div class="root-grid" id="root-grid"></div>
+    </section>
+    <section id="tree-view" class="hidden">
+      <div class="toolbar">
+        <button class="btn" id="back-btn">返回根节点</button>
+        <div id="current-root" class="root-title"></div>
+      </div>
+      <div id="tree-container"></div>
+    </section>
+  </main>
+  <script id="tree-data" type="application/json">{{ json_text | safe }}</script>
+  <script>
+    const JSON_FILE = "{{ json_filename }}";
+    const rootView = document.getElementById("root-view");
+    const treeView = document.getElementById("tree-view");
+    const rootGrid = document.getElementById("root-grid");
+    const treeContainer = document.getElementById("tree-container");
+    const currentRoot = document.getElementById("current-root");
+    const backBtn = document.getElementById("back-btn");
+
+    function countNodes(node) {
+      if (!node.children || node.children.length === 0) return 1;
+      return 1 + node.children.reduce((sum, child) => sum + countNodes(child), 0);
+    }
+
+    function sortNodesByDuration(nodes) {
+      return [...(nodes || [])].sort((left, right) => {
+        const leftSeconds = Number(left?.duration_seconds || 0);
+        const rightSeconds = Number(right?.duration_seconds || 0);
+        if (rightSeconds !== leftSeconds) return rightSeconds - leftSeconds;
+        const leftName = String(left?.name || "");
+        const rightName = String(right?.name || "");
+        return leftName.localeCompare(rightName, "zh-CN");
+      });
+    }
+
+    function renderRootList(roots) {
+      rootGrid.innerHTML = "";
+      const sortedRoots = sortNodesByDuration(roots);
+      sortedRoots.forEach(root => {
+        const card = document.createElement("div");
+        card.className = "root-card";
+        const total = countNodes(root) - 1;
+        card.innerHTML = `<div class="root-title">${root.name}</div>
+          <div class="root-meta">节点数: ${total}</div>
+          <div class="root-meta">时长: ${root.duration_text || "0m"} (${root.duration_days_text || "0.00d"})</div>`;
+        card.addEventListener("click", () => {
+          renderTree(root);
+          currentRoot.textContent = root.name;
+          rootView.classList.add("hidden");
+          treeView.classList.remove("hidden");
+        });
+        rootGrid.appendChild(card);
+      });
+    }
+
+    function renderTree(root) {
+      treeContainer.innerHTML = "";
+      const ul = document.createElement("ul");
+      ul.className = "tree";
+      ul.appendChild(renderNode(root));
+      treeContainer.appendChild(ul);
+    }
+
+    function renderNode(node) {
+      const li = document.createElement("li");
+      const row = document.createElement("div");
+      row.className = "node-row";
+
+      if (node.children && node.children.length) {
+        const btn = document.createElement("button");
+        btn.className = "toggle";
+        btn.textContent = "▾";
+        row.appendChild(btn);
+        const childUl = document.createElement("ul");
+        childUl.className = "tree";
+        const sortedChildren = sortNodesByDuration(node.children);
+        sortedChildren.forEach(child => childUl.appendChild(renderNode(child)));
+        btn.addEventListener("click", () => {
+          const collapsed = childUl.classList.toggle("collapsed");
+          btn.textContent = collapsed ? "▸" : "▾";
+        });
+        li.appendChild(row);
+        li.appendChild(childUl);
+      } else {
+        const spacer = document.createElement("span");
+        spacer.className = "leaf-spacer";
+        row.appendChild(spacer);
+        li.appendChild(row);
+      }
+
+      const name = document.createElement("span");
+      name.className = "node-name";
+      name.textContent = node.name;
+      row.appendChild(name);
+      const duration = document.createElement("span");
+      duration.className = "node-duration";
+      duration.textContent = node.duration_text
+        ? `(${node.duration_text}, ${node.duration_days_text || "0.00d"})`
+        : "";
+      row.appendChild(duration);
+      return li;
+    }
+
+    async function loadData() {
+      try {
+        const resp = await fetch(JSON_FILE);
+        if (resp.ok) return await resp.json();
+      } catch (err) {}
+      const embedded = document.getElementById("tree-data");
+      return embedded ? JSON.parse(embedded.textContent) : { roots: [] };
+    }
+
+    backBtn.addEventListener("click", () => {
+      treeView.classList.add("hidden");
+      rootView.classList.remove("hidden");
+    });
+
+    loadData().then(data => {
+      renderRootList(data.roots || []);
+    });
+  </script>
+</body>
+</html>

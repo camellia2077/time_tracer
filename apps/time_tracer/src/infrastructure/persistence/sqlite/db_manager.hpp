@@ -55,7 +55,7 @@ class DBManager {
 
  private:
   std::string db_name_;
-  sqlite3* db_;
+  sqlite3* db_ = nullptr;
 };
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_SQLITE_DB_MANAGER_H_

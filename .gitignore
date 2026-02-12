@@ -1,8 +1,13 @@
 build/
+.cache/
 build_*/
 __pycache__/
 html/
 temp/
+output/
+temp/
+
+*.png
 *.exe
 *.log
 

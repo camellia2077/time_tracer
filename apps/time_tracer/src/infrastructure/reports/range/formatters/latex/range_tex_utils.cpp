@@ -13,16 +13,11 @@ namespace RangeTexUtils {
 
 namespace {
 auto FormatRatio(int count, int total_days) -> std::string {
-  if (total_days <= 0) {
-    return std::to_string(count);
-  }
-  double percent =
-      100.0 * static_cast<double>(count) / static_cast<double>(total_days);
-  return std::format("{} ({:.2f}\\%)", count, percent);
+  return FormatCountWithPercentage(count, total_days, "\\%");
 }
 }  // namespace
 
-void DisplaySummary(std::stringstream& report_stream,
+void DisplaySummary(std::string& report_stream,
 
                     const RangeReportData& data,
                     const std::shared_ptr<RangeTexConfig>& config) {

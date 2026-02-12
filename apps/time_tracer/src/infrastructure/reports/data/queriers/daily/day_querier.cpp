@@ -4,10 +4,10 @@
 #include <format>
 #include <stdexcept>
 
-#include "infrastructure/schema/day_schema.hpp"
-#include "infrastructure/schema/time_records_schema.hpp"
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
+#include "infrastructure/schema/day_schema.hpp"
+#include "infrastructure/schema/time_records_schema.hpp"
 
 DayQuerier::DayQuerier(sqlite3* sqlite_db, std::string_view date)
     : BaseQuerier(sqlite_db, date) {}
@@ -44,12 +44,12 @@ void DayQuerier::PrepareData(DailyReportData& data) const {
 
 void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
-  std::string sql = std::format(
-      "SELECT {}, {}, {}, {}, {} FROM {} WHERE {} = ?;",
-      schema::day::db::kStatus, schema::day::db::kSleep,
-      schema::day::db::kRemark, schema::day::db::kGetupTime,
-      schema::day::db::kExercise, schema::day::db::kTable,
-      schema::day::db::kDate);
+  std::string sql =
+      std::format("SELECT {}, {}, {}, {}, {} FROM {} WHERE {} = ?;",
+                  schema::day::db::kStatus, schema::day::db::kSleep,
+                  schema::day::db::kRemark, schema::day::db::kGetupTime,
+                  schema::day::db::kExercise, schema::day::db::kTable,
+                  schema::day::db::kDate);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);

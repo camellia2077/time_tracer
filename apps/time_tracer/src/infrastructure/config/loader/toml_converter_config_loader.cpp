@@ -17,12 +17,12 @@ auto TomlConverterConfigLoader::Load(ConverterConfig& config) -> bool {
       config.remark_prefix = *val;
     }
 
-    parse_header_order(config);
-    parse_wake_keywords(config);
-    parse_top_parent_mapping(config);
-    parse_text_mappings(config);
-    parse_text_duration_mappings(config);
-    parse_duration_mappings(config);
+    ParseHeaderOrder(config);
+    ParseWakeKeywords(config);
+    ParseTopParentMapping(config);
+    ParseTextMappings(config);
+    ParseTextDurationMappings(config);
+    ParseDurationMappings(config);
 
   } catch (const std::exception& e) {
     namespace colors = time_tracer::common::colors;
@@ -34,7 +34,7 @@ auto TomlConverterConfigLoader::Load(ConverterConfig& config) -> bool {
   return true;
 }
 
-void TomlConverterConfigLoader::parse_header_order(ConverterConfig& config) {
+void TomlConverterConfigLoader::ParseHeaderOrder(ConverterConfig& config) {
   if (const toml::array* arr = toml_source_["header_order"].as_array()) {
     config.header_order.clear();
     for (const auto& elem : *arr) {
@@ -45,7 +45,7 @@ void TomlConverterConfigLoader::parse_header_order(ConverterConfig& config) {
   }
 }
 
-void TomlConverterConfigLoader::parse_wake_keywords(ConverterConfig& config) {
+void TomlConverterConfigLoader::ParseWakeKeywords(ConverterConfig& config) {
   if (const toml::array* arr = toml_source_["wake_keywords"].as_array()) {
     config.wake_keywords.clear();
     for (const auto& elem : *arr) {
@@ -56,8 +56,7 @@ void TomlConverterConfigLoader::parse_wake_keywords(ConverterConfig& config) {
   }
 }
 
-void TomlConverterConfigLoader::parse_top_parent_mapping(
-    ConverterConfig& config) {
+void TomlConverterConfigLoader::ParseTopParentMapping(ConverterConfig& config) {
   if (const toml::table* tbl = toml_source_["top_parent_mapping"].as_table()) {
     for (const auto& [k, v] : *tbl) {
       if (auto val_str = v.value<std::string>()) {
@@ -67,7 +66,7 @@ void TomlConverterConfigLoader::parse_top_parent_mapping(
   }
 }
 
-void TomlConverterConfigLoader::parse_text_mappings(ConverterConfig& config) {
+void TomlConverterConfigLoader::ParseTextMappings(ConverterConfig& config) {
   if (const toml::table* tbl = toml_source_["text_mappings"].as_table()) {
     for (const auto& [k, v] : *tbl) {
       if (auto val_str = v.value<std::string>()) {
@@ -77,7 +76,7 @@ void TomlConverterConfigLoader::parse_text_mappings(ConverterConfig& config) {
   }
 }
 
-void TomlConverterConfigLoader::parse_text_duration_mappings(
+void TomlConverterConfigLoader::ParseTextDurationMappings(
     ConverterConfig& config) {
   if (const toml::table* tbl =
           toml_source_["text_duration_mappings"].as_table()) {
@@ -89,8 +88,7 @@ void TomlConverterConfigLoader::parse_text_duration_mappings(
   }
 }
 
-void TomlConverterConfigLoader::parse_duration_mappings(
-    ConverterConfig& config) {
+void TomlConverterConfigLoader::ParseDurationMappings(ConverterConfig& config) {
   if (const toml::table* duration_tbl =
           toml_source_["duration_mappings"].as_table()) {
     for (const auto& [event_key, rules_node] : *duration_tbl) {

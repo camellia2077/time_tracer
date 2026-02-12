@@ -14,10 +14,11 @@ add_subdirectory(api/cli)
 
 # 5. Main Executable
 add_executable(time_tracker_cli main_cli.cpp)
-setup_project_target(time_tracker_cli)
+setup_app_target(time_tracker_cli)
 
 target_link_libraries(time_tracker_cli PRIVATE
-    -Wl,--whole-archive time_tracker_cli_lib -Wl,--no-whole-archive
+    -Wl,--whole-archive time_tracker_cli_commands -Wl,--no-whole-archive
+    time_tracker_cli_lib
     time_tracker_application
 )
 

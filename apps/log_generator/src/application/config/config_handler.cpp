@@ -36,8 +36,8 @@ auto ConfigHandler::load(const Config& config,
     return std::nullopt;
   }
 
-  auto toml_configs_opt = ConfigLoader::load_from_content(
-      *settings_content_opt, *mapping_content_opt);
+  auto toml_configs_opt = ConfigLoader::load_from_content(*settings_content_opt,
+                                                          *mapping_content_opt);
   if (!toml_configs_opt) {
     std::cerr << RED_COLOR << "Config parse failed. Exiting." << RESET_COLOR
               << std::endl;

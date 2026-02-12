@@ -5,7 +5,6 @@
 #include <array>
 #include <cctype>
 #include <iostream>
-#include <regex>
 #include <stdexcept>
 #include <string_view>
 
@@ -27,11 +26,14 @@ constexpr size_t kTimeMinuteOffset = 2;
 constexpr size_t kTimeMinuteLength = 2;
 constexpr int kMaxHour = 23;
 constexpr int kMaxMinute = 59;
-constexpr size_t kEventMatchSize = 4;
 constexpr size_t kRemarkDelimiterCount = 3;
 // Inline remark delimiters. Example: "1026math //note" -> remark "note".
 constexpr std::array<std::string_view, kRemarkDelimiterCount>
     kRemarkDelimiters = {"//", "#", ";"};
+
+[[nodiscard]] auto IsAsciiDigit(char value) -> bool {
+  return value >= '0' && value <= '9';
+}
 
 auto FormatTime(const std::string& time_str_hhmm) -> std::string {
   return (time_str_hhmm.length() == kTimeDigitsLength)
@@ -46,8 +48,6 @@ auto FormatTime(const std::string& time_str_hhmm) -> std::string {
                            std::to_string(line_number) + ": " + message +
                            " => '" + line + "'");
 }
-
-const std::regex kEventPattern(R"(^(\d{2})(\d{2})(.*)$)");
 }  // namespace
 
 TextParser::TextParser(const ConverterConfig& config)
@@ -90,13 +90,13 @@ auto TextParser::Parse(std::istream& input_stream,
       current_day.date = current_year_prefix + "-" +
                          line.substr(kMonthStartOffset, kMonthDigitsLength) +
                          "-" + line.substr(kDayStartOffset, kDayDigitsLength);
-      current_day.source_span = SourceSpan{
-          .file_path = std::string(source_file),
-          .line_start = line_number,
-          .line_end = line_number,
-          .column_start = 1,
-          .column_end = static_cast<int>(line.length()),
-          .raw_text = line};
+      current_day.source_span =
+          SourceSpan{.file_path = std::string(source_file),
+                     .line_start = line_number,
+                     .line_end = line_number,
+                     .column_start = 1,
+                     .column_end = static_cast<int>(line.length()),
+                     .raw_text = line};
 
     } else {
       ParseLine(line, line_number, current_day, source_file);
@@ -111,12 +111,14 @@ auto TextParser::IsYearMarker(const std::string& line) -> bool {
   if (line.length() != kYearMarkerLength || line[0] != kYearMarkerPrefix) {
     return false;
   }
-  return std::all_of(line.begin() + 1, line.end(), ::isdigit);
+  return std::ranges::all_of(line.substr(1),
+                             [](char value) { return IsAsciiDigit(value); });
 }
 
 auto TextParser::IsNewDayMarker(const std::string& line) -> bool {
   return line.length() == kDayMarkerLength &&
-         std::ranges::all_of(line, ::isdigit);
+         std::ranges::all_of(line,
+                             [](char value) { return IsAsciiDigit(value); });
 }
 
 auto TextParser::ExtractRemark(std::string_view remaining_line)
@@ -186,27 +188,23 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
     ThrowParseError(line_number, line, "Event line appears before date");
   }
 
-  std::smatch match;
-  if (!std::regex_match(line, match, kEventPattern) ||
-      match.size() != kEventMatchSize) {
+  if (line.length() < kTimeDigitsLength ||
+      !std::ranges::all_of(line.substr(0, kTimeDigitsLength),
+                           [](char value) { return IsAsciiDigit(value); })) {
     ThrowParseError(line_number, line, "Invalid event line format");
   }
 
-  int hour = 0;
-  int minute = 0;
-  try {
-    hour = std::stoi(match[1].str());
-    minute = std::stoi(match[2].str());
-  } catch (const std::exception&) {
-    ThrowParseError(line_number, line, "Failed to parse time");
-  }
+  const int hour = (line[kTimeHourOffset] - '0') * 10 +
+                   (line[kTimeHourOffset + 1] - '0');
+  const int minute = (line[kTimeMinuteOffset] - '0') * 10 +
+                     (line[kTimeMinuteOffset + 1] - '0');
 
   if (hour > kMaxHour || minute > kMaxMinute) {
     ThrowParseError(line_number, line, "Time out of range");
   }
 
-  std::string time_str_hhmm = match[1].str() + match[2].str();
-  RemarkResult remark_data = ExtractRemark(match[3].str());
+  std::string time_str_hhmm = line.substr(0, kTimeDigitsLength);
+  RemarkResult remark_data = ExtractRemark(line.substr(kTimeDigitsLength));
 
   if (remark_data.description.empty()) {
     ThrowParseError(line_number, line, "Missing activity description");
@@ -216,9 +214,7 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                                     .time_str_hhmm = time_str_hhmm});
 
   current_day.rawEvents.push_back(
-      {time_str_hhmm,
-       remark_data.description,
-       remark_data.remark,
+      {time_str_hhmm, remark_data.description, remark_data.remark,
        SourceSpan{.file_path = std::string(source_file),
                   .line_start = line_number,
                   .line_end = line_number,

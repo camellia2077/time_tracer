@@ -39,9 +39,11 @@ CheckOptions:
   - key:             readability-identifier-naming.EnumConstantCase
     value:           CamelCase
 
-  # 宏定义逻辑修正：允许全大写，不仅限于 _H_ 
+  # 宏定义逻辑修正：支持 Google 风格的末尾下划线
   - key:             readability-identifier-naming.MacroDefinitionCase
     value:           UPPER_CASE
+  - key:             readability-identifier-naming.MacroDefinitionSuffix
+    value:           _  
 
   # 类型规范
   - key:             readability-identifier-naming.ClassCase

@@ -54,7 +54,7 @@ auto DaysInMonth(int year, int month) -> int {
 }  // namespace
 
 // [修改] 参数类型 json -> nlohmann::json
-void validateDateContinuity(const nlohmann::json& days_array,
+void ValidateDateContinuity(const nlohmann::json& days_array,
                             std::set<Error>& errors, DateCheckMode mode) {
   if (mode == DateCheckMode::kNone) {
     return;
@@ -115,7 +115,7 @@ void validateDateContinuity(const nlohmann::json& days_array,
         error_msg += " (Completeness Check)";
       }
 
-      errors.insert({0, error_msg, ErrorType::kDateContinuity});
+      errors.insert({0, error_msg, ErrorType::kDateContinuity, std::nullopt});
     }
   }
 }

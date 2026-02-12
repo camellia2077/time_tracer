@@ -46,8 +46,8 @@ void LogGenerator::generate_for_month(const MonthContext& month_context,
 
   // [核心修改] 2. 生成第 1 天
   // 通过调度器查询是否通宵，替代硬编码
-  bool is_nosleep = sleep_scheduler_->determine_if_nosleep(
-      1, month_context.days_in_month);
+  bool is_nosleep =
+      sleep_scheduler_->determine_if_nosleep(1, month_context.days_in_month);
   day_generator_->generate_for_day(buffer, month_context.month, 1, is_nosleep);
 
   // [核心修改] 3. 循环生成剩余天数
@@ -55,8 +55,8 @@ void LogGenerator::generate_for_month(const MonthContext& month_context,
     buffer.push_back('\n');
 
     // 直接询问策略类，无需在此处维护复杂状态
-    is_nosleep =
-        sleep_scheduler_->determine_if_nosleep(day, month_context.days_in_month);
+    is_nosleep = sleep_scheduler_->determine_if_nosleep(
+        day, month_context.days_in_month);
 
     day_generator_->generate_for_day(buffer, month_context.month, day,
                                      is_nosleep);

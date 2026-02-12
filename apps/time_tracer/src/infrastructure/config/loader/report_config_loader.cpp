@@ -5,6 +5,11 @@
 
 using namespace TomlLoaderUtils;
 
+namespace {
+constexpr int kDefaultStatisticFontSize = 10;
+constexpr int kDefaultStatisticTitleFontSize = 12;
+}  // namespace
+
 // ==========================================
 // Daily Loaders
 // ==========================================
@@ -36,6 +41,10 @@ auto ReportConfigLoader::LoadDailyTypConfig(const fs::path& path)
   if (const toml::array* arr = tbl["statistics_items"].as_array()) {
     ParseStatisticsItems(arr, config.statistics_items);
   }
+  config.statistic_font_size =
+      tbl["statistic_font_size"].value_or(kDefaultStatisticFontSize);
+  config.statistic_title_font_size =
+      tbl["statistic_title_font_size"].value_or(kDefaultStatisticTitleFontSize);
   return config;
 }
 

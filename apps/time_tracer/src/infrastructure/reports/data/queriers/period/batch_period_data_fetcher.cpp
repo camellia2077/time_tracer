@@ -14,6 +14,10 @@
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/time_records_schema.hpp"
 
+namespace {
+constexpr int kAnaerobicTimeColumnIndex = 5;
+}
+
 BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* db_connection)
     : db_(db_connection) {
   if (db_ == nullptr) {
@@ -21,6 +25,7 @@ BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* db_connection)
   }
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
     -> std::map<int, PeriodReportData> {
   std::map<int, PeriodReportData> results;
@@ -56,12 +61,12 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
   sqlite3_stmt* stmt = nullptr;
 
   // 查询：日期 >= max_start_date
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT {0}, {1}, {2} FROM {3} WHERE {0} >= ?",
       schema::time_records::db::kDate, schema::time_records::db::kProjectId,
       schema::time_records::db::kDuration, schema::time_records::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, max_start_date.c_str(), -1, SQLITE_TRANSIENT);
 
     while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -80,13 +85,12 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
   }
 
   sqlite3_stmt* flag_stmt = nullptr;
-  const std::string flag_sql = std::format(
+  const std::string kFlagSql = std::format(
       "SELECT {0}, {1}, {2}, {3}, {4}, {5} FROM {6} WHERE {0} >= ?",
-      schema::day::db::kDate, schema::day::db::kStatus,
-      schema::day::db::kSleep, schema::day::db::kExercise,
-      schema::day::db::kCardioTime, schema::day::db::kAnaerobicTime,
-      schema::day::db::kTable);
-  if (sqlite3_prepare_v2(db_, flag_sql.c_str(), -1, &flag_stmt, nullptr) ==
+      schema::day::db::kDate, schema::day::db::kStatus, schema::day::db::kSleep,
+      schema::day::db::kExercise, schema::day::db::kCardioTime,
+      schema::day::db::kAnaerobicTime, schema::day::db::kTable);
+  if (sqlite3_prepare_v2(db_, kFlagSql.c_str(), -1, &flag_stmt, nullptr) ==
       SQLITE_OK) {
     sqlite3_bind_text(flag_stmt, 1, max_start_date.c_str(), -1,
                       SQLITE_TRANSIENT);
@@ -98,10 +102,10 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
       int sleep = sqlite3_column_int(flag_stmt, 2);
       int exercise = sqlite3_column_int(flag_stmt, 3);
       int cardio_time = sqlite3_column_int(flag_stmt, 4);
-      int anaerobic_time = sqlite3_column_int(flag_stmt, 5);
-      raw_day_flags.push_back(
-          {std::move(date), status, sleep, exercise, cardio_time,
-           anaerobic_time});
+      int anaerobic_time =
+          sqlite3_column_int(flag_stmt, kAnaerobicTimeColumnIndex);
+      raw_day_flags.push_back({std::move(date), status, sleep, exercise,
+                               cardio_time, anaerobic_time});
     }
     sqlite3_finalize(flag_stmt);
   } else {

@@ -28,11 +28,9 @@ class FileController {
    * @brief 准备输出环境（创建必要的目录）。
    * @details 将环境初始化的 IO 操作封装在此。
    * @param output_root 根输出目录。
-   * @param export_root 导出文件目录。
    */
   static void PrepareOutputDirectories(
-      const std::filesystem::path& output_root,
-      const std::filesystem::path& export_root);
+      const std::filesystem::path& output_root);
 };
 
 #endif  // INFRASTRUCTURE_IO_FILE_CONTROLLER_H_

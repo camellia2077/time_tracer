@@ -18,6 +18,9 @@ add_library(reports_shared SHARED
     "shared/utils/format/iso_week_utils.cpp"
     "shared/utils/format/year_utils.cpp"
     "shared/utils/format/time_format.cpp"
+    "shared/interfaces/formatter_c_config_bridge_v1.cpp"
+    "shared/interfaces/formatter_c_string_view_utils.cpp"
+    "shared/interfaces/formatter_c_report_data_bridge.cpp"
     
     # Shared - Style Config
     "shared/config/tex_style_config.cpp"
@@ -36,9 +39,8 @@ set_target_properties(reports_shared PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
-setup_project_target(reports_shared)
+setup_plugin_target(reports_shared NO_STDCXXEXP)
 target_link_libraries(reports_shared PUBLIC
-    tomlplusplus::tomlplusplus
     nlohmann_json::nlohmann_json
     time_tracker_domain # Needed for time utils maybe?
 )
@@ -69,7 +71,7 @@ add_library(reports_data STATIC
     "data/queriers/yearly/year_querier.cpp"
     "data/queriers/yearly/batch_year_data_fetcher.cpp"
 )
-setup_project_target(reports_data)
+setup_plugin_target(reports_data NO_STDCXXEXP)
 target_link_libraries(reports_data PUBLIC 
     reports_shared 
     SQLite3

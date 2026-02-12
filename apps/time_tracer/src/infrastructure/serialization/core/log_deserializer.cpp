@@ -8,7 +8,7 @@
 
 namespace serializer::core {
 
-auto LogDeserializer::deserialize(const nlohmann::json& day_json) -> DailyLog {
+auto LogDeserializer::Deserialize(const nlohmann::json& day_json) -> DailyLog {
   DailyLog day;
   try {
     namespace json_keys = schema::day::json;
@@ -20,8 +20,7 @@ auto LogDeserializer::deserialize(const nlohmann::json& day_json) -> DailyLog {
     day.date = headers.at(json_keys::kDate);
     day.hasStudyActivity = (headers.value(json_keys::kStatus, 0) != 0);
     day.hasSleepActivity = (headers.value(json_keys::kSleep, 0) != 0);
-    day.hasExerciseActivity =
-        (headers.value(json_keys::kExercise, 0) != 0);
+    day.hasExerciseActivity = (headers.value(json_keys::kExercise, 0) != 0);
 
     std::string getup = headers.value(json_keys::kGetup, "00:00");
     if (getup == "Null") {
@@ -79,8 +78,7 @@ auto LogDeserializer::deserialize(const nlohmann::json& day_json) -> DailyLog {
         record.end_timestamp = activity_json.at(json_keys::kEndTimestamp);
         record.start_time_str = activity_json.at(json_keys::kStartTime);
         record.end_time_str = activity_json.at(json_keys::kEndTime);
-        record.duration_seconds =
-            activity_json.at(json_keys::kDurationSeconds);
+        record.duration_seconds = activity_json.at(json_keys::kDurationSeconds);
 
         if (activity_json.contains(json_keys::kActivityRemark) &&
             !activity_json[json_keys::kActivityRemark].is_null()) {

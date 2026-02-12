@@ -1,23 +1,13 @@
 // infrastructure/reports/monthly/formatters/typst/month_typ_config.cpp
 #include "infrastructure/reports/monthly/formatters/typst/month_typ_config.hpp"
 
-namespace {
-constexpr double kDefaultMarginTopCm = 2.5;
-constexpr double kDefaultMarginSideCm = 2.0;
-constexpr double kDefaultMarginBottomCm = 2.5;
-}  // namespace
-
-MonthTypConfig::MonthTypConfig(const toml::table& config)
-    : MonthBaseConfig(config), style_(config) {
-  margin_top_cm_ = config_table_["margin_top_cm"].value_or<double>(
-      static_cast<double>(kDefaultMarginTopCm));
-  margin_bottom_cm_ = config_table_["margin_bottom_cm"].value_or<double>(
-      static_cast<double>(kDefaultMarginBottomCm));
-  margin_left_cm_ = config_table_["margin_left_cm"].value_or<double>(
-      static_cast<double>(kDefaultMarginSideCm));
-  margin_right_cm_ = config_table_["margin_right_cm"].value_or<double>(
-      static_cast<double>(kDefaultMarginSideCm));
-}
+MonthTypConfig::MonthTypConfig(const TtMonthTypConfigV1& config)
+    : MonthBaseConfig(config.labels),
+      style_(config.style),
+      margin_top_cm_(config.style.marginTopCm),
+      margin_bottom_cm_(config.style.marginBottomCm),
+      margin_left_cm_(config.style.marginLeftCm),
+      margin_right_cm_(config.style.marginRightCm) {}
 
 auto MonthTypConfig::GetMarginTopCm() const -> double {
   return margin_top_cm_;

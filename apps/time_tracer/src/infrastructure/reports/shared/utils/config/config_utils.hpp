@@ -12,7 +12,7 @@
  * @return 解析后的 nlohmann::json 对象。
  * @throws std::runtime_error 如果无法打开或解析文件。
  */
-nlohmann::json load_json_config(const std::filesystem::path& config_path,
-                                const std::string& error_message_prefix);
+auto LoadJsonConfig(const std::filesystem::path& config_path,
+                    const std::string& error_message_prefix) -> nlohmann::json;
 
 #endif  // REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_

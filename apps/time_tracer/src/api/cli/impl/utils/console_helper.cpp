@@ -2,8 +2,10 @@
 #include "api/cli/impl/utils/console_helper.hpp"
 
 #if defined(_WIN32) || defined(_WIN64)
-#include <shellapi.h>
 #include <windows.h>
+// clang-format off
+#include <shellapi.h>
+// clang-format on
 
 namespace ConsoleHelper {
 

@@ -9,7 +9,6 @@
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/utils/help_formatter.hpp"
-#include "application/reporting/generator/report_generator.hpp"
 #include "application/reporting/report_handler.hpp"
 #include "application/workflow_handler.hpp"
 #include "infrastructure/config/config_loader.hpp"
@@ -59,8 +58,6 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
     default_db_path = fs::absolute(*app_config_.defaults.db_path);
   }
 
-  fs::path default_reports_root = default_output_root / "reports";
-
   fs::path db_path;
   if (auto user_db_path = parser_.GetOption({"--db", "--database"})) {
     db_path = fs::absolute(*user_db_path);
@@ -71,14 +68,17 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
 
   if (auto path_opt = parser_.GetOption({"-o", "--output"})) {
     exported_files_path_ = fs::absolute(*path_opt);
+  } else if (app_config_.export_path.has_value()) {
+    exported_files_path_ = fs::absolute(*app_config_.export_path);
   } else {
-    exported_files_path_ = default_reports_root;
+    throw std::runtime_error(
+        "Missing export output directory. Provide --output <dir> or configure "
+        "[system].export_root in config/config.toml.");
   }
   output_root_path_ = default_output_root;
 
   // 2. 初始化基础设施
-  FileController::PrepareOutputDirectories(output_root_path_,
-                                           exported_files_path_);
+  FileController::PrepareOutputDirectories(output_root_path_);
 
   db_manager_ = std::make_unique<DBManager>(db_path.string());
 
@@ -103,13 +103,11 @@ CliApplication::CliApplication(const std::vector<std::string>& args)
   reports::RegisterReportFormatters();
   auto report_query_service =
       std::make_unique<ReportService>(db_connection, app_config_);
-  auto report_generator =
-      std::make_unique<ReportGenerator>(std::move(report_query_service));
   std::unique_ptr<IReportExporter> exporter =
       std::make_unique<Exporter>(exported_files_path_);
 
   auto report_impl = std::make_shared<ReportHandler>(
-      std::move(report_generator), std::move(exporter));
+      std::move(report_query_service), std::move(exporter));
   app_context_->report_handler = report_impl;  // 注入接口
 
   // [Repository]
@@ -170,6 +168,11 @@ auto CliApplication::Execute() -> int {
       std::cerr << colors::kRed << "Configuration Error: " << e.what()
                 << colors::kReset << std::endl;
       return static_cast<int>(AppExitCode::kConfigError);
+    } catch (const DllCompatibilityError& e) {
+      namespace colors = time_tracer::common::colors;
+      std::cerr << colors::kRed << "DLL Compatibility Error: " << e.what()
+                << colors::kReset << std::endl;
+      return static_cast<int>(AppExitCode::kDllCompatibilityError);
     } catch (const LogicError& e) {
       namespace colors = time_tracer::common::colors;
       std::cerr << colors::kRed << "Logic Error: " << e.what() << colors::kReset

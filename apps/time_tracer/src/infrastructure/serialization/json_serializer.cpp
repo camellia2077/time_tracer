@@ -15,7 +15,7 @@ using core::LogSerializer;
 // --- Serialization Facade ---
 
 auto JsonSerializer::SerializeDay(const DailyLog& day) -> nlohmann::json {
-  return LogSerializer::serialize(day);
+  return LogSerializer::Serialize(day);
 }
 
 auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days)
@@ -23,7 +23,7 @@ auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days)
   nlohmann::json j_array = nlohmann::json::array();
   for (const auto& day : days) {
     if (!day.date.empty()) {
-      j_array.push_back(LogSerializer::serialize(day));
+      j_array.push_back(LogSerializer::Serialize(day));
     }
   }
   return j_array;
@@ -33,7 +33,7 @@ auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days)
 
 auto JsonSerializer::DeserializeDay(const nlohmann::json& day_json)
     -> DailyLog {
-  return LogDeserializer::deserialize(day_json);
+  return LogDeserializer::Deserialize(day_json);
 }
 
 auto JsonSerializer::DeserializeDays(const nlohmann::json& json_array)
@@ -43,7 +43,7 @@ auto JsonSerializer::DeserializeDays(const nlohmann::json& json_array)
     return days;
   }
   for (const auto& json_item : json_array) {
-    days.push_back(LogDeserializer::deserialize(json_item));
+    days.push_back(LogDeserializer::Deserialize(json_item));
   }
   return days;
 }

@@ -10,6 +10,10 @@
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/time_records_schema.hpp"
 
+namespace {
+constexpr int kAnaerobicDaysColumnIndex = 5;
+}
+
 BatchMonthDataFetcher::BatchMonthDataFetcher(sqlite3* sqlite_db)
     : db_(sqlite_db) {
   if (db_ == nullptr) {
@@ -71,7 +75,7 @@ void BatchMonthDataFetcher::FetchProjectStats(
     std::map<std::string, MonthlyReportData>& all_months_data,
     std::map<std::string, std::map<long long, long long>>& project_agg) {
   sqlite3_stmt* stmt = nullptr;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT strftime('%Y-%m', {0}) as ym, {1}, SUM({2}) "
       "FROM {3} "
       "GROUP BY ym, {1} "
@@ -79,7 +83,7 @@ void BatchMonthDataFetcher::FetchProjectStats(
       schema::time_records::db::kDate, schema::time_records::db::kProjectId,
       schema::time_records::db::kDuration, schema::time_records::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for monthly stats.");
   }
 
@@ -110,13 +114,13 @@ void BatchMonthDataFetcher::FetchProjectStats(
 void BatchMonthDataFetcher::FetchActualDays(
     std::map<std::string, int>& actual_days) {
   sqlite3_stmt* stmt = nullptr;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT strftime('%Y-%m', {0}) as ym, COUNT(DISTINCT {0}) "
       "FROM {1} "
       "GROUP BY ym;",
       schema::time_records::db::kDate, schema::time_records::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error(
         "Failed to prepare statement for monthly actual days.");
   }
@@ -135,6 +139,7 @@ void BatchMonthDataFetcher::FetchActualDays(
   sqlite3_finalize(stmt);
 }
 
+// NOLINTBEGIN(bugprone-easily-swappable-parameters)
 void BatchMonthDataFetcher::FetchDayFlagCounts(
     std::map<std::string, int>& status_days,
     std::map<std::string, int>& sleep_days,
@@ -142,7 +147,7 @@ void BatchMonthDataFetcher::FetchDayFlagCounts(
     std::map<std::string, int>& cardio_days,
     std::map<std::string, int>& anaerobic_days) {
   sqlite3_stmt* stmt = nullptr;
-  const std::string sql = std::format(
+  const std::string kSql = std::format(
       "SELECT strftime('%Y-%m', {0}) as ym, "
       "SUM(CASE WHEN {1} != 0 THEN 1 ELSE 0 END), "
       "SUM(CASE WHEN {2} != 0 THEN 1 ELSE 0 END), "
@@ -151,12 +156,11 @@ void BatchMonthDataFetcher::FetchDayFlagCounts(
       "SUM(CASE WHEN {5} > 0 THEN 1 ELSE 0 END) "
       "FROM {6} "
       "GROUP BY ym;",
-      schema::day::db::kDate, schema::day::db::kStatus,
-      schema::day::db::kSleep, schema::day::db::kExercise,
-      schema::day::db::kCardioTime, schema::day::db::kAnaerobicTime,
-      schema::day::db::kTable);
+      schema::day::db::kDate, schema::day::db::kStatus, schema::day::db::kSleep,
+      schema::day::db::kExercise, schema::day::db::kCardioTime,
+      schema::day::db::kAnaerobicTime, schema::day::db::kTable);
 
-  if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error(
         "Failed to prepare statement for monthly flag counts.");
   }
@@ -172,7 +176,9 @@ void BatchMonthDataFetcher::FetchDayFlagCounts(
     sleep_days[year_month] = sqlite3_column_int(stmt, 2);
     exercise_days[year_month] = sqlite3_column_int(stmt, 3);
     cardio_days[year_month] = sqlite3_column_int(stmt, 4);
-    anaerobic_days[year_month] = sqlite3_column_int(stmt, 5);
+    anaerobic_days[year_month] =
+        sqlite3_column_int(stmt, kAnaerobicDaysColumnIndex);
   }
   sqlite3_finalize(stmt);
 }
+// NOLINTEND(bugprone-easily-swappable-parameters)

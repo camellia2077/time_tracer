@@ -18,7 +18,8 @@ enum class AppExitCode : int32_t {
   kLogicError = 6,
   kConfigError = 7,
   kMemoryError = 8,
-  kUnknownError = 9
+  kUnknownError = 9,
+  kDllCompatibilityError = 10
 };
 
 #endif  // SHARED_TYPES_EXIT_CODES_H_

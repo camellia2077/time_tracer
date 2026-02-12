@@ -17,6 +17,7 @@ void LogProcessor::ConvertStreamToData(
   processor.ExecuteConversion(combined_stream, data_consumer, source_file);
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 auto LogProcessor::ProcessSourceContent(const std::string& filename,
                                         const std::string& content)
     -> LogProcessingResult {
@@ -30,11 +31,14 @@ auto LogProcessor::ProcessSourceContent(const std::string& filename,
   try {
     std::stringstream string_stream(content);
     // 使用 lambda 捕获 result 并填充数据
-    ConvertStreamToData(string_stream, [&](DailyLog&& log) -> void {
-      constexpr size_t kYearMonthLen = 7;
-      std::string key = log.date.substr(0, kYearMonthLen);  // YYYY-MM
-      result.processed_data[key].push_back(std::move(log));
-    }, filename);
+    ConvertStreamToData(
+        string_stream,
+        [&](DailyLog&& log) -> void {
+          constexpr size_t kYearMonthLen = 7;
+          std::string key = log.date.substr(0, kYearMonthLen);  // YYYY-MM
+          result.processed_data[key].push_back(std::move(log));
+        },
+        filename);
   } catch (const std::exception& e) {
     namespace colors = time_tracer::common::colors;
     std::cerr << colors::kRed

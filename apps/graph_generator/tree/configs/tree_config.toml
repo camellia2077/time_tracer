@@ -1,0 +1,89 @@
+# Tree graph generator configuration
+
+[paths]
+# SQLite database used to build the project tree.
+database = "C:/Computer/my_github/github_cpp/time_tracer/my_test/time_tracer_test/output/db/time_data.sqlite3"
+
+# Output directory for generated images.
+# If empty, defaults to "<app>/output".
+output_directory = ""
+
+[settings]
+# Root path filter (e.g. "study_math"). Leave empty for full tree.
+root_path = ""
+
+# Max depth; -1 for unlimited.
+max_depth = -1
+
+# Layout orientation: "horizontal" or "vertical".
+layout = "horizontal"
+
+# Generate one image per root node when true.
+split_roots = true
+
+# Output file base name (without extension).
+output_name = "project_tree"
+
+# Chart title.
+title = "Project Tree"
+
+# Output format: "svg", "png", or "pdf".
+output_format = "svg"
+# Output multiple formats (optional).
+# output_formats = ["svg", "png", "pdf"]
+
+# Export interactive HTML/JSON (root list + tree view).
+output_html = true
+output_json = true
+
+# Export images (svg/png/pdf). Disable if you only want HTML/JSON.
+output_images = true
+
+[style]
+# 背景色（建议浅色）
+background_color = "#F7F7F7"
+
+# 画布尺寸（英寸）
+figure_width = 16
+figure_height = 10
+# 输出分辨率（DPI）
+dpi = 600
+
+# 节点基础大小
+node_size = 460
+
+# 标签字体大小
+label_font_size = 20
+# 标签垂直偏移（相对垂直间距）
+label_offset_y = 0.25
+
+# 水平/垂直间距
+horizontal_spacing = 1.4
+vertical_spacing = 1.2
+
+# 根节点放大倍率
+root_node_scale = 1.5
+# 最小节点缩放比例（深层节点不会小于该比例）
+min_node_scale = 0.6
+# 根节点标签字号倍率
+label_root_scale = 1.2
+# 最小标签缩放比例
+label_min_scale = 0.85
+
+# Depth gradient auto-blends from root_color to background_color.
+[colors]
+scheme = 1
+
+[colors.schemes]
+"1" = { root = "#1FBFA6", edge = "#63D7C7" } # Mint
+"2" = { root = "#E86F78", edge = "#F6A1A7" } # Peach/Coral
+"3" = { root = "#E3A100", edge = "#FFD36A" } # Lemon/Orange
+"4" = { root = "#2B5BFF", edge = "#5AA8FF" } # Electric Blue/Purple
+"5" = { root = "#1FA27B", edge = "#6EE6C2" } # Lime/Turquoise
+"6" = { root = "#C218D1", edge = "#FF6AD9" } # Hot Pink/Magenta
+"7" = { root = "#0E7F6A", edge = "#7BE3D1" } # Mint (High Contrast)
+"8" = { root = "#B73C4B", edge = "#F6B0B8" } # Peach/Coral (High Contrast)
+"9" = { root = "#B97900", edge = "#FFE08C" } # Lemon/Orange (High Contrast)
+"10" = { root = "#1237C9", edge = "#86C2FF" } # Electric Blue/Purple (High Contrast)
+"11" = { root = "#0E6B4F", edge = "#88F0D5" } # Lime/Turquoise (High Contrast)
+"12" = { root = "#8E10A6", edge = "#FF9BE2" } # Hot Pink/Magenta (High Contrast)

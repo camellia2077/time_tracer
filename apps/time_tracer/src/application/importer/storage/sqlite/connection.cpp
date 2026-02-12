@@ -13,7 +13,7 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
               << std::endl;  // MODIFIED
     db_ = nullptr;           // MODIFIED
   } else {
-    const std::string create_days_sql = std::format(
+    const std::string kCreateDaysSql = std::format(
         "CREATE TABLE IF NOT EXISTS {0} ("
         "{1} TEXT PRIMARY KEY, "
         "{2} INTEGER, "
@@ -37,8 +37,7 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
         "{20} INTEGER, "
         "{21} INTEGER, "
         "{22} INTEGER);",
-        schema::day::db::kTable, schema::day::db::kDate,
-        schema::day::db::kYear,
+        schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
         schema::day::db::kMonth, schema::day::db::kStatus,
         schema::day::db::kSleep, schema::day::db::kRemark,
         schema::day::db::kGetupTime, schema::day::db::kExercise,
@@ -47,20 +46,19 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
         schema::day::db::kGroomingTime, schema::day::db::kToiletTime,
         schema::day::db::kStudyTime, schema::day::db::kSleepNightTime,
         schema::day::db::kSleepDayTime, schema::day::db::kSleepTotalTime,
-        schema::day::db::kRecreationTime,
-        schema::day::db::kRecreationZhihuTime,
+        schema::day::db::kRecreationTime, schema::day::db::kRecreationZhihuTime,
         schema::day::db::kRecreationBilibiliTime,
         schema::day::db::kRecreationDouyinTime);
-    ExecuteSql(db_, create_days_sql, "Create days table");  // MODIFIED
+    ExecuteSql(db_, kCreateDaysSql, "Create days table");  // MODIFIED
 
-    const std::string create_index_sql = std::format(
-        "CREATE INDEX IF NOT EXISTS {0} ON {1} ({2}, {3});",
-        schema::day::db::kIndexYearMonth, schema::day::db::kTable,
-        schema::day::db::kYear, schema::day::db::kMonth);
-    ExecuteSql(db_, create_index_sql,
+    const std::string kCreateIndexSql =
+        std::format("CREATE INDEX IF NOT EXISTS {0} ON {1} ({2}, {3});",
+                    schema::day::db::kIndexYearMonth, schema::day::db::kTable,
+                    schema::day::db::kYear, schema::day::db::kMonth);
+    ExecuteSql(db_, kCreateIndexSql,
                "Create index on days(year, month)");  // MODIFIED
 
-    const std::string create_projects_sql = std::format(
+    const std::string kCreateProjectsSql = std::format(
         "CREATE TABLE IF NOT EXISTS {0} ("
         "{1} INTEGER PRIMARY KEY AUTOINCREMENT, "
         "{2} TEXT NOT NULL, "
@@ -68,10 +66,10 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
         "FOREIGN KEY ({3}) REFERENCES {0}({1}));",
         schema::projects::db::kTable, schema::projects::db::kId,
         schema::projects::db::kName, schema::projects::db::kParentId);
-    ExecuteSql(db_, create_projects_sql,
+    ExecuteSql(db_, kCreateProjectsSql,
                "Create projects table");  // MODIFIED
 
-    const std::string create_records_sql = std::format(
+    const std::string kCreateRecordsSql = std::format(
         "CREATE TABLE IF NOT EXISTS {0} ("
         "{1} INTEGER PRIMARY KEY, "
         "{2} INTEGER, "
@@ -93,7 +91,7 @@ Connection::Connection(const std::string& db_path) {       // MODIFIED
         schema::time_records::db::kActivityRemark, schema::day::db::kTable,
         schema::day::db::kDate, schema::projects::db::kTable,
         schema::projects::db::kId);
-    ExecuteSql(db_, create_records_sql,
+    ExecuteSql(db_, kCreateRecordsSql,
                "Create time_records table");  // MODIFIED
   }
 }
