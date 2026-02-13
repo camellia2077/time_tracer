@@ -123,23 +123,29 @@ class BaseQuerier {
   [[nodiscard]] auto FetchDayFlagCounts() const -> DayFlagCounts {
     DayFlagCounts counts{};
     sqlite3_stmt* stmt = nullptr;
-    std::string sql = "SELECT "
-                      "SUM(CASE WHEN ";
+    std::string sql =
+        "SELECT "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kStatus;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kSleep;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kExercise;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kCardioTime;
-    sql += " > 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " > 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kAnaerobicTime;
-    sql += " > 0 THEN 1 ELSE 0 END) "
-           "FROM ";
+    sql +=
+        " > 0 THEN 1 ELSE 0 END) "
+        "FROM ";
     sql += schema::day::db::kTable;
     sql += " WHERE ";
     sql += GetDateConditionSql();

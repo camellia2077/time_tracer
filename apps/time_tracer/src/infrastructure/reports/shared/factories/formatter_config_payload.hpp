@@ -10,6 +10,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "infrastructure/config/models/report_config_models.hpp"
@@ -187,6 +188,11 @@ class FormatterConfigPayload {
     double margin_right_cm = kDefaultMarginRightCm;
   };
 
+  struct DayTypStatisticSizes {
+    int32_t statistic_font_size = 0;
+    int32_t statistic_title_font_size = 0;
+  };
+
   static void FlattenStatisticsItems(const toml::array* array,
                                      int32_t parent_index,
                                      std::vector<StatisticItemNodeOwned>* out);
@@ -223,6 +229,49 @@ class FormatterConfigPayload {
   void BuildRangeMdConfig(const toml::table& config_table);
   void BuildRangeTexConfig(const toml::table& config_table);
   void BuildRangeTypConfig(const toml::table& config_table);
+
+  void PopulateDayMdConfig();
+  void PopulateDayTexConfig();
+  void PopulateDayTypConfig(DayTypStatisticSizes sizes);
+  void PopulateMonthMdConfig();
+  void PopulateMonthTexConfig();
+  void PopulateMonthTypConfig();
+  void PopulateRangeMdConfig();
+  void PopulateRangeTexConfig();
+  void PopulateRangeTypConfig();
+
+  void LoadStatistics(const toml::table& config_table);
+  void LoadStatistics(const std::vector<ReportStatisticsItem>& items);
+  void LoadKeywordColors(const toml::table& config_table);
+  void LoadKeywordColors(const std::map<std::string, std::string>& colors);
+
+  template <typename ConfigType>
+  static void InitializeConfigHeader(ConfigType* config) {
+    if (config == nullptr) {
+      return;
+    }
+    config->structSize = static_cast<uint32_t>(sizeof(ConfigType));
+    config->version = TT_FORMATTER_CONFIG_DATA_VERSION_V1;
+  }
+
+  template <typename ConfigType>
+  void FinalizeConfig(uint32_t config_kind, const ConfigType* config_data) {
+    RebuildConfigView(config_kind, config_data, sizeof(ConfigType));
+  }
+
+  template <typename BuildFn>
+  void BuildFromLoaded(BuildFn&& build_fn) {
+    ResetToEmpty();
+    std::forward<BuildFn>(build_fn)();
+  }
+
+  template <typename ConfigType, typename PrepareFn, typename PopulateFn>
+  void BuildWithStrategy(uint32_t config_kind, ConfigType* config_data,
+                         PrepareFn&& prepare_fn, PopulateFn&& populate_fn) {
+    std::forward<PrepareFn>(prepare_fn)();
+    std::forward<PopulateFn>(populate_fn)();
+    FinalizeConfig(config_kind, config_data);
+  }
 
   void RebuildKeywordColorsCView();
   void RebuildStatisticsCView();

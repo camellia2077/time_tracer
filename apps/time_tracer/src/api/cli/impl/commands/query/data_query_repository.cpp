@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 
 #include <optional>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -21,10 +22,18 @@ namespace time_tracer::cli::impl::commands::query::data {
 namespace {
 
 constexpr int kFirstDayOfMonth = 1;
+constexpr size_t kProjectCteWithProjectReserve = 640;
+constexpr size_t kProjectCteWithoutProjectReserve = 192;
+constexpr size_t kQueryYearsReserve = 96;
+constexpr size_t kQueryMonthsReserve = 112;
+constexpr size_t kQueryDaysReserve = 256;
+constexpr size_t kQueryDayClauseReserve = 24;
+constexpr size_t kDateDistinctQueryReserve = 80;
+constexpr size_t kDayDurationWithProjectQueryReserve = 720;
+constexpr size_t kDayDurationQueryReserve = 240;
 
 [[nodiscard]] auto BuildQualifiedName(std::string_view alias,
-                                      std::string_view column)
-    -> std::string {
+                                      std::string_view column) -> std::string {
   std::string qualified_name;
   qualified_name.reserve(alias.size() + column.size() + 1);
   qualified_name.append(alias);
@@ -33,12 +42,13 @@ constexpr int kFirstDayOfMonth = 1;
   return qualified_name;
 }
 
-[[nodiscard]] auto BuildQualifiedClause(std::string_view alias,
-                                        std::string_view column,
-                                        std::string_view op) -> std::string {
-  std::string clause = BuildQualifiedName(alias, column);
+[[nodiscard]] auto BuildQualifiedClause(const char* table_alias,
+                                        std::string_view column_name,
+                                        const char* comparison_operator)
+    -> std::string {
+  std::string clause = BuildQualifiedName(table_alias, column_name);
   clause.push_back(' ');
-  clause.append(op);
+  clause.append(comparison_operator);
   clause.append(" ?");
   return clause;
 }
@@ -46,7 +56,7 @@ constexpr int kFirstDayOfMonth = 1;
 [[nodiscard]] auto BuildProjectCte(bool has_project) -> std::string {
   if (has_project) {
     std::string sql;
-    sql.reserve(640);
+    sql.reserve(kProjectCteWithProjectReserve);
     sql += "WITH RECURSIVE ";
     sql += schema::projects::cte::kProjectPaths;
     sql += "(";
@@ -99,7 +109,7 @@ constexpr int kFirstDayOfMonth = 1;
     return sql;
   }
   std::string sql;
-  sql.reserve(192);
+  sql.reserve(kProjectCteWithoutProjectReserve);
   sql += "SELECT DISTINCT d.";
   sql += schema::day::db::kDate;
   sql += " FROM ";
@@ -118,7 +128,8 @@ constexpr int kFirstDayOfMonth = 1;
     -> std::vector<std::string> {
   std::vector<std::string> clauses;
   if (filters.year.has_value()) {
-    clauses.emplace_back(BuildQualifiedClause("d", schema::day::db::kYear, "="));
+    clauses.emplace_back(
+        BuildQualifiedClause("d", schema::day::db::kYear, "="));
     params.push_back({.type = SqlParam::Type::kInt,
                       .text_value = "",
                       .int_value = *filters.year});
@@ -151,8 +162,8 @@ constexpr int kFirstDayOfMonth = 1;
                       .text_value = "%" + *filters.day_remark + "%"});
   }
   if (filters.project.has_value()) {
-    std::string clause = BuildQualifiedClause("pp", schema::projects::cte::kPath,
-                                              "LIKE");
+    std::string clause =
+        BuildQualifiedClause("pp", schema::projects::cte::kPath, "LIKE");
     clause += " ESCAPE '\\\\'";
     clauses.push_back(std::move(clause));
     params.push_back({.type = SqlParam::Type::kText,
@@ -230,7 +241,7 @@ constexpr int kFirstDayOfMonth = 1;
 
 auto QueryYears(sqlite3* db_conn) -> std::vector<std::string> {
   std::string sql;
-  sql.reserve(96);
+  sql.reserve(kQueryYearsReserve);
   sql += "SELECT DISTINCT ";
   sql += schema::day::db::kYear;
   sql += " FROM ";
@@ -244,7 +255,7 @@ auto QueryYears(sqlite3* db_conn) -> std::vector<std::string> {
 auto QueryMonths(sqlite3* db_conn, const std::optional<int>& year)
     -> std::vector<std::string> {
   std::string sql;
-  sql.reserve(112);
+  sql.reserve(kQueryMonthsReserve);
   sql += "SELECT DISTINCT ";
   sql += schema::day::db::kYear;
   sql += ", ";
@@ -283,7 +294,7 @@ auto QueryDays(sqlite3* db_conn, const std::optional<int>& year,
                const std::optional<std::string>& to_date, bool reverse,
                const std::optional<int>& limit) -> std::vector<std::string> {
   std::string sql;
-  sql.reserve(256);
+  sql.reserve(kQueryDaysReserve);
   sql += "SELECT ";
   sql += schema::day::db::kDate;
   sql += " FROM ";
@@ -293,7 +304,7 @@ auto QueryDays(sqlite3* db_conn, const std::optional<int>& year,
 
   if (year.has_value()) {
     std::string clause;
-    clause.reserve(24);
+    clause.reserve(kQueryDayClauseReserve);
     clause += schema::day::db::kYear;
     clause += " = ?";
     clauses.push_back(std::move(clause));
@@ -302,7 +313,7 @@ auto QueryDays(sqlite3* db_conn, const std::optional<int>& year,
   }
   if (month.has_value()) {
     std::string clause;
-    clause.reserve(24);
+    clause.reserve(kQueryDayClauseReserve);
     clause += schema::day::db::kMonth;
     clause += " = ?";
     clauses.push_back(std::move(clause));
@@ -311,7 +322,7 @@ auto QueryDays(sqlite3* db_conn, const std::optional<int>& year,
   }
   if (from_date.has_value()) {
     std::string clause;
-    clause.reserve(24);
+    clause.reserve(kQueryDayClauseReserve);
     clause += schema::day::db::kDate;
     clause += " >= ?";
     clauses.push_back(std::move(clause));
@@ -321,7 +332,7 @@ auto QueryDays(sqlite3* db_conn, const std::optional<int>& year,
   }
   if (to_date.has_value()) {
     std::string clause;
-    clause.reserve(24);
+    clause.reserve(kQueryDayClauseReserve);
     clause += schema::day::db::kDate;
     clause += " <= ?";
     clauses.push_back(std::move(clause));
@@ -360,7 +371,7 @@ auto QueryDatesByFilters(sqlite3* db_conn, const QueryFilters& filters)
   if (kNeedRecordsJoin) {
     sql = BuildProjectCte(filters.project.has_value());
   } else {
-    sql.reserve(80);
+    sql.reserve(kDateDistinctQueryReserve);
     sql += "SELECT DISTINCT d.";
     sql += schema::day::db::kDate;
     sql += " FROM ";
@@ -399,7 +410,7 @@ auto QueryDayDurations(sqlite3* db_conn, const QueryFilters& filters)
   const bool kNeedProject = filters.project.has_value();
 
   if (kNeedProject) {
-    sql.reserve(720);
+    sql.reserve(kDayDurationWithProjectQueryReserve);
     sql += "WITH RECURSIVE ";
     sql += schema::projects::cte::kProjectPaths;
     sql += "(";
@@ -453,7 +464,7 @@ auto QueryDayDurations(sqlite3* db_conn, const QueryFilters& filters)
     sql += " = pp.";
     sql += schema::projects::db::kId;
   } else {
-    sql.reserve(240);
+    sql.reserve(kDayDurationQueryReserve);
     sql += "SELECT d.";
     sql += schema::day::db::kDate;
     sql += ", SUM(tr.";

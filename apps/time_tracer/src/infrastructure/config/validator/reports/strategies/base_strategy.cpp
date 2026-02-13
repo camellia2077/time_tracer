@@ -168,5 +168,5 @@ auto BaseStrategy::IsValidHexColor(const std::string& color_string) -> bool {
     return false;
   }
   return std::all_of(color_string.begin() + 1, color_string.end(),
-                     [](char value) { return IsHexDigit(value); });
+                     [](char value) -> bool { return IsHexDigit(value); });
 }

@@ -26,6 +26,9 @@ add_library(time_tracker_infrastructure STATIC
     "reports/services/weekly_report_service.cpp"
     "reports/services/yearly_report_service.cpp"
     "reports/shared/factories/formatter_config_payload.cpp"
+    "reports/shared/factories/formatter_config_payload_fillers.cpp"
+    "reports/shared/factories/formatter_config_payload_cview.cpp"
+    "reports/shared/factories/formatter_config_payload_lifecycle.cpp"
 
     # Serializer
     "serialization/json_serializer.cpp"
