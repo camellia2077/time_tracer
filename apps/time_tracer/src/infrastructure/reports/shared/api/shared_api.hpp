@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/api/shared_api.hpp
-#ifndef REPORTS_SHARED_API_SHARED_API_H_
-#define REPORTS_SHARED_API_SHARED_API_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_API_SHARED_API_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_API_SHARED_API_H_
 
 // ----------------------------------------------------------------------
 // 定义导入/导出宏 (适用于 Windows/MSVC 和 MinGW)
@@ -42,4 +42,4 @@
 #define ENABLE_C4251_WARNING   // NOLINT(readability-identifier-naming)
 #endif
 
-#endif  // REPORTS_SHARED_API_SHARED_API_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_API_SHARED_API_H_

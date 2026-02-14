@@ -1,6 +1,6 @@
 // infrastructure/config/loader/report_config_loader.hpp
-#ifndef CONFIG_LOADER_REPORT_CONFIG_LOADER_H_
-#define CONFIG_LOADER_REPORT_CONFIG_LOADER_H_
+#ifndef INFRASTRUCTURE_CONFIG_LOADER_REPORT_CONFIG_LOADER_H_
+#define INFRASTRUCTURE_CONFIG_LOADER_REPORT_CONFIG_LOADER_H_
 
 #include <filesystem>
 #include <string>
@@ -56,4 +56,4 @@ class ReportConfigLoader {
       -> YearlyMdConfig;
 };
 
-#endif  // CONFIG_LOADER_REPORT_CONFIG_LOADER_H_
+#endif  // INFRASTRUCTURE_CONFIG_LOADER_REPORT_CONFIG_LOADER_H_

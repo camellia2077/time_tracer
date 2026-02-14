@@ -1,134 +1,145 @@
 // application/pipeline/pipeline_manager.cpp
 #include "application/pipeline/pipeline_manager.hpp"
 
-#include <iostream>
+#include <stdexcept>
 #include <utility>
 
-#include "application/pipeline/steps/converter_step.hpp"
-#include "application/pipeline/steps/file_collector.hpp"
-#include "application/pipeline/steps/logic_linker_step.hpp"
-#include "application/pipeline/steps/logic_validator_step.hpp"
-#include "application/pipeline/steps/structure_validator_step.hpp"
-#include "application/pipeline/utils/converter_config_factory.hpp"
-#include "infrastructure/io/processed_data_writer.hpp"
+#include "application/pipeline/steps/pipeline_stages.hpp"
+#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/i_ingest_input_provider.hpp"
+#include "application/ports/i_processed_data_storage.hpp"
+#include "application/ports/logger.hpp"
 #include "shared/types/ansi_colors.hpp"
 
 namespace core::pipeline {
 
-PipelineManager::PipelineManager(const AppConfig& config, fs::path output_root)
-    : app_config_(config), output_root_(std::move(output_root)) {}
+namespace {
+
+auto Colorize(std::string_view color, std::string_view message) -> std::string {
+  return std::string(color) + std::string(message) +
+         std::string(time_tracer::common::colors::kReset);
+}
+
+}  // namespace
+
+PipelineManager::PipelineManager(
+    fs::path output_root,
+    std::shared_ptr<time_tracer::application::ports::IConverterConfigProvider>
+        converter_config_provider,
+    std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
+        ingest_input_provider,
+    std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
+        processed_data_storage)
+    : output_root_(std::move(output_root)),
+      converter_config_provider_(std::move(converter_config_provider)),
+      ingest_input_provider_(std::move(ingest_input_provider)),
+      processed_data_storage_(std::move(processed_data_storage)) {
+  if (!converter_config_provider_ || !ingest_input_provider_ ||
+      !processed_data_storage_) {
+    throw std::invalid_argument(
+        "PipelineManager dependencies must not be null.");
+  }
+}
 
 auto PipelineManager::Run(const std::string& input_path,
                           const AppOptions& options)
     -> std::optional<PipelineContext> {
-  // 1. 初始化上下文
-  PipelineContext context(app_config_, output_root_);
+  PipelineContext context(output_root_);
   context.config.input_root = input_path;
   context.config.date_check_mode = options.date_check_mode;
   context.config.save_processed_output = options.save_processed_output;
 
-  std::cout << "\n"
-            << time_tracer::common::colors::kBrightCyan
-            << time_tracer::common::colors::kBold
-            << "--- Pipeline Execution Started ---"
-            << time_tracer::common::colors::kReset << std::endl;
+  time_tracer::application::ports::LogInfo(
+      std::string("\n") +
+      Colorize(time_tracer::common::colors::kBrightCyan,
+               std::string(time_tracer::common::colors::kBold) +
+                   "--- Pipeline Execution Started ---"));
 
-  // 2. 执行：收集文件
-  if (!core::pipeline::FileCollector::Execute(context, ".txt")) {
+  if (!core::pipeline::FileCollector::Execute(context, *ingest_input_provider_,
+                                              ".txt")) {
     return std::nullopt;
   }
 
-  // 2.5 统一加载配置
   if (options.validate_structure || options.convert) {
     try {
-      std::cout << time_tracer::common::colors::kGray << "[INFO] "
-                << time_tracer::common::colors::kReset
-                << "Loading Configuration..." << std::endl;
-      context.state.converter_config = ConverterConfigFactory::Create(
-          app_config_.pipeline.interval_processor_config_path, app_config_);
+      time_tracer::application::ports::LogInfo(
+          Colorize(time_tracer::common::colors::kGray,
+                   "[INFO] Loading Configuration..."));
+
+      context.state.converter_config =
+          converter_config_provider_->LoadConverterConfig();
 
     } catch (const std::exception& e) {
-      std::cerr << time_tracer::common::colors::kRed
-                << "[Pipeline] 配置加载失败: " << e.what()
-                << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::application::ports::LogError(
+          Colorize(time_tracer::common::colors::kRed,
+                   std::string("[Pipeline] 配置加载失败: ") + e.what()));
       return std::nullopt;
     }
   }
 
-  // 3. 执行：结构验证 (Structure Validation)
   if (options.validate_structure) {
-    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
-              << time_tracer::common::colors::kReset
-              << "Step: Validating File Structure..." << std::endl;
+    time_tracer::application::ports::LogInfo(
+        Colorize(time_tracer::common::colors::kCyan,
+                 "[STEP] Step: Validating File Structure..."));
     if (!core::pipeline::StructureValidatorStep::Execute(context)) {
-      // 结构错误通常意味着无法解析，直接终止
       return std::nullopt;
     }
   }
 
-  // 4. 执行：转换
   if (options.convert) {
-    // 4.1 并行文件转换 (文件内逻辑)
     if (!ConverterStep::Execute(context)) {
-      std::cerr << time_tracer::common::colors::kRed
-                << "[Pipeline] 转换步骤存在错误，终止流程。"
-                << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::application::ports::LogError(
+          Colorize(time_tracer::common::colors::kRed,
+                   "[Pipeline] 转换步骤存在错误，终止流程。"));
       return std::nullopt;
     }
 
-    // [核心修复] 4.2 执行逻辑链接 (跨文件/跨月逻辑)
-    // 必须在 ConverterStep 收集完所有数据后执行
     if (!core::pipeline::LogicLinkerStep::Execute(context)) {
-      std::cerr << time_tracer::common::colors::kRed
-                << "[Pipeline] 跨月数据连接失败，流程终止。"
-                << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::application::ports::LogError(
+          Colorize(time_tracer::common::colors::kRed,
+                   "[Pipeline] 跨月数据连接失败，流程终止。"));
       return std::nullopt;
     }
   }
 
-  // [重命名] 5. 执行：逻辑验证 (Logic Validation)
   if (options.validate_logic) {
-    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
-              << time_tracer::common::colors::kReset
-              << "Step: Validating Business Logic..." << std::endl;
+    time_tracer::application::ports::LogInfo(
+        Colorize(time_tracer::common::colors::kCyan,
+                 "[STEP] Step: Validating Business Logic..."));
     if (!core::pipeline::LogicValidatorStep::Execute(context)) {
-      // 逻辑错误可能影响入库，终止
-
       return std::nullopt;
     }
   }
 
-  // 6. 执行：保存
   if (options.convert && options.save_processed_output) {
-    std::cout << time_tracer::common::colors::kCyan << "[STEP] "
-              << time_tracer::common::colors::kReset
-              << "Step: Saving Validated JSON..." << std::endl;
-    auto new_files = infrastructure::io::ProcessedDataWriter::Write(
-        context.result.processed_data, context.cached_json_outputs,
-        context.config.output_root);
+    time_tracer::application::ports::LogInfo(
+        Colorize(time_tracer::common::colors::kCyan,
+                 "[STEP] Step: Saving Validated JSON..."));
+
+    auto new_files = processed_data_storage_->WriteProcessedData(
+        context.result.processed_data, context.config.output_root);
 
     context.state.generated_files.insert(context.state.generated_files.end(),
                                          new_files.begin(), new_files.end());
 
     if (new_files.empty() && !context.result.processed_data.empty()) {
-      std::cerr << time_tracer::common::colors::kYellow
-                << time_tracer::common::colors::kBold << "[WARN] "
-                << time_tracer::common::colors::kReset
-                << time_tracer::common::colors::kYellow
-                << "Data exists but no files were generated (flush failed)."
-                << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::application::ports::LogWarn(
+          Colorize(time_tracer::common::colors::kYellow,
+                   std::string(time_tracer::common::colors::kBold) +
+                       "[WARN] Data exists but no files were generated (flush "
+                       "failed)."));
     } else {
-      std::cout << time_tracer::common::colors::kBrightGreen << "[OK] "
-                << time_tracer::common::colors::kReset
-                << "JSON data safely persisted to disk." << std::endl;
+      time_tracer::application::ports::LogInfo(
+          Colorize(time_tracer::common::colors::kBrightGreen,
+                   "[OK] JSON data safely persisted to disk."));
     }
   }
 
-  std::cout << "\n"
-            << time_tracer::common::colors::kBrightGreen
-            << time_tracer::common::colors::kBold
-            << "--- Pipeline Finished Successfully ---"
-            << time_tracer::common::colors::kReset << std::endl;
+  time_tracer::application::ports::LogInfo(
+      std::string("\n") +
+      Colorize(time_tracer::common::colors::kBrightGreen,
+               std::string(time_tracer::common::colors::kBold) +
+                   "--- Pipeline Finished Successfully ---"));
   return context;
 }
 

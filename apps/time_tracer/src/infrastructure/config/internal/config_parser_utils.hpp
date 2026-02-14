@@ -1,6 +1,6 @@
 // infrastructure/config/internal/config_parser_utils.hpp
-#ifndef CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_
-#define CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_
+#ifndef INFRASTRUCTURE_CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_
+#define INFRASTRUCTURE_CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_
 
 #include <toml++/toml.h>
 
@@ -39,4 +39,4 @@ void ParseCliDefaults(const toml::table& tbl,
 
 }  // namespace ConfigParserUtils
 
-#endif  // CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_
+#endif  // INFRASTRUCTURE_CONFIG_INTERNAL_CONFIG_PARSER_UTILS_H_

@@ -1,0 +1,43 @@
+Release v0.6.0: 核心架构解耦 + 跨端同步保障基线
+
+[Summary]
+完成 core/application/infrastructure 分层解耦与 CLI 收敛，建立面向 Android 复用的端口化架构；同时补齐 Windows/Android 最小同步保障（契约、占位实现、检查脚本、PR 约束）。
+
+[Added]
+- 核心调用层：新增 Core DTO 与 Core UseCase (`ITimeTracerCoreApi`)。
+- 注入桥接：新增 `AppContext::core_api`，统一 CLI 到核心业务入口。
+- 关键端口：新增日志、数据加载/存储、查询、运行环境校验等 Application Ports。
+- 平台时钟端口：新增 `IPlatformClock`（`TodayLocalDateIso` / `LocalUtcOffsetMinutes`）。
+- Windows 平台时钟实现：`infrastructure/platform/windows/windows_platform_clock.*`。
+- Android 平台时钟占位实现（可编译基线）：`infrastructure/platform/android/android_platform_clock.*`。
+- 跨端同步契约文档：`docs/time_tracer/platform_sync_contract.md`。
+- 本地同步门禁脚本：`scripts/check_platform_sync.ps1`。
+- PR 同步检查模板：`.github/PULL_REQUEST_TEMPLATE.md`。
+- 平台目录占位：`android/linux/ios/macos` README。
+
+[Changed & Refactored]
+- 架构解耦：`application` 构建层移除对 `infrastructure` 的直接链接依赖。
+- CLI 收敛：`convert/query/export` 等命令统一走 `ITimeTracerCoreApi`。
+- Domain/Infrastructure 收敛：
+  - converter/validator 规则与实现聚合。
+  - formatter config 物理拆分与模板化编排，降低参数误用风险。
+  - I/O、查询模型、序列化入口统一整理。
+- 报告周期查询链路完成时钟注入：`period_querier` / `batch_period_data_fetcher` / `report_service` / `sqlite_report_data_query_service`。
+- 文件系统端口收口（不重构目录）：删除未使用 `IPipelineFileService`/`PipelineFileService` 链路与构建项。
+- 日志收口：除控制台适配器外，基础设施层不再直接 `std::cout/cerr/println`。
+- CLI 入口迁移：`src/main_cli.cpp` -> `src/api/cli/main.cpp`，为后续 Android 入口分离预留空间。
+- 平台目录分层：Windows 代码迁移到 `platform/windows/`。
+
+[Fixed]
+- 测试脚本默认构建目录统一为 `build_fast`（`run_log_generator.bat` / `env.toml`）。
+- 修复日/月/年命令历史记录中的 `-ly` 非预期调用形式。
+
+[Verification]
+- Windows 全量门禁通过：
+  - `python scripts/run.py build --app time_tracer`
+  - `ctest --test-dir apps/time_tracer/build_fast --output-on-failure`
+  - `python test/run.py --suite time_tracer --agent --build-dir build_fast --concise`
+- 同步检查通过：
+  - `pwsh ./scripts/check_platform_sync.ps1`
+  - `pwsh ./scripts/check_platform_sync.ps1 -RunWindowsChecks`
+- 结果：`test/output/time_tracer/result.json` -> `success=true`，`total_tests=108`，`total_failed=0`。

@@ -72,6 +72,7 @@ class TestEngine:
             "failed_cases": [],
             "error_message": "",
         }
+        self.case_records: List[Dict] = []
 
     def run(self):
         self.start_time = time.monotonic()
@@ -103,6 +104,7 @@ class TestEngine:
                 all_reports = self._run_suite(modules)
 
             duration = time.monotonic() - self.start_time
+            self.case_records = self.reporter.build_case_records(all_reports)
             self.run_result = self.reporter.build_summary(
                 all_reports,
                 duration,
@@ -116,6 +118,9 @@ class TestEngine:
 
     def get_result(self) -> Dict:
         return dict(self.run_result)
+
+    def get_case_records(self) -> List[Dict]:
+        return list(self.case_records)
 
     def _build_context(self) -> TestContext:
         output_dir = self.paths.OUTPUT_DIR_NAME \

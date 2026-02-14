@@ -1,14 +1,14 @@
-// importer/import_service.cpp
+// application/importer/import_service.cpp
 #include "application/importer/import_service.hpp"
 
 #include <chrono>
-#include <utility>
+#include <exception>
 
-#include "application/importer/storage/repository.hpp"
 #include "application/parser/memory_parser.hpp"
 
-ImportService::ImportService(std::string db_path)
-    : db_path_(std::move(db_path)) {}
+ImportService::ImportService(
+    time_tracer::application::ports::ITimeSheetRepository& repository)
+    : repository_(repository) {}
 
 auto ImportService::ImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map)
@@ -33,11 +33,10 @@ auto ImportService::ImportFromMemory(
       std::chrono::duration<double>(end_parsing - start).count();
 
   // 2. 入库
-  Repository inserter(db_path_);
-  if (inserter.IsDbOpen()) {
+  if (repository_.IsDbOpen()) {
     stats.db_open_success = true;
     try {
-      inserter.ImportData(all_data.days, all_data.records);
+      repository_.ImportData(all_data.days, all_data.records);
       stats.transaction_success = true;
     } catch (const std::exception& e) {
       stats.transaction_success = false;

@@ -1,10 +1,9 @@
-// infrastructure/serialization/serializer/json_serializer.cpp
+// infrastructure/serialization/json_serializer.cpp
 #include "infrastructure/serialization/json_serializer.hpp"
 
 #include <iostream>
 
-#include "infrastructure/serialization/core/log_deserializer.hpp"
-#include "infrastructure/serialization/core/log_serializer.hpp"
+#include "infrastructure/serialization/core/log_codec.hpp"
 
 namespace serializer {
 

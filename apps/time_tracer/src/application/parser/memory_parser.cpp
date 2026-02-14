@@ -1,4 +1,4 @@
-// importer/parser/memory_parser.cpp
+// application/parser/memory_parser.cpp
 #include "application/parser/memory_parser.hpp"
 
 #include <iostream>

@@ -1,6 +1,6 @@
-// infrastructure/serialization/serializer/json_serializer.hpp
-#ifndef SERIALIZER_JSON_SERIALIZER_H_
-#define SERIALIZER_JSON_SERIALIZER_H_
+// infrastructure/serialization/json_serializer.hpp
+#ifndef INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
+#define INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
 
 #include <nlohmann/json.hpp>
 #include <vector>
@@ -29,4 +29,4 @@ class JsonSerializer {
 
 }  // namespace serializer
 
-#endif  // SERIALIZER_JSON_SERIALIZER_H_
+#endif  // INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_

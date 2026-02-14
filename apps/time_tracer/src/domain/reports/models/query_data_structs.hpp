@@ -1,6 +1,6 @@
 // domain/reports/models/query_data_structs.hpp
-#ifndef REPORTS_DATA_MODEL_QUERY_DATA_STRUCTS_H_
-#define REPORTS_DATA_MODEL_QUERY_DATA_STRUCTS_H_
+#ifndef DOMAIN_REPORTS_MODELS_QUERY_DATA_STRUCTS_H_
+#define DOMAIN_REPORTS_MODELS_QUERY_DATA_STRUCTS_H_
 
 #include <map>
 #include <string>
@@ -8,7 +8,7 @@
 
 struct FormattedDailyReportEntry {
   std::string report_id;
-  std::string content;
+  std::string kContent;
 };
 
 using FormattedDailyReportsByMonth =
@@ -25,4 +25,4 @@ using FormattedWeeklyReports = std::map<int, FormattedReportsByIsoWeek>;
 
 using FormattedYearlyReports = std::map<int, std::string>;
 
-#endif  // REPORTS_DATA_MODEL_QUERY_DATA_STRUCTS_H_
+#endif  // DOMAIN_REPORTS_MODELS_QUERY_DATA_STRUCTS_H_

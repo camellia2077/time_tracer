@@ -3,13 +3,14 @@
 
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <optional>
+#include <string>
+#include <vector>
 
 #include "api/cli/impl/app/cli_application.hpp"
 #include "api/cli/impl/utils/console_helper.hpp"
-#include "application/bootstrap/startup_validator.hpp"
-#include "infrastructure/config/config_loader.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "application/ports/i_cli_runtime_factory.hpp"
 #include "shared/types/ansi_colors.hpp"
 #include "shared/types/version.hpp"
 
@@ -62,21 +63,24 @@ auto HandleInfoCommands(const std::vector<std::string>& args)
   return std::nullopt;
 }
 
-// [Refactor] Loads configuration and validates the environment.
-// Returns true if environment is valid (or help mode), false otherwise.
-auto ValidateEnv(const std::string& exe_path, bool is_help_mode) -> bool {
-  ConfigLoader boot_loader(exe_path);
-  AppConfig config = boot_loader.LoadConfiguration();
+auto ValidateEnv(
+    const std::filesystem::path& exe_path, bool is_help_mode,
+    const std::shared_ptr<time_tracer::application::ports::ICliRuntimeFactory>&
+        kRuntimeFactory) -> bool {
+  if (!kRuntimeFactory) {
+    SafePrintln(std::cerr, "\n{}CLI runtime factory is not available.{}\n",
+                time_tracer::common::colors::kRed,
+                time_tracer::common::colors::kReset);
+    return false;
+  }
 
-  if (!is_help_mode) {
-    if (!StartupValidator::ValidateEnvironment(config)) {
-      SafePrintln(std::cerr,
-                  "\n{}Configuration validation failed. Please check the "
-                  "errors above.{}\n",
-                  time_tracer::common::colors::kRed,
-                  time_tracer::common::colors::kReset);
-      return false;
-    }
+  if (!kRuntimeFactory->ValidateEnvironment(exe_path, is_help_mode)) {
+    SafePrintln(std::cerr,
+                "\n{}Configuration validation failed. Please check the errors "
+                "above.{}\n",
+                time_tracer::common::colors::kRed,
+                time_tracer::common::colors::kReset);
+    return false;
   }
   return true;
 }
@@ -104,11 +108,14 @@ auto Run(std::vector<std::string> args) -> int {
     }
   }
 
-  if (!ValidateEnv(args[0], is_help_mode)) {
+  const auto kRuntimeFactory =
+      time_tracer::application::ports::CreateCliRuntimeFactory();
+
+  if (!ValidateEnv(args[0], is_help_mode, kRuntimeFactory)) {
     return 1;
   }
 
-  CliApplication controller(args);
+  CliApplication controller(args, kRuntimeFactory);
   return controller.Execute();
 }
 

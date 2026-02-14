@@ -1,11 +1,23 @@
 // infrastructure/reports/shared/utils/format/report_string_utils.hpp
-#ifndef REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_
-#define REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_
 
 #include <string>
 
 #include "domain/reports/models/range_report_data.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
+
+/**
+ * @brief 将表示布尔值的字符串 ("0" 或 "1")
+ * 转换为文本形式。
+
+ * *
+ * @param value
+ * 要转换的字符串，期望为 "0" 或 "1"。
+ * @return 输入为 "1"
+ * 返回 "true"，否则返回 "false"。
+ */
+REPORTS_SHARED_API auto BoolToString(const std::string& value) -> std::string;
 
 /**
  * @brief 替换字符串中所有匹配的子串。
@@ -52,4 +64,4 @@ REPORTS_SHARED_API auto FormatCountWithPercentage(
     int count, int total_count, const std::string& percent_suffix = "%")
     -> std::string;
 
-#endif  // REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_REPORT_STRING_UTILS_H_

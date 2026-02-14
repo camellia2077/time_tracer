@@ -9,7 +9,7 @@
 #include <optional>
 #include <string>
 
-#include "domain/reports/types/report_format.hpp"
+#include "domain/reports/types/report_types.hpp"
 
 // 定义导出工具的命名空间
 namespace ExportUtils {

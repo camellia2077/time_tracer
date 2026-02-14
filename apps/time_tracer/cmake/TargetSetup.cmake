@@ -68,13 +68,15 @@ endfunction()
 function(setup_app_target TARGET_NAME)
     _setup_target_common(${TARGET_NAME})
 
+    _apply_stdcxxexp_if_needed(${TARGET_NAME} ${ARGN})
+endfunction()
+
+function(link_app_external_dependencies TARGET_NAME)
     target_link_libraries(${TARGET_NAME} PRIVATE
         SQLite::SQLite3
         nlohmann_json::nlohmann_json
         tomlplusplus::tomlplusplus
     )
-
-    _apply_stdcxxexp_if_needed(${TARGET_NAME} ${ARGN})
 endfunction()
 
 function(setup_plugin_target TARGET_NAME)

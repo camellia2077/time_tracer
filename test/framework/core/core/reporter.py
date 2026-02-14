@@ -67,6 +67,13 @@ class Reporter:
             "error_message": "",
         }
 
+    def build_case_records(self, all_reports: List[TestReport]) -> List[Dict[str, Any]]:
+        records: List[Dict[str, Any]] = []
+        for report in all_reports:
+            for result in report.results:
+                records.append(self._build_case_record(report.module_name, result))
+        return records
+
     def print_summary(self, summary: Dict[str, Any]):
         print("\n" + "=" * 24 + " TEST SUMMARY " + "=" * 24, flush=True)
         print(
@@ -121,11 +128,22 @@ class Reporter:
 
     def _build_failed_case(self, module_name: str,
                            result: SingleTestResult) -> Dict[str, Any]:
-        execution = result.execution_result
-        return {
+        case = self._build_case_record(module_name, result)
+        return case
+
+    def _build_case_record(self, module_name: str,
+                           result: SingleTestResult) -> Dict[str, Any]:
+        record: Dict[str, Any] = {
             "module": module_name,
             "name": result.name,
             "status": result.status,
+        }
+
+        if result.status != "FAIL":
+            return record
+
+        execution = result.execution_result
+        record.update({
             "log_file": result.log_file or "",
             "messages": [self._strip_ansi(item) for item in result.messages],
             "return_code": execution.return_code if execution else -1,
@@ -134,7 +152,8 @@ class Reporter:
                                             20),
             "stdout_tail": self._tail_lines(execution.stdout if execution else "",
                                             20),
-        }
+        })
+        return record
 
     def _colorize(self, text: str, color_name: str) -> str:
         if self.no_color:

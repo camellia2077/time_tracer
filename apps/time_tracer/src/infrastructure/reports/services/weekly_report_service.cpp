@@ -3,14 +3,14 @@
 
 #include <stdexcept>
 
-#include "infrastructure/reports/data/queriers/weekly/batch_week_data_fetcher.hpp"
+#include "infrastructure/reports/data/queriers/weekly/weekly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
-#include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"
+#include "shared/utils/period_utils.hpp"
 
 WeeklyReportService::WeeklyReportService(sqlite3* database_connection,
-                                         const AppConfig& config)
-    : db_(database_connection), app_config_(config) {
+                                         const ReportCatalog& report_catalog)
+    : db_(database_connection), report_catalog_(report_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -25,8 +25,8 @@ auto WeeklyReportService::GenerateReports(ReportFormat format)
   BatchWeekDataFetcher fetcher(db_);
   auto all_weeks_data = fetcher.FetchAllData();
 
-  auto formatter =
-      GenericFormatterFactory<WeeklyReportData>::Create(format, app_config_);
+  auto formatter = GenericFormatterFactory<WeeklyReportData>::Create(
+      format, report_catalog_);
 
   reports::services::FormatReportMap(
       all_weeks_data, formatter, name_cache,

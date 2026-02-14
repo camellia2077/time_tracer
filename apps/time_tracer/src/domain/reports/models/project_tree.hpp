@@ -1,6 +1,6 @@
 // domain/reports/models/project_tree.hpp
-#ifndef REPORTS_DATA_MODEL_PROJECT_TREE_H_
-#define REPORTS_DATA_MODEL_PROJECT_TREE_H_
+#ifndef DOMAIN_REPORTS_MODELS_PROJECT_TREE_H_
+#define DOMAIN_REPORTS_MODELS_PROJECT_TREE_H_
 
 #include <string>
 #include <unordered_map>
@@ -22,4 +22,4 @@ using ProjectTree = std::unordered_map<std::string, ProjectNode>;
 
 }  // namespace reporting
 
-#endif  // REPORTS_DATA_MODEL_PROJECT_TREE_H_
+#endif  // DOMAIN_REPORTS_MODELS_PROJECT_TREE_H_

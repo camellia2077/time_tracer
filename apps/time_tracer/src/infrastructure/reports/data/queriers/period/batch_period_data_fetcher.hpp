@@ -1,13 +1,14 @@
 // infrastructure/reports/data/queriers/period/batch_period_data_fetcher.hpp
-#ifndef REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
-#define REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
+#define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
 
 #include <sqlite3.h>
 
 #include <map>
 #include <vector>
 
-#include "domain/reports/models/period_report_data.hpp"
+#include "application/ports/i_platform_clock.hpp"
+#include "domain/reports/models/period_report_models.hpp"
 
 /**
  * @class BatchPeriodDataFetcher
@@ -18,7 +19,9 @@
  */
 class BatchPeriodDataFetcher {
  public:
-  explicit BatchPeriodDataFetcher(sqlite3* db_connection);
+  BatchPeriodDataFetcher(
+      sqlite3* db_connection,
+      const time_tracer::application::ports::IPlatformClock& platform_clock);
 
   /**
    * @brief 为给定的天数列表获取聚合后的报告数据。
@@ -30,6 +33,7 @@ class BatchPeriodDataFetcher {
 
  private:
   sqlite3* db_;
+  const time_tracer::application::ports::IPlatformClock& platform_clock_;
 
   // 内部结构，用于存储原始查询结果
   struct RawRecord {
@@ -39,4 +43,4 @@ class BatchPeriodDataFetcher {
   };
 };
 
-#endif  // REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_

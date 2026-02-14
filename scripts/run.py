@@ -58,7 +58,7 @@ def main():
     subparsers.choices["configure"].add_argument(
         "--build-dir",
         default=None,
-        help="Override build directory name (default: build_agent/build_tidy).",
+        help="Override build directory name (default: build_fast/build_tidy).",
     )
     subparsers.choices["configure"].add_argument(
         "--kill-build-procs",
@@ -76,7 +76,7 @@ def main():
     subparsers.choices["build"].add_argument(
         "--build-dir",
         default=None,
-        help="Override build directory name (default: build_agent/build_tidy).",
+        help="Override build directory name (default: build_fast/build_tidy).",
     )
     subparsers.choices["build"].add_argument(
         "--kill-build-procs",

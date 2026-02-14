@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/utils/format/time_format.hpp
-#ifndef REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
-#define REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
 
 #include <string>
 
@@ -30,4 +30,4 @@ REPORTS_SHARED_API auto AddDaysToDateStr(std::string date_str, int days)
  */
 REPORTS_SHARED_API auto GetCurrentDateStr() -> std::string;
 
-#endif  // REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_

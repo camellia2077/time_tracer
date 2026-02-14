@@ -28,6 +28,17 @@ def print_header(paths, no_color: bool):
 
 
 def _build_error_result(error_message: str, log_dir: str) -> Dict:
+    bootstrap_case = {
+        "module": "runner",
+        "name": "bootstrap",
+        "status": "FAIL",
+        "log_file": "",
+        "messages": [error_message],
+        "return_code": 1,
+        "command": [],
+        "stderr_tail": [error_message],
+        "stdout_tail": [],
+    }
     return {
         "success": False,
         "exit_code": 1,
@@ -36,17 +47,8 @@ def _build_error_result(error_message: str, log_dir: str) -> Dict:
         "duration_seconds": 0.0,
         "log_dir": log_dir,
         "modules": [],
-        "failed_cases": [{
-            "module": "runner",
-            "name": "bootstrap",
-            "status": "FAIL",
-            "log_file": "",
-            "messages": [error_message],
-            "return_code": 1,
-            "command": [],
-            "stderr_tail": [error_message],
-            "stdout_tail": [],
-        }],
+        "failed_cases": [bootstrap_case],
+        "_case_records": [bootstrap_case],
         "error_message": error_message,
     }
 
@@ -75,6 +77,7 @@ def main(config_path: Optional[Path] = None, build_dir_name: Optional[str] = Non
         engine = TestEngine(config, options=run_options)
         success = engine.run()
         result = engine.get_result()
+        result["_case_records"] = engine.get_case_records()
         result["success"] = success
         result["exit_code"] = 0 if success else 1
         return result if return_result else result["exit_code"]

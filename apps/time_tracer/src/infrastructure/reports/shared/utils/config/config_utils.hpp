@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/utils/config/config_utils.hpp
-#ifndef REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
-#define REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
 
 #include <filesystem>
 #include <nlohmann/json.hpp>
@@ -15,4 +15,4 @@
 auto LoadJsonConfig(const std::filesystem::path& config_path,
                     const std::string& error_message_prefix) -> nlohmann::json;
 
-#endif  // REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_

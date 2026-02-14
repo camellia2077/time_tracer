@@ -359,7 +359,7 @@ class TidyFlowCommand:
             app_name,
             "--agent",
             "--build-dir",
-            "build_agent",
+            "build_fast",
         ]
         if concise:
             cmd.append("--concise")

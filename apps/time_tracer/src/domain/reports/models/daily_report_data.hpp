@@ -1,6 +1,6 @@
 // domain/reports/models/daily_report_data.hpp
-#ifndef REPORTS_DATA_MODEL_DAILY_REPORT_DATA_H_
-#define REPORTS_DATA_MODEL_DAILY_REPORT_DATA_H_
+#ifndef DOMAIN_REPORTS_MODELS_DAILY_REPORT_DATA_H_
+#define DOMAIN_REPORTS_MODELS_DAILY_REPORT_DATA_H_
 
 #include <map>
 #include <optional>
@@ -36,4 +36,4 @@ struct DailyReportData {
   reporting::ProjectTree project_tree;
 };
 
-#endif  // REPORTS_DATA_MODEL_DAILY_REPORT_DATA_H_
+#endif  // DOMAIN_REPORTS_MODELS_DAILY_REPORT_DATA_H_

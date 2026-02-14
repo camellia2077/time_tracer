@@ -1,5 +1,6 @@
-#ifndef REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_
-#define REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_
+// infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_
 
 #include <stdint.h>
 
@@ -355,4 +356,4 @@ using TtGetLastErrorFuncV2 = int32_t (*)(TtFormatterHandle handle,
 }
 #endif
 
-#endif  // REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_INTERFACES_FORMATTER_C_ABI_V2_H_

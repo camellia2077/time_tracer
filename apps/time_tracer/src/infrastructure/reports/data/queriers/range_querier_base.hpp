@@ -1,6 +1,6 @@
 // infrastructure/reports/data/queriers/range_querier_base.hpp
-#ifndef REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_
-#define REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_
+#define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_
 
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
 #include "infrastructure/reports/data/queriers/base_querier.hpp"
@@ -35,4 +35,4 @@ class RangeQuerierBase : public BaseQuerier<ReportDataType, QueryParamType> {
   }
 };
 
-#endif  // REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_QUERIER_BASE_H_

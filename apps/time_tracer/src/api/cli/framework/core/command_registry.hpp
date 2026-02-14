@@ -1,6 +1,6 @@
 // api/cli/framework/core/command_registry.hpp
-#ifndef CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_
-#define CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_
+#ifndef API_CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_
+#define API_CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_
 
 #include <functional>
 #include <map>
@@ -68,4 +68,4 @@ struct CommandRegistrar {
   }
 };
 
-#endif  // CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_
+#endif  // API_CLI_FRAMEWORK_CORE_COMMAND_REGISTRY_H_

@@ -6,14 +6,10 @@
 #include <map>
 #include <vector>
 
+#include "application/dto/ingest_input_model.hpp"
 #include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
-#include "infrastructure/config/models/app_config.hpp"
-
-// [重构] 引用 Common 定义的配置结构体
-#include <nlohmann/json.hpp>
-
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 namespace fs = std::filesystem;
 
@@ -23,23 +19,20 @@ namespace core::pipeline {
  * @brief Pipeline 任务的运行时配置 (Runtime Config)
  */
 struct PipelineRunConfig {
-  const AppConfig& app_config;
-
   fs::path input_root;
   fs::path output_root;
 
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   bool save_processed_output = false;
 
-  PipelineRunConfig(const AppConfig& cfg, fs::path out)
-      : app_config(cfg), output_root(std::move(out)) {}
+  explicit PipelineRunConfig(fs::path out) : output_root(std::move(out)) {}
 };
 
 /**
  * @brief Pipeline 运行时的可变状态 (Mutable State)
  */
 struct PipelineState {
-  std::vector<fs::path> source_files;
+  std::vector<time_tracer::application::dto::IngestInputModel> ingest_inputs;
   std::vector<fs::path> generated_files;
 
   // 运行时加载的 ConverterConfig (Struct)
@@ -63,11 +56,7 @@ class PipelineContext {
   PipelineState state;
   PipelineResult result;
 
-  // 缓存已验证的 JSON 对象
-  std::map<std::string, nlohmann::json> cached_json_outputs;
-
-  PipelineContext(const AppConfig& cfg, const fs::path& out_root)
-      : config(cfg, out_root) {}
+  explicit PipelineContext(const fs::path& out_root) : config(out_root) {}
 };
 
 }  // namespace core::pipeline

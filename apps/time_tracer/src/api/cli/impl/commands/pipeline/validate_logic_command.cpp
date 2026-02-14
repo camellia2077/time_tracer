@@ -1,41 +1,81 @@
 // api/cli/impl/commands/pipeline/validate_logic_command.cpp
-#include "api/cli/impl/commands/pipeline/validate_logic_command.hpp"
-
-#include <filesystem>
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <string_view>
 #include <utility>
 
 #include "api/cli/framework/core/command_parser.hpp"
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/core/command_validator.hpp"
+#include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/app/app_context.hpp"
 #include "api/cli/impl/utils/arg_utils.hpp"
-#include "application/pipeline/pipeline_manager.hpp"
-#include "domain/types/app_options.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+#include "domain/types/date_check_mode.hpp"
+#include "shared/types/exceptions.hpp"
+
+class ValidateLogicCommand : public ICommand {
+ public:
+  ValidateLogicCommand(ITimeTracerCoreApi& core_api,
+                       DateCheckMode default_date_check_mode);
+
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+  [[nodiscard]] auto GetCategory() const -> std::string override {
+    return "Pipeline";
+  }
+
+  auto Execute(const CommandParser& parser) -> void override;
+
+ private:
+  ITimeTracerCoreApi& core_api_;
+  DateCheckMode default_date_check_mode_;
+};
+
+namespace {
+
+auto BuildCoreErrorMessage(std::string_view fallback,
+                           const std::string& error_message) -> std::string {
+  if (!error_message.empty()) {
+    return error_message;
+  }
+  return std::string(fallback);
+}
+
+void EnsureOperationSuccess(
+    const time_tracer::core::dto::OperationAck& response,
+    std::string_view fallback_message) {
+  if (response.ok) {
+    return;
+  }
+  throw time_tracer::common::LogicError(
+      BuildCoreErrorMessage(fallback_message, response.error_message));
+}
+
+}  // namespace
 
 // 注册命令：validate-logic
 static CommandRegistrar<AppContext> registrar(
     "validate-logic",
     [](AppContext& ctx) -> std::unique_ptr<ValidateLogicCommand> {
+      if (!ctx.core_api) {
+        throw std::runtime_error("Core API not initialized");
+      }
       DateCheckMode default_date_check = ctx.config.default_date_check_mode;
       if (ctx.config.command_defaults.validate_logic_date_check_mode) {
         default_date_check =
             *ctx.config.command_defaults.validate_logic_date_check_mode;
       }
 
-      std::filesystem::path output_root =
-          ctx.config.defaults.output_root.value_or(
-              ctx.config.export_path.value_or("./"));
-
-      return std::make_unique<ValidateLogicCommand>(ctx.config, output_root,
+      return std::make_unique<ValidateLogicCommand>(*ctx.core_api,
                                                     default_date_check);
     });
 
 ValidateLogicCommand::ValidateLogicCommand(
-    const AppConfig& config, std::filesystem::path output_root,
-    DateCheckMode default_date_check_mode)
-    : app_config_(config),
-      output_root_(std::move(output_root)),
-      default_date_check_mode_(default_date_check_mode) {}
+    ITimeTracerCoreApi& core_api, DateCheckMode default_date_check_mode)
+    : core_api_(core_api), default_date_check_mode_(default_date_check_mode) {}
 
 auto ValidateLogicCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {
@@ -62,25 +102,16 @@ auto ValidateLogicCommand::GetHelp() const -> std::string {
 void ValidateLogicCommand::Execute(const CommandParser& parser) {
   auto args = CommandValidator::Validate(parser, GetDefinitions());
 
-  AppOptions options;
-  options.input_path = args.Get("path");
-
-  // [关键] 逻辑验证需要先转换数据(convert)，但不保存(save=false)
-  options.validate_structure =
-      false;  // 可选：是否同时也做结构验证？通常可以跳过以加快速度，或者开启以保安全
-  options.convert = true;                 // 必须开启，否则没有数据来验证逻辑
-  options.validate_logic = true;          // 开启本功能
-  options.save_processed_output = false;  // 只验证，不生成文件
-  options.date_check_mode = default_date_check_mode_;
+  DateCheckMode mode = default_date_check_mode_;
 
   // 解析日期检查模式
   if (args.Has("date_check")) {
-    options.date_check_mode =
-        ArgUtils::ParseDateCheckMode(args.Get("date_check"));
+    mode = ArgUtils::ParseDateCheckMode(args.Get("date_check"));
   } else if (args.Has("no_date_check")) {
-    options.date_check_mode = DateCheckMode::kNone;
+    mode = DateCheckMode::kNone;
   }
 
-  core::pipeline::PipelineManager manager(app_config_, output_root_);
-  (void)manager.Run(options.input_path.string(), options);
+  const auto kResponse = core_api_.RunValidateLogic(
+      {.input_path = args.Get("path"), .date_check_mode = mode});
+  EnsureOperationSuccess(kResponse, "Validate-logic command failed.");
 }

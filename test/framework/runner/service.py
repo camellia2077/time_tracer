@@ -30,6 +30,47 @@ def _resolve_result_json_path(args, suite_root: Path,
     return canonical_result_json
 
 
+def _resolve_result_cases_json_path(suite_output_root: Path) -> Path:
+    return (suite_output_root / "result_cases.json").resolve()
+
+
+def _extract_case_records(result_payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(result_payload, dict):
+        return []
+
+    raw_records = result_payload.pop("_case_records", None)
+    if not isinstance(raw_records, list):
+        return []
+
+    records: list[dict[str, Any]] = []
+    for item in raw_records:
+        if isinstance(item, dict):
+            records.append(item)
+    return records
+
+
+def _build_result_cases_payload(
+    result_payload: Any,
+    case_records: list[dict[str, Any]],
+) -> dict[str, Any]:
+    failed_cases: list[dict[str, Any]] = [
+        item for item in case_records if item.get("status") == "FAIL"
+    ]
+
+    total_cases = len(case_records)
+    total_failed = len(failed_cases)
+    if isinstance(result_payload, dict):
+        total_cases = int(result_payload.get("total_tests", total_cases) or 0)
+        total_failed = int(result_payload.get("total_failed", total_failed) or 0)
+
+    return {
+        "success": (total_failed == 0),
+        "total_cases": total_cases,
+        "total_failed": total_failed,
+        "cases": failed_cases,
+    }
+
+
 def _validate_output_contract(
     suite_output_root: Path,
     result_json_path: Path,
@@ -111,6 +152,7 @@ def run_suite(
     config_path = resolve_path(args.config, suite_root, "config.toml")
     result_json_path = _resolve_result_json_path(args, suite_root,
                                                  suite_output_root)
+    result_cases_json_path = _resolve_result_cases_json_path(suite_output_root)
 
     result = None
     exit_code = 1
@@ -183,6 +225,7 @@ def run_suite(
 
     if not isinstance(result, dict):
         result = {}
+    case_records = _extract_case_records(result)
     result["log_dir"] = str(logs_root.resolve())
 
     contract_errors = _validate_output_contract(
@@ -209,6 +252,8 @@ def run_suite(
         result["success"] = bool(result.get("success", True))
 
     try:
+        cases_payload = _build_result_cases_payload(result, case_records)
+        write_result_json(result_cases_json_path, cases_payload)
         write_result_json(result_json_path, result)
     except Exception as error:
         print(f"Warning: failed to write result JSON: {error}")
