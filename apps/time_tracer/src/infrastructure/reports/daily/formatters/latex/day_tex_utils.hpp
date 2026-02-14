@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/latex/day_tex_utils.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
-#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
 
 #include <memory>
 #include <string>
@@ -19,4 +19,4 @@ void DisplayDetailedActivities(std::string& report_stream,
 
 }  // namespace DayTexUtils
 
-#endif  // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_UTILS_H_

@@ -1,6 +1,6 @@
 // infrastructure/config/loader/converter_config_loader.hpp
-#ifndef CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_
-#define CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_
+#ifndef INFRASTRUCTURE_CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_
+#define INFRASTRUCTURE_CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_
 
 #include <toml++/toml.h>
 
@@ -48,4 +48,4 @@ class ConverterConfigLoader {
                                     ConverterConfig& config) -> void;
 };
 
-#endif  // CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_
+#endif  // INFRASTRUCTURE_CONFIG_LOADER_CONVERTER_CONFIG_LOADER_H_

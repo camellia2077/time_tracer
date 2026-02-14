@@ -1,6 +1,6 @@
 // infrastructure/config/validator/plugins/facade/plugin_validator.hpp
-#ifndef CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
-#define CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
+#ifndef INFRASTRUCTURE_CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
+#define INFRASTRUCTURE_CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
 
 #include <cstdint>
 #include <filesystem>
@@ -22,4 +22,4 @@ class PluginValidator {
                            PluginValidationOptions{}) -> bool;
 };
 
-#endif  // CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_
+#endif  // INFRASTRUCTURE_CONFIG_VALIDATOR_PLUGINS_FACADE_PLUGIN_VALIDATOR_H_

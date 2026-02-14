@@ -1,8 +1,12 @@
-// bootstrap/startup_validator.hpp
-#ifndef BOOTSTRAP_STARTUP_VALIDATOR_H_
-#define BOOTSTRAP_STARTUP_VALIDATOR_H_
+// application/bootstrap/startup_validator.hpp
+#ifndef APPLICATION_BOOTSTRAP_STARTUP_VALIDATOR_H_
+#define APPLICATION_BOOTSTRAP_STARTUP_VALIDATOR_H_
 
-#include "infrastructure/config/models/app_config.hpp"
+#include "application/dto/runtime_environment_requirements.hpp"
+
+namespace time_tracer::application::ports {
+class IRuntimeEnvironmentValidator;
+}
 
 /**
  * @class StartupValidator
@@ -14,10 +18,15 @@ class StartupValidator {
  public:
   /**
    * @brief 执行环境完整性检查。
-   * @param config 应用程序配置对象，用于获取插件目录路径。
+   * @param requirements 运行时依赖需求描述。
+   * @param validator 运行时依赖校验器接口。
    * @return true 如果环境依赖（DLL）完整。
    */
-  static auto ValidateEnvironment(const AppConfig& config) -> bool;
+  static auto ValidateEnvironment(
+      const time_tracer::application::dto::RuntimeEnvironmentRequirements&
+          requirements,
+      const time_tracer::application::ports::IRuntimeEnvironmentValidator&
+          validator) -> bool;
 };
 
-#endif  // BOOTSTRAP_STARTUP_VALIDATOR_H_
+#endif  // APPLICATION_BOOTSTRAP_STARTUP_VALIDATOR_H_

@@ -13,41 +13,35 @@ class TidyCommand:
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
-    def execute(
-        self,
-        app_name: str,
-        extra_args: list = None,
-        jobs: int | None = None,
-        parse_workers: int | None = None,
-        keep_going: bool | None = None,
-    ):
-        from .build import BuildCommand
-        
+    def _resolve_tidy_paths(self, app_name: str) -> dict[str, Path]:
         app_dir = self.ctx.get_app_dir(app_name)
         build_dir = app_dir / "build_tidy"
-        log_path = build_dir / "build.log"
-        tasks_dir = build_dir / "tasks"
-        ninja_log_path = build_dir / ".ninja_log"
-        overall_start = time.perf_counter()
-        configure_seconds = 0.0
-        build_seconds = 0.0
-        parse_seconds = 0.0
-        split_stats = None
-        did_auto_configure = False
-        
-        # 1. Ensure build is configured
-        if not (build_dir / "CMakeCache.txt").exists():
-            print(f"--- Build directory {build_dir} not configured. Running auto-configure...")
-            did_auto_configure = True
-            configure_start = time.perf_counter()
-            builder = BuildCommand(self.ctx)
-            ret = builder.configure(app_name, tidy=True)
-            configure_seconds = time.perf_counter() - configure_start
-            if ret != 0:
-                print("--- Auto-configure failed. Aborting Tidy.")
-                return ret
-        
-        # 2. Run Tidy Build with Real-time Output
+        return {
+            "build_dir": build_dir,
+            "log_path": build_dir / "build.log",
+            "tasks_dir": build_dir / "tasks",
+            "ninja_log_path": build_dir / ".ninja_log",
+        }
+
+    def _ensure_configured(self, app_name: str, build_dir: Path) -> tuple[int, bool, float]:
+        from .build import BuildCommand
+
+        if (build_dir / "CMakeCache.txt").exists():
+            return 0, False, 0.0
+
+        print(f"--- Build directory {build_dir} not configured. Running auto-configure...")
+        configure_start = time.perf_counter()
+        builder = BuildCommand(self.ctx)
+        ret = builder.configure(app_name, tidy=True)
+        configure_seconds = time.perf_counter() - configure_start
+        return ret, True, configure_seconds
+
+    def _resolve_build_options(
+        self,
+        extra_args: list | None,
+        jobs: int | None,
+        keep_going: bool | None,
+    ) -> tuple[list, bool, int | None, bool]:
         filtered_args = [a for a in (extra_args or []) if a != "--"]
         has_target_override = "--target" in filtered_args
         configured_jobs = self.ctx.config.tidy.jobs
@@ -56,6 +50,16 @@ class TidyCommand:
         effective_keep_going = (
             configured_keep_going if keep_going is None else keep_going
         )
+        return filtered_args, has_target_override, effective_jobs, effective_keep_going
+
+    def _build_tidy_command(
+        self,
+        build_dir: Path,
+        filtered_args: list,
+        has_target_override: bool,
+        effective_jobs: int | None,
+        effective_keep_going: bool,
+    ) -> list[str]:
         cmd = ["cmake", "--build", str(build_dir)]
         if not has_target_override:
             cmd += ["--target", "tidy"]
@@ -68,26 +72,93 @@ class TidyCommand:
             # Project preference: during tidy, continue checks even when
             # individual compilation units fail.
             cmd += ["--", "-k", "0"]
+        return cmd
+
+    def _run_tidy_build(self, cmd: list[str], log_path: Path) -> tuple[int, float]:
         build_start = time.perf_counter()
         ret = run_command(cmd, env=self.ctx.setup_env(), log_file=log_path)
         build_seconds = time.perf_counter() - build_start
+        return ret, build_seconds
+
+    def _split_from_log(
+        self,
+        log_path: Path,
+        tasks_dir: Path,
+        parse_workers: int | None = None,
+        max_lines: int | None = None,
+        max_diags: int | None = None,
+        batch_size: int | None = None,
+    ) -> tuple[dict, float]:
+        parse_start = time.perf_counter()
+        log_content = log_path.read_text(encoding="utf-8", errors="replace")
+        split_stats = self._split_and_sort(
+            log_content,
+            tasks_dir,
+            parse_workers=parse_workers,
+            max_lines=max_lines,
+            max_diags=max_diags,
+            batch_size=batch_size,
+        )
+        parse_seconds = time.perf_counter() - parse_start
+        return split_stats, parse_seconds
+
+    def execute(
+        self,
+        app_name: str,
+        extra_args: list = None,
+        jobs: int | None = None,
+        parse_workers: int | None = None,
+        keep_going: bool | None = None,
+    ):
+        paths = self._resolve_tidy_paths(app_name)
+        build_dir = paths["build_dir"]
+        log_path = paths["log_path"]
+        tasks_dir = paths["tasks_dir"]
+        ninja_log_path = paths["ninja_log_path"]
+        overall_start = time.perf_counter()
+        configure_seconds = 0.0
+        build_seconds = 0.0
+        parse_seconds = 0.0
+        split_stats = None
+        did_auto_configure = False
+
+        # 1. Ensure build is configured
+        ret, did_auto_configure, configure_seconds = self._ensure_configured(
+            app_name, build_dir
+        )
+        if ret != 0:
+            print("--- Auto-configure failed. Aborting Tidy.")
+            return ret
+
+        # 2. Run Tidy Build with Real-time Output
+        (
+            filtered_args,
+            has_target_override,
+            effective_jobs,
+            effective_keep_going,
+        ) = self._resolve_build_options(extra_args, jobs, keep_going)
+        cmd = self._build_tidy_command(
+            build_dir,
+            filtered_args,
+            has_target_override,
+            effective_jobs,
+            effective_keep_going,
+        )
+        ret, build_seconds = self._run_tidy_build(cmd, log_path)
         if ret != 0:
             print(f"--- Tidy build finished with code {ret}. Processing logs anyway...")
 
         # 3. Process Logs
         if log_path.exists():
-            parse_start = time.perf_counter()
-            log_content = log_path.read_text(encoding="utf-8", errors="replace")
             try:
-                split_stats = self._split_and_sort(
-                    log_content,
+                split_stats, parse_seconds = self._split_from_log(
+                    log_path,
                     tasks_dir,
                     parse_workers=parse_workers,
                 )
             except ValueError as error:
                 print(f"--- Tidy log split failed: {error}")
                 return 1
-            parse_seconds = time.perf_counter() - parse_start
 
         ninja_stats = self._read_ninja_timing(ninja_log_path)
         total_seconds = time.perf_counter() - overall_start
@@ -112,21 +183,18 @@ class TidyCommand:
         max_diags: int | None = None,
         batch_size: int | None = None,
     ) -> int:
-        app_dir = self.ctx.get_app_dir(app_name)
-        build_dir = app_dir / "build_tidy"
-        log_path = build_dir / "build.log"
-        tasks_dir = build_dir / "tasks"
+        paths = self._resolve_tidy_paths(app_name)
+        log_path = paths["log_path"]
+        tasks_dir = paths["tasks_dir"]
 
         if not log_path.exists():
             print(f"--- tidy-split: build log not found: {log_path}")
             print("--- tidy-split: run `tidy` first to generate build.log.")
             return 1
 
-        parse_start = time.perf_counter()
-        log_content = log_path.read_text(encoding="utf-8", errors="replace")
         try:
-            split_stats = self._split_and_sort(
-                log_content,
+            split_stats, parse_seconds = self._split_from_log(
+                log_path,
                 tasks_dir,
                 parse_workers=parse_workers,
                 max_lines=max_lines,
@@ -136,7 +204,6 @@ class TidyCommand:
         except ValueError as error:
             print(f"--- tidy-split: invalid split settings: {error}")
             return 1
-        parse_seconds = time.perf_counter() - parse_start
 
         print(
             "--- tidy-split summary: "
@@ -160,8 +227,42 @@ class TidyCommand:
     ):
         tasks_dir.mkdir(parents=True, exist_ok=True)
         log_lines = log_content.splitlines()
-        
-        # 1. Group by Ninja task
+        ninja_sections = self._group_ninja_sections(log_lines)
+        (
+            effective_max_lines,
+            effective_max_diags,
+            effective_batch_size,
+        ) = self._resolve_split_limits(max_lines, max_diags, batch_size)
+        workers = self._resolve_parse_workers(parse_workers)
+
+        processed = self._collect_section_tasks(
+            ninja_sections,
+            effective_max_lines,
+            effective_max_diags,
+            workers,
+        )
+        processed.sort(key=lambda x: (x["score"], x["size"]))
+
+        total_batches = self._write_task_batches(
+            processed,
+            tasks_dir,
+            effective_batch_size,
+        )
+        print(
+            f"--- Created {len(processed)} granular tasks in {tasks_dir} "
+            f"(batches={total_batches}, batch_size={effective_batch_size})"
+        )
+        return {
+            "sections": len(ninja_sections),
+            "workers": workers,
+            "tasks": len(processed),
+            "batches": total_batches,
+            "batch_size": effective_batch_size,
+            "max_lines": effective_max_lines,
+            "max_diags": effective_max_diags,
+        }
+
+    def _group_ninja_sections(self, log_lines: list[str]) -> list[list[str]]:
         ninja_sections = []
         curr_section = []
         for line in log_lines:
@@ -173,9 +274,14 @@ class TidyCommand:
                 curr_section.append(line)
         if curr_section:
             ninja_sections.append(curr_section)
+        return ninja_sections
 
-        # 2. Extract diagnostics and group them
-        processed = []
+    def _resolve_split_limits(
+        self,
+        max_lines: int | None,
+        max_diags: int | None,
+        batch_size: int | None,
+    ) -> tuple[int, int, int]:
         effective_max_lines = (
             self.ctx.config.tidy.max_lines if max_lines is None else max_lines
         )
@@ -191,59 +297,50 @@ class TidyCommand:
             raise ValueError("max_diags must be > 0")
         if effective_batch_size <= 0:
             raise ValueError("batch_size must be > 0")
+        return effective_max_lines, effective_max_diags, effective_batch_size
 
-        workers = self._resolve_parse_workers(parse_workers)
+    def _collect_section_tasks(
+        self,
+        ninja_sections: list[list[str]],
+        max_lines: int,
+        max_diags: int,
+        workers: int,
+    ) -> list[dict]:
+        processed = []
         if workers > 1 and len(ninja_sections) > 1:
             with ThreadPoolExecutor(max_workers=workers) as executor:
                 for section_tasks in executor.map(
                     self._process_ninja_section,
                     ninja_sections,
-                    [effective_max_lines] * len(ninja_sections),
-                    [effective_max_diags] * len(ninja_sections),
+                    [max_lines] * len(ninja_sections),
+                    [max_diags] * len(ninja_sections),
                 ):
                     processed.extend(section_tasks)
-        else:
-            for section in ninja_sections:
-                processed.extend(
-                    self._process_ninja_section(
-                        section,
-                        effective_max_lines,
-                        effective_max_diags,
-                    )
-                )
+            return processed
 
+        for section in ninja_sections:
+            processed.extend(self._process_ninja_section(section, max_lines, max_diags))
+        return processed
 
-        # 3. Sort and Save
-        processed.sort(key=lambda x: (x["score"], x["size"]))
-
+    def _write_task_batches(
+        self,
+        processed: list[dict],
+        tasks_dir: Path,
+        batch_size: int,
+    ) -> int:
         self._cleanup_old_tasks(tasks_dir)
         for idx, task in enumerate(processed, 1):
-            batch_index = ((idx - 1) // effective_batch_size) + 1
+            batch_index = ((idx - 1) // batch_size) + 1
             batch_dir = tasks_dir / f"batch_{batch_index:03d}"
             batch_dir.mkdir(parents=True, exist_ok=True)
             (batch_dir / f"task_{idx:03d}.log").write_text(
                 task["content"], encoding="utf-8"
             )
-        
+
         self._write_markdown_summary(processed, tasks_dir / "tasks_summary.md")
-        total_batches = (
-            ((len(processed) - 1) // effective_batch_size) + 1
-            if processed
-            else 0
-        )
-        print(
-            f"--- Created {len(processed)} granular tasks in {tasks_dir} "
-            f"(batches={total_batches}, batch_size={effective_batch_size})"
-        )
-        return {
-            "sections": len(ninja_sections),
-            "workers": workers,
-            "tasks": len(processed),
-            "batches": total_batches,
-            "batch_size": effective_batch_size,
-            "max_lines": effective_max_lines,
-            "max_diags": effective_max_diags,
-        }
+        if not processed:
+            return 0
+        return ((len(processed) - 1) // batch_size) + 1
 
     def _cleanup_old_tasks(self, tasks_dir: Path) -> None:
         if not tasks_dir.exists():

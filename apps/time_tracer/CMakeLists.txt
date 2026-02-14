@@ -8,6 +8,8 @@ set(CMAKE_CLI_FORCE_UTF8 ON)
 
 cmake_policy(SET CMP0115 NEW)
 
+include(CTest)
+
 # --- Find External Dependencies ---
 find_package(SQLite3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
@@ -44,17 +46,6 @@ include(BuildTypeFlags)
 
 # --- 3. 添加源码子目录 ---
 add_subdirectory(src)
-
-# 添加子目录以构建所有日报格式化器的 DLL
-add_subdirectory(src/infrastructure/reports/daily/formatters/markdown)
-add_subdirectory(src/infrastructure/reports/daily/formatters/typst)
-add_subdirectory(src/infrastructure/reports/daily/formatters/latex)
-add_subdirectory(src/infrastructure/reports/range/formatters/markdown)
-add_subdirectory(src/infrastructure/reports/range/formatters/typst)
-add_subdirectory(src/infrastructure/reports/range/formatters/latex)
-add_subdirectory(src/infrastructure/reports/monthly/formatters/markdown)
-add_subdirectory(src/infrastructure/reports/monthly/formatters/typst)
-add_subdirectory(src/infrastructure/reports/monthly/formatters/latex)
 
 set(ALL_TARGETS time_tracker_cli)
 

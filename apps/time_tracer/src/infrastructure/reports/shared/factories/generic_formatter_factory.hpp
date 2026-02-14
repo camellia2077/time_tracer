@@ -1,18 +1,18 @@
 // infrastructure/reports/shared/factories/generic_formatter_factory.hpp
-#ifndef REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_
-#define REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_
 
 #include <filesystem>
 #include <functional>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <type_traits>
 
-#include "domain/reports/types/report_format.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "domain/ports/diagnostics.hpp"
+#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/shared/factories/dll_formatter_wrapper.hpp"
 #include "infrastructure/reports/shared/factories/formatter_config_payload.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
@@ -24,9 +24,10 @@ class GenericFormatterFactory {
  public:
   using Creator =
       std::function<std::unique_ptr<IReportFormatter<ReportDataType>>(
-          const AppConfig&)>;
+          const ReportCatalog&)>;
 
-  [[nodiscard]] static auto Create(ReportFormat format, const AppConfig& config)
+  [[nodiscard]] static auto Create(ReportFormat format,
+                                   const ReportCatalog& catalog)
       -> std::unique_ptr<IReportFormatter<ReportDataType>> {
     auto& creators = GetCreators();
     auto iter = creators.find(format);
@@ -37,7 +38,7 @@ class GenericFormatterFactory {
           "type.");
     }
 
-    return iter->second(config);
+    return iter->second(catalog);
   }
 
   static void RegisterCreator(ReportFormat format, Creator creator) {
@@ -48,7 +49,7 @@ class GenericFormatterFactory {
                                    std::string dll_base_name) {
     RegisterCreator(
         format,
-        [dll_base_name, format](const AppConfig& config)
+        [dll_base_name, format](const ReportCatalog& catalog)
             -> std::unique_ptr<IReportFormatter<ReportDataType>> {
           const uint32_t kConfigKind = GetFormatterConfigKind(format);
           if (kConfigKind == TT_FORMATTER_CONFIG_KIND_UNKNOWN) {
@@ -57,12 +58,12 @@ class GenericFormatterFactory {
                 "format.");
           }
           FormatterConfigPayload config_payload =
-              BuildConfigPayloadFromLoaded(format, config);
+              BuildConfigPayloadFromLoaded(format, catalog);
 
           // Pass payload by const reference all the way through.
           // The ABI config view points to payload-owned string buffers, so a
           // move here may invalidate pointer addresses before DLL init.
-          return LoadFromDll(dll_base_name, config, config_payload);
+          return LoadFromDll(dll_base_name, catalog, config_payload);
         });
   }
 
@@ -113,22 +114,23 @@ class GenericFormatterFactory {
   }
 
   [[nodiscard]] static auto BuildConfigPayloadFromLoaded(
-      ReportFormat format, const AppConfig& config) -> FormatterConfigPayload {
+      ReportFormat format, const ReportCatalog& catalog)
+      -> FormatterConfigPayload {
     FormatterConfigPayload payload{};
 
     if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedDailyMdConfig(
-              config.loaded_reports.markdown.day);
+              catalog.loaded_reports.markdown.day);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedDailyTexConfig(
-              config.loaded_reports.latex.day);
+              catalog.loaded_reports.latex.day);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedDailyTypConfig(
-              config.loaded_reports.typst.day);
+              catalog.loaded_reports.typst.day);
           return payload;
       }
     }
@@ -137,15 +139,15 @@ class GenericFormatterFactory {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedMonthMdConfig(
-              config.loaded_reports.markdown.month);
+              catalog.loaded_reports.markdown.month);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedMonthTexConfig(
-              config.loaded_reports.latex.month);
+              catalog.loaded_reports.latex.month);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedMonthTypConfig(
-              config.loaded_reports.typst.month);
+              catalog.loaded_reports.typst.month);
           return payload;
       }
     }
@@ -154,19 +156,19 @@ class GenericFormatterFactory {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedRangeMdConfig(
-              config.loaded_reports.markdown.period.labels);
+              catalog.loaded_reports.markdown.period.labels);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedRangeTexConfig(
-              config.loaded_reports.latex.period.labels,
-              config.loaded_reports.latex.period.fonts,
-              config.loaded_reports.latex.period.layout);
+              catalog.loaded_reports.latex.period.labels,
+              catalog.loaded_reports.latex.period.fonts,
+              catalog.loaded_reports.latex.period.layout);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedRangeTypConfig(
-              config.loaded_reports.typst.period.labels,
-              config.loaded_reports.typst.period.fonts,
-              config.loaded_reports.typst.period.layout);
+              catalog.loaded_reports.typst.period.labels,
+              catalog.loaded_reports.typst.period.fonts,
+              catalog.loaded_reports.typst.period.layout);
           return payload;
       }
     }
@@ -175,19 +177,19 @@ class GenericFormatterFactory {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedRangeMdConfig(
-              config.loaded_reports.markdown.week.labels);
+              catalog.loaded_reports.markdown.week.labels);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedRangeTexConfig(
-              config.loaded_reports.latex.week.labels,
-              config.loaded_reports.latex.week.fonts,
-              config.loaded_reports.latex.week.layout);
+              catalog.loaded_reports.latex.week.labels,
+              catalog.loaded_reports.latex.week.fonts,
+              catalog.loaded_reports.latex.week.layout);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedRangeTypConfig(
-              config.loaded_reports.typst.week.labels,
-              config.loaded_reports.typst.week.fonts,
-              config.loaded_reports.typst.week.layout);
+              catalog.loaded_reports.typst.week.labels,
+              catalog.loaded_reports.typst.week.fonts,
+              catalog.loaded_reports.typst.week.layout);
           return payload;
       }
     }
@@ -196,19 +198,19 @@ class GenericFormatterFactory {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedRangeMdConfig(
-              config.loaded_reports.markdown.year.labels);
+              catalog.loaded_reports.markdown.year.labels);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedRangeTexConfig(
-              config.loaded_reports.latex.year.labels,
-              config.loaded_reports.latex.year.fonts,
-              config.loaded_reports.latex.year.layout);
+              catalog.loaded_reports.latex.year.labels,
+              catalog.loaded_reports.latex.year.fonts,
+              catalog.loaded_reports.latex.year.layout);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedRangeTypConfig(
-              config.loaded_reports.typst.year.labels,
-              config.loaded_reports.typst.year.fonts,
-              config.loaded_reports.typst.year.layout);
+              catalog.loaded_reports.typst.year.labels,
+              catalog.loaded_reports.typst.year.fonts,
+              catalog.loaded_reports.typst.year.layout);
           return payload;
       }
     }
@@ -217,19 +219,19 @@ class GenericFormatterFactory {
       switch (format) {
         case ReportFormat::kMarkdown:
           payload.BuildFromLoadedRangeMdConfig(
-              config.loaded_reports.markdown.period.labels);
+              catalog.loaded_reports.markdown.period.labels);
           return payload;
         case ReportFormat::kLaTeX:
           payload.BuildFromLoadedRangeTexConfig(
-              config.loaded_reports.latex.period.labels,
-              config.loaded_reports.latex.period.fonts,
-              config.loaded_reports.latex.period.layout);
+              catalog.loaded_reports.latex.period.labels,
+              catalog.loaded_reports.latex.period.fonts,
+              catalog.loaded_reports.latex.period.layout);
           return payload;
         case ReportFormat::kTyp:
           payload.BuildFromLoadedRangeTypConfig(
-              config.loaded_reports.typst.period.labels,
-              config.loaded_reports.typst.period.fonts,
-              config.loaded_reports.typst.period.layout);
+              catalog.loaded_reports.typst.period.labels,
+              catalog.loaded_reports.typst.period.fonts,
+              catalog.loaded_reports.typst.period.layout);
           return payload;
       }
     }
@@ -241,12 +243,11 @@ class GenericFormatterFactory {
   // Must take const reference, not by value:
   // moving FormatterConfigPayload can break C-view string pointer stability.
   [[nodiscard]] static auto LoadFromDll(
-      const std::string& base_name, const AppConfig& config,
+      const std::string& base_name, const ReportCatalog& catalog,
       const FormatterConfigPayload& config_payload)
       -> std::unique_ptr<IReportFormatter<ReportDataType>> {
     try {
-      fs::path exe_dir(config.exe_dir_path);
-      fs::path plugin_dir = exe_dir / "plugins";
+      fs::path plugin_dir = catalog.plugin_dir_path;
       fs::path dll_path;
 
 #ifdef _WIN32
@@ -266,11 +267,11 @@ class GenericFormatterFactory {
           dll_path.string(), config_payload);
 
     } catch (const std::exception& exception) {
-      std::cerr << "Error loading dynamic formatter: " << exception.what()
-                << std::endl;
+      time_tracer::domain::ports::EmitError(
+          "Error loading dynamic formatter: " + std::string(exception.what()));
       throw;
     }
   }
 };
 
-#endif  // REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_GENERIC_FORMATTER_FACTORY_H_

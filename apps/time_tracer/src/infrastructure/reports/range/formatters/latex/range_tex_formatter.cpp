@@ -129,6 +129,9 @@ auto FormatReportImpl(RangeTexFormatter* formatter,
 }
 }  // namespace
 
+RangeTexConfig::RangeTexConfig(const TtRangeTexConfigV1& config)
+    : RangeBaseConfig(config.labels), style_(config.style) {}
+
 RangeTexFormatter::RangeTexFormatter(std::shared_ptr<RangeTexConfig> config)
     : BaseTexFormatter(config) {}
 

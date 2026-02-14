@@ -1,6 +1,6 @@
 // domain/reports/interfaces/i_project_info_provider.hpp
-#ifndef REPORTS_DATA_INTERFACES_I_PROJECT_INFO_PROVIDER_H_
-#define REPORTS_DATA_INTERFACES_I_PROJECT_INFO_PROVIDER_H_
+#ifndef DOMAIN_REPORTS_INTERFACES_I_PROJECT_INFO_PROVIDER_H_
+#define DOMAIN_REPORTS_INTERFACES_I_PROJECT_INFO_PROVIDER_H_
 
 #include <sqlite3.h>
 
@@ -20,4 +20,4 @@ class IProjectInfoProvider {
       -> std::vector<std::string> = 0;
 };
 
-#endif  // REPORTS_DATA_INTERFACES_I_PROJECT_INFO_PROVIDER_H_
+#endif  // DOMAIN_REPORTS_INTERFACES_I_PROJECT_INFO_PROVIDER_H_

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include "infrastructure/schema/time_records_schema.hpp"
+#include "infrastructure/schema/sqlite_schema.hpp"
 SqliteProjectRepository::SqliteProjectRepository(std::string db_path)
     : db_path_(std::move(db_path)) {}
 

@@ -5,11 +5,11 @@
 #include <string_view>
 
 #include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_format.hpp"
+#include "domain/reports/types/report_types.hpp"
 
 struct SingleExportTask {
   std::string_view id;
-  std::string_view content;
+  std::string_view kContent;
 };
 
 class IReportExporter {

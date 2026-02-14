@@ -10,7 +10,7 @@ def parse_suite_args(
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         "--build-dir",
-        help="Build folder under project_apps_root, e.g. build_fast/build_agent.",
+        help="Build folder under project_apps_root, e.g. build_fast/build_tidy.",
     )
     parser.add_argument(
         "--bin-dir",

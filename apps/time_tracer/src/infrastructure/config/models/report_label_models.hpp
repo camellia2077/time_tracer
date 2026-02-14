@@ -1,6 +1,6 @@
-// infrastructure/config/models/models/report_label_models.hpp
-#ifndef COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_H_
-#define COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_H_
+// infrastructure/config/models/report_label_models.hpp
+#ifndef INFRASTRUCTURE_CONFIG_MODELS_REPORT_LABEL_MODELS_H_
+#define INFRASTRUCTURE_CONFIG_MODELS_REPORT_LABEL_MODELS_H_
 
 #include <string>
 
@@ -44,4 +44,4 @@ using PeriodReportLabels = RangeReportLabels;
 using WeeklyReportLabels = RangeReportLabels;
 using YearlyReportLabels = RangeReportLabels;
 
-#endif  // COMMON_CONFIG_MODELS_REPORT_LABEL_MODELS_H_
+#endif  // INFRASTRUCTURE_CONFIG_MODELS_REPORT_LABEL_MODELS_H_

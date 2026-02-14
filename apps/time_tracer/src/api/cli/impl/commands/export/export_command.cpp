@@ -1,9 +1,8 @@
 // api/cli/impl/commands/export/export_command.cpp
-#include "api/cli/impl/commands/export/export_command.hpp"
-
-#include <array>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -11,13 +10,36 @@
 #include "api/cli/framework/core/command_parser.hpp"
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/core/command_validator.hpp"
+#include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/app/app_context.hpp"
 #include "api/cli/impl/utils/arg_utils.hpp"
 #include "api/cli/impl/utils/period_utils.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+#include "shared/types/exceptions.hpp"
+
+class ExportCommand : public ICommand {
+ public:
+  ExportCommand(ITimeTracerCoreApi& core_api, std::string default_format);
+
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+  [[nodiscard]] auto GetCategory() const -> std::string override {
+    return "Export";
+  }
+
+  auto Execute(const CommandParser& parser) -> void override;
+
+ private:
+  ITimeTracerCoreApi& core_api_;
+  std::string default_format_;
+};
 
 using namespace time_tracer::cli::impl::utils;
+using namespace time_tracer::core::dto;
 
 namespace {
+
 constexpr std::string_view kSupportedExportTypes =
     "day, month, week, year, recent, all-day, all-month, all-week, all-year, "
     "all-recent";
@@ -33,148 +55,81 @@ auto ParseFormats(const ParsedArgs& args, const std::string& default_format)
   return {ReportFormat::kMarkdown};
 }
 
-struct NormalizedExportArgs {
-  std::string_view kSubCommand;
-  std::string_view kExportArg;
-};
-
-using ExportWithArgumentHandler = void (*)(IReportHandler&, std::string_view,
-                                           ReportFormat);
-using ExportWithoutArgumentHandler = void (*)(IReportHandler&, ReportFormat);
-
-void ExportDay(IReportHandler& report_handler, std::string_view kExportArg,
-               ReportFormat format) {
-  report_handler.RunExportSingleDayReport(std::string(kExportArg), format);
-}
-
-void ExportMonth(IReportHandler& report_handler, std::string_view kExportArg,
-                 ReportFormat format) {
-  report_handler.RunExportSingleMonthReport(std::string(kExportArg), format);
-}
-
-void ExportWeek(IReportHandler& report_handler, std::string_view kExportArg,
-                ReportFormat format) {
-  report_handler.RunExportSingleWeekReport(std::string(kExportArg), format);
-}
-
-void ExportYear(IReportHandler& report_handler, std::string_view export_arg,
-                ReportFormat format) {
-  report_handler.RunExportSingleYearReport(std::string(export_arg), format);
-}
-
-void ExportRecent(IReportHandler& report_handler, std::string_view export_arg,
-                  ReportFormat format) {
-  try {
-    report_handler.RunExportSinglePeriodReport(
-        std::stoi(std::string(export_arg)), format);
-  } catch (const std::exception&) {
-    throw std::runtime_error("Invalid number provided for 'export recent': " +
-                             std::string(export_arg));
+[[nodiscard]] auto ParseExportType(std::string_view value)
+    -> std::optional<ReportExportType> {
+  if (value == "day") {
+    return ReportExportType::kDay;
   }
-}
-
-void ExportAllRecent(IReportHandler& report_handler,
-                     std::string_view export_arg, ReportFormat format) {
-  std::vector<int> days_list =
-      ArgUtils::ParseNumberList(std::string(export_arg));
-  report_handler.RunExportAllPeriodReportsQuery(days_list, format);
-}
-
-void ExportAllDay(IReportHandler& report_handler, ReportFormat format) {
-  report_handler.RunExportAllDailyReportsQuery(format);
-}
-
-void ExportAllMonth(IReportHandler& report_handler, ReportFormat format) {
-  report_handler.RunExportAllMonthlyReportsQuery(format);
-}
-
-void ExportAllWeek(IReportHandler& report_handler, ReportFormat format) {
-  report_handler.RunExportAllWeeklyReportsQuery(format);
-}
-
-void ExportAllYear(IReportHandler& report_handler, ReportFormat format) {
-  report_handler.RunExportAllYearlyReportsQuery(format);
-}
-
-constexpr std::array<std::pair<std::string_view, ExportWithArgumentHandler>, 6>
-    kExportWithArgDispatchTable = {{
-        {"day", &ExportDay},
-        {"month", &ExportMonth},
-        {"week", &ExportWeek},
-        {"year", &ExportYear},
-        {"recent", &ExportRecent},
-        {"all-recent", &ExportAllRecent},
-    }};
-
-constexpr std::array<std::pair<std::string_view, ExportWithoutArgumentHandler>,
-                     4>
-    kExportWithoutArgDispatchTable = {{
-        {"all-day", &ExportAllDay},
-        {"all-month", &ExportAllMonth},
-        {"all-week", &ExportAllWeek},
-        {"all-year", &ExportAllYear},
-    }};
-
-[[nodiscard]] auto FindExportWithArgumentHandler(std::string_view kSubCommand)
-    -> ExportWithArgumentHandler {
-  for (const auto& [name, kHandler] : kExportWithArgDispatchTable) {
-    if (name == kSubCommand) {
-      return kHandler;
-    }
+  if (value == "month") {
+    return ReportExportType::kMonth;
   }
-  return nullptr;
+  if (value == "recent") {
+    return ReportExportType::kRecent;
+  }
+  if (value == "week") {
+    return ReportExportType::kWeek;
+  }
+  if (value == "year") {
+    return ReportExportType::kYear;
+  }
+  if (value == "all-day") {
+    return ReportExportType::kAllDay;
+  }
+  if (value == "all-month") {
+    return ReportExportType::kAllMonth;
+  }
+  if (value == "all-recent") {
+    return ReportExportType::kAllRecent;
+  }
+  if (value == "all-week") {
+    return ReportExportType::kAllWeek;
+  }
+  if (value == "all-year") {
+    return ReportExportType::kAllYear;
+  }
+  return std::nullopt;
 }
 
-[[nodiscard]] auto FindExportWithoutArgumentHandler(
-    std::string_view kSubCommand) -> ExportWithoutArgumentHandler {
-  for (const auto& [name, kHandler] : kExportWithoutArgDispatchTable) {
-    if (name == kSubCommand) {
-      return kHandler;
-    }
-  }
-  return nullptr;
+[[nodiscard]] auto RequiresArgument(const ReportExportType kType) -> bool {
+  return kType == ReportExportType::kDay || kType == ReportExportType::kMonth ||
+         kType == ReportExportType::kRecent ||
+         kType == ReportExportType::kWeek || kType == ReportExportType::kYear ||
+         kType == ReportExportType::kAllRecent;
 }
 
-void RunExportWithArgument(IReportHandler& report_handler,
-                           const NormalizedExportArgs& args,
-                           ReportFormat format) {
-  const auto kHandler = FindExportWithArgumentHandler(args.kSubCommand);
-  if (kHandler == nullptr) {
-    throw std::runtime_error(
-        "Unknown export type '" + std::string(args.kSubCommand) +
-        "'. Supported: " + std::string(kSupportedExportTypes) + ".");
+auto BuildCoreErrorMessage(std::string_view fallback,
+                           const std::string& error_message) -> std::string {
+  if (!error_message.empty()) {
+    return error_message;
   }
-  kHandler(report_handler, args.kExportArg, format);
+  return std::string(fallback);
 }
 
-void RunExportWithoutArgument(IReportHandler& report_handler,
-                              std::string_view kSubCommand,
-                              ReportFormat format) {
-  const auto kHandler = FindExportWithoutArgumentHandler(kSubCommand);
-  if (kHandler == nullptr) {
-    throw std::runtime_error(
-        "Unknown export type '" + std::string(kSubCommand) +
-        "'. Supported: " + std::string(kSupportedExportTypes) + ".");
+void EnsureOperationSuccess(const OperationAck& response,
+                            std::string_view fallback_message) {
+  if (response.ok) {
+    return;
   }
-  kHandler(report_handler, format);
+  throw time_tracer::common::LogicError(
+      BuildCoreErrorMessage(fallback_message, response.error_message));
 }
+
 }  // namespace
 
 static CommandRegistrar<AppContext> registrar(
     "export", [](AppContext& ctx) -> std::unique_ptr<ExportCommand> {
-      if (!ctx.report_handler) {
-        throw std::runtime_error("ReportHandler not initialized");
+      if (!ctx.core_api) {
+        throw std::runtime_error("Core API not initialized");
       }
       std::string format_value =
           ctx.config.command_defaults.export_format.value_or(
               ctx.config.defaults.default_format.value_or("md"));
-      return std::make_unique<ExportCommand>(*ctx.report_handler, format_value);
+      return std::make_unique<ExportCommand>(*ctx.core_api, format_value);
     });
 
-ExportCommand::ExportCommand(IReportHandler& report_handler,
+ExportCommand::ExportCommand(ITimeTracerCoreApi& core_api,
                              std::string default_format)
-    : report_handler_(report_handler),
-      default_format_(std::move(default_format)) {}
+    : core_api_(core_api), default_format_(std::move(default_format)) {}
 
 auto ExportCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {{"type",
@@ -223,33 +178,37 @@ void ExportCommand::Execute(const CommandParser& parser) {
 
   const std::string kSubCommand = args.Get("type");
   const std::string kExportArg = args.Get("argument");
+
+  const auto kExportType = ParseExportType(kSubCommand);
+  if (!kExportType.has_value()) {
+    throw std::runtime_error(
+        "Unknown export type '" + kSubCommand +
+        "'. Supported: " + std::string(kSupportedExportTypes) + ".");
+  }
+
   const std::vector<ReportFormat> kFormats =
       ParseFormats(args, default_format_);
 
   for (const auto& format : kFormats) {
-    const auto kWithArgHandler = FindExportWithArgumentHandler(kSubCommand);
-    const auto kWithoutArgHandler =
-        FindExportWithoutArgumentHandler(kSubCommand);
+    ReportExportRequest request;
+    request.type = *kExportType;
+    request.format = format;
 
-    if ((kWithArgHandler == nullptr) && (kWithoutArgHandler == nullptr)) {
-      throw std::runtime_error(
-          "Unknown export type '" + kSubCommand +
-          "'. Supported: " + std::string(kSupportedExportTypes) + ".");
-    }
-
-    if (kWithArgHandler != nullptr) {
+    if (RequiresArgument(request.type)) {
       if (kExportArg.empty()) {
         throw std::runtime_error("Argument required for export type '" +
                                  kSubCommand + "'.");
       }
-      const std::string kNormalizedArg = PeriodParser::Normalize(
-          {.period_type_ = kSubCommand, .period_arg_ = kExportArg});
-      RunExportWithArgument(
-          report_handler_,
-          {.kSubCommand = kSubCommand, .kExportArg = kNormalizedArg}, format);
-      continue;
+
+      if (request.type == ReportExportType::kAllRecent) {
+        request.recent_days_list = ArgUtils::ParseNumberList(kExportArg);
+      } else {
+        request.argument = PeriodParser::Normalize(
+            {.period_type_ = kSubCommand, .period_arg_ = kExportArg});
+      }
     }
 
-    RunExportWithoutArgument(report_handler_, kSubCommand, format);
+    const auto kResponse = core_api_.RunReportExport(request);
+    EnsureOperationSuccess(kResponse, "Export command failed.");
   }
 }

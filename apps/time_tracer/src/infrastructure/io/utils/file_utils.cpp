@@ -2,8 +2,8 @@
 #include "infrastructure/io/utils/file_utils.hpp"
 
 #include <algorithm>
-#include <iostream>
 
+#include "domain/ports/diagnostics.hpp"
 #include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
@@ -24,8 +24,9 @@ auto FindFilesByExtensionRecursively(const fs::path& root_path,
       }
     }
   } catch (const fs::filesystem_error& e) {
-    std::cerr << "Filesystem error accessing directory " << root_path << ": "
-              << e.what() << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "Filesystem error accessing directory " + root_path.string() + ": " +
+        e.what());
   }
   std::ranges::sort(files_found);
   return files_found;
@@ -39,10 +40,10 @@ auto ResolveFiles(const std::vector<std::string>& input_paths,
   for (const std::string& path_str : input_paths) {
     fs::path input_path(path_str);
     if (!fs::exists(input_path)) {
-      // 使用 std::cerr 打印警告，如果不想依赖 AnsiColors 可以去掉颜色代码
-      std::cerr << time_tracer::common::colors::kYellow
-                << "Warning: Path does not exist: " << path_str
-                << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::domain::ports::EmitWarn(
+          std::string(time_tracer::common::colors::kYellow) +
+          "Warning: Path does not exist: " + path_str +
+          std::string(time_tracer::common::colors::kReset));
       continue;
     }
 

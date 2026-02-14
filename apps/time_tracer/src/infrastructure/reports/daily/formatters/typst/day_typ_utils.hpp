@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/typst/day_typ_utils.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_
-#define REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_
 
 #include <memory>
 #include <string>
@@ -25,4 +25,4 @@ void DisplayDetailedActivities(std::string& report_stream,
 
 }  // namespace DayTypUtils
 
-#endif  // REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_TYPST_DAY_TYP_UTILS_H_

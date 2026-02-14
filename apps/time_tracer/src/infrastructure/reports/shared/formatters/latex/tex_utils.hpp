@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/formatters/latex/tex_utils.hpp
-#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
-#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
 
 #include <map>
 #include <string>
@@ -68,4 +68,4 @@ namespace TexUtils {
 
 }  // namespace TexUtils
 
-#endif  // REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_

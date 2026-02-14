@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/formatters/latex/tex_common_utils.hpp
-#ifndef REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_
-#define REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_
 
 #include <string>
 #include <vector>
@@ -44,4 +44,4 @@ REPORTS_SHARED_API auto BuildCompactListOptions(double top_sep_pt,
 
 }  // namespace TexCommonUtils
 
-#endif  // REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_COMMON_UTILS_H_

@@ -4,22 +4,39 @@
 
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "application/interfaces/i_workflow_handler.hpp"  // [新增]
+#include "application/interfaces/i_workflow_handler.hpp"
+#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/i_database_health_checker.hpp"
+#include "application/ports/i_ingest_input_provider.hpp"
+#include "application/ports/i_processed_data_loader.hpp"
+#include "application/ports/i_processed_data_storage.hpp"
+#include "application/ports/i_time_sheet_repository.hpp"
 #include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/types/app_options.hpp"
-#include "infrastructure/config/models/app_config.hpp"
 
 namespace fs = std::filesystem;
 
-// [修改] 继承 IWorkflowHandler
 class WorkflowHandler : public IWorkflowHandler {
  public:
-  WorkflowHandler(std::string db_path, const AppConfig& config,
-                  fs::path output_root_path);
+  WorkflowHandler(
+      fs::path output_root_path,
+      std::shared_ptr<time_tracer::application::ports::IProcessedDataLoader>
+          processed_data_loader,
+      std::shared_ptr<time_tracer::application::ports::ITimeSheetRepository>
+          time_sheet_repository,
+      std::shared_ptr<time_tracer::application::ports::IDatabaseHealthChecker>
+          database_health_checker,
+      std::shared_ptr<time_tracer::application::ports::IConverterConfigProvider>
+          converter_config_provider,
+      std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
+          ingest_input_provider,
+      std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
+          processed_data_storage);
   ~WorkflowHandler() override;
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
@@ -31,12 +48,24 @@ class WorkflowHandler : public IWorkflowHandler {
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
                  bool save_processed = false) -> void override;
-  [[nodiscard]] auto GetConfig() const -> const AppConfig& override;
+  auto RunValidateStructure(const std::string& source_path) -> void override;
+  auto RunValidateLogic(const std::string& source_path,
+                        DateCheckMode date_check_mode) -> void override;
 
  private:
-  const AppConfig& app_config_;
-  std::string db_path_;
   fs::path output_root_path_;
+  std::shared_ptr<time_tracer::application::ports::IProcessedDataLoader>
+      processed_data_loader_;
+  std::shared_ptr<time_tracer::application::ports::ITimeSheetRepository>
+      time_sheet_repository_;
+  std::shared_ptr<time_tracer::application::ports::IDatabaseHealthChecker>
+      database_health_checker_;
+  std::shared_ptr<time_tracer::application::ports::IConverterConfigProvider>
+      converter_config_provider_;
+  std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
+      ingest_input_provider_;
+  std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
+      processed_data_storage_;
 };
 
 #endif  // APPLICATION_WORKFLOW_HANDLER_H_

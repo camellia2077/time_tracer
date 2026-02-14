@@ -1,0 +1,45 @@
+// application/ports/i_cli_runtime_factory.hpp
+#ifndef APPLICATION_PORTS_I_CLI_RUNTIME_FACTORY_H_
+#define APPLICATION_PORTS_I_CLI_RUNTIME_FACTORY_H_
+
+#include <filesystem>
+#include <memory>
+#include <optional>
+#include <string>
+
+#include "application/dto/cli_config.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+
+namespace time_tracer::application::ports {
+
+struct CliRuntimeRequest {
+  std::filesystem::path executable_path;
+  std::string command_name;
+  std::optional<std::filesystem::path> db_override;
+  std::optional<std::filesystem::path> output_override;
+};
+
+struct CliRuntime {
+  std::shared_ptr<ITimeTracerCoreApi> core_api;
+  time_tracer::application::dto::CliConfig cli_config;
+  std::shared_ptr<void> runtime_state;
+};
+
+class ICliRuntimeFactory {
+ public:
+  virtual ~ICliRuntimeFactory() = default;
+
+  [[nodiscard]] virtual auto ValidateEnvironment(
+      const std::filesystem::path& executable_path, bool is_help_mode) const
+      -> bool = 0;
+
+  [[nodiscard]] virtual auto BuildRuntime(
+      const CliRuntimeRequest& request) const -> CliRuntime = 0;
+};
+
+// Default runtime factory provider. Implemented in infrastructure.
+auto CreateCliRuntimeFactory() -> std::shared_ptr<ICliRuntimeFactory>;
+
+}  // namespace time_tracer::application::ports
+
+#endif  // APPLICATION_PORTS_I_CLI_RUNTIME_FACTORY_H_

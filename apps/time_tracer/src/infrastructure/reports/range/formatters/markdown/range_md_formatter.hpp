@@ -1,6 +1,6 @@
 // infrastructure/reports/range/formatters/markdown/range_md_formatter.hpp
-#ifndef REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_
-#define REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_
 
 #include <memory>
 #include <string>
@@ -29,4 +29,4 @@ class RangeMdFormatter
                            const RangeReportData& data) const override;
 };
 
-#endif  // REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_MARKDOWN_RANGE_MD_FORMATTER_H_

@@ -10,9 +10,6 @@
 #include "domain/model/daily_log.hpp"
 #include "domain/types/app_options.hpp"
 
-// 前向声明，减少头文件依赖
-struct AppConfig;
-
 class IWorkflowHandler {
  public:
   virtual ~IWorkflowHandler() = default;
@@ -34,8 +31,9 @@ class IWorkflowHandler {
                          DateCheckMode date_check_mode,
                          bool save_processed = false) -> void = 0;
 
-  // 获取配置
-  [[nodiscard]] virtual auto GetConfig() const -> const AppConfig& = 0;
+  virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
+  virtual auto RunValidateLogic(const std::string& source_path,
+                                DateCheckMode date_check_mode) -> void = 0;
 };
 
 #endif  // APPLICATION_INTERFACES_I_WORKFLOW_HANDLER_H_

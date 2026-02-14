@@ -1,6 +1,6 @@
 // domain/types/app_options.hpp
-#ifndef COMMON_APP_OPTIONS_H_
-#define COMMON_APP_OPTIONS_H_
+#ifndef DOMAIN_TYPES_APP_OPTIONS_H_
+#define DOMAIN_TYPES_APP_OPTIONS_H_
 
 #include <filesystem>
 
@@ -18,4 +18,4 @@ struct AppOptions {
   bool save_processed_output = false;
 };
 
-#endif  // COMMON_APP_OPTIONS_H_
+#endif  // DOMAIN_TYPES_APP_OPTIONS_H_

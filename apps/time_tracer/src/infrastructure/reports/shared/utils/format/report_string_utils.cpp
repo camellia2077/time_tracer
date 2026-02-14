@@ -7,6 +7,10 @@ constexpr int kFractionThreshold = 10;
 constexpr std::size_t kResultSuffixReserve = 16U;
 }  // namespace
 
+auto BoolToString(const std::string& value) -> std::string {
+  return (value == "1") ? "true" : "false";
+}
+
 auto ReplaceAll(std::string str, const std::string& from,
                 const std::string& replacement) -> std::string {
   size_t start_pos = 0;

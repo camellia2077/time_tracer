@@ -12,14 +12,16 @@
 #include "infrastructure/reports/data/queriers/utils/batch_aggregation.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"  // 需要用到 AddDaysToDateStr
 #include "infrastructure/schema/day_schema.hpp"
-#include "infrastructure/schema/time_records_schema.hpp"
+#include "infrastructure/schema/sqlite_schema.hpp"
 
 namespace {
 constexpr int kAnaerobicTimeColumnIndex = 5;
 }
 
-BatchPeriodDataFetcher::BatchPeriodDataFetcher(sqlite3* db_connection)
-    : db_(db_connection) {
+BatchPeriodDataFetcher::BatchPeriodDataFetcher(
+    sqlite3* db_connection,
+    const time_tracer::application::ports::IPlatformClock& platform_clock)
+    : db_(db_connection), platform_clock_(platform_clock) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -39,7 +41,7 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
     return results;
   }
 
-  std::string today_str = GetCurrentDateStr();
+  std::string today_str = platform_clock_.TodayLocalDateIso();
   // 计算最大范围的起始日期（包含今天，所以是 max_days - 1）
   std::string max_start_date = AddDaysToDateStr(today_str, -(max_days - 1));
 

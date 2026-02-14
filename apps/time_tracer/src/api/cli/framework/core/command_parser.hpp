@@ -1,6 +1,6 @@
 // api/cli/framework/core/command_parser.hpp
-#ifndef CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
-#define CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
+#ifndef API_CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
+#define API_CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
 
 #include <optional>
 #include <span>
@@ -55,4 +55,4 @@ class CommandParser {
       -> std::vector<std::string>;
 };
 
-#endif  // CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_
+#endif  // API_CLI_FRAMEWORK_CORE_COMMAND_PARSER_H_

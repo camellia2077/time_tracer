@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/markdown/day_md_formatter.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
-#define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
 
 #include "domain/reports/models/daily_report_data.hpp"
 #include "infrastructure/reports/daily/formatters/markdown/day_md_config.hpp"
@@ -33,4 +33,4 @@ class DayMdFormatter : public BaseMdFormatter<DailyReportData, DayMdConfig> {
                                  const DailyReportData& data) const;
 };
 
-#endif  // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_FORMATTER_H_

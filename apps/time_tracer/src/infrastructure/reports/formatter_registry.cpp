@@ -5,11 +5,8 @@
 #include <string_view>
 
 #include "domain/reports/models/daily_report_data.hpp"
-#include "domain/reports/models/monthly_report_data.hpp"
-#include "domain/reports/models/period_report_data.hpp"
-#include "domain/reports/models/weekly_report_data.hpp"
-#include "domain/reports/models/yearly_report_data.hpp"
-#include "domain/reports/types/report_format.hpp"
+#include "domain/reports/models/period_report_models.hpp"
+#include "domain/reports/types/report_types.hpp"
 #include "infrastructure/reports/plugin_manifest.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 

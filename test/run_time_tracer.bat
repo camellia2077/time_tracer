@@ -9,7 +9,7 @@ rem   run_time_tracer.bat -b C:\Computer\my_github\github_cpp\time_tracer\time_t
 rem
 rem   Select build directory + rebuild:
 rem   run_time_tracer.bat -b build_fast --with-build
-rem   run_time_tracer.bat --build build_agent --with-build
+rem   run_time_tracer.bat --build build_fast --with-build
 rem
 rem Notes:
 rem   - This script forwards --build-dir to run.py.

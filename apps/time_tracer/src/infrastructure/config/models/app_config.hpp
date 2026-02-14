@@ -1,6 +1,6 @@
 // infrastructure/config/models/app_config.hpp
-#ifndef COMMON_CONFIG_APP_CONFIG_H_
-#define COMMON_CONFIG_APP_CONFIG_H_
+#ifndef INFRASTRUCTURE_CONFIG_MODELS_APP_CONFIG_H_
+#define INFRASTRUCTURE_CONFIG_MODELS_APP_CONFIG_H_
 
 #include <filesystem>
 #include <optional>
@@ -9,46 +9,13 @@
 #include <vector>
 
 #include "domain/types/date_check_mode.hpp"
-#include "infrastructure/config/models/report_config_models.hpp"
-// [新增] 引入 Converter 配置模型
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 
 namespace fs = std::filesystem;
-
-// [新增] 用于存储加载后的所有报表配置
-struct LoadedReportConfigs {
-  struct {
-    DailyTexConfig day;
-    MonthlyTexConfig month;
-    PeriodTexConfig period;
-    WeeklyTexConfig week;
-    YearlyTexConfig year;
-  } latex;
-
-  struct {
-    DailyTypConfig day;
-    MonthlyTypConfig month;
-    PeriodTypConfig period;
-    WeeklyTypConfig week;
-    YearlyTypConfig year;
-  } typst;
-
-  struct {
-    DailyMdConfig day;
-    MonthlyMdConfig month;
-    PeriodMdConfig period;
-    WeeklyMdConfig week;
-    YearlyMdConfig year;
-  } markdown;
-};
 
 struct PipelineConfig {
   fs::path interval_processor_config_path;
   std::unordered_map<fs::path, fs::path> initial_top_parents;
-
-  // [新增] 加载完成的 Converter 配置
-  // Core 层将直接使用此对象初始化 Converter，而无需 Core 自己去解析 TOML
-  ConverterConfig loaded_converter_config;
 };
 
 struct ReportConfigPaths {
@@ -75,7 +42,7 @@ struct ReportConfigPaths {
 };
 
 struct GlobalDefaults {
-  std::optional<fs::path> db_path;
+  std::optional<fs::path> kDbPath;
   std::optional<fs::path> output_root;
   std::optional<std::string> default_format;
 };
@@ -95,7 +62,7 @@ struct CommandDefaults {
 struct AppConfig {
   fs::path exe_dir_path;
   fs::path error_log_path;
-  std::optional<fs::path> export_path;
+  std::optional<fs::path> kExportPath;
 
   bool default_save_processed_output = false;
   DateCheckMode default_date_check_mode = DateCheckMode::kNone;
@@ -108,4 +75,4 @@ struct AppConfig {
   LoadedReportConfigs loaded_reports;
 };
 
-#endif  // COMMON_CONFIG_APP_CONFIG_H_
+#endif  // INFRASTRUCTURE_CONFIG_MODELS_APP_CONFIG_H_

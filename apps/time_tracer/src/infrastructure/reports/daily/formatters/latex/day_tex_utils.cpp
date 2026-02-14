@@ -5,7 +5,6 @@
 
 #include "infrastructure/reports/shared/formatters/latex/tex_common_utils.hpp"
 #include "infrastructure/reports/shared/formatters/latex/tex_utils.hpp"
-#include "infrastructure/reports/shared/utils/format/bool_to_string.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 

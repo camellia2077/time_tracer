@@ -1,6 +1,6 @@
 // infrastructure/config/config_loader.hpp
-#ifndef CONFIG_CONFIG_LOADER_H_
-#define CONFIG_CONFIG_LOADER_H_
+#ifndef INFRASTRUCTURE_CONFIG_CONFIG_LOADER_H_
+#define INFRASTRUCTURE_CONFIG_CONFIG_LOADER_H_
 
 #include <filesystem>
 #include <string>
@@ -41,4 +41,4 @@ class ConfigLoader {
   const std::string kConfigDirName = "config";
 };
 
-#endif  // CONFIG_CONFIG_LOADER_H_
+#endif  // INFRASTRUCTURE_CONFIG_CONFIG_LOADER_H_

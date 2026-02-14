@@ -1,6 +1,6 @@
 // domain/logic/validator/common/diagnostic.hpp
-#ifndef VALIDATOR_COMMON_DIAGNOSTIC_H_
-#define VALIDATOR_COMMON_DIAGNOSTIC_H_
+#ifndef DOMAIN_LOGIC_VALIDATOR_COMMON_DIAGNOSTIC_H_
+#define DOMAIN_LOGIC_VALIDATOR_COMMON_DIAGNOSTIC_H_
 
 #include <optional>
 #include <string>
@@ -20,4 +20,4 @@ struct Diagnostic {
 
 }  // namespace validator
 
-#endif  // VALIDATOR_COMMON_DIAGNOSTIC_H_
+#endif  // DOMAIN_LOGIC_VALIDATOR_COMMON_DIAGNOSTIC_H_

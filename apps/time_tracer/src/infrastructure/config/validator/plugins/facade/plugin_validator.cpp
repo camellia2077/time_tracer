@@ -1,11 +1,11 @@
 // infrastructure/config/validator/plugins/facade/plugin_validator.cpp
 #include "infrastructure/config/validator/plugins/facade/plugin_validator.hpp"
 
-#include <iostream>
 #include <optional>
 #include <string>
 #include <string_view>
 
+#include "domain/ports/diagnostics.hpp"
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -124,18 +124,18 @@ auto ValidateFormatterAbi(const fs::path& plugin_path,
                           uint32_t expected_abi_version) -> bool {
   DynamicLibrary library(plugin_path);
   if (!library.IsOpen()) {
-    std::cerr << "[Validator] Error: Failed to load plugin DLL at '"
-              << plugin_path.string()
-              << "': " << GetDynamicLibraryErrorMessage() << "." << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: Failed to load plugin DLL at '" +
+        plugin_path.string() + "': " + GetDynamicLibraryErrorMessage() + ".");
     return false;
   }
 
   auto get_abi_info = reinterpret_cast<TtGetFormatterAbiInfoFuncV2>(
       library.GetSymbol(kAbiInfoSymbol));
   if (get_abi_info == nullptr) {
-    std::cerr << "[Validator] Error: Required symbol '" << kAbiInfoSymbol
-              << "' not found in '" << plugin_path.string() << "'."
-              << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: Required symbol '" + std::string(kAbiInfoSymbol) +
+        "' not found in '" + plugin_path.string() + "'.");
     return false;
   }
 
@@ -144,16 +144,18 @@ auto ValidateFormatterAbi(const fs::path& plugin_path,
   const auto kStatusCode =
       static_cast<TtFormatterStatusCode>(get_abi_info(&abi_info));
   if (kStatusCode != TT_FORMATTER_STATUS_OK) {
-    std::cerr << "[Validator] Error: '" << kAbiInfoSymbol << "' failed for '"
-              << plugin_path.string() << "' with status code "
-              << static_cast<int32_t>(kStatusCode) << "." << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: '" + std::string(kAbiInfoSymbol) +
+        "' failed for '" + plugin_path.string() + "' with status code " +
+        std::to_string(static_cast<int32_t>(kStatusCode)) + ".");
     return false;
   }
 
   if (abi_info.abiVersion != expected_abi_version) {
-    std::cerr << "[Validator] Error: ABI mismatch for '" << plugin_path.string()
-              << "'. Expected " << expected_abi_version << ", got "
-              << abi_info.abiVersion << "." << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: ABI mismatch for '" + plugin_path.string() +
+        "'. Expected " + std::to_string(expected_abi_version) + ", got " +
+        std::to_string(abi_info.abiVersion) + ".");
     return false;
   }
 
@@ -166,8 +168,9 @@ auto PluginValidator::Validate(const fs::path& plugins_path,
                                const PluginValidationOptions& options) -> bool {
   if (!FileSystemHelper::Exists(plugins_path) ||
       !FileSystemHelper::IsDirectory(plugins_path)) {
-    std::cerr << "[Validator] Error: Plugins directory not found at '"
-              << plugins_path.string() << "'." << std::endl;
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: Plugins directory not found at '" +
+        plugins_path.string() + "'.");
     return expected_plugins.empty();
   }
 
@@ -177,9 +180,10 @@ auto PluginValidator::Validate(const fs::path& plugins_path,
   for (const auto& plugin_name : expected_plugins) {
     const auto kPluginPath = ResolvePluginBinaryPath(plugins_path, plugin_name);
     if (!kPluginPath.has_value()) {
-      std::cerr << "[Validator] Error: Required plugin '" << plugin_name
-                << kDynamicLibraryExtension << "' not found in directory '"
-                << plugins_path.string() << "'." << std::endl;
+      time_tracer::domain::ports::EmitError(
+          "[Validator] Error: Required plugin '" + plugin_name +
+          std::string(kDynamicLibraryExtension) + "' not found in directory '" +
+          plugins_path.string() + "'.");
       all_valid = false;
       continue;
     }

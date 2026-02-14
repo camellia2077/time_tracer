@@ -5,25 +5,17 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/interfaces/i_command.hpp"
-#include "api/cli/impl/utils/help_formatter.hpp"
-#include "application/reporting/report_handler.hpp"
-#include "application/workflow_handler.hpp"
-#include "infrastructure/config/config_loader.hpp"
-#include "infrastructure/io/file_controller.hpp"
-#include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
-#include "infrastructure/persistence/sqlite/db_manager.hpp"
-#include "infrastructure/reports/exporter.hpp"
-#include "infrastructure/reports/formatter_registry.hpp"
-#include "infrastructure/reports/report_service.hpp"
+#include "api/cli/impl/utils/console_helper.hpp"
+#include "application/ports/i_cli_runtime_factory.hpp"
 #include "shared/types/ansi_colors.hpp"
 #include "shared/types/exceptions.hpp"
 #include "shared/types/exit_codes.hpp"
 
 namespace fs = std::filesystem;
-const std::string kDatabaseFilename = "time_data.sqlite3";
 
 // [新增] 辅助函数，定义应用特定的全局参数规则
 static auto GetAppParserConfig() -> ParserConfig {
@@ -36,86 +28,47 @@ static auto GetAppParserConfig() -> ParserConfig {
 }
 
 // [修改] 在初始化列表中调用 get_app_parser_config()
-CliApplication::CliApplication(const std::vector<std::string>& args)
-    : parser_(args, GetAppParserConfig()) {
-  // 0. 初始化服务容器
-  app_context_ = std::make_shared<AppContext>();
-
-  // 1. 路径初始化
-  fs::path exe_path(parser_.GetRawArg(0));
-  ConfigLoader config_loader(parser_.GetRawArg(0));
-  app_config_ = config_loader.LoadConfiguration();
-  app_context_->config = app_config_;
-
-  fs::path default_output_root =
-      fs::absolute(exe_path.parent_path() / "output");
-  if (app_config_.defaults.output_root) {
-    default_output_root = fs::absolute(*app_config_.defaults.output_root);
+CliApplication::CliApplication(
+    const std::vector<std::string>& args,
+    std::shared_ptr<time_tracer::application::ports::ICliRuntimeFactory>
+        runtime_factory)
+    : parser_(args, GetAppParserConfig()),
+      app_context_(std::make_shared<AppContext>()),
+      runtime_factory_(std::move(runtime_factory)) {
+  if (!runtime_factory_) {
+    throw std::runtime_error("CLI runtime factory not initialized.");
   }
-
-  fs::path default_db_path = default_output_root / "db" / kDatabaseFilename;
-  if (app_config_.defaults.db_path) {
-    default_db_path = fs::absolute(*app_config_.defaults.db_path);
-  }
-
-  fs::path db_path;
-  if (auto user_db_path = parser_.GetOption({"--db", "--database"})) {
-    db_path = fs::absolute(*user_db_path);
-  } else {
-    db_path = default_db_path;
-  }
-  app_context_->db_path = db_path;
-
-  if (auto path_opt = parser_.GetOption({"-o", "--output"})) {
-    exported_files_path_ = fs::absolute(*path_opt);
-  } else if (app_config_.export_path.has_value()) {
-    exported_files_path_ = fs::absolute(*app_config_.export_path);
-  } else {
-    throw std::runtime_error(
-        "Missing export output directory. Provide --output <dir> or configure "
-        "[system].export_root in config/config.toml.");
-  }
-  output_root_path_ = default_output_root;
-
-  // 2. 初始化基础设施
-  FileController::PrepareOutputDirectories(output_root_path_);
-
-  db_manager_ = std::make_unique<DBManager>(db_path.string());
-
-  // 3. 初始化并注入核心服务到 Context
-  // [WorkflowHandler]
-  auto workflow_impl = std::make_shared<WorkflowHandler>(
-      db_path.string(), app_config_, output_root_path_);
-  app_context_->workflow_handler = workflow_impl;  // 注入接口
-
-  // 数据库连接检查 (逻辑保持不变)
-  const std::string kCommand = parser_.GetCommand();
-  if (kCommand == "query" || kCommand == "export") {
-    if (!db_manager_->OpenDatabaseIfNeeded()) {
-      throw std::runtime_error(
-          "Failed to open database at: " + db_path.string() +
-          "\nPlease ensure data has been imported or check the path.");
-    }
-  }
-  sqlite3* db_connection = db_manager_->GetDbConnection();
-
-  // [ReportHandler]
-  reports::RegisterReportFormatters();
-  auto report_query_service =
-      std::make_unique<ReportService>(db_connection, app_config_);
-  std::unique_ptr<IReportExporter> exporter =
-      std::make_unique<Exporter>(exported_files_path_);
-
-  auto report_impl = std::make_shared<ReportHandler>(
-      std::move(report_query_service), std::move(exporter));
-  app_context_->report_handler = report_impl;  // 注入接口
-
-  // [Repository]
-  app_context_->project_repository =
-      std::make_shared<SqliteProjectRepository>(db_path.string());
+  BuildRuntime();
 }
 
 CliApplication::~CliApplication() = default;
+
+void CliApplication::BuildRuntime() {
+  time_tracer::application::ports::CliRuntimeRequest request;
+  request.executable_path = fs::path(parser_.GetRawArg(0));
+
+  try {
+    request.command_name = parser_.GetCommand();
+  } catch (...) {
+    request.command_name.clear();
+  }
+
+  if (auto user_db_path = parser_.GetOption({"--db", "--database"})) {
+    request.db_override = fs::absolute(*user_db_path);
+  }
+  if (auto path_opt = parser_.GetOption({"-o", "--output"})) {
+    request.output_override = fs::absolute(*path_opt);
+  }
+
+  auto runtime = runtime_factory_->BuildRuntime(request);
+  if (!runtime.core_api) {
+    throw std::runtime_error("Runtime factory returned null core API.");
+  }
+
+  app_context_->core_api = std::move(runtime.core_api);
+  app_context_->config = std::move(runtime.cli_config);
+  runtime_state_ = std::move(runtime.runtime_state);
+}
 
 auto CliApplication::Execute() -> int {
   using namespace time_tracer::common;
@@ -134,7 +87,7 @@ auto CliApplication::Execute() -> int {
       auto command = CommandRegistry<AppContext>::Instance().CreateCommand(
           command_name, *app_context_);
       if (command) {
-        PrintCommandUsage(command_name, *command);
+        ConsoleHelper::PrintCommandUsage(command_name, *command);
 
         return static_cast<int>(AppExitCode::kSuccess);
       }
@@ -142,7 +95,7 @@ auto CliApplication::Execute() -> int {
 
     auto commands = CommandRegistry<AppContext>::Instance().CreateAllCommands(
         *app_context_);
-    PrintFullUsage(parser_.GetRawArg(0).c_str(), commands);
+    ConsoleHelper::PrintFullUsage(parser_.GetRawArg(0).c_str(), commands);
 
     return static_cast<int>(AppExitCode::kSuccess);
   }
@@ -204,5 +157,3 @@ auto CliApplication::Execute() -> int {
 
   return static_cast<int>(AppExitCode::kSuccess);
 }
-
-void CliApplication::InitializeOutputPaths() {}

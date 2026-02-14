@@ -1,12 +1,12 @@
 // infrastructure/reports/shared/generators/base_generator.hpp
-#ifndef REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_
-#define REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_
 
 #include <memory>
 #include <string>
 // [修复] 更新包含路径
-#include "domain/reports/types/report_format.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 
 /**
@@ -27,11 +27,14 @@ class BaseGenerator {
  public:
   /**
    * @brief 构造函数。
-   * @param database_connection 指向 SQLite 数据库连接的指针。
-   * @param config 应用程序配置对象的常量引用。
+   * @param database_connection 指向 SQLite
+   * 数据库连接的指针。
+   * @param config
+   * 应用程序配置对象的常量引用。
+
    */
-  BaseGenerator(sqlite3* database_connection, const AppConfig& config)
-      : db_(database_connection), app_config_(config) {}
+  BaseGenerator(sqlite3* database_connection, const ReportCatalog& catalog)
+      : db_(database_connection), report_catalog_(catalog) {}
 
   virtual ~BaseGenerator() = default;
 
@@ -48,8 +51,8 @@ class BaseGenerator {
     ReportDataType report_data = querier.FetchData();
 
     // 2. 使用通用工厂创建格式化器
-    auto formatter =
-        GenericFormatterFactory<ReportDataType>::Create(format, app_config_);
+    auto formatter = GenericFormatterFactory<ReportDataType>::Create(
+        format, report_catalog_);
 
     // 3. 格式化并返回报告
     return formatter->FormatReport(report_data);
@@ -57,7 +60,7 @@ class BaseGenerator {
 
  protected:
   sqlite3* db_;
-  const AppConfig& app_config_;
+  const ReportCatalog& report_catalog_;
 };
 
-#endif  // REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_GENERATORS_BASE_GENERATOR_H_

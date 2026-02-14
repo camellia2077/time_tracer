@@ -4,8 +4,7 @@
 #include <iostream>
 #include <sstream>
 
-#include "domain/logic/validator/txt/rules/line_rules.hpp"
-#include "domain/logic/validator/txt/rules/structure_rules.hpp"
+#include "domain/logic/validator/txt/rules/txt_rules.hpp"
 #include "shared/utils/string_utils.hpp"
 
 namespace validator::txt {

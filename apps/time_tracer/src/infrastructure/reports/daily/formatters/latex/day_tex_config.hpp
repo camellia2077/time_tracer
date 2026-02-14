@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/latex/day_tex_config.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
-#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
 
 #include <map>
 #include <string>
@@ -48,4 +48,4 @@ class DayTexConfig : public DayBaseConfig {
   std::map<std::string, std::string> keyword_colors_;
 };
 
-#endif  // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_CONFIG_H_

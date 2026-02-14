@@ -1,3 +1,4 @@
+// application/service/converter_service.hpp
 #ifndef APPLICATION_SERVICE_CONVERTER_SERVICE_H_
 #define APPLICATION_SERVICE_CONVERTER_SERVICE_H_
 
@@ -6,7 +7,7 @@
 #include <string_view>
 
 #include "domain/model/daily_log.hpp"
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 class ConverterService {
  public:

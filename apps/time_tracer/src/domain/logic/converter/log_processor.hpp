@@ -1,6 +1,6 @@
 // domain/logic/converter/log_processor.hpp
-#ifndef CONVERTER_LOG_PROCESSOR_H_
-#define CONVERTER_LOG_PROCESSOR_H_
+#ifndef DOMAIN_LOGIC_CONVERTER_LOG_PROCESSOR_H_
+#define DOMAIN_LOGIC_CONVERTER_LOG_PROCESSOR_H_
 
 #include <functional>
 #include <istream>
@@ -10,8 +10,7 @@
 #include <vector>
 
 #include "domain/model/daily_log.hpp"
-// [重构] 引用 Common 定义的配置结构体
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 struct LogProcessingResult {
   bool success = true;
@@ -36,4 +35,4 @@ class LogProcessor {
   const ConverterConfig& config_;
 };
 
-#endif  // CONVERTER_LOG_PROCESSOR_H_
+#endif  // DOMAIN_LOGIC_CONVERTER_LOG_PROCESSOR_H_

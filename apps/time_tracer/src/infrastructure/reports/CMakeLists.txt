@@ -2,9 +2,6 @@
 
 # --- Shared Reports Library ---
 add_library(reports_shared SHARED
-    # Shared - External Utils
-    "../../shared/utils/string_utils.cpp"
-    
     # Base Configs
     "daily/common/day_base_config.cpp"
     "monthly/common/month_base_config.cpp"
@@ -13,14 +10,12 @@ add_library(reports_shared SHARED
 
     # Shared - Internal Utils & Config
     "shared/utils/config/config_utils.cpp"
-    "shared/utils/format/bool_to_string.cpp"
     "shared/utils/format/report_string_utils.cpp"
-    "shared/utils/format/iso_week_utils.cpp"
-    "shared/utils/format/year_utils.cpp"
     "shared/utils/format/time_format.cpp"
     "shared/interfaces/formatter_c_config_bridge_v1.cpp"
     "shared/interfaces/formatter_c_string_view_utils.cpp"
-    "shared/interfaces/formatter_c_report_data_bridge.cpp"
+    "shared/interfaces/formatter_c_report_data_bridge_validate.cpp"
+    "shared/interfaces/formatter_c_report_data_bridge_parse.cpp"
     
     # Shared - Style Config
     "shared/config/tex_style_config.cpp"
@@ -52,24 +47,20 @@ add_library(reports_data STATIC
     "data/utils/project_tree_builder.cpp"
 
     # Daily Queriers
-    "data/queriers/daily/day_querier.cpp"
-    "data/queriers/daily/batch_day_data_fetcher.cpp"
+    "data/queriers/daily/daily_querier.cpp"
 
     # Monthly Queriers
-    "data/queriers/monthly/month_querier.cpp"
-    "data/queriers/monthly/batch_month_data_fetcher.cpp"
+    "data/queriers/monthly/monthly_querier.cpp"
 
     # Period Queriers
     "data/queriers/period/period_querier.cpp"
     "data/queriers/period/batch_period_data_fetcher.cpp"
 
     # Weekly Queriers
-    "data/queriers/weekly/week_querier.cpp"
-    "data/queriers/weekly/batch_week_data_fetcher.cpp"
+    "data/queriers/weekly/weekly_querier.cpp"
 
     # Yearly Queriers
-    "data/queriers/yearly/year_querier.cpp"
-    "data/queriers/yearly/batch_year_data_fetcher.cpp"
+    "data/queriers/yearly/yearly_querier.cpp"
 )
 setup_plugin_target(reports_data NO_STDCXXEXP)
 target_link_libraries(reports_data PUBLIC 
@@ -78,4 +69,13 @@ target_link_libraries(reports_data PUBLIC
     time_tracker_domain
 )
 
-# Export targets to parent scope if needed, or just link by name "reports_shared"
+# Formatter plugin subdirectories
+add_subdirectory(daily/formatters/markdown)
+add_subdirectory(daily/formatters/typst)
+add_subdirectory(daily/formatters/latex)
+add_subdirectory(range/formatters/markdown)
+add_subdirectory(range/formatters/typst)
+add_subdirectory(range/formatters/latex)
+add_subdirectory(monthly/formatters/markdown)
+add_subdirectory(monthly/formatters/typst)
+add_subdirectory(monthly/formatters/latex)

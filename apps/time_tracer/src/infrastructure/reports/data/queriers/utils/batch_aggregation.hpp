@@ -1,6 +1,6 @@
 // infrastructure/reports/data/queriers/utils/batch_aggregation.hpp
-#ifndef REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
-#define REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
+#define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
 
 #include <map>
 #include <set>
@@ -89,4 +89,4 @@ void FinalizeGroupedAggregationWithDays(
 
 }  // namespace reports::data::batch
 
-#endif  // REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_

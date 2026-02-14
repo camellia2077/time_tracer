@@ -15,7 +15,6 @@
 #include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 #include "infrastructure/reports/shared/interfaces/formatter_c_config_bridge_v1.hpp"
 #include "infrastructure/reports/shared/interfaces/formatter_c_report_data_bridge.hpp"
-#include "infrastructure/reports/shared/utils/format/bool_to_string.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
@@ -132,6 +131,10 @@ auto FormatReportImpl(DayMdFormatter* formatter,
   }
 }
 }  // namespace
+
+DayMdConfig::DayMdConfig(const TtDayMdConfigV1& config)
+    : DayBaseConfig(config.labels, config.statisticsItems,
+                    config.statisticsItemCount) {}
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config)
     : BaseMdFormatter(config) {}

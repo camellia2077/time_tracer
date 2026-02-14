@@ -1,6 +1,6 @@
 // infrastructure/reports/range/formatters/typst/range_typ_config.hpp
-#ifndef REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
-#define REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
+#ifndef INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
+#define INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
 
 #include <string>
 
@@ -48,4 +48,4 @@ class RangeTypConfig : public RangeBaseConfig {
   double margin_right_cm_;
 };
 
-#endif  // REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_
+#endif  // INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_CONFIG_H_

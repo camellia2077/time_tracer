@@ -4,14 +4,16 @@ cd /d "%SCRIPT_DIR%"
 
 rem Usage:
 rem   run_log_generator.bat -b build --with-build
-rem   run_log_generator.bat --build build_agent --with-build
+rem   run_log_generator.bat --build build_fast --with-build
 rem
 rem Notes:
 rem   - This script forwards --build-dir to run.py.
 rem   - --with-build is still required if you want configure/build stages.
 rem   - Only -b/--build are accepted for build dir selection in this wrapper.
 
-set "BUILD_DIR_ARG="
+rem Default to build_fast so runtime copies binaries from:
+rem   apps/log_generator/build_fast/bin
+set "BUILD_DIR_ARG=--build-dir build_fast"
 set "FORWARD_ARGS="
 
 :parse_args

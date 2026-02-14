@@ -1,8 +1,8 @@
 // infrastructure/reports/monthly/formatters/typst/month_typ_formatter.hpp
-#ifndef REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_
-#define REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_
 
-#include "domain/reports/models/monthly_report_data.hpp"
+#include "domain/reports/models/period_report_models.hpp"
 #include "infrastructure/reports/monthly/formatters/typst/month_typ_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_typ_formatter.hpp"
 #include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
@@ -27,4 +27,4 @@ class MonthTypFormatter
   void FormatPageSetup(std::string& report_stream) const override;
 };
 
-#endif  // REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_TYPST_MONTH_TYP_FORMATTER_H_

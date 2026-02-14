@@ -1,7 +1,6 @@
 // infrastructure/config/loader/toml_loader_utils.cpp
 #include "infrastructure/config/loader/toml_loader_utils.hpp"
 
-#include <iostream>
 #include <stdexcept>
 #include <string_view>
 

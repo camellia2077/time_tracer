@@ -64,13 +64,13 @@ auto ReportHandler::RunPeriodQueries(const std::vector<int>& days_list,
 auto ReportHandler::RunExportSingleDayReport(std::string_view date,
                                              ReportFormat format) -> void {
   const auto kContent = query_service_->RunDailyQuery(date, format);
-  exporter_->ExportSingleDayReport({.id = date, .content = kContent}, format);
+  exporter_->ExportSingleDayReport({.id = date, .kContent = kContent}, format);
 }
 
 auto ReportHandler::RunExportSingleMonthReport(std::string_view month,
                                                ReportFormat format) -> void {
   const auto kContent = query_service_->RunMonthlyQuery(month, format);
-  exporter_->ExportSingleMonthReport({.id = month, .content = kContent},
+  exporter_->ExportSingleMonthReport({.id = month, .kContent = kContent},
                                      format);
 }
 
@@ -83,14 +83,14 @@ auto ReportHandler::RunExportSinglePeriodReport(int days, ReportFormat format)
 auto ReportHandler::RunExportSingleWeekReport(std::string_view iso_week,
                                               ReportFormat format) -> void {
   const auto kContent = query_service_->RunWeeklyQuery(iso_week, format);
-  exporter_->ExportSingleWeekReport({.id = iso_week, .content = kContent},
+  exporter_->ExportSingleWeekReport({.id = iso_week, .kContent = kContent},
                                     format);
 }
 
 auto ReportHandler::RunExportSingleYearReport(std::string_view year,
                                               ReportFormat format) -> void {
   const auto kContent = query_service_->RunYearlyQuery(year, format);
-  exporter_->ExportSingleYearReport({.id = year, .content = kContent}, format);
+  exporter_->ExportSingleYearReport({.id = year, .kContent = kContent}, format);
 }
 
 auto ReportHandler::RunExportAllDailyReportsQuery(ReportFormat format) -> void {

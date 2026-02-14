@@ -1,0 +1,12 @@
+set(TIME_TRACKER_INFRA_PERSISTENCE_SOURCES
+    "persistence/sqlite/db_manager.cpp"
+    "persistence/repositories/sqlite_project_repository.cpp"
+    "persistence/sqlite_data_query_service.cpp"
+    "persistence/sqlite_database_health_checker.cpp"
+    "persistence/sqlite_time_sheet_repository.cpp"
+    "persistence/importer/repository.cpp"
+    "persistence/importer/sqlite/writer.cpp"
+    "persistence/importer/sqlite/project_resolver.cpp"
+    "persistence/importer/sqlite/connection.cpp"
+    "persistence/importer/sqlite/statement.cpp"
+)

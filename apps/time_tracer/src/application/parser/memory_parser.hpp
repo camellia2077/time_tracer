@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-#include "application/importer/parser/parsed_data.hpp"
+#include "application/importer/model/import_models.hpp"
 #include "domain/model/daily_log.hpp"
 
 /**

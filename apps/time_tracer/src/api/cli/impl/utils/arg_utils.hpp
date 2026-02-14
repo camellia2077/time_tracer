@@ -1,6 +1,6 @@
 // api/cli/impl/utils/arg_utils.hpp
-#ifndef CLI_IMPL_UTILS_ARG_UTILS_H_
-#define CLI_IMPL_UTILS_ARG_UTILS_H_
+#ifndef API_CLI_IMPL_UTILS_ARG_UTILS_H_
+#define API_CLI_IMPL_UTILS_ARG_UTILS_H_
 
 #include <algorithm>  // for std::find if needed
 #include <sstream>
@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "domain/logic/validator/common/validator_utils.hpp"  // DateCheckMode definition
-#include "domain/reports/types/report_format.hpp"
+#include "domain/reports/types/report_types.hpp"
 
 class ArgUtils {
  public:
@@ -79,4 +79,4 @@ class ArgUtils {
   }
 };
 
-#endif  // CLI_IMPL_UTILS_ARG_UTILS_H_
+#endif  // API_CLI_IMPL_UTILS_ARG_UTILS_H_

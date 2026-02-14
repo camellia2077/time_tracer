@@ -2,7 +2,6 @@
 
 add_library(DayMdFormatter SHARED
     day_md_formatter.cpp
-    day_md_config.cpp
 )
 
 setup_plugin_target(DayMdFormatter NO_STDCXXEXP)

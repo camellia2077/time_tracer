@@ -9,7 +9,7 @@ class BuildCommand:
     def _resolve_build_dir_name(tidy: bool, build_dir_name: str | None) -> str:
         if build_dir_name:
             return build_dir_name
-        return "build_tidy" if tidy else "build_agent"
+        return "build_tidy" if tidy else "build_fast"
 
     @staticmethod
     def _has_cmake_definition(args: list[str], key: str) -> bool:

@@ -2,7 +2,6 @@
 
 add_library(DayTypFormatter SHARED
     day_typ_formatter.cpp
-    day_typ_config.cpp
     day_typ_utils.cpp
     ../statistics/typst_strategy.cpp
 )

@@ -1,6 +1,6 @@
 // api/cli/framework/core/arg_definitions.hpp
-#ifndef CLI_FRAMEWORK_CORE_ARG_DEFINITIONS_H_
-#define CLI_FRAMEWORK_CORE_ARG_DEFINITIONS_H_
+#ifndef API_CLI_FRAMEWORK_CORE_ARG_DEFINITIONS_H_
+#define API_CLI_FRAMEWORK_CORE_ARG_DEFINITIONS_H_
 
 #include <map>
 #include <optional>

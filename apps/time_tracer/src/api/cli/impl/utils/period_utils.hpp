@@ -6,8 +6,7 @@
 #include <string_view>
 
 #include "domain/utils/time_utils.hpp"
-#include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"
-#include "infrastructure/reports/shared/utils/format/year_utils.hpp"
+#include "shared/utils/period_utils.hpp"
 
 namespace time_tracer::cli::impl::utils {
 

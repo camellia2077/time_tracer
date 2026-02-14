@@ -1,6 +1,6 @@
 // infrastructure/reports/data/utils/project_tree_builder.hpp
-#ifndef REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
-#define REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
+#define INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
 
 #include <sqlite3.h>
 
@@ -21,4 +21,4 @@ void BuildProjectTreeFromIds(
     const std::vector<std::pair<long long, long long>>& id_records,
     const IProjectInfoProvider& provider);
 
-#endif  // REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_

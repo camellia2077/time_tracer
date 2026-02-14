@@ -45,7 +45,7 @@ def _run_step(title: str, cmd: list[str], cwd: Path) -> int:
 
 
 def _default_build_dir(tidy: bool) -> str:
-    return "build_tidy" if tidy else "build_agent"
+    return "build_tidy" if tidy else "build_fast"
 
 
 def _load_suite_default_build_dir(suite_root: Path) -> str | None:
@@ -78,7 +78,7 @@ def _load_suite_default_build_dir(suite_root: Path) -> str | None:
 
 def _auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
     app_root = repo_root / "apps" / app_name
-    candidates = ["build_agent", "build_fast", "build_tidy", "build"]
+    candidates = ["build_fast", "build_agent", "build_tidy", "build"]
     for candidate in candidates:
         candidate_bin = app_root / candidate / "bin"
         if candidate_bin.exists() and candidate_bin.is_dir():
@@ -180,7 +180,7 @@ def parse_args(argv):
         "--build-dir",
         default=None,
         help=(
-            "Build folder under apps/<app>, e.g. build/build_fast/build_agent. "
+            "Build folder under apps/<app>, e.g. build/build_fast/build_tidy. "
             "If omitted, uses suite TOML [paths].default_build_dir when set."
         ),
     )

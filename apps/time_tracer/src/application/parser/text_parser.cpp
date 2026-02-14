@@ -1,13 +1,13 @@
-// adapters/input/parser/text_parser.cpp
+// application/parser/text_parser.cpp
 #include "application/parser/text_parser.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cctype>
-#include <iostream>
 #include <stdexcept>
 #include <string_view>
 
+#include "application/ports/logger.hpp"
 #include "shared/types/ansi_colors.hpp"
 #include "shared/utils/string_utils.hpp"
 
@@ -74,11 +74,11 @@ auto TextParser::Parse(std::istream& input_stream,
     }
 
     if (current_year_prefix.empty()) {
-      std::cerr
-          << time_tracer::common::colors::kYellow << "Warning: Skipping line '"
-          << line
-          << "' because a year header (e.g., y2025) has not been found yet."
-          << time_tracer::common::colors::kReset << std::endl;
+      time_tracer::application::ports::LogWarn(
+          std::string(time_tracer::common::colors::kYellow) +
+          "Warning: Skipping line '" + line +
+          "' because a year header (e.g., y2025) has not been found yet." +
+          std::string(time_tracer::common::colors::kReset));
       continue;
     }
 
@@ -111,14 +111,14 @@ auto TextParser::IsYearMarker(const std::string& line) -> bool {
   if (line.length() != kYearMarkerLength || line[0] != kYearMarkerPrefix) {
     return false;
   }
-  return std::ranges::all_of(line.substr(1),
-                             [](char value) { return IsAsciiDigit(value); });
+  return std::ranges::all_of(
+      line.substr(1), [](char value) -> bool { return IsAsciiDigit(value); });
 }
 
 auto TextParser::IsNewDayMarker(const std::string& line) -> bool {
   return line.length() == kDayMarkerLength &&
-         std::ranges::all_of(line,
-                             [](char value) { return IsAsciiDigit(value); });
+         std::ranges::all_of(
+             line, [](char value) -> bool { return IsAsciiDigit(value); });
 }
 
 auto TextParser::ExtractRemark(std::string_view remaining_line)
@@ -189,17 +189,18 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
   }
 
   if (line.length() < kTimeDigitsLength ||
-      !std::ranges::all_of(line.substr(0, kTimeDigitsLength),
-                           [](char value) { return IsAsciiDigit(value); })) {
+      !std::ranges::all_of(
+          line.substr(0, kTimeDigitsLength),
+          [](char value) -> bool { return IsAsciiDigit(value); })) {
     ThrowParseError(line_number, line, "Invalid event line format");
   }
 
-  const int hour = (line[kTimeHourOffset] - '0') * 10 +
-                   (line[kTimeHourOffset + 1] - '0');
-  const int minute = (line[kTimeMinuteOffset] - '0') * 10 +
-                     (line[kTimeMinuteOffset + 1] - '0');
+  const int kHour =
+      ((line[kTimeHourOffset] - '0') * 10) + (line[kTimeHourOffset + 1] - '0');
+  const int kMinute = ((line[kTimeMinuteOffset] - '0') * 10) +
+                      (line[kTimeMinuteOffset + 1] - '0');
 
-  if (hour > kMaxHour || minute > kMaxMinute) {
+  if (kHour > kMaxHour || kMinute > kMaxMinute) {
     ThrowParseError(line_number, line, "Time out of range");
   }
 

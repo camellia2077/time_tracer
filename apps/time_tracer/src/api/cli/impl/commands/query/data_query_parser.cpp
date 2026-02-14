@@ -3,51 +3,23 @@
 
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
-#include "api/cli/impl/utils/date_utils.hpp"
+#include "api/cli/impl/utils/tree_formatter.hpp"
 
 using namespace time_tracer::cli::impl::utils;
+using time_tracer::core::dto::DataQueryAction;
+using time_tracer::core::dto::DataQueryRequest;
 
 namespace time_tracer::cli::impl::commands::query::data {
 
-auto ParseQueryFilters(const ParsedArgs& args) -> QueryFilters {
-  QueryFilters filters;
-  if (args.Has("year")) {
-    filters.year = args.GetAsInt("year");
-  }
-  if (args.Has("month")) {
-    filters.month = args.GetAsInt("month");
-  }
-  if (args.Has("from")) {
-    filters.from_date = NormalizeDateInput(args.Get("from"), false);
-  }
-  if (args.Has("to")) {
-    filters.to_date = NormalizeDateInput(args.Get("to"), true);
-  }
-  if (args.Has("remark")) {
-    filters.remark = args.Get("remark");
-  }
-  if (args.Has("day_remark")) {
-    filters.day_remark = args.Get("day_remark");
-  }
-  if (args.Has("project")) {
-    filters.project = args.Get("project");
-  }
-  if (args.Has("exercise")) {
-    filters.exercise = args.GetAsInt("exercise");
-  }
-  if (args.Has("status")) {
-    filters.status = args.GetAsInt("status");
-  }
-  filters.overnight = args.Has("overnight");
-  filters.reverse = args.Has("reverse");
-  if (args.Has("numbers")) {
-    filters.limit = args.GetAsInt("numbers");
-  }
-  return filters;
-}
+namespace {
 
-auto ResolveDataQueryAction(const ParsedArgs& args) -> DataQueryAction {
+constexpr std::string_view kSupportedDataQueryActions =
+    "years, months, days, days-duration, days-stats, search";
+
+[[nodiscard]] auto ParseDataQueryAction(const ParsedArgs& args)
+    -> DataQueryAction {
   std::string action = "unknown";
   if (args.Has("action")) {
     action = args.Get("action");
@@ -76,6 +48,50 @@ auto ResolveDataQueryAction(const ParsedArgs& args) -> DataQueryAction {
 
   throw std::runtime_error("Invalid query data action: " + action + ". Use " +
                            std::string(kSupportedDataQueryActions) + ".");
+}
+
+}  // namespace
+
+auto ParseDataQueryRequest(const ParsedArgs& args) -> DataQueryRequest {
+  DataQueryRequest request;
+  request.action = ParseDataQueryAction(args);
+
+  if (args.Has("year")) {
+    request.year = args.GetAsInt("year");
+  }
+  if (args.Has("month")) {
+    request.month = args.GetAsInt("month");
+  }
+  if (args.Has("from")) {
+    request.from_date = NormalizeDateInput(args.Get("from"), false);
+  }
+  if (args.Has("to")) {
+    request.to_date = NormalizeDateInput(args.Get("to"), true);
+  }
+  if (args.Has("remark")) {
+    request.remark = args.Get("remark");
+  }
+  if (args.Has("day_remark")) {
+    request.day_remark = args.Get("day_remark");
+  }
+  if (args.Has("project")) {
+    request.project = args.Get("project");
+  }
+  if (args.Has("exercise")) {
+    request.exercise = args.GetAsInt("exercise");
+  }
+  if (args.Has("status")) {
+    request.status = args.GetAsInt("status");
+  }
+  request.overnight = args.Has("overnight");
+  request.reverse = args.Has("reverse");
+  if (args.Has("numbers")) {
+    request.limit = args.GetAsInt("numbers");
+  }
+  if (args.Has("top")) {
+    request.top_n = args.GetAsInt("top");
+  }
+  return request;
 }
 
 }  // namespace time_tracer::cli::impl::commands::query::data

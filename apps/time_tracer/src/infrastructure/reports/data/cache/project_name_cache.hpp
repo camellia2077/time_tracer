@@ -1,18 +1,18 @@
 // infrastructure/reports/data/cache/project_name_cache.hpp
-#ifndef REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
-#define REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
+#define INFRASTRUCTURE_REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
 
 #include <sqlite3.h>
 
 #include <algorithm>
 #include <format>
-#include <iostream>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include "domain/ports/diagnostics.hpp"
 #include "domain/reports/interfaces/i_project_info_provider.hpp"
-#include "infrastructure/schema/time_records_schema.hpp"
+#include "infrastructure/schema/sqlite_schema.hpp"
 
 struct ProjectInfo {
   std::string name;
@@ -54,8 +54,8 @@ class ProjectNameCache : public IProjectInfoProvider {
         cache_[project_id] = {.name = std::move(name), .parent_id = parent};
       }
     } else {
-      std::cerr << "Failed to load projects: " << sqlite3_errmsg(sqlite_db)
-                << std::endl;
+      time_tracer::domain::ports::EmitError(
+          "Failed to load projects: " + std::string(sqlite3_errmsg(sqlite_db)));
     }
     sqlite3_finalize(stmt);
     loaded_ = true;
@@ -81,4 +81,4 @@ class ProjectNameCache : public IProjectInfoProvider {
   std::unordered_map<long long, ProjectInfo> cache_;
 };
 
-#endif  // REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_

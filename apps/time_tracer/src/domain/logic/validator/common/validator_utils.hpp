@@ -1,6 +1,6 @@
 // domain/logic/validator/common/validator_utils.hpp
-#ifndef VALIDATOR_COMMON_VALIDATOR_UTILS_H_
-#define VALIDATOR_COMMON_VALIDATOR_UTILS_H_
+#ifndef DOMAIN_LOGIC_VALIDATOR_COMMON_VALIDATOR_UTILS_H_
+#define DOMAIN_LOGIC_VALIDATOR_COMMON_VALIDATOR_UTILS_H_
 
 #include <optional>
 #include <set>
@@ -56,4 +56,4 @@ void PrintDiagnostics(const std::string& fallback_filename,
 
 }  // namespace validator
 
-#endif  // VALIDATOR_COMMON_VALIDATOR_UTILS_H_
+#endif  // DOMAIN_LOGIC_VALIDATOR_COMMON_VALIDATOR_UTILS_H_

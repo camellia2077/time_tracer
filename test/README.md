@@ -15,7 +15,7 @@ Unified executable test workspace.
 - `data/`: shared input data (e.g. `data/dates`).
 - `output/`: all generated runtime artifacts.
 - `run.py`: unified entrypoint (`--suite time_tracer|log_generator`).
-- `run_time_tracer.bat`: scenario launcher (default `--with-build --build-dir build_agent`).
+- `run_time_tracer.bat`: scenario launcher (default `--with-build --build-dir build_fast`).
 - `run_log_generator.bat`: scenario launcher (default test-only, auto-detect existing build dir).
 
 ## Output layering
@@ -36,9 +36,9 @@ Suite TOML files support `${repo_root}` and relative paths.
 
 From `time_tracer_cpp/test`:
 
-- `python run.py --suite time_tracer --build-dir build_agent --concise`
+- `python run.py --suite time_tracer --build-dir build_fast --concise`
 - `python run.py --suite log_generator --build-dir build_fast --concise`
-- `python run.py --suite time_tracer --with-build --build-dir build_agent --agent --concise`
+- `python run.py --suite time_tracer --with-build --build-dir build_fast --agent --concise`
 - `python run.py --suite log_generator --build-dir build_fast --agent --concise`
 - `run_time_tracer.bat --agent --concise`
 - `run_log_generator.bat --agent --concise`

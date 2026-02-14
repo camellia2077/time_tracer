@@ -31,8 +31,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--build-dir",
-        default="build_agent",
-        help="Build directory name passed to loader (default: build_agent).",
+        default="build_fast",
+        help="Build directory name passed to loader (default: build_fast).",
     )
     args = parser.parse_args()
 

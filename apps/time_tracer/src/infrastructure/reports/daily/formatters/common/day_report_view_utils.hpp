@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/common/day_report_view_utils.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_
-#define REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_
 
 #include <cstddef>
 #include <string>
@@ -55,4 +55,4 @@ inline auto BuildDailyContentData(const TtDailyReportDataV1& data_view)
 
 }  // namespace day_report_view_utils
 
-#endif  // REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_COMMON_DAY_REPORT_VIEW_UTILS_H_

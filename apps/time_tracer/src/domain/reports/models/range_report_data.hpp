@@ -1,6 +1,6 @@
 // domain/reports/models/range_report_data.hpp
-#ifndef REPORTS_DATA_MODEL_RANGE_REPORT_DATA_H_
-#define REPORTS_DATA_MODEL_RANGE_REPORT_DATA_H_
+#ifndef DOMAIN_REPORTS_MODELS_RANGE_REPORT_DATA_H_
+#define DOMAIN_REPORTS_MODELS_RANGE_REPORT_DATA_H_
 
 #include <string>
 #include <vector>
@@ -25,4 +25,4 @@ struct RangeReportData {
   reporting::ProjectTree project_tree;
 };
 
-#endif  // REPORTS_DATA_MODEL_RANGE_REPORT_DATA_H_
+#endif  // DOMAIN_REPORTS_MODELS_RANGE_REPORT_DATA_H_

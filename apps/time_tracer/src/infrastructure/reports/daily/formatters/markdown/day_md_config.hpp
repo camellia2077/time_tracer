@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/markdown/day_md_config.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
-#define REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
 
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 #include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
@@ -10,4 +10,4 @@ class DayMdConfig : public DayBaseConfig {
   explicit DayMdConfig(const TtDayMdConfigV1& config);
 };
 
-#endif  // REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_MARKDOWN_DAY_MD_CONFIG_H_

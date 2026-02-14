@@ -1,3 +1,4 @@
+// infrastructure/reports/shared/interfaces/formatter_c_config_bridge_v1.cpp
 #include "infrastructure/reports/shared/interfaces/formatter_c_config_bridge_v1.hpp"
 
 #include <string>

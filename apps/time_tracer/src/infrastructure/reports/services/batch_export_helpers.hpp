@@ -1,6 +1,6 @@
 // infrastructure/reports/services/batch_export_helpers.hpp
-#ifndef REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
-#define REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
+#ifndef INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
+#define INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
 
 #include <sqlite3.h>
 
@@ -40,4 +40,4 @@ inline void FormatReportMap(MapT& data_map, FormatterT& formatter,
 
 }  // namespace reports::services
 
-#endif  // REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
+#endif  // INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_

@@ -1,6 +1,6 @@
 // shared/types/ansi_colors.hpp
-#ifndef COMMON_ANSI_COLORS_H_
-#define COMMON_ANSI_COLORS_H_
+#ifndef SHARED_TYPES_ANSI_COLORS_H_
+#define SHARED_TYPES_ANSI_COLORS_H_
 
 #include <string_view>
 
@@ -26,4 +26,4 @@ constexpr std::string_view kBrightCyan = "\033[96m";
 
 }  // namespace time_tracer::common::colors
 
-#endif  // COMMON_ANSI_COLORS_H_
+#endif  // SHARED_TYPES_ANSI_COLORS_H_

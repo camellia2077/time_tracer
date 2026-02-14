@@ -1,10 +1,9 @@
 // api/cli/impl/commands/query/query_command.cpp
-#include "api/cli/impl/commands/query/query_command.hpp"
-
-#include <array>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -12,106 +11,94 @@
 #include "api/cli/framework/core/command_parser.hpp"
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/core/command_validator.hpp"
+#include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/app/app_context.hpp"
-#include "api/cli/impl/commands/query/data_query_executor.hpp"
+#include "api/cli/impl/commands/query/data_query_parser.hpp"
 #include "api/cli/impl/utils/arg_utils.hpp"
 #include "api/cli/impl/utils/period_utils.hpp"
-#include "domain/utils/time_utils.hpp"
-#include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"
-#include "infrastructure/reports/shared/utils/format/year_utils.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+#include "shared/types/exceptions.hpp"
+
+class QueryCommand : public ICommand {
+ public:
+  QueryCommand(ITimeTracerCoreApi& core_api, std::string default_format);
+
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+  [[nodiscard]] auto GetCategory() const -> std::string override {
+    return "Query";
+  }
+
+  auto Execute(const CommandParser& parser) -> void override;
+
+ private:
+  ITimeTracerCoreApi& core_api_;
+  std::string default_format_;
+};
 
 using namespace time_tracer::cli::impl::utils;
+using namespace time_tracer::core::dto;
 
 namespace {
+
 constexpr std::size_t kSeparatorWidth = 40U;
 constexpr std::string_view kSupportedQueryTypes =
     "day, month, week, year, recent, data";
 
-struct NormalizedQueryArgs {
-  std::string_view sub_command;
-  std::string_view query_arg;
-};
-
-using QueryDispatchHandler = void (*)(IReportHandler&, std::string_view,
-                                      ReportFormat);
-
-void RunDayQuery(IReportHandler& report_handler, std::string_view query_arg,
-                 ReportFormat format) {
-  std::cout << report_handler.RunDailyQuery(std::string(query_arg), format);
-}
-
-void RunMonthQuery(IReportHandler& report_handler, std::string_view query_arg,
-                   ReportFormat format) {
-  std::cout << report_handler.RunMonthlyQuery(std::string(query_arg), format);
-}
-
-void RunRecentQuery(IReportHandler& report_handler, std::string_view query_arg,
-                    ReportFormat format) {
-  std::vector<int> periods = ArgUtils::ParseNumberList(std::string(query_arg));
-  if (!periods.empty()) {
-    std::cout << report_handler.RunPeriodQueries(periods, format);
+[[nodiscard]] auto ParseQueryType(std::string_view value)
+    -> std::optional<ReportQueryType> {
+  if (value == "day") {
+    return ReportQueryType::kDay;
   }
-}
-
-void RunWeekQuery(IReportHandler& report_handler, std::string_view query_arg,
-                  ReportFormat format) {
-  std::cout << report_handler.RunWeeklyQuery(std::string(query_arg), format);
-}
-
-void RunYearQuery(IReportHandler& report_handler, std::string_view query_arg,
-                  ReportFormat format) {
-  std::cout << report_handler.RunYearlyQuery(std::string(query_arg), format);
-}
-
-constexpr std::array<std::pair<std::string_view, QueryDispatchHandler>, 5>
-    kQueryDispatchTable = {{
-        {"day", &RunDayQuery},
-        {"month", &RunMonthQuery},
-        {"recent", &RunRecentQuery},
-        {"week", &RunWeekQuery},
-        {"year", &RunYearQuery},
-    }};
-
-[[nodiscard]] auto FindQueryHandler(std::string_view sub_command)
-    -> QueryDispatchHandler {
-  for (const auto& [name, kHandler] : kQueryDispatchTable) {
-    if (name == sub_command) {
-      return kHandler;
-    }
+  if (value == "month") {
+    return ReportQueryType::kMonth;
   }
-  return nullptr;
+  if (value == "recent") {
+    return ReportQueryType::kRecent;
+  }
+  if (value == "week") {
+    return ReportQueryType::kWeek;
+  }
+  if (value == "year") {
+    return ReportQueryType::kYear;
+  }
+  return std::nullopt;
 }
 
-void RunQueryForFormat(IReportHandler& report_handler,
-                       const NormalizedQueryArgs& args, ReportFormat format) {
-  const auto kHandler = FindQueryHandler(args.sub_command);
-  if (kHandler == nullptr) {
-    throw std::runtime_error(
-        "Unknown query type '" + std::string(args.sub_command) +
-        "'. Supported: " + std::string(kSupportedQueryTypes) + ".");
+auto BuildCoreErrorMessage(std::string_view fallback,
+                           const std::string& error_message) -> std::string {
+  if (!error_message.empty()) {
+    return error_message;
   }
-  kHandler(report_handler, args.query_arg, format);
+  return std::string(fallback);
 }
+
+void EnsureTextOutputSuccess(const TextOutput& response,
+                             std::string_view fallback_message) {
+  if (response.ok) {
+    return;
+  }
+  throw time_tracer::common::LogicError(
+      BuildCoreErrorMessage(fallback_message, response.error_message));
+}
+
 }  // namespace
 
 static CommandRegistrar<AppContext> registrar(
     "query", [](AppContext& ctx) -> std::unique_ptr<QueryCommand> {
-      if (!ctx.report_handler) {
-        throw std::runtime_error("ReportHandler not initialized");
+      if (!ctx.core_api) {
+        throw std::runtime_error("Core API not initialized");
       }
       std::string format_value =
           ctx.config.command_defaults.query_format.value_or(
               ctx.config.defaults.default_format.value_or("md"));
-      // [Update] Pass db_path
-      return std::make_unique<QueryCommand>(*ctx.report_handler, format_value,
-                                            ctx.db_path.string());
+      return std::make_unique<QueryCommand>(*ctx.core_api, format_value);
     });
 
-QueryCommand::QueryCommand(IReportHandler& report_handler,
-                           std::string default_format, std::string db_path)
-    : report_handler_(report_handler),
-      default_format_(std::move(default_format)),
-      db_path_(std::move(db_path)) {}
+QueryCommand::QueryCommand(ITimeTracerCoreApi& core_api,
+                           std::string default_format)
+    : core_api_(core_api), default_format_(std::move(default_format)) {}
 
 auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {
@@ -213,12 +200,11 @@ auto QueryCommand::GetHelp() const -> std::string {
 }
 
 void QueryCommand::Execute(const CommandParser& parser) {
-  // 1. 统一验证与解析
   ParsedArgs args = CommandValidator::Validate(parser, GetDefinitions());
 
-  // 2. 获取清洗后的参数
   const std::string kSubCommand = args.Get("type");
   const std::string kQueryArg = args.Get("argument");
+
   std::string format_str;
   if (args.Has("format")) {
     format_str = args.Get("format");
@@ -226,28 +212,51 @@ void QueryCommand::Execute(const CommandParser& parser) {
     format_str = default_format_;
   }
 
-  // 3. 业务逻辑
-  // 3. 业务逻辑
   if (kSubCommand == "data") {
-    DataQueryExecutor executor(db_path_);
-    executor.Execute(args);
+    DataQueryRequest request =
+        time_tracer::cli::impl::commands::query::data::ParseDataQueryRequest(
+            args);
+
+    const auto kResponse = core_api_.RunDataQuery(request);
+    EnsureTextOutputSuccess(kResponse, "Data query failed.");
+    std::cout << kResponse.content;
     return;
+  }
+
+  const auto kQueryType = ParseQueryType(kSubCommand);
+  if (!kQueryType.has_value()) {
+    throw std::runtime_error(
+        "Unknown query type '" + kSubCommand +
+        "'. Supported: " + std::string(kSupportedQueryTypes) + ".");
   }
 
   const std::vector<ReportFormat> kFormats =
       ArgUtils::ParseReportFormats(format_str);
-
   const std::string kNormalizedArgValue = PeriodParser::Normalize(
       {.period_type_ = kSubCommand, .period_arg_ = kQueryArg});
 
-  // 执行查询
   for (size_t index = 0; index < kFormats.size(); ++index) {
     if (index > 0) {
       std::cout << "\n" << std::string(kSeparatorWidth, '=') << "\n";
     }
-    RunQueryForFormat(
-        report_handler_,
-        {.sub_command = kSubCommand, .query_arg = kNormalizedArgValue},
-        kFormats[index]);
+
+    if (*kQueryType == ReportQueryType::kRecent) {
+      std::vector<int> periods = ArgUtils::ParseNumberList(kNormalizedArgValue);
+      if (periods.empty()) {
+        continue;
+      }
+      const auto kResponse = core_api_.RunPeriodBatchQuery(
+          {.days_list = std::move(periods), .format = kFormats[index]});
+      EnsureTextOutputSuccess(kResponse, "Recent query failed.");
+      std::cout << kResponse.content;
+      continue;
+    }
+
+    const auto kResponse =
+        core_api_.RunReportQuery({.type = *kQueryType,
+                                  .argument = kNormalizedArgValue,
+                                  .format = kFormats[index]});
+    EnsureTextOutputSuccess(kResponse, "Report query failed.");
+    std::cout << kResponse.content;
   }
 }
