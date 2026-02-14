@@ -53,6 +53,22 @@ graph TD
     *   **`utils/`**: 通用工具函数。
     *   **`types/`**: 跨层使用的基础类型规范。
 
+### 0.6 边界与禁区 (Boundary & No-Go Zones)
+以下规则用于保证“高内聚、低耦合”，并作为后续重构与审查基线：
+
+| 源层 | 允许依赖 | 禁止依赖 |
+| --- | --- | --- |
+| `domain` | `domain`, `shared` | `application`, `api`, `infrastructure` |
+| `application` | `domain`, `application`, `shared` | `api`, `infrastructure`（具体实现头） |
+| `api/cli` | `application`（use_case + dto + ports）, `domain`（必要枚举） | `infrastructure`（具体实现与技术细节） |
+| `infrastructure` | `domain`, `application` 契约, `shared` | 反向让核心层依赖基础设施 |
+
+补充约束：
+*   **`ports/interfaces/dto/abi` 保持独立**：这些是跨层契约文件，不因“减少文件数”而合并。
+*   **`api/cli` 不承载业务规则**：仅负责参数解析、请求映射、响应映射、退出码与文本输出。
+*   **`infrastructure` 承载技术细节**：SQLite、文件系统、插件加载、序列化等实现必须下沉到基础设施层。
+*   **“是否合并文件”的判定**：仅当文件“总是一起改、只服务同一功能、无跨层复用”时才合并。
+
 ---
 
 ## 1. 核心设计模式

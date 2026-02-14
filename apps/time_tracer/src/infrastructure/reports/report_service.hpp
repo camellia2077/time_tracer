@@ -1,6 +1,6 @@
 // infrastructure/reports/report_service.hpp
-#ifndef REPORTS_REPORT_SERVICE_H_
-#define REPORTS_REPORT_SERVICE_H_
+#ifndef INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
+#define INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
 
 #include <sqlite3.h>
 
@@ -11,13 +11,16 @@
 #include <vector>
 
 #include "application/interfaces/i_report_query_service.hpp"
-#include "domain/reports/models/period_report_data.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "application/ports/i_platform_clock.hpp"
+#include "domain/reports/models/period_report_models.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
 class ReportService : public IReportQueryService {
  public:
-  explicit ReportService(sqlite3* sqlite_db, const AppConfig& config);
+  ReportService(sqlite3* sqlite_db, const ReportCatalog& catalog,
+                std::shared_ptr<time_tracer::application::ports::IPlatformClock>
+                    platform_clock);
   ~ReportService() override = default;
 
   // --- Single Queries ---
@@ -54,10 +57,12 @@ class ReportService : public IReportQueryService {
       -> IReportFormatter<PeriodReportData>&;
 
   sqlite3* db_;
-  const AppConfig& app_config_;  // [ADDED] Store a reference to the config
+  const ReportCatalog& report_catalog_;
+  std::shared_ptr<time_tracer::application::ports::IPlatformClock>
+      platform_clock_;
   mutable std::map<ReportFormat,
                    std::unique_ptr<IReportFormatter<PeriodReportData>>>
       period_formatter_cache_;
 };
 
-#endif  // REPORTS_REPORT_SERVICE_H_
+#endif  // INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_

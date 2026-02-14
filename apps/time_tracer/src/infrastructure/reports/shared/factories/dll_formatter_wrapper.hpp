@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/factories/dll_formatter_wrapper.hpp
-#ifndef REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_
-#define REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_
 
 #include <cstddef>
 #include <cstdint>
@@ -290,4 +290,4 @@ class DllFormatterWrapper : public IReportFormatter<ReportDataType> {
   TtGetLastErrorFuncV2 get_last_error_func_v2_ = nullptr;
 };
 
-#endif  // REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_DLL_FORMATTER_WRAPPER_H_

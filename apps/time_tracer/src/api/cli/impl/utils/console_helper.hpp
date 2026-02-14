@@ -4,9 +4,13 @@
 #include <cstdio>
 #include <format>
 #include <iostream>
+#include <memory>
 #include <print>
 #include <string>
+#include <utility>
 #include <vector>
+
+class ICommand;
 
 namespace ConsoleHelper {
 
@@ -17,6 +21,14 @@ void SetupConsole();
 // Get command line arguments in UTF-8
 auto GetUtf8Args() -> std::vector<std::string>;
 #endif
+
+void PrintFullUsage(
+    const char* app_name,
+    const std::vector<std::pair<std::string, std::unique_ptr<ICommand>>>&
+        commands);
+
+void PrintCommandUsage(const std::string& command_name,
+                       const ICommand& command);
 
 // Safe println helper (std::ostream)
 template <typename... Args>

@@ -3,13 +3,13 @@
 // [修改] 指向新的 data 模块路径
 #include <stdexcept>
 
-#include "infrastructure/reports/data/queriers/daily/batch_day_data_fetcher.hpp"
+#include "infrastructure/reports/data/queriers/daily/daily_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 
 DailyReportService::DailyReportService(sqlite3* sqlite_db,
-                                       const AppConfig& config)
-    : db_(sqlite_db), app_config_(config) {
+                                       const ReportCatalog& report_catalog)
+    : db_(sqlite_db), report_catalog_(report_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -29,7 +29,7 @@ auto DailyReportService::GenerateAllReports(ReportFormat format)
 
   // 2. 创建格式化器
   auto formatter =
-      GenericFormatterFactory<DailyReportData>::Create(format, app_config_);
+      GenericFormatterFactory<DailyReportData>::Create(format, report_catalog_);
 
   // 3. 遍历并格式化
   for (const auto& [date, year, month] : batch_data.date_order) {

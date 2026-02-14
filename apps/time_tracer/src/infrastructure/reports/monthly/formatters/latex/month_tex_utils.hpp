@@ -1,11 +1,11 @@
 // infrastructure/reports/monthly/formatters/latex/month_tex_utils.hpp
-#ifndef REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
-#define REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
 
 #include <memory>
 #include <string>
 
-#include "domain/reports/models/monthly_report_data.hpp"
+#include "domain/reports/models/period_report_models.hpp"
 #include "infrastructure/reports/monthly/formatters/latex/month_tex_config.hpp"
 
 namespace MonthTexUtils {
@@ -20,4 +20,4 @@ void DisplayHeader(std::string& report_stream, const MonthlyReportData& data,
 
 }  // namespace MonthTexUtils
 
-#endif  // REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_LATEX_MONTH_TEX_UTILS_H_

@@ -1,6 +1,6 @@
-// infrastructure/config/models/models/report_config_models.hpp
-#ifndef COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_
-#define COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_
+// infrastructure/config/models/report_config_models.hpp
+#ifndef INFRASTRUCTURE_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_
+#define INFRASTRUCTURE_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_
 
 #include <map>
 #include <string>
@@ -114,4 +114,4 @@ struct YearlyMdConfig {
   YearlyReportLabels labels;
 };
 
-#endif  // COMMON_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_
+#endif  // INFRASTRUCTURE_CONFIG_MODELS_REPORT_CONFIG_MODELS_H_

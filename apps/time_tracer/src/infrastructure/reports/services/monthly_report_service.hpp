@@ -1,6 +1,6 @@
 // infrastructure/reports/services/monthly_report_service.hpp
-#ifndef REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
-#define REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
+#ifndef INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
+#define INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 
 #include <sqlite3.h>
 
@@ -8,13 +8,13 @@
 #include <string>
 
 #include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_format.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 
 class MonthlyReportService {
  public:
   explicit MonthlyReportService(sqlite3* database_connection,
-                                const AppConfig& config);
+                                const ReportCatalog& report_catalog);
 
   /**
    * @brief 生成所有历史月份的报告。
@@ -27,7 +27,7 @@ class MonthlyReportService {
 
  private:
   sqlite3* db_;
-  const AppConfig& app_config_;
+  const ReportCatalog& report_catalog_;
 };
 
-#endif  // REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
+#endif  // INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_

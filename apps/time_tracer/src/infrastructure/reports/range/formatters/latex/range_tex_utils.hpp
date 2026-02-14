@@ -1,6 +1,6 @@
 // infrastructure/reports/range/formatters/latex/range_tex_utils.hpp
-#ifndef REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_
-#define REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_
+#ifndef INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_
+#define INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_
 
 #include <memory>
 #include <string>
@@ -17,4 +17,4 @@ void DisplaySummary(std::string& report_stream,
 
 }  // namespace RangeTexUtils
 
-#endif  // REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_
+#endif  // INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_LATEX_RANGE_TEX_UTILS_H_

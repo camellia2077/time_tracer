@@ -1,6 +1,6 @@
 // infrastructure/reports/range/formatters/typst/range_typ_formatter.hpp
-#ifndef REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_
-#define REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_
 
 #include <memory>
 
@@ -29,4 +29,4 @@ class RangeTypFormatter
                            const RangeReportData& data) const override;
 };
 
-#endif  // REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_RANGE_FORMATTERS_TYPST_RANGE_TYP_FORMATTER_H_

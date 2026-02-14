@@ -1,6 +1,6 @@
 // infrastructure/reports/data/queriers/base_querier.hpp
-#ifndef REPORTS_DATA_QUERIERS_BASE_QUERIER_H_
-#define REPORTS_DATA_QUERIERS_BASE_QUERIER_H_
+#ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_BASE_QUERIER_H_
+#define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_BASE_QUERIER_H_
 
 #include <sqlite3.h>
 
@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "infrastructure/schema/day_schema.hpp"
-#include "infrastructure/schema/time_records_schema.hpp"
+#include "infrastructure/schema/sqlite_schema.hpp"
 
 template <typename ReportDataType, typename QueryParamType>
 class BaseQuerier {
@@ -123,23 +123,29 @@ class BaseQuerier {
   [[nodiscard]] auto FetchDayFlagCounts() const -> DayFlagCounts {
     DayFlagCounts counts{};
     sqlite3_stmt* stmt = nullptr;
-    std::string sql = "SELECT "
-                      "SUM(CASE WHEN ";
+    std::string sql =
+        "SELECT "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kStatus;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kSleep;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kExercise;
-    sql += " != 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " != 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kCardioTime;
-    sql += " > 0 THEN 1 ELSE 0 END), "
-           "SUM(CASE WHEN ";
+    sql +=
+        " > 0 THEN 1 ELSE 0 END), "
+        "SUM(CASE WHEN ";
     sql += schema::day::db::kAnaerobicTime;
-    sql += " > 0 THEN 1 ELSE 0 END) "
-           "FROM ";
+    sql +=
+        " > 0 THEN 1 ELSE 0 END) "
+        "FROM ";
     sql += schema::day::db::kTable;
     sql += " WHERE ";
     sql += GetDateConditionSql();
@@ -161,4 +167,4 @@ class BaseQuerier {
   }
 };
 
-#endif  // REPORTS_DATA_QUERIERS_BASE_QUERIER_H_
+#endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_BASE_QUERIER_H_

@@ -8,8 +8,11 @@
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 #include "infrastructure/schema/day_schema.hpp"
 
-PeriodQuerier::PeriodQuerier(sqlite3* sqlite_db, int days_to_query)
-    : RangeQuerierBase(sqlite_db, days_to_query) {}
+PeriodQuerier::PeriodQuerier(
+    sqlite3* sqlite_db, int days_to_query,
+    const time_tracer::application::ports::IPlatformClock& platform_clock)
+    : RangeQuerierBase(sqlite_db, days_to_query),
+      platform_clock_(platform_clock) {}
 
 auto PeriodQuerier::ValidateInput() const -> bool {
   return param_ > 0;
@@ -20,7 +23,7 @@ void PeriodQuerier::HandleInvalidInput(PeriodReportData& data) const {
 }
 
 void PeriodQuerier::PrepareData(PeriodReportData& data) const {
-  end_date_ = GetCurrentDateStr();
+  end_date_ = platform_clock_.TodayLocalDateIso();
   start_date_ = AddDaysToDateStr(end_date_, -(this->param_ - 1));
 
   data.requested_days = this->param_;

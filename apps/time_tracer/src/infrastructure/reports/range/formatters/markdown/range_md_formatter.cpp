@@ -148,6 +148,9 @@ auto FormatReportImpl(RangeMdFormatter* formatter,
 }
 }  // namespace
 
+RangeMdConfig::RangeMdConfig(const TtRangeMdConfigV1& config)
+    : RangeBaseConfig(config.labels) {}
+
 RangeMdFormatter::RangeMdFormatter(std::shared_ptr<RangeMdConfig> config)
     : BaseMdFormatter(config) {}
 

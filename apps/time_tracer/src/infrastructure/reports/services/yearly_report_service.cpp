@@ -3,14 +3,14 @@
 
 #include <stdexcept>
 
-#include "infrastructure/reports/data/queriers/yearly/batch_year_data_fetcher.hpp"
+#include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
-#include "infrastructure/reports/shared/utils/format/year_utils.hpp"
+#include "shared/utils/period_utils.hpp"
 
 YearlyReportService::YearlyReportService(sqlite3* sqlite_db,
-                                         const AppConfig& config)
-    : db_(sqlite_db), app_config_(config) {
+                                         const ReportCatalog& report_catalog)
+    : db_(sqlite_db), report_catalog_(report_catalog) {
   if (db_ == nullptr) {
     throw std::invalid_argument("Database connection cannot be null.");
   }
@@ -25,8 +25,8 @@ auto YearlyReportService::GenerateReports(ReportFormat format)
   BatchYearDataFetcher fetcher(db_);
   auto all_years_data = fetcher.FetchAllData();
 
-  auto formatter =
-      GenericFormatterFactory<YearlyReportData>::Create(format, app_config_);
+  auto formatter = GenericFormatterFactory<YearlyReportData>::Create(
+      format, report_catalog_);
 
   reports::services::FormatReportMap(
       all_years_data, formatter, name_cache,

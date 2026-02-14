@@ -2,14 +2,11 @@
 #pragma once
 
 #include "api/cli/framework/core/arg_definitions.hpp"
-#include "api/cli/impl/commands/query/data_query_types.hpp"
-#include "api/cli/impl/commands/query/query_filters.hpp"
+#include "application/dto/core_requests.hpp"
 
 namespace time_tracer::cli::impl::commands::query::data {
 
-[[nodiscard]] auto ParseQueryFilters(const ParsedArgs& args) -> QueryFilters;
-
-[[nodiscard]] auto ResolveDataQueryAction(const ParsedArgs& args)
-    -> DataQueryAction;
+[[nodiscard]] auto ParseDataQueryRequest(const ParsedArgs& args)
+    -> time_tracer::core::dto::DataQueryRequest;
 
 }  // namespace time_tracer::cli::impl::commands::query::data

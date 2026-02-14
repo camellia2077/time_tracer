@@ -1,16 +1,42 @@
 // domain/logic/validator/common/validator_utils.cpp
 #include "domain/logic/validator/common/validator_utils.hpp"
 
-#include <fstream>
-#include <iostream>
 #include <map>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <vector>
 
-#include "shared/types/ansi_colors.hpp"
+#include "domain/ports/diagnostics.hpp"
 
 namespace validator {
+namespace {
+
+auto BuildLogHeader(const std::string& filename) -> std::string {
+  std::ostringstream stream;
+  stream
+      << "\n文件 " << filename
+      << " 的检验错误\n--------------------------------------------------\n\n";
+  return stream.str();
+}
+
+auto FlushReport(const std::ostringstream& report_stream) -> bool {
+  return time_tracer::domain::ports::AppendErrorReport(report_stream.str());
+}
+
+void EmitReportSavedMessage(bool appended) {
+  const std::string kDestinationLabel =
+      time_tracer::domain::ports::GetErrorReportDestinationLabel();
+  if (appended) {
+    time_tracer::domain::ports::EmitInfo("详细的错误日志已保存至: " +
+                                         kDestinationLabel);
+    return;
+  }
+  time_tracer::domain::ports::EmitWarn("详细错误日志写入失败，目标: " +
+                                       kDestinationLabel);
+}
+
+}  // namespace
 
 static auto GetErrorTypeHeader(ErrorType type) -> std::string {
   switch (type) {
@@ -51,24 +77,19 @@ static auto GetErrorTypeHeader(ErrorType type) -> std::string {
 // NOLINTNEXTLINE(readability-function-cognitive-complexity)
 void PrintGroupedErrors(const std::string& filename,
                         const std::set<Error>& errors) {
-  std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
+  time_tracer::domain::ports::EmitError("请根据以下错误信息，手动修正该文件。");
   std::map<ErrorType, std::vector<Error>> grouped_errors;
   for (const auto& err : errors) {
     grouped_errors[err.type].push_back(err);
   }
 
-  const std::string kErrorLogPath =
-      "./output/errors.log";  // 建议后续改为可配置路径
-  std::ofstream err_stream(kErrorLogPath, std::ios::app);
-
-  err_stream
-      << "\n文件 " << filename
-      << " 的检验错误\n--------------------------------------------------\n\n";
+  std::ostringstream report_stream;
+  report_stream << BuildLogHeader(filename);
 
   for (const auto& pair : grouped_errors) {
     std::string header = GetErrorTypeHeader(pair.first);
-    std::cerr << "\n" << header << std::endl;
-    err_stream << header << "\n";
+    time_tracer::domain::ports::EmitError("\n" + header);
+    report_stream << header << "\n";
     for (const auto& err : pair.second) {
       std::string location_prefix;
       if (err.source_span.has_value() && err.source_span->HasLine()) {
@@ -96,20 +117,17 @@ void PrintGroupedErrors(const std::string& filename,
       }
 
       std::string error_message = location_prefix + err.message;
-      std::cerr << "  " << error_message << std::endl;
-      err_stream << "  " << error_message << "\n";
+      time_tracer::domain::ports::EmitError("  " + error_message);
+      report_stream << "  " << error_message << "\n";
 
       if (err.source_span.has_value() && !err.source_span->raw_text.empty()) {
         std::string raw_line = "    > " + err.source_span->raw_text;
-        std::cerr << raw_line << std::endl;
-        err_stream << raw_line << "\n";
+        time_tracer::domain::ports::EmitError(raw_line);
+        report_stream << raw_line << "\n";
       }
     }
   }
-  err_stream.close();
-  std::cout << "\n详细的错误日志已保存至: "
-            << time_tracer::common::colors::kYellow << kErrorLogPath
-            << time_tracer::common::colors::kReset << std::endl;
+  EmitReportSavedMessage(FlushReport(report_stream));
 }
 
 static auto GetDiagnosticHeader(const std::string& code) -> std::string {
@@ -133,7 +151,7 @@ void PrintDiagnostics(const std::string& fallback_filename,
     return;
   }
 
-  std::cerr << "请根据以下错误信息，手动修正该文件。" << std::endl;
+  time_tracer::domain::ports::EmitError("请根据以下错误信息，手动修正该文件。");
 
   std::map<std::string, std::vector<Diagnostic>> grouped;
   for (const auto& diag : diagnostics) {
@@ -141,18 +159,13 @@ void PrintDiagnostics(const std::string& fallback_filename,
     grouped[key].push_back(diag);
   }
 
-  const std::string kErrorLogPath =
-      "./output/errors.log";  // 建议后续改为可配置路径
-  std::ofstream err_stream(kErrorLogPath, std::ios::app);
-
-  err_stream
-      << "\n文件 " << fallback_filename
-      << " 的检验错误\n--------------------------------------------------\n\n";
+  std::ostringstream report_stream;
+  report_stream << BuildLogHeader(fallback_filename);
 
   for (const auto& pair : grouped) {
     std::string header = GetDiagnosticHeader(pair.first);
-    std::cerr << "\n" << header << std::endl;
-    err_stream << header << "\n";
+    time_tracer::domain::ports::EmitError("\n" + header);
+    report_stream << header << "\n";
     for (const auto& diag : pair.second) {
       std::string location_prefix;
       if (diag.source_span.has_value() && diag.source_span->HasLine()) {
@@ -180,21 +193,18 @@ void PrintDiagnostics(const std::string& fallback_filename,
       }
 
       std::string error_message = location_prefix + diag.message;
-      std::cerr << "  " << error_message << std::endl;
-      err_stream << "  " << error_message << "\n";
+      time_tracer::domain::ports::EmitError("  " + error_message);
+      report_stream << "  " << error_message << "\n";
 
       if (diag.source_span.has_value() && !diag.source_span->raw_text.empty()) {
         std::string raw_line = "    > " + diag.source_span->raw_text;
-        std::cerr << raw_line << std::endl;
-        err_stream << raw_line << "\n";
+        time_tracer::domain::ports::EmitError(raw_line);
+        report_stream << raw_line << "\n";
       }
     }
   }
 
-  err_stream.close();
-  std::cout << "\n详细的错误日志已保存至: "
-            << time_tracer::common::colors::kYellow << kErrorLogPath
-            << time_tracer::common::colors::kReset << std::endl;
+  EmitReportSavedMessage(FlushReport(report_stream));
 }
 
 }  // namespace validator

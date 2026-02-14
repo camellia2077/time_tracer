@@ -1,6 +1,6 @@
 // api/cli/impl/utils/tree_formatter.hpp
-#ifndef CLI_IMPL_UTILS_TREE_FORMATTER_H_
-#define CLI_IMPL_UTILS_TREE_FORMATTER_H_
+#ifndef API_CLI_IMPL_UTILS_TREE_FORMATTER_H_
+#define API_CLI_IMPL_UTILS_TREE_FORMATTER_H_
 
 #include <string>
 #include <vector>
@@ -23,4 +23,27 @@ class TreeFormatter {
   static auto PrintTree(const std::vector<ProjectTreeNode>& nodes) -> void;
 };
 
-#endif  // CLI_IMPL_UTILS_TREE_FORMATTER_H_
+namespace time_tracer::cli::impl::utils {
+
+struct DateParts {
+  int year;
+  int month;
+  int day;
+};
+
+struct MonthInfo {
+  int year;
+  int month;
+};
+
+auto IsLeapYear(int year) -> bool;
+
+auto DaysInMonth(const MonthInfo& info) -> int;
+
+auto FormatDate(const DateParts& parts) -> std::string;
+
+auto NormalizeDateInput(const std::string& input, bool is_end) -> std::string;
+
+}  // namespace time_tracer::cli::impl::utils
+
+#endif  // API_CLI_IMPL_UTILS_TREE_FORMATTER_H_

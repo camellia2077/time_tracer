@@ -1,13 +1,13 @@
 // domain/logic/validator/txt/facade/text_validator.hpp
-#ifndef VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_
-#define VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_
+#ifndef DOMAIN_LOGIC_VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_
+#define DOMAIN_LOGIC_VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_
 
 #include <memory>
 #include <set>
 #include <string>
 
 #include "domain/logic/validator/common/validator_utils.hpp"
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 namespace validator::txt {
 
@@ -27,4 +27,4 @@ class TextValidator {
 
 }  // namespace validator::txt
 
-#endif  // VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_
+#endif  // DOMAIN_LOGIC_VALIDATOR_TXT_FACADE_TEXT_VALIDATOR_H_

@@ -9,9 +9,9 @@ class FormatCommand:
         self.ctx = ctx
 
     def execute(self, app_name: str, extra_args: list | None = None) -> int:
-        build_dir = self.ctx.get_app_dir(app_name) / "build_agent"
+        build_dir = self.ctx.get_app_dir(app_name) / "build_fast"
         if not (build_dir / "CMakeCache.txt").exists():
-            print("--- format: build_agent is not configured. Running configure...")
+            print("--- format: build_fast is not configured. Running configure...")
             build_cmd = BuildCommand(self.ctx)
             ret = build_cmd.configure(
                 app_name=app_name,

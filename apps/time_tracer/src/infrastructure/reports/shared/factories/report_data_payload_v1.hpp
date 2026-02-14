@@ -1,6 +1,6 @@
 // infrastructure/reports/shared/factories/report_data_payload_v1.hpp
-#ifndef REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_
-#define REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_
+#ifndef INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_
+#define INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_
 
 #include <algorithm>
 #include <limits>
@@ -194,4 +194,4 @@ class ReportDataPayloadV1 {
 
 }  // namespace report_data_payload_v1
 
-#endif  // REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_
+#endif  // INFRASTRUCTURE_REPORTS_SHARED_FACTORIES_REPORT_DATA_PAYLOAD_V1_H_

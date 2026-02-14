@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/statistics/i_stat_strategy.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_
-#define REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_
 
 #include <string>
 #include <vector>
@@ -52,4 +52,4 @@ class REPORTS_SHARED_API IStatStrategy {
       const std::vector<std::string>& lines) const -> std::string = 0;
 };
 
-#endif  // REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_STATISTICS_I_STAT_STRATEGY_H_

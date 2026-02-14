@@ -1,6 +1,6 @@
 // api/cli/framework/core/command_validator.hpp
-#ifndef CLI_FRAMEWORK_CORE_COMMAND_VALIDATOR_H_
-#define CLI_FRAMEWORK_CORE_COMMAND_VALIDATOR_H_
+#ifndef API_CLI_FRAMEWORK_CORE_COMMAND_VALIDATOR_H_
+#define API_CLI_FRAMEWORK_CORE_COMMAND_VALIDATOR_H_
 
 #include <stdexcept>
 #include <vector>

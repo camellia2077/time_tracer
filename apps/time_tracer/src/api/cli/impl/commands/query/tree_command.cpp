@@ -1,26 +1,65 @@
 // api/cli/impl/commands/query/tree_command.cpp
-#include "api/cli/impl/commands/query/tree_command.hpp"
-
 #include <iostream>
 #include <memory>
-#include <optional>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
 #include "api/cli/framework/core/command_parser.hpp"
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/core/command_validator.hpp"
+#include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/app/app_context.hpp"
 #include "api/cli/impl/utils/tree_formatter.hpp"
-#include "application/reporting/tree/project_tree_viewer.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+#include "shared/types/exceptions.hpp"
+
+class TreeCommand : public ICommand {
+ public:
+  explicit TreeCommand(ITimeTracerCoreApi& core_api);
+
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+
+  auto Execute(const CommandParser& parser) -> void override;
+
+ private:
+  ITimeTracerCoreApi& core_api_;
+};
+
+namespace {
+
+auto BuildCoreErrorMessage(std::string_view fallback,
+                           const std::string& error_message) -> std::string {
+  if (!error_message.empty()) {
+    return error_message;
+  }
+  return std::string(fallback);
+}
+
+void EnsureTreeResponseSuccess(
+    const time_tracer::core::dto::TreeQueryResponse& response,
+    std::string_view fallback_message) {
+  if (response.ok) {
+    return;
+  }
+  throw time_tracer::common::LogicError(
+      BuildCoreErrorMessage(fallback_message, response.error_message));
+}
+
+}  // namespace
 
 // Register the command
 static CommandRegistrar<AppContext> registrar(
     "tree", [](AppContext& ctx) -> std::unique_ptr<TreeCommand> {
-      return std::make_unique<TreeCommand>(ctx.project_repository);
+      if (!ctx.core_api) {
+        throw std::runtime_error("Core API not initialized");
+      }
+      return std::make_unique<TreeCommand>(*ctx.core_api);
     });
 
-TreeCommand::TreeCommand(std::shared_ptr<IProjectRepository> repository)
-    : repository_(std::move(repository)) {}
+TreeCommand::TreeCommand(ITimeTracerCoreApi& core_api) : core_api_(core_api) {}
 
 auto TreeCommand::GetDefinitions() const -> std::vector<ArgDef> {
   return {{"project_path",
@@ -56,11 +95,11 @@ auto TreeCommand::GetHelp() const -> std::string {
 auto TreeCommand::Execute(const CommandParser& parser) -> void {
   ParsedArgs args = CommandValidator::Validate(parser, GetDefinitions());
 
-  ProjectTreeViewer viewer(repository_);
-
   if (args.Has("roots")) {
-    auto roots = viewer.GetRoots();
-    TreeFormatter::PrintRoots(roots);
+    const auto kResponse = core_api_.RunTreeQuery(
+        {.list_roots = true, .root_pattern = "", .max_depth = -1});
+    EnsureTreeResponseSuccess(kResponse, "Tree roots query failed.");
+    TreeFormatter::PrintRoots(kResponse.roots);
     return;
   }
 
@@ -85,11 +124,13 @@ auto TreeCommand::Execute(const CommandParser& parser) -> void {
     break;
   }
 
-  auto tree_result = viewer.GetTree(root, level);
-  if (!tree_result.has_value()) {
+  const auto kResponse = core_api_.RunTreeQuery(
+      {.list_roots = false, .root_pattern = root, .max_depth = level});
+  EnsureTreeResponseSuccess(kResponse, "Tree query failed.");
+  if (!kResponse.found) {
     std::cerr << "No project found matching path: " << root << "\n";
     return;
   }
 
-  TreeFormatter::PrintTree(*tree_result);
+  TreeFormatter::PrintTree(kResponse.nodes);
 }

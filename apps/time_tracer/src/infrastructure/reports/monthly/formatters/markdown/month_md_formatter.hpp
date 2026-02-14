@@ -1,8 +1,8 @@
 // infrastructure/reports/monthly/formatters/markdown/month_md_formatter.hpp
-#ifndef REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_
-#define REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_
 
-#include "domain/reports/models/monthly_report_data.hpp"
+#include "domain/reports/models/period_report_models.hpp"
 #include "infrastructure/reports/monthly/formatters/markdown/month_md_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_md_formatter.hpp"
 #include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
@@ -26,4 +26,4 @@ class MonthMdFormatter
                            const MonthlyReportData& data) const override;
 };
 
-#endif  // REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_MONTHLY_FORMATTERS_MARKDOWN_MONTH_MD_FORMATTER_H_

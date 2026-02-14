@@ -156,11 +156,11 @@ class TidyLoopCommand:
         self, app_name: str, kill_build_procs: bool
     ) -> int:
         app_dir = self.ctx.get_app_dir(app_name)
-        build_dir = app_dir / "build_agent"
+        build_dir = app_dir / "build_fast"
         if (build_dir / "CMakeCache.txt").exists():
             return 0
 
-        print("--- tidy-loop: build_agent is not configured. Running configure...")
+        print("--- tidy-loop: build_fast is not configured. Running configure...")
         builder = BuildCommand(self.ctx)
         return builder.configure(
             app_name=app_name,
@@ -193,7 +193,7 @@ class TidyLoopCommand:
             app_name,
             "--agent",
             "--build-dir",
-            "build_agent",
+            "build_fast",
         ]
         if concise:
             test_cmd.append("--concise")

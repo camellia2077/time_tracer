@@ -125,6 +125,9 @@ auto FormatReportImpl(MonthTexFormatter* formatter,
 }
 }  // namespace
 
+MonthTexConfig::MonthTexConfig(const TtMonthTexConfigV1& config)
+    : MonthBaseConfig(config.labels), style_(config.style) {}
+
 MonthTexFormatter::MonthTexFormatter(std::shared_ptr<MonthTexConfig> config)
     : BaseTexFormatter(config) {}
 

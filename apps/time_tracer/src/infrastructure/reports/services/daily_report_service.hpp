@@ -1,23 +1,27 @@
 // infrastructure/reports/services/daily_report_service.hpp
-#ifndef REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
-#define REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
+#ifndef INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
+#define INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 
 #include <sqlite3.h>
 
 #include <string>
 
 #include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_format.hpp"
-#include "infrastructure/config/models/app_config.hpp"
+#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 
 class DailyReportService {
  public:
   /**
    * @brief 构造函数。
-   * @param db 指向数据库连接的指针。
+   * @param db
+   * 指向数据库连接的指针。
+
+   * *
    * @param config 应用程序配置对象的引用。
    */
-  explicit DailyReportService(sqlite3* sqlite_db, const AppConfig& config);
+  explicit DailyReportService(sqlite3* sqlite_db,
+                              const ReportCatalog& report_catalog);
 
   /**
    * @brief 生成所有日报并返回分类好的结果。
@@ -28,7 +32,7 @@ class DailyReportService {
 
  private:
   sqlite3* db_;
-  const AppConfig& app_config_;
+  const ReportCatalog& report_catalog_;
 };
 
-#endif  // REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
+#endif  // INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_

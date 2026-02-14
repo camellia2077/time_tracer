@@ -1,6 +1,6 @@
 // api/cli/framework/interfaces/i_command.hpp
-#ifndef CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_
-#define CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_
+#ifndef API_CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_
+#define API_CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_
 
 #include <string>
 #include <vector>
@@ -31,4 +31,4 @@ class ICommand {
   }
 };
 
-#endif  // CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_
+#endif  // API_CLI_FRAMEWORK_INTERFACES_I_COMMAND_H_

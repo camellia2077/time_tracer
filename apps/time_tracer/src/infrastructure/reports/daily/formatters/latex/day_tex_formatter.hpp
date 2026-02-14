@@ -1,6 +1,6 @@
 // infrastructure/reports/daily/formatters/latex/day_tex_formatter.hpp
-#ifndef REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
-#define REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
+#ifndef INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
+#define INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
 
 #include "domain/reports/models/daily_report_data.hpp"
 #include "infrastructure/reports/daily/formatters/latex/day_tex_config.hpp"
@@ -32,4 +32,4 @@ class DayTexFormatter : public BaseTexFormatter<DailyReportData, DayTexConfig> {
   [[nodiscard]] auto GetNoRecordsMsg() const -> std::string override;
 };
 
-#endif  // REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_
+#endif  // INFRASTRUCTURE_REPORTS_DAILY_FORMATTERS_LATEX_DAY_TEX_FORMATTER_H_

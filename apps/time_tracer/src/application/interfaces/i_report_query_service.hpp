@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_format.hpp"
+#include "domain/reports/types/report_types.hpp"
 
 class IReportQueryService {
  public:

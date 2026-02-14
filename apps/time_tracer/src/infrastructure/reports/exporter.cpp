@@ -2,9 +2,9 @@
 #include "infrastructure/reports/exporter.hpp"
 
 #include <iomanip>
-#include <iostream>
 #include <sstream>
 
+#include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/core/file_writer.hpp"
 #include "infrastructure/reports/export_utils.hpp"
@@ -37,9 +37,10 @@ void Exporter::WriteReportToFile(std::string_view report_content,
     FileWriter::WriteContent(output_path, std::string(report_content));
 
   } catch (const std::exception& e) {
-    std::cerr << time_tracer::common::colors::kRed
-              << "Error: Failed to write report to " << output_path << ": "
-              << e.what() << time_tracer::common::colors::kReset << std::endl;
+    time_tracer::domain::ports::EmitError(
+        std::string(time_tracer::common::colors::kRed) +
+        "Error: Failed to write report to " + output_path.string() + ": " +
+        e.what() + std::string(time_tracer::common::colors::kReset));
   }
 }
 
@@ -49,28 +50,31 @@ void Exporter::ExportSingleDayReport(const SingleExportTask& task,
                                      ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleDayReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen
-            << "Success: Report exported to " << fs::absolute(path)
-            << time_tracer::common::colors::kReset << std::endl;
-  WriteReportToFile(task.content, path);
+  time_tracer::domain::ports::EmitInfo(
+      std::string(time_tracer::common::colors::kGreen) +
+      "Success: Report exported to " + fs::absolute(path).string() +
+      std::string(time_tracer::common::colors::kReset));
+  WriteReportToFile(task.kContent, path);
 }
 
 void Exporter::ExportSingleMonthReport(const SingleExportTask& task,
                                        ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleMonthReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen
-            << "Success: Report exported to " << fs::absolute(path)
-            << time_tracer::common::colors::kReset << std::endl;
-  WriteReportToFile(task.content, path);
+  time_tracer::domain::ports::EmitInfo(
+      std::string(time_tracer::common::colors::kGreen) +
+      "Success: Report exported to " + fs::absolute(path).string() +
+      std::string(time_tracer::common::colors::kReset));
+  WriteReportToFile(task.kContent, path);
 }
 
 void Exporter::ExportSinglePeriodReport(int days, std::string_view content,
                                         ReportFormat format) const {
   fs::path path = file_manager_->GetSinglePeriodReportPath(days, format);
-  std::cout << time_tracer::common::colors::kGreen
-            << "Success: Report exported to " << fs::absolute(path)
-            << time_tracer::common::colors::kReset << std::endl;
+  time_tracer::domain::ports::EmitInfo(
+      std::string(time_tracer::common::colors::kGreen) +
+      "Success: Report exported to " + fs::absolute(path).string() +
+      std::string(time_tracer::common::colors::kReset));
   WriteReportToFile(content, path);
 }
 
@@ -78,20 +82,22 @@ void Exporter::ExportSingleWeekReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleWeekReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen
-            << "Success: Report exported to " << fs::absolute(path)
-            << time_tracer::common::colors::kReset << std::endl;
-  WriteReportToFile(task.content, path);
+  time_tracer::domain::ports::EmitInfo(
+      std::string(time_tracer::common::colors::kGreen) +
+      "Success: Report exported to " + fs::absolute(path).string() +
+      std::string(time_tracer::common::colors::kReset));
+  WriteReportToFile(task.kContent, path);
 }
 
 void Exporter::ExportSingleYearReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleYearReportPath(std::string(task.id), format);
-  std::cout << time_tracer::common::colors::kGreen
-            << "Success: Report exported to " << fs::absolute(path)
-            << time_tracer::common::colors::kReset << std::endl;
-  WriteReportToFile(task.content, path);
+  time_tracer::domain::ports::EmitInfo(
+      std::string(time_tracer::common::colors::kGreen) +
+      "Success: Report exported to " + fs::absolute(path).string() +
+      std::string(time_tracer::common::colors::kReset));
+  WriteReportToFile(task.kContent, path);
 }
 
 void Exporter::ExportAllDailyReports(const FormattedGroupedReports& reports,
@@ -104,7 +110,7 @@ void Exporter::ExportAllDailyReports(const FormattedGroupedReports& reports,
       for (const auto& month_pair : year_pair.second) {
         for (const auto& day_report : month_pair.second) {
           const std::string& date = day_report.report_id;
-          const std::string& content = day_report.content;
+          const std::string& content = day_report.kContent;
           fs::path report_path =
               file_manager_->GetSingleDayReportPath(date, format);
           WriteReportToFile(content, report_path);

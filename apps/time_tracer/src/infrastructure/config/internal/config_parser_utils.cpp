@@ -1,7 +1,6 @@
 // infrastructure/config/internal/config_parser_utils.cpp
 #include "infrastructure/config/internal/config_parser_utils.hpp"
 
-#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -35,7 +34,7 @@ auto ParseDateCheckMode(std::string_view mode_str) -> DateCheckMode {
 auto ParseGlobalDefaults(const toml::table& defaults_tbl,
                          const fs::path& exe_path, AppConfig& config) -> void {
   if (auto val = defaults_tbl.get("db_path")->value<std::string>()) {
-    config.defaults.db_path = ResolveDefaultPath(exe_path, *val);
+    config.defaults.kDbPath = ResolveDefaultPath(exe_path, *val);
   }
   if (auto val = defaults_tbl.get("output_root")->value<std::string>()) {
     config.defaults.output_root = ResolveDefaultPath(exe_path, *val);
@@ -110,7 +109,7 @@ void ParseSystemSettings(const toml::table& tbl, const fs::path& exe_path,
         config.error_log_path = exe_path / "error.log";
       }
       if (auto val = kGenNode["export_root"].value<std::string>()) {
-        config.export_path = ResolveDefaultPath(exe_path, *val);
+        config.kExportPath = ResolveDefaultPath(exe_path, *val);
       }
       config.default_save_processed_output =
           kGenNode["save_processed_output"].value_or(false);
@@ -129,7 +128,7 @@ void ParseSystemSettings(const toml::table& tbl, const fs::path& exe_path,
     }
 
     if (auto val = kSysNode["export_root"].value<std::string>()) {
-      config.export_path = ResolveDefaultPath(exe_path, *val);
+      config.kExportPath = ResolveDefaultPath(exe_path, *val);
     }
 
     config.default_save_processed_output =

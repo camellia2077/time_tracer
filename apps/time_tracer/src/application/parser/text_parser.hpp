@@ -1,6 +1,6 @@
-// adapters/input/parser/text_parser.hpp
-#ifndef ADAPTERS_INPUT_PARSER_TEXT_PARSER_H_
-#define ADAPTERS_INPUT_PARSER_TEXT_PARSER_H_
+// application/parser/text_parser.hpp
+#ifndef APPLICATION_PARSER_TEXT_PARSER_H_
+#define APPLICATION_PARSER_TEXT_PARSER_H_
 
 #include <functional>
 #include <iostream>
@@ -9,7 +9,7 @@
 #include <unordered_set>
 
 #include "domain/model/daily_log.hpp"
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 class TextParser {
  public:
@@ -48,4 +48,4 @@ class TextParser {
       -> bool;
 };
 
-#endif  // ADAPTERS_INPUT_PARSER_TEXT_PARSER_H_
+#endif  // APPLICATION_PARSER_TEXT_PARSER_H_

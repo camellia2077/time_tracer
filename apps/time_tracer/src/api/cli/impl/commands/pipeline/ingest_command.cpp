@@ -1,21 +1,67 @@
 // api/cli/impl/commands/pipeline/ingest_command.cpp
-#include "api/cli/impl/commands/pipeline/ingest_command.hpp"
-
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <string>
+#include <string_view>
 
 #include "api/cli/framework/core/command_parser.hpp"
 #include "api/cli/framework/core/command_registry.hpp"
 #include "api/cli/framework/core/command_validator.hpp"  // [新增]
+#include "api/cli/framework/interfaces/i_command.hpp"
 #include "api/cli/impl/app/app_context.hpp"
 #include "api/cli/impl/utils/arg_utils.hpp"  // [新增] 用于 DateCheckMode 解析
-#include "domain/types/app_options.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/use_cases/i_time_tracer_core_api.hpp"
+#include "domain/types/date_check_mode.hpp"
+#include "shared/types/exceptions.hpp"
+
+class IngestCommand : public ICommand {
+ public:
+  IngestCommand(ITimeTracerCoreApi& core_api,
+                DateCheckMode default_date_check_mode,
+                bool default_save_processed_output);
+
+  [[nodiscard]] auto GetDefinitions() const -> std::vector<ArgDef> override;
+  [[nodiscard]] auto GetHelp() const -> std::string override;
+  [[nodiscard]] auto GetCategory() const -> std::string override {
+    return "Pipeline";
+  }
+
+  auto Execute(const CommandParser& parser) -> void override;
+
+ private:
+  ITimeTracerCoreApi& core_api_;
+  DateCheckMode default_date_check_mode_;
+  bool default_save_processed_output_;
+};
+
+namespace {
+
+auto BuildCoreErrorMessage(std::string_view fallback,
+                           const std::string& error_message) -> std::string {
+  if (!error_message.empty()) {
+    return error_message;
+  }
+  return std::string(fallback);
+}
+
+void EnsureOperationSuccess(
+    const time_tracer::core::dto::OperationAck& response,
+    std::string_view fallback_message) {
+  if (response.ok) {
+    return;
+  }
+  throw time_tracer::common::LogicError(
+      BuildCoreErrorMessage(fallback_message, response.error_message));
+}
+
+}  // namespace
 
 [[maybe_unused]] static CommandRegistrar<AppContext> registrar(
     "ingest", [](AppContext& ctx) -> std::unique_ptr<IngestCommand> {
-      if (!ctx.workflow_handler) {
-        throw std::runtime_error("WorkflowHandler not initialized");
+      if (!ctx.core_api) {
+        throw std::runtime_error("Core API not initialized");
       }
       DateCheckMode default_date_check = ctx.config.default_date_check_mode;
       if (ctx.config.command_defaults.ingest_date_check_mode) {
@@ -29,14 +75,14 @@
             *ctx.config.command_defaults.ingest_save_processed_output;
       }
 
-      return std::make_unique<IngestCommand>(
-          *ctx.workflow_handler, default_date_check, default_save_processed);
+      return std::make_unique<IngestCommand>(*ctx.core_api, default_date_check,
+                                             default_save_processed);
     });
 
-IngestCommand::IngestCommand(IWorkflowHandler& workflow_handler,
+IngestCommand::IngestCommand(ITimeTracerCoreApi& core_api,
                              DateCheckMode default_date_check_mode,
                              bool default_save_processed_output)
-    : workflow_handler_(workflow_handler),
+    : core_api_(core_api),
       default_date_check_mode_(default_date_check_mode),
       default_save_processed_output_(default_save_processed_output) {}
 
@@ -94,6 +140,11 @@ void IngestCommand::Execute(const CommandParser& parser) {
     save_json = true;
   }
 
-  // 3. 执行业务
-  workflow_handler_.RunIngest(kInputPath, mode, save_json);
+  // 3. 执行业务 use case
+  time_tracer::core::dto::IngestRequest request;
+  request.input_path = kInputPath;
+  request.date_check_mode = mode;
+  request.save_processed_output = save_json;
+  const auto kResponse = core_api_.RunIngest(request);
+  EnsureOperationSuccess(kResponse, "Ingest command failed.");
 }

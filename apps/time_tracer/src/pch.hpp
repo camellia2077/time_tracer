@@ -1,6 +1,7 @@
+// pch.hpp
 #pragma once
-#ifndef PCH_H
-#define PCH_H
+#ifndef PCH_H_
+#define PCH_H_
 
 // ===================================================================
 //  1. C++ 标准库 (Standard Library)
@@ -44,27 +45,26 @@
 #include "domain/logic/validator/common/validator_utils.hpp"  // 使用次数: 11
 #include "domain/model/daily_log.hpp"                         // 使用次数: 19
 #include "domain/reports/models/daily_report_data.hpp"        // 使用次数: 11
-#include "domain/reports/models/monthly_report_data.hpp"      // 使用次数: 9
+#include "domain/reports/models/period_report_models.hpp"     // 使用次数: 9
 #include "domain/reports/models/project_tree.hpp"             // 使用次数: 7
 #include "domain/reports/models/query_data_structs.hpp"       // 使用次数: 7
 #include "domain/reports/models/range_report_data.hpp"        // 使用次数: 10
-#include "domain/reports/types/report_format.hpp"             // 使用次数: 14
+#include "domain/reports/types/report_types.hpp"              // 使用次数: 14
 #include "domain/types/app_options.hpp"                       // 使用次数: 7
 #include "infrastructure/config/models/app_config.hpp"        // 使用次数: 20
 #include "infrastructure/config/models/converter_config_models.hpp"  // 使用次数: 13
-#include "infrastructure/config/validator/reports/strategies/base_strategy.hpp"  // 使用次数: 7
+#include "infrastructure/config/validator/reports/strategies/report_query_strategies.hpp"  // 使用次数: 7
 #include "infrastructure/io/core/file_system_helper.hpp"     // 使用次数: 9
 #include "infrastructure/persistence/sqlite/db_manager.hpp"  // 使用次数: 6
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"  // 使用次数: 10
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"  // 使用次数: 8
 #include "infrastructure/reports/shared/api/shared_api.hpp"  // 使用次数: 18
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"  // 使用 次数: 7
-#include "infrastructure/reports/shared/utils/format/iso_week_utils.hpp"  // 使用次数: 7
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"  // 使用次数: 7
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"  // 使用次数: 15
-#include "infrastructure/reports/shared/utils/format/year_utils.hpp"  // 使用次数: 7
 #include "nlohmann/json.hpp"              // 使用次数: 14
 #include "shared/types/ansi_colors.hpp"   // 使用次数: 26
+#include "shared/utils/period_utils.hpp"  // 使用次数: 8
 #include "shared/utils/string_utils.hpp"  // 使用次数: 9
 
-#endif  // PCH_H
+#endif  // PCH_H_
