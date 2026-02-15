@@ -1,0 +1,30 @@
+# Android Studio / IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Gradle / AGP / Kotlin caches
+.gradle/
+.kotlin/
+build/
+**/build/
+
+# Native build intermediates
+.cxx/
+**/.cxx/
+.externalNativeBuild/
+
+# Local machine config
+local.properties
+
+# Misc generated artifacts
+captures/
+.DS_Store
+Thumbs.db
+
+
+
+# ignore txt
+input/
+*.txt

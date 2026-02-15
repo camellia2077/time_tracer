@@ -1,0 +1,167 @@
+package com.example.tracer.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+// Slate: Modern Neutral Grays with a slight blue tint
+val Slate50 = Color(0xFFF8FAFC)
+val Slate100 = Color(0xFFF1F5F9)
+val Slate200 = Color(0xFFE2E8F0)
+val Slate300 = Color(0xFFCBD5E1)
+val Slate400 = Color(0xFF94A3B8)
+val Slate500 = Color(0xFF64748B)
+val Slate600 = Color(0xFF475569)
+val Slate700 = Color(0xFF334155)
+val Slate800 = Color(0xFF1E293B)
+val Slate900 = Color(0xFF0F172A)
+val Slate950 = Color(0xFF020617)
+
+// Accent: Indigo (Professional, Calm, Deep)
+val Indigo100 = Color(0xFFE0E7FF)
+val Indigo400 = Color(0xFF818CF8)
+val Indigo500 = Color(0xFF6366F1)
+val Indigo600 = Color(0xFF4F46E5)
+val Indigo900 = Color(0xFF312E81)
+
+// Semantic Colors
+val LightBackground = Slate50
+val DarkBackground = Slate950
+val LightSurface = Color.White
+val DarkSurface = Slate900
+
+val LightPrimary = Indigo600
+val DarkPrimary = Indigo400
+
+// Emerald (Natural, Relaxed)
+val Emerald100 = Color(0xFFD1FAE5)
+val Emerald400 = Color(0xFF34D399)
+val Emerald500 = Color(0xFF10B981)
+val Emerald600 = Color(0xFF059669)
+val Emerald900 = Color(0xFF064E3B)
+
+// Rose (Warm, Energetic)
+val Rose100 = Color(0xFFFFE4E6)
+val Rose400 = Color(0xFFFB7185)
+val Rose500 = Color(0xFFF43F5E)
+val Rose600 = Color(0xFFE11D48)
+val Rose900 = Color(0xFF881337)
+
+// Sky (Calm, Airy)
+val Sky100 = Color(0xFFE0F2FE)
+val Sky400 = Color(0xFF38BDF8)
+val Sky500 = Color(0xFF0EA5E9)
+val Sky600 = Color(0xFF0284C7)
+val Sky900 = Color(0xFF0C4A6E)
+
+// Sky Neutral (Cool Neutral) - For Sky
+val SkyNeutral50 = Color(0xFFF4FAFE)
+val SkyNeutral100 = Color(0xFFEAF4FC)
+val SkyNeutral200 = Color(0xFFD8E8F6)
+val SkyNeutral300 = Color(0xFFBDD7EB)
+val SkyNeutral400 = Color(0xFF8FAEC8)
+val SkyNeutral500 = Color(0xFF67849B)
+val SkyNeutral600 = Color(0xFF4D657B)
+val SkyNeutral700 = Color(0xFF3A4F62)
+val SkyNeutral800 = Color(0xFF263544)
+val SkyNeutral900 = Color(0xFF18222F)
+val SkyNeutral950 = Color(0xFF0C131E)
+
+// Stone (Warm Neutral) - For Rose
+val Stone50 = Color(0xFFFAFAF9)
+val Stone100 = Color(0xFFF5F5F4)
+val Stone200 = Color(0xFFE7E5E4)
+val Stone300 = Color(0xFFD6D3D1)
+val Stone400 = Color(0xFFA8A29E)
+val Stone500 = Color(0xFF78716C)
+val Stone600 = Color(0xFF57534E)
+val Stone700 = Color(0xFF44403C)
+val Stone800 = Color(0xFF292524)
+val Stone900 = Color(0xFF1C1917)
+val Stone950 = Color(0xFF0C0A09)
+
+// Neutral (True Neutral) - For Emerald
+val Neutral50 = Color(0xFFFAFAFA)
+val Neutral100 = Color(0xFFF5F5F5)
+val Neutral200 = Color(0xFFE5E5E5)
+val Neutral300 = Color(0xFFD4D4D4)
+val Neutral400 = Color(0xFFA3A3A3)
+val Neutral500 = Color(0xFF737373)
+val Neutral600 = Color(0xFF525252)
+val Neutral700 = Color(0xFF404040)
+val Neutral800 = Color(0xFF262626)
+val Neutral900 = Color(0xFF171717)
+val Neutral950 = Color(0xFF0A0A0A)
+// Teal (Crisp, Cool, Balanced)
+val Teal100 = Color(0xFFCCFBF1)
+val Teal400 = Color(0xFF2DD4BF)
+val Teal500 = Color(0xFF14B8A6)
+val Teal600 = Color(0xFF0D9488)
+val Teal900 = Color(0xFF134E4A)
+
+// Orange (Warm, Vibrant, Earthy)
+val Orange100 = Color(0xFFFFEDD5)
+val Orange400 = Color(0xFFFB923C)
+val Orange500 = Color(0xFFF97316)
+val Orange600 = Color(0xFFEA580C)
+val Orange900 = Color(0xFF7C2D12)
+
+// Violet (Mysterious, Creative, Electric)
+val Violet100 = Color(0xFFEDE9FE)
+val Violet400 = Color(0xFFA78BFA)
+val Violet500 = Color(0xFF8B5CF6)
+val Violet600 = Color(0xFF7C3AED)
+val Violet900 = Color(0xFF4C1D95)
+// Pink (Vibrant, Playful, Hot)
+val Pink100 = Color(0xFFFCE7F3)
+val Pink400 = Color(0xFFF472B6)
+val Pink500 = Color(0xFFEC4899)
+val Pink600 = Color(0xFFDB2777)
+val Pink900 = Color(0xFF831843)
+
+// Sakura (Soft, Romantic, Pastel)
+val Sakura100 = Color(0xFFFFEBF0)
+val Sakura400 = Color(0xFFFDA4AF)
+val Sakura500 = Color(0xFFFB7185)
+val Sakura600 = Color(0xFFF43F5E)
+val Sakura900 = Color(0xFFBE123C)
+
+// Magenta (Deep, Dramatic, Powerful)
+val Magenta100 = Color(0xFFFAE8FF) // Use light Fuchsia tint
+val Magenta400 = Color(0xFFE879F9)
+val Magenta500 = Color(0xFFD946EF)
+val Magenta600 = Color(0xFFC026D3)
+val Magenta900 = Color(0xFF701A75)
+
+// Lavender Scale (Soft Purple)
+val Lavender100 = Color(0xFFF3E5F5)
+val Lavender400 = Color(0xFFBA68C8)
+val Lavender500 = Color(0xFF9C27B0)
+val Lavender600 = Color(0xFF7B1FA2)
+val Lavender900 = Color(0xFF4A148C)
+
+// Peach Scale (Soft Orange)
+val Peach100 = Color(0xFFFFE0B2)
+val Peach400 = Color(0xFFFFB74D)
+val Peach500 = Color(0xFFFF9800)
+val Peach600 = Color(0xFFF57C00)
+val Peach900 = Color(0xFFE65100)
+
+// Mint Scale (Soft Green)
+val Mint100 = Color(0xFFC8E6C9)
+val Mint400 = Color(0xFF66BB6A)
+val Mint500 = Color(0xFF4CAF50)
+val Mint600 = Color(0xFF43A047)
+val Mint900 = Color(0xFF1B5E20)
+
+// Gold Scale (Sunflower / Amber)
+val Gold100 = Color(0xFFFFECB3)
+val Gold400 = Color(0xFFFFCA28)
+val Gold500 = Color(0xFFFFC107)
+val Gold600 = Color(0xFFFFB300)
+val Gold900 = Color(0xFFFF6F00)
+
+// Cyan Scale (Vibrant Aqua)
+val Cyan100 = Color(0xFFB2EBF2)
+val Cyan400 = Color(0xFF26C6DA)
+val Cyan500 = Color(0xFF00BCD4)
+val Cyan600 = Color(0xFF00ACC1)
+val Cyan900 = Color(0xFF006064)

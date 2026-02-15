@@ -5,6 +5,12 @@
 
 这是一套功能强大的个人时间管理工具集，采用 **Clean Architecture** (整洁架构) 设计，旨在提供极致的输入效率、稳健的数据存储以及多维度的可视化分析。
 
+### 设计理念（简要）
+
+1. **数据归用户所有**：记录以可读文本保存，用户可长期持有、备份、迁移，不被单一 App 绑定。  
+2. **支持快速修改数据**：可直接编辑文本（改活动名、加备注等），再同步更新数据库与报告。  
+3. **跨平台同一输入**：CLI、Android 等平台使用同一种文本数据作为输入，减少格式切换成本。  
+
 ### 核心组件
 
 * **`time_tracker_cli` (C++23)**: 核心命令行程序。采用管道模式处理原始文本日志，提供基于 SQLite 的高效查询及多格式（Markdown, LaTeX, Typst）报表导出。
@@ -92,7 +98,27 @@ docs/time_tracer/
 
 ## 许可证与开源库
 
+本仓库自有源码使用 **MIT** 许可证（见 `LICENSE`）。
+第三方依赖保持各自原始许可证。
+
+### 核心与工具链
+
 * **[SQLite](https://www.sqlite.org/)**: 嵌入式数据库 (Public Domain)。
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON 解析 (MIT)。
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML 配置处理 (MIT)。
-* **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD)。
+* **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD 风格许可证)。
+
+### Android 应用 (`apps/tracer_android`)
+
+* **[AndroidX / Jetpack Compose 系列](https://github.com/androidx/androidx)**  
+  包含本项目 Android 端使用的 `core-ktx`、`lifecycle-*`、`activity-compose`、`compose-*`、`datastore-preferences` 以及 AndroidX 测试库。  
+  **许可证**: Apache License 2.0。
+* **[Material Components for Android](https://github.com/material-components/material-components-android)** (`com.google.android.material:material`)  
+  **许可证**: Apache License 2.0。
+* **[Multiplatform Markdown Renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)** (`com.mikepenz:multiplatform-markdown-renderer-m3`)  
+  **许可证**: Apache License 2.0。
+* **[JUnit 4](https://github.com/junit-team/junit4)** (`junit:junit`，仅测试依赖)  
+  **许可证**: Eclipse Public License 1.0 (EPL-1.0)。
+
+依赖版本清单位于：
+* `apps/tracer_android/gradle/libs.versions.toml`

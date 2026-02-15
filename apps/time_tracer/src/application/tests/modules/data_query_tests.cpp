@@ -20,21 +20,9 @@ auto TestDataQueryResponses(TestState& state) -> void {
       BuildCoreApiForTest(workflow_handler, report_handler, data_query);
 
   data_query->response = {.ok = true, .content = "years", .error_message = ""};
-  const auto kSuccess =
-      core_api.RunDataQuery({.action = DataQueryAction::kYears,
-                             .year = std::nullopt,
-                             .month = std::nullopt,
-                             .from_date = std::nullopt,
-                             .to_date = std::nullopt,
-                             .remark = std::nullopt,
-                             .day_remark = std::nullopt,
-                             .project = std::nullopt,
-                             .exercise = std::nullopt,
-                             .status = std::nullopt,
-                             .overnight = false,
-                             .reverse = false,
-                             .limit = std::nullopt,
-                             .top_n = std::nullopt});
+  DataQueryRequest success_request;
+  success_request.action = DataQueryAction::kYears;
+  const auto kSuccess = core_api.RunDataQuery(success_request);
   Expect(state, kSuccess.ok, "RunDataQuery should return ok on success.");
   Expect(state, kSuccess.content == "years",
          "RunDataQuery should return service content.");

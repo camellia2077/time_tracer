@@ -154,6 +154,19 @@ class Cleanup:
 
 
 @dataclass
+class LogRoutingRule:
+    stage: str
+    subdir: str
+    command_prefix: List[str] = field(default_factory=list)
+    legacy_name_contains: List[str] = field(default_factory=list)
+
+
+@dataclass
+class LogRoutingConfig:
+    rules: List[LogRoutingRule] = field(default_factory=list)
+
+
+@dataclass
 class RunControl:
     ENABLE_ENVIRONMENT_CLEAN: bool = False
     ENABLE_ENVIRONMENT_PREPARE: bool = False
@@ -172,6 +185,7 @@ class GlobalConfig:
     cli_names: CLINames
     test_params: TestParams
     cleanup: Cleanup
+    log_routing: LogRoutingConfig
     run_control: RunControl
     pipeline: PipelineConfig
     commands: List[CommandSpec] = field(default_factory=list)

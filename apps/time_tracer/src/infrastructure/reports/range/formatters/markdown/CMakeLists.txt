@@ -2,6 +2,7 @@
 
 add_library(RangeMdFormatter SHARED
     range_md_formatter.cpp
+    range_md_formatter_core.cpp
 )
 
 setup_plugin_target(RangeMdFormatter NO_STDCXXEXP)
