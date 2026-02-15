@@ -6,6 +6,12 @@
 
 A powerful personal time management toolset designed using **Clean Architecture** principles to provide maximum efficiency, robust data storage, and multi-dimensional analysis.
 
+### Design Principles (Brief)
+
+1. **Users own their data**: records are stored in readable text, so users can keep, back up, and migrate data without being locked to one app.  
+2. **Fast data editing**: users can directly edit text logs (rename activities, add remarks), then sync to database and reports.  
+3. **One input format across platforms**: CLI, Android, and other clients use the same text input format to minimize switching cost.  
+
 ### Core Components
 
 * **`time_tracker_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format report exports (Markdown, LaTeX, Typst).
@@ -93,7 +99,27 @@ Special thanks to the following AI models for their core assistance in coding, a
 
 ## License & Open Source Libraries
 
+This repository's own source code is licensed under **MIT** (see `LICENSE`).
+Third-party dependencies remain under their respective licenses.
+
+### Core and Tools
+
 * **[SQLite](https://www.sqlite.org/)**: Embedded database (Public Domain).
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON parsing (MIT).
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML configuration (MIT).
-* **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD).
+* **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD-style license).
+
+### Android App (`apps/tracer_android`)
+
+* **[AndroidX / Jetpack Compose family](https://github.com/androidx/androidx)**  
+  Includes `core-ktx`, `lifecycle-*`, `activity-compose`, `compose-*`, `datastore-preferences`, and AndroidX test libraries used by this app.  
+  **License**: Apache License 2.0.
+* **[Material Components for Android](https://github.com/material-components/material-components-android)** (`com.google.android.material:material`)  
+  **License**: Apache License 2.0.
+* **[Multiplatform Markdown Renderer](https://github.com/mikepenz/multiplatform-markdown-renderer)** (`com.mikepenz:multiplatform-markdown-renderer-m3`)  
+  **License**: Apache License 2.0.
+* **[JUnit 4](https://github.com/junit-team/junit4)** (`junit:junit`, test-only dependency)  
+  **License**: Eclipse Public License 1.0 (EPL-1.0).
+
+Dependency versions are managed in:
+* `apps/tracer_android/gradle/libs.versions.toml`

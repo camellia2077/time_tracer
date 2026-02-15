@@ -19,6 +19,8 @@ class IReportDataQueryService {
   virtual auto QueryDaily(std::string_view date) -> DailyReportData = 0;
   virtual auto QueryMonthly(std::string_view month) -> MonthlyReportData = 0;
   virtual auto QueryPeriod(int days) -> PeriodReportData = 0;
+  virtual auto QueryRange(std::string_view start_date,
+                          std::string_view end_date) -> PeriodReportData = 0;
   virtual auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData = 0;
   virtual auto QueryYearly(std::string_view year) -> YearlyReportData = 0;
 

@@ -143,8 +143,10 @@ void FormatterConfigPayload::FillDayLabels(const DailyReportLabels& labels,
                           ? kReportTitle
                           : labels.report_title_prefix;
   out->report_title = kReportTitle.empty() ? out->title_prefix : kReportTitle;
-  out->date_label = labels.date_label;
-  out->total_time_label = labels.total_time_label;
+  out->date_label = labels.date_label.empty() ? "Date" : labels.date_label;
+  out->total_time_label = labels.total_time_label.empty()
+                              ? "Total Time Recorded"
+                              : labels.total_time_label;
   out->status_label =
       labels.status_label.empty() ? "Status" : labels.status_label;
   out->sleep_label = labels.sleep_label.empty() ? "Sleep" : labels.sleep_label;

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/query/data/data_query_models.hpp"
 #include "infrastructure/query/data/data_query_types.hpp"
 
@@ -31,5 +32,16 @@ namespace time_tracer::infrastructure::query::data {
 [[nodiscard]] auto QueryDayDurations(sqlite3* db_conn,
                                      const QueryFilters& filters)
     -> std::vector<DayDurationRow>;
+
+[[nodiscard]] auto QueryActivitySuggestions(
+    sqlite3* db_conn, const ActivitySuggestionQueryOptions& options)
+    -> std::vector<ActivitySuggestionRow>;
+
+[[nodiscard]] auto QueryLatestTrackedDate(sqlite3* db_conn)
+    -> std::optional<std::string>;
+
+[[nodiscard]] auto QueryProjectTree(sqlite3* db_conn,
+                                    const QueryFilters& filters)
+    -> reporting::ProjectTree;
 
 }  // namespace time_tracer::infrastructure::query::data

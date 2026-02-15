@@ -179,7 +179,7 @@ auto BuildWhereClauses(const QueryFilters& filters,
   if (filters.project.has_value()) {
     std::string clause =
         BuildQualifiedClause("pp", schema::projects::cte::kPath, "LIKE");
-    clause += " ESCAPE '\\\\'";
+    clause += " ESCAPE '\\'";
     clauses.push_back(std::move(clause));
     params.push_back({.type = SqlParam::Type::kText,
                       .text_value = BuildLikeContains(*filters.project)});
@@ -238,11 +238,17 @@ auto QueryStringColumn(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  int rc = SQLITE_OK;
+  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
     const unsigned char* text = sqlite3_column_text(stmt, 0);
     if (text != nullptr) {
       results.emplace_back(reinterpret_cast<const char*>(text));
     }
+  }
+  if (rc != SQLITE_DONE) {
+    const std::string error_message = sqlite3_errmsg(db_conn);
+    sqlite3_finalize(stmt);
+    throw std::runtime_error("Failed to execute query: " + error_message);
   }
   sqlite3_finalize(stmt);
   return results;
@@ -269,10 +275,16 @@ auto QueryYearMonth(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  int rc = SQLITE_OK;
+  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
     const int kYear = sqlite3_column_int(stmt, 0);
     const int kMonth = sqlite3_column_int(stmt, 1);
     results.emplace_back(kYear, kMonth);
+  }
+  if (rc != SQLITE_DONE) {
+    const std::string error_message = sqlite3_errmsg(db_conn);
+    sqlite3_finalize(stmt);
+    throw std::runtime_error("Failed to execute query: " + error_message);
   }
   sqlite3_finalize(stmt);
   return results;
@@ -300,7 +312,8 @@ auto QueryRowsWithTotalDuration(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  while (sqlite3_step(stmt) == SQLITE_ROW) {
+  int rc = SQLITE_OK;
+  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
     DayDurationRow row;
     const unsigned char* text = sqlite3_column_text(stmt, 0);
     if (text != nullptr) {
@@ -308,6 +321,11 @@ auto QueryRowsWithTotalDuration(sqlite3* db_conn, const std::string& sql,
     }
     row.total_seconds = sqlite3_column_int64(stmt, 1);
     rows.push_back(std::move(row));
+  }
+  if (rc != SQLITE_DONE) {
+    const std::string error_message = sqlite3_errmsg(db_conn);
+    sqlite3_finalize(stmt);
+    throw std::runtime_error("Failed to execute query: " + error_message);
   }
 
   sqlite3_finalize(stmt);

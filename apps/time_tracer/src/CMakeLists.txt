@@ -29,24 +29,29 @@ enforce_core_include_boundary(
 add_subdirectory(infrastructure)
 
 # 4. API Layer (Interface)
-add_subdirectory(api/cli)
-
-# 5. Main Executable
-add_executable(time_tracker_cli api/cli/main.cpp)
-setup_app_target(time_tracker_cli)
-
-if(CMAKE_EXE_LINKER_FLAGS_RELEASE MATCHES "fuse-ld=lld")
-    target_link_libraries(time_tracker_cli PRIVATE
-        -Wl,--whole-archive
-        time_tracker_cli_commands
-        -Wl,--no-whole-archive
-        time_tracker_cli_lib
-    )
+if(ANDROID)
+    message(STATUS "Android build detected: build JNI bridge target.")
+    add_subdirectory(api/android)
 else()
-    target_link_libraries(time_tracker_cli PRIVATE
-        "$<LINK_LIBRARY:WHOLE_ARCHIVE,time_tracker_cli_commands>"
-        time_tracker_cli_lib
-    )
+    add_subdirectory(api/cli)
+
+    # 5. Main Executable
+    add_executable(time_tracker_cli api/cli/main.cpp)
+    setup_app_target(time_tracker_cli)
+
+    if(CMAKE_EXE_LINKER_FLAGS_RELEASE MATCHES "fuse-ld=lld")
+        target_link_libraries(time_tracker_cli PRIVATE
+            -Wl,--whole-archive
+            time_tracker_cli_commands
+            -Wl,--no-whole-archive
+            time_tracker_cli_lib
+        )
+    else()
+        target_link_libraries(time_tracker_cli PRIVATE
+            "$<LINK_LIBRARY:WHOLE_ARCHIVE,time_tracker_cli_commands>"
+            time_tracker_cli_lib
+        )
+    endif()
 endif()
 
 if(BUILD_TESTING)
@@ -69,19 +74,47 @@ if(BUILD_TESTING)
         NAME time_tracker_core_api_tests
         COMMAND time_tracker_core_api_tests
     )
+
+    add_executable(time_tracker_android_runtime_tests
+        infrastructure/tests/android_runtime_factory_tests.cpp
+    )
+    setup_app_target(time_tracker_android_runtime_tests)
+    target_link_libraries(time_tracker_android_runtime_tests PRIVATE
+        time_tracker_infrastructure
+    )
+    add_test(
+        NAME time_tracker_android_runtime_tests
+        COMMAND time_tracker_android_runtime_tests
+    )
+
+    add_executable(time_tracker_formatter_parity_tests
+        infrastructure/tests/report_formatter_parity_tests.cpp
+    )
+    setup_app_target(time_tracker_formatter_parity_tests)
+    target_link_libraries(time_tracker_formatter_parity_tests PRIVATE
+        time_tracker_infrastructure
+    )
+    add_test(
+        NAME time_tracker_formatter_parity_tests
+        COMMAND time_tracker_formatter_parity_tests
+    )
 endif()
 
-# --- Post Build Actions (Moved from root) ---
-# 1. Config Copy
-add_custom_command(
-    TARGET time_tracker_cli POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/config"
-    "$<TARGET_FILE_DIR:time_tracker_cli>/config"
-    COMMENT "Copying config folder for time_tracker_cli"
-)
+if(NOT ANDROID)
+    # --- Post Build Actions (Moved from root) ---
+    # 1. Config Copy
+    add_custom_command(
+        TARGET time_tracker_cli POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/config"
+        "$<TARGET_FILE_DIR:time_tracker_cli>/config"
+        COMMENT "Copying config folder for time_tracker_cli"
+    )
 
-# 2. Win32 DLL Copy
-# Need to include the module from root cmake folder
-set(ALL_TARGETS time_tracker_cli)
-include("${CMAKE_SOURCE_DIR}/cmake/Win32PostBuildCopy.cmake")
+    # 2. Win32 DLL Copy
+    if(WIN32)
+        # Need to include the module from root cmake folder
+        set(ALL_TARGETS time_tracker_cli)
+        include("${CMAKE_SOURCE_DIR}/cmake/Win32PostBuildCopy.cmake")
+    endif()
+endif()

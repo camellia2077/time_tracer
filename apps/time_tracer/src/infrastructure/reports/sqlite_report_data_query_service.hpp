@@ -25,6 +25,8 @@ class SqliteReportDataQueryService final
   auto QueryDaily(std::string_view date) -> DailyReportData override;
   auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
   auto QueryPeriod(int days) -> PeriodReportData override;
+  auto QueryRange(std::string_view start_date, std::string_view end_date)
+      -> PeriodReportData override;
   auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
   auto QueryYearly(std::string_view year) -> YearlyReportData override;
 

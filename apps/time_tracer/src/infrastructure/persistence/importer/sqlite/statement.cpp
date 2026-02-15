@@ -46,7 +46,29 @@ auto Statement::PrepareStatements() -> void {
       "?, ?, ?, "
       "?, ?, ?, ?, "
       "?"
-      ");",
+      ") "
+      "ON CONFLICT({1}) DO UPDATE SET "
+      "{2}=excluded.{2}, "
+      "{3}=excluded.{3}, "
+      "{4}=excluded.{4}, "
+      "{5}=excluded.{5}, "
+      "{6}=excluded.{6}, "
+      "{7}=excluded.{7}, "
+      "{8}=excluded.{8}, "
+      "{9}=excluded.{9}, "
+      "{10}=excluded.{10}, "
+      "{11}=excluded.{11}, "
+      "{12}=excluded.{12}, "
+      "{13}=excluded.{13}, "
+      "{14}=excluded.{14}, "
+      "{15}=excluded.{15}, "
+      "{16}=excluded.{16}, "
+      "{17}=excluded.{17}, "
+      "{18}=excluded.{18}, "
+      "{19}=excluded.{19}, "
+      "{20}=excluded.{20}, "
+      "{21}=excluded.{21}, "
+      "{22}=excluded.{22};",
       schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
       schema::day::db::kMonth, schema::day::db::kStatus,
       schema::day::db::kSleep, schema::day::db::kRemark,

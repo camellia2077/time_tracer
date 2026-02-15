@@ -12,3 +12,6 @@ add_library(time_tracker_domain STATIC
 )
 
 setup_plugin_target(time_tracker_domain NO_STDCXXEXP)
+target_link_libraries(time_tracker_domain PUBLIC
+    nlohmann_json::nlohmann_json
+)

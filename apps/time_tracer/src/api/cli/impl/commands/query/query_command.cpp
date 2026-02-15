@@ -44,7 +44,7 @@ namespace {
 
 constexpr std::size_t kSeparatorWidth = 40U;
 constexpr std::string_view kSupportedQueryTypes =
-    "day, month, week, year, recent, data";
+    "day, month, week, year, recent, range, data";
 
 [[nodiscard]] auto ParseQueryType(std::string_view value)
     -> std::optional<ReportQueryType> {
@@ -56,6 +56,9 @@ constexpr std::string_view kSupportedQueryTypes =
   }
   if (value == "recent") {
     return ReportQueryType::kRecent;
+  }
+  if (value == "range") {
+    return ReportQueryType::kRange;
   }
   if (value == "week") {
     return ReportQueryType::kWeek;
@@ -105,7 +108,7 @@ auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
       {"type",
        ArgType::kPositional,
        {},
-       "Query type (day, month, week, year, recent, data)",
+       "Query type (day, month, week, year, recent, range, data)",
        true,
        "",
        0},
@@ -113,7 +116,8 @@ auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
        ArgType::kPositional,
        {},
        "Date/Range arg OR Data Action "
-       "(years/months/days/days-duration/days-stats/search)",
+       "(years/months/days/days-duration/days-stats/search/activity-suggest/"
+       "tree)",
        true,
        "",
        1},
@@ -183,7 +187,45 @@ auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
       {"top",
        ArgType::kOption,
        {"--top"},
-       "Top N items for days-stats output",
+       "Top N items for days-stats/activity-suggest output",
+       false,
+       ""},
+      {"lookback_days",
+       ArgType::kOption,
+       {"--lookback-days"},
+       "Lookback window in days for activity-suggest (default: 10)",
+       false,
+       ""},
+      {"activity_prefix",
+       ArgType::kOption,
+       {"--activity-prefix"},
+       "Activity name prefix filter for activity-suggest",
+       false,
+       ""},
+      {"score_mode",
+       ArgType::kOption,
+       {"--score-mode"},
+       "Score mode for activity-suggest (frequency or duration)",
+       false,
+       ""},
+      {"period",
+       ArgType::kOption,
+       {"--period"},
+       "Period kind for query data tree/days-stats "
+       "(day/week/month/year/recent/range)",
+       false,
+       ""},
+      {"period_arg",
+       ArgType::kOption,
+       {"--period-arg"},
+       "Period argument for query data tree/days-stats "
+       "(e.g. 20260101, 2026-W05, 7)",
+       false,
+       ""},
+      {"level",
+       ArgType::kOption,
+       {"-l", "--level"},
+       "Max tree depth for query data tree (-1 means unlimited)",
        false,
        ""},
       {"reverse",
@@ -195,7 +237,7 @@ auto QueryCommand::GetDefinitions() const -> std::vector<ArgDef> {
 }
 
 auto QueryCommand::GetHelp() const -> std::string {
-  return "Queries statistics (day, month, week, year, recent) from the "
+  return "Queries statistics (day, month, week, year, recent, range) from the "
          "database.";
 }
 

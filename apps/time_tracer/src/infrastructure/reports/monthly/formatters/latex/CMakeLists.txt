@@ -2,6 +2,7 @@
 
 add_library(MonthTexFormatter SHARED
     month_tex_formatter.cpp
+    month_tex_formatter_core.cpp
     month_tex_utils.cpp
 )
 

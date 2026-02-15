@@ -1,6 +1,7 @@
 // infrastructure/query/data/data_query_types.hpp
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -12,11 +13,14 @@ enum class DataQueryAction {
   kDays,
   kDaysDuration,
   kDaysStats,
-  kSearch
+  kSearch,
+  kActivitySuggest,
+  kTree
 };
 
 constexpr std::string_view kSupportedDataQueryActions =
-    "years, months, days, days-duration, days-stats, search";
+    "years, months, days, days-duration, days-stats, search, activity-suggest, "
+    "tree";
 
 struct DayDurationRow {
   std::string date;
@@ -37,6 +41,21 @@ struct DayDurationStats {
   double max_seconds = 0.0;
   double iqr_seconds = 0.0;
   double mad_seconds = 0.0;
+};
+
+struct ActivitySuggestionQueryOptions {
+  int lookback_days = 10;
+  int limit = 5;
+  std::optional<std::string> prefix;
+  bool score_by_duration = false;
+};
+
+struct ActivitySuggestionRow {
+  std::string activity_name;
+  int usage_count = 0;
+  long long total_duration_seconds = 0;
+  std::string last_used_date;
+  double score = 0.0;
 };
 
 }  // namespace time_tracer::infrastructure::query::data

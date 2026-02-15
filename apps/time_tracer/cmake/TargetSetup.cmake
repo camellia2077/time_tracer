@@ -60,6 +60,10 @@ function(_apply_stdcxxexp_if_needed TARGET_NAME)
     set(options NO_STDCXXEXP)
     cmake_parse_arguments(STX "${options}" "" "" ${ARGN})
 
+    if(ANDROID)
+        return()
+    endif()
+
     if(NOT STX_NO_STDCXXEXP)
         target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
     endif()

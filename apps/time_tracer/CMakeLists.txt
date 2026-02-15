@@ -11,9 +11,14 @@ cmake_policy(SET CMP0115 NEW)
 include(CTest)
 
 # --- Find External Dependencies ---
-find_package(SQLite3 REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(tomlplusplus REQUIRED)
+if(ANDROID)
+    include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/AndroidDependencies.cmake")
+    configure_time_tracer_android_dependencies()
+else()
+    find_package(SQLite3 REQUIRED)
+    find_package(nlohmann_json REQUIRED)
+    find_package(tomlplusplus REQUIRED)
+endif()
 
 # --- 1. 项目范围的设置 ---
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

@@ -2,6 +2,7 @@
 
 add_library(RangeTexFormatter SHARED
     range_tex_formatter.cpp
+    range_tex_formatter_core.cpp
     range_tex_utils.cpp
 )
 

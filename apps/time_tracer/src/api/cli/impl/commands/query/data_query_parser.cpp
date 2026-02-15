@@ -16,7 +16,11 @@ namespace time_tracer::cli::impl::commands::query::data {
 namespace {
 
 constexpr std::string_view kSupportedDataQueryActions =
-    "years, months, days, days-duration, days-stats, search";
+    "years, months, days, days-duration, days-stats, search, activity-suggest, "
+    "tree";
+constexpr std::string_view kSupportedScoreModes = "frequency, duration";
+constexpr std::string_view kSupportedPeriods =
+    "day, week, month, year, recent, range";
 
 [[nodiscard]] auto ParseDataQueryAction(const ParsedArgs& args)
     -> DataQueryAction {
@@ -45,9 +49,31 @@ constexpr std::string_view kSupportedDataQueryActions =
   if (action == "search") {
     return DataQueryAction::kSearch;
   }
+  if (action == "activity-suggest") {
+    return DataQueryAction::kActivitySuggest;
+  }
+  if (action == "tree") {
+    return DataQueryAction::kTree;
+  }
 
   throw std::runtime_error("Invalid query data action: " + action + ". Use " +
                            std::string(kSupportedDataQueryActions) + ".");
+}
+
+[[nodiscard]] auto ParseActivityScoreMode(std::string_view mode) -> bool {
+  if (mode.empty() || mode == "frequency") {
+    return false;
+  }
+  if (mode == "duration") {
+    return true;
+  }
+  throw std::runtime_error("Invalid score mode: " + std::string(mode) +
+                           ". Use " + std::string(kSupportedScoreModes) + ".");
+}
+
+[[nodiscard]] auto IsSupportedPeriod(std::string_view value) -> bool {
+  return value == "day" || value == "week" || value == "month" ||
+         value == "year" || value == "recent" || value == "range";
 }
 
 }  // namespace
@@ -91,6 +117,63 @@ auto ParseDataQueryRequest(const ParsedArgs& args) -> DataQueryRequest {
   if (args.Has("top")) {
     request.top_n = args.GetAsInt("top");
   }
+  if (args.Has("lookback_days")) {
+    const int lookback_days = args.GetAsInt("lookback_days");
+    if (lookback_days <= 0) {
+      throw std::runtime_error("--lookback-days must be greater than 0.");
+    }
+    request.lookback_days = lookback_days;
+  }
+  if (args.Has("activity_prefix")) {
+    request.activity_prefix = args.Get("activity_prefix");
+  }
+  if (args.Has("score_mode")) {
+    request.activity_score_by_duration =
+        ParseActivityScoreMode(args.Get("score_mode"));
+  }
+  if (args.Has("period")) {
+    request.tree_period = args.Get("period");
+  }
+  if (args.Has("period_arg")) {
+    request.tree_period_argument = args.Get("period_arg");
+  }
+  if (args.Has("level")) {
+    request.tree_max_depth = args.GetAsInt("level");
+  }
+
+  const bool supports_period = request.action == DataQueryAction::kTree ||
+                               request.action == DataQueryAction::kDaysStats;
+
+  if (supports_period) {
+    if (request.tree_period.has_value()) {
+      const std::string period = *request.tree_period;
+      if (!IsSupportedPeriod(period)) {
+        throw std::runtime_error("Invalid --period value: " + period +
+                                 ". Use " + std::string(kSupportedPeriods) +
+                                 ".");
+      }
+      if (!request.tree_period_argument.has_value() && period != "recent") {
+        if (request.action == DataQueryAction::kTree) {
+          throw std::runtime_error(
+              "query data tree with --period requires --period-arg "
+              "(except recent, where --lookback-days can be used).");
+        }
+        throw std::runtime_error(
+            "query data days-stats with --period requires --period-arg "
+            "(except recent, where --lookback-days can be used).");
+      }
+    }
+  }
+
+  if (request.action == DataQueryAction::kTree &&
+      !request.tree_period.has_value() && !args.Has("from") &&
+      !args.Has("to") && !args.Has("year") && !args.Has("month") &&
+      !args.Has("lookback_days")) {
+    throw std::runtime_error(
+        "query data tree requires either --period/--period-arg or "
+        "date filters (--from/--to/--year/--month).");
+  }
+
   return request;
 }
 

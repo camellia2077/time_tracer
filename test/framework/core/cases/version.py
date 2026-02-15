@@ -6,13 +6,15 @@ from ..utils.file_ops import format_size, get_folder_size
 
 class VersionChecker(BaseTester):
     def __init__(self, counter: TestCounter, module_order: int,
-                 context: TestContext, show_output: str = "none"):
+                 context: TestContext, show_output: str = "none",
+                 log_routing_rules=None):
         super().__init__(
             counter,
             module_order,
             "version_check",
             context,
             show_output=show_output,
+            log_routing_rules=log_routing_rules,
         )
 
     def run_tests(self) -> TestReport:

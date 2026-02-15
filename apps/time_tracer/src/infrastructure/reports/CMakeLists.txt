@@ -55,6 +55,7 @@ add_library(reports_data STATIC
     # Period Queriers
     "data/queriers/period/period_querier.cpp"
     "data/queriers/period/batch_period_data_fetcher.cpp"
+    "data/queriers/range/date_range_querier.cpp"
 
     # Weekly Queriers
     "data/queriers/weekly/weekly_querier.cpp"
@@ -70,12 +71,14 @@ target_link_libraries(reports_data PUBLIC
 )
 
 # Formatter plugin subdirectories
-add_subdirectory(daily/formatters/markdown)
-add_subdirectory(daily/formatters/typst)
-add_subdirectory(daily/formatters/latex)
-add_subdirectory(range/formatters/markdown)
-add_subdirectory(range/formatters/typst)
-add_subdirectory(range/formatters/latex)
-add_subdirectory(monthly/formatters/markdown)
-add_subdirectory(monthly/formatters/typst)
-add_subdirectory(monthly/formatters/latex)
+if(NOT ANDROID)
+    add_subdirectory(daily/formatters/markdown)
+    add_subdirectory(daily/formatters/typst)
+    add_subdirectory(daily/formatters/latex)
+    add_subdirectory(range/formatters/markdown)
+    add_subdirectory(range/formatters/typst)
+    add_subdirectory(range/formatters/latex)
+    add_subdirectory(monthly/formatters/markdown)
+    add_subdirectory(monthly/formatters/typst)
+    add_subdirectory(monthly/formatters/latex)
+endif()

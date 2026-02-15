@@ -13,6 +13,7 @@ class TestLogger:
     def log_result(self, test_name: str, log_filename: str,
                    result: ExecutionResult) -> Path:
         log_path = self.log_dir / log_filename
+        log_path.parent.mkdir(parents=True, exist_ok=True)
         with open(log_path, "w", encoding="utf-8") as file:
             file.write(f"Test: {test_name}\n")
             file.write(f"Command: {' '.join(result.command)}\n")

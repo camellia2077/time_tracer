@@ -42,3 +42,26 @@ From `time_tracer_cpp/test`:
 - `python run.py --suite log_generator --build-dir build_fast --agent --concise`
 - `run_time_tracer.bat --agent --concise`
 - `run_log_generator.bat --agent --concise`
+- `run_android_runtime_cpp_tests.bat -b build_fast`
+
+## Java env for Android build (Windows)
+
+For Android Gradle build in this workspace, use Android Studio bundled JBR:
+
+- `JAVA_HOME=C:\Application\Android\as\jbr`
+
+Validation (PowerShell):
+
+```powershell
+$env:JAVA_HOME
+java -version
+```
+
+Example verified output:
+
+```text
+C:\Application\Android\as\jbr
+openjdk version "21.0.9" 2025-10-21
+OpenJDK Runtime Environment (build 21.0.9+-14649483-b1163.86)
+OpenJDK 64-Bit Server VM (build 21.0.9+-14649483-b1163.86, mixed mode)
+```

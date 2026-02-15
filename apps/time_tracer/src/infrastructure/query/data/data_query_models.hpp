@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/query/data/data_query_types.hpp"
 
 namespace time_tracer::infrastructure::query::data {
@@ -45,7 +46,19 @@ auto PrintDayDurationStats(const DayDurationStats& stats) -> void;
 auto PrintTopDayDurations(const std::vector<DayDurationRow>& rows, int top_n)
     -> void;
 
+[[nodiscard]] auto RenderActivitySuggestions(
+    const std::vector<ActivitySuggestionRow>& rows) -> std::string;
+
+auto PrintActivitySuggestions(const std::vector<ActivitySuggestionRow>& rows)
+    -> void;
+
 [[nodiscard]] auto ComputeDayDurationStats(
     const std::vector<DayDurationRow>& rows) -> DayDurationStats;
+
+[[nodiscard]] auto RenderProjectTree(const reporting::ProjectTree& tree,
+                                     int max_depth) -> std::string;
+
+auto PrintProjectTree(const reporting::ProjectTree& tree, int max_depth)
+    -> void;
 
 }  // namespace time_tracer::infrastructure::query::data

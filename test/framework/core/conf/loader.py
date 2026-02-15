@@ -3,7 +3,9 @@ import re
 import sys
 from pathlib import Path
 from typing import Any, Dict
-from .definitions import Paths, CLINames, TestParams, Cleanup, RunControl, GlobalConfig, CommandSpec, PipelineConfig
+from .definitions import (CLINames, Cleanup, CommandSpec, GlobalConfig,
+                          LogRoutingConfig, LogRoutingRule, Paths,
+                          PipelineConfig, RunControl, TestParams)
 from .schema_validator import validate_suite_schema
 
 # Python 3.11+ 内置 tomllib
@@ -249,6 +251,45 @@ def _load_cleanup_params(toml_data) -> Cleanup:
     cleanup_inst.DIRECTORIES_TO_CLEAN = cleanup_data.get("directories_to_clean", [])
     return cleanup_inst
 
+def _load_log_routing(toml_data) -> LogRoutingConfig:
+    log_routing_data = toml_data.get("log_routing", {})
+    if not isinstance(log_routing_data, dict):
+        return LogRoutingConfig()
+
+    raw_rules = log_routing_data.get("rules", [])
+    if not isinstance(raw_rules, list):
+        return LogRoutingConfig()
+
+    rules: list[LogRoutingRule] = []
+    for item in raw_rules:
+        if not isinstance(item, dict):
+            continue
+
+        stage = str(item.get("stage", "")).strip()
+        subdir = str(item.get("subdir", "")).strip().strip("/\\")
+        if not stage or not subdir:
+            continue
+
+        command_prefix = [
+            str(token).strip().lower()
+            for token in _normalize_list(item.get("command_prefix"))
+            if str(token).strip()
+        ]
+        legacy_name_contains = [
+            str(token).strip().lower()
+            for token in _normalize_list(item.get("legacy_name_contains"))
+            if str(token).strip()
+        ]
+
+        rules.append(LogRoutingRule(
+            stage=stage,
+            subdir=subdir,
+            command_prefix=command_prefix,
+            legacy_name_contains=legacy_name_contains,
+        ))
+
+    return LogRoutingConfig(rules=rules)
+
 def _load_run_control(toml_data) -> RunControl:
     run_control_data = toml_data.get("run_control", {})
     run_inst = RunControl()
@@ -432,6 +473,7 @@ def load_config(config_path: Path = None, build_dir_name: str = None,
             cli_names=_load_cli_names(toml_data),
             test_params=_load_test_params(toml_data),
             cleanup=_load_cleanup_params(toml_data),
+            log_routing=_load_log_routing(toml_data),
             run_control=_load_run_control(toml_data),
             pipeline=pipeline_cfg,
             commands=_load_commands(toml_data, pipeline_cfg)

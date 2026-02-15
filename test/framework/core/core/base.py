@@ -2,9 +2,11 @@
 import re
 from pathlib import Path
 
-from ..conf.definitions import AppExitCode, SingleTestResult, TestContext, TestReport
+from ..conf.definitions import (AppExitCode, LogRoutingRule, SingleTestResult,
+                                TestContext, TestReport)
 from .executor import CommandExecutor
 from .logger import TestLogger
+from .log_routing import LogRoutingManager
 
 
 class TestCounter:
@@ -18,23 +20,35 @@ class TestCounter:
 
 class BaseTester:
     def __init__(self, counter: TestCounter, module_order: int, name: str,
-                 context: TestContext, show_output: str = "none"):
+                 context: TestContext, show_output: str = "none",
+                 log_routing_rules: list[LogRoutingRule] | None = None):
         self.ctx = context
         self.counter = counter
         self.module_name = name
 
         log_dir = self.ctx.py_output_base_dir / f"{module_order}_{name}"
         self.logger = TestLogger(log_dir)
+        self.log_routing = LogRoutingManager(
+            log_dir=self.logger.log_dir,
+            module_name=self.module_name,
+            rules=log_routing_rules or [],
+        )
         self.executor = CommandExecutor(show_output=show_output)
 
     def run_tests(self) -> TestReport:
         raise NotImplementedError
+
+    def _resolve_log_subdir(self, command_args: list) -> str:
+        return self.log_routing.resolve_subdir(command_args)
 
     def run_command_test(self, test_name: str, command_args: list,
                          **kwargs) -> SingleTestResult:
         current_count = self.counter.increment()
         sanitized_name = re.sub(r"[^a-zA-Z0-9]+", "_", test_name).lower()
         log_file = f"{current_count}_{sanitized_name}.log"
+        subdir = self._resolve_log_subdir(command_args)
+        if subdir:
+            log_file = f"{subdir}/{log_file}"
 
         full_cmd = [str(self.ctx.exe_path)] + command_args
         if kwargs.get("add_output_dir", False):

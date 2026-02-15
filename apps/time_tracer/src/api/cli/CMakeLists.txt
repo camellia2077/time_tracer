@@ -5,6 +5,9 @@ set(TIME_TRACKER_CLI_CORE_SOURCES
     "framework/core/command_parser.cpp"
     "framework/core/arg_definitions.cpp"
 
+    # Runtime bootstrap
+    "../../infrastructure/bootstrap/cli_runtime_factory.cpp"
+
     # App
     "impl/app/cli_application.cpp"
     "impl/app/app_runner.cpp"

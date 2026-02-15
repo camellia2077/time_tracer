@@ -2,6 +2,7 @@
 
 add_library(DayTexFormatter SHARED
     day_tex_formatter.cpp
+    day_tex_formatter_core.cpp
     day_tex_utils.cpp
     ../statistics/latex_strategy.cpp
 )

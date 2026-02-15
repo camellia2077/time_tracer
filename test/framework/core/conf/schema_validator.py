@@ -282,6 +282,41 @@ def _validate_commands(
         )
 
 
+def _validate_log_routing(
+    toml_data: dict[str, Any],
+    errors: list[str],
+) -> None:
+    log_routing = toml_data.get("log_routing")
+    if log_routing is None:
+        return
+    if not isinstance(log_routing, dict):
+        _append_error(errors, "log_routing", "must be a table.")
+        return
+
+    rules = log_routing.get("rules", [])
+    if not isinstance(rules, list):
+        _append_error(errors, "log_routing.rules", "must be an array of tables.")
+        return
+
+    for index, rule in enumerate(rules):
+        rule_path = f"log_routing.rules[{index}]"
+        if not isinstance(rule, dict):
+            _append_error(errors, rule_path, "must be a table.")
+            continue
+
+        _require_non_empty_string(rule, "stage", rule_path, errors)
+        _require_non_empty_string(rule, "subdir", rule_path, errors)
+        for key in ("command_prefix", "legacy_name_contains"):
+            values = _as_list(rule.get(key))
+            for value_index, value in enumerate(values):
+                if not isinstance(value, str) or not value.strip():
+                    _append_error(
+                        errors,
+                        f"{rule_path}.{key}[{value_index}]",
+                        "must be a non-empty string.",
+                    )
+
+
 def _validate_no_unresolved_dollar_variables(
     node: Any,
     path: str,
@@ -322,6 +357,7 @@ def validate_suite_schema(
     _validate_run_control(run_control, errors)
     _validate_pipeline(pipeline, errors)
     _validate_commands(toml_data, errors)
+    _validate_log_routing(toml_data, errors)
 
     if errors:
         details = "\n".join(f" - {error}" for error in errors)

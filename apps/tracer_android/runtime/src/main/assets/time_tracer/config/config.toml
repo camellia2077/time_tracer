@@ -1,0 +1,43 @@
+# config/config.toml
+
+[system]
+error_log = "../output/error_log.txt"
+export_root = "exported_reports"
+save_processed_output = true
+date_check_continuity = true
+
+[defaults]
+db_path = "output/db/time_data.sqlite3"
+output_root = "output"
+default_format = "md"
+
+[commands.export]
+format = "md"
+
+[commands.convert]
+date_check = "continuity"
+save_processed_output = true
+validate_logic = true
+validate_structure = true
+
+[commands.query]
+format = "md"
+
+[commands.ingest]
+date_check = "continuity"
+save_processed_output = true
+
+[commands.validate-logic]
+date_check = "none"
+
+[converter]
+# 指向新的 TOML 格式的转换器配置
+interval_config = "converter/interval_processor_config.toml"
+
+# Android keeps markdown only for lightweight runtime.
+[reports.markdown]
+day = "reports/markdown/day.toml"
+month = "reports/markdown/month.toml"
+period = "reports/markdown/period.toml"
+week = "reports/markdown/week.toml"
+year = "reports/markdown/year.toml"
