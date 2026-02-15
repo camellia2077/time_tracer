@@ -15,6 +15,7 @@ enum class ReportQueryType {
   kDay,
   kMonth,
   kRecent,
+  kRange,
   kWeek,
   kYear,
 };
@@ -39,6 +40,8 @@ enum class DataQueryAction {
   kDaysDuration,
   kDaysStats,
   kSearch,
+  kActivitySuggest,
+  kTree,
 };
 
 struct ConvertRequest {
@@ -110,6 +113,12 @@ struct DataQueryRequest {
   bool reverse = false;
   std::optional<int> limit;
   std::optional<int> top_n;
+  std::optional<int> lookback_days;
+  std::optional<std::string> activity_prefix;
+  bool activity_score_by_duration = false;
+  std::optional<std::string> tree_period;
+  std::optional<std::string> tree_period_argument;
+  std::optional<int> tree_max_depth;
 };
 
 struct TreeQueryRequest {

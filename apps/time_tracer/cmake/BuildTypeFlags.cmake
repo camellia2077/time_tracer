@@ -20,8 +20,14 @@ else()
     # -Os:         优化代码大小（兼顾体积与编译/运行稳定性）
     # -march=native: 针对当前机器的CPU架构进行优化，以获得最佳性能
     # -ffunction-sections/-fdata-sections: 将函数/数据分段，配合链接期 gc-sections 做体积裁剪
+    set(TIME_TRACKER_RELEASE_OPT_FLAGS "-Os -ffunction-sections -fdata-sections")
+    if(ANDROID)
+        message(STATUS "Android build detected, skip -march=native.")
+    else()
+        string(APPEND TIME_TRACKER_RELEASE_OPT_FLAGS " -march=native")
+    endif()
     set(CMAKE_CXX_FLAGS_RELEASE
-        "${CMAKE_CXX_FLAGS_RELEASE} -Os -march=native -ffunction-sections -fdata-sections")
+        "${CMAKE_CXX_FLAGS_RELEASE} ${TIME_TRACKER_RELEASE_OPT_FLAGS}")
 
     # --- 2. 设置通用的 Release 模式链接器标志 ---
     # -s:          剔除可执行文件中的符号信息，减小最终文件大小

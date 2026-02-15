@@ -14,13 +14,15 @@ from .reporter import Reporter
 class TableTester(BaseTester):
     def __init__(self, counter: TestCounter, module_order: int, stage: str,
                  context: TestContext, commands: List[CommandSpec],
-                 stop_on_failure: bool, show_output: str):
+                 stop_on_failure: bool, show_output: str,
+                 log_routing_rules=None):
         super().__init__(
             counter,
             module_order,
             stage,
             context,
             show_output=show_output,
+            log_routing_rules=log_routing_rules,
         )
         self.commands = commands
         self.stop_on_failure = stop_on_failure
@@ -52,6 +54,7 @@ class TestEngine:
         self.commands = config.commands
         self.run_control = config.run_control
         self.cleanup = config.cleanup
+        self.log_routing = config.log_routing
         self.options = options or {}
 
         self.start_time = 0.0
@@ -162,6 +165,7 @@ class TestEngine:
                     module_order=idx,
                     context=context,
                     show_output=self.show_output,
+                    log_routing_rules=self.log_routing.rules,
                 ))
                 continue
 
@@ -173,6 +177,7 @@ class TestEngine:
                 commands=self._expand_commands(context, commands),
                 stop_on_failure=self.run_control.STOP_ON_FAILURE,
                 show_output=self.show_output,
+                log_routing_rules=self.log_routing.rules,
             ))
         return modules
 

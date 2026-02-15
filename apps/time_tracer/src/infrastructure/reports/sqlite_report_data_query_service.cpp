@@ -8,6 +8,7 @@
 #include "infrastructure/reports/data/queriers/monthly/monthly_querier.hpp"
 #include "infrastructure/reports/data/queriers/period/batch_period_data_fetcher.hpp"
 #include "infrastructure/reports/data/queriers/period/period_querier.hpp"
+#include "infrastructure/reports/data/queriers/range/date_range_querier.hpp"
 #include "infrastructure/reports/data/queriers/weekly/weekly_querier.hpp"
 #include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
@@ -52,6 +53,14 @@ auto SqliteReportDataQueryService::QueryMonthly(std::string_view month)
 auto SqliteReportDataQueryService::QueryPeriod(int days) -> PeriodReportData {
   PeriodQuerier querier(EnsureDbConnection(db_connection_), days,
                         *platform_clock_);
+  return querier.FetchData();
+}
+
+auto SqliteReportDataQueryService::QueryRange(std::string_view start_date,
+                                              std::string_view end_date)
+    -> PeriodReportData {
+  DateRangeQuerier querier(EnsureDbConnection(db_connection_), start_date,
+                           end_date);
   return querier.FetchData();
 }
 

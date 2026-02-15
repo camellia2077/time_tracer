@@ -28,6 +28,7 @@ enum class StructuredReportKind {
   kDay,
   kMonth,
   kRecent,
+  kRange,
   kWeek,
   kYear,
 };

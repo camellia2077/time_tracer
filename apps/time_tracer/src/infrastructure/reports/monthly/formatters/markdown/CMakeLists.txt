@@ -2,6 +2,7 @@
 
 add_library(MonthMdFormatter SHARED
     month_md_formatter.cpp
+    month_md_formatter_core.cpp
 )
 
 setup_plugin_target(MonthMdFormatter NO_STDCXXEXP)

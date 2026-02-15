@@ -10,6 +10,25 @@ temp/
 *.png
 *.exe
 *.log
+*.tex
+*.typ
 
 
+# Android
+# 忽略 IDE 配置
+.idea/
+*.iml
+.DS_Store
+
+# 忽略本地 SDK 路径
+local.properties
+
+# 忽略构建产物和缓存
+build/
+.gradle/
+.kotlin/
+captures/
+
+# 忽略 keystore 文件
+*.jks
 

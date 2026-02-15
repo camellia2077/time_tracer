@@ -147,6 +147,16 @@ auto FormatStructuredReport(
               .content = formatter.FormatPeriod(*report, format),
               .error_message = ""};
     }
+    case StructuredReportKind::kRange: {
+      const auto* report = std::get_if<PeriodReportData>(&output.report);
+      if (report == nullptr) {
+        return BuildTextFailure("RunReportQuery",
+                                "Structured report kind/data mismatch: range.");
+      }
+      return {.ok = true,
+              .content = formatter.FormatPeriod(*report, format),
+              .error_message = ""};
+    }
     case StructuredReportKind::kWeek: {
       const auto* report = std::get_if<WeeklyReportData>(&output.report);
       if (report == nullptr) {

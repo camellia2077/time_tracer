@@ -1,8 +1,12 @@
 // application/use_cases/time_tracer_core_api_report.cpp
+#include <cctype>
+#include <chrono>
 #include <exception>
 #include <optional>
 #include <sstream>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "application/interfaces/i_report_handler.hpp"
@@ -19,6 +23,111 @@ namespace core_api_helpers =
 namespace {
 
 constexpr int kPeriodSeparatorLength = 40;
+
+struct DateRangeArgument {
+  std::string start_date;
+  std::string end_date;
+};
+
+[[nodiscard]] auto TrimAscii(std::string_view value) -> std::string_view {
+  size_t begin = 0;
+  while (begin < value.size() &&
+         std::isspace(static_cast<unsigned char>(value[begin])) != 0) {
+    ++begin;
+  }
+
+  size_t end = value.size();
+  while (end > begin &&
+         std::isspace(static_cast<unsigned char>(value[end - 1])) != 0) {
+    --end;
+  }
+
+  return value.substr(begin, end - begin);
+}
+
+auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
+  if (value.empty()) {
+    return false;
+  }
+
+  int parsed = 0;
+  for (const char character : value) {
+    if (std::isdigit(static_cast<unsigned char>(character)) == 0) {
+      return false;
+    }
+    parsed = parsed * 10 + (character - '0');
+  }
+  out_value = parsed;
+  return true;
+}
+
+auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
+    -> bool {
+  if (value.size() != 10 || value[4] != '-' || value[7] != '-') {
+    return false;
+  }
+
+  int year = 0;
+  int month = 0;
+  int day = 0;
+  if (!ParseUnsigned(value.substr(0, 4), year) ||
+      !ParseUnsigned(value.substr(5, 2), month) ||
+      !ParseUnsigned(value.substr(8, 2), day)) {
+    return false;
+  }
+
+  const std::chrono::year_month_day ymd(
+      std::chrono::year(year), std::chrono::month(static_cast<unsigned>(month)),
+      std::chrono::day(static_cast<unsigned>(day)));
+  if (!ymd.ok()) {
+    return false;
+  }
+
+  out_ymd = ymd;
+  return true;
+}
+
+auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
+  const std::string_view trimmed = TrimAscii(argument);
+  const size_t separator_pos = trimmed.find('|');
+  const size_t comma_pos = trimmed.find(',');
+
+  size_t split_pos = std::string_view::npos;
+  if (separator_pos != std::string_view::npos) {
+    split_pos = separator_pos;
+  } else if (comma_pos != std::string_view::npos) {
+    split_pos = comma_pos;
+  }
+
+  if (split_pos == std::string_view::npos) {
+    throw std::invalid_argument(
+        "Range argument must be `start|end` or `start,end` "
+        "(ISO YYYY-MM-DD).");
+  }
+
+  const std::string_view start_view = TrimAscii(trimmed.substr(0, split_pos));
+  const std::string_view end_view = TrimAscii(trimmed.substr(split_pos + 1U));
+  if (start_view.empty() || end_view.empty()) {
+    throw std::invalid_argument("Range start/end date must not be empty.");
+  }
+
+  std::chrono::year_month_day start_ymd;
+  std::chrono::year_month_day end_ymd;
+  if (!ParseIsoDate(start_view, start_ymd)) {
+    throw std::invalid_argument("Invalid range start date (ISO YYYY-MM-DD): " +
+                                std::string(start_view));
+  }
+  if (!ParseIsoDate(end_view, end_ymd)) {
+    throw std::invalid_argument("Invalid range end date (ISO YYYY-MM-DD): " +
+                                std::string(end_view));
+  }
+  if (std::chrono::sys_days(start_ymd) > std::chrono::sys_days(end_ymd)) {
+    throw std::invalid_argument("Range start date must be <= end date.");
+  }
+
+  return {.start_date = std::string(start_view),
+          .end_date = std::string(end_view)};
+}
 
 }  // namespace
 
@@ -60,6 +169,10 @@ auto TimeTracerCoreApi::RunReportQuery(const ReportQueryRequest& request)
             .content = report_handler_.RunPeriodQuery(kDays, request.format),
             .error_message = ""};
       }
+      case ReportQueryType::kRange:
+        return core_api_helpers::BuildTextFailure(
+            "RunReportQuery",
+            "Range report requires report data query service and formatter.");
       case ReportQueryType::kWeek:
         return {.ok = true,
                 .content = report_handler_.RunWeeklyQuery(request.argument,
@@ -105,6 +218,13 @@ auto TimeTracerCoreApi::RunStructuredReportQuery(
         return {.ok = true,
                 .kind = StructuredReportKind::kRecent,
                 .report = kReport->QueryPeriod(kDays),
+                .error_message = ""};
+      }
+      case ReportQueryType::kRange: {
+        const DateRangeArgument range = ParseRangeArgument(request.argument);
+        return {.ok = true,
+                .kind = StructuredReportKind::kRange,
+                .report = kReport->QueryRange(range.start_date, range.end_date),
                 .error_message = ""};
       }
       case ReportQueryType::kWeek:

@@ -2,6 +2,7 @@
 
 add_library(MonthTypFormatter SHARED
     month_typ_formatter.cpp
+    month_typ_formatter_core.cpp
 )
 
 setup_plugin_target(MonthTypFormatter NO_STDCXXEXP)

@@ -21,6 +21,23 @@ mode = "ingest"
 test_data_path = "../../data/dates"
 
 # ==============================================================================
+#                        LOG ROUTING (OPTIONAL)
+# ==============================================================================
+[log_routing]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "tree"]
+subdir = "tree"
+legacy_name_contains = ["_query_data_tree_"]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "days-stats"]
+subdir = "stats"
+legacy_name_contains = ["_query_data_days_stats_"]
+
+# ==============================================================================
 #                      COMMAND TABLE (TABLE-DRIVEN)
 # ==============================================================================
 [[command_groups]]
@@ -156,7 +173,109 @@ args = ["query", "data", "search", "--remark", "meeting", "--database", "{db_pat
 expect_exit = 0
 
 [[commands]]
+name = "Query Data Search Activity Remark Banana"
+stage = "query-data"
+args = ["query", "data", "search", "--remark", "banana", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Search Day Remark Betrayal"
+stage = "query-data"
+args = ["query", "data", "search", "--day-remark", "背叛", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
 name = "Query Data Project Search"
 stage = "query-data"
 args = ["query", "data", "search", "--project", "study", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Activity Suggest"
+stage = "query-data"
+args = ["query", "data", "activity-suggest", "--lookback-days", "10", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Days Stats Day"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20260103", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Days Stats Week"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "week", "--period-arg", "2026-W01", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Days Stats Month"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "month", "--period-arg", "202601", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Days Stats Year"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "year", "--period-arg", "2026", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Days Stats Recent"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "recent", "--period-arg", "7", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Days Stats Range"
+stage = "query-data"
+args = ["query", "data", "days-stats", "--period", "range", "--period-arg", "20260101|20260131", "--top", "5", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["## Day Duration Stats", "- **Days**:", "### Notes"]
+
+[[commands]]
+name = "Query Data Tree Day"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "day", "--period-arg", "20260103", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Week"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "week", "--period-arg", "2026-W01", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Month"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "month", "--period-arg", "202601", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Year"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "year", "--period-arg", "2026", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Recent"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "recent", "--period-arg", "7", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Range"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "range", "--period-arg", "20260101|20260131", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Data Tree Day Level 1"
+stage = "query-data"
+args = ["query", "data", "tree", "--period", "day", "--period-arg", "20260103", "--level", "1", "--database", "{db_path}"]
 expect_exit = 0
