@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 
+
 def get_folder_size(folder_path: Path) -> int:
     """Calculates the total size of a folder and all its subfolders."""
     total_size = 0
@@ -11,6 +12,7 @@ def get_folder_size(folder_path: Path) -> int:
             if not os.path.islink(fp):
                 total_size += os.path.getsize(fp)
     return total_size
+
 
 def format_size(size_in_bytes: int) -> str:
     """Formats a size in bytes to a human-readable string (KB, MB)."""

@@ -1,8 +1,14 @@
 // domain/ports/diagnostics.cpp
 #include "domain/ports/diagnostics.hpp"
 
+#include <algorithm>
+#include <deque>
 #include <mutex>
+#include <ranges>
+#include <sstream>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 namespace time_tracer::domain::ports {
 namespace {
@@ -29,6 +35,68 @@ std::shared_ptr<IDiagnosticsSink> g_diagnostics_sink =
     std::make_shared<NullDiagnosticsSink>();
 std::shared_ptr<IErrorReportWriter> g_error_report_writer =
     std::make_shared<NullErrorReportWriter>();
+constexpr std::size_t kBufferedDiagnosticsCapacity = 256;
+
+struct BufferedDiagnosticEntry {
+  DiagnosticSeverity severity;
+  std::string message;
+};
+
+std::deque<BufferedDiagnosticEntry> g_buffered_diagnostics;
+
+// Session-level dedup set: gates Emit calls only (not file writes).
+// All severities share one set; reset via ClearDiagnosticsDedup().
+std::unordered_set<std::string> g_dedup_set;
+
+auto ToSeverityRank(DiagnosticSeverity severity) -> int {
+  switch (severity) {
+    case DiagnosticSeverity::kInfo:
+      return 0;
+    case DiagnosticSeverity::kWarn:
+      return 1;
+    case DiagnosticSeverity::kError:
+      return 2;
+  }
+  return 0;
+}
+
+auto ToSeverityLabel(DiagnosticSeverity severity) -> std::string_view {
+  switch (severity) {
+    case DiagnosticSeverity::kInfo:
+      return "INFO";
+    case DiagnosticSeverity::kWarn:
+      return "WARN";
+    case DiagnosticSeverity::kError:
+      return "ERROR";
+  }
+  return "INFO";
+}
+
+void BufferDiagnosticLocked(DiagnosticSeverity severity,
+                            std::string_view message) {
+  if (message.empty()) {
+    return;
+  }
+  g_buffered_diagnostics.push_back(
+      {.severity = severity, .message = std::string(message)});
+  while (g_buffered_diagnostics.size() > kBufferedDiagnosticsCapacity) {
+    g_buffered_diagnostics.pop_front();
+  }
+}
+
+void EmitAndBuffer(DiagnosticSeverity severity, std::string_view message) {
+  std::shared_ptr<IDiagnosticsSink> sink;
+  bool already_emitted = false;
+  {
+    std::scoped_lock lock(g_mutex);
+    sink = g_diagnostics_sink;
+    BufferDiagnosticLocked(severity, message);
+    already_emitted = !g_dedup_set.emplace(message).second;
+  }
+  if (!already_emitted) {
+    sink->Emit(severity, message);
+  }
+}
 
 }  // namespace
 
@@ -61,15 +129,15 @@ auto GetErrorReportWriter() -> std::shared_ptr<IErrorReportWriter> {
 }
 
 auto EmitInfo(std::string_view message) -> void {
-  GetDiagnosticsSink()->Emit(DiagnosticSeverity::kInfo, message);
+  EmitAndBuffer(DiagnosticSeverity::kInfo, message);
 }
 
 auto EmitWarn(std::string_view message) -> void {
-  GetDiagnosticsSink()->Emit(DiagnosticSeverity::kWarn, message);
+  EmitAndBuffer(DiagnosticSeverity::kWarn, message);
 }
 
 auto EmitError(std::string_view message) -> void {
-  GetDiagnosticsSink()->Emit(DiagnosticSeverity::kError, message);
+  EmitAndBuffer(DiagnosticSeverity::kError, message);
 }
 
 auto AppendErrorReport(std::string_view report_content) -> bool {
@@ -78,6 +146,62 @@ auto AppendErrorReport(std::string_view report_content) -> bool {
 
 auto GetErrorReportDestinationLabel() -> std::string {
   return GetErrorReportWriter()->DestinationLabel();
+}
+
+auto ClearBufferedDiagnostics() -> void {
+  std::scoped_lock lock(g_mutex);
+  g_buffered_diagnostics.clear();
+}
+
+auto ClearDiagnosticsDedup() -> void {
+  std::scoped_lock lock(g_mutex);
+  g_dedup_set.clear();
+}
+
+auto GetCurrentRunErrorLogPath() -> std::string {
+  return GetErrorReportDestinationLabel();
+}
+
+auto GetBufferedDiagnosticsSummary(DiagnosticSeverity minimum_severity,
+                                   std::size_t max_entries) -> std::string {
+  if (max_entries == 0) {
+    return "";
+  }
+
+  std::vector<std::string> lines;
+  lines.reserve(max_entries);
+  {
+    std::scoped_lock lock(g_mutex);
+    const int kMinRank = ToSeverityRank(minimum_severity);
+    for (const auto& buffered_diagnostic :
+         std::views::reverse(g_buffered_diagnostics)) {
+      if (ToSeverityRank(buffered_diagnostic.severity) < kMinRank) {
+        continue;
+      }
+
+      const std::string kLine =
+          "[" + std::string(ToSeverityLabel(buffered_diagnostic.severity)) +
+          "] " + buffered_diagnostic.message;
+      lines.push_back(kLine);
+      if (lines.size() >= max_entries) {
+        break;
+      }
+    }
+  }
+
+  if (lines.empty()) {
+    return "";
+  }
+
+  std::ranges::reverse(lines);
+  std::ostringstream stream;
+  for (std::size_t idx = 0; idx < lines.size(); ++idx) {
+    if (idx > 0) {
+      stream << '\n';
+    }
+    stream << lines[idx];
+  }
+  return stream.str();
 }
 
 }  // namespace time_tracer::domain::ports

@@ -1,0 +1,72 @@
+# ==============================================================================
+#                      COMMAND TABLE (TABLE-DRIVEN)
+# ==============================================================================
+[[command_groups]]
+name = "Query Daily"
+stage = "query"
+name_template = "Query Daily ({date}) [{fmt}]"
+template = ["query", "day", "{date}", "--format", "{fmt}", "--database", "{db_path}"]
+matrix = { date = ["20260101", "20260201"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Query Monthly"
+stage = "query"
+name_template = "Query Monthly ({month}) [{fmt}]"
+template = ["query", "month", "{month}", "--format", "{fmt}", "--database", "{db_path}"]
+matrix = { month = ["202605", "202606"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Query Weekly"
+stage = "query"
+name_template = "Query Weekly ({week}) [{fmt}]"
+template = ["query", "week", "{week}", "--format", "{fmt}", "--database", "{db_path}"]
+matrix = { week = ["2026-W01", "2026-W05"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Query Yearly"
+stage = "query"
+name_template = "Query Yearly ({year}) [{fmt}]"
+template = ["query", "year", "{year}", "--format", "{fmt}", "--database", "{db_path}"]
+matrix = { year = ["2025", "2026"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Query Recent"
+stage = "query"
+name_template = "Query Recent ({days} days) [{fmt}]"
+template = ["query", "recent", "{days}", "--format", "{fmt}", "--database", "{db_path}"]
+matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Export Daily"
+stage = "export"
+name_template = "Export Daily ({date}) [{fmt}]"
+template = ["export", "day", "{date}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { date = ["20210103", "20260101", "20260102", "20260103", "20260104", "20260105", "20260106", "20260107", "20260108", "20260109", "202601010", "20260201"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Export Monthly"
+stage = "export"
+name_template = "Export Monthly ({month}) [{fmt}]"
+template = ["export", "month", "{month}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { month = ["202605", "202606"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Export Weekly"
+stage = "export"
+name_template = "Export Weekly ({week}) [{fmt}]"
+template = ["export", "week", "{week}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { week = ["2026-W01", "2026-W05"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Export Yearly"
+stage = "export"
+name_template = "Export Yearly ({year}) [{fmt}]"
+template = ["export", "year", "{year}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { year = ["2025", "2026"], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Export Recent"
+stage = "export"
+name_template = "Export Recent ({days} days) [{fmt}]"
+template = ["export", "recent", "{days}", "--format", "{fmt}", "--database", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }

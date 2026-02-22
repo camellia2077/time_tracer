@@ -1,0 +1,5 @@
+[[commands]]
+name = "Version Check"
+stage = "version"
+args = ["--version"]
+expect_exit = 0

@@ -50,6 +50,9 @@ auto TextValidator::Validate(const std::string& filename,
     if (LineRules::IsYear(trimmed_line)) {
       pimpl_->structural_validator.ProcessYearLine(line_number, trimmed_line,
                                                    errors, span);
+    } else if (LineRules::IsMonth(trimmed_line)) {
+      pimpl_->structural_validator.ProcessMonthLine(line_number, trimmed_line,
+                                                    errors, span);
     } else if (LineRules::IsDate(trimmed_line)) {
       pimpl_->structural_validator.ProcessDateLine(line_number, trimmed_line,
                                                    errors, span);
@@ -75,6 +78,19 @@ auto TextValidator::Validate(const std::string& filename,
                      ErrorType::kSourceMissingYearHeader, span});
       return false;  // 严重错误，停止解析
     }
+  }
+
+  if (pimpl_->structural_validator.HasSeenYear() &&
+      !pimpl_->structural_validator.HasSeenMonth()) {
+    const int kLine = line_number > 0 ? line_number : 1;
+    errors.insert({kLine, "Month header (mMM) is required before date lines.",
+                   ErrorType::kStructural,
+                   SourceSpan{.file_path = filename,
+                              .line_start = kLine,
+                              .line_end = kLine,
+                              .column_start = 1,
+                              .column_end = 1,
+                              .raw_text = ""}});
   }
 
   return errors.empty();

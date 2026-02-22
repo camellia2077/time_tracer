@@ -14,6 +14,7 @@
 #include "application/use_cases/time_tracer_core_api.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/repositories/i_project_repository.hpp"
+#include "domain/types/ingest_mode.hpp"
 
 namespace time_tracer::application::tests {
 
@@ -30,6 +31,7 @@ class FakeWorkflowHandler final : public IWorkflowHandler {
   std::string last_ingest_input;
   DateCheckMode last_ingest_mode = DateCheckMode::kNone;
   bool last_ingest_save_processed = false;
+  IngestMode last_ingest_import_mode = IngestMode::kStandard;
   std::string last_import_path;
   std::string last_validate_structure_input;
   std::string last_validate_logic_input;
@@ -49,7 +51,7 @@ class FakeWorkflowHandler final : public IWorkflowHandler {
       const std::map<std::string, std::vector<DailyLog>>& data_map)
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed) -> void override;
+                 bool save_processed, IngestMode ingest_mode) -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;

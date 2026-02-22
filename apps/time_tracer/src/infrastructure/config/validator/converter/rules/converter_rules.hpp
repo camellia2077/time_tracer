@@ -6,13 +6,15 @@
 
 #include <string>
 
+struct MainConfigPaths {
+  std::string duration_rules_config_path;
+  std::string alias_mapping_path;
+};
+
 class MainRule {
  public:
-  // NOLINTBEGIN(bugprone-easily-swappable-parameters)
-  static auto Validate(const toml::table& main_tbl,
-                       std::string& out_mappings_path,
-                       std::string& out_duration_rules_path) -> bool;
-  // NOLINTEND(bugprone-easily-swappable-parameters)
+  static auto Validate(const toml::table& main_tbl, MainConfigPaths& out_paths)
+      -> bool;
 };
 
 class DurationRule {
@@ -23,6 +25,11 @@ class DurationRule {
 class MappingRule {
  public:
   static auto Validate(const toml::table& mappings_tbl) -> bool;
+};
+
+class V2Rule {
+ public:
+  static auto ValidateAliasMapping(const toml::table& alias_tbl) -> bool;
 };
 
 #endif  // INFRASTRUCTURE_CONFIG_VALIDATOR_CONVERTER_RULES_CONVERTER_RULES_H_

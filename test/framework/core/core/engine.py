@@ -4,18 +4,24 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 from ..cases.version import VersionChecker
-from ..conf.definitions import (CommandSpec, GlobalConfig, TestContext,
-                                 TestReport)
+from ..conf.definitions import CommandSpec, GlobalConfig, TestContext, TestReport
 from ..infrastructure.environment import EnvironmentManager
 from .base import BaseTester, TestCounter
 from .reporter import Reporter
 
 
 class TableTester(BaseTester):
-    def __init__(self, counter: TestCounter, module_order: int, stage: str,
-                 context: TestContext, commands: List[CommandSpec],
-                 stop_on_failure: bool, show_output: str,
-                 log_routing_rules=None):
+    def __init__(
+        self,
+        counter: TestCounter,
+        module_order: int,
+        stage: str,
+        context: TestContext,
+        commands: List[CommandSpec],
+        stop_on_failure: bool,
+        show_output: str,
+        log_routing_rules=None,
+    ):
         super().__init__(
             counter,
             module_order,
@@ -35,8 +41,10 @@ class TableTester(BaseTester):
                 spec.args,
                 add_output_dir=spec.add_output_dir,
                 expect_exit=spec.expect_exit,
+                raw_command=spec.raw_command,
                 stdin_input=spec.stdin_input,
                 expect_files=spec.expect_files,
+                expect_file_contains=spec.expect_file_contains,
                 expect_stdout_contains=spec.expect_stdout_contains,
                 expect_stderr_contains=spec.expect_stderr_contains,
             )
@@ -81,8 +89,10 @@ class TestEngine:
         self.start_time = time.monotonic()
         all_reports: List[TestReport] = []
         try:
-            if self.run_control.ENABLE_ENVIRONMENT_CLEAN or \
-                    self.run_control.ENABLE_ENVIRONMENT_PREPARE:
+            if (
+                self.run_control.ENABLE_ENVIRONMENT_CLEAN
+                or self.run_control.ENABLE_ENVIRONMENT_PREPARE
+            ):
                 self.env_manager = EnvironmentManager(
                     source_exe_dir=self.paths.SOURCE_EXECUTABLES_DIR,
                     files_to_copy=self.cleanup.FILES_TO_COPY,
@@ -99,8 +109,7 @@ class TestEngine:
 
             if self.run_control.ENABLE_TEST_EXECUTION:
                 if self.paths.PROCESSED_JSON_DIR:
-                    self.paths.PROCESSED_JSON_DIR.mkdir(parents=True,
-                                                        exist_ok=True)
+                    self.paths.PROCESSED_JSON_DIR.mkdir(parents=True, exist_ok=True)
                 context = self._build_context()
                 counter = TestCounter()
                 modules = self._build_table_suites(context, counter)
@@ -126,10 +135,12 @@ class TestEngine:
         return list(self.case_records)
 
     def _build_context(self) -> TestContext:
-        output_dir = self.paths.OUTPUT_DIR_NAME \
-            if self.paths.OUTPUT_DIR_NAME else Path.cwd()
-        exe_path = self.paths.TARGET_EXECUTABLES_DIR / \
-            self.cli_names.EXECUTABLE_CLI_NAME
+        output_dir = (
+            self.paths.OUTPUT_DIR_NAME if self.paths.OUTPUT_DIR_NAME else Path.cwd()
+        )
+        exe_path = (
+            self.paths.TARGET_EXECUTABLES_DIR / self.cli_names.EXECUTABLE_CLI_NAME
+        )
 
         return TestContext(
             exe_path=exe_path,
@@ -143,8 +154,9 @@ class TestEngine:
             processed_json_path=self.paths.PROCESSED_JSON_PATH,
         )
 
-    def _build_table_suites(self, context: TestContext,
-                            counter: TestCounter) -> List[BaseTester]:
+    def _build_table_suites(
+        self, context: TestContext, counter: TestCounter
+    ) -> List[BaseTester]:
         if not self.commands:
             return []
 
@@ -160,40 +172,48 @@ class TestEngine:
         modules: List[BaseTester] = []
         for idx, (stage, commands) in enumerate(stages, 1):
             if stage == "version":
-                modules.append(VersionChecker(
-                    counter=counter,
-                    module_order=idx,
-                    context=context,
-                    show_output=self.show_output,
-                    log_routing_rules=self.log_routing.rules,
-                ))
+                modules.append(
+                    VersionChecker(
+                        counter=counter,
+                        module_order=idx,
+                        context=context,
+                        show_output=self.show_output,
+                        log_routing_rules=self.log_routing.rules,
+                    )
+                )
                 continue
 
-            modules.append(TableTester(
-                counter=counter,
-                module_order=idx,
-                stage=stage,
-                context=context,
-                commands=self._expand_commands(context, commands),
-                stop_on_failure=self.run_control.STOP_ON_FAILURE,
-                show_output=self.show_output,
-                log_routing_rules=self.log_routing.rules,
-            ))
+            modules.append(
+                TableTester(
+                    counter=counter,
+                    module_order=idx,
+                    stage=stage,
+                    context=context,
+                    commands=self._expand_commands(context, commands),
+                    stop_on_failure=self.run_control.STOP_ON_FAILURE,
+                    show_output=self.show_output,
+                    log_routing_rules=self.log_routing.rules,
+                )
+            )
         return modules
 
-    def _expand_commands(self, context: TestContext,
-                         commands: List[CommandSpec]) -> List[CommandSpec]:
+    def _expand_commands(
+        self, context: TestContext, commands: List[CommandSpec]
+    ) -> List[CommandSpec]:
         variables = {
             "data_path": str(context.source_data_path),
             "db_path": str(context.db_path) if context.db_path else "",
             "output_dir": str(context.output_dir),
             "export_output_dir": str(context.export_output_dir)
-            if context.export_output_dir else "",
+            if context.export_output_dir
+            else "",
             "exe_dir": str(context.exe_path.parent),
             "processed_json_path": str(context.processed_json_path)
-            if context.processed_json_path else "",
+            if context.processed_json_path
+            else "",
             "processed_json_dir": str(context.processed_json_dir)
-            if context.processed_json_dir else "",
+            if context.processed_json_dir
+            else "",
         }
 
         def safe_format(value: str) -> str:
@@ -205,23 +225,33 @@ class TestEngine:
 
         expanded = []
         for command in commands:
-            expanded.append(CommandSpec(
-                name=safe_format(command.name),
-                args=[safe_format(str(arg)) for arg in command.args],
-                stage=command.stage,
-                expect_exit=command.expect_exit,
-                add_output_dir=command.add_output_dir,
-                stdin_input=safe_format(command.stdin_input)
-                if command.stdin_input else None,
-                expect_files=[safe_format(str(path))
-                              for path in command.expect_files],
-                expect_stdout_contains=[safe_format(str(text))
-                                        for text in
-                                        command.expect_stdout_contains],
-                expect_stderr_contains=[safe_format(str(text))
-                                        for text in
-                                        command.expect_stderr_contains],
-            ))
+            expanded.append(
+                CommandSpec(
+                    name=safe_format(command.name),
+                    args=[safe_format(str(arg)) for arg in command.args],
+                    stage=command.stage,
+                    expect_exit=command.expect_exit,
+                    raw_command=command.raw_command,
+                    add_output_dir=command.add_output_dir,
+                    stdin_input=safe_format(command.stdin_input)
+                    if command.stdin_input
+                    else None,
+                    expect_files=[
+                        safe_format(str(path)) for path in command.expect_files
+                    ],
+                    expect_file_contains=[
+                        safe_format(str(spec)) for spec in command.expect_file_contains
+                    ],
+                    expect_stdout_contains=[
+                        safe_format(str(text))
+                        for text in command.expect_stdout_contains
+                    ],
+                    expect_stderr_contains=[
+                        safe_format(str(text))
+                        for text in command.expect_stderr_contains
+                    ],
+                )
+            )
         return expanded
 
     def _run_suite(self, modules: List[BaseTester]):

@@ -45,10 +45,22 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   app_config.exe_dir_path = exe_path_;
 
   // 1. 解析基础路径和设置
-  ConfigParserUtils::ParseSystemSettings(tbl, exe_path_, app_config);
-  ConfigParserUtils::ParseCliDefaults(tbl, exe_path_, app_config);
-  ConfigParserUtils::ParsePipelineSettings(tbl, config_dir_path_, app_config);
-  ConfigParserUtils::ParseReportPaths(tbl, config_dir_path_, app_config);
+  ConfigParserUtils::ParseSystemSettings(tbl, exe_path_, main_config_path_,
+                                         app_config);
+  ConfigParserUtils::ParseCliDefaults(tbl, exe_path_, main_config_path_,
+                                      app_config);
+
+  const bool kBundlePathsLoaded =
+      ConfigParserUtils::TryParseBundlePaths(config_dir_path_, app_config);
+  if (!kBundlePathsLoaded) {
+    const fs::path kBundlePath =
+        ConfigParserUtils::ResolveBundlePath(config_dir_path_);
+    throw std::runtime_error(
+        "Bundle path config not found: " + kBundlePath.string() +
+        ". Legacy [converter]/[reports] fallback was removed. "
+        "Run `python scripts/run.py config-migrate --app tracer_windows "
+        "--apply` first.");
+  }
 
   // 2. 加载报表配置
   try {

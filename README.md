@@ -1,5 +1,4 @@
-[English Version](README.en.md)
-# time tracer (TimeMaster)
+# time tracer (TimeMaster) ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 **time tracer** - 基于 C++23 构建的个人时间追踪与分析系统。
 
@@ -13,7 +12,7 @@
 
 ### 核心组件
 
-* **`time_tracker_cli` (C++23)**: 核心命令行程序。采用管道模式处理原始文本日志，提供基于 SQLite 的高效查询及多格式（Markdown, LaTeX, Typst）报表导出。
+* **`time_tracer_cli` (C++23)**: 核心命令行程序。采用管道模式处理原始文本日志，提供基于 SQLite 的高效查询及多格式（Markdown, LaTeX, Typst）报表导出。
 * **`graph_generator` (Python)**: 数据可视化工具。读取数据库并生成动态图表（如时间线、热力图）。
 * **`log_generator` (C++)**: 辅助工具。用于生成符合规范的测试日志数据。
 
@@ -23,7 +22,7 @@
 
 ### 1. 环境依赖
 
-* **C++ 组件 (`time_tracker_cli`)**:
+* **C++ 组件 (`time_tracer_cli`)**:
     * **MSYS2 UCRT64** (Windows 推荐)
     * **CMake** >= 3.25 (C++23 支持)
     * **编译器**: Clang 16+ 或 GCC 13+
@@ -44,21 +43,21 @@
 
 ```bash
 # 处理 target_logs 目录下的所有原始日志
-time_tracker_cli blink -a "path/to/target_logs"
+time_tracer_cli blink -a "path/to/target_logs"
 ```
 
 **示例 2：查询数据清单**
 
 ```bash
 # 查询 2026年 的所有日期记录
-time_tracker_cli query data days --year 2026
+time_tracer_cli query data days --year 2026
 ```
 
 **示例 3：导出格式化报表**
 
 ```bash
 # 导出 2026-W05 的周报为 Markdown 格式
-time_tracker_cli export week 2026-W05 -f md
+time_tracer_cli export week 2026-W05 -f md
 ```
 
 ---
@@ -93,12 +92,13 @@ docs/time_tracer/
 * **Gemini 3 Pro**
 * **Claude 4.5 opus**
 * **GPT-5.2-codex**
+* **GPT-5.3-codex**
 
 ---
 
 ## 许可证与开源库
 
-本仓库自有源码使用 **MIT** 许可证（见 `LICENSE`）。
+本仓库自有源码使用 **GNU General Public License v3.0 (GPL v3)** 许可证（见 `LICENSE`）。
 第三方依赖保持各自原始许可证。
 
 ### 核心与工具链

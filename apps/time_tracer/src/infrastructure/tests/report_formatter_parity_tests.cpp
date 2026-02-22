@@ -1,3 +1,4 @@
+// infrastructure/tests/report_formatter_parity_tests.cpp
 #include <algorithm>
 #include <array>
 #include <cstdlib>
@@ -23,6 +24,9 @@
 #include "infrastructure/reports/report_dto_formatter.hpp"
 
 namespace {
+
+// Test fixture code intentionally favors explicit literals and sample labels.
+// NOLINTBEGIN(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)
 
 namespace fs = std::filesystem;
 
@@ -477,6 +481,7 @@ auto RunFormatterParityTests() -> int {
   return 1;
 }
 
+// NOLINTEND(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)
 }  // namespace
 
 auto main() -> int {

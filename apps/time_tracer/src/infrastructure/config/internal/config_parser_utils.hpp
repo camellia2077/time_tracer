@@ -15,27 +15,34 @@ namespace ConfigParserUtils {
  */
 void ParseSystemSettings(const toml::table& tbl,
                          const std::filesystem::path& exe_path,
+                         const std::filesystem::path& source_config_path,
                          AppConfig& config);
 
 /**
- * @brief 解析 Converter / Pipeline 部分的配置 (TOML)
+ * @brief 返回 `config/meta/bundle.toml` 的标准路径。
  */
-void ParsePipelineSettings(const toml::table& tbl,
-                           const std::filesystem::path& config_dir,
-                           AppConfig& config);
+auto ResolveBundlePath(const std::filesystem::path& config_dir)
+    -> std::filesystem::path;
 
 /**
- * @brief 解析 Reports 路径配置部分 (TOML)
+ * @brief 解析 `config/meta/bundle.toml` 中的路径配置。
+ * @return
+
+ * * true 表示成功加载 bundle；false 表示 bundle 文件缺失。
+ *
+ *
+ * @throws std::runtime_error 当 bundle 文件存在但无效。
  */
-void ParseReportPaths(const toml::table& tbl,
-                      const std::filesystem::path& config_dir,
-                      AppConfig& config);
+auto TryParseBundlePaths(const std::filesystem::path& config_dir,
+                         AppConfig& config) -> bool;
 
 /**
  * @brief 解析 CLI 默认参数与命令级配置 (TOML)
  */
 void ParseCliDefaults(const toml::table& tbl,
-                      const std::filesystem::path& exe_path, AppConfig& config);
+                      const std::filesystem::path& exe_path,
+                      const std::filesystem::path& source_config_path,
+                      AppConfig& config);
 
 }  // namespace ConfigParserUtils
 

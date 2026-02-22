@@ -137,12 +137,6 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
-    fun createCurrentMonthTxt() {
-        viewModelScope.launch {
-            uiState = recordUseCases.createCurrentMonthTxt(uiState)
-        }
-    }
-
     fun refreshHistory() {
         viewModelScope.launch {
             uiState = recordUseCases.refreshHistory(uiState)
@@ -179,7 +173,16 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
-    fun clearLiveTxtEditorState() {
+    fun discardUnsavedHistoryDraft() {
+        if (uiState.editableHistoryContent == uiState.selectedHistoryContent) {
+            return
+        }
+        uiState = uiState.copy(
+            editableHistoryContent = uiState.selectedHistoryContent
+        )
+    }
+
+    fun clearTxtEditorState() {
         uiState = recordUseCases.clearEditorState(uiState)
     }
 }

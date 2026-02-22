@@ -17,6 +17,29 @@ if(CLANG_TIDY_EXE)
     # 注意：我们只对 .cpp 进行 Tidy 检查，因为头文件会被包含在 .cpp 中一同分析。
     file(GLOB_RECURSE ALL_TIDY_SOURCES LIST_DIRECTORIES false RELATIVE "${CMAKE_SOURCE_DIR}" "src/*.cpp")
 
+    # 在非 Android 平台执行 tidy 时，跳过 Android 专属实现，避免 JNI 头缺失导致中断。
+    if(NOT ANDROID)
+        list(LENGTH ALL_TIDY_SOURCES TIDY_SOURCE_COUNT_BEFORE_FILTER)
+        set(TIDY_SOURCES_NON_ANDROID "")
+        foreach(FILE_PATH ${ALL_TIDY_SOURCES})
+            string(REPLACE "\\" "/" FILE_PATH_NORMALIZED "${FILE_PATH}")
+            if(NOT FILE_PATH_NORMALIZED MATCHES ".*/android/.*\\.cpp$"
+               AND NOT FILE_PATH_NORMALIZED MATCHES ".*/android_.*\\.cpp$")
+                list(APPEND TIDY_SOURCES_NON_ANDROID "${FILE_PATH}")
+            endif()
+        endforeach()
+        set(ALL_TIDY_SOURCES ${TIDY_SOURCES_NON_ANDROID})
+        list(LENGTH ALL_TIDY_SOURCES TIDY_SOURCE_COUNT_AFTER_FILTER)
+        math(EXPR TIDY_ANDROID_EXCLUDED_COUNT
+            "${TIDY_SOURCE_COUNT_BEFORE_FILTER} - ${TIDY_SOURCE_COUNT_AFTER_FILTER}"
+        )
+        if(TIDY_ANDROID_EXCLUDED_COUNT GREATER 0)
+            message(STATUS
+                "Non-Android tidy: excluded ${TIDY_ANDROID_EXCLUDED_COUNT} Android-related source files."
+            )
+        endif()
+    endif()
+
     # 2. 创建顶层目标
     add_custom_target(tidy-fix)
 

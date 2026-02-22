@@ -14,7 +14,31 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
 
 enum class ThemeColor {
-    Rose, Orange, Peach, Gold, Mint, Emerald, Teal, Cyan, Sky, Lavender, Violet, Pink, Sakura, Magenta, Slate
+    Rose,
+    Orange,
+    Peach,
+    Amber,
+    Gold,
+    Mint,
+    Emerald,
+    Teal,
+    Turquoise,
+    Cyan,
+    Sky,
+    Periwinkle,
+    Lavender,
+    Violet,
+    Pink,
+    Sakura,
+    Magenta,
+    Cobalt,
+    Navy,
+    Crimson,
+    Burgundy,
+    Lime,
+    Cocoa,
+    Graphite,
+    Slate
 }
 
 enum class ThemeMode {
@@ -23,6 +47,12 @@ enum class ThemeMode {
 
 enum class DarkThemeStyle {
     Tinted, Neutral, Black
+}
+
+enum class AppLanguage {
+    Chinese,
+    English,
+    Japanese
 }
 
 data class ThemeConfig(
@@ -45,6 +75,7 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         const val DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 7
         const val DEFAULT_RECORD_SUGGEST_TOP_N: Int = 5
         val DEFAULT_RECORD_QUICK_ACTIVITIES: List<String> = listOf("meal", "洗漱", "上厕所")
+        const val DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE: Boolean = false
         private const val MIN_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 1
         private const val MAX_RECORD_SUGGEST_LOOKBACK_DAYS: Int = 60
         private const val MIN_RECORD_SUGGEST_TOP_N: Int = 1
@@ -60,11 +91,13 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val USE_DYNAMIC_COLOR = booleanPreferencesKey("use_dynamic_color")
         val DARK_THEME_STYLE = stringPreferencesKey("dark_theme_style")
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
         val RECORD_SUGGEST_LOOKBACK_DAYS = intPreferencesKey("record_suggest_lookback_days")
         val RECORD_SUGGEST_TOP_N = intPreferencesKey("record_suggest_top_n")
         val RECORD_QUICK_ACTIVITIES = stringPreferencesKey("record_quick_activities")
         val RECORD_ASSIST_EXPANDED = booleanPreferencesKey("record_assist_expanded")
         val RECORD_ASSIST_SETTINGS_EXPANDED = booleanPreferencesKey("record_assist_settings_expanded")
+        val REPORT_CHART_SHOW_AVERAGE_LINE = booleanPreferencesKey("report_chart_show_average_line")
     }
 
     val themeConfig: Flow<ThemeConfig> = dataStore.data.map { preferences ->
@@ -77,8 +110,14 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             themeColor = runCatching { ThemeColor.valueOf(colorName) }.getOrDefault(ThemeColor.Slate),
             themeMode = runCatching { ThemeMode.valueOf(modeName) }.getOrDefault(ThemeMode.System),
             useDynamicColor = useDynamicColor,
-            darkThemeStyle = runCatching { DarkThemeStyle.valueOf(darkThemeStyleName) }.getOrDefault(DarkThemeStyle.Tinted)
+            darkThemeStyle = runCatching { DarkThemeStyle.valueOf(darkThemeStyleName) }
+                .getOrDefault(DarkThemeStyle.Tinted)
         )
+    }
+
+    val appLanguage: Flow<AppLanguage> = dataStore.data.map { preferences ->
+        val languageName = preferences[PreferencesKeys.APP_LANGUAGE] ?: AppLanguage.English.name
+        runCatching { AppLanguage.valueOf(languageName) }.getOrDefault(AppLanguage.English)
     }
 
     val recordSuggestionPreferences: Flow<RecordSuggestionPreferences> = dataStore.data.map { preferences ->
@@ -127,6 +166,17 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         }
     }
 
+    val reportChartShowAverageLine: Flow<Boolean> = dataStore.data.map { preferences ->
+        preferences[PreferencesKeys.REPORT_CHART_SHOW_AVERAGE_LINE]
+            ?: DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
+    }
+
+    suspend fun setAppLanguage(language: AppLanguage) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.APP_LANGUAGE] = language.name
+        }
+    }
+
     suspend fun setRecordSuggestLookbackDays(value: Int) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_SUGGEST_LOOKBACK_DAYS] = normalizeLookbackDays(value)
@@ -156,6 +206,12 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
     suspend fun setRecordAssistSettingsExpanded(value: Boolean) {
         dataStore.edit { preferences ->
             preferences[PreferencesKeys.RECORD_ASSIST_SETTINGS_EXPANDED] = value
+        }
+    }
+
+    suspend fun setReportChartShowAverageLine(value: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.REPORT_CHART_SHOW_AVERAGE_LINE] = value
         }
     }
 

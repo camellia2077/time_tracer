@@ -1,0 +1,38 @@
+# Test scenario configuration (run control, pipeline, paths, log routing)
+
+# ==============================================================================
+#                       RUN CONTROL (EXECUTION)
+# ==============================================================================
+[run_control]
+enable_test_execution = 1
+stop_on_failure = 1
+
+# ==============================================================================
+#                      PIPELINE CONTROL
+# ==============================================================================
+[pipeline]
+# mode: "ingest" or "staged"
+mode = "ingest"
+
+# ==============================================================================
+#                 PATH AND DIRECTORY CONFIGURATION
+# ==============================================================================
+[paths]
+test_data_path = "${test_root}/data"
+
+# ==============================================================================
+#                        LOG ROUTING (OPTIONAL)
+# ==============================================================================
+[log_routing]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "tree"]
+subdir = "tree"
+legacy_name_contains = ["_query_data_tree_"]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "days-stats"]
+subdir = "stats"
+legacy_name_contains = ["_query_data_days_stats_"]

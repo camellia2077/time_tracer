@@ -72,7 +72,7 @@ auto WindowsPlatformClock::LocalUtcOffsetMinutes() const -> int {
     return 0;
   }
 
-  const long long kOffsetSeconds =
+  const auto kOffsetSeconds =
       static_cast<long long>(kLocalAsEpoch - kUtcAsLocalEpoch);
   return static_cast<int>(kOffsetSeconds / kSecondsPerMinute);
 }

@@ -9,6 +9,7 @@ namespace time_tracer::application::tests {
 auto RunConvertIngestValidateTests(TestState& state) -> void;
 auto RunReportTests(TestState& state) -> void;
 auto RunDataQueryTests(TestState& state) -> void;
+auto RunImportServiceTests(TestState& state) -> void;
 
 }  // namespace time_tracer::application::tests
 

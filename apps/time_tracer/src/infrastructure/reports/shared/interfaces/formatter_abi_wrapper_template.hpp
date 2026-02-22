@@ -35,6 +35,10 @@ template <typename Derived, typename FormatterType,
 struct DailyFormatterAbiTraitsBase
     : FormatterAbiTraitsBase<FormatterType, FormatterConfigType, ConfigViewType,
                              TtDailyReportDataV1> {
+ private:
+  DailyFormatterAbiTraitsBase() = default;
+
+ public:
   static auto GetConfigView(const TtFormatterConfig* formatter_config,
                             const ConfigViewType** out_config,
                             std::string* error_message) -> bool {
@@ -51,6 +55,7 @@ struct DailyFormatterAbiTraitsBase
   static constexpr std::array<uint32_t, 1> kSupportedReportDataKinds = {
       TT_REPORT_DATA_KIND_DAILY};
   static constexpr const char* kExpectedReportKindsHint = nullptr;
+  friend Derived;
 };
 
 template <typename Derived, typename FormatterType,
@@ -59,6 +64,10 @@ template <typename Derived, typename FormatterType,
 struct MonthlyFormatterAbiTraitsBase
     : FormatterAbiTraitsBase<FormatterType, FormatterConfigType, ConfigViewType,
                              TtRangeReportDataV1> {
+ private:
+  MonthlyFormatterAbiTraitsBase() = default;
+
+ public:
   static auto GetConfigView(const TtFormatterConfig* formatter_config,
                             const ConfigViewType** out_config,
                             std::string* error_message) -> bool {
@@ -75,6 +84,7 @@ struct MonthlyFormatterAbiTraitsBase
   static constexpr std::array<uint32_t, 1> kSupportedReportDataKinds = {
       TT_REPORT_DATA_KIND_MONTHLY};
   static constexpr const char* kExpectedReportKindsHint = nullptr;
+  friend Derived;
 };
 
 template <typename Derived, typename FormatterType,
@@ -83,6 +93,10 @@ template <typename Derived, typename FormatterType,
 struct RangeFamilyFormatterAbiTraitsBase
     : FormatterAbiTraitsBase<FormatterType, FormatterConfigType, ConfigViewType,
                              TtRangeReportDataV1> {
+ private:
+  RangeFamilyFormatterAbiTraitsBase() = default;
+
+ public:
   static auto GetConfigView(const TtFormatterConfig* formatter_config,
                             const ConfigViewType** out_config,
                             std::string* error_message) -> bool {
@@ -104,6 +118,7 @@ struct RangeFamilyFormatterAbiTraitsBase
   };
   static constexpr const char* kExpectedReportKindsHint =
       "Expected range/period/weekly/yearly.";
+  friend Derived;
 };
 
 template <typename Traits>
@@ -137,10 +152,10 @@ class FormatterAbiWrapper {
     }
 
     FormatterType* formatter = nullptr;
-    const auto status_code = CreateFormatterImpl(config, &formatter);
-    if (status_code != TT_FORMATTER_STATUS_OK) {
+    const auto kStatusCode = CreateFormatterImpl(config, &formatter);
+    if (kStatusCode != TT_FORMATTER_STATUS_OK) {
       *out_handle = nullptr;
-      return status_code;
+      return kStatusCode;
     }
 
     *out_handle = static_cast<TtFormatterHandle>(formatter);
@@ -195,27 +210,27 @@ class FormatterAbiWrapper {
 
     auto* formatter = static_cast<FormatterType*>(handle);
     std::string formatted_report;
-    const auto status_code =
+    const auto kStatusCode =
         FormatReportImpl(formatter, report_view, &formatted_report);
-    if (status_code != TT_FORMATTER_STATUS_OK) {
-      return status_code;
+    if (kStatusCode != TT_FORMATTER_STATUS_OK) {
+      return kStatusCode;
     }
 
-    const auto report_size = formatted_report.size();
+    const auto kReportSize = formatted_report.size();
     auto* copied_report =
-        static_cast<char*>(std::malloc(report_size + static_cast<size_t>(1U)));
+        static_cast<char*>(std::malloc(kReportSize + static_cast<size_t>(1U)));
     if (copied_report == nullptr) {
       SetLastError(TT_FORMATTER_STATUS_MEMORY_ERROR,
                    "Failed to allocate output report buffer.");
       return TT_FORMATTER_STATUS_MEMORY_ERROR;
     }
-    if (report_size > 0U) {
-      std::memcpy(copied_report, formatted_report.data(), report_size);
+    if (kReportSize > 0U) {
+      std::memcpy(copied_report, formatted_report.data(), kReportSize);
     }
-    copied_report[report_size] = '\0';
+    copied_report[kReportSize] = '\0';
 
     *out_report_content = copied_report;
-    *out_report_size = static_cast<uint64_t>(report_size);
+    *out_report_size = static_cast<uint64_t>(kReportSize);
     ClearLastError();
     return TT_FORMATTER_STATUS_OK;
   }
@@ -318,7 +333,7 @@ class FormatterAbiWrapper {
 
 }  // namespace infrastructure::reports::abi
 
-#define TT_DEFINE_FORMATTER_ABI_EXPORTS(TRAITS_TYPE)                       \
+#define TT_DEFINE_FORMATTER_ABI_EXPORTS_(TRAITS_TYPE)                      \
   extern "C" {                                                             \
   __declspec(dllexport) auto tt_getFormatterAbiInfo(                       \
       TtFormatterAbiInfo* out_abi) -> int32_t {                            \
@@ -362,5 +377,10 @@ class FormatterAbiWrapper {
         TRAITS_TYPE>::GetLastError(handle, out_error);                     \
   }                                                                        \
   }
+
+// Backward-compatible alias while call sites migrate to the suffixed macro.
+// NOLINTNEXTLINE(readability-identifier-naming)
+#define TT_DEFINE_FORMATTER_ABI_EXPORTS(TRAITS_TYPE) \
+  TT_DEFINE_FORMATTER_ABI_EXPORTS_(TRAITS_TYPE)
 
 #endif  // INFRASTRUCTURE_REPORTS_SHARED_INTERFACES_FORMATTER_ABI_WRAPPER_TEMPLATE_H_

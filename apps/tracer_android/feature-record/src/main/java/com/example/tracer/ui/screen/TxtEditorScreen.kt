@@ -3,41 +3,31 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import java.text.SimpleDateFormat
+import com.example.tracer.feature.record.R
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
-private enum class TxtOutputMode {
+internal enum class TxtOutputMode {
     ALL,
     DAY
 }
@@ -49,7 +39,6 @@ fun TxtEditorSection(
     onOpenPreviousMonth: () -> Unit,
     onOpenNextMonth: () -> Unit,
     onOpenMonth: (String) -> Unit,
-    onCreateCurrentMonthTxt: () -> Unit,
     selectedHistoryFile: String,
     onRefreshHistory: () -> Unit,
     editableHistoryContent: String,
@@ -57,252 +46,260 @@ fun TxtEditorSection(
     onSaveHistoryFile: () -> Unit,
     inlineStatusText: String
 ) {
-    val cal = remember { Calendar.getInstance() }
-    var monthMenuExpanded by remember { mutableStateOf(false) }
-    var outputMode by remember { mutableStateOf(TxtOutputMode.ALL) }
+    var outputMode by remember { mutableStateOf(TxtOutputMode.DAY) }
     var dayMarkerInput by remember {
-        mutableStateOf(SimpleDateFormat("MMdd", Locale.US).format(cal.time))
+        mutableStateOf("0101")
     }
-
-    var pickedYearText by remember { mutableStateOf(cal.get(Calendar.YEAR).toString()) }
-    var pickedMonth by remember { mutableStateOf(cal.get(Calendar.MONTH) + 1) }
+    var autoDayMarkerLoadedKey by remember { mutableStateOf("") }
+    var isEditorContentVisible by remember(selectedHistoryFile) { mutableStateOf(false) }
+    val parsedAvailableMonths = remember(availableMonths) {
+        availableMonths
+            .mapNotNull(::parseYearMonthKey)
+            .distinctBy { it.key }
+            .sortedBy { it.key }
+    }
+    val monthsByYear = remember(parsedAvailableMonths) {
+        parsedAvailableMonths
+            .groupBy { it.year }
+            .mapValues { (_, value) -> value.map { it.month }.distinct().sorted() }
+    }
+    val availableYears = remember(monthsByYear) {
+        monthsByYear.keys.sorted()
+    }
+    val selectedYear = parseYearMonthKey(selectedMonth)?.year
+        ?: availableYears.lastOrNull().orEmpty()
+    val availableMonthValues = remember(monthsByYear, selectedYear) {
+        if (selectedYear.isBlank()) {
+            emptyList()
+        } else {
+            monthsByYear[selectedYear].orEmpty()
+        }
+    }
+    val selectedMonthValue = parseYearMonthKey(selectedMonth)?.month
+        ?.takeIf { availableMonthValues.contains(it) }
+        ?: availableMonthValues.lastOrNull().orEmpty()
 
     LaunchedEffect(selectedMonth) {
-        val parsed = parseMonthKey(selectedMonth)
-        if (parsed != null) {
-            pickedYearText = parsed.first.toString()
-            pickedMonth = parsed.second
-        }
-        outputMode = TxtOutputMode.ALL
+        outputMode = TxtOutputMode.DAY
     }
 
-    val monthItems = remember {
-        (1..12).map { month ->
-            month to String.format(Locale.US, "%02d", month)
+    LaunchedEffect(selectedHistoryFile, selectedMonth) {
+        if (selectedHistoryFile.isBlank()) {
+            autoDayMarkerLoadedKey = ""
+            return@LaunchedEffect
+        }
+        val loadKey = "$selectedHistoryFile@$selectedMonth"
+        if (autoDayMarkerLoadedKey == loadKey) {
+            return@LaunchedEffect
+        }
+
+        dayMarkerInput = defaultDayMarkerForSelectedMonth(selectedMonth)
+        autoDayMarkerLoadedKey = loadKey
+    }
+
+    // Auto-load TXT list when entering the tab to avoid requiring manual refresh.
+    LaunchedEffect(selectedHistoryFile, availableMonths) {
+        if (selectedHistoryFile.isBlank() && availableMonths.isEmpty()) {
+            onRefreshHistory()
         }
     }
-    val pickedYear = pickedYearText.toIntOrNull()
-    val isYearValid = pickedYear != null && pickedYear in 1..9999
 
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        // Navigation & Creation Card
-        ElevatedCard(modifier = Modifier.fillMaxWidth()) {
+    val normalizedDayMarker = dayMarkerInput.filter { it.isDigit() }.take(4)
+    val dayEditorStateForSave = remember(editableHistoryContent, normalizedDayMarker) {
+        buildDayBlockEditorState(
+            content = editableHistoryContent,
+            dayMarker = normalizedDayMarker
+        )
+    }
+    val canSaveCurrentContent = outputMode == TxtOutputMode.ALL ||
+        (dayEditorStateForSave.isMarkerValid && dayEditorStateForSave.found)
+    val showSaveFab = selectedHistoryFile.isNotEmpty() && isEditorContentVisible
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            TxtMonthNavigationCard(
+                selectedMonth = selectedMonth,
+                onOpenPreviousMonth = onOpenPreviousMonth,
+                onOpenNextMonth = onOpenNextMonth,
+                onOpenMonth = onOpenMonth,
+                availableYears = availableYears,
+                selectedYear = selectedYear,
+                selectedMonthValue = selectedMonthValue,
+                monthsByYear = monthsByYear,
+                onRefreshHistory = onRefreshHistory
+            )
+
             Column(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(top = 16.dp)
+                    .padding(bottom = if (showSaveFab) 24.dp else 0.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
-                ) {
-                    androidx.compose.material3.IconButton(onClick = onOpenPreviousMonth) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Previous Month")
-                    }
-
-                    Box {
-                        androidx.compose.material3.TextButton(onClick = { monthMenuExpanded = true }) {
-                            Text(
-                                text = selectedMonth.ifEmpty { "Select File" },
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Icon(Icons.Filled.ArrowDropDown, contentDescription = null)
-                        }
-
-                        DropdownMenu(
-                            expanded = monthMenuExpanded,
-                            onDismissRequest = { monthMenuExpanded = false }
-                        ) {
-                            if (availableMonths.isEmpty()) {
-                                DropdownMenuItem(
-                                    text = { Text("No files") },
-                                    onClick = { monthMenuExpanded = false }
-                                )
-                            } else {
-                                availableMonths.forEach { month ->
-                                    DropdownMenuItem(
-                                        text = { Text(month) },
-                                        onClick = {
-                                            monthMenuExpanded = false
-                                            onOpenMonth(month)
-                                        }
-                                    )
-                                }
+                if (selectedHistoryFile.isNotEmpty()) {
+                    TxtEditorContentCard(
+                        selectedHistoryFile = selectedHistoryFile,
+                        selectedMonth = selectedMonth,
+                        outputMode = outputMode,
+                        onOutputModeChange = { nextMode ->
+                            if (nextMode == TxtOutputMode.DAY && outputMode != TxtOutputMode.DAY) {
+                                dayMarkerInput = defaultDayMarkerForSelectedMonth(selectedMonth)
                             }
-                        }
-                    }
-
-                    androidx.compose.material3.IconButton(onClick = onOpenNextMonth) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = "Next Month")
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    androidx.compose.material3.TextButton(onClick = onCreateCurrentMonthTxt) {
-                        Icon(Icons.Filled.Add, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("New Current")
-                    }
-                    androidx.compose.material3.TextButton(onClick = onRefreshHistory) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Refresh List")
-                    }
-                }
-            }
-        }
-
-        if (selectedHistoryFile.isNotEmpty()) {
-            val normalizedDayMarker = dayMarkerInput.filter { it.isDigit() }.take(4)
-            val editorText = if (outputMode == TxtOutputMode.ALL) {
-                editableHistoryContent
-            } else {
-                extractDayBlockOutput(editableHistoryContent, normalizedDayMarker)
-            }
-            val dayModeHint = if (outputMode == TxtOutputMode.DAY) {
-                "Day output is preview-only. Switch to ALL to edit and save."
-            } else {
-                ""
-            }
-
-            // Editor Card
-            ElevatedCard(modifier = Modifier.fillMaxWidth()) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "Editor: $selectedHistoryFile",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Button(
-                            onClick = { outputMode = TxtOutputMode.ALL },
-                            enabled = outputMode != TxtOutputMode.ALL,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("ALL")
-                        }
-                        OutlinedButton(
-                            onClick = { outputMode = TxtOutputMode.DAY },
-                            enabled = outputMode != TxtOutputMode.DAY,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("DAY")
-                        }
-                    }
-                    if (outputMode == TxtOutputMode.DAY) {
-                        OutlinedTextField(
-                            value = dayMarkerInput,
-                            onValueChange = { value ->
-                                dayMarkerInput = value.filter { it.isDigit() }.take(4)
-                            },
-                            label = { Text("Target Day (MMDD)") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                    
-                    if (dayModeHint.isNotBlank()) {
-                         Text(
-                             text = dayModeHint,
-                             style = MaterialTheme.typography.bodySmall,
-                             color = MaterialTheme.colorScheme.tertiary
-                         )
-                    }
-
-                    if (inlineStatusText.isNotBlank()) {
-                        val isError = inlineStatusText.contains("fail", ignoreCase = true) ||
-                            inlineStatusText.contains("error", ignoreCase = true)
-                        val statusColor = if (isError) {
-                            MaterialTheme.colorScheme.error
-                        } else {
-                            MaterialTheme.colorScheme.primary
-                        }
-                        Text(
-                            text = inlineStatusText,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = statusColor,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    OutlinedTextField(
-                        value = editorText,
-                        onValueChange = onEditableHistoryContentChange,
-                        readOnly = outputMode == TxtOutputMode.DAY,
-                        label = {
-                            Text(if (outputMode == TxtOutputMode.ALL) "Content" else "Preview")
+                            outputMode = nextMode
                         },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 8,
-                        textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace)
+                        dayMarkerInput = dayMarkerInput,
+                        onDayMarkerInputChange = { value ->
+                            dayMarkerInput = value.filter { it.isDigit() }.take(4)
+                        },
+                        inlineStatusText = inlineStatusText,
+                        isEditorContentVisible = isEditorContentVisible,
+                        onToggleEditorContentVisibility = {
+                            isEditorContentVisible = !isEditorContentVisible
+                        },
+                        editableHistoryContent = editableHistoryContent,
+                        onEditableHistoryContentChange = onEditableHistoryContentChange
                     )
-                    
-                    Button(
-                        onClick = onSaveHistoryFile,
-                        enabled = outputMode == TxtOutputMode.ALL,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.Check, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Save & Sync")
-                    }
                 }
+            }
+        }
+
+        if (showSaveFab) {
+            val canSave = canSaveCurrentContent
+            FloatingActionButton(
+                onClick = {
+                    if (canSave) {
+                        onSaveHistoryFile()
+                    }
+                },
+                containerColor = if (canSave) {
+                    MaterialTheme.colorScheme.primaryContainer
+                } else {
+                    MaterialTheme.colorScheme.surfaceVariant
+                },
+                contentColor = if (canSave) {
+                    MaterialTheme.colorScheme.onPrimaryContainer
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 12.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = stringResource(R.string.txt_cd_ingest)
+                )
             }
         }
     }
 }
 
-private fun parseMonthKey(monthKey: String): Pair<Int, Int>? {
-    val match = Regex("""^(\d{4})-(\d{2})$""").matchEntire(monthKey.trim())
-        ?: return null
-    val year = match.groupValues[1].toIntOrNull() ?: return null
-    val month = match.groupValues[2].toIntOrNull() ?: return null
-    if (month !in 1..12) {
-        return null
-    }
-    return year to month
-}
+internal data class DayBlockEditorState(
+    val text: String,
+    val found: Boolean,
+    val isMarkerValid: Boolean
+)
 
-private fun extractDayBlockOutput(content: String, dayMarker: String): String {
+internal fun buildDayBlockEditorState(content: String, dayMarker: String): DayBlockEditorState {
     if (!isValidDayMarker(dayMarker)) {
-        return "Invalid day marker. Use MMDD (example: 0214)."
+        return DayBlockEditorState(
+            text = "",
+            found = false,
+            isMarkerValid = false
+        )
     }
 
-    val lines = content.lines()
+    val lines = content.lines().map { it.trimEnd('\r') }
     val startIndex = lines.indexOfFirst { it.trim() == dayMarker }
     if (startIndex < 0) {
-        return "Day $dayMarker not found in current TXT."
+        return DayBlockEditorState(
+            text = "",
+            found = false,
+            isMarkerValid = true
+        )
     }
 
-    var endIndex = lines.size
+    val endIndex = findDayBlockEndIndex(lines, startIndex)
+    val bodyLines = lines.subList(startIndex + 1, endIndex)
+    return DayBlockEditorState(
+        text = bodyLines.joinToString(separator = "\n"),
+        found = true,
+        isMarkerValid = true
+    )
+}
+
+internal fun mergeDayBlockContent(
+    fullContent: String,
+    dayMarker: String,
+    editedDayBody: String
+): String {
+    if (!isValidDayMarker(dayMarker)) {
+        return fullContent
+    }
+
+    val lines = fullContent.lines().map { it.trimEnd('\r') }.toMutableList()
+    val startIndex = lines.indexOfFirst { it.trim() == dayMarker }
+    if (startIndex < 0) {
+        return fullContent
+    }
+
+    val endIndex = findDayBlockEndIndex(lines, startIndex)
+    val normalizedDayBodyLines = normalizeEditedDayBody(dayMarker, editedDayBody)
+    lines.subList(startIndex + 1, endIndex).clear()
+    lines.addAll(startIndex + 1, normalizedDayBodyLines)
+
+    return lines.joinToString(separator = "\n")
+}
+
+private fun normalizeEditedDayBody(dayMarker: String, editedDayBody: String): List<String> {
+    val lines = editedDayBody.lines().map { it.trimEnd('\r') }.toMutableList()
+
+    // Keep trailing blank lines so Enter in DAY editor is reflected immediately.
+    // Backward-compat: tolerate pasted content that still includes MMDD header.
+    if (lines.firstOrNull()?.trim() == dayMarker) {
+        lines.removeAt(0)
+    }
+    return lines
+}
+
+private fun findDayBlockEndIndex(lines: List<String>, startIndex: Int): Int {
     for (index in (startIndex + 1) until lines.size) {
         if (isDayMarkerLine(lines[index])) {
-            endIndex = index
-            break
+            return index
         }
     }
+    return lines.size
+}
 
-    return lines.subList(startIndex, endIndex).joinToString(separator = "\n")
+private fun defaultDayMarkerForSelectedMonth(selectedMonth: String): String {
+    val now = Calendar.getInstance()
+    val fallbackMonth = now.get(Calendar.MONTH) + 1
+    val fallbackDay = now.get(Calendar.DAY_OF_MONTH)
+    val parsed = parseYearMonthKey(selectedMonth)
+    if (parsed == null) {
+        return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
+    }
+
+    val selectedYear = parsed.year.toIntOrNull()
+    val selectedMonth = parsed.month.toIntOrNull()
+    if (selectedYear == null || selectedMonth == null) {
+        return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
+    }
+
+    val maxDay = Calendar.getInstance().run {
+        clear()
+        set(Calendar.YEAR, selectedYear)
+        set(Calendar.MONTH, selectedMonth - 1)
+        getActualMaximum(Calendar.DAY_OF_MONTH)
+    }
+    val targetDay = fallbackDay.coerceAtMost(maxDay)
+    return String.format(Locale.US, "%02d%02d", selectedMonth, targetDay)
 }
 
 private fun isDayMarkerLine(line: String): Boolean {
-    val trimmed = line.trim()
-    return trimmed.length == 4 && trimmed.all { it.isDigit() }
+    return isValidDayMarker(line.trim())
 }
 
 private fun isValidDayMarker(value: String): Boolean {
@@ -312,4 +309,25 @@ private fun isValidDayMarker(value: String): Boolean {
     val month = value.substring(0, 2).toIntOrNull() ?: return false
     val day = value.substring(2, 4).toIntOrNull() ?: return false
     return month in 1..12 && day in 1..31
+}
+
+private data class YearMonthKey(
+    val year: String,
+    val month: String
+) {
+    val key: String
+        get() = "$year-$month"
+}
+
+private fun parseYearMonthKey(value: String): YearMonthKey? {
+    val normalized = value.trim()
+    val match = Regex("""^(\d{4})-(\d{2})$""").matchEntire(normalized)
+        ?: return null
+    val year = match.groupValues[1]
+    val month = match.groupValues[2]
+    val monthInt = month.toIntOrNull() ?: return null
+    if (monthInt !in 1..12) {
+        return null
+    }
+    return YearMonthKey(year = year, month = month)
 }

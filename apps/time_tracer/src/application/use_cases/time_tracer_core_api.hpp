@@ -80,7 +80,7 @@ class TimeTracerCoreApi : public ITimeTracerCoreApi {
   std::shared_ptr<time_tracer::application::ports::IDataQueryService>
       data_query_service_;
   std::shared_ptr<time_tracer::application::ports::IReportDataQueryService>
-      kReport;
+      kReport_;
   std::shared_ptr<time_tracer::application::ports::IReportDtoFormatter>
       report_dto_formatter_;
   std::shared_ptr<time_tracer::application::ports::IReportExportWriter>

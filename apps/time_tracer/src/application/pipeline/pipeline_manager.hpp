@@ -17,6 +17,7 @@ namespace time_tracer::application::ports {
 class IConverterConfigProvider;
 class IIngestInputProvider;
 class IProcessedDataStorage;
+class IValidationIssueReporter;
 }  // namespace time_tracer::application::ports
 
 namespace core::pipeline {
@@ -30,7 +31,9 @@ class PipelineManager {
       std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
           ingest_input_provider,
       std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
-          processed_data_storage);
+          processed_data_storage,
+      std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+          validation_issue_reporter);
 
   [[nodiscard]] auto Run(const std::string& input_path,
                          const AppOptions& options)
@@ -44,6 +47,8 @@ class PipelineManager {
       ingest_input_provider_;
   std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
       processed_data_storage_;
+  std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+      validation_issue_reporter_;
 };
 
 }  // namespace core::pipeline

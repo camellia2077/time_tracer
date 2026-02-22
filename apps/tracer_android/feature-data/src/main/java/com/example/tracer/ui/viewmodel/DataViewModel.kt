@@ -24,7 +24,7 @@ class DataViewModel(
         initializeRuntime()
     }
 
-    fun initializeRuntime() {
+    private fun initializeRuntime() {
         viewModelScope.launch {
             uiState = uiState.copy(statusText = "nativeInit running...")
             val result = runtimeInitializer.initializeRuntime()
@@ -57,11 +57,16 @@ class DataViewModel(
         }
     }
 
-    fun querySmoke() {
+    fun ingestSingleTxtReplaceMonth(inputPath: String) {
         viewModelScope.launch {
-            uiState = uiState.copy(statusText = "nativeQuery(debug smoke) running...")
-            val result = runtimeInitializer.querySmoke()
-            uiState = uiState.copy(statusText = "nativeQuery(debug smoke) -> ${result.rawResponse}")
+            uiState = uiState.copy(
+                statusText = "nativeIngest(single_txt_replace_month) running..."
+            )
+            val result = runtimeInitializer.ingestSingleTxtReplaceMonth(inputPath)
+            uiState = uiState.copy(
+                initialized = result.initialized,
+                statusText = "nativeIngest(single_txt_replace_month) -> ${result.rawResponse}"
+            )
         }
     }
 
@@ -76,12 +81,16 @@ class DataViewModel(
         }
     }
 
-    fun clearLiveTxt() {
+    fun clearTxt() {
         viewModelScope.launch {
-            uiState = uiState.copy(statusText = "clearing live txt...")
-            val result = recordGateway.clearLiveTxt()
+            uiState = uiState.copy(statusText = "clearing txt...")
+            val result = recordGateway.clearTxt()
             uiState = uiState.copy(statusText = result.message)
         }
+    }
+
+    fun setStatusText(text: String) {
+        uiState = uiState.copy(statusText = text)
     }
 }
 

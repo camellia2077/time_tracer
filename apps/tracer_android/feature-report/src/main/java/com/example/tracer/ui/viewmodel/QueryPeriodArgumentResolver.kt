@@ -20,7 +20,9 @@ internal sealed interface QueryPeriodResolveResult {
     data class Failure(val message: String) : QueryPeriodResolveResult
 }
 
-internal class QueryPeriodArgumentResolver {
+internal class QueryPeriodArgumentResolver(
+    private val textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider
+) {
     private val strictBasicIsoDateFormatter: SimpleDateFormat =
         SimpleDateFormat("yyyyMMdd", Locale.US).apply { isLenient = false }
     private val strictMonthDigitsFormatter: SimpleDateFormat =
@@ -67,7 +69,10 @@ internal class QueryPeriodArgumentResolver {
         subjectLabel: String
     ): String? {
         if (periodArgument.isBlank()) {
-            return "$subjectLabel argument is required for period ${period.wireValue}."
+            return textProvider.periodArgumentRequired(
+                subjectLabel = subjectLabel,
+                periodLabel = textProvider.periodLabel(period)
+            )
         }
 
         return when (period) {
@@ -82,14 +87,14 @@ internal class QueryPeriodArgumentResolver {
             DataTreePeriod.RANGE -> {
                 val parts = periodArgument.split("|")
                 if (parts.size != 2) {
-                    "Invalid range argument. Use start|end (example: 2026-02-01|2026-02-15)."
+                    textProvider.invalidRangeArgumentFormat()
                 } else {
                     val start = parsePeriodDate(parts[0])
                     val end = parsePeriodDate(parts[1])
                     if (start == null || end == null) {
-                        "Invalid range date value. Use YYYY-MM-DD (or YYYYMMDD)."
+                        textProvider.invalidRangeDateValue()
                     } else if (start.after(end)) {
-                        "$subjectLabel range invalid. Start date must be <= end date."
+                        textProvider.subjectRangeInvalid(subjectLabel)
                     } else {
                         null
                     }
@@ -100,48 +105,48 @@ internal class QueryPeriodArgumentResolver {
 
     private fun validateDateDigits(value: String): String? {
         if (!Regex("""^\d{8}$""").matches(value)) {
-            return "Invalid day format. Use digits YYYYMMDD (example: 20260214)."
+            return textProvider.invalidDayFormat()
         }
         return try {
             strictBasicIsoDateFormatter.parse(value)
             null
         } catch (_: Exception) {
-            "Invalid date value: $value."
+            textProvider.invalidDateValue(value)
         }
     }
 
     private fun validateMonthDigits(value: String): String? {
         if (!Regex("""^\d{6}$""").matches(value)) {
-            return "Invalid month format. Use digits YYYYMM (example: 202602)."
+            return textProvider.invalidMonthFormat()
         }
         return try {
             strictMonthDigitsFormatter.parse(value)
             null
         } catch (_: Exception) {
-            "Invalid month value: $value."
+            textProvider.invalidMonthValue(value)
         }
     }
 
     private fun validateIsoYear(value: String): String? {
         if (!Regex("""^\d{4}$""").matches(value)) {
-            return "Invalid year format. Use ISO year: YYYY (example: 2026)."
+            return textProvider.invalidYearFormat()
         }
         return try {
             strictIsoYearFormatter.parse(value)
             null
         } catch (_: Exception) {
-            "Invalid ISO year value: $value."
+            textProvider.invalidIsoYearValue(value)
         }
     }
 
     private fun validateWeekDigits(value: String): String? {
         val match = Regex("""^(\d{4})(\d{2})$""").matchEntire(value)
-            ?: return "Invalid week format. Use digits YYYYWW (example: 202607)."
+            ?: return textProvider.invalidWeekFormat()
 
         val year = match.groupValues[1].toIntOrNull()
-            ?: return "Invalid week year: ${match.groupValues[1]}."
+            ?: return textProvider.invalidWeekYear(match.groupValues[1])
         val week = match.groupValues[2].toIntOrNull()
-            ?: return "Invalid week number: ${match.groupValues[2]}."
+            ?: return textProvider.invalidWeekNumber(match.groupValues[2])
 
         val cal = Calendar.getInstance(Locale.US).apply {
             set(Calendar.YEAR, year)
@@ -152,19 +157,19 @@ internal class QueryPeriodArgumentResolver {
         }
         val maxIsoWeek = cal.getActualMaximum(Calendar.WEEK_OF_YEAR)
         if (week !in 1..maxIsoWeek) {
-            return "Invalid week value: $value. $year supports week 01 to $maxIsoWeek."
+            return textProvider.invalidWeekValue(value, year, maxIsoWeek)
         }
         return null
     }
 
     private fun validateRecentDays(value: String): String? {
         if (value.isBlank()) {
-            return "Recent days is required and must be a number."
+            return textProvider.recentDaysRequired()
         }
         val days = value.toIntOrNull()
-            ?: return "Recent days must be numeric."
+            ?: return textProvider.recentDaysMustBeNumeric()
         if (days <= 0) {
-            return "Recent days must be greater than 0."
+            return textProvider.recentDaysMustBeGreaterThanZero()
         }
         return null
     }

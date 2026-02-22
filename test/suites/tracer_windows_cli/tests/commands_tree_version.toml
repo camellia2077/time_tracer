@@ -1,0 +1,36 @@
+[[commands]]
+name = "Version Check"
+stage = "version"
+args = ["--version"]
+expect_exit = 0
+
+# Tree command tests
+[[commands]]
+name = "Tree Full"
+stage = "tree"
+args = ["tree", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Roots"
+stage = "tree"
+args = ["tree", "--roots", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 0"
+stage = "tree"
+args = ["tree", "-l", "0", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 1"
+stage = "tree"
+args = ["tree", "-l", "1", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 3"
+stage = "tree"
+args = ["tree", "-l", "3", "--database", "{db_path}"]
+expect_exit = 0

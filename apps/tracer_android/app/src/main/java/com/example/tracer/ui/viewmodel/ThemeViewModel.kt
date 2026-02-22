@@ -3,6 +3,7 @@ package com.example.tracer.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
@@ -18,6 +19,12 @@ class ThemeViewModel(private val repository: UserPreferencesRepository) : ViewMo
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
+        )
+    val appLanguage: StateFlow<AppLanguage> = repository.appLanguage
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppLanguage.English
         )
 
     fun setThemeColor(color: ThemeColor) {
@@ -41,6 +48,12 @@ class ThemeViewModel(private val repository: UserPreferencesRepository) : ViewMo
     fun setDarkThemeStyle(style: com.example.tracer.data.DarkThemeStyle) {
         viewModelScope.launch {
             repository.setDarkThemeStyle(style)
+        }
+    }
+
+    fun setAppLanguage(language: AppLanguage) {
+        viewModelScope.launch {
+            repository.setAppLanguage(language)
         }
     }
 }

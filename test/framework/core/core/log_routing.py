@@ -5,15 +5,20 @@ from ..conf.definitions import LogRoutingRule
 
 
 class LogRoutingManager:
-    def __init__(self, log_dir: Path, module_name: str,
-                 rules: Iterable[LogRoutingRule] | None = None):
+    def __init__(
+        self,
+        log_dir: Path,
+        module_name: str,
+        rules: Iterable[LogRoutingRule] | None = None,
+    ):
         self.log_dir = log_dir
         self.module_name = module_name.strip().lower()
         self.rules = self._filter_rules_for_module(rules or [])
         self._organize_legacy_logs()
 
     def _filter_rules_for_module(
-            self, rules: Iterable[LogRoutingRule]) -> list[LogRoutingRule]:
+        self, rules: Iterable[LogRoutingRule]
+    ) -> list[LogRoutingRule]:
         matched_rules: list[LogRoutingRule] = []
         for rule in rules:
             if rule.stage.strip().lower() == self.module_name:
@@ -27,7 +32,7 @@ class LogRoutingManager:
         normalized_args = [str(arg).strip().lower() for arg in command_args]
         for rule in self.rules:
             prefix = [item.strip().lower() for item in rule.command_prefix]
-            if prefix and normalized_args[:len(prefix)] != prefix:
+            if prefix and normalized_args[: len(prefix)] != prefix:
                 continue
             return rule.subdir
         return ""

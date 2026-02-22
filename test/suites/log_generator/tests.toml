@@ -1,37 +1,7 @@
-# Table-driven command scenarios for log_generator
-
-[run_control]
-enable_test_execution = 1
-stop_on_failure = 1
-
-[pipeline]
-mode = "none"
-
-[[commands]]
-name = "Version Check"
-stage = "version"
-args = ["--version"]
-expect_exit = 0
-
-[[command_groups]]
-name = "Generate Logs"
-stage = "generate"
-name_template = "Generate ({start}-{end}, items={items}, nosleep)"
-template = [
-  "--start",
-  "{start}",
-  "--end",
-  "{end}",
-  "--items",
-  "{items}",
-  "{nosleep_flag}",
-  "--output",
-  "{output_dir}/log_generator_output"
+# Aggregated scenario configuration for log_generator suite.
+includes = [
+  "tests/base.toml",
+  "tests/commands_version.toml",
+  "tests/command_groups_generate.toml",
+  "tests/commands_average_guard.toml",
 ]
-matrix = { start = [2021], end = [2027], items = [8], nosleep_flag = ["--nosleep"] }
-expect_exit = 0
-expect_files = [
-  "{output_dir}/log_generator_output/{start}/{start}_01.txt",
-  "{output_dir}/log_generator_output/{end}/{end}_12.txt"
-]
-expect_stdout_contains = ["Output Directory:"]

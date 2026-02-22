@@ -36,7 +36,7 @@ RangeMdFormatter::RangeMdFormatter(std::shared_ptr<RangeMdConfig> config)
 
 auto RangeMdFormatter::FormatReportFromView(
     const TtRangeReportDataV1& data_view) const -> std::string {
-  RangeReportData summary_data =
+  auto summary_data =
       range_report_view_utils::BuildRangeLikeSummaryData<RangeReportData>(
           data_view);
 

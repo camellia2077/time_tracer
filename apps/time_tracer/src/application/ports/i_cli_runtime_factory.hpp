@@ -2,6 +2,7 @@
 #ifndef APPLICATION_PORTS_I_CLI_RUNTIME_FACTORY_H_
 #define APPLICATION_PORTS_I_CLI_RUNTIME_FACTORY_H_
 
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -25,6 +26,15 @@ struct CliRuntime {
   std::shared_ptr<void> runtime_state;
 };
 
+enum class CliRuntimeValidationFailure : std::uint8_t {
+  kNone = 0,
+  kRuntimeDependencyMissing = 1,
+  kConfigurationError = 2,
+  kIoError = 3,
+  kInvalidArguments = 4,
+  kUnknownError = 5,
+};
+
 class ICliRuntimeFactory {
  public:
   virtual ~ICliRuntimeFactory() = default;
@@ -32,6 +42,9 @@ class ICliRuntimeFactory {
   [[nodiscard]] virtual auto ValidateEnvironment(
       const std::filesystem::path& executable_path, bool is_help_mode) const
       -> bool = 0;
+
+  [[nodiscard]] virtual auto GetLastValidationFailure() const
+      -> CliRuntimeValidationFailure = 0;
 
   [[nodiscard]] virtual auto BuildRuntime(
       const CliRuntimeRequest& request) const -> CliRuntime = 0;

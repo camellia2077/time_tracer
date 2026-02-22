@@ -1,0 +1,26 @@
+[[command_groups]]
+name = "Generate Logs"
+stage = "generate"
+name_template = "Generate ({start}-{end}, items={items}, nosleep)"
+template = [
+  "--start",
+  "{start}",
+  "--end",
+  "{end}",
+  "--items",
+  "{items}",
+  "{nosleep_flag}",
+  "--output",
+  "{output_dir}/log_generator_output"
+]
+matrix = { start = [2021], end = [2027], items = [8], nosleep_flag = ["--nosleep"] }
+expect_exit = 0
+expect_files = [
+  "{output_dir}/log_generator_output/{start}/{start}-01.txt",
+  "{output_dir}/log_generator_output/{end}/{end}-12.txt"
+]
+expect_file_contains = [
+  "{output_dir}/log_generator_output/{start}/{start}-01.txt::m01",
+  "{output_dir}/log_generator_output/{end}/{end}-12.txt::m12"
+]
+expect_stdout_contains = ["Output Directory:"]

@@ -6,6 +6,7 @@ import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.example.tracer.data.AppLanguage
 import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
@@ -50,12 +51,15 @@ class TracerScreenStatsMarkdownRenderTest {
                     onSetThemeColor = {},
                     onSetThemeMode = {},
                     onSetUseDynamicColor = {},
-                    onSetDarkThemeStyle = {}
+                    onSetDarkThemeStyle = {},
+                    appLanguage = AppLanguage.English,
+                    onSetAppLanguage = {}
                 )
             }
         }
 
         composeRule.onNodeWithText("Report").performClick()
+        composeRule.onNodeWithText("Recent").performClick()
         composeRule.onNodeWithText("Generate recent Stats").performClick()
         composeRule.waitForIdle()
 
@@ -73,11 +77,12 @@ private class FakeRuntimeGateway(
         rawResponse = """{"ok":true,"content":"","error_message":""}"""
     )
 
-    override suspend fun querySmoke(): NativeCallResult = initializeRuntime()
-
     override suspend fun ingestSmoke(): NativeCallResult = initializeRuntime()
 
     override suspend fun ingestFull(): NativeCallResult = initializeRuntime()
+
+    override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
+        initializeRuntime()
 
     override suspend fun clearAndReinitialize(): ClearAndInitResult = ClearAndInitResult(
         initialized = true,
@@ -99,12 +104,13 @@ private class FakeRuntimeGateway(
     override suspend fun recordNow(
         activityName: String,
         remark: String,
-        targetDateIso: String?
+        targetDateIso: String?,
+        preferredTxtPath: String?
     ): RecordActionResult = RecordActionResult(ok = true, message = "ok")
 
     override suspend fun syncLiveToDatabase(): NativeCallResult = initializeRuntime()
 
-    override suspend fun clearLiveTxt(): ClearTxtResult = ClearTxtResult(
+    override suspend fun clearTxt(): ClearTxtResult = ClearTxtResult(
         ok = true,
         message = "ok"
     )
@@ -145,19 +151,34 @@ private class FakeRuntimeGateway(
     override suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "Total: 0", message = "ok")
 
+    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
+        ReportChartQueryResult(
+            ok = true,
+            data = ReportChartData(
+                roots = listOf("study"),
+                selectedRoot = "study",
+                lookbackDays = params.lookbackDays,
+                points = listOf(
+                    ReportChartPoint(date = "2026-02-13", durationSeconds = 3600L),
+                    ReportChartPoint(date = "2026-02-14", durationSeconds = 5400L)
+                )
+            ),
+            message = "ok"
+        )
+
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = listOf("meal"), message = "ok")
 
-    override suspend fun listLiveTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
+    override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
         ok = true,
         files = emptyList(),
         message = "ok"
     )
 
-    override suspend fun readLiveTxtFile(relativePath: String): TxtFileContentResult =
+    override suspend fun readTxtFile(relativePath: String): TxtFileContentResult =
         TxtFileContentResult(ok = true, filePath = relativePath, content = "", message = "ok")
 
-    override suspend fun saveLiveTxtFileAndSync(
+    override suspend fun saveTxtFileAndSync(
         relativePath: String,
         content: String
     ): RecordActionResult = RecordActionResult(ok = true, message = "ok")
