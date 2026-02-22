@@ -23,6 +23,13 @@ namespace core_api_helpers =
 namespace {
 
 constexpr int kPeriodSeparatorLength = 40;
+constexpr int kDecimalBase = 10;
+constexpr size_t kIsoDateLength = 10U;
+constexpr size_t kIsoYearLength = 4U;
+constexpr size_t kIsoMonthSeparatorIndex = 7U;
+constexpr size_t kIsoMonthStartIndex = 5U;
+constexpr size_t kIsoDayStartIndex = 8U;
+constexpr size_t kIsoPartLength = 2U;
 
 struct DateRangeArgument {
   std::string start_date;
@@ -51,11 +58,11 @@ auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
   }
 
   int parsed = 0;
-  for (const char character : value) {
-    if (std::isdigit(static_cast<unsigned char>(character)) == 0) {
+  for (const char kCharacter : value) {
+    if (std::isdigit(static_cast<unsigned char>(kCharacter)) == 0) {
       return false;
     }
-    parsed = parsed * 10 + (character - '0');
+    parsed = (parsed * kDecimalBase) + (kCharacter - '0');
   }
   out_value = parsed;
   return true;
@@ -63,40 +70,42 @@ auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
 
 auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
     -> bool {
-  if (value.size() != 10 || value[4] != '-' || value[7] != '-') {
+  if (value.size() != kIsoDateLength || value[kIsoYearLength] != '-' ||
+      value[kIsoMonthSeparatorIndex] != '-') {
     return false;
   }
 
   int year = 0;
   int month = 0;
   int day = 0;
-  if (!ParseUnsigned(value.substr(0, 4), year) ||
-      !ParseUnsigned(value.substr(5, 2), month) ||
-      !ParseUnsigned(value.substr(8, 2), day)) {
+  if (!ParseUnsigned(value.substr(0U, kIsoYearLength), year) ||
+      !ParseUnsigned(value.substr(kIsoMonthStartIndex, kIsoPartLength),
+                     month) ||
+      !ParseUnsigned(value.substr(kIsoDayStartIndex, kIsoPartLength), day)) {
     return false;
   }
 
-  const std::chrono::year_month_day ymd(
+  const std::chrono::year_month_day kYmd(
       std::chrono::year(year), std::chrono::month(static_cast<unsigned>(month)),
       std::chrono::day(static_cast<unsigned>(day)));
-  if (!ymd.ok()) {
+  if (!kYmd.ok()) {
     return false;
   }
 
-  out_ymd = ymd;
+  out_ymd = kYmd;
   return true;
 }
 
 auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
-  const std::string_view trimmed = TrimAscii(argument);
-  const size_t separator_pos = trimmed.find('|');
-  const size_t comma_pos = trimmed.find(',');
+  const std::string_view kTrimmed = TrimAscii(argument);
+  const size_t kSeparatorPos = kTrimmed.find('|');
+  const size_t kCommaPos = kTrimmed.find(',');
 
   size_t split_pos = std::string_view::npos;
-  if (separator_pos != std::string_view::npos) {
-    split_pos = separator_pos;
-  } else if (comma_pos != std::string_view::npos) {
-    split_pos = comma_pos;
+  if (kSeparatorPos != std::string_view::npos) {
+    split_pos = kSeparatorPos;
+  } else if (kCommaPos != std::string_view::npos) {
+    split_pos = kCommaPos;
   }
 
   if (split_pos == std::string_view::npos) {
@@ -105,28 +114,28 @@ auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
         "(ISO YYYY-MM-DD).");
   }
 
-  const std::string_view start_view = TrimAscii(trimmed.substr(0, split_pos));
-  const std::string_view end_view = TrimAscii(trimmed.substr(split_pos + 1U));
-  if (start_view.empty() || end_view.empty()) {
+  const std::string_view kStartView = TrimAscii(kTrimmed.substr(0U, split_pos));
+  const std::string_view kEndView = TrimAscii(kTrimmed.substr(split_pos + 1U));
+  if (kStartView.empty() || kEndView.empty()) {
     throw std::invalid_argument("Range start/end date must not be empty.");
   }
 
   std::chrono::year_month_day start_ymd;
   std::chrono::year_month_day end_ymd;
-  if (!ParseIsoDate(start_view, start_ymd)) {
+  if (!ParseIsoDate(kStartView, start_ymd)) {
     throw std::invalid_argument("Invalid range start date (ISO YYYY-MM-DD): " +
-                                std::string(start_view));
+                                std::string(kStartView));
   }
-  if (!ParseIsoDate(end_view, end_ymd)) {
+  if (!ParseIsoDate(kEndView, end_ymd)) {
     throw std::invalid_argument("Invalid range end date (ISO YYYY-MM-DD): " +
-                                std::string(end_view));
+                                std::string(kEndView));
   }
   if (std::chrono::sys_days(start_ymd) > std::chrono::sys_days(end_ymd)) {
     throw std::invalid_argument("Range start date must be <= end date.");
   }
 
-  return {.start_date = std::string(start_view),
-          .end_date = std::string(end_view)};
+  return {.start_date = std::string(kStartView),
+          .end_date = std::string(kEndView)};
 }
 
 }  // namespace
@@ -134,7 +143,7 @@ auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
 auto TimeTracerCoreApi::RunReportQuery(const ReportQueryRequest& request)
     -> TextOutput {
   try {
-    if (kReport && report_dto_formatter_) {
+    if (kReport_ && report_dto_formatter_) {
       const auto kStructured = RunStructuredReportQuery(
           {.type = request.type, .argument = request.argument});
       if (!kStructured.ok) {
@@ -196,7 +205,7 @@ auto TimeTracerCoreApi::RunReportQuery(const ReportQueryRequest& request)
 auto TimeTracerCoreApi::RunStructuredReportQuery(
     const StructuredReportQueryRequest& request) -> StructuredReportOutput {
   try {
-    if (!kReport) {
+    if (!kReport_) {
       return core_api_helpers::BuildStructuredReportFailure(
           "RunStructuredReportQuery",
           "Report data query service is not configured.");
@@ -206,36 +215,37 @@ auto TimeTracerCoreApi::RunStructuredReportQuery(
       case ReportQueryType::kDay:
         return {.ok = true,
                 .kind = StructuredReportKind::kDay,
-                .report = kReport->QueryDaily(request.argument),
+                .report = kReport_->QueryDaily(request.argument),
                 .error_message = ""};
       case ReportQueryType::kMonth:
         return {.ok = true,
                 .kind = StructuredReportKind::kMonth,
-                .report = kReport->QueryMonthly(request.argument),
+                .report = kReport_->QueryMonthly(request.argument),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
         const int kDays = std::stoi(request.argument);
         return {.ok = true,
                 .kind = StructuredReportKind::kRecent,
-                .report = kReport->QueryPeriod(kDays),
+                .report = kReport_->QueryPeriod(kDays),
                 .error_message = ""};
       }
       case ReportQueryType::kRange: {
-        const DateRangeArgument range = ParseRangeArgument(request.argument);
-        return {.ok = true,
-                .kind = StructuredReportKind::kRange,
-                .report = kReport->QueryRange(range.start_date, range.end_date),
-                .error_message = ""};
+        const DateRangeArgument kRange = ParseRangeArgument(request.argument);
+        return {
+            .ok = true,
+            .kind = StructuredReportKind::kRange,
+            .report = kReport_->QueryRange(kRange.start_date, kRange.end_date),
+            .error_message = ""};
       }
       case ReportQueryType::kWeek:
         return {.ok = true,
                 .kind = StructuredReportKind::kWeek,
-                .report = kReport->QueryWeekly(request.argument),
+                .report = kReport_->QueryWeekly(request.argument),
                 .error_message = ""};
       case ReportQueryType::kYear:
         return {.ok = true,
                 .kind = StructuredReportKind::kYear,
-                .report = kReport->QueryYearly(request.argument),
+                .report = kReport_->QueryYearly(request.argument),
                 .error_message = ""};
     }
     return core_api_helpers::BuildStructuredReportFailure(
@@ -252,7 +262,7 @@ auto TimeTracerCoreApi::RunStructuredReportQuery(
 auto TimeTracerCoreApi::RunPeriodBatchQuery(
     const PeriodBatchQueryRequest& request) -> TextOutput {
   try {
-    if (kReport && report_dto_formatter_) {
+    if (kReport_ && report_dto_formatter_) {
       const auto kStructured =
           RunStructuredPeriodBatchQuery({.kDays = request.days_list});
       if (!kStructured.ok && kStructured.items.empty()) {
@@ -309,7 +319,7 @@ auto TimeTracerCoreApi::RunStructuredPeriodBatchQuery(
     const StructuredPeriodBatchQueryRequest& request)
     -> StructuredPeriodBatchOutput {
   try {
-    if (!kReport) {
+    if (!kReport_) {
       return core_api_helpers::BuildStructuredPeriodBatchFailure(
           "RunStructuredPeriodBatchQuery",
           "Report data query service is not configured.");
@@ -325,7 +335,7 @@ auto TimeTracerCoreApi::RunStructuredPeriodBatchQuery(
                                         .report = std::nullopt,
                                         .error_message = ""};
       try {
-        item.report = kReport->QueryPeriod(kDays);
+        item.report = kReport_->QueryPeriod(kDays);
       } catch (const std::exception& exception) {
         item.ok = false;
         item.error_message = exception.what();
@@ -351,62 +361,62 @@ auto TimeTracerCoreApi::RunStructuredPeriodBatchQuery(
 auto TimeTracerCoreApi::RunReportExport(const ReportExportRequest& request)
     -> OperationAck {
   try {
-    if (kReport && report_export_writer_) {
+    if (kReport_ && report_export_writer_) {
       switch (request.type) {
         case ReportExportType::kDay: {
-          const auto kDailyReport = kReport->QueryDaily(request.argument);
+          const auto kDailyReport = kReport_->QueryDaily(request.argument);
           report_export_writer_->ExportSingleDay(request.argument, kDailyReport,
                                                  request.format);
           break;
         }
         case ReportExportType::kMonth: {
-          const auto kMonthlyReport = kReport->QueryMonthly(request.argument);
+          const auto kMonthlyReport = kReport_->QueryMonthly(request.argument);
           report_export_writer_->ExportSingleMonth(
               request.argument, kMonthlyReport, request.format);
           break;
         }
         case ReportExportType::kRecent: {
           const int kDays = std::stoi(request.argument);
-          const auto kPeriodReport = kReport->QueryPeriod(kDays);
+          const auto kPeriodReport = kReport_->QueryPeriod(kDays);
           report_export_writer_->ExportSinglePeriod(kDays, kPeriodReport,
                                                     request.format);
           break;
         }
         case ReportExportType::kWeek: {
-          const auto kWeeklyReport = kReport->QueryWeekly(request.argument);
+          const auto kWeeklyReport = kReport_->QueryWeekly(request.argument);
           report_export_writer_->ExportSingleWeek(
               request.argument, kWeeklyReport, request.format);
           break;
         }
         case ReportExportType::kYear: {
-          const auto kYearlyReport = kReport->QueryYearly(request.argument);
+          const auto kYearlyReport = kReport_->QueryYearly(request.argument);
           report_export_writer_->ExportSingleYear(
               request.argument, kYearlyReport, request.format);
           break;
         }
         case ReportExportType::kAllDay: {
-          const auto kReports = kReport->QueryAllDaily();
+          const auto kReports = kReport_->QueryAllDaily();
           report_export_writer_->ExportAllDaily(kReports, request.format);
           break;
         }
         case ReportExportType::kAllMonth: {
-          const auto kReports = kReport->QueryAllMonthly();
+          const auto kReports = kReport_->QueryAllMonthly();
           report_export_writer_->ExportAllMonthly(kReports, request.format);
           break;
         }
         case ReportExportType::kAllRecent: {
           const auto kReports =
-              kReport->QueryPeriodBatch(request.recent_days_list);
+              kReport_->QueryPeriodBatch(request.recent_days_list);
           report_export_writer_->ExportAllPeriod(kReports, request.format);
           break;
         }
         case ReportExportType::kAllWeek: {
-          const auto kReports = kReport->QueryAllWeekly();
+          const auto kReports = kReport_->QueryAllWeekly();
           report_export_writer_->ExportAllWeekly(kReports, request.format);
           break;
         }
         case ReportExportType::kAllYear: {
-          const auto kReports = kReport->QueryAllYearly();
+          const auto kReports = kReport_->QueryAllYearly();
           report_export_writer_->ExportAllYearly(kReports, request.format);
           break;
         }

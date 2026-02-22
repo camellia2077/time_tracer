@@ -17,7 +17,7 @@ MonthTexFormatter::MonthTexFormatter(std::shared_ptr<MonthTexConfig> config)
 
 auto MonthTexFormatter::FormatReportFromView(
     const TtRangeReportDataV1& data_view) const -> std::string {
-  MonthlyReportData summary_data =
+  auto summary_data =
       range_report_view_utils::BuildRangeLikeSummaryData<MonthlyReportData>(
           data_view);
 

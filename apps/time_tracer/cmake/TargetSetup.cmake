@@ -20,9 +20,12 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 function(_setup_target_common TARGET_NAME)
+    set(options NO_PCH)
+    cmake_parse_arguments(STC "${options}" "" "" ${ARGN})
+
     target_include_directories(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
-    if(ENABLE_PCH)
+    if(ENABLE_PCH AND NOT STC_NO_PCH)
         target_precompile_headers(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/pch.hpp")
     endif()
 
@@ -70,7 +73,7 @@ function(_apply_stdcxxexp_if_needed TARGET_NAME)
 endfunction()
 
 function(setup_app_target TARGET_NAME)
-    _setup_target_common(${TARGET_NAME})
+    _setup_target_common(${TARGET_NAME} ${ARGN})
 
     _apply_stdcxxexp_if_needed(${TARGET_NAME} ${ARGN})
 endfunction()
@@ -84,7 +87,7 @@ function(link_app_external_dependencies TARGET_NAME)
 endfunction()
 
 function(setup_plugin_target TARGET_NAME)
-    _setup_target_common(${TARGET_NAME})
+    _setup_target_common(${TARGET_NAME} ${ARGN})
     _apply_stdcxxexp_if_needed(${TARGET_NAME} ${ARGN})
 endfunction()
 

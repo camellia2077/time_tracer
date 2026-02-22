@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="txt_hint_invalid_day_marker">日付マーカーが無効です。MMDD 形式を使用してください（例: 0214）。</string>
+    <string name="txt_hint_day_edit_enabled">DAY 編集が有効です。保存すると月次 TXT 内の当日ブロックを置き換えます。</string>
+    <string name="txt_hint_day_not_found">現在の月次 TXT に日付 %1$s が見つかりません。DAY モードは既存ブロックのみ編集できます。</string>
+    <string name="txt_label_editor_file">エディタ: %1$s</string>
+    <string name="txt_mode_all">ALL</string>
+    <string name="txt_mode_day">DAY</string>
+    <string name="txt_label_target_day">対象日 (MMDD)</string>
+    <string name="txt_action_hide_content">内容を隠す</string>
+    <string name="txt_action_show_content">内容を表示</string>
+    <string name="txt_label_content">内容</string>
+    <string name="txt_label_day_content_with_date">DAY 内容 %1$s</string>
+    <string name="txt_label_day_content">DAY 内容</string>
+
+    <string name="txt_cd_ingest">取り込み</string>
+    <string name="txt_cd_prev_month">前月</string>
+    <string name="txt_cd_next_month">翌月</string>
+    <string name="txt_label_select_file">ファイル選択</string>
+    <string name="txt_action_refresh_list">一覧を更新</string>
+    <string name="txt_sheet_select_year_month">年と月を選択</string>
+    <string name="txt_sheet_current_month">現在: %1$s</string>
+    <string name="txt_sheet_current_month_unselected">未選択</string>
+    <string name="txt_picker_year_title">年</string>
+    <string name="txt_picker_year_placeholder">年</string>
+    <string name="txt_picker_month_title">月</string>
+    <string name="txt_picker_month_placeholder">月</string>
+    <string name="txt_picker_no_years">年がありません</string>
+    <string name="txt_picker_no_months">月がありません</string>
+    <string name="txt_picker_open_year_month">%1$s-%2$s を開く</string>
+    <string name="txt_picker_field_value">%1$s: %2$s</string>
+
+    <string name="record_label_target_date">対象日付</string>
+    <string name="record_mode_manual">手動</string>
+    <string name="record_mode_auto">自動</string>
+    <string name="record_title_record_input">記録入力</string>
+    <string name="record_label_activity_name">アクティビティ名</string>
+    <string name="record_label_remark_optional">備考（任意）</string>
+    <string name="record_action_record_activity">アクティビティを記録</string>
+    <string name="record_title_quick_access">クイックアクセス</string>
+    <string name="record_cd_collapse">折りたたむ</string>
+    <string name="record_cd_expand">展開</string>
+    <string name="record_title_assist_settings">補助設定</string>
+    <string name="record_label_days">日数</string>
+    <string name="record_label_top_n">上位 N</string>
+    <string name="record_label_search_add_quick_activity">クイック活動を検索して追加</string>
+    <string name="record_chip_add_activity">+ %1$s</string>
+    <string name="record_chip_remove_activity">%1$s X</string>
+    <string name="record_hint_no_quick_activities">クイック活動がありません。ヘッダーを押して追加してください。</string>
+    <string name="record_action_hide_suggestions">提案を隠す</string>
+    <string name="record_action_show_suggestions">提案を表示</string>
+    <string name="record_hint_loading">読み込み中...</string>
+    <string name="record_hint_no_suggestions">提案がありません。</string>
+</resources>

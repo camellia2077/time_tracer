@@ -75,7 +75,7 @@ auto ValidateRequiredKeys(const toml::table& query_config,
                           const std::string& file_name,
                           const std::set<std::string>& required_keys,
                           const std::string& report_type) -> bool {
-  return std::ranges::all_of(required_keys, [&](const auto& key) {
+  return std::ranges::all_of(required_keys, [&](const auto& key) -> auto {
     if (query_config.contains(key)) {
       return true;
     }
@@ -95,7 +95,7 @@ auto ValidatePeriodKeys(const toml::table& query_config,
       "anaerobic_days_label",  "total_time_label",       "no_records_message",
       "invalid_range_message", "project_breakdown_label"};
 
-  return std::ranges::all_of(kPeriodKeys, [&](const auto& key) {
+  return std::ranges::all_of(kPeriodKeys, [&](const auto& key) -> auto {
     if (query_config.contains(key)) {
       return true;
     }

@@ -17,8 +17,12 @@
 class ConverterConfigLoader {
  public:
   /**
-   * @brief 从指定的主配置文件路径加载完整的 Converter 配置。
-   * 自动处理 mappings_config_path 的合并。
+   * @brief 从指定的主配置文件路径加载完整的 Converter
+   * 配置。
+
+   * * 自动处理 alias_mapping_path / duration_rules_config_path
+   * 的合并。
+
    */
   static auto LoadFromFile(const std::filesystem::path& main_config_path)
       -> ConverterConfig;

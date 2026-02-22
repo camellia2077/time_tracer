@@ -1,153 +1,173 @@
-# 数据库说明（SQLite）
+# 数据库表设计说明（SQLite）
 
-本项目定位为**文本分析工具**，不包含任何图片生成逻辑。折线图/柱状图等可由外部脚本（如 Python）读取数据库后生成。本页记录数据库结构与约束，便于其他工具直接读取。
+本文用于说明当前 `time_tracer` 的 SQLite 存储结构，方便外部程序（Python、Go、Rust、BI 工具等）直接查询。
+
+权威来源（以代码为准）：
+- `apps/time_tracer/src/infrastructure/persistence/importer/sqlite/connection.cpp`
+- `apps/time_tracer/src/infrastructure/schema/day_schema.hpp`
+- `apps/time_tracer/src/infrastructure/schema/sqlite_schema.hpp`
+
+相关文档：
+- `docs/time_tracer/core/ingest/ingest_data_structures.md`（文本内容转换为 struct 的流程与字段说明）
+- `docs/time_tracer/guides/database/storage/data_structures.md`（数据库中存储数据的结构模型）
+- `docs/time_tracer/guides/database/parsing/README.md`（SQLite 数据库解析总览与执行顺序）
+- `docs/time_tracer/guides/database/parsing/01_period_normalization.md`（第 1 步：周期归一化）
+- `docs/time_tracer/guides/database/parsing/02_filter_sql_build.md`（第 2 步：过滤器与 SQL 片段构建）
+- `docs/time_tracer/guides/database/parsing/03_sql_execution_row_decode.md`（第 3 步：SQL 执行与取行解码）
+- `docs/time_tracer/guides/database/parsing/04_semantic_projection.md`（第 4 步：语义投影）
+- `docs/time_tracer/guides/database/generation/tree_algorithms.md`（树结构聚合与渲染算法）
 
 ## 1. 数据库位置
 
-数据库为单文件 SQLite。路径由 `config/config.toml` 中的 `db_path` 指定。
+数据库为单文件 SQLite，路径由 `config/config.toml` 的 `db_path` 指定。
 
-## 2. 表结构
+## 2. 表总览
 
-### 2.1 `days`
+- `days`：按天聚合的统计和标记。
+- `projects`：活动项目树（层级节点）。
+- `time_records`：原始时间记录（每条活动）。
 
-- **主键**：`date` (TEXT, `YYYY-MM-DD`)
-- **用途**：存放“按天聚合”的统计与标记
+## 3. 表结构
 
-| 列名 | 类型 | 含义 | 备注 |
+### 3.1 `days`
+
+主键：`date` (`TEXT`, `YYYY-MM-DD`)
+
+| 列名 | 类型 | 约束 | 说明 |
 | --- | --- | --- | --- |
-| `date` | TEXT | 日期 | 主键，格式 `YYYY-MM-DD` |
-| `year` | INTEGER | 年 | 例：2026 |
-| `month` | INTEGER | 月 | 1~12 |
-| `status` | INTEGER | 当天状态标记 | 0/1 |
-| `sleep` | INTEGER | 是否睡眠标记 | 0/1 |
-| `remark` | TEXT | 当天备注 | 可为空 |
-| `getup_time` | TEXT | 起床时间 | `HH:MM`，可能为空或 `00:00` |
-| `exercise` | INTEGER | 是否运动标记 | 0/1 |
-| `total_exercise_time` | INTEGER | 运动总时长 | 秒 |
-| `cardio_time` | INTEGER | 有氧时长 | 秒 |
-| `anaerobic_time` | INTEGER | 无氧时长 | 秒 |
-| `gaming_time` | INTEGER | 游戏时长 | 秒 |
-| `grooming_time` | INTEGER | 洗漱时长 | 秒 |
-| `toilet_time` | INTEGER | 如厕时长 | 秒 |
-| `study_time` | INTEGER | 学习时长 | 秒 |
-| `sleep_night_time` | INTEGER | 夜间睡眠时长 | 秒 |
-| `sleep_day_time` | INTEGER | 白天睡眠时长 | 秒 |
-| `sleep_total_time` | INTEGER | 睡眠总时长 | 秒 |
-| `recreation_time` | INTEGER | 娱乐总时长 | 秒 |
-| `recreation_zhihu_time` | INTEGER | 知乎娱乐时长 | 秒 |
-| `recreation_bilibili_time` | INTEGER | B 站娱乐时长 | 秒 |
-| `recreation_douyin_time` | INTEGER | 抖音娱乐时长 | 秒 |
+| `date` | TEXT | PRIMARY KEY | 日期 |
+| `year` | INTEGER |  | 年 |
+| `month` | INTEGER |  | 月（1~12） |
+| `status` | INTEGER |  | 状态标记（0/1） |
+| `sleep` | INTEGER |  | 睡眠标记（0/1） |
+| `remark` | TEXT |  | 当天备注 |
+| `getup_time` | TEXT |  | 起床时间（`HH:MM`） |
+| `exercise` | INTEGER |  | 运动标记（0/1） |
+| `total_exercise_time` | INTEGER |  | 运动总时长（秒） |
+| `cardio_time` | INTEGER |  | 有氧时长（秒） |
+| `anaerobic_time` | INTEGER |  | 无氧时长（秒） |
+| `gaming_time` | INTEGER |  | 游戏时长（秒） |
+| `grooming_time` | INTEGER |  | 洗漱时长（秒） |
+| `toilet_time` | INTEGER |  | 如厕时长（秒） |
+| `study_time` | INTEGER |  | 学习时长（秒） |
+| `sleep_night_time` | INTEGER |  | 夜间睡眠（秒） |
+| `sleep_day_time` | INTEGER |  | 白天睡眠（秒） |
+| `sleep_total_time` | INTEGER |  | 睡眠总时长（秒） |
+| `recreation_time` | INTEGER |  | 娱乐总时长（秒） |
+| `recreation_zhihu_time` | INTEGER |  | 知乎娱乐（秒） |
+| `recreation_bilibili_time` | INTEGER |  | B 站娱乐（秒） |
+| `recreation_douyin_time` | INTEGER |  | 抖音娱乐（秒） |
 
-#### 2.1.1 字段语义与生成规则（更细说明）
+### 3.2 `projects`
 
-- **`date/year/month`**：从日期字符串解析得到，`year/month` 直接由 `date` 拆分。
-- **`status`**：当天是否存在以 `study` 开头的活动（存在=1，不存在=0）。
-- **`sleep`**：当天是否存在睡眠活动（存在=1，不存在=0）。睡眠活动可能由解析逻辑自动补齐（例如依据前一天最后事件与起床时间生成 `sleep_night`）。
-- **`exercise`**：当天是否存在以 `exercise` 开头的活动（存在=1，不存在=0）。
-- **`remark`**：当天所有备注合并为一个字符串，按输入顺序用换行拼接。
-- **`getup_time`**：起床时间 `HH:MM`。若为“续写日”则写入 `Null` 并最终存入数据库为 `NULL`；若缺省则写入 `00:00`。
-- **时间统计字段（统一单位：秒）**：
-  - `sleep_night_time`：项目路径 **等于** `sleep_night` 的时长累计。
-  - `sleep_day_time`：项目路径 **等于** `sleep_day` 的时长累计。
-  - `sleep_total_time`：`sleep_night_time + sleep_day_time`。
-  - `study_time`：项目路径 **以** `study` 开头的时长累计。
-  - `total_exercise_time`：项目路径 **以** `exercise` 开头的时长累计。
-  - `cardio_time`：项目路径 **以** `exercise_cardio` 开头的时长累计。
-  - `anaerobic_time`：项目路径 **以** `exercise_anaerobic` 开头的时长累计。
-  - `grooming_time`：项目路径 **以** `routine_grooming` 开头的时长累计。
-  - `toilet_time`：项目路径 **以** `routine_toilet` 开头的时长累计。
-  - `gaming_time`：项目路径 **以** `recreation_game` 开头的时长累计。
-  - `recreation_time`：项目路径 **以** `recreation` 开头的时长累计。
-  - `recreation_zhihu_time`：项目路径 **以** `recreation_zhihu` 开头的时长累计。
-  - `recreation_bilibili_time`：项目路径 **以** `recreation_bilibili` 开头的时长累计。
-  - `recreation_douyin_time`：项目路径 **以** `recreation_douyin` 开头的时长累计。
+主键：`id` (`INTEGER`, AUTOINCREMENT)
 
-### 2.2 `time_records`
-
-- **主键**：`logical_id` (INTEGER)
-- **用途**：存放“原始活动记录”
-
-| 列名 | 类型 | 含义 | 备注 |
+| 列名 | 类型 | 约束 | 说明 |
 | --- | --- | --- | --- |
-| `logical_id` | INTEGER | 活动逻辑 ID | 由日期 + 日内序号组合生成 |
-| `start_timestamp` | INTEGER | 开始时间戳 | 秒级时间戳 |
-| `end_timestamp` | INTEGER | 结束时间戳 | 秒级时间戳 |
-| `date` | TEXT | 日期 | `YYYY-MM-DD`，外键到 `days.date` |
-| `start` | TEXT | 开始时间 | `HH:MM` |
-| `end` | TEXT | 结束时间 | `HH:MM` |
-| `project_id` | INTEGER | 项目 ID | 外键到 `projects.id` |
-| `duration` | INTEGER | 时长 | 秒 |
-| `activity_remark` | TEXT | 活动备注 | 可为空 |
+| `id` | INTEGER | PRIMARY KEY AUTOINCREMENT | 项目节点 ID |
+| `name` | TEXT | NOT NULL | 当前层级名称 |
+| `parent_id` | INTEGER | FK -> `projects.id` | 父节点 ID，根节点可空 |
+| `full_path` | TEXT | NOT NULL DEFAULT `''` | 完整路径快照（`_` 分隔） |
+| `depth` | INTEGER | NOT NULL DEFAULT `0` | 层级深度（根为 0） |
 
-#### 2.2.1 字段语义与生成规则（更细说明）
+说明：
+- 项目层级分隔符在数据库内部固定为 `_`（例如 `study_math_linear-algebra`）。
+- 展示层可以自行把 `_` 替换为任意连接符（如 `/`、` > `、emoji 等）。
 
-- **`logical_id`**：按天递增的逻辑 ID，格式为 `(YYYYMMDD * 1,000,000) + 序号`。  
-  例：`20210101` 第 42 条记录 → `20210101000042`。
-- **`start/end`**：活动的起止时间字符串 `HH:MM`。
-- **`duration`**：由 `start/end` 计算得到，若结束时间早于开始时间，则视为跨天并加 24 小时。
-- **`start_timestamp/end_timestamp`**：用 `date + time` 生成秒级时间戳，若为跨天结束则 `end_timestamp` 会额外加 24 小时。
-- **`project_id`**：由 `project_path` 解析得到的项目 ID（见 `projects` 表）。
-- **`activity_remark`**：单条活动备注，允许为空。
+### 3.3 `time_records`
 
-### 2.3 `projects`
+主键：`logical_id` (`INTEGER`)
 
-- **主键**：`id` (INTEGER, AUTOINCREMENT)
-- **用途**：存放活动所属项目树
-
-| 列名 | 类型 | 含义 | 备注 |
+| 列名 | 类型 | 约束 | 说明 |
 | --- | --- | --- | --- |
-| `id` | INTEGER | 项目 ID | 主键 |
-| `name` | TEXT | 项目名 | 不为空 |
-| `parent_id` | INTEGER | 父节点 ID | 可为空，外键到 `projects.id` |
+| `logical_id` | INTEGER | PRIMARY KEY | 逻辑记录 ID |
+| `start_timestamp` | INTEGER | NOT NULL, CHECK `>= 0` | 开始时间戳（秒） |
+| `end_timestamp` | INTEGER | NOT NULL, CHECK `>= start_timestamp` | 结束时间戳（秒） |
+| `date` | TEXT | NOT NULL, FK -> `days.date` | 日期 |
+| `start` | TEXT | NOT NULL | 开始时间（`HH:MM`） |
+| `end` | TEXT | NOT NULL | 结束时间（`HH:MM`） |
+| `project_id` | INTEGER | NOT NULL, FK -> `projects.id` | 项目节点 ID |
+| `duration` | INTEGER | NOT NULL, CHECK `>= 0` | 时长（秒） |
+| `project_path_snapshot` | TEXT | NOT NULL DEFAULT `''` | 写入时的完整路径快照（`_` 分隔） |
+| `activity_remark` | TEXT |  | 活动备注（可空） |
 
-#### 2.3.1 字段语义与生成规则（更细说明）
+## 4. 索引设计（当前实现）
 
-- **层级关系**：`parent_id` 为空代表根节点；非空代表子节点。
-- **路径规则**：完整路径通过递归 CTE 生成，用 `_` 连接各级 `name`。
-  - 示例：`study_math_linear-algebra` 表示三层结构。
-- **注意**：数据库层面不强制 `name` 的唯一性或同级唯一性，建议读取端自行处理。
+| 索引名 | 表 | 列 | 类型 | 作用 |
+| --- | --- | --- | --- | --- |
+| `idx_year_month` | `days` | (`year`, `month`) | 普通索引 | 月/年统计查询 |
+| `idx_projects_full_path_unique` | `projects` | (`full_path`) | 部分唯一索引（`WHERE full_path <> ''`） | 路径去重 |
+| `idx_projects_parent_name_unique` | `projects` | (`parent_id`, `name`) | 唯一索引 | 同父节点下名称去重 |
+| `idx_time_records_date_project` | `time_records` | (`date`, `project_id`) | 普通索引 | 按日期+项目查询 |
+| `idx_time_records_date_path_snapshot` | `time_records` | (`date`, `project_path_snapshot`) | 普通索引 | 按日期+路径快照查询 |
 
-## 3. 索引
+## 5. 外键关系
 
-| 索引名 | 表 | 列 | 用途 |
-| --- | --- | --- | --- |
-| `idx_year_month` | `days` | (`year`, `month`) | 加速按月/按年查询 |
+- `time_records.date` -> `days.date`
+- `time_records.project_id` -> `projects.id`
+- `projects.parent_id` -> `projects.id`
 
-## 4. 关系与约束
+SQLite 连接初始化时会执行 `PRAGMA foreign_keys = ON;`。
 
-- `time_records.date` → `days.date`
-- `time_records.project_id` → `projects.id`
-- `projects.parent_id` → `projects.id`
-
-## 5. 常用访问示例
+## 6. 外部程序常用查询示例
 
 ```sql
--- 查询某月所有天的统计
-SELECT * FROM days WHERE year = 2026 AND month = 1;
+-- 1) 某月日统计
+SELECT *
+FROM days
+WHERE year = 2026 AND month = 1
+ORDER BY date;
 ```
 
 ```sql
--- 按天汇总活动时长
+-- 2) 某日期区间总时长（秒）
 SELECT date, SUM(duration) AS total_duration
 FROM time_records
-GROUP BY date;
+WHERE date BETWEEN '2026-01-01' AND '2026-01-31'
+GROUP BY date
+ORDER BY date;
 ```
 
 ```sql
--- 递归展开项目路径（示例）
-WITH RECURSIVE project_paths(id, path) AS (
-  SELECT id, name FROM projects WHERE parent_id IS NULL
-  UNION ALL
-  SELECT p.id, pp.path || '_' || p.name
-  FROM projects p JOIN project_paths pp ON p.parent_id = pp.id
-)
-SELECT * FROM project_paths;
+-- 3) 直接用快照路径过滤（推荐）
+-- 注意：_ 在 LIKE 里是通配符，需 ESCAPE。
+SELECT date, SUM(duration) AS study_seconds
+FROM time_records
+WHERE date BETWEEN '2026-01-01' AND '2026-01-31'
+  AND (
+    project_path_snapshot = 'study'
+    OR project_path_snapshot LIKE 'study\_%' ESCAPE '\'
+  )
+GROUP BY date
+ORDER BY date;
 ```
 
-## 6. JSON 对应关系
+```sql
+-- 4) 结构诊断场景：从 projects 反推完整路径（非主查询路径）
+WITH RECURSIVE project_paths(id, path) AS (
+  SELECT id, name
+  FROM projects
+  WHERE parent_id IS NULL
+  UNION ALL
+  SELECT p.id, pp.path || '_' || p.name
+  FROM projects p
+  JOIN project_paths pp ON p.parent_id = pp.id
+)
+SELECT tr.logical_id, tr.date, tr.start, tr.end, tr.duration,
+       pp.path AS project_path, tr.activity_remark
+FROM time_records tr
+JOIN project_paths pp ON pp.id = tr.project_id
+ORDER BY tr.logical_id;
+```
 
-JSON 与数据库字段命名保持一致，权威字段列表可参考：
+## 7. 兼容性与接入建议
+
+- 运行时查询统一使用 `time_records.project_path_snapshot` 做路径过滤与聚合。
+- 数据库需包含 `project_path_snapshot` 列；缺失时应先升级或重建数据库。
+- 建议保证入库流程始终写入非空快照路径，避免查询阶段过滤掉空路径记录。
+- 接入方写查询时建议先 `EXPLAIN QUERY PLAN`，确认命中索引。
+
+## 8. 字段常量参考
+
 - `apps/time_tracer/src/infrastructure/schema/day_schema.hpp`
-- `apps/time_tracer/src/infrastructure/schema/time_records_schema.hpp`
-
-如需扩展字段，建议同步更新上述 schema 常量与相关导入/查询逻辑。
+- `apps/time_tracer/src/infrastructure/schema/sqlite_schema.hpp`

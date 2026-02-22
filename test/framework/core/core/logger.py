@@ -10,8 +10,9 @@ class TestLogger:
         self.log_dir = log_dir
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
-    def log_result(self, test_name: str, log_filename: str,
-                   result: ExecutionResult) -> Path:
+    def log_result(
+        self, test_name: str, log_filename: str, result: ExecutionResult
+    ) -> Path:
         log_path = self.log_dir / log_filename
         log_path.parent.mkdir(parents=True, exist_ok=True)
         with open(log_path, "w", encoding="utf-8") as file:

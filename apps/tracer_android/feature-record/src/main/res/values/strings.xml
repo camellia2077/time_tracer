@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="txt_hint_invalid_day_marker">Invalid day marker. Use MMDD (example: 0214).</string>
+    <string name="txt_hint_day_edit_enabled">DAY editing is enabled. Save will replace this day window inside the month TXT.</string>
+    <string name="txt_hint_day_not_found">Day %1$s not found in current month TXT. DAY mode edits existing blocks only.</string>
+    <string name="txt_label_editor_file">Editor: %1$s</string>
+    <string name="txt_mode_all">ALL</string>
+    <string name="txt_mode_day">DAY</string>
+    <string name="txt_label_target_day">Target Day (MMDD)</string>
+    <string name="txt_action_hide_content">Hide Content</string>
+    <string name="txt_action_show_content">Show Content</string>
+    <string name="txt_label_content">Content</string>
+    <string name="txt_label_day_content_with_date">DAY Content %1$s</string>
+    <string name="txt_label_day_content">DAY Content</string>
+
+    <string name="txt_cd_ingest">Ingest</string>
+    <string name="txt_cd_prev_month">Previous Month</string>
+    <string name="txt_cd_next_month">Next Month</string>
+    <string name="txt_label_select_file">Select File</string>
+    <string name="txt_action_refresh_list">Refresh List</string>
+    <string name="txt_sheet_select_year_month">Select Year &amp; Month</string>
+    <string name="txt_sheet_current_month">Current: %1$s</string>
+    <string name="txt_sheet_current_month_unselected">Not selected</string>
+    <string name="txt_picker_year_title">Year</string>
+    <string name="txt_picker_year_placeholder">Year</string>
+    <string name="txt_picker_month_title">Month</string>
+    <string name="txt_picker_month_placeholder">Month</string>
+    <string name="txt_picker_no_years">No years</string>
+    <string name="txt_picker_no_months">No months</string>
+    <string name="txt_picker_open_year_month">Open %1$s-%2$s</string>
+    <string name="txt_picker_field_value">%1$s: %2$s</string>
+
+    <string name="record_label_target_date">Target Date</string>
+    <string name="record_mode_manual">Manual</string>
+    <string name="record_mode_auto">Auto</string>
+    <string name="record_title_record_input">Record Input</string>
+    <string name="record_label_activity_name">Activity Name</string>
+    <string name="record_label_remark_optional">Remark (Optional)</string>
+    <string name="record_action_record_activity">Record Activity</string>
+    <string name="record_title_quick_access">Quick Access</string>
+    <string name="record_cd_collapse">Collapse</string>
+    <string name="record_cd_expand">Expand</string>
+    <string name="record_title_assist_settings">Assist Settings</string>
+    <string name="record_label_days">Days</string>
+    <string name="record_label_top_n">Top N</string>
+    <string name="record_label_search_add_quick_activity">Search &amp; Add Quick Activity</string>
+    <string name="record_chip_add_activity">+ %1$s</string>
+    <string name="record_chip_remove_activity">%1$s X</string>
+    <string name="record_hint_no_quick_activities">No quick activities. Click header to add.</string>
+    <string name="record_action_hide_suggestions">Hide Suggestions</string>
+    <string name="record_action_show_suggestions">Show Suggestions</string>
+    <string name="record_hint_loading">Loading...</string>
+    <string name="record_hint_no_suggestions">No suggestions.</string>
+</resources>

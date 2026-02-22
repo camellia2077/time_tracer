@@ -1,6 +1,6 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# time tracer (TimeMaster)
+# time tracer (TimeTracer) ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
 
 **time tracer** - A personal time tracking and analysis system built with C++23.
 
@@ -14,7 +14,7 @@ A powerful personal time management toolset designed using **Clean Architecture*
 
 ### Core Components
 
-* **`time_tracker_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format report exports (Markdown, LaTeX, Typst).
+* **`time_tracer_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format report exports (Markdown, LaTeX, Typst).
 * **`graph_generator` (Python)**: A data visualization tool that reads the database and generates dynamic charts like timelines and heatmaps.
 * **`log_generator` (C++)**: A helper utility for generating standardized test logs.
 
@@ -24,7 +24,7 @@ A powerful personal time management toolset designed using **Clean Architecture*
 
 ### 1. Dependencies
 
-* **C++ Components (`time_tracker_cli`)**:
+* **C++ Components (`time_tracer_cli`)**:
     * **MSYS2 UCRT64** (Recommended for Windows)
     * **CMake** >= 3.25 (C++23 support)
     * **Compiler**: Clang 16+ or GCC 13+
@@ -45,21 +45,21 @@ We provide automated build scripts that compile the core application and all plu
 
 ```bash
 # Ingest all raw logs from the target_logs directory
-time_tracker_cli blink -a "path/to/target_logs"
+time_tracer_cli blink -a "path/to/target_logs"
 ```
 
 **Example 2: Query Data Records**
 
 ```bash
 # List all days recorded in 2026
-time_tracker_cli query data days --year 2026
+time_tracer_cli query data days --year 2026
 ```
 
 **Example 3: Export Formatted Reports**
 
 ```bash
 # Export the weekly report for 2026-W05 as Markdown
-time_tracker_cli export week 2026-W05 -f md
+time_tracer_cli export week 2026-W05 -f md
 ```
 
 ---
@@ -94,12 +94,13 @@ Special thanks to the following AI models for their core assistance in coding, a
 * **Gemini 3 Pro**
 * **Claude 4.5 opus**
 * **GPT-5.2-codex**
+* **GPT-5.3-codex**
 
 ---
 
 ## License & Open Source Libraries
 
-This repository's own source code is licensed under **MIT** (see `LICENSE`).
+This repository's own source code is licensed under **GNU General Public License v3.0 (GPL v3)** (see `LICENSE`).
 Third-party dependencies remain under their respective licenses.
 
 ### Core and Tools

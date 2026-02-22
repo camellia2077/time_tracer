@@ -15,5 +15,5 @@ struct DayTexFormatterAbiTraits final
 }  // namespace
 
 // NOLINTBEGIN(readability-identifier-naming)
-TT_DEFINE_FORMATTER_ABI_EXPORTS(DayTexFormatterAbiTraits)
+TT_DEFINE_FORMATTER_ABI_EXPORTS_(DayTexFormatterAbiTraits)
 // NOLINTEND(readability-identifier-naming)

@@ -27,6 +27,40 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ENABLE_APP_ICON "Enable application icon for Windows executables" OFF)
+option(TT_ENABLE_PROCESSED_JSON_IO
+       "Enable processed JSON file IO (struct<->json persistence)" ON)
+option(TT_REPORT_ENABLE_LATEX
+       "Enable LaTeX report formatter implementation in core runtime" ON)
+option(TT_REPORT_ENABLE_TYPST
+       "Enable Typst report formatter implementation in core runtime" ON)
+
+if(ANDROID)
+    set(TT_ENABLE_PROCESSED_JSON_IO OFF CACHE BOOL "" FORCE)
+    set(TT_REPORT_ENABLE_LATEX OFF CACHE BOOL "" FORCE)
+    set(TT_REPORT_ENABLE_TYPST OFF CACHE BOOL "" FORCE)
+endif()
+
+message(STATUS "TT_ENABLE_PROCESSED_JSON_IO=${TT_ENABLE_PROCESSED_JSON_IO}")
+message(STATUS "TT_REPORT_ENABLE_LATEX=${TT_REPORT_ENABLE_LATEX}")
+message(STATUS "TT_REPORT_ENABLE_TYPST=${TT_REPORT_ENABLE_TYPST}")
+
+if(TT_ENABLE_PROCESSED_JSON_IO)
+    add_compile_definitions(TT_ENABLE_PROCESSED_JSON_IO=1)
+else()
+    add_compile_definitions(TT_ENABLE_PROCESSED_JSON_IO=0)
+endif()
+
+if(TT_REPORT_ENABLE_LATEX)
+    add_compile_definitions(TT_REPORT_ENABLE_LATEX=1)
+else()
+    add_compile_definitions(TT_REPORT_ENABLE_LATEX=0)
+endif()
+
+if(TT_REPORT_ENABLE_TYPST)
+    add_compile_definitions(TT_REPORT_ENABLE_TYPST=1)
+else()
+    add_compile_definitions(TT_REPORT_ENABLE_TYPST=0)
+endif()
 
 set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
 
@@ -52,7 +86,10 @@ include(BuildTypeFlags)
 # --- 3. 添加源码子目录 ---
 add_subdirectory(src)
 
-set(ALL_TARGETS time_tracker_cli)
+set(ALL_TARGETS)
+if(TARGET time_tracer_cli)
+    list(APPEND ALL_TARGETS time_tracer_cli)
+endif()
 
 # 在每次构建后，复制配置文件
 # 在每次构建后，复制配置文件 (Moved to src/CMakeLists.txt)

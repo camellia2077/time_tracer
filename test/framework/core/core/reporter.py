@@ -11,10 +11,13 @@ class Reporter:
         self.concise = concise
 
     def print_module_start(self, module_order: int, module_name: str):
-        print(self._colorize(
-            f"\n--- {module_order}. Running {module_name} tasks ---",
-            "CYAN",
-        ), flush=True)
+        print(
+            self._colorize(
+                f"\n--- {module_order}. Running {module_name} tasks ---",
+                "CYAN",
+            ),
+            flush=True,
+        )
 
     def print_module_report(self, report: TestReport):
         print(
@@ -35,25 +38,27 @@ class Reporter:
         for result in report.results:
             self._print_single_result(report.module_name, result)
 
-    def build_summary(self, all_reports: List[TestReport], total_duration: float,
-                      log_dir) -> Dict[str, Any]:
+    def build_summary(
+        self, all_reports: List[TestReport], total_duration: float, log_dir
+    ) -> Dict[str, Any]:
         total_tests = sum(len(item.results) for item in all_reports)
         total_failed = sum(item.failed_count for item in all_reports)
         modules: List[Dict[str, Any]] = []
         failed_cases: List[Dict[str, Any]] = []
 
         for report in all_reports:
-            modules.append({
-                "name": report.module_name,
-                "total": len(report.results),
-                "passed": report.passed_count,
-                "failed": report.failed_count,
-            })
+            modules.append(
+                {
+                    "name": report.module_name,
+                    "total": len(report.results),
+                    "passed": report.passed_count,
+                    "failed": report.failed_count,
+                }
+            )
             for result in report.results:
                 if result.status != "FAIL":
                     continue
-                failed_cases.append(self._build_failed_case(report.module_name,
-                                                           result))
+                failed_cases.append(self._build_failed_case(report.module_name, result))
 
         return {
             "success": total_failed == 0,
@@ -83,13 +88,17 @@ class Reporter:
             flush=True,
         )
         if summary["success"]:
-            print(self._colorize("[SUCCESS] All test steps passed.", "GREEN"),
-                  flush=True)
+            print(
+                self._colorize("[SUCCESS] All test steps passed.", "GREEN"), flush=True
+            )
         else:
-            print(self._colorize(
-                f"[FAILED] {summary['total_failed']} test step(s) failed.",
-                "RED",
-            ), flush=True)
+            print(
+                self._colorize(
+                    f"[FAILED] {summary['total_failed']} test step(s) failed.",
+                    "RED",
+                ),
+                flush=True,
+            )
             print(f"Log directory: {summary['log_dir']}", flush=True)
         print("=" * 64, flush=True)
 
@@ -107,15 +116,18 @@ class Reporter:
             self._print_failure_detail(module_name, result)
 
     def _print_failure_detail(self, module_name: str, result: SingleTestResult):
-        print(self._colorize(
-            f"  [FAIL] [{module_name}] {result.name}",
-            "RED",
-        ), flush=True)
+        print(
+            self._colorize(
+                f"  [FAIL] [{module_name}] {result.name}",
+                "RED",
+            ),
+            flush=True,
+        )
         if result.execution_result:
-            print(f"    exit_code: {result.execution_result.return_code}",
-                  flush=True)
-            print(f"    command: {' '.join(result.execution_result.command)}",
-                  flush=True)
+            print(f"    exit_code: {result.execution_result.return_code}", flush=True)
+            print(
+                f"    command: {' '.join(result.execution_result.command)}", flush=True
+            )
             stderr_tail = self._tail_lines(result.execution_result.stderr, 10)
             if stderr_tail:
                 print("    stderr (tail):", flush=True)
@@ -126,13 +138,15 @@ class Reporter:
         for message in result.messages:
             print(f"    note: {self._strip_ansi(message)}", flush=True)
 
-    def _build_failed_case(self, module_name: str,
-                           result: SingleTestResult) -> Dict[str, Any]:
+    def _build_failed_case(
+        self, module_name: str, result: SingleTestResult
+    ) -> Dict[str, Any]:
         case = self._build_case_record(module_name, result)
         return case
 
-    def _build_case_record(self, module_name: str,
-                           result: SingleTestResult) -> Dict[str, Any]:
+    def _build_case_record(
+        self, module_name: str, result: SingleTestResult
+    ) -> Dict[str, Any]:
         record: Dict[str, Any] = {
             "module": module_name,
             "name": result.name,
@@ -143,16 +157,20 @@ class Reporter:
             return record
 
         execution = result.execution_result
-        record.update({
-            "log_file": result.log_file or "",
-            "messages": [self._strip_ansi(item) for item in result.messages],
-            "return_code": execution.return_code if execution else -1,
-            "command": execution.command if execution else [],
-            "stderr_tail": self._tail_lines(execution.stderr if execution else "",
-                                            20),
-            "stdout_tail": self._tail_lines(execution.stdout if execution else "",
-                                            20),
-        })
+        record.update(
+            {
+                "log_file": result.log_file or "",
+                "messages": [self._strip_ansi(item) for item in result.messages],
+                "return_code": execution.return_code if execution else -1,
+                "command": execution.command if execution else [],
+                "stderr_tail": self._tail_lines(
+                    execution.stderr if execution else "", 20
+                ),
+                "stdout_tail": self._tail_lines(
+                    execution.stdout if execution else "", 20
+                ),
+            }
+        )
         return record
 
     def _colorize(self, text: str, color_name: str) -> str:

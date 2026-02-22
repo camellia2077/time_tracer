@@ -8,6 +8,7 @@
 #include "application/ports/i_converter_config_provider.hpp"
 #include "application/ports/i_ingest_input_provider.hpp"
 #include "application/ports/i_processed_data_storage.hpp"
+#include "application/ports/i_validation_issue_reporter.hpp"
 #include "application/ports/logger.hpp"
 #include "shared/types/ansi_colors.hpp"
 
@@ -29,13 +30,16 @@ PipelineManager::PipelineManager(
     std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
         ingest_input_provider,
     std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
-        processed_data_storage)
+        processed_data_storage,
+    std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+        validation_issue_reporter)
     : output_root_(std::move(output_root)),
       converter_config_provider_(std::move(converter_config_provider)),
       ingest_input_provider_(std::move(ingest_input_provider)),
-      processed_data_storage_(std::move(processed_data_storage)) {
+      processed_data_storage_(std::move(processed_data_storage)),
+      validation_issue_reporter_(std::move(validation_issue_reporter)) {
   if (!converter_config_provider_ || !ingest_input_provider_ ||
-      !processed_data_storage_) {
+      !processed_data_storage_ || !validation_issue_reporter_) {
     throw std::invalid_argument(
         "PipelineManager dependencies must not be null.");
   }
@@ -48,6 +52,7 @@ auto PipelineManager::Run(const std::string& input_path,
   context.config.input_root = input_path;
   context.config.date_check_mode = options.date_check_mode;
   context.config.save_processed_output = options.save_processed_output;
+  context.state.validation_issue_reporter = validation_issue_reporter_;
 
   time_tracer::application::ports::LogInfo(
       std::string("\n") +
@@ -62,9 +67,8 @@ auto PipelineManager::Run(const std::string& input_path,
 
   if (options.validate_structure || options.convert) {
     try {
-      time_tracer::application::ports::LogInfo(
-          Colorize(time_tracer::common::colors::kGray,
-                   "[INFO] Loading Configuration..."));
+      time_tracer::application::ports::LogInfo(Colorize(
+          time_tracer::common::colors::kGray, "Loading Configuration..."));
 
       context.state.converter_config =
           converter_config_provider_->LoadConverterConfig();

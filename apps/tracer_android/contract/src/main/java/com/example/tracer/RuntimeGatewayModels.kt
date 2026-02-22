@@ -3,7 +3,8 @@ package com.example.tracer
 data class NativeCallResult(
     val initialized: Boolean,
     val operationOk: Boolean,
-    val rawResponse: String
+    val rawResponse: String,
+    val errorLogPath: String = ""
 )
 
 data class ReportCallResult(
@@ -92,5 +93,35 @@ data class DataTreeQueryParams(
 data class DataQueryTextResult(
     val ok: Boolean,
     val outputText: String,
+    val message: String
+)
+
+data class ReportChartQueryParams(
+    val root: String? = null,
+    val lookbackDays: Int = 7,
+    val fromDateIso: String? = null,
+    val toDateIso: String? = null
+)
+
+data class ReportChartPoint(
+    val date: String,
+    val durationSeconds: Long
+)
+
+data class ReportChartData(
+    val roots: List<String>,
+    val selectedRoot: String,
+    val lookbackDays: Int,
+    val points: List<ReportChartPoint>,
+    val averageDurationSeconds: Long? = null,
+    val totalDurationSeconds: Long? = null,
+    val activeDays: Int? = null,
+    val rangeDays: Int? = null,
+    val usesLegacyStatsFallback: Boolean = false
+)
+
+data class ReportChartQueryResult(
+    val ok: Boolean,
+    val data: ReportChartData?,
     val message: String
 )

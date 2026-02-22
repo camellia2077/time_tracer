@@ -167,14 +167,11 @@ private fun parseMarkdown(text: String): List<MarkdownBlock> {
 private fun parseInline(text: String, builder: androidx.compose.ui.text.AnnotatedString.Builder) {
     // Very simple bold and code parsing
     // Supports **bold** and `code`
-    var currentIndex = 0
-    val boldRegex = "\\*\\*(.*?)\\*\\*".toRegex()
-    val codeRegex = "`([^`]+)`".toRegex()
 
     // We can't easily nest regexes in a simple loop without a proper tokenizer.
     // For this MVP, we'll just handle Bold, then plain text.
     // A better approach for the future: full AST parser.
-    
+
     // Simple split for now:
     val parts = text.split("**")
     parts.forEachIndexed { index, part ->
@@ -186,15 +183,20 @@ private fun parseInline(text: String, builder: androidx.compose.ui.text.Annotate
         } else {
             // Normal part (check for code)
             val subParts = part.split("`")
-             subParts.forEachIndexed { subIndex, subPart ->
-                 if (subIndex % 2 == 1) {
-                     builder.withStyle(SpanStyle(fontFamily = FontFamily.Monospace, background = Color.LightGray.copy(alpha = 0.3f))) {
-                         append(subPart)
-                     }
-                 } else {
-                     builder.append(subPart)
-                 }
-             }
+            subParts.forEachIndexed { subIndex, subPart ->
+                if (subIndex % 2 == 1) {
+                    builder.withStyle(
+                        SpanStyle(
+                            fontFamily = FontFamily.Monospace,
+                            background = Color.LightGray.copy(alpha = 0.3f)
+                        )
+                    ) {
+                        append(subPart)
+                    }
+                } else {
+                    builder.append(subPart)
+                }
+            }
         }
     }
 }

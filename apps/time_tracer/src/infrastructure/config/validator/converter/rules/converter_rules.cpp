@@ -1,19 +1,23 @@
 // infrastructure/config/validator/converter/rules/converter_rules.cpp
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
 
+#include <algorithm>
 #include <set>
 #include <string>
+#include <string_view>
 
 #include "domain/ports/diagnostics.hpp"
 
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto MainRule::Validate(const toml::table& main_tbl,
-                        std::string& out_mappings_path,
-                        std::string& out_duration_rules_path) -> bool {
+namespace {
+
+constexpr std::string_view kKeyDurationRulesPath = "duration_rules_config_path";
+constexpr std::string_view kKeyAliasMappingPath = "alias_mapping_path";
+
+auto ValidateMainStrictAlias(const toml::table& main_tbl,
+                             MainConfigPaths& out_paths) -> bool {
   const std::set<std::string> kRequiredKeys = {
-      "mappings_config_path", "duration_rules_config_path",
-      "top_parent_mapping",   "header_order",
-      "remark_prefix",        "wake_keywords"};
+      "alias_mapping_path", "duration_rules_config_path", "header_order",
+      "remark_prefix", "wake_keywords"};
 
   for (const auto& key : kRequiredKeys) {
     if (!main_tbl.contains(key)) {
@@ -24,16 +28,18 @@ auto MainRule::Validate(const toml::table& main_tbl,
     }
   }
 
-  if (!main_tbl["mappings_config_path"].is_string() ||
-      !main_tbl["duration_rules_config_path"].is_string()) {
+  if (main_tbl.contains("mappings_config_path")) {
     time_tracer::domain::ports::EmitError(
-        "[Validator] Error: 'mappings_config_path' and "
-        "'duration_rules_config_path' must be strings.");
+        "[Validator] Error: 'mappings_config_path' is no longer supported. "
+        "Use 'alias_mapping_path' and alias_mapping.toml [aliases].");
     return false;
   }
-  if (!main_tbl["top_parent_mapping"].is_table()) {
+
+  if (!main_tbl[kKeyAliasMappingPath].is_string() ||
+      !main_tbl[kKeyDurationRulesPath].is_string()) {
     time_tracer::domain::ports::EmitError(
-        "[Validator] Error: 'top_parent_mapping' must be a Table.");
+        "[Validator] Error: 'alias_mapping_path' and "
+        "'duration_rules_config_path' must be strings.");
     return false;
   }
   if (!main_tbl["header_order"].is_array() ||
@@ -48,18 +54,36 @@ auto MainRule::Validate(const toml::table& main_tbl,
         "[Validator] Error: 'remark_prefix' must be a string.");
     return false;
   }
+  if (main_tbl.contains("top_parent_mapping") &&
+      !main_tbl["top_parent_mapping"].is_table()) {
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: 'top_parent_mapping' must be a table when "
+        "present.");
+    return false;
+  }
 
-  if (auto mappings_val =
-          main_tbl["mappings_config_path"].value<std::string>()) {
-    out_mappings_path = *mappings_val;
+  const auto kAliasMappingPath =
+      main_tbl[kKeyAliasMappingPath].value<std::string>();
+  const auto kDurationRulesPath =
+      main_tbl[kKeyDurationRulesPath].value<std::string>();
+  if (!kAliasMappingPath.has_value() || !kDurationRulesPath.has_value()) {
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: 'alias_mapping_path' and "
+        "'duration_rules_config_path' must be strings.");
+    return false;
   }
-  if (auto duration_val =
-          main_tbl["duration_rules_config_path"].value<std::string>()) {
-    out_duration_rules_path = *duration_val;
-  }
+
+  out_paths.alias_mapping_path = *kAliasMappingPath;
+  out_paths.duration_rules_config_path = *kDurationRulesPath;
   return true;
 }
-// NOLINTEND(bugprone-easily-swappable-parameters)
+
+}  // namespace
+
+auto MainRule::Validate(const toml::table& main_tbl, MainConfigPaths& out_paths)
+    -> bool {
+  return ValidateMainStrictAlias(main_tbl, out_paths);
+}
 
 auto DurationRule::Validate(const toml::table& duration_tbl) -> bool {
   if (!duration_tbl.contains("text_duration_mappings") ||
@@ -127,4 +151,30 @@ auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
     return false;
   }
   return true;
+}
+
+auto V2Rule::ValidateAliasMapping(const toml::table& alias_tbl) -> bool {
+  const toml::table* aliases = alias_tbl["aliases"].as_table();
+  if (aliases == nullptr) {
+    time_tracer::domain::ports::EmitError(
+        "[Validator] Error: 'aliases' must be a table.");
+    return false;
+  }
+  return std::ranges::all_of(*aliases, [](const auto& alias_entry) -> bool {
+    const auto& [alias_key, node] = alias_entry;
+    const std::string kAliasKey = std::string(alias_key.str());
+    if (kAliasKey.empty()) {
+      time_tracer::domain::ports::EmitError(
+          "[Validator] Error: aliases contains an empty key.");
+      return false;
+    }
+    const auto kAliasValue = node.template value<std::string>();
+    if (!kAliasValue || kAliasValue->empty()) {
+      time_tracer::domain::ports::EmitError("[Validator] Error: aliases.'" +
+                                            kAliasKey +
+                                            "' must be a non-empty string.");
+      return false;
+    }
+    return true;
+  });
 }

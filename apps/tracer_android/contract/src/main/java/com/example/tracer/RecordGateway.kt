@@ -6,8 +6,9 @@ interface RecordGateway {
     suspend fun recordNow(
         activityName: String,
         remark: String,
-        targetDateIso: String?
+        targetDateIso: String?,
+        preferredTxtPath: String?
     ): RecordActionResult
     suspend fun syncLiveToDatabase(): NativeCallResult
-    suspend fun clearLiveTxt(): ClearTxtResult
+    suspend fun clearTxt(): ClearTxtResult
 }

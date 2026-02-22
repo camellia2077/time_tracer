@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="report_mode_day">日</string>
+    <string name="report_mode_month">月</string>
+    <string name="report_mode_week">周</string>
+    <string name="report_mode_year">年</string>
+    <string name="report_mode_range">区间</string>
+    <string name="report_mode_recent">近期</string>
+    <string name="report_result_mode_text">文字</string>
+    <string name="report_result_mode_chart">图表</string>
+
+    <string name="report_title_mode_parameters">%1$s 参数</string>
+    <string name="report_title_report_date">报表日期</string>
+    <string name="report_title_report_month">报表月份</string>
+    <string name="report_title_report_week">报表周</string>
+    <string name="report_label_report_year">报表年份 (YYYY)</string>
+    <string name="report_title_start_date">开始日期</string>
+    <string name="report_title_end_date">结束日期</string>
+    <string name="report_label_recent_days">最近天数 (N)</string>
+    <string name="report_action_generate_report_md">生成报表 MD</string>
+
+    <string name="report_title_stats_parameters">统计参数</string>
+    <string name="report_section_stats">统计</string>
+    <string name="report_action_loading">加载中...</string>
+    <string name="report_action_generate_stats">生成%1$s统计</string>
+
+    <string name="report_title_project_tree_parameters">项目树参数</string>
+    <string name="report_section_tree">树</string>
+    <string name="report_label_tree_level">树层级（-1 表示不限）</string>
+    <string name="report_action_load_project_tree">加载%1$s项目树</string>
+
+    <string name="report_title_chart_parameters">图表参数</string>
+    <string name="report_label_chart_root">根节点</string>
+    <string name="report_chart_root_all">全部根节点</string>
+    <string name="report_label_chart_lookback_days">最近天数 (N)</string>
+    <string name="report_label_chart_date_filter_mode">日期筛选方式</string>
+    <string name="report_chart_date_mode_lookback">最近天数</string>
+    <string name="report_chart_date_mode_range">日期区间</string>
+    <string name="report_action_load_chart">加载图表</string>
+    <string name="report_action_chart_loading">图表加载中...</string>
+    <string name="report_chart_empty">当前范围暂无图表数据。</string>
+    <string name="report_chart_empty_in_range">所选日期范围暂无图表数据。</string>
+    <string name="report_label_chart_visual">图表类型</string>
+    <string name="report_label_chart_range_start">开始日期</string>
+    <string name="report_label_chart_range_end">结束日期</string>
+    <string name="report_chart_range_error_both_required">使用范围筛选时，开始和结束日期都必须填写。</string>
+    <string name="report_chart_range_error_invalid_start">开始日期无效。</string>
+    <string name="report_chart_range_error_invalid_end">结束日期无效。</string>
+    <string name="report_chart_range_error_order">日期范围无效，开始日期必须小于或等于结束日期。</string>
+    <string name="report_chart_visual_line">折线图</string>
+    <string name="report_chart_visual_bar">柱状图</string>
+    <string name="report_chart_visual_pie">饼状图</string>
+    <string name="report_chart_pie_hint">点击扇区查看日期和时长。</string>
+    <string name="report_chart_axis_x_date">X 轴：日期（MM-dd）</string>
+    <string name="report_chart_axis_y_hours">Y 轴：时长（小时）</string>
+    <string name="report_chart_toggle_average_line">显示平均线</string>
+    <string name="report_chart_average_duration">平均时长：%1$s</string>
+    <string name="report_chart_legacy_fallback_notice">当前使用本地平均值兼容兜底（计划于 v0.3.0 下线）。</string>
+    <string name="report_chart_selected_detail">已选点：%1$s · %2$s</string>
+
+    <string name="report_title_section_day">%1$s日期</string>
+    <string name="report_title_section_month">%1$s月份</string>
+    <string name="report_title_section_week">%1$s周</string>
+    <string name="report_label_section_year">%1$s年份 (YYYY)</string>
+    <string name="report_title_section_start_date">%1$s开始日期</string>
+    <string name="report_title_section_end_date">%1$s结束日期</string>
+    <string name="report_label_section_recent_days">%1$s最近天数 (N)</string>
+
+    <string name="report_cd_collapse">收起</string>
+    <string name="report_cd_expand">展开</string>
+
+    <string name="report_subject_stats">统计</string>
+    <string name="report_subject_tree">树</string>
+
+    <string name="report_status_native_report_running">nativeReport(%1$s, md) 运行中...</string>
+    <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_range_start_date_invalid">区间开始日期无效。%1$s</string>
+    <string name="report_status_range_end_date_invalid">区间结束日期无效。%1$s</string>
+    <string name="report_status_query_stats_running">query data days-stats 运行中... period=%1$s</string>
+    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
+    <string name="report_status_query_tree_running">query data tree 运行中...</string>
+    <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
+    <string name="report_status_query_chart_running">query data report-chart 运行中...</string>
+    <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_error_tree_level_min">树层级必须 &gt;= -1。</string>
+    <string name="report_error_chart_payload_invalid">图表数据载荷无效。</string>
+    <string name="report_error_period_argument_required">%1$s 参数在 %2$s 周期下必填。</string>
+    <string name="report_error_invalid_range_argument">区间参数无效。请使用 start|end（例如：2026-02-01|2026-02-15）。</string>
+    <string name="report_error_invalid_range_date_value">区间日期值无效。请使用 YYYY-MM-DD（或 YYYYMMDD）。</string>
+    <string name="report_error_subject_range_invalid">%1$s 区间无效。开始日期必须 &lt;= 结束日期。</string>
+    <string name="report_error_invalid_day_format">日期格式无效。请使用 YYYYMMDD 数字（例如：20260214）。</string>
+    <string name="report_error_invalid_date_value">日期值无效：%1$s。</string>
+    <string name="report_error_invalid_month_format">月份格式无效。请使用 YYYYMM 数字（例如：202602）。</string>
+    <string name="report_error_invalid_month_value">月份值无效：%1$s。</string>
+    <string name="report_error_invalid_year_format">年份格式无效。请使用 ISO 年份：YYYY（例如：2026）。</string>
+    <string name="report_error_invalid_iso_year_value">ISO 年份值无效：%1$s。</string>
+    <string name="report_error_invalid_week_format">周格式无效。请使用 YYYYWW 数字（例如：202607）。</string>
+    <string name="report_error_invalid_week_year">周年份无效：%1$s。</string>
+    <string name="report_error_invalid_week_number">周序号无效：%1$s。</string>
+    <string name="report_error_invalid_week_value">周值无效：%1$s。%2$d 支持周范围 01 到 %3$d。</string>
+    <string name="report_error_invalid_range_order">区间无效。开始日期必须 &lt;= 结束日期。</string>
+    <string name="report_error_recent_days_required">最近天数必填，且必须为数字。</string>
+    <string name="report_error_recent_days_numeric">最近天数必须为数字。</string>
+    <string name="report_error_recent_days_positive">最近天数必须大于 0。</string>
+    <string name="report_error_unknown_viewmodel_class">未知 ViewModel 类：%1$s</string>
+</resources>

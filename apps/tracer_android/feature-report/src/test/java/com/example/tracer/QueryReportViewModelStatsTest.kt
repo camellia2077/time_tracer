@@ -134,6 +134,18 @@ private class FakeQueryGateway : QueryGateway {
     override suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
+    override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
+        ReportChartQueryResult(
+            ok = true,
+            data = ReportChartData(
+                roots = emptyList(),
+                selectedRoot = "",
+                lookbackDays = params.lookbackDays,
+                points = emptyList()
+            ),
+            message = "ok"
+        )
+
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         ActivityMappingNamesResult(ok = true, names = emptyList(), message = "ok")
 }

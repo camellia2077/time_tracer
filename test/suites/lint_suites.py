@@ -27,7 +27,7 @@ def main() -> int:
     )
     parser.add_argument(
         "--suite",
-        help="Only validate one suite folder (e.g. time_tracer/log_generator).",
+        help="Only validate one suite folder (e.g. tracer_windows_cli/log_generator).",
     )
     parser.add_argument(
         "--build-dir",

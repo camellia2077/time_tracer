@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
+#include <string_view>
 
 #include "infrastructure/config/loader/toml_loader_utils.hpp"  // 使用 read_toml
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
@@ -11,6 +12,39 @@
 
 namespace fs = std::filesystem;
 using namespace TomlLoaderUtils;
+
+namespace {
+
+constexpr std::string_view kAliasesSection = "aliases";
+
+auto ReadRequiredToml(const fs::path& file_path, std::string_view logical_name)
+    -> toml::table {
+  if (!FileSystemHelper::Exists(file_path)) {
+    throw std::runtime_error(std::string(logical_name) +
+                             " config file not found: " + file_path.string());
+  }
+  return ReadToml(file_path);
+}
+
+auto BuildTextMappingsFromAlias(toml::table& main_tbl,
+                                const toml::table& alias_tbl) -> void {
+  const toml::table* aliases = alias_tbl[kAliasesSection].as_table();
+
+  toml::table text_mappings;
+  for (const auto& [alias_key, alias_value] : *aliases) {
+    const std::string kAlias = std::string(alias_key.str());
+    const auto kProjectPathNode = alias_value.value<std::string>();
+    if (!kProjectPathNode.has_value()) {
+      throw std::runtime_error(
+          "aliases values must be non-empty strings in alias mapping config.");
+    }
+    const std::string kProjectPath = *kProjectPathNode;
+    text_mappings.insert(kAlias, kProjectPath);
+  }
+  main_tbl.insert_or_assign("text_mappings", std::move(text_mappings));
+}
+
+}  // namespace
 
 auto ConverterConfigLoader::MergeTomlTable(toml::table& target,
                                            const toml::table& source) -> void {
@@ -73,42 +107,31 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
   toml::table main_tbl = ReadToml(main_config_path);
   fs::path config_dir = main_config_path.parent_path();
 
-  std::string mappings_rel_path;
-  std::string duration_rules_rel_path;
-  if (!MainRule::Validate(main_tbl, mappings_rel_path,
-                          duration_rules_rel_path)) {
+  MainConfigPaths paths;
+  if (!MainRule::Validate(main_tbl, paths)) {
     throw std::runtime_error(
         "Converter config validation failed for main config: " +
         main_config_path.string());
   }
 
-  const fs::path mappings_path = config_dir / mappings_rel_path;
-  if (!FileSystemHelper::Exists(mappings_path)) {
-    throw std::runtime_error("Mappings config file not found: " +
-                             mappings_path.string());
-  }
-  const toml::table mappings_tbl = ReadToml(mappings_path);
-  if (!MappingRule::Validate(mappings_tbl)) {
-    throw std::runtime_error(
-        "Converter config validation failed for mappings: " +
-        mappings_path.string());
-  }
-  MergeSectionIfPresent(main_tbl, mappings_tbl, "text_mappings");
-  MergeSectionIfPresent(main_tbl, mappings_tbl, "text_duration_mappings");
+  const fs::path kAliasMappingPath = config_dir / paths.alias_mapping_path;
+  const fs::path kDurationRulesPath =
+      config_dir / paths.duration_rules_config_path;
 
-  const fs::path duration_rules_path = config_dir / duration_rules_rel_path;
-  if (!FileSystemHelper::Exists(duration_rules_path)) {
-    throw std::runtime_error("Duration rules config file not found: " +
-                             duration_rules_path.string());
-  }
-  const toml::table duration_tbl = ReadToml(duration_rules_path);
-  if (!DurationRule::Validate(duration_tbl)) {
+  const toml::table kAliasMappingTbl =
+      ReadRequiredToml(kAliasMappingPath, "Alias mapping");
+  const toml::table kDurationTbl =
+      ReadRequiredToml(kDurationRulesPath, "Duration rules");
+  if (!V2Rule::ValidateAliasMapping(kAliasMappingTbl) ||
+      !DurationRule::Validate(kDurationTbl)) {
     throw std::runtime_error(
-        "Converter config validation failed for duration rules: " +
-        duration_rules_path.string());
+        "Converter config validation failed for converter schema under: " +
+        config_dir.string());
   }
-  MergeSectionIfPresent(main_tbl, duration_tbl, "duration_mappings");
-  MergeSectionIfPresent(main_tbl, duration_tbl, "text_duration_mappings");
+
+  BuildTextMappingsFromAlias(main_tbl, kAliasMappingTbl);
+  MergeSectionIfPresent(main_tbl, kDurationTbl, "text_duration_mappings");
+  MergeSectionIfPresent(main_tbl, kDurationTbl, "duration_mappings");
 
   return main_tbl;
 }
@@ -123,13 +146,13 @@ auto ConverterConfigLoader::ParseTomlToStruct(const toml::table& tbl,
 
 auto ConverterConfigLoader::ParseBasicConfig(const toml::table& tbl,
                                              ConverterConfig& config) -> void {
-  const auto remark_prefix = tbl["remark_prefix"].value<std::string>();
-  if (!remark_prefix || remark_prefix->empty()) {
+  const auto kRemarkPrefix = tbl["remark_prefix"].value<std::string>();
+  if (!kRemarkPrefix || kRemarkPrefix->empty()) {
     throw std::runtime_error(
         "Invalid converter config: 'remark_prefix' must be a non-empty "
         "string.");
   }
-  config.remark_prefix = *remark_prefix;
+  config.remark_prefix = *kRemarkPrefix;
 
   const toml::array* header_order = tbl["header_order"].as_array();
   if (header_order == nullptr || header_order->empty()) {
@@ -139,13 +162,13 @@ auto ConverterConfigLoader::ParseBasicConfig(const toml::table& tbl,
   config.header_order.clear();
   config.header_order.reserve(header_order->size());
   for (const auto& elem : *header_order) {
-    const auto value = elem.value<std::string>();
-    if (!value || value->empty()) {
+    const auto kValue = elem.value<std::string>();
+    if (!kValue || kValue->empty()) {
       throw std::runtime_error(
           "Invalid converter config: each item in 'header_order' must be a "
           "non-empty string.");
     }
-    config.header_order.push_back(*value);
+    config.header_order.push_back(*kValue);
   }
 
   const toml::array* wake_keywords = tbl["wake_keywords"].as_array();
@@ -156,13 +179,13 @@ auto ConverterConfigLoader::ParseBasicConfig(const toml::table& tbl,
   config.wake_keywords.clear();
   config.wake_keywords.reserve(wake_keywords->size());
   for (const auto& elem : *wake_keywords) {
-    const auto value = elem.value<std::string>();
-    if (!value || value->empty()) {
+    const auto kValue = elem.value<std::string>();
+    if (!kValue || kValue->empty()) {
       throw std::runtime_error(
           "Invalid converter config: each item in 'wake_keywords' must be a "
           "non-empty string.");
     }
-    config.wake_keywords.push_back(*value);
+    config.wake_keywords.push_back(*kValue);
   }
 }
 
@@ -178,14 +201,14 @@ auto ConverterConfigLoader::ParseGeneratedActivities(const toml::table& tbl,
 
     if (const toml::node* sleep_project_node =
             gen_tbl->get("sleep_project_path")) {
-      const auto sleep_project_path = sleep_project_node->value<std::string>();
-      if (!sleep_project_path || sleep_project_path->empty()) {
+      const auto kSleepProjectPath = sleep_project_node->value<std::string>();
+      if (!kSleepProjectPath || kSleepProjectPath->empty()) {
         throw std::runtime_error(
             "Invalid converter config: "
             "'generated_activities.sleep_project_path' "
             "must be a non-empty string.");
       }
-      config.generated_sleep_project_path = *sleep_project_path;
+      config.generated_sleep_project_path = *kSleepProjectPath;
     }
   }
 }
@@ -203,23 +226,27 @@ auto ConverterConfigLoader::ParseMappings(const toml::table& tbl,
 
     target.clear();
     for (const auto& [k, v] : *map_tbl) {
-      const std::string entry_key = std::string(k.str());
-      if (entry_key.empty()) {
+      const std::string kEntryKey = std::string(k.str());
+      if (kEntryKey.empty()) {
         throw std::runtime_error("Invalid converter config: '" + key +
                                  "' contains an empty key.");
       }
 
-      const auto entry_value = v.value<std::string>();
-      if (!entry_value || entry_value->empty()) {
+      const auto kEntryValue = v.value<std::string>();
+      if (!kEntryValue || kEntryValue->empty()) {
         throw std::runtime_error("Invalid converter config: value of '" + key +
-                                 "." + entry_key +
+                                 "." + kEntryKey +
                                  "' must be a non-empty string.");
       }
-      target[entry_key] = *entry_value;
+      target[kEntryKey] = *kEntryValue;
     }
   };
 
-  load_map("top_parent_mapping", config.top_parent_mapping);
+  if (tbl.contains("top_parent_mapping")) {
+    load_map("top_parent_mapping", config.top_parent_mapping);
+  } else {
+    config.top_parent_mapping.clear();
+  }
   load_map("text_mappings", config.text_mapping);
   load_map("text_duration_mappings", config.text_duration_mapping);
 }
@@ -235,8 +262,8 @@ auto ConverterConfigLoader::ParseDurationMappings(const toml::table& tbl,
 
   config.duration_mappings.clear();
   for (const auto& [event_key, rules_node] : *duration_tbl) {
-    const std::string event = std::string(event_key.str());
-    if (event.empty()) {
+    const std::string kEvent = std::string(event_key.str());
+    if (kEvent.empty()) {
       throw std::runtime_error(
           "Invalid converter config: 'duration_mappings' contains an empty "
           "key.");
@@ -245,7 +272,7 @@ auto ConverterConfigLoader::ParseDurationMappings(const toml::table& tbl,
     const toml::array* rules_arr = rules_node.as_array();
     if (rules_arr == nullptr || rules_arr->empty()) {
       throw std::runtime_error("Invalid converter config: 'duration_mappings." +
-                               event + "' must be a non-empty array.");
+                               kEvent + "' must be a non-empty array.");
     }
 
     std::vector<DurationMappingRule> rules;
@@ -255,27 +282,27 @@ auto ConverterConfigLoader::ParseDurationMappings(const toml::table& tbl,
       if (rule_tbl == nullptr) {
         throw std::runtime_error(
             "Invalid converter config: each rule in 'duration_mappings." +
-            event + "' must be a table.");
+            kEvent + "' must be a table.");
       }
 
-      const auto less_than_minutes =
+      const auto kLessThanMinutes =
           rule_tbl->get("less_than_minutes")->value<int>();
-      const auto value = rule_tbl->get("value")->value<std::string>();
-      if (!less_than_minutes || *less_than_minutes <= 0) {
+      const auto kValue = rule_tbl->get("value")->value<std::string>();
+      if (!kLessThanMinutes || *kLessThanMinutes <= 0) {
         throw std::runtime_error(
             "Invalid converter config: 'less_than_minutes' in "
             "'duration_mappings." +
-            event + "' must be a positive integer.");
+            kEvent + "' must be a positive integer.");
       }
-      if (!value || value->empty()) {
+      if (!kValue || kValue->empty()) {
         throw std::runtime_error(
-            "Invalid converter config: 'value' in 'duration_mappings." + event +
-            "' must be a non-empty string.");
+            "Invalid converter config: 'value' in 'duration_mappings." +
+            kEvent + "' must be a non-empty string.");
       }
 
       rules.push_back(DurationMappingRule{
-          .less_than_minutes = *less_than_minutes,
-          .value = *value,
+          .less_than_minutes = *kLessThanMinutes,
+          .value = *kValue,
       });
     }
 
@@ -292,11 +319,11 @@ auto ConverterConfigLoader::ParseDurationMappings(const toml::table& tbl,
         throw std::runtime_error(
             "Invalid converter config: 'less_than_minutes' in "
             "'duration_mappings." +
-            event + "' must be strictly increasing.");
+            kEvent + "' must be strictly increasing.");
       }
     }
 
-    config.duration_mappings[event] = std::move(rules);
+    config.duration_mappings[kEvent] = std::move(rules);
   }
 }
 

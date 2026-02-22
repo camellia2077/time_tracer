@@ -27,7 +27,7 @@ struct DateParts {
 
 [[nodiscard]] auto FormatDate(const DateParts& parts) -> std::string;
 
-[[nodiscard]] auto BuildProjectCte(bool has_project) -> std::string;
+[[nodiscard]] auto BuildProjectDateJoinSql() -> std::string;
 
 [[nodiscard]] auto BuildWhereClauses(const QueryFilters& filters,
                                      std::vector<SqlParam>& params)
