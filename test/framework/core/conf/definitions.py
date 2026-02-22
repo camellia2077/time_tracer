@@ -98,9 +98,12 @@ class CommandSpec:
     args: List[str]
     stage: str = "commands"
     expect_exit: int = 0
+    raw_command: bool = False
     add_output_dir: bool = False
     stdin_input: Optional[str] = None
     expect_files: List[str] = field(default_factory=list)
+    # Each item format: "<absolute_or_formatted_path>::<required_substring>"
+    expect_file_contains: List[str] = field(default_factory=list)
     expect_stdout_contains: List[str] = field(default_factory=list)
     expect_stderr_contains: List[str] = field(default_factory=list)
 

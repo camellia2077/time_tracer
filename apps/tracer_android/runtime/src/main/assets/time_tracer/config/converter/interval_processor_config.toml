@@ -1,7 +1,7 @@
 # converter/interval_processor_config.toml
 
-mappings_config_path = "mapping_config.toml"
 duration_rules_config_path = "duration_rules.toml"
+alias_mapping_path = "alias_mapping.toml"
 
 header_order = [
     "Date:",
@@ -17,6 +17,3 @@ wake_keywords = ["起床", "醒", "w", "wake", "新的一天开始了"]
 [generated_activities]
 # 当 LogLinker 自动补全跨月/跨天睡眠时，使用此项目路径来生成睡觉的活动名
 sleep_project_path = "sleep_night"
-
-[top_parent_mapping]
-study = "study"

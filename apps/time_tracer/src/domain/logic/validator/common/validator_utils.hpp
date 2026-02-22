@@ -49,11 +49,6 @@ struct Error {
   }
 };
 
-void PrintGroupedErrors(const std::string& filename,
-                        const std::set<Error>& errors);
-void PrintDiagnostics(const std::string& fallback_filename,
-                      const std::vector<Diagnostic>& diagnostics);
-
 }  // namespace validator
 
 #endif  // DOMAIN_LOGIC_VALIDATOR_COMMON_VALIDATOR_UTILS_H_

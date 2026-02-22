@@ -98,8 +98,17 @@ auto ProjectResolver::EnsurePath(const std::string& full_path) -> long long {
 
   ImportProjectNode* current_node = root_.get();
   long long current_parent_id = 0;
+  std::string current_full_path;
+  current_full_path.reserve(full_path.size());
+  int current_depth = 0;
 
   for (const auto& part_name : parts) {
+    if (!current_full_path.empty()) {
+      current_full_path += "_";
+    }
+    current_full_path += part_name;
+    ++current_depth;
+
     auto child_it = current_node->children.find(part_name);
 
     if (child_it != current_node->children.end()) {
@@ -115,6 +124,9 @@ auto ProjectResolver::EnsurePath(const std::string& full_path) -> long long {
       } else {
         sqlite3_bind_int64(stmt_insert_project_, 2, current_parent_id);
       }
+      sqlite3_bind_text(stmt_insert_project_, 3, current_full_path.c_str(), -1,
+                        SQLITE_TRANSIENT);
+      sqlite3_bind_int(stmt_insert_project_, 4, current_depth);
 
       if (sqlite3_step(stmt_insert_project_) != SQLITE_DONE) {
         throw std::runtime_error("Error inserting project: " + part_name);

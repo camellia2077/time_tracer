@@ -15,9 +15,11 @@
 #include "application/ports/i_processed_data_loader.hpp"
 #include "application/ports/i_processed_data_storage.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
-#include "domain/logic/validator/common/validator_utils.hpp"
+#include "application/ports/i_validation_issue_reporter.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/types/app_options.hpp"
+#include "domain/types/date_check_mode.hpp"
+#include "domain/types/ingest_mode.hpp"
 
 namespace fs = std::filesystem;
 
@@ -36,7 +38,9 @@ class WorkflowHandler : public IWorkflowHandler {
       std::shared_ptr<time_tracer::application::ports::IIngestInputProvider>
           ingest_input_provider,
       std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
-          processed_data_storage);
+          processed_data_storage,
+      std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+          validation_issue_reporter);
   ~WorkflowHandler() override;
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
@@ -47,7 +51,9 @@ class WorkflowHandler : public IWorkflowHandler {
       const std::map<std::string, std::vector<DailyLog>>& data_map)
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed = false) -> void override;
+                 bool save_processed = false,
+                 IngestMode ingest_mode = IngestMode::kStandard)
+      -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
@@ -66,6 +72,12 @@ class WorkflowHandler : public IWorkflowHandler {
       ingest_input_provider_;
   std::shared_ptr<time_tracer::application::ports::IProcessedDataStorage>
       processed_data_storage_;
+  std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+      validation_issue_reporter_;
+
+  auto RunDatabaseImportFromMemoryReplacingMonth(
+      const std::map<std::string, std::vector<DailyLog>>& data_map, int year,
+      int month) -> void;
 };
 
 #endif  // APPLICATION_WORKFLOW_HANDLER_H_

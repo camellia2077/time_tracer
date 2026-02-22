@@ -14,10 +14,10 @@
 namespace {
 constexpr size_t kYearMarkerLength = 5;
 constexpr char kYearMarkerPrefix = 'y';
+constexpr size_t kMonthMarkerLength = 3;
+constexpr char kMonthMarkerPrefix = 'm';
 constexpr size_t kDayMarkerLength = 4;
-constexpr size_t kMonthDigitsLength = 2;
 constexpr size_t kDayDigitsLength = 2;
-constexpr size_t kMonthStartOffset = 0;
 constexpr size_t kDayStartOffset = 2;
 constexpr size_t kTimeDigitsLength = 4;
 constexpr size_t kTimeHourOffset = 0;
@@ -26,6 +26,8 @@ constexpr size_t kTimeMinuteOffset = 2;
 constexpr size_t kTimeMinuteLength = 2;
 constexpr int kMaxHour = 23;
 constexpr int kMaxMinute = 59;
+constexpr int kMinMonth = 1;
+constexpr int kMaxMonth = 12;
 constexpr size_t kRemarkDelimiterCount = 3;
 // Inline remark delimiters. Example: "1026math //note" -> remark "note".
 constexpr std::array<std::string_view, kRemarkDelimiterCount>
@@ -59,6 +61,7 @@ auto TextParser::Parse(std::istream& input_stream,
   DailyLog current_day;
   std::string line;
   std::string current_year_prefix;
+  std::string current_month_prefix;
   int line_number = 0;
 
   while (std::getline(input_stream, line)) {
@@ -70,6 +73,20 @@ auto TextParser::Parse(std::istream& input_stream,
 
     if (IsYearMarker(line)) {
       current_year_prefix = line.substr(1);
+      current_month_prefix.clear();
+      continue;
+    }
+
+    if (IsMonthMarker(line)) {
+      if (current_year_prefix.empty()) {
+        time_tracer::application::ports::LogWarn(
+            std::string(time_tracer::common::colors::kYellow) +
+            "Warning: Skipping line '" + line +
+            "' because a year header (e.g., y2025) has not been found yet." +
+            std::string(time_tracer::common::colors::kReset));
+        continue;
+      }
+      current_month_prefix = line.substr(1);
       continue;
     }
 
@@ -83,13 +100,17 @@ auto TextParser::Parse(std::istream& input_stream,
     }
 
     if (IsNewDayMarker(line)) {
+      if (current_month_prefix.empty()) {
+        ThrowParseError(line_number, line,
+                        "Date found before month header (mMM)");
+      }
       if (!current_day.date.empty()) {
         on_new_day(current_day);
       }
       current_day.Clear();
-      current_day.date = current_year_prefix + "-" +
-                         line.substr(kMonthStartOffset, kMonthDigitsLength) +
-                         "-" + line.substr(kDayStartOffset, kDayDigitsLength);
+      const std::string kMonthPrefix = current_month_prefix;
+      current_day.date = current_year_prefix + "-" + kMonthPrefix + "-" +
+                         line.substr(kDayStartOffset, kDayDigitsLength);
       current_day.source_span =
           SourceSpan{.file_path = std::string(source_file),
                      .line_start = line_number,
@@ -113,6 +134,19 @@ auto TextParser::IsYearMarker(const std::string& line) -> bool {
   }
   return std::ranges::all_of(
       line.substr(1), [](char value) -> bool { return IsAsciiDigit(value); });
+}
+
+auto TextParser::IsMonthMarker(const std::string& line) -> bool {
+  if (line.length() != kMonthMarkerLength || line[0] != kMonthMarkerPrefix) {
+    return false;
+  }
+  if (!std::ranges::all_of(line.substr(1), [](char value) -> bool {
+        return IsAsciiDigit(value);
+      })) {
+    return false;
+  }
+  int month_value = std::stoi(line.substr(1));
+  return month_value >= kMinMonth && month_value <= kMaxMonth;
 }
 
 auto TextParser::IsNewDayMarker(const std::string& line) -> bool {

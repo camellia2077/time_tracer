@@ -8,6 +8,7 @@
 
 #include "domain/reports/types/report_types.hpp"
 #include "domain/types/date_check_mode.hpp"
+#include "domain/types/ingest_mode.hpp"
 
 namespace time_tracer::core::dto {
 
@@ -41,7 +42,14 @@ enum class DataQueryAction {
   kDaysStats,
   kSearch,
   kActivitySuggest,
+  kMappingNames,
+  kReportChart,
   kTree,
+};
+
+enum class DataQueryOutputMode {
+  kText,
+  kSemanticJson,
 };
 
 struct ConvertRequest {
@@ -56,6 +64,7 @@ struct IngestRequest {
   std::string input_path;
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   bool save_processed_output = false;
+  IngestMode ingest_mode = IngestMode::kStandard;
 };
 
 struct ImportRequest {
@@ -100,6 +109,7 @@ struct ReportExportRequest {
 
 struct DataQueryRequest {
   DataQueryAction action = DataQueryAction::kYears;
+  DataQueryOutputMode output_mode = DataQueryOutputMode::kText;
   std::optional<int> year;
   std::optional<int> month;
   std::optional<std::string> from_date;
@@ -119,6 +129,7 @@ struct DataQueryRequest {
   std::optional<std::string> tree_period;
   std::optional<std::string> tree_period_argument;
   std::optional<int> tree_max_depth;
+  std::optional<std::string> root;
 };
 
 struct TreeQueryRequest {

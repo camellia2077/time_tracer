@@ -1,0 +1,8 @@
+# Aggregated scenario configuration for tracer_windows_cli suite.
+# Include order matters for merged command execution order.
+includes = [
+  "tests/base.toml",
+  "tests/command_groups.toml",
+  "tests/commands_tree_version.toml",
+  "tests/commands_query_data.toml",
+]

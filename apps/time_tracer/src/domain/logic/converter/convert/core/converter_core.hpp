@@ -4,6 +4,7 @@
 
 #include <map>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "domain/model/daily_log.hpp"
@@ -22,6 +23,9 @@ class LogLinker {
  public:
   explicit LogLinker(const ConverterConfig& config);
   void LinkLogs(std::map<std::string, std::vector<DailyLog>>& data_map);
+  void LinkFirstDayWithExternalPreviousEvent(
+      std::map<std::string, std::vector<DailyLog>>& data_map,
+      std::string_view previous_date, std::string_view previous_end_time);
 
  private:
   const ConverterConfig& config_;

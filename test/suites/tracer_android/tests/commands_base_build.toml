@@ -1,0 +1,8 @@
+[[commands]]
+name = "APK Debug Exists"
+stage = "base-build"
+args = [
+  "/c",
+  "if exist ..\\..\\..\\..\\apps\\tracer_android\\app\\build\\outputs\\apk\\debug\\app-debug.apk (exit /b 0) else (echo Missing app-debug.apk && exit /b 1)"
+]
+expect_exit = 0

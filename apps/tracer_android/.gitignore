@@ -28,3 +28,4 @@ Thumbs.db
 # ignore txt
 input/
 *.txt
+!runtime/src/main/cpp/CMakeLists.txt

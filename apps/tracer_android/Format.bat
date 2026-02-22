@@ -1,1 +1,0 @@
-.\gradlew.bat app:ktlintFormat contract:ktlintFormat feature-data:ktlintFormat feature-record:ktlintFormat feature-report:ktlintFormat runtime:ktlintFormat

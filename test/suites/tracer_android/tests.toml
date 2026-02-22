@@ -1,0 +1,7 @@
+# Aggregated scenario configuration for tracer_android suite.
+includes = [
+  "tests/base.toml",
+  "tests/commands_base_setup.toml",
+  "tests/commands_base_build.toml",
+  "tests/commands_base_config.toml",
+]

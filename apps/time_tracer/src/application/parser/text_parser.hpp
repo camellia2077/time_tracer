@@ -26,6 +26,7 @@ class TextParser {
       wake_keywords_;  // [优化] 直接引用 vector，避免拷贝 set
 
   static auto IsYearMarker(const std::string& line) -> bool;
+  static auto IsMonthMarker(const std::string& line) -> bool;
   static auto IsNewDayMarker(const std::string& line) -> bool;
   auto ParseLine(const std::string& line, int line_number,
                  DailyLog& current_day, std::string_view source_file) const

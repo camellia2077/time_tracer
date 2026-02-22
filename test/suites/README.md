@@ -2,7 +2,8 @@
 
 Canonical table-driven suite definitions.
 
-- `time_tracer/`: config for `apps/time_tracer`.
+- `tracer_windows_cli/`: integrated suite for core + Windows CLI (`apps/tracer_windows_cli` build target).
+- `tracer_android/`: host-side verification checks for `apps/tracer_android`.
 - `log_generator/`: config for `apps/log_generator`.
 
 Each suite contains:
@@ -10,6 +11,12 @@ Each suite contains:
 - `config.toml` (entry, includes `env.toml` + `tests.toml`)
 - `env.toml` (environment / deployment paths)
 - `tests.toml` (command table)
+
+`tracer_android` also provides profile-specific entries:
+
+- `config_android_style.toml`
+- `config_android_ci.toml`
+- `config_android_device.toml`
 
 Optional launcher default:
 

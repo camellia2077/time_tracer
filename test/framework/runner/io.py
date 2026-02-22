@@ -29,8 +29,9 @@ class TeeStream:
         return getattr(self.original_stream, "encoding", "utf-8")
 
 
-def resolve_path(path_value: Optional[str], base_dir: Path,
-                 default_relative: str) -> Path:
+def resolve_path(
+    path_value: Optional[str], base_dir: Path, default_relative: str
+) -> Path:
     path_obj = Path(path_value) if path_value else base_dir / default_relative
     if not path_obj.is_absolute():
         path_obj = (base_dir / path_obj).resolve()
@@ -57,4 +58,3 @@ def resolve_python_output_log_path(
             log_dir = Path(configured_log_dir)
     log_dir.mkdir(parents=True, exist_ok=True)
     return log_dir / "output.log"
-

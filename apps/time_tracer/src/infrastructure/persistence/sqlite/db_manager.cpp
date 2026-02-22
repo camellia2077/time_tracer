@@ -4,10 +4,28 @@
 
 #include <sqlite3.h>
 
+#include <optional>
 #include <utility>
 
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
+
+namespace {
+auto QueryForeignKeysPragma(sqlite3* db_conn) -> std::optional<int> {
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db_conn, "PRAGMA foreign_keys;", -1, &stmt, nullptr) !=
+      SQLITE_OK) {
+    return std::nullopt;
+  }
+
+  std::optional<int> result;
+  if (sqlite3_step(stmt) == SQLITE_ROW) {
+    result = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  return result;
+}
+}  // namespace
 
 DBManager::DBManager(std::string db_name) : db_name_(std::move(db_name)) {}
 
@@ -38,6 +56,23 @@ auto DBManager::OpenDatabaseIfNeeded() -> bool {
     db_ = nullptr;
     return false;
   }
+
+  char* err_msg = nullptr;
+  if (sqlite3_exec(db_, "PRAGMA foreign_keys = ON;", nullptr, nullptr,
+                   &err_msg) != SQLITE_OK) {
+    const std::string kError =
+        (err_msg != nullptr) ? err_msg : "unknown sqlite error";
+    sqlite3_free(err_msg);
+    time_tracer::domain::ports::EmitWarn(
+        "警告: 无法启用 PRAGMA foreign_keys: " + kError);
+  }
+
+  const auto kFkStatus = QueryForeignKeysPragma(db_);
+  if (!kFkStatus.has_value()) {
+    time_tracer::domain::ports::EmitWarn(
+        "警告: 无法读取 PRAGMA foreign_keys 状态。");
+  }
+
   return true;
 }
 

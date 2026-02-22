@@ -1,0 +1,89 @@
+[[commands]]
+name = "Android Config Bundle Exists"
+stage = "base-config"
+args = [
+  "/c",
+  "if exist ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\time_tracer\\config\\meta\\bundle.toml (exit /b 0) else (echo Missing assets config bundle.toml && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android Config Uses Android Profile"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:profile ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\time_tracer\\config\\meta\\bundle.toml | findstr /c:android >nul && exit /b 0 || (echo Missing profile=android in bundle.toml && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android Config Uses Canonical Source Root"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:apps/time_tracer/config ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\time_tracer\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical source-root marker in bundle.toml && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android TXT Month Header Parser Uses mMM"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:monthRegex ..\\..\\..\\..\\apps\\tracer_android\\feature-record\\src\\main\\java\\com\\example\\tracer\\ui\\viewmodel\\RecordUseCases.kt >nul && exit /b 0 || (echo Missing monthRegex parser in RecordUseCases.kt && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android New Month File Writes mMM Header"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:\"m%02d\" ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\java\\com\\example\\tracer\\runtime\\LiveRawRecordStore.kt >nul && exit /b 0 || (echo Missing mMM header write in LiveRawRecordStore.kt && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Converter Interval Uses alias_mapping_path"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:alias_mapping_path ..\\..\\..\\..\\apps\\time_tracer\\config\\converter\\interval_processor_config.toml >nul && exit /b 0 || (echo Missing alias_mapping_path in interval_processor_config.toml && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Converter Interval Rejects mappings_config_path"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:mappings_config_path ..\\..\\..\\..\\apps\\time_tracer\\config\\converter\\interval_processor_config.toml >nul && (echo Unexpected legacy mappings_config_path in interval_processor_config.toml && exit /b 1) || exit /b 0"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Alias Mapping Uses aliases Table"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:[aliases] ..\\..\\..\\..\\apps\\time_tracer\\config\\converter\\alias_mapping.toml >nul && exit /b 0 || (echo Missing [aliases] table in alias_mapping.toml && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android JNI Uses tracer_core C ABI"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:tracer_core_runtime_create ..\\..\\..\\..\\apps\\time_tracer\\src\\api\\android\\native_bridge.cpp >nul && exit /b 0 || (echo Missing tracer_core_runtime_create in native_bridge.cpp && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Android JNI No Legacy Runtime Builder"
+stage = "base-config"
+args = [
+  "/c",
+  "findstr /c:BuildAndroidRuntime ..\\..\\..\\..\\apps\\time_tracer\\src\\api\\android\\native_bridge.cpp >nul && (echo Unexpected BuildAndroidRuntime in native_bridge.cpp && exit /b 1) || exit /b 0"
+]
+expect_exit = 0

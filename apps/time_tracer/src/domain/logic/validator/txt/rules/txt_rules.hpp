@@ -18,6 +18,7 @@ class LineRules {
   explicit LineRules(const ConverterConfig& config);
 
   static auto IsYear(const std::string& line) -> bool;
+  static auto IsMonth(const std::string& line) -> bool;
   static auto IsDate(const std::string& line) -> bool;
   auto IsRemark(const std::string& line) const -> bool;
 
@@ -38,6 +39,8 @@ class StructureRules {
 
   void ProcessYearLine(int line_number, const std::string& line,
                        std::set<Error>& errors, const SourceSpan& span);
+  void ProcessMonthLine(int line_number, const std::string& line,
+                        std::set<Error>& errors, const SourceSpan& span);
   void ProcessDateLine(int line_number, const std::string& line,
                        std::set<Error>& errors, const SourceSpan& span);
   void ProcessRemarkLine(int line_number, const std::string& line,
@@ -49,12 +52,16 @@ class StructureRules {
                                       const SourceSpan& span);
 
   [[nodiscard]] auto HasSeenYear() const -> bool;
+  [[nodiscard]] auto HasSeenMonth() const -> bool;
 
  private:
   bool has_seen_year_ = false;
   bool has_seen_date_in_block_ = false;
   bool has_seen_event_in_day_ = false;
   bool has_seen_any_date_ = false;
+  bool has_seen_month_ = false;
+  bool has_reported_missing_month_header_ = false;
+  std::string month_header_;
   int last_seen_year_ = 0;
 };
 

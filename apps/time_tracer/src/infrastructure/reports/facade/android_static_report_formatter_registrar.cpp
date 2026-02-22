@@ -1,26 +1,39 @@
 // infrastructure/reports/facade/android_static_report_formatter_registrar.cpp
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
 
-#include <array>
 #include <memory>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 
+#ifndef TT_REPORT_ENABLE_LATEX
+#define TT_REPORT_ENABLE_LATEX 1
+#endif
+
+#ifndef TT_REPORT_ENABLE_TYPST
+#define TT_REPORT_ENABLE_TYPST 1
+#endif
+
 #include "infrastructure/config/models/report_catalog.hpp"
-#include "infrastructure/reports/daily/formatters/latex/day_tex_formatter.hpp"
 #include "infrastructure/reports/daily/formatters/markdown/day_md_formatter.hpp"
-#include "infrastructure/reports/daily/formatters/typst/day_typ_formatter.hpp"
-#include "infrastructure/reports/monthly/formatters/latex/month_tex_formatter.hpp"
 #include "infrastructure/reports/monthly/formatters/markdown/month_md_formatter.hpp"
-#include "infrastructure/reports/monthly/formatters/typst/month_typ_formatter.hpp"
-#include "infrastructure/reports/range/formatters/latex/range_tex_formatter.hpp"
 #include "infrastructure/reports/range/formatters/markdown/range_md_formatter.hpp"
-#include "infrastructure/reports/range/formatters/typst/range_typ_formatter.hpp"
 #include "infrastructure/reports/shared/factories/formatter_config_payload.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
+
+#if TT_REPORT_ENABLE_LATEX
+#include "infrastructure/reports/daily/formatters/latex/day_tex_formatter.hpp"
+#include "infrastructure/reports/monthly/formatters/latex/month_tex_formatter.hpp"
+#include "infrastructure/reports/range/formatters/latex/range_tex_formatter.hpp"
+#endif
+
+#if TT_REPORT_ENABLE_TYPST
+#include "infrastructure/reports/daily/formatters/typst/day_typ_formatter.hpp"
+#include "infrastructure/reports/monthly/formatters/typst/month_typ_formatter.hpp"
+#include "infrastructure/reports/range/formatters/typst/range_typ_formatter.hpp"
+#endif
 
 namespace {
 
@@ -67,6 +80,7 @@ auto BuildMonthMarkdownCoreFormatter(const ReportCatalog& catalog)
       "month markdown");
 }
 
+#if TT_REPORT_ENABLE_LATEX
 auto BuildDayLatexCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
   FormatterConfigPayload payload;
@@ -84,7 +98,9 @@ auto BuildMonthLatexCoreFormatter(const ReportCatalog& catalog)
                             MonthTexFormatter, MonthlyReportData>(
       payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_MONTH_TEX, "month latex");
 }
+#endif
 
+#if TT_REPORT_ENABLE_TYPST
 auto BuildDayTypstCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
   FormatterConfigPayload payload;
@@ -102,6 +118,7 @@ auto BuildMonthTypstCoreFormatter(const ReportCatalog& catalog)
                             MonthTypFormatter, MonthlyReportData>(
       payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_MONTH_TYP, "month typst");
 }
+#endif
 
 auto BuildRangeMarkdownCoreFormatter(const RangeReportLabels& labels)
     -> std::unique_ptr<IReportFormatter<RangeReportData>> {
@@ -113,6 +130,7 @@ auto BuildRangeMarkdownCoreFormatter(const RangeReportLabels& labels)
                                              "range markdown");
 }
 
+#if TT_REPORT_ENABLE_LATEX
 auto BuildRangeLatexCoreFormatter(const RangeReportLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
@@ -123,7 +141,9 @@ auto BuildRangeLatexCoreFormatter(const RangeReportLabels& labels,
                             RangeTexFormatter, RangeReportData>(
       payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_RANGE_TEX, "range latex");
 }
+#endif
 
+#if TT_REPORT_ENABLE_TYPST
 auto BuildRangeTypstCoreFormatter(const RangeReportLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
@@ -134,6 +154,7 @@ auto BuildRangeTypstCoreFormatter(const RangeReportLabels& labels,
                             RangeTypFormatter, RangeReportData>(
       payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_RANGE_TYP, "range typst");
 }
+#endif
 
 template <typename ReportDataType>
 class RangeReportFormatterAdapter final
@@ -173,6 +194,7 @@ auto BuildYearlyMarkdownCoreFormatter(const ReportCatalog& catalog)
           catalog.loaded_reports.markdown.year.labels));
 }
 
+#if TT_REPORT_ENABLE_LATEX
 auto BuildPeriodLatexCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<PeriodReportData>> {
   return std::make_unique<RangeReportFormatterAdapter<PeriodReportData>>(
@@ -196,7 +218,9 @@ auto BuildYearlyLatexCoreFormatter(const ReportCatalog& catalog)
                                    catalog.loaded_reports.latex.year.fonts,
                                    catalog.loaded_reports.latex.year.layout));
 }
+#endif
 
+#if TT_REPORT_ENABLE_TYPST
 auto BuildPeriodTypstCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<PeriodReportData>> {
   return std::make_unique<RangeReportFormatterAdapter<PeriodReportData>>(
@@ -220,6 +244,7 @@ auto BuildYearlyTypstCoreFormatter(const ReportCatalog& catalog)
                                    catalog.loaded_reports.typst.year.fonts,
                                    catalog.loaded_reports.typst.year.layout));
 }
+#endif
 
 template <typename ReportDataType, typename Builder>
 auto RegisterCoreCreator(ReportFormat format, Builder&& builder) -> void {
@@ -271,41 +296,56 @@ struct FormatRegistrationRow {
   YearlyBuilder build_yearly;
 };
 
-constexpr std::array<FormatRegistrationRow, 3> kFormatRegistrationRows = {{
-    {
-        .format = ReportFormat::kMarkdown,
-        .enabled_flag = &AndroidPolicy::enable_markdown,
-        .disabled_reason = "Markdown formatter is disabled by Android static "
-                           "formatter policy.",
-        .build_daily = &BuildDayMarkdownCoreFormatter,
-        .build_monthly = &BuildMonthMarkdownCoreFormatter,
-        .build_period = &BuildPeriodMarkdownCoreFormatter,
-        .build_weekly = &BuildWeeklyMarkdownCoreFormatter,
-        .build_yearly = &BuildYearlyMarkdownCoreFormatter,
-    },
-    {
-        .format = ReportFormat::kLaTeX,
-        .enabled_flag = &AndroidPolicy::enable_latex,
-        .disabled_reason =
-            "LaTeX formatter is disabled by Android static formatter policy.",
-        .build_daily = &BuildDayLatexCoreFormatter,
-        .build_monthly = &BuildMonthLatexCoreFormatter,
-        .build_period = &BuildPeriodLatexCoreFormatter,
-        .build_weekly = &BuildWeeklyLatexCoreFormatter,
-        .build_yearly = &BuildYearlyLatexCoreFormatter,
-    },
-    {
-        .format = ReportFormat::kTyp,
-        .enabled_flag = &AndroidPolicy::enable_typst,
-        .disabled_reason =
-            "Typst formatter is disabled by Android static formatter policy.",
-        .build_daily = &BuildDayTypstCoreFormatter,
-        .build_monthly = &BuildMonthTypstCoreFormatter,
-        .build_period = &BuildPeriodTypstCoreFormatter,
-        .build_weekly = &BuildWeeklyTypstCoreFormatter,
-        .build_yearly = &BuildYearlyTypstCoreFormatter,
-    },
-}};
+#if !TT_REPORT_ENABLE_LATEX
+constexpr std::string_view kLatexCompiledOutReason =
+    "LaTeX formatter is not compiled into this core build.";
+#endif
+
+#if !TT_REPORT_ENABLE_TYPST
+constexpr std::string_view kTypstCompiledOutReason =
+    "Typst formatter is not compiled into this core build.";
+#endif
+
+constexpr FormatRegistrationRow kMarkdownRegistrationRow = {
+    .format = ReportFormat::kMarkdown,
+    .enabled_flag = &AndroidPolicy::enable_markdown,
+    .disabled_reason =
+        "Markdown formatter is disabled by Android static "
+        "formatter policy.",
+    .build_daily = &BuildDayMarkdownCoreFormatter,
+    .build_monthly = &BuildMonthMarkdownCoreFormatter,
+    .build_period = &BuildPeriodMarkdownCoreFormatter,
+    .build_weekly = &BuildWeeklyMarkdownCoreFormatter,
+    .build_yearly = &BuildYearlyMarkdownCoreFormatter,
+};
+
+#if TT_REPORT_ENABLE_LATEX
+constexpr FormatRegistrationRow kLatexRegistrationRow = {
+    .format = ReportFormat::kLaTeX,
+    .enabled_flag = &AndroidPolicy::enable_latex,
+    .disabled_reason =
+        "LaTeX formatter is disabled by Android static formatter policy.",
+    .build_daily = &BuildDayLatexCoreFormatter,
+    .build_monthly = &BuildMonthLatexCoreFormatter,
+    .build_period = &BuildPeriodLatexCoreFormatter,
+    .build_weekly = &BuildWeeklyLatexCoreFormatter,
+    .build_yearly = &BuildYearlyLatexCoreFormatter,
+};
+#endif
+
+#if TT_REPORT_ENABLE_TYPST
+constexpr FormatRegistrationRow kTypstRegistrationRow = {
+    .format = ReportFormat::kTyp,
+    .enabled_flag = &AndroidPolicy::enable_typst,
+    .disabled_reason =
+        "Typst formatter is disabled by Android static formatter policy.",
+    .build_daily = &BuildDayTypstCoreFormatter,
+    .build_monthly = &BuildMonthTypstCoreFormatter,
+    .build_period = &BuildPeriodTypstCoreFormatter,
+    .build_weekly = &BuildWeeklyTypstCoreFormatter,
+    .build_yearly = &BuildYearlyTypstCoreFormatter,
+};
+#endif
 
 auto RegisterCreatorsForRow(const FormatRegistrationRow& row) -> void {
   RegisterCoreCreator<DailyReportData>(row.format, row.build_daily);
@@ -313,6 +353,15 @@ auto RegisterCreatorsForRow(const FormatRegistrationRow& row) -> void {
   RegisterCoreCreator<PeriodReportData>(row.format, row.build_period);
   RegisterCoreCreator<WeeklyReportData>(row.format, row.build_weekly);
   RegisterCoreCreator<YearlyReportData>(row.format, row.build_yearly);
+}
+
+auto RegisterRowByPolicy(const FormatRegistrationRow& row, bool enabled)
+    -> void {
+  if (enabled) {
+    RegisterCreatorsForRow(row);
+    return;
+  }
+  RegisterDisabledFormatForAllTypes(row.format, row.disabled_reason);
 }
 
 }  // namespace
@@ -325,13 +374,21 @@ AndroidStaticReportFormatterRegistrar::AndroidStaticReportFormatterRegistrar(
 
 auto AndroidStaticReportFormatterRegistrar::RegisterStaticFormatters() const
     -> void {
-  for (const auto& row : kFormatRegistrationRows) {
-    if (policy_.*(row.enabled_flag)) {
-      RegisterCreatorsForRow(row);
-      continue;
-    }
-    RegisterDisabledFormatForAllTypes(row.format, row.disabled_reason);
-  }
+  RegisterRowByPolicy(kMarkdownRegistrationRow, policy_.enable_markdown);
+
+#if TT_REPORT_ENABLE_LATEX
+  RegisterRowByPolicy(kLatexRegistrationRow, policy_.enable_latex);
+#else
+  RegisterDisabledFormatForAllTypes(ReportFormat::kLaTeX,
+                                    kLatexCompiledOutReason);
+#endif
+
+#if TT_REPORT_ENABLE_TYPST
+  RegisterRowByPolicy(kTypstRegistrationRow, policy_.enable_typst);
+#else
+  RegisterDisabledFormatForAllTypes(ReportFormat::kTyp,
+                                    kTypstCompiledOutReason);
+#endif
 }
 
 }  // namespace infrastructure::reports

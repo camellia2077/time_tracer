@@ -10,7 +10,7 @@ target_sources(time_tracker_application PRIVATE
     ${TIME_TRACKER_APPLICATION_PIPELINE_SOURCES}
 )
 
-setup_app_target(time_tracker_application)
+setup_app_target(time_tracker_application NO_PCH)
 
 target_link_libraries(time_tracker_application PUBLIC
     time_tracker_domain

@@ -5,9 +5,14 @@ from ..utils.file_ops import format_size, get_folder_size
 
 
 class VersionChecker(BaseTester):
-    def __init__(self, counter: TestCounter, module_order: int,
-                 context: TestContext, show_output: str = "none",
-                 log_routing_rules=None):
+    def __init__(
+        self,
+        counter: TestCounter,
+        module_order: int,
+        context: TestContext,
+        show_output: str = "none",
+        log_routing_rules=None,
+    ):
         super().__init__(
             counter,
             module_order,
@@ -30,7 +35,8 @@ class VersionChecker(BaseTester):
                 if self.ctx.exe_path.exists():
                     size_bytes = self.ctx.exe_path.stat().st_size
                     result.messages.append(
-                        f"Executable size: {format_size(size_bytes)}")
+                        f"Executable size: {format_size(size_bytes)}"
+                    )
 
                 exe_dir = self.ctx.exe_path.parent
                 dll_size = 0
@@ -41,13 +47,15 @@ class VersionChecker(BaseTester):
 
                 if dll_count > 0:
                     result.messages.append(
-                        f"DLLs size ({dll_count} files): {format_size(dll_size)}")
+                        f"DLLs size ({dll_count} files): {format_size(dll_size)}"
+                    )
 
                 plugins_path = exe_dir / "plugins"
                 if plugins_path.exists() and plugins_path.is_dir():
                     plugins_size = get_folder_size(plugins_path)
                     result.messages.append(
-                        f"Plugins folder size: {format_size(plugins_size)}")
+                        f"Plugins folder size: {format_size(plugins_size)}"
+                    )
             except Exception as error:
                 result.messages.append(f"Error checking sizes: {error}")
 

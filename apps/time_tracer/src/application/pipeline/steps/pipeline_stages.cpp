@@ -4,11 +4,13 @@
 #include <chrono>
 #include <future>
 #include <iomanip>
+#include <iterator>
 #include <mutex>
 #include <set>
 #include <sstream>
 #include <vector>
 
+#include "application/ports/i_validation_issue_reporter.hpp"
 #include "application/ports/logger.hpp"
 #include "domain/logic/converter/convert/core/converter_core.hpp"
 #include "domain/logic/converter/log_processor.hpp"
@@ -21,6 +23,27 @@ namespace core::pipeline {
 
 namespace {
 constexpr double kMillisPerSecond = 1000.0;
+
+auto ResolveLogicFallbackLabel(const std::string& month_key,
+                               const std::vector<DailyLog>& days)
+    -> std::string {
+  for (const auto& day : days) {
+    if (day.source_span.has_value() && !day.source_span->file_path.empty()) {
+      return day.source_span->file_path;
+    }
+  }
+
+  for (const auto& day : days) {
+    for (const auto& activity : day.processedActivities) {
+      if (activity.source_span.has_value() &&
+          !activity.source_span->file_path.empty()) {
+        return activity.source_span->file_path;
+      }
+    }
+  }
+
+  return "ProcessedData[" + month_key + "]";
+}
 }  // namespace
 
 auto FileCollector::Execute(
@@ -67,14 +90,19 @@ auto StructureValidatorStep::Execute(PipelineContext& context) -> bool {
 
   for (const auto& input : context.state.ingest_inputs) {
     files_checked++;
-    std::string filename =
-        input.source_label.empty() ? input.source_id : input.source_label;
+    const std::string kSourcePath =
+        input.source_id.empty() ? input.source_label : input.source_id;
+    const std::string kDisplayLabel =
+        input.source_label.empty() ? kSourcePath : input.source_label;
 
     std::set<validator::Error> errors;
 
-    if (!validator.Validate(filename, input.content, errors)) {
+    if (!validator.Validate(kSourcePath, input.content, errors)) {
       all_valid = false;
-      validator::PrintGroupedErrors(filename, errors);
+      if (context.state.validation_issue_reporter != nullptr) {
+        context.state.validation_issue_reporter->ReportStructureErrors(
+            kDisplayLabel, errors);
+      }
     }
   }
 
@@ -133,8 +161,13 @@ auto ConverterStep::Execute(PipelineContext& context) -> bool {
       all_success = false;
     } else {
       std::scoped_lock lock(data_mutex);
-      context.result.processed_data.insert(result.processed_data.begin(),
-                                           result.processed_data.end());
+      // `processed_data` key semantics: year-month bucket (`YYYY-MM`).
+      for (auto& [year_month_key, month_days] : result.processed_data) {
+        auto& merged_days = context.result.processed_data[year_month_key];
+        merged_days.insert(merged_days.end(),
+                           std::make_move_iterator(month_days.begin()),
+                           std::make_move_iterator(month_days.end()));
+      }
     }
   }
 
@@ -214,12 +247,16 @@ auto LogicValidatorStep::Execute(PipelineContext& context) -> bool {
       continue;
     }
 
-    std::string pseudo_filename = "ProcessedData[" + month_key + "]";
+    const std::string kFallbackLabel =
+        ResolveLogicFallbackLabel(month_key, days);
 
     std::vector<validator::Diagnostic> diagnostics;
-    if (!validator.Validate(pseudo_filename, days, diagnostics)) {
+    if (!validator.Validate(kFallbackLabel, days, diagnostics)) {
       all_valid = false;
-      validator::PrintDiagnostics(pseudo_filename, diagnostics);
+      if (context.state.validation_issue_reporter != nullptr) {
+        context.state.validation_issue_reporter->ReportLogicDiagnostics(
+            kFallbackLabel, diagnostics);
+      }
     }
   }
 

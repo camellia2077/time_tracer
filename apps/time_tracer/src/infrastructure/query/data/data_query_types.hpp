@@ -7,6 +7,9 @@
 
 namespace time_tracer::infrastructure::query::data {
 
+constexpr int kDefaultActivitySuggestionLookbackDays = 10;
+constexpr int kDefaultActivitySuggestionLimit = 5;
+
 enum class DataQueryAction {
   kYears,
   kMonths,
@@ -15,12 +18,13 @@ enum class DataQueryAction {
   kDaysStats,
   kSearch,
   kActivitySuggest,
+  kReportChart,
   kTree
 };
 
 constexpr std::string_view kSupportedDataQueryActions =
-    "years, months, days, days-duration, days-stats, search, activity-suggest, "
-    "tree";
+    "years, months, days, days-duration, days-stats, search, "
+    "activity-suggest, report-chart, tree";
 
 struct DayDurationRow {
   std::string date;
@@ -44,8 +48,8 @@ struct DayDurationStats {
 };
 
 struct ActivitySuggestionQueryOptions {
-  int lookback_days = 10;
-  int limit = 5;
+  int lookback_days = kDefaultActivitySuggestionLookbackDays;
+  int limit = kDefaultActivitySuggestionLimit;
   std::optional<std::string> prefix;
   bool score_by_duration = false;
 };

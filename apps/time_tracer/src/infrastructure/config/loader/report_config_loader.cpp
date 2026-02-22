@@ -14,6 +14,7 @@ using namespace TomlLoaderUtils;
 namespace {
 constexpr int kDefaultStatisticFontSize = 10;
 constexpr int kDefaultStatisticTitleFontSize = 12;
+constexpr size_t kHexColorLength = 7;
 
 [[noreturn]] auto ThrowInvalidConfig(const fs::path& path,
                                      std::string_view detail) -> void {
@@ -23,22 +24,22 @@ constexpr int kDefaultStatisticTitleFontSize = 12;
 
 auto RequireNode(const toml::table& tbl, const fs::path& path,
                  std::string_view key) -> toml::node_view<const toml::node> {
-  const toml::node_view<const toml::node> node = tbl[key];
-  if (!node) {
+  const toml::node_view<const toml::node> kNode = tbl[key];
+  if (!kNode) {
     ThrowInvalidConfig(path, "missing key '" + std::string(key) + "'.");
   }
-  return node;
+  return kNode;
 }
 
 auto RequireString(const toml::table& tbl, const fs::path& path,
                    std::string_view key) -> void {
-  const toml::node_view<const toml::node> node = RequireNode(tbl, path, key);
-  if (!node.is_string()) {
+  const toml::node_view<const toml::node> kNode = RequireNode(tbl, path, key);
+  if (!kNode.is_string()) {
     ThrowInvalidConfig(path,
                        "key '" + std::string(key) + "' must be a string.");
   }
-  const auto value = node.value<std::string>();
-  if (!value || value->empty()) {
+  const auto kValue = kNode.value<std::string>();
+  if (!kValue || kValue->empty()) {
     ThrowInvalidConfig(path,
                        "key '" + std::string(key) + "' must not be empty.");
   }
@@ -47,16 +48,16 @@ auto RequireString(const toml::table& tbl, const fs::path& path,
 auto ValidateOptionalStringIfPresent(const toml::table& tbl,
                                      const fs::path& path, std::string_view key)
     -> void {
-  const toml::node_view<const toml::node> node = tbl[key];
-  if (!node) {
+  const toml::node_view<const toml::node> kNode = tbl[key];
+  if (!kNode) {
     return;
   }
-  if (!node.is_string()) {
+  if (!kNode.is_string()) {
     ThrowInvalidConfig(
         path, "key '" + std::string(key) + "' must be a string when present.");
   }
-  const auto value = node.value<std::string>();
-  if (!value || value->empty()) {
+  const auto kValue = kNode.value<std::string>();
+  if (!kValue || kValue->empty()) {
     ThrowInvalidConfig(
         path, "key '" + std::string(key) + "' must not be empty when present.");
   }
@@ -64,13 +65,13 @@ auto ValidateOptionalStringIfPresent(const toml::table& tbl,
 
 auto RequirePositiveInteger(const toml::table& tbl, const fs::path& path,
                             std::string_view key) -> void {
-  const toml::node_view<const toml::node> node = RequireNode(tbl, path, key);
-  if (!node.is_integer()) {
+  const toml::node_view<const toml::node> kNode = RequireNode(tbl, path, key);
+  if (!kNode.is_integer()) {
     ThrowInvalidConfig(path,
                        "key '" + std::string(key) + "' must be an integer.");
   }
-  const auto value = node.value<int>();
-  if (!value || *value <= 0) {
+  const auto kValue = kNode.value<int>();
+  if (!kValue || *kValue <= 0) {
     ThrowInvalidConfig(path, "key '" + std::string(key) + "' must be > 0.");
   }
 }
@@ -78,16 +79,16 @@ auto RequirePositiveInteger(const toml::table& tbl, const fs::path& path,
 auto ValidateOptionalPositiveIntegerIfPresent(const toml::table& tbl,
                                               const fs::path& path,
                                               std::string_view key) -> void {
-  const toml::node_view<const toml::node> node = tbl[key];
-  if (!node) {
+  const toml::node_view<const toml::node> kNode = tbl[key];
+  if (!kNode) {
     return;
   }
-  if (!node.is_integer()) {
+  if (!kNode.is_integer()) {
     ThrowInvalidConfig(path, "key '" + std::string(key) +
                                  "' must be an integer when present.");
   }
-  const auto value = node.value<int>();
-  if (!value || *value <= 0) {
+  const auto kValue = kNode.value<int>();
+  if (!kValue || *kValue <= 0) {
     ThrowInvalidConfig(
         path, "key '" + std::string(key) + "' must be > 0 when present.");
   }
@@ -96,18 +97,18 @@ auto ValidateOptionalPositiveIntegerIfPresent(const toml::table& tbl,
 auto ValidateOptionalNumberIfPresent(const toml::table& tbl,
                                      const fs::path& path, std::string_view key)
     -> void {
-  const toml::node_view<const toml::node> node = tbl[key];
-  if (!node) {
+  const toml::node_view<const toml::node> kNode = tbl[key];
+  if (!kNode) {
     return;
   }
-  if (!node.is_number()) {
+  if (!kNode.is_number()) {
     ThrowInvalidConfig(
         path, "key '" + std::string(key) + "' must be numeric when present.");
   }
 }
 
 auto IsValidHexColor(std::string_view color) -> bool {
-  if (color.size() != 7 || color[0] != '#') {
+  if (color.size() != kHexColorLength || color[0] != '#') {
     return false;
   }
   for (size_t index = 1; index < color.size(); ++index) {
@@ -126,42 +127,42 @@ auto ValidateStatisticsItemsArray(const toml::array& items,
   }
   for (size_t index = 0; index < items.size(); ++index) {
     const toml::node& item_node = items[index];
-    const std::string item_context =
+    const std::string kItemContext =
         std::string(context) + "[" + std::to_string(index) + "]";
     if (!item_node.is_table()) {
-      ThrowInvalidConfig(path, item_context + " must be a table.");
+      ThrowInvalidConfig(path, kItemContext + " must be a table.");
     }
     const toml::table& item_tbl = *item_node.as_table();
 
-    const toml::node_view<const toml::node> label_node = item_tbl["label"];
-    if (!label_node || !label_node.is_string()) {
-      ThrowInvalidConfig(path, item_context + ".label must be a string.");
+    const toml::node_view<const toml::node> kLabelNode = item_tbl["label"];
+    if (!kLabelNode || !kLabelNode.is_string()) {
+      ThrowInvalidConfig(path, kItemContext + ".label must be a string.");
     }
-    const auto label_value = label_node.value<std::string>();
-    if (!label_value || label_value->empty()) {
-      ThrowInvalidConfig(path, item_context + ".label must not be empty.");
-    }
-
-    const toml::node_view<const toml::node> show_node = item_tbl["show"];
-    if (show_node && !show_node.is_boolean()) {
-      ThrowInvalidConfig(path, item_context + ".show must be a boolean.");
+    const auto kLabelValue = kLabelNode.value<std::string>();
+    if (!kLabelValue || kLabelValue->empty()) {
+      ThrowInvalidConfig(path, kItemContext + ".label must not be empty.");
     }
 
-    const toml::node_view<const toml::node> column_node = item_tbl["db_column"];
-    if (column_node && !column_node.is_string()) {
-      ThrowInvalidConfig(path, item_context + ".db_column must be a string.");
+    const toml::node_view<const toml::node> kShowNode = item_tbl["show"];
+    if (kShowNode && !kShowNode.is_boolean()) {
+      ThrowInvalidConfig(path, kItemContext + ".show must be a boolean.");
     }
 
-    const toml::node_view<const toml::node> sub_items_node =
+    const toml::node_view<const toml::node> kColumnNode = item_tbl["db_column"];
+    if (kColumnNode && !kColumnNode.is_string()) {
+      ThrowInvalidConfig(path, kItemContext + ".db_column must be a string.");
+    }
+
+    const toml::node_view<const toml::node> kSubItemsNode =
         item_tbl["sub_items"];
-    if (!sub_items_node) {
+    if (!kSubItemsNode) {
       continue;
     }
-    if (!sub_items_node.is_array()) {
-      ThrowInvalidConfig(path, item_context + ".sub_items must be an array.");
+    if (!kSubItemsNode.is_array()) {
+      ThrowInvalidConfig(path, kItemContext + ".sub_items must be an array.");
     }
-    ValidateStatisticsItemsArray(*sub_items_node.as_array(), path,
-                                 item_context + ".sub_items");
+    ValidateStatisticsItemsArray(*kSubItemsNode.as_array(), path,
+                                 kItemContext + ".sub_items");
   }
 }
 
@@ -199,24 +200,24 @@ auto ValidateDailyLabels(const toml::table& tbl, const fs::path& path,
 
 auto ValidateDailyStatistics(const toml::table& tbl, const fs::path& path)
     -> void {
-  const toml::node_view<const toml::node> stats_node =
+  const toml::node_view<const toml::node> kStatsNode =
       RequireNode(tbl, path, "statistics_items");
-  if (!stats_node.is_array()) {
+  if (!kStatsNode.is_array()) {
     ThrowInvalidConfig(path, "key 'statistics_items' must be an array.");
   }
-  ValidateStatisticsItemsArray(*stats_node.as_array(), path,
+  ValidateStatisticsItemsArray(*kStatsNode.as_array(), path,
                                "statistics_items");
 }
 
 auto ValidateKeywordColors(const toml::table& tbl, const fs::path& path)
     -> void {
-  const toml::node_view<const toml::node> color_node =
+  const toml::node_view<const toml::node> kColorNode =
       RequireNode(tbl, path, "keyword_colors");
-  if (!color_node.is_table()) {
+  if (!kColorNode.is_table()) {
     ThrowInvalidConfig(path, "key 'keyword_colors' must be a table.");
   }
 
-  const toml::table& colors = *color_node.as_table();
+  const toml::table& colors = *kColorNode.as_table();
   if (colors.empty()) {
     ThrowInvalidConfig(path, "key 'keyword_colors' must not be empty.");
   }
@@ -227,8 +228,8 @@ auto ValidateKeywordColors(const toml::table& tbl, const fs::path& path)
                                    std::string(color_key.str()) +
                                    " must be a string.");
     }
-    const auto color_value = color_value_node.value<std::string>();
-    if (!color_value || !IsValidHexColor(*color_value)) {
+    const auto kColorValue = color_value_node.value<std::string>();
+    if (!kColorValue || !IsValidHexColor(*kColorValue)) {
       ThrowInvalidConfig(path, "keyword_colors." +
                                    std::string(color_key.str()) +
                                    " must be a hex color like #RRGGBB.");

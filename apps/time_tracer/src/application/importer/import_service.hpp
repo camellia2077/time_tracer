@@ -15,8 +15,9 @@ class ImportService {
       time_tracer::application::ports::ITimeSheetRepository& repository);
   // [保留] 仅保留处理内存对象（结构体）的接口
   auto ImportFromMemory(
-      const std::map<std::string, std::vector<DailyLog>>& data_map)
-      -> ImportStats;
+      const std::map<std::string, std::vector<DailyLog>>& data_map,
+      const std::optional<ReplaceMonthTarget>& replace_month_target =
+          std::nullopt) -> ImportStats;
 
  private:
   time_tracer::application::ports::ITimeSheetRepository& repository_;

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">追踪器</string>
+
+    <string name="tracer_tab_data">数据</string>
+    <string name="tracer_tab_report">报表</string>
+    <string name="tracer_tab_record">记录</string>
+    <string name="tracer_tab_txt">TXT</string>
+    <string name="tracer_tab_config">配置</string>
+
+    <string name="tracer_tree_result_day">日树结果</string>
+    <string name="tracer_tree_result_week">周树结果</string>
+    <string name="tracer_tree_result_month">月树结果</string>
+    <string name="tracer_tree_result_year">年树结果</string>
+    <string name="tracer_tree_result_recent">近期树结果</string>
+    <string name="tracer_tree_result_range">区间树结果</string>
+
+    <string name="tracer_stats_result_day">日统计结果</string>
+    <string name="tracer_stats_result_week">周统计结果</string>
+    <string name="tracer_stats_result_month">月统计结果</string>
+    <string name="tracer_stats_result_year">年统计结果</string>
+    <string name="tracer_stats_result_recent">近期统计结果</string>
+    <string name="tracer_stats_result_range">区间统计结果</string>
+
+    <string name="tracer_report_result_title">报表结果</string>
+    <string name="tracer_chart_result_title">图表结果</string>
+    <string name="tracer_analysis_error_title">分析错误</string>
+    <string name="tracer_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：alias_mapping.toml 校验集合为空。</string>
+    <string name="tracer_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>
+    <string name="tracer_status_quick_activities_exceed_limit">快捷活动超过上限：%1$d。</string>
+    <string name="tracer_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
+    <string name="tracer_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
+    <string name="tracer_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
+
+    <string name="tracer_export_all_canceled">已取消导出全部。</string>
+    <string name="tracer_export_all_failed_no_months">导出全部失败：没有可用月份。</string>
+    <string name="tracer_export_all_failed_dates_folder">导出全部失败：无法定位 dates 目录。</string>
+    <string name="tracer_export_error_invalid_month_key">%1$s：月份键无效。</string>
+    <string name="tracer_export_error_source_file_not_found">%1$s：未找到源文件。</string>
+    <string name="tracer_export_error_read_failed">%1$s：%2$s</string>
+    <string name="tracer_export_error_invalid_txt_header">%1$s：TXT 头无效，首行必须是 yYYYY。</string>
+    <string name="tracer_export_error_year_folder">%1$s：无法定位年份目录“%2$s”。</string>
+    <string name="tracer_export_error_create_target_file">%1$s：无法创建或覆盖目标文件。</string>
+    <string name="tracer_export_error_open_output_stream">无法打开输出流。</string>
+    <string name="tracer_export_error_write_failed">%1$s：写入失败。</string>
+    <plurals name="tracer_export_all_success">
+        <item quantity="other">全部导出成功 -&gt; %1$d 个月 TXT 文件。</item>
+    </plurals>
+    <plurals name="tracer_export_error_tail">
+        <item quantity="other"> | ...（%1$d 个错误）</item>
+    </plurals>
+    <string name="tracer_export_all_completed">全部导出完成 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_all_failed">全部导出失败：%1$s</string>
+    <string name="tracer_export_unknown_error">未知错误</string>
+    <string name="tracer_export_already_in_progress">导出已在进行中。</string>
+    <string name="tracer_export_select_txt_destination">请选择 TXT 导出目标目录。</string>
+    <string name="tracer_export_config_canceled">已取消配置导出。</string>
+    <string name="tracer_export_failed_no_config_entries">导出失败：未准备配置条目。</string>
+    <string name="tracer_export_error_resolve_target">%1$s：无法定位导出目标。</string>
+    <string name="tracer_export_error_open_destination_stream">无法打开目标输出流。</string>
+    <string name="tracer_export_error_write_failed_path">%1$s：写入失败。</string>
+    <string name="tracer_export_config_success">配置导出成功 -&gt; %1$d 个 TOML 文件。</string>
+    <string name="tracer_export_config_completed">配置导出完成 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_config_failed">配置导出失败：%1$s</string>
+    <string name="tracer_export_prepare_android_config">正在准备 Android 配置导出...</string>
+    <string name="tracer_export_select_android_config_directory">请选择 Android 配置 TOML 导出目录。</string>
+    <string name="tracer_import_config_canceled">已取消配置导入。</string>
+    <string name="tracer_import_prepare_android_config">正在准备 Android 配置导入...</string>
+    <string name="tracer_import_select_android_config_directory">请选择 Android 配置 TOML 源目录。</string>
+    <string name="tracer_import_prepare_android_config_full_replace">正在准备 Android 配置导入（Full Replace）...</string>
+    <string name="tracer_import_prepare_android_config_partial_update">正在准备 Android 配置导入（Partial Update）...</string>
+    <string name="tracer_import_select_android_config_directory_full_replace">请选择 Android 配置 TOML 源目录（Full Replace）。</string>
+    <string name="tracer_import_select_android_config_directory_partial_update">请选择 Android 配置 TOML 源目录（Partial Update）。</string>
+    <string name="tracer_import_config_failed">配置导入失败：%1$s</string>
+
+    <string name="config_title_appearance">外观</string>
+    <string name="config_label_use_wallpaper_colors">使用壁纸动态配色</string>
+    <string name="config_theme_color_current">主题色（当前：%1$s）</string>
+    <string name="config_theme_color_tap_expand">主题色（点击展开）</string>
+    <string name="config_theme_color_content_desc">主题颜色 %1$s</string>
+    <string name="config_title_theme_mode">主题模式</string>
+    <string name="config_theme_mode_system">跟随系统</string>
+    <string name="config_theme_mode_light">浅色</string>
+    <string name="config_theme_mode_dark">深色</string>
+
+    <string name="config_title_language">语言</string>
+    <string name="config_language_chinese">中文</string>
+    <string name="config_language_english">English</string>
+    <string name="config_language_japanese">日本語</string>
+
+    <string name="config_title_dark_theme_style">深色主题风格</string>
+    <string name="config_dark_theme_style_tinted">色调</string>
+    <string name="config_dark_theme_style_grey">灰阶</string>
+    <string name="config_dark_theme_style_black">纯黑</string>
+
+    <string name="config_title_configuration_files">配置文件</string>
+    <string name="config_action_refresh_list">刷新列表</string>
+    <string name="config_action_import_android_config">导入 Android 配置 (TOML)</string>
+    <string name="config_action_import_android_config_full_replace">导入 Android 配置（Full Replace）</string>
+    <string name="config_action_import_android_config_partial_update">导入 Android 配置（Partial Update）</string>
+    <string name="config_action_export_android_config">导出 Android 配置 (TOML)</string>
+    <string name="config_category_converter">转换器</string>
+    <string name="config_category_reports">报表</string>
+    <string name="config_no_toml_files_in_category">%1$s 下没有 TOML 文件。</string>
+    <string name="config_action_select_toml_file">选择 TOML 文件</string>
+
+    <string name="config_title_editor_file">编辑器：%1$s</string>
+    <string name="config_label_toml_content">TOML 内容</string>
+    <string name="config_action_save_changes">保存更改</string>
+
+    <string name="config_title_about">关于</string>
+    <string name="config_about_author">作者：%1$s</string>
+    <string name="config_about_repo">仓库：%1$s</string>
+    <string name="config_about_core">核心：%1$s</string>
+    <string name="config_about_app">应用：%1$s</string>
+</resources>

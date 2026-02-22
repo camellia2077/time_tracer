@@ -2,6 +2,7 @@
 #ifndef DOMAIN_PORTS_DIAGNOSTICS_H_
 #define DOMAIN_PORTS_DIAGNOSTICS_H_
 
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -40,6 +41,18 @@ auto EmitError(std::string_view message) -> void;
 
 auto AppendErrorReport(std::string_view report_content) -> bool;
 auto GetErrorReportDestinationLabel() -> std::string;
+
+auto ClearBufferedDiagnostics() -> void;
+auto GetBufferedDiagnosticsSummary(DiagnosticSeverity minimum_severity,
+                                   std::size_t max_entries) -> std::string;
+
+// Session-level dedup: clears the set of already-emitted messages.
+// Call at the start of each run to reset deduplication state.
+auto ClearDiagnosticsDedup() -> void;
+
+// Returns the file path of the current run's error log.
+// Delegates to the active IErrorReportWriter; returns "disabled" when none.
+auto GetCurrentRunErrorLogPath() -> std::string;
 
 }  // namespace time_tracer::domain::ports
 

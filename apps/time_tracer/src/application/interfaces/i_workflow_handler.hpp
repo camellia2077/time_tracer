@@ -6,9 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/types/app_options.hpp"
+#include "domain/types/date_check_mode.hpp"
+#include "domain/types/ingest_mode.hpp"
 
 class IWorkflowHandler {
  public:
@@ -29,7 +30,9 @@ class IWorkflowHandler {
   // 完整流程 (Ingest/Blink)
   virtual auto RunIngest(const std::string& source_path,
                          DateCheckMode date_check_mode,
-                         bool save_processed = false) -> void = 0;
+                         bool save_processed = false,
+                         IngestMode ingest_mode = IngestMode::kStandard)
+      -> void = 0;
 
   virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
   virtual auto RunValidateLogic(const std::string& source_path,

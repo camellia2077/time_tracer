@@ -6,6 +6,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "infrastructure/schema/day_schema.hpp"
@@ -15,7 +16,7 @@ template <typename ReportDataType, typename QueryParamType>
 class BaseQuerier {
  public:
   explicit BaseQuerier(sqlite3* sqlite_db, QueryParamType param)
-      : db_(sqlite_db), param_(param) {
+      : db_(sqlite_db), param_(std::move(param)) {
     if (db_ == nullptr) {
       throw std::invalid_argument("Database connection cannot be null.");
     }

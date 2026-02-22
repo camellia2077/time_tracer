@@ -31,7 +31,7 @@ TimeTracerCoreApi::TimeTracerCoreApi(
       report_handler_(report_handler),
       project_repository_(std::move(project_repository)),
       data_query_service_(std::move(data_query_service)),
-      kReport(std::move(report_data_query_service)),
+      kReport_(std::move(report_data_query_service)),
       report_dto_formatter_(std::move(report_dto_formatter)),
       report_export_writer_(std::move(report_export_writer)) {
   if (!project_repository_) {
@@ -66,7 +66,8 @@ auto TimeTracerCoreApi::RunIngest(const IngestRequest& request)
     -> OperationAck {
   try {
     workflow_handler_.RunIngest(request.input_path, request.date_check_mode,
-                                request.save_processed_output);
+                                request.save_processed_output,
+                                request.ingest_mode);
     return {.ok = true, .error_message = ""};
   } catch (const std::exception& exception) {
     return core_api_helpers::BuildOperationFailure("RunIngest", exception);

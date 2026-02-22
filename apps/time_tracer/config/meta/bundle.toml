@@ -1,0 +1,57 @@
+# Canonical source bundle for cross-platform config generation.
+# Platform-specific bundles should be generated from this source.
+
+schema_version = 1
+profile = "shared"
+bundle_name = "time_tracer_config"
+
+[file_list]
+required = [
+  "config.toml",
+  "converter/interval_processor_config.toml",
+  "converter/alias_mapping.toml",
+  "converter/duration_rules.toml",
+  "reports/markdown/day.toml",
+  "reports/markdown/month.toml",
+  "reports/markdown/period.toml",
+  "reports/markdown/week.toml",
+  "reports/markdown/year.toml",
+  "reports/latex/day.toml",
+  "reports/latex/month.toml",
+  "reports/latex/period.toml",
+  "reports/latex/week.toml",
+  "reports/latex/year.toml",
+  "reports/typst/day.toml",
+  "reports/typst/month.toml",
+  "reports/typst/period.toml",
+  "reports/typst/week.toml",
+  "reports/typst/year.toml"
+]
+optional = [
+  "reports/latex/common_style.toml",
+  "reports/typst/common_style.toml"
+]
+
+[paths.converter]
+interval_config = "converter/interval_processor_config.toml"
+
+[paths.reports.markdown]
+day = "reports/markdown/day.toml"
+month = "reports/markdown/month.toml"
+period = "reports/markdown/period.toml"
+week = "reports/markdown/week.toml"
+year = "reports/markdown/year.toml"
+
+[paths.reports.latex]
+day = "reports/latex/day.toml"
+month = "reports/latex/month.toml"
+period = "reports/latex/period.toml"
+week = "reports/latex/week.toml"
+year = "reports/latex/year.toml"
+
+[paths.reports.typst]
+day = "reports/typst/day.toml"
+month = "reports/typst/month.toml"
+period = "reports/typst/period.toml"
+week = "reports/typst/week.toml"
+year = "reports/typst/year.toml"

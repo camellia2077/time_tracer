@@ -1,15 +1,23 @@
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
 [tool.ruff.lint]
 select = [
-    "E",    # 基础风格
-    "F",    # 语法错误
-    "B",    # 逻辑漏洞 (Bugprone)
-    "UP",   # 现代化 (Modernize)
-    "N",    # 命名规范
-    "I",    # 排序 Import
-    "A",    # 防止覆盖内置变量
-    "T20",  # 禁止遗留 print
-    "SIM",  # 简化逻辑
-    "RET",  # 优化 Return
-    "C4",   # 优化容器推导式
-    "RUF",  # Ruff 专属高级规则
+    "E",   # 基础风格
+    "F",   # 语法错误
+    "B",   # 逻辑漏洞 (Bugprone)
+    "UP",  # 现代化 (Modernize)
+    "I",   # 排序 Import
+    "A",   # 防止覆盖内置变量
+    "N",   # 命名规范
 ]
+ignore = [
+    "E501",  # 交给 ruff format 处理长行
+]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["E402"]

@@ -9,6 +9,7 @@ from .core.engine import TestEngine
 
 def print_header(paths, no_color: bool):
     import datetime
+
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     color_cyan = "" if no_color else Colors.CYAN
     color_green = "" if no_color else Colors.GREEN
@@ -53,15 +54,20 @@ def _build_error_result(error_message: str, log_dir: str) -> Dict:
     }
 
 
-def main(config_path: Optional[Path] = None, build_dir_name: Optional[str] = None,
-         bin_dir: Optional[str] = None, options: Optional[Dict] = None,
-         return_result: bool = False):
+def main(
+    config_path: Optional[Path] = None,
+    build_dir_name: Optional[str] = None,
+    bin_dir: Optional[str] = None,
+    options: Optional[Dict] = None,
+    return_result: bool = False,
+):
     run_options = options or {}
     no_color = bool(run_options.get("no_color", False))
     log_dir = ""
     try:
-        config = load_config(config_path, build_dir_name=build_dir_name,
-                             bin_dir=bin_dir)
+        config = load_config(
+            config_path, build_dir_name=build_dir_name, bin_dir=bin_dir
+        )
         if config.paths.PY_OUTPUT_DIR:
             log_dir = str(config.paths.PY_OUTPUT_DIR)
     except Exception as error:

@@ -87,14 +87,25 @@ auto Statement::PrepareStatements() -> void {
   }
 
   const std::string kInsertRecordSql = std::format(
-      "INSERT OR REPLACE INTO {0} "
-      "({1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}) "
-      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);",
+      "INSERT INTO {0} "
+      "({1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}) "
+      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) "
+      "ON CONFLICT({1}) DO UPDATE SET "
+      "{2}=excluded.{2}, "
+      "{3}=excluded.{3}, "
+      "{4}=excluded.{4}, "
+      "{5}=excluded.{5}, "
+      "{6}=excluded.{6}, "
+      "{7}=excluded.{7}, "
+      "{8}=excluded.{8}, "
+      "{9}=excluded.{9}, "
+      "{10}=excluded.{10};",
       schema::time_records::db::kTable, schema::time_records::db::kLogicalId,
       schema::time_records::db::kStartTimestamp,
       schema::time_records::db::kEndTimestamp, schema::time_records::db::kDate,
       schema::time_records::db::kStart, schema::time_records::db::kEnd,
       schema::time_records::db::kProjectId, schema::time_records::db::kDuration,
+      schema::time_records::db::kProjectPathSnapshot,
       schema::time_records::db::kActivityRemark);
   if (sqlite3_prepare_v2(db_, kInsertRecordSql.c_str(), -1,
                          &stmt_insert_record_, nullptr) != SQLITE_OK) {
@@ -102,8 +113,10 @@ auto Statement::PrepareStatements() -> void {
   }
 
   const std::string kInsertProjectSql = std::format(
-      "INSERT INTO {0} ({1}, {2}) VALUES (?, ?);", schema::projects::db::kTable,
-      schema::projects::db::kName, schema::projects::db::kParentId);
+      "INSERT INTO {0} ({1}, {2}, {3}, {4}) VALUES (?, ?, ?, ?);",
+      schema::projects::db::kTable, schema::projects::db::kName,
+      schema::projects::db::kParentId, schema::projects::db::kFullPath,
+      schema::projects::db::kDepth);
   if (sqlite3_prepare_v2(db_, kInsertProjectSql.c_str(), -1,
                          &stmt_insert_project_, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare project insert statement.");

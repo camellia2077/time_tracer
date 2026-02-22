@@ -16,8 +16,7 @@ namespace time_tracer::infrastructure::query::data::detail {
 namespace {
 
 constexpr int kThresholdTwoDigits = 10;
-constexpr size_t kProjectCteWithProjectReserve = 640;
-constexpr size_t kProjectCteWithoutProjectReserve = 192;
+constexpr size_t kProjectDateJoinReserve = 192;
 
 [[nodiscard]] auto EscapeLikeLiteral(const std::string& value) -> std::string {
   std::string escaped;
@@ -33,6 +32,11 @@ constexpr size_t kProjectCteWithoutProjectReserve = 192;
 
 [[nodiscard]] auto BuildLikeContains(const std::string& value) -> std::string {
   return "%" + EscapeLikeLiteral(value) + "%";
+}
+
+[[nodiscard]] auto BuildRootPrefixLikePattern(const std::string& value)
+    -> std::string {
+  return EscapeLikeLiteral(value) + "\\_%";
 }
 
 [[nodiscard]] auto BuildQualifiedName(std::string_view alias,
@@ -68,63 +72,9 @@ auto FormatDate(const DateParts& parts) -> std::string {
   return std::to_string(parts.kYear) + "-" + month_str + "-" + day_str;
 }
 
-auto BuildProjectCte(bool has_project) -> std::string {
-  if (has_project) {
-    std::string sql;
-    sql.reserve(kProjectCteWithProjectReserve);
-    sql += "WITH RECURSIVE ";
-    sql += schema::projects::cte::kProjectPaths;
-    sql += "(";
-    sql += schema::projects::db::kId;
-    sql += ", ";
-    sql += schema::projects::cte::kPath;
-    sql += ") AS (";
-    sql += "  SELECT ";
-    sql += schema::projects::db::kId;
-    sql += ", ";
-    sql += schema::projects::db::kName;
-    sql += " FROM ";
-    sql += schema::projects::db::kTable;
-    sql += " p WHERE ";
-    sql += schema::projects::db::kParentId;
-    sql += " IS NULL";
-    sql += "  UNION ALL ";
-    sql += "  SELECT p.";
-    sql += schema::projects::db::kId;
-    sql += ", pp.";
-    sql += schema::projects::cte::kPath;
-    sql += " || '_' || p.";
-    sql += schema::projects::db::kName;
-    sql += "   FROM ";
-    sql += schema::projects::db::kTable;
-    sql += " p JOIN ";
-    sql += schema::projects::cte::kProjectPaths;
-    sql += " pp ON p.";
-    sql += schema::projects::db::kParentId;
-    sql += " = pp.";
-    sql += schema::projects::db::kId;
-    sql += ") ";
-    sql += "SELECT DISTINCT d.";
-    sql += schema::day::db::kDate;
-    sql += " FROM ";
-    sql += schema::day::db::kTable;
-    sql += " d ";
-    sql += "JOIN ";
-    sql += schema::time_records::db::kTable;
-    sql += " tr ON tr.";
-    sql += schema::time_records::db::kDate;
-    sql += " = d.";
-    sql += schema::day::db::kDate;
-    sql += " JOIN ";
-    sql += schema::projects::cte::kProjectPaths;
-    sql += " pp ON tr.";
-    sql += schema::time_records::db::kProjectId;
-    sql += " = pp.";
-    sql += schema::projects::db::kId;
-    return sql;
-  }
+auto BuildProjectDateJoinSql() -> std::string {
   std::string sql;
-  sql.reserve(kProjectCteWithoutProjectReserve);
+  sql.reserve(kProjectDateJoinReserve);
   sql += "SELECT DISTINCT d.";
   sql += schema::day::db::kDate;
   sql += " FROM ";
@@ -177,12 +127,26 @@ auto BuildWhereClauses(const QueryFilters& filters,
                       .text_value = "%" + *filters.day_remark + "%"});
   }
   if (filters.project.has_value()) {
-    std::string clause =
-        BuildQualifiedClause("pp", schema::projects::cte::kPath, "LIKE");
+    std::string clause = BuildQualifiedClause(
+        "tr", schema::time_records::db::kProjectPathSnapshot, "LIKE");
     clause += " ESCAPE '\\'";
     clauses.push_back(std::move(clause));
     params.push_back({.type = SqlParam::Type::kText,
                       .text_value = BuildLikeContains(*filters.project)});
+  }
+  if (filters.root.has_value()) {
+    std::string clause = "(tr.";
+    clause += schema::time_records::db::kProjectPathSnapshot;
+    clause += " = ? OR tr.";
+    clause += schema::time_records::db::kProjectPathSnapshot;
+    clause += " LIKE ? ESCAPE '\\')";
+    clauses.push_back(std::move(clause));
+    params.push_back({.type = SqlParam::Type::kText,
+                      .text_value = *filters.root,
+                      .int_value = 0});
+    params.push_back({.type = SqlParam::Type::kText,
+                      .text_value = BuildRootPrefixLikePattern(*filters.root),
+                      .int_value = 0});
   }
   if (filters.remark.has_value()) {
     clauses.emplace_back(BuildQualifiedClause(
@@ -238,17 +202,17 @@ auto QueryStringColumn(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  int rc = SQLITE_OK;
-  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+  int step_result = SQLITE_OK;
+  while ((step_result = sqlite3_step(stmt)) == SQLITE_ROW) {
     const unsigned char* text = sqlite3_column_text(stmt, 0);
     if (text != nullptr) {
       results.emplace_back(reinterpret_cast<const char*>(text));
     }
   }
-  if (rc != SQLITE_DONE) {
-    const std::string error_message = sqlite3_errmsg(db_conn);
+  if (step_result != SQLITE_DONE) {
+    const std::string kErrorMessage = sqlite3_errmsg(db_conn);
     sqlite3_finalize(stmt);
-    throw std::runtime_error("Failed to execute query: " + error_message);
+    throw std::runtime_error("Failed to execute query: " + kErrorMessage);
   }
   sqlite3_finalize(stmt);
   return results;
@@ -275,16 +239,16 @@ auto QueryYearMonth(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  int rc = SQLITE_OK;
-  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+  int step_result = SQLITE_OK;
+  while ((step_result = sqlite3_step(stmt)) == SQLITE_ROW) {
     const int kYear = sqlite3_column_int(stmt, 0);
     const int kMonth = sqlite3_column_int(stmt, 1);
     results.emplace_back(kYear, kMonth);
   }
-  if (rc != SQLITE_DONE) {
-    const std::string error_message = sqlite3_errmsg(db_conn);
+  if (step_result != SQLITE_DONE) {
+    const std::string kErrorMessage = sqlite3_errmsg(db_conn);
     sqlite3_finalize(stmt);
-    throw std::runtime_error("Failed to execute query: " + error_message);
+    throw std::runtime_error("Failed to execute query: " + kErrorMessage);
   }
   sqlite3_finalize(stmt);
   return results;
@@ -312,8 +276,8 @@ auto QueryRowsWithTotalDuration(sqlite3* db_conn, const std::string& sql,
     }
   }
 
-  int rc = SQLITE_OK;
-  while ((rc = sqlite3_step(stmt)) == SQLITE_ROW) {
+  int step_result = SQLITE_OK;
+  while ((step_result = sqlite3_step(stmt)) == SQLITE_ROW) {
     DayDurationRow row;
     const unsigned char* text = sqlite3_column_text(stmt, 0);
     if (text != nullptr) {
@@ -322,10 +286,10 @@ auto QueryRowsWithTotalDuration(sqlite3* db_conn, const std::string& sql,
     row.total_seconds = sqlite3_column_int64(stmt, 1);
     rows.push_back(std::move(row));
   }
-  if (rc != SQLITE_DONE) {
-    const std::string error_message = sqlite3_errmsg(db_conn);
+  if (step_result != SQLITE_DONE) {
+    const std::string kErrorMessage = sqlite3_errmsg(db_conn);
     sqlite3_finalize(stmt);
-    throw std::runtime_error("Failed to execute query: " + error_message);
+    throw std::runtime_error("Failed to execute query: " + kErrorMessage);
   }
 
   sqlite3_finalize(stmt);

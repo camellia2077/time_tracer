@@ -1,0 +1,76 @@
+[[commands]]
+name = "Generate Logs (Average Guard, Nosleep)"
+stage = "duration-stats"
+args = [
+  "--year",
+  "2026",
+  "--items",
+  "8",
+  "--nosleep",
+  "--output",
+  "{output_dir}/avg_guard_nosleep"
+]
+expect_exit = 0
+expect_files = [
+  "{output_dir}/avg_guard_nosleep/2026/2026-01.txt",
+  "{output_dir}/avg_guard_nosleep/2026/2026-12.txt"
+]
+
+[[commands]]
+name = "Validate Daily Average (Nosleep)"
+stage = "duration-stats"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/test/suites/log_generator/scripts/check_daily_average.py",
+  "--input-root",
+  "{output_dir}/avg_guard_nosleep",
+  "--activities-config",
+  "{exe_dir}/config/activities_config.toml",
+  "--min-hours",
+  "23.8",
+  "--max-hours",
+  "24.2",
+  "--label",
+  "nosleep"
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] nosleep"]
+
+[[commands]]
+name = "Generate Logs (Average Guard, Normal)"
+stage = "duration-stats"
+args = [
+  "--year",
+  "2026",
+  "--items",
+  "8",
+  "--output",
+  "{output_dir}/avg_guard_normal"
+]
+expect_exit = 0
+expect_files = [
+  "{output_dir}/avg_guard_normal/2026/2026-01.txt",
+  "{output_dir}/avg_guard_normal/2026/2026-12.txt"
+]
+
+[[commands]]
+name = "Validate Daily Average (Normal)"
+stage = "duration-stats"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/test/suites/log_generator/scripts/check_daily_average.py",
+  "--input-root",
+  "{output_dir}/avg_guard_normal",
+  "--activities-config",
+  "{exe_dir}/config/activities_config.toml",
+  "--min-hours",
+  "23.8",
+  "--max-hours",
+  "24.2",
+  "--label",
+  "normal"
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] normal"]

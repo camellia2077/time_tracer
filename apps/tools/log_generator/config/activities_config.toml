@@ -1,0 +1,40 @@
+wake_keywords = [
+    "起床",
+    "醒",
+    "w",
+    "wake",
+    "新的一天开始了"
+]
+
+[nosleep]
+# 通宵概率配置（仅在命令行启用 --nosleep 时生效）
+# probability 取值范围: 0.0 ~ 1.0
+# 值越小，通宵天越少；1.0 表示保持原有高频通宵行为
+probability = 0.35
+
+
+[daily_remarks]
+prefix = "r "
+contents = [
+    "守望先锋真好玩",
+    "烤肉自助",
+    "没有牺牲大到无法接受",
+    "没有背叛小到可以容忍",
+    "alpha",
+    "beta"
+]
+generation_chance = 0.8
+# [新增] 这里设置为 3，表示将随机生成 1 到 4 行备注
+max_lines = 3
+
+[activity_remarks]
+contents = [
+    "remark",
+    "备注",
+    "apple",
+    "banana",
+    "cherry",
+    "date",
+]
+generation_chance = 0.5
+

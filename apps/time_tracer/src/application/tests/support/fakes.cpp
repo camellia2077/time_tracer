@@ -29,11 +29,13 @@ auto FakeWorkflowHandler::RunDatabaseImportFromMemory(
 
 auto FakeWorkflowHandler::RunIngest(const std::string& source_path,
                                     DateCheckMode date_check_mode,
-                                    bool save_processed) -> void {
+                                    bool save_processed, IngestMode ingest_mode)
+    -> void {
   ++ingest_call_count;
   last_ingest_input = source_path;
   last_ingest_mode = date_check_mode;
   last_ingest_save_processed = save_processed;
+  last_ingest_import_mode = ingest_mode;
   if (fail_ingest) {
     throw std::runtime_error("ingest failed");
   }

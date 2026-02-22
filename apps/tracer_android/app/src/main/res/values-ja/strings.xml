@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tracer</string>
+
+    <string name="tracer_tab_data">データ</string>
+    <string name="tracer_tab_report">レポート</string>
+    <string name="tracer_tab_record">記録</string>
+    <string name="tracer_tab_txt">TXT</string>
+    <string name="tracer_tab_config">設定</string>
+
+    <string name="tracer_tree_result_day">日次ツリー結果</string>
+    <string name="tracer_tree_result_week">週次ツリー結果</string>
+    <string name="tracer_tree_result_month">月次ツリー結果</string>
+    <string name="tracer_tree_result_year">年次ツリー結果</string>
+    <string name="tracer_tree_result_recent">最近ツリー結果</string>
+    <string name="tracer_tree_result_range">期間ツリー結果</string>
+
+    <string name="tracer_stats_result_day">日次統計結果</string>
+    <string name="tracer_stats_result_week">週次統計結果</string>
+    <string name="tracer_stats_result_month">月次統計結果</string>
+    <string name="tracer_stats_result_year">年次統計結果</string>
+    <string name="tracer_stats_result_recent">最近統計結果</string>
+    <string name="tracer_stats_result_range">期間統計結果</string>
+
+    <string name="tracer_report_result_title">レポート結果</string>
+    <string name="tracer_chart_result_title">グラフ結果</string>
+    <string name="tracer_analysis_error_title">解析エラー</string>
+    <string name="tracer_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: alias_mapping.toml の検証セットが空です。</string>
+    <string name="tracer_status_quick_activities_cannot_be_empty">クイック活動は空にできません。</string>
+    <string name="tracer_status_quick_activities_exceed_limit">クイック活動が上限を超えています: %1$d。</string>
+    <string name="tracer_status_invalid_quick_activities">無効なクイック活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
+    <string name="tracer_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
+    <string name="tracer_status_invalid_suggested_activity">無効な提案活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
+
+    <string name="tracer_export_all_canceled">全件エクスポートをキャンセルしました。</string>
+    <string name="tracer_export_all_failed_no_months">全件エクスポート失敗: 利用可能な月がありません。</string>
+    <string name="tracer_export_all_failed_dates_folder">全件エクスポート失敗: dates フォルダを解決できません。</string>
+    <string name="tracer_export_error_invalid_month_key">%1$s: 月キーが無効です。</string>
+    <string name="tracer_export_error_source_file_not_found">%1$s: ソースファイルが見つかりません。</string>
+    <string name="tracer_export_error_read_failed">%1$s: %2$s</string>
+    <string name="tracer_export_error_invalid_txt_header">%1$s: TXT ヘッダーが無効です。1 行目は yYYYY である必要があります。</string>
+    <string name="tracer_export_error_year_folder">%1$s: 年フォルダ %2$s を解決できません。</string>
+    <string name="tracer_export_error_create_target_file">%1$s: 出力ファイルを作成または上書きできません。</string>
+    <string name="tracer_export_error_open_output_stream">出力ストリームを開けません。</string>
+    <string name="tracer_export_error_write_failed">%1$s: 書き込みに失敗しました。</string>
+    <plurals name="tracer_export_all_success">
+        <item quantity="other">全件エクスポート成功 -&gt; %1$d か月分の TXT ファイル。</item>
+    </plurals>
+    <plurals name="tracer_export_error_tail">
+        <item quantity="other"> | ...(%1$d 件のエラー)</item>
+    </plurals>
+    <string name="tracer_export_all_completed">全件エクスポート完了 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_all_failed">全件エクスポート失敗: %1$s</string>
+    <string name="tracer_export_unknown_error">不明なエラー</string>
+    <string name="tracer_export_already_in_progress">エクスポートはすでに進行中です。</string>
+    <string name="tracer_export_select_txt_destination">TXT のエクスポート先フォルダを選択してください。</string>
+    <string name="tracer_export_config_canceled">設定エクスポートをキャンセルしました。</string>
+    <string name="tracer_export_failed_no_config_entries">エクスポート失敗: 設定エントリが準備されていません。</string>
+    <string name="tracer_export_error_resolve_target">%1$s: エクスポート先を解決できません。</string>
+    <string name="tracer_export_error_open_destination_stream">出力先ストリームを開けません。</string>
+    <string name="tracer_export_error_write_failed_path">%1$s: 書き込みに失敗しました。</string>
+    <string name="tracer_export_config_success">設定エクスポート成功 -&gt; %1$d 個の TOML ファイル。</string>
+    <string name="tracer_export_config_completed">設定エクスポート完了 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_config_failed">設定エクスポート失敗: %1$s</string>
+    <string name="tracer_export_prepare_android_config">Android 設定のエクスポートを準備中...</string>
+    <string name="tracer_export_select_android_config_directory">Android 設定 TOML のエクスポート先ディレクトリを選択してください。</string>
+    <string name="tracer_import_config_canceled">設定インポートをキャンセルしました。</string>
+    <string name="tracer_import_prepare_android_config">Android 設定のインポートを準備中...</string>
+    <string name="tracer_import_select_android_config_directory">Android 設定 TOML の入力元ディレクトリを選択してください。</string>
+    <string name="tracer_import_prepare_android_config_full_replace">Android 設定のインポートを準備中（Full Replace）...</string>
+    <string name="tracer_import_prepare_android_config_partial_update">Android 設定のインポートを準備中（Partial Update）...</string>
+    <string name="tracer_import_select_android_config_directory_full_replace">Android 設定 TOML の入力元ディレクトリを選択してください（Full Replace）。</string>
+    <string name="tracer_import_select_android_config_directory_partial_update">Android 設定 TOML の入力元ディレクトリを選択してください（Partial Update）。</string>
+    <string name="tracer_import_config_failed">設定インポート失敗: %1$s</string>
+
+    <string name="config_title_appearance">外観</string>
+    <string name="config_label_use_wallpaper_colors">壁紙の動的カラーを使用</string>
+    <string name="config_theme_color_current">テーマカラー（現在: %1$s）</string>
+    <string name="config_theme_color_tap_expand">テーマカラー（タップで展開）</string>
+    <string name="config_theme_color_content_desc">テーマカラー %1$s</string>
+    <string name="config_title_theme_mode">テーマモード</string>
+    <string name="config_theme_mode_system">システム</string>
+    <string name="config_theme_mode_light">ライト</string>
+    <string name="config_theme_mode_dark">ダーク</string>
+
+    <string name="config_title_language">言語</string>
+    <string name="config_language_chinese">中文</string>
+    <string name="config_language_english">English</string>
+    <string name="config_language_japanese">日本語</string>
+
+    <string name="config_title_dark_theme_style">ダークテーマスタイル</string>
+    <string name="config_dark_theme_style_tinted">Tinted</string>
+    <string name="config_dark_theme_style_grey">グレー</string>
+    <string name="config_dark_theme_style_black">ブラック</string>
+
+    <string name="config_title_configuration_files">設定ファイル</string>
+    <string name="config_action_refresh_list">一覧を更新</string>
+    <string name="config_action_import_android_config">Android 設定をインポート (TOML)</string>
+    <string name="config_action_import_android_config_full_replace">Android 設定をインポート（Full Replace）</string>
+    <string name="config_action_import_android_config_partial_update">Android 設定をインポート（Partial Update）</string>
+    <string name="config_action_export_android_config">Android 設定をエクスポート (TOML)</string>
+    <string name="config_category_converter">Converter</string>
+    <string name="config_category_reports">レポート</string>
+    <string name="config_no_toml_files_in_category">%1$s に TOML ファイルがありません。</string>
+    <string name="config_action_select_toml_file">TOML ファイルを選択</string>
+
+    <string name="config_title_editor_file">エディタ: %1$s</string>
+    <string name="config_label_toml_content">TOML 内容</string>
+    <string name="config_action_save_changes">保存</string>
+
+    <string name="config_title_about">情報</string>
+    <string name="config_about_author">作者: %1$s</string>
+    <string name="config_about_repo">リポジトリ: %1$s</string>
+    <string name="config_about_core">コア: %1$s</string>
+    <string name="config_about_app">アプリ: %1$s</string>
+</resources>

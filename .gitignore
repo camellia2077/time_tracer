@@ -2,16 +2,20 @@ build/
 .cache/
 build_*/
 __pycache__/
+.ruff_cache/
 html/
 temp/
 output/
 temp/
+.ruff_cache/
 
 *.png
 *.exe
 *.log
 *.tex
 *.typ
+*.sqlite3
+*.txt
 
 
 # Android
@@ -31,4 +35,5 @@ captures/
 
 # 忽略 keystore 文件
 *.jks
+
 

@@ -4,7 +4,7 @@
 function(enforce_core_include_boundary)
     set(options)
     set(oneValueArgs ROOT)
-    set(multiValueArgs CORE_DIRS FORBIDDEN_PREFIXES)
+    set(multiValueArgs CORE_DIRS FORBIDDEN_PREFIXES FORBIDDEN_PATTERNS)
     cmake_parse_arguments(ECB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT ECB_ROOT)
@@ -61,6 +61,74 @@ function(enforce_core_include_boundary)
                         )
                     endif()
                 endforeach()
+
+                foreach(_pattern IN LISTS ECB_FORBIDDEN_PATTERNS)
+                    string(REGEX MATCH "${_pattern}" _forbidden_pattern_match "${_line}")
+                    if(_forbidden_pattern_match)
+                        file(RELATIVE_PATH _relative_file "${ECB_ROOT}" "${_file}")
+                        message(FATAL_ERROR
+                            "[core-boundary] forbidden include pattern in "
+                            "${_relative_file}: ${_line}"
+                        )
+                    endif()
+                endforeach()
+            endforeach()
+        endforeach()
+    endforeach()
+endfunction()
+
+function(enforce_core_target_link_boundary)
+    set(options)
+    set(oneValueArgs)
+    set(multiValueArgs CORE_TARGETS FORBIDDEN_TARGETS)
+    cmake_parse_arguments(ECTB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT ECTB_CORE_TARGETS)
+        message(FATAL_ERROR
+            "enforce_core_target_link_boundary requires CORE_TARGETS."
+        )
+    endif()
+
+    if(NOT ECTB_FORBIDDEN_TARGETS)
+        set(ECTB_FORBIDDEN_TARGETS
+            "tracer_adapters"
+            "tti"
+            "ttri"
+            "time_tracker_infrastructure"
+            "time_tracker_reports_infrastructure"
+            "time_tracker_io_adapters"
+        )
+    endif()
+
+    foreach(_core_target IN LISTS ECTB_CORE_TARGETS)
+        if(NOT TARGET "${_core_target}")
+            continue()
+        endif()
+
+        set(_all_links)
+        get_target_property(_direct_links "${_core_target}" LINK_LIBRARIES)
+        get_target_property(_interface_links "${_core_target}" INTERFACE_LINK_LIBRARIES)
+
+        if(_direct_links)
+            list(APPEND _all_links ${_direct_links})
+        endif()
+        if(_interface_links)
+            list(APPEND _all_links ${_interface_links})
+        endif()
+
+        foreach(_link_item IN LISTS _all_links)
+            foreach(_forbidden_target IN LISTS ECTB_FORBIDDEN_TARGETS)
+                string(REGEX MATCH
+                    "(^|[^A-Za-z0-9_])${_forbidden_target}([^A-Za-z0-9_]|$)"
+                    _forbidden_target_match
+                    "${_link_item}"
+                )
+                if(_forbidden_target_match)
+                    message(FATAL_ERROR
+                        "[core-boundary] target ${_core_target} links forbidden "
+                        "dependency ${_forbidden_target} via: ${_link_item}"
+                    )
+                endif()
             endforeach()
         endforeach()
     endforeach()

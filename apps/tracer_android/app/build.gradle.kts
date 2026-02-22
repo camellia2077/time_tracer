@@ -1,10 +1,10 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 }
-
-import java.util.Properties
-import java.io.FileInputStream
 
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("local.properties")
@@ -15,9 +15,10 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.example.tracer"
     compileSdk = 36
+    ndkVersion = "29.0.14206865"
 
     androidResources {
-        localeFilters += listOf("zh", "en")
+        localeFilters += listOf("zh", "en", "ja")
     }
 
     signingConfigs {
@@ -34,12 +35,12 @@ android {
         minSdk = 35
         targetSdk = 36
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "0.2.0"
 
         ndk {
-            abiFilters.add("arm64-v8a")
+            abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
         }
-        
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -77,6 +78,37 @@ android {
     }
 }
 
+val renameReleaseApk by tasks.registering {
+    doLast {
+        val apkDir =
+            layout.buildDirectory
+                .dir("outputs/apk/release")
+                .get()
+                .asFile
+        val apks =
+            apkDir
+                .listFiles()
+                ?.filter { it.isFile && it.extension == "apk" }
+                ?: emptyList()
+        val source =
+            apks.firstOrNull { it.name.endsWith("-release.apk") }
+                ?: apks.firstOrNull()
+                ?: throw GradleException("No APK found in ${apkDir.absolutePath}")
+        val target = apkDir.resolve("Tracer.apk")
+
+        if (source.absolutePath != target.absolutePath) {
+            source.copyTo(target, overwrite = true)
+        }
+        apks
+            .filter { it.absolutePath != target.absolutePath }
+            .forEach { it.delete() }
+    }
+}
+
+tasks.matching { it.name == "assembleRelease" }.configureEach {
+    finalizedBy(renameReleaseApk)
+}
+
 dependencies {
     coreLibraryDesugaring(libs.desugar.jdk.libs)
     implementation(project(":contract"))
@@ -98,6 +130,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.mikepenz.markdown.m3)
+    implementation(libs.tomlj)
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.google.material)
 

@@ -1,0 +1,204 @@
+[apps.time_tracer]
+path = "apps/time_tracer"
+cmake_flags = [
+    "-G", "Ninja",
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF"
+]
+
+[apps.tracer_windows_cli]
+path = "apps/tracer_windows_cli"
+config_sync_target = "windows"
+cmake_flags = [
+    "-G", "Ninja",
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF"
+]
+
+[apps.tracer_android]
+path = "apps/tracer_android"
+backend = "gradle"
+gradle_wrapper = "gradlew.bat"
+config_sync_target = "android"
+gradle_tasks = [
+    ":app:assembleDebug",
+]
+
+[apps.log_generator]
+path = "apps/log_generator"
+cmake_flags = [
+    "-G", "Ninja",
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF"
+]
+
+[build]
+# Toolchain selector used by scripts/run.py configure.
+# Values: "default" | "clang" | "gcc"
+# NOTE:
+# Main executable LTO can fail on some toolchains, so build scripts
+# keep `-DENABLE_LTO=OFF` by default for program targets.
+# DLL targets may enable LTO in project-specific scripts where supported.
+compiler = "clang"
+default_profile = "fast"
+
+# Optional explicit overrides. When both are set, they take precedence over `compiler`.
+# c_compiler = "clang"
+# cxx_compiler = "clang++"
+
+[build.profiles.fast]
+description = "Fast local verification profile."
+build_dir = "build_fast"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleDebug"]
+
+[build.profiles.release_safe]
+description = "Release build with optimization, but LTO/FTO disabled for stability."
+build_dir = "build"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=OFF",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "WARNING_LEVEL=2",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleRelease"]
+
+[build.profiles.core_lite]
+description = "Release-lite build for reduced core size (markdown-only, no processed JSON IO)."
+build_dir = "build_lite"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=OFF",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "TT_ENABLE_PROCESSED_JSON_IO=OFF",
+    "-D", "TT_REPORT_ENABLE_LATEX=OFF",
+    "-D", "TT_REPORT_ENABLE_TYPST=OFF",
+    "-D", "WARNING_LEVEL=2",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleRelease"]
+
+[build.profiles.check]
+description = "Release build with clang-tidy checks enabled and LTO/FTO disabled."
+build_dir = "build_check"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=OFF",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "ENABLE_CLANG_TIDY=ON",
+    "-D", "ENABLE_PCH=OFF",
+    "-D", "WARNING_LEVEL=2",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleDebug"]
+
+[build.profiles.android_style]
+description = "Android style checks (ktlint + lintDebug; detekt disabled in this flow)."
+gradle_tasks = [
+    ":app:ktlintCheck",
+    ":app:lintDebug",
+]
+
+[build.profiles.android_ci]
+description = "Android CI checks (style without detekt + unit tests + lintRelease)."
+gradle_tasks = [
+    ":app:ktlintCheck",
+    ":app:lintDebug",
+    ":app:testDebugUnitTest",
+    ":app:lintRelease",
+]
+
+[build.profiles.android_release]
+description = "Android release APK build with native optimization enabled."
+gradle_tasks = [":app:assembleRelease"]
+gradle_args = [
+    "-PtimeTracerDisableNativeOptimization=false",
+]
+
+[build.profiles.android_release_no_opt]
+description = "Android release APK build without native optimization and without detekt flow."
+gradle_tasks = [":app:assembleRelease"]
+gradle_args = [
+    "-PtimeTracerDisableNativeOptimization=true",
+]
+
+[build.profiles.android_device]
+description = "Android instrumentation on connected device/emulator (non-default)."
+gradle_tasks = [
+    ":app:connectedDebugAndroidTest",
+]
+
+[post_change]
+# Default app when post-change cannot infer a single touched app.
+default_app = "time_tracer"
+# Default build dir for post-change flow.
+default_build_dir = "build_fast"
+# Test policy for `python scripts/run.py post-change`.
+# Values: "auto" | "always" | "never"
+run_tests = "auto"
+# Whether script-only changes should trigger C++ build.
+# Values:
+# - "build": always build
+# - "skip": skip build when only non-CMake script files changed
+# - "auto": same as skip, but keep build for CMake-related script changes
+script_changes = "build"
+
+[tidy]
+# Granular task splitting limits to prevent AI agent overload
+max_lines = 150
+max_diags = 12
+# Store tasks by folder batches to reduce agent context scope.
+batch_size = 20
+# Ninja parallelism (0 = build tool default, equivalent to `-j` without a value).
+jobs = 0
+# Log parser worker count (0 = auto).
+parse_workers = 0
+# User preference: keep going through as many tidy checks as possible.
+# This maps to Ninja `-k 0` behind `cmake --build`.
+keep_going = true
+# Run one tidy-fix pass before tidy task generation in tidy-flow.
+run_fix_before_tidy = true
+# Controllable tidy-fix scope:
+# 0 = run full `tidy-fix`; N>0 = run `tidy_fix_step_N` (prefix range).
+fix_limit = 0
+# Auto trigger full tidy rebuild when incremental refresh hits stale-graph symptoms.
+auto_full_on_no_such_file = true
+auto_full_on_glob_mismatch = true
+# Auto trigger full tidy rebuild when rename-apply shows stale candidate snapshot.
+auto_full_on_high_already_renamed = true
+auto_full_already_renamed_ratio = 0.60
+auto_full_already_renamed_min = 20
+
+[rename]
+engine = "clangd"
+check_name = "readability-identifier-naming"
+clangd_path = "clangd"
+clangd_background_index = true
+clangd_warmup_seconds = 1.0
+skip_header_single_edit = true
+max_candidates_per_run = 300
+dry_run_default = false
+allowed_kinds = [
+    "constant",
+    "variable",
+    "function",
+    "method",
+    "parameter",
+    "member",
+    "class member",
+    "private member",
+    "protected member"
+]

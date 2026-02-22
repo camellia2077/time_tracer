@@ -20,7 +20,13 @@ class MemoryParser {
 
   /**
    * @brief 执行转换。
-   * @param data_map 内存中的按月分组数据。
+   * @param data_map
+   * 内存中的按月分组数据（key 为 `YYYY-MM` 分桶标识）。
+   *
+   * 当前实现不依赖 key 参与转换，仅消费 value 中的 `DailyLog`
+   * 列表。
+
+   * *
    * @return 可直接用于入库的 ParsedData 结构。
    */
   static auto Parse(

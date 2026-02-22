@@ -37,7 +37,8 @@ constexpr int kRecordIdxStartTimeStr = 5;
 constexpr int kRecordIdxEndTimeStr = 6;
 constexpr int kRecordIdxProjectId = 7;
 constexpr int kRecordIdxDuration = 8;
-constexpr int kRecordIdxRemark = 9;
+constexpr int kRecordIdxProjectPathSnapshot = 9;
+constexpr int kRecordIdxRemark = 10;
 }  // namespace
 
 namespace infrastructure::persistence::importer::sqlite {
@@ -67,11 +68,11 @@ auto Writer::InsertDays(const std::vector<DayData>& days) -> void {
     sqlite3_bind_text(stmt_insert_day_, kDayIdxRemark, day_data.remark.c_str(),
                       -1, SQLITE_TRANSIENT);
 
-    if (day_data.getup_time == "Null" || day_data.getup_time.empty()) {
+    if (!day_data.getup_time.has_value()) {
       sqlite3_bind_null(stmt_insert_day_, kDayIdxGetupTime);
     } else {
       sqlite3_bind_text(stmt_insert_day_, kDayIdxGetupTime,
-                        day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
+                        day_data.getup_time->c_str(), -1, SQLITE_TRANSIENT);
     }
 
     sqlite3_bind_int(stmt_insert_day_, kDayIdxExercise, day_data.exercise);
@@ -145,6 +146,10 @@ auto Writer::InsertRecords(const std::vector<TimeRecordInternal>& records)
     sqlite3_bind_int64(stmt_insert_record_, kRecordIdxProjectId, project_id);
     sqlite3_bind_int(stmt_insert_record_, kRecordIdxDuration,
                      record_data.duration_seconds);
+    // Persist canonical '_' path and keep connector replacement in display
+    // layer.
+    sqlite3_bind_text(stmt_insert_record_, kRecordIdxProjectPathSnapshot,
+                      record_data.project_path.c_str(), -1, SQLITE_TRANSIENT);
 
     if (record_data.remark.has_value()) {
       sqlite3_bind_text(stmt_insert_record_, kRecordIdxRemark,

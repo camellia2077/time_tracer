@@ -2,7 +2,9 @@
 
 [text_duration_mappings]
 "失眠" = "insomnia"
+"insomnia" = "insomnia"
 "饭" = "meal"
+"meal_dining" = "meal"
 "休息" = "rest"
 "r" = "rest"
 "rest" = "rest"

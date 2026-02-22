@@ -9,7 +9,21 @@ import java.io.IOException
 internal class RuntimeEnvironment(private val context: Context) {
     fun prepareRuntimePaths(): RuntimePaths {
         val rootDir = File(context.filesDir, "time_tracer")
-        copyAssetTree(context.assets, "time_tracer", rootDir)
+        // Keep runtime-generated data by default.
+        copyAssetTree(
+            assetManager = context.assets,
+            assetPath = "time_tracer",
+            targetPath = rootDir,
+            overwriteExistingFiles = false
+        )
+        // Keep imported/edited runtime config stable across initialization.
+        // Config assets are used for first-time bootstrap and missing-file补齐 only.
+        copyAssetTree(
+            assetManager = context.assets,
+            assetPath = "time_tracer/config",
+            targetPath = File(rootDir, "config"),
+            overwriteExistingFiles = false
+        )
         removeLegacyReportConfigDirs(rootDir)
 
         val dbFile = File(rootDir, "db/time_data.sqlite3")
@@ -36,6 +50,8 @@ internal class RuntimeEnvironment(private val context: Context) {
             liveAutoSyncInput.mkdirs()
         }
 
+        cleanupOldErrorLogs(File(rootDir, "output/logs"))
+
         return RuntimePaths(
             dbPath = dbFile.absolutePath,
             outputRoot = outputRoot.absolutePath,
@@ -46,6 +62,20 @@ internal class RuntimeEnvironment(private val context: Context) {
             liveRawInputPath = liveRawInput.absolutePath,
             liveAutoSyncInputPath = liveAutoSyncInput.absolutePath
         )
+    }
+
+    // Keeps the newest [maxCount] run-scoped error log files.
+    // Never deletes errors-latest.log.
+    internal fun cleanupOldErrorLogs(logsDir: File, maxCount: Int = 50) {
+        if (!logsDir.isDirectory) return
+        val logFiles = logsDir.listFiles { f ->
+            f.isFile && f.name.startsWith("errors-") &&
+                f.name.endsWith(".log") && f.name != "errors-latest.log"
+        } ?: return
+        if (logFiles.size <= maxCount) return
+        logFiles.sortedByDescending { it.lastModified() }
+            .drop(maxCount)
+            .forEach { it.delete() }
     }
 
     fun clearRuntimeData(): String {
@@ -61,24 +91,70 @@ internal class RuntimeEnvironment(private val context: Context) {
         }
     }
 
-    fun clearLiveTxtData(): ClearTxtResult {
-        val rootDir = File(context.filesDir, "time_tracer")
-        val liveRawDir = File(rootDir, "input/live_raw")
-        val liveAutoSyncDir = File(rootDir, "input/live_auto_sync")
+    fun clearTxtData(): ClearTxtResult {
+        val inputDir = File(context.filesDir, "time_tracer/input")
+        if (!inputDir.exists()) {
+            return ClearTxtResult(
+                ok = true,
+                message = "clear txt -> no input directory: ${inputDir.absolutePath}"
+            )
+        }
 
-        val (rawOk, rawMessage) = resetDirectory(liveRawDir, "live_raw")
-        val (autoSyncOk, autoSyncMessage) = resetDirectory(liveAutoSyncDir, "live_auto_sync")
+        val txtFiles = inputDir
+            .walkTopDown()
+            .filter { it.isFile && it.extension.equals("txt", ignoreCase = true) }
+            .toList()
+
+        if (txtFiles.isEmpty()) {
+            return ClearTxtResult(
+                ok = true,
+                message = "clear txt -> no txt files under ${inputDir.absolutePath}"
+            )
+        }
+
+        var removedCount = 0
+        val failedPaths = mutableListOf<String>()
+        for (txtFile in txtFiles) {
+            if (txtFile.delete()) {
+                removedCount += 1
+            } else {
+                failedPaths += txtFile.absolutePath
+            }
+        }
+
+        if (failedPaths.isNotEmpty()) {
+            val preview = failedPaths.take(3).joinToString(" | ")
+            val suffix = if (failedPaths.size > 3) {
+                " | ...(${failedPaths.size} failed)"
+            } else {
+                ""
+            }
+            return ClearTxtResult(
+                ok = false,
+                message = "clear txt -> removed $removedCount/${txtFiles.size} file(s). failed: $preview$suffix"
+            )
+        }
 
         return ClearTxtResult(
-            ok = rawOk && autoSyncOk,
-            message = "$rawMessage\n$autoSyncMessage"
+            ok = true,
+            message = "clear txt -> removed $removedCount txt file(s) under ${inputDir.absolutePath}"
         )
     }
 
-    private fun copyAssetTree(assetManager: AssetManager, assetPath: String, targetPath: File) {
+    private fun copyAssetTree(
+        assetManager: AssetManager,
+        assetPath: String,
+        targetPath: File,
+        overwriteExistingFiles: Boolean
+    ) {
         val children = assetManager.list(assetPath) ?: emptyArray()
         if (children.isEmpty()) {
-            copyAssetFile(assetManager, assetPath, targetPath)
+            copyAssetFile(
+                assetManager = assetManager,
+                assetPath = assetPath,
+                targetFile = targetPath,
+                overwriteExistingFile = overwriteExistingFiles
+            )
             return
         }
 
@@ -89,13 +165,22 @@ internal class RuntimeEnvironment(private val context: Context) {
         for (child in children) {
             val childAssetPath = "$assetPath/$child"
             val childTargetPath = File(targetPath, child)
-            copyAssetTree(assetManager, childAssetPath, childTargetPath)
+            copyAssetTree(
+                assetManager = assetManager,
+                assetPath = childAssetPath,
+                targetPath = childTargetPath,
+                overwriteExistingFiles = overwriteExistingFiles
+            )
         }
     }
 
-    private fun copyAssetFile(assetManager: AssetManager, assetPath: String, targetFile: File) {
-        // Copy defaults only once; keep user-edited runtime files on next app starts.
-        if (targetFile.exists()) {
+    private fun copyAssetFile(
+        assetManager: AssetManager,
+        assetPath: String,
+        targetFile: File,
+        overwriteExistingFile: Boolean
+    ) {
+        if (targetFile.exists() && !overwriteExistingFile) {
             return
         }
         targetFile.parentFile?.mkdirs()
@@ -104,19 +189,6 @@ internal class RuntimeEnvironment(private val context: Context) {
                 input.copyTo(output)
             }
         }
-    }
-
-    private fun resetDirectory(dir: File, label: String): Pair<Boolean, String> {
-        val deleted = if (dir.exists()) dir.deleteRecursively() else true
-        if (!deleted) {
-            return false to "clear $label -> failed to delete ${dir.absolutePath}"
-        }
-
-        if (!dir.exists() && !dir.mkdirs()) {
-            return false to "clear $label -> failed to recreate ${dir.absolutePath}"
-        }
-
-        return true to "clear $label -> ready ${dir.absolutePath}"
     }
 
     private fun removeLegacyReportConfigDirs(rootDir: File) {

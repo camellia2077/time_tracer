@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="txt_hint_invalid_day_marker">日期标记无效。请使用 MMDD（例如：0214）。</string>
+    <string name="txt_hint_day_edit_enabled">已启用 DAY 编辑。保存后会替换当前月 TXT 中该天窗口内容。</string>
+    <string name="txt_hint_day_not_found">当前月 TXT 中未找到日期 %1$s。DAY 模式仅支持编辑已存在区块。</string>
+    <string name="txt_label_editor_file">编辑器：%1$s</string>
+    <string name="txt_mode_all">全部</string>
+    <string name="txt_mode_day">单日</string>
+    <string name="txt_label_target_day">目标日期 (MMDD)</string>
+    <string name="txt_action_hide_content">隐藏内容</string>
+    <string name="txt_action_show_content">显示内容</string>
+    <string name="txt_label_content">内容</string>
+    <string name="txt_label_day_content_with_date">单日内容 %1$s</string>
+    <string name="txt_label_day_content">单日内容</string>
+
+    <string name="txt_cd_ingest">写入</string>
+    <string name="txt_cd_prev_month">上个月</string>
+    <string name="txt_cd_next_month">下个月</string>
+    <string name="txt_label_select_file">选择文件</string>
+    <string name="txt_action_refresh_list">刷新列表</string>
+    <string name="txt_sheet_select_year_month">选择年月</string>
+    <string name="txt_sheet_current_month">当前：%1$s</string>
+    <string name="txt_sheet_current_month_unselected">未选择</string>
+    <string name="txt_picker_year_title">年份</string>
+    <string name="txt_picker_year_placeholder">年份</string>
+    <string name="txt_picker_month_title">月份</string>
+    <string name="txt_picker_month_placeholder">月份</string>
+    <string name="txt_picker_no_years">无可选年份</string>
+    <string name="txt_picker_no_months">无可选月份</string>
+    <string name="txt_picker_open_year_month">打开 %1$s-%2$s</string>
+    <string name="txt_picker_field_value">%1$s：%2$s</string>
+
+    <string name="record_label_target_date">目标日期</string>
+    <string name="record_mode_manual">手动</string>
+    <string name="record_mode_auto">自动</string>
+    <string name="record_title_record_input">记录输入</string>
+    <string name="record_label_activity_name">活动名称</string>
+    <string name="record_label_remark_optional">备注（可选）</string>
+    <string name="record_action_record_activity">记录活动</string>
+    <string name="record_title_quick_access">快捷入口</string>
+    <string name="record_cd_collapse">收起</string>
+    <string name="record_cd_expand">展开</string>
+    <string name="record_title_assist_settings">辅助设置</string>
+    <string name="record_label_days">天数</string>
+    <string name="record_label_top_n">前 N 项</string>
+    <string name="record_label_search_add_quick_activity">搜索并添加快捷活动</string>
+    <string name="record_chip_add_activity">+ %1$s</string>
+    <string name="record_chip_remove_activity">%1$s X</string>
+    <string name="record_hint_no_quick_activities">暂无快捷活动，点击标题添加。</string>
+    <string name="record_action_hide_suggestions">隐藏建议</string>
+    <string name="record_action_show_suggestions">显示建议</string>
+    <string name="record_hint_loading">加载中...</string>
+    <string name="record_hint_no_suggestions">暂无建议。</string>
+</resources>

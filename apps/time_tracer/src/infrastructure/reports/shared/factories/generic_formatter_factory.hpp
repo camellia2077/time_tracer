@@ -19,6 +19,27 @@
 
 namespace fs = std::filesystem;
 
+namespace generic_formatter_factory_detail {
+
+enum class ReportDataKind {
+  kDaily,
+  kMonthly,
+  kPeriod,
+  kWeekly,
+  kYearly,
+  kRange,
+};
+
+[[nodiscard]] auto ResolveFormatterConfigKind(ReportDataKind report_data_kind,
+                                              ReportFormat format) -> uint32_t;
+
+[[nodiscard]] auto BuildConfigPayloadFromLoaded(ReportDataKind report_data_kind,
+                                                ReportFormat format,
+                                                const ReportCatalog& catalog)
+    -> FormatterConfigPayload;
+
+}  // namespace generic_formatter_factory_detail
+
 template <typename ReportDataType>
 class GenericFormatterFactory {
  public:
@@ -72,172 +93,43 @@ class GenericFormatterFactory {
     return creators;
   }
 
+ private:
+  template <typename T>
+  static constexpr bool kAlwaysFalse = false;
+
+  [[nodiscard]] static consteval auto ResolveReportDataKind()
+      -> generic_formatter_factory_detail::ReportDataKind {
+    using Kind = generic_formatter_factory_detail::ReportDataKind;
+    if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
+      return Kind::kDaily;
+    } else if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
+      return Kind::kMonthly;
+    } else if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
+      return Kind::kPeriod;
+    } else if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
+      return Kind::kWeekly;
+    } else if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
+      return Kind::kYearly;
+    } else if constexpr (std::is_same_v<ReportDataType, RangeReportData>) {
+      return Kind::kRange;
+    } else {
+      static_assert(kAlwaysFalse<ReportDataType>,
+                    "Unsupported ReportDataType for GenericFormatterFactory.");
+    }
+  }
+
+ public:
   [[nodiscard]] static auto GetFormatterConfigKind(ReportFormat format)
       -> uint32_t {
-    if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          return TT_FORMATTER_CONFIG_KIND_DAY_MD;
-        case ReportFormat::kLaTeX:
-          return TT_FORMATTER_CONFIG_KIND_DAY_TEX;
-        case ReportFormat::kTyp:
-          return TT_FORMATTER_CONFIG_KIND_DAY_TYP;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          return TT_FORMATTER_CONFIG_KIND_MONTH_MD;
-        case ReportFormat::kLaTeX:
-          return TT_FORMATTER_CONFIG_KIND_MONTH_TEX;
-        case ReportFormat::kTyp:
-          return TT_FORMATTER_CONFIG_KIND_MONTH_TYP;
-      }
-    }
-
-    if constexpr ((std::is_same_v<ReportDataType, PeriodReportData>) ||
-                  (std::is_same_v<ReportDataType, WeeklyReportData>) ||
-                  (std::is_same_v<ReportDataType, YearlyReportData>) ||
-                  (std::is_same_v<ReportDataType, RangeReportData>)) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          return TT_FORMATTER_CONFIG_KIND_RANGE_MD;
-        case ReportFormat::kLaTeX:
-          return TT_FORMATTER_CONFIG_KIND_RANGE_TEX;
-        case ReportFormat::kTyp:
-          return TT_FORMATTER_CONFIG_KIND_RANGE_TYP;
-      }
-    }
-
-    return TT_FORMATTER_CONFIG_KIND_UNKNOWN;
+    return generic_formatter_factory_detail::ResolveFormatterConfigKind(
+        ResolveReportDataKind(), format);
   }
 
   [[nodiscard]] static auto BuildConfigPayloadFromLoaded(
       ReportFormat format, const ReportCatalog& catalog)
       -> FormatterConfigPayload {
-    FormatterConfigPayload payload{};
-
-    if constexpr (std::is_same_v<ReportDataType, DailyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedDailyMdConfig(
-              catalog.loaded_reports.markdown.day);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedDailyTexConfig(
-              catalog.loaded_reports.latex.day);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedDailyTypConfig(
-              catalog.loaded_reports.typst.day);
-          return payload;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, MonthlyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedMonthMdConfig(
-              catalog.loaded_reports.markdown.month);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedMonthTexConfig(
-              catalog.loaded_reports.latex.month);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedMonthTypConfig(
-              catalog.loaded_reports.typst.month);
-          return payload;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, PeriodReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedRangeMdConfig(
-              catalog.loaded_reports.markdown.period.labels);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedRangeTexConfig(
-              catalog.loaded_reports.latex.period.labels,
-              catalog.loaded_reports.latex.period.fonts,
-              catalog.loaded_reports.latex.period.layout);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedRangeTypConfig(
-              catalog.loaded_reports.typst.period.labels,
-              catalog.loaded_reports.typst.period.fonts,
-              catalog.loaded_reports.typst.period.layout);
-          return payload;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, WeeklyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedRangeMdConfig(
-              catalog.loaded_reports.markdown.week.labels);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedRangeTexConfig(
-              catalog.loaded_reports.latex.week.labels,
-              catalog.loaded_reports.latex.week.fonts,
-              catalog.loaded_reports.latex.week.layout);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedRangeTypConfig(
-              catalog.loaded_reports.typst.week.labels,
-              catalog.loaded_reports.typst.week.fonts,
-              catalog.loaded_reports.typst.week.layout);
-          return payload;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, YearlyReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedRangeMdConfig(
-              catalog.loaded_reports.markdown.year.labels);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedRangeTexConfig(
-              catalog.loaded_reports.latex.year.labels,
-              catalog.loaded_reports.latex.year.fonts,
-              catalog.loaded_reports.latex.year.layout);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedRangeTypConfig(
-              catalog.loaded_reports.typst.year.labels,
-              catalog.loaded_reports.typst.year.fonts,
-              catalog.loaded_reports.typst.year.layout);
-          return payload;
-      }
-    }
-
-    if constexpr (std::is_same_v<ReportDataType, RangeReportData>) {
-      switch (format) {
-        case ReportFormat::kMarkdown:
-          payload.BuildFromLoadedRangeMdConfig(
-              catalog.loaded_reports.markdown.period.labels);
-          return payload;
-        case ReportFormat::kLaTeX:
-          payload.BuildFromLoadedRangeTexConfig(
-              catalog.loaded_reports.latex.period.labels,
-              catalog.loaded_reports.latex.period.fonts,
-              catalog.loaded_reports.latex.period.layout);
-          return payload;
-        case ReportFormat::kTyp:
-          payload.BuildFromLoadedRangeTypConfig(
-              catalog.loaded_reports.typst.period.labels,
-              catalog.loaded_reports.typst.period.fonts,
-              catalog.loaded_reports.typst.period.layout);
-          return payload;
-      }
-    }
-
-    throw std::invalid_argument(
-        "Unsupported report format or report data type for formatter payload.");
+    return generic_formatter_factory_detail::BuildConfigPayloadFromLoaded(
+        ResolveReportDataKind(), format, catalog);
   }
 
   // Must take const reference, not by value:

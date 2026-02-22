@@ -17,8 +17,9 @@ class Workspace:
         self.use_temp = use_temp
         self._temp_obj = None
 
-    def setup(self, target_dir_override: Optional[Path] = None,
-              should_clean: bool = False) -> Path:
+    def setup(
+        self, target_dir_override: Optional[Path] = None, should_clean: bool = False
+    ) -> Path:
         if self.use_temp:
             self._temp_obj = TemporaryDirectory(prefix="tt_test_")
             root = Path(self._temp_obj.name)
@@ -29,8 +30,7 @@ class Workspace:
             return root
 
         if not target_dir_override:
-            raise ValueError(
-                "target_dir_override is required in non-temporary mode.")
+            raise ValueError("target_dir_override is required in non-temporary mode.")
 
         if target_dir_override.exists() and should_clean:
             print(

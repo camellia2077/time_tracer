@@ -15,6 +15,8 @@ object NativeBridge {
     const val QUERY_ACTION_SEARCH = 5
     const val QUERY_ACTION_ACTIVITY_SUGGEST = 6
     const val QUERY_ACTION_TREE = 7
+    const val QUERY_ACTION_MAPPING_NAMES = 8
+    const val QUERY_ACTION_REPORT_CHART = 9
 
     const val REPORT_MODE_SINGLE = 0
     const val REPORT_MODE_PERIOD_BATCH = 1
@@ -44,6 +46,21 @@ object NativeBridge {
         saveProcessedOutput: Boolean
     ): String
 
+    external fun nativeIngestSingleTxtReplaceMonth(
+        inputPath: String,
+        dateCheckMode: Int,
+        saveProcessedOutput: Boolean
+    ): String
+
+    external fun nativeValidateStructure(
+        inputPath: String
+    ): String
+
+    external fun nativeValidateLogic(
+        inputPath: String,
+        dateCheckMode: Int
+    ): String
+
     external fun nativeQuery(
         action: Int,
         year: Int,
@@ -53,6 +70,7 @@ object NativeBridge {
         remark: String,
         dayRemark: String,
         project: String,
+        root: String,
         exercise: Int,
         status: Int,
         overnight: Boolean,
@@ -63,7 +81,8 @@ object NativeBridge {
         scoreByDuration: Boolean,
         treePeriod: String,
         treePeriodArgument: String,
-        treeMaxDepth: Int
+        treeMaxDepth: Int,
+        outputMode: String
     ): String
 
     external fun nativeReport(

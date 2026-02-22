@@ -40,4 +40,3 @@ def run_clang_format_after_success(repo_root: Path, app_name: str) -> int:
     else:
         print(f"clang-format status: failed ({completed.returncode})")
     return int(completed.returncode)
-

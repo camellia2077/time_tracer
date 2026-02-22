@@ -4,6 +4,14 @@
 option(BUILD_INSTALLER "Build a CPack installer package" OFF)
 
 if(BUILD_INSTALLER)
+    if(NOT ALL_TARGETS)
+        message(FATAL_ERROR
+            "BUILD_INSTALLER requires desktop executable targets, "
+            "but apps/time_tracer no longer provides them. "
+            "Use apps/tracer_windows_cli for Windows packaging."
+        )
+    endif()
+
     # 安装主程序到 bin 目录
     install(TARGETS ${ALL_TARGETS}
         RUNTIME DESTINATION bin

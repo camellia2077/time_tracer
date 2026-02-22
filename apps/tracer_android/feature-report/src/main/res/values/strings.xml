@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="report_mode_day">Day</string>
+    <string name="report_mode_month">Month</string>
+    <string name="report_mode_week">Week</string>
+    <string name="report_mode_year">Year</string>
+    <string name="report_mode_range">Range</string>
+    <string name="report_mode_recent">Recent</string>
+    <string name="report_result_mode_text">Text</string>
+    <string name="report_result_mode_chart">Chart</string>
+
+    <string name="report_title_mode_parameters">%1$s Parameters</string>
+    <string name="report_title_report_date">Report Date</string>
+    <string name="report_title_report_month">Report Month</string>
+    <string name="report_title_report_week">Report Week</string>
+    <string name="report_label_report_year">Report Year (YYYY)</string>
+    <string name="report_title_start_date">Start Date</string>
+    <string name="report_title_end_date">End Date</string>
+    <string name="report_label_recent_days">Recent Days (N)</string>
+    <string name="report_action_generate_report_md">Generate Report MD</string>
+
+    <string name="report_title_stats_parameters">Stats Parameters</string>
+    <string name="report_section_stats">Stats</string>
+    <string name="report_action_loading">Loading...</string>
+    <string name="report_action_generate_stats">Generate %1$s Stats</string>
+
+    <string name="report_title_project_tree_parameters">Project Tree Parameters</string>
+    <string name="report_section_tree">Tree</string>
+    <string name="report_label_tree_level">Tree Level (-1 means unlimited)</string>
+    <string name="report_action_load_project_tree">Load %1$s Project Tree</string>
+
+    <string name="report_title_chart_parameters">Chart Parameters</string>
+    <string name="report_label_chart_root">Root Node</string>
+    <string name="report_chart_root_all">All Roots</string>
+    <string name="report_label_chart_lookback_days">Lookback Days (N)</string>
+    <string name="report_label_chart_date_filter_mode">Date Filter Mode</string>
+    <string name="report_chart_date_mode_lookback">Lookback</string>
+    <string name="report_chart_date_mode_range">Date Range</string>
+    <string name="report_action_load_chart">Load Chart</string>
+    <string name="report_action_chart_loading">Loading Chart...</string>
+    <string name="report_chart_empty">No chart data in this range.</string>
+    <string name="report_chart_empty_in_range">No chart data in the selected date range.</string>
+    <string name="report_label_chart_visual">Chart Type</string>
+    <string name="report_label_chart_range_start">Start Date</string>
+    <string name="report_label_chart_range_end">End Date</string>
+    <string name="report_chart_range_error_both_required">Start and end date are required for range filter.</string>
+    <string name="report_chart_range_error_invalid_start">Invalid start date.</string>
+    <string name="report_chart_range_error_invalid_end">Invalid end date.</string>
+    <string name="report_chart_range_error_order">Invalid range. Start date must be less than or equal to end date.</string>
+    <string name="report_chart_visual_line">Line</string>
+    <string name="report_chart_visual_bar">Bar</string>
+    <string name="report_chart_visual_pie">Pie</string>
+    <string name="report_chart_pie_hint">Tap a slice to view date and duration.</string>
+    <string name="report_chart_axis_x_date">X Axis: Date (MM-dd)</string>
+    <string name="report_chart_axis_y_hours">Y Axis: Duration (hours)</string>
+    <string name="report_chart_toggle_average_line">Show Average Line</string>
+    <string name="report_chart_average_duration">Average: %1$s</string>
+    <string name="report_chart_legacy_fallback_notice">Using legacy local average fallback (planned removal in v0.3.0).</string>
+    <string name="report_chart_selected_detail">Selected: %1$s · %2$s</string>
+
+    <string name="report_title_section_day">%1$s Day</string>
+    <string name="report_title_section_month">%1$s Month</string>
+    <string name="report_title_section_week">%1$s Week</string>
+    <string name="report_label_section_year">%1$s Year (YYYY)</string>
+    <string name="report_title_section_start_date">%1$s Start Date</string>
+    <string name="report_title_section_end_date">%1$s End Date</string>
+    <string name="report_label_section_recent_days">%1$s Recent Days (N)</string>
+
+    <string name="report_cd_collapse">Collapse</string>
+    <string name="report_cd_expand">Expand</string>
+
+    <string name="report_subject_stats">Stats</string>
+    <string name="report_subject_tree">Tree</string>
+
+    <string name="report_status_native_report_running">nativeReport(%1$s, md) running...</string>
+    <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_range_start_date_invalid">Range start date invalid. %1$s</string>
+    <string name="report_status_range_end_date_invalid">Range end date invalid. %1$s</string>
+    <string name="report_status_query_stats_running">query data days-stats running... period=%1$s</string>
+    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
+    <string name="report_status_query_tree_running">query data tree running...</string>
+    <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
+    <string name="report_status_query_chart_running">query data report-chart running...</string>
+    <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_error_tree_level_min">Tree level must be &gt;= -1.</string>
+    <string name="report_error_chart_payload_invalid">Report chart payload is invalid.</string>
+    <string name="report_error_period_argument_required">%1$s argument is required for period %2$s.</string>
+    <string name="report_error_invalid_range_argument">Invalid range argument. Use start|end (example: 2026-02-01|2026-02-15).</string>
+    <string name="report_error_invalid_range_date_value">Invalid range date value. Use YYYY-MM-DD (or YYYYMMDD).</string>
+    <string name="report_error_subject_range_invalid">%1$s range invalid. Start date must be &lt;= end date.</string>
+    <string name="report_error_invalid_day_format">Invalid day format. Use digits YYYYMMDD (example: 20260214).</string>
+    <string name="report_error_invalid_date_value">Invalid date value: %1$s.</string>
+    <string name="report_error_invalid_month_format">Invalid month format. Use digits YYYYMM (example: 202602).</string>
+    <string name="report_error_invalid_month_value">Invalid month value: %1$s.</string>
+    <string name="report_error_invalid_year_format">Invalid year format. Use ISO year: YYYY (example: 2026).</string>
+    <string name="report_error_invalid_iso_year_value">Invalid ISO year value: %1$s.</string>
+    <string name="report_error_invalid_week_format">Invalid week format. Use digits YYYYWW (example: 202607).</string>
+    <string name="report_error_invalid_week_year">Invalid week year: %1$s.</string>
+    <string name="report_error_invalid_week_number">Invalid week number: %1$s.</string>
+    <string name="report_error_invalid_week_value">Invalid week value: %1$s. For year %2$d, valid weeks are 01 to %3$d.</string>
+    <string name="report_error_invalid_range_order">Invalid range. Start date must be &lt;= end date.</string>
+    <string name="report_error_recent_days_required">Recent days is required and must be a number.</string>
+    <string name="report_error_recent_days_numeric">Recent days must be numeric.</string>
+    <string name="report_error_recent_days_positive">Recent days must be greater than 0.</string>
+    <string name="report_error_unknown_viewmodel_class">Unknown ViewModel class: %1$s</string>
+</resources>

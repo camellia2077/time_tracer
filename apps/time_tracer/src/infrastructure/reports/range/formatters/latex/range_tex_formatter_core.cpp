@@ -17,7 +17,7 @@ RangeTexFormatter::RangeTexFormatter(std::shared_ptr<RangeTexConfig> config)
 
 auto RangeTexFormatter::FormatReportFromView(
     const TtRangeReportDataV1& data_view) const -> std::string {
-  RangeReportData summary_data =
+  auto summary_data =
       range_report_view_utils::BuildRangeLikeSummaryData<RangeReportData>(
           data_view);
 

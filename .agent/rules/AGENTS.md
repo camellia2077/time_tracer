@@ -1,0 +1,49 @@
+---
+trigger: always_on
+---
+
+[CONSTRAINTS]
+
+- Build/test entry must use project Python commands:
+  - `python scripts/verify.py ...` (preferred verify entry)
+  - `python scripts/run.py ...`
+  - `python test/run.py ...`
+- App instruction resolution order:
+  - 1) Use `apps/<target_app>/agent.md` when present.
+  - 2) If missing, read `apps/<target_app>/README.md` build/test section.
+  - 3) Fall back to this file for global defaults.
+- Target app routing defaults:
+  - Changes under `apps/tracer_android/**` => target app `tracer_android`.
+  - Changes under `apps/tracer_windows/**` => target app `time_tracer` verify flow.
+  - Changes under `apps/time_tracer/**` => target app `time_tracer` verify flow.
+- Core C ABI change rule:
+  - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols/signatures.
+  - `docs/time_tracer/core/contracts/c_abi.md` is the single source of truth for ABI naming/contract.
+- For `tracer_android`, verify result must be read from:
+  - `test/output/tracer_android/result.json`
+  - `test/output/tracer_android/result_cases.json`
+- Windows CLI test pipeline rule:
+  - For `time_tracer` suite, compile target must be `apps/tracer_windows`.
+  - Preferred flow (single command):
+    - `python scripts/verify.py --app time_tracer --quick`
+  - `verify` must be treated as canonical for Windows CLI quick validation
+    because it performs build first and then runs suite tests.
+  - Do not treat `apps/time_tracer` as the default Windows CLI delivery build target.
+- Do not use ad-hoc `cmake`/`ninja` wrappers outside `scripts/run.py`.
+- After code changes, run `python scripts/run.py post-change` unless the user requests another flow.
+- Docs-only change rule:
+  - If the change only touches documentation files (for example `docs/**` and `*.md`) and does not modify code/config/scripts/tests, skip `verify` and build/test compilation by default.
+- Default quick verification build directory is `build_fast`.
+- Full optimization safety rule:
+  - if `DISABLE_OPTIMIZATION=OFF`, `ENABLE_LTO` must stay `OFF` (FTO/LTO forbidden due to ICE risk).
+- Default build shell is PowerShell; run `.sh` workflows only when explicitly requested.
+- Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
+- On failures, report the executed command and key error lines.
+- If a user request is incorrect, risky, or clearly suboptimal, state that directly and provide a better alternative before executing; do not follow blindly.
+- Long-file refactor rule:
+  - First do in-file boundary convergence (`namespace {}` / helper groups / stable entry).
+  - Only after boundary stabilization, do physical split into multiple `*.cpp`.
+  - Avoid combining feature changes into the same refactor step.
+- Temporary file rule:
+  - Store temporary files under repository `temp/` only.
+  - Do not create temporary files in source/config/test directories unless explicitly requested.

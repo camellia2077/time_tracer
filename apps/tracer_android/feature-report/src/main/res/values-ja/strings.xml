@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="report_mode_day">日</string>
+    <string name="report_mode_month">月</string>
+    <string name="report_mode_week">週</string>
+    <string name="report_mode_year">年</string>
+    <string name="report_mode_range">期間</string>
+    <string name="report_mode_recent">最近</string>
+    <string name="report_result_mode_text">テキスト</string>
+    <string name="report_result_mode_chart">グラフ</string>
+
+    <string name="report_title_mode_parameters">%1$s パラメータ</string>
+    <string name="report_title_report_date">レポート日付</string>
+    <string name="report_title_report_month">レポート月</string>
+    <string name="report_title_report_week">レポート週</string>
+    <string name="report_label_report_year">レポート年 (YYYY)</string>
+    <string name="report_title_start_date">開始日</string>
+    <string name="report_title_end_date">終了日</string>
+    <string name="report_label_recent_days">最近日数 (N)</string>
+    <string name="report_action_generate_report_md">レポート MD を生成</string>
+
+    <string name="report_title_stats_parameters">統計パラメータ</string>
+    <string name="report_section_stats">統計</string>
+    <string name="report_action_loading">読み込み中...</string>
+    <string name="report_action_generate_stats">%1$s 統計を生成</string>
+
+    <string name="report_title_project_tree_parameters">プロジェクトツリーパラメータ</string>
+    <string name="report_section_tree">ツリー</string>
+    <string name="report_label_tree_level">ツリーレベル（-1 は無制限）</string>
+    <string name="report_action_load_project_tree">%1$s プロジェクトツリーを読み込む</string>
+
+    <string name="report_title_chart_parameters">グラフパラメータ</string>
+    <string name="report_label_chart_root">ルートノード</string>
+    <string name="report_chart_root_all">すべてのルート</string>
+    <string name="report_label_chart_lookback_days">最近日数 (N)</string>
+    <string name="report_label_chart_date_filter_mode">日付フィルター方式</string>
+    <string name="report_chart_date_mode_lookback">最近日数</string>
+    <string name="report_chart_date_mode_range">日付範囲</string>
+    <string name="report_action_load_chart">グラフを読み込む</string>
+    <string name="report_action_chart_loading">グラフを読み込み中...</string>
+    <string name="report_chart_empty">この範囲にはグラフデータがありません。</string>
+    <string name="report_chart_empty_in_range">選択した日付範囲にグラフデータがありません。</string>
+    <string name="report_label_chart_visual">グラフ種類</string>
+    <string name="report_label_chart_range_start">開始日</string>
+    <string name="report_label_chart_range_end">終了日</string>
+    <string name="report_chart_range_error_both_required">範囲フィルタでは開始日と終了日の両方が必要です。</string>
+    <string name="report_chart_range_error_invalid_start">開始日が無効です。</string>
+    <string name="report_chart_range_error_invalid_end">終了日が無効です。</string>
+    <string name="report_chart_range_error_order">範囲が無効です。開始日は終了日以下である必要があります。</string>
+    <string name="report_chart_visual_line">折れ線</string>
+    <string name="report_chart_visual_bar">棒</string>
+    <string name="report_chart_visual_pie">円</string>
+    <string name="report_chart_pie_hint">扇形をタップして日付と時間を表示します。</string>
+    <string name="report_chart_axis_x_date">X 軸: 日付（MM-dd）</string>
+    <string name="report_chart_axis_y_hours">Y 軸: 時間（時間）</string>
+    <string name="report_chart_toggle_average_line">平均線を表示</string>
+    <string name="report_chart_average_duration">平均時間: %1$s</string>
+    <string name="report_chart_legacy_fallback_notice">現在はローカル平均の互換フォールバックを使用中（v0.3.0 で削除予定）。</string>
+    <string name="report_chart_selected_detail">選択: %1$s ・ %2$s</string>
+
+    <string name="report_title_section_day">%1$s 日</string>
+    <string name="report_title_section_month">%1$s 月</string>
+    <string name="report_title_section_week">%1$s 週</string>
+    <string name="report_label_section_year">%1$s 年 (YYYY)</string>
+    <string name="report_title_section_start_date">%1$s 開始日</string>
+    <string name="report_title_section_end_date">%1$s 終了日</string>
+    <string name="report_label_section_recent_days">%1$s 最近日数 (N)</string>
+
+    <string name="report_cd_collapse">折りたたむ</string>
+    <string name="report_cd_expand">展開</string>
+
+    <string name="report_subject_stats">統計</string>
+    <string name="report_subject_tree">ツリー</string>
+
+    <string name="report_status_native_report_running">nativeReport(%1$s, md) 実行中...</string>
+    <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_range_start_date_invalid">期間の開始日が無効です。%1$s</string>
+    <string name="report_status_range_end_date_invalid">期間の終了日が無効です。%1$s</string>
+    <string name="report_status_query_stats_running">query data days-stats 実行中... period=%1$s</string>
+    <string name="report_status_query_stats_result">query data days-stats(%1$s) -&gt; OK=%2$s</string>
+    <string name="report_status_query_tree_running">query data tree 実行中...</string>
+    <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
+    <string name="report_status_query_chart_running">query data report-chart 実行中...</string>
+    <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_error_tree_level_min">ツリーレベルは -1 以上である必要があります。</string>
+    <string name="report_error_chart_payload_invalid">グラフデータのペイロードが無効です。</string>
+    <string name="report_error_period_argument_required">%1$s の引数は %2$s 期間で必須です。</string>
+    <string name="report_error_invalid_range_argument">期間引数が無効です。start|end を使用してください（例: 2026-02-01|2026-02-15）。</string>
+    <string name="report_error_invalid_range_date_value">期間の日付値が無効です。YYYY-MM-DD（または YYYYMMDD）を使用してください。</string>
+    <string name="report_error_subject_range_invalid">%1$s の期間が無効です。開始日は終了日以下である必要があります。</string>
+    <string name="report_error_invalid_day_format">日付形式が無効です。YYYYMMDD の数字を使用してください（例: 20260214）。</string>
+    <string name="report_error_invalid_date_value">日付値が無効です: %1$s。</string>
+    <string name="report_error_invalid_month_format">月形式が無効です。YYYYMM の数字を使用してください（例: 202602）。</string>
+    <string name="report_error_invalid_month_value">月値が無効です: %1$s。</string>
+    <string name="report_error_invalid_year_format">年形式が無効です。ISO 年 YYYY を使用してください（例: 2026）。</string>
+    <string name="report_error_invalid_iso_year_value">ISO 年の値が無効です: %1$s。</string>
+    <string name="report_error_invalid_week_format">週形式が無効です。YYYYWW の数字を使用してください（例: 202607）。</string>
+    <string name="report_error_invalid_week_year">週の年が無効です: %1$s。</string>
+    <string name="report_error_invalid_week_number">週番号が無効です: %1$s。</string>
+    <string name="report_error_invalid_week_value">週の値が無効です: %1$s。%2$d 年は 01 から %3$d 週をサポートします。</string>
+    <string name="report_error_invalid_range_order">期間が無効です。開始日は終了日以下である必要があります。</string>
+    <string name="report_error_recent_days_required">最近日数は必須で、数値である必要があります。</string>
+    <string name="report_error_recent_days_numeric">最近日数は数値である必要があります。</string>
+    <string name="report_error_recent_days_positive">最近日数は 0 より大きい必要があります。</string>
+    <string name="report_error_unknown_viewmodel_class">不明な ViewModel クラス: %1$s</string>
+</resources>

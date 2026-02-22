@@ -3,7 +3,9 @@
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_REPOSITORY_H_
 
 #include <memory>
+#include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "application/importer/model/import_models.hpp"
@@ -20,6 +22,11 @@ namespace infrastructure::persistence::importer {
  */
 class Repository {
  public:
+  struct LatestActivityTail {
+    std::string date;
+    std::string end_time;
+  };
+
   explicit Repository(const std::string& db_path);
   ~Repository() = default;
 
@@ -27,6 +34,10 @@ class Repository {
 
   auto ImportData(const std::vector<DayData>& days,
                   const std::vector<TimeRecordInternal>& records) -> void;
+  auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
+                        const std::vector<TimeRecordInternal>& records) -> void;
+  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
+      std::string_view date) const -> std::optional<LatestActivityTail>;
 
  private:
   std::unique_ptr<sqlite::Connection> connection_manager_;

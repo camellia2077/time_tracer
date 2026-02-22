@@ -56,7 +56,7 @@ RangeTypFormatter::RangeTypFormatter(std::shared_ptr<RangeTypConfig> config)
 
 auto RangeTypFormatter::FormatReportFromView(
     const TtRangeReportDataV1& data_view) const -> std::string {
-  RangeReportData summary_data =
+  auto summary_data =
       range_report_view_utils::BuildRangeLikeSummaryData<RangeReportData>(
           data_view);
 

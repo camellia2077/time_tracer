@@ -1,3 +1,4 @@
+// infrastructure/reports/data/queriers/range/date_range_querier.cpp
 #include "infrastructure/reports/data/queriers/range/date_range_querier.hpp"
 
 #include <cctype>
@@ -10,16 +11,26 @@
 
 namespace {
 
+constexpr size_t kIsoDateLength = 10;
+constexpr size_t kYearSeparatorIndex = 4;
+constexpr size_t kMonthSeparatorIndex = 7;
+constexpr size_t kYearLength = 4;
+constexpr size_t kMonthOffset = 5;
+constexpr size_t kDayOffset = 8;
+constexpr size_t kMonthDayLength = 2;
+constexpr int kDecimalBase = 10;
+constexpr int kInclusiveDaySpan = 1;
+
 auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
   if (value.empty()) {
     return false;
   }
   int parsed = 0;
-  for (const char character : value) {
-    if (std::isdigit(static_cast<unsigned char>(character)) == 0) {
+  for (const char kCharacter : value) {
+    if (std::isdigit(static_cast<unsigned char>(kCharacter)) == 0) {
       return false;
     }
-    parsed = parsed * 10 + (character - '0');
+    parsed = (parsed * kDecimalBase) + (kCharacter - '0');
   }
   out_value = parsed;
   return true;
@@ -27,26 +38,27 @@ auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
 
 auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
     -> bool {
-  if (value.size() != 10 || value[4] != '-' || value[7] != '-') {
+  if (value.size() != kIsoDateLength || value[kYearSeparatorIndex] != '-' ||
+      value[kMonthSeparatorIndex] != '-') {
     return false;
   }
 
   int year = 0;
   int month = 0;
   int day = 0;
-  if (!ParseUnsigned(value.substr(0, 4), year) ||
-      !ParseUnsigned(value.substr(5, 2), month) ||
-      !ParseUnsigned(value.substr(8, 2), day)) {
+  if (!ParseUnsigned(value.substr(0, kYearLength), year) ||
+      !ParseUnsigned(value.substr(kMonthOffset, kMonthDayLength), month) ||
+      !ParseUnsigned(value.substr(kDayOffset, kMonthDayLength), day)) {
     return false;
   }
 
-  const std::chrono::year_month_day ymd(
+  const std::chrono::year_month_day kYmd(
       std::chrono::year(year), std::chrono::month(static_cast<unsigned>(month)),
       std::chrono::day(static_cast<unsigned>(day)));
-  if (!ymd.ok()) {
+  if (!kYmd.ok()) {
     return false;
   }
-  out_ymd = ymd;
+  out_ymd = kYmd;
   return true;
 }
 
@@ -106,17 +118,17 @@ auto DateRangeQuerier::TryBuildRequestedDays(int& requested_days) const
     return false;
   }
 
-  const auto start_days = std::chrono::sys_days(start_ymd);
-  const auto end_days = std::chrono::sys_days(end_ymd);
-  if (start_days > end_days) {
+  const auto kStartDays = std::chrono::sys_days(start_ymd);
+  const auto kEndDays = std::chrono::sys_days(end_ymd);
+  if (kStartDays > kEndDays) {
     return false;
   }
 
-  const auto span_days = (end_days - start_days).count() + 1;
-  if (span_days > std::numeric_limits<int>::max()) {
+  const auto kSpanDays = (kEndDays - kStartDays).count() + kInclusiveDaySpan;
+  if (kSpanDays > std::numeric_limits<int>::max()) {
     return false;
   }
 
-  requested_days = static_cast<int>(span_days);
+  requested_days = static_cast<int>(kSpanDays);
   return true;
 }

@@ -11,6 +11,8 @@ internal class IngestSyncUseCase(
         return NativeBridge.nativeIngest(
             inputPath = paths.liveAutoSyncInputPath,
             dateCheckMode = NativeBridge.DATE_CHECK_NONE,
+            // Android build disables processed JSON output in core
+            // (TT_ENABLE_PROCESSED_JSON_IO=OFF).
             saveProcessedOutput = false
         )
     }

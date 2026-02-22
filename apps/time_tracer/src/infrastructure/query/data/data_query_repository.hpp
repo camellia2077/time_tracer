@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "domain/reports/models/project_tree.hpp"
@@ -31,6 +32,14 @@ namespace time_tracer::infrastructure::query::data {
 
 [[nodiscard]] auto QueryDayDurations(sqlite3* db_conn,
                                      const QueryFilters& filters)
+    -> std::vector<DayDurationRow>;
+
+[[nodiscard]] auto QueryProjectRootNames(sqlite3* db_conn)
+    -> std::vector<std::string>;
+
+[[nodiscard]] auto QueryDayDurationsByRootInDateRange(
+    sqlite3* db_conn, const std::optional<std::string>& root,
+    std::string_view from_date, std::string_view to_date)
     -> std::vector<DayDurationRow>;
 
 [[nodiscard]] auto QueryActivitySuggestions(

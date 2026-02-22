@@ -1,0 +1,8 @@
+[[commands]]
+name = "Ensure Artifacts Directory"
+stage = "base-setup"
+args = [
+  "/c",
+  "if not exist {output_dir} mkdir {output_dir}"
+]
+expect_exit = 0

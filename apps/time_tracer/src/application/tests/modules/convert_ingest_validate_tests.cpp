@@ -2,6 +2,7 @@
 #include "application/tests/modules/test_modules.hpp"
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
+#include "domain/logic/converter/convert/core/converter_core.hpp"
 
 namespace time_tracer::application::tests {
 
@@ -63,7 +64,8 @@ auto TestIngestResponses(TestState& state) -> void {
 
   const IngestRequest kRequest = {.input_path = "source-folder",
                                   .date_check_mode = DateCheckMode::kContinuity,
-                                  .save_processed_output = true};
+                                  .save_processed_output = true,
+                                  .ingest_mode = IngestMode::kStandard};
 
   const auto kSuccess = core_api.RunIngest(kRequest);
   Expect(state, kSuccess.ok, "RunIngest should return ok on success.");
@@ -79,6 +81,9 @@ auto TestIngestResponses(TestState& state) -> void {
          workflow_handler.last_ingest_save_processed ==
              kRequest.save_processed_output,
          "RunIngest should forward save_processed_output.");
+  Expect(state,
+         workflow_handler.last_ingest_import_mode == kRequest.ingest_mode,
+         "RunIngest should forward ingest_mode.");
 
   workflow_handler.fail_ingest = true;
   const auto kFailure = core_api.RunIngest(kRequest);
@@ -134,12 +139,44 @@ auto TestValidateResponses(TestState& state) -> void {
          "RunValidateLogic failure should include operation name.");
 }
 
+auto TestContinuationDayPreservesFirstSegment(TestState& state) -> void {
+  ConverterConfig config;
+  DayProcessor processor(config);
+
+  DailyLog previous_day;
+  previous_day.date = "2026-02-01";
+  previous_day.rawEvents.push_back(RawEvent{.endTimeStr = "23:30"});
+
+  DailyLog continuation_day;
+  continuation_day.date = "2026-02-02";
+  continuation_day.isContinuation = true;
+  continuation_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "07:00", .description = "study_cpp"});
+
+  processor.Process(previous_day, continuation_day);
+
+  Expect(state, continuation_day.processedActivities.size() == 1,
+         "Continuation day should keep first segment after conversion.");
+  if (continuation_day.processedActivities.empty()) {
+    return;
+  }
+
+  const auto& first_activity = continuation_day.processedActivities.front();
+  Expect(state, first_activity.start_time_str == "23:30",
+         "Continuation day first segment should start from previous day end.");
+  Expect(state, first_activity.end_time_str == "07:00",
+         "Continuation day first segment should end at first raw event time.");
+  Expect(state, first_activity.duration_seconds > 0,
+         "Continuation day first segment duration should be positive.");
+}
+
 }  // namespace
 
 auto RunConvertIngestValidateTests(TestState& state) -> void {
   TestConvertResponses(state);
   TestIngestResponses(state);
   TestValidateResponses(state);
+  TestContinuationDayPreservesFirstSegment(state);
 }
 
 }  // namespace time_tracer::application::tests

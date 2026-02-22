@@ -1,3 +1,7 @@
+> Status: Active
+> 
+> 文档入口：`docs/time_tracer/README.md`
+
 # 核心程序流程 (Core Workflows)
 
 本文档通过剖析内部数据流向与执行步骤，详细展示了 TimeTracer 关键命令的运作机制。

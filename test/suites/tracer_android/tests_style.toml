@@ -1,0 +1,19 @@
+# Extra checks for android_style profile
+
+[[commands]]
+name = "Style Report Ktlint Exists"
+stage = "android-style"
+args = [
+  "/c",
+  "if exist ..\\..\\..\\..\\apps\\tracer_android\\app\\build\\reports\\ktlint\\ktlintKotlinScriptCheck\\ktlintKotlinScriptCheck.txt (exit /b 0) else (echo Missing ktlint report && exit /b 1)"
+]
+expect_exit = 0
+
+[[commands]]
+name = "Style Report LintDebug Exists"
+stage = "android-style"
+args = [
+  "/c",
+  "if exist ..\\..\\..\\..\\apps\\tracer_android\\app\\build\\reports\\lint-results-debug.html (exit /b 0) else (echo Missing lint-results-debug.html && exit /b 1)"
+]
+expect_exit = 0

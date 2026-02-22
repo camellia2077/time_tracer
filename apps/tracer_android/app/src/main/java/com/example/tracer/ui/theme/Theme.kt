@@ -1,7 +1,5 @@
 package com.example.tracer.ui.theme
 
-import android.app.Activity
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
@@ -10,13 +8,10 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.WindowCompat
 import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
@@ -49,17 +44,27 @@ private fun getPrimaryPalette(themeColor: ThemeColor): PrimaryPalette =
         ThemeColor.Rose -> PrimaryPalette(Rose100, Rose400, Rose600, Rose900)
         ThemeColor.Orange -> PrimaryPalette(Orange100, Orange400, Orange600, Orange900)
         ThemeColor.Peach -> PrimaryPalette(Peach100, Peach400, Peach600, Peach900)
+        ThemeColor.Amber -> PrimaryPalette(Amber100, Amber400, Amber600, Amber900)
         ThemeColor.Gold -> PrimaryPalette(Gold100, Gold400, Gold600, Gold900)
         ThemeColor.Mint -> PrimaryPalette(Mint100, Mint400, Mint600, Mint900)
         ThemeColor.Emerald -> PrimaryPalette(Emerald100, Emerald400, Emerald600, Emerald900)
         ThemeColor.Teal -> PrimaryPalette(Teal100, Teal400, Teal600, Teal900)
+        ThemeColor.Turquoise -> PrimaryPalette(Turquoise100, Turquoise400, Turquoise600, Turquoise900)
         ThemeColor.Cyan -> PrimaryPalette(Cyan100, Cyan400, Cyan600, Cyan900)
         ThemeColor.Sky -> PrimaryPalette(Sky100, Sky400, Sky600, Sky900)
+        ThemeColor.Periwinkle -> PrimaryPalette(Periwinkle100, Periwinkle400, Periwinkle600, Periwinkle900)
         ThemeColor.Lavender -> PrimaryPalette(Lavender100, Lavender400, Lavender600, Lavender900)
         ThemeColor.Violet -> PrimaryPalette(Violet100, Violet400, Violet600, Violet900)
         ThemeColor.Pink -> PrimaryPalette(Pink100, Pink400, Pink600, Pink900)
         ThemeColor.Sakura -> PrimaryPalette(Sakura100, Sakura400, Sakura600, Sakura900)
         ThemeColor.Magenta -> PrimaryPalette(Magenta100, Magenta400, Magenta600, Magenta900)
+        ThemeColor.Cobalt -> PrimaryPalette(Cobalt100, Cobalt400, Cobalt600, Cobalt900)
+        ThemeColor.Navy -> PrimaryPalette(Navy100, Navy400, Navy600, Navy900)
+        ThemeColor.Crimson -> PrimaryPalette(Crimson100, Crimson400, Crimson600, Crimson900)
+        ThemeColor.Burgundy -> PrimaryPalette(Burgundy100, Burgundy400, Burgundy600, Burgundy900)
+        ThemeColor.Lime -> PrimaryPalette(Lime100, Lime400, Lime600, Lime900)
+        ThemeColor.Cocoa -> PrimaryPalette(Cocoa100, Cocoa400, Cocoa600, Cocoa900)
+        ThemeColor.Graphite -> PrimaryPalette(Graphite100, Graphite400, Graphite600, Graphite900)
         ThemeColor.Slate -> PrimaryPalette(Indigo100, Indigo400, Indigo600, Indigo900)
     }
 
@@ -74,12 +79,12 @@ private fun getNeutralPalette(themeColor: ThemeColor): NeutralPalette =
             n800 = Stone800, n900 = Stone900, n950 = Stone950
         )
         // Warm colors use Stone neutral
-        ThemeColor.Peach, ThemeColor.Gold, ThemeColor.Orange, ThemeColor.Sakura -> NeutralPalette(
+        ThemeColor.Peach, ThemeColor.Amber, ThemeColor.Gold, ThemeColor.Orange, ThemeColor.Sakura, ThemeColor.Crimson, ThemeColor.Burgundy, ThemeColor.Cocoa -> NeutralPalette(
             n50 = Stone50, n100 = Stone100, n200 = Stone200, n300 = Stone300,
             n400 = Stone400, n500 = Stone500, n600 = Stone600, n700 = Stone700,
             n800 = Stone800, n900 = Stone900, n950 = Stone950
         )
-        ThemeColor.Emerald, ThemeColor.Mint, ThemeColor.Teal, ThemeColor.Cyan -> NeutralPalette(
+        ThemeColor.Emerald, ThemeColor.Mint, ThemeColor.Teal, ThemeColor.Turquoise, ThemeColor.Cyan, ThemeColor.Lime -> NeutralPalette(
             n50 = Neutral50, n100 = Neutral100, n200 = Neutral200, n300 = Neutral300,
             n400 = Neutral400, n500 = Neutral500, n600 = Neutral600, n700 = Neutral700,
             n800 = Neutral800, n900 = Neutral900, n950 = Neutral950
@@ -89,7 +94,7 @@ private fun getNeutralPalette(themeColor: ThemeColor): NeutralPalette =
             n400 = SkyNeutral400, n500 = SkyNeutral500, n600 = SkyNeutral600, n700 = SkyNeutral700,
             n800 = SkyNeutral800, n900 = SkyNeutral900, n950 = SkyNeutral950
         )
-        ThemeColor.Violet, ThemeColor.Lavender, ThemeColor.Slate -> NeutralPalette(
+        ThemeColor.Violet, ThemeColor.Periwinkle, ThemeColor.Lavender, ThemeColor.Slate, ThemeColor.Cobalt, ThemeColor.Navy, ThemeColor.Graphite -> NeutralPalette(
             n50 = Slate50, n100 = Slate100, n200 = Slate200, n300 = Slate300,
             n400 = Slate400, n500 = Slate500, n600 = Slate600, n700 = Slate700,
             n800 = Slate800, n900 = Slate900, n950 = Slate950
@@ -238,7 +243,7 @@ fun TracerTheme(
     val dynamicColor = themeConfig.useDynamicColor
     
     val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+        dynamicColor -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
@@ -248,11 +253,7 @@ fun TracerTheme(
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        SideEffect {
-            val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.background.toArgb() // Immersive feel
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
-        }
+        // Edge-to-Edge handles status bar appearance automatically
     }
 
     MaterialTheme(

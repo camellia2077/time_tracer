@@ -1,10 +1,93 @@
 // infrastructure/reports/report_file_manager.cpp
 #include "infrastructure/reports/report_file_manager.hpp"
 
+#include <algorithm>
+#include <cctype>
+#include <optional>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 
 #include "infrastructure/reports/export_utils.hpp"
+
+namespace {
+
+struct DailyPathLayout {
+  std::string year;
+  std::string month;
+  std::string file_stem;
+};
+
+auto IsAllDigits(std::string_view value) -> bool {
+  return !value.empty() &&
+         std::all_of(value.begin(), value.end(), [](const char ch) {
+           return std::isdigit(static_cast<unsigned char>(ch)) != 0;
+         });
+}
+
+auto BuildDailyPathLayoutFromCompact(std::string_view value)
+    -> std::optional<DailyPathLayout> {
+  constexpr size_t kCompactDateLength = 8;
+  constexpr size_t kYearOffset = 0;
+  constexpr size_t kMonthOffset = 4;
+  constexpr size_t kDayOffset = 6;
+  constexpr size_t kYearLength = 4;
+  constexpr size_t kMonthLength = 2;
+  constexpr size_t kDayLength = 2;
+  if (value.size() != kCompactDateLength || !IsAllDigits(value)) {
+    return std::nullopt;
+  }
+
+  const std::string year = std::string(value.substr(kYearOffset, kYearLength));
+  const std::string month =
+      std::string(value.substr(kMonthOffset, kMonthLength));
+  const std::string day = std::string(value.substr(kDayOffset, kDayLength));
+  return DailyPathLayout{
+      .year = year,
+      .month = month,
+      .file_stem = year + "-" + month + "-" + day,
+  };
+}
+
+auto BuildDailyPathLayoutFromIso(std::string_view value)
+    -> std::optional<DailyPathLayout> {
+  constexpr size_t kIsoDateLength = 10;
+  constexpr size_t kYearOffset = 0;
+  constexpr size_t kMonthOffset = 5;
+  constexpr size_t kDayOffset = 8;
+  constexpr size_t kYearLength = 4;
+  constexpr size_t kMonthLength = 2;
+  constexpr size_t kDayLength = 2;
+  constexpr size_t kFirstHyphenOffset = 4;
+  constexpr size_t kSecondHyphenOffset = 7;
+  if (value.size() != kIsoDateLength || value[kFirstHyphenOffset] != '-' ||
+      value[kSecondHyphenOffset] != '-') {
+    return std::nullopt;
+  }
+
+  const std::string_view year = value.substr(kYearOffset, kYearLength);
+  const std::string_view month = value.substr(kMonthOffset, kMonthLength);
+  const std::string_view day = value.substr(kDayOffset, kDayLength);
+  if (!IsAllDigits(year) || !IsAllDigits(month) || !IsAllDigits(day)) {
+    return std::nullopt;
+  }
+
+  return DailyPathLayout{
+      .year = std::string(year),
+      .month = std::string(month),
+      .file_stem = std::string(value),
+  };
+}
+
+auto ResolveDailyPathLayout(std::string_view date)
+    -> std::optional<DailyPathLayout> {
+  if (auto iso = BuildDailyPathLayoutFromIso(date); iso.has_value()) {
+    return iso;
+  }
+  return BuildDailyPathLayoutFromCompact(date);
+}
+
+}  // namespace
 
 ReportFileManager::ReportFileManager(fs::path export_root)
     : export_root_path_(std::move(export_root)) {}
@@ -17,8 +100,12 @@ auto ReportFileManager::GetSingleDayReportPath(const std::string& date,
     throw std::runtime_error("Unsupported report format.");
   }
   auto details = details_opt.value();
-  return export_root_path_ / details.dir_name / "day" /
-         (date + details.extension);
+  fs::path day_root = export_root_path_ / details.dir_name / "day";
+  if (auto layout = ResolveDailyPathLayout(date); layout.has_value()) {
+    return day_root / layout->year / layout->month /
+           (layout->file_stem + details.extension);
+  }
+  return day_root / (date + details.extension);
 }
 
 auto ReportFileManager::GetSingleMonthReportPath(const std::string& month,

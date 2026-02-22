@@ -8,6 +8,7 @@ auto main() -> int {
   time_tracer::application::tests::RunConvertIngestValidateTests(state);
   time_tracer::application::tests::RunReportTests(state);
   time_tracer::application::tests::RunDataQueryTests(state);
+  time_tracer::application::tests::RunImportServiceTests(state);
 
   if (state.failures == 0) {
     std::cout << "[PASS] time_tracker_core_api_tests" << '\n';

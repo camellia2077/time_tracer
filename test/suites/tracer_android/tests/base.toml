@@ -1,0 +1,8 @@
+# Table-driven command scenarios for tracer_android (host-side)
+
+[run_control]
+enable_test_execution = 1
+stop_on_failure = 1
+
+[pipeline]
+mode = "none"

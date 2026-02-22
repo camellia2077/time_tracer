@@ -2,11 +2,16 @@
 # ----------------------------------------------------
 # 此模块专门负责为不同的构建类型（如 Release）配置编译和链接标志。
 
+include_guard(GLOBAL)
+
 message(STATUS "Configuring build type flags...")
 
 # [新增] 提供一个选项来彻底禁用优化，以极大地提高编译速度
 # 这主要用于开发阶段，不考虑运行效率和 exe 体积
 option(DISABLE_OPTIMIZATION "Disable all optimizations for fastest compilation speed" OFF)
+option(ENABLE_SHARED_LINK_SIZE_OPT
+       "Enable shared-library linker size opts (ICF/gc-sections) in Release"
+       ON)
 
 if(DISABLE_OPTIMIZATION)
     message(STATUS "!!! Optimization is DISABLED for faster compilation speed !!!")
@@ -38,9 +43,19 @@ else()
 endif()
 
 # ==================== [核心修改] ====================
-# 添加一个选项来控制LTO，可以由Python脚本通过 -DENABLE_LTO=ON/OFF 来设置
-# 默认设为ON，因为对于Release构建来说，这是一个好的实践
+# 添加一个选项来控制LTO，可以由Python脚本通过 -DENABLE_LTO=ON/OFF 来设置。
+# 注意：全开优化构建（DISABLE_OPTIMIZATION=OFF）阶段禁止启用 FTO/LTO，
+# 因为当前工具链下会稳定触发编译器内部错误（ICE）。
 option(ENABLE_LTO "Enable Link-Time Optimization for Release builds" ON)
+set(TIME_TRACKER_FTO_FORCED_OFF OFF)
+if(ENABLE_LTO AND NOT DISABLE_OPTIMIZATION)
+    message(WARNING
+        "FTO/LTO is forbidden for full-optimization builds because it "
+        "deterministically triggers compiler ICE. Forcing ENABLE_LTO=OFF.")
+    set(ENABLE_LTO OFF CACHE BOOL
+        "Enable Link-Time Optimization for Release builds" FORCE)
+    set(TIME_TRACKER_FTO_FORCED_OFF ON)
+endif()
 # ====================================================
 
 # --- 3. 根据编译器类型，添加特定的链接时优化 (LTO) 标志 ---
@@ -61,6 +76,8 @@ if(ENABLE_LTO AND NOT DISABLE_OPTIMIZATION)
 else()
     if(DISABLE_OPTIMIZATION)
         message(STATUS "Link-Time Optimization (LTO) is forced OFF because optimizations are disabled.")
+    elseif(TIME_TRACKER_FTO_FORCED_OFF)
+        message(STATUS "Link-Time Optimization (LTO/FTO) is forced OFF by ICE-safety policy for full-optimization builds.")
     else()
         message(STATUS "Link-Time Optimization (LTO) is disabled by user configuration.")
     endif()
@@ -68,6 +85,26 @@ endif()
 # ====================================================
 
 if(NOT DISABLE_OPTIMIZATION)
+    if(ENABLE_SHARED_LINK_SIZE_OPT)
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            # Shared libs: mirror executable ICF policy to fold identical sections.
+            set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+                "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -fuse-ld=lld -Wl,--icf=safe")
+            message(STATUS "Shared-library ICF enabled: -Wl,--icf=safe (lld)")
+        endif()
+
+        # Shared libs: collect dead sections from -ffunction-sections/-fdata-sections.
+        if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR NOT ENABLE_LTO)
+            set(CMAKE_SHARED_LINKER_FLAGS_RELEASE
+                "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -Wl,--gc-sections")
+            message(STATUS "Shared-library section-gc enabled: -Wl,--gc-sections")
+        else()
+            message(STATUS "Shared-library section-gc skipped for Clang+LTO (MinGW compatibility).")
+        endif()
+    else()
+        message(STATUS "Shared-library ICF/section-gc is disabled by user configuration.")
+    endif()
+
     if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         # 使用 lld，并启用安全 ICF 以折叠等价代码/只读数据，减小主程序体积。
         set(CMAKE_EXE_LINKER_FLAGS_RELEASE

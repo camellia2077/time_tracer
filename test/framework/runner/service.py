@@ -6,13 +6,11 @@ from typing import Any, Optional, Sequence
 from core.main import main
 
 from .args import parse_suite_args
-from .formatting import (run_clang_format_after_success,
-                         should_run_format_on_success)
+from .formatting import run_clang_format_after_success, should_run_format_on_success
 from .io import TeeStream, resolve_path, write_result_json
 
 
-def _resolve_result_json_path(args, suite_root: Path,
-                              suite_output_root: Path) -> Path:
+def _resolve_result_json_path(args, suite_root: Path, suite_output_root: Path) -> Path:
     canonical_result_json = (suite_output_root / "result.json").resolve()
     if not args.result_json:
         return canonical_result_json
@@ -108,7 +106,9 @@ def _validate_output_contract(
                 f"{output_log_path.resolve()} != {expected_output_log}"
             )
         if not expected_output_log.exists():
-            errors.append(f"Missing required output file: logs/output.log ({expected_output_log})")
+            errors.append(
+                f"Missing required output file: logs/output.log ({expected_output_log})"
+            )
 
     if isinstance(result_payload, dict):
         result_log_dir = result_payload.get("log_dir")
@@ -122,8 +122,7 @@ def _validate_output_contract(
                     )
             except (OSError, RuntimeError, TypeError, ValueError):
                 errors.append(
-                    "Result payload log_dir cannot be resolved: "
-                    f"{result_log_dir}"
+                    f"Result payload log_dir cannot be resolved: {result_log_dir}"
                 )
 
     return errors
@@ -150,8 +149,7 @@ def run_suite(
     )
 
     config_path = resolve_path(args.config, suite_root, "config.toml")
-    result_json_path = _resolve_result_json_path(args, suite_root,
-                                                 suite_output_root)
+    result_json_path = _resolve_result_json_path(args, suite_root, suite_output_root)
     result_cases_json_path = _resolve_result_cases_json_path(suite_output_root)
 
     result = None
@@ -178,10 +176,11 @@ def run_suite(
                 options=options,
                 return_result=True,
             )
-            exit_code = int(result.get("exit_code", 1 if not result.get("success") else 0))
+            exit_code = int(
+                result.get("exit_code", 1 if not result.get("success") else 0)
+            )
 
-            if should_run_format_on_success(args, bool(format_app)) and \
-                    exit_code == 0:
+            if should_run_format_on_success(args, bool(format_app)) and exit_code == 0:
                 format_exit_code = run_clang_format_after_success(
                     repo_root=repo_root,
                     app_name=str(format_app),
@@ -189,7 +188,7 @@ def run_suite(
                 if isinstance(result, dict):
                     result["format_ran"] = True
                     result["format_exit_code"] = format_exit_code
-                    result["format_success"] = (format_exit_code == 0)
+                    result["format_success"] = format_exit_code == 0
                 if format_exit_code != 0:
                     print(
                         f"Warning: clang-format step failed with "
@@ -243,7 +242,7 @@ def run_suite(
     else:
         print(f"Output contract check: OK ({suite_output_root.resolve()})")
 
-    result["output_contract_ok"] = (len(contract_errors) == 0)
+    result["output_contract_ok"] = len(contract_errors) == 0
     result["output_contract_errors"] = contract_errors
     result["exit_code"] = exit_code
     if exit_code != 0:

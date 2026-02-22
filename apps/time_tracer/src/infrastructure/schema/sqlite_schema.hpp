@@ -14,6 +14,8 @@ inline constexpr std::string_view kStart = "start";
 inline constexpr std::string_view kEnd = "end";
 inline constexpr std::string_view kProjectId = "project_id";
 inline constexpr std::string_view kDuration = "duration";
+inline constexpr std::string_view kProjectPathSnapshot =
+    "project_path_snapshot";
 inline constexpr std::string_view kActivityRemark = "activity_remark";
 }  // namespace schema::time_records::db
 
@@ -22,6 +24,8 @@ inline constexpr std::string_view kTable = "projects";
 inline constexpr std::string_view kId = "id";
 inline constexpr std::string_view kName = "name";
 inline constexpr std::string_view kParentId = "parent_id";
+inline constexpr std::string_view kFullPath = "full_path";
+inline constexpr std::string_view kDepth = "depth";
 }  // namespace schema::projects::db
 
 namespace schema::projects::cte {

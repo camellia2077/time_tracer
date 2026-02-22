@@ -49,7 +49,7 @@ auto IsAllDigits(std::string_view value) -> bool {
   if (value.empty()) {
     return false;
   }
-  return std::ranges::all_of(value, [](unsigned char kCharacter) {
+  return std::ranges::all_of(value, [](unsigned char kCharacter) -> bool {
     return std::isdigit(kCharacter) != 0;
   });
 }

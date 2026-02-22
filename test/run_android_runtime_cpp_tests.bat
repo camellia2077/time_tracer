@@ -11,14 +11,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-echo [1/3] Configure time_tracer (%BUILD_DIR%)
-python scripts/run.py configure --app time_tracer --build-dir %BUILD_DIR%
-if errorlevel 1 exit /b %ERRORLEVEL%
-
-echo [2/3] Build time_tracer (%BUILD_DIR%)
-python scripts/run.py build --app time_tracer --build-dir %BUILD_DIR%
-if errorlevel 1 exit /b %ERRORLEVEL%
-
-echo [3/3] Run time_tracer tests (agent mode)
-python test/run.py --suite time_tracer --agent --build-dir %BUILD_DIR% --concise
+echo [1/1] Verify time_tracer (build + tests, %BUILD_DIR%)
+python scripts/verify.py --app time_tracer --build-dir %BUILD_DIR% --concise
 exit /b %ERRORLEVEL%

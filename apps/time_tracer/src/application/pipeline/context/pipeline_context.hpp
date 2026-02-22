@@ -4,14 +4,19 @@
 
 #include <filesystem>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "application/dto/ingest_input_model.hpp"
-#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/types/converter_config.hpp"
+#include "domain/types/date_check_mode.hpp"
 
 namespace fs = std::filesystem;
+
+namespace time_tracer::application::ports {
+class IValidationIssueReporter;
+}  // namespace time_tracer::application::ports
 
 namespace core::pipeline {
 
@@ -34,6 +39,8 @@ struct PipelineRunConfig {
 struct PipelineState {
   std::vector<time_tracer::application::dto::IngestInputModel> ingest_inputs;
   std::vector<fs::path> generated_files;
+  std::shared_ptr<time_tracer::application::ports::IValidationIssueReporter>
+      validation_issue_reporter;
 
   // 运行时加载的 ConverterConfig (Struct)
   ConverterConfig converter_config;
