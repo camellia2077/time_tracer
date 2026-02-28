@@ -3,7 +3,6 @@ import os
 import shutil
 import sys
 from pathlib import Path
-from typing import List
 
 from ..conf.definitions import Colors
 
@@ -17,7 +16,7 @@ class ArtifactDeployer:
         self.source = source_root
         self.target = target_root
 
-    def deploy(self, files: List[str], folders: List[str]):
+    def deploy(self, files: list[str], folders: list[str]):
         if not self.source.exists():
             print(
                 f"  {_color(Colors.RED)}Error: source directory not found: "
@@ -32,8 +31,7 @@ class ArtifactDeployer:
                 shutil.copy(src, dst)
             else:
                 print(
-                    f"  {_color(Colors.YELLOW)}Warning: missing file "
-                    f"{name}{_color(Colors.RESET)}"
+                    f"  {_color(Colors.YELLOW)}Warning: missing file {name}{_color(Colors.RESET)}"
                 )
 
         for folder in folders:

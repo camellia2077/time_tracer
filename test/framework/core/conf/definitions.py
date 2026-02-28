@@ -1,7 +1,6 @@
 # test/conf/definitions.py
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass(frozen=True)
@@ -52,22 +51,22 @@ class ExecutionResult:
     stdout: str
     stderr: str
     duration: float
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
 class SingleTestResult:
     name: str
     status: str  # "PASS" or "FAIL"
-    execution_result: Optional[ExecutionResult] = None
-    messages: List[str] = field(default_factory=list)
-    log_file: Optional[str] = None
+    execution_result: ExecutionResult | None = None
+    messages: list[str] = field(default_factory=list)
+    log_file: str | None = None
 
 
 @dataclass
 class TestReport:
     module_name: str
-    results: List[SingleTestResult] = field(default_factory=list)
+    results: list[SingleTestResult] = field(default_factory=list)
     duration: float = 0.0
 
     @property
@@ -85,88 +84,88 @@ class TestContext:
     source_data_path: Path
     output_dir: Path
     db_path: Path
-    export_output_dir: Optional[Path]
-    processed_json_dir: Optional[Path]
+    export_output_dir: Path | None
+    processed_json_dir: Path | None
     py_output_base_dir: Path
     processed_dir_name: str
-    processed_json_path: Optional[Path] = None
+    processed_json_path: Path | None = None
 
 
 @dataclass
 class CommandSpec:
     name: str
-    args: List[str]
+    args: list[str]
     stage: str = "commands"
     expect_exit: int = 0
     raw_command: bool = False
     add_output_dir: bool = False
-    stdin_input: Optional[str] = None
-    expect_files: List[str] = field(default_factory=list)
+    stdin_input: str | None = None
+    expect_files: list[str] = field(default_factory=list)
     # Each item format: "<absolute_or_formatted_path>::<required_substring>"
-    expect_file_contains: List[str] = field(default_factory=list)
-    expect_stdout_contains: List[str] = field(default_factory=list)
-    expect_stderr_contains: List[str] = field(default_factory=list)
+    expect_file_contains: list[str] = field(default_factory=list)
+    expect_stdout_contains: list[str] = field(default_factory=list)
+    expect_stderr_contains: list[str] = field(default_factory=list)
 
 
 @dataclass
 class Paths:
-    PROJECT_APPS_ROOT: Optional[Path] = None
-    DEFAULT_BUILD_DIR: Optional[str] = None
-    SOURCE_EXECUTABLES_DIR: Optional[Path] = None
-    SOURCE_DATA_PATH: Optional[Path] = None
-    TEST_DATA_ROOT: Optional[Path] = None
-    SOURCE_DATA_FOLDER_NAME: Optional[str] = None
-    TARGET_EXECUTABLES_DIR: Optional[Path] = None
-    DB_DIR: Optional[Path] = None
-    EXPORT_OUTPUT_DIR: Optional[Path] = None
-    PY_OUTPUT_DIR: Optional[Path] = None
-    OUTPUT_DIR_NAME: Optional[Path] = None
-    PROCESSED_DATA_DIR_NAME: Optional[str] = None
-    PROCESSED_JSON_PATH: Optional[Path] = None
-    PROCESSED_JSON_DIR: Optional[Path] = None
+    PROJECT_APPS_ROOT: Path | None = None
+    DEFAULT_BUILD_DIR: str | None = None
+    SOURCE_EXECUTABLES_DIR: Path | None = None
+    SOURCE_DATA_PATH: Path | None = None
+    TEST_DATA_ROOT: Path | None = None
+    SOURCE_DATA_FOLDER_NAME: str | None = None
+    TARGET_EXECUTABLES_DIR: Path | None = None
+    DB_DIR: Path | None = None
+    EXPORT_OUTPUT_DIR: Path | None = None
+    PY_OUTPUT_DIR: Path | None = None
+    OUTPUT_DIR_NAME: Path | None = None
+    PROCESSED_DATA_DIR_NAME: str | None = None
+    PROCESSED_JSON_PATH: Path | None = None
+    PROCESSED_JSON_DIR: Path | None = None
 
 
 @dataclass
 class CLINames:
-    EXECUTABLE_CLI_NAME: Optional[str] = None
-    EXECUTABLE_APP_NAME: Optional[str] = None
-    GENERATED_DB_FILE_NAME: Optional[str] = None
+    EXECUTABLE_CLI_NAME: str | None = None
+    EXECUTABLE_APP_NAME: str | None = None
+    GENERATED_DB_FILE_NAME: str | None = None
 
 
 @dataclass
 class TestParams:
-    TEST_FORMATS: List[str] = field(default_factory=list)
-    DAILY_QUERY_DATES: List[str] = field(default_factory=list)
-    MONTHLY_QUERY_MONTHS: List[str] = field(default_factory=list)
-    WEEKLY_QUERY_WEEKS: List[str] = field(default_factory=list)
-    YEARLY_QUERY_YEARS: List[str] = field(default_factory=list)
-    RECENT_QUERY_DAYS: List[int] = field(default_factory=list)
+    TEST_FORMATS: list[str] = field(default_factory=list)
+    DAILY_QUERY_DATES: list[str] = field(default_factory=list)
+    MONTHLY_QUERY_MONTHS: list[str] = field(default_factory=list)
+    WEEKLY_QUERY_WEEKS: list[str] = field(default_factory=list)
+    YEARLY_QUERY_YEARS: list[str] = field(default_factory=list)
+    RECENT_QUERY_DAYS: list[int] = field(default_factory=list)
     EXPORT_MODE_IS_BULK: bool = False
-    SPECIFIC_EXPORT_DATES: List[str] = field(default_factory=list)
-    SPECIFIC_EXPORT_MONTHS: List[str] = field(default_factory=list)
-    SPECIFIC_EXPORT_WEEKS: List[str] = field(default_factory=list)
-    SPECIFIC_EXPORT_YEARS: List[str] = field(default_factory=list)
-    RECENT_EXPORT_DAYS: List[int] = field(default_factory=list)
+    SPECIFIC_EXPORT_DATES: list[str] = field(default_factory=list)
+    SPECIFIC_EXPORT_MONTHS: list[str] = field(default_factory=list)
+    SPECIFIC_EXPORT_WEEKS: list[str] = field(default_factory=list)
+    SPECIFIC_EXPORT_YEARS: list[str] = field(default_factory=list)
+    RECENT_EXPORT_DAYS: list[int] = field(default_factory=list)
 
 
 @dataclass
 class Cleanup:
-    FILES_TO_COPY: List[str] = field(default_factory=list)
-    FOLDERS_TO_COPY: List[str] = field(default_factory=list)
-    DIRECTORIES_TO_CLEAN: List[str] = field(default_factory=list)
+    FILES_TO_COPY: list[str] = field(default_factory=list)
+    FOLDERS_TO_COPY: list[str] = field(default_factory=list)
+    DIRECTORIES_TO_CLEAN: list[str] = field(default_factory=list)
 
 
 @dataclass
 class LogRoutingRule:
     stage: str
     subdir: str
-    command_prefix: List[str] = field(default_factory=list)
-    legacy_name_contains: List[str] = field(default_factory=list)
+    command_prefix: list[str] = field(default_factory=list)
+    legacy_name_contains: list[str] = field(default_factory=list)
 
 
 @dataclass
 class LogRoutingConfig:
-    rules: List[LogRoutingRule] = field(default_factory=list)
+    rules: list[LogRoutingRule] = field(default_factory=list)
 
 
 @dataclass
@@ -191,4 +190,4 @@ class GlobalConfig:
     log_routing: LogRoutingConfig
     run_control: RunControl
     pipeline: PipelineConfig
-    commands: List[CommandSpec] = field(default_factory=list)
+    commands: list[CommandSpec] = field(default_factory=list)

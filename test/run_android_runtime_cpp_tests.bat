@@ -12,5 +12,5 @@ if errorlevel 1 (
 )
 
 echo [1/1] Verify time_tracer (build + tests, %BUILD_DIR%)
-python scripts/verify.py --app time_tracer --build-dir %BUILD_DIR% --concise
+python scripts/run.py verify --app tracer_core --build-dir %BUILD_DIR% --concise
 exit /b %ERRORLEVEL%

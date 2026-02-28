@@ -8,31 +8,9 @@
     <string name="tracer_tab_txt">TXT</string>
     <string name="tracer_tab_config">配置</string>
 
-    <string name="tracer_tree_result_day">日树结果</string>
-    <string name="tracer_tree_result_week">周树结果</string>
-    <string name="tracer_tree_result_month">月树结果</string>
-    <string name="tracer_tree_result_year">年树结果</string>
-    <string name="tracer_tree_result_recent">近期树结果</string>
-    <string name="tracer_tree_result_range">区间树结果</string>
-
-    <string name="tracer_stats_result_day">日统计结果</string>
-    <string name="tracer_stats_result_week">周统计结果</string>
-    <string name="tracer_stats_result_month">月统计结果</string>
-    <string name="tracer_stats_result_year">年统计结果</string>
-    <string name="tracer_stats_result_recent">近期统计结果</string>
-    <string name="tracer_stats_result_range">区间统计结果</string>
-
-    <string name="tracer_report_result_title">报表结果</string>
-    <string name="tracer_chart_result_title">图表结果</string>
-    <string name="tracer_analysis_error_title">分析错误</string>
-    <string name="tracer_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：alias_mapping.toml 校验集合为空。</string>
-    <string name="tracer_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>
-    <string name="tracer_status_quick_activities_exceed_limit">快捷活动超过上限：%1$d。</string>
-    <string name="tracer_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
-    <string name="tracer_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
-    <string name="tracer_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
 
     <string name="tracer_export_all_canceled">已取消导出全部。</string>
+    <string name="tracer_export_all_tracer_canceled">已取消导出全部 TRACER。</string>
     <string name="tracer_export_all_failed_no_months">导出全部失败：没有可用月份。</string>
     <string name="tracer_export_all_failed_dates_folder">导出全部失败：无法定位 dates 目录。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s：月份键无效。</string>
@@ -43,17 +21,39 @@
     <string name="tracer_export_error_create_target_file">%1$s：无法创建或覆盖目标文件。</string>
     <string name="tracer_export_error_open_output_stream">无法打开输出流。</string>
     <string name="tracer_export_error_write_failed">%1$s：写入失败。</string>
+    <string name="tracer_export_error_encrypt_failed">%1$s：加密失败：%2$s</string>
     <plurals name="tracer_export_all_success">
         <item quantity="other">全部导出成功 -&gt; %1$d 个月 TXT 文件。</item>
+    </plurals>
+    <plurals name="tracer_export_all_tracer_success">
+        <item quantity="other">全部导出成功 -&gt; %1$d 个月 TRACER 文件。</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="other"> | ...（%1$d 个错误）</item>
     </plurals>
     <string name="tracer_export_all_completed">全部导出完成 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_all_tracer_completed">全部 TRACER 导出完成 -&gt; %1$d/%2$d。%3$s</string>
     <string name="tracer_export_all_failed">全部导出失败：%1$s</string>
+    <string name="tracer_export_all_tracer_failed">全部 TRACER 导出失败：%1$s</string>
     <string name="tracer_export_unknown_error">未知错误</string>
     <string name="tracer_export_already_in_progress">导出已在进行中。</string>
     <string name="tracer_export_select_txt_destination">请选择 TXT 导出目标目录。</string>
+    <string name="tracer_export_select_tracer_destination">请选择 TRACER 导出目标目录。</string>
+    <string name="tracer_import_select_tracer_folder">请选择 TRACER 导入源目录。</string>
+    <string name="tracer_import_folder_tracer_canceled">已取消目录 TRACER 导入。</string>
+    <string name="tracer_import_folder_tracer_no_files">所选目录下未找到 TRACER 文件。</string>
+    <string name="tracer_import_folder_tracer_failed">目录 TRACER 导入失败：%1$s</string>
+    <string name="tracer_import_folder_tracer_completed_success">目录 TRACER 导入完成 -&gt; %1$d/%2$d。</string>
+    <string name="tracer_import_folder_tracer_completed_with_errors">目录 TRACER 导入完成 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_import_select_single_tracer">正在选择单个 TRACER...</string>
+    <string name="tracer_import_single_tracer_canceled">已取消导入单个 TRACER。</string>
+    <string name="tracer_import_single_tracer_failed">导入单个 TRACER 失败：%1$s</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">加密口令</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">解密口令</string>
+    <string name="tracer_crypto_passphrase_hint">输入口令</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">确认口令</string>
+    <string name="tracer_crypto_passphrase_required">必须输入口令。</string>
+    <string name="tracer_crypto_passphrase_mismatch">两次输入口令不一致。</string>
     <string name="tracer_export_config_canceled">已取消配置导出。</string>
     <string name="tracer_export_failed_no_config_entries">导出失败：未准备配置条目。</string>
     <string name="tracer_export_error_resolve_target">%1$s：无法定位导出目标。</string>
@@ -65,13 +65,12 @@
     <string name="tracer_export_prepare_android_config">正在准备 Android 配置导出...</string>
     <string name="tracer_export_select_android_config_directory">请选择 Android 配置 TOML 导出目录。</string>
     <string name="tracer_import_config_canceled">已取消配置导入。</string>
-    <string name="tracer_import_prepare_android_config">正在准备 Android 配置导入...</string>
-    <string name="tracer_import_select_android_config_directory">请选择 Android 配置 TOML 源目录。</string>
     <string name="tracer_import_prepare_android_config_full_replace">正在准备 Android 配置导入（Full Replace）...</string>
     <string name="tracer_import_prepare_android_config_partial_update">正在准备 Android 配置导入（Partial Update）...</string>
     <string name="tracer_import_select_android_config_directory_full_replace">请选择 Android 配置 TOML 源目录（Full Replace）。</string>
     <string name="tracer_import_select_android_config_directory_partial_update">请选择 Android 配置 TOML 源目录（Partial Update）。</string>
     <string name="tracer_import_config_failed">配置导入失败：%1$s</string>
+    <string name="tracer_diagnostics_prepare">正在准备诊断载荷...</string>
 
     <string name="config_title_appearance">外观</string>
     <string name="config_label_use_wallpaper_colors">使用壁纸动态配色</string>
@@ -113,4 +112,5 @@
     <string name="config_about_repo">仓库：%1$s</string>
     <string name="config_about_core">核心：%1$s</string>
     <string name="config_about_app">应用：%1$s</string>
+    <string name="config_action_copy_diagnostics">复制诊断载荷</string>
 </resources>

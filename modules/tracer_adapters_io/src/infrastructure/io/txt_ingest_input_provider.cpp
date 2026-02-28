@@ -13,8 +13,8 @@ namespace infrastructure::io {
 
 auto TxtIngestInputProvider::CollectTextInputs(
     const std::filesystem::path& input_root, std::string_view extension) const
-    -> time_tracer::application::dto::IngestInputCollection {
-  time_tracer::application::dto::IngestInputCollection collection;
+    -> tracer_core::application::dto::IngestInputCollection {
+  tracer_core::application::dto::IngestInputCollection collection;
   collection.input_exists = FileSystemHelper::Exists(input_root);
   if (!collection.input_exists) {
     return collection;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -11,6 +12,7 @@ struct ResponseEnvelope {
   bool ok = false;
   std::string error_message;
   std::string content;
+  std::optional<std::string> report_hash_sha256;
 };
 
 struct ParseResponseEnvelopeResult {

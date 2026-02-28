@@ -81,6 +81,9 @@ struct TreeRequestPayload {
   std::optional<bool> list_roots;
   std::optional<std::string> root_pattern;
   std::optional<int> max_depth;
+  std::optional<std::string> period;
+  std::optional<std::string> period_argument;
+  std::optional<std::string> root;
 };
 
 }  // namespace tracer::transport

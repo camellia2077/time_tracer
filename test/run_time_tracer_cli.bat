@@ -5,7 +5,7 @@ cd /d "%SCRIPT_DIR%"
 rem Usage:
 rem   Select build directory:
 rem   run_time_tracer_cli.bat -b build
-rem   run_time_tracer_cli.bat -b C:\Computer\my_github\github_cpp\time_tracer\time_tracer_cpp\apps\tracer_windows_cli\build
+rem   run_time_tracer_cli.bat -b C:\Computer\my_github\github_cpp\time_tracer\time_tracer_cpp\apps\tracer_cli\windows\build
 rem
 rem   Select build directory + rebuild:
 rem   run_time_tracer_cli.bat -b build_fast --with-build

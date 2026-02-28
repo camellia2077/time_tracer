@@ -1,5 +1,6 @@
 # src/tt_testing/__main__.py
 import sys
+
 from .main import main
 
 if __name__ == "__main__":

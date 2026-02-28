@@ -14,6 +14,13 @@ _LOG_REASON_TOKENS = {
 }
 
 
+def _resolve_tidy_header_filter(ctx: Context) -> str:
+    configured = (ctx.config.tidy.header_filter_regex or "").strip()
+    if configured:
+        return configured
+    return r"^(?!.*[\\/]_deps[\\/]).*"
+
+
 def ensure_compile_commands(
     ctx: Context,
     app_name: str,
@@ -46,9 +53,15 @@ def run_incremental_tidy(
     refresh_dir = build_dir / "refresh" / batch_name
     refresh_dir.mkdir(parents=True, exist_ok=True)
     chunks = chunk_paths(files, chunk_size=chunk_size)
+    header_filter = _resolve_tidy_header_filter(ctx)
     had_failure = False
     for chunk_index, chunk in enumerate(chunks, start=1):
-        cmd = ["clang-tidy", "-p", str(build_dir)] + [str(path) for path in chunk]
+        cmd = [
+            "clang-tidy",
+            "-p",
+            str(build_dir),
+            f"-header-filter={header_filter}",
+        ] + [str(path) for path in chunk]
         log_path = refresh_dir / f"incremental_tidy_{chunk_index:03d}.log"
         print(
             f"--- tidy-refresh: incremental chunk {chunk_index}/{len(chunks)} ({len(chunk)} files)."

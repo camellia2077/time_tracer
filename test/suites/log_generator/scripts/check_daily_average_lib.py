@@ -114,9 +114,7 @@ def parse_month_file(path: Path, wake_keywords: set[str]) -> list[ParsedDay]:
         elif current_day.getup_minute is None and not current_day.events:
             current_day.is_continuation = True
 
-        current_day.events.append(
-            ParsedEvent(minute_of_day=minute_of_day, description=description)
-        )
+        current_day.events.append(ParsedEvent(minute_of_day=minute_of_day, description=description))
 
     return days
 

@@ -3,6 +3,8 @@ package com.example.tracer
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -20,6 +22,7 @@ import java.util.Locale
 
 private val DISPLAY_TIME_FORMATTER = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US)
 private const val MAX_QUICK_ACTIVITY_COUNT = 12
+private val RECORD_PRIMARY_SECTION_TOP_SPACER = 96.dp
 
 @Composable
 fun RecordSection(
@@ -66,6 +69,23 @@ fun RecordSection(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        if (suggestionsVisible) {
+            RecordSuggestionsSection(
+                suggestionsVisible = true,
+                isSuggestionsLoading = isSuggestionsLoading,
+                suggestedActivities = suggestedActivities,
+                onToggleSuggestions = onToggleSuggestions,
+                onSuggestedActivityClick = onSuggestedActivityClick,
+                showToggleButton = false
+            )
+        } else {
+            Spacer(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(RECORD_PRIMARY_SECTION_TOP_SPACER)
+            )
+        }
+
         RecordTimeSettingsCard(
             useManualDate = useManualDate,
             manualDate = manualDate,
@@ -75,41 +95,33 @@ fun RecordSection(
             onManualDateChange = onManualDateChange
         )
 
+        RecordQuickAccessCard(
+            recordContent = recordContent,
+            onRecordContentChange = onRecordContentChange,
+            quickActivities = quickActivities,
+            availableActivityNames = availableActivityNames,
+            onQuickActivitiesUpdate = onQuickActivitiesUpdate,
+            assistSettingsExpanded = assistSettingsExpanded,
+            onToggleAssistSettings = onToggleAssistSettings,
+            suggestionLookbackDays = suggestionLookbackDays,
+            suggestionTopN = suggestionTopN,
+            onSuggestionLookbackDaysChange = onSuggestionLookbackDaysChange,
+            onSuggestionTopNChange = onSuggestionTopNChange,
+            quickActivitySearch = quickActivitySearch,
+            onQuickActivitySearchChange = { quickActivitySearch = it },
+            maxQuickActivityCount = MAX_QUICK_ACTIVITY_COUNT
+        )
+
         RecordInputCard(
             recordContent = recordContent,
             onRecordContentChange = onRecordContentChange,
             recordRemark = recordRemark,
-            onRecordRemarkChange = onRecordRemarkChange
+            onRecordRemarkChange = onRecordRemarkChange,
+            suggestionsVisible = suggestionsVisible,
+            onToggleSuggestions = onToggleSuggestions
         ) {
             haptic.performHapticFeedback(HapticFeedbackType.LongPress)
             onRecordNow()
-        }
-
-        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            RecordQuickAccessCard(
-                recordContent = recordContent,
-                onRecordContentChange = onRecordContentChange,
-                quickActivities = quickActivities,
-                availableActivityNames = availableActivityNames,
-                onQuickActivitiesUpdate = onQuickActivitiesUpdate,
-                assistSettingsExpanded = assistSettingsExpanded,
-                onToggleAssistSettings = onToggleAssistSettings,
-                suggestionLookbackDays = suggestionLookbackDays,
-                suggestionTopN = suggestionTopN,
-                onSuggestionLookbackDaysChange = onSuggestionLookbackDaysChange,
-                onSuggestionTopNChange = onSuggestionTopNChange,
-                quickActivitySearch = quickActivitySearch,
-                onQuickActivitySearchChange = { quickActivitySearch = it },
-                maxQuickActivityCount = MAX_QUICK_ACTIVITY_COUNT
-            )
-
-            RecordSuggestionsSection(
-                suggestionsVisible = suggestionsVisible,
-                isSuggestionsLoading = isSuggestionsLoading,
-                suggestedActivities = suggestedActivities,
-                onToggleSuggestions = onToggleSuggestions,
-                onSuggestedActivityClick = onSuggestedActivityClick
-            )
         }
     }
 }

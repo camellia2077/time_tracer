@@ -1,6 +1,6 @@
 import re
-from typing import Any, Iterable
-
+from collections.abc import Iterable
+from typing import Any
 
 IDENTIFIER_PATTERN = re.compile(r"^[a-zA-Z_][a-zA-Z0-9_]*$")
 BRACE_VAR_PATTERN = re.compile(r"(?<!\{)\{([a-zA-Z_][a-zA-Z0-9_]*)\}(?!\})")

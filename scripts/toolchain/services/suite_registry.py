@@ -5,7 +5,7 @@ from pathlib import Path
 
 _SUITE_BY_APP = {
     # `tracer_windows_cli` is the integrated core + Windows CLI suite.
-    "time_tracer": "tracer_windows_cli",
+    "tracer_core": "tracer_windows_cli",
     "tracer_windows_cli": "tracer_windows_cli",
     "tracer_android": "tracer_android",
     "log_generator": "log_generator",

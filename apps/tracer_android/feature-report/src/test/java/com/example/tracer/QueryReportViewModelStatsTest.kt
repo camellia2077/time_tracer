@@ -131,7 +131,10 @@ private class FakeQueryGateway : QueryGateway {
         )
     }
 
-    override suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
+    override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
+        TreeQueryResult(ok = true, found = false, message = "ok")
+
+    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =

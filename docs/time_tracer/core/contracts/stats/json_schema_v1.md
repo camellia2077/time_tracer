@@ -4,6 +4,7 @@
 1. 版本：`v1`
 2. 生效日期：`2026-02-22`
 3. 适用输出模式：`output_mode=semantic_json`
+4. `report-chart` 专项字段约束见：`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
 
 ## 通用包络
 语义 JSON 顶层对象应包含以下基础字段：
@@ -82,6 +83,9 @@
 2. `rows` 为参与统计的样本序列（非仅 top N 子集）。
 
 ## `report_chart`
+`report-chart` 的字段定义与跨端口径以
+`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` 为准。
+
 ```json
 {
   "schema_version": 1,
@@ -97,7 +101,7 @@
   "active_days": 5,
   "range_days": 7,
   "series": [
-    { "date": "2026-02-16", "duration_seconds": 2400 }
+    { "date": "2026-02-16", "duration_seconds": 2400, "epoch_day": 20400 }
   ]
 }
 ```
@@ -105,6 +109,7 @@
 说明：
 1. `average_duration_seconds` 按 `range_days` 计算。
 2. 空数据时 `series` 可为空，统计字段为 0。
+3. `series[].epoch_day` 为可选字段，用于端侧优化 x 轴渲染。
 
 ## `tree`
 ```json

@@ -1,4 +1,4 @@
-# time tracer (TimeMaster) ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+# time tracer (TimeMaster) ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
 **time tracer** - 基于 C++23 构建的个人时间追踪与分析系统。
 
@@ -33,6 +33,21 @@
 ### 2. 构建指南
 
 我们提供了全自动的构建脚本，可一键完成核心程序与所有插件驱动的编译。
+
+项目统一使用 Python 工具链命令进行构建和测试，不建议直接调用 `cmake`/`ninja` 或自定义 `ps1`。
+➡️ **Python 工具链修改定位图（Agent/开发者）**：[docs/toolchain/python_command_map.md](docs/toolchain/python_command_map.md)
+➡️ **clang-tidy 标准流程 SOP**：[docs/toolchain/clang_tidy_sop.md](docs/toolchain/clang_tidy_sop.md)
+
+```bash
+# 构建（time_tracer）
+python scripts/run.py build --app tracer_core --profile release_safe --build-dir build
+
+# 快速验证（构建 + 测试）
+python scripts/run.py verify --app tracer_core --quick
+
+# 采集 Windows 构建基线（可选）
+python scripts/tools/capture_windows_build_baseline.py --run-build --clean-first --profile release_safe --build-dir build
+```
 
 ➡️ **详细步骤请参考：[构建指南](docs/time_tracer/guides/build_guide.md)**
 
@@ -96,9 +111,15 @@ docs/time_tracer/
 
 ---
 
+## 免责声明 (Disclaimer)
+
+本软件仅作为个人效率管理工具使用，严禁用于任何违反所在地法律法规的行为。开发者不认同、不参与、不承担任何第三方利用本软件进行政治宣传的后果。
+
+---
+
 ## 许可证与开源库
 
-本仓库自有源码使用 **GNU General Public License v3.0 (GPL v3)** 许可证（见 `LICENSE`）。
+本仓库自有源码使用 **Apache License 2.0** 许可证（见 `LICENSE`）。
 第三方依赖保持各自原始许可证。
 
 ### 核心与工具链
@@ -106,6 +127,8 @@ docs/time_tracer/
 * **[SQLite](https://www.sqlite.org/)**: 嵌入式数据库 (Public Domain)。
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON 解析 (MIT)。
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML 配置处理 (MIT)。
+* **[libsodium](https://github.com/jedisct1/libsodium)**: 加密基础库（计划用于 `tracer_core` 导出/分享文件加密能力）(ISC License)。
+* **[Apache ECharts](https://echarts.apache.org/)**: Windows CLI `report-chart` 单文件 HTML 图表渲染（Line/Bar/Pie/Heatmap-Year/Heatmap-Month）(Apache License 2.0)。
 * **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD 风格许可证)。
 
 ### Android 应用 (`apps/tracer_android`)

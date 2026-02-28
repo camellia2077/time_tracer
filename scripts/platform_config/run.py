@@ -32,13 +32,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--source-root",
         type=Path,
-        default=repo_root / "apps" / "time_tracer" / "config",
+        default=repo_root / "apps" / "tracer_core" / "config",
         help="Canonical source config root.",
     )
     parser.add_argument(
         "--windows-output-root",
         type=Path,
-        default=repo_root / "apps" / "tracer_windows_cli" / "config",
+        default=repo_root / "apps" / "tracer_cli" / "windows" / "config",
         help="Output root for generated Windows config.",
     )
     parser.add_argument(
@@ -51,7 +51,7 @@ def parse_args() -> argparse.Namespace:
         / "src"
         / "main"
         / "assets"
-        / "time_tracer"
+        / "tracer_core"
         / "config",
         help="Output root for generated Android config.",
     )

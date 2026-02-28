@@ -4,6 +4,7 @@
 #include <string>
 
 #include "nlohmann/json.hpp"
+#include "tracer/transport/envelope.hpp"
 #include "tracer/transport/fields.hpp"
 
 namespace tracer::transport {
@@ -171,6 +172,39 @@ auto ParseResolvedCliPaths(const json& payload) -> ResolvedCliPathsPayload {
 }
 
 }  // namespace
+
+auto DecodeAckResponse(std::string_view response_json, std::string_view context)
+    -> AckResponsePayload {
+  const auto parsed = ParseResponseEnvelope(response_json, context);
+  if (parsed.HasError()) {
+    throw std::invalid_argument(parsed.error.message);
+  }
+
+  AckResponsePayload out{};
+  out.ok = parsed.envelope.ok;
+  out.error_message = parsed.envelope.error_message;
+  if (!out.ok && out.error_message.empty()) {
+    out.error_message = "Core operation failed.";
+  }
+  return out;
+}
+
+auto DecodeTextResponse(std::string_view response_json, std::string_view context)
+    -> TextResponsePayload {
+  const auto parsed = ParseResponseEnvelope(response_json, context);
+  if (parsed.HasError()) {
+    throw std::invalid_argument(parsed.error.message);
+  }
+
+  TextResponsePayload out{};
+  out.ok = parsed.envelope.ok;
+  out.error_message = parsed.envelope.error_message;
+  out.content = parsed.envelope.content;
+  if (!out.ok && out.error_message.empty()) {
+    out.error_message = "Core operation failed.";
+  }
+  return out;
+}
 
 auto DecodeRuntimeCheckResponse(std::string_view response_json)
     -> RuntimeCheckResponsePayload {

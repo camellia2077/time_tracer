@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -17,7 +18,7 @@ import androidx.compose.ui.unit.dp
 private const val ABOUT_AUTHOR = "camellia2077"
 private const val ABOUT_REPOSITORY = "https://github.com/camellia2077/time_tracer_cpp"
 private const val ABOUT_CORE_VERSION = "0.6.2"
-private const val ABOUT_ANDROID_APP_VERSION = "0.2.0"
+private const val ABOUT_ANDROID_APP_VERSION = "0.2.1"
 
 @Composable
 fun ConfigSection(
@@ -34,6 +35,7 @@ fun ConfigSection(
     onImportAndroidConfigFullReplace: () -> Unit,
     onImportAndroidConfigPartialUpdate: () -> Unit,
     onExportAndroidConfig: () -> Unit,
+    onCopyDiagnosticsPayload: () -> Unit,
     onEditableContentChange: (String) -> Unit,
     onSaveCurrentFile: () -> Unit,
     onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
@@ -84,12 +86,14 @@ fun ConfigSection(
             )
         }
 
-        ConfigAboutCard()
+        ConfigAboutCard(onCopyDiagnosticsPayload = onCopyDiagnosticsPayload)
     }
 }
 
 @Composable
-private fun ConfigAboutCard() {
+private fun ConfigAboutCard(
+    onCopyDiagnosticsPayload: () -> Unit
+) {
     ElevatedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -121,6 +125,13 @@ private fun ConfigAboutCard() {
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+            }
+
+            OutlinedButton(
+                onClick = onCopyDiagnosticsPayload,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.config_action_copy_diagnostics))
             }
         }
     }

@@ -5,9 +5,12 @@ trigger: always_on
 [CONSTRAINTS]
 
 - Build/test entry must use project Python commands:
-  - `python scripts/verify.py ...` (preferred verify entry)
+  - `python scripts/run.py verify ...` (preferred verify entry)
   - `python scripts/run.py ...`
   - `python test/run.py ...`
+- Build success criterion:
+  - Determine compile/build success by process exit code.
+  - `exit code = 0` means success; any non-zero exit code means failure.
 - App instruction resolution order:
   - 1) Use `apps/<target_app>/agent.md` when present.
   - 2) If missing, read `apps/<target_app>/README.md` build/test section.
@@ -15,20 +18,23 @@ trigger: always_on
 - Target app routing defaults:
   - Changes under `apps/tracer_android/**` => target app `tracer_android`.
   - Changes under `apps/tracer_windows/**` => target app `time_tracer` verify flow.
-  - Changes under `apps/time_tracer/**` => target app `time_tracer` verify flow.
+  - Changes under `apps/tracer_core/**` => target app `time_tracer` verify flow.
 - Core C ABI change rule:
   - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols/signatures.
   - `docs/time_tracer/core/contracts/c_abi.md` is the single source of truth for ABI naming/contract.
+- Report-chart contract change rule:
+  - Read `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` before editing report-chart fields or semantics.
+  - Then sync `docs/time_tracer/core/contracts/stats/json_schema_v1.md` and `docs/time_tracer/core/contracts/stats/README.md`.
 - For `tracer_android`, verify result must be read from:
   - `test/output/tracer_android/result.json`
   - `test/output/tracer_android/result_cases.json`
 - Windows CLI test pipeline rule:
   - For `time_tracer` suite, compile target must be `apps/tracer_windows`.
   - Preferred flow (single command):
-    - `python scripts/verify.py --app time_tracer --quick`
+    - `python scripts/run.py verify --app tracer_core --quick`
   - `verify` must be treated as canonical for Windows CLI quick validation
     because it performs build first and then runs suite tests.
-  - Do not treat `apps/time_tracer` as the default Windows CLI delivery build target.
+  - Do not treat `apps/tracer_core` as the default Windows CLI delivery build target.
 - Do not use ad-hoc `cmake`/`ninja` wrappers outside `scripts/run.py`.
 - After code changes, run `python scripts/run.py post-change` unless the user requests another flow.
 - Docs-only change rule:

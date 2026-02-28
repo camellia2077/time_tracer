@@ -22,7 +22,7 @@ class TestVerifyCliHandler(TestCase):
     @staticmethod
     def _base_args() -> argparse.Namespace:
         return argparse.Namespace(
-            app="time_tracer",
+            app="tracer_core",
             tidy=False,
             profile=None,
             quick=False,
@@ -31,6 +31,7 @@ class TestVerifyCliHandler(TestCase):
             no_kill_build_procs=False,
             cmake_args=[],
             concise=False,
+            scope="batch",
             extra_args=[],
         )
 

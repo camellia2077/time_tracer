@@ -17,6 +17,7 @@ class BuildProfileConfig:
     description: str = ""
     build_dir: str = ""
     cmake_args: list[str] = field(default_factory=list)
+    build_targets: list[str] = field(default_factory=list)
     gradle_tasks: list[str] = field(default_factory=list)
     gradle_args: list[str] = field(default_factory=list)
 
@@ -38,6 +39,7 @@ class TidyConfig:
     jobs: int = 0
     parse_workers: int = 0
     keep_going: bool = True
+    header_filter_regex: str = r"^(?!.*[\\/]_deps[\\/]).*"
     run_fix_before_tidy: bool = True
     fix_limit: int = 0
     auto_full_on_no_such_file: bool = True
@@ -74,7 +76,7 @@ class RenameConfig:
 
 @dataclass
 class PostChangeConfig:
-    default_app: str = "time_tracer"
+    default_app: str = "tracer_core"
     default_build_dir: str = "build_fast"
     run_tests: str = "auto"
     script_changes: str = "build"

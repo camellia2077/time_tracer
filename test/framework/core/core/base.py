@@ -10,8 +10,8 @@ from ..conf.definitions import (
     TestReport,
 )
 from .executor import CommandExecutor
-from .logger import TestLogger
 from .log_routing import LogRoutingManager
+from .logger import TestLogger
 
 
 class TestCounter:
@@ -52,9 +52,7 @@ class BaseTester:
     def _resolve_log_subdir(self, command_args: list) -> str:
         return self.log_routing.resolve_subdir(command_args)
 
-    def run_command_test(
-        self, test_name: str, command_args: list, **kwargs
-    ) -> SingleTestResult:
+    def run_command_test(self, test_name: str, command_args: list, **kwargs) -> SingleTestResult:
         current_count = self.counter.increment()
         sanitized_name = re.sub(r"[^a-zA-Z0-9]+", "_", test_name).lower()
         log_file = f"{current_count}_{sanitized_name}.log"
@@ -71,10 +69,12 @@ class BaseTester:
             full_cmd.extend(["--output", str(self.ctx.output_dir / "exported_files")])
 
         cwd_path = self.ctx.exe_path.parent
+        expect_exit = kwargs.get("expect_exit", 0)
         result = self.executor.run(
             full_cmd,
             input_str=kwargs.get("stdin_input"),
             cwd=cwd_path,
+            expected_exit=expect_exit,
         )
 
         log_path = self.logger.log_result(test_name, log_file, result)
@@ -82,13 +82,10 @@ class BaseTester:
         messages = []
         status = "PASS"
 
-        expect_exit = kwargs.get("expect_exit", 0)
         if expect_exit is not None and result.return_code != expect_exit:
             status = "FAIL"
             err_msg = AppExitCode.to_string(result.return_code)
-            messages.append(
-                f"Expected exit {expect_exit}, got {result.return_code} ({err_msg})."
-            )
+            messages.append(f"Expected exit {expect_exit}, got {result.return_code} ({err_msg}).")
 
         stdout_text = CommandExecutor.strip_ansi_codes(result.stdout or "")
         stderr_text = CommandExecutor.strip_ansi_codes(result.stderr or "")
@@ -111,9 +108,7 @@ class BaseTester:
         for spec in kwargs.get("expect_file_contains", []) or []:
             if "::" not in spec:
                 status = "FAIL"
-                messages.append(
-                    f"Invalid expect_file_contains spec (missing '::'): {spec}"
-                )
+                messages.append(f"Invalid expect_file_contains spec (missing '::'): {spec}")
                 continue
 
             path_str, needle = spec.split("::", 1)
@@ -127,9 +122,7 @@ class BaseTester:
                 content = path_obj.read_text(encoding="utf-8", errors="replace")
             except Exception as error:
                 status = "FAIL"
-                messages.append(
-                    f"Failed to read file for content check: {path_str} ({error})"
-                )
+                messages.append(f"Failed to read file for content check: {path_str} ({error})")
                 continue
 
             if needle not in content:

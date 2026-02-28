@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 from pathlib import Path
 
 from ...services.suite_registry import resolve_suite_build_app
@@ -102,11 +103,16 @@ def run_native_core_runtime_tests(
     if build_app != "tracer_windows_cli":
         return 0
 
-    bin_dir = repo_root / "apps" / build_app / build_dir_name / "bin"
+    app_root = (
+        repo_root / "apps" / "tracer_cli" / "windows"
+        if build_app == "tracer_windows_cli"
+        else repo_root / "apps" / build_app
+    )
+    bin_dir = app_root / build_dir_name / "bin"
     suffix = ".exe" if os.name == "nt" else ""
     tests = [
-        "time_tracer_core_c_api_smoke_tests",
-        "time_tracer_core_c_api_stability_tests",
+        "tracer_core_c_api_smoke_tests",
+        "tracer_core_c_api_stability_tests",
     ]
 
     for test_name in tests:
@@ -126,3 +132,122 @@ def run_native_core_runtime_tests(
         if ret != 0:
             return ret
     return 0
+
+
+def run_report_markdown_gates(
+    repo_root: Path,
+    setup_env_fn,
+    run_command_fn,
+    app_name: str,
+    build_dir_name: str,
+) -> int:
+    build_app = resolve_suite_build_app(app_name) or app_name
+    if build_app != "tracer_windows_cli":
+        return 0
+
+    app_root = (
+        repo_root / "apps" / "tracer_cli" / "windows"
+        if build_app == "tracer_windows_cli"
+        else repo_root / "apps" / build_app
+    )
+    cli_bin = app_root / build_dir_name / "bin" / (
+        "time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli"
+    )
+    export_root = (
+        repo_root / "test" / "output" / "tracer_windows_cli" / "artifacts" / "reports" / "markdown"
+    )
+    db_path = (
+        repo_root
+        / "test"
+        / "output"
+        / "tracer_windows_cli"
+        / "workspace"
+        / "output"
+        / "db"
+        / "time_data.sqlite3"
+    )
+    current_cases_dir = (
+        repo_root / "temp" / "report_markdown_cases" / "current_v1"
+    )
+    golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
+
+    collect_cmd = [
+        sys.executable,
+        "scripts/tools/collect_report_markdown_cases.py",
+        "--export-root",
+        str(export_root),
+        "--output-dir",
+        str(current_cases_dir),
+        "--cli-bin",
+        str(cli_bin),
+        "--db-path",
+        str(db_path),
+        "--strict-text-policy",
+    ]
+    collect_ret = run_command_fn(
+        collect_cmd,
+        cwd=repo_root,
+        env=setup_env_fn(),
+    )
+    if collect_ret != 0:
+        return collect_ret
+
+    audit_cmd = [
+        sys.executable,
+        "scripts/tools/report_consistency_audit.py",
+        "--left-dir",
+        str(golden_dir),
+        "--right-dir",
+        str(current_cases_dir),
+        "--pattern",
+        "*.md",
+        "--output",
+        "temp/report-md-golden-byte-audit.md",
+        "--fail-on-diff",
+    ]
+    audit_ret = run_command_fn(
+        audit_cmd,
+        cwd=repo_root,
+        env=setup_env_fn(),
+    )
+    if audit_ret != 0:
+        return audit_ret
+
+    render_cmd = [
+        sys.executable,
+        "scripts/tools/report_markdown_render_snapshot_check.py",
+        "--left-dir",
+        str(golden_dir),
+        "--right-dir",
+        str(current_cases_dir),
+        "--pattern",
+        "*.md",
+        "--output",
+        "temp/report-md-golden-render-check.json",
+        "--fail-on-structure-diff",
+    ]
+    return run_command_fn(
+        render_cmd,
+        cwd=repo_root,
+        env=setup_env_fn(),
+    )
+
+
+def run_internal_logic_tests(
+    repo_root: Path,
+    setup_env_fn,
+    run_command_fn,
+) -> int:
+    test_cmd = [
+        sys.executable,
+        "-m",
+        "unittest",
+        "scripts.tests.test_verify_command",
+        "scripts.tests.test_verify_cli_handler",
+    ]
+    print("--- verify: running internal logic tests (Python unit/component)")
+    return run_command_fn(
+        test_cmd,
+        cwd=repo_root,
+        env=setup_env_fn(),
+    )

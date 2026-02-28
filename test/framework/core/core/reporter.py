@@ -1,6 +1,6 @@
 # test/core/reporter.py
 import re
-from typing import Any, Dict, List
+from typing import Any
 
 from ..conf.definitions import Colors, SingleTestResult, TestReport
 
@@ -39,12 +39,12 @@ class Reporter:
             self._print_single_result(report.module_name, result)
 
     def build_summary(
-        self, all_reports: List[TestReport], total_duration: float, log_dir
-    ) -> Dict[str, Any]:
+        self, all_reports: list[TestReport], total_duration: float, log_dir
+    ) -> dict[str, Any]:
         total_tests = sum(len(item.results) for item in all_reports)
         total_failed = sum(item.failed_count for item in all_reports)
-        modules: List[Dict[str, Any]] = []
-        failed_cases: List[Dict[str, Any]] = []
+        modules: list[dict[str, Any]] = []
+        failed_cases: list[dict[str, Any]] = []
 
         for report in all_reports:
             modules.append(
@@ -72,14 +72,14 @@ class Reporter:
             "error_message": "",
         }
 
-    def build_case_records(self, all_reports: List[TestReport]) -> List[Dict[str, Any]]:
-        records: List[Dict[str, Any]] = []
+    def build_case_records(self, all_reports: list[TestReport]) -> list[dict[str, Any]]:
+        records: list[dict[str, Any]] = []
         for report in all_reports:
             for result in report.results:
                 records.append(self._build_case_record(report.module_name, result))
         return records
 
-    def print_summary(self, summary: Dict[str, Any]):
+    def print_summary(self, summary: dict[str, Any]):
         print("\n" + "=" * 24 + " TEST SUMMARY " + "=" * 24, flush=True)
         print(
             f"Total: {summary['total_tests']}, "
@@ -88,9 +88,7 @@ class Reporter:
             flush=True,
         )
         if summary["success"]:
-            print(
-                self._colorize("[SUCCESS] All test steps passed.", "GREEN"), flush=True
-            )
+            print(self._colorize("[SUCCESS] All test steps passed.", "GREEN"), flush=True)
         else:
             print(
                 self._colorize(
@@ -125,9 +123,7 @@ class Reporter:
         )
         if result.execution_result:
             print(f"    exit_code: {result.execution_result.return_code}", flush=True)
-            print(
-                f"    command: {' '.join(result.execution_result.command)}", flush=True
-            )
+            print(f"    command: {' '.join(result.execution_result.command)}", flush=True)
             stderr_tail = self._tail_lines(result.execution_result.stderr, 10)
             if stderr_tail:
                 print("    stderr (tail):", flush=True)
@@ -138,19 +134,16 @@ class Reporter:
         for message in result.messages:
             print(f"    note: {self._strip_ansi(message)}", flush=True)
 
-    def _build_failed_case(
-        self, module_name: str, result: SingleTestResult
-    ) -> Dict[str, Any]:
+    def _build_failed_case(self, module_name: str, result: SingleTestResult) -> dict[str, Any]:
         case = self._build_case_record(module_name, result)
         return case
 
-    def _build_case_record(
-        self, module_name: str, result: SingleTestResult
-    ) -> Dict[str, Any]:
-        record: Dict[str, Any] = {
+    def _build_case_record(self, module_name: str, result: SingleTestResult) -> dict[str, Any]:
+        record: dict[str, Any] = {
             "module": module_name,
             "name": result.name,
             "status": result.status,
+            "log_file": result.log_file or "",
         }
 
         if result.status != "FAIL":
@@ -159,16 +152,11 @@ class Reporter:
         execution = result.execution_result
         record.update(
             {
-                "log_file": result.log_file or "",
                 "messages": [self._strip_ansi(item) for item in result.messages],
                 "return_code": execution.return_code if execution else -1,
                 "command": execution.command if execution else [],
-                "stderr_tail": self._tail_lines(
-                    execution.stderr if execution else "", 20
-                ),
-                "stdout_tail": self._tail_lines(
-                    execution.stdout if execution else "", 20
-                ),
+                "stderr_tail": self._tail_lines(execution.stderr if execution else "", 20),
+                "stdout_tail": self._tail_lines(execution.stdout if execution else "", 20),
             }
         )
         return record
@@ -180,7 +168,7 @@ class Reporter:
         return f"{color_value}{text}{Colors.RESET}"
 
     @staticmethod
-    def _tail_lines(text: str, max_lines: int) -> List[str]:
+    def _tail_lines(text: str, max_lines: int) -> list[str]:
         if not text:
             return []
         lines = text.strip().splitlines()

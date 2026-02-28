@@ -35,7 +35,7 @@ android {
         minSdk = 35
         targetSdk = 36
         versionCode = 1
-        versionName = "0.2.0"
+        versionName = "0.2.1"
 
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "x86_64"))
@@ -135,6 +135,7 @@ dependencies {
     implementation(libs.google.material)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

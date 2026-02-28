@@ -47,8 +47,16 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">クイック活動がありません。ヘッダーを押して追加してください。</string>
-    <string name="record_action_hide_suggestions">提案を隠す</string>
-    <string name="record_action_show_suggestions">提案を表示</string>
+    <string name="record_action_suggestions">提案</string>
     <string name="record_hint_loading">読み込み中...</string>
     <string name="record_hint_no_suggestions">提案がありません。</string>
+
+    <string name="record_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: alias_mapping.toml の検証セットが空です。</string>
+    <string name="record_status_quick_activities_cannot_be_empty">クイック活動は空にできません。</string>
+    <plurals name="record_status_quick_activities_exceed_limit">
+        <item quantity="other">クイック活動は %1$d 件を超えられません。</item>
+    </plurals>
+    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
+    <string name="record_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
+    <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
 </resources>

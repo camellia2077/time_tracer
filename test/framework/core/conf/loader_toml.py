@@ -96,6 +96,34 @@ def _resolve_paths_section_for_file(data: dict, base_dir: Path) -> dict:
     return updated
 
 
+def _resolve_cleanup_section_for_file(data: dict, base_dir: Path) -> dict:
+    cleanup_data = data.get("cleanup")
+    if not isinstance(cleanup_data, dict):
+        return data
+
+    dirs_to_clean = cleanup_data.get("directories_to_clean")
+    if not isinstance(dirs_to_clean, list):
+        return data
+
+    normalized_cleanup = dict(cleanup_data)
+    normalized_dirs: list[str] = []
+    for value in dirs_to_clean:
+        if not isinstance(value, str):
+            continue
+        value_str = value.strip()
+        if not value_str:
+            continue
+        path_obj = Path(value_str)
+        if not path_obj.is_absolute():
+            path_obj = (base_dir / path_obj).resolve()
+        normalized_dirs.append(str(path_obj))
+
+    normalized_cleanup["directories_to_clean"] = normalized_dirs
+    updated = dict(data)
+    updated["cleanup"] = normalized_cleanup
+    return updated
+
+
 def _load_toml_with_includes(
     config_path: Path, visited=None, variables: dict[str, str] | None = None
 ) -> dict:
@@ -131,6 +159,10 @@ def _load_toml_with_includes(
 
     data_no_includes = {k: v for k, v in data.items() if k != "includes"}
     data_no_includes = _resolve_paths_section_for_file(
+        data_no_includes,
+        resolved.parent,
+    )
+    data_no_includes = _resolve_cleanup_section_for_file(
         data_no_includes,
         resolved.parent,
     )

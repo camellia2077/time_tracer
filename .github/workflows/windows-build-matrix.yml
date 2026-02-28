@@ -1,0 +1,74 @@
+name: Windows Build Matrix
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * 0"
+
+jobs:
+  windows-matrix:
+    name: ${{ matrix.job_name }}
+    runs-on: windows-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - job_name: default
+            profile: fast
+            build_dir: build_fast
+            cmake_args: ""
+            allow_failure: false
+          - job_name: optimized
+            profile: release_bundle
+            build_dir: build_release
+            cmake_args: ""
+            allow_failure: false
+          - job_name: lto-experimental
+            profile: release_bundle
+            build_dir: build_lto_exp
+            cmake_args: "--cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON"
+            allow_failure: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup MSYS2 UCRT64 Toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ccache
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-nlohmann-json
+
+      - name: Add UCRT64 Bin To PATH
+        shell: pwsh
+        run: |
+          "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Verify (stable rows)
+        if: matrix.cmake_args == ''
+        shell: pwsh
+        run: |
+          python scripts/run.py verify --app tracer_core --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
+
+      - name: Verify (experimental row)
+        if: matrix.cmake_args != ''
+        shell: pwsh
+        run: |
+          python scripts/run.py verify --app tracer_core --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}

@@ -5,10 +5,10 @@
 
 ## 1. 核心领域实体 (Domain Models)
 
-Domain 层的所有实体都存放在 `apps/time_tracer/src/domain/model/` 目录下。
+Domain 层的所有实体都存放在 `apps/tracer_core/src/domain/model/` 目录下。
 
 ### 1.1 `DailyLog` (日记录实体)
-**文件**: `apps/time_tracer/src/domain/model/daily_log.hpp`
+**文件**: `apps/tracer_core/src/domain/model/daily_log.hpp`
 
 由于我们的文本输入是按天（例如 `0101`、`0102`）组织的，`DailyLog` 自然成为了数据转换期最大的容器。
 它的生命周期贯穿了整个数据的清洗变形期：
@@ -18,7 +18,7 @@ Domain 层的所有实体都存放在 `apps/time_tracer/src/domain/model/` 目�
 4. **统计产生期**：基于处理好的活动，最终生成一份当天的宏观统计数据 `stats`。
 
 ### 1.2 `BaseActivityRecord` (归一化活动记录)
-**文件**: `apps/time_tracer/src/domain/model/time_data_models.hpp`
+**文件**: `apps/tracer_core/src/domain/model/time_data_models.hpp`
 
 这是每一个具体的活动（例如打游戏、睡觉、学高数）的最终领域形态。
 *   `start_time_str` / `end_time_str` / `duration_seconds`: 精确的时长表达。
@@ -26,7 +26,7 @@ Domain 层的所有实体都存放在 `apps/time_tracer/src/domain/model/` 目�
 *   `remark`: 挂载额外注释。
 
 ### 1.3 `ActivityStats` (日度统计快照)
-**文件**: `apps/time_tracer/src/domain/model/time_data_models.hpp`
+**文件**: `apps/tracer_core/src/domain/model/time_data_models.hpp`
 
 这是经过运算后浓缩的统计面板。在 C++ 结构体中，它被扁平化为各项具体指标（如 `study_time`, `sleep_night_time`, `anaerobic_time`），这些数据最终将被直接投入 SQLite 以供快速提取。
 
@@ -35,7 +35,7 @@ Domain 层的所有实体都存放在 `apps/time_tracer/src/domain/model/` 目�
 ## 2. 核心转换与运算边界 (Logic - Converter)
 
 当文本变成 `RawEvent` 后，如何把它们搓揉成最终的 `BaseActivityRecord` 呢？
-**核心逻辑在**：`apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`
+**核心逻辑在**：`apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`
 
 ### 2.1 DayProcessor (单日运算器)
 这是每天必须经历的单线程处理机：
@@ -52,7 +52,7 @@ Domain 层的所有实体都存放在 `apps/time_tracer/src/domain/model/` 目�
 
 引擎不留垃圾，这就是 `validator` 存在的意义。只有被它放行的时间数据才被允许向后续传递。
 
-**核心引擎文件**: `apps/time_tracer/src/domain/logic/validator/structure/structure_validator.cpp`
+**核心引擎文件**: `apps/tracer_core/src/domain/logic/validator/structure/structure_validator.cpp`
 
 ### 3.1 异常过长拦截防误规则 (`ValidateActivityDuration`)
 *   **触发条件**：任何单个活动的时长如果在运算后被判定 > 16 小时（例如错写了 PM 导致倒置计算叠加）。

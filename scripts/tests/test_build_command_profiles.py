@@ -147,7 +147,7 @@ class TestBuildCommandProfiles(TestCase):
             calls.append({"cmd": cmd, "cwd": cwd})
             return 0
 
-        invalid_source = self.ctx.repo_root / "apps" / "tracer_windows_cli" / "config"
+        invalid_source = self.ctx.repo_root / "apps" / "tracer_cli" / "windows" / "config"
         with patch(
             "toolchain.commands.cmd_build.command.run_command", side_effect=fake_run_command
         ):

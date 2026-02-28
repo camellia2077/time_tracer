@@ -1,13 +1,18 @@
 import os
 import sys
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Any, Optional, Sequence
+from typing import Any
 
 from core.main import main
 
 from .args import parse_suite_args
 from .formatting import run_clang_format_after_success, should_run_format_on_success
 from .io import TeeStream, resolve_path, write_result_json
+
+_OUTPUT_LOG_NAME = "output.log"
+_FULL_OUTPUT_LOG_NAME = "output_full.log"
+_TEMP_OUTPUT_LOG_NAME = "python_output.latest.log"
 
 
 def _resolve_result_json_path(args, suite_root: Path, suite_output_root: Path) -> Path:
@@ -72,7 +77,8 @@ def _build_result_cases_payload(
 def _validate_output_contract(
     suite_output_root: Path,
     result_json_path: Path,
-    output_log_path: Optional[Path],
+    output_log_path: Path | None,
+    output_full_log_path: Path | None,
     result_payload: Any,
 ) -> list[str]:
     errors: list[str] = []
@@ -80,7 +86,8 @@ def _validate_output_contract(
     expected_logs = (suite_output_root / "logs").resolve()
     expected_artifacts = (suite_output_root / "artifacts").resolve()
     expected_result_json = (suite_output_root / "result.json").resolve()
-    expected_output_log = (expected_logs / "output.log").resolve()
+    expected_output_log = (expected_logs / _OUTPUT_LOG_NAME).resolve()
+    expected_output_full_log = (expected_logs / _FULL_OUTPUT_LOG_NAME).resolve()
 
     required_dirs = {
         "workspace": expected_workspace,
@@ -106,8 +113,20 @@ def _validate_output_contract(
                 f"{output_log_path.resolve()} != {expected_output_log}"
             )
         if not expected_output_log.exists():
+            errors.append(f"Missing required output file: logs/output.log ({expected_output_log})")
+
+    if output_full_log_path is None:
+        errors.append(f"Missing required output file: logs/{_FULL_OUTPUT_LOG_NAME} (not generated)")
+    else:
+        if output_full_log_path.resolve() != expected_output_full_log:
             errors.append(
-                f"Missing required output file: logs/output.log ({expected_output_log})"
+                "Full output log path is non-canonical: "
+                f"{output_full_log_path.resolve()} != {expected_output_full_log}"
+            )
+        if not expected_output_full_log.exists():
+            errors.append(
+                "Missing required output file: "
+                f"logs/{_FULL_OUTPUT_LOG_NAME} ({expected_output_full_log})"
             )
 
     if isinstance(result_payload, dict):
@@ -121,11 +140,83 @@ def _validate_output_contract(
                         f"{resolved_log_dir} != {expected_logs}"
                     )
             except (OSError, RuntimeError, TypeError, ValueError):
-                errors.append(
-                    f"Result payload log_dir cannot be resolved: {result_log_dir}"
-                )
+                errors.append(f"Result payload log_dir cannot be resolved: {result_log_dir}")
 
     return errors
+
+
+def _collect_case_log_paths(
+    logs_root: Path,
+    case_records: list[dict[str, Any]],
+) -> list[Path]:
+    root_resolved = logs_root.resolve()
+    seen: set[Path] = set()
+    collected: list[Path] = []
+
+    for item in case_records:
+        if not isinstance(item, dict):
+            continue
+        log_file = str(item.get("log_file", "")).strip()
+        if not log_file:
+            continue
+
+        candidate = (logs_root / log_file).resolve()
+        try:
+            candidate.relative_to(root_resolved)
+        except ValueError:
+            continue
+        if not candidate.is_file() or candidate in seen:
+            continue
+        seen.add(candidate)
+        collected.append(candidate)
+
+    if collected:
+        collected.sort(key=lambda path: path.relative_to(root_resolved).as_posix())
+        return collected
+
+    ignored_names = {_OUTPUT_LOG_NAME, _FULL_OUTPUT_LOG_NAME, _TEMP_OUTPUT_LOG_NAME}
+    for path in logs_root.rglob("*.log"):
+        if not path.is_file():
+            continue
+        if path.name in ignored_names:
+            continue
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        collected.append(resolved)
+
+    collected.sort(key=lambda path: path.relative_to(root_resolved).as_posix())
+    return collected
+
+
+def _persist_output_logs(
+    logs_root: Path,
+    temp_log_path: Path,
+    case_records: list[dict[str, Any]],
+) -> tuple[Path, Path]:
+    concise_output_path = (logs_root / _OUTPUT_LOG_NAME).resolve()
+    concise_text = temp_log_path.read_text(encoding="utf-8")
+    concise_output_path.write_text(concise_text, encoding="utf-8")
+
+    full_output_path = (logs_root / _FULL_OUTPUT_LOG_NAME).resolve()
+    case_log_paths = _collect_case_log_paths(logs_root, case_records)
+    with full_output_path.open("w", encoding="utf-8") as handle:
+        handle.write("=== Session Output (Concise) ===\n")
+        handle.write(concise_text)
+        if not concise_text.endswith("\n"):
+            handle.write("\n")
+
+        handle.write("\n=== Case Logs (Full Test Content) ===\n")
+        for case_log_path in case_log_paths:
+            relative_path = case_log_path.relative_to(logs_root).as_posix()
+            handle.write(f"\n--- {relative_path} ---\n")
+            case_log_content = case_log_path.read_text(encoding="utf-8", errors="ignore")
+            handle.write(case_log_content)
+            if not case_log_content.endswith("\n"):
+                handle.write("\n")
+
+    return concise_output_path, full_output_path
 
 
 def run_suite(
@@ -133,8 +224,8 @@ def run_suite(
     suite_root: Path,
     suite_name: str,
     description: str,
-    format_app: Optional[str] = None,
-    test_root: Optional[Path] = None,
+    format_app: str | None = None,
+    test_root: Path | None = None,
 ) -> int:
     workspace_root = test_root if test_root else suite_root.parent
     repo_root = workspace_root.parent
@@ -154,7 +245,7 @@ def run_suite(
 
     result = None
     exit_code = 1
-    temp_log_path = logs_root / "python_output.latest.log"
+    temp_log_path = logs_root / _TEMP_OUTPUT_LOG_NAME
 
     with temp_log_path.open("w", encoding="utf-8") as session_log_file:
         original_stdout = sys.stdout
@@ -176,9 +267,7 @@ def run_suite(
                 options=options,
                 return_result=True,
             )
-            exit_code = int(
-                result.get("exit_code", 1 if not result.get("success") else 0)
-            )
+            exit_code = int(result.get("exit_code", 1 if not result.get("success") else 0))
 
             if should_run_format_on_success(args, bool(format_app)) and exit_code == 0:
                 format_exit_code = run_clang_format_after_success(
@@ -190,10 +279,7 @@ def run_suite(
                     result["format_exit_code"] = format_exit_code
                     result["format_success"] = format_exit_code == 0
                 if format_exit_code != 0:
-                    print(
-                        f"Warning: clang-format step failed with "
-                        f"exit code {format_exit_code}"
-                    )
+                    print(f"Warning: clang-format step failed with exit code {format_exit_code}")
             elif isinstance(result, dict) and bool(format_app):
                 result["format_ran"] = False
         except KeyboardInterrupt:
@@ -203,14 +289,20 @@ def run_suite(
             sys.stdout = original_stdout
             sys.stderr = original_stderr
 
-    output_log_path: Optional[Path] = None
+    if not isinstance(result, dict):
+        result = {}
+    case_records = _extract_case_records(result)
+
+    output_log_path: Path | None = None
+    output_full_log_path: Path | None = None
     try:
-        output_log_path = (logs_root / "output.log").resolve()
-        output_log_path.write_text(
-            temp_log_path.read_text(encoding="utf-8"),
-            encoding="utf-8",
+        output_log_path, output_full_log_path = _persist_output_logs(
+            logs_root=logs_root,
+            temp_log_path=temp_log_path,
+            case_records=case_records,
         )
         print(f"Python output log: {output_log_path}")
+        print(f"Python full output log: {output_full_log_path}")
     except Exception as error:
         print(f"Warning: failed to persist Python output log: {error}")
         if exit_code == 0:
@@ -222,15 +314,13 @@ def run_suite(
         except OSError:
             pass
 
-    if not isinstance(result, dict):
-        result = {}
-    case_records = _extract_case_records(result)
     result["log_dir"] = str(logs_root.resolve())
 
     contract_errors = _validate_output_contract(
         suite_output_root=suite_output_root,
         result_json_path=result_json_path,
         output_log_path=output_log_path,
+        output_full_log_path=output_full_log_path,
         result_payload=result,
     )
     if contract_errors:

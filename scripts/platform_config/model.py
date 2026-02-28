@@ -11,4 +11,5 @@ class BundleModel:
     required_files: list[str]
     optional_files: list[str]
     converter_interval_config: str
+    visualization_heatmap_config: str
     reports: dict[str, dict[str, str]]

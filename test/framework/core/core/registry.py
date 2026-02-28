@@ -1,18 +1,16 @@
 # test/core/registry.py
-from typing import List
 
+from ..cases.export import ExportTester
 from ..cases.ingest import IngestTester
 from ..cases.query import QueryTester
-from ..cases.export import ExportTester
 from ..cases.version import VersionChecker
-
-from .base import BaseTester, TestCounter
 from ..conf.definitions import GlobalConfig, TestContext
+from .base import BaseTester, TestCounter
 
 
 def create_test_suite(
     config: GlobalConfig, context: TestContext, counter: TestCounter
-) -> List[BaseTester]:
+) -> list[BaseTester]:
     """
     工厂函数：根据全局配置组装测试套件列表。
     在此处进行具体的参数注入，保持 Engine 的纯净。

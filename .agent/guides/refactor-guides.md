@@ -63,8 +63,8 @@ description: Refactor Guides Description
 
 ## 验证标准（必须）
 
-- `python scripts/run.py build --app time_tracer --build-dir build_fast` 通过。
-- `ctest --test-dir apps/time_tracer/build_fast -R "^time_tracker_core_api_tests$"` 通过。
+- `python scripts/run.py build --app tracer_core --build-dir build_fast` 通过。
+- `ctest --test-dir apps/tracer_core/build_fast -R "^time_tracker_core_api_tests$"` 通过。
 - `python test/run.py --suite time_tracer --agent --build-dir build_fast --concise` 通过。
 
 ## 评估指标=

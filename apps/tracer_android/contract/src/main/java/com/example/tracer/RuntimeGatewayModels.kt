@@ -4,21 +4,25 @@ data class NativeCallResult(
     val initialized: Boolean,
     val operationOk: Boolean,
     val rawResponse: String,
-    val errorLogPath: String = ""
+    val errorLogPath: String = "",
+    val operationId: String = ""
 )
 
 data class ReportCallResult(
     val initialized: Boolean,
     val operationOk: Boolean,
     val outputText: String,
-    val rawResponse: String
+    val rawResponse: String,
+    val errorLogPath: String = "",
+    val operationId: String = ""
 )
 
 data class ClearAndInitResult(
     val initialized: Boolean,
     val operationOk: Boolean,
     val clearMessage: String,
-    val initResponse: String
+    val initResponse: String,
+    val operationId: String = ""
 )
 
 data class ClearTxtResult(
@@ -28,7 +32,8 @@ data class ClearTxtResult(
 
 data class RecordActionResult(
     val ok: Boolean,
-    val message: String
+    val message: String,
+    val operationId: String = ""
 )
 
 data class TxtHistoryListResult(
@@ -54,13 +59,15 @@ data class ConfigTomlListResult(
 data class ActivitySuggestionResult(
     val ok: Boolean,
     val suggestions: List<String>,
-    val message: String
+    val message: String,
+    val operationId: String = ""
 )
 
 data class ActivityMappingNamesResult(
     val ok: Boolean,
     val names: List<String>,
-    val message: String
+    val message: String,
+    val operationId: String = ""
 )
 
 enum class DataTreePeriod(val wireValue: String) {
@@ -90,10 +97,29 @@ data class DataTreeQueryParams(
     val level: Int = -1
 )
 
+data class TreeNode(
+    val name: String,
+    val path: String = "",
+    val durationSeconds: Long? = null,
+    val children: List<TreeNode> = emptyList()
+)
+
+data class TreeQueryResult(
+    val ok: Boolean,
+    val found: Boolean,
+    val roots: List<String> = emptyList(),
+    val nodes: List<TreeNode> = emptyList(),
+    val message: String,
+    val operationId: String = "",
+    val legacyText: String = "",
+    val usesTextFallback: Boolean = false
+)
+
 data class DataQueryTextResult(
     val ok: Boolean,
     val outputText: String,
-    val message: String
+    val message: String,
+    val operationId: String = ""
 )
 
 data class ReportChartQueryParams(
@@ -105,7 +131,8 @@ data class ReportChartQueryParams(
 
 data class ReportChartPoint(
     val date: String,
-    val durationSeconds: Long
+    val durationSeconds: Long,
+    val epochDay: Long? = null
 )
 
 data class ReportChartData(
@@ -117,11 +144,39 @@ data class ReportChartData(
     val totalDurationSeconds: Long? = null,
     val activeDays: Int? = null,
     val rangeDays: Int? = null,
-    val usesLegacyStatsFallback: Boolean = false
+    val usesLegacyStatsFallback: Boolean = false,
+    val schemaVersion: Int? = null,
+    val usesSchemaVersionFallback: Boolean = false
 )
 
 data class ReportChartQueryResult(
     val ok: Boolean,
     val data: ReportChartData?,
-    val message: String
+    val message: String,
+    val operationId: String = ""
+)
+
+data class RuntimeDiagnosticEntry(
+    val timestampIso: String,
+    val operationId: String,
+    val stage: String,
+    val ok: Boolean,
+    val initialized: Boolean?,
+    val message: String,
+    val errorLogPath: String = ""
+)
+
+data class RuntimeDiagnosticsListResult(
+    val ok: Boolean,
+    val entries: List<RuntimeDiagnosticEntry>,
+    val message: String,
+    val diagnosticsLogPath: String = ""
+)
+
+data class RuntimeDiagnosticsPayloadResult(
+    val ok: Boolean,
+    val payload: String,
+    val message: String,
+    val entryCount: Int = 0,
+    val diagnosticsLogPath: String = ""
 )

@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 
 class TeeStream:
@@ -29,9 +29,7 @@ class TeeStream:
         return getattr(self.original_stream, "encoding", "utf-8")
 
 
-def resolve_path(
-    path_value: Optional[str], base_dir: Path, default_relative: str
-) -> Path:
+def resolve_path(path_value: str | None, base_dir: Path, default_relative: str) -> Path:
     path_obj = Path(path_value) if path_value else base_dir / default_relative
     if not path_obj.is_absolute():
         path_obj = (base_dir / path_obj).resolve()

@@ -7,12 +7,12 @@ from ....core.executor import run_command
 
 
 def resolve_platform_config_source_root(ctx: Context) -> Path:
-    return ctx.repo_root / "apps" / "time_tracer" / "config"
+    return ctx.repo_root / "apps" / "tracer_core" / "config"
 
 
 def resolve_platform_config_output_root(ctx: Context, sync_target: str) -> Path:
     if sync_target == "windows":
-        return ctx.repo_root / "apps" / "tracer_windows_cli" / "config"
+        return ctx.repo_root / "apps" / "tracer_cli" / "windows" / "config"
     if sync_target == "android":
         return (
             ctx.repo_root
@@ -22,7 +22,7 @@ def resolve_platform_config_output_root(ctx: Context, sync_target: str) -> Path:
             / "src"
             / "main"
             / "assets"
-            / "time_tracer"
+            / "tracer_core"
             / "config"
         )
     raise ValueError(f"Unsupported config sync target: {sync_target}")
