@@ -9,7 +9,7 @@ is unavailable.
 
 Run from repository root and prefer Python entry commands:
 
-- `python scripts/verify.py ...`
+- `python scripts/run.py verify ...`
 - `python scripts/run.py ...`
 - `python test/run.py ...`
 
@@ -23,7 +23,7 @@ Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 ## Canonical Verify Command
 
 ```powershell
-python scripts/verify.py --app log_generator --build-dir build_fast --concise
+python scripts/run.py verify --app log_generator --build-dir build_fast --concise
 ```
 
 This command is the primary flow: configure/build first, then run the

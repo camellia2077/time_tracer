@@ -39,10 +39,17 @@ auto SerializeTreeNode(const ProjectTreeNodePayload& node) -> json {
   for (const auto& child : node.children) {
     children.push_back(SerializeTreeNode(child));
   }
-  return json{
+  json out = json{
       {"name", node.name},
       {"children", std::move(children)},
   };
+  if (node.path.has_value()) {
+    out["path"] = *node.path;
+  }
+  if (node.duration_seconds.has_value()) {
+    out["duration_seconds"] = *node.duration_seconds;
+  }
+  return out;
 }
 
 auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
@@ -57,6 +64,20 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
 
   ProjectTreeNodePayload out{};
   out.name = name.value.value_or("");
+
+  const auto path = TryReadStringField(node_json, "path");
+  if (path.HasError()) {
+    throw std::invalid_argument(path.error.message);
+  }
+  out.path = path.value;
+
+  const auto duration_seconds_it = node_json.find("duration_seconds");
+  if (duration_seconds_it != node_json.end() && !duration_seconds_it->is_null()) {
+    if (!duration_seconds_it->is_number_integer()) {
+      throw std::invalid_argument("field `duration_seconds` must be an integer.");
+    }
+    out.duration_seconds = duration_seconds_it->get<long long>();
+  }
 
   const auto children_it = node_json.find("children");
   if (children_it == node_json.end() || children_it->is_null()) {
@@ -90,11 +111,26 @@ auto DecodeTreeRequest(std::string_view request_json) -> TreeRequestPayload {
   if (max_depth.HasError()) {
     throw std::invalid_argument(max_depth.error.message);
   }
+  const auto period = TryReadStringField(payload, "period");
+  if (period.HasError()) {
+    throw std::invalid_argument(period.error.message);
+  }
+  const auto period_argument = TryReadStringField(payload, "period_argument");
+  if (period_argument.HasError()) {
+    throw std::invalid_argument(period_argument.error.message);
+  }
+  const auto root = TryReadStringField(payload, "root");
+  if (root.HasError()) {
+    throw std::invalid_argument(root.error.message);
+  }
 
   TreeRequestPayload out{};
   out.list_roots = list_roots.value;
   out.root_pattern = root_pattern.value;
   out.max_depth = max_depth.value;
+  out.period = period.value;
+  out.period_argument = period_argument.value;
+  out.root = root.value;
   return out;
 }
 
@@ -108,6 +144,15 @@ auto EncodeTreeRequest(const TreeRequestPayload& request) -> std::string {
   }
   if (request.max_depth.has_value()) {
     payload["max_depth"] = *request.max_depth;
+  }
+  if (request.period.has_value()) {
+    payload["period"] = *request.period;
+  }
+  if (request.period_argument.has_value()) {
+    payload["period_argument"] = *request.period_argument;
+  }
+  if (request.root.has_value()) {
+    payload["root"] = *request.root;
   }
   return payload.dump();
 }

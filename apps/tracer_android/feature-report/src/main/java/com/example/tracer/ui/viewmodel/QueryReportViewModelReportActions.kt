@@ -19,8 +19,9 @@ internal suspend fun runDayReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportDayMarkdown(dayIso)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.DAY,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.DAY),
             ok = result.operationOk
@@ -47,8 +48,9 @@ internal suspend fun runMonthReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportMonthMarkdown(monthIso)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.MONTH,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.MONTH),
             ok = result.operationOk
@@ -74,8 +76,9 @@ internal suspend fun runYearReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportYearMarkdown(year)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.YEAR,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.YEAR),
             ok = result.operationOk
@@ -102,8 +105,9 @@ internal suspend fun runWeekReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportWeekMarkdown(weekIso)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.WEEK,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.WEEK),
             ok = result.operationOk
@@ -129,8 +133,9 @@ internal suspend fun runRecentReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportRecentMarkdown(recentDays)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.RECENT,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.RECENT),
             ok = result.operationOk
@@ -176,11 +181,30 @@ internal suspend fun runRangeReportAction(
     )
     emit(runningState)
     val result = reportGateway.reportRange(startDate = startIso, endDate = endIso)
-    return runningState.copy(
-        activeResult = if (result.operationOk) QueryResult.Report(result.outputText) else null,
+    return runningState.copyWithReportOutcome(
+        period = DataTreePeriod.RANGE,
+        result = result,
         statusText = textProvider.nativeReportResult(
             mode = textProvider.periodLabel(DataTreePeriod.RANGE),
             ok = result.operationOk
         )
+    )
+}
+
+private fun QueryReportUiState.copyWithReportOutcome(
+    period: DataTreePeriod,
+    result: ReportCallResult,
+    statusText: String
+): QueryReportUiState {
+    val report = if (result.operationOk) QueryResult.Report(result.outputText) else null
+    val nextReportResults = if (report != null) {
+        reportResultsByPeriod + (period to report)
+    } else {
+        reportResultsByPeriod - period
+    }
+    return copy(
+        reportResultsByPeriod = nextReportResults,
+        activeResult = report,
+        statusText = statusText
     )
 }

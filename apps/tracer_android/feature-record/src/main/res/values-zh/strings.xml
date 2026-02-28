@@ -47,8 +47,16 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">暂无快捷活动，点击标题添加。</string>
-    <string name="record_action_hide_suggestions">隐藏建议</string>
-    <string name="record_action_show_suggestions">显示建议</string>
+    <string name="record_action_suggestions">建议</string>
     <string name="record_hint_loading">加载中...</string>
     <string name="record_hint_no_suggestions">暂无建议。</string>
+
+    <string name="record_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：alias_mapping.toml 校验集合为空。</string>
+    <string name="record_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>
+    <plurals name="record_status_quick_activities_exceed_limit">
+        <item quantity="other">快捷活动不能超过 %1$d 项。</item>
+    </plurals>
+    <string name="record_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
+    <string name="record_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
+    <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
 </resources>

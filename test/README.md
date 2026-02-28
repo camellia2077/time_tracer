@@ -10,9 +10,11 @@ Unified executable test workspace.
 - `compat/`: legacy wrappers forwarding to unified runner.
   - `compat/time_tracer/`: `run.bat`, `run_fast.bat`, `run_agent.bat`
   - `compat/log_generator/`: `run.bat`, `run_fast.bat`, `run_agent.bat`
-- `suites/tracer_windows_cli/`: core + Windows CLI integrated suite config (`apps/tracer_windows_cli` build target).
+- `suites/tracer_windows_cli/`: core + Windows CLI integrated suite config (`apps/tracer_cli/windows` build target).
 - `suites/log_generator/`: table-driven suite config for `apps/log_generator`.
-- `data/`: shared input data (e.g. `data/dates`).
+- `data/`: canonical integration/e2e input dataset shared by CLI/Android.
+- `fixtures/unit/`: minimal unit/component fixtures (small, focused, fast).
+- `golden/`: snapshot/golden expected outputs for artifact regression checks.
 - `output/`: all generated runtime artifacts.
 - `run.py`: unified entrypoint (`--suite tracer_windows_cli|log_generator|tracer_android`).
 - `run_time_tracer_cli.bat`: scenario launcher (default `--with-build --build-dir build_fast`).
@@ -24,7 +26,7 @@ Unified executable test workspace.
 Each suite writes into:
 
 - `output/<suite>/workspace`: copied binaries and runtime workspace.
-- `output/<suite>/logs`: per-case logs + python output log.
+- `output/<suite>/logs`: per-case logs + python concise log (`output.log`) + python full log (`output_full.log`).
 - `output/<suite>/artifacts`: generated report/output files.
 - `output/<suite>/result.json`: machine-readable summary.
 - Runner enforces this contract strictly; non-canonical result path overrides are ignored.
@@ -45,7 +47,25 @@ From `time_tracer_cpp/test`:
 - `run_log_generator.bat --agent --concise`
 - `run_runtime_guard.bat --build-dir build_fast`
 - `run_android_runtime_cpp_tests.bat`
-  - Uses one command `python scripts/verify.py --app time_tracer --build-dir build_fast --concise`
+  - Uses one command `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise`
+
+## Verify scope layering
+
+- Internal logic tests (unit/component):
+  - `python scripts/run.py verify --app tracer_core --scope unit`
+- Artifact/result checks (integration/e2e/snapshot gates):
+  - `python scripts/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise`
+- Full verify pipeline (unit + artifact):
+  - `python scripts/run.py verify --app tracer_core --scope batch --build-dir build_fast --concise`
+- Lightweight task checks (build + native runtime smoke only):
+  - `python scripts/run.py verify --app tracer_core --scope task --build-dir build_fast --concise`
+
+## Test Data Policy
+
+- `test/data` is the single canonical input source for integration/e2e.
+- `tracer_windows_cli` suite reads test input from `test/data` via suite config.
+- Android runtime assets `input/full` are synced from `test/data` before build (`preBuild`).
+- `unit/component` tests should prefer `test/fixtures/unit` and avoid depending on large datasets.
 
 ## Java env for Android build (Windows)
 
@@ -68,3 +88,4 @@ openjdk version "21.0.9" 2025-10-21
 OpenJDK Runtime Environment (build 21.0.9+-14649483-b1163.86)
 OpenJDK 64-Bit Server VM (build 21.0.9+-14649483-b1163.86, mixed mode)
 ```
+

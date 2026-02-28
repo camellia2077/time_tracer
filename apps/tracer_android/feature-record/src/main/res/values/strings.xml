@@ -47,8 +47,17 @@
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
     <string name="record_hint_no_quick_activities">No quick activities. Click header to add.</string>
-    <string name="record_action_hide_suggestions">Hide Suggestions</string>
-    <string name="record_action_show_suggestions">Show Suggestions</string>
+    <string name="record_action_suggestions">Suggestions</string>
     <string name="record_hint_loading">Loading...</string>
     <string name="record_hint_no_suggestions">No suggestions.</string>
+
+    <string name="record_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: alias_mapping.toml validation set is empty.</string>
+    <string name="record_status_quick_activities_cannot_be_empty">Quick activities cannot be empty.</string>
+    <plurals name="record_status_quick_activities_exceed_limit">
+        <item quantity="one">Quick activities cannot exceed %1$d entry.</item>
+        <item quantity="other">Quick activities cannot exceed %1$d entries.</item>
+    </plurals>
+    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
+    <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
+    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
 </resources>

@@ -47,9 +47,7 @@ def _validate_commands(
             if not args_list:
                 _append_error(errors, f"{command_path}.args", "must be non-empty.")
 
-        if "raw_command" in command and not isinstance(
-            command.get("raw_command"), bool
-        ):
+        if "raw_command" in command and not isinstance(command.get("raw_command"), bool):
             _append_error(errors, f"{command_path}.raw_command", "must be a bool.")
 
         strings_to_validate: list[str] = []
@@ -64,9 +62,7 @@ def _validate_commands(
             "expect_stdout_contains",
             "expect_stderr_contains",
         ):
-            strings_to_validate.extend(
-                [str(item) for item in _as_list(command.get(key))]
-            )
+            strings_to_validate.extend([str(item) for item in _as_list(command.get(key))])
 
         _validate_placeholder_usage(
             values=strings_to_validate,
@@ -85,9 +81,7 @@ def _validate_commands(
         template = group.get("template", group.get("args"))
         template_list = _as_list(template)
         if not template_list:
-            _append_error(
-                errors, f"{group_path}.template", "is required and must be non-empty."
-            )
+            _append_error(errors, f"{group_path}.template", "is required and must be non-empty.")
 
         matrix = group.get("matrix", {})
         if matrix is None:
@@ -98,9 +92,7 @@ def _validate_commands(
 
         matrix_keys: set[str] = set()
         for matrix_key, matrix_value in matrix.items():
-            if not isinstance(matrix_key, str) or not IDENTIFIER_PATTERN.match(
-                matrix_key
-            ):
+            if not isinstance(matrix_key, str) or not IDENTIFIER_PATTERN.match(matrix_key):
                 _append_error(
                     errors,
                     f"{group_path}.matrix.{matrix_key}",

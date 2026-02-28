@@ -4,5 +4,7 @@ includes = [
   "tests/base.toml",
   "tests/command_groups.toml",
   "tests/commands_tree_version.toml",
+  "tests/commands_failure_modes.toml",
   "tests/commands_query_data.toml",
+  "tests/commands_crypto.toml",
 ]

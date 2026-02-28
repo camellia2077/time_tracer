@@ -7,6 +7,7 @@ html/
 temp/
 output/
 temp/
+input/
 .ruff_cache/
 
 *.png
@@ -15,7 +16,8 @@ temp/
 *.tex
 *.typ
 *.sqlite3
-*.txt
+
+
 
 
 # Android
@@ -35,5 +37,10 @@ captures/
 
 # 忽略 keystore 文件
 *.jks
+
+
+# 忽略 Code Runner 产生的任何临时 Python 文件
+tempCodeRunnerFile.py
+tempCodeRunnerFile
 
 

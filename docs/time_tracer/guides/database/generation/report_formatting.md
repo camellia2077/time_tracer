@@ -2,7 +2,7 @@
 
 本文描述 Time Tracer 是如何将已经在内存中聚合好的 `ReportData`（包含时长的各项统计和已建好的项目树）拼接转化为具体的渲染输出文件（如 Markdown、LaTeX、Typst 等）的。
 
-权威代码入口位于 `apps/time_tracer/src/infrastructure/reports/` 目录。
+权威代码入口位于 `apps/tracer_core/src/infrastructure/reports/` 目录。
 
 ## 1. 核心架构与职责分层
 
@@ -23,7 +23,7 @@
 
 真正的字符串拼接（Concatenation）和字符画绘制，下放到了极其细分的具象格式化器中。
 
-**源码定位**: `apps/time_tracer/src/infrastructure/reports/daily/formatters/markdown/day_md_formatter_core.cpp`
+**源码定位**: `apps/tracer_core/src/infrastructure/reports/daily/formatters/markdown/day_md_formatter_core.cpp`
 
 ### 2.1 纯手工字符串流式组装
 Time Tracer 没有选用沉重的第三方模板引擎（如 Jinja 或 Mustache），而是利用 C++ 的 `std::string::operator+=` 进行了最高效的基础流式拼接：
@@ -57,7 +57,7 @@ void DayMdFormatter::FormatHeaderContent(...) const {
 
 ## 3. 多种格式的支持生态
 
-不仅仅只有 Markdown。基于这套严谨的接口规约，Time Tracer 开发了丰富的输出变种，所有实现皆放置在 `apps/time_tracer/src/infrastructure/reports/<维度>/formatters/` 下。
+不仅仅只有 Markdown。基于这套严谨的接口规约，Time Tracer 开发了丰富的输出变种，所有实现皆放置在 `apps/tracer_core/src/infrastructure/reports/<维度>/formatters/` 下。
 
 - **`markdown/`**: 输出友好的纯文本，适合快速浏览与移动端跨端显示。
 - **`latex/`**: 输出带有严谨预设宏的 `.tex` 源码流，适合直接被编译为极其正式的年度/月度时光审计 PDF 文件。

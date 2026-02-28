@@ -8,7 +8,7 @@
 
 `application` 层不包含任何复杂的跨天算法（计算均在 `domain`），也不直接触碰任何数据库 C-API（交互均在 `infrastructure`）。它的使命是**调度验证**、**驱动管线**与**协议转换**。
 
-其目录位于：`apps/time_tracer/src/application/`
+其目录位于：`apps/tracer_core/src/application/`
 
 ### 1.1 `pipeline` (流水线大脑)
 **核心基建**：`pipeline_manager.hpp`

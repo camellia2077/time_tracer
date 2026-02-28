@@ -21,8 +21,8 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     )
     parser.add_argument(
         "--artifact-glob",
-        default="*.exe",
-        help="Artifact glob under <app>/<build_dir>/bin (default: *.exe).",
+        default="time_tracer_cli.exe",
+        help="Artifact glob under <app>/<build_dir>/bin (default: time_tracer_cli.exe).",
     )
     parser.add_argument(
         "--exclude-substr",

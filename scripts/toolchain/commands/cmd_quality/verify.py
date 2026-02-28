@@ -1,4 +1,5 @@
 import time
+from typing import Literal
 
 from ...core.context import Context
 from ...core.executor import run_command
@@ -54,6 +55,7 @@ class VerifyCommand:
         profile_name: str | None = None,
         concise: bool = False,
         kill_build_procs: bool = False,
+        verify_scope: Literal["task", "unit", "artifact", "batch"] = "batch",
     ) -> int:
         started_at = time.monotonic()
         suite_name = resolve_suite_name(app_name)
@@ -87,14 +89,41 @@ class VerifyCommand:
                 build_only=(suite_name is None),
             )
             return build_ret
+        if suite_name is None and verify_scope != "unit":
+            self._write_build_only_result_json(
+                app_name=app_name,
+                build_dir_name=resolved_build_dir_name,
+                success=True,
+                exit_code=0,
+                duration_seconds=time.monotonic() - started_at,
+            )
+            return 0
 
-        suite_ret = self.run_tests(
-            app_name=app_name,
-            build_dir_name=resolved_build_dir_name,
-            profile_name=profile_name,
-            concise=concise,
-            skip_suite_build=True,
-        )
+        if verify_scope == "task":
+            suite_ret = self.run_task_scope_checks(
+                app_name=app_name,
+                build_dir_name=resolved_build_dir_name,
+            )
+        elif verify_scope == "unit":
+            suite_ret = self.run_unit_scope_checks()
+        elif verify_scope == "artifact":
+            suite_ret = self.run_artifact_scope_checks(
+                app_name=app_name,
+                build_dir_name=resolved_build_dir_name,
+                profile_name=profile_name,
+                concise=concise,
+            )
+        else:
+            unit_ret = self.run_unit_scope_checks()
+            if unit_ret != 0:
+                suite_ret = unit_ret
+            else:
+                suite_ret = self.run_artifact_scope_checks(
+                    app_name=app_name,
+                    build_dir_name=resolved_build_dir_name,
+                    profile_name=profile_name,
+                    concise=concise,
+                )
         if not suite_name:
             self._write_build_only_result_json(
                 app_name=app_name,
@@ -105,6 +134,28 @@ class VerifyCommand:
                 error_message=("Build-only verification failed." if suite_ret != 0 else ""),
             )
         return suite_ret
+
+    def run_artifact_scope_checks(
+        self,
+        app_name: str,
+        build_dir_name: str,
+        profile_name: str | None = None,
+        concise: bool = False,
+    ) -> int:
+        return self.run_tests(
+            app_name=app_name,
+            build_dir_name=build_dir_name,
+            profile_name=profile_name,
+            concise=concise,
+            skip_suite_build=True,
+        )
+
+    def run_unit_scope_checks(self) -> int:
+        return verify_helpers.run_internal_logic_tests(
+            repo_root=self.ctx.repo_root,
+            setup_env_fn=self.ctx.setup_env,
+            run_command_fn=run_command,
+        )
 
     def run_tests(
         self,
@@ -153,6 +204,16 @@ class VerifyCommand:
         if suite_ret != 0:
             return suite_ret
 
+        markdown_gate_ret = verify_helpers.run_report_markdown_gates(
+            repo_root=self.ctx.repo_root,
+            setup_env_fn=self.ctx.setup_env,
+            run_command_fn=run_command,
+            app_name=app_name,
+            build_dir_name=build_dir_name,
+        )
+        if markdown_gate_ret != 0:
+            return markdown_gate_ret
+
         native_ret = self._run_native_core_runtime_tests(
             app_name=app_name,
             build_dir_name=build_dir_name,
@@ -160,6 +221,14 @@ class VerifyCommand:
         if native_ret != 0:
             return native_ret
         return 0
+
+    def run_task_scope_checks(self, app_name: str, build_dir_name: str) -> int:
+        # Task-scope verify is intentionally lightweight and stable:
+        # keep only native ABI/runtime smoke checks.
+        return self._run_native_core_runtime_tests(
+            app_name=app_name,
+            build_dir_name=build_dir_name,
+        )
 
     def _run_native_core_runtime_tests(self, app_name: str, build_dir_name: str) -> int:
         return verify_helpers.run_native_core_runtime_tests(

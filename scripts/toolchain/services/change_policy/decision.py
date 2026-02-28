@@ -158,7 +158,7 @@ def _resolve_app_name(
     configured_default_app = (ctx.config.post_change.default_app or "").strip()
     configured_apps = list(ctx.config.apps.keys())
     if not configured_apps:
-        fallback = configured_default_app or "time_tracer"
+        fallback = configured_default_app or "tracer_core"
         return fallback, f"No configured apps found; fallback to `{fallback}`."
 
     default_app_is_valid = (
@@ -167,7 +167,7 @@ def _resolve_app_name(
     fallback_app = (
         configured_default_app
         if default_app_is_valid
-        else ("time_tracer" if "time_tracer" in configured_apps else configured_apps[0])
+        else ("tracer_core" if "tracer_core" in configured_apps else configured_apps[0])
     )
     invalid_default_note = ""
     if configured_default_app and not default_app_is_valid:

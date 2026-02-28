@@ -27,7 +27,6 @@ internal fun ensureTextStorageCached(
     val paths = runtimePathsProvider()
     val created = MultiInputTextStorage(
         fullInputPath = paths.fullInputPath,
-        smokeInputPath = paths.smokeInputPath,
         liveRawInputPath = paths.liveRawInputPath,
         recordStore = rawRecordStore
     )

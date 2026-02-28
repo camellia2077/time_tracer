@@ -1,6 +1,6 @@
 # test/cases/query.py
+from ..conf.definitions import Colors, TestContext, TestReport
 from ..core.base import BaseTester, TestCounter
-from ..conf.definitions import TestContext, TestReport, Colors
 
 
 class QueryTester(BaseTester):
@@ -19,9 +19,7 @@ class QueryTester(BaseTester):
     ):
         super().__init__(counter, module_order, "query", context)
         self.db_file = (
-            context.db_path
-            if context.db_path
-            else context.exe_path.parent / generated_db_file_name
+            context.db_path if context.db_path else context.exe_path.parent / generated_db_file_name
         )
         self.daily_dates = daily_query_dates
         self.monthly_months = monthly_query_months

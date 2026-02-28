@@ -7,7 +7,7 @@ description: Build and test log_generator after code changes
 - Do not delete `apps/log_generator/build_fast` unless explicitly requested.
 
 1. Canonical One-Command Verify (required)
-- `python scripts/verify.py --app log_generator --build-dir build_fast --concise`
+- `python scripts/run.py verify --app log_generator --build-dir build_fast --concise`
 - This is the primary flow: it runs configure/build first, then runs the `test` suite automatically.
 
 2. Optional Split Flow (for debugging only)
@@ -29,7 +29,7 @@ description: Build and test log_generator after code changes
 
 5. Command Policy
 - Use Python entry commands only:
-  - `python scripts/verify.py ...`
+  - `python scripts/run.py verify ...`
   - `python scripts/run.py ...`
   - `python test/run.py ...`
 - Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.

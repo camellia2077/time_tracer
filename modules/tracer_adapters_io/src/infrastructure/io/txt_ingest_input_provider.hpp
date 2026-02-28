@@ -10,11 +10,11 @@
 namespace infrastructure::io {
 
 class TxtIngestInputProvider final
-    : public time_tracer::application::ports::IIngestInputProvider {
+    : public tracer_core::application::ports::IIngestInputProvider {
  public:
   [[nodiscard]] auto CollectTextInputs(const std::filesystem::path& input_root,
                                        std::string_view extension) const
-      -> time_tracer::application::dto::IngestInputCollection override;
+      -> tracer_core::application::dto::IngestInputCollection override;
 };
 
 }  // namespace infrastructure::io

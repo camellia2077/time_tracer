@@ -16,14 +16,23 @@ val timeTracerDisableNativeOptimization =
         .orNull
         ?.trim()
         ?.equals("true", ignoreCase = true) == true
+val timeTracerSourceTestDataRootProperty = providers.gradleProperty("timeTracerSourceTestDataRoot").orNull
+val timeTracerAndroidInputFullRootProperty = providers.gradleProperty("timeTracerAndroidInputFullRoot").orNull
 
 val timeTracerSourceConfigRoot =
     timeTracerSourceConfigRootProperty?.let { file(it) }
-        ?: repoRootDir.resolve("apps/time_tracer/config")
+        ?: repoRootDir.resolve("apps/tracer_core/config")
+val timeTracerSourceTestDataRoot =
+    timeTracerSourceTestDataRootProperty?.let { file(it) }
+        ?: repoRootDir.resolve("test/data")
 val timeTracerConfigRootFile =
     timeTracerConfigRootProperty?.let { file(it) }
-        ?: projectDir.resolve("src/main/assets/time_tracer/config")
+        ?: projectDir.resolve("src/main/assets/tracer_core/config")
+val timeTracerAndroidInputFullRoot =
+    timeTracerAndroidInputFullRootProperty?.let { file(it) }
+        ?: projectDir.resolve("src/main/assets/tracer_core/input/full")
 val platformConfigRunner = repoRootDir.resolve("scripts/platform_config/run.py")
+val inputDataSyncRunner = repoRootDir.resolve("scripts/tools/sync_android_input_from_test_data.py")
 val pythonExecutable =
     if (timeTracerPythonProperty.isNotEmpty()) {
         timeTracerPythonProperty
@@ -33,9 +42,9 @@ val pythonExecutable =
         "python3"
     }
 
-val syncTimeTracerConfig by tasks.registering(Exec::class) {
-    group = "time_tracer"
-    description = "Generate Android config bundle before build."
+val syncTracerCoreConfig by tasks.registering(Exec::class) {
+    group = "tracer_core"
+    description = "Generate Android tracer_core config bundle before build."
     workingDir = repoRootDir
     doFirst {
         if (!platformConfigRunner.exists()) {
@@ -67,8 +76,41 @@ val syncTimeTracerConfig by tasks.registering(Exec::class) {
     }
 }
 
+val syncTracerCoreInputData by tasks.registering(Exec::class) {
+    group = "tracer_core"
+    description = "Sync Android input/full from canonical test/data before build."
+    workingDir = repoRootDir
+    doFirst {
+        if (!inputDataSyncRunner.exists()) {
+            throw GradleException(
+                "Missing input data sync script: ${inputDataSyncRunner.absolutePath}"
+            )
+        }
+        if (!timeTracerSourceTestDataRoot.exists()) {
+            throw GradleException(
+                "Missing source test data root: ${timeTracerSourceTestDataRoot.absolutePath}"
+            )
+        }
+        commandLine(
+            pythonExecutable,
+            inputDataSyncRunner.absolutePath,
+            "--source-root",
+            timeTracerSourceTestDataRoot.absolutePath,
+            "--android-input-full-root",
+            timeTracerAndroidInputFullRoot.absolutePath,
+            "--apply",
+        )
+        logger.lifecycle(
+            "sync Android input/full via scripts/tools/sync_android_input_from_test_data.py " +
+                "(source=${timeTracerSourceTestDataRoot.absolutePath}, " +
+                "output=${timeTracerAndroidInputFullRoot.absolutePath})"
+        )
+    }
+}
+
 tasks.matching { it.name == "preBuild" }.configureEach {
-    dependsOn(syncTimeTracerConfig)
+    dependsOn(syncTracerCoreConfig)
+    dependsOn(syncTracerCoreInputData)
 }
 
 android {
@@ -85,7 +127,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += listOf("-DANDROID_STL=c++_shared")
+                arguments += listOf("-DANDROID_STL=c++_static")
                 cppFlags += listOf("-std=c++23")
                 targets += listOf("time_tracker_android_bridge")
             }

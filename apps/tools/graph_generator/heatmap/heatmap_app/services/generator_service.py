@@ -1,13 +1,11 @@
-import os
 from pathlib import Path
 from ..core.config import AppConfig
-from ..data.sqlite_source import SQLiteSource
 from ..rendering.heatmap_renderer import HeatmapRenderer
 from ..rendering.heatmap_strategies import NumericStrategy, BooleanStrategy
 
 class GeneratorService:
     """核心服务，负责编排热力图的生成流程。"""
-    def __init__(self, config: AppConfig, data_source: SQLiteSource, base_dir: Path):
+    def __init__(self, config: AppConfig, data_source, base_dir: Path):
         self.config = config
         self.data_source = data_source
         self.base_dir = Path(base_dir) # 确保是 Path

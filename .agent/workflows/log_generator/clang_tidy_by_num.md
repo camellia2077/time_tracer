@@ -2,29 +2,43 @@
 description: Run scoped Tidy tasks for log_generator (by log count or batch count)
 ---
 
+### Scope Mapping (MUST)
+- Tidy analysis scope:
+  - `apps/tools/log_generator`
+- Task queue location is fixed to:
+  - `apps/tools/log_generator/build_tidy/tasks/batch_*/task_*.log`
+- Keep incremental build from existing:
+  - `apps/tools/log_generator/build_fast`; do not delete it.
+- In this workflow, tidy task operations use:
+  - `--app log_generator` (`tidy*`, `clean`, `rename-*`).
+- Verify gate command:
+  - task 级轻量验证：`python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
+  - task scope 检查集：build + native runtime smoke（不含 `runtime_guard`）
+  - batch 级全量验证：由 `tidy-batch --preset sop` 内置执行
+- Verify gate result file:
+  - `test/output/log_generator/result.json` must keep `"success": true`.
+
 ### Inputs (MUST)
 - Choose exactly one mode:
   - **Log mode**: clean exactly `<LOG_N>` tasks.
   - **Batch mode**: clean exactly `<BATCH_N>` non-empty `batch_*` folders.
-- Batch mode target set = smallest `<BATCH_N>` non-empty batches under `apps/log_generator/build_tidy/tasks/`; freeze this set for the whole run.
-- Use incremental build from existing `apps/log_generator/build_fast`; do not delete it.
+- Default path is **Batch mode + tidy-batch**.
+- **Log mode** is legacy/troubleshooting-only and may require manual `clean` fallback.
+- Batch mode target set = smallest `<BATCH_N>` non-empty batches under `apps/tools/log_generator/build_tidy/tasks/`; freeze this set for the whole run.
 
 ### Fix Cadence (MUST)
 - Work **one `task_NNN.log` at a time**; do not batch-edit multiple logs before verification.
-- After each log fix, run:
-  - `python scripts/verify.py --app log_generator --build-dir build_fast --concise`
-- `test/output/log_generator/result.json` must stay `success: true` after every step.
-- Batch refresh policy:
-  - Each time one selected `batch_*` is fully emptied, run:
-  - `python scripts/run.py tidy-refresh --app log_generator --batch-id <BATCH_ID> --full-every 3 --keep-going`
-  - This command does incremental tidy for that batch and triggers periodic full tidy every 3 counted batches.
-  - Auto full-tidy fallback:
-  - `tidy-refresh` will auto switch to full tidy when it detects stale-graph signals (`no such file or directory`, `GLOB mismatch`, or high `already_renamed` ratio in latest rename report).
-  - After auto rebuild, ignore stale old logs and continue from newly generated `task_*.log`.
-- Batch close shortcut (optional):
-  - When one batch is fully fixed and ready to close in one shot, run:
-  - `python scripts/run.py tidy-batch --app log_generator --batch-id <BATCH_ID> --strict-clean --full-every 3 --keep-going`
-  - Add `--run-verify --concise` when you want to include verify in the same command.
+- After each log fix, run task-scope verify:
+  - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
+- `test/output/log_generator/result.json` must stay `"success": true` after every step.
+- Batch close command (default and recommended):
+  - When one selected `batch_*` is ready to close, run:
+  - `python scripts/run.py tidy-batch --app log_generator --batch-id <BATCH_ID> --preset sop --timeout-seconds 1800`
+  - This command is the unified path for verify gate + clean + incremental refresh.
+  - If timeout/interruption occurs, rerun the same command to resume from checkpoint.
+  - `tidy-refresh` fallback (auto inside tidy-batch):
+  - It auto switches to full tidy when stale-graph signals appear (`no such file or directory`, `GLOB mismatch`, or high `already_renamed` ratio in latest rename report).
+  - After auto rebuild, treat old task logs as stale and continue only from newest logs.
 
 ### ABI Boundary Suppression Policy (MUST)
 - 仅允许在 ABI/FFI 边界做定点抑制（`NOLINTNEXTLINE` 或 `NOLINTBEGIN/END`）。
@@ -32,8 +46,14 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
 - 禁止目录级/文件级一刀切忽略 `bugprone-*`、`readability-*`。
 - 非 ABI 实现文件优先修复告警，不用“备注忽略”兜底；如果当前 app 无 ABI 边界，则默认不使用该类抑制。
 
+### Refactor Guardrail (MUST)
+- For long-file maintainability refactors:
+  - Step 1: in-file boundary convergence first (helpers/sections/entry narrowing).
+  - Step 2: physical split to new `*.cpp` only after Step 1 is stable.
+  - Do not mix behavior/features into the same refactor batch.
+
 ### Task Source
-- If any `apps/log_generator/build_tidy/tasks/batch_*/task_*.log` exists: resume only, do not regenerate.
+- If any `apps/tools/log_generator/build_tidy/tasks/batch_*/task_*.log` exists: resume only, do not regenerate.
 - Only when tasks are missing (bootstrap once):
   - `python scripts/run.py tidy-fix --app log_generator --limit <FIX_N> --keep-going`
   - `python scripts/run.py tidy --app log_generator --jobs 16 --parse-workers 8 --keep-going`
@@ -45,8 +65,8 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
   - `python scripts/run.py rename-audit --app log_generator`
 - Verify baseline:
   - `python scripts/run.py configure --app log_generator`
-  - `python scripts/verify.py --app log_generator --build-dir build_fast --concise`
-  - `test/output/log_generator/result.json` must be `success: true`.
+  - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise`
+  - `test/output/log_generator/result.json` must be `"success": true`.
 
 ### Auto Loop (rename-only)
 - Log mode:
@@ -64,21 +84,22 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
 - Analyze only this log; if pure rename, rerun rename baseline instead of manual edits.
 - Fix only this task.
 - Verify:
-  - `python scripts/verify.py --app log_generator --build-dir build_fast --concise`
-  - `test/output/log_generator/result.json` must stay `success: true`.
-- Archive:
-  - Batch mode:
-  - `python scripts/run.py clean --app log_generator --strict --batch-id <BATCH_ID> <ID>`
-  - Log mode:
+  - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
+  - `test/output/log_generator/result.json` must stay `"success": true`.
+- Do not manually run `clean + tidy-refresh` in normal flow.
+- For multiple tasks mapped to the same source file in one batch, use clustered clean:
+  - `python scripts/run.py clean --app log_generator --strict --batch-id <BATCH_ID> --cluster-by-file <ID>`
+- After one batch is fully fixed, close it with the unified command:
+  - `python scripts/run.py tidy-batch --app log_generator --batch-id <BATCH_ID> --preset sop`
+- Manual fallback (`clean` / `tidy-refresh`) is only for troubleshooting command failures.
+- Legacy log-mode fallback:
   - `python scripts/run.py clean --app log_generator --strict <ID>`
-  - `clean` matches exact `task_<ID>.log`, strict mode requires latest verify success, and with `--batch-id` only cleans that batch.
-- When one `batch_*` folder is fully cleaned, refresh tasks before next batch:
-  - `python scripts/run.py tidy-refresh --app log_generator --batch-id <BATCH_ID> --full-every 3 --keep-going`
 
 ### Stop Conditions (MUST)
-- Gate: `test/output/log_generator/result.json` keeps `success: true`.
+- Gate: `test/output/log_generator/result.json` keeps `"success": true`.
 - Log mode done: cleaned count in this run reaches `<LOG_N>`.
 - Batch mode done: selected `<BATCH_N>` batches are all empty/removed.
 - Final acceptance (when this run is intended as full completion):
   - `python scripts/run.py tidy-close --app log_generator --keep-going --concise`
   - `tidy-close` includes: `tidy-refresh --final-full` + `verify` + empty-`task_*.log` check.
+

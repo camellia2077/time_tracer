@@ -3,9 +3,9 @@
 本文用于说明当前 `time_tracer` 的 SQLite 存储结构，方便外部程序（Python、Go、Rust、BI 工具等）直接查询。
 
 权威来源（以代码为准）：
-- `apps/time_tracer/src/infrastructure/persistence/importer/sqlite/connection.cpp`
-- `apps/time_tracer/src/infrastructure/schema/day_schema.hpp`
-- `apps/time_tracer/src/infrastructure/schema/sqlite_schema.hpp`
+- `apps/tracer_core/src/infrastructure/persistence/importer/sqlite/connection.cpp`
+- `apps/tracer_core/src/infrastructure/schema/day_schema.hpp`
+- `apps/tracer_core/src/infrastructure/schema/sqlite_schema.hpp`
 
 相关文档：
 - `docs/time_tracer/core/ingest/ingest_data_structures.md`（文本内容转换为 struct 的流程与字段说明）
@@ -169,5 +169,5 @@ ORDER BY tr.logical_id;
 
 ## 8. 字段常量参考
 
-- `apps/time_tracer/src/infrastructure/schema/day_schema.hpp`
-- `apps/time_tracer/src/infrastructure/schema/sqlite_schema.hpp`
+- `apps/tracer_core/src/infrastructure/schema/day_schema.hpp`
+- `apps/tracer_core/src/infrastructure/schema/sqlite_schema.hpp`

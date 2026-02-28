@@ -56,6 +56,20 @@ def profile_cmake_args(ctx: Context, profile_name: str | None) -> list[str]:
     return [arg for arg in raw_args if arg != "--"]
 
 
+def profile_build_targets(ctx: Context, profile_name: str | None) -> list[str]:
+    _, profile_cfg = resolve_profile(ctx, profile_name)
+    if profile_cfg is None:
+        return []
+    raw_targets = getattr(profile_cfg, "build_targets", []) or []
+    normalized_targets: list[str] = []
+    for target in raw_targets:
+        target_text = str(target).strip()
+        if not target_text or target_text == "--":
+            continue
+        normalized_targets.append(target_text)
+    return normalized_targets
+
+
 def profile_gradle_tasks(ctx: Context, profile_name: str | None) -> list[str]:
     _, profile_cfg = resolve_profile(ctx, profile_name)
     if profile_cfg is None:

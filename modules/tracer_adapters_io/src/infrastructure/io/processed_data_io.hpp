@@ -14,10 +14,10 @@
 namespace infrastructure::io {
 
 class ProcessedDataLoader final
-    : public time_tracer::application::ports::IProcessedDataLoader {
+    : public tracer_core::application::ports::IProcessedDataLoader {
  public:
   auto LoadDailyLogs(const std::string& processed_path)
-      -> time_tracer::application::ports::ProcessedDataLoadResult override;
+      -> tracer_core::application::ports::ProcessedDataLoadResult override;
 };
 
 class ProcessedDataWriter {
@@ -28,7 +28,7 @@ class ProcessedDataWriter {
 };
 
 class ProcessedDataStorage final
-    : public time_tracer::application::ports::IProcessedDataStorage {
+    : public tracer_core::application::ports::IProcessedDataStorage {
  public:
   auto WriteProcessedData(
       const std::map<std::string, std::vector<DailyLog>>& data,

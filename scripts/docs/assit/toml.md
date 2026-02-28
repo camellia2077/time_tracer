@@ -2,7 +2,7 @@
 
 ### Windows CLI（当前推荐）
 - Agent 只需要调用一条 verify 命令：
-  - `python scripts/verify.py --app time_tracer --build-dir build_fast --concise`
+  - `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise`
 - 这条命令会自动完成：
   1. 触发 build（不在 CMake 中写死 config 路径）。
   2. build 阶段自动调用 `scripts/platform_config/run.py`，生成并同步 Windows 侧配置。

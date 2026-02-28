@@ -14,6 +14,12 @@ namespace tracer::transport {
     -> std::string;
 [[nodiscard]] auto EncodeIngestResponse(const IngestResponsePayload& response)
     -> std::string;
+[[nodiscard]] auto DecodeAckResponse(std::string_view response_json,
+                                     std::string_view context = {})
+    -> AckResponsePayload;
+[[nodiscard]] auto DecodeTextResponse(std::string_view response_json,
+                                      std::string_view context = {})
+    -> TextResponsePayload;
 [[nodiscard]] auto DecodeRuntimeCheckResponse(std::string_view response_json)
     -> RuntimeCheckResponsePayload;
 [[nodiscard]] auto DecodeResolveCliContextResponse(

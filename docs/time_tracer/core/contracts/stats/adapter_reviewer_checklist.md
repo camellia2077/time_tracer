@@ -20,7 +20,10 @@
 3. `text` 与 `semantic_json` 是否行为一致（仅表现形式不同）。
 
 ## D. 测试与文档
-1. `apps/time_tracer/src/infrastructure/tests/data_query_refactor_tests.cpp` 是否同步更新。
+1. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`、
+   `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`、
+   `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
+   是否同步更新。
 2. `test/suites/tracer_windows_cli/tests/commands_query_data.toml` 是否补充关键回归场景。
 3. `docs/time_tracer/core/contracts/stats/*.md` 是否同步更新（能力、schema、版本策略）。
 4. 版本历史是否补充迁移说明（`docs/time_tracer/history/`）。

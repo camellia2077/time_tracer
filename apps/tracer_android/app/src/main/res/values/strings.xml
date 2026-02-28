@@ -8,31 +8,9 @@
     <string name="tracer_tab_txt">TXT</string>
     <string name="tracer_tab_config">Config</string>
 
-    <string name="tracer_tree_result_day">Day Tree Result</string>
-    <string name="tracer_tree_result_week">Week Tree Result</string>
-    <string name="tracer_tree_result_month">Month Tree Result</string>
-    <string name="tracer_tree_result_year">Year Tree Result</string>
-    <string name="tracer_tree_result_recent">Recent Tree Result</string>
-    <string name="tracer_tree_result_range">Range Tree Result</string>
-
-    <string name="tracer_stats_result_day">Day Stats Result</string>
-    <string name="tracer_stats_result_week">Week Stats Result</string>
-    <string name="tracer_stats_result_month">Month Stats Result</string>
-    <string name="tracer_stats_result_year">Year Stats Result</string>
-    <string name="tracer_stats_result_recent">Recent Stats Result</string>
-    <string name="tracer_stats_result_range">Range Stats Result</string>
-
-    <string name="tracer_report_result_title">Report Result</string>
-    <string name="tracer_chart_result_title">Chart Result</string>
-    <string name="tracer_analysis_error_title">Analysis Error</string>
-    <string name="tracer_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: alias_mapping.toml validation set is empty.</string>
-    <string name="tracer_status_quick_activities_cannot_be_empty">Quick activities cannot be empty.</string>
-    <string name="tracer_status_quick_activities_exceed_limit">Quick activities exceed limit: %1$d.</string>
-    <string name="tracer_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
-    <string name="tracer_status_quick_activities_saved">Quick activities saved (%1$d).</string>
-    <string name="tracer_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
 
     <string name="tracer_export_all_canceled">Export all canceled.</string>
+    <string name="tracer_export_all_tracer_canceled">Export all TRACER canceled.</string>
     <string name="tracer_export_all_failed_no_months">Export all failed: no available months.</string>
     <string name="tracer_export_all_failed_dates_folder">Export all failed: cannot resolve dates folder.</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: invalid month key.</string>
@@ -43,19 +21,42 @@
     <string name="tracer_export_error_create_target_file">%1$s: cannot create or overwrite target file.</string>
     <string name="tracer_export_error_open_output_stream">cannot open output stream.</string>
     <string name="tracer_export_error_write_failed">%1$s: write failed.</string>
+    <string name="tracer_export_error_encrypt_failed">%1$s: encrypt failed: %2$s</string>
     <plurals name="tracer_export_all_success">
         <item quantity="one">Export all success -&gt; %1$d month TXT file.</item>
         <item quantity="other">Export all success -&gt; %1$d months TXT files.</item>
+    </plurals>
+    <plurals name="tracer_export_all_tracer_success">
+        <item quantity="one">Export all success -&gt; %1$d month TRACER file.</item>
+        <item quantity="other">Export all success -&gt; %1$d months TRACER files.</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="one"> | ...(%1$d error)</item>
         <item quantity="other"> | ...(%1$d errors)</item>
     </plurals>
     <string name="tracer_export_all_completed">Export all completed -&gt; %1$d/%2$d. %3$s</string>
+    <string name="tracer_export_all_tracer_completed">Export all TRACER completed -&gt; %1$d/%2$d. %3$s</string>
     <string name="tracer_export_all_failed">Export all failed: %1$s</string>
+    <string name="tracer_export_all_tracer_failed">Export all TRACER failed: %1$s</string>
     <string name="tracer_export_unknown_error">unknown error</string>
     <string name="tracer_export_already_in_progress">Export already in progress.</string>
     <string name="tracer_export_select_txt_destination">Select destination folder for TXT export.</string>
+    <string name="tracer_export_select_tracer_destination">Select destination folder for TRACER export.</string>
+    <string name="tracer_import_select_tracer_folder">Select source folder for TRACER import.</string>
+    <string name="tracer_import_folder_tracer_canceled">Folder TRACER import canceled.</string>
+    <string name="tracer_import_folder_tracer_no_files">No TRACER files found in selected folder.</string>
+    <string name="tracer_import_folder_tracer_failed">Folder TRACER import failed: %1$s</string>
+    <string name="tracer_import_folder_tracer_completed_success">Folder TRACER import completed -&gt; %1$d/%2$d.</string>
+    <string name="tracer_import_folder_tracer_completed_with_errors">Folder TRACER import completed -&gt; %1$d/%2$d. %3$s</string>
+    <string name="tracer_import_select_single_tracer">Selecting single TRACER...</string>
+    <string name="tracer_import_single_tracer_canceled">Single TRACER import canceled.</string>
+    <string name="tracer_import_single_tracer_failed">Single TRACER import failed: %1$s</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Passphrase</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">Decrypt Passphrase</string>
+    <string name="tracer_crypto_passphrase_hint">Enter passphrase</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">Confirm passphrase</string>
+    <string name="tracer_crypto_passphrase_required">Passphrase is required.</string>
+    <string name="tracer_crypto_passphrase_mismatch">Passphrase does not match.</string>
     <string name="tracer_export_config_canceled">Export config canceled.</string>
     <string name="tracer_export_failed_no_config_entries">Export failed: no config entries prepared.</string>
     <string name="tracer_export_error_resolve_target">%1$s: cannot resolve export target.</string>
@@ -67,13 +68,12 @@
     <string name="tracer_export_prepare_android_config">Preparing Android config export...</string>
     <string name="tracer_export_select_android_config_directory">Select export directory for Android config TOML files.</string>
     <string name="tracer_import_config_canceled">Import config canceled.</string>
-    <string name="tracer_import_prepare_android_config">Preparing Android config import...</string>
-    <string name="tracer_import_select_android_config_directory">Select source directory for Android config TOML files.</string>
     <string name="tracer_import_prepare_android_config_full_replace">Preparing Android config import (Full Replace)...</string>
     <string name="tracer_import_prepare_android_config_partial_update">Preparing Android config import (Partial Update)...</string>
     <string name="tracer_import_select_android_config_directory_full_replace">Select source directory for Android config TOML files (Full Replace).</string>
     <string name="tracer_import_select_android_config_directory_partial_update">Select source directory for Android config TOML files (Partial Update).</string>
     <string name="tracer_import_config_failed">Import config failed: %1$s</string>
+    <string name="tracer_diagnostics_prepare">Preparing diagnostics payload...</string>
 
     <string name="config_title_appearance">Appearance</string>
     <string name="config_label_use_wallpaper_colors">Use Wallpaper Colors</string>
@@ -115,4 +115,5 @@
     <string name="config_about_repo">Repo: %1$s</string>
     <string name="config_about_core">Core: %1$s</string>
     <string name="config_about_app">App: %1$s</string>
+    <string name="config_action_copy_diagnostics">Copy Diagnostics Payload</string>
 </resources>

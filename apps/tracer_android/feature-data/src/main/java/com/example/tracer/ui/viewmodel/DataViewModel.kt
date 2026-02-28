@@ -14,83 +14,79 @@ data class DataUiState(
 )
 
 class DataViewModel(
-    private val runtimeInitializer: RuntimeInitializer,
-    private val recordGateway: RecordGateway
+    runtimeInitializer: RuntimeInitializer,
+    recordGateway: RecordGateway
 ) : ViewModel() {
+    private val useCases: DataUseCases = DataUseCases(
+        runtimeInitializer = runtimeInitializer,
+        recordGateway = recordGateway
+    )
     var uiState by mutableStateOf(DataUiState())
         private set
 
+    private sealed interface DataIntent {
+        data object InitializeRuntime : DataIntent
+        data object IngestFull : DataIntent
+        data class IngestSingleTxtReplaceMonth(val inputPath: String) : DataIntent
+        data object ClearDataAndReinitialize : DataIntent
+        data object ClearTxt : DataIntent
+    }
+
     init {
-        initializeRuntime()
-    }
-
-    private fun initializeRuntime() {
-        viewModelScope.launch {
-            uiState = uiState.copy(statusText = "nativeInit running...")
-            val result = runtimeInitializer.initializeRuntime()
-            uiState = uiState.copy(
-                initialized = result.initialized,
-                statusText = "nativeInit -> ${result.rawResponse}"
-            )
-        }
-    }
-
-    fun ingestSmoke() {
-        viewModelScope.launch {
-            uiState = uiState.copy(statusText = "nativeIngest(smoke) running...")
-            val result = runtimeInitializer.ingestSmoke()
-            uiState = uiState.copy(
-                initialized = result.initialized,
-                statusText = "nativeIngest(smoke) -> ${result.rawResponse}"
-            )
-        }
+        dispatchIntent(DataIntent.InitializeRuntime)
     }
 
     fun ingestFull() {
-        viewModelScope.launch {
-            uiState = uiState.copy(statusText = "nativeIngest(full) running...")
-            val result = runtimeInitializer.ingestFull()
-            uiState = uiState.copy(
-                initialized = result.initialized,
-                statusText = "nativeIngest(full) -> ${result.rawResponse}"
-            )
-        }
+        dispatchIntent(DataIntent.IngestFull)
+    }
+
+    suspend fun ingestFullAndGetResult(): Boolean {
+        val update = useCases.ingestFullWithResult(uiState)
+        uiState = update.state
+        return update.operationOk
     }
 
     fun ingestSingleTxtReplaceMonth(inputPath: String) {
-        viewModelScope.launch {
-            uiState = uiState.copy(
-                statusText = "nativeIngest(single_txt_replace_month) running..."
-            )
-            val result = runtimeInitializer.ingestSingleTxtReplaceMonth(inputPath)
-            uiState = uiState.copy(
-                initialized = result.initialized,
-                statusText = "nativeIngest(single_txt_replace_month) -> ${result.rawResponse}"
-            )
-        }
+        dispatchIntent(DataIntent.IngestSingleTxtReplaceMonth(inputPath))
+    }
+
+    suspend fun ingestSingleTxtReplaceMonthAndGetResult(inputPath: String): Boolean {
+        val update = useCases.ingestSingleTxtReplaceMonthWithResult(
+            currentState = uiState,
+            inputPath = inputPath
+        )
+        uiState = update.state
+        return update.operationOk
     }
 
     fun clearDataAndReinitialize() {
-        viewModelScope.launch {
-            uiState = uiState.copy(statusText = "clearing app data...")
-            val result = runtimeInitializer.clearAndReinitialize()
-            uiState = uiState.copy(
-                initialized = result.initialized,
-                statusText = "${result.clearMessage}\nnativeInit -> ${result.initResponse}"
-            )
-        }
+        dispatchIntent(DataIntent.ClearDataAndReinitialize)
     }
 
     fun clearTxt() {
-        viewModelScope.launch {
-            uiState = uiState.copy(statusText = "clearing txt...")
-            val result = recordGateway.clearTxt()
-            uiState = uiState.copy(statusText = result.message)
-        }
+        dispatchIntent(DataIntent.ClearTxt)
     }
 
     fun setStatusText(text: String) {
         uiState = uiState.copy(statusText = text)
+    }
+
+    private fun dispatchIntent(intent: DataIntent) {
+        viewModelScope.launch {
+            uiState = when (intent) {
+                DataIntent.InitializeRuntime -> useCases.initializeRuntime(uiState)
+                DataIntent.IngestFull -> useCases.ingestFull(uiState)
+                is DataIntent.IngestSingleTxtReplaceMonth -> {
+                    useCases.ingestSingleTxtReplaceMonth(
+                        currentState = uiState,
+                        inputPath = intent.inputPath
+                    )
+                }
+
+                DataIntent.ClearDataAndReinitialize -> useCases.clearDataAndReinitialize(uiState)
+                DataIntent.ClearTxt -> useCases.clearTxt(uiState)
+            }
+        }
     }
 }
 

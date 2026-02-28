@@ -2,6 +2,19 @@ import subprocess
 import sys
 from pathlib import Path
 
+_DEFAULT_BUILD_PROCESS_NAMES = ["cmake.exe", "ninja.exe", "ccache.exe"]
+_DEFAULT_RUNTIME_LOCK_PROCESS_NAMES = [
+    "time_tracer_cli.exe",
+    "tracer_core_c_api_smoke_tests.exe",
+    "tracer_core_c_api_stability_tests.exe",
+    "time_tracker_core_api_tests.exe",
+    "time_tracker_android_runtime_tests.exe",
+    "time_tracker_formatter_parity_tests.exe",
+    "tracer_transport_tests.exe",
+    "tracer_transport_fields_tests.exe",
+    "tracer_transport_runtime_codec_tests.exe",
+]
+
 
 def _write_stdout_safe(text: str) -> None:
     try:
@@ -15,9 +28,10 @@ def _write_stdout_safe(text: str) -> None:
     sys.stdout.write(safe_text)
 
 
-def kill_build_processes(process_names: list[str] | None = None) -> None:
-    names = process_names or ["cmake.exe", "ninja.exe", "ccache.exe"]
-    print("--- Cleaning build processes: cmake/ninja/ccache")
+def _taskkill_processes(names: list[str], start_message: str, done_message: str) -> None:
+    if not names:
+        return
+    print(start_message)
 
     found_any = False
     for name in names:
@@ -51,9 +65,30 @@ def kill_build_processes(process_names: list[str] | None = None) -> None:
                 print(f"--- taskkill {name} returned {result.returncode} (non-gbk output omitted)")
 
     if found_any:
-        print("--- Build process cleanup complete.")
+        print(done_message)
     else:
         print("--- No matching build processes found.")
+
+
+def kill_build_processes(process_names: list[str] | None = None) -> None:
+    names = process_names or _DEFAULT_BUILD_PROCESS_NAMES
+    _taskkill_processes(
+        names=names,
+        start_message="--- Cleaning build processes: cmake/ninja/ccache",
+        done_message="--- Build process cleanup complete.",
+    )
+
+
+def kill_runtime_lock_processes(process_names: list[str] | None = None) -> None:
+    names = process_names or _DEFAULT_RUNTIME_LOCK_PROCESS_NAMES
+    _taskkill_processes(
+        names=names,
+        start_message=(
+            "--- Cleaning runtime lock processes before build "
+            "(cli/native tests that may hold core DLL)."
+        ),
+        done_message="--- Runtime lock process cleanup complete.",
+    )
 
 
 def run_command(

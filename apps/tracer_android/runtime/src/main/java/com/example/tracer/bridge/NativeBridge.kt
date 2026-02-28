@@ -1,5 +1,7 @@
 package com.example.tracer
 
+import java.util.concurrent.atomic.AtomicReference
+
 object NativeBridge {
     const val UNSET_INT = -1
 
@@ -30,8 +32,19 @@ object NativeBridge {
 
     const val REPORT_FORMAT_MARKDOWN = 0
 
+    private val cryptoProgressListenerRef = AtomicReference<((String) -> Unit)?>(null)
+
     init {
         System.loadLibrary("time_tracker_android_bridge")
+    }
+
+    fun setCryptoProgressListener(listener: ((String) -> Unit)?) {
+        cryptoProgressListenerRef.set(listener)
+    }
+
+    @JvmStatic
+    fun onCryptoProgressJson(progressJson: String) {
+        cryptoProgressListenerRef.get()?.invoke(progressJson)
     }
 
     external fun nativeInit(
@@ -61,6 +74,19 @@ object NativeBridge {
         dateCheckMode: Int
     ): String
 
+    external fun nativeEncryptFile(
+        inputPath: String,
+        outputPath: String,
+        passphrase: String,
+        securityLevel: String
+    ): String
+
+    external fun nativeDecryptFile(
+        inputPath: String,
+        outputPath: String,
+        passphrase: String
+    ): String
+
     external fun nativeQuery(
         action: Int,
         year: Int,
@@ -83,6 +109,15 @@ object NativeBridge {
         treePeriodArgument: String,
         treeMaxDepth: Int,
         outputMode: String
+    ): String
+
+    external fun nativeTree(
+        listRoots: Boolean,
+        rootPattern: String,
+        maxDepth: Int,
+        period: String,
+        periodArgument: String,
+        root: String
     ): String
 
     external fun nativeReport(

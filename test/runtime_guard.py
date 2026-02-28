@@ -3,9 +3,9 @@ import re
 import shutil
 import subprocess
 import sys
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
 
 try:
     import tomllib
@@ -19,7 +19,7 @@ DEFAULT_APP_NAME = "tracer_windows_cli"
 DEFAULT_CLI_EXE = "time_tracer_cli.exe"
 DEFAULT_RUNTIME_FILES = [
     "time_tracer_cli.exe",
-    "time_tracer_core.dll",
+    "tracer_core.dll",
     "libreports_shared.dll",
     "libsqlite3-0.dll",
     "libtomlplusplus-3.dll",
@@ -75,9 +75,7 @@ def _load_runtime_bundle_spec(repo_root: Path) -> tuple[list[str], list[str]]:
         [item for item in files if isinstance(item, str)] if isinstance(files, list) else []
     )
     selected_folders = (
-        [item for item in folders if isinstance(item, str)]
-        if isinstance(folders, list)
-        else []
+        [item for item in folders if isinstance(item, str)] if isinstance(folders, list) else []
     )
 
     if not selected_files:
@@ -114,15 +112,14 @@ def _copy_runtime_bundle(
 def _ensure_source_runtime_ready(source_bin: Path) -> None:
     required = [
         source_bin / DEFAULT_CLI_EXE,
-        source_bin / "time_tracer_core.dll",
+        source_bin / "tracer_core.dll",
         source_bin / "libreports_shared.dll",
         source_bin / "config" / "config.toml",
     ]
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         raise RuntimeError(
-            "Runtime guard source bundle is incomplete. Missing:\n- "
-            + "\n- ".join(missing)
+            "Runtime guard source bundle is incomplete. Missing:\n- " + "\n- ".join(missing)
         )
 
 
@@ -134,9 +131,7 @@ def _resolve_source_bin_dir(repo_root: Path, args: argparse.Namespace) -> Path:
     if not build_dir:
         build_dir = _auto_detect_build_dir(repo_root, DEFAULT_APP_NAME)
     if not build_dir:
-        raise RuntimeError(
-            "No build dir detected. Use --build-dir, --bin-dir, or build first."
-        )
+        raise RuntimeError("No build dir detected. Use --build-dir, --bin-dir, or build first.")
     return (repo_root / "apps" / DEFAULT_APP_NAME / build_dir / "bin").resolve()
 
 
@@ -174,9 +169,7 @@ def _run_scenario(
         check=False,
     )
 
-    merged_output = _strip_ansi(
-        (completed.stdout or "") + "\n" + (completed.stderr or "")
-    ).lower()
+    merged_output = _strip_ansi((completed.stdout or "") + "\n" + (completed.stderr or "")).lower()
     actual_exit = completed.returncode
 
     if scenario.expect_success:
@@ -198,20 +191,14 @@ def _run_scenario(
         if token.lower() not in merged_output:
             return (
                 False,
-                "missing expected token: "
-                + token
-                + "\n"
-                + merged_output.strip(),
+                "missing expected token: " + token + "\n" + merged_output.strip(),
             )
 
     for token in scenario.unexpected_tokens:
         if token.lower() in merged_output:
             return (
                 False,
-                "found unexpected token: "
-                + token
-                + "\n"
-                + merged_output.strip(),
+                "found unexpected token: " + token + "\n" + merged_output.strip(),
             )
 
     return True, f"exit={actual_exit}"
@@ -235,10 +222,10 @@ def _build_scenarios() -> list[RuntimeGuardScenario]:
         RuntimeGuardScenario(
             name="missing_core_dll",
             description="缺失 core dll 时，CLI 本地最小检查应 fail-fast。",
-            mutate=lambda bin_dir: _remove_required(bin_dir / "time_tracer_core.dll"),
+            mutate=lambda bin_dir: _remove_required(bin_dir / "tracer_core.dll"),
             expect_success=False,
             expected_exit=10,
-            expected_tokens=["runtime check failed", "time_tracer_core.dll"],
+            expected_tokens=["runtime check failed", "tracer_core.dll"],
             unexpected_tokens=[
                 "configuration validation failed",
                 "startup error",
@@ -262,7 +249,7 @@ def _build_scenarios() -> list[RuntimeGuardScenario]:
             mutate=lambda bin_dir: _remove_required(bin_dir / "libreports_shared.dll"),
             expect_success=False,
             expected_exit=10,
-            expected_tokens=["runtime check failed", "failed to load", "time_tracer_core.dll"],
+            expected_tokens=["runtime check failed", "failed to load", "tracer_core.dll"],
             unexpected_tokens=[
                 "configuration validation failed",
                 "startup error",
@@ -278,7 +265,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--build-dir",
         default=None,
-        help="Build dir under apps/tracer_windows_cli (e.g. build_fast).",
+        help="Build dir under apps/tracer_cli/windows (e.g. build_fast).",
     )
     parser.add_argument(
         "--bin-dir",
@@ -288,10 +275,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         default=None,
-        help=(
-            "Workspace for guard cases. "
-            "Default: test/output/tracer_windows_cli/runtime_guard"
-        ),
+        help=("Workspace for guard cases. Default: test/output/tracer_windows_cli/runtime_guard"),
     )
     parser.add_argument(
         "--keep-workspace",
@@ -358,3 +342,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

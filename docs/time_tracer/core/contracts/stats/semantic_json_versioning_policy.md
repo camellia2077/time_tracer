@@ -36,8 +36,10 @@
 3. 对未知字段按“忽略但不失败”处理，保证前向兼容。
 
 ## 测试门禁
-1. `apps/time_tracer/src/infrastructure/tests/data_query_refactor_tests.cpp`
-   - 必须覆盖 `schema_version/action/output_mode` 基础包络。
-   - 必须覆盖关键 action 的字段快照（至少 `days-stats`、`report-chart`）。
-2. `test/suites/tracer_windows_cli/tests/commands_query_data.toml`
+1. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
+2. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
+3. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
+   - 三个测试入口合计必须覆盖 `schema_version/action/output_mode` 基础包络。
+   - 必须覆盖关键 action 的字段快照（至少 `days-stats`、`report-chart`、`tree`）。
+4. `test/suites/tracer_windows_cli/tests/commands_query_data.toml`
    - 必须覆盖 `--data-output json` 的关键 fallback 场景。

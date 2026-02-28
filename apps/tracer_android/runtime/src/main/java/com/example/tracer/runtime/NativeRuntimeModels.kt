@@ -5,7 +5,6 @@ internal data class RuntimePaths(
     val outputRoot: String,
     val configRootPath: String,
     val configTomlPath: String,
-    val smokeInputPath: String,
     val fullInputPath: String,
     val liveRawInputPath: String,
     val liveAutoSyncInputPath: String
@@ -14,7 +13,8 @@ internal data class RuntimePaths(
 internal data class NativeResponsePayload(
     val ok: Boolean,
     val content: String,
-    val errorMessage: String
+    val errorMessage: String,
+    val reportHashSha256: String = ""
 )
 
 internal data class RecordWriteSnapshot(

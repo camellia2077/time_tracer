@@ -77,8 +77,6 @@ private class FakeRuntimeGateway(
         rawResponse = """{"ok":true,"content":"","error_message":""}"""
     )
 
-    override suspend fun ingestSmoke(): NativeCallResult = initializeRuntime()
-
     override suspend fun ingestFull(): NativeCallResult = initializeRuntime()
 
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
@@ -148,7 +146,10 @@ private class FakeRuntimeGateway(
     override suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = statsMarkdown, message = "ok")
 
-    override suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
+    override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
+        TreeQueryResult(ok = true, found = false, message = "ok")
+
+    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "Total: 0", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
@@ -198,6 +199,23 @@ private class FakeRuntimeGateway(
         content: String
     ): TxtFileContentResult =
         TxtFileContentResult(ok = true, filePath = relativePath, content = content, message = "ok")
+
+    override suspend fun listRecentDiagnostics(limit: Int): RuntimeDiagnosticsListResult =
+        RuntimeDiagnosticsListResult(
+            ok = true,
+            entries = emptyList(),
+            message = "ok",
+            diagnosticsLogPath = ""
+        )
+
+    override suspend fun buildDiagnosticsPayload(maxEntries: Int): RuntimeDiagnosticsPayloadResult =
+        RuntimeDiagnosticsPayloadResult(
+            ok = true,
+            payload = "",
+            message = "ok",
+            entryCount = 0,
+            diagnosticsLogPath = ""
+        )
 
     private fun emptyReportResult(): ReportCallResult = ReportCallResult(
         initialized = true,

@@ -8,31 +8,9 @@
     <string name="tracer_tab_txt">TXT</string>
     <string name="tracer_tab_config">設定</string>
 
-    <string name="tracer_tree_result_day">日次ツリー結果</string>
-    <string name="tracer_tree_result_week">週次ツリー結果</string>
-    <string name="tracer_tree_result_month">月次ツリー結果</string>
-    <string name="tracer_tree_result_year">年次ツリー結果</string>
-    <string name="tracer_tree_result_recent">最近ツリー結果</string>
-    <string name="tracer_tree_result_range">期間ツリー結果</string>
-
-    <string name="tracer_stats_result_day">日次統計結果</string>
-    <string name="tracer_stats_result_week">週次統計結果</string>
-    <string name="tracer_stats_result_month">月次統計結果</string>
-    <string name="tracer_stats_result_year">年次統計結果</string>
-    <string name="tracer_stats_result_recent">最近統計結果</string>
-    <string name="tracer_stats_result_range">期間統計結果</string>
-
-    <string name="tracer_report_result_title">レポート結果</string>
-    <string name="tracer_chart_result_title">グラフ結果</string>
-    <string name="tracer_analysis_error_title">解析エラー</string>
-    <string name="tracer_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: alias_mapping.toml の検証セットが空です。</string>
-    <string name="tracer_status_quick_activities_cannot_be_empty">クイック活動は空にできません。</string>
-    <string name="tracer_status_quick_activities_exceed_limit">クイック活動が上限を超えています: %1$d。</string>
-    <string name="tracer_status_invalid_quick_activities">無効なクイック活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
-    <string name="tracer_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
-    <string name="tracer_status_invalid_suggested_activity">無効な提案活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
 
     <string name="tracer_export_all_canceled">全件エクスポートをキャンセルしました。</string>
+    <string name="tracer_export_all_tracer_canceled">TRACER 全件エクスポートをキャンセルしました。</string>
     <string name="tracer_export_all_failed_no_months">全件エクスポート失敗: 利用可能な月がありません。</string>
     <string name="tracer_export_all_failed_dates_folder">全件エクスポート失敗: dates フォルダを解決できません。</string>
     <string name="tracer_export_error_invalid_month_key">%1$s: 月キーが無効です。</string>
@@ -43,17 +21,39 @@
     <string name="tracer_export_error_create_target_file">%1$s: 出力ファイルを作成または上書きできません。</string>
     <string name="tracer_export_error_open_output_stream">出力ストリームを開けません。</string>
     <string name="tracer_export_error_write_failed">%1$s: 書き込みに失敗しました。</string>
+    <string name="tracer_export_error_encrypt_failed">%1$s: 暗号化に失敗しました: %2$s</string>
     <plurals name="tracer_export_all_success">
         <item quantity="other">全件エクスポート成功 -&gt; %1$d か月分の TXT ファイル。</item>
+    </plurals>
+    <plurals name="tracer_export_all_tracer_success">
+        <item quantity="other">全件エクスポート成功 -&gt; %1$d か月分の TRACER ファイル。</item>
     </plurals>
     <plurals name="tracer_export_error_tail">
         <item quantity="other"> | ...(%1$d 件のエラー)</item>
     </plurals>
     <string name="tracer_export_all_completed">全件エクスポート完了 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_export_all_tracer_completed">TRACER 全件エクスポート完了 -&gt; %1$d/%2$d。%3$s</string>
     <string name="tracer_export_all_failed">全件エクスポート失敗: %1$s</string>
+    <string name="tracer_export_all_tracer_failed">TRACER 全件エクスポート失敗: %1$s</string>
     <string name="tracer_export_unknown_error">不明なエラー</string>
     <string name="tracer_export_already_in_progress">エクスポートはすでに進行中です。</string>
     <string name="tracer_export_select_txt_destination">TXT のエクスポート先フォルダを選択してください。</string>
+    <string name="tracer_export_select_tracer_destination">TRACER のエクスポート先フォルダを選択してください。</string>
+    <string name="tracer_import_select_tracer_folder">TRACER 取り込み元フォルダを選択してください。</string>
+    <string name="tracer_import_folder_tracer_canceled">フォルダ TRACER 取り込みをキャンセルしました。</string>
+    <string name="tracer_import_folder_tracer_no_files">選択したフォルダに TRACER ファイルが見つかりません。</string>
+    <string name="tracer_import_folder_tracer_failed">フォルダ TRACER 取り込み失敗: %1$s</string>
+    <string name="tracer_import_folder_tracer_completed_success">フォルダ TRACER 取り込み完了 -&gt; %1$d/%2$d。</string>
+    <string name="tracer_import_folder_tracer_completed_with_errors">フォルダ TRACER 取り込み完了 -&gt; %1$d/%2$d。%3$s</string>
+    <string name="tracer_import_select_single_tracer">単一 TRACER を選択中...</string>
+    <string name="tracer_import_single_tracer_canceled">単一 TRACER の取り込みをキャンセルしました。</string>
+    <string name="tracer_import_single_tracer_failed">単一 TRACER の取り込み失敗: %1$s</string>
+    <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスフレーズ</string>
+    <string name="tracer_crypto_passphrase_decrypt_title">復号パスフレーズ</string>
+    <string name="tracer_crypto_passphrase_hint">パスフレーズを入力</string>
+    <string name="tracer_crypto_passphrase_confirm_hint">パスフレーズを再入力</string>
+    <string name="tracer_crypto_passphrase_required">パスフレーズは必須です。</string>
+    <string name="tracer_crypto_passphrase_mismatch">パスフレーズが一致しません。</string>
     <string name="tracer_export_config_canceled">設定エクスポートをキャンセルしました。</string>
     <string name="tracer_export_failed_no_config_entries">エクスポート失敗: 設定エントリが準備されていません。</string>
     <string name="tracer_export_error_resolve_target">%1$s: エクスポート先を解決できません。</string>
@@ -65,13 +65,12 @@
     <string name="tracer_export_prepare_android_config">Android 設定のエクスポートを準備中...</string>
     <string name="tracer_export_select_android_config_directory">Android 設定 TOML のエクスポート先ディレクトリを選択してください。</string>
     <string name="tracer_import_config_canceled">設定インポートをキャンセルしました。</string>
-    <string name="tracer_import_prepare_android_config">Android 設定のインポートを準備中...</string>
-    <string name="tracer_import_select_android_config_directory">Android 設定 TOML の入力元ディレクトリを選択してください。</string>
     <string name="tracer_import_prepare_android_config_full_replace">Android 設定のインポートを準備中（Full Replace）...</string>
     <string name="tracer_import_prepare_android_config_partial_update">Android 設定のインポートを準備中（Partial Update）...</string>
     <string name="tracer_import_select_android_config_directory_full_replace">Android 設定 TOML の入力元ディレクトリを選択してください（Full Replace）。</string>
     <string name="tracer_import_select_android_config_directory_partial_update">Android 設定 TOML の入力元ディレクトリを選択してください（Partial Update）。</string>
     <string name="tracer_import_config_failed">設定インポート失敗: %1$s</string>
+    <string name="tracer_diagnostics_prepare">診断ペイロードを準備中...</string>
 
     <string name="config_title_appearance">外観</string>
     <string name="config_label_use_wallpaper_colors">壁紙の動的カラーを使用</string>
@@ -113,4 +112,5 @@
     <string name="config_about_repo">リポジトリ: %1$s</string>
     <string name="config_about_core">コア: %1$s</string>
     <string name="config_about_app">アプリ: %1$s</string>
+    <string name="config_action_copy_diagnostics">診断ペイロードをコピー</string>
 </resources>

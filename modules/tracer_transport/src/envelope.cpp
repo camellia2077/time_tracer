@@ -52,6 +52,15 @@ auto ReadOptionalString(const json& payload, const char* field_name)
   return it->get<std::string>();
 }
 
+auto ReadOptionalStringValue(const json& payload, const char* field_name)
+    -> std::optional<std::string> {
+  const auto it = payload.find(field_name);
+  if (it == payload.end() || !it->is_string()) {
+    return std::nullopt;
+  }
+  return it->get<std::string>();
+}
+
 }  // namespace
 
 auto BuildResponseEnvelope(bool ok, std::string_view error_message,
@@ -64,12 +73,15 @@ auto BuildResponseEnvelope(bool ok, std::string_view error_message,
 }
 
 auto SerializeResponseEnvelope(const ResponseEnvelope& envelope) -> std::string {
-  return json{
+  json payload = {
       {"ok", envelope.ok},
       {"error_message", envelope.error_message},
       {"content", envelope.content},
+  };
+  if (envelope.report_hash_sha256.has_value()) {
+    payload["report_hash_sha256"] = *envelope.report_hash_sha256;
   }
-      .dump();
+  return payload.dump();
 }
 
 auto ParseResponseEnvelope(std::string_view response_json,
@@ -101,6 +113,8 @@ auto ParseResponseEnvelope(std::string_view response_json,
               .ok = ok_it->get<bool>(),
               .error_message = ReadOptionalString(payload, "error_message"),
               .content = ReadOptionalString(payload, "content"),
+              .report_hash_sha256 =
+                  ReadOptionalStringValue(payload, "report_hash_sha256"),
           },
       .error = TransportError{},
   };

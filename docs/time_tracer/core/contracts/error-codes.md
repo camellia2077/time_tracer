@@ -28,7 +28,7 @@
 
 ## 4. 与现有校验错误类型的映射建议
 
-来源：`apps/time_tracer/src/domain/logic/validator/common/validator_utils.hpp`
+来源：`apps/tracer_core/src/domain/logic/validator/common/validator_utils.hpp`
 
 | `validator::ErrorType` | 建议错误码 |
 | --- | --- |
@@ -51,7 +51,7 @@
 
 ## 5. 与现有 Diagnostic code 的兼容建议
 
-来源：`apps/time_tracer/src/domain/logic/validator/common/diagnostic.hpp`
+来源：`apps/tracer_core/src/domain/logic/validator/common/diagnostic.hpp`
 
 当前 `Diagnostic.code` 已存在若干业务码（如 `activity.duration.zero`）。
 建议策略：
@@ -77,8 +77,8 @@
 3. 单测应覆盖关键错误码映射，防止回归。
 
 ## 8. 相关代码入口
-1. `apps/time_tracer/src/domain/logic/validator/common/validator_utils.hpp`
-2. `apps/time_tracer/src/domain/logic/validator/common/diagnostic.hpp`
-3. `apps/time_tracer/src/infrastructure/logging/validation_issue_reporter.cpp`
-4. `apps/time_tracer/src/domain/ports/diagnostics.hpp`
+1. `apps/tracer_core/src/domain/logic/validator/common/validator_utils.hpp`
+2. `apps/tracer_core/src/domain/logic/validator/common/diagnostic.hpp`
+3. `apps/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
+4. `apps/tracer_core/src/domain/ports/diagnostics.hpp`
 

@@ -26,9 +26,8 @@ internal fun ReportPieChart(
     onPointSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val sortedPoints = remember(points) { points.sortedBy { it.date } }
-    val durationHours = remember(sortedPoints) {
-        sortedPoints.map { point -> point.durationSeconds.coerceAtLeast(0L) / 3600f }
+    val durationHours = remember(points) {
+        points.map { point -> point.durationSeconds.coerceAtLeast(0L) / 3600f }
     }
     var canvasSize by remember { mutableStateOf(IntSize.Zero) }
 

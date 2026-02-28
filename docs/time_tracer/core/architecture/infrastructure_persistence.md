@@ -7,14 +7,14 @@
 ## 1. 核心职责分解
 
 `infrastructure` 层完全实现了定义在 `application/ports` 中的虚接口契约。
-其目录位于：`apps/time_tracer/src/infrastructure/`
+其目录位于：`apps/tracer_core/src/infrastructure/`
 
 它的两大最核心命脉板块为：
 - **`persistence` (持久化存储)**：负责将清洗后的数据行写入本地数据库，并承接复杂的多维聚合查询。
 - **`platform` / `io` (跨平台与底层服务)**：封装系统时间获取、日志捕获、原生控制台 API 的调用。
 
 ### 1.1 `importer/sqlite/writer` (纯数据的高速入库机)
-**核心基建**：`apps/time_tracer/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+**核心基建**：`apps/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
 
 我们在 `application` 篇中提到过，`domain` 层产生的 `DailyLog` 对象会被转换为不包含业务逻辑的 `ParsedData` 结构，然后传递给 Writer。这体现了应用逻辑与持久化实现之间的解耦：
 
@@ -22,7 +22,7 @@
 - **事务与并发防坠**：通过 RAII (Resource Acquisition Is Initialization) 风格封装的 `Transaction` 对象，确保无论这几百条明细中途哪个数据违反了 SQLite 的唯一约束（如日期主键冲突），或者是意外崩溃，整批数据的写入能够安全滚回。它保证了：“要么这几十天的 TXT 被完整安全地吃进去，要么不留一点残渣”。
 
 ### 1.2 `ProjectResolver` (树形节点的动态织梦者)
-**核心基建**：`apps/time_tracer/src/infrastructure/persistence/importer/sqlite/project_resolver.cpp`
+**核心基建**：`apps/tracer_core/src/infrastructure/persistence/importer/sqlite/project_resolver.cpp`
 
 Time Tracer 在持久化 `time_records` 时，并未简单地把 `study_math_advanced` 存成一个孤立文本，而是依靠一套严格的层级主外键树关系 (`projects` 表)。
 
@@ -33,7 +33,7 @@ Time Tracer 在持久化 `time_records` 时，并未简单地把 `study_math_adv
 - 最终，解析器返回叶子节点的唯一 ID，由 `writer` 作为外键存入明细记录中。
 
 ### 1.3 `DataQueryService` (基于关系型的强大检索阀)
-**核心基建**：`apps/time_tracer/src/infrastructure/persistence/sqlite_data_query_service.cpp`
+**核心基建**：`apps/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`
 
 Time Tracer 除了高并发入库外，另一个终极场景就是“查询与导出”。
 我们支持了极其繁复的诸如 `query data period --from 2024-01-01 --to 2024-02-01 --filter study`。

@@ -6,14 +6,14 @@
 
 void FileWriter::WriteContent(const std::filesystem::path& path,
                               const std::string& content) {
-  std::ofstream file(path, std::ios::out | std::ios::trunc);
+  std::ofstream file(path, std::ios::out | std::ios::trunc | std::ios::binary);
 
   if (!file.is_open()) {
     throw std::runtime_error("Unable to open file for writing: " +
                              path.string());
   }
 
-  file << content;
+  file.write(content.data(), static_cast<std::streamsize>(content.size()));
 
   if (file.fail()) {
     throw std::runtime_error("Error occurred while writing to file: " +

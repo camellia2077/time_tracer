@@ -1,18 +1,18 @@
 # CLI Output Style Guide
 
-This guide defines text/format rules for `apps/tracer_windows_cli` CLI output.
+This guide defines text/format rules for `apps/tracer_cli/windows` CLI output.
 Use it when changing command output, help text, step logs, or error summaries.
 
 ## Scope
 
-- Applies to all user-facing terminal output in `apps/tracer_windows_cli/src/...`.
-- Applies to runtime pipeline output forwarded from core (`apps/time_tracer`).
+- Applies to all user-facing terminal output in `apps/tracer_cli/windows/src/...`.
+- Applies to runtime pipeline output forwarded from core (`apps/tracer_core`).
 
 ## Single Source References
 
 - Style and structure rules: `docs/time_tracer/clients/windows_cli/specs/cli-output-style.md`
 - Console color reference: `docs/time_tracer/clients/windows_cli/specs/console-color.md`
-- Shared ANSI constants: `apps/time_tracer/src/shared/types/ansi_colors.hpp`
+- Shared ANSI constants: `apps/tracer_core/src/shared/types/ansi_colors.hpp`
 
 ## Output Structure Rules
 
@@ -73,3 +73,4 @@ See detailed palette and usage references in:
 - Final summary appears once.
 - Color usage follows palette mapping and resets correctly.
 - Output remains clear with color disabled.
+

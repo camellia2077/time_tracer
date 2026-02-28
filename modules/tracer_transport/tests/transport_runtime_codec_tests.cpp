@@ -12,6 +12,7 @@ using nlohmann::json;
 using tracer::transport::CapabilitiesResponsePayload;
 using tracer::transport::ConvertRequestPayload;
 using tracer::transport::DecodeExportRequest;
+using tracer::transport::DecodeAckResponse;
 using tracer::transport::DecodeConvertRequest;
 using tracer::transport::DecodeIngestRequest;
 using tracer::transport::DecodeImportRequest;
@@ -20,6 +21,7 @@ using tracer::transport::DecodeResolveCliContextResponse;
 using tracer::transport::DecodeReportBatchRequest;
 using tracer::transport::DecodeReportRequest;
 using tracer::transport::DecodeRuntimeCheckResponse;
+using tracer::transport::DecodeTextResponse;
 using tracer::transport::DecodeTreeResponse;
 using tracer::transport::DecodeTreeRequest;
 using tracer::transport::DecodeValidateLogicRequest;
@@ -244,18 +246,29 @@ void TestDecodeExportRequest(int& failures) {
 
 void TestDecodeTreeRequest(int& failures) {
   const auto request = DecodeTreeRequest(
-      R"({"list_roots":true,"root_pattern":"study","max_depth":3})");
+      R"({"list_roots":true,"root_pattern":"study","max_depth":3,"period":"recent","period_argument":"7","root":"study"})");
   Expect(request.list_roots.has_value() && *request.list_roots,
          "DecodeTreeRequest list_roots mismatch.", failures);
   Expect(request.root_pattern.has_value() && *request.root_pattern == "study",
          "DecodeTreeRequest root_pattern mismatch.", failures);
   Expect(request.max_depth.has_value() && *request.max_depth == 3,
          "DecodeTreeRequest max_depth mismatch.", failures);
+  Expect(request.period.has_value() && *request.period == "recent",
+         "DecodeTreeRequest period mismatch.", failures);
+  Expect(request.period_argument.has_value() &&
+             *request.period_argument == "7",
+         "DecodeTreeRequest period_argument mismatch.", failures);
+  Expect(request.root.has_value() && *request.root == "study",
+         "DecodeTreeRequest root mismatch.", failures);
 
   ExpectInvalidArgument(
       [] { (void)DecodeTreeRequest(R"({"max_depth":"3"})"); },
       "field `max_depth` must be an integer.",
       "DecodeTreeRequest max_depth type", failures);
+  ExpectInvalidArgument(
+      [] { (void)DecodeTreeRequest(R"({"period":1})"); },
+      "field `period` must be a string.", "DecodeTreeRequest period type",
+      failures);
 }
 
 void TestDecodeRuntimeCheckResponse(int& failures) {
@@ -319,15 +332,27 @@ void TestDecodeResolveCliContextResponse(int& failures) {
 
 void TestDecodeTreeResponse(int& failures) {
   const auto response = DecodeTreeResponse(
-      R"({"ok":true,"found":false,"error_message":"","roots":["study","sleep"],"nodes":[{"name":"study","children":[{"name":"math","children":[]}]}]})");
+      R"({"ok":true,"found":false,"error_message":"","roots":["study","sleep"],"nodes":[{"name":"study","path":"study","duration_seconds":3600,"children":[{"name":"math","path":"study_math","duration_seconds":1800,"children":[]}]}]})");
   Expect(response.ok, "DecodeTreeResponse ok mismatch.", failures);
   Expect(!response.found, "DecodeTreeResponse found mismatch.", failures);
   Expect(response.roots.size() == 2U,
          "DecodeTreeResponse roots size mismatch.", failures);
   Expect(response.nodes.size() == 1U,
          "DecodeTreeResponse nodes size mismatch.", failures);
+  Expect(response.nodes[0].path.has_value() &&
+             *response.nodes[0].path == "study",
+         "DecodeTreeResponse node path mismatch.", failures);
+  Expect(response.nodes[0].duration_seconds.has_value() &&
+             *response.nodes[0].duration_seconds == 3600LL,
+         "DecodeTreeResponse node duration mismatch.", failures);
   Expect(response.nodes[0].children.size() == 1U,
          "DecodeTreeResponse child size mismatch.", failures);
+  Expect(response.nodes[0].children[0].path.has_value() &&
+             *response.nodes[0].children[0].path == "study_math",
+         "DecodeTreeResponse child path mismatch.", failures);
+  Expect(response.nodes[0].children[0].duration_seconds.has_value() &&
+             *response.nodes[0].children[0].duration_seconds == 1800LL,
+         "DecodeTreeResponse child duration mismatch.", failures);
 
   ExpectInvalidArgument(
       [] {
@@ -340,6 +365,56 @@ void TestDecodeTreeResponse(int& failures) {
       [] { (void)DecodeTreeResponse(R"({"ok":true,"roots":[1]})"); },
       "field `roots` must be a string array.",
       "DecodeTreeResponse invalid roots type", failures);
+  ExpectInvalidArgument(
+      [] {
+        (void)DecodeTreeResponse(
+            R"({"ok":true,"nodes":[{"name":"study","duration_seconds":"bad"}]})");
+      },
+      "field `duration_seconds` must be an integer.",
+      "DecodeTreeResponse invalid duration type", failures);
+}
+
+void TestDecodeAckAndTextResponses(int& failures) {
+  const auto ack_ok =
+      DecodeAckResponse(R"({"ok":true,"error_message":""})", "runtime_import");
+  Expect(ack_ok.ok, "DecodeAckResponse ok mismatch.", failures);
+  Expect(ack_ok.error_message.empty(),
+         "DecodeAckResponse error_message mismatch.", failures);
+
+  const auto ack_failed = DecodeAckResponse(
+      R"({"ok":false,"error_message":""})", "runtime_export");
+  Expect(!ack_failed.ok, "DecodeAckResponse failed ok mismatch.", failures);
+  Expect(ack_failed.error_message == "Core operation failed.",
+         "DecodeAckResponse failed fallback error mismatch.", failures);
+
+  const auto text_ok = DecodeTextResponse(
+      R"({"ok":true,"error_message":"","content":"query content"})",
+      "runtime_query");
+  Expect(text_ok.ok, "DecodeTextResponse ok mismatch.", failures);
+  Expect(text_ok.error_message.empty(),
+         "DecodeTextResponse error_message mismatch.", failures);
+  Expect(text_ok.content == "query content",
+         "DecodeTextResponse content mismatch.", failures);
+
+  const auto text_failed = DecodeTextResponse(
+      R"({"ok":false,"error_message":"","content":"partial"})", "runtime_report");
+  Expect(!text_failed.ok, "DecodeTextResponse failed ok mismatch.", failures);
+  Expect(text_failed.error_message == "Core operation failed.",
+         "DecodeTextResponse failed fallback error mismatch.", failures);
+  Expect(text_failed.content == "partial",
+         "DecodeTextResponse failed content mismatch.", failures);
+
+  ExpectInvalidArgument(
+      [] {
+        (void)DecodeAckResponse(R"({"error_message":"missing ok"})",
+                                "runtime_validate_logic");
+      },
+      "runtime_validate_logic:",
+      "DecodeAckResponse invalid envelope context", failures);
+  ExpectInvalidArgument(
+      [] { (void)DecodeTextResponse(R"({"ok":1})", "runtime_query"); },
+      "runtime_query:", "DecodeTextResponse invalid envelope context",
+      failures);
 }
 
 void TestEncodeRequestRoundTrip(int& failures) {
@@ -497,6 +572,9 @@ void TestEncodeRequestRoundTrip(int& failures) {
     request.list_roots = false;
     request.root_pattern = "study";
     request.max_depth = 2;
+    request.period = "recent";
+    request.period_argument = "7";
+    request.root = "study";
     const auto encoded = EncodeTreeRequest(request);
     const auto decoded = DecodeTreeRequest(encoded);
     Expect(decoded.list_roots == request.list_roots,
@@ -505,6 +583,12 @@ void TestEncodeRequestRoundTrip(int& failures) {
            "EncodeTreeRequest round-trip root_pattern mismatch.", failures);
     Expect(decoded.max_depth == request.max_depth,
            "EncodeTreeRequest round-trip max_depth mismatch.", failures);
+    Expect(decoded.period == request.period,
+           "EncodeTreeRequest round-trip period mismatch.", failures);
+    Expect(decoded.period_argument == request.period_argument,
+           "EncodeTreeRequest round-trip period_argument mismatch.", failures);
+    Expect(decoded.root == request.root,
+           "EncodeTreeRequest round-trip root mismatch.", failures);
   }
 }
 
@@ -595,8 +679,12 @@ void TestEncodeTreeResponse(int& failures) {
 
   ProjectTreeNodePayload node{};
   node.name = "study";
+  node.path = "study";
+  node.duration_seconds = 3600;
   ProjectTreeNodePayload child{};
   child.name = "math";
+  child.path = "study_math";
+  child.duration_seconds = 1800;
   node.children.push_back(child);
   payload.nodes.push_back(node);
 
@@ -614,10 +702,20 @@ void TestEncodeTreeResponse(int& failures) {
          "EncodeTreeResponse nodes mismatch.", failures);
   Expect(tree["nodes"][0].value("name", std::string{}) == "study",
          "EncodeTreeResponse root node name mismatch.", failures);
+  Expect(tree["nodes"][0].value("path", std::string{}) == "study",
+         "EncodeTreeResponse root node path mismatch.", failures);
+  Expect(tree["nodes"][0].value("duration_seconds", -1LL) == 3600LL,
+         "EncodeTreeResponse root node duration mismatch.", failures);
   Expect(tree["nodes"][0].contains("children") &&
              tree["nodes"][0]["children"].is_array() &&
              tree["nodes"][0]["children"].size() == 1U,
          "EncodeTreeResponse child node mismatch.", failures);
+  Expect(tree["nodes"][0]["children"][0].value("path", std::string{}) ==
+             "study_math",
+         "EncodeTreeResponse child node path mismatch.", failures);
+  Expect(tree["nodes"][0]["children"][0].value("duration_seconds", -1LL) ==
+             1800LL,
+         "EncodeTreeResponse child node duration mismatch.", failures);
 }
 
 }  // namespace
@@ -633,6 +731,7 @@ auto main() -> int {
   TestDecodeRuntimeCheckResponse(failures);
   TestDecodeResolveCliContextResponse(failures);
   TestDecodeTreeResponse(failures);
+  TestDecodeAckAndTextResponses(failures);
   TestEncodeRequestRoundTrip(failures);
   TestEncodeResponses(failures);
   TestEncodeTreeResponse(failures);

@@ -9,20 +9,24 @@ internal class RuntimeRecordDelegate(
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: LiveRawRecordStore,
     private val responseCodec: NativeResponseCodec,
-    private val executeAfterInit: ((RuntimePaths) -> String) -> NativeCallResult,
+    private val recordTranslator: NativeRecordTranslator,
+    private val executeAfterInit: (
+        operationName: String,
+        action: (RuntimePaths) -> String
+    ) -> NativeCallResult,
     private val syncLiveOperation: (RuntimePaths) -> String
 ) {
     suspend fun createCurrentMonthTxt(): RecordActionResult = withContext(Dispatchers.IO) {
         RecordActionResult(
             ok = false,
-            message = "TXT create entry is removed. Select existing imported TXT files from full/ or smoke/."
+            message = "TXT create entry is removed. Select existing imported TXT files from full/ or live_raw/."
         )
     }
 
     suspend fun createMonthTxt(month: String): RecordActionResult = withContext(Dispatchers.IO) {
         RecordActionResult(
             ok = false,
-            message = "TXT create entry is removed for $month. Select existing imported TXT files from full/ or smoke/."
+            message = "TXT create entry is removed for $month. Select existing imported TXT files from full/ or live_raw/."
         )
     }
 
@@ -46,7 +50,7 @@ internal class RuntimeRecordDelegate(
 
     suspend fun syncLiveToDatabase(): NativeCallResult = withContext(Dispatchers.IO) {
         try {
-            executeAfterInit { paths ->
+            executeAfterInit("native_sync_live_to_database") { paths ->
                 syncLiveOperation(paths)
             }
         } catch (error: Exception) {
@@ -74,7 +78,7 @@ internal class RuntimeRecordDelegate(
                     )
                 val targetInputPath = File(sourceTarget.first, sourceTarget.second).absolutePath
 
-                val structureCheckResult = executeAfterInit {
+                val structureCheckResult = executeAfterInit("native_validate_structure") {
                     NativeBridge.nativeValidateStructure(
                         inputPath = targetInputPath
                     )
@@ -85,11 +89,12 @@ internal class RuntimeRecordDelegate(
                 )?.let { failureMessage ->
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save ok, $failureMessage"
+                        message = "save ok, $failureMessage",
+                        operationId = structureCheckResult.operationId
                     )
                 }
 
-                val logicCheckResult = executeAfterInit {
+                val logicCheckResult = executeAfterInit("native_validate_logic") {
                     NativeBridge.nativeValidateLogic(
                         inputPath = targetInputPath,
                         dateCheckMode = NativeBridge.DATE_CHECK_CONTINUITY
@@ -101,11 +106,12 @@ internal class RuntimeRecordDelegate(
                 )?.let { failureMessage ->
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save ok, $failureMessage"
+                        message = "save ok, $failureMessage",
+                        operationId = logicCheckResult.operationId
                     )
                 }
 
-                val syncResult = executeAfterInit {
+                val syncResult = executeAfterInit("native_reimport_txt") {
                     NativeBridge.nativeIngest(
                         inputPath = targetInputPath,
                         dateCheckMode = NativeBridge.DATE_CHECK_CONTINUITY,
@@ -118,13 +124,15 @@ internal class RuntimeRecordDelegate(
                 )?.let { failureMessage ->
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save ok, $failureMessage"
+                        message = "save ok, $failureMessage",
+                        operationId = syncResult.operationId
                     )
                 }
 
                 RecordActionResult(
                     ok = true,
-                    message = "save+re-import -> ${saveResult.filePath}"
+                    message = "save+re-import -> ${saveResult.filePath}",
+                    operationId = syncResult.operationId
                 )
             } catch (error: Exception) {
                 buildRecordActionFailure(prefix = "save txt failed", error = error)
@@ -195,12 +203,13 @@ internal class RuntimeRecordDelegate(
 
         return RecordActionResult(
             ok = true,
-            message = "$recordSummary\nsync: ok"
+            message = "$recordSummary\nsync: ok",
+            operationId = syncResult.operationId
         )
     }
 
     private fun syncRecordInput(inputPath: String): NativeCallResult {
-        return executeAfterInit {
+        return executeAfterInit("native_record_sync_ingest") {
             NativeBridge.nativeIngest(
                 inputPath = inputPath,
                 dateCheckMode = NativeBridge.DATE_CHECK_NONE,
@@ -210,20 +219,10 @@ internal class RuntimeRecordDelegate(
     }
 
     private fun extractNativeStageFailure(result: NativeCallResult, stage: String): String? {
-        if (!result.initialized) {
-            return "$stage failed: native init failed."
-        }
-        if (result.operationOk) {
-            return null
-        }
-
-        val payload = responseCodec.parse(result.rawResponse)
-        val error = if (payload.errorMessage.isNotEmpty()) {
-            payload.errorMessage
-        } else {
-            result.rawResponse
-        }
-        val detailedError = enrichFailureWithFullReport(error)
+        val translatedFailure = recordTranslator.extractStageFailure(result, stage) ?: return null
+        val detailedError = enrichFailureWithFullReport(
+            translatedFailure.substringAfter("$stage failed: ", translatedFailure)
+        )
         return "$stage failed: $detailedError"
     }
 

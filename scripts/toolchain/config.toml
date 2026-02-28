@@ -1,5 +1,5 @@
-[apps.time_tracer]
-path = "apps/time_tracer"
+[apps.tracer_core]
+path = "apps/tracer_core"
 cmake_flags = [
     "-G", "Ninja",
     "-D", "CMAKE_BUILD_TYPE=Release",
@@ -9,7 +9,7 @@ cmake_flags = [
 ]
 
 [apps.tracer_windows_cli]
-path = "apps/tracer_windows_cli"
+path = "apps/tracer_cli/windows"
 config_sync_target = "windows"
 cmake_flags = [
     "-G", "Ninja",
@@ -29,7 +29,7 @@ gradle_tasks = [
 ]
 
 [apps.log_generator]
-path = "apps/log_generator"
+path = "apps/tools/log_generator"
 cmake_flags = [
     "-G", "Ninja",
     "-D", "CMAKE_BUILD_TYPE=Release",
@@ -59,6 +59,7 @@ cmake_args = [
     "-D", "CMAKE_BUILD_TYPE=Release",
     "-D", "DISABLE_OPTIMIZATION=ON",
     "-D", "ENABLE_LTO=OFF",
+    "-D", "ENABLE_CLANG_TIDY=OFF",
     "-D", "WARNING_LEVEL=0",
     "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
 ]
@@ -73,6 +74,37 @@ cmake_args = [
     "-D", "ENABLE_LTO=OFF",
     "-D", "WARNING_LEVEL=2",
     "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleRelease"]
+
+[build.profiles.release_bundle]
+description = "Windows release bundle profile: bundled sqlite + toml header-only + static runtime knobs."
+build_dir = "build_release"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=OFF",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "BUILD_TESTING=OFF",
+    "-D", "TT_USE_BUNDLED_SQLITE=ON",
+    "-D", "TT_TOML_HEADER_ONLY=ON",
+    "-D", "TT_STATIC_MINGW_RUNTIME=ON",
+    "-D", "WARNING_LEVEL=2",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+# Keep release output complete (CLI + synced runtime dirs + formatter plugins),
+# while avoiding broad ALL-target drift and test targets.
+build_targets = [
+    "tracer_windows_cli_assets_sync",
+    "tracer_windows_cli_config_sync",
+    "DayMdFormatter",
+    "DayTypFormatter",
+    "DayTexFormatter",
+    "RangeMdFormatter",
+    "RangeTypFormatter",
+    "RangeTexFormatter",
+    "MonthMdFormatter",
+    "MonthTypFormatter",
+    "MonthTexFormatter",
 ]
 gradle_tasks = [":app:assembleRelease"]
 
@@ -143,7 +175,7 @@ gradle_tasks = [
 
 [post_change]
 # Default app when post-change cannot infer a single touched app.
-default_app = "time_tracer"
+default_app = "tracer_core"
 # Default build dir for post-change flow.
 default_build_dir = "build_fast"
 # Test policy for `python scripts/run.py post-change`.
@@ -161,7 +193,7 @@ script_changes = "build"
 max_lines = 150
 max_diags = 12
 # Store tasks by folder batches to reduce agent context scope.
-batch_size = 20
+batch_size = 10
 # Ninja parallelism (0 = build tool default, equivalent to `-j` without a value).
 jobs = 0
 # Log parser worker count (0 = auto).
@@ -169,6 +201,9 @@ parse_workers = 0
 # User preference: keep going through as many tidy checks as possible.
 # This maps to Ninja `-k 0` behind `cmake --build`.
 keep_going = true
+# Unified clang-tidy header filter (used by CMake tidy targets + tidy-refresh incremental mode).
+# Default excludes third-party build dependencies under */_deps/* while keeping project headers in scope.
+header_filter_regex = "^(?!.*[\\\\/]_deps[\\\\/]).*"
 # Run one tidy-fix pass before tidy task generation in tidy-flow.
 run_fix_before_tidy = true
 # Controllable tidy-fix scope:
@@ -202,3 +237,5 @@ allowed_kinds = [
     "private member",
     "protected member"
 ]
+
+
