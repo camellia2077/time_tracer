@@ -1,6 +1,6 @@
 # tracer_android Architecture
 
-Android host app for `apps/time_tracer` (`Jetpack Compose + JNI`).
+Android host app for `apps/tracer_core` (`Jetpack Compose + JNI`).
 
 ## Module Layers
 
@@ -21,11 +21,11 @@ Android host app for `apps/time_tracer` (`Jetpack Compose + JNI`).
 
 Bundled assets location:
 
-- `runtime/src/main/assets/time_tracer/**`
+- `runtime/src/main/assets/tracer_core/**`
 
 On app startup, assets are copied to:
 
-- `${filesDir}/time_tracer/**`
+- `${filesDir}/tracer_core/**`
 
 Then runtime initializes via:
 
@@ -33,7 +33,7 @@ Then runtime initializes via:
 
 `converterConfigTomlPath`:
 
-- `${filesDir}/time_tracer/config/converter/interval_processor_config.toml`
+- `${filesDir}/tracer_core/config/converter/interval_processor_config.toml`
 
 ## Core C ABI Alignment Status
 
@@ -56,4 +56,4 @@ For full protocol details (JNI contract, C ABI mapping, JSON fields):
 
 For full module tree and responsibilities, see:
 
-- `apps/tracer_android/STRUCTURE.md`
+- `docs/time_tracer/clients/android_ui/specs/STRUCTURE.md`

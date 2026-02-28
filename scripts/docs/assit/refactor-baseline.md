@@ -6,9 +6,9 @@
 
 1. `python scripts/run.py self-test`
    - 结果：`PASS`（17/17）
-2. `python scripts/verify.py --app time_tracer --build-dir build_fast --concise`
+2. `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise`
    - 结果：`PASS`（tracer_windows_cli suite: 124/124）
-3. `python scripts/verify.py --app log_generator --build-dir build_fast --concise`
+3. `python scripts/run.py verify --app log_generator --build-dir build_fast --concise`
    - 结果：`PASS`（log_generator suite: 2/2）
 4. `python scripts/run.py build --app tracer_android --profile fast`
    - 结果：`PASS`（Gradle assembleDebug 成功）

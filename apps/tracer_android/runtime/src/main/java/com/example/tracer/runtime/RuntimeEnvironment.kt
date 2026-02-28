@@ -7,12 +7,23 @@ import java.io.FileOutputStream
 import java.io.IOException
 
 internal class RuntimeEnvironment(private val context: Context) {
+    private companion object {
+        const val RUNTIME_ROOT_DIR_NAME = "tracer_core"
+        const val LEGACY_RUNTIME_ROOT_DIR_NAME = "time_tracer"
+        const val RUNTIME_ASSET_ROOT = "tracer_core"
+    }
+
+    @Volatile
+    private var lastConfigBundleStatus: RuntimeConfigBundleStatus = unknownConfigBundleStatus()
+
+    fun lastConfigBundleStatus(): RuntimeConfigBundleStatus = lastConfigBundleStatus
+
     fun prepareRuntimePaths(): RuntimePaths {
-        val rootDir = File(context.filesDir, "time_tracer")
+        val rootDir = resolveRuntimeRootDir()
         // Keep runtime-generated data by default.
         copyAssetTree(
             assetManager = context.assets,
-            assetPath = "time_tracer",
+            assetPath = RUNTIME_ASSET_ROOT,
             targetPath = rootDir,
             overwriteExistingFiles = false
         )
@@ -20,11 +31,19 @@ internal class RuntimeEnvironment(private val context: Context) {
         // Config assets are used for first-time bootstrap and missing-file补齐 only.
         copyAssetTree(
             assetManager = context.assets,
-            assetPath = "time_tracer/config",
+            assetPath = "$RUNTIME_ASSET_ROOT/config",
             targetPath = File(rootDir, "config"),
             overwriteExistingFiles = false
         )
         removeLegacyReportConfigDirs(rootDir)
+        refreshLegacyBundleTomlIfNeeded(rootDir)
+
+        val configRootDir = File(rootDir, "config")
+        val configBundleStatus = validateRuntimeConfigBundle(configRootDir)
+        lastConfigBundleStatus = configBundleStatus
+        if (!configBundleStatus.ok) {
+            throw IllegalStateException(configBundleStatus.message)
+        }
 
         val dbFile = File(rootDir, "db/time_data.sqlite3")
         dbFile.parentFile?.mkdirs()
@@ -34,12 +53,11 @@ internal class RuntimeEnvironment(private val context: Context) {
             outputRoot.mkdirs()
         }
 
-        val configToml = File(rootDir, "config/converter/interval_processor_config.toml")
+        val configToml = File(configRootDir, "converter/interval_processor_config.toml")
         if (!configToml.exists()) {
             throw IllegalStateException("Missing config TOML: ${configToml.absolutePath}")
         }
 
-        val smokeInput = File(rootDir, "input/smoke")
         val fullInput = File(rootDir, "input/full")
         val liveRawInput = File(rootDir, "input/live_raw")
         if (!liveRawInput.exists()) {
@@ -55,9 +73,8 @@ internal class RuntimeEnvironment(private val context: Context) {
         return RuntimePaths(
             dbPath = dbFile.absolutePath,
             outputRoot = outputRoot.absolutePath,
-            configRootPath = File(rootDir, "config").absolutePath,
+            configRootPath = configRootDir.absolutePath,
             configTomlPath = configToml.absolutePath,
-            smokeInputPath = smokeInput.absolutePath,
             fullInputPath = fullInput.absolutePath,
             liveRawInputPath = liveRawInput.absolutePath,
             liveAutoSyncInputPath = liveAutoSyncInput.absolutePath
@@ -79,20 +96,28 @@ internal class RuntimeEnvironment(private val context: Context) {
     }
 
     fun clearRuntimeData(): String {
-        val rootDir = File(context.filesDir, "time_tracer")
-        if (!rootDir.exists()) {
+        val runtimeRootDir = File(context.filesDir, RUNTIME_ROOT_DIR_NAME)
+        val legacyRootDir = File(context.filesDir, LEGACY_RUNTIME_ROOT_DIR_NAME)
+        val existingRoots = listOf(runtimeRootDir, legacyRootDir).filter { it.exists() }
+        if (existingRoots.isEmpty()) {
             return "clear -> no runtime data to remove"
         }
 
-        return if (rootDir.deleteRecursively()) {
-            "clear -> removed ${rootDir.absolutePath}"
+        val failedRoots = mutableListOf<String>()
+        for (root in existingRoots) {
+            if (!root.deleteRecursively()) {
+                failedRoots += root.absolutePath
+            }
+        }
+        return if (failedRoots.isEmpty()) {
+            "clear -> removed ${existingRoots.joinToString { it.absolutePath }}"
         } else {
-            "clear -> failed to remove ${rootDir.absolutePath}"
+            "clear -> failed to remove ${failedRoots.joinToString()}"
         }
     }
 
     fun clearTxtData(): ClearTxtResult {
-        val inputDir = File(context.filesDir, "time_tracer/input")
+        val inputDir = File(resolveRuntimeRootDir(), "input")
         if (!inputDir.exists()) {
             return ClearTxtResult(
                 ok = true,
@@ -139,6 +164,33 @@ internal class RuntimeEnvironment(private val context: Context) {
             ok = true,
             message = "clear txt -> removed $removedCount txt file(s) under ${inputDir.absolutePath}"
         )
+    }
+
+    private fun resolveRuntimeRootDir(): File {
+        val runtimeRootDir = File(context.filesDir, RUNTIME_ROOT_DIR_NAME)
+        migrateLegacyRuntimeRootIfNeeded(runtimeRootDir)
+        return runtimeRootDir
+    }
+
+    private fun migrateLegacyRuntimeRootIfNeeded(runtimeRootDir: File) {
+        if (runtimeRootDir.exists()) {
+            return
+        }
+
+        val legacyRootDir = File(context.filesDir, LEGACY_RUNTIME_ROOT_DIR_NAME)
+        if (!legacyRootDir.exists()) {
+            return
+        }
+
+        runtimeRootDir.parentFile?.mkdirs()
+        if (legacyRootDir.renameTo(runtimeRootDir)) {
+            return
+        }
+
+        val copied = legacyRootDir.copyRecursively(runtimeRootDir, overwrite = false)
+        if (copied) {
+            legacyRootDir.deleteRecursively()
+        }
     }
 
     private fun copyAssetTree(
@@ -202,5 +254,36 @@ internal class RuntimeEnvironment(private val context: Context) {
                 dir.deleteRecursively()
             }
         }
+    }
+
+    // Keep user-edited config files stable, but auto-repair legacy bundle schema
+    // when runtime still holds an old bundle.toml without visualization paths.
+    private fun refreshLegacyBundleTomlIfNeeded(rootDir: File) {
+        val bundleFile = File(rootDir, "config/meta/bundle.toml")
+        if (!bundleFile.exists()) {
+            return
+        }
+
+        val requiresRefresh = try {
+            val content = bundleFile.readText()
+            val hasVisualizationTable =
+                content.contains(Regex("""(?m)^\s*\[paths\.visualization\]\s*$"""))
+            val hasHeatmapPath =
+                content.contains(Regex("""(?m)^\s*heatmap\s*=\s*".+"\s*$"""))
+            !(hasVisualizationTable && hasHeatmapPath)
+        } catch (_: IOException) {
+            true
+        }
+
+        if (!requiresRefresh) {
+            return
+        }
+
+        copyAssetFile(
+            assetManager = context.assets,
+            assetPath = "$RUNTIME_ASSET_ROOT/config/meta/bundle.toml",
+            targetFile = bundleFile,
+            overwriteExistingFile = true
+        )
     }
 }

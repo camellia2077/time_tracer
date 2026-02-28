@@ -7,7 +7,8 @@ interface QueryGateway {
     ): ActivitySuggestionResult
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult
-    suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult
+    suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult
+    suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult
 }

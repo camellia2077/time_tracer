@@ -75,12 +75,12 @@ class TestVerifyCommand(TestCase):
         self.assertIn("--config", called_cmd)
         self.assertIn("config_android_style.toml", called_cmd)
 
-    def test_run_tests_time_tracer_uses_tracer_windows_cli_suite(self):
+    def test_run_tests_tracer_core_uses_tracer_windows_cli_suite(self):
         with patch(
             "toolchain.commands.cmd_quality.verify.run_command", return_value=0
         ) as mocked_run:
             result = self.command.run_tests(
-                app_name="time_tracer",
+                app_name="tracer_core",
                 build_dir_name="build_fast",
                 concise=True,
             )
@@ -99,7 +99,7 @@ class TestVerifyCommand(TestCase):
         self.assertIn("--skip-configure", called_cmd)
         self.assertIn("--concise", called_cmd)
 
-    def test_execute_time_tracer_builds_tracer_windows_cli_then_runs_suite(self):
+    def test_execute_tracer_core_builds_tracer_windows_cli_then_runs_suite(self):
         class FakeBuildCommand:
             last_build_kwargs = None
             last_resolve_kwargs = None
@@ -120,7 +120,7 @@ class TestVerifyCommand(TestCase):
                 "toolchain.commands.cmd_quality.verify.run_command", return_value=0
             ) as mocked_run:
                 result = self.command.execute(
-                    app_name="time_tracer",
+                    app_name="tracer_core",
                     build_dir_name="build_fast",
                     concise=True,
                 )
@@ -244,3 +244,105 @@ class TestVerifyCommand(TestCase):
         self.assertFalse(call_kwargs["success"])
         self.assertEqual(call_kwargs["exit_code"], 5)
         self.assertFalse(call_kwargs["build_only"])
+
+    def test_execute_unit_scope_only_runs_unit_checks(self):
+        class FakeBuildCommand:
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, **_kwargs):
+                return 0
+
+            def resolve_build_dir_name(self, **_kwargs):
+                return "build_fast"
+
+        with (
+            patch("toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ) as mocked_unit,
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ) as mocked_artifact,
+        ):
+            result = self.command.execute(
+                app_name="tracer_core",
+                build_dir_name="build_fast",
+                verify_scope="unit",
+            )
+
+        self.assertEqual(result, 0)
+        mocked_unit.assert_called_once()
+        mocked_artifact.assert_not_called()
+
+    def test_execute_artifact_scope_only_runs_artifact_checks(self):
+        class FakeBuildCommand:
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, **_kwargs):
+                return 0
+
+            def resolve_build_dir_name(self, **_kwargs):
+                return "build_fast"
+
+        with (
+            patch("toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ) as mocked_unit,
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ) as mocked_artifact,
+        ):
+            result = self.command.execute(
+                app_name="tracer_core",
+                build_dir_name="build_fast",
+                verify_scope="artifact",
+            )
+
+        self.assertEqual(result, 0)
+        mocked_unit.assert_not_called()
+        mocked_artifact.assert_called_once()
+
+    def test_execute_batch_scope_runs_unit_then_artifact(self):
+        class FakeBuildCommand:
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, **_kwargs):
+                return 0
+
+            def resolve_build_dir_name(self, **_kwargs):
+                return "build_fast"
+
+        with (
+            patch("toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ) as mocked_unit,
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ) as mocked_artifact,
+        ):
+            result = self.command.execute(
+                app_name="tracer_core",
+                build_dir_name="build_fast",
+                verify_scope="batch",
+            )
+
+        self.assertEqual(result, 0)
+        mocked_unit.assert_called_once()
+        mocked_artifact.assert_called_once()

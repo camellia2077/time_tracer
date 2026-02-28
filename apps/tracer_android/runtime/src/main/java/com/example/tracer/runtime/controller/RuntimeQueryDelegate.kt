@@ -4,7 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class RuntimeQueryDelegate(
-    private val responseCodec: NativeResponseCodec,
+    private val queryTranslator: NativeQueryTranslator,
+    private val executeNativeTreeQuery: (DataTreeQueryParams) -> NativeCallResult,
     private val executeNativeDataQuery: (
         request: DataQueryRequest,
         onRuntimePaths: ((RuntimePaths) -> Unit)?
@@ -31,28 +32,21 @@ internal class RuntimeQueryDelegate(
                 ),
                 null
             )
-
-            if (!queryResult.initialized) {
-                return@withContext ActivitySuggestionResult(
-                    ok = false,
-                    suggestions = emptyList(),
-                    message = extractNativeInitFailureMessage(
-                        rawResponse = queryResult.rawResponse,
-                        responseCodec = responseCodec
+            val contentResult = queryTranslator.toContentResult(
+                queryResult = queryResult,
+                defaultFailureMessage = "query activity suggestions failed."
+            )
+            val rawActivities = when (contentResult) {
+                is DomainResult.Success -> parseSuggestedActivities(contentResult.value)
+                is DomainResult.Failure -> {
+                    return@withContext ActivitySuggestionResult(
+                        ok = false,
+                        suggestions = emptyList(),
+                        message = contentResult.error.legacyMessage(),
+                        operationId = contentResult.error.operationId
                     )
-                )
+                }
             }
-
-            val payload = responseCodec.parse(queryResult.rawResponse)
-            if (!payload.ok) {
-                return@withContext ActivitySuggestionResult(
-                    ok = false,
-                    suggestions = emptyList(),
-                    message = payload.errorMessage.ifEmpty { "query activity suggestions failed." }
-                )
-            }
-
-            val rawActivities = parseSuggestedActivities(payload.content)
             val mappingNamesResult = queryActivityMappingNamesFromCore()
             val validActivityNames = if (mappingNamesResult.ok) {
                 mappingNamesResult.names.toSet()
@@ -68,7 +62,8 @@ internal class RuntimeQueryDelegate(
             ActivitySuggestionResult(
                 ok = true,
                 suggestions = suggestions,
-                message = buildSuggestionResultMessage(suggestions, lookbackDays)
+                message = buildSuggestionResultMessage(suggestions, lookbackDays),
+                operationId = queryResult.operationId
             )
         } catch (error: Exception) {
             ActivitySuggestionResult(
@@ -123,7 +118,62 @@ internal class RuntimeQueryDelegate(
             )
         }
 
-    suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
+    suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
+        withContext(Dispatchers.IO) {
+            val periodValidation = validateAndNormalizePeriodArgument(
+                period = params.period,
+                periodArgument = params.periodArgument
+            )
+            if (periodValidation.error != null) {
+                return@withContext TreeQueryResult(
+                    ok = false,
+                    found = false,
+                    message = periodValidation.error.message,
+                    operationId = periodValidation.error.operationId
+                )
+            }
+            val normalizedParams = params.copy(periodArgument = periodValidation.argument)
+
+            try {
+                val structuredResult = queryTranslator.toTreeQueryResult(
+                    executeNativeTreeQuery(normalizedParams)
+                )
+                if (structuredResult.ok) {
+                    return@withContext structuredResult
+                }
+
+                val legacyResult = runLegacyTreeQuery(normalizedParams)
+                if (!legacyResult.ok) {
+                    return@withContext structuredResult
+                }
+                val operationId = structuredResult.operationId.ifBlank {
+                    legacyResult.operationId
+                }
+                TreeQueryResult(
+                    ok = true,
+                    found = legacyResult.outputText.isNotBlank(),
+                    roots = emptyList(),
+                    nodes = emptyList(),
+                    message = buildTreeResultMessage(
+                        found = legacyResult.outputText.isNotBlank(),
+                        roots = emptyList(),
+                        nodes = emptyList(),
+                        usesTextFallback = true
+                    ),
+                    operationId = operationId,
+                    legacyText = legacyResult.outputText,
+                    usesTextFallback = true
+                )
+            } catch (error: Exception) {
+                TreeQueryResult(
+                    ok = false,
+                    found = false,
+                    message = formatNativeFailure("query project tree failed", error)
+                )
+            }
+        }
+
+    suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
         withContext(Dispatchers.IO) {
             val periodValidation = validateAndNormalizePeriodArgument(
                 period = params.period,
@@ -132,14 +182,7 @@ internal class RuntimeQueryDelegate(
             if (periodValidation.error != null) {
                 return@withContext periodValidation.error
             }
-            runDataQuery(
-                request = DataQueryRequest(
-                    action = NativeBridge.QUERY_ACTION_TREE,
-                    treePeriod = params.period.wireValue,
-                    treePeriodArgument = periodValidation.argument,
-                    treeMaxDepth = params.level
-                )
-            )
+            runLegacyTreeQuery(params.copy(periodArgument = periodValidation.argument))
         }
 
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
@@ -172,7 +215,8 @@ internal class RuntimeQueryDelegate(
                     return@withContext ReportChartQueryResult(
                         ok = false,
                         data = null,
-                        message = queryResult.message
+                        message = queryResult.message,
+                        operationId = queryResult.operationId
                     )
                 }
 
@@ -180,13 +224,18 @@ internal class RuntimeQueryDelegate(
                     ?: return@withContext ReportChartQueryResult(
                         ok = false,
                         data = null,
-                        message = "report chart query returned invalid payload."
+                        message = appendFailureContext(
+                            message = "report chart query returned invalid payload.",
+                            operationId = queryResult.operationId
+                        ),
+                        operationId = queryResult.operationId
                     )
 
                 ReportChartQueryResult(
                     ok = true,
                     data = parsed,
-                    message = buildReportChartResultMessage(parsed.points.size)
+                    message = buildReportChartResultMessage(parsed.points.size),
+                    operationId = queryResult.operationId
                 )
             } catch (error: Exception) {
                 ReportChartQueryResult(
@@ -212,27 +261,17 @@ internal class RuntimeQueryDelegate(
 
     private fun runDataQuery(request: DataQueryRequest): DataQueryTextResult {
         val queryResult = executeNativeDataQuery(request, null)
+        return queryTranslator.toDataQueryTextResult(queryResult)
+    }
 
-        if (!queryResult.initialized) {
-            return DataQueryTextResult(
-                ok = false,
-                outputText = "",
-                message = extractNativeInitFailureMessage(
-                    rawResponse = queryResult.rawResponse,
-                    responseCodec = responseCodec
-                )
+    private fun runLegacyTreeQuery(params: DataTreeQueryParams): DataQueryTextResult {
+        return runDataQuery(
+            request = DataQueryRequest(
+                action = NativeBridge.QUERY_ACTION_TREE,
+                treePeriod = params.period.wireValue,
+                treePeriodArgument = params.periodArgument,
+                treeMaxDepth = params.level
             )
-        }
-
-        val payload = responseCodec.parse(queryResult.rawResponse)
-        return DataQueryTextResult(
-            ok = payload.ok,
-            outputText = if (payload.ok) payload.content else "",
-            message = if (payload.ok) {
-                "query ok"
-            } else {
-                payload.errorMessage.ifEmpty { "data query failed." }
-            }
         )
     }
 
@@ -246,7 +285,11 @@ internal class RuntimeQueryDelegate(
             return ActivityMappingNamesResult(
                 ok = false,
                 names = emptyList(),
-                message = "mapping names query failed: ${queryResult.message}"
+                message = appendFailureContext(
+                    message = "mapping names query failed: ${queryResult.message}",
+                    operationId = queryResult.operationId
+                ),
+                operationId = queryResult.operationId
             )
         }
 
@@ -255,14 +298,19 @@ internal class RuntimeQueryDelegate(
             return ActivityMappingNamesResult(
                 ok = false,
                 names = emptyList(),
-                message = "mapping names query failed: empty names."
+                message = appendFailureContext(
+                    message = "mapping names query failed: empty names.",
+                    operationId = queryResult.operationId
+                ),
+                operationId = queryResult.operationId
             )
         }
 
         return ActivityMappingNamesResult(
             ok = true,
             names = names,
-            message = "Loaded ${names.size} mapping names."
+            message = "Loaded ${names.size} mapping names.",
+            operationId = queryResult.operationId
         )
     }
 }

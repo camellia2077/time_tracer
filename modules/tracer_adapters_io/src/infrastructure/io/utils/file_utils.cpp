@@ -24,7 +24,7 @@ auto FindFilesByExtensionRecursively(const fs::path& root_path,
       }
     }
   } catch (const fs::filesystem_error& e) {
-    time_tracer::domain::ports::EmitError(
+    tracer_core::domain::ports::EmitError(
         "Filesystem error accessing directory " + root_path.string() + ": " +
         e.what());
   }
@@ -40,10 +40,10 @@ auto ResolveFiles(const std::vector<std::string>& input_paths,
   for (const std::string& path_str : input_paths) {
     fs::path input_path(path_str);
     if (!fs::exists(input_path)) {
-      time_tracer::domain::ports::EmitWarn(
-          std::string(time_tracer::common::colors::kYellow) +
+      tracer_core::domain::ports::EmitWarn(
+          std::string(tracer_core::common::colors::kYellow) +
           "Warning: Path does not exist: " + path_str +
-          std::string(time_tracer::common::colors::kReset));
+          std::string(tracer_core::common::colors::kReset));
       continue;
     }
 

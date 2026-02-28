@@ -20,7 +20,7 @@
 | `activity-suggest` | `lookback_days/top/prefix/score_mode` | 评分聚合（核心查询层） | `items[].score`, `total_count` | `items=[]`, `total_count=0` |
 
 ## 边界说明
-1. 统计公式只允许存在于 `apps/time_tracer/src/infrastructure/query/data/stats/`。
-2. 时间范围解析与 action 编排只允许存在于 `apps/time_tracer/src/infrastructure/query/data/orchestrators/`。
-3. 文本与语义 JSON 渲染只允许存在于 `apps/time_tracer/src/infrastructure/query/data/renderers/`。
+1. 统计公式只允许存在于 `apps/tracer_core/src/infrastructure/query/data/stats/`。
+2. 时间范围解析与 action 编排只允许存在于 `apps/tracer_core/src/infrastructure/query/data/orchestrators/`。
+3. 文本与语义 JSON 渲染只允许存在于 `apps/tracer_core/src/infrastructure/query/data/renderers/`。
 4. Core/CLI/Android adapter 只做请求映射、调用转发、结果解码与错误映射。

@@ -16,6 +16,14 @@ def register(parser: argparse.ArgumentParser, _: ParserDefaults) -> None:
         default=None,
         help="Restrict clean scope to one batch (e.g. 1, 001, batch_001).",
     )
+    parser.add_argument(
+        "--cluster-by-file",
+        action="store_true",
+        help=(
+            "Expand specified task id(s) to all tasks in the same batch "
+            "that point to the same source file."
+        ),
+    )
     parser.add_argument("task_ids", nargs="+")
 
 
@@ -26,6 +34,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         task_ids=args.task_ids,
         strict=args.strict,
         batch_id=args.batch_id,
+        cluster_by_file=args.cluster_by_file,
     )
 
 

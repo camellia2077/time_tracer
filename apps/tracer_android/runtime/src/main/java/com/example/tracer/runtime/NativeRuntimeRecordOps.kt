@@ -73,7 +73,12 @@ internal fun buildRecordSyncFailureResult(
     if (!syncResult.initialized) {
         return RecordActionResult(
             ok = false,
-            message = "$recordSummary\nsync: failed (native init failed)"
+            message = appendFailureContext(
+                message = "$recordSummary\nsync: failed (native init failed)",
+                operationId = syncResult.operationId,
+                errorLogPath = syncResult.errorLogPath
+            ),
+            operationId = syncResult.operationId
         )
     }
     if (syncResult.operationOk) {
@@ -88,7 +93,12 @@ internal fun buildRecordSyncFailureResult(
     }
     return RecordActionResult(
         ok = false,
-        message = "$recordSummary\nsync: failed ($error)"
+        message = appendFailureContext(
+            message = "$recordSummary\nsync: failed ($error)",
+            operationId = syncResult.operationId,
+            errorLogPath = syncResult.errorLogPath
+        ),
+        operationId = syncResult.operationId
     )
 }
 

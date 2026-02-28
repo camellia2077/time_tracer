@@ -11,7 +11,7 @@ def register(parser: argparse.ArgumentParser, _: ParserDefaults) -> None:
         default=None,
         help=(
             "Override config root directory (default inferred from app; "
-            "for tracer_windows_cli/time_tracer it is apps/time_tracer/config)."
+            "for tracer_windows_cli/tracer_core it is apps/tracer_core/config)."
         ),
     )
     parser.add_argument(

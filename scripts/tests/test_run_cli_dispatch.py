@@ -46,7 +46,7 @@ class TestRunCliDispatch(TestCase):
                     "run.py",
                     "build",
                     "--app",
-                    "time_tracer",
+                    "tracer_core",
                     "--profile",
                     "fast",
                     "--cmake-args=-DA=1",
@@ -57,7 +57,7 @@ class TestRunCliDispatch(TestCase):
         self.assertIsNotNone(FakeBuildCommand.last_kwargs)
         args = FakeBuildCommand.last_args
         kwargs = FakeBuildCommand.last_kwargs
-        self.assertEqual(args[0], "time_tracer")
+        self.assertEqual(args[0], "tracer_core")
         self.assertFalse(args[1])
         self.assertEqual(args[2], [])
         self.assertEqual(kwargs["profile_name"], "fast")
@@ -80,14 +80,14 @@ class TestRunCliDispatch(TestCase):
                     "run.py",
                     "post-change",
                     "--app",
-                    "time_tracer",
+                    "tracer_core",
                     "--dry-run",
                 ]
             )
 
         self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
         kwargs = FakePostChangeCommand.last_kwargs
-        self.assertEqual(kwargs["app_name"], "time_tracer")
+        self.assertEqual(kwargs["app_name"], "tracer_core")
         self.assertEqual(kwargs["profile_name"], None)
         self.assertEqual(kwargs["build_dir_name"], "build_fast")
 
@@ -108,7 +108,7 @@ class TestRunCliDispatch(TestCase):
                     "run.py",
                     "post-change",
                     "--app",
-                    "time_tracer",
+                    "tracer_core",
                     "--profile",
                     "fast",
                     "--dry-run",

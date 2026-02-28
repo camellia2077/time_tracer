@@ -1,3 +1,4 @@
+新建文件夹。画大饼。
 Role (角色): Backend Synchronizer & Linux Headless Client (后端同步中心与 Linux 无界面客户端)。
 
 Tech Stack (技术栈): Rust (Tokio / Axum / Serde)。

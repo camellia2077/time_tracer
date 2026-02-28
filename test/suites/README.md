@@ -2,7 +2,7 @@
 
 Canonical table-driven suite definitions.
 
-- `tracer_windows_cli/`: integrated suite for core + Windows CLI (`apps/tracer_windows_cli` build target).
+- `tracer_windows_cli/`: integrated suite for core + Windows CLI (`apps/tracer_cli/windows` build target).
 - `tracer_android/`: host-side verification checks for `apps/tracer_android`.
 - `log_generator/`: config for `apps/log_generator`.
 
@@ -37,3 +37,4 @@ Schema validation is enforced before test execution starts:
 Manual lint command:
 
 - `python test/suites/lint_suites.py`
+

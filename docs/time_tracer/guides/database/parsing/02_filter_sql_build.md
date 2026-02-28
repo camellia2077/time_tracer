@@ -42,10 +42,10 @@ return clauses, params
 
 ## 5. 源码定位
 
-- `apps/time_tracer/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BuildWhereClauses(...)`
-- `apps/time_tracer/src/infrastructure/query/data/data_query_repository_sql.cpp`：`EscapeLikeLiteral(...)`
-- `apps/time_tracer/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BuildProjectDateJoinSql()`
-- `apps/time_tracer/src/infrastructure/query/data/data_query_repository_sql.hpp`
+- `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BuildWhereClauses(...)`
+- `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`：`EscapeLikeLiteral(...)`
+- `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BuildProjectDateJoinSql()`
+- `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.hpp`
 
 ## 6. 下一步
 

@@ -1,6 +1,6 @@
 # test/cases/ingest.py
-from ..core.base import BaseTester, TestCounter
 from ..conf.definitions import TestContext, TestReport
+from ..core.base import BaseTester, TestCounter
 
 
 class IngestTester(BaseTester):

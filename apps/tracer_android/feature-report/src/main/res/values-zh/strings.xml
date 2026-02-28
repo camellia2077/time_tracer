@@ -50,7 +50,14 @@
     <string name="report_chart_visual_line">折线图</string>
     <string name="report_chart_visual_bar">柱状图</string>
     <string name="report_chart_visual_pie">饼状图</string>
+    <string name="report_chart_visual_heatmap_month">月热力图</string>
+    <string name="report_chart_visual_heatmap_year">年热力图</string>
     <string name="report_chart_pie_hint">点击扇区查看日期和时长。</string>
+    <string name="report_chart_heatmap_hint">点击日期方格查看日期和时长。</string>
+    <string name="report_chart_heatmap_theme_policy_label">热力图主题</string>
+    <string name="report_chart_heatmap_theme_policy_system">跟随系统（默认）</string>
+    <string name="report_chart_heatmap_theme_policy_palette">手动选择</string>
+    <string name="report_chart_heatmap_palette_label">手动配色</string>
     <string name="report_chart_axis_x_date">X 轴：日期（MM-dd）</string>
     <string name="report_chart_axis_y_hours">Y 轴：时长（小时）</string>
     <string name="report_chart_toggle_average_line">显示平均线</string>
@@ -82,6 +89,12 @@
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart 运行中...</string>
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_result_title_report">报表结果</string>
+    <string name="report_result_title_chart">图表结果</string>
+    <string name="report_result_title_analysis_error">分析错误</string>
+    <string name="report_result_title_stats">%1$s统计结果</string>
+    <string name="report_result_title_tree">%1$s树结果</string>
 
     <string name="report_error_tree_level_min">树层级必须 &gt;= -1。</string>
     <string name="report_error_chart_payload_invalid">图表数据载荷无效。</string>

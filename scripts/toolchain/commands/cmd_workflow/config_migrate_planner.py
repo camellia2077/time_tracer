@@ -203,7 +203,7 @@ def build_bundle_model(
     return {
         "schema_version": 1,
         "profile": profile,
-        "bundle_name": "time_tracer_config",
+        "bundle_name": "tracer_core_config",
         "file_list": {
             "required": sorted(required),
             "optional": collect_optional_files(config_root),

@@ -14,11 +14,17 @@
 
 ## 变更落点
 1. 修改 `tracer_core_*` C ABI、JSON 字段契约、响应包结构：更新 `docs/time_tracer/core/contracts/c_abi.md`。
-2. 修改 JNI <-> Kotlin 协议、Android runtime 网关行为：更新 `docs/time_tracer/clients/android_ui/runtime-protocol.md`。
-3. 修改 envelope/fields/runtime codec 实现：更新 `modules/tracer_transport/README.md`（并按需在契约层文档补充结论）。
-4. 修改 Android/CLI 的表现层差异（例如 Android 新增图表、CLI 仅文本）：同时更新
+2. 修改 `report-chart` 字段、统计口径、跨端图表契约：先更新
+   - `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+   - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
+   - `docs/time_tracer/core/contracts/stats/README.md`
+3. 修改 JNI <-> Kotlin 协议、Android runtime 网关行为：更新 `docs/time_tracer/clients/android_ui/runtime-protocol.md`。
+4. 修改 envelope/fields/runtime codec 实现：更新 `modules/tracer_transport/README.md`（并按需在契约层文档补充结论）。
+5. 修改 Android/CLI 的表现层差异（例如 Android 新增图表、CLI 仅文本）：同时更新
    - `docs/time_tracer/clients/android_ui/features.md`
    - `docs/time_tracer/clients/windows_cli/README.md`
+6. 修改报告生成链路中的“数据一致性规则”（例如路径映射来源、缓存刷新策略、长生命周期行为）：更新
+   - `docs/time_tracer/core/contracts/reporting/report_data_consistency_spec_v1.md`
 
 ## 表现层能力差异（Android vs Windows CLI）
 1. 该类差异属于“展现层（UI/CLI）”范围，不属于 Core ABI 契约差异。

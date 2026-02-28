@@ -39,9 +39,7 @@ def _validate_paths(
     if "default_build_dir" in paths:
         _require_non_empty_string(paths, "default_build_dir", "paths", errors)
 
-    project_apps_root = _require_non_empty_string(
-        paths, "project_apps_root", "paths", errors
-    )
+    project_apps_root = _require_non_empty_string(paths, "project_apps_root", "paths", errors)
     test_data_path = _require_non_empty_string(paths, "test_data_path", "paths", errors)
 
     must_exist_map = {

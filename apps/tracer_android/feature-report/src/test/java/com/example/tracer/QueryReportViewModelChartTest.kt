@@ -4,6 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -107,7 +108,7 @@ class QueryReportViewModelChartTest {
     }
 
     @Test
-    fun switchToChart_withoutCoreStats_keepsNullStats_forUiFallback() = runTest {
+    fun switchToChart_withoutCoreStats_usesDerivedStatsFromPipeline() = runTest {
         val fakeQueryGateway = FakeChartQueryGateway(includeCoreStats = false)
         val viewModel = QueryReportViewModel(
             reportGateway = FakeChartReportGateway(),
@@ -119,11 +120,13 @@ class QueryReportViewModelChartTest {
 
         val state = viewModel.uiState
         assertEquals(2, state.chartPoints.size)
-        assertEquals(null, state.chartAverageDurationSeconds)
-        assertEquals(null, state.chartTotalDurationSeconds)
-        assertEquals(null, state.chartActiveDays)
-        assertEquals(null, state.chartRangeDays)
+        assertEquals(4500L, state.chartAverageDurationSeconds)
+        assertEquals(9000L, state.chartTotalDurationSeconds)
+        assertEquals(2, state.chartActiveDays)
+        assertEquals(2, state.chartRangeDays)
         assertEquals(true, state.chartUsesLegacyStatsFallback)
+        assertNotNull(state.chartLastTrace)
+        assertEquals(false, state.chartLastTrace?.cacheHit)
     }
 }
 
@@ -173,7 +176,10 @@ private class FakeChartQueryGateway(
     override suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
-    override suspend fun queryProjectTree(params: DataTreeQueryParams): DataQueryTextResult =
+    override suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
+        TreeQueryResult(ok = true, found = false, message = "ok")
+
+    override suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
         DataQueryTextResult(ok = true, outputText = "", message = "ok")
 
     override suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult {

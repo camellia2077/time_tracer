@@ -50,7 +50,14 @@
     <string name="report_chart_visual_line">折れ線</string>
     <string name="report_chart_visual_bar">棒</string>
     <string name="report_chart_visual_pie">円</string>
+    <string name="report_chart_visual_heatmap_month">ヒートマップ（月）</string>
+    <string name="report_chart_visual_heatmap_year">ヒートマップ（年）</string>
     <string name="report_chart_pie_hint">扇形をタップして日付と時間を表示します。</string>
+    <string name="report_chart_heatmap_hint">日付セルをタップして日付と時間を表示します。</string>
+    <string name="report_chart_heatmap_theme_policy_label">ヒートマップテーマ</string>
+    <string name="report_chart_heatmap_theme_policy_system">システム（デフォルト）</string>
+    <string name="report_chart_heatmap_theme_policy_palette">手動</string>
+    <string name="report_chart_heatmap_palette_label">手動パレット</string>
     <string name="report_chart_axis_x_date">X 軸: 日付（MM-dd）</string>
     <string name="report_chart_axis_y_hours">Y 軸: 時間（時間）</string>
     <string name="report_chart_toggle_average_line">平均線を表示</string>
@@ -82,6 +89,12 @@
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart 実行中...</string>
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_result_title_report">レポート結果</string>
+    <string name="report_result_title_chart">グラフ結果</string>
+    <string name="report_result_title_analysis_error">解析エラー</string>
+    <string name="report_result_title_stats">%1$s 統計結果</string>
+    <string name="report_result_title_tree">%1$s ツリー結果</string>
 
     <string name="report_error_tree_level_min">ツリーレベルは -1 以上である必要があります。</string>
     <string name="report_error_chart_payload_invalid">グラフデータのペイロードが無効です。</string>

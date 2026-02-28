@@ -44,6 +44,8 @@ void TestParseMissingOptionalDefaults(int& failures) {
          "Missing `error_message` should default to empty string.", failures);
   Expect(parsed.envelope.content.empty(),
          "Missing `content` should default to empty string.", failures);
+  Expect(!parsed.envelope.report_hash_sha256.has_value(),
+         "Missing `report_hash_sha256` should default to nullopt.", failures);
 }
 
 void TestParseOptionalTypeMismatchDefaults(int& failures) {
@@ -115,6 +117,20 @@ void TestSerializeRoundTrip(int& failures) {
          "Roundtrip `error_message` mismatch.", failures);
   Expect(parsed.envelope.content == envelope.content,
          "Roundtrip `content` mismatch.", failures);
+  Expect(!parsed.envelope.report_hash_sha256.has_value(),
+         "Roundtrip missing hash should keep nullopt.", failures);
+}
+
+void TestSerializeRoundTripWithHash(int& failures) {
+  auto envelope = BuildResponseEnvelope(true, "", "report body");
+  envelope.report_hash_sha256 =
+      "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef";
+  const std::string serialized = SerializeResponseEnvelope(envelope);
+  const auto parsed = ParseResponseEnvelope(serialized, "roundtrip_with_hash");
+  Expect(!parsed.HasError(),
+         "Serialized envelope with hash should parse back.", failures);
+  Expect(parsed.envelope.report_hash_sha256 == envelope.report_hash_sha256,
+         "Roundtrip `report_hash_sha256` mismatch.", failures);
 }
 
 }  // namespace
@@ -129,6 +145,7 @@ auto main() -> int {
   TestParseInvalidJson(failures);
   TestParseNonObjectJson(failures);
   TestSerializeRoundTrip(failures);
+  TestSerializeRoundTripWithHash(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_transport_tests\n";

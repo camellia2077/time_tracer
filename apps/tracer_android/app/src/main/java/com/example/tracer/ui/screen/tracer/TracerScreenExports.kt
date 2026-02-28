@@ -1,6 +1,5 @@
 package com.example.tracer
 
-import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
@@ -14,7 +13,11 @@ import kotlinx.coroutines.launch
 
 internal data class TracerExportActions(
     val onExportAllMonthsTxt: () -> Unit,
+    val onExportAllMonthsTracer: () -> Unit,
     val isTxtExportInProgress: Boolean,
+    val isTracerExportInProgress: Boolean,
+    val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
+    val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
     val onExportAndroidConfigBundle: () -> Unit
 )
 
@@ -24,11 +27,18 @@ internal fun rememberTracerExportActions(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     recordUiState: RecordUiState,
     txtStorageGateway: TxtStorageGateway,
+    cryptoGateway: FileCryptoGateway,
     recordViewModel: RecordViewModel,
     configViewModel: ConfigViewModel
 ): TracerExportActions {
-    var pendingConfigExportEntries by remember { mutableStateOf<List<ConfigExportEntry>>(emptyList()) }
     var isTxtExportInProgress by remember { mutableStateOf(false) }
+    var isTracerExportInProgress by remember { mutableStateOf(false) }
+    var tracerSecurityLevel by remember { mutableStateOf(FileCryptoSecurityLevel.INTERACTIVE) }
+    val onExportAndroidConfigBundle = rememberTracerAndroidConfigExportAction(
+        context = context,
+        coroutineScope = coroutineScope,
+        configViewModel = configViewModel
+    )
 
     val exportAllTxtLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
@@ -42,157 +52,12 @@ internal fun rememberTracerExportActions(
         coroutineScope.launch {
             val message = runCatching {
                 withContext(Dispatchers.IO) {
-                    val monthKeys = recordUiState.availableMonths.sorted()
-                    if (monthKeys.isEmpty()) {
-                        return@withContext context.getString(R.string.tracer_export_all_failed_no_months)
-                    }
-
-                    val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
-                    val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
-                        treeUri,
-                        treeDocumentId
-                    )
-                    val datesRootUri = ensureDirectoryChild(
-                        contentResolver = context.contentResolver,
+                    exportAllMonthsTxtToTree(
+                        context = context,
                         treeUri = treeUri,
-                        parentDocumentUri = rootDocumentUri,
-                        directoryName = "dates"
-                    ) ?: return@withContext context.getString(
-                        R.string.tracer_export_all_failed_dates_folder
+                        recordUiState = recordUiState,
+                        txtStorageGateway = txtStorageGateway
                     )
-
-                    var successCount = 0
-                    val errors = mutableListOf<String>()
-                    val normalizedHistoryFiles = recordUiState.historyFiles
-                        .map { it.replace('\\', '/') }
-                        .sorted()
-                    val monthToSourcePath = buildMonthToSourcePathIndex(
-                        historyFiles = normalizedHistoryFiles,
-                        readTxtFile = { path -> txtStorageGateway.readTxtFile(path) }
-                    )
-
-                    for (monthKey in monthKeys) {
-                        val normalizedMonthKey = normalizeMonthKey(monthKey)
-                        if (normalizedMonthKey == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_invalid_month_key,
-                                monthKey
-                            )
-                            continue
-                        }
-
-                        val sourcePath = monthToSourcePath[normalizedMonthKey]
-                        if (sourcePath == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_source_file_not_found,
-                                normalizedMonthKey
-                            )
-                            continue
-                        }
-
-                        val content = if (
-                            recordUiState.selectedMonth == normalizedMonthKey &&
-                            recordUiState.selectedHistoryFile.replace('\\', '/') == sourcePath
-                        ) {
-                            recordUiState.editableHistoryContent
-                        } else {
-                            val readResult = txtStorageGateway.readTxtFile(sourcePath)
-                            if (!readResult.ok) {
-                                errors += context.getString(
-                                    R.string.tracer_export_error_read_failed,
-                                    normalizedMonthKey,
-                                    readResult.message
-                                )
-                                continue
-                            }
-                            readResult.content
-                        }
-
-                        val exportYear = extractExportYearFromFirstLine(content)
-                        if (exportYear == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_invalid_txt_header,
-                                normalizedMonthKey
-                            )
-                            continue
-                        }
-
-                        val yearDirUri = ensureDirectoryChild(
-                            contentResolver = context.contentResolver,
-                            treeUri = treeUri,
-                            parentDocumentUri = datesRootUri,
-                            directoryName = exportYear
-                        )
-                        if (yearDirUri == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_year_folder,
-                                normalizedMonthKey,
-                                exportYear
-                            )
-                            continue
-                        }
-
-                        val exportName = "$normalizedMonthKey.txt"
-                        val outputUri = resolveOrCreateTextDocumentForOverwrite(
-                            contentResolver = context.contentResolver,
-                            treeUri = treeUri,
-                            parentDocumentUri = yearDirUri,
-                            fileName = exportName
-                        )
-                        if (outputUri == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_create_target_file,
-                                normalizedMonthKey
-                            )
-                            continue
-                        }
-
-                        val writeOk = runCatching {
-                            val output = context.contentResolver.openOutputStream(outputUri, "wt")
-                                ?: error(context.getString(R.string.tracer_export_error_open_output_stream))
-                            output.use { stream ->
-                                writeUtf8Text(
-                                    output = stream,
-                                    content = content,
-                                    includeBom = true
-                                )
-                            }
-                        }.isSuccess
-
-                        if (writeOk) {
-                            successCount++
-                        } else {
-                            errors += context.getString(
-                                R.string.tracer_export_error_write_failed,
-                                normalizedMonthKey
-                            )
-                        }
-                    }
-
-                    if (errors.isEmpty()) {
-                        context.resources.getQuantityString(
-                            R.plurals.tracer_export_all_success,
-                            successCount,
-                            successCount
-                        )
-                    } else {
-                        val head = errors.take(3).joinToString(" | ")
-                        val tail = if (errors.size > 3) {
-                            context.resources.getQuantityString(
-                                R.plurals.tracer_export_error_tail,
-                                errors.size,
-                                errors.size
-                            )
-                        } else {
-                            ""
-                        }
-                        context.getString(
-                            R.string.tracer_export_all_completed,
-                            successCount,
-                            monthKeys.size,
-                            "$head$tail"
-                        )
-                    }
                 }
             }.getOrElse { error ->
                 context.getString(
@@ -204,8 +69,56 @@ internal fun rememberTracerExportActions(
             isTxtExportInProgress = false
         }
     }
+
+    val exportAllTracerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { treeUri ->
+        if (treeUri == null) {
+            recordViewModel.clearCryptoProgress()
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_tracer_canceled))
+            isTracerExportInProgress = false
+            return@rememberLauncherForActivityResult
+        }
+
+        coroutineScope.launch {
+            val passphrase = promptPassphrase(
+                context = context,
+                title = context.getString(R.string.tracer_crypto_passphrase_encrypt_title),
+                firstHint = context.getString(R.string.tracer_crypto_passphrase_hint),
+                secondHint = context.getString(R.string.tracer_crypto_passphrase_confirm_hint),
+                requiredMessage = context.getString(R.string.tracer_crypto_passphrase_required),
+                mismatchMessage = context.getString(R.string.tracer_crypto_passphrase_mismatch)
+            )
+            if (passphrase.isNullOrBlank()) {
+                recordViewModel.clearCryptoProgress()
+                recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_tracer_canceled))
+                isTracerExportInProgress = false
+                return@launch
+            }
+
+            recordViewModel.startCryptoProgress("导出 TRACER")
+            val exportResult = withContext(Dispatchers.IO) {
+                exportAllMonthsTracerToTree(
+                    context = context,
+                    treeUri = treeUri,
+                    recordUiState = recordUiState,
+                    txtStorageGateway = txtStorageGateway,
+                    cryptoGateway = cryptoGateway,
+                    recordViewModel = recordViewModel,
+                    passphrase = passphrase,
+                    tracerSecurityLevel = tracerSecurityLevel
+                )
+            }
+            recordViewModel.finishCryptoProgress(
+                statusText = exportResult.progressStatusText,
+                keepVisible = true
+            )
+            recordViewModel.setStatusText(exportResult.message)
+            isTracerExportInProgress = false
+        }
+    }
     val onExportAllMonthsTxt: () -> Unit = {
-        if (isTxtExportInProgress) {
+        if (isTxtExportInProgress || isTracerExportInProgress) {
             recordViewModel.setStatusText(context.getString(R.string.tracer_export_already_in_progress))
         } else if (recordUiState.availableMonths.isEmpty()) {
             recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_failed_no_months))
@@ -215,124 +128,27 @@ internal fun rememberTracerExportActions(
             exportAllTxtLauncher.launch(null)
         }
     }
-
-    val exportConfigLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocumentTree()
-    ) { treeUri ->
-        if (treeUri == null) {
-            configViewModel.setStatusText(context.getString(R.string.tracer_export_config_canceled))
-            return@rememberLauncherForActivityResult
-        }
-
-        val entries = pendingConfigExportEntries
-        if (entries.isEmpty()) {
-            configViewModel.setStatusText(context.getString(R.string.tracer_export_failed_no_config_entries))
-            return@rememberLauncherForActivityResult
-        }
-
-        coroutineScope.launch {
-            val message = withContext(Dispatchers.IO) {
-                runCatching {
-                    val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
-                    val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
-                        treeUri,
-                        treeDocumentId
-                    )
-                    var successCount = 0
-                    val errors = mutableListOf<String>()
-
-                    for (entry in entries) {
-                        val outputUri =
-                            resolveOrCreateTextDocumentByRelativePathForOverwrite(
-                                contentResolver = context.contentResolver,
-                                treeUri = treeUri,
-                                rootDocumentUri = rootDocumentUri,
-                                relativePath = entry.relativePath
-                            )
-                        if (outputUri == null) {
-                            errors += context.getString(
-                                R.string.tracer_export_error_resolve_target,
-                                entry.relativePath
-                            )
-                            continue
-                        }
-
-                        val writeOk = runCatching {
-                            val output = context.contentResolver.openOutputStream(outputUri, "wt")
-                                ?: error(
-                                    context.getString(R.string.tracer_export_error_open_destination_stream)
-                                )
-                            output.use { stream ->
-                                writeUtf8Text(
-                                    output = stream,
-                                    content = entry.content,
-                                    includeBom = false
-                                )
-                            }
-                        }.isSuccess
-
-                        if (writeOk) {
-                            successCount++
-                        } else {
-                            errors += context.getString(
-                                R.string.tracer_export_error_write_failed_path,
-                                entry.relativePath
-                            )
-                        }
-                    }
-
-                    if (errors.isEmpty()) {
-                        context.getString(R.string.tracer_export_config_success, successCount)
-                    } else {
-                        val head = errors.take(3).joinToString(" | ")
-                        val tail = if (errors.size > 3) {
-                            context.resources.getQuantityString(
-                                R.plurals.tracer_export_error_tail,
-                                errors.size,
-                                errors.size
-                            )
-                        } else {
-                            ""
-                        }
-                        context.getString(
-                            R.string.tracer_export_config_completed,
-                            successCount,
-                            entries.size,
-                            "$head$tail"
-                        )
-                    }
-                }.getOrElse { error ->
-                    context.getString(
-                        R.string.tracer_export_config_failed,
-                        error.message ?: context.getString(R.string.tracer_export_unknown_error)
-                    )
-                }
-            }
-            configViewModel.setStatusText(message)
-        }
-    }
-
-    val onExportAndroidConfigBundle: () -> Unit = {
-        coroutineScope.launch {
-            configViewModel.setStatusText(context.getString(R.string.tracer_export_prepare_android_config))
-            val buildResult = withContext(Dispatchers.IO) {
-                configViewModel.buildAndroidExportBundle()
-            }
-            if (!buildResult.ok || buildResult.bundle == null) {
-                configViewModel.setStatusText(buildResult.message)
-                return@launch
-            }
-            pendingConfigExportEntries = buildResult.bundle.entries
-            configViewModel.setStatusText(
-                context.getString(R.string.tracer_export_select_android_config_directory)
-            )
-            exportConfigLauncher.launch(null)
+    val onExportAllMonthsTracer: () -> Unit = {
+        if (isTxtExportInProgress || isTracerExportInProgress) {
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_already_in_progress))
+        } else if (recordUiState.availableMonths.isEmpty()) {
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_failed_no_months))
+        } else {
+            isTracerExportInProgress = true
+            recordViewModel.setStatusText(context.getString(R.string.tracer_export_select_tracer_destination))
+            exportAllTracerLauncher.launch(null)
         }
     }
 
     return TracerExportActions(
         onExportAllMonthsTxt = onExportAllMonthsTxt,
+        onExportAllMonthsTracer = onExportAllMonthsTracer,
         isTxtExportInProgress = isTxtExportInProgress,
+        isTracerExportInProgress = isTracerExportInProgress,
+        selectedTracerSecurityLevel = tracerSecurityLevel,
+        onTracerSecurityLevelChange = { nextLevel ->
+            tracerSecurityLevel = nextLevel
+        },
         onExportAndroidConfigBundle = onExportAndroidConfigBundle
     )
 }

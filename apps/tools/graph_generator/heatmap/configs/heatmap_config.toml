@@ -6,6 +6,21 @@
 # 数据库文件的完整路径
 path = "C:/Computer/my_github/github_cpp/time_tracer/my_test/output/time_data.sqlite3"
 
+[source]
+# 数据源模式:
+# - sqlite: 直连 SQLite（现有行为）
+# - core_contract: 通过 time_tracer_cli 消费 Core 语义契约（逐步迁移）
+mode = "sqlite"
+
+# 当 mode=core_contract 时生效；可写绝对路径或命令名（需在 PATH 内）
+core_cli_path = "time_tracer_cli"
+
+# Core CLI 调用超时（秒）
+core_timeout_seconds = 20
+
+# Core 查询失败时是否回退 SQLite（建议迁移期保持 true）
+allow_sql_fallback = true
+
 [heatmap]
 # 要生成热力图的年份
 year = 2025

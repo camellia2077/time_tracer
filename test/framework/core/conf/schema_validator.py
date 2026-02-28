@@ -19,9 +19,7 @@ def validate_suite_schema(
 ) -> None:
     errors: list[str] = []
 
-    paths, cli_names, run_control, pipeline = _validate_required_sections(
-        toml_data, errors
-    )
+    paths, cli_names, run_control, pipeline = _validate_required_sections(toml_data, errors)
     _validate_no_unresolved_dollar_variables(toml_data, "", errors)
     _validate_paths(paths, config_path, errors)
     _validate_cli_names(cli_names, errors)

@@ -19,34 +19,40 @@
    - 导入数据结构与转换算法约束。
 3. `docs/time_tracer/core/architecture/`
    - Core 边界、模块职责与重构约束。
+4. `docs/time_tracer/core/specs/`
+   - 面向 Agent/协作者的快速上手与改动路由文档。
 
 ## 当前权威文档（沿用）
 
 ### Core 分层文档
-1. `docs/time_tracer/core/contracts/README.md`
-2. `docs/time_tracer/core/contracts/c_abi.md`
-3. `docs/time_tracer/core/contracts/error-model.md`
-4. `docs/time_tracer/core/contracts/error-codes.md`
-5. `docs/time_tracer/core/contracts/stats/README.md`
-6. `docs/time_tracer/core/contracts/stats/capability_contract_v1.md`
-7. `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
-8. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
-9. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
-10. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
-11. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
-12. `docs/time_tracer/core/contracts/stats/code_map.md`
-13. `docs/time_tracer/core/ingest/README.md`
-14. `docs/time_tracer/core/ingest/ingest_data_structures.md`
-15. `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`
-41. `docs/time_tracer/core/architecture/README.md`
-42. `docs/time_tracer/core/architecture/data_lifecycle_parsing_to_storage.md`
-43. `docs/time_tracer/core/architecture/domain_model_and_rules.md`
-44. `docs/time_tracer/core/architecture/application_pipeline_and_ports.md`
-45. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
-46. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
-47. `docs/time_tracer/core/architecture/data_query/README.md`
-48. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
-49. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
+1. `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
+2. `docs/time_tracer/core/contracts/README.md`
+3. `docs/time_tracer/core/contracts/c_abi.md`
+4. `docs/time_tracer/core/contracts/error-model.md`
+5. `docs/time_tracer/core/contracts/error-codes.md`
+6. `docs/time_tracer/core/contracts/stats/README.md`
+7. `docs/time_tracer/core/contracts/stats/capability_contract_v1.md`
+8. `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+9. `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
+10. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
+11. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
+12. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
+13. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
+14. `docs/time_tracer/core/contracts/stats/code_map.md`
+15. `docs/time_tracer/core/contracts/reporting/report_data_consistency_spec_v1.md`
+16. `docs/time_tracer/core/contracts/reporting/report_output_text_contract_v1.md`
+17. `docs/time_tracer/core/ingest/README.md`
+18. `docs/time_tracer/core/ingest/ingest_data_structures.md`
+19. `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`
+20. `docs/time_tracer/core/architecture/README.md`
+21. `docs/time_tracer/core/architecture/data_lifecycle_parsing_to_storage.md`
+22. `docs/time_tracer/core/architecture/domain_model_and_rules.md`
+23. `docs/time_tracer/core/architecture/application_pipeline_and_ports.md`
+24. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
+25. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
+26. `docs/time_tracer/core/architecture/data_query/README.md`
+27. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
+28. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
 
 ### 相关上游文档
 1. `docs/time_tracer/design/core_logic.md`
@@ -63,6 +69,6 @@
 
 ## 规则
 1. 新增 Core 文档优先放在本目录。
-2. 新增文档按职责边界放入 `contracts/ingest/architecture` 对应目录。
+2. 新增文档按职责边界放入 `contracts/ingest/architecture/specs` 对应目录。
 3. Core（`domain + application`）不得依赖 `modules/tracer_adapters_io` 等 adapter 实现目录。
 4. Core 只通过 `application/ports` 暴露契约，不直接包含 `infrastructure/*` 头。

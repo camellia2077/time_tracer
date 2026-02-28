@@ -8,15 +8,29 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class QueryReportViewModel(
-    private val reportGateway: ReportGateway,
-    private val queryGateway: QueryGateway,
-    private val textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider
+    reportGateway: ReportGateway,
+    queryGateway: QueryGateway,
+    textProvider: QueryReportTextProvider = DefaultQueryReportTextProvider
 ) : ViewModel() {
     var uiState by mutableStateOf(QueryReportUiState())
         private set
+    private val useCases = QueryReportUseCases(
+        reportGateway = reportGateway,
+        queryGateway = queryGateway,
+        textProvider = textProvider
+    )
 
-    private val periodArgumentResolver = QueryPeriodArgumentResolver(textProvider)
-    private val inputValidator = QueryInputValidator(textProvider)
+    private sealed interface QueryReportIntent {
+        data object ReportDay : QueryReportIntent
+        data object ReportMonth : QueryReportIntent
+        data object ReportYear : QueryReportIntent
+        data object ReportWeek : QueryReportIntent
+        data object ReportRecent : QueryReportIntent
+        data object ReportRange : QueryReportIntent
+        data class LoadStats(val period: DataTreePeriod) : QueryReportIntent
+        data class LoadTree(val period: DataTreePeriod, val level: Int) : QueryReportIntent
+        data object LoadChart : QueryReportIntent
+    }
 
     private fun digitsOnly(value: String, maxLength: Int): String =
         value.filter { it.isDigit() }.take(maxLength)
@@ -45,7 +59,7 @@ class QueryReportViewModel(
         uiState = uiState.copy(resultDisplayMode = mode)
         if (mode == ReportResultDisplayMode.CHART &&
             !uiState.chartLoading &&
-            uiState.chartRoots.isEmpty() &&
+            uiState.chartRenderModel == null &&
             uiState.chartPoints.isEmpty()
         ) {
             loadChart()
@@ -95,134 +109,114 @@ class QueryReportViewModel(
     }
 
     fun reportDay() {
-        viewModelScope.launch { triggerDayReport() }
+        dispatchIntent(QueryReportIntent.ReportDay)
     }
 
     fun reportMonth() {
-        viewModelScope.launch { triggerMonthReport() }
+        dispatchIntent(QueryReportIntent.ReportMonth)
     }
 
     fun reportYear() {
-        viewModelScope.launch { triggerYearReport() }
+        dispatchIntent(QueryReportIntent.ReportYear)
     }
 
     fun reportWeek() {
-        viewModelScope.launch { triggerWeekReport() }
+        dispatchIntent(QueryReportIntent.ReportWeek)
     }
 
     fun reportRecent() {
-        viewModelScope.launch { triggerRecentReport() }
+        dispatchIntent(QueryReportIntent.ReportRecent)
     }
 
     fun reportRange() {
-        viewModelScope.launch { triggerRangeReport() }
+        dispatchIntent(QueryReportIntent.ReportRange)
     }
 
     fun loadDayStats(period: DataTreePeriod) {
-        viewModelScope.launch { triggerStatsAnalysis(period) }
+        dispatchIntent(QueryReportIntent.LoadStats(period))
     }
 
     fun loadTree(
         period: DataTreePeriod,
         level: Int = -1
     ) {
-        viewModelScope.launch { triggerTreeAnalysis(period, level) }
+        dispatchIntent(QueryReportIntent.LoadTree(period, level))
     }
 
     fun loadChart() {
-        viewModelScope.launch { triggerChartQuery() }
+        dispatchIntent(QueryReportIntent.LoadChart)
     }
 
-    private suspend fun triggerDayReport() {
-        uiState = runDayReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+    private fun dispatchIntent(intent: QueryReportIntent) {
+        viewModelScope.launch {
+            uiState = when (intent) {
+                QueryReportIntent.ReportDay -> {
+                    useCases.reportDay(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerMonthReport() {
-        uiState = runMonthReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+                QueryReportIntent.ReportMonth -> {
+                    useCases.reportMonth(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerYearReport() {
-        uiState = runYearReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+                QueryReportIntent.ReportYear -> {
+                    useCases.reportYear(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerWeekReport() {
-        uiState = runWeekReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+                QueryReportIntent.ReportWeek -> {
+                    useCases.reportWeek(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerRecentReport() {
-        uiState = runRecentReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+                QueryReportIntent.ReportRecent -> {
+                    useCases.reportRecent(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerRangeReport() {
-        uiState = runRangeReportAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            reportGateway = reportGateway,
-            emit = { state -> uiState = state }
-        )
-    }
+                QueryReportIntent.ReportRange -> {
+                    useCases.reportRange(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
 
-    private suspend fun triggerStatsAnalysis(period: DataTreePeriod) {
-        uiState = runStatsAnalysisAction(
-            currentState = uiState,
-            period = period,
-            source = currentPeriodSource(),
-            periodArgumentResolver = periodArgumentResolver,
-            textProvider = textProvider,
-            queryGateway = queryGateway
-        )
-    }
+                is QueryReportIntent.LoadStats -> {
+                    useCases.loadStats(
+                        currentState = uiState,
+                        period = intent.period,
+                        source = currentPeriodSource()
+                    )
+                }
 
-    private suspend fun triggerTreeAnalysis(period: DataTreePeriod, level: Int) {
-        uiState = runTreeAnalysisAction(
-            currentState = uiState,
-            period = period,
-            level = level,
-            source = currentPeriodSource(),
-            periodArgumentResolver = periodArgumentResolver,
-            textProvider = textProvider,
-            queryGateway = queryGateway
-        )
-    }
+                is QueryReportIntent.LoadTree -> {
+                    useCases.loadTree(
+                        currentState = uiState,
+                        period = intent.period,
+                        level = intent.level,
+                        source = currentPeriodSource()
+                    )
+                }
 
-    private suspend fun triggerChartQuery() {
-        uiState = runChartQueryAction(
-            currentState = uiState,
-            inputValidator = inputValidator,
-            textProvider = textProvider,
-            queryGateway = queryGateway
-        )
+                QueryReportIntent.LoadChart -> {
+                    useCases.loadChart(
+                        currentState = uiState,
+                        emit = { state -> uiState = state }
+                    )
+                }
+            }
+        }
     }
 
     private fun currentPeriodSource(): QueryPeriodSource = QueryPeriodSource(

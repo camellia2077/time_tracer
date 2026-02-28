@@ -11,6 +11,17 @@ struct IngestResponsePayload {
   std::string error_message;
 };
 
+struct AckResponsePayload {
+  bool ok = false;
+  std::string error_message;
+};
+
+struct TextResponsePayload {
+  bool ok = false;
+  std::string error_message;
+  std::string content;
+};
+
 struct RuntimeCheckResponsePayload {
   bool ok = false;
   std::string error_message;
@@ -108,6 +119,8 @@ struct ExportResponsePayload {
 
 struct ProjectTreeNodePayload {
   std::string name;
+  std::optional<std::string> path;
+  std::optional<long long> duration_seconds;
   std::vector<ProjectTreeNodePayload> children;
 };
 

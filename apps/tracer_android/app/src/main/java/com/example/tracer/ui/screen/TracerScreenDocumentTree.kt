@@ -15,6 +15,11 @@ internal data class DocumentTreeTextFile(
     val content: String
 )
 
+internal data class DocumentTreeBinaryFile(
+    val relativePath: String,
+    val content: ByteArray
+)
+
 private fun listDirectChildDocuments(
     contentResolver: ContentResolver,
     treeUri: Uri,
@@ -122,6 +127,51 @@ internal fun readTextFilesFromDocumentTree(
     return output.sortedBy { it.relativePath }
 }
 
+internal fun readBinaryFilesFromDocumentTree(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    rootDocumentUri: Uri,
+    fileSelector: (fileName: String, mimeType: String) -> Boolean
+): List<DocumentTreeBinaryFile> {
+    fun readBinaryDocument(documentUri: Uri): ByteArray {
+        val input = contentResolver.openInputStream(documentUri)
+            ?: throw IllegalStateException("Cannot open input stream for $documentUri")
+        return input.use { it.readBytes() }
+    }
+
+    val output = mutableListOf<DocumentTreeBinaryFile>()
+
+    fun walk(parentUri: Uri, relativeDir: String) {
+        val children = listDirectChildDocuments(
+            contentResolver = contentResolver,
+            treeUri = treeUri,
+            parentDocumentUri = parentUri
+        )
+        for (child in children) {
+            val childUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, child.documentId)
+            val relativePath = if (relativeDir.isEmpty()) {
+                child.displayName
+            } else {
+                "$relativeDir/${child.displayName}"
+            }
+            if (child.mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
+                walk(childUri, relativePath)
+                continue
+            }
+            if (!fileSelector(child.displayName, child.mimeType)) {
+                continue
+            }
+            output += DocumentTreeBinaryFile(
+                relativePath = relativePath,
+                content = readBinaryDocument(childUri)
+            )
+        }
+    }
+
+    walk(rootDocumentUri, "")
+    return output.sortedBy { it.relativePath }
+}
+
 internal fun ensureDirectoryChild(
     contentResolver: ContentResolver,
     treeUri: Uri,
@@ -157,6 +207,22 @@ internal fun resolveOrCreateTextDocumentForOverwrite(
     parentDocumentUri: Uri,
     fileName: String
 ): Uri? {
+    return resolveOrCreateDocumentForOverwrite(
+        contentResolver = contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = parentDocumentUri,
+        fileName = fileName,
+        mimeType = "text/plain"
+    )
+}
+
+internal fun resolveOrCreateDocumentForOverwrite(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    parentDocumentUri: Uri,
+    fileName: String,
+    mimeType: String
+): Uri? {
     val existing = findDirectChildDocument(
         contentResolver = contentResolver,
         treeUri = treeUri,
@@ -174,7 +240,7 @@ internal fun resolveOrCreateTextDocumentForOverwrite(
         DocumentsContract.createDocument(
             contentResolver,
             parentDocumentUri,
-            "text/plain",
+            mimeType,
             fileName
         )
     }.getOrNull()

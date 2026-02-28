@@ -14,8 +14,8 @@ def resolve_config_root(ctx: Context, app_name: str, config_root_arg: str | None
         candidate = Path(config_root_arg)
         return (candidate if candidate.is_absolute() else (ctx.repo_root / candidate)).resolve()
 
-    if app_name in {"time_tracer", "tracer_windows_cli"}:
-        return (ctx.repo_root / "apps" / "time_tracer" / "config").resolve()
+    if app_name in {"tracer_core", "tracer_windows_cli"}:
+        return (ctx.repo_root / "apps" / "tracer_core" / "config").resolve()
     if app_name == "tracer_android":
         return (
             ctx.repo_root
@@ -25,14 +25,14 @@ def resolve_config_root(ctx: Context, app_name: str, config_root_arg: str | None
             / "src"
             / "main"
             / "assets"
-            / "time_tracer"
+            / "tracer_core"
             / "config"
         ).resolve()
 
     fallback = (ctx.get_app_dir(app_name) / "config").resolve()
     if fallback.exists():
         return fallback
-    return (ctx.repo_root / "apps" / "time_tracer" / "config").resolve()
+    return (ctx.repo_root / "apps" / "tracer_core" / "config").resolve()
 
 
 def to_absolute_path(config_root: Path, value: str) -> Path:

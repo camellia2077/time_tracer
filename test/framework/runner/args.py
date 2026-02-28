@@ -1,5 +1,5 @@
 import argparse
-from typing import Sequence
+from collections.abc import Sequence
 
 
 def parse_suite_args(

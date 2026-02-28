@@ -22,21 +22,21 @@ class FileImportReader {
    */
   static auto ReadJsonFiles(const std::string& path_str)
       -> std::vector<std::pair<std::string, std::string>> {
-    time_tracer::domain::ports::EmitInfo("正在扫描待导入文件...");
+    tracer_core::domain::ports::EmitInfo("正在扫描待导入文件...");
     std::vector<std::string> input_paths = {path_str};
     // 职责分离：调用现有的工具类
     std::vector<std::string> json_files =
         FileUtils::ResolveFiles(input_paths, ".json");
 
     if (json_files.empty()) {
-      time_tracer::domain::ports::EmitWarn(
-          std::string(time_tracer::common::colors::kYellow) + "警告: 在路径 " +
+      tracer_core::domain::ports::EmitWarn(
+          std::string(tracer_core::common::colors::kYellow) + "警告: 在路径 " +
           path_str + " 下未找到 .json 文件。" +
-          std::string(time_tracer::common::colors::kReset));
+          std::string(tracer_core::common::colors::kReset));
       return {};
     }
 
-    time_tracer::domain::ports::EmitInfo(
+    tracer_core::domain::ports::EmitInfo(
         "正在读取 " + std::to_string(json_files.size()) + " 个文件的内容...");
     std::vector<std::pair<std::string, std::string>> payload;
     payload.reserve(json_files.size());
@@ -47,20 +47,20 @@ class FileImportReader {
         std::string content = FileReader::ReadContent(file_path);
         payload.emplace_back(file_path, std::move(content));
       } catch (const std::exception& e) {
-        time_tracer::domain::ports::EmitError(
-            std::string(time_tracer::common::colors::kRed) +
+        tracer_core::domain::ports::EmitError(
+            std::string(tracer_core::common::colors::kRed) +
             "读取失败: " + file_path + " - " + e.what() +
-            std::string(time_tracer::common::colors::kReset));
+            std::string(tracer_core::common::colors::kReset));
         read_failure_count++;
       }
     }
 
     if (read_failure_count > 0) {
-      time_tracer::domain::ports::EmitWarn(
-          std::string(time_tracer::common::colors::kYellow) + "警告: 有 " +
+      tracer_core::domain::ports::EmitWarn(
+          std::string(tracer_core::common::colors::kYellow) + "警告: 有 " +
           std::to_string(read_failure_count) +
           " 个文件读取失败，将跳过这些文件。" +
-          std::string(time_tracer::common::colors::kReset));
+          std::string(tracer_core::common::colors::kReset));
     }
 
     return payload;

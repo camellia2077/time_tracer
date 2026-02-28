@@ -15,6 +15,10 @@ class AppConfig:
         self.db_path: Path = Path("")
         self.bool_heatmap_settings: Dict[str, Any] = {}
         self.color_settings: Dict[str, Any] = {}
+        self.source_mode: str = "sqlite"
+        self.core_cli_path: str = "time_tracer_cli"
+        self.core_timeout_seconds: int = 20
+        self.allow_sql_fallback: bool = True
         
         self._load_configs()
 
@@ -45,6 +49,32 @@ class AppConfig:
         else:
             self.heatmap_settings["project_names"] = p_names
         self.bool_heatmap_settings = main_config.get("boolean_heatmaps", {})
+
+        source_cfg = main_config.get("source", {})
+        requested_mode = str(source_cfg.get("mode", "sqlite")).strip().lower()
+        if requested_mode not in {"sqlite", "core_contract"}:
+            print(f"警告: 未知 source.mode='{requested_mode}'，已回退为 sqlite。")
+            requested_mode = "sqlite"
+        self.source_mode = requested_mode
+
+        self.core_cli_path = (
+            str(source_cfg.get("core_cli_path", "time_tracer_cli")).strip()
+            or "time_tracer_cli"
+        )
+        try:
+            self.core_timeout_seconds = max(
+                1, int(source_cfg.get("core_timeout_seconds", 20))
+            )
+        except (TypeError, ValueError):
+            self.core_timeout_seconds = 20
+
+        fallback_raw = source_cfg.get("allow_sql_fallback", True)
+        if isinstance(fallback_raw, bool):
+            self.allow_sql_fallback = fallback_raw
+        else:
+            self.allow_sql_fallback = (
+                str(fallback_raw).strip().lower() not in {"0", "false", "no", "off"}
+            )
 
         if not str(self.db_path):
             print("错误：数据库路径未在配置中指定。")

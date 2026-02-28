@@ -3,7 +3,6 @@ import os
 import shutil
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional
 
 from ..conf.definitions import Colors
 
@@ -17,9 +16,7 @@ class Workspace:
         self.use_temp = use_temp
         self._temp_obj = None
 
-    def setup(
-        self, target_dir_override: Optional[Path] = None, should_clean: bool = False
-    ) -> Path:
+    def setup(self, target_dir_override: Path | None = None, should_clean: bool = False) -> Path:
         if self.use_temp:
             self._temp_obj = TemporaryDirectory(prefix="tt_test_")
             root = Path(self._temp_obj.name)

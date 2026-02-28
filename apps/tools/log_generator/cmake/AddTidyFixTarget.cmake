@@ -5,6 +5,9 @@ find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
 if(CLANG_TIDY_EXE)
     add_custom_target(tidy)
     add_custom_target(tidy-fix)
+    if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")
+        set(TT_CLANG_TIDY_HEADER_FILTER "^(?!.*[\\\\/]_deps[\\\\/]).*")
+    endif()
 
     list(LENGTH SOURCES TOTAL_SOURCES)
 
@@ -21,6 +24,7 @@ if(CLANG_TIDY_EXE)
             COMMAND ${CLANG_TIDY_EXE}
                 -p ${CMAKE_BINARY_DIR}
                 --format-style=file
+                "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
                 "${FILE_PATH}"
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "[${COUNTER}] Analyzing: ${FILE_PATH}"
@@ -52,6 +56,7 @@ if(CLANG_TIDY_EXE)
                 -p ${CMAKE_BINARY_DIR}
                 --fix
                 --format-style=file
+                "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
                 "${FILE_PATH}"
             WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
             COMMENT "[${COUNTER}] Analyzing and Fixing: ${FILE_PATH}"

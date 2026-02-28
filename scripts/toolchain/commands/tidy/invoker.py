@@ -4,6 +4,27 @@ from pathlib import Path
 from ...core.context import Context
 from ...core.executor import run_command
 
+_TIDY_HEADER_FILTER_CACHE_KEY = "TT_CLANG_TIDY_HEADER_FILTER"
+
+
+def _resolve_tidy_header_filter_regex(ctx: Context) -> str:
+    configured = (ctx.config.tidy.header_filter_regex or "").strip()
+    if configured:
+        return configured
+    return r"^(?!.*[\\/]_deps[\\/]).*"
+
+
+def _read_cmake_cache_value(cache_path: Path, key: str) -> str | None:
+    try:
+        for raw_line in cache_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            if not raw_line.startswith(f"{key}:"):
+                continue
+            _, _, value = raw_line.partition("=")
+            return value.strip()
+    except OSError:
+        return None
+    return None
+
 
 def resolve_tidy_paths(
     ctx: Context,
@@ -29,10 +50,21 @@ def ensure_configured(
 ) -> tuple[int, bool, float]:
     from ..cmd_build import BuildCommand
 
-    if (build_dir / "CMakeCache.txt").exists():
-        return 0, False, 0.0
+    cache_path = build_dir / "CMakeCache.txt"
+    expected_filter = _resolve_tidy_header_filter_regex(ctx)
+    if cache_path.exists():
+        current_filter = _read_cmake_cache_value(cache_path, _TIDY_HEADER_FILTER_CACHE_KEY)
+        if current_filter == expected_filter:
+            return 0, False, 0.0
+        print(
+            "--- Build directory "
+            f"{build_dir} tidy header filter is stale "
+            f"(cache key={_TIDY_HEADER_FILTER_CACHE_KEY}). "
+            "Running auto-configure..."
+        )
+    else:
+        print(f"--- Build directory {build_dir} not configured. Running auto-configure...")
 
-    print(f"--- Build directory {build_dir} not configured. Running auto-configure...")
     configure_start = time.perf_counter()
     builder = BuildCommand(ctx)
     ret = builder.configure(

@@ -30,7 +30,9 @@ internal enum class ReportMode {
 }
 
 @Composable
-fun QueryReportSection(
+internal fun QueryReportSection(
+    reportMode: ReportMode,
+    onReportModeChange: (ReportMode) -> Unit,
     reportDate: String,
     onReportDateChange: (String) -> Unit,
     reportMonth: String,
@@ -57,7 +59,6 @@ fun QueryReportSection(
     onLoadDayStats: (DataTreePeriod) -> Unit,
     onLoadTree: (DataTreePeriod, Int) -> Unit
 ) {
-    var reportMode by rememberSaveable { mutableStateOf(ReportMode.DAY) }
     val analysisPeriod = reportMode.toDataTreePeriod()
     var treeLevel by rememberSaveable { mutableStateOf("-1") }
 
@@ -76,7 +77,7 @@ fun QueryReportSection(
             selectedIndex = selectedIndex,
             reportModes = reportModes,
             reportMode = reportMode,
-            onReportModeChange = { reportMode = it }
+            onReportModeChange = onReportModeChange
         )
         ReportResultModeSwitcher(
             mode = resultDisplayMode,

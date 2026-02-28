@@ -53,6 +53,26 @@
    - `error_message` (`string`)
    - `paths` (`object`, present on success)
    - `cli_config` (`object`, present on success)
+7. `tracer_core_runtime_tree_json` request/response contract:
+   - Request:
+     - `list_roots` (`bool`, optional)
+     - `root_pattern` (`string`, optional)
+     - `max_depth` (`int`, optional)
+     - `period` (`string`, optional)
+     - `period_argument` (`string`, optional)
+     - `root` (`string`, optional)
+   - Response:
+     - `ok` (`bool`)
+     - `found` (`bool`, default `true`)
+     - `error_message` (`string`)
+     - `roots` (`string[]`)
+     - `nodes` (`object[]`)
+   - `nodes[]` currently includes:
+     - `name` (`string`)
+     - `path` (`string`, optional)
+     - `duration_seconds` (`integer`, optional)
+     - `children` (`object[]`, recursive)
+   - Note: internal core DTO may evolve with more fields, but C ABI tree node payload remains additive and backward-compatible.
 
 ## Response Envelope Contract
 1. Standard response envelope fields:

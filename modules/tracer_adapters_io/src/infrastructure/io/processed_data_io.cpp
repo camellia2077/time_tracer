@@ -16,8 +16,8 @@ namespace fs = std::filesystem;
 namespace infrastructure::io {
 
 auto ProcessedDataLoader::LoadDailyLogs(const std::string& processed_path)
-    -> time_tracer::application::ports::ProcessedDataLoadResult {
-  time_tracer::application::ports::ProcessedDataLoadResult result;
+    -> tracer_core::application::ports::ProcessedDataLoadResult {
+  tracer_core::application::ports::ProcessedDataLoadResult result;
 
   auto import_payload = FileImportReader::ReadJsonFiles(processed_path);
   for (const auto& [filepath, content] : import_payload) {
@@ -51,10 +51,10 @@ auto ProcessedDataWriter::Write(
 
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
-      time_tracer::domain::ports::EmitError(
-          std::string(time_tracer::common::colors::kRed) +
+      tracer_core::domain::ports::EmitError(
+          std::string(tracer_core::common::colors::kRed) +
           "错误: 无法写入输出文件: " + output_file_path.string() + " - " +
-          e.what() + std::string(time_tracer::common::colors::kReset));
+          e.what() + std::string(tracer_core::common::colors::kReset));
     }
   }
   return written_files;

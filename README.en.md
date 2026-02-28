@@ -1,6 +1,6 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# time tracer (TimeTracer) ![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)
+# time tracer (TimeTracer) ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
 **time tracer** - A personal time tracking and analysis system built with C++23.
 
@@ -98,9 +98,15 @@ Special thanks to the following AI models for their core assistance in coding, a
 
 ---
 
+## Disclaimer
+
+This software is intended for use as a personal efficiency management tool only. Any use of this software in violation of local laws and regulations is strictly prohibited. The developer does not endorse, participate in, or assume any responsibility for the consequences of any third party using this software for political propaganda.
+
+---
+
 ## License & Open Source Libraries
 
-This repository's own source code is licensed under **GNU General Public License v3.0 (GPL v3)** (see `LICENSE`).
+This repository's own source code is licensed under **Apache License 2.0** (see `LICENSE`).
 Third-party dependencies remain under their respective licenses.
 
 ### Core and Tools
@@ -108,6 +114,8 @@ Third-party dependencies remain under their respective licenses.
 * **[SQLite](https://www.sqlite.org/)**: Embedded database (Public Domain).
 * **[nlohmann/json](https://github.com/nlohmann/json)**: JSON parsing (MIT).
 * **[tomlplusplus](https://github.com/marzer/tomlplusplus)**: TOML configuration (MIT).
+* **[libsodium](https://github.com/jedisct1/libsodium)**: Cryptography library (planned for `tracer_core` encrypted export/share capability) (ISC License).
+* **[Apache ECharts](https://echarts.apache.org/)**: Used by Windows CLI `report-chart` single-file HTML chart rendering (Line/Bar/Pie/Heatmap-Year/Heatmap-Month) (Apache License 2.0).
 * **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD-style license).
 
 ### Android App (`apps/tracer_android`)

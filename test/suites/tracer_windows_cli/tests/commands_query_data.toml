@@ -112,6 +112,105 @@ expect_exit = 0
 expect_stdout_contains = ["\"schema_version\":1", "\"action\":\"report_chart\"", "\"output_mode\":\"semantic_json\"", "\"selected_root\":\"\"", "\"range_days\":7", "\"series\":"]
 
 [[commands]]
+name = "Chart Export Line Html"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "-o", "{output_dir}/report_chart_study_line.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart line HTML:"]
+expect_files = ["{output_dir}/report_chart_study_line.html"]
+expect_file_contains = [
+  '{output_dir}/report_chart_study_line.html::Report Chart (Line)',
+  '{output_dir}/report_chart_study_line.html::"series"',
+  "{output_dir}/report_chart_study_line.html::echarts.init(chartRoot",
+]
+
+[[commands]]
+name = "Chart Export Bar Html"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "bar", "-o", "{output_dir}/report_chart_study_bar.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart bar HTML:"]
+expect_files = ["{output_dir}/report_chart_study_bar.html"]
+expect_file_contains = [
+  '{output_dir}/report_chart_study_bar.html::Report Chart (Bar)',
+  "{output_dir}/report_chart_study_bar.html::const chartKind = 'bar'",
+  "{output_dir}/report_chart_study_bar.html::type: 'bar'",
+]
+
+[[commands]]
+name = "Chart Export Pie Html"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260107", "--root", "study", "--type", "pie", "-o", "{output_dir}/report_chart_study_pie.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart pie HTML:"]
+expect_files = ["{output_dir}/report_chart_study_pie.html"]
+expect_file_contains = [
+  '{output_dir}/report_chart_study_pie.html::Report Chart (Pie)',
+  "{output_dir}/report_chart_study_pie.html::const chartKind = 'pie'",
+  "{output_dir}/report_chart_study_pie.html::type: 'pie'",
+]
+
+[[commands]]
+name = "Chart Export Heatmap Year Html"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20261231", "--root", "study", "--type", "heatmap-year", "-o", "{output_dir}/report_chart_study_heatmap_year.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart heatmap-year HTML:"]
+expect_files = ["{output_dir}/report_chart_study_heatmap_year.html"]
+expect_file_contains = [
+  '{output_dir}/report_chart_study_heatmap_year.html::Report Chart (Heatmap Year)',
+  "{output_dir}/report_chart_study_heatmap_year.html::const chartKind = 'heatmap-year'",
+  "{output_dir}/report_chart_study_heatmap_year.html::type: 'heatmap'",
+  "{output_dir}/report_chart_study_heatmap_year.html::coordinateSystem: 'calendar'",
+]
+
+[[commands]]
+name = "Chart Export Heatmap Month Html"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "-o", "{output_dir}/report_chart_study_heatmap_month.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
+expect_files = ["{output_dir}/report_chart_study_heatmap_month.html"]
+expect_file_contains = [
+  '{output_dir}/report_chart_study_heatmap_month.html::Report Chart (Heatmap Month)',
+  "{output_dir}/report_chart_study_heatmap_month.html::const chartKind = 'heatmap-month'",
+  "{output_dir}/report_chart_study_heatmap_month.html::type: 'heatmap'",
+  "{output_dir}/report_chart_study_heatmap_month.html::coordinateSystem: 'calendar'",
+]
+
+[[commands]]
+name = "Chart Export Heatmap Month Html Github Theme"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--theme", "github", "-o", "{output_dir}/report_chart_study_heatmap_month_github.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
+expect_files = ["{output_dir}/report_chart_study_heatmap_month_github.html"]
+expect_file_contains = [
+  "{output_dir}/report_chart_study_heatmap_month_github.html::const chartTheme = 'github'",
+  "{output_dir}/report_chart_study_heatmap_month_github.html::#9be9a8",
+  "{output_dir}/report_chart_study_heatmap_month_github.html::type: 'heatmap'",
+]
+
+[[commands]]
+name = "Chart List Heatmap Palettes"
+stage = "query-data"
+args = ["chart", "--list-heatmap-palettes", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Heatmap palettes", "GITHUB_GREEN_LIGHT", "LAVA_RED_LIGHT", "default-light"]
+
+[[commands]]
+name = "Chart Export Heatmap Month Html Blue Palette"
+stage = "query-data"
+args = ["chart", "--from", "20260101", "--to", "20260131", "--root", "study", "--type", "heatmap-month", "--heatmap-palette", "BLUE_LIGHT", "-o", "{output_dir}/report_chart_study_heatmap_month_blue.html", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["Saved chart heatmap-month HTML:"]
+expect_files = ["{output_dir}/report_chart_study_heatmap_month_blue.html"]
+expect_file_contains = [
+  "{output_dir}/report_chart_study_heatmap_month_blue.html::#6baed6",
+  "{output_dir}/report_chart_study_heatmap_month_blue.html::type: 'piecewise'",
+]
+
+[[commands]]
 name = "Query Data Activity Suggest"
 stage = "query-data"
 args = ["query", "data", "activity-suggest", "--lookback-days", "10", "--top", "5", "--database", "{db_path}"]

@@ -33,9 +33,7 @@ def run_prepare_phase(
         )
         state["tidy_fix_exit_code"] = tidy_fix_ret
         if tidy_fix_ret != 0:
-            print(
-                "--- tidy-flow: tidy-fix returned non-zero; continue to tidy task generation."
-            )
+            print("--- tidy-flow: tidy-fix returned non-zero; continue to tidy task generation.")
 
     print("--- tidy-flow: generating/refreshing tidy tasks...")
     tidy_ret = TidyCommand(ctx).execute(

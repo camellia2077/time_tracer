@@ -8,9 +8,7 @@ from ..conf.definitions import ExecutionResult
 
 class CommandExecutor:
     def __init__(self, show_output: str = "none"):
-        self.show_output = (
-            show_output if show_output in {"none", "fail", "all"} else "none"
-        )
+        self.show_output = show_output if show_output in {"none", "fail", "all"} else "none"
 
     @staticmethod
     def strip_ansi_codes(text: str) -> str:
@@ -19,7 +17,13 @@ class CommandExecutor:
         ansi_escape = re.compile(r"\x1b\[[0-9;]*m")
         return ansi_escape.sub("", text)
 
-    def run(self, command: list, cwd=None, input_str: str = None) -> ExecutionResult:
+    def run(
+        self,
+        command: list,
+        cwd=None,
+        input_str: str = None,
+        expected_exit: int | None = None,
+    ) -> ExecutionResult:
         start_time = time.monotonic()
         try:
             result = subprocess.run(
@@ -35,7 +39,10 @@ class CommandExecutor:
             duration = time.monotonic() - start_time
 
             self._display_process_output(
-                result.returncode, result.stdout, result.stderr
+                result.returncode,
+                result.stdout,
+                result.stderr,
+                expected_exit,
             )
             return ExecutionResult(
                 command=command,
@@ -55,10 +62,17 @@ class CommandExecutor:
             )
 
     def _display_process_output(
-        self, return_code: int, stdout_text: str, stderr_text: str
+        self,
+        return_code: int,
+        stdout_text: str,
+        stderr_text: str,
+        expected_exit: int | None = None,
     ):
+        unexpected_non_zero = return_code != 0 and (
+            expected_exit is None or return_code != expected_exit
+        )
         should_show = (self.show_output == "all") or (
-            self.show_output == "fail" and return_code != 0
+            self.show_output == "fail" and unexpected_non_zero
         )
         if not should_show:
             return

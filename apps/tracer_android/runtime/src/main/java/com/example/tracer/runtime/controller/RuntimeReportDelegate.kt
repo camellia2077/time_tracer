@@ -4,7 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal class RuntimeReportDelegate(
-    private val executeReportAfterInit: ((RuntimePaths) -> String) -> ReportCallResult
+    private val executeReportAfterInit: (
+        operationName: String,
+        action: (RuntimePaths) -> String
+    ) -> ReportCallResult
 ) {
     suspend fun reportDayMarkdown(date: String): ReportCallResult =
         runMarkdownReportFlow(
@@ -46,7 +49,7 @@ internal class RuntimeReportDelegate(
         reportType: Int,
         argument: String
     ): ReportCallResult = withContext(Dispatchers.IO) {
-        executeReportAfterInit {
+        executeReportAfterInit(buildReportOperationName(reportType)) {
             NativeBridge.nativeReport(
                 mode = NativeBridge.REPORT_MODE_SINGLE,
                 reportType = reportType,
@@ -55,5 +58,18 @@ internal class RuntimeReportDelegate(
                 daysList = null
             )
         }
+    }
+
+    private fun buildReportOperationName(reportType: Int): String {
+        val suffix = when (reportType) {
+            NativeBridge.REPORT_TYPE_DAY -> "day"
+            NativeBridge.REPORT_TYPE_MONTH -> "month"
+            NativeBridge.REPORT_TYPE_YEAR -> "year"
+            NativeBridge.REPORT_TYPE_WEEK -> "week"
+            NativeBridge.REPORT_TYPE_RECENT -> "recent"
+            NativeBridge.REPORT_TYPE_RANGE -> "range"
+            else -> "unknown"
+        }
+        return "native_report_$suffix"
     }
 }

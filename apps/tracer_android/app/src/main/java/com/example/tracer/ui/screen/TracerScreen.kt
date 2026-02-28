@@ -3,9 +3,8 @@ package com.example.tracer
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -19,13 +18,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun TracerScreen(
@@ -48,6 +53,8 @@ fun TracerScreen(
     var validMappingNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    val diagnosticsPrepareText = stringResource(R.string.tracer_diagnostics_prepare)
     val dataViewModel: DataViewModel = viewModel(
         factory = remember(runtimeInitializer, recordGateway) {
             DataViewModelFactory(runtimeInitializer, recordGateway)
@@ -89,7 +96,21 @@ fun TracerScreen(
     val reportChartShowAverageLine by userPreferencesRepository.reportChartShowAverageLine.collectAsState(
         initial = com.example.tracer.data.UserPreferencesRepository.DEFAULT_REPORT_CHART_SHOW_AVERAGE_LINE
     )
+    var reportHeatmapTomlConfig by remember { mutableStateOf(defaultReportHeatmapTomlConfig()) }
+    var reportHeatmapStylePreference by remember {
+        mutableStateOf(
+            ReportHeatmapTomlLoader.deriveStylePreference(reportHeatmapTomlConfig)
+        )
+    }
+    var reportHeatmapApplyMessage by remember { mutableStateOf("") }
+    var reportHeatmapAutoApplyJob by remember { mutableStateOf<Job?>(null) }
     val lifecycleOwner = LocalLifecycleOwner.current
+    val isSystemDark = isSystemInDarkTheme()
+    val isAppDarkThemeActive = when (themeConfig.themeMode) {
+        com.example.tracer.data.ThemeMode.Dark -> true
+        com.example.tracer.data.ThemeMode.Light -> false
+        com.example.tracer.data.ThemeMode.System -> isSystemDark
+    }
 
     LaunchedEffect(
         recordSuggestionPreferences.lookbackDays,
@@ -109,12 +130,14 @@ fun TracerScreen(
         )
     }
 
-    val statusText = statusTextForSelectedTab(
-        selectedTab = selectedTab,
-        dataStatusText = dataUiState.statusText,
-        queryStatusText = queryUiState.statusText,
-        recordStatusText = recordUiState.statusText,
-        configStatusText = configUiState.statusText
+    val statusText = TracerTabRegistry.statusText(
+        tab = selectedTab,
+        args = TracerTabStatusArgs(
+            dataStatusText = dataUiState.statusText,
+            queryStatusText = queryUiState.statusText,
+            recordStatusText = recordUiState.statusText,
+            configStatusText = configUiState.statusText
+        )
     )
     val isDebuggableBuild = remember(context) {
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
@@ -125,57 +148,121 @@ fun TracerScreen(
         coroutineScope = coroutineScope,
         recordUiState = recordUiState,
         txtStorageGateway = txtStorageGateway,
+        cryptoGateway = controller,
         recordViewModel = recordViewModel,
         configViewModel = configViewModel
     )
     val importSingleTxtAction = rememberTracerSingleTxtImportAction(
         context = context,
         coroutineScope = coroutineScope,
-        dataViewModel = dataViewModel
+        dataViewModel = dataViewModel,
+        recordViewModel = recordViewModel
+    )
+    val importFolderTracerAction = rememberTracerFolderTracerImportAction(
+        context = context,
+        coroutineScope = coroutineScope,
+        dataViewModel = dataViewModel,
+        recordViewModel = recordViewModel,
+        cryptoGateway = controller
+    )
+    val importSingleTracerAction = rememberTracerSingleTracerImportAction(
+        context = context,
+        coroutineScope = coroutineScope,
+        dataViewModel = dataViewModel,
+        recordViewModel = recordViewModel,
+        cryptoGateway = controller
     )
     val configImportActions = rememberTracerAndroidConfigImportActions(
         context = context,
         coroutineScope = coroutineScope,
         configViewModel = configViewModel
     )
+    val onCopyDiagnosticsPayload: () -> Unit = {
+        coroutineScope.launch {
+            configViewModel.setStatusText(diagnosticsPrepareText)
+            val payloadResult = withContext(Dispatchers.IO) {
+                controller.buildDiagnosticsPayload(maxEntries = 50)
+            }
+            if (!payloadResult.ok || payloadResult.payload.isBlank()) {
+                configViewModel.setStatusText(payloadResult.message)
+                return@launch
+            }
+
+            clipboardManager.setText(AnnotatedString(payloadResult.payload))
+            configViewModel.setStatusText(payloadResult.message)
+        }
+    }
+
+    val tabLifecycleArgs = {
+        buildTracerTabLifecycleArgs(
+            controller = controller,
+            recordViewModel = recordViewModel,
+            configViewModel = configViewModel,
+            onValidMappingNamesChanged = { names -> validMappingNames = names }
+        )
+    }
+    val onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit = { event ->
+        dispatchTracerCoordinatorEvent(
+            event = event,
+            selectedTab = selectedTab,
+            tabLifecycleArgs = tabLifecycleArgs,
+            onTabChanged = { nextTab -> selectedTab = nextTab }
+        )
+    }
 
     StatusSnackbarEffect(
         selectedTab = selectedTab,
         statusText = statusText,
         snackbarHostState = snackbarHostState,
-        onShowExportDetails = { selectedTab = TracerTab.TXT }
+        onCoordinatorEvent = onCoordinatorEvent
     )
 
-    // Refresh tab-specific data when switching tabs.
     LaunchedEffect(selectedTab, controller) {
-        if (selectedTab == TracerTab.CONFIG) {
-            configViewModel.refreshConfigFiles()
+        TracerTabRegistry.onEnter(selectedTab, tabLifecycleArgs())
+    }
+
+    LaunchedEffect(selectedTab) {
+        if (selectedTab == TracerTab.REPORT) {
+            val loadedConfig = withContext(Dispatchers.IO) {
+                ReportHeatmapTomlLoader.load(controller)
+            }
+            reportHeatmapTomlConfig = loadedConfig
+            reportHeatmapStylePreference =
+                ReportHeatmapTomlLoader.deriveStylePreference(loadedConfig)
+            reportHeatmapApplyMessage = ""
         }
-        if (selectedTab == TracerTab.RECORD || selectedTab == TracerTab.TXT) {
-            val mappingResult = controller.listActivityMappingNames()
-            if (mappingResult.ok) {
-                validMappingNames = mappingResult.names.toSet()
-                if (recordUiState.statusText.startsWith("Activity mapping validation unavailable:")) {
-                    recordViewModel.setStatusText("")
-                }
-            } else {
-                validMappingNames = emptySet()
-                recordViewModel.setStatusText(
-                    "Activity mapping validation unavailable: ${mappingResult.message}"
+    }
+
+    fun scheduleHeatmapTomlAutoApply(nextStyle: ReportHeatmapStylePreference) {
+        val targetConfig = reportHeatmapTomlConfig
+        reportHeatmapAutoApplyJob?.cancel()
+        reportHeatmapApplyMessage = ""
+        reportHeatmapAutoApplyJob = coroutineScope.launch {
+            val applyResult = withContext(Dispatchers.IO) {
+                applyHeatmapStyleToToml(
+                    controller = controller,
+                    config = targetConfig,
+                    style = nextStyle
                 )
+            }
+            if (!applyResult.ok) {
+                reportHeatmapApplyMessage = applyResult.message
+                return@launch
+            }
+            reportHeatmapApplyMessage = ""
+            if (applyResult.updatedConfig != null) {
+                reportHeatmapTomlConfig = applyResult.updatedConfig
+            }
+            if (applyResult.updatedStyle != null) {
+                reportHeatmapStylePreference = applyResult.updatedStyle
             }
         }
     }
 
     DisposableEffect(lifecycleOwner, selectedTab) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event != Lifecycle.Event.ON_STOP) {
-                return@LifecycleEventObserver
-            }
-            when (selectedTab) {
-                TracerTab.TXT -> recordViewModel.discardUnsavedHistoryDraft()
-                TracerTab.CONFIG -> configViewModel.discardUnsavedDraft()
-                else -> Unit
+            if (event == Lifecycle.Event.ON_STOP) {
+                TracerTabRegistry.onLeave(selectedTab, tabLifecycleArgs())
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
@@ -187,14 +274,7 @@ fun TracerScreen(
     TracerBottomNavShell(
         selectedTab = selectedTab,
         onTabSelected = { nextTab ->
-            if (nextTab != selectedTab) {
-                when (selectedTab) {
-                    TracerTab.TXT -> recordViewModel.discardUnsavedHistoryDraft()
-                    TracerTab.CONFIG -> configViewModel.discardUnsavedDraft()
-                    else -> Unit
-                }
-                selectedTab = nextTab
-            }
+            onCoordinatorEvent(TracerCoordinatorEvent.SelectTab(nextTab))
         },
         snackbarHostState = snackbarHostState
     ) { innerPadding ->
@@ -227,48 +307,148 @@ fun TracerScreen(
                 onSetThemeMode = onSetThemeMode,
                 onSetUseDynamicColor = onSetUseDynamicColor,
                 onSetDarkThemeStyle = onSetDarkThemeStyle,
-                appLanguage = appLanguage,
-                onSetAppLanguage = onSetAppLanguage,
-                validMappingNames = validMappingNames,
-                userPreferencesRepository = userPreferencesRepository,
-                coroutineScope = coroutineScope,
-                onImportSingleTxt = importSingleTxtAction,
-                onExportAllMonthsTxt = exportActions.onExportAllMonthsTxt,
-                isTxtExportInProgress = exportActions.isTxtExportInProgress,
-                onImportAndroidConfigFullReplace = configImportActions.onImportAndroidConfigFullReplace,
-                onImportAndroidConfigPartialUpdate = configImportActions.onImportAndroidConfigPartialUpdate,
-                onExportAndroidConfigBundle = exportActions.onExportAndroidConfigBundle
-            )
-
-            QueryResultDisplay(
-                selectedTab = selectedTab,
-                resultDisplayMode = queryUiState.resultDisplayMode,
-                activeResult = queryUiState.activeResult,
-                analysisError = queryUiState.analysisError,
-                chartRoots = queryUiState.chartRoots,
-                chartSelectedRoot = queryUiState.chartSelectedRoot,
-                chartDateInputMode = queryUiState.chartDateInputMode,
-                chartLookbackDays = queryUiState.chartLookbackDays,
-                chartRangeStartDate = queryUiState.chartRangeStartDate,
-                chartRangeEndDate = queryUiState.chartRangeEndDate,
-                chartLoading = queryUiState.chartLoading,
-                chartError = queryUiState.chartError,
-                chartPoints = queryUiState.chartPoints,
-                chartAverageDurationSeconds = queryUiState.chartAverageDurationSeconds,
-                chartUsesLegacyStatsFallback = queryUiState.chartUsesLegacyStatsFallback,
-                chartShowAverageLine = reportChartShowAverageLine,
-                onChartRootChange = queryReportViewModel::onChartRootChange,
-                onChartDateInputModeChange = queryReportViewModel::onChartDateInputModeChange,
-                onChartLookbackDaysChange = queryReportViewModel::onChartLookbackDaysChange,
-                onChartRangeStartDateChange = queryReportViewModel::onChartRangeStartDateChange,
-                onChartRangeEndDateChange = queryReportViewModel::onChartRangeEndDateChange,
-                onChartShowAverageLineChange = { value ->
+                reportChartShowAverageLine = reportChartShowAverageLine,
+                onReportChartShowAverageLineChange = { value ->
                     coroutineScope.launch {
                         userPreferencesRepository.setReportChartShowAverageLine(value)
                     }
                 },
-                onLoadChart = queryReportViewModel::loadChart
+                reportHeatmapTomlConfig = reportHeatmapTomlConfig,
+                reportHeatmapStylePreference = reportHeatmapStylePreference,
+                onReportHeatmapThemePolicyChange = { value ->
+                    val nextStyle = when (value) {
+                        ReportHeatmapThemePolicy.FOLLOW_SYSTEM -> {
+                            ReportHeatmapStylePreference(
+                                themePolicy = ReportHeatmapThemePolicy.FOLLOW_SYSTEM,
+                                paletteName = ""
+                            )
+                        }
+
+                        ReportHeatmapThemePolicy.PALETTE -> {
+                            reportHeatmapStylePreference.copy(
+                                themePolicy = ReportHeatmapThemePolicy.PALETTE
+                            )
+                        }
+                    }
+                    if (nextStyle != reportHeatmapStylePreference) {
+                        reportHeatmapStylePreference = nextStyle
+                        scheduleHeatmapTomlAutoApply(nextStyle)
+                    }
+                },
+                onReportHeatmapPaletteNameChange = { value ->
+                    val nextStyle = reportHeatmapStylePreference.copy(
+                        paletteName = value.trim()
+                    )
+                    if (nextStyle != reportHeatmapStylePreference) {
+                        reportHeatmapStylePreference = nextStyle
+                        scheduleHeatmapTomlAutoApply(nextStyle)
+                    }
+                },
+                reportHeatmapApplyMessage = reportHeatmapApplyMessage,
+                isAppDarkThemeActive = isAppDarkThemeActive,
+                appLanguage = appLanguage,
+                onSetAppLanguage = onSetAppLanguage,
+                validMappingNames = validMappingNames,
+                onPersistRecordQuickActivities = { activities ->
+                    coroutineScope.launch {
+                        userPreferencesRepository.setRecordQuickActivities(activities)
+                    }
+                },
+                onPersistRecordAssistExpanded = { value ->
+                    coroutineScope.launch {
+                        userPreferencesRepository.setRecordAssistExpanded(value)
+                    }
+                },
+                onPersistRecordAssistSettingsExpanded = { value ->
+                    coroutineScope.launch {
+                        userPreferencesRepository.setRecordAssistSettingsExpanded(value)
+                    }
+                },
+                onPersistRecordSuggestLookbackDays = { value ->
+                    coroutineScope.launch {
+                        userPreferencesRepository.setRecordSuggestLookbackDays(value)
+                    }
+                },
+                onPersistRecordSuggestTopN = { value ->
+                    coroutineScope.launch {
+                        userPreferencesRepository.setRecordSuggestTopN(value)
+                    }
+                },
+                onImportFolderTracer = importFolderTracerAction,
+                onImportSingleTxt = importSingleTxtAction,
+                onImportSingleTracer = importSingleTracerAction,
+                onExportAllMonthsTxt = exportActions.onExportAllMonthsTxt,
+                onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,
+                isTxtExportInProgress = exportActions.isTxtExportInProgress,
+                isTracerExportInProgress = exportActions.isTracerExportInProgress,
+                selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
+                onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
+                onImportAndroidConfigFullReplace = configImportActions.onImportAndroidConfigFullReplace,
+                onImportAndroidConfigPartialUpdate = configImportActions.onImportAndroidConfigPartialUpdate,
+                onExportAndroidConfigBundle = exportActions.onExportAndroidConfigBundle,
+                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
             )
         }
     }
+}
+
+private data class HeatmapTomlApplyResult(
+    val ok: Boolean,
+    val message: String,
+    val updatedConfig: ReportHeatmapTomlConfig? = null,
+    val updatedStyle: ReportHeatmapStylePreference? = null
+)
+
+private suspend fun applyHeatmapStyleToToml(
+    controller: RuntimeGateway,
+    config: ReportHeatmapTomlConfig,
+    style: ReportHeatmapStylePreference
+): HeatmapTomlApplyResult {
+    val configPath = ReportHeatmapTomlLoader.configPath()
+    val readResult = controller.readConfigTomlFile(configPath)
+    if (!readResult.ok) {
+        return HeatmapTomlApplyResult(
+            ok = false,
+            message = readResult.message.ifBlank {
+                "Apply failed: cannot read $configPath."
+            }
+        )
+    }
+
+    val (nextLightPalette, nextDarkPalette) = ReportHeatmapTomlLoader
+        .resolveDefaultPalettesForStyle(
+            config = config,
+            stylePreference = style
+        )
+    val rewrittenContent = ReportHeatmapTomlLoader.rewriteDefaults(
+        rawToml = readResult.content,
+        lightPalette = nextLightPalette,
+        darkPalette = nextDarkPalette
+    )
+    if (rewrittenContent == null) {
+        return HeatmapTomlApplyResult(
+            ok = false,
+            message = "Apply failed: missing [defaults] section in $configPath."
+        )
+    }
+
+    val saveResult = controller.saveConfigTomlFile(configPath, rewrittenContent)
+    if (!saveResult.ok) {
+        return HeatmapTomlApplyResult(
+            ok = false,
+            message = saveResult.message.ifBlank {
+                "Apply failed: cannot save $configPath."
+            }
+        )
+    }
+
+    val updatedConfig = ReportHeatmapTomlLoader.parse(rewrittenContent)
+    return HeatmapTomlApplyResult(
+        ok = true,
+        message = saveResult.message.ifBlank {
+            "Applied heatmap style to $configPath."
+        },
+        updatedConfig = updatedConfig,
+        updatedStyle = ReportHeatmapTomlLoader.deriveStylePreference(updatedConfig)
+    )
 }

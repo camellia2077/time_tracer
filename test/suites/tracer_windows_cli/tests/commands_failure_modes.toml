@@ -1,0 +1,53 @@
+# Failure-path regression cases for CLI exit code / stderr contract.
+# Note:
+# - bootstrap runtime guard cases (missing core/config dll) remain covered by
+#   `python test/runtime_guard.py --build-dir build_fast`.
+
+[[commands]]
+name = "Unknown Command Returns CommandNotFound"
+stage = "failure"
+args = ["unknown_cmd"]
+expect_exit = 2
+expect_stderr_contains = ["Unknown command 'unknown_cmd'.", "Run with --help to see available commands."]
+
+[[commands]]
+name = "Legacy Pre Command Removed"
+stage = "failure"
+args = ["pre"]
+expect_exit = 2
+expect_stderr_contains = ["Unknown command 'pre'.", "Run with --help to see available commands."]
+
+[[commands]]
+name = "Blink Alias Routes To Ingest"
+stage = "failure"
+args = ["blink", "--database", "{db_path}"]
+expect_exit = 1
+expect_stderr_contains = ["Error executing command 'ingest':", "Missing required argument: <path>"]
+
+[[commands]]
+name = "Query Invalid Type Returns GenericError"
+stage = "failure"
+args = ["query", "foo", "20260101", "--database", "{db_path}"]
+expect_exit = 1
+expect_stderr_contains = ["Error executing command 'query':", "Unknown query type 'foo'."]
+
+[[commands]]
+name = "Tree Invalid Level Returns GenericError"
+stage = "failure"
+args = ["tree", "-l", "abc", "--database", "{db_path}"]
+expect_exit = 1
+expect_stderr_contains = ["Error executing command 'tree':", "Argument 'level' is not a valid integer: abc"]
+
+[[commands]]
+name = "Export Missing Day Argument Returns GenericError"
+stage = "failure"
+args = ["export", "day", "--database", "{db_path}"]
+expect_exit = 1
+expect_stderr_contains = ["Error executing command 'export':", "Argument required for export type 'day'."]
+
+[[commands]]
+name = "Query Data Invalid Day Boundary Returns LogicError"
+stage = "failure"
+args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--database", "{db_path}"]
+expect_exit = 6
+expect_stderr_contains = ["Logic Error:", "Invalid date boundary: 20261301"]

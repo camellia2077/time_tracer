@@ -10,7 +10,6 @@ internal interface TextStorage {
 
 internal class MultiInputTextStorage(
     private val fullInputPath: String,
-    private val smokeInputPath: String,
     private val liveRawInputPath: String,
     private val recordStore: LiveRawRecordStore
 ) : TextStorage {
@@ -19,7 +18,6 @@ internal class MultiInputTextStorage(
 
     private val sources = listOf(
         TxtSource(key = "full", rootPath = fullInputPath),
-        TxtSource(key = "smoke", rootPath = smokeInputPath),
         TxtSource(key = "live_raw", rootPath = liveRawInputPath)
     )
 
@@ -48,7 +46,7 @@ internal class MultiInputTextStorage(
                 ok = false,
                 filePath = relativePath,
                 content = "",
-                message = "TXT file path is invalid. Use full/... or smoke/... or live_raw/..."
+                message = "TXT file path is invalid. Use full/... or live_raw/..."
             )
 
         val result = recordStore.readTxtFile(resolved.source.rootPath, resolved.innerPath)
@@ -63,7 +61,7 @@ internal class MultiInputTextStorage(
                 ok = false,
                 filePath = relativePath,
                 content = "",
-                message = "TXT file path is invalid. Use full/... or smoke/... or live_raw/..."
+                message = "TXT file path is invalid. Use full/... or live_raw/..."
             )
 
         val result = recordStore.writeTxtFile(

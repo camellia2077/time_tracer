@@ -3,11 +3,11 @@
 本文专门说明：在数据库解析得到标准记录后，如何生成项目树并输出树形结果。
 
 权威代码入口：
-- `apps/time_tracer/src/infrastructure/reports/data/utils/project_tree_builder.cpp`
-- `apps/time_tracer/src/infrastructure/query/data/renderers/data_query_renderer.cpp`
-- `apps/time_tracer/src/infrastructure/query/data/renderers/text_renderer.cpp`
-- `apps/time_tracer/src/infrastructure/reports/data/cache/project_name_cache.hpp`
-- `apps/time_tracer/src/infrastructure/reports/services/batch_export_helpers.hpp`
+- `apps/tracer_core/src/infrastructure/reports/data/utils/project_tree_builder.cpp`
+- `apps/tracer_core/src/infrastructure/query/data/renderers/data_query_renderer.cpp`
+- `apps/tracer_core/src/infrastructure/query/data/renderers/text_renderer.cpp`
+- `apps/tracer_core/src/infrastructure/reports/data/cache/project_name_cache.hpp`
+- `apps/tracer_core/src/infrastructure/reports/services/batch_export_helpers.hpp`
 
 ## 1. 输入与输出
 
@@ -55,8 +55,8 @@ for (path, duration) in records:
 2. 同一路径重复出现自动累加。
 
 源码定位：
-- `apps/time_tracer/src/infrastructure/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromRecords(...)`
-- `apps/time_tracer/src/infrastructure/reports/data/utils/project_tree_builder.hpp`
+- `apps/tracer_core/src/infrastructure/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromRecords(...)`
+- `apps/tracer_core/src/infrastructure/reports/data/utils/project_tree_builder.hpp`
 
 ## 3. ID 记录构树算法
 
@@ -74,9 +74,9 @@ for (path, duration) in records:
   2. 通过 `parent_id` 向上回溯并反转，恢复路径片段。
 
 源码定位：
-- `apps/time_tracer/src/infrastructure/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromIds(...)`
-- `apps/time_tracer/src/infrastructure/reports/data/cache/project_name_cache.hpp`：`ProjectNameCache`
-- `apps/time_tracer/src/domain/reports/interfaces/i_project_info_provider.hpp`：`IProjectInfoProvider`
+- `apps/tracer_core/src/infrastructure/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromIds(...)`
+- `apps/tracer_core/src/infrastructure/reports/data/cache/project_name_cache.hpp`：`ProjectNameCache`
+- `apps/tracer_core/src/domain/reports/interfaces/i_project_info_provider.hpp`：`IProjectInfoProvider`
 
 ## 4. 树渲染算法（CLI）
 
@@ -97,8 +97,8 @@ for (path, duration) in records:
    2. `-1` 表示无限制。
 
 源码定位：
-- `apps/time_tracer/src/infrastructure/query/data/renderers/text_renderer.cpp`：`RenderProjectTreeText(...)`
-- `apps/time_tracer/src/infrastructure/query/data/renderers/text_renderer.cpp`：`AppendTreeChildren(...)`
+- `apps/tracer_core/src/infrastructure/query/data/renderers/text_renderer.cpp`：`RenderProjectTreeText(...)`
+- `apps/tracer_core/src/infrastructure/query/data/renderers/text_renderer.cpp`：`AppendTreeChildren(...)`
 
 ## 5. 复杂度与实现权衡
 

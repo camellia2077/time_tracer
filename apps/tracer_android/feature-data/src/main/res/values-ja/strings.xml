@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_title_ingestion">データ取り込み</string>
-    <string name="data_action_ingest_smoke">Smoke データを取り込む</string>
     <string name="data_action_ingest_full">Full データを取り込む</string>
+    <string name="data_action_import_folder_tracer">フォルダ内の全 TRACER を取り込む</string>
     <string name="data_action_import_single_txt">単一 TXT を取り込む</string>
+    <string name="data_action_import_single_tracer">単一 TRACER を取り込む</string>
 
     <string name="data_title_txt_export">TXT エクスポート</string>
     <string name="data_action_exporting">エクスポート中...</string>
     <string name="data_action_export_all_months_txt">全月の TXT をエクスポート</string>
+    <string name="data_action_export_all_months_tracer">全月の TRACER をエクスポート</string>
+    <string name="data_label_tracer_security_level">暗号化レベル</string>
+    <string name="data_security_level_interactive">高速（Interactive）</string>
+    <string name="data_security_level_moderate">標準（Moderate）</string>
+    <string name="data_security_level_high">高強度（High）</string>
 
     <string name="data_title_maintenance_debug">メンテナンス &amp; デバッグ</string>
     <string name="data_action_clear_txt">TXT をクリア</string>
@@ -19,4 +25,8 @@
     <string name="data_dialog_clear_all_data_message">すべてのアプリデータを削除します。この操作は元に戻せません。</string>
     <string name="data_action_confirm">確認</string>
     <string name="data_action_cancel">キャンセル</string>
+    <string name="data_action_show_progress_details">詳細を表示</string>
+    <string name="data_action_hide_progress_details">詳細を非表示</string>
+    <string name="data_progress_overall">全体進捗</string>
+    <string name="data_progress_current_file">現在フォルダー進捗</string>
 </resources>

@@ -1,5 +1,5 @@
+from collections.abc import Iterable, Sequence
 from pathlib import Path
-from typing import Iterable, Sequence
 
 from ..conf.definitions import LogRoutingRule
 
@@ -16,9 +16,7 @@ class LogRoutingManager:
         self.rules = self._filter_rules_for_module(rules or [])
         self._organize_legacy_logs()
 
-    def _filter_rules_for_module(
-        self, rules: Iterable[LogRoutingRule]
-    ) -> list[LogRoutingRule]:
+    def _filter_rules_for_module(self, rules: Iterable[LogRoutingRule]) -> list[LogRoutingRule]:
         matched_rules: list[LogRoutingRule] = []
         for rule in rules:
             if rule.stage.strip().lower() == self.module_name:

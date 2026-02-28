@@ -1,0 +1,27 @@
+# Crypto command tests
+
+[[commands]]
+name = "Crypto Encrypt Single Txt"
+stage = "crypto"
+args = ["crypto", "encrypt", "--in", "{data_path}/2026/2026-01.txt", "--out", "{output_dir}/crypt/2026-01.tracer"]
+stdin_input = "phase3pass\nphase3pass\n"
+expect_exit = 0
+expect_stdout_contains = ["Encrypted:"]
+expect_files = ["{output_dir}/crypt/2026-01.tracer"]
+
+[[commands]]
+name = "Crypto Inspect Single Tracer"
+stage = "crypto"
+args = ["crypto", "inspect", "--in", "{output_dir}/crypt/2026-01.tracer"]
+expect_exit = 0
+expect_stdout_contains = ["version: 2", "compression_id: 1", "compression_level: 1"]
+
+[[commands]]
+name = "Crypto Decrypt Single Tracer"
+stage = "crypto"
+args = ["crypto", "decrypt", "--in", "{output_dir}/crypt/2026-01.tracer", "--out", "{output_dir}/crypt/2026-01.roundtrip.txt"]
+stdin_input = "phase3pass\n"
+expect_exit = 0
+expect_stdout_contains = ["Decrypted:"]
+expect_files = ["{output_dir}/crypt/2026-01.roundtrip.txt"]
+expect_file_contains = ["{output_dir}/crypt/2026-01.roundtrip.txt::y2026"]

@@ -64,6 +64,7 @@
 4. 版本升级流程详见：`docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`。
 
 ## 相关文档
-1. 能力矩阵：`docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
-2. JSON 字段：`docs/time_tracer/core/contracts/stats/json_schema_v1.md`
-3. 代码映射：`docs/time_tracer/core/contracts/stats/code_map.md`
+1. report-chart 专项契约：`docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
+2. 能力矩阵：`docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
+3. JSON 字段：`docs/time_tracer/core/contracts/stats/json_schema_v1.md`
+4. 代码映射：`docs/time_tracer/core/contracts/stats/code_map.md`

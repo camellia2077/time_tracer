@@ -1,8 +1,8 @@
 # test/cases/export.py
 from pathlib import Path
-from typing import List, Tuple
+
+from ..conf.definitions import Colors, SingleTestResult, TestContext, TestReport
 from ..core.base import BaseTester, TestCounter
-from ..conf.definitions import Colors, TestContext, TestReport, SingleTestResult
 
 
 class ExportTester(BaseTester):
@@ -25,9 +25,7 @@ class ExportTester(BaseTester):
         super().__init__(counter, module_order, "export", context)
 
         self.db_file = (
-            context.db_path
-            if context.db_path
-            else context.exe_path.parent / generated_db_file_name
+            context.db_path if context.db_path else context.exe_path.parent / generated_db_file_name
         )
         self.export_output_path = export_output_path
         self.is_bulk_mode = is_bulk_mode
@@ -66,15 +64,13 @@ class ExportTester(BaseTester):
             fail_res = SingleTestResult(
                 name="Database Existence Check",
                 status="FAIL",
-                messages=[
-                    f"{Colors.RED}错误: 数据库文件不存在: {self.db_file}{Colors.RESET}"
-                ],
+                messages=[f"{Colors.RED}错误: 数据库文件不存在: {self.db_file}{Colors.RESET}"],
             )
             report.results.append(fail_res)
             return False
         return True
 
-    def _plan_test_cases(self) -> List[Tuple[str, List[str]]]:
+    def _plan_test_cases(self) -> list[tuple[str, list[str]]]:
         """根据配置生成测试计划"""
         common_args = [
             "--database",
@@ -88,30 +84,20 @@ class ExportTester(BaseTester):
         else:
             return self._build_specific_cases(common_args)
 
-    def _build_bulk_cases(self, common_args: List[str]) -> List[Tuple[str, List[str]]]:
+    def _build_bulk_cases(self, common_args: list[str]) -> list[tuple[str, list[str]]]:
         """构建批量导出模式的测试用例"""
         cases = []
 
         # 1. Daily & Monthly
+        cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-day"], common_args))
         cases.extend(
-            self._make_cases(
-                "Bulk Export All Daily", ["export", "all-day"], common_args
-            )
+            self._make_cases("Bulk Export All Monthly", ["export", "all-month"], common_args)
         )
         cases.extend(
-            self._make_cases(
-                "Bulk Export All Monthly", ["export", "all-month"], common_args
-            )
+            self._make_cases("Bulk Export All Weekly", ["export", "all-week"], common_args)
         )
         cases.extend(
-            self._make_cases(
-                "Bulk Export All Weekly", ["export", "all-week"], common_args
-            )
-        )
-        cases.extend(
-            self._make_cases(
-                "Bulk Export All Yearly", ["export", "all-year"], common_args
-            )
+            self._make_cases("Bulk Export All Yearly", ["export", "all-year"], common_args)
         )
 
         # 2. Period
@@ -126,9 +112,7 @@ class ExportTester(BaseTester):
             )
         return cases
 
-    def _build_specific_cases(
-        self, common_args: List[str]
-    ) -> List[Tuple[str, List[str]]]:
+    def _build_specific_cases(self, common_args: list[str]) -> list[tuple[str, list[str]]]:
         """构建指定导出模式的测试用例"""
         cases = []
 
@@ -185,8 +169,8 @@ class ExportTester(BaseTester):
         return cases
 
     def _make_cases(
-        self, base_name: str, base_cmd: List[str], common_args: List[str]
-    ) -> List[Tuple[str, List[str]]]:
+        self, base_name: str, base_cmd: list[str], common_args: list[str]
+    ) -> list[tuple[str, list[str]]]:
         """
         微型工厂：为每个 format 生成一个测试用例
         """

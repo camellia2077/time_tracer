@@ -6,4 +6,5 @@ interface RuntimeGateway :
     ReportGateway,
     QueryGateway,
     TxtStorageGateway,
-    ConfigGateway
+    ConfigGateway,
+    FileCryptoGateway

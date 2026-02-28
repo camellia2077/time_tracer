@@ -100,10 +100,19 @@ internal suspend fun runTreeAnalysisAction(
     return runningState.copy(
         analysisLoading = false,
         analysisError = if (result.ok) "" else result.message,
-        activeResult = if (result.ok) QueryResult.Tree(
-            result.outputText,
-            period
-        ) else null,
+        activeResult = if (result.ok) {
+            QueryResult.Tree(
+                period = period,
+                nodes = result.nodes,
+                found = result.found,
+                roots = result.roots,
+                message = result.message,
+                fallbackText = result.legacyText,
+                usesTextFallback = result.usesTextFallback
+            )
+        } else {
+            null
+        },
         statusText = textProvider.queryTreeResult(result.ok)
     )
 }

@@ -5,7 +5,6 @@ import argparse
 import sys
 from pathlib import Path
 
-
 SUITES_ROOT = Path(__file__).resolve().parent
 TEST_ROOT = SUITES_ROOT.parent
 FRAMEWORK_ROOT = TEST_ROOT / "framework"

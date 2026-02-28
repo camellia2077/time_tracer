@@ -5,6 +5,45 @@ from ...core.context import Context
 from . import common as build_common
 
 
+def _resolve_tidy_header_filter_regex(ctx: Context) -> str:
+    configured = (ctx.config.tidy.header_filter_regex or "").strip()
+    if configured:
+        return configured
+    return r"^(?!.*[\\/]_deps[\\/]).*"
+
+
+def _has_build_target_override(build_args: list[str]) -> bool:
+    for arg in build_args:
+        if arg in {"--target", "-t"}:
+            return True
+        if arg.startswith("--target=") or arg.startswith("-t="):
+            return True
+    return False
+
+
+def _read_cmake_cache_value(cache_path: Path, key: str) -> str | None:
+    try:
+        for raw_line in cache_path.read_text(encoding="utf-8", errors="replace").splitlines():
+            if not raw_line.startswith(f"{key}:"):
+                continue
+            _, _, value = raw_line.partition("=")
+            return value.strip()
+    except OSError:
+        return None
+    return None
+
+
+def needs_tidy_filter_reconfigure(ctx: Context, tidy: bool, build_dir: Path) -> bool:
+    if not tidy:
+        return False
+    cache_path = build_dir / "CMakeCache.txt"
+    if not cache_path.exists():
+        return True
+    expected = _resolve_tidy_header_filter_regex(ctx)
+    actual = _read_cmake_cache_value(cache_path, "TT_CLANG_TIDY_HEADER_FILTER")
+    return actual != expected
+
+
 def is_configured(
     ctx: Context,
     app_name: str,
@@ -95,6 +134,13 @@ def configure_cmake(
         configure_args, "TRACER_WINDOWS_CONFIG_SOURCE_DIR"
     )
     configure_args += build_common.resolve_windows_config_cmake_args(ctx, app_name)
+    if tidy and not build_common.has_cmake_definition(
+        flags + configure_args, "TT_CLANG_TIDY_HEADER_FILTER"
+    ):
+        configure_args += [
+            "-D",
+            f"TT_CLANG_TIDY_HEADER_FILTER={_resolve_tidy_header_filter_regex(ctx)}",
+        ]
     toolchain_flags = build_common.resolve_toolchain_flags(ctx, flags + configure_args)
     config_cmd = (
         ["cmake", "-S", str(source_dir), "-B", str(build_dir)]
@@ -129,6 +175,8 @@ def build_cmake(
     build_dir = ctx.get_app_dir(app_name) / resolved_build_dir_name
     filtered_build_args = [a for a in (extra_args or []) if a != "--"]
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
+    profile_build_targets = build_common.profile_build_targets(ctx, profile_name)
+    has_target_override = _has_build_target_override(filtered_build_args)
     explicit_profile_requested = bool((profile_name or "").strip())
     is_currently_configured = is_configured_fn(
         app_name,
@@ -141,6 +189,7 @@ def build_cmake(
         or explicit_profile_requested
         or not is_currently_configured
         or needs_windows_config_reconfigure_fn(app_name, build_dir)
+        or needs_tidy_filter_reconfigure(ctx, tidy, build_dir)
     )
     if should_configure:
         if not is_currently_configured:
@@ -157,7 +206,11 @@ def build_cmake(
         )
         if configure_ret != 0:
             return configure_ret
-    build_cmd = ["cmake", "--build", str(build_dir), "-j"] + filtered_build_args
+    build_cmd = ["cmake", "--build", str(build_dir), "-j"]
+    if profile_build_targets and not has_target_override:
+        print(f"--- build: applying profile build targets: {', '.join(profile_build_targets)}")
+        build_cmd += ["--target", *profile_build_targets]
+    build_cmd += filtered_build_args
     build_ret = run_command_fn(build_cmd, env=ctx.setup_env())
     if build_ret != 0:
         return build_ret

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from .definitions import (
-    CLINames,
     Cleanup,
+    CLINames,
     LogRoutingConfig,
     LogRoutingRule,
     Paths,
@@ -29,9 +29,7 @@ def _load_paths(toml_data) -> Paths:
     paths_inst.DEFAULT_BUILD_DIR = default_build_dir or None
 
     project_apps_root = paths_data.get("project_apps_root")
-    paths_inst.PROJECT_APPS_ROOT = (
-        Path(project_apps_root) if project_apps_root else None
-    )
+    paths_inst.PROJECT_APPS_ROOT = Path(project_apps_root) if project_apps_root else None
 
     source_exe_dir = paths_data.get("source_executables_dir")
     paths_inst.SOURCE_EXECUTABLES_DIR = Path(source_exe_dir) if source_exe_dir else None
@@ -42,9 +40,7 @@ def _load_paths(toml_data) -> Paths:
         build_dir_name = paths_inst.DEFAULT_BUILD_DIR
     if bin_dir:
         paths_inst.SOURCE_EXECUTABLES_DIR = Path(bin_dir)
-        print(
-            f"  - Binary directory override active: {paths_inst.SOURCE_EXECUTABLES_DIR}"
-        )
+        print(f"  - Binary directory override active: {paths_inst.SOURCE_EXECUTABLES_DIR}")
     else:
         build_dir_name = toml_data.get("_build_dir_name")
         if build_dir_name and paths_inst.PROJECT_APPS_ROOT:
@@ -64,9 +60,7 @@ def _load_paths(toml_data) -> Paths:
 
     test_data_path_str = paths_data.get("test_data_path")
     if not test_data_path_str:
-        raise ValueError(
-            "Config error: 'test_data_path' is missing in [paths] section."
-        )
+        raise ValueError("Config error: 'test_data_path' is missing in [paths] section.")
     paths_inst.SOURCE_DATA_PATH = Path(test_data_path_str)
 
     paths_inst.TEST_DATA_ROOT = paths_inst.SOURCE_DATA_PATH.parent
@@ -82,20 +76,14 @@ def _load_paths(toml_data) -> Paths:
     paths_inst.EXPORT_OUTPUT_DIR = Path(export_dir) if export_dir else None
 
     py_output_val = paths_data.get("py_output_dir")
-    paths_inst.PY_OUTPUT_DIR = (
-        Path(py_output_val) if py_output_val else Path.cwd() / "py_output"
-    )
+    paths_inst.PY_OUTPUT_DIR = Path(py_output_val) if py_output_val else Path.cwd() / "py_output"
 
     output_dir_name = paths_data.get("output_dir_name")
     paths_inst.OUTPUT_DIR_NAME = Path(output_dir_name) if output_dir_name else None
 
-    paths_inst.PROCESSED_DATA_DIR_NAME = (
-        f"Processed_{paths_inst.SOURCE_DATA_FOLDER_NAME}"
-    )
+    paths_inst.PROCESSED_DATA_DIR_NAME = f"Processed_{paths_inst.SOURCE_DATA_FOLDER_NAME}"
     processed_json_dir = paths_data.get("processed_json_dir")
-    paths_inst.PROCESSED_JSON_DIR = (
-        Path(processed_json_dir) if processed_json_dir else None
-    )
+    paths_inst.PROCESSED_JSON_DIR = Path(processed_json_dir) if processed_json_dir else None
 
     if paths_inst.PROCESSED_JSON_DIR:
         paths_inst.PROCESSED_JSON_PATH = paths_inst.PROCESSED_JSON_DIR
@@ -126,21 +114,11 @@ def _load_test_params(toml_data) -> TestParams:
     params_inst.YEARLY_QUERY_YEARS = test_params_data.get("yearly_query_years", [])
     params_inst.RECENT_QUERY_DAYS = test_params_data.get("recent_query_days", [])
 
-    params_inst.EXPORT_MODE_IS_BULK = bool(
-        test_params_data.get("export_mode_is_bulk", False)
-    )
-    params_inst.SPECIFIC_EXPORT_DATES = test_params_data.get(
-        "specific_export_dates", []
-    )
-    params_inst.SPECIFIC_EXPORT_MONTHS = test_params_data.get(
-        "specific_export_months", []
-    )
-    params_inst.SPECIFIC_EXPORT_WEEKS = test_params_data.get(
-        "specific_export_weeks", []
-    )
-    params_inst.SPECIFIC_EXPORT_YEARS = test_params_data.get(
-        "specific_export_years", []
-    )
+    params_inst.EXPORT_MODE_IS_BULK = bool(test_params_data.get("export_mode_is_bulk", False))
+    params_inst.SPECIFIC_EXPORT_DATES = test_params_data.get("specific_export_dates", [])
+    params_inst.SPECIFIC_EXPORT_MONTHS = test_params_data.get("specific_export_months", [])
+    params_inst.SPECIFIC_EXPORT_WEEKS = test_params_data.get("specific_export_weeks", [])
+    params_inst.SPECIFIC_EXPORT_YEARS = test_params_data.get("specific_export_years", [])
     params_inst.RECENT_EXPORT_DAYS = test_params_data.get("recent_export_days", [])
     return params_inst
 
@@ -149,9 +127,7 @@ def _load_cleanup_params(toml_data) -> Cleanup:
     cleanup_data = toml_data.get("cleanup", {})
     cleanup_inst = Cleanup()
     cleanup_inst.FILES_TO_COPY = cleanup_data.get("files_to_copy", [])
-    cleanup_inst.FOLDERS_TO_COPY = cleanup_data.get(
-        "folders_to_copy", ["config", "plugins"]
-    )
+    cleanup_inst.FOLDERS_TO_COPY = cleanup_data.get("folders_to_copy", ["config", "plugins"])
     cleanup_inst.DIRECTORIES_TO_CLEAN = cleanup_data.get("directories_to_clean", [])
     return cleanup_inst
 
@@ -201,15 +177,11 @@ def _load_log_routing(toml_data) -> LogRoutingConfig:
 def _load_run_control(toml_data) -> RunControl:
     run_control_data = toml_data.get("run_control", {})
     run_inst = RunControl()
-    run_inst.ENABLE_ENVIRONMENT_CLEAN = bool(
-        run_control_data.get("enable_environment_clean", True)
-    )
+    run_inst.ENABLE_ENVIRONMENT_CLEAN = bool(run_control_data.get("enable_environment_clean", True))
     run_inst.ENABLE_ENVIRONMENT_PREPARE = bool(
         run_control_data.get("enable_environment_prepare", True)
     )
-    run_inst.ENABLE_TEST_EXECUTION = bool(
-        run_control_data.get("enable_test_execution", True)
-    )
+    run_inst.ENABLE_TEST_EXECUTION = bool(run_control_data.get("enable_test_execution", True))
     run_inst.STOP_ON_FAILURE = bool(run_control_data.get("stop_on_failure", True))
     return run_inst
 
@@ -218,8 +190,6 @@ def _load_pipeline(toml_data) -> PipelineConfig:
     pipeline_data = toml_data.get("pipeline", {})
     mode = str(pipeline_data.get("mode", "ingest")).strip().lower()
     if mode not in {"ingest", "staged", "none"}:
-        raise ValueError(
-            "Config error: [pipeline].mode must be 'ingest', 'staged', or 'none'."
-        )
+        raise ValueError("Config error: [pipeline].mode must be 'ingest', 'staged', or 'none'.")
 
     return PipelineConfig(MODE=mode)

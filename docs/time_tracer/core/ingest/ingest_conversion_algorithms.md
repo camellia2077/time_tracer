@@ -3,13 +3,13 @@
 本文聚焦算法层面，说明 TimeTracer 如何把输入文本逐步转换为可入库的结构化 `struct` 数据。
 
 权威代码入口（以实现为准）：
-- `apps/time_tracer/src/application/parser/text_parser.cpp`
-- `apps/time_tracer/src/application/service/converter_service.cpp`
-- `apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`
-- `apps/time_tracer/src/domain/logic/converter/log_processor.cpp`
-- `apps/time_tracer/src/application/pipeline/steps/pipeline_stages.cpp`
-- `apps/time_tracer/src/application/parser/memory_parser.cpp`
-- `apps/time_tracer/src/application/importer/model/import_models.hpp`
+- `apps/tracer_core/src/application/parser/text_parser.cpp`
+- `apps/tracer_core/src/application/service/converter_service.cpp`
+- `apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`
+- `apps/tracer_core/src/domain/logic/converter/log_processor.cpp`
+- `apps/tracer_core/src/application/pipeline/steps/pipeline_stages.cpp`
+- `apps/tracer_core/src/application/parser/memory_parser.cpp`
+- `apps/tracer_core/src/application/importer/model/import_models.hpp`
 
 ## 1. 输入与输出
 
@@ -56,9 +56,9 @@ txt
    2. 如果首事件不是 wake 且无 `getupTime`，标记 `isContinuation=true`（表示延续上一天）。
 
 源码定位：
-- `apps/time_tracer/src/application/parser/text_parser.cpp`：`TextParser::Parse(...)`
-- `apps/time_tracer/src/application/parser/text_parser.cpp`：`TextParser::ParseLine(...)`、`TextParser::ExtractRemark(...)`
-- `apps/time_tracer/src/application/parser/text_parser.cpp`：`TextParser::IsYearMarker(...)`、`TextParser::IsNewDayMarker(...)`
+- `apps/tracer_core/src/application/parser/text_parser.cpp`：`TextParser::Parse(...)`
+- `apps/tracer_core/src/application/parser/text_parser.cpp`：`TextParser::ParseLine(...)`、`TextParser::ExtractRemark(...)`
+- `apps/tracer_core/src/application/parser/text_parser.cpp`：`TextParser::IsYearMarker(...)`、`TextParser::IsNewDayMarker(...)`
 
 ## 4. ConverterService：滑动窗口日处理
 
@@ -72,7 +72,7 @@ txt
 该设计保证跨天逻辑可在单遍扫描内完成，不需要全量回看历史。
 
 源码定位：
-- `apps/time_tracer/src/application/service/converter_service.cpp`：`ConverterService::ExecuteConversion(...)`
+- `apps/tracer_core/src/application/service/converter_service.cpp`：`ConverterService::ExecuteConversion(...)`
 
 ## 5. DayProcessor：RawEvent 转 BaseActivityRecord
 
@@ -91,8 +91,8 @@ txt
    1. `isContinuation=true` 时，用上一天末事件时间回填 `getupTime`。
 
 源码定位：
-- `apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayProcessor::Process(...)`
-- `apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`：`ActivityMapper`（活动映射）
+- `apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayProcessor::Process(...)`
+- `apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`ActivityMapper`（活动映射）
 
 ## 6. DayStats：为 struct 填充统计与主键字段
 
@@ -111,7 +111,7 @@ txt
    2. `sleep_total_time = sleep_night_time + sleep_day_time`。
 
 源码定位：
-- `apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayStats::CalculateStats(...)`
+- `apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayStats::CalculateStats(...)`
 
 ## 7. LogProcessor + Pipeline：分桶与跨月补链
 
@@ -124,9 +124,9 @@ txt
    2. 条件满足时在本月首日插入生成睡眠段并重算统计。
 
 源码定位：
-- `apps/time_tracer/src/domain/logic/converter/log_processor.hpp`：`LogProcessor::ProcessSourceContent(...)`
-- `apps/time_tracer/src/application/pipeline/steps/pipeline_stages.cpp`：`ConverterStep::Execute(...)`
-- `apps/time_tracer/src/domain/logic/converter/convert/core/converter_core.cpp`：`LogLinker::LinkLogs(...)`
+- `apps/tracer_core/src/domain/logic/converter/log_processor.hpp`：`LogProcessor::ProcessSourceContent(...)`
+- `apps/tracer_core/src/application/pipeline/steps/pipeline_stages.cpp`：`ConverterStep::Execute(...)`
+- `apps/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`LogLinker::LinkLogs(...)`
 
 ## 8. MemoryParser：领域结构转入库结构
 
@@ -154,8 +154,8 @@ txt
       4. `date`
 
 源码定位：
-- `apps/time_tracer/src/application/parser/memory_parser.cpp`：`MemoryParser::Parse(...)`
-- `apps/time_tracer/src/application/importer/model/import_models.hpp`：`ParsedData`、`DayData`、`TimeRecordInternal`
+- `apps/tracer_core/src/application/parser/memory_parser.cpp`：`MemoryParser::Parse(...)`
+- `apps/tracer_core/src/application/importer/model/import_models.hpp`：`ParsedData`、`DayData`、`TimeRecordInternal`
 
 ## 9. 关键特性总结
 

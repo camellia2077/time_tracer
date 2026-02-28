@@ -9,6 +9,8 @@ class ArtifactSizeCommand:
     _DEFAULT_BUILD_DIR = "build_artifact_size"
     _DEFAULT_PROFILE = "release_safe"
     _DEFAULT_RESULT_JSON_NAME = "artifact_size.json"
+    _DEFAULT_ARTIFACT_GLOB = "time_tracer_cli.exe"
+    _DEFAULT_TRACKED_PE_SECTIONS = [".text", ".rdata"]
 
     def __init__(self, ctx: Context):
         self.ctx = ctx
@@ -20,7 +22,7 @@ class ArtifactSizeCommand:
         build_dir_name: str | None = None,
         profile_name: str | None = None,
         result_json: str | None = None,
-        artifact_glob: str = "*.exe",
+        artifact_glob: str | None = None,
         exclude_substrings: list[str] | None = None,
         cmake_args: list[str] | None = None,
     ) -> int:
@@ -61,15 +63,17 @@ class ArtifactSizeCommand:
         try:
             artifacts, total_bytes = collect_artifact_sizes(
                 bin_dir=bin_dir,
-                artifact_glob=artifact_glob,
+                artifact_glob=artifact_glob or self._DEFAULT_ARTIFACT_GLOB,
                 exclude_substrings=exclude_substrings,
+                tracked_pe_sections=self._DEFAULT_TRACKED_PE_SECTIONS,
             )
         except FileNotFoundError as exc:
             print(f"Error: {exc}")
             return 1
 
         if not artifacts:
-            print(f"Error: no artifacts matched under {bin_dir} (glob={artifact_glob}).")
+            effective_glob = artifact_glob or self._DEFAULT_ARTIFACT_GLOB
+            print(f"Error: no artifacts matched under {bin_dir} (glob={effective_glob}).")
             return 1
 
         if result_json and result_json.strip():

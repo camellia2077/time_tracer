@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ...core.config import BuildProfileConfig
 from ...core.context import Context
-from ...core.executor import kill_build_processes, run_command
+from ...core.executor import kill_build_processes, kill_runtime_lock_processes, run_command
 from . import cmake as build_cmake, command_entries as build_command_entries, common as build_common
 
 
@@ -220,6 +220,7 @@ class BuildCommand:
             kill_build_procs=kill_build_procs,
             run_command_fn=run_command,
             kill_build_processes_fn=kill_build_processes,
+            kill_runtime_lock_processes_fn=kill_runtime_lock_processes,
         )
 
     def execute(

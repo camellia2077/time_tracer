@@ -1,6 +1,5 @@
 # src/tt_testing/main.py
 from pathlib import Path
-from typing import Dict, Optional
 
 from .conf.definitions import Colors
 from .conf.loader import load_config
@@ -28,7 +27,7 @@ def print_header(paths, no_color: bool):
     print(f"{color_cyan}" + "-" * 80 + f"{color_reset}\n")
 
 
-def _build_error_result(error_message: str, log_dir: str) -> Dict:
+def _build_error_result(error_message: str, log_dir: str) -> dict:
     bootstrap_case = {
         "module": "runner",
         "name": "bootstrap",
@@ -55,19 +54,17 @@ def _build_error_result(error_message: str, log_dir: str) -> Dict:
 
 
 def main(
-    config_path: Optional[Path] = None,
-    build_dir_name: Optional[str] = None,
-    bin_dir: Optional[str] = None,
-    options: Optional[Dict] = None,
+    config_path: Path | None = None,
+    build_dir_name: str | None = None,
+    bin_dir: str | None = None,
+    options: dict | None = None,
     return_result: bool = False,
 ):
     run_options = options or {}
     no_color = bool(run_options.get("no_color", False))
     log_dir = ""
     try:
-        config = load_config(
-            config_path, build_dir_name=build_dir_name, bin_dir=bin_dir
-        )
+        config = load_config(config_path, build_dir_name=build_dir_name, bin_dir=bin_dir)
         if config.paths.PY_OUTPUT_DIR:
             log_dir = str(config.paths.PY_OUTPUT_DIR)
     except Exception as error:

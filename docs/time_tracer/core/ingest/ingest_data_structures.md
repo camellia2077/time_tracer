@@ -3,12 +3,12 @@
 本文说明 TimeTracer 在“文本内容 -> 结构化数据 -> SQLite 入库”过程中，核心 struct 如何设计与流转。
 
 权威代码入口：
-- `apps/time_tracer/src/application/parser/text_parser.cpp`
-- `apps/time_tracer/src/domain/model/daily_log.hpp`
-- `apps/time_tracer/src/domain/model/time_data_models.hpp`
-- `apps/time_tracer/src/application/parser/memory_parser.cpp`
-- `apps/time_tracer/src/application/importer/model/import_models.hpp`
-- `apps/time_tracer/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+- `apps/tracer_core/src/application/parser/text_parser.cpp`
+- `apps/tracer_core/src/domain/model/daily_log.hpp`
+- `apps/tracer_core/src/domain/model/time_data_models.hpp`
+- `apps/tracer_core/src/application/parser/memory_parser.cpp`
+- `apps/tracer_core/src/application/importer/model/import_models.hpp`
+- `apps/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
 
 相关算法文档：
 - `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`（文本到 struct 的转换算法细节）
@@ -32,7 +32,7 @@ txt 行文本
 
 ### 2.1 `SourceSpan`
 
-文件：`apps/time_tracer/src/domain/model/source_span.hpp`
+文件：`apps/tracer_core/src/domain/model/source_span.hpp`
 
 作用：记录源文本定位信息，便于错误定位与诊断。
 
@@ -44,7 +44,7 @@ txt 行文本
 
 ### 2.2 `RawEvent`
 
-文件：`apps/time_tracer/src/domain/model/daily_log.hpp`
+文件：`apps/tracer_core/src/domain/model/daily_log.hpp`
 
 作用：`TextParser` 逐行解析事件后得到的最原始事件结构。
 
@@ -58,7 +58,7 @@ txt 行文本
 
 ### 3.1 `ActivityStats`
 
-文件：`apps/time_tracer/src/domain/model/time_data_models.hpp`
+文件：`apps/tracer_core/src/domain/model/time_data_models.hpp`
 
 作用：一天内统计聚合结果（单位秒）。
 
@@ -71,7 +71,7 @@ txt 行文本
 
 ### 3.2 `BaseActivityRecord`
 
-文件：`apps/time_tracer/src/domain/model/time_data_models.hpp`
+文件：`apps/tracer_core/src/domain/model/time_data_models.hpp`
 
 作用：统一活动记录结构（已完成时间与项目路径归一化）。
 
@@ -85,7 +85,7 @@ txt 行文本
 
 ### 3.3 `DailyLog`
 
-文件：`apps/time_tracer/src/domain/model/daily_log.hpp`
+文件：`apps/tracer_core/src/domain/model/daily_log.hpp`
 
 作用：单日完整领域对象，是转换阶段的核心载体。
 
@@ -104,7 +104,7 @@ txt 行文本
 
 ### 3.4 `LogProcessingResult`
 
-文件：`apps/time_tracer/src/domain/logic/converter/log_processor.hpp`
+文件：`apps/tracer_core/src/domain/logic/converter/log_processor.hpp`
 
 作用：单个输入源转换结果。
 
@@ -119,7 +119,7 @@ txt 行文本
 
 ### 4.1 `DayData`
 
-文件：`apps/time_tracer/src/application/importer/model/import_models.hpp`
+文件：`apps/tracer_core/src/application/importer/model/import_models.hpp`
 
 作用：`days` 表的入库模型。
 
@@ -135,7 +135,7 @@ txt 行文本
 
 ### 4.2 `TimeRecordInternal`
 
-文件：`apps/time_tracer/src/application/importer/model/import_models.hpp`
+文件：`apps/tracer_core/src/application/importer/model/import_models.hpp`
 
 作用：`time_records` 表入库模型。
 
@@ -148,7 +148,7 @@ txt 行文本
 
 ### 4.3 `ParsedData`
 
-文件：`apps/time_tracer/src/application/importer/model/import_models.hpp`
+文件：`apps/tracer_core/src/application/importer/model/import_models.hpp`
 
 作用：一次导入的批量入库数据包。
 
@@ -160,7 +160,7 @@ txt 行文本
 
 ### 5.1 `DayData -> days`
 
-文件：`apps/time_tracer/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+文件：`apps/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
 
 映射关系要点：
 - `DayData.date/year/month/status/sleep/exercise/remark/getup_time` -> `days` 同名列
@@ -170,8 +170,8 @@ txt 行文本
 ### 5.2 `TimeRecordInternal -> projects + time_records`
 
 文件：
-- `apps/time_tracer/src/infrastructure/persistence/importer/sqlite/project_resolver.cpp`
-- `apps/time_tracer/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+- `apps/tracer_core/src/infrastructure/persistence/importer/sqlite/project_resolver.cpp`
+- `apps/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
 
 流程：
 1. 先用 `project_path`（`_` 分隔）经 `ProjectResolver` 解析/创建 `projects` 树节点，得到 `project_id`。

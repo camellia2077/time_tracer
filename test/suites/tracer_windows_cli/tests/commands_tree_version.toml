@@ -4,12 +4,54 @@ stage = "version"
 args = ["--version"]
 expect_exit = 0
 
+[[commands]]
+name = "Tracer Easter Egg"
+stage = "version"
+args = ["tracer"]
+expect_exit = 0
+expect_stdout_contains = ["timetracer is here"]
+
+[[commands]]
+name = "Motto Easter Egg"
+stage = "version"
+args = ["motto"]
+expect_exit = 0
+expect_stdout_contains = ["Trace your time, log your life."]
+
+[[commands]]
+name = "Zen Easter Egg"
+stage = "version"
+args = ["zen"]
+expect_exit = 0
+expect_stdout_contains = ["Trace your time, log your life."]
+
+[[commands]]
+name = "Doctor Check"
+stage = "version"
+args = ["doctor"]
+expect_exit = 0
+expect_stdout_contains = ["Runtime Doctor", "Summary: required"]
+
 # Tree command tests
+[[commands]]
+name = "Tree Help"
+stage = "tree"
+args = ["tree", "--help"]
+expect_exit = 0
+expect_stdout_contains = ["Display project structure as a tree.", "Max depth level"]
+
 [[commands]]
 name = "Tree Full"
 stage = "tree"
 args = ["tree", "--database", "{db_path}"]
 expect_exit = 0
+
+[[commands]]
+name = "Tree Root Path"
+stage = "tree"
+args = ["tree", "study", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["study"]
 
 [[commands]]
 name = "Tree Roots"

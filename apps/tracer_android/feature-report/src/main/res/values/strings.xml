@@ -50,7 +50,14 @@
     <string name="report_chart_visual_line">Line</string>
     <string name="report_chart_visual_bar">Bar</string>
     <string name="report_chart_visual_pie">Pie</string>
+    <string name="report_chart_visual_heatmap_month">Heatmap (Month)</string>
+    <string name="report_chart_visual_heatmap_year">Heatmap (Year)</string>
     <string name="report_chart_pie_hint">Tap a slice to view date and duration.</string>
+    <string name="report_chart_heatmap_hint">Tap a day cell to view date and duration.</string>
+    <string name="report_chart_heatmap_theme_policy_label">Heatmap Theme</string>
+    <string name="report_chart_heatmap_theme_policy_system">System (Default)</string>
+    <string name="report_chart_heatmap_theme_policy_palette">Manual</string>
+    <string name="report_chart_heatmap_palette_label">Manual Palette</string>
     <string name="report_chart_axis_x_date">X Axis: Date (MM-dd)</string>
     <string name="report_chart_axis_y_hours">Y Axis: Duration (hours)</string>
     <string name="report_chart_toggle_average_line">Show Average Line</string>
@@ -82,6 +89,12 @@
     <string name="report_status_query_tree_result">query data tree -&gt; OK=%1$s</string>
     <string name="report_status_query_chart_running">query data report-chart running...</string>
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
+
+    <string name="report_result_title_report">Report Result</string>
+    <string name="report_result_title_chart">Chart Result</string>
+    <string name="report_result_title_analysis_error">Analysis Error</string>
+    <string name="report_result_title_stats">%1$s Stats Result</string>
+    <string name="report_result_title_tree">%1$s Tree Result</string>
 
     <string name="report_error_tree_level_min">Tree level must be &gt;= -1.</string>
     <string name="report_error_chart_payload_invalid">Report chart payload is invalid.</string>

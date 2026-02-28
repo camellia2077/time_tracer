@@ -27,25 +27,26 @@ internal fun RecordSuggestionsSection(
     isSuggestionsLoading: Boolean,
     suggestedActivities: List<String>,
     onToggleSuggestions: () -> Unit,
-    onSuggestedActivityClick: (String) -> Unit
+    onSuggestedActivityClick: (String) -> Unit,
+    showToggleButton: Boolean = true
 ) {
     Column(modifier = Modifier.fillMaxWidth()) {
-        TextButton(
-            onClick = onToggleSuggestions,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                if (suggestionsVisible) {
-                    stringResource(R.string.record_action_hide_suggestions)
-                } else {
-                    stringResource(R.string.record_action_show_suggestions)
-                }
-            )
-            Spacer(Modifier.width(8.dp))
-            Icon(
-                if (suggestionsVisible) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
-                contentDescription = null
-            )
+        if (showToggleButton) {
+            TextButton(
+                onClick = onToggleSuggestions,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.record_action_suggestions))
+                Spacer(Modifier.width(8.dp))
+                Icon(
+                    if (suggestionsVisible) {
+                        Icons.Default.KeyboardArrowUp
+                    } else {
+                        Icons.Default.KeyboardArrowDown
+                    },
+                    contentDescription = null
+                )
+            }
         }
 
         AnimatedVisibility(visible = suggestionsVisible) {

@@ -12,13 +12,13 @@ framework_root = test_root / "framework"
 sys.path.insert(0, str(framework_root))
 
 from suite_runner import run_suite
+
 from run_support import (
     _ensure_bin_dir_exists,
     _load_suite_default_build_dir,
     _resolve_build_dir,
     _run_optional_build_steps,
 )
-
 
 # `tracer_windows_cli` is the core + Windows CLI integrated suite.
 SUITE_META = {

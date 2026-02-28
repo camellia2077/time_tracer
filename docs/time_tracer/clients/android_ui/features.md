@@ -67,7 +67,7 @@
   - 头解析（`yYYYY + mMM`）、受管路径写入、触发 native ingest。
 - `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt`
   - `nativeIngestSingleTxtReplaceMonth` JNI 声明。
-- `apps/time_tracer/src/api/android/native_bridge_calls.cpp`
+- `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
   - 组装 ingest 请求并设置 `ingest_mode=single_txt_replace_month`。
 
 ## Config：Android TOML 导入（Full Replace / Partial Update）
@@ -112,7 +112,11 @@
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/viewmodel/AndroidConfigPathPolicy.kt`
   - 导入/导出共用白名单与路径归一化规则。
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
+  - Config 页状态管理与导入导出入口编排（委托 use case 执行）。
+- `apps/tracer_android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigBundleTransferUseCase.kt`
   - 导入前校验、`profile` 校验、替换与回滚。
+- `apps/tracer_android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigBundleTransferModels.kt`
+  - Config 导入导出数据模型（export/import entry 与结果对象）。
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/tracer/TracerScreenImports.kt`
   - `OpenDocumentTree` 导入入口与目录读取触发。
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/TracerScreenDocumentTree.kt`
@@ -165,6 +169,7 @@
   - `discardUnsavedHistoryDraft`：TXT 未保存草稿回滚到最近一次已保存内容。
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/viewmodel/ConfigViewModel.kt`
   - `selectedFileContent + editableContent`：已保存内容与草稿分离；`discardUnsavedDraft` 负责回滚。
+  - 导入导出流程入口保留在 ViewModel，执行逻辑下沉至 `ConfigBundleTransferUseCase`。
 - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/TracerScreen.kt`
   - 标签页切换与 `ON_STOP` 生命周期事件触发草稿丢弃。
 
@@ -200,6 +205,30 @@
   - `chartLoading=true` 显示加载中
   - 失败时显示 `chartError`
   - 不影响文字模式结果展示
+
+### 代码定位（Kotlin）
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportTabContent.kt`
+  - Report tab 顶层容器，编排参数区与结果区。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/QueryReportResultDisplay.kt`
+  - 文本/图表/错误结果卡片渲染分发。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartResultContent.kt`
+  - 图表模式页面编排入口。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartParameterSection.kt`
+  - 图表参数输入区（根节点、日期模式、日期参数、加载按钮）。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartVisualizationSection.kt`
+  - 图表结果区（错误/空态/折线柱状饼图/平均线/选中点详情）。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportMarkdownRenderer.kt`
+  - 报表 Markdown 的 Compose 渲染。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportMarkdownParser.kt`
+  - 报表 Markdown 解析（block + inline）。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/viewmodel/QueryReportChartPipeline.kt`
+  - 图表查询 use case 流程（缓存、状态组装、trace）。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/viewmodel/QueryReportChartParamResolver.kt`
+  - 图表参数校验与查询参数解析。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/viewmodel/QueryReportChartMappers.kt`
+  - core payload 到 domain/render model 的映射。
+- `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/viewmodel/QueryReportChartModels.kt`
+  - 图表 domain/render/trace 模型定义。
 
 ### 多语言
 - 新增图表模式相关文案已同步到：

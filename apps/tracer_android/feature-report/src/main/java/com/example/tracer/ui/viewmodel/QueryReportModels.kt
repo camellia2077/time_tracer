@@ -8,7 +8,15 @@ import java.util.Locale
 sealed class QueryResult {
     data class Report(val text: String) : QueryResult()
     data class Stats(val text: String, val period: DataTreePeriod) : QueryResult()
-    data class Tree(val text: String, val period: DataTreePeriod) : QueryResult()
+    data class Tree(
+        val period: DataTreePeriod,
+        val nodes: List<TreeNode>,
+        val found: Boolean,
+        val roots: List<String> = emptyList(),
+        val message: String = "",
+        val fallbackText: String = "",
+        val usesTextFallback: Boolean = false
+    ) : QueryResult()
 }
 
 enum class ReportResultDisplayMode {
@@ -29,6 +37,7 @@ data class QueryReportUiState(
     val reportRangeStartDate: String = currentMonthStartDateDigits(),
     val reportRangeEndDate: String = currentDateDigits(),
     val reportRecentDays: String = "7",
+    val reportResultsByPeriod: Map<DataTreePeriod, QueryResult.Report> = emptyMap(),
     val activeResult: QueryResult? = null,
     val statsPeriod: DataTreePeriod = DataTreePeriod.RECENT,
     val treePeriod: DataTreePeriod = DataTreePeriod.RECENT,
@@ -39,6 +48,8 @@ data class QueryReportUiState(
     val chartLookbackDays: String = "7",
     val chartRangeStartDate: String = "",
     val chartRangeEndDate: String = "",
+    val chartRenderModel: ChartRenderModel? = null,
+    val chartLastTrace: ChartQueryTrace? = null,
     val chartPoints: List<ReportChartPoint> = emptyList(),
     val chartAverageDurationSeconds: Long? = null,
     val chartTotalDurationSeconds: Long? = null,
