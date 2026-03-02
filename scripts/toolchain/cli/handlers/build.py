@@ -34,6 +34,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
             "Can be repeated. Recommended: --cmake-args=-DENABLE_LTO=OFF"
         ),
     )
+    parser.add_argument(
+        "--windows-icon-svg",
+        default=None,
+        help=(
+            "Override Windows CLI icon SVG source. "
+            "Only used for tracer_windows_rust_cli release-profile builds."
+        ),
+    )
     parser.add_argument("extra_args", nargs=argparse.REMAINDER)
 
 
@@ -47,6 +55,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         cmake_args=parse_cmake_args(getattr(args, "cmake_args", [])),
         build_dir_name=args.build_dir,
         profile_name=args.profile,
+        windows_icon_svg=getattr(args, "windows_icon_svg", None),
         kill_build_procs=kill_build_procs,
     )
 
