@@ -44,6 +44,9 @@ if(BUILD_TESTING)
     target_include_directories(tracer_core_c_api_smoke_tests PRIVATE
         "${PROJECT_SOURCE_DIR}/src"
     )
+    target_link_libraries(tracer_core_c_api_smoke_tests PRIVATE
+        nlohmann_json::nlohmann_json
+    )
     if(NOT WIN32)
         target_link_libraries(tracer_core_c_api_smoke_tests PRIVATE dl)
     endif()
@@ -64,6 +67,9 @@ if(BUILD_TESTING)
     setup_app_target(tracer_core_c_api_stability_tests NO_PCH)
     target_include_directories(tracer_core_c_api_stability_tests PRIVATE
         "${PROJECT_SOURCE_DIR}/src"
+    )
+    target_link_libraries(tracer_core_c_api_stability_tests PRIVATE
+        nlohmann_json::nlohmann_json
     )
     if(NOT WIN32)
         target_link_libraries(tracer_core_c_api_stability_tests PRIVATE dl)

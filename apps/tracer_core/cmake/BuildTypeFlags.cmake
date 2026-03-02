@@ -53,7 +53,7 @@ else()
     # -s:          剔除可执行文件中的符号信息，减小最终文件大小
     set(CMAKE_EXE_LINKER_FLAGS_RELEASE
         "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -s")
-    # 这个是剔除libreports_shared.dll中的符号信息
+    # 这个是剔除reports_shared.dll中的符号信息
     set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -s")
 endif()
 

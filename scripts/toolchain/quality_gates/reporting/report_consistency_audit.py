@@ -44,6 +44,15 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Return non-zero when any byte mismatch is found.",
     )
+    parser.add_argument(
+        "--normalize-ext",
+        default=".md",
+        help=(
+            "Comma-separated extension whitelist for text normalization "
+            "(BOM removal + CRLF/CR -> LF) before compare. "
+            "Example: .md,.txt,.json ; default: .md"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -57,6 +66,26 @@ def resolve_repo_root() -> Path:
 
 def sha256_hex(content: bytes) -> str:
     return hashlib.sha256(content).hexdigest()
+
+
+def normalize_text_bytes(content: bytes) -> bytes:
+    # Compare text semantically across platforms: ignore UTF-8 BOM and
+    # newline-style differences (CRLF/CR vs LF).
+    if content.startswith(b"\xef\xbb\xbf"):
+        content = content[3:]
+    return content.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
+def parse_normalize_extensions(raw_value: str) -> set[str]:
+    extensions: set[str] = set()
+    for token in raw_value.split(","):
+        item = token.strip().lower()
+        if not item:
+            continue
+        if not item.startswith("."):
+            item = f".{item}"
+        extensions.add(item)
+    return extensions
 
 
 def first_diff_detail(left: bytes, right: bytes) -> str:
@@ -102,7 +131,12 @@ def collect_relative_paths(root: Path, pattern: str) -> set[str]:
     return paths
 
 
-def audit_dirs(left_dir: Path, right_dir: Path, pattern: str) -> tuple[list[FileDiff], list[str]]:
+def audit_dirs(
+    left_dir: Path,
+    right_dir: Path,
+    pattern: str,
+    normalize_extensions: set[str],
+) -> tuple[list[FileDiff], list[str]]:
     left_paths = collect_relative_paths(left_dir, pattern)
     right_paths = collect_relative_paths(right_dir, pattern)
 
@@ -119,14 +153,25 @@ def audit_dirs(left_dir: Path, right_dir: Path, pattern: str) -> tuple[list[File
 
         left_bytes = left_path.read_bytes()
         right_bytes = right_path.read_bytes()
-        same_bytes = left_bytes == right_bytes
+        compare_left = left_bytes
+        compare_right = right_bytes
+        suffix = Path(rel_path).suffix.lower()
+        normalized = suffix in normalize_extensions
+        if normalized:
+            compare_left = normalize_text_bytes(left_bytes)
+            compare_right = normalize_text_bytes(right_bytes)
+        same_bytes = compare_left == compare_right
         diffs.append(
             FileDiff(
                 relative_path=rel_path,
-                left_sha256=sha256_hex(left_bytes),
-                right_sha256=sha256_hex(right_bytes),
+                left_sha256=sha256_hex(compare_left),
+                right_sha256=sha256_hex(compare_right),
                 same_bytes=same_bytes,
-                detail="identical" if same_bytes else first_diff_detail(left_bytes, right_bytes),
+                detail=(
+                    f"identical ({suffix} normalized)"
+                    if same_bytes and normalized
+                    else ("identical" if same_bytes else first_diff_detail(compare_left, compare_right))
+                ),
             )
         )
 
@@ -191,12 +236,34 @@ def main() -> int:
             print(f"Error: verify failed with exit code {verify_exit_code}.")
             return verify_exit_code
 
-    diffs, missing = audit_dirs(left_dir, right_dir, args.pattern)
+    normalize_extensions = parse_normalize_extensions(args.normalize_ext)
+    if normalize_extensions:
+        ext_str = ", ".join(sorted(normalize_extensions))
+        print(f"Normalization enabled for extensions: {ext_str}")
+    else:
+        print("Normalization disabled for all extensions.")
+
+    diffs, missing = audit_dirs(left_dir, right_dir, args.pattern, normalize_extensions)
     write_report(output_path, left_dir, right_dir, args.pattern, diffs, missing)
     print(f"Audit report written to {output_path}")
 
     has_diff = any(not item.same_bytes for item in diffs)
     has_missing = bool(missing)
+    mismatch_count = sum(1 for item in diffs if not item.same_bytes)
+    print(
+        "Audit summary: "
+        f"compared={len(diffs)}, mismatches={mismatch_count}, missing_pairs={len(missing)}"
+    )
+    if missing:
+        print("Missing pairs:")
+        for rel_path in missing:
+            print(f"  - {rel_path}")
+    if mismatch_count:
+        print("Byte mismatches:")
+        for item in diffs:
+            if not item.same_bytes:
+                print(f"  - {item.relative_path}: {item.detail}")
+
     if args.fail_on_diff and (has_diff or has_missing):
         return 2
     return 0

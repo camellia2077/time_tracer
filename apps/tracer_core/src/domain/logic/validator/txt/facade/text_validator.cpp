@@ -71,6 +71,7 @@ auto TextValidator::Validate(const std::string& filename,
     // 检查文件头是否缺失年份
     // 注意：这里逻辑稍微调整，只有当遇到有效内容（且还没见年份）时才报错，或者文件结束检查
     // 原有逻辑在每一行都查，可能会报多次，但这里保持原样以确保尽早发现
+    // 这里采用 fail-fast：缺失 year header 时立即返回，避免后续结构规则产生级联噪声错误。
     if (!pimpl_->structural_validator.HasSeenYear() &&
         !LineRules::IsYear(trimmed_line)) {
       errors.insert({line_number,

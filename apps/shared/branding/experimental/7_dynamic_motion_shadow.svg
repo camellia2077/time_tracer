@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <defs>
+        <!-- 主渐变色 -->
+        <linearGradient id="gradSharpRoundedWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- 动态拖影（Motion Shadow） -->
+        <!-- dx设为负数代表阴影向左移动，从而反衬出物体正在向右高速运动 -->
+        <filter id="motionShadow" x="-30%" y="-30%" width="160%" height="160%">
+            <!-- 第一层：较锐利的短拖影 -->
+            <feDropShadow dx="-1" dy="0" stdDeviation="0.8" flood-color="#4F46E5" flood-opacity="0.3" result="shadow1" />
+            <!-- 第二层：更模糊、更长远的拖影 -->
+            <feDropShadow dx="-2.5" dy="0" stdDeviation="2" flood-color="#4F46E5" flood-opacity="0.15" result="shadow2" in="SourceAlpha" />
+            <!-- 将两层拖影和原图像合并 -->
+            <feMerge>
+                <feMergeNode in="shadow2"/>
+                <feMergeNode in="shadow1"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <!-- 白色背景板 -->
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <!-- 整个箭头图形组向右平移 (translateX = 1.5) -->
+    <!-- 并且挂载刚刚写好的 motionShadow 拖影滤镜 -->
+    <g transform="translate(1.5, 0)" filter="url(#motionShadow)">
+        <!-- Segment 3 (Main Arrow) -->
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhite)" />
+
+        <!-- Segment 2 (Middle Trail) -->
+        <!-- 改回黄金比例的尺寸 -->
+        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhite)" opacity="0.6" />
+
+        <!-- Segment 1 (Left Trail) -->
+        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhite)" opacity="0.3" />
+    </g>
+</svg>

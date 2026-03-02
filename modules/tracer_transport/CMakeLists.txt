@@ -21,7 +21,7 @@ target_include_directories(tracer_transport PUBLIC
 )
 
 target_link_libraries(tracer_transport
-    PRIVATE nlohmann_json::nlohmann_json
+    PUBLIC nlohmann_json::nlohmann_json
 )
 
 if(BUILD_TESTING)

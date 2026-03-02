@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="gradSharpRoundedWhiteGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <g transform="translate(1.5, 0)">
+        <!-- 方案1.1：时间分割 (Time Division / 等差减半法)
+             机械、精准的步进感，犹如刻度尺
+             L2 = L3身子的一半，L1 = L2的一半。
+             主箭头 X=12 起，前身直段约为 5 (12到17)。
+             设计：
+             Gap2 = 1.0 (极短的咬合距离)
+             L2 = 2.5 (5的一半)
+             Gap1 = 2.0 (断裂距离翻倍)
+             L1 = 1.25 (2.5的一半)
+        -->
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhiteGolden)" />
+
+        <!-- Segment 2 (Middle Trail) -->
+        <!-- X = 12 - 1.0 (Gap2) - 2.5 (L2) = 8.5 -->
+        <rect x="8.5" y="11.25" width="2.5" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.6" />
+
+        <!-- Segment 1 (Left Trail) -->
+        <!-- X = 8.5 - 2.0 (Gap1) - 1.25 (L1) = 5.25 -->
+        <rect x="5.25" y="11.25" width="1.25" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.3" />
+    </g>
+</svg>

@@ -6,12 +6,29 @@ from pathlib import Path
 from ...core.context import Context
 
 
+def _env_truthy(name: str) -> bool:
+    value = (os.getenv(name) or "").strip().lower()
+    return value in {"1", "true", "yes", "on"}
+
+
 def should_enable_windows_cli_icon(app_name: str, profile_name: str | None) -> bool:
     if os.name != "nt":
         return False
     if app_name != "tracer_windows_rust_cli":
         return False
-    return "release" in (profile_name or "").strip().lower()
+    # Explicit manual off-switch for any environment.
+    if _env_truthy("TT_WINDOWS_CLI_ICON_DISABLE"):
+        return False
+    # Hard-disable in CI: icon generation depends on host tools (e.g. rsvg-convert)
+    # that may not exist on runners, and should not block release verification.
+    if _env_truthy("GITHUB_ACTIONS") or _env_truthy("CI"):
+        return False
+    profile_key = (profile_name or "").strip().lower()
+    # CI runners may not provide `rsvg-convert`; skip icon embedding for *_ci* profiles
+    # to keep release verification focused on runtime correctness instead of host tooling.
+    if "ci" in profile_key:
+        return False
+    return "release" in profile_key
 
 
 def _build_png_ico_payload(png_bytes: bytes) -> bytes:

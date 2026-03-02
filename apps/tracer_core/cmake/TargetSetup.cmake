@@ -7,8 +7,17 @@
 # 3 = level 2 + -Werror
 set(WARNING_LEVEL 2 CACHE STRING "Set compiler warning level (0-3)")
 
-option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" ON)
+# Keep normal build fast: clang-tidy is opt-in via --tidy / run_clang_tidy.sh.
+option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_PCH "Enable Precompiled Headers" ON)
+
+include(CheckCXXSourceCompiles)
+if(NOT DEFINED TT_CAN_LINK_STDCXXEXP)
+    set(_tt_saved_required_libraries "${CMAKE_REQUIRED_LIBRARIES}")
+    set(CMAKE_REQUIRED_LIBRARIES stdc++exp)
+    check_cxx_source_compiles("int main() { return 0; }" TT_CAN_LINK_STDCXXEXP)
+    set(CMAKE_REQUIRED_LIBRARIES "${_tt_saved_required_libraries}")
+endif()
 
 if(ENABLE_CLANG_TIDY)
     find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
@@ -25,12 +34,21 @@ endif()
 
 function(_setup_target_common TARGET_NAME)
     set(options NO_PCH)
-    cmake_parse_arguments(STC "${options}" "" "" ${ARGN})
+    set(one_value_args PCH_HEADER)
+    cmake_parse_arguments(STC "${options}" "${one_value_args}" "" ${ARGN})
 
     target_include_directories(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src")
 
     if(ENABLE_PCH AND NOT STC_NO_PCH)
-        target_precompile_headers(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/pch.hpp")
+        set(TT_TARGET_PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch.hpp")
+        if(STC_PCH_HEADER)
+            if(IS_ABSOLUTE "${STC_PCH_HEADER}")
+                set(TT_TARGET_PCH_HEADER "${STC_PCH_HEADER}")
+            else()
+                set(TT_TARGET_PCH_HEADER "${PROJECT_SOURCE_DIR}/${STC_PCH_HEADER}")
+            endif()
+        endif()
+        target_precompile_headers(${TARGET_NAME} PRIVATE "${TT_TARGET_PCH_HEADER}")
     endif()
 
     if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
@@ -86,7 +104,7 @@ function(_apply_stdcxxexp_if_needed TARGET_NAME)
         return()
     endif()
 
-    if(NOT STX_NO_STDCXXEXP)
+    if(NOT STX_NO_STDCXXEXP AND TT_CAN_LINK_STDCXXEXP)
         target_link_libraries(${TARGET_NAME} PRIVATE stdc++exp)
     endif()
 endfunction()

@@ -15,7 +15,7 @@ DEFAULT_CLI_EXE = "time_tracer_cli.exe"
 DEFAULT_RUNTIME_FILES = [
     "time_tracer_cli.exe",
     "tracer_core.dll",
-    "libreports_shared.dll",
+    "reports_shared.dll",
     "libsqlite3-0.dll",
     "libtomlplusplus-3.dll",
     "libgcc_s_seh-1.dll",
@@ -81,7 +81,7 @@ def ensure_source_runtime_ready(source_bin: Path) -> None:
     required = [
         source_bin / DEFAULT_CLI_EXE,
         source_bin / "tracer_core.dll",
-        source_bin / "libreports_shared.dll",
+        source_bin / "reports_shared.dll",
         source_bin / "config" / "config.toml",
     ]
     missing = [str(path) for path in required if not path.exists()]

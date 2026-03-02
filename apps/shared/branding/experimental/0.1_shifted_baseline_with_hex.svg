@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <defs>
+        <!-- Arrow Gradient -->
+        <linearGradient id="gradSharpRoundedWhiteGoldenShadow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- Text masking or subtle coloring for Hex stream -->
+        <linearGradient id="textFade" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#64748B;stop-opacity:0.02" />
+            <stop offset="50%" style="stop-color:#64748B;stop-opacity:0.08" />
+            <stop offset="100%" style="stop-color:#64748B;stop-opacity:0.02" />
+        </linearGradient>
+    </defs>
+    
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <!-- Advanced Layer: Invisible Data Stream (Tiny monospace text from Variant 6) -->
+    <!-- Using extremely low opacity so it only reveals upon close inspection -->
+    <g font-family="monospace" font-size="1.2" font-weight="bold" fill="url(#textFade)" letter-spacing="0.2">
+        <text x="2" y="3.5">01 10 01 A4 FF 3C</text>
+        <text x="2" y="5.0">E2 D9 00 1B CC 42</text>
+        <text x="2" y="6.5">00 BB 1C 4A 9F 08</text>
+        <text x="2" y="8.0">FF 10 3A F1 23 C4</text>
+        <text x="2" y="9.5">8A 01 B0 7C E9 10</text>
+        <text x="2" y="11.0">01 02 03 A0 11 BB</text>
+        <text x="2" y="12.5">C4 D5 E6 F7 08 90</text>
+        <text x="2" y="14.0">AA 11 22 33 44 55</text>
+        <text x="2" y="15.5">1B 2C 3D 4E 5F 60</text>
+        <text x="2" y="17.0">FF E1 D2 C3 B4 A5</text>
+        <text x="2" y="18.5">01 10 01 A4 FF 3C</text>
+        <text x="2" y="20.0">77 88 99 AA BB CC</text>
+        <text x="2" y="21.5">DD EE FF 00 11 22</text>
+    </g>
+
+    <!-- 整个箭头图形组向右平移一点 (translateX = 1.5)，不加额外拖影和阴影效果 -->
+    <g transform="translate(1.5, 0)">
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhiteGoldenShadow)" />
+        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.6" />
+        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.3" />
+    </g>
+</svg>

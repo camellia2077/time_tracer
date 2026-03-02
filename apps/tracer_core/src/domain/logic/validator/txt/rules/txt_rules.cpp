@@ -94,6 +94,8 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
     const std::string kRemainingLine = line.substr(kTimePrefixLength);
     size_t comment_pos = std::string::npos;
     constexpr std::array<const char*, 3> kDelimiters = {"//", "#", ";"};
+    // Keep parser/validator behavior aligned: inline remark begins at the
+    // earliest delimiter occurrence.
     for (const char* delimiter : kDelimiters) {
       size_t pos = kRemainingLine.find(delimiter);
       if (pos != std::string::npos &&
@@ -110,6 +112,8 @@ auto LineRules::IsValidEventLine(const std::string& line, int line_number,
 
     if (!wake_keywords_.contains(kDescription) &&
         !valid_event_keywords_.contains(kDescription)) {
+      // Unknown activity is a semantic validation error, not a syntax error:
+      // the line is structurally valid but references unmapped domain terms.
       errors.insert({line_number,
                      "Unrecognized activity '" + kDescription +
                          "'. Please check spelling or update config file.",
@@ -232,6 +236,8 @@ void StructureRules::ProcessDateLine(int line_number, const std::string& line,
   }
 
   if (!has_seen_any_date_) {
+    // Business invariant for single-month ingest files: first date must start
+    // from day 01 to keep continuity and gap checks predictable.
     if (line.length() >= 4) {
       std::string day_part = line.substr(2, 2);
       if (day_part != "01") {

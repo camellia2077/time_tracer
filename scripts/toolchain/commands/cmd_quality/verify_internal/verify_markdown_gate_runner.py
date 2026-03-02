@@ -66,6 +66,8 @@ def run_report_triplet_gates(
             f"temp/report-triplet-{format_name}-byte-audit.md",
             "--fail-on-diff",
         ]
+        if extension == "md":
+            audit_cmd.extend(["--normalize-ext", ".md"])
         audit_ret = run_command_fn(
             audit_cmd,
             cwd=repo_root,
@@ -146,6 +148,8 @@ def run_report_markdown_gates(
         "--output",
         "temp/report-md-golden-byte-audit.md",
         "--fail-on-diff",
+        "--normalize-ext",
+        ".md",
     ]
     audit_ret = run_command_fn(
         audit_cmd,

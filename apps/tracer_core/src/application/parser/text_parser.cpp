@@ -160,6 +160,8 @@ auto TextParser::ExtractRemark(std::string_view remaining_line)
   size_t comment_pos = std::string::npos;
   std::string_view chosen_delimiter;
 
+  // Multiple inline remark markers are allowed; pick the earliest one so
+  // "0232foo //a #b" keeps description as "foo" and remark as "a #b".
   for (std::string_view delimiter : kRemarkDelimiters) {
     size_t pos = remaining_line.find(delimiter);
     if (pos != std::string::npos) {
@@ -194,11 +196,15 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
   }
 
   if (is_wake) {
+    // First wake event in a day establishes getupTime; later wake-like events
+    // do not override to keep ingest deterministic.
     if (current_day.getupTime.empty()) {
       current_day.getupTime = FormatTime(std::string(input.time_str_hhmm));
     }
 
   } else {
+    // No wake + first event of the day means this day may be continuation of
+    // previous-day sleep/activity segment.
     if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
       current_day.isContinuation = true;
     }

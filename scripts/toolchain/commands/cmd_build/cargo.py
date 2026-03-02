@@ -130,17 +130,28 @@ def _sync_windows_runtime_layout_for_rust(
         )
 
     copied_files: list[str] = []
-    for dll_name in ("tracer_core.dll", "libreports_shared.dll"):
-        source_file = _first_existing_path(
-            [candidate / dll_name for candidate in runtime_bin_candidates]
+
+    tracer_core_dll = _first_existing_path(
+        [candidate / "tracer_core.dll" for candidate in runtime_bin_candidates]
+    )
+    if tracer_core_dll and _copy_file_if_present(tracer_core_dll, runtime_bin_dir):
+        copied_files.append("tracer_core.dll")
+    else:
+        print(
+            "Warning: runtime dependency `tracer_core.dll` not found for Rust CLI runtime layout. "
+            "Build output may not be directly runnable."
         )
-        if source_file and _copy_file_if_present(source_file, runtime_bin_dir):
-            copied_files.append(dll_name)
-        else:
-            print(
-                f"Warning: runtime dependency `{dll_name}` not found for Rust CLI runtime layout. "
-                "Build output may not be directly runnable."
-            )
+
+    reports_shared_source = _first_existing_path(
+        [candidate / "reports_shared.dll" for candidate in runtime_bin_candidates]
+    )
+    if reports_shared_source and _copy_file_if_present(reports_shared_source, runtime_bin_dir):
+        copied_files.append("reports_shared.dll")
+    else:
+        print(
+            "Warning: runtime dependency `reports_shared.dll` not found for Rust CLI runtime layout. "
+            "Build output may not be directly runnable."
+        )
 
     config_source = windows_cli_config_root(ctx.repo_root)
     if _copy_dir_if_present(config_source, runtime_bin_dir / "config"):

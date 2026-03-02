@@ -16,8 +16,24 @@ input/
 *.tex
 *.typ
 *.sqlite3
+!test/golden/report_triplet/**/v1/*.tex
+!test/golden/report_triplet/**/v1/*.typ
 
 
+# --- Rust 专用 ---
+
+# 核心构建产物目录
+target/
+
+# 如果你使用 Cargo 的安装功能产生的二进制文件
+bin/
+
+# 编译过程中产生的各类备份和临时文件
+**/*.rs.bk
+
+# 如果你在使用 Rust 进行 WebAssembly (Wasm) 开发
+pkg/
+wasm-bindgen-raytracer
 
 
 # Android

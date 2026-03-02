@@ -51,7 +51,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 # - Configure in scripts/toolchain/config/build.toml -> [build.profiles.<name>].build_targets
 # - Applied only when user does not pass explicit --target in build extra args
 # - Explicit user --target always takes precedence
-# build_targets = ["tracer_windows_runtime_layout"]
+# build_targets = ["tracer_core_shared"]
 
 # Tidy header diagnostics scope (scripts/toolchain/config/workflow.toml -> [tidy].header_filter_regex)
 # Example: exclude build third-party deps under */_deps/*

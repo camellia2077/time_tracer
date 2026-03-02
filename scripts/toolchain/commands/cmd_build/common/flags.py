@@ -27,8 +27,10 @@ def resolve_toolchain_flags(ctx: Context, user_args: list[str]) -> list[str]:
     compiler_key = (build_cfg.compiler or "default").strip().lower()
     if not c_compiler and not cxx_compiler:
         if compiler_key == "clang":
+            c_compiler = "clang"
             cxx_compiler = "clang++"
         elif compiler_key == "gcc":
+            c_compiler = "gcc"
             cxx_compiler = "g++"
 
     flags: list[str] = []

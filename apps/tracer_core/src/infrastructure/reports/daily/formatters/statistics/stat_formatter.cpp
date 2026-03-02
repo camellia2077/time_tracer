@@ -1,6 +1,7 @@
 // infrastructure/reports/daily/formatters/statistics/stat_formatter.cpp
 #include "infrastructure/reports/daily/formatters/statistics/stat_formatter.hpp"
 
+#include <stdexcept>
 #include <vector>
 
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"

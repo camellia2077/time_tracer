@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="gradSharpRoundedWhiteGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <g transform="translate(1.5, 0)">
+        <!-- 方案1.2：视错觉平衡 (Optical Jump / 极小与极大的跳跃)
+             能量喷发感，前段断裂成散碎星火，跳跃到主箭头。
+             我们要求“越向右间距越小”。
+             设计：
+             Gap2 = 0.5 (几乎连着)
+             L2 = 1.5 (极短的线段，近乎一个正方形或微长条)
+             Gap1 = 2.5 (突然极大的断裂间距)
+             L1 = 0.8 (微小的一个点状线段，被远远抛在后面)
+             这会显得主箭头庞大无比，拥有绝对的质量统治力。
+        -->
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhiteGolden)" />
+
+        <!-- Segment 2 (Middle Trail) -->
+        <!-- X = 12 - 0.5 (Gap2) - 1.5 (L2) = 10 -->
+        <rect x="10" y="11.25" width="1.5" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.6" rx="0.3" ry="0.3" />
+
+        <!-- Segment 1 (Left Trail) -->
+        <!-- X = 10 - 2.5 (Gap1) - 0.8 (L1) = 6.7 -->
+        <rect x="6.7" y="11.25" width="0.8" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.3" rx="0.3" ry="0.3" />
+    </g>
+</svg>

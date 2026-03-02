@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="gradSharpRoundedWhiteGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <rect x="2" y="2" width="20" height="20" rx="4.5" ry="4.5" fill="#FFFFFF" />
+
+    <!-- 整个箭头图形组向右平移一点 (translateX = 1.5)，不加任何额外效果 -->
+    <g transform="translate(1.5, 0)">
+        <!-- Segment 3 (Main Arrow) -->
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhiteGolden)" />
+
+        <!-- Segment 2 (Middle Trail) -->
+        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.6" />
+
+        <!-- Segment 1 (Left Trail) -->
+        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.3" />
+    </g>
+</svg>

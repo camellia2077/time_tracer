@@ -27,6 +27,8 @@ add_library(reports_shared SHARED
 
 target_compile_definitions(reports_shared PRIVATE REPORTS_SHARED_EXPORTS)
 set_target_properties(reports_shared PROPERTIES
+    PREFIX ""
+    OUTPUT_NAME "reports_shared"
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
@@ -59,7 +61,11 @@ add_library(reports_data STATIC
     # Yearly Queriers
     "data/queriers/yearly/yearly_querier.cpp"
 )
-setup_plugin_target(reports_data NO_STDCXXEXP)
+setup_plugin_target(
+    reports_data
+    NO_STDCXXEXP
+    PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch_sqlite.hpp"
+)
 target_link_libraries(reports_data PUBLIC 
     reports_shared 
     SQLite3

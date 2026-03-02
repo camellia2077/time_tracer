@@ -35,7 +35,7 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
 
         let checks = vec![
             required_check("core_dll", exe_dir.join("tracer_core.dll")),
-            required_check("reports_shared_dll", exe_dir.join("libreports_shared.dll")),
+            required_check("reports_shared_dll", exe_dir.join("reports_shared.dll")),
             required_check("config_toml", exe_dir.join("config").join("config.toml")),
             required_check(
                 "converter_alias_mapping",

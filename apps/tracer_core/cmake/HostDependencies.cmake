@@ -20,7 +20,19 @@ function(_tt_host_ensure_nlohmann_json)
         return()
     endif()
 
-    find_package(nlohmann_json REQUIRED)
+    find_package(nlohmann_json QUIET)
+    if(TARGET nlohmann_json::nlohmann_json)
+        return()
+    endif()
+
+    message(STATUS "Host: fetching nlohmann_json.")
+    FetchContent_Declare(
+        nlohmann_json
+        URL "https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz"
+        URL_HASH "SHA256=42F6E95CAD6EC532FD372391373363B62A14AF6D771056DBFC86160E6DFFF7AA"
+    )
+    FetchContent_MakeAvailable(nlohmann_json)
+
     if(NOT TARGET nlohmann_json::nlohmann_json)
         message(FATAL_ERROR "Host dependency missing: nlohmann_json::nlohmann_json")
     endif()

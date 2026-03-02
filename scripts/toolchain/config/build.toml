@@ -25,6 +25,20 @@ cmake_args = [
 ]
 gradle_tasks = [":app:assembleDebug"]
 
+[build.profiles.fast_ci_no_pch]
+description = "CI fast profile with PCH disabled for toolchain/header compatibility."
+build_dir = "build_fast"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=ON",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "ENABLE_CLANG_TIDY=OFF",
+    "-D", "ENABLE_PCH=OFF",
+    "-D", "WARNING_LEVEL=0",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+gradle_tasks = [":app:assembleDebug"]
+
 [build.profiles.release_safe]
 description = "Release build with optimization, but LTO/FTO disabled for stability."
 build_dir = "build"
@@ -54,7 +68,27 @@ cmake_args = [
 # Keep release output complete (CLI + synced runtime dirs),
 # while avoiding broad ALL-target drift and test targets.
 build_targets = [
-    "tracer_windows_runtime_layout",
+    "tracer_core_shared",
+]
+gradle_tasks = [":app:assembleRelease"]
+
+[build.profiles.release_bundle_ci_no_pch]
+description = "Windows release bundle CI profile with PCH disabled for toolchain/header compatibility."
+build_dir = "build"
+cmake_args = [
+    "-D", "CMAKE_BUILD_TYPE=Release",
+    "-D", "DISABLE_OPTIMIZATION=OFF",
+    "-D", "ENABLE_LTO=OFF",
+    "-D", "ENABLE_PCH=OFF",
+    "-D", "BUILD_TESTING=OFF",
+    "-D", "TT_USE_BUNDLED_SQLITE=ON",
+    "-D", "TT_TOML_HEADER_ONLY=ON",
+    "-D", "TT_STATIC_MINGW_RUNTIME=ON",
+    "-D", "WARNING_LEVEL=2",
+    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
+]
+build_targets = [
+    "tracer_core_shared",
 ]
 gradle_tasks = [":app:assembleRelease"]
 

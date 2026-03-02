@@ -38,7 +38,10 @@ add_library(ttri STATIC)
 target_sources(ttri PRIVATE
     ${TIME_TRACKER_INFRA_REPORTS_SOURCES}
 )
-setup_app_target(ttri)
+setup_app_target(
+    ttri
+    PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch_sqlite_toml.hpp"
+)
 target_link_libraries(ttri PUBLIC
     time_tracker_io_adapters
     tracer_core
@@ -58,7 +61,10 @@ target_sources(tti PRIVATE
     ${TIME_TRACKER_INFRA_CONFIG_SOURCES}
 )
 
-setup_app_target(tti)
+setup_app_target(
+    tti
+    PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch_sqlite_toml.hpp"
+)
 
 target_link_libraries(tti PUBLIC
     time_tracker_io_adapters

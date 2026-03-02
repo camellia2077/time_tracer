@@ -68,7 +68,7 @@ def build_scenarios() -> list[RuntimeGuardScenario]:
         RuntimeGuardScenario(
             name="missing_reports_shared_dll",
             description="缺失 core 依赖 dll 时，core 动态加载应 fail-fast。",
-            mutate=lambda bin_dir: remove_required(bin_dir / "libreports_shared.dll"),
+            mutate=lambda bin_dir: remove_required(bin_dir / "reports_shared.dll"),
             expect_success=False,
             expected_exits=(10, 3221225781),
             expected_tokens=[],

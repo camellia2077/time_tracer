@@ -93,6 +93,15 @@ def collect_file_cases(
         (output_dir / file_case.name).write_bytes(content)
 
 
+def clear_output_markdown_cases(output_dir: Path) -> None:
+    """Delete stale markdown snapshots so audit compares only current cases."""
+    if not output_dir.is_dir():
+        return
+    for path in output_dir.glob("*.md"):
+        if path.is_file():
+            path.unlink()
+
+
 def collect_query_range_case(
     cli_bin: Path,
     db_path: Path,
@@ -158,6 +167,7 @@ def main() -> int:
         return 2
 
     output_dir.mkdir(parents=True, exist_ok=True)
+    clear_output_markdown_cases(output_dir)
     collect_file_cases(
         export_root=export_root,
         output_dir=output_dir,
