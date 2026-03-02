@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <rect width="24" height="24" fill="#FFFFFF" />
+    <!-- Option G: Indigo-Violet Gradient Arrow -->
+    <path d="M12,18l-1.07,-1.07 4.18,-4.18H6V11.25h9.11L10.93,7.07 12,6l6,6 -6,6Z" fill="url(#grad1)" />
+</svg>

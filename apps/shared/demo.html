@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 箭头动画与业务场景映射</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ==========================================
+           通用 SVG 样式与基础状态
+           ========================================== */
+        .svg-container {
+            width: 160px;
+            height: 160px;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .svg-arrow {
+            width: 80%;
+            height: 80%;
+            transition: all 0.3s ease;
+        }
+
+        .trail-main,
+        .trail-middle,
+        .trail-end {
+            transform-origin: center;
+        }
+
+        /* 动画 1-4 (保留之前的经典效果作为对比) */
+        .anim-fly .svg-arrow {
+            animation: fly-right 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes fly-right {
+            0% {
+                transform: translateX(-15px);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(15px);
+                opacity: 0;
+            }
+        }
+
+        .anim-thrust .trail-main {
+            animation: hover-main 2s ease-in-out infinite alternate;
+        }
+
+        .anim-thrust .trail-middle {
+            animation: pulse-trail 0.6s ease-in-out infinite alternate;
+        }
+
+        .anim-thrust .trail-end {
+            animation: pulse-trail 0.6s ease-in-out infinite alternate 0.3s;
+        }
+
+        @keyframes hover-main {
+            0% {
+                transform: translateX(0px);
+            }
+
+            100% {
+                transform: translateX(1px);
+            }
+        }
+
+        @keyframes pulse-trail {
+            0% {
+                opacity: 0.2;
+                transform: translateX(-1px);
+            }
+
+            100% {
+                opacity: 0.9;
+                transform: translateX(0px);
+            }
+        }
+
+        .anim-charge-fire .trail-main {
+            animation: charge-main 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .anim-charge-fire .trail-middle,
+        .anim-charge-fire .trail-end {
+            animation: charge-trails 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            transform-origin: left center;
+        }
+
+        @keyframes charge-main {
+            0% {
+                transform: translateX(0);
+            }
+
+            40% {
+                transform: translateX(-4px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            100% {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes charge-trails {
+            0% {
+                transform: scaleX(1);
+            }
+
+            40% {
+                transform: scaleX(0.3) translateX(-10px);
+                opacity: 1;
+            }
+
+            60% {
+                transform: scaleX(0.3) translateX(-10px);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleX(2) translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        .anim-warp {
+            animation: warp-bg 2s infinite alternate;
+        }
+
+        .anim-warp .trail-main {
+            animation: warp-vibrate 0.1s linear infinite;
+        }
+
+        .anim-warp .trail-middle {
+            animation: warp-stretch-mid 0.8s ease-in-out infinite alternate;
+            transform-origin: right center;
+        }
+
+        .anim-warp .trail-end {
+            animation: warp-stretch-end 0.8s ease-in-out infinite alternate 0.1s;
+            transform-origin: right center;
+        }
+
+        @keyframes warp-bg {
+            0% {
+                background-color: #ffffff;
+            }
+
+            100% {
+                background-color: #f8fafc;
+            }
+        }
+
+        @keyframes warp-vibrate {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(0.5px, 0.5px);
+            }
+
+            50% {
+                transform: translate(-0.5px, -0.5px);
+            }
+
+            75% {
+                transform: translate(-0.5px, 0.5px);
+            }
+        }
+
+        @keyframes warp-stretch-mid {
+            0% {
+                transform: scaleX(1);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scaleX(4) translateX(-2px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes warp-stretch-end {
+            0% {
+                transform: scaleX(1);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: scaleX(6) translateX(-4px);
+                opacity: 0.8;
+            }
+        }
+
+        /* ==========================================
+           新增业务场景动画 5-7
+           ========================================== */
+
+        /* 5. 确认顿挫 (用于插入数据库) - 单次执行 */
+        .anim-commit-bounce .svg-arrow {
+            animation: bounce-action 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .anim-commit-bounce .trail-middle,
+        .anim-commit-bounce .trail-end {
+            animation: flash-action 0.4s ease-out forwards;
+        }
+
+        @keyframes bounce-action {
+            0% {
+                transform: translateX(0) scale(1);
+            }
+
+            30% {
+                transform: translateX(6px) scaleX(0.9);
+            }
+
+            /* 向右压紧 */
+            100% {
+                transform: translateX(0) scale(1);
+            }
+
+            /* 弹回 */
+        }
+
+        @keyframes flash-action {
+            0% {
+                opacity: 0.3;
+            }
+
+            30% {
+                opacity: 1;
+                transform: scaleY(1.5);
+            }
+
+            /* 高亮并轻微变粗 */
+            100% {
+                opacity: 0.6;
+                transform: scaleY(1);
+            }
+        }
+
+        /* 6. 数据律动 (用于生成 MD 报告) */
+        .anim-streaming-ripple .trail-middle {
+            animation: ripple-pulse 0.8s ease-in-out infinite;
+        }
+
+        .anim-streaming-ripple .trail-end {
+            animation: ripple-pulse 0.8s ease-in-out infinite 0.4s;
+            /* 错开半个周期 */
+        }
+
+        /* 主箭头微弱呼吸，保持稳定感 */
+        .anim-streaming-ripple .trail-main {
+            animation: main-stable-pulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes ripple-pulse {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scaleY(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scaleY(1.2);
+            }
+        }
+
+        @keyframes main-stable-pulse {
+
+            0%,
+            100% {
+                opacity: 0.85;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* 7. 处理构建 (用于生成图表) */
+        .anim-processing-flow .trail-end {
+            animation: flow-forward 1s linear infinite;
+        }
+
+        .anim-processing-flow .trail-middle {
+            animation: flow-forward 1s linear infinite 0.2s;
+            /* 稍微延迟，形成流水线 */
+        }
+
+        @keyframes flow-forward {
+            0% {
+                transform: translateX(-4px);
+                opacity: 0;
+            }
+
+            30% {
+                opacity: 0.8;
+            }
+
+            70% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateX(4px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 md:p-8 font-sans text-slate-800">
+
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
+
+        <!-- 上半部分：SVG 展示区 -->
+        <div class="bg-slate-50 p-8 md:p-12 flex flex-col items-center justify-center border-b border-slate-200">
+            <h2 class="text-xl font-bold text-slate-700 mb-8 text-center" id="currentAnimTitle">静止状态 (Idle)</h2>
+
+            <div id="svgWrapper" class="svg-container">
+                <svg class="svg-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <defs>
+                        <linearGradient id="gradL" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop id="gradStart" offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+                            <stop id="gradEnd" offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <path class="trail-main" d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z"
+                        fill="url(#gradL)" />
+                    <rect class="trail-middle" x="7" y="11.25" width="4" height="1.5" rx="0.5" fill="url(#gradL)"
+                        opacity="0.6" />
+                    <rect class="trail-end" x="4" y="11.25" width="2" height="1.5" rx="0.5" fill="url(#gradL)"
+                        opacity="0.3" />
+                </svg>
+            </div>
+
+            <p id="animDescription" class="mt-8 text-sm text-slate-500 text-center h-10 max-w-md">
+                准备就绪，选择下方的业务场景以预览效果。
+            </p>
+        </div>
+
+        <!-- 下半部分：控制面板 -->
+        <div class="p-8 flex flex-col items-center bg-white">
+
+            <!-- 颜色控制区域移至最上方，方便先选主题 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <!-- 预设的主色系 -->
+                <button onclick="setColor(this, '#4F46E5', '#7C3AED')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110 ring-2 ring-offset-2 ring-slate-400"
+                    style="background: linear-gradient(135deg, #4F46E5, #7C3AED);" title="靛蓝紫 (Indigo Violet)"></button>
+                <button onclick="setColor(this, '#0EA5E9', '#2563EB')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #0EA5E9, #2563EB);" title="科技蓝 (Tech Blue)"></button>
+                <button onclick="setColor(this, '#10B981', '#14B8A6')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #10B981, #14B8A6);" title="翡翠绿 (Emerald Teal)"></button>
+                <button onclick="setColor(this, '#F59E0B', '#EA580C')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #F59E0B, #EA580C);" title="琥珀橙 (Amber Orange)"></button>
+                <button onclick="setColor(this, '#F43F5E', '#E11D48')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #F43F5E, #E11D48);" title="玫瑰红 (Rose Red)"></button>
+                <button onclick="setColor(this, '#8B5CF6', '#D946EF')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #8B5CF6, #D946EF);" title="霓虹紫 (Neon Purple)"></button>
+                <button onclick="setColor(this, '#14B8A6', '#06B6D4')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #14B8A6, #06B6D4);" title="青色海洋 (Cyan Ocean)"></button>
+                <button onclick="setColor(this, '#475569', '#1E293B')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #475569, #1E293B);" title="专注灰 (Focus Slate)"></button>
+                <button onclick="setColor(this, '#000000', '#000000')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: #000000;" title="极简黑 (Monochrome)"></button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+                <button onclick="setAnimation(this, '', '静止状态 (Idle)', '默认待机状态。')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-600 font-medium hover:border-indigo-500 hover:text-indigo-600 transition-colors text-sm text-center">
+                    0. 停止 (Reset)
+                </button>
+                <!-- 保留的基础动画 -->
+                <button onclick="setAnimation(this, 'anim-fly', '穿梭循环', '基础动画1')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    1. 穿梭
+                </button>
+                <button onclick="setAnimation(this, 'anim-thrust', '尾迹推进', '基础动画2')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    2. 推进
+                </button>
+                <button onclick="triggerOnce(this, 'anim-charge-fire', '蓄力发射', '基础动画3')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    3. 发射
+                </button>
+                <button onclick="setAnimation(this, 'anim-warp', '曲率拉伸', '基础动画4')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    4. 曲率
+                </button>
+
+                <!-- 新增业务场景动画，高亮显示 -->
+                <button onclick="triggerOnce(this, 'anim-commit-bounce', '插入数据库 (DB Commit)', '坚实的单次物理回弹，确认数据已成功写入。')"
+                    class="control-btn p-3 rounded-lg border-2 border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold hover:border-emerald-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    5. 入库 (顿挫)
+                </button>
+                <button
+                    onclick="setAnimation(this, 'anim-streaming-ripple', '生成报告 (MD Streaming)', '尾迹像呼吸灯交错闪烁，隐喻持续且有节奏的文本流输出。')"
+                    class="control-btn p-3 rounded-lg border-2 border-blue-200 bg-blue-50 text-blue-700 font-semibold hover:border-blue-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    6. 报告 (律动)
+                </button>
+                <button
+                    onclick="setAnimation(this, 'anim-processing-flow', '生成图表 (Chart Processing)', '尾迹模拟流水线或进度条向主箭头输送数据，隐喻图表构建解析。')"
+                    class="control-btn p-3 rounded-lg border-2 border-purple-200 bg-purple-50 text-purple-700 font-semibold hover:border-purple-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    7. 图表 (流转)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const svgWrapper = document.getElementById('svgWrapper');
+        const titleEl = document.getElementById('currentAnimTitle');
+        const descEl = document.getElementById('animDescription');
+
+        function clearAnimations() {
+            svgWrapper.className = 'svg-container';
+            void svgWrapper.offsetWidth;
+        }
+
+        function setAnimation(btn, animClass, title, description) {
+            clearAnimations();
+            if (animClass) svgWrapper.classList.add(animClass);
+            updateText(title, description);
+            updateActiveButton(btn);
+        }
+
+        function triggerOnce(btn, animClass, title, description) {
+            clearAnimations();
+            svgWrapper.classList.add(animClass);
+            updateText(title, description);
+            updateActiveButton(btn);
+
+            const mainElement = svgWrapper.querySelector(animClass === 'anim-commit-bounce' ? '.svg-arrow' : '.trail-main');
+            mainElement.onanimationend = null;
+            mainElement.onanimationend = (e) => {
+                // 判断动画名称，防止意外重置
+                if (e.animationName.includes('charge-main') || e.animationName.includes('bounce-action')) {
+                    setTimeout(() => {
+                        const resetBtn = document.querySelector('.control-btn'); // 获取第0个按钮
+                        setAnimation(resetBtn, '', '静止状态 (Idle)', '操作完成，已重置。');
+                    }, animClass === 'anim-commit-bounce' ? 200 : 500);
+                }
+            };
+        }
+
+        function updateText(title, description) {
+            titleEl.textContent = title;
+            descEl.textContent = description;
+        }
+
+        function updateActiveButton(clickedBtn) {
+            const buttons = document.querySelectorAll('.control-btn');
+            // 复杂的重置逻辑，以兼容我们用不同颜色标注的业务场景按钮
+            buttons.forEach(btn => {
+                btn.classList.remove('ring-2', 'ring-offset-1', 'ring-slate-400');
+                if (!btn.classList.contains('bg-emerald-50') && !btn.classList.contains('bg-blue-50') && !btn.classList.contains('bg-purple-50')) {
+                    btn.classList.remove('border-indigo-500', 'text-indigo-600', 'bg-indigo-50');
+                }
+            });
+            if (clickedBtn) {
+                // 统一用 ring 强调当前选中状态，避免破坏按钮本身的主题色
+                clickedBtn.classList.add('ring-2', 'ring-offset-1', 'ring-slate-400');
+            }
+        }
+
+        function setColor(clickedBtn, startColor, endColor) {
+            document.getElementById('gradStart').style.stopColor = startColor;
+            document.getElementById('gradEnd').style.stopColor = endColor;
+
+            const buttons = document.querySelectorAll('.color-btn');
+            buttons.forEach(btn => btn.classList.remove('ring-2', 'ring-offset-2', 'ring-slate-400'));
+            if (clickedBtn) clickedBtn.classList.add('ring-2', 'ring-offset-2', 'ring-slate-400');
+        }
+    </script>
+</body>
+
+</html>

@@ -82,8 +82,8 @@ Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
 | `android_runtime_report_consistency_tests.cpp` — `TestStructureLayerMdSectionIntegrity` | 结构层 | 断言日报/月报 MD 包含预期 section 标题和标签 |
 | `report_formatter_parity_md_tests.cpp` | 格式层 + 字节层 | 同一 fixture，CLI/Android 原始字节一致 + sha256 一致 + golden snapshot |
 | `android_runtime_business_regression_tests.cpp` | 数据层 | 项目重命名后缓存刷新、项目表变更后映射更新 |
-| `scripts/tools/collect_report_markdown_cases.py` + `report_consistency_audit.py` | 字节层 | 固定六类样本（day/month/week/year/recent/range）对 golden 做字节级审计 |
-| `scripts/tools/report_markdown_render_snapshot_check.py` | 结构层（渲染） | 固定六类样本做标题/列表/代码块/表格/空行结构快照对比 |
+| `scripts/toolchain/quality_gates/reporting/collect_report_markdown_cases.py` + `report_consistency_audit.py` | 字节层 | 固定六类样本（day/month/week/year/recent/range）对 golden 做字节级审计 |
+| `scripts/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py` | 结构层（渲染） | 固定六类样本做标题/列表/代码块/表格/空行结构快照对比 |
 
 
 ## 6. 代码评审检查单（必须逐项勾选）

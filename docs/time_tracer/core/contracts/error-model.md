@@ -18,6 +18,12 @@
 4. 错误报告默认目录：`<runtime_data_root>/logs/`
    - Windows CLI 约定运行数据根为 `<exe>/output/`
    - 因此默认目录为 `<exe>/output/logs/`
+5. Core C ABI 响应统一包含错误契约字段：
+   - `error_code`（稳定机器码，字符串）
+   - `error_category`（错误类别，字符串）
+   - `hints`（可选提示，字符串数组）
+6. 当 `ok=true` 时，以上三字段默认为空（`""` / `[]`）。
+7. 当 `ok=false` 时，`error_code` 与 `error_category` 必须可机器判定。
 
 ## 3. 统一错误记录模型（建议规范）
 
@@ -70,4 +76,5 @@
 4. `apps/tracer_core/src/infrastructure/logging/file_error_report_writer.cpp`
 5. `apps/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
 6. `apps/tracer_core/src/api/android/android_runtime_factory.cpp`
-
+7. `apps/tracer_core/src/api/core_c/tracer_core_c_api.cpp`
+8. `apps/tracer_core/src/api/core_c/tracer_core_c_api_internal.cpp`

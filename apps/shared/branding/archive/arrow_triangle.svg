@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <!-- 4 Equilateral Triangles based on 8x8 grid positions (Side = 8, Height = 6.928) -->
+    <!-- Centered Indigo Color Palette -->
+
+    <!-- Top Triangle (Base: 8,8 to 16,8 | Peak: 12,1.072) -->
+    <path d="M8 8 L16 8 L12 1.072 Z" fill="#E0E7FF" />
+    
+    <!-- Right Triangle (Base: 16,8 to 16,16 | Peak: 22.928,12) -->
+    <path d="M16 8 L16 16 L22.928 12 Z" fill="#E0E7FF" />
+    
+    <!-- Bottom Triangle (Base: 8,16 to 16,16 | Peak: 12,22.928) -->
+    <path d="M16 16 L8 16 L12 22.928 Z" fill="#E0E7FF" />
+    
+    <!-- Left Triangle (Base: 8,8 to 8,16 | Peak: 1.072,12) -->
+    <path d="M8 16 L8 8 L1.072 12 Z" fill="#E0E7FF" />
+    
+    <!-- Arrow - Material 3 Primary (Indigo 600) -->
+    <!-- Tip moved to 18.31 (Centroid of Right Triangle) -->
+    <g fill="none" stroke="#4F46E5" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h13.31" />
+        <path d="M11.31 5l7 7-7 7" />
+    </g>
+</svg>

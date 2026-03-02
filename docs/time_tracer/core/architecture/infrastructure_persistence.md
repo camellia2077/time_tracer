@@ -2,7 +2,7 @@
 
 本篇文档解析 Time Tracer 架构中最外围、也是最“重”的物理防守层 —— `infrastructure`（基础设施）层。
 
-根据 Clean Architecture 的原则，内部的 `domain`（业务模型）和 `application`（用例调度）都是不包含任何具象存储或外部依赖的乌托邦。所有的“脏污工作”——例如读写文件、连接 SQLite 数据库、调用系统的时钟或终端彩色打印——全部被隔离在这层执行。
+根据 Clean Architecture 的原则，内部的 `domain`（业务模型）和 `application`（用例调度）都是不包含任何具象存储或外部依赖的乌托邦。所有的底层 I/O 实现——例如读写文件、连接 SQLite 数据库、调用系统的时钟或终端彩色打印——全部被隔离在这层执行。
 
 ## 1. 核心职责分解
 
@@ -18,7 +18,7 @@
 
 我们在 `application` 篇中提到过，`domain` 层产生的 `DailyLog` 对象会被转换为不包含业务逻辑的 `ParsedData` 结构，然后传递给 Writer。这体现了应用逻辑与持久化实现之间的解耦：
 
-- **无脑安全插入**：`writer.cpp` 的本职工作非常简单，拿到 `DayData`，绑定参数给 SQLite 的 `Statement`，然后 `INSERT OR IGNORE INTO days`。
+- **简单高效的插入逻辑**：`writer.cpp` 的本职工作非常直接，拿到 `DayData`，绑定参数给 SQLite 的 `Statement`，然后执行 `INSERT OR IGNORE INTO days`。
 - **事务与并发防坠**：通过 RAII (Resource Acquisition Is Initialization) 风格封装的 `Transaction` 对象，确保无论这几百条明细中途哪个数据违反了 SQLite 的唯一约束（如日期主键冲突），或者是意外崩溃，整批数据的写入能够安全滚回。它保证了：“要么这几十天的 TXT 被完整安全地吃进去，要么不留一点残渣”。
 
 ### 1.2 `ProjectResolver` (树形节点的动态织梦者)

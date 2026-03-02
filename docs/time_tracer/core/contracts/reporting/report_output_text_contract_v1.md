@@ -32,6 +32,6 @@
 2. Android 输出策略：`apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/translators/ReportOutputPolicy.kt`
 3. Core formatter parity tests：`apps/tracer_core/src/infrastructure/tests/report_formatter/`
 4. Android runtime report consistency tests：`apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp`
-5. 固定样本采样脚本：`scripts/tools/collect_report_markdown_cases.py`
-6. 字节级审计脚本：`scripts/tools/report_consistency_audit.py`
-7. 渲染结构校验脚本：`scripts/tools/report_markdown_render_snapshot_check.py`
+5. 固定样本采样脚本：`scripts/toolchain/quality_gates/reporting/collect_report_markdown_cases.py`
+6. 字节级审计脚本：`scripts/toolchain/quality_gates/reporting/report_consistency_audit.py`
+7. 渲染结构校验脚本：`scripts/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py`

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <!-- Option B1: Soft Dark Background (Slate 700) -->
+    <rect width="24" height="24" fill="#334155" />
+    
+    <!-- Muted Slate 400 Squares -->
+    <rect x="9" y="3" width="6" height="6" fill="#94A3B8" />
+    <rect x="9" y="15" width="6" height="6" fill="#94A3B8" />
+    <rect x="3" y="9" width="6" height="6" fill="#94A3B8" />
+    <rect x="15" y="9" width="6" height="6" fill="#94A3B8" />
+    
+    <!-- High-Light Arrow (Slate 50) -->
+    <g fill="none" stroke="#F8FAFC" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 12h10" />
+        <path d="M12 7l5 5-5 5" />
+    </g>
+</svg>

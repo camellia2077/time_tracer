@@ -17,6 +17,7 @@ A powerful personal time management toolset designed using **Clean Architecture*
 * **`time_tracer_cli` (C++23)**: The core command-line application. It uses a pipeline pattern to process raw text logs and offers efficient SQLite-based queries and multi-format report exports (Markdown, LaTeX, Typst).
 * **`graph_generator` (Python)**: A data visualization tool that reads the database and generates dynamic charts like timelines and heatmaps.
 * **`log_generator` (C++)**: A helper utility for generating standardized test logs.
+* **Boundary note**: report formatting internals are consolidated in `tracer_core` (`reports_shared`) as an internal module; CLI/Rust consume stable runtime/CLI contracts instead of formatter implementation details. This boundary supports future partial-open-source releases where `reports_shared` can remain private.
 
 ---
 
@@ -34,7 +35,7 @@ A powerful personal time management toolset designed using **Clean Architecture*
 
 ### 2. Build Guide
 
-We provide automated build scripts that compile the core application and all plugin drivers in one go.
+We provide automated build scripts that compile the core application and runtime deliverables in one go.
 
 ➡️ **For detailed steps, see: [Build Guide](docs/time_tracer/guides/build_guide.md)**
 
@@ -89,12 +90,9 @@ docs/time_tracer/
 
 ### AI Collaborators
 Special thanks to the following AI models for their core assistance in coding, architectural design, and documentation optimization:
-* **Gemini 2.5 Pro**
-* **Gemini 3 Flash**
-* **Gemini 3 Pro**
-* **Claude 4.5 opus**
-* **GPT-5.2-codex**
-* **GPT-5.3-codex**
+* **Google**: Gemini 2.5 Pro, 3 Pro, 3 Flash, 3.1 Pro
+* **Anthropic**: Claude 4.5 Opus
+* **OpenAI**: GPT-5.2 Codex, 5.3 Codex
 
 ---
 
@@ -118,6 +116,18 @@ Third-party dependencies remain under their respective licenses.
 * **[Apache ECharts](https://echarts.apache.org/)**: Used by Windows CLI `report-chart` single-file HTML chart rendering (Line/Bar/Pie/Heatmap-Year/Heatmap-Month) (Apache License 2.0).
 * **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD-style license).
 
+### Windows Rust CLI (`apps/tracer_cli/windows/rust_cli`)
+
+* **[clap](https://github.com/clap-rs/clap)**: Rust CLI argument parser and subcommand framework (MIT or Apache License 2.0).
+* **[thiserror](https://github.com/dtolnay/thiserror)**: Rust error type derive helper (MIT or Apache License 2.0).
+* **[libloading](https://github.com/nagisa/rust_libloading)**: Dynamic library loading (e.g., runtime DLL) (ISC License).
+* **[serde](https://github.com/serde-rs/serde)**: Serialization/deserialization framework (MIT or Apache License 2.0).
+* **[serde_json](https://github.com/serde-rs/json)**: JSON handling (MIT or Apache License 2.0).
+* **[toml](https://github.com/toml-rs/toml)**: TOML parser (MIT or Apache License 2.0).
+
+Dependency versions are managed in:
+* `apps/tracer_cli/windows/rust_cli/Cargo.toml`
+ 
 ### Android App (`apps/tracer_android`)
 
 * **[AndroidX / Jetpack Compose family](https://github.com/androidx/androidx)**  

@@ -16,7 +16,13 @@ description: Run all Tidy tasks for log_generator
   - task scope 检查集：build + native runtime smoke（不含 `runtime_guard`）
   - batch 级全量验证：由 `tidy-batch --preset sop` 内置执行
 - Verify gate result file:
-  - `test/output/log_generator/result.json` must keep `"success": true`.
+  - `test/output/artifact_log_generator/result.json` must keep `"success": true`.
+- Tidy machine summary (single source for agent):
+  - `apps/tools/log_generator/build_tidy/tidy_result.json`
+  - Read this file first for `tasks.total/tasks.remaining/blocking_files/next_action`.
+- check -> fix_strategy rule table:
+  - `scripts/toolchain/config/workflow.toml` -> `[tidy.fix_strategy]`
+  - Categories: `auto_fix`, `safe_refactor`, `nolint_allowed`, `manual_only`.
 
 ### Entry Command (MUST)
 - `python scripts/run.py tidy-flow --app log_generator --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N>`
@@ -28,9 +34,15 @@ description: Run all Tidy tasks for log_generator
 ### Hard Completion Gate (MUST)
 - Completion is valid **only when** no `task_*.log` exists under `apps/tools/log_generator/build_tidy/tasks/`.
 - All `batch_*` folders under `apps/tools/log_generator/build_tidy/tasks/` must be empty or removed.
-- `test/output/log_generator/result.json` must exist and keep `"success": true`.
+- `test/output/artifact_log_generator/result.json` must exist and keep `"success": true`.
 - Partial progress is **not** completion.
 - Exit code `2` is never completion.
+
+### Tidy-Only Close (MUST)
+- For decoupled tidy收口（不跑业务 verify）:
+  - `python scripts/run.py tidy-close --app log_generator --tidy-only --keep-going`
+- For full close（含 verify）:
+  - `python scripts/run.py tidy-close --app log_generator --keep-going --concise`
 
 ### Execution Rules (MUST)
 - ABI/FFI 边界抑制规则：
@@ -50,7 +62,7 @@ description: Run all Tidy tasks for log_generator
 - Baseline verify:
   - `python scripts/run.py configure --app log_generator`
   - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise`
-  - `test/output/log_generator/result.json` must be `"success": true`.
+  - `test/output/artifact_log_generator/result.json` must be `"success": true`.
 - Run fast loop:
   - `python scripts/run.py tidy-loop --app log_generator --all --test-every 3 --concise`
 - Auto rebuild fallback:
@@ -62,7 +74,7 @@ description: Run all Tidy tasks for log_generator
   - analyze one log (if pure rename, rerun rename baseline);
   - fix one task only (one-log-at-a-time cadence);
 - verify after each log (task scope): `python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
-  - `test/output/log_generator/result.json` must stay `"success": true`;
+  - `test/output/artifact_log_generator/result.json` must stay `"success": true`;
   - when the same source file has multiple tasks in one batch, prefer clustered clean:
   - `python scripts/run.py clean --app log_generator --strict --batch-id <BATCH_ID> --cluster-by-file <ID>`
   - do not manually run `clean + tidy-refresh` in normal flow;

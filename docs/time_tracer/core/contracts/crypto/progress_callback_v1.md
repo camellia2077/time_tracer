@@ -55,3 +55,40 @@
 3. `FileCryptoOptions.progress_callback` 返回 `kCancel` 时，流程中断。
 4. `FileCryptoOptions.cancel_token` 可由外部主动触发取消。
 5. 取消统一返回错误：`kCancelled` / `crypto.cancelled`。
+
+## C ABI 侧边通道（v1 增量）
+1. C ABI 注册函数：
+   - `tracer_core_set_crypto_progress_callback(TtCoreCryptoProgressCallback callback, void* user_data)`
+2. 回调签名：
+   - `void callback(const char* utf8_progress_json, void* user_data)`
+3. 清理语义：
+   - 传 `nullptr` callback 等价于清空注册。
+4. 稳定性语义：
+   - host 回调异常不得中断 core 主流程。
+   - `utf8_progress_json` 仅在回调调用期间有效，host 需自行复制。
+
+## JSON 映射字段（C ABI / Android 同源）
+1. `operation`
+2. `phase`
+3. `current_group_label`
+4. `group_index`
+5. `group_count`
+6. `file_index_in_group`
+7. `file_count_in_group`
+8. `current_file_index`
+9. `total_files`
+10. `current_file_done_bytes`
+11. `current_file_total_bytes`
+12. `overall_done_bytes`
+13. `overall_total_bytes`
+14. `speed_bytes_per_sec`
+15. `remaining_bytes`
+16. `eta_seconds`
+17. `current_input_path`
+18. `current_output_path`
+19. `input_root_path`
+20. `output_root_path`
+
+## 对齐约束
+1. Android `onCryptoProgressJson` 与 C ABI `tracer_core_set_crypto_progress_callback` 共享同一字段映射逻辑。
+2. 任一字段新增必须保持“可选/加法”兼容，不得破坏既有解析端。

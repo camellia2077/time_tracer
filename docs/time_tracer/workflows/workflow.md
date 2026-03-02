@@ -61,4 +61,4 @@ flowchart LR
 **核心逻辑阶段:**
 1.  **数据提取 (Fetch)**: 从数据库中按时间范围检索所有相关的原始活动记录。
 2.  **树形重构 (Reconstruction)**: 基础设施层在聚合后构建项目树（如 `project_tree_builder`），按路径汇总层级时长。
-3.  **动态渲染 (Transformation)**: 系统根据用户指定的格式加载对应的 DLL 插件，遍历项目树并生成格式化输出。
+3.  **动态渲染 (Transformation)**: 系统根据用户指定的格式在进程内选择对应 formatter，遍历项目树并生成格式化输出。

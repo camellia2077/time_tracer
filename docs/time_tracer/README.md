@@ -36,11 +36,12 @@
 
 ## 核心入口
 1. **开发者指南域**：`docs/time_tracer/guides/` (例如：[数据结构与算法](docs/time_tracer/guides/database/README.md))
-2. **终端用户手册域 (强烈推荐使用者阅读)**：`docs/time_tracer/user_manual/` (包含输入文本规范 `input_format_cn.md` 等)
-3. Core 文档域：`docs/time_tracer/core/README.md`
-4. C ABI 契约：`docs/time_tracer/core/contracts/c_abi.md`
-5. Android Runtime 协议：`docs/time_tracer/clients/android_ui/runtime-protocol.md`
-6. Windows CLI 文档：`docs/time_tracer/clients/windows_cli/README.md`
-7. Transport 实现说明：`modules/tracer_transport/README.md`
-8. 跨层流程：`docs/time_tracer/workflows/workflow.md`
-9. DataQuery 职责边界与代码落点：`docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
+2. **多端 Config 分发机制**：`docs/time_tracer/guides/config/MULTI_PLATFORM_CONFIG_DISTRIBUTION.md`
+3. **终端用户手册域 (强烈推荐使用者阅读)**：`docs/time_tracer/user_manual/` (包含输入文本规范 `input_format_cn.md` 等)
+4. Core 文档域：`docs/time_tracer/core/README.md`
+5. C ABI 契约：`docs/time_tracer/core/contracts/c_abi.md`
+6. Android Runtime 协议：`docs/time_tracer/clients/android_ui/runtime-protocol.md`
+7. Windows CLI 文档：`docs/time_tracer/clients/windows_cli/README.md`
+8. Transport 实现说明：`modules/tracer_transport/README.md`
+9. 跨层流程：`docs/time_tracer/workflows/workflow.md`
+10. DataQuery 职责边界与代码落点：`docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <!-- B2 Neutral Gray Background -->
+    <rect width="24" height="24" fill="#475569" />
+    
+    <!-- Scaled Background "Cross" Grid (Gray) -->
+    <rect x="9" y="3" width="6" height="6" fill="#CBD5E1" />
+    <rect x="9" y="15" width="6" height="6" fill="#CBD5E1" />
+    <rect x="3" y="9" width="6" height="6" fill="#CBD5E1" />
+    <rect x="15" y="9" width="6" height="6" fill="#CBD5E1" />
+    
+    <!-- Scaled Arrow (White) -->
+    <g fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 12h10" />
+        <path d="M12 7l5 5-5 5" />
+    </g>
+</svg>

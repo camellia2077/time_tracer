@@ -73,4 +73,4 @@ class IProcessedDataStorage {
 6. 最后，`PipelineManager` 通过调用 `IProcessedDataStorage->Save(...)` **(Ports 接口)**，将数据托付给了不知道躲在哪里的数据库连接器。
 
 ## 4. 总结
-`application` 层就像是一个高技术含量的前台大厅和邮政分拣中心。它负责在纯净的后端（Domain）与肮脏多变的外部世界之间来回摆渡、翻译、转接，确保没有外部的污渍能够沾染到核心的时间统筹算法。
+`application` 层就像是一个高技术含量的前台大厅和邮政分拣中心。它负责在纯净的后端（Domain）与易变且复杂的外部环境之间来回摆渡、翻译、转接，确保没有外部的干扰能够影响到核心的时间统筹算法。

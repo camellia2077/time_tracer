@@ -9,7 +9,8 @@
 4. 按需求阅读契约：
    - C ABI：`docs/time_tracer/core/contracts/c_abi.md`
    - 错误模型：`docs/time_tracer/core/contracts/error-model.md`
-   - 加密进度：`docs/time_tracer/core/contracts/crypto/progress_callback_contract_v1.md`
+   - 加密接口：`docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+   - 加密进度：`docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
    - 统计契约：`docs/time_tracer/core/contracts/stats/README.md`
 
 ## 2. 模块职责地图（src）
@@ -30,6 +31,10 @@
 1. 改 C ABI 入参/出参
    - `apps/tracer_core/src/api/core_c/`
    - 同步更新：`docs/time_tracer/core/contracts/c_abi.md`
+   - 关键文件：
+     - `tracer_core_c_api.cpp`（runtime lifecycle + callback registration + context resolve）
+     - `tracer_core_c_api_workflow.cpp`（ingest/convert/import/validate）
+     - `tracer_core_c_api_reporting.cpp`（query/report/export/tree/crypto text）
 2. 改 Android JNI 能力或回调
    - `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
    - `apps/tracer_core/src/api/android/native_bridge_registration.cpp`
@@ -53,6 +58,10 @@
 2. Windows CLI 是否需要跟进参数/解析/展示。
 3. Android runtime/JNI 是否需要跟进字段与解析。
 4. 失败语义是否保持兼容（error code / message / content 字段）。
+5. callback 行为是否仍满足：
+   - UTF-8 文本
+   - severity 映射稳定（0/1/2）
+   - callback 抛错不影响主流程
 
 ## 5. Agent 搜索范围建议
 优先扫描：
@@ -80,6 +89,16 @@ rg -n --glob '!**/build/**' --glob '!**/build_fast/**' --glob '!**/build_fast_*/
 python scripts/run.py build --app tracer_core --profile fast
 python scripts/run.py verify --app tracer_core --profile fast --concise
 ```
+
+补充（Windows Rust CLI 集成）：
+
+```powershell
+python scripts/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise
+```
+
+通过后重点查看：
+1. `test/output/artifact_windows_cli/result.json`
+2. `test/output/artifact_windows_cli/logs/output.log`
 
 ## 7. 常见排错入口
 1. ABI 改了但上层异常：先对齐 `c_abi.md` 与 consumer 参数。

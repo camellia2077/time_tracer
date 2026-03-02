@@ -16,7 +16,13 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
   - task scope 检查集：build + native runtime smoke（不含 `runtime_guard`）
   - batch 级全量验证：由 `tidy-batch --preset sop` 内置执行
 - Verify gate result file:
-  - `test/output/log_generator/result.json` must keep `"success": true`.
+  - `test/output/artifact_log_generator/result.json` must keep `"success": true`.
+- Tidy machine summary (single source for agent):
+  - `apps/tools/log_generator/build_tidy/tidy_result.json`
+  - Read this file first for `tasks.total/tasks.remaining/blocking_files/next_action`.
+- check -> fix_strategy rule table:
+  - `scripts/toolchain/config/workflow.toml` -> `[tidy.fix_strategy]`
+  - Categories: `auto_fix`, `safe_refactor`, `nolint_allowed`, `manual_only`.
 
 ### Inputs (MUST)
 - Choose exactly one mode:
@@ -30,7 +36,7 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
 - Work **one `task_NNN.log` at a time**; do not batch-edit multiple logs before verification.
 - After each log fix, run task-scope verify:
   - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
-- `test/output/log_generator/result.json` must stay `"success": true` after every step.
+- `test/output/artifact_log_generator/result.json` must stay `"success": true` after every step.
 - Batch close command (default and recommended):
   - When one selected `batch_*` is ready to close, run:
   - `python scripts/run.py tidy-batch --app log_generator --batch-id <BATCH_ID> --preset sop --timeout-seconds 1800`
@@ -66,7 +72,7 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
 - Verify baseline:
   - `python scripts/run.py configure --app log_generator`
   - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise`
-  - `test/output/log_generator/result.json` must be `"success": true`.
+  - `test/output/artifact_log_generator/result.json` must be `"success": true`.
 
 ### Auto Loop (rename-only)
 - Log mode:
@@ -85,7 +91,7 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
 - Fix only this task.
 - Verify:
   - `python scripts/run.py verify --app log_generator --build-dir build_fast --concise --scope task`
-  - `test/output/log_generator/result.json` must stay `"success": true`.
+  - `test/output/artifact_log_generator/result.json` must stay `"success": true`.
 - Do not manually run `clean + tidy-refresh` in normal flow.
 - For multiple tasks mapped to the same source file in one batch, use clustered clean:
   - `python scripts/run.py clean --app log_generator --strict --batch-id <BATCH_ID> --cluster-by-file <ID>`
@@ -96,10 +102,13 @@ description: Run scoped Tidy tasks for log_generator (by log count or batch coun
   - `python scripts/run.py clean --app log_generator --strict <ID>`
 
 ### Stop Conditions (MUST)
-- Gate: `test/output/log_generator/result.json` keeps `"success": true`.
+- Gate: `test/output/artifact_log_generator/result.json` keeps `"success": true`.
 - Log mode done: cleaned count in this run reaches `<LOG_N>`.
 - Batch mode done: selected `<BATCH_N>` batches are all empty/removed.
 - Final acceptance (when this run is intended as full completion):
   - `python scripts/run.py tidy-close --app log_generator --keep-going --concise`
   - `tidy-close` includes: `tidy-refresh --final-full` + `verify` + empty-`task_*.log` check.
+- Tidy-only acceptance (decoupled from business verify):
+  - `python scripts/run.py tidy-close --app log_generator --tidy-only --keep-going`
+  - This mode enforces only: `tidy-refresh --final-full` + empty-`task_*.log` check.
 

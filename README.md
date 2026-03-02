@@ -1,3 +1,5 @@
+[English Version](README.en.md) | [中文版本](README.md)
+
 # time tracer (TimeMaster) ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
 
 **time tracer** - 基于 C++23 构建的个人时间追踪与分析系统。
@@ -15,6 +17,7 @@
 * **`time_tracer_cli` (C++23)**: 核心命令行程序。采用管道模式处理原始文本日志，提供基于 SQLite 的高效查询及多格式（Markdown, LaTeX, Typst）报表导出。
 * **`graph_generator` (Python)**: 数据可视化工具。读取数据库并生成动态图表（如时间线、热力图）。
 * **`log_generator` (C++)**: 辅助工具。用于生成符合规范的测试日志数据。
+* **边界说明**：报表格式化内部实现已统一收敛到 `tracer_core` 的 `reports_shared` 内部模块；CLI/Rust 仅依赖稳定的 runtime/CLI 契约，不暴露 formatter 内部细节。该边界可支持未来“部分开源”发布（`reports_shared` 可保持私有）。
 
 ---
 
@@ -32,7 +35,7 @@
 
 ### 2. 构建指南
 
-我们提供了全自动的构建脚本，可一键完成核心程序与所有插件驱动的编译。
+我们提供了全自动的构建脚本，可一键完成核心程序与运行时交付物的编译。
 
 项目统一使用 Python 工具链命令进行构建和测试，不建议直接调用 `cmake`/`ninja` 或自定义 `ps1`。
 ➡️ **Python 工具链修改定位图（Agent/开发者）**：[docs/toolchain/python_command_map.md](docs/toolchain/python_command_map.md)
@@ -45,8 +48,8 @@ python scripts/run.py build --app tracer_core --profile release_safe --build-dir
 # 快速验证（构建 + 测试）
 python scripts/run.py verify --app tracer_core --quick
 
-# 采集 Windows 构建基线（可选）
-python scripts/tools/capture_windows_build_baseline.py --run-build --clean-first --profile release_safe --build-dir build
+# 代码行数扫描（开发辅助工具，可选）
+python scripts/devtools/loc/scan_cpp_lines.py apps/tracer_cli/windows apps/tracer_core -t 350
 ```
 
 ➡️ **详细步骤请参考：[构建指南](docs/time_tracer/guides/build_guide.md)**
@@ -102,12 +105,9 @@ docs/time_tracer/
 
 ### AI 合作开发者
 在此感谢以下模型在重构与架构优化中提供的协助：
-* **Gemini 2.5 Pro**
-* **Gemini 3 Flash**
-* **Gemini 3 Pro**
-* **Claude 4.5 opus**
-* **GPT-5.2-codex**
-* **GPT-5.3-codex**
+* **Google**: Gemini 2.5 Pro, 3 Pro, 3 Flash, 3.1 Pro
+* **Anthropic**: Claude 4.5 Opus
+* **OpenAI**: GPT-5.2 Codex, 5.3 Codex
 
 ---
 
@@ -131,6 +131,18 @@ docs/time_tracer/
 * **[Apache ECharts](https://echarts.apache.org/)**: Windows CLI `report-chart` 单文件 HTML 图表渲染（Line/Bar/Pie/Heatmap-Year/Heatmap-Month）(Apache License 2.0)。
 * **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD 风格许可证)。
 
+### Windows Rust CLI (`apps/tracer_cli/windows/rust_cli`)
+
+* **[clap](https://github.com/clap-rs/clap)**: Rust CLI 参数解析与子命令框架（MIT 或 Apache License 2.0）。
+* **[thiserror](https://github.com/dtolnay/thiserror)**: Rust 错误类型派生（MIT 或 Apache License 2.0）。
+* **[libloading](https://github.com/nagisa/rust_libloading)**: 动态库加载（如 runtime DLL）(ISC License)。
+* **[serde](https://github.com/serde-rs/serde)**: 序列化/反序列化框架（MIT 或 Apache License 2.0）。
+* **[serde_json](https://github.com/serde-rs/json)**: JSON 处理（MIT 或 Apache License 2.0）。
+* **[toml](https://github.com/toml-rs/toml)**: TOML 解析（MIT 或 Apache License 2.0）。
+
+依赖版本清单位于：
+* `apps/tracer_cli/windows/rust_cli/Cargo.toml`
+ 
 ### Android 应用 (`apps/tracer_android`)
 
 * **[AndroidX / Jetpack Compose 系列](https://github.com/androidx/androidx)**  

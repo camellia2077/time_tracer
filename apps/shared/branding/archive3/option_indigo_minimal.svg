@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <!-- Lightened Slate Background (Slate 200) -->
+    <rect width="24" height="24" fill="#e2e8f0" />
+    
+    <!-- Indigo Arrow (Minimalist - No background squares) -->
+    <g fill="none" stroke="#4F46E5" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 12h10" />
+        <path d="M12 7l5 5-5 5" />
+    </g>
+</svg>

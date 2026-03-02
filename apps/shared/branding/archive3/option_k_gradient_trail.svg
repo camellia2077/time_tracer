@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    <rect width="24" height="24" fill="#FFFFFF" />
+    
+    <!-- Option K: Gradient Arrow with faded trails -->
+    <!-- Shifted right by 2 units to make room for trails -->
+    <path d="M14,18l-1.07,-1.07 4.18,-4.18H8V11.25h9.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#grad1)" />
+    
+    <!-- Trailing lines with descending opacity -->
+    <rect x="4" y="11.25" width="3" height="1.5" rx="0.5" fill="url(#grad1)" opacity="0.6" />
+    <rect x="1.5" y="11.25" width="1.5" height="1.5" rx="0.5" fill="url(#grad1)" opacity="0.3" />
+</svg>

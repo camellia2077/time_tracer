@@ -71,6 +71,15 @@
 | 路径不存在 | `runtime.io.path_not_found` |
 | 运行时依赖缺失 | `runtime.dependency.missing` |
 
+## 6.1 C ABI 当前已使用错误码（2026-03）
+| 场景 | 错误码 | 类别 |
+| --- | --- | --- |
+| 通用运行时异常（默认） | `runtime.generic_error` | `runtime` |
+| 构建信息接口失败 | `runtime.build_info_error` | `runtime` |
+| 解析/构建 CLI 上下文失败 | `config.resolve_failed` | `config` |
+| 命令契约接口请求非法 | `contract.invalid_request` | `contract` |
+| 命令契约接口内部异常 | `contract.internal_error` | `contract` |
+
 ## 7. 管理规则
 1. 新增错误码时同步更新本文档。
 2. 变更错误码需评估兼容影响（日志检索、自动化脚本、前端展示）。
@@ -81,4 +90,3 @@
 2. `apps/tracer_core/src/domain/logic/validator/common/diagnostic.hpp`
 3. `apps/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
 4. `apps/tracer_core/src/domain/ports/diagnostics.hpp`
-

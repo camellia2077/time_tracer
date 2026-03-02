@@ -9,9 +9,12 @@ is unavailable.
 
 Run from repository root and prefer Python entry commands:
 
-- `python scripts/run.py verify ...`
-- `python scripts/run.py ...`
-- `python test/run.py ...`
+- Daily one-command flow:
+  - `python scripts/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise`
+- Milestone/release flow:
+  - `python scripts/run.py verify --app log_generator --build-dir build_fast --scope batch --concise`
+- Other operations:
+  - `python scripts/run.py ...`
 
 Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 
@@ -23,7 +26,7 @@ Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 ## Canonical Verify Command
 
 ```powershell
-python scripts/run.py verify --app log_generator --build-dir build_fast --concise
+python scripts/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise
 ```
 
 This command is the primary flow: configure/build first, then run the
@@ -34,27 +37,29 @@ This command is the primary flow: configure/build first, then run the
 ```powershell
 python scripts/run.py configure --app log_generator --build-dir build_fast
 python scripts/run.py build --app log_generator --build-dir build_fast
-python test/run.py --suite log_generator --build-dir build_fast --agent --concise
+python scripts/run.py verify --app log_generator --build-dir build_fast --scope artifact --concise
 ```
 
 ## Result Files and Logs
 
+- State file: `apps/log_generator/build_fast/post_change_last.json`
+
 Required result files:
 
-- `test/output/log_generator/result.json`
-- `test/output/log_generator/result_cases.json`
+- Summary: `test/output/artifact_log_generator/result.json`
+- Case details: `test/output/artifact_log_generator/result_cases.json`
 
 Expected result: `"success": true` in `result.json`.
 
 Failure triage logs:
 
-- `test/output/log_generator/logs/output.log`
-- `test/output/log_generator/logs/**`
+- Aggregated log: `test/output/artifact_log_generator/logs/output.log`
+- `test/output/artifact_log_generator/logs/**`
 
 ## Completion Criteria
 
 - Verify command exits with code `0`.
-- `test/output/log_generator/result.json` exists and reports `"success": true`.
+- `test/output/artifact_log_generator/result.json` exists and reports `"success": true`.
 
 ## Notes
 

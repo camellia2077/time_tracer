@@ -53,6 +53,7 @@
 26. `docs/time_tracer/core/architecture/data_query/README.md`
 27. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
 28. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
+29. `docs/time_tracer/core/contracts/cli_surface_contract_v1.md`
 
 ### 相关上游文档
 1. `docs/time_tracer/design/core_logic.md`
