@@ -207,6 +207,7 @@ class BuildCommand:
         cmake_args: list[str] | None = None,
         build_dir_name: str | None = None,
         profile_name: str | None = None,
+        windows_icon_svg: str | None = None,
         kill_build_procs: bool = False,
     ) -> int:
         return build_command_entries.build_entry(
@@ -217,6 +218,7 @@ class BuildCommand:
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            windows_icon_svg=windows_icon_svg,
             kill_build_procs=kill_build_procs,
             run_command_fn=run_command,
             kill_build_processes_fn=kill_build_processes,

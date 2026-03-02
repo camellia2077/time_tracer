@@ -1,4 +1,4 @@
-from . import cmake as build_cmake, gradle as build_gradle
+from . import cargo as build_cargo, cmake as build_cmake, gradle as build_gradle
 
 
 def configure_entry(
@@ -31,6 +31,14 @@ def configure_entry(
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
         )
+    if backend == "cargo":
+        return build_cargo.configure_cargo(
+            app_name=app_name,
+            tidy=tidy,
+            extra_args=extra_args,
+            cmake_args=cmake_args,
+            build_dir_name=build_dir_name,
+        )
 
     return build_cmake.configure_cmake(
         ctx=command.ctx,
@@ -53,12 +61,13 @@ def build_entry(
     cmake_args: list[str] | None = None,
     build_dir_name: str | None = None,
     profile_name: str | None = None,
+    windows_icon_svg: str | None = None,
     kill_build_procs: bool = False,
     run_command_fn=None,
     kill_build_processes_fn=None,
     kill_runtime_lock_processes_fn=None,
 ) -> int:
-    if app_name in {"tracer_core", "tracer_windows_cli"} and kill_runtime_lock_processes_fn:
+    if app_name in {"tracer_core", "tracer_windows_rust_cli"} and kill_runtime_lock_processes_fn:
         kill_runtime_lock_processes_fn()
 
     if kill_build_procs:
@@ -78,6 +87,24 @@ def build_entry(
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            run_command_fn=run_command_fn,
+        )
+    if backend == "cargo":
+        resolved_build_dir_name = command.resolve_build_dir_name(
+            tidy=tidy,
+            build_dir_name=build_dir_name,
+            profile_name=profile_name,
+            app_name=app_name,
+        )
+        return build_cargo.build_cargo(
+            ctx=command.ctx,
+            app_name=app_name,
+            tidy=tidy,
+            extra_args=extra_args,
+            cmake_args=cmake_args,
+            build_dir_name=resolved_build_dir_name,
+            profile_name=profile_name,
+            windows_icon_svg=windows_icon_svg,
             run_command_fn=run_command_fn,
         )
 
