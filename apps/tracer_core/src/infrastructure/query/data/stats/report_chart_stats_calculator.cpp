@@ -84,6 +84,7 @@ auto BuildTotalsByDate(const std::vector<DayDurationRow>& sparse_rows)
 
 }  // namespace
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 auto BuildReportChartSeries(std::string_view start_date,
                             std::string_view end_date,
                             const std::vector<DayDurationRow>& sparse_rows)

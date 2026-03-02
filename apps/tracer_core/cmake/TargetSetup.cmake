@@ -57,8 +57,16 @@ function(_setup_target_common TARGET_NAME)
     if(WIN32 AND CMAKE_RC_COMPILER AND ENABLE_APP_ICON)
         get_target_property(TARGET_TYPE ${TARGET_NAME} TYPE)
         if(TARGET_TYPE STREQUAL "EXECUTABLE")
-            target_sources(${TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/src/resources/app_icon.rc")
-            message(STATUS "Icon resource added to target: ${TARGET_NAME}")
+            set(TT_ICON_RESOURCE_RC "${PROJECT_SOURCE_DIR}/src/resources/app_icon.rc")
+            if(EXISTS "${TT_ICON_RESOURCE_RC}")
+                target_sources(${TARGET_NAME} PRIVATE "${TT_ICON_RESOURCE_RC}")
+                message(STATUS "Icon resource added to target: ${TARGET_NAME}")
+            else()
+                message(WARNING
+                    "ENABLE_APP_ICON=ON but icon resource is missing for target "
+                    "${TARGET_NAME}: ${TT_ICON_RESOURCE_RC}"
+                )
+            endif()
         endif()
     endif()
 endfunction()
@@ -140,7 +148,16 @@ endfunction()
 function(setup_plugin_target TARGET_NAME)
     _setup_target_common(${TARGET_NAME} ${ARGN})
     _apply_stdcxxexp_if_needed(${TARGET_NAME} ${ARGN})
-    _apply_mingw_static_runtime_if_needed(${TARGET_NAME} ${ARGN})
+    if(DEFINED TT_STATIC_MINGW_RUNTIME_PLUGINS
+       AND NOT TT_STATIC_MINGW_RUNTIME_PLUGINS)
+        _apply_mingw_static_runtime_if_needed(
+            ${TARGET_NAME}
+            NO_STATIC_MINGW_RUNTIME
+            ${ARGN}
+        )
+    else()
+        _apply_mingw_static_runtime_if_needed(${TARGET_NAME} ${ARGN})
+    endif()
 endfunction()
 
 # Backward-compatible alias: existing targets default to app profile.

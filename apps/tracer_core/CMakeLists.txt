@@ -24,6 +24,9 @@ option(TT_TOML_HEADER_ONLY
 option(TT_STATIC_MINGW_RUNTIME
        "Prefer static libgcc/libstdc++/winpthread on Windows MinGW builds"
        ${TT_WINDOWS_DEP_DEFAULT})
+option(TT_STATIC_MINGW_RUNTIME_PLUGINS
+       "Prefer static libgcc/libstdc++/winpthread for plugin/runtime shared libraries on Windows MinGW builds"
+       ${TT_STATIC_MINGW_RUNTIME})
 option(TT_ENABLE_EXPERIMENTAL_LTO
        "Enable experimental LTO/FTO path for Release builds"
        OFF)
@@ -67,6 +70,7 @@ message(STATUS "TT_ENABLE_HEAVY_DIAGNOSTICS=${TT_ENABLE_HEAVY_DIAGNOSTICS}")
 message(STATUS "TT_USE_BUNDLED_SQLITE=${TT_USE_BUNDLED_SQLITE}")
 message(STATUS "TT_TOML_HEADER_ONLY=${TT_TOML_HEADER_ONLY}")
 message(STATUS "TT_STATIC_MINGW_RUNTIME=${TT_STATIC_MINGW_RUNTIME}")
+message(STATUS "TT_STATIC_MINGW_RUNTIME_PLUGINS=${TT_STATIC_MINGW_RUNTIME_PLUGINS}")
 message(STATUS "TT_ENABLE_EXPERIMENTAL_LTO=${TT_ENABLE_EXPERIMENTAL_LTO}")
 
 if(TT_ENABLE_PROCESSED_JSON_IO)
@@ -107,7 +111,8 @@ else()
     add_compile_definitions(TT_RUNTIME_REQUIRE_TOML_DLL=1)
 endif()
 
-if(WIN32 AND MINGW AND NOT TT_STATIC_MINGW_RUNTIME)
+if(WIN32 AND MINGW AND
+   (NOT TT_STATIC_MINGW_RUNTIME OR NOT TT_STATIC_MINGW_RUNTIME_PLUGINS))
     add_compile_definitions(TT_RUNTIME_REQUIRE_MINGW_DLLS=1)
 else()
     add_compile_definitions(TT_RUNTIME_REQUIRE_MINGW_DLLS=0)

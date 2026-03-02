@@ -13,6 +13,12 @@
 namespace tracer_core::application::tests {
 namespace {
 
+constexpr int kReplaceYear = 2026;
+constexpr int kReplaceMonth = 2;
+constexpr int kStartTimestamp = 25200;
+constexpr int kEndTimestamp = 28800;
+constexpr int kDurationSeconds = 3600;
+
 class FakeTimeSheetRepository final
     : public tracer_core::application::ports::ITimeSheetRepository {
  public:
@@ -42,13 +48,14 @@ class FakeTimeSheetRepository final
     }
   }
 
-  auto ReplaceMonthData(const int year, const int month,
+  // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
+  auto ReplaceMonthData(const int kYear, const int kMonth,
                         const std::vector<DayData>& days,
                         const std::vector<TimeRecordInternal>& records)
       -> void override {
     ++replace_call_count;
-    replace_year = year;
-    replace_month = month;
+    replace_year = kYear;
+    replace_month = kMonth;
     replace_days = days.size();
     replace_records = records.size();
     if (fail_replace) {
@@ -70,12 +77,12 @@ auto BuildSingleDayMap() -> std::map<std::string, std::vector<DailyLog>> {
   day.getupTime = "07:00";
   day.processedActivities.push_back(BaseActivityRecord{
       .logical_id = 1,
-      .start_timestamp = 25200,
-      .end_timestamp = 28800,
+      .start_timestamp = kStartTimestamp,
+      .end_timestamp = kEndTimestamp,
       .start_time_str = "07:00",
       .end_time_str = "08:00",
       .project_path = "study_cpp",
-      .duration_seconds = 3600,
+      .duration_seconds = kDurationSeconds,
       .remark = std::nullopt,
   });
 
@@ -86,22 +93,24 @@ auto TestReplaceMonthUsesReplacePath(TestState& state) -> void {
   FakeTimeSheetRepository repository;
   ImportService service(repository);
 
-  const ImportStats stats = service.ImportFromMemory(
-      BuildSingleDayMap(), ReplaceMonthTarget{.year = 2026, .month = 2});
+  const ImportStats kStats = service.ImportFromMemory(
+      BuildSingleDayMap(),
+      ReplaceMonthTarget{.kYear = kReplaceYear, .kMonth = kReplaceMonth});
 
   Expect(state, repository.replace_call_count == 1,
          "Replace-month import should call ReplaceMonthData once.");
   Expect(state, repository.import_call_count == 0,
          "Replace-month import should not call ImportData.");
   Expect(state,
-         repository.replace_year == 2026 && repository.replace_month == 2,
+         repository.replace_year == kReplaceYear &&
+             repository.replace_month == kReplaceMonth,
          "Replace-month import should forward target year/month.");
   Expect(state, repository.replace_days == 1 && repository.replace_records == 1,
          "Replace-month import should pass parsed days/records.");
-  Expect(state, stats.db_open_success && stats.transaction_success,
+  Expect(state, kStats.db_open_success && kStats.transaction_success,
          "Replace-month import should report successful DB transaction.");
   Expect(state,
-         stats.replaced_month.has_value() && *stats.replaced_month == "2026-02",
+         kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
          "Replace-month import should expose replaced_month in stats.");
 }
 
@@ -109,8 +118,8 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
   FakeTimeSheetRepository repository;
   ImportService service(repository);
 
-  const ImportStats stats = service.ImportFromMemory(
-      {}, ReplaceMonthTarget{.year = 2026, .month = 2});
+  const ImportStats kStats = service.ImportFromMemory(
+      {}, ReplaceMonthTarget{.kYear = kReplaceYear, .kMonth = kReplaceMonth});
 
   Expect(state, repository.replace_call_count == 1,
          "Empty replace-month import should still clear target month.");
@@ -118,10 +127,10 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
          "Empty replace-month import should not call ImportData.");
   Expect(state, repository.replace_days == 0 && repository.replace_records == 0,
          "Empty replace-month import should pass empty data vectors.");
-  Expect(state, stats.db_open_success && stats.transaction_success,
+  Expect(state, kStats.db_open_success && kStats.transaction_success,
          "Empty replace-month import should report successful DB transaction.");
   Expect(state,
-         stats.replaced_month.has_value() && *stats.replaced_month == "2026-02",
+         kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
          "Empty replace-month import should still report replaced_month.");
 }
 

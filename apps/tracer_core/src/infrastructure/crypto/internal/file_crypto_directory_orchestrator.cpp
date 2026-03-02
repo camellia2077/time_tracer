@@ -28,12 +28,12 @@ auto ToProgressDescriptor(const DirectoryTaskPlanEntry& entry)
 
 }  // namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto RunDirectoryCrypto(FileCryptoOperation operation,
                         const fs::path& input_root_path,
                         const fs::path& output_root_path,
                         std::string_view passphrase,
-                        std::string_view input_extension_lower,
-                        std::string_view output_extension_lower,
+                        const DirectoryCryptoExtensions& extensions,
                         const FileCryptoOptions& options)
     -> FileCryptoBatchResult {
   FileCryptoBatchResult batch{};
@@ -45,17 +45,16 @@ auto RunDirectoryCrypto(FileCryptoOperation operation,
   }
 
   ProgressReporter reporter(operation, &options);
-  if (const auto scan_begin =
+  if (const auto kScanBegin =
           reporter.BeginScan(input_root_path, output_root_path);
-      !scan_begin.ok()) {
-    batch.status = scan_begin;
-    batch.cancelled = IsCancelledError(scan_begin);
+      !kScanBegin.ok()) {
+    batch.status = kScanBegin;
+    batch.cancelled = IsCancelledError(kScanBegin);
     return batch;
   }
 
   auto [plan_result, plan] =
-      BuildDirectoryTaskPlan(input_root_path, output_root_path,
-                             input_extension_lower, output_extension_lower);
+      BuildDirectoryTaskPlan(input_root_path, output_root_path, extensions);
   if (!plan_result.ok()) {
     batch.status = plan_result;
     batch.cancelled = IsCancelledError(plan_result);
@@ -67,11 +66,11 @@ auto RunDirectoryCrypto(FileCryptoOperation operation,
     return batch;
   }
 
-  if (const auto totals_result = reporter.SetAggregateTotals(
+  if (const auto kTotalsResult = reporter.SetAggregateTotals(
           plan.entries.size(), plan.total_input_bytes, plan.group_count, true);
-      !totals_result.ok()) {
-    batch.status = totals_result;
-    batch.cancelled = IsCancelledError(totals_result);
+      !kTotalsResult.ok()) {
+    batch.status = kTotalsResult;
+    batch.cancelled = IsCancelledError(kTotalsResult);
     if (batch.cancelled) {
       (void)reporter.MarkCancelled();
     } else {
@@ -102,11 +101,11 @@ auto RunDirectoryCrypto(FileCryptoOperation operation,
   }
 
   for (const auto& plan_entry : plan.entries) {
-    if (const auto file_select_result = reporter.SetCurrentFile(
+    if (const auto kFileSelectResult = reporter.SetCurrentFile(
             ToProgressDescriptor(plan_entry), overall_done_bytes);
-        !file_select_result.ok()) {
-      batch.status = file_select_result;
-      batch.cancelled = IsCancelledError(file_select_result);
+        !kFileSelectResult.ok()) {
+      batch.status = kFileSelectResult;
+      batch.cancelled = IsCancelledError(kFileSelectResult);
       if (batch.cancelled) {
         (void)reporter.MarkCancelled();
       } else {

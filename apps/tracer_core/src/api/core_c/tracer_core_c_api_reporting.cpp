@@ -2,6 +2,7 @@
 #include <sodium.h>
 
 #include <array>
+#include <cstdint>
 #include <exception>
 #include <optional>
 #include <string>
@@ -35,13 +36,18 @@ using tracer_core::core::dto::TreeQueryRequest;
 namespace {
 
 auto ToLowerHex(const unsigned char* bytes, size_t size) -> std::string {
-  constexpr char kHex[] = "0123456789abcdef";
+  constexpr std::array<char, 16> kHex = {
+      '0', '1', '2', '3', '4', '5', '6', '7',
+      '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+  };
+  constexpr unsigned kHexShiftBits = 4U;
+  constexpr std::uint8_t kHexNibbleMask = 0x0FU;
   std::string out;
   out.resize(size * 2U);
   for (size_t index = 0; index < size; ++index) {
-    const unsigned char byte = bytes[index];
-    out[index * 2U] = kHex[(byte >> 4U) & 0x0FU];
-    out[index * 2U + 1U] = kHex[byte & 0x0FU];
+    const unsigned char kByte = bytes[index];
+    out[index * 2U] = kHex[(kByte >> kHexShiftBits) & kHexNibbleMask];
+    out[(index * 2U) + 1U] = kHex[kByte & kHexNibbleMask];
   }
   return out;
 }

@@ -58,7 +58,6 @@
 #include "infrastructure/crypto/file_crypto_service.hpp"     // 使用次数: 10
 #include "infrastructure/reports/shared/api/shared_api.hpp"  // 使用次数: 17
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"  // 使用次数: 10
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"  // 使用次数: 38
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"  // 使用次 数: 10
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"  // 使用次数: 16
 #include "infrastructure/schema/day_schema.hpp"     // 使用次数: 16

@@ -80,7 +80,7 @@ void LogLinker::LinkLogs(
 
 void LogLinker::LinkFirstDayWithExternalPreviousEvent(
     std::map<std::string, std::vector<DailyLog>>& data_map,
-    std::string_view previous_date, std::string_view previous_end_time) {
+    const ExternalPreviousEvent& previous_event) {
   if (data_map.empty()) {
     return;
   }
@@ -91,17 +91,17 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
   }
 
   DailyLog& current_first_day = first_month_iter->second.front();
-  const bool has_valid_getup = !current_first_day.getupTime.empty() &&
+  const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
                                current_first_day.getupTime != "00:00";
-  const bool missing_sleep = !current_first_day.hasSleepActivity;
-  if (!has_valid_getup || !missing_sleep) {
+  const bool kMissingSleep = !current_first_day.hasSleepActivity;
+  if (!kHasValidGetup || !kMissingSleep) {
     return;
   }
 
   DailyLog previous_day;
-  previous_day.date = std::string(previous_date);
+  previous_day.date = std::string(previous_event.date);
   previous_day.rawEvents.push_back(
-      RawEvent{.endTimeStr = std::string(previous_end_time)});
+      RawEvent{.endTimeStr = std::string(previous_event.end_time)});
   ProcessCrossDay(current_first_day, previous_day);
 }
 

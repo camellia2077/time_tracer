@@ -4,14 +4,14 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API TypstStyleConfig {
  public:
-  explicit TypstStyleConfig(const TtTypstStyleConfigV1& config);
+  TypstStyleConfig(const FontConfig& fonts, const LayoutConfig& layout);
 
   [[nodiscard]] auto GetBaseFont() const -> const std::string&;
   [[nodiscard]] auto GetTitleFont() const -> const std::string&;

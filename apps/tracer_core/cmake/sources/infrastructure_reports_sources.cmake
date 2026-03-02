@@ -2,8 +2,6 @@ set(TIME_TRACKER_INFRA_REPORTS_SOURCES
     "reports/export_utils.cpp"
     "reports/exporter.cpp"
     "reports/report_file_manager.cpp"
-    "reports/plugin_manifest.cpp"
-    "reports/formatter_registry.cpp"
     "reports/facade/android_static_report_formatter_registrar.cpp"
     "reports/facade/report_formatter_registry_adapter.cpp"
     "reports/report_dto_export_writer.cpp"
@@ -17,11 +15,6 @@ set(TIME_TRACKER_INFRA_REPORTS_SOURCES
     "reports/services/monthly_report_service.cpp"
     "reports/services/weekly_report_service.cpp"
     "reports/services/yearly_report_service.cpp"
-    "reports/shared/factories/formatter_config_payload.cpp"
-    "reports/shared/factories/formatter_config_payload_fillers.cpp"
-    "reports/shared/factories/formatter_config_payload_cview.cpp"
-    "reports/shared/factories/formatter_config_payload_lifecycle.cpp"
-    "reports/shared/factories/generic_formatter_factory_resolver.cpp"
 )
 
 if(TT_REPORT_ENABLE_LATEX)

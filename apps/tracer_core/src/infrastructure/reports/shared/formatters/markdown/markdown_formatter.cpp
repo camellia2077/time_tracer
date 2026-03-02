@@ -80,14 +80,6 @@ auto FormatProjectTree(const reporting::ProjectTree& tree,
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
   return formatter.FormatProjectTree(tree, total_duration, avg_days);
 }
-
-auto FormatProjectTree(const TtProjectTreeNodeV1* nodes, uint32_t node_count,
-                       long long total_duration, int avg_days) -> std::string {
-  auto strategy = std::make_unique<MarkdownFormattingStrategy>();
-  reporting::ProjectTreeFormatter formatter(std::move(strategy));
-  return formatter.FormatProjectTree(nodes, node_count, total_duration,
-                                     avg_days);
-}
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace MarkdownFormatter

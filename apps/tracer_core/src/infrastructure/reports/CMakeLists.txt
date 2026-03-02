@@ -12,10 +12,6 @@ add_library(reports_shared SHARED
     "shared/utils/config/config_utils.cpp"
     "shared/utils/format/report_string_utils.cpp"
     "shared/utils/format/time_format.cpp"
-    "shared/interfaces/formatter_c_config_bridge_v1.cpp"
-    "shared/interfaces/formatter_c_string_view_utils.cpp"
-    "shared/interfaces/formatter_c_report_data_bridge_validate.cpp"
-    "shared/interfaces/formatter_c_report_data_bridge_parse.cpp"
     
     # Shared - Style Config
     "shared/config/tex_style_config.cpp"
@@ -34,7 +30,7 @@ set_target_properties(reports_shared PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
     RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
 )
-setup_plugin_target(reports_shared NO_STDCXXEXP)
+setup_app_target(reports_shared NO_STDCXXEXP)
 target_link_libraries(reports_shared PUBLIC
     nlohmann_json::nlohmann_json
     time_tracker_domain # Needed for time utils maybe?
@@ -69,16 +65,3 @@ target_link_libraries(reports_data PUBLIC
     SQLite3
     time_tracker_domain
 )
-
-# Formatter plugin subdirectories
-if(NOT ANDROID)
-    add_subdirectory(daily/formatters/markdown)
-    add_subdirectory(daily/formatters/typst)
-    add_subdirectory(daily/formatters/latex)
-    add_subdirectory(range/formatters/markdown)
-    add_subdirectory(range/formatters/typst)
-    add_subdirectory(range/formatters/latex)
-    add_subdirectory(monthly/formatters/markdown)
-    add_subdirectory(monthly/formatters/typst)
-    add_subdirectory(monthly/formatters/latex)
-endif()

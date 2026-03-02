@@ -4,6 +4,8 @@
 namespace tracer_core_c_api_stability_internal {
 
 void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
+  constexpr std::size_t kSha256HexLength = 64U;
+
   RequireOk(
       api.runtime_query(runtime, json{{"action", "years"}}.dump().c_str()),
       "baseline query years");
@@ -64,7 +66,7 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
           "baseline runtime report should return ok=true");
   const std::string kReportHash =
       kReportResponse.value("report_hash_sha256", std::string{});
-  Require(kReportHash.size() == 64,
+  Require(kReportHash.size() == kSha256HexLength,
           "baseline runtime report should include 64-char report hash");
   Require(
       kReportHash.find_first_not_of("0123456789abcdef") == std::string::npos,
@@ -100,7 +102,7 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
       kReportBatchResponse.value("content", std::string{});
   const std::string kReportBatchHash =
       kReportBatchResponse.value("report_hash_sha256", std::string{});
-  Require(kReportBatchHash.size() == 64,
+  Require(kReportBatchHash.size() == kSha256HexLength,
           "baseline runtime report batch should include 64-char report hash");
   Require(kReportBatchHash != kReportHash ||
               kReportBatchContent !=

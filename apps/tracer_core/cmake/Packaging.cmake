@@ -17,21 +17,6 @@ if(BUILD_INSTALLER)
         RUNTIME DESTINATION bin
     )
 
-    # 安装所有 DLL 插件到 bin/plugins 目录
-    install(TARGETS
-        DayMdFormatter
-        DayTypFormatter
-        DayTexFormatter
-        MonthMdFormatter
-        MonthTypFormatter
-        MonthTexFormatter
-        RangeMdFormatter
-        RangeTypFormatter
-        RangeTexFormatter
-        RUNTIME DESTINATION bin/plugins
-        LIBRARY DESTINATION bin/plugins
-    )
-
     # 注意：这里的路径仍然是硬编码的，后续可以进一步优化为自动查找或变量配置
     set(UCRT64_BIN_PATH "C:/msys64/ucrt64/bin")
     set(RUNTIME_DLL_NAMES)
@@ -43,7 +28,7 @@ if(BUILD_INSTALLER)
     if(NOT TT_TOML_HEADER_ONLY)
         list(APPEND RUNTIME_DLL_NAMES "libtomlplusplus-3.dll")
     endif()
-    if(MINGW AND NOT TT_STATIC_MINGW_RUNTIME)
+    if(MINGW AND (NOT TT_STATIC_MINGW_RUNTIME OR NOT TT_STATIC_MINGW_RUNTIME_PLUGINS))
         list(APPEND RUNTIME_DLL_NAMES
             "libstdc++-6.dll"
             "libgcc_s_seh-1.dll"

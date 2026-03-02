@@ -13,164 +13,164 @@ namespace {
 auto TestAndroidToWindowsCryptoInterop(int& failures) -> void {
   using namespace file_crypto_tests_internal;
 
-  const RuntimeTestPaths paths =
+  const RuntimeTestPaths kPaths =
       BuildTempTestPaths("tracer_core_file_crypto_android_to_windows_test");
-  const auto android_plain_txt =
+  const auto kAndroidPlainTxt =
       ResolveRepoRootForInterop() / "test" / "data" / "2026" / "2026-01.txt";
-  const auto interop_tracer = paths.test_root / "android_export.tracer";
-  const auto windows_restored_txt = paths.test_root / "windows_restored.txt";
+  const auto kInteropTracer = kPaths.test_root / "android_export.tracer";
+  const auto kWindowsRestoredTxt = kPaths.test_root / "windows_restored.txt";
   constexpr std::string_view kPassphrase = "phase3-interop-passphrase";
 
-  RemoveTree(paths.test_root);
-  if (!std::filesystem::exists(android_plain_txt)) {
+  RemoveTree(kPaths.test_root);
+  if (!std::filesystem::exists(kAndroidPlainTxt)) {
     ++failures;
     std::cerr << "[FAIL] Missing Android-side plaintext fixture: "
-              << android_plain_txt.string() << '\n';
-    RemoveTree(paths.test_root);
+              << kAndroidPlainTxt.string() << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
 
-  const auto android_encrypt_result =
+  const auto kAndroidEncryptResult =
       tracer_core::infrastructure::crypto::EncryptFile(
-          android_plain_txt, interop_tracer, kPassphrase);
-  Expect(android_encrypt_result.ok(),
+          kAndroidPlainTxt, kInteropTracer, kPassphrase);
+  Expect(kAndroidEncryptResult.ok(),
          "Android-side export should generate .tracer successfully.", failures);
-  if (!android_encrypt_result.ok()) {
+  if (!kAndroidEncryptResult.ok()) {
     std::cerr << "[FAIL] Android export error: "
-              << android_encrypt_result.error_code << " | "
-              << android_encrypt_result.error_message << '\n';
-    RemoveTree(paths.test_root);
+              << kAndroidEncryptResult.error_code << " | "
+              << kAndroidEncryptResult.error_message << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
 
-  const auto windows_decrypt_result =
+  const auto kWindowsDecryptResult =
       tracer_core::infrastructure::crypto::DecryptFile(
-          interop_tracer, windows_restored_txt, kPassphrase);
-  Expect(windows_decrypt_result.ok(),
+          kInteropTracer, kWindowsRestoredTxt, kPassphrase);
+  Expect(kWindowsDecryptResult.ok(),
          "Windows-side decrypt should accept Android-produced .tracer.",
          failures);
-  if (!windows_decrypt_result.ok()) {
+  if (!kWindowsDecryptResult.ok()) {
     std::cerr << "[FAIL] Windows decrypt error: "
-              << windows_decrypt_result.error_code << " | "
-              << windows_decrypt_result.error_message << '\n';
-    RemoveTree(paths.test_root);
+              << kWindowsDecryptResult.error_code << " | "
+              << kWindowsDecryptResult.error_message << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
 
-  const std::string restored = ReadTextFile(windows_restored_txt);
-  const std::string expected_plaintext = ReadTextFile(android_plain_txt);
-  Expect(restored == expected_plaintext,
+  const std::string kRestored = ReadTextFile(kWindowsRestoredTxt);
+  const std::string kExpectedPlaintext = ReadTextFile(kAndroidPlainTxt);
+  Expect(kRestored == kExpectedPlaintext,
          "Android->Windows interop plaintext should round-trip unchanged.",
          failures);
 
-  RemoveTree(paths.test_root);
+  RemoveTree(kPaths.test_root);
 }
 
 auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
   using namespace file_crypto_tests_internal;
 
-  const RuntimeTestPaths paths =
+  const RuntimeTestPaths kPaths =
       BuildTempTestPaths("tracer_core_file_crypto_windows_to_android_test");
-  const auto windows_plain_txt =
+  const auto kWindowsPlainTxt =
       ResolveRepoRootForInterop() / "test" / "data" / "2026" / "2026-01.txt";
-  const auto interop_tracer = paths.test_root / "windows_export.tracer";
-  const auto android_import_txt = paths.test_root / "android_import.txt";
-  const auto converter_config_toml = ResolveRepoRootForInterop() / "apps" /
+  const auto kInteropTracer = kPaths.test_root / "windows_export.tracer";
+  const auto kAndroidImportTxt = kPaths.test_root / "android_import.txt";
+  const auto kConverterConfigToml = ResolveRepoRootForInterop() / "apps" /
                                      "tracer_core" / "config" / "converter" /
                                      "interval_processor_config.toml";
   constexpr std::string_view kPassphrase = "phase3-interop-passphrase";
 
-  RemoveTree(paths.test_root);
-  if (!std::filesystem::exists(windows_plain_txt)) {
+  RemoveTree(kPaths.test_root);
+  if (!std::filesystem::exists(kWindowsPlainTxt)) {
     ++failures;
     std::cerr << "[FAIL] Missing Windows-side plaintext fixture: "
-              << windows_plain_txt.string() << '\n';
-    RemoveTree(paths.test_root);
+              << kWindowsPlainTxt.string() << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
 
-  const auto windows_encrypt_result =
+  const auto kWindowsEncryptResult =
       tracer_core::infrastructure::crypto::EncryptFile(
-          windows_plain_txt, interop_tracer, kPassphrase);
-  Expect(windows_encrypt_result.ok(),
+          kWindowsPlainTxt, kInteropTracer, kPassphrase);
+  Expect(kWindowsEncryptResult.ok(),
          "Windows-side export should generate .tracer successfully.", failures);
-  if (!windows_encrypt_result.ok()) {
+  if (!kWindowsEncryptResult.ok()) {
     std::cerr << "[FAIL] Windows export error: "
-              << windows_encrypt_result.error_code << " | "
-              << windows_encrypt_result.error_message << '\n';
-    RemoveTree(paths.test_root);
+              << kWindowsEncryptResult.error_code << " | "
+              << kWindowsEncryptResult.error_message << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
 
-  const auto android_decrypt_result =
+  const auto kAndroidDecryptResult =
       tracer_core::infrastructure::crypto::DecryptFile(
-          interop_tracer, android_import_txt, kPassphrase);
-  Expect(android_decrypt_result.ok(),
+          kInteropTracer, kAndroidImportTxt, kPassphrase);
+  Expect(kAndroidDecryptResult.ok(),
          "Android-side decrypt should accept Windows-produced .tracer.",
          failures);
-  if (!android_decrypt_result.ok()) {
+  if (!kAndroidDecryptResult.ok()) {
     std::cerr << "[FAIL] Android decrypt error: "
-              << android_decrypt_result.error_code << " | "
-              << android_decrypt_result.error_message << '\n';
-    RemoveTree(paths.test_root);
+              << kAndroidDecryptResult.error_code << " | "
+              << kAndroidDecryptResult.error_message << '\n';
+    RemoveTree(kPaths.test_root);
     return;
   }
-  const std::string source_plaintext = ReadTextFile(windows_plain_txt);
-  const std::string imported_plaintext = ReadTextFile(android_import_txt);
-  Expect(imported_plaintext == source_plaintext,
+  const std::string kSourcePlaintext = ReadTextFile(kWindowsPlainTxt);
+  const std::string kImportedPlaintext = ReadTextFile(kAndroidImportTxt);
+  Expect(kImportedPlaintext == kSourcePlaintext,
          "Windows->Android decrypted TXT should match the Windows source TXT.",
          failures);
 
   try {
-    const auto runtime_request =
-        BuildRuntimeRequest(paths, converter_config_toml);
+    const auto kRuntimeRequest =
+        BuildRuntimeRequest(kPaths, kConverterConfigToml);
     auto runtime =
-        infrastructure::bootstrap::BuildAndroidRuntime(runtime_request);
+        infrastructure::bootstrap::BuildAndroidRuntime(kRuntimeRequest);
     if (!runtime.core_api) {
       ++failures;
       std::cerr << "[FAIL] BuildAndroidRuntime should provide a valid core "
                    "API for interop import.\n";
-      RemoveTree(paths.test_root);
+      RemoveTree(kPaths.test_root);
       return;
     }
 
-    const auto structure_ack = runtime.core_api->RunValidateStructure(
-        {.input_path = android_import_txt.string()});
-    Expect(structure_ack.ok,
+    const auto kStructureAck = runtime.core_api->RunValidateStructure(
+        {.input_path = kAndroidImportTxt.string()});
+    Expect(kStructureAck.ok,
            "Android import pre-check: structure validation should pass.",
            failures);
-    if (!structure_ack.ok) {
+    if (!kStructureAck.ok) {
       std::cerr << "[FAIL] Android structure validation failed: "
-                << structure_ack.error_message << '\n';
+                << kStructureAck.error_message << '\n';
     }
 
-    const auto logic_ack = runtime.core_api->RunValidateLogic(
-        {.input_path = android_import_txt.string(),
+    const auto kLogicAck = runtime.core_api->RunValidateLogic(
+        {.input_path = kAndroidImportTxt.string(),
          .date_check_mode = DateCheckMode::kNone});
-    Expect(logic_ack.ok,
+    Expect(kLogicAck.ok,
            "Android import pre-check: logic validation should pass.", failures);
-    if (!logic_ack.ok) {
+    if (!kLogicAck.ok) {
       std::cerr << "[FAIL] Android logic validation failed: "
-                << logic_ack.error_message << '\n';
+                << kLogicAck.error_message << '\n';
     }
 
     tracer_core::core::dto::IngestRequest ingest_request;
-    ingest_request.input_path = android_import_txt.string();
+    ingest_request.input_path = kAndroidImportTxt.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
-    const auto ingest_ack = runtime.core_api->RunIngest(ingest_request);
-    Expect(ingest_ack.ok,
+    const auto kIngestAck = runtime.core_api->RunIngest(ingest_request);
+    Expect(kIngestAck.ok,
            "Android import should ingest TXT decrypted from Windows .tracer.",
            failures);
-    if (!ingest_ack.ok) {
-      std::cerr << "[FAIL] Android ingest failed: " << ingest_ack.error_message
+    if (!kIngestAck.ok) {
+      std::cerr << "[FAIL] Android ingest failed: " << kIngestAck.error_message
                 << '\n';
-      RemoveTree(paths.test_root);
+      RemoveTree(kPaths.test_root);
       return;
     }
 
     sqlite3* database = nullptr;
-    if (sqlite3_open(paths.db_path.string().c_str(), &database) != SQLITE_OK ||
+    if (sqlite3_open(kPaths.db_path.string().c_str(), &database) != SQLITE_OK ||
         database == nullptr) {
       ++failures;
       std::cerr << "[FAIL] sqlite3_open should succeed for Android import DB "
@@ -178,20 +178,20 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
       if (database != nullptr) {
         sqlite3_close(database);
       }
-      RemoveTree(paths.test_root);
+      RemoveTree(kPaths.test_root);
       return;
     }
 
-    const auto imported_count = QueryCount(
+    const auto kImportedCount = QueryCount(
         database, "SELECT COUNT(*) FROM time_records WHERE date='2026-01-01';");
     sqlite3_close(database);
 
-    if (!imported_count.has_value()) {
+    if (!kImportedCount.has_value()) {
       ++failures;
       std::cerr << "[FAIL] Failed to query imported rows for interop "
                    "verification.\n";
     } else {
-      Expect(*imported_count > 0,
+      Expect(*kImportedCount > 0,
              "Android import should persist records decrypted from Windows "
              ".tracer.",
              failures);
@@ -206,7 +206,7 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
                  "exception.\n";
   }
 
-  RemoveTree(paths.test_root);
+  RemoveTree(kPaths.test_root);
 }
 
 }  // namespace

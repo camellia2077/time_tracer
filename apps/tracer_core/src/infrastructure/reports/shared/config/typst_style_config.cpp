@@ -1,19 +1,15 @@
 // infrastructure/reports/shared/config/typst_style_config.cpp
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
 
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
-
-TypstStyleConfig::TypstStyleConfig(const TtTypstStyleConfigV1& config) {
-  base_font_ = formatter_c_string_view_utils::ToString(config.baseFont,
-                                                       "style.baseFont");
-  title_font_ = formatter_c_string_view_utils::ToString(config.titleFont,
-                                                        "style.titleFont");
-  category_title_font_ = formatter_c_string_view_utils::ToString(
-      config.categoryTitleFont, "style.categoryTitleFont");
-  base_font_size_ = config.baseFontSize;
-  report_title_font_size_ = config.reportTitleFontSize;
-  category_title_font_size_ = config.categoryTitleFontSize;
-  line_spacing_em_ = config.lineSpacingEm;
+TypstStyleConfig::TypstStyleConfig(const FontConfig& fonts,
+                                   const LayoutConfig& layout) {
+  base_font_ = fonts.base_font;
+  title_font_ = fonts.title_font;
+  category_title_font_ = fonts.category_title_font;
+  base_font_size_ = fonts.base_font_size;
+  report_title_font_size_ = fonts.report_title_font_size;
+  category_title_font_size_ = fonts.category_title_font_size;
+  line_spacing_em_ = layout.line_spacing_em;
 }
 
 auto TypstStyleConfig::GetBaseFont() const -> const std::string& {

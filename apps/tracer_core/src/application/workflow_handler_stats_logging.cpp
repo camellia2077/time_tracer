@@ -41,11 +41,11 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
     return;
   }
 
-  const bool has_skipped =
+  const bool kHasSkipped =
       (stats.skipped_days > 0U) || (stats.skipped_records > 0U);
-  const bool has_legacy_failed = !stats.failed_files.empty();
+  const bool kHasLegacyFailed = !stats.failed_files.empty();
 
-  if (!has_legacy_failed && !has_skipped) {
+  if (!kHasLegacyFailed && !kHasSkipped) {
     app_ports::LogInfo(std::string(colors::kGreen) + "[Success] Processed " +
                        std::to_string(stats.successful_files) + " items." +
                        colors::kReset.data());
@@ -55,7 +55,7 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
             << "[Partial] Days=" << stats.successful_days << "/"
             << stats.total_days << ", Records=" << stats.successful_records
             << "/" << stats.total_records;
-    if (has_legacy_failed) {
+    if (kHasLegacyFailed) {
       summary << ", LegacyFailedFiles=" << stats.failed_files.size();
     }
     summary << colors::kReset.data();
@@ -84,14 +84,14 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
     }
   }
 
-  const double total_time =
+  const double kTotalTime =
       stats.parsing_duration_s + stats.db_insertion_duration_s;
 
   std::ostringstream timing;
   timing << std::fixed << std::setprecision(3)
          << "Timing: Parse=" << stats.parsing_duration_s
          << "s, Insert=" << stats.db_insertion_duration_s
-         << "s, Total=" << total_time << "s";
+         << "s, Total=" << kTotalTime << "s";
   app_ports::LogInfo(timing.str());
 
   if (stats.replaced_month.has_value()) {
@@ -142,7 +142,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingMonth(
 
   ImportService service(*time_sheet_repository_);
   ImportStats stats = service.ImportFromMemory(
-      data_map, ReplaceMonthTarget{.year = year, .month = month});
+      data_map, ReplaceMonthTarget{.kYear = year, .kMonth = month});
 
   PrintImportStats(stats, "Memory Import (Replace Month)");
   workflow_handler_internal::ThrowIfImportTaskFailed(

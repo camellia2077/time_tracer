@@ -23,7 +23,13 @@ using nlohmann::json;
 using GetVersionFn = const char* (*)();
 using PingFn = int (*)();
 using GetCapabilitiesFn = const char* (*)();
+using GetBuildInfoFn = const char* (*)();
+using GetCommandContractFn = const char* (*)(const char*);
 using LastErrorFn = const char* (*)();
+using SetLogCallbackFn = void (*)(TtCoreLogCallback, void*);
+using SetDiagnosticsCallbackFn = void (*)(TtCoreDiagnosticsCallback, void*);
+using SetCryptoProgressCallbackFn = void (*)(TtCoreCryptoProgressCallback,
+                                             void*);
 using RuntimeCheckEnvironmentFn = const char* (*)(const char*, int);
 using RuntimeResolveCliContextFn = const char* (*)(const char*, const char*,
                                                    const char*, const char*);
@@ -42,12 +48,23 @@ using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeExportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeTreeFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeCryptoEncryptFn = const char* (*)(TtCoreRuntimeHandle*,
+                                               const char*);
+using RuntimeCryptoDecryptFn = const char* (*)(TtCoreRuntimeHandle*,
+                                               const char*);
+using RuntimeCryptoInspectFn = const char* (*)(TtCoreRuntimeHandle*,
+                                               const char*);
 
 struct CoreApiFns {
   GetVersionFn get_version = nullptr;
   PingFn ping = nullptr;
   GetCapabilitiesFn get_capabilities = nullptr;
+  GetBuildInfoFn get_build_info = nullptr;
+  GetCommandContractFn get_command_contract = nullptr;
   LastErrorFn last_error = nullptr;
+  SetLogCallbackFn set_log_callback = nullptr;
+  SetDiagnosticsCallbackFn set_diagnostics_callback = nullptr;
+  SetCryptoProgressCallbackFn set_crypto_progress_callback = nullptr;
   RuntimeCheckEnvironmentFn runtime_check_environment = nullptr;
   RuntimeResolveCliContextFn runtime_resolve_cli_context = nullptr;
   RuntimeCreateFn runtime_create = nullptr;
@@ -62,6 +79,9 @@ struct CoreApiFns {
   RuntimeReportBatchFn runtime_report_batch = nullptr;
   RuntimeExportFn runtime_export = nullptr;
   RuntimeTreeFn runtime_tree = nullptr;
+  RuntimeCryptoEncryptFn runtime_crypto_encrypt = nullptr;
+  RuntimeCryptoDecryptFn runtime_crypto_decrypt = nullptr;
+  RuntimeCryptoInspectFn runtime_crypto_inspect = nullptr;
 };
 
 #ifdef _WIN32

@@ -15,10 +15,9 @@
 namespace infrastructure::bootstrap::android_runtime_detail {
 
 auto BuildAndroidReportCatalog(
-    const std::filesystem::path& output_root,
+    const std::filesystem::path& /*output_root*/,
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog {
   ReportCatalog catalog;
-  catalog.plugin_dir_path = output_root / "plugins";
 
   catalog.loaded_reports.markdown.day =
       ReportConfigLoader::LoadDailyMdConfig(runtime_config_paths.markdown.day);

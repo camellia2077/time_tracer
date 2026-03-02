@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 struct StatisticItemConfig {
   std::string label;
@@ -19,9 +19,8 @@ DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API DayBaseConfig {
  public:
-  DayBaseConfig(const TtDayLabelsConfigV1& labels,
-                const TtFormatterStatisticItemNodeV1* statistics_items,
-                uint32_t statistics_item_count);
+  DayBaseConfig(const DailyReportLabels& labels,
+                const std::vector<ReportStatisticsItem>& statistics_items);
   virtual ~DayBaseConfig() = default;
 
   [[nodiscard]] auto GetTitlePrefix() const -> const std::string&;
@@ -43,11 +42,11 @@ class REPORTS_SHARED_API DayBaseConfig {
 
  protected:
   static auto BuildStatisticsItems(
-      const TtFormatterStatisticItemNodeV1* statistics_items,
-      uint32_t statistics_item_count) -> std::vector<StatisticItemConfig>;
+      const std::vector<ReportStatisticsItem>& statistics_items)
+      -> std::vector<StatisticItemConfig>;
 
  private:
-  void LoadBaseConfig(const TtDayLabelsConfigV1& labels);
+  void LoadBaseConfig(const DailyReportLabels& labels);
 
   std::string title_prefix_;
   std::string date_label_;

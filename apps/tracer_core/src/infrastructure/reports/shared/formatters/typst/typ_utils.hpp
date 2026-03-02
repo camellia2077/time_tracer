@@ -6,7 +6,6 @@
 
 #include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 namespace TypUtils {
 
@@ -47,11 +46,6 @@ namespace TypUtils {
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API auto FormatProjectTree(
     const reporting::ProjectTree& tree, long long total_duration, int avg_days,
-    const std::string& category_title_font, int category_title_font_size)
-    -> std::string;
-REPORTS_SHARED_API auto FormatProjectTree(
-    const TtProjectTreeNodeV1* nodes, uint32_t node_count,
-    long long total_duration, int avg_days,
     const std::string& category_title_font, int category_title_font_size)
     -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)

@@ -3,8 +3,6 @@
 #include <string>
 
 #include "infrastructure/reports/range/formatters/markdown/range_md_formatter.hpp"
-#include "infrastructure/reports/shared/formatters/markdown/markdown_formatter.hpp"
-#include "infrastructure/reports/shared/interfaces/range_report_view_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
@@ -28,40 +26,11 @@ auto BuildMarkdownItemLine(const std::string& label, const std::string& value)
 }
 }  // namespace
 
-RangeMdConfig::RangeMdConfig(const TtRangeMdConfigV1& config)
-    : RangeBaseConfig(config.labels) {}
+RangeMdConfig::RangeMdConfig(const RangeReportLabels& labels)
+    : RangeBaseConfig(labels) {}
 
 RangeMdFormatter::RangeMdFormatter(std::shared_ptr<RangeMdConfig> config)
     : BaseMdFormatter(std::move(config)) {}
-
-auto RangeMdFormatter::FormatReportFromView(
-    const TtRangeReportDataV1& data_view) const -> std::string {
-  auto summary_data =
-      range_report_view_utils::BuildRangeLikeSummaryData<RangeReportData>(
-          data_view);
-
-  if (std::string error_message = ValidateData(summary_data);
-      !error_message.empty()) {
-    return error_message + "\n";
-  }
-
-  std::string report_stream;
-  FormatHeaderContent(report_stream, summary_data);
-
-  if (IsEmptyData(summary_data)) {
-    report_stream += GetNoRecordsMsg();
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  report_stream += "\n## ";
-  report_stream += config_->GetProjectBreakdownLabel();
-  report_stream += "\n";
-  report_stream += MarkdownFormatter::FormatProjectTree(
-      data_view.projectTreeNodes, data_view.projectTreeNodeCount,
-      data_view.totalDuration, GetAvgDays(summary_data));
-  return report_stream;
-}
 
 auto RangeMdFormatter::ValidateData(const RangeReportData& data) const
     -> std::string {

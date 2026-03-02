@@ -5,13 +5,13 @@
 #include <map>
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class DayTypConfig : public DayBaseConfig {
  public:
-  explicit DayTypConfig(const TtDayTypConfigV1& config);
+  explicit DayTypConfig(const DailyTypConfig& config);
 
   [[nodiscard]] auto GetStatisticFontSize() const -> int;
   [[nodiscard]] auto GetStatisticTitleFontSize() const -> int;

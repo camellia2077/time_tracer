@@ -4,14 +4,14 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API TexStyleConfig {
  public:
-  explicit TexStyleConfig(const TtTexStyleConfigV1& config);
+  TexStyleConfig(const FontConfig& fonts, const LayoutConfig& layout);
 
   [[nodiscard]] auto GetMainFont() const -> const std::string&;
   [[nodiscard]] auto GetCjkMainFont() const -> const std::string&;

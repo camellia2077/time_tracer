@@ -4,13 +4,14 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/range/common/range_base_config.hpp"
 #include "infrastructure/reports/shared/config/tex_style_config.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class RangeTexConfig : public RangeBaseConfig {
  public:
-  explicit RangeTexConfig(const TtRangeTexConfigV1& config);
+  RangeTexConfig(const RangeReportLabels& labels, const FontConfig& fonts,
+                 const LayoutConfig& layout);
   [[nodiscard]] auto GetMainFont() const -> const std::string& {
     return style_.GetMainFont();
   }

@@ -1,37 +1,23 @@
 // infrastructure/reports/monthly/common/month_base_config.cpp
 #include "infrastructure/reports/monthly/common/month_base_config.hpp"
 
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
-
-MonthBaseConfig::MonthBaseConfig(const TtMonthLabelsConfigV1& labels) {
+MonthBaseConfig::MonthBaseConfig(const MonthlyReportLabels& labels) {
   LoadBaseConfig(labels);
 }
 
-void MonthBaseConfig::LoadBaseConfig(const TtMonthLabelsConfigV1& labels) {
-  report_title_ = formatter_c_string_view_utils::ToString(labels.reportTitle,
-                                                          "labels.reportTitle");
-  title_template_ = formatter_c_string_view_utils::ToString(
-      labels.titleTemplate, "labels.titleTemplate");
-  actual_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.actualDaysLabel, "labels.actualDaysLabel");
-  status_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.statusDaysLabel, "labels.statusDaysLabel");
-  sleep_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.sleepDaysLabel, "labels.sleepDaysLabel");
-  exercise_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.exerciseDaysLabel, "labels.exerciseDaysLabel");
-  cardio_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.cardioDaysLabel, "labels.cardioDaysLabel");
-  anaerobic_days_label_ = formatter_c_string_view_utils::ToString(
-      labels.anaerobicDaysLabel, "labels.anaerobicDaysLabel");
-  total_time_label_ = formatter_c_string_view_utils::ToString(
-      labels.totalTimeLabel, "labels.totalTimeLabel");
-  no_records_message_ = formatter_c_string_view_utils::ToString(
-      labels.noRecordsMessage, "labels.noRecordsMessage");
-  invalid_format_message_ = formatter_c_string_view_utils::ToString(
-      labels.invalidFormatMessage, "labels.invalidFormatMessage");
-  project_breakdown_label_ = formatter_c_string_view_utils::ToString(
-      labels.projectBreakdownLabel, "labels.projectBreakdownLabel");
+void MonthBaseConfig::LoadBaseConfig(const MonthlyReportLabels& labels) {
+  report_title_ = labels.report_title;
+  title_template_ = labels.title_template;
+  actual_days_label_ = labels.actual_days_label;
+  status_days_label_ = labels.status_days_label;
+  sleep_days_label_ = labels.sleep_days_label;
+  exercise_days_label_ = labels.exercise_days_label;
+  cardio_days_label_ = labels.cardio_days_label;
+  anaerobic_days_label_ = labels.anaerobic_days_label;
+  total_time_label_ = labels.total_time_label;
+  no_records_message_ = labels.no_records_message;
+  invalid_format_message_ = labels.invalid_format_message;
+  project_breakdown_label_ = labels.project_breakdown_label;
 }
 
 auto MonthBaseConfig::GetReportTitle() const -> const std::string& {

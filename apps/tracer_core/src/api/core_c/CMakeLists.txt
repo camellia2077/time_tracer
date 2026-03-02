@@ -3,6 +3,7 @@ set(TRACER_CORE_C_API_SOURCES
     "tracer_core_c_api_internal.cpp"
     "tracer_core_c_api_workflow.cpp"
     "tracer_core_c_api_reporting.cpp"
+    "tracer_core_c_api_crypto.cpp"
     "../android/android_runtime_factory.cpp"
     "../android/android_runtime_factory_resolver.cpp"
     "../android/android_runtime_factory_catalog.cpp"

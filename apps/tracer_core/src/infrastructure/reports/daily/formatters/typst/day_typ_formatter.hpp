@@ -5,13 +5,10 @@
 #include "domain/reports/models/daily_report_data.hpp"
 #include "infrastructure/reports/daily/formatters/typst/day_typ_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_typ_formatter.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class DayTypFormatter : public BaseTypFormatter<DailyReportData, DayTypConfig> {
  public:
   explicit DayTypFormatter(std::shared_ptr<DayTypConfig> config);
-  [[nodiscard]] auto FormatReportFromView(
-      const TtDailyReportDataV1& data_view) const -> std::string;
 
  protected:
   // --- 实现基类钩子 ---

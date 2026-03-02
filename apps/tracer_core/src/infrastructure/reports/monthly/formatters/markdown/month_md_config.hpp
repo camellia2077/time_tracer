@@ -4,12 +4,12 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/monthly/common/month_base_config.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class MonthMdConfig : public MonthBaseConfig {
  public:
-  explicit MonthMdConfig(const TtMonthMdConfigV1& config);
+  explicit MonthMdConfig(const MonthlyMdConfig& config);
 
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 

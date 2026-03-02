@@ -11,7 +11,7 @@ if(WIN32)
         list(APPEND REQUIRED_DLLS "libtomlplusplus-3.dll")
     endif()
 
-    if(MINGW AND NOT TT_STATIC_MINGW_RUNTIME)
+    if(MINGW AND (NOT TT_STATIC_MINGW_RUNTIME OR NOT TT_STATIC_MINGW_RUNTIME_PLUGINS))
         list(APPEND REQUIRED_DLLS
             "libgcc_s_seh-1.dll"
             "libstdc++-6.dll"

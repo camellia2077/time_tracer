@@ -12,17 +12,26 @@ namespace {
 
 auto TestDateRangeResolver(int& failures) -> void {
   using tracer_core::infrastructure::query::data::orchestrators::
+      ExplicitDateRangeErrors;
+  using tracer_core::infrastructure::query::data::orchestrators::
       ResolveExplicitDateRange;
   using tracer_core::infrastructure::query::data::orchestrators::
       ResolveRollingDateRange;
 
+  const ExplicitDateRangeErrors kRangeErrors{
+      .missing_boundary_error =
+          "report-chart requires both --from-date and --to-date.",
+      .validation =
+          {
+              .invalid_range_error =
+                  "report-chart invalid range: from_date must be <= to_date.",
+              .invalid_date_error =
+                  "report-chart resolved invalid date range.",
+          },
+  };
+
   const auto kExplicitRange = ResolveExplicitDateRange(
-      "20260201", "20260203",
-      "report-chart requires both --from-date and "
-      "--to-date.",
-      "report-chart invalid range: from_date must be <= "
-      "to_date.",
-      "report-chart resolved invalid date range.");
+      "20260201", "20260203", kRangeErrors);
   Expect(kExplicitRange.has_value(),
          "explicit date range should be produced when both boundaries exist.",
          failures);
@@ -35,11 +44,8 @@ auto TestDateRangeResolver(int& failures) -> void {
 
   bool threw_missing_boundary = false;
   try {
-    static_cast<void>(ResolveExplicitDateRange(
-        "20260201", std::nullopt,
-        "report-chart requires both --from-date and --to-date.",
-        "report-chart invalid range: from_date must be <= to_date.",
-        "report-chart resolved invalid date range."));
+    static_cast<void>(
+        ResolveExplicitDateRange("20260201", std::nullopt, kRangeErrors));
   } catch (const std::exception& ex) {
     threw_missing_boundary =
         Contains(ex.what(), "requires both --from-date and --to-date");

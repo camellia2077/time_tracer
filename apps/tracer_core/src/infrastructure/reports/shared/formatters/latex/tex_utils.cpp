@@ -234,17 +234,6 @@ auto FormatProjectTree(
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
   return formatter.FormatProjectTree(tree, total_duration, avg_days);
 }
-
-auto FormatProjectTree(const TtProjectTreeNodeV1* nodes, uint32_t node_count,
-                       long long total_duration, int avg_days,
-                       int category_title_font_size, double list_top_sep_pt,
-                       double list_item_sep_ex) -> std::string {
-  auto strategy = std::make_unique<LatexFormattingStrategy>(
-      category_title_font_size, list_top_sep_pt, list_item_sep_ex);
-  reporting::ProjectTreeFormatter formatter(std::move(strategy));
-  return formatter.FormatProjectTree(nodes, node_count, total_duration,
-                                     avg_days);
-}
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
 }  // namespace TexUtils

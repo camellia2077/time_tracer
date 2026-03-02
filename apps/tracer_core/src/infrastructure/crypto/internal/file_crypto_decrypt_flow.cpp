@@ -16,6 +16,7 @@
 
 namespace tracer_core::infrastructure::crypto::internal {
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-easily-swappable-parameters)
 auto DecryptFileInternal(const fs::path& input_tracer_path,
                          const fs::path& output_txt_path,
                          std::string_view passphrase,
@@ -23,10 +24,10 @@ auto DecryptFileInternal(const fs::path& input_tracer_path,
                          BatchCryptoSession* batch_session)
     -> FileCryptoResult {
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kReadInput, true);
-        !phase_result.ok()) {
-      return phase_result;
+        !kPhaseResult.ok()) {
+      return kPhaseResult;
     }
   }
 
@@ -37,22 +38,22 @@ auto DecryptFileInternal(const fs::path& input_tracer_path,
   }
 
   TracerFileHeader header{};
-  if (const auto parse_result = ParseHeader(encrypted_bytes, header);
-      !parse_result.ok()) {
-    return parse_result;
+  if (const auto kParseResult = ParseHeader(encrypted_bytes, header);
+      !kParseResult.ok()) {
+    return kParseResult;
   }
 
 #if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM && defined(TT_HAS_ZSTD) && \
     TT_HAS_ZSTD
-  if (const auto init_result = InitializeCryptoBackend(); !init_result.ok()) {
-    return init_result;
+  if (const auto kInitResult = InitializeCryptoBackend(); !kInitResult.ok()) {
+    return kInitResult;
   }
 
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kDeriveKey, true);
-        !phase_result.ok()) {
-      return phase_result;
+        !kPhaseResult.ok()) {
+      return kPhaseResult;
     }
   }
 
@@ -71,8 +72,13 @@ auto DecryptFileInternal(const fs::path& input_tracer_path,
     }
     key = std::move(subkey);
   } else {
-    auto [derive_result, derived_key] = DeriveMasterKeyWithArgon2id(
-        passphrase, header.ops_limit, header.mem_limit_kib, header.salt);
+    auto [derive_result, derived_key] =
+        DeriveMasterKeyWithArgon2id(passphrase,
+                                    Argon2idLimits{
+                                        .ops_limit = header.ops_limit,
+                                        .mem_limit_kib = header.mem_limit_kib,
+                                    },
+                                    header.salt);
     if (!derive_result.ok()) {
       return derive_result;
     }
@@ -114,7 +120,7 @@ auto DecryptFileInternal(const fs::path& input_tracer_path,
   decrypted_payload.resize(static_cast<std::size_t>(decrypted_size));
 
   std::vector<std::uint8_t> plaintext;
-  if (header.version == kFormatVersionV1 ||
+  if (header.kVersion == kFormatVersionV1 ||
       header.compression_id == kCompressionNone) {
     plaintext = std::move(decrypted_payload);
   } else if (header.compression_id == kCompressionZstd) {

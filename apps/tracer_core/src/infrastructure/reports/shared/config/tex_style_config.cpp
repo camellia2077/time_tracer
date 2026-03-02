@@ -1,19 +1,16 @@
 // infrastructure/reports/shared/config/tex_style_config.cpp
 #include "infrastructure/reports/shared/config/tex_style_config.hpp"
 
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
-
-TexStyleConfig::TexStyleConfig(const TtTexStyleConfigV1& config) {
-  main_font_ = formatter_c_string_view_utils::ToString(config.mainFont,
-                                                       "style.mainFont");
-  cjk_main_font_ = formatter_c_string_view_utils::ToString(config.cjkMainFont,
-                                                           "style.cjkMainFont");
-  base_font_size_ = config.baseFontSize;
-  report_title_font_size_ = config.reportTitleFontSize;
-  category_title_font_size_ = config.categoryTitleFontSize;
-  margin_in_ = config.marginIn;
-  list_top_sep_pt_ = config.listTopSepPt;
-  list_item_sep_ex_ = config.listItemSepEx;
+TexStyleConfig::TexStyleConfig(const FontConfig& fonts,
+                               const LayoutConfig& layout) {
+  main_font_ = fonts.main_font;
+  cjk_main_font_ = fonts.cjk_main_font;
+  base_font_size_ = fonts.base_font_size;
+  report_title_font_size_ = fonts.report_title_font_size;
+  category_title_font_size_ = fonts.category_title_font_size;
+  margin_in_ = layout.margin_in;
+  list_top_sep_pt_ = layout.list_top_sep_pt;
+  list_item_sep_ex_ = layout.list_item_sep_ex;
 }
 
 auto TexStyleConfig::GetMainFont() const -> const std::string& {

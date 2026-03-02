@@ -2,11 +2,9 @@
 #include <memory>
 #include <string>
 
-#include "infrastructure/reports/daily/formatters/common/day_report_view_utils.hpp"
 #include "infrastructure/reports/daily/formatters/markdown/day_md_formatter.hpp"
 #include "infrastructure/reports/daily/formatters/statistics/markdown_stat_strategy.hpp"
 #include "infrastructure/reports/daily/formatters/statistics/stat_formatter.hpp"
-#include "infrastructure/reports/shared/formatters/markdown/markdown_formatter.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
@@ -46,36 +44,11 @@ auto BuildActivityLine(const TimeRecord& record,
 }
 }  // namespace
 
-DayMdConfig::DayMdConfig(const TtDayMdConfigV1& config)
-    : DayBaseConfig(config.labels, config.statisticsItems,
-                    config.statisticsItemCount) {}
+DayMdConfig::DayMdConfig(const DailyMdConfig& config)
+    : DayBaseConfig(config.labels, config.statistics_items) {}
 
 DayMdFormatter::DayMdFormatter(std::shared_ptr<DayMdConfig> config)
     : BaseMdFormatter(std::move(config)) {}
-
-auto DayMdFormatter::FormatReportFromView(
-    const TtDailyReportDataV1& data_view) const -> std::string {
-  DailyReportData data =
-      day_report_view_utils::BuildDailyContentData(data_view);
-
-  std::string report_stream;
-  FormatHeaderContent(report_stream, data);
-
-  if (IsEmptyData(data)) {
-    report_stream += GetNoRecordsMsg();
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  FormatExtraContent(report_stream, data);
-  report_stream += "\n## ";
-  report_stream += config_->GetProjectBreakdownLabel();
-  report_stream += "\n";
-  report_stream += MarkdownFormatter::FormatProjectTree(
-      data_view.projectTreeNodes, data_view.projectTreeNodeCount,
-      data_view.totalDuration, GetAvgDays(data));
-  return report_stream;
-}
 
 auto DayMdFormatter::IsEmptyData(const DailyReportData& data) const -> bool {
   return data.total_duration == 0;

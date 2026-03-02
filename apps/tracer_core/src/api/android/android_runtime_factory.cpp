@@ -5,9 +5,7 @@
 #include <ctime>
 #include <filesystem>
 #include <iomanip>
-#include <iostream>
 #include <memory>
-#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -81,68 +79,6 @@ auto BuildRunScopedErrorLogPath(const fs::path& logs_root) -> fs::path {
   return logs_root / ("errors-" + BuildIsoUtcTimestampForFilename() + ".log");
 }
 
-class SimpleStreamLogger final
-    : public tracer_core::application::ports::ILogger {
- public:
-  auto Log(tracer_core::application::ports::LogSeverity severity,
-           std::string_view message) -> void override {
-    std::scoped_lock lock(output_mutex_);
-    std::ostream& output =
-        severity == tracer_core::application::ports::LogSeverity::kError
-            ? std::cerr
-            : std::cout;
-    output << "[" << ToLabel(severity) << "] " << message << '\n';
-  }
-
- private:
-  [[nodiscard]] static auto ToLabel(
-      tracer_core::application::ports::LogSeverity severity)
-      -> std::string_view {
-    switch (severity) {
-      case tracer_core::application::ports::LogSeverity::kInfo:
-        return "INFO";
-      case tracer_core::application::ports::LogSeverity::kWarn:
-        return "WARN";
-      case tracer_core::application::ports::LogSeverity::kError:
-        return "ERROR";
-    }
-    return "INFO";
-  }
-
-  std::mutex output_mutex_;
-};
-
-class SimpleDiagnosticsSink final
-    : public tracer_core::domain::ports::IDiagnosticsSink {
- public:
-  auto Emit(tracer_core::domain::ports::DiagnosticSeverity severity,
-            std::string_view message) -> void override {
-    std::scoped_lock lock(output_mutex_);
-    std::ostream& output =
-        severity == tracer_core::domain::ports::DiagnosticSeverity::kError
-            ? std::cerr
-            : std::cout;
-    output << "[" << ToLabel(severity) << "] " << message << '\n';
-  }
-
- private:
-  [[nodiscard]] static auto ToLabel(
-      tracer_core::domain::ports::DiagnosticSeverity severity)
-      -> std::string_view {
-    switch (severity) {
-      case tracer_core::domain::ports::DiagnosticSeverity::kInfo:
-        return "INFO";
-      case tracer_core::domain::ports::DiagnosticSeverity::kWarn:
-        return "WARN";
-      case tracer_core::domain::ports::DiagnosticSeverity::kError:
-        return "ERROR";
-    }
-    return "INFO";
-  }
-
-  std::mutex output_mutex_;
-};
-
 struct AndroidRuntimeState {
   std::shared_ptr<DBManager> db_manager;
   std::shared_ptr<IWorkflowHandler> workflow_handler;
@@ -172,12 +108,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   FileIoService::PrepareOutputDirectories(kOutputRoot);
   android_runtime_detail::EnsureDatabaseBootstrapped(kDbPath);
 
-  tracer_core::application::ports::SetLogger(
-      request.logger ? request.logger : std::make_shared<SimpleStreamLogger>());
-
-  tracer_core::domain::ports::SetDiagnosticsSink(
-      request.diagnostics_sink ? request.diagnostics_sink
-                               : std::make_shared<SimpleDiagnosticsSink>());
+  tracer_core::application::ports::SetLogger(request.logger);
+  tracer_core::domain::ports::SetDiagnosticsSink(request.diagnostics_sink);
   tracer_core::domain::ports::SetErrorReportWriter(
       request.error_report_writer
           ? request.error_report_writer

@@ -22,6 +22,13 @@ auto EncodeCapabilitiesResponse(const CapabilitiesResponsePayload& response)
        }},
       {"features",
        {
+           {"build_info_json", response.features.build_info_json},
+           {"command_contract_json", response.features.command_contract_json},
+           {"runtime_log_callback", response.features.runtime_log_callback},
+           {"runtime_diagnostics_callback",
+            response.features.runtime_diagnostics_callback},
+           {"runtime_crypto_progress_callback",
+            response.features.runtime_crypto_progress_callback},
            {"runtime_ingest_json", response.features.runtime_ingest_json},
            {"runtime_convert_json", response.features.runtime_convert_json},
            {"runtime_import_json", response.features.runtime_import_json},

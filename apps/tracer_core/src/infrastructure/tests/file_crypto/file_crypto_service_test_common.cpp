@@ -9,6 +9,10 @@
 
 namespace android_runtime_tests::file_crypto_tests_internal {
 
+constexpr std::size_t kU64ByteCount = 8U;
+constexpr std::size_t kByteBitWidth = 8U;
+constexpr std::uint8_t kByteMask = 0xFFU;
+
 auto Expect(bool condition, const std::string& message, int& failures) -> void {
   if (condition) {
     return;
@@ -87,8 +91,9 @@ auto ResolveRepoRootForInterop() -> std::filesystem::path {
 
 void WriteU64LE(std::vector<std::uint8_t>& bytes, std::size_t offset,
                 std::uint64_t value) {
-  for (std::size_t i = 0; i < 8; ++i) {
-    bytes[offset + i] = static_cast<std::uint8_t>((value >> (i * 8U)) & 0xFFU);
+  for (std::size_t i = 0; i < kU64ByteCount; ++i) {
+    bytes[offset + i] = static_cast<std::uint8_t>(
+        (value >> (i * kByteBitWidth)) & kByteMask);
   }
 }
 
@@ -109,11 +114,11 @@ auto UpdateBatchProgressExpectationState(
     state.overall_monotonic = false;
   }
 
-  const std::uint64_t expected_remaining =
+  const std::uint64_t kExpectedRemaining =
       snapshot.overall_done_bytes < snapshot.overall_total_bytes
           ? snapshot.overall_total_bytes - snapshot.overall_done_bytes
           : 0;
-  if (snapshot.remaining_bytes != expected_remaining) {
+  if (snapshot.remaining_bytes != kExpectedRemaining) {
     state.remaining_bytes_consistent = false;
   }
 
@@ -122,12 +127,12 @@ auto UpdateBatchProgressExpectationState(
       state.eta_consistent = false;
     }
   } else {
-    const std::uint64_t expected_eta =
+    const std::uint64_t kExpectedEta =
         snapshot.remaining_bytes == 0
             ? 0
             : (snapshot.remaining_bytes + snapshot.speed_bytes_per_sec - 1) /
                   snapshot.speed_bytes_per_sec;
-    if (snapshot.eta_seconds != expected_eta) {
+    if (snapshot.eta_seconds != kExpectedEta) {
       state.eta_consistent = false;
     }
   }

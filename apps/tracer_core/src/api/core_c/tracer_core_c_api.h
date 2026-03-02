@@ -30,6 +30,27 @@ typedef enum TtCoreStatus {
   TT_CORE_STATUS_ERROR = 1,
 } TtCoreStatus;
 
+typedef enum TtCoreLogSeverity {
+  TT_CORE_LOG_INFO = 0,
+  TT_CORE_LOG_WARN = 1,
+  TT_CORE_LOG_ERROR = 2,
+} TtCoreLogSeverity;
+
+typedef enum TtCoreDiagnosticSeverity {
+  TT_CORE_DIAGNOSTIC_INFO = 0,
+  TT_CORE_DIAGNOSTIC_WARN = 1,
+  TT_CORE_DIAGNOSTIC_ERROR = 2,
+} TtCoreDiagnosticSeverity;
+
+typedef void (*TtCoreLogCallback)(TtCoreLogSeverity severity,
+                                  const char* utf8_message,
+                                  void* user_data);
+typedef void (*TtCoreDiagnosticsCallback)(TtCoreDiagnosticSeverity severity,
+                                          const char* utf8_message,
+                                          void* user_data);
+typedef void (*TtCoreCryptoProgressCallback)(const char* utf8_progress_json,
+                                             void* user_data);
+
 typedef struct TtCoreRuntimeHandle TtCoreRuntimeHandle;
 
 // Returns a static null-terminated UTF-8 version string.
@@ -41,11 +62,23 @@ TT_CORE_API int tracer_core_ping(void);
 // Returns compile-time/runtime capability map as UTF-8 JSON.
 TT_CORE_API const char* tracer_core_get_capabilities_json(void);
 
+// Returns build metadata payload as UTF-8 JSON.
+TT_CORE_API const char* tracer_core_get_build_info_json(void);
+
+// Returns command-level contract payload as UTF-8 JSON.
+// `request_json` may be empty/null or include filter:
+// { "command": "query" }
+TT_CORE_API const char* tracer_core_get_command_contract_json(
+    const char* request_json);
+
 // Validates host runtime environment for CLI bootstrap.
 // Returns UTF-8 JSON object:
 // {
 //   "ok": bool,
 //   "error_message": string,
+//   "error_code": string,
+//   "error_category": string,
+//   "hints": [string, ...],
 //   "messages": [string, ...]
 // }
 TT_CORE_API const char* tracer_core_runtime_check_environment_json(
@@ -63,6 +96,21 @@ TT_CORE_API const char* tracer_core_runtime_resolve_cli_context_json(
 // Returns the last thread-local error message. Empty string means no error.
 TT_CORE_API const char* tracer_core_last_error(void);
 
+// Registers host log callback for runtime logger events.
+// Passing nullptr clears current callback.
+TT_CORE_API void tracer_core_set_log_callback(TtCoreLogCallback callback,
+                                              void* user_data);
+
+// Registers host diagnostics callback for runtime diagnostics events.
+// Passing nullptr clears current callback.
+TT_CORE_API void tracer_core_set_diagnostics_callback(
+    TtCoreDiagnosticsCallback callback, void* user_data);
+
+// Registers host callback for file crypto progress events.
+// Passing nullptr clears current callback.
+TT_CORE_API void tracer_core_set_crypto_progress_callback(
+    TtCoreCryptoProgressCallback callback, void* user_data);
+
 // Creates a reusable core runtime handle.
 // - `db_path` can be empty/null to use default under `output_root`.
 // - `output_root` must be a valid writable directory path.
@@ -78,6 +126,9 @@ TT_CORE_API void tracer_core_runtime_destroy(TtCoreRuntimeHandle* handle);
 // Runs ingest/query/report with JSON request payload and returns JSON response.
 // Returned pointer is thread-local and remains valid until the next API call
 // on the same thread.
+// Standard response envelope fields:
+// - ok / error_message / error_code / error_category / hints
+// - content (for text responses)
 TT_CORE_API const char* tracer_core_runtime_ingest_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_convert_json(
@@ -97,6 +148,20 @@ TT_CORE_API const char* tracer_core_runtime_report_batch_json(
 TT_CORE_API const char* tracer_core_runtime_export_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_tree_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+
+// Runs file-crypto operations with JSON request payload and returns JSON
+// text-response payload:
+// {
+//   "ok": bool,
+//   "error_message": string,
+//   "content": string
+// }
+TT_CORE_API const char* tracer_core_runtime_crypto_encrypt_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_crypto_decrypt_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_crypto_inspect_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 
 #ifdef __cplusplus

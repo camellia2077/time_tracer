@@ -2,23 +2,17 @@
 #include <memory>
 #include <string>
 
-#include "infrastructure/reports/daily/formatters/common/day_report_view_utils.hpp"
 #include "infrastructure/reports/daily/formatters/statistics/stat_formatter.hpp"
 #include "infrastructure/reports/daily/formatters/statistics/typst_strategy.hpp"
 #include "infrastructure/reports/daily/formatters/typst/day_typ_formatter.hpp"
 #include "infrastructure/reports/daily/formatters/typst/day_typ_utils.hpp"
-#include "infrastructure/reports/shared/formatters/typst/typ_utils.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
 
-DayTypConfig::DayTypConfig(const TtDayTypConfigV1& config)
-    : DayBaseConfig(config.labels, config.statisticsItems,
-                    config.statisticsItemCount),
-      style_(config.style),
-      statistic_font_size_(config.statisticFontSize),
-      statistic_title_font_size_(config.statisticTitleFontSize),
-      keyword_colors_(formatter_c_string_view_utils::BuildKeywordColorsMap(
-          config.keywordColors, config.keywordColorCount,
-          "day.keywordColors")) {}
+DayTypConfig::DayTypConfig(const DailyTypConfig& config)
+    : DayBaseConfig(config.labels, config.statistics_items),
+      style_(config.fonts, config.layout),
+      statistic_font_size_(config.statistic_font_size),
+      statistic_title_font_size_(config.statistic_title_font_size),
+      keyword_colors_(config.keyword_colors) {}
 
 auto DayTypConfig::GetStatisticFontSize() const -> int {
   return statistic_font_size_;
@@ -35,34 +29,6 @@ auto DayTypConfig::GetKeywordColors() const
 
 DayTypFormatter::DayTypFormatter(std::shared_ptr<DayTypConfig> config)
     : BaseTypFormatter(std::move(config)) {}
-
-auto DayTypFormatter::FormatReportFromView(
-    const TtDailyReportDataV1& data_view) const -> std::string {
-  DailyReportData data =
-      day_report_view_utils::BuildDailyContentData(data_view);
-
-  std::string report_stream;
-  FormatPageSetup(report_stream);
-  FormatTextSetup(report_stream);
-  FormatHeaderContent(report_stream, data);
-
-  if (IsEmptyData(data)) {
-    report_stream += GetNoRecordsMsg();
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  FormatExtraContent(report_stream, data);
-  report_stream += TypUtils::BuildTitleText(
-      config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize(),
-      config_->GetProjectBreakdownLabel());
-  report_stream += "\n\n";
-  report_stream += TypUtils::FormatProjectTree(
-      data_view.projectTreeNodes, data_view.projectTreeNodeCount,
-      data_view.totalDuration, GetAvgDays(data),
-      config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize());
-  return report_stream;
-}
 
 auto DayTypFormatter::IsEmptyData(const DailyReportData& data) const -> bool {
   return data.total_duration == 0;

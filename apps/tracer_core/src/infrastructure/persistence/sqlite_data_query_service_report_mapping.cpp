@@ -82,12 +82,20 @@ auto BuildReportChartContent(
   const int kPayloadLookbackDays = ResolvePositiveLookbackDays(
       request.lookback_days, kDefaultReportChartLookbackDays,
       "--lookback-days");
+  const infra_data_query_orchestrators::ExplicitDateRangeErrors kRangeErrors{
+      .missing_boundary_error =
+          "report-chart requires both --from-date and --to-date.",
+      .validation =
+          {
+              .invalid_range_error =
+                  "report-chart invalid range: from_date must be <= to_date.",
+              .invalid_date_error =
+                  "report-chart resolved invalid date range.",
+          },
+  };
   const auto kExplicitRange =
       infra_data_query_orchestrators::ResolveExplicitDateRange(
-          request.from_date, request.to_date,
-          "report-chart requires both --from-date and --to-date.",
-          "report-chart invalid range: from_date must be <= to_date.",
-          "report-chart resolved invalid date range.");
+          request.from_date, request.to_date, kRangeErrors);
 
   json payload = json::object();
   payload["roots"] = kRoots;
@@ -119,9 +127,11 @@ auto BuildReportChartContent(
     payload["to_date"] = range.end_date;
   }
   infra_data_query_orchestrators::ValidateDateRange(
-      range.start_date, range.end_date,
-      "report-chart invalid range: from_date must be <= to_date.",
-      "report-chart resolved invalid date range.");
+      infra_data_query_orchestrators::DateRangeBoundaries{
+          .start_date = range.start_date,
+          .end_date = range.end_date,
+      },
+      kRangeErrors.validation);
 
   const std::vector<infra_data_query::DayDurationRow> kSparseRows =
       infra_data_query::QueryDayDurationsByRootInDateRange(

@@ -4,13 +4,13 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/monthly/common/month_base_config.hpp"
 #include "infrastructure/reports/shared/config/typst_style_config.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class MonthTypConfig : public MonthBaseConfig {
  public:
-  explicit MonthTypConfig(const TtMonthTypConfigV1& config);
+  explicit MonthTypConfig(const MonthlyTypConfig& config);
 
   [[nodiscard]] auto GetBaseFont() const -> const std::string& {
     return style_.GetBaseFont();

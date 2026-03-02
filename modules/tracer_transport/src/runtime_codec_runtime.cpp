@@ -183,6 +183,9 @@ auto DecodeAckResponse(std::string_view response_json, std::string_view context)
   AckResponsePayload out{};
   out.ok = parsed.envelope.ok;
   out.error_message = parsed.envelope.error_message;
+  out.error_contract.error_code = parsed.envelope.error_code;
+  out.error_contract.error_category = parsed.envelope.error_category;
+  out.error_contract.hints = parsed.envelope.hints;
   if (!out.ok && out.error_message.empty()) {
     out.error_message = "Core operation failed.";
   }
@@ -200,6 +203,9 @@ auto DecodeTextResponse(std::string_view response_json, std::string_view context
   out.ok = parsed.envelope.ok;
   out.error_message = parsed.envelope.error_message;
   out.content = parsed.envelope.content;
+  out.error_contract.error_code = parsed.envelope.error_code;
+  out.error_contract.error_category = parsed.envelope.error_category;
+  out.error_contract.hints = parsed.envelope.hints;
   if (!out.ok && out.error_message.empty()) {
     out.error_message = "Core operation failed.";
   }
@@ -212,6 +218,8 @@ auto DecodeRuntimeCheckResponse(std::string_view response_json)
 
   const auto ok = TryReadBoolField(payload, "ok");
   const auto error_message = TryReadStringField(payload, "error_message");
+  const auto error_code = TryReadStringField(payload, "error_code");
+  const auto error_category = TryReadStringField(payload, "error_category");
 
   if (ok.HasError()) {
     throw std::invalid_argument(ok.error.message);
@@ -222,10 +230,18 @@ auto DecodeRuntimeCheckResponse(std::string_view response_json)
   if (error_message.HasError()) {
     throw std::invalid_argument(error_message.error.message);
   }
+  if (error_code.HasError()) {
+    throw std::invalid_argument(error_code.error.message);
+  }
+  if (error_category.HasError()) {
+    throw std::invalid_argument(error_category.error.message);
+  }
 
   RuntimeCheckResponsePayload out{};
   out.ok = *ok.value;
   out.error_message = error_message.value.value_or("");
+  out.error_contract.error_code = error_code.value.value_or("");
+  out.error_contract.error_category = error_category.value.value_or("");
 
   if (const auto messages_it = payload.find("messages");
       messages_it != payload.end() && !messages_it->is_null()) {
@@ -241,6 +257,20 @@ auto DecodeRuntimeCheckResponse(std::string_view response_json)
     }
   }
 
+  if (const auto hints_it = payload.find("hints");
+      hints_it != payload.end() && !hints_it->is_null()) {
+    if (!hints_it->is_array()) {
+      throw std::invalid_argument("field `hints` must be a string array.");
+    }
+    out.error_contract.hints.reserve(hints_it->size());
+    for (const auto& item : *hints_it) {
+      if (!item.is_string()) {
+        throw std::invalid_argument("field `hints` must be a string array.");
+      }
+      out.error_contract.hints.push_back(item.get<std::string>());
+    }
+  }
+
   return out;
 }
 
@@ -250,6 +280,8 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
 
   const auto ok = TryReadBoolField(payload, "ok");
   const auto error_message = TryReadStringField(payload, "error_message");
+  const auto error_code = TryReadStringField(payload, "error_code");
+  const auto error_category = TryReadStringField(payload, "error_category");
 
   if (ok.HasError()) {
     throw std::invalid_argument(ok.error.message);
@@ -260,11 +292,28 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
   if (error_message.HasError()) {
     throw std::invalid_argument(error_message.error.message);
   }
+  if (error_code.HasError()) {
+    throw std::invalid_argument(error_code.error.message);
+  }
+  if (error_category.HasError()) {
+    throw std::invalid_argument(error_category.error.message);
+  }
 
   ResolveCliContextResponsePayload out{};
   out.ok = *ok.value;
   out.error_message = error_message.value.value_or("");
+  out.error_contract.error_code = error_code.value.value_or("");
+  out.error_contract.error_category = error_category.value.value_or("");
   if (!out.ok) {
+    if (const auto hints_it = payload.find("hints");
+        hints_it != payload.end() && hints_it->is_array()) {
+      out.error_contract.hints.reserve(hints_it->size());
+      for (const auto& item : *hints_it) {
+        if (item.is_string()) {
+          out.error_contract.hints.push_back(item.get<std::string>());
+        }
+      }
+    }
     return out;
   }
 

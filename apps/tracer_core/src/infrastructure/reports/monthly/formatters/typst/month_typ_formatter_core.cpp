@@ -3,8 +3,6 @@
 #include <string>
 
 #include "infrastructure/reports/monthly/formatters/typst/month_typ_formatter.hpp"
-#include "infrastructure/reports/shared/formatters/typst/typ_utils.hpp"
-#include "infrastructure/reports/shared/interfaces/range_report_view_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
@@ -29,13 +27,13 @@ auto FormatRatio(int count, int total_days) -> std::string {
 
 }  // namespace
 
-MonthTypConfig::MonthTypConfig(const TtMonthTypConfigV1& config)
+MonthTypConfig::MonthTypConfig(const MonthlyTypConfig& config)
     : MonthBaseConfig(config.labels),
-      style_(config.style),
-      margin_top_cm_(config.style.marginTopCm),
-      margin_bottom_cm_(config.style.marginBottomCm),
-      margin_left_cm_(config.style.marginLeftCm),
-      margin_right_cm_(config.style.marginRightCm) {}
+      style_(config.fonts, config.layout),
+      margin_top_cm_(config.layout.margin_top_cm),
+      margin_bottom_cm_(config.layout.margin_bottom_cm),
+      margin_left_cm_(config.layout.margin_left_cm),
+      margin_right_cm_(config.layout.margin_right_cm) {}
 
 auto MonthTypConfig::GetMarginTopCm() const -> double {
   return margin_top_cm_;
@@ -55,42 +53,6 @@ auto MonthTypConfig::GetMarginRightCm() const -> double {
 
 MonthTypFormatter::MonthTypFormatter(std::shared_ptr<MonthTypConfig> config)
     : BaseTypFormatter(std::move(config)) {}
-
-auto MonthTypFormatter::FormatReportFromView(
-    const TtRangeReportDataV1& data_view) const -> std::string {
-  auto summary_data =
-      range_report_view_utils::BuildRangeLikeSummaryData<MonthlyReportData>(
-          data_view);
-
-  std::string report_stream;
-  FormatPageSetup(report_stream);
-  FormatTextSetup(report_stream);
-
-  if (std::string error_message = ValidateData(summary_data);
-      !error_message.empty()) {
-    report_stream += error_message;
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  FormatHeaderContent(report_stream, summary_data);
-
-  if (IsEmptyData(summary_data)) {
-    report_stream += GetNoRecordsMsg();
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  report_stream += TypUtils::BuildTitleText(
-      config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize(),
-      config_->GetProjectBreakdownLabel());
-  report_stream += "\n\n";
-  report_stream += TypUtils::FormatProjectTree(
-      data_view.projectTreeNodes, data_view.projectTreeNodeCount,
-      data_view.totalDuration, GetAvgDays(summary_data),
-      config_->GetCategoryTitleFont(), config_->GetCategoryTitleFontSize());
-  return report_stream;
-}
 
 auto MonthTypFormatter::ValidateData(const MonthlyReportData& data) const
     -> std::string {

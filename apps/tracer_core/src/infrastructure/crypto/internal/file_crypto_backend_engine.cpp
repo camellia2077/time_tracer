@@ -28,7 +28,7 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
   }
 
   const PwhashLimitPair kLimits = ResolvePwhashLimits(security_level);
-  if (kLimits.ops_limit == 0 || kLimits.mem_limit_bytes == 0) {
+  if (kLimits.ops_limit == 0 || kLimits.kMemLimitBytes == 0) {
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
                       "Invalid KDF limits for batch session."),
             {}};
@@ -40,7 +40,7 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
             {}};
   }
 
-  const auto kMemLimitKib = kLimits.mem_limit_bytes / 1024ULL;
+  const auto kMemLimitKib = kLimits.kMemLimitBytes / 1024ULL;
   if (kMemLimitKib == 0 ||
       kMemLimitKib > static_cast<unsigned long long>(
                          std::numeric_limits<std::uint32_t>::max())) {
@@ -54,9 +54,16 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
   randombytes_buf(session.encrypt_batch_salt.data(),
                   session.encrypt_batch_salt.size());
 
-  auto [derive_result, master_key] = DeriveMasterKeyWithArgon2id(
-      passphrase, static_cast<std::uint32_t>(kLimits.ops_limit),
-      static_cast<std::uint32_t>(kMemLimitKib), session.encrypt_batch_salt);
+  auto [derive_result, master_key] =
+      DeriveMasterKeyWithArgon2id(passphrase,
+                                  Argon2idLimits{
+                                      .ops_limit = static_cast<std::uint32_t>(
+                                          kLimits.ops_limit),
+                                      .mem_limit_kib =
+                                          static_cast<std::uint32_t>(
+                                              kMemLimitKib),
+                                  },
+                                  session.encrypt_batch_salt);
   if (!derive_result.ok()) {
     return {derive_result, {}};
   }

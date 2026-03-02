@@ -1,6 +1,9 @@
 // infrastructure/tests/report_formatter/report_formatter_parity_md_tests.cpp
+#include <sodium.h>
+
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -12,12 +15,6 @@
 #include <string>
 #include <string_view>
 #include <utility>
-
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
-#include <sodium.h>
 
 #include "application/ports/i_report_formatter_registry.hpp"
 #include "domain/reports/models/daily_report_data.hpp"
@@ -41,7 +38,7 @@ namespace fs = std::filesystem;
 using report_formatter_parity_internal::CaseOutputs;
 using report_formatter_parity_internal::ParityOutputs;
 
-enum class FormatterPipeline { kCliDll, kAndroidStatic };
+enum class FormatterPipeline { kDefaultRegistry, kAndroidStatic };
 
 auto BuildRepoRoot() -> fs::path {
   return fs::path(__FILE__)
@@ -52,28 +49,8 @@ auto BuildRepoRoot() -> fs::path {
       .parent_path();  // apps
 }
 
-auto BuildExecutableDirectory() -> fs::path {
-#ifdef _WIN32
-  std::wstring buffer(static_cast<size_t>(MAX_PATH), L'\0');
-  DWORD length = GetModuleFileNameW(nullptr, buffer.data(),
-                                    static_cast<DWORD>(buffer.size()));
-  while ((length >= buffer.size()) && (length != 0U)) {
-    buffer.resize(buffer.size() * 2U);
-    length = GetModuleFileNameW(nullptr, buffer.data(),
-                                static_cast<DWORD>(buffer.size()));
-  }
-  if (length != 0U) {
-    buffer.resize(length);
-    return fs::path(buffer).parent_path();
-  }
-#endif
-  return fs::current_path();
-}
-
-auto BuildReportCatalog(const fs::path& repo_root, const fs::path& plugin_dir)
-    -> ReportCatalog {
+auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
   ReportCatalog catalog;
-  catalog.plugin_dir_path = plugin_dir;
 
   const fs::path markdown_config_dir =
       repo_root / "time_tracer" / "config" / "reports" / "markdown";
@@ -122,7 +99,7 @@ auto BuildReportCatalog(const fs::path& repo_root, const fs::path& plugin_dir)
 
 auto BuildFormatter(FormatterPipeline pipeline, const ReportCatalog& catalog)
     -> std::unique_ptr<infrastructure::reports::ReportDtoFormatter> {
-  if (pipeline == FormatterPipeline::kCliDll) {
+  if (pipeline == FormatterPipeline::kDefaultRegistry) {
     auto registry =
         tracer_core::application::ports::CreateReportFormatterRegistry();
     registry->RegisterFormatters();
@@ -265,19 +242,12 @@ auto RunFormatterParityTests() -> int {
   const fs::path snapshot_root = repo_root / "time_tracer" / "src" /
                                  "infrastructure" / "tests" / "golden" /
                                  "formatter_parity";
-  const fs::path executable_dir = BuildExecutableDirectory();
-  const fs::path plugin_dir = executable_dir / "plugins";
   const bool update_snapshots =
       std::getenv("TT_UPDATE_FORMATTER_SNAPSHOTS") != nullptr;
 
-  if (!fs::exists(plugin_dir)) {
-    std::cerr << "[FAIL] Plugin directory not found: " << plugin_dir << '\n';
-    return 1;
-  }
-
   ReportCatalog catalog;
   try {
-    catalog = BuildReportCatalog(repo_root, plugin_dir);
+    catalog = BuildReportCatalog(repo_root);
   } catch (const std::exception& exception) {
     std::cerr << "[FAIL] Failed to load report config for parity tests: "
               << exception.what() << '\n';
@@ -296,7 +266,8 @@ auto RunFormatterParityTests() -> int {
 
   ParityOutputs outputs;
   try {
-    auto cli_formatter = BuildFormatter(FormatterPipeline::kCliDll, catalog);
+    auto cli_formatter =
+        BuildFormatter(FormatterPipeline::kDefaultRegistry, catalog);
     outputs.cli_by_format[0] = CollectOutputs(
         *cli_formatter, daily_report, monthly_report, weekly_report,
         yearly_report, range_report, ReportFormat::kMarkdown);
@@ -349,12 +320,17 @@ namespace report_formatter_parity_internal {
 namespace {
 
 auto ToHexLower(const unsigned char* bytes, size_t size) -> std::string {
-  constexpr char kHex[] = "0123456789abcdef";
+  constexpr std::array<char, 16> kHex = {
+      '0', '1', '2', '3', '4', '5', '6', '7',
+      '8', '9', 'a', 'b', 'c', 'd', 'e', 'f',
+  };
+  constexpr unsigned kHexShiftBits = 4U;
+  constexpr std::uint8_t kHexNibbleMask = 0x0FU;
   std::string text(size * 2U, '\0');
   for (size_t index = 0; index < size; ++index) {
-    const unsigned char value = bytes[index];
-    text[index * 2U] = kHex[(value >> 4U) & 0x0FU];
-    text[index * 2U + 1U] = kHex[value & 0x0FU];
+    const unsigned char kValue = bytes[index];
+    text[index * 2U] = kHex[(kValue >> kHexShiftBits) & kHexNibbleMask];
+    text[(index * 2U) + 1U] = kHex[kValue & kHexNibbleMask];
   }
   return text;
 }
@@ -487,20 +463,20 @@ auto RunCaseWithSnapshot(const std::string& case_name,
               << BuildFirstDiffMessage(cli_output, android_output) << '\n';
   }
 
-  const std::string cli_hash = ComputeSha256Hex(cli_output);
-  const std::string android_hash = ComputeSha256Hex(android_output);
-  if (cli_hash != android_hash) {
+  const std::string kCliHash = ComputeSha256Hex(cli_output);
+  const std::string kAndroidHash = ComputeSha256Hex(android_output);
+  if (kCliHash != kAndroidHash) {
     ++failures;
     std::cerr << "[FAIL] " << case_name
               << " hash parity failed between CLI and Android: cli_sha256="
-              << cli_hash << ", android_sha256=" << android_hash << '\n';
+              << kCliHash << ", android_sha256=" << kAndroidHash << '\n';
   }
 
-  const std::string cli_snapshot_text = cli_output;
-  const std::string android_snapshot_text = android_output;
+  const std::string kCliSnapshotText = cli_output;
+  const std::string kAndroidSnapshotText = android_output;
 
   if (update_snapshots) {
-    if (!WriteFileText(snapshot_file, cli_snapshot_text)) {
+    if (!WriteFileText(snapshot_file, kCliSnapshotText)) {
       ++failures;
       std::cerr << "[FAIL] " << case_name
                 << " failed to update snapshot: " << snapshot_file << '\n';
@@ -517,8 +493,8 @@ auto RunCaseWithSnapshot(const std::string& case_name,
     return;
   }
 
-  AssertParityAndSnapshot(case_name, *kSnapshot, cli_snapshot_text,
-                          android_snapshot_text, failures);
+  AssertParityAndSnapshot(case_name, *kSnapshot, kCliSnapshotText,
+                          kAndroidSnapshotText, failures);
 }
 
 auto RunFormatSnapshotCases(const std::string& format_label,

@@ -18,24 +18,24 @@ namespace tracer_core::infrastructure::crypto::internal {
 auto CompressWithZstdLevel1(const std::vector<std::uint8_t>& plaintext)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
 #if defined(TT_HAS_ZSTD) && TT_HAS_ZSTD
-  const std::size_t bound = ZSTD_compressBound(plaintext.size());
-  if (bound == 0) {
+  const std::size_t kBound = ZSTD_compressBound(plaintext.size());
+  if (kBound == 0) {
     return {MakeError(FileCryptoError::kCompressionFailed,
                       "zstd failed to estimate compression bound."),
             {}};
   }
 
-  std::vector<std::uint8_t> compressed(bound);
-  const std::size_t output_size =
+  std::vector<std::uint8_t> compressed(kBound);
+  const std::size_t kOutputSize =
       ZSTD_compress(compressed.data(), compressed.size(), plaintext.data(),
                     plaintext.size(), kDefaultCompressionLevel);
-  if (ZSTD_isError(output_size)) {
+  if (ZSTD_isError(kOutputSize) != 0U) {
     return {MakeError(FileCryptoError::kCompressionFailed,
                       "zstd compression failed."),
             {}};
   }
 
-  compressed.resize(output_size);
+  compressed.resize(kOutputSize);
   return {{}, std::move(compressed)};
 #else
   (void)plaintext;
@@ -57,8 +57,7 @@ auto DecompressWithZstd(const std::vector<std::uint8_t>& compressed,
             {}};
   }
 
-  const std::size_t kDstSize =
-      static_cast<std::size_t>(expected_plaintext_size);
+  const auto kDstSize = static_cast<std::size_t>(expected_plaintext_size);
   std::vector<std::uint8_t> plaintext(kDstSize);
   const std::size_t kDecompressedSize = ZSTD_decompress(
       plaintext.data(), plaintext.size(), compressed.data(), compressed.size());

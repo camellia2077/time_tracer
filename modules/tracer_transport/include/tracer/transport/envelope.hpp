@@ -3,6 +3,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "tracer/transport/errors.hpp"
 
@@ -11,6 +12,9 @@ namespace tracer::transport {
 struct ResponseEnvelope {
   bool ok = false;
   std::string error_message;
+  std::string error_code;
+  std::string error_category;
+  std::vector<std::string> hints;
   std::string content;
   std::optional<std::string> report_hash_sha256;
 };
@@ -23,7 +27,10 @@ struct ParseResponseEnvelopeResult {
 };
 
 [[nodiscard]] auto BuildResponseEnvelope(bool ok, std::string_view error_message,
-                                         std::string_view content)
+                                         std::string_view content,
+                                         std::string_view error_code = {},
+                                         std::string_view error_category = {},
+                                         const std::vector<std::string>& hints = {})
     -> ResponseEnvelope;
 
 [[nodiscard]] auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)

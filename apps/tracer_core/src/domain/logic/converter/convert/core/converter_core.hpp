@@ -21,11 +21,16 @@ class DayProcessor {
 
 class LogLinker {
  public:
+  struct ExternalPreviousEvent {
+    std::string_view date;
+    std::string_view end_time;
+  };
+
   explicit LogLinker(const ConverterConfig& config);
   void LinkLogs(std::map<std::string, std::vector<DailyLog>>& data_map);
   void LinkFirstDayWithExternalPreviousEvent(
       std::map<std::string, std::vector<DailyLog>>& data_map,
-      std::string_view previous_date, std::string_view previous_end_time);
+      const ExternalPreviousEvent& previous_event);
 
  private:
   const ConverterConfig& config_;

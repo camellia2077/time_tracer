@@ -12,7 +12,5 @@ set(TIME_TRACKER_INFRA_CONFIG_SOURCES
     "config/loader/converter_config_loader.cpp"
     "config/loader/toml_loader_utils.cpp"
     "config/validator/converter/rules/converter_rules.cpp"
-    "config/validator/plugins/facade/plugin_validator.cpp"
-    "config/validator/plugins/facade/runtime_environment_validator_adapter.cpp"
     "config/validator/reports/strategies/report_query_strategies.cpp"
 )

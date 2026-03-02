@@ -3,9 +3,6 @@
 #include <string>
 
 #include "infrastructure/reports/monthly/formatters/markdown/month_md_formatter.hpp"
-#include "infrastructure/reports/shared/formatters/markdown/markdown_formatter.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
-#include "infrastructure/reports/shared/interfaces/range_report_view_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
@@ -29,11 +26,9 @@ auto BuildMarkdownItemLine(const std::string& label, const std::string& value)
 }
 }  // namespace
 
-MonthMdConfig::MonthMdConfig(const TtMonthMdConfigV1& config)
+MonthMdConfig::MonthMdConfig(const MonthlyMdConfig& config)
     : MonthBaseConfig(config.labels),
-      project_breakdown_label_(formatter_c_string_view_utils::ToString(
-          config.labels.projectBreakdownLabel,
-          "labels.projectBreakdownLabel")) {}
+      project_breakdown_label_(config.labels.project_breakdown_label) {}
 
 auto MonthMdConfig::GetProjectBreakdownLabel() const -> const std::string& {
   return project_breakdown_label_;
@@ -41,35 +36,6 @@ auto MonthMdConfig::GetProjectBreakdownLabel() const -> const std::string& {
 
 MonthMdFormatter::MonthMdFormatter(std::shared_ptr<MonthMdConfig> config)
     : BaseMdFormatter(std::move(config)) {}
-
-auto MonthMdFormatter::FormatReportFromView(
-    const TtRangeReportDataV1& data_view) const -> std::string {
-  auto summary_data =
-      range_report_view_utils::BuildRangeLikeSummaryData<MonthlyReportData>(
-          data_view);
-
-  if (std::string error_message = ValidateData(summary_data);
-      !error_message.empty()) {
-    return error_message + "\n";
-  }
-
-  std::string report_stream;
-  FormatHeaderContent(report_stream, summary_data);
-
-  if (IsEmptyData(summary_data)) {
-    report_stream += GetNoRecordsMsg();
-    report_stream += "\n";
-    return report_stream;
-  }
-
-  report_stream += "\n## ";
-  report_stream += config_->GetProjectBreakdownLabel();
-  report_stream += "\n";
-  report_stream += MarkdownFormatter::FormatProjectTree(
-      data_view.projectTreeNodes, data_view.projectTreeNodeCount,
-      data_view.totalDuration, GetAvgDays(summary_data));
-  return report_stream;
-}
 
 auto MonthMdFormatter::ValidateData(const MonthlyReportData& data) const
     -> std::string {

@@ -7,7 +7,6 @@
 
 #include "domain/reports/models/project_tree.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 namespace reporting {
 
@@ -51,10 +50,6 @@ class REPORTS_SHARED_API ProjectTreeFormatter {  // [新增] 必须添加 API �
   // Public API: keep parameter order and naming for ABI compatibility.
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
   [[nodiscard]] auto FormatProjectTree(const ProjectTree& tree,
-                                       long long total_duration,
-                                       int avg_days) const -> std::string;
-  [[nodiscard]] auto FormatProjectTree(const TtProjectTreeNodeV1* nodes,
-                                       uint32_t node_count,
                                        long long total_duration,
                                        int avg_days) const -> std::string;
   // NOLINTEND(bugprone-easily-swappable-parameters)

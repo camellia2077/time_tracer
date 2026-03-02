@@ -7,14 +7,11 @@
 #include "domain/reports/models/range_report_data.hpp"
 #include "infrastructure/reports/range/formatters/latex/range_tex_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_tex_formatter.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class RangeTexFormatter
     : public BaseTexFormatter<RangeReportData, RangeTexConfig> {
  public:
   explicit RangeTexFormatter(std::shared_ptr<RangeTexConfig> config);
-  [[nodiscard]] auto FormatReportFromView(
-      const TtRangeReportDataV1& data_view) const -> std::string;
 
  private:
   [[nodiscard]] auto ValidateData(const RangeReportData& data) const

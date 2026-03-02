@@ -33,14 +33,18 @@ struct DirectoryTaskPlan {
   std::uint64_t total_input_bytes = 0;
 };
 
+struct DirectoryCryptoExtensions {
+  std::string_view input_extension_lower;
+  std::string_view output_extension_lower;
+};
+
 auto BuildSingleFilePlanEntry(const fs::path& input_path,
                               const fs::path& output_path)
     -> std::pair<FileCryptoResult, DirectoryTaskPlanEntry>;
 
 auto BuildDirectoryTaskPlan(const fs::path& input_root_path,
                             const fs::path& output_root_path,
-                            std::string_view input_extension_lower,
-                            std::string_view output_extension_lower)
+                            const DirectoryCryptoExtensions& extensions)
     -> std::pair<FileCryptoResult, DirectoryTaskPlan>;
 
 }  // namespace tracer_core::infrastructure::crypto::internal

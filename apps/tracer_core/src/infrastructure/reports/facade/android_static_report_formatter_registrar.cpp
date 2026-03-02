@@ -19,7 +19,6 @@
 #include "infrastructure/reports/daily/formatters/markdown/day_md_formatter.hpp"
 #include "infrastructure/reports/monthly/formatters/markdown/month_md_formatter.hpp"
 #include "infrastructure/reports/range/formatters/markdown/range_md_formatter.hpp"
-#include "infrastructure/reports/shared/factories/formatter_config_payload.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
@@ -37,97 +36,61 @@
 
 namespace {
 
-template <typename PayloadType, typename FormatterConfigType,
-          typename FormatterType, typename ReportDataType>
-auto BuildCoreFormatter(const TtFormatterConfig& config_view,
-                        uint32_t expected_kind, const char* format_name)
+template <typename FormatterConfigType, typename FormatterType,
+          typename ReportDataType, typename... ConfigArgs>
+auto BuildCoreFormatter(ConfigArgs&&... config_args)
     -> std::unique_ptr<IReportFormatter<ReportDataType>> {
-  if (config_view.configData == nullptr) {
-    throw std::runtime_error(std::string("Missing formatter config data for ") +
-                             format_name + ".");
-  }
-  if (config_view.configKind != expected_kind) {
-    throw std::runtime_error(
-        std::string("Unexpected formatter config kind for ") + format_name +
-        ".");
-  }
-  if (config_view.configDataSize != sizeof(PayloadType)) {
-    throw std::runtime_error(std::string("Invalid formatter config size for ") +
-                             format_name + ".");
-  }
-
-  const auto* payload = static_cast<const PayloadType*>(config_view.configData);
-  auto formatter_config = std::make_shared<FormatterConfigType>(*payload);
+  auto formatter_config = std::make_shared<FormatterConfigType>(
+      std::forward<ConfigArgs>(config_args)...);
   return std::make_unique<FormatterType>(std::move(formatter_config));
 }
 
 auto BuildDayMarkdownCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedDailyMdConfig(catalog.loaded_reports.markdown.day);
-  return BuildCoreFormatter<TtDayMdConfigV1, DayMdConfig, DayMdFormatter,
-                            DailyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_DAY_MD, "day markdown");
+  return BuildCoreFormatter<DayMdConfig, DayMdFormatter, DailyReportData>(
+      catalog.loaded_reports.markdown.day);
 }
 
 auto BuildMonthMarkdownCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedMonthMdConfig(catalog.loaded_reports.markdown.month);
-  return BuildCoreFormatter<TtMonthMdConfigV1, MonthMdConfig, MonthMdFormatter,
-                            MonthlyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_MONTH_MD,
-      "month markdown");
+  return BuildCoreFormatter<MonthMdConfig, MonthMdFormatter, MonthlyReportData>(
+      catalog.loaded_reports.markdown.month);
 }
 
 #if TT_REPORT_ENABLE_LATEX
 auto BuildDayLatexCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedDailyTexConfig(catalog.loaded_reports.latex.day);
-  return BuildCoreFormatter<TtDayTexConfigV1, DayTexConfig, DayTexFormatter,
-                            DailyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_DAY_TEX, "day latex");
+  return BuildCoreFormatter<DayTexConfig, DayTexFormatter, DailyReportData>(
+      catalog.loaded_reports.latex.day);
 }
 
 auto BuildMonthLatexCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedMonthTexConfig(catalog.loaded_reports.latex.month);
-  return BuildCoreFormatter<TtMonthTexConfigV1, MonthTexConfig,
-                            MonthTexFormatter, MonthlyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_MONTH_TEX, "month latex");
+  return BuildCoreFormatter<MonthTexConfig, MonthTexFormatter,
+                            MonthlyReportData>(
+      catalog.loaded_reports.latex.month);
 }
 #endif
 
 #if TT_REPORT_ENABLE_TYPST
 auto BuildDayTypstCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<DailyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedDailyTypConfig(catalog.loaded_reports.typst.day);
-  return BuildCoreFormatter<TtDayTypConfigV1, DayTypConfig, DayTypFormatter,
-                            DailyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_DAY_TYP, "day typst");
+  return BuildCoreFormatter<DayTypConfig, DayTypFormatter, DailyReportData>(
+      catalog.loaded_reports.typst.day);
 }
 
 auto BuildMonthTypstCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<MonthlyReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedMonthTypConfig(catalog.loaded_reports.typst.month);
-  return BuildCoreFormatter<TtMonthTypConfigV1, MonthTypConfig,
-                            MonthTypFormatter, MonthlyReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_MONTH_TYP, "month typst");
+  return BuildCoreFormatter<MonthTypConfig, MonthTypFormatter,
+                            MonthlyReportData>(
+      catalog.loaded_reports.typst.month);
 }
 #endif
 
 auto BuildRangeMarkdownCoreFormatter(const RangeReportLabels& labels)
     -> std::unique_ptr<IReportFormatter<RangeReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedRangeMdConfig(labels);
-  return BuildCoreFormatter<TtRangeMdConfigV1, RangeMdConfig, RangeMdFormatter,
-                            RangeReportData>(payload.GetCConfig(),
-                                             TT_FORMATTER_CONFIG_KIND_RANGE_MD,
-                                             "range markdown");
+  return BuildCoreFormatter<RangeMdConfig, RangeMdFormatter, RangeReportData>(
+      labels);
 }
 
 #if TT_REPORT_ENABLE_LATEX
@@ -135,11 +98,8 @@ auto BuildRangeLatexCoreFormatter(const RangeReportLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
     -> std::unique_ptr<IReportFormatter<RangeReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedRangeTexConfig(labels, fonts, layout);
-  return BuildCoreFormatter<TtRangeTexConfigV1, RangeTexConfig,
-                            RangeTexFormatter, RangeReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_RANGE_TEX, "range latex");
+  return BuildCoreFormatter<RangeTexConfig, RangeTexFormatter, RangeReportData>(
+      labels, fonts, layout);
 }
 #endif
 
@@ -148,11 +108,8 @@ auto BuildRangeTypstCoreFormatter(const RangeReportLabels& labels,
                                   const FontConfig& fonts,
                                   const LayoutConfig& layout)
     -> std::unique_ptr<IReportFormatter<RangeReportData>> {
-  FormatterConfigPayload payload;
-  payload.BuildFromLoadedRangeTypConfig(labels, fonts, layout);
-  return BuildCoreFormatter<TtRangeTypConfigV1, RangeTypConfig,
-                            RangeTypFormatter, RangeReportData>(
-      payload.GetCConfig(), TT_FORMATTER_CONFIG_KIND_RANGE_TYP, "range typst");
+  return BuildCoreFormatter<RangeTypConfig, RangeTypFormatter, RangeReportData>(
+      labels, fonts, layout);
 }
 #endif
 

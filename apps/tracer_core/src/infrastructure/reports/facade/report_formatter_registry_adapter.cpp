@@ -4,18 +4,7 @@
 #include <memory>
 #include <utility>
 
-#include "infrastructure/reports/formatter_registry.hpp"
-#include "infrastructure/reports/plugin_manifest.hpp"
-
-namespace {
-
-class NoopStaticReportFormatterRegistrar final
-    : public tracer_core::application::ports::IStaticReportFormatterRegistrar {
- public:
-  auto RegisterStaticFormatters() const -> void override {}
-};
-
-}  // namespace
+#include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
 
 namespace infrastructure::reports {
 
@@ -26,13 +15,7 @@ ReportFormatterRegistryAdapter::ReportFormatterRegistryAdapter(
     : static_registrar_(std::move(static_registrar)) {}
 
 auto ReportFormatterRegistryAdapter::RegisterFormatters() const -> void {
-  ::reports::RegisterReportFormatters();
   static_registrar_->RegisterStaticFormatters();
-}
-
-auto ReportFormatterRegistryAdapter::GetExpectedFormatterPluginNames() const
-    -> std::vector<std::string> {
-  return ::reports::plugin_manifest::GetExpectedFormatterPluginNames();
 }
 
 }  // namespace infrastructure::reports
@@ -43,7 +26,10 @@ auto CreateReportFormatterRegistry(
     std::shared_ptr<IStaticReportFormatterRegistrar> static_registrar)
     -> std::shared_ptr<IReportFormatterRegistry> {
   if (!static_registrar) {
-    static_registrar = std::make_shared<NoopStaticReportFormatterRegistrar>();
+    static_registrar = std::make_shared<
+        ::infrastructure::reports::AndroidStaticReportFormatterRegistrar>(
+        ::infrastructure::reports::AndroidStaticReportFormatterPolicy::
+            AllFormats());
   }
 
   return std::make_shared<

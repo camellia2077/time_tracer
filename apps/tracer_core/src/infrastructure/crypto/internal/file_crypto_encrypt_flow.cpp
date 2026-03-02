@@ -16,6 +16,7 @@
 
 namespace tracer_core::infrastructure::crypto::internal {
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity,bugprone-easily-swappable-parameters)
 auto EncryptFileInternal(const fs::path& input_txt_path,
                          const fs::path& output_tracer_path,
                          std::string_view passphrase,
@@ -30,10 +31,10 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   }
 
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kReadInput, true);
-        !phase_result.ok()) {
-      return phase_result;
+        !kPhaseResult.ok()) {
+      return kPhaseResult;
     }
   }
   auto [read_result, plaintext] = ReadAllBytes(input_txt_path, reporter);
@@ -42,10 +43,10 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   }
 
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kCompress, true);
-        !phase_result.ok()) {
-      return phase_result;
+        !kPhaseResult.ok()) {
+      return kPhaseResult;
     }
   }
   auto [compress_result, compressed_plaintext] =
@@ -54,13 +55,13 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
     return compress_result;
   }
 
-  const bool use_batch_subkey = batch_session != nullptr &&
+  const bool kUseBatchSubkey = batch_session != nullptr &&
                                 batch_session->encrypt_mode_enabled &&
                                 batch_session->encrypt_master_key.size() ==
                                     crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
   auto [header_result, header] = BuildDefaultHeaderV2(
-      security_level, use_batch_subkey ? kKdfArgon2idBatchSubkey : kKdfArgon2id,
-      use_batch_subkey ? &batch_session->encrypt_batch_salt : nullptr);
+      security_level, kUseBatchSubkey ? kKdfArgon2idBatchSubkey : kKdfArgon2id,
+      kUseBatchSubkey ? &batch_session->encrypt_batch_salt : nullptr);
   if (!header_result.ok()) {
     return header_result;
   }
@@ -75,7 +76,7 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   }
 
   std::vector<std::uint8_t> key;
-  if (use_batch_subkey) {
+  if (kUseBatchSubkey) {
     auto [subkey_result, subkey] = DeriveSubkeyFromBatchMaster(
         batch_session->encrypt_master_key, header.nonce);
     if (!subkey_result.ok()) {
@@ -83,8 +84,13 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
     }
     key = std::move(subkey);
   } else {
-    auto [derive_result, derived_key] = DeriveMasterKeyWithArgon2id(
-        passphrase, header.ops_limit, header.mem_limit_kib, header.salt);
+    auto [derive_result, derived_key] =
+        DeriveMasterKeyWithArgon2id(passphrase,
+                                    Argon2idLimits{
+                                        .ops_limit = header.ops_limit,
+                                        .mem_limit_kib = header.mem_limit_kib,
+                                    },
+                                    header.salt);
     if (!derive_result.ok()) {
       return derive_result;
     }
@@ -92,11 +98,11 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   }
 
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kEncrypt, true);
-        !phase_result.ok()) {
+        !kPhaseResult.ok()) {
       sodium_memzero(key.data(), key.size());
-      return phase_result;
+      return kPhaseResult;
     }
   }
 
@@ -116,17 +122,17 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   header.ciphertext_size = static_cast<std::uint64_t>(ciphertext.size());
 
   if (reporter != nullptr) {
-    if (const auto phase_result =
+    if (const auto kPhaseResult =
             reporter->SetPhase(FileCryptoPhase::kWriteOutput, true);
-        !phase_result.ok()) {
-      return phase_result;
+        !kPhaseResult.ok()) {
+      return kPhaseResult;
     }
   }
   auto output_bytes = BuildHeaderBytes(header);
   output_bytes.insert(output_bytes.end(), ciphertext.begin(), ciphertext.end());
-  const auto write_result = WriteAllBytes(output_tracer_path, output_bytes);
-  if (!write_result.ok()) {
-    return write_result;
+  const auto kWriteResult = WriteAllBytes(output_tracer_path, output_bytes);
+  if (!kWriteResult.ok()) {
+    return kWriteResult;
   }
 
   if (reporter != nullptr) {

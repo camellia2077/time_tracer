@@ -55,8 +55,8 @@ struct ParsedData {
 };
 
 struct ReplaceMonthTarget {
-  int year = 0;
-  int month = 0;
+  int kYear = 0;
+  int kMonth = 0;
 };
 
 struct ImportStats {

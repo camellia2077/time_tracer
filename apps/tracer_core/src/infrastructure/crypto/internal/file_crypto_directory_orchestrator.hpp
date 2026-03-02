@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "infrastructure/crypto/file_crypto_service.hpp"
+#include "infrastructure/crypto/internal/file_crypto_directory_plan.hpp"
 
 namespace tracer_core::infrastructure::crypto::internal {
 
@@ -15,8 +16,7 @@ auto RunDirectoryCrypto(FileCryptoOperation operation,
                         const fs::path& input_root_path,
                         const fs::path& output_root_path,
                         std::string_view passphrase,
-                        std::string_view input_extension_lower,
-                        std::string_view output_extension_lower,
+                        const DirectoryCryptoExtensions& extensions,
                         const FileCryptoOptions& options)
     -> FileCryptoBatchResult;
 

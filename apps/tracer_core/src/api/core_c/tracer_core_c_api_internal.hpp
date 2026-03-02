@@ -4,7 +4,9 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
+#include "api/core_c/tracer_core_c_api.h"
 #include "api/android/android_runtime_factory.hpp"
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
@@ -18,6 +20,11 @@ struct TtCoreRuntimeHandle {
 
 namespace tracer_core::core::c_api::internal {
 
+struct CryptoProgressCallbackRegistration {
+  TtCoreCryptoProgressCallback callback = nullptr;
+  void* user_data = nullptr;
+};
+
 extern thread_local std::string g_last_error;
 extern thread_local std::string g_last_response;
 
@@ -25,6 +32,11 @@ void ClearLastError();
 void SetLastError(const char* message);
 
 [[nodiscard]] auto BuildFailureResponse(std::string message) -> const char*;
+[[nodiscard]] auto BuildFailureResponse(std::string message,
+                                        std::string error_code,
+                                        std::string error_category,
+                                        std::vector<std::string> hints) -> const
+    char*;
 [[nodiscard]] auto BuildOperationResponse(
     const tracer_core::core::dto::OperationAck& output) -> const char*;
 [[nodiscard]] auto BuildTextResponse(
@@ -51,6 +63,11 @@ void SetLastError(const char* message);
 [[nodiscard]] auto ParseReportType(const std::string& value)
     -> tracer_core::core::dto::ReportQueryType;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
+
+void SetCryptoProgressCallbackRegistration(TtCoreCryptoProgressCallback callback,
+                                           void* user_data);
+[[nodiscard]] auto GetCryptoProgressCallbackRegistration()
+    -> CryptoProgressCallbackRegistration;
 
 }  // namespace tracer_core::core::c_api::internal
 

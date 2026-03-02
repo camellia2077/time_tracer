@@ -4,14 +4,14 @@
 
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/shared/api/shared_api.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 DISABLE_C4251_WARNING
 
 class REPORTS_SHARED_API RangeBaseConfig {
  public:
-  explicit RangeBaseConfig(const TtRangeLabelsConfigV1& labels);
+  explicit RangeBaseConfig(const RangeReportLabels& labels);
   virtual ~RangeBaseConfig() = default;
 
   [[nodiscard]] auto GetTitleTemplate() const -> const std::string&;
@@ -27,7 +27,7 @@ class REPORTS_SHARED_API RangeBaseConfig {
   [[nodiscard]] auto GetProjectBreakdownLabel() const -> const std::string&;
 
  private:
-  void LoadBaseConfig(const TtRangeLabelsConfigV1& labels);
+  void LoadBaseConfig(const RangeReportLabels& labels);
 
   std::string title_template_;
   std::string total_time_label_;

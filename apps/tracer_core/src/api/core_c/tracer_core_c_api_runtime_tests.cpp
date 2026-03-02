@@ -21,6 +21,55 @@ auto RequireSymbol(LibHandle library, const char* symbol_name) -> Fn {
   return reinterpret_cast<Fn>(symbol);
 }
 
+struct CallbackProbeState {
+  std::atomic<int> kLogCount{0};
+  std::atomic<int> kDiagnosticsCount{0};
+  std::atomic<int> kCryptoProgressCount{0};
+};
+
+extern "C" void CaptureLogCallback(TtCoreLogSeverity /*severity*/,
+                                   const char* utf8_message,
+                                   void* user_data) {
+  if (user_data == nullptr) {
+    return;
+  }
+  auto* state = static_cast<CallbackProbeState*>(user_data);
+  if (utf8_message != nullptr && utf8_message[0] != '\0') {
+    state->kLogCount.fetch_add(1, std::memory_order_relaxed);
+  }
+}
+
+extern "C" void CaptureDiagnosticsCallback(
+    TtCoreDiagnosticSeverity /*severity*/, const char* utf8_message,
+    void* user_data) {
+  if (user_data == nullptr) {
+    return;
+  }
+  auto* state = static_cast<CallbackProbeState*>(user_data);
+  if (utf8_message != nullptr && utf8_message[0] != '\0') {
+    state->kDiagnosticsCount.fetch_add(1, std::memory_order_relaxed);
+  }
+}
+
+extern "C" void CaptureCryptoProgressCallback(const char* utf8_progress_json,
+                                              void* user_data) {
+  if (user_data == nullptr || utf8_progress_json == nullptr ||
+      utf8_progress_json[0] == '\0') {
+    return;
+  }
+
+  try {
+    const json kPayload = json::parse(utf8_progress_json);
+    if (!kPayload.is_object()) {
+      return;
+    }
+    auto* state = static_cast<CallbackProbeState*>(user_data);
+    state->kCryptoProgressCount.fetch_add(1, std::memory_order_relaxed);
+  } catch (...) {
+    // Keep callback resilient; test only counts valid JSON payloads.
+  }
+}
+
 }  // namespace
 
 #ifdef _WIN32
@@ -94,8 +143,19 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
   api.ping = RequireSymbol<PingFn>(library, "tracer_core_ping");
   api.get_capabilities = RequireSymbol<GetCapabilitiesFn>(
       library, "tracer_core_get_capabilities_json");
+  api.get_build_info =
+      RequireSymbol<GetBuildInfoFn>(library, "tracer_core_get_build_info_json");
+  api.get_command_contract = RequireSymbol<GetCommandContractFn>(
+      library, "tracer_core_get_command_contract_json");
   api.last_error =
       RequireSymbol<LastErrorFn>(library, "tracer_core_last_error");
+  api.set_log_callback = RequireSymbol<SetLogCallbackFn>(
+      library, "tracer_core_set_log_callback");
+  api.set_diagnostics_callback = RequireSymbol<SetDiagnosticsCallbackFn>(
+      library, "tracer_core_set_diagnostics_callback");
+  api.set_crypto_progress_callback =
+      RequireSymbol<SetCryptoProgressCallbackFn>(
+          library, "tracer_core_set_crypto_progress_callback");
   api.runtime_check_environment = RequireSymbol<RuntimeCheckEnvironmentFn>(
       library, "tracer_core_runtime_check_environment_json");
   api.runtime_resolve_cli_context = RequireSymbol<RuntimeResolveCliContextFn>(
@@ -124,6 +184,12 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       library, "tracer_core_runtime_export_json");
   api.runtime_tree =
       RequireSymbol<RuntimeTreeFn>(library, "tracer_core_runtime_tree_json");
+  api.runtime_crypto_encrypt = RequireSymbol<RuntimeCryptoEncryptFn>(
+      library, "tracer_core_runtime_crypto_encrypt_json");
+  api.runtime_crypto_decrypt = RequireSymbol<RuntimeCryptoDecryptFn>(
+      library, "tracer_core_runtime_crypto_decrypt_json");
+  api.runtime_crypto_inspect = RequireSymbol<RuntimeCryptoInspectFn>(
+      library, "tracer_core_runtime_crypto_inspect_json");
   return api;
 }
 
@@ -190,6 +256,11 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
             "capabilities.features." + std::string(key) + " must be a boolean");
   };
 
+  kRequireBool("build_info_json");
+  kRequireBool("command_contract_json");
+  kRequireBool("runtime_log_callback");
+  kRequireBool("runtime_diagnostics_callback");
+  kRequireBool("runtime_crypto_progress_callback");
   kRequireBool("runtime_ingest_json");
   kRequireBool("runtime_convert_json");
   kRequireBool("runtime_import_json");
@@ -204,6 +275,27 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("report_markdown");
   kRequireBool("report_latex");
   kRequireBool("report_typst");
+
+  const json kBuildInfo = ParseResponse(api.get_build_info(), "build_info");
+  Require(kBuildInfo.value("ok", false),
+          "build_info response should return ok=true");
+  Require(kBuildInfo.contains("core_version") &&
+              kBuildInfo["core_version"].is_string(),
+          "build_info response should include string field `core_version`");
+  Require(kBuildInfo.contains("abi_version") &&
+              kBuildInfo["abi_version"].is_number_integer(),
+          "build_info response should include integer field `abi_version`");
+
+  const json kCommandContract =
+      ParseResponse(api.get_command_contract(nullptr), "command_contract");
+  Require(kCommandContract.value("ok", false),
+          "command_contract response should return ok=true");
+  Require(kCommandContract.contains("contract_version") &&
+              kCommandContract["contract_version"].is_string(),
+          "command_contract response should include string `contract_version`");
+  Require(kCommandContract.contains("commands") &&
+              kCommandContract["commands"].is_array(),
+          "command_contract response should include array `commands`");
 }
 
 void RunRuntimeBootstrapChecks(const CoreApiFns& api,
@@ -217,6 +309,17 @@ void RunRuntimeBootstrapChecks(const CoreApiFns& api,
               kRuntimeCheck["error_message"].is_string(),
           "runtime_check_environment response must contain string field "
           "`error_message`");
+  Require(kRuntimeCheck.contains("error_code") &&
+              kRuntimeCheck["error_code"].is_string(),
+          "runtime_check_environment response must contain string field "
+          "`error_code`");
+  Require(kRuntimeCheck.contains("error_category") &&
+              kRuntimeCheck["error_category"].is_string(),
+          "runtime_check_environment response must contain string field "
+          "`error_category`");
+  Require(kRuntimeCheck.contains("hints") && kRuntimeCheck["hints"].is_array(),
+          "runtime_check_environment response must contain array field "
+          "`hints`");
   if (kRuntimeCheck.contains("messages")) {
     Require(kRuntimeCheck["messages"].is_array(),
             "runtime_check_environment field `messages` must be array when "
@@ -235,6 +338,18 @@ void RunRuntimeBootstrapChecks(const CoreApiFns& api,
               kResolvedContext["error_message"].is_string(),
           "runtime_resolve_cli_context response must contain string field "
           "`error_message`");
+  Require(kResolvedContext.contains("error_code") &&
+              kResolvedContext["error_code"].is_string(),
+          "runtime_resolve_cli_context response must contain string field "
+          "`error_code`");
+  Require(kResolvedContext.contains("error_category") &&
+              kResolvedContext["error_category"].is_string(),
+          "runtime_resolve_cli_context response must contain string field "
+          "`error_category`");
+  Require(kResolvedContext.contains("hints") &&
+              kResolvedContext["hints"].is_array(),
+          "runtime_resolve_cli_context response must contain array field "
+          "`hints`");
 
   if (kResolvedContext.value("ok", false)) {
     const auto kPathsIt = kResolvedContext.find("paths");
@@ -329,6 +444,60 @@ void RunCreateDestroyChurn(const CoreApiFns& api,
   }
 }
 
+void RunCallbackBridgeChecks(const CoreApiFns& api,
+                             TtCoreRuntimeHandle* runtime,
+                             const fs::path& input_root) {
+  CallbackProbeState callback_state{};
+  api.set_log_callback(&CaptureLogCallback, &callback_state);
+  api.set_diagnostics_callback(&CaptureDiagnosticsCallback, &callback_state);
+  api.set_crypto_progress_callback(&CaptureCryptoProgressCallback,
+                                   &callback_state);
+
+  const std::string kIngestRequest = json{{"input_path", input_root.string()},
+                                          {"date_check_mode", "none"},
+                                          {"save_processed_output", false}}
+                                         .dump();
+  RequireOk(api.runtime_ingest(runtime, kIngestRequest.c_str()),
+            "callback ingest");
+
+  const fs::path kCryptoInput = input_root / "2026" / "2026-01.txt";
+  Require(fs::exists(kCryptoInput),
+          "callback crypto input file missing: test/data/2026/2026-01.txt");
+  const fs::path kCryptoOutput = input_root / ".." / "output" /
+                                 "tracer_core_c_api_stability" / "callback" /
+                                 "2026-01.tracer";
+  std::error_code io_error;
+  fs::create_directories(fs::absolute(kCryptoOutput).parent_path(), io_error);
+  Require(!io_error,
+          "callback crypto output directory creation failed: " +
+              io_error.message());
+  const std::string kCryptoEncryptRequest =
+      json{{"input_path", fs::absolute(kCryptoInput).string()},
+           {"output_path", fs::absolute(kCryptoOutput).string()},
+           {"passphrase", "phase6-progress-callback"},
+           {"security_level", "interactive"},
+           {"date_check_mode", "none"}}
+          .dump();
+  RequireOk(api.runtime_crypto_encrypt(runtime, kCryptoEncryptRequest.c_str()),
+            "callback crypto encrypt");
+
+  api.set_log_callback(nullptr, nullptr);
+  api.set_diagnostics_callback(nullptr, nullptr);
+  api.set_crypto_progress_callback(nullptr, nullptr);
+
+  const int kLogCount = callback_state.kLogCount.load(std::memory_order_relaxed);
+  const int kDiagnosticsCount =
+      callback_state.kDiagnosticsCount.load(std::memory_order_relaxed);
+  const int kCryptoProgressCount =
+      callback_state.kCryptoProgressCount.load(std::memory_order_relaxed);
+  Require(kLogCount > 0 || kDiagnosticsCount > 0,
+          "runtime callbacks should receive at least one log or diagnostics "
+          "message during ingest");
+  Require(kCryptoProgressCount > 0,
+          "runtime crypto progress callback should receive at least one "
+          "valid JSON progress payload during encrypt");
+}
+
 }  // namespace tracer_core_c_api_stability_internal
 
 auto main() -> int {
@@ -383,13 +552,7 @@ auto main() -> int {
     {
       auto baseline_runtime =
           CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);
-      RequireOk(api.runtime_ingest(baseline_runtime.Get(),
-                                   json{{"input_path", kInputRoot.string()},
-                                        {"date_check_mode", "none"},
-                                        {"save_processed_output", false}}
-                                       .dump()
-                                       .c_str()),
-                "baseline ingest");
+      RunCallbackBridgeChecks(api, baseline_runtime.Get(), kInputRoot);
       RunQueryChecks(api, baseline_runtime.Get());
       RunErrorPathChecks(api, baseline_runtime.Get(), kConverterConfig);
       RunConcurrentChecks(api, kRuntimePaths);

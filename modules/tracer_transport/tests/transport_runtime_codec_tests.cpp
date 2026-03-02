@@ -641,6 +641,9 @@ void TestEncodeResponses(int& failures) {
   CapabilitiesResponsePayload capabilities{};
   capabilities.abi.name = "tracer_core_c";
   capabilities.abi.version = 1;
+  capabilities.features.runtime_log_callback = true;
+  capabilities.features.runtime_diagnostics_callback = true;
+  capabilities.features.runtime_crypto_progress_callback = true;
   capabilities.features.runtime_ingest_json = true;
   capabilities.features.runtime_convert_json = true;
   capabilities.features.runtime_import_json = true;
@@ -664,6 +667,19 @@ void TestEncodeResponses(int& failures) {
          "EncodeCapabilitiesResponse abi.version mismatch.", failures);
   Expect(capabilities_json["features"].value("runtime_ingest_json", false),
          "EncodeCapabilitiesResponse features.runtime_ingest_json mismatch.",
+         failures);
+  Expect(capabilities_json["features"].value("runtime_log_callback", false),
+         "EncodeCapabilitiesResponse features.runtime_log_callback mismatch.",
+         failures);
+  Expect(capabilities_json["features"].value("runtime_diagnostics_callback",
+                                             false),
+         "EncodeCapabilitiesResponse features.runtime_diagnostics_callback "
+         "mismatch.",
+         failures);
+  Expect(capabilities_json["features"].value("runtime_crypto_progress_callback",
+                                             false),
+         "EncodeCapabilitiesResponse "
+         "features.runtime_crypto_progress_callback mismatch.",
          failures);
   Expect(!capabilities_json["features"].value("report_latex", true),
          "EncodeCapabilitiesResponse features.report_latex mismatch.",

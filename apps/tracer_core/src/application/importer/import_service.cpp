@@ -63,12 +63,12 @@ auto ImportService::ImportFromMemory(
     stats.db_open_success = true;
     try {
       if (replace_month_target.has_value()) {
-        repository_.ReplaceMonthData(replace_month_target->year,
-                                     replace_month_target->month, all_data.days,
+        repository_.ReplaceMonthData(replace_month_target->kYear,
+                                     replace_month_target->kMonth, all_data.days,
                                      all_data.records);
         stats.replaced_month =
-            std::format("{:04d}-{:02d}", replace_month_target->year,
-                        replace_month_target->month);
+            std::format("{:04d}-{:02d}", replace_month_target->kYear,
+                        replace_month_target->kMonth);
       } else {
         repository_.ImportData(all_data.days, all_data.records);
       }

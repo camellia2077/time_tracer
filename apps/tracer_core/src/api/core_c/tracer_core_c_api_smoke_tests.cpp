@@ -18,7 +18,13 @@ namespace {
 using GetVersionFn = const char* (*)();
 using PingFn = int (*)();
 using GetCapabilitiesFn = const char* (*)();
+using GetBuildInfoFn = const char* (*)();
+using GetCommandContractFn = const char* (*)(const char*);
 using LastErrorFn = const char* (*)();
+using SetLogCallbackFn = void (*)(TtCoreLogCallback, void*);
+using SetDiagnosticsCallbackFn = void (*)(TtCoreDiagnosticsCallback, void*);
+using SetCryptoProgressCallbackFn = void (*)(TtCoreCryptoProgressCallback,
+                                             void*);
 using RuntimeCreateFn = TtCoreRuntimeHandle* (*)(const char*, const char*,
                                                  const char*);
 using RuntimeDestroyFn = void (*)(TtCoreRuntimeHandle*);
@@ -129,6 +135,7 @@ auto IsOkResponse(const char* response_json, std::string_view context,
 
 }  // namespace
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto main() -> int {
   LibHandle library = nullptr;
   try {
@@ -145,8 +152,20 @@ auto main() -> int {
         reinterpret_cast<PingFn>(LookupSymbol(library, "tracer_core_ping"));
     const auto kGetCapabilities = reinterpret_cast<GetCapabilitiesFn>(
         LookupSymbol(library, "tracer_core_get_capabilities_json"));
+    const auto kGetBuildInfo = reinterpret_cast<GetBuildInfoFn>(
+        LookupSymbol(library, "tracer_core_get_build_info_json"));
+    const auto kGetCommandContract = reinterpret_cast<GetCommandContractFn>(
+        LookupSymbol(library, "tracer_core_get_command_contract_json"));
     const auto kLastError = reinterpret_cast<LastErrorFn>(
         LookupSymbol(library, "tracer_core_last_error"));
+    const auto kSetLogCallback = reinterpret_cast<SetLogCallbackFn>(
+        LookupSymbol(library, "tracer_core_set_log_callback"));
+    const auto kSetDiagnosticsCallback =
+        reinterpret_cast<SetDiagnosticsCallbackFn>(
+            LookupSymbol(library, "tracer_core_set_diagnostics_callback"));
+    const auto kSetCryptoProgressCallback =
+        reinterpret_cast<SetCryptoProgressCallbackFn>(LookupSymbol(
+            library, "tracer_core_set_crypto_progress_callback"));
     const auto kRuntimeCreate = reinterpret_cast<RuntimeCreateFn>(
         LookupSymbol(library, "tracer_core_runtime_create"));
     const auto kRuntimeDestroy = reinterpret_cast<RuntimeDestroyFn>(
@@ -159,7 +178,10 @@ auto main() -> int {
         LookupSymbol(library, "tracer_core_runtime_report_json"));
 
     if (kGetVersion == nullptr || kPing == nullptr ||
-        kGetCapabilities == nullptr || kLastError == nullptr ||
+        kGetCapabilities == nullptr || kGetBuildInfo == nullptr ||
+        kGetCommandContract == nullptr || kLastError == nullptr ||
+        kSetLogCallback == nullptr || kSetDiagnosticsCallback == nullptr ||
+        kSetCryptoProgressCallback == nullptr ||
         kRuntimeCreate == nullptr || kRuntimeDestroy == nullptr ||
         kRuntimeIngest == nullptr || kRuntimeQuery == nullptr ||
         kRuntimeReport == nullptr) {
@@ -198,6 +220,50 @@ auto main() -> int {
           !kFeaturesIt->is_object()) {
         std::cerr << "[FAIL] tracer_core_get_capabilities_json missing "
                      "`features` object.\n";
+        CloseLibrary(library);
+        return 1;
+      }
+    }
+
+    {
+      nlohmann::json build_info_payload;
+      try {
+        build_info_payload = nlohmann::json::parse(kGetBuildInfo());
+      } catch (const std::exception& error) {
+        std::cerr << "[FAIL] tracer_core_get_build_info_json invalid json: "
+                  << error.what() << '\n';
+        CloseLibrary(library);
+        return 1;
+      }
+      if (!build_info_payload.value("ok", false)) {
+        std::cerr
+            << "[FAIL] tracer_core_get_build_info_json returned ok=false\n";
+        CloseLibrary(library);
+        return 1;
+      }
+    }
+
+    {
+      nlohmann::json contract_payload;
+      try {
+        contract_payload = nlohmann::json::parse(kGetCommandContract(nullptr));
+      } catch (const std::exception& error) {
+        std::cerr
+            << "[FAIL] tracer_core_get_command_contract_json invalid json: "
+            << error.what() << '\n';
+        CloseLibrary(library);
+        return 1;
+      }
+      if (!contract_payload.value("ok", false)) {
+        std::cerr << "[FAIL] tracer_core_get_command_contract_json returned "
+                     "ok=false\n";
+        CloseLibrary(library);
+        return 1;
+      }
+      if (!contract_payload.contains("commands") ||
+          !contract_payload["commands"].is_array()) {
+        std::cerr << "[FAIL] tracer_core_get_command_contract_json missing "
+                     "commands array\n";
         CloseLibrary(library);
         return 1;
       }

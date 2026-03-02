@@ -25,31 +25,28 @@ auto HasNonEmptyDateInput(const std::optional<std::string>& date_input)
 
 }  // namespace
 
-auto ValidateDateRange(std::string_view start_date, std::string_view end_date,
-                       std::string_view invalid_range_error,
-                       std::string_view invalid_date_error) -> void {
-  const auto kStartYmd = query_internal::ParseIsoDate(start_date);
-  const auto kEndYmd = query_internal::ParseIsoDate(end_date);
+auto ValidateDateRange(const DateRangeBoundaries& boundaries,
+                       const DateRangeValidationErrors& errors) -> void {
+  const auto kStartYmd = query_internal::ParseIsoDate(boundaries.start_date);
+  const auto kEndYmd = query_internal::ParseIsoDate(boundaries.end_date);
   if (!kStartYmd.has_value() || !kEndYmd.has_value()) {
-    throw std::runtime_error(std::string(invalid_date_error));
+    throw std::runtime_error(std::string(errors.invalid_date_error));
   }
   const auto kStartDays = std::chrono::sys_days{*kStartYmd};
   const auto kEndDays = std::chrono::sys_days{*kEndYmd};
   if (kStartDays > kEndDays) {
-    throw std::runtime_error(std::string(invalid_range_error));
+    throw std::runtime_error(std::string(errors.invalid_range_error));
   }
 }
 
 auto ResolveExplicitDateRange(const std::optional<std::string>& from_date_input,
                               const std::optional<std::string>& to_date_input,
-                              std::string_view missing_boundary_error,
-                              std::string_view invalid_range_error,
-                              std::string_view invalid_date_error)
+                              const ExplicitDateRangeErrors& errors)
     -> std::optional<ResolvedDateRange> {
   const bool kHasFromDate = HasNonEmptyDateInput(from_date_input);
   const bool kHasToDate = HasNonEmptyDateInput(to_date_input);
   if (kHasFromDate != kHasToDate) {
-    throw std::runtime_error(std::string(missing_boundary_error));
+    throw std::runtime_error(std::string(errors.missing_boundary_error));
   }
   if (!kHasFromDate) {
     return std::nullopt;
@@ -61,8 +58,12 @@ auto ResolveExplicitDateRange(const std::optional<std::string>& from_date_input,
       .start_date = query_internal::NormalizeBoundaryDate(kFromDate, false),
       .end_date = query_internal::NormalizeBoundaryDate(kToDate, true),
   };
-  ValidateDateRange(range.start_date, range.end_date, invalid_range_error,
-                    invalid_date_error);
+  ValidateDateRange(
+      DateRangeBoundaries{
+          .start_date = range.start_date,
+          .end_date = range.end_date,
+      },
+      errors.validation);
   return range;
 }
 

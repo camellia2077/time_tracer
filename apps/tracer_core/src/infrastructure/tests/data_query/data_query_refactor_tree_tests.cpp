@@ -184,4 +184,3 @@ auto RunDataQueryRefactorTreeTests(int& failures) -> void {
 }
 
 }  // namespace android_runtime_tests::data_query_refactor_internal
-

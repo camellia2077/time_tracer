@@ -204,9 +204,13 @@ auto EncryptDirectory(const std::filesystem::path& input_root_path,
                       std::string_view passphrase,
                       const FileCryptoOptions& options)
     -> FileCryptoBatchResult {
+  const file_crypto_internal::DirectoryCryptoExtensions kExtensions{
+      .input_extension_lower = ".txt",
+      .output_extension_lower = ".tracer",
+  };
   return file_crypto_internal::RunDirectoryCrypto(
       FileCryptoOperation::kEncrypt, input_root_path, output_root_path,
-      passphrase, ".txt", ".tracer", options);
+      passphrase, kExtensions, options);
 }
 
 auto DecryptDirectory(const std::filesystem::path& input_root_path,
@@ -214,9 +218,13 @@ auto DecryptDirectory(const std::filesystem::path& input_root_path,
                       std::string_view passphrase,
                       const FileCryptoOptions& options)
     -> FileCryptoBatchResult {
+  const file_crypto_internal::DirectoryCryptoExtensions kExtensions{
+      .input_extension_lower = ".tracer",
+      .output_extension_lower = ".txt",
+  };
   return file_crypto_internal::RunDirectoryCrypto(
       FileCryptoOperation::kDecrypt, input_root_path, output_root_path,
-      passphrase, ".tracer", ".txt", options);
+      passphrase, kExtensions, options);
 }
 
 auto InspectEncryptedFile(const std::filesystem::path& input_tracer_path,
@@ -241,7 +249,7 @@ auto InspectEncryptedFile(const std::filesystem::path& input_tracer_path,
   }
 
   if (metadata_out != nullptr) {
-    metadata_out->version = header.version;
+    metadata_out->version = header.kVersion;
     metadata_out->kdf_id = header.kdf_id;
     metadata_out->cipher_id = header.cipher_id;
     metadata_out->compression_id = header.compression_id;

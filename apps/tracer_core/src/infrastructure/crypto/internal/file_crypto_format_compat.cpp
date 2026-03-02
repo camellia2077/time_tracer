@@ -28,6 +28,7 @@ constexpr std::size_t kV1MemLimitOffset = 12;
 constexpr std::size_t kV1SaltOffset = 16;
 constexpr std::size_t kV1NonceOffset = 32;
 constexpr std::size_t kV1CiphertextSizeOffset = 56;
+constexpr std::size_t kMinHeaderPrefixSize = 8;
 constexpr std::size_t kV2KdfOffset = 5;
 constexpr std::size_t kV2CipherOffset = 6;
 constexpr std::size_t kV2CompressionIdOffset = 7;
@@ -76,10 +77,10 @@ auto ReadU64LE(const std::vector<std::uint8_t>& data, std::size_t offset)
 auto BuildHeaderBytes(const TracerFileHeader& header)
     -> std::vector<std::uint8_t> {
   std::vector<std::uint8_t> bytes;
-  if (header.version == kFormatVersionV1) {
+  if (header.kVersion == kFormatVersionV1) {
     bytes.reserve(kHeaderSizeV1);
     bytes.insert(bytes.end(), header.magic.begin(), header.magic.end());
-    bytes.push_back(header.version);
+    bytes.push_back(header.kVersion);
     bytes.push_back(header.kdf_id);
     bytes.push_back(header.cipher_id);
     bytes.push_back(0);
@@ -93,7 +94,7 @@ auto BuildHeaderBytes(const TracerFileHeader& header)
 
   bytes.reserve(kHeaderSizeV2);
   bytes.insert(bytes.end(), header.magic.begin(), header.magic.end());
-  bytes.push_back(header.version);
+  bytes.push_back(header.kVersion);
   bytes.push_back(header.kdf_id);
   bytes.push_back(header.cipher_id);
   bytes.push_back(header.compression_id);
@@ -114,9 +115,10 @@ auto BuildHeaderBytes(const TracerFileHeader& header)
   return bytes;
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto ParseHeader(const std::vector<std::uint8_t>& data,
                  TracerFileHeader& header) -> FileCryptoResult {
-  if (data.size() < 8) {
+  if (data.size() < kMinHeaderPrefixSize) {
     return MakeError(FileCryptoError::kUnsupportedFormat,
                      "Encrypted file is too small to contain a valid header.");
   }
@@ -127,16 +129,16 @@ auto ParseHeader(const std::vector<std::uint8_t>& data,
                      "Invalid encrypted file magic. Expected TTRC.");
   }
 
-  const auto version = data[kVersionOffset];
-  if (version == kFormatVersionV1) {
+  const auto kVersion = data[kVersionOffset];
+  if (kVersion == kFormatVersionV1) {
     if (data.size() < kHeaderSizeV1) {
       return MakeError(FileCryptoError::kUnsupportedFormat,
                        "Encrypted file is too small for v1 header.");
     }
-    header.version = version;
+    header.kVersion = kVersion;
     header.kdf_id = data[kV1KdfOffset];
     header.cipher_id = data[kV1CipherOffset];
-    const auto reserved = data[kV1ReservedOffset];
+    const auto kReserved = data[kV1ReservedOffset];
     header.ops_limit = ReadU32LE(data, kV1OpsLimitOffset);
     header.mem_limit_kib = ReadU32LE(data, kV1MemLimitOffset);
     std::copy_n(data.begin() + kV1SaltOffset, header.salt.size(),
@@ -155,7 +157,7 @@ auto ParseHeader(const std::vector<std::uint8_t>& data,
           FileCryptoError::kUnsupportedFormat,
           "Unsupported KDF or cipher identifier in encrypted v1 file.");
     }
-    if (reserved != 0) {
+    if (kReserved != 0) {
       return MakeError(FileCryptoError::kUnsupportedFormat,
                        "Encrypted v1 reserved field must be zero.");
     }
@@ -172,12 +174,12 @@ auto ParseHeader(const std::vector<std::uint8_t>& data,
     return {};
   }
 
-  if (version == kFormatVersionV2) {
+  if (kVersion == kFormatVersionV2) {
     if (data.size() < kHeaderSizeV2) {
       return MakeError(FileCryptoError::kUnsupportedFormat,
                        "Encrypted file is too small for v2 header.");
     }
-    header.version = version;
+    header.kVersion = kVersion;
     header.kdf_id = data[kV2KdfOffset];
     header.cipher_id = data[kV2CipherOffset];
     header.compression_id = data[kV2CompressionIdOffset];
@@ -208,8 +210,8 @@ auto ParseHeader(const std::vector<std::uint8_t>& data,
       return MakeError(FileCryptoError::kUnsupportedFormat,
                        "Encrypted v2 compression level must be non-zero.");
     }
-    if (!std::all_of(
-            kV2ReservedOffsets.begin(), kV2ReservedOffsets.end(),
+    if (!std::ranges::all_of(
+            kV2ReservedOffsets,
             [&](std::size_t index) -> bool { return data[index] == 0; })) {
       return MakeError(FileCryptoError::kUnsupportedFormat,
                        "Encrypted v2 reserved fields must be zero.");

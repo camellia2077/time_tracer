@@ -2,8 +2,6 @@
 #ifndef INFRASTRUCTURE_CONFIG_MODELS_REPORT_CATALOG_H_
 #define INFRASTRUCTURE_CONFIG_MODELS_REPORT_CATALOG_H_
 
-#include <filesystem>
-
 #include "infrastructure/config/models/report_config_models.hpp"
 
 struct LoadedReportConfigs {
@@ -33,7 +31,6 @@ struct LoadedReportConfigs {
 };
 
 struct ReportCatalog {
-  std::filesystem::path plugin_dir_path;
   LoadedReportConfigs loaded_reports;
 };
 

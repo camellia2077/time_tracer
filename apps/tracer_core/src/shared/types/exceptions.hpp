@@ -48,7 +48,7 @@ class LogicError : public AppError {
 };
 
 /**
- * @brief Exception thrown for plugin ABI mismatch/incompatibility.
+ * @brief Exception thrown for runtime ABI mismatch/incompatibility.
  */
 class DllCompatibilityError : public LogicError {
  public:

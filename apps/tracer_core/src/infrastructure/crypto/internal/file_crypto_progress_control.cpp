@@ -23,6 +23,7 @@ auto ProgressReporter::BeginScan(const fs::path& input_root,
   return Emit(true);
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 auto ProgressReporter::SetAggregateTotals(std::size_t total_files,
                                           std::uint64_t total_bytes,
                                           std::size_t group_count,
@@ -58,9 +59,9 @@ auto ProgressReporter::SetPhase(FileCryptoPhase phase, bool force_emit)
 
 auto ProgressReporter::UpdateCurrentFileProgress(std::uint64_t done_bytes)
     -> FileCryptoResult {
-  const std::uint64_t capped_done =
+  const std::uint64_t kCappedDone =
       std::min(done_bytes, snapshot_.current_file_total_bytes);
-  snapshot_.current_file_done_bytes = capped_done;
+  snapshot_.current_file_done_bytes = kCappedDone;
   snapshot_.overall_done_bytes =
       current_file_base_overall_done_bytes_ + snapshot_.current_file_done_bytes;
   return Emit(false);
@@ -106,27 +107,28 @@ auto ProgressReporter::ShouldEmit(bool force_emit) const -> bool {
     return false;
   }
 
-  const auto now = std::chrono::steady_clock::now();
-  const auto min_interval = options_->progress_min_interval;
-  const bool interval_ready =
-      min_interval.count() <= 0 || now - last_emit_time_ >= min_interval;
+  const auto kNow = std::chrono::steady_clock::now();
+  const auto kMinInterval = options_->progress_min_interval;
+  const bool kIntervalReady =
+      kMinInterval.count() <= 0 || kNow - last_emit_time_ >= kMinInterval;
 
-  const std::uint64_t bytes_delta =
+  const std::uint64_t kBytesDelta =
       snapshot_.overall_done_bytes >= last_emit_overall_done_bytes_
           ? snapshot_.overall_done_bytes - last_emit_overall_done_bytes_
           : 0;
-  const std::uint64_t min_bytes_delta = options_->progress_min_bytes_delta;
-  const bool bytes_ready =
-      min_bytes_delta == 0 || bytes_delta >= min_bytes_delta;
+  const std::uint64_t kMinBytesDelta = options_->progress_min_bytes_delta;
+  const bool kBytesReady =
+      kMinBytesDelta == 0 || kBytesDelta >= kMinBytesDelta;
 
-  return interval_ready || bytes_ready;
+  return kIntervalReady || kBytesReady;
 }
 
+// NOLINTNEXTLINE(readability-function-cognitive-complexity)
 auto ProgressReporter::UpdateRuntimeEstimates(
     std::chrono::steady_clock::time_point emit_time) -> void {
-  const std::uint64_t capped_done =
+  const std::uint64_t kCappedDone =
       std::min(snapshot_.overall_done_bytes, snapshot_.overall_total_bytes);
-  snapshot_.remaining_bytes = snapshot_.overall_total_bytes - capped_done;
+  snapshot_.remaining_bytes = snapshot_.overall_total_bytes - kCappedDone;
 
   if (snapshot_.phase == FileCryptoPhase::kCompleted ||
       snapshot_.phase == FileCryptoPhase::kCancelled ||

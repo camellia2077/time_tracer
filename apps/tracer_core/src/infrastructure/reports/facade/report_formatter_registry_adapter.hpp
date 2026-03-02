@@ -3,8 +3,6 @@
 #define INFRASTRUCTURE_REPORTS_FACADE_REPORT_FORMATTER_REGISTRY_ADAPTER_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "application/ports/i_report_formatter_registry.hpp"
 
@@ -19,9 +17,6 @@ class ReportFormatterRegistryAdapter final
           static_registrar);
 
   auto RegisterFormatters() const -> void override;
-
-  [[nodiscard]] auto GetExpectedFormatterPluginNames() const
-      -> std::vector<std::string> override;
 
  private:
   std::shared_ptr<

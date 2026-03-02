@@ -3,8 +3,6 @@
 #define APPLICATION_PORTS_I_REPORT_FORMATTER_REGISTRY_H_
 
 #include <memory>
-#include <string>
-#include <vector>
 
 namespace tracer_core::application::ports {
 
@@ -20,9 +18,6 @@ class IReportFormatterRegistry {
   virtual ~IReportFormatterRegistry() = default;
 
   virtual auto RegisterFormatters() const -> void = 0;
-
-  [[nodiscard]] virtual auto GetExpectedFormatterPluginNames() const
-      -> std::vector<std::string> = 0;
 };
 
 // Default formatter registry provider. Implemented in infrastructure.

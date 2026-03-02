@@ -21,8 +21,8 @@ struct DailyPathLayout {
 
 auto IsAllDigits(std::string_view value) -> bool {
   return !value.empty() &&
-         std::ranges::all_of(value, [](const char character) -> bool {
-           return std::isdigit(static_cast<unsigned char>(character)) != 0;
+         std::ranges::all_of(value, [](char digit_char) -> bool {
+           return std::isdigit(static_cast<unsigned char>(digit_char)) != 0;
          });
 }
 

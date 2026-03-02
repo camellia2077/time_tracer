@@ -6,26 +6,36 @@
 
 namespace tracer::transport {
 
+struct ErrorContractPayload {
+  std::string error_code;
+  std::string error_category;
+  std::vector<std::string> hints;
+};
+
 struct IngestResponsePayload {
   bool ok = false;
   std::string error_message;
+  ErrorContractPayload error_contract;
 };
 
 struct AckResponsePayload {
   bool ok = false;
   std::string error_message;
+  ErrorContractPayload error_contract;
 };
 
 struct TextResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
+  ErrorContractPayload error_contract;
 };
 
 struct RuntimeCheckResponsePayload {
   bool ok = false;
   std::string error_message;
   std::vector<std::string> messages;
+  ErrorContractPayload error_contract;
 };
 
 struct CliGlobalDefaultsPayload {
@@ -65,6 +75,7 @@ struct ResolveCliContextResponsePayload {
   std::string error_message;
   std::optional<ResolvedCliPathsPayload> paths;
   std::optional<CliConfigPayload> cli_config;
+  ErrorContractPayload error_contract;
 };
 
 struct CapabilitiesAbiPayload {
@@ -73,6 +84,11 @@ struct CapabilitiesAbiPayload {
 };
 
 struct CapabilitiesFeaturesPayload {
+  bool build_info_json = false;
+  bool command_contract_json = false;
+  bool runtime_log_callback = false;
+  bool runtime_diagnostics_callback = false;
+  bool runtime_crypto_progress_callback = false;
   bool runtime_ingest_json = false;
   bool runtime_convert_json = false;
   bool runtime_import_json = false;
@@ -98,23 +114,27 @@ struct QueryResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
+  ErrorContractPayload error_contract;
 };
 
 struct ReportResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
+  ErrorContractPayload error_contract;
 };
 
 struct ReportBatchResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
+  ErrorContractPayload error_contract;
 };
 
 struct ExportResponsePayload {
   bool ok = false;
   std::string error_message;
+  ErrorContractPayload error_contract;
 };
 
 struct ProjectTreeNodePayload {
@@ -130,6 +150,7 @@ struct TreeResponsePayload {
   std::string error_message;
   std::vector<std::string> roots;
   std::vector<ProjectTreeNodePayload> nodes;
+  ErrorContractPayload error_contract;
 };
 
 }  // namespace tracer::transport

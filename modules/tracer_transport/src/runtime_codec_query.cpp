@@ -225,6 +225,9 @@ auto EncodeQueryResponse(const QueryResponsePayload& response)
       {"ok", response.ok},
       {"content", response.content},
       {"error_message", response.error_message},
+      {"error_code", response.error_contract.error_code},
+      {"error_category", response.error_contract.error_category},
+      {"hints", response.error_contract.hints},
   }
       .dump();
 }

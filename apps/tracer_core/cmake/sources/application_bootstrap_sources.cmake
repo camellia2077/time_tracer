@@ -1,5 +1,4 @@
 set(TIME_TRACKER_APPLICATION_BOOTSTRAP_SOURCES
-    "bootstrap/startup_validator.cpp"
     "workflow_handler_entry.cpp"
     "workflow_handler_import_flow.cpp"
     "workflow_handler_stats_logging.cpp"

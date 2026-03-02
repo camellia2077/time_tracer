@@ -2,121 +2,64 @@
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 
 #include <algorithm>
-#include <map>
 #include <stdexcept>
 #include <utility>
 #include <vector>
 
-#include "infrastructure/reports/shared/interfaces/formatter_c_string_view_utils.hpp"
-
 namespace {
 
-auto BuildStatisticItemTree(const std::vector<StatisticItemConfig>& flat_items,
-                            const std::vector<std::vector<uint32_t>>& children,
-                            uint32_t index) -> StatisticItemConfig {
-  StatisticItemConfig item = flat_items[index];
-  item.sub_items.clear();
-  item.sub_items.reserve(children[index].size());
-
-  for (uint32_t child_index : children[index]) {
-    item.sub_items.push_back(
-        BuildStatisticItemTree(flat_items, children, child_index));
+auto BuildStatisticItemTree(const ReportStatisticsItem& item)
+    -> StatisticItemConfig {
+  StatisticItemConfig config_item{};
+  config_item.label = item.label;
+  config_item.db_column = item.db_column;
+  config_item.show = item.show;
+  config_item.sub_items.reserve(item.sub_items.size());
+  for (const auto& child : item.sub_items) {
+    config_item.sub_items.push_back(BuildStatisticItemTree(child));
   }
-  return item;
+  return config_item;
 }
 
 }  // namespace
 
 DayBaseConfig::DayBaseConfig(
-    const TtDayLabelsConfigV1& labels,
-    const TtFormatterStatisticItemNodeV1* statistics_items,
-    uint32_t statistics_item_count)
-    : statistics_items_(
-          BuildStatisticsItems(statistics_items, statistics_item_count)) {
+    const DailyReportLabels& labels,
+    const std::vector<ReportStatisticsItem>& statistics_items)
+    : statistics_items_(BuildStatisticsItems(statistics_items)) {
   LoadBaseConfig(labels);
 }
 
 auto DayBaseConfig::BuildStatisticsItems(
-    const TtFormatterStatisticItemNodeV1* statistics_items,
-    uint32_t statistics_item_count) -> std::vector<StatisticItemConfig> {
-  if (statistics_item_count == 0U) {
+    const std::vector<ReportStatisticsItem>& statistics_items)
+    -> std::vector<StatisticItemConfig> {
+  if (statistics_items.empty()) {
     return {};
-  }
-  if (statistics_items == nullptr) {
-    throw std::invalid_argument(
-        "statistics_items is null while statistics_item_count > 0.");
-  }
-
-  std::vector<StatisticItemConfig> flat_items;
-  flat_items.reserve(statistics_item_count);
-  std::vector<std::vector<uint32_t>> children(statistics_item_count);
-  std::vector<uint32_t> roots;
-  roots.reserve(statistics_item_count);
-
-  for (uint32_t index = 0; index < statistics_item_count; ++index) {
-    const auto& source = statistics_items[index];
-    StatisticItemConfig item{};
-    item.label = formatter_c_string_view_utils::ToString(
-        source.label, "statistics_items.label");
-    item.db_column = formatter_c_string_view_utils::ToString(
-        source.dbColumn, "statistics_items.db_column");
-    item.show = source.show != 0U;
-    flat_items.push_back(std::move(item));
-
-    const int32_t kParentIndex = source.parentIndex;
-    if (kParentIndex < -1) {
-      throw std::invalid_argument(
-          "statistics_items.parentIndex must be >= -1.");
-    }
-    if (kParentIndex == -1) {
-      roots.push_back(index);
-      continue;
-    }
-    if (std::cmp_greater_equal(kParentIndex, statistics_item_count) ||
-        std::cmp_greater_equal(kParentIndex, index)) {
-      throw std::invalid_argument("Invalid statistics_items.parentIndex.");
-    }
-    children[static_cast<uint32_t>(kParentIndex)].push_back(index);
   }
 
   std::vector<StatisticItemConfig> tree_items;
-  tree_items.reserve(roots.size());
-  for (uint32_t root_index : roots) {
-    tree_items.push_back(
-        BuildStatisticItemTree(flat_items, children, root_index));
+  tree_items.reserve(statistics_items.size());
+  for (const auto& item : statistics_items) {
+    tree_items.push_back(BuildStatisticItemTree(item));
   }
   return tree_items;
 }
 
-void DayBaseConfig::LoadBaseConfig(const TtDayLabelsConfigV1& labels) {
-  title_prefix_ = formatter_c_string_view_utils::ToString(labels.titlePrefix,
-                                                          "labels.titlePrefix");
-  date_label_ = formatter_c_string_view_utils::ToString(labels.dateLabel,
-                                                        "labels.dateLabel");
-  total_time_label_ = formatter_c_string_view_utils::ToString(
-      labels.totalTimeLabel, "labels.totalTimeLabel");
-  status_label_ = formatter_c_string_view_utils::ToString(labels.statusLabel,
-                                                          "labels.statusLabel");
-  sleep_label_ = formatter_c_string_view_utils::ToString(labels.sleepLabel,
-                                                         "labels.sleepLabel");
-  getup_time_label_ = formatter_c_string_view_utils::ToString(
-      labels.getupTimeLabel, "labels.getupTimeLabel");
-  remark_label_ = formatter_c_string_view_utils::ToString(labels.remarkLabel,
-                                                          "labels.remarkLabel");
-  exercise_label_ = formatter_c_string_view_utils::ToString(
-      labels.exerciseLabel, "labels.exerciseLabel");
-  no_records_ = formatter_c_string_view_utils::ToString(
-      labels.noRecordsMessage, "labels.noRecordsMessage");
-  statistics_label_ = formatter_c_string_view_utils::ToString(
-      labels.statisticsLabel, "labels.statisticsLabel");
-  all_activities_label_ = formatter_c_string_view_utils::ToString(
-      labels.allActivitiesLabel, "labels.allActivitiesLabel");
-  activity_remark_label_ = formatter_c_string_view_utils::ToString(
-      labels.activityRemarkLabel, "labels.activityRemarkLabel");
-  activity_connector_ = formatter_c_string_view_utils::ToString(
-      labels.activityConnector, "labels.activityConnector");
-  project_breakdown_label_ = formatter_c_string_view_utils::ToString(
-      labels.projectBreakdownLabel, "labels.projectBreakdownLabel");
+void DayBaseConfig::LoadBaseConfig(const DailyReportLabels& labels) {
+  title_prefix_ = labels.report_title_prefix;
+  date_label_ = labels.date_label;
+  total_time_label_ = labels.total_time_label;
+  status_label_ = labels.status_label;
+  sleep_label_ = labels.sleep_label;
+  getup_time_label_ = labels.getup_time_label;
+  remark_label_ = labels.remark_label;
+  exercise_label_ = labels.exercise_label;
+  no_records_ = labels.no_records_message;
+  statistics_label_ = labels.statistics_label;
+  all_activities_label_ = labels.all_activities_label;
+  activity_remark_label_ = labels.activity_remark_label;
+  activity_connector_ = labels.activity_connector;
+  project_breakdown_label_ = labels.project_breakdown_label;
 }
 
 auto DayBaseConfig::GetTitlePrefix() const -> const std::string& {

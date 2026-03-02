@@ -28,7 +28,7 @@ constexpr std::size_t kNonceSize = 24;
 
 struct TracerFileHeader {
   std::array<char, 4> magic = kTracerMagic;
-  std::uint8_t version = kFormatVersionV2;
+  std::uint8_t kVersion = kFormatVersionV2;
   std::uint8_t kdf_id = kKdfArgon2id;
   std::uint8_t cipher_id = kCipherXChaCha20Poly1305;
   std::uint8_t compression_id = kCompressionZstd;

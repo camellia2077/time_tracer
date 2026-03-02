@@ -73,9 +73,11 @@ enum class FileCryptoControl {
 };
 
 enum class FileCryptoSecurityLevel {
-  kInteractive = 0,
+  kMin = 0,
+  kInteractive,
   kModerate,
   kHigh,
+  kMax,
 };
 
 struct FileCryptoProgressSnapshot {

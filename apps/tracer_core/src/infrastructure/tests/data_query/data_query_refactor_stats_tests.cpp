@@ -220,6 +220,7 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
   using tracer_core::infrastructure::query::data::QueryFilters;
+  constexpr double kExpectedMeanSeconds = 2700.0;
 
   DataQueryRequest stats_request;
   stats_request.action = DataQueryAction::kDaysStats;
@@ -247,7 +248,7 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
            "days-stats orchestrator semantic snapshot should count "
            "non-empty rows.",
            failures);
-    Expect(kStatsObjectIt->value("mean_seconds", -1.0) == 2700.0,
+    Expect(kStatsObjectIt->value("mean_seconds", -1.0) == kExpectedMeanSeconds,
            "days-stats orchestrator semantic snapshot should keep mean "
            "contract.",
            failures);
@@ -259,6 +260,7 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
                                                   int& failures) -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
+  constexpr long long kExpectedTotalDurationSeconds = 5400LL;
   constexpr long long kExpectedAverageDurationSeconds = 1800LL;
 
   DataQueryRequest report_chart_request;
@@ -282,7 +284,8 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
          "report-chart orchestrator semantic snapshot should keep selected "
          "root.",
          failures);
-  Expect(kChartPayload.value("total_duration_seconds", -1LL) == 5400LL,
+  Expect(kChartPayload.value("total_duration_seconds", -1LL) ==
+             kExpectedTotalDurationSeconds,
          "report-chart orchestrator semantic snapshot should keep total "
          "duration.",
          failures);

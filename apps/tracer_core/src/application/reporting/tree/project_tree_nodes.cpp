@@ -52,9 +52,9 @@ struct NamedReportNodeRef {
   out.path = JoinTreePath(parent_path, name);
   out.duration_seconds = node.duration;
 
-  const auto children = CollectSortedReportChildren(node);
-  out.children.reserve(children.size());
-  for (const auto& child : children) {
+  const auto kChildren = CollectSortedReportChildren(node);
+  out.children.reserve(kChildren.size());
+  for (const auto& child : kChildren) {
     out.children.push_back(
         BuildNodeFromReportNode(child.name, *child.node, out.path));
   }
@@ -72,14 +72,14 @@ struct NamedReportNodeRef {
 
 auto CollectTreeMatchesByPath(const ProjectTreeNode& node,
                               std::string_view parent_path,
-                              std::string_view root_pattern,
-                              std::vector<ProjectTreeNode>& out) -> void {
-  const std::string current_path = ResolveNodePath(node, parent_path);
-  if (current_path == root_pattern) {
+                              std::vector<ProjectTreeNode>& out,
+                              std::string_view root_pattern) -> void {
+  const std::string kCurrentPath = ResolveNodePath(node, parent_path);
+  if (kCurrentPath == root_pattern) {
     out.push_back(node);
   }
   for (const auto& child : node.children) {
-    CollectTreeMatchesByPath(child, current_path, root_pattern, out);
+    CollectTreeMatchesByPath(child, kCurrentPath, out, root_pattern);
   }
 }
 
@@ -131,7 +131,7 @@ auto FindProjectTreeNodesByPath(const std::vector<ProjectTreeNode>& roots,
 
   std::vector<ProjectTreeNode> out;
   for (const auto& root : roots) {
-    CollectTreeMatchesByPath(root, "", root_pattern, out);
+    CollectTreeMatchesByPath(root, "", out, root_pattern);
   }
   return out;
 }

@@ -23,19 +23,19 @@ auto ParseGlobalDefaults(const toml::table& defaults_tbl,
                          const ConfigParseSource& source, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "defaults";
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           defaults_tbl, "db_path", source.source_path, kSection, "a string")) {
-    config.defaults.kDbPath = ResolveDefaultPath(source.exe_path, *value);
+    config.defaults.kDbPath = ResolveDefaultPath(source.exe_path, *kValue);
   }
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           defaults_tbl, "output_root", source.source_path, kSection,
           "a string")) {
-    config.defaults.output_root = ResolveDefaultPath(source.exe_path, *value);
+    config.defaults.output_root = ResolveDefaultPath(source.exe_path, *kValue);
   }
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           defaults_tbl, "default_format", source.source_path, kSection,
           "a string")) {
-    config.defaults.default_format = *value;
+    config.defaults.default_format = *kValue;
   }
 }
 
@@ -43,9 +43,9 @@ auto ParseExportDefaults(const toml::table& export_tbl,
                          const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.export";
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           export_tbl, "format", source_path, kSection, "a string")) {
-    config.command_defaults.export_format = *value;
+    config.command_defaults.export_format = *kValue;
   }
 }
 
@@ -53,24 +53,24 @@ auto ParseConvertDefaults(const toml::table& convert_tbl,
                           const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.convert";
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           convert_tbl, "date_check", source_path, kSection, "a string")) {
     config.command_defaults.convert_date_check_mode = ParseDateCheckMode(
-        *value, source_path, JoinFieldPath(kSection, "date_check"));
+        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
   }
-  if (const auto value =
+  if (const auto kValue =
           TryReadTypedField<bool>(convert_tbl, "save_processed_output",
                                   source_path, kSection, "a boolean")) {
-    config.command_defaults.convert_save_processed_output = value;
+    config.command_defaults.convert_save_processed_output = kValue;
   }
-  if (const auto value = TryReadTypedField<bool>(
+  if (const auto kValue = TryReadTypedField<bool>(
           convert_tbl, "validate_logic", source_path, kSection, "a boolean")) {
-    config.command_defaults.convert_validate_logic = value;
+    config.command_defaults.convert_validate_logic = kValue;
   }
-  if (const auto value =
+  if (const auto kValue =
           TryReadTypedField<bool>(convert_tbl, "validate_structure",
                                   source_path, kSection, "a boolean")) {
-    config.command_defaults.convert_validate_structure = value;
+    config.command_defaults.convert_validate_structure = kValue;
   }
 }
 
@@ -78,9 +78,9 @@ auto ParseQueryDefaults(const toml::table& query_tbl,
                         const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.query";
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           query_tbl, "format", source_path, kSection, "a string")) {
-    config.command_defaults.query_format = *value;
+    config.command_defaults.query_format = *kValue;
   }
 }
 
@@ -88,15 +88,15 @@ auto ParseIngestDefaults(const toml::table& ingest_tbl,
                          const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.ingest";
-  if (const auto value = TryReadTypedField<std::string>(
+  if (const auto kValue = TryReadTypedField<std::string>(
           ingest_tbl, "date_check", source_path, kSection, "a string")) {
     config.command_defaults.ingest_date_check_mode = ParseDateCheckMode(
-        *value, source_path, JoinFieldPath(kSection, "date_check"));
+        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
   }
-  if (const auto value =
+  if (const auto kValue =
           TryReadTypedField<bool>(ingest_tbl, "save_processed_output",
                                   source_path, kSection, "a boolean")) {
-    config.command_defaults.ingest_save_processed_output = value;
+    config.command_defaults.ingest_save_processed_output = kValue;
   }
 }
 
@@ -104,31 +104,32 @@ auto ParseValidateLogicDefaults(const toml::table& validate_logic_tbl,
                                 const fs::path& source_path, AppConfig& config)
     -> void {
   constexpr std::string_view kSection = "commands.validate-logic";
-  if (const auto value =
+  if (const auto kValue =
           TryReadTypedField<std::string>(validate_logic_tbl, "date_check",
                                          source_path, kSection, "a string")) {
     config.command_defaults.validate_logic_date_check_mode = ParseDateCheckMode(
-        *value, source_path, JoinFieldPath(kSection, "date_check"));
+        *kValue, source_path, JoinFieldPath(kSection, "date_check"));
   }
 }
 
+// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
 void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
                              const fs::path& source_config_path,
                              AppConfig& config) {
   auto fill_from_section = [&](const toml::table& section,
                                std::string_view section_key) -> void {
-    if (const auto value = TryReadTypedField<std::string>(
+    if (const auto kValue = TryReadTypedField<std::string>(
             section, "error_log", source_config_path, section_key,
             "a string")) {
-      config.error_log_path = exe_path / *value;
+      config.error_log_path = exe_path / *kValue;
     } else {
       config.error_log_path = exe_path / "error.log";
     }
 
-    if (const auto value = TryReadTypedField<std::string>(
+    if (const auto kValue = TryReadTypedField<std::string>(
             section, "export_root", source_config_path, section_key,
             "a string")) {
-      config.kExportPath = ResolveDefaultPath(exe_path, *value);
+      config.kExportPath = ResolveDefaultPath(exe_path, *kValue);
     }
 
     config.default_save_processed_output =
@@ -136,12 +137,12 @@ void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
                                 source_config_path, section_key, "a boolean")
             .value_or(false);
 
-    const bool check =
+    const bool kCheck =
         TryReadTypedField<bool>(section, "date_check_continuity",
                                 source_config_path, section_key, "a boolean")
             .value_or(false);
     config.default_date_check_mode =
-        check ? DateCheckMode::kContinuity : DateCheckMode::kNone;
+        kCheck ? DateCheckMode::kContinuity : DateCheckMode::kNone;
   };
 
   if (const toml::table* system_tbl =
@@ -162,13 +163,13 @@ void ParseSystemSettingsImpl(const toml::table& tbl, const fs::path& exe_path,
 void ParseCliDefaultsImpl(const toml::table& tbl, const fs::path& exe_path,
                           const fs::path& source_config_path,
                           AppConfig& config) {
-  const ConfigParseSource parse_source{
+  const ConfigParseSource kParseSource{
       .exe_path = exe_path,
       .source_path = source_config_path,
   };
   if (const toml::table* defaults_tbl =
           TryReadTableField(tbl, "defaults", source_config_path, "")) {
-    ParseGlobalDefaults(*defaults_tbl, parse_source, config);
+    ParseGlobalDefaults(*defaults_tbl, kParseSource, config);
   }
 
   const toml::table* commands_tbl =

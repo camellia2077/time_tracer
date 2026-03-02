@@ -1,6 +1,7 @@
 #include "tracer/transport/envelope.hpp"
 
 #include <string>
+#include <vector>
 
 #include "nlohmann/json.hpp"
 
@@ -61,13 +62,38 @@ auto ReadOptionalStringValue(const json& payload, const char* field_name)
   return it->get<std::string>();
 }
 
+auto ReadOptionalStringArray(const json& payload, const char* field_name)
+    -> std::vector<std::string> {
+  const auto it = payload.find(field_name);
+  if (it == payload.end() || !it->is_array()) {
+    return {};
+  }
+
+  std::vector<std::string> out;
+  out.reserve(it->size());
+  for (const auto& entry : *it) {
+    if (!entry.is_string()) {
+      return {};
+    }
+    out.push_back(entry.get<std::string>());
+  }
+  return out;
+}
+
 }  // namespace
 
 auto BuildResponseEnvelope(bool ok, std::string_view error_message,
-                           std::string_view content) -> ResponseEnvelope {
+                           std::string_view content,
+                           std::string_view error_code,
+                           std::string_view error_category,
+                           const std::vector<std::string>& hints)
+    -> ResponseEnvelope {
   return ResponseEnvelope{
       .ok = ok,
       .error_message = std::string(error_message),
+      .error_code = std::string(error_code),
+      .error_category = std::string(error_category),
+      .hints = hints,
       .content = std::string(content),
   };
 }
@@ -76,6 +102,9 @@ auto SerializeResponseEnvelope(const ResponseEnvelope& envelope) -> std::string 
   json payload = {
       {"ok", envelope.ok},
       {"error_message", envelope.error_message},
+      {"error_code", envelope.error_code},
+      {"error_category", envelope.error_category},
+      {"hints", envelope.hints},
       {"content", envelope.content},
   };
   if (envelope.report_hash_sha256.has_value()) {
@@ -112,6 +141,9 @@ auto ParseResponseEnvelope(std::string_view response_json,
           ResponseEnvelope{
               .ok = ok_it->get<bool>(),
               .error_message = ReadOptionalString(payload, "error_message"),
+              .error_code = ReadOptionalString(payload, "error_code"),
+              .error_category = ReadOptionalString(payload, "error_category"),
+              .hints = ReadOptionalStringArray(payload, "hints"),
               .content = ReadOptionalString(payload, "content"),
               .report_hash_sha256 =
                   ReadOptionalStringValue(payload, "report_hash_sha256"),

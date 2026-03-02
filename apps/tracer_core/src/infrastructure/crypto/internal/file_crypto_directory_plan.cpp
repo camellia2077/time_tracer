@@ -13,10 +13,10 @@ namespace tracer_core::infrastructure::crypto::internal {
 namespace {
 
 [[nodiscard]] auto ToLowerAscii(std::string value) -> std::string {
-  std::transform(value.begin(), value.end(), value.begin(),
-                 [](unsigned char ch) -> char {
-                   return static_cast<char>(std::tolower(ch));
-                 });
+  std::ranges::transform(value, value.begin(),
+                         [](unsigned char character) -> char {
+                           return static_cast<char>(std::tolower(character));
+                         });
   return value;
 }
 
@@ -27,23 +27,23 @@ namespace {
 }
 
 [[nodiscard]] auto ResolveTopLevelGroupLabel(const fs::path& root,
-                                             const fs::path& file_path)
+                                             const fs::path& kFilePath)
     -> std::string {
   std::error_code relative_error;
-  const fs::path relative = fs::relative(file_path, root, relative_error);
+  const fs::path kRelative = fs::relative(kFilePath, root, relative_error);
   if (relative_error) {
     return "(root)";
   }
-  const fs::path parent = relative.parent_path();
-  if (parent.empty() || parent == ".") {
+  const fs::path kParent = kRelative.parent_path();
+  if (kParent.empty() || kParent == ".") {
     return "(root)";
   }
-  const auto it = parent.begin();
-  if (it == parent.end()) {
+  const auto kIt = kParent.begin();
+  if (kIt == kParent.end()) {
     return "(root)";
   }
-  const std::string label = it->string();
-  return label.empty() ? "(root)" : label;
+  const std::string kLabel = kIt->string();
+  return kLabel.empty() ? "(root)" : kLabel;
 }
 
 }  // namespace
@@ -52,7 +52,7 @@ auto BuildSingleFilePlanEntry(const fs::path& input_path,
                               const fs::path& output_path)
     -> std::pair<FileCryptoResult, DirectoryTaskPlanEntry> {
   std::error_code size_error;
-  const auto input_size = fs::file_size(input_path, size_error);
+  const auto kInputSize = fs::file_size(input_path, size_error);
   if (size_error) {
     return {MakeError(FileCryptoError::kInputReadFailed,
                       "Failed to read input file size."),
@@ -63,7 +63,7 @@ auto BuildSingleFilePlanEntry(const fs::path& input_path,
   entry.input_path = input_path;
   entry.output_path = output_path;
   entry.group_label = "(root)";
-  entry.input_size_bytes = input_size;
+  entry.input_size_bytes = kInputSize;
   entry.group_index = 1;
   entry.group_file_index = 1;
   entry.group_file_count = 1;
@@ -74,8 +74,7 @@ auto BuildSingleFilePlanEntry(const fs::path& input_path,
 
 auto BuildDirectoryTaskPlan(const fs::path& input_root_path,
                             const fs::path& output_root_path,
-                            std::string_view input_extension_lower,
-                            std::string_view output_extension_lower)
+                            const DirectoryCryptoExtensions& extensions)
     -> std::pair<FileCryptoResult, DirectoryTaskPlan> {
   if (input_root_path.empty() || output_root_path.empty()) {
     return {MakeError(FileCryptoError::kInvalidArgument,
@@ -105,21 +104,22 @@ auto BuildDirectoryTaskPlan(const fs::path& input_root_path,
     if (!entry.is_regular_file()) {
       continue;
     }
-    const fs::path file_path = entry.path();
-    if (!HasExtensionCaseInsensitive(file_path, input_extension_lower)) {
+    const fs::path kFilePath = entry.path();
+    if (!HasExtensionCaseInsensitive(kFilePath,
+                                     extensions.input_extension_lower)) {
       continue;
     }
 
     std::error_code size_error;
-    const auto file_size = fs::file_size(file_path, size_error);
+    const auto kFileSize = fs::file_size(kFilePath, size_error);
     if (size_error) {
       return {MakeError(FileCryptoError::kInputReadFailed,
                         "Failed to read input file size during scan."),
               {}};
     }
 
-    files.push_back(file_path);
-    total_input_bytes += file_size;
+    files.push_back(kFilePath);
+    total_input_bytes += kFileSize;
   }
 
   if (files.empty()) {
@@ -127,11 +127,11 @@ auto BuildDirectoryTaskPlan(const fs::path& input_root_path,
         MakeError(
             FileCryptoError::kInvalidArgument,
             "No matching files found under input directory for extension: " +
-                std::string(input_extension_lower)),
+                std::string(extensions.input_extension_lower)),
         {}};
   }
 
-  std::sort(files.begin(), files.end());
+  std::ranges::sort(files);
 
   std::map<std::string, std::size_t> group_file_counts;
   for (const auto& file_path : files) {
@@ -171,7 +171,7 @@ auto BuildDirectoryTaskPlan(const fs::path& input_root_path,
     DirectoryTaskPlanEntry plan_entry{};
     plan_entry.input_path = file_path;
     plan_entry.output_path = output_root_path / kRelativePath;
-    plan_entry.output_path.replace_extension(output_extension_lower);
+    plan_entry.output_path.replace_extension(extensions.output_extension_lower);
     plan_entry.group_label =
         ResolveTopLevelGroupLabel(input_root_path, file_path);
     plan_entry.input_size_bytes = kFileSize;

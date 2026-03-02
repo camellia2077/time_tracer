@@ -15,7 +15,12 @@ namespace tracer_core::infrastructure::crypto::internal {
 
 struct PwhashLimitPair {
   unsigned long long ops_limit = 0;
-  unsigned long long mem_limit_bytes = 0;
+  unsigned long long kMemLimitBytes = 0;
+};
+
+struct Argon2idLimits {
+  std::uint32_t ops_limit = 0;
+  std::uint32_t mem_limit_kib = 0;
 };
 
 auto InitializeCryptoBackend() -> FileCryptoResult;
@@ -24,8 +29,7 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
     -> PwhashLimitPair;
 
 auto DeriveMasterKeyWithArgon2id(
-    std::string_view passphrase, std::uint32_t ops_limit,
-    std::uint32_t mem_limit_kib,
+    std::string_view passphrase, const Argon2idLimits& limits,
     const std::array<std::uint8_t, kSaltSize>& salt)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>>;
 

@@ -5,13 +5,13 @@
 #include <map>
 #include <string>
 
+#include "infrastructure/config/models/report_config_models.hpp"
 #include "infrastructure/reports/daily/common/day_base_config.hpp"
 #include "infrastructure/reports/shared/config/tex_style_config.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class DayTexConfig : public DayBaseConfig {
  public:
-  explicit DayTexConfig(const TtDayTexConfigV1& config);
+  explicit DayTexConfig(const DailyTexConfig& config);
 
   [[nodiscard]] auto GetReportTitle() const -> const std::string&;
   [[nodiscard]] auto GetKeywordColors() const

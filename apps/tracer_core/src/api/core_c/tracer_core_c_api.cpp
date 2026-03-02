@@ -2,6 +2,8 @@
 #include "api/core_c/tracer_core_c_api.h"
 
 #include <filesystem>
+#include <memory>
+#include <mutex>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
@@ -19,185 +21,8 @@ using tracer_core::core::c_api::internal::BuildCapabilitiesResponseJson;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::SetLastError;
 
-namespace {
+#include "api/core_c/internal/tracer_core_c_api_namespace.inc"
 
-namespace fs = std::filesystem;
-using nlohmann::json;
-
-constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
-constexpr std::string_view kCoreLibraryName = "tracer_core.dll";
-constexpr std::string_view kReportsSharedLibraryName = "libreports_shared.dll";
-constexpr std::string_view kSqliteLibraryName = "libsqlite3-0.dll";
-constexpr std::string_view kTomlLibraryName = "libtomlplusplus-3.dll";
-constexpr std::string_view kLibgccRuntimeName = "libgcc_s_seh-1.dll";
-constexpr std::string_view kLibstdcppRuntimeName = "libstdc++-6.dll";
-constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
-
-#ifndef TT_RUNTIME_REQUIRE_SQLITE_DLL
-#define TT_RUNTIME_REQUIRE_SQLITE_DLL 1
-#endif
-
-#ifndef TT_RUNTIME_REQUIRE_TOML_DLL
-#define TT_RUNTIME_REQUIRE_TOML_DLL 1
-#endif
-
-#ifndef TT_RUNTIME_REQUIRE_MINGW_DLLS
-#define TT_RUNTIME_REQUIRE_MINGW_DLLS 1
-#endif
-
-struct ResolvedCliContext {
-  AppConfig app_config;
-  fs::path output_root;
-  fs::path db_path;
-  fs::path export_root;
-  fs::path runtime_output_root;
-};
-
-[[nodiscard]] auto IsNonEmptyCString(const char* value) -> bool {
-  return value != nullptr && value[0] != '\0';
-}
-
-[[nodiscard]] auto ToDateCheckModeString(DateCheckMode mode)
-    -> std::string_view {
-  switch (mode) {
-    case DateCheckMode::kNone:
-      return "none";
-    case DateCheckMode::kContinuity:
-      return "continuity";
-    case DateCheckMode::kFull:
-      return "full";
-  }
-  return "none";
-}
-
-[[nodiscard]] auto ToDateCheckModeJson(const std::optional<DateCheckMode>& mode)
-    -> json {
-  if (!mode.has_value()) {
-    return nullptr;
-  }
-  return std::string(ToDateCheckModeString(*mode));
-}
-
-[[nodiscard]] auto ToStringJson(const std::optional<std::string>& value)
-    -> json {
-  if (!value.has_value()) {
-    return nullptr;
-  }
-  return *value;
-}
-
-[[nodiscard]] auto BuildCliConfigJson(const AppConfig& app_config) -> json {
-  return json{
-      {"default_save_processed_output",
-       app_config.default_save_processed_output},
-      {"default_date_check_mode",
-       std::string(ToDateCheckModeString(app_config.default_date_check_mode))},
-      {"defaults",
-       {{"default_format", ToStringJson(app_config.defaults.default_format)}}},
-      {"command_defaults",
-       {{"export_format",
-         ToStringJson(app_config.command_defaults.export_format)},
-        {"query_format",
-         ToStringJson(app_config.command_defaults.query_format)},
-        {"convert_date_check_mode",
-         ToDateCheckModeJson(
-             app_config.command_defaults.convert_date_check_mode)},
-        {"convert_save_processed_output",
-         app_config.command_defaults.convert_save_processed_output.has_value()
-             ? json(*app_config.command_defaults.convert_save_processed_output)
-             : json(nullptr)},
-        {"convert_validate_logic",
-         app_config.command_defaults.convert_validate_logic.has_value()
-             ? json(*app_config.command_defaults.convert_validate_logic)
-             : json(nullptr)},
-        {"convert_validate_structure",
-         app_config.command_defaults.convert_validate_structure.has_value()
-             ? json(*app_config.command_defaults.convert_validate_structure)
-             : json(nullptr)},
-        {"ingest_date_check_mode",
-         ToDateCheckModeJson(
-             app_config.command_defaults.ingest_date_check_mode)},
-        {"ingest_save_processed_output",
-         app_config.command_defaults.ingest_save_processed_output.has_value()
-             ? json(*app_config.command_defaults.ingest_save_processed_output)
-             : json(nullptr)},
-        {"validate_logic_date_check_mode",
-         ToDateCheckModeJson(
-             app_config.command_defaults.validate_logic_date_check_mode)}}}};
-}
-
-[[nodiscard]] auto ResolveCliContext(const char* executable_path,
-                                     const char* db_override,
-                                     const char* output_override,
-                                     const char* command_name)
-    -> ResolvedCliContext {
-  if (!IsNonEmptyCString(executable_path)) {
-    throw std::invalid_argument("executable_path must not be empty.");
-  }
-
-  ConfigLoader config_loader(executable_path);
-  AppConfig app_config = config_loader.LoadConfiguration();
-
-  const fs::path kExecutable = fs::absolute(fs::path(executable_path));
-  fs::path output_root = fs::absolute(kExecutable.parent_path() / "output");
-  if (app_config.defaults.output_root.has_value()) {
-    output_root = fs::absolute(*app_config.defaults.output_root);
-  }
-
-  fs::path export_root;
-  if (IsNonEmptyCString(output_override)) {
-    export_root = fs::absolute(fs::path(output_override));
-  } else if (app_config.kExportPath.has_value()) {
-    export_root = fs::absolute(*app_config.kExportPath);
-  }
-
-  fs::path db_path = output_root / "db" / kDatabaseFilename;
-  if (app_config.defaults.kDbPath.has_value()) {
-    db_path = fs::absolute(*app_config.defaults.kDbPath);
-  }
-  if (IsNonEmptyCString(db_override)) {
-    db_path = fs::absolute(fs::path(db_override));
-  }
-
-  const std::string kResolvedCommand = IsNonEmptyCString(command_name)
-                                           ? std::string(command_name)
-                                           : std::string();
-  const fs::path kRuntimeOutputRoot =
-      (kResolvedCommand == "export" && !export_root.empty()) ? export_root
-                                                             : output_root;
-
-  return ResolvedCliContext{
-      .app_config = std::move(app_config),
-      .output_root = std::move(output_root),
-      .db_path = std::move(db_path),
-      .export_root = std::move(export_root),
-      .runtime_output_root = kRuntimeOutputRoot,
-  };
-}
-
-[[nodiscard]] auto BuildFailureJsonResponse(
-    std::string_view error_message,
-    const std::vector<std::string>& messages = {}) -> const char* {
-  const std::string kNormalizedError = error_message.empty()
-                                           ? std::string("Unknown error.")
-                                           : std::string(error_message);
-  SetLastError(kNormalizedError.c_str());
-
-  json payload = {{"ok", false}, {"error_message", kNormalizedError}};
-  if (!messages.empty()) {
-    payload["messages"] = messages;
-  }
-  tracer_core::core::c_api::internal::g_last_response = payload.dump();
-  return tracer_core::core::c_api::internal::g_last_response.c_str();
-}
-
-[[nodiscard]] auto BuildSuccessJsonResponse(const json& payload) -> const
-    char* {
-  tracer_core::core::c_api::internal::g_last_response = payload.dump();
-  return tracer_core::core::c_api::internal::g_last_response.c_str();
-}
-
-}  // namespace
 
 extern "C" TT_CORE_API auto tracer_core_get_version(void) -> const char* {
   try {
@@ -233,6 +58,106 @@ extern "C" TT_CORE_API auto tracer_core_get_capabilities_json(void) -> const
   }
 }
 
+extern "C" TT_CORE_API auto tracer_core_get_build_info_json(void) -> const
+    char* {
+  try {
+    ClearLastError();
+    return BuildSuccessJsonResponse(
+        json{{"ok", true},
+             {"error_message", ""},
+             {"core_version", std::string(AppInfo::kVersion)},
+             {"abi_name", std::string(kCoreAbiName)},
+             {"abi_version", kCoreAbiVersion},
+             {"build_time_utc", std::string(AppInfo::kLastUpdated)}});
+  } catch (const std::exception& error) {
+    return BuildFailureJsonResponse(error.what(), {},
+                                    "runtime.build_info_error", "runtime");
+  } catch (...) {
+    return BuildFailureJsonResponse(
+        "tracer_core_get_build_info_json failed unexpectedly.", {},
+        "runtime.build_info_error", "runtime");
+  }
+}
+
+extern "C" TT_CORE_API auto tracer_core_get_command_contract_json(
+    const char* kRequest) -> const char* {
+  try {
+    ClearLastError();
+
+    std::optional<std::string> command_filter;
+    if (IsNonEmptyCString(kRequest)) {
+      const json kRequestJson = json::parse(kRequest);
+      if (!kRequestJson.is_object()) {
+        return BuildFailureJsonResponse(
+            "request_json must be a JSON object.", {},
+            "contract.invalid_request", "contract",
+            {R"(Use JSON object, e.g. {"command":"query"}.)"});
+      }
+      const auto kCommandIt = kRequestJson.find("command");
+      if (kCommandIt != kRequestJson.end() && !kCommandIt->is_null()) {
+        if (!kCommandIt->is_string()) {
+          return BuildFailureJsonResponse(
+              "field `command` must be a string.", {},
+              "contract.invalid_request", "contract",
+              {R"(Use JSON object, e.g. {"command":"query"}.)"});
+        }
+        command_filter = kCommandIt->get<std::string>();
+      }
+    }
+
+    json commands =
+        json::array({json{{"id", "blink"},
+                          {"aliases", json::array({"ingest"})},
+                          {"supports", json{{"structured_output", false}}}},
+                     json{{"id", "ingest"},
+                          {"aliases", json::array({"blink"})},
+                          {"supports", json{{"structured_output", false}}}},
+                     json{{"id", "query"},
+                          {"aliases", json::array()},
+                          {"supports", json{{"structured_output", true}}}},
+                     json{{"id", "tree"},
+                          {"aliases", json::array()},
+                          {"supports", json{{"structured_output", true}}}},
+                     json{{"id", "report"},
+                          {"aliases", json::array()},
+                          {"supports", json{{"structured_output", false}}}},
+                     json{{"id", "export"},
+                          {"aliases", json::array()},
+                          {"supports", json{{"structured_output", false}}}},
+                     json{{"id", "crypto"},
+                          {"aliases", json::array()},
+                          {"supports", json{{"structured_output", false}}}}});
+
+    if (command_filter.has_value()) {
+      json filtered = json::array();
+      for (const auto& item : commands) {
+        if (item.value("id", "") == *command_filter) {
+          filtered.push_back(item);
+          break;
+        }
+      }
+      commands = std::move(filtered);
+    }
+
+    return BuildSuccessJsonResponse(json{{"ok", true},
+                                         {"error_message", ""},
+                                         {"contract_version", "1"},
+                                         {"commands", std::move(commands)}});
+  } catch (const json::parse_error& error) {
+    return BuildFailureJsonResponse(
+        std::string("Invalid request JSON: ") + error.what(), {},
+        "contract.invalid_request", "contract",
+        {R"(Use JSON object, e.g. {"command":"query"}.)"});
+  } catch (const std::exception& error) {
+    return BuildFailureJsonResponse(error.what(), {}, "contract.internal_error",
+                                    "contract");
+  } catch (...) {
+    return BuildFailureJsonResponse(
+        "tracer_core_get_command_contract_json failed unexpectedly.", {},
+        "contract.internal_error", "contract");
+  }
+}
+
 extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
     const char* executable_path, int is_help_mode) -> const char* {
   try {
@@ -241,7 +166,10 @@ extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
         ResolveCliContext(executable_path, nullptr, nullptr, nullptr);
     if (is_help_mode != 0) {
       return BuildSuccessJsonResponse(json{
-          {"ok", true}, {"error_message", ""}, {"messages", json::array()}});
+          {"ok", true},
+          {"error_message", ""},
+          {"messages", json::array()},
+      });
     }
 
     const fs::path kBinDir = kContext.app_config.exe_dir_path;
@@ -331,10 +259,12 @@ extern "C" TT_CORE_API auto tracer_core_runtime_resolve_cli_context_json(
                     .string()}}},
              {"cli_config", BuildCliConfigJson(kContext.app_config)}});
   } catch (const std::exception& error) {
-    return BuildFailureJsonResponse(error.what());
+    return BuildFailureJsonResponse(error.what(), {}, "config.resolve_failed",
+                                    "config");
   } catch (...) {
     return BuildFailureJsonResponse(
-        "tracer_core_runtime_resolve_cli_context_json failed unexpectedly.");
+        "tracer_core_runtime_resolve_cli_context_json failed unexpectedly.", {},
+        "config.resolve_failed", "config");
   }
 }
 
@@ -343,6 +273,26 @@ extern "C" TT_CORE_API auto tracer_core_last_error(void) -> const char* {
     return "";
   }
   return tracer_core::core::c_api::internal::g_last_error.c_str();
+}
+
+extern "C" TT_CORE_API void tracer_core_set_log_callback(
+    TtCoreLogCallback callback, void* user_data) {
+  std::scoped_lock lock(g_callback_mutex);
+  g_log_callback_registration.callback = callback;
+  g_log_callback_registration.user_data = user_data;
+}
+
+extern "C" TT_CORE_API void tracer_core_set_diagnostics_callback(
+    TtCoreDiagnosticsCallback callback, void* user_data) {
+  std::scoped_lock lock(g_callback_mutex);
+  g_diagnostics_callback_registration.callback = callback;
+  g_diagnostics_callback_registration.user_data = user_data;
+}
+
+extern "C" TT_CORE_API void tracer_core_set_crypto_progress_callback(
+    TtCoreCryptoProgressCallback callback, void* user_data) {
+  tracer_core::core::c_api::internal::SetCryptoProgressCallbackRegistration(
+      callback, user_data);
 }
 
 // ABI compatibility: parameter order is part of exported C contract.
@@ -367,6 +317,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_create(
     }
     request.output_root = fs::path(output_root);
     request.converter_config_toml_path = fs::path(converter_config_toml_path);
+    request.logger = CreateAbiLoggerAdapter();
+    request.diagnostics_sink = CreateAbiDiagnosticsAdapter();
 
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
     if (!runtime.core_api) {

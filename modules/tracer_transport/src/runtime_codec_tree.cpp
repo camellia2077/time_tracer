@@ -163,6 +163,8 @@ auto DecodeTreeResponse(std::string_view response_json) -> TreeResponsePayload {
   const auto ok = TryReadBoolField(payload, "ok");
   const auto found = TryReadBoolField(payload, "found");
   const auto error_message = TryReadStringField(payload, "error_message");
+  const auto error_code = TryReadStringField(payload, "error_code");
+  const auto error_category = TryReadStringField(payload, "error_category");
   if (ok.HasError()) {
     throw std::invalid_argument(ok.error.message);
   }
@@ -175,11 +177,19 @@ auto DecodeTreeResponse(std::string_view response_json) -> TreeResponsePayload {
   if (error_message.HasError()) {
     throw std::invalid_argument(error_message.error.message);
   }
+  if (error_code.HasError()) {
+    throw std::invalid_argument(error_code.error.message);
+  }
+  if (error_category.HasError()) {
+    throw std::invalid_argument(error_category.error.message);
+  }
 
   TreeResponsePayload out{};
   out.ok = *ok.value;
   out.found = found.value.value_or(true);
   out.error_message = error_message.value.value_or("");
+  out.error_contract.error_code = error_code.value.value_or("");
+  out.error_contract.error_category = error_category.value.value_or("");
 
   if (const auto roots_it = payload.find("roots");
       roots_it != payload.end() && !roots_it->is_null()) {
@@ -206,6 +216,20 @@ auto DecodeTreeResponse(std::string_view response_json) -> TreeResponsePayload {
     }
   }
 
+  if (const auto hints_it = payload.find("hints");
+      hints_it != payload.end() && !hints_it->is_null()) {
+    if (!hints_it->is_array()) {
+      throw std::invalid_argument("field `hints` must be a string array.");
+    }
+    out.error_contract.hints.reserve(hints_it->size());
+    for (const auto& hint : *hints_it) {
+      if (!hint.is_string()) {
+        throw std::invalid_argument("field `hints` must be a string array.");
+      }
+      out.error_contract.hints.push_back(hint.get<std::string>());
+    }
+  }
+
   return out;
 }
 
@@ -226,6 +250,9 @@ auto EncodeTreeResponse(const TreeResponsePayload& response) -> std::string {
       {"roots", std::move(roots)},
       {"nodes", std::move(nodes)},
       {"error_message", response.error_message},
+      {"error_code", response.error_contract.error_code},
+      {"error_category", response.error_contract.error_category},
+      {"hints", response.error_contract.hints},
   }
       .dump();
 }

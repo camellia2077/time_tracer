@@ -5,14 +5,11 @@
 #include "domain/reports/models/period_report_models.hpp"
 #include "infrastructure/reports/monthly/formatters/typst/month_typ_config.hpp"
 #include "infrastructure/reports/shared/formatters/templates/base_typ_formatter.hpp"
-#include "infrastructure/reports/shared/interfaces/formatter_c_abi_v2.hpp"
 
 class MonthTypFormatter
     : public BaseTypFormatter<MonthlyReportData, MonthTypConfig> {
  public:
   explicit MonthTypFormatter(std::shared_ptr<MonthTypConfig> config);
-  [[nodiscard]] auto FormatReportFromView(
-      const TtRangeReportDataV1& data_view) const -> std::string;
 
  protected:
   [[nodiscard]] auto ValidateData(const MonthlyReportData& data) const

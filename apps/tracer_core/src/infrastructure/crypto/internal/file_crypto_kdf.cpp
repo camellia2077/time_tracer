@@ -76,21 +76,41 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
     -> PwhashLimitPair {
 #if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM
   switch (security_level) {
+    case FileCryptoSecurityLevel::kMin:
+      return {
+          .ops_limit =
+              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MIN),
+          .kMemLimitBytes =
+              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MIN),
+      };
     case FileCryptoSecurityLevel::kHigh:
       return {
-          static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_SENSITIVE),
-          static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_SENSITIVE),
+          .ops_limit =
+              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_SENSITIVE),
+          .kMemLimitBytes =
+              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_SENSITIVE),
+      };
+    case FileCryptoSecurityLevel::kMax:
+      return {
+          .ops_limit =
+              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MAX),
+          .kMemLimitBytes =
+              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MAX),
       };
     case FileCryptoSecurityLevel::kModerate:
       return {
-          static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MODERATE),
-          static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MODERATE),
+          .ops_limit =
+              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MODERATE),
+          .kMemLimitBytes =
+              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MODERATE),
       };
     case FileCryptoSecurityLevel::kInteractive:
     default:
       return {
-          static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_INTERACTIVE),
-          static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_INTERACTIVE),
+          .ops_limit = static_cast<unsigned long long>(
+              crypto_pwhash_OPSLIMIT_INTERACTIVE),
+          .kMemLimitBytes = static_cast<unsigned long long>(
+              crypto_pwhash_MEMLIMIT_INTERACTIVE),
       };
   }
 #else
@@ -100,28 +120,29 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
 }
 
 auto DeriveMasterKeyWithArgon2id(
-    std::string_view passphrase, std::uint32_t ops_limit,
-    std::uint32_t mem_limit_kib,
+    std::string_view passphrase, const Argon2idLimits& limits,
     const std::array<std::uint8_t, kSaltSize>& salt)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
 #if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM
   std::vector<std::uint8_t> key(crypto_aead_xchacha20poly1305_ietf_KEYBYTES);
-  const std::size_t mem_limit_bytes =
-      static_cast<std::size_t>(mem_limit_kib) * 1024U;
+  const std::size_t kMemLimitBytes =
+      static_cast<std::size_t>(limits.mem_limit_kib) * 1024U;
   if (crypto_pwhash(key.data(), key.size(), passphrase.data(),
                     static_cast<unsigned long long>(passphrase.size()),
-                    salt.data(), static_cast<unsigned long long>(ops_limit),
-                    mem_limit_bytes, crypto_pwhash_ALG_ARGON2ID13) != 0) {
+                    salt.data(),
+                    static_cast<unsigned long long>(limits.ops_limit),
+                    kMemLimitBytes, crypto_pwhash_ALG_ARGON2ID13) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
-                      "Failed to derive key with Argon2id."),
+                      "Failed to derive key with Argon2id (likely "
+                      "insufficient system resources; consider lowering "
+                      "security_level, e.g. `high`)."),
             {}};
   }
   return {{}, std::move(key)};
 #else
   (void)passphrase;
-  (void)ops_limit;
-  (void)mem_limit_kib;
+  (void)limits;
   (void)salt;
   return {MakeError(FileCryptoError::kCryptoBackendUnavailable,
                     "File crypto backend is unavailable (build without "
@@ -142,9 +163,8 @@ auto DeriveSubkeyFromBatchMaster(
   }
 
   std::array<std::uint8_t, kBatchSubkeyLabel.size() + kNonceSize> input{};
-  std::copy(kBatchSubkeyLabel.begin(), kBatchSubkeyLabel.end(), input.begin());
-  std::copy(nonce.begin(), nonce.end(),
-            input.begin() + kBatchSubkeyLabel.size());
+  std::ranges::copy(kBatchSubkeyLabel, input.begin());
+  std::ranges::copy(nonce, input.begin() + kBatchSubkeyLabel.size());
 
   std::vector<std::uint8_t> subkey(crypto_aead_xchacha20poly1305_ietf_KEYBYTES);
   if (crypto_generichash(subkey.data(), subkey.size(), input.data(),
@@ -173,8 +193,13 @@ auto GetOrDeriveMasterKeyForHeader(std::string_view passphrase,
       cached != nullptr) {
     return {{}, *cached};
   }
-  auto [derive_result, derived_key] = DeriveMasterKeyWithArgon2id(
-      passphrase, header.ops_limit, header.mem_limit_kib, header.salt);
+  auto [derive_result, derived_key] =
+      DeriveMasterKeyWithArgon2id(passphrase,
+                                  Argon2idLimits{
+                                      .ops_limit = header.ops_limit,
+                                      .mem_limit_kib = header.mem_limit_kib,
+                                  },
+                                  header.salt);
   if (!derive_result.ok()) {
     return {derive_result, {}};
   }
@@ -191,15 +216,15 @@ auto BuildDefaultHeaderV2(FileCryptoSecurityLevel security_level,
 
   constexpr std::size_t kOpsLimitMax =
       std::numeric_limits<std::uint32_t>::max();
-  const PwhashLimitPair limits = ResolvePwhashLimits(security_level);
-  const auto kOpsLimit = limits.ops_limit;
+  const PwhashLimitPair kLimits = ResolvePwhashLimits(security_level);
+  const auto kOpsLimit = kLimits.ops_limit;
   if (kOpsLimit > kOpsLimitMax) {
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
                       "libsodium opslimit exceeds v2 header capacity."),
             {}};
   }
 
-  const auto kMemLimitBytes = limits.mem_limit_bytes;
+  const auto kMemLimitBytes = kLimits.kMemLimitBytes;
   const auto kMemLimitKiB = kMemLimitBytes / 1024ULL;
   if (kMemLimitKiB == 0 ||
       kMemLimitKiB > static_cast<unsigned long long>(
@@ -209,7 +234,7 @@ auto BuildDefaultHeaderV2(FileCryptoSecurityLevel security_level,
             {}};
   }
 
-  header.version = kFormatVersionV2;
+  header.kVersion = kFormatVersionV2;
   header.kdf_id = kdf_id;
   header.cipher_id = kCipherXChaCha20Poly1305;
   header.compression_id = kCompressionZstd;
