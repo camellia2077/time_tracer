@@ -6,7 +6,8 @@ from pathlib import Path
 
 from ...core.context import Context
 from ...services.change_policy import ChangePolicyDecision
-from ...services.suite_registry import needs_suite_build, resolve_suite_name
+from ...services.suite_registry import needs_suite_build, resolve_suite_runner_name
+from ..shared.result_reporting import print_failure_report, print_result_paths
 
 
 def resolve_state_path(ctx: Context, app_name: str, build_dir_name: str) -> Path:
@@ -67,12 +68,13 @@ def build_command_text(decision: ChangePolicyDecision, profile_name: str | None)
 
 
 def test_command_text(decision: ChangePolicyDecision) -> str:
-    suite_name = resolve_suite_name(decision.app_name) or decision.app_name
+    suite_runner_name = resolve_suite_runner_name(decision.app_name) or decision.app_name
     cmd = [
         "python",
         "test/run.py",
+        "suite",
         "--suite",
-        suite_name,
+        suite_runner_name,
         "--agent",
         "--build-dir",
         decision.build_dir_name,
@@ -143,12 +145,24 @@ def new_state(
     return state
 
 
-def finish(state: dict, state_path: Path, exit_code: int, status: str) -> int:
+def finish(
+    state: dict,
+    state_path: Path,
+    exit_code: int,
+    status: str,
+    repo_root: Path | None = None,
+) -> int:
     state["status"] = status
     state["exit_code"] = exit_code
     state["updated_at"] = utc_now_iso()
     write_state(state_path=state_path, state=state)
     print(f"--- post-change state: {state_path}")
+    if repo_root is not None:
+        print_result_paths(
+            app_name=str(state.get("app", "")),
+            repo_root=repo_root,
+            state_json=state_path,
+        )
     return exit_code
 
 
@@ -157,17 +171,29 @@ def finish_failure(
     state_path: Path,
     stage: str,
     exit_code: int,
+    repo_root: Path,
 ) -> int:
     set_step(state, stage, "failed", exit_code)
     state["failed_stage"] = stage
-    state["failed_command"] = state["steps"][stage]["command"]
+    failed_command = str(state["steps"][stage]["command"])
+    state["failed_command"] = failed_command
     state["error_summary"] = (
         f"{stage} failed with exit code {exit_code}. Check command output above for key errors."
     )
     state["next_action"] = "Fix errors and rerun: python scripts/run.py post-change"
+    print_failure_report(
+        command=failed_command,
+        exit_code=exit_code,
+        next_action=state["next_action"],
+        app_name=str(state.get("app", "")),
+        repo_root=repo_root,
+        state_json=state_path,
+        fallback_key_error_hint="See command output above for key errors.",
+    )
     return finish(
         state=state,
         state_path=state_path,
         exit_code=exit_code,
         status="stopped",
+        repo_root=repo_root,
     )

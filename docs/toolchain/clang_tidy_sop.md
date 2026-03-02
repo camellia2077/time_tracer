@@ -40,7 +40,7 @@ apps/tracer_cli/windows/scripts/run_clang_tidy.sh <BATCH_ID>
    - `python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <BATCH_ID> --preset sop --timeout-seconds 1800`
 6. 若中断/超时，直接重跑同一命令，自动从 checkpoint 续跑。
 7. 确认门禁结果：
-   - `test/output/tracer_windows_cli/result.json` 中 `"success": true`
+   - `test/output/artifact_windows_cli/result.json` 中 `"success": true`
 8. 继续下一个批次。
 
 ## 4. 严格清理规则（新增）
@@ -67,7 +67,7 @@ python scripts/run.py tidy-refresh --app tracer_windows_cli --batch-id <BATCH_ID
 ## 6. 完成标准
 
 1. `apps/tracer_cli/windows/build_tidy/tasks/` 下无 `task_*.log`。
-2. `test/output/tracer_windows_cli/result.json` 保持 `"success": true`。
+2. `test/output/artifact_windows_cli/result.json` 保持 `"success": true`。
 3. 全量收尾建议执行：
 
 ```bash

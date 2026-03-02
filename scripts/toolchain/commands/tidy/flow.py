@@ -1,5 +1,6 @@
 from ...core.context import Context
-from . import flow_runner as tidy_flow_runner
+from . import tidy_result as tidy_result_summary
+from .flow_internal import flow_runner as tidy_flow_runner
 
 
 class TidyFlowCommand:
@@ -39,4 +40,20 @@ class TidyFlowCommand:
             profile_name=profile_name,
             kill_build_procs=kill_build_procs,
         )
-        return tidy_flow_runner.execute_flow(self.ctx, options)
+        ret = tidy_flow_runner.execute_flow(self.ctx, options)
+        if ret == 0:
+            status = "completed"
+        elif ret == 2:
+            status = "manual_loop_required"
+        else:
+            status = "failed"
+        tidy_result_summary.write_tidy_result(
+            ctx=self.ctx,
+            app_name=app_name,
+            stage="tidy-flow",
+            status=status,
+            exit_code=ret,
+            build_dir_name="build_tidy",
+            verify_mode="full",
+        )
+        return ret

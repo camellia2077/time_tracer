@@ -1,7 +1,8 @@
 from pathlib import Path
 
 from ...core.context import Context
-from . import (
+from . import tidy_result as tidy_result_summary
+from .refresh_internal import (
     refresh_execute as tidy_refresh_execute,
     refresh_mapper as tidy_refresh_mapper,
     refresh_runner as tidy_refresh_runner,
@@ -189,7 +190,8 @@ class TidyRefreshCommand:
         build_dir_name: str | None = None,
         dry_run: bool = False,
     ) -> int:
-        return tidy_refresh_execute.execute_refresh_command(
+        resolved_build_dir_name = (build_dir_name or "").strip() or "build_tidy"
+        ret = tidy_refresh_execute.execute_refresh_command(
             command=self,
             app_name=app_name,
             batch_id=batch_id,
@@ -200,6 +202,21 @@ class TidyRefreshCommand:
             keep_going=keep_going,
             force_full=force_full,
             final_full=final_full,
-            build_dir_name=build_dir_name,
+            build_dir_name=resolved_build_dir_name,
             dry_run=dry_run,
         )
+        status = "completed" if ret == 0 else "failed"
+        stage = "tidy-refresh"
+        if dry_run:
+            stage = "tidy-refresh-dry-run"
+        verify_mode = "skip"
+        tidy_result_summary.write_tidy_result(
+            ctx=self.ctx,
+            app_name=app_name,
+            stage=stage,
+            status=status,
+            exit_code=ret,
+            build_dir_name=resolved_build_dir_name,
+            verify_mode=verify_mode,
+        )
+        return ret

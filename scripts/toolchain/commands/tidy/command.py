@@ -7,6 +7,7 @@ from . import (
     invoker as tidy_invoker,
     log_splitter as tidy_log_splitter,
     task_builder as tidy_task_builder,
+    tidy_result as tidy_result_summary,
 )
 
 
@@ -143,7 +144,12 @@ class TidyCommand:
         tasks_dir: Path,
         batch_size: int,
     ) -> int:
-        return tidy_task_builder.write_task_batches(processed, tasks_dir, batch_size)
+        return tidy_task_builder.write_task_batches(
+            processed,
+            tasks_dir,
+            batch_size,
+            fix_strategy_config=self.ctx.config.tidy.fix_strategy,
+        )
 
     def _cleanup_old_tasks(self, tasks_dir: Path) -> None:
         tidy_task_builder.cleanup_old_tasks(tasks_dir)
@@ -193,7 +199,11 @@ class TidyCommand:
         )
 
     def _write_markdown_summary(self, processed: list, out_path: Path) -> None:
-        tidy_task_builder.write_markdown_summary(processed, out_path)
+        tidy_task_builder.write_markdown_summary(
+            processed,
+            out_path,
+            fix_strategy_config=self.ctx.config.tidy.fix_strategy,
+        )
 
     # --- Public entrypoints ---
     def execute(
@@ -205,7 +215,7 @@ class TidyCommand:
         keep_going: bool | None = None,
         build_dir_name: str | None = None,
     ) -> int:
-        return tidy_command_execute.execute_tidy_command(
+        ret = tidy_command_execute.execute_tidy_command(
             command=self,
             app_name=app_name,
             extra_args=extra_args,
@@ -214,6 +224,17 @@ class TidyCommand:
             keep_going=keep_going,
             build_dir_name=build_dir_name,
         )
+        status = "completed" if ret == 0 else "failed"
+        tidy_result_summary.write_tidy_result(
+            ctx=self.ctx,
+            app_name=app_name,
+            stage="tidy",
+            status=status,
+            exit_code=ret,
+            build_dir_name=(build_dir_name or "").strip() or "build_tidy",
+            verify_mode="skip",
+        )
+        return ret
 
     def split_only(
         self,

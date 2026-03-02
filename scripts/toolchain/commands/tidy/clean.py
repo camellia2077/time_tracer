@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ...core.context import Context
 from ...services import batch_state
-from ...services.suite_registry import resolve_suite_name
+from ...services.suite_registry import resolve_result_output_name
 from ..shared import tidy as tidy_shared
 
 
@@ -154,7 +154,7 @@ class CleanCommand:
         return tidy_shared.latest_verify_succeeded(self.ctx, app_name)
 
     def _latest_verify_result_mtime(self, app_name: str) -> float | None:
-        suite_name = resolve_suite_name(app_name) or app_name
+        suite_name = resolve_result_output_name(app_name)
         result_path = self.ctx.repo_root / "test" / "output" / suite_name / "result.json"
         if not result_path.exists():
             return None

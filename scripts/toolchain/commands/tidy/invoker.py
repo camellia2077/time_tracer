@@ -92,7 +92,7 @@ def resolve_build_options(
 
 
 def build_tidy_command(
-    app_name: str,
+    _app_name: str,
     build_dir: Path,
     filtered_args: list[str],
     has_target_override: bool,
@@ -100,7 +100,7 @@ def build_tidy_command(
     effective_keep_going: bool,
 ) -> list[str]:
     cmd = ["cmake", "--build", str(build_dir)]
-    default_target = "tidy_all" if app_name == "tracer_windows_cli" else "tidy"
+    default_target = "tidy"
     if not has_target_override:
         cmd += ["--target", default_target]
     if effective_jobs and effective_jobs > 0:

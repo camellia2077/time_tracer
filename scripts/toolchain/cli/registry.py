@@ -4,17 +4,21 @@ from .model import CommandSpec
 def command_specs() -> list[CommandSpec]:
     # Local imports keep command registry cheap and avoid early import cycles.
     from .handlers import (
-        artifact_size,
         build,
         clean,
         config_migrate,
         configure,
-        format as format_handler,
         post_change,
-        rename_apply,
-        rename_audit,
-        rename_plan,
+        rename,
+    )
+    from .handlers.quality import (
+        artifact_size,
+        format as format_handler,
+        lint,
         self_test,
+        verify,
+    )
+    from .handlers.tidy import (
         tidy,
         tidy_batch,
         tidy_close,
@@ -23,7 +27,6 @@ def command_specs() -> list[CommandSpec]:
         tidy_loop,
         tidy_refresh,
         tidy_split,
-        verify,
     )
 
     return [
@@ -32,6 +35,7 @@ def command_specs() -> list[CommandSpec]:
         verify.COMMAND,
         artifact_size.COMMAND,
         format_handler.COMMAND,
+        lint.COMMAND,
         tidy.COMMAND,
         tidy_split.COMMAND,
         tidy_fix.COMMAND,
@@ -41,9 +45,9 @@ def command_specs() -> list[CommandSpec]:
         tidy_batch.COMMAND,
         tidy_close.COMMAND,
         clean.COMMAND,
-        rename_plan.COMMAND,
-        rename_apply.COMMAND,
-        rename_audit.COMMAND,
+        rename.RENAME_PLAN_COMMAND,
+        rename.RENAME_APPLY_COMMAND,
+        rename.RENAME_AUDIT_COMMAND,
         post_change.COMMAND,
         self_test.COMMAND,
         config_migrate.COMMAND,

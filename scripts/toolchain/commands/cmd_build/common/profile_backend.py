@@ -8,7 +8,7 @@ from ....core.context import Context
 def resolve_backend(ctx: Context, app_name: str) -> str:
     app = ctx.get_app_metadata(app_name)
     backend = (getattr(app, "backend", "cmake") or "cmake").strip().lower()
-    if backend in {"cmake", "gradle"}:
+    if backend in {"cmake", "gradle", "cargo"}:
         return backend
     print(f"Warning: unknown backend `{backend}` for app `{app_name}`; fallback to `cmake`.")
     return "cmake"
@@ -41,7 +41,7 @@ def resolve_profile(
         print(
             "Warning: build profile "
             f"`{selected_profile}` not found in "
-            "scripts/toolchain/config.toml. "
+            "scripts/toolchain/config.toml or scripts/toolchain/config/*.toml. "
             "Profile settings will be ignored."
         )
         return None, None
@@ -83,6 +83,14 @@ def profile_gradle_args(ctx: Context, profile_name: str | None) -> list[str]:
     if profile_cfg is None:
         return []
     raw_args = getattr(profile_cfg, "gradle_args", []) or []
+    return [arg for arg in raw_args if arg and arg != "--"]
+
+
+def profile_cargo_args(ctx: Context, profile_name: str | None) -> list[str]:
+    _, profile_cfg = resolve_profile(ctx, profile_name)
+    if profile_cfg is None:
+        return []
+    raw_args = getattr(profile_cfg, "cargo_args", []) or []
     return [arg for arg in raw_args if arg and arg != "--"]
 
 

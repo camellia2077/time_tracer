@@ -13,6 +13,7 @@
    - `scripts/toolchain/commands/**`
 3. 只改默认配置与 profile：
    - `scripts/toolchain/config.toml`
+   - `scripts/toolchain/config/*.toml`
    - `scripts/toolchain/core/config.py`
 4. 只改入口转发：
    - `scripts/run.py`

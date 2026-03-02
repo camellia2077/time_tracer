@@ -10,7 +10,10 @@ if __package__ in (None, ""):
     if str(PACKAGE_PARENT) not in sys.path:
         sys.path.insert(0, str(PACKAGE_PARENT))
     from platform_config import sync
+    from platform_paths import android_config_root, tracer_core_config_root, windows_cli_config_root
 else:
+    from platform_paths import android_config_root, tracer_core_config_root, windows_cli_config_root
+
     from . import sync
 
 
@@ -32,27 +35,19 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--source-root",
         type=Path,
-        default=repo_root / "apps" / "tracer_core" / "config",
+        default=tracer_core_config_root(repo_root),
         help="Canonical source config root.",
     )
     parser.add_argument(
         "--windows-output-root",
         type=Path,
-        default=repo_root / "apps" / "tracer_cli" / "windows" / "config",
+        default=windows_cli_config_root(repo_root),
         help="Output root for generated Windows config.",
     )
     parser.add_argument(
         "--android-output-root",
         type=Path,
-        default=repo_root
-        / "apps"
-        / "tracer_android"
-        / "runtime"
-        / "src"
-        / "main"
-        / "assets"
-        / "tracer_core"
-        / "config",
+        default=android_config_root(repo_root),
         help="Output root for generated Android config.",
     )
     parser.add_argument(

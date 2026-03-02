@@ -45,6 +45,8 @@ def is_cmake_related(path: str) -> bool:
         return True
     if lower == "scripts/toolchain/config.toml":
         return True
+    if lower.startswith("scripts/toolchain/config/") and lower.endswith(".toml"):
+        return True
     if lower.startswith("cmake/") or "/cmake/" in lower:
         return True
     return False

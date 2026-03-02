@@ -1,0 +1,59 @@
+# over_inclusive = true：判定逻辑为 大于等于 >=
+# over_inclusive = false：判定逻辑为 严格大于 >
+
+[cpp]
+display_name = "C++"
+default_paths = ["apps/tracer_core","modules"]
+extensions = [".cpp", ".h", ".hpp", ".cppm", ".cc", ".cxx", ".c"]
+ignore_dirs = [".git", ".idea", ".vscode", "vs", "bin", "obj", "Debug", "Release"]
+ignore_prefixes = ["build", "cmake", "out"]
+default_over_threshold = 350
+default_under_threshold = 120
+default_dir_over_files = 16
+over_inclusive = false
+
+[kt]
+display_name = "Kotlin"
+default_paths = ["apps/tracer_android"]
+extensions = [".kt"]
+ignore_dirs = [".git", ".gradle", "build", ".idea", "captures"]
+ignore_prefixes = []
+default_over_threshold = 350
+default_under_threshold = 150
+default_dir_over_files = 15
+over_inclusive = false
+
+[py]
+display_name = "Python"
+default_paths = ["test", "scripts"]
+extensions = [".py", ".pyw"]
+ignore_dirs = [
+  ".git",
+  ".idea",
+  ".vscode",
+  "__pycache__",
+  "venv",
+  "env",
+  ".env",
+  ".pytest_cache",
+  "dist",
+  "build",
+  ".mypy_cache",
+  ".tox",
+]
+ignore_prefixes = [".", "site-packages"]
+default_over_threshold = 250
+default_under_threshold = 120
+default_dir_over_files = 10
+over_inclusive = true
+
+[rs]
+display_name = "Rust"
+default_paths = ["apps/tracer_cli/windows/rust_cli/src"]
+extensions = [".rs"]
+ignore_dirs = [".git", ".idea", ".vscode", "target", "build", "dist", "__pycache__"]
+ignore_prefixes = []
+default_over_threshold = 350
+default_under_threshold = 120
+default_dir_over_files = 12
+over_inclusive = false

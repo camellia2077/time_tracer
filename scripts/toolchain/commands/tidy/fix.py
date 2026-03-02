@@ -33,7 +33,7 @@ class TidyFixCommand:
         effective_jobs = configured_jobs if jobs is None else jobs
         effective_keep_going = configured_keep_going if keep_going is None else keep_going
 
-        target = "tidy_fix_all" if app_name == "tracer_windows_cli" else "tidy-fix"
+        target = "tidy-fix"
         if effective_limit and effective_limit > 0:
             target = f"tidy_fix_step_{effective_limit}"
 

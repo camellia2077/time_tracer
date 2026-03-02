@@ -20,6 +20,7 @@ class BuildProfileConfig:
     build_targets: list[str] = field(default_factory=list)
     gradle_tasks: list[str] = field(default_factory=list)
     gradle_args: list[str] = field(default_factory=list)
+    cargo_args: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -29,6 +30,48 @@ class BuildConfig:
     cxx_compiler: str | None = None
     default_profile: str = ""
     profiles: dict[str, BuildProfileConfig] = field(default_factory=dict)
+
+
+@dataclass
+class TidyFixStrategyConfig:
+    auto_fix: list[str] = field(
+        default_factory=lambda: [
+            "modernize-use-nullptr",
+            "modernize-use-override",
+            "modernize-use-using",
+            "modernize-loop-convert",
+            "modernize-raw-string-literal",
+            "readability-braces-around-statements",
+            "readability-else-after-return",
+            "readability-redundant-control-flow",
+        ]
+    )
+    safe_refactor: list[str] = field(
+        default_factory=lambda: [
+            "bugprone-easily-swappable-parameters",
+            "readability-function-cognitive-complexity",
+            "bugprone-branch-clone",
+            "performance-for-range-copy",
+            "modernize-pass-by-value",
+            "readability-identifier-naming",
+        ]
+    )
+    nolint_allowed: list[str] = field(
+        default_factory=lambda: [
+            "readability-function-cognitive-complexity",
+            "bugprone-easily-swappable-parameters",
+            "cppcoreguidelines-avoid-magic-numbers",
+        ]
+    )
+    manual_only: list[str] = field(
+        default_factory=lambda: [
+            "clang-diagnostic-error",
+            "clang-diagnostic-*",
+            "clang-analyzer-*",
+            "cppcoreguidelines-pro-type-reinterpret-cast",
+            "concurrency-*",
+        ]
+    )
 
 
 @dataclass
@@ -47,6 +90,7 @@ class TidyConfig:
     auto_full_on_high_already_renamed: bool = True
     auto_full_already_renamed_ratio: float = 0.6
     auto_full_already_renamed_min: int = 20
+    fix_strategy: TidyFixStrategyConfig = field(default_factory=TidyFixStrategyConfig)
 
 
 @dataclass

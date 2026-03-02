@@ -2,29 +2,21 @@ import sys
 from collections.abc import Callable
 from pathlib import Path
 
+from platform_paths import android_config_root, tracer_core_config_root, windows_cli_config_root
+
 from ....core.context import Context
 from ....core.executor import run_command
 
 
 def resolve_platform_config_source_root(ctx: Context) -> Path:
-    return ctx.repo_root / "apps" / "tracer_core" / "config"
+    return tracer_core_config_root(ctx.repo_root)
 
 
 def resolve_platform_config_output_root(ctx: Context, sync_target: str) -> Path:
     if sync_target == "windows":
-        return ctx.repo_root / "apps" / "tracer_cli" / "windows" / "config"
+        return windows_cli_config_root(ctx.repo_root)
     if sync_target == "android":
-        return (
-            ctx.repo_root
-            / "apps"
-            / "tracer_android"
-            / "runtime"
-            / "src"
-            / "main"
-            / "assets"
-            / "tracer_core"
-            / "config"
-        )
+        return android_config_root(ctx.repo_root)
     raise ValueError(f"Unsupported config sync target: {sync_target}")
 
 

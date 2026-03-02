@@ -14,7 +14,7 @@ def resolve_config_root(ctx: Context, app_name: str, config_root_arg: str | None
         candidate = Path(config_root_arg)
         return (candidate if candidate.is_absolute() else (ctx.repo_root / candidate)).resolve()
 
-    if app_name in {"tracer_core", "tracer_windows_cli"}:
+    if app_name in {"tracer_core", "tracer_windows_rust_cli"}:
         return (ctx.repo_root / "apps" / "tracer_core" / "config").resolve()
     if app_name == "tracer_android":
         return (

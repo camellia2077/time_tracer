@@ -26,7 +26,7 @@
    - 关联：`scripts/toolchain/commands/cmd_build/command.py`
 
 3. 调整 profile 默认策略（如 `cmake_args`、`build_targets`、`BUILD_TESTING`）
-   - 先改：`scripts/toolchain/config.toml`
+   - 先改：`scripts/toolchain/config/build.toml`
    - 字段模型：`scripts/toolchain/core/config.py`
    - 读取适配：`scripts/toolchain/commands/cmd_build/common/profile_backend.py`
 
@@ -36,23 +36,29 @@
    - 执行层：`scripts/toolchain/commands/cmd_quality/verify.py`
 
 5. 调整 shell wrapper 参数通道（run.py 参数 vs cmake --build 参数）
-   - `apps/tracer_cli/windows/scripts/build.sh`
+   - `apps/tracer_cli/windows/scripts/build_core_runtime_release.sh`
    - `apps/tracer_cli/windows/scripts/build_fast.sh`
-   - `apps/tracer_cli/windows/scripts/build_release.sh`
+   - `apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
 
 6. 调整 clang-tidy 第三方头过滤
-   - 配置优先：`scripts/toolchain/config.toml` -> `[tidy].header_filter_regex`
+   - 配置优先：`scripts/toolchain/config/workflow.toml` -> `[tidy].header_filter_regex`
    - 默认回退：`scripts/toolchain/commands/cmd_build/cmake.py`
 
 7. 执行 clang-tidy 批次收口（统一入口）
-   - 命令：`python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going`
+   - 命令（C++ 轨）：`python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going`
    - 参数层：`scripts/toolchain/cli/handlers/tidy_batch.py`
    - 执行层：`scripts/toolchain/commands/tidy/batch.py`
 
 ## 3. 最小回归命令
 
 ```bash
-python scripts/run.py build --app tracer_windows_cli --profile release_bundle -- --target help
+# Windows build/bin 产出 core runtime DLL
+bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
+
+# 基于 windows/build/bin 编译 Rust CLI
+bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
+
+# C++ 轨专用（clang-tidy）
 python scripts/run.py verify --app tracer_core --quick --concise
 python scripts/run.py tidy --app tracer_windows_cli -- --target tidy_all
 python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going
@@ -64,4 +70,5 @@ python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <BATCH_ID> 
 2. `scripts/README.md`
 3. `scripts/toolchain/README.md`
 4. `docs/toolchain/clang_tidy_sop.md`
+
 

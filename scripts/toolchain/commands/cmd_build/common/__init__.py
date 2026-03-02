@@ -16,6 +16,7 @@ from .config_sync import (
 from .flags import has_cmake_definition, resolve_toolchain_flags
 from .profile_backend import (
     profile_build_targets,
+    profile_cargo_args,
     profile_cmake_args,
     profile_gradle_args,
     profile_gradle_tasks,
@@ -55,6 +56,7 @@ __all__ = [
     "resolve_build_dir_name",
     "resolve_profile",
     "profile_build_targets",
+    "profile_cargo_args",
     "profile_cmake_args",
     "profile_gradle_args",
     "profile_gradle_tasks",

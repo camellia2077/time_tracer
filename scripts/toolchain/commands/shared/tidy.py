@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 from ...core.context import Context
-from ...services.suite_registry import resolve_suite_name
+from ...services.suite_registry import resolve_result_output_name
 
 BATCH_NAME_PATTERN = re.compile(r"^batch_(\d+)$")
 BATCH_ID_PATTERN = re.compile(r"^\d+$")
@@ -70,7 +70,7 @@ def write_json_dict(
 
 
 def latest_verify_succeeded(ctx: Context, app_name: str) -> tuple[bool, str]:
-    suite_name = resolve_suite_name(app_name) or app_name
+    suite_name = resolve_result_output_name(app_name)
     result_path = ctx.repo_root / "test" / "output" / suite_name / "result.json"
     payload = read_json_dict(result_path)
     if payload is None:

@@ -2,8 +2,10 @@ import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from ...core.config import TidyFixStrategyConfig
 from ...core.context import Context
 from ...services import log_parser, task_sorter
+from .fix_strategy import resolve_primary_strategy
 
 
 def split_and_sort(
@@ -37,6 +39,7 @@ def split_and_sort(
         processed,
         tasks_dir,
         effective_batch_size,
+        fix_strategy_config=ctx.config.tidy.fix_strategy,
     )
     print(
         f"--- Created {len(processed)} granular tasks in {tasks_dir} "
@@ -113,6 +116,7 @@ def write_task_batches(
     processed: list[dict],
     tasks_dir: Path,
     batch_size: int,
+    fix_strategy_config: TidyFixStrategyConfig,
 ) -> int:
     cleanup_old_tasks(tasks_dir)
     for idx, task in enumerate(processed, 1):
@@ -121,7 +125,11 @@ def write_task_batches(
         batch_dir.mkdir(parents=True, exist_ok=True)
         (batch_dir / f"task_{idx:03d}.log").write_text(task["content"], encoding="utf-8")
 
-    write_markdown_summary(processed, tasks_dir / "tasks_summary.md")
+    write_markdown_summary(
+        processed,
+        tasks_dir / "tasks_summary.md",
+        fix_strategy_config=fix_strategy_config,
+    )
     if not processed:
         return 0
     return ((len(processed) - 1) // batch_size) + 1
@@ -207,13 +215,21 @@ def process_ninja_section(
     return processed
 
 
-def write_markdown_summary(processed: list, out_path: Path) -> None:
+def write_markdown_summary(
+    processed: list,
+    out_path: Path,
+    fix_strategy_config: TidyFixStrategyConfig,
+) -> None:
     lines = [
         "# Clang-Tidy Tasks Summary\n",
-        "| ID | File | Difficulty Score | Warning Types |",
-        "| --- | --- | --- | --- |",
+        "| ID | File | Difficulty Score | Warning Types | Fix Strategy |",
+        "| --- | --- | --- | --- | --- |",
     ]
     for idx, item in enumerate(processed, 1):
-        w_types = ", ".join(sorted(set(w["check"] for w in item["diag"])))
-        lines.append(f"| {idx:03d} | {item['file']} | {item['score']:.2f} | {w_types} |")
+        checks = sorted(set(w["check"] for w in item["diag"]))
+        w_types = ", ".join(checks)
+        strategy = resolve_primary_strategy(checks, fix_strategy_config)
+        lines.append(
+            f"| {idx:03d} | {item['file']} | {item['score']:.2f} | {w_types} | {strategy} |"
+        )
     out_path.write_text("\n".join(lines), encoding="utf-8")

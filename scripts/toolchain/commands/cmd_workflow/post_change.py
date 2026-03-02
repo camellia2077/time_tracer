@@ -72,6 +72,7 @@ class PostChangeCommand:
                 state_path=state_path,
                 exit_code=0,
                 status="dry_run",
+                repo_root=self.ctx.repo_root,
             )
 
         if not decision.need_configure and not decision.need_build and not decision.need_test:
@@ -85,6 +86,7 @@ class PostChangeCommand:
                 state_path=state_path,
                 exit_code=0,
                 status="completed",
+                repo_root=self.ctx.repo_root,
             )
 
         if decision.need_configure:
@@ -104,6 +106,7 @@ class PostChangeCommand:
                     state_path=state_path,
                     stage="configure",
                     exit_code=configure_ret,
+                    repo_root=self.ctx.repo_root,
                 )
             post_change_state.set_step(state, "configure", "done", configure_ret)
         else:
@@ -126,6 +129,7 @@ class PostChangeCommand:
                     state_path=state_path,
                     stage="build",
                     exit_code=build_ret,
+                    repo_root=self.ctx.repo_root,
                 )
             post_change_state.set_step(state, "build", "done", build_ret)
         else:
@@ -144,6 +148,7 @@ class PostChangeCommand:
                     state_path=state_path,
                     stage="test",
                     exit_code=test_ret,
+                    repo_root=self.ctx.repo_root,
                 )
             post_change_state.set_step(state, "test", "done", test_ret)
         else:
@@ -156,6 +161,7 @@ class PostChangeCommand:
             state_path=state_path,
             exit_code=0,
             status="completed",
+            repo_root=self.ctx.repo_root,
         )
 
     def _run_tests(self, app_name: str, build_dir_name: str, concise: bool) -> int:

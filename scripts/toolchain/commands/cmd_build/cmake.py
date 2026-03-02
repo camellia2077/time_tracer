@@ -33,6 +33,13 @@ def _read_cmake_cache_value(cache_path: Path, key: str) -> str | None:
     return None
 
 
+def _should_enable_windows_cli_icon(app_name: str, profile_name: str | None) -> bool:
+    if app_name != "tracer_windows_rust_cli":
+        return False
+    profile_key = (profile_name or "").strip().lower()
+    return "release" in profile_key
+
+
 def needs_tidy_filter_reconfigure(ctx: Context, tidy: bool, build_dir: Path) -> bool:
     if not tidy:
         return False
@@ -122,6 +129,9 @@ def configure_cmake(
     filtered_extra_args = [a for a in (extra_args or []) if a != "--"]
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
     configure_args = profile_cmake_args + filtered_extra_args + filtered_cmake_args
+    if _should_enable_windows_cli_icon(app_name=app_name, profile_name=profile_name):
+        if not build_common.has_cmake_definition(flags + configure_args, "ENABLE_APP_ICON"):
+            configure_args += ["-D", "ENABLE_APP_ICON=ON"]
     is_valid_override, error_message = build_common.validate_windows_config_source_override(
         ctx=ctx,
         app_name=app_name,

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from ...services.clangd_lsp import ClangdClient
-from . import apply_processor
+from .internal import apply_processor
 
 
 class RenameApplyMixin:

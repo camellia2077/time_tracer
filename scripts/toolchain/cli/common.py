@@ -23,7 +23,9 @@ def apply_app_path_override(args: argparse.Namespace, ctx: Context) -> int:
 
 
 def add_profile_arg(parser_obj: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
-    help_text = "Build profile from scripts/toolchain/config.toml."
+    help_text = (
+        "Build profile from scripts/toolchain/config.toml and scripts/toolchain/config/*.toml."
+    )
     if defaults.default_profile:
         help_text += f" Default profile: {defaults.default_profile}."
     if defaults.profile_choices:

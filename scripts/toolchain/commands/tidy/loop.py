@@ -1,7 +1,7 @@
 from ...core.context import Context
 from ..cmd_rename import RenameCommand
-from . import loop_tasks as tidy_loop_tasks, loop_verify as tidy_loop_verify
 from .clean import CleanCommand
+from .flow_internal import loop_tasks as tidy_loop_tasks, loop_verify as tidy_loop_verify
 
 
 class TidyLoopCommand:

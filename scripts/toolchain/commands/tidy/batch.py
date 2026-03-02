@@ -1,6 +1,4 @@
 import re
-import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -8,6 +6,9 @@ from ...core.context import Context
 from ...services import batch_state
 from ..cmd_quality.verify import VerifyCommand
 from ..shared import tidy as tidy_shared
+from . import tidy_result as tidy_result_summary
+from .batch_internal.tidy_batch_checkpoint import load_checkpoint, save_checkpoint
+from .batch_internal.tidy_batch_pipeline import run_refresh_stage, should_run_stage, timeout_reached
 from .clean import CleanCommand
 from .refresh import TidyRefreshCommand
 
@@ -34,12 +35,27 @@ class TidyBatchCommand:
         timeout_seconds: int | None = None,
         resume_checkpoint: bool = True,
     ) -> int:
+        resolved_build_dir_name = "build_tidy"
+
+        def finalize(code: int, status: str) -> int:
+            verify_mode = "full" if run_verify else "skip"
+            tidy_result_summary.write_tidy_result(
+                ctx=self.ctx,
+                app_name=app_name,
+                stage="tidy-batch",
+                status=status,
+                exit_code=code,
+                build_dir_name=resolved_build_dir_name,
+                verify_mode=verify_mode,
+            )
+            return code
+
         start_time = time.monotonic()
         try:
             normalized_batch = self._normalize_batch_name(batch_id)
         except ValueError as exc:
             print(f"--- tidy-batch: {exc}")
-            return 2
+            return finalize(2, "invalid_batch_id")
 
         app_dir = self.ctx.get_app_dir(app_name)
         tasks_dir = app_dir / "build_tidy" / "tasks"
@@ -50,10 +66,15 @@ class TidyBatchCommand:
         task_ids = self._collect_task_ids(batch_dir)
         if not task_ids and not done_batch_dir.exists():
             print(f"--- tidy-batch: no tasks found in {batch_dir}")
-            return 1
+            return finalize(1, "missing_batch")
 
         checkpoint = (
-            self._load_checkpoint(app_name=app_name, batch_id=normalized_batch)
+            load_checkpoint(
+                ctx=self.ctx,
+                app_name=app_name,
+                batch_id=normalized_batch,
+                stage_order=_BATCH_STAGES,
+            )
             if resume_checkpoint
             else None
         )
@@ -65,9 +86,10 @@ class TidyBatchCommand:
             )
 
         verify_success: bool | None = None
-        if run_verify and self._should_run_stage(next_stage, "verify"):
-            if self._timeout_reached(start_time, timeout_seconds):
-                self._save_checkpoint(
+        if run_verify and should_run_stage(next_stage, "verify", _BATCH_STAGES):
+            if timeout_reached(start_time, timeout_seconds):
+                save_checkpoint(
+                    ctx=self.ctx,
                     app_name=app_name,
                     batch_id=normalized_batch,
                     next_stage="verify",
@@ -75,7 +97,7 @@ class TidyBatchCommand:
                     verify_success=verify_success,
                 )
                 print("--- tidy-batch: timeout reached before verify stage.")
-                return 124
+                return finalize(124, "timeout_before_verify")
             print("--- tidy-batch: running verify gate...")
             verify_ret = VerifyCommand(self.ctx).execute(
                 app_name=app_name,
@@ -87,9 +109,10 @@ class TidyBatchCommand:
             )
             if verify_ret != 0:
                 print("--- tidy-batch: verify failed.")
-                return verify_ret
+                return finalize(verify_ret, "verify_failed")
             verify_success = True
-            self._save_checkpoint(
+            save_checkpoint(
+                ctx=self.ctx,
                 app_name=app_name,
                 batch_id=normalized_batch,
                 next_stage="clean",
@@ -97,9 +120,10 @@ class TidyBatchCommand:
                 verify_success=verify_success,
             )
 
-        if task_ids and self._should_run_stage(next_stage, "clean"):
-            if self._timeout_reached(start_time, timeout_seconds):
-                self._save_checkpoint(
+        if task_ids and should_run_stage(next_stage, "clean", _BATCH_STAGES):
+            if timeout_reached(start_time, timeout_seconds):
+                save_checkpoint(
+                    ctx=self.ctx,
                     app_name=app_name,
                     batch_id=normalized_batch,
                     next_stage="clean",
@@ -107,7 +131,7 @@ class TidyBatchCommand:
                     verify_success=verify_success,
                 )
                 print("--- tidy-batch: timeout reached before clean stage.")
-                return 124
+                return finalize(124, "timeout_before_clean")
             print(f"--- tidy-batch: cleaning {len(task_ids)} task logs from {normalized_batch}.")
             clean_ret = CleanCommand(self.ctx).execute(
                 app_name=app_name,
@@ -117,8 +141,9 @@ class TidyBatchCommand:
             )
             if clean_ret != 0:
                 print("--- tidy-batch: clean failed.")
-                return clean_ret
-            self._save_checkpoint(
+                return finalize(clean_ret, "clean_failed")
+            save_checkpoint(
+                ctx=self.ctx,
                 app_name=app_name,
                 batch_id=normalized_batch,
                 next_stage="refresh",
@@ -128,9 +153,10 @@ class TidyBatchCommand:
         elif not task_ids:
             print("--- tidy-batch: batch already moved to tasks_done, skip clean stage.")
 
-        if self._should_run_stage(next_stage, "refresh"):
-            if self._timeout_reached(start_time, timeout_seconds):
-                self._save_checkpoint(
+        if should_run_stage(next_stage, "refresh", _BATCH_STAGES):
+            if timeout_reached(start_time, timeout_seconds):
+                save_checkpoint(
+                    ctx=self.ctx,
                     app_name=app_name,
                     batch_id=normalized_batch,
                     next_stage="refresh",
@@ -138,9 +164,11 @@ class TidyBatchCommand:
                     verify_success=verify_success,
                 )
                 print("--- tidy-batch: timeout reached before refresh stage.")
-                return 124
+                return finalize(124, "timeout_before_refresh")
             print(f"--- tidy-batch: refreshing tidy state for {normalized_batch}...")
-            refresh_ret = self._run_refresh_stage(
+            refresh_ret = run_refresh_stage(
+                ctx=self.ctx,
+                refresh_command_cls=TidyRefreshCommand,
                 app_name=app_name,
                 batch_id=normalized_batch,
                 full_every=full_every,
@@ -149,7 +177,8 @@ class TidyBatchCommand:
                 timeout_seconds=timeout_seconds,
             )
             if refresh_ret == 124:
-                self._save_checkpoint(
+                save_checkpoint(
+                    ctx=self.ctx,
                     app_name=app_name,
                     batch_id=normalized_batch,
                     next_stage="refresh",
@@ -157,11 +186,12 @@ class TidyBatchCommand:
                     verify_success=verify_success,
                 )
                 print("--- tidy-batch: timeout reached during refresh stage.")
-                return 124
+                return finalize(124, "timeout_during_refresh")
             if refresh_ret != 0:
                 print("--- tidy-batch: tidy-refresh failed.")
-                return refresh_ret
-            self._save_checkpoint(
+                return finalize(refresh_ret, "refresh_failed")
+            save_checkpoint(
+                ctx=self.ctx,
                 app_name=app_name,
                 batch_id=normalized_batch,
                 next_stage="finalize",
@@ -172,8 +202,9 @@ class TidyBatchCommand:
         if verify_success is None and strict_clean:
             verify_success = True
 
-        if self._timeout_reached(start_time, timeout_seconds):
-            self._save_checkpoint(
+        if timeout_reached(start_time, timeout_seconds):
+            save_checkpoint(
+                ctx=self.ctx,
                 app_name=app_name,
                 batch_id=normalized_batch,
                 next_stage="finalize",
@@ -181,7 +212,7 @@ class TidyBatchCommand:
                 verify_success=verify_success,
             )
             print("--- tidy-batch: timeout reached before finalize stage.")
-            return 124
+            return finalize(124, "timeout_before_finalize")
 
         state_path = batch_state.update_state(
             ctx=self.ctx,
@@ -200,7 +231,7 @@ class TidyBatchCommand:
             f"cleaned={len(task_ids)}, full_every={full_every}"
         )
         print(f"--- tidy-batch: batch state updated -> {state_path}")
-        return 0
+        return finalize(0, "completed")
 
     def _collect_task_ids(self, batch_dir: Path) -> list[str]:
         if not batch_dir.exists() or not batch_dir.is_dir():
@@ -215,100 +246,3 @@ class TidyBatchCommand:
 
     def _normalize_batch_name(self, batch_id: str) -> str:
         return tidy_shared.normalize_required_batch_name(batch_id)
-
-    def _should_run_stage(self, next_stage: str, stage: str) -> bool:
-        try:
-            return _BATCH_STAGES.index(stage) >= _BATCH_STAGES.index(next_stage)
-        except ValueError:
-            return True
-
-    def _timeout_reached(self, start_time: float, timeout_seconds: int | None) -> bool:
-        if timeout_seconds is None or timeout_seconds <= 0:
-            return False
-        return (time.monotonic() - start_time) >= timeout_seconds
-
-    def _load_checkpoint(self, app_name: str, batch_id: str) -> dict | None:
-        state_path = batch_state.state_path(self.ctx, app_name)
-        state = batch_state.load_state(state_path, app_name)
-        checkpoint = state.get("tidy_batch_checkpoint")
-        if not isinstance(checkpoint, dict):
-            return None
-        if checkpoint.get("batch_id") != batch_id:
-            return None
-        if checkpoint.get("next_stage") not in _BATCH_STAGES:
-            return None
-        return checkpoint
-
-    def _run_refresh_stage(
-        self,
-        *,
-        app_name: str,
-        batch_id: str,
-        full_every: int,
-        keep_going: bool | None,
-        start_time: float,
-        timeout_seconds: int | None,
-    ) -> int:
-        if timeout_seconds is None or timeout_seconds <= 0:
-            return TidyRefreshCommand(self.ctx).execute(
-                app_name=app_name,
-                batch_id=batch_id,
-                full_every=full_every,
-                keep_going=keep_going,
-            )
-
-        remaining_seconds = timeout_seconds - (time.monotonic() - start_time)
-        if remaining_seconds <= 0:
-            return 124
-
-        cmd = [
-            sys.executable,
-            str(self.ctx.repo_root / "scripts" / "run.py"),
-            "tidy-refresh",
-            "--app",
-            app_name,
-            "--batch-id",
-            batch_id,
-            "--full-every",
-            str(full_every),
-        ]
-        if keep_going is True:
-            cmd.append("--keep-going")
-        elif keep_going is False:
-            cmd.append("--no-keep-going")
-
-        try:
-            completed = subprocess.run(
-                cmd,
-                cwd=self.ctx.repo_root,
-                env=self.ctx.setup_env(),
-                check=False,
-                timeout=max(1, int(remaining_seconds)),
-            )
-            return int(completed.returncode)
-        except subprocess.TimeoutExpired:
-            print("--- tidy-batch: refresh stage timeout reached.")
-            return 124
-
-    def _save_checkpoint(
-        self,
-        *,
-        app_name: str,
-        batch_id: str,
-        next_stage: str,
-        task_ids: list[str],
-        verify_success: bool | None,
-    ) -> None:
-        checkpoint = {
-            "batch_id": batch_id,
-            "next_stage": next_stage,
-            "task_ids": task_ids,
-        }
-        batch_state.update_state(
-            ctx=self.ctx,
-            app_name=app_name,
-            batch_id=batch_id,
-            cleaned_task_ids=[],
-            last_verify_success=verify_success,
-            extra_fields={"tidy_batch_checkpoint": checkpoint},
-        )

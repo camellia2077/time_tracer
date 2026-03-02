@@ -1,12 +1,18 @@
-import subprocess
-
 from ...core.context import Context
+from ...core.executor import run_command
 from ..cmd_build import BuildCommand
 
 
 class FormatCommand:
     def __init__(self, ctx: Context):
         self.ctx = ctx
+
+    def _resolve_backend(self, app_name: str) -> str:
+        app = self.ctx.get_app_metadata(app_name)
+        backend = (getattr(app, "backend", "cmake") or "cmake").strip().lower()
+        if backend in {"cmake", "gradle", "cargo"}:
+            return backend
+        return "cmake"
 
     def execute(
         self,
@@ -15,6 +21,22 @@ class FormatCommand:
         build_dir_name: str | None = None,
         profile_name: str | None = None,
     ) -> int:
+        backend = self._resolve_backend(app_name)
+        filtered_args = [arg for arg in (extra_args or []) if arg != "--"]
+        if backend == "cargo":
+            command = ["cargo", "fmt", *filtered_args]
+            print(f"--- format: start ({app_name}), backend=cargo")
+            ret = run_command(
+                command,
+                cwd=self.ctx.get_app_dir(app_name),
+                env=self.ctx.setup_env(),
+            )
+            if ret == 0:
+                print(f"--- format: done ({app_name})")
+                return 0
+            print(f"--- format: failed ({app_name}), exit={ret}")
+            return int(ret)
+
         build_cmd = BuildCommand(self.ctx)
         resolved_build_dir_name = build_cmd.resolve_build_dir_name(
             tidy=False,
@@ -36,9 +58,8 @@ class FormatCommand:
             if ret != 0:
                 return ret
 
-        filtered_args = [arg for arg in (extra_args or []) if arg != "--"]
         has_target_override = "--target" in filtered_args
-        default_target = "format_all" if app_name == "tracer_windows_cli" else "format"
+        default_target = "format"
         command = ["cmake", "--build", str(build_dir)]
         if not has_target_override:
             command += ["--target", default_target]
@@ -46,20 +67,14 @@ class FormatCommand:
         print(
             f"--- format: start ({app_name}), target={default_target if not has_target_override else 'custom'}"
         )
-        completed = subprocess.run(
+        ret = run_command(
             command,
             cwd=self.ctx.repo_root,
             env=self.ctx.setup_env(),
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=False,
         )
-        if completed.returncode == 0:
+        if ret == 0:
             print(f"--- format: done ({app_name})")
             return 0
 
-        print(f"--- format: failed ({app_name}), exit={completed.returncode}")
-        return int(completed.returncode)
+        print(f"--- format: failed ({app_name}), exit={ret}")
+        return int(ret)

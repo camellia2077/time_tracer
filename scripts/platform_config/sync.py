@@ -1,30 +1,25 @@
 from __future__ import annotations
 
-import difflib
+import time
 import tomllib
 from pathlib import Path
 
-from .bundle import build_bundle_model, load_source_bundle
-from .constants import SUPPORTED_TARGETS
-from .files import apply_plan, collect_plan_files, read_existing_files
+from .internal.bundle import build_bundle_model, load_source_bundle
+from .internal.constants import SUPPORTED_TARGETS
+from .internal.files import (
+    apply_plan_atomic,
+    build_file_hashes,
+    collect_plan_files,
+    hash_bytes,
+    read_existing_files,
+)
+from .internal.state import compute_input_hash, is_cache_hit, write_state
+from .internal.sync_gate import validate_sync_output
+from .internal.sync_report import print_bundle_diff, print_sync_header, print_sync_report
 
 
-def print_bundle_diff(output_root: Path, generated_bundle: str) -> None:
-    bundle_path = output_root / "meta" / "bundle.toml"
-    existing_text = bundle_path.read_text(encoding="utf-8") if bundle_path.exists() else ""
-    diff_lines = list(
-        difflib.unified_diff(
-            existing_text.splitlines(),
-            generated_bundle.splitlines(),
-            fromfile=f"{bundle_path} (current)",
-            tofile=f"{bundle_path} (generated)",
-            lineterm="",
-        )
-    )
-    if diff_lines:
-        print("\n".join(diff_lines))
-    else:
-        print("--- bundle.toml is already up to date.")
+def _hash_file(path: Path) -> str:
+    return hash_bytes(path.read_bytes())
 
 
 def sync_target(
@@ -36,6 +31,7 @@ def sync_target(
     show_diff: bool,
     allow_overwrite_source: bool,
 ) -> None:
+    started = time.monotonic()
     resolved_source = source_root.resolve()
     resolved_output = output_root.resolve()
     if resolved_source == resolved_output and not allow_overwrite_source:
@@ -47,6 +43,46 @@ def sync_target(
     source_bundle = load_source_bundle(source_root)
     model = build_bundle_model(source_bundle, target)
     planned_files = collect_plan_files(source_root, model)
+    file_hashes = build_file_hashes(planned_files)
+    input_hash = compute_input_hash(target, source_root, file_hashes)
+
+    cache_hit = False
+    if apply and resolved_output.exists():
+        cache_hit = is_cache_hit(
+            output_root=resolved_output,
+            expected_target=target,
+            expected_source_root=resolved_source,
+            expected_input_hash=input_hash,
+            expected_file_hashes=file_hashes,
+            hash_file_fn=_hash_file,
+        )
+
+    if cache_hit:
+        duration_ms = int((time.monotonic() - started) * 1000)
+        print_sync_header(
+            target=target,
+            source_root=source_root,
+            output_root=output_root,
+            planned_files=len(planned_files),
+            added=0,
+            changed=0,
+            removed=0,
+        )
+        print("--- apply: cache hit, synchronized platform config is up to date.")
+        print_sync_report(
+            target=target,
+            source_root=source_root,
+            output_root=output_root,
+            planned_files=len(planned_files),
+            added=0,
+            changed=0,
+            removed=0,
+            cache_hit=True,
+            applied=False,
+            duration_ms=duration_ms,
+        )
+        return
+
     existing_files = read_existing_files(output_root)
 
     planned_keys = set(planned_files)
@@ -57,11 +93,15 @@ def sync_target(
         rel for rel in (planned_keys & existing_keys) if planned_files[rel] != existing_files[rel]
     )
 
-    print(f"=== target: {target}")
-    print(f"source: {source_root}")
-    print(f"output: {output_root}")
-    print(f"planned files: {len(planned_files)}")
-    print(f"changes: +{len(added)} ~{len(changed)} -{len(removed)}")
+    print_sync_header(
+        target=target,
+        source_root=source_root,
+        output_root=output_root,
+        planned_files=len(planned_files),
+        added=len(added),
+        changed=len(changed),
+        removed=len(removed),
+    )
 
     if show_diff:
         generated_bundle = planned_files["meta/bundle.toml"].decode("utf-8")
@@ -69,10 +109,50 @@ def sync_target(
 
     if not apply:
         print("--- dry-run: no files were written.")
+        duration_ms = int((time.monotonic() - started) * 1000)
+        print_sync_report(
+            target=target,
+            source_root=source_root,
+            output_root=output_root,
+            planned_files=len(planned_files),
+            added=len(added),
+            changed=len(changed),
+            removed=len(removed),
+            cache_hit=False,
+            applied=False,
+            duration_ms=duration_ms,
+        )
         return
 
-    apply_plan(output_root, planned_files, removed)
+    apply_plan_atomic(output_root, planned_files)
+    validate_sync_output(
+        output_root=output_root,
+        planned_files=planned_files,
+        model=model,
+        target=target,
+    )
+    write_state(
+        output_root=output_root,
+        target=target,
+        source_root=source_root,
+        input_hash=input_hash,
+        file_hashes=file_hashes,
+        planned_file_count=len(planned_files),
+    )
     print("--- apply: synchronized platform config.")
+    duration_ms = int((time.monotonic() - started) * 1000)
+    print_sync_report(
+        target=target,
+        source_root=source_root,
+        output_root=output_root,
+        planned_files=len(planned_files),
+        added=len(added),
+        changed=len(changed),
+        removed=len(removed),
+        cache_hit=False,
+        applied=True,
+        duration_ms=duration_ms,
+    )
 
 
 def run_generation(
