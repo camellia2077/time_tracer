@@ -10,6 +10,7 @@ from .runtime_guard_bundle import (
     copy_runtime_bundle,
     ensure_source_runtime_ready,
     load_runtime_bundle_spec,
+    resolve_runtime_library_names,
     resolve_source_bin_dir,
 )
 from .runtime_guard_scenarios import RuntimeGuardScenario, build_scenarios
@@ -147,7 +148,11 @@ def main(argv: list[str], repo_root: Path) -> int:
     workspace_root.mkdir(parents=True, exist_ok=True)
 
     files_to_copy, folders_to_copy = load_runtime_bundle_spec(repo_root)
-    scenarios = build_scenarios()
+    core_dll_name, reports_shared_dll_name = resolve_runtime_library_names(source_bin)
+    scenarios = build_scenarios(
+        core_dll_name=core_dll_name,
+        reports_shared_dll_name=reports_shared_dll_name,
+    )
     failures: list[str] = []
 
     print(f"[runtime-guard] source bin: {source_bin}", flush=True)

@@ -1,5 +1,8 @@
 use std::env;
+use std::fs;
 use std::path::PathBuf;
+
+use serde_json::Value;
 
 use crate::cli::DoctorArgs;
 use crate::commands::handler::{CommandContext, CommandHandler};
@@ -33,9 +36,13 @@ impl CommandHandler<DoctorArgs> for DoctorHandler {
         println!("  db_path    : {}", db_path.display());
         println!();
 
+        let libraries = load_runtime_libraries(&exe_dir);
         let checks = vec![
-            required_check("core_dll", exe_dir.join("tracer_core.dll")),
-            required_check("reports_shared_dll", exe_dir.join("reports_shared.dll")),
+            required_check("core_dll", exe_dir.join(libraries.core_dll)),
+            required_check(
+                "reports_shared_dll",
+                exe_dir.join(libraries.reports_shared_dll),
+            ),
             required_check("config_toml", exe_dir.join("config").join("config.toml")),
             required_check(
                 "converter_alias_mapping",
@@ -138,4 +145,33 @@ fn optional_dir_check(id: &'static str, path: PathBuf) -> Check {
 
 fn has_failure(checks: &[Check], id: &str) -> bool {
     checks.iter().any(|c| c.required && !c.ok && c.id == id)
+}
+
+struct RuntimeLibraries {
+    core_dll: String,
+    reports_shared_dll: String,
+}
+
+fn load_runtime_libraries(exe_dir: &PathBuf) -> RuntimeLibraries {
+    let mut result = RuntimeLibraries {
+        core_dll: "tracer_core.dll".to_string(),
+        reports_shared_dll: "reports_shared.dll".to_string(),
+    };
+    let manifest_path = exe_dir.join("runtime_manifest.json");
+    let Ok(content) = fs::read_to_string(&manifest_path) else {
+        return result;
+    };
+    let Ok(payload) = serde_json::from_str::<Value>(&content) else {
+        return result;
+    };
+    let Some(libraries) = payload.get("libraries") else {
+        return result;
+    };
+    if let Some(value) = libraries.get("core").and_then(Value::as_str) {
+        result.core_dll = value.to_string();
+    }
+    if let Some(value) = libraries.get("reports_shared").and_then(Value::as_str) {
+        result.reports_shared_dll = value.to_string();
+    }
+    result
 }

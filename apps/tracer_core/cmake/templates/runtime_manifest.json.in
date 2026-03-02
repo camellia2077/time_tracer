@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "generated_by": "cmake",
+  "libraries": {
+    "core": "tracer_core.dll",
+    "reports_shared": "reports_shared.dll"
+  },
+  "runtime": {
+    "required_files": [
+@TT_RUNTIME_REQUIRED_FILES_JSON@
+    ],
+    "required_dirs": [
+@TT_RUNTIME_REQUIRED_DIRS_JSON@
+    ],
+    "optional_dirs": [
+@TT_RUNTIME_OPTIONAL_DIRS_JSON@
+    ]
+  }
+}

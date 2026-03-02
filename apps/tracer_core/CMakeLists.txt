@@ -152,6 +152,8 @@ include(TargetSetup)
 
 # 4. 编译标志
 include(BuildTypeFlags)
+include(RuntimeManifest)
+tt_generate_runtime_manifest()
 
 # --- 3. 添加源码子目录 ---
 add_subdirectory(src)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -23,6 +24,8 @@ DEFAULT_RUNTIME_FILES = [
     "libwinpthread-1.dll",
 ]
 DEFAULT_RUNTIME_FOLDERS = ["config"]
+DEFAULT_CORE_DLL = "tracer_core.dll"
+DEFAULT_REPORTS_SHARED_DLL = "reports_shared.dll"
 
 
 def auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
@@ -65,6 +68,50 @@ def load_runtime_bundle_spec(repo_root: Path) -> tuple[list[str], list[str]]:
     return selected_files, selected_folders
 
 
+def _load_runtime_manifest(source_bin: Path) -> tuple[list[str], list[str]] | None:
+    manifest_path = source_bin / "runtime_manifest.json"
+    if not manifest_path.is_file():
+        return None
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    runtime = payload.get("runtime")
+    if not isinstance(runtime, dict):
+        return None
+    raw_files = runtime.get("required_files")
+    raw_dirs = runtime.get("required_dirs")
+    files = [item for item in (raw_files or []) if isinstance(item, str) and item]
+    folders = [item for item in (raw_dirs or []) if isinstance(item, str) and item]
+    if not files:
+        return None
+    return files, folders
+
+
+def resolve_runtime_library_names(source_bin: Path) -> tuple[str, str]:
+    manifest_path = source_bin / "runtime_manifest.json"
+    if not manifest_path.is_file():
+        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+    if not isinstance(payload, dict):
+        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+    libraries = payload.get("libraries")
+    if not isinstance(libraries, dict):
+        return DEFAULT_CORE_DLL, DEFAULT_REPORTS_SHARED_DLL
+    core_dll = libraries.get("core")
+    reports_shared_dll = libraries.get("reports_shared")
+    if not isinstance(core_dll, str) or not core_dll:
+        core_dll = DEFAULT_CORE_DLL
+    if not isinstance(reports_shared_dll, str) or not reports_shared_dll:
+        reports_shared_dll = DEFAULT_REPORTS_SHARED_DLL
+    return core_dll, reports_shared_dll
+
+
 def copy_runtime_bundle(
     source_bin: Path,
     dest_bin: Path,
@@ -78,12 +125,20 @@ def copy_runtime_bundle(
 
 
 def ensure_source_runtime_ready(source_bin: Path) -> None:
-    required = [
-        source_bin / DEFAULT_CLI_EXE,
-        source_bin / "tracer_core.dll",
-        source_bin / "reports_shared.dll",
-        source_bin / "config" / "config.toml",
-    ]
+    manifest_spec = _load_runtime_manifest(source_bin)
+    required = [source_bin / DEFAULT_CLI_EXE]
+    if manifest_spec is not None:
+        required_files, required_folders = manifest_spec
+        required.extend(source_bin / rel for rel in required_files)
+        required.extend(source_bin / rel for rel in required_folders)
+    else:
+        required.extend(
+            [
+                source_bin / DEFAULT_CORE_DLL,
+                source_bin / DEFAULT_REPORTS_SHARED_DLL,
+                source_bin / "config" / "config.toml",
+            ]
+        )
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         raise RuntimeError(

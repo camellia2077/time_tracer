@@ -1,7 +1,9 @@
 use std::env;
+use std::fs;
 use std::path::{Path, PathBuf};
 
 use libloading::Library;
+use serde_json::Value;
 
 use crate::error::AppError;
 
@@ -17,10 +19,25 @@ pub(crate) fn resolve_core_dll_path() -> Result<PathBuf, AppError> {
     }
     let exe = env::current_exe()
         .map_err(|e| AppError::Io(format!("Resolve current exe path failed: {e}")))?;
-    Ok(exe
-        .parent()
-        .unwrap_or_else(|| Path::new("."))
-        .join("tracer_core.dll"))
+    let exe_dir = exe.parent().unwrap_or_else(|| Path::new("."));
+    let core_name = resolve_core_library_name(exe_dir);
+    Ok(exe_dir.join(core_name))
+}
+
+fn resolve_core_library_name(exe_dir: &Path) -> String {
+    let manifest_path = exe_dir.join("runtime_manifest.json");
+    let Ok(content) = fs::read_to_string(manifest_path) else {
+        return "tracer_core.dll".to_string();
+    };
+    let Ok(payload) = serde_json::from_str::<Value>(&content) else {
+        return "tracer_core.dll".to_string();
+    };
+    payload
+        .get("libraries")
+        .and_then(|v| v.get("core"))
+        .and_then(Value::as_str)
+        .map(|v| v.to_string())
+        .unwrap_or_else(|| "tracer_core.dll".to_string())
 }
 
 pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppError> {
