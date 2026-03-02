@@ -4,9 +4,11 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../.." && pwd)"
 exec python "${REPO_ROOT}/scripts/run.py" \
-  post-change \
+  build \
   --app tracer_core \
-  --run-tests always \
-  --build-dir build_fast \
-  --concise \
+  --profile release_bundle \
+  --build-dir build \
+  -- \
+  --target reports_shared \
+  --target tracer_core_shared \
   "$@"

@@ -1,71 +1,27 @@
-# Core Console Color Reference
+# Windows Rust CLI 颜色与终端显示
 
-This note is for agents working in `apps/tracer_cli/windows` who need to adjust CLI text colors.
+本文档说明 Rust CLI 的颜色来源与调整方式。
 
-## Source Of Truth
+## 1. 当前实现
 
-The shared console color palette is defined in core:
+1. Rust CLI 本身默认输出以纯文本为主。
+2. pipeline 等日志中的 ANSI 颜色主要来自 `tracer_core`。
+3. Windows 控制台 UTF-8 代码页初始化在：`apps/tracer_cli/windows/rust_cli/src/main.rs`。
 
-- `apps/tracer_core/src/shared/types/ansi_colors.hpp`
+## 2. 颜色源定义
 
-`apps/tracer_cli/windows` consumes these constants directly via:
+1. Core ANSI 常量定义：`apps/tracer_core/src/shared/types/ansi_colors.hpp`
+2. 若要统一调整全局颜色语义，应修改上面的 core 常量与调用点。
 
-- `#include "shared/types/ansi_colors.hpp"`
+## 3. 调整规则
 
-## Defined Color Constants
+1. 不要在多处硬编码 ANSI 转义字符串。
+2. 若必须新增 Rust 侧彩色输出，先确认不会破坏测试文本断言。
+3. 颜色只能增强可读性，关闭颜色后文本仍需完整可读。
 
-From `time_tracer::common::colors`:
-
-| Constant | ANSI value | Typical use |
-| --- | --- | --- |
-| `kReset` | `\033[0m` | Reset style/color after colored output |
-| `kBold` | `\033[1m` | Emphasis for titles/headings |
-| `kItalic` | `\033[3m` | Motto/info text |
-| `kRed` | `\033[31m` | Errors/failures |
-| `kGreen` | `\033[32m` | Success messages |
-| `kYellow` | `\033[33m` | Warnings/partial status |
-| `kCyan` | `\033[36m` | Command names/steps |
-| `kGray` | `\033[90m` | Secondary metadata |
-| `kBrightGreen` | `\033[92m` | Important success banner/version |
-| `kBrightCyan` | `\033[96m` | Pipeline start banner |
-
-## Main Usage Locations
-
-Core side (produces many colored pipeline/status lines):
-
-- `apps/tracer_core/src/application/pipeline/pipeline_manager.cpp`
-- `apps/tracer_core/src/application/pipeline/steps/pipeline_stages.cpp`
-- `apps/tracer_core/src/application/workflow_handler.cpp`
-
-Windows CLI side (help/version/top-level errors):
-
-- `apps/tracer_cli/windows/src/api/cli/main.cpp`
-- `apps/tracer_cli/windows/src/api/cli/impl/app/cli_application.cpp`
-- `apps/tracer_cli/windows/src/api/cli/impl/app/app_runner.cpp`
-- `apps/tracer_cli/windows/src/api/cli/impl/utils/console_helper.cpp`
-
-## Change Rules
-
-1. If you want a global palette change, edit `apps/tracer_core/src/shared/types/ansi_colors.hpp`.
-2. If you want only one command/page to look different, change call sites in `apps/tracer_cli/windows/src/...`.
-3. Always terminate styled output with `kReset` to avoid color bleed into later lines.
-4. Do not add manual severity prefixes like `"[INFO]"` if logger/sink already emits severity tags.
-5. Keep report formatter color settings (`keyword_colors` in report TOML) separate from console ANSI colors.
-
-## Windows Console Requirement
-
-ANSI escape rendering on Windows relies on:
-
-- `apps/tracer_cli/windows/src/api/cli/impl/utils/console_helper.cpp`
-
-`SetupConsole()` enables `ENABLE_VIRTUAL_TERMINAL_PROCESSING`.
-
-## Quick Audit Commands
-
-From repository root:
+## 4. 快速审计
 
 ```powershell
-rg -n "shared/types/ansi_colors.hpp|colors::k" apps/tracer_core/src apps/tracer_cli/windows/src -S
-rg -n "kReset|kRed|kGreen|kYellow|kCyan|kGray|kBright" apps/tracer_cli/windows/src -S
+rg -n "ansi_colors|\\033\\[|kRed|kGreen|kYellow|kCyan|kGray" apps/tracer_core/src
+rg -n "\\x1b|ansi|color|SetConsoleOutputCP|SetConsoleCP" apps/tracer_cli/windows/rust_cli/src
 ```
-

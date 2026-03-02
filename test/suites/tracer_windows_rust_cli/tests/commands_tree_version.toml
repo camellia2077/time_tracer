@@ -1,0 +1,145 @@
+[[commands]]
+name = "Version Check"
+stage = "version"
+args = ["--version"]
+expect_exit = 0
+expect_stdout_regex = [
+  "(?m)^time_tracer_cli\\s+\\S+$",
+]
+
+[[commands]]
+name = "Global Help"
+stage = "version"
+args = ["--help"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Rust CLI shell for time tracer",
+  "Usage: time_tracer_cli.exe [OPTIONS] <COMMAND>",
+  "Commands:",
+  "query",
+  "chart",
+  "crypto",
+  "ingest",
+  "tree",
+  "licenses",
+  "Options:",
+  "-v, --version",
+  "-h, --help",
+]
+
+[[commands]]
+name = "Project License"
+stage = "version"
+args = ["--license"]
+expect_exit = 0
+expect_stdout_contains = ["TimeTracer project license: Apache License 2.0", "Run `licenses`"]
+
+[[commands]]
+name = "Third-party Licenses Summary"
+stage = "version"
+args = ["licenses"]
+expect_exit = 0
+expect_stdout_contains = ["Third-party licenses (summary):", "nlohmann/json", "clap"]
+
+[[commands]]
+name = "Third-party Licenses Full"
+stage = "version"
+args = ["licenses", "--full"]
+expect_exit = 0
+expect_stdout_contains = ["Third-party licenses (full):", "License URL: https://www.apache.org/licenses/LICENSE-2.0"]
+
+[[commands]]
+name = "Tracer Easter Egg"
+stage = "version"
+args = ["tracer"]
+expect_exit = 0
+expect_stdout_contains = ["timetracer is here"]
+
+[[commands]]
+name = "Motto Easter Egg"
+stage = "version"
+args = ["motto"]
+expect_exit = 0
+expect_stdout_contains = ["Trace your time, log your life."]
+
+[[commands]]
+name = "Zen Easter Egg"
+stage = "version"
+args = ["zen"]
+expect_exit = 0
+expect_stdout_contains = ["Trace your time, log your life."]
+
+[[commands]]
+name = "Doctor Check"
+stage = "version"
+args = ["doctor"]
+expect_exit = 0
+expect_stdout_contains = ["Runtime Doctor", "Summary: required"]
+
+# Tree command tests
+[[commands]]
+name = "Tree Help"
+stage = "tree"
+args = ["tree", "--help"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Display project structure as a tree.",
+  "Usage: time_tracer_cli.exe tree [OPTIONS] [ROOT]",
+  "[ROOT]",
+  "-l, --level <LEVEL>",
+  "Max depth level",
+  "-r, --roots",
+  "List all root projects",
+]
+
+[[commands]]
+name = "Query Help"
+stage = "tree"
+args = ["query", "--help"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Query statistics from the database",
+  "Usage: time_tracer_cli.exe query [OPTIONS] <QUERY_TYPE> <ARGUMENT>",
+  "<QUERY_TYPE>",
+  "possible values: day, month, week, year, recent, range, data",
+  "--data-output <DATA_OUTPUT>",
+  "possible values: text, json",
+  "--period <PERIOD>",
+]
+
+[[commands]]
+name = "Tree Full"
+stage = "tree"
+args = ["tree", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Root Path"
+stage = "tree"
+args = ["tree", "study", "--database", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = ["study"]
+
+[[commands]]
+name = "Tree Roots"
+stage = "tree"
+args = ["tree", "--roots", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 0"
+stage = "tree"
+args = ["tree", "-l", "0", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 1"
+stage = "tree"
+args = ["tree", "-l", "1", "--database", "{db_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Tree Level 3"
+stage = "tree"
+args = ["tree", "-l", "3", "--database", "{db_path}"]
+expect_exit = 0

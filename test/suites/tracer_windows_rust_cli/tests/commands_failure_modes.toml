@@ -1,0 +1,74 @@
+# Failure-path regression cases for CLI exit code / stderr contract.
+# Note:
+# - bootstrap runtime guard cases (missing core/config dll) remain covered by
+#   `python test/run.py runtime-guard --build-dir build_fast`.
+
+[[commands]]
+name = "Unknown Command Returns CommandNotFound"
+stage = "failure"
+args = ["unknown_cmd"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'unknown_cmd'."]
+
+[[commands]]
+name = "Legacy Pre Command Removed"
+stage = "failure"
+args = ["pre"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'pre'."]
+
+[[commands]]
+name = "Blink Alias Routes To Ingest"
+stage = "failure"
+args = ["blink", "--database", "{db_path}"]
+expect_exit = 1
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["Error executing command 'ingest':", "Missing required argument: <path>"]
+
+[[commands]]
+name = "Query Invalid Type Returns GenericError"
+stage = "failure"
+args = ["query", "foo", "20260101", "--database", "{db_path}"]
+expect_exit = 1
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["Error executing command 'query':", "Unknown query type 'foo'."]
+
+[[commands]]
+name = "Tree Invalid Level Returns GenericError"
+stage = "failure"
+args = ["tree", "-l", "abc", "--database", "{db_path}"]
+expect_exit = 1
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["Error executing command 'tree':", "Argument 'level' is not a valid integer: abc"]
+
+[[commands]]
+name = "Export Missing Day Argument Returns GenericError"
+stage = "failure"
+args = ["export", "day", "--database", "{db_path}"]
+expect_exit = 1
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["Error executing command 'export':", "Argument required for export type 'day'."]
+
+[[commands]]
+name = "Query Data Invalid Day Boundary Returns LogicError"
+stage = "failure"
+args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--database", "{db_path}"]
+expect_exit = 6
+expect_error_code = "runtime.generic_error"
+expect_error_category = "runtime"
+expect_hints_contains = ["Inspect `error_message` for detailed failure reason."]
+expect_stderr_contains = ["Logic Error:", "Invalid date boundary: 20261301"]

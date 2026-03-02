@@ -1,90 +1,65 @@
-# tracer_windows_cli Structure
+# Windows Rust CLI 结构规范
 
-This document defines stable ownership boundaries for `apps/tracer_cli/windows`.
-Goal: keep future changes in "feature extension" mode instead of frequent architecture rewrites.
+本文档定义 `apps/tracer_cli/windows/rust_cli` 的稳定分层与改动路由。
 
-## 1. Module Ownership
+## 1. 分层与职责
 
-1. Bootstrap layer: `apps/tracer_cli/windows/src/bootstrap/`
-   - Runtime factory loading/proxy/check.
-   - Dynamic loading of core C ABI and runtime wiring.
-   - Should not contain command argument semantics.
+1. 入口层：`src/main.rs`
+   - 负责进程入口、UTF-8 控制台初始化、全局错误出口。
+2. 参数层：`src/cli/mod.rs`
+   - 负责 `clap` 命令模型、参数校验、`--help/--version` 行为。
+3. 分发层：`src/commands/mod.rs`、`src/commands/handler.rs`
+   - 负责命令到 handler 的路由，不承载业务逻辑。
+4. 命令实现层：`src/commands/handlers/*.rs`
+   - 每个命令独立处理参数组装、调用 runtime、渲染输出。
+5. Core 适配层：`src/core/runtime.rs`
+   - 负责动态加载 `tracer_core.dll` 并调用 C ABI。
+6. 错误模型层：`src/error/mod.rs`
+   - 统一 `AppError` 与 `AppExitCode`。
+7. 许可证元数据：`src/licenses.rs`
+   - 负责 `licenses` 与 `licenses --full` 文本来源。
+8. 运行时资源：`runtime/config/`、`runtime/assets/`
+   - 交付时随 CLI 一起复制。
 
-2. CLI app layer: `apps/tracer_cli/windows/src/api/cli/impl/app/`
-   - Entry orchestration (`app_runner`, `cli_application`).
-   - Global parser policy, command dispatch, top-level exception/exit mapping.
-   - Should not contain business details of each command.
+## 2. 稳定执行链路
 
-3. Command layer: `apps/tracer_cli/windows/src/api/cli/impl/commands/`
-   - Command definitions, parameter validation, process orchestration.
-   - Grouped by domain: `chart/`, `crypto/`, `export/`, `general/`, `pipeline/`, `query/`.
-   - `register_all_commands.cpp` is the single command registration aggregator.
+1. `main` 收集参数并调用 `parse_cli`。
+2. `commands::execute` 进入分发层。
+3. 对应 handler 调用 `core/runtime.rs`。
+4. runtime 返回文本或 JSON，再由 handler 输出。
+5. 统一错误在 `main` 转换为退出码。
 
-4. Presentation layer: `apps/tracer_cli/windows/src/api/cli/impl/presentation/`
-   - User-facing output rendering only.
-   - Current focus:
-     - `presentation/report_chart/` for chart HTML rendering.
-     - `presentation/progress/` for crypto progress rendering.
-   - Should not call core runtime directly.
+## 3. 改动路由（Agent 快速表）
 
-5. CLI framework layer: `apps/tracer_cli/windows/src/api/cli/framework/`
-   - Reusable parser/registry contracts and infrastructure.
-   - No command-specific business logic.
+1. 新增命令：
+   - `src/cli/mod.rs` 增加子命令定义。
+   - `src/commands/mod.rs` 增加路由。
+   - `src/commands/handlers/` 增加实现文件。
+2. 改参数校验或帮助文案：
+   - `src/cli/mod.rs`
+3. 改 Core 调用或字段映射：
+   - `src/core/runtime.rs`
+4. 改错误码或错误文本：
+   - `src/error/mod.rs`
+   - `src/main.rs`（解析错误映射）
+5. 改 licenses 输出：
+   - `src/licenses.rs`
+   - `src/commands/handlers/licenses.rs`
 
-6. Utilities layer: `apps/tracer_cli/windows/src/api/cli/impl/utils/`
-   - Shared formatting/console/path helpers.
-   - Keep stateless as much as possible.
+## 4. 测试契约落点
 
-## 2. Stable Execution Flow
+1. 套件入口：`test/suites/tracer_windows_rust_cli/tests.toml`
+2. 命令集：`test/suites/tracer_windows_rust_cli/tests/command_groups.toml`
+3. 细分用例：
+   - `commands_tree_version.toml`
+   - `commands_query_data.toml`
+   - `commands_crypto.toml`
+   - `commands_failure_modes.toml`
+4. 报告 gate：`test/suites/tracer_windows_rust_cli/tests/gate_cases.toml`
 
-1. `main.cpp` -> `AppRunner::Run(...)`
-2. `CliApplication` parses args and builds runtime (`bootstrap` factory).
-3. `RegisterAllCommands()` registers command creators to `CommandRegistry`.
-4. `CommandRegistry` resolves command by name and executes command instance.
-5. Command calls core runtime API (via app context/runtime factory output).
-6. Presentation modules render output/progress/help text.
-
-## 3. Change Routing (Where To Modify)
-
-1. Add a new command:
-   - Add file under `impl/commands/<group>/<name>_command.cpp`
-   - Register in `impl/commands/register_all_commands.cpp`
-   - Keep output logic in `impl/presentation/*` when output is non-trivial.
-
-2. Change command output style/colors:
-   - Command text + presentation modules in `impl/presentation/*`
-   - Must follow:
-     - `docs/time_tracer/clients/windows_cli/specs/cli-output-style.md`
-     - `docs/time_tracer/clients/windows_cli/specs/console-color.md`
-
-3. Change runtime/core call adaptation:
-   - `src/bootstrap/cli_runtime_factory_proxy.cpp`
-   - Related loader/check files in `src/bootstrap/`
-
-4. Change global parser/help/exit behavior:
-   - `impl/app/cli_application.cpp`
-   - `EXIT_CODE_POLICY.md` when exit semantics change
-
-## 4. Guardrails
-
-1. `commands/` should orchestrate, not own rendering complexity.
-2. `presentation/` should render, not own business decisions.
-3. `bootstrap/` should adapt runtime, not parse command semantics.
-4. Cross-cutting text/format changes should update style docs in the same change.
-
-## 5. Minimal Verification
-
-Run from repository root:
+## 5. 最小验证命令
 
 ```powershell
-python scripts/run.py verify --app tracer_core --quick
+python scripts/run.py build --app tracer_windows_rust_cli --build-dir build_fast
+python scripts/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise
 ```
-
-Optional split flow:
-
-```powershell
-python scripts/run.py configure --app tracer_windows_cli --build-dir build_fast
-python scripts/run.py build --app tracer_windows_cli --build-dir build_fast
-python test/run.py --suite tracer_windows_cli --build-dir build_fast --agent --concise
-```
-
