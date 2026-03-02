@@ -1,17 +1,23 @@
 # src/tt_testing/core/base.py
 import re
-from pathlib import Path
+from typing import Any
 
 from ..conf.definitions import (
-    AppExitCode,
     LogRoutingRule,
     SingleTestResult,
     TestContext,
     TestReport,
 )
-from .executor import CommandExecutor
-from .log_routing import LogRoutingManager
-from .logger import TestLogger
+from .command_expectations import evaluate_command_expectations
+from .json_payload import (
+    extract_json_payload,
+    parse_expected_json_value,
+    resolve_json_path,
+    tokenize_json_path,
+)
+from .runtime.executor import CommandExecutor
+from .runtime.log_routing import LogRoutingManager
+from .runtime.logger import TestLogger
 
 
 class TestCounter:
@@ -52,6 +58,22 @@ class BaseTester:
     def _resolve_log_subdir(self, command_args: list) -> str:
         return self.log_routing.resolve_subdir(command_args)
 
+    @staticmethod
+    def _extract_json_payload(text: str) -> tuple[Any | None, str | None]:
+        return extract_json_payload(text)
+
+    @staticmethod
+    def _tokenize_json_path(path: str) -> list[str | int]:
+        return tokenize_json_path(path)
+
+    @classmethod
+    def _resolve_json_path(cls, payload: Any, path: str) -> tuple[bool, Any | None, str | None]:
+        return resolve_json_path(payload, path)
+
+    @staticmethod
+    def _parse_expected_json_value(raw: str) -> Any:
+        return parse_expected_json_value(raw)
+
     def run_command_test(self, test_name: str, command_args: list, **kwargs) -> SingleTestResult:
         current_count = self.counter.increment()
         sanitized_name = re.sub(r"[^a-zA-Z0-9]+", "_", test_name).lower()
@@ -79,55 +101,15 @@ class BaseTester:
 
         log_path = self.logger.log_result(test_name, log_file, result)
 
-        messages = []
-        status = "PASS"
-
-        if expect_exit is not None and result.return_code != expect_exit:
-            status = "FAIL"
-            err_msg = AppExitCode.to_string(result.return_code)
-            messages.append(f"Expected exit {expect_exit}, got {result.return_code} ({err_msg}).")
-
         stdout_text = CommandExecutor.strip_ansi_codes(result.stdout or "")
         stderr_text = CommandExecutor.strip_ansi_codes(result.stderr or "")
-
-        for needle in kwargs.get("expect_stdout_contains", []) or []:
-            if needle not in stdout_text:
-                status = "FAIL"
-                messages.append(f"Missing stdout text: {needle}")
-
-        for needle in kwargs.get("expect_stderr_contains", []) or []:
-            if needle not in stderr_text:
-                status = "FAIL"
-                messages.append(f"Missing stderr text: {needle}")
-
-        for path_str in kwargs.get("expect_files", []) or []:
-            if not Path(path_str).exists():
-                status = "FAIL"
-                messages.append(f"Missing file: {path_str}")
-
-        for spec in kwargs.get("expect_file_contains", []) or []:
-            if "::" not in spec:
-                status = "FAIL"
-                messages.append(f"Invalid expect_file_contains spec (missing '::'): {spec}")
-                continue
-
-            path_str, needle = spec.split("::", 1)
-            path_obj = Path(path_str)
-            if not path_obj.exists():
-                status = "FAIL"
-                messages.append(f"Missing file for content check: {path_str}")
-                continue
-
-            try:
-                content = path_obj.read_text(encoding="utf-8", errors="replace")
-            except Exception as error:
-                status = "FAIL"
-                messages.append(f"Failed to read file for content check: {path_str} ({error})")
-                continue
-
-            if needle not in content:
-                status = "FAIL"
-                messages.append(f"Missing file content in {path_str}: {needle}")
+        status, messages = evaluate_command_expectations(
+            return_code=result.return_code,
+            stdout_text=stdout_text,
+            stderr_text=stderr_text,
+            expect_exit=expect_exit,
+            expectations=kwargs,
+        )
 
         return SingleTestResult(
             name=test_name,

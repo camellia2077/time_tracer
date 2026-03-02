@@ -2,8 +2,8 @@
 from pathlib import Path
 
 from .definitions import GlobalConfig
-from .loader_commands import _load_commands
-from .loader_sections import (
+from .loaders.loader_commands import _load_commands
+from .loaders.loader_sections import (
     _load_cleanup_params,
     _load_cli_names,
     _load_log_routing,
@@ -12,8 +12,8 @@ from .loader_sections import (
     _load_run_control,
     _load_test_params,
 )
-from .loader_toml import _detect_repo_root, _load_toml_with_includes
-from .schema_validator import validate_suite_schema
+from .loaders.loader_toml import _detect_repo_root, _load_toml_with_includes
+from .schema.schema_validator import validate_suite_schema
 
 
 def _build_config_payload(
@@ -65,7 +65,7 @@ def load_config(
 
         pipeline_cfg = _load_pipeline(toml_data)
         return _build_config_payload(toml_data, pipeline_cfg)
-    except FileNotFoundError:
-        raise FileNotFoundError(f"config.toml not found at: {target_path.absolute()}")
-    except Exception as error:
-        raise RuntimeError(f"Error loading config.toml: {error}")
+    except FileNotFoundError as err:
+        raise FileNotFoundError(f"config.toml not found at: {target_path.absolute()}") from err
+    except Exception as err:
+        raise RuntimeError(f"Error loading config.toml: {err}") from err

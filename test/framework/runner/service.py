@@ -2,221 +2,52 @@ import os
 import sys
 from collections.abc import Sequence
 from pathlib import Path
-from typing import Any
 
 from core.main import main
 
 from .args import parse_suite_args
-from .formatting import run_clang_format_after_success, should_run_format_on_success
+from .formatting import (
+    run_clang_format_after_success,
+    should_run_format_on_success,
+)
 from .io import TeeStream, resolve_path, write_result_json
-
-_OUTPUT_LOG_NAME = "output.log"
-_FULL_OUTPUT_LOG_NAME = "output_full.log"
-_TEMP_OUTPUT_LOG_NAME = "python_output.latest.log"
-
-
-def _resolve_result_json_path(args, suite_root: Path, suite_output_root: Path) -> Path:
-    canonical_result_json = (suite_output_root / "result.json").resolve()
-    if not args.result_json:
-        return canonical_result_json
-
-    requested_result_json = Path(args.result_json)
-    if not requested_result_json.is_absolute():
-        requested_result_json = (suite_root / requested_result_json).resolve()
-
-    if requested_result_json != canonical_result_json:
-        print(
-            "Warning: output contract enforces result JSON path at "
-            f"{canonical_result_json}; ignoring --result-json={requested_result_json}"
-        )
-
-    return canonical_result_json
+from .log_persistence import TEMP_OUTPUT_LOG_NAME, persist_output_logs
+from .output_contract import validate_output_contract
+from .result_payload import (
+    extract_case_records,
+    resolve_result_json_path,
+)
 
 
-def _resolve_result_cases_json_path(suite_output_root: Path) -> Path:
-    return (suite_output_root / "result_cases.json").resolve()
-
-
-def _extract_case_records(result_payload: Any) -> list[dict[str, Any]]:
-    if not isinstance(result_payload, dict):
-        return []
-
-    raw_records = result_payload.pop("_case_records", None)
-    if not isinstance(raw_records, list):
-        return []
-
-    records: list[dict[str, Any]] = []
-    for item in raw_records:
-        if isinstance(item, dict):
-            records.append(item)
-    return records
-
-
-def _build_result_cases_payload(
-    result_payload: Any,
-    case_records: list[dict[str, Any]],
-) -> dict[str, Any]:
-    failed_cases: list[dict[str, Any]] = [
-        item for item in case_records if item.get("status") == "FAIL"
-    ]
-
-    total_cases = len(case_records)
-    total_failed = len(failed_cases)
-    if isinstance(result_payload, dict):
-        total_cases = int(result_payload.get("total_tests", total_cases) or 0)
-        total_failed = int(result_payload.get("total_failed", total_failed) or 0)
-
-    return {
-        "success": (total_failed == 0),
-        "total_cases": total_cases,
-        "total_failed": total_failed,
-        "cases": failed_cases,
-    }
-
-
-def _validate_output_contract(
-    suite_output_root: Path,
-    result_json_path: Path,
-    output_log_path: Path | None,
-    output_full_log_path: Path | None,
-    result_payload: Any,
-) -> list[str]:
-    errors: list[str] = []
-    expected_workspace = (suite_output_root / "workspace").resolve()
-    expected_logs = (suite_output_root / "logs").resolve()
-    expected_artifacts = (suite_output_root / "artifacts").resolve()
-    expected_result_json = (suite_output_root / "result.json").resolve()
-    expected_output_log = (expected_logs / _OUTPUT_LOG_NAME).resolve()
-    expected_output_full_log = (expected_logs / _FULL_OUTPUT_LOG_NAME).resolve()
-
-    required_dirs = {
-        "workspace": expected_workspace,
-        "logs": expected_logs,
-        "artifacts": expected_artifacts,
-    }
-    for dir_name, dir_path in required_dirs.items():
-        if not dir_path.exists() or not dir_path.is_dir():
-            errors.append(f"Missing required output directory: {dir_name} ({dir_path})")
-
-    if result_json_path.resolve() != expected_result_json:
-        errors.append(
-            "Result JSON path is non-canonical: "
-            f"{result_json_path.resolve()} != {expected_result_json}"
-        )
-
-    if output_log_path is None:
-        errors.append("Missing required output file: logs/output.log (not generated)")
-    else:
-        if output_log_path.resolve() != expected_output_log:
-            errors.append(
-                "Python output log path is non-canonical: "
-                f"{output_log_path.resolve()} != {expected_output_log}"
-            )
-        if not expected_output_log.exists():
-            errors.append(f"Missing required output file: logs/output.log ({expected_output_log})")
-
-    if output_full_log_path is None:
-        errors.append(f"Missing required output file: logs/{_FULL_OUTPUT_LOG_NAME} (not generated)")
-    else:
-        if output_full_log_path.resolve() != expected_output_full_log:
-            errors.append(
-                "Full output log path is non-canonical: "
-                f"{output_full_log_path.resolve()} != {expected_output_full_log}"
-            )
-        if not expected_output_full_log.exists():
-            errors.append(
-                "Missing required output file: "
-                f"logs/{_FULL_OUTPUT_LOG_NAME} ({expected_output_full_log})"
-            )
-
-    if isinstance(result_payload, dict):
-        result_log_dir = result_payload.get("log_dir")
-        if result_log_dir:
-            try:
-                resolved_log_dir = Path(result_log_dir).resolve()
-                if resolved_log_dir != expected_logs:
-                    errors.append(
-                        "Result payload log_dir is non-canonical: "
-                        f"{resolved_log_dir} != {expected_logs}"
-                    )
-            except (OSError, RuntimeError, TypeError, ValueError):
-                errors.append(f"Result payload log_dir cannot be resolved: {result_log_dir}")
-
-    return errors
-
-
-def _collect_case_log_paths(
-    logs_root: Path,
-    case_records: list[dict[str, Any]],
-) -> list[Path]:
-    root_resolved = logs_root.resolve()
-    seen: set[Path] = set()
-    collected: list[Path] = []
-
-    for item in case_records:
-        if not isinstance(item, dict):
+def _cleanup_legacy_result_json_files(suite_output_root: Path) -> None:
+    # Keep output root concise for agent consumption: only retain canonical result.json.
+    for result_path in suite_output_root.glob("result*.json"):
+        if result_path.name == "result.json":
             continue
-        log_file = str(item.get("log_file", "")).strip()
-        if not log_file:
-            continue
-
-        candidate = (logs_root / log_file).resolve()
         try:
-            candidate.relative_to(root_resolved)
-        except ValueError:
-            continue
-        if not candidate.is_file() or candidate in seen:
-            continue
-        seen.add(candidate)
-        collected.append(candidate)
-
-    if collected:
-        collected.sort(key=lambda path: path.relative_to(root_resolved).as_posix())
-        return collected
-
-    ignored_names = {_OUTPUT_LOG_NAME, _FULL_OUTPUT_LOG_NAME, _TEMP_OUTPUT_LOG_NAME}
-    for path in logs_root.rglob("*.log"):
-        if not path.is_file():
-            continue
-        if path.name in ignored_names:
-            continue
-        resolved = path.resolve()
-        if resolved in seen:
-            continue
-        seen.add(resolved)
-        collected.append(resolved)
-
-    collected.sort(key=lambda path: path.relative_to(root_resolved).as_posix())
-    return collected
+            result_path.unlink()
+        except OSError:
+            pass
 
 
-def _persist_output_logs(
-    logs_root: Path,
-    temp_log_path: Path,
-    case_records: list[dict[str, Any]],
-) -> tuple[Path, Path]:
-    concise_output_path = (logs_root / _OUTPUT_LOG_NAME).resolve()
-    concise_text = temp_log_path.read_text(encoding="utf-8")
-    concise_output_path.write_text(concise_text, encoding="utf-8")
-
-    full_output_path = (logs_root / _FULL_OUTPUT_LOG_NAME).resolve()
-    case_log_paths = _collect_case_log_paths(logs_root, case_records)
-    with full_output_path.open("w", encoding="utf-8") as handle:
-        handle.write("=== Session Output (Concise) ===\n")
-        handle.write(concise_text)
-        if not concise_text.endswith("\n"):
-            handle.write("\n")
-
-        handle.write("\n=== Case Logs (Full Test Content) ===\n")
-        for case_log_path in case_log_paths:
-            relative_path = case_log_path.relative_to(logs_root).as_posix()
-            handle.write(f"\n--- {relative_path} ---\n")
-            case_log_content = case_log_path.read_text(encoding="utf-8", errors="ignore")
-            handle.write(case_log_content)
-            if not case_log_content.endswith("\n"):
-                handle.write("\n")
-
-    return concise_output_path, full_output_path
+def _build_minimal_result_payload(result: dict) -> dict:
+    raw_exit_code = result.get("exit_code", 1)
+    exit_code = 1 if raw_exit_code is None else int(raw_exit_code)
+    payload: dict[str, object] = {
+        "success": bool(result.get("success", False)),
+        "exit_code": exit_code,
+        "total_tests": int(result.get("total_tests", 0) or 0),
+        "total_failed": int(result.get("total_failed", 0) or 0),
+        "duration_seconds": float(result.get("duration_seconds", 0.0) or 0.0),
+        "log_dir": str(result.get("log_dir", "")),
+        "output_contract_ok": bool(result.get("output_contract_ok", False)),
+    }
+    error_message = str(result.get("error_message", "") or "")
+    if error_message:
+        payload["error_message"] = error_message
+    if not payload["success"]:
+        payload["next_action"] = "Read logs/output.log for failure details."
+    return payload
 
 
 def run_suite(
@@ -240,12 +71,12 @@ def run_suite(
     )
 
     config_path = resolve_path(args.config, suite_root, "config.toml")
-    result_json_path = _resolve_result_json_path(args, suite_root, suite_output_root)
-    result_cases_json_path = _resolve_result_cases_json_path(suite_output_root)
+    result_json_path = resolve_result_json_path(args, suite_root, suite_output_root)
+    _cleanup_legacy_result_json_files(suite_output_root)
 
     result = None
     exit_code = 1
-    temp_log_path = logs_root / _TEMP_OUTPUT_LOG_NAME
+    temp_log_path = logs_root / TEMP_OUTPUT_LOG_NAME
 
     with temp_log_path.open("w", encoding="utf-8") as session_log_file:
         original_stdout = sys.stdout
@@ -268,8 +99,16 @@ def run_suite(
                 return_result=True,
             )
             exit_code = int(result.get("exit_code", 1 if not result.get("success") else 0))
+            format_on_success_default = bool(result.get("format_on_success_default", True))
 
-            if should_run_format_on_success(args, bool(format_app)) and exit_code == 0:
+            if (
+                should_run_format_on_success(
+                    args,
+                    bool(format_app),
+                    format_on_success_default,
+                )
+                and exit_code == 0
+            ):
                 format_exit_code = run_clang_format_after_success(
                     repo_root=repo_root,
                     app_name=str(format_app),
@@ -291,12 +130,12 @@ def run_suite(
 
     if not isinstance(result, dict):
         result = {}
-    case_records = _extract_case_records(result)
+    case_records = extract_case_records(result)
 
     output_log_path: Path | None = None
     output_full_log_path: Path | None = None
     try:
-        output_log_path, output_full_log_path = _persist_output_logs(
+        output_log_path, output_full_log_path = persist_output_logs(
             logs_root=logs_root,
             temp_log_path=temp_log_path,
             case_records=case_records,
@@ -316,7 +155,7 @@ def run_suite(
 
     result["log_dir"] = str(logs_root.resolve())
 
-    contract_errors = _validate_output_contract(
+    contract_errors = validate_output_contract(
         suite_output_root=suite_output_root,
         result_json_path=result_json_path,
         output_log_path=output_log_path,
@@ -341,9 +180,7 @@ def run_suite(
         result["success"] = bool(result.get("success", True))
 
     try:
-        cases_payload = _build_result_cases_payload(result, case_records)
-        write_result_json(result_cases_json_path, cases_payload)
-        write_result_json(result_json_path, result)
+        write_result_json(result_json_path, _build_minimal_result_payload(result))
     except Exception as error:
         print(f"Warning: failed to write result JSON: {error}")
         if exit_code == 0:

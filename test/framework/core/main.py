@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .conf.definitions import Colors
 from .conf.loader import load_config
-from .core.engine import TestEngine
+from .core.suite.engine import TestEngine
 
 
 def print_header(paths, no_color: bool):
@@ -46,6 +46,7 @@ def _build_error_result(error_message: str, log_dir: str) -> dict:
         "total_failed": 1,
         "duration_seconds": 0.0,
         "log_dir": log_dir,
+        "format_on_success_default": True,
         "modules": [],
         "failed_cases": [bootstrap_case],
         "_case_records": [bootstrap_case],
@@ -83,6 +84,7 @@ def main(
         result["_case_records"] = engine.get_case_records()
         result["success"] = success
         result["exit_code"] = 0 if success else 1
+        result["format_on_success_default"] = bool(config.run_control.FORMAT_ON_SUCCESS)
         return result if return_result else result["exit_code"]
     except Exception as error:
         error_message = f"Runtime Error: {error}"

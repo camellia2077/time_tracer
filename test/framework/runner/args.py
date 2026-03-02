@@ -54,10 +54,19 @@ def parse_suite_args(
         help="Only show module summary and failure details.",
     )
     if enable_format_on_success:
-        parser.add_argument(
-            "--no-format-on-success",
+        format_group = parser.add_mutually_exclusive_group()
+        format_group.add_argument(
+            "--format-on-success",
+            dest="format_on_success",
             action="store_true",
+            help="Enable post-test clang-format step.",
+        )
+        format_group.add_argument(
+            "--no-format-on-success",
+            dest="format_on_success",
+            action="store_false",
             help="Disable post-test clang-format step.",
         )
+        parser.set_defaults(format_on_success=None)
 
     return parser.parse_args(argv)

@@ -8,9 +8,19 @@ from pathlib import Path
 SUITES_ROOT = Path(__file__).resolve().parent
 TEST_ROOT = SUITES_ROOT.parent
 FRAMEWORK_ROOT = TEST_ROOT / "framework"
-sys.path.insert(0, str(FRAMEWORK_ROOT))
 
-from core.conf.loader import load_config
+
+def _ensure_framework_path() -> None:
+    framework_root_str = str(FRAMEWORK_ROOT)
+    if framework_root_str not in sys.path:
+        sys.path.insert(0, framework_root_str)
+
+
+def _load_config_func():
+    _ensure_framework_path()
+    from core.conf.loader import load_config
+
+    return load_config
 
 
 def _collect_suite_configs(suite_name: str | None) -> list[Path]:
@@ -21,12 +31,14 @@ def _collect_suite_configs(suite_name: str | None) -> list[Path]:
 
 
 def main() -> int:
+    load_config = _load_config_func()
+
     parser = argparse.ArgumentParser(
         description="Validate all test suite TOML schemas before execution."
     )
     parser.add_argument(
         "--suite",
-        help="Only validate one suite folder (e.g. tracer_windows_cli/log_generator).",
+        help="Only validate one suite folder (e.g. tracer_windows_rust_cli/log_generator).",
     )
     parser.add_argument(
         "--build-dir",

@@ -7,10 +7,14 @@ from pathlib import Path
 def should_run_format_on_success(
     args,
     enable_format_on_success: bool,
+    default_format_on_success: bool,
 ) -> bool:
     if not enable_format_on_success:
         return False
-    return not getattr(args, "no_format_on_success", False)
+    override = getattr(args, "format_on_success", None)
+    if override is None:
+        return default_format_on_success
+    return bool(override)
 
 
 def run_clang_format_after_success(repo_root: Path, app_name: str) -> int:

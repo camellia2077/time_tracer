@@ -1,8 +1,18 @@
 # suites
 
-Canonical table-driven suite definitions.
+Canonical table-driven artifact suite definitions.
 
-- `tracer_windows_cli/`: integrated suite for core + Windows CLI (`apps/tracer_cli/windows` build target).
+## Artifact suite naming
+
+Logical suite name -> physical folder:
+
+- `artifact_windows_cli` -> `tracer_windows_rust_cli/`
+- `artifact_android` -> `tracer_android/`
+- `artifact_log_generator` -> `log_generator/`
+
+## Suite folders
+
+- `tracer_windows_rust_cli/`: integrated suite for core + Windows CLI (`apps/tracer_cli/windows` build target).
 - `tracer_android/`: host-side verification checks for `apps/tracer_android`.
 - `log_generator/`: config for `apps/log_generator`.
 

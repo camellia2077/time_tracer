@@ -1,7 +1,7 @@
 # test/cases/version.py
 from ..conf.definitions import CommandSpec, TestContext, TestReport
 from ..core.base import BaseTester, TestCounter
-from ..utils.file_ops import format_size, get_folder_size
+from ..utils.file_ops import format_size
 
 
 class VersionChecker(BaseTester):
@@ -44,10 +44,6 @@ class VersionChecker(BaseTester):
             if dll_count > 0:
                 result.messages.append(f"DLLs size ({dll_count} files): {format_size(dll_size)}")
 
-            plugins_path = exe_dir / "plugins"
-            if plugins_path.exists() and plugins_path.is_dir():
-                plugins_size = get_folder_size(plugins_path)
-                result.messages.append(f"Plugins folder size: {format_size(plugins_size)}")
         except Exception as error:
             result.messages.append(f"Error checking sizes: {error}")
 
@@ -77,7 +73,12 @@ class VersionChecker(BaseTester):
                 expect_files=command.expect_files,
                 expect_file_contains=command.expect_file_contains,
                 expect_stdout_contains=command.expect_stdout_contains,
+                expect_stdout_regex=command.expect_stdout_regex,
+                expect_stdout_any_of=command.expect_stdout_any_of,
                 expect_stderr_contains=command.expect_stderr_contains,
+                expect_error_code=command.expect_error_code,
+                expect_error_category=command.expect_error_category,
+                expect_json_fields=command.expect_json_fields,
             )
 
             if result.status == "PASS" and self._is_version_flag(command.args):

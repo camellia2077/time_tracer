@@ -104,7 +104,16 @@ class CommandSpec:
     # Each item format: "<absolute_or_formatted_path>::<required_substring>"
     expect_file_contains: list[str] = field(default_factory=list)
     expect_stdout_contains: list[str] = field(default_factory=list)
+    expect_stdout_regex: list[str] = field(default_factory=list)
+    expect_stdout_any_of: list[str] = field(default_factory=list)
     expect_stderr_contains: list[str] = field(default_factory=list)
+    expect_error_code: str | None = None
+    expect_error_category: str | None = None
+    expect_hints_contains: list[str] = field(default_factory=list)
+    # Each item format:
+    #   "<json.path>"                (field exists)
+    #   "<json.path>::<expected>"    (field equals expected literal/string)
+    expect_json_fields: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -174,6 +183,7 @@ class RunControl:
     ENABLE_ENVIRONMENT_PREPARE: bool = False
     ENABLE_TEST_EXECUTION: bool = False
     STOP_ON_FAILURE: bool = True
+    FORMAT_ON_SUCCESS: bool = True
 
 
 @dataclass
