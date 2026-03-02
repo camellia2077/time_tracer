@@ -25,13 +25,13 @@ Test data consistency:
 - Unit/component tests should use small fixtures and avoid depending on large `test/data`.
 - Manual check command:
 ```bash
-python scripts/tools/sync_android_input_from_test_data.py --check
+python scripts/devtools/android/sync_android_input_from_test_data.py --check
 ```
 
 Outputs:
-- `test/output/tracer_android/result.json`
-- `test/output/tracer_android/result_cases.json`
-- `test/output/tracer_android/logs/output.log`
+- `test/output/artifact_android/result.json`
+- `test/output/artifact_android/result_cases.json`
+- `test/output/artifact_android/logs/output.log`
 
 Core contract references:
 - Core C ABI: `docs/time_tracer/core/contracts/c_abi.md`

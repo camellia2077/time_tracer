@@ -32,7 +32,8 @@ val timeTracerAndroidInputFullRoot =
     timeTracerAndroidInputFullRootProperty?.let { file(it) }
         ?: projectDir.resolve("src/main/assets/tracer_core/input/full")
 val platformConfigRunner = repoRootDir.resolve("scripts/platform_config/run.py")
-val inputDataSyncRunner = repoRootDir.resolve("scripts/tools/sync_android_input_from_test_data.py")
+val inputDataSyncRunner =
+    repoRootDir.resolve("scripts/devtools/android/sync_android_input_from_test_data.py")
 val pythonExecutable =
     if (timeTracerPythonProperty.isNotEmpty()) {
         timeTracerPythonProperty
@@ -101,7 +102,7 @@ val syncTracerCoreInputData by tasks.registering(Exec::class) {
             "--apply",
         )
         logger.lifecycle(
-            "sync Android input/full via scripts/tools/sync_android_input_from_test_data.py " +
+            "sync Android input/full via scripts/devtools/android/sync_android_input_from_test_data.py " +
                 "(source=${timeTracerSourceTestDataRoot.absolutePath}, " +
                 "output=${timeTracerAndroidInputFullRoot.absolutePath})"
         )

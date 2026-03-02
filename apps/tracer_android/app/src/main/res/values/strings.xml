@@ -115,5 +115,12 @@
     <string name="config_about_repo">Repo: %1$s</string>
     <string name="config_about_core">Core: %1$s</string>
     <string name="config_about_app">App: %1$s</string>
+    <string name="config_title_project_info">Project Information</string>
+    <string name="config_about_entry_description">Project details and third-party licenses are available in About.</string>
+    <string name="config_action_open_about">Open About</string>
+    <string name="config_title_open_source_licenses">Open Source Licenses</string>
+    <string name="config_open_source_licenses_description">This app uses the following open source libraries.</string>
+    <string name="config_open_source_licenses_unavailable">Open source licenses are temporarily unavailable.</string>
+    <string name="config_action_back">Back</string>
     <string name="config_action_copy_diagnostics">Copy Diagnostics Payload</string>
 </resources>

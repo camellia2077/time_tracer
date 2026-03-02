@@ -112,5 +112,12 @@
     <string name="config_about_repo">仓库：%1$s</string>
     <string name="config_about_core">核心：%1$s</string>
     <string name="config_about_app">应用：%1$s</string>
+    <string name="config_title_project_info">项目信息</string>
+    <string name="config_about_entry_description">项目详情与第三方许可证已统一放在 About 页面。</string>
+    <string name="config_action_open_about">打开 About</string>
+    <string name="config_title_open_source_licenses">开源许可证</string>
+    <string name="config_open_source_licenses_description">本应用使用了以下开源库。</string>
+    <string name="config_open_source_licenses_unavailable">开源许可证暂时不可用。</string>
+    <string name="config_action_back">返回</string>
     <string name="config_action_copy_diagnostics">复制诊断载荷</string>
 </resources>

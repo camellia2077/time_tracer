@@ -1,0 +1,20 @@
+{
+  "target": "android",
+  "source_root": "C:\\Computer\\my_github\\github_cpp\\time_tracer\\time_tracer_cpp\\apps\\tracer_core\\config",
+  "input_hash": "4e1ae1c1d7693683f523d23e956be0433293129f4b6a7cc3da2f15d3a31a71f7",
+  "planned_file_count": 11,
+  "file_hashes": {
+    "charts/heatmap.toml": "6ad0f28fd9cb645df803f041cfd75d496b518dc7494ce717e71ab63da5d84135",
+    "config.toml": "509e2a3085c548639da2fe144865a8f50bfdaa2cb527726f752d7706c3d045e6",
+    "converter/alias_mapping.toml": "866bd2c4a21ff92482e4d5ebc7480bf34e092ec3bd242393a2461e4a25dcd640",
+    "converter/duration_rules.toml": "d33e45b91b6a5d3e784e47f42977d0154ba0d58a76d3f01a72f8843b8466e5bf",
+    "converter/interval_processor_config.toml": "a2317572605da45e4cdc12e9ef24b79ffcf9935c5693c80269983f4371822758",
+    "meta/bundle.toml": "7ffb53884cd1b5a10972420213a8965ff6174bed3b33849933ff9fa14040ec07",
+    "reports/markdown/day.toml": "d28f0e66d089a12ffcb7cc5dee9b8720c2648fde8919527da4d8c565789506f2",
+    "reports/markdown/month.toml": "2bdbda9c5bf20a80890ed3d3156e14693179d54f14c16b6a36dae33c42308a1d",
+    "reports/markdown/period.toml": "6b08e7c3697c9c80d807a647ca3b19b022763172f712a66f94f0e88360d088b8",
+    "reports/markdown/week.toml": "1a1610c600a402b9ccca53a54082a2c50dfc13a7edf2393090b780bc1e1ac06b",
+    "reports/markdown/year.toml": "68b62b9f5fba449b79fc35698f10e9346d757557f6f6b7a65722c5ebfdb6d8a1"
+  },
+  "generated_at_utc": "2026-02-28T13:17:13.428771+00:00"
+}

@@ -57,3 +57,24 @@ For full protocol details (JNI contract, C ABI mapping, JSON fields):
 For full module tree and responsibilities, see:
 
 - `docs/time_tracer/clients/android_ui/specs/STRUCTURE.md`
+
+## Recent Responsibility Split (2026-03-02)
+
+To reduce file-level coupling and improve agent navigation, three hotspots were split by role:
+
+1. Runtime controller boundary (`runtime`)
+   - orchestrator: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+   - JNI bridge calls: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeBridge.kt`
+   - runtime lifecycle/session cache: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeSession.kt`
+   - runtime error formatting/mapping: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeErrorMapper.kt`
+
+2. Tracer screen composition root (`app`)
+   - route/composition root: `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/TracerScreen.kt` (`TracerScreen`)
+   - action wiring: same file (`TracerScreenActions`, `rememberTracerScreenActions`)
+   - presentational content: same file (`TracerScreenContent`)
+
+3. Record state flow (`feature-record`)
+   - ViewModel shell: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordViewModel.kt`
+   - intent handling: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordIntentHandler.kt`
+   - state reducer: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordStateReducer.kt`
+   - use case call adapter: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordUseCaseCaller.kt`

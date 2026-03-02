@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.roundToInt
 
 data class CryptoProgressUiState(
     val isVisible: Boolean = false,
@@ -53,62 +52,52 @@ private fun currentIsoDate(): String =
     SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
 class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() {
+    private val intentHandler = RecordIntentHandler(
+        useCaseCaller = RecordUseCaseCaller(recordUseCases)
+    )
+
     var uiState by mutableStateOf(RecordUiState())
         private set
 
     fun onRecordContentChange(value: String) {
-        uiState = uiState.copy(recordContent = value)
+        uiState = intentHandler.onRecordContentChange(uiState, value)
     }
 
     fun onRecordRemarkChange(value: String) {
-        uiState = uiState.copy(recordRemark = value)
+        uiState = intentHandler.onRecordRemarkChange(uiState, value)
     }
 
     fun useAutoDate() {
-        uiState = uiState.copy(useManualDate = false)
+        uiState = intentHandler.useAutoDate(uiState)
     }
 
     fun useManualDate() {
-        uiState = uiState.copy(useManualDate = true)
+        uiState = intentHandler.useManualDate(uiState)
     }
 
     fun onManualDateChange(value: String) {
-        uiState = uiState.copy(manualDate = value)
+        uiState = intentHandler.onManualDateChange(uiState, value)
     }
 
     fun updateEditableHistoryContent(value: String) {
-        uiState = uiState.copy(editableHistoryContent = value)
+        uiState = intentHandler.updateEditableHistoryContent(uiState, value)
     }
 
     fun updateSuggestionPreferences(lookbackDays: Int, topN: Int) {
-        if (uiState.suggestionLookbackDays == lookbackDays && uiState.suggestionTopN == topN) {
-            return
-        }
-
-        uiState = uiState.copy(
-            suggestionLookbackDays = lookbackDays,
-            suggestionTopN = topN
+        uiState = intentHandler.updateSuggestionPreferences(
+            state = uiState,
+            lookbackDays = lookbackDays,
+            topN = topN
         )
     }
 
     fun updateQuickActivities(values: List<String>) {
-        val normalized = values
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .distinct()
-        if (normalized.isEmpty() || uiState.quickActivities == normalized) {
-            return
-        }
-        uiState = uiState.copy(quickActivities = normalized)
+        uiState = intentHandler.updateQuickActivities(uiState, values)
     }
 
     fun updateAssistUiState(assistExpanded: Boolean, assistSettingsExpanded: Boolean) {
-        if (uiState.assistExpanded == assistExpanded &&
-            uiState.assistSettingsExpanded == assistSettingsExpanded
-        ) {
-            return
-        }
-        uiState = uiState.copy(
+        uiState = intentHandler.updateAssistUiState(
+            state = uiState,
             assistExpanded = assistExpanded,
             assistSettingsExpanded = assistSettingsExpanded
         )
@@ -116,21 +105,13 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
 
     fun toggleSuggestions() {
         if (uiState.suggestionsVisible) {
-            uiState = uiState.copy(suggestionsVisible = false)
+            uiState = intentHandler.hideSuggestions(uiState)
             return
         }
 
-        uiState = uiState.copy(
-            suggestionsVisible = true,
-            isSuggestionsLoading = true,
-            statusText = "Loading activity suggestions..."
-        )
+        uiState = intentHandler.showSuggestionsLoading(uiState)
         viewModelScope.launch {
-            val resultState = recordUseCases.loadActivitySuggestions(
-                state = uiState,
-                lookbackDays = uiState.suggestionLookbackDays,
-                topN = uiState.suggestionTopN
-            )
+            val resultState = intentHandler.loadActivitySuggestions(uiState)
             uiState = uiState.copy(
                 suggestedActivities = resultState.suggestedActivities,
                 isSuggestionsLoading = resultState.isSuggestionsLoading,
@@ -140,24 +121,15 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
     }
 
     fun applySuggestedActivity(activityName: String) {
-        uiState = uiState.copy(recordContent = activityName)
+        uiState = intentHandler.applySuggestedActivity(uiState, activityName)
     }
 
     fun setStatusText(message: String) {
-        uiState = uiState.copy(statusText = message)
+        uiState = intentHandler.setStatusText(uiState, message)
     }
 
     fun startCryptoProgress(operationText: String) {
-        uiState = uiState.copy(
-            cryptoProgress = CryptoProgressUiState(
-                isVisible = true,
-                operationText = operationText,
-                phaseText = "处理中",
-                statusText = "处理中",
-                detailsText = "已用时 00:00 | 预计剩余 --:--",
-                startedAtEpochMs = System.currentTimeMillis()
-            )
-        )
+        uiState = intentHandler.startCryptoProgress(uiState, operationText)
     }
 
     fun updateCryptoProgress(
@@ -168,211 +140,77 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         currentTextOverride: String? = null,
         currentProgressOverride: Float? = null
     ) {
-        val phaseText = when (event.phase) {
-            FileCryptoPhase.COMPLETED -> "完成"
-            FileCryptoPhase.CANCELLED -> "已取消"
-            FileCryptoPhase.FAILED -> "失败"
-            else -> "处理中"
-        }
-        val statusText = phaseText
-
-        val overallProgress = (overallProgressOverride ?: event.overallProgressFraction)
-            .coerceIn(0f, 1f)
-        val currentProgress = (currentProgressOverride ?: event.currentFileProgressFraction)
-            .coerceIn(0f, 1f)
-
-        val defaultOverallText =
-            "${(overallProgress * 100f).roundToInt()}% (${event.currentFileIndex}/${event.totalFiles})"
-        val groupLabel = event.currentGroupLabel.ifBlank { "(root)" }
-        val defaultCurrentText =
-            "${groupLabel} ${(currentProgress * 100f).roundToInt()}% (${event.fileIndexInGroup}/${event.fileCountInGroup})"
-
-        val nowEpochMs = System.currentTimeMillis()
-        val startedAtEpochMs = uiState.cryptoProgress.startedAtEpochMs
-        val elapsedSeconds = if (startedAtEpochMs > 0L) {
-            ((nowEpochMs - startedAtEpochMs) / 1000L).coerceAtLeast(0L)
-        } else {
-            0L
-        }
-        val detailsText = buildString {
-            append("已用时 ")
-            append(formatDuration(elapsedSeconds))
-            append(" | 预计剩余 ")
-            append(
-                formatBatchEta(
-                    overallProgress = overallProgress,
-                    elapsedSeconds = elapsedSeconds,
-                    phase = event.phase,
-                    fallbackEtaSeconds = event.etaSeconds,
-                    fallbackRemainingBytes = event.remainingBytes
-                )
-            )
-        }
-        val advancedDetailsText = buildString {
-            append("speed ")
-            append(formatBytes(event.speedBytesPerSec))
-            append("/s")
-            append(" | remain ")
-            append(formatBytes(event.remainingBytes))
-        }
-
-        uiState = uiState.copy(
-            cryptoProgress = uiState.cryptoProgress.copy(
-                isVisible = true,
-                operationText = operationTextOverride ?: uiState.cryptoProgress.operationText,
-                phaseText = phaseText,
-                statusText = statusText,
-                overallProgress = overallProgress,
-                overallText = overallTextOverride ?: defaultOverallText,
-                currentProgress = currentProgress,
-                currentText = currentTextOverride ?: defaultCurrentText,
-                detailsText = detailsText,
-                advancedDetailsText = advancedDetailsText
-            )
+        uiState = intentHandler.updateCryptoProgress(
+            state = uiState,
+            event = event,
+            operationTextOverride = operationTextOverride,
+            overallProgressOverride = overallProgressOverride,
+            overallTextOverride = overallTextOverride,
+            currentTextOverride = currentTextOverride,
+            currentProgressOverride = currentProgressOverride
         )
     }
 
     fun finishCryptoProgress(statusText: String, keepVisible: Boolean) {
-        uiState = uiState.copy(
-            cryptoProgress = uiState.cryptoProgress.copy(
-                isVisible = keepVisible,
-                phaseText = statusText,
-                statusText = statusText
-            )
+        uiState = intentHandler.finishCryptoProgress(
+            state = uiState,
+            statusText = statusText,
+            keepVisible = keepVisible
         )
     }
 
     fun clearCryptoProgress() {
-        uiState = uiState.copy(cryptoProgress = CryptoProgressUiState())
+        uiState = intentHandler.clearCryptoProgress(uiState)
     }
 
     fun recordNow() {
         viewModelScope.launch {
-            uiState = recordUseCases.recordNow(uiState)
+            uiState = intentHandler.recordNow(uiState)
         }
     }
 
     fun refreshHistory() {
         viewModelScope.launch {
-            uiState = recordUseCases.refreshHistory(uiState)
+            uiState = intentHandler.refreshHistory(uiState)
         }
     }
 
     fun openHistoryFile(path: String) {
         viewModelScope.launch {
-            uiState = recordUseCases.openHistoryFile(uiState, path)
+            uiState = intentHandler.openHistoryFile(uiState, path)
         }
     }
 
     fun openMonth(month: String) {
         viewModelScope.launch {
-            uiState = recordUseCases.openMonth(uiState, month)
+            uiState = intentHandler.openMonth(uiState, month)
         }
     }
 
     fun openPreviousMonth() {
         viewModelScope.launch {
-            uiState = recordUseCases.openPreviousMonth(uiState)
+            uiState = intentHandler.openPreviousMonth(uiState)
         }
     }
 
     fun openNextMonth() {
         viewModelScope.launch {
-            uiState = recordUseCases.openNextMonth(uiState)
+            uiState = intentHandler.openNextMonth(uiState)
         }
     }
 
     fun saveHistoryFileAndSync() {
         viewModelScope.launch {
-            uiState = recordUseCases.saveHistoryFileAndSync(uiState)
+            uiState = intentHandler.saveHistoryFileAndSync(uiState)
         }
     }
 
     fun discardUnsavedHistoryDraft() {
-        if (uiState.editableHistoryContent == uiState.selectedHistoryContent) {
-            return
-        }
-        uiState = uiState.copy(
-            editableHistoryContent = uiState.selectedHistoryContent
-        )
+        uiState = intentHandler.discardUnsavedHistoryDraft(uiState)
     }
 
     fun clearTxtEditorState() {
-        uiState = recordUseCases.clearEditorState(uiState)
-    }
-}
-
-private fun formatBytes(bytes: Long): String {
-    val normalizedBytes = bytes.coerceAtLeast(0L)
-    val units = listOf("B", "KB", "MB", "GB", "TB")
-    var value = normalizedBytes.toDouble()
-    var index = 0
-    while (value >= 1024.0 && index < units.lastIndex) {
-        value /= 1024.0
-        index++
-    }
-    if (index == 0) {
-        return "${normalizedBytes}B"
-    }
-    val rounded = ((value * 10.0).roundToInt()) / 10.0
-    return "${rounded}${units[index]}"
-}
-
-private fun formatEta(etaSeconds: Long, remainingBytes: Long, phase: FileCryptoPhase): String {
-    if (phase == FileCryptoPhase.COMPLETED || remainingBytes <= 0L) {
-        return "00:00"
-    }
-    if (etaSeconds <= 0L) {
-        return "--:--"
-    }
-    val hours = etaSeconds / 3600L
-    val minutes = (etaSeconds % 3600L) / 60L
-    val seconds = etaSeconds % 60L
-    return if (hours > 0L) {
-        "%d:%02d:%02d".format(hours, minutes, seconds)
-    } else {
-        "%02d:%02d".format(minutes, seconds)
-    }
-}
-
-private fun formatBatchEta(
-    overallProgress: Float,
-    elapsedSeconds: Long,
-    phase: FileCryptoPhase,
-    fallbackEtaSeconds: Long,
-    fallbackRemainingBytes: Long
-): String {
-    if (phase == FileCryptoPhase.COMPLETED) {
-        return "00:00"
-    }
-
-    val boundedProgress = overallProgress.coerceIn(0f, 1f)
-    if (boundedProgress >= 1f) {
-        return "00:00"
-    }
-    if (elapsedSeconds <= 0L || boundedProgress <= 0f) {
-        return formatEta(fallbackEtaSeconds, fallbackRemainingBytes, phase)
-    }
-
-    val estimatedTotalSeconds =
-        (elapsedSeconds.toDouble() / boundedProgress.toDouble()).toLong()
-    val remainingSeconds =
-        (estimatedTotalSeconds - elapsedSeconds).coerceAtLeast(0L)
-    if (remainingSeconds == 0L) {
-        return formatEta(fallbackEtaSeconds, fallbackRemainingBytes, phase)
-    }
-    return formatDuration(remainingSeconds)
-}
-
-private fun formatDuration(totalSeconds: Long): String {
-    val safeSeconds = totalSeconds.coerceAtLeast(0L)
-    val hours = safeSeconds / 3600L
-    val minutes = (safeSeconds % 3600L) / 60L
-    val seconds = safeSeconds % 60L
-    return if (hours > 0L) {
-        "%d:%02d:%02d".format(hours, minutes, seconds)
-    } else {
-        "%02d:%02d".format(minutes, seconds)
+        uiState = intentHandler.clearTxtEditorState(uiState)
     }
 }
 

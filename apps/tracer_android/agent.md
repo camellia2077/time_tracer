@@ -146,9 +146,9 @@ Note:
 - `post-change` state is written to:
   - `apps/tracer_android/build/post_change_last.json`
 - Machine-readable results:
-  - `test/output/tracer_android/result.json`
-  - `test/output/tracer_android/result_cases.json`
-  - `test/output/tracer_android/logs/output.log`
+  - `test/output/artifact_android/result.json`
+  - `test/output/artifact_android/result_cases.json`
+  - `test/output/artifact_android/logs/output.log`
 - Canonical integration input source is `test/data`; Android runtime assets `input/full` must be synced from it.
 - Unit/component tests should use small fixtures and avoid relying on large integration datasets.
 

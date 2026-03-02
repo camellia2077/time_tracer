@@ -112,5 +112,12 @@
     <string name="config_about_repo">リポジトリ: %1$s</string>
     <string name="config_about_core">コア: %1$s</string>
     <string name="config_about_app">アプリ: %1$s</string>
+    <string name="config_title_project_info">プロジェクト情報</string>
+    <string name="config_about_entry_description">プロジェクト情報とサードパーティーライセンスは About 画面に統合されています。</string>
+    <string name="config_action_open_about">About を開く</string>
+    <string name="config_title_open_source_licenses">オープンソースライセンス</string>
+    <string name="config_open_source_licenses_description">このアプリは以下のオープンソースライブラリを使用しています。</string>
+    <string name="config_open_source_licenses_unavailable">オープンソースライセンスは現在利用できません。</string>
+    <string name="config_action_back">戻る</string>
     <string name="config_action_copy_diagnostics">診断ペイロードをコピー</string>
 </resources>

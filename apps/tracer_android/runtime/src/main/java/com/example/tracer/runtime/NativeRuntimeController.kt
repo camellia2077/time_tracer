@@ -9,13 +9,14 @@ import java.time.format.DateTimeFormatter
 
 class NativeRuntimeController(context: Context) : RuntimeGateway {
     // RuntimeGateway is the aggregate contract that composes all domain gateways.
-    private var runtimePaths: RuntimePaths? = null
-    private var textStorage: TextStorage? = null
-    private var configTomlStorage: ConfigTomlStorage? = null
     private val runtimeEnvironment = RuntimeEnvironment(context)
+    private val rawRecordStore = LiveRawRecordStore()
+    private val runtimeSession = RuntimeSession(runtimeEnvironment, rawRecordStore)
+    private val runtimeBridge = NativeRuntimeBridge()
+    private val errorMapper = RuntimeErrorMapper()
     private val operationIdGenerator = RuntimeOperationIdGenerator()
     private val diagnosticsRecorder = RuntimeDiagnosticsRecorder(
-        runtimePathsProvider = { runtimePaths }
+        runtimePathsProvider = runtimeSession::runtimePathsOrNull
     )
     private val responseCodec = NativeResponseCodec()
     private val reportTranslator = NativeReportTranslator(responseCodec)
@@ -23,19 +24,18 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val recordTranslator = NativeRecordTranslator(responseCodec)
     private val callExecutor = NativeCallExecutor(
         initializeRuntime = { initializeRuntimeInternal() },
-        runtimePathsProvider = { runtimePaths },
+        runtimePathsProvider = runtimeSession::runtimePathsOrNull,
         responseCodec = responseCodec,
         reportTranslator = reportTranslator,
         diagnosticsRecorder = diagnosticsRecorder,
         nextOperationId = operationIdGenerator::next,
-        formatFailure = ::formatNativeFailure
+        formatFailure = errorMapper::formatFailure
     )
-    private val rawRecordStore = LiveRawRecordStore()
     private val syncUseCase = IngestSyncUseCase(AutoSyncMaterializer())
 
     private val recordDelegate = RuntimeRecordDelegate(
-        ensureRuntimePaths = ::ensureRuntimePaths,
-        ensureTextStorage = ::ensureTextStorage,
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
+        ensureTextStorage = runtimeSession::ensureTextStorage,
         rawRecordStore = rawRecordStore,
         responseCodec = responseCodec,
         recordTranslator = recordTranslator,
@@ -43,8 +43,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         syncLiveOperation = { paths -> syncUseCase.run(paths) }
     )
     private val storageDelegate = RuntimeStorageDelegate(
-        ensureTextStorage = ::ensureTextStorage,
-        ensureConfigTomlStorage = ::ensureConfigTomlStorage
+        ensureTextStorage = runtimeSession::ensureTextStorage,
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
     )
     private val reportDelegate = RuntimeReportDelegate(
         executeReportAfterInit = ::executeReportAfterInit
@@ -58,31 +58,19 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val initService = RuntimeInitService(
         initializeRuntimeInternal = ::initializeRuntimeInternal,
         clearRuntimeData = runtimeEnvironment::clearRuntimeData,
-        resetRuntimeCaches = ::resetRuntimeCaches
+        resetRuntimeCaches = runtimeSession::reset
     )
     private val ingestService = RuntimeIngestService(
-        ensureRuntimePaths = ::ensureRuntimePaths,
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         executeAfterInit = ::executeAfterInit,
-        nativeIngest = { inputPath, dateCheckMode, saveProcessedOutput ->
-            NativeBridge.nativeIngest(
-                inputPath = inputPath,
-                dateCheckMode = dateCheckMode,
-                saveProcessedOutput = saveProcessedOutput
-            )
-        },
-        nativeIngestSingleTxtReplaceMonth = { inputPath, dateCheckMode, saveProcessedOutput ->
-            NativeBridge.nativeIngestSingleTxtReplaceMonth(
-                inputPath = inputPath,
-                dateCheckMode = dateCheckMode,
-                saveProcessedOutput = saveProcessedOutput
-            )
-        }
+        nativeIngest = runtimeBridge::nativeIngest,
+        nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth
     )
     private val recordService = RuntimeRecordService(
         recordDelegate = recordDelegate,
         storageDelegate = storageDelegate,
         clearTxtData = {
-            ensureRuntimePaths()
+            runtimeSession.ensureRuntimePaths()
             runtimeEnvironment.clearTxtData()
         }
     )
@@ -91,21 +79,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val configService = RuntimeConfigService(storageDelegate)
     private val cryptoService = RuntimeCryptoService(
         responseCodec = responseCodec,
-        nativeEncryptFile = { inputPath, outputPath, passphrase, securityLevel ->
-            NativeBridge.nativeEncryptFile(
-                inputPath = inputPath,
-                outputPath = outputPath,
-                passphrase = passphrase,
-                securityLevel = securityLevel.wireValue
-            )
-        },
-        nativeDecryptFile = { inputPath, outputPath, passphrase ->
-            NativeBridge.nativeDecryptFile(
-                inputPath = inputPath,
-                outputPath = outputPath,
-                passphrase = passphrase
-            )
-        }
+        nativeEncryptFile = runtimeBridge::nativeEncryptFile,
+        nativeDecryptFile = runtimeBridge::nativeDecryptFile
     )
 
     // init
@@ -221,7 +196,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
             }
 
             runCatching {
-                ensureRuntimePaths()
+                runtimeSession.ensureRuntimePaths()
             }.onFailure { error ->
                 val asException = if (error is Exception) {
                     error
@@ -236,8 +211,11 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
                         stage = "diagnostics.prepare_runtime_paths",
                         ok = false,
                         initialized = null,
-                        message = appendFailureContext(
-                            message = formatNativeFailure("prepare runtime paths failed", asException),
+                        message = errorMapper.appendContext(
+                            message = errorMapper.formatFailure(
+                                "prepare runtime paths failed",
+                                asException
+                            ),
                             operationId = operationId
                         ),
                         errorLogPath = ""
@@ -307,12 +285,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private fun initializeRuntimeInternal(): NativeCallResult {
         val operationId = operationIdGenerator.next("native_init")
         try {
-            val paths = ensureRuntimePaths()
-            val response = NativeBridge.nativeInit(
-                dbPath = paths.dbPath,
-                outputRoot = paths.outputRoot,
-                converterConfigTomlPath = paths.configTomlPath
-            )
+            val paths = runtimeSession.ensureRuntimePaths()
+            val response = runtimeBridge.nativeInit(paths)
             val payload = responseCodec.parse(response)
             val errorLogPath = runCatching {
                 org.json.JSONObject(payload.content).optString("error_log_path", "")
@@ -327,7 +301,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
             val message = if (payload.ok) {
                 "ok"
             } else {
-                appendFailureContext(
+                errorMapper.appendContext(
                     message = payload.errorMessage.ifEmpty { "native init failed." },
                     operationId = operationId,
                     errorLogPath = errorLogPath
@@ -346,7 +320,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
             )
             return result
         } catch (error: Exception) {
-            val failureMessage = formatNativeFailure("nativeInit failed", error)
+            val failureMessage = errorMapper.formatFailure("nativeInit failed", error)
             diagnosticsRecorder.record(
                 RuntimeDiagnosticRecord(
                     timestampEpochMs = System.currentTimeMillis(),
@@ -354,37 +328,15 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
                     stage = "native_init",
                     ok = false,
                     initialized = false,
-                    message = appendFailureContext(failureMessage, operationId = operationId),
+                    message = errorMapper.appendContext(
+                        failureMessage,
+                        operationId = operationId
+                    ),
                     errorLogPath = ""
                 )
             )
             throw error
         }
-    }
-
-    private fun ensureRuntimePaths(): RuntimePaths {
-        return ensureRuntimePathsCached(
-            existing = runtimePaths,
-            runtimeEnvironment = runtimeEnvironment,
-            onPrepared = { runtimePaths = it }
-        )
-    }
-
-    private fun ensureTextStorage(): TextStorage {
-        return ensureTextStorageCached(
-            existing = textStorage,
-            runtimePathsProvider = { ensureRuntimePaths() },
-            rawRecordStore = rawRecordStore,
-            onPrepared = { textStorage = it }
-        )
-    }
-
-    private fun ensureConfigTomlStorage(): ConfigTomlStorage {
-        return ensureConfigTomlStorageCached(
-            existing = configTomlStorage,
-            runtimePathsProvider = { ensureRuntimePaths() },
-            onPrepared = { configTomlStorage = it }
-        )
     }
 
     private fun executeAfterInit(
@@ -414,29 +366,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         val operationName = "native_query_${request.action}"
         return executeAfterInit(operationName = operationName) { paths ->
             onRuntimePaths?.invoke(paths)
-            NativeBridge.nativeQuery(
-                action = request.action,
-                year = request.year ?: 0,
-                month = request.month ?: 0,
-                fromDate = request.fromDateIso.orEmpty(),
-                toDate = request.toDateIso.orEmpty(),
-                remark = request.remark.orEmpty(),
-                dayRemark = request.dayRemark.orEmpty(),
-                project = request.project.orEmpty(),
-                root = request.root.orEmpty(),
-                exercise = request.exercise ?: NativeBridge.UNSET_INT,
-                status = request.status ?: NativeBridge.UNSET_INT,
-                overnight = request.overnight,
-                reverse = request.reverse,
-                limit = request.limit ?: NativeBridge.UNSET_INT,
-                topN = request.topN ?: NativeBridge.UNSET_INT,
-                lookbackDays = request.lookbackDays ?: NativeBridge.UNSET_INT,
-                scoreByDuration = request.scoreByDuration,
-                treePeriod = request.treePeriod.orEmpty(),
-                treePeriodArgument = request.treePeriodArgument.orEmpty(),
-                treeMaxDepth = request.treeMaxDepth ?: NativeBridge.UNSET_INT,
-                outputMode = request.outputMode.orEmpty()
-            )
+            runtimeBridge.nativeQuery(request)
         }
     }
 
@@ -444,23 +374,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         params: DataTreeQueryParams
     ): NativeCallResult {
         return executeAfterInit(operationName = "native_tree") {
-            NativeBridge.nativeTree(
-                listRoots = false,
-                rootPattern = "",
-                maxDepth = params.level,
-                period = params.period.wireValue,
-                periodArgument = params.periodArgument,
-                root = ""
-            )
+            runtimeBridge.nativeTree(params)
         }
-    }
-
-    private fun resetRuntimeCaches() {
-        resetRuntimeStorageCaches(
-            onRuntimePathsReset = { runtimePaths = null },
-            onTextStorageReset = { textStorage = null },
-            onConfigTomlStorageReset = { configTomlStorage = null }
-        )
     }
 
     private fun buildDiagnosticsPayloadText(

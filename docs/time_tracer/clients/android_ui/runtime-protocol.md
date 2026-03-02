@@ -54,6 +54,14 @@ Canonical C ABI naming and global rules:
 4. Core responses are parsed through `ParseResponseEnvelope`, then JNI returns a normalized JSON string via `SerializeResponseEnvelope`.
 5. Kotlin-visible response shape remains stable: `{ok,error_message,content}`.
 6. JNI native method signatures are unchanged.
+7. Crypto progress JSON payload mapping is shared with core C ABI callback path:
+   - C ABI: `tracer_core_set_crypto_progress_callback(...)`
+   - Android: `onCryptoProgressJson(...)`
+   - Both use the same snapshot-to-JSON field serializer.
+8. Android crypto UI keeps performance-oriented security-level policy:
+   - Android JNI crypto API only exposes `interactive|moderate|high`.
+   - Core C ABI may accept wider host-side levels (`min|interactive|moderate|high|max`),
+     but Android host deliberately does not expose `min/max`.
 
 ## JSON Payload Contract (JNI -> core)
 

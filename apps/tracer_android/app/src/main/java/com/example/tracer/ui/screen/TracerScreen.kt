@@ -53,8 +53,6 @@ fun TracerScreen(
     var validMappingNames by remember { mutableStateOf<Set<String>>(emptySet()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    val clipboardManager = LocalClipboardManager.current
-    val diagnosticsPrepareText = stringResource(R.string.tracer_diagnostics_prepare)
     val dataViewModel: DataViewModel = viewModel(
         factory = remember(runtimeInitializer, recordGateway) {
             DataViewModelFactory(runtimeInitializer, recordGateway)
@@ -177,21 +175,6 @@ fun TracerScreen(
         coroutineScope = coroutineScope,
         configViewModel = configViewModel
     )
-    val onCopyDiagnosticsPayload: () -> Unit = {
-        coroutineScope.launch {
-            configViewModel.setStatusText(diagnosticsPrepareText)
-            val payloadResult = withContext(Dispatchers.IO) {
-                controller.buildDiagnosticsPayload(maxEntries = 50)
-            }
-            if (!payloadResult.ok || payloadResult.payload.isBlank()) {
-                configViewModel.setStatusText(payloadResult.message)
-                return@launch
-            }
-
-            clipboardManager.setText(AnnotatedString(payloadResult.payload))
-            configViewModel.setStatusText(payloadResult.message)
-        }
-    }
 
     val tabLifecycleArgs = {
         buildTracerTabLifecycleArgs(
@@ -201,20 +184,21 @@ fun TracerScreen(
             onValidMappingNamesChanged = { names -> validMappingNames = names }
         )
     }
-    val onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit = { event ->
-        dispatchTracerCoordinatorEvent(
-            event = event,
-            selectedTab = selectedTab,
-            tabLifecycleArgs = tabLifecycleArgs,
-            onTabChanged = { nextTab -> selectedTab = nextTab }
-        )
-    }
+    val actions = rememberTracerScreenActions(
+        selectedTab = selectedTab,
+        tabLifecycleArgs = tabLifecycleArgs,
+        onTabChanged = { nextTab -> selectedTab = nextTab },
+        coroutineScope = coroutineScope,
+        controller = controller,
+        configViewModel = configViewModel,
+        userPreferencesRepository = userPreferencesRepository
+    )
 
     StatusSnackbarEffect(
         selectedTab = selectedTab,
         statusText = statusText,
         snackbarHostState = snackbarHostState,
-        onCoordinatorEvent = onCoordinatorEvent
+        onCoordinatorEvent = actions.onCoordinatorEvent
     )
 
     LaunchedEffect(selectedTab, controller) {
@@ -271,6 +255,210 @@ fun TracerScreen(
         }
     }
 
+    TracerScreenContent(
+        selectedTab = selectedTab,
+        statusText = statusText,
+        isDebuggableBuild = isDebuggableBuild,
+        snackbarHostState = snackbarHostState,
+        onCoordinatorEvent = actions.onCoordinatorEvent,
+        dataViewModel = dataViewModel,
+        queryUiState = queryUiState,
+        queryReportViewModel = queryReportViewModel,
+        recordUiState = recordUiState,
+        recordViewModel = recordViewModel,
+        configUiState = configUiState,
+        configViewModel = configViewModel,
+        themeConfig = themeConfig,
+        onSetThemeColor = onSetThemeColor,
+        onSetThemeMode = onSetThemeMode,
+        onSetUseDynamicColor = onSetUseDynamicColor,
+        onSetDarkThemeStyle = onSetDarkThemeStyle,
+        reportChartShowAverageLine = reportChartShowAverageLine,
+        onReportChartShowAverageLineChange = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setReportChartShowAverageLine(value)
+            }
+        },
+        reportHeatmapTomlConfig = reportHeatmapTomlConfig,
+        reportHeatmapStylePreference = reportHeatmapStylePreference,
+        onReportHeatmapThemePolicyChange = { value ->
+            val nextStyle = when (value) {
+                ReportHeatmapThemePolicy.FOLLOW_SYSTEM -> {
+                    ReportHeatmapStylePreference(
+                        themePolicy = ReportHeatmapThemePolicy.FOLLOW_SYSTEM,
+                        paletteName = ""
+                    )
+                }
+
+                ReportHeatmapThemePolicy.PALETTE -> {
+                    reportHeatmapStylePreference.copy(
+                        themePolicy = ReportHeatmapThemePolicy.PALETTE
+                    )
+                }
+            }
+            if (nextStyle != reportHeatmapStylePreference) {
+                reportHeatmapStylePreference = nextStyle
+                scheduleHeatmapTomlAutoApply(nextStyle)
+            }
+        },
+        onReportHeatmapPaletteNameChange = { value ->
+            val nextStyle = reportHeatmapStylePreference.copy(
+                paletteName = value.trim()
+            )
+            if (nextStyle != reportHeatmapStylePreference) {
+                reportHeatmapStylePreference = nextStyle
+                scheduleHeatmapTomlAutoApply(nextStyle)
+            }
+        },
+        reportHeatmapApplyMessage = reportHeatmapApplyMessage,
+        isAppDarkThemeActive = isAppDarkThemeActive,
+        appLanguage = appLanguage,
+        onSetAppLanguage = onSetAppLanguage,
+        validMappingNames = validMappingNames,
+        onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
+        onPersistRecordAssistExpanded = actions.onPersistRecordAssistExpanded,
+        onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,
+        onPersistRecordSuggestLookbackDays = actions.onPersistRecordSuggestLookbackDays,
+        onPersistRecordSuggestTopN = actions.onPersistRecordSuggestTopN,
+        onImportFolderTracer = importFolderTracerAction,
+        onImportSingleTxt = importSingleTxtAction,
+        onImportSingleTracer = importSingleTracerAction,
+        onExportAllMonthsTxt = exportActions.onExportAllMonthsTxt,
+        onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,
+        isTxtExportInProgress = exportActions.isTxtExportInProgress,
+        isTracerExportInProgress = exportActions.isTracerExportInProgress,
+        selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
+        onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
+        onImportAndroidConfigFullReplace = configImportActions.onImportAndroidConfigFullReplace,
+        onImportAndroidConfigPartialUpdate = configImportActions.onImportAndroidConfigPartialUpdate,
+        onExportAndroidConfigBundle = exportActions.onExportAndroidConfigBundle,
+        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload
+    )
+}
+
+private data class TracerScreenActions(
+    val onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit,
+    val onCopyDiagnosticsPayload: () -> Unit,
+    val onPersistRecordQuickActivities: (List<String>) -> Unit,
+    val onPersistRecordAssistExpanded: (Boolean) -> Unit,
+    val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    val onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    val onPersistRecordSuggestTopN: (Int) -> Unit
+)
+
+@Composable
+private fun rememberTracerScreenActions(
+    selectedTab: TracerTab,
+    tabLifecycleArgs: () -> TracerTabLifecycleArgs,
+    onTabChanged: (TracerTab) -> Unit,
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
+    controller: RuntimeGateway,
+    configViewModel: ConfigViewModel,
+    userPreferencesRepository: com.example.tracer.data.UserPreferencesRepository
+): TracerScreenActions {
+    val clipboardManager = LocalClipboardManager.current
+    val diagnosticsPrepareText = stringResource(R.string.tracer_diagnostics_prepare)
+    return TracerScreenActions(
+        onCoordinatorEvent = { event ->
+            dispatchTracerCoordinatorEvent(
+                event = event,
+                selectedTab = selectedTab,
+                tabLifecycleArgs = tabLifecycleArgs,
+                onTabChanged = onTabChanged
+            )
+        },
+        onCopyDiagnosticsPayload = {
+            coroutineScope.launch {
+                configViewModel.setStatusText(diagnosticsPrepareText)
+                val payloadResult = withContext(Dispatchers.IO) {
+                    controller.buildDiagnosticsPayload(maxEntries = 50)
+                }
+                if (!payloadResult.ok || payloadResult.payload.isBlank()) {
+                    configViewModel.setStatusText(payloadResult.message)
+                    return@launch
+                }
+
+                clipboardManager.setText(AnnotatedString(payloadResult.payload))
+                configViewModel.setStatusText(payloadResult.message)
+            }
+        },
+        onPersistRecordQuickActivities = { activities ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordQuickActivities(activities)
+            }
+        },
+        onPersistRecordAssistExpanded = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordAssistExpanded(value)
+            }
+        },
+        onPersistRecordAssistSettingsExpanded = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordAssistSettingsExpanded(value)
+            }
+        },
+        onPersistRecordSuggestLookbackDays = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordSuggestLookbackDays(value)
+            }
+        },
+        onPersistRecordSuggestTopN = { value ->
+            coroutineScope.launch {
+                userPreferencesRepository.setRecordSuggestTopN(value)
+            }
+        }
+    )
+}
+
+@Composable
+private fun TracerScreenContent(
+    selectedTab: TracerTab,
+    statusText: String,
+    isDebuggableBuild: Boolean,
+    snackbarHostState: SnackbarHostState,
+    onCoordinatorEvent: (TracerCoordinatorEvent) -> Unit,
+    dataViewModel: DataViewModel,
+    queryUiState: QueryReportUiState,
+    queryReportViewModel: QueryReportViewModel,
+    recordUiState: RecordUiState,
+    recordViewModel: RecordViewModel,
+    configUiState: ConfigUiState,
+    configViewModel: ConfigViewModel,
+    themeConfig: com.example.tracer.data.ThemeConfig,
+    onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
+    onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
+    onSetUseDynamicColor: (Boolean) -> Unit,
+    onSetDarkThemeStyle: (com.example.tracer.data.DarkThemeStyle) -> Unit,
+    reportChartShowAverageLine: Boolean,
+    onReportChartShowAverageLineChange: (Boolean) -> Unit,
+    reportHeatmapTomlConfig: ReportHeatmapTomlConfig,
+    reportHeatmapStylePreference: ReportHeatmapStylePreference,
+    onReportHeatmapThemePolicyChange: (ReportHeatmapThemePolicy) -> Unit,
+    onReportHeatmapPaletteNameChange: (String) -> Unit,
+    reportHeatmapApplyMessage: String,
+    isAppDarkThemeActive: Boolean,
+    appLanguage: com.example.tracer.data.AppLanguage,
+    onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit,
+    validMappingNames: Set<String>,
+    onPersistRecordQuickActivities: (List<String>) -> Unit,
+    onPersistRecordAssistExpanded: (Boolean) -> Unit,
+    onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
+    onPersistRecordSuggestLookbackDays: (Int) -> Unit,
+    onPersistRecordSuggestTopN: (Int) -> Unit,
+    onImportFolderTracer: () -> Unit,
+    onImportSingleTxt: () -> Unit,
+    onImportSingleTracer: () -> Unit,
+    onExportAllMonthsTxt: () -> Unit,
+    onExportAllMonthsTracer: () -> Unit,
+    isTxtExportInProgress: Boolean,
+    isTracerExportInProgress: Boolean,
+    selectedTracerSecurityLevel: FileCryptoSecurityLevel,
+    onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
+    onImportAndroidConfigFullReplace: () -> Unit,
+    onImportAndroidConfigPartialUpdate: () -> Unit,
+    onExportAndroidConfigBundle: () -> Unit,
+    onCopyDiagnosticsPayload: () -> Unit
+) {
     TracerBottomNavShell(
         selectedTab = selectedTab,
         onTabSelected = { nextTab ->
@@ -308,84 +496,33 @@ fun TracerScreen(
                 onSetUseDynamicColor = onSetUseDynamicColor,
                 onSetDarkThemeStyle = onSetDarkThemeStyle,
                 reportChartShowAverageLine = reportChartShowAverageLine,
-                onReportChartShowAverageLineChange = { value ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setReportChartShowAverageLine(value)
-                    }
-                },
+                onReportChartShowAverageLineChange = onReportChartShowAverageLineChange,
                 reportHeatmapTomlConfig = reportHeatmapTomlConfig,
                 reportHeatmapStylePreference = reportHeatmapStylePreference,
-                onReportHeatmapThemePolicyChange = { value ->
-                    val nextStyle = when (value) {
-                        ReportHeatmapThemePolicy.FOLLOW_SYSTEM -> {
-                            ReportHeatmapStylePreference(
-                                themePolicy = ReportHeatmapThemePolicy.FOLLOW_SYSTEM,
-                                paletteName = ""
-                            )
-                        }
-
-                        ReportHeatmapThemePolicy.PALETTE -> {
-                            reportHeatmapStylePreference.copy(
-                                themePolicy = ReportHeatmapThemePolicy.PALETTE
-                            )
-                        }
-                    }
-                    if (nextStyle != reportHeatmapStylePreference) {
-                        reportHeatmapStylePreference = nextStyle
-                        scheduleHeatmapTomlAutoApply(nextStyle)
-                    }
-                },
-                onReportHeatmapPaletteNameChange = { value ->
-                    val nextStyle = reportHeatmapStylePreference.copy(
-                        paletteName = value.trim()
-                    )
-                    if (nextStyle != reportHeatmapStylePreference) {
-                        reportHeatmapStylePreference = nextStyle
-                        scheduleHeatmapTomlAutoApply(nextStyle)
-                    }
-                },
+                onReportHeatmapThemePolicyChange = onReportHeatmapThemePolicyChange,
+                onReportHeatmapPaletteNameChange = onReportHeatmapPaletteNameChange,
                 reportHeatmapApplyMessage = reportHeatmapApplyMessage,
                 isAppDarkThemeActive = isAppDarkThemeActive,
                 appLanguage = appLanguage,
                 onSetAppLanguage = onSetAppLanguage,
                 validMappingNames = validMappingNames,
-                onPersistRecordQuickActivities = { activities ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setRecordQuickActivities(activities)
-                    }
-                },
-                onPersistRecordAssistExpanded = { value ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setRecordAssistExpanded(value)
-                    }
-                },
-                onPersistRecordAssistSettingsExpanded = { value ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setRecordAssistSettingsExpanded(value)
-                    }
-                },
-                onPersistRecordSuggestLookbackDays = { value ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setRecordSuggestLookbackDays(value)
-                    }
-                },
-                onPersistRecordSuggestTopN = { value ->
-                    coroutineScope.launch {
-                        userPreferencesRepository.setRecordSuggestTopN(value)
-                    }
-                },
-                onImportFolderTracer = importFolderTracerAction,
-                onImportSingleTxt = importSingleTxtAction,
-                onImportSingleTracer = importSingleTracerAction,
-                onExportAllMonthsTxt = exportActions.onExportAllMonthsTxt,
-                onExportAllMonthsTracer = exportActions.onExportAllMonthsTracer,
-                isTxtExportInProgress = exportActions.isTxtExportInProgress,
-                isTracerExportInProgress = exportActions.isTracerExportInProgress,
-                selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
-                onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
-                onImportAndroidConfigFullReplace = configImportActions.onImportAndroidConfigFullReplace,
-                onImportAndroidConfigPartialUpdate = configImportActions.onImportAndroidConfigPartialUpdate,
-                onExportAndroidConfigBundle = exportActions.onExportAndroidConfigBundle,
+                onPersistRecordQuickActivities = onPersistRecordQuickActivities,
+                onPersistRecordAssistExpanded = onPersistRecordAssistExpanded,
+                onPersistRecordAssistSettingsExpanded = onPersistRecordAssistSettingsExpanded,
+                onPersistRecordSuggestLookbackDays = onPersistRecordSuggestLookbackDays,
+                onPersistRecordSuggestTopN = onPersistRecordSuggestTopN,
+                onImportFolderTracer = onImportFolderTracer,
+                onImportSingleTxt = onImportSingleTxt,
+                onImportSingleTracer = onImportSingleTracer,
+                onExportAllMonthsTxt = onExportAllMonthsTxt,
+                onExportAllMonthsTracer = onExportAllMonthsTracer,
+                isTxtExportInProgress = isTxtExportInProgress,
+                isTracerExportInProgress = isTracerExportInProgress,
+                selectedTracerSecurityLevel = selectedTracerSecurityLevel,
+                onTracerSecurityLevelChange = onTracerSecurityLevelChange,
+                onImportAndroidConfigFullReplace = onImportAndroidConfigFullReplace,
+                onImportAndroidConfigPartialUpdate = onImportAndroidConfigPartialUpdate,
+                onExportAndroidConfigBundle = onExportAndroidConfigBundle,
                 onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
             )
         }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Option L: Monochrome Arrow with Geometric Progression Trails -->
+    <!-- Segment 3 (Main Arrow) -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M 17.11 12.75 L 12.5 12.75 A 0.5 0.5 0 0 1 12 12.25 L 12 11.75 A 0.5 0.5 0 0 1 12.5 11.25 L 17.11 11.25 L 13.284 7.424 A 0.5 0.5 0 0 1 13.284 6.716 L 13.646 6.354 A 0.5 0.5 0 0 1 14.354 6.354 L 19.646 11.646 A 0.5 0.5 0 0 1 19.646 12.354 L 14.354 17.646 A 0.5 0.5 0 0 1 13.646 17.646 L 13.284 17.284 A 0.5 0.5 0 0 1 13.284 16.576 Z" />
+    <!-- Segment 2 (Middle Trail) -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.6"
+        android:pathData="M 7.5,11.25 L 10.5,11.25 A 0.5,0.5 0,0,1 11,11.75 L 11,12.25 A 0.5,0.5 0,0,1 10.5,12.75 L 7.5,12.75 A 0.5,0.5 0,0,1 7,12.25 L 7,11.75 A 0.5,0.5 0,0,1 7.5,11.25 Z" />
+    <!-- Segment 1 (Left Trail) -->
+    <path
+        android:fillColor="#000000"
+        android:fillAlpha="0.3"
+        android:pathData="M 4.5,11.25 L 5.5,11.25 A 0.5,0.5 0,0,1 6,11.75 L 6,12.25 A 0.5,0.5 0,0,1 5.5,12.75 L 4.5,12.75 A 0.5,0.5 0,0,1 4,12.25 L 4,11.75 A 0.5,0.5 0,0,1 4.5,11.25 Z" />
+</vector>

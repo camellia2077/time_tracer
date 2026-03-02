@@ -51,10 +51,18 @@ This document defines current tab ownership, entry boundaries, and coordinator r
 ## Coordinator and Shell Boundaries
 
 - Composition root and coordinator: `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/TracerScreen.kt`
-  - owns selected tab state
-  - wires viewmodels and shared dependencies
-  - dispatches lifecycle/tab transition hooks through `TracerTabRegistry`
-  - dispatches typed coordinator events
+  - route role (`TracerScreen`):
+    - owns selected tab state
+    - wires viewmodels and shared dependencies
+    - dispatches lifecycle/tab transition hooks through `TracerTabRegistry`
+    - dispatches typed coordinator events
+  - actions role (`TracerScreenActions`, `rememberTracerScreenActions`):
+    - owns event dispatchers and side-effect callbacks
+    - owns preference persistence callback wiring
+    - owns diagnostics payload copy action
+  - content role (`TracerScreenContent`):
+    - pure UI render function for shell + current tab content
+    - receives all state/actions by parameters, no coordinator ownership
 
 - Navigation shell: `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/TracerScreenShell.kt`
   - owns bottom navigation rendering only
@@ -73,8 +81,13 @@ This document defines current tab ownership, entry boundaries, and coordinator r
   - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
   - coordinates validation, runtime invocation, fallback strategy, and domain result mapping.
 - Runtime bridge execution
-  - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
-  - owns `executeNativeDataQuery(...)` and `executeNativeTreeQuery(...)` transport calls.
+  - orchestrator: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+  - bridge adapter: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeBridge.kt`
+  - session cache owner: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeSession.kt`
+  - error mapping owner: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeErrorMapper.kt`
+  - query transport dispatch still owned by controller:
+    - `executeNativeDataQuery(...)`
+    - `executeNativeTreeQuery(...)`
 - Query ops split (pure helpers)
   - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
   - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
@@ -119,3 +132,18 @@ This document defines current tab ownership, entry boundaries, and coordinator r
 
 - UI preference writes are injected as callbacks from `TracerScreen` into tab route args.
 - Feature tab entries call injected callbacks; they do not directly depend on app repository implementation.
+
+## Record ViewModel Responsibility Split
+
+- ViewModel shell
+  - `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordViewModel.kt`
+  - keeps UI state holder + coroutine scope boundaries only.
+- Intent handling
+  - `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordIntentHandler.kt`
+  - maps UI intents to reducer transitions/use case calls.
+- State reducer
+  - `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordStateReducer.kt`
+  - pure state transitions and crypto progress presentation formatting.
+- Use case adapter
+  - `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordUseCaseCaller.kt`
+  - encapsulates `RecordUseCases` invocations.

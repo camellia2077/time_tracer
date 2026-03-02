@@ -46,10 +46,16 @@ Goal: locate the right files in 5 minutes and avoid broad repo-wide searching.
    - heatmap controls: `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartVisualizationHeatmapControls.kt`
    - summary/footer: `apps/tracer_android/feature-report/src/main/java/com/example/tracer/ui/screen/ReportChartVisualizationSummary.kt`
 4. Change record-side shared UI state:
-   - `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordViewModel.kt`
+   - ViewModel shell: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordViewModel.kt`
+   - intent handling: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordIntentHandler.kt`
+   - reducer transitions: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordStateReducer.kt`
+   - use case adapter: `apps/tracer_android/feature-record/src/main/java/com/example/tracer/ui/viewmodel/RecordUseCaseCaller.kt`
 5. Add/extend runtime service behavior:
    - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/services/*.kt`
-   - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+   - orchestrator: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+   - JNI bridge adapter: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeBridge.kt`
+   - runtime session cache: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeSession.kt`
+   - runtime error mapping: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/RuntimeErrorMapper.kt`
 6. Change runtime record write / TXT storage behavior:
    - facade: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/LiveRawRecordStore.kt`
    - txt IO: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/LiveRawTxtFileStore.kt`
@@ -113,3 +119,7 @@ python scripts/run.py verify --app tracer_android --profile android_ci --concise
    - Check `NativeBridge.onCryptoProgressJson(...)` path.
 3. UI updated but text missing:
    - Check string resources across 3 locales.
+4. Runtime call path unclear after refactor:
+   - start from `NativeRuntimeController`, then follow to `NativeRuntimeBridge` (JNI), `RuntimeSession` (paths/storage cache), and `RuntimeErrorMapper` (error text/context).
+5. Record UI state change location unclear:
+   - reducer logic in `RecordStateReducer`, async use case wiring in `RecordIntentHandler` + `RecordUseCaseCaller`, ViewModel keeps only orchestration shell.
