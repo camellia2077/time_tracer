@@ -1,5 +1,6 @@
 import os
 import tomllib
+from dataclasses import fields
 from pathlib import Path
 
 from .config import (
@@ -8,6 +9,8 @@ from .config import (
     BuildConfig,
     BuildProfileConfig,
     PostChangeConfig,
+    QualityConfig,
+    QualityGateAuditConfig,
     RenameConfig,
     TidyConfig,
     TidyFixStrategyConfig,
@@ -29,32 +32,54 @@ class Context:
 
             apps_data = {}
             for name, meta in data.get("apps", {}).items():
-                apps_data[name] = AppConfig(**meta)
+                apps_data[name] = AppConfig(
+                    **self._filter_dataclass_kwargs(AppConfig, meta)
+                )
 
             build_data = data.get("build", {})
             build_profiles_data = build_data.get("profiles", {})
             build_data_without_profiles = dict(build_data)
             build_data_without_profiles.pop("profiles", None)
-            build_cfg = BuildConfig(**build_data_without_profiles)
+            build_cfg = BuildConfig(
+                **self._filter_dataclass_kwargs(BuildConfig, build_data_without_profiles)
+            )
             if isinstance(build_profiles_data, dict):
-                for profile_name, profile_meta in build_profiles_data.items():
-                    if not isinstance(profile_meta, dict):
-                        continue
-                    build_cfg.profiles[profile_name] = BuildProfileConfig(**profile_meta)
+                build_cfg.profiles = self._resolve_build_profiles(build_profiles_data)
+
+            quality_data = data.get("quality", {})
+            quality_data_without_gate = dict(quality_data)
+            gate_audit_data = quality_data_without_gate.pop("gate_audit", {})
+            quality_cfg = QualityConfig(
+                **self._filter_dataclass_kwargs(QualityConfig, quality_data_without_gate)
+            )
+            if isinstance(gate_audit_data, dict):
+                quality_cfg.gate_audit = QualityGateAuditConfig(
+                    **self._filter_dataclass_kwargs(QualityGateAuditConfig, gate_audit_data)
+                )
+
             tidy_data = data.get("tidy", {})
             tidy_data_without_fix_strategy = dict(tidy_data)
             fix_strategy_data = tidy_data_without_fix_strategy.pop("fix_strategy", {})
-            tidy_cfg = TidyConfig(**tidy_data_without_fix_strategy)
+            tidy_cfg = TidyConfig(
+                **self._filter_dataclass_kwargs(TidyConfig, tidy_data_without_fix_strategy)
+            )
             if isinstance(fix_strategy_data, dict):
-                tidy_cfg.fix_strategy = TidyFixStrategyConfig(**fix_strategy_data)
+                tidy_cfg.fix_strategy = TidyFixStrategyConfig(
+                    **self._filter_dataclass_kwargs(TidyFixStrategyConfig, fix_strategy_data)
+                )
             rename_data = data.get("rename", {})
             post_change_data = data.get("post_change", {})
             return AgentConfig(
                 apps=apps_data,
                 build=build_cfg,
+                quality=quality_cfg,
                 tidy=tidy_cfg,
-                rename=RenameConfig(**rename_data),
-                post_change=PostChangeConfig(**post_change_data),
+                rename=RenameConfig(
+                    **self._filter_dataclass_kwargs(RenameConfig, rename_data)
+                ),
+                post_change=PostChangeConfig(
+                    **self._filter_dataclass_kwargs(PostChangeConfig, post_change_data)
+                ),
             )
         except Exception as e:
             print(
@@ -62,6 +87,84 @@ class Context:
                 f"and/or scripts/toolchain/config/*.toml: {e}. Using defaults."
             )
             return AgentConfig()
+
+    @staticmethod
+    def _filter_dataclass_kwargs(cls_type, raw_data: dict) -> dict:
+        if not isinstance(raw_data, dict):
+            return {}
+        allowed = {item.name for item in fields(cls_type)}
+        return {key: value for key, value in raw_data.items() if key in allowed}
+
+    @classmethod
+    def _merge_profile_meta(cls, base: dict, override: dict) -> dict:
+        merged = dict(base)
+        for key, value in override.items():
+            if key in {"extends", "inherits"}:
+                continue
+            if isinstance(value, list):
+                inherited = merged.get(key, [])
+                if isinstance(inherited, list):
+                    merged[key] = [*inherited, *value]
+                else:
+                    merged[key] = list(value)
+                continue
+            if value is None:
+                continue
+            if isinstance(value, str) and value == "" and key in merged:
+                continue
+            merged[key] = value
+        return merged
+
+    @classmethod
+    def _resolve_build_profiles(cls, profiles_payload: dict) -> dict[str, BuildProfileConfig]:
+        raw_profiles: dict[str, dict] = {}
+        for profile_name, profile_meta in profiles_payload.items():
+            if not isinstance(profile_name, str):
+                continue
+            if not isinstance(profile_meta, dict):
+                continue
+            raw_profiles[profile_name] = dict(profile_meta)
+
+        resolved_meta: dict[str, dict] = {}
+        resolving: set[str] = set()
+
+        def resolve_one(profile_name: str) -> dict:
+            if profile_name in resolved_meta:
+                return resolved_meta[profile_name]
+            if profile_name in resolving:
+                raise ValueError(
+                    f"build profile inheritance cycle detected at `{profile_name}`"
+                )
+            profile_meta = raw_profiles.get(profile_name)
+            if profile_meta is None:
+                raise ValueError(f"build profile `{profile_name}` not found")
+
+            resolving.add(profile_name)
+            inherited_name = str(
+                profile_meta.get("extends") or profile_meta.get("inherits") or ""
+            ).strip()
+            merged: dict = {}
+            if inherited_name:
+                if inherited_name not in raw_profiles:
+                    raise ValueError(
+                        f"build profile `{profile_name}` extends unknown profile `{inherited_name}`"
+                    )
+                merged = cls._merge_profile_meta(merged, resolve_one(inherited_name))
+            merged = cls._merge_profile_meta(merged, profile_meta)
+            merged["extends"] = inherited_name
+            resolving.remove(profile_name)
+            resolved_meta[profile_name] = merged
+            return merged
+
+        for profile_name in raw_profiles.keys():
+            resolve_one(profile_name)
+
+        parsed: dict[str, BuildProfileConfig] = {}
+        for profile_name, profile_meta in resolved_meta.items():
+            parsed[profile_name] = BuildProfileConfig(
+                **cls._filter_dataclass_kwargs(BuildProfileConfig, profile_meta)
+            )
+        return parsed
 
     def _load_raw_config_data(self) -> dict:
         base_path = self.repo_root / "scripts" / "toolchain" / "config.toml"

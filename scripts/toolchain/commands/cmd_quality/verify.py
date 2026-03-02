@@ -216,7 +216,10 @@ class VerifyCommand:
             repo_root=self.ctx.repo_root,
             setup_env_fn=self.ctx.setup_env,
             run_command_fn=run_command,
-            run_report_markdown_gates_fn=run_report_markdown_gates,
+            run_report_markdown_gates_fn=lambda **kwargs: run_report_markdown_gates(
+                **kwargs,
+                normalize_ext=tuple(self.ctx.config.quality.gate_audit.normalize_ext),
+            ),
             run_native_core_runtime_tests_fn=run_native_core_runtime_tests,
         )
 

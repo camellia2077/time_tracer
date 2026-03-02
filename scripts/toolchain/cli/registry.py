@@ -15,6 +15,7 @@ def command_specs() -> list[CommandSpec]:
         artifact_size,
         format as format_handler,
         lint,
+        refresh_golden,
         self_test,
         verify,
     )
@@ -33,6 +34,7 @@ def command_specs() -> list[CommandSpec]:
         configure.COMMAND,
         build.COMMAND,
         verify.COMMAND,
+        refresh_golden.COMMAND,
         artifact_size.COMMAND,
         format_handler.COMMAND,
         lint.COMMAND,

@@ -13,6 +13,11 @@ run_tests = "auto"
 # - "auto": same as skip, but keep build for CMake-related script changes
 script_changes = "build"
 
+[quality.gate_audit]
+# Extensions that use text-normalized compare in report_consistency_audit.py
+# (BOM removal + CRLF/CR -> LF) to avoid platform newline noise.
+normalize_ext = [".md"]
+
 [tidy]
 # Granular task splitting limits to prevent AI agent overload
 max_lines = 150

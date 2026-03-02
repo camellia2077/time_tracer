@@ -12,8 +12,8 @@ default_profile = "fast"
 # c_compiler = "clang"
 # cxx_compiler = "clang++"
 
-[build.profiles.fast]
-description = "Fast local verification profile."
+[build.profiles._fast_base]
+description = "Base fast profile for local/CI derivation."
 build_dir = "build_fast"
 cmake_args = [
     "-D", "CMAKE_BUILD_TYPE=Release",
@@ -25,19 +25,16 @@ cmake_args = [
 ]
 gradle_tasks = [":app:assembleDebug"]
 
+[build.profiles.fast]
+extends = "_fast_base"
+description = "Fast local verification profile."
+
 [build.profiles.fast_ci_no_pch]
+extends = "_fast_base"
 description = "CI fast profile with PCH disabled for toolchain/header compatibility."
-build_dir = "build_fast"
 cmake_args = [
-    "-D", "CMAKE_BUILD_TYPE=Release",
-    "-D", "DISABLE_OPTIMIZATION=ON",
-    "-D", "ENABLE_LTO=OFF",
-    "-D", "ENABLE_CLANG_TIDY=OFF",
     "-D", "ENABLE_PCH=OFF",
-    "-D", "WARNING_LEVEL=0",
-    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
 ]
-gradle_tasks = [":app:assembleDebug"]
 
 [build.profiles.release_safe]
 description = "Release build with optimization, but LTO/FTO disabled for stability."
@@ -51,8 +48,8 @@ cmake_args = [
 ]
 gradle_tasks = [":app:assembleRelease"]
 
-[build.profiles.release_bundle]
-description = "Windows release bundle profile: bundled sqlite + toml header-only + static EXE runtime."
+[build.profiles._release_bundle_base]
+description = "Base windows release bundle profile."
 build_dir = "build"
 cmake_args = [
     "-D", "CMAKE_BUILD_TYPE=Release",
@@ -72,25 +69,16 @@ build_targets = [
 ]
 gradle_tasks = [":app:assembleRelease"]
 
+[build.profiles.release_bundle]
+extends = "_release_bundle_base"
+description = "Windows release bundle profile: bundled sqlite + toml header-only + static EXE runtime."
+
 [build.profiles.release_bundle_ci_no_pch]
+extends = "_release_bundle_base"
 description = "Windows release bundle CI profile with PCH disabled for toolchain/header compatibility."
-build_dir = "build"
 cmake_args = [
-    "-D", "CMAKE_BUILD_TYPE=Release",
-    "-D", "DISABLE_OPTIMIZATION=OFF",
-    "-D", "ENABLE_LTO=OFF",
     "-D", "ENABLE_PCH=OFF",
-    "-D", "BUILD_TESTING=OFF",
-    "-D", "TT_USE_BUNDLED_SQLITE=ON",
-    "-D", "TT_TOML_HEADER_ONLY=ON",
-    "-D", "TT_STATIC_MINGW_RUNTIME=ON",
-    "-D", "WARNING_LEVEL=2",
-    "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
 ]
-build_targets = [
-    "tracer_core_shared",
-]
-gradle_tasks = [":app:assembleRelease"]
 
 [build.profiles.core_lite]
 description = "Release-lite build for reduced core size (markdown-only, no processed JSON IO)."
@@ -156,3 +144,26 @@ description = "Android instrumentation on connected device/emulator (non-default
 gradle_tasks = [
     ":app:connectedDebugAndroidTest",
 ]
+
+[build.ci]
+# Source of truth for GitHub Actions windows matrix generation.
+[[build.ci.windows_matrix]]
+job_name = "default"
+profile = "fast_ci_no_pch"
+build_dir = "build_fast"
+cmake_args = ""
+allow_failure = false
+
+[[build.ci.windows_matrix]]
+job_name = "optimized"
+profile = "release_bundle_ci_no_pch"
+build_dir = "build_release"
+cmake_args = ""
+allow_failure = false
+
+[[build.ci.windows_matrix]]
+job_name = "lto-experimental"
+profile = "release_bundle_ci_no_pch"
+build_dir = "build_lto_exp"
+cmake_args = "--cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON"
+allow_failure = true

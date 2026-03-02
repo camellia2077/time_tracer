@@ -10,29 +10,35 @@ on:
     - cron: "0 2 * * 0"
 
 jobs:
+  prepare-windows-matrix:
+    name: prepare-windows-matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate matrix from toolchain config
+        id: generate
+        shell: bash
+        run: |
+          MATRIX_JSON="$(python scripts/toolchain/ci/windows_matrix.py --config scripts/toolchain/config/build.toml)"
+          echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+
   windows-matrix:
+    needs: prepare-windows-matrix
     name: ${{ matrix.job_name }}
     runs-on: windows-latest
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - job_name: default
-            profile: fast_ci_no_pch
-            build_dir: build_fast
-            cmake_args: ""
-            allow_failure: false
-          - job_name: optimized
-            profile: release_bundle_ci_no_pch
-            build_dir: build_release
-            cmake_args: ""
-            allow_failure: false
-          - job_name: lto-experimental
-            profile: release_bundle_ci_no_pch
-            build_dir: build_lto_exp
-            cmake_args: "--cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON"
-            allow_failure: true
+      matrix: ${{ fromJson(needs.prepare-windows-matrix.outputs.matrix) }}
 
     steps:
       - name: Checkout

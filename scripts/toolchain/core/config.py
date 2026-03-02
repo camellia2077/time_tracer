@@ -14,6 +14,7 @@ class AppConfig:
 
 @dataclass
 class BuildProfileConfig:
+    extends: str = ""
     description: str = ""
     build_dir: str = ""
     cmake_args: list[str] = field(default_factory=list)
@@ -94,6 +95,17 @@ class TidyConfig:
 
 
 @dataclass
+class QualityGateAuditConfig:
+    # File extensions that should be text-normalized before gate compare.
+    normalize_ext: list[str] = field(default_factory=lambda: [".md"])
+
+
+@dataclass
+class QualityConfig:
+    gate_audit: QualityGateAuditConfig = field(default_factory=QualityGateAuditConfig)
+
+
+@dataclass
 class RenameConfig:
     engine: str = "clangd"
     check_name: str = "readability-identifier-naming"
@@ -130,6 +142,7 @@ class PostChangeConfig:
 class AgentConfig:
     apps: dict[str, AppConfig] = field(default_factory=dict)
     build: BuildConfig = field(default_factory=BuildConfig)
+    quality: QualityConfig = field(default_factory=QualityConfig)
     tidy: TidyConfig = field(default_factory=TidyConfig)
     rename: RenameConfig = field(default_factory=RenameConfig)
     post_change: PostChangeConfig = field(default_factory=PostChangeConfig)

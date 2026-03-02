@@ -1,5 +1,6 @@
 import os
 import shutil
+import json
 from collections.abc import Callable
 from pathlib import Path
 
@@ -94,6 +95,26 @@ def _first_existing_path(candidates: list[Path]) -> Path | None:
     return None
 
 
+def _load_runtime_manifest_required_files(manifest_path: Path) -> list[str]:
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except Exception:
+        return []
+    if not isinstance(payload, dict):
+        return []
+    runtime = payload.get("runtime")
+    if not isinstance(runtime, dict):
+        return []
+    files = runtime.get("required_files")
+    if not isinstance(files, list):
+        return []
+    selected: list[str] = []
+    for item in files:
+        if isinstance(item, str) and item.strip():
+            selected.append(item.strip())
+    return selected
+
+
 def _env_truthy(name: str) -> bool:
     value = (os.getenv(name) or "").strip().lower()
     return value in {"1", "true", "yes", "on"}
@@ -131,27 +152,33 @@ def _sync_windows_runtime_layout_for_rust(
 
     copied_files: list[str] = []
 
-    tracer_core_dll = _first_existing_path(
-        [candidate / "tracer_core.dll" for candidate in runtime_bin_candidates]
+    manifest_source = _first_existing_path(
+        [candidate / "runtime_manifest.json" for candidate in runtime_bin_candidates]
     )
-    if tracer_core_dll and _copy_file_if_present(tracer_core_dll, runtime_bin_dir):
-        copied_files.append("tracer_core.dll")
-    else:
+    required_files = ["tracer_core.dll", "reports_shared.dll"]
+    if manifest_source:
+        loaded = _load_runtime_manifest_required_files(manifest_source)
+        if loaded:
+            # Only sync root-level DLL files from core runtime output.
+            required_files = [
+                item
+                for item in loaded
+                if "/" not in item and "\\" not in item and item.lower().endswith(".dll")
+            ]
+    for runtime_file in required_files:
+        source_file = _first_existing_path(
+            [candidate / runtime_file for candidate in runtime_bin_candidates]
+        )
+        if source_file and _copy_file_if_present(source_file, runtime_bin_dir):
+            copied_files.append(runtime_file)
+            continue
         print(
-            "Warning: runtime dependency `tracer_core.dll` not found for Rust CLI runtime layout. "
+            f"Warning: runtime dependency `{runtime_file}` not found for Rust CLI runtime layout. "
             "Build output may not be directly runnable."
         )
 
-    reports_shared_source = _first_existing_path(
-        [candidate / "reports_shared.dll" for candidate in runtime_bin_candidates]
-    )
-    if reports_shared_source and _copy_file_if_present(reports_shared_source, runtime_bin_dir):
-        copied_files.append("reports_shared.dll")
-    else:
-        print(
-            "Warning: runtime dependency `reports_shared.dll` not found for Rust CLI runtime layout. "
-            "Build output may not be directly runnable."
-        )
+    if manifest_source and _copy_file_if_present(manifest_source, runtime_bin_dir):
+        copied_files.append("runtime_manifest.json")
 
     config_source = windows_cli_config_root(ctx.repo_root)
     if _copy_dir_if_present(config_source, runtime_bin_dir / "config"):

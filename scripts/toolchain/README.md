@@ -10,6 +10,8 @@ Quick links:
 ## Directory Structure
 
 - `config.toml` + `config/*.toml`: layered toolchain config sources.
+  - Build profiles support `extends` inheritance in `config/build.toml`.
+  - Windows CI matrix is generated from `[[build.ci.windows_matrix]]`.
 - `core/`: **Infrastructure Layer**. Handles environment setup, process execution (with real-time feedback), and application registration.
 - `services/`: **Logic Layer**. Pure functions for parsing diagnostics, planning rename candidates, and driving `clangd` LSP edits.
 - `commands/`: **Workflow Layer**. Orchestrates multi-step processes like `configure`, `build`, `tidy`, `clean`, and rename automation (`rename-plan`, `rename-apply`, `rename-audit`).
@@ -52,6 +54,9 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 # - Applied only when user does not pass explicit --target in build extra args
 # - Explicit user --target always takes precedence
 # build_targets = ["tracer_core_shared"]
+
+# Refresh report golden snapshots (optional pre-verify can be skipped)
+# python scripts/run.py refresh-golden --app tracer_core --profile fast_ci_no_pch --build-dir build_fast
 
 # Tidy header diagnostics scope (scripts/toolchain/config/workflow.toml -> [tidy].header_filter_regex)
 # Example: exclude build third-party deps under */_deps/*

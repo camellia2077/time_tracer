@@ -15,6 +15,7 @@ def run_report_triplet_gates(
     db_path: Path,
     output_name: str,
     cases_config_path: Path,
+    normalize_ext: tuple[str, ...],
 ) -> int:
     specs: tuple[tuple[str, str, str], ...] = (
         ("md", "markdown", "md"),
@@ -66,8 +67,8 @@ def run_report_triplet_gates(
             f"temp/report-triplet-{format_name}-byte-audit.md",
             "--fail-on-diff",
         ]
-        if extension == "md":
-            audit_cmd.extend(["--normalize-ext", ".md"])
+        if extension == "md" and normalize_ext:
+            audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
         audit_ret = run_command_fn(
             audit_cmd,
             cwd=repo_root,
@@ -84,6 +85,7 @@ def run_report_markdown_gates(
     run_command_fn,
     app_name: str,
     build_dir_name: str,
+    normalize_ext: tuple[str, ...] = (".md",),
 ) -> int:
     output_name = resolve_result_output_name(app_name)
     if output_name != "artifact_windows_cli":
@@ -148,9 +150,9 @@ def run_report_markdown_gates(
         "--output",
         "temp/report-md-golden-byte-audit.md",
         "--fail-on-diff",
-        "--normalize-ext",
-        ".md",
     ]
+    if normalize_ext:
+        audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
     audit_ret = run_command_fn(
         audit_cmd,
         cwd=repo_root,
@@ -188,4 +190,5 @@ def run_report_markdown_gates(
         db_path=db_path,
         output_name=output_name,
         cases_config_path=cases_config_path,
+        normalize_ext=normalize_ext,
     )

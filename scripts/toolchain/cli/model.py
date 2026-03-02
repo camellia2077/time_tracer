@@ -41,7 +41,11 @@ class ParserDefaults:
         )
         return cls(
             app_choices=list(ctx.config.apps.keys()),
-            profile_choices=sorted(ctx.config.build.profiles.keys()),
+            profile_choices=sorted(
+                name
+                for name in ctx.config.build.profiles.keys()
+                if not str(name).startswith("_")
+            ),
             default_profile=default_profile,
             post_change_default_run_tests=post_change_default_run_tests,
             post_change_default_build_dir=post_change_default_build_dir,

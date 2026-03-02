@@ -122,3 +122,52 @@ class TestContextConfigResolution(TestCase):
                 Context(repo_root)
             output = captured.getvalue()
             self.assertNotIn("deprecated duplicate config keys", output)
+
+    def test_build_profile_extends_merges_parent_lists(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            cfg = repo_root / "scripts" / "toolchain" / "config.toml"
+
+            _write_text(
+                cfg,
+                """
+[build]
+default_profile = "child"
+
+[build.profiles._base]
+build_dir = "build_fast"
+cmake_args = ["-D", "A=1"]
+
+[build.profiles.child]
+extends = "_base"
+cmake_args = ["-D", "B=2"]
+""".strip(),
+            )
+
+            ctx = Context(repo_root)
+            profile = ctx.config.build.profiles["child"]
+            self.assertEqual(profile.build_dir, "build_fast")
+            self.assertEqual(profile.cmake_args, ["-D", "A=1", "-D", "B=2"])
+
+    def test_build_profile_extends_cycle_falls_back_to_defaults(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            cfg = repo_root / "scripts" / "toolchain" / "config.toml"
+
+            _write_text(
+                cfg,
+                """
+[build.profiles.a]
+extends = "b"
+
+[build.profiles.b]
+extends = "a"
+""".strip(),
+            )
+
+            captured = StringIO()
+            with redirect_stdout(captured):
+                ctx = Context(repo_root)
+            output = captured.getvalue()
+            self.assertIn("Failed to load config", output)
+            self.assertEqual(ctx.config.build.profiles, {})
