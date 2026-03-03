@@ -14,9 +14,12 @@
 
 // --- START CORRECTION: ADDING MISSING FUNCTION IMPLEMENTATIONS ---
 
+// --- 修改：更新构造函数实现 ---
 // Constructor: Initializes the validator and loads configuration files.
-FormatValidator::FormatValidator(const std::string& config_filename, const std::string& header_config_filename)
-    : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
+FormatValidator::FormatValidator(const std::string& config_filename, const std::string& header_config_filename, bool enable_day_count_check)
+    : config_filepath_(config_filename), 
+      header_config_filepath_(header_config_filename),
+      check_day_count_enabled_(enable_day_count_check) { // 初始化新成员
     loadConfiguration();
 }
 
@@ -28,16 +31,26 @@ void FormatValidator::loadConfiguration() {
         try {
             nlohmann::json j;
             config_ifs >> j;
-            config_.parent_categories = j.get<std::map<std::string, std::unordered_set<std::string>>>();
-            config_.loaded = true;
+            
+            // --- 修改的部分 ---
+            if (j.contains("PARENT_CATEGORIES")) {
+                config_.parent_categories = j["PARENT_CATEGORIES"].get<std::map<std::string, std::unordered_set<std::string>>>();
+                config_.loaded = true;
+            } else {
+                 std::cerr << RED_COLOR << "Error: Validator config JSON does not contain 'PARENT_CATEGORIES' key." << RESET_COLOR << std::endl;
+                 config_.loaded = false;
+            }
+            // --- 修改结束 ---
+
         } catch (const std::exception& e) {
             std::cerr << RED_COLOR << "Error processing validator config JSON: " << e.what() << RESET_COLOR << std::endl;
+            config_.loaded = false; // 确保在出错时loaded为false
         }
     } else {
         std::cerr << RED_COLOR << "Error: Could not open validator config file: " << config_filepath_ << RESET_COLOR << std::endl;
     }
 
-    // Load header order configuration
+    // Load header order configuration (这部分代码是正确的，无需修改)
     std::ifstream header_ifs(header_config_filepath_);
     if (header_ifs.is_open()) {
         try {
@@ -258,8 +271,14 @@ void FormatValidator::validate_date_line(const std::string& line, int line_num, 
     }
 }
 
+// --- 修改：在此函数中加入对命令行开关的判断 ---
 // New function to perform the final validation on all collected dates
 void FormatValidator::validate_all_days_for_month(const std::map<std::string, std::set<int>>& month_day_map, std::set<Error>& errors) {
+    // 如果没有通过命令行启用此检查，则直接返回
+    if (!check_day_count_enabled_) {
+        return;
+    }
+
     for (const auto& pair : month_day_map) {
         const std::string& yyyymm = pair.first;
         const std::set<int>& days = pair.second;
