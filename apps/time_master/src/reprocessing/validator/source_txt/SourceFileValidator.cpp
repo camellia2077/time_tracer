@@ -99,7 +99,7 @@ bool SourceFileValidator::validate(const std::string& file_path, std::set<Error>
         }
         
         // 6. 尝试作为事件行进行解析和验证
-        if (parseAndValidateEventLine(trimmed_line, errors, lineNumber, !eventFoundForCurrentDay)) {
+        if (parseAndValidateEventLine(trimmed_line, errors, lineNumber)) {
             eventFoundForCurrentDay = true;
             continue;
         }
@@ -127,7 +127,7 @@ bool SourceFileValidator::isRemarkLine(const std::string& line) {
     return !trim(line.substr(remark_prefix_.length())).empty();
 }
 
-bool SourceFileValidator::parseAndValidateEventLine(const std::string& line, std::set<Error>& errors, int line_number, bool is_first_event) {
+bool SourceFileValidator::parseAndValidateEventLine(const std::string& line, std::set<Error>& errors, int line_number) {
     if (line.length() < 5 || !std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
         return false;
     }
@@ -154,14 +154,9 @@ bool SourceFileValidator::parseAndValidateEventLine(const std::string& line, std
 
         if (description.empty()) return false;
 
-        if (is_first_event) {
-            if (wake_keywords_.count(description) == 0) {
-                 errors.insert({line_number, "Unrecognized wake-up activity '" + description + "'. The first activity of the day must be a valid wake keyword (e.g., '起床').", ErrorType::UnrecognizedActivity});
-            }
-        } else {
-            if (valid_event_keywords_.count(description) == 0) {
-                 errors.insert({line_number, "Unrecognized activity '" + description + "'. Please check spelling or update config file.", ErrorType::UnrecognizedActivity});
-            }
+        // [核心修改] 移除对第一个活动的特殊检查，统一验证所有活动
+        if (wake_keywords_.count(description) == 0 && valid_event_keywords_.count(description) == 0) {
+             errors.insert({line_number, "Unrecognized activity '" + description + "'. Please check spelling or update config file.", ErrorType::UnrecognizedActivity});
         }
         return true; 
     } catch (const std::exception&) {

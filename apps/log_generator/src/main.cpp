@@ -1,5 +1,5 @@
 #include "config/Config.h"
-#include "config/ConfigValidator.h" // 引入新的验证模块
+#include "config/ConfigValidator.h"
 #include "generator/facade/LogGenerator.h"
 #include "utils/Utils.h"
 #include "file_io/FileManager.h"
@@ -32,7 +32,9 @@ public:
         std::filesystem::path activities_config_path = exe_dir / "config" / "common_activities.json";
         std::filesystem::path remarks_config_path = exe_dir / "config" / "activities_config.json";
         
-        auto json_configs_opt = ConfigLoader::load_json_configurations(activities_config_path.string(), remarks_config_path.string());
+        // [核心修改] 创建 ConfigLoader 的实例，然后通过该实例调用成员函数
+        ConfigLoader loader;
+        auto json_configs_opt = loader.load_json_configurations(activities_config_path.string(), remarks_config_path.string());
         
         if (!json_configs_opt) {
             std::cerr << RED_COLOR << "程序因配置加载失败而退出。" << RESET_COLOR << std::endl;
@@ -53,7 +55,7 @@ public:
         auto total_start_time = std::chrono::high_resolution_clock::now();
         std::cout << "正在为 " << config.start_year << " 至 " << config.end_year << " 年生成数据..." << '\n';
 
-        LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
+        LogGenerator generator(config, json_configs_opt->activities, json_configs_opt->remarks, json_configs_opt->activity_remarks, json_configs_opt->wake_keywords);
         FileManager file_manager;
         PerformanceReporter reporter;
 

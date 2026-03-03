@@ -18,7 +18,7 @@ EventGenerator::EventGenerator(int items_per_day,
       dis_wake_keyword_selector_(0, static_cast<int>(wake_keywords.size()) -1),
       should_generate_remark_(remark_config.has_value() ? remark_config->generation_chance : 0.0) {}
 
-void EventGenerator::generate_events_for_day(std::string& log_content) {
+void EventGenerator::generate_events_for_day(std::string& log_content, bool is_nosleep_day) {
     for (int i = 0; i < items_per_day_; ++i) {
         int hour;
         int minute = dis_minute_(gen_);
@@ -26,13 +26,14 @@ void EventGenerator::generate_events_for_day(std::string& log_content) {
         
         bool is_wakeup_event = false;
 
-        if (i == 0) {
-            // 处理“起床”的特殊情况
+        // [核心修改]
+        if (i == 0 && !is_nosleep_day) {
+            // 正常天：处理“起床”的特殊情况
             text = wake_keywords_[dis_wake_keyword_selector_(gen_)];
             hour = 6;
             is_wakeup_event = true;
         } else {
-            // 处理其他随机事件
+            // 通宵天或非第一项活动：处理其他随机事件
             text = common_activities_[dis_activity_selector_(gen_)];
             double progress_ratio = (items_per_day_ > 1) ? static_cast<double>(i) / (items_per_day_ - 1) : 1.0;
             int logical_hour = 6 + static_cast<int>(std::round(progress_ratio * 19.0));

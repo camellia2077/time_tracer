@@ -22,7 +22,7 @@ public:
                  std::mt19937& gen);
 
     // 生成一天的完整日志
-    void generate_for_day(std::string& log_content, int year, int month, int day);
+    void generate_for_day(std::string& log_content, int year, int month, int day, bool is_nosleep_day); // 修改
 
 private:
     // DayGenerator 持有其他子生成器的所有权

@@ -15,17 +15,22 @@
  */
 class LogGenerator {
 public:
-    LogGenerator(int items_per_day,
+    LogGenerator(const Config& config, // 修改：传入整个Config对象
                  const std::vector<std::string>& activities,
                  const std::optional<DailyRemarkConfig>& remark_config,
                  const std::optional<ActivityRemarkConfig>& activity_remark_config,
-                 const std::vector<std::string>& wake_keywords); // 新增
+                 const std::vector<std::string>& wake_keywords);
 
     // Facade 方法，封装了复杂的生成流程
     std::string generate_for_month(int year, int month, int days_in_month);
 
 private:
-    // [核心修改] Facade 现在只持有一个 DayGenerator 实例
     std::mt19937 gen_;
     std::unique_ptr<DayGenerator> day_generator_;
+
+    // 新增：通宵模式相关的状态变量
+    bool enable_nosleep_;
+    int nosleep_sequence_length_ = 1;
+    int days_into_sequence_ = 0;
+    bool is_in_nosleep_block_ = true;
 };
