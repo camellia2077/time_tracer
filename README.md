@@ -46,14 +46,20 @@ Time_Master/
 ├── db_inserter/ 
 │   ├── DataImporterr.cpp  # 封装解析数据与插入数据库      
 │   └── DataImporterr.h           
-│   └── parser_and_inserter/
-│       ├── DatabaseInserter.cpp    # 数据库插入
-│       ├── DatabaseInserter.cpp    # 数据库插入
-│       └── DatabaseInserter.h       
+│   └── inserter/
+│   │   ├── DatabaseInserter.cpp    # 数据库插入
+│   │   └── DatabaseInserter.cpp    # 数据库插入
+│   └── model/
+│   │   └── time_sheet_model.h      # 共享的结构
+│   └── parser/
+│       ├── ConfigLoader.h       
+│       ├── ConfigLoader.cpp        # 加载配置
+│       ├── DataFileParserr.h       
 │       ├── DataFileParser.cpp      # 解析数据 
-│       └── DataFileParser.h   
-│       └── time_sheet_model.h      # 共享的结构
-│       └── ParserConfig.h          # json传入的变量
+│       ├── DataFileParser.h   
+│       ├── ParserConfig.h         # 读取json配置的父项目映射
+│       ├── ParserFactory.h     # 声明创建解析器的工厂
+│       └── ParserFactory.cpp   # 实现工厂，封装配置加载和解析器创建的逻辑
 │
 ├── file_handler/ # 读取json配置，递归文件夹查询文件
 │   ├── config_loader.cpp # 加载json
@@ -83,8 +89,9 @@ Time_Master/
 ├── reprocessing/               # 预处理
 │   ├── IntervalProcessor.cpp
 │   └── IntervalProcessor.h
-│   ├── LogProcessor.cpp
-│   └── LogProcessor.h
+│   └── input_transfer/ # 转换验证后的输入文件
+│   │   ├── LogProcessor.cpp
+│   │   ├── LogProcessor.h
 │   └── validator/
 │       ├── OutputFileValidator.cpp # 转换后文件格式检验
 │       └── OutputFileValidator.h 

@@ -1,12 +1,10 @@
-#include "Config.h"         // 包含配置模块
-#include "LogGenerator.h"   // 包含核心逻辑模块
-#include "Utils.h"          // 包含工具声明
+#include "Config.h"
+#include "LogGenerator.h"
 
 #include <iostream>
 #include <vector>
 #include <string>
 #include <iomanip>
-#include <sstream>
 #include <fstream>
 #include <stdexcept>
 #include <random>
@@ -15,23 +13,31 @@
 #include <chrono>
 #include <optional>
 #include <filesystem>
+#include <format>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #endif
 
-// --- 1. Utility Components (实现) ---
-// 在这里，我们只实现 Utils.h 中声明的函数和定义的静态变量
+// --- NEW: Utils namespace is now fully contained in main.cpp ---
 namespace Utils {
+    // Declarations from former Utils.h
+    struct ConsoleColors {
+        static const std::string red;
+        static const std::string green;
+        static const std::string reset;
+    };
+    void setup_console();
+    bool is_leap(int year);
+    int get_days_in_month(int year, int month);
+    void print_usage(const char* prog_name);
+    void print_version();
 
-    // 【已删除】struct ConsoleColors 的重复定义
-    
-    // 为在 Utils.h 中声明的静态变量提供定义
+    // Implementations from former main.cpp's Utils section
     const std::string ConsoleColors::red = "\033[1;31m";
     const std::string ConsoleColors::green = "\033[1;32m";
     const std::string ConsoleColors::reset = "\033[0m";
 
-    // 实现 Utils.h 中声明的函数
     void setup_console() {
     #if defined(_WIN32) || defined(_WIN64)
         SetConsoleOutputCP(CP_UTF8);
@@ -45,19 +51,13 @@ namespace Utils {
         }
     #endif
     }
-
-    std::string format_two_digits(int n) {
-        std::ostringstream ss;
-        ss << std::setw(2) << std::setfill('0') << n;
-        return ss.str();
-    }
     
     bool is_leap(int year) {
         return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
     }
 
     int get_days_in_month(int year, int month) {
-        if (month < 1 || month > 12) return 0; // Basic validation
+        if (month < 1 || month > 12) return 0;
         if (month == 2) {
             return is_leap(year) ? 29 : 28;
         } else if (month == 4 || month == 6 || month == 9 || month == 11) {
@@ -83,10 +83,9 @@ namespace Utils {
         std::cout << "log_generator version " << APP_VERSION << std::endl;
         std::cout << "Last Updated: " << LAST_UPDATE << std::endl;
     }
-
 } // namespace Utils
 
-// --- 4. Application Runner ---
+// --- Application Runner ---
 class Application {
     public:
         int run(int argc, char* argv[]) {
@@ -96,29 +95,30 @@ class Application {
             }
             Utils::setup_console();
     
-            // Phase 1: Configuration & Setup
             auto config_opt = ConfigLoader::parse_arguments(argc, argv);
             if (!config_opt) {
+                // 现在由 main.cpp 自己承担打印用法信息的责任
+                Utils::print_usage(argv[0]);
                 return 1;
             }
             Config config = *config_opt;
     
-            // MODIFIED: Call the new JSON configuration loader.
             auto json_configs_opt = ConfigLoader::load_json_configurations("activities_config.json");
             if (!json_configs_opt) {
                 std::cerr << Utils::ConsoleColors::red << "Exiting program due to configuration loading failure." << Utils::ConsoleColors::reset << std::endl;
                 return 1;
             }
     
-            // Phase 2: Execution & Output
-            auto start_time = std::chrono::high_resolution_clock::now();
+            auto total_start_time = std::chrono::high_resolution_clock::now();
             std::cout << "Generating data for years " << config.start_year << " to " << config.end_year << "..." << '\n';
     
-            // MODIFIED: Pass all loaded configs to the generator.
             LogGenerator generator(config.items_per_day, json_configs_opt->activities, json_configs_opt->remarks);
             int files_generated = 0;
+            
+            // NEW: Durations to store timings for different phases
+            auto total_generation_duration = std::chrono::nanoseconds(0);
+            auto total_io_duration = std::chrono::nanoseconds(0);
     
-            // NEW: Define and create the master "Date" directory.
             const std::string master_dir_name = "Date";
             try {
                 if (!std::filesystem::exists(master_dir_name)) {
@@ -131,63 +131,89 @@ class Application {
             }
             
             for (int year = config.start_year; year <= config.end_year; ++year) {
-                // NEW: Construct the path for the year directory inside the master "Date" directory.
                 std::filesystem::path year_dir_path = std::filesystem::path(master_dir_name) / std::to_string(year);
                 
                 try {
                     if (!std::filesystem::exists(year_dir_path)) {
                         std::filesystem::create_directory(year_dir_path);
-                        std::cout << "Created directory: '" << year_dir_path.string() << "'\n";
                     }
                 } catch(const std::filesystem::filesystem_error& e) {
                     std::cerr << Utils::ConsoleColors::red << "Error creating directory '" << year_dir_path.string() << "'. Detail: " << e.what() << Utils::ConsoleColors::reset << '\n';
-                    return 1; // Stop if we can't create a required directory
+                    return 1;
                 }
     
                 for (int month = 1; month <= 12; ++month) {
-                    std::string filename = std::to_string(year) + "_" + Utils::format_two_digits(month) + ".txt";
-    
-                    // NEW: Use the 'year_dir_path' object to build the full path.
-                    // The path is now correctly built as "Date/YYYY/YYYY_MM.txt"
+                    std::string filename = std::format("{}_{:02}.txt", year, month);
                     std::filesystem::path full_path = year_dir_path / filename;
     
+                    // --- MODIFIED: Timing logic implemented ---
+                    // 1. Time the text generation
+                    auto gen_start = std::chrono::high_resolution_clock::now();
+                    int days_in_month = Utils::get_days_in_month(year, month);
+                    std::string month_log = generator.generate_for_month(month, days_in_month); // Now returns string
+                    auto gen_end = std::chrono::high_resolution_clock::now();
+                    total_generation_duration += (gen_end - gen_start);
+
+                    // 2. Time the file I/O
+                    auto io_start = std::chrono::high_resolution_clock::now();
                     std::ofstream outFile(full_path);
                     if (!outFile.is_open()) {
                         std::cerr << Utils::ConsoleColors::red << "Error: Could not open file '" << full_path.string() << "' for writing." << Utils::ConsoleColors::reset << '\n';
-                        continue; // Skip this month and continue with the next
+                        continue;
                     }
-    
-                    int days_in_month = Utils::get_days_in_month(year, month);
-                    generator.generate_for_month(outFile, month, days_in_month);
+                    outFile << month_log;
                     outFile.close();
+                    auto io_end = std::chrono::high_resolution_clock::now();
+                    total_io_duration += (io_end - io_start);
+
                     files_generated++;
                 }
             }
     
-            // Phase 3: Reporting
-            auto end_time = std::chrono::high_resolution_clock::now();
-            report_completion(config, files_generated, start_time, end_time);
+            auto total_end_time = std::chrono::high_resolution_clock::now();
+            report_completion(config, files_generated, total_start_time, total_end_time, total_generation_duration, total_io_duration);
             
             return 0;
         }
     
     private:
-        // Reporting function is unchanged, but included here for completeness of the Application class
+        // MODIFIED: Added duration parameters for detailed reporting
         void report_completion(const Config& config,
                                int files_generated,
                                const std::chrono::high_resolution_clock::time_point& start, 
-                               const std::chrono::high_resolution_clock::time_point& end) {
-            auto duration_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-            auto duration_s = std::chrono::duration<double>(end - start);
-    
-            std::cout << Utils::ConsoleColors::green << "\nData generation complete. " << Utils::ConsoleColors::reset 
-                      << files_generated << " monthly log files created for years " << config.start_year << "-" << config.end_year << "." << '\n';
-            std::cout << "Total generation time: " << duration_ms.count() << " ms (" << std::fixed << std::setprecision(3) << duration_s.count() << " s)." << '\n';
+                               const std::chrono::high_resolution_clock::time_point& end,
+                               const std::chrono::nanoseconds& gen_duration,
+                               const std::chrono::nanoseconds& io_duration) {
+
+            auto total_duration = end - start;
+            
+            // Convert all durations to seconds (double) and milliseconds (long long)
+            auto total_s = std::chrono::duration<double>(total_duration);
+            auto total_ms = std::chrono::duration_cast<std::chrono::milliseconds>(total_duration);
+
+            auto gen_s = std::chrono::duration<double>(gen_duration);
+            auto gen_ms = std::chrono::duration_cast<std::chrono::milliseconds>(gen_duration);
+
+            auto io_s = std::chrono::duration<double>(io_duration);
+            auto io_ms = std::chrono::duration_cast<std::chrono::milliseconds>(io_duration);
+
+            std::cout << std::format("{}\nData generation complete.{} {} monthly log files created for years {}-{}.\n",
+                                     Utils::ConsoleColors::green,
+                                     Utils::ConsoleColors::reset,
+                                     files_generated,
+                                     config.start_year,
+                                     config.end_year);
+            
+            // NEW: Print timing details in the requested format
+            std::cout << "---------------------------\n";
+            std::cout << std::format("total time:    {:.2f} s ({}ms)\n", total_s.count(), total_ms.count());
+            std::cout << std::format("text generate: {:.2f} s ({}ms)\n", gen_s.count(), gen_ms.count());
+            std::cout << std::format("io:            {:.2f} s ({}ms)\n", io_s.count(), io_ms.count());
+            std::cout << "---------------------------\n";
         }
     };
 
-
-// --- 5. Main Entry Point ---
+// --- Main Entry Point ---
 int main(int argc, char* argv[]) {
     Application app;
     return app.run(argc, argv);
