@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "PeriodQuerier.h"
 #include "queries/shared/query_utils.h"
 #include <iomanip>

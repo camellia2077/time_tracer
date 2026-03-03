@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // reprocessing/validator/internal/SourceFileValidator.cpp
 #include "SourceFileValidator.h"
 

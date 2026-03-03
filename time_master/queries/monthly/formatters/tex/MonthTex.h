@@ -1,9 +1,10 @@
-// MonthTex.h (corrected)
+// MonthTex.h
 #ifndef MONTHLY_REPORT_TEX_FORMATTER_H
 #define MONTHLY_REPORT_TEX_FORMATTER_H
 
-#include "queries/monthly/IMonthFmt.h" // Corrected: Was IPeriodFmt.h
-#include "queries/shared/BaseTexFormatter.h" 
+#include "queries/shared/Interface/IReportFormatter.h"  // 引入新的模板接口
+#include "queries/shared/MonthlyReportData.h" // 引入数据类型
+#include "queries/shared/BaseTexFormatter.h"
 
 // --- Forward Declarations ---
 struct DailyReportData;
@@ -16,12 +17,11 @@ struct MonthlyReportData;
  * 通过继承 BaseTexFormatter 来复用文档框架。
  */
 // Corrected: Inherits from the correct interface
-class MonthTex : public IMonthFmt, private BaseTexFormatter { 
-public:
-    MonthTex() = default;
-
-    // This override is now correct because the base class is correct
-    std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;
+class MonthTex : public IReportFormatter<MonthlyReportData>, private BaseTexFormatter {
+    public:
+        MonthTex() = default;
+    
+        std::string format_report(const MonthlyReportData& data, sqlite3* db) const override;
 
 private:
     // Implements the pure virtual "hook" function from the base class

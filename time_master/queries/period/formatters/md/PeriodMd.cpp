@@ -1,3 +1,4 @@
+#include "common/pch.h"
 // queries/report_generators/period/formatter/period_md/PeriodMd.cpp
 #include "PeriodMd.h"
 #include <iomanip>

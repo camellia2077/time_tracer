@@ -1,3 +1,4 @@
+#include "common/pch.h"
 #include "AllPeriodReports.h"
 #include "queries/period/PeriodFmtFactory.h"
 #include "queries/period/PeriodQuerier.h" // [修正] 添加缺失的头文件
