@@ -1,14 +1,14 @@
 #ifndef ACTION_HANDLER_H
 #define ACTION_HANDLER_H
 
-#include "LogProcessor.h"
+// action_handler/ActionHandler.h
+#include "reprocessing/LogProcessor.h"
 #include <string>
 #include <vector>
 #include <map>
 #include <filesystem>
-#include "report_generators/_shared/query_data_structs.h"
-// [新增] 引入报告格式定义
-#include "report_generators/_shared/ReportFormat.h"
+#include "queries/report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 
 // 前向声明
 struct sqlite3;
@@ -16,6 +16,7 @@ namespace fs = std::filesystem;
 
 class ActionHandler {
 public:
+    // ... (public members remain the same) ...
     ActionHandler(const std::string& db_name, const AppConfig& config, const std::string& main_config_path);
     ~ActionHandler();
 
@@ -30,48 +31,15 @@ public:
     void run_full_pipeline_and_import(const std::string& source_path);
 
     // --- 查询相关 ---
-    /**
-     * @brief 运行单日的查询。
-     * @param date 要查询的日期。
-     * @param format [修改] 指定报告的输出格式。
-     * @return 格式化后的报告字符串。
-     */
     std::string run_daily_query(const std::string& date, ReportFormat format) const;
-    /**
-     * @brief 为指定的周期生成格式化的报告。
-     * @param days 要查询的天数。
-     * @param format [修改] 指定报告的输出格式。
-     * @return 格式化后的报告字符串。
-     */
     std::string run_period_query(int days, ReportFormat format) const;
-
-    /**
-     * @brief 为指定月份生成格式化的月报。
-     * @param month 要查询的月份，格式为 YYYYMM。
-     * @param format [修改] 指定报告的输出格式。
-     * @return 格式化后的报告字符串。
-     */
     std::string run_monthly_query(const std::string& month, ReportFormat format) const;
     
     // --- 导出功能 ---
-    /**
-     * @brief 导出所有日报，每个日报存为一个独立的文件。
-     * @param format [修改] 指定导出的文件格式。
-     */
     void run_export_all_daily_reports_query(ReportFormat format) const;
-
-    /**
-     * @brief 导出所有月报，每个月合并成一个文件。
-     * @param format [修改] 指定导出的文件格式。
-     */
     void run_export_all_monthly_reports_query(ReportFormat format) const;
-
-    /**
-     * @brief 导出所有周期报告，每个周期存为一个文件。
-     * @param days_list 一个包含多个天数的 vector，例如 {7, 30, 90}。
-     * @param format [修改] 指定导出的文件格式。
-     */
     void run_export_all_period_reports_query(const std::vector<int>& days_list, ReportFormat format) const;
+
 
 private:
     // 数据库连接管理
@@ -86,11 +54,15 @@ private:
     AppConfig app_config_;
     std::string main_config_path_;
 
+    
+
     // 用于保存文件处理状态的成员
     fs::path input_root_;
     std::vector<fs::path> files_to_process_;
     std::map<fs::path, fs::path> source_to_output_map_;
     LogProcessor processor_;
+    // 新增：用于存储导出根路径的成员变量
+    std::filesystem::path export_root_path_; 
 };
 
 #endif // ACTION_HANDLER_H

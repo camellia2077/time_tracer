@@ -1,9 +1,11 @@
+// queries/report_generators/monthly/querier/MonthlyReportQuerier.h
 #ifndef MONTHLY_REPORT_QUERIER_H
 #define MONTHLY_REPORT_QUERIER_H
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/monthly/_month_data/MonthlyReportData.h"
+
 
 // 月报查询器类
 class MonthlyReportQuerier {

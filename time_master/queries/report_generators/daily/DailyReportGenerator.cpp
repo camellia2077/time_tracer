@@ -1,8 +1,8 @@
+// queries/report_generators/daily/DailyReportGenerator.cpp
 #include "DailyReportGenerator.h"
-#include "querier/DailyReportQuerier.h"
-#include "report_generators/_shared/query_data_structs.h"
-// [新增] 引入格式化器工厂，替代原来的具体格式化器
-#include "formatter/DailyReportFormatterFactory.h" 
+#include "queries\report_generators\daily\querier/DailyReportQuerier.h"
+#include "queries\report_generators/_shared/query_data_structs.h"
+#include "queries/report_generators/daily/formatter/DailyReportFormatterFactory.h" // 引入格式化器工厂，替代原来的具体格式化器
 
 DailyReportGenerator::DailyReportGenerator(sqlite3* db) : m_db(db) {}
 

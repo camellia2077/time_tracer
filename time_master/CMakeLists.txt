@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- 为 Release 构建类型设置优化编译选项 ---
+# 不要使用 -Os优化，因为程序会因为json.hpp报错
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -march=native -flto")
 
 # --- 为 Release 构建类型设置优化链接选项 ---
@@ -34,6 +35,10 @@ file(GLOB DB_INSERTER_SOURCES
 )
 file(GLOB QUERIES_SOURCES
     "queries/*.cpp"
+    "queries/format/*.cpp"
+    "queries/format/md/*.cpp"
+    "queries/format/tex/*.cpp"
+
     "queries/report_generators/*.cpp"
 
     "queries/report_generators/_shared/*.cpp"
@@ -41,16 +46,23 @@ file(GLOB QUERIES_SOURCES
     "queries/report_generators/daily/*.cpp"
     "queries/report_generators/daily/formatter/*.cpp"
     "queries/report_generators/daily/formatter/day_md/*.cpp"
+    "queries/report_generators/daily/formatter/day_tex/*.cpp"
 
     "queries/report_generators/daily/querier/*.cpp"
 
     "queries/report_generators/monthly/*.cpp"
     "queries/report_generators/monthly/formatter/*.cpp"
+    "queries/report_generators/monthly/formatter/month_md/*.cpp"
+    "queries/report_generators/monthly/formatter/month_tex/*.cpp"
+    
     "queries/report_generators/monthly/querier/*.cpp"
 
 
     "queries/report_generators/period/*.cpp"
     "queries/report_generators/period/formatter/*.cpp"
+    "queries/report_generators/period/formatter/period_md/*.cpp"
+    "queries/report_generators/period/formatter/period_tex/*.cpp"
+
     "queries/report_generators/period/querier/*.cpp"
 )
 
@@ -114,52 +126,12 @@ if(WIN32)
     message(STATUS "Windows icon resource added to both targets.")
 endif()
 
-# --- 为每个目标分别添加头文件搜索路径 ---
+# --- 为每个目标分别添加头文件搜索路径 (修改为绝对路径) ---
 target_include_directories(time_tracker_app PRIVATE
-    "common"
-
-    "db_inserter"
-    "db_inserter/model"
-    "db_inserter/inserter"
-    "db_inserter/parser"
-    "db_inserter/parser/internal"
-
-    "queries"
-
-
-    "resources"
-    "time_master_app"
-
-    "reprocessing"
-    "reprocessing/validator"
-    "reprocessing/validator/internal"
-    "reprocessing/input_transfer"
-    "reprocessing/input_transfer/internal"
-
-    "file_handler"
-    "action_handler"
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 target_include_directories(time_tracker_cli PRIVATE
-    "common"
-
-    "db_inserter"
-    "db_inserter/model"
-    "db_inserter/inserter"
-    "db_inserter/parser"
-    "db_inserter/parser/internal"
-
-    "queries"
-
-    "resources"
-
-    "reprocessing"
-    "reprocessing/validator"
-    "reprocessing/validator/internal"
-    "reprocessing/input_transfer"
-    "reprocessing/input_transfer/internal"
-
-    "file_handler"
-    "action_handler"
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # --- 为每个目标分别链接库 ---

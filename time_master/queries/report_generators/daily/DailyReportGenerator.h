@@ -1,9 +1,10 @@
+// queries/report_generators/daily/DailyReportGenerator.h
 #ifndef DAILY_REPORT_GENERATOR_H
 #define DAILY_REPORT_GENERATOR_H
 
 #include <sqlite3.h>
 #include <string>
-#include "report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
+#include "queries/report_generators/_shared/ReportFormat.h" // [新增] 引入报告格式的定义
 
 /**
  * @class DailyReportGenerator

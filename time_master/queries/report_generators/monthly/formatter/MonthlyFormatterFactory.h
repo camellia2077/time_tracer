@@ -1,15 +1,16 @@
+// queries/report_generators/monthly/formatter/MonthlyFormatterFactory.h
 #ifndef MONTHLY_REPORT_FORMATTER_FACTORY_H
 #define MONTHLY_REPORT_FORMATTER_FACTORY_H
 
 #include "IReportFormatter.h"
-#include "report_generators/_shared/ReportFormat.h"
+#include "queries/report_generators/_shared/ReportFormat.h"
 #include <memory>
 
 /**
- * @class MonthlyReportFormatterFactory
+ * @class MonthlyFormatterFactory
  * @brief 负责创建具体月报格式化器实例的工厂。
  */
-class MonthlyReportFormatterFactory {
+class MonthlyFormatterFactory {
 public:
     /**
      * @brief 根据指定的格式创建一个格式化器实例。
