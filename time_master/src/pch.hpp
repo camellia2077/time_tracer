@@ -41,24 +41,4 @@
 #include "queries/shared/ReportFormat.hpp"    // 使用次数: 16
 #include "common/AnsiColors.hpp"              // 使用次数: 15
 
-
-
-
-
-// --- 核心接口与工具 (Core Interfaces & Utilities) ---
-#include "queries/shared/utils/query_utils.hpp" // 使用次数: 11
-#include "queries/shared/Interface/IReportFormatter.hpp" // 使用次数: 11
-
-#include "queries/shared/factories/TreeFmtFactory.hpp" // 使用次数: 10
-#include "queries/shared/Interface/ITreeFmt.hpp" // 使用次数: 9
-#include "reprocessing/validator/common/ValidatorUtils.hpp" // 使用次数: 9
-#include "queries/shared/data/DailyReportData.hpp" // 使用次数: 8
-#include "common/AppConfig.hpp"               // 使用次数: 7
-#include "queries/shared/data/MonthlyReportData.hpp" // 使用次数: 6
-#include "queries/shared/data/PeriodReportData.hpp" // 使用次数: 6
-#include "queries/shared/data/query_data_structs.hpp" // 使用次数: 6
-#include "queries/shared/factories/FmtFactory.hpp" // 使用次数: 6
-
-
-
 #endif //PCH_HPP

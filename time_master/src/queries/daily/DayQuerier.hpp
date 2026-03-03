@@ -1,4 +1,4 @@
-// queries/report_generators/daily/querier/DayQuerier.hpp
+// queries\daily\DayQuerier.hpp
 #ifndef DAILY_REPORT_QUERIER_HPP
 #define DAILY_REPORT_QUERIER_HPP
 
@@ -29,6 +29,7 @@ private:
     void _fetch_metadata(DailyReportData& data);
     void _fetch_total_duration(DailyReportData& data);
     void _fetch_time_records(DailyReportData& data);
+    void _fetch_detailed_records(DailyReportData& data); // 获取每日活动的细节
 
     sqlite3* m_db; // 指向 SQLite 数据库连接的指针，用于执行数据库查询
     const std::string m_date; // 表示要查询日报的日期，格式为 YYYYMMDD
