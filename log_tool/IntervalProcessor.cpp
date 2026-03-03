@@ -1,3 +1,5 @@
+// IntervalProcessor.cpp
+
 #include "IntervalProcessor.h"
 #include "SharedUtils.h"
 #include <iostream>
@@ -7,18 +9,14 @@
 #include <ctime>
 #include <filesystem>
 
-namespace fs = std::filesystem;
-
-// --- Constructor ---
-IntervalProcessor::IntervalProcessor(const std::string& config_filename)
-    : config_filepath_(config_filename) {
-    if (!loadTextMapping()) {
+// 构造函数接收两个配置文件
+IntervalProcessor::IntervalProcessor(const std::string& config_filename, const std::string& header_config_filename)
+    : config_filepath_(config_filename), header_config_filepath_(header_config_filename) {
+    if (!loadConfiguration()) {
         std::cerr << RED_COLOR << "Error: IntervalProcessor failed to load its configuration." << RESET_COLOR << std::endl;
-        // The object can still be created, but processFile will likely fail or work with no mappings.
     }
 }
 
-// --- Public Methods ---
 bool IntervalProcessor::processFile(const std::string& input_filepath, const std::string& output_filepath) {
     std::ifstream inFile(input_filepath);
     if (!inFile.is_open()) {
@@ -55,11 +53,15 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
         if (isDateLine(line)) {
             if (!previousDay.date.empty()) {
                 processDayData(previousDay);
+                // --- MODIFICATION START ---
+                // 当我们为前一天添加 sleep_night 时，设置标志位
                 if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
                     std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
                     std::string sleepEndTime = currentDay.getupTime;
                     previousDay.remarksOutput.push_back(sleepStartTime + "~" + sleepEndTime + "sleep_night");
+                    previousDay.endsWithSleepNight = true; // 设置标志
                 }
+                // --- MODIFICATION END ---
                 writeDayData(outFile, previousDay);
             }
             previousDay = currentDay;
@@ -86,15 +88,19 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     // After the loop, process the last two days
     if (!previousDay.date.empty()) {
         processDayData(previousDay);
+        // --- MODIFICATION START ---
         if (!currentDay.getupTime.empty() && !previousDay.rawEvents.empty()) {
             std::string sleepStartTime = formatTime(previousDay.rawEvents.back().endTimeStr);
             std::string sleepEndTime = currentDay.getupTime;
             previousDay.remarksOutput.push_back(sleepStartTime + "~" + sleepEndTime + "sleep_night");
+            previousDay.endsWithSleepNight = true; // 设置标志
         }
+        // --- MODIFICATION END ---
         writeDayData(outFile, previousDay);
     }
     if (!currentDay.date.empty()) {
         processDayData(currentDay);
+        // 对于文件的最后一天，没有下一天来形成 sleep_night，所以 endsWithSleepNight 标志将保持默认的 false
         writeDayData(outFile, currentDay);
     }
 
@@ -103,48 +109,69 @@ bool IntervalProcessor::processFile(const std::string& input_filepath, const std
     return true;
 }
 
-
-// --- Private Helper Methods ---
-
-bool IntervalProcessor::loadTextMapping() {
-    std::ifstream ifs(config_filepath_);
-    if (!ifs.is_open()) {
+// 加载两个配置文件
+bool IntervalProcessor::loadConfiguration() {
+    // 1. 加载文本映射配置
+    std::ifstream mapping_ifs(config_filepath_);
+    if (!mapping_ifs.is_open()) {
         std::cerr << RED_COLOR << "Error: Could not open mapping file: " << config_filepath_ << RESET_COLOR << std::endl;
         return false;
     }
-
-    nlohmann::json j;
     try {
-        ifs >> j;
-        if (j.is_object()) {
-            text_mapping_ = j.get<std::unordered_map<std::string, std::string>>();
-        } else {
-            std::cerr << RED_COLOR << "Error: Root of JSON in " << config_filepath_ << " is not an object." << RESET_COLOR << std::endl;
-            return false;
-        }
-    } catch (const nlohmann::json::parse_error& e) {
-        std::cerr << RED_COLOR << "Error parsing mapping JSON: " << e.what() << RESET_COLOR << std::endl;
-        return false;
-    } catch (const nlohmann::json::type_error& e) {
-        std::cerr << RED_COLOR << "Error: Type mismatch in JSON config: " << e.what() << RESET_COLOR << std::endl;
+        nlohmann::json j;
+        mapping_ifs >> j;
+        text_mapping_ = j.get<std::unordered_map<std::string, std::string>>();
+    } catch (const std::exception& e) {
+        std::cerr << RED_COLOR << "Error processing mapping JSON: " << e.what() << RESET_COLOR << std::endl;
         return false;
     }
+
+    // 2. 加载头部顺序配置
+    std::ifstream header_ifs(header_config_filepath_);
+    if (!header_ifs.is_open()) {
+        std::cerr << RED_COLOR << "Error: Could not open header format file: " << header_config_filepath_ << RESET_COLOR << std::endl;
+        return false;
+    }
+    try {
+        nlohmann::json j;
+        header_ifs >> j;
+        if (j.contains("header_order") && j["header_order"].is_array()) {
+            header_order_ = j["header_order"].get<std::vector<std::string>>();
+        } else {
+            throw std::runtime_error("'header_order' key not found or not an array.");
+        }
+        if (header_order_.empty() || header_order_[0] != "Date:") {
+            throw std::runtime_error("'Date:' must be the first item in header_order.");
+        }
+        if (std::find(header_order_.begin(), header_order_.end(), "Getup:") == header_order_.end() ||
+            std::find(header_order_.begin(), header_order_.end(), "Remark:") == header_order_.end()) {
+            throw std::runtime_error("'Getup:' and 'Remark:' must be present in header_order.");
+        }
+    } catch (const std::exception& e) {
+        std::cerr << RED_COLOR << "Error processing header format JSON: " << e.what() << RESET_COLOR << std::endl;
+        return false;
+    }
+
     return true;
 }
 
+// --- MODIFICATION START ---
+// 在 clear 方法中重置新成员
 void IntervalProcessor::DayData::clear() {
     date.clear();
     hasStudyActivity = false;
+    endsWithSleepNight = false; // 重置
     getupTime.clear();
     rawEvents.clear();
     remarksOutput.clear();
 }
+// --- MODIFICATION END ---
 
 std::string IntervalProcessor::formatTime(const std::string& timeStrHHMM) {
     if (timeStrHHMM.length() == 4) {
         return timeStrHHMM.substr(0, 2) + ":" + timeStrHHMM.substr(2, 2);
     }
-    return timeStrHHMM; // Return original if format is unexpected
+    return timeStrHHMM;
 }
 
 bool IntervalProcessor::isDateLine(const std::string& line) {
@@ -164,6 +191,7 @@ bool IntervalProcessor::parseEventLine(const std::string& line, std::string& out
     return !outDescription.empty();
 }
 
+// processDayData 已经正确设置了 hasStudyActivity，无需修改
 void IntervalProcessor::processDayData(DayData& day) {
     if (day.date.empty() || day.getupTime.empty() || day.rawEvents.empty()) {
         return;
@@ -188,15 +216,29 @@ void IntervalProcessor::processDayData(DayData& day) {
     }
 }
 
+
+// --- MODIFICATION START ---
+// 重写：根据 hasStudyActivity 和 endsWithSleepNight 标志动态生成输出
 void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day) {
     if (day.date.empty()) return;
 
-    outFile << "Date:" << day.date << "\n";
-    outFile << "Status:" << (day.hasStudyActivity ? "True" : "False") << "\n";
-    outFile << "Getup:" << day.getupTime << "\n";
-    outFile << "Remark:\n";
-    for (const auto& remark : day.remarksOutput) {
-        outFile << remark << "\n";
+    for (const auto& header : header_order_) {
+        if (header == "Date:") {
+            outFile << "Date:" << day.date << "\n";
+        } else if (header == "Status:") {
+            // 根据 hasStudyActivity 标志设置 Status
+            outFile << "Status:" << (day.hasStudyActivity ? "True" : "False") << "\n";
+        } else if (header == "Sleep:") {
+            // 根据 endsWithSleepNight 标志设置 Sleep
+            outFile << "Sleep:" << (day.endsWithSleepNight ? "True" : "False") << "\n";
+        } else if (header == "Getup:") {
+            outFile << "Getup:" << (day.getupTime.empty() ? "00:00" : day.getupTime) << "\n";
+        } else if (header == "Remark:") {
+            outFile << "Remark:\n";
+            for (const auto& remark : day.remarksOutput) {
+                outFile << remark << "\n";
+            }
+        }
     }
-    outFile << "\n";
+    outFile << "\n"; // 每个日期块后加一个空行
 }

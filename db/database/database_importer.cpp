@@ -38,8 +38,9 @@ void DatabaseImporter::import_data(const DataFileParser& parser) {
     for (const auto& day_data : parser.days) {
         sqlite3_bind_text(stmt_insert_day, 1, day_data.date.c_str(), -1, SQLITE_TRANSIENT);
         sqlite3_bind_text(stmt_insert_day, 2, day_data.status.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 3, day_data.remark.c_str(), -1, SQLITE_TRANSIENT);
-        sqlite3_bind_text(stmt_insert_day, 4, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT);
+        sqlite3_bind_text(stmt_insert_day, 3, day_data.sleep.c_str(), -1, SQLITE_TRANSIENT); // 新增：绑定sleep数据
+        sqlite3_bind_text(stmt_insert_day, 4, day_data.remark.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从3变为4
+        sqlite3_bind_text(stmt_insert_day, 5, day_data.getup_time.c_str(), -1, SQLITE_TRANSIENT); // 修改：索引从4变为5
 
         if (sqlite3_step(stmt_insert_day) != SQLITE_DONE) {
             std::cerr << "Error inserting day row: " << sqlite3_errmsg(db) << std::endl;
@@ -78,13 +79,15 @@ void DatabaseImporter::import_data(const DataFileParser& parser) {
 // --- Private Member Functions ---
 
 void DatabaseImporter::_initialize_database() {
-    execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, remark TEXT, getup_time TEXT);", "Create days table");
+    // 修改：为days表添加sleep列
+    execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS days (date TEXT PRIMARY KEY, status TEXT, sleep TEXT, remark TEXT, getup_time TEXT);", "Create days table");
     execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS time_records (date TEXT, start TEXT, end TEXT, project_path TEXT, duration INTEGER, PRIMARY KEY (date, start), FOREIGN KEY (date) REFERENCES days(date));", "Create time_records table");
     execute_sql_importer(db, "CREATE TABLE IF NOT EXISTS parent_child (child TEXT PRIMARY KEY, parent TEXT);", "Create parent_child table");
 }
 
 void DatabaseImporter::_prepare_statements() {
-    const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, remark, getup_time) VALUES (?, ?, ?, ?);";
+    // 修改：INSERT语句以包含sleep列
+    const char* insert_day_sql = "INSERT OR REPLACE INTO days (date, status, sleep, remark, getup_time) VALUES (?, ?, ?, ?, ?);";
     if (sqlite3_prepare_v2(db, insert_day_sql, -1, &stmt_insert_day, nullptr) != SQLITE_OK) {
         throw std::runtime_error("Failed to prepare day insert statement.");
     }
