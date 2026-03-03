@@ -1,6 +1,6 @@
 // file: action_handler/query/DirectQueryManager.cpp
 
-#include "common/pch.h" // 项目使用预编译头文件
+ // 项目使用预编译头文件
 #include "DirectQueryManager.h"
 #include "queries/QueryHandler.h" // 引入底层的查询处理器
 

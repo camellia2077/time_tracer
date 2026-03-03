@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "query_utils.h"
 #include "queries/shared/breakdown/TreeFmtFactory.h" // 引入TreeFmtFactory
 #include "queries/shared/breakdown/ITreeFmt.h"       // 引入ITreeFmt

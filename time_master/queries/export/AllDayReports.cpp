@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 #include "AllDayReports.h"
 #include "queries/daily/DayQuerier.h"
 #include <stdexcept>

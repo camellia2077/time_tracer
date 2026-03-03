@@ -1,4 +1,4 @@
-#include "common/pch.h"
+
 // queries\report_generators\daily\querier\DayQuerier.cpp
 #include "DayQuerier.h"
 #include <stdexcept>
