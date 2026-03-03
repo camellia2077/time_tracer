@@ -1,0 +1,120 @@
+#include "query_utils.hpp"
+#include "queries/shared/factories/TreeFmtFactory.hpp" // 引入TreeFmtFactory
+#include "queries/shared/interface/ITreeFmt.hpp"       // 引入ITreeFmt
+
+#include "common/common_utils.hpp"
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <map>
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+
+// --- 【核心函数】 ---
+std::string generate_project_breakdown(
+    ReportFormat format,
+    sqlite3* db,
+    const std::vector<std::pair<std::string, long long>>& records,
+    long long total_duration,
+    int avg_days)
+{
+    // 1. 获取父子类别映射
+    std::map<std::string, std::string> parent_map = get_parent_map(db);
+
+    // 2. 根据记录构建项目树
+    ProjectTree project_tree;
+    build_project_tree_from_records(project_tree, records, parent_map);
+
+    // 3. 使用工厂创建对应的项目明细格式化器
+    auto formatter = TreeFmtFactory::createFormatter(format);
+
+    // 4. 调用格式化器生成并返回最终的字符串
+    if (formatter) {
+        return formatter->format(project_tree, total_duration, avg_days);
+    }
+    
+    // 如果没有找到格式化器，返回空字符串或抛出异常
+    return ""; 
+}
+
+// --- 独立的工具函数实现 ---
+
+// 获取父子类别映射
+std::map<std::string, std::string> get_parent_map(sqlite3* db) {
+    std::map<std::string, std::string> parent_map;
+    sqlite3_stmt* stmt;
+    const char* sql = "SELECT child, parent FROM parent_child;";
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) == SQLITE_OK) {
+        while (sqlite3_step(stmt) == SQLITE_ROW) {
+            parent_map[reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0))] =
+                reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        }
+    } else {
+        std::cerr << "Failed to prepare statement (get_parent_map): " << sqlite3_errmsg(db) << std::endl;
+    }
+    sqlite3_finalize(stmt);
+    return parent_map;
+}
+
+// 从记录构建项目树
+void build_project_tree_from_records(
+    ProjectTree& tree,
+    const std::vector<std::pair<std::string, long long>>& records,
+    const std::map<std::string, std::string>& parent_map)
+{
+    for (const auto& record : records) {
+        const std::string& project_path = record.first;
+        long long duration = record.second;
+
+        std::vector<std::string> parts = split_string(project_path, '_');
+        if (parts.empty()) continue;
+
+        std::string top_level_category_key = parts[0];
+        std::string top_level_display_name;
+
+        auto it_parent = parent_map.find(top_level_category_key);
+        if (it_parent != parent_map.end()) {
+            top_level_display_name = it_parent->second;
+        } else {
+            top_level_display_name = top_level_category_key;
+        }
+
+        tree[top_level_display_name].duration += duration;
+        ProjectNode* current_node = &tree[top_level_display_name];
+
+        for (size_t i = 1; i < parts.size(); ++i) {
+            current_node->children[parts[i]].duration += duration;
+            current_node = &current_node->children[parts[i]];
+        }
+    }
+}
+
+// 增减日期字符串中的天数
+std::string add_days_to_date_str(std::string date_str, int days) {
+    int year = std::stoi(date_str.substr(0, 4));
+    int month = std::stoi(date_str.substr(4, 2));
+    int day = std::stoi(date_str.substr(6, 2));
+
+    std::tm t{};
+    t.tm_year = year - 1900;
+    t.tm_mon = month - 1;
+    t.tm_mday = day + days;
+    std::mktime(&t);
+
+    std::stringstream ss;
+    ss << std::put_time(&t, "%Y%m%d");
+    return ss.str();
+}
+
+// 获取当前日期字符串
+std::string get_current_date_str() {
+    auto now = std::chrono::system_clock::now();
+    auto in_time_t = std::chrono::system_clock::to_time_t(now);
+    std::stringstream ss;
+    ss << std::put_time(std::localtime(&in_time_t), "%Y%m%d");
+    return ss.str();
+}
