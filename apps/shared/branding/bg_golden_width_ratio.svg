@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <linearGradient id="gradSharpRoundedWhiteGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+        <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+    </linearGradient>
+    
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <!-- 方案2.1：宽度黄金覆盖率 (Golden Width Ratio)
+         底板边长 (22) 是图形最大宽度 (13.596) 的 1.618 倍。
+         我们通过 scale(0.8357) 将 1.3 方案里的箭头等比缩小，
+         并利用精准计算的平移参数 translate(3.964, 1.972) 将它停泊在完美的黄金位移点（2.618 左右边距比）上。
+    -->
+    <g transform="translate(3.964, 1.972) scale(0.8357)">
+        <path d="M13.528,18.472 L12.458,17.402 L17.11,12.75 H12 V11.25 H17.11 L12.458,6.598 L13.528,5.528 L20,12 Z" fill="url(#gradSharpRoundedWhiteGolden)" />
+        <rect x="7.636" y="11.25" width="3.158" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.6" />
+        <rect x="3.732" y="11.25" width="1.952" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.3" />
+    </g>
+</svg>

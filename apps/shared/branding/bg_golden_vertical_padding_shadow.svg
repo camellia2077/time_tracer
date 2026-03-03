@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <defs>
+        <linearGradient id="gradSharpRoundedWhiteGolden" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- 增加极淡的物理阴影 Ambient Shadow -->
+        <filter id="ambientShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0.5" stdDeviation="0.75" flood-color="#000000" flood-opacity="0.12" />
+        </filter>
+    </defs>
+    
+    <!-- 方案2.2：垂直高度黄金围剿并且带物理阴影 -->
+    <rect x="1.528" y="1.528" width="20.943" height="20.943" rx="4.76" ry="4.76" fill="#FFFFFF" />
+
+    <!-- 将 filter="url(#ambientShadow)" 添加到整个编组上 -->
+    <g transform="translate(1.179, 0)" filter="url(#ambientShadow)">
+        <path d="M13.528,18.472 L12.458,17.402 L17.11,12.75 H12 V11.25 H17.11 L12.458,6.598 L13.528,5.528 L20,12 Z" fill="url(#gradSharpRoundedWhiteGolden)" />
+        <rect x="7.636" y="11.25" width="3.158" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.6" />
+        <rect x="3.732" y="11.25" width="1.952" height="1.5" fill="url(#gradSharpRoundedWhiteGolden)" opacity="0.3" />
+    </g>
+</svg>

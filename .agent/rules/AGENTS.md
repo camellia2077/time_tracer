@@ -59,6 +59,7 @@ trigger: always_on
 - Full optimization safety rule:
   - if `DISABLE_OPTIMIZATION=OFF`, `ENABLE_LTO` must stay `OFF` (FTO/LTO forbidden due to ICE risk).
 - Default build shell is PowerShell; run `.sh` workflows only when explicitly requested.
+- Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution to avoid UTF-8 encoding issues.
 - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
 - On failures, report the executed command and key error lines.
 - If a user request is incorrect, risky, or clearly suboptimal, state that directly and provide a better alternative before executing; do not follow blindly.
