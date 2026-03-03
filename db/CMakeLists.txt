@@ -24,6 +24,8 @@ file(GLOB COMMON_SOURCES "common/*.cpp")   # 查找 common 目录下的源文件
 file(GLOB PARSING_SOURCES "parsing/*.cpp")
 file(GLOB DATABASE_SOURCES "database/*.cpp")
 file(GLOB QUERIES_SOURCES "queries/*.cpp")
+file(GLOB MENU_SOURCES "Menu/*.cpp")      
+file(GLOB PROCESSING_SOURCES "processing/*.cpp") 
 
 # --- 定义最终的可执行文件 ---
 add_executable(
@@ -34,6 +36,8 @@ add_executable(
     ${PARSING_SOURCES}   # 添加 parsing 目录下的所有 .cpp 文件
     ${DATABASE_SOURCES}  # 添加 database 目录下的所有 .cpp 文件
     ${QUERIES_SOURCES}   # 添加 queries 目录下的所有 .cpp 文件
+    ${MENU_SOURCES}      # 添加 Menu 目录下的源文件
+    ${PROCESSING_SOURCES}
 )
 
 # --- 为 Windows 平台添加图标资源 ---
@@ -63,6 +67,8 @@ target_include_directories(time_tracker_app PRIVATE
     "parsing"
     "queries"
     "resources"
+    "Menu"
+    "processing"
 )
 
 # --- 链接库 ---

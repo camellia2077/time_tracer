@@ -12,8 +12,8 @@ DataFileParser::DataFileParser() // 构造函数与析构函数
 {
     initial_top_level_parents = // 映射，包含预定义的顶级父子关系，如 "study" 对应 "STUDY"，"code" 对应 "CODE"。
     {
-        {"study", "STUDY"},
-        {"code", "CODE"}
+        {"study", "study"},
+        {"code", "code"}
     };
 }
 
@@ -146,7 +146,6 @@ void DataFileParser::_handle_time_record_line(const std::string& line, int line_
 
 void DataFileParser::_process_project_path(const std::string& project_path_orig) {
     std::string project_path = project_path_orig; // 复制原始项目路径
-    std::replace(project_path.begin(), project_path.end(), ' ', '_'); // 将路径中的所有空格替换为下划线
     std::stringstream ss(project_path); // 使用字符串流处理路径（此处未直接使用，但可以是后续处理的基础）
     std::string segment; // 用于存储路径的片段
     std::vector<std::string> segments = split_string(project_path, '_'); // 调用 common_utils.h 中的 split_string 函数，按 '_' 分隔符切分项目路径。
@@ -168,8 +167,6 @@ void DataFileParser::_process_project_path(const std::string& project_path_orig)
                 parent_of_current_segment = it->second; // 使用预定义的父级（如 "STUDY"）
             } else { // 如果没有找到
                 parent_of_current_segment = current_full_path; // 父级就是它自己
-                // 将其转换为大写形式作为父级
-                std::transform(parent_of_current_segment.begin(), parent_of_current_segment.end(), parent_of_current_segment.begin(), ::toupper);
             }
         } else { // 如果不是第一个分段
             parent_of_current_segment = current_full_path; // 上一个完整路径是当前段的父路径

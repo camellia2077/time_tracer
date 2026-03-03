@@ -1,0 +1,33 @@
+{
+    "active_scheme": "vibrant",
+    "color_schemes": {
+      "default": {
+        "code": "#1f77b4",
+        "routine": "#ff7f0e",
+        "study": "#2ca02c",
+        "break": "#d62728",
+        "rest": "#9467bd",
+        "exercise": "#8c564b",
+        "sleep": "#4B0082",
+        "insomnia": "#e377c2",
+        "recreation": "#7f7f7f",
+        "arrange": "#bcbd22",
+        "other": "#17becf",
+        "meal": "#f5b041"
+      },
+      "vibrant": {
+        "code": "#007bff",
+        "routine": "#fd7e14",
+        "study": "#28a745",
+        "break": "#dc3545",
+        "rest": "#6f42c1",
+        "exercise": "#20c997",
+        "sleep": "#001f3f",
+        "insomnia": "#f012be",
+        "recreation": "#6c757d",
+        "arrange": "#ffc107",
+        "other": "#17a2b8",
+        "meal": "#e83e8c"
+      }
+    }
+  }
