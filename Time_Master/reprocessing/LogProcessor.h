@@ -6,17 +6,16 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <nlohmann/json.hpp> // 包含json头文件
+#include <nlohmann/json.hpp> 
 
-// 配置：程序启动时设置，通常不变
 struct AppConfig {
-    // 【修改】包含所有需要的配置文件路径
+
     std::string interval_processor_config_path;
     std::string format_validator_config_path;
     std::string error_log_path;
 };
 
-// 选项：每次运行时根据用户输入决定
+
 struct AppOptions {
     std::string input_path;
     bool run_all = false;

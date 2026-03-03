@@ -1,4 +1,3 @@
-// --- START OF FILE reprocessing/IntervalProcessor.cpp (修复后) ---
 
 #include "IntervalProcessor.h"
 
@@ -11,7 +10,6 @@
 #include <ctime>
 #include <filesystem>
 
-// --- 构造函数与 DayData::clear() 保持不变 ---
 IntervalProcessor::IntervalProcessor(const std::string& config_filename)
     : config_filepath_(config_filename) {
     if (!loadConfiguration()) {
@@ -30,9 +28,9 @@ void IntervalProcessor::DayData::clear() {
     isContinuation = false;
 }
 
-// ##################################################################
-// ###                  核心转换逻辑 (重构后)                     ###
-// ##################################################################
+
+//                  核心转换逻辑 (无变化)                     
+
 
 bool IntervalProcessor::executeConversion(const std::string& input_filepath, const std::string& output_filepath, const std::string& year_prefix) {
     std::ifstream inFile(input_filepath);
@@ -50,7 +48,6 @@ bool IntervalProcessor::executeConversion(const std::string& input_filepath, con
     DayData previousDay, currentDay;
     std::string line;
 
-    // 主循环: 只负责读取和分派任务
     while (std::getline(inFile, line)) {
         line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
         line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
@@ -60,15 +57,13 @@ bool IntervalProcessor::executeConversion(const std::string& input_filepath, con
             handleDateLine(line, currentDay, previousDay, outFile, year_prefix);
         } else if (isRemarkLine(line)) {
             handleRemarkLine(line, currentDay);
-        } else { // 假定剩下的是事件行
+        } else {
             handleEventLine(line, currentDay);
         }
     }
 
-    // 收尾工作: 处理并写入文件中最后两天的数据
     finalizeAndWriteDay(previousDay, currentDay, outFile);
     
-    // 对于文件中的最后一天，没有 "nextDay"，所以单独处理和写入
     if (!currentDay.date.empty()) {
         processAndFormatEvents(currentDay);
         writeDayData(outFile, currentDay);
@@ -78,23 +73,18 @@ bool IntervalProcessor::executeConversion(const std::string& input_filepath, con
 }
 
 
-// ##################################################################
-// ###                  私有辅助函数 (新实现)                     ###
-// ##################################################################
+
+//                      私有辅助函数 
 
 void IntervalProcessor::handleDateLine(const std::string& line, DayData& currentDay, DayData& previousDay, std::ofstream& outFile, const std::string& year_prefix) {
-    // 当遇到新日期时，意味着前一天的数据已经完整，可以进行最终处理和写入
     finalizeAndWriteDay(previousDay, currentDay, outFile);
-    
-    // “滚动”日期：当前天变为前一天，并为新的一天重置数据
     previousDay = currentDay;
     currentDay.clear();
     currentDay.date = year_prefix + line;
 }
 
 void IntervalProcessor::handleRemarkLine(const std::string& line, DayData& currentDay) {
-    if (currentDay.date.empty()) return; // 忽略在第一个日期前的任何备注
-
+    if (currentDay.date.empty()) return;
     std::string remark_content = line.substr(remark_prefix_.length());
     remark_content.erase(0, remark_content.find_first_not_of(" \t"));
     if (!remark_content.empty()) {
@@ -103,16 +93,16 @@ void IntervalProcessor::handleRemarkLine(const std::string& line, DayData& curre
 }
 
 void IntervalProcessor::handleEventLine(const std::string& line, DayData& currentDay) {
-    if (currentDay.date.empty()) return; // 忽略在第一个日期前的任何事件
-
+    if (currentDay.date.empty()) return;
     std::string eventTimeBuffer, eventDescBuffer;
     if (parseEventLine(line, eventTimeBuffer, eventDescBuffer)) {
+        // "起床"应该只标记 getupTime，而不应该成为一个活动事件。
+
         if (eventDescBuffer == "起床" || eventDescBuffer == "醒") {
             if (currentDay.getupTime.empty()) {
                 currentDay.getupTime = formatTime(eventTimeBuffer);
             }
         } else {
-            // 如果在“起床”事件之前有其他事件，说明这一天是前一天的延续
             if (currentDay.getupTime.empty() && currentDay.rawEvents.empty()) {
                 currentDay.isContinuation = true;
             }
@@ -122,82 +112,81 @@ void IntervalProcessor::handleEventLine(const std::string& line, DayData& curren
 }
 
 void IntervalProcessor::processAndFormatEvents(DayData& day) {
-    // 1. 添加通用备注
     for (const auto& general_remark : day.generalRemarks) {
          day.remarksOutput.push_back(general_remark);
     }
     
-    // 如果没有起床时间且不是延续日，则没有活动事件可处理
     if (day.getupTime.empty() && !day.isContinuation) return;
     
-    // 2. 遍历原始事件并格式化
     std::string startTime = day.getupTime;
     for (const auto& rawEvent : day.rawEvents) {
+        if (rawEvent.description == "起床" || rawEvent.description == "醒") {
+            if (startTime.empty()) {
+                 startTime = formatTime(rawEvent.endTimeStr);
+            }
+            continue;
+        }
+
         std::string formattedEventEndTime = formatTime(rawEvent.endTimeStr);
         std::string mappedDescription = rawEvent.description;
-
-        // 应用文本映射规则
+        
+        // 步骤 1: 应用常规文本映射
         auto mapIt = text_mapping_.find(rawEvent.description);
         if (mapIt != text_mapping_.end()) {
             mappedDescription = mapIt->second;
         } else {
+            // 步骤 2: 应用基于时长的文本映射 (例如 "饭" -> "meal")
             auto durMapIt = text_duration_mapping_.find(rawEvent.description);
             if (durMapIt != text_duration_mapping_.end()) {
                 mappedDescription = durMapIt->second;
             }
         }
-
-        // 应用时长规则
+        
+        // 【核心新增逻辑】
+        // 步骤 3: 检查映射后的名称是否需要根据时长进一步细分
         auto durationRulesIt = duration_mappings_.find(mappedDescription);
         if (durationRulesIt != duration_mappings_.end()) {
+            // 计算时长
             int duration = calculateDurationMinutes(startTime, formattedEventEndTime);
+            // 遍历规则，找到第一个匹配的
             for (const auto& rule : durationRulesIt->second) {
                 if (duration < rule.less_than_minutes) {
-                    mappedDescription = rule.value;
-                    break;
+                    mappedDescription = rule.value; // 应用新名称
+                    break; // 找到后立即停止
                 }
             }
         }
 
-        // 检查学习状态并生成输出行
         if (mappedDescription.find("study") != std::string::npos) day.hasStudyActivity = true;
-        day.remarksOutput.push_back(startTime + "~" + formattedEventEndTime + mappedDescription);
+        if (!startTime.empty()) {
+            day.remarksOutput.push_back(startTime + "~" + formattedEventEndTime + mappedDescription);
+        }
         startTime = formattedEventEndTime;
     }
 }
 
 void IntervalProcessor::finalizeAndWriteDay(DayData& dayToFinalize, DayData& nextDay, std::ofstream& outFile) {
     if (dayToFinalize.date.empty()) return;
-
-    // 1. 处理当天的所有内部事件
     processAndFormatEvents(dayToFinalize);
-
-    // 2. 处理与第二天的关联（即 sleep_night）
     if (nextDay.isContinuation) {
-        // 如果第二天是延续，那么今天就没有“夜间睡眠”
         dayToFinalize.endsWithSleepNight = false;
         if (!dayToFinalize.rawEvents.empty()) {
-            // 设置第二天的“起床时间”为今天的最后一个事件的结束时间
             nextDay.getupTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
         }
     } else if (!dayToFinalize.isContinuation && !nextDay.getupTime.empty()) {
-        // 如果今天不是延续日，并且第二天有明确的起床时间，则计算夜间睡眠
         if (!dayToFinalize.rawEvents.empty()) {
-            std::string sleepStartTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
-            dayToFinalize.remarksOutput.push_back(sleepStartTime + "~" + nextDay.getupTime + "sleep_night");
+            std::string lastEventTime = formatTime(dayToFinalize.rawEvents.back().endTimeStr);
+            // 应该为"sleep_night"，而不是" sleep_night"，不要加空格
+            dayToFinalize.remarksOutput.push_back(lastEventTime + "~" + nextDay.getupTime + "sleep_night");
             dayToFinalize.endsWithSleepNight = true;
         }
     }
-
-    // 3. 将完全处理好的一天数据写入文件
     writeDayData(outFile, dayToFinalize);
 }
 
 
-// ##################################################################
-// ###                  底层私有函数 (无变化)                      ###
-// ##################################################################
 
+// 输出函数 
 void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day) {
     if (day.date.empty()) return;
 
@@ -216,18 +205,32 @@ void IntervalProcessor::writeDayData(std::ofstream& outFile, const DayData& day)
                 outFile << "Getup:" << (day.getupTime.empty() ? "00:00" : day.getupTime) << "\n";
             }
         } else if (header == "Remark:") {
-            if (day.remarksOutput.empty()) {
-                outFile << "Remark:\n";
-            } else {
+            // 【核心修正】实现更完善的 Remark 输出逻辑
+            
+            // 检查原始的通用备注是否存在。
+            // generalRemarks 包含了所有 "r "行的内容。
+            if (!day.generalRemarks.empty()) {
+                // 如果存在通用备注，将第一个备注拼接到 "Remark:" 后面
                 outFile << "Remark:" << day.remarksOutput[0] << "\n";
+                // 从第二个元素开始循环打印（如果存在的话）
                 for (size_t i = 1; i < day.remarksOutput.size(); ++i) {
                     outFile << day.remarksOutput[i] << "\n";
+                }
+            } else {
+                // 如果不存在通用备注，说明 remarksOutput 中全是活动事件
+                outFile << "Remark:\n"; // "Remark:" 单独占一行
+                // 循环打印所有活动事件
+                for (const auto& remark_line : day.remarksOutput) {
+                    outFile << remark_line << "\n";
                 }
             }
         }
     }
-    outFile << "\n";
+    outFile << "\n"; // 在每个日期块后留一个空行
 }
+
+
+// ###                  配置加载及其他                  ###
 
 bool IntervalProcessor::loadConfiguration() {
     std::ifstream config_ifs(config_filepath_);
@@ -239,7 +242,7 @@ bool IntervalProcessor::loadConfiguration() {
     try {
         config_ifs >> j;
     } catch (const std::exception& e) {
-        std::cerr << RED_COLOR << "Error parsing main config JSON: " << e.what() << RESET_COLOR << std::endl;
+        std::cerr << RED_COLOR << "Error parsing config JSON: " << e.what() << RESET_COLOR << std::endl;
         return false;
     }
     try {
@@ -247,38 +250,12 @@ bool IntervalProcessor::loadConfiguration() {
         duration_mappings_.clear();
         text_duration_mapping_.clear();
 
-        if (j.contains("header_order") && j["header_order"].is_array()) {
-            header_order_ = j["header_order"].get<std::vector<std::string>>();
-        } else {
-            throw std::runtime_error("'header_order' key not found or not an array.");
-        }
-
-        if (j.contains("remark_prefix") && j["remark_prefix"].is_string()) {
-            remark_prefix_ = j["remark_prefix"].get<std::string>();
-        } else {
-            remark_prefix_ = ""; 
-        }
-
-        if (header_order_.empty() || header_order_[0] != "Date:") {
-            throw std::runtime_error("'Date:' must be the first item in header_order.");
-        }
-        if (std::find(header_order_.begin(), header_order_.end(), "Getup:") == header_order_.end() ||
-            std::find(header_order_.begin(), header_order_.end(), "Remark:") == header_order_.end()) {
-            throw std::runtime_error("'Getup:' and 'Remark:' must be present in header_order.");
-        }
-
-        if (j.contains("text_mappings") && j["text_mappings"].is_object()) {
-            text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
-        } else {
-            std::cerr << YELLOW_COLOR << "Warning: 'text_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
-        }
-
-        if (j.contains("text_duration_mappings") && j["text_duration_mappings"].is_object()) {
-            text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
-        } else {
-            std::cerr << YELLOW_COLOR << "Warning: 'text_duration_mappings' key not found or is not an object in " << config_filepath_ << RESET_COLOR << std::endl;
-        }
+        if (j.contains("header_order")) header_order_ = j["header_order"].get<std::vector<std::string>>();
+        if (j.contains("remark_prefix")) remark_prefix_ = j["remark_prefix"].get<std::string>();
+        if (j.contains("text_mappings")) text_mapping_ = j["text_mappings"].get<std::unordered_map<std::string, std::string>>();
+        if (j.contains("text_duration_mappings")) text_duration_mapping_ = j["text_duration_mappings"].get<std::unordered_map<std::string, std::string>>();
         
+        // 【核心新增逻辑】加载 duration_mappings
         if (j.contains("duration_mappings") && j["duration_mappings"].is_object()) {
             const auto& duration_json = j["duration_mappings"];
             for (auto& [event_key, rules_json] : duration_json.items()) {
@@ -289,6 +266,7 @@ bool IntervalProcessor::loadConfiguration() {
                         rule_json.at("value").get<std::string>()
                     });
                 }
+                // 【重要】按时长升序排序，确保匹配逻辑正确
                 std::sort(rules.begin(), rules.end(), [](const DurationRule& a, const DurationRule& b) {
                     return a.less_than_minutes < b.less_than_minutes;
                 });
@@ -300,6 +278,26 @@ bool IntervalProcessor::loadConfiguration() {
         return false;
     }
     return true;
+}
+
+// --- 新增辅助函数 calculateDurationMinutes ---
+int IntervalProcessor::calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) {
+    if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
+    try {
+        int startHour = std::stoi(startTimeStr.substr(0, 2));
+        int startMin = std::stoi(startTimeStr.substr(3, 2));
+        int endHour = std::stoi(endTimeStr.substr(0, 2));
+        int endMin = std::stoi(endTimeStr.substr(3, 2));
+        int startTimeInMinutes = startHour * 60 + startMin;
+        int endTimeInMinutes = endHour * 60 + endMin;
+        // 处理跨天情况
+        if (endTimeInMinutes < startTimeInMinutes) {
+            endTimeInMinutes += 24 * 60;
+        }
+        return endTimeInMinutes - startTimeInMinutes;
+    } catch (const std::exception&) {
+        return 0;
+    }
 }
 
 std::string IntervalProcessor::formatTime(const std::string& timeStrHHMM) {
@@ -326,28 +324,12 @@ bool IntervalProcessor::parseEventLine(const std::string& line, std::string& out
     if (line.length() < 5 || !std::all_of(line.begin(), line.begin() + 4, ::isdigit)) {
         return false;
     }
-    int hh = std::stoi(line.substr(0, 2));
-    int mm = std::stoi(line.substr(2, 2));
-    if (hh > 23 || mm > 59) return false;
-    outTimeStr = line.substr(0, 4);
-    outDescription = line.substr(4);
-    return !outDescription.empty();
-}
-
-int IntervalProcessor::calculateDurationMinutes(const std::string& startTimeStr, const std::string& endTimeStr) {
-    if (startTimeStr.length() != 5 || endTimeStr.length() != 5) return 0;
     try {
-        int startHour = std::stoi(startTimeStr.substr(0, 2));
-        int startMin = std::stoi(startTimeStr.substr(3, 2));
-        int endHour = std::stoi(endTimeStr.substr(0, 2));
-        int endMin = std::stoi(endTimeStr.substr(3, 2));
-        int startTimeInMinutes = startHour * 60 + startMin;
-        int endTimeInMinutes = endHour * 60 + endMin;
-        if (endTimeInMinutes < startTimeInMinutes) {
-            endTimeInMinutes += 24 * 60;
-        }
-        return endTimeInMinutes - startTimeInMinutes;
-    } catch (const std::exception&) {
-        return 0;
-    }
+        int hh = std::stoi(line.substr(0, 2));
+        int mm = std::stoi(line.substr(2, 2));
+        if (hh > 23 || mm > 59) return false;
+        outTimeStr = line.substr(0, 4);
+        outDescription = line.substr(4);
+        return !outDescription.empty();
+    } catch (const std::exception&){ return false; }
 }

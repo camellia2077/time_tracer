@@ -27,15 +27,22 @@
 Time_Master/
 ├── CMakeLists.txt
 ├── main.cpp # 交互式
-├── main_command # 命令行传入
+├── main_command.cpp # 命令行传入
 │
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
 │   ├── common_utils.h
 │   └── version.h # for version info
+│
+├── config/ # 用于存放json文件
+│   ├── config.json # 用于定于父项目的映射
+│   ├── format_validator_config.json # 检验转化后项目名称合法性
+│   └── interval_processor_config.json # 转化规则
+│
 ├── database/ # Manages the creation of the database and the importation of data into it.
 │   ├── database_importer.cpp
 │   └── database_importer.h
+│
 ├── menu/                # UI components
 │   ├── menu.h           # Header for the Menu class
 │   └── menu.cpp         # Implementation of the Menu class
@@ -71,43 +78,22 @@ Time_Master/
 time_tracker_command <command> [arguments]
 ```
 ### 1.2.2 可用命令
-| 序号 | 标签 | 功能描述 |
-|---|---|---|
-| 1 |`-p,--process <filepath>`|解析txt并导入数据|
-| 2 |`-q d,--query daily <YYYYMMDD>`|查询指定日期的统计数据|
-| 3 |`-q p,--query period <days>`|查询过去指定天数的统计数据|
-| 4 |`-q m,--query monthly <YYYYMM>`|查询指定月份的统计数据|
-| 5 |`-h,--help`|查看使用帮助|
-| 6 |`--version`|查看程序版本|
+| 序号 | 短标签 | 长标签 | 功能描述 |
+|---|---|---|---|
+| 1 | `-vs <path>` | `--validate-source <path>` | 仅检验源文件的格式 |
+| 2 | `-c <path>` | `--convert <path>` | 仅转换文件格式 |
+| 3 | `-vo`  | `--validate-output` | 转换后检验输出文件 (需与 `-c` 或 `-a` 配合) |
+| 4 | `-a <path>` | `--all <path>` | 执行完整流程(检验源->转换->检验输出) |
+| 5 | `-edc`  | `--enable-day-check`  | 启用对月份天数完整性的检查 |
+| 6 | `-p <filepath>` | `--process <filepath>` | 解析单个已格式化的txt文件并导入数据库 |
+| 7 | `-q d <YYYYMMDD>` | `--query daily <YYYYMMDD>` | 查询指定日期的统计数据 |
+| 8 | `-q p <days>` | `--query period <days>` | 查询过去指定天数的统计数据 |
+| 9 | `-q m <YYYYMM>` | `--query monthly <YYYYMM>` | 查询指定月份的统计数据 |
+| 10 | `-h` | `--help` | 查看此使用帮助 |
+| 11 | `-v` | `--version` | 查看程序版本和更新日期 |
+
 ### 1.2.3 示例
-#### 示例1:导入文本(序号1)
-支持从文件夹中导入txt，或者导入单个txt文件
-1. 传入Date文件夹下的全部文本
-```bash
-./Time_Master -p,process C:\Date\2024\2024_10.txt
-```
-2. 传入单个txt文件
-```bash
-./Time_Master -p,process C:\Date\2024\2024_10.txt
-```
-#### 示例2:查询指定日期数据统计(序号2)
-```bash
-./Time_Master -q d,-query daily 20250523
-```
-#### 示例3:查询过去几天的数据统计(序号3)
-1. 查询过去7天数据统计
-```bash
-./Time_Master -q p,-query period 7
-```
-2. 查询过去30天数据统计
-```bash
-./Time_Master -q p,-query period 30
-```
-#### 示例4:查询月份数据统计(序号4)
-1. 查询2025年1月的数据
-```bash
-./Time_Master-q m,-query monthly 202501
-```
+
 
 
 ## 1.3 使用msys2 UCRT64环境进行编译

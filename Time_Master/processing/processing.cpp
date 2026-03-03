@@ -17,6 +17,8 @@
 
 namespace fs = std::filesystem;
 
+//
+class UserInteractor {
 public:
     std::vector<std::string> collect_paths_from_user() const {
         std::cout << "Enter file name(s) or directory path(s) to process (space-separated, then Enter): ";
