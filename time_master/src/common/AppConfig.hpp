@@ -10,7 +10,6 @@
 // 应用程序的核心配置，由 config.json 加载
 struct AppConfig {
     std::string interval_processor_config_path;
-    std::string format_validator_config_path;
     std::string error_log_path;
     std::optional<std::string> export_path; // 用于存储自定义导出根目录路径
 };

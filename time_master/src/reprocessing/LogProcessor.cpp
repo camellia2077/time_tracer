@@ -5,7 +5,7 @@
 #include "reprocessing/validator/common/ValidatorUtils.hpp"
 
 #include "reprocessing/converter/IntervalConverter.hpp"
-#include "common/common_utils.hpp"
+#include "common/AnsiColors.hpp" // For colored console output
 
 #include <iostream>
 #include <algorithm>

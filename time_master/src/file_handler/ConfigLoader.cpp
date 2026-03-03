@@ -57,9 +57,6 @@ AppConfig ConfigLoader::load_configuration() {
         std::string ip_config_relative = j.at("interval_processor_config_path").get<std::string>();
         app_config.interval_processor_config_path = (config_dir_path / ip_config_relative).string();
 
-        std::string fv_config_relative = j.at("format_validator_config_path").get<std::string>();
-        app_config.format_validator_config_path = (config_dir_path / fv_config_relative).string();
-
         std::string error_log_relative = j.at("error_log_path").get<std::string>();
 
         app_config.error_log_path = (config_dir_path / error_log_relative).lexically_normal().string();

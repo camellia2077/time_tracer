@@ -2,7 +2,7 @@
 #include "ReportExporter.hpp"
 #include "ExportUtils.hpp"
 #include "queries/QueryHandler.hpp"
-#include "common/common_utils.hpp" // For color constants
+#include "common/AnsiColors.hpp" // For colored console output
 
 #include <iostream>
 #include <fstream>

@@ -1,6 +1,6 @@
 // reprocessing/validator/source_txt/SourceFileValidator.cpp
 #include "SourceFileValidator.hpp"
-#include "common/common_utils.hpp"
+#include "common/AnsiColors.hpp" // For colored console output
 #include <fstream>
 #include <iostream>
 #include <algorithm>

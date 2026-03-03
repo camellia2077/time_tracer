@@ -8,8 +8,8 @@
 #include <chrono>
 #include <fstream>
 
-#include "common/common_utils.hpp"
-// [核心修改] 引入新的JsonDataParser，不再需要旧的工厂
+#include "common/AnsiColors.hpp" // 获取颜色宏定义
+
 #include "db_inserter/parser/JsonDataParser.hpp"
 #include "db_inserter/inserter/DatabaseInserter.hpp"
           

@@ -4,6 +4,7 @@
 
 #include "queries/shared/Interface/IReportFormatter.hpp"
 #include "queries/shared/data/DailyReportData.hpp"
+
 #include <sstream>
 
 // Forward declaration

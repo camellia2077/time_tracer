@@ -5,7 +5,7 @@
 
 #include <string>
 #include <filesystem>
-#include "common/AppConfig.hpp" // [修改] 引入新的通用配置头文件
+#include "common/AppConfig.hpp"
 
 class ConfigLoader {
 public:

@@ -156,7 +156,7 @@ void JsonValidator::validateHighLevelRules(const json& day_object, std::set<Erro
         }
         // 获取最后一个活动
         const auto& last_activity = day_object["Activities"].back();
-        std::string title = last_activity.value("activity", json::object()).value("title", "");
+        std::string title = last_activity.value("activity", json::object()).value("top_parents", "");
         // 验证最后一个活动的标题是否为 "sleep"
         if (title != "sleep") {
             std::string date_str = headers.value("Date", "[Unknown Date]");
