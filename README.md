@@ -21,39 +21,43 @@
     * **用途**: 用于生成柱状图，可视化父级支出的汇总数据。
     * **许可证**: Matplotlib License (BSD-style)
 # 1 Time_Master 
-主程序，用于解析文本内容，存入数据库，查询数据库
+用于解析文本内容，存入数据库，查询数据库
 ## 1.1 structure
 ```
 Time_Master/
 ├── CMakeLists.txt
 ├── main.cpp # 交互式
-├── main_command.cpp # 命令行传入
+├── main_cli.cpp # 命令行传入
+│
+├── action_handler/ # 所有功能的封装
+│   ├── action_handler.cpp
+│   └── action_handler.h
 │
 ├── common/ # Contains shared utilities and data structures used throughout the application.
 │   ├── common_utils.cpp
 │   ├── common_utils.h
 │   └── version.h # for version info
 │
-├── config/ # 用于存放json文件
+├── config/ # 用于存放json配置文件
 │   ├── config.json # 用于定于父项目的映射
 │   ├── format_validator_config.json # 检验转化后项目名称合法性
 │   └── interval_processor_config.json # 转化规则
 │
-├── database/ # Manages the creation of the database and the importation of data into it.
-│   ├── database_importer.cpp
-│   └── database_importer.h
-│
-├── menu/                # UI components
-│   ├── menu.h           # Header for the Menu class
-│   └── menu.cpp         # Implementation of the Menu class
-│
-├── parsing/                    # Handles data parsing from input files.
+├── db_inserter/ 
+│   ├── processing.cpp          # Implements file collection, parsing, and database import.
+│   └── processing.h            # Declares the main function to start file processing.
+│   ├── database_importer.cpp   
+│   ├── database_importer.h
 │   ├── data_parser.cpp         # Parsing files and populating database
 │   └── data_parser.h           # Defines the DataFileParser class and data structures for parsed data.
 │
-├── processing/                 # Manages the file processing workflow.
-│   ├── processing.cpp          # Implements file collection, parsing, and database import.
-│   └── processing.h            # Declares the main function to start file processing.
+├── file_handler/ # 读取json配置，递归文件夹查询文件
+│   ├── file_handler.cpp
+│   └── file_handler.h
+│
+├── ui/                
+│   ├── menu.h           
+│   └── menu.cpp         
 │
 ├── queries/             # Contains all logic for querying the database and generating user-facing reports.
 │   ├── query_handler.cpp    # Implements the QueryHandler class, which acts as a simple interface (Facade) to 
@@ -66,6 +70,20 @@ Time_Master/
 │   └── query_period.h       # Declares the class for generating reports over a specific time period.
 │   ├── query_utils.cpp      # Implements shared helper functions for querying.
 │   └── query_utils.h        # Declares various utility functions used by the different query generators.
+│
+├── reprocessing/               # 预处理
+│   ├── IntervalProcessor.cpp
+│   └── IntervalProcessor.h
+│   ├── LogProcessor.cpp
+│   └── LogProcessor.h
+│   └── validator/
+│       ├── OutputFileValidator.cpp # 转换后文件格式检验
+│       └── OutputFileValidator.h 
+│       ├── SourceFileValidator.cpp # 源文件格式检验
+│       └── SourceFileValidator.h 
+│       ├── ValidatorUtils.cpp
+│       └── ValidatorUtils.h
+│
 └── resources/
     ├── app_icon.rc
     └── output_icon.ico

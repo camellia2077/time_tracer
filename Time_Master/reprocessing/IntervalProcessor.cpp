@@ -131,15 +131,15 @@ void IntervalProcessor::processAndFormatEvents(DayData& day) {
         std::string mappedDescription = rawEvent.description;
         
         // 步骤 1: 应用常规文本映射
-        auto mapIt = text_mapping_.find(rawEvent.description);
+        auto mapIt = text_mapping_.find(mappedDescription); // 注意: 查找键是 mappedDescription
         if (mapIt != text_mapping_.end()) {
             mappedDescription = mapIt->second;
-        } else {
-            // 步骤 2: 应用基于时长的文本映射 (例如 "饭" -> "meal")
-            auto durMapIt = text_duration_mapping_.find(rawEvent.description);
-            if (durMapIt != text_duration_mapping_.end()) {
-                mappedDescription = durMapIt->second;
-            }
+        }
+
+        // 步骤 2: 应用用于时长分类的文本映射 (例如 "饭" -> "meal")
+        auto durMapIt = text_duration_mapping_.find(mappedDescription);
+        if (durMapIt != text_duration_mapping_.end()) {
+            mappedDescription = durMapIt->second;
         }
         
         // 【核心新增逻辑】

@@ -4,6 +4,7 @@
 #include <sqlite3.h>
 #include <string>
 
+
 /**
  * @class QueryHandler
  * @brief 所有查询功能的统一入口（外观类）。定义了我们统一的查询接口
@@ -16,14 +17,14 @@ public:
     // 构造函数，接收数据库连接
     explicit QueryHandler(sqlite3* db);
 
-    // 按天查询
-    void run_daily_query(const std::string& date_str) const;
+    // 按天查询，返回报告字符串
+    std::string run_daily_query(const std::string& date_str) const;
 
-    // 按周期查询
-    void run_period_query(int days) const;
+    // 按周期查询，返回报告字符串
+    std::string run_period_query(int days) const;
 
-    // 按月查询
-    void run_monthly_query(const std::string& year_month_str) const;
+    // 按月查询，返回报告字符串
+    std::string run_monthly_query(const std::string& year_month_str) const;
 
 private:
     sqlite3* m_db; // 保存数据库连接
