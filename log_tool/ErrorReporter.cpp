@@ -13,11 +13,15 @@ namespace { // Anonymous namespace for internal linkage (like static)
 // This helper function is now private to this .cpp file.
 std::string getErrorTypeHeader(FormatValidator::ErrorType type) {
     switch (type) {
-        case FormatValidator::ErrorType::DateContinuity:
+        // MODIFICATION: DateContinuity is no longer here.
         case FormatValidator::ErrorType::IncorrectDayCountForMonth:
             return "Date errors(日期错误):";
+
+        // MODIFICATION: DateContinuity is now grouped with TimeDiscontinuity.
+        case FormatValidator::ErrorType::DateContinuity:
         case FormatValidator::ErrorType::TimeDiscontinuity:
             return "Time discontinuity errors(时间不连续):";
+
         case FormatValidator::ErrorType::MissingSleepNight:
             return "Lack of sleep_night errors(最后的活动项目缺少sleep_night):";
         case FormatValidator::ErrorType::FileAccess:
@@ -53,8 +57,18 @@ void printGroupedErrors(const std::string& filename, const std::set<FormatValida
         std::cerr << "\n" << header << std::endl;
         err_stream << header << "\n";
         for (const auto& err : pair.second) {
-            std::string error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
-            std::cerr << RED_COLOR << "  " << error_message << RESET_COLOR << std::endl;
+            // Conditionally format the error message based on the line number.
+            std::string error_message;
+            if (err.line_number == 0) {
+                // For file-level errors (like month day count), don't print the line number.
+                error_message = err.message;
+            } else {
+                // For all other errors, include the line number.
+                error_message = "Line " + std::to_string(err.line_number) + ": " + err.message;
+            }
+            // The error message is now printed directly to std::cerr.
+            // Color codes must be included in the err.message string itself.
+            std::cerr << "  " << error_message << std::endl;
             err_stream << "  " << error_message << "\n";
         }
     }
