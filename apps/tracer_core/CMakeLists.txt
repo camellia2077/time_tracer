@@ -1,5 +1,5 @@
 # --- START OF FILE CMakeLists.txt ---
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 3.28)
 
 project(TimeTrackerApp VERSION "0.5.5" LANGUAGES C CXX)
 
