@@ -52,8 +52,8 @@
    - `report-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
 
 ## Transport 层
-1. `modules/tracer_transport/include/tracer/transport/runtime_requests.hpp`
-2. `modules/tracer_transport/src/runtime_codec_query.cpp`
+1. `libs/tracer_transport/include/tracer/transport/runtime_requests.hpp`
+2. `libs/tracer_transport/src/runtime_codec_query.cpp`
    - runtime 请求编解码（含 `output_mode` 等字段透传）。
 
 ## Windows CLI 适配层

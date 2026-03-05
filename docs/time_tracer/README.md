@@ -19,7 +19,7 @@
    - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
    - `docs/time_tracer/core/contracts/stats/README.md`
 3. 修改 JNI <-> Kotlin 协议、Android runtime 网关行为：更新 `docs/time_tracer/clients/android_ui/runtime-protocol.md`。
-4. 修改 envelope/fields/runtime codec 实现：更新 `modules/tracer_transport/README.md`（并按需在契约层文档补充结论）。
+4. 修改 envelope/fields/runtime codec 实现：更新 `libs/tracer_transport/README.md`（并按需在契约层文档补充结论）。
 5. 修改 Android/CLI 的表现层差异（例如 Android 新增图表、CLI 仅文本）：同时更新
    - `docs/time_tracer/clients/android_ui/features.md`
    - `docs/time_tracer/clients/windows_cli/README.md`
@@ -42,6 +42,8 @@
 5. C ABI 契约：`docs/time_tracer/core/contracts/c_abi.md`
 6. Android Runtime 协议：`docs/time_tracer/clients/android_ui/runtime-protocol.md`
 7. Windows CLI 文档：`docs/time_tracer/clients/windows_cli/README.md`
-8. Transport 实现说明：`modules/tracer_transport/README.md`
-9. 跨层流程：`docs/time_tracer/workflows/workflow.md`
-10. DataQuery 职责边界与代码落点：`docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
+8. Transport 实现说明：`libs/tracer_transport/README.md`
+9. IO Adapter 实现说明：`libs/tracer_adapters_io/README.md`
+10. Native Modules 规范：`docs/time_tracer/guides/native/native_modules.md`
+11. 跨层流程：`docs/time_tracer/workflows/workflow.md`
+12. DataQuery 职责边界与代码落点：`docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`

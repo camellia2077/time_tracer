@@ -71,5 +71,5 @@
 ## 规则
 1. 新增 Core 文档优先放在本目录。
 2. 新增文档按职责边界放入 `contracts/ingest/architecture/specs` 对应目录。
-3. Core（`domain + application`）不得依赖 `modules/tracer_adapters_io` 等 adapter 实现目录。
+3. Core（`domain + application`）不得依赖 `libs/tracer_adapters_io` 等 adapter 实现目录。
 4. Core 只通过 `application/ports` 暴露契约，不直接包含 `infrastructure/*` 头。

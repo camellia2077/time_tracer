@@ -11,6 +11,13 @@ trigger: always_on
     - `python scripts/run.py verify --app <app> --quick --scope batch --concise`
   - Other build/test operations must go through:
     - `python scripts/run.py ...`
+- Python CLI help-first rule:
+  - Before using command flags, read help first:
+    - `python scripts/run.py -h`
+    - `python scripts/run.py <subcommand> -h`
+    - `python test/run.py -h`
+  - For `python scripts/run.py <subcommand>`, if the subcommand or flag combination has not been validated in the current session, run the corresponding `-h` first; validated combinations may be reused without repeating `-h`.
+  - If `unrecognized arguments` appears, rerun with the corresponding `-h` before retrying.
 - Build success criterion:
   - Determine compile/build success by process exit code.
   - `exit code = 0` means success; any non-zero exit code means failure.
