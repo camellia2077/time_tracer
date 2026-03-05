@@ -12,6 +12,18 @@ add_library(tracer_transport STATIC
     src/runtime_codec_tree.cpp
 )
 
+if(TT_CPP20_MODULES_EFFECTIVE)
+    target_sources(tracer_transport PUBLIC
+        FILE_SET transport_modules TYPE CXX_MODULES FILES
+            src/modules/tracer.transport.errors.cppm
+            src/modules/tracer.transport.envelope.cppm
+            src/modules/tracer.transport.cppm
+    )
+    set_target_properties(tracer_transport PROPERTIES
+        CXX_SCAN_FOR_MODULES ON
+    )
+endif()
+
 if(COMMAND setup_app_target)
     setup_app_target(tracer_transport)
 endif()
@@ -66,4 +78,20 @@ if(BUILD_TESTING)
         NAME tracer_transport_runtime_codec_tests
         COMMAND tracer_transport_runtime_codec_tests
     )
+
+    if(TT_CPP20_MODULES_EFFECTIVE)
+        add_executable(tracer_transport_modules_smoke_tests
+            tests/transport_modules_smoke_tests.cpp
+        )
+        if(COMMAND setup_app_target)
+            setup_app_target(tracer_transport_modules_smoke_tests)
+        endif()
+        target_link_libraries(tracer_transport_modules_smoke_tests PRIVATE
+            tracer_transport
+        )
+        add_test(
+            NAME tracer_transport_modules_smoke_tests
+            COMMAND tracer_transport_modules_smoke_tests
+        )
+    endif()
 endif()

@@ -50,16 +50,16 @@ It is used by core C ABI adapters and host adapters to avoid duplicated codec an
 
 ## Tests
 
-1. `modules/tracer_transport/tests/transport_envelope_tests.cpp`
-2. `modules/tracer_transport/tests/transport_fields_tests.cpp`
-3. `modules/tracer_transport/tests/transport_runtime_codec_tests.cpp`
+1. `libs/tracer_transport/tests/transport_envelope_tests.cpp`
+2. `libs/tracer_transport/tests/transport_fields_tests.cpp`
+3. `libs/tracer_transport/tests/transport_runtime_codec_tests.cpp`
 
 ## Main Sources
 
-1. `modules/tracer_transport/src/envelope.cpp`
-2. `modules/tracer_transport/src/fields.cpp`
-3. `modules/tracer_transport/src/runtime_codec_ingest.cpp`
-4. `modules/tracer_transport/src/runtime_codec_query.cpp`
-5. `modules/tracer_transport/src/runtime_codec_report.cpp`
-6. `modules/tracer_transport/src/runtime_codec_export.cpp`
-7. `modules/tracer_transport/src/runtime_codec_tree.cpp`
+1. `libs/tracer_transport/src/envelope.cpp`
+2. `libs/tracer_transport/src/fields.cpp`
+3. `libs/tracer_transport/src/runtime_codec_ingest.cpp`
+4. `libs/tracer_transport/src/runtime_codec_query.cpp`
+5. `libs/tracer_transport/src/runtime_codec_report.cpp`
+6. `libs/tracer_transport/src/runtime_codec_export.cpp`
+7. `libs/tracer_transport/src/runtime_codec_tree.cpp`
