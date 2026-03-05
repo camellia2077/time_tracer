@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <memory>
@@ -66,3 +66,4 @@ class ReportService : public IReportQueryService {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
+

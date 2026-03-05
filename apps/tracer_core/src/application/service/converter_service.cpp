@@ -3,6 +3,8 @@
 
 #include "application/parser/text_parser.hpp"
 #include "domain/logic/converter/convert/core/converter_core.hpp"
+#include "domain/model/daily_log.hpp"
+#include "domain/types/converter_config.hpp"
 #include "shared/types/ansi_colors.hpp"
 
 namespace {

@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_MONTHLY_MONTHLY_QUERIER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_MONTHLY_MONTHLY_QUERIER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <string>
@@ -50,3 +50,4 @@ class BatchMonthDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_MONTHLY_MONTHLY_QUERIER_H_
+

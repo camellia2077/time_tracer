@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
 #define INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
 
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 #include <vector>
 
 #include "domain/model/daily_log.hpp"

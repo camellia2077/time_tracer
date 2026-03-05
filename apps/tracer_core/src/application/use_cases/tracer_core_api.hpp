@@ -2,7 +2,6 @@
 #ifndef APPLICATION_USE_CASES_TRACER_CORE_API_H_
 #define APPLICATION_USE_CASES_TRACER_CORE_API_H_
 
-#include <filesystem>
 #include <memory>
 
 #include "application/use_cases/i_tracer_core_api.hpp"

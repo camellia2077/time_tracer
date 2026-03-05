@@ -1,5 +1,6 @@
 // infrastructure/persistence/repositories/sqlite_project_repository.cpp
 #include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <iostream>

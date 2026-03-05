@@ -7,6 +7,7 @@
 #include "application/pipeline/pipeline_manager.hpp"
 #include "application/workflow_handler.hpp"
 #include "domain/ports/diagnostics.hpp"
+#include "domain/types/app_options.hpp"
 
 using namespace core::pipeline;
 namespace app_ports = tracer_core::application::ports;

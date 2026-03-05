@@ -2,8 +2,6 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
 #define INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
 
-#include <sqlite3.h>
-
 #include <filesystem>
 
 #include "domain/repositories/i_project_repository.hpp"
@@ -20,3 +18,4 @@ class SqliteProjectRepository : public IProjectRepository {
 };
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
+

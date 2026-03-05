@@ -2,8 +2,6 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
 
-#include <sqlite3.h>
-
 #include <string>
 #include <vector>
 

@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_STATEMENT_H_
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_STATEMENT_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 namespace infrastructure::persistence::importer::sqlite {
 
@@ -28,3 +28,4 @@ class Statement {
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_STATEMENT_H_
+

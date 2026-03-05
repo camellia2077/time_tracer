@@ -1,5 +1,6 @@
 // infrastructure/persistence/importer/sqlite/project_resolver.cpp
 #include "infrastructure/persistence/importer/sqlite/project_resolver.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <queue>

@@ -1,6 +1,7 @@
 // infrastructure/serialization/core/log_codec.cpp
 #include "infrastructure/serialization/core/log_codec.hpp"
 
+#include <nlohmann/json.hpp>
 #include <string>
 
 #include "domain/ports/diagnostics.hpp"

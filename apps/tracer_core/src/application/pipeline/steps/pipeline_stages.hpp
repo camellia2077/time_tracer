@@ -5,7 +5,10 @@
 #include <string>
 
 #include "application/pipeline/context/pipeline_context.hpp"
-#include "application/ports/i_ingest_input_provider.hpp"
+
+namespace tracer_core::application::ports {
+class IIngestInputProvider;
+}  // namespace tracer_core::application::ports
 
 namespace core::pipeline {
 

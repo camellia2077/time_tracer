@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
 
@@ -30,3 +30,4 @@ auto ExecuteSql(sqlite3* sqlite_db, const std::string& sql_query,
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
+

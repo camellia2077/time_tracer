@@ -1,37 +1,21 @@
 # src/infrastructure/CMakeLists.txt
 add_subdirectory(reports)
 add_subdirectory(
-    "${PROJECT_SOURCE_DIR}/../../modules/tracer_transport"
-    "${CMAKE_BINARY_DIR}/modules/tracer_transport"
+    "${PROJECT_SOURCE_DIR}/../../libs/tracer_transport"
+    "${CMAKE_BINARY_DIR}/libs/tracer_transport"
 )
-
-set(TRACER_ADAPTERS_IO_SOURCE_ROOT
-    "${PROJECT_SOURCE_DIR}/../../modules/tracer_adapters_io/src"
+add_subdirectory(
+    "${PROJECT_SOURCE_DIR}/../../libs/tracer_adapters_io"
+    "${CMAKE_BINARY_DIR}/libs/tracer_adapters_io"
 )
 
 include("${PROJECT_SOURCE_DIR}/cmake/sources/infrastructure_core_sources.cmake")
-include("${PROJECT_SOURCE_DIR}/cmake/sources/infrastructure_io_sources.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/sources/infrastructure_persistence_sources.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/sources/infrastructure_reports_sources.cmake")
 include("${PROJECT_SOURCE_DIR}/cmake/sources/infrastructure_config_sources.cmake")
 
-add_library(time_tracker_io_adapters STATIC)
-target_sources(time_tracker_io_adapters PRIVATE
-    ${TIME_TRACKER_INFRA_IO_SOURCES}
-)
-setup_app_target(time_tracker_io_adapters)
-target_include_directories(time_tracker_io_adapters PUBLIC
-    "${TRACER_ADAPTERS_IO_SOURCE_ROOT}"
-)
-target_link_libraries(time_tracker_io_adapters PUBLIC
-    tracer_transport
-    tracer_core
-)
-
-if(TT_ENABLE_PROCESSED_JSON_IO)
-    target_link_libraries(time_tracker_io_adapters PUBLIC
-        nlohmann_json::nlohmann_json
-    )
+if(NOT TARGET tracer_adapters_io)
+    message(FATAL_ERROR "Required target missing: tracer_adapters_io")
 endif()
 
 add_library(ttri STATIC)
@@ -43,7 +27,7 @@ setup_app_target(
     PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch_sqlite_toml.hpp"
 )
 target_link_libraries(ttri PUBLIC
-    time_tracker_io_adapters
+    tracer_adapters_io
     tracer_core
     reports_data
     reports_shared
@@ -51,8 +35,6 @@ target_link_libraries(ttri PUBLIC
     tomlplusplus::tomlplusplus
     nlohmann_json::nlohmann_json
 )
-# ttri = time_tracker_reports_infrastructure
-add_library(time_tracker_reports_infrastructure ALIAS ttri)
 
 add_library(tti STATIC)
 target_sources(tti PRIVATE
@@ -61,14 +43,34 @@ target_sources(tti PRIVATE
     ${TIME_TRACKER_INFRA_CONFIG_SOURCES}
 )
 
+if(TT_CPP20_MODULES_EFFECTIVE)
+    target_sources(tti PUBLIC
+        FILE_SET core_infrastructure_modules TYPE CXX_MODULES
+        BASE_DIRS
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules"
+        FILES
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.logging.console_logger.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.logging.console_diagnostics_sink.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.logging.file_error_report_writer.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.logging.validation_issue_reporter.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.platform.windows.clock.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.platform.android.clock.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.config.static_converter_config_provider.cppm"
+            "${PROJECT_SOURCE_DIR}/src/infrastructure/modules/tracer.core.infrastructure.cppm"
+    )
+    set_target_properties(tti PROPERTIES
+        CXX_SCAN_FOR_MODULES ON
+    )
+endif()
+
 setup_app_target(
     tti
     PCH_HEADER "${PROJECT_SOURCE_DIR}/src/pch_sqlite_toml.hpp"
 )
 
 target_link_libraries(tti PUBLIC
-    time_tracker_io_adapters
-    time_tracker_reports_infrastructure
+    tracer_adapters_io
+    ttri
     tracer_core
     SQLite3
     tomlplusplus::tomlplusplus

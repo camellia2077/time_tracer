@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <memory>
@@ -46,3 +46,4 @@ class SqliteReportDataQueryService final
 }  // namespace infrastructure::reports
 
 #endif  // INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
+

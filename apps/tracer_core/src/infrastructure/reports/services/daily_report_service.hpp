@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
 
@@ -36,3 +36,4 @@ class DailyReportService {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
+

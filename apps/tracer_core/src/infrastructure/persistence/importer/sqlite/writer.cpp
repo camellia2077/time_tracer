@@ -1,5 +1,6 @@
 // infrastructure/persistence/importer/sqlite/writer.cpp
 #include "infrastructure/persistence/importer/sqlite/writer.hpp"
+#include <sqlite3.h>
 
 #include <stdexcept>
 

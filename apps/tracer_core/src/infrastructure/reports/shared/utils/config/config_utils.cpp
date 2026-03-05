@@ -2,6 +2,7 @@
 #include "infrastructure/reports/shared/utils/config/config_utils.hpp"
 
 #include <fstream>
+#include <nlohmann/json.hpp>
 #include <stdexcept>
 
 auto LoadJsonConfig(const std::filesystem::path& config_path,

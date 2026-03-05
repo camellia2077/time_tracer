@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include "domain/reports/interfaces/i_project_info_provider.hpp"
 #include "infrastructure/reports/data/cache/project_name_cache.hpp"
@@ -41,3 +41,4 @@ inline void FormatReportMap(MapT& data_map, FormatterT& formatter,
 }  // namespace reports::services
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
+

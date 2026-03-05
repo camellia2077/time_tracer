@@ -91,12 +91,11 @@ function(enforce_core_target_link_boundary)
 
     if(NOT ECTB_FORBIDDEN_TARGETS)
         set(ECTB_FORBIDDEN_TARGETS
+            "tracer_adapters_io"
             "tracer_adapters"
             "tti"
             "ttri"
             "time_tracker_infrastructure"
-            "time_tracker_reports_infrastructure"
-            "time_tracker_io_adapters"
         )
     endif()
 

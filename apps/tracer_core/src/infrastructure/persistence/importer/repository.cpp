@@ -1,5 +1,6 @@
 // infrastructure/persistence/importer/repository.cpp
 #include "infrastructure/persistence/importer/repository.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <optional>

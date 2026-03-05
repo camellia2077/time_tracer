@@ -9,19 +9,18 @@
 #include <vector>
 
 #include "application/interfaces/i_workflow_handler.hpp"
-#include "application/ports/i_converter_config_provider.hpp"
-#include "application/ports/i_database_health_checker.hpp"
-#include "application/ports/i_ingest_input_provider.hpp"
-#include "application/ports/i_processed_data_loader.hpp"
-#include "application/ports/i_processed_data_storage.hpp"
-#include "application/ports/i_time_sheet_repository.hpp"
-#include "application/ports/i_validation_issue_reporter.hpp"
-#include "domain/model/daily_log.hpp"
-#include "domain/types/app_options.hpp"
-#include "domain/types/date_check_mode.hpp"
-#include "domain/types/ingest_mode.hpp"
 
 namespace fs = std::filesystem;
+
+namespace tracer_core::application::ports {
+class IConverterConfigProvider;
+class IDatabaseHealthChecker;
+class IIngestInputProvider;
+class IProcessedDataLoader;
+class IProcessedDataStorage;
+class ITimeSheetRepository;
+class IValidationIssueReporter;
+}  // namespace tracer_core::application::ports
 
 class WorkflowHandler : public IWorkflowHandler {
  public:

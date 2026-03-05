@@ -11,6 +11,7 @@
 #include "application/ports/i_report_export_writer.hpp"
 #include "application/use_cases/tracer_core_api.hpp"
 #include "application/use_cases/tracer_core_api_helpers.hpp"
+#include "domain/types/app_options.hpp"
 
 using namespace tracer_core::core::dto;
 namespace core_api_helpers =

@@ -1,7 +1,7 @@
 // infrastructure/query/data/orchestrators/tree_orchestrator.hpp
 #pragma once
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
@@ -15,3 +15,4 @@ auto HandleTreeQuery(sqlite3* db_conn,
     -> tracer_core::core::dto::TextOutput;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
+

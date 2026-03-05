@@ -1,5 +1,6 @@
 // infrastructure/reports/data/queriers/range/date_range_querier.cpp
 #include "infrastructure/reports/data/queriers/range/date_range_querier.hpp"
+#include <sqlite3.h>
 
 #include <cctype>
 #include <chrono>

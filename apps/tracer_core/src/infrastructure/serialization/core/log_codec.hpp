@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_SERIALIZATION_CORE_LOG_CODEC_H_
 #define INFRASTRUCTURE_SERIALIZATION_CORE_LOG_CODEC_H_
 
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
 
 #include "domain/model/daily_log.hpp"
 

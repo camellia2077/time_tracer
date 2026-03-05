@@ -13,10 +13,13 @@
 
 #include "application/pipeline/pipeline_manager.hpp"
 #include "application/ports/logger.hpp"
+#include "application/ports/i_database_health_checker.hpp"
+#include "application/ports/i_time_sheet_repository.hpp"
 #include "application/workflow_handler.hpp"
 #include "domain/logic/converter/convert/core/converter_core.hpp"
 #include "domain/logic/converter/log_processor.hpp"
 #include "domain/ports/diagnostics.hpp"
+#include "domain/types/app_options.hpp"
 #include "shared/types/ansi_colors.hpp"
 #include "shared/utils/string_utils.hpp"
 

@@ -57,6 +57,33 @@ option(TT_REPORT_ENABLE_TYPST
 option(TT_ENABLE_HEAVY_DIAGNOSTICS
        "Enable heavy diagnostics details (diff context/trace payloads)" OFF)
 
+if(WIN32 OR ANDROID)
+    set(TT_CPP20_MODULES_DEFAULT ON)
+else()
+    set(TT_CPP20_MODULES_DEFAULT OFF)
+endif()
+option(TT_ENABLE_CPP20_MODULES
+       "Enable C++20 named modules for selected module targets"
+       ${TT_CPP20_MODULES_DEFAULT})
+unset(TT_CPP20_MODULES_DEFAULT)
+
+set(TT_CPP20_MODULES_EFFECTIVE OFF)
+if(TT_ENABLE_CPP20_MODULES)
+    if(CMAKE_VERSION VERSION_LESS 3.28)
+        message(WARNING
+            "TT_ENABLE_CPP20_MODULES=ON ignored: CMake < 3.28 does not meet "
+            "the project modules baseline."
+        )
+    elseif(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|MSVC")
+        message(WARNING
+            "TT_ENABLE_CPP20_MODULES=ON ignored: unsupported compiler "
+            "(${CMAKE_CXX_COMPILER_ID})."
+        )
+    else()
+        set(TT_CPP20_MODULES_EFFECTIVE ON)
+    endif()
+endif()
+
 if(ANDROID)
     set(TT_ENABLE_PROCESSED_JSON_IO OFF CACHE BOOL "" FORCE)
     set(TT_REPORT_ENABLE_LATEX OFF CACHE BOOL "" FORCE)
@@ -67,6 +94,8 @@ message(STATUS "TT_ENABLE_PROCESSED_JSON_IO=${TT_ENABLE_PROCESSED_JSON_IO}")
 message(STATUS "TT_REPORT_ENABLE_LATEX=${TT_REPORT_ENABLE_LATEX}")
 message(STATUS "TT_REPORT_ENABLE_TYPST=${TT_REPORT_ENABLE_TYPST}")
 message(STATUS "TT_ENABLE_HEAVY_DIAGNOSTICS=${TT_ENABLE_HEAVY_DIAGNOSTICS}")
+message(STATUS "TT_ENABLE_CPP20_MODULES=${TT_ENABLE_CPP20_MODULES}")
+message(STATUS "TT_CPP20_MODULES_EFFECTIVE=${TT_CPP20_MODULES_EFFECTIVE}")
 message(STATUS "TT_USE_BUNDLED_SQLITE=${TT_USE_BUNDLED_SQLITE}")
 message(STATUS "TT_TOML_HEADER_ONLY=${TT_TOML_HEADER_ONLY}")
 message(STATUS "TT_STATIC_MINGW_RUNTIME=${TT_STATIC_MINGW_RUNTIME}")
@@ -95,6 +124,12 @@ if(TT_ENABLE_HEAVY_DIAGNOSTICS)
     add_compile_definitions(TT_ENABLE_HEAVY_DIAGNOSTICS=1)
 else()
     add_compile_definitions(TT_ENABLE_HEAVY_DIAGNOSTICS=0)
+endif()
+
+if(TT_CPP20_MODULES_EFFECTIVE)
+    add_compile_definitions(TT_ENABLE_CPP20_MODULES=1)
+else()
+    add_compile_definitions(TT_ENABLE_CPP20_MODULES=0)
 endif()
 
 add_compile_definitions(TT_ENABLE_FILE_CRYPTO=1)

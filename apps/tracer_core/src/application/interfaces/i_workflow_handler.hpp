@@ -6,10 +6,11 @@
 #include <string>
 #include <vector>
 
-#include "domain/model/daily_log.hpp"
-#include "domain/types/app_options.hpp"
 #include "domain/types/date_check_mode.hpp"
 #include "domain/types/ingest_mode.hpp"
+
+struct AppOptions;
+struct DailyLog;
 
 class IWorkflowHandler {
  public:

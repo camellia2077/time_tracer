@@ -3,11 +3,16 @@
 #define APPLICATION_IMPORTER_IMPORT_SERVICE_H_
 
 #include <map>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "application/importer/model/import_models.hpp"
-#include "application/ports/i_time_sheet_repository.hpp"
-#include "domain/model/daily_log.hpp"
+
+struct DailyLog;
+namespace tracer_core::application::ports {
+class ITimeSheetRepository;
+}  // namespace tracer_core::application::ports
 
 class ImportService {
  public:

@@ -6,6 +6,8 @@
 #include <format>
 
 #include "application/parser/memory_parser.hpp"
+#include "application/ports/i_time_sheet_repository.hpp"
+#include "domain/model/daily_log.hpp"
 
 ImportService::ImportService(
     tracer_core::application::ports::ITimeSheetRepository& repository)

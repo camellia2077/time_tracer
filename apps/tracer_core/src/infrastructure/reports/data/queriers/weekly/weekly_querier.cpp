@@ -1,5 +1,6 @@
 // infrastructure/reports/data/queriers/weekly/weekly_querier.cpp
 #include "infrastructure/reports/data/queriers/weekly/weekly_querier.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <map>

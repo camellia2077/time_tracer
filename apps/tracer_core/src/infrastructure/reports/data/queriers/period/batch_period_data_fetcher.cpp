@@ -1,5 +1,6 @@
 // infrastructure/reports/data/queriers/period/batch_period_data_fetcher.cpp
 #include "infrastructure/reports/data/queriers/period/batch_period_data_fetcher.hpp"
+#include <sqlite3.h>
 
 #include <algorithm>
 #include <format>

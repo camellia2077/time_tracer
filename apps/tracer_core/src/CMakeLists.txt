@@ -24,7 +24,7 @@ enforce_core_include_boundary(
         "api/"
         "infrastructure/"
     FORBIDDEN_PATTERNS
-        "modules[\\\\/]tracer_adapters_io[\\\\/]"
+        "libs[\\\\/]tracer_adapters_io[\\\\/]"
         "tracer_adapters_io[\\\\/]src[\\\\/]"
 )
 
@@ -37,12 +37,11 @@ enforce_core_target_link_boundary(
         time_tracker_application
         tracer_core
     FORBIDDEN_TARGETS
+        tracer_adapters_io
         tracer_adapters
         tti
         ttri
         time_tracker_infrastructure
-        time_tracker_reports_infrastructure
-        time_tracker_io_adapters
 )
 
 # 4. API Layer (Interface)
@@ -61,6 +60,142 @@ endif()
 add_subdirectory(api/core_c)
 
 if(BUILD_TESTING)
+    if(TT_CPP20_MODULES_EFFECTIVE)
+        add_executable(tracer_core_shared_modules_smoke_tests
+            shared/tests/shared_modules_smoke_tests.cpp
+        )
+        setup_app_target(tracer_core_shared_modules_smoke_tests NO_PCH)
+        target_link_libraries(tracer_core_shared_modules_smoke_tests PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_shared_modules_smoke_tests
+            COMMAND tracer_core_shared_modules_smoke_tests
+        )
+
+        add_executable(tracer_core_shared_legacy_headers_compat_tests
+            shared/tests/shared_legacy_headers_compat_tests.cpp
+        )
+        setup_app_target(tracer_core_shared_legacy_headers_compat_tests NO_PCH)
+        target_link_libraries(
+            tracer_core_shared_legacy_headers_compat_tests PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_shared_legacy_headers_compat_tests
+            COMMAND tracer_core_shared_legacy_headers_compat_tests
+        )
+
+        add_executable(tracer_core_domain_modules_smoke_tests
+            domain/tests/domain_modules_smoke_tests.cpp
+        )
+        setup_app_target(tracer_core_domain_modules_smoke_tests NO_PCH)
+        target_link_libraries(tracer_core_domain_modules_smoke_tests PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_domain_modules_smoke_tests
+            COMMAND tracer_core_domain_modules_smoke_tests
+        )
+
+        add_executable(tracer_core_domain_legacy_headers_compat_tests
+            domain/tests/domain_legacy_headers_compat_tests.cpp
+        )
+        setup_app_target(tracer_core_domain_legacy_headers_compat_tests NO_PCH)
+        target_link_libraries(
+            tracer_core_domain_legacy_headers_compat_tests PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_domain_legacy_headers_compat_tests
+            COMMAND tracer_core_domain_legacy_headers_compat_tests
+        )
+
+        add_executable(tracer_core_domain_logic_modules_smoke_tests
+            domain/tests/domain_logic_modules_smoke_tests.cpp
+        )
+        setup_app_target(tracer_core_domain_logic_modules_smoke_tests NO_PCH)
+        target_link_libraries(tracer_core_domain_logic_modules_smoke_tests
+            PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_domain_logic_modules_smoke_tests
+            COMMAND tracer_core_domain_logic_modules_smoke_tests
+        )
+
+        add_executable(tracer_core_domain_logic_legacy_headers_compat_tests
+            domain/tests/domain_logic_legacy_headers_compat_tests.cpp
+        )
+        setup_app_target(tracer_core_domain_logic_legacy_headers_compat_tests
+            NO_PCH
+        )
+        target_link_libraries(
+            tracer_core_domain_logic_legacy_headers_compat_tests PRIVATE
+            time_tracker_domain
+        )
+        add_test(
+            NAME tracer_core_domain_logic_legacy_headers_compat_tests
+            COMMAND tracer_core_domain_logic_legacy_headers_compat_tests
+        )
+
+        add_executable(tracer_core_application_modules_smoke_tests
+            application/tests/application_modules_smoke_tests.cpp
+        )
+        setup_app_target(tracer_core_application_modules_smoke_tests NO_PCH)
+        target_link_libraries(
+            tracer_core_application_modules_smoke_tests PRIVATE
+            time_tracker_application
+        )
+        add_test(
+            NAME tracer_core_application_modules_smoke_tests
+            COMMAND tracer_core_application_modules_smoke_tests
+        )
+
+        add_executable(tracer_core_application_legacy_headers_compat_tests
+            application/tests/application_legacy_headers_compat_tests.cpp
+        )
+        setup_app_target(
+            tracer_core_application_legacy_headers_compat_tests NO_PCH
+        )
+        target_link_libraries(
+            tracer_core_application_legacy_headers_compat_tests PRIVATE
+            time_tracker_application
+        )
+        add_test(
+            NAME tracer_core_application_legacy_headers_compat_tests
+            COMMAND tracer_core_application_legacy_headers_compat_tests
+        )
+
+        add_executable(tracer_core_infrastructure_modules_smoke_tests
+            infrastructure/tests/infrastructure_modules_smoke_tests.cpp
+        )
+        setup_app_target(tracer_core_infrastructure_modules_smoke_tests NO_PCH)
+        target_link_libraries(
+            tracer_core_infrastructure_modules_smoke_tests PRIVATE
+            time_tracker_infrastructure
+        )
+        add_test(
+            NAME tracer_core_infrastructure_modules_smoke_tests
+            COMMAND tracer_core_infrastructure_modules_smoke_tests
+        )
+
+        add_executable(tracer_core_infrastructure_legacy_headers_compat_tests
+            infrastructure/tests/infrastructure_legacy_headers_compat_tests.cpp
+        )
+        setup_app_target(
+            tracer_core_infrastructure_legacy_headers_compat_tests NO_PCH
+        )
+        target_link_libraries(
+            tracer_core_infrastructure_legacy_headers_compat_tests PRIVATE
+            time_tracker_infrastructure
+        )
+        add_test(
+            NAME tracer_core_infrastructure_legacy_headers_compat_tests
+            COMMAND tracer_core_infrastructure_legacy_headers_compat_tests
+        )
+    endif()
+
     set(TIME_TRACKER_CORE_API_TEST_SOURCES
         application/tests/support/fakes.cpp
         application/tests/support/test_support.cpp

@@ -2,6 +2,7 @@
 #include "infrastructure/serialization/json_serializer.hpp"
 
 #include <iostream>
+#include <nlohmann/json.hpp>
 
 #include "infrastructure/serialization/core/log_codec.hpp"
 

@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_DAILY_DAILY_QUERIER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_DAILY_DAILY_QUERIER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <string>
@@ -52,3 +52,4 @@ class BatchDayDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_DAILY_DAILY_QUERIER_H_
+

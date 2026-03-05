@@ -14,6 +14,7 @@
 #include "application/use_cases/tracer_core_api.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/repositories/i_project_repository.hpp"
+#include "domain/types/app_options.hpp"
 #include "domain/types/ingest_mode.hpp"
 
 namespace tracer_core::application::tests {

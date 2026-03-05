@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_SQLITE_DATA_QUERY_SERVICE_INTERNAL_HPP_
 #define INFRASTRUCTURE_PERSISTENCE_SQLITE_DATA_QUERY_SERVICE_INTERNAL_HPP_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <chrono>
 #include <filesystem>
@@ -68,3 +68,4 @@ auto DispatchDataQueryAction(
 }  // namespace infrastructure::persistence::data_query_service_internal
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_SQLITE_DATA_QUERY_SERVICE_INTERNAL_HPP_
+

@@ -1,5 +1,6 @@
 // infrastructure/reports/data/queriers/yearly/yearly_querier.cpp
 #include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <map>

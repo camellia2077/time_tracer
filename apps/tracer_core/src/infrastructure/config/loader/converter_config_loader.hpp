@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <string_view>
 
-#include "infrastructure/config/models/converter_config_models.hpp"
+#include "domain/types/converter_config.hpp"
 
 /**
  * @class ConverterConfigLoader

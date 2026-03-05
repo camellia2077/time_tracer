@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_DATE_RANGE_QUERIER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_DATE_RANGE_QUERIER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
 #include <string_view>
@@ -33,3 +33,4 @@ class DateRangeQuerier
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_RANGE_DATE_RANGE_QUERIER_H_
+

@@ -6,7 +6,6 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <vector>
 
 #include "application/pipeline/context/pipeline_context.hpp"
 #include "domain/types/app_options.hpp"

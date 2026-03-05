@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_YEARLY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_YEARLY_REPORT_SERVICE_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <string>
@@ -24,3 +24,4 @@ class YearlyReportService {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_YEARLY_REPORT_SERVICE_H_
+

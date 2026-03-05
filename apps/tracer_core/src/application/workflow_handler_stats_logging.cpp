@@ -6,6 +6,7 @@
 #include <string_view>
 
 #include "application/importer/import_service.hpp"
+#include "application/ports/i_processed_data_loader.hpp"
 #include "application/ports/logger.hpp"
 #include "application/workflow_handler.hpp"
 #include "shared/types/ansi_colors.hpp"

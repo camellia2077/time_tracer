@@ -3,11 +3,11 @@
 #define APPLICATION_SERVICE_CONVERTER_SERVICE_H_
 
 #include <functional>
-#include <iostream>
+#include <iosfwd>
 #include <string_view>
 
-#include "domain/model/daily_log.hpp"
-#include "domain/types/converter_config.hpp"
+struct ConverterConfig;
+struct DailyLog;
 
 class ConverterService {
  public:

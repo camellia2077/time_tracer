@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_PROJECT_RESOLVER_H_
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_PROJECT_RESOLVER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <memory>
 #include <string>
@@ -36,3 +36,4 @@ class ProjectResolver {
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_PROJECT_RESOLVER_H_
+

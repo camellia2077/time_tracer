@@ -1,5 +1,6 @@
 // infrastructure/persistence/importer/sqlite/statement.cpp
 #include "infrastructure/persistence/importer/sqlite/statement.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <stdexcept>

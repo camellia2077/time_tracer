@@ -1,5 +1,6 @@
 // infrastructure/persistence/importer/sqlite/connection.cpp
 #include "infrastructure/persistence/importer/sqlite/connection.hpp"
+#include <sqlite3.h>
 
 #include <format>
 #include <optional>

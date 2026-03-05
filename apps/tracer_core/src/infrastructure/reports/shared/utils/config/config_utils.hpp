@@ -3,7 +3,8 @@
 #define INFRASTRUCTURE_REPORTS_SHARED_UTILS_CONFIG_CONFIG_UTILS_H_
 
 #include <filesystem>
-#include <nlohmann/json.hpp>
+#include <nlohmann/json_fwd.hpp>
+#include <string>
 
 /**
  * @brief 从指定路径加载并解析 JSON 配置文件。

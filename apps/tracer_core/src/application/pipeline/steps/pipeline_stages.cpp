@@ -10,6 +10,7 @@
 #include <sstream>
 #include <vector>
 
+#include "application/ports/i_ingest_input_provider.hpp"
 #include "application/ports/i_validation_issue_reporter.hpp"
 #include "application/ports/logger.hpp"
 #include "domain/logic/converter/convert/core/converter_core.hpp"

@@ -1,5 +1,6 @@
 // infrastructure/reports/data/queriers/monthly/monthly_querier.cpp
 #include "infrastructure/reports/data/queriers/monthly/monthly_querier.hpp"
+#include <sqlite3.h>
 
 #include <algorithm>
 #include <cctype>

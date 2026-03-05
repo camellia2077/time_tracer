@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <vector>
@@ -44,3 +44,4 @@ class BatchPeriodDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_BATCH_PERIOD_DATA_FETCHER_H_
+

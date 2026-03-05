@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_PERIOD_QUERIER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_PERIOD_QUERIER_H_
 
-#include <sqlite3.h>
+#include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
 
@@ -30,3 +30,4 @@ class PeriodQuerier : public RangeQuerierBase<PeriodReportData, int> {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_PERIOD_QUERIER_H_
+
