@@ -32,6 +32,24 @@ def set_step(state: dict, step_name: str, status: str, exit_code: int | None = N
     state["updated_at"] = utc_now_iso()
 
 
+def set_step_duration_ms(state: dict, step_name: str, duration_ms: int) -> None:
+    timings = state.setdefault("metrics", {}).setdefault("timings_ms", {})
+    timings[step_name] = int(duration_ms)
+    state["updated_at"] = utc_now_iso()
+
+
+def set_total_duration_ms(state: dict, duration_ms: int) -> None:
+    timings = state.setdefault("metrics", {}).setdefault("timings_ms", {})
+    timings["total"] = int(duration_ms)
+    state["updated_at"] = utc_now_iso()
+
+
+def set_artifact_sizes(state: dict, artifact_sizes: dict) -> None:
+    metrics = state.setdefault("metrics", {})
+    metrics["artifact_sizes"] = artifact_sizes
+    state["updated_at"] = utc_now_iso()
+
+
 def configure_command_text(decision: ChangePolicyDecision, profile_name: str | None) -> str:
     cmd = [
         "python",
@@ -110,6 +128,7 @@ def new_state(
             "concise": concise,
             "dry_run": dry_run,
             "kill_build_procs": kill_build_procs,
+            "cmake_args": decision.cmake_args,
         },
         "decision": {
             "changed_files": decision.changed_files,
@@ -123,6 +142,20 @@ def new_state(
         "failed_command": None,
         "error_summary": None,
         "next_action": None,
+        "metrics": {
+            "timings_ms": {
+                "configure": None,
+                "build": None,
+                "test": None,
+                "total": None,
+            },
+            "artifact_sizes": {
+                "candidate_dirs": [],
+                "artifacts": [],
+                "count": 0,
+                "total_bytes": 0,
+            },
+        },
         "steps": {
             "configure": {
                 "status": "pending" if decision.need_configure else "skipped",

@@ -35,11 +35,11 @@ args = [
 expect_exit = 0
 
 [[commands]]
-name = "Android New Month File Writes mMM Header"
+name = "Android New Month File Writes mMM Header In Persistence"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:\"m%02d\" ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\java\\com\\example\\tracer\\runtime\\LiveRawRecordStore.kt >nul && exit /b 0 || (echo Missing mMM header write in LiveRawRecordStore.kt && exit /b 1)"
+  "findstr /c:\"m%02d\" ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\java\\com\\example\\tracer\\runtime\\LiveRawRecordPersistence.kt >nul && exit /b 0 || (echo Missing mMM header write in LiveRawRecordPersistence.kt && exit /b 1)"
 ]
 expect_exit = 0
 

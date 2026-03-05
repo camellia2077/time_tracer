@@ -1,5 +1,7 @@
 import importlib.util
+import io
 import sys
+from contextlib import redirect_stderr
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
@@ -140,6 +142,47 @@ class TestRunCliDispatch(TestCase):
         self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
         self.assertEqual(FakePostChangeCommand.last_kwargs["app_name"], "tracer_android")
         self.assertIsNone(FakePostChangeCommand.last_kwargs["build_dir_name"])
+
+    def test_post_change_dispatches_cmake_args(self):
+        class FakePostChangeCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakePostChangeCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("toolchain.cli.handlers.post_change.PostChangeCommand", FakePostChangeCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "post-change",
+                    "--app",
+                    "tracer_core",
+                    "--dry-run",
+                    "--cmake-args=-DA=1",
+                    "--cmake-args=-DB=2",
+                ]
+            )
+
+        self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
+        self.assertEqual(FakePostChangeCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
+
+    def test_unrecognized_arguments_show_build_verify_hint(self):
+        stderr = io.StringIO()
+        with patch.object(sys, "argv", ["run.py", "post-change", "--bad-arg"]), redirect_stderr(
+            stderr
+        ), self.assertRaises(SystemExit) as raised:
+            self.run_module.main()
+
+        self.assertEqual(raised.exception.code, 2)
+        error_text = stderr.getvalue()
+        self.assertIn("unrecognized arguments: --bad-arg", error_text)
+        self.assertIn("python scripts/run.py post-change -h", error_text)
+        self.assertIn("python scripts/run.py build ...", error_text)
+        self.assertIn("python scripts/run.py verify ...", error_text)
 
     def test_config_migrate_defaults_to_dry_run(self):
         class FakeConfigMigrateCommand:

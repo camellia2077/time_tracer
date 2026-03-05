@@ -178,6 +178,7 @@ class VerifyCommand:
             "scripts.tests.platform.test_build_toolchain_flags",
             "scripts.tests.platform.test_context_config_resolution",
             "scripts.tests.platform.test_platform_config_sync",
+            "scripts.tests.platform.test_post_change_metrics",
             "scripts.tests.verify.test_verify_run_tests",
             "scripts.tests.verify.test_verify_execute_flow",
             "scripts.tests.verify.test_verify_cli_handler",

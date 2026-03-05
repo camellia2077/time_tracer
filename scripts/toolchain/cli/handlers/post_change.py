@@ -2,7 +2,7 @@ import argparse
 
 from ...commands.cmd_workflow.post_change import PostChangeCommand
 from ...core.context import Context
-from ..common import add_profile_arg
+from ..common import add_profile_arg, parse_cmake_args
 from ..model import CommandSpec, ParserDefaults
 
 
@@ -43,6 +43,16 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         "--kill-build-procs",
         action="store_true",
         help="Kill cmake/ninja/ccache before post-change build stages (default: off)",
+    )
+    parser.add_argument(
+        "--cmake-args",
+        action="append",
+        default=[],
+        metavar="ARGS",
+        help=(
+            "Extra CMake configure args string applied before post-change build flow. "
+            "Can be repeated. Recommended: --cmake-args=-DENABLE_LTO=OFF"
+        ),
     )
     parser.add_argument(
         "--no-kill-build-procs",
@@ -86,6 +96,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         concise=args.concise,
         dry_run=args.dry_run,
         kill_build_procs=kill_build_procs,
+        cmake_args=parse_cmake_args(getattr(args, "cmake_args", [])),
     )
 
 

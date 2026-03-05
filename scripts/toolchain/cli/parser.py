@@ -1,8 +1,39 @@
 import argparse
+import sys
 
 from ..core.context import Context
 from .model import ParserDefaults
 from .registry import command_specs
+
+
+class ToolchainArgumentParser(argparse.ArgumentParser):
+    def error(self, message: str) -> None:
+        if "unrecognized arguments:" in message:
+            argv = sys.argv[1:]
+            command = argv[0] if argv else ""
+            hint_lines: list[str] = []
+
+            if command:
+                hint_lines.append(f"Hint: run `python scripts/run.py {command} -h` to inspect supported flags.")
+            else:
+                hint_lines.append("Hint: run `python scripts/run.py -h` to inspect supported commands.")
+
+            cmake_flag_requested = "--cmake-args" in message or any(
+                arg.startswith("--cmake-args") for arg in argv
+            )
+            if cmake_flag_requested:
+                hint_lines.append(
+                    "Hint: for CMake argument passthrough, use `build`/`verify` "
+                    "or `post-change --cmake-args=...`."
+                )
+            else:
+                hint_lines.append(
+                    "Hint: if you are trying a build validation flow, consider "
+                    "`python scripts/run.py build ...` or `python scripts/run.py verify ...`."
+                )
+
+            message = f"{message}\n" + "\n".join(hint_lines)
+        super().error(message)
 
 
 def _add_app_argument(
@@ -21,7 +52,7 @@ def _add_app_argument(
 
 def build_parser(ctx: Context) -> argparse.ArgumentParser:
     defaults = ParserDefaults.from_context(ctx)
-    parser = argparse.ArgumentParser(description="Unified build/test toolchain")
+    parser = ToolchainArgumentParser(description="Unified build/test toolchain")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     for spec in command_specs():
