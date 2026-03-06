@@ -38,12 +38,13 @@ def is_documentation_file(path: str) -> bool:
 
 def is_cmake_related(path: str) -> bool:
     lower = path.lower()
-    file_name = PurePosixPath(lower).name
+    posix_path = PurePosixPath(lower)
+    file_name = posix_path.name
     if file_name == "cmakelists.txt":
         return True
     if lower.endswith(".cmake"):
         return True
-    if lower == "scripts/toolchain/config.toml":
+    if posix_path.parts == ("scripts", "toolchain", "config.toml"):
         return True
     if lower.startswith("scripts/toolchain/config/") and lower.endswith(".toml"):
         return True

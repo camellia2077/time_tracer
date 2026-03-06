@@ -2,20 +2,32 @@
 
 本文说明当前项目如何把 `assets/tracer_core/config` 作为单一事实来源，分发到各表现层运行时目录。
 
+## 0. 目录职责边界
+
+1. Canonical source：`assets/tracer_core/config`
+2. Generated runtime copy：
+   - `apps/tracer_cli/windows/rust_cli/runtime/config`
+   - `apps/tracer_android/runtime/src/main/assets/tracer_core/config`
+3. 维护规则：
+   - 修改共享 config 时，只改 `assets/tracer_core/config`
+   - app 内 runtime config 目录只允许由同步流程刷新，不应手工作为源头维护
+4. 非运行时设计参考文件（例如品牌 SVG、图标探索稿）不属于 `assets/`；
+   其长期归属是 `design/branding/**`
+
 ## 1. 单一事实来源
 
-1. 源配置目录：`assets/tracer_core/config`
+1. 源配置目录（唯一 source of truth）：`assets/tracer_core/config`
 2. 分发入口脚本：`scripts/platform_config/run.py`
 3. 构建链路触发点：`scripts/run.py build|configure` -> `scripts/toolchain/commands/cmd_build/common/config_sync.py`
 
 ## 2. 目标目录（当前）
 
-1. Windows CLI：`apps/tracer_cli/windows/rust_cli/runtime/config`
-2. Android Runtime：`apps/tracer_android/runtime/src/main/assets/tracer_core/config`
+1. Windows CLI generated copy：`apps/tracer_cli/windows/rust_cli/runtime/config`
+2. Android Runtime generated copy：`apps/tracer_android/runtime/src/main/assets/tracer_core/config`
 
 ## 3. 触发策略
 
-1. 仅当 app 在 `scripts/toolchain/config.toml` 配置了 `config_sync_target` 时，构建前自动分发。
+1. 仅当 app 在 `scripts/toolchain/config/apps.toml` 配置了 `config_sync_target` 时，构建前自动分发。
 2. 当前启用项：
    - `[apps.tracer_windows_cli] config_sync_target = "windows"`
    - `[apps.tracer_android] config_sync_target = "android"`

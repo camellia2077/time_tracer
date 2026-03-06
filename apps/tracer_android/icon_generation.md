@@ -1,16 +1,22 @@
 # Android Icon 生成与替换流程
 
-本文用于说明如何在本项目中为 Android 应用切换/更新 launcher icon，并与 `apps/shared/branding` 下的品牌 SVG 保持一致。
+本文用于说明如何在本项目中为 Android 应用切换/更新 launcher icon，并与 `design/branding` 下的品牌 SVG 保持一致。
+
+> 目录语义说明（2026-03-06）
+>
+> - 设计参考 SVG 与品牌探索稿已迁移到 `design/branding/**`。
+> - 旧的共享设计目录已退役删除，不再承担共享设计资产归档职责。
+> - 如需新增设计稿，请直接放入 `design/branding/**`。
 
 ## 1. 设计源文件
 
 当前默认设计源：
 
-- `apps/shared/branding/sharp_rounded_white.svg`（推荐，圆角白底）
+- `design/branding/exports/sharp_rounded_white_golden.svg`（推荐，圆角白底）
 
 可选设计源：
 
-- `apps/shared/branding/sharp_transparent.svg`（透明底）
+- `design/branding/exports/bg_golden_vertical_padding_transparent.svg`（透明底）
 
 说明：
 
@@ -35,7 +41,7 @@ Android launcher 资源入口：
 
 ## 3. 标准操作步骤
 
-1. 选择视觉版本（默认建议 `sharp_rounded_white.svg`）。
+1. 选择视觉版本（默认建议 `sharp_rounded_white_golden.svg`）。
 2. 编辑 `ic_launcher_foreground.xml`，同步箭头与轨迹形状。
 3. 编辑 `ic_launcher_colors.xml`：
    - 若前景图内已经包含白色圆角底，建议背景使用透明：`#00000000`
@@ -52,7 +58,7 @@ python "scripts/run.py" build --app tracer_android --profile android_style
 
 为与 Windows CLI 图标统一，推荐以下默认组合：
 
-- 视觉源：`apps/shared/branding/sharp_rounded_white.svg`
+- 视觉源：`design/branding/exports/sharp_rounded_white_golden.svg`
 - Android 前景：`ic_launcher_foreground.xml` 使用圆角白底 + 箭头
 - Android 背景：`ic_launcher_background = #00000000`（透明）
 
@@ -70,7 +76,8 @@ python "scripts/run.py" build --app tracer_android --profile android_style
 
 ## 6. 与 Windows 流程的关系
 
-- Windows 图标生成流程见：`apps/shared/windows_icon_generation.md`
-- Android 与 Windows 共用同一品牌源（`apps/shared/branding`），但产物格式不同：
+- Windows 图标生成流程见：`apps/tracer_cli/windows/icon_generation.md`
+- Android 与 Windows 当前共用同一设计源目录：`design/branding/**`
+- 两端产物格式不同：
   - Windows：由 Python 构建链将 SVG 转 `.ico`
   - Android：手工维护 vector drawable XML

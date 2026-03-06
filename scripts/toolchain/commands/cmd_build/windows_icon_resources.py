@@ -68,10 +68,10 @@ def _resolve_source_svg_path(ctx: Context, svg_override: str | None) -> Path:
         return Path(raw_env_svg).expanduser().resolve()
     return (
         ctx.repo_root
-        / "apps"
-        / "shared"
+        / "design"
         / "branding"
-        / "sharp_rounded_white.svg"
+        / "exports"
+        / "sharp_rounded_white_golden.svg"
     ).resolve()
 
 

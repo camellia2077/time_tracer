@@ -48,17 +48,20 @@ python scripts/run.py verify --app tracer_core --build-dir build_fast --scope ar
 7. 运行时模板与配置：
    - `apps/tracer_cli/windows/rust_cli/runtime/assets/`
    - `apps/tracer_cli/windows/rust_cli/runtime/config/`
+   - canonical source: `assets/tracer_core/config`
+   - `runtime/config/` 是 generated runtime copy，不是共享 config 源头
 8. 输出契约测试入口：
    - `test/suites/tracer_windows_rust_cli/tests/command_groups.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_tree_version.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_crypto.toml`
 9. EXE 图标生成与注入：
-   - 默认 SVG 源（圆角白底）：`apps/shared/branding/sharp_rounded_white.svg`
-   - 可选 SVG 源（透明底）：`apps/shared/branding/sharp_transparent.svg`
+   - 默认 SVG 源（圆角白底）：`design/branding/exports/sharp_rounded_white_golden.svg`
+   - 可选 SVG 源（透明底）：`design/branding/exports/bg_golden_vertical_padding_transparent.svg`
    - 构建生成：`apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
    - 注入逻辑：`apps/tracer_cli/windows/rust_cli/build.rs`
    - Python 构建入口：`scripts/toolchain/commands/cmd_build/cargo.py`
+   - 说明文档：`apps/tracer_cli/windows/icon_generation.md`
 
 ## 文档优先定位（避免全局搜索）
 

@@ -11,6 +11,13 @@ This document defines the Android-side lifecycle from source config to runtime c
   - `apps/tracer_android/runtime/build.gradle.kts`
   - task: `syncTracerCoreConfig` (hooked into `preBuild`)
 
+## 1.1 Boundary Rules
+
+- `assets/tracer_core/config` is the only shared config source.
+- `apps/tracer_android/runtime/src/main/assets/tracer_core/config` is a generated runtime copy.
+- Android-side fixes to shared config must be applied back at `assets/tracer_core/config`, then resynced.
+- Design-reference SVG / branding exploration files are outside this lifecycle; their long-term home is `design/branding/**`, not the Android runtime asset tree.
+
 ## 2. Runtime Asset Layout
 
 - Synced output root:

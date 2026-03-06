@@ -27,6 +27,15 @@ Android host app for `apps/tracer_core_shell` (`Jetpack Compose + JNI`).
   - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
   - `docs/time_tracer/core/contracts/stats/README.md`
 
+## Runtime Config Boundary
+
+- Canonical shared source: `assets/tracer_core/config`
+- Android generated runtime copy:
+  - `apps/tracer_android/runtime/src/main/assets/tracer_core/config`
+- Do not treat the Android runtime copy as the source-of-truth for shared config edits.
+- Icon generation guide:
+  - `apps/tracer_android/icon_generation.md`
+
 ## Kotlin Split Landmarks
 
 - Config import/export split:

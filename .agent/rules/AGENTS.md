@@ -87,3 +87,8 @@ trigger: always_on
 - Temporary file rule:
   - Store temporary files under repository `temp/` only.
   - Do not create temporary files in source/config/test directories unless explicitly requested.
+- Shared asset semantics rule:
+  - `assets/tracer_core/config` is the only canonical shared runtime config source.
+  - App-local config directories are generated runtime copies, not source-of-truth.
+  - Design reference SVG / branding exploration files belong under `design/branding/**` in the long-term layout.
+  - The legacy shared design directory has been retired; design reference assets belong under `design/branding/**`.

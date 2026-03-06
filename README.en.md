@@ -18,7 +18,8 @@ A powerful personal time management toolset designed using **Clean Architecture*
 * **`graph_generator` (Python)**: A data visualization tool that reads the database and generates dynamic charts like timelines and heatmaps.
 * **`log_generator` (C++)**: A helper utility for generating standardized test logs.
 * **Boundary note**: report formatting internals are consolidated in `tracer_core` (`reports_shared`) as an internal module; CLI/Rust consume stable runtime/CLI contracts instead of formatter implementation details. This boundary supports future partial-open-source releases where `reports_shared` can remain private.
-* **Migration status (2026-03-06)**: `libs/tracer_core` is now the primary host of core business implementation; `apps/tracer_core_shell` is the only real shell/CMake root; `apps/tracer_core_shell` has been retired and removed.
+* **Migration status (2026-03-06)**: `libs/tracer_core` is now the primary host of core business implementation; `apps/tracer_core_shell` is the only real shell/CMake root; `apps/tracer_core` has been retired and removed.
+* **Asset boundary (2026-03-06)**: the only canonical shared runtime config source is `assets/tracer_core/config`; app-local Android/Windows config directories are generated runtime copies only. Design-reference SVG assets and branding explorations now live under `design/branding/**`.
 
 ---
 

@@ -49,7 +49,7 @@ def resolve_profile(
         print(
             "Warning: build profile "
             f"`{selected_profile}` not found in "
-            "scripts/toolchain/config.toml or scripts/toolchain/config/*.toml. "
+            "scripts/toolchain/config/*.toml. "
             "Profile settings will be ignored."
         )
         return None, None

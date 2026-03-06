@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <defs>
+        <!-- 主渐变色 -->
+        <linearGradient id="gradSharpRoundedWhite" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- 强化动态拖影（Motion Shadow Impact） -->
+        <!-- 增加向左的偏移量(dx)并提高不透明度和模糊半径，制造更强烈的“残片/残像”撕扯感 -->
+        <filter id="motionShadow" x="-50%" y="-50%" width="200%" height="200%">
+            <!-- 第一层：核心残像，比之前更向左 -->
+            <feDropShadow dx="-2" dy="0" stdDeviation="0.8" flood-color="#4F46E5" flood-opacity="0.45" result="shadow1" />
+            
+            <!-- 第二层：中段散开的拖影 -->
+            <feDropShadow dx="-4.5" dy="0" stdDeviation="2.5" flood-color="#4F46E5" flood-opacity="0.25" result="shadow2" in="SourceAlpha" />
+            
+            <!-- 第三层：尾流逸散的最远端模糊气流，极度拉伸 -->
+            <feDropShadow dx="-8" dy="0" stdDeviation="4" flood-color="#7C3AED" flood-opacity="0.1" result="shadow3" in="SourceAlpha" />
+
+            <!-- 将三层拖影和原图像合并，形成高速冲击尾流 -->
+            <feMerge>
+                <feMergeNode in="shadow3"/>
+                <feMergeNode in="shadow2"/>
+                <feMergeNode in="shadow1"/>
+                <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+        </filter>
+    </defs>
+    
+    <!-- 白色背景板 -->
+    <rect x="1" y="1" width="22" height="22" rx="5" ry="5" fill="#FFFFFF" />
+
+    <!-- 整个图形依然有平移的物理惯量前置 -->
+    <g transform="translate(1.5, 0)" filter="url(#motionShadow)">
+        <!-- Segment 3 (Main Arrow) -->
+        <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhite)" />
+
+        <!-- Segment 2 (Middle Trail) -->
+        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhite)" opacity="0.6" />
+
+        <!-- Segment 1 (Left Trail) -->
+        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhite)" opacity="0.3" />
+    </g>
+</svg>

@@ -7,6 +7,11 @@ Current behavior:
 - Native runtime is built through `runtime/src/main/cpp/CMakeLists.txt`.
 - Core capabilities are consumed via JNI/runtime gateway, not by embedding Windows build artifacts.
 
+Runtime config boundary:
+- Canonical shared source: `assets/tracer_core/config`
+- Android generated runtime copy: `apps/tracer_android/runtime/src/main/assets/tracer_core/config`
+- If shared config semantics change, update `assets/tracer_core/config` first, then resync into Android runtime assets.
+
 Build (Python entry, recommended):
 ```bash
 python scripts/run.py build --app tracer_android --profile android_edit
@@ -51,6 +56,7 @@ Android docs:
 - Runtime protocol: `docs/time_tracer/clients/android_ui/runtime-protocol.md`
 - Android architecture: `docs/time_tracer/clients/android_ui/architecture.md`
 - Feature scope: `docs/time_tracer/clients/android_ui/features.md`
+- Icon generation guide: `apps/tracer_android/icon_generation.md`
 
 Agent rules:
 - Detailed build/test rules and scan scope are maintained in `apps/tracer_android/agent.md`.

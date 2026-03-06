@@ -83,8 +83,8 @@ class Context:
             )
         except Exception as e:
             print(
-                "Warning: Failed to load config from scripts/toolchain/config.toml "
-                f"and/or scripts/toolchain/config/*.toml: {e}. Using defaults."
+                "Warning: Failed to load config from scripts/toolchain/config/*.toml "
+                f"(and legacy merged fallback, if present): {e}. Using defaults."
             )
             return AgentConfig()
 
@@ -249,7 +249,7 @@ class Context:
         more_suffix = f" (+{more_count} more)" if more_count else ""
         print(
             "Warning: deprecated duplicate config keys detected between "
-            "scripts/toolchain/config.toml and scripts/toolchain/config/*.toml. "
+            "legacy merged config and scripts/toolchain/config/*.toml. "
             f"Prefer keeping these keys only in split files. "
             f"keys: {sample}{more_suffix}"
         )

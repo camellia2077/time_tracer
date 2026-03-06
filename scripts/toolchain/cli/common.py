@@ -53,7 +53,7 @@ def reject_unsupported_build_dir_override(
 
 def add_profile_arg(parser_obj: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     help_text = (
-        "Build profile from scripts/toolchain/config.toml and scripts/toolchain/config/*.toml."
+        "Build profile from scripts/toolchain/config/*.toml."
     )
     if defaults.default_profile:
         help_text += f" Default profile: {defaults.default_profile}."

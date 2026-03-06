@@ -1,0 +1,327 @@
+        /* ==========================================
+           通用 SVG 样式与基础状态
+           ========================================== */
+        .svg-container {
+            width: 160px;
+            height: 160px;
+            border-radius: 1.5rem;
+            background-color: #ffffff;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .svg-arrow {
+            width: 80%;
+            height: 80%;
+            transition: all 0.3s ease;
+        }
+
+        .trail-main,
+        .trail-middle,
+        .trail-end {
+            transform-origin: center;
+        }
+
+        /* 动画 1-4 (保留之前的经典效果作为对比) */
+        .anim-fly .svg-arrow {
+            animation: fly-right 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+
+        @keyframes fly-right {
+            0% {
+                transform: translateX(-15px);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            80% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(15px);
+                opacity: 0;
+            }
+        }
+
+        .anim-thrust .trail-main {
+            animation: hover-main 2s ease-in-out infinite alternate;
+        }
+
+        .anim-thrust .trail-middle {
+            animation: pulse-trail 0.6s ease-in-out infinite alternate;
+        }
+
+        .anim-thrust .trail-end {
+            animation: pulse-trail 0.6s ease-in-out infinite alternate 0.3s;
+        }
+
+        @keyframes hover-main {
+            0% {
+                transform: translateX(0px);
+            }
+
+            100% {
+                transform: translateX(1px);
+            }
+        }
+
+        @keyframes pulse-trail {
+            0% {
+                opacity: 0.2;
+                transform: translateX(-1px);
+            }
+
+            100% {
+                opacity: 0.9;
+                transform: translateX(0px);
+            }
+        }
+
+        .anim-charge-fire .trail-main {
+            animation: charge-main 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        .anim-charge-fire .trail-middle,
+        .anim-charge-fire .trail-end {
+            animation: charge-trails 1s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+            transform-origin: left center;
+        }
+
+        @keyframes charge-main {
+            0% {
+                transform: translateX(0);
+            }
+
+            40% {
+                transform: translateX(-4px);
+            }
+
+            60% {
+                transform: translateX(-4px);
+            }
+
+            100% {
+                transform: translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        @keyframes charge-trails {
+            0% {
+                transform: scaleX(1);
+            }
+
+            40% {
+                transform: scaleX(0.3) translateX(-10px);
+                opacity: 1;
+            }
+
+            60% {
+                transform: scaleX(0.3) translateX(-10px);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scaleX(2) translateX(30px);
+                opacity: 0;
+            }
+        }
+
+        .anim-warp {
+            animation: warp-bg 2s infinite alternate;
+        }
+
+        .anim-warp .trail-main {
+            animation: warp-vibrate 0.1s linear infinite;
+        }
+
+        .anim-warp .trail-middle {
+            animation: warp-stretch-mid 0.8s ease-in-out infinite alternate;
+            transform-origin: right center;
+        }
+
+        .anim-warp .trail-end {
+            animation: warp-stretch-end 0.8s ease-in-out infinite alternate 0.1s;
+            transform-origin: right center;
+        }
+
+        @keyframes warp-bg {
+            0% {
+                background-color: #ffffff;
+            }
+
+            100% {
+                background-color: #f8fafc;
+            }
+        }
+
+        @keyframes warp-vibrate {
+
+            0%,
+            100% {
+                transform: translate(0, 0);
+            }
+
+            25% {
+                transform: translate(0.5px, 0.5px);
+            }
+
+            50% {
+                transform: translate(-0.5px, -0.5px);
+            }
+
+            75% {
+                transform: translate(-0.5px, 0.5px);
+            }
+        }
+
+        @keyframes warp-stretch-mid {
+            0% {
+                transform: scaleX(1);
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: scaleX(4) translateX(-2px);
+                opacity: 1;
+            }
+        }
+
+        @keyframes warp-stretch-end {
+            0% {
+                transform: scaleX(1);
+                opacity: 0.25;
+            }
+
+            100% {
+                transform: scaleX(6) translateX(-4px);
+                opacity: 0.8;
+            }
+        }
+
+        /* ==========================================
+           新增业务场景动画 5-7
+           ========================================== */
+
+        /* 5. 确认顿挫 (用于插入数据库) - 单次执行 */
+        .anim-commit-bounce .svg-arrow {
+            animation: bounce-action 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .anim-commit-bounce .trail-middle,
+        .anim-commit-bounce .trail-end {
+            animation: flash-action 0.4s ease-out forwards;
+        }
+
+        @keyframes bounce-action {
+            0% {
+                transform: translateX(0) scale(1);
+            }
+
+            30% {
+                transform: translateX(6px) scaleX(0.9);
+            }
+
+            /* 向右压紧 */
+            100% {
+                transform: translateX(0) scale(1);
+            }
+
+            /* 弹回 */
+        }
+
+        @keyframes flash-action {
+            0% {
+                opacity: 0.25;
+            }
+
+            30% {
+                opacity: 1;
+                transform: scaleY(1.5);
+            }
+
+            /* 高亮并轻微变粗 */
+            100% {
+                opacity: 0.5;
+                transform: scaleY(1);
+            }
+        }
+
+        /* 6. 数据律动 (用于生成 MD 报告) */
+        .anim-streaming-ripple .trail-middle {
+            animation: ripple-pulse 0.8s ease-in-out infinite;
+        }
+
+        .anim-streaming-ripple .trail-end {
+            animation: ripple-pulse 0.8s ease-in-out infinite 0.4s;
+            /* 错开半个周期 */
+        }
+
+        /* 主箭头微弱呼吸，保持稳定感 */
+        .anim-streaming-ripple .trail-main {
+            animation: main-stable-pulse 1.6s ease-in-out infinite;
+        }
+
+        @keyframes ripple-pulse {
+
+            0%,
+            100% {
+                opacity: 0.2;
+                transform: scaleY(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scaleY(1.2);
+            }
+        }
+
+        @keyframes main-stable-pulse {
+
+            0%,
+            100% {
+                opacity: 0.85;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* 7. 处理构建 (用于生成图表) */
+        .anim-processing-flow .trail-end {
+            animation: flow-forward 1s linear infinite;
+        }
+
+        .anim-processing-flow .trail-middle {
+            animation: flow-forward 1s linear infinite 0.2s;
+            /* 稍微延迟，形成流水线 */
+        }
+
+        @keyframes flow-forward {
+            0% {
+                transform: translateX(-4px);
+                opacity: 0;
+            }
+
+            30% {
+                opacity: 0.8;
+            }
+
+            70% {
+                opacity: 0.8;
+            }
+
+            100% {
+                transform: translateX(4px);
+                opacity: 0;
+            }
+        }

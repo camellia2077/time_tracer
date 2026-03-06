@@ -34,6 +34,12 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 - 测试总日志：`test/output/artifact_windows_cli/logs/output.log`
 - post-change 记录：`apps/tracer_core_shell/build_fast/post_change_last.json`
 
+## Runtime Config Boundary
+
+- Canonical shared source: `assets/tracer_core/config`
+- Windows generated runtime copy: `apps/tracer_cli/windows/rust_cli/runtime/config`
+- 如果共享 config 语义变化，应先修改 `assets/tracer_core/config`，再通过同步流程刷新 Windows runtime copy。
+
 ## Agent 修改定位
 
 1. CLI 入口：`apps/tracer_cli/windows/rust_cli/src/main.rs`
@@ -65,8 +71,8 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 ## EXE 图标（Windows）
 
 1. 品牌源文件（SVG）：
-   - 默认（圆角白底）：`apps/shared/branding/sharp_rounded_white.svg`
-   - 可选（透明底）：`apps/shared/branding/sharp_transparent.svg`
+   - 默认（圆角白底）：`design/branding/exports/sharp_rounded_white_golden.svg`
+   - 可选（透明底）：`design/branding/exports/bg_golden_vertical_padding_transparent.svg`
 2. 构建时自动生成：
    - `apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
 3. Rust 资源注入：
@@ -76,4 +82,6 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
    - `bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
 5. 可选覆盖：
    - `TT_WINDOWS_CLI_ICON_ICO`：直接指定 `.ico` 路径
-   - `TT_WINDOWS_CLI_ICON_SVG`：覆盖默认 `sharp_rounded_white.svg`
+   - `TT_WINDOWS_CLI_ICON_SVG`：覆盖默认 `sharp_rounded_white_golden.svg`
+6. 说明文档：
+   - `apps/tracer_cli/windows/icon_generation.md`

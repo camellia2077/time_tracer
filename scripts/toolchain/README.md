@@ -9,7 +9,7 @@ Quick links:
 
 ## Directory Structure
 
-- `config.toml` + `config/*.toml`: layered toolchain config sources.
+- `config/*.toml`: layered toolchain config sources.
   - Build profiles support `extends` inheritance in `config/build.toml`.
   - Windows CI matrix is generated from `[[build.ci.windows_matrix]]`.
 - `core/`: **Infrastructure Layer**. Handles environment setup, process execution (with real-time feedback), and application registration.

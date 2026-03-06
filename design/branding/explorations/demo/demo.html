@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG 箭头动画与业务场景映射</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="./demo.css">
+</head>
+
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4 md:p-8 font-sans text-slate-800">
+
+    <div class="max-w-4xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
+
+        <!-- 上半部分：SVG 展示区 -->
+        <div class="bg-slate-50 p-8 md:p-12 flex flex-col items-center justify-center border-b border-slate-200">
+            <h2 class="text-xl font-bold text-slate-700 mb-8 text-center" id="currentAnimTitle">静止状态 (Idle)</h2>
+
+            <!-- 背景选择控制面板 (Background Selection) -->
+            <div class="flex flex-wrap justify-center gap-3 mb-6">
+                <button onclick="setBackground('solid')" id="bg-btn-solid"
+                    class="bg-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-indigo-500 text-indigo-700 bg-indigo-50 transition-all">
+                    纯净白板 (Solid)
+                </button>
+                <button onclick="setBackground('data')" id="bg-btn-data"
+                    class="bg-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-slate-200 text-slate-500 hover:border-slate-300 transition-all">
+                    内源数据流 (Data Stream)
+                </button>
+                <button onclick="setBackground('time')" id="bg-btn-time"
+                    class="bg-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-slate-200 text-slate-500 hover:border-slate-300 transition-all">
+                    二十四时流 (Time Stream)
+                </button>
+                <button onclick="setBackground('timeHoriz')" id="bg-btn-timeHoriz"
+                    class="bg-btn px-4 py-2 rounded-full text-sm font-medium border-2 border-slate-200 text-slate-500 hover:border-slate-300 transition-all">
+                    水平三线 (Horiz Stream)
+                </button>
+            </div>
+
+            <div id="svgWrapper" class="svg-container relative">
+                <svg class="svg-arrow absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                    <defs>
+                        <linearGradient id="gradL" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop id="gradStart" offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+                            <stop id="gradEnd" offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+                        </linearGradient>
+                        <filter id="ambientShadow" x="-20%" y="-20%" width="140%" height="140%">
+                            <feDropShadow dx="0" dy="0.5" stdDeviation="0.75" flood-color="#000000"
+                                flood-opacity="0.12" />
+                        </filter>
+                        
+                        <!-- 背景文本遮罩渐变 (Text Fade) -->
+                        <linearGradient id="textFade" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#64748B;stop-opacity:0.02" />
+                            <stop offset="50%" style="stop-color:#64748B;stop-opacity:0.08" />
+                            <stop offset="100%" style="stop-color:#64748B;stop-opacity:0.02" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Background Streams (Initially hidden) -->
+                                                                                <g id="bgDataStream" style="opacity: 0; transition: opacity 0.5s ease;" font-family="monospace" font-size="1.2" font-weight="bold" fill="url(#textFade)" letter-spacing="0.2">
+                        <text y="3.3">
+                            <tspan x="5.1" text-anchor="middle">01 10</tspan>
+                            <tspan x="12" text-anchor="middle">01 A4</tspan>
+                            <tspan x="18.9" text-anchor="middle">FF 3C</tspan>
+                        </text>
+                        <text y="4.8">
+                            <tspan x="5.1" text-anchor="middle">E2 D9</tspan>
+                            <tspan x="12" text-anchor="middle">00 1B</tspan>
+                            <tspan x="18.9" text-anchor="middle">CC 42</tspan>
+                        </text>
+                        <text y="6.3">
+                            <tspan x="5.1" text-anchor="middle">00 BB</tspan>
+                            <tspan x="12" text-anchor="middle">1C 4A</tspan>
+                            <tspan x="18.9" text-anchor="middle">9F 08</tspan>
+                        </text>
+                        <text y="7.8">
+                            <tspan x="5.1" text-anchor="middle">FF 10</tspan>
+                            <tspan x="12" text-anchor="middle">3A F1</tspan>
+                            <tspan x="18.9" text-anchor="middle">23 C4</tspan>
+                        </text>
+                        <text y="9.3">
+                            <tspan x="5.1" text-anchor="middle">8A 01</tspan>
+                            <tspan x="12" text-anchor="middle">B0 7C</tspan>
+                            <tspan x="18.9" text-anchor="middle">E9 10</tspan>
+                        </text>
+                        <text y="10.8">
+                            <tspan x="5.1" text-anchor="middle">01 02</tspan>
+                            <tspan x="12" text-anchor="middle">03 A0</tspan>
+                            <tspan x="18.9" text-anchor="middle">11 BB</tspan>
+                        </text>
+                        <text y="12.3">
+                            <tspan x="5.1" text-anchor="middle">C4 D5</tspan>
+                            <tspan x="12" text-anchor="middle">E6 F7</tspan>
+                            <tspan x="18.9" text-anchor="middle">08 90</tspan>
+                        </text>
+                        <text y="13.8">
+                            <tspan x="5.1" text-anchor="middle">AA 11</tspan>
+                            <tspan x="12" text-anchor="middle">22 33</tspan>
+                            <tspan x="18.9" text-anchor="middle">44 55</tspan>
+                        </text>
+                        <text y="15.3">
+                            <tspan x="5.1" text-anchor="middle">1B 2C</tspan>
+                            <tspan x="12" text-anchor="middle">3D 4E</tspan>
+                            <tspan x="18.9" text-anchor="middle">5F 60</tspan>
+                        </text>
+                        <text y="16.8">
+                            <tspan x="5.1" text-anchor="middle">FF E1</tspan>
+                            <tspan x="12" text-anchor="middle">D2 C3</tspan>
+                            <tspan x="18.9" text-anchor="middle">B4 A5</tspan>
+                        </text>
+                        <text y="18.3">
+                            <tspan x="5.1" text-anchor="middle">01 10</tspan>
+                            <tspan x="12" text-anchor="middle">01 A4</tspan>
+                            <tspan x="18.9" text-anchor="middle">FF 3C</tspan>
+                        </text>
+                        <text y="19.8">
+                            <tspan x="5.1" text-anchor="middle">77 88</tspan>
+                            <tspan x="12" text-anchor="middle">99 AA</tspan>
+                            <tspan x="18.9" text-anchor="middle">BB CC</tspan>
+                        </text>
+                        <text y="21.3">
+                            <tspan x="5.1" text-anchor="middle">DD EE</tspan>
+                            <tspan x="12" text-anchor="middle">FF 00</tspan>
+                            <tspan x="18.9" text-anchor="middle">11 22</tspan>
+                        </text>
+                    </g>
+
+                                                                                <g id="bgTimeStream" style="opacity: 0; transition: opacity 0.5s ease;" font-family="monospace" font-size="1.2" font-weight="bold" fill="url(#textFade)" letter-spacing="0.2">
+                        <text y="3.3">
+                            <tspan x="5.1" text-anchor="middle">00:00</tspan>
+                            <tspan x="12" text-anchor="middle">10:15</tspan>
+                            <tspan x="18.9" text-anchor="middle">20:31</tspan>
+                        </text>
+                        <text y="4.8">
+                            <tspan x="5.1" text-anchor="middle">00:47</tspan>
+                            <tspan x="12" text-anchor="middle">11:03</tspan>
+                            <tspan x="18.9" text-anchor="middle">21:18</tspan>
+                        </text>
+                        <text y="6.3">
+                            <tspan x="5.1" text-anchor="middle">01:34</tspan>
+                            <tspan x="12" text-anchor="middle">11:50</tspan>
+                            <tspan x="18.9" text-anchor="middle">22:06</tspan>
+                        </text>
+                        <text y="7.8">
+                            <tspan x="5.1" text-anchor="middle">02:22</tspan>
+                            <tspan x="12" text-anchor="middle">12:37</tspan>
+                            <tspan x="18.9" text-anchor="middle">22:53</tspan>
+                        </text>
+                        <text y="9.3">
+                            <tspan x="5.1" text-anchor="middle">03:09</tspan>
+                            <tspan x="12" text-anchor="middle">13:25</tspan>
+                            <tspan x="18.9" text-anchor="middle">23:41</tspan>
+                        </text>
+                        <text y="10.8">
+                            <tspan x="5.1" text-anchor="middle">03:56</tspan>
+                            <tspan x="12" text-anchor="middle">14:12</tspan>
+                            <tspan x="18.9" text-anchor="middle">00:28</tspan>
+                        </text>
+                        <text y="12.3">
+                            <tspan x="5.1" text-anchor="middle">04:44</tspan>
+                            <tspan x="12" text-anchor="middle">15:00</tspan>
+                            <tspan x="18.9" text-anchor="middle">01:15</tspan>
+                        </text>
+                        <text y="13.8">
+                            <tspan x="5.1" text-anchor="middle">05:31</tspan>
+                            <tspan x="12" text-anchor="middle">15:47</tspan>
+                            <tspan x="18.9" text-anchor="middle">02:03</tspan>
+                        </text>
+                        <text y="15.3">
+                            <tspan x="5.1" text-anchor="middle">06:18</tspan>
+                            <tspan x="12" text-anchor="middle">16:34</tspan>
+                            <tspan x="18.9" text-anchor="middle">02:50</tspan>
+                        </text>
+                        <text y="16.8">
+                            <tspan x="5.1" text-anchor="middle">07:06</tspan>
+                            <tspan x="12" text-anchor="middle">17:22</tspan>
+                            <tspan x="18.9" text-anchor="middle">03:37</tspan>
+                        </text>
+                        <text y="18.3">
+                            <tspan x="5.1" text-anchor="middle">07:53</tspan>
+                            <tspan x="12" text-anchor="middle">18:09</tspan>
+                            <tspan x="18.9" text-anchor="middle">04:25</tspan>
+                        </text>
+                        <text y="19.8">
+                            <tspan x="5.1" text-anchor="middle">08:41</tspan>
+                            <tspan x="12" text-anchor="middle">18:56</tspan>
+                            <tspan x="18.9" text-anchor="middle">05:12</tspan>
+                        </text>
+                        <text y="21.3">
+                            <tspan x="5.1" text-anchor="middle">09:28</tspan>
+                            <tspan x="12" text-anchor="middle">19:44</tspan>
+                            <tspan x="18.9" text-anchor="middle">06:00</tspan>
+                        </text>
+                    </g>
+
+                    <g id="bgTimeHoriz" style="opacity: 0; transition: opacity 0.5s ease;" font-family="monospace" font-size="1.2" font-weight="bold" fill="url(#textFade)" letter-spacing="0.2">
+                        <text y="6.0">
+                            <tspan x="3.5" text-anchor="middle">00:00</tspan>
+                            <tspan x="9.2" text-anchor="middle">02:43</tspan>
+                            <tspan x="14.8" text-anchor="middle">05:27</tspan>
+                            <tspan x="20.5" text-anchor="middle">08:10</tspan>
+                        </text>
+                        <text y="12.5">
+                            <tspan x="3.5" text-anchor="middle">10:54</tspan>
+                            <tspan x="9.2" text-anchor="middle">13:38</tspan>
+                            <tspan x="14.8" text-anchor="middle">16:21</tspan>
+                            <tspan x="20.5" text-anchor="middle">19:05</tspan>
+                        </text>
+                        <text y="19.0">
+                            <tspan x="3.5" text-anchor="middle">21:49</tspan>
+                            <tspan x="9.2" text-anchor="middle">00:32</tspan>
+                            <tspan x="14.8" text-anchor="middle">03:16</tspan>
+                            <tspan x="20.5" text-anchor="middle">06:00</tspan>
+                        </text>
+                    </g>
+
+                    <!-- Main Arrow -->
+                    <g filter="url(#ambientShadow)" transform="translate(1.179, 0)">
+                        <path class="trail-main"
+                            d="M13.528,18.472 L12.458,17.402 L17.11,12.75 H12 V11.25 H17.11 L12.458,6.598 L13.528,5.528 L20,12 Z"
+                            fill="url(#gradL)" />
+                        <rect class="trail-middle" x="7.636" y="11.25" width="3.158" height="1.5" rx="0.5"
+                            fill="url(#gradL)" opacity="0.50" />
+                        <rect class="trail-end" x="3.732" y="11.25" width="1.952" height="1.5" rx="0.5" fill="url(#gradL)"
+                            opacity="0.25" />
+                    </g>
+                </svg>
+            </div>
+
+            <p id="animDescription" class="mt-8 text-sm text-slate-500 text-center h-10 max-w-md">
+                准备就绪，选择下方的业务场景以预览效果。
+            </p>
+        </div>
+
+        <!-- 下半部分：控制面板 -->
+        <div class="p-8 flex flex-col items-center bg-white">
+
+            <!-- 颜色控制区域移至最上方，方便先选主题 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-8">
+                <!-- 预设的主色系 -->
+                <button onclick="setColor(this, '#4F46E5', '#7C3AED')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110 ring-2 ring-offset-2 ring-slate-400"
+                    style="background: linear-gradient(135deg, #4F46E5, #7C3AED);" title="靛蓝紫 (Indigo Violet)"></button>
+                <button onclick="setColor(this, '#0EA5E9', '#2563EB')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #0EA5E9, #2563EB);" title="科技蓝 (Tech Blue)"></button>
+                <button onclick="setColor(this, '#10B981', '#14B8A6')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #10B981, #14B8A6);" title="翡翠绿 (Emerald Teal)"></button>
+                <button onclick="setColor(this, '#F59E0B', '#EA580C')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #F59E0B, #EA580C);" title="琥珀橙 (Amber Orange)"></button>
+                <button onclick="setColor(this, '#F43F5E', '#E11D48')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #F43F5E, #E11D48);" title="玫瑰红 (Rose Red)"></button>
+                <button onclick="setColor(this, '#8B5CF6', '#D946EF')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #8B5CF6, #D946EF);" title="霓虹紫 (Neon Purple)"></button>
+                <button onclick="setColor(this, '#14B8A6', '#06B6D4')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #14B8A6, #06B6D4);" title="青色海洋 (Cyan Ocean)"></button>
+                <button onclick="setColor(this, '#475569', '#1E293B')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: linear-gradient(135deg, #475569, #1E293B);" title="专注灰 (Focus Slate)"></button>
+                <button onclick="setColor(this, '#000000', '#000000')"
+                    class="color-btn w-8 h-8 rounded-full shadow-sm transition-transform hover:scale-110"
+                    style="background: #000000;" title="极简黑 (Monochrome)"></button>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 w-full">
+                <button onclick="setAnimation(this, '', '静止状态 (Idle)', '默认待机状态。')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-600 font-medium hover:border-indigo-500 hover:text-indigo-600 transition-colors text-sm text-center">
+                    0. 停止 (Reset)
+                </button>
+                <!-- 保留的基础动画 -->
+                <button onclick="setAnimation(this, 'anim-fly', '穿梭循环', '基础动画1')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    1. 穿梭
+                </button>
+                <button onclick="setAnimation(this, 'anim-thrust', '尾迹推进', '基础动画2')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    2. 推进
+                </button>
+                <button onclick="triggerOnce(this, 'anim-charge-fire', '蓄力发射', '基础动画3')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center">
+                    3. 发射
+                </button>
+                <button onclick="setAnimation(this, 'anim-warp', '曲率拉伸', '基础动画4')"
+                    class="control-btn p-3 rounded-lg border-2 border-slate-200 text-slate-300 font-medium hover:border-slate-400 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    4. 曲率
+                </button>
+
+                <!-- 新增业务场景动画，高亮显示 -->
+                <button onclick="triggerOnce(this, 'anim-commit-bounce', '插入数据库 (DB Commit)', '坚实的单次物理回弹，确认数据已成功写入。')"
+                    class="control-btn p-3 rounded-lg border-2 border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold hover:border-emerald-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    5. 入库 (顿挫)
+                </button>
+                <button
+                    onclick="setAnimation(this, 'anim-streaming-ripple', '生成报告 (MD Streaming)', '尾迹像呼吸灯交错闪烁，隐喻持续且有节奏的文本流输出。')"
+                    class="control-btn p-3 rounded-lg border-2 border-blue-200 bg-blue-50 text-blue-700 font-semibold hover:border-blue-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    6. 报告 (律动)
+                </button>
+                <button
+                    onclick="setAnimation(this, 'anim-processing-flow', '生成图表 (Chart Processing)', '尾迹模拟流水线或进度条向主箭头输送数据，隐喻图表构建解析。')"
+                    class="control-btn p-3 rounded-lg border-2 border-purple-200 bg-purple-50 text-purple-700 font-semibold hover:border-purple-500 transition-colors text-sm text-center col-span-2 md:col-span-1">
+                    7. 图表 (流转)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./demo.js"></script>
+</body>
+
+</html>

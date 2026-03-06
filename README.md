@@ -18,7 +18,8 @@
 * **`graph_generator` (Python)**: 数据可视化工具。读取数据库并生成动态图表（如时间线、热力图）。
 * **`log_generator` (C++)**: 辅助工具。用于生成符合规范的测试日志数据。
 * **边界说明**：报表格式化内部实现已统一收敛到 `tracer_core` 的 `reports_shared` 内部模块；CLI/Rust 仅依赖稳定的 runtime/CLI 契约，不暴露 formatter 内部细节。该边界可支持未来“部分开源”发布（`reports_shared` 可保持私有）。
-* **迁移状态（2026-03-06）**：`libs/tracer_core` 已成为核心业务实现主承载；`apps/tracer_core_shell` 是唯一真实 shell/CMake 根；`apps/tracer_core_shell` 已退役删除。
+* **迁移状态（2026-03-06）**：`libs/tracer_core` 已成为核心业务实现主承载；`apps/tracer_core_shell` 是唯一真实 shell/CMake 根；`apps/tracer_core` 已退役删除。
+* **资源边界（2026-03-06）**：共享 runtime config 的唯一 canonical source 为 `assets/tracer_core/config`；Android/Windows app 内 config 目录都是 generated runtime copy。设计参考 SVG 与品牌探索稿已收口到 `design/branding/**`。
 
 ---
 

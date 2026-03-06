@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <defs>
+        <!-- 主体箭头：高频（蓝紫） -->
+        <linearGradient id="gradEnergyHigh" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- 中段拖影：中频（紫红），伴随透明度下降 -->
+        <linearGradient id="gradEnergyMid" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#7C3AED;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#DB2777;stop-opacity:1" />
+        </linearGradient>
+
+        <!-- 末端残影：低频（暗红偏灰），进一步透明度下降 -->
+        <linearGradient id="gradEnergyLow" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#DB2777;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#9CA3AF;stop-opacity:1" />
+        </linearGradient>
+
+        <filter id="ambientShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="0.5" stdDeviation="0.75" flood-color="#000000" flood-opacity="0.12" />
+        </filter>
+    </defs>
+    
+    <rect x="1.528" y="1.528" width="20.943" height="20.943" rx="4.76" ry="4.76" fill="#FFFFFF" />
+
+    <g transform="translate(1.179, 0)" filter="url(#ambientShadow)">
+        <!-- 100% 透明度，高能高频 -->
+        <path d="M13.528,18.472 L12.458,17.402 L17.11,12.75 H12 V11.25 H17.11 L12.458,6.598 L13.528,5.528 L20,12 Z" fill="url(#gradEnergyHigh)" opacity="1" />
+        
+        <!-- 50% 透明度，中频红移 -->
+        <rect x="7.636" y="11.25" width="3.158" height="1.5" fill="url(#gradEnergyMid)" opacity="0.50" />
+        
+        <!-- 25% 透明度，低频冷却 -->
+        <rect x="3.732" y="11.25" width="1.952" height="1.5" fill="url(#gradEnergyLow)" opacity="0.25" />
+    </g>
+</svg>

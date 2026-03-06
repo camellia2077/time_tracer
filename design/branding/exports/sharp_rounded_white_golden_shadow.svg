@@ -17,9 +17,9 @@
         <path d="M14,18l-1.07,-1.07 4.18,-4.18H12V11.25h5.11L12.93,7.07 14,6l6,6 -6,6Z" fill="url(#gradSharpRoundedWhiteGoldenShadow)" />
 
         <!-- Segment 2 (Middle Trail) -->
-        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.6" />
+        <rect x="7.577" y="11.25" width="3.578" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.50" />
 
         <!-- Segment 1 (Left Trail) -->
-        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.3" />
+        <rect x="4" y="11.25" width="2.211" height="1.5" fill="url(#gradSharpRoundedWhiteGoldenShadow)" opacity="0.25" />
     </g>
 </svg>
