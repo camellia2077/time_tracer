@@ -158,9 +158,9 @@ Then calls:
 
 ## References
 
-1. `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
-2. `apps/tracer_core/src/api/android/native_bridge_registration.cpp`
-3. `apps/tracer_core/src/api/core_c/time_tracer_core_c_api.h`
+1. `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
+2. `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`
+3. `apps/tracer_core_shell/api/c_api/time_tracer_core_c_api.h`
 4. `libs/tracer_transport/include/tracer/transport/runtime_codec.hpp`
 5. `libs/tracer_transport/include/tracer/transport/envelope.hpp`
 6. `docs/time_tracer/clients/android_ui/architecture.md`

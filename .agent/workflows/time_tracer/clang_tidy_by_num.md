@@ -4,14 +4,14 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
 
 ### Scope Mapping (MUST)
 - Tidy analysis scope is:
-  - `apps/tracer_core`
+  - `apps/tracer_core_shell`
 - Task queue location is fixed to:
-  - `apps/tracer_core/build_tidy/tasks/batch_*/task_*.log`
+  - `apps/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log`
 - Current active batches (resume-first):
-  - `apps/tracer_core/build_tidy/tasks/batch_001`
-  - `apps/tracer_core/build_tidy/tasks/batch_002`
+  - `apps/tracer_core_shell/build_tidy/tasks/batch_001`
+  - `apps/tracer_core_shell/build_tidy/tasks/batch_002`
 - Keep incremental build from existing:
-  - `apps/tracer_core/build_fast`; do not delete it.
+  - `apps/tracer_core_shell/build_fast`; do not delete it.
 - In this workflow, tidy task operations use:
   - `--app tracer_core` (`tidy*`, `clean`, `rename-*`).
 - Verify gate command:
@@ -21,7 +21,7 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
 - Verify gate result file:
   - `test/output/artifact_windows_cli/result.json` must keep `"success": true`.
 - Tidy machine summary (single source for agent):
-  - `apps/tracer_core/build_tidy/tidy_result.json`
+  - `apps/tracer_core_shell/build_tidy/tidy_result.json`
   - Read this file first for `tasks.total/tasks.remaining/blocking_files/next_action`.
 - check -> fix_strategy rule table:
   - `scripts/toolchain/config/workflow.toml` -> `[tidy.fix_strategy]`
@@ -30,7 +30,7 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
 ### Python Execution Directory (MUST)
 - All Python commands in this workflow must run from repository root:
   - `C:/Computer/my_github/github_cpp/time_tracer/time_tracer_cpp`
-- Do not `cd` into `apps/tracer_core` before running `python scripts/run.py ...`.
+- Do not `cd` into `apps/tracer_core_shell` before running `python scripts/run.py ...`.
 
 ### Inputs (MUST)
 - Choose exactly one mode:
@@ -38,7 +38,7 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
   - **Batch mode**: clean exactly `<BATCH_N>` non-empty `batch_*` folders.
 - Default path is **Batch mode + tidy-batch**.
 - **Log mode** is legacy/troubleshooting-only and may require manual `clean` fallback.
-- Batch mode target set = smallest `<BATCH_N>` non-empty batches under `apps/tracer_core/build_tidy/tasks/`; freeze this set for the whole run.
+- Batch mode target set = smallest `<BATCH_N>` non-empty batches under `apps/tracer_core_shell/build_tidy/tasks/`; freeze this set for the whole run.
 
 ### Fix Cadence (MUST)
 - Work **one `task_NNN.log` at a time**; do not batch-edit multiple logs before verification.
@@ -55,7 +55,7 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
   - After auto rebuild, treat old task logs as stale and continue only from newest logs.
 
 ### ABI Boundary Suppression Policy (MUST)
-- 仅允许在 ABI/FFI 边界做定点抑制（`NOLINTNEXTLINE` 或 `NOLINTBEGIN/END`），典型位置：`apps/tracer_core/src/api/core_c` 导出 C 接口签名。
+- 仅允许在 ABI/FFI 边界做定点抑制（`NOLINTNEXTLINE` 或 `NOLINTBEGIN/END`），典型位置：`apps/tracer_core_shell/api/c_api` 导出 C 接口签名。
 - 定点抑制必须附带原因注释：`ABI compatibility`（或等价表述）。
 - 禁止目录级/文件级一刀切忽略 `bugprone-*`、`readability-*`。
 - 非 ABI 实现文件（如 `domain/`、`infrastructure/`）优先修复告警，不用“备注忽略”兜底。
@@ -67,7 +67,7 @@ description: Run scoped Tidy tasks for time_tracer (by log count or batch count,
   - Do not mix behavior/features into the same refactor batch.
 
 ### Task Source
-- If any `apps/tracer_core/build_tidy/tasks/batch_*/task_*.log` exists: resume only, do not regenerate.
+- If any `apps/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log` exists: resume only, do not regenerate.
 - Only when tasks are missing (bootstrap once):
   - `python scripts/run.py tidy-fix --app tracer_core --limit <FIX_N> --keep-going`
   - `python scripts/run.py tidy --app tracer_core --jobs 16 --parse-workers 8 --keep-going`

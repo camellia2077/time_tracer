@@ -70,11 +70,11 @@
    - 不重写核心错误语义
 
 ## 8. 相关代码入口
-1. `apps/tracer_core/src/domain/ports/diagnostics.hpp`
-2. `apps/tracer_core/src/domain/ports/diagnostics.cpp`
-3. `apps/tracer_core/src/infrastructure/logging/file_error_report_writer.hpp`
-4. `apps/tracer_core/src/infrastructure/logging/file_error_report_writer.cpp`
-5. `apps/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
-6. `apps/tracer_core/src/api/android/android_runtime_factory.cpp`
-7. `apps/tracer_core/src/api/core_c/tracer_core_c_api.cpp`
-8. `apps/tracer_core/src/api/core_c/tracer_core_c_api_internal.cpp`
+1. `libs/tracer_core/src/domain/ports/diagnostics.hpp`
+2. `libs/tracer_core/src/domain/ports/diagnostics.cpp`
+3. `libs/tracer_core/src/infrastructure/logging/file_error_report_writer.hpp`
+4. `libs/tracer_core/src/infrastructure/logging/file_error_report_writer.cpp`
+5. `libs/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
+6. `apps/tracer_core_shell/api/android_jni/android_runtime_factory.cpp`
+7. `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`
+8. `apps/tracer_core_shell/api/c_api/tracer_core_c_api_internal.cpp`

@@ -4,7 +4,7 @@ This document defines the Android-side lifecycle from source config to runtime c
 
 ## 1. Source of Truth
 
-- Core config source: `apps/tracer_core/config`
+- Core config source: `assets/tracer_core/config`
 - Android bundle sync entry:
   - `scripts/platform_config/run.py --target android --apply`
 - Gradle integration:

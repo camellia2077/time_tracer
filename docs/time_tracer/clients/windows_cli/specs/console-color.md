@@ -10,7 +10,7 @@
 
 ## 2. 颜色源定义
 
-1. Core ANSI 常量定义：`apps/tracer_core/src/shared/types/ansi_colors.hpp`
+1. Core ANSI 常量定义：`libs/tracer_core/src/shared/types/ansi_colors.hpp`
 2. 若要统一调整全局颜色语义，应修改上面的 core 常量与调用点。
 
 ## 3. 调整规则
@@ -22,6 +22,6 @@
 ## 4. 快速审计
 
 ```powershell
-rg -n "ansi_colors|\\033\\[|kRed|kGreen|kYellow|kCyan|kGray" apps/tracer_core/src
+rg -n "ansi_colors|\\033\\[|kRed|kGreen|kYellow|kCyan|kGray" libs/tracer_core/src
 rg -n "\\x1b|ansi|color|SetConsoleOutputCP|SetConsoleCP" apps/tracer_cli/windows/rust_cli/src
 ```

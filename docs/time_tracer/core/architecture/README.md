@@ -35,3 +35,5 @@
    - DataQuery 重构收口结果与稳定化约束。
 4. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
    - 按职责边界拆分后的代码落点（含 Core/CLI/Android 路径）。
+5. `docs/time_tracer/core/architecture/tracer_core_identity_and_boundary.md`
+   - `tracer_core` 对外标识、apps/libs 语义边界与脚本/CI 一致性基线。

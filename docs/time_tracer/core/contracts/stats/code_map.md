@@ -3,9 +3,9 @@
 本文件用于快速定位“统计计算、语义输出、端侧消费”的关键代码位置。
 
 ## 迁移护栏（Phase 0）
-1. 新增统计公式与派生指标优先落在 `apps/tracer_core/src/infrastructure/query/data/stats/`。
-2. 新增时间范围解析与 action 编排优先落在 `apps/tracer_core/src/infrastructure/query/data/orchestrators/`。
-3. 新增 `text/semantic_json` 输出逻辑优先落在 `apps/tracer_core/src/infrastructure/query/data/renderers/`。
+1. 新增统计公式与派生指标优先落在 `libs/tracer_core/src/infrastructure/query/data/stats/`。
+2. 新增时间范围解析与 action 编排优先落在 `libs/tracer_core/src/infrastructure/query/data/orchestrators/`。
+3. 新增 `text/semantic_json` 输出逻辑优先落在 `libs/tracer_core/src/infrastructure/query/data/renderers/`。
 4. `sqlite_data_query_service_*`、CLI、Android 路径仅承担入口适配职责，不新增业务统计实现。
 
 ## 契约与守卫文档（Phase 7/8）
@@ -16,39 +16,39 @@
 5. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
 
 ## Core 契约层
-1. `apps/tracer_core/src/application/dto/core_requests.hpp`
+1. `libs/tracer_core/src/application/dto/core_requests.hpp`
    - `DataQueryRequest`、`DataQueryOutputMode` 契约定义。
-2. `apps/tracer_core/src/application/dto/core_responses.hpp`
+2. `libs/tracer_core/src/application/dto/core_responses.hpp`
    - 通用文本响应结构（`TextOutput`）。
 
 ## Core 查询与统计语义层
-1. `apps/tracer_core/src/infrastructure/query/data/data_query_types.hpp`
+1. `libs/tracer_core/src/infrastructure/query/data/data_query_types.hpp`
    - 统计数据结构（`DayDurationRow`、`DayDurationStats`）。
-2. `apps/tracer_core/src/infrastructure/query/data/stats/day_duration_stats_calculator.cpp`
+2. `libs/tracer_core/src/infrastructure/query/data/stats/day_duration_stats_calculator.cpp`
    - `days-stats` 的均值、方差、标准差、百分位、MAD 等计算。
-3. `apps/tracer_core/src/infrastructure/query/data/stats/report_chart_stats_calculator.cpp`
+3. `libs/tracer_core/src/infrastructure/query/data/stats/report_chart_stats_calculator.cpp`
    - `report-chart` 的日序列聚合与总时长/平均值/活跃天数计算。
-4. `apps/tracer_core/src/infrastructure/query/data/renderers/data_query_renderer.cpp`
-5. `apps/tracer_core/src/infrastructure/query/data/renderers/text_renderer.cpp`
-6. `apps/tracer_core/src/infrastructure/query/data/renderers/semantic_json_renderer.cpp`
+4. `libs/tracer_core/src/infrastructure/query/data/renderers/data_query_renderer.cpp`
+5. `libs/tracer_core/src/infrastructure/query/data/renderers/text_renderer.cpp`
+6. `libs/tracer_core/src/infrastructure/query/data/renderers/semantic_json_renderer.cpp`
    - 统一渲染入口与 text/semantic_json 分层实现。
 
 ## Core 数据访问与编排层
-1. `apps/tracer_core/src/infrastructure/query/data/data_query_repository.hpp`
-2. `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`
-3. `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`
+1. `libs/tracer_core/src/infrastructure/query/data/data_query_repository.hpp`
+2. `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`
+3. `libs/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`
    - 数据查询与 root/project 过滤 SQL 逻辑。
-4. `apps/tracer_core/src/infrastructure/query/data/orchestrators/date_range_resolver.cpp`
-5. `apps/tracer_core/src/infrastructure/query/data/orchestrators/list_query_orchestrator.cpp`
-6. `apps/tracer_core/src/infrastructure/query/data/orchestrators/days_stats_orchestrator.cpp`
-7. `apps/tracer_core/src/infrastructure/query/data/orchestrators/report_chart_orchestrator.cpp`
-8. `apps/tracer_core/src/infrastructure/query/data/orchestrators/tree_orchestrator.cpp`
+4. `libs/tracer_core/src/infrastructure/query/data/orchestrators/date_range_resolver.cpp`
+5. `libs/tracer_core/src/infrastructure/query/data/orchestrators/list_query_orchestrator.cpp`
+6. `libs/tracer_core/src/infrastructure/query/data/orchestrators/days_stats_orchestrator.cpp`
+7. `libs/tracer_core/src/infrastructure/query/data/orchestrators/report_chart_orchestrator.cpp`
+8. `libs/tracer_core/src/infrastructure/query/data/orchestrators/tree_orchestrator.cpp`
    - data query action 编排与 period/range 解析。
-9. `apps/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_request.cpp`
+9. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_request.cpp`
    - 请求参数归一化、过滤参数解析与校验。
-10. `apps/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_dispatch.cpp`
+10. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_dispatch.cpp`
    - 轻量 action 路由（调用 orchestrators）。
-11. `apps/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp`
+11. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp`
    - `report-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
 
 ## Transport 层
@@ -79,12 +79,12 @@
    - runtime 调用总入口。
 
 ## 测试参考
-1. `apps/tracer_core/src/application/tests/modules/data_query_tests.cpp`
-2. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_bootstrap_tests.cpp`
-3. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_config_tests.cpp`
-4. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp`
-5. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
-6. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
-7. `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
+1. `libs/tracer_core/src/application/tests/modules/data_query_tests.cpp`
+2. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_bootstrap_tests.cpp`
+3. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_config_tests.cpp`
+4. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp`
+5. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
+6. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
+7. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
 8. `apps/tracer_android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
 

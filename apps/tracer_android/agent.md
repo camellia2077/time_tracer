@@ -1,6 +1,6 @@
 # tracer_android
 
-Android host app for `apps/tracer_core` (`Jetpack Compose + JNI`).
+Android host app for `apps/tracer_core_shell` (`Jetpack Compose + JNI`).
 
 ## Scope Policy (Read First)
 
@@ -100,16 +100,17 @@ rg -n --glob '!**/build/**' --glob '!**/.gradle/**' --glob '!**/.kotlin/**' --gl
 Run from repo root:
 
 ```powershell
-# Daily post-change command (only)
-python scripts/run.py build --app tracer_android --profile fast
+# Daily edit-loop command (fastest local APK rebuild path)
+python scripts/run.py build --app tracer_android --profile android_edit
 ```
 
 Compile/test command policy (fixed entrypoints):
 
-- Build: `python scripts/run.py build --app tracer_android --profile fast`
+- Edit-loop build: `python scripts/run.py build --app tracer_android --profile android_edit`
 - Style verify: `python scripts/run.py verify --app tracer_android --profile android_style --concise`
 - CI-like verify: `python scripts/run.py verify --app tracer_android --profile android_ci --concise`
 - Device verify: `python scripts/run.py verify --app tracer_android --profile android_device --concise`
+- Post-change validation: `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
 
 ## Non-daily Optional Commands
 
@@ -134,7 +135,9 @@ python scripts/run.py build --app tracer_android --profile android_release_no_op
 
 Note:
 - Daily workflow after local edits is fixed to:
-  - `python scripts/run.py build --app tracer_android --profile fast`
+  - `python scripts/run.py build --app tracer_android --profile android_edit`
+- Validation workflow after local edits is:
+  - `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
 - Python build flow now defaults to fast-compile-first on Android:
   - If `-PtimeTracerDisableNativeOptimization` is not explicitly passed,
     scripts auto-inject `-PtimeTracerDisableNativeOptimization=true`.
@@ -143,6 +146,7 @@ Note:
 - `android_device` profile is an explicit non-default entry; default verify flow does not require a device.
 - `tracer_android` uses Gradle backend; build artifacts are under `apps/tracer_android/build`.
 - For `tracer_android`, do not rely on `build_fast` semantics used by CMake apps.
+- For `tracer_android`, do not pass `--build-dir`; fixed-dir backends reject that override.
 - `post-change` state is written to:
   - `apps/tracer_android/build/post_change_last.json`
 - Machine-readable results:

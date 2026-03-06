@@ -1,10 +1,10 @@
 # 多端 Config 分发机制（Windows CLI / Android）
 
-本文说明当前项目如何把 `apps/tracer_core/config` 作为单一事实来源，分发到各表现层运行时目录。
+本文说明当前项目如何把 `assets/tracer_core/config` 作为单一事实来源，分发到各表现层运行时目录。
 
 ## 1. 单一事实来源
 
-1. 源配置目录：`apps/tracer_core/config`
+1. 源配置目录：`assets/tracer_core/config`
 2. 分发入口脚本：`scripts/platform_config/run.py`
 3. 构建链路触发点：`scripts/run.py build|configure` -> `scripts/toolchain/commands/cmd_build/common/config_sync.py`
 
@@ -23,7 +23,7 @@
 
 ## 4. 分发流程（构建时）
 
-1. 读取 source bundle：`apps/tracer_core/config/meta/bundle.toml`
+1. 读取 source bundle：`assets/tracer_core/config/meta/bundle.toml`
 2. 根据 target 生成计划文件集（windows/android）
 3. 执行增量判断（输入哈希 + 状态文件）
 4. 命中缓存则跳过写入；未命中则执行原子写入

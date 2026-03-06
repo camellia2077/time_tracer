@@ -67,7 +67,7 @@
   - 头解析（`yYYYY + mMM`）、受管路径写入、触发 native ingest。
 - `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt`
   - `nativeIngestSingleTxtReplaceMonth` JNI 声明。
-- `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
+- `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
   - 组装 ingest 请求并设置 `ingest_mode=single_txt_replace_month`。
 
 ## Config：Android TOML 导入（Full Replace / Partial Update）

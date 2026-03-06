@@ -32,7 +32,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 - 主结果：`test/output/artifact_windows_cli/result.json`
 - 用例结果：`test/output/artifact_windows_cli/result_cases.json`
 - 测试总日志：`test/output/artifact_windows_cli/logs/output.log`
-- post-change 记录：`apps/tracer_core/build_fast/post_change_last.json`
+- post-change 记录：`apps/tracer_core_shell/build_fast/post_change_last.json`
 
 ## Agent 修改定位
 

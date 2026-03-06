@@ -4,7 +4,7 @@
 
 ## 1. 默认开关策略
 
-1. `apps/tracer_core` 在 Windows Host 与 Android 默认 `TT_ENABLE_CPP20_MODULES=ON`。
+1. `apps/tracer_core_shell` 在 Windows Host 与 Android 默认 `TT_ENABLE_CPP20_MODULES=ON`。
 2. 任意平台都可通过 CMake 参数显式覆盖：
    - 开启：`-DTT_ENABLE_CPP20_MODULES=ON`
    - 关闭：`-DTT_ENABLE_CPP20_MODULES=OFF`
@@ -25,14 +25,14 @@
    - `tracer.adapters.io.core.writer`
    - `tracer.adapters.io.core.fs`
    - `tracer.adapters.io.utils.file_utils`
-3. `apps/tracer_core/src/shared/modules/`
+3. `libs/tracer_core/src/shared/modules/`
    - `tracer.core.shared`
    - `tracer.core.shared.string_utils`
    - `tracer.core.shared.period_utils`
    - `tracer.core.shared.exceptions`
    - `tracer.core.shared.exit_codes`
    - `tracer.core.shared.ansi_colors`
-4. `apps/tracer_core/src/domain/modules/`
+4. `libs/tracer_core/src/domain/modules/`
    - `tracer.core.domain`（聚合）
    - `tracer.core.domain.ports.diagnostics`
    - `tracer.core.domain.repositories.project_repository`
@@ -47,18 +47,28 @@
    - `tracer.core.domain.logic.validator.common.*`
    - `tracer.core.domain.logic.validator.txt.*`
    - `tracer.core.domain.logic.validator.structure`
-5. `apps/tracer_core/src/application/modules/`
+5. `libs/tracer_core/src/application/modules/`
    - `tracer.core.application`（聚合）
    - `tracer.core.application.use_cases.*`
    - `tracer.core.application.service.converter`
    - `tracer.core.application.importer.service`
    - `tracer.core.application.pipeline.*`
    - `tracer.core.application.workflow_handler`
-6. `apps/tracer_core/src/infrastructure/modules/`
+6. `libs/tracer_core/src/infrastructure/modules/`
    - `tracer.core.infrastructure`（聚合）
    - `tracer.core.infrastructure.logging.*`
    - `tracer.core.infrastructure.platform.*.clock`
    - `tracer.core.infrastructure.config.static_converter_config_provider`
+
+### 2.1 迁移后构建归属（2026-03-05）
+
+1. `tracer.core.shared.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_shared_lib`）。
+2. `tracer.core.domain.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_domain_lib`）。
+3. `tracer.core.application.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_application_lib`）。
+4. `tracer.core.infrastructure.*` 低耦合模块构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_infrastructure_lite_lib`）。
+5. `infrastructure` 剩余业务实现（含 reports/query/persistence/config/crypto）的构建归属在
+   `libs/tracer_core/infrastructure/CMakeLists.txt`（`tti`/`ttri`/`reports_*`）。
+6. `libs/tracer_core/src/infrastructure/CMakeLists.txt` 仅保留壳层接线，不再维护业务源码清单。
 
 ## 3. 命名规则
 

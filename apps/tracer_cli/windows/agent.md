@@ -15,7 +15,7 @@ description: Windows Rust CLI 变更后的标准构建与验证流程（Rust-onl
 2. 阶段验收：
    - `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
 3. 结果检查：
-   - `apps/tracer_core/build_fast/post_change_last.json`
+- `apps/tracer_core_shell/build_fast/post_change_last.json`
    - `test/output/artifact_windows_cli/result.json`
    - `test/output/artifact_windows_cli/logs/output.log`
 4. 必须满足：

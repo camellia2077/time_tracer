@@ -28,7 +28,7 @@ python scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N |
 
 如果不传 `paths`，会自动读取 `scan_lines.toml` 中该语言的 `default_paths`：
 
-- `cpp` -> `apps/tracer_core`
+- `cpp` -> `apps/tracer_core_shell`, `libs/tracer_core`
 - `kt` -> `apps/tracer_android`
 - `py` -> `test`, `scripts`
 - `rs` -> `apps/tracer_cli/windows/rust_cli/src`

@@ -6,7 +6,9 @@ trigger: always_on
 
 - Build/test entry must use project Python commands:
   - Daily one-command flow:
-    - `python scripts/run.py post-change --app <app> --run-tests always --build-dir build_fast --concise`
+    - `python scripts/run.py post-change --app <app> --run-tests always --concise`
+    - For apps without a fixed backend build directory, `--build-dir build_fast` remains the default quick path.
+    - For `tracer_android`, do not pass `--build-dir`; Gradle backend uses fixed build dir `build`.
   - Milestone/release flow:
     - `python scripts/run.py verify --app <app> --quick --scope batch --concise`
   - Other build/test operations must go through:
@@ -22,14 +24,16 @@ trigger: always_on
   - Determine compile/build success by process exit code.
   - `exit code = 0` means success; any non-zero exit code means failure.
 - Result visibility contract (state/summary/log):
-  - State: `apps/<app>/build_fast/post_change_last.json`
+  - State:
+    - Default/flexible backend path: `apps/<app>/<build_dir>/post_change_last.json`
+    - `tracer_android`: `apps/tracer_android/build/post_change_last.json`
     - step status (`configure/build/test`), failed stage, failed command, next action.
   - Summary: `test/output/<result_target>/result.json`
     - overall success/exit code summary (agent pass/fail must read this file).
   - Aggregated log: `test/output/<result_target>/logs/output.log`
     - key error lines for failure triage.
   - Result target mapping:
-    - `tracer_core` / `tracer_windows_cli` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
+    - `tracer_core` / `tracer_core_shell` / `tracer_windows_cli` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
     - `tracer_android` -> `artifact_android`
     - `log_generator` -> `artifact_log_generator`
     - Unmapped apps keep `<result_target>=<app>`
@@ -40,7 +44,7 @@ trigger: always_on
 - Target app routing defaults:
   - Changes under `apps/tracer_android/**` => target app `tracer_android`.
   - Changes under `apps/tracer_cli/windows/**` => target app `tracer_core` verify flow.
-  - Changes under `apps/tracer_core/**` => target app `tracer_core` verify flow.
+  - Changes under `apps/tracer_core_shell/**` => target app `tracer_core_shell` verify flow.
 - Core C ABI change rule:
   - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols/signatures.
   - `docs/time_tracer/core/contracts/c_abi.md` is the single source of truth for ABI naming/contract.
@@ -49,25 +53,30 @@ trigger: always_on
   - Then sync `docs/time_tracer/core/contracts/stats/json_schema_v1.md` and `docs/time_tracer/core/contracts/stats/README.md`.
 - For `tracer_android`, verify pass/fail must be read from:
   - `test/output/artifact_android/result.json`
-- For `tracer_windows_rust_cli` / `tracer_core` Windows CLI flow, verify pass/fail must be read from:
+- For `tracer_windows_rust_cli` / `tracer_core` / `tracer_core_shell` Windows CLI flow, verify pass/fail must be read from:
   - `test/output/artifact_windows_cli/result.json`
 - Windows CLI test pipeline rule:
   - For Windows CLI integrated suite, compile target must be `apps/tracer_cli/windows`.
   - Daily flow (single command):
     - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
+    - `python scripts/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
   - Milestone flow (single command):
     - `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
-  - Do not treat `apps/tracer_core` as the default Windows CLI delivery build target.
+    - `python scripts/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+  - Do not treat `tracer_core` / `tracer_core_shell` as the default Windows CLI delivery build target.
 - Do not use ad-hoc `cmake`/`ninja` wrappers outside `scripts/run.py`.
 - After code changes, run `python scripts/run.py post-change` unless the user requests another flow.
+- Android flow split:
+  - Edit loop: `python scripts/run.py build --app tracer_android --profile android_edit`
+  - Validation loop: `python scripts/run.py verify --app tracer_android --profile android_style --concise` or `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
 - Docs-only change rule:
   - If the change only touches documentation files (for example `docs/**` and `*.md`) and does not modify code/config/scripts/tests, skip `verify` and build/test compilation by default.
-- Default quick verification build directory is `build_fast`.
+- Default quick verification build directory is `build_fast` for apps without a fixed backend build directory.
 - Full optimization safety rule:
   - if `DISABLE_OPTIMIZATION=OFF`, `ENABLE_LTO` must stay `OFF` (FTO/LTO forbidden due to ICE risk).
 - Default build shell is PowerShell; run `.sh` workflows only when explicitly requested.
 - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution to avoid UTF-8 encoding issues.
-- CMake baseline for `apps/tracer_core` is `3.28` or newer.
+- CMake baseline for `apps/tracer_core_shell` is `3.28` or newer.
 - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
 - On failures, report the executed command and key error lines.
 - If a user request is incorrect, risky, or clearly suboptimal, state that directly and provide a better alternative before executing; do not follow blindly.

@@ -8,7 +8,7 @@
    - `apps/tracer_cli/windows/build_tidy/tasks/batch_*/task_*.log`
 2. 诊断涉及代码范围：
    - `apps/tracer_cli/windows`
-   - `apps/tracer_core`
+   - `apps/tracer_core_shell`
 3. 批次收口统一命令：
    - `python scripts/run.py tidy-batch ...`
 

@@ -15,9 +15,9 @@
 
 | Capability | Core Status | Android Status | Windows CLI Status | Reason (why not adopted) | Contract/Test Coverage | Next Action |
 | --- | --- | --- | --- | --- | --- | --- |
-| `ingest_mode=single_txt_replace_month`（同年月替换） | `done` | `done` | `not_started` | `ingest` 命令当前未暴露 ingest mode 参数，默认标准模式。 | Core: `apps/tracer_core/src/api/core_c/tracer_core_c_api_internal.cpp`; Android bridge: `apps/tracer_core/src/api/android/native_bridge_calls.cpp`; Android runtime test: `apps/tracer_android/runtime/src/test/java/com/example/tracer/RuntimeIngestServiceTest.kt` | Windows CLI 评估是否增加 `--ingest-mode single_txt_replace_month`。 |
+| `ingest_mode=single_txt_replace_month`（同年月替换） | `done` | `done` | `not_started` | `ingest` 命令当前未暴露 ingest mode 参数，默认标准模式。 | Core: `apps/tracer_core_shell/api/c_api/tracer_core_c_api_internal.cpp`; Android bridge: `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`; Android runtime test: `apps/tracer_android/runtime/src/test/java/com/example/tracer/RuntimeIngestServiceTest.kt` | Windows CLI 评估是否增加 `--ingest-mode single_txt_replace_month`。 |
 | 单次调用导入 `.tracer`（解密后按月替换入库）能力基元（`decrypt + single_txt_replace_month ingest`） | `done` | `done` | `not_started` | Windows 目前是两步命令（`crypto decrypt` + `ingest`），没有一体化导入命令。 | CLI crypto tests: `test/suites/tracer_windows_cli/tests/commands_crypto.toml`; Android 导入说明：`docs/time_tracer/clients/android_ui/features.md` | 后续若需要 Windows 一键导入，可新增 `crypto import` 或 `ingest --from-tracer`。 |
-| Android JNI 专用入口 `nativeIngestSingleTxtReplaceMonth` | `done` | `done` | `blocked` | 该入口是 Android Native Bridge 专用，Windows CLI 不走 JNI。 | Registration: `apps/tracer_core/src/api/android/native_bridge_registration.cpp`; Bridge decl: `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt` | 保持 Android-only；Windows 若要复用，走 CLI 参数层接入 core runtime API。 |
+| Android JNI 专用入口 `nativeIngestSingleTxtReplaceMonth` | `done` | `done` | `blocked` | 该入口是 Android Native Bridge 专用，Windows CLI 不走 JNI。 | Registration: `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`; Bridge decl: `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt` | 保持 Android-only；Windows 若要复用，走 CLI 参数层接入 core runtime API。 |
 
 ## 维护规则
 1. 每次新增 core 能力时，必须评估 Android/Windows CLI 复用状态，并同步本表。

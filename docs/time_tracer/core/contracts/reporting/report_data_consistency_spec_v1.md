@@ -39,9 +39,9 @@
 3. Android 长生命周期路径必须有自动化测试，不得只依赖 CLI 短进程验证。
 
 建议最少落点：
-1. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp`
-2. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp`
-3. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp`
+1. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp`
+2. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp`
+3. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp`
 
 ## 5.5 跨端 MD 报告一致性保障（Windows CLI / Android）
 
@@ -106,8 +106,8 @@ Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
    1. 将 `ProjectNameCache::EnsureLoaded` 改为每次刷新 DB 快照。
    2. 增加“项目表变化后缓存必须刷新”的回归测试。
 4. 相关代码：
-   1. `apps/tracer_core/src/infrastructure/reports/data/cache/project_name_cache.hpp`
-   2. `apps/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp`
+   1. `libs/tracer_core/src/infrastructure/reports/data/cache/project_name_cache.hpp`
+   2. `libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp`
 
 ## 8. 变更要求
 后续若修改以下任一模块，必须同步检查本规范：

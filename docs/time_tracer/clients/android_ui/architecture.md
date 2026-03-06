@@ -1,6 +1,6 @@
 # tracer_android Architecture
 
-Android host app for `apps/tracer_core` (`Jetpack Compose + JNI`).
+Android host app for `apps/tracer_core_shell` (`Jetpack Compose + JNI`).
 
 ## Module Layers
 

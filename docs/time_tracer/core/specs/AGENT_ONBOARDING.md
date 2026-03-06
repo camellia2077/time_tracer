@@ -14,44 +14,44 @@
    - 统计契约：`docs/time_tracer/core/contracts/stats/README.md`
 
 ## 2. 模块职责地图（src）
-1. `apps/tracer_core/src/domain`
+1. `libs/tracer_core/src/domain`
    - 领域模型、业务规则、领域端口，不依赖平台细节。
-2. `apps/tracer_core/src/application`
+2. `libs/tracer_core/src/application`
    - 用例编排、pipeline、DTO、ports。
-3. `apps/tracer_core/src/infrastructure`
+3. `libs/tracer_core/src/infrastructure`
    - IO、数据库、查询、报表、加密、配置加载等具体实现。
-4. `apps/tracer_core/src/api/core_c`
+4. `apps/tracer_core_shell/api/c_api`
    - 对外 C ABI 入口（Windows CLI 等 consumer 主要经由此层调用）。
-5. `apps/tracer_core/src/api/android`
+5. `apps/tracer_core_shell/api/android_jni`
    - Android JNI 入口与桥接逻辑。
-6. `apps/tracer_core/src/shared`
+6. `libs/tracer_core/src/shared`
    - 跨层共用类型/工具（避免承载业务流程）。
 
 ## 3. 常见需求到文件定位（高频）
 1. 改 C ABI 入参/出参
-   - `apps/tracer_core/src/api/core_c/`
+   - `apps/tracer_core_shell/api/c_api/`
    - 同步更新：`docs/time_tracer/core/contracts/c_abi.md`
    - 关键文件：
      - `tracer_core_c_api.cpp`（runtime lifecycle + callback registration + context resolve）
      - `tracer_core_c_api_workflow.cpp`（ingest/convert/import/validate）
      - `tracer_core_c_api_reporting.cpp`（query/report/export/tree/crypto text）
 2. 改 Android JNI 能力或回调
-   - `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
-   - `apps/tracer_core/src/api/android/native_bridge_registration.cpp`
+   - `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
+   - `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`
 3. 改文件加解密（含进度）
-   - `apps/tracer_core/src/infrastructure/crypto/`
+   - `libs/tracer_core/src/infrastructure/crypto/`
    - 同步更新：`docs/time_tracer/core/contracts/crypto/`
 4. 改 ingest 流程或校验逻辑
-   - `apps/tracer_core/src/application/pipeline/`
-   - `apps/tracer_core/src/application/importer/`
-   - `apps/tracer_core/src/domain/logic/validator/`
+   - `libs/tracer_core/src/application/pipeline/`
+   - `libs/tracer_core/src/application/importer/`
+   - `libs/tracer_core/src/domain/logic/validator/`
 5. 改 query/report 统计结构
-   - `apps/tracer_core/src/infrastructure/query/data/`
-   - `apps/tracer_core/src/infrastructure/reports/`
+   - `libs/tracer_core/src/infrastructure/query/data/`
+   - `libs/tracer_core/src/infrastructure/reports/`
    - 同步更新：`docs/time_tracer/core/contracts/stats/`
 6. 改数据库读写或 schema
-   - `apps/tracer_core/src/infrastructure/persistence/`
-   - `apps/tracer_core/src/infrastructure/schema/`
+   - `libs/tracer_core/src/infrastructure/persistence/`
+   - `libs/tracer_core/src/infrastructure/schema/`
 
 ## 4. 跨端同步检查清单（改 core 后必看）
 1. 契约文档是否同步（`docs/time_tracer/core/contracts/*`）。
@@ -65,21 +65,21 @@
 
 ## 5. Agent 搜索范围建议
 优先扫描：
-1. `apps/tracer_core/src`
+1. `apps/tracer_core_shell`
 2. `docs/time_tracer/core`
-3. `apps/tracer_core/config`（涉及配置契约时）
+3. `assets/tracer_core/config`（涉及配置契约时）
 
 默认排除：
-1. `apps/tracer_core/build/**`
-2. `apps/tracer_core/build_fast/**`
-3. `apps/tracer_core/build_fast_*/**`
-4. `apps/tracer_core/.cache/**`
+1. `apps/tracer_core_shell/build/**`
+2. `apps/tracer_core_shell/build_fast/**`
+3. `apps/tracer_core_shell/build_fast_*/**`
+4. `apps/tracer_core_shell/.cache/**`
 5. `test/output/**`
 
 参考命令：
 
 ```powershell
-rg -n --glob '!**/build/**' --glob '!**/build_fast/**' --glob '!**/build_fast_*/**' --glob '!**/.cache/**' "PATTERN" apps/tracer_core docs/time_tracer/core
+rg -n --glob '!**/build/**' --glob '!**/build_fast/**' --glob '!**/build_fast_*/**' --glob '!**/.cache/**' "PATTERN" apps/tracer_core_shell docs/time_tracer/core
 ```
 
 ## 6. 最小验证命令

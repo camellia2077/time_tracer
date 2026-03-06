@@ -9,6 +9,7 @@ Unified test workspace.
   - Target: unit/component logic checks.
 - Artifact test layer (delivery-focused, executable/runtime contract):
   - Entry: `python scripts/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise`
+  - `build_fast` here is the Windows CLI / flexible CMake build-dir example, not an Android recommendation.
   - Target: runtime workspace/output contract + integration/e2e/golden checks.
 
 Suite naming policy:
@@ -70,14 +71,19 @@ From repository root:
 
 - Daily one-command flow:
   - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
+  - `build_fast` here is the default quick path for flexible CMake backends.
 - Milestone/release flow:
   - `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
 - Windows CLI（Rust-only）:
   - `python test/run.py suite --suite artifact_windows_cli --bin-dir apps/tracer_cli/windows/rust_cli/build_fast/bin --no-format-on-success --concise`
+- Android edit loop:
+  - `python scripts/run.py build --app tracer_android --profile android_edit`
 - Android style gate:
   - `python scripts/run.py verify --app tracer_android --profile android_style --concise`
 - Android CI-like gate:
   - `python scripts/run.py verify --app tracer_android --profile android_ci --concise`
+- Android post-change validation:
+  - `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
 
 ## Verify scope layering
 
@@ -85,6 +91,7 @@ From repository root:
   - `python scripts/run.py verify --app tracer_core --scope unit`
 - Artifact/result checks (integration/e2e/snapshot gates):
   - `python scripts/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise`
+  - `build_fast` here applies to flexible CMake backends such as Windows CLI flows.
   - Includes fixed snapshot gates for `day/month/range × md/tex/typ` (`test/golden/report_triplet/*/v1`).
 - Full verify pipeline (unit + artifact):
   - `python scripts/run.py verify --app tracer_core --scope batch --build-dir build_fast --concise`

@@ -64,14 +64,14 @@ Goal: locate the right files in 5 minutes and avoid broad repo-wide searching.
    - persistence: `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/LiveRawRecordPersistence.kt`
 7. Add/extend JNI callback/event bridge:
    - Android side: `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt`
-   - Core side: `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
+   - Core side: `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
 8. Add/extend shared contract fields:
    - `apps/tracer_android/contract/src/main/java/com/example/tracer/*.kt`
    - Then sync runtime parsing + UI usage.
 
 ## 4. Example Chain: File Crypto Progress
 1. Core emits progress snapshot:
-   - `apps/tracer_core/src/api/android/native_bridge_calls.cpp`
+   - `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
 2. JNI bridge forwards JSON:
    - `apps/tracer_android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt`
 3. Runtime parses and dispatches:

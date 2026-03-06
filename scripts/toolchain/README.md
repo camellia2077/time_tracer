@@ -26,23 +26,27 @@ Quick links:
 
 All commands are accessed via the root `scripts/run.py`.
 
+Core shell naming:
+- Recommended semantic app name: `tracer_core_shell`
+- Backward-compatible app id: `tracer_core`
+
 ```bash
 # Example: Run tidy for time_tracer
-python scripts/run.py tidy --app tracer_core
+python scripts/run.py tidy --app tracer_core_shell
 
 # Configure and build are split commands
-python scripts/run.py configure --app tracer_core
-python scripts/run.py build --app tracer_core
-python scripts/run.py build --app tracer_core --profile fast
-python scripts/run.py verify --app tracer_core --profile fast --concise
-python scripts/run.py format --app tracer_core
+python scripts/run.py configure --app tracer_core_shell
+python scripts/run.py build --app tracer_core_shell
+python scripts/run.py build --app tracer_core_shell --profile fast
+python scripts/run.py verify --app tracer_core_shell --profile fast --concise
+python scripts/run.py format --app tracer_core_shell
 
-# Runtime lock cleanup (time_tracer_cli / native test EXEs holding core DLL) runs automatically on build for tracer_core/tracer_windows_rust_cli.
+# Runtime lock cleanup (time_tracer_cli / native test EXEs holding core DLL) runs automatically on build for tracer_core_shell/tracer_core/tracer_windows_rust_cli.
 # Build tool cleanup (cmake/ninja/ccache) remains opt-in.
-python scripts/run.py build --app tracer_core --kill-build-procs
+python scripts/run.py build --app tracer_core_shell --kill-build-procs
 
 # Tune tidy parallelism
-python scripts/run.py tidy --app tracer_core --jobs 16 --parse-workers 8
+python scripts/run.py tidy --app tracer_core_shell --jobs 16 --parse-workers 8
 
 # Windows CLI build entry (default Rust / fallback C++)
 bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
@@ -56,15 +60,15 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 # build_targets = ["tracer_core_shared"]
 
 # Refresh report golden snapshots (optional pre-verify can be skipped)
-# python scripts/run.py refresh-golden --app tracer_core --profile fast_ci_no_pch --build-dir build_fast
+# python scripts/run.py refresh-golden --app tracer_core_shell --profile fast_ci_no_pch --build-dir build_fast
 
 # Tidy header diagnostics scope (scripts/toolchain/config/workflow.toml -> [tidy].header_filter_regex)
 # Example: exclude build third-party deps under */_deps/*
 # header_filter_regex = "^(?!.*[\\\\/]_deps[\\\\/]).*"
 
 # Auto loop for rename-only tasks with periodic verify
-python scripts/run.py tidy-loop --app tracer_core --n 10 --test-every 3 --concise
-python scripts/run.py tidy-loop --app tracer_core --all --test-every 3 --concise
+python scripts/run.py tidy-loop --app tracer_core_shell --n 10 --test-every 3 --concise
+python scripts/run.py tidy-loop --app tracer_core_shell --all --test-every 3 --concise
 
 # Run scripts/toolchain minimal regression tests
 python scripts/run.py self-test
@@ -83,22 +87,31 @@ python scripts/run.py config-migrate --app tracer_windows_rust_cli --rollback
 # `-PtimeTracerConfigRoot=<generated-config-root>`.
 # Rust app
 python scripts/run.py build --app tracer_windows_rust_cli
-python scripts/run.py build --app tracer_android
+
+# Android edit loop (fastest local path: build only, no verify suite)
+python scripts/run.py build --app tracer_android --profile android_edit
+
+# Android validation loop (use only when you need checks/tests)
+python scripts/run.py verify --app tracer_android --profile android_style --concise
+python scripts/run.py verify --app tracer_android --profile android_ci --concise
+python scripts/run.py post-change --app tracer_android --run-tests always --concise
 
 # Windows CLI quick validation (single command):
-# `verify --app tracer_core` maps to Windows CLI artifact build + test flow,
+# `verify --app tracer_core_shell` maps to Windows CLI artifact build + test flow,
 # and runs artifact checks automatically after build.
-python scripts/run.py verify --app tracer_core --build-dir build_fast --concise
+# `build_fast` here is a flexible CMake build dir example, not an Android/Gradle recommendation.
+python scripts/run.py verify --app tracer_core_shell --build-dir build_fast --concise
 
 # Build and apply rename plan for naming warnings
-python scripts/run.py rename-plan --app tracer_core
-python scripts/run.py rename-apply --app tracer_core
-python scripts/run.py rename-audit --app tracer_core
+python scripts/run.py rename-plan --app tracer_core_shell
+python scripts/run.py rename-apply --app tracer_core_shell
+python scripts/run.py rename-audit --app tracer_core_shell
 ```
 
 ## Result Visibility Contract
 
 - State file (`post-change`): `apps/<app>/<build_dir>/post_change_last.json`
+  - Fixed-dir backend example: `apps/tracer_android/build/post_change_last.json`
   - Step status (`configure/build/test`), failed stage, failed command, next action.
 - Summary file: `test/output/<result_target>/result.json`
   - Overall success/failure and module summary.
@@ -107,7 +120,7 @@ python scripts/run.py rename-audit --app tracer_core
 - Aggregated log: `test/output/<result_target>/logs/output.log`
   - Key error lines for failure triage.
 - Result target mapping:
-  - `tracer_core` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
+  - `tracer_core` / `tracer_core_shell` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
   - `tracer_android` -> `artifact_android`
   - `log_generator` -> `artifact_log_generator`
   - Unmapped apps keep `<result_target>=<app>`.

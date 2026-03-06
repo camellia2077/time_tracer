@@ -13,7 +13,7 @@ python scripts/run.py verify ...
 
 ## Core Switches
 
-以下开关主要作用于 `apps/tracer_core`（`tracer_windows_cli` 通过 add_subdirectory 复用）：
+以下开关主要作用于 `apps/tracer_core_shell`（`tracer_windows_cli` 通过 add_subdirectory 复用）：
 
 1. `TT_USE_BUNDLED_SQLITE`
 作用：Windows 下使用 SQLite amalgamation 源码内置编译，避免外部 SQLite DLL 依赖。

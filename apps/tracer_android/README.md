@@ -1,6 +1,6 @@
 # tracer_android
 
-Android host app (`Jetpack Compose + JNI`) for `apps/tracer_core` core runtime.
+Android host app (`Jetpack Compose + JNI`) for `apps/tracer_core_shell` core runtime.
 
 Current behavior:
 - Android app build is driven by Gradle backend.
@@ -9,7 +9,7 @@ Current behavior:
 
 Build (Python entry, recommended):
 ```bash
-python scripts/run.py build --app tracer_android --profile fast
+python scripts/run.py build --app tracer_android --profile android_edit
 python scripts/run.py build --app tracer_android --profile android_release
 ```
 
@@ -17,7 +17,13 @@ Verify (recommended profiles):
 ```bash
 python scripts/run.py verify --app tracer_android --profile android_style --concise
 python scripts/run.py verify --app tracer_android --profile android_ci --concise
+python scripts/run.py post-change --app tracer_android --run-tests always --concise
 ```
+
+Recommended split:
+- Edit loop: use `build --app tracer_android --profile android_edit` for the fastest local APK rebuild path.
+- Validation loop: use `verify` / `post-change` only when you want style checks, test suites, or artifact validation.
+- Gradle local performance is configured in `gradle.properties` with build cache, configuration cache, and parallel execution enabled.
 
 Test data consistency:
 - Canonical test input is `test/data`.

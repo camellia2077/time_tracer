@@ -47,12 +47,12 @@ return rows
 
 ## 6. 源码定位
 
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryDatesByFilters(...)`
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryDayDurations(...)`
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryActivitySuggestions(...)`
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryProjectTree(...)`
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`EnsureProjectPathSnapshotColumnOrThrow(...)`
-- `apps/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BindAll(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryDatesByFilters(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryDayDurations(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryActivitySuggestions(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryProjectTree(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`EnsureProjectPathSnapshotColumnOrThrow(...)`
+- `libs/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`：`BindAll(...)`
 
 ## 7. 下一步
 

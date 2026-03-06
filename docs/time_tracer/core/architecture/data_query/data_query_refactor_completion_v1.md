@@ -12,9 +12,9 @@
    - `data_query_semantic.cpp/.hpp`
    - `data_query_statistics.cpp`
 2. Core 主链路收口到：
-   - `apps/tracer_core/src/infrastructure/query/data/stats/`
-   - `apps/tracer_core/src/infrastructure/query/data/orchestrators/`
-   - `apps/tracer_core/src/infrastructure/query/data/renderers/`
+   - `libs/tracer_core/src/infrastructure/query/data/stats/`
+   - `libs/tracer_core/src/infrastructure/query/data/orchestrators/`
+   - `libs/tracer_core/src/infrastructure/query/data/renderers/`
 3. CMake 编译清单移除旧兼容入口，改为新目录编译项。
 4. 契约文档补齐：
    - `capability_contract_v1.md`
@@ -25,9 +25,9 @@
    - `adapter_reviewer_checklist.md`
 5. 自动化测试补齐：
    - Core refactor 回归：
-     - `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
-     - `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
-     - `apps/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
+     - `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
+     - `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
+     - `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
    - CLI query-data 场景回归：`commands_query_data.toml`
 
 ## 稳态维护规则
