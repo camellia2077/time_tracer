@@ -16,12 +16,12 @@ def run_native_core_runtime_tests(
     if resolve_result_output_name(app_name) != "artifact_windows_cli":
         return 0
 
-    app_root = repo_root / "apps" / "tracer_core"
+    app_root = repo_root / "apps" / "tracer_core_shell"
     bin_dir = app_root / build_dir_name / "bin"
     suffix = ".exe" if os.name == "nt" else ""
     tests = [
-        "tracer_core_c_api_smoke_tests",
-        "tracer_core_c_api_stability_tests",
+        "tc_c_api_smoke_tests",
+        "tc_c_api_stability_tests",
     ]
 
     for test_name in tests:

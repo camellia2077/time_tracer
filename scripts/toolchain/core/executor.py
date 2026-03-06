@@ -5,27 +5,39 @@ from pathlib import Path
 _DEFAULT_BUILD_PROCESS_NAMES = ["cmake.exe", "ninja.exe", "ccache.exe"]
 _DEFAULT_RUNTIME_LOCK_PROCESS_NAMES = [
     "time_tracer_cli.exe",
-    "tracer_core_c_api_smoke_tests.exe",
-    "tracer_core_c_api_stability_tests.exe",
-    "time_tracker_core_api_tests.exe",
-    "time_tracker_android_runtime_tests.exe",
-    "time_tracker_formatter_parity_tests.exe",
-    "tracer_transport_tests.exe",
-    "tracer_transport_fields_tests.exe",
-    "tracer_transport_runtime_codec_tests.exe",
+    "tc_c_api_smoke_tests.exe",
+    "tc_c_api_stability_tests.exe",
+    "tt_core_api_tests.exe",
+    "tt_android_runtime_tests.exe",
+    "tt_fmt_parity_tests.exe",
+    "ttr_tests.exe",
+    "ttr_fields_tests.exe",
+    "ttr_rt_codec_tests.exe",
 ]
 
 
 def _write_stdout_safe(text: str) -> None:
-    try:
-        sys.stdout.write(text)
-        return
-    except UnicodeEncodeError:
-        pass
+    candidates = [sys.stdout]
+    fallback = getattr(sys, "__stdout__", None)
+    if fallback is not None and fallback is not sys.stdout:
+        candidates.append(fallback)
 
-    encoding = sys.stdout.encoding or "utf-8"
-    safe_text = text.encode(encoding, errors="replace").decode(encoding, errors="replace")
-    sys.stdout.write(safe_text)
+    for stream in candidates:
+        if stream is None:
+            continue
+        try:
+            stream.write(text)
+            return
+        except UnicodeEncodeError:
+            encoding = getattr(stream, "encoding", None) or "utf-8"
+            safe_text = text.encode(encoding, errors="replace").decode(encoding, errors="replace")
+            try:
+                stream.write(safe_text)
+                return
+            except (BrokenPipeError, OSError, ValueError):
+                continue
+        except (BrokenPipeError, OSError, ValueError):
+            continue
 
 
 def _taskkill_processes(names: list[str], start_message: str, done_message: str) -> None:
@@ -96,12 +108,12 @@ def run_command(
     cwd: Path | None = None,
     env: dict | None = None,
     log_file: Path | None = None,
-    flush_interval: int = 20,
+    flush_interval: int = 1,
 ) -> int:
     """
     Runs a command with real-time output to stdout and optional mirroring to a log file.
     """
-    print(f"--- Running: {' '.join(str(c) for c in cmd)}")
+    print(f"--- Running: {' '.join(str(c) for c in cmd)}", flush=True)
 
     # Ensure stdout is mirrored and line-buffered
     f = None
@@ -143,3 +155,5 @@ def run_command(
     finally:
         if f:
             f.close()
+
+

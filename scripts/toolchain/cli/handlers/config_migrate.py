@@ -11,7 +11,8 @@ def register(parser: argparse.ArgumentParser, _: ParserDefaults) -> None:
         default=None,
         help=(
             "Override config root directory (default inferred from app; "
-            "for tracer_windows_rust_cli/tracer_core it is apps/tracer_core/config)."
+            "for tracer_windows_rust_cli/tracer_core/tracer_core_shell it is "
+            "assets/tracer_core/config)."
         ),
     )
     parser.add_argument(

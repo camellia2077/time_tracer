@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
         "--source-root",
         type=Path,
         default=tracer_core_config_root(repo_root),
-        help="Canonical source config root.",
+        help="Canonical source config root (default: assets/tracer_core/config).",
     )
     parser.add_argument(
         "--windows-output-root",

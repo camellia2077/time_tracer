@@ -21,7 +21,7 @@ from toolchain.core.context import Context  # noqa: E402
 
 class TestPlatformConfigSync(TestCase):
     def test_windows_sync_writes_state_and_cache_hit(self):
-        source_root = REPO_ROOT / "apps" / "tracer_core" / "config"
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_root = Path(temp_dir)
             windows_out = temp_root / "windows_config"

@@ -115,7 +115,7 @@ def configure_cmake(
         app_name,
     )
     build_dir = ctx.get_app_dir(app_name) / resolved_build_dir_name
-    source_dir = ctx.get_app_dir(app_name)
+    source_dir = ctx.get_app_source_dir(app_name)
 
     build_dir.mkdir(parents=True, exist_ok=True)
 

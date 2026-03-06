@@ -2,7 +2,12 @@ import argparse
 
 from ....commands.cmd_quality.verify import VerifyCommand
 from ....core.context import Context
-from ...common import add_profile_arg, parse_cmake_args
+from ...common import (
+    add_profile_arg,
+    parse_cmake_args,
+    reject_unsupported_build_dir_override,
+    resolve_fixed_build_dir,
+)
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -12,12 +17,18 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument(
         "--quick",
         action="store_true",
-        help="Shortcut for --build-dir build_fast --concise.",
+        help=(
+            "Shortcut for concise verify output; also uses `build_fast` when the app "
+            "does not declare a fixed backend build directory."
+        ),
     )
     parser.add_argument(
         "--build-dir",
         default=None,
-        help="Override build directory name (default: build_fast/build_tidy).",
+        help=(
+            "Override build directory name for backends without a fixed build directory "
+            "(for example CMake). Fixed-dir backends like `tracer_android` reject this flag."
+        ),
     )
     parser.add_argument(
         "--kill-build-procs",
@@ -64,9 +75,17 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
     build_dir_name = args.build_dir
     concise = bool(args.concise)
     if args.quick:
-        if build_dir_name is None:
+        if build_dir_name is None and not resolve_fixed_build_dir(ctx, args.app):
             build_dir_name = "build_fast"
         concise = True
+    build_dir_error = reject_unsupported_build_dir_override(
+        ctx=ctx,
+        app_name=args.app,
+        build_dir_name=args.build_dir,
+        command_name="verify",
+    )
+    if build_dir_error != 0:
+        return build_dir_error
     cmd = VerifyCommand(ctx)
     return cmd.execute(
         app_name=args.app,

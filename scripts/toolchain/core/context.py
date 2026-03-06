@@ -275,6 +275,13 @@ class Context:
         # 3. Fallback
         return self.apps_root / app_name
 
+    def get_app_source_dir(self, app_name: str) -> Path:
+        app = self.get_app_metadata(app_name)
+        source_path = Path((getattr(app, "cmake_source_path", "") or "").strip())
+        if source_path:
+            return source_path if source_path.is_absolute() else self.repo_root / source_path
+        return self.get_app_dir(app_name)
+
     def get_app_metadata(self, app_name: str) -> AppConfig:
         if app_name not in self.config.apps:
             # Return a default if not found

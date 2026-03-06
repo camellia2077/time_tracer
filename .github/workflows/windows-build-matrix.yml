@@ -67,17 +67,17 @@ jobs:
         run: |
           "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
-      - name: Verify (stable rows)
+      - name: Verify tracer_core_shell (stable rows)
         if: matrix.cmake_args == ''
         shell: pwsh
         run: |
-          python scripts/run.py verify --app tracer_core --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
+          python scripts/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
 
-      - name: Verify (experimental row)
+      - name: Verify tracer_core_shell (experimental row)
         if: matrix.cmake_args != ''
         shell: pwsh
         run: |
-          python scripts/run.py verify --app tracer_core --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}
+          python scripts/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}
 
       - name: Show markdown audit report
         if: always()

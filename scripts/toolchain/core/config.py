@@ -4,7 +4,9 @@ from dataclasses import dataclass, field
 @dataclass
 class AppConfig:
     path: str
+    cmake_source_path: str = ""
     backend: str = "cmake"
+    fixed_build_dir: str = ""
     default_tidy: bool = True
     cmake_flags: list[str] = field(default_factory=list)
     gradle_wrapper: str = ""

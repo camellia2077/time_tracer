@@ -22,6 +22,35 @@ def apply_app_path_override(args: argparse.Namespace, ctx: Context) -> int:
     return 0
 
 
+def resolve_fixed_build_dir(ctx: Context, app_name: str | None) -> str | None:
+    if not app_name:
+        return None
+    fixed_build_dir = (getattr(ctx.get_app_metadata(app_name), "fixed_build_dir", "") or "").strip()
+    if fixed_build_dir:
+        return fixed_build_dir
+    return None
+
+
+def reject_unsupported_build_dir_override(
+    *,
+    ctx: Context,
+    app_name: str | None,
+    build_dir_name: str | None,
+    command_name: str,
+) -> int:
+    normalized_build_dir = (build_dir_name or "").strip()
+    if not normalized_build_dir:
+        return 0
+    fixed_build_dir = resolve_fixed_build_dir(ctx, app_name)
+    if not fixed_build_dir:
+        return 0
+    print(
+        f"Error: `{command_name}` does not support `--build-dir` for app `{app_name}`. "
+        f"This backend always uses `{fixed_build_dir}`."
+    )
+    return 2
+
+
 def add_profile_arg(parser_obj: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     help_text = (
         "Build profile from scripts/toolchain/config.toml and scripts/toolchain/config/*.toml."

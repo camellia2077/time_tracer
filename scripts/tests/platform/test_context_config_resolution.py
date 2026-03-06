@@ -171,3 +171,42 @@ extends = "a"
             output = captured.getvalue()
             self.assertIn("Failed to load config", output)
             self.assertEqual(ctx.config.build.profiles, {})
+
+    def test_app_fixed_build_dir_is_loaded(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            cfg = repo_root / "scripts" / "toolchain" / "config.toml"
+
+            _write_text(
+                cfg,
+                """
+[apps.demo]
+path = "apps/demo"
+backend = "gradle"
+fixed_build_dir = "build"
+""".strip(),
+            )
+
+            ctx = Context(repo_root)
+            self.assertEqual(ctx.get_app_metadata("demo").fixed_build_dir, "build")
+
+    def test_app_cmake_source_path_overrides_source_dir_only(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            cfg = repo_root / "scripts" / "toolchain" / "config.toml"
+
+            _write_text(
+                cfg,
+                """
+[apps.demo]
+path = "apps/demo_shell"
+cmake_source_path = "apps/demo_legacy"
+""".strip(),
+            )
+
+            ctx = Context(repo_root)
+            self.assertEqual(ctx.get_app_dir("demo"), repo_root / "apps" / "demo_shell")
+            self.assertEqual(
+                ctx.get_app_source_dir("demo"),
+                repo_root / "apps" / "demo_legacy",
+            )

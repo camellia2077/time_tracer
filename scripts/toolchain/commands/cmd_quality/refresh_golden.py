@@ -258,8 +258,11 @@ class RefreshGoldenCommand:
         recent_range: str | None,
         range_argument: str | None,
     ) -> int:
-        if app_name != "tracer_core":
-            print("Error: refresh-golden currently supports --app tracer_core only.")
+        if app_name not in {"tracer_core", "tracer_core_shell"}:
+            print(
+                "Error: refresh-golden currently supports "
+                "--app tracer_core / --app tracer_core_shell only."
+            )
             return 2
 
         resolved_build_dir = (build_dir_name or "").strip() or "build_fast"

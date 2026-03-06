@@ -67,7 +67,7 @@ def build_entry(
     kill_build_processes_fn=None,
     kill_runtime_lock_processes_fn=None,
 ) -> int:
-    if app_name in {"tracer_core", "tracer_windows_rust_cli"} and kill_runtime_lock_processes_fn:
+    if app_name in {"tracer_core", "tracer_core_shell", "tracer_windows_rust_cli"} and kill_runtime_lock_processes_fn:
         kill_runtime_lock_processes_fn()
 
     if kill_build_procs:

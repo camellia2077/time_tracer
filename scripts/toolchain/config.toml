@@ -1,9 +1,0 @@
-# Backward-compatible base config file.
-# Actual toolchain config is now split by responsibility under:
-# - scripts/toolchain/config/apps.toml
-# - scripts/toolchain/config/build.toml
-# - scripts/toolchain/config/workflow.toml
-#
-# This file remains as an optional local override layer.
-# Keys declared here are merged first, then files under config/*.toml
-# are merged in lexical order and can override base values.

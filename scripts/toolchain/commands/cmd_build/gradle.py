@@ -14,7 +14,7 @@ def configure_gradle(
 ) -> int:
     if tidy:
         print("--- configure: gradle backend does not use `--tidy`; flag ignored.")
-    if build_dir_name:
+    if build_dir_name and build_dir_name != "build":
         print(f"--- configure: gradle backend ignores --build-dir ({build_dir_name}).")
     filtered_extra_args = [a for a in (extra_args or []) if a != "--"]
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
@@ -37,7 +37,7 @@ def build_gradle(
     effective_run_command = run_command if run_command_fn is None else run_command_fn
     if tidy:
         print("--- build: gradle backend does not use `--tidy`; flag ignored.")
-    if build_dir_name:
+    if build_dir_name and build_dir_name != "build":
         print(f"--- build: gradle backend ignores --build-dir ({build_dir_name}).")
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
     if filtered_cmake_args:

@@ -2,6 +2,17 @@
 import sys
 from pathlib import Path
 
+
+def _enable_line_buffered_stdio() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(line_buffering=True, write_through=True)
+        except Exception:
+            continue
+
+
+_enable_line_buffered_stdio()
+
 # Add current directory to path
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.append(str(SCRIPT_DIR))
@@ -11,7 +22,7 @@ try:
     from toolchain.cli.parser import build_parser
     from toolchain.core.context import Context
 except ImportError as e:
-    print(f"Error: Could not load internal toolchain modules.\n{e}")
+    print(f"Error: Could not load internal toolchain modules.\n{e}", flush=True)
     sys.exit(1)
 
 

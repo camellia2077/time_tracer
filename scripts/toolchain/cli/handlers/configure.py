@@ -2,7 +2,7 @@ import argparse
 
 from ...commands.cmd_build import BuildCommand
 from ...core.context import Context
-from ..common import add_profile_arg, parse_cmake_args
+from ..common import add_profile_arg, parse_cmake_args, reject_unsupported_build_dir_override
 from ..model import CommandSpec, ParserDefaults
 
 
@@ -12,7 +12,10 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument(
         "--build-dir",
         default=None,
-        help="Override build directory name (default: build_fast/build_tidy).",
+        help=(
+            "Override build directory name for backends without a fixed build directory "
+            "(for example CMake). Fixed-dir backends like `tracer_android` reject this flag."
+        ),
     )
     parser.add_argument(
         "--kill-build-procs",
@@ -38,6 +41,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    build_dir_error = reject_unsupported_build_dir_override(
+        ctx=ctx,
+        app_name=args.app,
+        build_dir_name=args.build_dir,
+        command_name="configure",
+    )
+    if build_dir_error != 0:
+        return build_dir_error
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
     cmd = BuildCommand(ctx)
     return cmd.configure(

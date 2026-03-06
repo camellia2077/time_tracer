@@ -3,7 +3,7 @@
 
 [cpp]
 display_name = "C++"
-default_paths = ["apps/tracer_core","modules"]
+default_paths = ["apps/tracer_core_shell","libs/tracer_core","modules"]
 extensions = [".cpp", ".h", ".hpp", ".cppm", ".cc", ".cxx", ".c"]
 ignore_dirs = [".git", ".idea", ".vscode", "vs", "bin", "obj", "Debug", "Release"]
 ignore_prefixes = ["build", "cmake", "out"]

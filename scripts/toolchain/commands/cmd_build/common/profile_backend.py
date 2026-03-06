@@ -14,6 +14,14 @@ def resolve_backend(ctx: Context, app_name: str) -> str:
     return "cmake"
 
 
+def resolve_fixed_build_dir(ctx: Context, app_name: str) -> str | None:
+    app = ctx.get_app_metadata(app_name)
+    fixed_build_dir = (getattr(app, "fixed_build_dir", "") or "").strip()
+    if fixed_build_dir:
+        return fixed_build_dir
+    return None
+
+
 def resolve_build_dir_name(
     tidy: bool,
     build_dir_name: str | None,

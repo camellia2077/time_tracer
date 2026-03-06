@@ -65,7 +65,7 @@ cmake_args = [
 # Keep release output complete (CLI + synced runtime dirs),
 # while avoiding broad ALL-target drift and test targets.
 build_targets = [
-    "tracer_core_shared",
+    "tc_shared_dll",
 ]
 gradle_tasks = [":app:assembleRelease"]
 
@@ -114,6 +114,12 @@ description = "Android style checks (ktlint + lintDebug; detekt disabled in this
 gradle_tasks = [
     ":app:ktlintCheck",
     ":app:lintDebug",
+]
+
+[build.profiles.android_edit]
+description = "Android edit-loop build only (fast debug APK, no verify suite)."
+gradle_tasks = [
+    ":app:assembleDebug",
 ]
 
 [build.profiles.android_ci]

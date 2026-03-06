@@ -23,7 +23,7 @@ val timeTracerAndroidInputFullRootProperty = providers.gradleProperty("timeTrace
 
 val timeTracerSourceConfigRoot =
     timeTracerSourceConfigRootProperty?.let { file(it) }
-        ?: repoRootDir.resolve("apps/tracer_core/config")
+        ?: repoRootDir.resolve("assets/tracer_core/config")
 val timeTracerSourceTestDataRoot =
     timeTracerSourceTestDataRootProperty?.let { file(it) }
         ?: repoRootDir.resolve("test/data")
@@ -59,70 +59,71 @@ val timeTracerEnableCpp20Modules =
         )
     }
 
+val repoRootPath = repoRootDir.absolutePath
+val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.absolutePath
+val timeTracerSourceTestDataRootPath = timeTracerSourceTestDataRoot.absolutePath
+val timeTracerConfigRootPath = timeTracerConfigRootFile.absolutePath
+val timeTracerAndroidInputFullRootPath = timeTracerAndroidInputFullRoot.absolutePath
+val platformConfigRunnerPath = platformConfigRunner.absolutePath
+val inputDataSyncRunnerPath = inputDataSyncRunner.absolutePath
+
+if (!platformConfigRunner.exists()) {
+    throw GradleException(
+        "Missing platform config generator: $platformConfigRunnerPath"
+    )
+}
+if (!inputDataSyncRunner.exists()) {
+    throw GradleException(
+        "Missing input data sync script: $inputDataSyncRunnerPath"
+    )
+}
+if (!timeTracerSourceConfigRoot.exists()) {
+    throw GradleException(
+        "Missing source config root: $timeTracerSourceConfigRootPath"
+    )
+}
+if (!timeTracerSourceTestDataRoot.exists()) {
+    throw GradleException(
+        "Missing source test data root: $timeTracerSourceTestDataRootPath"
+    )
+}
+
 val syncTracerCoreConfig by tasks.registering(Exec::class) {
     group = "tracer_core"
     description = "Generate Android tracer_core config bundle before build."
-    workingDir = repoRootDir
-    doFirst {
-        if (!platformConfigRunner.exists()) {
-            throw GradleException(
-                "Missing platform config generator: ${platformConfigRunner.absolutePath}"
-            )
-        }
-        if (!timeTracerSourceConfigRoot.exists()) {
-            throw GradleException(
-                "Missing source config root: ${timeTracerSourceConfigRoot.absolutePath}"
-            )
-        }
-        commandLine(
-            pythonExecutable,
-            platformConfigRunner.absolutePath,
-            "--target",
-            "android",
-            "--source-root",
-            timeTracerSourceConfigRoot.absolutePath,
-            "--android-output-root",
-            timeTracerConfigRootFile.absolutePath,
-            "--apply",
-        )
-        logger.lifecycle(
-            "sync Android config via scripts/platform_config/run.py " +
-                "(source=${timeTracerSourceConfigRoot.absolutePath}, " +
-                "output=${timeTracerConfigRootFile.absolutePath})"
-        )
-    }
+    workingDir = File(repoRootPath)
+    inputs.file(platformConfigRunnerPath)
+    inputs.dir(timeTracerSourceConfigRootPath)
+    outputs.dir(timeTracerConfigRootPath)
+    commandLine(
+        pythonExecutable,
+        platformConfigRunnerPath,
+        "--target",
+        "android",
+        "--source-root",
+        timeTracerSourceConfigRootPath,
+        "--android-output-root",
+        timeTracerConfigRootPath,
+        "--apply",
+    )
 }
 
 val syncTracerCoreInputData by tasks.registering(Exec::class) {
     group = "tracer_core"
     description = "Sync Android input/full from canonical test/data before build."
-    workingDir = repoRootDir
-    doFirst {
-        if (!inputDataSyncRunner.exists()) {
-            throw GradleException(
-                "Missing input data sync script: ${inputDataSyncRunner.absolutePath}"
-            )
-        }
-        if (!timeTracerSourceTestDataRoot.exists()) {
-            throw GradleException(
-                "Missing source test data root: ${timeTracerSourceTestDataRoot.absolutePath}"
-            )
-        }
-        commandLine(
-            pythonExecutable,
-            inputDataSyncRunner.absolutePath,
-            "--source-root",
-            timeTracerSourceTestDataRoot.absolutePath,
-            "--android-input-full-root",
-            timeTracerAndroidInputFullRoot.absolutePath,
-            "--apply",
-        )
-        logger.lifecycle(
-            "sync Android input/full via scripts/devtools/android/sync_android_input_from_test_data.py " +
-                "(source=${timeTracerSourceTestDataRoot.absolutePath}, " +
-                "output=${timeTracerAndroidInputFullRoot.absolutePath})"
-        )
-    }
+    workingDir = File(repoRootPath)
+    inputs.file(inputDataSyncRunnerPath)
+    inputs.dir(timeTracerSourceTestDataRootPath)
+    outputs.dir(timeTracerAndroidInputFullRootPath)
+    commandLine(
+        pythonExecutable,
+        inputDataSyncRunnerPath,
+        "--source-root",
+        timeTracerSourceTestDataRootPath,
+        "--android-input-full-root",
+        timeTracerAndroidInputFullRootPath,
+        "--apply",
+    )
 }
 
 tasks.matching { it.name == "preBuild" }.configureEach {
@@ -149,7 +150,7 @@ android {
                     "-DTT_ENABLE_CPP20_MODULES=$timeTracerEnableCpp20Modules"
                 )
                 cppFlags += listOf("-std=c++23")
-                targets += listOf("time_tracker_android_bridge")
+                targets += listOf("tt_android_bridge")
             }
         }
     }

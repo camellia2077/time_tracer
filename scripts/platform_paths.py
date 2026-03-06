@@ -4,7 +4,7 @@ from pathlib import Path
 
 
 def tracer_core_config_root(repo_root: Path) -> Path:
-    return repo_root / "apps" / "tracer_core" / "config"
+    return repo_root / "assets" / "tracer_core" / "config"
 
 
 def windows_cli_config_root(repo_root: Path) -> Path:

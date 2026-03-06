@@ -9,6 +9,6 @@ exec python "${REPO_ROOT}/scripts/run.py" \
   --profile release_bundle \
   --build-dir build \
   -- \
-  --target reports_shared \
-  --target tracer_core_shared \
+  --target tc_rpt_shared_lib \
+  --target tc_shared_dll \
   "$@"

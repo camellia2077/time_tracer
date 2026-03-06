@@ -111,13 +111,10 @@ class BuildCommand:
         profile_name: str | None = None,
         app_name: str | None = None,
     ) -> str:
-        backend = ""
         if app_name:
-            backend = self._resolve_backend(app_name)
-
-        if backend == "gradle":
-            # Android/Gradle build outputs are rooted under app/build.
-            return "build"
+            fixed_build_dir = build_common.resolve_fixed_build_dir(self.ctx, app_name)
+            if fixed_build_dir:
+                return fixed_build_dir
 
         _, profile_cfg = self._resolve_profile(profile_name)
         profile_build_dir = ""

@@ -21,11 +21,11 @@ def execute_build_stage(
     build_app_name = resolve_suite_build_app(app_name) or app_name
     build_cmd = build_command_cls(ctx)
 
-    # tracer_core verify flow needs fresh core runtime artifacts before
-    # building the Rust CLI shell.
-    if app_name == "tracer_core" and build_app_name == "tracer_windows_rust_cli":
+    # tracer_core/tracer_core_shell verify flow needs fresh core runtime
+    # artifacts before building the Rust CLI shell.
+    if app_name in {"tracer_core", "tracer_core_shell"} and build_app_name == "tracer_windows_rust_cli":
         core_build_ret = build_cmd.build(
-            app_name="tracer_core",
+            app_name=app_name,
             tidy=tidy,
             extra_args=extra_args,
             cmake_args=cmake_args,
@@ -38,9 +38,9 @@ def execute_build_stage(
                 tidy=tidy,
                 build_dir_name=build_dir_name,
                 profile_name=profile_name,
-                app_name="tracer_core",
+                app_name=app_name,
             )
-            return int(core_build_ret), resolved_core_build_dir_name, "tracer_core"
+            return int(core_build_ret), resolved_core_build_dir_name, app_name
 
     build_ret = build_cmd.build(
         app_name=build_app_name,

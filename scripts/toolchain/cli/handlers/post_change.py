@@ -2,7 +2,12 @@ import argparse
 
 from ...commands.cmd_workflow.post_change import PostChangeCommand
 from ...core.context import Context
-from ..common import add_profile_arg, parse_cmake_args
+from ..common import (
+    add_profile_arg,
+    parse_cmake_args,
+    reject_unsupported_build_dir_override,
+    resolve_fixed_build_dir,
+)
 from ..model import CommandSpec, ParserDefaults
 
 
@@ -12,9 +17,10 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         "--build-dir",
         default=None,
         help=(
-            "Build directory for post-change flow "
+            "Build directory for post-change on backends without a fixed build directory "
             f"(default: {defaults.post_change_default_build_dir}, "
-            "or profile build_dir when --profile is set)."
+            "or profile build_dir when --profile is set). Fixed-dir backends like "
+            "`tracer_android` reject this flag."
         ),
     )
     parser.add_argument(
@@ -62,6 +68,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    build_dir_error = reject_unsupported_build_dir_override(
+        ctx=ctx,
+        app_name=args.app,
+        build_dir_name=args.build_dir,
+        command_name="post-change",
+    )
+    if build_dir_error != 0:
+        return build_dir_error
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
     effective_post_change_build_dir = args.build_dir
 
@@ -75,14 +89,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
 
     if not effective_post_change_build_dir and not args.profile:
         should_apply_default_build_dir = True
-        if args.app:
-            backend = (
-                (getattr(ctx.get_app_metadata(args.app), "backend", "cmake") or "cmake")
-                .strip()
-                .lower()
-            )
-            if backend == "gradle":
-                should_apply_default_build_dir = False
+        if resolve_fixed_build_dir(ctx, args.app):
+            should_apply_default_build_dir = False
         if should_apply_default_build_dir:
             effective_post_change_build_dir = default_build_dir
 

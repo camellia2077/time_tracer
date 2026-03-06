@@ -6,6 +6,7 @@ from pathlib import Path
 _SUITE_BY_APP = {
     # `tracer_windows_rust_cli` is the integrated core + Windows Rust CLI suite.
     "tracer_core": "tracer_windows_rust_cli",
+    "tracer_core_shell": "tracer_windows_rust_cli",
     "tracer_windows_rust_cli": "tracer_windows_rust_cli",
     "tracer_android": "tracer_android",
     "log_generator": "log_generator",
@@ -19,6 +20,7 @@ _SUITE_RUNNER_NAME = {
 
 _SUITE_BUILD_APP_BY_APP = {
     "tracer_core": "tracer_windows_rust_cli",
+    "tracer_core_shell": "tracer_windows_rust_cli",
     "tracer_windows_rust_cli": "tracer_windows_rust_cli",
     "tracer_android": "tracer_android",
     "log_generator": "log_generator",

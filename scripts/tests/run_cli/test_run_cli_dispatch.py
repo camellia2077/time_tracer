@@ -143,6 +143,53 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakePostChangeCommand.last_kwargs["app_name"], "tracer_android")
         self.assertIsNone(FakePostChangeCommand.last_kwargs["build_dir_name"])
 
+    def test_build_rejects_build_dir_for_tracer_android(self):
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "build", "--app", "tracer_android", "--build-dir", "build_fast"],
+        ), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+
+    def test_verify_quick_tracer_android_keeps_build_dir_unset(self):
+        class FakeVerifyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeVerifyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("toolchain.cli.handlers.quality.verify.VerifyCommand", FakeVerifyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "verify",
+                    "--app",
+                    "tracer_android",
+                    "--quick",
+                ]
+            )
+
+        self.assertIsNotNone(FakeVerifyCommand.last_kwargs)
+        self.assertIsNone(FakeVerifyCommand.last_kwargs["build_dir_name"])
+
+    def test_verify_rejects_build_dir_for_tracer_android(self):
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "verify", "--app", "tracer_android", "--build-dir", "build_fast"],
+        ), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+
     def test_post_change_dispatches_cmake_args(self):
         class FakePostChangeCommand:
             last_kwargs = None
