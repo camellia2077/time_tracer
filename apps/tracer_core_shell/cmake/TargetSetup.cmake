@@ -51,6 +51,14 @@ function(_setup_target_common TARGET_NAME)
         )
     endif()
 
+    if(TARGET tt_build_options)
+        target_link_libraries(${TARGET_NAME} PRIVATE tt_build_options)
+    endif()
+
+    if(TARGET tt_feature_flags)
+        target_link_libraries(${TARGET_NAME} PRIVATE tt_feature_flags)
+    endif()
+
     if(ENABLE_PCH AND NOT STC_NO_PCH)
         set(TT_TARGET_PCH_HEADER "${PROJECT_SOURCE_DIR}/pch.hpp")
         if(STC_PCH_HEADER)

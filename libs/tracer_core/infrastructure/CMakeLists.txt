@@ -1,3 +1,11 @@
+#
+# Infrastructure assembly owned here:
+# - reports shared/data/full report adapters
+# - persistence/config/full infrastructure targets
+# This directory expects the parent `libs/tracer_core` layer targets to
+# already exist, especially `tc_infra_lite_lib` and `tc_all_lib`.
+#
+
 set(TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT
     "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/sources"
 )

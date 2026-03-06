@@ -37,6 +37,12 @@ target_link_libraries(tc_core_iface INTERFACE
     time_tracker_application
 )
 
+# Optional AI extension stack insertion point:
+# - tracer_core_ai attaches after core semantic layers
+# - tracer_ai_provider attaches after tracer_core_ai
+include("${PROJECT_SOURCE_DIR}/cmake/AiModuleSlots.cmake")
+tt_configure_optional_ai_modules()
+
 set(TRACER_CORE_LIB_SOURCE_ROOT "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/src")
 set(TRACER_CORE_SHELL_SOURCE_ROOT "${PROJECT_SOURCE_DIR}")
 set(TRACER_CORE_SHELL_HOST_ROOT "${TRACER_CORE_SHELL_SOURCE_ROOT}/host")
@@ -44,7 +50,7 @@ set(TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT
     "${TRACER_CORE_SHELL_SOURCE_ROOT}/tests/platform"
 )
 
-include(CoreBoundaryRules)
+include("${PROJECT_SOURCE_DIR}/cmake/CoreBoundaryRules.cmake")
 enforce_core_include_boundary(
     ROOT "${TRACER_CORE_LIB_SOURCE_ROOT}"
     CORE_DIRS
@@ -89,7 +95,9 @@ enforce_shell_api_include_boundary(
         "api/c_api/tracer_core_c_api_crypto.cpp"
 )
 
-# 3. Infrastructure (IO, Persistence, Config)
+# 3. Infrastructure composition
+# - `tracer_transport` / `tracer_adapters_io` stay as standalone adapter libs.
+# - `libs/tracer_core/infrastructure` owns reports/persistence/config assembly.
 add_subdirectory(
     "${PROJECT_SOURCE_DIR}/../../libs/tracer_transport"
     "${CMAKE_BINARY_DIR}/libs/tracer_transport"
