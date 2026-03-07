@@ -110,21 +110,20 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
 
   const std::vector<AdapterGuardRule> kRules = {
       {
-          "apps/tracer_cli/windows/src/api/cli/impl/commands/query/"
-          "data_query_parser.cpp",
+          "apps/tracer_cli/windows/rust_cli/src/commands/handlers/query.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/tracer_cli/windows/src/api/cli/impl/commands/query/"
-          "query_command.cpp",
+          "apps/tracer_cli/windows/rust_cli/src/commands/handlers/chart/"
+          "request.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/tracer_cli/windows/src/bootstrap/cli_runtime_factory_proxy.cpp",
+          "apps/tracer_cli/windows/rust_cli/src/core/runtime/invoke.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},

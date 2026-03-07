@@ -21,6 +21,7 @@ class FileErrorReportWriter final
  private:
   std::filesystem::path run_file_path_;
   std::filesystem::path latest_file_path_;
+  bool initialized_ = false;
 };
 
 }  // namespace infrastructure::logging

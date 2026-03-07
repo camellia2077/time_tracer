@@ -64,6 +64,10 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
             "Ingestion process failed."));
   }
 
+  // Persistence gate: reaching this point means the ingest pipeline has
+  // already completed conversion, structure validation, and logic validation.
+  // Any database creation or write-side effect must happen only after this
+  // boundary.
   auto& context = *result_context_opt;
   app_ports::LogInfo("\n--- 流水线验证通过，准备入库 ---");
 

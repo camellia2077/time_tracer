@@ -9,8 +9,6 @@
 
 #include "host/android_runtime_factory_internal.hpp"
 #include "infrastructure/config/internal/config_parser_utils.hpp"
-#include "infrastructure/persistence/importer/sqlite/connection.hpp"
-
 #ifndef TT_REPORT_ENABLE_LATEX
 #define TT_REPORT_ENABLE_LATEX 1
 #endif
@@ -38,17 +36,6 @@ auto ResolveDbPath(const fs::path& db_path, const fs::path& output_root)
     return fs::absolute(db_path);
   }
   return fs::absolute(output_root / "db" / kDatabaseFilename);
-}
-
-auto EnsureDatabaseBootstrapped(const fs::path& db_path) -> void {
-  fs::create_directories(db_path.parent_path());
-
-  infrastructure::persistence::importer::sqlite::Connection bootstrap_db(
-      db_path.string());
-  if (bootstrap_db.GetDb() == nullptr) {
-    throw std::runtime_error("Failed to initialize database at: " +
-                             db_path.string());
-  }
 }
 
 auto ResolveAndroidRuntimeConfigPaths(

@@ -4,7 +4,8 @@
 
 > 目录约定说明（2026-03-07）
 > - 品牌设计 SVG 与相关参考资源统一存放在 `design/branding/**`
-> - Windows CLI 默认图标设计源已经切换到 `bg_indigo_mist_vertical_padding.svg`
+> - Windows CLI 默认图标设计源已经切换到 `bg_white_vertical_padding_rounded.svg`
+> - 旧的满画布浅底导出稿已重命名为 `bg_full_canvas_light_vertical_padding.svg`
 > - 如需新增或替换设计稿，应优先放到 `design/branding/exports/**`
 
 ## 适用范围
@@ -20,7 +21,7 @@
 ## 默认图标源
 
 1. 默认 SVG：
-   - `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
+   - `design/branding/exports/bg_white_vertical_padding_rounded.svg`
 2. 可选透明底 SVG：
    - `design/branding/exports/bg_golden_vertical_padding_transparent.svg`
 3. 生成 ICO 位置：
@@ -44,13 +45,13 @@ python scripts/run.py build --app tracer_windows_rust_cli --profile release_bund
 ### 2) 通过命令行指定 SVG
 
 ```powershell
-python scripts/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_indigo_mist_vertical_padding.svg"
+python scripts/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 ### 3) 通过封装脚本指定 SVG
 
 ```powershell
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh --windows-icon-svg "design/branding/exports/bg_indigo_mist_vertical_padding.svg"
+bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 ## 可选覆盖项

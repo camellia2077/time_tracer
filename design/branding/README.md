@@ -63,7 +63,7 @@
   - 最终落地为 Android adaptive icon 的 `background / foreground / monochrome` 三个资源
 - Windows CLI
   - 参考无背景品牌母版几何
-  - 默认构建源：`design/branding/exports/bg_indigo_mist_vertical_padding.svg`
+  - 默认构建源：`design/branding/exports/bg_white_vertical_padding_rounded.svg`
   - 最终在构建期转为 `.ico`
 
 平台映射文档：

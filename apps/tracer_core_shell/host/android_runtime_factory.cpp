@@ -23,23 +23,21 @@
 #include "application/workflow_handler.hpp"
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/config/file_converter_config_provider.hpp"
-#include "infrastructure/io/file_io_service.hpp"
 #include "infrastructure/io/processed_data_io.hpp"
 #include "infrastructure/io/txt_ingest_input_provider.hpp"
 #include "infrastructure/logging/file_error_report_writer.hpp"
 #include "infrastructure/logging/validation_issue_reporter.hpp"
 #include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
-#include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
 #include "infrastructure/persistence/sqlite_database_health_checker.hpp"
 #include "infrastructure/persistence/sqlite_time_sheet_repository.hpp"
 #include "infrastructure/platform/android/android_platform_clock.hpp"
 #include "infrastructure/reports/exporter.hpp"
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
+#include "infrastructure/reports/lazy_sqlite_report_data_query_service.hpp"
+#include "infrastructure/reports/lazy_sqlite_report_query_service.hpp"
 #include "infrastructure/reports/report_dto_export_writer.hpp"
 #include "infrastructure/reports/report_dto_formatter.hpp"
-#include "infrastructure/reports/report_service.hpp"
-#include "infrastructure/reports/sqlite_report_data_query_service.hpp"
 
 namespace {
 
@@ -80,7 +78,6 @@ auto BuildRunScopedErrorLogPath(const fs::path& logs_root) -> fs::path {
 }
 
 struct AndroidRuntimeState {
-  std::shared_ptr<DBManager> db_manager;
   std::shared_ptr<IWorkflowHandler> workflow_handler;
   std::shared_ptr<IReportHandler> report_handler;
   std::shared_ptr<ReportCatalog> report_catalog;
@@ -92,6 +89,9 @@ namespace infrastructure::bootstrap {
 
 auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
     -> AndroidRuntime {
+  // Runtime bootstrap must stay side-effect free with respect to ingest
+  // persistence. Creating the runtime is not permission to create the ingest
+  // database; database creation belongs only to the post-validation write phase.
   const fs::path kOutputRoot =
       android_runtime_detail::ResolveOutputRoot(request.output_root);
   const fs::path kDbPath =
@@ -105,9 +105,6 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   const fs::path kConverterConfigTomlPath =
       kRuntimeConfigPaths.converter_config_toml_path;
 
-  FileIoService::PrepareOutputDirectories(kOutputRoot);
-  android_runtime_detail::EnsureDatabaseBootstrapped(kDbPath);
-
   tracer_core::application::ports::SetLogger(request.logger);
   tracer_core::domain::ports::SetDiagnosticsSink(request.diagnostics_sink);
   tracer_core::domain::ports::SetErrorReportWriter(
@@ -119,15 +116,6 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   // Reset session-level diagnostics state for this run.
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
-
-  auto db_manager = std::make_shared<DBManager>(kDbPath.string());
-  if (!db_manager->OpenDatabaseIfNeeded()) {
-    throw std::runtime_error("Failed to open database at: " + kDbPath.string());
-  }
-  sqlite3* db_connection = db_manager->GetDbConnection();
-  if (db_connection == nullptr) {
-    throw std::runtime_error("Database connection is null.");
-  }
 
   auto processed_data_loader =
       std::make_shared<infrastructure::io::ProcessedDataLoader>();
@@ -162,8 +150,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       android_runtime_detail::BuildAndroidReportCatalog(kOutputRoot,
                                                         kRuntimeConfigPaths));
 
-  auto report_query_service = std::make_unique<ReportService>(
-      db_connection, *report_catalog, platform_clock);
+  auto report_query_service =
+      std::make_unique<infrastructure::reports::LazySqliteReportQueryService>(
+          kDbPath, report_catalog, platform_clock);
   auto exporter = std::make_unique<Exporter>(kOutputRoot);
   auto report = std::make_shared<ReportHandler>(std::move(report_query_service),
                                                 std::move(exporter));
@@ -174,8 +163,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::make_shared<infrastructure::persistence::SqliteDataQueryService>(
           kDbPath, kConverterConfigTomlPath);
   auto report_data_query_service =
-      std::make_shared<infrastructure::reports::SqliteReportDataQueryService>(
-          db_connection, platform_clock);
+      std::make_shared<
+          infrastructure::reports::LazySqliteReportDataQueryService>(
+          kDbPath, platform_clock);
   auto static_formatter_registrar = std::make_shared<
       infrastructure::reports::AndroidStaticReportFormatterRegistrar>(
       kRuntimeConfigPaths.formatter_policy);
@@ -198,7 +188,6 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::move(report_export_writer));
 
   auto runtime_state = std::make_shared<AndroidRuntimeState>();
-  runtime_state->db_manager = std::move(db_manager);
   runtime_state->workflow_handler = std::move(workflow);
   runtime_state->report_handler = std::move(report);
   runtime_state->report_catalog = std::move(report_catalog);

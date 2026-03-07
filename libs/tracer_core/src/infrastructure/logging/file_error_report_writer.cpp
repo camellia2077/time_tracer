@@ -30,6 +30,15 @@ auto TruncateFile(const std::filesystem::path& file_path) -> bool {
   return stream.is_open() && stream.good();
 }
 
+auto RemoveFileIfExists(const std::filesystem::path& file_path) -> void {
+  if (file_path.empty()) {
+    return;
+  }
+
+  std::error_code error_code;
+  std::filesystem::remove(file_path, error_code);
+}
+
 }  // namespace
 
 FileErrorReportWriter::FileErrorReportWriter(std::filesystem::path file_path)
@@ -39,33 +48,40 @@ FileErrorReportWriter::FileErrorReportWriter(
     std::filesystem::path run_file_path, std::filesystem::path latest_file_path)
     : run_file_path_(std::move(run_file_path)),
       latest_file_path_(std::move(latest_file_path)) {
-  if (!run_file_path_.empty() && EnsureParentDirectory(run_file_path_)) {
-    static_cast<void>(TruncateFile(run_file_path_));
-  }
-  if (latest_file_path_.empty()) {
-    return;
-  }
-  if (!EnsureParentDirectory(latest_file_path_)) {
-    return;
-  }
-  static_cast<void>(TruncateFile(latest_file_path_));
+  RemoveFileIfExists(latest_file_path_);
 }
 
 auto FileErrorReportWriter::Append(std::string_view report_content) -> bool {
-  if (!EnsureParentDirectory(run_file_path_)) {
-    return false;
+  if (!initialized_) {
+    if (!run_file_path_.empty()) {
+      if (!EnsureParentDirectory(run_file_path_)) {
+        return false;
+      }
+      if (!TruncateFile(run_file_path_)) {
+        return false;
+      }
+    }
+
+    if (!latest_file_path_.empty()) {
+      if (!EnsureParentDirectory(latest_file_path_)) {
+        return false;
+      }
+      if (!TruncateFile(latest_file_path_)) {
+        return false;
+      }
+    }
+
+    initialized_ = true;
   }
-  if (!AppendToFile(run_file_path_, report_content)) {
+
+  if (!run_file_path_.empty() &&
+      !AppendToFile(run_file_path_, report_content)) {
     return false;
   }
 
-  if (!latest_file_path_.empty()) {
-    if (!EnsureParentDirectory(latest_file_path_)) {
+  if (!latest_file_path_.empty() &&
+      !AppendToFile(latest_file_path_, report_content)) {
       return false;
-    }
-    if (!AppendToFile(latest_file_path_, report_content)) {
-      return false;
-    }
   }
 
   return true;

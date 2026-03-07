@@ -22,29 +22,21 @@ auto RunConfigSmokeSection(int& failures) -> void {
     chart_empty_request.action =
         tracer_core::core::dto::DataQueryAction::kReportChart;
     chart_empty_request.lookback_days = 7;
-    if (const auto chart_empty_result = RunDataQueryOrRecordFailure(
-            fixture.runtime.core_api, chart_empty_request,
-            "RunDataQuery(report-chart, empty)", failures);
-        chart_empty_result.has_value()) {
-      if (const auto payload = ParseJsonOrRecordFailure(
-              chart_empty_result->content, "report-chart empty", failures);
-          payload.has_value()) {
-        ValidateChartSeriesPayload(*payload, "report-chart empty", failures);
-        const auto roots_it = payload->find("roots");
-        if (roots_it != payload->end() && roots_it->is_array() &&
-            !roots_it->empty()) {
-          ++failures;
-          std::cerr << "[FAIL] report-chart empty payload roots should be "
-                       "empty.\n";
-        }
-        const auto series_it = payload->find("series");
-        if (series_it != payload->end() && series_it->is_array() &&
-            !series_it->empty()) {
-          ++failures;
-          std::cerr << "[FAIL] report-chart empty payload series should be "
-                       "empty.\n";
-        }
-      }
+    const auto chart_empty_result =
+        fixture.runtime.core_api->RunDataQuery(chart_empty_request);
+    if (chart_empty_result.ok) {
+      ++failures;
+      std::cerr << "[FAIL] RunDataQuery(report-chart, empty) should fail "
+                   "when the database does not exist.\n";
+    } else if (chart_empty_result.error_message.empty()) {
+      ++failures;
+      std::cerr << "[FAIL] RunDataQuery(report-chart, empty) should return "
+                   "a non-empty error message.\n";
+    }
+    if (std::filesystem::exists(fixture.paths.db_path)) {
+      ++failures;
+      std::cerr << "[FAIL] RunDataQuery(report-chart, empty) should not "
+                   "create a database file.\n";
     }
 
     tracer_core::core::dto::DataQueryRequest chart_invalid_request;

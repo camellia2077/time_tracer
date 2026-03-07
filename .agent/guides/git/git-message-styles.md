@@ -25,6 +25,8 @@ description: Agent 专用 Git 提交消息模板
 - 存在 breaking changes 时，使用 `feat!` 或添加 `[Breaking Changes]`
 - 空 section 不要保留
 - `squash` 或 `reword` 后，不要保留 `Squashed commits:` 或原 commit 列表
+- 涉及中文 commit message 的生成、落盘、amend、reword 或 `--file` 提交时，优先使用 `pwsh` / `pwsh.exe`
+- 需要将提交信息写入文件时，使用 `pwsh` 的 UTF-8 输出（如 `Set-Content -Encoding utf8`），避免中文乱码
 
 ## Template
 

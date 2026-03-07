@@ -3,9 +3,11 @@
 #include <sqlite3.h>
 
 #include <format>
+#include <filesystem>
 #include <optional>
 #include <stdexcept>
 
+#include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
 
@@ -41,29 +43,43 @@ struct MonthBoundary {
 }  // namespace
 
 Repository::Repository(const std::string& db_path) {
-  connection_manager_ = std::make_unique<sqlite::Connection>(db_path);
-
-  if (connection_manager_->GetDb() != nullptr) {
-    statement_manager_ =
-        std::make_unique<sqlite::Statement>(connection_manager_->GetDb());
-
-    data_inserter_ = std::make_unique<sqlite::Writer>(
-        connection_manager_->GetDb(), statement_manager_->GetInsertDayStmt(),
-        statement_manager_->GetInsertRecordStmt(),
-        statement_manager_->GetInsertProjectStmt());
-  }
+  // This constructor must stay free of persistence side effects in the final
+  // design. Database creation / schema initialization belong to the explicit
+  // write phase after ingest validation has passed.
+  db_path_ = db_path;
 }
 
 auto Repository::IsDbOpen() const -> bool {
   return connection_manager_ && (connection_manager_->GetDb() != nullptr);
 }
 
+auto Repository::EnsureWriteRepositoryReady() -> void {
+  if (IsDbOpen() && statement_manager_ && data_inserter_) {
+    return;
+  }
+
+  const std::filesystem::path kDbPath(db_path_);
+  if (!kDbPath.parent_path().empty()) {
+    std::filesystem::create_directories(kDbPath.parent_path());
+  }
+
+  connection_manager_ = std::make_unique<sqlite::Connection>(db_path_);
+  if (!connection_manager_ || connection_manager_->GetDb() == nullptr) {
+    throw std::runtime_error("Failed to open write database: " + db_path_);
+  }
+
+  statement_manager_ =
+      std::make_unique<sqlite::Statement>(connection_manager_->GetDb());
+  data_inserter_ = std::make_unique<sqlite::Writer>(
+      connection_manager_->GetDb(), statement_manager_->GetInsertDayStmt(),
+      statement_manager_->GetInsertRecordStmt(),
+      statement_manager_->GetInsertProjectStmt());
+}
+
 auto Repository::ImportData(const std::vector<DayData>& days,
                             const std::vector<TimeRecordInternal>& records)
     -> void {
-  if (!IsDbOpen()) {
-    throw std::runtime_error("Database is not open. Cannot import data.");
-  }
+  EnsureWriteRepositoryReady();
 
   if (!connection_manager_->BeginTransaction()) {
     throw std::runtime_error("Failed to begin transaction.");
@@ -85,10 +101,7 @@ auto Repository::ImportData(const std::vector<DayData>& days,
 auto Repository::ReplaceMonthData(
     const int kYear, const int kMonth, const std::vector<DayData>& days,
     const std::vector<TimeRecordInternal>& records) -> void {
-  if (!IsDbOpen()) {
-    throw std::runtime_error(
-        "Database is not open. Cannot replace month data.");
-  }
+  EnsureWriteRepositoryReady();
 
   const auto kBoundary = BuildMonthBoundary(kYear, kMonth);
   if (!kBoundary.has_value()) {
@@ -133,7 +146,19 @@ auto Repository::ReplaceMonthData(
 
 auto Repository::TryGetLatestActivityTailBeforeDate(std::string_view date) const
     -> std::optional<LatestActivityTail> {
-  if (!IsDbOpen()) {
+  sqlite3* db_connection = nullptr;
+  DBManager db_manager(db_path_);
+
+  if (IsDbOpen()) {
+    db_connection = connection_manager_->GetDb();
+  } else {
+    if (!db_manager.OpenDatabaseIfNeeded()) {
+      return std::nullopt;
+    }
+    db_connection = db_manager.GetDbConnection();
+  }
+
+  if (db_connection == nullptr) {
     return std::nullopt;
   }
 
@@ -145,8 +170,8 @@ auto Repository::TryGetLatestActivityTailBeforeDate(std::string_view date) const
       schema::time_records::db::kEndTimestamp);
 
   sqlite3_stmt* stmt = nullptr;
-  if (sqlite3_prepare_v2(connection_manager_->GetDb(), kSql.c_str(), -1, &stmt,
-                         nullptr) != SQLITE_OK) {
+  if (sqlite3_prepare_v2(db_connection, kSql.c_str(), -1, &stmt, nullptr) !=
+      SQLITE_OK) {
     return std::nullopt;
   }
 

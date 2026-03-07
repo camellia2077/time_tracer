@@ -11,6 +11,54 @@
 namespace android_runtime_tests {
 namespace {
 
+auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
+  const RuntimeTestPaths paths =
+      BuildTempTestPaths("time_tracer_android_runtime_side_effect_free_test");
+  const std::filesystem::path repo_root = BuildRepoRoot();
+  const std::filesystem::path config_toml_path =
+      repo_root / "assets" / "tracer_core" / "config" / "converter" /
+      "interval_processor_config.toml";
+
+  RemoveTree(paths.test_root);
+
+  try {
+    const auto request = BuildRuntimeRequest(paths, config_toml_path);
+    static_cast<void>(infrastructure::bootstrap::BuildAndroidRuntime(request));
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should not throw for valid config: "
+              << exception.what() << '\n';
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  if (std::filesystem::exists(paths.output_root)) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should not create output_root "
+                 "during bootstrap.\n";
+  }
+
+  if (std::filesystem::exists(paths.db_path.parent_path())) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should not create db directory "
+                 "during bootstrap.\n";
+  }
+
+  if (std::filesystem::exists(paths.db_path)) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should not create database file "
+                 "during bootstrap.\n";
+  }
+
+  if (std::filesystem::exists(paths.output_root / "logs")) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should not create logs directory "
+                 "during bootstrap.\n";
+  }
+
+  RemoveTree(paths.test_root);
+}
+
 auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_config_test");
@@ -85,6 +133,7 @@ auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
 }  // namespace
 
 auto RunCoreConfigValidationTests(int& failures) -> void {
+  TestAndroidRuntimeBootstrapStaysSideEffectFree(failures);
   TestAndroidRuntimeRejectsInvalidConverterConfig(failures);
   TestReportConfigLoaderRejectsInvalidDailyMarkdown(failures);
 }

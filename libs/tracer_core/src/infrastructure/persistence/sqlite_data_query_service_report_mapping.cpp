@@ -72,6 +72,27 @@ auto BuildMappingNamesContent(
   return payload.dump();
 }
 
+auto ValidateReportChartRequest(
+    const tracer_core::core::dto::DataQueryRequest& request) -> void {
+  static_cast<void>(ResolvePositiveLookbackDays(
+      request.lookback_days, kDefaultReportChartLookbackDays,
+      "--lookback-days"));
+
+  const infra_data_query_orchestrators::ExplicitDateRangeErrors kRangeErrors{
+      .missing_boundary_error =
+          "report-chart requires both --from-date and --to-date.",
+      .validation =
+          {
+              .invalid_range_error =
+                  "report-chart invalid range: from_date must be <= to_date.",
+              .invalid_date_error =
+                  "report-chart resolved invalid date range.",
+          },
+  };
+  static_cast<void>(infra_data_query_orchestrators::ResolveExplicitDateRange(
+      request.from_date, request.to_date, kRangeErrors));
+}
+
 auto BuildReportChartContent(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request)
     -> std::string {
@@ -79,6 +100,7 @@ auto BuildReportChartContent(
   const std::vector<std::string> kRoots =
       infra_data_query::QueryProjectRootNames(db_conn);
 
+  ValidateReportChartRequest(request);
   const int kPayloadLookbackDays = ResolvePositiveLookbackDays(
       request.lookback_days, kDefaultReportChartLookbackDays,
       "--lookback-days");

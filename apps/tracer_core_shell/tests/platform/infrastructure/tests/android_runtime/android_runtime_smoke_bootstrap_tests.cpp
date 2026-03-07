@@ -14,10 +14,57 @@ namespace {
 
 using nlohmann::json;
 
-auto RunStatsPeriodQuery(const std::shared_ptr<ITracerCoreApi>& core_api,
-                         std::string period,
-                         std::optional<std::string> period_argument,
-                         std::optional<int> lookback_days, int& failures)
+auto ExpectDataQueryFailureWithoutDb(
+    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const tracer_core::core::dto::DataQueryRequest& request,
+    const std::filesystem::path& db_path, std::string_view context,
+    int& failures) -> void {
+  const auto result = core_api->RunDataQuery(request);
+  if (result.ok) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should fail when the database does not exist.\n";
+  } else if (result.error_message.empty()) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should return a non-empty error message.\n";
+  }
+
+  if (std::filesystem::exists(db_path)) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should not create a database artifact.\n";
+  }
+}
+
+auto ExpectReportQueryFailureWithoutDb(
+    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const tracer_core::core::dto::ReportQueryRequest& request,
+    const std::filesystem::path& db_path, std::string_view context,
+    int& failures) -> void {
+  const auto result = core_api->RunReportQuery(request);
+  if (result.ok) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should fail when the database does not exist.\n";
+  } else if (result.error_message.empty()) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should return a non-empty error message.\n";
+  }
+
+  if (std::filesystem::exists(db_path)) {
+    ++failures;
+    std::cerr << "[FAIL] " << context
+              << " should not create a database artifact.\n";
+  }
+}
+
+auto ExpectStatsPeriodQueryFailureWithoutDb(
+    const std::shared_ptr<ITracerCoreApi>& core_api,
+    std::string period, std::optional<std::string> period_argument,
+    std::optional<int> lookback_days, const std::filesystem::path& db_path,
+    int& failures)
     -> void {
   tracer_core::core::dto::DataQueryRequest request;
   request.action = tracer_core::core::dto::DataQueryAction::kDaysStats;
@@ -27,21 +74,7 @@ auto RunStatsPeriodQuery(const std::shared_ptr<ITracerCoreApi>& core_api,
 
   const std::string context =
       "RunDataQuery(days-stats, period='" + period + "')";
-  const auto result =
-      RunDataQueryOrRecordFailure(core_api, request, context, failures);
-  if (!result.has_value()) {
-    return;
-  }
-  if (!Contains(result->content, "## Day Duration Stats")) {
-    ++failures;
-    std::cerr << "[FAIL] " << context
-              << " output should include '## Day Duration Stats'.\n";
-  }
-  if (!Contains(result->content, "**Days**: 0")) {
-    ++failures;
-    std::cerr << "[FAIL] " << context
-              << " output should include '**Days**: 0'.\n";
-  }
+  ExpectDataQueryFailureWithoutDb(core_api, request, db_path, context, failures);
 }
 
 }  // namespace
@@ -53,7 +86,7 @@ auto BuildRuntimeFixture(std::string_view test_name, int& failures)
 
   const std::filesystem::path repo_root = BuildRepoRoot();
   fixture.input_path = repo_root / "test" / "data";
-  fixture.config_toml_path = repo_root / "apps" / "tracer_core" / "config" /
+  fixture.config_toml_path = repo_root / "assets" / "tracer_core" / "config" /
                              "converter" / "interval_processor_config.toml";
 
   RemoveTree(fixture.paths.test_root);
@@ -289,17 +322,17 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
 
   RuntimeFixture fixture = std::move(*fixture_opt);
   try {
+    if (std::filesystem::exists(fixture.paths.db_path)) {
+      ++failures;
+      std::cerr << "[FAIL] Fresh runtime bootstrap should not create a "
+                   "database file.\n";
+    }
+
     tracer_core::core::dto::DataQueryRequest years_request;
     years_request.action = tracer_core::core::dto::DataQueryAction::kYears;
-    if (const auto years_result =
-            RunDataQueryOrRecordFailure(fixture.runtime.core_api, years_request,
-                                        "RunDataQuery(years)", failures);
-        years_result.has_value() &&
-        !Contains(years_result->content, "Total: 0")) {
-      ++failures;
-      std::cerr << "[FAIL] RunDataQuery(years) output should include "
-                   "'Total: 0'.\n";
-    }
+    ExpectDataQueryFailureWithoutDb(fixture.runtime.core_api, years_request,
+                                    fixture.paths.db_path,
+                                    "RunDataQuery(years)", failures);
 
     tracer_core::core::dto::DataQueryRequest mapping_names_request;
     mapping_names_request.action =
@@ -313,40 +346,40 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
       std::cerr << "[FAIL] RunDataQuery(mapping-names) output should include "
                    "\"names\" JSON key.\n";
     }
+    if (std::filesystem::exists(fixture.paths.db_path)) {
+      ++failures;
+      std::cerr << "[FAIL] RunDataQuery(mapping-names) should not create a "
+                   "database file.\n";
+    }
 
     tracer_core::core::dto::DataQueryRequest stats_request;
     stats_request.action = tracer_core::core::dto::DataQueryAction::kDaysStats;
-    if (const auto stats_result =
-            RunDataQueryOrRecordFailure(fixture.runtime.core_api, stats_request,
-                                        "RunDataQuery(days-stats)", failures);
-        stats_result.has_value()) {
-      if (!Contains(stats_result->content, "## Day Duration Stats")) {
-        ++failures;
-        std::cerr << "[FAIL] RunDataQuery(days-stats) output should include "
-                     "'## Day Duration Stats'.\n";
-      }
-      if (!Contains(stats_result->content, "**Days**: 0")) {
-        ++failures;
-        std::cerr << "[FAIL] RunDataQuery(days-stats) output should include "
-                     "'**Days**: 0'.\n";
-      }
-    }
+    ExpectDataQueryFailureWithoutDb(fixture.runtime.core_api, stats_request,
+                                    fixture.paths.db_path,
+                                    "RunDataQuery(days-stats)", failures);
 
-    RunStatsPeriodQuery(fixture.runtime.core_api, "day",
-                        std::string("2026-02-01"), std::nullopt, failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "week",
-                        std::string("2026-W05"), std::nullopt, failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "month",
-                        std::string("2026-02"), std::nullopt, failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "year", std::string("2026"),
-                        std::nullopt, failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "recent", std::string("7"),
-                        std::nullopt, failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "recent", std::nullopt, 7,
-                        failures);
-    RunStatsPeriodQuery(fixture.runtime.core_api, "range",
-                        std::string("2026-02-01|2026-02-15"), std::nullopt,
-                        failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "day", std::string("2026-02-01"),
+        std::nullopt, fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "week", std::string("2026-W05"),
+        std::nullopt, fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "month", std::string("2026-02"),
+        std::nullopt, fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "year", std::string("2026"), std::nullopt,
+        fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "recent", std::string("7"), std::nullopt,
+        fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "recent", std::nullopt, 7,
+        fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(
+        fixture.runtime.core_api, "range",
+        std::string("2026-02-01|2026-02-15"), std::nullopt,
+        fixture.paths.db_path, failures);
 
     tracer_core::core::dto::DataQueryRequest invalid_stats_period_request;
     invalid_stats_period_request.action =
@@ -366,15 +399,16 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
     tree_request.tree_period = "recent";
     tree_request.tree_period_argument = "7";
     tree_request.tree_max_depth = 1;
-    if (const auto tree_result =
-            RunDataQueryOrRecordFailure(fixture.runtime.core_api, tree_request,
-                                        "RunDataQuery(tree)", failures);
-        tree_result.has_value() &&
-        !Contains(tree_result->content, "Total: 0")) {
-      ++failures;
-      std::cerr
-          << "[FAIL] RunDataQuery(tree) output should include 'Total: 0'.\n";
-    }
+    ExpectDataQueryFailureWithoutDb(fixture.runtime.core_api, tree_request,
+                                    fixture.paths.db_path,
+                                    "RunDataQuery(tree)", failures);
+
+    ExpectReportQueryFailureWithoutDb(
+        fixture.runtime.core_api,
+        {.type = tracer_core::core::dto::ReportQueryType::kRecent,
+         .argument = "1",
+         .format = ReportFormat::kMarkdown},
+        fixture.paths.db_path, "RunReportQuery(recent)", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Android runtime bootstrap smoke test threw exception: "

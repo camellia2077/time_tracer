@@ -7,6 +7,9 @@ SqliteTimeSheetRepository::SqliteTimeSheetRepository(const std::string& db_path)
     : repository_(db_path) {}
 
 auto SqliteTimeSheetRepository::IsDbOpen() const -> bool {
+  // Repository construction must not be treated as a write-side side effect.
+  // The ingest database may be created only when the write path is entered
+  // after all validation stages have succeeded.
   return repository_.IsDbOpen();
 }
 

@@ -61,29 +61,24 @@ auto ImportService::ImportFromMemory(
   }
 
   // 2. 入库
-  if (repository_.IsDbOpen()) {
-    stats.db_open_success = true;
-    try {
-      if (replace_month_target.has_value()) {
-        repository_.ReplaceMonthData(replace_month_target->kYear,
-                                     replace_month_target->kMonth, all_data.days,
-                                     all_data.records);
-        stats.replaced_month =
-            std::format("{:04d}-{:02d}", replace_month_target->kYear,
-                        replace_month_target->kMonth);
-      } else {
-        repository_.ImportData(all_data.days, all_data.records);
-      }
-      stats.transaction_success = true;
-    } catch (const std::exception& e) {
-      stats.transaction_success = false;
-      stats.error_message = e.what();
-      stats.reason_buckets["db_transaction_failed"] += 1;
+  try {
+    if (replace_month_target.has_value()) {
+      repository_.ReplaceMonthData(replace_month_target->kYear,
+                                   replace_month_target->kMonth, all_data.days,
+                                   all_data.records);
+      stats.replaced_month =
+          std::format("{:04d}-{:02d}", replace_month_target->kYear,
+                      replace_month_target->kMonth);
+    } else {
+      repository_.ImportData(all_data.days, all_data.records);
     }
-  } else {
+    stats.db_open_success = true;
+    stats.transaction_success = true;
+  } catch (const std::exception& e) {
     stats.db_open_success = false;
-    stats.error_message = "Cannot open database.";
-    stats.reason_buckets["db_not_open"] += 1;
+    stats.transaction_success = false;
+    stats.error_message = e.what();
+    stats.reason_buckets["db_transaction_failed"] += 1;
   }
 
   auto end_total = std::chrono::high_resolution_clock::now();

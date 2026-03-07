@@ -31,7 +31,6 @@ struct AndroidRuntimeConfigPaths {
 [[nodiscard]] auto ResolveDbPath(const std::filesystem::path& db_path,
                                  const std::filesystem::path& output_root)
     -> std::filesystem::path;
-auto EnsureDatabaseBootstrapped(const std::filesystem::path& db_path) -> void;
 
 [[nodiscard]] auto ResolveAndroidRuntimeConfigPaths(
     const std::filesystem::path& requested_converter_config_toml_path)

@@ -37,3 +37,10 @@
 2. 改输出文本：同步更新 `specs/cli-output-style.md` 与测试断言。
 3. 改 C ABI 交互：同步更新 `docs/time_tracer/core/contracts/c_abi.md`。
 4. 本目录不再维护旧前端主线说明；历史仅在归档文档中保留。
+
+## Ingest 持久化边界
+
+1. `ingest` 必须先完成输入收集、解析、结构校验与逻辑校验，再进入数据库持久化阶段。
+2. 若运行前数据库不存在，则失败的 `ingest` 不得留下新的 `.sqlite3`、`-wal`、`-shm` 或 `-journal`。
+3. Windows CLI 不应依赖“失败后删除空库文件”的补偿逻辑；该规则由 core/runtime 持久化边界直接保证。
+4. `query` / `report` 在数据库缺失时应返回明确错误，而不是隐式建库掩盖问题。

@@ -35,6 +35,18 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
       return;
     }
 
+    tracer_core::core::dto::IngestRequest ingest_request;
+    ingest_request.input_path = (BuildRepoRoot() / "test" / "data").string();
+    ingest_request.date_check_mode = DateCheckMode::kNone;
+    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    if (!ingest_result.ok) {
+      ++failures;
+      std::cerr << "[FAIL] Legacy fallback test ingest should succeed: "
+                << ingest_result.error_message << '\n';
+      RemoveTree(paths.test_root);
+      return;
+    }
+
     static_cast<void>(RunAndCheckReportQuery(
         runtime.core_api,
         {.type = tracer_core::core::dto::ReportQueryType::kDay,

@@ -32,6 +32,12 @@ auto SqliteDataQueryService::RunDataQuery(
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
 
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kReportChart) {
+    infrastructure::persistence::data_query_service_internal::
+        ValidateReportChartRequest(request);
+  }
+
   DBManager db_manager(db_path_.string());
   sqlite3* db_conn = data_query_service_internal::EnsureDbConnectionOrThrow(
       db_manager, db_path_);

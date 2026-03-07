@@ -40,6 +40,9 @@ class Repository {
       std::string_view date) const -> std::optional<LatestActivityTail>;
 
  private:
+  auto EnsureWriteRepositoryReady() -> void;
+
+  std::string db_path_;
   std::unique_ptr<sqlite::Connection> connection_manager_;
   std::unique_ptr<sqlite::Statement> statement_manager_;
   std::unique_ptr<sqlite::Writer> data_inserter_;

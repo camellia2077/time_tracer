@@ -4,101 +4,61 @@ trigger: always_on
 
 [CONSTRAINTS]
 
-- Build/test entry must use project Python commands:
-  - Daily one-command flow:
-    - `python scripts/run.py post-change --app <app> --run-tests always --concise`
-    - For apps without a fixed backend build directory, `--build-dir build_fast` remains the default quick path.
-    - For `tracer_android`, do not pass `--build-dir`; Gradle backend uses fixed build dir `build`.
-  - Milestone/release flow:
-    - `python scripts/run.py verify --app <app> --quick --scope batch --concise`
-  - Other build/test operations must go through:
-    - `python scripts/run.py ...`
-- Python CLI help-first rule:
+- Shell / encoding:
+  - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution.
+  - Run `.sh` workflows only when explicitly requested.
+- Build / test entry:
+  - Use `python scripts/run.py ...` as the default project build / verify / post-change entry.
+  - Do not use ad-hoc `cmake` / `ninja` wrappers unless the user explicitly asks for them.
   - Before using command flags, read help first:
     - `python scripts/run.py -h`
     - `python scripts/run.py <subcommand> -h`
     - `python test/run.py -h`
-  - For `python scripts/run.py <subcommand>`, if the subcommand or flag combination has not been validated in the current session, run the corresponding `-h` first; validated combinations may be reused without repeating `-h`.
-  - If `unrecognized arguments` appears, rerun with the corresponding `-h` before retrying.
-- Build success criterion:
-  - Determine compile/build success by process exit code.
+  - If `unrecognized arguments` appears, rerun the corresponding `-h` before retrying.
+- Success / failure judgment:
+  - Build success is determined by process exit code.
   - `exit code = 0` means success; any non-zero exit code means failure.
-- Result visibility contract (state/summary/log):
-  - State:
-    - Default/flexible backend path: `apps/<app>/<build_dir>/post_change_last.json`
+  - On failures, report the executed command and key error lines.
+- Result visibility contract:
+  - Post-change state:
+    - default/flexible backend path: `apps/<app>/<build_dir>/post_change_last.json`
     - `tracer_android`: `apps/tracer_android/build/post_change_last.json`
-    - step status (`configure/build/test`), failed stage, failed command, next action.
-  - Summary: `test/output/<result_target>/result.json`
-    - overall success/exit code summary (agent pass/fail must read this file).
+  - Machine-readable summary: `test/output/<result_target>/result.json`
   - Aggregated log: `test/output/<result_target>/logs/output.log`
-    - key error lines for failure triage.
   - Result target mapping:
     - `tracer_core` / `tracer_core_shell` / `tracer_windows_cli` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
     - `tracer_android` -> `artifact_android`
     - `log_generator` -> `artifact_log_generator`
     - Unmapped apps keep `<result_target>=<app>`
-- App instruction resolution order:
+- Instruction resolution:
   - 1) Use `apps/<target_app>/agent.md` when present.
-  - 2) If missing, read `apps/<target_app>/README.md` build/test section.
-  - 3) Fall back to this file for global defaults.
-- Target app routing defaults:
-  - Changes under `apps/tracer_android/**` => target app `tracer_android`.
-  - Changes under `apps/tracer_cli/windows/**` => target app `tracer_core` verify flow.
-  - Changes under `apps/tracer_core_shell/**` => target app `tracer_core_shell` verify flow.
-- Core C ABI change rule:
-  - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols/signatures.
-  - `docs/time_tracer/core/contracts/c_abi.md` is the single source of truth for ABI naming/contract.
-- Report-chart contract change rule:
-  - Read `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` before editing report-chart fields or semantics.
-  - Then sync `docs/time_tracer/core/contracts/stats/json_schema_v1.md` and `docs/time_tracer/core/contracts/stats/README.md`.
-- Core JSON boundary rule:
-  - `JSON` may remain as an exchange format at transport / serialization / renderer / adapter / host boundaries.
+  - 2) If missing, read `apps/<target_app>/README.md`.
+  - 3) Fall back to this file only for global defaults.
+- Validation scope:
+  - After code changes, prefer `python scripts/run.py post-change ...` unless the user requests another flow.
+  - If the change only touches documentation files (`docs/**`, `*.md`) and does not modify code/config/scripts/tests, skip build/test by default.
+  - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
+- High-risk contract gates:
+  - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols / signatures.
+  - Read `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` before editing report-chart fields / semantics.
+  - Then sync:
+    - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
+    - `docs/time_tracer/core/contracts/stats/README.md`
+- Core JSON boundary:
+  - `JSON` may remain as an exchange format only at transport / serialization / renderer / adapter / host boundaries.
   - Do not add `nlohmann/json` dependencies under `libs/tracer_core/src/domain/**`.
   - Do not add `nlohmann/json` dependencies under `libs/tracer_core/src/application/**`.
-  - Do not expose `nlohmann::json` as an application-layer public input/output type.
-  - Do not treat `semantic_json` as an application-layer internal protocol or intermediate model.
-  - Thread explicit output mode / typed semantic result through core flows; do not fan out new `bool semantic_json` toggles as internal protocol.
+  - Do not expose `nlohmann::json` as an application-layer public input / output type.
+  - Do not treat `semantic_json` as an application-layer internal protocol.
+  - Thread explicit output mode / typed semantic result through core flows.
   - Future `libs/tracer_core_ai/src/domain/**` and `libs/tracer_core_ai/src/application/**` must also stay free of `nlohmann/json`.
-  - Future AI modules must consume typed semantic models first and only encode/decode JSON at renderer / transport / adapter edges.
-  - When refactoring existing JSON-heavy paths, move toward typed models in `domain / application`, and keep JSON decode/encode at the boundary layers.
-- For `tracer_android`, verify pass/fail must be read from:
-  - `test/output/artifact_android/result.json`
-- For `tracer_windows_rust_cli` / `tracer_core` / `tracer_core_shell` Windows CLI flow, verify pass/fail must be read from:
-  - `test/output/artifact_windows_cli/result.json`
-- Windows CLI test pipeline rule:
-  - For Windows CLI integrated suite, compile target must be `apps/tracer_cli/windows`.
-  - Daily flow (single command):
-    - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
-    - `python scripts/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
-  - Milestone flow (single command):
-    - `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
-    - `python scripts/run.py verify --app tracer_core_shell --quick --scope batch --concise`
-  - Do not treat `tracer_core` / `tracer_core_shell` as the default Windows CLI delivery build target.
-- Do not use ad-hoc `cmake`/`ninja` wrappers outside `scripts/run.py`.
-- After code changes, run `python scripts/run.py post-change` unless the user requests another flow.
-- Android flow split:
-  - Edit loop: `python scripts/run.py build --app tracer_android --profile android_edit`
-  - Validation loop: `python scripts/run.py verify --app tracer_android --profile android_style --concise` or `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
-- Docs-only change rule:
-  - If the change only touches documentation files (for example `docs/**` and `*.md`) and does not modify code/config/scripts/tests, skip `verify` and build/test compilation by default.
-- Default quick verification build directory is `build_fast` for apps without a fixed backend build directory.
-- Full optimization safety rule:
-  - if `DISABLE_OPTIMIZATION=OFF`, `ENABLE_LTO` must stay `OFF` (FTO/LTO forbidden due to ICE risk).
-- Default build shell is PowerShell; run `.sh` workflows only when explicitly requested.
-- Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution to avoid UTF-8 encoding issues.
-- CMake baseline for `apps/tracer_core_shell` is `3.28` or newer.
-- Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
-- On failures, report the executed command and key error lines.
-- If a user request is incorrect, risky, or clearly suboptimal, state that directly and provide a better alternative before executing; do not follow blindly.
-- Long-file refactor rule:
-  - First do in-file boundary convergence (`namespace {}` / helper groups / stable entry).
-  - Only after boundary stabilization, do physical split into multiple `*.cpp`.
-  - Avoid combining feature changes into the same refactor step.
-- Temporary file rule:
-  - Store temporary files under repository `temp/` only.
-  - Do not create temporary files in source/config/test directories unless explicitly requested.
-- Shared asset semantics rule:
+- Shared source-of-truth:
   - `assets/tracer_core/config` is the only canonical shared runtime config source.
   - App-local config directories are generated runtime copies, not source-of-truth.
-  - Design reference SVG / branding exploration files belong under `design/branding/**` in the long-term layout.
-  - The legacy shared design directory has been retired; design reference assets belong under `design/branding/**`.
+  - Design reference / branding exploration assets belong under `design/branding/**`.
+- Refactor / temp file discipline:
+  - Long-file refactors: first do in-file boundary convergence, then split files only after boundaries stabilize.
+  - Avoid mixing feature changes into the same refactor step.
+  - Store temporary files under repository `temp/` only, unless the user explicitly asks otherwise.
+- Execution quality:
+  - If a user request is incorrect, risky, or clearly suboptimal, say so directly and provide a better alternative before executing.

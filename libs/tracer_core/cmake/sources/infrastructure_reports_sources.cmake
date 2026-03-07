@@ -8,6 +8,8 @@ set(TIME_TRACKER_INFRA_REPORTS_SOURCES
     "reports/report_dto_formatter.cpp"
     "reports/daily/formatters/markdown/day_md_formatter_core.cpp"
     "reports/monthly/formatters/markdown/month_md_formatter_core.cpp"
+    "reports/lazy_sqlite_report_data_query_service.cpp"
+    "reports/lazy_sqlite_report_query_service.cpp"
     "reports/range/formatters/markdown/range_md_formatter_core.cpp"
     "reports/report_service.cpp"
     "reports/sqlite_report_data_query_service.cpp"

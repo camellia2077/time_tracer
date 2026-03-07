@@ -30,6 +30,8 @@
 5. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
 6. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
    - Core 分层与模块边界重构与开发规则说明。
+7. `docs/time_tracer/core/design/ingest-persistence-boundary.md`
+   - Ingest 持久化边界规则：只有全部校验通过后，才允许创建数据库并写入。
 2. `docs/time_tracer/core/architecture/data_query/README.md`
    - DataQuery 子域总览与阅读顺序。
 3. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`

@@ -63,8 +63,9 @@ auto BuildRepoRoot() -> std::filesystem::path {
       .parent_path()   // android_runtime
       .parent_path()   // tests
       .parent_path()   // infrastructure
-      .parent_path()   // src
-      .parent_path()   // tracer_core
+      .parent_path()   // platform
+      .parent_path()   // tests
+      .parent_path()   // tracer_core_shell
       .parent_path()   // apps
       .parent_path();  // repo root
 }
@@ -105,7 +106,7 @@ auto WriteFileWithParents(const std::filesystem::path& target_path,
 auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
     -> bool {
   const std::filesystem::path source_root =
-      BuildRepoRoot() / "apps" / "tracer_core" / "config";
+      BuildRepoRoot() / "assets" / "tracer_core" / "config";
 
   const auto copy_required_file = [&](std::string_view relative_path) -> bool {
     return CopyFileWithParents(

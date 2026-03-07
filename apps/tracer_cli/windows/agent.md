@@ -57,7 +57,7 @@ python scripts/run.py verify --app tracer_core --build-dir build_fast --scope ar
    - `test/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_crypto.toml`
 9. EXE 图标生成与注入：
-   - 默认 SVG 源：`design/branding/exports/bg_indigo_mist_vertical_padding.svg`
+   - 默认 SVG 源：`design/branding/exports/bg_white_vertical_padding_rounded.svg`
    - 可选透明底 SVG：`design/branding/exports/bg_golden_vertical_padding_transparent.svg`
    - 构建生成：`apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
    - 注入逻辑：`apps/tracer_cli/windows/rust_cli/build.rs`
@@ -87,6 +87,10 @@ python scripts/run.py verify --app tracer_core --build-dir build_fast --scope ar
 - 不要重新引入已归档前端实现的运行时依赖
 - 测试输入源固定为 `test/data`
 - 临时产物放在 `temp/`
+- `ingest` 的持久化语义必须保持严格边界：
+  - 只有全部校验通过后，才允许创建数据库并写入
+  - 若运行前数据库不存在，则失败的 ingest 不得留下新的 `.sqlite3` / `-wal` / `-shm` / `-journal`
+  - 不要把“失败后清理空库文件”当作长期设计；长期修复应落在 core/runtime 持久化边界
 
 ## 文档入口
 

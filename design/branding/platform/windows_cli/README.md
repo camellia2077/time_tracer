@@ -4,13 +4,18 @@ Windows CLI 图标使用 `design/branding/master/time_tracer_brand_master_symbol
 
 ## 当前默认构建源
 
-- `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
+- `design/branding/exports/bg_white_vertical_padding_rounded.svg`
+
+## 可选参考导出
+
+- `design/branding/exports/bg_full_canvas_light_vertical_padding.svg`
 
 ## 说明
 
 - Windows CLI 可以更直接地贴近无背景品牌母版
 - 白底与整体画布关系由 Windows 平台导出版决定
 - 当前默认构建源保留了你选定的箭头大小与位置
+- 圆角导出稿在 24x24 画布中保留透明安全区，并以内缩圆角底板承载母版符号
 - 构建期会将 SVG 转成 `.ico` 并注入 EXE
 - 默认解析逻辑位于：
   - `scripts/toolchain/commands/cmd_build/windows_icon_resources.py`
