@@ -65,7 +65,35 @@ enforce_core_include_boundary(
         "apps[\\/]tracer_core[\\/]src[\\/](api|infrastructure)[\\/]"
         "libs[\\/]tracer_adapters_io[\\/]"
         "tracer_adapters_io[\\/]src[\\/]"
+        "nlohmann[\\/]json(_fwd)?\\.hpp"
 )
+enforce_source_content_boundary(
+    ROOT "${TRACER_CORE_LIB_SOURCE_ROOT}"
+    TARGET_DIRS
+        "domain"
+        "application"
+    FORBIDDEN_PATTERNS
+        "nlohmann::json"
+)
+
+if(EXISTS "${TT_TRACER_CORE_AI_SOURCE_DIR}/src")
+    enforce_core_include_boundary(
+        ROOT "${TT_TRACER_CORE_AI_SOURCE_DIR}/src"
+        CORE_DIRS
+            "domain"
+            "application"
+        FORBIDDEN_PATTERNS
+            "nlohmann[\\/]json(_fwd)?\\.hpp"
+    )
+    enforce_source_content_boundary(
+        ROOT "${TT_TRACER_CORE_AI_SOURCE_DIR}/src"
+        TARGET_DIRS
+            "domain"
+            "application"
+        FORBIDDEN_PATTERNS
+            "nlohmann::json"
+    )
+endif()
 
 enforce_app_shell_source_boundary(
     ROOT "${PROJECT_SOURCE_DIR}"

@@ -27,11 +27,8 @@ auto SqliteDataQueryService::RunDataQuery(
     std::string content =
         infrastructure::persistence::data_query_service_internal::
             BuildMappingNamesContent(converter_config_toml_path_);
-    const bool kSemanticJsonOutput =
-        request.output_mode ==
-        tracer_core::core::dto::DataQueryOutputMode::kSemanticJson;
     content = infra_data_query_renderers::RenderJsonObjectOutput(
-        "mapping_names", std::move(content), kSemanticJsonOutput);
+        "mapping_names", std::move(content), request.output_mode);
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
 

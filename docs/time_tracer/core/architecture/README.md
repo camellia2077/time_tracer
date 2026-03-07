@@ -28,6 +28,7 @@
 4. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
    - Infrastructure 持久层架构：SQLite 高速直接入库（Writer）、动态生成层级项目树（Project Resolver）、基于关联型数据库构建底层聚合查询（DataQueryService）与依赖隔离。
 5. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
+6. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
    - Core 分层与模块边界重构与开发规则说明。
 2. `docs/time_tracer/core/architecture/data_query/README.md`
    - DataQuery 子域总览与阅读顺序。

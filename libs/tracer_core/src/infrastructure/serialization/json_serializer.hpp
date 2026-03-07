@@ -2,28 +2,26 @@
 #ifndef INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
 #define INFRASTRUCTURE_SERIALIZATION_JSON_SERIALIZER_H_
 
-#include <nlohmann/json_fwd.hpp>
+#include <string>
+#include <string_view>
 #include <vector>
 
 #include "domain/model/daily_log.hpp"
 
 namespace serializer {
 
-/**
- * @brief 序列化模块的外观类 (Facade)
- * 负责调度内部核心组件 (LogSerializer, LogDeserializer) 完成转换任务。
- */
 class JsonSerializer {
  public:
-  // Struct -> JSON
-  [[nodiscard]] static auto SerializeDay(const DailyLog& day) -> nlohmann::json;
+  [[nodiscard]] static auto SerializeDay(const DailyLog& day, int indent = -1)
+      -> std::string;
   [[nodiscard]] static auto SerializeDays(const std::vector<DailyLog>& days)
-      -> nlohmann::json;
+      -> std::string;
+  [[nodiscard]] static auto SerializeDays(const std::vector<DailyLog>& days,
+                                          int indent) -> std::string;
 
-  // JSON -> Struct
-  [[nodiscard]] static auto DeserializeDay(const nlohmann::json& day_json)
+  [[nodiscard]] static auto DeserializeDay(std::string_view day_json)
       -> DailyLog;
-  [[nodiscard]] static auto DeserializeDays(const nlohmann::json& json_array)
+  [[nodiscard]] static auto DeserializeDays(std::string_view json_array)
       -> std::vector<DailyLog>;
 };
 

@@ -51,6 +51,16 @@ trigger: always_on
 - Report-chart contract change rule:
   - Read `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` before editing report-chart fields or semantics.
   - Then sync `docs/time_tracer/core/contracts/stats/json_schema_v1.md` and `docs/time_tracer/core/contracts/stats/README.md`.
+- Core JSON boundary rule:
+  - `JSON` may remain as an exchange format at transport / serialization / renderer / adapter / host boundaries.
+  - Do not add `nlohmann/json` dependencies under `libs/tracer_core/src/domain/**`.
+  - Do not add `nlohmann/json` dependencies under `libs/tracer_core/src/application/**`.
+  - Do not expose `nlohmann::json` as an application-layer public input/output type.
+  - Do not treat `semantic_json` as an application-layer internal protocol or intermediate model.
+  - Thread explicit output mode / typed semantic result through core flows; do not fan out new `bool semantic_json` toggles as internal protocol.
+  - Future `libs/tracer_core_ai/src/domain/**` and `libs/tracer_core_ai/src/application/**` must also stay free of `nlohmann/json`.
+  - Future AI modules must consume typed semantic models first and only encode/decode JSON at renderer / transport / adapter edges.
+  - When refactoring existing JSON-heavy paths, move toward typed models in `domain / application`, and keep JSON decode/encode at the boundary layers.
 - For `tracer_android`, verify pass/fail must be read from:
   - `test/output/artifact_android/result.json`
 - For `tracer_windows_rust_cli` / `tracer_core` / `tracer_core_shell` Windows CLI flow, verify pass/fail must be read from:

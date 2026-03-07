@@ -28,7 +28,8 @@ auto BuildSuccessOutput(std::string content)
 
 auto HandleTreeQuery(sqlite3* db_conn,
                      const tracer_core::core::dto::DataQueryRequest& request,
-                     const QueryFilters& base_filters, bool semantic_json)
+                     const QueryFilters& base_filters,
+                     tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   namespace app_tree = tracer_core::application::reporting::tree;
   auto tree_filters = base_filters;
@@ -42,7 +43,7 @@ auto HandleTreeQuery(sqlite3* db_conn,
   const auto kNodes = app_tree::LimitProjectTreeDepth(
       app_tree::BuildProjectTreeNodesFromReportTree(kTree), kMaxDepth);
   return BuildSuccessOutput(data_query_renderers::RenderProjectTreeOutput(
-      kNodes, kMaxDepth, semantic_json));
+      kNodes, kMaxDepth, output_mode));
 }
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators

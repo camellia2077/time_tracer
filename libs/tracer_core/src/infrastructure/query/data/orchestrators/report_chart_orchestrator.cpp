@@ -23,11 +23,12 @@ auto BuildSuccessOutput(std::string content)
 
 auto HandleReportChartQuery(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
-    bool semantic_json) -> tracer_core::core::dto::TextOutput {
+    tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> tracer_core::core::dto::TextOutput {
   std::string content =
       query_internal::BuildReportChartContent(db_conn, request);
   return BuildSuccessOutput(data_query_renderers::RenderJsonObjectOutput(
-      "report_chart", std::move(content), semantic_json));
+      "report_chart", std::move(content), output_mode));
 }
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators

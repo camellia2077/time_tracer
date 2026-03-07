@@ -22,49 +22,53 @@ auto BuildSuccessOutput(std::string content)
 
 }  // namespace
 
-auto HandleYearsQuery(sqlite3* db_conn, bool semantic_json)
+auto HandleYearsQuery(sqlite3* db_conn,
+                      tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   const auto kYears = QueryYears(db_conn);
   return BuildSuccessOutput(
-      data_query_renderers::RenderListOutput("years", kYears, semantic_json));
+      data_query_renderers::RenderListOutput("years", kYears, output_mode));
 }
 
 auto HandleMonthsQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                       bool semantic_json)
+                       tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   const auto kMonths = QueryMonths(db_conn, base_filters.kYear);
   return BuildSuccessOutput(
-      data_query_renderers::RenderListOutput("months", kMonths, semantic_json));
+      data_query_renderers::RenderListOutput("months", kMonths, output_mode));
 }
 
 auto HandleDaysQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                     bool semantic_json) -> tracer_core::core::dto::TextOutput {
+                     tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> tracer_core::core::dto::TextOutput {
   const auto kDays = QueryDays(db_conn, base_filters.kYear, base_filters.kMonth,
                                base_filters.from_date, base_filters.to_date,
                                base_filters.reverse, base_filters.limit);
   return BuildSuccessOutput(
-      data_query_renderers::RenderListOutput("days", kDays, semantic_json));
+      data_query_renderers::RenderListOutput("days", kDays, output_mode));
 }
 
 auto HandleDaysDurationQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                             bool semantic_json)
+                             tracer_core::core::dto::DataQueryOutputMode
+                                 output_mode)
     -> tracer_core::core::dto::TextOutput {
   const auto kRows = QueryDayDurations(db_conn, base_filters);
   return BuildSuccessOutput(data_query_renderers::RenderDayDurationsOutput(
-      "days_duration", kRows, semantic_json));
+      "days_duration", kRows, output_mode));
 }
 
 auto HandleSearchQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                       bool semantic_json)
+                       tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   const auto kItems = QueryDatesByFilters(db_conn, base_filters);
   return BuildSuccessOutput(
-      data_query_renderers::RenderListOutput("search", kItems, semantic_json));
+      data_query_renderers::RenderListOutput("search", kItems, output_mode));
 }
 
 auto HandleActivitySuggestQuery(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
-    bool semantic_json) -> tracer_core::core::dto::TextOutput {
+    tracer_core::core::dto::DataQueryOutputMode output_mode)
+    -> tracer_core::core::dto::TextOutput {
   ActivitySuggestionQueryOptions options;
   options.lookback_days =
       request.lookback_days.value_or(kDefaultSuggestLookbackDays);
@@ -74,8 +78,7 @@ auto HandleActivitySuggestQuery(
   options.score_by_duration = request.activity_score_by_duration;
   const auto kRows = QueryActivitySuggestions(db_conn, options);
   return BuildSuccessOutput(
-      data_query_renderers::RenderActivitySuggestionsOutput(kRows,
-                                                            semantic_json));
+      data_query_renderers::RenderActivitySuggestionsOutput(kRows, output_mode));
 }
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators

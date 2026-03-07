@@ -30,7 +30,6 @@ set(TRACER_CORE_REPORTS_SHARED_SOURCES
     "${TRACER_CORE_REPORTS_ROOT}/monthly/common/month_base_config.cpp"
     "${TRACER_CORE_REPORTS_ROOT}/range/common/range_base_config.cpp"
     "${TRACER_CORE_REPORTS_ROOT}/daily/formatters/statistics/stat_formatter.cpp"
-    "${TRACER_CORE_REPORTS_ROOT}/shared/utils/config/config_utils.cpp"
     "${TRACER_CORE_REPORTS_ROOT}/shared/utils/format/report_string_utils.cpp"
     "${TRACER_CORE_REPORTS_ROOT}/shared/utils/format/time_format.cpp"
     "${TRACER_CORE_REPORTS_ROOT}/shared/config/tex_style_config.cpp"

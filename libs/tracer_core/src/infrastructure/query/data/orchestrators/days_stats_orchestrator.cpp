@@ -26,7 +26,8 @@ auto BuildSuccessOutput(std::string content)
 
 auto HandleDaysStatsQuery(
     sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
-    const QueryFilters& base_filters, bool semantic_json)
+    const QueryFilters& base_filters,
+    tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   auto stats_filters = base_filters;
   if (request.tree_period.has_value()) {
@@ -37,7 +38,7 @@ auto HandleDaysStatsQuery(
   const auto kRows = QueryDayDurations(db_conn, stats_filters);
   const auto kStats = data_query_stats::ComputeDayDurationStats(kRows);
   return BuildSuccessOutput(data_query_renderers::RenderDayDurationStatsOutput(
-      kRows, kStats, request.top_n, semantic_json));
+      kRows, kStats, request.top_n, output_mode));
 }
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators

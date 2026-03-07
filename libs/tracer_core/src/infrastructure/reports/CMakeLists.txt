@@ -9,7 +9,6 @@ add_library(reports_shared SHARED
     "daily/formatters/statistics/stat_formatter.cpp"
 
     # Shared - Internal Utils & Config
-    "shared/utils/config/config_utils.cpp"
     "shared/utils/format/report_string_utils.cpp"
     "shared/utils/format/time_format.cpp"
     

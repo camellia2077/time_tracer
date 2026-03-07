@@ -2,12 +2,14 @@
 #include "infrastructure/io/processed_data_io.hpp"
 
 #include <exception>
+#include <iterator>
 #include <nlohmann/json.hpp>
 
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/core/file_writer.hpp"
 #include "infrastructure/io/file_import_reader.hpp"
+#include "infrastructure/io/processed_json_validation.hpp"
 #include "infrastructure/serialization/json_serializer.hpp"
 #include "shared/types/ansi_colors.hpp"
 
@@ -23,7 +25,16 @@ auto ProcessedDataLoader::LoadDailyLogs(const std::string& processed_path)
   for (const auto& [filepath, content] : import_payload) {
     try {
       auto json_obj = nlohmann::json::parse(content);
-      auto logs = serializer::JsonSerializer::DeserializeDays(json_obj);
+      auto validation_input = BuildProcessedJsonValidationInput(json_obj);
+      auto validation_errors =
+          CollectProcessedJsonValidationErrors(filepath, validation_input);
+      if (!validation_errors.empty()) {
+        result.errors.insert(result.errors.end(),
+                             std::make_move_iterator(validation_errors.begin()),
+                             std::make_move_iterator(validation_errors.end()));
+        continue;
+      }
+      auto logs = serializer::JsonSerializer::DeserializeDays(content);
       result.data_by_source[filepath] = std::move(logs);
     } catch (const std::exception& e) {
       result.errors.push_back({.source = filepath, .message = e.what()});
@@ -45,9 +56,8 @@ auto ProcessedDataWriter::Write(
     try {
       FileSystemHelper::CreateDirectories(month_output_dir);
 
-      nlohmann::json json_content =
-          serializer::JsonSerializer::SerializeDays(month_days);
-      FileWriter::WriteContent(output_file_path, json_content.dump(4));
+      FileWriter::WriteContent(
+          output_file_path, serializer::JsonSerializer::SerializeDays(month_days, 4));
 
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {

@@ -28,6 +28,7 @@ namespace android_runtime_tests::data_query_refactor_internal {
 namespace {
 
 using nlohmann::json;
+using tracer_core::core::dto::DataQueryOutputMode;
 
 constexpr double kDoubleTolerance = 1e-9;
 constexpr long long kDuration3600 = 3600;
@@ -126,7 +127,8 @@ auto TestSemanticDayStatsSnapshot(int& failures) -> void {
   const auto kRows = BuildStatsSampleRows();
   const auto kStats = ComputeDayDurationStats(kRows);
   const std::string kSemantic = tracer_core::infrastructure::query::data::
-      renderers::RenderDayDurationStatsOutput(kRows, kStats, 2, true);
+      renderers::RenderDayDurationStatsOutput(
+          kRows, kStats, 2, DataQueryOutputMode::kSemanticJson);
 
   const auto kPayload = json::parse(kSemantic);
   Expect(kPayload.value("schema_version", 0) == 1,
@@ -189,7 +191,7 @@ auto CheckYearsOrchestratorSemanticSnapshot(sqlite3* database, int& failures)
     -> bool {
   const auto kYearsOutput =
       tracer_core::infrastructure::query::data::orchestrators::HandleYearsQuery(
-          database, true);
+          database, DataQueryOutputMode::kSemanticJson);
   Expect(kYearsOutput.ok, "years orchestrator should succeed.", failures);
   if (!kYearsOutput.ok) {
     return false;
@@ -228,7 +230,8 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
   QueryFilters base_filters;
   const auto kStatsOutput =
       tracer_core::infrastructure::query::data::orchestrators::
-          HandleDaysStatsQuery(database, stats_request, base_filters, true);
+          HandleDaysStatsQuery(database, stats_request, base_filters,
+                               DataQueryOutputMode::kSemanticJson);
   Expect(kStatsOutput.ok, "days-stats orchestrator should succeed.", failures);
   if (!kStatsOutput.ok) {
     return false;
@@ -270,7 +273,8 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   report_chart_request.root = "study";
   const auto kChartOutput =
       tracer_core::infrastructure::query::data::orchestrators::
-          HandleReportChartQuery(database, report_chart_request, true);
+          HandleReportChartQuery(database, report_chart_request,
+                                 DataQueryOutputMode::kSemanticJson);
   Expect(kChartOutput.ok, "report-chart orchestrator should succeed.",
          failures);
   if (!kChartOutput.ok) {
@@ -320,7 +324,8 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   missing_root_request.root = "nosuchroot";
   const auto kMissingRootOutput =
       tracer_core::infrastructure::query::data::orchestrators::
-          HandleReportChartQuery(database, missing_root_request, true);
+          HandleReportChartQuery(database, missing_root_request,
+                                 DataQueryOutputMode::kSemanticJson);
   Expect(kMissingRootOutput.ok,
          "report-chart missing-root fallback should succeed.", failures);
   if (!kMissingRootOutput.ok) {

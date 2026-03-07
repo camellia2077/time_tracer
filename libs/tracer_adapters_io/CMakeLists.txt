@@ -26,8 +26,8 @@ endif()
 if(TT_ENABLE_PROCESSED_JSON_IO)
     target_sources(taio_lib PRIVATE
         src/infrastructure/io/processed_data_io.cpp
+        src/infrastructure/io/processed_json_validation.cpp
         "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/serialization/json_serializer.cpp"
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/serialization/core/log_codec.cpp"
     )
 else()
     target_sources(taio_lib PRIVATE

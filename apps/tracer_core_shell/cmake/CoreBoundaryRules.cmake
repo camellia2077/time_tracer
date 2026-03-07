@@ -77,6 +77,67 @@ function(enforce_core_include_boundary)
     endforeach()
 endfunction()
 
+function(enforce_source_content_boundary)
+    set(options)
+    set(oneValueArgs ROOT)
+    set(multiValueArgs TARGET_DIRS FORBIDDEN_PATTERNS)
+    cmake_parse_arguments(ESCB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if(NOT ESCB_ROOT)
+        message(FATAL_ERROR "enforce_source_content_boundary requires ROOT.")
+    endif()
+
+    if(NOT ESCB_TARGET_DIRS)
+        message(FATAL_ERROR
+            "enforce_source_content_boundary requires TARGET_DIRS."
+        )
+    endif()
+
+    if(NOT ESCB_FORBIDDEN_PATTERNS)
+        message(FATAL_ERROR
+            "enforce_source_content_boundary requires FORBIDDEN_PATTERNS."
+        )
+    endif()
+
+    foreach(_target_dir IN LISTS ESCB_TARGET_DIRS)
+        if(IS_ABSOLUTE "${_target_dir}")
+            set(_scan_dir "${_target_dir}")
+        else()
+            set(_scan_dir "${ESCB_ROOT}/${_target_dir}")
+        endif()
+
+        if(NOT EXISTS "${_scan_dir}")
+            continue()
+        endif()
+
+        file(GLOB_RECURSE _content_files CONFIGURE_DEPENDS
+            LIST_DIRECTORIES false
+            "${_scan_dir}/*.h"
+            "${_scan_dir}/*.hh"
+            "${_scan_dir}/*.hpp"
+            "${_scan_dir}/*.hxx"
+            "${_scan_dir}/*.c"
+            "${_scan_dir}/*.cc"
+            "${_scan_dir}/*.cpp"
+            "${_scan_dir}/*.cxx"
+        )
+
+        foreach(_file IN LISTS _content_files)
+            foreach(_pattern IN LISTS ESCB_FORBIDDEN_PATTERNS)
+                file(STRINGS "${_file}" _matched_lines REGEX "${_pattern}")
+                if(_matched_lines)
+                    list(GET _matched_lines 0 _first_match)
+                    file(RELATIVE_PATH _relative_file "${ESCB_ROOT}" "${_file}")
+                    message(FATAL_ERROR
+                        "[core-boundary] forbidden content pattern in "
+                        "${_relative_file}: ${_first_match}"
+                    )
+                endif()
+            endforeach()
+        endforeach()
+    endforeach()
+endfunction()
+
 function(enforce_core_target_link_boundary)
     set(options)
     set(oneValueArgs)

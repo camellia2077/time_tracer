@@ -4,7 +4,6 @@ set(TRACER_CORE_DOMAIN_SOURCES
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/converter/convert/core/converter_core.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/converter/convert/core/converter_core_stats.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/converter/convert/core/converter_core_activity_mapper.cpp"
-    "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/validator/json/rules/json_rules.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/validator/txt/facade/text_validator.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/validator/txt/rules/txt_rules.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/domain/logic/validator/structure/structure_validator.cpp"
@@ -64,7 +63,4 @@ target_include_directories(tc_domain_lib PUBLIC
 )
 target_link_libraries(tc_domain_lib PUBLIC
     tc_shared_lib
-)
-target_link_libraries(tc_domain_lib PRIVATE
-    nlohmann_json::nlohmann_json
 )
