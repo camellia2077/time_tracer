@@ -66,11 +66,26 @@
             const dataStream = document.getElementById('bgDataStream');
             const timeStream = document.getElementById('bgTimeStream');
             const timeHoriz = document.getElementById('bgTimeHoriz');
+            const backgroundStyles = {
+                solid: '#ffffff',
+                data: '#ffffff',
+                time: '#ffffff',
+                timeHoriz: '#ffffff',
+                indigoMist: 'linear-gradient(135deg, #F7F5FF 0%, #EEF1FF 100%)',
+                periwinkleAir: 'linear-gradient(135deg, #F5F7FF 0%, #EAF0FF 100%)',
+                lavenderFog: 'linear-gradient(135deg, #F9F5FF 0%, #F1ECFF 100%)',
+                duskBlue: 'linear-gradient(135deg, #F4F8FF 0%, #E9F1FF 100%)',
+                slateLilac: 'linear-gradient(135deg, #F5F6FA 0%, #ECEFF7 100%)',
+                warmLilacGray: 'linear-gradient(135deg, #F8F4F7 0%, #F1EDF4 100%)',
+                glacierViolet: 'linear-gradient(135deg, #F2F8FF 0%, #EDF1FF 100%)',
+                softPlumIce: 'linear-gradient(135deg, #F7F2FF 0%, #F0EDFF 100%)'
+            };
             
             // Toggle visibility
             if (dataStream) dataStream.style.opacity = type === 'data' ? '1' : '0';
             if (timeStream) timeStream.style.opacity = type === 'time' ? '1' : '0';
             if (timeHoriz) timeHoriz.style.opacity = type === 'timeHoriz' ? '1' : '0';
+            svgWrapper.style.background = backgroundStyles[type] || '#ffffff';
 
             // Update button styles
             const buttons = document.querySelectorAll('.bg-btn');

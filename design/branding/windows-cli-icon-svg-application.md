@@ -16,7 +16,7 @@ Windows CLI 图标设计源优先从以下目录选择：
 
 当前默认使用：
 
-- `design/branding/exports/bg_golden_vertical_padding.svg`
+- `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
 
 可选参考：
 
@@ -40,7 +40,7 @@ Windows CLI 的默认 SVG 来源由工具链代码决定：
 
 当未显式覆盖时，默认使用：
 
-- `design/branding/exports/bg_golden_vertical_padding.svg`
+- `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
 
 ## 标准应用流程
 
@@ -48,7 +48,7 @@ Windows CLI 的默认 SVG 来源由工具链代码决定：
 
 默认选用：
 
-- `design/branding/exports/bg_golden_vertical_padding.svg`
+- `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
 
 如果需要透明底变体，可改用：
 
@@ -102,7 +102,7 @@ SVG 转 `.ico` 依赖：
 
 ## 维护约定
 
-- Windows CLI 默认图标设计源当前固定为 `bg_golden_vertical_padding.svg`
+- Windows CLI 默认图标设计源当前固定为 `bg_indigo_mist_vertical_padding.svg`
 - 若默认视觉方案改变，应同时更新：
   - `scripts/toolchain/commands/cmd_build/windows_icon_resources.py`
   - `apps/tracer_cli/windows/README.md`

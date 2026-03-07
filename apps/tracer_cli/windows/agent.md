@@ -57,7 +57,7 @@ python scripts/run.py verify --app tracer_core --build-dir build_fast --scope ar
    - `test/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_crypto.toml`
 9. EXE 图标生成与注入：
-   - 默认 SVG 源：`design/branding/exports/bg_golden_vertical_padding.svg`
+   - 默认 SVG 源：`design/branding/exports/bg_indigo_mist_vertical_padding.svg`
    - 可选透明底 SVG：`design/branding/exports/bg_golden_vertical_padding_transparent.svg`
    - 构建生成：`apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
    - 注入逻辑：`apps/tracer_cli/windows/rust_cli/build.rs`

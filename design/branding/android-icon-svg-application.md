@@ -1,141 +1,104 @@
 # Android 图标 SVG 应用说明
 
-本文说明如何将 `design/branding/exports/**` 下的 SVG 设计稿，应用到 Android launcher icon 资源。
+本文说明如何将 `design/branding` 下的品牌母版与平台参考稿，落地为 Android launcher icon 资源。
 
 ## 目标
 
-- 让 `design/branding` 作为 Android 图标的设计源目录
-- 明确 SVG 与 Android 图标资源之间的对应关系
-- 统一后续图标更新流程，避免设计稿与实现脱节
+- 让 `design/branding/master/` 作为品牌识别核心来源
+- 让 `design/branding/platform/android/` 作为 Android 平台适配来源
+- 让 Android 最终资源遵循标准 adaptive icon 的 `background / foreground / monochrome` 分层
 
-## 设计源目录
+## 设计源层级
 
-Android 图标设计源优先从以下目录选择：
+Android 图标当前采用两级设计源：
 
-- `design/branding/exports/`
+1. 品牌母版：
+   - `design/branding/master/time_tracer_brand_master_symbol.svg`
+2. Android 平台参考稿：
+   - `design/branding/platform/android/time_tracer_android_launcher_reference.svg`
 
-当前默认视觉参考使用：
+说明：
 
-- `design/branding/exports/bg_golden_vertical_padding_shadow.svg`
-
-当前 Android 平台专用参考稿：
-
-- `design/branding/platform/android/time_tracer_android_launcher_reference.svg`
-
-可选参考：
-
-- `design/branding/exports/bg_golden_vertical_padding_transparent.svg`
+- 品牌母版只保留箭头与轨迹符号，不写死背景和 safe zone
+- Android 平台参考稿负责定义：
+  - `Indigo Mist` full-bleed 浅品牌色背景层
+  - 前景符号大小
+  - 与 adaptive icon 对应的安全区边距
+  - 最终由 launcher mask 呈现的外轮廓预期
 
 ## Android 图标资源位置
 
 Android 启动图标相关资源位于：
 
+- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_background.xml`
 - `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground.xml`
+- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground_symbol.xml`
 - `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
-- `apps/tracer_android/app/src/main/res/values/ic_launcher_colors.xml`
+- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome_symbol.xml`
 - `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
 - `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
 
 ## 核心原则
 
-1. `design/branding` 中的 SVG 是设计参考源，不是 Android 直接运行时资源
-2. Android launcher icon 当前使用 `vector drawable` XML，而不是直接加载 SVG
-3. 因此更新图标时，做法是：
-   - 以无背景品牌母版作为识别核心
-   - 以 Android 平台专用参考稿控制安全区
-   - 再以 SVG 视觉参考做颜色、白底和阴影补偿
-   - 手动把形状同步到 Android XML 资源
-4. `ic_launcher.xml` 与 `ic_launcher_round.xml` 一般不改结构
-5. 主要改动集中在：
-   - `ic_launcher_foreground.xml`
-   - `ic_launcher_monochrome.xml`
-   - `ic_launcher_colors.xml`
+1. SVG 是设计参考源，不是 Android 直接运行时资源
+2. Android launcher 最终使用标准 adaptive icon 分层，不再把背景塞进 foreground
+3. 前景只承载品牌符号：
+   - 箭头
+   - 左侧两段轨迹
+4. 背景单独承载 `Indigo Mist` full-bleed 浅品牌色背景层
+5. 单色图标与彩色前景保持相同 safe zone
+
+## 当前分层策略
+
+### Background
+
+- 资源：`ic_launcher_background.xml`
+- 职责：只负责 `Indigo Mist` full-bleed 浅品牌色背景层
+- 当前做法：铺满背景层，最终外轮廓由 launcher mask 决定
+
+### Foreground
+
+- 资源：`ic_launcher_foreground.xml`
+- 职责：只负责前景 safe zone
+- 当前做法：使用 inset 包装 `ic_launcher_foreground_symbol.xml`
+
+- 资源：`ic_launcher_foreground_symbol.xml`
+- 职责：只负责彩色箭头与轨迹符号
+
+### Monochrome
+
+- 资源：`ic_launcher_monochrome.xml`
+- 职责：只负责单色 safe zone
+- 当前做法：使用 inset 包装 `ic_launcher_monochrome_symbol.xml`
+
+- 资源：`ic_launcher_monochrome_symbol.xml`
+- 职责：只负责单色箭头与轨迹符号
 
 ## 标准应用流程
 
-### 1. 选定 SVG 设计源
+1. 先修改品牌母版或 Android 平台参考稿
+2. 再同步 Android 资源：
+   - `ic_launcher_background.xml`
+   - `ic_launcher_foreground_symbol.xml`
+   - `ic_launcher_monochrome_symbol.xml`
+3. 如需调整适配尺寸，优先改 inset，而不是继续在前景内部塞背景
+4. 保持 `ic_launcher.xml` 与 `ic_launcher_round.xml` 只做资源引用，不塞平台逻辑
 
-默认视觉参考选用：
+## 为什么这样做
 
-- `design/branding/exports/bg_golden_vertical_padding_shadow.svg`
+因为不同 Android launcher，特别是 Pixel 与小米等国产桌面，会对 adaptive icon 做不同强度的缩放和遮罩处理。
 
-平台安全区参考选用：
+如果把背景和符号都塞进 foreground：
 
-- `design/branding/platform/android/time_tracer_android_launcher_reference.svg`
+- launcher 会把整个前景层当成“大图块”
+- 结果更容易出现图标看起来过大、贴边、边距不稳定
 
-如果只是需要无阴影或透明底参考，也可以改看：
+拆成标准 fg/bg 两层后：
 
-- `design/branding/exports/bg_golden_vertical_padding_transparent.svg`
-
-### 2. 同步彩色前景图标
-
-编辑：
-
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground.xml`
-
-需要从 SVG 与平台参考稿同步这些视觉元素：
-
-- 白色圆角底
-- 主箭头形状
-- 左侧轨迹条
-- 中间轨迹条
-- 渐变方向与颜色
-- 前景整体安全区缩放
-
-### 3. 同步单色图标
-
-编辑：
-
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
-
-要求：
-
-- 与彩色版保持一致的几何轮廓
-- 仅保留单色表达
-- 不引入额外背景色
-- 与彩色版保持相同安全区缩放
-
-### 4. 检查背景色
-
-编辑：
-
-- `apps/tracer_android/app/src/main/res/values/ic_launcher_colors.xml`
-
-当前默认方案：
-
-- `ic_launcher_background = #00000000`
-
-原因：
-
-- 白色圆角底已经在前景图里
-- 透明背景更适合当前图标结构
-
-### 5. 保持自适应图标入口不变
-
-检查以下文件仍正确引用前景/背景资源：
-
-- `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
-- `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
-
-通常只需确认它们继续引用：
-
-- `@color/ic_launcher_background`
-- `@drawable/ic_launcher_foreground`
-- `@drawable/ic_launcher_monochrome`
-
-## 阴影处理说明
-
-`bg_golden_vertical_padding_shadow.svg` 含有阴影效果，但 Android `vector drawable` 不支持 SVG 的 `filter/feDropShadow`。
-
-因此 Android 端应采用近似方案：
-
-- 在 `ic_launcher_foreground.xml` 中增加半透明偏移图形
-- 用视觉近似代替真实 SVG 阴影滤镜
-
-这意味着：
-
-- Android 图标会尽量接近设计稿
-- 但不会与 SVG 渲染结果做到像素级完全一致
+- 白底和符号各自拥有独立层级
+- safe zone 可以明确控制
+- 更符合 Android 官方 adaptive icon 设计模型
+- 能避免某些 launcher 将透明外圈或内嵌白底误表现为额外黑边
 
 ## 验证方式
 
@@ -148,18 +111,22 @@ python scripts/run.py build --app tracer_android --profile android_edit
 需要确认：
 
 - 构建成功
-- 图标未被裁切
-- 深浅色桌面显示正常
-- 单色图标在系统场景下可读
+- 安装后桌面图标边距稳定
+- Pixel 与小米等 launcher 下不再出现明显贴边
+- 单色主题图标保持可读
 
 ## 维护约定
 
-- 新的 Android 图标设计稿优先放到 `design/branding/exports/`
-- 不要把 Android 专用实现细节写回 SVG 目录
-- SVG 负责设计源，Android XML 负责平台落地
-- 当品牌母版、Android 平台参考稿或 SVG 视觉参考改版时，必须同步更新 Android 图标资源
+- Android 图标不要再回到“foreground 内部自带背景”的旧做法
+- 优先通过：
+  - `background` 层
+  - `foreground` inset
+  - `monochrome` inset
+  来调整观感
+- 当品牌母版或 Android 平台参考稿改版时，必须同步更新 Android 图标资源
 
 ## 相关文档
 
 - `design/branding/README.md`
+- `design/branding/platform/android/README.md`
 - `apps/tracer_android/icon_generation.md`

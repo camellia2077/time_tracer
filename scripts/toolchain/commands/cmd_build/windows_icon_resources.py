@@ -71,7 +71,7 @@ def _resolve_source_svg_path(ctx: Context, svg_override: str | None) -> Path:
         / "design"
         / "branding"
         / "exports"
-        / "bg_golden_vertical_padding.svg"
+        / "bg_indigo_mist_vertical_padding.svg"
     ).resolve()
 
 

@@ -4,7 +4,7 @@ Windows CLI 图标使用 `design/branding/master/time_tracer_brand_master_symbol
 
 ## 当前默认构建源
 
-- `design/branding/exports/bg_golden_vertical_padding.svg`
+- `design/branding/exports/bg_indigo_mist_vertical_padding.svg`
 
 ## 说明
 

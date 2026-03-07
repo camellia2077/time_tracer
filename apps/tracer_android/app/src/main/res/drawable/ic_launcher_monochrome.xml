@@ -1,24 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <group
-        android:scaleX="0.86"
-        android:scaleY="0.86"
-        android:translateX="1.68"
-        android:translateY="1.68">
-        <path
-            android:fillColor="#000000"
-            android:pathData="M14.707,18.472L13.637,17.402L18.289,12.75H13.179V11.25H18.289L13.637,6.598L14.707,5.528L21.179,12Z" />
-        <path
-            android:fillColor="#000000"
-            android:fillAlpha="0.5"
-            android:pathData="M8.815,11.25H11.973V12.75H8.815Z" />
-        <path
-            android:fillColor="#000000"
-            android:fillAlpha="0.25"
-            android:pathData="M4.911,11.25H6.863V12.75H4.911Z" />
-    </group>
-</vector>
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:insetLeft="16dp"
+    android:insetTop="16dp"
+    android:insetRight="16dp"
+    android:insetBottom="16dp"
+    android:drawable="@drawable/ic_launcher_monochrome_symbol" />

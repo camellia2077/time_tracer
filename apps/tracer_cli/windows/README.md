@@ -85,7 +85,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 ## EXE 图标
 
 1. 品牌源文件（SVG）：
-   - 默认：`design/branding/exports/bg_golden_vertical_padding.svg`
+   - 默认：`design/branding/exports/bg_indigo_mist_vertical_padding.svg`
    - 可选透明底：`design/branding/exports/bg_golden_vertical_padding_transparent.svg`
 2. 构建时自动生成：
    - `apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
@@ -96,7 +96,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
    - `bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
 5. 可选覆盖：
    - `TT_WINDOWS_CLI_ICON_ICO`：直接指定 `.ico` 路径
-   - `TT_WINDOWS_CLI_ICON_SVG`：覆盖默认 `bg_golden_vertical_padding.svg`
+   - `TT_WINDOWS_CLI_ICON_SVG`：覆盖默认 `bg_indigo_mist_vertical_padding.svg`
 6. 说明文档：
    - `apps/tracer_cli/windows/icon_generation.md`
    - `design/branding/windows-cli-icon-svg-application.md`

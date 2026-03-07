@@ -59,11 +59,11 @@
 
 - Android
   - 参考无背景品牌母版几何
-  - 默认视觉参考：`design/branding/exports/bg_golden_vertical_padding_shadow.svg`
-  - 最终落地为 Android `vector drawable`
+  - 默认平台参考：`design/branding/platform/android/time_tracer_android_launcher_reference.svg`
+  - 最终落地为 Android adaptive icon 的 `background / foreground / monochrome` 三个资源
 - Windows CLI
   - 参考无背景品牌母版几何
-  - 默认构建源：`design/branding/exports/bg_golden_vertical_padding.svg`
+  - 默认构建源：`design/branding/exports/bg_indigo_mist_vertical_padding.svg`
   - 最终在构建期转为 `.ico`
 
 平台映射文档：
