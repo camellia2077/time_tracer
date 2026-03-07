@@ -4,6 +4,12 @@
 
 ---
 
+## [Unreleased]
+### Changed (变更)
+* **版本单一来源收口**：Android app 版本统一从 `apps/tracer_android/meta/version.properties` 读取；Core 版本统一从 `libs/tracer_core/src/shared/types/version.hpp` 读取，避免在 About 页或 `build.gradle.kts` 中再次手填。
+
+---
+
 ## [0.2.2] - 2026-03-01
 ### Changed (变更)
 * **About 页面整合**：Config 页统一改为 `Open About` 入口，页面内同时展示项目基础信息与第三方许可证。

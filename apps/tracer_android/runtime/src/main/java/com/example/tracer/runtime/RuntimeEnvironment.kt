@@ -59,6 +59,9 @@ internal class RuntimeEnvironment(private val context: Context) {
         }
 
         val fullInput = File(rootDir, "input/full")
+        if (!fullInput.exists()) {
+            fullInput.mkdirs()
+        }
         val liveRawInput = File(rootDir, "input/live_raw")
         if (!liveRawInput.exists()) {
             liveRawInput.mkdirs()

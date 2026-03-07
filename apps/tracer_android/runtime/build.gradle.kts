@@ -1,5 +1,57 @@
+import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.RegularFileProperty
+import org.gradle.api.provider.Property
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputDirectory
+import org.gradle.api.tasks.InputFile
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
+import org.gradle.api.tasks.TaskAction
+import org.gradle.kotlin.dsl.register
+import org.gradle.process.ExecOperations
+import javax.inject.Inject
+
 plugins {
     alias(libs.plugins.android.library)
+}
+
+abstract class SyncDebugInputSeedAssetsTask @Inject constructor(
+    private val execOperations: ExecOperations,
+) : DefaultTask() {
+    @get:Input
+    abstract val pythonExecutable: Property<String>
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.NONE)
+    abstract val syncScript: RegularFileProperty
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sourceRoot: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val outputDirectory: DirectoryProperty
+
+    @TaskAction
+    fun sync() {
+        val assetRoot = outputDirectory.get().asFile
+        val inputFullRoot = assetRoot.resolve("tracer_core/input/full")
+        inputFullRoot.mkdirs()
+        execOperations.exec {
+            commandLine(
+                pythonExecutable.get(),
+                syncScript.get().asFile.absolutePath,
+                "--source-root",
+                sourceRoot.get().asFile.absolutePath,
+                "--android-input-full-root",
+                inputFullRoot.absolutePath,
+                "--apply",
+                "--prune-managed-years",
+            )
+        }.assertNormalExitValue()
+    }
 }
 
 val repoRootDir =
@@ -19,7 +71,10 @@ val timeTracerDisableNativeOptimization =
         ?.trim()
         ?.equals("true", ignoreCase = true) == true
 val timeTracerSourceTestDataRootProperty = providers.gradleProperty("timeTracerSourceTestDataRoot").orNull
-val timeTracerAndroidInputFullRootProperty = providers.gradleProperty("timeTracerAndroidInputFullRoot").orNull
+val timeTracerAndroidDebugAssetsRootProperty = providers.gradleProperty("timeTracerAndroidDebugAssetsRoot").orNull
+val legacyTimeTracerAndroidDebugInputFullRootProperty =
+    providers.gradleProperty("timeTracerAndroidDebugInputFullRoot").orNull
+        ?: providers.gradleProperty("timeTracerAndroidInputFullRoot").orNull
 
 val timeTracerSourceConfigRoot =
     timeTracerSourceConfigRootProperty?.let { file(it) }
@@ -27,12 +82,14 @@ val timeTracerSourceConfigRoot =
 val timeTracerSourceTestDataRoot =
     timeTracerSourceTestDataRootProperty?.let { file(it) }
         ?: repoRootDir.resolve("test/data")
+val defaultDebugAssetsRoot = layout.buildDirectory.dir("generated/tracer/runtime/debug/assets").get().asFile
 val timeTracerConfigRootFile =
     timeTracerConfigRootProperty?.let { file(it) }
         ?: projectDir.resolve("src/main/assets/tracer_core/config")
-val timeTracerAndroidInputFullRoot =
-    timeTracerAndroidInputFullRootProperty?.let { file(it) }
-        ?: projectDir.resolve("src/main/assets/tracer_core/input/full")
+val timeTracerAndroidDebugAssetsRoot =
+    timeTracerAndroidDebugAssetsRootProperty?.let { file(it) }
+        ?: legacyTimeTracerAndroidDebugInputFullRootProperty?.let { file(it).parentFile?.parentFile?.parentFile }
+        ?: defaultDebugAssetsRoot
 val platformConfigRunner = repoRootDir.resolve("scripts/platform_config/run.py")
 val inputDataSyncRunner =
     repoRootDir.resolve("scripts/devtools/android/sync_android_input_from_test_data.py")
@@ -63,7 +120,7 @@ val repoRootPath = repoRootDir.absolutePath
 val timeTracerSourceConfigRootPath = timeTracerSourceConfigRoot.absolutePath
 val timeTracerSourceTestDataRootPath = timeTracerSourceTestDataRoot.absolutePath
 val timeTracerConfigRootPath = timeTracerConfigRootFile.absolutePath
-val timeTracerAndroidInputFullRootPath = timeTracerAndroidInputFullRoot.absolutePath
+val timeTracerAndroidDebugAssetsRootPath = timeTracerAndroidDebugAssetsRoot.absolutePath
 val platformConfigRunnerPath = platformConfigRunner.absolutePath
 val inputDataSyncRunnerPath = inputDataSyncRunner.absolutePath
 
@@ -72,19 +129,9 @@ if (!platformConfigRunner.exists()) {
         "Missing platform config generator: $platformConfigRunnerPath"
     )
 }
-if (!inputDataSyncRunner.exists()) {
-    throw GradleException(
-        "Missing input data sync script: $inputDataSyncRunnerPath"
-    )
-}
 if (!timeTracerSourceConfigRoot.exists()) {
     throw GradleException(
         "Missing source config root: $timeTracerSourceConfigRootPath"
-    )
-}
-if (!timeTracerSourceTestDataRoot.exists()) {
-    throw GradleException(
-        "Missing source test data root: $timeTracerSourceTestDataRootPath"
     )
 }
 
@@ -108,27 +155,19 @@ val syncTracerCoreConfig by tasks.registering(Exec::class) {
     )
 }
 
-val syncTracerCoreInputData by tasks.registering(Exec::class) {
+val androidPythonExecutable = pythonExecutable
+
+val syncTracerCoreDebugInputData = tasks.register<SyncDebugInputSeedAssetsTask>("syncTracerCoreDebugInputData") {
     group = "tracer_core"
-    description = "Sync Android input/full from canonical test/data before build."
-    workingDir = File(repoRootPath)
-    inputs.file(inputDataSyncRunnerPath)
-    inputs.dir(timeTracerSourceTestDataRootPath)
-    outputs.dir(timeTracerAndroidInputFullRootPath)
-    commandLine(
-        pythonExecutable,
-        inputDataSyncRunnerPath,
-        "--source-root",
-        timeTracerSourceTestDataRootPath,
-        "--android-input-full-root",
-        timeTracerAndroidInputFullRootPath,
-        "--apply",
-    )
+    description = "Sync Android debug input/full seed TXT data from canonical test/data before build."
+    pythonExecutable.set(androidPythonExecutable)
+    syncScript.set(file(inputDataSyncRunnerPath))
+    sourceRoot.set(file(timeTracerSourceTestDataRootPath))
+    outputDirectory.set(file(timeTracerAndroidDebugAssetsRootPath))
 }
 
 tasks.matching { it.name == "preBuild" }.configureEach {
     dependsOn(syncTracerCoreConfig)
-    dependsOn(syncTracerCoreInputData)
 }
 
 android {
@@ -186,6 +225,16 @@ android {
                 }
             }
         }
+    }
+
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("debug")) { variant ->
+        variant.sources.assets?.addGeneratedSourceDirectory(
+            syncTracerCoreDebugInputData,
+            SyncDebugInputSeedAssetsTask::outputDirectory,
+        )
     }
 }
 

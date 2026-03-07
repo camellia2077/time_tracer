@@ -1,7 +1,7 @@
 {
   "target": "windows",
-  "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "11923cf234d09842d9e46c3fb71d0d58df5a74f28325e6303d109c3342e0d9fc",
+  "source_root": "C:/code/time_tracer/assets/tracer_core/config",
+  "input_hash": "4d919e90c25a6a54bc917693d3ae797cbc07b3208932a91fc862065978e12684",
   "planned_file_count": 23,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
@@ -28,5 +28,5 @@
     "reports/typst/week.toml": "1bfcd556bc0c142a6ff9bd98c318812212d3506ab8b0b5d29fbb5713a8fa3591",
     "reports/typst/year.toml": "bf27369c9274b975fb8a9087913de63e0bedd5c2429a392412f417ec85dfad95"
   },
-  "generated_at_utc": "2026-03-06T08:11:04.128184+00:00"
+  "generated_at_utc": "2026-03-07T05:37:01.844357+00:00"
 }

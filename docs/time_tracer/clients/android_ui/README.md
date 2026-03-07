@@ -34,6 +34,10 @@
 2. 历史 Android 文档保留，不强制搬迁。
 3. Android runtime 通过 `tracer_core + tracer_adapters` 复用同一套 adapter 组装链路（含 IO adapter），不直接绑定旧目录实现。
 4. Android 业务数据协议文档统一放在 `runtime-protocol.md`；C ABI 全局规则以 `docs/time_tracer/core/contracts/c_abi.md` 为准。
+5. Android 版本信息保持单一来源：
+   - App 版本：`apps/tracer_android/meta/version.properties`
+   - Core 版本：`libs/tracer_core/src/shared/types/version.hpp`
+   - 不要在 About 页或 `app/build.gradle.kts` 中再次手填版本字符串。
 
 ## Tree 表现层约定（Phase 4/5）
 1. Android Report 的 Tree 查询优先走结构化链路：`nativeTree -> runtime_tree_json`。

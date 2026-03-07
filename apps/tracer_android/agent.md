@@ -36,6 +36,19 @@ Android host app for `apps/tracer_core_shell` (`Jetpack Compose + JNI`).
 - Icon generation guide:
   - `apps/tracer_android/icon_generation.md`
 
+## Version Source of Truth
+
+- Android app version source:
+  - `apps/tracer_android/meta/version.properties`
+  - Update `VERSION_CODE` and `VERSION_NAME` there
+  - Do not hardcode Android app version in `apps/tracer_android/app/build.gradle.kts`
+- Core version source:
+  - `libs/tracer_core/src/shared/types/version.hpp`
+  - Android Gradle parses this header and injects it into `BuildConfig.TRACER_CORE_VERSION`
+- About page version display:
+  - App version uses `BuildConfig.VERSION_NAME`
+  - Core version uses `BuildConfig.TRACER_CORE_VERSION`
+
 ## Kotlin Split Landmarks
 
 - Config import/export split:
@@ -199,4 +212,3 @@ Use:
     - `apps/tracer_android/**/res/values-ja/strings.xml` (Japanese)
   - Do not leave new/changed keys only in one locale unless explicitly intended.
 - Keep these two documents as the single source of truth for domain-specific UI rules.
-

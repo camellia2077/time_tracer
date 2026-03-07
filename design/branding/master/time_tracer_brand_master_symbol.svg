@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="512" height="512">
+    <title>Time Tracer Brand Master Symbol</title>
+    <desc>
+        Canonical background-free brand master symbol for multi-platform icon adaptation.
+        Preserves the chosen arrow size, arrow position, and the two-step motion trails,
+        while leaving background, safe area, and shadow decisions to each platform.
+    </desc>
+
+    <defs>
+        <linearGradient id="ttBrandMasterSymbolGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#7C3AED;stop-opacity:1" />
+        </linearGradient>
+    </defs>
+
+    <g transform="translate(1.179, 0)">
+        <path d="M13.528,18.472 L12.458,17.402 L17.11,12.75 H12 V11.25 H17.11 L12.458,6.598 L13.528,5.528 L20,12 Z" fill="url(#ttBrandMasterSymbolGradient)" />
+        <rect x="7.636" y="11.25" width="3.158" height="1.5" fill="url(#ttBrandMasterSymbolGradient)" opacity="0.50" />
+        <rect x="3.732" y="11.25" width="1.952" height="1.5" fill="url(#ttBrandMasterSymbolGradient)" opacity="0.25" />
+    </g>
+</svg>

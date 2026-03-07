@@ -2,6 +2,22 @@
 
 This document defines current tab ownership, entry boundaries, and coordinator responsibilities for `tracer_android`.
 
+## Version Metadata Ownership
+
+- Android app version source of truth:
+  - `apps/tracer_android/meta/version.properties`
+- Core version source of truth:
+  - `libs/tracer_core/src/shared/types/version.hpp`
+- Gradle ownership:
+  - `apps/tracer_android/app/build.gradle.kts` reads both sources and injects:
+    - Android app `versionCode` / `versionName`
+    - `BuildConfig.TRACER_CORE_VERSION`
+- About page display:
+  - App version uses `BuildConfig.VERSION_NAME`
+  - Core version uses `BuildConfig.TRACER_CORE_VERSION`
+- Do not reintroduce hardcoded version strings in UI layer files such as:
+  - `apps/tracer_android/app/src/main/java/com/example/tracer/ui/screen/ConfigScreen.kt`
+
 ## Tab Ownership
 
 - `DATA` tab

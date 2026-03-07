@@ -6,6 +6,22 @@
 # Release (Signed, Native Optimization Enabled) - Recommended (repo root)
 python .\scripts\run.py build --app tracer_android --profile android_release
 
+# Release signing setup (local, untracked)
+# 1. Copy:
+#    apps/tracer_android/keystore.properties.example
+#    -> apps/tracer_android/keystore.properties
+# 2. Fill:
+#    STORE_FILE
+#    STORE_PASSWORD
+#    KEY_ALIAS
+#    KEY_PASSWORD
+#
+# CI can provide the same values through environment variables:
+#    TT_ANDROID_STORE_FILE
+#    TT_ANDROID_STORE_PASSWORD
+#    TT_ANDROID_KEY_ALIAS
+#    TT_ANDROID_KEY_PASSWORD
+
 # Troubleshooting Only: Native No-Optimization
 python .\scripts\run.py build --app tracer_android --profile android_release_no_opt
 

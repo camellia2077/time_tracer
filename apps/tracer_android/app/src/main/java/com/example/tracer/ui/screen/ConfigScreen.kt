@@ -31,13 +31,10 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mikepenz.aboutlibraries.Libs
-import com.mikepenz.aboutlibraries.util.withContext
 import com.mikepenz.aboutlibraries.ui.compose.m3.LibrariesContainer
 
 private const val ABOUT_AUTHOR = "camellia2077"
 private const val ABOUT_REPOSITORY = "https://github.com/camellia2077/time_tracer_cpp"
-private const val ABOUT_CORE_VERSION = "0.6.2"
-private const val ABOUT_ANDROID_APP_VERSION = "0.2.2"
 private const val ABOUT_LOG_TAG = "ConfigAboutPage"
 
 private data class LibrariesLoadState(
@@ -175,9 +172,7 @@ private fun ConfigAboutPage(
     val licensePanelMaxHeight = LocalConfiguration.current.screenHeightDp.dp * 0.6f
     val librariesLoadState by produceState(initialValue = LibrariesLoadState(), context) {
         value = runCatching {
-            val libs = Libs.Builder()
-                .withContext(context)
-                .build()
+            val libs = AboutLibrariesAssetLoader.load(context)
             LibrariesLoadState(libraries = libs, isLoading = false)
         }.getOrElse { error ->
             Log.e(ABOUT_LOG_TAG, "Failed to load open-source licenses metadata.", error)
@@ -240,11 +235,11 @@ private fun ConfigAboutPage(
                     )
                     HorizontalDivider()
                     Text(
-                        stringResource(R.string.config_about_core, ABOUT_CORE_VERSION),
+                        stringResource(R.string.config_about_core, BuildConfig.TRACER_CORE_VERSION),
                         style = MaterialTheme.typography.bodySmall
                     )
                     Text(
-                        stringResource(R.string.config_about_app, ABOUT_ANDROID_APP_VERSION),
+                        stringResource(R.string.config_about_app, BuildConfig.VERSION_NAME),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }

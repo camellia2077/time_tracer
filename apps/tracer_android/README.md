@@ -12,11 +12,31 @@ Runtime config boundary:
 - Android generated runtime copy: `apps/tracer_android/runtime/src/main/assets/tracer_core/config`
 - If shared config semantics change, update `assets/tracer_core/config` first, then resync into Android runtime assets.
 
+Version source of truth:
+- Android app version source:
+  - `apps/tracer_android/meta/version.properties`
+  - `VERSION_CODE` and `VERSION_NAME` must be updated there, not hardcoded in `app/build.gradle.kts`
+- Core version source:
+  - `libs/tracer_core/src/shared/types/version.hpp`
+  - Android About page reads the parsed core version through `BuildConfig.TRACER_CORE_VERSION`
+- Android About page app version reads `BuildConfig.VERSION_NAME`
+
 Build (Python entry, recommended):
 ```bash
 python scripts/run.py build --app tracer_android --profile android_edit
 python scripts/run.py build --app tracer_android --profile android_release
 ```
+
+Release signing:
+- Local release signing uses `apps/tracer_android/keystore.properties` (not committed).
+- CI/release automation can use environment variables:
+  - `TT_ANDROID_STORE_FILE`
+  - `TT_ANDROID_STORE_PASSWORD`
+  - `TT_ANDROID_KEY_ALIAS`
+  - `TT_ANDROID_KEY_PASSWORD`
+- Template:
+  - `apps/tracer_android/keystore.properties.example`
+- `local.properties` is reserved for local SDK/toolchain paths such as `sdk.dir`; do not store release signing secrets there.
 
 Verify (recommended profiles):
 ```bash

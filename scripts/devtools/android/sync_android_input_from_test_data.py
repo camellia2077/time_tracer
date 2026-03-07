@@ -9,7 +9,7 @@ from pathlib import Path
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Sync Android runtime input/full from canonical test/data."
+        description="Sync Android debug runtime input/full seed TXT files from canonical test/data."
     )
     parser.add_argument(
         "--source-root",
@@ -18,8 +18,8 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--android-input-full-root",
-        default="apps/tracer_android/runtime/src/main/assets/tracer_core/input/full",
-        help="Android assets input/full root.",
+        default="apps/tracer_android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full",
+        help="Android debug assets input/full root.",
     )
     parser.add_argument(
         "--apply",
