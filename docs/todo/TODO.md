@@ -1,7 +1,7 @@
 00
-优先解决安卓month/week这些报告时间和windows不一致的问题
+时间边界溢出 (Time Boundary Overflow)： 你的单日总时长统计为 24h 16m，这在物理现实中是不存在的。仔细看你的时间轴，从第一天的 02:58 跨越到了次日凌晨的 03:14。这说明你 C++ 核心中关于“一天结束的分割线（Day Cutoff Time）”判定逻辑有缺陷，在处理跨越分割线的活动（例如跨越凌晨3点的学习或睡眠）时，没有执行正确的拆分和截断操作。
 
-
+数据聚合不一致 (Aggregation Inconsistency)： 在 Statistics 区块中，明确写着 Bilibili: 0h 0m；但是在 All Activities 时间轴和底部的 Project Breakdown 中，却清晰地记录了 bilibili: 1h 31m。这说明你的 C++ 核心在生成报告时，用于计算总和的遍历算法（Tree Traversal）或数据累加器（Accumulator）在处理特定子节点映射时出现了 Bug，导致部分子项目在统计模块被漏算。
 
 
 0
