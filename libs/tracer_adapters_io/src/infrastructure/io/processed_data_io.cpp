@@ -1,17 +1,52 @@
 // infrastructure/io/processed_data_io.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.adapters.io.core.fs;
+import tracer.adapters.io.core.writer;
+import tracer.core.domain.ports.diagnostics;
+import tracer.core.shared.ansi_colors;
+#endif
+
 #include "infrastructure/io/processed_data_io.hpp"
 
 #include <exception>
 #include <iterator>
 #include <nlohmann/json.hpp>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
 #include "infrastructure/io/core/file_writer.hpp"
+#include "shared/types/ansi_colors.hpp"
+#endif
+
 #include "infrastructure/io/file_import_reader.hpp"
 #include "infrastructure/io/processed_json_validation.hpp"
 #include "infrastructure/serialization/json_serializer.hpp"
-#include "shared/types/ansi_colors.hpp"
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modcore = tracer::adapters::io::modcore;
+namespace modports = tracer::core::domain::modports;
+namespace modcolors = tracer::core::shared::modcolors;
+#else
+namespace modcore {
+
+using FileSystem = ::FileSystemHelper;
+using Writer = ::FileWriter;
+
+inline auto CreateDirectories(const std::filesystem::path& path) -> void {
+  FileSystem::CreateDirectories(path);
+}
+
+inline auto WriteContent(const std::filesystem::path& path,
+                         const std::string& content) -> void {
+  Writer::WriteContent(path, content);
+}
+
+}  // namespace modcore
+
+namespace modports = tracer_core::domain::ports;
+namespace modcolors = tracer_core::common::colors;
+#endif
 
 namespace fs = std::filesystem;
 
@@ -54,17 +89,17 @@ auto ProcessedDataWriter::Write(
     fs::path month_output_dir = output_file_path.parent_path();
 
     try {
-      FileSystemHelper::CreateDirectories(month_output_dir);
+      modcore::CreateDirectories(month_output_dir);
 
-      FileWriter::WriteContent(
+      modcore::WriteContent(
           output_file_path, serializer::JsonSerializer::SerializeDays(month_days, 4));
 
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
-      tracer_core::domain::ports::EmitError(
-          std::string(tracer_core::common::colors::kRed) +
+      modports::EmitError(
+          std::string(modcolors::kRed) +
           "错误: 无法写入输出文件: " + output_file_path.string() + " - " +
-          e.what() + std::string(tracer_core::common::colors::kReset));
+          e.what() + std::string(modcolors::kReset));
     }
   }
   return written_files;

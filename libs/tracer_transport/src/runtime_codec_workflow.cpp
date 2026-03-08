@@ -1,16 +1,27 @@
+#if TT_ENABLE_CPP20_MODULES
+import tracer.transport.fields;
+#endif
+
 #include "tracer/transport/runtime_codec.hpp"
 
 #include <stdexcept>
 #include <string>
 
 #include "nlohmann/json.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "tracer/transport/fields.hpp"
+#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::transport::modfields::RequireStringField;
+using tracer::transport::modfields::TryReadBoolField;
+using tracer::transport::modfields::TryReadStringField;
+#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {

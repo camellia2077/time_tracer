@@ -1,9 +1,21 @@
 // application/parser/memory_parser.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.domain.ports.diagnostics;
+#endif
+
 #include "application/parser/memory_parser.hpp"
 
 #include <optional>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modports = tracer::core::domain::modports;
+#else
+namespace modports = tracer_core::domain::ports;
+#endif
 
 namespace {
 constexpr size_t kDateStrMinLen = 7;
@@ -75,8 +87,8 @@ auto MemoryParser::Parse(
     for (const auto& input_day : days) {
       const auto kParsedYearMonth = TryParseYearMonth(input_day.date);
       if (!kParsedYearMonth.has_value()) {
-        tracer_core::domain::ports::EmitWarn(
-            "[memory parser] skip day with invalid date: " + input_day.date);
+        modports::EmitWarn("[memory parser] skip day with invalid date: " +
+                           input_day.date);
         continue;
       }
 

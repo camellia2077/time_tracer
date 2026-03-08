@@ -1,11 +1,19 @@
 // application/service/converter_service.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.domain.logic.converter.core;
+#endif
+
 #include "application/service/converter_service.hpp"
 
 #include "application/parser/text_parser.hpp"
+
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/logic/converter/convert/core/converter_core.hpp"
-#include "domain/model/daily_log.hpp"
-#include "domain/types/converter_config.hpp"
-#include "shared/types/ansi_colors.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::domain::modlogic::converter::DayProcessor;
+#endif
 
 namespace {
 constexpr size_t kIsoDateLength = 10;

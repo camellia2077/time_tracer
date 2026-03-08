@@ -22,7 +22,7 @@
 namespace AppInfo {
 // 使用 constexpr 和 string_view 可以在编译期确定字符串，效率更高
 // 这也是现代C++的推荐做法
-constexpr std::string_view kVersion = "0.8.0";
+constexpr std::string_view kVersion = "0.8.1";
 constexpr std::string_view kLastUpdated = TRACER_CORE_BUILD_TIMESTAMP;
 
 }  // namespace AppInfo

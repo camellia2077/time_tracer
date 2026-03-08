@@ -26,6 +26,7 @@ auto Expect(bool condition, const std::string& message, int& failures) -> void;
 auto ExpectNear(double lhs, double rhs, const std::string& message,
                 int& failures) -> void;
 
+auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void;
 auto RunDataQueryRefactorStatsTests(int& failures) -> void;
 auto RunDataQueryRefactorPeriodTests(int& failures) -> void;
 auto RunDataQueryRefactorTreeTests(int& failures) -> void;

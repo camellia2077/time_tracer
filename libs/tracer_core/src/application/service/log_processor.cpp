@@ -1,10 +1,23 @@
 // application/service/log_processor.cpp
-#include "domain/logic/converter/log_processor.hpp"
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.service.converter;
+import tracer.core.domain.ports.diagnostics;
+#endif
 
 #include <sstream>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/service/converter_service.hpp"
 #include "domain/ports/diagnostics.hpp"
+#endif
+#include "domain/logic/converter/log_processor.hpp"
+
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::application::modservice::ConverterService;
+namespace modports = tracer::core::domain::modports;
+#else
+namespace modports = tracer_core::domain::ports;
+#endif
 
 LogProcessor::LogProcessor(const ConverterConfig& config) : config_(config) {}
 
@@ -34,8 +47,8 @@ auto LogProcessor::ProcessSourceContent(const std::string& filename,
         },
         filename);
   } catch (const std::exception& e) {
-    tracer_core::domain::ports::EmitError(
-        std::string("An error occurred during conversion: ") + e.what());
+    modports::EmitError(std::string("An error occurred during conversion: ") +
+                        e.what());
     result.success = false;
   } catch (...) {
     result.success = false;

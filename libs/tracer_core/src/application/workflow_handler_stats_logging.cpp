@@ -1,17 +1,32 @@
 // application/workflow_handler_stats_logging.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.importer.service;
+import tracer.core.shared.ansi_colors;
+#endif
+
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/importer/import_service.hpp"
+#include "shared/types/ansi_colors.hpp"
+#endif
 #include "application/ports/i_processed_data_loader.hpp"
 #include "application/ports/logger.hpp"
 #include "application/workflow_handler.hpp"
-#include "shared/types/ansi_colors.hpp"
 
 namespace app_ports = tracer_core::application::ports;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::application::modimporter::ImportService;
+using tracer::core::application::modimporter::ImportStats;
+using tracer::core::application::modimporter::ReplaceMonthTarget;
+namespace modcolors = tracer::core::shared::modcolors;
+#else
+namespace modcolors = tracer_core::common::colors;
+#endif
 
 namespace workflow_handler_internal {
 auto ThrowIfImportTaskFailed(const ImportStats& stats,
@@ -26,19 +41,18 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   stream << "\n--- " << title << " Report ---";
   app_ports::LogInfo(stream.str());
 
-  namespace colors = tracer_core::common::colors;
   if (!stats.db_open_success) {
     app_ports::LogError(
-        std::string(colors::kRed) + "[Fatal] DB Error: " +
+        std::string(modcolors::kRed) + "[Fatal] DB Error: " +
         (stats.error_message.empty() ? "Unknown" : stats.error_message) +
-        colors::kReset.data());
+        modcolors::kReset.data());
     return;
   }
 
   if (!stats.transaction_success) {
-    app_ports::LogError(std::string(colors::kRed) +
+    app_ports::LogError(std::string(modcolors::kRed) +
                         "[Fatal] Transaction Failed: " + stats.error_message +
-                        colors::kReset.data());
+                        modcolors::kReset.data());
     return;
   }
 
@@ -47,19 +61,20 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   const bool kHasLegacyFailed = !stats.failed_files.empty();
 
   if (!kHasLegacyFailed && !kHasSkipped) {
-    app_ports::LogInfo(std::string(colors::kGreen) + "[Success] Processed " +
+    app_ports::LogInfo(std::string(modcolors::kGreen) +
+                       "[Success] Processed " +
                        std::to_string(stats.successful_files) + " items." +
-                       colors::kReset.data());
+                       modcolors::kReset.data());
   } else {
     std::ostringstream summary;
-    summary << std::string(colors::kYellow)
+    summary << std::string(modcolors::kYellow)
             << "[Partial] Days=" << stats.successful_days << "/"
             << stats.total_days << ", Records=" << stats.successful_records
             << "/" << stats.total_records;
     if (kHasLegacyFailed) {
       summary << ", LegacyFailedFiles=" << stats.failed_files.size();
     }
-    summary << colors::kReset.data();
+    summary << modcolors::kReset.data();
     app_ports::LogWarn(summary.str());
 
     for (const auto& failed_file : stats.failed_files) {
@@ -107,17 +122,16 @@ void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
 
   auto load_result = processed_data_loader_->LoadDailyLogs(processed_path_str);
 
-  namespace colors = tracer_core::common::colors;
   for (const auto& error : load_result.errors) {
-    app_ports::LogError(std::string(colors::kRed) + "解析文件失败 " +
+    app_ports::LogError(std::string(modcolors::kRed) + "解析文件失败 " +
                         error.source + ": " + error.message +
-                        colors::kReset.data());
+                        modcolors::kReset.data());
   }
 
   if (load_result.data_by_source.empty()) {
-    app_ports::LogWarn(std::string(colors::kYellow) +
+    app_ports::LogWarn(std::string(modcolors::kYellow) +
                        "没有有效的 JSON 数据可供导入。" +
-                       colors::kReset.data());
+                       modcolors::kReset.data());
     return;
   }
 

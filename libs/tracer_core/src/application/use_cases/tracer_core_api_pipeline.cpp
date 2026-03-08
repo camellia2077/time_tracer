@@ -1,4 +1,9 @@
 // application/use_cases/tracer_core_api_pipeline.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.use_cases.helpers;
+import tracer.core.domain.types.app_options;
+#endif
+
 #include <exception>
 #include <stdexcept>
 #include <utility>
@@ -10,12 +15,19 @@
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
 #include "application/use_cases/tracer_core_api.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/use_cases/tracer_core_api_helpers.hpp"
 #include "domain/types/app_options.hpp"
+#endif
 
 using namespace tracer_core::core::dto;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::domain::modtypes::AppOptions;
+namespace core_api_helpers = tracer::core::application::modusecases::helpers;
+#else
 namespace core_api_helpers =
     tracer_core::application::use_cases::core_api_helpers;
+#endif
 
 TracerCoreApi::TracerCoreApi(
     IWorkflowHandler& workflow_handler, IReportHandler& report_handler,

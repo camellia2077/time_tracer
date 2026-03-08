@@ -1,10 +1,20 @@
 // infrastructure/config/file_converter_config_provider.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.config.loader.converter_config_loader;
+#endif
+
 #include "infrastructure/config/file_converter_config_provider.hpp"
 
 #include <stdexcept>
 #include <utility>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/config/loader/converter_config_loader.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::infrastructure::modconfig::ConverterConfigLoader;
+#endif
 
 namespace infrastructure::config {
 

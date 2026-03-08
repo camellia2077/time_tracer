@@ -24,11 +24,16 @@ if(TT_CPP20_MODULES_EFFECTIVE)
         FILES
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.interface.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.api.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.helpers.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.data.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.nodes.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.viewer.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.service.converter.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.importer.service.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.context.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.types.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.stages.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.manager.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.orchestrator.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow_handler.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.cppm"
     )

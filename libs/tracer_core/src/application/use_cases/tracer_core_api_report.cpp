@@ -1,4 +1,8 @@
 // application/use_cases/tracer_core_api_report.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.use_cases.helpers;
+#endif
+
 #include <cctype>
 #include <chrono>
 #include <exception>
@@ -14,11 +18,17 @@
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
 #include "application/use_cases/tracer_core_api.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/use_cases/tracer_core_api_helpers.hpp"
+#endif
 
 using namespace tracer_core::core::dto;
+#if TT_ENABLE_CPP20_MODULES
+namespace core_api_helpers = tracer::core::application::modusecases::helpers;
+#else
 namespace core_api_helpers =
     tracer_core::application::use_cases::core_api_helpers;
+#endif
 
 namespace {
 

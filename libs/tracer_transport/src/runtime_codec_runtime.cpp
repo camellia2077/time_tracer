@@ -1,17 +1,36 @@
-#include "tracer/transport/runtime_codec.hpp"
+#if TT_ENABLE_CPP20_MODULES
+import tracer.transport.envelope;
+import tracer.transport.fields;
+#endif
 
 #include <stdexcept>
 #include <string>
 
 #include "nlohmann/json.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "tracer/transport/envelope.hpp"
 #include "tracer/transport/fields.hpp"
+#endif
+#include "tracer/transport/runtime_codec.hpp"
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::transport::modfields::RequireStringField;
+using tracer::transport::modfields::TryReadBoolField;
+using tracer::transport::modfields::TryReadStringField;
+#endif
+
+auto ParseEnvelope(std::string_view response_json, std::string_view context) {
+#if TT_ENABLE_CPP20_MODULES
+  return tracer::transport::modenvelope::Parse(response_json, context);
+#else
+  return ParseResponseEnvelope(response_json, context);
+#endif
+}
 
 auto ParseResponseObject(std::string_view response_json) -> json {
   if (response_json.empty()) {
@@ -175,7 +194,7 @@ auto ParseResolvedCliPaths(const json& payload) -> ResolvedCliPathsPayload {
 
 auto DecodeAckResponse(std::string_view response_json, std::string_view context)
     -> AckResponsePayload {
-  const auto kParsed = ParseResponseEnvelope(response_json, context);
+  const auto kParsed = ParseEnvelope(response_json, context);
   if (kParsed.HasError()) {
     throw std::invalid_argument(kParsed.error.message);
   }
@@ -194,7 +213,7 @@ auto DecodeAckResponse(std::string_view response_json, std::string_view context)
 
 auto DecodeTextResponse(std::string_view response_json, std::string_view context)
     -> TextResponsePayload {
-  const auto kParsed = ParseResponseEnvelope(response_json, context);
+  const auto kParsed = ParseEnvelope(response_json, context);
   if (kParsed.HasError()) {
     throw std::invalid_argument(kParsed.error.message);
   }

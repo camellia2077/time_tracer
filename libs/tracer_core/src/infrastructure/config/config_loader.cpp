@@ -1,15 +1,48 @@
 // infrastructure/config/config_loader.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.adapters.io.core.fs;
+import tracer.core.infrastructure.config.internal.config_detail_loader;
+import tracer.core.infrastructure.config.internal.config_parser_utils;
+#endif
+
 #include "infrastructure/config/config_loader.hpp"
 
 #include <toml++/toml.h>
 
 #include <stdexcept>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/config/internal/config_detail_loader.hpp"
 #include "infrastructure/config/internal/config_parser_utils.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
+#endif
 
 namespace fs = std::filesystem;
+#if TT_ENABLE_CPP20_MODULES
+namespace modcore = tracer::adapters::io::modcore;
+#else
+namespace modcore {
+
+[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
+  return ::FileSystemHelper::Exists(path);
+}
+
+}  // namespace modcore
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modconfig_internal = tracer::core::infrastructure::modconfig::internal;
+#else
+namespace modconfig_internal {
+
+using ::ConfigDetailLoader::LoadDetailedReports;
+using ::ConfigParserUtils::ParseCliDefaults;
+using ::ConfigParserUtils::ParseSystemSettings;
+using ::ConfigParserUtils::ResolveBundlePath;
+using ::ConfigParserUtils::TryParseBundlePaths;
+
+}  // namespace modconfig_internal
+#endif
 
 ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
   try {
@@ -28,7 +61,7 @@ auto ConfigLoader::GetMainConfigPath() const -> std::string {
 }
 
 auto ConfigLoader::LoadConfiguration() -> AppConfig {
-  if (!FileSystemHelper::Exists(main_config_path_)) {
+  if (!modcore::Exists(main_config_path_)) {
     throw std::runtime_error("Configuration file not found: " +
                              main_config_path_.string());
   }
@@ -45,16 +78,16 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   app_config.exe_dir_path = exe_path_;
 
   // 1. 解析基础路径和设置
-  ConfigParserUtils::ParseSystemSettings(tbl, exe_path_, main_config_path_,
-                                         app_config);
-  ConfigParserUtils::ParseCliDefaults(tbl, exe_path_, main_config_path_,
-                                      app_config);
+  modconfig_internal::ParseSystemSettings(tbl, exe_path_, main_config_path_,
+                                          app_config);
+  modconfig_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
+                                       app_config);
 
-  const bool kBundlePathsLoaded =
-      ConfigParserUtils::TryParseBundlePaths(config_dir_path_, app_config);
+  const bool kBundlePathsLoaded = modconfig_internal::TryParseBundlePaths(
+      config_dir_path_, app_config);
   if (!kBundlePathsLoaded) {
     const fs::path kBundlePath =
-        ConfigParserUtils::ResolveBundlePath(config_dir_path_);
+        modconfig_internal::ResolveBundlePath(config_dir_path_);
     throw std::runtime_error(
         "Bundle path config not found: " + kBundlePath.string() +
         ". Legacy [converter]/[reports] fallback was removed. "
@@ -64,7 +97,7 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
 
   // 2. 加载报表配置
   try {
-    ConfigDetailLoader::LoadDetailedReports(app_config);
+    modconfig_internal::LoadDetailedReports(app_config);
   } catch (const std::exception& e) {
     throw std::runtime_error("Failed to load report configuration details: " +
                              std::string(e.what()));

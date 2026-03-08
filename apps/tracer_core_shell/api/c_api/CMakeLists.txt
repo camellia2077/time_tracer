@@ -65,6 +65,8 @@ if(BUILD_TESTING)
     )
 
     add_executable(tc_c_api_stability_tests
+        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_runtime_support.cpp"
+        "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_runtime_stress_tests.cpp"
         "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_runtime_tests.cpp"
         "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_query_tests.cpp"
         "${TRACER_CORE_SHELL_INTEGRATION_TEST_ROOT}/tracer_core_c_api_error_tests.cpp"

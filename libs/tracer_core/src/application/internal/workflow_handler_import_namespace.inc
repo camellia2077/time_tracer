@@ -111,7 +111,7 @@ struct ActivityTailCandidate {
 }
 
 [[nodiscard]] auto TryResolveSingleTxtTargetMonth(
-    const PipelineContext& context) -> std::optional<SingleTxtTargetMonth> {
+    const PipelineSession& context) -> std::optional<SingleTxtTargetMonth> {
   if (context.state.ingest_inputs.size() != 1U) {
     return std::nullopt;
   }
@@ -259,7 +259,7 @@ struct ActivityTailCandidate {
 }
 
 [[nodiscard]] auto TryGetPreviousTailFromSiblingTxt(
-    const PipelineContext& context, const SingleTxtTargetMonth& target_month)
+    const PipelineSession& context, const SingleTxtTargetMonth& target_month)
     -> std::optional<app_ports::PreviousActivityTail> {
   if (context.state.ingest_inputs.size() != 1U) {
     return std::nullopt;
@@ -328,7 +328,7 @@ struct ActivityTailCandidate {
 }
 
 [[nodiscard]] auto ResolvePreviousTailForReplaceMonth(
-    const PipelineContext& context, const SingleTxtTargetMonth& target_month,
+    const PipelineSession& context, const SingleTxtTargetMonth& target_month,
     const std::map<std::string, std::vector<DailyLog>>& processed_data,
     app_ports::ITimeSheetRepository& repository)
     -> std::optional<app_ports::PreviousActivityTail> {
@@ -344,9 +344,11 @@ struct ActivityTailCandidate {
   return TryGetPreviousTailFromSiblingTxt(context, target_month);
 }
 
-[[nodiscard]] auto BuildIngestOptions(DateCheckMode date_check_mode,
+[[nodiscard]] auto BuildIngestOptions(const std::string& source_path,
+                                      DateCheckMode date_check_mode,
                                       bool save_processed) -> AppOptions {
   AppOptions options;
+  options.input_path = source_path;
   options.validate_structure = true;
   options.convert = true;
   options.validate_logic = true;

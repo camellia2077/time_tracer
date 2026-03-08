@@ -1,11 +1,23 @@
 // infrastructure/config/validator/reports/strategies/report_query_strategies.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.domain.ports.diagnostics;
+#endif
+
 #include "infrastructure/config/validator/reports/strategies/report_query_strategies.hpp"
 
 #include <algorithm>
 #include <set>
 #include <string>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modports = tracer::core::domain::modports;
+#else
+namespace modports = tracer_core::domain::ports;
+#endif
 
 namespace {
 
@@ -15,7 +27,7 @@ namespace {
 }
 
 void EmitValidationError(const std::string& message) {
-  tracer_core::domain::ports::EmitError(message);
+  modports::EmitError(message);
 }
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
@@ -79,9 +91,8 @@ auto ValidateRequiredKeys(const toml::table& query_config,
     if (query_config.contains(key)) {
       return true;
     }
-    tracer_core::domain::ports::EmitError("[Validator] Error in " + file_name +
-                                          ": Missing " + report_type +
-                                          " report key '" + key + "'.");
+    modports::EmitError("[Validator] Error in " + file_name + ": Missing " +
+                        report_type + " report key '" + key + "'.");
     return false;
   });
 }
@@ -99,9 +110,8 @@ auto ValidatePeriodKeys(const toml::table& query_config,
     if (query_config.contains(key)) {
       return true;
     }
-    tracer_core::domain::ports::EmitError("[Validator] Error in " + file_name +
-                                          ": Missing " + report_type +
-                                          " report key '" + key + "'.");
+    modports::EmitError("[Validator] Error in " + file_name + ": Missing " +
+                        report_type + " report key '" + key + "'.");
     return false;
   });
 }

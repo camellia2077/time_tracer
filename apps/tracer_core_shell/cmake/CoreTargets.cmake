@@ -271,19 +271,19 @@ if(BUILD_TESTING)
             COMMAND tc_app_mod_smoke_tests
         )
 
-        add_executable(tc_app_legacy_hdr_compat_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/application_legacy_headers_compat_tests.cpp"
+        add_executable(tc_app_pipeline_hdr_smoke_tests
+            "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/application_pipeline_headers_smoke_tests.cpp"
         )
         setup_app_target(
-            tc_app_legacy_hdr_compat_tests NO_PCH
+            tc_app_pipeline_hdr_smoke_tests NO_PCH
         )
         target_link_libraries(
-            tc_app_legacy_hdr_compat_tests PRIVATE
+            tc_app_pipeline_hdr_smoke_tests PRIVATE
             time_tracker_application
         )
         add_test(
-            NAME tc_app_legacy_hdr_compat_tests
-            COMMAND tc_app_legacy_hdr_compat_tests
+            NAME tc_app_pipeline_hdr_smoke_tests
+            COMMAND tc_app_pipeline_hdr_smoke_tests
         )
 
         add_executable(tc_infra_mod_smoke_tests
@@ -343,15 +343,25 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_bootstrap_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_config_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_chart_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_report_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_io_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_core_config_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_history_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_ingest_guard_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_data_layer_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_structure_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_bundle_policy_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_compat_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/validation_issue_reporter_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/txt_month_header_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_test_support.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_stats_scenario_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_main.cpp"
@@ -377,7 +387,9 @@ if(BUILD_TESTING)
     )
 
     add_executable(tt_fmt_parity_tests
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_fixture_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_md_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_snapshot_support.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_tex_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_typ_tests.cpp"
     )

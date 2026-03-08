@@ -1,13 +1,28 @@
 // infrastructure/serialization/json_serializer.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.domain.ports.diagnostics;
+import tracer.core.shared.string_utils;
+#endif
+
 #include "infrastructure/serialization/json_serializer.hpp"
 
 #include <nlohmann/json.hpp>
 
 #include <string>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
-#include "infrastructure/schema/day_schema.hpp"
 #include "shared/utils/string_utils.hpp"
+#endif
+
+#include "infrastructure/schema/day_schema.hpp"
+
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::shared::modutils::SplitString;
+namespace modports = tracer::core::domain::modports;
+#else
+namespace modports = tracer_core::domain::ports;
+#endif
 
 namespace serializer {
 namespace {
@@ -176,8 +191,8 @@ auto DeserializeLogFromJsonObject(const nlohmann::json& day_json) -> DailyLog {
       }
     }
   } catch (const nlohmann::json::exception& e) {
-    tracer_core::domain::ports::EmitError("Deserialization error for day: " +
-                                          std::string(e.what()));
+    modports::EmitError("Deserialization error for day: " +
+                        std::string(e.what()));
     throw;
   }
 

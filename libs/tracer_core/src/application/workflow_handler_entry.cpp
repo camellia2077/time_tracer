@@ -1,16 +1,36 @@
 // application/workflow_handler_entry.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.pipeline.orchestrator;
+import tracer.core.domain.types.app_options;
+import tracer.core.domain.types.date_check_mode;
+import tracer.core.domain.ports.diagnostics;
+#endif
+
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 
-#include "application/pipeline/pipeline_manager.hpp"
-#include "application/workflow_handler.hpp"
+#if !TT_ENABLE_CPP20_MODULES
+#include "application/pipeline/pipeline_orchestrator.hpp"
 #include "domain/ports/diagnostics.hpp"
 #include "domain/types/app_options.hpp"
+#endif
+#include "application/workflow_handler.hpp"
 
-using namespace core::pipeline;
 namespace app_ports = tracer_core::application::ports;
+namespace app_pipeline = tracer::core::application::pipeline;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::domain::modtypes::AppOptions;
+using tracer::core::domain::modtypes::DateCheckMode;
+namespace modports = tracer::core::domain::modports;
+#else
+using ::AppOptions;
+using ::DateCheckMode;
+namespace modports = tracer_core::domain::ports;
+#endif
+
+using app_pipeline::PipelineOrchestrator;
 
 namespace workflow_handler_internal {
 [[nodiscard]] auto BuildPipelineFailureMessage(std::string_view base_message)
@@ -44,10 +64,10 @@ namespace {
   return options;
 }
 
-auto RunPipelineOrThrow(PipelineManager& pipeline, const std::string& source,
+auto RunPipelineOrThrow(PipelineOrchestrator& pipeline,
                         const AppOptions& options,
                         std::string_view failure_message) -> void {
-  if (!pipeline.Run(source, options)) {
+  if (!pipeline.Run(options)) {
     throw std::runtime_error(
         workflow_handler_internal::BuildPipelineFailureMessage(
             failure_message));
@@ -88,35 +108,38 @@ WorkflowHandler::~WorkflowHandler() = default;
 
 auto WorkflowHandler::RunConverter(const std::string& input_path,
                                    const AppOptions& options) -> void {
-  PipelineManager pipeline(output_root_path_, converter_config_provider_,
-                           ingest_input_provider_, processed_data_storage_,
-                           validation_issue_reporter_);
-  if (!pipeline.Run(input_path, options)) {
+  PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
+                                ingest_input_provider_,
+                                processed_data_storage_,
+                                validation_issue_reporter_);
+  if (!pipeline.Run(options)) {
     throw std::runtime_error("Converter Pipeline Failed.");
   }
 }
 
 auto WorkflowHandler::RunValidateStructure(const std::string& source_path)
     -> void {
-  tracer_core::domain::ports::ClearBufferedDiagnostics();
+  modports::ClearBufferedDiagnostics();
   const AppOptions kOptions = BuildStructureValidationOptions(source_path);
 
-  PipelineManager pipeline(output_root_path_, converter_config_provider_,
-                           ingest_input_provider_, processed_data_storage_,
-                           validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, source_path, kOptions,
+  PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
+                                ingest_input_provider_,
+                                processed_data_storage_,
+                                validation_issue_reporter_);
+  RunPipelineOrThrow(pipeline, kOptions,
                      "Validate structure pipeline failed.");
 }
 
 auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
                                        DateCheckMode date_check_mode) -> void {
-  tracer_core::domain::ports::ClearBufferedDiagnostics();
+  modports::ClearBufferedDiagnostics();
   const AppOptions kOptions =
       BuildLogicValidationOptions(source_path, date_check_mode);
 
-  PipelineManager pipeline(output_root_path_, converter_config_provider_,
-                           ingest_input_provider_, processed_data_storage_,
-                           validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, source_path, kOptions,
+  PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
+                                ingest_input_provider_,
+                                processed_data_storage_,
+                                validation_issue_reporter_);
+  RunPipelineOrThrow(pipeline, kOptions,
                      "Validate logic pipeline failed.");
 }

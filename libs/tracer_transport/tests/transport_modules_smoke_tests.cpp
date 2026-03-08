@@ -10,6 +10,8 @@ using tracer::transport::modenvelope::Parse;
 using tracer::transport::modenvelope::Serialize;
 using tracer::transport::moderrors::Code;
 using tracer::transport::moderrors::Make;
+using tracer::transport::modfields::BuildTypeError;
+using tracer::transport::modfields::FormatFieldIssue;
 
 auto Contains(std::string_view text, std::string_view pattern) -> bool {
   return text.find(pattern) != std::string_view::npos;
@@ -47,12 +49,22 @@ void TestEnvelopeBridge(int& failures) {
          "Invalid JSON error should include context.", failures);
 }
 
+void TestFieldBridge(int& failures) {
+  const auto issue = BuildTypeError("limit", "integer");
+  const auto formatted = FormatFieldIssue(issue);
+  Expect(issue.field_name == "limit", "Field bridge should preserve name.",
+         failures);
+  Expect(Contains(formatted, "limit:"), "Formatted field issue mismatch.",
+         failures);
+}
+
 }  // namespace
 
 auto main() -> int {
   int failures = 0;
   TestErrorBridge(failures);
   TestEnvelopeBridge(failures);
+  TestFieldBridge(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_transport_modules_smoke_tests\n";

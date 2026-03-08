@@ -10,19 +10,13 @@ namespace {
 using tracer::core::application::modimporter::ImportService;
 using tracer::core::application::modimporter::ImportStats;
 using tracer::core::application::modimporter::ReplaceMonthTarget;
-using tracer::core::application::modpipeline::ConverterStep;
-using tracer::core::application::modpipeline::FileCollector;
-using tracer::core::application::modpipeline::LogicLinkerStep;
-using tracer::core::application::modpipeline::LogicValidatorStep;
-using tracer::core::application::modpipeline::PipelineContext;
-using tracer::core::application::modpipeline::PipelineManager;
-using tracer::core::application::modpipeline::PipelineRunConfig;
-using tracer::core::application::modpipeline::StructureValidatorStep;
 using tracer::core::application::modservice::ConverterService;
 using tracer::core::application::modusecases::ITracerCoreApi;
 using tracer::core::application::modusecases::TracerCoreApi;
 using tracer::core::application::modworkflow::IWorkflowHandler;
 using tracer::core::application::modworkflow::WorkflowHandler;
+
+namespace app_pipeline = tracer::core::application::pipeline;
 
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {
@@ -51,34 +45,40 @@ void TestUseCasesAndServices(int& failures) {
 }
 
 void TestPipelineBridge(int& failures) {
-  Expect(std::is_class_v<PipelineRunConfig>,
-         "PipelineRunConfig should be visible through module bridge.",
+  Expect(std::is_class_v<app_pipeline::PipelineRunSpec>,
+         "PipelineRunSpec should be visible through the pipeline module.",
          failures);
-  Expect(std::is_class_v<PipelineContext>,
-         "PipelineContext should be visible through module bridge.", failures);
-  Expect(std::is_class_v<PipelineManager>,
-         "PipelineManager should be visible through module bridge.", failures);
-  Expect(std::is_class_v<FileCollector>,
-         "FileCollector should be visible through module bridge.", failures);
-  Expect(std::is_class_v<StructureValidatorStep>,
-         "StructureValidatorStep should be visible through module bridge.",
+  Expect(std::is_class_v<app_pipeline::PipelineSession>,
+         "PipelineSession should be visible through the pipeline module.",
          failures);
-  Expect(std::is_class_v<ConverterStep>,
-         "ConverterStep should be visible through module bridge.", failures);
-  Expect(std::is_class_v<LogicLinkerStep>,
-         "LogicLinkerStep should be visible through module bridge.", failures);
-  Expect(std::is_class_v<LogicValidatorStep>,
-         "LogicValidatorStep should be visible through module bridge.",
+  Expect(std::is_class_v<app_pipeline::PipelineOrchestrator>,
+         "PipelineOrchestrator should be visible through the pipeline module.",
+         failures);
+  Expect(std::is_class_v<app_pipeline::InputCollectionStage>,
+         "InputCollectionStage should be visible through the pipeline module.",
+         failures);
+  Expect(std::is_class_v<app_pipeline::StructureValidationStage>,
+         "StructureValidationStage should be visible through the pipeline module.",
+         failures);
+  Expect(std::is_class_v<app_pipeline::ConversionStage>,
+         "ConversionStage should be visible through the pipeline module.",
+         failures);
+  Expect(std::is_class_v<app_pipeline::CrossMonthLinkStage>,
+         "CrossMonthLinkStage should be visible through the pipeline module.",
+         failures);
+  Expect(std::is_class_v<app_pipeline::LogicValidationStage>,
+         "LogicValidationStage should be visible through the pipeline module.",
          failures);
 
-  PipelineContext context(std::filesystem::path("phase4-module-output"));
+  app_pipeline::PipelineSession context(
+      std::filesystem::path("phase5-pipeline-module-output"));
   Expect(context.config.output_root ==
-             std::filesystem::path("phase4-module-output"),
-         "PipelineContext constructor should preserve output_root.", failures);
+             std::filesystem::path("phase5-pipeline-module-output"),
+         "PipelineSession constructor should preserve output_root.", failures);
   Expect(context.state.ingest_inputs.empty(),
-         "PipelineContext state should initialize as empty.", failures);
+         "PipelineSession state should initialize as empty.", failures);
   Expect(context.result.processed_data.empty(),
-         "PipelineContext result should initialize as empty.", failures);
+         "PipelineSession result should initialize as empty.", failures);
 }
 
 void TestWorkflowBridge(int& failures) {

@@ -1,15 +1,27 @@
 // application/use_cases/tracer_core_api_query.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.use_cases.helpers;
+import tracer.core.application.reporting.tree.viewer;
+#endif
+
 #include <exception>
 #include <utility>
 
 #include "application/ports/i_data_query_service.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/reporting/tree/project_tree_viewer.hpp"
-#include "application/use_cases/tracer_core_api.hpp"
 #include "application/use_cases/tracer_core_api_helpers.hpp"
+#endif
+#include "application/use_cases/tracer_core_api.hpp"
 
 using namespace tracer_core::core::dto;
+#if TT_ENABLE_CPP20_MODULES
+using tracer::core::application::modreporting::tree::ProjectTreeViewer;
+namespace core_api_helpers = tracer::core::application::modusecases::helpers;
+#else
 namespace core_api_helpers =
     tracer_core::application::use_cases::core_api_helpers;
+#endif
 
 auto TracerCoreApi::RunDataQuery(const DataQueryRequest& request)
     -> TextOutput {

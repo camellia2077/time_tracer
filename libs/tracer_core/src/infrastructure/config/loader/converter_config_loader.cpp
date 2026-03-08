@@ -1,4 +1,9 @@
 // infrastructure/config/loader/converter_config_loader.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.adapters.io.core.fs;
+import tracer.core.infrastructure.config.loader.toml_loader_utils;
+#endif
+
 #include "infrastructure/config/loader/converter_config_loader.hpp"
 
 #include <algorithm>
@@ -6,12 +11,32 @@
 #include <stdexcept>
 #include <string_view>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/config/loader/toml_loader_utils.hpp"  // 使用 read_toml
+#endif
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/io/core/file_system_helper.hpp"
+#endif
 
 namespace fs = std::filesystem;
-using namespace TomlLoaderUtils;
+#if TT_ENABLE_CPP20_MODULES
+namespace modcore = tracer::adapters::io::modcore;
+#else
+namespace modcore {
+
+[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
+  return ::FileSystemHelper::Exists(path);
+}
+
+}  // namespace modcore
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modloader = tracer::core::infrastructure::modconfig::loader;
+#else
+namespace modloader = TomlLoaderUtils;
+#endif
 
 namespace {
 
@@ -19,11 +44,11 @@ constexpr std::string_view kAliasesSection = "aliases";
 
 auto ReadRequiredToml(const fs::path& file_path, std::string_view logical_name)
     -> toml::table {
-  if (!FileSystemHelper::Exists(file_path)) {
+  if (!modcore::Exists(file_path)) {
     throw std::runtime_error(std::string(logical_name) +
                              " config file not found: " + file_path.string());
   }
-  return ReadToml(file_path);
+  return modloader::ReadToml(file_path);
 }
 
 auto BuildTextMappingsFromAlias(toml::table& main_tbl,
@@ -87,11 +112,11 @@ auto ConverterConfigLoader::MergeOptionalSections(
   }
 
   fs::path file_path = config_dir / *path_node;
-  if (!FileSystemHelper::Exists(file_path)) {
+  if (!modcore::Exists(file_path)) {
     return;
   }
 
-  toml::table source_tbl = ReadToml(file_path);
+  toml::table source_tbl = modloader::ReadToml(file_path);
   for (std::string_view section_key : section_keys) {
     MergeSectionIfPresent(main_tbl, source_tbl, section_key);
   }
@@ -99,12 +124,12 @@ auto ConverterConfigLoader::MergeOptionalSections(
 
 auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
     -> toml::table {
-  if (!FileSystemHelper::Exists(main_config_path)) {
+  if (!modcore::Exists(main_config_path)) {
     throw std::runtime_error("Converter config file not found: " +
                              main_config_path.string());
   }
 
-  toml::table main_tbl = ReadToml(main_config_path);
+  toml::table main_tbl = modloader::ReadToml(main_config_path);
   fs::path config_dir = main_config_path.parent_path();
 
   MainConfigPaths paths;

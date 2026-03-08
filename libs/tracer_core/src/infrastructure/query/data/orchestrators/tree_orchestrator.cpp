@@ -1,14 +1,25 @@
 // infrastructure/query/data/orchestrators/tree_orchestrator.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.reporting.tree.nodes;
+#endif
+
 #include "infrastructure/query/data/orchestrators/tree_orchestrator.hpp"
 
 #include <stdexcept>
 #include <utility>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "application/reporting/tree/project_tree_nodes.hpp"
+#endif
 #include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
 #include "infrastructure/query/data/data_query_repository.hpp"
 #include "infrastructure/query/data/renderers/data_query_renderer.hpp"
 
+#if TT_ENABLE_CPP20_MODULES
+namespace app_tree = tracer::core::application::modreporting::tree;
+#else
+namespace app_tree = tracer_core::application::reporting::tree;
+#endif
 namespace query_internal =
     infrastructure::persistence::data_query_service_internal;
 namespace data_query_renderers =
@@ -31,7 +42,6 @@ auto HandleTreeQuery(sqlite3* db_conn,
                      const QueryFilters& base_filters,
                      tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
-  namespace app_tree = tracer_core::application::reporting::tree;
   auto tree_filters = base_filters;
   query_internal::ApplyTreePeriod(request, db_conn, tree_filters);
   const int kMaxDepth = request.tree_max_depth.value_or(kMinUnlimitedDepth);

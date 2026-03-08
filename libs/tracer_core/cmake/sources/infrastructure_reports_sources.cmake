@@ -3,6 +3,7 @@ set(TIME_TRACKER_INFRA_REPORTS_SOURCES
     "reports/exporter.cpp"
     "reports/report_file_manager.cpp"
     "reports/facade/android_static_report_formatter_registrar.cpp"
+    "reports/facade/android_static_report_formatter_registrar_support.cpp"
     "reports/facade/report_formatter_registry_adapter.cpp"
     "reports/report_dto_export_writer.cpp"
     "reports/report_dto_formatter.cpp"

@@ -1,29 +1,6 @@
-// application/pipeline/pipeline_manager.hpp
-#ifndef APPLICATION_PIPELINE_PIPELINE_MANAGER_H_
-#define APPLICATION_PIPELINE_PIPELINE_MANAGER_H_
-
-#include <filesystem>
-#include <memory>
-#include <optional>
-#include <string>
-
-#include "application/pipeline/context/pipeline_context.hpp"
-#include "domain/types/app_options.hpp"
-
-namespace fs = std::filesystem;
-
-namespace tracer_core::application::ports {
-class IConverterConfigProvider;
-class IIngestInputProvider;
-class IProcessedDataStorage;
-class IValidationIssueReporter;
-}  // namespace tracer_core::application::ports
-
-namespace core::pipeline {
-
-class PipelineManager {
+class PipelineOrchestrator {
  public:
-  PipelineManager(
+  PipelineOrchestrator(
       fs::path output_root,
       std::shared_ptr<tracer_core::application::ports::IConverterConfigProvider>
           converter_config_provider,
@@ -34,9 +11,8 @@ class PipelineManager {
       std::shared_ptr<tracer_core::application::ports::IValidationIssueReporter>
           validation_issue_reporter);
 
-  [[nodiscard]] auto Run(const std::string& input_path,
-                         const AppOptions& options)
-      -> std::optional<PipelineContext>;
+  [[nodiscard]] auto Run(const AppOptions& options)
+      -> std::optional<PipelineSession>;
 
  private:
   fs::path output_root_;
@@ -49,7 +25,3 @@ class PipelineManager {
   std::shared_ptr<tracer_core::application::ports::IValidationIssueReporter>
       validation_issue_reporter_;
 };
-
-}  // namespace core::pipeline
-
-#endif  // APPLICATION_PIPELINE_PIPELINE_MANAGER_H_

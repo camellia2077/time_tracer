@@ -1,4 +1,8 @@
 // infrastructure/logging/validation_issue_reporter.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.domain.ports.diagnostics;
+#endif
+
 #include "infrastructure/logging/validation_issue_reporter.hpp"
 
 #include <map>
@@ -7,7 +11,15 @@
 #include <string>
 #include <vector>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modports = tracer::core::domain::modports;
+#else
+namespace modports = tracer_core::domain::ports;
+#endif
 
 namespace infrastructure::logging {
 namespace {
@@ -21,19 +33,16 @@ auto BuildLogHeader(std::string_view filename) -> std::string {
 }
 
 auto FlushReport(const std::ostringstream& report_stream) -> bool {
-  return tracer_core::domain::ports::AppendErrorReport(report_stream.str());
+  return modports::AppendErrorReport(report_stream.str());
 }
 
 void EmitReportSavedMessage(bool appended) {
-  const std::string kDestinationLabel =
-      tracer_core::domain::ports::GetErrorReportDestinationLabel();
+  const std::string kDestinationLabel = modports::GetErrorReportDestinationLabel();
   if (appended) {
-    tracer_core::domain::ports::EmitInfo("详细的错误日志已保存至: " +
-                                         kDestinationLabel);
+    modports::EmitInfo("详细的错误日志已保存至: " + kDestinationLabel);
     return;
   }
-  tracer_core::domain::ports::EmitWarn("详细错误日志写入失败，目标: " +
-                                       kDestinationLabel);
+  modports::EmitWarn("详细错误日志写入失败，目标: " + kDestinationLabel);
 }
 
 auto GetErrorTypeHeader(validator::ErrorType type) -> std::string {
@@ -154,7 +163,7 @@ void ValidationIssueReporter::ReportStructureErrors(
     return;
   }
 
-  tracer_core::domain::ports::EmitError("请根据以下错误信息，手动修正该文件。");
+  modports::EmitError("请根据以下错误信息，手动修正该文件。");
 
   std::map<validator::ErrorType, std::vector<validator::Error>> grouped_errors;
   for (const auto& error : errors) {
@@ -166,18 +175,18 @@ void ValidationIssueReporter::ReportStructureErrors(
 
   for (const auto& [error_type, grouped] : grouped_errors) {
     const std::string kHeader = GetErrorTypeHeader(error_type);
-    tracer_core::domain::ports::EmitError("\n" + kHeader);
+    modports::EmitError("\n" + kHeader);
     report_stream << kHeader << "\n";
     for (const auto& error : grouped) {
       const std::string kErrorMessage =
           BuildLocationPrefix(error, display_label) + error.message;
-      tracer_core::domain::ports::EmitError("  " + kErrorMessage);
+      modports::EmitError("  " + kErrorMessage);
       report_stream << "  " << kErrorMessage << "\n";
 
       if (error.source_span.has_value() &&
           !error.source_span->raw_text.empty()) {
         const std::string kRawLine = "    > " + error.source_span->raw_text;
-        tracer_core::domain::ports::EmitError(kRawLine);
+        modports::EmitError(kRawLine);
         report_stream << kRawLine << "\n";
       }
     }
@@ -193,7 +202,7 @@ void ValidationIssueReporter::ReportLogicDiagnostics(
     return;
   }
 
-  tracer_core::domain::ports::EmitError("请根据以下错误信息，手动修正该文件。");
+  modports::EmitError("请根据以下错误信息，手动修正该文件。");
 
   std::map<std::string, std::vector<validator::Diagnostic>> grouped;
   for (const auto& diagnostic : diagnostics) {
@@ -207,19 +216,19 @@ void ValidationIssueReporter::ReportLogicDiagnostics(
 
   for (const auto& [code, grouped_diagnostics] : grouped) {
     const std::string kHeader = GetDiagnosticHeader(code);
-    tracer_core::domain::ports::EmitError("\n" + kHeader);
+    modports::EmitError("\n" + kHeader);
     report_stream << kHeader << "\n";
     for (const auto& diagnostic : grouped_diagnostics) {
       const std::string kErrorMessage =
           BuildLocationPrefix(diagnostic, fallback_label) + diagnostic.message;
-      tracer_core::domain::ports::EmitError("  " + kErrorMessage);
+      modports::EmitError("  " + kErrorMessage);
       report_stream << "  " << kErrorMessage << "\n";
 
       if (diagnostic.source_span.has_value() &&
           !diagnostic.source_span->raw_text.empty()) {
         const std::string kRawLine =
             "    > " + diagnostic.source_span->raw_text;
-        tracer_core::domain::ports::EmitError(kRawLine);
+        modports::EmitError(kRawLine);
         report_stream << kRawLine << "\n";
       }
     }

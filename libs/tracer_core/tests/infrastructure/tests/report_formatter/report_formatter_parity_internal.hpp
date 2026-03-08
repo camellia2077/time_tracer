@@ -41,6 +41,7 @@ auto RunCaseWithSnapshot(const std::string& case_name,
                          const std::string& cli_output,
                          const std::string& android_output,
                          bool update_snapshots, int& failures) -> void;
+auto RunFormatterParityTests() -> int;
 
 auto RunFormatSnapshotCases(const std::string& format_label,
                             const std::string& extension,

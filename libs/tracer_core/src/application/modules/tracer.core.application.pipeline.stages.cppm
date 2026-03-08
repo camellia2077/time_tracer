@@ -1,15 +1,17 @@
 module;
 
-#include "application/pipeline/steps/pipeline_stages.hpp"
+#include <string>
+
+namespace tracer_core::application::ports {
+class IIngestInputProvider;
+}  // namespace tracer_core::application::ports
 
 export module tracer.core.application.pipeline.stages;
 
-export namespace tracer::core::application::modpipeline {
+export import tracer.core.application.pipeline.types;
 
-using ::core::pipeline::ConverterStep;
-using ::core::pipeline::FileCollector;
-using ::core::pipeline::LogicLinkerStep;
-using ::core::pipeline::LogicValidatorStep;
-using ::core::pipeline::StructureValidatorStep;
+export namespace tracer::core::application::pipeline {
 
-}  // namespace tracer::core::application::modpipeline
+#include "application/pipeline/detail/pipeline_stages_decl.inc"
+
+}  // namespace tracer::core::application::pipeline

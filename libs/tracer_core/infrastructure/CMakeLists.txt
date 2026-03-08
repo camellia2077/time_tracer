@@ -145,6 +145,22 @@ target_sources(tc_infra_full_lib PRIVATE
     ${TRACER_CORE_INFRA_PERSISTENCE_SOURCES}
     ${TRACER_CORE_INFRA_CONFIG_SOURCES}
 )
+if(TT_CPP20_MODULES_EFFECTIVE)
+    target_sources(tc_infra_full_lib PUBLIC
+        FILE_SET core_infrastructure_full_modules TYPE CXX_MODULES
+        BASE_DIRS
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
+        FILES
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.internal.config_detail_loader.cppm"
+            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.internal.config_parser_utils.cppm"
+    )
+    set_target_properties(tc_infra_full_lib PROPERTIES
+        CXX_SCAN_FOR_MODULES ON
+    )
+endif()
 
 setup_app_target(
     tc_infra_full_lib

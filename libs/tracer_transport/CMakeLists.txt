@@ -17,6 +17,7 @@ if(TT_CPP20_MODULES_EFFECTIVE)
         FILE_SET transport_modules TYPE CXX_MODULES FILES
             src/modules/tracer.transport.errors.cppm
             src/modules/tracer.transport.envelope.cppm
+            src/modules/tracer.transport.fields.cppm
             src/modules/tracer.transport.cppm
     )
     set_target_properties(ttr_lib PROPERTIES
@@ -66,6 +67,9 @@ if(BUILD_TESTING)
     )
 
     add_executable(ttr_rt_codec_tests
+        tests/transport_runtime_codec_decode_request_tests.cpp
+        tests/transport_runtime_codec_decode_response_tests.cpp
+        tests/transport_runtime_codec_encode_tests.cpp
         tests/transport_runtime_codec_tests.cpp
     )
     if(COMMAND setup_app_target)

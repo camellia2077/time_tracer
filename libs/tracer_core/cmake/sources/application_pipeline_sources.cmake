@@ -1,4 +1,19 @@
-set(TIME_TRACKER_APPLICATION_PIPELINE_SOURCES
-    "pipeline/pipeline_manager.cpp"
-    "pipeline/steps/pipeline_stages.cpp"
-)
+if(TT_CPP20_MODULES_EFFECTIVE)
+    set(TIME_TRACKER_APPLICATION_PIPELINE_SOURCES
+        "pipeline/pipeline_orchestrator.module.cpp"
+        "pipeline/stages/input_collection_stage.module.cpp"
+        "pipeline/stages/structure_validation_stage.module.cpp"
+        "pipeline/stages/conversion_stage.module.cpp"
+        "pipeline/stages/cross_month_link_stage.module.cpp"
+        "pipeline/stages/logic_validation_stage.module.cpp"
+    )
+else()
+    set(TIME_TRACKER_APPLICATION_PIPELINE_SOURCES
+        "pipeline/pipeline_orchestrator.cpp"
+        "pipeline/stages/input_collection_stage.cpp"
+        "pipeline/stages/structure_validation_stage.cpp"
+        "pipeline/stages/conversion_stage.cpp"
+        "pipeline/stages/cross_month_link_stage.cpp"
+        "pipeline/stages/logic_validation_stage.cpp"
+    )
+endif()
