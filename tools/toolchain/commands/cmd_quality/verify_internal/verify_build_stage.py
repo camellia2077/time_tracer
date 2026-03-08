@@ -17,6 +17,7 @@ def execute_build_stage(
     build_dir_name: str | None,
     profile_name: str | None,
     kill_build_procs: bool,
+    run_command_fn=None,
 ) -> tuple[int, str, str]:
     build_app_name = resolve_suite_build_app(app_name) or app_name
     build_cmd = build_command_cls(ctx)
@@ -32,6 +33,7 @@ def execute_build_stage(
             build_dir_name=build_dir_name,
             profile_name=profile_name,
             kill_build_procs=kill_build_procs,
+            run_command_fn=run_command_fn,
         )
         if core_build_ret != 0:
             resolved_core_build_dir_name = build_cmd.resolve_build_dir_name(
@@ -50,6 +52,7 @@ def execute_build_stage(
         build_dir_name=build_dir_name,
         profile_name=profile_name,
         kill_build_procs=kill_build_procs,
+        run_command_fn=run_command_fn,
     )
     resolved_build_dir_name = build_cmd.resolve_build_dir_name(
         tidy=tidy,

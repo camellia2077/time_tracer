@@ -63,86 +63,44 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "fast")
         self.assertEqual(FakeBuildCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
 
-    def test_post_change_uses_default_build_dir_without_profile(self):
-        class FakePostChangeCommand:
+    def test_validate_dispatches_plan_paths_and_run_name(self):
+        class FakeValidateCommand:
             last_kwargs = None
 
             def __init__(self, _ctx):
                 pass
 
             def execute(self, **kwargs):
-                FakePostChangeCommand.last_kwargs = kwargs
+                FakeValidateCommand.last_kwargs = kwargs
                 return 0
 
-        with patch("tools.toolchain.cli.handlers.post_change.PostChangeCommand", FakePostChangeCommand):
+        with patch("tools.toolchain.cli.handlers.validate.ValidateCommand", FakeValidateCommand):
             self._assert_return_zero(
                 [
                     "run.py",
-                    "post-change",
-                    "--app",
-                    "tracer_core",
-                    "--dry-run",
+                    "validate",
+                    "--plan",
+                    "temp/import_batch01.toml",
+                    "--paths",
+                    "libs/tracer_core/src/a.cpp",
+                    "libs/tracer_core/src/b.cpp",
+                    "--paths-file",
+                    "temp/import_batch01.paths",
+                    "--run-name",
+                    "batch01",
+                    "--verbose",
                 ]
             )
 
-        self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
-        self.assertEqual(FakePostChangeCommand.last_kwargs["app_name"], "tracer_core")
-        self.assertEqual(FakePostChangeCommand.last_kwargs["profile_name"], None)
-        self.assertEqual(FakePostChangeCommand.last_kwargs["build_dir_name"], "build_fast")
-
-    def test_post_change_keeps_build_dir_unset_when_profile_is_given(self):
-        class FakePostChangeCommand:
-            last_kwargs = None
-
-            def __init__(self, _ctx):
-                pass
-
-            def execute(self, **kwargs):
-                FakePostChangeCommand.last_kwargs = kwargs
-                return 0
-
-        with patch("tools.toolchain.cli.handlers.post_change.PostChangeCommand", FakePostChangeCommand):
-            self._assert_return_zero(
-                [
-                    "run.py",
-                    "post-change",
-                    "--app",
-                    "tracer_core",
-                    "--profile",
-                    "fast",
-                    "--dry-run",
-                ]
-            )
-
-        self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
-        self.assertEqual(FakePostChangeCommand.last_kwargs["profile_name"], "fast")
-        self.assertIsNone(FakePostChangeCommand.last_kwargs["build_dir_name"])
-
-    def test_post_change_tracer_android_keeps_build_dir_unset(self):
-        class FakePostChangeCommand:
-            last_kwargs = None
-
-            def __init__(self, _ctx):
-                pass
-
-            def execute(self, **kwargs):
-                FakePostChangeCommand.last_kwargs = kwargs
-                return 0
-
-        with patch("tools.toolchain.cli.handlers.post_change.PostChangeCommand", FakePostChangeCommand):
-            self._assert_return_zero(
-                [
-                    "run.py",
-                    "post-change",
-                    "--app",
-                    "tracer_android",
-                    "--dry-run",
-                ]
-            )
-
-        self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
-        self.assertEqual(FakePostChangeCommand.last_kwargs["app_name"], "tracer_android")
-        self.assertIsNone(FakePostChangeCommand.last_kwargs["build_dir_name"])
+        self.assertIsNotNone(FakeValidateCommand.last_kwargs)
+        self.assertEqual(FakeValidateCommand.last_kwargs["plan_path"], "temp/import_batch01.toml")
+        self.assertEqual(
+            FakeValidateCommand.last_kwargs["raw_paths"],
+            ["libs/tracer_core/src/a.cpp", "libs/tracer_core/src/b.cpp"],
+        )
+        self.assertEqual(FakeValidateCommand.last_kwargs["paths_file"], "temp/import_batch01.paths")
+        self.assertEqual(FakeValidateCommand.last_kwargs["run_name"], "batch01")
+        self.assertTrue(FakeValidateCommand.last_kwargs["verbose"])
 
     def test_tidy_dispatches_source_scope_and_build_dir(self):
         class FakeTidyCommand:
@@ -515,46 +473,22 @@ class TestRunCliDispatch(TestCase):
 
         self.assertEqual(rc, 2)
 
-    def test_post_change_dispatches_cmake_args(self):
-        class FakePostChangeCommand:
-            last_kwargs = None
-
-            def __init__(self, _ctx):
-                pass
-
-            def execute(self, **kwargs):
-                FakePostChangeCommand.last_kwargs = kwargs
-                return 0
-
-        with patch("tools.toolchain.cli.handlers.post_change.PostChangeCommand", FakePostChangeCommand):
-            self._assert_return_zero(
-                [
-                    "run.py",
-                    "post-change",
-                    "--app",
-                    "tracer_core",
-                    "--dry-run",
-                    "--cmake-args=-DA=1",
-                    "--cmake-args=-DB=2",
-                ]
-            )
-
-        self.assertIsNotNone(FakePostChangeCommand.last_kwargs)
-        self.assertEqual(FakePostChangeCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
-
     def test_unrecognized_arguments_show_build_verify_hint(self):
         stderr = io.StringIO()
-        with patch.object(sys, "argv", ["run.py", "post-change", "--bad-arg"]), redirect_stderr(
-            stderr
-        ), self.assertRaises(SystemExit) as raised:
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "validate", "--plan", "temp/import_batch01.toml", "--bad-arg"],
+        ), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
             self.run_module.main()
 
         self.assertEqual(raised.exception.code, 2)
         error_text = stderr.getvalue()
         self.assertIn("unrecognized arguments: --bad-arg", error_text)
-        self.assertIn("python tools/run.py post-change -h", error_text)
+        self.assertIn("python tools/run.py validate -h", error_text)
         self.assertIn("python tools/run.py build ...", error_text)
         self.assertIn("python tools/run.py verify ...", error_text)
+        self.assertIn("python tools/run.py validate ...", error_text)
 
     def test_config_migrate_defaults_to_dry_run(self):
         class FakeConfigMigrateCommand:

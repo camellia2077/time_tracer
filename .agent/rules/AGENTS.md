@@ -8,7 +8,7 @@ trigger: always_on
   - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution.
   - Run `.sh` workflows only when explicitly requested.
 - Build / test entry:
-  - Use `python tools/run.py ...` as the default project build / verify / post-change entry.
+  - Use `python tools/run.py ...` as the default project build / verify / validate entry.
   - Do not use ad-hoc `cmake` / `ninja` wrappers unless the user explicitly asks for them.
   - Before using command flags, read help first:
     - `python tools/run.py -h`
@@ -20,9 +20,11 @@ trigger: always_on
   - `exit code = 0` means success; any non-zero exit code means failure.
   - On failures, report the executed command and key error lines.
 - Result visibility contract:
-  - Post-change state:
-    - default/flexible backend path: `out/build/<app>/<build_dir>/post_change_last.json`
-    - `tracer_android`: `out/build/tracer_android/build/post_change_last.json`
+  - Validation summary:
+    - `out/validate/<run_name>/summary.json`
+  - Validation logs:
+    - `out/validate/<run_name>/logs/output.log`
+    - `out/validate/<run_name>/logs/output.full.log`
   - Machine-readable summary: `out/test/<result_target>/result.json`
   - Aggregated log: `out/test/<result_target>/logs/output.log`
   - Result target mapping:
@@ -35,7 +37,8 @@ trigger: always_on
   - 2) If missing, read `apps/<target_app>/README.md`.
   - 3) Fall back to this file only for global defaults.
 - Validation scope:
-  - After code changes, prefer `python tools/run.py post-change ...` unless the user requests another flow.
+  - After code changes, prefer `python tools/run.py validate --plan ... --paths ...` unless the user requests another flow.
+  - `validate` requires explicit focused paths via `--paths` or `--paths-file`; do not infer scope from the whole dirty worktree.
   - If the change only touches documentation files (`docs/**`, `*.md`) and does not modify code/config/scripts/tests, skip build/test by default.
   - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
 - High-risk contract gates:

@@ -140,6 +140,7 @@ def execute_entry(
     profile_name: str | None = None,
     kill_build_procs: bool = False,
     kill_build_processes_fn=None,
+    run_command_fn=None,
 ) -> int:
     if kill_build_procs:
         kill_build_processes_fn()
@@ -154,6 +155,7 @@ def execute_entry(
         profile_name=profile_name,
         kill_build_procs=False,
         sync_platform_config=True,
+        run_command_fn=run_command_fn,
     )
     if ret != 0:
         return ret
@@ -166,4 +168,5 @@ def execute_entry(
         build_dir_name=build_dir_name,
         profile_name=profile_name,
         kill_build_procs=False,
+        run_command_fn=run_command_fn,
     )

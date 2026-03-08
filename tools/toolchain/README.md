@@ -46,6 +46,7 @@ python tools/run.py configure --app tracer_core_shell
 python tools/run.py build --app tracer_core_shell
 python tools/run.py build --app tracer_core_shell --profile fast
 python tools/run.py verify --app tracer_core_shell --profile fast --concise
+python tools/run.py validate --plan temp/import_batch01.toml --paths-file temp/import_batch01.paths
 python tools/run.py format --app tracer_core_shell
 
 # Runtime lock cleanup (time_tracer_cli / native test EXEs holding core DLL) runs automatically on build for tracer_core_shell/tracer_core/tracer_windows_rust_cli.
@@ -107,7 +108,7 @@ python tools/run.py build --app tracer_android --profile android_edit
 # Android validation loop (use only when you need checks/tests)
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
-python tools/run.py post-change --app tracer_android --run-tests always --concise
+python tools/run.py validate --plan temp/android_ci.toml --paths-file temp/android_ci.paths
 
 # Windows CLI quick validation (single command):
 # `verify --app tracer_core_shell` maps to Windows CLI artifact build + test flow,
@@ -141,9 +142,11 @@ python tools/run.py rename-audit --app tracer_core_shell
 
 ## Result Visibility Contract
 
-- State file (`post-change`): `out/build/<app>/<build_dir>/post_change_last.json`
-  - Fixed-dir backend example: `out/build/tracer_android/build/post_change_last.json`
-  - Step status (`configure/build/test`), failed stage, failed command, next action.
+- Validation summary: `out/validate/<run_name>/summary.json`
+  - Track-level status, per-step exit codes, focused scope paths, and failure summary.
+- Validation logs:
+  - `out/validate/<run_name>/logs/output.log`
+  - `out/validate/<run_name>/logs/output.full.log`
 - Summary file: `out/test/<result_target>/result.json`
   - Overall success/failure and module summary.
 - Case details file: `out/test/<result_target>/result_cases.json`

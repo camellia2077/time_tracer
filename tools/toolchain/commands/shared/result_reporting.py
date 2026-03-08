@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
 from ...core.generated_paths import resolve_test_result_layout_for_app
+from ...services.log_analysis import extract_key_error_lines_from_log
 
 
 def resolve_result_paths(repo_root: Path, app_name: str) -> dict[str, Path]:
@@ -27,50 +27,6 @@ def print_result_paths(
         print(f"state_json: {state_json}")
     print(f"result_json (summary): {paths['result_json']}")
     print(f"output_log (aggregated log): {paths['output_log']}")
-
-
-def _extract_key_error_lines_from_log(log_path: Path, limit: int = 5) -> list[str]:
-    if not log_path.exists() or not log_path.is_file():
-        return []
-
-    try:
-        lines = log_path.read_text(encoding="utf-8", errors="replace").splitlines()
-    except OSError:
-        return []
-
-    if not lines:
-        return []
-
-    pattern = re.compile(r"(error|failed|fatal|exception|traceback|not found)", re.IGNORECASE)
-    selected: list[str] = []
-    seen: set[str] = set()
-
-    for line in reversed(lines):
-        text = line.strip()
-        if not text:
-            continue
-        if pattern.search(text):
-            if text not in seen:
-                selected.append(text)
-                seen.add(text)
-            if len(selected) >= limit:
-                break
-
-    if not selected:
-        for line in reversed(lines):
-            text = line.strip()
-            if not text:
-                continue
-            if text not in seen:
-                selected.append(text)
-                seen.add(text)
-            if len(selected) >= min(3, limit):
-                break
-
-    selected.reverse()
-    return selected
-
-
 def print_failure_report(
     *,
     command: str,
@@ -84,7 +40,7 @@ def print_failure_report(
 ) -> None:
     paths = resolve_result_paths(repo_root=repo_root, app_name=app_name)
     resolved_log_path = log_path or paths["output_log"]
-    key_error_lines = _extract_key_error_lines_from_log(resolved_log_path)
+    key_error_lines = extract_key_error_lines_from_log(resolved_log_path)
 
     print("=== FAILURE REPORT ===")
     print(f"command: {command}")

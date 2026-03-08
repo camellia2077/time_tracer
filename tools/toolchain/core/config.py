@@ -140,18 +140,9 @@ class RenameConfig:
 
 
 @dataclass
-class PostChangeConfig:
-    default_app: str = "tracer_core"
-    default_build_dir: str = "build_fast"
-    run_tests: str = "auto"
-    script_changes: str = "build"
-
-
-@dataclass
 class AgentConfig:
     apps: dict[str, AppConfig] = field(default_factory=dict)
     build: BuildConfig = field(default_factory=BuildConfig)
     quality: QualityConfig = field(default_factory=QualityConfig)
     tidy: TidyConfig = field(default_factory=TidyConfig)
     rename: RenameConfig = field(default_factory=RenameConfig)
-    post_change: PostChangeConfig = field(default_factory=PostChangeConfig)

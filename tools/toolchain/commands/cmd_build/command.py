@@ -182,6 +182,7 @@ class BuildCommand:
         profile_name: str | None = None,
         kill_build_procs: bool = False,
         sync_platform_config: bool = True,
+        run_command_fn=None,
     ) -> int:
         return build_command_entries.configure_entry(
             command=self,
@@ -194,7 +195,7 @@ class BuildCommand:
             profile_name=profile_name,
             kill_build_procs=kill_build_procs,
             sync_platform_config=sync_platform_config,
-            run_command_fn=run_command,
+            run_command_fn=run_command if run_command_fn is None else run_command_fn,
             kill_build_processes_fn=kill_build_processes,
         )
 
@@ -209,6 +210,7 @@ class BuildCommand:
         profile_name: str | None = None,
         windows_icon_svg: str | None = None,
         kill_build_procs: bool = False,
+        run_command_fn=None,
     ) -> int:
         return build_command_entries.build_entry(
             command=self,
@@ -221,7 +223,7 @@ class BuildCommand:
             profile_name=profile_name,
             windows_icon_svg=windows_icon_svg,
             kill_build_procs=kill_build_procs,
-            run_command_fn=run_command,
+            run_command_fn=run_command if run_command_fn is None else run_command_fn,
             kill_build_processes_fn=kill_build_processes,
             kill_runtime_lock_processes_fn=kill_runtime_lock_processes,
         )
@@ -236,6 +238,7 @@ class BuildCommand:
         build_dir_name: str | None = None,
         profile_name: str | None = None,
         kill_build_procs: bool = False,
+        run_command_fn=None,
     ) -> int:
         return build_command_entries.execute_entry(
             command=self,
@@ -248,4 +251,5 @@ class BuildCommand:
             profile_name=profile_name,
             kill_build_procs=kill_build_procs,
             kill_build_processes_fn=kill_build_processes,
+            run_command_fn=run_command if run_command_fn is None else run_command_fn,
         )

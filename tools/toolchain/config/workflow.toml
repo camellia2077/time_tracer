@@ -1,18 +1,3 @@
-[post_change]
-# Default app when post-change cannot infer a single touched app.
-default_app = "tracer_core"
-# Default build dir for post-change flow.
-default_build_dir = "build_fast"
-# Test policy for `python tools/run.py post-change`.
-# Values: "auto" | "always" | "never"
-run_tests = "auto"
-# Whether script-only changes should trigger C++ build.
-# Values:
-# - "build": always build
-# - "skip": skip build when only non-CMake script files changed
-# - "auto": same as skip, but keep build for CMake-related script changes
-script_changes = "build"
-
 [quality.gate_audit]
 # Extensions that use text-normalized compare in report_consistency_audit.py
 # (BOM removal + CRLF/CR -> LF) to avoid platform newline noise.

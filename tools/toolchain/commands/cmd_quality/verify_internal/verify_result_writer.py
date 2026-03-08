@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 def _cleanup_legacy_result_json_files(output_root: Path) -> None:
     for result_path in output_root.glob("result*.json"):

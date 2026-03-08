@@ -109,11 +109,17 @@ def run_command(
     env: dict | None = None,
     log_file: Path | None = None,
     flush_interval: int = 1,
+    output_mode: str = "live",
 ) -> int:
     """
     Runs a command with real-time output to stdout and optional mirroring to a log file.
     """
-    print(f"--- Running: {' '.join(str(c) for c in cmd)}", flush=True)
+    normalized_output_mode = (output_mode or "live").strip().lower()
+    if normalized_output_mode not in {"live", "quiet"}:
+        raise ValueError(f"unsupported output_mode: {output_mode}")
+
+    if normalized_output_mode == "live":
+        print(f"--- Running: {' '.join(str(c) for c in cmd)}", flush=True)
 
     # Ensure stdout is mirrored and line-buffered
     f = None
@@ -137,17 +143,19 @@ def run_command(
 
         line_count = 0
         for line in process.stdout:
-            _write_stdout_safe(line)
+            if normalized_output_mode == "live":
+                _write_stdout_safe(line)
             line_count += 1
             should_flush = (line_count % flush_interval) == 0
-            if should_flush:
+            if normalized_output_mode == "live" and should_flush:
                 sys.stdout.flush()
             if f:
                 f.write(line)
                 if should_flush:
                     f.flush()
 
-        sys.stdout.flush()
+        if normalized_output_mode == "live":
+            sys.stdout.flush()
         if f:
             f.flush()
 
