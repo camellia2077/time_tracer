@@ -6,7 +6,7 @@
 
 1. 外部兼容 app id 继续保留为 `tracer_core`。
 2. 内部推荐语义名为 `tracer_core_shell`。
-3. `scripts/run.py` 现已同时支持：
+3. `tools/run.py` 现已同时支持：
    - `--app tracer_core`
    - `--app tracer_core_shell`
 4. Windows CLI 结果目标保持不变：

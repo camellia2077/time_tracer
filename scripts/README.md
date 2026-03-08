@@ -1,61 +1,29 @@
 # Scripts Overview
 
-本目录包含项目的 Python 自动化入口与工具链实现。
+本目录现在只保留开发辅助脚本，不再承载仓库级构建 / 编译 / clang-tidy 工具链。
 
-## 快速导航
+## 目录
 
-1. 命令入口：
-   - `scripts/run.py`
-2. 工具链实现：
-   - `scripts/toolchain/`
-3. 开发者工具（不参与默认构建/测试流水线）：
-   - `scripts/devtools/loc/`（代码行数统计）
-   - `scripts/devtools/android/`（Android 辅助脚本）
-4. 定位文档（建议先读）：
-   - `docs/toolchain/python_command_map.md`
-   - `docs/toolchain/clang_tidy_sop.md`
-5. agent 规则：
-   - `scripts/AGENTS.md`
+1. `scripts/devtools/loc/`
+   - 代码行数统计等辅助脚本
+2. `scripts/devtools/android/`
+   - Android 辅助脚本
+3. `scripts/devtools/ps/`
+   - PowerShell 辅助脚本
 
-## 常见命令
+## 官方入口说明
+
+- Python 构建 / 编译 / verify / tidy 官方入口：
+  - `python tools/run.py ...`
+- 平台配置同步入口：
+  - `python tools/platform_config/run.py ...`
+
+## 示例
 
 ```bash
-# 日常唯一入口（构建+编译+测试，推荐语义名 tracer_core_shell）
-python scripts/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise
+# Python 工具链主入口
+python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
 
-# 里程碑唯一入口（兼容旧 app id: tracer_core）
-python scripts/run.py verify --app tracer_core_shell --quick --scope batch --concise
-
-# 先构建 core runtime DLL（apps/tracer_core_shell/build/bin）
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
-
-# 再基于 apps/tracer_core_shell/build/bin 编译 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
-
-# Rust CLI 构建（Windows）
-python scripts/run.py build --app tracer_windows_rust_cli --build-dir build_fast
-
-# Android 编辑期（固定构建目录后端，不使用 --build-dir）
-python scripts/run.py build --app tracer_android --profile android_edit
-
-# Android 验证期
-python scripts/run.py verify --app tracer_android --profile android_style --concise
-python scripts/run.py post-change --app tracer_android --run-tests always --concise
+# 开发辅助脚本示例
+python scripts/devtools/loc/run.py --lang py tools test scripts/devtools --under 120
 ```
-
-## 结果文件（统一契约）
-
-- State: `apps/<app>/<build_dir>/post_change_last.json`
-  - 例如 `tracer_core` / `tracer_core_shell` 默认可用 `apps/tracer_core_shell/build_fast/post_change_last.json`
-  - `tracer_android` 固定使用 `apps/tracer_android/build/post_change_last.json`
-- Summary: `test/output/<result_target>/result.json`
-- Case details: `test/output/<result_target>/result_cases.json`
-- Aggregated log: `test/output/<result_target>/logs/output.log`
-
-`<result_target>` 映射：
-
-- `tracer_core` / `tracer_core_shell` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
-- `tracer_android` -> `artifact_android`
-- `log_generator` -> `artifact_log_generator`
-- 未映射 app 保持 `<result_target>=<app>`
-

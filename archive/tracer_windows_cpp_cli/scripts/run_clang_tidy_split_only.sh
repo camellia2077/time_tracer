@@ -29,14 +29,14 @@ fi
 # - Windows may only provide py launcher.
 if command -v python >/dev/null 2>&1; then
   PYTHON_BIN=(python)
-elif command -v python3 >/dev/null 2>&1; then
-  PYTHON_BIN=(python3)
 elif command -v py >/dev/null 2>&1; then
   PYTHON_BIN=(py -3)
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN=(python3)
 else
   echo "Error: python runtime not found (python/python3/py)." >&2
   exit 127
 fi
 
 echo "[clang-tidy split-only] build_dir=${BUILD_DIR}"
-"${PYTHON_BIN[@]}" "${REPO_ROOT}/scripts/run.py" tidy-split --app tracer_windows_cli --build-dir "${BUILD_DIR}" "${EXTRA_ARGS[@]}"
+"${PYTHON_BIN[@]}" "${REPO_ROOT}/tools/run.py" tidy-split --app tracer_windows_cli --build-dir "${BUILD_DIR}" "${EXTRA_ARGS[@]}"

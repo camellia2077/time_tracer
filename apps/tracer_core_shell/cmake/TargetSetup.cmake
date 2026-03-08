@@ -7,7 +7,7 @@
 # 3 = level 2 + -Werror
 set(WARNING_LEVEL 2 CACHE STRING "Set compiler warning level (0-3)")
 
-# Keep normal build fast: clang-tidy is opt-in via --tidy / run_clang_tidy.sh.
+# Keep normal build fast: clang-tidy is opt-in via --tidy / run_clang_tidy_libs_core.sh.
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_PCH "Enable Precompiled Headers" ON)
 

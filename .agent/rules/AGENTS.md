@@ -8,11 +8,11 @@ trigger: always_on
   - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution.
   - Run `.sh` workflows only when explicitly requested.
 - Build / test entry:
-  - Use `python scripts/run.py ...` as the default project build / verify / post-change entry.
+  - Use `python tools/run.py ...` as the default project build / verify / post-change entry.
   - Do not use ad-hoc `cmake` / `ninja` wrappers unless the user explicitly asks for them.
   - Before using command flags, read help first:
-    - `python scripts/run.py -h`
-    - `python scripts/run.py <subcommand> -h`
+    - `python tools/run.py -h`
+    - `python tools/run.py <subcommand> -h`
     - `python test/run.py -h`
   - If `unrecognized arguments` appears, rerun the corresponding `-h` before retrying.
 - Success / failure judgment:
@@ -35,7 +35,7 @@ trigger: always_on
   - 2) If missing, read `apps/<target_app>/README.md`.
   - 3) Fall back to this file only for global defaults.
 - Validation scope:
-  - After code changes, prefer `python scripts/run.py post-change ...` unless the user requests another flow.
+  - After code changes, prefer `python tools/run.py post-change ...` unless the user requests another flow.
   - If the change only touches documentation files (`docs/**`, `*.md`) and does not modify code/config/scripts/tests, skip build/test by default.
   - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
 - High-risk contract gates:

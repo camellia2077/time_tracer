@@ -95,15 +95,15 @@
    - ON 路径（modules 路径）
 5. Android 主路径默认按 ON 验证，同时保留 `OFF` 回退能力：
    - `-PtimeTracerEnableCpp20Modules=OFF`
-6. 构建与验证统一通过 `python scripts/run.py ...`，禁止手工 cmake/ninja 流程作为主路径。
+6. 构建与验证统一通过 `python tools/run.py ...`，禁止手工 cmake/ninja 流程作为主路径。
 
 ## 5. 推荐验证命令
 
 1. Core ON（默认）回归：
-   - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_core_phase6_on --concise`
+   - `python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_core_phase6_on --concise`
 2. Core OFF 回退回归：
-   - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_core_phase6_off --cmake-args=-DTT_ENABLE_CPP20_MODULES=OFF --concise`
+   - `python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_core_phase6_off --cmake-args=-DTT_ENABLE_CPP20_MODULES=OFF --concise`
 3. Android ON（默认）回归：
-   - `python scripts/run.py post-change --app tracer_android --profile fast --run-tests always --concise`
+   - `python tools/run.py post-change --app tracer_android --profile fast --run-tests always --concise`
 4. Android CI 样式单元回归：
-   - `python scripts/run.py verify --app tracer_android --profile android_ci --scope unit --concise`
+   - `python tools/run.py verify --app tracer_android --profile android_ci --scope unit --concise`

@@ -1,7 +1,7 @@
 {
   "target": "windows",
-  "source_root": "C:/code/time_tracer/assets/tracer_core/config",
-  "input_hash": "4d919e90c25a6a54bc917693d3ae797cbc07b3208932a91fc862065978e12684",
+  "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
+  "input_hash": "3fa5ea9aac107d7f364b2d9fe9291497567fc5fab56c19529defa0ab702ac2e4",
   "planned_file_count": 23,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
@@ -9,7 +9,7 @@
     "converter/alias_mapping.toml": "6d38dda510d2bb6a49a8406011ee6dee0b15f18e9965412981cb2996fe696bdc",
     "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
     "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
-    "meta/bundle.toml": "306141a223c6cb2fc8048ab86bac0d35c84986f5ccdec1fb7913ba51ff84881e",
+    "meta/bundle.toml": "209b0d94a9c9c4bbd3854a606c68c4aaa1ff3f0c91170caf70a4eda1a033a60c",
     "reports/latex/common_style.toml": "35540e77e0618a202b75151751f1c2bb5e6dcbc0603f177c31aef1b1358bd6de",
     "reports/latex/day.toml": "1caf3c91b1284b46eb3d33c6ef86f0dc5e7bdafecc5f80a52a2522ed8e91876f",
     "reports/latex/month.toml": "62a087d8c97b23f6bb57d65768d52ba670c23f518e63989b46d38b5adb975adc",
@@ -28,5 +28,5 @@
     "reports/typst/week.toml": "1bfcd556bc0c142a6ff9bd98c318812212d3506ab8b0b5d29fbb5713a8fa3591",
     "reports/typst/year.toml": "bf27369c9274b975fb8a9087913de63e0bedd5c2429a392412f417ec85dfad95"
   },
-  "generated_at_utc": "2026-03-07T05:37:01.844357+00:00"
+  "generated_at_utc": "2026-03-07T18:06:28.582012+00:00"
 }

@@ -1,27 +1,18 @@
-# AGENTS Guide (scripts)
+# AGENTS Guide (scripts/devtools)
 
-当任务涉及 `scripts/` 下的 Python 构建/验证工具链时，先阅读以下文档再改代码：
-
-1. `docs/toolchain/python_command_map.md`
-2. `scripts/toolchain/README.md`
+当任务涉及 `scripts/` 时，仅将其视为 `scripts/devtools/` 的作用域。
 
 ## 改动路由规则
 
-1. 只改命令行参数定义：
-   - `scripts/toolchain/cli/handlers/*.py`
-2. 只改构建/验证执行逻辑：
-   - `scripts/toolchain/commands/**`
-3. 只改默认配置与 profile：
-   - `scripts/toolchain/config/*.toml`
-   - `scripts/toolchain/core/config.py`
-4. 只改入口转发：
-   - `scripts/run.py`
-5. 只改 Windows CLI wrapper 参数通道：
-   - `apps/tracer_cli/windows/scripts/build*.sh`
+1. 开发辅助脚本：
+   - `scripts/devtools/**`
+2. 开发辅助脚本文档：
+   - `scripts/devtools/**/*.md`
+3. Python 构建 / 编译 / clang-tidy 工具链：
+   - 改 `tools/`，不要改回 `scripts/`
 
 ## 最小修改原则
 
-1. 先改最靠近问题的一层，避免跨层重复修复。
-2. 若改动影响参数协议，必须同步更新对应 README/文档。
-3. 未明确要求时，保持向后兼容。
-
+1. `scripts/` 仅承载开发辅助脚本，不再承载构建主入口。
+2. 若需求属于 build / verify / tidy / platform config，统一改 `tools/`。
+3. 未明确要求时，不新增新的 `scripts/` 根级入口。

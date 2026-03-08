@@ -118,7 +118,7 @@ set(TRACER_WINDOWS_CONFIG_SOURCE_DIR ""
 if(TRACER_WINDOWS_CONFIG_SOURCE_DIR STREQUAL "")
     message(FATAL_ERROR
         "TRACER_WINDOWS_CONFIG_SOURCE_DIR is required. "
-        "Use `python scripts/run.py build --app tracer_windows_cli` "
+        "Use `python tools/run.py build --app tracer_windows_cli` "
         "or pass -DTRACER_WINDOWS_CONFIG_SOURCE_DIR=<path> manually."
     )
 endif()

@@ -14,5 +14,5 @@
 ```bash
 python scripts/devtools/loc/scan_cpp_lines.py apps/tracer_cli/windows apps/tracer_core_shell libs/tracer_core -t 350
 python scripts/devtools/loc/scan_kt_lines.py apps/tracer_android -t 350
-python scripts/devtools/loc/scan_py_lines.py scripts test -t 200
+python scripts/devtools/loc/scan_py_lines.py tools test scripts/devtools -t 200
 ```

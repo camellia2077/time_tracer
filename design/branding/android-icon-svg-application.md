@@ -105,7 +105,7 @@ Android 启动图标相关资源位于：
 在仓库根目录执行：
 
 ```powershell
-python scripts/run.py build --app tracer_android --profile android_edit
+python tools/run.py build --app tracer_android --profile android_edit
 ```
 
 需要确认：

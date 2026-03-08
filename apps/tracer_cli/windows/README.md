@@ -17,10 +17,10 @@ Windows CLI 当前交付实现为 Rust-only 版本。
 
 ```powershell
 # 推荐：代码改动后的单命令 build + 集成验证
-python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise
+python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise
 
 # 阶段性批量验证
-python scripts/run.py verify --app tracer_core --quick --scope batch --concise
+python tools/run.py verify --app tracer_core --quick --scope batch --concise
 
 # 默认发布构建入口：先编 Windows runtime，再编 Rust CLI
 bash apps/tracer_cli/windows/scripts/build_windows_release.sh
@@ -102,7 +102,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 3. Rust 资源注入
    - `apps/tracer_cli/windows/rust_cli/build.rs`
 4. 构建入口
-   - `python scripts/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build`
+   - `python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build`
    - `bash apps/tracer_cli/windows/scripts/build_windows_release.sh`
    - `bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
 5. 可选覆盖

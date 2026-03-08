@@ -8,10 +8,10 @@ $ErrorActionPreference = "Stop"
 
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $repoRoot = (Resolve-Path (Join-Path $scriptDir "../../../../..")).Path
-$runPy = Join-Path $repoRoot "scripts/run.py"
+$runPy = Join-Path $repoRoot "tools/run.py"
 
 if (-not (Test-Path $runPy)) {
-    Write-Error "scripts/run.py not found: $runPy"
+    Write-Error "tools/run.py not found: $runPy"
 }
 
 $pythonCmd = if (Get-Command python -ErrorAction SilentlyContinue) { "python" } elseif (Get-Command py -ErrorAction SilentlyContinue) { "py" } else { "" }
@@ -20,7 +20,7 @@ if (-not $pythonCmd) {
 }
 
 Write-Host "[rust clippy] app=tracer_windows_rust_cli"
-$cmd = @("scripts/run.py", "lint", "--app", "tracer_windows_rust_cli", "--")
+$cmd = @("tools/run.py", "lint", "--app", "tracer_windows_rust_cli", "--")
 $cmd += $LintArgs
 if ($pythonCmd -eq "py") {
     & py -3 @cmd

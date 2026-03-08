@@ -16,8 +16,8 @@ This checklist locks guardrails for Android runtime refactor phases.
 Run from repository root:
 
 ```powershell
-python scripts/run.py verify --app tracer_android --profile android_style --concise
-python scripts/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_style --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
 ```
 
 ## 3. Baseline Unit Test Set

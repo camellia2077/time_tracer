@@ -82,7 +82,7 @@ python scripts/devtools/loc/run.py --lang cpp "C:/abs/path/to/project" --over 30
 扫描多个路径（分开打印）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py test scripts --under 80
+python scripts/devtools/loc/run.py --lang py tools test scripts/devtools --under 80
 ```
 
 扫描目录中文件过多的热点目录（按 Python 扩展名过滤）：

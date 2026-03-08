@@ -6,12 +6,12 @@
 
 ## 1. 编译构建：Python 驱动的 CMake 编排
 
-项目通过 `scripts/run.py` 调度 CMake 构建过程，替代手动命令行操作。
+项目通过 `tools/run.py` 调度 CMake 构建过程，替代手动命令行操作。
 
-### 核心逻辑 (scripts/toolchain/commands/cmd_build/cmake.py)
+### 核心逻辑 (tools/toolchain/commands/cmd_build/cmake.py)
 *   **状态感知 (State-Aware)**：解析 `CMakeCache.txt` 确定配置状态，根据标志位（如 `ENABLE_CLANG_TIDY`）或路径变化自动触发重新配置。
 *   **并发编译**：根据系统核心数自动配置并行任务数 (`-j`)。
-*   **AI Agent 协作**：Agent 通过单一指令（如 `python scripts/run.py post-change`）触发配置、编译、产物同步及测试全流程。
+*   **AI Agent 协作**：Agent 通过单一指令（如 `python tools/run.py post-change`）触发配置、编译、产物同步及测试全流程。
 
 ---
 
@@ -19,11 +19,11 @@
 
 针对大型项目静态检查耗时问题，实现批次化管理逻辑。
 
-### 自动化批次处理 (scripts/toolchain/commands/tidy/batch.py)
+### 自动化批次处理 (tools/toolchain/commands/tidy/batch.py)
 *   **分段检查点 (Checkpointing)**：流水线划分为 `verify` -> `clean` -> `refresh` -> `finalize` 阶段，支持在中断后从检查点恢复。
 *   **任务分片**：将错误日志分割为若干批次（Batch），每个批次由多个任务文件（Task Log）组成。
 
-### 实时刷新机制 (scripts/toolchain/commands/tidy/refresh.py)
+### 实时刷新机制 (tools/toolchain/commands/tidy/refresh.py)
 *   **增量推理 (Auto-Reasoning)**：通过 Mapper 逻辑识别受源代码变动影响的编译单元。
 *   **频率控制 (Cadence)**：通过 `full_every` 机制在多次增量刷新后强制执行全量刷新。
 

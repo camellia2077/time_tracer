@@ -64,7 +64,7 @@ Android launcher 相关资源：
 ## 6. 验证方式
 
 ```powershell
-python scripts/run.py build --app tracer_android --profile android_edit
+python tools/run.py build --app tracer_android --profile android_edit
 ```
 
 建议验证：

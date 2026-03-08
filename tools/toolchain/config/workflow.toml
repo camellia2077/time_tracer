@@ -1,0 +1,113 @@
+[post_change]
+# Default app when post-change cannot infer a single touched app.
+default_app = "tracer_core"
+# Default build dir for post-change flow.
+default_build_dir = "build_fast"
+# Test policy for `python tools/run.py post-change`.
+# Values: "auto" | "always" | "never"
+run_tests = "auto"
+# Whether script-only changes should trigger C++ build.
+# Values:
+# - "build": always build
+# - "skip": skip build when only non-CMake script files changed
+# - "auto": same as skip, but keep build for CMake-related script changes
+script_changes = "build"
+
+[quality.gate_audit]
+# Extensions that use text-normalized compare in report_consistency_audit.py
+# (BOM removal + CRLF/CR -> LF) to avoid platform newline noise.
+normalize_ext = [".md"]
+
+[tidy]
+# Granular task splitting limits to prevent AI agent overload
+max_lines = 150
+max_diags = 12
+# Store tasks by folder batches to reduce agent context scope.
+batch_size = 10
+# Ninja parallelism (0 = build tool default, equivalent to `-j` without a value).
+jobs = 0
+# Log parser worker count (0 = auto).
+parse_workers = 0
+# User preference: keep going through as many tidy checks as possible.
+# This maps to Ninja `-k 0` behind `cmake --build`.
+keep_going = true
+# Unified clang-tidy header filter (used by CMake tidy targets + tidy-refresh incremental mode).
+# Default excludes third-party build dependencies under */_deps/* while keeping project headers in scope.
+header_filter_regex = "^(?!.*[\\\\/]_deps[\\\\/]).*"
+# Run one tidy-fix pass before tidy task generation in tidy-flow.
+run_fix_before_tidy = true
+# Controllable tidy-fix scope:
+# 0 = run full `tidy-fix`; N>0 = run `tidy_fix_step_N` (prefix range).
+fix_limit = 0
+# Auto trigger full tidy rebuild when incremental refresh hits stale-graph symptoms.
+auto_full_on_no_such_file = true
+auto_full_on_glob_mismatch = true
+# Auto trigger full tidy rebuild when rename-apply shows stale candidate snapshot.
+auto_full_on_high_already_renamed = true
+auto_full_already_renamed_ratio = 0.60
+auto_full_already_renamed_min = 20
+
+[tidy.fix_strategy]
+# Pattern grammar:
+# - exact: "bugprone-easily-swappable-parameters"
+# - prefix wildcard: "clang-diagnostic-*"
+auto_fix = [
+  "modernize-use-nullptr",
+  "modernize-use-override",
+  "modernize-use-using",
+  "modernize-loop-convert",
+  "modernize-raw-string-literal",
+  "readability-braces-around-statements",
+  "readability-else-after-return",
+  "readability-redundant-control-flow",
+]
+safe_refactor = [
+  "bugprone-easily-swappable-parameters",
+  "readability-function-cognitive-complexity",
+  "bugprone-branch-clone",
+  "performance-for-range-copy",
+  "modernize-pass-by-value",
+  "readability-identifier-naming",
+]
+nolint_allowed = [
+  "readability-function-cognitive-complexity",
+  "bugprone-easily-swappable-parameters",
+  "cppcoreguidelines-avoid-magic-numbers",
+]
+manual_only = [
+  "clang-diagnostic-error",
+  "clang-diagnostic-*",
+  "clang-analyzer-*",
+  "cppcoreguidelines-pro-type-reinterpret-cast",
+  "concurrency-*",
+]
+
+[tidy.source_scopes.core_family]
+roots = [
+  "libs/tracer_core/src",
+  "libs/tracer_adapters_io/src",
+  "libs/tracer_core_bridge_common/src",
+  "libs/tracer_transport/src",
+]
+tidy_build_dir = "build_tidy_core_family"
+
+[rename]
+engine = "clangd"
+check_name = "readability-identifier-naming"
+clangd_path = "clangd"
+clangd_background_index = true
+clangd_warmup_seconds = 1.0
+skip_header_single_edit = true
+max_candidates_per_run = 300
+dry_run_default = false
+allowed_kinds = [
+    "constant",
+    "variable",
+    "function",
+    "method",
+    "parameter",
+    "member",
+    "class member",
+    "private member",
+    "protected member"
+]

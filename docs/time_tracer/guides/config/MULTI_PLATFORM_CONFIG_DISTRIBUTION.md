@@ -17,8 +17,8 @@
 ## 1. 单一事实来源
 
 1. 源配置目录（唯一 source of truth）：`assets/tracer_core/config`
-2. 分发入口脚本：`scripts/platform_config/run.py`
-3. 构建链路触发点：`scripts/run.py build|configure` -> `scripts/toolchain/commands/cmd_build/common/config_sync.py`
+2. 分发入口脚本：`tools/platform_config/run.py`
+3. 构建链路触发点：`tools/run.py build|configure` -> `tools/toolchain/commands/cmd_build/common/config_sync.py`
 
 ## 2. 目标目录（当前）
 
@@ -27,7 +27,7 @@
 
 ## 3. 触发策略
 
-1. 仅当 app 在 `scripts/toolchain/config/apps.toml` 配置了 `config_sync_target` 时，构建前自动分发。
+1. 仅当 app 在 `tools/toolchain/config/apps.toml` 配置了 `config_sync_target` 时，构建前自动分发。
 2. 当前启用项：
    - `[apps.tracer_windows_cli] config_sync_target = "windows"`
    - `[apps.tracer_android] config_sync_target = "android"`
@@ -63,7 +63,7 @@
 
 为避免路径硬编码漂移，已统一收敛到：
 
-1. `scripts/platform_paths.py`
+1. `tools/platform_paths.py`
    - `tracer_core_config_root(repo_root)`
    - `windows_cli_config_root(repo_root)`
    - `android_config_root(repo_root)`
@@ -74,18 +74,18 @@
 
 1. Windows dry-run：
 ```bash
-python scripts/platform_config/run.py --target windows
+python tools/platform_config/run.py --target windows
 ```
 
 2. Android apply：
 ```bash
-python scripts/platform_config/run.py --target android --apply
+python tools/platform_config/run.py --target android --apply
 ```
 
 3. 构建时自动触发（示例）：
 ```bash
-python scripts/run.py configure --app tracer_windows_cli --build-dir build_fast
-python scripts/run.py build --app tracer_android --profile fast
+python tools/run.py configure --app tracer_windows_cli --build-dir build_fast
+python tools/run.py build --app tracer_android --profile fast
 ```
 
 ## 8. 相关文档

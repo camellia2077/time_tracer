@@ -45,10 +45,10 @@
 
 ```bash
 # 构建（time_tracer）
-python scripts/run.py build --app tracer_core --profile release_safe --build-dir build
+python tools/run.py build --app tracer_core --profile release_safe --build-dir build
 
 # 快速验证（构建 + 测试）
-python scripts/run.py verify --app tracer_core --quick
+python tools/run.py verify --app tracer_core --quick
 
 # 代码行数扫描（开发辅助工具，可选）
 python scripts/devtools/loc/scan_cpp_lines.py apps/tracer_cli/windows apps/tracer_core_shell libs/tracer_core -t 350

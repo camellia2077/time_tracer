@@ -90,7 +90,7 @@ val timeTracerAndroidDebugAssetsRoot =
     timeTracerAndroidDebugAssetsRootProperty?.let { file(it) }
         ?: legacyTimeTracerAndroidDebugInputFullRootProperty?.let { file(it).parentFile?.parentFile?.parentFile }
         ?: defaultDebugAssetsRoot
-val platformConfigRunner = repoRootDir.resolve("scripts/platform_config/run.py")
+val platformConfigRunner = repoRootDir.resolve("tools/platform_config/run.py")
 val inputDataSyncRunner =
     repoRootDir.resolve("scripts/devtools/android/sync_android_input_from_test_data.py")
 val pythonExecutable =

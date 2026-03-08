@@ -10,11 +10,11 @@ is unavailable.
 Run from repository root and prefer Python entry commands:
 
 - Daily one-command flow:
-  - `python scripts/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise`
+  - `python tools/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise`
 - Milestone/release flow:
-  - `python scripts/run.py verify --app log_generator --build-dir build_fast --scope batch --concise`
+  - `python tools/run.py verify --app log_generator --build-dir build_fast --scope batch --concise`
 - Other operations:
-  - `python scripts/run.py ...`
+  - `python tools/run.py ...`
 
 Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 
@@ -26,7 +26,7 @@ Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 ## Canonical Verify Command
 
 ```powershell
-python scripts/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise
+python tools/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise
 ```
 
 This command is the primary flow: configure/build first, then run the
@@ -35,9 +35,9 @@ This command is the primary flow: configure/build first, then run the
 ## Optional Split Flow (Debug Only)
 
 ```powershell
-python scripts/run.py configure --app log_generator --build-dir build_fast
-python scripts/run.py build --app log_generator --build-dir build_fast
-python scripts/run.py verify --app log_generator --build-dir build_fast --scope artifact --concise
+python tools/run.py configure --app log_generator --build-dir build_fast
+python tools/run.py build --app log_generator --build-dir build_fast
+python tools/run.py verify --app log_generator --build-dir build_fast --scope artifact --concise
 ```
 
 ## Result Files and Logs

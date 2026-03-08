@@ -26,8 +26,8 @@
 
 1. 集成套件目录：`test/suites/tracer_windows_rust_cli/`
 2. 推荐命令：
-   - `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
-   - `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
+   - `python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
+   - `python tools/run.py verify --app tracer_core --quick --scope batch --concise`
 3. 验收结果目录：`test/output/artifact_windows_cli/`
 4. 通过判定：`test/output/artifact_windows_cli/result.json` 中 `success=true`
 

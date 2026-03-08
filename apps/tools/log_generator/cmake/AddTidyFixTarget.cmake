@@ -8,6 +8,9 @@ if(CLANG_TIDY_EXE)
     if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")
         set(TT_CLANG_TIDY_HEADER_FILTER "^(?!.*[\\\\/]_deps[\\\\/]).*")
     endif()
+    if(NOT DEFINED TT_ANALYSIS_COMPILE_DB_DIR OR "${TT_ANALYSIS_COMPILE_DB_DIR}" STREQUAL "")
+        set(TT_ANALYSIS_COMPILE_DB_DIR "${CMAKE_BINARY_DIR}/analysis_compile_db")
+    endif()
 
     list(LENGTH SOURCES TOTAL_SOURCES)
 
@@ -16,17 +19,25 @@ if(CLANG_TIDY_EXE)
 
     foreach(FILE_PATH ${SOURCES})
         math(EXPR COUNTER "${COUNTER} + 1")
+        set(TIDY_SOURCE_FILE "${FILE_PATH}")
+        if(NOT IS_ABSOLUTE "${TIDY_SOURCE_FILE}")
+            get_filename_component(
+                TIDY_SOURCE_FILE
+                "${CMAKE_SOURCE_DIR}/${TIDY_SOURCE_FILE}"
+                ABSOLUTE
+            )
+        endif()
         set(CURRENT_TARGET "tidy_check_step_${COUNTER}")
         set(TIDY_TASK_MARKER "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}")
 
         add_custom_target(${CURRENT_TARGET}
             COMMAND ${CMAKE_COMMAND} -E echo "${TIDY_TASK_MARKER}"
             COMMAND ${CLANG_TIDY_EXE}
-                -p ${CMAKE_BINARY_DIR}
+                -p ${TT_ANALYSIS_COMPILE_DB_DIR}
                 --format-style=file
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
-                "${FILE_PATH}"
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                "${TIDY_SOURCE_FILE}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "[${COUNTER}] Analyzing: ${FILE_PATH}"
             VERBATIM
         )
@@ -47,18 +58,26 @@ if(CLANG_TIDY_EXE)
 
     foreach(FILE_PATH ${SOURCES})
         math(EXPR COUNTER "${COUNTER} + 1")
+        set(TIDY_SOURCE_FILE "${FILE_PATH}")
+        if(NOT IS_ABSOLUTE "${TIDY_SOURCE_FILE}")
+            get_filename_component(
+                TIDY_SOURCE_FILE
+                "${CMAKE_SOURCE_DIR}/${TIDY_SOURCE_FILE}"
+                ABSOLUTE
+            )
+        endif()
         set(CURRENT_TARGET "tidy_fix_step_${COUNTER}")
         set(TIDY_TASK_MARKER "[${COUNTER}/${TOTAL_SOURCES}] [${COUNTER}/CHECK] Analyzing: ${FILE_PATH}")
 
         add_custom_target(${CURRENT_TARGET}
             COMMAND ${CMAKE_COMMAND} -E echo "${TIDY_TASK_MARKER}"
             COMMAND ${CLANG_TIDY_EXE}
-                -p ${CMAKE_BINARY_DIR}
+                -p ${TT_ANALYSIS_COMPILE_DB_DIR}
                 --fix
                 --format-style=file
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
-                "${FILE_PATH}"
-            WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+                "${TIDY_SOURCE_FILE}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "[${COUNTER}] Analyzing and Fixing: ${FILE_PATH}"
             VERBATIM
         )

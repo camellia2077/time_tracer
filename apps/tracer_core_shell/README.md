@@ -13,11 +13,11 @@ Current phase:
 
 ## Build And Verify
 
-- Use `python scripts/run.py -h` and `python scripts/run.py <subcommand> -h` before trying new flag combinations.
+- Use `python tools/run.py -h` and `python tools/run.py <subcommand> -h` before trying new flag combinations.
 - Preferred daily validation:
-  - `python scripts/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
+  - `python tools/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
 - Milestone / batch validation:
-  - `python scripts/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+  - `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
 - Result files:
   - `apps/tracer_core_shell/build_fast/post_change_last.json`
   - `test/output/artifact_windows_cli/result.json`

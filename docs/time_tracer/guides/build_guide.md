@@ -7,8 +7,8 @@
 统一使用 Python 入口命令，不直接调用裸 `cmake`/`ninja`：
 
 ```bash
-python scripts/run.py build ...
-python scripts/run.py verify ...
+python tools/run.py build ...
+python tools/run.py verify ...
 ```
 
 ## Core Switches
@@ -39,7 +39,7 @@ python scripts/run.py verify ...
 bash apps/tracer_cli/windows/scripts/build_fast.sh
 
 # 回退 C++
-python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise
+python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise
 ```
 
 2. `optimized`（稳定发布）
@@ -60,7 +60,7 @@ bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
 
 ```bash
 # C++ 轨专用（实验 LTO 开关走 CMake）
-python scripts/run.py verify --app tracer_windows_cli --profile release_bundle --build-dir build_lto_exp --concise --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON
+python tools/run.py verify --app tracer_windows_cli --profile release_bundle --build-dir build_lto_exp --concise --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON
 ```
 
 ## Rollback Playbook
@@ -71,28 +71,28 @@ python scripts/run.py verify --app tracer_windows_cli --profile release_bundle -
 
 ```bash
 # C++ 轨专用（CMake 开关）
-python scripts/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_USE_BUNDLED_SQLITE=OFF
+python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_USE_BUNDLED_SQLITE=OFF
 ```
 
 2. 关闭 toml header-only（回退动态库）：
 
 ```bash
 # C++ 轨专用（CMake 开关）
-python scripts/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_TOML_HEADER_ONLY=OFF
+python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_TOML_HEADER_ONLY=OFF
 ```
 
 3. 关闭 MinGW 静态运行时（回退 runtime DLL）：
 
 ```bash
 # C++ 轨专用（CMake 开关）
-python scripts/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_STATIC_MINGW_RUNTIME=OFF
+python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_STATIC_MINGW_RUNTIME=OFF
 ```
 
 4. 关闭实验 LTO：
 
 ```bash
 # C++ 轨专用（CMake 开关）
-python scripts/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=OFF
+python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=OFF
 ```
 
 建议：每次只变更一个开关，并记录构建日志与二进制依赖变化。

@@ -28,7 +28,7 @@ jobs:
         id: generate
         shell: bash
         run: |
-          MATRIX_JSON="$(python scripts/toolchain/ci/windows_matrix.py --config scripts/toolchain/config/build.toml)"
+          MATRIX_JSON="$(python tools/toolchain/ci/windows_matrix.py --config tools/toolchain/config/build.toml)"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
   windows-matrix:
@@ -71,13 +71,13 @@ jobs:
         if: matrix.cmake_args == ''
         shell: pwsh
         run: |
-          python scripts/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
+          python tools/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
 
       - name: Verify tracer_core_shell (experimental row)
         if: matrix.cmake_args != ''
         shell: pwsh
         run: |
-          python scripts/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}
+          python tools/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}
 
       - name: Show markdown audit report
         if: always()

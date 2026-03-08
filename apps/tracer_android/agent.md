@@ -123,16 +123,16 @@ Run from repo root:
 
 ```powershell
 # Daily edit-loop command (fastest local APK rebuild path)
-python scripts/run.py build --app tracer_android --profile android_edit
+python tools/run.py build --app tracer_android --profile android_edit
 ```
 
 Compile/test command policy (fixed entrypoints):
 
-- Edit-loop build: `python scripts/run.py build --app tracer_android --profile android_edit`
-- Style verify: `python scripts/run.py verify --app tracer_android --profile android_style --concise`
-- CI-like verify: `python scripts/run.py verify --app tracer_android --profile android_ci --concise`
-- Device verify: `python scripts/run.py verify --app tracer_android --profile android_device --concise`
-- Post-change validation: `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
+- Edit-loop build: `python tools/run.py build --app tracer_android --profile android_edit`
+- Style verify: `python tools/run.py verify --app tracer_android --profile android_style --concise`
+- CI-like verify: `python tools/run.py verify --app tracer_android --profile android_ci --concise`
+- Device verify: `python tools/run.py verify --app tracer_android --profile android_device --concise`
+- Post-change validation: `python tools/run.py post-change --app tracer_android --run-tests always --concise`
 
 ## Non-daily Optional Commands
 
@@ -140,26 +140,26 @@ Use only when explicitly needed:
 
 ```powershell
 # Style gate
-python scripts/run.py verify --app tracer_android --profile android_style --concise
+python tools/run.py verify --app tracer_android --profile android_style --concise
 
 # CI-like gate
-python scripts/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
 
 # Device gate
-python scripts/run.py verify --app tracer_android --profile android_device --concise
+python tools/run.py verify --app tracer_android --profile android_device --concise
 
 # Release APK with native optimization enabled
-python scripts/run.py build --app tracer_android --profile android_release
+python tools/run.py build --app tracer_android --profile android_release
 
 # Release APK without native optimization
-python scripts/run.py build --app tracer_android --profile android_release_no_opt
+python tools/run.py build --app tracer_android --profile android_release_no_opt
 ```
 
 Note:
 - Daily workflow after local edits is fixed to:
-  - `python scripts/run.py build --app tracer_android --profile android_edit`
+  - `python tools/run.py build --app tracer_android --profile android_edit`
 - Validation workflow after local edits is:
-  - `python scripts/run.py post-change --app tracer_android --run-tests always --concise`
+  - `python tools/run.py post-change --app tracer_android --run-tests always --concise`
 - Python build flow now defaults to fast-compile-first on Android:
   - If `-PtimeTracerDisableNativeOptimization` is not explicitly passed,
     scripts auto-inject `-PtimeTracerDisableNativeOptimization=true`.

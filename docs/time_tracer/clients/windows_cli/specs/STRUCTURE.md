@@ -60,6 +60,6 @@
 ## 5. 最小验证命令
 
 ```powershell
-python scripts/run.py build --app tracer_windows_rust_cli --build-dir build_fast
-python scripts/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise
+python tools/run.py build --app tracer_windows_rust_cli --build-dir build_fast
+python tools/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise
 ```

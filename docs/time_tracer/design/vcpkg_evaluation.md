@@ -44,7 +44,7 @@
 非常建议引入 vcpkg。可以采用以下实施方案：
 1. **Host 端改造**：为主机端 CMake 引入 `vcpkg.json` Manifest 机制。在 `CMakeLists.txt` 判断：若使用了 vcpkg toolchain，则直接 `find_package()` 这五大核心依赖；否则回退到当前的 `HostDependencies.cmake`。
 2. **渐进式替换**：不删除现有的 `AndroidDependencies.cmake`，因为针对 Android NDK 的跨端编译，直接将其作为 CMake 源码子树（FetchContent）反而是目前最无痛的办法。
-3. **保留 UCRT64 测试**：确保在使用 vcpkg 提供依赖的前提下，项目的 CI 和本地 `python scripts/run.py` 使用 MinGW 依然能顺畅跑通。
+3. **保留 UCRT64 测试**：确保在使用 vcpkg 提供依赖的前提下，项目的 CI 和本地 `python tools/run.py` 使用 MinGW 依然能顺畅跑通。
 
 **下一步行动确认：**
 你希望我们接下来尝试**为 Host 构建引入 `vcpkg.json` 并改造 CMake 脚本**吗（在保证不破坏现有 Android 编译和 Python 构建流的前提下）？

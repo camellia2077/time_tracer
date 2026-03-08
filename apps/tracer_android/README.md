@@ -23,8 +23,8 @@ Version source of truth:
 
 Build (Python entry, recommended):
 ```bash
-python scripts/run.py build --app tracer_android --profile android_edit
-python scripts/run.py build --app tracer_android --profile android_release
+python tools/run.py build --app tracer_android --profile android_edit
+python tools/run.py build --app tracer_android --profile android_release
 ```
 
 Release signing:
@@ -40,9 +40,9 @@ Release signing:
 
 Verify (recommended profiles):
 ```bash
-python scripts/run.py verify --app tracer_android --profile android_style --concise
-python scripts/run.py verify --app tracer_android --profile android_ci --concise
-python scripts/run.py post-change --app tracer_android --run-tests always --concise
+python tools/run.py verify --app tracer_android --profile android_style --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py post-change --app tracer_android --run-tests always --concise
 ```
 
 Recommended split:

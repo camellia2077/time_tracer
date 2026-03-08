@@ -86,14 +86,14 @@ rg -n --glob '!**/build/**' --glob '!**/build_fast/**' --glob '!**/build_fast_*/
 在仓库根目录执行：
 
 ```powershell
-python scripts/run.py build --app tracer_core --profile fast
-python scripts/run.py verify --app tracer_core --profile fast --concise
+python tools/run.py build --app tracer_core --profile fast
+python tools/run.py verify --app tracer_core --profile fast --concise
 ```
 
 补充（Windows Rust CLI 集成）：
 
 ```powershell
-python scripts/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise
+python tools/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise
 ```
 
 通过后重点查看：

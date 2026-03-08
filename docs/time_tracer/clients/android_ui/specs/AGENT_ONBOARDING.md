@@ -101,14 +101,14 @@ Goal: locate the right files in 5 minutes and avoid broad repo-wide searching.
 Run from repo root:
 
 ```powershell
-python scripts/run.py build --app tracer_android --profile fast
-python scripts/run.py verify --app tracer_android --profile android_style --concise
+python tools/run.py build --app tracer_android --profile fast
+python tools/run.py verify --app tracer_android --profile android_style --concise
 ```
 
 Use CI-like verify when needed:
 
 ```powershell
-python scripts/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
 ```
 
 ## 7. Troubleshooting First Checks

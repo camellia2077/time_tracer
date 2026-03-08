@@ -16,7 +16,7 @@
    - `release` 类 profile
    - 例如 `release_bundle`、`release_safe`
 3. 构建入口：
-   - `python scripts/run.py build ...`
+   - `python tools/run.py build ...`
 
 ## 默认图标源
 
@@ -39,13 +39,13 @@
 ### 1) 使用默认 SVG
 
 ```powershell
-python scripts/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build
 ```
 
 ### 2) 通过命令行指定 SVG
 
 ```powershell
-python scripts/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 ### 3) 通过封装脚本指定 SVG
@@ -75,7 +75,7 @@ Windows 图标构建流程如下：
 
 默认 SVG 解析逻辑位于：
 
-- `scripts/toolchain/commands/cmd_build/windows_icon_resources.py`
+- `tools/toolchain/commands/cmd_build/windows_icon_resources.py`
 
 ## 依赖与故障排查
 

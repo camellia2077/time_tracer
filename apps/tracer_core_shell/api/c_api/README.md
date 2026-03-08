@@ -14,4 +14,4 @@ Local rules:
 When changing ABI:
 1. Update this folder code/tests.
 2. Update `docs/time_tracer/core/contracts/c_abi.md`.
-3. Run verification via `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise`.
+3. Run verification via `python tools/run.py verify --app tracer_core --build-dir build_fast --concise`.

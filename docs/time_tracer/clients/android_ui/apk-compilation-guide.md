@@ -26,7 +26,7 @@ python .\scripts\run.py build --app tracer_android --profile android_release
 python .\scripts\run.py build --app tracer_android --profile android_release_no_opt
 
 # Important:
-# tracer_android uses Gradle backend, so `--cmake-args` is ignored in `scripts/run.py`.
+# tracer_android uses Gradle backend, so `--cmake-args` is ignored in `tools/run.py`.
 # If you need to change STL mode, modify runtime/build.gradle.kts first, then run python command above.
 
 # Direct Gradle (apps/tracer_android)

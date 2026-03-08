@@ -1,0 +1,152 @@
+import sys
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest import TestCase
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+TOOLS_DIR = REPO_ROOT / "tools"
+
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.toolchain.commands.cmd_build.common.flags import resolve_toolchain_flags  # noqa: E402
+from tools.toolchain.commands.cmd_build import cmake as build_cmake  # noqa: E402
+from tools.toolchain.core.context import Context  # noqa: E402
+
+
+def _write_text(path: Path, content: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content, encoding="utf-8")
+
+
+class TestBuildToolchainFlags(TestCase):
+    def test_compiler_clang_sets_c_and_cxx_compilers(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_text(
+                repo_root / "tools" / "toolchain" / "config.toml",
+                '[build]\ncompiler = "clang"\n',
+            )
+            ctx = Context(repo_root)
+
+            flags = resolve_toolchain_flags(ctx, [])
+
+            self.assertEqual(
+                flags,
+                [
+                    "-D",
+                    "CMAKE_C_COMPILER=clang",
+                    "-D",
+                    "CMAKE_CXX_COMPILER=clang++",
+                ],
+            )
+
+    def test_compiler_gcc_sets_c_and_cxx_compilers(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_text(
+                repo_root / "tools" / "toolchain" / "config.toml",
+                '[build]\ncompiler = "gcc"\n',
+            )
+            ctx = Context(repo_root)
+
+            flags = resolve_toolchain_flags(ctx, [])
+
+            self.assertEqual(
+                flags,
+                [
+                    "-D",
+                    "CMAKE_C_COMPILER=gcc",
+                    "-D",
+                    "CMAKE_CXX_COMPILER=g++",
+                ],
+            )
+
+    def test_tidy_reconfigure_required_when_compile_db_dir_mismatches(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_text(
+                repo_root / "tools" / "toolchain" / "config.toml",
+                """
+[apps.demo]
+path = "apps/demo"
+
+[tidy.source_scopes.core_family]
+roots = ["libs/tracer_core/src"]
+tidy_build_dir = "build_tidy_core_family"
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            build_dir = repo_root / "apps" / "demo" / "build_tidy_core_family"
+            build_dir.mkdir(parents=True, exist_ok=True)
+            cache_text = "\n".join(
+                [
+                    "TT_CLANG_TIDY_HEADER_FILTER:STRING=^(?!.*[\\\\/]_deps[\\\\/]).*",
+                    "TT_CLANG_TIDY_SOURCE_SCOPE:STRING=core_family",
+                    "TT_CLANG_TIDY_SOURCE_ROOTS:STRING="
+                    + str((repo_root / "libs" / "tracer_core" / "src").resolve()).replace("\\", "/"),
+                    "TT_ANALYSIS_COMPILE_DB_DIR:STRING=C:/tmp/old_compile_db",
+                ]
+            )
+            _write_text(build_dir / "CMakeCache.txt", cache_text)
+
+            self.assertTrue(
+                build_cmake.needs_tidy_filter_reconfigure(
+                    ctx=ctx,
+                    tidy=True,
+                    build_dir=build_dir,
+                    source_scope="core_family",
+                )
+            )
+
+    def test_tidy_configure_strips_conflicting_profile_clang_tidy_flags(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_text(
+                repo_root / "tools" / "toolchain" / "config.toml",
+                """
+[apps.demo]
+path = "apps/demo"
+
+[build]
+default_profile = "fast"
+
+[build.profiles.fast]
+cmake_args = [
+  "-D", "ENABLE_CLANG_TIDY=OFF",
+  "-D", "ENABLE_PCH=ON",
+]
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            app_dir = repo_root / "apps" / "demo"
+            app_dir.mkdir(parents=True, exist_ok=True)
+
+            captured: list[list[str]] = []
+
+            def _capture_run(command: list[str], env=None):
+                captured.append(command)
+                return 0
+
+            ret = build_cmake.configure_cmake(
+                ctx=ctx,
+                app_name="demo",
+                tidy=True,
+                source_scope=None,
+                extra_args=None,
+                cmake_args=None,
+                build_dir_name="build_tidy",
+                profile_name=None,
+                resolve_build_dir_name_fn=lambda tidy, build_dir_name, profile_name, app_name: (
+                    build_dir_name or "build_tidy"
+                ),
+                run_command_fn=_capture_run,
+            )
+
+            self.assertEqual(ret, 0)
+            self.assertEqual(len(captured), 1)
+            command = captured[0]
+            self.assertIn("ENABLE_CLANG_TIDY=ON", command)
+            self.assertIn("ENABLE_PCH=OFF", command)
+            self.assertNotIn("ENABLE_CLANG_TIDY=OFF", command)
+            self.assertNotIn("ENABLE_PCH=ON", command)

@@ -15,11 +15,48 @@ if(CLANG_TIDY_EXE)
     if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")
         set(TT_CLANG_TIDY_HEADER_FILTER "^(?!.*[\\\\/]_deps[\\\\/]).*")
     endif()
+    if(NOT DEFINED TT_ANALYSIS_COMPILE_DB_DIR OR "${TT_ANALYSIS_COMPILE_DB_DIR}" STREQUAL "")
+        set(TT_ANALYSIS_COMPILE_DB_DIR "${CMAKE_BINARY_DIR}/analysis_compile_db")
+    endif()
 
     # 1. 汇总源文件
     # 逻辑修补：采用递归扫描以匹配项目新的分层架构（api, application, domain, infrastructure, shared）。
     # 注意：我们只对 .cpp 进行 Tidy 检查，因为头文件会被包含在 .cpp 中一同分析。
-    file(GLOB_RECURSE ALL_TIDY_SOURCES LIST_DIRECTORIES false RELATIVE "${CMAKE_SOURCE_DIR}" "src/*.cpp")
+    set(ALL_TIDY_SOURCES "")
+    if(DEFINED TT_CLANG_TIDY_SOURCE_ROOTS AND NOT "${TT_CLANG_TIDY_SOURCE_ROOTS}" STREQUAL "")
+        set(TT_CLANG_TIDY_SCOPE_ROOTS "${TT_CLANG_TIDY_SOURCE_ROOTS}")
+        message(STATUS
+            "Using scoped clang-tidy source roots"
+            " (scope=${TT_CLANG_TIDY_SOURCE_SCOPE}): ${TT_CLANG_TIDY_SCOPE_ROOTS}"
+        )
+        foreach(TIDY_SCOPE_ROOT ${TT_CLANG_TIDY_SCOPE_ROOTS})
+            if(NOT IS_ABSOLUTE "${TIDY_SCOPE_ROOT}")
+                get_filename_component(
+                    TIDY_SCOPE_ROOT
+                    "${CMAKE_SOURCE_DIR}/${TIDY_SCOPE_ROOT}"
+                    ABSOLUTE
+                )
+            endif()
+            if(NOT EXISTS "${TIDY_SCOPE_ROOT}")
+                message(WARNING "clang-tidy scope root does not exist: ${TIDY_SCOPE_ROOT}")
+                continue()
+            endif()
+            file(
+                GLOB_RECURSE TIDY_SCOPE_SOURCES
+                LIST_DIRECTORIES false
+                "${TIDY_SCOPE_ROOT}/*.cpp"
+            )
+            list(APPEND ALL_TIDY_SOURCES ${TIDY_SCOPE_SOURCES})
+        endforeach()
+    else()
+        file(
+            GLOB_RECURSE ALL_TIDY_SOURCES
+            LIST_DIRECTORIES false
+            RELATIVE "${CMAKE_SOURCE_DIR}"
+            "src/*.cpp"
+        )
+    endif()
+    list(REMOVE_DUPLICATES ALL_TIDY_SOURCES)
 
     # 在非 Android 平台执行 tidy 时，跳过 Android 专属实现，避免 JNI 头缺失导致中断。
     if(NOT ANDROID)
@@ -59,18 +96,26 @@ if(CLANG_TIDY_EXE)
     
     foreach(FILE_PATH ${ALL_TIDY_SOURCES})
         math(EXPR COUNTER "${COUNTER} + 1")
+        set(TIDY_SOURCE_FILE "${FILE_PATH}")
+        if(NOT IS_ABSOLUTE "${TIDY_SOURCE_FILE}")
+            get_filename_component(
+                TIDY_SOURCE_FILE
+                "${CMAKE_SOURCE_DIR}/${TIDY_SOURCE_FILE}"
+                ABSOLUTE
+            )
+        endif()
         
         # --- 目标 A: tidy-fix (含修复) ---
         set(CURRENT_FIX_TARGET "tidy_fix_step_${COUNTER}")
         add_custom_target(${CURRENT_FIX_TARGET}
             COMMAND ${CLANG_TIDY_EXE} 
-                -p ${CMAKE_BINARY_DIR} 
+                -p ${TT_ANALYSIS_COMPILE_DB_DIR} 
                 --fix 
                 --format-style=file 
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
                 ${TIDY_ERR_FLAG}
-                "${CMAKE_SOURCE_DIR}/${FILE_PATH}"
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                "${TIDY_SOURCE_FILE}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "[${COUNTER}/FIX] Analyzing and Fixing: ${FILE_PATH}"
             VERBATIM
         )
@@ -83,12 +128,12 @@ if(CLANG_TIDY_EXE)
         set(CURRENT_CHECK_TARGET "tidy_check_step_${COUNTER}")
         add_custom_target(${CURRENT_CHECK_TARGET}
             COMMAND ${CLANG_TIDY_EXE} 
-                -p ${CMAKE_BINARY_DIR} 
+                -p ${TT_ANALYSIS_COMPILE_DB_DIR} 
                 --format-style=file 
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
                 ${TIDY_ERR_FLAG}
-                "${CMAKE_SOURCE_DIR}/${FILE_PATH}"
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                "${TIDY_SOURCE_FILE}"
+            WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
             COMMENT "[${COUNTER}/CHECK] Analyzing: ${FILE_PATH}"
             VERBATIM
         )

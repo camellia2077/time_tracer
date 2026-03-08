@@ -13,14 +13,14 @@
 
 ## 构建与验证
 1. 推荐日常单命令验证（包含构建 + 套件）：  
-   `python scripts/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
+   `python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
 2. 里程碑/发版前验证：  
-   `python scripts/run.py verify --app tracer_core --quick --scope batch --concise`
+   `python tools/run.py verify --app tracer_core --quick --scope batch --concise`
 3. C++ 轨显式构建：  
-   `python scripts/run.py configure --app tracer_windows_cli --build-dir build_fast`  
-   `python scripts/run.py build --app tracer_windows_cli --build-dir build_fast`
+   `python tools/run.py configure --app tracer_windows_cli --build-dir build_fast`  
+   `python tools/run.py build --app tracer_windows_cli --build-dir build_fast`
 4. C++ 轨 artifact 验证（显式）：  
-   `python scripts/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise`
+   `python tools/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise`
 
 ## 当前实现差异（相对 Rust）
 1. `tracer_windows_cli` 套件直接覆盖该 backend。

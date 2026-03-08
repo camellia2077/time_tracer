@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../../../../.." && pwd)"
-RUN_PY="${REPO_ROOT}/scripts/run.py"
+RUN_PY="${REPO_ROOT}/tools/run.py"
 
 print_usage() {
   echo "Usage: $0 <batch_id> [--runpy-args <extra tidy-batch args...>]"
@@ -13,7 +13,7 @@ print_usage() {
   echo "  $0 batch_003 --runpy-args --full-every 1 --no-keep-going"
   echo ""
   echo "Default command:"
-  echo "  python scripts/run.py tidy-batch --app tracer_windows_cli --batch-id <batch_id> \\"
+  echo "  python tools/run.py tidy-batch --app tracer_windows_cli --batch-id <batch_id> \\"
   echo "    --strict-clean --run-verify --concise --full-every 3 --keep-going"
 }
 
@@ -23,7 +23,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 if [[ ! -f "${RUN_PY}" ]]; then
-  echo "Error: scripts/run.py not found: ${RUN_PY}" >&2
+  echo "Error: tools/run.py not found: ${RUN_PY}" >&2
   exit 1
 fi
 
@@ -48,10 +48,10 @@ fi
 # - Windows may only provide py launcher.
 if command -v python >/dev/null 2>&1; then
   PYTHON_BIN=(python)
-elif command -v python3 >/dev/null 2>&1; then
-  PYTHON_BIN=(python3)
 elif command -v py >/dev/null 2>&1; then
   PYTHON_BIN=(py -3)
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN=(python3)
 else
   echo "Error: python runtime not found (python/python3/py)." >&2
   exit 127

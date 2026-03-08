@@ -6,7 +6,7 @@ This document defines the Android-side lifecycle from source config to runtime c
 
 - Core config source: `assets/tracer_core/config`
 - Android bundle sync entry:
-  - `scripts/platform_config/run.py --target android --apply`
+  - `tools/platform_config/run.py --target android --apply`
 - Gradle integration:
   - `apps/tracer_android/runtime/build.gradle.kts`
   - task: `syncTracerCoreConfig` (hooked into `preBuild`)

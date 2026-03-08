@@ -18,7 +18,7 @@ Windows CLI 图标使用 `design/branding/master/time_tracer_brand_master_symbol
 - 圆角导出稿在 24x24 画布中保留透明安全区，并以内缩圆角底板承载母版符号
 - 构建期会将 SVG 转成 `.ico` 并注入 EXE
 - 默认解析逻辑位于：
-  - `scripts/toolchain/commands/cmd_build/windows_icon_resources.py`
+  - `tools/toolchain/commands/cmd_build/windows_icon_resources.py`
 
 ## 相关文档
 
