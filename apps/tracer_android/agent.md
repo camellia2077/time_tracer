@@ -109,7 +109,7 @@ Exclude generated/build outputs by default:
 - `apps/tracer_android/**/.cxx/**`
 - `apps/tracer_android/**/.externalNativeBuild/**`
 - `apps/tracer_android/runtime/runtime/**`
-- `test/output/**`
+- `out/test/**`
 
 Reference search command:
 
@@ -170,11 +170,11 @@ Note:
 - For `tracer_android`, do not rely on `build_fast` semantics used by CMake apps.
 - For `tracer_android`, do not pass `--build-dir`; fixed-dir backends reject that override.
 - `post-change` state is written to:
-  - `apps/tracer_android/build/post_change_last.json`
+  - `out/build/tracer_android/build/post_change_last.json`
 - Machine-readable results:
-  - `test/output/artifact_android/result.json`
-  - `test/output/artifact_android/result_cases.json`
-  - `test/output/artifact_android/logs/output.log`
+  - `out/test/artifact_android/result.json`
+  - `out/test/artifact_android/result_cases.json`
+  - `out/test/artifact_android/logs/output.log`
 - Canonical integration input source is `test/data`; Android runtime assets `input/full` must be synced from it.
 - Unit/component tests should use small fixtures and avoid relying on large integration datasets.
 

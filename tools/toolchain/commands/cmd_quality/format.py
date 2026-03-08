@@ -44,7 +44,7 @@ class FormatCommand:
             profile_name=profile_name,
             app_name=app_name,
         )
-        build_dir = self.ctx.get_app_dir(app_name) / resolved_build_dir_name
+        build_dir = self.ctx.get_build_dir(app_name, resolved_build_dir_name)
         if not (build_dir / "CMakeCache.txt").exists():
             print(f"--- format: {resolved_build_dir_name} is not configured. Running configure...")
             ret = build_cmd.configure(

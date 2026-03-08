@@ -29,10 +29,10 @@ def execute_refresh_command(
     resolved_build_dir_name = (
         (build_dir_name or "").strip() or tidy_workspace.DEFAULT_TIDY_BUILD_DIR_NAME
     )
-    app_dir = command.ctx.get_app_dir(app_name)
-    build_dir = app_dir / resolved_build_dir_name
-    tasks_done_dir = build_dir / "tasks_done"
-    state_path = build_dir / "refresh_state.json"
+    tidy_layout = command.ctx.get_tidy_layout(app_name, resolved_build_dir_name)
+    build_dir = tidy_layout.root
+    tasks_done_dir = tidy_layout.tasks_done_dir
+    state_path = tidy_layout.refresh_state_path
     compile_commands_path = analysis_compile_db.resolve_compile_db_path(build_dir)
 
     normalized_batch = None
@@ -93,7 +93,7 @@ def execute_refresh_command(
             incremental_files = command._resolve_incremental_files(
                 touched_files=touched_files,
                 compile_units=compile_units,
-                app_dir=app_dir,
+                app_dir=command.ctx.get_app_dir(app_name),
                 neighbor_scope=neighbor_scope,
             )
 

@@ -9,10 +9,10 @@ description: Agent policy for the full time_tracer clang-tidy queue
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `apps/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
-- Machine summary: `apps/tracer_core_shell/build_tidy_core_family/tidy_result.json`
-- Automation reports: `apps/tracer_core_shell/build_tidy_core_family/automation/`
-- Verify result: `test/output/artifact_windows_cli/result.json`
+- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
+- Machine summary: `out/tidy/tracer_core_shell/build_tidy_core_family/tidy_result.json`
+- Automation reports: `out/tidy/tracer_core_shell/build_tidy_core_family/automation/`
+- Verify result: `out/test/artifact_windows_cli/result.json`
 
 ## First Command (MUST)
 - Start with the official auto entry:
@@ -37,8 +37,8 @@ description: Agent policy for the full time_tracer clang-tidy queue
 
 ## Completion Gate (MUST)
 - Done means:
-  - no `task_*.log` remains under `apps/tracer_core_shell/build_tidy_core_family/tasks/`
-  - `test/output/artifact_windows_cli/result.json` still reports success
+  - no `task_*.log` remains under `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/`
+  - `out/test/artifact_windows_cli/result.json` still reports success
 - Exit code `2` from auto flow is not completion.
 - Final acceptance command is:
   - `python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise`

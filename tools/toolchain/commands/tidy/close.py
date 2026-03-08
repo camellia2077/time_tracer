@@ -78,7 +78,7 @@ class TidyCloseCommand:
                 )
                 return verify_ret
 
-        tasks_dir = self.ctx.get_app_dir(app_name) / resolved_build_dir_name / "tasks"
+        tasks_dir = self.ctx.get_tidy_layout(app_name, resolved_build_dir_name).tasks_dir
         pending_tasks = self._list_pending_tasks(tasks_dir)
         if pending_tasks:
             print(

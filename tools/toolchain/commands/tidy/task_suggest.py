@@ -25,9 +25,9 @@ class TidyTaskSuggestCommand:
             build_dir_name=tidy_build_dir_name,
             source_scope=source_scope,
         )
-        app_dir = self.ctx.get_app_dir(app_name)
-        build_tidy_dir = app_dir / workspace.build_dir_name
-        tasks_dir = build_tidy_dir / "tasks"
+        tidy_layout = self.ctx.get_tidy_layout(app_name, workspace.build_dir_name)
+        build_tidy_dir = tidy_layout.root
+        tasks_dir = tidy_layout.tasks_dir
         task_path = resolve_task_log_path(
             tasks_dir,
             task_log_path=task_log_path,

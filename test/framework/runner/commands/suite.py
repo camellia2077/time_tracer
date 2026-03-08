@@ -10,11 +10,11 @@ except ImportError:  # pragma: no cover
     import tomli as tomllib  # type: ignore
 
 from runner.service import run_suite
+from tools.toolchain.core.generated_paths import resolve_build_layout
 
 from .run_support import (
     ensure_bin_dir_exists,
     load_suite_default_build_dir,
-    resolve_app_root,
     resolve_build_dir,
     run_optional_build_steps,
 )
@@ -85,7 +85,7 @@ def build_parser() -> argparse.ArgumentParser:
         "--build-dir",
         default=None,
         help=(
-            "Build folder under apps/<app>, e.g. build/build_fast/build_tidy. "
+            "Logical build dir name, resolved under out/build/<app>/<build_dir>. "
             "If omitted, uses suite TOML [paths].default_build_dir when set."
         ),
     )
@@ -107,7 +107,7 @@ def _resolve_effective_bin_dir(
         return Path(requested_bin_dir).resolve()
     if not build_dir:
         raise RuntimeError(f"Cannot resolve bin dir for `{app_name}` without build dir.")
-    return (resolve_app_root(repo_root, app_name) / build_dir / "bin").resolve()
+    return resolve_build_layout(repo_root, app_name, build_dir).bin_dir
 
 
 def main(argv: list[str], test_root: Path, repo_root: Path | None = None) -> int:
@@ -149,15 +149,15 @@ def main(argv: list[str], test_root: Path, repo_root: Path | None = None) -> int
     )
 
     if args.with_build:
-        scripts_run = active_repo_root / "scripts" / "run.py"
-        if not scripts_run.exists():
-            print(f"Error: scripts runner not found: {scripts_run}")
+        tools_run = active_repo_root / "tools" / "run.py"
+        if not tools_run.exists():
+            print(f"Error: tools runner not found: {tools_run}")
             return 1
 
         build_exit_code = run_optional_build_steps(
             repo_root=active_repo_root,
             app_name=str(app_name),
-            scripts_run=scripts_run,
+            scripts_run=tools_run,
             python_exe=sys.executable,
             effective_build_dir=effective_build_dir,
             tidy=args.tidy,

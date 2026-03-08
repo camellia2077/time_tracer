@@ -53,12 +53,9 @@ def configure_cargo(
     return 0
 
 
-def _copy_cli_artifact(app_dir: Path, build_dir_name: str, profile_name: str | None) -> int:
+def _copy_cli_artifact(app_dir: Path, target_dir: Path, profile_name: str | None) -> int:
     artifact = _artifact_name()
-    source_path = (
-        app_dir / build_dir_name / "cargo_target" / _profile_output_dir(profile_name) / artifact
-    )
-    target_dir = app_dir / build_dir_name / "bin"
+    source_path = app_dir / "target" / _profile_output_dir(profile_name) / artifact
     target_path = target_dir / artifact
 
     if not source_path.exists():
@@ -130,14 +127,11 @@ def _sync_windows_runtime_layout_for_rust(
     if app_name != "tracer_windows_rust_cli":
         return 0
 
-    app_dir = ctx.get_app_dir(app_name)
-    runtime_bin_dir = app_dir / build_dir_name / "bin"
+    runtime_bin_dir = ctx.get_build_layout(app_name, build_dir_name).bin_dir
     runtime_bin_dir.mkdir(parents=True, exist_ok=True)
 
-    core_dir = ctx.get_app_dir("tracer_core")
-
     runtime_bin_candidates = [
-        core_dir / build_dir_name / "bin",
+        ctx.get_build_layout("tracer_core", build_dir_name).bin_dir,
     ]
     # When strict sync is enabled, only probe the current build dir.
     # This is useful for intentionally verifying warning paths where
@@ -145,8 +139,8 @@ def _sync_windows_runtime_layout_for_rust(
     if not _env_truthy("TT_RUST_RUNTIME_SYNC_STRICT"):
         runtime_bin_candidates.extend(
             [
-                core_dir / "build_fast" / "bin",
-                core_dir / "build" / "bin",
+                ctx.get_build_layout("tracer_core", "build_fast").bin_dir,
+                ctx.get_build_layout("tracer_core", "build").bin_dir,
             ]
         )
 
@@ -209,7 +203,8 @@ def _build_cargo_args(ctx: Context, profile_name: str | None) -> list[str]:
 
 def _build_cargo_environment(ctx: Context, app_dir: Path, build_dir_name: str) -> dict[str, str]:
     env = ctx.setup_env()
-    env["CARGO_TARGET_DIR"] = str((app_dir / build_dir_name / "cargo_target").resolve())
+    _ = build_dir_name
+    env["CARGO_TARGET_DIR"] = str((app_dir / "target").resolve())
     return env
 
 
@@ -248,7 +243,6 @@ def build_cargo(
     icon_ico = prepare_windows_cli_icon_ico(
         ctx=ctx,
         app_name=app_name,
-        app_dir=app_dir,
         build_dir_name=resolved_build_dir_name,
         profile_name=profile_name,
         svg_override=windows_icon_svg,
@@ -273,7 +267,7 @@ def build_cargo(
         return build_ret
     copy_ret = _copy_cli_artifact(
         app_dir=app_dir,
-        build_dir_name=resolved_build_dir_name,
+        target_dir=ctx.get_build_layout(app_name, resolved_build_dir_name).bin_dir,
         profile_name=profile_name,
     )
     if copy_ret != 0:

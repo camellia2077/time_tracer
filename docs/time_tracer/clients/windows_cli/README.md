@@ -28,8 +28,8 @@
 2. 推荐命令：
    - `python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise`
    - `python tools/run.py verify --app tracer_core --quick --scope batch --concise`
-3. 验收结果目录：`test/output/artifact_windows_cli/`
-4. 通过判定：`test/output/artifact_windows_cli/result.json` 中 `success=true`
+3. 验收结果目录：`out/test/artifact_windows_cli/`
+4. 通过判定：`out/test/artifact_windows_cli/result.json` 中 `success=true`
 
 ## 文档维护规则
 

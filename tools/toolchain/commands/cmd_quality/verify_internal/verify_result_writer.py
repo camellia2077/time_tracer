@@ -1,10 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
-
-from ....services.suite_registry import resolve_result_output_name
-
 
 def _cleanup_legacy_result_json_files(output_root: Path) -> None:
     for result_path in output_root.glob("result*.json"):
@@ -26,9 +22,11 @@ def write_build_only_result_json(
     error_message: str = "",
     build_only: bool = True,
 ) -> None:
-    output_name = resolve_result_output_name(app_name)
-    output_root = repo_root / "test" / "output" / output_name
-    logs_dir = output_root / "logs"
+    from ....core.generated_paths import resolve_test_result_layout_for_app
+
+    layout = resolve_test_result_layout_for_app(repo_root, app_name)
+    output_root = layout.root
+    logs_dir = layout.logs_dir
     output_root.mkdir(parents=True, exist_ok=True)
     logs_dir.mkdir(parents=True, exist_ok=True)
     _cleanup_legacy_result_json_files(output_root)
@@ -45,7 +43,7 @@ def write_build_only_result_json(
     }
     if not success and error_message:
         result_payload["error_message"] = error_message
-    (output_root / "result.json").write_text(
+    layout.result_json_path.write_text(
         json.dumps(result_payload, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )

@@ -44,16 +44,16 @@ class TestPostChangeMetrics(TestCase):
             self._write_apps_config(repo_root)
 
             self._write_file(
-                repo_root / "apps/tracer_core_shell/build_case/bin/tracer_core.dll",
+                repo_root / "out/build/tracer_core_shell/build_case/bin/tracer_core.dll",
                 b"abc",
             )
             self._write_file(
                 repo_root
-                / "apps/tracer_cli/windows/rust_cli/build_case/bin/time_tracer_cli.exe",
+                / "out/build/tracer_windows_rust_cli/build_case/bin/time_tracer_cli.exe",
                 b"12345",
             )
             self._write_file(
-                repo_root / "apps/tracer_core_shell/build_case/bin/README.txt",
+                repo_root / "out/build/tracer_core_shell/build_case/bin/README.txt",
                 b"not-a-binary",
             )
 
@@ -68,13 +68,13 @@ class TestPostChangeMetrics(TestCase):
             self.assertEqual(metrics["total_bytes"], 8)
 
             candidate_paths = {item["path"] for item in metrics["candidate_dirs"]}
-            self.assertIn("apps/tracer_core_shell/build_case/bin", candidate_paths)
-            self.assertIn("apps/tracer_cli/windows/rust_cli/build_case/bin", candidate_paths)
+            self.assertIn("out/build/tracer_core_shell/build_case/bin", candidate_paths)
+            self.assertIn("out/build/tracer_windows_rust_cli/build_case/bin", candidate_paths)
 
             artifact_paths = {item["path"] for item in metrics["artifacts"]}
-            self.assertIn("apps/tracer_core_shell/build_case/bin/tracer_core.dll", artifact_paths)
+            self.assertIn("out/build/tracer_core_shell/build_case/bin/tracer_core.dll", artifact_paths)
             self.assertIn(
-                "apps/tracer_cli/windows/rust_cli/build_case/bin/time_tracer_cli.exe",
+                "out/build/tracer_windows_rust_cli/build_case/bin/time_tracer_cli.exe",
                 artifact_paths,
             )
 

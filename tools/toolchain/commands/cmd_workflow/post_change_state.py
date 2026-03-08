@@ -11,7 +11,7 @@ from ..shared.result_reporting import print_failure_report, print_result_paths
 
 
 def resolve_state_path(ctx: Context, app_name: str, build_dir_name: str) -> Path:
-    return ctx.get_app_dir(app_name) / build_dir_name / "post_change_last.json"
+    return ctx.get_build_layout(app_name, build_dir_name).post_change_state_path
 
 
 def utc_now_iso() -> str:

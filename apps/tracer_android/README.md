@@ -60,9 +60,9 @@ python scripts/devtools/android/sync_android_input_from_test_data.py --check
 ```
 
 Outputs:
-- `test/output/artifact_android/result.json`
-- `test/output/artifact_android/result_cases.json`
-- `test/output/artifact_android/logs/output.log`
+- `out/test/artifact_android/result.json`
+- `out/test/artifact_android/result_cases.json`
+- `out/test/artifact_android/logs/output.log`
 
 Core contract references:
 - Core C ABI: `docs/time_tracer/core/contracts/c_abi.md`

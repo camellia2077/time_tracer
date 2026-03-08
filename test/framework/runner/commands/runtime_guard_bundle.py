@@ -9,7 +9,7 @@ try:
 except ImportError:  # pragma: no cover
     import tomli as tomllib  # type: ignore
 
-from .run_support import resolve_app_root
+from tools.toolchain.core.generated_paths import resolve_build_layout
 
 DEFAULT_APP_NAME = "tracer_windows_rust_cli"
 DEFAULT_CLI_EXE = "time_tracer_cli.exe"
@@ -29,9 +29,8 @@ DEFAULT_REPORTS_SHARED_DLL = "reports_shared.dll"
 
 
 def auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
-    app_root = resolve_app_root(repo_root, app_name)
     for candidate in ("build_fast", "build_agent", "build_tidy", "build"):
-        if (app_root / candidate / "bin").is_dir():
+        if resolve_build_layout(repo_root, app_name, candidate).bin_dir.is_dir():
             return candidate
     return None
 
@@ -155,5 +154,4 @@ def resolve_source_bin_dir(repo_root: Path, args) -> Path:
         build_dir = auto_detect_build_dir(repo_root, DEFAULT_APP_NAME)
     if not build_dir:
         raise RuntimeError("No build dir detected. Use --build-dir, --bin-dir, or build first.")
-    app_root = resolve_app_root(repo_root, DEFAULT_APP_NAME)
-    return (app_root / build_dir / "bin").resolve()
+    return resolve_build_layout(repo_root, DEFAULT_APP_NAME, build_dir).bin_dir

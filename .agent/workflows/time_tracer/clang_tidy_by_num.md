@@ -9,9 +9,9 @@ description: Agent policy for one numbered time_tracer clang-tidy task
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `apps/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
-- Automation reports: `apps/tracer_core_shell/build_tidy_core_family/automation/`
-- Verify result: `test/output/artifact_windows_cli/result.json`
+- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
+- Automation reports: `out/tidy/tracer_core_shell/build_tidy_core_family/automation/`
+- Verify result: `out/test/artifact_windows_cli/result.json`
 
 ## Input Policy (MUST)
 - Input is exactly one pending `<TASK_ID>`.

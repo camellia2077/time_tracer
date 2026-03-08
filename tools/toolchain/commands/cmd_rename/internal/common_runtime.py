@@ -16,7 +16,7 @@ def ensure_tidy_build_ready(
     resolved_tidy_build_dir_name = (
         (tidy_build_dir_name or "").strip() or DEFAULT_TIDY_BUILD_DIR_NAME
     )
-    build_tidy_dir = ctx.get_app_dir(app_name) / resolved_tidy_build_dir_name
+    build_tidy_dir = ctx.get_tidy_dir(app_name, resolved_tidy_build_dir_name)
     compile_commands_path = build_tidy_dir / "compile_commands.json"
     if compile_commands_path.exists():
         return 0

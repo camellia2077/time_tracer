@@ -31,7 +31,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="temp/report-consistency-audit.md",
+        default="report-consistency-audit.md",
         help="Output markdown report path.",
     )
     parser.add_argument(

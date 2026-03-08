@@ -12,7 +12,7 @@ def state_path(
     tidy_build_dir_name: str | None = None,
 ) -> Path:
     resolved_build_dir_name = (tidy_build_dir_name or "").strip() or DEFAULT_TIDY_BUILD_DIR_NAME
-    return ctx.get_app_dir(app_name) / resolved_build_dir_name / "batch_state.json"
+    return ctx.get_tidy_layout(app_name, resolved_build_dir_name).batch_state_path
 
 
 def load_state(path: Path, app_name: str) -> dict:

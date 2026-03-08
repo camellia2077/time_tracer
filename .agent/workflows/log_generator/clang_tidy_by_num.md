@@ -8,9 +8,9 @@ description: Agent policy for one numbered log_generator clang-tidy task
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `apps/tools/log_generator/build_tidy/tasks/batch_*/task_*.log`
-- Automation reports: `apps/tools/log_generator/build_tidy/automation/`
-- Verify result: `test/output/artifact_log_generator/result.json`
+- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.log`
+- Automation reports: `out/tidy/log_generator/build_tidy/automation/`
+- Verify result: `out/test/artifact_log_generator/result.json`
 
 ## Input Policy (MUST)
 - Input is exactly one pending `<TASK_ID>`.

@@ -31,9 +31,9 @@ Suite naming policy:
 - `data/`: canonical integration/e2e input dataset shared by CLI/Android.
 - `fixtures/unit/`: minimal unit/component fixtures (small, focused, fast).
 - `golden/`: snapshot/golden expected outputs for artifact regression checks.
-- `output/`: all generated runtime artifacts.
+- `out/test/`: all generated runtime artifacts and test results.
 - `run.py`: test 根目录唯一 Python 入口（`suite` + `runtime-guard` + `smoke-windows-cli`），invoked by `tools/run.py`.
-- `run_runtime_guard.bat`: 统一 runtime-guard 入口，使用 `-b build|build_fast` 选择源目录；如缺 `time_tracer_cli.exe` 会自动尝试从 `apps/tracer_cli/windows/rust_cli/<build>/bin`（再回退 `rust_cli/build/bin`）回填。
+- `run_runtime_guard.bat`: 统一 runtime-guard 入口，使用 `-b build|build_fast` 选择源目录；如缺 `time_tracer_cli.exe` 会自动尝试从 `out/build/tracer_windows_rust_cli/<build>/bin` 回填。
 - `run_runtime_guard_from_build.bat`: 兼容壳，等价于 `run_runtime_guard.bat -b build`。
 - `run_runtime_guard_from_build_fast.bat`: 兼容壳，等价于 `run_runtime_guard.bat -b build_fast`。
 - `runtime-guard` 场景在执行前会先完整复制源 `bin` 目录，再针对单个场景做“删文件”变异，保证与真实运行时布局一致。
@@ -42,17 +42,18 @@ Suite naming policy:
 
 Each artifact suite writes into:
 
-- `output/<suite>/workspace`: copied binaries and runtime workspace.
-- `output/<suite>/logs`: per-case logs + python concise log (`output.log`) + python full log (`output_full.log`).
-- `output/<suite>/artifacts`: generated report/output files.
-- `output/<suite>/result.json`: machine-readable summary.
+- `out/test/<suite>/workspace`: copied binaries and runtime workspace.
+- `out/test/<suite>/logs`: per-case logs + python concise log (`output.log`) + python full log (`output_full.log`).
+- `out/test/<suite>/artifacts`: generated report/output files.
+- `out/test/<suite>/quality_gates`: generated gate case snapshots and audit reports.
+- `out/test/<suite>/result.json`: machine-readable summary.
 - Runner enforces this contract strictly; non-canonical result path overrides are ignored.
 
 Canonical output directories:
 
-- `output/artifact_windows_cli`
-- `output/artifact_android`
-- `output/artifact_log_generator`
+- `out/test/artifact_windows_cli`
+- `out/test/artifact_android`
+- `out/test/artifact_log_generator`
 
 Result file semantics (unified):
 
@@ -75,7 +76,7 @@ From repository root:
 - Milestone/release flow:
   - `python tools/run.py verify --app tracer_core --quick --scope batch --concise`
 - Windows CLI（Rust-only）:
-  - `python test/run.py suite --suite artifact_windows_cli --bin-dir apps/tracer_cli/windows/rust_cli/build_fast/bin --no-format-on-success --concise`
+  - `python test/run.py suite --suite artifact_windows_cli --bin-dir out/build/tracer_windows_rust_cli/build_fast/bin --no-format-on-success --concise`
 - Android edit loop:
   - `python tools/run.py build --app tracer_android --profile android_edit`
 - Android style gate:
@@ -144,5 +145,3 @@ openjdk version "21.0.9" 2025-10-21
 OpenJDK Runtime Environment (build 21.0.9+-14649483-b1163.86)
 OpenJDK 64-Bit Server VM (build 21.0.9+-14649483-b1163.86, mixed mode)
 ```
-
-

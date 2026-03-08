@@ -37,5 +37,5 @@
 ## 6. 变更检查清单
 
 1. 本地跑：`python tools/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise`
-2. 检查：`test/output/artifact_windows_cli/result.json`
+2. 检查：`out/test/artifact_windows_cli/result.json`
 3. 确认：`success=true` 且无新增非预期字符串回归

@@ -44,7 +44,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--export-root",
         required=True,
-        help="Export root (for example test/output/.../reports/markdown).",
+        help="Export root (for example out/test/.../reports/markdown).",
     )
     parser.add_argument(
         "--output-dir",

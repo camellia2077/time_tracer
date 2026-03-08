@@ -71,10 +71,10 @@
 
 默认排除：
 1. `apps/tracer_core_shell/build/**`
-2. `apps/tracer_core_shell/build_fast/**`
-3. `apps/tracer_core_shell/build_fast_*/**`
+2. `out/build/tracer_core_shell/build_fast/**`
+3. `out/build/tracer_core_shell/build_fast_*/**`
 4. `apps/tracer_core_shell/.cache/**`
-5. `test/output/**`
+5. `out/test/**`
 
 参考命令：
 
@@ -97,8 +97,8 @@ python tools/run.py verify --app tracer_core --scope artifact --build-dir build_
 ```
 
 通过后重点查看：
-1. `test/output/artifact_windows_cli/result.json`
-2. `test/output/artifact_windows_cli/logs/output.log`
+1. `out/test/artifact_windows_cli/result.json`
+2. `out/test/artifact_windows_cli/logs/output.log`
 
 ## 7. 常见排错入口
 1. ABI 改了但上层异常：先对齐 `c_abi.md` 与 consumer 参数。

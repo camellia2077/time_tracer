@@ -8,10 +8,10 @@ description: Agent policy for the full log_generator clang-tidy queue
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `apps/tools/log_generator/build_tidy/tasks/batch_*/task_*.log`
-- Machine summary: `apps/tools/log_generator/build_tidy/tidy_result.json`
-- Automation reports: `apps/tools/log_generator/build_tidy/automation/`
-- Verify result: `test/output/artifact_log_generator/result.json`
+- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.log`
+- Machine summary: `out/tidy/log_generator/build_tidy/tidy_result.json`
+- Automation reports: `out/tidy/log_generator/build_tidy/automation/`
+- Verify result: `out/test/artifact_log_generator/result.json`
 
 ## First Command (MUST)
 - Start with the official auto entry:
@@ -36,8 +36,8 @@ description: Agent policy for the full log_generator clang-tidy queue
 
 ## Completion Gate (MUST)
 - Done means:
-  - no `task_*.log` remains under `apps/tools/log_generator/build_tidy/tasks/`
-  - `test/output/artifact_log_generator/result.json` still reports success
+  - no `task_*.log` remains under `out/tidy/log_generator/build_tidy/tasks/`
+  - `out/test/artifact_log_generator/result.json` still reports success
 - Exit code `2` from auto flow is not completion.
 - Final acceptance command is:
   - `python tools/run.py tidy-close --app log_generator --tidy-build-dir build_tidy --keep-going --concise`

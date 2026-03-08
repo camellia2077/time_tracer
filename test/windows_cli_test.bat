@@ -38,9 +38,9 @@ if "%BUILD_MODE%"=="" (
 )
 
 if /I "%BUILD_MODE%"=="build" (
-    set "RUST_BIN_REL=apps/tracer_cli/windows/rust_cli/build/bin"
+    set "RUST_BIN_REL=out/build/tracer_windows_rust_cli/build/bin"
 ) else if /I "%BUILD_MODE%"=="fast" (
-    set "RUST_BIN_REL=apps/tracer_cli/windows/rust_cli/build_fast/bin"
+    set "RUST_BIN_REL=out/build/tracer_windows_rust_cli/build_fast/bin"
 ) else (
     echo [ERROR] Unsupported -d value: "%BUILD_MODE%"
     echo [HINT]  Use: -d build  or  -d fast

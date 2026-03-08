@@ -39,7 +39,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="temp/report-markdown-render-check.json",
+        default="report-markdown-render-check.json",
         help="Output JSON report path.",
     )
     parser.add_argument(

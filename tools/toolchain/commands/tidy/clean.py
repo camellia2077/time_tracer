@@ -2,7 +2,6 @@ from pathlib import Path
 
 from ...core.context import Context
 from ...services import batch_state
-from ...services.suite_registry import resolve_result_output_name
 from ..shared import tidy as tidy_shared
 from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
@@ -20,10 +19,10 @@ class CleanCommand:
         cluster_by_file: bool = False,
         tidy_build_dir_name: str | None = None,
     ) -> int:
-        app_dir = self.ctx.get_app_dir(app_name)
         resolved_tidy_build_dir = (tidy_build_dir_name or "").strip() or DEFAULT_TIDY_BUILD_DIR_NAME
-        tasks_dir = app_dir / resolved_tidy_build_dir / "tasks"
-        done_dir = app_dir / resolved_tidy_build_dir / "tasks_done"
+        tidy_layout = self.ctx.get_tidy_layout(app_name, resolved_tidy_build_dir)
+        tasks_dir = tidy_layout.tasks_dir
+        done_dir = tidy_layout.tasks_done_dir
         try:
             normalized_batch = self._normalize_batch_name(batch_id)
         except ValueError as exc:
@@ -159,8 +158,7 @@ class CleanCommand:
         return tidy_shared.latest_verify_succeeded(self.ctx, app_name)
 
     def _latest_verify_result_mtime(self, app_name: str) -> float | None:
-        suite_name = resolve_result_output_name(app_name)
-        result_path = self.ctx.repo_root / "test" / "output" / suite_name / "result.json"
+        result_path = self.ctx.get_test_result_layout_for_app(app_name).result_json_path
         if not result_path.exists():
             return None
         try:

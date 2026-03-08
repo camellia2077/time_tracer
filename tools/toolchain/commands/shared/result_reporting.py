@@ -3,16 +3,15 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from ...services.suite_registry import resolve_result_output_name
+from ...core.generated_paths import resolve_test_result_layout_for_app
 
 
 def resolve_result_paths(repo_root: Path, app_name: str) -> dict[str, Path]:
-    suite_or_app = resolve_result_output_name(app_name)
-    output_root = repo_root / "test" / "output" / suite_or_app
+    layout = resolve_test_result_layout_for_app(repo_root, app_name)
     return {
-        "output_root": output_root,
-        "result_json": output_root / "result.json",
-        "output_log": output_root / "logs" / "output.log",
+        "output_root": layout.root,
+        "result_json": layout.result_json_path,
+        "output_log": layout.output_log_path,
     }
 
 

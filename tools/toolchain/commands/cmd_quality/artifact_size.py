@@ -59,7 +59,7 @@ class ArtifactSizeCommand:
         if build_ret != 0:
             return build_ret
 
-        bin_dir = self.ctx.get_app_dir(app_name) / effective_build_dir_name / "bin"
+        bin_dir = self.ctx.get_build_layout(app_name, effective_build_dir_name).bin_dir
         try:
             artifacts, total_bytes = collect_artifact_sizes(
                 bin_dir=bin_dir,
@@ -82,8 +82,7 @@ class ArtifactSizeCommand:
                 result_path = self.ctx.repo_root / result_path
         else:
             result_path = (
-                self.ctx.get_app_dir(app_name)
-                / effective_build_dir_name
+                self.ctx.get_build_dir(app_name, effective_build_dir_name)
                 / self._DEFAULT_RESULT_JSON_NAME
             )
 

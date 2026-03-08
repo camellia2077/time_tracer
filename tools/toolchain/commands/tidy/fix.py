@@ -23,8 +23,7 @@ class TidyFixCommand:
             build_dir_name=tidy_build_dir_name,
             source_scope=source_scope,
         )
-        app_dir = self.ctx.get_app_dir(app_name)
-        build_dir = app_dir / workspace.build_dir_name
+        build_dir = self.ctx.get_tidy_dir(app_name, workspace.build_dir_name)
 
         if not (build_dir / "CMakeCache.txt").exists():
             print(

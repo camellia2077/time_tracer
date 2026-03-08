@@ -10,7 +10,7 @@ def parse_suite_args(
     parser = argparse.ArgumentParser(description=description)
     parser.add_argument(
         "--build-dir",
-        help="Build folder under project_apps_root, e.g. build_fast/build_tidy.",
+        help="Logical build dir name under out/build/<app>/, e.g. build_fast/build_tidy.",
     )
     parser.add_argument(
         "--bin-dir",
@@ -24,7 +24,7 @@ def parse_suite_args(
         "--result-json",
         help=(
             "Result JSON path hint. Output contract fixes canonical path to "
-            "output/<suite>/result.json; non-canonical values are ignored."
+            "out/test/<suite>/result.json; non-canonical values are ignored."
         ),
     )
     parser.add_argument(

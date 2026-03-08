@@ -20,8 +20,8 @@ Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
 
 ## Incremental Build Rule
 
-- Reuse `apps/log_generator/build_fast` for incremental verification.
-- Do not delete `apps/log_generator/build_fast` unless explicitly requested.
+- Reuse `out/build/log_generator/build_fast` for incremental verification.
+- Do not delete `out/build/log_generator/build_fast` unless explicitly requested.
 
 ## Canonical Verify Command
 
@@ -42,24 +42,24 @@ python tools/run.py verify --app log_generator --build-dir build_fast --scope ar
 
 ## Result Files and Logs
 
-- State file: `apps/log_generator/build_fast/post_change_last.json`
+- State file: `out/build/log_generator/build_fast/post_change_last.json`
 
 Required result files:
 
-- Summary: `test/output/artifact_log_generator/result.json`
-- Case details: `test/output/artifact_log_generator/result_cases.json`
+- Summary: `out/test/artifact_log_generator/result.json`
+- Case details: `out/test/artifact_log_generator/result_cases.json`
 
 Expected result: `"success": true` in `result.json`.
 
 Failure triage logs:
 
-- Aggregated log: `test/output/artifact_log_generator/logs/output.log`
-- `test/output/artifact_log_generator/logs/**`
+- Aggregated log: `out/test/artifact_log_generator/logs/output.log`
+- `out/test/artifact_log_generator/logs/**`
 
 ## Completion Criteria
 
 - Verify command exits with code `0`.
-- `test/output/artifact_log_generator/result.json` exists and reports `"success": true`.
+- `out/test/artifact_log_generator/result.json` exists and reports `"success": true`.
 
 ## Notes
 

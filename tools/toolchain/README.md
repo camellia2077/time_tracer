@@ -123,33 +123,35 @@ python tools/run.py rename-audit --app tracer_core_shell
 
 ## Scoped clang-tidy workspace
 
-- Default full-queue tidy workspace: `apps/tracer_core_shell/build_tidy`
-- Official clang-tidy input: `apps/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
+- Default full-queue tidy workspace: `out/tidy/tracer_core_shell/build_tidy`
+- Official clang-tidy input: `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
 - Raw build `compile_commands.json` belongs to the build system only; it is not a clang-tidy contract
 - Built-in source scope preset: `core_family`
   - `libs/tracer_core/src`
   - `libs/tracer_adapters_io/src`
   - `libs/tracer_core_bridge_common/src`
   - `libs/tracer_transport/src`
-- Default scoped tidy workspace for `core_family`: `apps/tracer_core_shell/build_tidy_core_family`
+- Default scoped tidy workspace for `core_family`: `out/tidy/tracer_core_shell/build_tidy_core_family`
 - `--source-scope` controls the selected C++ source roots
 - `--tidy-build-dir` controls which tidy queue/state workspace is used by queue-management commands
-- Task-local automation reports land under `apps/<app>/<tidy_workspace>/automation/`
+- Task-local automation reports land under `out/tidy/<app>/<tidy_workspace>/automation/`
 - Thin shell wrapper: `apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh`
   - Always forwards `tracer_core_shell + core_family + build_tidy_core_family`
   - Does not own any filtering logic
 
 ## Result Visibility Contract
 
-- State file (`post-change`): `apps/<app>/<build_dir>/post_change_last.json`
-  - Fixed-dir backend example: `apps/tracer_android/build/post_change_last.json`
+- State file (`post-change`): `out/build/<app>/<build_dir>/post_change_last.json`
+  - Fixed-dir backend example: `out/build/tracer_android/build/post_change_last.json`
   - Step status (`configure/build/test`), failed stage, failed command, next action.
-- Summary file: `test/output/<result_target>/result.json`
+- Summary file: `out/test/<result_target>/result.json`
   - Overall success/failure and module summary.
-- Case details file: `test/output/<result_target>/result_cases.json`
+- Case details file: `out/test/<result_target>/result_cases.json`
   - Per-case failure details.
-- Aggregated log: `test/output/<result_target>/logs/output.log`
+- Aggregated log: `out/test/<result_target>/logs/output.log`
   - Key error lines for failure triage.
+- Quality gate outputs: `out/test/<result_target>/quality_gates/`
+  - Generated case snapshots plus markdown/triplet audit reports for `verify` and `refresh-golden`.
 - Result target mapping:
   - `tracer_core` / `tracer_core_shell` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
   - `tracer_android` -> `artifact_android`

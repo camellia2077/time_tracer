@@ -54,6 +54,8 @@ def load_config(
             variables={
                 "repo_root": str(repo_root),
                 "test_root": str(repo_root / "test"),
+                "out_root": str(repo_root / "out"),
+                "out_test_root": str(repo_root / "out" / "test"),
             },
         )
         validate_suite_schema(toml_data, target_path.resolve())
@@ -62,6 +64,7 @@ def load_config(
             toml_data["_build_dir_name"] = build_dir_name
         if bin_dir:
             toml_data["_bin_dir"] = bin_dir
+        toml_data["_repo_root"] = str(repo_root)
 
         pipeline_cfg = _load_pipeline(toml_data)
         return _build_config_payload(toml_data, pipeline_cfg)

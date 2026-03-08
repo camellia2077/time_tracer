@@ -61,8 +61,8 @@ flowchart TD
   - `libs/tracer_core_bridge_common/src`
   - `libs/tracer_transport/src`
 - `core_family` 只覆盖生产源码，不含 `tests/`，也不含 app host `src/`
-- 默认全量队列仍使用 `apps/<app>/build_tidy`
-- scoped 队列使用独立 workspace；`core_family` 默认是 `apps/tracer_core_shell/build_tidy_core_family`
+- 默认全量队列仍使用逻辑 workspace 名 `build_tidy`，物理目录为 `out/tidy/<app>/build_tidy`
+- scoped 队列使用独立 workspace；`core_family` 默认是 `out/tidy/tracer_core_shell/build_tidy_core_family`
 - 所有队列状态路径与 CMake scope 注入都先经过 `tools/toolchain/commands/tidy/workspace.py`
 
 ## 2. 改动路由速查
@@ -279,7 +279,7 @@ clang-tidy 相关主要有这些基础服务：
 - `task_sorter.py`
   - 根据 check 类型、头文件风险、warning 数量给任务排序
 - `batch_state.py`
-  - 维护 `apps/<app>/build_tidy/batch_state.json`
+  - 维护 `out/tidy/<app>/<tidy_workspace>/batch_state.json`
 
 这层尽量保持“无工作流编排”，适合放纯函数和格式处理。
 
@@ -319,7 +319,7 @@ clang-tidy 相关默认配置主要在：
 clang-tidy 主工作目录是：
 
 ```text
-apps/<app>/<tidy_workspace>/
+out/tidy/<app>/<tidy_workspace>/
 ```
 
 其中：
@@ -331,20 +331,20 @@ apps/<app>/<tidy_workspace>/
 
 | 路径 | 作用 |
 | --- | --- |
-| `apps/<app>/<tidy_workspace>/build.log` | `tidy` build 原始日志 |
-| `apps/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json` | clang-tidy 唯一官方输入；供分析使用的 sanitized compile db（剥离 `@*.obj.modmap`） |
-| `apps/<app>/<tidy_workspace>/.ninja_log` | Ninja 执行时序，用于 timing summary |
-| `apps/<app>/<tidy_workspace>/tasks/batch_*/task_*.log` | 待处理任务 |
-| `apps/<app>/<tidy_workspace>/tasks/tasks_summary.md` | 拆分后的任务摘要 |
-| `apps/<app>/<tidy_workspace>/tasks_done/batch_*/task_*.log` | 已归档任务 |
-| `apps/<app>/<tidy_workspace>/tidy_result.json` | 面向人和 agent 的统一状态摘要 |
-| `apps/<app>/<tidy_workspace>/batch_state.json` | 批次级状态、checkpoint、verify/refresh 结果 |
-| `apps/<app>/<tidy_workspace>/refresh_state.json` | refresh cadence 与 last_full 记录 |
-| `apps/<app>/<tidy_workspace>/flow_state.json` | tidy-flow 执行状态 |
-| `apps/<app>/<tidy_workspace>/refresh/<batch>/incremental_tidy_*.log` | 增量 refresh 分片日志 |
-| `apps/<app>/<tidy_workspace>/rename/rename_candidates.json` | rename plan 候选 |
-| `apps/<app>/<tidy_workspace>/rename/rename_apply_report.json` | rename apply 结果报告 |
-| `test/output/<suite>/result.json` | strict clean / verify gate 依赖的测试总结果 |
+| `out/tidy/<app>/<tidy_workspace>/build.log` | `tidy` build 原始日志 |
+| `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json` | clang-tidy 唯一官方输入；供分析使用的 sanitized compile db（剥离 `@*.obj.modmap`） |
+| `out/tidy/<app>/<tidy_workspace>/.ninja_log` | Ninja 执行时序，用于 timing summary |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log` | 待处理任务 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/tasks_summary.md` | 拆分后的任务摘要 |
+| `out/tidy/<app>/<tidy_workspace>/tasks_done/batch_*/task_*.log` | 已归档任务 |
+| `out/tidy/<app>/<tidy_workspace>/tidy_result.json` | 面向人和 agent 的统一状态摘要 |
+| `out/tidy/<app>/<tidy_workspace>/batch_state.json` | 批次级状态、checkpoint、verify/refresh 结果 |
+| `out/tidy/<app>/<tidy_workspace>/refresh_state.json` | refresh cadence 与 last_full 记录 |
+| `out/tidy/<app>/<tidy_workspace>/flow_state.json` | tidy-flow 执行状态 |
+| `out/tidy/<app>/<tidy_workspace>/refresh/<batch>/incremental_tidy_*.log` | 增量 refresh 分片日志 |
+| `out/tidy/<app>/<tidy_workspace>/rename/rename_candidates.json` | rename plan 候选 |
+| `out/tidy/<app>/<tidy_workspace>/rename/rename_apply_report.json` | rename apply 结果报告 |
+| `out/test/<suite>/result.json` | strict clean / verify gate 依赖的测试总结果 |
 
 agent 排查建议：
 
@@ -442,7 +442,7 @@ pwsh -Command "python tools/run.py tidy --app tracer_core_shell"
    - 同步更新本文和 `docs/toolchain/clang_tidy_sop.md`
 3. 修改批次流转时：
    - 同步检查 `tidy-batch`、`tidy-refresh`、`tidy-close`
-   - 因为这三者共享 `build_tidy/` 状态目录
+   - 因为这三者共享同一个 tidy workspace 状态目录
 4. 修改 rename 自动化时：
    - 同步检查 `tidy-flow` 和 `tidy-loop`
    - 因为两者都可能触发 rename / clean

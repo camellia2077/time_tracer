@@ -9,8 +9,7 @@ from ...cmd_build import BuildCommand
 
 
 def ensure_build_configured(ctx: Context, app_name: str, kill_build_procs: bool) -> int:
-    app_dir = ctx.get_app_dir(app_name)
-    build_dir = app_dir / "build_fast"
+    build_dir = ctx.get_build_dir(app_name, "build_fast")
     if (build_dir / "CMakeCache.txt").exists():
         return 0
 

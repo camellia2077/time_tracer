@@ -17,6 +17,7 @@ from .result_payload import (
     extract_case_records,
     resolve_result_json_path,
 )
+from tools.toolchain.core.generated_paths import resolve_test_result_layout
 
 
 def _cleanup_legacy_result_json_files(suite_output_root: Path) -> None:
@@ -59,9 +60,10 @@ def run_suite(
     test_root: Path | None = None,
 ) -> int:
     workspace_root = test_root if test_root else suite_root.parent
-    repo_root = workspace_root.parent
-    suite_output_root = workspace_root / "output" / suite_name
-    logs_root = suite_output_root / "logs"
+    repo_root = (test_root.parent if test_root else suite_root.parent.parent.parent).resolve()
+    suite_output_layout = resolve_test_result_layout(repo_root, suite_name)
+    suite_output_root = suite_output_layout.root
+    logs_root = suite_output_layout.logs_dir
     logs_root.mkdir(parents=True, exist_ok=True)
 
     args = parse_suite_args(

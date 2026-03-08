@@ -77,7 +77,7 @@ def _resolve_source_svg_path(ctx: Context, svg_override: str | None) -> Path:
 
 def _generate_windows_cli_icon_from_svg(
     ctx: Context,
-    app_dir: Path,
+    app_name: str,
     build_dir_name: str,
     svg_override: str | None,
 ) -> Path | None:
@@ -86,7 +86,7 @@ def _generate_windows_cli_icon_from_svg(
         print(f"Error: source SVG icon not found: {source_svg}")
         return None
 
-    output_dir = app_dir / build_dir_name / "resources"
+    output_dir = ctx.get_build_dir(app_name, build_dir_name) / "resources"
     output_dir.mkdir(parents=True, exist_ok=True)
     output_png = output_dir / "time_tracer_cli.icon.256.png"
     output_ico = output_dir / "time_tracer_cli.ico"
@@ -165,7 +165,6 @@ def _generate_windows_cli_icon_from_svg(
 def prepare_windows_cli_icon_ico(
     ctx: Context,
     app_name: str,
-    app_dir: Path,
     build_dir_name: str,
     profile_name: str | None,
     svg_override: str | None = None,
@@ -178,7 +177,7 @@ def prepare_windows_cli_icon_ico(
         return icon_override
     return _generate_windows_cli_icon_from_svg(
         ctx=ctx,
-        app_dir=app_dir,
+        app_name=app_name,
         build_dir_name=build_dir_name,
         svg_override=svg_override,
     )

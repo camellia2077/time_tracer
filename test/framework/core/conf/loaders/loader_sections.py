@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from tools.toolchain.core.generated_paths import resolve_build_layout
+
 from ..definitions import (
     Cleanup,
     CLINames,
@@ -28,9 +30,6 @@ def _load_paths(toml_data) -> Paths:
         default_build_dir = default_build_dir.strip()
     paths_inst.DEFAULT_BUILD_DIR = default_build_dir or None
 
-    project_apps_root = paths_data.get("project_apps_root")
-    paths_inst.PROJECT_APPS_ROOT = Path(project_apps_root) if project_apps_root else None
-
     source_exe_dir = paths_data.get("source_executables_dir")
     paths_inst.SOURCE_EXECUTABLES_DIR = Path(source_exe_dir) if source_exe_dir else None
 
@@ -42,15 +41,41 @@ def _load_paths(toml_data) -> Paths:
         paths_inst.SOURCE_EXECUTABLES_DIR = Path(bin_dir)
         print(f"  - Binary directory override active: {paths_inst.SOURCE_EXECUTABLES_DIR}")
     else:
-        build_dir_name = toml_data.get("_build_dir_name")
-        if build_dir_name and paths_inst.PROJECT_APPS_ROOT:
-            paths_inst.SOURCE_EXECUTABLES_DIR = (
-                paths_inst.PROJECT_APPS_ROOT / build_dir_name / "bin"
+        build_app_name = paths_data.get("build_app_name")
+        repo_root_value = toml_data.get("_repo_root")
+        if (
+            isinstance(build_dir_name, str)
+            and build_dir_name
+            and isinstance(build_app_name, str)
+            and build_app_name.strip()
+            and isinstance(repo_root_value, str)
+            and repo_root_value.strip()
+        ):
+            paths_inst.SOURCE_EXECUTABLES_DIR = resolve_build_layout(
+                Path(repo_root_value),
+                build_app_name.strip(),
+                build_dir_name,
+            ).bin_dir
+            print(
+                "  - Build Folder override active: "
+                f"Using {build_dir_name} -> {paths_inst.SOURCE_EXECUTABLES_DIR}"
             )
-            print(f"  - Build Folder override active: Using {build_dir_name}")
-    if build_dir_name and not paths_inst.PROJECT_APPS_ROOT:
+        elif build_dir_name:
+            missing_fields: list[str] = []
+            if not isinstance(build_app_name, str) or not build_app_name.strip():
+                missing_fields.append("[paths].build_app_name")
+            if not isinstance(repo_root_value, str) or not repo_root_value.strip():
+                missing_fields.append("repo root context")
+            missing_fields_text = ", ".join(missing_fields) if missing_fields else "required fields"
+            raise ValueError(
+                "Config error: --build-dir now resolves binaries from "
+                "`out/build/<app>/<build_dir>/bin`. Missing "
+                f"{missing_fields_text}."
+            )
+    if build_dir_name and not paths_inst.SOURCE_EXECUTABLES_DIR:
         raise ValueError(
-            "Config error: [paths].project_apps_root is required when using --build-dir."
+            "Config error: failed to resolve binary directory for "
+            "`out/build/<app>/<build_dir>/bin`."
         )
     if not bin_dir and not build_dir_name:
         raise ValueError(

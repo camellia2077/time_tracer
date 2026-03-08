@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 
+from ....core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ....services.suite_registry import resolve_result_output_name
 
 
@@ -17,16 +18,21 @@ def run_report_triplet_gates(
     cases_config_path: Path,
     normalize_ext: tuple[str, ...],
 ) -> int:
+    result_layout = resolve_test_result_layout(repo_root, output_name)
+    quality_gates_root = result_layout.quality_gates_dir
     specs: tuple[tuple[str, str, str], ...] = (
         ("md", "markdown", "md"),
         ("tex", "latex", "tex"),
         ("typ", "typ", "typ"),
     )
     for format_name, export_dir_name, extension in specs:
-        current_cases_dir = repo_root / "temp" / "report_triplet_cases" / format_name / "current_v1"
+        current_cases_dir = (
+            quality_gates_root / "report_triplet_cases" / format_name / "current_v1"
+        )
         golden_dir = repo_root / "test" / "golden" / "report_triplet" / format_name / "v1"
-        export_root = (
-            repo_root / "test" / "output" / output_name / "artifacts" / "reports" / export_dir_name
+        export_root = result_layout.artifacts_dir / "reports" / export_dir_name
+        audit_output_path = (
+            quality_gates_root / "audits" / f"report-triplet-{format_name}-byte-audit.md"
         )
 
         collect_cmd = [
@@ -64,7 +70,7 @@ def run_report_triplet_gates(
             "--pattern",
             f"*.{extension}",
             "--output",
-            f"temp/report-triplet-{format_name}-byte-audit.md",
+            str(audit_output_path),
             "--fail-on-diff",
         ]
         if extension == "md" and normalize_ext:
@@ -91,26 +97,19 @@ def run_report_markdown_gates(
     if output_name != "artifact_windows_cli":
         return 0
 
-    app_root = repo_root / "apps" / "tracer_cli" / "windows" / "rust_cli"
-    cli_bin = (
-        app_root
-        / build_dir_name
-        / "bin"
-        / ("time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli")
-    )
-    export_root = repo_root / "test" / "output" / output_name / "artifacts" / "reports" / "markdown"
-    db_path = (
-        repo_root
-        / "test"
-        / "output"
-        / output_name
-        / "workspace"
-        / "output"
-        / "db"
-        / "time_data.sqlite3"
-    )
-    current_cases_dir = repo_root / "temp" / "report_markdown_cases" / "current_v1"
+    result_layout = resolve_test_result_layout(repo_root, output_name)
+    quality_gates_root = result_layout.quality_gates_dir
+    cli_bin = resolve_build_layout(
+        repo_root,
+        "tracer_windows_rust_cli",
+        build_dir_name,
+    ).bin_dir / ("time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli")
+    export_root = result_layout.artifacts_dir / "reports" / "markdown"
+    db_path = result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
+    current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"
     golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
+    markdown_audit_output = quality_gates_root / "audits" / "report-md-golden-byte-audit.md"
+    render_check_output = quality_gates_root / "audits" / "report-md-golden-render-check.json"
     cases_config_path = (
         repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
     )
@@ -148,7 +147,7 @@ def run_report_markdown_gates(
         "--pattern",
         "*.md",
         "--output",
-        "temp/report-md-golden-byte-audit.md",
+        str(markdown_audit_output),
         "--fail-on-diff",
     ]
     if normalize_ext:
@@ -171,7 +170,7 @@ def run_report_markdown_gates(
         "--pattern",
         "*.md",
         "--output",
-        "temp/report-md-golden-render-check.json",
+        str(render_check_output),
         "--fail-on-structure-diff",
     ]
     render_ret = run_command_fn(

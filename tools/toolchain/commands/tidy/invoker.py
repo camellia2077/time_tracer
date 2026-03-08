@@ -32,15 +32,15 @@ def resolve_tidy_paths(
     app_name: str,
     build_dir_name: str | None = None,
 ) -> dict[str, Path]:
-    app_dir = ctx.get_app_dir(app_name)
     resolved_build_dir_name = (
         (build_dir_name or "").strip() or tidy_workspace.DEFAULT_TIDY_BUILD_DIR_NAME
     )
-    build_dir = app_dir / resolved_build_dir_name
+    tidy_layout = ctx.get_tidy_layout(app_name, resolved_build_dir_name)
+    build_dir = tidy_layout.root
     return {
         "build_dir": build_dir,
         "log_path": build_dir / "build.log",
-        "tasks_dir": build_dir / "tasks",
+        "tasks_dir": tidy_layout.tasks_dir,
         "ninja_log_path": build_dir / ".ninja_log",
     }
 

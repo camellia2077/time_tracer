@@ -9,12 +9,13 @@ def paths(ctx, app_name: str, tidy_build_dir_name: str | None = None) -> dict[st
     resolved_tidy_build_dir_name = (
         (tidy_build_dir_name or "").strip() or DEFAULT_TIDY_BUILD_DIR_NAME
     )
-    build_tidy_dir = app_dir / resolved_tidy_build_dir_name
-    rename_dir = build_tidy_dir / "rename"
+    tidy_layout = ctx.get_tidy_layout(app_name, resolved_tidy_build_dir_name)
+    build_tidy_dir = tidy_layout.root
+    rename_dir = tidy_layout.rename_dir
     return {
         "app_dir": app_dir,
         "build_tidy_dir": build_tidy_dir,
-        "tasks_dir": build_tidy_dir / "tasks",
+        "tasks_dir": tidy_layout.tasks_dir,
         "rename_dir": rename_dir,
         "candidates_path": rename_dir / "rename_candidates.json",
         "plan_md_path": rename_dir / "rename_plan.md",

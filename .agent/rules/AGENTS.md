@@ -21,10 +21,10 @@ trigger: always_on
   - On failures, report the executed command and key error lines.
 - Result visibility contract:
   - Post-change state:
-    - default/flexible backend path: `apps/<app>/<build_dir>/post_change_last.json`
-    - `tracer_android`: `apps/tracer_android/build/post_change_last.json`
-  - Machine-readable summary: `test/output/<result_target>/result.json`
-  - Aggregated log: `test/output/<result_target>/logs/output.log`
+    - default/flexible backend path: `out/build/<app>/<build_dir>/post_change_last.json`
+    - `tracer_android`: `out/build/tracer_android/build/post_change_last.json`
+  - Machine-readable summary: `out/test/<result_target>/result.json`
+  - Aggregated log: `out/test/<result_target>/logs/output.log`
   - Result target mapping:
     - `tracer_core` / `tracer_core_shell` / `tracer_windows_cli` / `tracer_windows_rust_cli` -> `artifact_windows_cli`
     - `tracer_android` -> `artifact_android`

@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+from ....core.generated_paths import resolve_build_layout
 from ....services.suite_registry import resolve_result_output_name
 
 
@@ -16,8 +17,11 @@ def run_native_core_runtime_tests(
     if resolve_result_output_name(app_name) != "artifact_windows_cli":
         return 0
 
-    app_root = repo_root / "apps" / "tracer_core_shell"
-    bin_dir = app_root / build_dir_name / "bin"
+    bin_dir = resolve_build_layout(
+        repo_root,
+        "tracer_core_shell",
+        build_dir_name,
+    ).bin_dir
     suffix = ".exe" if os.name == "nt" else ""
     tests = [
         "tc_c_api_smoke_tests",

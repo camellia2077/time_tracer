@@ -5,7 +5,6 @@ from typing import Any
 
 _VAR_PATTERN = re.compile(r"\$\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 _PATH_KEYS = {
-    "project_apps_root",
     "source_executables_dir",
     "test_data_path",
     "target_executables_dir",

@@ -5,13 +5,13 @@
 补充约定：
 
 - clang-tidy 是**分析消费者**，不是完整模块构建器
-- clang-tidy 的唯一官方输入是 `apps/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
+- clang-tidy 的唯一官方输入是 `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
 - raw build `compile_commands.json` 仅属于构建系统，不属于 clang-tidy contract
 
 ## 1. 目标与适用范围
 
 1. 任务队列目录固定为：
-   - `apps/tracer_cli/windows/build_tidy/tasks/batch_*/task_*.log`
+   - `out/tidy/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log`
 2. 诊断涉及代码范围：
    - `apps/tracer_cli/windows`
    - `apps/tracer_core_shell`
@@ -35,7 +35,7 @@ apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
 
 ## 3. 单批次执行步骤
 
-1. 从 `apps/tracer_cli/windows/build_tidy/tasks/` 选择一个待处理 `batch_xxx`。
+1. 从 `out/tidy/tracer_core_shell/build_tidy/tasks/` 选择一个待处理 `batch_xxx`。
 2. 逐个处理该批次里的 `task_*.log`（一次只修一个 task，允许同文件聚类 clean）。
 3. 每个 task 修复后先做任务级轻量验证：
    - `python tools/run.py verify --app tracer_core --build-dir build_fast --concise --scope task`
@@ -46,7 +46,7 @@ apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
    - `python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --preset sop --timeout-seconds 1800`
 6. 若中断/超时，直接重跑同一命令，自动从 checkpoint 续跑。
 7. 确认门禁结果：
-   - `test/output/artifact_windows_cli/result.json` 中 `"success": true`
+   - `out/test/artifact_windows_cli/result.json` 中 `"success": true`
 8. 继续下一个批次。
 
 ## 4. 严格清理规则（新增）
@@ -72,8 +72,8 @@ python tools/run.py tidy-refresh --app tracer_core_shell --batch-id <BATCH_ID> -
 
 ## 6. 完成标准
 
-1. `apps/tracer_cli/windows/build_tidy/tasks/` 下无 `task_*.log`。
-2. `test/output/artifact_windows_cli/result.json` 保持 `"success": true`。
+1. `out/tidy/tracer_core_shell/build_tidy/tasks/` 下无 `task_*.log`。
+2. `out/test/artifact_windows_cli/result.json` 保持 `"success": true`。
 3. 全量收尾建议执行：
 
 ```bash

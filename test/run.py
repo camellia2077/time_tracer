@@ -13,8 +13,16 @@ def _ensure_framework_path(test_root: Path) -> None:
         sys.path.insert(0, framework_root_str)
 
 
+def _ensure_repo_root_path(test_root: Path) -> None:
+    repo_root = test_root.parent
+    repo_root_str = str(repo_root)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
+
+
 def _load_runner_modules():
     test_root = _resolve_test_root()
+    _ensure_repo_root_path(test_root)
     _ensure_framework_path(test_root)
     from runner.commands import runtime_guard as runtime_guard_module
     from runner.commands import smoke_windows_cli as smoke_windows_cli_module

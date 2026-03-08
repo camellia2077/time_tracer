@@ -3,7 +3,6 @@ import re
 from pathlib import Path
 
 from ...core.context import Context
-from ...services.suite_registry import resolve_result_output_name
 
 BATCH_NAME_PATTERN = re.compile(r"^batch_(\d+)$")
 BATCH_ID_PATTERN = re.compile(r"^\d+$")
@@ -70,8 +69,7 @@ def write_json_dict(
 
 
 def latest_verify_succeeded(ctx: Context, app_name: str) -> tuple[bool, str]:
-    suite_name = resolve_result_output_name(app_name)
-    result_path = ctx.repo_root / "test" / "output" / suite_name / "result.json"
+    result_path = ctx.get_test_result_layout_for_app(app_name).result_json_path
     payload = read_json_dict(result_path)
     if payload is None:
         return False, f"missing or invalid {result_path}"

@@ -96,8 +96,7 @@ def sync_windows_runtime_config_copy_if_needed(
     if resolve_config_sync_target(ctx, app_name) != "windows":
         return 0
 
-    build_dir = ctx.get_app_dir(app_name) / build_dir_name
-    runtime_bin_dir = build_dir / "bin"
+    runtime_bin_dir = ctx.get_build_layout(app_name, build_dir_name).bin_dir
     if not runtime_bin_dir.exists():
         return 0
 

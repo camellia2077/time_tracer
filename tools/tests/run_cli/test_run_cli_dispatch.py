@@ -383,14 +383,14 @@ class TestRunCliDispatch(TestCase):
                     "--app",
                     "tracer_core_shell",
                     "--task-log",
-                    "apps/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
+                    "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
                 ]
             )
 
         self.assertEqual(FakeTidyTaskPatchCommand.last_kwargs["app_name"], "tracer_core_shell")
         self.assertEqual(
             FakeTidyTaskPatchCommand.last_kwargs["task_log_path"],
-            "apps/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
+            "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
         )
 
     def test_tidy_task_suggest_dispatches_task_selector(self):

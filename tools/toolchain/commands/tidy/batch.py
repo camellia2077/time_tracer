@@ -65,9 +65,9 @@ class TidyBatchCommand:
             print(f"--- tidy-batch: {exc}")
             return finalize(2, "invalid_batch_id")
 
-        app_dir = self.ctx.get_app_dir(app_name)
-        tasks_dir = app_dir / resolved_build_dir_name / "tasks"
-        tasks_done_dir = app_dir / resolved_build_dir_name / "tasks_done"
+        tidy_layout = self.ctx.get_tidy_layout(app_name, resolved_build_dir_name)
+        tasks_dir = tidy_layout.tasks_dir
+        tasks_done_dir = tidy_layout.tasks_done_dir
         batch_dir = tasks_dir / normalized_batch
         done_batch_dir = tasks_done_dir / normalized_batch
 

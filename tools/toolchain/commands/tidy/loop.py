@@ -24,9 +24,8 @@ class TidyLoopCommand:
             return 0
 
         effective_test_every = max(1, test_every)
-        app_dir = self.ctx.get_app_dir(app_name)
         resolved_tidy_build_dir = (tidy_build_dir_name or "").strip() or DEFAULT_TIDY_BUILD_DIR_NAME
-        tasks_dir = app_dir / resolved_tidy_build_dir / "tasks"
+        tasks_dir = self.ctx.get_tidy_layout(app_name, resolved_tidy_build_dir).tasks_dir
         if not tasks_dir.exists():
             print(f"--- tidy-loop: tasks directory not found: {tasks_dir}")
             return 1

@@ -1,6 +1,8 @@
 import subprocess
 from pathlib import Path
 
+from tools.toolchain.core.generated_paths import resolve_build_layout
+
 
 def resolve_app_root(repo_root: Path, app_name: str) -> Path:
     if app_name == "tracer_windows_rust_cli":
@@ -54,10 +56,9 @@ def load_suite_default_build_dir(
 
 
 def auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
-    app_root = resolve_app_root(repo_root, app_name)
     candidates = ["build_fast", "build_agent", "build_tidy", "build"]
     for candidate in candidates:
-        candidate_bin = app_root / candidate / "bin"
+        candidate_bin = resolve_build_layout(repo_root, app_name, candidate).bin_dir
         if candidate_bin.exists() and candidate_bin.is_dir():
             return candidate
     return None
@@ -108,7 +109,7 @@ def ensure_bin_dir_exists(
     if bin_dir:
         candidate = Path(bin_dir).resolve()
     elif build_dir:
-        candidate = (resolve_app_root(repo_root, app_name) / build_dir / "bin").resolve()
+        candidate = resolve_build_layout(repo_root, app_name, build_dir).bin_dir
     else:
         print("Error: no executable directory is resolved.")
         print("Hint: pass --build-dir or --bin-dir, or use --with-build.")

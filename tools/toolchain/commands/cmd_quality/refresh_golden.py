@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ...core.context import Context
+from ...core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ...core.executor import run_command
 from ...services.suite_registry import resolve_result_output_name
 from .verify import VerifyCommand
@@ -73,11 +74,12 @@ class RefreshGoldenCommand:
         repo_root = self.ctx.repo_root
         env = self.ctx.setup_env()
 
-        markdown_export_root = (
-            repo_root / "test" / "output" / output_name / "artifacts" / "reports" / "markdown"
-        )
-        markdown_current = repo_root / "temp" / "report_markdown_cases" / "current_v1"
+        result_layout = resolve_test_result_layout(repo_root, output_name)
+        quality_gates_root = result_layout.quality_gates_dir
+        markdown_export_root = result_layout.artifacts_dir / "reports" / "markdown"
+        markdown_current = quality_gates_root / "report_markdown_cases" / "current_v1"
         markdown_golden = repo_root / "test" / "golden" / "report_markdown" / "v1"
+        markdown_audit_output = quality_gates_root / "audits" / "report-md-golden-byte-audit.md"
 
         collect_markdown_cmd = [
             os.sys.executable,
@@ -113,7 +115,7 @@ class RefreshGoldenCommand:
             "--pattern",
             "*.md",
             "--output",
-            "temp/report-md-golden-byte-audit.md",
+            str(markdown_audit_output),
             "--fail-on-diff",
         ]
         if normalize_ext:
@@ -127,11 +129,10 @@ class RefreshGoldenCommand:
             ("typ", "typ", "*.typ"),
         )
         for fmt, export_dir_name, pattern in triplet_specs:
-            current_dir = repo_root / "temp" / "report_triplet_cases" / fmt / "current_v1"
+            current_dir = quality_gates_root / "report_triplet_cases" / fmt / "current_v1"
             golden_dir = repo_root / "test" / "golden" / "report_triplet" / fmt / "v1"
-            export_root = (
-                repo_root / "test" / "output" / output_name / "artifacts" / "reports" / export_dir_name
-            )
+            export_root = result_layout.artifacts_dir / "reports" / export_dir_name
+            audit_output = quality_gates_root / "audits" / f"report-triplet-{fmt}-byte-audit.md"
 
             collect_cmd = [
                 os.sys.executable,
@@ -170,7 +171,7 @@ class RefreshGoldenCommand:
                 "--pattern",
                 pattern,
                 "--output",
-                f"temp/report-triplet-{fmt}-byte-audit.md",
+                str(audit_output),
                 "--fail-on-diff",
             ]
             if fmt == "md" and normalize_ext:
@@ -180,8 +181,15 @@ class RefreshGoldenCommand:
 
         return 0, changes
 
-    def _write_summary(self, changes: list[tuple[str, SyncStats]]) -> Path:
-        summary_path = self.ctx.repo_root / "temp" / "report-golden-refresh-summary.md"
+    def _write_summary(
+        self,
+        changes: list[tuple[str, SyncStats]],
+        output_name: str,
+    ) -> Path:
+        summary_path = (
+            resolve_test_result_layout(self.ctx.repo_root, output_name).quality_gates_dir
+            / "report-golden-refresh-summary.md"
+        )
         lines: list[str] = ["# Golden Refresh Summary", ""]
         for scope, stats in changes:
             lines.append(f"## {scope}")
@@ -284,22 +292,13 @@ class RefreshGoldenCommand:
 
         repo_root = self.ctx.repo_root
         cli_name = "time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli"
-        cli_bin = (
-            repo_root
-            / "apps"
-            / "tracer_cli"
-            / "windows"
-            / "rust_cli"
-            / resolved_build_dir
-            / "bin"
-            / cli_name
-        )
+        cli_bin = resolve_build_layout(
+            repo_root,
+            "tracer_windows_rust_cli",
+            resolved_build_dir,
+        ).bin_dir / cli_name
         db_path = (
-            repo_root
-            / "test"
-            / "output"
-            / output_name
-            / "workspace"
+            resolve_test_result_layout(repo_root, output_name).workspace_dir
             / "output"
             / "db"
             / "time_data.sqlite3"
@@ -322,6 +321,6 @@ class RefreshGoldenCommand:
         if ret != 0:
             return ret
 
-        summary_path = self._write_summary(changes)
+        summary_path = self._write_summary(changes, output_name)
         print(f"--- refresh-golden: summary written to {summary_path}")
         return 0

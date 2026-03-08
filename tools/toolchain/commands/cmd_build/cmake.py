@@ -41,6 +41,17 @@ def _should_enable_windows_cli_icon(app_name: str, profile_name: str | None) -> 
     return "release" in profile_key
 
 
+def _resolve_cmake_build_dir(
+    ctx: Context,
+    app_name: str,
+    build_dir_name: str,
+    tidy: bool,
+) -> Path:
+    if tidy:
+        return ctx.get_tidy_dir(app_name, build_dir_name)
+    return ctx.get_build_dir(app_name, build_dir_name)
+
+
 def needs_tidy_filter_reconfigure(
     ctx: Context,
     tidy: bool,
@@ -96,7 +107,7 @@ def is_configured(
         profile_name,
         app_name,
     )
-    build_dir = ctx.get_app_dir(app_name) / resolved_build_dir_name
+    build_dir = _resolve_cmake_build_dir(ctx, app_name, resolved_build_dir_name, tidy)
     return (build_dir / "CMakeCache.txt").exists()
 
 
@@ -143,7 +154,7 @@ def configure_cmake(
         profile_name,
         app_name,
     )
-    build_dir = ctx.get_app_dir(app_name) / resolved_build_dir_name
+    build_dir = _resolve_cmake_build_dir(ctx, app_name, resolved_build_dir_name, tidy)
     source_dir = ctx.get_app_source_dir(app_name)
 
     build_dir.mkdir(parents=True, exist_ok=True)
@@ -242,7 +253,7 @@ def build_cmake(
         profile_name,
         app_name,
     )
-    build_dir = ctx.get_app_dir(app_name) / resolved_build_dir_name
+    build_dir = _resolve_cmake_build_dir(ctx, app_name, resolved_build_dir_name, tidy)
     filtered_build_args = [a for a in (extra_args or []) if a != "--"]
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
     profile_build_targets = build_common.profile_build_targets(ctx, profile_name)

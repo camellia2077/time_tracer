@@ -5,6 +5,8 @@ import subprocess
 import time
 from pathlib import Path
 
+from tools.toolchain.core.generated_paths import resolve_test_result_layout
+
 from .runtime_guard_bundle import (
     DEFAULT_CLI_EXE,
     copy_runtime_bundle,
@@ -114,7 +116,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--workspace",
         default=None,
-        help=("Workspace for guard cases. Default: test/output/artifact_windows_cli/runtime_guard"),
+        help=("Workspace for guard cases. Default: out/test/artifact_windows_cli/runtime_guard"),
     )
     parser.add_argument(
         "--keep-workspace",
@@ -137,7 +139,7 @@ def main(argv: list[str], repo_root: Path) -> int:
     workspace_root = (
         Path(args.workspace).resolve()
         if args.workspace
-        else (repo_root / "test" / "output" / "artifact_windows_cli" / "runtime_guard").resolve()
+        else resolve_test_result_layout(repo_root, "artifact_windows_cli").runtime_guard_root
     )
     if workspace_root.exists() and not args.keep_workspace:
         try:

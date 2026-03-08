@@ -16,6 +16,13 @@ from .config import (
     TidyFixStrategyConfig,
     TidySourceScopeConfig,
 )
+from .generated_paths import (
+    resolve_build_layout,
+    resolve_out_root,
+    resolve_test_result_layout,
+    resolve_test_result_layout_for_app,
+    resolve_tidy_layout,
+)
 
 
 class Context:
@@ -299,6 +306,27 @@ class Context:
             # Return a default if not found
             return AppConfig(path=str(self.get_app_dir(app_name)))
         return self.config.apps[app_name]
+
+    def get_out_root(self) -> Path:
+        return resolve_out_root(self.repo_root)
+
+    def get_build_layout(self, app_name: str, build_dir_name: str):
+        return resolve_build_layout(self.repo_root, app_name, build_dir_name)
+
+    def get_build_dir(self, app_name: str, build_dir_name: str) -> Path:
+        return self.get_build_layout(app_name, build_dir_name).root
+
+    def get_tidy_layout(self, app_name: str, tidy_build_dir_name: str):
+        return resolve_tidy_layout(self.repo_root, app_name, tidy_build_dir_name)
+
+    def get_tidy_dir(self, app_name: str, tidy_build_dir_name: str) -> Path:
+        return self.get_tidy_layout(app_name, tidy_build_dir_name).root
+
+    def get_test_result_layout(self, result_target: str):
+        return resolve_test_result_layout(self.repo_root, result_target)
+
+    def get_test_result_layout_for_app(self, app_name: str):
+        return resolve_test_result_layout_for_app(self.repo_root, app_name)
 
     def setup_env(self):
         """Setup specialized environment for toolchain."""

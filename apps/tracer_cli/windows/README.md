@@ -37,10 +37,10 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 
 ## 结果文件
 
-- 主结果：`test/output/artifact_windows_cli/result.json`
-- 用例结果：`test/output/artifact_windows_cli/result_cases.json`
-- 聚合日志：`test/output/artifact_windows_cli/logs/output.log`
-- `post-change` 状态：`apps/tracer_core_shell/build_fast/post_change_last.json`
+- 主结果：`out/test/artifact_windows_cli/result.json`
+- 用例结果：`out/test/artifact_windows_cli/result_cases.json`
+- 聚合日志：`out/test/artifact_windows_cli/logs/output.log`
+- `post-change` 状态：`out/build/tracer_core_shell/build_fast/post_change_last.json`
 
 ## Runtime Config Boundary
 

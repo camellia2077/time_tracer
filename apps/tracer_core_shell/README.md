@@ -19,9 +19,9 @@ Current phase:
 - Milestone / batch validation:
   - `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
 - Result files:
-  - `apps/tracer_core_shell/build_fast/post_change_last.json`
-  - `test/output/artifact_windows_cli/result.json`
-  - `test/output/artifact_windows_cli/logs/output.log`
+  - `out/build/tracer_core_shell/build_fast/post_change_last.json`
+  - `out/test/artifact_windows_cli/result.json`
+  - `out/test/artifact_windows_cli/logs/output.log`
 - CMake baseline for this host is `3.28` or newer.
 
 ## Runtime Boundary

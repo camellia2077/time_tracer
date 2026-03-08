@@ -118,7 +118,6 @@ class CommandSpec:
 
 @dataclass
 class Paths:
-    PROJECT_APPS_ROOT: Path | None = None
     DEFAULT_BUILD_DIR: str | None = None
     SOURCE_EXECUTABLES_DIR: Path | None = None
     SOURCE_DATA_PATH: Path | None = None

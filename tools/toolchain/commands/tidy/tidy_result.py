@@ -158,11 +158,10 @@ def write_tidy_result(
     next_action: str | None = None,
     source_scope: str | None = None,
 ) -> Path:
-    app_dir = ctx.get_app_dir(app_name)
-    build_tidy_dir = app_dir / build_dir_name
-    tasks_dir = build_tidy_dir / "tasks"
-    tasks_done_dir = build_tidy_dir / "tasks_done"
-    result_path = build_tidy_dir / "tidy_result.json"
+    tidy_layout = ctx.get_tidy_layout(app_name, build_dir_name)
+    tasks_dir = tidy_layout.tasks_dir
+    tasks_done_dir = tidy_layout.tasks_done_dir
+    result_path = tidy_layout.tidy_result_path
 
     pending_logs = _collect_task_logs(tasks_dir)
     archived_logs = _collect_task_logs(tasks_done_dir)

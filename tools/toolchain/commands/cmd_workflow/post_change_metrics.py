@@ -18,13 +18,11 @@ def _to_repo_relative(repo_root: Path, path: Path) -> str:
 def _resolve_candidate_bin_dirs(ctx: Context, app_name: str, build_dir_name: str) -> list[Path]:
     candidates: list[Path] = []
 
-    primary_app_dir = ctx.get_app_dir(app_name)
-    candidates.append(primary_app_dir / build_dir_name / "bin")
+    candidates.append(ctx.get_build_layout(app_name, build_dir_name).bin_dir)
 
     suite_build_app = resolve_suite_build_app(app_name)
     if suite_build_app and suite_build_app != app_name:
-        suite_app_dir = ctx.get_app_dir(suite_build_app)
-        candidates.append(suite_app_dir / build_dir_name / "bin")
+        candidates.append(ctx.get_build_layout(suite_build_app, build_dir_name).bin_dir)
 
     deduped: list[Path] = []
     seen: set[Path] = set()

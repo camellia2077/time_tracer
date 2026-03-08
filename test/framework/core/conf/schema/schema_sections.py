@@ -27,7 +27,7 @@ def _validate_paths(
     errors: list[str],
 ) -> None:
     required_fields = [
-        "project_apps_root",
+        "build_app_name",
         "test_data_path",
         "target_executables_dir",
         "output_dir_name",
@@ -39,11 +39,10 @@ def _validate_paths(
     if "default_build_dir" in paths:
         _require_non_empty_string(paths, "default_build_dir", "paths", errors)
 
-    project_apps_root = _require_non_empty_string(paths, "project_apps_root", "paths", errors)
+    build_app_name = _require_non_empty_string(paths, "build_app_name", "paths", errors)
     test_data_path = _require_non_empty_string(paths, "test_data_path", "paths", errors)
 
     must_exist_map = {
-        "paths.project_apps_root": project_apps_root,
         "paths.test_data_path": test_data_path,
     }
     for field_path, field_value in must_exist_map.items():
@@ -54,6 +53,13 @@ def _validate_paths(
             path_obj = (config_path.parent / path_obj).resolve()
         if not path_obj.exists():
             _append_error(errors, field_path, f"path does not exist: `{path_obj}`.")
+
+    if build_app_name and ("/" in build_app_name or "\\" in build_app_name):
+        _append_error(
+            errors,
+            "paths.build_app_name",
+            "must be an app id, not a path.",
+        )
 
 
 def _validate_cli_names(cli_names: dict[str, Any], errors: list[str]) -> None:

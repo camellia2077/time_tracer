@@ -18,19 +18,19 @@ def should_run_format_on_success(
 
 
 def run_clang_format_after_success(repo_root: Path, app_name: str) -> int:
-    scripts_entry = repo_root / "scripts" / "run.py"
-    if not scripts_entry.exists():
-        print(f"Warning: scripts entry not found, skip clang-format: {scripts_entry}")
+    tools_entry = repo_root / "tools" / "run.py"
+    if not tools_entry.exists():
+        print(f"Warning: tools entry not found, skip clang-format: {tools_entry}")
         return 1
 
     format_cmd = [
         sys.executable,
-        str(scripts_entry),
+        str(tools_entry),
         "format",
         "--app",
         app_name,
     ]
-    print("--- All tests passed. Running clang-format via scripts...")
+    print("--- All tests passed. Running clang-format via tools...")
     completed = subprocess.run(
         format_cmd,
         cwd=repo_root,
