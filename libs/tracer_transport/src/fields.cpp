@@ -127,14 +127,14 @@ auto TryReadIntField(const nlohmann::json& payload,
 
 auto TryReadIntListField(const nlohmann::json& payload,
                          std::string_view field_name) -> IntListFieldResult {
-  const auto it = payload.find(std::string(field_name));
-  if (it == payload.end() || it->is_null()) {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || kIt->is_null()) {
     return IntListFieldResult{
         .value = std::nullopt,
         .error = TransportError{},
     };
   }
-  if (!it->is_array()) {
+  if (!kIt->is_array()) {
     return IntListFieldResult{
         .value = std::nullopt,
         .error = BuildTypeTransportError(field_name, "integer array"),
@@ -142,8 +142,8 @@ auto TryReadIntListField(const nlohmann::json& payload,
   }
 
   std::vector<int> values;
-  values.reserve(it->size());
-  for (const auto& item : *it) {
+  values.reserve(kIt->size());
+  for (const auto& item : *kIt) {
     if (!item.is_number_integer()) {
       return IntListFieldResult{
           .value = std::nullopt,

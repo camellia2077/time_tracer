@@ -175,17 +175,17 @@ auto ParseResolvedCliPaths(const json& payload) -> ResolvedCliPathsPayload {
 
 auto DecodeAckResponse(std::string_view response_json, std::string_view context)
     -> AckResponsePayload {
-  const auto parsed = ParseResponseEnvelope(response_json, context);
-  if (parsed.HasError()) {
-    throw std::invalid_argument(parsed.error.message);
+  const auto kParsed = ParseResponseEnvelope(response_json, context);
+  if (kParsed.HasError()) {
+    throw std::invalid_argument(kParsed.error.message);
   }
 
   AckResponsePayload out{};
-  out.ok = parsed.envelope.ok;
-  out.error_message = parsed.envelope.error_message;
-  out.error_contract.error_code = parsed.envelope.error_code;
-  out.error_contract.error_category = parsed.envelope.error_category;
-  out.error_contract.hints = parsed.envelope.hints;
+  out.ok = kParsed.envelope.ok;
+  out.error_message = kParsed.envelope.error_message;
+  out.error_contract.error_code = kParsed.envelope.error_code;
+  out.error_contract.error_category = kParsed.envelope.error_category;
+  out.error_contract.hints = kParsed.envelope.hints;
   if (!out.ok && out.error_message.empty()) {
     out.error_message = "Core operation failed.";
   }
@@ -194,18 +194,18 @@ auto DecodeAckResponse(std::string_view response_json, std::string_view context)
 
 auto DecodeTextResponse(std::string_view response_json, std::string_view context)
     -> TextResponsePayload {
-  const auto parsed = ParseResponseEnvelope(response_json, context);
-  if (parsed.HasError()) {
-    throw std::invalid_argument(parsed.error.message);
+  const auto kParsed = ParseResponseEnvelope(response_json, context);
+  if (kParsed.HasError()) {
+    throw std::invalid_argument(kParsed.error.message);
   }
 
   TextResponsePayload out{};
-  out.ok = parsed.envelope.ok;
-  out.error_message = parsed.envelope.error_message;
-  out.content = parsed.envelope.content;
-  out.error_contract.error_code = parsed.envelope.error_code;
-  out.error_contract.error_category = parsed.envelope.error_category;
-  out.error_contract.hints = parsed.envelope.hints;
+  out.ok = kParsed.envelope.ok;
+  out.error_message = kParsed.envelope.error_message;
+  out.content = kParsed.envelope.content;
+  out.error_contract.error_code = kParsed.envelope.error_code;
+  out.error_contract.error_category = kParsed.envelope.error_category;
+  out.error_contract.hints = kParsed.envelope.hints;
   if (!out.ok && out.error_message.empty()) {
     out.error_message = "Core operation failed.";
   }
@@ -214,42 +214,42 @@ auto DecodeTextResponse(std::string_view response_json, std::string_view context
 
 auto DecodeRuntimeCheckResponse(std::string_view response_json)
     -> RuntimeCheckResponsePayload {
-  const json payload = ParseResponseObject(response_json);
+  const json kPayload = ParseResponseObject(response_json);
 
-  const auto ok = TryReadBoolField(payload, "ok");
-  const auto error_message = TryReadStringField(payload, "error_message");
-  const auto error_code = TryReadStringField(payload, "error_code");
-  const auto error_category = TryReadStringField(payload, "error_category");
+  const auto kOk = TryReadBoolField(kPayload, "ok");
+  const auto kErrorMessage = TryReadStringField(kPayload, "error_message");
+  const auto kErrorCode = TryReadStringField(kPayload, "error_code");
+  const auto kErrorCategory = TryReadStringField(kPayload, "error_category");
 
-  if (ok.HasError()) {
-    throw std::invalid_argument(ok.error.message);
+  if (kOk.HasError()) {
+    throw std::invalid_argument(kOk.error.message);
   }
-  if (!ok.value.has_value()) {
+  if (!kOk.value.has_value()) {
     throw std::invalid_argument("field `ok` must be a boolean.");
   }
-  if (error_message.HasError()) {
-    throw std::invalid_argument(error_message.error.message);
+  if (kErrorMessage.HasError()) {
+    throw std::invalid_argument(kErrorMessage.error.message);
   }
-  if (error_code.HasError()) {
-    throw std::invalid_argument(error_code.error.message);
+  if (kErrorCode.HasError()) {
+    throw std::invalid_argument(kErrorCode.error.message);
   }
-  if (error_category.HasError()) {
-    throw std::invalid_argument(error_category.error.message);
+  if (kErrorCategory.HasError()) {
+    throw std::invalid_argument(kErrorCategory.error.message);
   }
 
   RuntimeCheckResponsePayload out{};
-  out.ok = *ok.value;
-  out.error_message = error_message.value.value_or("");
-  out.error_contract.error_code = error_code.value.value_or("");
-  out.error_contract.error_category = error_category.value.value_or("");
+  out.ok = *kOk.value;
+  out.error_message = kErrorMessage.value.value_or("");
+  out.error_contract.error_code = kErrorCode.value.value_or("");
+  out.error_contract.error_category = kErrorCategory.value.value_or("");
 
-  if (const auto messages_it = payload.find("messages");
-      messages_it != payload.end() && !messages_it->is_null()) {
-    if (!messages_it->is_array()) {
+  if (const auto kMessagesIt = kPayload.find("messages");
+      kMessagesIt != kPayload.end() && !kMessagesIt->is_null()) {
+    if (!kMessagesIt->is_array()) {
       throw std::invalid_argument("field `messages` must be a string array.");
     }
-    out.messages.reserve(messages_it->size());
-    for (const auto& item : *messages_it) {
+    out.messages.reserve(kMessagesIt->size());
+    for (const auto& item : *kMessagesIt) {
       if (!item.is_string()) {
         throw std::invalid_argument("field `messages` must be a string array.");
       }
@@ -257,13 +257,13 @@ auto DecodeRuntimeCheckResponse(std::string_view response_json)
     }
   }
 
-  if (const auto hints_it = payload.find("hints");
-      hints_it != payload.end() && !hints_it->is_null()) {
-    if (!hints_it->is_array()) {
+  if (const auto kHintsIt = kPayload.find("hints");
+      kHintsIt != kPayload.end() && !kHintsIt->is_null()) {
+    if (!kHintsIt->is_array()) {
       throw std::invalid_argument("field `hints` must be a string array.");
     }
-    out.error_contract.hints.reserve(hints_it->size());
-    for (const auto& item : *hints_it) {
+    out.error_contract.hints.reserve(kHintsIt->size());
+    for (const auto& item : *kHintsIt) {
       if (!item.is_string()) {
         throw std::invalid_argument("field `hints` must be a string array.");
       }
@@ -278,37 +278,37 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
     -> ResolveCliContextResponsePayload {
   const json payload = ParseResponseObject(response_json);
 
-  const auto ok = TryReadBoolField(payload, "ok");
-  const auto error_message = TryReadStringField(payload, "error_message");
-  const auto error_code = TryReadStringField(payload, "error_code");
-  const auto error_category = TryReadStringField(payload, "error_category");
+  const auto kOk = TryReadBoolField(payload, "ok");
+  const auto kErrorMessage = TryReadStringField(payload, "error_message");
+  const auto kErrorCode = TryReadStringField(payload, "error_code");
+  const auto kErrorCategory = TryReadStringField(payload, "error_category");
 
-  if (ok.HasError()) {
-    throw std::invalid_argument(ok.error.message);
+  if (kOk.HasError()) {
+    throw std::invalid_argument(kOk.error.message);
   }
-  if (!ok.value.has_value()) {
+  if (!kOk.value.has_value()) {
     throw std::invalid_argument("field `ok` must be a boolean.");
   }
-  if (error_message.HasError()) {
-    throw std::invalid_argument(error_message.error.message);
+  if (kErrorMessage.HasError()) {
+    throw std::invalid_argument(kErrorMessage.error.message);
   }
-  if (error_code.HasError()) {
-    throw std::invalid_argument(error_code.error.message);
+  if (kErrorCode.HasError()) {
+    throw std::invalid_argument(kErrorCode.error.message);
   }
-  if (error_category.HasError()) {
-    throw std::invalid_argument(error_category.error.message);
+  if (kErrorCategory.HasError()) {
+    throw std::invalid_argument(kErrorCategory.error.message);
   }
 
   ResolveCliContextResponsePayload out{};
-  out.ok = *ok.value;
-  out.error_message = error_message.value.value_or("");
-  out.error_contract.error_code = error_code.value.value_or("");
-  out.error_contract.error_category = error_category.value.value_or("");
+  out.ok = *kOk.value;
+  out.error_message = kErrorMessage.value.value_or("");
+  out.error_contract.error_code = kErrorCode.value.value_or("");
+  out.error_contract.error_category = kErrorCategory.value.value_or("");
   if (!out.ok) {
-    if (const auto hints_it = payload.find("hints");
-        hints_it != payload.end() && hints_it->is_array()) {
-      out.error_contract.hints.reserve(hints_it->size());
-      for (const auto& item : *hints_it) {
+    if (const auto kHintsIt = payload.find("hints");
+        kHintsIt != payload.end() && kHintsIt->is_array()) {
+      out.error_contract.hints.reserve(kHintsIt->size());
+      for (const auto& item : *kHintsIt) {
         if (item.is_string()) {
           out.error_contract.hints.push_back(item.get<std::string>());
         }
@@ -317,19 +317,19 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
     return out;
   }
 
-  const auto paths_it = payload.find("paths");
-  if (paths_it == payload.end() || !paths_it->is_object()) {
+  const auto kPathsIt = payload.find("paths");
+  if (kPathsIt == payload.end() || !kPathsIt->is_object()) {
     throw std::invalid_argument(
         "field `paths` must be an object when `ok=true`.");
   }
-  out.paths = ParseResolvedCliPaths(*paths_it);
+  out.paths = ParseResolvedCliPaths(*kPathsIt);
 
-  const auto cli_config_it = payload.find("cli_config");
-  if (cli_config_it == payload.end() || !cli_config_it->is_object()) {
+  const auto kCliConfigIt = payload.find("cli_config");
+  if (kCliConfigIt == payload.end() || !kCliConfigIt->is_object()) {
     throw std::invalid_argument(
         "field `cli_config` must be an object when `ok=true`.");
   }
-  out.cli_config = ParseCliConfig(*cli_config_it);
+  out.cli_config = ParseCliConfig(*kCliConfigIt);
 
   return out;
 }

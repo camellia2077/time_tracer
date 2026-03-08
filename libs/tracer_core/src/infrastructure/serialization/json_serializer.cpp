@@ -221,12 +221,12 @@ auto JsonSerializer::DeserializeDay(std::string_view day_json) -> DailyLog {
 
 auto JsonSerializer::DeserializeDays(std::string_view json_array)
     -> std::vector<DailyLog> {
-  const nlohmann::json parsed = ParseJsonText(json_array);
+  const nlohmann::json kParsed = ParseJsonText(json_array);
   std::vector<DailyLog> days;
-  if (!parsed.is_array()) {
+  if (!kParsed.is_array()) {
     return days;
   }
-  for (const auto& json_item : parsed) {
+  for (const auto& json_item : kParsed) {
     days.push_back(DeserializeLogFromJsonObject(json_item));
   }
   return days;

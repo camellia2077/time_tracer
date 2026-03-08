@@ -58,7 +58,7 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
     throw std::runtime_error(
         "Bundle path config not found: " + kBundlePath.string() +
         ". Legacy [converter]/[reports] fallback was removed. "
-        "Run `python scripts/run.py config-migrate --app tracer_windows "
+        "Run `python tools/run.py config-migrate --app tracer_windows "
         "--apply` first.");
   }
 

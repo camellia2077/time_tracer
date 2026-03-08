@@ -94,6 +94,103 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
   return out;
 }
 
+struct TreeResponseEnvelopeFields {
+  bool ok = false;
+  bool found = true;
+  std::string error_message;
+  std::string error_code;
+  std::string error_category;
+};
+
+auto ParseTreeResponseEnvelopeFields(const json& payload)
+    -> TreeResponseEnvelopeFields {
+  const auto kOk = TryReadBoolField(payload, "ok");
+  const auto kFound = TryReadBoolField(payload, "found");
+  const auto kErrorMessage = TryReadStringField(payload, "error_message");
+  const auto kErrorCode = TryReadStringField(payload, "error_code");
+  const auto kErrorCategory = TryReadStringField(payload, "error_category");
+  if (kOk.HasError()) {
+    throw std::invalid_argument(kOk.error.message);
+  }
+  if (!kOk.value.has_value()) {
+    throw std::invalid_argument("field `ok` must be a boolean.");
+  }
+  if (kFound.HasError()) {
+    throw std::invalid_argument(kFound.error.message);
+  }
+  if (kErrorMessage.HasError()) {
+    throw std::invalid_argument(kErrorMessage.error.message);
+  }
+  if (kErrorCode.HasError()) {
+    throw std::invalid_argument(kErrorCode.error.message);
+  }
+  if (kErrorCategory.HasError()) {
+    throw std::invalid_argument(kErrorCategory.error.message);
+  }
+  return TreeResponseEnvelopeFields{
+      .ok = *kOk.value,
+      .found = kFound.value.value_or(true),
+      .error_message = kErrorMessage.value.value_or(""),
+      .error_code = kErrorCode.value.value_or(""),
+      .error_category = kErrorCategory.value.value_or(""),
+  };
+}
+
+auto ParseOptionalRoots(const json& payload) -> std::vector<std::string> {
+  if (const auto kRootsIt = payload.find("roots");
+      kRootsIt != payload.end() && !kRootsIt->is_null()) {
+    if (!kRootsIt->is_array()) {
+      throw std::invalid_argument("field `roots` must be a string array.");
+    }
+    std::vector<std::string> roots;
+    roots.reserve(kRootsIt->size());
+    for (const auto& root : *kRootsIt) {
+      if (!root.is_string()) {
+        throw std::invalid_argument("field `roots` must be a string array.");
+      }
+      roots.push_back(root.get<std::string>());
+    }
+    return roots;
+  }
+  return {};
+}
+
+auto ParseOptionalResponseNodes(const json& payload)
+    -> std::vector<ProjectTreeNodePayload> {
+  if (const auto kNodesIt = payload.find("nodes");
+      kNodesIt != payload.end() && !kNodesIt->is_null()) {
+    if (!kNodesIt->is_array()) {
+      throw std::invalid_argument("field `nodes` must be an object array.");
+    }
+    std::vector<ProjectTreeNodePayload> nodes;
+    nodes.reserve(kNodesIt->size());
+    for (const auto& node : *kNodesIt) {
+      nodes.push_back(ParseTreeNode(node));
+    }
+    return nodes;
+  }
+  return {};
+}
+
+auto ParseOptionalHints(const json& payload) -> std::vector<std::string> {
+  if (const auto kHintsIt = payload.find("hints");
+      kHintsIt != payload.end() && !kHintsIt->is_null()) {
+    if (!kHintsIt->is_array()) {
+      throw std::invalid_argument("field `hints` must be a string array.");
+    }
+    std::vector<std::string> hints;
+    hints.reserve(kHintsIt->size());
+    for (const auto& hint : *kHintsIt) {
+      if (!hint.is_string()) {
+        throw std::invalid_argument("field `hints` must be a string array.");
+      }
+      hints.push_back(hint.get<std::string>());
+    }
+    return hints;
+  }
+  return {};
+}
+
 }  // namespace
 
 auto DecodeTreeRequest(std::string_view request_json) -> TreeRequestPayload {
@@ -115,13 +212,13 @@ auto DecodeTreeRequest(std::string_view request_json) -> TreeRequestPayload {
   if (period.HasError()) {
     throw std::invalid_argument(period.error.message);
   }
-  const auto period_argument = TryReadStringField(payload, "period_argument");
-  if (period_argument.HasError()) {
-    throw std::invalid_argument(period_argument.error.message);
+  const auto kPeriodArgument = TryReadStringField(payload, "period_argument");
+  if (kPeriodArgument.HasError()) {
+    throw std::invalid_argument(kPeriodArgument.error.message);
   }
-  const auto root = TryReadStringField(payload, "root");
-  if (root.HasError()) {
-    throw std::invalid_argument(root.error.message);
+  const auto kRoot = TryReadStringField(payload, "root");
+  if (kRoot.HasError()) {
+    throw std::invalid_argument(kRoot.error.message);
   }
 
   TreeRequestPayload out{};
@@ -129,8 +226,8 @@ auto DecodeTreeRequest(std::string_view request_json) -> TreeRequestPayload {
   out.root_pattern = root_pattern.value;
   out.max_depth = max_depth.value;
   out.period = period.value;
-  out.period_argument = period_argument.value;
-  out.root = root.value;
+  out.period_argument = kPeriodArgument.value;
+  out.root = kRoot.value;
   return out;
 }
 
@@ -158,77 +255,19 @@ auto EncodeTreeRequest(const TreeRequestPayload& request) -> std::string {
 }
 
 auto DecodeTreeResponse(std::string_view response_json) -> TreeResponsePayload {
-  const json payload = ParseResponseObject(response_json);
-
-  const auto ok = TryReadBoolField(payload, "ok");
-  const auto found = TryReadBoolField(payload, "found");
-  const auto error_message = TryReadStringField(payload, "error_message");
-  const auto error_code = TryReadStringField(payload, "error_code");
-  const auto error_category = TryReadStringField(payload, "error_category");
-  if (ok.HasError()) {
-    throw std::invalid_argument(ok.error.message);
-  }
-  if (!ok.value.has_value()) {
-    throw std::invalid_argument("field `ok` must be a boolean.");
-  }
-  if (found.HasError()) {
-    throw std::invalid_argument(found.error.message);
-  }
-  if (error_message.HasError()) {
-    throw std::invalid_argument(error_message.error.message);
-  }
-  if (error_code.HasError()) {
-    throw std::invalid_argument(error_code.error.message);
-  }
-  if (error_category.HasError()) {
-    throw std::invalid_argument(error_category.error.message);
-  }
+  const json kPayload = ParseResponseObject(response_json);
+  const TreeResponseEnvelopeFields kEnvelope =
+      ParseTreeResponseEnvelopeFields(kPayload);
 
   TreeResponsePayload out{};
-  out.ok = *ok.value;
-  out.found = found.value.value_or(true);
-  out.error_message = error_message.value.value_or("");
-  out.error_contract.error_code = error_code.value.value_or("");
-  out.error_contract.error_category = error_category.value.value_or("");
-
-  if (const auto roots_it = payload.find("roots");
-      roots_it != payload.end() && !roots_it->is_null()) {
-    if (!roots_it->is_array()) {
-      throw std::invalid_argument("field `roots` must be a string array.");
-    }
-    out.roots.reserve(roots_it->size());
-    for (const auto& root : *roots_it) {
-      if (!root.is_string()) {
-        throw std::invalid_argument("field `roots` must be a string array.");
-      }
-      out.roots.push_back(root.get<std::string>());
-    }
-  }
-
-  if (const auto nodes_it = payload.find("nodes");
-      nodes_it != payload.end() && !nodes_it->is_null()) {
-    if (!nodes_it->is_array()) {
-      throw std::invalid_argument("field `nodes` must be an object array.");
-    }
-    out.nodes.reserve(nodes_it->size());
-    for (const auto& node : *nodes_it) {
-      out.nodes.push_back(ParseTreeNode(node));
-    }
-  }
-
-  if (const auto hints_it = payload.find("hints");
-      hints_it != payload.end() && !hints_it->is_null()) {
-    if (!hints_it->is_array()) {
-      throw std::invalid_argument("field `hints` must be a string array.");
-    }
-    out.error_contract.hints.reserve(hints_it->size());
-    for (const auto& hint : *hints_it) {
-      if (!hint.is_string()) {
-        throw std::invalid_argument("field `hints` must be a string array.");
-      }
-      out.error_contract.hints.push_back(hint.get<std::string>());
-    }
-  }
+  out.ok = kEnvelope.ok;
+  out.found = kEnvelope.found;
+  out.error_message = kEnvelope.error_message;
+  out.error_contract.error_code = kEnvelope.error_code;
+  out.error_contract.error_category = kEnvelope.error_category;
+  out.roots = ParseOptionalRoots(kPayload);
+  out.nodes = ParseOptionalResponseNodes(kPayload);
+  out.error_contract.hints = ParseOptionalHints(kPayload);
 
   return out;
 }

@@ -1,99 +1,50 @@
 ---
-description: Run all Tidy tasks for time_tracer (tracer_core task queue)
+description: Agent policy for the full time_tracer clang-tidy queue
 ---
 
-### Scope Mapping (MUST)
-- Tidy analysis scope is:
-  - `apps/tracer_core_shell`
-- Task queue location is fixed to:
-  - `apps/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log`
-- Current active batches (resume-first):
-  - `apps/tracer_core_shell/build_tidy/tasks/batch_001`
-  - `apps/tracer_core_shell/build_tidy/tasks/batch_002`
-- Keep incremental build from existing:
-  - `apps/tracer_core_shell/build_fast`; do not delete it.
-- In this workflow, tidy task operations use:
-  - `--app tracer_core` (`tidy*`, `clean`, `rename-*`).
-- Verify gate command:
-  - task 级轻量验证：`python scripts/run.py verify --app tracer_core --build-dir build_fast --concise --scope task`
-  - task scope 检查集：build + native runtime smoke（不含 `runtime_guard`）
-  - batch 级全量验证：由 `tidy-batch --preset sop` 内置执行
-- Verify gate result file:
-  - `test/output/artifact_windows_cli/result.json` must keep `"success": true`.
-- Tidy machine summary (single source for agent):
-  - `apps/tracer_core_shell/build_tidy/tidy_result.json`
-  - Read this file first for `tasks.total/tasks.remaining/blocking_files/next_action`.
-- check -> fix_strategy rule table:
-  - `scripts/toolchain/config/workflow.toml` -> `[tidy.fix_strategy]`
-  - Categories: `auto_fix`, `safe_refactor`, `nolint_allowed`, `manual_only`.
+## Fixed Contract (MUST)
+- Official app anchor: `tracer_core_shell`
+- Official source scope: `core_family`
+- Official tidy workspace: `build_tidy_core_family`
+- Run from repo root only: `C:\code\time_tracer`
 
-### Python Execution Directory (MUST)
-- All Python commands in this workflow must run from repository root:
-  - `C:/Computer/my_github/github_cpp/time_tracer/time_tracer_cpp`
-- Do not `cd` into `apps/tracer_core_shell` before running `python scripts/run.py ...`.
+## Fixed Paths (MUST)
+- Task queue: `apps/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
+- Machine summary: `apps/tracer_core_shell/build_tidy_core_family/tidy_result.json`
+- Automation reports: `apps/tracer_core_shell/build_tidy_core_family/automation/`
+- Verify result: `test/output/artifact_windows_cli/result.json`
 
-### Entry Command (MUST)
-- `python scripts/run.py tidy-flow --app tracer_core --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N>`
-- Exit code rule:
-  - `0`: auto phase finished for now; still must pass completion gate below.
-  - `2`: manual tasks remain; continue with single-task loop.
-  - other non-zero: stop and diagnose.
+## First Command (MUST)
+- Start with the official auto entry:
+  - `python tools/run.py tidy-flow --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N>`
+- If flags are unclear, read `python tools/run.py tidy-flow -h` before changing anything.
 
-### Hard Completion Gate (MUST)
-- Completion is valid **only when** no `task_*.log` exists under `apps/tracer_core_shell/build_tidy/tasks/`.
-- All `batch_*` folders under `apps/tracer_core_shell/build_tidy/tasks/` must be empty or removed.
-- `test/output/artifact_windows_cli/result.json` must exist and keep `"success": true`.
-- Partial progress is **not** completion.
-- Exit code `2` is never completion.
+## Single-Task Policy (MUST)
+- When auto flow stops on manual tasks, always pick the smallest pending `task_NNN.log`.
+- Always derive `<BATCH_ID>` from the real task path before acting.
+- Use this order:
+  1. `tidy-task-patch`
+  2. `tidy-task-fix --dry-run`
+  3. `tidy-task-suggest`
+  4. `tidy-step --dry-run`
+  5. `tidy-step`
+- Treat `automation/` as the first place to read before manual fixing.
 
-### Tidy-Only Close (MUST)
-- For decoupled tidy收口（不跑业务 verify）:
-  - `python scripts/run.py tidy-close --app tracer_core --tidy-only --keep-going`
-- For full close（含 verify）:
-  - `python scripts/run.py tidy-close --app tracer_core --keep-going --concise`
+## Batch Policy (MUST)
+- Normal close path is `tidy-batch --preset sop`.
+- `clean + tidy-refresh` is troubleshooting-only, not the normal workflow.
+- If the same file has several task logs in one batch, prefer clustered clean.
 
-### Execution Rules (MUST)
-- ABI/FFI 边界抑制规则：
-  - 仅允许在 ABI 边界做定点抑制（`NOLINTNEXTLINE` 或 `NOLINTBEGIN/END`），典型位置：`apps/tracer_core_shell/api/c_api` 导出 C 接口签名。
-  - 定点抑制必须附带原因注释：`ABI compatibility`（或等价表述）。
-  - 禁止目录级/文件级一刀切忽略 `bugprone-*`、`readability-*`。
-  - 非 ABI 实现文件优先修复告警，不用“备注忽略”兜底。
-- Task source:
-  - If any `apps/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log` exists, resume only.
-  - Only when tasks are missing (bootstrap once):
-    - `python scripts/run.py tidy-fix --app tracer_core --limit <FIX_N> --keep-going`
-    - `python scripts/run.py tidy --app tracer_core --jobs 16 --parse-workers 8 --keep-going`
-- Rename baseline:
-  - `python scripts/run.py rename-plan --app tracer_core`
-  - `python scripts/run.py rename-apply --app tracer_core`
-  - `python scripts/run.py rename-audit --app tracer_core`
-- Baseline verify:
-  - `python scripts/run.py configure --app tracer_core`
-  - `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise`
-  - `test/output/artifact_windows_cli/result.json` must be `"success": true`.
-- Run fast loop:
-  - `python scripts/run.py tidy-loop --app tracer_core --all --test-every 3 --concise`
-- Auto rebuild fallback:
-  - `tidy-refresh` now auto switches to full tidy when stale-graph signals are detected (`no such file or directory`, `GLOB mismatch`, or high `already_renamed` ratio in latest rename report).
-  - Once auto rebuild runs, stale old logs are discarded logically; continue from newest `task_*.log` only.
-- If manual tasks remain, run single-task loop (one task per round):
-  - pick smallest pending `task_NNN.log`;
-  - derive `<BATCH_ID>` from selected task path (`tasks/batch_xxx/task_NNN.log`);
-  - analyze one log (if pure rename, rerun rename baseline);
-  - fix one task only (one-log-at-a-time cadence);
-- verify after each log (task scope): `python scripts/run.py verify --app tracer_core --build-dir build_fast --concise --scope task`
-  - `test/output/artifact_windows_cli/result.json` must stay `"success": true`;
-  - when the same source file has multiple tasks in one batch, prefer clustered clean:
-  - `python scripts/run.py clean --app tracer_core --strict --batch-id <BATCH_ID> --cluster-by-file <ID>`
-  - do not manually run `clean + tidy-refresh` in normal flow;
-  - close each fixed batch with unified command:
-  - `python scripts/run.py tidy-batch --app tracer_core --batch-id <BATCH_ID> --preset sop --timeout-seconds 1800`
-  - `tidy-batch` includes verify gate + clean + tidy-refresh, and keeps the periodic full tidy cadence (`--full-every 3`);
-  - if timeout/interruption occurs, rerun the same `tidy-batch` command; it resumes from checkpoint automatically.
-  - manual fallback (`clean` / `tidy-refresh`) is troubleshooting-only when `tidy-batch` fails.
-- Repeat until hard completion gate is satisfied.
-- Final tidy acceptance (mandatory once at the end):
-  - `python scripts/run.py tidy-close --app tracer_core --keep-going --concise`
-  - `tidy-close` enforces: final-full refresh + verify + no `task_*.log`.
+## Completion Gate (MUST)
+- Done means:
+  - no `task_*.log` remains under `apps/tracer_core_shell/build_tidy_core_family/tasks/`
+  - `test/output/artifact_windows_cli/result.json` still reports success
+- Exit code `2` from auto flow is not completion.
+- Final acceptance command is:
+  - `python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise`
 
-
+## Repo-Specific Guardrails (MUST)
+- Only use pinpoint suppression at true ABI boundaries such as `apps/tracer_core_shell/api/c_api`.
+- Non-ABI implementation files must prefer real fixes over suppression.
+- `apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh` is a thin wrapper only; do not move logic into shell.
+- For parameter syntax and defaults, always consult `python tools/run.py <subcommand> -h`.

@@ -84,14 +84,14 @@ auto DecodeReportBatchRequest(std::string_view request_json)
     throw std::invalid_argument("field `days_list` must be an integer array.");
   }
 
-  const auto format = TryReadStringField(payload, "format");
-  if (format.HasError()) {
-    throw std::invalid_argument(format.error.message);
+  const auto kFormat = TryReadStringField(payload, "format");
+  if (kFormat.HasError()) {
+    throw std::invalid_argument(kFormat.error.message);
   }
 
   ReportBatchRequestPayload out{};
   out.days_list = *days_list.value;
-  out.format = format.value;
+  out.format = kFormat.value;
   return out;
 }
 

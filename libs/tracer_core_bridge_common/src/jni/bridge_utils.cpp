@@ -10,20 +10,51 @@ namespace tracer_core_bridge_common::jni {
 
 namespace tt_transport = tracer::transport;
 
-[[nodiscard]] auto BuildResponseJson(bool ok, std::string_view error_message,
+namespace {
+
+constexpr int kDateCheckModeNone = 0;
+constexpr int kDateCheckModeContinuity = 1;
+constexpr int kDateCheckModeFull = 2;
+
+constexpr int kQueryActionYears = 0;
+constexpr int kQueryActionMonths = 1;
+constexpr int kQueryActionDays = 2;
+constexpr int kQueryActionDaysDuration = 3;
+constexpr int kQueryActionDaysStats = 4;
+constexpr int kQueryActionSearch = 5;
+constexpr int kQueryActionActivitySuggest = 6;
+constexpr int kQueryActionTree = 7;
+constexpr int kQueryActionMappingNames = 8;
+constexpr int kQueryActionReportChart = 9;
+
+constexpr int kReportTypeDay = 0;
+constexpr int kReportTypeMonth = 1;
+constexpr int kReportTypeRecent = 2;
+constexpr int kReportTypeWeek = 3;
+constexpr int kReportTypeYear = 4;
+constexpr int kReportTypeRange = 5;
+
+constexpr int kReportFormatMarkdown = 0;
+constexpr int kReportFormatLatex = 1;
+constexpr int kReportFormatTypst = 2;
+
+}  // namespace
+
+[[nodiscard]] auto BuildResponseJson(bool is_ok,
+                                     std::string_view error_message,
                                      std::string_view content) -> std::string {
   return tt_transport::SerializeResponseEnvelope(
-      tt_transport::BuildResponseEnvelope(ok, error_message, content));
+      tt_transport::BuildResponseEnvelope(is_ok, error_message, content));
 }
 
 [[nodiscard]] auto ParseDateCheckModeCode(int value) -> std::string {
-  if (value == 0) {
+  if (value == kDateCheckModeNone) {
     return "none";
   }
-  if (value == 1) {
+  if (value == kDateCheckModeContinuity) {
     return "continuity";
   }
-  if (value == 2) {
+  if (value == kDateCheckModeFull) {
     return "full";
   }
   throw std::invalid_argument("Unsupported date_check_mode code: " +
@@ -31,34 +62,34 @@ namespace tt_transport = tracer::transport;
 }
 
 [[nodiscard]] auto ParseDataQueryActionCode(int value) -> std::string {
-  if (value == 0) {
+  if (value == kQueryActionYears) {
     return "years";
   }
-  if (value == 1) {
+  if (value == kQueryActionMonths) {
     return "months";
   }
-  if (value == 2) {
+  if (value == kQueryActionDays) {
     return "days";
   }
-  if (value == 3) {
+  if (value == kQueryActionDaysDuration) {
     return "days_duration";
   }
-  if (value == 4) {
+  if (value == kQueryActionDaysStats) {
     return "days_stats";
   }
-  if (value == 5) {
+  if (value == kQueryActionSearch) {
     return "search";
   }
-  if (value == 6) {
+  if (value == kQueryActionActivitySuggest) {
     return "activity_suggest";
   }
-  if (value == 7) {
+  if (value == kQueryActionTree) {
     return "tree";
   }
-  if (value == 8) {
+  if (value == kQueryActionMappingNames) {
     return "mapping_names";
   }
-  if (value == 9) {
+  if (value == kQueryActionReportChart) {
     return "report_chart";
   }
   throw std::invalid_argument("Unsupported query action code: " +
@@ -66,22 +97,22 @@ namespace tt_transport = tracer::transport;
 }
 
 [[nodiscard]] auto ParseReportTypeCode(int value) -> std::string {
-  if (value == 0) {
+  if (value == kReportTypeDay) {
     return "day";
   }
-  if (value == 1) {
+  if (value == kReportTypeMonth) {
     return "month";
   }
-  if (value == 2) {
+  if (value == kReportTypeRecent) {
     return "recent";
   }
-  if (value == 3) {
+  if (value == kReportTypeWeek) {
     return "week";
   }
-  if (value == 4) {
+  if (value == kReportTypeYear) {
     return "year";
   }
-  if (value == 5) {
+  if (value == kReportTypeRange) {
     return "range";
   }
   throw std::invalid_argument("Unsupported report type code: " +
@@ -89,13 +120,13 @@ namespace tt_transport = tracer::transport;
 }
 
 [[nodiscard]] auto ParseReportFormatCode(int value) -> std::string {
-  if (value == 0) {
+  if (value == kReportFormatMarkdown) {
     return "markdown";
   }
-  if (value == 1) {
+  if (value == kReportFormatLatex) {
     return "latex";
   }
-  if (value == 2) {
+  if (value == kReportFormatTypst) {
     return "typst";
   }
   throw std::invalid_argument("Unsupported report format code: " +
@@ -105,14 +136,14 @@ namespace tt_transport = tracer::transport;
 [[nodiscard]] auto ParseCoreResponse(const char* response_json,
                                      std::string_view context)
     -> tt_transport::ResponseEnvelope {
-  const auto parsed = tt_transport::ParseResponseEnvelope(
+  const auto kParsed = tt_transport::ParseResponseEnvelope(
       response_json != nullptr ? std::string_view(response_json)
                                : std::string_view{},
       context);
-  if (parsed.HasError()) {
-    throw std::runtime_error(parsed.error.message);
+  if (kParsed.HasError()) {
+    throw std::runtime_error(kParsed.error.message);
   }
-  return parsed.envelope;
+  return kParsed.envelope;
 }
 
 }  // namespace tracer_core_bridge_common::jni

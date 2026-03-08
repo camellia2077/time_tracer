@@ -94,8 +94,7 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
       return {
           .ops_limit =
               static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MAX),
-          .kMemLimitBytes =
-              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MAX),
+          .kMemLimitBytes = crypto_pwhash_MEMLIMIT_MAX,
       };
     case FileCryptoSecurityLevel::kModerate:
       return {
