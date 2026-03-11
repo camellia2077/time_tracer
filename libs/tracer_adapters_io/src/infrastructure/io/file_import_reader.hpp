@@ -14,6 +14,8 @@
 
 namespace infrastructure::io {
 
+namespace colors = tracer::core::shared::ansi_colors;
+
 class FileImportReader {
  public:
   /**
@@ -30,9 +32,8 @@ class FileImportReader {
 
     if (json_files.empty()) {
       tracer_core::domain::ports::EmitWarn(
-          std::string(tracer_core::common::colors::kYellow) + "警告: 在路径 " +
-          path_str + " 下未找到 .json 文件。" +
-          std::string(tracer_core::common::colors::kReset));
+          std::string(colors::kYellow) + "警告: 在路径 " + path_str +
+          " 下未找到 .json 文件。" + std::string(colors::kReset));
       return {};
     }
 
@@ -48,19 +49,17 @@ class FileImportReader {
         payload.emplace_back(file_path, std::move(content));
       } catch (const std::exception& e) {
         tracer_core::domain::ports::EmitError(
-            std::string(tracer_core::common::colors::kRed) +
-            "读取失败: " + file_path + " - " + e.what() +
-            std::string(tracer_core::common::colors::kReset));
+            std::string(colors::kRed) + "读取失败: " + file_path + " - " +
+            e.what() + std::string(colors::kReset));
         read_failure_count++;
       }
     }
 
     if (read_failure_count > 0) {
       tracer_core::domain::ports::EmitWarn(
-          std::string(tracer_core::common::colors::kYellow) + "警告: 有 " +
-          std::to_string(read_failure_count) +
-          " 个文件读取失败，将跳过这些文件。" +
-          std::string(tracer_core::common::colors::kReset));
+          std::string(colors::kYellow) + "警告: 有 " +
+          std::to_string(read_failure_count) + " 个文件读取失败，将跳过这些文件。" +
+          std::string(colors::kReset));
     }
 
     return payload;

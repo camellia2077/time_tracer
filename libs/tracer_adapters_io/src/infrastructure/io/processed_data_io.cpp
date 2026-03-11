@@ -26,7 +26,6 @@ import tracer.core.shared.ansi_colors;
 #if TT_ENABLE_CPP20_MODULES
 namespace modcore = tracer::adapters::io::modcore;
 namespace modports = tracer::core::domain::modports;
-namespace modcolors = tracer::core::shared::modcolors;
 #else
 namespace modcore {
 
@@ -45,8 +44,9 @@ inline auto WriteContent(const std::filesystem::path& path,
 }  // namespace modcore
 
 namespace modports = tracer_core::domain::ports;
-namespace modcolors = tracer_core::common::colors;
 #endif
+
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace fs = std::filesystem;
 
