@@ -10,6 +10,8 @@
 #include "application/reporting/tree/project_tree_nodes.hpp"
 #include "domain/repositories/i_project_repository.hpp"
 
+namespace app_tree = tracer::core::application::reporting::tree;
+
 namespace {
 
 struct InternalNode {
@@ -66,13 +68,12 @@ auto ConvertToTreeNode(const InternalNode* node, std::string current_path)
 
 }  // namespace
 
-ProjectTreeViewer::ProjectTreeViewer(
-    std::shared_ptr<IProjectRepository> repository)
+app_tree::ProjectTreeViewer::ProjectTreeViewer(ProjectRepositoryPtr repository)
     : repository_(std::move(repository)) {}
 
-ProjectTreeViewer::~ProjectTreeViewer() = default;
+app_tree::ProjectTreeViewer::~ProjectTreeViewer() = default;
 
-auto ProjectTreeViewer::GetRoots() -> std::vector<std::string> {
+auto app_tree::ProjectTreeViewer::GetRoots() -> std::vector<std::string> {
   auto projects = repository_->GetAllProjects();
 
   std::vector<std::string> roots;
@@ -84,7 +85,8 @@ auto ProjectTreeViewer::GetRoots() -> std::vector<std::string> {
   return roots;
 }
 
-auto ProjectTreeViewer::GetTree(const std::string& root_pattern, int max_depth)
+auto app_tree::ProjectTreeViewer::GetTree(const std::string& root_pattern,
+                                          int max_depth)
     -> std::optional<std::vector<ProjectTreeNode>> {
   auto projects = repository_->GetAllProjects();
 
@@ -101,12 +103,10 @@ auto ProjectTreeViewer::GetTree(const std::string& root_pattern, int max_depth)
   auto selected_roots =
       root_pattern.empty()
           ? full_tree_roots
-          : tracer_core::application::reporting::tree::
-                FindProjectTreeNodesByPath(full_tree_roots, root_pattern);
+          : app_tree::FindProjectTreeNodesByPath(full_tree_roots, root_pattern);
   if (selected_roots.empty()) {
     return std::nullopt;
   }
 
-  return tracer_core::application::reporting::tree::LimitProjectTreeDepth(
-      selected_roots, max_depth);
+  return app_tree::LimitProjectTreeDepth(selected_roots, max_depth);
 }

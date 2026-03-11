@@ -1,0 +1,16 @@
+using ::tracer_core::domain::ports::AppendErrorReport;
+using ::tracer_core::domain::ports::ClearBufferedDiagnostics;
+using ::tracer_core::domain::ports::ClearDiagnosticsDedup;
+using ::tracer_core::domain::ports::DiagnosticSeverity;
+using ::tracer_core::domain::ports::EmitError;
+using ::tracer_core::domain::ports::EmitInfo;
+using ::tracer_core::domain::ports::EmitWarn;
+using ::tracer_core::domain::ports::GetBufferedDiagnosticsSummary;
+using ::tracer_core::domain::ports::GetCurrentRunErrorLogPath;
+using ::tracer_core::domain::ports::GetDiagnosticsSink;
+using ::tracer_core::domain::ports::GetErrorReportDestinationLabel;
+using ::tracer_core::domain::ports::GetErrorReportWriter;
+using ::tracer_core::domain::ports::IDiagnosticsSink;
+using ::tracer_core::domain::ports::IErrorReportWriter;
+using ::tracer_core::domain::ports::SetDiagnosticsSink;
+using ::tracer_core::domain::ports::SetErrorReportWriter;

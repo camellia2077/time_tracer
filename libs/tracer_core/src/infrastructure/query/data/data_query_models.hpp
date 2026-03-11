@@ -4,22 +4,14 @@
 #include <optional>
 #include <string>
 
+namespace tracer::core::infrastructure::query::data {
+
+#include "infrastructure/query/data/detail/data_query_models_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data
+
 namespace tracer_core::infrastructure::query::data {
 
-struct QueryFilters {
-  std::optional<int> kYear;
-  std::optional<int> kMonth;
-  std::optional<std::string> from_date;
-  std::optional<std::string> to_date;
-  std::optional<std::string> remark;
-  std::optional<std::string> day_remark;
-  std::optional<std::string> project;
-  std::optional<std::string> root;
-  std::optional<int> exercise;
-  std::optional<int> status;
-  bool overnight = false;
-  bool reverse = false;
-  std::optional<int> limit;
-};
+using tracer::core::infrastructure::query::data::QueryFilters;
 
 }  // namespace tracer_core::infrastructure::query::data

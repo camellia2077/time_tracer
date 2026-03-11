@@ -1,0 +1,10 @@
+using tracer_core::common::colors::kBold;
+using tracer_core::common::colors::kBrightCyan;
+using tracer_core::common::colors::kBrightGreen;
+using tracer_core::common::colors::kCyan;
+using tracer_core::common::colors::kGray;
+using tracer_core::common::colors::kGreen;
+using tracer_core::common::colors::kItalic;
+using tracer_core::common::colors::kRed;
+using tracer_core::common::colors::kReset;
+using tracer_core::common::colors::kYellow;

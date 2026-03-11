@@ -2,30 +2,24 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.persistence.write.importer.sqlite.connection;
+#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
 
+namespace tracer::core::infrastructure::persistence::importer::sqlite {
+
+#include "infrastructure/persistence/importer/sqlite/detail/connection_decl.inc"
+
+}  // namespace tracer::core::infrastructure::persistence::importer::sqlite
+#endif
+
 namespace infrastructure::persistence::importer::sqlite {
 
-class Connection {
- public:
-  explicit Connection(const std::string& db_path);
-  ~Connection();
-
-  [[nodiscard]] auto GetDb() const -> sqlite3*;
-  auto BeginTransaction() -> bool;
-  auto CommitTransaction() -> bool;
-  auto RollbackTransaction() -> void;
-
- private:
-  sqlite3* db_{nullptr};
-};
-
-// NOLINTBEGIN(bugprone-easily-swappable-parameters)
-auto ExecuteSql(sqlite3* sqlite_db, const std::string& sql_query,
-                const std::string& error_context = "") -> bool;
-// NOLINTEND(bugprone-easily-swappable-parameters)
+using tracer::core::infrastructure::persistence::importer::sqlite::Connection;
+using tracer::core::infrastructure::persistence::importer::sqlite::ExecuteSql;
 
 }  // namespace infrastructure::persistence::importer::sqlite
 

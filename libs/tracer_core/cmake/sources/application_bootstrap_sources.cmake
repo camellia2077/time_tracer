@@ -1,11 +1,5 @@
 set(TIME_TRACKER_APPLICATION_BOOTSTRAP_SOURCES
-    "workflow_handler_entry.cpp"
-    "workflow_handler_import_flow.cpp"
-    "workflow_handler_stats_logging.cpp"
-    "workflow_handler_error_mapping.cpp"
     "reporting/report_handler.cpp"
-    "reporting/tree/project_tree_viewer.cpp"
-    "reporting/tree/project_tree_nodes.cpp"
     "importer/import_service.cpp"
     "parser/memory_parser.cpp"
     "service/log_processor.cpp"

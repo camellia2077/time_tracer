@@ -1,12 +1,19 @@
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.reports.querying.report_service;
+#endif
+
 #include "infrastructure/reports/lazy_sqlite_report_query_service.hpp"
 
 #include <stdexcept>
 #include <utility>
 
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/reports/report_service.hpp"
+#endif
 
-namespace infrastructure::reports {
+namespace tracer::core::infrastructure::reports {
 namespace {
 
 auto EnsureReadableDbConnection(const std::filesystem::path& db_path,
@@ -152,4 +159,4 @@ auto LazySqliteReportQueryService::RunExportAllYearlyReportsQuery(
                            });
 }
 
-}  // namespace infrastructure::reports
+}  // namespace tracer::core::infrastructure::reports

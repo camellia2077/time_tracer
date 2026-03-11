@@ -1,12 +1,20 @@
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/infrastructure_core_sources.cmake")
+include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/infrastructure_logging_sources.cmake")
 
 set(TRACER_CORE_INFRA_LITE_SOURCES
-    "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/logging/console_logger.cpp"
-    "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/logging/console_diagnostics_sink.cpp"
-    "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/logging/file_error_report_writer.cpp"
-    "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/logging/validation_issue_reporter.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/config/static_converter_config_provider.cpp"
     "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
+)
+if(TT_CPP20_MODULES_EFFECTIVE)
+    list(APPEND TRACER_CORE_INFRA_LITE_SOURCES
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/config/static_converter_config_provider.module.cpp"
+    )
+endif()
+list(TRANSFORM TIME_TRACKER_INFRA_LOGGING_SOURCES
+    PREPEND "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/"
+)
+list(PREPEND TRACER_CORE_INFRA_LITE_SOURCES
+    ${TIME_TRACKER_INFRA_LOGGING_SOURCES}
 )
 
 if(TIME_TRACKER_INFRA_ANDROID_HELPER_CLOCK_SOURCE)
@@ -26,13 +34,14 @@ if(TT_CPP20_MODULES_EFFECTIVE)
         BASE_DIRS
             "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules"
         FILES
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.log.console_logger.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.log.console_diag_sink.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.log.file_error_report_writer.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.log.valid_issue_reporter.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.logging.console_logger.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.logging.console_diagnostics_sink.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.logging.file_error_report_writer.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.logging.validation_issue_reporter.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.logging.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.plat.windows.clock.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.plat.android.clock.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tc.core.infra.cfg.static_conv_cfg_prov.cppm"
+            "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.config.static_converter_config_provider.cppm"
             "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/modules/tracer.core.infrastructure.cppm"
     )
     set_target_properties(tc_infra_lite_lib PROPERTIES

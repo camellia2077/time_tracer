@@ -56,4 +56,10 @@ struct DailyLog {
   }
 };
 
+namespace tracer::core::domain::model {
+
+#include "domain/detail/daily_log_contract.inc"
+
+}  // namespace tracer::core::domain::model
+
 #endif  // DOMAIN_MODEL_DAILY_LOG_H_

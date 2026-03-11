@@ -18,13 +18,11 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 #endif
 
 namespace fs = std::filesystem;
-#if TT_ENABLE_CPP20_MODULES
-namespace modloader = tracer::core::infrastructure::modconfig::loader;
-#else
-namespace modloader = TomlLoaderUtils;
-#endif
+namespace modloader = tracer::core::infrastructure::config::loader;
 
 #include "infrastructure/config/loader/internal/report_config_loader_namespace.inc"
+
+namespace tracer::core::infrastructure::config {
 
 
 // ==========================================
@@ -236,3 +234,5 @@ auto ReportConfigLoader::LoadYearlyMdConfig(const fs::path& path)
   modloader::FillYearlyLabels(tbl, config.labels);
   return config;
 }
+
+}  // namespace tracer::core::infrastructure::config

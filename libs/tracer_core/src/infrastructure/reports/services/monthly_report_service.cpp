@@ -1,4 +1,5 @@
 // infrastructure/reports/services/monthly_report_service.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/services/monthly_report_service.hpp"
 // [修改] 指向新的 data 模块路径
 #include <stdexcept>
@@ -32,6 +33,8 @@ static auto ParseYearMonth(const std::string& year_month_str)
   return {0, 0};
 }
 
+namespace tracer::core::infrastructure::reports::services {
+
 MonthlyReportService::MonthlyReportService(sqlite3* database_connection,
                                            const ReportCatalog& report_catalog)
     : db_(database_connection), report_catalog_(report_catalog) {
@@ -44,7 +47,8 @@ auto MonthlyReportService::GenerateReports(ReportFormat format)
     -> FormattedMonthlyReports {
   FormattedMonthlyReports reports;
 
-  ProjectNameCache name_cache = reports::services::CreateProjectNameCache(db_);
+  ProjectNameCache name_cache =
+      ::reports::services::CreateProjectNameCache(db_);
 
   // 1. 委托 Fetcher 获取所有数据
   BatchMonthDataFetcher fetcher(db_);
@@ -55,7 +59,7 @@ auto MonthlyReportService::GenerateReports(ReportFormat format)
       format, report_catalog_);
 
   // 3. 遍历并格式化
-  reports::services::FormatReportMap(
+  ::reports::services::FormatReportMap(
       all_months_data, formatter, name_cache,
       [&](const std::string& year_month_str,
           const std::string& formatted_report) -> void {
@@ -67,3 +71,5 @@ auto MonthlyReportService::GenerateReports(ReportFormat format)
 
   return reports;
 }
+
+}  // namespace tracer::core::infrastructure::reports::services

@@ -286,10 +286,21 @@ if(BUILD_TESTING)
             COMMAND tc_app_pipeline_hdr_smoke_tests
         )
 
-        add_executable(tc_infra_mod_smoke_tests
+        set(TC_INFRA_MOD_SMOKE_TEST_SOURCES
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/infrastructure_modules_smoke_tests.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/logging_platform_config.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_stats_repository.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_internal_orchestrators.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/persistence.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/reports.cpp"
+        )
+        add_executable(tc_infra_mod_smoke_tests
+            ${TC_INFRA_MOD_SMOKE_TEST_SOURCES}
         )
         setup_app_target(tc_infra_mod_smoke_tests NO_PCH)
+        target_include_directories(tc_infra_mod_smoke_tests PRIVATE
+            "${TRACER_CORE_LIB_TESTS_ROOT}"
+        )
         target_link_libraries(
             tc_infra_mod_smoke_tests PRIVATE
             tc_infra_full_lib
@@ -299,11 +310,23 @@ if(BUILD_TESTING)
             COMMAND tc_infra_mod_smoke_tests
         )
 
-        add_executable(tc_infra_legacy_hdr_compat_tests
+        set(TC_INFRA_LEGACY_HDR_COMPAT_TEST_SOURCES
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/infrastructure_legacy_headers_compat_tests.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/logging_platform_config.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/query_stats_repository.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/query_internal_orchestrators.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/persistence.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/reports_export_dto.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/reports_querying.cpp"
+        )
+        add_executable(tc_infra_legacy_hdr_compat_tests
+            ${TC_INFRA_LEGACY_HDR_COMPAT_TEST_SOURCES}
         )
         setup_app_target(
             tc_infra_legacy_hdr_compat_tests NO_PCH
+        )
+        target_include_directories(tc_infra_legacy_hdr_compat_tests PRIVATE
+            "${TRACER_CORE_LIB_TESTS_ROOT}"
         )
         target_link_libraries(
             tc_infra_legacy_hdr_compat_tests PRIVATE

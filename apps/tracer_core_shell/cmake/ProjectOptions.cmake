@@ -78,9 +78,17 @@ set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
 
 find_program(CCACHE_EXECUTABLE ccache)
 if(CCACHE_EXECUTABLE)
-    message(STATUS "ccache found, enabling compiler launcher.")
     set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
-    set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
+    if(TT_CPP20_MODULES_EFFECTIVE)
+        message(STATUS
+            "ccache found, but disabling the C++ compiler launcher because "
+            "named module builds require stable PCM side outputs."
+        )
+        unset(CMAKE_CXX_COMPILER_LAUNCHER)
+    else()
+        message(STATUS "ccache found, enabling compiler launcher.")
+        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
+    endif()
 endif()
 
 message(STATUS "TT_ENABLE_PROCESSED_JSON_IO=${TT_ENABLE_PROCESSED_JSON_IO}")

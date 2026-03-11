@@ -1,0 +1,13 @@
+if(TT_CPP20_MODULES_EFFECTIVE)
+    set(TIME_TRACKER_APPLICATION_REPORTING_TREE_SOURCES
+        "reporting/tree/project_tree_nodes.cpp"
+        "reporting/tree/project_tree_nodes.module.cpp"
+        "reporting/tree/project_tree_viewer.cpp"
+        "reporting/tree/project_tree_viewer.module.cpp"
+    )
+else()
+    set(TIME_TRACKER_APPLICATION_REPORTING_TREE_SOURCES
+        "reporting/tree/project_tree_nodes.cpp"
+        "reporting/tree/project_tree_viewer.cpp"
+    )
+endif()

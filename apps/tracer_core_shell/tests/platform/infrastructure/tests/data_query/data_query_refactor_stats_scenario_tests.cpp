@@ -1,4 +1,8 @@
 // infrastructure/tests/data_query/data_query_refactor_stats_scenario_tests.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.stats;
+#endif
+
 #include <array>
 #include <nlohmann/json.hpp>
 #include <optional>
@@ -10,8 +14,10 @@
 #include "infrastructure/query/data/orchestrators/list_query_orchestrator.hpp"
 #include "infrastructure/query/data/orchestrators/report_chart_orchestrator.hpp"
 #include "infrastructure/query/data/renderers/data_query_renderer.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
 #include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
+#endif
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
 namespace android_runtime_tests::data_query_refactor_internal {
@@ -19,6 +25,8 @@ namespace {
 
 using nlohmann::json;
 using tracer_core::core::dto::DataQueryOutputMode;
+namespace data_query_stats =
+    tracer::core::infrastructure::query::data::stats;
 
 constexpr long long kDuration3600 = 3600;
 constexpr long long kDuration1800 = 1800;
@@ -64,9 +72,7 @@ auto OpenSeededDatabaseOrRecordFailure(int& failures) -> ScopedSqlite {
 
 auto TestDayDurationStatsCalculator(int& failures) -> void {
   const auto kRows = BuildStatsSampleRows();
-  const auto kStats =
-      tracer_core::infrastructure::query::data::stats::ComputeDayDurationStats(
-          kRows);
+  const auto kStats = data_query_stats::ComputeDayDurationStats(kRows);
 
   Expect(kStats.count == 3, "stats calculator should keep sample count.",
          failures);
@@ -81,9 +87,8 @@ auto TestDayDurationStatsCalculator(int& failures) -> void {
 
 auto TestReportChartSeriesCalculator(int& failures) -> void {
   const auto kSparseRows = BuildSparseReportChartRows();
-  const auto kResult =
-      tracer_core::infrastructure::query::data::stats::BuildReportChartSeries(
-          "2026-02-01", "2026-02-03", kSparseRows);
+  const auto kResult = data_query_stats::BuildReportChartSeries(
+      "2026-02-01", "2026-02-03", kSparseRows);
 
   Expect(kResult.series.size() == 3,
          "report chart series should fill missing dates with zero.", failures);
@@ -110,8 +115,7 @@ auto TestReportChartSeriesCalculator(int& failures) -> void {
 }
 
 auto TestSemanticDayStatsSnapshot(int& failures) -> void {
-  using tracer_core::infrastructure::query::data::stats::
-      ComputeDayDurationStats;
+  using data_query_stats::ComputeDayDurationStats;
 
   const auto kRows = BuildStatsSampleRows();
   const auto kStats = ComputeDayDurationStats(kRows);

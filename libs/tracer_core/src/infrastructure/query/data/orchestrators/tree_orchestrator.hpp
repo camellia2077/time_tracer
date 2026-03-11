@@ -7,13 +7,16 @@
 #include "application/dto/core_responses.hpp"
 #include "infrastructure/query/data/data_query_models.hpp"
 
+namespace tracer::core::infrastructure::query::data::orchestrators {
+
+#include "infrastructure/query/data/orchestrators/detail/tree_orchestrator_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::orchestrators
+
 namespace tracer_core::infrastructure::query::data::orchestrators {
 
-auto HandleTreeQuery(sqlite3* db_conn,
-                     const tracer_core::core::dto::DataQueryRequest& request,
-                     const QueryFilters& base_filters,
-                     tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleTreeQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
 

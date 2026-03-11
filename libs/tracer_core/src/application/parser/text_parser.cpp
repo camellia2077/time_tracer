@@ -19,12 +19,8 @@ import tracer.core.shared.string_utils;
 
 #include "application/ports/logger.hpp"
 
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::shared::modutils::Trim;
-namespace modcolors = tracer::core::shared::modcolors;
-#else
-namespace modcolors = tracer_core::common::colors;
-#endif
+using tracer::core::shared::string_utils::Trim;
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace {
 constexpr size_t kYearMarkerLength = 5;

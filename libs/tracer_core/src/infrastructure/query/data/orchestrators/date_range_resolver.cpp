@@ -1,4 +1,8 @@
 // infrastructure/query/data/orchestrators/date_range_resolver.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.internal.request;
+#endif
+
 #include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
 
 #include <chrono>
@@ -7,12 +11,14 @@
 #include <string>
 #include <string_view>
 
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#if !TT_ENABLE_CPP20_MODULES
+#include "infrastructure/query/data/internal/request.hpp"
+#endif
 
 namespace query_internal =
-    infrastructure::persistence::data_query_service_internal;
+    tracer::core::infrastructure::query::data::internal;
 
-namespace tracer_core::infrastructure::query::data::orchestrators {
+namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace {
 
 constexpr int kLookbackInclusiveOffsetDays = 1;
@@ -84,4 +90,4 @@ auto ResolveRollingDateRange(int lookback_days) -> ResolvedDateRange {
   };
 }
 
-}  // namespace tracer_core::infrastructure::query::data::orchestrators
+}  // namespace tracer::core::infrastructure::query::data::orchestrators

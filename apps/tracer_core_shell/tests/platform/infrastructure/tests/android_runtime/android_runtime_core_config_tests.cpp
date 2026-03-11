@@ -11,6 +11,9 @@
 namespace android_runtime_tests {
 namespace {
 
+using ReportConfigLoader =
+    tracer::core::infrastructure::config::ReportConfigLoader;
+
 auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_android_runtime_side_effect_free_test");

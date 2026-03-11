@@ -38,4 +38,10 @@ inline auto SplitString(const std::string& str, char delimiter)
   return tokens;
 }
 
+namespace tracer::core::shared::string_utils {
+
+#include "shared/detail/string_utils_contract.inc"
+
+}  // namespace tracer::core::shared::string_utils
+
 #endif  // SHARED_UTILS_STRING_UTILS_H_

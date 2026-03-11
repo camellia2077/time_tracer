@@ -1,9 +1,4 @@
 // application/use_cases/tracer_core_api_pipeline.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.use_cases.helpers;
-import tracer.core.domain.types.app_options;
-#endif
-
 #include <exception>
 #include <stdexcept>
 #include <utility>
@@ -17,29 +12,34 @@ import tracer.core.domain.types.app_options;
 #include "application/use_cases/tracer_core_api.hpp"
 #if !TT_ENABLE_CPP20_MODULES
 #include "application/use_cases/tracer_core_api_helpers.hpp"
+#endif
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/types/app_options.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.application.use_cases.helpers;
+import tracer.core.domain.types.app_options;
 #endif
 
 using namespace tracer_core::core::dto;
 #if TT_ENABLE_CPP20_MODULES
-using tracer::core::domain::modtypes::AppOptions;
-namespace core_api_helpers = tracer::core::application::modusecases::helpers;
+using tracer::core::domain::types::AppOptions;
 #else
-namespace core_api_helpers =
-    tracer_core::application::use_cases::core_api_helpers;
+using ::AppOptions;
 #endif
+namespace core_api_helpers = tracer::core::application::use_cases::helpers;
+
+namespace tracer::core::application::use_cases {
 
 TracerCoreApi::TracerCoreApi(
-    IWorkflowHandler& workflow_handler, IReportHandler& report_handler,
-    std::shared_ptr<IProjectRepository> project_repository,
-    std::shared_ptr<tracer_core::application::ports::IDataQueryService>
-        data_query_service,
-    std::shared_ptr<tracer_core::application::ports::IReportDataQueryService>
-        report_data_query_service,
-    std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter>
-        report_dto_formatter,
-    std::shared_ptr<tracer_core::application::ports::IReportExportWriter>
-        report_export_writer)
+    ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler,
+    IReportHandler& report_handler,
+    ProjectRepositoryPtr project_repository,
+    DataQueryServicePtr data_query_service,
+    ReportDataQueryServicePtr report_data_query_service,
+    ReportDtoFormatterPtr report_dto_formatter,
+    ReportExportWriterPtr report_export_writer)
     : workflow_handler_(workflow_handler),
       report_handler_(report_handler),
       project_repository_(std::move(project_repository)),
@@ -124,3 +124,5 @@ auto TracerCoreApi::RunValidateLogic(const ValidateLogicRequest& request)
     return core_api_helpers::BuildOperationFailure("RunValidateLogic");
   }
 }
+
+}  // namespace tracer::core::application::use_cases

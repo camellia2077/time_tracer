@@ -1,11 +1,12 @@
 // infrastructure/reports/report_dto_formatter.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/report_dto_formatter.hpp"
 
 #include <utility>
 
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 
-namespace infrastructure::reports {
+namespace tracer::core::infrastructure::reports {
 
 ReportDtoFormatter::ReportDtoFormatter(const ReportCatalog& report_catalog)
     : report_catalog_(report_catalog) {}
@@ -49,4 +50,4 @@ auto ReportDtoFormatter::FormatWithCache(
   return formatter_iter->second->FormatReport(report);
 }
 
-}  // namespace infrastructure::reports
+}  // namespace tracer::core::infrastructure::reports

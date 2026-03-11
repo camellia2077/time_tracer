@@ -19,7 +19,7 @@ import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::converter::LogProcessingResult;
 using tracer::core::domain::modlogic::converter::LogProcessor;
-namespace modcolors = tracer::core::shared::modcolors;
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 namespace {

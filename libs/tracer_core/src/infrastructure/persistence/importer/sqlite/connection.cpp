@@ -1,4 +1,5 @@
 // infrastructure/persistence/importer/sqlite/connection.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/importer/sqlite/connection.hpp"
 #include <sqlite3.h>
 
@@ -11,7 +12,7 @@
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
 
-namespace infrastructure::persistence::importer::sqlite {
+namespace tracer::core::infrastructure::persistence::importer::sqlite {
 namespace {
 auto QueryPragmaInt(sqlite3* sqlite_db, std::string_view sql)
     -> std::optional<int> {
@@ -203,4 +204,4 @@ auto ExecuteSql(sqlite3* sqlite_db, const std::string& sql_query,
 }
 // NOLINTEND(bugprone-easily-swappable-parameters)
 
-}  // namespace infrastructure::persistence::importer::sqlite
+}  // namespace tracer::core::infrastructure::persistence::importer::sqlite

@@ -6,16 +6,15 @@
 
 #include "application/ports/logger.hpp"
 
+namespace tracer::core::infrastructure::logging {
+
+#include "infrastructure/logging/detail/console_logger_decl.inc"
+
+}  // namespace tracer::core::infrastructure::logging
+
 namespace infrastructure::logging {
 
-class ConsoleLogger final : public tracer_core::application::ports::ILogger {
- public:
-  auto Log(tracer_core::application::ports::LogSeverity severity,
-           std::string_view message) -> void override;
-
- private:
-  std::mutex output_mutex_;
-};
+using tracer::core::infrastructure::logging::ConsoleLogger;
 
 }  // namespace infrastructure::logging
 

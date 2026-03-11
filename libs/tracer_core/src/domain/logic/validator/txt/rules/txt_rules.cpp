@@ -8,6 +8,8 @@
 
 namespace validator::txt {
 
+using tracer::core::shared::string_utils::Trim;
+
 namespace {
 constexpr int kMinMonth = 1;
 constexpr int kMaxMonth = 12;

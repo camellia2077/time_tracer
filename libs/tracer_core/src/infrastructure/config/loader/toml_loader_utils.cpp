@@ -53,7 +53,7 @@ auto MergeStyleSource(const fs::path& path, toml::table config_tbl)
 }
 }  // namespace
 
-namespace TomlLoaderUtils {
+namespace tracer::core::infrastructure::config::loader {
 
 auto ReadToml(const fs::path& path) -> toml::table {
   toml::table config_tbl = ParseTomlFile(path);
@@ -199,4 +199,4 @@ void FillKeywordColors(const toml::table& tbl,
     }
   }
 }
-}  // namespace TomlLoaderUtils
+}  // namespace tracer::core::infrastructure::config::loader

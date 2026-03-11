@@ -1,7 +1,8 @@
 // infrastructure/persistence/sqlite_time_sheet_repository.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/sqlite_time_sheet_repository.hpp"
 
-namespace infrastructure::persistence {
+namespace tracer::core::infrastructure::persistence {
 
 SqliteTimeSheetRepository::SqliteTimeSheetRepository(const std::string& db_path)
     : repository_(db_path) {}
@@ -36,4 +37,4 @@ auto SqliteTimeSheetRepository::TryGetLatestActivityTailBeforeDate(
       .date = kTail->date, .end_time = kTail->end_time};
 }
 
-}  // namespace infrastructure::persistence
+}  // namespace tracer::core::infrastructure::persistence

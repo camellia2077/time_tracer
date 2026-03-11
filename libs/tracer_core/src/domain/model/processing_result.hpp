@@ -13,4 +13,10 @@ struct ProcessingResult {
   ProcessingTimings timings;
 };
 
+namespace tracer::core::domain::model {
+
+#include "domain/detail/processing_result_contract.inc"
+
+}  // namespace tracer::core::domain::model
+
 #endif  // DOMAIN_MODEL_PROCESSING_RESULT_H_

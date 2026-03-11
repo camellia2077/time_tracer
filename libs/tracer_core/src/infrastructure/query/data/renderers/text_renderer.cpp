@@ -11,7 +11,7 @@
 
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
 
-namespace tracer_core::infrastructure::query::data::renderers {
+namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
 constexpr int kDefaultOutputPrecision = 6;
@@ -238,4 +238,4 @@ auto RenderJsonObjectText(std::string content) -> std::string {
   return content;
 }
 
-}  // namespace tracer_core::infrastructure::query::data::renderers
+}  // namespace tracer::core::infrastructure::query::data::renderers

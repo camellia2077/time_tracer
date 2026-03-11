@@ -9,6 +9,8 @@
 
 namespace validator::txt {
 
+using tracer::core::shared::string_utils::Trim;
+
 struct TextValidator::PImpl {
   LineRules line_processor;
   StructureRules structural_validator;

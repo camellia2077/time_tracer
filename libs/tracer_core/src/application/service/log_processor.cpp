@@ -14,10 +14,9 @@ import tracer.core.domain.ports.diagnostics;
 
 #if TT_ENABLE_CPP20_MODULES
 using tracer::core::application::modservice::ConverterService;
-namespace modports = tracer::core::domain::modports;
-#else
-namespace modports = tracer_core::domain::ports;
 #endif
+
+namespace modports = tracer::core::domain::ports;
 
 LogProcessor::LogProcessor(const ConverterConfig& config) : config_(config) {}
 

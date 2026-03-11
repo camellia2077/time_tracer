@@ -12,32 +12,12 @@
 struct AppOptions;
 struct DailyLog;
 
-class IWorkflowHandler {
- public:
-  virtual ~IWorkflowHandler() = default;
+namespace tracer::core::application::workflow {
 
-  // 运行预处理流水线
-  virtual auto RunConverter(const std::string& input_path,
-                            const AppOptions& options) -> void = 0;
+#include "application/workflow/detail/i_workflow_handler_decl.inc"
 
-  // 传统的基于文件的导入
-  virtual auto RunDatabaseImport(const std::string& processed_path_str)
-      -> void = 0;
+}  // namespace tracer::core::application::workflow
 
-  // 基于内存数据的导入
-  virtual auto RunDatabaseImportFromMemory(
-      const std::map<std::string, std::vector<DailyLog>>& data_map) -> void = 0;
-
-  // 完整流程 (Ingest/Blink)
-  virtual auto RunIngest(const std::string& source_path,
-                         DateCheckMode date_check_mode,
-                         bool save_processed = false,
-                         IngestMode ingest_mode = IngestMode::kStandard)
-      -> void = 0;
-
-  virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
-  virtual auto RunValidateLogic(const std::string& source_path,
-                                DateCheckMode date_check_mode) -> void = 0;
-};
+using IWorkflowHandler = tracer::core::application::workflow::IWorkflowHandler;
 
 #endif  // APPLICATION_INTERFACES_I_WORKFLOW_HANDLER_H_

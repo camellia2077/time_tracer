@@ -7,7 +7,7 @@ import tracer.core.shared;
 
 namespace {
 
-using tracer::core::shared::modcolors::kRed;
+using tracer::core::shared::ansi_colors::kRed;
 using tracer::core::shared::modperiod::FormatIsoWeek;
 using tracer::core::shared::modperiod::IsoWeek;
 using tracer::core::shared::modperiod::IsoWeekEndDate;
@@ -17,8 +17,8 @@ using tracer::core::shared::modperiod::ParseIsoWeek;
 using tracer::core::shared::modtypes::AppError;
 using tracer::core::shared::modtypes::AppExitCode;
 using tracer::core::shared::modtypes::LogicError;
-using tracer::core::shared::modutils::SplitString;
-using tracer::core::shared::modutils::Trim;
+using tracer::core::shared::string_utils::SplitString;
+using tracer::core::shared::string_utils::Trim;
 
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {

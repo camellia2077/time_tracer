@@ -5,9 +5,14 @@
 
 #include "infrastructure/query/data/data_query_types.hpp"
 
+namespace tracer::core::infrastructure::query::data::stats {
+
+#include "infrastructure/query/data/stats/detail/day_duration_stats_calculator_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::stats
+
 namespace tracer_core::infrastructure::query::data::stats {
 
-[[nodiscard]] auto ComputeDayDurationStats(
-    const std::vector<DayDurationRow>& rows) -> DayDurationStats;
+using tracer::core::infrastructure::query::data::stats::ComputeDayDurationStats;
 
 }  // namespace tracer_core::infrastructure::query::data::stats

@@ -12,11 +12,7 @@ import tracer.core.infrastructure.config.loader.converter_config_loader;
 #include "infrastructure/config/loader/converter_config_loader.hpp"
 #endif
 
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::infrastructure::modconfig::ConverterConfigLoader;
-#endif
-
-namespace infrastructure::config {
+namespace tracer::core::infrastructure::config {
 
 FileConverterConfigProvider::FileConverterConfigProvider(
     std::filesystem::path config_path,
@@ -32,7 +28,9 @@ auto FileConverterConfigProvider::LoadConverterConfig() const
   }
 
   if (!cached_config_.has_value()) {
-    ConverterConfig config = ConverterConfigLoader::LoadFromFile(config_path_);
+    ConverterConfig config =
+        tracer::core::infrastructure::config::ConverterConfigLoader::
+            LoadFromFile(config_path_);
     for (const auto& [key, val] : initial_top_parents_) {
       config.initial_top_parents[key.string()] = val.string();
     }
@@ -42,4 +40,4 @@ auto FileConverterConfigProvider::LoadConverterConfig() const
   return *cached_config_;
 }
 
-}  // namespace infrastructure::config
+}  // namespace tracer::core::infrastructure::config

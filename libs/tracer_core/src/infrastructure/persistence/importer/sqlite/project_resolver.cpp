@@ -1,5 +1,11 @@
 // infrastructure/persistence/importer/sqlite/project_resolver.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.shared.string_utils;
+#endif
+
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/importer/sqlite/project_resolver.hpp"
+
 #include <sqlite3.h>
 
 #include <format>
@@ -10,9 +16,13 @@
 #include <vector>
 
 #include "infrastructure/schema/sqlite_schema.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "shared/utils/string_utils.hpp"
+#endif
 
-namespace infrastructure::persistence::importer::sqlite {
+using tracer::core::shared::string_utils::SplitString;
+
+namespace tracer::core::infrastructure::persistence::importer::sqlite {
 
 struct ImportProjectNode {
   long long id = 0;
@@ -172,4 +182,4 @@ auto ProjectResolver::GetId(const std::string& project_path) const
   return 0;
 }
 
-}  // namespace infrastructure::persistence::importer::sqlite
+}  // namespace tracer::core::infrastructure::persistence::importer::sqlite

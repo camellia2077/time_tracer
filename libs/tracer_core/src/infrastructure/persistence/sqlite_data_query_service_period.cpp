@@ -1,4 +1,8 @@
 // infrastructure/persistence/sqlite_data_query_service_period.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.repository;
+#endif
+
 #include <cctype>
 #include <chrono>
 #include <format>
@@ -7,13 +11,15 @@
 #include <string_view>
 
 #include "domain/utils/time_utils.hpp"
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#include "infrastructure/query/data/internal/period.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/query/data/data_query_repository.hpp"
+#endif
 #include "shared/utils/period_utils.hpp"
 
-namespace infra_data_query = tracer_core::infrastructure::query::data;
+namespace infra_data_query = tracer::core::infrastructure::query::data;
 
-namespace infrastructure::persistence::data_query_service_internal {
+namespace tracer::core::infrastructure::query::data::internal {
 namespace {
 
 constexpr int kDefaultTreeLookbackDays = 7;
@@ -227,4 +233,4 @@ auto ApplyTreePeriod(const tracer_core::core::dto::DataQueryRequest& request,
       "Invalid --period value. Use day/week/month/year/recent/range.");
 }
 
-}  // namespace infrastructure::persistence::data_query_service_internal
+}  // namespace tracer::core::infrastructure::query::data::internal

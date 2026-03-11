@@ -13,11 +13,7 @@ import tracer.core.domain.ports.diagnostics;
 #include "domain/ports/diagnostics.hpp"
 #endif
 
-#if TT_ENABLE_CPP20_MODULES
-namespace modports = tracer::core::domain::modports;
-#else
-namespace modports = tracer_core::domain::ports;
-#endif
+namespace modports = tracer::core::domain::ports;
 
 namespace {
 

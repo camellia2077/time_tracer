@@ -1,24 +1,12 @@
 // application/workflow_handler_error_mapping.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.importer.service;
-import tracer.core.domain.ports.diagnostics;
-#endif
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-#if !TT_ENABLE_CPP20_MODULES
 #include "application/importer/model/import_models.hpp"
 #include "domain/ports/diagnostics.hpp"
-#endif
 
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::application::modimporter::ImportStats;
-namespace modports = tracer::core::domain::modports;
-#else
-namespace modports = tracer_core::domain::ports;
-#endif
+namespace modports = tracer::core::domain::ports;
 
 namespace workflow_handler_internal {
 

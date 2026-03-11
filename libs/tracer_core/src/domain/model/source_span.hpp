@@ -15,4 +15,10 @@ struct SourceSpan {
   [[nodiscard]] auto HasLine() const -> bool { return line_start > 0; }
 };
 
+namespace tracer::core::domain::model {
+
+#include "domain/detail/source_span_contract.inc"
+
+}  // namespace tracer::core::domain::model
+
 #endif  // DOMAIN_MODEL_SOURCE_SPAN_H_

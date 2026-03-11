@@ -4,7 +4,7 @@
 #include "infrastructure/query/data/renderers/semantic_json_renderer.hpp"
 #include "infrastructure/query/data/renderers/text_renderer.hpp"
 
-namespace tracer_core::infrastructure::query::data::renderers {
+namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
 using tracer_core::core::dto::DataQueryOutputMode;
@@ -73,4 +73,4 @@ auto RenderJsonObjectOutput(std::string_view action, std::string content,
   return RenderJsonObjectText(std::move(content));
 }
 
-}  // namespace tracer_core::infrastructure::query::data::renderers
+}  // namespace tracer::core::infrastructure::query::data::renderers

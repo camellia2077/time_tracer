@@ -18,4 +18,10 @@ struct AppOptions {
   bool save_processed_output = false;
 };
 
+namespace tracer::core::domain::types {
+
+#include "domain/detail/app_options_contract.inc"
+
+}  // namespace tracer::core::domain::types
+
 #endif  // DOMAIN_TYPES_APP_OPTIONS_H_

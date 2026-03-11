@@ -10,6 +10,9 @@
 #include "shared/utils/string_utils.hpp"
 
 namespace converter_core_internal {
+
+using tracer::core::shared::string_utils::SplitString;
+
 namespace {
 
 constexpr int kHoursPerDay = 24;

@@ -2,6 +2,9 @@
 #ifndef INFRASTRUCTURE_REPORTS_REPORT_DTO_FORMATTER_H_
 #define INFRASTRUCTURE_REPORTS_REPORT_DTO_FORMATTER_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.dto.formatter;
+#else
 #include <map>
 #include <memory>
 
@@ -9,43 +12,16 @@
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
+namespace tracer::core::infrastructure::reports {
+
+#include "infrastructure/reports/detail/report_dto_formatter_decl.inc"
+
+}  // namespace tracer::core::infrastructure::reports
+#endif
+
 namespace infrastructure::reports {
 
-class ReportDtoFormatter final
-    : public tracer_core::application::ports::IReportDtoFormatter {
- public:
-  explicit ReportDtoFormatter(const ReportCatalog& report_catalog);
-
-  auto FormatDaily(const DailyReportData& report, ReportFormat format)
-      -> std::string override;
-  auto FormatMonthly(const MonthlyReportData& report, ReportFormat format)
-      -> std::string override;
-  auto FormatPeriod(const PeriodReportData& report, ReportFormat format)
-      -> std::string override;
-  auto FormatWeekly(const WeeklyReportData& report, ReportFormat format)
-      -> std::string override;
-  auto FormatYearly(const YearlyReportData& report, ReportFormat format)
-      -> std::string override;
-
- private:
-  template <typename ReportDataType>
-  auto FormatWithCache(
-      const ReportDataType& report, ReportFormat format,
-      std::map<ReportFormat, std::unique_ptr<IReportFormatter<ReportDataType>>>&
-          cache) -> std::string;
-
-  const ReportCatalog& report_catalog_;
-  std::map<ReportFormat, std::unique_ptr<IReportFormatter<DailyReportData>>>
-      daily_cache_;
-  std::map<ReportFormat, std::unique_ptr<IReportFormatter<MonthlyReportData>>>
-      monthly_cache_;
-  std::map<ReportFormat, std::unique_ptr<IReportFormatter<PeriodReportData>>>
-      period_cache_;
-  std::map<ReportFormat, std::unique_ptr<IReportFormatter<WeeklyReportData>>>
-      weekly_cache_;
-  std::map<ReportFormat, std::unique_ptr<IReportFormatter<YearlyReportData>>>
-      yearly_cache_;
-};
+using tracer::core::infrastructure::reports::ReportDtoFormatter;
 
 }  // namespace infrastructure::reports
 

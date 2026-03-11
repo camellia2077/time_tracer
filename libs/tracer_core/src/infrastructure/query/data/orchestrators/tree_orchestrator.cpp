@@ -1,31 +1,29 @@
 // infrastructure/query/data/orchestrators/tree_orchestrator.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.reporting.tree.nodes;
-#endif
-
 #include "infrastructure/query/data/orchestrators/tree_orchestrator.hpp"
 
 #include <stdexcept>
 #include <utility>
 
-#if !TT_ENABLE_CPP20_MODULES
 #include "application/reporting/tree/project_tree_nodes.hpp"
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.internal.period;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.renderers;
 #endif
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#if !TT_ENABLE_CPP20_MODULES
+#include "infrastructure/query/data/internal/period.hpp"
 #include "infrastructure/query/data/data_query_repository.hpp"
 #include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-
-#if TT_ENABLE_CPP20_MODULES
-namespace app_tree = tracer::core::application::modreporting::tree;
-#else
-namespace app_tree = tracer_core::application::reporting::tree;
 #endif
-namespace query_internal =
-    infrastructure::persistence::data_query_service_internal;
-namespace data_query_renderers =
-    tracer_core::infrastructure::query::data::renderers;
 
-namespace tracer_core::infrastructure::query::data::orchestrators {
+namespace app_tree = tracer::core::application::reporting::tree;
+namespace query_internal =
+    tracer::core::infrastructure::query::data::internal;
+namespace query_data_repository = tracer::core::infrastructure::query::data;
+namespace data_query_renderers =
+    tracer::core::infrastructure::query::data::renderers;
+
+namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace {
 
 constexpr int kMinUnlimitedDepth = -1;
@@ -49,11 +47,12 @@ auto HandleTreeQuery(sqlite3* db_conn,
     throw std::runtime_error("--level must be >= -1.");
   }
 
-  const auto kTree = QueryProjectTree(db_conn, tree_filters);
+  const auto kTree =
+      query_data_repository::QueryProjectTree(db_conn, tree_filters);
   const auto kNodes = app_tree::LimitProjectTreeDepth(
       app_tree::BuildProjectTreeNodesFromReportTree(kTree), kMaxDepth);
   return BuildSuccessOutput(data_query_renderers::RenderProjectTreeOutput(
       kNodes, kMaxDepth, output_mode));
 }
 
-}  // namespace tracer_core::infrastructure::query::data::orchestrators
+}  // namespace tracer::core::infrastructure::query::data::orchestrators

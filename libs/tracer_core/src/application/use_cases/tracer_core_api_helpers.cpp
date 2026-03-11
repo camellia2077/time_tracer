@@ -5,7 +5,7 @@
 
 #include "application/ports/i_report_dto_formatter.hpp"
 
-namespace tracer_core::application::use_cases::core_api_helpers {
+namespace tracer::core::application::use_cases::helpers {
 
 using namespace tracer_core::core::dto;
 
@@ -192,4 +192,4 @@ auto BuildPeriodBatchErrorLine(int days, std::string_view details)
          " days: " + std::string(details);
 }
 
-}  // namespace tracer_core::application::use_cases::core_api_helpers
+}  // namespace tracer::core::application::use_cases::helpers

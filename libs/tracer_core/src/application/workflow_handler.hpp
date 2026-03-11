@@ -22,61 +22,12 @@ class ITimeSheetRepository;
 class IValidationIssueReporter;
 }  // namespace tracer_core::application::ports
 
-class WorkflowHandler : public IWorkflowHandler {
- public:
-  WorkflowHandler(
-      fs::path output_root_path,
-      std::shared_ptr<tracer_core::application::ports::IProcessedDataLoader>
-          processed_data_loader,
-      std::shared_ptr<tracer_core::application::ports::ITimeSheetRepository>
-          time_sheet_repository,
-      std::shared_ptr<tracer_core::application::ports::IDatabaseHealthChecker>
-          database_health_checker,
-      std::shared_ptr<tracer_core::application::ports::IConverterConfigProvider>
-          converter_config_provider,
-      std::shared_ptr<tracer_core::application::ports::IIngestInputProvider>
-          ingest_input_provider,
-      std::shared_ptr<tracer_core::application::ports::IProcessedDataStorage>
-          processed_data_storage,
-      std::shared_ptr<tracer_core::application::ports::IValidationIssueReporter>
-          validation_issue_reporter);
-  ~WorkflowHandler() override;
+namespace tracer::core::application::workflow {
 
-  auto RunConverter(const std::string& input_path, const AppOptions& options)
-      -> void override;
-  auto RunDatabaseImport(const std::string& processed_path_str)
-      -> void override;
-  auto RunDatabaseImportFromMemory(
-      const std::map<std::string, std::vector<DailyLog>>& data_map)
-      -> void override;
-  auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed = false,
-                 IngestMode ingest_mode = IngestMode::kStandard)
-      -> void override;
-  auto RunValidateStructure(const std::string& source_path) -> void override;
-  auto RunValidateLogic(const std::string& source_path,
-                        DateCheckMode date_check_mode) -> void override;
+#include "application/workflow/detail/workflow_handler_decl.inc"
 
- private:
-  fs::path output_root_path_;
-  std::shared_ptr<tracer_core::application::ports::IProcessedDataLoader>
-      processed_data_loader_;
-  std::shared_ptr<tracer_core::application::ports::ITimeSheetRepository>
-      time_sheet_repository_;
-  std::shared_ptr<tracer_core::application::ports::IDatabaseHealthChecker>
-      database_health_checker_;
-  std::shared_ptr<tracer_core::application::ports::IConverterConfigProvider>
-      converter_config_provider_;
-  std::shared_ptr<tracer_core::application::ports::IIngestInputProvider>
-      ingest_input_provider_;
-  std::shared_ptr<tracer_core::application::ports::IProcessedDataStorage>
-      processed_data_storage_;
-  std::shared_ptr<tracer_core::application::ports::IValidationIssueReporter>
-      validation_issue_reporter_;
+}  // namespace tracer::core::application::workflow
 
-  auto RunDatabaseImportFromMemoryReplacingMonth(
-      const std::map<std::string, std::vector<DailyLog>>& data_map, int year,
-      int month) -> void;
-};
+using WorkflowHandler = tracer::core::application::workflow::WorkflowHandler;
 
 #endif  // APPLICATION_WORKFLOW_HANDLER_H_

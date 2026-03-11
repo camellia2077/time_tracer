@@ -1,20 +1,30 @@
 // infrastructure/query/data/orchestrators/days_stats_orchestrator.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.internal.period;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.renderers;
+import tracer.core.infrastructure.query.data.stats;
+#endif
+
 #include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
 
 #include <utility>
 
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#if !TT_ENABLE_CPP20_MODULES
+#include "infrastructure/query/data/internal/period.hpp"
 #include "infrastructure/query/data/data_query_repository.hpp"
 #include "infrastructure/query/data/renderers/data_query_renderer.hpp"
 #include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
+#endif
 
 namespace query_internal =
-    infrastructure::persistence::data_query_service_internal;
+    tracer::core::infrastructure::query::data::internal;
+namespace data_query_repository = tracer::core::infrastructure::query::data;
 namespace data_query_renderers =
-    tracer_core::infrastructure::query::data::renderers;
-namespace data_query_stats = tracer_core::infrastructure::query::data::stats;
+    tracer::core::infrastructure::query::data::renderers;
+namespace data_query_stats = tracer::core::infrastructure::query::data::stats;
 
-namespace tracer_core::infrastructure::query::data::orchestrators {
+namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace {
 
 auto BuildSuccessOutput(std::string content)
@@ -35,10 +45,11 @@ auto HandleDaysStatsQuery(
   }
   stats_filters.limit.reset();
   stats_filters.reverse = false;
-  const auto kRows = QueryDayDurations(db_conn, stats_filters);
+  const auto kRows =
+      data_query_repository::QueryDayDurations(db_conn, stats_filters);
   const auto kStats = data_query_stats::ComputeDayDurationStats(kRows);
   return BuildSuccessOutput(data_query_renderers::RenderDayDurationStatsOutput(
       kRows, kStats, request.top_n, output_mode));
 }
 
-}  // namespace tracer_core::infrastructure::query::data::orchestrators
+}  // namespace tracer::core::infrastructure::query::data::orchestrators

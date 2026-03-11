@@ -7,10 +7,14 @@
 #include "infrastructure/query/data/data_query_types.hpp"
 #include "infrastructure/query/data/stats/stats_models.hpp"
 
+namespace tracer::core::infrastructure::query::data::stats {
+
+#include "infrastructure/query/data/stats/detail/report_chart_stats_calculator_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::stats
+
 namespace tracer_core::infrastructure::query::data::stats {
 
-[[nodiscard]] auto BuildReportChartSeries(
-    std::string_view start_date, std::string_view end_date,
-    const std::vector<DayDurationRow>& sparse_rows) -> ReportChartSeriesResult;
+using tracer::core::infrastructure::query::data::stats::BuildReportChartSeries;
 
 }  // namespace tracer_core::infrastructure::query::data::stats

@@ -9,11 +9,9 @@ import tracer.core.infrastructure.config.loader.report_config_loader;
 #include "infrastructure/config/loader/report_config_loader.hpp"
 #endif
 
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::infrastructure::modconfig::ReportConfigLoader;
-#endif
+using tracer::core::infrastructure::config::ReportConfigLoader;
 
-namespace ConfigDetailLoader {
+namespace tracer::core::infrastructure::config::internal {
 
 void LoadDetailedReports(AppConfig& config) {
   // Typst
@@ -91,4 +89,4 @@ void LoadDetailedReports(AppConfig& config) {
   }
 }
 
-}  // namespace ConfigDetailLoader
+}  // namespace tracer::core::infrastructure::config::internal

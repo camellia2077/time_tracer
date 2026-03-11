@@ -3,7 +3,7 @@
 
 #include <utility>
 
-namespace infrastructure::config {
+namespace tracer::core::infrastructure::config {
 
 StaticConverterConfigProvider::StaticConverterConfigProvider(
     ConverterConfig converter_config)
@@ -14,4 +14,4 @@ auto StaticConverterConfigProvider::LoadConverterConfig() const
   return converter_config_;
 }
 
-}  // namespace infrastructure::config
+}  // namespace tracer::core::infrastructure::config

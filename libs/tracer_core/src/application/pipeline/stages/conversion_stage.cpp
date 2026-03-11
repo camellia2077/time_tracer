@@ -20,7 +20,6 @@ import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::converter::LogProcessingResult;
 using tracer::core::domain::modlogic::converter::LogProcessor;
-namespace modcolors = tracer::core::shared::modcolors;
 
 #else
 
@@ -41,9 +40,10 @@ namespace modcolors = tracer::core::shared::modcolors;
 
 using ::LogProcessingResult;
 using ::LogProcessor;
-namespace modcolors = tracer_core::common::colors;
 
 #endif
+
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 namespace {

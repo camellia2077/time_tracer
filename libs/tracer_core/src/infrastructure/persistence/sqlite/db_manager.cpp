@@ -1,4 +1,9 @@
 // infrastructure/persistence/sqlite/db_manager.cpp
+#if TT_ENABLE_CPP20_MODULES
+import tracer.adapters.io.core.fs;
+import tracer.core.domain.ports.diagnostics;
+import tracer.core.shared.ansi_colors;
+#endif
 
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 
@@ -7,8 +12,27 @@
 #include <optional>
 #include <utility>
 
+#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_system_helper.hpp"
+#include "shared/types/ansi_colors.hpp"
+#endif
+
+#if TT_ENABLE_CPP20_MODULES
+namespace modcore = tracer::adapters::io::modcore;
+#else
+namespace modcore {
+
+[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
+  return ::FileSystemHelper::Exists(path);
+}
+
+}  // namespace modcore
+#endif
+
+namespace modports = tracer::core::domain::ports;
+
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace {
 auto QueryForeignKeysPragma(sqlite3* db_conn) -> std::optional<int> {
@@ -39,19 +63,17 @@ auto DBManager::OpenDatabaseIfNeeded() -> bool {
   }
 
   // [New] 使用 FileSystemHelper 检查文件存在性
-  if (!FileSystemHelper::Exists(db_name_)) {
-    tracer_core::domain::ports::EmitError(
-        std::string(tracer_core::common::colors::kRed) + "错误: 数据库文件 '" +
-        db_name_ + "' 不存在。请先导入数据。" +
-        std::string(tracer_core::common::colors::kReset));
+  if (!modcore::Exists(db_name_)) {
+    modports::EmitError(std::string(modcolors::kRed) + "错误: 数据库文件 '" +
+                        db_name_ + "' 不存在。请先导入数据。" +
+                        std::string(modcolors::kReset));
     return false;
   }
 
   if (sqlite3_open(db_name_.c_str(), &db_) != 0) {
-    tracer_core::domain::ports::EmitError(
-        std::string(tracer_core::common::colors::kRed) +
-        "错误: 无法打开数据库 " + db_name_ + ": " + sqlite3_errmsg(db_) +
-        std::string(tracer_core::common::colors::kReset));
+    modports::EmitError(std::string(modcolors::kRed) + "错误: 无法打开数据库 " +
+                        db_name_ + ": " + sqlite3_errmsg(db_) +
+                        std::string(modcolors::kReset));
     sqlite3_close(db_);
     db_ = nullptr;
     return false;
@@ -63,14 +85,12 @@ auto DBManager::OpenDatabaseIfNeeded() -> bool {
     const std::string kError =
         (err_msg != nullptr) ? err_msg : "unknown sqlite error";
     sqlite3_free(err_msg);
-    tracer_core::domain::ports::EmitWarn(
-        "警告: 无法启用 PRAGMA foreign_keys: " + kError);
+    modports::EmitWarn("警告: 无法启用 PRAGMA foreign_keys: " + kError);
   }
 
   const auto kFkStatus = QueryForeignKeysPragma(db_);
   if (!kFkStatus.has_value()) {
-    tracer_core::domain::ports::EmitWarn(
-        "警告: 无法读取 PRAGMA foreign_keys 状态。");
+    modports::EmitWarn("警告: 无法读取 PRAGMA foreign_keys 状态。");
   }
 
   return true;

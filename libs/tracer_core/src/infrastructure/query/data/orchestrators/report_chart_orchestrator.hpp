@@ -6,12 +6,16 @@
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
 
+namespace tracer::core::infrastructure::query::data::orchestrators {
+
+#include "infrastructure/query/data/orchestrators/detail/report_chart_orchestrator_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::orchestrators
+
 namespace tracer_core::infrastructure::query::data::orchestrators {
 
-auto HandleReportChartQuery(
-    sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
-    tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleReportChartQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
 

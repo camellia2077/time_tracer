@@ -1,4 +1,5 @@
 // infrastructure/reports/report_dto_export_writer.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/report_dto_export_writer.hpp"
 
 #include <algorithm>
@@ -8,7 +9,7 @@
 #include <string_view>
 #include <utility>
 
-namespace infrastructure::reports {
+namespace tracer::core::infrastructure::reports {
 
 namespace {
 
@@ -275,4 +276,4 @@ auto ReportDtoExportWriter::ExportAllYearly(
   exporter_->ExportAllYearlyReports(formatted_reports, format);
 }
 
-}  // namespace infrastructure::reports
+}  // namespace tracer::core::infrastructure::reports

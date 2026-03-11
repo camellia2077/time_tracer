@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace infrastructure::logging {
+namespace tracer::core::infrastructure::logging {
 
 auto ConsoleDiagnosticsSink::Emit(
     const tracer_core::domain::ports::DiagnosticSeverity kSeverity,
@@ -15,4 +15,4 @@ auto ConsoleDiagnosticsSink::Emit(
   std::cout << kMessage << std::endl;
 }
 
-}  // namespace infrastructure::logging
+}  // namespace tracer::core::infrastructure::logging

@@ -1,4 +1,5 @@
 // infrastructure/reports/services/daily_report_service.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/services/daily_report_service.hpp"
 // [修改] 指向新的 data 模块路径
 #include <stdexcept>
@@ -6,6 +7,8 @@
 #include "infrastructure/reports/data/queriers/daily/daily_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
+
+namespace tracer::core::infrastructure::reports::services {
 
 DailyReportService::DailyReportService(sqlite3* sqlite_db,
                                        const ReportCatalog& report_catalog)
@@ -19,7 +22,8 @@ auto DailyReportService::GenerateAllReports(ReportFormat format)
     -> FormattedGroupedReports {
   FormattedGroupedReports grouped_reports;
 
-  ProjectNameCache name_cache = reports::services::CreateProjectNameCache(db_);
+  ProjectNameCache name_cache =
+      ::reports::services::CreateProjectNameCache(db_);
 
   // 1. 委托 Fetcher 获取所有准备好的数据
   BatchDayDataFetcher fetcher(db_, name_cache);
@@ -35,7 +39,7 @@ auto DailyReportService::GenerateAllReports(ReportFormat format)
 
     if (data.total_duration > 0) {
       // [修改] 传入 name_cache 替代 db_
-      reports::services::EnsureProjectTree(data, name_cache);
+      ::reports::services::EnsureProjectTree(data, name_cache);
 
       // 格式化
       std::string formatted_report = formatter->FormatReport(data);
@@ -45,3 +49,5 @@ auto DailyReportService::GenerateAllReports(ReportFormat format)
 
   return grouped_reports;
 }
+
+}  // namespace tracer::core::infrastructure::reports::services

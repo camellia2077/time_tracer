@@ -18,8 +18,7 @@ import tracer.core.application.pipeline.stages;
 import tracer.core.domain.types.app_options;
 import tracer.core.shared.ansi_colors;
 
-using tracer::core::domain::modtypes::AppOptions;
-namespace modcolors = tracer::core::shared::modcolors;
+using tracer::core::domain::types::AppOptions;
 
 #else
 
@@ -40,9 +39,10 @@ namespace modcolors = tracer::core::shared::modcolors;
 #include "shared/types/ansi_colors.hpp"
 
 using ::AppOptions;
-namespace modcolors = tracer_core::common::colors;
 
 #endif
+
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 

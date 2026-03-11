@@ -11,22 +11,22 @@ namespace {
 
 using tracer::core::domain::moderrors::ErrorRecord;
 using tracer::core::domain::moderrors::ErrorSeverity;
-using tracer::core::domain::modmodel::ActivityStats;
-using tracer::core::domain::modmodel::BaseActivityRecord;
-using tracer::core::domain::modmodel::DailyLog;
-using tracer::core::domain::modmodel::ProcessingResult;
-using tracer::core::domain::modmodel::SourceSpan;
-using tracer::core::domain::modports::AppendErrorReport;
-using tracer::core::domain::modports::ClearBufferedDiagnostics;
-using tracer::core::domain::modports::ClearDiagnosticsDedup;
-using tracer::core::domain::modports::DiagnosticSeverity;
-using tracer::core::domain::modports::EmitWarn;
-using tracer::core::domain::modports::GetBufferedDiagnosticsSummary;
-using tracer::core::domain::modports::GetErrorReportDestinationLabel;
-using tracer::core::domain::modports::IDiagnosticsSink;
-using tracer::core::domain::modports::IErrorReportWriter;
-using tracer::core::domain::modports::SetDiagnosticsSink;
-using tracer::core::domain::modports::SetErrorReportWriter;
+using tracer::core::domain::model::ActivityStats;
+using tracer::core::domain::model::BaseActivityRecord;
+using tracer::core::domain::model::DailyLog;
+using tracer::core::domain::model::ProcessingResult;
+using tracer::core::domain::model::SourceSpan;
+using tracer::core::domain::ports::AppendErrorReport;
+using tracer::core::domain::ports::ClearBufferedDiagnostics;
+using tracer::core::domain::ports::ClearDiagnosticsDedup;
+using tracer::core::domain::ports::DiagnosticSeverity;
+using tracer::core::domain::ports::EmitWarn;
+using tracer::core::domain::ports::GetBufferedDiagnosticsSummary;
+using tracer::core::domain::ports::GetErrorReportDestinationLabel;
+using tracer::core::domain::ports::IDiagnosticsSink;
+using tracer::core::domain::ports::IErrorReportWriter;
+using tracer::core::domain::ports::SetDiagnosticsSink;
+using tracer::core::domain::ports::SetErrorReportWriter;
 using tracer::core::domain::modrepos::IProjectRepository;
 using tracer::core::domain::modrepos::ProjectEntity;
 using tracer::core::domain::modreports::DailyReportData;
@@ -35,10 +35,10 @@ using tracer::core::domain::modreports::PeriodReportData;
 using tracer::core::domain::modreports::ProjectTree;
 using tracer::core::domain::modreports::ReportFormat;
 using tracer::core::domain::modreports::WeeklyReportData;
-using tracer::core::domain::modtypes::AppOptions;
-using tracer::core::domain::modtypes::ConverterConfig;
-using tracer::core::domain::modtypes::DateCheckMode;
-using tracer::core::domain::modtypes::IngestMode;
+using tracer::core::domain::types::AppOptions;
+using tracer::core::domain::types::ConverterConfig;
+using tracer::core::domain::types::DateCheckMode;
+using tracer::core::domain::types::IngestMode;
 
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {

@@ -30,19 +30,9 @@ namespace modcore {
 }  // namespace modcore
 #endif
 
-#if TT_ENABLE_CPP20_MODULES
-namespace modconfig_internal = tracer::core::infrastructure::modconfig::internal;
-#else
-namespace modconfig_internal {
+namespace infra_config_internal = tracer::core::infrastructure::config::internal;
 
-using ::ConfigDetailLoader::LoadDetailedReports;
-using ::ConfigParserUtils::ParseCliDefaults;
-using ::ConfigParserUtils::ParseSystemSettings;
-using ::ConfigParserUtils::ResolveBundlePath;
-using ::ConfigParserUtils::TryParseBundlePaths;
-
-}  // namespace modconfig_internal
-#endif
+namespace tracer::core::infrastructure::config {
 
 ConfigLoader::ConfigLoader(const std::string& exe_path_str) {
   try {
@@ -78,16 +68,16 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   app_config.exe_dir_path = exe_path_;
 
   // 1. 解析基础路径和设置
-  modconfig_internal::ParseSystemSettings(tbl, exe_path_, main_config_path_,
+  infra_config_internal::ParseSystemSettings(tbl, exe_path_,
+                                             main_config_path_, app_config);
+  infra_config_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
                                           app_config);
-  modconfig_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
-                                       app_config);
 
-  const bool kBundlePathsLoaded = modconfig_internal::TryParseBundlePaths(
+  const bool kBundlePathsLoaded = infra_config_internal::TryParseBundlePaths(
       config_dir_path_, app_config);
   if (!kBundlePathsLoaded) {
     const fs::path kBundlePath =
-        modconfig_internal::ResolveBundlePath(config_dir_path_);
+        infra_config_internal::ResolveBundlePath(config_dir_path_);
     throw std::runtime_error(
         "Bundle path config not found: " + kBundlePath.string() +
         ". Legacy [converter]/[reports] fallback was removed. "
@@ -97,7 +87,7 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
 
   // 2. 加载报表配置
   try {
-    modconfig_internal::LoadDetailedReports(app_config);
+    infra_config_internal::LoadDetailedReports(app_config);
   } catch (const std::exception& e) {
     throw std::runtime_error("Failed to load report configuration details: " +
                              std::string(e.what()));
@@ -105,3 +95,5 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
 
   return app_config;
 }
+
+}  // namespace tracer::core::infrastructure::config

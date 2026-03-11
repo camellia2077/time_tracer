@@ -4,22 +4,31 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "infrastructure/config/file_converter_config_provider.hpp"
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#include "infrastructure/query/data/internal/report_mapping.hpp"
 #include "infrastructure/query/data/data_query_models.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/query/data/data_query_repository.hpp"
 #include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
 #include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
+#endif
 
-namespace infra_data_query = tracer_core::infrastructure::query::data;
+import tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.stats;
+
+namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace infra_data_query_orchestrators =
-    tracer_core::infrastructure::query::data::orchestrators;
+    tracer::core::infrastructure::query::data::orchestrators;
 namespace infra_data_query_stats =
-    tracer_core::infrastructure::query::data::stats;
+    tracer::core::infrastructure::query::data::stats;
+using FileConverterConfigProvider =
+    tracer::core::infrastructure::config::FileConverterConfigProvider;
 
-namespace infrastructure::persistence::data_query_service_internal {
+namespace tracer::core::infrastructure::query::data::internal {
 namespace {
 
 constexpr int kDefaultReportChartLookbackDays = 7;
@@ -47,7 +56,7 @@ auto BuildMappingNamesContent(
         "mapping_names query requires converter config path.");
   }
 
-  infrastructure::config::FileConverterConfigProvider config_provider(
+  FileConverterConfigProvider config_provider(
       *converter_config_toml_path,
       std::unordered_map<std::filesystem::path, std::filesystem::path>{});
   const ConverterConfig kConfig = config_provider.LoadConverterConfig();
@@ -177,4 +186,4 @@ auto BuildReportChartContent(
   return payload.dump();
 }
 
-}  // namespace infrastructure::persistence::data_query_service_internal
+}  // namespace tracer::core::infrastructure::query::data::internal

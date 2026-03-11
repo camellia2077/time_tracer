@@ -11,7 +11,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace tracer_core::infrastructure::query::data::stats {
+namespace tracer::core::infrastructure::query::data::stats {
 namespace {
 
 constexpr size_t kIsoDateLength = 10;
@@ -22,6 +22,9 @@ constexpr size_t kIsoDateMonthOffset = 5;
 constexpr size_t kIsoDateDayOffset = 8;
 constexpr size_t kIsoDateMonthDayLength = 2;
 constexpr int kDecimalBase = 10;
+
+using LegacyDayDurationRow =
+    ::tracer_core::infrastructure::query::data::DayDurationRow;
 
 auto ParseUnsigned(std::string_view value, int& out) -> bool {
   if (value.empty()) {
@@ -72,7 +75,7 @@ auto FormatIsoDate(const std::chrono::year_month_day& ymd) -> std::string {
   return stream.str();
 }
 
-auto BuildTotalsByDate(const std::vector<DayDurationRow>& sparse_rows)
+auto BuildTotalsByDate(const std::vector<LegacyDayDurationRow>& sparse_rows)
     -> std::unordered_map<std::string, long long> {
   std::unordered_map<std::string, long long> totals_by_date;
   totals_by_date.reserve(sparse_rows.size());
@@ -85,9 +88,9 @@ auto BuildTotalsByDate(const std::vector<DayDurationRow>& sparse_rows)
 }  // namespace
 
 // NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-auto BuildReportChartSeries(std::string_view start_date,
-                            std::string_view end_date,
-                            const std::vector<DayDurationRow>& sparse_rows)
+auto BuildReportChartSeries(
+    std::string_view start_date, std::string_view end_date,
+    const std::vector<LegacyDayDurationRow>& sparse_rows)
     -> ReportChartSeriesResult {
   const auto kStartYmd = ParseIsoDate(start_date);
   const auto kEndYmd = ParseIsoDate(end_date);
@@ -137,4 +140,4 @@ auto BuildReportChartSeries(std::string_view start_date,
   return result;
 }
 
-}  // namespace tracer_core::infrastructure::query::data::stats
+}  // namespace tracer::core::infrastructure::query::data::stats

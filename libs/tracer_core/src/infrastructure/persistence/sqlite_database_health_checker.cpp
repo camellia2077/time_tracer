@@ -1,10 +1,11 @@
 // infrastructure/persistence/sqlite_database_health_checker.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/sqlite_database_health_checker.hpp"
 
 #include <filesystem>
 #include <utility>
 
-namespace infrastructure::persistence {
+namespace tracer::core::infrastructure::persistence {
 
 SqliteDatabaseHealthChecker::SqliteDatabaseHealthChecker(std::string db_path)
     : db_path_(std::move(db_path)) {}
@@ -32,4 +33,4 @@ auto SqliteDatabaseHealthChecker::CheckReady()
   return {.ok = true, .message = ""};
 }
 
-}  // namespace infrastructure::persistence
+}  // namespace tracer::core::infrastructure::persistence

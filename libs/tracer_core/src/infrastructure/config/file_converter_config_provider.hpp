@@ -8,24 +8,15 @@
 
 #include "application/ports/i_converter_config_provider.hpp"
 
+namespace tracer::core::infrastructure::config {
+
+#include "infrastructure/config/detail/file_converter_config_provider_decl.inc"
+
+}  // namespace tracer::core::infrastructure::config
+
 namespace infrastructure::config {
 
-class FileConverterConfigProvider final
-    : public tracer_core::application::ports::IConverterConfigProvider {
- public:
-  FileConverterConfigProvider(
-      std::filesystem::path config_path,
-      std::unordered_map<std::filesystem::path, std::filesystem::path>
-          initial_top_parents);
-
-  [[nodiscard]] auto LoadConverterConfig() const -> ConverterConfig override;
-
- private:
-  std::filesystem::path config_path_;
-  std::unordered_map<std::filesystem::path, std::filesystem::path>
-      initial_top_parents_;
-  mutable std::optional<ConverterConfig> cached_config_;
-};
+using tracer::core::infrastructure::config::FileConverterConfigProvider;
 
 }  // namespace infrastructure::config
 

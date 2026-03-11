@@ -7,33 +7,26 @@
 #include "application/dto/core_responses.hpp"
 #include "infrastructure/query/data/data_query_models.hpp"
 
+namespace tracer::core::infrastructure::query::data::orchestrators {
+
+#include "infrastructure/query/data/orchestrators/detail/list_query_orchestrator_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::orchestrators
+
 namespace tracer_core::infrastructure::query::data::orchestrators {
 
-auto HandleYearsQuery(
-    sqlite3* db_conn, tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
-
-auto HandleMonthsQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                       tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
-
-auto HandleDaysQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                     tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
-
-auto HandleDaysDurationQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                             tracer_core::core::dto::DataQueryOutputMode
-                                 output_mode)
-    -> tracer_core::core::dto::TextOutput;
-
-auto HandleSearchQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                       tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
-
-auto HandleActivitySuggestQuery(
-    sqlite3* db_conn, const tracer_core::core::dto::DataQueryRequest& request,
-    tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> tracer_core::core::dto::TextOutput;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleActivitySuggestQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleDaysDurationQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleDaysQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleMonthsQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleSearchQuery;
+using tracer::core::infrastructure::query::data::orchestrators::
+    HandleYearsQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
 

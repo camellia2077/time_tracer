@@ -4,8 +4,14 @@ module;
 
 export module tracer.core.application.reporting.tree.data;
 
-export namespace tracer::core::application::modreporting::tree {
+export namespace tracer::core::application::reporting::tree {
 
 using ::ProjectTreeNode;
+
+}  // namespace tracer::core::application::reporting::tree
+
+export namespace tracer::core::application::modreporting::tree {
+
+using tracer::core::application::reporting::tree::ProjectTreeNode;
 
 }  // namespace tracer::core::application::modreporting::tree

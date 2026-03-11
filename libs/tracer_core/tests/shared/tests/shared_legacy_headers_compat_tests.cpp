@@ -55,6 +55,14 @@ void TestTypesHeaderCompat(int& failures) {
          "Legacy ANSI colors header path mismatch.", failures);
 }
 
+void TestCanonicalHeaderContracts(int& failures) {
+  Expect(tracer::core::shared::string_utils::Trim("  canonical  ") ==
+             "canonical",
+         "Canonical Trim header contract mismatch.", failures);
+  Expect(!tracer::core::shared::ansi_colors::kGreen.empty(),
+         "Canonical ANSI colors header contract mismatch.", failures);
+}
+
 }  // namespace
 
 auto main() -> int {
@@ -62,6 +70,7 @@ auto main() -> int {
   TestStringHeaderCompat(failures);
   TestPeriodHeaderCompat(failures);
   TestTypesHeaderCompat(failures);
+  TestCanonicalHeaderContracts(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_core_shared_legacy_headers_compat_tests\n";

@@ -6,14 +6,16 @@
 #include <string>
 #include <vector>
 
-/**
- * @brief 项目树节点数据结构，用于从 Application 层向 CLI 层传递树结构
- */
 struct ProjectTreeNode {
-  std::string name;
-  std::string path;
-  std::optional<long long> duration_seconds;
-  std::vector<ProjectTreeNode> children;
+
+#include "application/reporting/tree/detail/project_tree_data_decl.inc"
+
 };
+
+namespace tracer::core::application::reporting::tree {
+
+using ::ProjectTreeNode;
+
+}  // namespace tracer::core::application::reporting::tree
 
 #endif  // APPLICATION_REPORTING_TREE_PROJECT_TREE_DATA_H_

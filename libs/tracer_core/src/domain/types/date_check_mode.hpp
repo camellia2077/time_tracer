@@ -12,4 +12,10 @@ enum class DateCheckMode {
   kFull         // 检查完整性 (1号到月底)
 };
 
+namespace tracer::core::domain::types {
+
+#include "domain/detail/date_check_mode_contract.inc"
+
+}  // namespace tracer::core::domain::types
+
 #endif  // DOMAIN_TYPES_DATE_CHECK_MODE_H_

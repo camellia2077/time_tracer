@@ -22,12 +22,12 @@ using tracer::core::domain::modlogic::validator_structure::StructValidator;
 using tracer::core::domain::modlogic::validator_txt::LineRules;
 using tracer::core::domain::modlogic::validator_txt::StructureRules;
 using tracer::core::domain::modlogic::validator_txt::TextValidator;
-using tracer::core::domain::modmodel::BaseActivityRecord;
-using tracer::core::domain::modmodel::DailyLog;
-using tracer::core::domain::modmodel::RawEvent;
-using tracer::core::domain::modmodel::SourceSpan;
-using tracer::core::domain::modtypes::ConverterConfig;
-using tracer::core::domain::modtypes::DateCheckMode;
+using tracer::core::domain::model::BaseActivityRecord;
+using tracer::core::domain::model::DailyLog;
+using tracer::core::domain::model::RawEvent;
+using tracer::core::domain::model::SourceSpan;
+using tracer::core::domain::types::ConverterConfig;
+using tracer::core::domain::types::DateCheckMode;
 
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {

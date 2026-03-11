@@ -10,7 +10,7 @@ module tracer.core.application.pipeline.stages;
 import tracer.core.application.pipeline.types;
 import tracer.core.shared.ansi_colors;
 
-namespace modcolors = tracer::core::shared::modcolors;
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 

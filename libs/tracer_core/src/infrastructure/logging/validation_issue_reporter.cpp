@@ -1,8 +1,4 @@
 // infrastructure/logging/validation_issue_reporter.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.domain.ports.diagnostics;
-#endif
-
 #include "infrastructure/logging/validation_issue_reporter.hpp"
 
 #include <map>
@@ -11,17 +7,11 @@ import tracer.core.domain.ports.diagnostics;
 #include <string>
 #include <vector>
 
-#if !TT_ENABLE_CPP20_MODULES
 #include "domain/ports/diagnostics.hpp"
-#endif
 
-#if TT_ENABLE_CPP20_MODULES
-namespace modports = tracer::core::domain::modports;
-#else
-namespace modports = tracer_core::domain::ports;
-#endif
+namespace modports = tracer::core::domain::ports;
 
-namespace infrastructure::logging {
+namespace tracer::core::infrastructure::logging {
 namespace {
 
 auto BuildLogHeader(std::string_view filename) -> std::string {
@@ -237,4 +227,4 @@ void ValidationIssueReporter::ReportLogicDiagnostics(
   EmitReportSavedMessage(FlushReport(report_stream));
 }
 
-}  // namespace infrastructure::logging
+}  // namespace tracer::core::infrastructure::logging

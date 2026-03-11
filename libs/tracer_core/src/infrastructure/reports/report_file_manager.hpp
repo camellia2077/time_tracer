@@ -2,47 +2,23 @@
 #ifndef INFRASTRUCTURE_REPORTS_REPORT_FILE_MANAGER_H_
 #define INFRASTRUCTURE_REPORTS_REPORT_FILE_MANAGER_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.exporting.report_file_manager;
+#else
 #include <filesystem>
 #include <string>
 #include <vector>
 
 #include "domain/reports/types/report_types.hpp"
 
-namespace fs = std::filesystem;
+namespace tracer::core::infrastructure::reports {
 
-class ReportFileManager {
- public:
-  explicit ReportFileManager(fs::path export_root);
+#include "infrastructure/reports/detail/report_file_manager_decl.inc"
 
-  [[nodiscard]] auto GetSingleDayReportPath(const std::string& date,
-                                            ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetSingleMonthReportPath(const std::string& month,
-                                              ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetSinglePeriodReportPath(int days,
-                                               ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetSingleWeekReportPath(const std::string& iso_week,
-                                             ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetSingleYearReportPath(const std::string& year,
-                                             ReportFormat format) const
-      -> fs::path;
+}  // namespace tracer::core::infrastructure::reports
+#endif
 
-  [[nodiscard]] auto GetAllDailyReportsBaseDir(ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetAllMonthlyReportsBaseDir(ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetAllPeriodReportsBaseDir(ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetAllWeeklyReportsBaseDir(ReportFormat format) const
-      -> fs::path;
-  [[nodiscard]] auto GetAllYearlyReportsBaseDir(ReportFormat format) const
-      -> fs::path;
-
- private:
-  fs::path export_root_path_;
-};
+using ReportFileManager =
+    tracer::core::infrastructure::reports::ReportFileManager;
 
 #endif  // INFRASTRUCTURE_REPORTS_REPORT_FILE_MANAGER_H_

@@ -1,32 +1,18 @@
 // application/workflow_handler_stats_logging.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.importer.service;
-import tracer.core.shared.ansi_colors;
-#endif
-
 #include <iomanip>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-#if !TT_ENABLE_CPP20_MODULES
 #include "application/importer/import_service.hpp"
 #include "shared/types/ansi_colors.hpp"
-#endif
 #include "application/ports/i_processed_data_loader.hpp"
 #include "application/ports/logger.hpp"
 #include "application/workflow_handler.hpp"
 
 namespace app_ports = tracer_core::application::ports;
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::application::modimporter::ImportService;
-using tracer::core::application::modimporter::ImportStats;
-using tracer::core::application::modimporter::ReplaceMonthTarget;
-namespace modcolors = tracer::core::shared::modcolors;
-#else
-namespace modcolors = tracer_core::common::colors;
-#endif
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace workflow_handler_internal {
 auto ThrowIfImportTaskFailed(const ImportStats& stats,
@@ -117,6 +103,8 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
 
 }  // namespace
 
+namespace tracer::core::application::workflow {
+
 void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
   app_ports::LogInfo("正在解析 JSON 数据...");
 
@@ -163,3 +151,5 @@ auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingMonth(
   workflow_handler_internal::ThrowIfImportTaskFailed(
       stats, "Memory import (replace month) failed.");
 }
+
+}  // namespace tracer::core::application::workflow

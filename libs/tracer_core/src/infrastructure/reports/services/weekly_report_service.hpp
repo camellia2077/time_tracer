@@ -2,6 +2,9 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_WEEKLY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_WEEKLY_REPORT_SERVICE_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.querying.services.weekly_report_service;
+#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
@@ -11,18 +14,21 @@
 #include "domain/reports/types/report_types.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 
-class WeeklyReportService {
- public:
-  explicit WeeklyReportService(sqlite3* database_connection,
-                               const ReportCatalog& report_catalog);
+namespace tracer::core::infrastructure::reports::services {
 
-  [[nodiscard]] auto GenerateReports(ReportFormat format)
-      -> FormattedWeeklyReports;
+#include "infrastructure/reports/services/detail/weekly_report_service_decl.inc"
 
- private:
-  sqlite3* db_;
-  const ReportCatalog& report_catalog_;
-};
+}  // namespace tracer::core::infrastructure::reports::services
+#endif
+
+namespace infrastructure::reports::services {
+
+using tracer::core::infrastructure::reports::services::WeeklyReportService;
+
+}  // namespace infrastructure::reports::services
+
+using WeeklyReportService =
+    tracer::core::infrastructure::reports::services::WeeklyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_WEEKLY_REPORT_SERVICE_H_
 

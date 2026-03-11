@@ -8,6 +8,7 @@
 #include <string_view>
 
 #include "host/android_runtime_factory_internal.hpp"
+#include "infrastructure/config/models/app_config.hpp"
 #include "infrastructure/config/internal/config_parser_utils.hpp"
 #ifndef TT_REPORT_ENABLE_LATEX
 #define TT_REPORT_ENABLE_LATEX 1
@@ -18,6 +19,8 @@
 #endif
 
 namespace infrastructure::bootstrap::android_runtime_detail {
+
+namespace ConfigParserUtils = tracer::core::infrastructure::config::internal;
 
 #include "host/internal/android_runtime_factory_resolver_namespace.inc"
 

@@ -2,6 +2,9 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.querying.services.monthly_report_service;
+#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
@@ -11,24 +14,21 @@
 #include "domain/reports/types/report_types.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 
-class MonthlyReportService {
- public:
-  explicit MonthlyReportService(sqlite3* database_connection,
-                                const ReportCatalog& report_catalog);
+namespace tracer::core::infrastructure::reports::services {
 
-  /**
-   * @brief 生成所有历史月份的报告。
-   * * 优化说明：
-   * 内部不再循环调用 MonthQuerier，而是使用 SQL 聚合查询一次性获取所有数据，
-   * 避免了 N+1 查询问题，显著提升生成速度。
-   */
-  [[nodiscard]] auto GenerateReports(ReportFormat format)
-      -> FormattedMonthlyReports;
+#include "infrastructure/reports/services/detail/monthly_report_service_decl.inc"
 
- private:
-  sqlite3* db_;
-  const ReportCatalog& report_catalog_;
-};
+}  // namespace tracer::core::infrastructure::reports::services
+#endif
+
+namespace infrastructure::reports::services {
+
+using tracer::core::infrastructure::reports::services::MonthlyReportService;
+
+}  // namespace infrastructure::reports::services
+
+using MonthlyReportService =
+    tracer::core::infrastructure::reports::services::MonthlyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 

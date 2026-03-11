@@ -14,6 +14,9 @@
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 
+using ReportConfigLoader =
+    tracer::core::infrastructure::config::ReportConfigLoader;
+
 auto BuildAndroidReportCatalog(
     const std::filesystem::path& /*output_root*/,
     const AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog {

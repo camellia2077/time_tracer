@@ -10,35 +10,24 @@
 #include "application/dto/core_requests.hpp"
 #include "infrastructure/query/data/data_query_types.hpp"
 
+namespace tracer::core::infrastructure::query::data::renderers {
+
+#include "infrastructure/query/data/renderers/detail/data_query_renderer_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::renderers
+
 namespace tracer_core::infrastructure::query::data::renderers {
 
-[[nodiscard]] auto RenderListOutput(std::string_view action,
-                                    const std::vector<std::string>& items,
-                                    tracer_core::core::dto::DataQueryOutputMode
-                                        output_mode) -> std::string;
-
-[[nodiscard]] auto RenderDayDurationsOutput(
-    std::string_view action, const std::vector<DayDurationRow>& rows,
-    tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
-
-[[nodiscard]] auto RenderDayDurationStatsOutput(
-    const std::vector<DayDurationRow>& rows, const DayDurationStats& stats,
-    const std::optional<int>& top_n,
-    tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
-
-[[nodiscard]] auto RenderActivitySuggestionsOutput(
-    const std::vector<ActivitySuggestionRow>& rows,
-    tracer_core::core::dto::DataQueryOutputMode output_mode)
-    -> std::string;
-
-[[nodiscard]] auto RenderProjectTreeOutput(
-    const std::vector<ProjectTreeNode>& nodes, int max_depth,
-    tracer_core::core::dto::DataQueryOutputMode output_mode) -> std::string;
-
-[[nodiscard]] auto RenderJsonObjectOutput(std::string_view action,
-                                          std::string content,
-                                          tracer_core::core::dto::
-                                              DataQueryOutputMode output_mode)
-    -> std::string;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderActivitySuggestionsOutput;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderDayDurationsOutput;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderDayDurationStatsOutput;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderJsonObjectOutput;
+using tracer::core::infrastructure::query::data::renderers::RenderListOutput;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderProjectTreeOutput;
 
 }  // namespace tracer_core::infrastructure::query::data::renderers

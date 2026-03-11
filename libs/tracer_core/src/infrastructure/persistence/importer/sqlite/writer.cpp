@@ -1,8 +1,11 @@
 // infrastructure/persistence/importer/sqlite/writer.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/importer/sqlite/writer.hpp"
 #include <sqlite3.h>
 
 #include <stdexcept>
+
+#include "infrastructure/persistence/importer/sqlite/project_resolver.hpp"
 
 namespace {
 // Day Table Bind Indices
@@ -42,7 +45,7 @@ constexpr int kRecordIdxProjectPathSnapshot = 9;
 constexpr int kRecordIdxRemark = 10;
 }  // namespace
 
-namespace infrastructure::persistence::importer::sqlite {
+namespace tracer::core::infrastructure::persistence::importer::sqlite {
 
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 Writer::Writer(sqlite3* sqlite_db, sqlite3_stmt* stmt_day,
@@ -166,4 +169,4 @@ auto Writer::InsertRecords(const std::vector<TimeRecordInternal>& records)
   }
 }
 
-}  // namespace infrastructure::persistence::importer::sqlite
+}  // namespace tracer::core::infrastructure::persistence::importer::sqlite

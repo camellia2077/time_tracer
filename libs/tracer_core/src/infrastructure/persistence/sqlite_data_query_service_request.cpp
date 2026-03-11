@@ -11,11 +11,11 @@
 
 #include "domain/utils/time_utils.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
-#include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+#include "infrastructure/query/data/internal/request.hpp"
 
-namespace infra_data_query = tracer_core::infrastructure::query::data;
+namespace infra_data_query = tracer::core::infrastructure::query::data;
 
-namespace infrastructure::persistence::data_query_service_internal {
+namespace tracer::core::infrastructure::query::data::internal {
 namespace {
 
 constexpr int kDecimalBase = 10;
@@ -272,4 +272,4 @@ auto BuildCliFilters(const tracer_core::core::dto::DataQueryRequest& request)
   return filters;
 }
 
-}  // namespace infrastructure::persistence::data_query_service_internal
+}  // namespace tracer::core::infrastructure::query::data::internal

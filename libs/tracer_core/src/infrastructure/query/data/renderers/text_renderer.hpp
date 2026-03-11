@@ -8,30 +8,26 @@
 #include "application/reporting/tree/project_tree_data.hpp"
 #include "infrastructure/query/data/data_query_types.hpp"
 
+namespace tracer::core::infrastructure::query::data::renderers {
+
+#include "infrastructure/query/data/renderers/detail/text_renderer_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::renderers
+
 namespace tracer_core::infrastructure::query::data::renderers {
 
-[[nodiscard]] auto RenderListText(const std::vector<std::string>& items)
-    -> std::string;
-
-[[nodiscard]] auto RenderDayDurationsText(
-    const std::vector<DayDurationRow>& rows) -> std::string;
-
-[[nodiscard]] auto RenderDayDurationStatsText(const DayDurationStats& stats)
-    -> std::string;
-
-[[nodiscard]] auto RenderTopDayDurationsText(
-    const std::vector<DayDurationRow>& rows, int top_n) -> std::string;
-
-[[nodiscard]] auto RenderDayDurationStatsOutputText(
-    const std::vector<DayDurationRow>& rows, const DayDurationStats& stats,
-    const std::optional<int>& top_n) -> std::string;
-
-[[nodiscard]] auto RenderActivitySuggestionsText(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string;
-
-[[nodiscard]] auto RenderProjectTreeText(
-    const std::vector<ProjectTreeNode>& nodes, int max_depth) -> std::string;
-
-[[nodiscard]] auto RenderJsonObjectText(std::string content) -> std::string;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderActivitySuggestionsText;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderDayDurationsText;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderDayDurationStatsOutputText;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderDayDurationStatsText;
+using tracer::core::infrastructure::query::data::renderers::RenderJsonObjectText;
+using tracer::core::infrastructure::query::data::renderers::RenderListText;
+using tracer::core::infrastructure::query::data::renderers::RenderProjectTreeText;
+using tracer::core::infrastructure::query::data::renderers::
+    RenderTopDayDurationsText;
 
 }  // namespace tracer_core::infrastructure::query::data::renderers

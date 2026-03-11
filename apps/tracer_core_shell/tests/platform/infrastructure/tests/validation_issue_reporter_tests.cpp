@@ -1,15 +1,20 @@
 // infrastructure/tests/validation_issue_reporter_tests.cpp
+import tracer.core.infrastructure.logging;
+
 #include <iostream>
 #include <memory>
 #include <string>
 #include <string_view>
 
+#include "domain/logic/validator/common/diagnostic.hpp"
+#include "domain/logic/validator/common/validator_utils.hpp"
 #include "domain/ports/diagnostics.hpp"
-#include "infrastructure/logging/validation_issue_reporter.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests {
 namespace {
+
+namespace infra_logging = tracer::core::infrastructure::logging;
 
 constexpr int kUnrecognizedActivityLine = 14;
 constexpr int kDurationDiagnosticLine = 81;
@@ -123,7 +128,7 @@ auto InstallCapturingPorts()
 auto TestStructureReporterRendersPathAndLine(int& failures) -> void {
   DiagnosticsStateGuard guard;
   auto [sink, writer] = InstallCapturingPorts();
-  infrastructure::logging::ValidationIssueReporter reporter;
+  infra_logging::ValidationIssueReporter reporter;
 
   std::set<validator::Error> errors;
   errors.insert(
@@ -157,7 +162,7 @@ auto TestStructureReporterRendersPathAndLine(int& failures) -> void {
 auto TestLogicReporterPrefersSourceSpanPath(int& failures) -> void {
   DiagnosticsStateGuard guard;
   auto [sink, writer] = InstallCapturingPorts();
-  infrastructure::logging::ValidationIssueReporter reporter;
+  infra_logging::ValidationIssueReporter reporter;
 
   std::vector<validator::Diagnostic> diagnostics;
   diagnostics.push_back(BuildDiagnosticWithSpan(

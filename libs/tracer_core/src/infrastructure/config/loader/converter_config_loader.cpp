@@ -32,11 +32,7 @@ namespace modcore {
 }  // namespace modcore
 #endif
 
-#if TT_ENABLE_CPP20_MODULES
-namespace modloader = tracer::core::infrastructure::modconfig::loader;
-#else
-namespace modloader = TomlLoaderUtils;
-#endif
+namespace modloader = tracer::core::infrastructure::config::loader;
 
 namespace {
 
@@ -70,6 +66,8 @@ auto BuildTextMappingsFromAlias(toml::table& main_tbl,
 }
 
 }  // namespace
+
+namespace tracer::core::infrastructure::config {
 
 auto ConverterConfigLoader::MergeTomlTable(toml::table& target,
                                            const toml::table& source) -> void {
@@ -359,3 +357,5 @@ auto ConverterConfigLoader::LoadFromFile(const fs::path& main_config_path)
   ParseTomlToStruct(merged_toml, config);
   return config;
 }
+
+}  // namespace tracer::core::infrastructure::config

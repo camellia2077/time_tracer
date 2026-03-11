@@ -56,4 +56,10 @@ auto GetCurrentRunErrorLogPath() -> std::string;
 
 }  // namespace tracer_core::domain::ports
 
+namespace tracer::core::domain::ports {
+
+#include "domain/detail/diagnostics_contract.inc"
+
+}  // namespace tracer::core::domain::ports
+
 #endif  // DOMAIN_PORTS_DIAGNOSTICS_H_

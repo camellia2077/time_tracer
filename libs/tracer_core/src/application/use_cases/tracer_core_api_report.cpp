@@ -1,8 +1,4 @@
 // application/use_cases/tracer_core_api_report.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.use_cases.helpers;
-#endif
-
 #include <cctype>
 #include <chrono>
 #include <exception>
@@ -22,13 +18,12 @@ import tracer.core.application.use_cases.helpers;
 #include "application/use_cases/tracer_core_api_helpers.hpp"
 #endif
 
-using namespace tracer_core::core::dto;
 #if TT_ENABLE_CPP20_MODULES
-namespace core_api_helpers = tracer::core::application::modusecases::helpers;
-#else
-namespace core_api_helpers =
-    tracer_core::application::use_cases::core_api_helpers;
+import tracer.core.application.use_cases.helpers;
 #endif
+
+using namespace tracer_core::core::dto;
+namespace core_api_helpers = tracer::core::application::use_cases::helpers;
 
 namespace {
 
@@ -150,6 +145,8 @@ auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
 
 }  // namespace
 
+namespace tracer::core::application::use_cases {
+
 auto TracerCoreApi::RunReportQuery(const ReportQueryRequest& request)
     -> TextOutput {
   try {
@@ -270,3 +267,5 @@ auto TracerCoreApi::RunStructuredReportQuery(
 }
 
 #include "application/use_cases/internal/tracer_core_api_report_period_export.inc"
+
+}  // namespace tracer::core::application::use_cases

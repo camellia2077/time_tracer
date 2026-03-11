@@ -1,4 +1,5 @@
 // infrastructure/persistence/importer/sqlite/statement.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/importer/sqlite/statement.hpp"
 #include <sqlite3.h>
 
@@ -8,7 +9,7 @@
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
 
-namespace infrastructure::persistence::importer::sqlite {
+namespace tracer::core::infrastructure::persistence::importer::sqlite {
 
 Statement::Statement(sqlite3* sqlite_db) : db_(sqlite_db) {
   PrepareStatements();
@@ -136,4 +137,4 @@ auto Statement::FinalizeStatements() -> void {
   }
 }
 
-}  // namespace infrastructure::persistence::importer::sqlite
+}  // namespace tracer::core::infrastructure::persistence::importer::sqlite

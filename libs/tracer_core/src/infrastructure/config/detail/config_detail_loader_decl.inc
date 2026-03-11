@@ -1,0 +1,1 @@
+void LoadDetailedReports(AppConfig& config);

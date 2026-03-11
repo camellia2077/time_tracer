@@ -2,6 +2,9 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.querying.services.daily_report_service;
+#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
@@ -10,30 +13,21 @@
 #include "domain/reports/types/report_types.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 
-class DailyReportService {
- public:
-  /**
-   * @brief 构造函数。
-   * @param db
-   * 指向数据库连接的指针。
+namespace tracer::core::infrastructure::reports::services {
 
-   * *
-   * @param config 应用程序配置对象的引用。
-   */
-  explicit DailyReportService(sqlite3* sqlite_db,
-                              const ReportCatalog& report_catalog);
+#include "infrastructure/reports/services/detail/daily_report_service_decl.inc"
 
-  /**
-   * @brief 生成所有日报并返回分类好的结果。
-   * @param format 需要生成的报告格式。
-   * @return 一个包含所有格式化后日报的嵌套 map。
-   */
-  auto GenerateAllReports(ReportFormat format) -> FormattedGroupedReports;
+}  // namespace tracer::core::infrastructure::reports::services
+#endif
 
- private:
-  sqlite3* db_;
-  const ReportCatalog& report_catalog_;
-};
+namespace infrastructure::reports::services {
+
+using tracer::core::infrastructure::reports::services::DailyReportService;
+
+}  // namespace infrastructure::reports::services
+
+using DailyReportService =
+    tracer::core::infrastructure::reports::services::DailyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 

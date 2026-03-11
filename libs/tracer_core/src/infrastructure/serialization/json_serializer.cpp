@@ -17,12 +17,9 @@ import tracer.core.shared.string_utils;
 
 #include "infrastructure/schema/day_schema.hpp"
 
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::shared::modutils::SplitString;
-namespace modports = tracer::core::domain::modports;
-#else
-namespace modports = tracer_core::domain::ports;
-#endif
+using tracer::core::shared::string_utils::SplitString;
+
+namespace modports = tracer::core::domain::ports;
 
 namespace serializer {
 namespace {

@@ -1,3 +1,4 @@
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 // infrastructure/reports/sqlite_report_data_query_service.cpp
 #include "infrastructure/reports/sqlite_report_data_query_service.hpp"
 
@@ -13,7 +14,7 @@
 #include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 
-namespace infrastructure::reports {
+namespace tracer::core::infrastructure::reports {
 
 namespace {
 
@@ -152,4 +153,4 @@ auto SqliteReportDataQueryService::QueryAllYearly()
   return reports;
 }
 
-}  // namespace infrastructure::reports
+}  // namespace tracer::core::infrastructure::reports

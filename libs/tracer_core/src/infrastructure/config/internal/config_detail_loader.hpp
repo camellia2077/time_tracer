@@ -4,9 +4,15 @@
 
 #include "infrastructure/config/models/app_config.hpp"
 
+namespace tracer::core::infrastructure::config::internal {
+
+#include "infrastructure/config/detail/config_detail_loader_decl.inc"
+
+}  // namespace tracer::core::infrastructure::config::internal
+
 namespace ConfigDetailLoader {
 
-void LoadDetailedReports(AppConfig& config);
+using tracer::core::infrastructure::config::internal::LoadDetailedReports;
 
 }  // namespace ConfigDetailLoader
 

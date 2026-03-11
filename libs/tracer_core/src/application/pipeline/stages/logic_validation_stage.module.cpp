@@ -16,7 +16,7 @@ import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::validator_common::Diagnostic;
 using tracer::core::domain::modlogic::validator_structure::StructValidator;
-namespace modcolors = tracer::core::shared::modcolors;
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 namespace {

@@ -1,4 +1,5 @@
 // infrastructure/reports/services/yearly_report_service.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/services/yearly_report_service.hpp"
 
 #include <stdexcept>
@@ -7,6 +8,8 @@
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 #include "shared/utils/period_utils.hpp"
+
+namespace tracer::core::infrastructure::reports::services {
 
 YearlyReportService::YearlyReportService(sqlite3* sqlite_db,
                                          const ReportCatalog& report_catalog)
@@ -20,7 +23,8 @@ auto YearlyReportService::GenerateReports(ReportFormat format)
     -> FormattedYearlyReports {
   FormattedYearlyReports reports;
 
-  ProjectNameCache name_cache = reports::services::CreateProjectNameCache(db_);
+  ProjectNameCache name_cache =
+      ::reports::services::CreateProjectNameCache(db_);
 
   BatchYearDataFetcher fetcher(db_);
   auto all_years_data = fetcher.FetchAllData();
@@ -28,7 +32,7 @@ auto YearlyReportService::GenerateReports(ReportFormat format)
   auto formatter = GenericFormatterFactory<YearlyReportData>::Create(
       format, report_catalog_);
 
-  reports::services::FormatReportMap(
+  ::reports::services::FormatReportMap(
       all_years_data, formatter, name_cache,
       [&](const std::string& year_label,
           const std::string& formatted_report) -> void {
@@ -40,3 +44,5 @@ auto YearlyReportService::GenerateReports(ReportFormat format)
 
   return reports;
 }
+
+}  // namespace tracer::core::infrastructure::reports::services

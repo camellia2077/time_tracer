@@ -1,12 +1,17 @@
 // infrastructure/persistence/repositories/sqlite_project_repository.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
 #include <sqlite3.h>
 
 #include <format>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 #include "infrastructure/schema/sqlite_schema.hpp"
+
+namespace tracer::core::infrastructure::persistence {
+
 SqliteProjectRepository::SqliteProjectRepository(std::string db_path)
     : db_path_(std::move(db_path)) {}
 
@@ -52,3 +57,5 @@ auto SqliteProjectRepository::GetAllProjects() -> std::vector<ProjectEntity> {
 
   return projects;
 }
+
+}  // namespace tracer::core::infrastructure::persistence

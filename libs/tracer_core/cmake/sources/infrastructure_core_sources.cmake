@@ -17,6 +17,20 @@ else()
         "platform/android/android_platform_clock.cpp")
 endif()
 
+if(TT_CPP20_MODULES_EFFECTIVE)
+    set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
+        "query/data/stats/day_duration_stats_calculator.module.cpp"
+        "query/data/stats/report_chart_stats_calculator.module.cpp"
+        "query/data/stats/stats_boundary.module.cpp"
+    )
+else()
+    set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
+        "query/data/stats/day_duration_stats_calculator.cpp"
+        "query/data/stats/report_chart_stats_calculator.cpp"
+        "query/data/stats/stats_boundary.cpp"
+    )
+endif()
+
 set(TIME_TRACKER_INFRA_CORE_SOURCES
     "query/data/data_query_repository.cpp"
     "query/data/data_query_sql_common.cpp"
@@ -26,9 +40,7 @@ set(TIME_TRACKER_INFRA_CORE_SOURCES
     "query/data/data_query_sql_builders_activity.cpp"
     "query/data/data_query_row_mappers.cpp"
     "query/data/data_query_repository_sql.cpp"
-    "query/data/stats/day_duration_stats_calculator.cpp"
-    "query/data/stats/report_chart_stats_calculator.cpp"
-    "query/data/stats/stats_boundary.cpp"
+    ${TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES}
     "query/data/orchestrators/date_range_resolver.cpp"
     "query/data/orchestrators/list_query_orchestrator.cpp"
     "query/data/orchestrators/days_stats_orchestrator.cpp"

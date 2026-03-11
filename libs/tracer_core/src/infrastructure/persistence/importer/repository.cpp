@@ -1,4 +1,5 @@
 // infrastructure/persistence/importer/repository.cpp
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/persistence/importer/repository.hpp"
 #include <sqlite3.h>
 
@@ -7,11 +8,14 @@
 #include <optional>
 #include <stdexcept>
 
+#include "infrastructure/persistence/importer/sqlite/connection.hpp"
+#include "infrastructure/persistence/importer/sqlite/statement.hpp"
+#include "infrastructure/persistence/importer/sqlite/writer.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
 
-namespace infrastructure::persistence::importer {
+namespace tracer::core::infrastructure::persistence::importer {
 
 namespace {
 
@@ -42,12 +46,9 @@ struct MonthBoundary {
 
 }  // namespace
 
-Repository::Repository(const std::string& db_path) {
-  // This constructor must stay free of persistence side effects in the final
-  // design. Database creation / schema initialization belong to the explicit
-  // write phase after ingest validation has passed.
-  db_path_ = db_path;
-}
+Repository::Repository(const std::string& db_path) : db_path_(db_path) {}
+
+Repository::~Repository() = default;
 
 auto Repository::IsDbOpen() const -> bool {
   return connection_manager_ && (connection_manager_->GetDb() != nullptr);
@@ -192,4 +193,4 @@ auto Repository::TryGetLatestActivityTailBeforeDate(std::string_view date) const
   return result;
 }
 
-}  // namespace infrastructure::persistence::importer
+}  // namespace tracer::core::infrastructure::persistence::importer

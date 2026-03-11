@@ -111,11 +111,48 @@ void TestLegacyHeaderPath(int& failures) {
          failures);
 }
 
+void TestCanonicalHeaderContracts(int& failures) {
+  tracer::core::domain::types::AppOptions options;
+  options.convert = true;
+  options.date_check_mode = tracer::core::domain::types::DateCheckMode::kNone;
+  Expect(options.convert, "Canonical AppOptions header contract mismatch.",
+         failures);
+
+  tracer::core::domain::types::ConverterConfig config;
+  config.header_order = {"study"};
+  Expect(config.header_order.size() == 1U,
+         "Canonical ConverterConfig header contract mismatch.", failures);
+
+  const auto ingest_mode =
+      tracer::core::domain::types::IngestMode::kSingleTxtReplaceMonth;
+  Expect(
+      ingest_mode ==
+          tracer::core::domain::types::IngestMode::kSingleTxtReplaceMonth,
+      "Canonical IngestMode header contract mismatch.", failures);
+
+  tracer::core::domain::model::SourceSpan span;
+  span.line_start = 1;
+  Expect(span.HasLine(), "Canonical SourceSpan header contract mismatch.",
+         failures);
+
+  tracer::core::domain::model::DailyLog day;
+  day.processedActivities.push_back(
+      tracer::core::domain::model::BaseActivityRecord{});
+  day.stats = tracer::core::domain::model::ActivityStats{.study_time = 30};
+  Expect(day.processedActivities.size() == 1U,
+         "Canonical DailyLog header contract mismatch.", failures);
+
+  tracer::core::domain::model::ProcessingResult result;
+  Expect(result.success,
+         "Canonical ProcessingResult header contract mismatch.", failures);
+}
+
 }  // namespace
 
 auto main() -> int {
   int failures = 0;
   TestLegacyHeaderPath(failures);
+  TestCanonicalHeaderContracts(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_core_domain_legacy_headers_compat_tests\n";

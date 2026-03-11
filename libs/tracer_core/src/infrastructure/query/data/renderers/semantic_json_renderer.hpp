@@ -9,28 +9,25 @@
 #include "application/reporting/tree/project_tree_data.hpp"
 #include "infrastructure/query/data/data_query_types.hpp"
 
+namespace tracer::core::infrastructure::query::data::renderers {
+
+#include "infrastructure/query/data/renderers/detail/semantic_json_renderer_decl.inc"
+
+}  // namespace tracer::core::infrastructure::query::data::renderers
+
 namespace tracer_core::infrastructure::query::data::renderers {
 
-[[nodiscard]] auto BuildSemanticListPayload(
-    std::string_view action, const std::vector<std::string>& items)
-    -> std::string;
-
-[[nodiscard]] auto BuildSemanticDayDurationsPayload(
-    std::string_view action, const std::vector<DayDurationRow>& rows)
-    -> std::string;
-
-[[nodiscard]] auto BuildSemanticDayStatsPayload(
-    const std::vector<DayDurationRow>& rows, const DayDurationStats& stats,
-    const std::optional<int>& top_n) -> std::string;
-
-[[nodiscard]] auto BuildSemanticActivitySuggestionsPayload(
-    const std::vector<ActivitySuggestionRow>& rows) -> std::string;
-
-[[nodiscard]] auto BuildSemanticTreePayload(
-    const std::vector<ProjectTreeNode>& nodes, int max_depth) -> std::string;
-
-[[nodiscard]] auto BuildSemanticJsonObjectPayload(std::string_view action,
-                                                  std::string content)
-    -> std::string;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticActivitySuggestionsPayload;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticDayDurationsPayload;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticDayStatsPayload;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticJsonObjectPayload;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticListPayload;
+using tracer::core::infrastructure::query::data::renderers::
+    BuildSemanticTreePayload;
 
 }  // namespace tracer_core::infrastructure::query::data::renderers

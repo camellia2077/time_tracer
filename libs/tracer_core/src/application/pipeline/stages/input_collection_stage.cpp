@@ -11,8 +11,6 @@ module tracer.core.application.pipeline.stages;
 import tracer.core.application.pipeline.types;
 import tracer.core.shared.ansi_colors;
 
-namespace modcolors = tracer::core::shared::modcolors;
-
 #else
 
 #include "application/pipeline/pipeline_stages.hpp"
@@ -23,9 +21,9 @@ namespace modcolors = tracer::core::shared::modcolors;
 #include "application/ports/logger.hpp"
 #include "shared/types/ansi_colors.hpp"
 
-namespace modcolors = tracer_core::common::colors;
-
 #endif
+
+namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 

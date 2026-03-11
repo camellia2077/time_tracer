@@ -8,18 +8,18 @@
 #include "application/reporting/tree/project_tree_data.hpp"
 #include "domain/reports/models/project_tree.hpp"
 
+namespace tracer::core::application::reporting::tree {
+
+#include "application/reporting/tree/detail/project_tree_nodes_decl.inc"
+
+}  // namespace tracer::core::application::reporting::tree
+
 namespace tracer_core::application::reporting::tree {
 
-[[nodiscard]] auto BuildProjectTreeNodesFromReportTree(
-    const ::reporting::ProjectTree& tree) -> std::vector<ProjectTreeNode>;
-
-[[nodiscard]] auto FindProjectTreeNodesByPath(
-    const std::vector<ProjectTreeNode>& roots, std::string_view root_pattern)
-    -> std::vector<ProjectTreeNode>;
-
-[[nodiscard]] auto LimitProjectTreeDepth(
-    const std::vector<ProjectTreeNode>& roots, int max_depth)
-    -> std::vector<ProjectTreeNode>;
+using tracer::core::application::reporting::tree::
+    BuildProjectTreeNodesFromReportTree;
+using tracer::core::application::reporting::tree::FindProjectTreeNodesByPath;
+using tracer::core::application::reporting::tree::LimitProjectTreeDepth;
 
 }  // namespace tracer_core::application::reporting::tree
 

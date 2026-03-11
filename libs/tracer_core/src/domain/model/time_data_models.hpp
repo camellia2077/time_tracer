@@ -44,4 +44,10 @@ struct BaseActivityRecord {
   std::optional<SourceSpan> source_span;
 };
 
+namespace tracer::core::domain::model {
+
+#include "domain/detail/time_data_models_contract.inc"
+
+}  // namespace tracer::core::domain::model
+
 #endif  // DOMAIN_MODEL_TIME_DATA_MODELS_H_

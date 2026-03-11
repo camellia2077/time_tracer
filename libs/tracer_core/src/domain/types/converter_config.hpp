@@ -29,4 +29,10 @@ struct ConverterConfig {
   std::unordered_map<std::string, std::string> initial_top_parents;
 };
 
+namespace tracer::core::domain::types {
+
+#include "domain/detail/converter_config_contract.inc"
+
+}  // namespace tracer::core::domain::types
+
 #endif  // DOMAIN_TYPES_CONVERTER_CONFIG_H_

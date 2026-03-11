@@ -1,3 +1,8 @@
+#define TT_FORCE_LEGACY_HEADER_DECLS 1
+#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.reports.querying.services;
+#endif
+
 // infrastructure/reports/report_service.cpp
 #include "infrastructure/reports/report_service.hpp"
 
@@ -15,11 +20,15 @@
 #include "infrastructure/reports/data/queriers/weekly/weekly_querier.hpp"
 #include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
+#if !TT_ENABLE_CPP20_MODULES
 #include "infrastructure/reports/services/daily_report_service.hpp"
 #include "infrastructure/reports/services/monthly_report_service.hpp"
 #include "infrastructure/reports/services/weekly_report_service.hpp"
 #include "infrastructure/reports/services/yearly_report_service.hpp"
+#endif
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
+
+namespace tracer::core::infrastructure::reports {
 
 ReportService::ReportService(
     sqlite3* sqlite_db, const ReportCatalog& catalog,
@@ -72,13 +81,13 @@ auto ReportService::RunYearlyQuery(std::string_view year_str,
 
 auto ReportService::RunExportAllDailyReportsQuery(ReportFormat format) const
     -> FormattedGroupedReports {
-  DailyReportService generator(db_, report_catalog_);
+  services::DailyReportService generator(db_, report_catalog_);
   return generator.GenerateAllReports(format);
 }
 
 auto ReportService::RunExportAllMonthlyReportsQuery(ReportFormat format) const
     -> FormattedMonthlyReports {
-  MonthlyReportService generator(db_, report_catalog_);
+  services::MonthlyReportService generator(db_, report_catalog_);
   return generator.GenerateReports(format);
 }
 
@@ -90,7 +99,8 @@ auto ReportService::RunExportAllPeriodReportsQuery(
     return reports;
   }
 
-  ProjectNameCache name_cache = reports::services::CreateProjectNameCache(db_);
+  ProjectNameCache name_cache =
+      ::reports::services::CreateProjectNameCache(db_);
 
   BatchPeriodDataFetcher fetcher(db_, *platform_clock_);
   std::map<int, PeriodReportData> all_data = fetcher.FetchAllData(days_list);
@@ -98,7 +108,7 @@ auto ReportService::RunExportAllPeriodReportsQuery(
   auto formatter = GenericFormatterFactory<PeriodReportData>::Create(
       format, report_catalog_);
 
-  reports::services::FormatReportMap(
+  ::reports::services::FormatReportMap(
       all_data, formatter, name_cache,
       [&](int days, const std::string& formatted_report) -> void {
         if (days > 0) {
@@ -111,13 +121,13 @@ auto ReportService::RunExportAllPeriodReportsQuery(
 
 auto ReportService::RunExportAllWeeklyReportsQuery(ReportFormat format) const
     -> FormattedWeeklyReports {
-  WeeklyReportService generator(db_, report_catalog_);
+  services::WeeklyReportService generator(db_, report_catalog_);
   return generator.GenerateReports(format);
 }
 
 auto ReportService::RunExportAllYearlyReportsQuery(ReportFormat format) const
     -> FormattedYearlyReports {
-  YearlyReportService generator(db_, report_catalog_);
+  services::YearlyReportService generator(db_, report_catalog_);
   return generator.GenerateReports(format);
 }
 
@@ -139,3 +149,5 @@ auto ReportService::GetOrCreatePeriodFormatter(ReportFormat format) const
 
   return *(inserted_iter->second);
 }
+
+}  // namespace tracer::core::infrastructure::reports

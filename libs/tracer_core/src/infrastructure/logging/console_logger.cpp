@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-namespace infrastructure::logging {
+namespace tracer::core::infrastructure::logging {
 
 auto ConsoleLogger::Log(tracer_core::application::ports::LogSeverity severity,
                         std::string_view message) -> void {
@@ -15,4 +15,4 @@ auto ConsoleLogger::Log(tracer_core::application::ports::LogSeverity severity,
   std::cout << message << std::endl;
 }
 
-}  // namespace infrastructure::logging
+}  // namespace tracer::core::infrastructure::logging

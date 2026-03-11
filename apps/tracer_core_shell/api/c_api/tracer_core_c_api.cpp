@@ -21,6 +21,12 @@ using tracer_core::core::c_api::internal::BuildCapabilitiesResponseJson;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::SetLastError;
 
+namespace {
+
+using ConfigLoader = tracer::core::infrastructure::config::ConfigLoader;
+
+}  // namespace
+
 #include "api/c_api/internal/tracer_core_c_api_namespace.inc"
 
 

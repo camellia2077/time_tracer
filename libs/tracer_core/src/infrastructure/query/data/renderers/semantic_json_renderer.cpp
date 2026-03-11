@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-namespace tracer_core::infrastructure::query::data::renderers {
+namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
 constexpr int kSemanticSchemaVersion = 1;
@@ -221,4 +221,4 @@ auto BuildSemanticJsonObjectPayload(std::string_view action,
   return payload.dump();
 }
 
-}  // namespace tracer_core::infrastructure::query::data::renderers
+}  // namespace tracer::core::infrastructure::query::data::renderers

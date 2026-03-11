@@ -7,4 +7,10 @@ enum class IngestMode {
   kSingleTxtReplaceMonth = 1,
 };
 
+namespace tracer::core::domain::types {
+
+#include "domain/detail/ingest_mode_contract.inc"
+
+}  // namespace tracer::core::domain::types
+
 #endif  // DOMAIN_TYPES_INGEST_MODE_H_

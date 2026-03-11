@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-namespace tracer_core::application::reporting::tree {
+namespace tracer::core::application::reporting::tree {
 namespace {
 
 struct NamedReportNodeRef {
@@ -150,4 +150,4 @@ auto LimitProjectTreeDepth(const std::vector<ProjectTreeNode>& roots,
   return out;
 }
 
-}  // namespace tracer_core::application::reporting::tree
+}  // namespace tracer::core::application::reporting::tree

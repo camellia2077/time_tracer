@@ -1,34 +1,20 @@
 // application/workflow_handler_entry.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.application.pipeline.orchestrator;
-import tracer.core.domain.types.app_options;
-import tracer.core.domain.types.date_check_mode;
-import tracer.core.domain.ports.diagnostics;
-#endif
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
 
-#if !TT_ENABLE_CPP20_MODULES
 #include "application/pipeline/pipeline_orchestrator.hpp"
 #include "domain/ports/diagnostics.hpp"
 #include "domain/types/app_options.hpp"
-#endif
 #include "application/workflow_handler.hpp"
 
 namespace app_ports = tracer_core::application::ports;
 namespace app_pipeline = tracer::core::application::pipeline;
-#if TT_ENABLE_CPP20_MODULES
-using tracer::core::domain::modtypes::AppOptions;
-using tracer::core::domain::modtypes::DateCheckMode;
-namespace modports = tracer::core::domain::modports;
-#else
 using ::AppOptions;
 using ::DateCheckMode;
-namespace modports = tracer_core::domain::ports;
-#endif
+
+namespace modports = tracer::core::domain::ports;
 
 using app_pipeline::PipelineOrchestrator;
 
@@ -76,6 +62,7 @@ auto RunPipelineOrThrow(PipelineOrchestrator& pipeline,
 
 }  // namespace
 
+namespace tracer::core::application::workflow {
 WorkflowHandler::WorkflowHandler(
     fs::path output_root_path,
     std::shared_ptr<app_ports::IProcessedDataLoader> processed_data_loader,
@@ -143,3 +130,5 @@ auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
   RunPipelineOrThrow(pipeline, kOptions,
                      "Validate logic pipeline failed.");
 }
+
+}  // namespace tracer::core::application::workflow

@@ -6,7 +6,7 @@
 #include <ranges>
 #include <vector>
 
-namespace tracer_core::infrastructure::query::data::stats {
+namespace tracer::core::infrastructure::query::data::stats {
 namespace {
 
 constexpr double kPercentile25 = 25.0;
@@ -15,11 +15,16 @@ constexpr double kPercentile90 = 90.0;
 constexpr double kPercentile95 = 95.0;
 constexpr double kEvenCountDivisor = 2.0;
 
+using LegacyDayDurationRow =
+    ::tracer_core::infrastructure::query::data::DayDurationRow;
+using LegacyDayDurationStats =
+    ::tracer_core::infrastructure::query::data::DayDurationStats;
+
 }  // namespace
 
-auto ComputeDayDurationStats(const std::vector<DayDurationRow>& rows)
-    -> DayDurationStats {
-  DayDurationStats stats;
+auto ComputeDayDurationStats(const std::vector<LegacyDayDurationRow>& rows)
+    -> LegacyDayDurationStats {
+  LegacyDayDurationStats stats;
   if (rows.empty()) {
     return stats;
   }
@@ -106,4 +111,4 @@ auto ComputeDayDurationStats(const std::vector<DayDurationRow>& rows)
   return stats;
 }
 
-}  // namespace tracer_core::infrastructure::query::data::stats
+}  // namespace tracer::core::infrastructure::query::data::stats

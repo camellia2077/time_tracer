@@ -2,46 +2,30 @@
 #ifndef INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
 
+#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
+import tracer.core.infrastructure.reports.data_querying.sqlite_report_data_query_service;
+#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "application/ports/i_platform_clock.hpp"
 #include "application/ports/i_report_data_query_service.hpp"
 
+namespace tracer::core::infrastructure::reports {
+
+#include "infrastructure/reports/detail/sqlite_report_data_query_service_decl.inc"
+
+}  // namespace tracer::core::infrastructure::reports
+#endif
+
 namespace infrastructure::reports {
 
-class SqliteReportDataQueryService final
-    : public tracer_core::application::ports::IReportDataQueryService {
- public:
-  SqliteReportDataQueryService(
-      sqlite3* db_connection,
-      std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-          platform_clock);
-
-  auto QueryDaily(std::string_view date) -> DailyReportData override;
-  auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
-  auto QueryPeriod(int days) -> PeriodReportData override;
-  auto QueryRange(std::string_view start_date, std::string_view end_date)
-      -> PeriodReportData override;
-  auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
-  auto QueryYearly(std::string_view year) -> YearlyReportData override;
-
-  auto QueryPeriodBatch(const std::vector<int>& days_list)
-      -> std::map<int, PeriodReportData> override;
-  auto QueryAllDaily() -> std::map<std::string, DailyReportData> override;
-  auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override;
-  auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override;
-  auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override;
-
- private:
-  sqlite3* db_connection_;
-  std::shared_ptr<tracer_core::application::ports::IPlatformClock>
-      platform_clock_;
-};
+using tracer::core::infrastructure::reports::SqliteReportDataQueryService;
 
 }  // namespace infrastructure::reports
 

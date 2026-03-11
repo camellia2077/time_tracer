@@ -5,7 +5,7 @@
 #include <system_error>
 #include <utility>
 
-namespace infrastructure::logging {
+namespace tracer::core::infrastructure::logging {
 
 namespace {
 
@@ -91,4 +91,4 @@ auto FileErrorReportWriter::DestinationLabel() const -> std::string {
   return run_file_path_.string();
 }
 
-}  // namespace infrastructure::logging
+}  // namespace tracer::core::infrastructure::logging
