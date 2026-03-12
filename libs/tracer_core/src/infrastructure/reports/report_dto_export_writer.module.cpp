@@ -11,12 +11,20 @@ module;
 #include <utility>
 
 #include "application/interfaces/i_report_exporter.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
 
 module tracer.core.infrastructure.reports.dto.export_writer;
 
+import tracer.core.infrastructure.reports.dto.formatter;
+
 namespace tracer::core::infrastructure::reports {
+
+auto CreateReportDtoFormatter(const ReportCatalog& report_catalog)
+    -> std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter> {
+  return std::make_shared<ReportDtoFormatter>(report_catalog);
+}
 
 namespace {
 

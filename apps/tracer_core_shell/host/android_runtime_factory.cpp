@@ -38,15 +38,12 @@
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
 #include "infrastructure/platform/android/android_platform_clock.hpp"
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
-#include "infrastructure/reports/lazy_sqlite_report_data_query_service.hpp"
-#include "infrastructure/reports/lazy_sqlite_report_query_service.hpp"
-
 #if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.logging;
 import tracer.core.infrastructure.persistence.runtime;
 import tracer.core.infrastructure.persistence.write;
 import tracer.core.infrastructure.reports.data_querying;
-import tracer.core.infrastructure.reports.dto;
+import tracer.core.infrastructure.reports.dto.export_writer;
 import tracer.core.infrastructure.reports.exporting;
 import tracer.core.infrastructure.reports.querying;
 import tracer.core.application.use_cases.api;
@@ -196,7 +193,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
           static_formatter_registrar);
   formatter_registry->RegisterFormatters();
   auto report_dto_formatter =
-      std::make_shared<infra_reports::ReportDtoFormatter>(*report_catalog);
+      infra_reports::CreateReportDtoFormatter(*report_catalog);
   auto report_exporter_for_dto =
       std::make_shared<infra_reports::Exporter>(kOutputRoot);
   auto report_export_writer = std::make_shared<infra_reports::ReportDtoExportWriter>(

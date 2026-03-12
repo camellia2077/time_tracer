@@ -1,3 +1,6 @@
+[[nodiscard]] auto CreateReportDtoFormatter(const ReportCatalog& report_catalog)
+    -> std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter>;
+
 class ReportDtoExportWriter final
     : public tracer_core::application::ports::IReportExportWriter {
  public:

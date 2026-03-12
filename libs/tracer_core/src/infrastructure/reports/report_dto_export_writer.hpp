@@ -10,6 +10,7 @@ import tracer.core.infrastructure.reports.dto.export_writer;
 #include <string>
 
 #include "application/interfaces/i_report_exporter.hpp"
+#include "infrastructure/config/models/report_catalog.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
 

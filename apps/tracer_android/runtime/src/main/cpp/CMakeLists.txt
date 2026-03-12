@@ -44,13 +44,17 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
 add_library(tt_android_bridge SHARED
     ${TIME_TRACKER_ANDROID_BRIDGE_SOURCES}
 )
+setup_app_target(tt_android_bridge)
+set_target_properties(tt_android_bridge PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
 target_include_directories(tt_android_bridge PRIVATE
     "${TRACER_CORE_SHELL_DIR}"
     "${APPS_ROOT}/../libs/tracer_core_bridge_common/src"
 )
 target_link_libraries(tt_android_bridge PRIVATE
     tc_adapters_iface
-    tc_core_iface
+    tc_all_lib
     tc_core_bridge_common_c_api_lib
 )
 
@@ -64,3 +68,4 @@ add_library(tt_android_app_iface INTERFACE)
 target_link_libraries(tt_android_app_iface INTERFACE
     tt_android_bridge
 )
+

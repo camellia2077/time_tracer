@@ -1,6 +1,7 @@
 // infrastructure/reports/report_dto_export_writer.cpp
 #define TT_FORCE_LEGACY_HEADER_DECLS 1
 #include "infrastructure/reports/report_dto_export_writer.hpp"
+#include "infrastructure/reports/report_dto_formatter.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -10,6 +11,11 @@
 #include <utility>
 
 namespace tracer::core::infrastructure::reports {
+
+auto CreateReportDtoFormatter(const ReportCatalog& report_catalog)
+    -> std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter> {
+  return std::make_shared<ReportDtoFormatter>(report_catalog);
+}
 
 namespace {
 

@@ -188,7 +188,12 @@ android {
                     "-DANDROID_STL=c++_static",
                     "-DTT_ENABLE_CPP20_MODULES=$timeTracerEnableCpp20Modules"
                 )
-                cppFlags += listOf("-std=c++23")
+                // Work around NDK 29 Clang mis-handling std::as_const in libc++.
+                cppFlags += listOf(
+                    "-std=c++23",
+                    "-Xclang",
+                    "-fno-builtin-std-as_const",
+                )
                 targets += listOf("tt_android_bridge")
             }
         }
@@ -245,3 +250,4 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.org.json)
 }
+
