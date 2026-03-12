@@ -4,6 +4,7 @@ This directory contains the build/test/tidy automation toolchain.
 
 Quick links:
 - `../../docs/toolchain/python_command_map.md` (change-routing map for humans/agents)
+- `../../docs/toolchain/validate_plan_toml.md` (validate plan TOML schema and examples)
 - `../../docs/toolchain/clang_tidy_architecture.md` (clang-tidy file architecture / change routing)
 - `../../docs/toolchain/clang_tidy_flow.md` (clang-tidy workflow / state files)
 - `../../docs/toolchain/clang_tidy_sop.md` (standard clang-tidy batch SOP)
