@@ -22,6 +22,8 @@
 #if !TT_ENABLE_CPP20_MODULES
 #include "application/use_cases/tracer_core_api.hpp"
 #include "application/workflow_handler.hpp"
+#include "infrastructure/logging/file_error_report_writer.hpp"
+#include "infrastructure/logging/validation_issue_reporter.hpp"
 #include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
 #include "infrastructure/persistence/sqlite_database_health_checker.hpp"
 #include "infrastructure/persistence/sqlite_time_sheet_repository.hpp"
