@@ -1,77 +1,61 @@
-# Core 文档域
+# Core Docs
 
-本目录用于承载 TimeTracer 内核（领域 + 应用 + 端口契约）相关文档。
+This directory holds the developer-facing docs for the core engine:
+domain rules, application orchestration, contracts, architecture constraints,
+and core-specific onboarding.
 
-## 范围
-1. 领域模型、业务规则、用例编排。
-2. 核心接口（ports/dto）与跨端契约。
-3. 与具体 UI 或平台无关的设计说明。
+## Start Here
+1. [Library Dependency Map](../architecture/library_dependency_map.md)
+   - Use this first when you need to decide which library owns the change.
+2. [Core Agent Onboarding](specs/AGENT_ONBOARDING.md)
+   - Fastest route for common core and shell-facing changes.
+3. [Core Architecture Index](architecture/README.md)
+   - Architecture constraints and subsystem design docs.
+4. [Core Contracts Index](contracts/README.md)
+   - External behavior contracts and stable payload definitions.
 
-## 不在此处
-1. Windows CLI 参数交互、命令行展示细节。
-2. Android Compose UI、页面状态管理。
-3. 构建机或 IDE 个人使用说明。
+## What Lives Here
+1. Domain model, business rules, and application orchestration docs.
+2. Core-facing contracts, error semantics, reporting/query contracts, and schema docs.
+3. Architecture rules for module boundaries, JSON handling, and dependency direction.
+4. Agent/collaborator routing docs for fast entry into the right library or host adapter path.
 
-## 目录分层（按职责边界）
-1. `docs/time_tracer/core/contracts/`
-   - 对外契约、错误语义、统计契约与 schema。
-2. `docs/time_tracer/core/ingest/`
-   - 导入数据结构与转换算法约束。
-3. `docs/time_tracer/core/architecture/`
-   - Core 边界、模块职责与重构约束。
-4. `docs/time_tracer/core/specs/`
-   - 面向 Agent/协作者的快速上手与改动路由文档。
+## What Does Not Live Here
+1. Android Compose UI details.
+2. Windows CLI interaction docs.
+3. Long-form library navigation for non-core libraries.
+   - Use [`../architecture/README.md`](../architecture/README.md) and
+     [`../architecture/libraries/README.md`](../architecture/libraries/README.md)
+     for that.
 
-## 当前权威文档（沿用）
+## Read-First Docs by Change Type
+1. C ABI or runtime boundary behavior:
+   - [contracts/c_abi.md](contracts/c_abi.md)
+   - [../clients/android_ui/runtime-protocol.md](../clients/android_ui/runtime-protocol.md)
+2. Core use case, workflow, reporting tree, or config ownership changes:
+   - [specs/AGENT_ONBOARDING.md](specs/AGENT_ONBOARDING.md)
+   - [../architecture/libraries/tracer_core.md](../architecture/libraries/tracer_core.md)
+3. Query/report payload or chart output changes:
+   - [contracts/stats/README.md](contracts/stats/README.md)
+   - [contracts/reporting/report_data_consistency_spec_v1.md](contracts/reporting/report_data_consistency_spec_v1.md)
+4. JSON boundary changes:
+   - [architecture/core_json_boundary_design.md](architecture/core_json_boundary_design.md)
+5. Module-boundary refactors:
+   - [architecture/refactor_module_boundaries.md](architecture/refactor_module_boundaries.md)
+   - [architecture/tracer_core_identity_and_boundary.md](architecture/tracer_core_identity_and_boundary.md)
 
-### Core 分层文档
-1. `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
-2. `docs/time_tracer/core/contracts/README.md`
-3. `docs/time_tracer/core/contracts/c_abi.md`
-4. `docs/time_tracer/core/contracts/error-model.md`
-5. `docs/time_tracer/core/contracts/error-codes.md`
-6. `docs/time_tracer/core/contracts/stats/README.md`
-7. `docs/time_tracer/core/contracts/stats/capability_contract_v1.md`
-8. `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
-9. `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
-10. `docs/time_tracer/core/contracts/stats/capability_matrix_v1.md`
-11. `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
-12. `docs/time_tracer/core/contracts/stats/adapter_code_map.md`
-13. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
-14. `docs/time_tracer/core/contracts/stats/code_map.md`
-15. `docs/time_tracer/core/contracts/reporting/report_data_consistency_spec_v1.md`
-16. `docs/time_tracer/core/contracts/reporting/report_output_text_contract_v1.md`
-17. `docs/time_tracer/core/ingest/README.md`
-18. `docs/time_tracer/core/ingest/ingest_data_structures.md`
-19. `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`
-20. `docs/time_tracer/core/architecture/README.md`
-21. `docs/time_tracer/core/architecture/data_lifecycle_parsing_to_storage.md`
-22. `docs/time_tracer/core/architecture/domain_model_and_rules.md`
-23. `docs/time_tracer/core/architecture/application_pipeline_and_ports.md`
-24. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
-25. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
-26. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
-27. `docs/time_tracer/core/architecture/data_query/README.md`
-28. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
-29. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
-30. `docs/time_tracer/core/contracts/cli_surface_contract_v1.md`
-31. `docs/time_tracer/core/architecture/tracer_core_identity_and_boundary.md`
+## Canonical Subdirectories
+1. `contracts/`
+   - Public behavior, ABI, schema, and output semantics.
+2. `architecture/`
+   - Boundary, dependency, and layering design docs.
+3. `ingest/`
+   - Import data structures and conversion algorithm docs.
+4. `specs/`
+   - Fast routing and contributor/agent entry docs.
 
-### 相关上游文档
-1. `docs/time_tracer/design/core_logic.md`
-2. `docs/time_tracer/guides/database/database_schema.md`
-3. `docs/time_tracer/guides/config/config_reference.md`
-4. `docs/time_tracer/guides/native/native_modules.md`
-5. `docs/time_tracer/guides/database/parsing/README.md`
-6. `docs/time_tracer/guides/database/parsing/01_period_normalization.md`
-7. `docs/time_tracer/guides/database/parsing/02_filter_sql_build.md`
-8. `docs/time_tracer/guides/database/parsing/03_sql_execution_row_decode.md`
-9. `docs/time_tracer/guides/database/parsing/04_semantic_projection.md`
-10. `docs/time_tracer/guides/database/generation/tree_algorithms.md`
-11. `docs/time_tracer/guides/database/storage/data_structures.md`
-
-## 规则
-1. 新增 Core 文档优先放在本目录。
-2. 新增文档按职责边界放入 `contracts/ingest/architecture/specs` 对应目录。
-3. Core（`domain + application`）不得依赖 `libs/tracer_adapters_io` 等 adapter 实现目录。
-4. Core 只通过 `application/ports` 暴露契约，不直接包含 `infrastructure/*` 头。
+## Core Rules
+1. New core docs should be added under this tree by responsibility.
+2. `domain` and `application` must not depend on adapter implementation libraries.
+3. Core should expose contracts through ports/DTOs and explicit module or thin-header boundaries.
+4. If a change crosses ABI or runtime JSON boundaries, update the contract docs before the implementation docs drift.

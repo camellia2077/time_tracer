@@ -1,11 +1,11 @@
 # Android 图标 SVG 应用说明
 
-本文说明如何将 `design/branding` 下的品牌母版与平台参考稿，落地为 Android launcher icon 资源。
+本文说明如何将 `ui/branding` 下的品牌母版与平台参考稿，落地为 Android launcher icon 资源。
 
 ## 目标
 
-- 让 `design/branding/master/` 作为品牌识别核心来源
-- 让 `design/branding/platform/android/` 作为 Android 平台适配来源
+- 让 `ui/branding/master/` 作为品牌识别核心来源
+- 让 `ui/branding/platform/android/` 作为 Android 平台适配来源
 - 让 Android 最终资源遵循标准 adaptive icon 的 `background / foreground / monochrome` 分层
 
 ## 设计源层级
@@ -13,9 +13,9 @@
 Android 图标当前采用两级设计源：
 
 1. 品牌母版：
-   - `design/branding/master/time_tracer_brand_master_symbol.svg`
+   - `ui/branding/master/time_tracer_brand_master_symbol.svg`
 2. Android 平台参考稿：
-   - `design/branding/platform/android/time_tracer_android_launcher_reference.svg`
+   - `ui/branding/platform/android/time_tracer_android_launcher_reference.svg`
 
 说明：
 
@@ -127,6 +127,6 @@ python tools/run.py build --app tracer_android --profile android_edit
 
 ## 相关文档
 
-- `design/branding/README.md`
-- `design/branding/platform/android/README.md`
+- `ui/branding/README.md`
+- `ui/branding/platform/android/README.md`
 - `apps/tracer_android/icon_generation.md`

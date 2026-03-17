@@ -169,7 +169,7 @@
 
 ## Layered Ownership
 1. This file defines stable external contract only.
-2. Transport codec/envelope/field implementation details are maintained in `libs/tracer_transport/README.md`.
+2. Transport codec/envelope/field implementation details are maintained in `docs/time_tracer/architecture/libraries/tracer_transport.md`.
 3. Android JNI runtime boundary behavior is maintained in `docs/time_tracer/clients/android_ui/runtime-protocol.md`.
 
 ## Implementation Notes (Non-Contract)

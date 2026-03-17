@@ -1,107 +1,112 @@
 # tracer_core Agent Onboarding
 
-本文档用于帮助 Agent 或新同学在 5 分钟内定位 `tracer_core` 的修改入口，减少全局搜索。
+Use this document to locate the right core-adjacent entrypoint in a few minutes
+without broad repository search.
 
-## 1. 建议阅读顺序（5 分钟路径）
-1. `docs/time_tracer/core/README.md`
-2. `docs/time_tracer/core/architecture/README.md`
-3. 本文档：`docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
-4. 按需求阅读契约：
-   - C ABI：`docs/time_tracer/core/contracts/c_abi.md`
-   - 错误模型：`docs/time_tracer/core/contracts/error-model.md`
-   - 加密接口：`docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
-   - 加密进度：`docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
-   - 统计契约：`docs/time_tracer/core/contracts/stats/README.md`
+## 5-Minute Reading Order
+1. [Library Dependency Map](../../architecture/library_dependency_map.md)
+2. [tracer_core](../../architecture/libraries/tracer_core.md)
+3. This file: `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
+4. Then read the exact contract docs for the boundary you are touching:
+   - [C ABI](../contracts/c_abi.md)
+   - [Stats contracts](../contracts/stats/README.md)
+   - [Android runtime protocol](../../clients/android_ui/runtime-protocol.md)
+   - [Core JSON boundary design](../architecture/core_json_boundary_design.md)
 
-## 2. 模块职责地图（src）
-1. `libs/tracer_core/src/domain`
-   - 领域模型、业务规则、领域端口，不依赖平台细节。
-2. `libs/tracer_core/src/application`
-   - 用例编排、pipeline、DTO、ports。
-3. `libs/tracer_core/src/infrastructure`
-   - IO、数据库、查询、报表、加密、配置加载等具体实现。
-4. `apps/tracer_core_shell/api/c_api`
-   - 对外 C ABI 入口（Windows CLI 等 consumer 主要经由此层调用）。
-5. `apps/tracer_core_shell/api/android_jni`
-   - Android JNI 入口与桥接逻辑。
-6. `libs/tracer_core/src/shared`
-   - 跨层共用类型/工具（避免承载业务流程）。
+## Who Owns What
+1. `libs/tracer_core`
+   - business rules, DTOs, module ownership, and core infrastructure families
+2. `apps/tracer_core_shell/api/c_api`
+   - shell-facing C ABI entrypoints and runtime glue
+3. `apps/tracer_core_shell/api/android_jni`
+   - Android JNI entrypoints and registration
+4. `libs/tracer_core_bridge_common`
+   - shared helper logic used by C API / JNI bridge code
+5. `libs/tracer_transport`
+   - runtime envelope, field, and codec implementation
+6. `libs/tracer_adapters_io`
+   - file-system ingest and processed-data adapter behavior
 
-## 3. 常见需求到文件定位（高频）
-1. 改 C ABI 入参/出参
-   - `apps/tracer_core_shell/api/c_api/`
-   - 同步更新：`docs/time_tracer/core/contracts/c_abi.md`
-   - 关键文件：
-     - `tracer_core_c_api.cpp`（runtime lifecycle + callback registration + context resolve）
-     - `tracer_core_c_api_workflow.cpp`（ingest/convert/import/validate）
-     - `tracer_core_c_api_reporting.cpp`（query/report/export/tree/crypto text）
-2. 改 Android JNI 能力或回调
-   - `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
-   - `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`
-3. 改文件加解密（含进度）
-   - `libs/tracer_core/src/infrastructure/crypto/`
-   - 同步更新：`docs/time_tracer/core/contracts/crypto/`
-4. 改 ingest 流程或校验逻辑
-   - `libs/tracer_core/src/application/pipeline/`
-   - `libs/tracer_core/src/application/importer/`
-   - `libs/tracer_core/src/domain/logic/validator/`
-5. 改 query/report 统计结构
-   - `libs/tracer_core/src/infrastructure/query/data/`
-   - `libs/tracer_core/src/infrastructure/reports/`
-   - 同步更新：`docs/time_tracer/core/contracts/stats/`
-6. 改数据库读写或 schema
-   - `libs/tracer_core/src/infrastructure/persistence/`
-   - `libs/tracer_core/src/infrastructure/schema/`
+## High-Frequency Change Routes
+1. Change C ABI inputs, outputs, or runtime behavior:
+   - read [C ABI](../contracts/c_abi.md)
+   - start in `apps/tracer_core_shell/api/c_api`
+   - pair with [tracer_transport](../../architecture/libraries/tracer_transport.md)
+     if JSON payload parsing or envelope behavior changes
+2. Change Android JNI bridge behavior or code/value translation:
+   - read [Android runtime protocol](../../clients/android_ui/runtime-protocol.md)
+   - start in `apps/tracer_core_shell/api/android_jni`
+   - pair with [tracer_core_bridge_common](../../architecture/libraries/tracer_core_bridge_common.md)
+3. Change core config ownership or shell config bridging:
+   - start in [tracer_core](../../architecture/libraries/tracer_core.md)
+   - then inspect:
+     - `apps/tracer_core_shell/api/c_api`
+     - `apps/tracer_core_shell/host`
+4. Change use cases, workflow, or reporting-tree boundaries:
+   - start in [tracer_core](../../architecture/libraries/tracer_core.md)
+   - then inspect:
+     - `libs/tracer_core/src/application/use_cases`
+     - `libs/tracer_core/src/application/workflow`
+     - `libs/tracer_core/src/application/reporting/tree`
+5. Change query/report/stat output semantics:
+   - read [Stats contracts](../contracts/stats/README.md)
+   - start in `libs/tracer_core/src/infrastructure/query`
+   - then inspect `libs/tracer_core/src/infrastructure/reports`
+6. Change file-system ingest or processed-data IO:
+   - start in [tracer_adapters_io](../../architecture/libraries/tracer_adapters_io.md)
 
-## 4. 跨端同步检查清单（改 core 后必看）
-1. 契约文档是否同步（`docs/time_tracer/core/contracts/*`）。
-2. Windows CLI 是否需要跟进参数/解析/展示。
-3. Android runtime/JNI 是否需要跟进字段与解析。
-4. 失败语义是否保持兼容（error code / message / content 字段）。
-5. callback 行为是否仍满足：
-   - UTF-8 文本
-   - severity 映射稳定（0/1/2）
-   - callback 抛错不影响主流程
-
-## 5. Agent 搜索范围建议
-优先扫描：
-1. `apps/tracer_core_shell`
+## Search Scope Guidance
+Prefer scanning only the smallest relevant set:
+1. `docs/time_tracer/architecture`
 2. `docs/time_tracer/core`
-3. `assets/tracer_core/config`（涉及配置契约时）
+3. The one or two libraries named by the dependency map
+4. `apps/tracer_core_shell` only when the change crosses the shell/runtime boundary
 
-默认排除：
-1. `apps/tracer_core_shell/build/**`
-2. `out/build/tracer_core_shell/build_fast/**`
-3. `out/build/tracer_core_shell/build_fast_*/**`
-4. `apps/tracer_core_shell/.cache/**`
-5. `out/test/**`
+Default exclusions:
+1. `out/**`
+2. `build/**`
+3. `.cache/**`
 
-参考命令：
+## Module-First Defaults
+1. For `libs/tracer_core` non-boundary consumers, default to `import tracer.*`
+   when a canonical module surface already exists.
+2. Keep explicit direct includes when the file is:
+   - the owner implementation for that header's declarations
+   - a stable boundary path such as `C ABI`, `JNI`, host bridge,
+     `android_runtime`, or `tracer_transport` public-header code
+3. If an `import` conversion breaks because a standard-library type suddenly
+   disappears, add the missing `<...>` include explicitly instead of reverting
+   to the old project-header include.
+4. Prefer a narrow local `using` or namespace alias in the consumer before
+   redesigning the wrapper surface.
+
+## Validation Shortcuts
+1. Focused change:
 
 ```powershell
-rg -n --glob '!**/build/**' --glob '!**/build_fast/**' --glob '!**/build_fast_*/**' --glob '!**/.cache/**' "PATTERN" apps/tracer_core_shell docs/time_tracer/core
+python tools/run.py validate --plan <plan_name> --paths <touched paths>
 ```
 
-## 6. 最小验证命令
-在仓库根目录执行：
+2. Shell/runtime integration:
 
 ```powershell
-python tools/run.py build --app tracer_core --profile fast
-python tools/run.py verify --app tracer_core --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
 ```
 
-补充（Windows Rust CLI 集成）：
+3. Before editing module or explicit boundary declaration surfaces, also inspect
+   the relevant module smoke tests and contract regressions listed in the touched detailed library doc under
+   `docs/time_tracer/architecture/libraries/`.
 
-```powershell
-python tools/run.py verify --app tracer_core --scope artifact --build-dir build_fast --concise
-```
-
-通过后重点查看：
-1. `out/test/artifact_windows_cli/result.json`
-2. `out/test/artifact_windows_cli/logs/output.log`
-
-## 7. 常见排错入口
-1. ABI 改了但上层异常：先对齐 `c_abi.md` 与 consumer 参数。
-2. Android 回调没触发：检查 JNI registration 与 `native_bridge_calls.cpp` 的回调路径。
-3. 进度显示异常：检查 `infrastructure/crypto` 快照字段是否完整上报。
-4. 统计 JSON 回归：检查 `contracts/stats` 文档与渲染/序列化实现是否一致。
+## Common Failure Checks
+1. If a runtime payload change breaks consumers, re-check:
+   - `c_abi.md`
+   - `runtime-protocol.md`
+   - `docs/time_tracer/architecture/libraries/tracer_transport.md`
+2. If config or bridge changes fail under `modules_on`, re-check:
+   - `docs/time_tracer/architecture/libraries/tracer_core.md`
+   - `apps/tracer_core_shell/api/c_api`
+   - `apps/tracer_core_shell/host`
+3. If stats or report output regresses, re-check:
+   - `contracts/stats/*`
+   - `libs/tracer_core/src/infrastructure/query`
+   - `libs/tracer_core/src/infrastructure/reports`

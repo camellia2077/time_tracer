@@ -1,6 +1,6 @@
 # Windows CLI 图标 SVG 应用说明
 
-本文说明如何将 `design/branding/exports/**` 下的 SVG 设计稿，应用到 Windows CLI 的 EXE 图标资源。
+本文说明如何将 `ui/branding/exports/**` 下的 SVG 设计稿，应用到 Windows CLI 的 EXE 图标资源。
 
 ## 目标
 
@@ -12,16 +12,17 @@
 
 Windows CLI 图标设计源优先从以下目录选择：
 
-- `design/branding/exports/`
+- `ui/branding/master/`
+- `ui/branding/exports/`
 
 当前默认使用：
 
-- `design/branding/exports/bg_white_vertical_padding_rounded.svg`
+- `ui/branding/master/time_tracer_brand_master.svg`
 
 可选参考：
 
-- `design/branding/exports/bg_full_canvas_light_vertical_padding.svg`
-- `design/branding/exports/bg_golden_vertical_padding_transparent.svg`
+- `ui/branding/exports/bg_full_canvas_light_vertical_padding.svg`
+- `ui/branding/exports/bg_golden_vertical_padding_transparent.svg`
 
 ## 构建产物位置
 
@@ -41,7 +42,7 @@ Windows CLI 的默认 SVG 来源由工具链代码决定：
 
 当未显式覆盖时，默认使用：
 
-- `design/branding/exports/bg_white_vertical_padding_rounded.svg`
+- `ui/branding/master/time_tracer_brand_master.svg`
 
 ## 标准应用流程
 
@@ -49,15 +50,15 @@ Windows CLI 的默认 SVG 来源由工具链代码决定：
 
 默认选用：
 
-- `design/branding/exports/bg_white_vertical_padding_rounded.svg`
+- `ui/branding/master/time_tracer_brand_master.svg`
 
 如果需要沿用旧的满画布浅底版本，可改用：
 
-- `design/branding/exports/bg_full_canvas_light_vertical_padding.svg`
+- `ui/branding/exports/bg_full_canvas_light_vertical_padding.svg`
 
 如果需要透明底变体，可改用：
 
-- `design/branding/exports/bg_golden_vertical_padding_transparent.svg`
+- `ui/branding/exports/bg_golden_vertical_padding_transparent.svg`
 
 ### 2. 执行 Windows CLI release 构建
 
@@ -79,13 +80,13 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 可使用命令行参数：
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_golden_vertical_padding_transparent.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "ui/branding/exports/bg_golden_vertical_padding_transparent.svg"
 ```
 
-如需测试新的圆角版本，可改为：
+如需测试其他圆角特调版本，可改为：
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "ui/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 也可使用环境变量：
@@ -113,16 +114,16 @@ SVG 转 `.ico` 依赖：
 
 ## 维护约定
 
-- Windows CLI 默认图标设计源当前固定为 `bg_white_vertical_padding_rounded.svg`
-- `bg_full_canvas_light_vertical_padding.svg` 作为满画布浅底的旧版导出稿保留
+- Windows CLI 默认图标设计源当前固定为 `time_tracer_brand_master.svg`
+- `bg_white_vertical_padding_rounded.svg` 等文件作为旧版导出稿保留
 - 若默认视觉方案改变，应同时更新：
   - `tools/toolchain/commands/cmd_build/windows_icon_resources.py`
   - `apps/tracer_cli/windows/README.md`
   - `apps/tracer_cli/windows/icon_generation.md`
   - `apps/tracer_cli/windows/agent.md`
-  - `design/branding/README.md`
+  - `ui/branding/README.md`
 
 ## 相关文档
 
-- `design/branding/README.md`
+- `ui/branding/README.md`
 - `apps/tracer_cli/windows/icon_generation.md`
