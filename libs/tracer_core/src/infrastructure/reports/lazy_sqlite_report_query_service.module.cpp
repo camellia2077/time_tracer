@@ -1,16 +1,13 @@
-module;
-
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <utility>
 
+#include "infrastructure/reports/lazy_sqlite_report_query_service.hpp"
 #include "application/interfaces/i_report_query_service.hpp"
 #include "application/ports/i_platform_clock.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
-
-module tracer.core.infrastructure.reports.querying.lazy_sqlite_report_query_service;
 
 import tracer.core.infrastructure.reports.querying.report_service;
 
@@ -72,7 +69,8 @@ auto LazySqliteReportQueryService::RunDailyQuery(std::string_view date_str,
                                                  ReportFormat format) const
     -> std::string {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> std::string {
                              return report_service.RunDailyQuery(date_str,
                                                                  format);
                            });
@@ -82,7 +80,8 @@ auto LazySqliteReportQueryService::RunPeriodQuery(int days,
                                                   ReportFormat format) const
     -> std::string {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> std::string {
                              return report_service.RunPeriodQuery(days, format);
                            });
 }
@@ -90,7 +89,8 @@ auto LazySqliteReportQueryService::RunPeriodQuery(int days,
 auto LazySqliteReportQueryService::RunMonthlyQuery(
     std::string_view year_month_str, ReportFormat format) const -> std::string {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> std::string {
                              return report_service.RunMonthlyQuery(
                                  year_month_str, format);
                            });
@@ -99,7 +99,8 @@ auto LazySqliteReportQueryService::RunMonthlyQuery(
 auto LazySqliteReportQueryService::RunWeeklyQuery(
     std::string_view iso_week_str, ReportFormat format) const -> std::string {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> std::string {
                              return report_service.RunWeeklyQuery(iso_week_str,
                                                                   format);
                            });
@@ -108,7 +109,8 @@ auto LazySqliteReportQueryService::RunWeeklyQuery(
 auto LazySqliteReportQueryService::RunYearlyQuery(
     std::string_view year_str, ReportFormat format) const -> std::string {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> std::string {
                              return report_service.RunYearlyQuery(year_str,
                                                                   format);
                            });
@@ -117,7 +119,8 @@ auto LazySqliteReportQueryService::RunYearlyQuery(
 auto LazySqliteReportQueryService::RunExportAllDailyReportsQuery(
     ReportFormat format) const -> FormattedGroupedReports {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> FormattedGroupedReports {
                              return report_service.RunExportAllDailyReportsQuery(
                                  format);
                            });
@@ -126,7 +129,8 @@ auto LazySqliteReportQueryService::RunExportAllDailyReportsQuery(
 auto LazySqliteReportQueryService::RunExportAllMonthlyReportsQuery(
     ReportFormat format) const -> FormattedMonthlyReports {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> FormattedMonthlyReports {
                              return report_service
                                  .RunExportAllMonthlyReportsQuery(format);
                            });
@@ -136,7 +140,8 @@ auto LazySqliteReportQueryService::RunExportAllPeriodReportsQuery(
     const std::vector<int>& days_list, ReportFormat format) const
     -> FormattedPeriodReports {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> FormattedPeriodReports {
                              return report_service.RunExportAllPeriodReportsQuery(
                                  days_list, format);
                            });
@@ -145,7 +150,8 @@ auto LazySqliteReportQueryService::RunExportAllPeriodReportsQuery(
 auto LazySqliteReportQueryService::RunExportAllWeeklyReportsQuery(
     ReportFormat format) const -> FormattedWeeklyReports {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> FormattedWeeklyReports {
                              return report_service
                                  .RunExportAllWeeklyReportsQuery(format);
                            });
@@ -154,7 +160,8 @@ auto LazySqliteReportQueryService::RunExportAllWeeklyReportsQuery(
 auto LazySqliteReportQueryService::RunExportAllYearlyReportsQuery(
     ReportFormat format) const -> FormattedYearlyReports {
   return WithReportService(db_path_, report_catalog_, platform_clock_,
-                           [&](const ReportService& report_service) {
+                           [&](const ReportService& report_service)
+                               -> FormattedYearlyReports {
                              return report_service
                                  .RunExportAllYearlyReportsQuery(format);
                            });

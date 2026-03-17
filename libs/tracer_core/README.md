@@ -1,20 +1,22 @@
-# tracer_core_lib
+# tracer_core
 
-`tracer_core_lib` 是 `tracer_core` 迁移到 `libs/` 的复用聚合入口。
+`tracer_core` is the main engine library for `time_tracer`. It owns core
+business rules, application orchestration, module-owned declarations, and the
+internal infrastructure families that implement config, persistence, query,
+reports, logging, crypto, and platform support.
 
-已完成项：
+## Start Here
+1. [Detailed library doc](../../docs/time_tracer/architecture/libraries/tracer_core.md)
+2. [Library dependency map](../../docs/time_tracer/architecture/library_dependency_map.md)
 
-- Step 1.1：建立独立 CMake target（`tracer_core_lib`）。
-- Step 1.2（最小单元）：迁移 `shared` 低耦合首批单元到 `libs/tracer_core`：
-  - `shared/utils/period_utils.cpp`
-  - `shared/modules/tracer.core.shared*`
-- Step 2.1：迁移 `domain` 构建职责到 `tracer_core_domain_lib`。
-- Step 2.2：迁移 `application` 构建职责到 `tracer_core_application_lib`。
-- Step 2.3：迁移低耦合 `infrastructure` 到
-  `tracer_core_infrastructure_lite_lib`（logging/clock/static config + modules）。
-- Step 3.2：迁移剩余 `infrastructure` 构建职责到
-  `libs/tracer_core/infrastructure/CMakeLists.txt`（保留 `reports_shared`、
-  `reports_data`、`ttri`、`tti`、`time_tracker_infrastructure`、
-  `tracer_adapters` 兼容目标名）。
+## Validate
 
-当前仍保持头文件接口兼容与业务行为不变。
+```powershell
+python tools/run.py validate --plan <plan_name> --paths libs/tracer_core apps/tracer_core_shell
+python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
+```
+
+## Read-First Docs
+1. [Core docs](../../docs/time_tracer/core/README.md)
+2. [Core agent onboarding](../../docs/time_tracer/core/specs/AGENT_ONBOARDING.md)
+3. [C ABI contract](../../docs/time_tracer/core/contracts/c_abi.md)

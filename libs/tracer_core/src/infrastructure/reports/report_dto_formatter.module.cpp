@@ -1,16 +1,13 @@
-module;
-
 #include <map>
 #include <memory>
 #include <string>
 #include <utility>
 
+#include "infrastructure/reports/report_dto_formatter.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
-
-module tracer.core.infrastructure.reports.dto.formatter;
 
 namespace tracer::core::infrastructure::reports {
 

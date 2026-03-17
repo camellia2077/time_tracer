@@ -1,4 +1,11 @@
 // infrastructure/tests/report_formatter/report_formatter_parity_fixture_tests.cpp
+import tracer.core.infrastructure.config.loader;
+import tracer.core.domain.reports.models.daily_report_data;
+import tracer.core.domain.reports.models.period_report_models;
+import tracer.core.domain.reports.models.project_tree;
+import tracer.core.domain.reports.types.report_types;
+import tracer.core.infrastructure.reports.dto;
+
 #include <cstdlib>
 #include <exception>
 #include <filesystem>
@@ -7,12 +14,8 @@
 #include <utility>
 
 #include "application/ports/i_report_formatter_registry.hpp"
-#include "domain/reports/models/daily_report_data.hpp"
-#include "domain/reports/models/period_report_models.hpp"
-#include "infrastructure/config/loader/report_config_loader.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
-#include "infrastructure/reports/report_dto_formatter.hpp"
 #include "infrastructure/tests/report_formatter/report_formatter_parity_internal.hpp"
 
 namespace {
@@ -21,6 +24,16 @@ namespace {
 // NOLINTBEGIN(readability-magic-numbers,readability-identifier-naming,bugprone-easily-swappable-parameters,modernize-use-auto,modernize-use-designated-initializers)
 
 namespace fs = std::filesystem;
+namespace infra_config = tracer::core::infrastructure::config;
+namespace infra_reports = tracer::core::infrastructure::reports;
+namespace reporting = tracer::core::domain::modreports;
+using tracer::core::domain::modreports::DailyReportData;
+using tracer::core::domain::modreports::MonthlyReportData;
+using tracer::core::domain::modreports::PeriodReportData;
+using tracer::core::domain::modreports::ReportFormat;
+using tracer::core::domain::modreports::TimeRecord;
+using tracer::core::domain::modreports::WeeklyReportData;
+using tracer::core::domain::modreports::YearlyReportData;
 using report_formatter_parity_internal::CaseOutputs;
 using report_formatter_parity_internal::ParityOutputs;
 
@@ -28,11 +41,14 @@ enum class FormatterPipeline { kDefaultRegistry, kAndroidStatic };
 
 auto BuildRepoRoot() -> fs::path {
   return fs::path(__FILE__)
+      .parent_path()   // report_formatter
       .parent_path()   // tests
       .parent_path()   // infrastructure
-      .parent_path()   // src
+      .parent_path()   // tests
+      .parent_path()   // tracer_core
+      .parent_path()   // libs
       .parent_path()   // time_tracer
-      .parent_path();  // apps
+      .parent_path();  // workspace root parent
 }
 
 auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
@@ -45,44 +61,58 @@ auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
   const fs::path typst_config_dir =
       repo_root / "time_tracer" / "config" / "reports" / "typst";
 
-  catalog.loaded_reports.markdown.day =
-      ReportConfigLoader::LoadDailyMdConfig(markdown_config_dir / "day.toml");
+  catalog.loaded_reports.markdown.day = infra_config::ReportConfigLoader::
+      LoadDailyMdConfig(markdown_config_dir / "day.toml");
   catalog.loaded_reports.markdown.month =
-      ReportConfigLoader::LoadMonthlyMdConfig(markdown_config_dir / "month.toml");
+      infra_config::ReportConfigLoader::LoadMonthlyMdConfig(
+          markdown_config_dir / "month.toml");
   catalog.loaded_reports.markdown.period =
-      ReportConfigLoader::LoadPeriodMdConfig(markdown_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodMdConfig(
+          markdown_config_dir / "period.toml");
   catalog.loaded_reports.markdown.week =
-      ReportConfigLoader::LoadWeeklyMdConfig(markdown_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyMdConfig(
+          markdown_config_dir / "week.toml");
   catalog.loaded_reports.markdown.year =
-      ReportConfigLoader::LoadYearlyMdConfig(markdown_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyMdConfig(
+          markdown_config_dir / "year.toml");
 
   catalog.loaded_reports.latex.day =
-      ReportConfigLoader::LoadDailyTexConfig(latex_config_dir / "day.toml");
+      infra_config::ReportConfigLoader::LoadDailyTexConfig(
+          latex_config_dir / "day.toml");
   catalog.loaded_reports.latex.month =
-      ReportConfigLoader::LoadMonthlyTexConfig(latex_config_dir / "month.toml");
+      infra_config::ReportConfigLoader::LoadMonthlyTexConfig(
+          latex_config_dir / "month.toml");
   catalog.loaded_reports.latex.period =
-      ReportConfigLoader::LoadPeriodTexConfig(latex_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodTexConfig(
+          latex_config_dir / "period.toml");
   catalog.loaded_reports.latex.week =
-      ReportConfigLoader::LoadWeeklyTexConfig(latex_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyTexConfig(
+          latex_config_dir / "week.toml");
   catalog.loaded_reports.latex.year =
-      ReportConfigLoader::LoadYearlyTexConfig(latex_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyTexConfig(
+          latex_config_dir / "year.toml");
 
   catalog.loaded_reports.typst.day =
-      ReportConfigLoader::LoadDailyTypConfig(typst_config_dir / "day.toml");
+      infra_config::ReportConfigLoader::LoadDailyTypConfig(
+          typst_config_dir / "day.toml");
   catalog.loaded_reports.typst.month =
-      ReportConfigLoader::LoadMonthlyTypConfig(typst_config_dir / "month.toml");
+      infra_config::ReportConfigLoader::LoadMonthlyTypConfig(
+          typst_config_dir / "month.toml");
   catalog.loaded_reports.typst.period =
-      ReportConfigLoader::LoadPeriodTypConfig(typst_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodTypConfig(
+          typst_config_dir / "period.toml");
   catalog.loaded_reports.typst.week =
-      ReportConfigLoader::LoadWeeklyTypConfig(typst_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyTypConfig(
+          typst_config_dir / "week.toml");
   catalog.loaded_reports.typst.year =
-      ReportConfigLoader::LoadYearlyTypConfig(typst_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyTypConfig(
+          typst_config_dir / "year.toml");
 
   return catalog;
 }
 
 auto BuildFormatter(FormatterPipeline pipeline, const ReportCatalog& catalog)
-    -> std::unique_ptr<infrastructure::reports::ReportDtoFormatter> {
+    -> std::unique_ptr<infra_reports::ReportDtoFormatter> {
   if (pipeline == FormatterPipeline::kDefaultRegistry) {
     auto registry =
         tracer_core::application::ports::CreateReportFormatterRegistry();
@@ -97,7 +127,7 @@ auto BuildFormatter(FormatterPipeline pipeline, const ReportCatalog& catalog)
     registry->RegisterFormatters();
   }
 
-  return std::make_unique<infrastructure::reports::ReportDtoFormatter>(catalog);
+  return std::make_unique<infra_reports::ReportDtoFormatter>(catalog);
 }
 
 auto BuildDailyProjectTree() -> reporting::ProjectTree {
@@ -202,7 +232,7 @@ auto BuildRangeFixture(const std::string& range_label,
   return report;
 }
 
-auto CollectOutputs(infrastructure::reports::ReportDtoFormatter& formatter,
+auto CollectOutputs(infra_reports::ReportDtoFormatter& formatter,
                     const DailyReportData& daily_report,
                     const MonthlyReportData& monthly_report,
                     const WeeklyReportData& weekly_report,

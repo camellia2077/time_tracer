@@ -12,11 +12,9 @@ module tracer.core.application.pipeline.stages;
 import tracer.core.application.pipeline.types;
 import tracer.core.domain.logic.validator.common.diagnostic;
 import tracer.core.domain.logic.validator.structure;
-import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::validator_common::Diagnostic;
 using tracer::core::domain::modlogic::validator_structure::StructValidator;
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 namespace {
@@ -49,9 +47,7 @@ auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
       "Step: Validating Business Logic (Dates, Continuity)...");
 
   if (session.result.processed_data.empty()) {
-    tracer_core::application::ports::LogWarn(
-        std::string(modcolors::kYellow) + "No data to validate." +
-        std::string(modcolors::kReset));
+    tracer_core::application::ports::LogWarn("No data to validate.");
     return true;
   }
 
@@ -63,28 +59,24 @@ auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
       continue;
     }
 
-    const std::string fallback_label =
+    const std::string kFallbackLabel =
         ResolveLogicFallbackLabel(month_key, days);
 
     std::vector<Diagnostic> diagnostics;
-    if (!validator.Validate(fallback_label, days, diagnostics)) {
+    if (!validator.Validate(kFallbackLabel, days, diagnostics)) {
       all_valid = false;
       if (session.state.validation_issue_reporter != nullptr) {
         session.state.validation_issue_reporter->ReportLogicDiagnostics(
-            fallback_label, diagnostics);
+            kFallbackLabel, diagnostics);
       }
     }
   }
 
   if (all_valid) {
-    tracer_core::application::ports::LogInfo(
-        std::string(modcolors::kGreen) + "Logic validation passed." +
-        std::string(modcolors::kReset));
+    tracer_core::application::ports::LogInfo("Logic validation passed.");
   } else {
     tracer_core::application::ports::LogError(
-        std::string(modcolors::kRed) +
-        "Logic validation found issues (e.g., broken date continuity)." +
-        std::string(modcolors::kReset));
+        "Logic validation found issues (e.g., broken date continuity).");
   }
 
   return all_valid;

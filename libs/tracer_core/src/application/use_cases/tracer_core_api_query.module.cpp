@@ -1,13 +1,11 @@
-module;
-
 #include <exception>
 #include <utility>
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
+#include "application/dto/tree_query_response.hpp"
 #include "application/ports/i_data_query_service.hpp"
-
-module tracer.core.application.use_cases.api;
+#include "application/use_cases/tracer_core_api.hpp"
 
 import tracer.core.application.reporting.tree.viewer;
 import tracer.core.application.use_cases.helpers;
@@ -43,7 +41,7 @@ auto TracerCoreApi::RunTreeQuery(const TreeQueryRequest& request)
       return {.ok = true,
               .found = true,
               .roots = viewer.GetRoots(),
-              .nodes = {},
+              .tree = {},
               .error_message = ""};
     }
 
@@ -53,14 +51,14 @@ auto TracerCoreApi::RunTreeQuery(const TreeQueryRequest& request)
       return {.ok = true,
               .found = false,
               .roots = {},
-              .nodes = {},
+              .tree = {},
               .error_message = ""};
     }
 
     return {.ok = true,
             .found = true,
             .roots = {},
-            .nodes = std::move(*kTreeResult),
+            .tree = TreeQueryPayload{.nodes = std::move(*kTreeResult)},
             .error_message = ""};
   } catch (const std::exception& exception) {
     return core_api_helpers::BuildTreeFailure("RunTreeQuery", exception);

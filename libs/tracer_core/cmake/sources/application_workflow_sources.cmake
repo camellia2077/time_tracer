@@ -1,15 +1,6 @@
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_APPLICATION_WORKFLOW_SOURCES
-        "workflow_handler_entry.module.cpp"
-        "workflow_handler_import_flow.module.cpp"
-        "workflow_handler_stats_logging.module.cpp"
-        "workflow_handler_error_mapping.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_APPLICATION_WORKFLOW_SOURCES
-        "workflow_handler_entry.cpp"
-        "workflow_handler_import_flow.cpp"
-        "workflow_handler_stats_logging.cpp"
-        "workflow_handler_error_mapping.cpp"
-    )
-endif()
+set(TIME_TRACKER_APPLICATION_WORKFLOW_SOURCES
+    "workflow_handler_entry.module.cpp"
+    "workflow_handler_import_flow.module.cpp"
+    "workflow_handler_stats_logging.module.cpp"
+    "workflow_handler_error_mapping.module.cpp"
+)

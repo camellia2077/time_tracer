@@ -1,5 +1,3 @@
-module;
-
 #include <sqlite3.h>
 
 #include <format>
@@ -7,10 +5,9 @@ module;
 #include <string>
 #include <string_view>
 
+#include "infrastructure/persistence/importer/sqlite/connection.hpp"
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
-
-module tracer.core.infrastructure.persistence.write.importer.sqlite.connection;
 
 import tracer.core.domain.ports.diagnostics;
 

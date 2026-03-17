@@ -95,35 +95,33 @@ add_library(tc_infra_reports_lib STATIC)
 target_sources(tc_infra_reports_lib PRIVATE
     ${TRACER_CORE_INFRA_REPORTS_SOURCES}
 )
-if(TT_CPP20_MODULES_EFFECTIVE)
-    target_sources(tc_infra_reports_lib PUBLIC
-        FILE_SET core_infrastructure_reports_modules TYPE CXX_MODULES
-        BASE_DIRS
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
-        FILES
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.exporting.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.exporting.export_utils.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.exporting.report_file_manager.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.exporting.exporter.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.dto.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.dto.formatter.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.dto.export_writer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.data_querying.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.data_querying.lazy_sqlite_report_data_query_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.data_querying.sqlite_report_data_query_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.lazy_sqlite_report_query_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.report_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.services.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.services.daily_report_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.services.monthly_report_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.services.weekly_report_service.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.reports.querying.services.yearly_report_service.cppm"
-    )
-    set_target_properties(tc_infra_reports_lib PROPERTIES
-        CXX_SCAN_FOR_MODULES ON
-    )
-endif()
+target_sources(tc_infra_reports_lib PUBLIC
+    FILE_SET core_infrastructure_reports_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
+    FILES
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.export_utils.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.report_file_manager.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.exporter.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.formatter.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.export_writer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/tracer.core.infrastructure.reports.data_querying.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/tracer.core.infrastructure.reports.data_querying.lazy_sqlite_report_data_query_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/tracer.core.infrastructure.reports.data_querying.sqlite_report_data_query_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/tracer.core.infrastructure.reports.querying.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/tracer.core.infrastructure.reports.querying.lazy_sqlite_report_query_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/tracer.core.infrastructure.reports.querying.report_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/tracer.core.infrastructure.reports.querying.services.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/tracer.core.infrastructure.reports.querying.services.daily_report_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/tracer.core.infrastructure.reports.querying.services.monthly_report_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/tracer.core.infrastructure.reports.querying.services.weekly_report_service.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/tracer.core.infrastructure.reports.querying.services.yearly_report_service.cppm"
+)
+set_target_properties(tc_infra_reports_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
 setup_app_target(
     tc_infra_reports_lib
     PCH_HEADER "${PROJECT_SOURCE_DIR}/pch_sqlite_toml.hpp"
@@ -141,10 +139,6 @@ target_link_libraries(tc_infra_reports_lib PUBLIC
 
 set(TRACER_CORE_INFRA_CORE_SOURCES_REMAINING ${TIME_TRACKER_INFRA_CORE_SOURCES})
 list(REMOVE_ITEM TRACER_CORE_INFRA_CORE_SOURCES_REMAINING
-    "logging/console_logger.cpp"
-    "logging/console_diagnostics_sink.cpp"
-    "logging/file_error_report_writer.cpp"
-    "logging/validation_issue_reporter.cpp"
     "config/static_converter_config_provider.cpp"
     "${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
 )
@@ -174,64 +168,64 @@ target_sources(tc_infra_full_lib PRIVATE
     ${TRACER_CORE_INFRA_PERSISTENCE_SOURCES}
     ${TRACER_CORE_INFRA_CONFIG_SOURCES}
 )
-if(TT_CPP20_MODULES_EFFECTIVE)
-    target_sources(tc_infra_full_lib PUBLIC
-        FILE_SET core_infrastructure_full_modules TYPE CXX_MODULES
-        BASE_DIRS
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
-        FILES
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.internal.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.config_loader.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.file_converter_config_provider.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.internal.config_detail_loader.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.config.internal.config_parser_utils.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.repository.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.repository.models.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.repository.types.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.repository.data_query_repository.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.internal.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.internal.request.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.internal.period.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.internal.report_mapping.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.renderers.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.renderers.data_query_renderer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.renderers.text_renderer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.renderers.semantic_json_renderer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.renderers.boundary.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.list_query_orchestrator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.days_stats_orchestrator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.report_chart_orchestrator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.tree_orchestrator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.date_range_resolver.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.orchestrators.boundary.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.stats.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.stats.models.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.stats.day_duration_stats_calculator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.stats.report_chart_stats_calculator.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.query.data.stats.boundary.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.runtime.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.sqlite.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.runtime.sqlite_project_repository.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.runtime.sqlite_database_health_checker.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.repository.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.sqlite.connection.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.sqlite.statement.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.sqlite.writer.cppm"
-            "${TRACER_CORE_INFRA_LIB_ROOT}/modules/tracer.core.infrastructure.persistence.write.importer.sqlite.project_resolver.cppm"
-    )
-    set_target_properties(tc_infra_full_lib PROPERTIES
-        CXX_SCAN_FOR_MODULES ON
-    )
-endif()
+target_sources(tc_infra_full_lib PUBLIC
+    FILE_SET core_infrastructure_full_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
+    FILES
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.config_loader.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.file_converter_config_provider.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.config_detail_loader.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.android_bundle_config_paths.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.cli_config_snapshot.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.config_parser_utils.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/tracer.core.infrastructure.query.data.repository.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/tracer.core.infrastructure.query.data.repository.models.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/tracer.core.infrastructure.query.data.repository.types.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/tracer.core.infrastructure.query.data.repository.data_query_repository.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/tracer.core.infrastructure.query.data.internal.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/tracer.core.infrastructure.query.data.internal.request.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/tracer.core.infrastructure.query.data.internal.period.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/tracer.core.infrastructure.query.data.internal.report_mapping.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/tracer.core.infrastructure.query.data.renderers.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/tracer.core.infrastructure.query.data.renderers.data_query_renderer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/tracer.core.infrastructure.query.data.renderers.text_renderer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/tracer.core.infrastructure.query.data.renderers.semantic_json_renderer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/tracer.core.infrastructure.query.data.renderers.boundary.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.list_query_orchestrator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.days_stats_orchestrator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.report_chart_orchestrator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.tree_orchestrator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.date_range_resolver.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/tracer.core.infrastructure.query.data.orchestrators.boundary.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/tracer.core.infrastructure.query.data.stats.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/tracer.core.infrastructure.query.data.stats.models.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/tracer.core.infrastructure.query.data.stats.day_duration_stats_calculator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/tracer.core.infrastructure.query.data.stats.report_chart_stats_calculator.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/tracer.core.infrastructure.query.data.stats.boundary.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/tracer.core.infrastructure.persistence.write.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/tracer.core.infrastructure.persistence.runtime.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/tracer.core.infrastructure.persistence.write.importer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/tracer.core.infrastructure.persistence.write.importer.sqlite.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/tracer.core.infrastructure.persistence.runtime.sqlite_project_repository.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/tracer.core.infrastructure.persistence.runtime.sqlite_database_health_checker.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/tracer.core.infrastructure.persistence.write.importer.repository.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/tracer.core.infrastructure.persistence.write.importer.sqlite.connection.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/tracer.core.infrastructure.persistence.write.importer.sqlite.statement.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/tracer.core.infrastructure.persistence.write.importer.sqlite.writer.cppm"
+        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/tracer.core.infrastructure.persistence.write.importer.sqlite.project_resolver.cppm"
+)
+set_target_properties(tc_infra_full_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
 
 setup_app_target(
     tc_infra_full_lib

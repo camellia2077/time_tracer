@@ -1,18 +1,16 @@
-module;
-
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <stdexcept>
 #include <string>
 
-#include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/reports/services/daily_report_service.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/data/queriers/daily/daily_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 
-module tracer.core.infrastructure.reports.querying.services.daily_report_service;
+import tracer.core.domain.reports.models.query_data_structs;
+import tracer.core.domain.reports.types.report_types;
 
 namespace tracer::core::infrastructure::reports::services {
 

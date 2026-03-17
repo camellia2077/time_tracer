@@ -1,60 +1,27 @@
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_REPORTS_EXPORT_SOURCES
-        "reports/export_utils.module.cpp"
-        "reports/exporter.module.cpp"
-        "reports/report_file_manager.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_REPORTS_EXPORT_SOURCES
-        "reports/export_utils.cpp"
-        "reports/exporter.cpp"
-        "reports/report_file_manager.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_REPORTS_EXPORT_SOURCES
+    "reports/export_utils.module.cpp"
+    "reports/exporter.module.cpp"
+    "reports/report_file_manager.module.cpp"
+)
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_REPORTS_DTO_SOURCES
-        "reports/report_dto_export_writer.module.cpp"
-        "reports/report_dto_formatter.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_REPORTS_DTO_SOURCES
-        "reports/report_dto_export_writer.cpp"
-        "reports/report_dto_formatter.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_REPORTS_DTO_SOURCES
+    "reports/report_dto_export_writer.module.cpp"
+    "reports/report_dto_formatter.module.cpp"
+)
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_REPORTS_QUERYING_SOURCES
-        "reports/lazy_sqlite_report_query_service.module.cpp"
-        "reports/report_service.module.cpp"
-        "reports/services/daily_report_service.module.cpp"
-        "reports/services/monthly_report_service.module.cpp"
-        "reports/services/weekly_report_service.module.cpp"
-        "reports/services/yearly_report_service.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_REPORTS_QUERYING_SOURCES
-        "reports/lazy_sqlite_report_query_service.cpp"
-        "reports/report_service.cpp"
-        "reports/services/daily_report_service.cpp"
-        "reports/services/monthly_report_service.cpp"
-        "reports/services/weekly_report_service.cpp"
-        "reports/services/yearly_report_service.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_REPORTS_QUERYING_SOURCES
+    "reports/lazy_sqlite_report_query_service.module.cpp"
+    "reports/report_service.module.cpp"
+    "reports/services/daily_report_service.module.cpp"
+    "reports/services/monthly_report_service.module.cpp"
+    "reports/services/weekly_report_service.module.cpp"
+    "reports/services/yearly_report_service.module.cpp"
+)
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_REPORTS_DATA_QUERYING_SOURCES
-        "reports/lazy_sqlite_report_data_query_service.module.cpp"
-        "reports/sqlite_report_data_query_service.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_REPORTS_DATA_QUERYING_SOURCES
-        "reports/lazy_sqlite_report_data_query_service.cpp"
-        "reports/sqlite_report_data_query_service.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_REPORTS_DATA_QUERYING_SOURCES
+    "reports/lazy_sqlite_report_data_query_service.module.cpp"
+    "reports/sqlite_report_data_query_service.module.cpp"
+)
 
 set(TIME_TRACKER_INFRA_REPORTS_SOURCES
     ${TIME_TRACKER_INFRA_REPORTS_EXPORT_SOURCES}

@@ -1,5 +1,3 @@
-module;
-
 #include <cctype>
 #include <chrono>
 #include <exception>
@@ -16,8 +14,7 @@ module;
 #include "application/ports/i_report_data_query_service.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
-
-module tracer.core.application.use_cases.api;
+#include "application/use_cases/tracer_core_api.hpp"
 
 import tracer.core.application.use_cases.helpers;
 

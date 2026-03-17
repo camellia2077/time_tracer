@@ -19,7 +19,7 @@
 
 namespace tracer_core::application::tests {
 
-class FakeWorkflowHandler final : public IWorkflowHandler {
+class FakeWorkflowHandler final : public tracer::core::application::workflow::IWorkflowHandler {
  public:
   bool fail_convert = false;
   bool fail_ingest = false;

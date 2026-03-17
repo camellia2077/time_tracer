@@ -9,7 +9,15 @@
 
 namespace tracer::core::infrastructure::query::data::stats {
 
-#include "infrastructure/query/data/stats/detail/report_chart_stats_calculator_decl.inc"
+struct ReportChartDateRange {
+  std::string_view start_date;
+  std::string_view end_date;
+};
+
+[[nodiscard]] auto BuildReportChartSeries(
+    ReportChartDateRange range,
+    const std::vector<DayDurationRow>& sparse_rows)
+    -> ReportChartSeriesResult;
 
 }  // namespace tracer::core::infrastructure::query::data::stats
 

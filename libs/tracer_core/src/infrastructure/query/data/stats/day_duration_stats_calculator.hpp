@@ -7,7 +7,8 @@
 
 namespace tracer::core::infrastructure::query::data::stats {
 
-#include "infrastructure/query/data/stats/detail/day_duration_stats_calculator_decl.inc"
+[[nodiscard]] auto ComputeDayDurationStats(
+    const std::vector<DayDurationRow>& rows) -> DayDurationStats;
 
 }  // namespace tracer::core::infrastructure::query::data::stats
 

@@ -1,10 +1,8 @@
-module;
-
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-module tracer.core.application.workflow.handler;
+#include "application/workflow_handler.hpp"
 
 import tracer.core.application.importer.service;
 import tracer.core.domain.ports.diagnostics;
@@ -12,28 +10,4 @@ import tracer.core.domain.ports.diagnostics;
 using tracer::core::application::modimporter::ImportStats;
 namespace modports = tracer::core::domain::ports;
 
-namespace workflow_handler_internal {
-
-[[nodiscard]] auto BuildPipelineFailureMessage(std::string_view base_message)
-    -> std::string {
-  std::string message(base_message);
-  const std::string kReportDestination =
-      modports::GetErrorReportDestinationLabel();
-  if (!kReportDestination.empty() && kReportDestination != "disabled") {
-    message += "\nFull error report: " + kReportDestination;
-  }
-  return message;
-}
-
-auto ThrowIfImportTaskFailed(const ImportStats& stats,
-                             std::string_view default_message) -> void {
-  if (stats.db_open_success && stats.transaction_success) {
-    return;
-  }
-
-  throw std::runtime_error(stats.error_message.empty()
-                               ? std::string(default_message)
-                               : stats.error_message);
-}
-
-}  // namespace workflow_handler_internal
+#include "application/internal/workflow_handler_error_mapping_impl.inc"

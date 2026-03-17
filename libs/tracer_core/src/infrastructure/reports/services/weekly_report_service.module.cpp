@@ -1,21 +1,20 @@
-module;
-
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <stdexcept>
 #include <string>
 
-#include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/reports/services/weekly_report_service.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/data/queriers/weekly/weekly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
-#include "shared/utils/period_utils.hpp"
 
-module tracer.core.infrastructure.reports.querying.services.weekly_report_service;
+import tracer.core.domain.reports.models.query_data_structs;
+import tracer.core.domain.reports.types.report_types;
+import tracer.core.shared.period_utils;
 
+namespace modperiod = tracer::core::shared::modperiod;
 namespace tracer::core::infrastructure::reports::services {
 
 WeeklyReportService::WeeklyReportService(sqlite3* database_connection,
@@ -43,8 +42,8 @@ auto WeeklyReportService::GenerateReports(ReportFormat format)
       all_weeks_data, formatter, name_cache,
       [&](const std::string& week_label,
           const std::string& formatted_report) -> void {
-        IsoWeek parsed{};
-        if (ParseIsoWeek(week_label, parsed)) {
+        modperiod::IsoWeek parsed{};
+        if (modperiod::ParseIsoWeek(week_label, parsed)) {
           reports[parsed.year][parsed.week] = formatted_report;
         }
       });

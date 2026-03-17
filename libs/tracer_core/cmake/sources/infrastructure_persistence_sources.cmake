@@ -1,34 +1,16 @@
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES
-        "persistence/sqlite_time_sheet_repository.module.cpp"
-        "persistence/importer/repository.module.cpp"
-        "persistence/importer/sqlite/writer.module.cpp"
-        "persistence/importer/sqlite/project_resolver.module.cpp"
-        "persistence/importer/sqlite/connection.module.cpp"
-        "persistence/importer/sqlite/statement.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES
-        "persistence/sqlite_time_sheet_repository.cpp"
-        "persistence/importer/repository.cpp"
-        "persistence/importer/sqlite/writer.cpp"
-        "persistence/importer/sqlite/project_resolver.cpp"
-        "persistence/importer/sqlite/connection.cpp"
-        "persistence/importer/sqlite/statement.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES
+    "persistence/sqlite_time_sheet_repository.module.cpp"
+    "persistence/importer/repository.module.cpp"
+    "persistence/importer/sqlite/writer.module.cpp"
+    "persistence/importer/sqlite/project_resolver.module.cpp"
+    "persistence/importer/sqlite/connection.module.cpp"
+    "persistence/importer/sqlite/statement.module.cpp"
+)
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_SOURCES
-        "persistence/repositories/sqlite_project_repository.module.cpp"
-        "persistence/sqlite_database_health_checker.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_SOURCES
-        "persistence/repositories/sqlite_project_repository.cpp"
-        "persistence/sqlite_database_health_checker.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_SOURCES
+    "persistence/repositories/sqlite_project_repository.module.cpp"
+    "persistence/sqlite_database_health_checker.module.cpp"
+)
 
 set(TIME_TRACKER_INFRA_PERSISTENCE_SOURCES
     "persistence/sqlite/db_manager.cpp"

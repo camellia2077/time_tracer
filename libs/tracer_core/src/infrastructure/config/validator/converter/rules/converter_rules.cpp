@@ -1,7 +1,5 @@
 // infrastructure/config/validator/converter/rules/converter_rules.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.domain.ports.diagnostics;
-#endif
 
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
 
@@ -9,10 +7,6 @@ import tracer.core.domain.ports.diagnostics;
 #include <set>
 #include <string>
 #include <string_view>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/ports/diagnostics.hpp"
-#endif
 
 namespace modports = tracer::core::domain::ports;
 

@@ -20,36 +20,34 @@ target_sources(tc_app_lib PRIVATE
     ${TRACER_CORE_APPLICATION_SOURCES}
 )
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    target_sources(tc_app_lib PUBLIC
-        FILE_SET core_application_modules TYPE CXX_MODULES
-        BASE_DIRS
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules"
-        FILES
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.interface.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.api.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.helpers.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.data.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.nodes.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.viewer.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.service.converter.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.importer.service.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.types.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.stages.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.orchestrator.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.interface.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.handler.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow_handler.cppm"
-            "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.cppm"
-    )
-    set_target_properties(tc_app_lib PROPERTIES
-        CXX_SCAN_FOR_MODULES ON
-    )
-endif()
+target_sources(tc_app_lib PUBLIC
+    FILE_SET core_application_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules"
+    FILES
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.interface.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.api.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.helpers.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.data.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.nodes.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.viewer.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.service.converter.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.importer.service.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.types.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.stages.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.orchestrator.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.interface.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow.handler.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.workflow_handler.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.cppm"
+)
+set_target_properties(tc_app_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
 
 if(COMMAND setup_app_target)
     setup_app_target(

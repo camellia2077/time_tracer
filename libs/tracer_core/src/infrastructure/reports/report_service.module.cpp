@@ -1,5 +1,3 @@
-module;
-
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
@@ -9,10 +7,9 @@ module;
 #include <string_view>
 #include <vector>
 
+#include "infrastructure/reports/report_service.hpp"
 #include "application/interfaces/i_report_query_service.hpp"
 #include "application/ports/i_platform_clock.hpp"
-#include "domain/reports/models/daily_report_data.hpp"
-#include "domain/reports/models/period_report_models.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/data/queriers/daily/daily_querier.hpp"
 #include "infrastructure/reports/data/queriers/monthly/monthly_querier.hpp"
@@ -25,10 +22,10 @@ module;
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 #include "infrastructure/reports/shared/interfaces/i_report_formatter.hpp"
 
-module tracer.core.infrastructure.reports.querying.report_service;
-
+import tracer.core.domain.reports.models.daily_report_data;
 import tracer.core.infrastructure.reports.querying.services;
 
+namespace modreports = tracer::core::domain::modreports;
 namespace tracer::core::infrastructure::reports {
 
 ReportService::ReportService(
@@ -46,7 +43,8 @@ ReportService::ReportService(
 
 auto ReportService::RunDailyQuery(std::string_view date,
                                   ReportFormat format) const -> std::string {
-  BaseGenerator<DailyReportData, DayQuerier, std::string_view> generator(
+  BaseGenerator<modreports::DailyReportData, DayQuerier, std::string_view>
+      generator(
       db_, report_catalog_);
   return generator.GenerateReport(date, format);
 }

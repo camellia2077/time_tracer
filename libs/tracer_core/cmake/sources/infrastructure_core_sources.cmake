@@ -17,19 +17,11 @@ else()
         "platform/android/android_platform_clock.cpp")
 endif()
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
-        "query/data/stats/day_duration_stats_calculator.module.cpp"
-        "query/data/stats/report_chart_stats_calculator.module.cpp"
-        "query/data/stats/stats_boundary.module.cpp"
-    )
-else()
-    set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
-        "query/data/stats/day_duration_stats_calculator.cpp"
-        "query/data/stats/report_chart_stats_calculator.cpp"
-        "query/data/stats/stats_boundary.cpp"
-    )
-endif()
+set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
+    "query/data/stats/day_duration_stats_calculator.module.cpp"
+    "query/data/stats/report_chart_stats_calculator.module.cpp"
+    "query/data/stats/stats_boundary.module.cpp"
+)
 
 set(TIME_TRACKER_INFRA_CORE_SOURCES
     "query/data/data_query_repository.cpp"
@@ -53,10 +45,6 @@ set(TIME_TRACKER_INFRA_CORE_SOURCES
     "query/data/renderers/renderers_boundary.cpp"
     "${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
     "${TIME_TRACKER_INFRA_ANDROID_HELPER_CLOCK_SOURCE}"
-    "logging/console_logger.cpp"
-    "logging/console_diagnostics_sink.cpp"
-    "logging/file_error_report_writer.cpp"
-    "logging/validation_issue_reporter.cpp"
     "crypto/internal/file_crypto_progress_control.cpp"
     "crypto/internal/file_crypto_directory_plan.cpp"
     "crypto/internal/file_crypto_io.cpp"

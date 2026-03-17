@@ -1,4 +1,10 @@
 // infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp
+import tracer.core.infrastructure.config.file_converter_config_provider;
+import tracer.core.domain.types.converter_config;
+import tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.stats;
+
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <set>
@@ -7,24 +13,14 @@
 #include <unordered_map>
 #include <vector>
 
-#include "infrastructure/config/file_converter_config_provider.hpp"
 #include "infrastructure/query/data/internal/report_mapping.hpp"
-#include "infrastructure/query/data/data_query_models.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/data_query_repository.hpp"
-#include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
-#include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
-#endif
-
-import tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
-import tracer.core.infrastructure.query.data.repository;
-import tracer.core.infrastructure.query.data.stats;
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace infra_data_query_orchestrators =
     tracer::core::infrastructure::query::data::orchestrators;
 namespace infra_data_query_stats =
     tracer::core::infrastructure::query::data::stats;
+namespace modtypes = tracer::core::domain::modtypes;
 using FileConverterConfigProvider =
     tracer::core::infrastructure::config::FileConverterConfigProvider;
 
@@ -59,7 +55,8 @@ auto BuildMappingNamesContent(
   FileConverterConfigProvider config_provider(
       *converter_config_toml_path,
       std::unordered_map<std::filesystem::path, std::filesystem::path>{});
-  const ConverterConfig kConfig = config_provider.LoadConverterConfig();
+  const modtypes::ConverterConfig kConfig =
+      config_provider.LoadConverterConfig();
 
   std::set<std::string> names;
   for (const auto& [alias, full_name] : kConfig.text_mapping) {
@@ -168,7 +165,8 @@ auto BuildReportChartContent(
       infra_data_query::QueryDayDurationsByRootInDateRange(
           db_conn, kSelectedRoot, range.start_date, range.end_date);
   const auto kSeriesResult = infra_data_query_stats::BuildReportChartSeries(
-      range.start_date, range.end_date, kSparseRows);
+      {.start_date = range.start_date, .end_date = range.end_date},
+      kSparseRows);
   for (const auto& point : kSeriesResult.series) {
     payload["series"].push_back(json{
         {"date", point.date},

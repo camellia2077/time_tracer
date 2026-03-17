@@ -73,11 +73,13 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
 
   const std::filesystem::path kConfigSmokeDir =
       std::filesystem::path("temp") / "phase4_config_infra_module_smoke";
-  const std::filesystem::path kCopiedConfigRoot = kConfigSmokeDir / "config";
   const std::filesystem::path kFakeExePath =
       kConfigSmokeDir / "bin" / "tracer_core_smoke.exe";
+  const std::filesystem::path kCopiedConfigRoot =
+      kFakeExePath.parent_path() / "config";
   std::filesystem::remove_all(kConfigSmokeDir, cleanup_error);
   std::filesystem::create_directories(kConfigSmokeDir);
+  std::filesystem::create_directories(kCopiedConfigRoot.parent_path());
   std::filesystem::copy(std::filesystem::path("assets") / "tracer_core" /
                             "config",
                         kCopiedConfigRoot,

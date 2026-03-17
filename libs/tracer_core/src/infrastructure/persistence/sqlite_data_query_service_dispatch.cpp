@@ -1,17 +1,9 @@
 // infrastructure/persistence/sqlite_data_query_service_dispatch.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.orchestrators;
-#endif
 
 #include <stdexcept>
 
 #include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
-#include "infrastructure/query/data/orchestrators/list_query_orchestrator.hpp"
-#include "infrastructure/query/data/orchestrators/report_chart_orchestrator.hpp"
-#include "infrastructure/query/data/orchestrators/tree_orchestrator.hpp"
-#endif
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace infra_data_query_orchestrators =

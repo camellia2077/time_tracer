@@ -55,7 +55,7 @@ auto BuildTreeFailure(std::string_view operation,
   return {.ok = false,
           .found = false,
           .roots = {},
-          .nodes = {},
+          .tree = {},
           .error_message = BuildErrorMessage(operation, exception.what())};
 }
 
@@ -64,7 +64,7 @@ auto BuildTreeFailure(std::string_view operation) -> TreeQueryResponse {
       .ok = false,
       .found = false,
       .roots = {},
-      .nodes = {},
+      .tree = {},
       .error_message =
           BuildErrorMessage(operation, "Unknown non-standard exception."),
   };

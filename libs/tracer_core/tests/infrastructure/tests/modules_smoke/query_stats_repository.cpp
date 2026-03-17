@@ -57,7 +57,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
 
   const auto kSeries =
       tracer::core::infrastructure::query::data::stats::BuildReportChartSeries(
-          "2026-02-01", "2026-02-03", kRows);
+          {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kRows);
   if (kSeries.series.size() != 3U ||
       kSeries.series.front().date != "2026-02-01" ||
       kSeries.series.back().date != "2026-02-03" ||

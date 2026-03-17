@@ -1,5 +1,3 @@
-module;
-
 #include <algorithm>
 #include <cctype>
 #include <map>
@@ -10,12 +8,11 @@ module;
 #include <string_view>
 #include <utility>
 
+#include "infrastructure/reports/report_dto_export_writer.hpp"
 #include "application/interfaces/i_report_exporter.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
-
-module tracer.core.infrastructure.reports.dto.export_writer;
 
 import tracer.core.infrastructure.reports.dto.formatter;
 
@@ -93,17 +90,17 @@ auto ParseDateYearMonth(const std::string& date)
     -> std::optional<YearMonthParts> {
   if (date.size() >= kDashedDateMinLength &&
       date[kDateDashYearMonthPos] == '-' && date[kDateDashMonthDayPos] == '-') {
-    const std::string_view year_view(date.data(), kYearWidth);
-    const std::string_view month_view(date.data() + kMonthOffsetWithDash,
+    const std::string_view kYearView(date.data(), kYearWidth);
+    const std::string_view kMonthView(date.data() + kMonthOffsetWithDash,
                                       kMonthWidth);
-    return ParseYearMonthViews(year_view, month_view);
+    return ParseYearMonthViews(kYearView, kMonthView);
   }
 
   if (date.size() >= kCompactDateMinLength) {
-    const std::string_view year_view(date.data(), kYearWidth);
-    const std::string_view month_view(date.data() + kMonthOffsetWithoutDash,
+    const std::string_view kYearView(date.data(), kYearWidth);
+    const std::string_view kMonthView(date.data() + kMonthOffsetWithoutDash,
                                       kMonthWidth);
-    return ParseYearMonthViews(year_view, month_view);
+    return ParseYearMonthViews(kYearView, kMonthView);
   }
 
   return std::nullopt;
@@ -113,17 +110,17 @@ auto ParseYearMonthLabel(const std::string& label)
     -> std::optional<YearMonthParts> {
   if (label.size() >= kDashedMonthLabelMinLength &&
       label[kMonthLabelDashPos] == '-') {
-    const std::string_view year_view(label.data(), kYearWidth);
-    const std::string_view month_view(label.data() + kMonthOffsetWithDash,
+    const std::string_view kYearView(label.data(), kYearWidth);
+    const std::string_view kMonthView(label.data() + kMonthOffsetWithDash,
                                       kMonthWidth);
-    return ParseYearMonthViews(year_view, month_view);
+    return ParseYearMonthViews(kYearView, kMonthView);
   }
 
   if (label.size() >= kCompactMonthLabelMinLength) {
-    const std::string_view year_view(label.data(), kYearWidth);
-    const std::string_view month_view(label.data() + kMonthOffsetWithoutDash,
+    const std::string_view kYearView(label.data(), kYearWidth);
+    const std::string_view kMonthView(label.data() + kMonthOffsetWithoutDash,
                                       kMonthWidth);
-    return ParseYearMonthViews(year_view, month_view);
+    return ParseYearMonthViews(kYearView, kMonthView);
   }
 
   return std::nullopt;
@@ -131,23 +128,23 @@ auto ParseYearMonthLabel(const std::string& label)
 
 auto ParseIsoWeekLabel(const std::string& label)
     -> std::optional<YearWeekParts> {
-  const size_t separator_pos = label.find(kIsoWeekSeparator);
-  if (separator_pos == std::string::npos || separator_pos == 0 ||
-      separator_pos + kIsoWeekSeparatorLength >= label.size()) {
+  const size_t kSeparatorPos = label.find(kIsoWeekSeparator);
+  if (kSeparatorPos == std::string::npos || kSeparatorPos == 0 ||
+      kSeparatorPos + kIsoWeekSeparatorLength >= label.size()) {
     return std::nullopt;
   }
 
-  const std::string_view year_view(label.data(), separator_pos);
-  const std::string_view week_view(
-      label.data() + separator_pos + kIsoWeekSeparatorLength,
-      label.size() - separator_pos - kIsoWeekSeparatorLength);
-  if (!IsAllDigits(year_view) || !IsAllDigits(week_view)) {
+  const std::string_view kYearView(label.data(), kSeparatorPos);
+  const std::string_view kWeekView(
+      label.data() + kSeparatorPos + kIsoWeekSeparatorLength,
+      label.size() - kSeparatorPos - kIsoWeekSeparatorLength);
+  if (!IsAllDigits(kYearView) || !IsAllDigits(kWeekView)) {
     return std::nullopt;
   }
 
   try {
-    YearWeekParts parsed{.year = std::stoi(std::string(year_view)),
-                         .week = std::stoi(std::string(week_view))};
+    YearWeekParts parsed{.year = std::stoi(std::string(kYearView)),
+                         .week = std::stoi(std::string(kWeekView))};
     if (parsed.week < kMinIsoWeek || parsed.week > kMaxIsoWeek) {
       return std::nullopt;
     }
@@ -187,38 +184,38 @@ ReportDtoExportWriter::ReportDtoExportWriter(
 auto ReportDtoExportWriter::ExportSingleDay(const std::string& date,
                                             const DailyReportData& report,
                                             ReportFormat format) -> void {
-  const std::string content = formatter_->FormatDaily(report, format);
-  exporter_->ExportSingleDayReport({.id = date, .kContent = content}, format);
+  const std::string kContent = formatter_->FormatDaily(report, format);
+  exporter_->ExportSingleDayReport({.id = date, .kContent = kContent}, format);
 }
 
 auto ReportDtoExportWriter::ExportSingleMonth(const std::string& month,
                                               const MonthlyReportData& report,
                                               ReportFormat format) -> void {
-  const std::string content = formatter_->FormatMonthly(report, format);
-  exporter_->ExportSingleMonthReport({.id = month, .kContent = content},
+  const std::string kContent = formatter_->FormatMonthly(report, format);
+  exporter_->ExportSingleMonthReport({.id = month, .kContent = kContent},
                                      format);
 }
 
 auto ReportDtoExportWriter::ExportSinglePeriod(int days,
                                                const PeriodReportData& report,
                                                ReportFormat format) -> void {
-  const std::string content = formatter_->FormatPeriod(report, format);
-  exporter_->ExportSinglePeriodReport(days, content, format);
+  const std::string kContent = formatter_->FormatPeriod(report, format);
+  exporter_->ExportSinglePeriodReport(days, kContent, format);
 }
 
 auto ReportDtoExportWriter::ExportSingleWeek(const std::string& iso_week,
                                              const WeeklyReportData& report,
                                              ReportFormat format) -> void {
-  const std::string content = formatter_->FormatWeekly(report, format);
-  exporter_->ExportSingleWeekReport({.id = iso_week, .kContent = content},
+  const std::string kContent = formatter_->FormatWeekly(report, format);
+  exporter_->ExportSingleWeekReport({.id = iso_week, .kContent = kContent},
                                     format);
 }
 
 auto ReportDtoExportWriter::ExportSingleYear(const std::string& year,
                                              const YearlyReportData& report,
                                              ReportFormat format) -> void {
-  const std::string content = formatter_->FormatYearly(report, format);
-  exporter_->ExportSingleYearReport({.id = year, .kContent = content}, format);
+  const std::string kContent = formatter_->FormatYearly(report, format);
+  exporter_->ExportSingleYearReport({.id = year, .kContent = kContent}, format);
 }
 
 auto ReportDtoExportWriter::ExportAllDaily(
@@ -226,11 +223,11 @@ auto ReportDtoExportWriter::ExportAllDaily(
     -> void {
   FormattedGroupedReports formatted_reports;
   for (const auto& [date, report] : reports) {
-    const auto parsed_date = ParseDateYearMonth(date);
-    if (!parsed_date.has_value()) {
+    const auto kParsedDate = ParseDateYearMonth(date);
+    if (!kParsedDate.has_value()) {
       continue;
     }
-    formatted_reports[parsed_date->year][parsed_date->month].push_back(
+    formatted_reports[kParsedDate->year][kParsedDate->month].push_back(
         {.report_id = date,
          .kContent = formatter_->FormatDaily(report, format)});
   }
@@ -242,11 +239,11 @@ auto ReportDtoExportWriter::ExportAllMonthly(
     ReportFormat format) -> void {
   FormattedMonthlyReports formatted_reports;
   for (const auto& [label, report] : reports) {
-    const auto parsed_label = ParseYearMonthLabel(label);
-    if (!parsed_label.has_value()) {
+    const auto kParsedLabel = ParseYearMonthLabel(label);
+    if (!kParsedLabel.has_value()) {
       continue;
     }
-    formatted_reports[parsed_label->year][parsed_label->month] =
+    formatted_reports[kParsedLabel->year][kParsedLabel->month] =
         formatter_->FormatMonthly(report, format);
   }
   exporter_->ExportAllMonthlyReports(formatted_reports, format);
@@ -267,11 +264,11 @@ auto ReportDtoExportWriter::ExportAllWeekly(
     -> void {
   FormattedWeeklyReports formatted_reports;
   for (const auto& [label, report] : reports) {
-    const auto parsed_label = ParseIsoWeekLabel(label);
-    if (!parsed_label.has_value()) {
+    const auto kParsedLabel = ParseIsoWeekLabel(label);
+    if (!kParsedLabel.has_value()) {
       continue;
     }
-    formatted_reports[parsed_label->year][parsed_label->week] =
+    formatted_reports[kParsedLabel->year][kParsedLabel->week] =
         formatter_->FormatWeekly(report, format);
   }
   exporter_->ExportAllWeeklyReports(formatted_reports, format);

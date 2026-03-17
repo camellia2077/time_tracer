@@ -6,22 +6,24 @@ module;
 #include <utility>
 #include <vector>
 
-#include "domain/reports/models/project_tree.hpp"
-
 module tracer.core.application.reporting.tree.nodes;
 
 import tracer.core.application.reporting.tree.data;
+import tracer.core.domain.reports.models.project_tree;
 
 namespace tracer::core::application::reporting::tree {
 namespace {
 
+using tracer::core::domain::modreports::ProjectNode;
+using tracer::core::domain::modreports::ProjectTree;
+
 struct NamedReportNodeRef {
   std::string_view name;
-  const ::reporting::ProjectNode* node = nullptr;
+  const ProjectNode* node = nullptr;
 };
 
 [[nodiscard]] auto CollectSortedReportChildren(
-    const ::reporting::ProjectNode& node) -> std::vector<NamedReportNodeRef> {
+    const ProjectNode& node) -> std::vector<NamedReportNodeRef> {
   std::vector<NamedReportNodeRef> children;
   children.reserve(node.children.size());
   for (const auto& [name, child] : node.children) {
@@ -49,7 +51,7 @@ struct NamedReportNodeRef {
 }
 
 [[nodiscard]] auto BuildNodeFromReportNode(std::string_view name,
-                                           const ::reporting::ProjectNode& node,
+                                           const ProjectNode& node,
                                            std::string_view parent_path)
     -> ProjectTreeNode {
   ProjectTreeNode out{};
@@ -106,7 +108,7 @@ auto CollectTreeMatchesByPath(const ProjectTreeNode& node,
 
 }  // namespace
 
-auto BuildProjectTreeNodesFromReportTree(const ::reporting::ProjectTree& tree)
+auto BuildProjectTreeNodesFromReportTree(const ProjectTree& tree)
     -> std::vector<ProjectTreeNode> {
   std::vector<NamedReportNodeRef> roots;
   roots.reserve(tree.size());

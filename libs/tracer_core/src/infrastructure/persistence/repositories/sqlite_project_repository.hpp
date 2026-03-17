@@ -2,20 +2,23 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
 #define INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
 
-#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
-import tracer.core.infrastructure.persistence.runtime.sqlite_project_repository;
-#else
 #include <string>
 
 #include "domain/repositories/i_project_repository.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 
 namespace tracer::core::infrastructure::persistence {
+class SqliteProjectRepository final : public IProjectRepository {
+ public:
+  explicit SqliteProjectRepository(std::string db_path);
 
-#include "infrastructure/persistence/repositories/detail/sqlite_project_repository_decl.inc"
+  auto GetAllProjects() -> std::vector<ProjectEntity> override;
+
+ private:
+  std::string db_path_;
+};
 
 }  // namespace tracer::core::infrastructure::persistence
-#endif
 
 namespace infrastructure::persistence {
 

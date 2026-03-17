@@ -9,9 +9,3 @@ export namespace tracer::core::application::workflow {
 using ::tracer::core::application::workflow::IWorkflowHandler;
 
 }  // namespace tracer::core::application::workflow
-
-export namespace tracer::core::application::modworkflow {
-
-using ::IWorkflowHandler;
-
-}  // namespace tracer::core::application::modworkflow

@@ -1,11 +1,9 @@
-module;
-
 #include <algorithm>
 #include <cmath>
 #include <ranges>
 #include <vector>
 
-module tracer.core.infrastructure.query.data.stats.day_duration_stats_calculator;
+#include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
 
 import tracer.core.infrastructure.query.data.repository.types;
 

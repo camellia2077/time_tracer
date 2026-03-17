@@ -2,9 +2,6 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
 
-#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
-import tracer.core.infrastructure.reports.querying.services.monthly_report_service;
-#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
@@ -15,11 +12,20 @@ import tracer.core.infrastructure.reports.querying.services.monthly_report_servi
 #include "infrastructure/config/models/report_catalog.hpp"
 
 namespace tracer::core::infrastructure::reports::services {
+class MonthlyReportService {
+ public:
+  explicit MonthlyReportService(sqlite3* database_connection,
+                                const ReportCatalog& report_catalog);
 
-#include "infrastructure/reports/services/detail/monthly_report_service_decl.inc"
+  [[nodiscard]] auto GenerateReports(ReportFormat format)
+      -> FormattedMonthlyReports;
+
+ private:
+  sqlite3* db_;
+  const ReportCatalog& report_catalog_;
+};
 
 }  // namespace tracer::core::infrastructure::reports::services
-#endif
 
 namespace infrastructure::reports::services {
 

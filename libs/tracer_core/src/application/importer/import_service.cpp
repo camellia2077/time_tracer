@@ -1,7 +1,5 @@
 // application/importer/import_service.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.domain.model.daily_log;
-#endif
 
 #include "application/importer/import_service.hpp"
 
@@ -11,10 +9,6 @@ import tracer.core.domain.model.daily_log;
 
 #include "application/parser/memory_parser.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/model/daily_log.hpp"
-#endif
 
 ImportService::ImportService(
     tracer_core::application::ports::ITimeSheetRepository& repository)

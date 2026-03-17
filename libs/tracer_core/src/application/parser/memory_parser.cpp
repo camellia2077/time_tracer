@@ -1,15 +1,9 @@
 // application/parser/memory_parser.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.domain.ports.diagnostics;
-#endif
 
 #include "application/parser/memory_parser.hpp"
 
 #include <optional>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/ports/diagnostics.hpp"
-#endif
 
 namespace modports = tracer::core::domain::ports;
 

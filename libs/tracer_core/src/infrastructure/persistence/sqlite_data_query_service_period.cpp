@@ -1,7 +1,6 @@
 // infrastructure/persistence/sqlite_data_query_service_period.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.repository;
-#endif
+import tracer.core.shared.period_utils;
 
 #include <cctype>
 #include <chrono>
@@ -12,12 +11,9 @@ import tracer.core.infrastructure.query.data.repository;
 
 #include "domain/utils/time_utils.hpp"
 #include "infrastructure/query/data/internal/period.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/data_query_repository.hpp"
-#endif
-#include "shared/utils/period_utils.hpp"
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
+namespace modperiod = tracer::core::shared::modperiod;
 
 namespace tracer::core::infrastructure::query::data::internal {
 namespace {
@@ -88,13 +84,13 @@ auto ApplyTreePeriodWeek(
     const tracer_core::core::dto::DataQueryRequest& request,
     infra_data_query::QueryFilters& filters) -> void {
   const std::string kArg = RequireTreePeriodArgument(request, "week");
-  IsoWeek week{};
-  if (!ParseIsoWeek(kArg, week)) {
+  modperiod::IsoWeek week{};
+  if (!modperiod::ParseIsoWeek(kArg, week)) {
     throw std::runtime_error(
         "Invalid week period. Use ISO YYYY-Www (e.g., 2026-W05).");
   }
-  filters.from_date = IsoWeekStartDate(week);
-  filters.to_date = IsoWeekEndDate(week);
+  filters.from_date = modperiod::IsoWeekStartDate(week);
+  filters.to_date = modperiod::IsoWeekEndDate(week);
 }
 
 auto ApplyTreePeriodMonth(
@@ -116,11 +112,11 @@ auto ApplyTreePeriodYear(
     infra_data_query::QueryFilters& filters) -> void {
   const std::string kArg = RequireTreePeriodArgument(request, "year");
   int year = 0;
-  if (!ParseGregorianYear(kArg, year)) {
+  if (!modperiod::ParseGregorianYear(kArg, year)) {
     throw std::runtime_error(
         "Invalid year period. Use Gregorian YYYY (e.g., 2026).");
   }
-  const std::string kYearText = FormatGregorianYear(year);
+  const std::string kYearText = modperiod::FormatGregorianYear(year);
   filters.from_date = NormalizeBoundaryDate(kYearText, false);
   filters.to_date = NormalizeBoundaryDate(kYearText, true);
 }

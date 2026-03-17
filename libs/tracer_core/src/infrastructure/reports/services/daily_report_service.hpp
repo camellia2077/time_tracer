@@ -2,9 +2,6 @@
 #ifndef INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 #define INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
 
-#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
-import tracer.core.infrastructure.reports.querying.services.daily_report_service;
-#else
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <string>
@@ -14,11 +11,19 @@ import tracer.core.infrastructure.reports.querying.services.daily_report_service
 #include "infrastructure/config/models/report_catalog.hpp"
 
 namespace tracer::core::infrastructure::reports::services {
+class DailyReportService {
+ public:
+  explicit DailyReportService(sqlite3* sqlite_db,
+                              const ReportCatalog& report_catalog);
 
-#include "infrastructure/reports/services/detail/daily_report_service_decl.inc"
+  auto GenerateAllReports(ReportFormat format) -> FormattedGroupedReports;
+
+ private:
+  sqlite3* db_;
+  const ReportCatalog& report_catalog_;
+};
 
 }  // namespace tracer::core::infrastructure::reports::services
-#endif
 
 namespace infrastructure::reports::services {
 

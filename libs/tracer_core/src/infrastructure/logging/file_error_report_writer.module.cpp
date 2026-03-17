@@ -1,13 +1,9 @@
-module;
-
 #include <filesystem>
 #include <fstream>
 #include <system_error>
 #include <utility>
 
-#include "domain/ports/diagnostics.hpp"
-
-module tracer.core.infrastructure.logging.file_error_report_writer;
+#include "infrastructure/logging/file_error_report_writer.hpp"
 
 namespace tracer::core::infrastructure::logging {
 

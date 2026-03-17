@@ -3,10 +3,7 @@
 #define INFRASTRUCTURE_PERSISTENCE_SQLITE_DB_MANAGER_H_
 
 #include <filesystem>
-#include <iostream>
 #include <string>
-
-#include "shared/types/ansi_colors.hpp"  // For colored console output
 
 // 前向声明
 struct sqlite3;

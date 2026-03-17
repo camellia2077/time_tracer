@@ -6,10 +6,12 @@ module;
 #include <utility>
 
 #include "application/dto/core_responses.hpp"
+#include "application/dto/tree_query_response.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
-#include "domain/reports/types/report_types.hpp"
 
 module tracer.core.application.use_cases.helpers;
+
+import tracer.core.domain.reports.types.report_types;
 
 namespace tracer::core::application::use_cases::helpers {
 
@@ -61,7 +63,7 @@ auto BuildTreeFailure(std::string_view operation,
   return {.ok = false,
           .found = false,
           .roots = {},
-          .nodes = {},
+          .tree = {},
           .error_message = BuildErrorMessage(operation, exception.what())};
 }
 
@@ -70,7 +72,7 @@ auto BuildTreeFailure(std::string_view operation) -> TreeQueryResponse {
       .ok = false,
       .found = false,
       .roots = {},
-      .nodes = {},
+      .tree = {},
       .error_message =
           BuildErrorMessage(operation, "Unknown non-standard exception."),
   };

@@ -1,17 +1,10 @@
 // infrastructure/query/data/orchestrators/report_chart_orchestrator.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.internal.report_mapping;
 import tracer.core.infrastructure.query.data.renderers;
-#endif
 
 #include "infrastructure/query/data/orchestrators/report_chart_orchestrator.hpp"
 
 #include <utility>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/internal/report_mapping.hpp"
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-#endif
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

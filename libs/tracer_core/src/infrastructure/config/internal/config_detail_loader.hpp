@@ -6,7 +6,7 @@
 
 namespace tracer::core::infrastructure::config::internal {
 
-#include "infrastructure/config/detail/config_detail_loader_decl.inc"
+#include "infrastructure/config/internal/detail/config_detail_loader_decl.inc"
 
 }  // namespace tracer::core::infrastructure::config::internal
 

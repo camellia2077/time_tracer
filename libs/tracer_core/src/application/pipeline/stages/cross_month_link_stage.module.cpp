@@ -8,10 +8,8 @@ module tracer.core.application.pipeline.stages;
 
 import tracer.core.application.pipeline.types;
 import tracer.core.domain.logic.converter.core;
-import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::converter::LogLinker;
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 
@@ -29,9 +27,7 @@ auto CrossMonthLinkStage::Execute(PipelineSession& session) -> bool {
 
   } catch (const std::exception& e) {
     tracer_core::application::ports::LogError(
-        std::string(modcolors::kRed) +
-        "[Pipeline] Logic Linker Error: " + e.what() +
-        std::string(modcolors::kReset));
+        std::string("[Pipeline] Logic Linker Error: ") + e.what());
     return true;
   }
 

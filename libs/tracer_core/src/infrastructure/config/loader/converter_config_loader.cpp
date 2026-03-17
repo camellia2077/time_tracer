@@ -1,8 +1,6 @@
 // infrastructure/config/loader/converter_config_loader.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.adapters.io.core.fs;
 import tracer.core.infrastructure.config.loader.toml_loader_utils;
-#endif
 
 #include "infrastructure/config/loader/converter_config_loader.hpp"
 
@@ -11,26 +9,10 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 #include <stdexcept>
 #include <string_view>
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/config/loader/toml_loader_utils.hpp"  // 使用 read_toml
-#endif
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/io/core/file_system_helper.hpp"
-#endif
 
 namespace fs = std::filesystem;
-#if TT_ENABLE_CPP20_MODULES
 namespace modcore = tracer::adapters::io::modcore;
-#else
-namespace modcore {
-
-[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
-  return ::FileSystemHelper::Exists(path);
-}
-
-}  // namespace modcore
-#endif
 
 namespace modloader = tracer::core::infrastructure::config::loader;
 

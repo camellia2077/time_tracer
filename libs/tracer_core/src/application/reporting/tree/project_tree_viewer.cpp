@@ -1,4 +1,6 @@
 // application/reporting/tree/project_tree_viewer.cpp
+import tracer.core.domain.repositories.project_repository;
+
 #include "application/reporting/tree/project_tree_viewer.hpp"
 
 #include <map>
@@ -8,9 +10,9 @@
 #include <vector>
 
 #include "application/reporting/tree/project_tree_nodes.hpp"
-#include "domain/repositories/i_project_repository.hpp"
 
 namespace app_tree = tracer::core::application::reporting::tree;
+using tracer::core::domain::modrepos::ProjectEntity;
 
 namespace {
 

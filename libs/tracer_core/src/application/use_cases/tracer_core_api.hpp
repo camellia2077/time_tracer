@@ -4,6 +4,9 @@
 
 #include <memory>
 
+#include "application/dto/core_requests.hpp"
+#include "application/dto/core_responses.hpp"
+#include "application/dto/tree_query_response.hpp"
 #include "application/use_cases/i_tracer_core_api.hpp"
 
 class IReportHandler;

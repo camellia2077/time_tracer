@@ -1,4 +1,7 @@
 // infrastructure/query/data/renderers/text_renderer.cpp
+import tracer.core.application.reporting.tree.data;
+import tracer.core.infrastructure.query.data.repository.types;
+
 #include "infrastructure/query/data/renderers/text_renderer.hpp"
 
 #include <algorithm>
@@ -13,6 +16,8 @@
 
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
+
+using tracer::core::application::reporting::tree::ProjectTreeNode;
 
 constexpr int kDefaultOutputPrecision = 6;
 

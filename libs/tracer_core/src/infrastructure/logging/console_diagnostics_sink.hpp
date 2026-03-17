@@ -6,7 +6,12 @@
 
 namespace tracer::core::infrastructure::logging {
 
-#include "infrastructure/logging/detail/console_diagnostics_sink_decl.inc"
+class ConsoleDiagnosticsSink final
+    : public tracer_core::domain::ports::IDiagnosticsSink {
+ public:
+  auto Emit(tracer_core::domain::ports::DiagnosticSeverity severity,
+            std::string_view message) -> void override;
+};
 
 }  // namespace tracer::core::infrastructure::logging
 

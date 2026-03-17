@@ -1,19 +1,12 @@
 // infrastructure/serialization/json_serializer.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.domain.ports.diagnostics;
 import tracer.core.shared.string_utils;
-#endif
 
 #include "infrastructure/serialization/json_serializer.hpp"
 
 #include <nlohmann/json.hpp>
 
 #include <string>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/ports/diagnostics.hpp"
-#include "shared/utils/string_utils.hpp"
-#endif
 
 #include "infrastructure/schema/day_schema.hpp"
 

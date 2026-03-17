@@ -1,4 +1,3 @@
-// infrastructure/config/internal/config_parser_utils.cpp
 #include "infrastructure/config/internal/config_parser_utils.hpp"
 
 #include "infrastructure/config/internal/config_parser_utils_internal.hpp"

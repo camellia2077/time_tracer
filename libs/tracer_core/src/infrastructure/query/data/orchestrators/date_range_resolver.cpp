@@ -1,7 +1,5 @@
 // infrastructure/query/data/orchestrators/date_range_resolver.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.internal.request;
-#endif
 
 #include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
 
@@ -10,10 +8,6 @@ import tracer.core.infrastructure.query.data.internal.request;
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/internal/request.hpp"
-#endif
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

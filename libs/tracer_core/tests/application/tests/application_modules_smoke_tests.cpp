@@ -1,4 +1,9 @@
 import tracer.core.application;
+import tracer.core.domain.model.daily_log;
+import tracer.core.domain.repositories.project_repository;
+import tracer.core.domain.types.app_options;
+import tracer.core.domain.types.date_check_mode;
+import tracer.core.domain.types.ingest_mode;
 
 #include "application/dto/ingest_input_model.hpp"
 #include "application/dto/core_requests.hpp"
@@ -12,10 +17,6 @@ import tracer.core.application;
 #include "application/ports/i_processed_data_storage.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
 #include "application/ports/i_validation_issue_reporter.hpp"
-#include "domain/model/daily_log.hpp"
-#include "domain/repositories/i_project_repository.hpp"
-#include "domain/types/app_options.hpp"
-#include "domain/types/ingest_mode.hpp"
 
 #include <exception>
 #include <filesystem>
@@ -33,6 +34,12 @@ using tracer::core::application::modimporter::ImportService;
 using tracer::core::application::modimporter::ImportStats;
 using tracer::core::application::modimporter::ReplaceMonthTarget;
 using tracer::core::application::modservice::ConverterService;
+using tracer::core::domain::modmodel::DailyLog;
+using tracer::core::domain::modrepos::IProjectRepository;
+using tracer::core::domain::modrepos::ProjectEntity;
+using tracer::core::domain::modtypes::AppOptions;
+using tracer::core::domain::modtypes::DateCheckMode;
+using tracer::core::domain::modtypes::IngestMode;
 
 namespace app_pipeline = tracer::core::application::pipeline;
 namespace app_tree = tracer::core::application::reporting::tree;
@@ -348,6 +355,19 @@ void TestReportingTreeBridge(int& failures) {
          failures);
   Expect(std::is_class_v<app_tree::ProjectTreeViewer>,
          "ProjectTreeViewer should be visible through the reporting tree module.",
+         failures);
+
+  app_tree::ProjectTreeNode root_node{};
+  root_node.name = "root";
+  root_node.path = "root";
+  root_node.duration_seconds = 42;
+  root_node.children.push_back(
+      {.name = "child", .path = "root/child", .duration_seconds = 7});
+  Expect(root_node.name == "root" &&
+             root_node.duration_seconds == std::optional<long long>(42) &&
+             root_node.children.size() == 1U &&
+             root_node.children.front().name == "child",
+         "ProjectTreeNode fields should remain writable through the owning module path.",
          failures);
 
   const auto build_nodes_fn = &app_tree::BuildProjectTreeNodesFromReportTree;

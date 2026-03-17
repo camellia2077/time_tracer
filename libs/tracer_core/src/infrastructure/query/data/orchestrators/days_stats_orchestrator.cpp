@@ -1,21 +1,12 @@
 // infrastructure/query/data/orchestrators/days_stats_orchestrator.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.internal.period;
 import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.renderers;
 import tracer.core.infrastructure.query.data.stats;
-#endif
 
 #include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
 
 #include <utility>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/internal/period.hpp"
-#include "infrastructure/query/data/data_query_repository.hpp"
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-#include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
-#endif
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

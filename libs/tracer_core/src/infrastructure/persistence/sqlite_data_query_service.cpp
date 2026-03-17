@@ -1,7 +1,5 @@
 // infrastructure/persistence/sqlite_data_query_service.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.renderers;
-#endif
 
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
 
@@ -11,9 +9,6 @@ import tracer.core.infrastructure.query.data.renderers;
 
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-#endif
 
 namespace infrastructure::persistence {
 namespace infra_data_query_renderers =

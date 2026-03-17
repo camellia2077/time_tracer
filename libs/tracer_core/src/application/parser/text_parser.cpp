@@ -1,8 +1,5 @@
 // application/parser/text_parser.cpp
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.shared.ansi_colors;
 import tracer.core.shared.string_utils;
-#endif
 
 #include "application/parser/text_parser.hpp"
 
@@ -12,15 +9,9 @@ import tracer.core.shared.string_utils;
 #include <stdexcept>
 #include <string_view>
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "shared/types/ansi_colors.hpp"
-#include "shared/utils/string_utils.hpp"
-#endif
-
 #include "application/ports/logger.hpp"
 
 using tracer::core::shared::string_utils::Trim;
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace {
 constexpr size_t kYearMarkerLength = 5;
@@ -91,10 +82,8 @@ auto TextParser::Parse(std::istream& input_stream,
     if (IsMonthMarker(line)) {
       if (current_year_prefix.empty()) {
         tracer_core::application::ports::LogWarn(
-            std::string(modcolors::kYellow) +
             "Warning: Skipping line '" + line +
-            "' because a year header (e.g., y2025) has not been found yet." +
-            std::string(modcolors::kReset));
+            "' because a year header (e.g., y2025) has not been found yet.");
         continue;
       }
       current_month_prefix = line.substr(1);
@@ -103,10 +92,8 @@ auto TextParser::Parse(std::istream& input_stream,
 
     if (current_year_prefix.empty()) {
       tracer_core::application::ports::LogWarn(
-          std::string(modcolors::kYellow) +
           "Warning: Skipping line '" + line +
-          "' because a year header (e.g., y2025) has not been found yet." +
-          std::string(modcolors::kReset));
+          "' because a year header (e.g., y2025) has not been found yet.");
       continue;
     }
 

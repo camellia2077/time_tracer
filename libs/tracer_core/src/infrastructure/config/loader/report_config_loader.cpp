@@ -1,7 +1,4 @@
-// infrastructure/config/loader/report_config_loader.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.config.loader.toml_loader_utils;
-#endif
 
 #include "infrastructure/config/loader/report_config_loader.hpp"
 
@@ -9,13 +6,11 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 
 #include <cctype>
 #include <cstddef>
+#include <filesystem>
 #include <stdexcept>
 #include <string>
 #include <string_view>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/config/loader/toml_loader_utils.hpp"
-#endif
+#include <vector>
 
 namespace fs = std::filesystem;
 namespace modloader = tracer::core::infrastructure::config::loader;

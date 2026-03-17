@@ -1,5 +1,3 @@
-module;
-
 #include <chrono>
 #include <iomanip>
 #include <optional>
@@ -10,7 +8,7 @@ module;
 #include <unordered_map>
 #include <vector>
 
-module tracer.core.infrastructure.query.data.stats.report_chart_stats_calculator;
+#include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
 
 import tracer.core.infrastructure.query.data.repository.types;
 import tracer.core.infrastructure.query.data.stats.models;
@@ -88,13 +86,11 @@ auto BuildTotalsByDate(const std::vector<DayDurationRow>& sparse_rows)
 
 }  // namespace
 
-// NOLINTNEXTLINE(bugprone-easily-swappable-parameters)
-auto BuildReportChartSeries(
-    std::string_view start_date, std::string_view end_date,
-    const std::vector<DayDurationRow>& sparse_rows)
+auto BuildReportChartSeries(ReportChartDateRange range,
+                            const std::vector<DayDurationRow>& sparse_rows)
     -> ReportChartSeriesResult {
-  const auto kStartYmd = ParseIsoDate(start_date);
-  const auto kEndYmd = ParseIsoDate(end_date);
+  const auto kStartYmd = ParseIsoDate(range.start_date);
+  const auto kEndYmd = ParseIsoDate(range.end_date);
   if (!kStartYmd.has_value() || !kEndYmd.has_value()) {
     throw std::runtime_error("report-chart resolved invalid date range.");
   }

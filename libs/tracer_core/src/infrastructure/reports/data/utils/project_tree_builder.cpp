@@ -1,15 +1,9 @@
 // infrastructure/reports/data/utils/project_tree_builder.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.shared.string_utils;
-#endif
 
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
 
 #include <cstddef>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "shared/utils/string_utils.hpp"
-#endif
 
 using tracer::core::shared::string_utils::SplitString;
 

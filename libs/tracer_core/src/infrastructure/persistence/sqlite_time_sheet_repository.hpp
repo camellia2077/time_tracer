@@ -2,9 +2,6 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_SQLITE_TIME_SHEET_REPOSITORY_H_
 #define INFRASTRUCTURE_PERSISTENCE_SQLITE_TIME_SHEET_REPOSITORY_H_
 
-#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
-import tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository;
-#else
 #include <optional>
 #include <string>
 #include <string_view>
@@ -13,11 +10,28 @@ import tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository
 #include "infrastructure/persistence/importer/repository.hpp"
 
 namespace tracer::core::infrastructure::persistence {
+class SqliteTimeSheetRepository final
+    : public tracer_core::application::ports::ITimeSheetRepository {
+ public:
+  explicit SqliteTimeSheetRepository(const std::string& db_path);
 
-#include "infrastructure/persistence/detail/sqlite_time_sheet_repository_decl.inc"
+  [[nodiscard]] auto IsDbOpen() const -> bool override;
+  auto ImportData(const std::vector<DayData>& days,
+                  const std::vector<TimeRecordInternal>& records)
+      -> void override;
+  auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
+                        const std::vector<TimeRecordInternal>& records)
+      -> void override;
+  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view date)
+      const
+      -> std::optional<tracer_core::application::ports::PreviousActivityTail>
+          override;
+
+ private:
+  importer::Repository repository_;
+};
 
 }  // namespace tracer::core::infrastructure::persistence
-#endif
 
 namespace infrastructure::persistence {
 

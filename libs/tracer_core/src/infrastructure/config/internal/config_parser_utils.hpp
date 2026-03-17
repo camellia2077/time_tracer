@@ -10,7 +10,7 @@
 
 namespace tracer::core::infrastructure::config::internal {
 
-#include "infrastructure/config/detail/config_parser_utils_decl.inc"
+#include "infrastructure/config/internal/detail/config_parser_utils_decl.inc"
 
 }  // namespace tracer::core::infrastructure::config::internal
 

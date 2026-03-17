@@ -1,21 +1,20 @@
-module;
-
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
 #include <stdexcept>
 #include <string>
 
-#include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/reports/services/yearly_report_service.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/data/queriers/yearly/yearly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
-#include "shared/utils/period_utils.hpp"
 
-module tracer.core.infrastructure.reports.querying.services.yearly_report_service;
+import tracer.core.domain.reports.models.query_data_structs;
+import tracer.core.domain.reports.types.report_types;
+import tracer.core.shared.period_utils;
 
+namespace modperiod = tracer::core::shared::modperiod;
 namespace tracer::core::infrastructure::reports::services {
 
 YearlyReportService::YearlyReportService(sqlite3* sqlite_db,
@@ -44,7 +43,7 @@ auto YearlyReportService::GenerateReports(ReportFormat format)
       [&](const std::string& year_label,
           const std::string& formatted_report) -> void {
         int gregorian_year = 0;
-        if (ParseGregorianYear(year_label, gregorian_year)) {
+        if (modperiod::ParseGregorianYear(year_label, gregorian_year)) {
           reports[gregorian_year] = formatted_report;
         }
       });

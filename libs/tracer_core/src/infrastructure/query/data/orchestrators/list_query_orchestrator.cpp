@@ -1,17 +1,10 @@
 // infrastructure/query/data/orchestrators/list_query_orchestrator.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.renderers;
-#endif
 
 #include "infrastructure/query/data/orchestrators/list_query_orchestrator.hpp"
 
 #include <utility>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/data_query_repository.hpp"
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-#endif
 
 namespace query_data_repository = tracer::core::infrastructure::query::data;
 namespace data_query_renderers =

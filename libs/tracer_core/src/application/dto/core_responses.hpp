@@ -7,7 +7,6 @@
 #include <variant>
 #include <vector>
 
-#include "application/reporting/tree/project_tree_data.hpp"
 #include "domain/reports/models/daily_report_data.hpp"
 #include "domain/reports/models/period_report_models.hpp"
 
@@ -54,14 +53,6 @@ struct StructuredPeriodBatchItem {
 struct StructuredPeriodBatchOutput {
   bool ok = true;
   std::vector<StructuredPeriodBatchItem> items;
-  std::string error_message;
-};
-
-struct TreeQueryResponse {
-  bool ok = true;
-  bool found = true;
-  std::vector<std::string> roots;
-  std::vector<ProjectTreeNode> nodes;
   std::string error_message;
 };
 

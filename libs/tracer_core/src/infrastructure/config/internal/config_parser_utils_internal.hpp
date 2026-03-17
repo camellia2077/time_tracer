@@ -30,6 +30,21 @@ struct BundlePathSource {
   const fs::path& config_dir;
 };
 
+struct AndroidBundleReportConfigPathSet {
+  fs::path day;
+  fs::path month;
+  fs::path period;
+  fs::path week;
+  fs::path year;
+};
+
+struct AndroidBundleConfigPaths {
+  fs::path converter_config_toml_path;
+  AndroidBundleReportConfigPathSet markdown;
+  std::optional<AndroidBundleReportConfigPathSet> latex;
+  std::optional<AndroidBundleReportConfigPathSet> typst;
+};
+
 auto ResolveDefaultPath(const fs::path& exe_path, const std::string& path_value)
     -> fs::path;
 
@@ -140,6 +155,9 @@ auto ResolveBundlePathImpl(const fs::path& config_dir) -> fs::path;
 
 auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
     -> bool;
+
+auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
+    -> std::optional<AndroidBundleConfigPaths>;
 
 }  // namespace ConfigParserUtils::internal
 

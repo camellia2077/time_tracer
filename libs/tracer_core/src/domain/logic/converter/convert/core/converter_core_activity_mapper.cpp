@@ -1,4 +1,6 @@
 // domain/logic/converter/convert/core/converter_core_activity_mapper.cpp
+import tracer.core.shared.string_utils;
+
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>
@@ -7,7 +9,6 @@
 #include <vector>
 
 #include "domain/logic/converter/convert/core/converter_core_internal.hpp"
-#include "shared/utils/string_utils.hpp"
 
 namespace converter_core_internal {
 

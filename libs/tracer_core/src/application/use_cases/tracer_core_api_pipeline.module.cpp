@@ -1,18 +1,13 @@
-module;
-
 #include <exception>
 #include <stdexcept>
 #include <utility>
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
-#include "application/interfaces/i_report_handler.hpp"
 #include "application/ports/i_data_query_service.hpp"
-#include "application/ports/i_report_data_query_service.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
-
-module tracer.core.application.use_cases.api;
+#include "application/use_cases/tracer_core_api.hpp"
 
 import tracer.core.application.use_cases.helpers;
 import tracer.core.application.workflow.interface;

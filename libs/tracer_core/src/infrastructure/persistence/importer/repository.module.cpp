@@ -1,5 +1,3 @@
-module;
-
 #include <sqlite3.h>
 
 #include <filesystem>
@@ -8,14 +6,14 @@ module;
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
+#include "infrastructure/persistence/importer/repository.hpp"
 #include "application/importer/model/import_models.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/schema/day_schema.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
-
-module tracer.core.infrastructure.persistence.write.importer.repository;
 
 import tracer.core.infrastructure.persistence.write.importer.sqlite;
 
@@ -50,7 +48,7 @@ struct MonthBoundary {
 
 }  // namespace
 
-Repository::Repository(const std::string& db_path) : db_path_(db_path) {}
+Repository::Repository(std::string db_path) : db_path_(std::move(db_path)) {}
 
 Repository::~Repository() = default;
 

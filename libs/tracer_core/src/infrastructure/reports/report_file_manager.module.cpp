@@ -1,5 +1,3 @@
-module;
-
 #include <algorithm>
 #include <cctype>
 #include <filesystem>
@@ -10,9 +8,7 @@ module;
 #include <string_view>
 #include <utility>
 
-#include "domain/reports/types/report_types.hpp"
-
-module tracer.core.infrastructure.reports.exporting.report_file_manager;
+#include "infrastructure/reports/report_file_manager.hpp"
 
 import tracer.core.infrastructure.reports.exporting.export_utils;
 

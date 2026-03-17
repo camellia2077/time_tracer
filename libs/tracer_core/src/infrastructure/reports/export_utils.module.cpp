@@ -1,21 +1,15 @@
-module;
-
 #include <exception>
 #include <filesystem>
 #include <functional>
 #include <optional>
 #include <string>
 
-#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/reports/export_utils.hpp"
 
-module tracer.core.infrastructure.reports.exporting.export_utils;
-
+import tracer.core.domain.reports.types.report_types;
 import tracer.core.domain.ports.diagnostics;
-import tracer.core.shared.ansi_colors;
 
 namespace modports = tracer::core::domain::ports;
-
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace fs = std::filesystem;
 
@@ -32,9 +26,7 @@ auto GetReportFormatDetails(ReportFormat format)
       return ReportFormatDetails{.dir_name = "typ", .extension = ".typ"};
 
     default:
-      modports::EmitError(std::string(modcolors::kRed) +
-                          "错误: 不支持的导出格式。" +
-                          std::string(modcolors::kReset));
+      modports::EmitError("错误: 不支持的导出格式。");
       return std::nullopt;
   }
 }
@@ -49,21 +41,18 @@ void ExecuteExportTask(const std::string& report_type_name_singular,
       // fs::absolute 可能会抛出 filesystem_error，但会被下方的 std::exception
       // 捕获
       fs::path final_path = fs::absolute(export_root_path);
-      modports::EmitInfo(std::string(modcolors::kGreen) + "成功: 共创建 " +
-                         std::to_string(files_created) + " 个" +
-                         report_type_name_singular + "文件，已保存至: " +
-                         final_path.string() + std::string(modcolors::kReset));
+      modports::EmitInfo("成功: 共创建 " + std::to_string(files_created) +
+                         " 个" + report_type_name_singular +
+                         "文件，已保存至: " + final_path.string());
     } else {
-      modports::EmitWarn(std::string(modcolors::kYellow) +
-                         "信息: 没有可导出的" + report_type_name_singular +
-                         "内容。" + std::string(modcolors::kReset));
+      modports::EmitWarn("信息: 没有可导出的" + report_type_name_singular +
+                         "内容。");
     }
 
   } catch (const std::exception& e) {
     // 统一捕获所有异常 (包括 FileSystemHelper 抛出的 runtime_error 和可能的
     // filesystem_error)
-    modports::EmitError(std::string(modcolors::kRed) + "导出过程中发生错误: " +
-                        e.what() + std::string(modcolors::kReset));
+    modports::EmitError(std::string("导出过程中发生错误: ") + e.what());
   }
 }
 

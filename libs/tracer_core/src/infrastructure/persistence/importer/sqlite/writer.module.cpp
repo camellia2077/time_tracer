@@ -2,6 +2,7 @@ module;
 
 #include <sqlite3.h>
 
+#include <memory>
 #include <stdexcept>
 #include <string>
 #include <vector>

@@ -15,11 +15,9 @@ module tracer.core.application.pipeline.stages;
 
 import tracer.core.application.pipeline.types;
 import tracer.core.domain.logic.converter.log_processor;
-import tracer.core.shared.ansi_colors;
 
 using tracer::core::domain::modlogic::converter::LogProcessingResult;
 using tracer::core::domain::modlogic::converter::LogProcessor;
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
 namespace {
@@ -31,7 +29,7 @@ constexpr double kMillisPerSecond = 1000.0;
 auto ConversionStage::Execute(PipelineSession& session) -> bool {
   tracer_core::application::ports::LogInfo(
       "Step: Converting files (Parallel)...");
-  const auto start_time = std::chrono::steady_clock::now();
+  const auto kStartTime = std::chrono::steady_clock::now();
 
   std::mutex data_mutex;
   std::vector<std::future<LogProcessingResult>> futures;
@@ -45,13 +43,11 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
                                                   input.content);
 
           } catch (const std::exception& e) {
-            const std::string source_label = input.source_label.empty()
+            const std::string kSourceLabel = input.source_label.empty()
                                                  ? input.source_id
                                                  : input.source_label;
             tracer_core::application::ports::LogError(
-                std::string(modcolors::kRed) +
-                "Thread Error [" + source_label + "]: " + e.what() +
-                std::string(modcolors::kReset));
+                "Thread Error [" + kSourceLabel + "]: " + e.what());
             return LogProcessingResult{.success = false, .processed_data = {}};
           }
         }));
@@ -78,32 +74,29 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
     }
   }
 
-  const auto end_time = std::chrono::steady_clock::now();
-  const double duration =
-      std::chrono::duration<double, std::milli>(end_time - start_time).count();
-  PrintTiming(duration);
+  const auto kEndTime = std::chrono::steady_clock::now();
+  const double kDuration =
+      std::chrono::duration<double, std::milli>(kEndTime - kStartTime).count();
+  PrintTiming(kDuration);
 
   if (all_success) {
     tracer_core::application::ports::LogInfo(
-        std::string(modcolors::kGreen) +
         "内存转换阶段 全部成功 (" + std::to_string(processed_count) +
-        " files)." + std::string(modcolors::kReset));
+        " files).");
   } else {
     tracer_core::application::ports::LogWarn(
-        std::string(modcolors::kYellow) +
-        "内存转换阶段 完成，但存在部分错误。" +
-        std::string(modcolors::kReset));
+        "内存转换阶段 完成，但存在部分错误。");
   }
 
   return all_success;
 }
 
 void ConversionStage::PrintTiming(double total_time_ms) {
-  const double total_time_s = total_time_ms / kMillisPerSecond;
+  const double kTotalTimeS = total_time_ms / kMillisPerSecond;
 
   std::ostringstream stream;
   stream << "--------------------------------------\n";
-  stream << "转换耗时: " << std::fixed << std::setprecision(3) << total_time_s
+  stream << "转换耗时: " << std::fixed << std::setprecision(3) << kTotalTimeS
          << " 秒 (" << total_time_ms << " ms)\n";
   stream << "--------------------------------------";
 

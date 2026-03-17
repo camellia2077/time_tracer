@@ -1,5 +1,3 @@
-module;
-
 #include "infrastructure/sqlite_fwd.hpp"
 
 #include <map>
@@ -7,14 +5,14 @@ module;
 #include <string>
 #include <utility>
 
-#include "domain/reports/models/query_data_structs.hpp"
-#include "domain/reports/types/report_types.hpp"
+#include "infrastructure/reports/services/monthly_report_service.hpp"
 #include "infrastructure/config/models/report_catalog.hpp"
 #include "infrastructure/reports/data/queriers/monthly/monthly_querier.hpp"
 #include "infrastructure/reports/services/batch_export_helpers.hpp"
 #include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"
 
-module tracer.core.infrastructure.reports.querying.services.monthly_report_service;
+import tracer.core.domain.reports.models.query_data_structs;
+import tracer.core.domain.reports.types.report_types;
 
 namespace {
 constexpr size_t kYearMonthStrMinLen = 7;

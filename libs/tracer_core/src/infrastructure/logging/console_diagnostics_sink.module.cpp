@@ -2,16 +2,18 @@ module;
 
 #include <iostream>
 
-#include "domain/ports/diagnostics.hpp"
-
 module tracer.core.infrastructure.logging.console_diagnostics_sink;
+
+import tracer.core.domain.ports.diagnostics;
 
 namespace tracer::core::infrastructure::logging {
 
+namespace modports = tracer::core::domain::ports;
+
 auto ConsoleDiagnosticsSink::Emit(
-    const tracer_core::domain::ports::DiagnosticSeverity kSeverity,
+    const modports::DiagnosticSeverity kSeverity,
     const std::string_view kMessage) -> void {
-  if (kSeverity == tracer_core::domain::ports::DiagnosticSeverity::kError) {
+  if (kSeverity == modports::DiagnosticSeverity::kError) {
     std::cerr << kMessage << std::endl;
     return;
   }

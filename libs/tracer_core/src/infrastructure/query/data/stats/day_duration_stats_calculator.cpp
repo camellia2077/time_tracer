@@ -1,4 +1,6 @@
 // infrastructure/query/data/stats/day_duration_stats_calculator.cpp
+import tracer.core.infrastructure.query.data.repository.types;
+
 #include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
 
 #include <algorithm>

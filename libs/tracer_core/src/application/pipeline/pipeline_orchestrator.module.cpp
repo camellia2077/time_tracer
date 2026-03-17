@@ -2,7 +2,6 @@ module;
 
 #include <stdexcept>
 #include <string>
-#include <string_view>
 #include <utility>
 
 #include "application/ports/i_converter_config_provider.hpp"
@@ -15,20 +14,9 @@ module tracer.core.application.pipeline.orchestrator;
 
 import tracer.core.application.pipeline.stages;
 import tracer.core.domain.types.app_options;
-import tracer.core.shared.ansi_colors;
-
 using tracer::core::domain::types::AppOptions;
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace tracer::core::application::pipeline {
-namespace {
-
-auto Colorize(std::string_view color, std::string_view message) -> std::string {
-  return std::string(color) + std::string(message) +
-         std::string(modcolors::kReset);
-}
-
-}  // namespace
 
 PipelineOrchestrator::PipelineOrchestrator(
     fs::path output_root,
@@ -61,10 +49,7 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   session.state.validation_issue_reporter = validation_issue_reporter_;
 
   tracer_core::application::ports::LogInfo(
-      std::string("\n") +
-      Colorize(modcolors::kBrightCyan,
-               std::string(modcolors::kBold) +
-                   "--- Pipeline Execution Started ---"));
+      "\n--- Pipeline Execution Started ---");
 
   if (!InputCollectionStage::Execute(session, *ingest_input_provider_, ".txt")) {
     return std::nullopt;
@@ -72,23 +57,21 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
 
   if (options.validate_structure || options.convert) {
     try {
-      tracer_core::application::ports::LogInfo(
-          Colorize(modcolors::kGray, "Loading Configuration..."));
+      tracer_core::application::ports::LogInfo("Loading Configuration...");
 
       session.state.converter_config =
           converter_config_provider_->LoadConverterConfig();
 
     } catch (const std::exception& e) {
       tracer_core::application::ports::LogError(
-          Colorize(modcolors::kRed,
-                   std::string("[Pipeline] 配置加载失败: ") + e.what()));
+          std::string("[Pipeline] 配置加载失败: ") + e.what());
       return std::nullopt;
     }
   }
 
   if (options.validate_structure) {
     tracer_core::application::ports::LogInfo(
-        Colorize(modcolors::kCyan, "[STEP] Step: Validating File Structure..."));
+        "[STEP] Step: Validating File Structure...");
     if (!StructureValidationStage::Execute(session)) {
       return std::nullopt;
     }
@@ -97,22 +80,20 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   if (options.convert) {
     if (!ConversionStage::Execute(session)) {
       tracer_core::application::ports::LogError(
-          Colorize(modcolors::kRed,
-                   "[Pipeline] 转换步骤存在错误，终止流程。"));
+          "[Pipeline] 转换步骤存在错误，终止流程。");
       return std::nullopt;
     }
 
     if (!CrossMonthLinkStage::Execute(session)) {
       tracer_core::application::ports::LogError(
-          Colorize(modcolors::kRed,
-                   "[Pipeline] 跨月数据连接失败，流程终止。"));
+          "[Pipeline] 跨月数据连接失败，流程终止。");
       return std::nullopt;
     }
   }
 
   if (options.validate_logic) {
     tracer_core::application::ports::LogInfo(
-        Colorize(modcolors::kCyan, "[STEP] Step: Validating Business Logic..."));
+        "[STEP] Step: Validating Business Logic...");
     if (!LogicValidationStage::Execute(session)) {
       return std::nullopt;
     }
@@ -120,7 +101,7 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
 
   if (options.convert && options.save_processed_output) {
     tracer_core::application::ports::LogInfo(
-        Colorize(modcolors::kCyan, "[STEP] Step: Saving Validated JSON..."));
+        "[STEP] Step: Saving Validated JSON...");
 
     auto new_files = processed_data_storage_->WriteProcessedData(
         session.result.processed_data, session.config.output_root);
@@ -130,22 +111,15 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
 
     if (new_files.empty() && !session.result.processed_data.empty()) {
       tracer_core::application::ports::LogWarn(
-          Colorize(modcolors::kYellow,
-                   std::string(modcolors::kBold) +
-                       "[WARN] Data exists but no files were generated (flush "
-                       "failed)."));
+          "[WARN] Data exists but no files were generated (flush failed).");
     } else {
       tracer_core::application::ports::LogInfo(
-          Colorize(modcolors::kBrightGreen,
-                   "[OK] JSON data safely persisted to disk."));
+          "[OK] JSON data safely persisted to disk.");
     }
   }
 
   tracer_core::application::ports::LogInfo(
-      std::string("\n") +
-      Colorize(modcolors::kBrightGreen,
-               std::string(modcolors::kBold) +
-                   "--- Pipeline Finished Successfully ---"));
+      "\n--- Pipeline Finished Successfully ---");
   return session;
 }
 

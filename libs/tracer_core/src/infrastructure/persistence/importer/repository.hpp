@@ -2,9 +2,6 @@
 #ifndef INFRASTRUCTURE_PERSISTENCE_IMPORTER_REPOSITORY_H_
 #define INFRASTRUCTURE_PERSISTENCE_IMPORTER_REPOSITORY_H_
 
-#if TT_ENABLE_CPP20_MODULES && !defined(TT_FORCE_LEGACY_HEADER_DECLS)
-import tracer.core.infrastructure.persistence.write.importer.repository;
-#else
 #include <memory>
 #include <optional>
 #include <string>
@@ -22,11 +19,35 @@ class Writer;
 }  // namespace tracer::core::infrastructure::persistence::importer::sqlite
 
 namespace tracer::core::infrastructure::persistence::importer {
+class Repository {
+ public:
+  struct LatestActivityTail {
+    std::string date;
+    std::string end_time;
+  };
 
-#include "infrastructure/persistence/importer/detail/repository_decl.inc"
+  explicit Repository(std::string db_path);
+  ~Repository();
+
+  [[nodiscard]] auto IsDbOpen() const -> bool;
+
+  auto ImportData(const std::vector<DayData>& days,
+                  const std::vector<TimeRecordInternal>& records) -> void;
+  auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
+                        const std::vector<TimeRecordInternal>& records) -> void;
+  [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
+      std::string_view date) const -> std::optional<LatestActivityTail>;
+
+ private:
+  auto EnsureWriteRepositoryReady() -> void;
+
+  std::string db_path_;
+  std::unique_ptr<sqlite::Connection> connection_manager_;
+  std::unique_ptr<sqlite::Statement> statement_manager_;
+  std::unique_ptr<sqlite::Writer> data_inserter_;
+};
 
 }  // namespace tracer::core::infrastructure::persistence::importer
-#endif
 
 namespace infrastructure::persistence::importer {
 

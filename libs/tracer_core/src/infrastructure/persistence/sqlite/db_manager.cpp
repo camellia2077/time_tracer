@@ -1,9 +1,6 @@
 // infrastructure/persistence/sqlite/db_manager.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.adapters.io.core.fs;
 import tracer.core.domain.ports.diagnostics;
-import tracer.core.shared.ansi_colors;
-#endif
 
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 
@@ -11,28 +8,9 @@ import tracer.core.shared.ansi_colors;
 
 #include <optional>
 #include <utility>
-
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/ports/diagnostics.hpp"
-#include "infrastructure/io/core/file_system_helper.hpp"
-#include "shared/types/ansi_colors.hpp"
-#endif
-
-#if TT_ENABLE_CPP20_MODULES
 namespace modcore = tracer::adapters::io::modcore;
-#else
-namespace modcore {
-
-[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
-  return ::FileSystemHelper::Exists(path);
-}
-
-}  // namespace modcore
-#endif
 
 namespace modports = tracer::core::domain::ports;
-
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace {
 auto QueryForeignKeysPragma(sqlite3* db_conn) -> std::optional<int> {
@@ -62,18 +40,16 @@ auto DBManager::OpenDatabaseIfNeeded() -> bool {
     return true;
   }
 
-  // [New] 使用 FileSystemHelper 检查文件存在性
+  // 使用模块导出的文件系统能力检查文件存在性
   if (!modcore::Exists(db_name_)) {
-    modports::EmitError(std::string(modcolors::kRed) + "错误: 数据库文件 '" +
-                        db_name_ + "' 不存在。请先导入数据。" +
-                        std::string(modcolors::kReset));
+    modports::EmitError("错误: 数据库文件 '" + db_name_ +
+                        "' 不存在。请先导入数据。");
     return false;
   }
 
   if (sqlite3_open(db_name_.c_str(), &db_) != 0) {
-    modports::EmitError(std::string(modcolors::kRed) + "错误: 无法打开数据库 " +
-                        db_name_ + ": " + sqlite3_errmsg(db_) +
-                        std::string(modcolors::kReset));
+    modports::EmitError("错误: 无法打开数据库 " + db_name_ + ": " +
+                        sqlite3_errmsg(db_));
     sqlite3_close(db_);
     db_ = nullptr;
     return false;

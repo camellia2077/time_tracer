@@ -1,10 +1,10 @@
 // domain/logic/validator/txt/rules/txt_rules.cpp
+import tracer.core.shared.string_utils;
+
 #include "domain/logic/validator/txt/rules/txt_rules.hpp"
 
 #include <algorithm>
 #include <array>
-
-#include "shared/utils/string_utils.hpp"
 
 namespace validator::txt {
 

@@ -1,1 +1,0 @@
-[[nodiscard]] auto BoundaryReady() -> bool;

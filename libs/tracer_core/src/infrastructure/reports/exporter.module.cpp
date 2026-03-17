@@ -1,5 +1,3 @@
-module;
-
 #include <exception>
 #include <filesystem>
 #include <iomanip>
@@ -8,22 +6,18 @@ module;
 #include <string>
 #include <string_view>
 
+#include "infrastructure/reports/exporter.hpp"
 #include "application/interfaces/i_report_exporter.hpp"
-
-module tracer.core.infrastructure.reports.exporting.exporter;
 
 import tracer.adapters.io.core.fs;
 import tracer.adapters.io.core.writer;
 import tracer.core.domain.ports.diagnostics;
 import tracer.core.infrastructure.reports.exporting.export_utils;
 import tracer.core.infrastructure.reports.exporting.report_file_manager;
-import tracer.core.shared.ansi_colors;
 
 namespace modcore = tracer::adapters::io::modcore;
 
 namespace modports = tracer::core::domain::ports;
-
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace fs = std::filesystem;
 
@@ -53,10 +47,8 @@ void Exporter::WriteReportToFile(std::string_view report_content,
     modcore::WriteContent(output_path, std::string(report_content));
 
   } catch (const std::exception& e) {
-    modports::EmitError(std::string(modcolors::kRed) +
-                        "Error: Failed to write report to " +
-                        output_path.string() + ": " + e.what() +
-                        std::string(modcolors::kReset));
+    modports::EmitError("Error: Failed to write report to " +
+                        output_path.string() + ": " + e.what());
   }
 }
 
@@ -66,10 +58,8 @@ void Exporter::ExportSingleDayReport(const SingleExportTask& task,
                                      ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleDayReportPath(std::string(task.id), format);
-  modports::EmitInfo(std::string(modcolors::kGreen) +
-                     "Success: Report exported to " +
-                     fs::absolute(path).string() +
-                     std::string(modcolors::kReset));
+  modports::EmitInfo("Success: Report exported to " +
+                     fs::absolute(path).string());
   WriteReportToFile(task.kContent, path);
 }
 
@@ -77,20 +67,16 @@ void Exporter::ExportSingleMonthReport(const SingleExportTask& task,
                                        ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleMonthReportPath(std::string(task.id), format);
-  modports::EmitInfo(std::string(modcolors::kGreen) +
-                     "Success: Report exported to " +
-                     fs::absolute(path).string() +
-                     std::string(modcolors::kReset));
+  modports::EmitInfo("Success: Report exported to " +
+                     fs::absolute(path).string());
   WriteReportToFile(task.kContent, path);
 }
 
 void Exporter::ExportSinglePeriodReport(int days, std::string_view content,
                                         ReportFormat format) const {
   fs::path path = file_manager_->GetSinglePeriodReportPath(days, format);
-  modports::EmitInfo(std::string(modcolors::kGreen) +
-                     "Success: Report exported to " +
-                     fs::absolute(path).string() +
-                     std::string(modcolors::kReset));
+  modports::EmitInfo("Success: Report exported to " +
+                     fs::absolute(path).string());
   WriteReportToFile(content, path);
 }
 
@@ -98,10 +84,8 @@ void Exporter::ExportSingleWeekReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleWeekReportPath(std::string(task.id), format);
-  modports::EmitInfo(std::string(modcolors::kGreen) +
-                     "Success: Report exported to " +
-                     fs::absolute(path).string() +
-                     std::string(modcolors::kReset));
+  modports::EmitInfo("Success: Report exported to " +
+                     fs::absolute(path).string());
   WriteReportToFile(task.kContent, path);
 }
 
@@ -109,10 +93,8 @@ void Exporter::ExportSingleYearReport(const SingleExportTask& task,
                                       ReportFormat format) const {
   fs::path path =
       file_manager_->GetSingleYearReportPath(std::string(task.id), format);
-  modports::EmitInfo(std::string(modcolors::kGreen) +
-                     "Success: Report exported to " +
-                     fs::absolute(path).string() +
-                     std::string(modcolors::kReset));
+  modports::EmitInfo("Success: Report exported to " +
+                     fs::absolute(path).string());
   WriteReportToFile(task.kContent, path);
 }
 

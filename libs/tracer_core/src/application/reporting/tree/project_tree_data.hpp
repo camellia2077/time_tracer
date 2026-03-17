@@ -6,16 +6,18 @@
 #include <string>
 #include <vector>
 
-struct ProjectTreeNode {
-
-#include "application/reporting/tree/detail/project_tree_data_decl.inc"
-
-};
-
 namespace tracer::core::application::reporting::tree {
 
-using ::ProjectTreeNode;
+struct ProjectTreeNode {
+  std::string name;
+  std::string path;
+  std::optional<long long> duration_seconds;
+  std::vector<ProjectTreeNode> children;
+};
 
 }  // namespace tracer::core::application::reporting::tree
+
+using ProjectTreeNode =
+    tracer::core::application::reporting::tree::ProjectTreeNode;
 
 #endif  // APPLICATION_REPORTING_TREE_PROJECT_TREE_DATA_H_

@@ -1,12 +1,9 @@
-module;
-
 #include <filesystem>
 #include <string>
 #include <utility>
 
+#include "infrastructure/persistence/sqlite_database_health_checker.hpp"
 #include "application/ports/i_database_health_checker.hpp"
-
-module tracer.core.infrastructure.persistence.runtime.sqlite_database_health_checker;
 
 namespace tracer::core::infrastructure::persistence {
 

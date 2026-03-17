@@ -1,3 +1,7 @@
+import tracer.core.application.importer.service;
+import tracer.core.domain.model.daily_log;
+import tracer.core.domain.model.time_data_models;
+
 // application/tests/modules/import_service_tests.cpp
 #include <map>
 #include <stdexcept>
@@ -5,13 +9,20 @@
 #include <string_view>
 #include <vector>
 
-#include "application/importer/import_service.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
 #include "application/tests/modules/test_modules.hpp"
 #include "application/tests/support/test_support.hpp"
 
 namespace tracer_core::application::tests {
 namespace {
+
+using tracer::core::application::modimporter::DayData;
+using tracer::core::application::modimporter::ImportService;
+using tracer::core::application::modimporter::ImportStats;
+using tracer::core::application::modimporter::ReplaceMonthTarget;
+using tracer::core::application::modimporter::TimeRecordInternal;
+using tracer::core::domain::modmodel::BaseActivityRecord;
+using tracer::core::domain::modmodel::DailyLog;
 
 constexpr int kReplaceYear = 2026;
 constexpr int kReplaceMonth = 2;

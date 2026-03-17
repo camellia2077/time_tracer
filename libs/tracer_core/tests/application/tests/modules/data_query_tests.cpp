@@ -87,13 +87,13 @@ auto TestTreeQueryResponses(TestState& state) -> void {
          "RunTreeQuery root pattern should return ok=true.");
   Expect(state, kFilteredResponse.found,
          "RunTreeQuery root pattern should return found=true.");
-  Expect(state, kFilteredResponse.nodes.size() == 1U,
+  Expect(state, kFilteredResponse.tree.nodes.size() == 1U,
          "RunTreeQuery root pattern should return one subtree root.");
-  Expect(state, kFilteredResponse.nodes[0].name == "child",
+  Expect(state, kFilteredResponse.tree.nodes[0].name == "child",
          "RunTreeQuery root pattern should match child node.");
-  Expect(state, kFilteredResponse.nodes[0].path == "root_child",
+  Expect(state, kFilteredResponse.tree.nodes[0].path == "root_child",
          "RunTreeQuery root pattern should preserve node path.");
-  Expect(state, kFilteredResponse.nodes[0].children.size() == 1U,
+  Expect(state, kFilteredResponse.tree.nodes[0].children.size() == 1U,
          "RunTreeQuery root pattern should keep subtree children.");
 
   TreeQueryRequest depth_limited_request{};
@@ -105,13 +105,13 @@ auto TestTreeQueryResponses(TestState& state) -> void {
          "RunTreeQuery depth limit should return ok=true.");
   Expect(state, kDepthLimitedResponse.found,
          "RunTreeQuery depth limit should return found=true.");
-  Expect(state, kDepthLimitedResponse.nodes.size() == 1U,
+  Expect(state, kDepthLimitedResponse.tree.nodes.size() == 1U,
          "RunTreeQuery depth limit should return one root node.");
-  Expect(state, kDepthLimitedResponse.nodes[0].children.size() == 2U,
+  Expect(state, kDepthLimitedResponse.tree.nodes[0].children.size() == 2U,
          "RunTreeQuery depth limit should keep first-level children.");
   Expect(state,
-         kDepthLimitedResponse.nodes[0].children[0].children.empty() &&
-             kDepthLimitedResponse.nodes[0].children[1].children.empty(),
+         kDepthLimitedResponse.tree.nodes[0].children[0].children.empty() &&
+             kDepthLimitedResponse.tree.nodes[0].children[1].children.empty(),
          "RunTreeQuery depth limit should trim nodes deeper than max_depth.");
 
   TreeQueryRequest missing_request{};
@@ -121,7 +121,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
          "RunTreeQuery missing root should still return ok=true.");
   Expect(state, !kMissingResponse.found,
          "RunTreeQuery missing root should return found=false.");
-  Expect(state, kMissingResponse.nodes.empty(),
+  Expect(state, kMissingResponse.tree.nodes.empty(),
          "RunTreeQuery missing root should return empty nodes.");
 
   repository->fail_get_all_projects = true;

@@ -1,20 +1,21 @@
 // application/service/log_processor.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.application.service.converter;
+import tracer.core.domain.logic.converter.log_processor;
+import tracer.core.domain.model.daily_log;
 import tracer.core.domain.ports.diagnostics;
-#endif
+import tracer.core.domain.types.converter_config;
 
+#include <functional>
+#include <istream>
 #include <sstream>
+#include <string>
+#include <string_view>
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "application/service/converter_service.hpp"
-#include "domain/ports/diagnostics.hpp"
-#endif
-#include "domain/logic/converter/log_processor.hpp"
-
-#if TT_ENABLE_CPP20_MODULES
 using tracer::core::application::modservice::ConverterService;
-#endif
+using tracer::core::domain::modlogic::converter::LogProcessingResult;
+using tracer::core::domain::modlogic::converter::LogProcessor;
+using tracer::core::domain::modmodel::DailyLog;
+using tracer::core::domain::modtypes::ConverterConfig;
 
 namespace modports = tracer::core::domain::ports;
 

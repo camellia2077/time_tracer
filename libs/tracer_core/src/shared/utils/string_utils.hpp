@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+namespace tracer::core::shared::string_utils {
+
 /**
  * @brief 去除字符串两端的空白字符。
  * @param str 输入的字符串。
@@ -37,10 +39,6 @@ inline auto SplitString(const std::string& str, char delimiter)
   }
   return tokens;
 }
-
-namespace tracer::core::shared::string_utils {
-
-#include "shared/detail/string_utils_contract.inc"
 
 }  // namespace tracer::core::shared::string_utils
 

@@ -1,15 +1,17 @@
 // domain/logic/validator/txt/facade/text_validator.cpp
+import tracer.core.shared.string_utils;
+import tracer.core.domain.logic.validator.txt.rules;
+
 #include "domain/logic/validator/txt/facade/text_validator.hpp"
 
 #include <iostream>
 #include <sstream>
 
-#include "domain/logic/validator/txt/rules/txt_rules.hpp"
-#include "shared/utils/string_utils.hpp"
-
 namespace validator::txt {
 
 using tracer::core::shared::string_utils::Trim;
+using tracer::core::domain::modlogic::validator_txt::LineRules;
+using tracer::core::domain::modlogic::validator_txt::StructureRules;
 
 struct TextValidator::PImpl {
   LineRules line_processor;

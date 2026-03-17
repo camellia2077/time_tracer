@@ -1,5 +1,3 @@
-module;
-
 #include <sqlite3.h>
 
 #include <format>
@@ -9,11 +7,11 @@ module;
 #include <utility>
 #include <vector>
 
-#include "domain/repositories/i_project_repository.hpp"
+#include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/schema/sqlite_schema.hpp"
 
-module tracer.core.infrastructure.persistence.runtime.sqlite_project_repository;
+import tracer.core.domain.repositories.project_repository;
 
 namespace tracer::core::infrastructure::persistence {
 

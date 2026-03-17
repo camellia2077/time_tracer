@@ -1,16 +1,8 @@
-// infrastructure/config/internal/config_detail_loader.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.core.infrastructure.config.loader.report_config_loader;
-#endif
 
 #include "infrastructure/config/internal/config_detail_loader.hpp"
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/config/loader/report_config_loader.hpp"
-#endif
-
 using tracer::core::infrastructure::config::ReportConfigLoader;
-
 namespace tracer::core::infrastructure::config::internal {
 
 void LoadDetailedReports(AppConfig& config) {

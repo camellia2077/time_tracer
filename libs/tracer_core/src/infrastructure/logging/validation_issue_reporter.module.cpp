@@ -1,16 +1,11 @@
-module;
-
 #include <map>
 #include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
 
+#include "infrastructure/logging/validation_issue_reporter.hpp"
 #include "application/ports/i_validation_issue_reporter.hpp"
-#include "domain/logic/validator/common/diagnostic.hpp"
-#include "domain/logic/validator/common/validator_utils.hpp"
-
-module tracer.core.infrastructure.logging.validation_issue_reporter;
 
 import tracer.core.domain.ports.diagnostics;
 

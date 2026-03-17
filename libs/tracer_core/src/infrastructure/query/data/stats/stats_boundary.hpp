@@ -3,7 +3,7 @@
 
 namespace tracer::core::infrastructure::query::data::stats {
 
-#include "infrastructure/query/data/stats/detail/stats_boundary_decl.inc"
+[[nodiscard]] auto BoundaryReady() -> bool;
 
 }  // namespace tracer::core::infrastructure::query::data::stats
 

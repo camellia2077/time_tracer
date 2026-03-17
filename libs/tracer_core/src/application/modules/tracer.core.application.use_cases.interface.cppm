@@ -12,6 +12,6 @@ using ::tracer::core::application::use_cases::ITracerCoreApi;
 
 export namespace tracer::core::application::modusecases {
 
-using ::ITracerCoreApi;
+using ::tracer::core::application::use_cases::ITracerCoreApi;
 
 }  // namespace tracer::core::application::modusecases

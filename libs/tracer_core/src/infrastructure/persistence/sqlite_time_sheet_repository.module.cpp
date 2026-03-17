@@ -1,13 +1,10 @@
-module;
-
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include "infrastructure/persistence/sqlite_time_sheet_repository.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
-
-module tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository;
 
 import tracer.core.infrastructure.persistence.write.importer.repository;
 

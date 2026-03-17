@@ -7,7 +7,6 @@ import tracer.core.shared;
 
 namespace {
 
-using tracer::core::shared::ansi_colors::kRed;
 using tracer::core::shared::modperiod::FormatIsoWeek;
 using tracer::core::shared::modperiod::IsoWeek;
 using tracer::core::shared::modperiod::IsoWeekEndDate;
@@ -28,12 +27,14 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
   std::cerr << "[FAIL] " << message << '\n';
 }
 
-void TestStringBridge(int& failures) {
-  Expect(Trim("  hello  ") == "hello", "Trim bridge mismatch.", failures);
+void TestStringModuleContract(int& failures) {
+  Expect(Trim("  hello  ") == "hello", "Trim module contract mismatch.",
+         failures);
   const std::vector<std::string> tokens = SplitString("a_b_c", '_');
-  Expect(tokens.size() == 3U, "SplitString bridge size mismatch.", failures);
+  Expect(tokens.size() == 3U, "SplitString module contract size mismatch.",
+         failures);
   Expect(tokens.size() == 3U && tokens[1] == "b",
-         "SplitString bridge content mismatch.", failures);
+         "SplitString module contract content mismatch.", failures);
 }
 
 void TestPeriodBridge(int& failures) {
@@ -65,14 +66,13 @@ void TestTypesBridge(int& failures) {
 
   Expect(static_cast<int>(AppExitCode::kSuccess) == 0,
          "AppExitCode bridge mismatch.", failures);
-  Expect(!kRed.empty(), "ANSI colors bridge should expose constants.", failures);
 }
 
 }  // namespace
 
 auto main() -> int {
   int failures = 0;
-  TestStringBridge(failures);
+  TestStringModuleContract(failures);
   TestPeriodBridge(failures);
   TestTypesBridge(failures);
 

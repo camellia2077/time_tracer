@@ -1,9 +1,7 @@
 // infrastructure/config/config_loader.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.adapters.io.core.fs;
 import tracer.core.infrastructure.config.internal.config_detail_loader;
 import tracer.core.infrastructure.config.internal.config_parser_utils;
-#endif
 
 #include "infrastructure/config/config_loader.hpp"
 
@@ -11,24 +9,8 @@ import tracer.core.infrastructure.config.internal.config_parser_utils;
 
 #include <stdexcept>
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/config/internal/config_detail_loader.hpp"
-#include "infrastructure/config/internal/config_parser_utils.hpp"
-#include "infrastructure/io/core/file_system_helper.hpp"
-#endif
-
 namespace fs = std::filesystem;
-#if TT_ENABLE_CPP20_MODULES
 namespace modcore = tracer::adapters::io::modcore;
-#else
-namespace modcore {
-
-[[nodiscard]] inline auto Exists(const std::filesystem::path& path) -> bool {
-  return ::FileSystemHelper::Exists(path);
-}
-
-}  // namespace modcore
-#endif
 
 namespace infra_config_internal = tracer::core::infrastructure::config::internal;
 

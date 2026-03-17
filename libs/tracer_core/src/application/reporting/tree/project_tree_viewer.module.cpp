@@ -6,15 +6,16 @@ module;
 #include <utility>
 #include <vector>
 
-#include "domain/repositories/i_project_repository.hpp"
-
 module tracer.core.application.reporting.tree.viewer;
 
 import tracer.core.application.reporting.tree.data;
 import tracer.core.application.reporting.tree.nodes;
+import tracer.core.domain.repositories.project_repository;
 
 namespace tracer::core::application::reporting::tree {
 namespace {
+
+using tracer::core::domain::modrepos::ProjectEntity;
 
 struct InternalNode {
   int id;

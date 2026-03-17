@@ -1,15 +1,12 @@
-module;
-
 #include <filesystem>
 #include <memory>
 #include <stdexcept>
 #include <utility>
 
+#include "infrastructure/reports/lazy_sqlite_report_data_query_service.hpp"
 #include "application/ports/i_platform_clock.hpp"
 #include "application/ports/i_report_data_query_service.hpp"
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
-
-module tracer.core.infrastructure.reports.data_querying.lazy_sqlite_report_data_query_service;
 
 import tracer.core.infrastructure.reports.data_querying.sqlite_report_data_query_service;
 
@@ -64,7 +61,7 @@ auto LazySqliteReportDataQueryService::QueryDaily(std::string_view date)
     -> DailyReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> DailyReportData {
         return report_service.QueryDaily(date);
       });
 }
@@ -73,7 +70,7 @@ auto LazySqliteReportDataQueryService::QueryMonthly(std::string_view month)
     -> MonthlyReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> MonthlyReportData {
         return report_service.QueryMonthly(month);
       });
 }
@@ -82,7 +79,7 @@ auto LazySqliteReportDataQueryService::QueryPeriod(int days)
     -> PeriodReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> PeriodReportData {
         return report_service.QueryPeriod(days);
       });
 }
@@ -92,7 +89,7 @@ auto LazySqliteReportDataQueryService::QueryRange(std::string_view start_date,
     -> PeriodReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> PeriodReportData {
         return report_service.QueryRange(start_date, end_date);
       });
 }
@@ -101,7 +98,7 @@ auto LazySqliteReportDataQueryService::QueryWeekly(std::string_view iso_week)
     -> WeeklyReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> WeeklyReportData {
         return report_service.QueryWeekly(iso_week);
       });
 }
@@ -110,7 +107,7 @@ auto LazySqliteReportDataQueryService::QueryYearly(std::string_view year)
     -> YearlyReportData {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service) -> YearlyReportData {
         return report_service.QueryYearly(year);
       });
 }
@@ -119,7 +116,8 @@ auto LazySqliteReportDataQueryService::QueryPeriodBatch(
     const std::vector<int>& days_list) -> std::map<int, PeriodReportData> {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::map<int, PeriodReportData> {
         return report_service.QueryPeriodBatch(days_list);
       });
 }
@@ -128,7 +126,8 @@ auto LazySqliteReportDataQueryService::QueryAllDaily()
     -> std::map<std::string, DailyReportData> {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::map<std::string, DailyReportData> {
         return report_service.QueryAllDaily();
       });
 }
@@ -137,7 +136,8 @@ auto LazySqliteReportDataQueryService::QueryAllMonthly()
     -> std::map<std::string, MonthlyReportData> {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::map<std::string, MonthlyReportData> {
         return report_service.QueryAllMonthly();
       });
 }
@@ -146,7 +146,8 @@ auto LazySqliteReportDataQueryService::QueryAllWeekly()
     -> std::map<std::string, WeeklyReportData> {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::map<std::string, WeeklyReportData> {
         return report_service.QueryAllWeekly();
       });
 }
@@ -155,7 +156,8 @@ auto LazySqliteReportDataQueryService::QueryAllYearly()
     -> std::map<std::string, YearlyReportData> {
   return WithStructuredReportService(
       db_path_, platform_clock_,
-      [&](SqliteReportDataQueryService& report_service) {
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::map<std::string, YearlyReportData> {
         return report_service.QueryAllYearly();
       });
 }

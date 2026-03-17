@@ -99,6 +99,141 @@ auto ValidateBundleFileList(const toml::table& bundle_tbl,
   }
 }
 
+auto LoadAndroidReportPathSetFromTable(
+    const toml::table& section, const ReportPathSource& source,
+    std::string_view section_field_path)
+    -> AndroidBundleReportConfigPathSet {
+  AndroidBundleReportConfigPathSet out{};
+  LoadReportPathsFromTable(section, source, section_field_path, out.day,
+                           out.month, out.period, out.week, out.year);
+  return out;
+}
+
+auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
+    -> std::optional<AndroidBundleConfigPaths> {
+  const fs::path kBundlePath = ResolveBundlePathImpl(config_dir);
+  if (!fs::exists(kBundlePath)) {
+    return std::nullopt;
+  }
+
+  toml::table bundle_tbl;
+  try {
+    bundle_tbl = toml::parse_file(kBundlePath.string());
+  } catch (const toml::parse_error& err) {
+    throw std::runtime_error("Failed to parse bundle TOML [" +
+                             kBundlePath.string() +
+                             "]: " + std::string(err.description()));
+  }
+
+  static_cast<void>(RequireTypedField<int64_t>(bundle_tbl, "schema_version",
+                                               kBundlePath, "", "an integer"));
+  const std::string kProfile =
+      RequireNonEmptyStringField(bundle_tbl, "profile", kBundlePath, "");
+
+  const BundlePathSource kBundleSource{
+      .bundle_path = kBundlePath,
+      .config_dir = config_dir,
+  };
+  ValidateBundleFileList(bundle_tbl, kBundleSource);
+
+  const toml::table* paths_tbl =
+      TryReadTableField(bundle_tbl, "paths", kBundlePath, "");
+  if (paths_tbl == nullptr) {
+    ThrowConfigFieldError(kBundlePath, "paths",
+                          "is required and must be a table.");
+  }
+
+  const toml::table* converter_tbl =
+      TryReadTableField(*paths_tbl, "converter", kBundlePath, "paths");
+  if (converter_tbl == nullptr) {
+    ThrowConfigFieldError(kBundlePath, "paths.converter",
+                          "is required and must be a table.");
+  }
+
+  EnsureFieldAbsent(*converter_tbl, "interval_processor_config", kBundlePath,
+                    "paths.converter", "paths.converter.interval_config");
+  EnsureFieldAbsent(*converter_tbl, "interval_processor_config_path",
+                    kBundlePath, "paths.converter",
+                    "paths.converter.interval_config");
+
+  AndroidBundleConfigPaths out{};
+  const std::string kIntervalConfig = RequireNonEmptyStringField(
+      *converter_tbl, "interval_config", kBundlePath, "paths.converter");
+  out.converter_config_toml_path =
+      NormalizeConfigRelativePath(config_dir, kIntervalConfig);
+  EnsureFileExists(kBundlePath, "paths.converter.interval_config",
+                   out.converter_config_toml_path);
+
+  const toml::table* visualization_tbl =
+      TryReadTableField(*paths_tbl, "visualization", kBundlePath, "paths");
+  if (visualization_tbl == nullptr) {
+    ThrowConfigFieldError(kBundlePath, "paths.visualization",
+                          "is required and must be a table.");
+  }
+  const std::string kHeatmapConfig = RequireNonEmptyStringField(
+      *visualization_tbl, "heatmap", kBundlePath, "paths.visualization");
+  const fs::path kHeatmapConfigPath =
+      NormalizeConfigRelativePath(config_dir, kHeatmapConfig);
+  EnsureFileExists(kBundlePath, "paths.visualization.heatmap",
+                   kHeatmapConfigPath);
+  ValidateHeatmapConfigFile(kHeatmapConfigPath);
+
+  const toml::table* reports_tbl =
+      TryReadTableField(*paths_tbl, "reports", kBundlePath, "paths");
+  if (reports_tbl == nullptr) {
+    ThrowConfigFieldError(kBundlePath, "paths.reports",
+                          "is required and must be a table.");
+  }
+
+  EnsureFieldAbsent(*reports_tbl, "md", kBundlePath, "paths.reports",
+                    "paths.reports.markdown");
+  EnsureFieldAbsent(*reports_tbl, "tex", kBundlePath, "paths.reports",
+                    "paths.reports.latex");
+  EnsureFieldAbsent(*reports_tbl, "typ", kBundlePath, "paths.reports",
+                    "paths.reports.typst");
+
+  const ReportPathSource kReportPathSource{
+      .config_dir = config_dir,
+      .source_path = kBundlePath,
+  };
+
+  const toml::table* markdown_tbl =
+      TryReadTableField(*reports_tbl, "markdown", kBundlePath,
+                        "paths.reports");
+  if (markdown_tbl == nullptr) {
+    ThrowConfigFieldError(kBundlePath, "paths.reports.markdown",
+                          "is required and must be a table for Android "
+                          "runtime.");
+  }
+  out.markdown = LoadAndroidReportPathSetFromTable(
+      *markdown_tbl, kReportPathSource, "paths.reports.markdown");
+
+  if (kProfile == "android") {
+    if (reports_tbl->get("latex") != nullptr) {
+      ThrowConfigFieldError(kBundlePath, "paths.reports.latex",
+                            "must not be present when profile is 'android'.");
+    }
+    if (reports_tbl->get("typst") != nullptr) {
+      ThrowConfigFieldError(kBundlePath, "paths.reports.typst",
+                            "must not be present when profile is 'android'.");
+    }
+  }
+
+  if (const toml::table* latex_tbl = TryReadTableField(
+          *reports_tbl, "latex", kBundlePath, "paths.reports")) {
+    out.latex = LoadAndroidReportPathSetFromTable(
+        *latex_tbl, kReportPathSource, "paths.reports.latex");
+  }
+
+  if (const toml::table* typst_tbl = TryReadTableField(
+          *reports_tbl, "typst", kBundlePath, "paths.reports")) {
+    out.typst = LoadAndroidReportPathSetFromTable(
+        *typst_tbl, kReportPathSource, "paths.reports.typst");
+  }
+
+  return out;
+}
+
 auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
     -> bool {
   const fs::path kBundlePath = ResolveBundlePathImpl(config_dir);
