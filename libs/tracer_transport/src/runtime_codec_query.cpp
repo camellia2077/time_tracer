@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,21 +6,16 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
 using tracer::transport::modfields::TryReadIntField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -38,125 +31,125 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 }  // namespace
 
 auto DecodeQueryRequest(std::string_view request_json) -> QueryRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto action = RequireStringField(payload, "action");
-  if (action.HasError()) {
-    throw std::invalid_argument(action.error.message);
+  const auto kAction = RequireStringField(kPayload, "action");
+  if (kAction.HasError()) {
+    throw std::invalid_argument(kAction.error.message);
   }
 
   QueryRequestPayload out{};
-  out.action = *action.value;
-  const auto output_mode = TryReadStringField(payload, "output_mode");
+  out.action = kAction.value.value_or("");
+  const auto kOutputMode = TryReadStringField(kPayload, "output_mode");
 
-  const auto year = TryReadIntField(payload, "year");
-  const auto month = TryReadIntField(payload, "month");
-  const auto from_date = TryReadStringField(payload, "from_date");
-  const auto to_date = TryReadStringField(payload, "to_date");
-  const auto remark = TryReadStringField(payload, "remark");
-  const auto day_remark = TryReadStringField(payload, "day_remark");
-  const auto project = TryReadStringField(payload, "project");
-  const auto root = TryReadStringField(payload, "root");
-  const auto exercise = TryReadIntField(payload, "exercise");
-  const auto status = TryReadIntField(payload, "status");
-  const auto overnight = TryReadBoolField(payload, "overnight");
-  const auto reverse = TryReadBoolField(payload, "reverse");
-  const auto limit = TryReadIntField(payload, "limit");
-  const auto top_n = TryReadIntField(payload, "top_n");
-  const auto lookback_days = TryReadIntField(payload, "lookback_days");
-  const auto activity_prefix = TryReadStringField(payload, "activity_prefix");
-  const auto score_by_duration =
-      TryReadBoolField(payload, "activity_score_by_duration");
-  const auto tree_period = TryReadStringField(payload, "tree_period");
-  const auto tree_period_argument =
-      TryReadStringField(payload, "tree_period_argument");
-  const auto tree_max_depth = TryReadIntField(payload, "tree_max_depth");
+  const auto kYear = TryReadIntField(kPayload, "year");
+  const auto kMonth = TryReadIntField(kPayload, "month");
+  const auto kFromDate = TryReadStringField(kPayload, "from_date");
+  const auto kToDate = TryReadStringField(kPayload, "to_date");
+  const auto kRemark = TryReadStringField(kPayload, "remark");
+  const auto kDayRemark = TryReadStringField(kPayload, "day_remark");
+  const auto kProject = TryReadStringField(kPayload, "project");
+  const auto kRoot = TryReadStringField(kPayload, "root");
+  const auto kExercise = TryReadIntField(kPayload, "exercise");
+  const auto kStatus = TryReadIntField(kPayload, "status");
+  const auto kOvernight = TryReadBoolField(kPayload, "overnight");
+  const auto kReverse = TryReadBoolField(kPayload, "reverse");
+  const auto kLimit = TryReadIntField(kPayload, "limit");
+  const auto kTopN = TryReadIntField(kPayload, "top_n");
+  const auto kLookbackDays = TryReadIntField(kPayload, "lookback_days");
+  const auto kActivityPrefix = TryReadStringField(kPayload, "activity_prefix");
+  const auto kScoreByDuration =
+      TryReadBoolField(kPayload, "activity_score_by_duration");
+  const auto kTreePeriod = TryReadStringField(kPayload, "tree_period");
+  const auto kTreePeriodArgument =
+      TryReadStringField(kPayload, "tree_period_argument");
+  const auto kTreeMaxDepth = TryReadIntField(kPayload, "tree_max_depth");
 
-  if (year.HasError()) {
-    throw std::invalid_argument(year.error.message);
+  if (kYear.HasError()) {
+    throw std::invalid_argument(kYear.error.message);
   }
-  if (output_mode.HasError()) {
-    throw std::invalid_argument(output_mode.error.message);
+  if (kOutputMode.HasError()) {
+    throw std::invalid_argument(kOutputMode.error.message);
   }
-  if (month.HasError()) {
-    throw std::invalid_argument(month.error.message);
+  if (kMonth.HasError()) {
+    throw std::invalid_argument(kMonth.error.message);
   }
-  if (from_date.HasError()) {
-    throw std::invalid_argument(from_date.error.message);
+  if (kFromDate.HasError()) {
+    throw std::invalid_argument(kFromDate.error.message);
   }
-  if (to_date.HasError()) {
-    throw std::invalid_argument(to_date.error.message);
+  if (kToDate.HasError()) {
+    throw std::invalid_argument(kToDate.error.message);
   }
-  if (remark.HasError()) {
-    throw std::invalid_argument(remark.error.message);
+  if (kRemark.HasError()) {
+    throw std::invalid_argument(kRemark.error.message);
   }
-  if (day_remark.HasError()) {
-    throw std::invalid_argument(day_remark.error.message);
+  if (kDayRemark.HasError()) {
+    throw std::invalid_argument(kDayRemark.error.message);
   }
-  if (project.HasError()) {
-    throw std::invalid_argument(project.error.message);
+  if (kProject.HasError()) {
+    throw std::invalid_argument(kProject.error.message);
   }
-  if (root.HasError()) {
-    throw std::invalid_argument(root.error.message);
+  if (kRoot.HasError()) {
+    throw std::invalid_argument(kRoot.error.message);
   }
-  if (exercise.HasError()) {
-    throw std::invalid_argument(exercise.error.message);
+  if (kExercise.HasError()) {
+    throw std::invalid_argument(kExercise.error.message);
   }
-  if (status.HasError()) {
-    throw std::invalid_argument(status.error.message);
+  if (kStatus.HasError()) {
+    throw std::invalid_argument(kStatus.error.message);
   }
-  if (overnight.HasError()) {
-    throw std::invalid_argument(overnight.error.message);
+  if (kOvernight.HasError()) {
+    throw std::invalid_argument(kOvernight.error.message);
   }
-  if (reverse.HasError()) {
-    throw std::invalid_argument(reverse.error.message);
+  if (kReverse.HasError()) {
+    throw std::invalid_argument(kReverse.error.message);
   }
-  if (limit.HasError()) {
-    throw std::invalid_argument(limit.error.message);
+  if (kLimit.HasError()) {
+    throw std::invalid_argument(kLimit.error.message);
   }
-  if (top_n.HasError()) {
-    throw std::invalid_argument(top_n.error.message);
+  if (kTopN.HasError()) {
+    throw std::invalid_argument(kTopN.error.message);
   }
-  if (lookback_days.HasError()) {
-    throw std::invalid_argument(lookback_days.error.message);
+  if (kLookbackDays.HasError()) {
+    throw std::invalid_argument(kLookbackDays.error.message);
   }
-  if (activity_prefix.HasError()) {
-    throw std::invalid_argument(activity_prefix.error.message);
+  if (kActivityPrefix.HasError()) {
+    throw std::invalid_argument(kActivityPrefix.error.message);
   }
-  if (score_by_duration.HasError()) {
-    throw std::invalid_argument(score_by_duration.error.message);
+  if (kScoreByDuration.HasError()) {
+    throw std::invalid_argument(kScoreByDuration.error.message);
   }
-  if (tree_period.HasError()) {
-    throw std::invalid_argument(tree_period.error.message);
+  if (kTreePeriod.HasError()) {
+    throw std::invalid_argument(kTreePeriod.error.message);
   }
-  if (tree_period_argument.HasError()) {
-    throw std::invalid_argument(tree_period_argument.error.message);
+  if (kTreePeriodArgument.HasError()) {
+    throw std::invalid_argument(kTreePeriodArgument.error.message);
   }
-  if (tree_max_depth.HasError()) {
-    throw std::invalid_argument(tree_max_depth.error.message);
+  if (kTreeMaxDepth.HasError()) {
+    throw std::invalid_argument(kTreeMaxDepth.error.message);
   }
 
-  out.output_mode = output_mode.value;
-  out.year = year.value;
-  out.month = month.value;
-  out.from_date = from_date.value;
-  out.to_date = to_date.value;
-  out.remark = remark.value;
-  out.day_remark = day_remark.value;
-  out.project = project.value;
-  out.root = root.value;
-  out.exercise = exercise.value;
-  out.status = status.value;
-  out.overnight = overnight.value;
-  out.reverse = reverse.value;
-  out.limit = limit.value;
-  out.top_n = top_n.value;
-  out.lookback_days = lookback_days.value;
-  out.activity_prefix = activity_prefix.value;
-  out.activity_score_by_duration = score_by_duration.value;
-  out.tree_period = tree_period.value;
-  out.tree_period_argument = tree_period_argument.value;
-  out.tree_max_depth = tree_max_depth.value;
+  out.output_mode = kOutputMode.value;
+  out.year = kYear.value;
+  out.month = kMonth.value;
+  out.from_date = kFromDate.value;
+  out.to_date = kToDate.value;
+  out.remark = kRemark.value;
+  out.day_remark = kDayRemark.value;
+  out.project = kProject.value;
+  out.root = kRoot.value;
+  out.exercise = kExercise.value;
+  out.status = kStatus.value;
+  out.overnight = kOvernight.value;
+  out.reverse = kReverse.value;
+  out.limit = kLimit.value;
+  out.top_n = kTopN.value;
+  out.lookback_days = kLookbackDays.value;
+  out.activity_prefix = kActivityPrefix.value;
+  out.activity_score_by_duration = kScoreByDuration.value;
+  out.tree_period = kTreePeriod.value;
+  out.tree_period_argument = kTreePeriodArgument.value;
+  out.tree_max_depth = kTreeMaxDepth.value;
 
   return out;
 }

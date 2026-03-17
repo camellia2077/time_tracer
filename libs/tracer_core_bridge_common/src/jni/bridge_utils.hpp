@@ -11,11 +11,6 @@ namespace tracer_core_bridge_common::jni {
 [[nodiscard]] auto BuildResponseJson(bool ok, std::string_view error_message,
                                      std::string_view content) -> std::string;
 
-[[nodiscard]] auto ParseDateCheckModeCode(int value) -> std::string;
-[[nodiscard]] auto ParseDataQueryActionCode(int value) -> std::string;
-[[nodiscard]] auto ParseReportTypeCode(int value) -> std::string;
-[[nodiscard]] auto ParseReportFormatCode(int value) -> std::string;
-
 [[nodiscard]] auto ParseCoreResponse(const char* response_json,
                                      std::string_view context)
     -> tracer::transport::ResponseEnvelope;

@@ -16,12 +16,17 @@ auto BuildDiffDiagnostics(std::string_view left, std::string_view right)
     -> std::string;
 
 auto RunReportConsistencyFieldVerificationTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void;
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
+        core_api,
+    int& failures) -> void;
 auto RunReportConsistencyCrossIngestTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
+        core_api,
     const std::filesystem::path& input_path, int& failures) -> void;
 auto RunReportConsistencyStructureTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void;
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
+        core_api,
+    int& failures) -> void;
 
 }  // namespace android_runtime_tests::report_consistency_internal
 

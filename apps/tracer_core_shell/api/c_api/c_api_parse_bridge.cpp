@@ -1,11 +1,15 @@
-#include "c_api/parse_utils.hpp"
+#include "api/c_api/c_api_parse_bridge.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <ranges>
 #include <stdexcept>
 
-namespace tracer_core_bridge_common::c_api {
+#include "application/dto/core_requests.hpp"
+#include "application/dto/core_responses.hpp"
+#include "domain/reports/types/report_types.hpp"
+
+namespace tracer_core::shell::c_api_bridge {
 
 [[nodiscard]] auto ToLowerAscii(std::string value) -> std::string {
   std::ranges::transform(value, value.begin(),
@@ -17,14 +21,14 @@ namespace tracer_core_bridge_common::c_api {
 
 [[nodiscard]] auto ParseDateCheckMode(const std::string& value)
     -> DateCheckMode {
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "none") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "none") {
     return DateCheckMode::kNone;
   }
-  if (kNormalized == "continuity") {
+  if (normalized == "continuity") {
     return DateCheckMode::kContinuity;
   }
-  if (kNormalized == "full") {
+  if (normalized == "full") {
     return DateCheckMode::kFull;
   }
   throw std::invalid_argument(
@@ -32,12 +36,12 @@ namespace tracer_core_bridge_common::c_api {
 }
 
 [[nodiscard]] auto ParseIngestMode(const std::string& value) -> IngestMode {
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "standard") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "standard") {
     return IngestMode::kStandard;
   }
-  if (kNormalized == "single_txt_replace_month" ||
-      kNormalized == "single-txt-replace-month") {
+  if (normalized == "single_txt_replace_month" ||
+      normalized == "single-txt-replace-month") {
     return IngestMode::kSingleTxtReplaceMonth;
   }
   throw std::invalid_argument(
@@ -47,36 +51,36 @@ namespace tracer_core_bridge_common::c_api {
 [[nodiscard]] auto ParseQueryAction(const std::string& value)
     -> tracer_core::core::dto::DataQueryAction {
   using tracer_core::core::dto::DataQueryAction;
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "years") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "years") {
     return DataQueryAction::kYears;
   }
-  if (kNormalized == "months") {
+  if (normalized == "months") {
     return DataQueryAction::kMonths;
   }
-  if (kNormalized == "days") {
+  if (normalized == "days") {
     return DataQueryAction::kDays;
   }
-  if (kNormalized == "days_duration" || kNormalized == "days-duration") {
+  if (normalized == "days_duration" || normalized == "days-duration") {
     return DataQueryAction::kDaysDuration;
   }
-  if (kNormalized == "days_stats" || kNormalized == "days-stats") {
+  if (normalized == "days_stats" || normalized == "days-stats") {
     return DataQueryAction::kDaysStats;
   }
-  if (kNormalized == "search") {
+  if (normalized == "search") {
     return DataQueryAction::kSearch;
   }
-  if (kNormalized == "activity_suggest" || kNormalized == "activity-suggest") {
+  if (normalized == "activity_suggest" || normalized == "activity-suggest") {
     return DataQueryAction::kActivitySuggest;
   }
-  if (kNormalized == "mapping_names" || kNormalized == "mapping-names") {
+  if (normalized == "mapping_names" || normalized == "mapping-names") {
     return DataQueryAction::kMappingNames;
   }
-  if (kNormalized == "report_chart" || kNormalized == "report-chart" ||
-      kNormalized == "chart") {
+  if (normalized == "report_chart" || normalized == "report-chart" ||
+      normalized == "chart") {
     return DataQueryAction::kReportChart;
   }
-  if (kNormalized == "tree") {
+  if (normalized == "tree") {
     return DataQueryAction::kTree;
   }
   throw std::invalid_argument(
@@ -87,12 +91,12 @@ namespace tracer_core_bridge_common::c_api {
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode {
   using tracer_core::core::dto::DataQueryOutputMode;
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "text") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "text") {
     return DataQueryOutputMode::kText;
   }
-  if (kNormalized == "semantic_json" || kNormalized == "semantic-json" ||
-      kNormalized == "json") {
+  if (normalized == "semantic_json" || normalized == "semantic-json" ||
+      normalized == "json") {
     return DataQueryOutputMode::kSemanticJson;
   }
   throw std::invalid_argument(
@@ -102,35 +106,35 @@ namespace tracer_core_bridge_common::c_api {
 [[nodiscard]] auto ParseExportType(const std::string& value)
     -> tracer_core::core::dto::ReportExportType {
   using tracer_core::core::dto::ReportExportType;
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "day") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "day") {
     return ReportExportType::kDay;
   }
-  if (kNormalized == "month") {
+  if (normalized == "month") {
     return ReportExportType::kMonth;
   }
-  if (kNormalized == "recent") {
+  if (normalized == "recent") {
     return ReportExportType::kRecent;
   }
-  if (kNormalized == "week") {
+  if (normalized == "week") {
     return ReportExportType::kWeek;
   }
-  if (kNormalized == "year") {
+  if (normalized == "year") {
     return ReportExportType::kYear;
   }
-  if (kNormalized == "all_day" || kNormalized == "all-day") {
+  if (normalized == "all_day" || normalized == "all-day") {
     return ReportExportType::kAllDay;
   }
-  if (kNormalized == "all_month" || kNormalized == "all-month") {
+  if (normalized == "all_month" || normalized == "all-month") {
     return ReportExportType::kAllMonth;
   }
-  if (kNormalized == "all_recent" || kNormalized == "all-recent") {
+  if (normalized == "all_recent" || normalized == "all-recent") {
     return ReportExportType::kAllRecent;
   }
-  if (kNormalized == "all_week" || kNormalized == "all-week") {
+  if (normalized == "all_week" || normalized == "all-week") {
     return ReportExportType::kAllWeek;
   }
-  if (kNormalized == "all_year" || kNormalized == "all-year") {
+  if (normalized == "all_year" || normalized == "all-year") {
     return ReportExportType::kAllYear;
   }
   throw std::invalid_argument(
@@ -141,23 +145,23 @@ namespace tracer_core_bridge_common::c_api {
 [[nodiscard]] auto ParseReportType(const std::string& value)
     -> tracer_core::core::dto::ReportQueryType {
   using tracer_core::core::dto::ReportQueryType;
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "day") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "day") {
     return ReportQueryType::kDay;
   }
-  if (kNormalized == "month") {
+  if (normalized == "month") {
     return ReportQueryType::kMonth;
   }
-  if (kNormalized == "recent") {
+  if (normalized == "recent") {
     return ReportQueryType::kRecent;
   }
-  if (kNormalized == "range") {
+  if (normalized == "range") {
     return ReportQueryType::kRange;
   }
-  if (kNormalized == "week") {
+  if (normalized == "week") {
     return ReportQueryType::kWeek;
   }
-  if (kNormalized == "year") {
+  if (normalized == "year") {
     return ReportQueryType::kYear;
   }
   throw std::invalid_argument(
@@ -165,18 +169,18 @@ namespace tracer_core_bridge_common::c_api {
 }
 
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {
-  const std::string kNormalized = ToLowerAscii(value);
-  if (kNormalized == "markdown" || kNormalized == "md") {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "markdown" || normalized == "md") {
     return ReportFormat::kMarkdown;
   }
-  if (kNormalized == "latex" || kNormalized == "tex") {
+  if (normalized == "latex" || normalized == "tex") {
     return ReportFormat::kLaTeX;
   }
-  if (kNormalized == "typst" || kNormalized == "typ") {
+  if (normalized == "typst" || normalized == "typ") {
     return ReportFormat::kTyp;
   }
   throw std::invalid_argument(
       "field `format` must be one of: markdown|latex|typst.");
 }
 
-}  // namespace tracer_core_bridge_common::c_api
+}  // namespace tracer_core::shell::c_api_bridge

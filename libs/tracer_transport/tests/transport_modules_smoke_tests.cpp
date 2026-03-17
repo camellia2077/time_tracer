@@ -7,6 +7,7 @@ namespace {
 
 using tracer::transport::modenvelope::Build;
 using tracer::transport::modenvelope::Parse;
+using tracer::transport::modenvelope::ParseArgs;
 using tracer::transport::modenvelope::Serialize;
 using tracer::transport::moderrors::Code;
 using tracer::transport::moderrors::Make;
@@ -35,13 +36,19 @@ void TestErrorBridge(int& failures) {
 void TestEnvelopeBridge(int& failures) {
   const auto envelope = Build(true, "", "module smoke payload");
   const auto serialized = Serialize(envelope);
-  const auto parsed = Parse(serialized, "module_smoke");
+  const auto parsed = Parse(ParseArgs{
+      .response_json = serialized,
+      .context = "module_smoke",
+  });
   Expect(!parsed.HasError(), "Round-trip parse should succeed.", failures);
   Expect(parsed.envelope.ok, "Round-trip `ok` should be true.", failures);
   Expect(parsed.envelope.content == "module smoke payload",
          "Round-trip content mismatch.", failures);
 
-  const auto bad = Parse("{", "module_smoke");
+  const auto bad = Parse(ParseArgs{
+      .response_json = "{",
+      .context = "module_smoke",
+  });
   Expect(bad.HasError(), "Invalid JSON should fail parsing.", failures);
   Expect(bad.error.code == Code::kParseFailure,
          "Invalid JSON should return parse failure.", failures);

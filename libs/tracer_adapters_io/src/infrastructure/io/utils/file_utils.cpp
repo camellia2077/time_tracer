@@ -4,13 +4,10 @@
 #include <algorithm>
 
 #include "domain/ports/diagnostics.hpp"
-#include "shared/types/ansi_colors.hpp"
 
 namespace fs = std::filesystem;
 
 namespace FileUtils {
-
-namespace colors = tracer::core::shared::ansi_colors;
 
 auto FindFilesByExtensionRecursively(const fs::path& root_path,
                                      const std::string& extension)
@@ -43,8 +40,7 @@ auto ResolveFiles(const std::vector<std::string>& input_paths,
     fs::path input_path(path_str);
     if (!fs::exists(input_path)) {
       tracer_core::domain::ports::EmitWarn(
-          std::string(colors::kYellow) + "Warning: Path does not exist: " +
-          path_str + std::string(colors::kReset));
+          "Warning: Path does not exist: " + path_str);
       continue;
     }
 

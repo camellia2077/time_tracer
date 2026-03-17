@@ -134,6 +134,11 @@ Compile/test command policy (fixed entrypoints):
 - Device verify: `python tools/run.py verify --app tracer_android --profile android_device --concise`
 - Post-change validation: `python tools/run.py post-change --app tracer_android --run-tests always --concise`
 
+Core-change validation rule:
+
+- When a change touches `libs/tracer_core/**`, `libs/tracer_core_bridge_common/**`, or `apps/tracer_core_shell/host/**` and can affect the Android host/runtime path, do not stop at `tracer_core_shell` / CLI-only validation.
+- In those cases, include `python tools/run.py build --app tracer_android --profile android_edit` as a required validation step before closing the task.
+
 ## Non-daily Optional Commands
 
 Use only when explicitly needed:
@@ -160,6 +165,7 @@ Note:
   - `python tools/run.py build --app tracer_android --profile android_edit`
 - Validation workflow after local edits is:
   - `python tools/run.py post-change --app tracer_android --run-tests always --concise`
+- For core-side changes that can flow into the Android host/runtime path, `android_edit` build is the minimum required Android confirmation; `tracer_core_shell` / CLI-only success is not sufficient.
 - Python build flow now defaults to fast-compile-first on Android:
   - If `-PtimeTracerDisableNativeOptimization` is not explicitly passed,
     scripts auto-inject `-PtimeTracerDisableNativeOptimization=true`.

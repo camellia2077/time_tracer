@@ -66,8 +66,8 @@ void SetLastError(const char* message) {
   payload.error_contract =
       BuildErrorContract(response.ok, response.error_message);
   payload.roots = response.roots;
-  payload.nodes.reserve(response.nodes.size());
-  for (const auto& node : response.nodes) {
+  payload.nodes.reserve(response.tree.nodes.size());
+  for (const auto& node : response.tree.nodes) {
     payload.nodes.push_back(ConvertTreeNode(node));
   }
   g_last_response = tt_transport::EncodeTreeResponse(payload);
@@ -117,33 +117,33 @@ void SetLastError(const char* message) {
 
 [[nodiscard]] auto ParseDateCheckMode(const std::string& value)
     -> DateCheckMode {
-  return tracer_core_bridge_common::c_api::ParseDateCheckMode(value);
+  return tracer_core::shell::c_api_bridge::ParseDateCheckMode(value);
 }
 
 [[nodiscard]] auto ParseIngestMode(const std::string& value) -> IngestMode {
-  return tracer_core_bridge_common::c_api::ParseIngestMode(value);
+  return tracer_core::shell::c_api_bridge::ParseIngestMode(value);
 }
 
 [[nodiscard]] auto ParseQueryAction(const std::string& value)
     -> tracer_core::core::dto::DataQueryAction {
-  return tracer_core_bridge_common::c_api::ParseQueryAction(value);
+  return tracer_core::shell::c_api_bridge::ParseQueryAction(value);
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)
     -> tracer_core::core::dto::DataQueryOutputMode {
-  return tracer_core_bridge_common::c_api::ParseDataQueryOutputMode(value);
+  return tracer_core::shell::c_api_bridge::ParseDataQueryOutputMode(value);
 }
 
 [[nodiscard]] auto ParseExportType(const std::string& value)
     -> tracer_core::core::dto::ReportExportType {
-  return tracer_core_bridge_common::c_api::ParseExportType(value);
+  return tracer_core::shell::c_api_bridge::ParseExportType(value);
 }
 
 [[nodiscard]] auto ParseReportType(const std::string& value)
     -> tracer_core::core::dto::ReportQueryType {
-  return tracer_core_bridge_common::c_api::ParseReportType(value);
+  return tracer_core::shell::c_api_bridge::ParseReportType(value);
 }
 
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {
-  return tracer_core_bridge_common::c_api::ParseReportFormat(value);
+  return tracer_core::shell::c_api_bridge::ParseReportFormat(value);
 }

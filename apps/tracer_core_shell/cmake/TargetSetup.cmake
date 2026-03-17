@@ -7,9 +7,14 @@
 # 3 = level 2 + -Werror
 set(WARNING_LEVEL 2 CACHE STRING "Set compiler warning level (0-3)")
 
-# Keep normal build fast: clang-tidy is opt-in via --tidy / run_clang_tidy_libs_core.sh.
+# Keep normal build fast: clang-tidy is opt-in via Python toolchain commands.
 option(ENABLE_CLANG_TIDY "Enable static analysis with clang-tidy" OFF)
 option(ENABLE_PCH "Enable Precompiled Headers" ON)
+option(
+    TT_ENABLE_CXX_CLANG_TIDY_WRAPPER
+    "Attach clang-tidy to normal compile rules via CXX_CLANG_TIDY"
+    OFF
+)
 
 include(CheckCXXSourceCompiles)
 if(NOT DEFINED TT_CAN_LINK_STDCXXEXP)
@@ -71,7 +76,7 @@ function(_setup_target_common TARGET_NAME)
         target_precompile_headers(${TARGET_NAME} PRIVATE "${TT_TARGET_PCH_HEADER}")
     endif()
 
-    if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE)
+    if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE AND TT_ENABLE_CXX_CLANG_TIDY_WRAPPER)
         set_target_properties(${TARGET_NAME} PROPERTIES
             CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
         )

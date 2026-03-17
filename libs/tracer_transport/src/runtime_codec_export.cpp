@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,20 +6,15 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadIntListField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -37,30 +30,31 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 }  // namespace
 
 auto DecodeExportRequest(std::string_view request_json) -> ExportRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto type = RequireStringField(payload, "type");
-  if (type.HasError()) {
-    throw std::invalid_argument(type.error.message);
+  const auto kType = RequireStringField(kPayload, "type");
+  if (kType.HasError()) {
+    throw std::invalid_argument(kType.error.message);
   }
-  const auto argument = TryReadStringField(payload, "argument");
-  if (argument.HasError()) {
-    throw std::invalid_argument(argument.error.message);
+  const auto kArgument = TryReadStringField(kPayload, "argument");
+  if (kArgument.HasError()) {
+    throw std::invalid_argument(kArgument.error.message);
   }
-  const auto format = TryReadStringField(payload, "format");
-  if (format.HasError()) {
-    throw std::invalid_argument(format.error.message);
+  const auto kFormat = TryReadStringField(kPayload, "format");
+  if (kFormat.HasError()) {
+    throw std::invalid_argument(kFormat.error.message);
   }
-  const auto recent_days = TryReadIntListField(payload, "recent_days_list");
-  if (recent_days.HasError()) {
-    throw std::invalid_argument(recent_days.error.message);
+  const auto kRecentDays =
+      TryReadIntListField(kPayload, "recent_days_list");
+  if (kRecentDays.HasError()) {
+    throw std::invalid_argument(kRecentDays.error.message);
   }
 
   ExportRequestPayload out{};
-  out.type = *type.value;
-  out.argument = argument.value;
-  out.format = format.value;
-  out.recent_days_list = recent_days.value;
+  out.type = kType.value.value_or("");
+  out.argument = kArgument.value;
+  out.format = kFormat.value;
+  out.recent_days_list = kRecentDays.value;
   return out;
 }
 

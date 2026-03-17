@@ -1,9 +1,10 @@
 // infrastructure/tests/data_query/data_query_refactor_period_tests.cpp
+import tracer.core.infrastructure.query.data.orchestrators;
+
 #include <exception>
 #include <optional>
 #include <string>
 
-#include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
@@ -11,11 +12,11 @@ namespace android_runtime_tests::data_query_refactor_internal {
 namespace {
 
 auto TestDateRangeResolver(int& failures) -> void {
-  using tracer_core::infrastructure::query::data::orchestrators::
+  using tracer::core::infrastructure::query::data::orchestrators::
       ExplicitDateRangeErrors;
-  using tracer_core::infrastructure::query::data::orchestrators::
+  using tracer::core::infrastructure::query::data::orchestrators::
       ResolveExplicitDateRange;
-  using tracer_core::infrastructure::query::data::orchestrators::
+  using tracer::core::infrastructure::query::data::orchestrators::
       ResolveRollingDateRange;
 
   const ExplicitDateRangeErrors kRangeErrors{

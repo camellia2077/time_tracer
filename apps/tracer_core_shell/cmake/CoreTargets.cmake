@@ -50,6 +50,14 @@ set(TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT
     "${TRACER_CORE_SHELL_SOURCE_ROOT}/tests/platform"
 )
 
+set_source_files_properties(
+    "${TRACER_CORE_SHELL_SOURCE_ROOT}/api/c_api/cli_runtime_config_bridge.cpp"
+    "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
+    "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
+    PROPERTIES
+        CXX_SCAN_FOR_MODULES ON
+)
+
 include("${PROJECT_SOURCE_DIR}/cmake/CoreBoundaryRules.cmake")
 enforce_core_include_boundary(
     ROOT "${TRACER_CORE_LIB_SOURCE_ROOT}"
@@ -179,8 +187,8 @@ add_subdirectory(
 set(TRACER_CORE_LIB_TESTS_ROOT "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/tests")
 
 if(BUILD_TESTING)
-    if(TT_CPP20_MODULES_EFFECTIVE)
-        add_executable(tc_shared_mod_smoke_tests
+    # Long-lived regression surface: module smoke + runtime/contract tests.
+    add_executable(tc_shared_mod_smoke_tests
             "${TRACER_CORE_LIB_TESTS_ROOT}/shared/tests/shared_modules_smoke_tests.cpp"
         )
         setup_app_target(tc_shared_mod_smoke_tests NO_PCH)
@@ -190,19 +198,6 @@ if(BUILD_TESTING)
         add_test(
             NAME tc_shared_mod_smoke_tests
             COMMAND tc_shared_mod_smoke_tests
-        )
-
-        add_executable(tc_shared_legacy_hdr_compat_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/shared/tests/shared_legacy_headers_compat_tests.cpp"
-        )
-        setup_app_target(tc_shared_legacy_hdr_compat_tests NO_PCH)
-        target_link_libraries(
-            tc_shared_legacy_hdr_compat_tests PRIVATE
-            time_tracker_domain
-        )
-        add_test(
-            NAME tc_shared_legacy_hdr_compat_tests
-            COMMAND tc_shared_legacy_hdr_compat_tests
         )
 
         add_executable(tc_domain_mod_smoke_tests
@@ -215,19 +210,6 @@ if(BUILD_TESTING)
         add_test(
             NAME tc_domain_mod_smoke_tests
             COMMAND tc_domain_mod_smoke_tests
-        )
-
-        add_executable(tc_domain_legacy_hdr_compat_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/domain/tests/domain_legacy_headers_compat_tests.cpp"
-        )
-        setup_app_target(tc_domain_legacy_hdr_compat_tests NO_PCH)
-        target_link_libraries(
-            tc_domain_legacy_hdr_compat_tests PRIVATE
-            time_tracker_domain
-        )
-        add_test(
-            NAME tc_domain_legacy_hdr_compat_tests
-            COMMAND tc_domain_legacy_hdr_compat_tests
         )
 
         add_executable(tc_dom_logic_mod_smoke_tests
@@ -243,21 +225,6 @@ if(BUILD_TESTING)
             COMMAND tc_dom_logic_mod_smoke_tests
         )
 
-        add_executable(tc_dom_logic_legacy_hdr_compat_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/domain/tests/domain_logic_legacy_headers_compat_tests.cpp"
-        )
-        setup_app_target(tc_dom_logic_legacy_hdr_compat_tests
-            NO_PCH
-        )
-        target_link_libraries(
-            tc_dom_logic_legacy_hdr_compat_tests PRIVATE
-            time_tracker_domain
-        )
-        add_test(
-            NAME tc_dom_logic_legacy_hdr_compat_tests
-            COMMAND tc_dom_logic_legacy_hdr_compat_tests
-        )
-
         add_executable(tc_app_mod_smoke_tests
             "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/application_modules_smoke_tests.cpp"
         )
@@ -269,21 +236,6 @@ if(BUILD_TESTING)
         add_test(
             NAME tc_app_mod_smoke_tests
             COMMAND tc_app_mod_smoke_tests
-        )
-
-        add_executable(tc_app_pipeline_hdr_smoke_tests
-            "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/application_pipeline_headers_smoke_tests.cpp"
-        )
-        setup_app_target(
-            tc_app_pipeline_hdr_smoke_tests NO_PCH
-        )
-        target_link_libraries(
-            tc_app_pipeline_hdr_smoke_tests PRIVATE
-            time_tracker_application
-        )
-        add_test(
-            NAME tc_app_pipeline_hdr_smoke_tests
-            COMMAND tc_app_pipeline_hdr_smoke_tests
         )
 
         set(TC_INFRA_MOD_SMOKE_TEST_SOURCES
@@ -309,34 +261,6 @@ if(BUILD_TESTING)
             NAME tc_infra_mod_smoke_tests
             COMMAND tc_infra_mod_smoke_tests
         )
-
-        set(TC_INFRA_LEGACY_HDR_COMPAT_TEST_SOURCES
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/infrastructure_legacy_headers_compat_tests.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/logging_platform_config.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/query_stats_repository.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/query_internal_orchestrators.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/persistence.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/reports_export_dto.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/legacy_headers_compat/reports_querying.cpp"
-        )
-        add_executable(tc_infra_legacy_hdr_compat_tests
-            ${TC_INFRA_LEGACY_HDR_COMPAT_TEST_SOURCES}
-        )
-        setup_app_target(
-            tc_infra_legacy_hdr_compat_tests NO_PCH
-        )
-        target_include_directories(tc_infra_legacy_hdr_compat_tests PRIVATE
-            "${TRACER_CORE_LIB_TESTS_ROOT}"
-        )
-        target_link_libraries(
-            tc_infra_legacy_hdr_compat_tests PRIVATE
-            tc_infra_full_lib
-        )
-        add_test(
-            NAME tc_infra_legacy_hdr_compat_tests
-            COMMAND tc_infra_legacy_hdr_compat_tests
-        )
-    endif()
 
     set(TIME_TRACKER_CORE_API_TEST_SOURCES
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/fakes.cpp"
@@ -391,6 +315,7 @@ if(BUILD_TESTING)
     )
     if(NOT ANDROID)
         target_sources(tt_android_runtime_tests PRIVATE
+            "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
             "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
             "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_resolver.cpp"
             "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_catalog.cpp"
@@ -429,6 +354,7 @@ if(BUILD_TESTING)
     )
 
     add_executable(tt_file_crypto_tests
+        "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_resolver.cpp"
         "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_catalog.cpp"

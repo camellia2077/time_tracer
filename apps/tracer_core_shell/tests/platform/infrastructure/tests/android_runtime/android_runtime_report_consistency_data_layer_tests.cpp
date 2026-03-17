@@ -4,8 +4,11 @@
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
+#include "application/use_cases/i_tracer_core_api.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_report_consistency_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
+
+using tracer::core::application::use_cases::ITracerCoreApi;
 
 namespace android_runtime_tests::report_consistency_internal {
 namespace {

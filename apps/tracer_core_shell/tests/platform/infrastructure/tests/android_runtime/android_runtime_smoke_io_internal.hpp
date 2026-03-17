@@ -2,10 +2,11 @@
 #ifndef INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_IO_INTERNAL_HPP_
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_IO_INTERNAL_HPP_
 
+#include "application/use_cases/i_tracer_core_api.hpp"
+
+#include <memory>
 #include <optional>
 #include <string>
-
-#include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 
 namespace android_runtime_tests::smoke {
 

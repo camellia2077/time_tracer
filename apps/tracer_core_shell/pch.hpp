@@ -39,29 +39,9 @@
 //  3. 项目内部稳定且常用的核心头文件
 //  建议仅包含极少修改的核心接口。
 // ===================================================================
-#include "application/dto/core_requests.hpp"                 // 使用次数: 10
 #include "application/dto/core_responses.hpp"                // 使用次数: 11
-#include "application/ports/logger.hpp"                      // 使用次数: 10
 #include "cstddef"                                           // 使用次数: 10
-#include "domain/model/daily_log.hpp"                        // 使用次数: 15
-#include "domain/ports/diagnostics.hpp"                      // 使用次数: 24
-#include "domain/reports/models/daily_report_data.hpp"       // 使用次数: 18
-#include "domain/reports/models/period_report_models.hpp"    // 使用次数: 19
-#include "domain/reports/models/project_tree.hpp"            // 使用次数: 9
-#include "domain/reports/models/range_report_data.hpp"       // 使用次数: 10
-#include "domain/reports/types/report_types.hpp"             // 使用次数: 18
-#include "domain/types/converter_config.hpp"                 // 使用次数: 9
-#include "domain/types/date_check_mode.hpp"                  // 使用次数: 10
-#include "infrastructure/config/models/report_catalog.hpp"   // 使用次数: 12
-#include "infrastructure/crypto/file_crypto_service.hpp"     // 使用次数: 10
-#include "infrastructure/reports/shared/api/shared_api.hpp"  // 使用次数: 17
-#include "infrastructure/reports/shared/factories/generic_formatter_factory.hpp"  // 使用次数: 10
-#include "infrastructure/reports/shared/utils/format/report_string_utils.hpp"  // 使用次 数: 10
-#include "infrastructure/reports/shared/utils/format/time_format.hpp"  // 使用次数: 16
-#include "infrastructure/schema/day_schema.hpp"     // 使用次数: 16
-#include "infrastructure/schema/sqlite_schema.hpp"  // 使用次数: 16
 #include "nlohmann/json.hpp"             // 使用次数: 14
-#include "shared/types/ansi_colors.hpp"  // 使用次数: 9
 
 #endif  // PCH_H
 

@@ -63,8 +63,6 @@ val repoRootDir =
 val timeTracerSourceConfigRootProperty = providers.gradleProperty("timeTracerSourceConfigRoot").orNull
 val timeTracerConfigRootProperty = providers.gradleProperty("timeTracerConfigRoot").orNull
 val timeTracerPythonProperty = providers.gradleProperty("timeTracerPython").orNull?.trim().orEmpty()
-val timeTracerEnableCpp20ModulesProperty =
-    providers.gradleProperty("timeTracerEnableCpp20Modules").orNull?.trim().orEmpty()
 val timeTracerDisableNativeOptimization =
     providers.gradleProperty("timeTracerDisableNativeOptimization")
         .orNull
@@ -92,7 +90,7 @@ val timeTracerAndroidDebugAssetsRoot =
         ?: defaultDebugAssetsRoot
 val platformConfigRunner = repoRootDir.resolve("tools/platform_config/run.py")
 val inputDataSyncRunner =
-    repoRootDir.resolve("scripts/devtools/android/sync_android_input_from_test_data.py")
+    repoRootDir.resolve("tools/scripts/devtools/android/sync_android_input_from_test_data.py")
 val pythonExecutable =
     if (timeTracerPythonProperty.isNotEmpty()) {
         timeTracerPythonProperty
@@ -100,20 +98,6 @@ val pythonExecutable =
         "python"
     } else {
         "python3"
-    }
-val timeTracerEnableCpp20Modules =
-    when {
-        timeTracerEnableCpp20ModulesProperty.isEmpty() -> "ON"
-        timeTracerEnableCpp20ModulesProperty.equals("on", ignoreCase = true) -> "ON"
-        timeTracerEnableCpp20ModulesProperty.equals("true", ignoreCase = true) -> "ON"
-        timeTracerEnableCpp20ModulesProperty == "1" -> "ON"
-        timeTracerEnableCpp20ModulesProperty.equals("off", ignoreCase = true) -> "OFF"
-        timeTracerEnableCpp20ModulesProperty.equals("false", ignoreCase = true) -> "OFF"
-        timeTracerEnableCpp20ModulesProperty == "0" -> "OFF"
-        else -> throw GradleException(
-            "Invalid -PtimeTracerEnableCpp20Modules value: '$timeTracerEnableCpp20ModulesProperty'. " +
-                "Use ON/OFF, true/false, or 1/0."
-        )
     }
 
 val repoRootPath = repoRootDir.absolutePath
@@ -184,10 +168,7 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += listOf(
-                    "-DANDROID_STL=c++_static",
-                    "-DTT_ENABLE_CPP20_MODULES=$timeTracerEnableCpp20Modules"
-                )
+                arguments.add("-DANDROID_STL=c++_static")
                 // Work around NDK 29 Clang mis-handling std::as_const in libc++.
                 cppFlags += listOf(
                     "-std=c++23",

@@ -12,18 +12,16 @@ add_library(ttr_lib STATIC
     src/runtime_codec_tree.cpp
 )
 
-if(TT_CPP20_MODULES_EFFECTIVE)
-    target_sources(ttr_lib PUBLIC
-        FILE_SET transport_modules TYPE CXX_MODULES FILES
-            src/modules/tracer.transport.errors.cppm
-            src/modules/tracer.transport.envelope.cppm
-            src/modules/tracer.transport.fields.cppm
-            src/modules/tracer.transport.cppm
-    )
-    set_target_properties(ttr_lib PROPERTIES
-        CXX_SCAN_FOR_MODULES ON
-    )
-endif()
+target_sources(ttr_lib PUBLIC
+    FILE_SET transport_modules TYPE CXX_MODULES FILES
+        src/modules/tracer.transport.errors.cppm
+        src/modules/tracer.transport.envelope.cppm
+        src/modules/tracer.transport.fields.cppm
+        src/modules/tracer.transport.cppm
+)
+set_target_properties(ttr_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
 
 if(COMMAND setup_app_target)
     setup_app_target(ttr_lib)
@@ -83,19 +81,17 @@ if(BUILD_TESTING)
         COMMAND ttr_rt_codec_tests
     )
 
-    if(TT_CPP20_MODULES_EFFECTIVE)
-        add_executable(ttr_mod_smoke_tests
-            tests/transport_modules_smoke_tests.cpp
-        )
-        if(COMMAND setup_app_target)
-            setup_app_target(ttr_mod_smoke_tests)
-        endif()
-        target_link_libraries(ttr_mod_smoke_tests PRIVATE
-            ttr_lib
-        )
-        add_test(
-            NAME ttr_mod_smoke_tests
-            COMMAND ttr_mod_smoke_tests
-        )
+    add_executable(ttr_mod_smoke_tests
+        tests/transport_modules_smoke_tests.cpp
+    )
+    if(COMMAND setup_app_target)
+        setup_app_target(ttr_mod_smoke_tests)
     endif()
+    target_link_libraries(ttr_mod_smoke_tests PRIVATE
+        ttr_lib
+    )
+    add_test(
+        NAME ttr_mod_smoke_tests
+        COMMAND ttr_mod_smoke_tests
+    )
 endif()

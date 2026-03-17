@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,20 +6,15 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadIntListField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -37,25 +30,25 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 }  // namespace
 
 auto DecodeReportRequest(std::string_view request_json) -> ReportRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto type = RequireStringField(payload, "type");
-  const auto argument = RequireStringField(payload, "argument");
-  const auto format = TryReadStringField(payload, "format");
-  if (type.HasError()) {
-    throw std::invalid_argument(type.error.message);
+  const auto kType = RequireStringField(kPayload, "type");
+  const auto kArgument = RequireStringField(kPayload, "argument");
+  const auto kFormat = TryReadStringField(kPayload, "format");
+  if (kType.HasError()) {
+    throw std::invalid_argument(kType.error.message);
   }
-  if (argument.HasError()) {
-    throw std::invalid_argument(argument.error.message);
+  if (kArgument.HasError()) {
+    throw std::invalid_argument(kArgument.error.message);
   }
-  if (format.HasError()) {
-    throw std::invalid_argument(format.error.message);
+  if (kFormat.HasError()) {
+    throw std::invalid_argument(kFormat.error.message);
   }
 
   ReportRequestPayload out{};
-  out.type = *type.value;
-  out.argument = *argument.value;
-  out.format = format.value;
+  out.type = kType.value.value_or("");
+  out.argument = kArgument.value.value_or("");
+  out.format = kFormat.value;
   return out;
 }
 
@@ -85,23 +78,23 @@ auto EncodeReportResponse(const ReportResponsePayload& response)
 
 auto DecodeReportBatchRequest(std::string_view request_json)
     -> ReportBatchRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto days_list = TryReadIntListField(payload, "days_list");
-  if (days_list.HasError()) {
-    throw std::invalid_argument(days_list.error.message);
+  const auto kDaysList = TryReadIntListField(kPayload, "days_list");
+  if (kDaysList.HasError()) {
+    throw std::invalid_argument(kDaysList.error.message);
   }
-  if (!days_list.value.has_value()) {
+  if (!kDaysList.value.has_value()) {
     throw std::invalid_argument("field `days_list` must be an integer array.");
   }
 
-  const auto kFormat = TryReadStringField(payload, "format");
+  const auto kFormat = TryReadStringField(kPayload, "format");
   if (kFormat.HasError()) {
     throw std::invalid_argument(kFormat.error.message);
   }
 
   ReportBatchRequestPayload out{};
-  out.days_list = *days_list.value;
+  out.days_list = *kDaysList.value;
   out.format = kFormat.value;
   return out;
 }

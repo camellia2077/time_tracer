@@ -12,12 +12,12 @@ auto WithIndefiniteArticle(std::string_view noun) -> std::string {
   if (noun.empty()) {
     return "a value";
   }
-  const char first = noun.front();
-  const bool starts_with_vowel =
-      first == 'a' || first == 'e' || first == 'i' || first == 'o' ||
-      first == 'u' || first == 'A' || first == 'E' || first == 'I' ||
-      first == 'O' || first == 'U';
-  return starts_with_vowel ? "an " + std::string(noun)
+  const char kFirst = noun.front();
+  const bool kStartsWithVowel =
+      kFirst == 'a' || kFirst == 'e' || kFirst == 'i' || kFirst == 'o' ||
+      kFirst == 'u' || kFirst == 'A' || kFirst == 'E' || kFirst == 'I' ||
+      kFirst == 'O' || kFirst == 'U';
+  return kStartsWithVowel ? "an " + std::string(noun)
                            : "a " + std::string(noun);
 }
 
@@ -49,78 +49,78 @@ auto FormatFieldIssue(const FieldIssue& issue) -> std::string {
 
 auto RequireStringField(const nlohmann::json& payload,
                         std::string_view field_name) -> StringFieldResult {
-  const auto it = payload.find(std::string(field_name));
-  if (it == payload.end() || !it->is_string()) {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || !kIt->is_string()) {
     return StringFieldResult{
         .value = std::nullopt,
         .error = BuildTypeTransportError(field_name, "string"),
     };
   }
   return StringFieldResult{
-      .value = it->get<std::string>(),
+      .value = kIt->get<std::string>(),
       .error = TransportError{},
   };
 }
 
 auto TryReadStringField(const nlohmann::json& payload,
                         std::string_view field_name) -> StringFieldResult {
-  const auto it = payload.find(std::string(field_name));
-  if (it == payload.end() || it->is_null()) {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || kIt->is_null()) {
     return StringFieldResult{
         .value = std::nullopt,
         .error = TransportError{},
     };
   }
-  if (!it->is_string()) {
+  if (!kIt->is_string()) {
     return StringFieldResult{
         .value = std::nullopt,
         .error = BuildTypeTransportError(field_name, "string"),
     };
   }
   return StringFieldResult{
-      .value = it->get<std::string>(),
+      .value = kIt->get<std::string>(),
       .error = TransportError{},
   };
 }
 
 auto TryReadBoolField(const nlohmann::json& payload,
                       std::string_view field_name) -> BoolFieldResult {
-  const auto it = payload.find(std::string(field_name));
-  if (it == payload.end() || it->is_null()) {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || kIt->is_null()) {
     return BoolFieldResult{
         .value = std::nullopt,
         .error = TransportError{},
     };
   }
-  if (!it->is_boolean()) {
+  if (!kIt->is_boolean()) {
     return BoolFieldResult{
         .value = std::nullopt,
         .error = BuildTypeTransportError(field_name, "boolean"),
     };
   }
   return BoolFieldResult{
-      .value = it->get<bool>(),
+      .value = kIt->get<bool>(),
       .error = TransportError{},
   };
 }
 
 auto TryReadIntField(const nlohmann::json& payload,
                      std::string_view field_name) -> IntFieldResult {
-  const auto it = payload.find(std::string(field_name));
-  if (it == payload.end() || it->is_null()) {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || kIt->is_null()) {
     return IntFieldResult{
         .value = std::nullopt,
         .error = TransportError{},
     };
   }
-  if (!it->is_number_integer()) {
+  if (!kIt->is_number_integer()) {
     return IntFieldResult{
         .value = std::nullopt,
         .error = BuildTypeTransportError(field_name, "integer"),
     };
   }
   return IntFieldResult{
-      .value = it->get<int>(),
+      .value = kIt->get<int>(),
       .error = TransportError{},
   };
 }

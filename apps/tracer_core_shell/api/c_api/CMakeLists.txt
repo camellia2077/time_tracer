@@ -1,12 +1,30 @@
 set(TRACER_CORE_C_API_SOURCES
+    "c_api_parse_bridge.cpp"
+    "cli_runtime_config_bridge.cpp"
     "tracer_core_c_api.cpp"
     "tracer_core_c_api_internal.cpp"
+    "tracer_core_c_api_runtime_config.cpp"
     "tracer_core_c_api_workflow.cpp"
     "tracer_core_c_api_reporting.cpp"
     "tracer_core_c_api_crypto.cpp"
+    "${PROJECT_SOURCE_DIR}/host/crypto_progress_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_resolver.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_catalog.cpp"
+)
+
+set_source_files_properties(
+    "cli_runtime_config_bridge.cpp"
+    "tracer_core_c_api_internal.cpp"
+    "tracer_core_c_api_runtime_config.cpp"
+    "tracer_core_c_api_workflow.cpp"
+    "tracer_core_c_api_reporting.cpp"
+    "tracer_core_c_api_crypto.cpp"
+    "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/android_runtime_factory.cpp"
+    PROPERTIES
+        CXX_SCAN_FOR_MODULES ON
 )
 
 add_library(tc_shared_dll SHARED
@@ -26,7 +44,6 @@ target_include_directories(tc_shared_dll PUBLIC
 target_link_libraries(tc_shared_dll PUBLIC
     tc_adapters_iface
     tc_all_lib
-    tc_core_bridge_common_c_api_lib
 )
 set_target_properties(tc_shared_dll PROPERTIES
     OUTPUT_NAME "tracer_core"

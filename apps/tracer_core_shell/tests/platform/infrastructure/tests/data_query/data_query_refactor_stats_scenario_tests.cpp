@@ -1,7 +1,8 @@
 // infrastructure/tests/data_query/data_query_refactor_stats_scenario_tests.cpp
-#if TT_ENABLE_CPP20_MODULES
+import tracer.core.infrastructure.query.data.orchestrators;
+import tracer.core.infrastructure.query.data.renderers;
+import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.stats;
-#endif
 
 #include <array>
 #include <nlohmann/json.hpp>
@@ -9,15 +10,7 @@ import tracer.core.infrastructure.query.data.stats;
 #include <string>
 #include <vector>
 
-#include "infrastructure/query/data/data_query_models.hpp"
-#include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
-#include "infrastructure/query/data/orchestrators/list_query_orchestrator.hpp"
-#include "infrastructure/query/data/orchestrators/report_chart_orchestrator.hpp"
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
-#include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
-#endif
+#include "application/dto/core_requests.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
 namespace android_runtime_tests::data_query_refactor_internal {
@@ -25,8 +18,13 @@ namespace {
 
 using nlohmann::json;
 using tracer_core::core::dto::DataQueryOutputMode;
+namespace data_query = tracer::core::infrastructure::query::data;
+namespace data_query_orchestrators = data_query::orchestrators;
+namespace data_query_renderers = data_query::renderers;
 namespace data_query_stats =
     tracer::core::infrastructure::query::data::stats;
+using data_query::DayDurationRow;
+using data_query::QueryFilters;
 
 constexpr long long kDuration3600 = 3600;
 constexpr long long kDuration1800 = 1800;
@@ -35,7 +33,7 @@ constexpr double kVariance2160000Double = 2160000.0;
 constexpr long long kDuration5400 = 5400;
 
 auto BuildStatsSampleRows()
-    -> std::vector<tracer_core::infrastructure::query::data::DayDurationRow> {
+    -> std::vector<DayDurationRow> {
   return {
       {.date = "2026-02-01", .total_seconds = kDuration3600},
       {.date = "2026-02-02", .total_seconds = kDuration1800},
@@ -44,7 +42,7 @@ auto BuildStatsSampleRows()
 }
 
 auto BuildSparseReportChartRows()
-    -> std::vector<tracer_core::infrastructure::query::data::DayDurationRow> {
+    -> std::vector<DayDurationRow> {
   return {
       {.date = "2026-02-01", .total_seconds = kDuration3600},
       {.date = "2026-02-03", .total_seconds = kDuration1800},
@@ -88,7 +86,7 @@ auto TestDayDurationStatsCalculator(int& failures) -> void {
 auto TestReportChartSeriesCalculator(int& failures) -> void {
   const auto kSparseRows = BuildSparseReportChartRows();
   const auto kResult = data_query_stats::BuildReportChartSeries(
-      "2026-02-01", "2026-02-03", kSparseRows);
+      {.start_date = "2026-02-01", .end_date = "2026-02-03"}, kSparseRows);
 
   Expect(kResult.series.size() == 3,
          "report chart series should fill missing dates with zero.", failures);
@@ -119,9 +117,8 @@ auto TestSemanticDayStatsSnapshot(int& failures) -> void {
 
   const auto kRows = BuildStatsSampleRows();
   const auto kStats = ComputeDayDurationStats(kRows);
-  const std::string kSemantic = tracer_core::infrastructure::query::data::
-      renderers::RenderDayDurationStatsOutput(
-          kRows, kStats, 2, DataQueryOutputMode::kSemanticJson);
+  const std::string kSemantic = data_query_renderers::RenderDayDurationStatsOutput(
+      kRows, kStats, 2, DataQueryOutputMode::kSemanticJson);
 
   const auto kPayload = json::parse(kSemantic);
   Expect(kPayload.value("schema_version", 0) == 1,
@@ -182,9 +179,8 @@ auto ExpectContiguousEpochDaySeries(const json& series_payload,
 
 auto CheckYearsOrchestratorSemanticSnapshot(sqlite3* database, int& failures)
     -> bool {
-  const auto kYearsOutput =
-      tracer_core::infrastructure::query::data::orchestrators::HandleYearsQuery(
-          database, DataQueryOutputMode::kSemanticJson);
+  const auto kYearsOutput = data_query_orchestrators::HandleYearsQuery(
+      database, DataQueryOutputMode::kSemanticJson);
   Expect(kYearsOutput.ok, "years orchestrator should succeed.", failures);
   if (!kYearsOutput.ok) {
     return false;
@@ -214,17 +210,14 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
                                                 int& failures) -> bool {
   using tracer_core::core::dto::DataQueryAction;
   using tracer_core::core::dto::DataQueryRequest;
-  using tracer_core::infrastructure::query::data::QueryFilters;
   constexpr double kExpectedMeanSeconds = 2700.0;
 
   DataQueryRequest stats_request;
   stats_request.action = DataQueryAction::kDaysStats;
   stats_request.top_n = 1;
   QueryFilters base_filters;
-  const auto kStatsOutput =
-      tracer_core::infrastructure::query::data::orchestrators::
-          HandleDaysStatsQuery(database, stats_request, base_filters,
-                               DataQueryOutputMode::kSemanticJson);
+  const auto kStatsOutput = data_query_orchestrators::HandleDaysStatsQuery(
+      database, stats_request, base_filters, DataQueryOutputMode::kSemanticJson);
   Expect(kStatsOutput.ok, "days-stats orchestrator should succeed.", failures);
   if (!kStatsOutput.ok) {
     return false;
@@ -264,10 +257,8 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   report_chart_request.from_date = "2026-02-01";
   report_chart_request.to_date = "2026-02-03";
   report_chart_request.root = "study";
-  const auto kChartOutput =
-      tracer_core::infrastructure::query::data::orchestrators::
-          HandleReportChartQuery(database, report_chart_request,
-                                 DataQueryOutputMode::kSemanticJson);
+  const auto kChartOutput = data_query_orchestrators::HandleReportChartQuery(
+      database, report_chart_request, DataQueryOutputMode::kSemanticJson);
   Expect(kChartOutput.ok, "report-chart orchestrator should succeed.",
          failures);
   if (!kChartOutput.ok) {
@@ -315,10 +306,8 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
 
   DataQueryRequest missing_root_request = report_chart_request;
   missing_root_request.root = "nosuchroot";
-  const auto kMissingRootOutput =
-      tracer_core::infrastructure::query::data::orchestrators::
-          HandleReportChartQuery(database, missing_root_request,
-                                 DataQueryOutputMode::kSemanticJson);
+  const auto kMissingRootOutput = data_query_orchestrators::HandleReportChartQuery(
+      database, missing_root_request, DataQueryOutputMode::kSemanticJson);
   Expect(kMissingRootOutput.ok,
          "report-chart missing-root fallback should succeed.", failures);
   if (!kMissingRootOutput.ok) {

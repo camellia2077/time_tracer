@@ -13,19 +13,13 @@
 #include <vector>
 
 #include "api/c_api/tracer_core_c_api_internal.hpp"
-#include "infrastructure/config/config_loader.hpp"
-#include "infrastructure/config/models/app_config.hpp"
 #include "shared/types/version.hpp"
 
 using tracer_core::core::c_api::internal::BuildCapabilitiesResponseJson;
 using tracer_core::core::c_api::internal::ClearLastError;
+using tracer_core::core::c_api::internal::ResolveCliContext;
+using tracer_core::core::c_api::internal::ResolvedCliContext;
 using tracer_core::core::c_api::internal::SetLastError;
-
-namespace {
-
-using ConfigLoader = tracer::core::infrastructure::config::ConfigLoader;
-
-}  // namespace
 
 #include "api/c_api/internal/tracer_core_c_api_namespace.inc"
 
@@ -178,7 +172,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
       });
     }
 
-    const fs::path kBinDir = kContext.app_config.exe_dir_path;
+    const fs::path kBinDir = kContext.cli_config.exe_dir_path;
     std::vector<std::string> errors;
     std::vector<fs::path> required_files = {
         kBinDir / kCoreLibraryName,
@@ -255,15 +249,14 @@ extern "C" TT_CORE_API auto tracer_core_runtime_resolve_cli_context_json(
         json{{"ok", true},
              {"error_message", ""},
              {"paths",
-              {{"exe_dir", kContext.app_config.exe_dir_path.string()},
+              {{"exe_dir", kContext.cli_config.exe_dir_path.string()},
                {"db_path", kContext.db_path.string()},
                {"output_root", kContext.output_root.string()},
                {"export_root", kContext.export_root.string()},
                {"runtime_output_root", kContext.runtime_output_root.string()},
                {"converter_config_toml_path",
-                kContext.app_config.pipeline.interval_processor_config_path
-                    .string()}}},
-             {"cli_config", BuildCliConfigJson(kContext.app_config)}});
+                kContext.cli_config.converter_config_toml_path.string()}}},
+             {"cli_config", BuildCliConfigJson(kContext.cli_config)}});
   } catch (const std::exception& error) {
     return BuildFailureJsonResponse(error.what(), {}, "config.resolve_failed",
                                     "config");

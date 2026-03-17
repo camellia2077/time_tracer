@@ -3,7 +3,6 @@ namespace {
 namespace fs = std::filesystem;
 using nlohmann::json;
 
-constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 constexpr std::string_view kCoreAbiName = "tracer_core_c";
 constexpr int kCoreAbiVersion = 1;
 constexpr std::string_view kCoreLibraryName = "tracer_core.dll";
@@ -26,14 +25,6 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
 #define TT_RUNTIME_REQUIRE_MINGW_DLLS 1
 #endif
 
-struct ResolvedCliContext {
-  AppConfig app_config;
-  fs::path output_root;
-  fs::path db_path;
-  fs::path export_root;
-  fs::path runtime_output_root;
-};
-
 struct LogCallbackRegistration {
   TtCoreLogCallback callback = nullptr;
   void* user_data = nullptr;
@@ -44,16 +35,9 @@ struct DiagnosticsCallbackRegistration {
   void* user_data = nullptr;
 };
 
-struct AppConfigCacheEntry {
-  fs::path normalized_executable_path;
-  AppConfig app_config;
-};
-
 std::mutex g_callback_mutex;
 LogCallbackRegistration g_log_callback_registration{};
 DiagnosticsCallbackRegistration g_diagnostics_callback_registration{};
-std::mutex g_app_config_cache_mutex;
-std::optional<AppConfigCacheEntry> g_app_config_cache{};
 
 [[nodiscard]] auto IsNonEmptyCString(const char* value) -> bool {
   return value != nullptr && value[0] != '\0';
@@ -145,41 +129,6 @@ auto CreateAbiDiagnosticsAdapter()
   return std::make_shared<AbiDiagnosticsCallbackSink>();
 }
 
-[[nodiscard]] auto NormalizeExecutablePath(const fs::path& executable_path)
-    -> fs::path {
-  std::error_code error;
-  const fs::path canonical = fs::weakly_canonical(executable_path, error);
-  if (!error) {
-    return canonical;
-  }
-  return fs::absolute(executable_path);
-}
-
-[[nodiscard]] auto LoadAppConfigCached(const fs::path& executable_path)
-    -> AppConfig {
-  const fs::path normalized_path = NormalizeExecutablePath(executable_path);
-  {
-    std::scoped_lock lock(g_app_config_cache_mutex);
-    if (g_app_config_cache.has_value() &&
-        g_app_config_cache->normalized_executable_path == normalized_path) {
-      return g_app_config_cache->app_config;
-    }
-  }
-
-  const std::string executable_utf8 = normalized_path.string();
-  ConfigLoader config_loader(executable_utf8.c_str());
-  AppConfig app_config = config_loader.LoadConfiguration();
-
-  {
-    std::scoped_lock lock(g_app_config_cache_mutex);
-    g_app_config_cache = AppConfigCacheEntry{
-        .normalized_executable_path = normalized_path,
-        .app_config = app_config,
-    };
-  }
-  return app_config;
-}
-
 [[nodiscard]] auto ToDateCheckModeString(DateCheckMode mode)
     -> std::string_view {
   switch (mode) {
@@ -209,91 +158,44 @@ auto CreateAbiDiagnosticsAdapter()
   return *value;
 }
 
-[[nodiscard]] auto BuildCliConfigJson(const AppConfig& app_config) -> json {
+[[nodiscard]] auto BuildCliConfigJson(
+    const tracer_core::core::c_api::internal::CliConfigContext& cli_config)
+    -> json {
   return json{
       {"default_save_processed_output",
-       app_config.default_save_processed_output},
+       cli_config.default_save_processed_output},
       {"default_date_check_mode",
-       std::string(ToDateCheckModeString(app_config.default_date_check_mode))},
+       std::string(ToDateCheckModeString(cli_config.default_date_check_mode))},
       {"defaults",
-       {{"default_format", ToStringJson(app_config.defaults.default_format)}}},
+       {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
-       {{"export_format",
-         ToStringJson(app_config.command_defaults.export_format)},
-        {"query_format",
-         ToStringJson(app_config.command_defaults.query_format)},
+       {{"export_format", ToStringJson(cli_config.command_defaults.export_format)},
+        {"query_format", ToStringJson(cli_config.command_defaults.query_format)},
         {"convert_date_check_mode",
          ToDateCheckModeJson(
-             app_config.command_defaults.convert_date_check_mode)},
+             cli_config.command_defaults.convert_date_check_mode)},
         {"convert_save_processed_output",
-         app_config.command_defaults.convert_save_processed_output.has_value()
-             ? json(*app_config.command_defaults.convert_save_processed_output)
+         cli_config.command_defaults.convert_save_processed_output.has_value()
+             ? json(*cli_config.command_defaults.convert_save_processed_output)
              : json(nullptr)},
         {"convert_validate_logic",
-         app_config.command_defaults.convert_validate_logic.has_value()
-             ? json(*app_config.command_defaults.convert_validate_logic)
+         cli_config.command_defaults.convert_validate_logic.has_value()
+             ? json(*cli_config.command_defaults.convert_validate_logic)
              : json(nullptr)},
         {"convert_validate_structure",
-         app_config.command_defaults.convert_validate_structure.has_value()
-             ? json(*app_config.command_defaults.convert_validate_structure)
+         cli_config.command_defaults.convert_validate_structure.has_value()
+             ? json(*cli_config.command_defaults.convert_validate_structure)
              : json(nullptr)},
         {"ingest_date_check_mode",
          ToDateCheckModeJson(
-             app_config.command_defaults.ingest_date_check_mode)},
+             cli_config.command_defaults.ingest_date_check_mode)},
         {"ingest_save_processed_output",
-         app_config.command_defaults.ingest_save_processed_output.has_value()
-             ? json(*app_config.command_defaults.ingest_save_processed_output)
+         cli_config.command_defaults.ingest_save_processed_output.has_value()
+             ? json(*cli_config.command_defaults.ingest_save_processed_output)
              : json(nullptr)},
         {"validate_logic_date_check_mode",
          ToDateCheckModeJson(
-             app_config.command_defaults.validate_logic_date_check_mode)}}}};
-}
-
-[[nodiscard]] auto ResolveCliContext(const char* executable_path,
-                                     const char* db_override,
-                                     const char* output_override,
-                                     const char* command_name)
-    -> ResolvedCliContext {
-  if (!IsNonEmptyCString(executable_path)) {
-    throw std::invalid_argument("executable_path must not be empty.");
-  }
-
-  const fs::path kExecutable = fs::absolute(fs::path(executable_path));
-  AppConfig app_config = LoadAppConfigCached(kExecutable);
-  fs::path output_root = fs::absolute(kExecutable.parent_path() / "output");
-  if (app_config.defaults.output_root.has_value()) {
-    output_root = fs::absolute(*app_config.defaults.output_root);
-  }
-
-  fs::path export_root;
-  if (IsNonEmptyCString(output_override)) {
-    export_root = fs::absolute(fs::path(output_override));
-  } else if (app_config.kExportPath.has_value()) {
-    export_root = fs::absolute(*app_config.kExportPath);
-  }
-
-  fs::path db_path = output_root / "db" / kDatabaseFilename;
-  if (app_config.defaults.kDbPath.has_value()) {
-    db_path = fs::absolute(*app_config.defaults.kDbPath);
-  }
-  if (IsNonEmptyCString(db_override)) {
-    db_path = fs::absolute(fs::path(db_override));
-  }
-
-  const std::string kResolvedCommand = IsNonEmptyCString(command_name)
-                                           ? std::string(command_name)
-                                           : std::string();
-  const fs::path kRuntimeOutputRoot =
-      (kResolvedCommand == "export" && !export_root.empty()) ? export_root
-                                                             : output_root;
-
-  return ResolvedCliContext{
-      .app_config = std::move(app_config),
-      .output_root = std::move(output_root),
-      .db_path = std::move(db_path),
-      .export_root = std::move(export_root),
-      .runtime_output_root = kRuntimeOutputRoot,
-  };
+             cli_config.command_defaults.validate_logic_date_check_mode)}}}};
 }
 
 [[nodiscard]] auto BuildFailureJsonResponse(

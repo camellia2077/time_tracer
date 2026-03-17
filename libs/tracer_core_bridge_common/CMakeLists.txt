@@ -3,7 +3,6 @@ if(TARGET tc_core_bridge_common_c_api_lib)
 endif()
 
 add_library(tc_core_bridge_common_c_api_lib STATIC
-    "src/c_api/parse_utils.cpp"
     "src/jni/bridge_utils.cpp"
 )
 

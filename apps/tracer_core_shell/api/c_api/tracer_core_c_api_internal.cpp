@@ -1,11 +1,15 @@
 // api/c_api/tracer_core_c_api_internal.cpp
+import tracer.core.application.use_cases.interface;
+
 #include "api/c_api/tracer_core_c_api_internal.hpp"
 
 #include <mutex>
 #include <stdexcept>
 #include <utility>
 
-#include "c_api/parse_utils.hpp"
+#include "application/dto/core_responses.hpp"
+#include "application/dto/tree_query_response.hpp"
+#include "api/c_api/c_api_parse_bridge.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
 #ifndef TT_ENABLE_PROCESSED_JSON_IO
@@ -23,6 +27,7 @@
 namespace tracer_core::core::c_api::internal {
 
 namespace tt_transport = tracer::transport;
+using tracer::core::application::use_cases::ITracerCoreApi;
 
 thread_local std::string g_last_error;
 thread_local std::string g_last_response;

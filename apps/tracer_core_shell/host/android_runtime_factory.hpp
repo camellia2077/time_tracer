@@ -6,8 +6,13 @@
 #include <memory>
 
 #include "application/ports/logger.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
 #include "domain/ports/diagnostics.hpp"
+
+namespace tracer::core::application::use_cases {
+
+class ITracerCoreApi;
+
+}  // namespace tracer::core::application::use_cases
 
 namespace infrastructure::bootstrap {
 
@@ -24,7 +29,8 @@ struct AndroidRuntimeRequest {
 };
 
 struct AndroidRuntime {
-  std::shared_ptr<ITracerCoreApi> core_api;
+  std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>
+      core_api;
   std::shared_ptr<void> runtime_state;
 };
 

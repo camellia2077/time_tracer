@@ -1,30 +1,38 @@
 // infrastructure/tests/validation_issue_reporter_tests.cpp
 import tracer.core.infrastructure.logging;
+import tracer.core.domain.logic.validator.common.diagnostic;
+import tracer.core.domain.logic.validator.common.validator_utils;
+import tracer.core.domain.model.source_span;
+import tracer.core.domain.ports.diagnostics;
 
 #include <iostream>
 #include <memory>
+#include <set>
 #include <string>
 #include <string_view>
+#include <utility>
+#include <vector>
 
-#include "domain/logic/validator/common/diagnostic.hpp"
-#include "domain/logic/validator/common/validator_utils.hpp"
-#include "domain/ports/diagnostics.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests {
 namespace {
 
 namespace infra_logging = tracer::core::infrastructure::logging;
+namespace modports = tracer::core::domain::modports;
+namespace validator_common = tracer::core::domain::modlogic::validator_common;
+
+using tracer::core::domain::modmodel::SourceSpan;
 
 constexpr int kUnrecognizedActivityLine = 14;
 constexpr int kDurationDiagnosticLine = 81;
 
 class CapturingDiagnosticsSink final
-    : public tracer_core::domain::ports::IDiagnosticsSink {
+    : public modports::IDiagnosticsSink {
  public:
-  auto Emit(tracer_core::domain::ports::DiagnosticSeverity severity,
+  auto Emit(modports::DiagnosticSeverity severity,
             std::string_view message) -> void override {
-    if (severity == tracer_core::domain::ports::DiagnosticSeverity::kError) {
+    if (severity == modports::DiagnosticSeverity::kError) {
       errors_.append(message);
       errors_.push_back('\n');
       return;
@@ -42,8 +50,7 @@ class CapturingDiagnosticsSink final
   std::string infos_;
 };
 
-class CapturingErrorReportWriter final
-    : public tracer_core::domain::ports::IErrorReportWriter {
+class CapturingErrorReportWriter final : public modports::IErrorReportWriter {
  public:
   auto Append(std::string_view report_content) -> bool override {
     appended_.append(report_content);
@@ -65,28 +72,27 @@ class CapturingErrorReportWriter final
 class DiagnosticsStateGuard {
  public:
   DiagnosticsStateGuard()
-      : previous_sink_(tracer_core::domain::ports::GetDiagnosticsSink()),
-        previous_writer_(tracer_core::domain::ports::GetErrorReportWriter()) {}
+      : previous_sink_(modports::GetDiagnosticsSink()),
+        previous_writer_(modports::GetErrorReportWriter()) {}
 
   ~DiagnosticsStateGuard() {
-    tracer_core::domain::ports::SetDiagnosticsSink(previous_sink_);
-    tracer_core::domain::ports::SetErrorReportWriter(previous_writer_);
+    modports::SetDiagnosticsSink(previous_sink_);
+    modports::SetErrorReportWriter(previous_writer_);
   }
 
  private:
-  std::shared_ptr<tracer_core::domain::ports::IDiagnosticsSink> previous_sink_;
-  std::shared_ptr<tracer_core::domain::ports::IErrorReportWriter>
-      previous_writer_;
+  std::shared_ptr<modports::IDiagnosticsSink> previous_sink_;
+  std::shared_ptr<modports::IErrorReportWriter> previous_writer_;
 };
 
 auto BuildErrorWithSpan(std::string file_path, int line, std::string raw_text)
-    -> validator::Error {
-  return validator::Error{
+    -> validator_common::Error {
+  return validator_common::Error{
       .line_number = line,
       .message =
           "Unrecognized activity 'clang'. Please check spelling or "
           "update config file.",
-      .type = validator::ErrorType::kUnrecognizedActivity,
+      .type = validator_common::ErrorType::kUnrecognizedActivity,
       .source_span = SourceSpan{
           .file_path = std::move(file_path),
           .line_start = line,
@@ -98,9 +104,10 @@ auto BuildErrorWithSpan(std::string file_path, int line, std::string raw_text)
 }
 
 auto BuildDiagnosticWithSpan(std::string file_path, int line,
-                             std::string raw_text) -> validator::Diagnostic {
-  return validator::Diagnostic{
-      .severity = validator::DiagnosticSeverity::kError,
+                             std::string raw_text)
+    -> validator_common::Diagnostic {
+  return validator_common::Diagnostic{
+      .severity = validator_common::DiagnosticSeverity::kError,
       .code = "activity.duration.too_long",
       .message =
           "In file for date 2025-02-01: Activity duration exceeds 16 "
@@ -120,8 +127,8 @@ auto InstallCapturingPorts()
                  std::shared_ptr<CapturingErrorReportWriter>> {
   auto sink = std::make_shared<CapturingDiagnosticsSink>();
   auto writer = std::make_shared<CapturingErrorReportWriter>();
-  tracer_core::domain::ports::SetDiagnosticsSink(sink);
-  tracer_core::domain::ports::SetErrorReportWriter(writer);
+  modports::SetDiagnosticsSink(sink);
+  modports::SetErrorReportWriter(writer);
   return {sink, writer};
 }
 
@@ -130,7 +137,7 @@ auto TestStructureReporterRendersPathAndLine(int& failures) -> void {
   auto [sink, writer] = InstallCapturingPorts();
   infra_logging::ValidationIssueReporter reporter;
 
-  std::set<validator::Error> errors;
+  std::set<validator_common::Error> errors;
   errors.insert(
       BuildErrorWithSpan(R"(C:\test\invalid\unrecognized_activity_sample.txt)",
                          kUnrecognizedActivityLine, "0940clang//clang tidy"));
@@ -164,7 +171,7 @@ auto TestLogicReporterPrefersSourceSpanPath(int& failures) -> void {
   auto [sink, writer] = InstallCapturingPorts();
   infra_logging::ValidationIssueReporter reporter;
 
-  std::vector<validator::Diagnostic> diagnostics;
+  std::vector<validator_common::Diagnostic> diagnostics;
   diagnostics.push_back(BuildDiagnosticWithSpan(
       R"(C:\test\dates\2025-02.txt)", kDurationDiagnosticLine, "2016sleep"));
   reporter.ReportLogicDiagnostics("ProcessedData[2025-02]", diagnostics);

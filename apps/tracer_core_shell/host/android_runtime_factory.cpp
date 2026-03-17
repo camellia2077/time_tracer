@@ -1,4 +1,17 @@
 // host/android_runtime_factory.cpp
+import tracer.core.application.use_cases.api;
+import tracer.core.application.workflow;
+import tracer.adapters.io.runtime;
+import tracer.core.infrastructure.config.file_converter_config_provider;
+import tracer.core.infrastructure.logging;
+import tracer.core.infrastructure.persistence.runtime;
+import tracer.core.infrastructure.persistence.write;
+import tracer.core.infrastructure.reports.data_querying;
+import tracer.core.infrastructure.reports.dto;
+import tracer.core.infrastructure.reports.exporting;
+import tracer.core.infrastructure.reports.querying;
+import tracer.core.infrastructure.platform.android.clock;
+
 #include "host/android_runtime_factory.hpp"
 
 #include <chrono>
@@ -15,51 +28,23 @@
 
 #include "host/android_runtime_factory_internal.hpp"
 #include "application/interfaces/i_report_handler.hpp"
-#include "application/interfaces/i_workflow_handler.hpp"
 #include "application/ports/i_report_formatter_registry.hpp"
 #include "application/ports/logger.hpp"
 #include "application/reporting/report_handler.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "application/use_cases/tracer_core_api.hpp"
-#include "application/workflow_handler.hpp"
-#include "infrastructure/logging/file_error_report_writer.hpp"
-#include "infrastructure/logging/validation_issue_reporter.hpp"
-#include "infrastructure/persistence/repositories/sqlite_project_repository.hpp"
-#include "infrastructure/persistence/sqlite_database_health_checker.hpp"
-#include "infrastructure/persistence/sqlite_time_sheet_repository.hpp"
-#include "infrastructure/reports/lazy_sqlite_report_data_query_service.hpp"
-#include "infrastructure/reports/lazy_sqlite_report_query_service.hpp"
-#include "infrastructure/reports/report_dto_export_writer.hpp"
-#include "infrastructure/reports/report_dto_formatter.hpp"
-#include "infrastructure/reports/exporter.hpp"
-#endif
-#include "infrastructure/config/file_converter_config_provider.hpp"
 #include "domain/ports/diagnostics.hpp"
-#include "infrastructure/io/processed_data_io.hpp"
-#include "infrastructure/io/txt_ingest_input_provider.hpp"
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
-#include "infrastructure/platform/android/android_platform_clock.hpp"
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
-#if TT_ENABLE_CPP20_MODULES
-import tracer.core.infrastructure.logging;
-import tracer.core.infrastructure.persistence.runtime;
-import tracer.core.infrastructure.persistence.write;
-import tracer.core.infrastructure.reports.data_querying;
-import tracer.core.infrastructure.reports.dto.export_writer;
-import tracer.core.infrastructure.reports.exporting;
-import tracer.core.infrastructure.reports.querying;
-import tracer.core.application.use_cases.api;
-import tracer.core.application.workflow;
-#endif
 
 namespace {
 
 namespace fs = std::filesystem;
 namespace app_use_cases = tracer::core::application::use_cases;
 namespace app_workflow = tracer::core::application::workflow;
+namespace adapters_runtime = tracer::adapters::io::modruntime;
 namespace infra_persistence_runtime = tracer::core::infrastructure::persistence;
 namespace infra_persistence_write = tracer::core::infrastructure::persistence;
 namespace infra_reports = tracer::core::infrastructure::reports;
+namespace infra_platform = tracer::core::infrastructure::modplatform;
 using FileConverterConfigProvider =
     tracer::core::infrastructure::config::FileConverterConfigProvider;
 namespace infra_logging = tracer::core::infrastructure::logging;
@@ -99,7 +84,7 @@ auto BuildRunScopedErrorLogPath(const fs::path& logs_root) -> fs::path {
 }
 
 struct AndroidRuntimeState {
-  std::shared_ptr<IWorkflowHandler> workflow_handler;
+  std::shared_ptr<app_workflow::IWorkflowHandler> workflow_handler;
   std::shared_ptr<IReportHandler> report_handler;
   std::shared_ptr<ReportCatalog> report_catalog;
 };
@@ -138,8 +123,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
 
-  auto processed_data_loader =
-      std::make_shared<infrastructure::io::ProcessedDataLoader>();
+  auto processed_data_loader = adapters_runtime::CreateProcessedDataLoader();
   auto time_sheet_repository =
       std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
           kDbPath.string());
@@ -151,10 +135,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
           kConverterConfigTomlPath, std::unordered_map<fs::path, fs::path>{});
   // Fail fast during runtime bootstrap if converter TOML is invalid.
   static_cast<void>(converter_config_provider->LoadConverterConfig());
-  auto ingest_input_provider =
-      std::make_shared<infrastructure::io::TxtIngestInputProvider>();
-  auto processed_data_storage =
-      std::make_shared<infrastructure::io::ProcessedDataStorage>();
+  auto ingest_input_provider = adapters_runtime::CreateTxtIngestInputProvider();
+  auto processed_data_storage = adapters_runtime::CreateProcessedDataStorage();
   auto validation_issue_reporter =
       std::make_shared<infra_logging::ValidationIssueReporter>();
 
@@ -165,7 +147,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::move(processed_data_storage), std::move(validation_issue_reporter));
 
   auto platform_clock =
-      std::make_shared<infrastructure::platform::AndroidPlatformClock>();
+      std::make_shared<infra_platform::AndroidPlatformClock>();
 
   auto report_catalog = std::make_shared<ReportCatalog>(
       android_runtime_detail::BuildAndroidReportCatalog(kOutputRoot,

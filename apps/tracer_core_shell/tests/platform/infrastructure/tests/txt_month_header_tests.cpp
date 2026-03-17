@@ -1,4 +1,7 @@
 // infrastructure/tests/txt_month_header_tests.cpp
+import tracer.core.domain.logic.validator.txt.facade;
+import tracer.core.domain.logic.validator.common.validator_utils;
+
 #include <exception>
 #include <iostream>
 #include <set>
@@ -7,11 +10,13 @@
 #include <vector>
 
 #include "application/parser/text_parser.hpp"
-#include "domain/logic/validator/txt/facade/text_validator.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests {
 namespace {
+
+using tracer::core::domain::modlogic::validator_txt::TextValidator;
+using tracer::core::domain::modlogic::validator_common::Error;
 
 auto BuildTestConverterConfig() -> ConverterConfig {
   ConverterConfig config;
@@ -23,7 +28,7 @@ auto BuildTestConverterConfig() -> ConverterConfig {
   return config;
 }
 
-auto CollectErrorMessages(const std::set<validator::Error>& errors)
+auto CollectErrorMessages(const std::set<Error>& errors)
     -> std::string {
   std::string joined;
   for (const auto& error : errors) {
@@ -84,16 +89,16 @@ auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
 
 auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   const ConverterConfig kConfig = BuildTestConverterConfig();
-  validator::txt::TextValidator validator(kConfig);
+  TextValidator text_validator(kConfig);
 
-  std::set<validator::Error> month_errors;
-  const bool kMonthOk = validator.Validate(
+  std::set<Error> month_errors;
+  const bool kMonthOk = text_validator.Validate(
       "month_ok.txt", "y2026\nm02\n0201\n0641wake\n", month_errors);
   Expect(kMonthOk && month_errors.empty(),
          "TextValidator should accept yYYYY + mMM + matching MMDD.", failures);
 
-  std::set<validator::Error> missing_month_errors;
-  const bool kMissingMonthOk = validator.Validate(
+  std::set<Error> missing_month_errors;
+  const bool kMissingMonthOk = text_validator.Validate(
       "missing_month.txt", "y2026\n0201\n0641wake\n", missing_month_errors);
   const std::string kMissingMonthText =
       CollectErrorMessages(missing_month_errors);
@@ -104,9 +109,9 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
          "Missing month header should report explicit mMM requirement.",
          failures);
 
-  std::set<validator::Error> year_only_errors;
+  std::set<Error> year_only_errors;
   const bool kYearOnlyOk =
-      validator.Validate("year_only.txt", "y2026\n", year_only_errors);
+      text_validator.Validate("year_only.txt", "y2026\n", year_only_errors);
   const std::string kYearOnlyText = CollectErrorMessages(year_only_errors);
   Expect(!kYearOnlyOk, "TextValidator should reject year-only files.",
          failures);
@@ -116,28 +121,28 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
 
 auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
   const ConverterConfig kConfig = BuildTestConverterConfig();
-  validator::txt::TextValidator validator(kConfig);
+  TextValidator text_validator(kConfig);
 
-  std::set<validator::Error> mismatch_errors;
-  const bool kMismatchOk = validator.Validate(
+  std::set<Error> mismatch_errors;
+  const bool kMismatchOk = text_validator.Validate(
       "mismatch.txt", "y2026\nm02\n0101\n0641wake\n", mismatch_errors);
   const std::string kMismatchText = CollectErrorMessages(mismatch_errors);
   Expect(!kMismatchOk, "Month/date mismatch should fail validation.", failures);
   Expect(Contains(kMismatchText, "does not match month header"),
          "Mismatch error should mention month-header conflict.", failures);
 
-  std::set<validator::Error> duplicate_errors;
-  const bool kDuplicateOk =
-      validator.Validate("duplicate_month.txt",
-                         "y2026\nm02\nm03\n0201\n0641wake\n", duplicate_errors);
+  std::set<Error> duplicate_errors;
+  const bool kDuplicateOk = text_validator.Validate(
+      "duplicate_month.txt", "y2026\nm02\nm03\n0201\n0641wake\n",
+      duplicate_errors);
   const std::string kDuplicateText = CollectErrorMessages(duplicate_errors);
   Expect(!kDuplicateOk, "Duplicate mMM headers should fail validation.",
          failures);
   Expect(Contains(kDuplicateText, "Multiple month headers found"),
          "Duplicate month header should report dedicated error.", failures);
 
-  std::set<validator::Error> late_month_errors;
-  const bool kLateMonthOk = validator.Validate(
+  std::set<Error> late_month_errors;
+  const bool kLateMonthOk = text_validator.Validate(
       "late_month.txt", "y2026\n0201\n0641wake\nm02\n", late_month_errors);
   const std::string kLateMonthText = CollectErrorMessages(late_month_errors);
   Expect(!kLateMonthOk, "Late mMM header should fail validation.", failures);

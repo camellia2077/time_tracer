@@ -133,7 +133,7 @@ auto EmitCryptoProgress(
   }
 
   const std::string progress_json =
-      tracer_core::api::shared::crypto_progress::BuildProgressSnapshotJson(
+      tracer_core::shell::crypto_progress_bridge::BuildProgressSnapshotJson(
           snapshot);
   try {
     registration.callback(progress_json.c_str(), registration.user_data);

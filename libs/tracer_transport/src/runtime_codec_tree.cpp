@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,21 +6,16 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
 using tracer::transport::modfields::TryReadIntField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -69,38 +62,38 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
     throw std::invalid_argument("field `nodes` must be an object array.");
   }
 
-  const auto name = RequireStringField(node_json, "name");
-  if (name.HasError()) {
-    throw std::invalid_argument(name.error.message);
+  const auto kName = RequireStringField(node_json, "name");
+  if (kName.HasError()) {
+    throw std::invalid_argument(kName.error.message);
   }
 
   ProjectTreeNodePayload out{};
-  out.name = name.value.value_or("");
+  out.name = kName.value.value_or("");
 
-  const auto path = TryReadStringField(node_json, "path");
-  if (path.HasError()) {
-    throw std::invalid_argument(path.error.message);
+  const auto kPath = TryReadStringField(node_json, "path");
+  if (kPath.HasError()) {
+    throw std::invalid_argument(kPath.error.message);
   }
-  out.path = path.value;
+  out.path = kPath.value;
 
-  const auto duration_seconds_it = node_json.find("duration_seconds");
-  if (duration_seconds_it != node_json.end() && !duration_seconds_it->is_null()) {
-    if (!duration_seconds_it->is_number_integer()) {
+  const auto kDurationSecondsIt = node_json.find("duration_seconds");
+  if (kDurationSecondsIt != node_json.end() && !kDurationSecondsIt->is_null()) {
+    if (!kDurationSecondsIt->is_number_integer()) {
       throw std::invalid_argument("field `duration_seconds` must be an integer.");
     }
-    out.duration_seconds = duration_seconds_it->get<long long>();
+    out.duration_seconds = kDurationSecondsIt->get<long long>();
   }
 
-  const auto children_it = node_json.find("children");
-  if (children_it == node_json.end() || children_it->is_null()) {
+  const auto kChildrenIt = node_json.find("children");
+  if (kChildrenIt == node_json.end() || kChildrenIt->is_null()) {
     return out;
   }
-  if (!children_it->is_array()) {
+  if (!kChildrenIt->is_array()) {
     throw std::invalid_argument("field `children` must be an object array.");
   }
 
-  out.children.reserve(children_it->size());
-  for (const auto& child : *children_it) {
+  out.children.reserve(kChildrenIt->size());
+  for (const auto& child : *kChildrenIt) {
     out.children.push_back(ParseTreeNode(child));
   }
   return out;
@@ -206,38 +199,38 @@ auto ParseOptionalHints(const json& payload) -> std::vector<std::string> {
 }  // namespace
 
 auto DecodeTreeRequest(std::string_view request_json) -> TreeRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto list_roots = TryReadBoolField(payload, "list_roots");
-  if (list_roots.HasError()) {
-    throw std::invalid_argument(list_roots.error.message);
+  const auto kListRoots = TryReadBoolField(kPayload, "list_roots");
+  if (kListRoots.HasError()) {
+    throw std::invalid_argument(kListRoots.error.message);
   }
-  const auto root_pattern = TryReadStringField(payload, "root_pattern");
-  if (root_pattern.HasError()) {
-    throw std::invalid_argument(root_pattern.error.message);
+  const auto kRootPattern = TryReadStringField(kPayload, "root_pattern");
+  if (kRootPattern.HasError()) {
+    throw std::invalid_argument(kRootPattern.error.message);
   }
-  const auto max_depth = TryReadIntField(payload, "max_depth");
-  if (max_depth.HasError()) {
-    throw std::invalid_argument(max_depth.error.message);
+  const auto kMaxDepth = TryReadIntField(kPayload, "max_depth");
+  if (kMaxDepth.HasError()) {
+    throw std::invalid_argument(kMaxDepth.error.message);
   }
-  const auto period = TryReadStringField(payload, "period");
-  if (period.HasError()) {
-    throw std::invalid_argument(period.error.message);
+  const auto kPeriod = TryReadStringField(kPayload, "period");
+  if (kPeriod.HasError()) {
+    throw std::invalid_argument(kPeriod.error.message);
   }
-  const auto kPeriodArgument = TryReadStringField(payload, "period_argument");
+  const auto kPeriodArgument = TryReadStringField(kPayload, "period_argument");
   if (kPeriodArgument.HasError()) {
     throw std::invalid_argument(kPeriodArgument.error.message);
   }
-  const auto kRoot = TryReadStringField(payload, "root");
+  const auto kRoot = TryReadStringField(kPayload, "root");
   if (kRoot.HasError()) {
     throw std::invalid_argument(kRoot.error.message);
   }
 
   TreeRequestPayload out{};
-  out.list_roots = list_roots.value;
-  out.root_pattern = root_pattern.value;
-  out.max_depth = max_depth.value;
-  out.period = period.value;
+  out.list_roots = kListRoots.value;
+  out.root_pattern = kRootPattern.value;
+  out.max_depth = kMaxDepth.value;
+  out.period = kPeriod.value;
   out.period_argument = kPeriodArgument.value;
   out.root = kRoot.value;
   return out;

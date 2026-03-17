@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,20 +6,15 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -38,38 +31,39 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 
 auto DecodeConvertRequest(std::string_view request_json)
     -> ConvertRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto input_path = RequireStringField(payload, "input_path");
-  if (input_path.HasError()) {
-    throw std::invalid_argument(input_path.error.message);
+  const auto kInputPath = RequireStringField(kPayload, "input_path");
+  if (kInputPath.HasError()) {
+    throw std::invalid_argument(kInputPath.error.message);
   }
 
-  const auto date_check_mode = TryReadStringField(payload, "date_check_mode");
-  const auto save_processed =
-      TryReadBoolField(payload, "save_processed_output");
-  const auto validate_logic = TryReadBoolField(payload, "validate_logic");
-  const auto validate_structure =
-      TryReadBoolField(payload, "validate_structure");
-  if (date_check_mode.HasError()) {
-    throw std::invalid_argument(date_check_mode.error.message);
+  const auto kDateCheckMode =
+      TryReadStringField(kPayload, "date_check_mode");
+  const auto kSaveProcessed =
+      TryReadBoolField(kPayload, "save_processed_output");
+  const auto kValidateLogic = TryReadBoolField(kPayload, "validate_logic");
+  const auto kValidateStructure =
+      TryReadBoolField(kPayload, "validate_structure");
+  if (kDateCheckMode.HasError()) {
+    throw std::invalid_argument(kDateCheckMode.error.message);
   }
-  if (save_processed.HasError()) {
-    throw std::invalid_argument(save_processed.error.message);
+  if (kSaveProcessed.HasError()) {
+    throw std::invalid_argument(kSaveProcessed.error.message);
   }
-  if (validate_logic.HasError()) {
-    throw std::invalid_argument(validate_logic.error.message);
+  if (kValidateLogic.HasError()) {
+    throw std::invalid_argument(kValidateLogic.error.message);
   }
-  if (validate_structure.HasError()) {
-    throw std::invalid_argument(validate_structure.error.message);
+  if (kValidateStructure.HasError()) {
+    throw std::invalid_argument(kValidateStructure.error.message);
   }
 
   ConvertRequestPayload out{};
-  out.input_path = *input_path.value;
-  out.date_check_mode = date_check_mode.value;
-  out.save_processed_output = save_processed.value;
-  out.validate_logic = validate_logic.value;
-  out.validate_structure = validate_structure.value;
+  out.input_path = kInputPath.value.value_or("");
+  out.date_check_mode = kDateCheckMode.value;
+  out.save_processed_output = kSaveProcessed.value;
+  out.validate_logic = kValidateLogic.value;
+  out.validate_structure = kValidateStructure.value;
   return out;
 }
 
@@ -93,15 +87,15 @@ auto EncodeConvertRequest(const ConvertRequestPayload& request) -> std::string {
 }
 
 auto DecodeImportRequest(std::string_view request_json) -> ImportRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto processed_path = RequireStringField(payload, "processed_path");
-  if (processed_path.HasError()) {
-    throw std::invalid_argument(processed_path.error.message);
+  const auto kProcessedPath = RequireStringField(kPayload, "processed_path");
+  if (kProcessedPath.HasError()) {
+    throw std::invalid_argument(kProcessedPath.error.message);
   }
 
   ImportRequestPayload out{};
-  out.processed_path = *processed_path.value;
+  out.processed_path = kProcessedPath.value.value_or("");
   return out;
 }
 
@@ -114,15 +108,15 @@ auto EncodeImportRequest(const ImportRequestPayload& request) -> std::string {
 
 auto DecodeValidateStructureRequest(std::string_view request_json)
     -> ValidateStructureRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto input_path = RequireStringField(payload, "input_path");
-  if (input_path.HasError()) {
-    throw std::invalid_argument(input_path.error.message);
+  const auto kInputPath = RequireStringField(kPayload, "input_path");
+  if (kInputPath.HasError()) {
+    throw std::invalid_argument(kInputPath.error.message);
   }
 
   ValidateStructureRequestPayload out{};
-  out.input_path = *input_path.value;
+  out.input_path = kInputPath.value.value_or("");
   return out;
 }
 
@@ -136,20 +130,21 @@ auto EncodeValidateStructureRequest(const ValidateStructureRequestPayload& reque
 
 auto DecodeValidateLogicRequest(std::string_view request_json)
     -> ValidateLogicRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto input_path = RequireStringField(payload, "input_path");
-  if (input_path.HasError()) {
-    throw std::invalid_argument(input_path.error.message);
+  const auto kInputPath = RequireStringField(kPayload, "input_path");
+  if (kInputPath.HasError()) {
+    throw std::invalid_argument(kInputPath.error.message);
   }
-  const auto date_check_mode = TryReadStringField(payload, "date_check_mode");
-  if (date_check_mode.HasError()) {
-    throw std::invalid_argument(date_check_mode.error.message);
+  const auto kDateCheckMode =
+      TryReadStringField(kPayload, "date_check_mode");
+  if (kDateCheckMode.HasError()) {
+    throw std::invalid_argument(kDateCheckMode.error.message);
   }
 
   ValidateLogicRequestPayload out{};
-  out.input_path = *input_path.value;
-  out.date_check_mode = date_check_mode.value;
+  out.input_path = kInputPath.value.value_or("");
+  out.date_check_mode = kDateCheckMode.value;
   return out;
 }
 

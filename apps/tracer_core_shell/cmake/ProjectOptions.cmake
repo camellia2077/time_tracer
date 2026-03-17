@@ -40,32 +40,19 @@ option(TT_ENABLE_HEAVY_DIAGNOSTICS
 
 include("${CMAKE_CURRENT_LIST_DIR}/options/ai_options.cmake")
 
-if(WIN32 OR ANDROID)
-    set(TT_CPP20_MODULES_DEFAULT ON)
-else()
-    set(TT_CPP20_MODULES_DEFAULT OFF)
+if(CMAKE_VERSION VERSION_LESS 3.28)
+    message(FATAL_ERROR
+        "apps/tracer_core_shell now requires CMake >= 3.28 because "
+        "tracer_core uses C++20 named modules as the default toolchain path."
+    )
 endif()
 
-option(TT_ENABLE_CPP20_MODULES
-       "Enable C++20 named modules for selected module targets"
-       ${TT_CPP20_MODULES_DEFAULT})
-unset(TT_CPP20_MODULES_DEFAULT)
-
-set(TT_CPP20_MODULES_EFFECTIVE OFF)
-if(TT_ENABLE_CPP20_MODULES)
-    if(CMAKE_VERSION VERSION_LESS 3.28)
-        message(WARNING
-            "TT_ENABLE_CPP20_MODULES=ON ignored: CMake < 3.28 does not meet "
-            "the project modules baseline."
-        )
-    elseif(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|MSVC")
-        message(WARNING
-            "TT_ENABLE_CPP20_MODULES=ON ignored: unsupported compiler "
-            "(${CMAKE_CXX_COMPILER_ID})."
-        )
-    else()
-        set(TT_CPP20_MODULES_EFFECTIVE ON)
-    endif()
+if(NOT CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU|MSVC")
+    message(FATAL_ERROR
+        "apps/tracer_core_shell now requires a Clang, GNU, or MSVC C++ "
+        "compiler for the modules-only toolchain. "
+        "Detected: ${CMAKE_CXX_COMPILER_ID}."
+    )
 endif()
 
 if(ANDROID)
@@ -79,16 +66,11 @@ set(PLUGIN_OUTPUT_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/plugins")
 find_program(CCACHE_EXECUTABLE ccache)
 if(CCACHE_EXECUTABLE)
     set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
-    if(TT_CPP20_MODULES_EFFECTIVE)
-        message(STATUS
-            "ccache found, but disabling the C++ compiler launcher because "
-            "named module builds require stable PCM side outputs."
-        )
-        unset(CMAKE_CXX_COMPILER_LAUNCHER)
-    else()
-        message(STATUS "ccache found, enabling compiler launcher.")
-        set(CMAKE_CXX_COMPILER_LAUNCHER "${CCACHE_EXECUTABLE}")
-    endif()
+    message(STATUS
+        "ccache found, but disabling the C++ compiler launcher because "
+        "the modules-only toolchain requires stable PCM side outputs."
+    )
+    unset(CMAKE_CXX_COMPILER_LAUNCHER)
 endif()
 
 message(STATUS "TT_ENABLE_PROCESSED_JSON_IO=${TT_ENABLE_PROCESSED_JSON_IO}")
@@ -99,8 +81,6 @@ message(STATUS "TT_ENABLE_AI_JSON=${TT_ENABLE_AI_JSON}")
 message(STATUS "TT_ENABLE_AI_JSON_EFFECTIVE=${TT_ENABLE_AI_JSON_EFFECTIVE}")
 message(STATUS "TT_ENABLE_AI_PROVIDER=${TT_ENABLE_AI_PROVIDER}")
 message(STATUS "TT_ENABLE_AI_PROVIDER_EFFECTIVE=${TT_ENABLE_AI_PROVIDER_EFFECTIVE}")
-message(STATUS "TT_ENABLE_CPP20_MODULES=${TT_ENABLE_CPP20_MODULES}")
-message(STATUS "TT_CPP20_MODULES_EFFECTIVE=${TT_CPP20_MODULES_EFFECTIVE}")
 message(STATUS "TT_USE_BUNDLED_SQLITE=${TT_USE_BUNDLED_SQLITE}")
 message(STATUS "TT_TOML_HEADER_ONLY=${TT_TOML_HEADER_ONLY}")
 message(STATUS "TT_STATIC_MINGW_RUNTIME=${TT_STATIC_MINGW_RUNTIME}")

@@ -3,15 +3,9 @@
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_INTERNAL_HPP_
 
 #include <filesystem>
-#include <memory>
-#include <nlohmann/json.hpp>
 #include <optional>
-#include <string>
 #include <string_view>
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests::smoke {
@@ -28,21 +22,6 @@ struct RuntimeFixture {
     -> std::optional<RuntimeFixture>;
 
 auto CleanupRuntimeFixture(const RuntimeFixture& fixture) -> void;
-
-[[nodiscard]] auto ParseJsonOrRecordFailure(const std::string& content,
-                                            std::string_view context,
-                                            int& failures)
-    -> std::optional<nlohmann::json>;
-
-auto ValidateChartSeriesPayload(const nlohmann::json& payload,
-                                std::string_view context, int& failures)
-    -> void;
-
-[[nodiscard]] auto RunDataQueryOrRecordFailure(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
-    const tracer_core::core::dto::DataQueryRequest& request,
-    std::string_view context, int& failures)
-    -> std::optional<tracer_core::core::dto::TextOutput>;
 
 auto RunBootstrapSmokeSection(int& failures) -> void;
 auto RunConfigSmokeSection(int& failures) -> void;

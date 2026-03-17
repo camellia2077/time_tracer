@@ -1,4 +1,7 @@
 // infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp
+import tracer.core.application.reporting.tree.data;
+import tracer.core.infrastructure.query.data.renderers;
+
 #include <filesystem>
 #include <iostream>
 #include <nlohmann/json.hpp>
@@ -6,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
@@ -15,19 +17,22 @@ namespace {
 
 using nlohmann::json;
 using tracer_core::core::dto::DataQueryOutputMode;
+namespace data_query_renderers =
+    tracer::core::infrastructure::query::data::renderers;
+using tracer::core::application::reporting::tree::ProjectTreeNode;
 
 auto TestRendererGateway(int& failures) -> void {
   const std::vector<std::string> kYears = {"2024", "2025"};
 
   const std::string kText =
-      tracer_core::infrastructure::query::data::renderers::RenderListOutput(
-          "years", kYears, DataQueryOutputMode::kText);
+      data_query_renderers::RenderListOutput("years", kYears,
+                                             DataQueryOutputMode::kText);
   Expect(Contains(kText, "Total: 2"),
          "text renderer should preserve total footer.", failures);
 
   const std::string kSemantic =
-      tracer_core::infrastructure::query::data::renderers::RenderListOutput(
-          "years", kYears, DataQueryOutputMode::kSemanticJson);
+      data_query_renderers::RenderListOutput("years", kYears,
+                                             DataQueryOutputMode::kSemanticJson);
   const auto kSemanticJson = json::parse(kSemantic);
   Expect(kSemanticJson.value("schema_version", 0) == 1,
          "semantic renderer should emit schema_version.", failures);
@@ -36,9 +41,8 @@ auto TestRendererGateway(int& failures) -> void {
   Expect(kSemanticJson.value("output_mode", std::string{}) == "semantic_json",
          "semantic renderer should emit output_mode.", failures);
 
-  const std::string kWrappedRaw = tracer_core::infrastructure::query::data::
-      renderers::RenderJsonObjectOutput("report_chart", "not-json",
-                                        DataQueryOutputMode::kSemanticJson);
+  const std::string kWrappedRaw = data_query_renderers::RenderJsonObjectOutput(
+      "report_chart", "not-json", DataQueryOutputMode::kSemanticJson);
   const auto kWrappedRawJson = json::parse(kWrappedRaw);
   Expect(kWrappedRawJson.contains("raw_content"),
          "semantic json wrapper should preserve raw payload on parse failure.",
@@ -71,8 +75,8 @@ auto TestTreeRendererWithStructuredNodes(int& failures) -> void {
            BuildNode("physics", "study_physics", kPhysicsDurationSeconds)}),
   };
 
-  const std::string kText = tracer_core::infrastructure::query::data::
-      renderers::RenderProjectTreeOutput(nodes, 1, DataQueryOutputMode::kText);
+  const std::string kText = data_query_renderers::RenderProjectTreeOutput(
+      nodes, 1, DataQueryOutputMode::kText);
   Expect(Contains(kText, "study\n"), "tree text renderer should output root.",
          failures);
   Expect(Contains(kText, "math"), "tree text renderer should output children.",
@@ -80,9 +84,8 @@ auto TestTreeRendererWithStructuredNodes(int& failures) -> void {
   Expect(!Contains(kText, "algebra"),
          "tree text renderer should respect max_depth trimming.", failures);
 
-  const std::string kSemantic = tracer_core::infrastructure::query::data::
-      renderers::RenderProjectTreeOutput(nodes, 1,
-                                         DataQueryOutputMode::kSemanticJson);
+  const std::string kSemantic = data_query_renderers::RenderProjectTreeOutput(
+      nodes, 1, DataQueryOutputMode::kSemanticJson);
   const auto kPayload = json::parse(kSemantic);
   Expect(kPayload.value("action", std::string{}) == "tree",
          "semantic tree payload should include action=tree.", failures);

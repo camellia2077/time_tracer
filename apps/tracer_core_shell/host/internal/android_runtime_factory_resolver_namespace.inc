@@ -64,104 +64,6 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
   return config_root;
 }
 
-[[nodiscard]] auto JoinFieldPath(std::string_view parent, std::string_view key)
-    -> std::string {
-  if (parent.empty()) {
-    return std::string(key);
-  }
-  return std::string(parent) + "." + std::string(key);
-}
-
-[[noreturn]] auto ThrowBundleFieldError(const fs::path& bundle_path,
-                                        std::string_view field_path,
-                                        std::string_view message) -> void {
-  throw std::runtime_error("Invalid config [" + bundle_path.string() +
-                           "] field '" + std::string(field_path) +
-                           "': " + std::string(message));
-}
-
-[[nodiscard]] auto RequireTableField(const toml::table& parent,
-                                     std::string_view key,
-                                     const fs::path& bundle_path,
-                                     std::string_view parent_field_path)
-    -> const toml::table* {
-  const std::string field_path = JoinFieldPath(parent_field_path, key);
-  const toml::node* node = parent.get(key);
-  if (node == nullptr) {
-    ThrowBundleFieldError(bundle_path, field_path,
-                          "is required and must be a table.");
-  }
-  const toml::table* table = node->as_table();
-  if (table == nullptr) {
-    ThrowBundleFieldError(bundle_path, field_path, "must be a table.");
-  }
-  return table;
-}
-
-[[nodiscard]] auto RequireStringField(const toml::table& parent,
-                                      std::string_view key,
-                                      const fs::path& bundle_path,
-                                      std::string_view parent_field_path)
-    -> std::string {
-  const std::string field_path = JoinFieldPath(parent_field_path, key);
-  const toml::node* node = parent.get(key);
-  if (node == nullptr || !node->is_string()) {
-    ThrowBundleFieldError(bundle_path, field_path,
-                          "is required and must be a string.");
-  }
-  const auto value = node->value<std::string>();
-  if (!value.has_value() || value->empty()) {
-    ThrowBundleFieldError(bundle_path, field_path,
-                          "must be a non-empty string.");
-  }
-  return *value;
-}
-
-[[nodiscard]] auto ValidateAndroidBundlePolicy(const fs::path& config_root)
-    -> bool {
-  const fs::path bundle_path =
-      ConfigParserUtils::ResolveBundlePath(config_root);
-  if (!fs::exists(bundle_path)) {
-    return false;
-  }
-
-  toml::table bundle_tbl;
-  try {
-    bundle_tbl = toml::parse_file(bundle_path.string());
-  } catch (const toml::parse_error& error) {
-    throw std::runtime_error("Failed to parse bundle TOML [" +
-                             bundle_path.string() +
-                             "]: " + std::string(error.description()));
-  }
-
-  const std::string profile =
-      RequireStringField(bundle_tbl, "profile", bundle_path, "");
-  const toml::table* paths_tbl =
-      RequireTableField(bundle_tbl, "paths", bundle_path, "");
-  const toml::table* reports_tbl =
-      RequireTableField(*paths_tbl, "reports", bundle_path, "paths");
-
-  const toml::node* markdown_node = reports_tbl->get("markdown");
-  if (markdown_node == nullptr || markdown_node->as_table() == nullptr) {
-    ThrowBundleFieldError(bundle_path, "paths.reports.markdown",
-                          "is required and must be a table for Android "
-                          "runtime.");
-  }
-
-  if (profile == "android") {
-    if (reports_tbl->get("latex") != nullptr) {
-      ThrowBundleFieldError(bundle_path, "paths.reports.latex",
-                            "must not be present when profile is 'android'.");
-    }
-    if (reports_tbl->get("typst") != nullptr) {
-      ThrowBundleFieldError(bundle_path, "paths.reports.typst",
-                            "must not be present when profile is 'android'.");
-    }
-  }
-
-  return true;
-}
-
 [[nodiscard]] auto BuildLegacyMarkdownConfigPaths(const fs::path& config_root)
     -> AndroidReportConfigPathSet {
   const fs::path markdown_dir = config_root / "reports" / "markdown";
@@ -179,87 +81,21 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
   };
 }
 
-[[nodiscard]] auto BuildBundleMarkdownConfigPaths(const AppConfig& config)
+[[nodiscard]] auto ToAndroidReportConfigPathSet(
+    const infra_config_internal::AndroidBundleReportConfigPathSet& config)
     -> AndroidReportConfigPathSet {
   return {
-      .day = ResolveRequiredReportTomlPath(config.reports.day_md_config_path,
+      .day = ResolveRequiredReportTomlPath(config.day,
                                            "paths.reports.markdown.day"),
-      .month = ResolveRequiredReportTomlPath(
-          config.reports.month_md_config_path, "paths.reports.markdown.month"),
-      .period =
-          ResolveRequiredReportTomlPath(config.reports.period_md_config_path,
-                                        "paths.reports.markdown.period"),
-      .week = ResolveRequiredReportTomlPath(config.reports.week_md_config_path,
+      .month = ResolveRequiredReportTomlPath(config.month,
+                                             "paths.reports.markdown.month"),
+      .period = ResolveRequiredReportTomlPath(config.period,
+                                              "paths.reports.markdown.period"),
+      .week = ResolveRequiredReportTomlPath(config.week,
                                             "paths.reports.markdown.week"),
-      .year = ResolveRequiredReportTomlPath(config.reports.year_md_config_path,
+      .year = ResolveRequiredReportTomlPath(config.year,
                                             "paths.reports.markdown.year"),
   };
-}
-
-[[nodiscard]] auto BuildBundleLatexConfigPaths(const AppConfig& config)
-    -> std::optional<AndroidReportConfigPathSet> {
-  const bool any_defined = !config.reports.day_tex_config_path.empty() ||
-                           !config.reports.month_tex_config_path.empty() ||
-                           !config.reports.period_tex_config_path.empty() ||
-                           !config.reports.week_tex_config_path.empty() ||
-                           !config.reports.year_tex_config_path.empty();
-#if !TT_REPORT_ENABLE_LATEX
-  if (any_defined) {
-    throw std::runtime_error(
-        "Android runtime bundle contains LaTeX report paths, but this core "
-        "build disables LaTeX (TT_REPORT_ENABLE_LATEX=OFF).");
-  }
-  return std::nullopt;
-#else
-  if (!any_defined) {
-    return std::nullopt;
-  }
-  return AndroidReportConfigPathSet{
-      .day = ResolveRequiredReportTomlPath(config.reports.day_tex_config_path,
-                                           "paths.reports.latex.day"),
-      .month = ResolveRequiredReportTomlPath(
-          config.reports.month_tex_config_path, "paths.reports.latex.month"),
-      .period = ResolveRequiredReportTomlPath(
-          config.reports.period_tex_config_path, "paths.reports.latex.period"),
-      .week = ResolveRequiredReportTomlPath(config.reports.week_tex_config_path,
-                                            "paths.reports.latex.week"),
-      .year = ResolveRequiredReportTomlPath(config.reports.year_tex_config_path,
-                                            "paths.reports.latex.year"),
-  };
-#endif
-}
-
-[[nodiscard]] auto BuildBundleTypstConfigPaths(const AppConfig& config)
-    -> std::optional<AndroidReportConfigPathSet> {
-  const bool any_defined = !config.reports.day_typ_config_path.empty() ||
-                           !config.reports.month_typ_config_path.empty() ||
-                           !config.reports.period_typ_config_path.empty() ||
-                           !config.reports.week_typ_config_path.empty() ||
-                           !config.reports.year_typ_config_path.empty();
-#if !TT_REPORT_ENABLE_TYPST
-  if (any_defined) {
-    throw std::runtime_error(
-        "Android runtime bundle contains Typst report paths, but this core "
-        "build disables Typst (TT_REPORT_ENABLE_TYPST=OFF).");
-  }
-  return std::nullopt;
-#else
-  if (!any_defined) {
-    return std::nullopt;
-  }
-  return AndroidReportConfigPathSet{
-      .day = ResolveRequiredReportTomlPath(config.reports.day_typ_config_path,
-                                           "paths.reports.typst.day"),
-      .month = ResolveRequiredReportTomlPath(
-          config.reports.month_typ_config_path, "paths.reports.typst.month"),
-      .period = ResolveRequiredReportTomlPath(
-          config.reports.period_typ_config_path, "paths.reports.typst.period"),
-      .week = ResolveRequiredReportTomlPath(config.reports.week_typ_config_path,
-                                            "paths.reports.typst.week"),
-      .year = ResolveRequiredReportTomlPath(config.reports.year_typ_config_path,
-                                            "paths.reports.typst.year"),
-  };
-#endif
 }
 
 }  // namespace

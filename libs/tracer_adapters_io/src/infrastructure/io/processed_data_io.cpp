@@ -1,58 +1,26 @@
 // infrastructure/io/processed_data_io.cpp
-#if TT_ENABLE_CPP20_MODULES
 import tracer.adapters.io.core.fs;
 import tracer.adapters.io.core.writer;
 import tracer.core.domain.ports.diagnostics;
-import tracer.core.shared.ansi_colors;
-#endif
 
-#include "infrastructure/io/processed_data_io.hpp"
+#include "infrastructure/io/internal/runtime_adapter_types.hpp"
 
 #include <exception>
 #include <iterator>
 #include <nlohmann/json.hpp>
 
-#if !TT_ENABLE_CPP20_MODULES
-#include "domain/ports/diagnostics.hpp"
-#include "infrastructure/io/core/file_system_helper.hpp"
-#include "infrastructure/io/core/file_writer.hpp"
-#include "shared/types/ansi_colors.hpp"
-#endif
-
 #include "infrastructure/io/file_import_reader.hpp"
 #include "infrastructure/io/processed_json_validation.hpp"
 #include "infrastructure/serialization/json_serializer.hpp"
 
-#if TT_ENABLE_CPP20_MODULES
 namespace modcore = tracer::adapters::io::modcore;
 namespace modports = tracer::core::domain::modports;
-#else
-namespace modcore {
-
-using FileSystem = ::FileSystemHelper;
-using Writer = ::FileWriter;
-
-inline auto CreateDirectories(const std::filesystem::path& path) -> void {
-  FileSystem::CreateDirectories(path);
-}
-
-inline auto WriteContent(const std::filesystem::path& path,
-                         const std::string& content) -> void {
-  Writer::WriteContent(path, content);
-}
-
-}  // namespace modcore
-
-namespace modports = tracer_core::domain::ports;
-#endif
-
-namespace modcolors = tracer::core::shared::ansi_colors;
 
 namespace fs = std::filesystem;
 
-namespace infrastructure::io {
+namespace infrastructure::io::internal {
 
-auto ProcessedDataLoader::LoadDailyLogs(const std::string& processed_path)
+auto ProcessedDataLoaderAdapter::LoadDailyLogs(const std::string& processed_path)
     -> tracer_core::application::ports::ProcessedDataLoadResult {
   tracer_core::application::ports::ProcessedDataLoadResult result;
 
@@ -97,19 +65,18 @@ auto ProcessedDataWriter::Write(
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
       modports::EmitError(
-          std::string(modcolors::kRed) +
           "错误: 无法写入输出文件: " + output_file_path.string() + " - " +
-          e.what() + std::string(modcolors::kReset));
+          e.what());
     }
   }
   return written_files;
 }
 
-auto ProcessedDataStorage::WriteProcessedData(
+auto ProcessedDataStorageAdapter::WriteProcessedData(
     const std::map<std::string, std::vector<DailyLog>>& data,
     const std::filesystem::path& output_root)
     -> std::vector<std::filesystem::path> {
   return ProcessedDataWriter::Write(data, output_root);
 }
 
-}  // namespace infrastructure::io
+}  // namespace infrastructure::io::internal

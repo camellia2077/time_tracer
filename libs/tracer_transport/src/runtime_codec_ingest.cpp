@@ -1,6 +1,4 @@
-#if TT_ENABLE_CPP20_MODULES
 import tracer.transport.fields;
-#endif
 
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -8,20 +6,15 @@ import tracer.transport.fields;
 #include <string>
 
 #include "nlohmann/json.hpp"
-#if !TT_ENABLE_CPP20_MODULES
-#include "tracer/transport/fields.hpp"
-#endif
 
 namespace tracer::transport {
 
 namespace {
 
 using nlohmann::json;
-#if TT_ENABLE_CPP20_MODULES
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
 using tracer::transport::modfields::TryReadStringField;
-#endif
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -37,34 +30,35 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 }  // namespace
 
 auto DecodeIngestRequest(std::string_view request_json) -> IngestRequestPayload {
-  const json payload = ParseRequestObject(request_json);
+  const json kPayload = ParseRequestObject(request_json);
 
-  const auto input_path = RequireStringField(payload, "input_path");
-  if (input_path.HasError()) {
-    throw std::invalid_argument(input_path.error.message);
+  const auto kInputPath = RequireStringField(kPayload, "input_path");
+  if (kInputPath.HasError()) {
+    throw std::invalid_argument(kInputPath.error.message);
   }
 
   IngestRequestPayload out{};
-  out.input_path = *input_path.value;
+  out.input_path = kInputPath.value.value_or("");
 
-  const auto date_check_mode = TryReadStringField(payload, "date_check_mode");
-  if (date_check_mode.HasError()) {
-    throw std::invalid_argument(date_check_mode.error.message);
+  const auto kDateCheckMode =
+      TryReadStringField(kPayload, "date_check_mode");
+  if (kDateCheckMode.HasError()) {
+    throw std::invalid_argument(kDateCheckMode.error.message);
   }
-  out.date_check_mode = date_check_mode.value;
+  out.date_check_mode = kDateCheckMode.value;
 
-  const auto save_processed =
-      TryReadBoolField(payload, "save_processed_output");
-  if (save_processed.HasError()) {
-    throw std::invalid_argument(save_processed.error.message);
+  const auto kSaveProcessed =
+      TryReadBoolField(kPayload, "save_processed_output");
+  if (kSaveProcessed.HasError()) {
+    throw std::invalid_argument(kSaveProcessed.error.message);
   }
-  out.save_processed_output = save_processed.value;
+  out.save_processed_output = kSaveProcessed.value;
 
-  const auto ingest_mode = TryReadStringField(payload, "ingest_mode");
-  if (ingest_mode.HasError()) {
-    throw std::invalid_argument(ingest_mode.error.message);
+  const auto kIngestMode = TryReadStringField(kPayload, "ingest_mode");
+  if (kIngestMode.HasError()) {
+    throw std::invalid_argument(kIngestMode.error.message);
   }
-  out.ingest_mode = ingest_mode.value;
+  out.ingest_mode = kIngestMode.value;
 
   return out;
 }

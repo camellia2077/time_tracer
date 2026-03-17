@@ -2,6 +2,9 @@
 #include <iostream>
 #include <string>
 
+#include "application/dto/core_requests.hpp"
+#include "infrastructure/tests/android_runtime/android_runtime_smoke_query_internal.hpp"
+#include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_io_internal.hpp"
 
 namespace android_runtime_tests::smoke {

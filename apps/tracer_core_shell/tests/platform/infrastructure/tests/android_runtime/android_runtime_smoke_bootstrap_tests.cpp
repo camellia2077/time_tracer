@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "infrastructure/tests/android_runtime/android_runtime_smoke_query_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 
 namespace android_runtime_tests::smoke {

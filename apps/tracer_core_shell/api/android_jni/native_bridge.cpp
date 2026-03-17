@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "api/android_jni/native_bridge_internal.hpp"
+#include "api/android_jni/jni_runtime_code_bridge.hpp"
 #include "jni/bridge_utils.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
@@ -78,22 +79,22 @@ auto DestroyRuntimeLocked() -> void {
 }
 
 [[nodiscard]] auto ParseDateCheckMode(jint value) -> std::string {
-  return tracer_core_bridge_common::jni::ParseDateCheckModeCode(
+  return tracer_core::shell::jni_bridge::ParseDateCheckModeCode(
       static_cast<int>(value));
 }
 
 [[nodiscard]] auto ParseDataQueryAction(jint value) -> std::string {
-  return tracer_core_bridge_common::jni::ParseDataQueryActionCode(
+  return tracer_core::shell::jni_bridge::ParseDataQueryActionCode(
       static_cast<int>(value));
 }
 
 [[nodiscard]] auto ParseReportType(jint value) -> std::string {
-  return tracer_core_bridge_common::jni::ParseReportTypeCode(
+  return tracer_core::shell::jni_bridge::ParseReportTypeCode(
       static_cast<int>(value));
 }
 
 [[nodiscard]] auto ParseReportFormat(jint value) -> std::string {
-  return tracer_core_bridge_common::jni::ParseReportFormatCode(
+  return tracer_core::shell::jni_bridge::ParseReportFormatCode(
       static_cast<int>(value));
 }
 

@@ -47,11 +47,6 @@ _tt_define_bool_feature(
     TT_ENABLE_AI_PROVIDER
     "${TT_ENABLE_AI_PROVIDER_EFFECTIVE}"
 )
-_tt_define_bool_feature(
-    tt_feature_flags
-    TT_ENABLE_CPP20_MODULES
-    "${TT_CPP20_MODULES_EFFECTIVE}"
-)
 
 target_compile_definitions(tt_feature_flags INTERFACE
     TT_ENABLE_FILE_CRYPTO=1

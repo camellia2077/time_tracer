@@ -1,11 +1,15 @@
 // api/c_api/tracer_core_c_api_workflow.cpp
+import tracer.core.application.use_cases.interface;
+
 #include <exception>
 
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "application/dto/core_requests.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
 namespace tt_transport = tracer::transport;
+using tracer::core::application::use_cases::ITracerCoreApi;
 
 using tracer_core::core::c_api::internal::BuildFailureResponse;
 using tracer_core::core::c_api::internal::BuildOperationResponse;

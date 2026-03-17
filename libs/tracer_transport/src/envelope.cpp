@@ -46,32 +46,32 @@ auto ValidationError(std::string_view context, std::string_view message)
 
 auto ReadOptionalString(const json& payload, const char* field_name)
     -> std::string {
-  const auto it = payload.find(field_name);
-  if (it == payload.end() || !it->is_string()) {
+  const auto kIt = payload.find(field_name);
+  if (kIt == payload.end() || !kIt->is_string()) {
     return {};
   }
-  return it->get<std::string>();
+  return kIt->get<std::string>();
 }
 
 auto ReadOptionalStringValue(const json& payload, const char* field_name)
     -> std::optional<std::string> {
-  const auto it = payload.find(field_name);
-  if (it == payload.end() || !it->is_string()) {
+  const auto kIt = payload.find(field_name);
+  if (kIt == payload.end() || !kIt->is_string()) {
     return std::nullopt;
   }
-  return it->get<std::string>();
+  return kIt->get<std::string>();
 }
 
 auto ReadOptionalStringArray(const json& payload, const char* field_name)
     -> std::vector<std::string> {
-  const auto it = payload.find(field_name);
-  if (it == payload.end() || !it->is_array()) {
+  const auto kIt = payload.find(field_name);
+  if (kIt == payload.end() || !kIt->is_array()) {
     return {};
   }
 
   std::vector<std::string> out;
-  out.reserve(it->size());
-  for (const auto& entry : *it) {
+  out.reserve(kIt->size());
+  for (const auto& entry : *kIt) {
     if (!entry.is_string()) {
       return {};
     }
@@ -82,14 +82,14 @@ auto ReadOptionalStringArray(const json& payload, const char* field_name)
 
 }  // namespace
 
-auto BuildResponseEnvelope(bool ok, std::string_view error_message,
+auto BuildResponseEnvelope(bool is_ok, std::string_view error_message,
                            std::string_view content,
                            std::string_view error_code,
                            std::string_view error_category,
                            const std::vector<std::string>& hints)
     -> ResponseEnvelope {
   return ResponseEnvelope{
-      .ok = ok,
+      .ok = is_ok,
       .error_message = std::string(error_message),
       .error_code = std::string(error_code),
       .error_category = std::string(error_category),
@@ -113,33 +113,34 @@ auto SerializeResponseEnvelope(const ResponseEnvelope& envelope) -> std::string 
   return payload.dump();
 }
 
-auto ParseResponseEnvelope(std::string_view response_json,
-                           std::string_view context)
+auto ParseResponseEnvelope(ResponseEnvelopeParseArgs parse_args)
     -> ParseResponseEnvelopeResult {
-  if (response_json.empty()) {
-    return ParseError(context, "empty core response.");
+  const auto kResponseJson = parse_args.response_json;
+  const auto kContext = parse_args.context;
+  if (kResponseJson.empty()) {
+    return ParseError(kContext, "empty core response.");
   }
 
   json payload;
   try {
-    payload = json::parse(std::string(response_json));
+    payload = json::parse(std::string(kResponseJson));
   } catch (const json::parse_error& error) {
-    return ParseError(context, error.what());
+    return ParseError(kContext, error.what());
   }
 
   if (!payload.is_object()) {
-    return ParseError(context, "non-object JSON core response.");
+    return ParseError(kContext, "non-object JSON core response.");
   }
 
-  const auto ok_it = payload.find("ok");
-  if (ok_it == payload.end() || !ok_it->is_boolean()) {
-    return ValidationError(context, "core response missing boolean `ok`.");
+  const auto kOkIt = payload.find("ok");
+  if (kOkIt == payload.end() || !kOkIt->is_boolean()) {
+    return ValidationError(kContext, "core response missing boolean `ok`.");
   }
 
   return ParseResponseEnvelopeResult{
       .envelope =
           ResponseEnvelope{
-              .ok = ok_it->get<bool>(),
+              .ok = kOkIt->get<bool>(),
               .error_message = ReadOptionalString(payload, "error_message"),
               .error_code = ReadOptionalString(payload, "error_code"),
               .error_category = ReadOptionalString(payload, "error_category"),

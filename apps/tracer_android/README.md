@@ -56,7 +56,7 @@ Test data consistency:
 - Unit/component tests should use small fixtures and avoid depending on large `test/data`.
 - Manual check command:
 ```bash
-python scripts/devtools/android/sync_android_input_from_test_data.py --check
+python tools/scripts/devtools/android/sync_android_input_from_test_data.py --check
 ```
 
 Outputs:

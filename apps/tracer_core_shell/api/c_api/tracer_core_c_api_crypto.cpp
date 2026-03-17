@@ -1,3 +1,5 @@
+import tracer.core.application.use_cases.interface;
+
 #include <algorithm>
 #include <cctype>
 #include <exception>
@@ -12,10 +14,13 @@
 
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/tracer_core_c_api_internal.hpp"
-#include "shared/crypto_progress_json.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/dto/core_requests.hpp"
+#include "application/dto/core_responses.hpp"
+#include "host/crypto_progress_bridge.hpp"
 #include "infrastructure/crypto/file_crypto_service.hpp"
 #include "nlohmann/json.hpp"
+
+using tracer::core::application::use_cases::ITracerCoreApi;
 
 using tracer_core::core::c_api::internal::BuildFailureResponse;
 using tracer_core::core::c_api::internal::BuildTextResponse;

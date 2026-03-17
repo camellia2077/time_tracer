@@ -1,7 +1,7 @@
 {
   "target": "android",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "d6812fcc0043947515e94645781f79d1587573fa6f4ccc833cade597fefe13f5",
+  "input_hash": "a756b006984188b34bcaa1555555fd94339721e573de99b5e4e6ca16bb2f2ab9",
   "planned_file_count": 11,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
@@ -9,12 +9,12 @@
     "converter/alias_mapping.toml": "6d38dda510d2bb6a49a8406011ee6dee0b15f18e9965412981cb2996fe696bdc",
     "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
     "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
-    "meta/bundle.toml": "8e9e15749a4a199446c1d142021f5ebc5574c5e37d53e27958a31ced44c746ca",
+    "meta/bundle.toml": "c9d9b59386b3f8c92545192d1cc56a2cfad0a4defd43b8d28135ff534a328f56",
     "reports/markdown/day.toml": "d28f0e66d089a12ffcb7cc5dee9b8720c2648fde8919527da4d8c565789506f2",
     "reports/markdown/month.toml": "2bdbda9c5bf20a80890ed3d3156e14693179d54f14c16b6a36dae33c42308a1d",
     "reports/markdown/period.toml": "6b08e7c3697c9c80d807a647ca3b19b022763172f712a66f94f0e88360d088b8",
     "reports/markdown/week.toml": "1a1610c600a402b9ccca53a54082a2c50dfc13a7edf2393090b780bc1e1ac06b",
     "reports/markdown/year.toml": "68b62b9f5fba449b79fc35698f10e9346d757557f6f6b7a65722c5ebfdb6d8a1"
   },
-  "generated_at_utc": "2026-03-06T08:11:04.223437+00:00"
+  "generated_at_utc": "2026-03-12T06:37:35.665234+00:00"
 }

@@ -26,7 +26,13 @@ struct ParseResponseEnvelopeResult {
   [[nodiscard]] auto HasError() const -> bool { return error.HasError(); }
 };
 
-[[nodiscard]] auto BuildResponseEnvelope(bool ok, std::string_view error_message,
+struct ResponseEnvelopeParseArgs {
+  std::string_view response_json;
+  std::string_view context;
+};
+
+[[nodiscard]] auto BuildResponseEnvelope(bool is_ok,
+                                         std::string_view error_message,
                                          std::string_view content,
                                          std::string_view error_code = {},
                                          std::string_view error_category = {},
@@ -36,8 +42,8 @@ struct ParseResponseEnvelopeResult {
 [[nodiscard]] auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)
     -> std::string;
 
-[[nodiscard]] auto ParseResponseEnvelope(std::string_view response_json,
-                                         std::string_view context = {})
+[[nodiscard]] auto ParseResponseEnvelope(
+    ResponseEnvelopeParseArgs parse_args)
     -> ParseResponseEnvelopeResult;
 
 }  // namespace tracer::transport

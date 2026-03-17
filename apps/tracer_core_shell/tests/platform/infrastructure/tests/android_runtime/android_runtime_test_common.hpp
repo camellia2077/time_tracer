@@ -2,6 +2,8 @@
 #ifndef INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_TEST_COMMON_HPP_
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_TEST_COMMON_HPP_
 
+#include "application/use_cases/i_tracer_core_api.hpp"
+
 #include <filesystem>
 #include <memory>
 #include <optional>
@@ -11,7 +13,6 @@
 #include "host/android_runtime_factory.hpp"
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
 
 struct sqlite3;
 

@@ -1,19 +1,18 @@
-// shared/crypto_progress_json.hpp
-#ifndef API_SHARED_CRYPTO_PROGRESS_JSON_HPP_
-#define API_SHARED_CRYPTO_PROGRESS_JSON_HPP_
+#include "host/crypto_progress_bridge.hpp"
 
-#include <string>
 #include <string_view>
 
 #include "infrastructure/crypto/file_crypto_service.hpp"
 #include "nlohmann/json.hpp"
 
-namespace tracer_core::api::shared::crypto_progress {
+namespace tracer_core::shell::crypto_progress_bridge {
 
 namespace file_crypto = tracer_core::infrastructure::crypto;
 using nlohmann::json;
 
-[[nodiscard]] inline auto ToOperationWireValue(
+namespace {
+
+[[nodiscard]] auto ToOperationWireValue(
     file_crypto::FileCryptoOperation operation) -> std::string_view {
   switch (operation) {
     case file_crypto::FileCryptoOperation::kEncrypt:
@@ -24,7 +23,7 @@ using nlohmann::json;
   return "unknown";
 }
 
-[[nodiscard]] inline auto ToPhaseWireValue(file_crypto::FileCryptoPhase phase)
+[[nodiscard]] auto ToPhaseWireValue(file_crypto::FileCryptoPhase phase)
     -> std::string_view {
   switch (phase) {
     case file_crypto::FileCryptoPhase::kScan:
@@ -53,7 +52,9 @@ using nlohmann::json;
   return "unknown";
 }
 
-[[nodiscard]] inline auto BuildProgressSnapshotJson(
+}  // namespace
+
+[[nodiscard]] auto BuildProgressSnapshotJson(
     const file_crypto::FileCryptoProgressSnapshot& snapshot) -> std::string {
   return json{
       {"operation", ToOperationWireValue(snapshot.operation)},
@@ -80,6 +81,4 @@ using nlohmann::json;
       .dump();
 }
 
-}  // namespace tracer_core::api::shared::crypto_progress
-
-#endif  // API_SHARED_CRYPTO_PROGRESS_JSON_HPP_
+}  // namespace tracer_core::shell::crypto_progress_bridge

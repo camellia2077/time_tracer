@@ -1,14 +1,23 @@
-#ifndef TRACER_CORE_BRIDGE_COMMON_C_API_PARSE_UTILS_HPP_
-#define TRACER_CORE_BRIDGE_COMMON_C_API_PARSE_UTILS_HPP_
+#ifndef API_CORE_C_API_PARSE_BRIDGE_H_
+#define API_CORE_C_API_PARSE_BRIDGE_H_
 
 #include <string>
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
-#include "domain/reports/types/report_types.hpp"
 #include "domain/types/date_check_mode.hpp"
 
-namespace tracer_core_bridge_common::c_api {
+enum class IngestMode;
+enum class ReportFormat;
+
+namespace tracer_core::core::dto {
+
+enum class DataQueryAction;
+enum class DataQueryOutputMode;
+enum class ReportExportType;
+enum class ReportQueryType;
+
+}  // namespace tracer_core::core::dto
+
+namespace tracer_core::shell::c_api_bridge {
 
 [[nodiscard]] auto ToLowerAscii(std::string value) -> std::string;
 
@@ -25,6 +34,6 @@ namespace tracer_core_bridge_common::c_api {
     -> tracer_core::core::dto::ReportQueryType;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
 
-}  // namespace tracer_core_bridge_common::c_api
+}  // namespace tracer_core::shell::c_api_bridge
 
-#endif  // TRACER_CORE_BRIDGE_COMMON_C_API_PARSE_UTILS_HPP_
+#endif  // API_CORE_C_API_PARSE_BRIDGE_H_

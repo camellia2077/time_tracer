@@ -2,11 +2,11 @@
 #include <string>
 
 #include "application/ports/logger.hpp"
-#include "infrastructure/io/processed_data_io.hpp"
+#include "infrastructure/io/internal/runtime_adapter_types.hpp"
 
-namespace infrastructure::io {
+namespace infrastructure::io::internal {
 
-auto ProcessedDataLoader::LoadDailyLogs(const std::string& processed_path)
+auto ProcessedDataLoaderAdapter::LoadDailyLogs(const std::string& processed_path)
     -> tracer_core::application::ports::ProcessedDataLoadResult {
   tracer_core::application::ports::LogWarn(
       "[ProcessedDataLoader] Processed JSON I/O is disabled by "
@@ -26,11 +26,11 @@ auto ProcessedDataWriter::Write(
   return {};
 }
 
-auto ProcessedDataStorage::WriteProcessedData(
+auto ProcessedDataStorageAdapter::WriteProcessedData(
     const std::map<std::string, std::vector<DailyLog>>& data,
     const std::filesystem::path& output_root)
     -> std::vector<std::filesystem::path> {
   return ProcessedDataWriter::Write(data, output_root);
 }
 
-}  // namespace infrastructure::io
+}  // namespace infrastructure::io::internal

@@ -10,8 +10,8 @@
 #include <string>
 
 #include "host/native_bridge_crypto_helpers.hpp"
+#include "host/crypto_progress_bridge.hpp"
 #include "api/android_jni/native_bridge_internal.hpp"
-#include "shared/crypto_progress_json.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 
@@ -111,7 +111,7 @@ auto EmitCryptoProgress(JNIEnv* env,
   }
 
   const std::string progress_json =
-      tracer_core::api::shared::crypto_progress::BuildProgressSnapshotJson(
+      tracer_core::shell::crypto_progress_bridge::BuildProgressSnapshotJson(
           snapshot);
 
   jstring payload_jstring = ToJString(env, progress_json);

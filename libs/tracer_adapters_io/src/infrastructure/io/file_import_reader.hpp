@@ -10,11 +10,8 @@
 #include "domain/ports/diagnostics.hpp"
 #include "infrastructure/io/core/file_reader.hpp"
 #include "infrastructure/io/utils/file_utils.hpp"
-#include "shared/types/ansi_colors.hpp"
 
 namespace infrastructure::io {
-
-namespace colors = tracer::core::shared::ansi_colors;
 
 class FileImportReader {
  public:
@@ -32,8 +29,7 @@ class FileImportReader {
 
     if (json_files.empty()) {
       tracer_core::domain::ports::EmitWarn(
-          std::string(colors::kYellow) + "警告: 在路径 " + path_str +
-          " 下未找到 .json 文件。" + std::string(colors::kReset));
+          "警告: 在路径 " + path_str + " 下未找到 .json 文件。");
       return {};
     }
 
@@ -49,17 +45,15 @@ class FileImportReader {
         payload.emplace_back(file_path, std::move(content));
       } catch (const std::exception& e) {
         tracer_core::domain::ports::EmitError(
-            std::string(colors::kRed) + "读取失败: " + file_path + " - " +
-            e.what() + std::string(colors::kReset));
+            "读取失败: " + file_path + " - " + e.what());
         read_failure_count++;
       }
     }
 
     if (read_failure_count > 0) {
       tracer_core::domain::ports::EmitWarn(
-          std::string(colors::kYellow) + "警告: 有 " +
-          std::to_string(read_failure_count) + " 个文件读取失败，将跳过这些文件。" +
-          std::string(colors::kReset));
+          "警告: 有 " + std::to_string(read_failure_count) +
+          " 个文件读取失败，将跳过这些文件。");
     }
 
     return payload;
