@@ -40,6 +40,7 @@ class TidyTaskSuggestCommand:
             build_tidy_dir=build_tidy_dir,
             app_name=app_name,
             parsed=parsed,
+            task_path=task_path,
             workspace_name=workspace.build_dir_name,
             source_scope=workspace.source_scope,
             suggestions=suggestions,

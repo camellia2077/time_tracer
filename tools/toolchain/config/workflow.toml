@@ -75,6 +75,17 @@ roots = [
   "libs/tracer_transport/src",
 ]
 tidy_build_dir = "build_tidy_core_family"
+prebuild_targets = [
+  "tc_shared_lib",
+  "tc_domain_lib",
+  "tc_app_lib",
+  "tc_infra_lite_lib",
+  "tc_infra_reports_lib",
+  "tc_infra_full_lib",
+  "taio_lib",
+  "ttr_lib",
+  "tc_core_bridge_common_c_api_lib",
+]
 
 [rename]
 engine = "clangd"

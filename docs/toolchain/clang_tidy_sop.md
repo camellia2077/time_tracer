@@ -11,7 +11,7 @@
 ## 1. 目标与适用范围
 
 1. 任务队列目录固定为：
-   - `out/tidy/tracer_core_shell/build_tidy/tasks/batch_*/task_*.log`
+   - `out/tidy/tracer_core_shell/build_tidy/tasks/batch_*/task_*.json`
 2. 诊断涉及代码范围：
    - `apps/tracer_cli/windows`
    - `apps/tracer_core_shell`
@@ -27,16 +27,11 @@ python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --p
 其中 `--preset sop` 等价于：
 - `--strict-clean --run-verify --concise --full-every 3 --keep-going`
 
-等价 wrapper：
-
-```bash
-apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
-```
-
 ## 3. 单批次执行步骤
 
 1. 从 `out/tidy/tracer_core_shell/build_tidy/tasks/` 选择一个待处理 `batch_xxx`。
-2. 逐个处理该批次里的 `task_*.log`（一次只修一个 task，允许同文件聚类 clean）。
+2. 逐个处理该批次里的 `task_*.json`（一次只修一个 task，允许同文件聚类 clean）。
+   - `task_*.log` / `task_*.toon` 只是可选渲染视图，不是 canonical 数据源。
 3. 每个 task 修复后先做任务级轻量验证：
    - `python tools/run.py verify --app tracer_core --build-dir build_fast --concise --scope task`
    - `task` scope 当前仅包含轻量稳定检查（build + native runtime smoke），不包含 `runtime_guard`。
@@ -52,7 +47,7 @@ apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
 ## 4. 严格清理规则（新增）
 
 1. `clean --strict` 不仅要求最新 `result.json` 为 success，还要求：
-   - verify 结果时间晚于目标 `task_*.log`；
+   - verify 结果时间晚于目标 `task_*.json`；
    - verify 结果时间晚于该 task 对应源码文件更新时间。
 2. 条件不满足时，strict clean 会拒绝归档，避免“未验证先清理”。
 
@@ -72,7 +67,7 @@ python tools/run.py tidy-refresh --app tracer_core_shell --batch-id <BATCH_ID> -
 
 ## 6. 完成标准
 
-1. `out/tidy/tracer_core_shell/build_tidy/tasks/` 下无 `task_*.log`。
+1. `out/tidy/tracer_core_shell/build_tidy/tasks/` 下无 `task_*.json`。
 2. `out/test/artifact_windows_cli/result.json` 保持 `"success": true`。
 3. 全量收尾建议执行：
 

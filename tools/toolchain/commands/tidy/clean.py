@@ -3,6 +3,7 @@ from pathlib import Path
 from ...core.context import Context
 from ...services import batch_state
 from ..shared import tidy as tidy_shared
+from .task_log import list_task_paths, load_task_record, task_artifact_paths
 from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
 
@@ -82,33 +83,34 @@ class CleanCommand:
         cleaned_task_ids: list[str] = []
         for tid in effective_task_ids:
             padded_id = tid.zfill(3)
-            target_logs = self._resolve_task_logs(
+            target_records = self._resolve_task_records(
                 tasks_dir=tasks_dir,
                 padded_id=padded_id,
                 normalized_batch=normalized_batch,
             )
-            if normalized_batch and not target_logs:
+            if normalized_batch and not target_records:
                 print(
-                    f"--- clean: task_{padded_id}.log not found in {tasks_dir / normalized_batch}"
+                    f"--- clean: task_{padded_id}.json not found in {tasks_dir / normalized_batch}"
                 )
                 return 1
 
-            for log_file in target_logs:
+            for record_path in target_records:
                 if strict:
                     strict_ok, strict_reason = self._strict_task_guard(
-                        log_file=log_file,
+                        record_path=record_path,
                         verify_result_mtime=verify_result_mtime,
                     )
                     if not strict_ok:
-                        print(f"--- clean: strict guard rejected {log_file.name}: {strict_reason}")
+                        print(f"--- clean: strict guard rejected {record_path.name}: {strict_reason}")
                         return 1
-                relative_path = log_file.relative_to(tasks_dir)
-                archive_path = done_dir / relative_path
-                archive_path.parent.mkdir(parents=True, exist_ok=True)
-                if archive_path.exists():
-                    archive_path.unlink()
-                log_file.replace(archive_path)
-                archived_count += 1
+                for artifact_path in task_artifact_paths(record_path):
+                    relative_path = artifact_path.relative_to(tasks_dir)
+                    archive_path = done_dir / relative_path
+                    archive_path.parent.mkdir(parents=True, exist_ok=True)
+                    if archive_path.exists():
+                        archive_path.unlink()
+                    artifact_path.replace(archive_path)
+                    archived_count += 1
                 if padded_id not in cleaned_task_ids:
                     cleaned_task_ids.append(padded_id)
 
@@ -122,7 +124,7 @@ class CleanCommand:
             removed_batch_dirs += 1
 
         print(
-            f"--- Archived {archived_count} task logs to {done_dir} "
+            f"--- Archived {archived_count} task artifacts to {done_dir} "
             f"and removed {removed_batch_dirs} empty batch folders from {tasks_dir}"
         )
         batch_state_path = batch_state.update_state(
@@ -137,19 +139,27 @@ class CleanCommand:
         print(f"--- clean: batch state updated -> {batch_state_path}")
         return 0
 
-    def _resolve_task_logs(
+    def _resolve_task_records(
         self,
         tasks_dir: Path,
         padded_id: str,
         normalized_batch: str | None,
     ) -> list[Path]:
         if not normalized_batch:
-            return list(tasks_dir.rglob(f"task_{padded_id}.log"))
+            return [
+                path
+                for path in list_task_paths(tasks_dir)
+                if path.stem == f"task_{padded_id}"
+            ]
 
         batch_dir = tasks_dir / normalized_batch
         if not batch_dir.exists() or not batch_dir.is_dir():
             return []
-        return list(batch_dir.glob(f"task_{padded_id}.log"))
+        return [
+            path
+            for path in list_task_paths(tasks_dir, batch_id=normalized_batch)
+            if path.stem == f"task_{padded_id}"
+        ]
 
     def _normalize_batch_name(self, batch_id: str | None) -> str | None:
         return tidy_shared.normalize_batch_name(batch_id, allow_none=True)
@@ -169,19 +179,19 @@ class CleanCommand:
     def _strict_task_guard(
         self,
         *,
-        log_file: Path,
+        record_path: Path,
         verify_result_mtime: float | None,
     ) -> tuple[bool, str]:
         if verify_result_mtime is None:
             return False, "missing verify result timestamp"
         try:
-            task_mtime = log_file.stat().st_mtime
+            task_mtime = record_path.stat().st_mtime
         except OSError:
             return False, "cannot read task timestamp"
         if verify_result_mtime < task_mtime:
-            return False, "verify result is older than task log"
+            return False, "verify result is older than task record"
 
-        for source_path in self._extract_task_source_files(log_file):
+        for source_path in self._extract_task_source_files(record_path):
             if not source_path.exists():
                 continue
             try:
@@ -195,16 +205,13 @@ class CleanCommand:
                 )
         return True, "ok"
 
-    def _extract_task_source_files(self, log_file: Path) -> list[Path]:
+    def _extract_task_source_files(self, record_path: Path) -> list[Path]:
         files: list[Path] = []
         try:
-            lines = log_file.read_text(encoding="utf-8", errors="ignore").splitlines()
-        except OSError:
+            record = load_task_record(record_path)
+        except (OSError, ValueError):
             return files
-        for line in lines:
-            if not line.startswith("File: "):
-                continue
-            raw = line[len("File: ") :].strip()
+        for raw in [record.source_file, *(diagnostic.file for diagnostic in record.diagnostics)]:
             if not raw:
                 continue
             path = Path(raw)
@@ -222,19 +229,22 @@ class CleanCommand:
         batch_dir = tasks_dir / normalized_batch
         if not batch_dir.exists():
             return []
-        logs = sorted(batch_dir.glob("task_*.log"), key=lambda p: p.name)
-        if not logs:
+        records = list_task_paths(tasks_dir, batch_id=normalized_batch)
+        if not records:
             return []
 
         file_to_ids: dict[str, list[str]] = {}
         id_to_file: dict[str, str] = {}
-        for log_file in logs:
-            tid = log_file.stem.replace("task_", "").zfill(3)
-            file_keys = self._extract_task_source_files(log_file)
-            if not file_keys:
+        for record_path in records:
+            tid = record_path.stem.replace("task_", "").zfill(3)
+            try:
+                record = load_task_record(record_path)
+            except (OSError, ValueError):
+                continue
+            if not record.source_file:
                 continue
             # Most tasks map to one source file. Use the first as cluster key.
-            key = str(file_keys[0])
+            key = str(Path(record.source_file))
             id_to_file[tid] = key
             file_to_ids.setdefault(key, []).append(tid)
 

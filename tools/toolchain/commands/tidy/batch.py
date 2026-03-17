@@ -11,8 +11,9 @@ from .batch_internal.tidy_batch_checkpoint import load_checkpoint, save_checkpoi
 from .batch_internal.tidy_batch_pipeline import run_refresh_stage, should_run_stage, timeout_reached
 from .clean import CleanCommand
 from .refresh import TidyRefreshCommand
+from .task_log import list_task_paths
 
-TASK_FILE_PATTERN = re.compile(r"^task_(\d+)\.log$")
+TASK_FILE_PATTERN = re.compile(r"^task_(\d+)\.(?:json|log|toon)$")
 _BATCH_STAGES = ("verify", "clean", "refresh", "finalize")
 
 
@@ -144,7 +145,7 @@ class TidyBatchCommand:
                 )
                 print("--- tidy-batch: timeout reached before clean stage.")
                 return finalize(124, "timeout_before_clean")
-            print(f"--- tidy-batch: cleaning {len(task_ids)} task logs from {normalized_batch}.")
+            print(f"--- tidy-batch: cleaning {len(task_ids)} task records from {normalized_batch}.")
             clean_ret = CleanCommand(self.ctx).execute(
                 app_name=app_name,
                 task_ids=task_ids,
@@ -258,7 +259,7 @@ class TidyBatchCommand:
         if not batch_dir.exists() or not batch_dir.is_dir():
             return []
         task_ids: list[str] = []
-        for task_file in sorted(batch_dir.glob("task_*.log"), key=lambda p: p.name):
+        for task_file in list_task_paths(batch_dir.parent, batch_id=batch_dir.name):
             match = TASK_FILE_PATTERN.match(task_file.name)
             if not match:
                 continue

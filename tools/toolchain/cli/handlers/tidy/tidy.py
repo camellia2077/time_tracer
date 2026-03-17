@@ -24,6 +24,12 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         default=None,
         help="Override tidy build directory name (default: build_tidy).",
     )
+    parser.add_argument(
+        "--task-view",
+        choices=["json", "text", "toon", "text+toon"],
+        default="text",
+        help="Additional task artifact view(s) to write alongside canonical JSON.",
+    )
     tidy_keep_going_group = parser.add_mutually_exclusive_group()
     tidy_keep_going_group.add_argument(
         "--keep-going",
@@ -51,6 +57,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         keep_going=args.keep_going,
         source_scope=args.source_scope,
         build_dir_name=args.build_dir,
+        task_view=args.task_view,
     )
 
 

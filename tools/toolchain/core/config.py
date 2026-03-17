@@ -81,6 +81,7 @@ class TidyFixStrategyConfig:
 class TidySourceScopeConfig:
     roots: list[str] = field(default_factory=list)
     tidy_build_dir: str = ""
+    prebuild_targets: list[str] = field(default_factory=list)
 
 
 @dataclass

@@ -3,7 +3,7 @@ from pathlib import Path
 from ....core.context import Context
 from ....core.executor import run_command
 from ...cmd_build import BuildCommand
-from .. import TidyCommand, analysis_compile_db
+from .. import TidyCommand, analysis_compile_db, invoker as tidy_invoker, workspace as tidy_workspace
 
 AUTO_REASON_NO_SUCH_FILE = "auto_no_such_file"
 AUTO_REASON_GLOB_MISMATCH = "auto_glob_mismatch"
@@ -29,25 +29,41 @@ def ensure_analysis_compile_db(
     source_scope: str | None,
 ) -> int:
     raw_compile_commands_path = build_dir / "compile_commands.json"
-    if raw_compile_commands_path.exists():
-        try:
-            analysis_compile_db.ensure_analysis_compile_db(build_dir)
-        except (FileNotFoundError, OSError, ValueError) as error:
-            print(f"--- tidy-refresh: failed to prepare analysis compile db: {error}")
-            return 1
-        return 0
-    print(
-        "--- tidy-refresh: missing raw compile_commands.json, "
-        "running tidy configure to regenerate analysis inputs..."
-    )
-    ret = BuildCommand(ctx).configure(
-        app_name=app_name,
-        tidy=True,
-        source_scope=source_scope,
+    if not raw_compile_commands_path.exists():
+        print(
+            "--- tidy-refresh: missing raw compile_commands.json, "
+            "running tidy configure to regenerate analysis inputs..."
+        )
+        ret = BuildCommand(ctx).configure(
+            app_name=app_name,
+            tidy=True,
+            source_scope=source_scope,
+            build_dir_name=build_dir_name,
+        )
+        if ret != 0:
+            return ret
+
+    workspace = tidy_workspace.resolve_workspace(
+        ctx,
         build_dir_name=build_dir_name,
+        source_scope=source_scope,
     )
-    if ret != 0:
-        return ret
+    if workspace.prebuild_targets:
+        prebuild_cmd = tidy_invoker.build_module_prereq_command(
+            build_dir,
+            workspace.prebuild_targets,
+            ctx.config.tidy.jobs,
+        )
+        prebuild_log = build_dir / "module_prereq_build.log"
+        print(
+            "--- tidy-refresh: module prebuild "
+            + ", ".join(workspace.prebuild_targets)
+        )
+        prebuild_ret, _ = tidy_invoker.run_tidy_build(ctx, prebuild_cmd, prebuild_log)
+        if prebuild_ret != 0:
+            print(f"--- tidy-refresh: module prebuild failed with code {prebuild_ret}")
+            return prebuild_ret
+
     try:
         analysis_compile_db.ensure_analysis_compile_db(build_dir)
     except (FileNotFoundError, OSError, ValueError) as error:

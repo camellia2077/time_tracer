@@ -251,12 +251,17 @@ roots = [
   "libs/tracer_transport/src",
 ]
 tidy_build_dir = "build_tidy_core_family"
+prebuild_targets = ["tc_shared_lib", "tc_domain_lib"]
 """.strip(),
             )
 
             ctx = Context(repo_root)
             scope_cfg = ctx.config.tidy.source_scopes["core_family"]
             self.assertEqual(scope_cfg.tidy_build_dir, "build_tidy_core_family")
+            self.assertEqual(
+                scope_cfg.prebuild_targets,
+                ["tc_shared_lib", "tc_domain_lib"],
+            )
             self.assertEqual(
                 scope_cfg.roots,
                 [
@@ -270,6 +275,10 @@ tidy_build_dir = "build_tidy_core_family"
             workspace = tidy_workspace.resolve_workspace(ctx, source_scope="core_family")
             self.assertEqual(workspace.source_scope, "core_family")
             self.assertEqual(workspace.build_dir_name, "build_tidy_core_family")
+            self.assertEqual(
+                workspace.prebuild_targets,
+                ["tc_shared_lib", "tc_domain_lib"],
+            )
             self.assertEqual(
                 workspace.source_roots,
                 [

@@ -3,11 +3,11 @@ import re
 from pathlib import Path
 
 from ....core.context import Context
-from ....services import log_parser
 from ...cmd_quality.verify import VerifyCommand
 from ..clean import CleanCommand
+from ..task_log import list_task_paths as list_task_record_paths, load_task_record
 
-TASK_ID_PATTERN = re.compile(r"task_(\d+)\.log$")
+TASK_ID_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 
 
 def count_rename_candidates(build_tidy_dir: Path) -> int:
@@ -38,13 +38,11 @@ def run_suite_verify(
 
 
 def has_task_logs(tasks_dir: Path) -> bool:
-    return any(tasks_dir.rglob("task_*.log"))
+    return bool(list_task_record_paths(tasks_dir))
 
 
 def list_task_paths(tasks_dir: Path) -> list[Path]:
-    task_paths = list(tasks_dir.rglob("task_*.log"))
-    task_paths.sort(key=task_sort_key)
-    return task_paths
+    return list_task_record_paths(tasks_dir)
 
 
 def list_task_ids(tasks_dir: Path) -> list[str]:
@@ -67,9 +65,11 @@ def clean_empty_tasks(
 
     empty_task_ids: list[str] = []
     for task_path in list_task_paths(tasks_dir):
-        content = task_path.read_text(encoding="utf-8", errors="replace")
-        diagnostics = log_parser.extract_diagnostics(content.splitlines())
-        if diagnostics:
+        try:
+            record = load_task_record(task_path)
+        except (OSError, ValueError):
+            continue
+        if record.diagnostics:
             continue
         current_task_id = task_id(task_path)
         if current_task_id:

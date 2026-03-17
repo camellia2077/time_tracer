@@ -22,5 +22,5 @@
    - Agent 应通过读取这些 `.txt` 文件来构造脚本参数或核对操作内容。
 
 3. **路径参考**：
-   - 脚本位置：`./scripts/devtools/ps/reusable_squash_first_parent.ps1`
+   - 脚本位置：`./tools/scripts/devtools/ps/reusable_squash_first_parent.ps1`
    - 执行位置：`./temp/reusable_squash_first_parent.ps1`

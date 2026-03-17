@@ -25,7 +25,7 @@ over_inclusive = false
 
 [py]
 display_name = "Python"
-default_paths = ["test", "scripts"]
+default_paths = ["test", "tools/scripts"]
 extensions = [".py", ".pyw"]
 ignore_dirs = [
   ".git",

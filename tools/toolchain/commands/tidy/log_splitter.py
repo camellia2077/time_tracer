@@ -14,6 +14,9 @@ def split_from_log(
     max_lines: int | None = None,
     max_diags: int | None = None,
     batch_size: int | None = None,
+    task_view: str = "text",
+    workspace_name: str = "",
+    source_scope: str | None = None,
 ) -> tuple[dict, float]:
     parse_start = time.perf_counter()
     log_content = log_path.read_text(encoding="utf-8", errors="replace")
@@ -24,6 +27,9 @@ def split_from_log(
         max_lines=max_lines,
         max_diags=max_diags,
         batch_size=batch_size,
+        task_view=task_view,
+        workspace_name=workspace_name,
+        source_scope=source_scope,
     )
     parse_seconds = time.perf_counter() - parse_start
     return split_stats, parse_seconds

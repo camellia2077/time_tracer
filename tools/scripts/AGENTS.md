@@ -1,13 +1,13 @@
-# AGENTS Guide (scripts/devtools)
+# AGENTS Guide (tools/scripts/devtools)
 
-当任务涉及 `scripts/` 时，仅将其视为 `scripts/devtools/` 的作用域。
+当任务涉及 `scripts/` 时，仅将其视为 `tools/scripts/devtools/` 的作用域。
 
 ## 改动路由规则
 
 1. 开发辅助脚本：
-   - `scripts/devtools/**`
+   - `tools/scripts/devtools/**`
 2. 开发辅助脚本文档：
-   - `scripts/devtools/**/*.md`
+   - `tools/scripts/devtools/**/*.md`
 3. Python 构建 / 编译 / clang-tidy 工具链：
    - 改 `tools/`，不要改回 `scripts/`
 

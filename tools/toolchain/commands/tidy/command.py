@@ -73,6 +73,18 @@ class TidyCommand:
     def _run_tidy_build(self, cmd: list[str], log_path: Path) -> tuple[int, float]:
         return tidy_invoker.run_tidy_build(self.ctx, cmd, log_path)
 
+    def _build_module_prereq_command(
+        self,
+        build_dir: Path,
+        prebuild_targets: list[str],
+        effective_jobs: int | None,
+    ) -> list[str]:
+        return tidy_invoker.build_module_prereq_command(
+            build_dir,
+            prebuild_targets,
+            effective_jobs,
+        )
+
     def _ensure_analysis_compile_db(self, build_dir: Path) -> Path:
         return analysis_compile_db.ensure_analysis_compile_db(build_dir)
 
@@ -85,6 +97,9 @@ class TidyCommand:
         max_lines: int | None = None,
         max_diags: int | None = None,
         batch_size: int | None = None,
+        task_view: str = "text",
+        workspace_name: str = "",
+        source_scope: str | None = None,
     ) -> tuple[dict, float]:
         return tidy_log_splitter.split_from_log(
             log_path,
@@ -94,6 +109,9 @@ class TidyCommand:
             max_lines=max_lines,
             max_diags=max_diags,
             batch_size=batch_size,
+            task_view=task_view,
+            workspace_name=workspace_name,
+            source_scope=source_scope,
         )
 
     def _split_and_sort(
@@ -104,6 +122,9 @@ class TidyCommand:
         max_lines: int | None = None,
         max_diags: int | None = None,
         batch_size: int | None = None,
+        task_view: str = "text",
+        workspace_name: str = "",
+        source_scope: str | None = None,
     ) -> dict:
         return tidy_task_builder.split_and_sort(
             self.ctx,
@@ -113,6 +134,9 @@ class TidyCommand:
             max_lines=max_lines,
             max_diags=max_diags,
             batch_size=batch_size,
+            task_view=task_view,
+            workspace_name=workspace_name,
+            source_scope=source_scope,
         )
 
     def _group_ninja_sections(self, log_lines: list[str]) -> list[list[str]]:
@@ -222,6 +246,7 @@ class TidyCommand:
         keep_going: bool | None = None,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
+        task_view: str = "text",
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -237,6 +262,8 @@ class TidyCommand:
             keep_going=keep_going,
             source_scope=workspace.source_scope,
             build_dir_name=workspace.build_dir_name,
+            task_view=task_view,
+            prebuild_targets=workspace.prebuild_targets,
         )
         status = "completed" if ret == 0 else "failed"
         tidy_result_summary.write_tidy_result(
@@ -260,6 +287,7 @@ class TidyCommand:
         batch_size: int | None = None,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
+        task_view: str = "text",
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -274,4 +302,6 @@ class TidyCommand:
             max_diags=max_diags,
             batch_size=batch_size,
             build_dir_name=workspace.build_dir_name,
+            task_view=task_view,
+            source_scope=workspace.source_scope,
         )

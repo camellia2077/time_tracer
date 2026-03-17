@@ -27,7 +27,7 @@
 flowchart TD
     A["python tools/run.py tidy"] --> B["out/tidy/<app>/build_tidy/build.log"]
     B --> C["tidy-split / task_builder"]
-    C --> D["out/tidy/<app>/build_tidy/tasks/batch_*/task_*.log"]
+    C --> D["out/tidy/<app>/build_tidy/tasks/batch_*/task_*.json"]
     D --> E["人工修复 / rename / empty clean"]
     E --> F["python tools/run.py tidy-batch"]
     F --> G["verify (optional)"]
@@ -66,7 +66,8 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 2. 如果未配置或 header filter cache 失效，则自动 configure
 3. 执行 `cmake --build <tidy_workspace_dir> --target tidy`
 4. 将输出写入 `out/tidy/<app>/<tidy_workspace>/build.log`
-5. 将 `build.log` 拆成 `tasks/batch_*/task_*.log`
+5. 将 `build.log` 拆成 `tasks/batch_*/task_*.json`
+   - 如配置 `--task-view`，再额外渲染 `task_*.log` / `task_*.toon`
 6. 生成 `tasks/tasks_summary.md`
 7. 写 `out/tidy/<app>/<tidy_workspace>/tidy_result.json`
 
@@ -80,7 +81,7 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 
 - `out/tidy/<app>/<tidy_workspace>/build.log`
 - `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
-- `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log`
+- `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.json`
 - `out/tidy/<app>/<tidy_workspace>/tasks/tasks_summary.md`
 - `out/tidy/<app>/<tidy_workspace>/tidy_result.json`
 
@@ -123,7 +124,7 @@ python tools/run.py clean --app tracer_core_shell --tidy-build-dir build_tidy_co
 
 核心职责：
 
-1. 将 `tasks/batch_xxx/task_yyy.log` 移到 `tasks_done/batch_xxx/task_yyy.log`
+1. 将 `tasks/batch_xxx/task_yyy.json` 移到 `tasks_done/batch_xxx/task_yyy.json`
 2. 可选 `--cluster-by-file`
    - 同一源码文件相关 task 一次性归档
 3. 可选 `--strict`
@@ -135,7 +136,7 @@ python tools/run.py clean --app tracer_core_shell --tidy-build-dir build_tidy_co
 失败优先排查：
 
 1. `out/test/<suite>/result.json`
-2. task log 首行里的 `File: ...`
+2. task record 里的 `source_file`
 3. `out/tidy/<app>/<tidy_workspace>/batch_state.json`
 
 ## 5. `tidy-refresh`：按批次增量 refresh，必要时升级 full tidy
@@ -158,7 +159,7 @@ python tools/run.py tidy-refresh --app tracer_core_shell --source-scope core_fam
 
 刷新逻辑：
 
-1. 从 `tasks_done/<batch>/task_*.log` 提取 touched files
+1. 从 `tasks_done/<batch>/task_*.json` 提取 touched files
 2. 读取 `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json`
 3. 将 touched files 映射到 compile units
 4. 执行增量 clang-tidy，日志写到 `refresh/<batch>/incremental_tidy_*.log`
@@ -243,7 +244,7 @@ checkpoint 行为：
 | 失败阶段 | 优先看 |
 | --- | --- |
 | verify 失败 | `out/test/<suite>/result.json`、verify 构建日志 |
-| clean 失败 | `clean.py` 的 strict guard 条件、对应 `task_*.log` |
+| clean 失败 | `clean.py` 的 strict guard 条件、对应 `task_*.json` |
 | refresh 失败 | `refresh_state.json`、`incremental_tidy_*.log`、`build.log` |
 | timeout | `batch_state.json` 中的 `tidy_batch_checkpoint.next_stage` |
 
@@ -260,7 +261,7 @@ python tools/run.py tidy-close --app tracer_core_shell --source-scope core_famil
 
 1. 强制执行一次 final full tidy
 2. 可选跑 verify（`--tidy-only` 会跳过）
-3. 确认 `tasks/` 下已经没有剩余 `task_*.log`
+3. 确认 `tasks/` 下已经没有剩余 `task_*.json`
 4. 写回 `batch_state.json`
 5. 写回 `tidy_result.json`
 
@@ -324,7 +325,7 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 
 职责：
 
-1. 读取单个 `task_*.log`
+1. 读取单个 `task_*.json`
 2. 识别可安全自动处理的模式：
    - `readability-identifier-naming` 的 rule-driven const rename
    - `readability-redundant-casting` 的 same-type cast 去除
@@ -461,7 +462,7 @@ out/tidy/<app>/<tidy_workspace>/tidy_result.json
 
 1. 先看 `next_action`
 2. 再看 `blocking_files[0]`
-3. 再去打开对应 `task_*.log`
+3. 再去打开对应 `task_*.json`
 
 ## 11. 给 agent 的最短排障顺序
 
@@ -471,9 +472,9 @@ out/tidy/<app>/<tidy_workspace>/tidy_result.json
 2. `out/tidy/<app>/<tidy_workspace>/batch_state.json`
 3. `out/tidy/<app>/<tidy_workspace>/refresh_state.json`
 4. `out/tidy/<app>/<tidy_workspace>/flow_state.json`
-5. `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log`
+5. `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.json`
 6. `out/tidy/<app>/<tidy_workspace>/refresh/<batch>/incremental_tidy_*.log`
 7. `out/tidy/<app>/<tidy_workspace>/build.log`
 
 如果只改参数层，不要直接钻到 `commands/`；
-如果只改执行算法，也不要先改 wrapper。
+如果只改执行算法，也不要先改文档里的命令示例。

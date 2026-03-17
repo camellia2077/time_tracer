@@ -5,6 +5,7 @@ from ...services import batch_state
 from ..cmd_quality.verify import VerifyCommand
 from . import tidy_result as tidy_result_summary, workspace as tidy_workspace
 from .refresh import TidyRefreshCommand
+from .task_log import list_task_paths
 
 
 class TidyCloseCommand:
@@ -82,7 +83,7 @@ class TidyCloseCommand:
         pending_tasks = self._list_pending_tasks(tasks_dir)
         if pending_tasks:
             print(
-                f"--- tidy-close: stage failed -> pending task logs remain ({len(pending_tasks)})."
+                f"--- tidy-close: stage failed -> pending task records remain ({len(pending_tasks)})."
             )
             for task_path in pending_tasks[:10]:
                 print(f"  - {task_path}")
@@ -132,4 +133,4 @@ class TidyCloseCommand:
     def _list_pending_tasks(self, tasks_dir: Path) -> list[Path]:
         if not tasks_dir.exists():
             return []
-        return sorted(tasks_dir.rglob("task_*.log"), key=lambda path: str(path))
+        return list_task_paths(tasks_dir)

@@ -41,6 +41,12 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         default=None,
         help="Max task logs per batch folder (default from config).",
     )
+    parser.add_argument(
+        "--task-view",
+        choices=["json", "text", "toon", "text+toon"],
+        default="text",
+        help="Additional task artifact view(s) to write alongside canonical JSON.",
+    )
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
@@ -53,6 +59,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         batch_size=args.batch_size,
         source_scope=args.source_scope,
         build_dir_name=args.build_dir,
+        task_view=args.task_view,
     )
 
 

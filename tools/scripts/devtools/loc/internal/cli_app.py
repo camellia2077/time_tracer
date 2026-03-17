@@ -163,7 +163,7 @@ class LocCliApplication:
             default=None,
             help=(
                 "扫描日志输出路径（支持相对/绝对）。"
-                "未传时默认写入 scripts/devtools/loc/logs/scan_<lang>.json。"
+                "未传时默认写入 tools/scripts/devtools/loc/logs/scan_<lang>.json。"
             ),
         )
 
@@ -199,7 +199,7 @@ class LocCliApplication:
 
     @staticmethod
     def _repo_root() -> Path:
-        return Path(__file__).resolve().parents[4]
+        return Path(__file__).resolve().parents[5]
 
     @staticmethod
     def _resolve_log_path(log_file: str | None, lang: str, repo_root: Path) -> Path:
@@ -210,7 +210,7 @@ class LocCliApplication:
             else:
                 path = path.resolve()
             return path
-        return (repo_root / "scripts" / "devtools" / "loc" / "logs" / f"scan_{lang}.json").resolve()
+        return (repo_root / "tools" / "scripts" / "devtools" / "loc" / "logs" / f"scan_{lang}.json").resolve()
 
     @staticmethod
     def _build_base_payload(*, args: argparse.Namespace) -> dict:

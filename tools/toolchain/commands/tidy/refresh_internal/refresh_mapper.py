@@ -1,11 +1,8 @@
 import json
-import re
 from pathlib import Path
 
-from ....services import log_parser
 from ...shared import tidy as tidy_shared
-
-TASK_FILE_PATTERN = re.compile(r"^task_(\d+)\.log$")
+from ..task_log import list_task_paths, load_task_record
 
 
 def normalize_batch_name(batch_id: str) -> str:
@@ -13,33 +10,18 @@ def normalize_batch_name(batch_id: str) -> str:
 
 
 def collect_batch_files(batch_dir: Path) -> list[Path]:
-    task_files = [
-        task_path
-        for task_path in batch_dir.glob("task_*.log")
-        if TASK_FILE_PATTERN.match(task_path.name)
-    ]
-    task_files.sort(key=lambda path: path.name)
+    task_files = list_task_paths(batch_dir.parent, batch_id=batch_dir.name)
     files_by_key: dict[str, Path] = {}
     for task_path in task_files:
-        content = task_path.read_text(encoding="utf-8", errors="replace")
-        lines = content.splitlines()
-        diagnostics = log_parser.extract_diagnostics(lines)
-        for diag in diagnostics:
-            file_raw = (diag.get("file") or "").strip()
-            if not file_raw:
-                continue
-            candidate = Path(file_raw)
+        record = load_task_record(task_path)
+        if record.source_file:
+            candidate = Path(record.source_file)
             files_by_key[path_key(candidate)] = candidate
-        if diagnostics:
-            continue
-        if not lines:
-            continue
-        first_line = lines[0].strip()
-        if first_line.startswith("File: "):
-            file_raw = first_line[len("File: ") :].strip()
-            if file_raw:
-                candidate = Path(file_raw)
-                files_by_key[path_key(candidate)] = candidate
+        for diagnostic in record.diagnostics:
+            if not diagnostic.file:
+                continue
+            candidate = Path(diagnostic.file)
+            files_by_key[path_key(candidate)] = candidate
     return sorted(files_by_key.values(), key=lambda path: path_key(path))
 
 

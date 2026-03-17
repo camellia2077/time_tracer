@@ -2,14 +2,14 @@
 
 本目录提供统一的代码行数扫描工具，入口只有一个：
 
-- `python scripts/devtools/loc/run.py`
+- `python tools/scripts/devtools/loc/run.py`
 
 ## 1. 基本用法
 
 从仓库根目录执行：
 
 ```bash
-python scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N | --under [N] | --dir-over-files [N]] [--dir-max-depth N] [--log-file <path>]
+python tools/scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N | --under [N] | --dir-over-files [N]] [--dir-max-depth N] [--log-file <path>]
 ```
 
 参数说明：
@@ -22,7 +22,7 @@ python scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N |
 - `--dir-max-depth N`：目录扫描最大深度（相对输入根目录，`0` 表示仅根目录）；仅对 `--dir-over-files` 生效。
 - `-t/--threshold N`：兼容参数，等价 `--over N`。
 - `--log-file`：可选，自定义日志文件路径（相对路径相对仓库根目录）。
-- `--config`：可选，指定配置文件路径，默认 `scripts/devtools/loc/scan_lines.toml`。
+- `--config`：可选，指定配置文件路径，默认 `tools/scripts/devtools/loc/scan_lines.toml`。
 
 ## 2. 默认行为
 
@@ -48,15 +48,15 @@ python scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N |
 
 默认日志路径：
 
-- `scripts/devtools/loc/logs/scan_cpp.json`
-- `scripts/devtools/loc/logs/scan_kt.json`
-- `scripts/devtools/loc/logs/scan_py.json`
-- `scripts/devtools/loc/logs/scan_rs.json`
+- `tools/scripts/devtools/loc/logs/scan_cpp.json`
+- `tools/scripts/devtools/loc/logs/scan_kt.json`
+- `tools/scripts/devtools/loc/logs/scan_py.json`
+- `tools/scripts/devtools/loc/logs/scan_rs.json`
 
 可用 `--log-file` 覆盖，例如：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py --under 120 --log-file temp/loc_scan_py.json
+python tools/scripts/devtools/loc/run.py --lang py --under 120 --log-file temp/loc_scan_py.json
 ```
 
 ## 4. 常用命令模板（Agent）
@@ -64,37 +64,37 @@ python scripts/devtools/loc/run.py --lang py --under 120 --log-file temp/loc_sca
 扫描 Python 大文件（默认路径）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py --over 200
+python tools/scripts/devtools/loc/run.py --lang py --over 200
 ```
 
 扫描 Kotlin 小文件（默认小文件阈值）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang kt --under
+python tools/scripts/devtools/loc/run.py --lang kt --under
 ```
 
 扫描 C++，指定绝对路径：
 
 ```bash
-python scripts/devtools/loc/run.py --lang cpp "C:/abs/path/to/project" --over 300
+python tools/scripts/devtools/loc/run.py --lang cpp "C:/abs/path/to/project" --over 300
 ```
 
 扫描多个路径（分开打印）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py tools test scripts/devtools --under 80
+python tools/scripts/devtools/loc/run.py --lang py tools test tools/scripts/devtools --under 80
 ```
 
 扫描目录中文件过多的热点目录（按 Python 扩展名过滤）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py --dir-over-files 25 --dir-max-depth 2
+python tools/scripts/devtools/loc/run.py --lang py --dir-over-files 25 --dir-max-depth 2
 ```
 
 扫描目录中文件过多的热点目录（使用语言默认阈值）：
 
 ```bash
-python scripts/devtools/loc/run.py --lang py --dir-over-files
+python tools/scripts/devtools/loc/run.py --lang py --dir-over-files
 ```
 
 Windows 快捷入口（bat 与 `run.py` 同目录）：
@@ -123,7 +123,7 @@ scripts\devtools\loc\run_rs_files.bat
 
 ## 5. 配置文件
 
-配置文件：`scripts/devtools/loc/scan_lines.toml`
+配置文件：`tools/scripts/devtools/loc/scan_lines.toml`
 
 建议只在这里维护：
 

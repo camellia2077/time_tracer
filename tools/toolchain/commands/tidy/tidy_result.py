@@ -1,66 +1,23 @@
 from __future__ import annotations
 
-import re
 from datetime import UTC, datetime
 from pathlib import Path
 
 from ...core.context import Context
 from ..shared import tidy as tidy_shared
-from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 from .fix_strategy import (
     ALL_STRATEGIES,
     STRATEGY_MANUAL_ONLY,
     resolve_fix_strategy,
     resolve_primary_strategy,
 )
-
-_TASK_ID_PATTERN = re.compile(r"^task_(\d+)\.log$")
-_CHECK_TYPE_PATTERN = re.compile(r"([A-Za-z0-9_.-]+)\(\d+\)")
-_CHECK_BRACKET_PATTERN = re.compile(r"\[([A-Za-z0-9_.-]+)\]")
-
-
-def _parse_task_log(task_log_path: Path) -> dict:
-    task_id_match = _TASK_ID_PATTERN.match(task_log_path.name)
-    task_id = task_id_match.group(1).zfill(3) if task_id_match else ""
-    batch_id = task_log_path.parent.name if task_log_path.parent else ""
-    try:
-        lines = task_log_path.read_text(encoding="utf-8", errors="ignore").splitlines()
-    except OSError:
-        lines = []
-
-    source_file = ""
-    checks: list[str] = []
-
-    for line in lines:
-        if line.startswith("File: ") and not source_file:
-            source_file = line[len("File: ") :].strip()
-            continue
-        if line.startswith("Types: "):
-            checks.extend(_CHECK_TYPE_PATTERN.findall(line))
-
-    if not checks:
-        for line in lines:
-            checks.extend(_CHECK_BRACKET_PATTERN.findall(line))
-
-    normalized_checks: list[str] = []
-    for check in checks:
-        text = check.strip()
-        if not text or text in normalized_checks:
-            continue
-        normalized_checks.append(text)
-
-    return {
-        "task_id": task_id,
-        "batch_id": batch_id,
-        "source_file": source_file,
-        "checks": normalized_checks,
-    }
-
+from .task_log import list_task_paths, load_task_record
+from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
 def _collect_task_logs(root: Path) -> list[Path]:
     if not root.exists():
         return []
-    return sorted(root.rglob("task_*.log"), key=lambda item: str(item))
+    return list_task_paths(root)
 
 
 def _build_blocking_files(ctx: Context, pending_logs: list[Path]) -> tuple[list[dict], dict]:
@@ -70,11 +27,11 @@ def _build_blocking_files(ctx: Context, pending_logs: list[Path]) -> tuple[list[
     strategy_cfg = ctx.config.tidy.fix_strategy
 
     for log_path in pending_logs:
-        parsed = _parse_task_log(log_path)
-        checks = parsed["checks"]
+        parsed = load_task_record(log_path)
+        checks = list(parsed.checks)
         primary_strategy = resolve_primary_strategy(checks, strategy_cfg)
         strategy_counts[primary_strategy] = strategy_counts.get(primary_strategy, 0) + 1
-        source_file = parsed["source_file"] or str(log_path)
+        source_file = parsed.source_file or str(log_path)
         if source_file in seen_files:
             continue
         seen_files.add(source_file)
@@ -83,8 +40,8 @@ def _build_blocking_files(ctx: Context, pending_logs: list[Path]) -> tuple[list[
             check_strategies[check] = resolve_fix_strategy(check, strategy_cfg)
         blocking_files.append(
             {
-                "task_id": parsed["task_id"],
-                "batch_id": parsed["batch_id"],
+                "task_id": parsed.task_id,
+                "batch_id": parsed.batch_id,
                 "source_file": source_file,
                 "checks": checks,
                 "check_fix_strategy": check_strategies,

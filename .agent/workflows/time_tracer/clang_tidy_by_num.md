@@ -9,13 +9,13 @@ description: Agent policy for one numbered time_tracer clang-tidy task
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.log`
+- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.json|log|toon`
 - Automation reports: `out/tidy/tracer_core_shell/build_tidy_core_family/automation/`
 - Verify result: `out/test/artifact_windows_cli/result.json`
 
 ## Input Policy (MUST)
 - Input is exactly one pending `<TASK_ID>`.
-- Resolve the real `task_<TASK_ID>.log` path first.
+- Resolve the real `task_<TASK_ID>` artifact path first.
 - Derive `<BATCH_ID>` from that path before running anything.
 - Work on one task only.
 
@@ -36,11 +36,15 @@ description: Agent policy for one numbered time_tracer clang-tidy task
 - Prefer `automation/` reports over re-reading the raw task log repeatedly.
 
 ## Batch Close Policy (MUST)
-- After the task is fixed and verified, close the batch with `tidy-batch --preset sop`.
+- `tidy-step` is the normal close path for one task:
+  - it runs task-scope verify
+  - reruns focused clang-tidy on the selected task source
+  - archives the matching `task_<TASK_ID>` artifact when that re-check is clean
+- After that, close the batch with `tidy-batch --preset sop`.
 - Do not manually compose `clean + tidy-refresh` in the normal path.
 
 ## Completion Rule (MUST)
 - This workflow is done for the requested number only when:
-  - the selected `task_<TASK_ID>.log` is gone from `tasks/`
+  - the selected `task_<TASK_ID>` artifact is gone from `tasks/`
   - verify still reports success
   - batch handoff is completed through `tidy-batch`

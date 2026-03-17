@@ -8,13 +8,13 @@ description: Agent policy for one numbered log_generator clang-tidy task
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.log`
+- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.json|log|toon`
 - Automation reports: `out/tidy/log_generator/build_tidy/automation/`
 - Verify result: `out/test/artifact_log_generator/result.json`
 
 ## Input Policy (MUST)
 - Input is exactly one pending `<TASK_ID>`.
-- Resolve the real `task_<TASK_ID>.log` path first.
+- Resolve the real `task_<TASK_ID>` artifact path first.
 - Derive `<BATCH_ID>` from that path before running anything.
 - Work on one task only.
 
@@ -40,6 +40,6 @@ description: Agent policy for one numbered log_generator clang-tidy task
 
 ## Completion Rule (MUST)
 - This workflow is done for the requested number only when:
-  - the selected `task_<TASK_ID>.log` is gone from `tasks/`
+  - the selected `task_<TASK_ID>` artifact is gone from `tasks/`
   - verify still reports success
   - batch handoff is completed through `tidy-batch`

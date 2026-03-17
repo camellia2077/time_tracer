@@ -2,9 +2,9 @@ import re
 from pathlib import Path
 
 from ....core.context import Context
-from ....services import log_parser
+from ..task_log import list_task_paths, load_task_record
 
-TASK_ID_PATTERN = re.compile(r"task_(\d+)\.log$")
+TASK_ID_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 
 
 def task_sort_key(path: Path) -> tuple[int, str]:
@@ -15,7 +15,7 @@ def task_sort_key(path: Path) -> tuple[int, str]:
 
 
 def next_task_path(tasks_dir: Path) -> Path | None:
-    task_files = list(tasks_dir.rglob("task_*.log"))
+    task_files = list_task_paths(tasks_dir)
     if not task_files:
         return None
     task_files.sort(key=task_sort_key)
@@ -30,13 +30,17 @@ def task_id(path: Path) -> str:
 
 
 def classify_task(ctx: Context, task_path: Path) -> str:
-    content = task_path.read_text(encoding="utf-8", errors="replace")
-    diagnostics = log_parser.extract_diagnostics(content.splitlines())
-    if not diagnostics:
+    try:
+        record = load_task_record(task_path)
+    except (OSError, ValueError):
+        return "empty"
+    if not record.diagnostics:
         return "empty"
 
     checks = {
-        diag.get("check", "").strip() for diag in diagnostics if diag.get("check", "").strip()
+        diagnostic.check.strip()
+        for diagnostic in record.diagnostics
+        if diagnostic.check.strip()
     }
     if not checks:
         return "manual"

@@ -185,7 +185,7 @@ def _build_diff(file_path: Path, before_text: str, after_text: str) -> str:
 
 def _rename_candidates(parsed: ParsedTaskLog) -> list[dict]:
     return log_parser.extract_rename_candidates(
-        parsed.diagnostics,
+        parsed.diagnostic_dicts(),
         check_name="readability-identifier-naming",
     )
 
@@ -210,20 +210,20 @@ def _supported_rename_candidate(candidate: dict, file_path: Path) -> tuple[bool,
 
 
 def plan_redundant_cast_actions(parsed: ParsedTaskLog) -> list[AutoFixAction]:
-    source_file = parsed.source_file
+    source_file = Path(parsed.source_file) if parsed.source_file else None
     if source_file is None or not source_file.exists():
         return []
 
     actions: list[AutoFixAction] = []
     source_lines = source_file.read_text(encoding="utf-8", errors="replace").splitlines()
     for index, diagnostic in enumerate(parsed.diagnostics, 1):
-        if diagnostic.get("check") != "readability-redundant-casting":
+        if diagnostic.check != "readability-redundant-casting":
             continue
-        message = str(diagnostic.get("message", "")).strip()
+        message = diagnostic.message.strip()
         if "same type" not in message:
             continue
-        line_number = int(diagnostic.get("line", 0))
-        col_number = int(diagnostic.get("col", 0))
+        line_number = int(diagnostic.line)
+        col_number = int(diagnostic.col)
         if line_number <= 0 or line_number > len(source_lines):
             continue
         source_line = source_lines[line_number - 1]
@@ -539,7 +539,7 @@ def run_task_auto_fix(
         task_id=task_id,
     )
     parsed = parse_task_log(resolved_task_path)
-    source_file = parsed.source_file or resolved_task_path
+    source_file = Path(parsed.source_file) if parsed.source_file else resolved_task_path
     json_path, markdown_path = _report_paths(
         build_tidy_dir,
         parsed.batch_id or "batch_unknown",
@@ -621,7 +621,7 @@ def run_task_auto_fix(
 
 
 def suggest_task_refactors(parsed: ParsedTaskLog) -> list[dict]:
-    source_file = parsed.source_file
+    source_file = Path(parsed.source_file) if parsed.source_file else None
     if source_file is None or not source_file.exists():
         return []
 
@@ -677,6 +677,7 @@ def write_task_suggestion_report(
     build_tidy_dir: Path,
     app_name: str,
     parsed: ParsedTaskLog,
+    task_path: Path,
     workspace_name: str,
     source_scope: str | None,
     suggestions: list[dict],
@@ -691,7 +692,7 @@ def write_task_suggestion_report(
         "app": app_name,
         "task_id": parsed.task_id,
         "batch_id": parsed.batch_id,
-        "task_log": str(parsed.task_path),
+        "task_log": str(task_path),
         "source_file": str(parsed.source_file or ""),
         "workspace": workspace_name,
         "source_scope": source_scope,

@@ -8,7 +8,7 @@ description: Agent policy for the full log_generator clang-tidy queue
 - Run from repo root only: `C:\code\time_tracer`
 
 ## Fixed Paths (MUST)
-- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.log`
+- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.json|log|toon`
 - Machine summary: `out/tidy/log_generator/build_tidy/tidy_result.json`
 - Automation reports: `out/tidy/log_generator/build_tidy/automation/`
 - Verify result: `out/test/artifact_log_generator/result.json`
@@ -19,7 +19,7 @@ description: Agent policy for the full log_generator clang-tidy queue
 - If flags are unclear, read `python tools/run.py tidy-flow -h` before changing anything.
 
 ## Single-Task Policy (MUST)
-- When auto flow stops on manual tasks, always pick the smallest pending `task_NNN.log`.
+- When auto flow stops on manual tasks, always pick the smallest pending `task_NNN` artifact.
 - Always derive `<BATCH_ID>` from the real task path before acting.
 - Use this order:
   1. `tidy-task-patch`
@@ -36,7 +36,7 @@ description: Agent policy for the full log_generator clang-tidy queue
 
 ## Completion Gate (MUST)
 - Done means:
-  - no `task_*.log` remains under `out/tidy/log_generator/build_tidy/tasks/`
+  - no `task_*.json` / `task_*.log` / `task_*.toon` remains under `out/tidy/log_generator/build_tidy/tasks/`
   - `out/test/artifact_log_generator/result.json` still reports success
 - Exit code `2` from auto flow is not completion.
 - Final acceptance command is:

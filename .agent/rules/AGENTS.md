@@ -7,6 +7,9 @@ trigger: always_on
 - Shell / encoding:
   - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution.
   - Run `.sh` workflows only when explicitly requested.
+  - When tool permissions allow escalation, prefer non-sandbox execution for
+    repository commands; do not intentionally start sandboxed build / verify /
+    validate runs.
 - Build / test entry:
   - Use `python tools/run.py ...` as the default project build / verify / validate entry.
   - Do not use ad-hoc `cmake` / `ninja` wrappers unless the user explicitly asks for them.
@@ -47,6 +50,24 @@ trigger: always_on
   - Then sync:
     - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
     - `docs/time_tracer/core/contracts/stats/README.md`
+- Core read-first gate:
+  - Before editing `libs/tracer_core/**` or `apps/tracer_core_shell/**`, read:
+    - `.agent/guides/docs/tracer_core-read-first.md`
+    - `docs/time_tracer/architecture/library_dependency_map.md`
+    - `docs/time_tracer/architecture/libraries/tracer_core.md`
+    - `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
+  - If the task resumes the active post-`Goal 2` import-expansion line, also read:
+    - `temp/tracer_core_consumer_import_expansion_reassessment.md`
+    - `temp/tracer_core_module_refactor_master.md`
+    - `temp/archive/module_refactor/tracer_core_ecosystem_compat_surface_reassessment.md`
+  - If the task resumes the latest closed core module-refactor line, also read:
+    - `temp/tracer_core_module_refactor_master.md`
+    - `temp/archive/module_refactor/tracer_core_ecosystem_compat_surface_reassessment.md`
+    - `temp/archive/module_refactor/tracer_core_pure_module_only_reassessment.md`
+  - If the task resumes the latest closed `modules_only_toolchain_cutover_execution`
+    line, also read:
+    - `temp/archive/module_refactor/modules_only_toolchain_cutover_execution.md`
+    - `temp/modules_only_toolchain_cutover_readiness.md`
 - Core JSON boundary:
   - `JSON` may remain as an exchange format only at transport / serialization / renderer / adapter / host boundaries.
   - Do not add `nlohmann/json` dependencies under `libs/tracer_core/src/domain/**`.

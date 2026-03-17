@@ -13,8 +13,11 @@ BreakBeforeBraces: Attach
 # 允许短的函数写在同一行
 AllowShortFunctionsOnASingleLine: Inline
 
-# 排序头文件
-SortIncludes: true
+# 保留 include block 边界，避免在 module/global-fragment 中重排依赖顺序
+IncludeBlocks: Preserve
+SortIncludes:
+  Enabled: false
+  IgnoreCase: false
 
 # [修复部分] 指针对齐方式必须是顶层键
 # 如果你想强制靠左 (int* p)，直接这样写：

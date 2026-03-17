@@ -9,8 +9,8 @@
 2. 工具链实现：
    - `tools/toolchain/`
 3. 开发者工具（不参与默认构建/测试流水线）：
-   - `scripts/devtools/loc/`（代码行数统计）
-   - `scripts/devtools/android/`（Android 辅助脚本）
+   - `tools/scripts/devtools/loc/`（代码行数统计）
+   - `tools/scripts/devtools/android/`（Android 辅助脚本）
 4. 定位文档（建议先读）：
    - `docs/toolchain/python_command_map.md`
    - `docs/toolchain/clang_tidy_architecture.md`
@@ -27,8 +27,10 @@ python tools/run.py tidy --app tracer_core_shell
 
 # libs core 正式 scoped tidy（workspace: out/tidy/tracer_core_shell/build_tidy_core_family）
 python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view json
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
 python tools/run.py tidy-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family
-bash apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
 
 # Task 级自动化（patch / fix / suggest / 单步执行）
 python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
@@ -78,7 +80,12 @@ python tools/run.py post-change --app tracer_android --run-tests always --concis
   - `tidy-task-fix`：安全自动修复报告
   - `tidy-task-suggest`：decode helper / protocol constants 建议
   - `tidy-step`：单步执行状态
-- `apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh` 是薄转发入口，只负责把命令转到 `tools/run.py`
+- clang-tidy 不再依赖应用侧 shell wrapper；统一直接使用 `python tools/run.py ...`
+- `--task-view` 当前支持 4 档：
+  - `json` -> `task_*.json`
+  - `text` -> `task_*.json + task_*.log`
+  - `toon` -> `task_*.json + task_*.toon`
+  - `text+toon` -> `task_*.json + task_*.log + task_*.toon`
 
 ## 结果文件（统一契约）
 

@@ -3,8 +3,9 @@ import re
 from pathlib import Path
 
 from . import log_parser
+from ..commands.tidy.task_log import list_task_paths, load_task_record
 
-TASK_FILE_PATTERN = re.compile(r"task_(\d+)\.log$")
+TASK_FILE_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 
 
 def _task_id_from_path(path: Path) -> str:
@@ -41,13 +42,15 @@ def collect_rename_candidates(
     collected: list[dict] = []
     dedupe_key_set = set()
 
-    task_files = list(tasks_dir.rglob("task_*.log"))
+    task_files = list_task_paths(tasks_dir)
     task_files.sort(key=lambda path: (_task_id_from_path(path), str(path)))
     for task_file in task_files:
         task_id = _task_id_from_path(task_file)
-        content = task_file.read_text(encoding="utf-8", errors="replace")
-        diagnostics = log_parser.extract_diagnostics(content.splitlines())
-        candidates = log_parser.extract_rename_candidates(diagnostics, check_name=check_name)
+        record = load_task_record(task_file)
+        candidates = log_parser.extract_rename_candidates(
+            record.diagnostic_dicts(),
+            check_name=check_name,
+        )
 
         for candidate in candidates:
             symbol_kind = candidate.get("symbol_kind", "").strip().lower()

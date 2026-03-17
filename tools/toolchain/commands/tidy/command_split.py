@@ -6,6 +6,8 @@ def split_only_tidy_command(
     max_diags: int | None = None,
     batch_size: int | None = None,
     build_dir_name: str | None = None,
+    task_view: str = "text",
+    source_scope: str | None = None,
 ) -> int:
     paths = command._resolve_tidy_paths(app_name, build_dir_name=build_dir_name)
     log_path = paths["log_path"]
@@ -24,6 +26,9 @@ def split_only_tidy_command(
             max_lines=max_lines,
             max_diags=max_diags,
             batch_size=batch_size,
+            task_view=task_view,
+            workspace_name=build_dir_name or "",
+            source_scope=source_scope,
         )
     except ValueError as error:
         print(f"--- tidy-split: invalid split settings: {error}")

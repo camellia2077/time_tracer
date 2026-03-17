@@ -39,8 +39,10 @@ python tools/run.py tidy --app tracer_core_shell
 
 # Scoped tidy for core-family libs only
 python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view json
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
 python tools/run.py tidy-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family
-bash apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh check
 
 # Configure and build are split commands
 python tools/run.py configure --app tracer_core_shell
@@ -84,6 +86,7 @@ python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_
 python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
 python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
 python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
+# `tidy-step` apply mode now does: auto-fix -> task-scope verify -> focused clang-tidy re-check -> archive current task artifact
 
 # Run tools/toolchain minimal regression tests
 python tools/run.py self-test
@@ -137,9 +140,13 @@ python tools/run.py rename-audit --app tracer_core_shell
 - `--source-scope` controls the selected C++ source roots
 - `--tidy-build-dir` controls which tidy queue/state workspace is used by queue-management commands
 - Task-local automation reports land under `out/tidy/<app>/<tidy_workspace>/automation/`
-- Thin shell wrapper: `apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh`
-  - Always forwards `tracer_core_shell + core_family + build_tidy_core_family`
-  - Does not own any filtering logic
+- No application-side shell wrapper is required for clang-tidy.
+- Use `python tools/run.py ...` directly.
+- `--task-view` supports:
+  - `json` -> `task_*.json`
+  - `text` -> `task_*.log`
+  - `toon` -> `task_*.toon`
+  - `text+toon` -> `task_*.json + task_*.log + task_*.toon`
 
 ## Result Visibility Contract
 

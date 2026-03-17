@@ -75,7 +75,7 @@ flowchart TD
 | 改 task 级自动 patch / fix / suggest / step 参数 | `tools/toolchain/cli/handlers/tidy/tidy_task_*.py`、`tools/toolchain/cli/handlers/tidy/tidy_step.py` |
 | 改 `python tools/run.py tidy ...` 的执行主链 | `tools/toolchain/commands/tidy/command.py`、`tools/toolchain/commands/tidy/command_execute.py` |
 | 改 `cmake --build ... --target tidy` 的拼装方式 | `tools/toolchain/commands/tidy/invoker.py` |
-| 改 `build.log` 到 `task_*.log` 的拆分策略 | `tools/toolchain/commands/tidy/task_builder.py`、`tools/toolchain/commands/tidy/log_splitter.py` |
+| 改 `build.log` 到 task records / task views 的拆分策略 | `tools/toolchain/commands/tidy/task_builder.py`、`tools/toolchain/commands/tidy/log_splitter.py` |
 | 改诊断解析规则 | `tools/toolchain/services/log_parser.py` |
 | 改任务优先级排序 | `tools/toolchain/services/task_sorter.py` |
 | 改批次收口（verify -> clean -> refresh -> finalize） | `tools/toolchain/commands/tidy/batch.py` |
@@ -86,7 +86,7 @@ flowchart TD
 | 改 rename-only / empty task 自动循环清理 | `tools/toolchain/commands/tidy/loop.py`、`tools/toolchain/commands/tidy/flow_internal/loop_tasks.py` |
 | 改状态 JSON / 汇总 JSON 格式 | `tools/toolchain/services/batch_state.py`、`tools/toolchain/commands/tidy/refresh_internal/refresh_state.py`、`tools/toolchain/commands/tidy/flow_internal/flow_state.py`、`tools/toolchain/commands/tidy/tidy_result.py` |
 | 改 fix strategy 分类 | `tools/toolchain/commands/tidy/fix_strategy.py`、`tools/toolchain/core/config.py`、`tools/toolchain/config/workflow.toml` |
-| 改 shell wrapper 的命令转发 | `apps/tracer_core_shell/scripts/run_clang_tidy_libs_core.sh`、`apps/tracer_core_shell/scripts/run_clang_tidy_split_only.sh`、应用侧同名脚本 |
+| 改 clang-tidy 命令入口 / task view 参数 | `tools/toolchain/cli/handlers/tidy/tidy.py`、`tools/toolchain/cli/handlers/tidy/tidy_split.py`、`tools/toolchain/commands/tidy/task_builder.py` |
 
 ## 3. 目录职责拆解
 
@@ -156,7 +156,8 @@ flowchart TD
   - 会从原始 `compile_commands.json` 去掉 `@*.obj.modmap`
   - 用于避免 clang-tidy 在模块扫描产物未生成时直接失败
 - `task_builder.py`
-  - 把 `build.log` 切成 `task_*.log`
+  - 把 `build.log` 切成 canonical `task_*.json`
+  - 可选渲染 `task_*.log` / `task_*.toon`
   - 做 section 分组、诊断聚类、优先级排序、batch 写盘
 - `log_splitter.py`
   - 日志读取、split 调用、ninja timing 汇总
@@ -176,7 +177,8 @@ flowchart TD
   - `tidy-loop` 主入口
   - 自动处理 rename-only / empty task
 - `task_log.py`
-  - 单个 `task_*.log` 的解析 / 选择 / batch/task id 解析
+  - 单个 task record 的解析 / 选择 / batch/task id 解析
+  - 优先读取 `task_*.json`，仅兼容旧 `task_*.log`
 - `task_auto_fix.py`
   - task 级自动化核心
   - 管 rule-driven const rename、redundant cast、suggest report
@@ -219,7 +221,7 @@ flowchart TD
   - refresh 主流程
   - 决定是只做 incremental，还是自动升级为 full tidy
 - `refresh_mapper.py`
-  - 从 `tasks_done/<batch>/task_*.log` 提取 touched files
+  - 从 `tasks_done/<batch>/task_*.json` 提取 touched files
   - 将 touched files 映射到 `analysis compile db` 里的 compile units
 - `refresh_runner.py`
   - 执行 incremental clang-tidy chunk
@@ -334,9 +336,11 @@ out/tidy/<app>/<tidy_workspace>/
 | `out/tidy/<app>/<tidy_workspace>/build.log` | `tidy` build 原始日志 |
 | `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json` | clang-tidy 唯一官方输入；供分析使用的 sanitized compile db（剥离 `@*.obj.modmap`） |
 | `out/tidy/<app>/<tidy_workspace>/.ninja_log` | Ninja 执行时序，用于 timing summary |
-| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log` | 待处理任务 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.json` | canonical 待处理任务 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log` | 可选 text 视图 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.toon` | 可选 TOON 视图 |
 | `out/tidy/<app>/<tidy_workspace>/tasks/tasks_summary.md` | 拆分后的任务摘要 |
-| `out/tidy/<app>/<tidy_workspace>/tasks_done/batch_*/task_*.log` | 已归档任务 |
+| `out/tidy/<app>/<tidy_workspace>/tasks_done/batch_*/task_*.json` | canonical 已归档任务 |
 | `out/tidy/<app>/<tidy_workspace>/tidy_result.json` | 面向人和 agent 的统一状态摘要 |
 | `out/tidy/<app>/<tidy_workspace>/batch_state.json` | 批次级状态、checkpoint、verify/refresh 结果 |
 | `out/tidy/<app>/<tidy_workspace>/refresh_state.json` | refresh cadence 与 last_full 记录 |
@@ -350,7 +354,7 @@ agent 排查建议：
 
 1. 先看 `tidy_result.json`
 2. 再看 `batch_state.json` / `refresh_state.json` / `flow_state.json`
-3. 最后再深入 `task_*.log`、`build.log`、`incremental_tidy_*.log`
+3. 最后再深入 `task_*.json`、`build.log`、`incremental_tidy_*.log`
 
 ## 6. 常见场景应该从哪里进
 

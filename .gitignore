@@ -22,6 +22,8 @@ input/
 !test/golden/report_triplet/**/v1/*.typ
 
 
+apps/tracer_android/runtime/src/main/assets/tracer_core/config/meta/sync_state.json
+
 # --- Rust 专用 ---
 
 # 核心构建产物目录

@@ -10,6 +10,8 @@ def execute_tidy_command(
     keep_going: bool | None = None,
     source_scope: str | None = None,
     build_dir_name: str | None = None,
+    task_view: str = "text",
+    prebuild_targets: list[str] | None = None,
 ) -> int:
     paths = command._resolve_tidy_paths(app_name, build_dir_name=build_dir_name)
     build_dir = paths["build_dir"]
@@ -32,18 +34,35 @@ def execute_tidy_command(
         print("--- Auto-configure failed. Aborting Tidy.")
         return ret
 
-    try:
-        command._ensure_analysis_compile_db(build_dir)
-    except (FileNotFoundError, OSError, ValueError) as error:
-        print(f"--- Failed to prepare analysis compile db: {error}")
-        return 1
-
     (
         filtered_args,
         has_target_override,
         effective_jobs,
         effective_keep_going,
     ) = command._resolve_build_options(extra_args, jobs, keep_going)
+    resolved_prebuild_targets = [target for target in (prebuild_targets or []) if str(target).strip()]
+    if resolved_prebuild_targets:
+        prebuild_log_path = build_dir / "module_prereq_build.log"
+        prebuild_cmd = command._build_module_prereq_command(
+            build_dir,
+            resolved_prebuild_targets,
+            effective_jobs,
+        )
+        print(
+            "--- Tidy module prebuild: "
+            + ", ".join(resolved_prebuild_targets)
+        )
+        prebuild_ret, _ = command._run_tidy_build(prebuild_cmd, prebuild_log_path)
+        if prebuild_ret != 0:
+            print(f"--- Tidy module prebuild failed with code {prebuild_ret}.")
+            return prebuild_ret
+
+    try:
+        command._ensure_analysis_compile_db(build_dir)
+    except (FileNotFoundError, OSError, ValueError) as error:
+        print(f"--- Failed to prepare analysis compile db: {error}")
+        return 1
+
     cmd = command._build_tidy_command(
         app_name,
         build_dir,
@@ -62,6 +81,9 @@ def execute_tidy_command(
                 log_path,
                 tasks_dir,
                 parse_workers=parse_workers,
+                task_view=task_view,
+                workspace_name=build_dir_name or "",
+                source_scope=source_scope,
             )
         except ValueError as error:
             print(f"--- Tidy log split failed: {error}")

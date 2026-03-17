@@ -23,6 +23,24 @@ class TestAnalysisCompileDb(TestCase):
         self.assertNotIn(".obj.modmap", sanitized)
         self.assertIn("-o libs\\tracer_core\\CMakeFiles\\tc_app_lib.dir\\src\\foo.cpp.obj", sanitized)
 
+    def test_sanitize_command_text_preserves_existing_modmap_arg(self):
+        with TemporaryDirectory() as tmp:
+            build_dir = Path(tmp)
+            modmap_path = build_dir / "foo.obj.modmap"
+            modmap_path.write_text("{}", encoding="utf-8")
+            command = (
+                r"C:\clang++.exe -std=gnu++23 "
+                r"@foo.obj.modmap "
+                r"-o foo.obj -c C:\repo\foo.cpp"
+            )
+
+            sanitized = analysis_compile_db.sanitize_command_text(
+                command,
+                str(build_dir),
+            )
+
+            self.assertIn("@foo.obj.modmap", sanitized)
+
     def test_ensure_analysis_compile_db_writes_copy(self):
         with TemporaryDirectory() as tmp:
             build_dir = Path(tmp)
@@ -72,3 +90,31 @@ class TestAnalysisCompileDb(TestCase):
             out_path = out_dir / "compile_commands.json"
             data = json.loads(out_path.read_text(encoding="utf-8"))
             self.assertNotIn(r"@foo.obj.modmap", data[0]["arguments"])
+
+    def test_ensure_analysis_compile_db_preserves_existing_modmap_in_arguments(self):
+        with TemporaryDirectory() as tmp:
+            build_dir = Path(tmp)
+            (build_dir / "foo.obj.modmap").write_text("{}", encoding="utf-8")
+            payload = [
+                {
+                    "directory": str(build_dir),
+                    "arguments": [
+                        r"C:\clang++.exe",
+                        r"@foo.obj.modmap",
+                        r"-o",
+                        r"foo.obj",
+                        r"-c",
+                        r"C:\repo\foo.cpp",
+                    ],
+                    "file": r"C:\repo\foo.cpp",
+                }
+            ]
+            (build_dir / "compile_commands.json").write_text(
+                json.dumps(payload),
+                encoding="utf-8",
+            )
+
+            out_dir = analysis_compile_db.ensure_analysis_compile_db(build_dir)
+            out_path = out_dir / "compile_commands.json"
+            data = json.loads(out_path.read_text(encoding="utf-8"))
+            self.assertIn(r"@foo.obj.modmap", data[0]["arguments"])

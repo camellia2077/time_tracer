@@ -143,6 +143,19 @@ def build_tidy_command(
     return cmd
 
 
+def build_module_prereq_command(
+    build_dir: Path,
+    prebuild_targets: list[str],
+    effective_jobs: int | None,
+) -> list[str]:
+    cmd = ["cmake", "--build", str(build_dir), "--target", *prebuild_targets]
+    if effective_jobs and effective_jobs > 0:
+        cmd += [f"-j{effective_jobs}"]
+    else:
+        cmd += ["-j"]
+    return cmd
+
+
 def run_tidy_build(ctx: Context, cmd: list[str], log_path: Path) -> tuple[int, float]:
     build_start = time.perf_counter()
     ret = run_command(cmd, env=ctx.setup_env(), log_file=log_path)

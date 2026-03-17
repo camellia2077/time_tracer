@@ -5,7 +5,16 @@ from pathlib import Path
 from ...core.config import TidyFixStrategyConfig
 from ...core.context import Context
 from ...services import log_parser, task_sorter
+from ..shared import tidy as tidy_shared
 from .fix_strategy import resolve_primary_strategy
+from .task_model import (
+    TaskDraft,
+    build_task_draft_from_diagnostics,
+    finalize_task_record,
+    render_text,
+    render_toon,
+    task_record_to_dict,
+)
 
 
 def split_and_sort(
@@ -16,6 +25,9 @@ def split_and_sort(
     max_lines: int | None = None,
     max_diags: int | None = None,
     batch_size: int | None = None,
+    task_view: str = "text",
+    workspace_name: str = "",
+    source_scope: str | None = None,
 ) -> dict:
     tasks_dir.mkdir(parents=True, exist_ok=True)
     log_lines = log_content.splitlines()
@@ -40,6 +52,9 @@ def split_and_sort(
         tasks_dir,
         effective_batch_size,
         fix_strategy_config=ctx.config.tidy.fix_strategy,
+        task_view=task_view,
+        workspace_name=workspace_name,
+        source_scope=source_scope,
     )
     print(
         f"--- Created {len(processed)} granular tasks in {tasks_dir} "
@@ -53,6 +68,7 @@ def split_and_sort(
         "batch_size": effective_batch_size,
         "max_lines": effective_max_lines,
         "max_diags": effective_max_diags,
+        "task_view": task_view,
     }
 
 
@@ -117,13 +133,36 @@ def write_task_batches(
     tasks_dir: Path,
     batch_size: int,
     fix_strategy_config: TidyFixStrategyConfig,
+    task_view: str,
+    workspace_name: str,
+    source_scope: str | None,
 ) -> int:
     cleanup_old_tasks(tasks_dir)
+    selected_views = _resolve_task_views(task_view)
+    write_json = _should_write_json(task_view)
     for idx, task in enumerate(processed, 1):
         batch_index = ((idx - 1) // batch_size) + 1
+        task_id = f"{idx:03d}"
+        batch_name = f"batch_{batch_index:03d}"
         batch_dir = tasks_dir / f"batch_{batch_index:03d}"
         batch_dir.mkdir(parents=True, exist_ok=True)
-        (batch_dir / f"task_{idx:03d}.log").write_text(task["content"], encoding="utf-8")
+        record = finalize_task_record(
+            task["draft"],
+            task_id=task_id,
+            batch_id=batch_name,
+            workspace=workspace_name,
+            source_scope=source_scope,
+        )
+        base_path = batch_dir / f"task_{task_id}"
+        if write_json:
+            tidy_shared.write_json_dict(
+                base_path.with_suffix(".json"),
+                task_record_to_dict(record),
+            )
+        if "text" in selected_views:
+            base_path.with_suffix(".log").write_text(render_text(record), encoding="utf-8")
+        if "toon" in selected_views:
+            base_path.with_suffix(".toon").write_text(render_toon(record), encoding="utf-8")
 
     write_markdown_summary(
         processed,
@@ -139,7 +178,7 @@ def cleanup_old_tasks(tasks_dir: Path) -> None:
     if not tasks_dir.exists():
         return
 
-    for old_task in tasks_dir.rglob("task_*.log"):
+    for old_task in tasks_dir.rglob("task_*.*"):
         old_task.unlink()
 
     batch_dirs = [path for path in tasks_dir.glob("batch_*") if path.is_dir()]
@@ -181,20 +220,19 @@ def process_ninja_section(
 
         real_file = batch[0]["file"]
         p_score = task_sorter.calculate_priority_score(batch, real_file)
-        summary = log_parser.generate_text_summary(batch)
-        batch_lines_content = []
+        raw_lines: list[str] = []
         for diag in batch:
-            batch_lines_content.extend(diag["lines"])
+            raw_lines.extend(diag["lines"])
+        draft = build_task_draft_from_diagnostics(batch, raw_lines=raw_lines)
+        if draft is None:
+            return
 
-        content = (
-            f"File: {real_file}\n" + "=" * 60 + "\n" + summary + "\n".join(batch_lines_content)
-        )
         processed.append(
             {
-                "content": content,
+                "draft": draft,
                 "score": p_score,
-                "size": len(content),
-                "diag": batch,
+                "size": len("\n".join(raw_lines)),
+                "diag": [diagnostic.to_log_parser_dict() for diagnostic in draft.diagnostics],
                 "file": real_file,
             }
         )
@@ -226,10 +264,27 @@ def write_markdown_summary(
         "| --- | --- | --- | --- | --- |",
     ]
     for idx, item in enumerate(processed, 1):
-        checks = sorted(set(w["check"] for w in item["diag"]))
+        draft: TaskDraft = item["draft"]
+        checks = list(draft.checks)
         w_types = ", ".join(checks)
         strategy = resolve_primary_strategy(checks, fix_strategy_config)
         lines.append(
             f"| {idx:03d} | {item['file']} | {item['score']:.2f} | {w_types} | {strategy} |"
         )
     out_path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _resolve_task_views(task_view: str) -> tuple[str, ...]:
+    normalized = (task_view or "").strip().lower()
+    if normalized == "json":
+        return ()
+    if normalized == "toon":
+        return ("toon",)
+    if normalized == "text+toon":
+        return ("text", "toon")
+    return ("text",)
+
+
+def _should_write_json(task_view: str) -> bool:
+    normalized = (task_view or "").strip().lower()
+    return normalized in {"json", "text+toon"}

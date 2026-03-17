@@ -37,7 +37,7 @@
 
 ## 3. LOC 阈值监控：代码健康管理
 
-基于 `scripts/devtools/loc/run.py` 监控代码分布。
+基于 `tools/scripts/devtools/loc/run.py` 监控代码分布。
 
 ### 监控维度 (scan_lines.toml)
 *   **文件行数监控**：按语言设定不同阈值（C++: 350, Python: 250），识别需重构的大文件。

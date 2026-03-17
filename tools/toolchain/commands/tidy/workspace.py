@@ -15,6 +15,7 @@ class ResolvedTidyWorkspace:
     source_scope: str | None
     build_dir_name: str
     source_roots: list[Path]
+    prebuild_targets: list[str]
 
 
 def normalize_source_scope(source_scope: str | None) -> str | None:
@@ -54,6 +55,22 @@ def resolve_source_roots(ctx: Context, source_scope: str | None) -> list[Path]:
     return resolved
 
 
+def resolve_prebuild_targets(ctx: Context, source_scope: str | None) -> list[str]:
+    scope_cfg = resolve_source_scope_config(ctx, source_scope)
+    if scope_cfg is None:
+        return []
+
+    resolved: list[str] = []
+    seen: set[str] = set()
+    for raw_target in getattr(scope_cfg, "prebuild_targets", []):
+        target_name = str(raw_target).strip()
+        if not target_name or target_name in seen:
+            continue
+        seen.add(target_name)
+        resolved.append(target_name)
+    return resolved
+
+
 def resolve_tidy_build_dir_name(
     ctx: Context,
     *,
@@ -85,6 +102,7 @@ def resolve_workspace(
             source_scope=normalized_scope,
         ),
         source_roots=resolve_source_roots(ctx, normalized_scope),
+        prebuild_targets=resolve_prebuild_targets(ctx, normalized_scope),
     )
 
 

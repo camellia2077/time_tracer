@@ -132,6 +132,157 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeTidyCommand.last_args, ("tracer_core_shell", []))
         self.assertEqual(FakeTidyCommand.last_kwargs["source_scope"], "core_family")
         self.assertEqual(FakeTidyCommand.last_kwargs["build_dir_name"], "build_tidy_core_family")
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "text")
+
+    def test_tidy_dispatches_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "text+toon",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "text+toon")
+
+    def test_tidy_dispatches_toon_only_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "toon",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "toon")
+
+    def test_tidy_dispatches_json_only_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "json",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "json")
+
+    def test_tidy_split_dispatches_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def split_only(self, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy_split.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-split",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "text+toon",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "text+toon")
+
+    def test_tidy_split_dispatches_toon_only_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def split_only(self, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy_split.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-split",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "toon",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "toon")
+
+    def test_tidy_split_dispatches_json_only_task_view(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def split_only(self, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy_split.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-split",
+                    "--app",
+                    "tracer_core_shell",
+                    "--task-view",
+                    "json",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "json")
 
     def test_tidy_fix_dispatches_source_scope_and_tidy_build_dir(self):
         class FakeTidyFixCommand:

@@ -80,6 +80,9 @@ def needs_tidy_filter_reconfigure(
         )
         or ""
     )
+    actual_tidy_wrapper = (
+        _read_cmake_cache_value(cache_path, "TT_ENABLE_CXX_CLANG_TIDY_WRAPPER") or ""
+    ).strip().upper()
     expected_compile_db_dir = build_common.normalize_cache_path(
         analysis_compile_db.resolve_compile_db_cache_value(build_dir)
     )
@@ -87,6 +90,7 @@ def needs_tidy_filter_reconfigure(
         actual_scope != expected_scope
         or actual_roots != expected_roots
         or actual_compile_db_dir != expected_compile_db_dir
+        or actual_tidy_wrapper != "OFF"
     )
 
 
@@ -161,7 +165,16 @@ def configure_cmake(
 
     flags = app.cmake_flags[:]
     if tidy:
-        flags.extend(["-D", "ENABLE_CLANG_TIDY=ON", "-D", "ENABLE_PCH=OFF"])
+        flags.extend(
+            [
+                "-D",
+                "ENABLE_CLANG_TIDY=ON",
+                "-D",
+                "ENABLE_PCH=OFF",
+                "-D",
+                "TT_ENABLE_CXX_CLANG_TIDY_WRAPPER=OFF",
+            ]
+        )
     else:
         flags.extend(["-D", "ENABLE_CLANG_TIDY=OFF", "-D", "ENABLE_PCH=ON"])
 
@@ -204,6 +217,10 @@ def configure_cmake(
         configure_args = build_common.strip_cmake_definition(
             configure_args,
             "ENABLE_PCH",
+        )
+        configure_args = build_common.strip_cmake_definition(
+            configure_args,
+            "TT_ENABLE_CXX_CLANG_TIDY_WRAPPER",
         )
     if tidy and not build_common.has_cmake_definition(
         flags + configure_args, "TT_CLANG_TIDY_HEADER_FILTER"
@@ -258,7 +275,6 @@ def build_cmake(
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
     profile_build_targets = build_common.profile_build_targets(ctx, profile_name)
     has_target_override = _has_build_target_override(filtered_build_args)
-    explicit_profile_requested = bool((profile_name or "").strip())
     is_currently_configured = is_configured_fn(
         app_name,
         tidy,
@@ -267,7 +283,6 @@ def build_cmake(
     )
     should_configure = (
         filtered_cmake_args
-        or explicit_profile_requested
         or not is_currently_configured
         or needs_windows_config_reconfigure_fn(app_name, build_dir)
         or needs_tidy_filter_reconfigure(ctx, tidy, build_dir, source_scope)

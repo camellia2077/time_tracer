@@ -106,7 +106,7 @@ def add_task_selector_args(parser_obj: argparse.ArgumentParser) -> None:
     parser_obj.add_argument(
         "--task-log",
         default=None,
-        help="Explicit task log path. Overrides --batch-id/--task-id selection.",
+        help="Explicit task artifact path (.json/.log). Overrides --batch-id/--task-id selection.",
     )
     parser_obj.add_argument(
         "--batch-id",
