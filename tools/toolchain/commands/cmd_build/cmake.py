@@ -22,6 +22,29 @@ def _has_build_target_override(build_args: list[str]) -> bool:
     return False
 
 
+def _resolve_runtime_platform_targets(
+    app_name: str,
+    runtime_platform: str | None,
+) -> list[str]:
+    normalized_platform = (runtime_platform or "").strip().lower()
+    if normalized_platform != "windows":
+        return []
+    if app_name not in {"tracer_core", "tracer_core_shell"}:
+        return []
+    return ["tc_rpt_shared_lib", "tc_shared_dll"]
+
+
+def _merge_build_targets(*target_groups: list[str]) -> list[str]:
+    merged: list[str] = []
+    for group in target_groups:
+        for target in group:
+            normalized = str(target).strip()
+            if not normalized or normalized in merged:
+                continue
+            merged.append(normalized)
+    return merged
+
+
 def _read_cmake_cache_value(cache_path: Path, key: str) -> str | None:
     try:
         for raw_line in cache_path.read_text(encoding="utf-8", errors="replace").splitlines():
@@ -257,6 +280,7 @@ def build_cmake(
     cmake_args: list[str] | None,
     build_dir_name: str | None,
     profile_name: str | None,
+    runtime_platform: str | None,
     resolve_build_dir_name_fn: Callable[[bool, str | None, str | None, str | None], str],
     is_configured_fn: Callable[[str, bool, str | None, str | None], bool],
     needs_windows_config_reconfigure_fn: Callable[[str, Path], bool],
@@ -274,6 +298,8 @@ def build_cmake(
     filtered_build_args = [a for a in (extra_args or []) if a != "--"]
     filtered_cmake_args = [a for a in (cmake_args or []) if a != "--"]
     profile_build_targets = build_common.profile_build_targets(ctx, profile_name)
+    runtime_platform_targets = _resolve_runtime_platform_targets(app_name, runtime_platform)
+    effective_build_targets = _merge_build_targets(profile_build_targets, runtime_platform_targets)
     has_target_override = _has_build_target_override(filtered_build_args)
     is_currently_configured = is_configured_fn(
         app_name,
@@ -304,9 +330,9 @@ def build_cmake(
         if configure_ret != 0:
             return configure_ret
     build_cmd = ["cmake", "--build", str(build_dir), "-j"]
-    if profile_build_targets and not has_target_override:
-        print(f"--- build: applying profile build targets: {', '.join(profile_build_targets)}")
-        build_cmd += ["--target", *profile_build_targets]
+    if effective_build_targets and not has_target_override:
+        print(f"--- build: applying build targets: {', '.join(effective_build_targets)}")
+        build_cmd += ["--target", *effective_build_targets]
     build_cmd += filtered_build_args
     build_ret = run_command_fn(build_cmd, env=ctx.setup_env())
     if build_ret != 0:

@@ -1,4 +1,5 @@
 import argparse
+import sys
 
 from ...commands.cmd_build import BuildCommand
 from ...core.context import Context
@@ -45,10 +46,36 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
             "Only used for tracer_windows_rust_cli release-profile builds."
         ),
     )
+    parser.add_argument(
+        "--rust-runtime-sync",
+        choices=["relaxed", "strict"],
+        default=None,
+        help=(
+            "Rust Windows CLI runtime sync mode. "
+            "`relaxed` probes current/core fallback build dirs; `strict` only uses the current build dir."
+        ),
+    )
+    parser.add_argument(
+        "--runtime-platform",
+        choices=["windows"],
+        default=None,
+        help=(
+            "Apply platform-owned runtime build targets. "
+            "Currently `windows` expands tracer_core runtime DLL targets and "
+            "enables the explicit Windows runtime flow for tracer_windows_rust_cli."
+        ),
+    )
     parser.add_argument("extra_args", nargs=argparse.REMAINDER)
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    if args.app == "tracer_windows_rust_cli" and args.runtime_platform != "windows":
+        print(
+            "Error: `build --app tracer_windows_rust_cli` now requires "
+            "`--runtime-platform windows`.",
+            file=sys.stderr,
+        )
+        return 2
     build_dir_error = reject_unsupported_build_dir_override(
         ctx=ctx,
         app_name=args.app,
@@ -67,6 +94,12 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         build_dir_name=args.build_dir,
         profile_name=args.profile,
         windows_icon_svg=getattr(args, "windows_icon_svg", None),
+        rust_runtime_sync=(
+            getattr(args, "rust_runtime_sync", None)
+            if args.app != "tracer_windows_rust_cli"
+            else (getattr(args, "rust_runtime_sync", None) or "strict")
+        ),
+        runtime_platform=getattr(args, "runtime_platform", None),
         kill_build_procs=kill_build_procs,
     )
 

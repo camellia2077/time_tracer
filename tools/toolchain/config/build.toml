@@ -62,11 +62,6 @@ cmake_args = [
     "-D", "WARNING_LEVEL=2",
     "-D", "TIDY_WARNINGS_AS_ERRORS=OFF",
 ]
-# Keep release output complete (CLI + synced runtime dirs),
-# while avoiding broad ALL-target drift and test targets.
-build_targets = [
-    "tc_shared_dll",
-]
 gradle_tasks = [":app:assembleRelease"]
 
 [build.profiles.release_bundle]

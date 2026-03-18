@@ -1,6 +1,22 @@
 from . import cargo as build_cargo, cmake as build_cmake, gradle as build_gradle
 
 
+def _print_build_output_dir(
+    command,
+    app_name: str,
+    backend: str,
+    build_dir_name: str,
+    tidy: bool,
+) -> None:
+    if backend == "gradle":
+        build_root = (command.ctx.get_app_dir(app_name) / "build").resolve()
+    elif tidy:
+        build_root = command.ctx.get_tidy_dir(app_name, build_dir_name)
+    else:
+        build_root = command.ctx.get_build_dir(app_name, build_dir_name)
+    print(f"Build files have been written to: {build_root.as_posix()}")
+
+
 def configure_entry(
     command,
     app_name: str,
@@ -65,6 +81,8 @@ def build_entry(
     build_dir_name: str | None = None,
     profile_name: str | None = None,
     windows_icon_svg: str | None = None,
+    rust_runtime_sync: str | None = None,
+    runtime_platform: str | None = None,
     kill_build_procs: bool = False,
     run_command_fn=None,
     kill_build_processes_fn=None,
@@ -81,8 +99,14 @@ def build_entry(
         return sync_ret
 
     backend = command._resolve_backend(app_name)
+    resolved_build_dir_name = command.resolve_build_dir_name(
+        tidy=tidy,
+        build_dir_name=build_dir_name,
+        profile_name=profile_name,
+        app_name=app_name,
+    )
     if backend == "gradle":
-        return build_gradle.build_gradle(
+        ret = build_gradle.build_gradle(
             ctx=command.ctx,
             app_name=app_name,
             tidy=tidy,
@@ -92,14 +116,17 @@ def build_entry(
             profile_name=profile_name,
             run_command_fn=run_command_fn,
         )
+        if ret == 0:
+            _print_build_output_dir(
+                command=command,
+                app_name=app_name,
+                backend=backend,
+                build_dir_name=resolved_build_dir_name,
+                tidy=tidy,
+            )
+        return ret
     if backend == "cargo":
-        resolved_build_dir_name = command.resolve_build_dir_name(
-            tidy=tidy,
-            build_dir_name=build_dir_name,
-            profile_name=profile_name,
-            app_name=app_name,
-        )
-        return build_cargo.build_cargo(
+        ret = build_cargo.build_cargo(
             ctx=command.ctx,
             app_name=app_name,
             tidy=tidy,
@@ -108,10 +135,21 @@ def build_entry(
             build_dir_name=resolved_build_dir_name,
             profile_name=profile_name,
             windows_icon_svg=windows_icon_svg,
+            rust_runtime_sync=rust_runtime_sync,
+            runtime_platform=runtime_platform,
             run_command_fn=run_command_fn,
         )
+        if ret == 0:
+            _print_build_output_dir(
+                command=command,
+                app_name=app_name,
+                backend=backend,
+                build_dir_name=resolved_build_dir_name,
+                tidy=tidy,
+            )
+        return ret
 
-    return build_cmake.build_cmake(
+    ret = build_cmake.build_cmake(
         ctx=command.ctx,
         app_name=app_name,
         tidy=tidy,
@@ -120,6 +158,7 @@ def build_entry(
         cmake_args=cmake_args,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
+        runtime_platform=runtime_platform,
         resolve_build_dir_name_fn=command.resolve_build_dir_name,
         is_configured_fn=command._is_configured,
         needs_windows_config_reconfigure_fn=command._needs_windows_config_reconfigure,
@@ -127,6 +166,15 @@ def build_entry(
         sync_windows_runtime_config_copy_if_needed_fn=command._sync_windows_runtime_config_copy_if_needed,
         run_command_fn=run_command_fn,
     )
+    if ret == 0:
+        _print_build_output_dir(
+            command=command,
+            app_name=app_name,
+            backend=backend,
+            build_dir_name=resolved_build_dir_name,
+            tidy=tidy,
+        )
+    return ret
 
 
 def execute_entry(

@@ -227,6 +227,7 @@ path = "apps/demo"
                 cmake_args=None,
                 build_dir_name="build_fast",
                 profile_name="fast",
+                runtime_platform=None,
                 resolve_build_dir_name_fn=lambda tidy, build_dir_name, profile_name, app_name: (
                     build_dir_name or "build_fast"
                 ),
@@ -242,4 +243,60 @@ path = "apps/demo"
             self.assertEqual(
                 build_calls,
                 [["cmake", "--build", str(build_dir), "-j"]],
+            )
+
+    def test_runtime_platform_windows_adds_core_runtime_targets(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_text(
+                repo_root / "tools" / "toolchain" / "config.toml",
+                """
+[apps.tracer_core]
+path = "apps/tracer_core_shell"
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            app_dir = repo_root / "apps" / "tracer_core_shell"
+            build_dir = repo_root / "out" / "build" / "tracer_core_shell" / "build"
+            app_dir.mkdir(parents=True, exist_ok=True)
+            build_dir.mkdir(parents=True, exist_ok=True)
+
+            build_calls: list[list[str]] = []
+
+            def _run(command: list[str], env=None):
+                build_calls.append(command)
+                return 0
+
+            ret = build_cmake.build_cmake(
+                ctx=ctx,
+                app_name="tracer_core",
+                tidy=False,
+                source_scope=None,
+                extra_args=None,
+                cmake_args=None,
+                build_dir_name="build",
+                profile_name="release_bundle",
+                runtime_platform="windows",
+                resolve_build_dir_name_fn=lambda tidy, build_dir_name, profile_name, app_name: (
+                    build_dir_name or "build"
+                ),
+                is_configured_fn=lambda *args, **kwargs: True,
+                needs_windows_config_reconfigure_fn=lambda app_name, build_dir: False,
+                configure_fn=lambda **kwargs: 0,
+                sync_windows_runtime_config_copy_if_needed_fn=lambda **kwargs: 0,
+                run_command_fn=_run,
+            )
+
+            self.assertEqual(ret, 0)
+            self.assertEqual(
+                build_calls,
+                [[
+                    "cmake",
+                    "--build",
+                    str(build_dir),
+                    "-j",
+                    "--target",
+                    "tc_rpt_shared_lib",
+                    "tc_shared_dll",
+                ]],
             )

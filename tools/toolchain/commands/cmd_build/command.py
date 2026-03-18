@@ -209,6 +209,8 @@ class BuildCommand:
         build_dir_name: str | None = None,
         profile_name: str | None = None,
         windows_icon_svg: str | None = None,
+        rust_runtime_sync: str | None = None,
+        runtime_platform: str | None = None,
         kill_build_procs: bool = False,
         run_command_fn=None,
     ) -> int:
@@ -222,6 +224,8 @@ class BuildCommand:
             build_dir_name=build_dir_name,
             profile_name=profile_name,
             windows_icon_svg=windows_icon_svg,
+            rust_runtime_sync=rust_runtime_sync,
+            runtime_platform=runtime_platform,
             kill_build_procs=kill_build_procs,
             run_command_fn=run_command if run_command_fn is None else run_command_fn,
             kill_build_processes_fn=kill_build_processes,

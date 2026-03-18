@@ -1,6 +1,6 @@
+import json
 import os
 import shutil
-import json
 from collections.abc import Callable
 from pathlib import Path
 
@@ -112,15 +112,18 @@ def _load_runtime_manifest_required_files(manifest_path: Path) -> list[str]:
     return selected
 
 
-def _env_truthy(name: str) -> bool:
-    value = (os.getenv(name) or "").strip().lower()
-    return value in {"1", "true", "yes", "on"}
+def _resolve_rust_runtime_sync_mode(sync_mode: str | None) -> str:
+    normalized = (sync_mode or "").strip().lower()
+    if normalized in {"strict", "relaxed"}:
+        return normalized
+    return "strict"
 
 
 def _sync_windows_runtime_layout_for_rust(
     ctx: Context,
     app_name: str,
     build_dir_name: str,
+    runtime_sync_mode: str,
 ) -> int:
     if os.name != "nt":
         return 0
@@ -136,7 +139,7 @@ def _sync_windows_runtime_layout_for_rust(
     # When strict sync is enabled, only probe the current build dir.
     # This is useful for intentionally verifying warning paths where
     # core DLLs are absent for Rust-only builds.
-    if not _env_truthy("TT_RUST_RUNTIME_SYNC_STRICT"):
+    if runtime_sync_mode != "strict":
         runtime_bin_candidates.extend(
             [
                 ctx.get_build_layout("tracer_core", "build_fast").bin_dir,
@@ -225,11 +228,15 @@ def build_cargo(
     build_dir_name: str | None,
     profile_name: str | None,
     windows_icon_svg: str | None = None,
+    rust_runtime_sync: str | None = None,
+    runtime_platform: str | None = None,
     run_command_fn: Callable[..., int] | None = None,
 ) -> int:
     effective_run_command = run_command if run_command_fn is None else run_command_fn
     app_dir = ctx.get_app_dir(app_name)
     resolved_build_dir_name = (build_dir_name or "").strip() or "build_fast"
+    resolved_runtime_platform = (runtime_platform or "").strip().lower()
+    resolved_rust_runtime_sync = _resolve_rust_runtime_sync_mode(rust_runtime_sync)
 
     if tidy:
         print("--- build: cargo backend does not use `--tidy`; flag ignored.")
@@ -272,8 +279,11 @@ def build_cargo(
     )
     if copy_ret != 0:
         return copy_ret
-    return _sync_windows_runtime_layout_for_rust(
-        ctx=ctx,
-        app_name=app_name,
-        build_dir_name=resolved_build_dir_name,
-    )
+    if app_name == "tracer_windows_rust_cli" and resolved_runtime_platform == "windows":
+        return _sync_windows_runtime_layout_for_rust(
+            ctx=ctx,
+            app_name=app_name,
+            build_dir_name=resolved_build_dir_name,
+            runtime_sync_mode=resolved_rust_runtime_sync,
+        )
+    return 0

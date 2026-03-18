@@ -4,6 +4,8 @@ from .model import CommandSpec
 def command_specs() -> list[CommandSpec]:
     # Local imports keep command registry cheap and avoid early import cycles.
     from .handlers import (
+        analyze,
+        analyze_split,
         build,
         clean,
         config_migrate,
@@ -37,6 +39,8 @@ def command_specs() -> list[CommandSpec]:
     return [
         configure.COMMAND,
         build.COMMAND,
+        analyze.COMMAND,
+        analyze_split.COMMAND,
         verify.COMMAND,
         refresh_golden.COMMAND,
         artifact_size.COMMAND,

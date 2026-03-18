@@ -63,6 +63,103 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "fast")
         self.assertEqual(FakeBuildCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
 
+    def test_build_dispatches_rust_cli_windows_runtime(self):
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, *args, **kwargs):
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.build.BuildCommand", FakeBuildCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "build",
+                    "--app",
+                    "tracer_windows_rust_cli",
+                    "--profile",
+                    "release_bundle",
+                    "--runtime-platform",
+                    "windows",
+                    "--rust-runtime-sync",
+                    "strict",
+                ]
+            )
+
+        self.assertEqual(FakeBuildCommand.last_kwargs["runtime_platform"], "windows")
+        self.assertEqual(FakeBuildCommand.last_kwargs["rust_runtime_sync"], "strict")
+
+    def test_build_defaults_rust_cli_runtime_sync_to_strict(self):
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, *args, **kwargs):
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.build.BuildCommand", FakeBuildCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "build",
+                    "--app",
+                    "tracer_windows_rust_cli",
+                    "--profile",
+                    "release_bundle",
+                    "--runtime-platform",
+                    "windows",
+                ]
+            )
+
+        self.assertEqual(FakeBuildCommand.last_kwargs["runtime_platform"], "windows")
+        self.assertEqual(FakeBuildCommand.last_kwargs["rust_runtime_sync"], "strict")
+
+    def test_build_dispatches_runtime_platform(self):
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, *args, **kwargs):
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.build.BuildCommand", FakeBuildCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "build",
+                    "--app",
+                    "tracer_core",
+                    "--profile",
+                    "release_bundle",
+                    "--runtime-platform",
+                    "windows",
+                ]
+            )
+
+        self.assertEqual(FakeBuildCommand.last_kwargs["runtime_platform"], "windows")
+
+    def test_build_rejects_tracer_windows_rust_cli_without_runtime_platform(self):
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "build", "--app", "tracer_windows_rust_cli", "--profile", "release_bundle"],
+        ), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+        self.assertIn("--runtime-platform windows", stderr.getvalue())
+
     def test_validate_dispatches_plan_paths_and_run_name(self):
         class FakeValidateCommand:
             last_kwargs = None
@@ -133,6 +230,86 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeTidyCommand.last_kwargs["source_scope"], "core_family")
         self.assertEqual(FakeTidyCommand.last_kwargs["build_dir_name"], "build_tidy_core_family")
         self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "text")
+
+    def test_analyze_dispatches_source_scope_build_dir_and_profile(self):
+        class FakeAnalyzeCommand:
+            last_args = None
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeAnalyzeCommand.last_args = args
+                FakeAnalyzeCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.analyze.AnalyzeCommand", FakeAnalyzeCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "analyze",
+                    "--app",
+                    "tracer_core_shell",
+                    "--source-scope",
+                    "core_family",
+                    "--build-dir",
+                    "build_analyze_core_family",
+                    "--profile",
+                    "fast",
+                    "--jobs",
+                    "8",
+                ]
+            )
+
+        self.assertEqual(FakeAnalyzeCommand.last_args, ("tracer_core_shell",))
+        self.assertEqual(FakeAnalyzeCommand.last_kwargs["source_scope"], "core_family")
+        self.assertEqual(
+            FakeAnalyzeCommand.last_kwargs["build_dir_name"],
+            "build_analyze_core_family",
+        )
+        self.assertEqual(FakeAnalyzeCommand.last_kwargs["profile_name"], "fast")
+        self.assertEqual(FakeAnalyzeCommand.last_kwargs["jobs"], 8)
+
+    def test_analyze_split_dispatches_scope_build_dir_and_batch_size(self):
+        class FakeAnalyzeCommand:
+            last_args = None
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def split_only(self, *args, **kwargs):
+                FakeAnalyzeCommand.last_args = args
+                FakeAnalyzeCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.analyze_split.AnalyzeCommand",
+            FakeAnalyzeCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "analyze-split",
+                    "--app",
+                    "tracer_core_shell",
+                    "--source-scope",
+                    "core_family",
+                    "--build-dir",
+                    "build_analyze_core_family",
+                    "--batch-size",
+                    "7",
+                ]
+            )
+
+        self.assertEqual(FakeAnalyzeCommand.last_args, ("tracer_core_shell",))
+        self.assertEqual(FakeAnalyzeCommand.last_kwargs["source_scope"], "core_family")
+        self.assertEqual(
+            FakeAnalyzeCommand.last_kwargs["build_dir_name"],
+            "build_analyze_core_family",
+        )
+        self.assertEqual(FakeAnalyzeCommand.last_kwargs["batch_size"], 7)
 
     def test_tidy_dispatches_task_view(self):
         class FakeTidyCommand:

@@ -16,6 +16,7 @@ from .config import (
     TidySourceScopeConfig,
 )
 from .generated_paths import (
+    resolve_analyze_layout,
     resolve_build_layout,
     resolve_out_root,
     resolve_test_result_layout,
@@ -317,6 +318,12 @@ class Context:
 
     def get_tidy_dir(self, app_name: str, tidy_build_dir_name: str) -> Path:
         return self.get_tidy_layout(app_name, tidy_build_dir_name).root
+
+    def get_analyze_layout(self, app_name: str, analyze_workspace_name: str):
+        return resolve_analyze_layout(self.repo_root, app_name, analyze_workspace_name)
+
+    def get_analyze_dir(self, app_name: str, analyze_workspace_name: str) -> Path:
+        return self.get_analyze_layout(app_name, analyze_workspace_name).root
 
     def get_test_result_layout(self, result_target: str):
         return resolve_test_result_layout(self.repo_root, result_target)

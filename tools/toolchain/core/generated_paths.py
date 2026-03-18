@@ -7,6 +7,7 @@ from pathlib import Path
 OUT_DIR_NAME = "out"
 BUILD_DIR_NAME = "build"
 TIDY_DIR_NAME = "tidy"
+ANALYZE_DIR_NAME = "analyze"
 TEST_DIR_NAME = "test"
 VALIDATE_DIR_NAME = "validate"
 FULL_OUTPUT_LOG_NAME = "output.full.log"
@@ -41,6 +42,20 @@ class TidyLayout:
     batch_state_path: Path
     refresh_state_path: Path
     flow_state_path: Path
+
+
+@dataclass(frozen=True, slots=True)
+class AnalyzeLayout:
+    app_name: str
+    app_segment: str
+    workspace_name: str
+    root: Path
+    reports_dir: Path
+    unit_reports_dir: Path
+    issues_dir: Path
+    summary_json_path: Path
+    output_log_path: Path
+    raw_report_path: Path
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +101,10 @@ def resolve_build_root(repo_root: Path) -> Path:
 
 def resolve_tidy_root(repo_root: Path) -> Path:
     return resolve_out_root(repo_root) / TIDY_DIR_NAME
+
+
+def resolve_analyze_root(repo_root: Path) -> Path:
+    return resolve_out_root(repo_root) / ANALYZE_DIR_NAME
 
 
 def resolve_test_root(repo_root: Path) -> Path:
@@ -141,6 +160,31 @@ def resolve_tidy_layout(
         batch_state_path=(root / "batch_state.json").resolve(),
         refresh_state_path=(root / "refresh_state.json").resolve(),
         flow_state_path=(root / "flow_state.json").resolve(),
+    )
+
+
+def resolve_analyze_layout(
+    repo_root: Path,
+    app_name: str,
+    workspace_name: str,
+) -> AnalyzeLayout:
+    app_segment = normalize_output_app_name(app_name)
+    normalized_workspace = (workspace_name or "").strip()
+    if not normalized_workspace:
+        raise ValueError("empty workspace_name")
+    root = (resolve_analyze_root(repo_root) / app_segment / normalized_workspace).resolve()
+    reports_dir = (root / "reports").resolve()
+    return AnalyzeLayout(
+        app_name=app_name,
+        app_segment=app_segment,
+        workspace_name=normalized_workspace,
+        root=root,
+        reports_dir=reports_dir,
+        unit_reports_dir=(reports_dir / "units").resolve(),
+        issues_dir=(root / "issues").resolve(),
+        summary_json_path=(root / "summary.json").resolve(),
+        output_log_path=(root / "analyze.log").resolve(),
+        raw_report_path=(reports_dir / "run.sarif").resolve(),
     )
 
 
