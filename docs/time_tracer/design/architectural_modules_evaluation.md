@@ -20,7 +20,7 @@
 ### 2.1 语义定位对齐 (Semantics Alignment)
 *   **当前问题**：`tracer_core` 位于 `apps/` 目录下。在常规习惯中，`apps` 代表“最终产物”或“可执行程序”。
 *   **迁移逻辑**：`tracer_core` 本质上是项目的 **Domain & Application Engine**，它并不产生用户直接运行的 EXE，而是为 `rust_cli` (Windows) 和 `tracer_android` 提供核心能力。
-*   **收益**：将其移至 `libs/` 明确了其作为“基础设施/引擎模块”的定位，使 `apps/` 目录专注承载真正的展现层（CLI, Android, Harmony 等）。
+*   **收益**：将其移至 `libs/` 明确了其作为“基础设施/引擎模块”的定位，使 `apps/` 目录专注承载真正的展现层（CLI, Android 等）。
 
 ### 2.2 物理边界强化 (Clean Architecture Support)
 *   通过 C++ Modules 的 `export module tracer.core;`，我们可以强制要求外界只能访问 `api/` 层导出的符号。
@@ -37,7 +37,7 @@ time_tracer/
 ├── apps/                 # 展现层 (Thin Clients)
 │   ├── rust_cli/
 │   ├── tracer_android/
-│   └── tracer_harmony/
+│   └── ...
 ├── libs/                 # 核心引擎与组件 (The Engine)
 │   ├── tracer_core/      # 原 apps/tracer_core (Logic & Domain)
 │   ├── tracer_transport/ # DTOs & Codecs
