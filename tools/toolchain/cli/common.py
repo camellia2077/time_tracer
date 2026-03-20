@@ -68,6 +68,46 @@ def add_profile_arg(parser_obj: argparse.ArgumentParser, defaults: ParserDefault
         parser_obj.add_argument("--profile", default=None, help=help_text)
 
 
+def add_build_dir_arg(
+    parser_obj: argparse.ArgumentParser,
+    *,
+    help_text: str = (
+        "Override build directory name for backends without a fixed build directory "
+        "(for example CMake). Fixed-dir backends like `tracer_android` reject this flag."
+    ),
+) -> None:
+    parser_obj.add_argument(
+        "--build-dir",
+        default=None,
+        help=help_text,
+    )
+
+
+def add_kill_build_procs_args(parser_obj: argparse.ArgumentParser) -> None:
+    parser_obj.add_argument(
+        "--kill-build-procs",
+        action="store_true",
+        help="Kill cmake/ninja/ccache before configure/build (default: off)",
+    )
+    parser_obj.add_argument(
+        "--no-kill-build-procs",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+
+
+def add_concise_arg(
+    parser_obj: argparse.ArgumentParser,
+    *,
+    help_text: str = "Use concise top-level output with backend logs written to a log file.",
+) -> None:
+    parser_obj.add_argument(
+        "--concise",
+        action="store_true",
+        help=help_text,
+    )
+
+
 def add_source_scope_arg(
     parser_obj: argparse.ArgumentParser,
     defaults: ParserDefaults,

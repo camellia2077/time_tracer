@@ -163,7 +163,7 @@ cmake_args = [
 
             captured: list[list[str]] = []
 
-            def _capture_run(command: list[str], env=None):
+            def _capture_run(command: list[str], env=None, **_kwargs):
                 captured.append(command)
                 return 0
 
@@ -214,7 +214,7 @@ path = "apps/demo"
                 configure_calls.append(kwargs)
                 return 0
 
-            def _run(command: list[str], env=None):
+            def _run(command: list[str], env=None, **_kwargs):
                 build_calls.append(command)
                 return 0
 
@@ -263,7 +263,7 @@ path = "apps/tracer_core_shell"
 
             build_calls: list[list[str]] = []
 
-            def _run(command: list[str], env=None):
+            def _run(command: list[str], env=None, **_kwargs):
                 build_calls.append(command)
                 return 0
 

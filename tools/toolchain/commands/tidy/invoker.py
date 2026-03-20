@@ -51,6 +51,9 @@ def ensure_configured(
     build_dir: Path,
     source_scope: str | None = None,
     build_dir_name: str | None = None,
+    profile_name: str | None = None,
+    concise: bool = False,
+    log_path: Path | None = None,
 ) -> tuple[int, bool, float]:
     from ..cmd_build import BuildCommand
 
@@ -99,6 +102,8 @@ def ensure_configured(
         tidy=True,
         source_scope=source_scope,
         build_dir_name=build_dir_name,
+        profile_name=profile_name,
+        concise=concise,
     )
     configure_seconds = time.perf_counter() - configure_start
     return ret, True, configure_seconds
@@ -156,8 +161,19 @@ def build_module_prereq_command(
     return cmd
 
 
-def run_tidy_build(ctx: Context, cmd: list[str], log_path: Path) -> tuple[int, float]:
+def run_tidy_build(
+    ctx: Context,
+    cmd: list[str],
+    log_path: Path,
+    *,
+    output_mode: str = "live",
+) -> tuple[int, float]:
     build_start = time.perf_counter()
-    ret = run_command(cmd, env=ctx.setup_env(), log_file=log_path)
+    ret = run_command(
+        cmd,
+        env=ctx.setup_env(),
+        log_file=log_path,
+        output_mode=output_mode,
+    )
     build_seconds = time.perf_counter() - build_start
     return ret, build_seconds

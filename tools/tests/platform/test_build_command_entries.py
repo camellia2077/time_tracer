@@ -59,6 +59,17 @@ class _FakeBuildCommand:
         _ = app_name, build_dir_name
         return 0
 
+    def resolve_output_log_path(
+        self,
+        *,
+        app_name: str,
+        tidy: bool,
+        build_dir_name: str | None = None,
+        profile_name: str | None = None,
+    ) -> Path:
+        _ = app_name, tidy, build_dir_name, profile_name
+        return self.ctx.repo_root / "out" / "fake" / "build.log"
+
 
 class TestBuildCommandEntries(TestCase):
     def test_build_entry_prints_cmake_build_dir_after_success(self):

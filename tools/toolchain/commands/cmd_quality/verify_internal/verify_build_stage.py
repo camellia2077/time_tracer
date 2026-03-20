@@ -6,6 +6,12 @@ from ....services.suite_registry import resolve_suite_build_app
 from ...cmd_build import BuildCommand
 
 
+def _resolve_runtime_platform(app_name: str) -> str | None:
+    if app_name == "tracer_windows_rust_cli":
+        return "windows"
+    return None
+
+
 def execute_build_stage(
     *,
     ctx,
@@ -16,9 +22,10 @@ def execute_build_stage(
     cmake_args: list[str] | None,
     build_dir_name: str | None,
     profile_name: str | None,
+    concise: bool,
     kill_build_procs: bool,
     run_command_fn=None,
-) -> tuple[int, str, str]:
+) -> tuple[int, str, str, object]:
     build_app_name = resolve_suite_build_app(app_name) or app_name
     build_cmd = build_command_cls(ctx)
 
@@ -32,6 +39,7 @@ def execute_build_stage(
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             kill_build_procs=kill_build_procs,
             run_command_fn=run_command_fn,
         )
@@ -42,7 +50,13 @@ def execute_build_stage(
                 profile_name=profile_name,
                 app_name=app_name,
             )
-            return int(core_build_ret), resolved_core_build_dir_name, app_name
+            core_log_path = build_cmd.resolve_output_log_path(
+                app_name=app_name,
+                tidy=tidy,
+                build_dir_name=build_dir_name,
+                profile_name=profile_name,
+            )
+            return int(core_build_ret), resolved_core_build_dir_name, app_name, core_log_path
 
     build_ret = build_cmd.build(
         app_name=build_app_name,
@@ -51,6 +65,8 @@ def execute_build_stage(
         cmake_args=cmake_args,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
+        concise=concise,
+        runtime_platform=_resolve_runtime_platform(build_app_name),
         kill_build_procs=kill_build_procs,
         run_command_fn=run_command_fn,
     )
@@ -60,7 +76,13 @@ def execute_build_stage(
         profile_name=profile_name,
         app_name=build_app_name,
     )
-    return int(build_ret), resolved_build_dir_name, build_app_name
+    build_log_path = build_cmd.resolve_output_log_path(
+        app_name=build_app_name,
+        tidy=tidy,
+        build_dir_name=build_dir_name,
+        profile_name=profile_name,
+    )
+    return int(build_ret), resolved_build_dir_name, build_app_name, build_log_path
 
 
 def handle_post_build_state(
@@ -76,6 +98,7 @@ def handle_post_build_state(
     write_build_only_result_json_fn,
     print_failure_report_fn,
     print_result_paths_fn,
+    build_log_path,
 ) -> int | None:
     if build_ret != 0:
         write_build_only_result_json_fn(
@@ -93,6 +116,7 @@ def handle_post_build_state(
             next_action=f"Fix errors and rerun: {verify_command_text}",
             app_name=app_name,
             repo_root=repo_root,
+            log_path=build_log_path,
             fallback_key_error_hint="Build failed. See command output above.",
         )
         print_result_paths_fn(app_name=app_name, repo_root=repo_root)

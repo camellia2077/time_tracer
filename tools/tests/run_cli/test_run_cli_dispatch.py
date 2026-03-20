@@ -63,6 +63,37 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "fast")
         self.assertEqual(FakeBuildCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
 
+    def test_build_dispatches_concise_and_kill_build_procs(self):
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, *args, **kwargs):
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+            def resolve_output_log_path(self, **_kwargs):
+                return Path.cwd() / "build.log"
+
+        with patch("tools.toolchain.cli.handlers.build.BuildCommand", FakeBuildCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "build",
+                    "--app",
+                    "tracer_core",
+                    "--profile",
+                    "fast",
+                    "--concise",
+                    "--kill-build-procs",
+                ]
+            )
+
+        self.assertTrue(FakeBuildCommand.last_kwargs["concise"])
+        self.assertTrue(FakeBuildCommand.last_kwargs["kill_build_procs"])
+
     def test_build_dispatches_rust_cli_windows_runtime(self):
         class FakeBuildCommand:
             last_kwargs = None
@@ -185,7 +216,6 @@ class TestRunCliDispatch(TestCase):
                     "temp/import_batch01.paths",
                     "--run-name",
                     "batch01",
-                    "--verbose",
                 ]
             )
 
@@ -198,6 +228,33 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeValidateCommand.last_kwargs["paths_file"], "temp/import_batch01.paths")
         self.assertEqual(FakeValidateCommand.last_kwargs["run_name"], "batch01")
         self.assertTrue(FakeValidateCommand.last_kwargs["verbose"])
+
+    def test_validate_dispatches_quiet_flag(self):
+        class FakeValidateCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeValidateCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.validate.ValidateCommand", FakeValidateCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "validate",
+                    "--plan",
+                    "temp/import_batch01.toml",
+                    "--paths",
+                    "libs/tracer_core/src/a.cpp",
+                    "--quiet",
+                ]
+            )
+
+        self.assertIsNotNone(FakeValidateCommand.last_kwargs)
+        self.assertFalse(FakeValidateCommand.last_kwargs["verbose"])
 
     def test_tidy_dispatches_source_scope_and_build_dir(self):
         class FakeTidyCommand:
@@ -765,31 +822,6 @@ class TestRunCliDispatch(TestCase):
 
         self.assertEqual(rc, 2)
 
-    def test_verify_quick_tracer_android_keeps_build_dir_unset(self):
-        class FakeVerifyCommand:
-            last_kwargs = None
-
-            def __init__(self, _ctx):
-                pass
-
-            def execute(self, **kwargs):
-                FakeVerifyCommand.last_kwargs = kwargs
-                return 0
-
-        with patch("tools.toolchain.cli.handlers.quality.verify.VerifyCommand", FakeVerifyCommand):
-            self._assert_return_zero(
-                [
-                    "run.py",
-                    "verify",
-                    "--app",
-                    "tracer_android",
-                    "--quick",
-                ]
-            )
-
-        self.assertIsNotNone(FakeVerifyCommand.last_kwargs)
-        self.assertIsNone(FakeVerifyCommand.last_kwargs["build_dir_name"])
-
     def test_verify_rejects_build_dir_for_tracer_android(self):
         stderr = io.StringIO()
         with patch.object(
@@ -800,6 +832,55 @@ class TestRunCliDispatch(TestCase):
             rc = self.run_module.main()
 
         self.assertEqual(rc, 2)
+
+    def test_verify_rejects_removed_quick_flag(self):
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "verify", "--app", "tracer_core", "--quick"],
+        ), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+            self.run_module.main()
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("unrecognized arguments: --quick", stderr.getvalue())
+
+    def test_tidy_dispatches_profile_concise_and_kill_build_procs(self):
+        class FakeTidyCommand:
+            last_args = None
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeTidyCommand.last_args = args
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy",
+                    "--app",
+                    "tracer_core_shell",
+                    "--profile",
+                    "fast",
+                    "--build-dir",
+                    "build_tidy_core_family",
+                    "--concise",
+                    "--kill-build-procs",
+                    "--source-scope",
+                    "core_family",
+                ]
+            )
+
+        self.assertEqual(FakeTidyCommand.last_args, ("tracer_core_shell", []))
+        self.assertEqual(FakeTidyCommand.last_kwargs["profile_name"], "fast")
+        self.assertEqual(FakeTidyCommand.last_kwargs["build_dir_name"], "build_tidy_core_family")
+        self.assertTrue(FakeTidyCommand.last_kwargs["concise"])
+        self.assertTrue(FakeTidyCommand.last_kwargs["kill_build_procs"])
 
     def test_unrecognized_arguments_show_build_verify_hint(self):
         stderr = io.StringIO()

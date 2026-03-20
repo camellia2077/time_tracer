@@ -40,7 +40,10 @@ def configure_cargo(
     extra_args: list[str] | None,
     cmake_args: list[str] | None,
     build_dir_name: str | None,
+    log_file=None,
+    output_mode: str = "live",
 ) -> int:
+    _ = log_file, output_mode
     if tidy:
         print("--- configure: cargo backend does not use `--tidy`; flag ignored.")
     if build_dir_name:
@@ -231,6 +234,8 @@ def build_cargo(
     rust_runtime_sync: str | None = None,
     runtime_platform: str | None = None,
     run_command_fn: Callable[..., int] | None = None,
+    log_file=None,
+    output_mode: str = "live",
 ) -> int:
     effective_run_command = run_command if run_command_fn is None else run_command_fn
     app_dir = ctx.get_app_dir(app_name)
@@ -269,6 +274,8 @@ def build_cargo(
         cargo_cmd,
         cwd=app_dir,
         env=env,
+        log_file=log_file,
+        output_mode=output_mode,
     )
     if build_ret != 0:
         return build_ret

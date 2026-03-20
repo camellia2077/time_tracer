@@ -1,12 +1,57 @@
 import argparse
 
 from ....commands.tidy import TidyCommand
+from ....commands.shared.result_reporting import print_failure_report
 from ....core.context import Context
-from ...common import add_source_scope_arg
+from ...common import (
+    add_build_dir_arg,
+    add_concise_arg,
+    add_kill_build_procs_args,
+    add_profile_arg,
+    reject_unsupported_build_dir_override,
+    add_source_scope_arg,
+)
 from ...model import CommandSpec, ParserDefaults
+from ....commands.tidy import workspace as tidy_workspace
+
+
+def _build_command_text(args: argparse.Namespace) -> str:
+    parts = ["python tools/run.py tidy", "--app", args.app]
+    if args.profile:
+        parts.extend(["--profile", args.profile])
+    if args.build_dir:
+        parts.extend(["--build-dir", args.build_dir])
+    if args.kill_build_procs and not args.no_kill_build_procs:
+        parts.append("--kill-build-procs")
+    if args.concise:
+        parts.append("--concise")
+    if args.jobs is not None:
+        parts.extend(["--jobs", str(args.jobs)])
+    if args.parse_workers is not None:
+        parts.extend(["--parse-workers", str(args.parse_workers)])
+    if args.source_scope:
+        parts.extend(["--source-scope", args.source_scope])
+    if args.task_view and args.task_view != "text":
+        parts.extend(["--task-view", args.task_view])
+    if args.keep_going is True:
+        parts.append("--keep-going")
+    elif args.keep_going is False:
+        parts.append("--no-keep-going")
+    for extra_arg in getattr(args, "extra_args", []) or []:
+        if extra_arg == "--":
+            continue
+        parts.append(extra_arg)
+    return " ".join(parts)
 
 
 def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
+    add_profile_arg(parser, defaults)
+    add_build_dir_arg(
+        parser,
+        help_text="Override build directory name (default: build_tidy).",
+    )
+    add_kill_build_procs_args(parser)
+    add_concise_arg(parser)
     parser.add_argument("--jobs", type=int, default=None, help="Ninja parallel jobs, e.g. 16")
     parser.add_argument(
         "--parse-workers",
@@ -18,11 +63,6 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         parser,
         defaults,
         help_suffix="When omitted, use the app's default full tidy source set.",
-    )
-    parser.add_argument(
-        "--build-dir",
-        default=None,
-        help="Override tidy build directory name (default: build_tidy).",
     )
     parser.add_argument(
         "--task-view",
@@ -48,17 +88,45 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
+    build_dir_error = reject_unsupported_build_dir_override(
+        ctx=ctx,
+        app_name=args.app,
+        build_dir_name=args.build_dir,
+        command_name="tidy",
+    )
+    if build_dir_error != 0:
+        return build_dir_error
     cmd = TidyCommand(ctx)
-    return cmd.execute(
+    ret = cmd.execute(
         args.app,
         args.extra_args,
         jobs=args.jobs,
         parse_workers=args.parse_workers,
+        concise=bool(args.concise),
+        profile_name=args.profile,
+        kill_build_procs=bool(args.kill_build_procs and not args.no_kill_build_procs),
         keep_going=args.keep_going,
         source_scope=args.source_scope,
         build_dir_name=args.build_dir,
         task_view=args.task_view,
     )
+    if ret != 0:
+        workspace = tidy_workspace.resolve_workspace(
+            ctx,
+            build_dir_name=args.build_dir,
+            source_scope=args.source_scope,
+        )
+        print_failure_report(
+            command=_build_command_text(args),
+            exit_code=int(ret),
+            next_action=f"Fix errors and rerun: {_build_command_text(args)}",
+            app_name=args.app,
+            repo_root=ctx.repo_root,
+            log_path=ctx.get_tidy_dir(args.app, workspace.build_dir_name) / "build.log",
+            fallback_key_error_hint="Tidy failed. See command output above.",
+            include_result_json=False,
+        )
+    return ret
 
 
 COMMAND = CommandSpec(name="tidy", register=register, run=run)

@@ -30,4 +30,7 @@ def make_fake_build_command(exit_code: int, build_dir_name: str = "build_fast"):
         def resolve_build_dir_name(self, **_kwargs):
             return build_dir_name
 
+        def resolve_output_log_path(self, **_kwargs):
+            return REPO_ROOT / "out" / "fake" / "build.log"
+
     return FakeBuildCommand

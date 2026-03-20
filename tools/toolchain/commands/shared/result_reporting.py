@@ -37,6 +37,7 @@ def print_failure_report(
     state_json: Path | None = None,
     log_path: Path | None = None,
     fallback_key_error_hint: str = "See command output above.",
+    include_result_json: bool = True,
 ) -> None:
     paths = resolve_result_paths(repo_root=repo_root, app_name=app_name)
     resolved_log_path = log_path or paths["output_log"]
@@ -47,7 +48,8 @@ def print_failure_report(
     print(f"exit_code: {exit_code}")
     if state_json is not None:
         print(f"state_json: {state_json}")
-    print(f"result_json: {paths['result_json']}")
+    if include_result_json:
+        print(f"result_json: {paths['result_json']}")
     print(f"output_log: {resolved_log_path}")
     print("key_error_lines:")
     if key_error_lines:

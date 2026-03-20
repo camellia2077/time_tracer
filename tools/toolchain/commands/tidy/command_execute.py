@@ -7,6 +7,9 @@ def execute_tidy_command(
     extra_args: list[str] | None = None,
     jobs: int | None = None,
     parse_workers: int | None = None,
+    concise: bool = False,
+    profile_name: str | None = None,
+    kill_build_procs: bool = False,
     keep_going: bool | None = None,
     source_scope: str | None = None,
     build_dir_name: str | None = None,
@@ -18,17 +21,26 @@ def execute_tidy_command(
     log_path = paths["log_path"]
     tasks_dir = paths["tasks_dir"]
     ninja_log_path = paths["ninja_log_path"]
+    output_mode = "quiet" if concise else "live"
     overall_start = time.perf_counter()
     configure_seconds = 0.0
     build_seconds = 0.0
     parse_seconds = 0.0
     split_stats = None
 
+    if kill_build_procs:
+        from ...core.executor import kill_build_processes
+
+        kill_build_processes()
+
     ret, did_auto_configure, configure_seconds = command._ensure_configured(
         app_name=app_name,
         build_dir=build_dir,
         source_scope=source_scope,
         build_dir_name=build_dir_name,
+        profile_name=profile_name,
+        concise=concise,
+        log_path=log_path,
     )
     if ret != 0:
         print("--- Auto-configure failed. Aborting Tidy.")
@@ -42,7 +54,7 @@ def execute_tidy_command(
     ) = command._resolve_build_options(extra_args, jobs, keep_going)
     resolved_prebuild_targets = [target for target in (prebuild_targets or []) if str(target).strip()]
     if resolved_prebuild_targets:
-        prebuild_log_path = build_dir / "module_prereq_build.log"
+        prebuild_log_path = log_path
         prebuild_cmd = command._build_module_prereq_command(
             build_dir,
             resolved_prebuild_targets,
@@ -52,7 +64,11 @@ def execute_tidy_command(
             "--- Tidy module prebuild: "
             + ", ".join(resolved_prebuild_targets)
         )
-        prebuild_ret, _ = command._run_tidy_build(prebuild_cmd, prebuild_log_path)
+        prebuild_ret, _ = command._run_tidy_build(
+            prebuild_cmd,
+            prebuild_log_path,
+            output_mode=output_mode,
+        )
         if prebuild_ret != 0:
             print(f"--- Tidy module prebuild failed with code {prebuild_ret}.")
             return prebuild_ret
@@ -71,7 +87,11 @@ def execute_tidy_command(
         effective_jobs,
         effective_keep_going,
     )
-    ret, build_seconds = command._run_tidy_build(cmd, log_path)
+    ret, build_seconds = command._run_tidy_build(
+        cmd,
+        log_path,
+        output_mode=output_mode,
+    )
     if ret != 0:
         print(f"--- Tidy build finished with code {ret}. Processing logs anyway...")
 

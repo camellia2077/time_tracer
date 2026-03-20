@@ -33,6 +33,7 @@ class TestPlatformConfigSync(TestCase):
                 windows_output_root=windows_out,
                 android_output_root=android_out,
                 apply=True,
+                check=False,
                 show_diff=False,
                 allow_overwrite_source=False,
             )
@@ -48,6 +49,7 @@ class TestPlatformConfigSync(TestCase):
                     windows_output_root=windows_out,
                     android_output_root=android_out,
                     apply=True,
+                    check=False,
                     show_diff=False,
                     allow_overwrite_source=False,
                 )
@@ -55,6 +57,81 @@ class TestPlatformConfigSync(TestCase):
             output = capture.getvalue()
             self.assertIn("cache hit", output.lower())
             self.assertIn('"cache_hit": true', output.lower())
+
+    def test_check_mode_passes_when_output_is_current(self):
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            windows_out = temp_root / "windows_config"
+            android_out = temp_root / "android_config"
+
+            apply_ret = run_generation(
+                target="windows",
+                source_root=source_root,
+                windows_output_root=windows_out,
+                android_output_root=android_out,
+                apply=True,
+                check=False,
+                show_diff=False,
+                allow_overwrite_source=False,
+            )
+            self.assertEqual(apply_ret, 0)
+
+            capture = io.StringIO()
+            with redirect_stdout(capture):
+                check_ret = run_generation(
+                    target="windows",
+                    source_root=source_root,
+                    windows_output_root=windows_out,
+                    android_output_root=android_out,
+                    apply=False,
+                    check=True,
+                    show_diff=False,
+                    allow_overwrite_source=False,
+                )
+
+            self.assertEqual(check_ret, 0)
+            self.assertIn("up to date", capture.getvalue().lower())
+
+    def test_check_mode_fails_on_drift_without_writing(self):
+        source_root = REPO_ROOT / "assets" / "tracer_core" / "config"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            temp_root = Path(temp_dir)
+            windows_out = temp_root / "windows_config"
+            android_out = temp_root / "android_config"
+
+            apply_ret = run_generation(
+                target="windows",
+                source_root=source_root,
+                windows_output_root=windows_out,
+                android_output_root=android_out,
+                apply=True,
+                check=False,
+                show_diff=False,
+                allow_overwrite_source=False,
+            )
+            self.assertEqual(apply_ret, 0)
+
+            config_file = windows_out / "config.toml"
+            original = config_file.read_text(encoding="utf-8")
+            config_file.write_text(original + "\n# drift\n", encoding="utf-8")
+
+            capture = io.StringIO()
+            with redirect_stdout(capture):
+                check_ret = run_generation(
+                    target="windows",
+                    source_root=source_root,
+                    windows_output_root=windows_out,
+                    android_output_root=android_out,
+                    apply=False,
+                    check=True,
+                    show_diff=False,
+                    allow_overwrite_source=False,
+                )
+
+            self.assertEqual(check_ret, 1)
+            self.assertIn("drift detected", capture.getvalue().lower())
+            self.assertTrue(config_file.read_text(encoding="utf-8").endswith("# drift\n"))
 
     def test_toolchain_windows_output_root_matches_shared_path_constant(self):
         ctx = Context(REPO_ROOT)

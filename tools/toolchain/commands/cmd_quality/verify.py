@@ -103,7 +103,7 @@ class VerifyCommand:
             cmake_args=cmake_args,
         )
         suite_name = resolve_suite_name(app_name)
-        build_ret, resolved_build_dir_name, build_app_name = execute_build_stage(
+        build_ret, resolved_build_dir_name, build_app_name, build_log_path = execute_build_stage(
             ctx=self.ctx,
             build_command_cls=BuildCommand,
             app_name=app_name,
@@ -112,6 +112,7 @@ class VerifyCommand:
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             kill_build_procs=kill_build_procs,
             run_command_fn=effective_run_command,
         )
@@ -130,6 +131,7 @@ class VerifyCommand:
             write_build_only_result_json_fn=self._write_build_only_result_json,
             print_failure_report_fn=print_failure_report,
             print_result_paths_fn=print_result_paths,
+            build_log_path=build_log_path,
         )
         if early_exit is not None:
             return int(early_exit)

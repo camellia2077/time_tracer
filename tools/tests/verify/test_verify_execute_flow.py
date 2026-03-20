@@ -18,6 +18,11 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             def resolve_build_dir_name(self, **_kwargs):
                 return "build_fast"
 
+            def resolve_output_log_path(self, **_kwargs):
+                from pathlib import Path
+
+                return Path(__file__).resolve().parents[3] / "out" / "fake" / "build.log"
+
         with patch("tools.toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand):
             with patch(
                 "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
@@ -34,6 +39,10 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertEqual(
             FakeBuildCommand.build_calls[-1]["app_name"],
             "tracer_windows_rust_cli",
+        )
+        self.assertEqual(
+            FakeBuildCommand.build_calls[-1]["runtime_platform"],
+            "windows",
         )
         called_cmd = None
         for call in mocked_run.call_args_list:

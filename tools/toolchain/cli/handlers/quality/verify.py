@@ -3,10 +3,12 @@ import argparse
 from ....commands.cmd_quality.verify import VerifyCommand
 from ....core.context import Context
 from ...common import (
+    add_build_dir_arg,
+    add_concise_arg,
+    add_kill_build_procs_args,
     add_profile_arg,
     parse_cmake_args,
     reject_unsupported_build_dir_override,
-    resolve_fixed_build_dir,
 )
 from ...model import CommandSpec, ParserDefaults
 
@@ -14,32 +16,8 @@ from ...model import CommandSpec, ParserDefaults
 def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument("--tidy", action="store_true")
     add_profile_arg(parser, defaults)
-    parser.add_argument(
-        "--quick",
-        action="store_true",
-        help=(
-            "Shortcut for concise verify output; also uses `build_fast` when the app "
-            "does not declare a fixed backend build directory."
-        ),
-    )
-    parser.add_argument(
-        "--build-dir",
-        default=None,
-        help=(
-            "Override build directory name for backends without a fixed build directory "
-            "(for example CMake). Fixed-dir backends like `tracer_android` reject this flag."
-        ),
-    )
-    parser.add_argument(
-        "--kill-build-procs",
-        action="store_true",
-        help="Kill cmake/ninja/ccache before configure/build (default: off)",
-    )
-    parser.add_argument(
-        "--no-kill-build-procs",
-        action="store_true",
-        help=argparse.SUPPRESS,
-    )
+    add_build_dir_arg(parser)
+    add_kill_build_procs_args(parser)
     parser.add_argument(
         "--cmake-args",
         action="append",
@@ -50,10 +28,9 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
             "Can be repeated. Recommended: --cmake-args=-DENABLE_LTO=OFF"
         ),
     )
-    parser.add_argument(
-        "--concise",
-        action="store_true",
-        help="Use concise output for test runner.",
+    add_concise_arg(
+        parser,
+        help_text="Use concise top-level output and concise test runner output.",
     )
     parser.add_argument(
         "--scope",
@@ -72,12 +49,6 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
-    build_dir_name = args.build_dir
-    concise = bool(args.concise)
-    if args.quick:
-        if build_dir_name is None and not resolve_fixed_build_dir(ctx, args.app):
-            build_dir_name = "build_fast"
-        concise = True
     build_dir_error = reject_unsupported_build_dir_override(
         ctx=ctx,
         app_name=args.app,
@@ -92,9 +63,9 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         tidy=args.tidy,
         extra_args=args.extra_args,
         cmake_args=parse_cmake_args(getattr(args, "cmake_args", [])),
-        build_dir_name=build_dir_name,
+        build_dir_name=args.build_dir,
         profile_name=args.profile,
-        concise=concise,
+        concise=bool(args.concise),
         kill_build_procs=kill_build_procs,
         verify_scope=args.scope,
     )

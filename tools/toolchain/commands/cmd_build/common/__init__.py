@@ -1,10 +1,6 @@
 from .android_override import (
-    extract_gradle_property_values,
-    resolve_android_config_gradle_args,
-    resolve_android_config_gradle_property,
     resolve_android_native_optimization_gradle_args,
     resolve_android_native_optimization_gradle_property,
-    validate_android_gradle_property_overrides,
 )
 from .config_sync import (
     resolve_config_sync_target,
@@ -27,7 +23,7 @@ from .profile_backend import (
     resolve_gradle_wrapper,
     resolve_profile,
 )
-from .utils import normalize_cache_path
+from .utils import normalize_cache_path, resolve_command_output_log_path
 from .windows_override import (
     extract_cmake_definition_values,
     resolve_windows_config_cmake_args,
@@ -47,10 +43,6 @@ __all__ = [
     "strip_cmake_definition",
     "validate_windows_config_source_override",
     "sync_windows_runtime_config_copy_if_needed",
-    "resolve_android_config_gradle_args",
-    "extract_gradle_property_values",
-    "validate_android_gradle_property_overrides",
-    "resolve_android_config_gradle_property",
     "resolve_android_native_optimization_gradle_args",
     "resolve_android_native_optimization_gradle_property",
     "resolve_backend",
@@ -65,6 +57,7 @@ __all__ = [
     "resolve_gradle_tasks",
     "resolve_gradle_wrapper",
     "normalize_cache_path",
+    "resolve_command_output_log_path",
     "has_cmake_definition",
     "resolve_toolchain_flags",
 ]

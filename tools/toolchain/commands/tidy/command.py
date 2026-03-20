@@ -35,6 +35,9 @@ class TidyCommand:
         build_dir: Path,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
+        profile_name: str | None = None,
+        concise: bool = False,
+        log_path: Path | None = None,
     ) -> tuple[int, bool, float]:
         return tidy_invoker.ensure_configured(
             self.ctx,
@@ -42,6 +45,9 @@ class TidyCommand:
             build_dir,
             source_scope=source_scope,
             build_dir_name=build_dir_name,
+            profile_name=profile_name,
+            concise=concise,
+            log_path=log_path,
         )
 
     def _resolve_build_options(
@@ -70,8 +76,19 @@ class TidyCommand:
             effective_keep_going,
         )
 
-    def _run_tidy_build(self, cmd: list[str], log_path: Path) -> tuple[int, float]:
-        return tidy_invoker.run_tidy_build(self.ctx, cmd, log_path)
+    def _run_tidy_build(
+        self,
+        cmd: list[str],
+        log_path: Path,
+        *,
+        output_mode: str = "live",
+    ) -> tuple[int, float]:
+        return tidy_invoker.run_tidy_build(
+            self.ctx,
+            cmd,
+            log_path,
+            output_mode=output_mode,
+        )
 
     def _build_module_prereq_command(
         self,
@@ -243,6 +260,9 @@ class TidyCommand:
         extra_args: list[str] | None = None,
         jobs: int | None = None,
         parse_workers: int | None = None,
+        concise: bool = False,
+        profile_name: str | None = None,
+        kill_build_procs: bool = False,
         keep_going: bool | None = None,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
@@ -259,6 +279,9 @@ class TidyCommand:
             extra_args=extra_args,
             jobs=jobs,
             parse_workers=parse_workers,
+            concise=concise,
+            profile_name=profile_name,
+            kill_build_procs=kill_build_procs,
             keep_going=keep_going,
             source_scope=workspace.source_scope,
             build_dir_name=workspace.build_dir_name,

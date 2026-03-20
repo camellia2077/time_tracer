@@ -26,6 +26,7 @@ def configure_entry(
     cmake_args: list[str] | None = None,
     build_dir_name: str | None = None,
     profile_name: str | None = None,
+    concise: bool = False,
     kill_build_procs: bool = False,
     sync_platform_config: bool = True,
     run_command_fn=None,
@@ -40,6 +41,13 @@ def configure_entry(
             return sync_ret
 
     backend = command._resolve_backend(app_name)
+    output_log_path = command.resolve_output_log_path(
+        app_name=app_name,
+        tidy=tidy,
+        build_dir_name=build_dir_name,
+        profile_name=profile_name,
+    )
+    output_mode = "quiet" if concise else "live"
     if backend == "gradle":
         return build_gradle.configure_gradle(
             app_name=app_name,
@@ -47,6 +55,8 @@ def configure_entry(
             extra_args=extra_args,
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
+            log_file=output_log_path,
+            output_mode=output_mode,
         )
     if backend == "cargo":
         return build_cargo.configure_cargo(
@@ -55,6 +65,8 @@ def configure_entry(
             extra_args=extra_args,
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
+            log_file=output_log_path,
+            output_mode=output_mode,
         )
 
     return build_cmake.configure_cmake(
@@ -68,6 +80,8 @@ def configure_entry(
         profile_name=profile_name,
         resolve_build_dir_name_fn=command.resolve_build_dir_name,
         run_command_fn=run_command_fn,
+        log_file=output_log_path,
+        output_mode=output_mode,
     )
 
 
@@ -80,6 +94,7 @@ def build_entry(
     cmake_args: list[str] | None = None,
     build_dir_name: str | None = None,
     profile_name: str | None = None,
+    concise: bool = False,
     windows_icon_svg: str | None = None,
     rust_runtime_sync: str | None = None,
     runtime_platform: str | None = None,
@@ -105,6 +120,13 @@ def build_entry(
         profile_name=profile_name,
         app_name=app_name,
     )
+    output_log_path = command.resolve_output_log_path(
+        app_name=app_name,
+        tidy=tidy,
+        build_dir_name=build_dir_name,
+        profile_name=profile_name,
+    )
+    output_mode = "quiet" if concise else "live"
     if backend == "gradle":
         ret = build_gradle.build_gradle(
             ctx=command.ctx,
@@ -115,6 +137,8 @@ def build_entry(
             build_dir_name=build_dir_name,
             profile_name=profile_name,
             run_command_fn=run_command_fn,
+            log_file=output_log_path,
+            output_mode=output_mode,
         )
         if ret == 0:
             _print_build_output_dir(
@@ -138,6 +162,8 @@ def build_entry(
             rust_runtime_sync=rust_runtime_sync,
             runtime_platform=runtime_platform,
             run_command_fn=run_command_fn,
+            log_file=output_log_path,
+            output_mode=output_mode,
         )
         if ret == 0:
             _print_build_output_dir(
@@ -165,6 +191,9 @@ def build_entry(
         configure_fn=command.configure,
         sync_windows_runtime_config_copy_if_needed_fn=command._sync_windows_runtime_config_copy_if_needed,
         run_command_fn=run_command_fn,
+        log_file=output_log_path,
+        output_mode=output_mode,
+        concise=concise,
     )
     if ret == 0:
         _print_build_output_dir(
@@ -186,6 +215,7 @@ def execute_entry(
     cmake_args: list[str] | None = None,
     build_dir_name: str | None = None,
     profile_name: str | None = None,
+    concise: bool = False,
     kill_build_procs: bool = False,
     kill_build_processes_fn=None,
     run_command_fn=None,
@@ -201,6 +231,7 @@ def execute_entry(
         cmake_args=cmake_args,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
+        concise=concise,
         kill_build_procs=False,
         sync_platform_config=True,
         run_command_fn=run_command_fn,
@@ -215,6 +246,7 @@ def execute_entry(
         cmake_args=None,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
+        concise=concise,
         kill_build_procs=False,
         run_command_fn=run_command_fn,
     )

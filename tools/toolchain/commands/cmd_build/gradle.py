@@ -11,7 +11,10 @@ def configure_gradle(
     extra_args: list[str] | None,
     cmake_args: list[str] | None,
     build_dir_name: str | None,
+    log_file=None,
+    output_mode: str = "live",
 ) -> int:
+    _ = log_file, output_mode
     if tidy:
         print("--- configure: gradle backend does not use `--tidy`; flag ignored.")
     if build_dir_name and build_dir_name != "build":
@@ -33,6 +36,8 @@ def build_gradle(
     build_dir_name: str | None,
     profile_name: str | None,
     run_command_fn: Callable[..., int] | None = None,
+    log_file=None,
+    output_mode: str = "live",
 ) -> int:
     effective_run_command = run_command if run_command_fn is None else run_command_fn
     if tidy:
@@ -57,19 +62,6 @@ def build_gradle(
             ctx=ctx,
             app_name=app_name,
         )
-    is_valid_override, error_message = build_common.validate_android_gradle_property_overrides(
-        ctx=ctx,
-        app_name=app_name,
-        gradle_args=gradle_extra_args,
-    )
-    if not is_valid_override:
-        print(error_message)
-        return 2
-    if not build_common.resolve_android_config_gradle_args(gradle_extra_args):
-        gradle_extra_args += build_common.resolve_android_config_gradle_property(
-            ctx=ctx,
-            app_name=app_name,
-        )
     gradle_cmd = [
         build_common.resolve_gradle_wrapper(ctx, app_name),
         *gradle_tasks,
@@ -79,4 +71,6 @@ def build_gradle(
         gradle_cmd,
         cwd=ctx.get_app_dir(app_name),
         env=ctx.setup_env(),
+        log_file=log_file,
+        output_mode=output_mode,
     )

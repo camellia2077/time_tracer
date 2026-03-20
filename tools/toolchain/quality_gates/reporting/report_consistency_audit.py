@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--run-verify-core",
         action="store_true",
-        help="Run `python tools/run.py verify --app tracer_core --quick --scope task` before audit.",
+        help="Run `python tools/run.py verify --app tracer_core --profile fast --scope task --concise` before audit.",
     )
     parser.add_argument(
         "--fail-on-diff",

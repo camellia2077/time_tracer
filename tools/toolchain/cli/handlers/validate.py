@@ -6,6 +6,7 @@ from ..model import CommandSpec, ParserDefaults
 
 
 def register(parser: argparse.ArgumentParser, _defaults: ParserDefaults) -> None:
+    parser.set_defaults(verbose=True)
     parser.add_argument(
         "--plan",
         required=True,
@@ -32,7 +33,14 @@ def register(parser: argparse.ArgumentParser, _defaults: ParserDefaults) -> None
     parser.add_argument(
         "--verbose",
         action="store_true",
-        help="Mirror full command output to the console while still writing logs.",
+        dest="verbose",
+        help="Mirror full command output to the console while still writing logs (default).",
+    )
+    parser.add_argument(
+        "--quiet",
+        action="store_false",
+        dest="verbose",
+        help="Write logs only and suppress live command output in the terminal.",
     )
 
 

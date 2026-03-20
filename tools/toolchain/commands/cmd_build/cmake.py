@@ -173,6 +173,8 @@ def configure_cmake(
     profile_name: str | None,
     resolve_build_dir_name_fn: Callable[[bool, str | None, str | None, str | None], str],
     run_command_fn: Callable[..., int],
+    log_file=None,
+    output_mode: str = "live",
 ) -> int:
     app = ctx.get_app_metadata(app_name)
     resolved_build_dir_name = resolve_build_dir_name_fn(
@@ -268,7 +270,12 @@ def configure_cmake(
         + toolchain_flags
         + configure_args
     )
-    return run_command_fn(config_cmd, env=ctx.setup_env())
+    return run_command_fn(
+        config_cmd,
+        env=ctx.setup_env(),
+        log_file=log_file,
+        output_mode=output_mode,
+    )
 
 
 def build_cmake(
@@ -287,6 +294,9 @@ def build_cmake(
     configure_fn: Callable[..., int],
     sync_windows_runtime_config_copy_if_needed_fn: Callable[[str, str], int],
     run_command_fn: Callable[..., int],
+    log_file=None,
+    output_mode: str = "live",
+    concise: bool = False,
 ) -> int:
     resolved_build_dir_name = resolve_build_dir_name_fn(
         tidy,
@@ -324,6 +334,7 @@ def build_cmake(
             cmake_args=filtered_cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             kill_build_procs=False,
             sync_platform_config=False,
         )
@@ -334,7 +345,12 @@ def build_cmake(
         print(f"--- build: applying build targets: {', '.join(effective_build_targets)}")
         build_cmd += ["--target", *effective_build_targets]
     build_cmd += filtered_build_args
-    build_ret = run_command_fn(build_cmd, env=ctx.setup_env())
+    build_ret = run_command_fn(
+        build_cmd,
+        env=ctx.setup_env(),
+        log_file=log_file,
+        output_mode=output_mode,
+    )
     if build_ret != 0:
         return build_ret
     return sync_windows_runtime_config_copy_if_needed_fn(

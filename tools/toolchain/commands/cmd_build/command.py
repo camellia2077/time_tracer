@@ -64,28 +64,6 @@ class BuildCommand:
             build_dir_name,
         )
 
-    @staticmethod
-    def _resolve_android_config_gradle_args(extra_args: list[str]) -> bool:
-        return build_common.resolve_android_config_gradle_args(extra_args)
-
-    @staticmethod
-    def _extract_gradle_property_values(args: list[str], key: str) -> list[str]:
-        return build_common.extract_gradle_property_values(args, key)
-
-    def _validate_android_gradle_property_overrides(
-        self,
-        app_name: str,
-        gradle_args: list[str],
-    ) -> tuple[bool, str]:
-        return build_common.validate_android_gradle_property_overrides(
-            self.ctx,
-            app_name,
-            gradle_args,
-        )
-
-    def _resolve_android_config_gradle_property(self, app_name: str) -> list[str]:
-        return build_common.resolve_android_config_gradle_property(self.ctx, app_name)
-
     # --- Backend/profile/build-dir helpers ---
     def _resolve_backend(self, app_name: str) -> str:
         return build_common.resolve_backend(self.ctx, app_name)
@@ -134,6 +112,29 @@ class BuildCommand:
     def _resolve_gradle_wrapper(self, app_name: str) -> str:
         return build_common.resolve_gradle_wrapper(self.ctx, app_name)
 
+    def resolve_output_log_path(
+        self,
+        *,
+        app_name: str,
+        tidy: bool,
+        build_dir_name: str | None = None,
+        profile_name: str | None = None,
+    ) -> Path:
+        backend = self._resolve_backend(app_name)
+        resolved_build_dir_name = self.resolve_build_dir_name(
+            tidy=tidy,
+            build_dir_name=build_dir_name,
+            profile_name=profile_name,
+            app_name=app_name,
+        )
+        return build_common.resolve_command_output_log_path(
+            ctx=self.ctx,
+            app_name=app_name,
+            backend=backend,
+            build_dir_name=resolved_build_dir_name,
+            tidy=tidy,
+        )
+
     # --- CMake cache/toolchain helpers ---
     def _is_configured(
         self,
@@ -180,6 +181,7 @@ class BuildCommand:
         cmake_args: list[str] | None = None,
         build_dir_name: str | None = None,
         profile_name: str | None = None,
+        concise: bool = False,
         kill_build_procs: bool = False,
         sync_platform_config: bool = True,
         run_command_fn=None,
@@ -193,6 +195,7 @@ class BuildCommand:
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             kill_build_procs=kill_build_procs,
             sync_platform_config=sync_platform_config,
             run_command_fn=run_command if run_command_fn is None else run_command_fn,
@@ -208,6 +211,7 @@ class BuildCommand:
         cmake_args: list[str] | None = None,
         build_dir_name: str | None = None,
         profile_name: str | None = None,
+        concise: bool = False,
         windows_icon_svg: str | None = None,
         rust_runtime_sync: str | None = None,
         runtime_platform: str | None = None,
@@ -223,6 +227,7 @@ class BuildCommand:
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             windows_icon_svg=windows_icon_svg,
             rust_runtime_sync=rust_runtime_sync,
             runtime_platform=runtime_platform,
@@ -241,6 +246,7 @@ class BuildCommand:
         cmake_args: list[str] | None = None,
         build_dir_name: str | None = None,
         profile_name: str | None = None,
+        concise: bool = False,
         kill_build_procs: bool = False,
         run_command_fn=None,
     ) -> int:
@@ -253,6 +259,7 @@ class BuildCommand:
             cmake_args=cmake_args,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
+            concise=concise,
             kill_build_procs=kill_build_procs,
             kill_build_processes_fn=kill_build_processes,
             run_command_fn=run_command if run_command_fn is None else run_command_fn,

@@ -38,3 +38,20 @@ class TestValidateCliHandler(TestCase):
         self.assertEqual(kwargs["paths_file"], "temp/import_batch01.paths")
         self.assertEqual(kwargs["run_name"], "batch01")
         self.assertTrue(kwargs["verbose"])
+
+    def test_run_passes_quiet_mode(self):
+        args = argparse.Namespace(
+            plan="temp/import_batch01.toml",
+            paths=[],
+            paths_file=None,
+            run_name=None,
+            verbose=False,
+        )
+
+        with patch("tools.toolchain.cli.handlers.validate.ValidateCommand") as mocked_command:
+            mocked_command.return_value.execute.return_value = 0
+            result = validate_handler.run(args, self.ctx)
+
+        self.assertEqual(result, 0)
+        kwargs = mocked_command.return_value.execute.call_args.kwargs
+        self.assertFalse(kwargs["verbose"])
