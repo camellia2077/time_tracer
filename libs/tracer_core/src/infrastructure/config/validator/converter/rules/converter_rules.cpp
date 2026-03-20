@@ -1,12 +1,12 @@
 // infrastructure/config/validator/converter/rules/converter_rules.cpp
-import tracer.core.domain.ports.diagnostics;
-
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
 
 #include <algorithm>
 #include <set>
 #include <string>
 #include <string_view>
+
+import tracer.core.domain.ports.diagnostics;
 
 namespace modports = tracer::core::domain::ports;
 

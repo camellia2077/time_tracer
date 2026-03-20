@@ -1,9 +1,9 @@
 // infrastructure/persistence/sqlite_data_query_service_dispatch.cpp
-import tracer.core.infrastructure.query.data.orchestrators;
-
 #include <stdexcept>
 
 #include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+
+import tracer.core.infrastructure.query.data.orchestrators;
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace infra_data_query_orchestrators =

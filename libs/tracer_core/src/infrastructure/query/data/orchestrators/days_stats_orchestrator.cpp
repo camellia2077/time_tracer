@@ -1,12 +1,12 @@
 // infrastructure/query/data/orchestrators/days_stats_orchestrator.cpp
+#include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
+
+#include <utility>
+
 import tracer.core.infrastructure.query.data.internal.period;
 import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.renderers;
 import tracer.core.infrastructure.query.data.stats;
-
-#include "infrastructure/query/data/orchestrators/days_stats_orchestrator.hpp"
-
-#include <utility>
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

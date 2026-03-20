@@ -1,11 +1,11 @@
 // domain/logic/validator/txt/facade/text_validator.cpp
-import tracer.core.shared.string_utils;
-import tracer.core.domain.logic.validator.txt.rules;
-
 #include "domain/logic/validator/txt/facade/text_validator.hpp"
 
 #include <iostream>
 #include <sstream>
+
+import tracer.core.shared.string_utils;
+import tracer.core.domain.logic.validator.txt.rules;
 
 namespace validator::txt {
 

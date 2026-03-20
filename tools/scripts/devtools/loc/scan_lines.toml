@@ -14,7 +14,7 @@ over_inclusive = false
 
 [kt]
 display_name = "Kotlin"
-default_paths = ["apps/tracer_android"]
+default_paths = ["apps/android"]
 extensions = [".kt"]
 ignore_dirs = [".git", ".gradle", "build", ".idea", "captures"]
 ignore_prefixes = []

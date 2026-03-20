@@ -1,10 +1,10 @@
 // infrastructure/query/data/renderers/data_query_renderer.cpp
+#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
+
 import tracer.core.application.reporting.tree.data;
 import tracer.core.infrastructure.query.data.renderers.semantic_json_renderer;
 import tracer.core.infrastructure.query.data.renderers.text_renderer;
 import tracer.core.infrastructure.query.data.repository.types;
-
-#include "infrastructure/query/data/renderers/data_query_renderer.hpp"
 
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {

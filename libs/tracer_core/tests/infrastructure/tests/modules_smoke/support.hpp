@@ -38,6 +38,7 @@ inline auto WriteSmokeFile(const std::filesystem::path& path,
 }
 
 auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int;
+auto RunInfrastructureModuleCryptoExchangeSmoke() -> int;
 auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int;
 auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int;
 auto RunInfrastructureModulePersistenceSmoke() -> int;

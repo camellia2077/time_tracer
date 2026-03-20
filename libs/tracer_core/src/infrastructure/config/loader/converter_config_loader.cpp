@@ -1,7 +1,4 @@
 // infrastructure/config/loader/converter_config_loader.cpp
-import tracer.adapters.io.core.fs;
-import tracer.core.infrastructure.config.loader.toml_loader_utils;
-
 #include "infrastructure/config/loader/converter_config_loader.hpp"
 
 #include <algorithm>
@@ -10,6 +7,9 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 #include <string_view>
 
 #include "infrastructure/config/validator/converter/rules/converter_rules.hpp"
+
+import tracer.adapters.io.core.fs;
+import tracer.core.infrastructure.config.loader.toml_loader_utils;
 
 namespace fs = std::filesystem;
 namespace modcore = tracer::adapters::io::modcore;

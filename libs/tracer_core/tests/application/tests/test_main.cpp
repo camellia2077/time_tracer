@@ -9,6 +9,7 @@ auto main() -> int {
   tracer_core::application::tests::RunReportTests(state);
   tracer_core::application::tests::RunDataQueryTests(state);
   tracer_core::application::tests::RunImportServiceTests(state);
+  tracer_core::application::tests::RunTracerExchangeTests(state);
 
   if (state.failures == 0) {
     std::cout << "[PASS] time_tracker_core_api_tests" << '\n';

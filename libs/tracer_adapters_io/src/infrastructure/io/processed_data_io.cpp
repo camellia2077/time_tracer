@@ -1,8 +1,4 @@
 // infrastructure/io/processed_data_io.cpp
-import tracer.adapters.io.core.fs;
-import tracer.adapters.io.core.writer;
-import tracer.core.domain.ports.diagnostics;
-
 #include "infrastructure/io/internal/runtime_adapter_types.hpp"
 
 #include <exception>
@@ -12,6 +8,10 @@ import tracer.core.domain.ports.diagnostics;
 #include "infrastructure/io/file_import_reader.hpp"
 #include "infrastructure/io/processed_json_validation.hpp"
 #include "infrastructure/serialization/json_serializer.hpp"
+
+import tracer.adapters.io.core.fs;
+import tracer.adapters.io.core.writer;
+import tracer.core.domain.ports.diagnostics;
 
 namespace modcore = tracer::adapters::io::modcore;
 namespace modports = tracer::core::domain::modports;
@@ -59,7 +59,7 @@ auto ProcessedDataWriter::Write(
     try {
       modcore::CreateDirectories(month_output_dir);
 
-      modcore::WriteContent(
+      modcore::WriteCanonicalText(
           output_file_path, serializer::JsonSerializer::SerializeDays(month_days, 4));
 
       written_files.push_back(output_file_path);

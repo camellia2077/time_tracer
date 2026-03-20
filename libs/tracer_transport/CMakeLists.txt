@@ -15,7 +15,6 @@ add_library(ttr_lib STATIC
 target_sources(ttr_lib PUBLIC
     FILE_SET transport_modules TYPE CXX_MODULES FILES
         src/modules/tracer.transport.errors.cppm
-        src/modules/tracer.transport.envelope.cppm
         src/modules/tracer.transport.fields.cppm
         src/modules/tracer.transport.cppm
 )
@@ -24,7 +23,7 @@ set_target_properties(ttr_lib PROPERTIES
 )
 
 if(COMMAND setup_app_target)
-    setup_app_target(ttr_lib)
+    setup_app_target(ttr_lib NO_PCH)
 endif()
 
 target_include_directories(ttr_lib PUBLIC

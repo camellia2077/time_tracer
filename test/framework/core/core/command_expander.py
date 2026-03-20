@@ -1,13 +1,20 @@
 from ..conf.definitions import CommandSpec, TestContext
 
 _LEGACY_COMMAND_ALIASES = {
-    "validate_structure": "validate-structure",
-    "validate_logic": "validate-logic",
+    "validate_structure": ["validate", "structure"],
+    "validate_logic": ["validate", "logic"],
 }
 
 
-def normalize_command_name(name: str) -> str:
-    return _LEGACY_COMMAND_ALIASES.get(name, name)
+def normalize_command_tokens(args: list[str]) -> list[str]:
+    if not args:
+        return args
+
+    normalized = _LEGACY_COMMAND_ALIASES.get(args[0])
+    if normalized is None:
+        return args
+
+    return [*normalized, *args[1:]]
 
 
 def expand_commands(
@@ -39,7 +46,7 @@ def expand_commands(
         if formatted_args and not command.raw_command:
             first_arg = formatted_args[0]
             if not first_arg.startswith("-"):
-                formatted_args[0] = normalize_command_name(first_arg)
+                formatted_args = normalize_command_tokens(formatted_args)
 
         expanded.append(
             CommandSpec(

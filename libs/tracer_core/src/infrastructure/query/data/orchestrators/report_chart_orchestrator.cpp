@@ -1,10 +1,10 @@
 // infrastructure/query/data/orchestrators/report_chart_orchestrator.cpp
-import tracer.core.infrastructure.query.data.internal.report_mapping;
-import tracer.core.infrastructure.query.data.renderers;
-
 #include "infrastructure/query/data/orchestrators/report_chart_orchestrator.hpp"
 
 #include <utility>
+
+import tracer.core.infrastructure.query.data.internal.report_mapping;
+import tracer.core.infrastructure.query.data.renderers;
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

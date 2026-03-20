@@ -1,9 +1,9 @@
 // infrastructure/reports/data/utils/project_tree_builder.cpp
-import tracer.core.shared.string_utils;
-
 #include "infrastructure/reports/data/utils/project_tree_builder.hpp"
 
 #include <cstddef>
+
+import tracer.core.shared.string_utils;
 
 using tracer::core::shared::string_utils::SplitString;
 

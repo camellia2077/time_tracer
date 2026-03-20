@@ -3,6 +3,7 @@ struct PipelineRunSpec {
   fs::path output_root;
 
   DateCheckMode date_check_mode = DateCheckMode::kNone;
+  bool structure_validation_blocks_conversion = false;
   bool save_processed_output = false;
 
   explicit PipelineRunSpec(fs::path out) : output_root(std::move(out)) {}

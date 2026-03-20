@@ -105,11 +105,14 @@ auto ValidatePalettes(const toml::table& palettes_table,
 auto ValidateHeatmapConfigFile(const fs::path& heatmap_path) -> void {
   toml::table table;
   try {
-    table = toml::parse_file(heatmap_path.string());
+    table = toml::parse(FileReader::ReadCanonicalText(heatmap_path));
   } catch (const toml::parse_error& err) {
     ThrowConfigFieldError(
         heatmap_path, "",
         "failed to parse TOML: " + std::string(err.description()) + ".");
+  } catch (const std::exception& err) {
+    ThrowConfigFieldError(
+        heatmap_path, "", "failed to load TOML: " + std::string(err.what()) + ".");
   }
 
   const auto kSchemaVersion = RequireTypedField<int64_t>(

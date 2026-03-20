@@ -17,6 +17,25 @@ import tracer.core.domain.types.app_options;
 using tracer::core::domain::types::AppOptions;
 
 namespace tracer::core::application::pipeline {
+namespace {
+
+[[nodiscard]] auto BuildStructureValidationStepLabel(
+    bool structure_validation_blocks_conversion) -> std::string_view {
+  if (structure_validation_blocks_conversion) {
+    return "[STEP] Step: Pre-validating File Structure before Conversion...";
+  }
+  return "[STEP] Step: Validating File Structure...";
+}
+
+[[nodiscard]] auto BuildStructureValidationFailureMessage(
+    bool structure_validation_blocks_conversion) -> std::string_view {
+  if (structure_validation_blocks_conversion) {
+    return "[Pipeline] 转换前结构预检失败，已跳过转换阶段。";
+  }
+  return "[Pipeline] 文件结构校验失败，流程终止。";
+}
+
+}  // namespace
 
 PipelineOrchestrator::PipelineOrchestrator(
     fs::path output_root,
@@ -42,9 +61,15 @@ PipelineOrchestrator::PipelineOrchestrator(
 
 auto PipelineOrchestrator::Run(const AppOptions& options)
     -> std::optional<PipelineSession> {
+  const bool kRunStructureValidationBeforeConversion =
+      options.convert && options.run_structure_validation_before_conversion;
+  const bool kRunStructureValidation =
+      options.validate_structure || kRunStructureValidationBeforeConversion;
   PipelineSession session(output_root_);
   session.config.input_root = options.input_path;
   session.config.date_check_mode = options.date_check_mode;
+  session.config.structure_validation_blocks_conversion =
+      options.convert && kRunStructureValidation;
   session.config.save_processed_output = options.save_processed_output;
   session.state.validation_issue_reporter = validation_issue_reporter_;
 
@@ -69,10 +94,14 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
     }
   }
 
-  if (options.validate_structure) {
+  if (kRunStructureValidation) {
     tracer_core::application::ports::LogInfo(
-        "[STEP] Step: Validating File Structure...");
+        BuildStructureValidationStepLabel(
+            session.config.structure_validation_blocks_conversion));
     if (!StructureValidationStage::Execute(session)) {
+      tracer_core::application::ports::LogError(
+          BuildStructureValidationFailureMessage(
+              session.config.structure_validation_blocks_conversion));
       return std::nullopt;
     }
   }
@@ -80,7 +109,7 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   if (options.convert) {
     if (!ConversionStage::Execute(session)) {
       tracer_core::application::ports::LogError(
-          "[Pipeline] 转换步骤存在错误，终止流程。");
+          "[Pipeline] 转换阶段失败，流程终止。");
       return std::nullopt;
     }
 

@@ -1,7 +1,4 @@
 // infrastructure/serialization/json_serializer.cpp
-import tracer.core.domain.ports.diagnostics;
-import tracer.core.shared.string_utils;
-
 #include "infrastructure/serialization/json_serializer.hpp"
 
 #include <nlohmann/json.hpp>
@@ -9,6 +6,9 @@ import tracer.core.shared.string_utils;
 #include <string>
 
 #include "infrastructure/schema/day_schema.hpp"
+
+import tracer.core.domain.ports.diagnostics;
+import tracer.core.shared.string_utils;
 
 using tracer::core::shared::string_utils::SplitString;
 

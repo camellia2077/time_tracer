@@ -1,13 +1,13 @@
 // infrastructure/query/data/orchestrators/tree_orchestrator.cpp
-import tracer.core.application.reporting.tree.nodes;
-import tracer.core.infrastructure.query.data.internal.period;
-import tracer.core.infrastructure.query.data.repository;
-import tracer.core.infrastructure.query.data.renderers;
-
 #include "infrastructure/query/data/orchestrators/tree_orchestrator.hpp"
 
 #include <stdexcept>
 #include <utility>
+
+import tracer.core.application.reporting.tree.nodes;
+import tracer.core.infrastructure.query.data.internal.period;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.renderers;
 
 namespace app_tree = tracer::core::application::reporting::tree;
 namespace query_internal =

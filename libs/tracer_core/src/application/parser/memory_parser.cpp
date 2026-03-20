@@ -1,9 +1,9 @@
 // application/parser/memory_parser.cpp
-import tracer.core.domain.ports.diagnostics;
-
 #include "application/parser/memory_parser.hpp"
 
 #include <optional>
+
+import tracer.core.domain.ports.diagnostics;
 
 namespace modports = tracer::core::domain::ports;
 

@@ -1,12 +1,17 @@
 import tracer.core.shared;
 
+#include <cstdint>
 #include <iostream>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
 
 namespace {
 
+using tracer::core::shared::modtext::Canonicalize;
+using tracer::core::shared::modtext::RequireCanonicalText;
+using tracer::core::shared::modtext::ToUtf8Bytes;
 using tracer::core::shared::modperiod::FormatIsoWeek;
 using tracer::core::shared::modperiod::IsoWeek;
 using tracer::core::shared::modperiod::IsoWeekEndDate;
@@ -35,6 +40,37 @@ void TestStringModuleContract(int& failures) {
          failures);
   Expect(tokens.size() == 3U && tokens[1] == "b",
          "SplitString module contract content mismatch.", failures);
+}
+
+void TestCanonicalTextContract(int& failures) {
+  const std::string legacy_text = "\xEF\xBB\xBFy2026\r\nm03\r0101\n";
+  Expect(RequireCanonicalText(legacy_text, "legacy.txt") ==
+             "y2026\nm03\n0101\n",
+         "Canonical text normalization should drop BOM and normalize line endings.",
+         failures);
+
+  const auto empty_text = Canonicalize(std::string_view{}, "empty.txt");
+  Expect(empty_text.ok && empty_text.text.empty(),
+         "Canonicalize should accept empty UTF-8 input.", failures);
+
+  const std::string bom_only = "\xEF\xBB\xBF";
+  const auto bom_only_text = Canonicalize(bom_only, "bom-only.txt");
+  Expect(bom_only_text.ok && bom_only_text.text.empty(),
+         "Canonicalize should accept a BOM-only UTF-8 file.", failures);
+
+  const std::vector<std::uint8_t> invalid_bytes = {0xFFU, 0x61U};
+  const auto invalid = Canonicalize(
+      std::span<const std::uint8_t>(invalid_bytes.data(), invalid_bytes.size()),
+      "invalid.txt");
+  Expect(!invalid.ok && invalid.text.empty(),
+         "Canonicalize should reject invalid UTF-8 bytes.", failures);
+  Expect(!invalid.ok &&
+             invalid.error_message.find("Invalid UTF-8") != std::string::npos,
+         "Canonicalize invalid UTF-8 error should mention UTF-8 validation.",
+         failures);
+
+  Expect(ToUtf8Bytes("a\nb") == std::vector<std::uint8_t>{'a', '\n', 'b'},
+         "ToUtf8Bytes should preserve canonical UTF-8 bytes.", failures);
 }
 
 void TestPeriodBridge(int& failures) {
@@ -73,6 +109,7 @@ void TestTypesBridge(int& failures) {
 auto main() -> int {
   int failures = 0;
   TestStringModuleContract(failures);
+  TestCanonicalTextContract(failures);
   TestPeriodBridge(failures);
   TestTypesBridge(failures);
 

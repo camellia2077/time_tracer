@@ -6,6 +6,7 @@
 
 #include "infrastructure/logging/validation_issue_reporter.hpp"
 #include "application/ports/i_validation_issue_reporter.hpp"
+#include "shared/utils/ide_location_formatter.hpp"
 
 import tracer.core.domain.ports.diagnostics;
 
@@ -13,6 +14,8 @@ namespace modports = tracer::core::domain::ports;
 
 namespace tracer::core::infrastructure::logging {
 namespace {
+
+using tracer::core::shared::ide_location::BuildIdeLocationPrefix;
 
 auto BuildLogHeader(std::string_view filename) -> std::string {
   std::ostringstream stream;
@@ -22,17 +25,25 @@ auto BuildLogHeader(std::string_view filename) -> std::string {
   return stream.str();
 }
 
-auto FlushReport(const std::ostringstream& report_stream) -> bool {
-  return modports::AppendErrorReport(report_stream.str());
+auto GetEnabledReportDestinationLabel() -> std::optional<std::string> {
+  const std::string kDestinationLabel = modports::GetErrorReportDestinationLabel();
+  if (kDestinationLabel.empty() || kDestinationLabel == "disabled") {
+    return std::nullopt;
+  }
+  return kDestinationLabel;
 }
 
-void EmitReportSavedMessage(bool appended) {
-  const std::string kDestinationLabel = modports::GetErrorReportDestinationLabel();
-  if (appended) {
-    modports::EmitInfo("详细的错误日志已保存至: " + kDestinationLabel);
+void FlushReportIfEnabled(const std::ostringstream& report_stream) {
+  const auto kDestinationLabel = GetEnabledReportDestinationLabel();
+  if (!kDestinationLabel.has_value()) {
     return;
   }
-  modports::EmitWarn("详细错误日志写入失败，目标: " + kDestinationLabel);
+
+  if (modports::AppendErrorReport(report_stream.str())) {
+    modports::EmitInfo("详细的错误日志已保存至: " + *kDestinationLabel);
+    return;
+  }
+  modports::EmitWarn("详细错误日志写入失败，目标: " + *kDestinationLabel);
 }
 
 auto GetErrorTypeHeader(validator::ErrorType type) -> std::string {
@@ -86,30 +97,17 @@ auto GetDiagnosticHeader(const std::string& code) -> std::string {
 auto BuildLocationPrefix(const validator::Error& error,
                          std::string_view fallback_label) -> std::string {
   if (error.source_span.has_value() && error.source_span->HasLine()) {
-    std::string file_label = error.source_span->file_path;
-    if (file_label.empty()) {
-      file_label = std::string(fallback_label);
-    }
-    std::string location_prefix;
-    if (!file_label.empty()) {
-      location_prefix = file_label + ":";
-    }
-    if (error.source_span->line_end > error.source_span->line_start &&
-        error.source_span->line_start > 0) {
-      location_prefix += std::to_string(error.source_span->line_start) + "-" +
-                         std::to_string(error.source_span->line_end) +
-                         ": Line " +
-                         std::to_string(error.source_span->line_start) + "-" +
-                         std::to_string(error.source_span->line_end) + ": ";
-    } else {
-      location_prefix += std::to_string(error.source_span->line_start) +
-                         ": Line " +
-                         std::to_string(error.source_span->line_start) + ": ";
-    }
-    return location_prefix;
+    const bool kHasFileLabel = !error.source_span->file_path.empty() ||
+                               !fallback_label.empty();
+    const std::string kIdePrefix =
+        kHasFileLabel ? BuildIdeLocationPrefix(*error.source_span, fallback_label)
+                      : std::string();
+    return kIdePrefix +
+           BuildIdeLocationPrefix(std::string_view{}, error.source_span->line_start,
+                                  error.source_span->line_end);
   }
   if (error.line_number > 0) {
-    return "Line " + std::to_string(error.line_number) + ": ";
+    return BuildIdeLocationPrefix(std::string_view{}, error.line_number);
   }
   return "";
 }
@@ -117,30 +115,17 @@ auto BuildLocationPrefix(const validator::Error& error,
 auto BuildLocationPrefix(const validator::Diagnostic& diagnostic,
                          std::string_view fallback_label) -> std::string {
   if (diagnostic.source_span.has_value() && diagnostic.source_span->HasLine()) {
-    std::string file_label = diagnostic.source_span->file_path;
-    if (file_label.empty()) {
-      file_label = std::string(fallback_label);
-    }
-    std::string location_prefix;
-    if (!file_label.empty()) {
-      location_prefix = file_label + ":";
-    }
-    if (diagnostic.source_span->line_end > diagnostic.source_span->line_start &&
-        diagnostic.source_span->line_start > 0) {
-      location_prefix +=
-          std::to_string(diagnostic.source_span->line_start) + "-" +
-          std::to_string(diagnostic.source_span->line_end) + ": Line " +
-          std::to_string(diagnostic.source_span->line_start) + "-" +
-          std::to_string(diagnostic.source_span->line_end) + ": ";
-    } else {
-      location_prefix +=
-          std::to_string(diagnostic.source_span->line_start) + ": Line " +
-          std::to_string(diagnostic.source_span->line_start) + ": ";
-    }
-    return location_prefix;
+    const bool kHasFileLabel = !diagnostic.source_span->file_path.empty() ||
+                               !fallback_label.empty();
+    const std::string kIdePrefix =
+        kHasFileLabel ? BuildIdeLocationPrefix(*diagnostic.source_span, fallback_label)
+                      : std::string();
+    return kIdePrefix + BuildIdeLocationPrefix(std::string_view{},
+                                               diagnostic.source_span->line_start,
+                                               diagnostic.source_span->line_end);
   }
   if (!fallback_label.empty()) {
-    return std::string(fallback_label) + ": ";
+    return BuildIdeLocationPrefix(fallback_label, 0);
   }
   return "";
 }
@@ -182,7 +167,7 @@ void ValidationIssueReporter::ReportStructureErrors(
     }
   }
 
-  EmitReportSavedMessage(FlushReport(report_stream));
+  FlushReportIfEnabled(report_stream);
 }
 
 void ValidationIssueReporter::ReportLogicDiagnostics(
@@ -224,7 +209,7 @@ void ValidationIssueReporter::ReportLogicDiagnostics(
     }
   }
 
-  EmitReportSavedMessage(FlushReport(report_stream));
+  FlushReportIfEnabled(report_stream);
 }
 
 }  // namespace tracer::core::infrastructure::logging

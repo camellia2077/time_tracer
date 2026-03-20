@@ -1,13 +1,13 @@
-Checks: >
+# 基础 Google 与通用规范
+# -google-runtime-references 保持关闭：这里不再强制套用旧的非常量引用限制。
+# C++23 相关增强当前额外保留：std::print / nullptr / override / pass-by-value / identifier-naming。
+Checks: >-
   -*,
-  # 基础 Google 与通用规范
   google-*,
   readability-*,
   modernize-*,
   bugprone-*,
-  -google-runtime-references, # Google 现已允许在某些情况下使用非常量引用
-  
-  # C++23 特定与现代化增强
+  -google-runtime-references,
   modernize-use-std-print,
   modernize-use-nullptr,
   modernize-use-override,

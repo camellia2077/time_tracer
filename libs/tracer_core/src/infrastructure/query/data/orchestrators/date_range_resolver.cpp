@@ -1,6 +1,4 @@
 // infrastructure/query/data/orchestrators/date_range_resolver.cpp
-import tracer.core.infrastructure.query.data.internal.request;
-
 #include "infrastructure/query/data/orchestrators/date_range_resolver.hpp"
 
 #include <chrono>
@@ -8,6 +6,8 @@ import tracer.core.infrastructure.query.data.internal.request;
 #include <stdexcept>
 #include <string>
 #include <string_view>
+
+import tracer.core.infrastructure.query.data.internal.request;
 
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;

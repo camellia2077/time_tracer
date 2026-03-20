@@ -137,12 +137,12 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
   RequireOk(api.runtime_ingest(runtime, kIngestRequest.c_str()),
             "callback ingest");
 
-  const fs::path kCryptoInput = input_root / "2026" / "2026-01.txt";
+  const fs::path kCryptoInput = input_root;
   Require(fs::exists(kCryptoInput),
-          "callback crypto input file missing: test/data/2026/2026-01.txt");
+          "callback crypto input directory missing: test/data");
   const fs::path kCryptoOutput = input_root / ".." / "output" /
                                  "tracer_core_c_api_stability" / "callback" /
-                                 "2026-01.tracer";
+                                 "test-data.tracer";
   std::error_code io_error;
   fs::create_directories(fs::absolute(kCryptoOutput).parent_path(), io_error);
   Require(!io_error,

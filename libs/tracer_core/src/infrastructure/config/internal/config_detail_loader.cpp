@@ -1,6 +1,6 @@
-import tracer.core.infrastructure.config.loader.report_config_loader;
-
 #include "infrastructure/config/internal/config_detail_loader.hpp"
+
+import tracer.core.infrastructure.config.loader.report_config_loader;
 
 using tracer::core::infrastructure::config::ReportConfigLoader;
 namespace tracer::core::infrastructure::config::internal {

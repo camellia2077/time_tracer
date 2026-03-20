@@ -8,9 +8,14 @@ export namespace tracer::adapters::io::modcore {
 
 using Writer = ::FileWriter;
 
-inline auto WriteContent(const std::filesystem::path& path,
-                         const std::string& content) -> void {
-  Writer::WriteContent(path, content);
+inline auto WriteBytes(const std::filesystem::path& path,
+                       std::span<const std::uint8_t> bytes) -> void {
+  Writer::WriteBytes(path, bytes);
+}
+
+inline auto WriteCanonicalText(const std::filesystem::path& path,
+                               std::string_view content) -> void {
+  Writer::WriteCanonicalText(path, content);
 }
 
 }  // namespace tracer::adapters::io::modcore

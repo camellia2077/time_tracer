@@ -14,6 +14,7 @@ struct AppOptions {
   bool convert = false;
   bool validate_structure = false;
   bool validate_logic = false;
+  bool run_structure_validation_before_conversion = false;
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   bool save_processed_output = false;
 };

@@ -1,6 +1,4 @@
 // infrastructure/persistence/sqlite_data_query_service.cpp
-import tracer.core.infrastructure.query.data.renderers;
-
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
 
 #include <optional>
@@ -9,6 +7,8 @@ import tracer.core.infrastructure.query.data.renderers;
 
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 #include "infrastructure/persistence/sqlite_data_query_service_internal.hpp"
+
+import tracer.core.infrastructure.query.data.renderers;
 
 namespace infrastructure::persistence {
 namespace infra_data_query_renderers =

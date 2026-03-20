@@ -11,6 +11,7 @@ module;
 module tracer.core.infrastructure.config.config_loader;
 
 import tracer.adapters.io.core.fs;
+import tracer.adapters.io.core.reader;
 import tracer.core.infrastructure.config.internal.config_detail_loader;
 import tracer.core.infrastructure.config.internal.config_parser_utils;
 
@@ -44,10 +45,13 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
 
   toml::table tbl;
   try {
-    tbl = toml::parse_file(main_config_path_.string());
+    tbl = toml::parse(modcore::ReadCanonicalText(main_config_path_));
   } catch (const toml::parse_error& error) {
     throw std::runtime_error("Failed to parse config.toml: " +
                              std::string(error.description()));
+  } catch (const std::exception& error) {
+    throw std::runtime_error("Failed to load config.toml: " +
+                             std::string(error.what()));
   }
 
   AppConfig app_config;

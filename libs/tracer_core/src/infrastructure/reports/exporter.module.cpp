@@ -44,7 +44,7 @@ void Exporter::WriteReportToFile(std::string_view report_content,
   try {
     modcore::CreateDirectories(output_dir);
 
-    modcore::WriteContent(output_path, std::string(report_content));
+    modcore::WriteCanonicalText(output_path, report_content);
 
   } catch (const std::exception& e) {
     modports::EmitError("Error: Failed to write report to " +

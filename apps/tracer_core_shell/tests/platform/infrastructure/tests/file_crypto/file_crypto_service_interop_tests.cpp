@@ -75,9 +75,9 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
       ResolveRepoRootForInterop() / "test" / "data" / "2026" / "2026-01.txt";
   const auto kInteropTracer = kPaths.test_root / "windows_export.tracer";
   const auto kAndroidImportTxt = kPaths.test_root / "android_import.txt";
-  const auto kConverterConfigToml = ResolveRepoRootForInterop() / "apps" /
-                                     "tracer_core" / "config" / "converter" /
-                                     "interval_processor_config.toml";
+  const auto kConverterConfigToml = ResolveRepoRootForInterop() / "assets" /
+                                    "tracer_core" / "config" / "converter" /
+                                    "interval_processor_config.toml";
   constexpr std::string_view kPassphrase = "phase3-interop-passphrase";
 
   RemoveTree(kPaths.test_root);

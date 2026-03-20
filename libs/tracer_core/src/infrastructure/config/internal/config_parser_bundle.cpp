@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "infrastructure/config/internal/config_parser_utils_internal.hpp"
+#include "infrastructure/io/core/file_reader.hpp"
 
 namespace ConfigParserUtils::internal {
 
@@ -118,11 +119,15 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
 
   toml::table bundle_tbl;
   try {
-    bundle_tbl = toml::parse_file(kBundlePath.string());
+    bundle_tbl = toml::parse(FileReader::ReadCanonicalText(kBundlePath));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse bundle TOML [" +
                              kBundlePath.string() +
                              "]: " + std::string(err.description()));
+  } catch (const std::exception& err) {
+    throw std::runtime_error("Failed to load bundle TOML [" +
+                             kBundlePath.string() +
+                             "]: " + std::string(err.what()));
   }
 
   static_cast<void>(RequireTypedField<int64_t>(bundle_tbl, "schema_version",
@@ -243,11 +248,15 @@ auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
 
   toml::table bundle_tbl;
   try {
-    bundle_tbl = toml::parse_file(kBundlePath.string());
+    bundle_tbl = toml::parse(FileReader::ReadCanonicalText(kBundlePath));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse bundle TOML [" +
                              kBundlePath.string() +
                              "]: " + std::string(err.description()));
+  } catch (const std::exception& err) {
+    throw std::runtime_error("Failed to load bundle TOML [" +
+                             kBundlePath.string() +
+                             "]: " + std::string(err.what()));
   }
 
   static_cast<void>(RequireTypedField<int64_t>(bundle_tbl, "schema_version",

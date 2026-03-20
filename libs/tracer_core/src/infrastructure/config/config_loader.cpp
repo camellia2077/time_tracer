@@ -1,13 +1,15 @@
 // infrastructure/config/config_loader.cpp
-import tracer.adapters.io.core.fs;
-import tracer.core.infrastructure.config.internal.config_detail_loader;
-import tracer.core.infrastructure.config.internal.config_parser_utils;
-
 #include "infrastructure/config/config_loader.hpp"
 
 #include <toml++/toml.h>
 
 #include <stdexcept>
+
+#include "infrastructure/io/core/file_reader.hpp"
+
+import tracer.adapters.io.core.fs;
+import tracer.core.infrastructure.config.internal.config_detail_loader;
+import tracer.core.infrastructure.config.internal.config_parser_utils;
 
 namespace fs = std::filesystem;
 namespace modcore = tracer::adapters::io::modcore;
@@ -40,10 +42,13 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
 
   toml::table tbl;
   try {
-    tbl = toml::parse_file(main_config_path_.string());
+    tbl = toml::parse(FileReader::ReadCanonicalText(main_config_path_));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse config.toml: " +
                              std::string(err.description()));
+  } catch (const std::exception& err) {
+    throw std::runtime_error("Failed to load config.toml: " +
+                             std::string(err.what()));
   }
 
   AppConfig app_config;

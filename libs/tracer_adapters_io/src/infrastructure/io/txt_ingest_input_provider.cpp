@@ -1,13 +1,14 @@
 // infrastructure/io/txt_ingest_input_provider.cpp
-import tracer.adapters.io.core.fs;
-import tracer.adapters.io.core.reader;
-import tracer.adapters.io.utils.file_utils;
-
 #include "infrastructure/io/internal/runtime_adapter_types.hpp"
 
 #include <algorithm>
 #include <string>
 #include <utility>
+
+import tracer.adapters.io.core.fs;
+import tracer.adapters.io.core.reader;
+import tracer.adapters.io.utils.file_utils;
+
 namespace modcore = tracer::adapters::io::modcore;
 namespace modutils = tracer::adapters::io::modutils;
 
@@ -40,7 +41,7 @@ auto TxtIngestInputProviderAdapter::CollectTextInputs(
     collection.inputs.push_back(
         {.source_id = file_path.string(),
          .source_label = std::move(source_label),
-         .content = modcore::ReadContent(file_path)});
+         .content = modcore::ReadCanonicalText(file_path)});
   }
 
   return collection;

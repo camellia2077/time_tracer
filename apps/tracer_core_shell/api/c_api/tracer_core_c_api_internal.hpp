@@ -36,6 +36,8 @@ struct TreeQueryResponse;
 
 struct TtCoreRuntimeHandle {
   infrastructure::bootstrap::AndroidRuntime runtime;
+  std::filesystem::path output_root;
+  std::filesystem::path converter_config_toml_path;
 };
 
 namespace tracer_core::core::c_api::internal {

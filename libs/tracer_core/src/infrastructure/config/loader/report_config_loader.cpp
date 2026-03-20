@@ -1,5 +1,3 @@
-import tracer.core.infrastructure.config.loader.toml_loader_utils;
-
 #include "infrastructure/config/loader/report_config_loader.hpp"
 
 #include <toml++/toml.h>
@@ -11,6 +9,8 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 #include <string>
 #include <string_view>
 #include <vector>
+
+import tracer.core.infrastructure.config.loader.toml_loader_utils;
 
 namespace fs = std::filesystem;
 namespace modloader = tracer::core::infrastructure::config::loader;

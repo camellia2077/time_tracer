@@ -1,7 +1,4 @@
 // infrastructure/query/data/renderers/semantic_json_renderer.cpp
-import tracer.core.application.reporting.tree.data;
-import tracer.core.infrastructure.query.data.repository.types;
-
 #include "infrastructure/query/data/renderers/semantic_json_renderer.hpp"
 
 #include <algorithm>
@@ -11,6 +8,9 @@ import tracer.core.infrastructure.query.data.repository.types;
 #include <string_view>
 #include <utility>
 #include <vector>
+
+import tracer.core.application.reporting.tree.data;
+import tracer.core.infrastructure.query.data.repository.types;
 
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {

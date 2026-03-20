@@ -1,9 +1,9 @@
 // application/service/converter_service.cpp
-import tracer.core.domain.logic.converter.core;
-
 #include "application/service/converter_service.hpp"
 
 #include "application/parser/text_parser.hpp"
+
+import tracer.core.domain.logic.converter.core;
 
 using tracer::core::domain::modlogic::converter::DayProcessor;
 

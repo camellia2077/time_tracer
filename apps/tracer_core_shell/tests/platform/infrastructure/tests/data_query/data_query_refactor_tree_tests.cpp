@@ -132,7 +132,7 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/tracer_android/runtime/src/main/java/com/example/tracer/"
+          "apps/android/runtime/src/main/java/com/example/tracer/"
           "runtime/"
           "controller/RuntimeQueryDelegate.kt",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",

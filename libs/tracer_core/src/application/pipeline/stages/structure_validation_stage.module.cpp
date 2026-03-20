@@ -18,9 +18,6 @@ using tracer::core::domain::modlogic::validator_txt::TextValidator;
 namespace tracer::core::application::pipeline {
 
 auto StructureValidationStage::Execute(PipelineSession& session) -> bool {
-  tracer_core::application::ports::LogInfo(
-      "Step: Validating Source Structure (TXT)...");
-
   TextValidator validator(session.state.converter_config);
 
   bool all_valid = true;
@@ -44,12 +41,24 @@ auto StructureValidationStage::Execute(PipelineSession& session) -> bool {
   }
 
   if (all_valid) {
-    tracer_core::application::ports::LogInfo(
-        "Structure validation passed for " + std::to_string(files_checked) +
-        " files.");
+    if (session.config.structure_validation_blocks_conversion) {
+      tracer_core::application::ports::LogInfo(
+          "Source structure precheck passed for " +
+          std::to_string(files_checked) + " files. Proceeding to conversion.");
+    } else {
+      tracer_core::application::ports::LogInfo(
+          "Structure validation passed for " + std::to_string(files_checked) +
+          " files.");
+    }
   } else {
-    tracer_core::application::ports::LogError(
-        "Structure validation failed. Please fix the errors above.");
+    if (session.config.structure_validation_blocks_conversion) {
+      tracer_core::application::ports::LogError(
+          "Source structure precheck failed. Fix the errors above before "
+          "conversion.");
+    } else {
+      tracer_core::application::ports::LogError(
+          "Structure validation failed. Please fix the errors above.");
+    }
   }
 
   return all_valid;
