@@ -96,6 +96,18 @@ auto NativeEncryptFile(JNIEnv* env, jobject thiz, jstring input_path,
 auto NativeDecryptFile(JNIEnv* env, jobject thiz, jstring input_path,
                        jstring output_path, jstring passphrase) -> jstring;
 
+auto NativeExportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
+                                jstring output_path, jstring passphrase,
+                                jstring security_level, jint date_check_mode)
+    -> jstring;
+
+auto NativeImportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
+                                jstring work_root, jstring passphrase)
+    -> jstring;
+
+auto NativeInspectTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
+                                 jstring passphrase) -> jstring;
+
 auto NativeQuery(JNIEnv* env, jobject thiz, jint action, jint year, jint month,
                  jstring from_date, jstring to_date, jstring remark,
                  jstring day_remark, jstring project, jstring root,
@@ -113,7 +125,7 @@ auto NativeReport(JNIEnv* env, jobject thiz, jint mode, jint report_type,
                   jstring argument, jint format, jintArray days_list)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 10> kNativeMethods;
+extern const std::array<JNINativeMethod, 13> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

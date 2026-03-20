@@ -29,6 +29,9 @@ class IWorkflowHandler {
                          bool save_processed = false,
                          IngestMode ingest_mode = IngestMode::kStandard)
       -> void = 0;
+  virtual auto RunIngestReplacingAll(const std::string& source_path,
+                                     DateCheckMode date_check_mode,
+                                     bool save_processed = false) -> void = 0;
 
   virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
   virtual auto RunValidateLogic(const std::string& source_path,

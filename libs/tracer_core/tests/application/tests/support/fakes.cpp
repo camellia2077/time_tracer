@@ -41,6 +41,18 @@ auto FakeWorkflowHandler::RunIngest(const std::string& source_path,
   }
 }
 
+auto FakeWorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
+                                                DateCheckMode date_check_mode,
+                                                bool save_processed) -> void {
+  ++ingest_replace_all_call_count;
+  last_ingest_replace_all_input = source_path;
+  last_ingest_replace_all_mode = date_check_mode;
+  last_ingest_replace_all_save_processed = save_processed;
+  if (fail_ingest_replace_all) {
+    throw std::runtime_error("replace-all ingest failed");
+  }
+}
+
 auto FakeWorkflowHandler::RunValidateStructure(const std::string& source_path)
     -> void {
   ++validate_structure_call_count;
@@ -210,12 +222,48 @@ auto FakeProjectRepository::GetAllProjects() -> std::vector<ProjectEntity> {
   return projects;
 }
 
+auto FakeTracerExchangeService::RunExport(
+    const tracer_core::core::dto::TracerExchangeExportRequest& request)
+    -> tracer_core::core::dto::TracerExchangeExportResult {
+  ++export_call_count;
+  last_export_request = request;
+  if (throw_on_export) {
+    throw std::runtime_error("exchange export failed");
+  }
+  return export_result;
+}
+
+auto FakeTracerExchangeService::RunImport(
+    const tracer_core::core::dto::TracerExchangeImportRequest& request)
+    -> tracer_core::core::dto::TracerExchangeImportResult {
+  ++import_call_count;
+  last_import_request = request;
+  if (throw_on_import) {
+    throw std::runtime_error("exchange import failed");
+  }
+  return import_result;
+}
+
+auto FakeTracerExchangeService::RunInspect(
+    const tracer_core::core::dto::TracerExchangeInspectRequest& request)
+    -> tracer_core::core::dto::TracerExchangeInspectResult {
+  ++inspect_call_count;
+  last_inspect_request = request;
+  if (throw_on_inspect) {
+    throw std::runtime_error("exchange inspect failed");
+  }
+  return inspect_result;
+}
+
 auto BuildCoreApi(FakeWorkflowHandler& workflow_handler,
                   FakeReportHandler& report_handler,
                   const std::shared_ptr<FakeProjectRepository>& repository,
-                  const std::shared_ptr<FakeDataQueryService>& data_query)
+                  const std::shared_ptr<FakeDataQueryService>& data_query,
+                  const std::shared_ptr<FakeTracerExchangeService>&
+                      tracer_exchange_service)
     -> TracerCoreApi {
-  return {workflow_handler, report_handler, repository, data_query};
+  return {workflow_handler, report_handler, repository, data_query, nullptr,
+          nullptr, nullptr, tracer_exchange_service};
 }
 
 }  // namespace tracer_core::application::tests

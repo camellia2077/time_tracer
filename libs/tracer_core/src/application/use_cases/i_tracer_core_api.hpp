@@ -56,6 +56,18 @@ class ITracerCoreApi {
   virtual auto RunTreeQuery(
       const tracer_core::core::dto::TreeQueryRequest& request)
       -> tracer_core::core::dto::TreeQueryResponse = 0;
+
+  virtual auto RunTracerExchangeExport(
+      const tracer_core::core::dto::TracerExchangeExportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeExportResult = 0;
+
+  virtual auto RunTracerExchangeImport(
+      const tracer_core::core::dto::TracerExchangeImportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeImportResult = 0;
+
+  virtual auto RunTracerExchangeInspect(
+      const tracer_core::core::dto::TracerExchangeInspectRequest& request)
+      -> tracer_core::core::dto::TracerExchangeInspectResult = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

@@ -6,12 +6,16 @@
 1. `docs/time_tracer/core/contracts/crypto/file_format_v1.md`
    - `.tracer` 二进制格式 `v1` 字段定义与解析约束。
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-   - `.tracer` 二进制格式 `v2`（zstd 后加密）字段定义与解析约束。
-3. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
+   - `.tracer` 外层二进制格式 `v2`（zstd 后加密）字段定义与解析约束。
+3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+   - 当前 tracer exchange 内层 `TTPKG v3` package 契约、严格 `payload/<year>/YYYY-MM.txt` 路径与事务式导入前提。
+4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v2.md`
+   - 历史 `v2` package 说明；当前主线不再支持导入。
+5. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
    - 加密/解密错误模型、稳定错误码与对外行为。
-4. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
+6. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
    - 进度回调字段、阶段语义、节流与取消约束。
-5. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+7. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
    - C ABI `runtime_crypto_*_json` 的请求字段、默认值、路径语义与响应 envelope。
    - 进度事件通过独立 callback side channel 提供，不混入 response envelope。
 
@@ -20,3 +24,4 @@
 2. 任何破坏性变更必须升级 `version`，禁止 silent break。
 3. 密钥与口令不写入日志、不写入错误文件。
 4. 进度回调字段必须保持跨宿主一致（Android / Windows C ABI 同源映射）。
+5. 当前 Windows tracer exchange 流程下，`file_format_v2` 的明文 payload 固定为 `tracer_exchange_package_v3`。

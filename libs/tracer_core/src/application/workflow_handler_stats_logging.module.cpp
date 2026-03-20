@@ -33,6 +33,7 @@ import tracer.core.domain.model.daily_log;
 namespace app_ports = tracer_core::application::ports;
 using tracer::core::application::modimporter::ImportService;
 using tracer::core::application::modimporter::ImportStats;
+using tracer::core::application::modimporter::ReplaceAllTarget;
 using tracer::core::application::modimporter::ReplaceMonthTarget;
 using tracer::core::domain::model::DailyLog;
 

@@ -121,12 +121,31 @@
      - `security_level` (`string`, optional):
        `min|interactive|moderate|high|max`, default `interactive`
        - compatibility alias: `sensitive` -> `high`
+     - behavior:
+       - input must be a directory; runtime recursively collects `.txt` files
+       - every input TXT basename must be `YYYY-MM.txt`, and file name must match `yYYYY + mMM` headers
+       - runtime validates every collected TXT structure and logic before export
+       - output is a `.tracer` exchange file whose outer carrier is `file_format_v2`
+         and whose plaintext payload is `tracer_exchange_package_v3`
    - `tracer_core_runtime_crypto_decrypt_json` request fields:
      - `input_path` (`string`, required)
-     - `output_path` (`string`, required)
      - `passphrase` (`string`, required)
+     - `output_path` (`string`, optional)
+     - behavior:
+       - input must be a single `.tracer` file
+       - `output_path` is a transaction work root for staging / backup / retained failure artifacts
+       - decrypt/import is a transactional full import, not a package unpack operation
+       - package converter TOML files are validated and then applied to current active config
+       - package months replace matching local months; local months outside the package are preserved
+       - decrypt/import validates the full effective TXT set and then rebuilds the database
+       - any failure must roll back active config, local TXT, and database state
    - `tracer_core_runtime_crypto_inspect_json` request fields:
      - `input_path` (`string`, required)
+     - `passphrase` (`string`, required)
+     - behavior:
+       - `output_path` is not supported and is rejected when present
+       - input must be a single `.tracer` file
+       - inspect returns outer `.tracer` header fields plus decrypted package summary
    - Response payloads follow standard text-query envelope:
      - `ok` (`bool`)
      - `content` (`string`)
@@ -136,6 +155,9 @@
      - `hints` (`string[]`)
    - Detailed semantics (path resolution, extension rules, success content text):
      - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+   - Payload format references:
+     - `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
+     - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
 11. callback registration contract:
    - `tracer_core_set_log_callback(callback, user_data)`
    - `tracer_core_set_diagnostics_callback(callback, user_data)`

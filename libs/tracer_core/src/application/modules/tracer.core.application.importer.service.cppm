@@ -9,6 +9,7 @@ export namespace tracer::core::application::modimporter {
 using ::DayData;
 using ::ImportService;
 using ::ImportStats;
+using ::ReplaceAllTarget;
 using ::ReplaceMonthTarget;
 using ::TimeRecordInternal;
 

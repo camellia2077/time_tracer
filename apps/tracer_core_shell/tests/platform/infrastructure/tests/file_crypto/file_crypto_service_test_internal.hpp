@@ -70,6 +70,7 @@ auto RunFileCryptoRoundtripTests(int& failures) -> void;
 auto RunFileCryptoFailureTests(int& failures) -> void;
 auto RunFileCryptoProgressTests(int& failures) -> void;
 auto RunFileCryptoInteropTests(int& failures) -> void;
+auto RunFileCryptoTracerExchangeTests(int& failures) -> void;
 
 }  // namespace android_runtime_tests
 

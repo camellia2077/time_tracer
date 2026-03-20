@@ -101,6 +101,49 @@ auto Repository::ImportData(const std::vector<DayData>& days,
   }
 }
 
+auto Repository::ReplaceAllData(
+    const std::vector<DayData>& days,
+    const std::vector<TimeRecordInternal>& records) -> void {
+  EnsureWriteRepositoryReady();
+
+  if (!connection_manager_->BeginTransaction()) {
+    throw std::runtime_error("Failed to begin transaction.");
+  }
+
+  try {
+    const std::string delete_records_sql = std::format(
+        "DELETE FROM {0};", schema::time_records::db::kTable);
+    if (!sqlite::ExecuteSql(connection_manager_->GetDb(), delete_records_sql,
+                            "Delete all rows from time_records")) {
+      throw std::runtime_error("Failed to delete all data from time_records.");
+    }
+
+    const std::string delete_days_sql =
+        std::format("DELETE FROM {0};", schema::day::db::kTable);
+    if (!sqlite::ExecuteSql(connection_manager_->GetDb(), delete_days_sql,
+                            "Delete all rows from days")) {
+      throw std::runtime_error("Failed to delete all data from days.");
+    }
+
+    const std::string delete_projects_sql =
+        std::format("DELETE FROM {0};", schema::projects::db::kTable);
+    if (!sqlite::ExecuteSql(connection_manager_->GetDb(), delete_projects_sql,
+                            "Delete all rows from projects")) {
+      throw std::runtime_error("Failed to delete all data from projects.");
+    }
+
+    data_inserter_->InsertDays(days);
+    data_inserter_->InsertRecords(records);
+
+    if (!connection_manager_->CommitTransaction()) {
+      throw std::runtime_error("Failed to commit transaction.");
+    }
+  } catch (const std::exception&) {
+    connection_manager_->RollbackTransaction();
+    throw;
+  }
+}
+
 auto Repository::ReplaceMonthData(
     const int kYear, const int kMonth, const std::vector<DayData>& days,
     const std::vector<TimeRecordInternal>& records) -> void {

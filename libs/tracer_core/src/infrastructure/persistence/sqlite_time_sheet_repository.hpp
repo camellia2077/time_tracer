@@ -19,6 +19,9 @@ class SqliteTimeSheetRepository final
   auto ImportData(const std::vector<DayData>& days,
                   const std::vector<TimeRecordInternal>& records)
       -> void override;
+  auto ReplaceAllData(const std::vector<DayData>& days,
+                      const std::vector<TimeRecordInternal>& records)
+      -> void override;
   auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
                         const std::vector<TimeRecordInternal>& records)
       -> void override;

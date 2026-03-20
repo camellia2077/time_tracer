@@ -19,6 +19,7 @@ namespace {
 using tracer::core::application::modimporter::DayData;
 using tracer::core::application::modimporter::ImportService;
 using tracer::core::application::modimporter::ImportStats;
+using tracer::core::application::modimporter::ReplaceAllTarget;
 using tracer::core::application::modimporter::ReplaceMonthTarget;
 using tracer::core::application::modimporter::TimeRecordInternal;
 using tracer::core::domain::modmodel::BaseActivityRecord;
@@ -36,13 +37,17 @@ class FakeTimeSheetRepository final
   bool db_open = true;
   bool fail_import = false;
   bool fail_replace = false;
+  bool fail_replace_all = false;
 
   int import_call_count = 0;
+  int replace_all_call_count = 0;
   int replace_call_count = 0;
   int replace_year = 0;
   int replace_month = 0;
   size_t import_days = 0;
   size_t import_records = 0;
+  size_t replace_all_days = 0;
+  size_t replace_all_records = 0;
   size_t replace_days = 0;
   size_t replace_records = 0;
 
@@ -56,6 +61,17 @@ class FakeTimeSheetRepository final
     import_records = records.size();
     if (fail_import) {
       throw std::runtime_error("fake import failed");
+    }
+  }
+
+  auto ReplaceAllData(const std::vector<DayData>& days,
+                      const std::vector<TimeRecordInternal>& records)
+      -> void override {
+    ++replace_all_call_count;
+    replace_all_days = days.size();
+    replace_all_records = records.size();
+    if (fail_replace_all) {
+      throw std::runtime_error("fake replace-all failed");
     }
   }
 
@@ -145,11 +161,35 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
          "Empty replace-month import should still report replaced_month.");
 }
 
+auto TestReplaceAllUsesReplaceAllPath(TestState& state) -> void {
+  FakeTimeSheetRepository repository;
+  ImportService service(repository);
+
+  const ImportStats stats = service.ImportFromMemory(
+      BuildSingleDayMap(), std::nullopt, ReplaceAllTarget{});
+
+  Expect(state, repository.replace_all_call_count == 1,
+         "Replace-all import should call ReplaceAllData once.");
+  Expect(state, repository.import_call_count == 0,
+         "Replace-all import should not call ImportData.");
+  Expect(state, repository.replace_call_count == 0,
+         "Replace-all import should not call ReplaceMonthData.");
+  Expect(state,
+         repository.replace_all_days == 1 && repository.replace_all_records == 1,
+         "Replace-all import should pass parsed days/records.");
+  Expect(state, stats.db_open_success && stats.transaction_success,
+         "Replace-all import should report successful DB transaction.");
+  Expect(state,
+         stats.replaced_month.has_value() && *stats.replaced_month == "ALL",
+         "Replace-all import should report ALL replace scope.");
+}
+
 }  // namespace
 
 auto RunImportServiceTests(TestState& state) -> void {
   TestReplaceMonthUsesReplacePath(state);
   TestReplaceMonthStillRunsForEmptyData(state);
+  TestReplaceAllUsesReplaceAllPath(state);
 }
 
 }  // namespace tracer_core::application::tests

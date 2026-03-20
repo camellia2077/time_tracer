@@ -26,6 +26,12 @@ auto SqliteTimeSheetRepository::ImportData(
   repository_.ImportData(days, records);
 }
 
+auto SqliteTimeSheetRepository::ReplaceAllData(
+    const std::vector<DayData>& days,
+    const std::vector<TimeRecordInternal>& records) -> void {
+  repository_.ReplaceAllData(days, records);
+}
+
 auto SqliteTimeSheetRepository::ReplaceMonthData(
     int year, int month, const std::vector<DayData>& days,
     const std::vector<TimeRecordInternal>& records) -> void {

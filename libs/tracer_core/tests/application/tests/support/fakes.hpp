@@ -11,6 +11,7 @@
 #include "application/interfaces/i_report_handler.hpp"
 #include "application/interfaces/i_workflow_handler.hpp"
 #include "application/ports/i_data_query_service.hpp"
+#include "application/ports/i_tracer_exchange_service.hpp"
 #include "application/use_cases/tracer_core_api.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/repositories/i_project_repository.hpp"
@@ -26,12 +27,16 @@ class FakeWorkflowHandler final : public tracer::core::application::workflow::IW
   bool fail_import = false;
   bool fail_validate_structure = false;
   bool fail_validate_logic = false;
+  bool fail_ingest_replace_all = false;
 
   std::string last_converter_input;
   AppOptions last_converter_options;
   std::string last_ingest_input;
+  std::string last_ingest_replace_all_input;
   DateCheckMode last_ingest_mode = DateCheckMode::kNone;
+  DateCheckMode last_ingest_replace_all_mode = DateCheckMode::kNone;
   bool last_ingest_save_processed = false;
+  bool last_ingest_replace_all_save_processed = false;
   IngestMode last_ingest_import_mode = IngestMode::kStandard;
   std::string last_import_path;
   std::string last_validate_structure_input;
@@ -40,6 +45,7 @@ class FakeWorkflowHandler final : public tracer::core::application::workflow::IW
 
   int convert_call_count = 0;
   int ingest_call_count = 0;
+  int ingest_replace_all_call_count = 0;
   int import_call_count = 0;
   int validate_structure_call_count = 0;
   int validate_logic_call_count = 0;
@@ -53,6 +59,9 @@ class FakeWorkflowHandler final : public tracer::core::application::workflow::IW
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
                  bool save_processed, IngestMode ingest_mode) -> void override;
+  auto RunIngestReplacingAll(const std::string& source_path,
+                             DateCheckMode date_check_mode,
+                             bool save_processed) -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
@@ -129,10 +138,68 @@ class FakeProjectRepository final : public IProjectRepository {
   auto GetAllProjects() -> std::vector<ProjectEntity> override;
 };
 
+class FakeTracerExchangeService final
+    : public tracer_core::application::ports::ITracerExchangeService {
+ public:
+  bool throw_on_export = false;
+  bool throw_on_import = false;
+  bool throw_on_inspect = false;
+
+  tracer_core::core::dto::TracerExchangeExportResult export_result{
+      .ok = true,
+      .resolved_output_tracer_path = "out/sample.tracer",
+      .source_root_name = "data",
+      .payload_file_count = 2,
+      .error_message = "",
+  };
+  tracer_core::core::dto::TracerExchangeImportResult import_result{
+      .ok = true,
+      .source_root_name = "data",
+      .payload_file_count = 2,
+      .replaced_month_count = 2,
+      .preserved_month_count = 1,
+      .rebuilt_month_count = 3,
+      .text_root_updated = true,
+      .config_applied = true,
+      .database_rebuilt = true,
+      .error_message = "",
+  };
+  tracer_core::core::dto::TracerExchangeInspectResult inspect_result{
+      .ok = true,
+      .input_tracer_path = "out/sample.tracer",
+      .package_type = "tracer_exchange",
+      .package_version = 3,
+      .source_root_name = "data",
+      .payload_file_count = 2,
+      .error_message = "",
+  };
+
+  tracer_core::core::dto::TracerExchangeExportRequest last_export_request;
+  tracer_core::core::dto::TracerExchangeImportRequest last_import_request;
+  tracer_core::core::dto::TracerExchangeInspectRequest last_inspect_request;
+  int export_call_count = 0;
+  int import_call_count = 0;
+  int inspect_call_count = 0;
+
+  auto RunExport(
+      const tracer_core::core::dto::TracerExchangeExportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeExportResult override;
+
+  auto RunImport(
+      const tracer_core::core::dto::TracerExchangeImportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeImportResult override;
+
+  auto RunInspect(
+      const tracer_core::core::dto::TracerExchangeInspectRequest& request)
+      -> tracer_core::core::dto::TracerExchangeInspectResult override;
+};
+
 auto BuildCoreApi(FakeWorkflowHandler& workflow_handler,
                   FakeReportHandler& report_handler,
                   const std::shared_ptr<FakeProjectRepository>& repository,
-                  const std::shared_ptr<FakeDataQueryService>& data_query)
+                  const std::shared_ptr<FakeDataQueryService>& data_query,
+                  const std::shared_ptr<FakeTracerExchangeService>&
+                      tracer_exchange_service = nullptr)
     -> TracerCoreApi;
 
 }  // namespace tracer_core::application::tests

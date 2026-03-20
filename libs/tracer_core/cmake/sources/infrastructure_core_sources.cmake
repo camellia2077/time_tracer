@@ -56,4 +56,9 @@ set(TIME_TRACKER_INFRA_CORE_SOURCES
     "crypto/internal/file_crypto_decrypt_flow.cpp"
     "crypto/internal/file_crypto_directory_orchestrator.cpp"
     "crypto/file_crypto_service.cpp"
+    "crypto/tracer_exchange_service_common.cpp"
+    "crypto/tracer_exchange_service_export.cpp"
+    "crypto/tracer_exchange_service_import.cpp"
+    "crypto/tracer_exchange_service_inspect.cpp"
+    "crypto/tracer_exchange_service.cpp"
 )

@@ -9,6 +9,8 @@ class TracerCoreApi : public ITracerCoreApi {
       std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter>;
   using ReportExportWriterPtr =
       std::shared_ptr<tracer_core::application::ports::IReportExportWriter>;
+  using TracerExchangeServicePtr =
+      std::shared_ptr<tracer_core::application::ports::ITracerExchangeService>;
 
   TracerCoreApi(
                 ::tracer::core::application::workflow::IWorkflowHandler&
@@ -18,7 +20,8 @@ class TracerCoreApi : public ITracerCoreApi {
                 DataQueryServicePtr data_query_service,
                 ReportDataQueryServicePtr report_data_query_service = nullptr,
                 ReportDtoFormatterPtr report_dto_formatter = nullptr,
-                ReportExportWriterPtr report_export_writer = nullptr);
+                ReportExportWriterPtr report_export_writer = nullptr,
+                TracerExchangeServicePtr tracer_exchange_service = nullptr);
 
   auto RunConvert(const tracer_core::core::dto::ConvertRequest& request)
       -> tracer_core::core::dto::OperationAck override;
@@ -62,6 +65,18 @@ class TracerCoreApi : public ITracerCoreApi {
   auto RunTreeQuery(const tracer_core::core::dto::TreeQueryRequest& request)
       -> tracer_core::core::dto::TreeQueryResponse override;
 
+  auto RunTracerExchangeExport(
+      const tracer_core::core::dto::TracerExchangeExportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeExportResult override;
+
+  auto RunTracerExchangeImport(
+      const tracer_core::core::dto::TracerExchangeImportRequest& request)
+      -> tracer_core::core::dto::TracerExchangeImportResult override;
+
+  auto RunTracerExchangeInspect(
+      const tracer_core::core::dto::TracerExchangeInspectRequest& request)
+      -> tracer_core::core::dto::TracerExchangeInspectResult override;
+
  private:
   ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler_;
   IReportHandler& report_handler_;
@@ -70,4 +85,5 @@ class TracerCoreApi : public ITracerCoreApi {
   ReportDataQueryServicePtr kReport_;
   ReportDtoFormatterPtr report_dto_formatter_;
   ReportExportWriterPtr report_export_writer_;
+  TracerExchangeServicePtr tracer_exchange_service_;
 };

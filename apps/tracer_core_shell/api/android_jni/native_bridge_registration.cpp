@@ -6,7 +6,7 @@
 
 namespace tracer_core::api::android::bridge_internal {
 
-const std::array<JNINativeMethod, 10> kNativeMethods = {
+const std::array<JNINativeMethod, 13> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
@@ -48,6 +48,26 @@ const std::array<JNINativeMethod, 10> kNativeMethods = {
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)"
             "Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeDecryptFile),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeExportTracerExchange"),
+        const_cast<char*>(
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
+            "Ljava/lang/String;I)Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeExportTracerExchange),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeImportTracerExchange"),
+        const_cast<char*>(
+            "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)"
+            "Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeImportTracerExchange),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeInspectTracerExchange"),
+        const_cast<char*>(
+            "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeInspectTracerExchange),
     },
     JNINativeMethod{
         const_cast<char*>("nativeQuery"),

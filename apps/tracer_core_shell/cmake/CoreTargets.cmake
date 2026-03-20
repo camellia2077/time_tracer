@@ -170,7 +170,7 @@ enforce_core_target_link_boundary(
 if(ANDROID)
     message(STATUS
         "Android build detected: JNI bridge target is owned by "
-        "apps/tracer_android/runtime."
+        "apps/android/runtime."
     )
 elseif(WIN32)
     message(STATUS
@@ -241,6 +241,7 @@ if(BUILD_TESTING)
         set(TC_INFRA_MOD_SMOKE_TEST_SOURCES
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/infrastructure_modules_smoke_tests.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/logging_platform_config.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/crypto_exchange.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_stats_repository.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_internal_orchestrators.cpp"
             "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/persistence.cpp"
@@ -269,6 +270,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/report_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/data_query_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/import_service_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/tracer_exchange_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main.cpp"
     )
     add_executable(tt_core_api_tests
@@ -304,6 +306,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_bundle_policy_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_compat_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_validate_logic_structure_reporting_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/validation_issue_reporter_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/txt_month_header_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/data_query/data_query_refactor_test_support.cpp"
@@ -365,6 +368,11 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_failure_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_progress_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_interop_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_package_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_export_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_import_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_test_main.cpp"
     )
     setup_app_target(tt_file_crypto_tests)

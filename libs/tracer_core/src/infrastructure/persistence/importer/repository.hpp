@@ -33,6 +33,8 @@ class Repository {
 
   auto ImportData(const std::vector<DayData>& days,
                   const std::vector<TimeRecordInternal>& records) -> void;
+  auto ReplaceAllData(const std::vector<DayData>& days,
+                      const std::vector<TimeRecordInternal>& records) -> void;
   auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
                         const std::vector<TimeRecordInternal>& records) -> void;
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(

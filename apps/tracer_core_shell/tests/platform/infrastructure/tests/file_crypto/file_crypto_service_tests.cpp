@@ -12,6 +12,7 @@ auto RunFileCryptoServiceTests(int& failures) -> void {
   RunFileCryptoFailureTests(failures);
   RunFileCryptoProgressTests(failures);
   RunFileCryptoInteropTests(failures);
+  RunFileCryptoTracerExchangeTests(failures);
 #else
   (void)failures;
   std::cout << "[INFO] Skip file crypto tests: libsodium/zstd backend is not "

@@ -6,6 +6,7 @@
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
+#include "application/ports/i_tracer_exchange_service.hpp"
 #include "application/dto/tree_query_response.hpp"
 #include "application/use_cases/i_tracer_core_api.hpp"
 
@@ -19,6 +20,7 @@ class IDataQueryService;
 class IReportDataQueryService;
 class IReportDtoFormatter;
 class IReportExportWriter;
+class ITracerExchangeService;
 }  // namespace tracer_core::application::ports
 
 namespace tracer::core::application::use_cases {

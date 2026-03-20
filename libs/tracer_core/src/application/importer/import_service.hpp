@@ -14,6 +14,8 @@ namespace tracer_core::application::ports {
 class ITimeSheetRepository;
 }  // namespace tracer_core::application::ports
 
+struct ReplaceAllTarget {};
+
 class ImportService {
  public:
   explicit ImportService(
@@ -22,6 +24,8 @@ class ImportService {
   auto ImportFromMemory(
       const std::map<std::string, std::vector<DailyLog>>& data_map,
       const std::optional<ReplaceMonthTarget>& replace_month_target =
+          std::nullopt,
+      const std::optional<ReplaceAllTarget>& replace_all_target =
           std::nullopt) -> ImportStats;
 
  private:

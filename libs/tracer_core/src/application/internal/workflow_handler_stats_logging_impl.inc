@@ -107,6 +107,19 @@ auto WorkflowHandler::RunDatabaseImportFromMemory(
                                                      "Memory import failed.");
 }
 
+auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingAll(
+    const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
+  app_ports::LogInfo("Task: Memory Import (Replace All)...");
+
+  ImportService service(*time_sheet_repository_);
+  ImportStats stats =
+      service.ImportFromMemory(data_map, std::nullopt, ReplaceAllTarget{});
+
+  PrintImportStats(stats, "Memory Import (replace all)");
+  workflow_handler_internal::ThrowIfImportTaskFailed(
+      stats, "Memory import (replace all) failed.");
+}
+
 auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingMonth(
     const std::map<std::string, std::vector<DailyLog>>& data_map, int year,
     int month) -> void {

@@ -62,6 +62,9 @@ class WorkflowHandler : public IWorkflowHandler {
                  bool save_processed = false,
                  IngestMode ingest_mode = IngestMode::kStandard)
       -> void override;
+  auto RunIngestReplacingAll(const std::string& source_path,
+                             DateCheckMode date_check_mode,
+                             bool save_processed = false) -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
@@ -79,6 +82,8 @@ class WorkflowHandler : public IWorkflowHandler {
   auto RunDatabaseImportFromMemoryReplacingMonth(
       const std::map<std::string, std::vector<DailyLog>>& data_map, int year,
       int month) -> void;
+  auto RunDatabaseImportFromMemoryReplacingAll(
+      const std::map<std::string, std::vector<DailyLog>>& data_map) -> void;
 };
 
 }  // namespace tracer::core::application::workflow

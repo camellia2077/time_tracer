@@ -1,8 +1,9 @@
-# `.tracer` File Format v2 (zstd + encryption)
+# `.tracer` File Format v2 (outer crypto carrier)
 
 ## 目标
 1. 在保持跨端加密互通的前提下，减少导出文件体积。
 2. 明确“先压缩后加密”的固定处理顺序与字段约束。
+3. 只定义外层 `.tracer` 二进制容器；不负责定义解密后明文 payload 的业务布局。
 
 ## 总体结构
 1. Header（固定 80 字节）
@@ -25,8 +26,10 @@
 14. `reserved_b` (4 bytes): 固定 `0`
 
 ## 数据链路
-1. 导出：`plaintext txt -> zstd(level=1) -> encrypt(XChaCha20-Poly1305) -> .tracer`
-2. 导入：`.tracer -> decrypt -> zstd decompress -> plaintext txt`
+1. 外层编码固定为：`plaintext payload -> zstd(level=1) -> encrypt(XChaCha20-Poly1305) -> .tracer`
+2. 外层解码固定为：`.tracer -> decrypt -> zstd decompress -> plaintext payload`
+3. 当前 Windows tracer exchange 流程中，`plaintext payload` 是 `TTPKG v3` 批量文本交换包字节流：
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
 
 ## 解析规则
 1. 文件总长度必须 `>= 80`。
@@ -37,9 +40,15 @@
 6. `ciphertext_size` 必须等于 `file_size - 80`。
 7. 解压后长度必须严格等于 `plaintext_size`，否则报元信息不匹配错误。
 
+## 载荷解释约束
+1. `file_format_v2` 只约束外层 `.tracer` 容器，不单独保证业务可导入。
+2. 当前 tracer exchange `decrypt/import` / `inspect` 路径除了要求外层 `v2` 合法，还要求解密后的明文 payload 必须满足：
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+3. 历史上“外层 v2 合法、但明文 payload 不是当前支持的 tracer exchange package”的文件，不属于当前 exchange import 成功范围。
+
 ## 与 v1 兼容策略
-1. 解码器必须支持：
+1. 外层 header 解码器仍可支持：
    - `v1`（无压缩元信息，按历史路径处理）
    - `v2`（压缩后加密）
 2. 编码器默认输出 `v2`。
-3. 后续新增格式继续升级 `version`，禁止 silent break。
+3. 后续新增外层容器格式继续升级 `version`，禁止 silent break。

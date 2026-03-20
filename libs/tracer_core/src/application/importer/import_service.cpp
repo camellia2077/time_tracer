@@ -1,6 +1,4 @@
 // application/importer/import_service.cpp
-import tracer.core.domain.model.daily_log;
-
 #include "application/importer/import_service.hpp"
 
 #include <chrono>
@@ -10,13 +8,16 @@ import tracer.core.domain.model.daily_log;
 #include "application/parser/memory_parser.hpp"
 #include "application/ports/i_time_sheet_repository.hpp"
 
+import tracer.core.domain.model.daily_log;
+
 ImportService::ImportService(
     tracer_core::application::ports::ITimeSheetRepository& repository)
     : repository_(repository) {}
 
 auto ImportService::ImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map,
-    const std::optional<ReplaceMonthTarget>& replace_month_target)
+    const std::optional<ReplaceMonthTarget>& replace_month_target,
+    const std::optional<ReplaceAllTarget>& replace_all_target)
     -> ImportStats {
   ImportStats stats;
   for (const auto& [source_key, days] : data_map) {
@@ -30,7 +31,8 @@ auto ImportService::ImportFromMemory(
   stats.total_files = stats.total_days;
   stats.successful_files = stats.total_files;
 
-  if (data_map.empty() && !replace_month_target.has_value()) {
+  if (data_map.empty() && !replace_month_target.has_value() &&
+      !replace_all_target.has_value()) {
     return stats;
   }
 
@@ -63,7 +65,10 @@ auto ImportService::ImportFromMemory(
 
   // 2. 入库
   try {
-    if (replace_month_target.has_value()) {
+    if (replace_all_target.has_value()) {
+      repository_.ReplaceAllData(all_data.days, all_data.records);
+      stats.replaced_month = "ALL";
+    } else if (replace_month_target.has_value()) {
       repository_.ReplaceMonthData(replace_month_target->kYear,
                                    replace_month_target->kMonth, all_data.days,
                                    all_data.records);

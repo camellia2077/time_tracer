@@ -64,6 +64,10 @@ class SmokeWorkflowHandler final : public app_workflow::IWorkflowHandler {
                  bool /*save_processed*/,
                  IngestMode /*ingest_mode*/) -> void override {}
 
+  auto RunIngestReplacingAll(const std::string& /*source_path*/,
+                             DateCheckMode /*date_check_mode*/,
+                             bool /*save_processed*/) -> void override {}
+
   auto RunValidateStructure(const std::string& /*source_path*/)
       -> void override {}
 
@@ -168,6 +172,10 @@ class SmokeTimeSheetRepository final : public app_ports::ITimeSheetRepository {
 
   auto ImportData(const std::vector<DayData>& /*days*/,
                   const std::vector<TimeRecordInternal>& /*records*/)
+      -> void override {}
+
+  auto ReplaceAllData(const std::vector<DayData>& /*days*/,
+                      const std::vector<TimeRecordInternal>& /*records*/)
       -> void override {}
 
   auto ReplaceMonthData(int /*year*/, int /*month*/,
