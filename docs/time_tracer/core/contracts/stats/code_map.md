@@ -65,17 +65,17 @@
    - runtime proxy 请求映射与响应解码。
 
 ## Android 适配层
-1. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
+1. `apps/android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
    - Android query 参数透传（含 root/output_mode）。
-2. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
+2. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
    - Query 请求模型与基础常量。
-3. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
+3. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
    - Query 参数校验与 period 参数归一化。
-4. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
+4. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
    - Core 返回 payload 解析与模型映射。
-5. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
+5. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
    - Query 成功/空结果文案组装。
-6. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+6. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
    - runtime 调用总入口。
 
 ## 测试参考
@@ -86,5 +86,5 @@
 5. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
 6. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
 7. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
-8. `apps/tracer_android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
+8. `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
 

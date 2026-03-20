@@ -47,9 +47,11 @@ python tools/run.py tidy-fix --app tracer_core_shell --source-scope core_family 
 # Configure and build are split commands
 python tools/run.py configure --app tracer_core_shell
 python tools/run.py build --app tracer_core_shell
-python tools/run.py build --app tracer_core_shell --profile fast
+python tools/run.py build --app tracer_core_shell --profile fast --concise
 python tools/run.py verify --app tracer_core_shell --profile fast --concise
 python tools/run.py validate --plan temp/import_batch01.toml --paths-file temp/import_batch01.paths
+# validate 默认会实时镜像子命令输出；如需只写日志可追加 --quiet
+python tools/run.py validate --plan temp/import_batch01.toml --paths-file temp/import_batch01.paths --quiet
 python tools/run.py format --app tracer_core_shell
 
 # Runtime lock cleanup (time_tracer_cli / native test EXEs holding core DLL) runs automatically on build for tracer_core_shell/tracer_core/tracer_windows_rust_cli.
@@ -57,12 +59,11 @@ python tools/run.py format --app tracer_core_shell
 python tools/run.py build --app tracer_core_shell --kill-build-procs
 
 # Tune tidy parallelism
-python tools/run.py tidy --app tracer_core_shell --jobs 16 --parse-workers 8
+python tools/run.py tidy --app tracer_core_shell --profile fast --jobs 16 --parse-workers 8 --concise
 
-# Windows CLI build entry (default Rust / fallback C++)
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
-bash apps/tracer_cli/windows/scripts/build_fast.sh
+# Windows CLI release build entry
+python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 
 # Profile build targets (optional):
 # - Configure in tools/toolchain/config/build.toml -> [build.profiles.<name>].build_targets
@@ -104,7 +105,7 @@ python tools/run.py config-migrate --app tracer_windows_rust_cli --rollback
 # For Gradle apps (tracer_android), build auto-injects:
 # `-PtimeTracerConfigRoot=<generated-config-root>`.
 # Rust app
-python tools/run.py build --app tracer_windows_rust_cli
+python tools/run.py build --app tracer_windows_rust_cli --runtime-platform windows
 
 # Android edit loop (fastest local path: build only, no verify suite)
 python tools/run.py build --app tracer_android --profile android_edit

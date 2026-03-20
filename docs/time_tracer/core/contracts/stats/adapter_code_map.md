@@ -17,17 +17,17 @@
    - transport/runtime 请求映射与响应解码。
 
 ## Android Adapter
-1. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
+1. `apps/android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
    - Query 请求组织与 runtime 调用。
-2. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
+2. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
    - Query 请求模型、output mode 常量、query payload 合同类型。
-3. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
+3. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
    - Query 参数校验与 period 参数归一化。
-4. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
+4. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
    - payload 解码、fallback 标记、Tree/Chart 结构化解析与建议归一化。
-5. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
+5. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
    - query 结果文案组装。
-6. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+6. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
    - runtime 总入口与生命周期管理。
 
 ## 自动化守卫（防回流）

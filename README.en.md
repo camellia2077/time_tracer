@@ -126,7 +126,7 @@ Third-party dependencies remain under their respective licenses.
 Dependency versions are managed in:
 * `apps/tracer_cli/windows/rust_cli/Cargo.toml`
  
-### Android App (`apps/tracer_android`)
+### Android App (`apps/android`)
 
 * **[AndroidX / Jetpack Compose family](https://github.com/androidx/androidx)**  
   Includes `core-ktx`, `lifecycle-*`, `activity-compose`, `compose-*`, `datastore-preferences`, and AndroidX test libraries used by this app.  
@@ -139,4 +139,4 @@ Dependency versions are managed in:
   **License**: Eclipse Public License 1.0 (EPL-1.0).
 
 Dependency versions are managed in:
-* `apps/tracer_android/gradle/libs.versions.toml`
+* `apps/android/gradle/libs.versions.toml`

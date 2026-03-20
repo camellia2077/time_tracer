@@ -40,6 +40,7 @@ python tools/run.py validate --plan temp/import_phase5_logging_patchB1_minimal.t
 - `--paths` 或 `--paths-file` 至少提供一个（可同时提供）。
 - `--paths-file` 按行读取路径，空行与 `#` 注释行会被忽略。
 - 范围路径会做去重并规范为仓库相对路径。
+- `validate` 默认会实时镜像子命令输出到终端；如需静默只写日志，追加 `--quiet`。
 
 ## 4. TOML 结构
 
@@ -198,4 +199,3 @@ concise = true
 name = "modules_on"
 build_dir = "build_import_phase5_logging_patchC"
 ```
-

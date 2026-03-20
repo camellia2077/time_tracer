@@ -65,7 +65,7 @@ Windows CLI 的默认 SVG 来源由工具链代码决定：
 在仓库根目录执行：
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
 构建期会：
@@ -80,13 +80,13 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 可使用命令行参数：
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "ui/branding/exports/bg_golden_vertical_padding_transparent.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows --windows-icon-svg "ui/branding/exports/bg_golden_vertical_padding_transparent.svg"
 ```
 
 如需测试其他圆角特调版本，可改为：
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "ui/branding/exports/bg_white_vertical_padding_rounded.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows --windows-icon-svg "ui/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 也可使用环境变量：

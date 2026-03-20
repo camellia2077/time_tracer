@@ -90,7 +90,7 @@ python tools/run.py validate --plan <plan_name> --paths <touched paths>
 2. Shell/runtime integration:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
 ```
 
 3. Before editing module or explicit boundary declaration surfaces, also inspect

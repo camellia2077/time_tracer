@@ -61,12 +61,12 @@
 
 ### 4.3 Android adapter
 
-1. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
-2. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
-3. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
-4. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
-5. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
-6. `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
+1. `apps/android/runtime/src/main/java/com/example/tracer/runtime/controller/RuntimeQueryDelegate.kt`
+2. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryContracts.kt`
+3. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryValidation.kt`
+4. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
+5. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryMessages.kt`
+6. `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeController.kt`
 
 ## 5. 主链路示例（report-chart）
 
@@ -85,7 +85,7 @@
 2. 改 `period/range/lookback` 解析规则：`orchestrators/date_range_resolver.*`
 3. 改 text/semantic_json 字段展示：`renderers/*.cpp`
 4. 改 CLI 参数语义：`apps/tracer_cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
-5. 改 Android 数据映射：`apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`（必要时联动 `NativeRuntimeQueryValidation.kt` / `NativeRuntimeQueryMessages.kt`）
+5. 改 Android 数据映射：`apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`（必要时联动 `NativeRuntimeQueryValidation.kt` / `NativeRuntimeQueryMessages.kt`）
 
 ## 7. 对应契约与测试
 

@@ -10,15 +10,15 @@ Android 图标使用 `design/branding/master/time_tracer_brand_master_symbol.svg
 
 Android launcher 采用标准 adaptive icon 分层：
 
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_background.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_background.xml`
   - `Indigo Mist` full-bleed 浅品牌色背景层
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_foreground.xml`
   - 前景 inset 包装层
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground_symbol.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_foreground_symbol.xml`
   - 箭头与轨迹符号
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
   - 单色 inset 包装层
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome_symbol.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_monochrome_symbol.xml`
   - 单色箭头与轨迹符号
 
 ## 说明

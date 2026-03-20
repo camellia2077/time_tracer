@@ -57,7 +57,7 @@
 1. Core 映射入口：
    - `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp`
 2. Android 解析入口：
-   - `apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
+   - `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
 3. Windows 查询适配入口：
    - `apps/tracer_cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
 

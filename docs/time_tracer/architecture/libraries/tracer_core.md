@@ -136,7 +136,7 @@ python tools/run.py validate --plan <plan_name> --paths libs/tracer_core apps/tr
 4. Shell/runtime integration after core-boundary changes:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
 ```
 
 5. When adding or moving sources, review:
