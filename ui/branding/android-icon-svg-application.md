@@ -30,13 +30,13 @@ Android 图标当前采用两级设计源：
 
 Android 启动图标相关资源位于：
 
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_background.xml`
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground.xml`
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_foreground_symbol.xml`
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
-- `apps/tracer_android/app/src/main/res/drawable/ic_launcher_monochrome_symbol.xml`
-- `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
-- `apps/tracer_android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_background.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_foreground.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_foreground_symbol.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_monochrome.xml`
+- `apps/android/app/src/main/res/drawable/ic_launcher_monochrome_symbol.xml`
+- `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`
+- `apps/android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml`
 
 ## 核心原则
 
@@ -129,4 +129,4 @@ python tools/run.py build --app tracer_android --profile android_edit
 
 - `ui/branding/README.md`
 - `ui/branding/platform/android/README.md`
-- `apps/tracer_android/icon_generation.md`
+- `apps/android/icon_generation.md`

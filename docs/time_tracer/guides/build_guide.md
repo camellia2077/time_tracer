@@ -36,10 +36,10 @@ python tools/run.py verify ...
 
 ```bash
 # 默认 Rust
-bash apps/tracer_cli/windows/scripts/build_fast.sh
+python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
 
 # 回退 C++
-python tools/run.py post-change --app tracer_core --run-tests always --build-dir build_fast --concise
+python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
 ```
 
 2. `optimized`（稳定发布）
@@ -48,10 +48,10 @@ python tools/run.py post-change --app tracer_core --run-tests always --build-dir
 
 ```bash
 # 先构建 core runtime DLL（windows/build/bin）
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
+python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
 
 # 再基于 windows/build/bin 编译 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
 3. `lto-experimental`（实验）
@@ -130,4 +130,3 @@ g++ -std=c++23 print_only.cpp -o print_only_exp.exe -lstdc++exp
 1. GCC 14 changes: https://gcc.gnu.org/gcc-14/changes.html
 2. GCC-help (2025-05): https://gcc.gnu.org/pipermail/gcc-help/2025-May/143911.html
 3. libstdc++ linkage docs: https://gcc.sourceware.org/onlinedocs/libstdc++/manual/using_dynamic_or_shared.html#manual.intro.using.linkage.experimental
-

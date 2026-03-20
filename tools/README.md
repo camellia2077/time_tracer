@@ -38,27 +38,27 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
 python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
 
-# 日常唯一入口（构建+编译+测试，推荐语义名 tracer_core_shell）
-python tools/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise
+# Windows CLI 单命令验证入口（推荐语义名 tracer_core_shell）
+python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
 
 # 里程碑唯一入口（兼容旧 app id: tracer_core）
-python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --scope batch --profile fast --concise
 
-# 先构建 core runtime DLL（staged output: out/build/tracer_core_shell/build/bin）
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
+# 先构建 Windows core runtime DLL（staged output: out/build/tracer_core_shell/build/bin）
+python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
 
-# 再基于 out/build/tracer_core_shell/build/bin 编译 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
+# 再基于当前 build 目录中的 runtime 产物编译 Rust CLI
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 
 # Rust CLI 构建（Windows）
-python tools/run.py build --app tracer_windows_rust_cli --build-dir build_fast
+python tools/run.py build --app tracer_windows_rust_cli --build-dir build_fast --runtime-platform windows
 
 # Android 编辑期（固定构建目录后端，不使用 --build-dir）
 python tools/run.py build --app tracer_android --profile android_edit
 
 # Android 验证期
 python tools/run.py verify --app tracer_android --profile android_style --concise
-python tools/run.py post-change --app tracer_android --run-tests always --concise
+python tools/run.py verify --app tracer_android --profile android_ci --scope batch --concise
 ```
 
 ## clang-tidy scoped workspace
@@ -89,9 +89,10 @@ python tools/run.py post-change --app tracer_android --run-tests always --concis
 
 ## 结果文件（统一契约）
 
-- State: `out/build/<app>/<build_dir>/post_change_last.json`
-  - 例如 `tracer_core` / `tracer_core_shell` 默认可用 `out/build/tracer_core_shell/build_fast/post_change_last.json`
-  - `tracer_android` 固定使用 `out/build/tracer_android/build/post_change_last.json`
+- Validation summary: `out/validate/<run_name>/summary.json`
+- Validation logs:
+  - `out/validate/<run_name>/logs/output.log`
+  - `out/validate/<run_name>/logs/output.full.log`
 - Summary: `out/test/<result_target>/result.json`
 - Case details: `out/test/<result_target>/result_cases.json`
 - Aggregated log: `out/test/<result_target>/logs/output.log`

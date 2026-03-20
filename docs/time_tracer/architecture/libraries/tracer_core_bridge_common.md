@@ -71,7 +71,7 @@ python tools/run.py validate --plan <plan_name> --paths libs/tracer_core_bridge_
 3. Shell/runtime integration shortcut:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
 ```
 
 ## Read-First Docs

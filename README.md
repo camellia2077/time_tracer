@@ -141,7 +141,7 @@ docs/time_tracer/
 依赖版本清单位于：
 * `apps/tracer_cli/windows/rust_cli/Cargo.toml`
  
-### Android 应用 (`apps/tracer_android`)
+### Android 应用 (`apps/android`)
 
 * **[AndroidX / Jetpack Compose 系列](https://github.com/androidx/androidx)**  
   包含本项目 Android 端使用的 `core-ktx`、`lifecycle-*`、`activity-compose`、`compose-*`、`datastore-preferences` 以及 AndroidX 测试库。  
@@ -154,4 +154,4 @@ docs/time_tracer/
   **许可证**: Eclipse Public License 1.0 (EPL-1.0)。
 
 依赖版本清单位于：
-* `apps/tracer_android/gradle/libs.versions.toml`
+* `apps/android/gradle/libs.versions.toml`

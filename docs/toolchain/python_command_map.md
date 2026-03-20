@@ -35,10 +35,10 @@
    - 参数层：`tools/toolchain/cli/handlers/verify.py`
    - 执行层：`tools/toolchain/commands/cmd_quality/verify.py`
 
-5. 调整 shell wrapper 参数通道（run.py 参数 vs cmake --build 参数）
-   - `apps/tracer_cli/windows/scripts/build_core_runtime_release.sh`
-   - `apps/tracer_cli/windows/scripts/build_fast.sh`
-   - `apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
+5. 调整 Windows CLI Python 构建入口参数（release/runtime sync/icon 覆盖）
+   - `tools/toolchain/cli/handlers/build.py`
+   - `tools/toolchain/commands/cmd_build/command.py`
+   - `tools/toolchain/commands/cmd_build/cargo.py`
 
 6. 调整 clang-tidy 第三方头过滤
    - 配置优先：`tools/toolchain/config/workflow.toml` -> `[tidy].header_filter_regex`
@@ -72,13 +72,14 @@
 
 ```bash
 # Windows build/bin 产出 core runtime DLL
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
+python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
 
 # 基于 windows/build/bin 编译 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 
-# C++ 轨专用（clang-tidy）
-python tools/run.py verify --app tracer_core --quick --concise
+# C++ 轨专用（clang-tidy / build verify）
+python tools/run.py build --app tracer_core --profile fast --concise
+python tools/run.py verify --app tracer_core --profile fast --concise
 python tools/run.py tidy --app tracer_core_shell -- --target tidy_all
 python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going
 python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id <BATCH_ID> --task-id <TASK_ID>

@@ -11,7 +11,7 @@
 ### 核心逻辑 (tools/toolchain/commands/cmd_build/cmake.py)
 *   **状态感知 (State-Aware)**：解析 `CMakeCache.txt` 确定配置状态，根据标志位（如 `ENABLE_CLANG_TIDY`）或路径变化自动触发重新配置。
 *   **并发编译**：根据系统核心数自动配置并行任务数 (`-j`)。
-*   **AI Agent 协作**：Agent 通过单一指令（如 `python tools/run.py post-change`）触发配置、编译、产物同步及测试全流程。
+*   **AI Agent 协作**：Agent 通过单一指令（如 `python tools/run.py verify ...` 或 `python tools/run.py validate ...`）触发配置、编译、产物同步及测试全流程。
 
 ---
 

@@ -96,7 +96,7 @@ flowchart LR
     C --> E["libs/tracer_core_bridge_common<br/>bridge helpers"]
     D --> F["libs/tracer_adapters_io"]
     G["apps/tracer_cli/windows/rust_cli"] --> B
-    H["apps/tracer_android/runtime"] --> B
+    H["apps/android/runtime"] --> B
 ```
 
 ## 6. 维护原则

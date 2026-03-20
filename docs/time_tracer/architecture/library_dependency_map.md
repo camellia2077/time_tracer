@@ -79,7 +79,7 @@ Read first:
 1. Preferred focused entry:
    - `python tools/run.py validate --plan <plan_name> --paths <touched paths>`
 2. If the change touches shell-facing integration:
-   - `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise`
 3. If the change touches transport or module surfaces:
    - check the module smoke tests and boundary regressions listed in the relevant detailed library doc
      under `docs/time_tracer/architecture/libraries/`

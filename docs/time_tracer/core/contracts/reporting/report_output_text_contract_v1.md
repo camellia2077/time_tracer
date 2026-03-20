@@ -28,8 +28,8 @@
 4. 六类固定样本（`day/month/week/year/recent/range`）必须通过 md golden 字节级校验与渲染结构校验。
 
 ## 5. 代码落点
-1. Android report translator：`apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeReportTranslator.kt`
-2. Android 输出策略：`apps/tracer_android/runtime/src/main/java/com/example/tracer/runtime/translators/ReportOutputPolicy.kt`
+1. Android report translator：`apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeReportTranslator.kt`
+2. Android 输出策略：`apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/ReportOutputPolicy.kt`
 3. Core formatter parity tests：`libs/tracer_core/src/infrastructure/tests/report_formatter/`
 4. Android runtime report consistency tests：`libs/tracer_core/src/infrastructure/tests/android_runtime/android_runtime_report_consistency_tests.cpp`
 5. 固定样本采样脚本：`tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py`
