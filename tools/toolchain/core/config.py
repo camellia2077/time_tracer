@@ -12,6 +12,7 @@ class AppConfig:
     gradle_wrapper: str = ""
     gradle_tasks: list[str] = field(default_factory=list)
     config_sync_target: str = ""
+    gradle_platform: str = ""
 
 
 @dataclass
