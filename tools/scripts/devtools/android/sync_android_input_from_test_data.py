@@ -18,7 +18,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--android-input-full-root",
-        default="apps/tracer_android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full",
+        default="apps/android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full",
         help="Android debug assets input/full root.",
     )
     parser.add_argument(

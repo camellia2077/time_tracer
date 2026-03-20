@@ -3,7 +3,7 @@ name = "Android Config Bundle Exists"
 stage = "base-config"
 args = [
   "/c",
-  "if exist ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml (exit /b 0) else (echo Missing assets config bundle.toml && exit /b 1)"
+  "if exist ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml (exit /b 0) else (echo Missing assets config bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -12,7 +12,7 @@ name = "Android Config Uses Android Profile"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:profile ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml | findstr /c:android >nul && exit /b 0 || (echo Missing profile=android in bundle.toml && exit /b 1)"
+  "findstr /c:profile ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml | findstr /c:android >nul && exit /b 0 || (echo Missing profile=android in bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -21,7 +21,7 @@ name = "Android Config Uses Canonical Source Root"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:assets/tracer_core/config ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical source-root marker in bundle.toml && exit /b 1)"
+  "findstr /c:assets/tracer_core/config ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\assets\\tracer_core\\config\\meta\\bundle.toml >nul && exit /b 0 || (echo Missing canonical source-root marker in bundle.toml && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -30,7 +30,7 @@ name = "Android TXT Month Header Parser Uses mMM"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:monthRegex ..\\..\\..\\..\\apps\\tracer_android\\feature-record\\src\\main\\java\\com\\example\\tracer\\ui\\viewmodel\\RecordUseCases.kt >nul && exit /b 0 || (echo Missing monthRegex parser in RecordUseCases.kt && exit /b 1)"
+  "findstr /c:monthRegex ..\\..\\..\\..\\apps\\android\\feature-record\\src\\main\\java\\com\\example\\tracer\\ui\\viewmodel\\RecordUseCases.kt >nul && exit /b 0 || (echo Missing monthRegex parser in RecordUseCases.kt && exit /b 1)"
 ]
 expect_exit = 0
 
@@ -39,7 +39,7 @@ name = "Android New Month File Writes mMM Header In Persistence"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:\"m%02d\" ..\\..\\..\\..\\apps\\tracer_android\\runtime\\src\\main\\java\\com\\example\\tracer\\runtime\\LiveRawRecordPersistence.kt >nul && exit /b 0 || (echo Missing mMM header write in LiveRawRecordPersistence.kt && exit /b 1)"
+  "findstr /c:\"m%02d\" ..\\..\\..\\..\\apps\\android\\runtime\\src\\main\\java\\com\\example\\tracer\\runtime\\LiveRawRecordPersistence.kt >nul && exit /b 0 || (echo Missing mMM header write in LiveRawRecordPersistence.kt && exit /b 1)"
 ]
 expect_exit = 0
 

@@ -25,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Generate platform config roots from canonical source config."
     )
+    mode_group = parser.add_mutually_exclusive_group()
     parser.add_argument(
         "--target",
         choices=("windows", "android", "both"),
@@ -49,10 +50,15 @@ def parse_args() -> argparse.Namespace:
         default=android_config_root(repo_root),
         help="Output root for generated Android config.",
     )
-    parser.add_argument(
+    mode_group.add_argument(
         "--apply",
         action="store_true",
         help="Write files to output roots. Default is dry-run.",
+    )
+    mode_group.add_argument(
+        "--check",
+        action="store_true",
+        help="Fail when synchronized output roots drift from canonical source config.",
     )
     parser.add_argument(
         "--show-diff",
@@ -75,6 +81,7 @@ def main() -> int:
         windows_output_root=args.windows_output_root.resolve(),
         android_output_root=args.android_output_root.resolve(),
         apply=args.apply,
+        check=args.check,
         show_diff=args.show_diff,
         allow_overwrite_source=args.allow_overwrite_source,
     )

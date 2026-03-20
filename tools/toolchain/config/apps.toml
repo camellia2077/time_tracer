@@ -26,11 +26,11 @@ backend = "cargo"
 config_sync_target = "windows"
 
 [apps.tracer_android]
-path = "apps/tracer_android"
+path = "apps/android"
 backend = "gradle"
 fixed_build_dir = "build"
 gradle_wrapper = "gradlew.bat"
-config_sync_target = "android"
+gradle_platform = "android"
 gradle_tasks = [
     ":app:assembleDebug",
 ]

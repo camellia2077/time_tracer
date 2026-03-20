@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <!--
+         Keep the Android lint gate high-signal for this repo:
+         - fatal/default errors still fail the build via abortOnError=true
+         - low-value style/noise warnings are ignored here
+         - correctness / cleanup findings remain visible
+    -->
+
+    <!-- Version drift notices are useful for dependency maintenance, but too noisy
+         for the main style/CI gate. Dependency upgrades are tracked separately. -->
+    <issue id="AndroidGradlePluginVersion" severity="ignore" />
+    <issue id="GradleDependency" severity="ignore" />
+    <issue id="NewerVersionAvailable" severity="ignore" />
+
+    <!-- Typography polish warnings create a lot of churn across zh/en/ja resources
+         without materially improving runtime quality. -->
+    <issue id="TypographyEllipsis" severity="ignore" />
+    <issue id="TypographyDashes" severity="ignore" />
+
+    <!-- Duplicate strings and synthetic accessors are low-value for this app-sized
+         codebase compared with correctness and behavior regressions. -->
+    <issue id="DuplicateStrings" severity="ignore" />
+    <issue id="SyntheticAccessor" severity="ignore" />
+
+    <!-- Keep real UI sizing mistakes actionable. -->
+    <issue id="ConfigurationScreenWidthHeight" severity="error" />
+
+    <!-- For this app the remaining ObsoleteSdkInt findings are low-value and the
+         adaptive icon resource layout still requires a v26-qualified folder for
+         stable packaging, so keep this rule out of the main lint gate. -->
+    <issue id="ObsoleteSdkInt" severity="ignore" />
+</lint>

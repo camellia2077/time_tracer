@@ -112,29 +112,28 @@ gradle_tasks = [
 ]
 
 [build.profiles.android_edit]
-description = "Android edit-loop build only (fast debug APK, no verify suite)."
+description = "Android edit-loop build only (AS-first debug APK path, no QA finalizers)."
 gradle_tasks = [
     ":app:assembleDebug",
 ]
 
 [build.profiles.android_ci]
-description = "Android CI checks (style without detekt + unit tests + lintRelease)."
+description = "Android CI checks (snapshot verify + debug/local QA + release QA)."
 gradle_tasks = [
-    ":app:ktlintCheck",
-    ":app:lintDebug",
-    ":app:testDebugUnitTest",
-    ":app:lintRelease",
+    ":runtime:verifyTracerCoreConfigSnapshot",
+    ":app:check",
+    ":app:qaRelease",
 ]
 
 [build.profiles.android_release]
-description = "Android release APK build with native optimization enabled."
+description = "Android release APK build with native optimization enabled and without QA finalizers."
 gradle_tasks = [":app:assembleRelease"]
 gradle_args = [
     "-PtimeTracerDisableNativeOptimization=false",
 ]
 
 [build.profiles.android_release_no_opt]
-description = "Android release APK build without native optimization and without detekt flow."
+description = "Android release APK build without native optimization and without QA finalizers."
 gradle_tasks = [":app:assembleRelease"]
 gradle_args = [
     "-PtimeTracerDisableNativeOptimization=true",

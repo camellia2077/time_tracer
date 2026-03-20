@@ -13,7 +13,7 @@ from .internal.files import (
     hash_bytes,
     read_existing_files,
 )
-from .internal.state import compute_input_hash, is_cache_hit, write_state
+from .internal.state import compute_input_hash, is_cache_hit, state_path, write_state
 from .internal.sync_gate import validate_sync_output
 from .internal.sync_report import print_bundle_diff, print_sync_header, print_sync_report
 
@@ -28,9 +28,10 @@ def sync_target(
     source_root: Path,
     output_root: Path,
     apply: bool,
+    check: bool,
     show_diff: bool,
     allow_overwrite_source: bool,
-) -> None:
+) -> bool:
     started = time.monotonic()
     resolved_source = source_root.resolve()
     resolved_output = output_root.resolve()
@@ -81,9 +82,11 @@ def sync_target(
             applied=False,
             duration_ms=duration_ms,
         )
-        return
+        return False
 
     existing_files = read_existing_files(output_root)
+    sync_state_rel = state_path(output_root).relative_to(output_root).as_posix()
+    existing_files.pop(sync_state_rel, None)
 
     planned_keys = set(planned_files)
     existing_keys = set(existing_files)
@@ -107,6 +110,26 @@ def sync_target(
         generated_bundle = planned_files["meta/bundle.toml"].decode("utf-8")
         print_bundle_diff(output_root, generated_bundle)
 
+    if check:
+        duration_ms = int((time.monotonic() - started) * 1000)
+        if added or changed or removed:
+            print("--- check: drift detected, synchronized platform config is stale.")
+        else:
+            print("--- check: synchronized platform config is up to date.")
+        print_sync_report(
+            target=target,
+            source_root=source_root,
+            output_root=output_root,
+            planned_files=len(planned_files),
+            added=len(added),
+            changed=len(changed),
+            removed=len(removed),
+            cache_hit=False,
+            applied=False,
+            duration_ms=duration_ms,
+        )
+        return bool(added or changed or removed)
+
     if not apply:
         print("--- dry-run: no files were written.")
         duration_ms = int((time.monotonic() - started) * 1000)
@@ -122,7 +145,7 @@ def sync_target(
             applied=False,
             duration_ms=duration_ms,
         )
-        return
+        return False
 
     apply_plan_atomic(output_root, planned_files)
     validate_sync_output(
@@ -153,6 +176,7 @@ def sync_target(
         applied=True,
         duration_ms=duration_ms,
     )
+    return False
 
 
 def run_generation(
@@ -162,6 +186,7 @@ def run_generation(
     windows_output_root: Path,
     android_output_root: Path,
     apply: bool,
+    check: bool,
     show_diff: bool,
     allow_overwrite_source: bool,
 ) -> int:
@@ -170,6 +195,7 @@ def run_generation(
         return 1
 
     targets: list[str] = list(SUPPORTED_TARGETS) if target == "both" else [target]
+    drift_detected = False
     try:
         for item in targets:
             output_root = (
@@ -177,15 +203,21 @@ def run_generation(
                 if item == "windows"
                 else android_output_root.resolve()
             )
-            sync_target(
-                target=item,
-                source_root=source_root.resolve(),
-                output_root=output_root,
-                apply=apply,
-                show_diff=show_diff,
-                allow_overwrite_source=allow_overwrite_source,
+            drift_detected = (
+                sync_target(
+                    target=item,
+                    source_root=source_root.resolve(),
+                    output_root=output_root,
+                    apply=apply,
+                    check=check,
+                    show_diff=show_diff,
+                    allow_overwrite_source=allow_overwrite_source,
+                )
+                or drift_detected
             )
     except (FileNotFoundError, ValueError, tomllib.TOMLDecodeError) as error:
         print(str(error))
+        return 1
+    if check and drift_detected:
         return 1
     return 0

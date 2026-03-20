@@ -1,27 +1,77 @@
 # Crypto command tests
 
 [[commands]]
-name = "Crypto Encrypt Single Txt"
+name = "Crypto Export Tracer Exchange"
 stage = "crypto"
-args = ["crypto", "encrypt", "--in", "{data_path}/2026/2026-01.txt", "--out", "{output_dir}/crypt/2026-01.tracer"]
+args = ["--output", "{output_dir}/crypt/test-data.tracer", "crypto", "encrypt", "--in", "{data_path}"]
 stdin_input = "phase3pass\nphase3pass\n"
 expect_exit = 0
-expect_stdout_contains = ["Encrypted:"]
-expect_files = ["{output_dir}/crypt/2026-01.tracer"]
+expect_stdout_contains = [
+  "Exported complete tracer exchange package:",
+  "Included payload TXT files:",
+  "Included converter TOML files:",
+  "Manifest included: yes",
+]
+expect_files = ["{output_dir}/crypt/test-data.tracer"]
 
 [[commands]]
-name = "Crypto Inspect Single Tracer"
+name = "Crypto Inspect Tracer Exchange"
 stage = "crypto"
-args = ["crypto", "inspect", "--in", "{output_dir}/crypt/2026-01.tracer"]
-expect_exit = 0
-expect_stdout_contains = ["version: 2", "compression_id: 1", "compression_level: 1"]
-
-[[commands]]
-name = "Crypto Decrypt Single Tracer"
-stage = "crypto"
-args = ["crypto", "decrypt", "--in", "{output_dir}/crypt/2026-01.tracer", "--out", "{output_dir}/crypt/2026-01.roundtrip.txt"]
+args = ["crypto", "inspect", "--in", "{output_dir}/crypt/test-data.tracer"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
-expect_stdout_contains = ["Decrypted:"]
-expect_files = ["{output_dir}/crypt/2026-01.roundtrip.txt"]
-expect_file_contains = ["{output_dir}/crypt/2026-01.roundtrip.txt::y2026"]
+expect_stdout_contains = [
+  "version: 2",
+  "compression_id: 1",
+  "compression_level: 1",
+  "Package:",
+  "package_type: tracer_exchange",
+  "package_version: 3",
+  "producer_platform: windows",
+  "producer_app: time_tracer_cli",
+  "created_at_utc: ",
+  "source_root_name: data",
+  "payload_file_count: 24",
+  "payload/2025/2025-01.txt: present",
+  "payload/2026/2026-12.txt: present",
+  "config/converter/interval_processor_config.toml: present",
+  "config/converter/alias_mapping.toml: present",
+  "config/converter/duration_rules.toml: present",
+]
+
+[[commands]]
+ name = "Crypto Decrypt Tracer Exchange"
+stage = "crypto"
+args = ["crypto", "decrypt", "--in", "{output_dir}/crypt/test-data.tracer"]
+stdin_input = "phase3pass\n"
+expect_exit = 0
+expect_stdout_contains = [
+  "Imported complete tracer exchange package:",
+  "Updated active text root:",
+  "Applied converter config: yes",
+  "Replaced months: 24",
+  "Preserved local months: 0",
+  "Rebuilt months: 24",
+  "Database rebuilt: yes",
+]
+expect_files = [
+  "{exe_dir}/input/full/2025-01.txt",
+  "{exe_dir}/input/full/2026-12.txt",
+  "{exe_dir}/output/db/time_data.sqlite3",
+]
+expect_file_contains = [
+  "{exe_dir}/input/full/2025-01.txt::y2025",
+  "{exe_dir}/input/full/2026-12.txt::y2026",
+]
+
+[[commands]]
+ name = "Crypto Decrypt Tracer Exchange Custom Output"
+stage = "crypto"
+args = ["--output", "{output_dir}/custom_decrypt", "crypto", "decrypt", "--in", "{output_dir}/crypt/test-data.tracer"]
+stdin_input = "phase3pass\n"
+expect_exit = 0
+expect_stdout_contains = [
+  "Imported complete tracer exchange package:",
+  "Updated active text root:",
+  "Database rebuilt: yes",
+]

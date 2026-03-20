@@ -19,7 +19,7 @@ def android_config_root(repo_root: Path) -> Path:
     return (
         repo_root
         / "apps"
-        / "tracer_android"
+        / "android"
         / "runtime"
         / "src"
         / "main"

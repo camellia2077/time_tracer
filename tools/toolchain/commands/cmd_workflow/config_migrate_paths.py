@@ -22,7 +22,7 @@ def resolve_config_root(ctx: Context, app_name: str, config_root_arg: str | None
         return (
             ctx.repo_root
             / "apps"
-            / "tracer_android"
+            / "android"
             / "runtime"
             / "src"
             / "main"
