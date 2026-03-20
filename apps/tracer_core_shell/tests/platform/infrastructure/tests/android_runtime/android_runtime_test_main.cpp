@@ -13,6 +13,7 @@ auto main() -> int {
   android_runtime_tests::RunCompatibilityTests(failures);
   android_runtime_tests::RunValidationIssueReporterTests(failures);
   android_runtime_tests::RunTxtMonthHeaderTests(failures);
+  android_runtime_tests::RunValidateLogicStructureReportingTests(failures);
   android_runtime_tests::RunDataQueryRefactorTests(failures);
 
   if (failures == 0) {

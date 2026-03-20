@@ -1,6 +1,8 @@
 // infrastructure/tests/android_runtime/android_runtime_business_regression_support.cpp
 #include <sqlite3.h>
 
+#include <iostream>
+
 #include "infrastructure/tests/android_runtime/android_runtime_business_regression_internal.hpp"
 
 namespace android_runtime_tests::business_regression_internal {

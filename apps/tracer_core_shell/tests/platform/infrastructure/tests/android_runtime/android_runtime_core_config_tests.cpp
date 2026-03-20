@@ -93,6 +93,45 @@ auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
   RemoveTree(paths.test_root);
 }
 
+auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures) -> void {
+  const RuntimeTestPaths paths = BuildTempTestPaths(
+      "time_tracer_android_runtime_factory_invalid_utf8_config_test");
+  const std::filesystem::path kInvalidConfigPath =
+      paths.test_root / "invalid_utf8.toml";
+
+  RemoveTree(paths.test_root);
+  std::filesystem::create_directories(paths.test_root);
+
+  {
+    std::ofstream file(kInvalidConfigPath, std::ios::binary | std::ios::trunc);
+    file.put(static_cast<char>(0xFF));
+    file.put('\n');
+  }
+
+  bool threw = false;
+  std::string message;
+  try {
+    const auto request = BuildRuntimeRequest(paths, kInvalidConfigPath);
+    static_cast<void>(infrastructure::bootstrap::BuildAndroidRuntime(request));
+  } catch (const std::exception& exception) {
+    threw = true;
+    message = exception.what();
+  }
+
+  if (!threw) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should fail for invalid UTF-8 "
+                 "converter config TOML.\n";
+  } else if (!Contains(message, "Invalid UTF-8")) {
+    ++failures;
+    std::cerr << "[FAIL] Invalid UTF-8 converter config error should mention "
+                 "UTF-8 validation, actual: "
+              << message << '\n';
+  }
+
+  RemoveTree(paths.test_root);
+}
+
 auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
   const RuntimeTestPaths paths =
       BuildTempTestPaths("time_tracer_report_config_loader_invalid_test");
@@ -138,6 +177,7 @@ auto TestReportConfigLoaderRejectsInvalidDailyMarkdown(int& failures) -> void {
 auto RunCoreConfigValidationTests(int& failures) -> void {
   TestAndroidRuntimeBootstrapStaysSideEffectFree(failures);
   TestAndroidRuntimeRejectsInvalidConverterConfig(failures);
+  TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(failures);
   TestReportConfigLoaderRejectsInvalidDailyMarkdown(failures);
 }
 

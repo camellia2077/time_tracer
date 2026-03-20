@@ -56,6 +56,7 @@ auto RunAndroidBundlePolicyTests(int& failures) -> void;
 auto RunCompatibilityTests(int& failures) -> void;
 auto RunValidationIssueReporterTests(int& failures) -> void;
 auto RunTxtMonthHeaderTests(int& failures) -> void;
+auto RunValidateLogicStructureReportingTests(int& failures) -> void;
 auto RunDataQueryRefactorTests(int& failures) -> void;
 auto RunFileCryptoServiceTests(int& failures) -> void;
 

@@ -14,12 +14,8 @@ import tracer.core.infrastructure.platform.android.clock;
 
 #include "host/android_runtime_factory.hpp"
 
-#include <chrono>
-#include <ctime>
 #include <filesystem>
-#include <iomanip>
 #include <memory>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -32,6 +28,7 @@ import tracer.core.infrastructure.platform.android.clock;
 #include "application/ports/logger.hpp"
 #include "application/reporting/report_handler.hpp"
 #include "domain/ports/diagnostics.hpp"
+#include "infrastructure/crypto/tracer_exchange_service.hpp"
 #include "infrastructure/persistence/sqlite_data_query_service.hpp"
 #include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
 
@@ -45,43 +42,9 @@ namespace infra_persistence_runtime = tracer::core::infrastructure::persistence;
 namespace infra_persistence_write = tracer::core::infrastructure::persistence;
 namespace infra_reports = tracer::core::infrastructure::reports;
 namespace infra_platform = tracer::core::infrastructure::modplatform;
+namespace infra_logging = tracer::core::infrastructure::logging;
 using FileConverterConfigProvider =
     tracer::core::infrastructure::config::FileConverterConfigProvider;
-namespace infra_logging = tracer::core::infrastructure::logging;
-
-auto ResolveRuntimeDataRoot(const fs::path& db_path,
-                            const fs::path& fallback_output_root) -> fs::path {
-  const fs::path kDbDir = db_path.parent_path();
-  if (kDbDir.empty()) {
-    return fallback_output_root;
-  }
-
-  const fs::path kRuntimeRoot = kDbDir.parent_path();
-  if (kRuntimeRoot.empty()) {
-    return fallback_output_root;
-  }
-  return kRuntimeRoot;
-}
-
-auto BuildIsoUtcTimestampForFilename() -> std::string {
-  const auto kNow = std::chrono::system_clock::now();
-  const std::time_t kNowTime = std::chrono::system_clock::to_time_t(kNow);
-
-  std::tm utc_time{};
-#if defined(_WIN32) || defined(_WIN64)
-  gmtime_s(&utc_time, &kNowTime);
-#else
-  gmtime_r(&kNowTime, &utc_time);
-#endif
-
-  std::ostringstream stream;
-  stream << std::put_time(&utc_time, "%Y-%m-%dT%H-%M-%SZ");
-  return stream.str();
-}
-
-auto BuildRunScopedErrorLogPath(const fs::path& logs_root) -> fs::path {
-  return logs_root / ("errors-" + BuildIsoUtcTimestampForFilename() + ".log");
-}
 
 struct AndroidRuntimeState {
   std::shared_ptr<app_workflow::IWorkflowHandler> workflow_handler;
@@ -102,9 +65,6 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       android_runtime_detail::ResolveOutputRoot(request.output_root);
   const fs::path kDbPath =
       android_runtime_detail::ResolveDbPath(request.db_path, kOutputRoot);
-  const fs::path kRuntimeDataRoot =
-      ResolveRuntimeDataRoot(kDbPath, kOutputRoot);
-  const fs::path kErrorLogsRoot = kRuntimeDataRoot / "logs";
   const android_runtime_detail::AndroidRuntimeConfigPaths kRuntimeConfigPaths =
       android_runtime_detail::ResolveAndroidRuntimeConfigPaths(
           request.converter_config_toml_path);
@@ -113,12 +73,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
 
   tracer_core::application::ports::SetLogger(request.logger);
   tracer_core::domain::ports::SetDiagnosticsSink(request.diagnostics_sink);
-  tracer_core::domain::ports::SetErrorReportWriter(
-      request.error_report_writer
-          ? request.error_report_writer
-          : std::make_shared<infra_logging::FileErrorReportWriter>(
-                BuildRunScopedErrorLogPath(kErrorLogsRoot),
-                kErrorLogsRoot / "errors-latest.log"));
+  // Android keeps validation/runtime failures in the active UI diagnostics
+  // channel and should not default to writing sidecar error-report files.
+  tracer_core::domain::ports::SetErrorReportWriter(request.error_report_writer);
   // Reset session-level diagnostics state for this run.
   tracer_core::domain::ports::ClearBufferedDiagnostics();
   tracer_core::domain::ports::ClearDiagnosticsDedup();
@@ -182,12 +139,14 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::make_shared<infra_reports::Exporter>(kOutputRoot);
   auto report_export_writer = std::make_shared<infra_reports::ReportDtoExportWriter>(
       report_dto_formatter, report_exporter_for_dto);
+  auto tracer_exchange_service =
+      tracer_core::infrastructure::crypto::CreateTracerExchangeService(*workflow);
 
   AndroidRuntime runtime;
   runtime.core_api = std::make_shared<app_use_cases::TracerCoreApi>(
       *workflow, *report, project_repository, std::move(data_query_service),
       std::move(report_data_query_service), std::move(report_dto_formatter),
-      std::move(report_export_writer));
+      std::move(report_export_writer), std::move(tracer_exchange_service));
 
   auto runtime_state = std::make_shared<AndroidRuntimeState>();
   runtime_state->workflow_handler = std::move(workflow);

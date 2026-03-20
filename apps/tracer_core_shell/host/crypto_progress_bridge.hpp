@@ -9,11 +9,20 @@ struct FileCryptoProgressSnapshot;
 
 }  // namespace tracer_core::infrastructure::crypto
 
+namespace tracer_core::core::dto {
+
+struct TracerExchangeProgressSnapshot;
+
+}  // namespace tracer_core::core::dto
+
 namespace tracer_core::shell::crypto_progress_bridge {
 
 [[nodiscard]] auto BuildProgressSnapshotJson(
     const tracer_core::infrastructure::crypto::FileCryptoProgressSnapshot&
         snapshot) -> std::string;
+[[nodiscard]] auto BuildProgressSnapshotJson(
+    const tracer_core::core::dto::TracerExchangeProgressSnapshot& snapshot)
+    -> std::string;
 
 }  // namespace tracer_core::shell::crypto_progress_bridge
 
