@@ -7,6 +7,7 @@ target_sources(tc_shared_lib PUBLIC
     BASE_DIRS
         "${TRACER_CORE_LIB_SOURCE_ROOT}/shared/modules"
     FILES
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/shared/modules/tracer.core.shared.canonical_text.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/shared/modules/tracer.core.shared.string_utils.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/shared/modules/tracer.core.shared.period_utils.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/shared/modules/tracer.core.shared.exceptions.cppm"

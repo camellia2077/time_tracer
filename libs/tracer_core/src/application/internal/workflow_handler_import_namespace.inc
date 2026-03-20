@@ -146,7 +146,18 @@ struct ActivityTailCandidate {
 
   std::ostringstream buffer;
   buffer << input.rdbuf();
-  return buffer.str();
+  if (input.bad()) {
+    return std::nullopt;
+  }
+
+  const std::string raw_text = buffer.str();
+  const auto canonical = modtext::Canonicalize(raw_text, path.string());
+  if (!canonical.ok) {
+    app_ports::LogWarn("Skipping sibling TXT fallback due to invalid text: " +
+                       canonical.error_message);
+    return std::nullopt;
+  }
+  return canonical.text;
 }
 
 [[nodiscard]] auto CollectPreviousMonthSiblingTxtFiles(

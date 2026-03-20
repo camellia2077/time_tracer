@@ -1,10 +1,4 @@
 // infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp
-import tracer.core.infrastructure.config.file_converter_config_provider;
-import tracer.core.domain.types.converter_config;
-import tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
-import tracer.core.infrastructure.query.data.repository;
-import tracer.core.infrastructure.query.data.stats;
-
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <set>
@@ -14,6 +8,12 @@ import tracer.core.infrastructure.query.data.stats;
 #include <vector>
 
 #include "infrastructure/query/data/internal/report_mapping.hpp"
+
+import tracer.core.infrastructure.config.file_converter_config_provider;
+import tracer.core.domain.types.converter_config;
+import tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.stats;
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace infra_data_query_orchestrators =

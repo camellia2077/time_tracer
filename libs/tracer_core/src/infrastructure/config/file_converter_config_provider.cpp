@@ -1,5 +1,3 @@
-import tracer.core.infrastructure.config.loader.converter_config_loader;
-
 #include "infrastructure/config/file_converter_config_provider.hpp"
 
 #include <filesystem>
@@ -7,6 +5,8 @@ import tracer.core.infrastructure.config.loader.converter_config_loader;
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
+
+import tracer.core.infrastructure.config.loader.converter_config_loader;
 
 namespace tracer::core::infrastructure::config {
 

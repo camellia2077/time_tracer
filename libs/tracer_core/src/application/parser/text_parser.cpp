@@ -1,7 +1,6 @@
 // application/parser/text_parser.cpp
-import tracer.core.shared.string_utils;
-
 #include "application/parser/text_parser.hpp"
+#include "shared/utils/ide_location_formatter.hpp"
 
 #include <algorithm>
 #include <array>
@@ -11,7 +10,10 @@ import tracer.core.shared.string_utils;
 
 #include "application/ports/logger.hpp"
 
+import tracer.core.shared.string_utils;
+
 using tracer::core::shared::string_utils::Trim;
+using tracer::core::shared::ide_location::BuildIdeLocationPrefix;
 
 namespace {
 constexpr size_t kYearMarkerLength = 5;
@@ -46,11 +48,15 @@ auto FormatTime(const std::string& time_str_hhmm) -> std::string {
              : time_str_hhmm;
 }
 
-[[noreturn]] void ThrowParseError(int line_number, const std::string& line,
+[[noreturn]] void ThrowParseError(std::string_view source_file, int line_number,
+                                  const std::string& line,
                                   const std::string& message) {
-  throw std::runtime_error("Parse error at line " +
-                           std::to_string(line_number) + ": " + message +
-                           " => '" + line + "'");
+  std::string prefix = BuildIdeLocationPrefix(source_file, line_number);
+  if (prefix.empty()) {
+    prefix = "unknown location: ";
+  }
+  throw std::runtime_error(prefix + "Parse error: " + message + " => '" +
+                           line + "'");
 }
 }  // namespace
 
@@ -99,7 +105,7 @@ auto TextParser::Parse(std::istream& input_stream,
 
     if (IsNewDayMarker(line)) {
       if (current_month_prefix.empty()) {
-        ThrowParseError(line_number, line,
+        ThrowParseError(source_file, line_number, line,
                         "Date found before month header (mMM)");
       }
       if (!current_day.date.empty()) {
@@ -223,14 +229,16 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
   }
 
   if (current_day.date.empty()) {
-    ThrowParseError(line_number, line, "Event line appears before date");
+    ThrowParseError(source_file, line_number, line,
+                    "Event line appears before date");
   }
 
   if (line.length() < kTimeDigitsLength ||
       !std::ranges::all_of(
           line.substr(0, kTimeDigitsLength),
           [](char value) -> bool { return IsAsciiDigit(value); })) {
-    ThrowParseError(line_number, line, "Invalid event line format");
+    ThrowParseError(source_file, line_number, line,
+                    "Invalid event line format");
   }
 
   const int kHour =
@@ -239,14 +247,15 @@ auto TextParser::ParseLine(const std::string& line, int line_number,
                       (line[kTimeMinuteOffset + 1] - '0');
 
   if (kHour > kMaxHour || kMinute > kMaxMinute) {
-    ThrowParseError(line_number, line, "Time out of range");
+    ThrowParseError(source_file, line_number, line, "Time out of range");
   }
 
   std::string time_str_hhmm = line.substr(0, kTimeDigitsLength);
   RemarkResult remark_data = ExtractRemark(line.substr(kTimeDigitsLength));
 
   if (remark_data.description.empty()) {
-    ThrowParseError(line_number, line, "Missing activity description");
+    ThrowParseError(source_file, line_number, line,
+                    "Missing activity description");
   }
 
   ProcessEventContext(current_day, {.description = remark_data.description,

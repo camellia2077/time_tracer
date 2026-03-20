@@ -6,6 +6,12 @@ auto main() -> int {
     return logging_status;
   }
 
+  const int crypto_exchange_status =
+      RunInfrastructureModuleCryptoExchangeSmoke();
+  if (crypto_exchange_status != 0) {
+    return crypto_exchange_status;
+  }
+
   const int query_stats_status =
       RunInfrastructureModuleQueryStatsRepositorySmoke();
   if (query_stats_status != 0) {

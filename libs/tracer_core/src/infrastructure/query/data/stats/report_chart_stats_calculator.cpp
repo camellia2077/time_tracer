@@ -1,7 +1,4 @@
 // infrastructure/query/data/stats/report_chart_stats_calculator.cpp
-import tracer.core.infrastructure.query.data.repository.types;
-import tracer.core.infrastructure.query.data.stats.models;
-
 #include "infrastructure/query/data/stats/report_chart_stats_calculator.hpp"
 
 #include <chrono>
@@ -13,6 +10,9 @@ import tracer.core.infrastructure.query.data.stats.models;
 #include <string_view>
 #include <unordered_map>
 #include <vector>
+
+import tracer.core.infrastructure.query.data.repository.types;
+import tracer.core.infrastructure.query.data.stats.models;
 
 namespace tracer::core::infrastructure::query::data::stats {
 namespace {

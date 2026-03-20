@@ -35,8 +35,7 @@ namespace {
   }
 
   bool found = false;
-  int step_result = SQLITE_OK;
-  while ((step_result = sqlite3_step(statement)) == SQLITE_ROW) {
+  while (sqlite3_step(statement) == SQLITE_ROW) {
     const unsigned char* name_text = sqlite3_column_text(statement, 1);
     if (name_text == nullptr) {
       continue;

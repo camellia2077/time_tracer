@@ -176,7 +176,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             CommandSpec(
                 name="Validate Structure",
                 stage="pipeline",
-                args=["validate-structure", "{data_path}"],
+                args=["validate", "structure", "{data_path}"],
                 expect_exit=0,
             ),
         )

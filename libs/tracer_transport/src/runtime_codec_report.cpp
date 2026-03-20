@@ -1,11 +1,11 @@
-import tracer.transport.fields;
-
 #include "tracer/transport/runtime_codec.hpp"
 
 #include <stdexcept>
 #include <string>
 
 #include "nlohmann/json.hpp"
+
+import tracer.transport.fields;
 
 namespace tracer::transport {
 

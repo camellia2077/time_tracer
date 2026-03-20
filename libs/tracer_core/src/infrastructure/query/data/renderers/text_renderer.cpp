@@ -1,7 +1,4 @@
 // infrastructure/query/data/renderers/text_renderer.cpp
-import tracer.core.application.reporting.tree.data;
-import tracer.core.infrastructure.query.data.repository.types;
-
 #include "infrastructure/query/data/renderers/text_renderer.hpp"
 
 #include <algorithm>
@@ -13,6 +10,9 @@ import tracer.core.infrastructure.query.data.repository.types;
 #include <vector>
 
 #include "infrastructure/reports/shared/utils/format/time_format.hpp"
+
+import tracer.core.application.reporting.tree.data;
+import tracer.core.infrastructure.query.data.repository.types;
 
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {

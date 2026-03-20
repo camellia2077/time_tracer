@@ -7,6 +7,7 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
     "${PROJECT_SOURCE_DIR}/host/native_bridge_crypto_calls.cpp"
     "${PROJECT_SOURCE_DIR}/host/crypto_progress_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/native_bridge_progress.cpp"
+    "${PROJECT_SOURCE_DIR}/host/tracer_exchange_inspect_formatter.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_resolver.cpp"

@@ -43,10 +43,12 @@ import tracer.core.domain.ports.diagnostics;
 import tracer.core.domain.types.app_options;
 import tracer.core.domain.types.date_check_mode;
 import tracer.core.domain.types.ingest_mode;
+import tracer.core.shared.canonical_text;
 import tracer.core.shared.string_utils;
 
 namespace app_ports = tracer_core::application::ports;
 namespace app_pipeline = tracer::core::application::pipeline;
+namespace modtext = tracer::core::shared::canonical_text;
 using tracer::core::shared::string_utils::Trim;
 using tracer::core::domain::modlogic::converter::LogLinker;
 using tracer::core::domain::modlogic::converter::LogProcessor;

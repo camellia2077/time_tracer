@@ -39,19 +39,19 @@
 ### 1) 使用默认 SVG
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
 ### 2) 通过命令行指定 SVG
 
 ```powershell
-python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
-### 3) 通过封装脚本指定 SVG
+### 3) 用 Python 入口指定 SVG（与 runtime strict sync 一起使用）
 
 ```powershell
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows --rust-runtime-sync strict --windows-icon-svg "design/branding/exports/bg_white_vertical_padding_rounded.svg"
 ```
 
 ## 可选覆盖项

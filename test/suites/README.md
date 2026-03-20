@@ -13,7 +13,7 @@ Logical suite name -> physical folder:
 ## Suite folders
 
 - `tracer_windows_rust_cli/`: integrated suite for core + Windows CLI (`apps/tracer_cli/windows` build target).
-- `tracer_android/`: host-side verification checks for `apps/tracer_android`.
+- `tracer_android/`: host-side verification checks for `apps/android`.
 - `log_generator/`: config for `apps/log_generator`.
 
 Each suite contains:

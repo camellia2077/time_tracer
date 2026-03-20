@@ -25,8 +25,10 @@ using tracer::adapters::io::modcore::CreateDirectories;
 using tracer::adapters::io::modcore::Exists;
 using tracer::adapters::io::modcore::IsDirectory;
 using tracer::adapters::io::modcore::IsRegularFile;
-using tracer::adapters::io::modcore::ReadContent;
-using tracer::adapters::io::modcore::WriteContent;
+using tracer::adapters::io::modcore::ReadBytes;
+using tracer::adapters::io::modcore::ReadCanonicalText;
+using tracer::adapters::io::modcore::WriteBytes;
+using tracer::adapters::io::modcore::WriteCanonicalText;
 using tracer::adapters::io::modruntime::CreateProcessedDataLoader;
 using tracer::adapters::io::modruntime::CreateProcessedDataStorage;
 using tracer::adapters::io::modruntime::CreateTxtIngestInputProvider;
@@ -87,15 +89,21 @@ void TestCoreAndUtilsBridge(int& failures) {
 
   try {
     CreateDirectories(nested);
-    WriteContent(note, "hello modules");
-    WriteContent(second, "second line");
-    WriteContent(ignored, "ignored");
+    WriteCanonicalText(note, "hello modules");
+    WriteCanonicalText(second, "second line");
+    WriteCanonicalText(ignored, "ignored");
 
     Expect(Exists(root), "Root directory should exist.", failures);
     Expect(IsDirectory(nested), "Nested path should be directory.", failures);
     Expect(IsRegularFile(note), "note.txt should be a regular file.", failures);
-    Expect(ReadContent(note) == "hello modules", "ReadContent result mismatch.",
+    Expect(ReadCanonicalText(note) == "hello modules",
+           "ReadCanonicalText result mismatch.",
            failures);
+    const auto note_bytes = ReadBytes(note);
+    Expect(note_bytes == std::vector<std::uint8_t>{'h', 'e', 'l', 'l', 'o', ' ',
+                                                   'm', 'o', 'd', 'u', 'l', 'e',
+                                                   's'},
+           "ReadBytes should preserve canonical UTF-8 payload bytes.", failures);
 
     const auto files = FindFilesByExtensionRecursively(root, ".txt");
     Expect(files.size() == 2U, "FindFilesByExtensionRecursively size mismatch.",
@@ -121,7 +129,11 @@ void TestRuntimeFactories(int& failures) {
 
   try {
     CreateDirectories(root);
-    WriteContent(note, "runtime factory bridge");
+    const std::vector<std::uint8_t> legacy_bytes = {
+        0xEFU, 0xBBU, 0xBFU, 'r', 'u', 'n', 't', 'i', 'm', 'e',
+        '\r',  '\n', 'f',   'a', 'c', 't', 'o', 'r', 'y', '\r',
+        'b',   'r',  'i',   'd', 'g', 'e'};
+    WriteBytes(note, legacy_bytes);
 
     auto ingest_input_provider = CreateTxtIngestInputProvider();
     auto processed_data_loader = CreateProcessedDataLoader();
@@ -144,8 +156,9 @@ void TestRuntimeFactories(int& failures) {
            failures);
     Expect(collected.inputs.size() == 1U,
            "Runtime factory provider should collect txt payloads.", failures);
-    Expect(collected.inputs.front().content == "runtime factory bridge",
-           "Runtime factory provider should read file content.", failures);
+    Expect(collected.inputs.front().content == "runtime\nfactory\nbridge",
+           "Runtime factory provider should canonicalize UTF-8 input content.",
+           failures);
 
     const std::map<std::string, std::vector<DailyLog>> data = {
         {"2026-03", {BuildRoundTripDay()}}};
@@ -203,12 +216,46 @@ void TestRuntimeFactories(int& failures) {
   (void)fs::remove_all(root, ec);
 }
 
+void TestRuntimeFactoriesRejectInvalidUtf8(int& failures) {
+  const fs::path root = MakeWorkspaceRoot();
+  const fs::path note = root / "broken.txt";
+
+  try {
+    CreateDirectories(root);
+    const std::vector<std::uint8_t> invalid_bytes = {0xFFU, 'x', '\n'};
+    WriteBytes(note, invalid_bytes);
+
+    auto ingest_input_provider = CreateTxtIngestInputProvider();
+    bool threw = false;
+    std::string message;
+    try {
+      static_cast<void>(ingest_input_provider->CollectTextInputs(root, ".txt"));
+    } catch (const std::exception& exception) {
+      threw = true;
+      message = exception.what();
+    }
+
+    Expect(threw, "Txt ingest provider should reject invalid UTF-8 files.",
+           failures);
+    Expect(message.find("Invalid UTF-8") != std::string::npos,
+           "Txt ingest provider failure should mention invalid UTF-8.",
+           failures);
+  } catch (const std::exception& ex) {
+    ++failures;
+    std::cerr << "[FAIL] Unexpected exception: " << ex.what() << '\n';
+  }
+
+  std::error_code ec;
+  (void)fs::remove_all(root, ec);
+}
+
 }  // namespace
 
 auto main() -> int {
   int failures = 0;
   TestCoreAndUtilsBridge(failures);
   TestRuntimeFactories(failures);
+  TestRuntimeFactoriesRejectInvalidUtf8(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_adapters_io_modules_smoke_tests\n";

@@ -7,9 +7,9 @@ Windows CLI 当前交付实现为 Rust-only 版本。
 1. `apps/tracer_cli/windows/rust_cli/`
    - Rust CLI 主工程
    - 负责参数解析、命令分发、Core C ABI 调用、运行时装配
-2. `apps/tracer_cli/windows/scripts/`
-   - Windows CLI 构建与打包脚本
-   - 默认发布入口是 `build_windows_release.sh`
+2. `python tools/run.py build ...`
+   - Windows CLI 构建与打包统一入口
+   - 默认发布流程是先构建 core runtime，再构建 Rust CLI
 3. `apps/tracer_cli/windows/agent.md`
    - 本模块的 agent 约束与验证入口
 
@@ -23,16 +23,11 @@ python tools/run.py post-change --app tracer_core --run-tests always --build-dir
 python tools/run.py verify --app tracer_core --quick --scope batch --concise
 
 # 默认发布构建入口：先编 Windows runtime，再编 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_windows_release.sh
-
-# 仅构建 Windows runtime 交付物（DLL + runtime layout）
-bash apps/tracer_cli/windows/scripts/build_core_runtime_release.sh
+python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 
 # 基于已有 runtime 产物单独构建 Rust CLI
-bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh
-
-# Windows CLI 快速入口脚本（面向改动后的构建 + 测试）
-bash apps/tracer_cli/windows/scripts/build_fast.sh
+python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
 ## 结果文件
@@ -102,9 +97,7 @@ bash apps/tracer_cli/windows/scripts/build_fast.sh
 3. Rust 资源注入
    - `apps/tracer_cli/windows/rust_cli/build.rs`
 4. 构建入口
-   - `python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build`
-   - `bash apps/tracer_cli/windows/scripts/build_windows_release.sh`
-   - `bash apps/tracer_cli/windows/scripts/build_rust_from_windows_build.sh`
+   - `python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows`
 5. 可选覆盖
    - `TT_WINDOWS_CLI_ICON_ICO`：直接指定 `.ico` 路径
    - `TT_WINDOWS_CLI_ICON_SVG`：覆盖默认 `bg_indigo_mist_vertical_padding.svg`

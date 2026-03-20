@@ -51,6 +51,23 @@ auto TestConvertResponses(TestState& state) -> void {
          workflow_handler.last_converter_options.validate_structure ==
              kRequest.validate_structure,
          "RunConvert should forward validate_structure.");
+  Expect(state,
+         !workflow_handler
+              .last_converter_options.run_structure_validation_before_conversion,
+         "RunConvert should not enable structure precheck when validate_logic is false.");
+
+  const ConvertRequest kLogicRequest = {.input_path = "source-path",
+                                        .date_check_mode = DateCheckMode::kNone,
+                                        .save_processed_output = false,
+                                        .validate_logic = true,
+                                        .validate_structure = false};
+  const auto kLogicSuccess = core_api.RunConvert(kLogicRequest);
+  Expect(state, kLogicSuccess.ok,
+         "RunConvert should succeed for validate_logic precheck request.");
+  Expect(state,
+         workflow_handler
+             .last_converter_options.run_structure_validation_before_conversion,
+         "RunConvert should enable structure precheck when validate_logic is true.");
 
   workflow_handler.fail_convert = true;
   const auto kFailure = core_api.RunConvert(kRequest);

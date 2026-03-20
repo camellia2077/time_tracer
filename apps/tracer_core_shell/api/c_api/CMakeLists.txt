@@ -8,6 +8,7 @@ set(TRACER_CORE_C_API_SOURCES
     "tracer_core_c_api_reporting.cpp"
     "tracer_core_c_api_crypto.cpp"
     "${PROJECT_SOURCE_DIR}/host/crypto_progress_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/tracer_exchange_inspect_formatter.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory.cpp"
     "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_resolver.cpp"

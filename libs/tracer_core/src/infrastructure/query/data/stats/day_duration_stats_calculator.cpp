@@ -1,12 +1,12 @@
 // infrastructure/query/data/stats/day_duration_stats_calculator.cpp
-import tracer.core.infrastructure.query.data.repository.types;
-
 #include "infrastructure/query/data/stats/day_duration_stats_calculator.hpp"
 
 #include <algorithm>
 #include <cmath>
 #include <ranges>
 #include <vector>
+
+import tracer.core.infrastructure.query.data.repository.types;
 
 namespace tracer::core::infrastructure::query::data::stats {
 namespace {

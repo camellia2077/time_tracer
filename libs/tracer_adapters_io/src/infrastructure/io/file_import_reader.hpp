@@ -41,7 +41,7 @@ class FileImportReader {
     int read_failure_count = 0;
     for (const auto& file_path : json_files) {
       try {
-        std::string content = FileReader::ReadContent(file_path);
+        std::string content = FileReader::ReadCanonicalText(file_path);
         payload.emplace_back(file_path, std::move(content));
       } catch (const std::exception& e) {
         tracer_core::domain::ports::EmitError(

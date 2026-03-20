@@ -14,7 +14,7 @@ constexpr std::string_view kStyleSourceKey = "style_source";
 
 auto ParseTomlFile(const fs::path& path) -> toml::table {
   try {
-    return toml::parse_file(path.string());
+    return toml::parse(FileReader::ReadCanonicalText(path));
   } catch (const toml::parse_error& e) {
     throw std::runtime_error("Config TOML Parse Error [" + path.string() +
                              "]: " + std::string(e.description()));

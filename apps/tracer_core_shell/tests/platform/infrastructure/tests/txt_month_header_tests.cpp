@@ -73,6 +73,7 @@ auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
 
   std::istringstream input("y2026\n0301\n0641wake\n");
   bool threw = false;
+  std::string message;
   try {
     std::vector<DailyLog> parsed_days;
     parser.Parse(
@@ -80,10 +81,17 @@ auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
         [&parsed_days](DailyLog& day) -> void { parsed_days.push_back(day); },
         "missing_month.txt");
   } catch (const std::exception& error) {
-    threw = Contains(error.what(), "month header (mMM)");
+    message = error.what();
+    threw = Contains(message, "month header (mMM)");
   }
   Expect(threw,
          "TextParser should reject files that omit required month header.",
+         failures);
+  Expect(Contains(message, "missing_month.txt:2"),
+         "TextParser parse errors should include source file and line number.",
+         failures);
+  Expect(message.starts_with("missing_month.txt:2: Parse error:"),
+         "TextParser parse errors should begin with IDE-friendly location.",
          failures);
 }
 

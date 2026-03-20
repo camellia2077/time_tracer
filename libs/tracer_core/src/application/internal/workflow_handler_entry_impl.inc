@@ -1,5 +1,26 @@
 namespace {
 
+class ScopedErrorReportWriterOverride final {
+ public:
+  explicit ScopedErrorReportWriterOverride(
+      std::shared_ptr<modports::IErrorReportWriter> writer)
+      : previous_writer_(modports::GetErrorReportWriter()) {
+    modports::SetErrorReportWriter(std::move(writer));
+  }
+
+  ScopedErrorReportWriterOverride(const ScopedErrorReportWriterOverride&) =
+      delete;
+  auto operator=(const ScopedErrorReportWriterOverride&)
+      -> ScopedErrorReportWriterOverride& = delete;
+
+  ~ScopedErrorReportWriterOverride() {
+    modports::SetErrorReportWriter(previous_writer_);
+  }
+
+ private:
+  std::shared_ptr<modports::IErrorReportWriter> previous_writer_;
+};
+
 [[nodiscard]] auto BuildStructureValidationOptions(
     const std::string& source_path) -> AppOptions {
   AppOptions options;
@@ -7,6 +28,9 @@ namespace {
   options.validate_structure = true;
   options.convert = false;
   options.validate_logic = false;
+  // Validate commands are intentionally terminal-first checks. We do not
+  // persist processed output or validation report files for them; users are
+  // expected to fix issues directly from the current terminal diagnostics.
   options.save_processed_output = false;
   options.date_check_mode = DateCheckMode::kNone;
   return options;
@@ -20,6 +44,10 @@ namespace {
   options.validate_structure = false;
   options.convert = true;
   options.validate_logic = true;
+  options.run_structure_validation_before_conversion = true;
+  // `validate logic` reuses the conversion pipeline for checks, but it keeps
+  // the same terminal-first contract as `validate structure`: no processed
+  // output or local validation report files are written for validate runs.
   options.save_processed_output = false;
   options.date_check_mode = date_check_mode;
   return options;
@@ -82,6 +110,9 @@ auto WorkflowHandler::RunValidateStructure(const std::string& source_path)
     -> void {
   modports::ClearBufferedDiagnostics();
   const AppOptions kOptions = BuildStructureValidationOptions(source_path);
+  // Keep validate runs terminal-only: suppress per-run error-report files and
+  // rely on the diagnostics already emitted to the active sink/terminal.
+  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_,
@@ -96,6 +127,9 @@ auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
   modports::ClearBufferedDiagnostics();
   const AppOptions kOptions =
       BuildLogicValidationOptions(source_path, date_check_mode);
+  // Keep validate runs terminal-only: suppress per-run error-report files and
+  // rely on the diagnostics already emitted to the active sink/terminal.
+  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_,

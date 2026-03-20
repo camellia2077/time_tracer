@@ -10,6 +10,12 @@ def resolve_app_root(repo_root: Path, app_name: str) -> Path:
     return repo_root / "apps" / app_name
 
 
+def resolve_runtime_platform_args(app_name: str) -> list[str]:
+    if app_name == "tracer_windows_rust_cli":
+        return ["--runtime-platform", "windows"]
+    return []
+
+
 def run_step(title: str, cmd: list[str], cwd: Path) -> int:
     print(f"\n=== {title} ===", flush=True)
     print("Command:", subprocess.list2cmdline(cmd), flush=True)
@@ -162,6 +168,7 @@ def run_optional_build_steps(
             "build",
             "--app",
             app_name,
+            *resolve_runtime_platform_args(app_name),
             *shared_build_flags,
         ]
         if effective_build_dir:

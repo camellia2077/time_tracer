@@ -34,7 +34,7 @@ else()
 endif()
 
 if(COMMAND setup_app_target)
-    setup_app_target(taio_lib NO_APP_SOURCE_ROOT_INCLUDE)
+    setup_app_target(taio_lib NO_PCH NO_APP_SOURCE_ROOT_INCLUDE)
 endif()
 
 target_include_directories(taio_lib PUBLIC

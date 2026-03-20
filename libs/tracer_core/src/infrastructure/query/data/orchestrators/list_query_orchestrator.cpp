@@ -1,10 +1,10 @@
 // infrastructure/query/data/orchestrators/list_query_orchestrator.cpp
-import tracer.core.infrastructure.query.data.repository;
-import tracer.core.infrastructure.query.data.renderers;
-
 #include "infrastructure/query/data/orchestrators/list_query_orchestrator.hpp"
 
 #include <utility>
+
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.infrastructure.query.data.renderers;
 
 namespace query_data_repository = tracer::core::infrastructure::query::data;
 namespace data_query_renderers =

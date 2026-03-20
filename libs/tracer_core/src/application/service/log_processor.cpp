@@ -1,15 +1,15 @@
 // application/service/log_processor.cpp
-import tracer.core.application.service.converter;
-import tracer.core.domain.logic.converter.log_processor;
-import tracer.core.domain.model.daily_log;
-import tracer.core.domain.ports.diagnostics;
-import tracer.core.domain.types.converter_config;
-
 #include <functional>
 #include <istream>
 #include <sstream>
 #include <string>
 #include <string_view>
+
+import tracer.core.application.service.converter;
+import tracer.core.domain.logic.converter.log_processor;
+import tracer.core.domain.model.daily_log;
+import tracer.core.domain.ports.diagnostics;
+import tracer.core.domain.types.converter_config;
 
 using tracer::core::application::modservice::ConverterService;
 using tracer::core::domain::modlogic::converter::LogProcessingResult;
@@ -47,8 +47,7 @@ auto LogProcessor::ProcessSourceContent(const std::string& filename,
         },
         filename);
   } catch (const std::exception& e) {
-    modports::EmitError(std::string("An error occurred during conversion: ") +
-                        e.what());
+    modports::EmitError(e.what());
     result.success = false;
   } catch (...) {
     result.success = false;

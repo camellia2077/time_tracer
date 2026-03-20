@@ -1,7 +1,4 @@
 // infrastructure/persistence/sqlite_data_query_service_period.cpp
-import tracer.core.infrastructure.query.data.repository;
-import tracer.core.shared.period_utils;
-
 #include <cctype>
 #include <chrono>
 #include <format>
@@ -11,6 +8,9 @@ import tracer.core.shared.period_utils;
 
 #include "domain/utils/time_utils.hpp"
 #include "infrastructure/query/data/internal/period.hpp"
+
+import tracer.core.infrastructure.query.data.repository;
+import tracer.core.shared.period_utils;
 
 namespace infra_data_query = tracer::core::infrastructure::query::data;
 namespace modperiod = tracer::core::shared::modperiod;

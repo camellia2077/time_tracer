@@ -1,13 +1,14 @@
 // infrastructure/persistence/sqlite/db_manager.cpp
-import tracer.adapters.io.core.fs;
-import tracer.core.domain.ports.diagnostics;
-
 #include "infrastructure/persistence/sqlite/db_manager.hpp"
 
 #include <sqlite3.h>
 
 #include <optional>
 #include <utility>
+
+import tracer.adapters.io.core.fs;
+import tracer.core.domain.ports.diagnostics;
+
 namespace modcore = tracer::adapters::io::modcore;
 
 namespace modports = tracer::core::domain::ports;

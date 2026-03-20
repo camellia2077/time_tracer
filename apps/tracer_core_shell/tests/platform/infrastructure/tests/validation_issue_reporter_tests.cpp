@@ -197,11 +197,42 @@ auto TestLogicReporterPrefersSourceSpanPath(int& failures) -> void {
   }
 }
 
+auto TestReporterSkipsSaveNoticeWhenErrorReportWriterDisabled(
+    int& failures) -> void {
+  DiagnosticsStateGuard guard;
+  auto sink = std::make_shared<CapturingDiagnosticsSink>();
+  modports::SetDiagnosticsSink(sink);
+  modports::SetErrorReportWriter(nullptr);
+  infra_logging::ValidationIssueReporter reporter;
+
+  std::set<validator_common::Error> errors;
+  errors.insert(
+      BuildErrorWithSpan(R"(C:\test\invalid\terminal_only_sample.txt)",
+                         kUnrecognizedActivityLine, "0940clang//clang tidy"));
+  reporter.ReportStructureErrors("terminal_only_sample.txt", errors);
+
+  if (!Contains(sink->Errors(),
+                "C:\\test\\invalid\\terminal_only_sample.txt:14: "
+                "Line 14: Unrecognized activity 'clang'.")) {
+    ++failures;
+    std::cerr << "[FAIL] Reporter should still emit validation diagnostics "
+                 "when the error report writer is disabled.\n";
+  }
+
+  if (Contains(sink->Infos(), "详细的错误日志已保存至") ||
+      Contains(sink->Infos(), "详细错误日志写入失败")) {
+    ++failures;
+    std::cerr << "[FAIL] Reporter should stay silent about report files when "
+                 "the error report writer is disabled.\n";
+  }
+}
+
 }  // namespace
 
 auto RunValidationIssueReporterTests(int& failures) -> void {
   TestStructureReporterRendersPathAndLine(failures);
   TestLogicReporterPrefersSourceSpanPath(failures);
+  TestReporterSkipsSaveNoticeWhenErrorReportWriterDisabled(failures);
 }
 
 }  // namespace android_runtime_tests

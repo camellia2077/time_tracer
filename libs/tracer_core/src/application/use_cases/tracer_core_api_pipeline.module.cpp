@@ -7,6 +7,7 @@
 #include "application/ports/i_data_query_service.hpp"
 #include "application/ports/i_report_dto_formatter.hpp"
 #include "application/ports/i_report_export_writer.hpp"
+#include "application/ports/i_tracer_exchange_service.hpp"
 #include "application/use_cases/tracer_core_api.hpp"
 
 import tracer.core.application.use_cases.helpers;
@@ -26,14 +27,16 @@ TracerCoreApi::TracerCoreApi(
     DataQueryServicePtr data_query_service,
     ReportDataQueryServicePtr report_data_query_service,
     ReportDtoFormatterPtr report_dto_formatter,
-    ReportExportWriterPtr report_export_writer)
+    ReportExportWriterPtr report_export_writer,
+    TracerExchangeServicePtr tracer_exchange_service)
     : workflow_handler_(workflow_handler),
       report_handler_(report_handler),
       project_repository_(std::move(project_repository)),
       data_query_service_(std::move(data_query_service)),
       kReport_(std::move(report_data_query_service)),
       report_dto_formatter_(std::move(report_dto_formatter)),
-      report_export_writer_(std::move(report_export_writer)) {
+      report_export_writer_(std::move(report_export_writer)),
+      tracer_exchange_service_(std::move(tracer_exchange_service)) {
   if (!project_repository_) {
     throw std::invalid_argument("project_repository must not be null.");
   }
@@ -49,6 +52,8 @@ auto TracerCoreApi::RunConvert(const ConvertRequest& request) -> OperationAck {
     options.convert = true;
     options.validate_structure = request.validate_structure;
     options.validate_logic = request.validate_logic;
+    options.run_structure_validation_before_conversion =
+        request.validate_logic;
     options.date_check_mode = request.date_check_mode;
     options.save_processed_output = request.save_processed_output;
 

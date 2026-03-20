@@ -326,6 +326,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_create(
 
     auto* handle = new TtCoreRuntimeHandle();
     handle->runtime = std::move(runtime);
+    handle->output_root = fs::absolute(request.output_root);
+    handle->converter_config_toml_path =
+        fs::absolute(request.converter_config_toml_path);
     return handle;
   } catch (const std::exception& error) {
     SetLastError(error.what());

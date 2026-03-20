@@ -27,8 +27,13 @@ constexpr double kMillisPerSecond = 1000.0;
 }  // namespace
 
 auto ConversionStage::Execute(PipelineSession& session) -> bool {
-  tracer_core::application::ports::LogInfo(
-      "Step: Converting files (Parallel)...");
+  if (session.config.structure_validation_blocks_conversion) {
+    tracer_core::application::ports::LogInfo(
+        "Step: Converting files after structure precheck (Parallel)...");
+  } else {
+    tracer_core::application::ports::LogInfo(
+        "Step: Converting files (Parallel)...");
+  }
   const auto kStartTime = std::chrono::steady_clock::now();
 
   std::mutex data_mutex;
@@ -81,11 +86,11 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
 
   if (all_success) {
     tracer_core::application::ports::LogInfo(
-        "内存转换阶段 全部成功 (" + std::to_string(processed_count) +
+        "转换阶段 全部成功 (" + std::to_string(processed_count) +
         " files).");
   } else {
     tracer_core::application::ports::LogWarn(
-        "内存转换阶段 完成，但存在部分错误。");
+        "转换阶段 完成，但存在部分错误。");
   }
 
   return all_success;

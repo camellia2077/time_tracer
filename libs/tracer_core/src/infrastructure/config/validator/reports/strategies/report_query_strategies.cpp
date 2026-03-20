@@ -1,11 +1,11 @@
 // infrastructure/config/validator/reports/strategies/report_query_strategies.cpp
-import tracer.core.domain.ports.diagnostics;
-
 #include "infrastructure/config/validator/reports/strategies/report_query_strategies.hpp"
 
 #include <algorithm>
 #include <set>
 #include <string>
+
+import tracer.core.domain.ports.diagnostics;
 
 namespace modports = tracer::core::domain::ports;
 

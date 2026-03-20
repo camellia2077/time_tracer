@@ -8,9 +8,14 @@ export namespace tracer::adapters::io::modcore {
 
 using Reader = ::FileReader;
 
-[[nodiscard]] inline auto ReadContent(const std::filesystem::path& path)
+[[nodiscard]] inline auto ReadBytes(const std::filesystem::path& path)
+    -> std::vector<std::uint8_t> {
+  return Reader::ReadBytes(path);
+}
+
+[[nodiscard]] inline auto ReadCanonicalText(const std::filesystem::path& path)
     -> std::string {
-  return Reader::ReadContent(path);
+  return Reader::ReadCanonicalText(path);
 }
 
 }  // namespace tracer::adapters::io::modcore
