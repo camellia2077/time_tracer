@@ -30,7 +30,11 @@ pub(super) fn format_progress_line(event: &CryptoProgressEvent) -> String {
     let operation = short_operation(&event.operation);
     let phase = short_phase(&event.phase);
     let file_progress = if event.total_files > 0 {
-        format!("{}/{}", event.current_file_index.min(event.total_files), event.total_files)
+        format!(
+            "{}/{}",
+            event.current_file_index.min(event.total_files),
+            event.total_files
+        )
     } else {
         "-/-".to_string()
     };
@@ -45,7 +49,8 @@ pub(super) fn format_progress_line(event: &CryptoProgressEvent) -> String {
     };
 
     let label = file_label(event);
-    let mut line = format!("[core][crypto] {operation}/{phase} {file_progress} {percent:.0}% {label}");
+    let mut line =
+        format!("[core][crypto] {operation}/{phase} {file_progress} {percent:.0}% {label}");
 
     if event.speed_bytes_per_sec > 0 {
         line.push_str(&format!(" {}/s", format_bytes(event.speed_bytes_per_sec)));
@@ -119,7 +124,10 @@ pub(super) fn format_bytes(bytes: u64) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{CryptoProgressEvent, file_label, format_bytes, format_progress_line, is_terminal_phase, short_operation, short_phase};
+    use super::{
+        CryptoProgressEvent, file_label, format_bytes, format_progress_line, is_terminal_phase,
+        short_operation, short_phase,
+    };
 
     #[test]
     fn format_bytes_keeps_expected_units() {

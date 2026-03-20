@@ -10,8 +10,7 @@ mod terminal;
 
 pub(crate) fn configure_callbacks(api: &CoreApi) {
     let enable_core_log = env_flag(ENV_CORE_LOG, true);
-    let enable_crypto_progress =
-        env_flag(ENV_CRYPTO_PROGRESS, true) && io::stderr().is_terminal();
+    let enable_crypto_progress = env_flag(ENV_CRYPTO_PROGRESS, true) && io::stderr().is_terminal();
 
     terminal::configure_dynamic_progress(enable_crypto_progress);
 
@@ -29,7 +28,10 @@ pub(crate) fn configure_callbacks(api: &CoreApi) {
 
         if let Some(set_crypto_progress_callback) = api.symbols.set_crypto_progress_callback {
             if enable_crypto_progress {
-                set_crypto_progress_callback(Some(core_crypto_progress_callback), std::ptr::null_mut());
+                set_crypto_progress_callback(
+                    Some(core_crypto_progress_callback),
+                    std::ptr::null_mut(),
+                );
             } else {
                 set_crypto_progress_callback(None, std::ptr::null_mut());
             }

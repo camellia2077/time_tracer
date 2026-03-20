@@ -26,19 +26,24 @@ impl CommandHandler<CryptoArgs> for CryptoHandler {
         let CryptoArgs {
             action,
             input,
-            output,
             security_level,
         } = args;
 
         validate_security_level_usage(&action, security_level.as_ref())?;
+        validate_output_usage(&action, ctx.output_path.as_ref())?;
         let input = absolute_existing_path(&input)?;
+        validate_input_usage(&action, &input)?;
 
         let api = CoreApi::load()?;
-        let (runtime, cli_config) = api.bootstrap("crypto", ctx)?;
+        let bootstrap_ctx = CommandContext {
+            db_path: ctx.db_path.clone(),
+            output_path: None,
+        };
+        let (runtime, cli_config) = api.bootstrap("crypto", &bootstrap_ctx)?;
 
         match action {
             CryptoAction::Encrypt => {
-                let output = absolute_output_path(output.as_deref())?;
+                let output = absolute_output_path_for_encrypt(ctx.output_path.as_deref())?;
                 let passphrase = prompt_passphrase_for_encrypt()?;
                 let security_level = map_security_level(security_level);
                 let date_check_mode = cli_config
@@ -57,21 +62,25 @@ impl CommandHandler<CryptoArgs> for CryptoHandler {
                 Ok(())
             }
             CryptoAction::Decrypt => {
-                let output = absolute_output_path(output.as_deref())?;
                 let passphrase = prompt_passphrase_for_decrypt()?;
+                let output = absolute_output_path(ctx.output_path.as_deref())?;
 
-                let request = json!({
+                let mut request = json!({
                     "input_path": input.to_string_lossy().to_string(),
-                    "output_path": output.to_string_lossy().to_string(),
                     "passphrase": passphrase,
                 });
+                if let Some(output) = output {
+                    request["output_path"] = json!(output.to_string_lossy().to_string());
+                }
                 let content = runtime.run_crypto_decrypt(&request)?;
                 print_content(&content);
                 Ok(())
             }
             CryptoAction::Inspect => {
+                let passphrase = prompt_passphrase_for_decrypt()?;
                 let request = json!({
                     "input_path": input.to_string_lossy().to_string(),
+                    "passphrase": passphrase,
                 });
                 let content = runtime.run_crypto_inspect(&request)?;
                 print_content(&content);
@@ -91,6 +100,27 @@ fn validate_security_level_usage(
     Err(AppError::InvalidArguments(
         "--security-level is only valid for encrypt.".to_string(),
     ))
+}
+
+fn validate_output_usage(action: &CryptoAction, output: Option<&String>) -> Result<(), AppError> {
+    if output.is_none() || matches!(action, CryptoAction::Encrypt | CryptoAction::Decrypt) {
+        return Ok(());
+    }
+    Err(AppError::InvalidArguments(
+        "--output/--out is not valid for inspect.".to_string(),
+    ))
+}
+
+fn validate_input_usage(action: &CryptoAction, input: &PathBuf) -> Result<(), AppError> {
+    match action {
+        CryptoAction::Encrypt if !input.is_dir() => Err(AppError::InvalidArguments(
+            "--in must point to a directory containing .txt files for encrypt.".to_string(),
+        )),
+        CryptoAction::Decrypt | CryptoAction::Inspect if !input.is_file() => Err(
+            AppError::InvalidArguments("--in must point to a .tracer file.".to_string()),
+        ),
+        _ => Ok(()),
+    }
 }
 
 fn absolute_existing_path(raw: &str) -> Result<PathBuf, AppError> {
@@ -114,13 +144,28 @@ fn absolute_existing_path(raw: &str) -> Result<PathBuf, AppError> {
     Ok(absolute)
 }
 
-fn absolute_output_path(raw: Option<&str>) -> Result<PathBuf, AppError> {
-    let value = raw.ok_or_else(|| {
-        AppError::InvalidArguments("--out is required for encrypt/decrypt.".to_string())
-    })?;
+fn absolute_output_path_for_encrypt(raw: Option<&str>) -> Result<PathBuf, AppError> {
+    let value = raw
+        .ok_or_else(|| {
+            AppError::InvalidArguments("--output/--out is required for encrypt.".to_string())
+        })?;
     if value.trim().is_empty() {
         return Err(AppError::InvalidArguments(
-            "--out is required for encrypt/decrypt.".to_string(),
+            "--output/--out is required for encrypt.".to_string(),
+        ));
+    }
+    absolute_output_path(Some(value))?.ok_or_else(|| {
+        AppError::InvalidArguments("--output/--out is required for encrypt.".to_string())
+    })
+}
+
+fn absolute_output_path(raw: Option<&str>) -> Result<Option<PathBuf>, AppError> {
+    let Some(value) = raw else {
+        return Ok(None);
+    };
+    if value.trim().is_empty() {
+        return Err(AppError::InvalidArguments(
+            "--output/--out must not be empty.".to_string(),
         ));
     }
     let path = PathBuf::from(value);
@@ -142,7 +187,7 @@ fn absolute_output_path(raw: Option<&str>) -> Result<PathBuf, AppError> {
             })?;
         }
     }
-    Ok(absolute)
+    Ok(Some(absolute))
 }
 
 fn prompt_passphrase_for_encrypt() -> Result<String, AppError> {

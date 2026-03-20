@@ -17,7 +17,8 @@ pub use licenses::LicensesArgs;
 pub use query::{DataOutputMode, QueryArgs, QueryFormat, QueryPeriod, QueryType, SuggestScoreMode};
 pub use tree::TreeArgs;
 pub use workflow::{
-    ConvertArgs, DateCheckMode, ImportArgs, IngestArgs, ValidateLogicArgs, ValidateStructureArgs,
+    ConvertArgs, DateCheckMode, ImportArgs, IngestArgs, ValidateArgs, ValidateLogicArgs,
+    ValidateStructureArgs, ValidateTarget,
 };
 
 #[derive(Debug, Parser)]
@@ -50,6 +51,7 @@ pub struct Cli {
     #[arg(
         short = 'o',
         long = "output",
+        visible_alias = "out",
         value_name = "PATH",
         global = true,
         help = "Output path override"
@@ -75,13 +77,8 @@ pub enum Command {
     Import(ImportArgs),
     #[command(about = "Run full ingestion pipeline", visible_alias = "blink")]
     Ingest(IngestArgs),
-    #[command(name = "validate-logic", about = "Validate business logic rules")]
-    ValidateLogic(ValidateLogicArgs),
-    #[command(
-        name = "validate-structure",
-        about = "Validate source TXT syntax and structure"
-    )]
-    ValidateStructure(ValidateStructureArgs),
+    #[command(about = "Validate source structure and business logic (default: all)")]
+    Validate(ValidateArgs),
     #[command(about = "Display project structure as a tree.")]
     Tree(TreeArgs),
     #[command(about = "Run runtime dependency/config diagnostics")]
@@ -98,7 +95,7 @@ pub enum Command {
 mod tests {
     use clap::{Parser, error::ErrorKind};
 
-    use super::{Cli, Command, CryptoAction, DataOutputMode, DateCheckMode};
+    use super::{Cli, Command, CryptoAction, DataOutputMode, DateCheckMode, ValidateTarget};
 
     #[test]
     fn version_flag_still_uses_clap_display_version() {
@@ -147,19 +144,34 @@ mod tests {
             "crypto",
             "encrypt",
             "--in",
-            "input.txt",
+            "input_dir",
             "--out",
             "output.tracer",
             "--security-level",
             "high",
         ])
         .unwrap();
+        assert_eq!(cli.output.as_deref(), Some("output.tracer"));
 
         match cli.command {
             Command::Crypto(args) => {
                 assert!(matches!(args.action, CryptoAction::Encrypt));
-                assert_eq!(args.input, "input.txt");
-                assert_eq!(args.output.as_deref(), Some("output.tracer"));
+                assert_eq!(args.input, "input_dir");
+            }
+            _ => panic!("expected crypto command"),
+        }
+    }
+
+    #[test]
+    fn crypto_decrypt_no_longer_requires_out() {
+        let cli = Cli::try_parse_from(["time_tracer_cli", "crypto", "decrypt", "--in", "a.tracer"])
+            .unwrap();
+        assert!(cli.output.is_none());
+
+        match cli.command {
+            Command::Crypto(args) => {
+                assert!(matches!(args.action, CryptoAction::Decrypt));
+                assert_eq!(args.input, "a.tracer");
             }
             _ => panic!("expected crypto command"),
         }
@@ -183,7 +195,8 @@ mod tests {
     fn validate_logic_still_parses_shared_date_check_mode() {
         let cli = Cli::try_parse_from([
             "time_tracer_cli",
-            "validate-logic",
+            "validate",
+            "logic",
             "input.txt",
             "--date-check",
             "continuity",
@@ -191,29 +204,56 @@ mod tests {
         .unwrap();
 
         match cli.command {
-            Command::ValidateLogic(args) => {
-                assert!(matches!(args.date_check, Some(DateCheckMode::Continuity)));
-                assert_eq!(args.path, "input.txt");
-            }
-            _ => panic!("expected validate-logic command"),
+            Command::Validate(args) => match args.target {
+                Some(ValidateTarget::Logic(args)) => {
+                    assert!(matches!(args.date_check, Some(DateCheckMode::Continuity)));
+                    assert_eq!(args.path, "input.txt");
+                }
+                _ => panic!("expected validate logic command"),
+            },
+            _ => panic!("expected validate command"),
         }
     }
 
     #[test]
     fn validate_structure_still_parses_path_only_form() {
-        let cli = Cli::try_parse_from(["time_tracer_cli", "validate-structure", "input.txt"])
-            .unwrap();
+        let cli =
+            Cli::try_parse_from(["time_tracer_cli", "validate", "structure", "input.txt"]).unwrap();
 
         match cli.command {
-            Command::ValidateStructure(args) => assert_eq!(args.path, "input.txt"),
-            _ => panic!("expected validate-structure command"),
+            Command::Validate(args) => match args.target {
+                Some(ValidateTarget::Structure(args)) => assert_eq!(args.path, "input.txt"),
+                _ => panic!("expected validate structure command"),
+            },
+            _ => panic!("expected validate command"),
+        }
+    }
+
+    #[test]
+    fn validate_default_path_parses_as_all_form() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "validate",
+            "input.txt",
+            "--date-check",
+            "full",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Validate(args) => {
+                assert!(args.target.is_none());
+                assert_eq!(args.path.as_deref(), Some("input.txt"));
+                assert!(matches!(args.date_check, Some(DateCheckMode::Full)));
+            }
+            _ => panic!("expected validate command"),
         }
     }
 
     #[test]
     fn tree_still_rejects_root_and_roots_together() {
-        let error = Cli::try_parse_from(["time_tracer_cli", "tree", "study", "--roots"])
-            .unwrap_err();
+        let error =
+            Cli::try_parse_from(["time_tracer_cli", "tree", "study", "--roots"]).unwrap_err();
         assert_eq!(error.kind(), ErrorKind::ArgumentConflict);
     }
 }

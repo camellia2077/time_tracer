@@ -44,7 +44,10 @@ fn with_progress_state<R>(handle: impl FnOnce(&mut ProgressRenderState) -> R) ->
 }
 
 fn render_progress_line_locked(state: &mut ProgressRenderState, line: &str) {
-    let max_width = detect_terminal_width().unwrap_or(100).saturating_sub(1).max(24);
+    let max_width = detect_terminal_width()
+        .unwrap_or(100)
+        .saturating_sub(1)
+        .max(24);
     let fitted = fit_line_to_width(line, max_width);
     let mut stderr = io::stderr();
     let width = fitted.chars().count();

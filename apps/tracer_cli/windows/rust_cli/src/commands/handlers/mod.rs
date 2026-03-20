@@ -10,5 +10,6 @@ pub mod motto;
 pub mod query;
 pub mod tracer;
 pub mod tree;
+pub mod validate;
 pub mod validate_logic;
 pub mod validate_structure;

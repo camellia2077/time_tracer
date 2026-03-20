@@ -15,8 +15,7 @@ use crate::commands::handlers::motto::MottoHandler;
 use crate::commands::handlers::query::QueryHandler;
 use crate::commands::handlers::tracer::TracerHandler;
 use crate::commands::handlers::tree::TreeHandler;
-use crate::commands::handlers::validate_logic::ValidateLogicHandler;
-use crate::commands::handlers::validate_structure::ValidateStructureHandler;
+use crate::commands::handlers::validate::ValidateHandler;
 use crate::error::AppError;
 
 pub fn execute(cli: Cli) -> Result<(), AppError> {
@@ -33,8 +32,7 @@ pub fn execute(cli: Cli) -> Result<(), AppError> {
         Command::Convert(args) => ConvertHandler.handle(args, &ctx),
         Command::Import(args) => ImportHandler.handle(args, &ctx),
         Command::Ingest(args) => IngestHandler.handle(args, &ctx),
-        Command::ValidateLogic(args) => ValidateLogicHandler.handle(args, &ctx),
-        Command::ValidateStructure(args) => ValidateStructureHandler.handle(args, &ctx),
+        Command::Validate(args) => ValidateHandler.handle(args, &ctx),
         Command::Tree(args) => TreeHandler.handle(args, &ctx),
         Command::Doctor(args) => DoctorHandler.handle(args, &ctx),
         Command::Licenses(args) => LicensesHandler.handle(args, &ctx),

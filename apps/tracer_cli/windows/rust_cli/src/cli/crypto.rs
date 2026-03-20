@@ -24,12 +24,6 @@ pub struct CryptoArgs {
     #[arg(long = "in", value_name = "PATH")]
     pub input: String,
     #[arg(
-        long = "out",
-        value_name = "PATH",
-        required_if_eq_any = [("action", "encrypt"), ("action", "decrypt")]
-    )]
-    pub output: Option<String>,
-    #[arg(
         long = "security-level",
         value_enum,
         help = "Encryption KDF profile (encrypt only): min|interactive|moderate|high|max (alias: sensitive)"
