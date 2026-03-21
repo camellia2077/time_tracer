@@ -25,7 +25,7 @@ class TracerScreenStatsMarkdownRenderTest {
 
     @Test
     fun reportTab_statsResult_rendersMarkdownContent() {
-        val fakeRuntime = FakeRuntimeGateway(
+        val fakeRuntime = FakeTracerScreenServices(
             statsMarkdown = "## Day Duration Stats\n\nstats-md-marker"
         )
         val themeConfig = ThemeConfig(
@@ -45,7 +45,8 @@ class TracerScreenStatsMarkdownRenderTest {
                     txtStorageGateway = fakeRuntime,
                     reportGateway = fakeRuntime,
                     queryGateway = fakeRuntime,
-                    controller = fakeRuntime,
+                    configGateway = fakeRuntime,
+                    tracerExchangeGateway = fakeRuntime,
                     userPreferencesRepository = userPreferencesRepository,
                     themeConfig = themeConfig,
                     onSetThemeColor = {},
@@ -68,9 +69,15 @@ class TracerScreenStatsMarkdownRenderTest {
     }
 }
 
-private class FakeRuntimeGateway(
+private class FakeTracerScreenServices(
     private val statsMarkdown: String
-) : RuntimeGateway {
+) : RuntimeInitializer,
+    RecordGateway,
+    TxtStorageGateway,
+    ReportGateway,
+    QueryGateway,
+    ConfigGateway,
+    TracerExchangeGateway {
     override suspend fun initializeRuntime(): NativeCallResult = NativeCallResult(
         initialized = true,
         operationOk = true,

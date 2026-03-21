@@ -9,8 +9,8 @@ internal object ReportHeatmapTomlLoader {
     private val HexColorPattern = Regex("^#[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$")
     private val SectionHeaderPattern = Regex("""^\s*\[[^\]]+\]\s*$""")
 
-    suspend fun load(controller: RuntimeGateway): ReportHeatmapTomlConfig {
-        val readResult = controller.readConfigTomlFile(HeatmapConfigPath)
+    suspend fun load(configGateway: ConfigGateway): ReportHeatmapTomlConfig {
+        val readResult = configGateway.readConfigTomlFile(HeatmapConfigPath)
         if (!readResult.ok || readResult.content.isBlank()) {
             return defaultReportHeatmapTomlConfig()
         }

@@ -31,9 +31,13 @@
     <string name="tracer_export_unknown_error">unknown error</string>
     <string name="tracer_export_already_in_progress">Export already in progress.</string>
     <string name="tracer_export_select_tracer_destination">Select destination folder for complete exchange package export.</string>
+    <string name="tracer_import_select_single_txt">Selecting single TXT...</string>
+    <string name="tracer_import_single_txt_canceled">Single TXT import canceled.</string>
+    <string name="tracer_import_single_txt_failed">Single TXT import failed: %1$s</string>
     <string name="tracer_import_select_single_tracer">Selecting single TRACER...</string>
     <string name="tracer_import_single_tracer_canceled">Single TRACER import canceled.</string>
     <string name="tracer_import_single_tracer_failed">Single TRACER import failed: %1$s</string>
+    <string name="tracer_import_error_read_selected_document">cannot read selected document.</string>
     <string name="tracer_import_single_tracer_completed_success">Single TRACER import completed -&gt; %1$d/%2$d TXT files.</string>
     <string name="tracer_import_single_tracer_completed_with_errors">Single TRACER import completed -&gt; %1$d/%2$d TXT files. %3$s</string>
     <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Passphrase</string>

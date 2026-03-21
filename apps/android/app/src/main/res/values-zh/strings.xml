@@ -29,9 +29,13 @@
     <string name="tracer_export_unknown_error">未知错误</string>
     <string name="tracer_export_already_in_progress">导出已在进行中。</string>
     <string name="tracer_export_select_tracer_destination">请选择完整交换包导出目标目录。</string>
+    <string name="tracer_import_select_single_txt">正在选择单个 TXT...</string>
+    <string name="tracer_import_single_txt_canceled">已取消导入单个 TXT。</string>
+    <string name="tracer_import_single_txt_failed">导入单个 TXT 失败：%1$s</string>
     <string name="tracer_import_select_single_tracer">正在选择单个 TRACER...</string>
     <string name="tracer_import_single_tracer_canceled">已取消导入单个 TRACER。</string>
     <string name="tracer_import_single_tracer_failed">导入单个 TRACER 失败：%1$s</string>
+    <string name="tracer_import_error_read_selected_document">无法读取所选文档。</string>
     <string name="tracer_import_single_tracer_completed_success">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。</string>
     <string name="tracer_import_single_tracer_completed_with_errors">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。%3$s</string>
     <string name="tracer_crypto_passphrase_encrypt_title">加密口令</string>

@@ -1,11 +1,6 @@
 package com.example.tracer
 
 import android.content.Context
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.time.Instant
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 
 class NativeRuntimeController(context: Context) : RuntimeGateway {
     // RuntimeGateway is the aggregate contract that composes all domain gateways.
@@ -22,14 +17,17 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val reportTranslator = NativeReportTranslator(responseCodec)
     private val queryTranslator = NativeQueryTranslator(responseCodec)
     private val recordTranslator = NativeRecordTranslator(responseCodec)
-    private val callExecutor = NativeCallExecutor(
-        initializeRuntime = { initializeRuntimeInternal() },
+    private val coreAdapter = RuntimeCoreAdapter(
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         runtimePathsProvider = runtimeSession::runtimePathsOrNull,
+        nativeInit = runtimeBridge::nativeInit,
+        nativeQuery = runtimeBridge::nativeQuery,
+        nativeTree = runtimeBridge::nativeTree,
         responseCodec = responseCodec,
         reportTranslator = reportTranslator,
         diagnosticsRecorder = diagnosticsRecorder,
         nextOperationId = operationIdGenerator::next,
-        formatFailure = errorMapper::formatFailure
+        errorMapper = errorMapper
     )
     private val syncUseCase = IngestSyncUseCase(AutoSyncMaterializer())
 
@@ -39,7 +37,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         rawRecordStore = rawRecordStore,
         responseCodec = responseCodec,
         recordTranslator = recordTranslator,
-        executeAfterInit = ::executeAfterInit,
+        executeAfterInit = coreAdapter::executeAfterInit,
         syncLiveOperation = { paths -> syncUseCase.run(paths) }
     )
     private val storageDelegate = RuntimeStorageDelegate(
@@ -47,22 +45,22 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
     )
     private val reportDelegate = RuntimeReportDelegate(
-        executeReportAfterInit = ::executeReportAfterInit
+        executeReportAfterInit = coreAdapter::executeReportAfterInit
     )
     private val queryDelegate = RuntimeQueryDelegate(
         queryTranslator = queryTranslator,
-        executeNativeTreeQuery = ::executeNativeTreeQuery,
-        executeNativeDataQuery = ::executeNativeDataQuery
+        executeNativeTreeQuery = coreAdapter::executeNativeTreeQuery,
+        executeNativeDataQuery = coreAdapter::executeNativeDataQuery
     )
 
     private val initService = RuntimeInitService(
-        initializeRuntimeInternal = ::initializeRuntimeInternal,
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
         clearRuntimeData = runtimeEnvironment::clearRuntimeData,
         resetRuntimeCaches = runtimeSession::reset
     )
     private val ingestService = RuntimeIngestService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
-        executeAfterInit = ::executeAfterInit,
+        executeAfterInit = coreAdapter::executeAfterInit,
         nativeIngest = runtimeBridge::nativeIngest,
         nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth
     )
@@ -77,6 +75,13 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val queryService = RuntimeQueryService(queryDelegate)
     private val reportService = RuntimeReportService(reportDelegate)
     private val configService = RuntimeConfigService(storageDelegate)
+    private val diagnosticsService = RuntimeDiagnosticsService(
+        ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
+        bundleStatusProvider = runtimeEnvironment::lastConfigBundleStatus,
+        diagnosticsRecorder = diagnosticsRecorder,
+        nextOperationId = operationIdGenerator::next,
+        errorMapper = errorMapper
+    )
     private val cryptoService = RuntimeCryptoService(
         responseCodec = responseCodec,
         nativeEncryptFile = runtimeBridge::nativeEncryptFile,
@@ -209,78 +214,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     )
 
     override suspend fun listRecentDiagnostics(limit: Int): RuntimeDiagnosticsListResult =
-        withContext(Dispatchers.IO) {
-            if (limit <= 0) {
-                return@withContext RuntimeDiagnosticsListResult(
-                    ok = false,
-                    entries = emptyList(),
-                    message = "diagnostics limit must be greater than 0.",
-                    diagnosticsLogPath = diagnosticsRecorder.diagnosticsLogPath()
-                )
-            }
-            val records = diagnosticsRecorder.recent(limit)
-            RuntimeDiagnosticsListResult(
-                ok = true,
-                entries = records.map { it.toContractEntry() },
-                message = "Loaded ${records.size} diagnostic record(s).",
-                diagnosticsLogPath = diagnosticsRecorder.diagnosticsLogPath()
-            )
-        }
+        diagnosticsService.listRecentDiagnostics(limit)
 
     override suspend fun buildDiagnosticsPayload(maxEntries: Int): RuntimeDiagnosticsPayloadResult =
-        withContext(Dispatchers.IO) {
-            if (maxEntries <= 0) {
-                return@withContext RuntimeDiagnosticsPayloadResult(
-                    ok = false,
-                    payload = "",
-                    message = "maxEntries must be greater than 0.",
-                    entryCount = 0,
-                    diagnosticsLogPath = diagnosticsRecorder.diagnosticsLogPath()
-                )
-            }
-
-            runCatching {
-                runtimeSession.ensureRuntimePaths()
-            }.onFailure { error ->
-                val asException = if (error is Exception) {
-                    error
-                } else {
-                    IllegalStateException(error.message ?: "unknown failure", error)
-                }
-                val operationId = operationIdGenerator.next("diagnostics_prepare_paths")
-                diagnosticsRecorder.record(
-                    RuntimeDiagnosticRecord(
-                        timestampEpochMs = System.currentTimeMillis(),
-                        operationId = operationId,
-                        stage = "diagnostics.prepare_runtime_paths",
-                        ok = false,
-                        initialized = null,
-                        message = errorMapper.appendContext(
-                            message = errorMapper.formatFailure(
-                                "prepare runtime paths failed",
-                                asException
-                            ),
-                            operationId = operationId
-                        ),
-                        errorLogPath = ""
-                    )
-                )
-            }
-
-            val records = diagnosticsRecorder.recent(maxEntries)
-            val bundleStatus = runtimeEnvironment.lastConfigBundleStatus()
-            val payload = buildDiagnosticsPayloadText(
-                records = records,
-                bundleStatus = bundleStatus
-            )
-            RuntimeDiagnosticsPayloadResult(
-                ok = true,
-                payload = payload,
-                message = "Prepared diagnostics payload (${records.size} entries).",
-                entryCount = records.size,
-                diagnosticsLogPath = diagnosticsRecorder.diagnosticsLogPath()
-            )
-        }
+        diagnosticsService.buildDiagnosticsPayload(maxEntries)
 
     // report
     override suspend fun reportDayMarkdown(date: String): ReportCallResult =
@@ -325,148 +262,4 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()
-
-    private fun initializeRuntimeInternal(): NativeCallResult {
-        val operationId = operationIdGenerator.next("native_init")
-        try {
-            val paths = runtimeSession.ensureRuntimePaths()
-            val response = runtimeBridge.nativeInit(paths)
-            val payload = responseCodec.parse(response)
-            val errorLogPath = runCatching {
-                org.json.JSONObject(payload.content).optString("error_log_path", "")
-            }.getOrDefault("")
-            val result = NativeCallResult(
-                initialized = payload.ok,
-                operationOk = payload.ok,
-                rawResponse = response,
-                errorLogPath = errorLogPath,
-                operationId = operationId
-            )
-            val message = if (payload.ok) {
-                "ok"
-            } else {
-                errorMapper.appendContext(
-                    message = payload.errorMessage.ifEmpty { "native init failed." },
-                    operationId = operationId,
-                    errorLogPath = errorLogPath
-                )
-            }
-            diagnosticsRecorder.record(
-                RuntimeDiagnosticRecord(
-                    timestampEpochMs = System.currentTimeMillis(),
-                    operationId = operationId,
-                    stage = "native_init",
-                    ok = payload.ok,
-                    initialized = payload.ok,
-                    message = message,
-                    errorLogPath = errorLogPath
-                )
-            )
-            return result
-        } catch (error: Exception) {
-            val failureMessage = errorMapper.formatFailure("nativeInit failed", error)
-            diagnosticsRecorder.record(
-                RuntimeDiagnosticRecord(
-                    timestampEpochMs = System.currentTimeMillis(),
-                    operationId = operationId,
-                    stage = "native_init",
-                    ok = false,
-                    initialized = false,
-                    message = errorMapper.appendContext(
-                        failureMessage,
-                        operationId = operationId
-                    ),
-                    errorLogPath = ""
-                )
-            )
-            throw error
-        }
-    }
-
-    private fun executeAfterInit(
-        operationName: String,
-        action: (RuntimePaths) -> String
-    ): NativeCallResult {
-        return callExecutor.executeAfterInit(
-            operationName = operationName,
-            action = action
-        )
-    }
-
-    private fun executeReportAfterInit(
-        operationName: String,
-        action: (RuntimePaths) -> String
-    ): ReportCallResult {
-        return callExecutor.executeReportAfterInit(
-            operationName = operationName,
-            action = action
-        )
-    }
-
-    private fun executeNativeDataQuery(
-        request: DataQueryRequest,
-        onRuntimePaths: ((RuntimePaths) -> Unit)? = null
-    ): NativeCallResult {
-        val operationName = "native_query_${request.action}"
-        return executeAfterInit(operationName = operationName) { paths ->
-            onRuntimePaths?.invoke(paths)
-            runtimeBridge.nativeQuery(request)
-        }
-    }
-
-    private fun executeNativeTreeQuery(
-        params: DataTreeQueryParams
-    ): NativeCallResult {
-        return executeAfterInit(operationName = "native_tree") {
-            runtimeBridge.nativeTree(params)
-        }
-    }
-
-    private fun buildDiagnosticsPayloadText(
-        records: List<RuntimeDiagnosticRecord>,
-        bundleStatus: RuntimeConfigBundleStatus
-    ): String {
-        val generatedAtIso = DateTimeFormatter.ISO_INSTANT
-            .withZone(ZoneOffset.UTC)
-            .format(Instant.now())
-        val bundleSchema = bundleStatus.schemaVersion?.toString() ?: "unknown"
-        val bundleProfile = bundleStatus.profile.ifBlank { "unknown" }
-        val bundleName = bundleStatus.bundleName.ifBlank { "unknown" }
-        val bundleMissing = if (bundleStatus.missingFiles.isEmpty()) {
-            "-"
-        } else {
-            bundleStatus.missingFiles.joinToString(",")
-        }
-        val logPath = diagnosticsRecorder.diagnosticsLogPath().ifBlank { "-" }
-
-        return buildString {
-            appendLine("time_tracer_android_support_payload_v1")
-            appendLine("generated_at_utc=$generatedAtIso")
-            appendLine("bundle.ok=${bundleStatus.ok}")
-            appendLine("bundle.schema_version=$bundleSchema")
-            appendLine("bundle.profile=$bundleProfile")
-            appendLine("bundle.name=$bundleName")
-            appendLine("bundle.required_count=${bundleStatus.requiredFiles.size}")
-            appendLine("bundle.missing=$bundleMissing")
-            appendLine("bundle.message=${bundleStatus.message}")
-            appendLine("diagnostics.log_path=$logPath")
-            appendLine("diagnostics.count=${records.size}")
-            appendLine("[diagnostics]")
-            for (record in records) {
-                val timestampIso = DateTimeFormatter.ISO_INSTANT
-                    .withZone(ZoneOffset.UTC)
-                    .format(Instant.ofEpochMilli(record.timestampEpochMs))
-                val initFlag = record.initialized?.toString() ?: "null"
-                val logSuffix = if (record.errorLogPath.isBlank()) {
-                    ""
-                } else {
-                    " log=${record.errorLogPath}"
-                }
-                appendLine(
-                    "$timestampIso op=${record.operationId} stage=${record.stage} ok=${record.ok} " +
-                        "initialized=$initFlag$logSuffix msg=${record.message}"
-                )
-            }
-        }
-    }
 }

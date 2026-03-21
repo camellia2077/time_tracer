@@ -9,7 +9,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.launch
 
 internal data class TracerExportActions(
     val onExportAllMonthsTracer: () -> Unit,
@@ -29,56 +28,89 @@ internal fun rememberTracerExportActions(
 ): TracerExportActions {
     var isTracerExportInProgress by remember { mutableStateOf(false) }
     var tracerSecurityLevel by remember { mutableStateOf(FileCryptoSecurityLevel.INTERACTIVE) }
+    val transferCoordinator = rememberTracerScreenTransferCoordinator(
+        context = context,
+        coroutineScope = coroutineScope
+    )
+    val transferUiCallbacks = remember(recordViewModel) {
+        TracerTransferUiCallbacks(
+            setStatusText = recordViewModel::setStatusText,
+            clearCryptoProgress = recordViewModel::clearCryptoProgress,
+            startCryptoProgress = recordViewModel::startCryptoProgress,
+            finishCryptoProgress = { statusText, detailsText ->
+                recordViewModel.finishCryptoProgress(
+                    statusText = statusText,
+                    keepVisible = true,
+                    detailsTextOverride = detailsText
+                )
+            }
+        )
+    }
+    val canceledStatusText = context.getString(R.string.tracer_export_all_tracer_canceled)
+    val progressOperationText = context.getString(R.string.tracer_progress_operation_export_tracer)
+    val passphraseRequest = remember(context) {
+        TracerTransferPassphraseRequest(
+            title = context.getString(R.string.tracer_crypto_passphrase_encrypt_title),
+            firstHint = context.getString(R.string.tracer_crypto_passphrase_hint),
+            secondHint = context.getString(R.string.tracer_crypto_passphrase_confirm_hint),
+            requiredMessage = context.getString(R.string.tracer_crypto_passphrase_required),
+            mismatchMessage = context.getString(R.string.tracer_crypto_passphrase_mismatch),
+            canceledStatusText = context.getString(R.string.tracer_export_all_tracer_canceled)
+        )
+    }
 
     val exportAllTracerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { treeUri ->
         if (treeUri == null) {
-            recordViewModel.clearCryptoProgress()
-            recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_tracer_canceled))
-            isTracerExportInProgress = false
+            transferCoordinator.handleSelectionCanceled(
+                uiCallbacks = transferUiCallbacks,
+                canceledStatusText = canceledStatusText,
+                onFinally = { isTracerExportInProgress = false }
+            )
             return@rememberLauncherForActivityResult
         }
 
-        coroutineScope.launch {
-            val passphrase = promptPassphrase(
-                context = context,
-                title = context.getString(R.string.tracer_crypto_passphrase_encrypt_title),
-                firstHint = context.getString(R.string.tracer_crypto_passphrase_hint),
-                secondHint = context.getString(R.string.tracer_crypto_passphrase_confirm_hint),
-                requiredMessage = context.getString(R.string.tracer_crypto_passphrase_required),
-                mismatchMessage = context.getString(R.string.tracer_crypto_passphrase_mismatch)
-            )
-            if (passphrase.isNullOrBlank()) {
-                recordViewModel.clearCryptoProgress()
-                recordViewModel.setStatusText(context.getString(R.string.tracer_export_all_tracer_canceled))
-                isTracerExportInProgress = false
-                return@launch
-            }
-
-            recordViewModel.startCryptoProgress(
-                context.getString(R.string.tracer_progress_operation_export_tracer)
-            )
-            val exportResult = withContext(Dispatchers.IO) {
-                exportAllMonthsTracerToTree(
-                    context = context,
-                    treeUri = treeUri,
-                    recordUiState = recordUiState,
-                    txtStorageGateway = txtStorageGateway,
-                    tracerExchangeGateway = tracerExchangeGateway,
-                    recordViewModel = recordViewModel,
-                    passphrase = passphrase,
-                    tracerSecurityLevel = tracerSecurityLevel
+        transferCoordinator.launchCryptoTransfer(
+            uiCallbacks = transferUiCallbacks,
+            passphraseRequest = passphraseRequest,
+            progressOperationText = progressOperationText,
+            prepareInput = { treeUri },
+            formatPrepareFailure = { error ->
+                context.getString(
+                    R.string.tracer_export_all_tracer_failed,
+                    error.message ?: context.getString(R.string.tracer_export_unknown_error)
                 )
-            }
-            recordViewModel.finishCryptoProgress(
-                statusText = exportResult.progressStatusText,
-                keepVisible = true,
-                detailsTextOverride = exportResult.message
-            )
-            recordViewModel.setStatusText(exportResult.message)
-            isTracerExportInProgress = false
-        }
+            },
+            runTransfer = { selectedTreeUri, passphrase ->
+                val exportResult = withContext(Dispatchers.IO) {
+                    exportAllMonthsTracerToTree(
+                        context = context,
+                        treeUri = selectedTreeUri,
+                        recordUiState = recordUiState,
+                        txtStorageGateway = txtStorageGateway,
+                        tracerExchangeGateway = tracerExchangeGateway,
+                        recordViewModel = recordViewModel,
+                        passphrase = passphrase,
+                        tracerSecurityLevel = tracerSecurityLevel
+                    )
+                }
+                TracerCryptoTransferResult(
+                    progressStatusText = exportResult.progressStatusText,
+                    message = exportResult.message
+                )
+            },
+            formatTransferFailure = { error ->
+                TracerCryptoTransferResult(
+                    progressStatusText = context.getString(R.string.tracer_progress_status_failed),
+                    message = context.getString(
+                        R.string.tracer_export_all_tracer_failed,
+                        error.message ?: context.getString(R.string.tracer_export_unknown_error)
+                    )
+                )
+            },
+            onFinally = { isTracerExportInProgress = false }
+        )
     }
     val onExportAllMonthsTracer: () -> Unit = {
         if (isTracerExportInProgress) {

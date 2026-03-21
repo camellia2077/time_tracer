@@ -1,167 +1,74 @@
-# tracer_android Runtime Protocol
+# Android Runtime Protocol
 
-## Scope
+## Purpose
 
-This document defines Android runtime boundary contracts:
+Describe the stable Android runtime boundary contracts between Kotlin, JNI, and core C ABI calls.
 
-1. Android UI/Kotlin to JNI method boundary.
-2. JNI internal calls to core C ABI (`tracer_core_*`).
-3. Business payload protocol used between JNI and core (JSON string).
+## When To Open
+
+- Open this when the task changes JNI method contracts, runtime payload shapes, or C ABI alignment.
+
+## What This Doc Does Not Cover
+
+- UI routing
+- Feature behavior
+- File-level ownership
 
 ## Boundary Model
 
 Runtime call chain:
 
-1. Kotlin/Compose -> JNI native methods (`nativeInit/nativeIngest/nativeQuery/nativeTree/nativeReport`)
-2. JNI -> core C ABI (`tracer_core_*`)
-3. C ABI -> core/application/infrastructure implementation
+1. Kotlin/Compose calls JNI-facing native methods.
+2. JNI calls core C ABI entrypoints (`tracer_core_*`).
+3. C ABI forwards into core/runtime implementation.
 
-Important:
+Important rules:
 
-1. Android app does not call `tracer_core_*` directly from Kotlin.
-2. Kotlin-facing API remains JNI methods.
-3. JNI-to-core business payload is UTF-8 JSON (`const char*`).
+- Kotlin does not call `tracer_core_*` directly.
+- Kotlin-visible runtime APIs remain JNI methods.
+- Business payloads between JNI and core remain UTF-8 JSON strings.
 
-## C ABI Contract
+## C ABI Scope
 
-Android JNI currently uses these C ABI entrypoints:
+Current Android JNI integration uses C ABI entrypoints in these categories:
 
-1. `tracer_core_runtime_create`
-2. `tracer_core_runtime_destroy`
-3. `tracer_core_runtime_ingest_json`
-4. `tracer_core_runtime_query_json`
-5. `tracer_core_runtime_tree_json`
-6. `tracer_core_runtime_report_json`
-7. `tracer_core_runtime_report_batch_json`
-8. `tracer_core_runtime_validate_structure_json`
-9. `tracer_core_runtime_validate_logic_json`
-10. `tracer_core_last_error`
+- runtime create/destroy
+- ingest/query/tree/report
+- structure/logic validation
+- last-error access
 
-Canonical C ABI naming and global rules:
+Canonical global rules live in:
 
-1. `docs/time_tracer/core/contracts/c_abi.md`
+- `docs/time_tracer/core/contracts/c_abi.md`
 
-## Transport Status (2026-02-19)
+## Stable Response Envelope
 
-1. JNI request encoding has been unified through `tracer_transport` for:
-   - `nativeIngest` -> `EncodeIngestRequest`
-   - `nativeQuery` -> `EncodeQueryRequest`
-   - `nativeTree` -> `EncodeTreeRequest`
-   - `nativeReport` (single) -> `EncodeReportRequest`
-   - `nativeReport` (batch) -> `EncodeReportBatchRequest`
-2. `nativeValidateStructure` and `nativeValidateLogic` request JSON is still assembled locally in JNI.
-3. `nativeTree` response uses `DecodeTreeResponse` after envelope parse, then JNI returns normalized envelope (`ok/error_message/content`) where `content` carries tree payload JSON.
-4. Core responses are parsed through `ParseResponseEnvelope`, then JNI returns a normalized JSON string via `SerializeResponseEnvelope`.
-5. Kotlin-visible response shape remains stable: `{ok,error_message,content}`.
-6. JNI native method signatures are unchanged.
-7. Crypto progress JSON payload mapping is shared with core C ABI callback path:
-   - C ABI: `tracer_core_set_crypto_progress_callback(...)`
-   - Android: `onCryptoProgressJson(...)`
-   - Both use the same snapshot-to-JSON field serializer.
-8. Android crypto UI keeps performance-oriented security-level policy:
-   - Android JNI crypto API only exposes `interactive|moderate|high`.
-   - Core C ABI may accept wider host-side levels (`min|interactive|moderate|high|max`),
-     but Android host deliberately does not expose `min/max`.
+Kotlin-visible JNI responses are normalized to:
 
-## JSON Payload Contract (JNI -> core)
+- `ok`
+- `error_message`
+- `content`
 
-### Common response envelope
+Some operations may add operation-specific fields, but the envelope shape stays stable.
 
-All JNI responses are normalized to:
+## Transport Status
 
-1. `ok` (`bool`)
-2. `error_message` (`string`)
-3. `content` (`string`, optional/operation-specific)
+Current status:
 
-### `nativeInit`
+- JNI request encoding for main ingest/query/tree/report paths is unified through shared transport helpers.
+- Validation requests still have JNI-local request assembly.
+- Tree responses are normalized before returning to Kotlin.
+- Kotlin-visible response shape remains `{ok,error_message,content}`.
+- JNI native method signatures remain stable.
 
-1. JNI receives typed parameters: `dbPath`, `outputRoot`, `converterConfigTomlPath`.
-2. JNI calls `tracer_core_runtime_create(...)`.
-3. No JSON request is required for create; errors are read from `tracer_core_last_error()`.
+## Crypto Progress Note
 
-### `nativeIngest`
+- Android crypto progress uses the same snapshot-to-JSON callback path as the core C ABI.
+- Android host intentionally exposes only the Android-supported security levels.
 
-JNI builds request via transport codec (`EncodeIngestRequest`) with fields:
+## Open Next
 
-1. `input_path` (`string`)
-2. `date_check_mode` (`"none" | "continuity" | "full"`)
-3. `save_processed_output` (`bool`)
-
-Then calls `tracer_core_runtime_ingest_json(...)`.
-
-### `nativeQuery`
-
-JNI builds request via transport codec (`EncodeQueryRequest`) with `action` and optional query fields.
-Typical fields include:
-
-1. `action` (`years|months|days|days_duration|days_stats|search|activity_suggest|tree`)
-2. date/period fields such as `year`, `month`, `from_date`, `to_date`
-3. filter flags such as `overnight`, `reverse`, `activity_score_by_duration`
-
-Then calls `tracer_core_runtime_query_json(...)`.
-
-### `nativeTree`
-
-JNI builds request via `EncodeTreeRequest` with optional fields:
-
-1. `list_roots` (`bool`)
-2. `root_pattern` (`string`)
-3. `max_depth` (`int`)
-4. `period` (`string`)
-5. `period_argument` (`string`)
-6. `root` (`string`)
-
-Then JNI calls `tracer_core_runtime_tree_json(...)`, decodes tree payload (`DecodeTreeResponse`), and returns normalized envelope:
-
-1. `ok`
-2. `error_message`
-3. `content` (tree payload JSON string with `found/roots/nodes`)
-
-### `nativeReport`
-
-Single report request is built via `EncodeReportRequest`:
-
-1. `type` (`day|month|recent|week|year|range`)
-2. `argument` (`string`)
-3. `format` (`markdown|latex|typst`)
-
-Batch report request is built via `EncodeReportBatchRequest`:
-
-1. `days_list` (`int[]`)
-2. `format` (`markdown|latex|typst`)
-
-Then calls:
-
-1. `tracer_core_runtime_report_json(...)` (single)
-2. `tracer_core_runtime_report_batch_json(...)` (batch)
-
-### `nativeValidateStructure` / `nativeValidateLogic`
-
-1. JNI currently assembles request JSON locally.
-2. Core response parsing and return envelope normalization still use `ParseResponseEnvelope` + `SerializeResponseEnvelope`.
-
-## Compatibility Rules
-
-1. Keep JNI method signatures stable unless Android UI contract must change.
-2. Prefer additive JSON fields; avoid breaking existing required field semantics.
-3. Keep response envelope (`ok/error_message/content`) stable for ViewModel parsing.
-4. Android Tree 主链应优先消费结构化节点；`query data tree` 文本路径仅作兼容 fallback。
-5. Any C ABI symbol change must follow `docs/time_tracer/core/contracts/c_abi.md`.
-
-## Report Output Fidelity Rules
-
-1. `nativeReport` 成功响应中的 `content` 必须原样透传到 Kotlin `ReportCallResult.outputText`。
-2. JNI/runtime/translators 不允许对报告正文做 `trim()/replace()/normalize`。
-3. Android 仅支持 `markdown` 报告格式（轻量化策略）；`latex/typst` 能力由 core/windows_cli 保持。
-4. UI 渲染层可做展示解析，但不得回写或覆盖导出正文。
-5. 规范来源：`docs/time_tracer/core/contracts/reporting/report_output_text_contract_v1.md`。
-
-## References
-
-1. `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`
-2. `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`
-3. `apps/tracer_core_shell/api/c_api/time_tracer_core_c_api.h`
-4. `libs/tracer_transport/include/tracer/transport/runtime_codec.hpp`
-5. `libs/tracer_transport/include/tracer/transport/envelope.hpp`
-6. `docs/time_tracer/clients/android_ui/architecture.md`
-7. `docs/time_tracer/core/contracts/c_abi.md`
+- Stable structure:
+  - `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
+- Config/runtime bootstrap:
+  - `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
