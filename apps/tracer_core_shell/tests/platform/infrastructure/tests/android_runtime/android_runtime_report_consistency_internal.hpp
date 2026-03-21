@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 
 namespace android_runtime_tests::report_consistency_internal {
 
@@ -16,16 +16,16 @@ auto BuildDiffDiagnostics(std::string_view left, std::string_view right)
     -> std::string;
 
 auto RunReportConsistencyFieldVerificationTests(
-    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
-        core_api,
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreRuntime>&
+        runtime_api,
     int& failures) -> void;
 auto RunReportConsistencyCrossIngestTests(
-    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
-        core_api,
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreRuntime>&
+        runtime_api,
     const std::filesystem::path& input_path, int& failures) -> void;
 auto RunReportConsistencyStructureTests(
-    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>&
-        core_api,
+    const std::shared_ptr<tracer::core::application::use_cases::ITracerCoreRuntime>&
+        runtime_api,
     int& failures) -> void;
 
 }  // namespace android_runtime_tests::report_consistency_internal

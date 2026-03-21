@@ -1,4 +1,3 @@
-// application/use_cases/i_tracer_core_api.hpp
 #ifndef APPLICATION_USE_CASES_I_TRACER_CORE_API_H_
 #define APPLICATION_USE_CASES_I_TRACER_CORE_API_H_
 

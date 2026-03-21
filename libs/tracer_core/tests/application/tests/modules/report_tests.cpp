@@ -12,13 +12,13 @@ using tracer_core::core::dto::ReportQueryType;
 namespace {
 
 auto TestReportQueryResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   report_handler.daily_query_result = "daily-report";
   const auto kSuccess =
-      core_api.RunReportQuery({.type = ReportQueryType::kDay,
+      runtime_api.report().RunReportQuery({.type = ReportQueryType::kDay,
                                .argument = "20260101",
                                .format = ReportFormat::kMarkdown});
   Expect(state, kSuccess.ok, "RunReportQuery should return ok on success.");
@@ -27,7 +27,7 @@ auto TestReportQueryResponses(TestState& state) -> void {
 
   report_handler.fail_query = true;
   const auto kFailure =
-      core_api.RunReportQuery({.type = ReportQueryType::kMonth,
+      runtime_api.report().RunReportQuery({.type = ReportQueryType::kMonth,
                                .argument = "202601",
                                .format = ReportFormat::kMarkdown});
   Expect(state, !kFailure.ok,
@@ -37,7 +37,7 @@ auto TestReportQueryResponses(TestState& state) -> void {
 
   report_handler.fail_query = false;
   const auto kBadRecentArg =
-      core_api.RunReportQuery({.type = ReportQueryType::kRecent,
+      runtime_api.report().RunReportQuery({.type = ReportQueryType::kRecent,
                                .argument = "abc",
                                .format = ReportFormat::kMarkdown});
   Expect(state, !kBadRecentArg.ok,
@@ -46,7 +46,7 @@ auto TestReportQueryResponses(TestState& state) -> void {
          "RunReportQuery invalid argument should include operation name.");
 
   report_handler.period_batch_result = "period-batch-report";
-  const auto kBatchSuccess = core_api.RunPeriodBatchQuery(
+  const auto kBatchSuccess = runtime_api.report().RunPeriodBatchQuery(
       {.days_list = {7, 14}, .format = ReportFormat::kMarkdown});
   Expect(state, kBatchSuccess.ok,
          "RunPeriodBatchQuery should return ok on success.");
@@ -54,7 +54,7 @@ auto TestReportQueryResponses(TestState& state) -> void {
          "RunPeriodBatchQuery should return handler content.");
 
   report_handler.fail_period_batch_query = true;
-  const auto kBatchFailure = core_api.RunPeriodBatchQuery(
+  const auto kBatchFailure = runtime_api.report().RunPeriodBatchQuery(
       {.days_list = {7, 14}, .format = ReportFormat::kMarkdown});
   Expect(state, !kBatchFailure.ok,
          "RunPeriodBatchQuery should return failed DTO when handler throws.");
@@ -63,12 +63,12 @@ auto TestReportQueryResponses(TestState& state) -> void {
 }
 
 auto TestReportExportResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   const auto kSuccess =
-      core_api.RunReportExport({.type = ReportExportType::kDay,
+      runtime_api.report().RunReportExport({.type = ReportExportType::kDay,
                                 .format = ReportFormat::kMarkdown,
                                 .argument = "20260101",
                                 .recent_days_list = {}});
@@ -78,7 +78,7 @@ auto TestReportExportResponses(TestState& state) -> void {
 
   report_handler.fail_export = true;
   const auto kFailure =
-      core_api.RunReportExport({.type = ReportExportType::kMonth,
+      runtime_api.report().RunReportExport({.type = ReportExportType::kMonth,
                                 .format = ReportFormat::kMarkdown,
                                 .argument = "202601",
                                 .recent_days_list = {}});
@@ -89,7 +89,7 @@ auto TestReportExportResponses(TestState& state) -> void {
 
   report_handler.fail_export = false;
   const auto kBadRecentArg =
-      core_api.RunReportExport({.type = ReportExportType::kRecent,
+      runtime_api.report().RunReportExport({.type = ReportExportType::kRecent,
                                 .format = ReportFormat::kMarkdown,
                                 .argument = "oops",
                                 .recent_days_list = {}});

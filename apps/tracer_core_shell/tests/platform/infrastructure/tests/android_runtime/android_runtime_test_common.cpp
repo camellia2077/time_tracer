@@ -141,11 +141,11 @@ auto ExpectBuildRuntimeThrows(
 }
 
 auto RunAndCheckReportQuery(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const tracer_core::core::dto::ReportQueryRequest& request,
     std::string_view test_name, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput> {
-  const auto result = core_api->RunReportQuery(request);
+  const auto result = runtime_api->report().RunReportQuery(request);
   if (!result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunReportQuery(" << test_name

@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_QUERY_INTERNAL_HPP_
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_QUERY_INTERNAL_HPP_
 
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 
 #include <memory>
 #include <optional>
@@ -26,7 +26,7 @@ auto ValidateChartSeriesPayload(const nlohmann::json& payload,
     -> void;
 
 [[nodiscard]] auto RunDataQueryOrRecordFailure(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const tracer_core::core::dto::DataQueryRequest& request,
     std::string_view context, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput>;

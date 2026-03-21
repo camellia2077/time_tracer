@@ -27,7 +27,7 @@ import tracer.core.application.use_cases.interface;
 namespace tracer_core::core::c_api::internal {
 
 namespace tt_transport = tracer::transport;
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 thread_local std::string g_last_error;
 thread_local std::string g_last_response;

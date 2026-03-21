@@ -18,7 +18,7 @@ import tracer.core.application.use_cases.interface;
 #include "tracer/transport/runtime_codec.hpp"
 
 namespace tt_transport = tracer::transport;
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 using tracer_core::core::c_api::internal::BuildFailureResponse;
 using tracer_core::core::c_api::internal::BuildOperationResponse;
@@ -87,7 +87,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_query_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   try {
     ClearLastError();
-    ITracerCoreApi& runtime = RequireRuntime(handle);
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
     const auto kPayload =
         tt_transport::DecodeQueryRequest(ToRequestJsonView(request_json));
 
@@ -123,7 +123,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_query_json(
       request.activity_score_by_duration = *kPayload.activity_score_by_duration;
     }
 
-    const auto kResponse = runtime.RunDataQuery(request);
+    const auto kResponse = runtime.query().RunDataQuery(request);
     return BuildTextResponse(kResponse);
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
@@ -137,7 +137,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   try {
     ClearLastError();
-    ITracerCoreApi& runtime = RequireRuntime(handle);
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
     const auto kPayload =
         tt_transport::DecodeReportRequest(ToRequestJsonView(request_json));
 
@@ -148,7 +148,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_json(
       request.format = ParseReportFormat(*kPayload.format);
     }
 
-    return BuildReportTextResponse(runtime.RunReportQuery(request));
+    return BuildReportTextResponse(runtime.report().RunReportQuery(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -161,7 +161,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_batch_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   try {
     ClearLastError();
-    ITracerCoreApi& runtime = RequireRuntime(handle);
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
     const auto kPayload =
         tt_transport::DecodeReportBatchRequest(ToRequestJsonView(request_json));
 
@@ -171,7 +171,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_batch_json(
       request.format = ParseReportFormat(*kPayload.format);
     }
 
-    return BuildReportTextResponse(runtime.RunPeriodBatchQuery(request));
+    return BuildReportTextResponse(runtime.report().RunPeriodBatchQuery(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -184,7 +184,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_export_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   try {
     ClearLastError();
-    ITracerCoreApi& runtime = RequireRuntime(handle);
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
     const auto kPayload =
         tt_transport::DecodeExportRequest(ToRequestJsonView(request_json));
 
@@ -200,7 +200,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_export_json(
       request.recent_days_list = *kPayload.recent_days_list;
     }
 
-    return BuildOperationResponse(runtime.RunReportExport(request));
+    return BuildOperationResponse(runtime.report().RunReportExport(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -213,7 +213,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_tree_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   try {
     ClearLastError();
-    ITracerCoreApi& runtime = RequireRuntime(handle);
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
     const auto kPayload =
         tt_transport::DecodeTreeRequest(ToRequestJsonView(request_json));
 
@@ -237,7 +237,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_tree_json(
       request.root = *kPayload.root;
     }
 
-    return BuildTreeResponse(runtime.RunTreeQuery(request));
+    return BuildTreeResponse(runtime.query().RunTreeQuery(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

@@ -24,7 +24,7 @@ auto RunConfigSmokeSection(int& failures) -> void {
         tracer_core::core::dto::DataQueryAction::kReportChart;
     chart_empty_request.lookback_days = 7;
     const auto chart_empty_result =
-        fixture.runtime.core_api->RunDataQuery(chart_empty_request);
+        fixture.runtime.runtime_api->query().RunDataQuery(chart_empty_request);
     if (chart_empty_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunDataQuery(report-chart, empty) should fail "
@@ -45,7 +45,7 @@ auto RunConfigSmokeSection(int& failures) -> void {
         tracer_core::core::dto::DataQueryAction::kReportChart;
     chart_invalid_request.lookback_days = 0;
     const auto chart_invalid_result =
-        fixture.runtime.core_api->RunDataQuery(chart_invalid_request);
+        fixture.runtime.runtime_api->query().RunDataQuery(chart_invalid_request);
     if (chart_invalid_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunDataQuery(report-chart) should reject "
@@ -62,7 +62,7 @@ auto RunConfigSmokeSection(int& failures) -> void {
         tracer_core::core::dto::DataQueryAction::kReportChart;
     chart_missing_range_request.from_date = "2026-02-01";
     const auto chart_missing_range_result =
-        fixture.runtime.core_api->RunDataQuery(chart_missing_range_request);
+        fixture.runtime.runtime_api->query().RunDataQuery(chart_missing_range_request);
     if (chart_missing_range_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunDataQuery(report-chart) should reject missing "
@@ -75,7 +75,7 @@ auto RunConfigSmokeSection(int& failures) -> void {
     chart_invalid_range_order_request.from_date = "2026-02-15";
     chart_invalid_range_order_request.to_date = "2026-02-01";
     const auto chart_invalid_range_order_result =
-        fixture.runtime.core_api->RunDataQuery(
+        fixture.runtime.runtime_api->query().RunDataQuery(
             chart_invalid_range_order_request);
     if (chart_invalid_range_order_result.ok) {
       ++failures;

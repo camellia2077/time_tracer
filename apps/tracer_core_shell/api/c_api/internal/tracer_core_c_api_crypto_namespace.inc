@@ -101,14 +101,14 @@ void EnsureValidationSuccess(const tracer_core::core::dto::OperationAck& ack,
   throw std::runtime_error(std::string(fallback_message));
 }
 
-void ValidateInputForEncryption(ITracerCoreApi& runtime, DateCheckMode mode,
+void ValidateInputForEncryption(ITracerCoreRuntime& runtime, DateCheckMode mode,
                                 const fs::path& input_path) {
   const std::string input = input_path.string();
-  EnsureValidationSuccess(runtime.RunValidateStructure(
+  EnsureValidationSuccess(runtime.pipeline().RunValidateStructure(
                               ValidateStructureRequest{.input_path = input}),
                           "TXT structure validation failed before encryption.");
 
-  EnsureValidationSuccess(runtime.RunValidateLogic(ValidateLogicRequest{
+  EnsureValidationSuccess(runtime.pipeline().RunValidateLogic(ValidateLogicRequest{
                               .input_path = input, .date_check_mode = mode}),
                           "TXT logic validation failed before encryption.");
 }
@@ -210,7 +210,7 @@ auto EmitCryptoProgress(
   return stream.str();
 }
 
-[[nodiscard]] auto RunCryptoEncrypt(ITracerCoreApi& runtime,
+[[nodiscard]] auto RunCryptoEncrypt(ITracerCoreRuntime& runtime,
                                     std::string_view request_json)
     -> TextOutput {
   const json payload = ParseJsonRequest(request_json);

@@ -49,7 +49,8 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
 
   const fs::path active_text_root = paths.test_root / "input" / "full";
   const fs::path runtime_work_root = paths.test_root / "work";
-  const auto result = runtime->core_api->RunTracerExchangeImport({
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeImport({
       .input_tracer_path = tracer_path,
       .active_text_root_path = active_text_root,
       .active_converter_main_config_path = main_config_path,
@@ -172,7 +173,8 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
       .passphrase = std::string(kPassphrase),
   };
 
-  const auto result = runtime->core_api->RunTracerExchangeImport(request);
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeImport(request);
   if (!result.ok) {
     ++failures;
     std::cerr
@@ -299,7 +301,8 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
       .passphrase = std::string(kPassphrase),
   };
 
-  const auto result = runtime->core_api->RunTracerExchangeImport(request);
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeImport(request);
   static_cast<void>(SetReadOnlyFlag(alias_config_path, false));
 
   Expect(!result.ok,
@@ -400,7 +403,8 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
       .passphrase = std::string(kPassphrase),
   };
 
-  const auto result = runtime->core_api->RunTracerExchangeImport(request);
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeImport(request);
 
   Expect(!result.ok,
          "RunTracerExchangeImport should reject invalid package converter config.",

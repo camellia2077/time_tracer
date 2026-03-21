@@ -114,7 +114,7 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
     return;
   }
 
-  const auto kAck = runtime.core_api->RunValidateLogic(
+  const auto kAck = runtime.runtime_api->pipeline().RunValidateLogic(
       {.input_path = kSourceRoot.string(),
        .date_check_mode = DateCheckMode::kNone});
   if (kAck.ok) {
@@ -224,7 +224,7 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
   }
 
   const auto kAck =
-      runtime.core_api->RunValidateStructure({.input_path = kSourceRoot.string()});
+      runtime.runtime_api->pipeline().RunValidateStructure({.input_path = kSourceRoot.string()});
   if (kAck.ok) {
     ++failures;
     std::cerr << "[FAIL] RunValidateStructure should fail for malformed "
@@ -306,7 +306,7 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
     return;
   }
 
-  const auto kAck = runtime.core_api->RunConvert(
+  const auto kAck = runtime.runtime_api->pipeline().RunConvert(
       {.input_path = kSourceRoot.string(),
        .date_check_mode = DateCheckMode::kNone,
        .save_processed_output = false,
@@ -403,7 +403,7 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
     return;
   }
 
-  const auto kAck = runtime.core_api->RunConvert(
+  const auto kAck = runtime.runtime_api->pipeline().RunConvert(
       {.input_path = kSourceRoot.string(),
        .date_check_mode = DateCheckMode::kNone,
        .save_processed_output = false,
@@ -490,7 +490,7 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
   }
 
   const auto kAck =
-      runtime.core_api->RunValidateStructure({.input_path = kSourceRoot.string()});
+      runtime.runtime_api->pipeline().RunValidateStructure({.input_path = kSourceRoot.string()});
   if (kAck.ok) {
     ++failures;
     std::cerr << "[FAIL] RunValidateStructure should fail for invalid UTF-8 "

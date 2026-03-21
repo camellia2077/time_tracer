@@ -23,10 +23,10 @@ auto TestSuccessfulIngestCreatesDbAndPersistsData(int& failures) -> void {
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -48,7 +48,8 @@ auto TestSuccessfulIngestCreatesDbAndPersistsData(int& failures) -> void {
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Valid ingest should succeed: "
@@ -118,10 +119,10 @@ auto TestInvalidStructureIngestDoesNotCreateDb(int& failures) -> void {
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -139,7 +140,8 @@ auto TestInvalidStructureIngestDoesNotCreateDb(int& failures) -> void {
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Invalid-structure ingest should fail.\n";
@@ -170,10 +172,10 @@ auto TestInvalidLogicIngestDoesNotCreateDb(int& failures) -> void {
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -190,7 +192,8 @@ auto TestInvalidLogicIngestDoesNotCreateDb(int& failures) -> void {
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kContinuity;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Invalid-logic ingest should fail.\n";
@@ -221,10 +224,10 @@ auto TestReplaceMonthInvalidInputDoesNotCreateDb(int& failures) -> void {
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -243,7 +246,8 @@ auto TestReplaceMonthInvalidInputDoesNotCreateDb(int& failures) -> void {
     ingest_request.input_path = input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Replace-month ingest should fail for invalid "
@@ -276,10 +280,10 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -299,7 +303,8 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = ok_input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
-    const auto first_ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto first_ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!first_ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Baseline ingest should succeed before mutation "
@@ -331,7 +336,7 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
     invalid_ingest_request.input_path = invalid_input_path.string();
     invalid_ingest_request.date_check_mode = DateCheckMode::kNone;
     const auto invalid_ingest_result =
-        runtime.core_api->RunIngest(invalid_ingest_request);
+        runtime.runtime_api->pipeline().RunIngest(invalid_ingest_request);
     if (invalid_ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Invalid ingest against existing DB should fail.\n";

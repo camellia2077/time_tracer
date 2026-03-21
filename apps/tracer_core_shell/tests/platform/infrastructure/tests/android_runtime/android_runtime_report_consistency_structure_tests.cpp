@@ -2,23 +2,23 @@
 #include <iostream>
 
 #include "application/dto/core_requests.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_report_consistency_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
 auto TestStructureLayerMdSectionIntegrity(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
   tracer_core::core::dto::ReportQueryRequest day_request;
   day_request.type = tracer_core::core::dto::ReportQueryType::kDay;
   day_request.argument = "2025-01-03";
   day_request.format = ReportFormat::kMarkdown;
 
-  const auto day_result = core_api->RunReportQuery(day_request);
+  const auto day_result = runtime_api->report().RunReportQuery(day_request);
   if (!day_result.ok) {
     ++failures;
     std::cerr << "[FAIL] StructureLayer/Day: RunReportQuery should succeed: "
@@ -55,7 +55,7 @@ auto TestStructureLayerMdSectionIntegrity(
   month_request.argument = "2025-01";
   month_request.format = ReportFormat::kMarkdown;
 
-  const auto month_result = core_api->RunReportQuery(month_request);
+  const auto month_result = runtime_api->report().RunReportQuery(month_request);
   if (!month_result.ok) {
     ++failures;
     std::cerr << "[FAIL] StructureLayer/Month: RunReportQuery should succeed: "
@@ -83,8 +83,8 @@ auto TestStructureLayerMdSectionIntegrity(
 }  // namespace
 
 auto RunReportConsistencyStructureTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void {
-  TestStructureLayerMdSectionIntegrity(core_api, failures);
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+  TestStructureLayerMdSectionIntegrity(runtime_api, failures);
 }
 
 }  // namespace android_runtime_tests::report_consistency_internal

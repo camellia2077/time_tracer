@@ -18,6 +18,7 @@ enum class ReportFormat;
 namespace tracer::core::application::use_cases {
 
 class ITracerCoreApi;
+class ITracerCoreRuntime;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -109,7 +110,7 @@ void SetLastError(const char* message);
     -> ResolvedCliContext;
 
 [[nodiscard]] auto RequireRuntime(TtCoreRuntimeHandle* handle)
-    -> tracer::core::application::use_cases::ITracerCoreApi&;
+    -> tracer::core::application::use_cases::ITracerCoreRuntime&;
 
 [[nodiscard]] auto ToRequestJsonView(const char* request_json)
     -> std::string_view;

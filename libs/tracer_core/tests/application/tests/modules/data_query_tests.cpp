@@ -14,16 +14,16 @@ using tracer_core::core::dto::TreeQueryRequest;
 namespace {
 
 auto TestDataQueryResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
-  auto core_api =
-      BuildCoreApiForTest(workflow_handler, report_handler, data_query);
+  auto runtime_api =
+      BuildRuntimeApiForTest(pipeline_workflow, report_handler, data_query);
 
   data_query->response = {.ok = true, .content = "years", .error_message = ""};
   DataQueryRequest success_request;
   success_request.action = DataQueryAction::kYears;
-  const auto kSuccess = core_api.RunDataQuery(success_request);
+  const auto kSuccess = runtime_api.query().RunDataQuery(success_request);
   Expect(state, kSuccess.ok, "RunDataQuery should return ok on success.");
   Expect(state, kSuccess.content == "years",
          "RunDataQuery should return service content.");
@@ -34,7 +34,7 @@ auto TestDataQueryResponses(TestState& state) -> void {
       .ok = false, .content = "", .error_message = "query rejected"};
   DataQueryRequest failed_request;
   failed_request.action = DataQueryAction::kDays;
-  const auto kFailedResponse = core_api.RunDataQuery(failed_request);
+  const auto kFailedResponse = runtime_api.query().RunDataQuery(failed_request);
   Expect(state, !kFailedResponse.ok,
          "RunDataQuery should preserve failure DTO from service.");
   Expect(state, kFailedResponse.error_message == "query rejected",
@@ -43,7 +43,7 @@ auto TestDataQueryResponses(TestState& state) -> void {
   data_query->fail_query = true;
   DataQueryRequest exception_request;
   exception_request.action = DataQueryAction::kMonths;
-  const auto kFailure = core_api.RunDataQuery(exception_request);
+  const auto kFailure = runtime_api.query().RunDataQuery(exception_request);
   Expect(state, !kFailure.ok,
          "RunDataQuery should return failed DTO when service throws.");
   Expect(state, Contains(kFailure.error_message, "RunDataQuery failed"),
@@ -51,7 +51,7 @@ auto TestDataQueryResponses(TestState& state) -> void {
 }
 
 auto TestTreeQueryResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto repository = std::make_shared<FakeProjectRepository>();
@@ -63,12 +63,12 @@ auto TestTreeQueryResponses(TestState& state) -> void {
       {.id = 4, .parent_id = 1, .name = "focus"},
       {.id = kRootBId, .parent_id = std::nullopt, .name = "root_b"},
   };
-  auto core_api =
-      BuildCoreApi(workflow_handler, report_handler, repository, data_query);
+  auto runtime_api =
+      BuildRuntimeApi(pipeline_workflow, report_handler, repository, data_query);
 
   TreeQueryRequest list_roots_request{};
   list_roots_request.list_roots = true;
-  const auto kRootsResponse = core_api.RunTreeQuery(list_roots_request);
+  const auto kRootsResponse = runtime_api.query().RunTreeQuery(list_roots_request);
   Expect(state, kRootsResponse.ok,
          "RunTreeQuery list roots should return ok=true.");
   Expect(state, kRootsResponse.found,
@@ -82,7 +82,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
 
   TreeQueryRequest filtered_request{};
   filtered_request.root_pattern = "root_child";
-  const auto kFilteredResponse = core_api.RunTreeQuery(filtered_request);
+  const auto kFilteredResponse = runtime_api.query().RunTreeQuery(filtered_request);
   Expect(state, kFilteredResponse.ok,
          "RunTreeQuery root pattern should return ok=true.");
   Expect(state, kFilteredResponse.found,
@@ -100,7 +100,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
   depth_limited_request.root_pattern = "root";
   depth_limited_request.max_depth = 1;
   const auto kDepthLimitedResponse =
-      core_api.RunTreeQuery(depth_limited_request);
+      runtime_api.query().RunTreeQuery(depth_limited_request);
   Expect(state, kDepthLimitedResponse.ok,
          "RunTreeQuery depth limit should return ok=true.");
   Expect(state, kDepthLimitedResponse.found,
@@ -116,7 +116,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
 
   TreeQueryRequest missing_request{};
   missing_request.root_pattern = "missing";
-  const auto kMissingResponse = core_api.RunTreeQuery(missing_request);
+  const auto kMissingResponse = runtime_api.query().RunTreeQuery(missing_request);
   Expect(state, kMissingResponse.ok,
          "RunTreeQuery missing root should still return ok=true.");
   Expect(state, !kMissingResponse.found,
@@ -125,7 +125,7 @@ auto TestTreeQueryResponses(TestState& state) -> void {
          "RunTreeQuery missing root should return empty nodes.");
 
   repository->fail_get_all_projects = true;
-  const auto kFailureResponse = core_api.RunTreeQuery(list_roots_request);
+  const auto kFailureResponse = runtime_api.query().RunTreeQuery(list_roots_request);
   Expect(state, !kFailureResponse.ok,
          "RunTreeQuery should return failed DTO when repository throws.");
   Expect(state, Contains(kFailureResponse.error_message, "RunTreeQuery failed"),

@@ -102,11 +102,11 @@ void SetLastError(const char* message) {
 }
 
 [[nodiscard]] auto RequireRuntime(TtCoreRuntimeHandle* handle)
-    -> ITracerCoreApi& {
-  if (handle == nullptr || handle->runtime.core_api == nullptr) {
+    -> ITracerCoreRuntime& {
+  if (handle == nullptr || handle->runtime.runtime_api == nullptr) {
     throw std::invalid_argument("runtime handle is null.");
   }
-  return *handle->runtime.core_api;
+  return *handle->runtime.runtime_api;
 }
 
 [[nodiscard]] auto ToRequestJsonView(const char* request_json)

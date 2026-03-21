@@ -27,10 +27,10 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
     const auto request = BuildRuntimeRequest(paths, kConverterTomlPath);
 
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr << "[FAIL] Legacy fallback should build Android runtime core "
-                   "API.\n";
+                   "runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -38,7 +38,8 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = (BuildRepoRoot() / "test" / "data").string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Legacy fallback test ingest should succeed: "
@@ -48,7 +49,7 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
     }
 
     static_cast<void>(RunAndCheckReportQuery(
-        runtime.core_api,
+        runtime.runtime_api,
         {.type = tracer_core::core::dto::ReportQueryType::kDay,
          .argument = "2026-02-01",
          .format = ReportFormat::kMarkdown},

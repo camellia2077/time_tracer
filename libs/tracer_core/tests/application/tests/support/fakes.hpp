@@ -9,10 +9,10 @@
 #include <vector>
 
 #include "application/interfaces/i_report_handler.hpp"
-#include "application/interfaces/i_workflow_handler.hpp"
+#include "application/pipeline/i_pipeline_workflow.hpp"
 #include "application/ports/i_data_query_service.hpp"
 #include "application/ports/i_tracer_exchange_service.hpp"
-#include "application/use_cases/tracer_core_api.hpp"
+#include "application/use_cases/tracer_core_runtime.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/repositories/i_project_repository.hpp"
 #include "domain/types/app_options.hpp"
@@ -20,7 +20,7 @@
 
 namespace tracer_core::application::tests {
 
-class FakeWorkflowHandler final : public tracer::core::application::workflow::IWorkflowHandler {
+class FakePipelineWorkflow final : public tracer::core::application::pipeline::IPipelineWorkflow {
  public:
   bool fail_convert = false;
   bool fail_ingest = false;
@@ -194,13 +194,12 @@ class FakeTracerExchangeService final
       -> tracer_core::core::dto::TracerExchangeInspectResult override;
 };
 
-auto BuildCoreApi(FakeWorkflowHandler& workflow_handler,
-                  FakeReportHandler& report_handler,
-                  const std::shared_ptr<FakeProjectRepository>& repository,
-                  const std::shared_ptr<FakeDataQueryService>& data_query,
-                  const std::shared_ptr<FakeTracerExchangeService>&
-                      tracer_exchange_service = nullptr)
-    -> TracerCoreApi;
+auto BuildRuntimeApi(
+    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    const std::shared_ptr<FakeProjectRepository>& repository,
+    const std::shared_ptr<FakeDataQueryService>& data_query,
+    const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service =
+        nullptr) -> TracerCoreRuntime;
 
 }  // namespace tracer_core::application::tests
 

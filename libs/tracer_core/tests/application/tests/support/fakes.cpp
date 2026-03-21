@@ -3,10 +3,15 @@
 
 #include <stdexcept>
 
+#include "application/use_cases/pipeline_api.hpp"
+#include "application/use_cases/query_api.hpp"
+#include "application/use_cases/report_api.hpp"
+#include "application/use_cases/tracer_exchange_api.hpp"
+
 namespace tracer_core::application::tests {
 
-auto FakeWorkflowHandler::RunConverter(const std::string& input_path,
-                                       const AppOptions& options) -> void {
+auto FakePipelineWorkflow::RunConverter(const std::string& input_path,
+                                        const AppOptions& options) -> void {
   ++convert_call_count;
   last_converter_input = input_path;
   last_converter_options = options;
@@ -15,7 +20,7 @@ auto FakeWorkflowHandler::RunConverter(const std::string& input_path,
   }
 }
 
-auto FakeWorkflowHandler::RunDatabaseImport(
+auto FakePipelineWorkflow::RunDatabaseImport(
     const std::string& processed_path_str) -> void {
   ++import_call_count;
   last_import_path = processed_path_str;
@@ -24,12 +29,13 @@ auto FakeWorkflowHandler::RunDatabaseImport(
   }
 }
 
-auto FakeWorkflowHandler::RunDatabaseImportFromMemory(
+auto FakePipelineWorkflow::RunDatabaseImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& /*data_map*/) -> void {}
 
-auto FakeWorkflowHandler::RunIngest(const std::string& source_path,
-                                    DateCheckMode date_check_mode,
-                                    bool save_processed, IngestMode ingest_mode)
+auto FakePipelineWorkflow::RunIngest(const std::string& source_path,
+                                     DateCheckMode date_check_mode,
+                                     bool save_processed,
+                                     IngestMode ingest_mode)
     -> void {
   ++ingest_call_count;
   last_ingest_input = source_path;
@@ -41,9 +47,9 @@ auto FakeWorkflowHandler::RunIngest(const std::string& source_path,
   }
 }
 
-auto FakeWorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
-                                                DateCheckMode date_check_mode,
-                                                bool save_processed) -> void {
+auto FakePipelineWorkflow::RunIngestReplacingAll(const std::string& source_path,
+                                                 DateCheckMode date_check_mode,
+                                                 bool save_processed) -> void {
   ++ingest_replace_all_call_count;
   last_ingest_replace_all_input = source_path;
   last_ingest_replace_all_mode = date_check_mode;
@@ -53,7 +59,7 @@ auto FakeWorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
   }
 }
 
-auto FakeWorkflowHandler::RunValidateStructure(const std::string& source_path)
+auto FakePipelineWorkflow::RunValidateStructure(const std::string& source_path)
     -> void {
   ++validate_structure_call_count;
   last_validate_structure_input = source_path;
@@ -62,8 +68,8 @@ auto FakeWorkflowHandler::RunValidateStructure(const std::string& source_path)
   }
 }
 
-auto FakeWorkflowHandler::RunValidateLogic(const std::string& source_path,
-                                           DateCheckMode date_check_mode)
+auto FakePipelineWorkflow::RunValidateLogic(const std::string& source_path,
+                                            DateCheckMode date_check_mode)
     -> void {
   ++validate_logic_call_count;
   last_validate_logic_input = source_path;
@@ -255,15 +261,21 @@ auto FakeTracerExchangeService::RunInspect(
   return inspect_result;
 }
 
-auto BuildCoreApi(FakeWorkflowHandler& workflow_handler,
-                  FakeReportHandler& report_handler,
-                  const std::shared_ptr<FakeProjectRepository>& repository,
-                  const std::shared_ptr<FakeDataQueryService>& data_query,
-                  const std::shared_ptr<FakeTracerExchangeService>&
-                      tracer_exchange_service)
-    -> TracerCoreApi {
-  return {workflow_handler, report_handler, repository, data_query, nullptr,
-          nullptr, nullptr, tracer_exchange_service};
+auto BuildRuntimeApi(FakePipelineWorkflow& pipeline_workflow,
+                     FakeReportHandler& report_handler,
+                     const std::shared_ptr<FakeProjectRepository>& repository,
+                     const std::shared_ptr<FakeDataQueryService>& data_query,
+                     const std::shared_ptr<FakeTracerExchangeService>&
+                         tracer_exchange_service)
+    -> TracerCoreRuntime {
+  auto pipeline_api =
+      std::make_shared<PipelineApi>(pipeline_workflow);
+  auto query_api = std::make_shared<QueryApi>(repository, data_query);
+  auto report_api = std::make_shared<ReportApi>(report_handler);
+  auto tracer_exchange_api =
+      std::make_shared<TracerExchangeApi>(tracer_exchange_service);
+  return {std::move(pipeline_api), std::move(query_api), std::move(report_api),
+          std::move(tracer_exchange_api)};
 }
 
 }  // namespace tracer_core::application::tests

@@ -29,10 +29,10 @@ auto TestProjectRenameKeepsHistorySnapshot(int& failures) -> void {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
 
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -40,7 +40,8 @@ auto TestProjectRenameKeepsHistorySnapshot(int& failures) -> void {
     tracer_core::core::dto::IngestRequest ingest_request;
     ingest_request.input_path = kInputPath.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunIngest should succeed: "
@@ -79,7 +80,7 @@ auto TestProjectRenameKeepsHistorySnapshot(int& failures) -> void {
     tree_query_request.tree_period = "range";
     tree_query_request.tree_period_argument = "2026-01-01|2026-01-10";
     const auto tree_query_result =
-        runtime.core_api->RunDataQuery(tree_query_request);
+        runtime.runtime_api->query().RunDataQuery(tree_query_request);
 
     if (!tree_query_result.ok) {
       ++failures;
@@ -199,10 +200,10 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
   try {
     const auto request = BuildRuntimeRequest(paths, kConfigTomlPath);
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr
-          << "[FAIL] BuildAndroidRuntime should return a valid core API.\n";
+          << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
       RemoveTree(paths.test_root);
       return;
     }
@@ -241,7 +242,8 @@ auto TestSingleTxtIngestFallsBackToSiblingPreviousMonthTxt(int& failures)
     ingest_request.date_check_mode = DateCheckMode::kNone;
     ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
 
-    const auto ingest_result = runtime.core_api->RunIngest(ingest_request);
+    const auto ingest_result =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] Single TXT ingest with sibling fallback should "

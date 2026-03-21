@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_TEST_COMMON_HPP_
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_TEST_COMMON_HPP_
 
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -43,7 +43,7 @@ auto ExpectBuildRuntimeThrows(
     const infrastructure::bootstrap::AndroidRuntimeRequest& request,
     std::string& message) -> bool;
 auto RunAndCheckReportQuery(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const tracer_core::core::dto::ReportQueryRequest& request,
     std::string_view test_name, int& failures)
     -> std::optional<tracer_core::core::dto::TextOutput>;

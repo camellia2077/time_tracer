@@ -30,7 +30,7 @@ answer "which library owns this behavior?" before opening code.
 ## Read-First Boundary Docs
 1. [`../core/contracts/c_abi.md`](../core/contracts/c_abi.md)
    - Read before changing C ABI payloads or runtime request/response shape.
-2. [`../clients/android_ui/runtime-protocol.md`](../clients/android_ui/runtime-protocol.md)
+2. [`../presentation/android/runtime-protocol.md`](../presentation/android/runtime-protocol.md)
    - Read before changing JNI/runtime bridge payload behavior.
 3. [`../core/contracts/stats/README.md`](../core/contracts/stats/README.md)
    - Read before changing query/report output semantics.
