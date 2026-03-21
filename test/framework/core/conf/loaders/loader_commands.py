@@ -176,7 +176,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             CommandSpec(
                 name="Validate Structure",
                 stage="pipeline",
-                args=["validate", "structure", "{data_path}"],
+                args=["pipeline", "validate", "structure", "{data_path}"],
                 expect_exit=0,
             ),
         )
@@ -185,7 +185,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             CommandSpec(
                 name="Convert",
                 stage="pipeline",
-                args=["convert", "{data_path}"],
+                args=["pipeline", "convert", "{data_path}"],
                 expect_exit=0,
             ),
         )
@@ -194,7 +194,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             CommandSpec(
                 name="Import",
                 stage="pipeline",
-                args=["import", "{processed_json_dir}"],
+                args=["pipeline", "import", "{processed_json_dir}"],
                 expect_exit=0,
             ),
         )
@@ -204,7 +204,7 @@ def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]
             CommandSpec(
                 name="Ingest Full Pipeline",
                 stage="pipeline",
-                args=["ingest", "{data_path}"],
+                args=["pipeline", "ingest", "{data_path}"],
                 expect_exit=0,
                 add_output_dir=False,
             ),

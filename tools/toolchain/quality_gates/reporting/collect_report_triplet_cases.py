@@ -121,12 +121,13 @@ def collect_query_range_case(
     case_name = output_name_template.format(ext=extension)
     cmd = [
         str(cli_bin),
-        "query",
+        "report",
+        "render",
         "range",
         range_argument,
         "--format",
         format_arg,
-        "--database",
+        "--db",
         str(db_path),
     ]
     completed = subprocess.run(
@@ -137,7 +138,7 @@ def collect_query_range_case(
     if completed.returncode != 0:
         stderr_text = completed.stderr.decode("utf-8", errors="replace")
         raise RuntimeError(
-            f"range query failed while collecting `{case_name}`: "
+            f"range report render failed while collecting `{case_name}`: "
             f"exit={completed.returncode}, stderr={stderr_text}"
         )
 

@@ -19,8 +19,8 @@ class IngestTester(BaseTester):
         source_path_str = str(self.ctx.source_data_path)
         tests_to_run = [
             {
-                "name": "Full Pipeline (Blink)",
-                "args": ["ingest", source_path_str],
+                "name": "Full Pipeline",
+                "args": ["pipeline", "ingest", source_path_str],
                 "add_output": True,
             }
         ]

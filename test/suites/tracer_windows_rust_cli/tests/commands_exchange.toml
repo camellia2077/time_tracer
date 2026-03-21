@@ -1,9 +1,9 @@
-# Crypto command tests
+# Exchange command tests
 
 [[commands]]
-name = "Crypto Export Tracer Exchange"
-stage = "crypto"
-args = ["--output", "{output_dir}/crypt/test-data.tracer", "crypto", "encrypt", "--in", "{data_path}"]
+name = "Exchange Export Tracer Package"
+stage = "exchange"
+args = ["--output", "{output_dir}/crypt/test-data.tracer", "exchange", "export", "--in", "{data_path}"]
 stdin_input = "phase3pass\nphase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -15,9 +15,9 @@ expect_stdout_contains = [
 expect_files = ["{output_dir}/crypt/test-data.tracer"]
 
 [[commands]]
-name = "Crypto Inspect Tracer Exchange"
-stage = "crypto"
-args = ["crypto", "inspect", "--in", "{output_dir}/crypt/test-data.tracer"]
+name = "Exchange Inspect Tracer Package"
+stage = "exchange"
+args = ["exchange", "inspect", "--in", "{output_dir}/crypt/test-data.tracer"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -40,9 +40,9 @@ expect_stdout_contains = [
 ]
 
 [[commands]]
- name = "Crypto Decrypt Tracer Exchange"
-stage = "crypto"
-args = ["crypto", "decrypt", "--in", "{output_dir}/crypt/test-data.tracer"]
+ name = "Exchange Import Tracer Package"
+stage = "exchange"
+args = ["exchange", "import", "--in", "{output_dir}/crypt/test-data.tracer"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [
@@ -65,9 +65,9 @@ expect_file_contains = [
 ]
 
 [[commands]]
- name = "Crypto Decrypt Tracer Exchange Custom Output"
-stage = "crypto"
-args = ["--output", "{output_dir}/custom_decrypt", "crypto", "decrypt", "--in", "{output_dir}/crypt/test-data.tracer"]
+ name = "Exchange Import Tracer Package Custom Output"
+stage = "exchange"
+args = ["--output", "{output_dir}/custom_decrypt", "exchange", "import", "--in", "{output_dir}/crypt/test-data.tracer"]
 stdin_input = "phase3pass\n"
 expect_exit = 0
 expect_stdout_contains = [

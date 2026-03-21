@@ -1,22 +1,4 @@
-use clap::{ArgAction, Args, ValueEnum};
-
-#[derive(Debug, Clone, ValueEnum)]
-pub enum QueryType {
-    Day,
-    Month,
-    Week,
-    Year,
-    Recent,
-    Range,
-    Data,
-}
-
-#[derive(Debug, Clone, ValueEnum)]
-pub enum QueryFormat {
-    Md,
-    Tex,
-    Typ,
-}
+use clap::{ArgAction, Args, Subcommand, ValueEnum};
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum DataOutputMode {
@@ -41,13 +23,9 @@ pub enum QueryPeriod {
 }
 
 #[derive(Debug, Args)]
-pub struct QueryArgs {
-    #[arg(value_enum, help = "Query type")]
-    pub query_type: QueryType,
-    #[arg(help = "Date/range arg or data action")]
-    pub argument: String,
-    #[arg(short = 'f', long = "format", value_enum, value_delimiter = ',')]
-    pub format: Vec<QueryFormat>,
+pub struct QueryDataArgs {
+    #[arg(help = "Semantic data action")]
+    pub action: String,
     #[arg(long = "data-output", value_enum)]
     pub data_output: Option<DataOutputMode>,
     #[arg(long)]
@@ -60,13 +38,8 @@ pub struct QueryArgs {
     pub to: Option<String>,
     #[arg(long)]
     pub remark: Option<String>,
-    #[arg(long = "day-remark", alias = "remark-day")]
+    #[arg(long = "day-remark")]
     pub day_remark: Option<String>,
-    #[arg(
-        long = "project",
-        help = "Deprecated legacy contains filter by project path (prefer --root)"
-    )]
-    pub project: Option<String>,
     #[arg(long)]
     pub root: Option<String>,
     #[arg(long, action = ArgAction::SetTrue)]
@@ -93,4 +66,27 @@ pub struct QueryArgs {
     pub level: Option<i32>,
     #[arg(short = 'r', long = "reverse", action = ArgAction::SetTrue)]
     pub reverse: bool,
+}
+
+#[derive(Debug, Args)]
+pub struct QueryTreeArgs {
+    pub root: Option<String>,
+    #[arg(short = 'l', long = "level")]
+    pub level: Option<i32>,
+    #[arg(short = 'r', long = "roots", action = ArgAction::SetTrue, conflicts_with = "root")]
+    pub roots: bool,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum QueryCommand {
+    #[command(about = "Run semantic data queries")]
+    Data(QueryDataArgs),
+    #[command(about = "Display project structure as a tree")]
+    Tree(QueryTreeArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct QueryArgs {
+    #[command(subcommand)]
+    pub command: QueryCommand,
 }

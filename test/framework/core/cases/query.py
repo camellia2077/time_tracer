@@ -36,7 +36,7 @@ class QueryTester(BaseTester):
             # 可以添加一个失败的 Result
             return report
 
-        db_arg = ["--database", str(self.db_file)]
+        db_arg = ["--db", str(self.db_file)]
 
         # ... (构建 commands 逻辑不变) ...
         tests_to_run = []
@@ -44,40 +44,40 @@ class QueryTester(BaseTester):
             for fmt in self.formats:
                 tests_to_run.append(
                     (
-                        f"Query Daily ({date}) [{fmt}]",
-                        ["query", "day", date, "--format", fmt] + db_arg,
+                        f"Render Daily ({date}) [{fmt}]",
+                        ["report", "render", "day", date, "--format", fmt] + db_arg,
                     )
                 )
         for month in self.monthly_months:
             for fmt in self.formats:
                 tests_to_run.append(
                     (
-                        f"Query Monthly ({month}) [{fmt}]",
-                        ["query", "month", month, "--format", fmt] + db_arg,
+                        f"Render Monthly ({month}) [{fmt}]",
+                        ["report", "render", "month", month, "--format", fmt] + db_arg,
                     )
                 )
         for week in self.weekly_weeks:
             for fmt in self.formats:
                 tests_to_run.append(
                     (
-                        f"Query Weekly ({week}) [{fmt}]",
-                        ["query", "week", week, "--format", fmt] + db_arg,
+                        f"Render Weekly ({week}) [{fmt}]",
+                        ["report", "render", "week", week, "--format", fmt] + db_arg,
                     )
                 )
         for year in self.yearly_years:
             for fmt in self.formats:
                 tests_to_run.append(
                     (
-                        f"Query Yearly ({year}) [{fmt}]",
-                        ["query", "year", year, "--format", fmt] + db_arg,
+                        f"Render Yearly ({year}) [{fmt}]",
+                        ["report", "render", "year", year, "--format", fmt] + db_arg,
                     )
                 )
         for days in self.recent_days:
             for fmt in self.formats:
                 tests_to_run.append(
                     (
-                        f"Query Recent ({days}) [{fmt}]",
-                        ["query", "recent", str(days), "--format", fmt] + db_arg,
+                        f"Render Recent ({days}) [{fmt}]",
+                        ["report", "render", "recent", str(days), "--format", fmt] + db_arg,
                     )
                 )
 

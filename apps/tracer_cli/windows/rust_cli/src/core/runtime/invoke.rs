@@ -31,12 +31,18 @@ struct TextResponse {
     error_contract: ErrorContract,
 }
 
-pub(crate) fn run_query(runtime: &CoreRuntime<'_>, request: &Value) -> Result<String, AppError> {
+pub(crate) fn run_query_data(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<String, AppError> {
     let payload = run_text(runtime, runtime.api.symbols.runtime_query, request, "query")?;
     Ok(payload.content)
 }
 
-pub(crate) fn run_report(runtime: &CoreRuntime<'_>, request: &Value) -> Result<String, AppError> {
+pub(crate) fn run_report_text(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<String, AppError> {
     let payload = run_text(
         runtime,
         runtime.api.symbols.runtime_report,
@@ -46,7 +52,7 @@ pub(crate) fn run_report(runtime: &CoreRuntime<'_>, request: &Value) -> Result<S
     Ok(payload.content)
 }
 
-pub(crate) fn run_report_batch(
+pub(crate) fn run_report_batch_text(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<String, AppError> {
@@ -59,7 +65,10 @@ pub(crate) fn run_report_batch(
     Ok(payload.content)
 }
 
-pub(crate) fn run_export(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(), AppError> {
+pub(crate) fn run_report_export(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<(), AppError> {
     run_ack(
         runtime,
         runtime.api.symbols.runtime_export,
@@ -68,7 +77,10 @@ pub(crate) fn run_export(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(
     )
 }
 
-pub(crate) fn run_convert(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(), AppError> {
+pub(crate) fn run_pipeline_convert(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<(), AppError> {
     run_ack(
         runtime,
         runtime.api.symbols.runtime_convert,
@@ -77,7 +89,10 @@ pub(crate) fn run_convert(runtime: &CoreRuntime<'_>, request: &Value) -> Result<
     )
 }
 
-pub(crate) fn run_import(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(), AppError> {
+pub(crate) fn run_pipeline_import(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<(), AppError> {
     run_ack(
         runtime,
         runtime.api.symbols.runtime_import,
@@ -86,7 +101,10 @@ pub(crate) fn run_import(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(
     )
 }
 
-pub(crate) fn run_ingest(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(), AppError> {
+pub(crate) fn run_pipeline_ingest(
+    runtime: &CoreRuntime<'_>,
+    request: &Value,
+) -> Result<(), AppError> {
     run_ack(
         runtime,
         runtime.api.symbols.runtime_ingest,
@@ -95,7 +113,7 @@ pub(crate) fn run_ingest(runtime: &CoreRuntime<'_>, request: &Value) -> Result<(
     )
 }
 
-pub(crate) fn run_validate_structure(
+pub(crate) fn run_pipeline_validate_structure(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<(), AppError> {
@@ -107,7 +125,7 @@ pub(crate) fn run_validate_structure(
     )
 }
 
-pub(crate) fn run_validate_logic(
+pub(crate) fn run_pipeline_validate_logic(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<(), AppError> {
@@ -119,7 +137,7 @@ pub(crate) fn run_validate_logic(
     )
 }
 
-pub(crate) fn run_tree(
+pub(crate) fn run_tree_query(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<TreeResponse, AppError> {
@@ -134,7 +152,7 @@ pub(crate) fn run_tree(
     Err(AppError::Logic(format_tree_error_detail(&payload)))
 }
 
-pub(crate) fn run_crypto_encrypt(
+pub(crate) fn run_tracer_exchange_export(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<String, AppError> {
@@ -142,12 +160,12 @@ pub(crate) fn run_crypto_encrypt(
         runtime,
         runtime.api.symbols.runtime_crypto_encrypt,
         request,
-        "crypto_encrypt",
+        "exchange_export",
     )?;
     Ok(payload.content)
 }
 
-pub(crate) fn run_crypto_decrypt(
+pub(crate) fn run_tracer_exchange_import(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<String, AppError> {
@@ -155,12 +173,12 @@ pub(crate) fn run_crypto_decrypt(
         runtime,
         runtime.api.symbols.runtime_crypto_decrypt,
         request,
-        "crypto_decrypt",
+        "exchange_import",
     )?;
     Ok(payload.content)
 }
 
-pub(crate) fn run_crypto_inspect(
+pub(crate) fn run_tracer_exchange_inspect(
     runtime: &CoreRuntime<'_>,
     request: &Value,
 ) -> Result<String, AppError> {
@@ -168,7 +186,7 @@ pub(crate) fn run_crypto_inspect(
         runtime,
         runtime.api.symbols.runtime_crypto_inspect,
         request,
-        "crypto_inspect",
+        "exchange_inspect",
     )?;
     Ok(payload.content)
 }

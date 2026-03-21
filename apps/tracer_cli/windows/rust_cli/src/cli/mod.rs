@@ -1,24 +1,32 @@
 use clap::{ArgAction, Parser, Subcommand};
 
 mod chart;
-mod crypto;
 mod doctor;
-mod export;
+mod exchange;
 mod licenses;
+mod pipeline;
 mod query;
-mod tree;
-mod workflow;
+mod report;
 
 pub use chart::{ChartArgs, ChartTheme, ChartType};
-pub use crypto::{CryptoAction, CryptoArgs, SecurityLevel};
 pub use doctor::DoctorArgs;
-pub use export::{ExportArgs, ExportFormat, ExportType};
+pub use exchange::{
+    ExchangeArgs, ExchangeCommand, ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs,
+    SecurityLevel,
+};
 pub use licenses::LicensesArgs;
-pub use query::{DataOutputMode, QueryArgs, QueryFormat, QueryPeriod, QueryType, SuggestScoreMode};
-pub use tree::TreeArgs;
-pub use workflow::{
-    ConvertArgs, DateCheckMode, ImportArgs, IngestArgs, ValidateArgs, ValidateLogicArgs,
-    ValidateStructureArgs, ValidateTarget,
+pub use pipeline::{
+    DateCheckMode, PipelineArgs, PipelineCommand, PipelineConvertArgs, PipelineImportArgs,
+    PipelineIngestArgs, PipelineValidateAllArgs, PipelineValidateArgs, PipelineValidateCommand,
+    PipelineValidateLogicArgs, PipelineValidateStructureArgs,
+};
+pub use query::{
+    DataOutputMode, QueryArgs, QueryCommand, QueryDataArgs, QueryPeriod, QueryTreeArgs,
+    SuggestScoreMode,
+};
+pub use report::{
+    ReportArgs, ReportCommand, ReportExportArgs, ReportExportPeriod, ReportFormat,
+    ReportRenderArgs, ReportRenderPeriod,
 };
 
 #[derive(Debug, Parser)]
@@ -42,7 +50,6 @@ pub struct Cli {
     pub version: (),
     #[arg(
         long = "db",
-        visible_alias = "database",
         value_name = "PATH",
         global = true,
         help = "Database path override"
@@ -51,7 +58,6 @@ pub struct Cli {
     #[arg(
         short = 'o',
         long = "output",
-        visible_alias = "out",
         value_name = "PATH",
         global = true,
         help = "Output path override"
@@ -63,31 +69,23 @@ pub struct Cli {
 
 #[derive(Debug, Subcommand)]
 pub enum Command {
-    #[command(about = "Query statistics from the database")]
+    #[command(about = "Run semantic data and tree queries")]
     Query(QueryArgs),
     #[command(about = "Generate report-chart HTML from database data")]
     Chart(ChartArgs),
-    #[command(about = "Encrypt/decrypt/inspect transfer files")]
-    Crypto(CryptoArgs),
-    #[command(about = "Export reports to md/tex/typ formats")]
-    Export(ExportArgs),
-    #[command(about = "Convert source files to processed JSON")]
-    Convert(ConvertArgs),
-    #[command(about = "Import processed JSON data into the database")]
-    Import(ImportArgs),
-    #[command(about = "Run full ingestion pipeline", visible_alias = "blink")]
-    Ingest(IngestArgs),
-    #[command(about = "Validate source structure and business logic (default: all)")]
-    Validate(ValidateArgs),
-    #[command(about = "Display project structure as a tree.")]
-    Tree(TreeArgs),
+    #[command(about = "Run pipeline operations against source and processed data")]
+    Pipeline(PipelineArgs),
+    #[command(about = "Render and export textual reports")]
+    Report(ReportArgs),
+    #[command(about = "Export/import/inspect tracer exchange packages")]
+    Exchange(ExchangeArgs),
     #[command(about = "Run runtime dependency/config diagnostics")]
     Doctor(DoctorArgs),
     #[command(about = "Print third-party dependency licenses")]
     Licenses(LicensesArgs),
     #[command(about = "Print the tracer easter egg line")]
     Tracer,
-    #[command(about = "Print the project motto easter egg", visible_alias = "zen")]
+    #[command(about = "Print the project motto easter egg")]
     Motto,
 }
 
@@ -95,7 +93,10 @@ pub enum Command {
 mod tests {
     use clap::{Parser, error::ErrorKind};
 
-    use super::{Cli, Command, CryptoAction, DataOutputMode, DateCheckMode, ValidateTarget};
+    use super::{
+        Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand, PipelineCommand,
+        PipelineValidateCommand, ReportCommand, ReportExportPeriod, ReportRenderPeriod,
+    };
 
     #[test]
     fn version_flag_still_uses_clap_display_version() {
@@ -104,7 +105,7 @@ mod tests {
     }
 
     #[test]
-    fn query_still_parses_data_output() {
+    fn query_data_still_parses_data_output() {
         let cli = Cli::try_parse_from([
             "time_tracer_cli",
             "query",
@@ -116,10 +117,13 @@ mod tests {
         .unwrap();
 
         match cli.command {
-            Command::Query(args) => {
-                assert!(matches!(args.data_output, Some(DataOutputMode::Json)));
-                assert_eq!(args.argument, "days_duration");
-            }
+            Command::Query(args) => match args.command {
+                super::QueryCommand::Data(args) => {
+                    assert!(matches!(args.data_output, Some(DataOutputMode::Json)));
+                    assert_eq!(args.action, "days_duration");
+                }
+                _ => panic!("expected query data command"),
+            },
             _ => panic!("expected query command"),
         }
     }
@@ -138,49 +142,52 @@ mod tests {
     }
 
     #[test]
-    fn crypto_encrypt_still_parses_required_fields() {
+    fn exchange_export_still_parses_required_fields() {
         let cli = Cli::try_parse_from([
             "time_tracer_cli",
-            "crypto",
-            "encrypt",
+            "exchange",
+            "export",
             "--in",
             "input_dir",
-            "--out",
-            "output.tracer",
             "--security-level",
             "high",
         ])
         .unwrap();
-        assert_eq!(cli.output.as_deref(), Some("output.tracer"));
 
         match cli.command {
-            Command::Crypto(args) => {
-                assert!(matches!(args.action, CryptoAction::Encrypt));
-                assert_eq!(args.input, "input_dir");
-            }
-            _ => panic!("expected crypto command"),
+            Command::Exchange(args) => match args.command {
+                ExchangeCommand::Export(args) => {
+                    assert_eq!(args.input, "input_dir");
+                }
+                _ => panic!("expected exchange export command"),
+            },
+            _ => panic!("expected exchange command"),
         }
     }
 
     #[test]
-    fn crypto_decrypt_no_longer_requires_out() {
-        let cli = Cli::try_parse_from(["time_tracer_cli", "crypto", "decrypt", "--in", "a.tracer"])
-            .unwrap();
+    fn exchange_import_still_parses_without_output() {
+        let cli =
+            Cli::try_parse_from(["time_tracer_cli", "exchange", "import", "--in", "a.tracer"])
+                .unwrap();
         assert!(cli.output.is_none());
 
         match cli.command {
-            Command::Crypto(args) => {
-                assert!(matches!(args.action, CryptoAction::Decrypt));
-                assert_eq!(args.input, "a.tracer");
-            }
-            _ => panic!("expected crypto command"),
+            Command::Exchange(args) => match args.command {
+                ExchangeCommand::Import(args) => {
+                    assert_eq!(args.input, "a.tracer");
+                }
+                _ => panic!("expected exchange import command"),
+            },
+            _ => panic!("expected exchange command"),
         }
     }
 
     #[test]
-    fn ingest_still_rejects_conflicting_date_check_flags() {
+    fn pipeline_ingest_still_rejects_conflicting_date_check_flags() {
         let error = Cli::try_parse_from([
             "time_tracer_cli",
+            "pipeline",
             "ingest",
             "input.txt",
             "--date-check",
@@ -192,9 +199,10 @@ mod tests {
     }
 
     #[test]
-    fn validate_logic_still_parses_shared_date_check_mode() {
+    fn pipeline_validate_logic_still_parses_shared_date_check_mode() {
         let cli = Cli::try_parse_from([
             "time_tracer_cli",
+            "pipeline",
             "validate",
             "logic",
             "input.txt",
@@ -204,56 +212,173 @@ mod tests {
         .unwrap();
 
         match cli.command {
-            Command::Validate(args) => match args.target {
-                Some(ValidateTarget::Logic(args)) => {
-                    assert!(matches!(args.date_check, Some(DateCheckMode::Continuity)));
-                    assert_eq!(args.path, "input.txt");
-                }
-                _ => panic!("expected validate logic command"),
+            Command::Pipeline(args) => match args.command {
+                PipelineCommand::Validate(args) => match args.command {
+                    PipelineValidateCommand::Logic(args) => {
+                        assert!(matches!(args.date_check, Some(DateCheckMode::Continuity)));
+                        assert_eq!(args.path, "input.txt");
+                    }
+                    _ => panic!("expected pipeline validate logic command"),
+                },
+                _ => panic!("expected pipeline validate command"),
             },
-            _ => panic!("expected validate command"),
+            _ => panic!("expected pipeline command"),
         }
     }
 
     #[test]
-    fn validate_structure_still_parses_path_only_form() {
-        let cli =
-            Cli::try_parse_from(["time_tracer_cli", "validate", "structure", "input.txt"]).unwrap();
-
-        match cli.command {
-            Command::Validate(args) => match args.target {
-                Some(ValidateTarget::Structure(args)) => assert_eq!(args.path, "input.txt"),
-                _ => panic!("expected validate structure command"),
-            },
-            _ => panic!("expected validate command"),
-        }
-    }
-
-    #[test]
-    fn validate_default_path_parses_as_all_form() {
+    fn pipeline_validate_all_still_parses_path_only_form() {
         let cli = Cli::try_parse_from([
             "time_tracer_cli",
+            "pipeline",
             "validate",
+            "all",
             "input.txt",
-            "--date-check",
-            "full",
         ])
         .unwrap();
 
         match cli.command {
-            Command::Validate(args) => {
-                assert!(args.target.is_none());
-                assert_eq!(args.path.as_deref(), Some("input.txt"));
-                assert!(matches!(args.date_check, Some(DateCheckMode::Full)));
-            }
-            _ => panic!("expected validate command"),
+            Command::Pipeline(args) => match args.command {
+                PipelineCommand::Validate(args) => match args.command {
+                    PipelineValidateCommand::All(args) => assert_eq!(args.path, "input.txt"),
+                    _ => panic!("expected pipeline validate all command"),
+                },
+                _ => panic!("expected pipeline validate command"),
+            },
+            _ => panic!("expected pipeline command"),
         }
     }
 
     #[test]
-    fn tree_still_rejects_root_and_roots_together() {
-        let error =
-            Cli::try_parse_from(["time_tracer_cli", "tree", "study", "--roots"]).unwrap_err();
+    fn report_export_all_recent_still_parses_argument() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "report",
+            "export",
+            "recent",
+            "7,10",
+            "--all",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Report(args) => match args.command {
+                ReportCommand::Export(args) => {
+                    assert!(args.all);
+                    assert_eq!(args.argument.as_deref(), Some("7,10"));
+                    assert!(matches!(args.period, ReportExportPeriod::Recent));
+                }
+                _ => panic!("expected report export command"),
+            },
+            _ => panic!("expected report command"),
+        }
+    }
+
+    #[test]
+    fn report_render_range_still_parses_period_and_argument() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "report",
+            "render",
+            "range",
+            "20260101|20260131",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Report(args) => match args.command {
+                ReportCommand::Render(args) => {
+                    assert!(matches!(args.period, ReportRenderPeriod::Range));
+                    assert_eq!(args.argument, "20260101|20260131");
+                }
+                _ => panic!("expected report render command"),
+            },
+            _ => panic!("expected report command"),
+        }
+    }
+
+    #[test]
+    fn query_tree_still_rejects_root_and_roots_together() {
+        let error = Cli::try_parse_from(["time_tracer_cli", "query", "tree", "study", "--roots"])
+            .unwrap_err();
         assert_eq!(error.kind(), ErrorKind::ArgumentConflict);
+    }
+
+    #[test]
+    fn global_database_alias_is_removed() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "--database",
+            "time_data.sqlite3",
+            "query",
+            "data",
+            "years",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+    }
+
+    #[test]
+    fn global_out_alias_is_removed() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "--out",
+            "report.md",
+            "report",
+            "render",
+            "day",
+            "20260101",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+    }
+
+    #[test]
+    fn motto_zen_alias_is_removed() {
+        let error = Cli::try_parse_from(["time_tracer_cli", "zen"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::InvalidSubcommand);
+    }
+
+    #[test]
+    fn query_project_option_is_removed() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "query",
+            "data",
+            "search",
+            "--project",
+            "study",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+    }
+
+    #[test]
+    fn query_remark_day_alias_is_removed() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "query",
+            "data",
+            "search",
+            "--remark-day",
+            "focus",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::UnknownArgument);
+    }
+
+    #[test]
+    fn exchange_sensitive_alias_is_removed() {
+        let error = Cli::try_parse_from([
+            "time_tracer_cli",
+            "exchange",
+            "export",
+            "--in",
+            "input_dir",
+            "--security-level",
+            "sensitive",
+        ])
+        .unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::InvalidValue);
     }
 }

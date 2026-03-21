@@ -1,5 +1,7 @@
+import io
 import json
 import tempfile
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
@@ -27,11 +29,31 @@ class TestValidateCommand(TestCase):
             encoding="utf-8",
         )
 
+    def _write_demo_repo(self, repo_root: Path) -> None:
+        config_dir = repo_root / "tools" / "toolchain" / "config"
+        config_dir.mkdir(parents=True, exist_ok=True)
+        (config_dir / "apps.toml").write_text(
+            "\n".join(
+                [
+                    "[apps.demo]",
+                    'path = "apps/demo"',
+                    "",
+                ]
+            )
+            + "\n",
+            encoding="utf-8",
+        )
+        (repo_root / "apps" / "demo").mkdir(parents=True, exist_ok=True)
+
     def _write_plan(self, repo_root: Path, content: str) -> Path:
         plan_path = repo_root / "temp" / "validate.toml"
         plan_path.parent.mkdir(parents=True, exist_ok=True)
         plan_path.write_text(content, encoding="utf-8")
         return plan_path
+
+    def _execute_silently(self, command: ValidateCommand, **kwargs) -> int:
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            return command.execute(**kwargs)
 
     def test_execute_writes_summary_for_successful_tracks(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -70,7 +92,8 @@ class TestValidateCommand(TestCase):
                 "tools.toolchain.commands.cmd_validate.command.BuildCommand.build",
                 new=fake_build,
             ):
-                result = command.execute(
+                result = self._execute_silently(
+                    command,
                     plan_path=str(plan_path),
                     raw_paths=["libs/tracer_core/src/a.cpp"],
                     verbose=False,
@@ -130,7 +153,8 @@ class TestValidateCommand(TestCase):
                 "tools.toolchain.commands.cmd_validate.command.BuildCommand.build",
                 new=fake_build,
             ):
-                result = command.execute(
+                result = self._execute_silently(
+                    command,
                     plan_path=str(plan_path),
                     raw_paths=["libs/tracer_core/src/a.cpp"],
                 )
@@ -184,7 +208,8 @@ class TestValidateCommand(TestCase):
                 "tools.toolchain.commands.cmd_validate.command.BuildCommand.build",
                 new=fake_build,
             ):
-                result = command.execute(
+                result = self._execute_silently(
+                    command,
                     plan_path=str(plan_path),
                     raw_paths=["libs/tracer_core/src/a.cpp"],
                 )
@@ -195,3 +220,197 @@ class TestValidateCommand(TestCase):
             payload = json.loads(summary_path.read_text(encoding="utf-8"))
             self.assertFalse(payload["success"])
             self.assertEqual(len(payload["tracks"]), 1)
+
+    def test_execute_verify_track_passes_concise_to_build_stage(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            self._write_minimal_repo(repo_root)
+            ctx = Context(repo_root)
+            command = ValidateCommand(ctx)
+            plan_path = self._write_plan(
+                repo_root,
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "import_batch04"',
+                        "",
+                        "[defaults]",
+                        'kind = "verify"',
+                        'app = "tracer_core"',
+                        'verify_scope = "task"',
+                        "concise = false",
+                        "",
+                        "[[tracks]]",
+                        'name = "verify_track"',
+                    ]
+                )
+                + "\n",
+            )
+            captured: list[bool] = []
+
+            def fake_execute_build_stage(**kwargs):
+                captured.append(bool(kwargs["concise"]))
+                return 0, "build_test", "tracer_core", repo_root / "build.log"
+
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_validate.command.execute_build_stage",
+                    new=fake_execute_build_stage,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.command.VerifyCommand.run_task_scope_checks",
+                    return_value=0,
+                ),
+            ):
+                result = self._execute_silently(
+                    command,
+                    plan_path=str(plan_path),
+                    raw_paths=["libs/tracer_core/src/application/use_cases/query_api.cpp"],
+                    verbose=False,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(captured, [False])
+
+    def test_execute_build_and_configure_tracks_pass_concise_to_build_command(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            self._write_minimal_repo(repo_root)
+            ctx = Context(repo_root)
+            command = ValidateCommand(ctx)
+            plan_path = self._write_plan(
+                repo_root,
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "import_batch05"',
+                        "",
+                        "[defaults]",
+                        'app = "tracer_core"',
+                        "concise = true",
+                        "",
+                        "[[tracks]]",
+                        'name = "configure_track"',
+                        'kind = "configure"',
+                        "",
+                        "[[tracks]]",
+                        'name = "build_track"',
+                        'kind = "build"',
+                    ]
+                )
+                + "\n",
+            )
+            configure_calls: list[bool] = []
+            build_calls: list[bool] = []
+
+            def fake_configure(self, **kwargs):
+                configure_calls.append(bool(kwargs["concise"]))
+                return 0
+
+            def fake_build(self, **kwargs):
+                build_calls.append(bool(kwargs["concise"]))
+                return 0
+
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_validate.command.BuildCommand.configure",
+                    new=fake_configure,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.command.BuildCommand.build",
+                    new=fake_build,
+                ),
+            ):
+                result = self._execute_silently(
+                    command,
+                    plan_path=str(plan_path),
+                    raw_paths=["tools/toolchain/commands/cmd_validate/command.py"],
+                    verbose=False,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(configure_calls, [True])
+            self.assertEqual(build_calls, [True])
+
+    def test_execute_configure_and_build_tracks_run_command_entry_smoke(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            self._write_demo_repo(repo_root)
+            ctx = Context(repo_root)
+            command = ValidateCommand(ctx)
+            plan_path = self._write_plan(
+                repo_root,
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "import_batch06"',
+                        "",
+                        "[defaults]",
+                        'app = "demo"',
+                        'build_dir = "build_smoke"',
+                        "concise = true",
+                        "",
+                        "[[tracks]]",
+                        'name = "configure_track"',
+                        'kind = "configure"',
+                        "",
+                        "[[tracks]]",
+                        'name = "build_track"',
+                        'kind = "build"',
+                    ]
+                )
+                + "\n",
+            )
+            captured_calls: list[tuple[str, str, Path]] = []
+
+            def fake_configure_cmake(**kwargs):
+                captured_calls.append(
+                    (
+                        "configure",
+                        str(kwargs["output_mode"]),
+                        Path(kwargs["log_file"]),
+                    )
+                )
+                return 0
+
+            def fake_build_cmake(**kwargs):
+                captured_calls.append(
+                    (
+                        "build",
+                        str(kwargs["output_mode"]),
+                        Path(kwargs["log_file"]),
+                    )
+                )
+                return 0
+
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_build.command_entries.build_cmake.configure_cmake",
+                    new=fake_configure_cmake,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_build.command_entries.build_cmake.build_cmake",
+                    new=fake_build_cmake,
+                ),
+            ):
+                result = self._execute_silently(
+                    command,
+                    plan_path=str(plan_path),
+                    raw_paths=["tools/toolchain/commands/cmd_validate/command.py"],
+                    verbose=False,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(
+                [(kind, output_mode) for kind, output_mode, _ in captured_calls],
+                [("configure", "quiet"), ("build", "quiet")],
+            )
+            self.assertTrue(all(log_file.name == "build.log" for _, _, log_file in captured_calls))
+            summary_path = repo_root / "out" / "validate" / "import_batch06" / "summary.json"
+            payload = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertTrue(payload["success"])
+            self.assertEqual([track["kind"] for track in payload["tracks"]], ["configure", "build"])
+            self.assertEqual(
+                [track["status"] for track in payload["tracks"]],
+                ["completed", "completed"],
+            )

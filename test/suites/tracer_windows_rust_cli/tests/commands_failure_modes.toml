@@ -24,49 +24,59 @@ expect_hints_contains = ["Run with --help to see available commands."]
 expect_stderr_contains = ["Unknown command 'pre'."]
 
 [[commands]]
-name = "Blink Alias Routes To Ingest"
+name = "Legacy Blink Alias Removed"
 stage = "failure"
-args = ["blink", "--database", "{db_path}"]
-expect_exit = 1
-expect_error_code = "cli.invalid_arguments"
+args = ["blink", "--db", "{db_path}"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
 expect_error_category = "cli"
-expect_hints_contains = ["Run command --help to inspect required arguments."]
-expect_stderr_contains = ["Error executing command 'ingest':", "Missing required argument: <path>"]
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'blink'."]
 
 [[commands]]
-name = "Query Invalid Type Returns GenericError"
+name = "Legacy Zen Alias Removed"
 stage = "failure"
-args = ["query", "foo", "20260101", "--database", "{db_path}"]
-expect_exit = 1
-expect_error_code = "cli.invalid_arguments"
+args = ["zen"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
 expect_error_category = "cli"
-expect_hints_contains = ["Run command --help to inspect required arguments."]
-expect_stderr_contains = ["Error executing command 'query':", "Unknown query type 'foo'."]
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'zen'."]
 
 [[commands]]
-name = "Tree Invalid Level Returns GenericError"
+name = "Query Invalid Subcommand Returns InvalidArguments"
 stage = "failure"
-args = ["tree", "-l", "abc", "--database", "{db_path}"]
-expect_exit = 1
+args = ["query", "foo", "20260101", "--db", "{db_path}"]
+expect_exit = 3
 expect_error_code = "cli.invalid_arguments"
 expect_error_category = "cli"
 expect_hints_contains = ["Run command --help to inspect required arguments."]
-expect_stderr_contains = ["Error executing command 'tree':", "Argument 'level' is not a valid integer: abc"]
+expect_stderr_contains = ["unrecognized subcommand 'foo'", "Usage: time_tracer_cli.exe query"]
 
 [[commands]]
-name = "Export Missing Day Argument Returns GenericError"
+name = "Query Tree Invalid Level Returns InvalidArguments"
 stage = "failure"
-args = ["export", "day", "--database", "{db_path}"]
-expect_exit = 1
+args = ["query", "tree", "-l", "abc", "--db", "{db_path}"]
+expect_exit = 3
 expect_error_code = "cli.invalid_arguments"
 expect_error_category = "cli"
 expect_hints_contains = ["Run command --help to inspect required arguments."]
-expect_stderr_contains = ["Error executing command 'export':", "Argument required for export type 'day'."]
+expect_stderr_contains = ["invalid value 'abc' for '--level <LEVEL>'", "For more information, try '--help'."]
+
+[[commands]]
+name = "Report Export Missing Day Argument Returns InvalidArguments"
+stage = "failure"
+args = ["report", "export", "day", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`report export day` requires <argument>."]
 
 [[commands]]
 name = "Query Data Invalid Day Boundary Returns LogicError"
 stage = "failure"
-args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--database", "{db_path}"]
+args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--db", "{db_path}"]
 expect_exit = 6
 expect_error_code = "runtime.generic_error"
 expect_error_category = "runtime"

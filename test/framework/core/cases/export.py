@@ -73,7 +73,7 @@ class ExportTester(BaseTester):
     def _plan_test_cases(self) -> list[tuple[str, list[str]]]:
         """根据配置生成测试计划"""
         common_args = [
-            "--database",
+            "--db",
             str(self.db_file),
             "--output",
             str(self.export_output_path),
@@ -89,15 +89,33 @@ class ExportTester(BaseTester):
         cases = []
 
         # 1. Daily & Monthly
-        cases.extend(self._make_cases("Bulk Export All Daily", ["export", "all-day"], common_args))
         cases.extend(
-            self._make_cases("Bulk Export All Monthly", ["export", "all-month"], common_args)
+            self._make_cases(
+                "Bulk Export All Daily",
+                ["report", "export", "day", "--all"],
+                common_args,
+            )
         )
         cases.extend(
-            self._make_cases("Bulk Export All Weekly", ["export", "all-week"], common_args)
+            self._make_cases(
+                "Bulk Export All Monthly",
+                ["report", "export", "month", "--all"],
+                common_args,
+            )
         )
         cases.extend(
-            self._make_cases("Bulk Export All Yearly", ["export", "all-year"], common_args)
+            self._make_cases(
+                "Bulk Export All Weekly",
+                ["report", "export", "week", "--all"],
+                common_args,
+            )
+        )
+        cases.extend(
+            self._make_cases(
+                "Bulk Export All Yearly",
+                ["report", "export", "year", "--all"],
+                common_args,
+            )
         )
 
         # 2. Period
@@ -106,7 +124,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Bulk Recent Export ({recent_days_str})",
-                    ["export", "all-recent", recent_days_str],
+                    ["report", "export", "recent", recent_days_str, "--all"],
                     common_args,
                 )
             )
@@ -121,7 +139,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Specific Export Daily ({date})",
-                    ["export", "day", date],
+                    ["report", "export", "day", date],
                     common_args,
                 )
             )
@@ -131,7 +149,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Specific Export Monthly ({month})",
-                    ["export", "month", month],
+                    ["report", "export", "month", month],
                     common_args,
                 )
             )
@@ -141,7 +159,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Specific Export Weekly ({week})",
-                    ["export", "week", week],
+                    ["report", "export", "week", week],
                     common_args,
                 )
             )
@@ -151,7 +169,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Specific Export Yearly ({year})",
-                    ["export", "year", year],
+                    ["report", "export", "year", year],
                     common_args,
                 )
             )
@@ -161,7 +179,7 @@ class ExportTester(BaseTester):
             cases.extend(
                 self._make_cases(
                     f"Specific Recent Export ({days} days)",
-                    ["export", "recent", str(days)],
+                    ["report", "export", "recent", str(days)],
                     common_args,
                 )
             )

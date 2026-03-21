@@ -6,18 +6,25 @@ mod errors;
 mod ffi;
 mod invoke;
 mod loader;
+mod pipeline_client;
+mod query_client;
+mod report_client;
+mod tracer_exchange_client;
 
 // Facade module: keep public runtime API stable while delegating internals to focused submodules.
 use std::ffi::c_void;
 
 use libloading::Library;
 use serde::Deserialize;
-use serde_json::Value;
 
 use crate::commands::handler::CommandContext;
 use crate::error::AppError;
 
 use self::loader::{load_runtime_symbols, resolve_core_dll_path};
+pub use self::pipeline_client::PipelineClient;
+pub use self::query_client::QueryClient;
+pub use self::report_client::ReportClient;
+pub use self::tracer_exchange_client::TracerExchangeClient;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ResolvedCliPaths {
@@ -52,7 +59,7 @@ pub struct CliConfig {
     pub command_defaults: CliCommandDefaults,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TreeNode {
     pub name: String,
     pub path: Option<String>,
@@ -61,7 +68,7 @@ pub struct TreeNode {
     pub children: Vec<TreeNode>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct TreeResponse {
     pub ok: bool,
     pub found: bool,
@@ -84,9 +91,14 @@ pub struct CoreApi {
     symbols: ffi::RuntimeSymbols,
 }
 
-pub struct CoreRuntime<'a> {
+pub(crate) struct CoreRuntime<'a> {
     api: &'a CoreApi,
     handle: *mut c_void,
+}
+
+pub struct RuntimeSession<'a> {
+    runtime: CoreRuntime<'a>,
+    cli_config: CliConfig,
 }
 
 impl Drop for CoreRuntime<'_> {
@@ -114,66 +126,34 @@ impl CoreApi {
         &self,
         command_name: &str,
         ctx: &CommandContext,
-    ) -> Result<(CoreRuntime<'_>, CliConfig), AppError> {
+    ) -> Result<RuntimeSession<'_>, AppError> {
         bootstrap::bootstrap(self, command_name, ctx)
     }
 }
 
-pub fn finalize_crypto_progress_line() {
+pub fn finalize_tracer_exchange_progress_line() {
     callbacks::finalize_crypto_progress_line();
 }
 
-impl CoreRuntime<'_> {
-    pub fn run_query(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_query(self, request)
+impl<'a> RuntimeSession<'a> {
+    pub fn pipeline(&self) -> PipelineClient<'_, 'a> {
+        PipelineClient::new(&self.runtime)
     }
 
-    pub fn run_report(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_report(self, request)
+    pub fn query(&self) -> QueryClient<'_, 'a> {
+        QueryClient::new(&self.runtime)
     }
 
-    pub fn run_report_batch(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_report_batch(self, request)
+    pub fn report(&self) -> ReportClient<'_, 'a> {
+        ReportClient::new(&self.runtime)
     }
 
-    pub fn run_export(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_export(self, request)
+    pub fn exchange(&self) -> TracerExchangeClient<'_, 'a> {
+        TracerExchangeClient::new(&self.runtime)
     }
 
-    pub fn run_convert(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_convert(self, request)
-    }
-
-    pub fn run_import(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_import(self, request)
-    }
-
-    pub fn run_ingest(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_ingest(self, request)
-    }
-
-    pub fn run_validate_structure(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_validate_structure(self, request)
-    }
-
-    pub fn run_validate_logic(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_validate_logic(self, request)
-    }
-
-    pub fn run_tree(&self, request: &Value) -> Result<TreeResponse, AppError> {
-        invoke::run_tree(self, request)
-    }
-
-    pub fn run_crypto_encrypt(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_crypto_encrypt(self, request)
-    }
-
-    pub fn run_crypto_decrypt(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_crypto_decrypt(self, request)
-    }
-
-    pub fn run_crypto_inspect(&self, request: &Value) -> Result<String, AppError> {
-        invoke::run_crypto_inspect(self, request)
+    pub fn cli_config(&self) -> &CliConfig {
+        &self.cli_config
     }
 }
 

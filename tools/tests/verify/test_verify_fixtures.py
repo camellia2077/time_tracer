@@ -1,4 +1,6 @@
+import io
 import sys
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import TestCase
 
@@ -17,6 +19,14 @@ class VerifyCommandTestBase(TestCase):
     def setUpClass(cls):
         cls.ctx = Context(REPO_ROOT)
         cls.command = VerifyCommand(cls.ctx)
+
+    def execute_silently(self, **kwargs) -> int:
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            return self.command.execute(**kwargs)
+
+    def run_tests_silently(self, **kwargs) -> int:
+        with redirect_stdout(io.StringIO()), redirect_stderr(io.StringIO()):
+            return self.command.run_tests(**kwargs)
 
 
 def make_fake_build_command(exit_code: int, build_dir_name: str = "build_fast"):
