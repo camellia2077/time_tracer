@@ -1,8 +1,8 @@
 from ..conf.definitions import CommandSpec, TestContext
 
 _LEGACY_COMMAND_ALIASES = {
-    "validate_structure": ["validate", "structure"],
-    "validate_logic": ["validate", "logic"],
+    "validate_structure": ["pipeline", "validate", "structure"],
+    "validate_logic": ["pipeline", "validate", "logic"],
 }
 
 

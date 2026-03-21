@@ -38,6 +38,6 @@ subdir = "stats"
 legacy_name_contains = ["_query_data_days_stats_"]
 
 [[log_routing.rules]]
-stage = "crypto"
-command_prefix = ["crypto"]
-subdir = "crypto"
+stage = "exchange"
+command_prefix = ["exchange"]
+subdir = "exchange"

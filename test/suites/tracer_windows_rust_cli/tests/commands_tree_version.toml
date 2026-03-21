@@ -18,9 +18,9 @@ expect_stdout_contains = [
   "Commands:",
   "query",
   "chart",
-  "crypto",
-  "ingest",
-  "tree",
+  "pipeline",
+  "report",
+  "exchange",
   "licenses",
   "Options:",
   "-v, --version",
@@ -63,13 +63,6 @@ expect_exit = 0
 expect_stdout_contains = ["Trace your time, log your life."]
 
 [[commands]]
-name = "Zen Easter Egg"
-stage = "version"
-args = ["zen"]
-expect_exit = 0
-expect_stdout_contains = ["Trace your time, log your life."]
-
-[[commands]]
 name = "Doctor Check"
 stage = "version"
 args = ["doctor"]
@@ -78,30 +71,27 @@ expect_stdout_contains = ["Runtime Doctor", "Summary: required"]
 
 # Tree command tests
 [[commands]]
-name = "Tree Help"
+name = "Query Tree Help"
 stage = "tree"
-args = ["tree", "--help"]
+args = ["query", "tree", "--help"]
 expect_exit = 0
 expect_stdout_contains = [
-  "Display project structure as a tree.",
-  "Usage: time_tracer_cli.exe tree [OPTIONS] [ROOT]",
+  "Display project structure as a tree",
+  "Usage: time_tracer_cli.exe query tree [OPTIONS] [ROOT]",
   "[ROOT]",
   "-l, --level <LEVEL>",
-  "Max depth level",
   "-r, --roots",
-  "List all root projects",
 ]
 
 [[commands]]
-name = "Query Help"
+name = "Query Data Help"
 stage = "tree"
-args = ["query", "--help"]
+args = ["query", "data", "--help"]
 expect_exit = 0
 expect_stdout_contains = [
-  "Query statistics from the database",
-  "Usage: time_tracer_cli.exe query [OPTIONS] <QUERY_TYPE> <ARGUMENT>",
-  "<QUERY_TYPE>",
-  "possible values: day, month, week, year, recent, range, data",
+  "Run semantic data queries",
+  "Usage: time_tracer_cli.exe query data [OPTIONS] <ACTION>",
+  "<ACTION>",
   "--data-output <DATA_OUTPUT>",
   "possible values: text, json",
   "--period <PERIOD>",
@@ -110,36 +100,36 @@ expect_stdout_contains = [
 [[commands]]
 name = "Tree Full"
 stage = "tree"
-args = ["tree", "--database", "{db_path}"]
+args = ["query", "tree", "--db", "{db_path}"]
 expect_exit = 0
 
 [[commands]]
 name = "Tree Root Path"
 stage = "tree"
-args = ["tree", "study", "--database", "{db_path}"]
+args = ["query", "tree", "study", "--db", "{db_path}"]
 expect_exit = 0
 expect_stdout_contains = ["study"]
 
 [[commands]]
 name = "Tree Roots"
 stage = "tree"
-args = ["tree", "--roots", "--database", "{db_path}"]
+args = ["query", "tree", "--roots", "--db", "{db_path}"]
 expect_exit = 0
 
 [[commands]]
 name = "Tree Level 0"
 stage = "tree"
-args = ["tree", "-l", "0", "--database", "{db_path}"]
+args = ["query", "tree", "-l", "0", "--db", "{db_path}"]
 expect_exit = 0
 
 [[commands]]
 name = "Tree Level 1"
 stage = "tree"
-args = ["tree", "-l", "1", "--database", "{db_path}"]
+args = ["query", "tree", "-l", "1", "--db", "{db_path}"]
 expect_exit = 0
 
 [[commands]]
 name = "Tree Level 3"
 stage = "tree"
-args = ["tree", "-l", "3", "--database", "{db_path}"]
+args = ["query", "tree", "-l", "3", "--db", "{db_path}"]
 expect_exit = 0

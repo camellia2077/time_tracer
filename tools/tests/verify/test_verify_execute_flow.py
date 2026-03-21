@@ -27,7 +27,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             with patch(
                 "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
             ) as mocked_run:
-                result = self.command.execute(
+                result = self.execute_silently(
                     app_name="tracer_core",
                     build_dir_name="build_fast",
                     concise=True,
@@ -69,7 +69,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=None,
             ) as mocked_writer,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="unknown_app",
                 build_dir_name="build_fast",
                 concise=True,
@@ -95,7 +95,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=None,
             ) as mocked_writer,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="unknown_app",
                 build_dir_name="build_fast",
                 concise=True,
@@ -121,7 +121,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=None,
             ) as mocked_writer,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="tracer_android",
                 build_dir_name="build_fast",
                 profile_name="android_style",
@@ -154,7 +154,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=0,
             ) as mocked_artifact,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="tracer_core",
                 build_dir_name="build_fast",
                 verify_scope="unit",
@@ -181,7 +181,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=0,
             ) as mocked_artifact,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="tracer_core",
                 build_dir_name="build_fast",
                 verify_scope="artifact",
@@ -208,7 +208,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return_value=0,
             ) as mocked_artifact,
         ):
-            result = self.command.execute(
+            result = self.execute_silently(
                 app_name="tracer_core",
                 build_dir_name="build_fast",
                 verify_scope="batch",

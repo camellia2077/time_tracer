@@ -12,7 +12,9 @@ use super::callbacks::configure_callbacks;
 use super::codec::{option_to_cstring, path_to_cstring, read_c_json};
 use super::env_flags::log_timing;
 use super::errors::{ErrorContract, format_error_detail};
-use super::{CliConfig, CoreApi, CoreRuntime, ResolvedCliContext, ResolvedCliPaths};
+use super::{
+    CliConfig, CoreApi, CoreRuntime, ResolvedCliContext, ResolvedCliPaths, RuntimeSession,
+};
 
 #[derive(Deserialize)]
 struct RuntimeCheckResponse {
@@ -40,7 +42,7 @@ pub(crate) fn bootstrap<'a>(
     api: &'a CoreApi,
     command_name: &str,
     ctx: &CommandContext,
-) -> Result<(CoreRuntime<'a>, CliConfig), AppError> {
+) -> Result<RuntimeSession<'a>, AppError> {
     let bootstrap_start = Instant::now();
     configure_callbacks(api);
     let exe = env::current_exe()
@@ -58,7 +60,10 @@ pub(crate) fn bootstrap<'a>(
     let runtime = create_runtime(api, &resolved.paths)?;
     log_timing("runtime.create", create_start.elapsed());
     log_timing("runtime.bootstrap_total", bootstrap_start.elapsed());
-    Ok((runtime, resolved.cli_config))
+    Ok(RuntimeSession {
+        runtime,
+        cli_config: resolved.cli_config,
+    })
 }
 
 fn check_environment(api: &CoreApi, exe: &Path) -> Result<(), AppError> {

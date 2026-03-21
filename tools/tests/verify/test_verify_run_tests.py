@@ -6,7 +6,7 @@ from .test_verify_fixtures import VerifyCommandTestBase
 class TestVerifyRunTests(VerifyCommandTestBase):
     def test_run_tests_skips_when_suite_unmapped(self):
         with patch("tools.toolchain.commands.cmd_quality.verify.run_command") as mocked_run:
-            result = self.command.run_tests(
+            result = self.run_tests_silently(
                 app_name="unknown_app",
                 build_dir_name="build_fast",
                 concise=False,
@@ -24,7 +24,7 @@ class TestVerifyRunTests(VerifyCommandTestBase):
                 return_value=r"C:\Windows\System32",
             ),
         ):
-            result = self.command.run_tests(
+            result = self.run_tests_silently(
                 app_name="tracer_android",
                 build_dir_name="build_fast",
                 concise=False,
@@ -48,7 +48,7 @@ class TestVerifyRunTests(VerifyCommandTestBase):
                 return_value=r"C:\Windows\System32",
             ),
         ):
-            result = self.command.run_tests(
+            result = self.run_tests_silently(
                 app_name="tracer_android",
                 build_dir_name="build_fast",
                 profile_name="android_style",
@@ -64,7 +64,7 @@ class TestVerifyRunTests(VerifyCommandTestBase):
         with patch(
             "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
         ) as mocked_run:
-            result = self.command.run_tests(
+            result = self.run_tests_silently(
                 app_name="tracer_core",
                 build_dir_name="build_fast",
                 concise=True,

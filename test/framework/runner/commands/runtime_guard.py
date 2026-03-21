@@ -56,7 +56,7 @@ def _run_scenario(
         return False, f"CLI executable not found in scenario bundle: {cli_path}"
 
     completed = subprocess.run(
-        [str(cli_path), "tree"],
+        [str(cli_path), "query", "tree"],
         cwd=str(scenario_bin),
         capture_output=True,
         text=True,
