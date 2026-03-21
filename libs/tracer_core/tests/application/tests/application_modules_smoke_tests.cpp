@@ -47,7 +47,7 @@ namespace app_use_cases = tracer::core::application::use_cases;
 namespace app_workflow = tracer::core::application::workflow;
 namespace app_ports = tracer_core::application::ports;
 
-class SmokeWorkflowHandler final : public app_workflow::IWorkflowHandler {
+class SmokePipelineWorkflow final : public app_workflow::IWorkflowHandler {
  public:
   auto RunConverter(const std::string& /*input_path*/,
                     const AppOptions& /*options*/) -> void override {}
@@ -249,13 +249,29 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
 }
 
 void TestUseCasesAndServices(int& failures) {
-  Expect(std::is_class_v<app_use_cases::ITracerCoreApi>,
-         "ITracerCoreApi should be visible through module bridge.", failures);
-  Expect(std::is_abstract_v<app_use_cases::ITracerCoreApi>,
-         "ITracerCoreApi should remain an abstract interface.", failures);
-  Expect(std::is_base_of_v<app_use_cases::ITracerCoreApi,
-                           app_use_cases::TracerCoreApi>,
-         "TracerCoreApi should keep ITracerCoreApi inheritance.", failures);
+  Expect(std::is_class_v<app_use_cases::ITracerCoreRuntime>,
+         "ITracerCoreRuntime should be visible through module bridge.", failures);
+  Expect(std::is_abstract_v<app_use_cases::ITracerCoreRuntime>,
+         "ITracerCoreRuntime should remain an abstract interface.", failures);
+  Expect(std::is_base_of_v<app_use_cases::ITracerCoreRuntime,
+                           app_use_cases::TracerCoreRuntime>,
+         "TracerCoreRuntime should keep ITracerCoreRuntime inheritance.", failures);
+  Expect(std::is_class_v<app_use_cases::IPipelineApi>,
+         "IPipelineApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::IQueryApi>,
+         "IQueryApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::IReportApi>,
+         "IReportApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::ITracerExchangeApi>,
+         "ITracerExchangeApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::PipelineApi>,
+         "PipelineApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::QueryApi>,
+         "QueryApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::ReportApi>,
+         "ReportApi should be visible through module bridge.", failures);
+  Expect(std::is_class_v<app_use_cases::TracerExchangeApi>,
+         "TracerExchangeApi should be visible through module bridge.", failures);
   Expect(std::is_class_v<ConverterService>,
          "ConverterService should be visible through module bridge.", failures);
   Expect(std::is_class_v<ImportService>,
@@ -280,37 +296,44 @@ void TestUseCasesAndServices(int& failures) {
          failures);
 
   try {
-    SmokeWorkflowHandler workflow_handler;
+    SmokePipelineWorkflow pipeline_workflow;
     SmokeReportHandler report_handler;
     auto project_repository = std::make_shared<SmokeProjectRepository>();
     auto data_query_service = std::make_shared<SmokeDataQueryService>();
-    app_use_cases::TracerCoreApi core_api(workflow_handler, report_handler,
-                                          project_repository,
-                                          data_query_service);
+    auto pipeline_api =
+        std::make_shared<app_use_cases::PipelineApi>(pipeline_workflow);
+    auto query_api = std::make_shared<app_use_cases::QueryApi>(
+        project_repository, data_query_service);
+    auto report_api = std::make_shared<app_use_cases::ReportApi>(report_handler);
+    auto tracer_exchange_api =
+        std::make_shared<app_use_cases::TracerExchangeApi>();
+    app_use_cases::TracerCoreRuntime runtime_api(
+        std::move(pipeline_api), std::move(query_api), std::move(report_api),
+        std::move(tracer_exchange_api));
 
-    const auto data_query_result = core_api.RunDataQuery({});
+    const auto data_query_result = runtime_api.query().RunDataQuery({});
     Expect(data_query_result.ok &&
                data_query_result.content == "smoke-data-query",
-           "TracerCoreApi RunDataQuery should execute through the owning api path.",
+           "QueryApi should execute through the owning api path.",
            failures);
 
-    const auto report_query_result = core_api.RunReportQuery(
+    const auto report_query_result = runtime_api.report().RunReportQuery(
         {.type = tracer_core::core::dto::ReportQueryType::kDay,
          .argument = "2026-03-10",
          .format = ReportFormat::kMarkdown});
     Expect(report_query_result.ok &&
                report_query_result.content == "smoke-daily",
-           "TracerCoreApi RunReportQuery should execute through the owning api path.",
+           "ReportApi should execute through the owning api path.",
            failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr
-        << "[FAIL] TracerCoreApi owning api path should construct and execute: "
+        << "[FAIL] TracerCoreRuntime owning api path should construct and execute: "
         << exception.what() << '\n';
   } catch (...) {
     ++failures;
     std::cerr
-        << "[FAIL] TracerCoreApi owning api path should construct and execute: "
+        << "[FAIL] TracerCoreRuntime owning api path should construct and execute: "
         << "unknown non-standard exception\n";
   }
 
@@ -391,13 +414,14 @@ void TestReportingTreeBridge(int& failures) {
 
 void TestWorkflowBridge(int& failures) {
   Expect(std::is_class_v<app_workflow::IWorkflowHandler>,
-         "IWorkflowHandler should be visible through the workflow family.",
+         "IWorkflowHandler should remain visible through the workflow family.",
          failures);
   Expect(std::is_abstract_v<app_workflow::IWorkflowHandler>,
          "IWorkflowHandler should remain an abstract interface.", failures);
   Expect(std::is_base_of_v<app_workflow::IWorkflowHandler,
                            app_workflow::WorkflowHandler>,
-         "WorkflowHandler should keep IWorkflowHandler inheritance.", failures);
+         "WorkflowHandler should keep the exported workflow compatibility surface.",
+         failures);
 }
 
 void TestWorkflowOwningPath(int& failures) {
@@ -414,24 +438,24 @@ void TestWorkflowOwningPath(int& failures) {
     auto validation_issue_reporter =
         std::make_shared<SmokeValidationIssueReporter>();
 
-    app_workflow::WorkflowHandler workflow_handler(
+    app_workflow::WorkflowHandler pipeline_workflow(
         std::filesystem::path("phase4-workflow-module-output"),
         std::move(processed_data_loader), std::move(time_sheet_repository),
         std::move(database_health_checker),
         std::move(converter_config_provider), std::move(ingest_input_provider),
         std::move(processed_data_storage),
         std::move(validation_issue_reporter));
-    workflow_handler.RunDatabaseImport("phase4-workflow-module-smoke.json");
+    pipeline_workflow.RunDatabaseImport("phase4-workflow-module-smoke.json");
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr
-        << "[FAIL] WorkflowHandler owning workflow path should construct and "
+        << "[FAIL] PipelineWorkflow owning workflow path should construct and "
            "execute RunDatabaseImport: "
         << exception.what() << '\n';
   } catch (...) {
     ++failures;
     std::cerr
-        << "[FAIL] WorkflowHandler owning workflow path should construct and "
+        << "[FAIL] PipelineWorkflow owning workflow path should construct and "
            "execute RunDatabaseImport: unknown non-standard exception\n";
   }
 }

@@ -7,13 +7,13 @@ namespace tracer_core::application::tests {
 namespace {
 
 auto TestExportDelegatesToExchangeService(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto repository = std::make_shared<FakeProjectRepository>();
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto tracer_exchange = std::make_shared<FakeTracerExchangeService>();
-  auto core_api = BuildCoreApi(workflow_handler, report_handler, repository,
-                               data_query, tracer_exchange);
+  auto runtime_api = BuildRuntimeApi(pipeline_workflow, report_handler, repository,
+                                     data_query, tracer_exchange);
 
   const tracer_core::core::dto::TracerExchangeExportRequest request{
       .input_text_root_path = "input",
@@ -24,7 +24,7 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
       .producer_app = "time_tracer_cli",
   };
 
-  const auto result = core_api.RunTracerExchangeExport(request);
+  const auto result = runtime_api.tracer_exchange().RunTracerExchangeExport(request);
   Expect(state, result.ok,
          "RunTracerExchangeExport should return the service success result.");
   Expect(state, tracer_exchange->export_call_count == 1,
@@ -36,16 +36,16 @@ auto TestExportDelegatesToExchangeService(TestState& state) -> void {
 }
 
 auto TestImportFailureIsWrapped(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
   auto repository = std::make_shared<FakeProjectRepository>();
   auto data_query = std::make_shared<FakeDataQueryService>();
   auto tracer_exchange = std::make_shared<FakeTracerExchangeService>();
   tracer_exchange->throw_on_import = true;
-  auto core_api = BuildCoreApi(workflow_handler, report_handler, repository,
-                               data_query, tracer_exchange);
+  auto runtime_api = BuildRuntimeApi(pipeline_workflow, report_handler, repository,
+                                     data_query, tracer_exchange);
 
-  const auto result = core_api.RunTracerExchangeImport(
+  const auto result = runtime_api.tracer_exchange().RunTracerExchangeImport(
       {.input_tracer_path = "sample.tracer",
        .active_text_root_path = "runtime/input/full",
        .active_converter_main_config_path =
@@ -61,11 +61,11 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
 }
 
 auto TestInspectWithoutServiceFailsGracefully(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
-  const auto result = core_api.RunTracerExchangeInspect(
+  const auto result = runtime_api.tracer_exchange().RunTracerExchangeInspect(
       {.input_tracer_path = "sample.tracer", .passphrase = "secret"});
   Expect(state, !result.ok,
          "RunTracerExchangeInspect should fail cleanly when no exchange service is configured.");

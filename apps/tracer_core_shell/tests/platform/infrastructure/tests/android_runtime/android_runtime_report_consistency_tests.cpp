@@ -21,7 +21,7 @@ auto RunReportConsistencyTests(int& failures) -> void {
     ingest_request.input_path = (fixture.input_path / "2025").string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     const auto ingest_result =
-        fixture.runtime.core_api->RunIngest(ingest_request);
+        fixture.runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] ReportConsistency: initial ingest should succeed: "
@@ -31,11 +31,11 @@ auto RunReportConsistencyTests(int& failures) -> void {
     }
 
     report_consistency_internal::RunReportConsistencyFieldVerificationTests(
-        fixture.runtime.core_api, failures);
+        fixture.runtime.runtime_api, failures);
     report_consistency_internal::RunReportConsistencyStructureTests(
-        fixture.runtime.core_api, failures);
+        fixture.runtime.runtime_api, failures);
     report_consistency_internal::RunReportConsistencyCrossIngestTests(
-        fixture.runtime.core_api, fixture.input_path, failures);
+        fixture.runtime.runtime_api, fixture.input_path, failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] ReportConsistency tests threw exception: "

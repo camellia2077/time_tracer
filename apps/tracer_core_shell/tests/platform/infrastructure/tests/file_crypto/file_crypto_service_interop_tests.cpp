@@ -126,15 +126,15 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
         BuildRuntimeRequest(kPaths, kConverterConfigToml);
     auto runtime =
         infrastructure::bootstrap::BuildAndroidRuntime(kRuntimeRequest);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       ++failures;
       std::cerr << "[FAIL] BuildAndroidRuntime should provide a valid core "
-                   "API for interop import.\n";
+                   "runtime API for interop import.\n";
       RemoveTree(kPaths.test_root);
       return;
     }
 
-    const auto kStructureAck = runtime.core_api->RunValidateStructure(
+    const auto kStructureAck = runtime.runtime_api->pipeline().RunValidateStructure(
         {.input_path = kAndroidImportTxt.string()});
     Expect(kStructureAck.ok,
            "Android import pre-check: structure validation should pass.",
@@ -144,7 +144,7 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
                 << kStructureAck.error_message << '\n';
     }
 
-    const auto kLogicAck = runtime.core_api->RunValidateLogic(
+    const auto kLogicAck = runtime.runtime_api->pipeline().RunValidateLogic(
         {.input_path = kAndroidImportTxt.string(),
          .date_check_mode = DateCheckMode::kNone});
     Expect(kLogicAck.ok,
@@ -158,7 +158,7 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
     ingest_request.input_path = kAndroidImportTxt.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
-    const auto kIngestAck = runtime.core_api->RunIngest(ingest_request);
+    const auto kIngestAck = runtime.runtime_api->pipeline().RunIngest(ingest_request);
     Expect(kIngestAck.ok,
            "Android import should ingest TXT decrypted from Windows .tracer.",
            failures);

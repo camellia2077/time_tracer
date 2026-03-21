@@ -10,7 +10,7 @@
 
 namespace tracer::core::application::use_cases {
 
-class ITracerCoreApi;
+class ITracerCoreRuntime;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -29,8 +29,8 @@ struct AndroidRuntimeRequest {
 };
 
 struct AndroidRuntime {
-  std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>
-      core_api;
+  std::shared_ptr<tracer::core::application::use_cases::ITracerCoreRuntime>
+      runtime_api;
   std::shared_ptr<void> runtime_state;
 };
 

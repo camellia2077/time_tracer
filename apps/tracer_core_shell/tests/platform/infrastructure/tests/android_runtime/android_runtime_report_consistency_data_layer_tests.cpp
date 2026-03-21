@@ -4,23 +4,23 @@
 
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_report_consistency_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
 auto TestDataLayerStructuredFieldVerification(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
   tracer_core::core::dto::StructuredReportQueryRequest structured_request;
   structured_request.type = tracer_core::core::dto::ReportQueryType::kDay;
   structured_request.argument = "2025-01-03";
 
   const auto structured_result =
-      core_api->RunStructuredReportQuery(structured_request);
+      runtime_api->report().RunStructuredReportQuery(structured_request);
 
   if (!structured_result.ok) {
     ++failures;
@@ -101,7 +101,7 @@ auto TestDataLayerStructuredFieldVerification(
 }
 
 auto TestDataLayerCrossIngestConsistency(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const std::filesystem::path& input_path, int& failures) -> void {
   const std::string target_date = "2025-01-03";
 
@@ -110,7 +110,7 @@ auto TestDataLayerCrossIngestConsistency(
   md_request.argument = target_date;
   md_request.format = ReportFormat::kMarkdown;
 
-  const auto md_before = core_api->RunReportQuery(md_request);
+  const auto md_before = runtime_api->report().RunReportQuery(md_request);
   if (!md_before.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunReportQuery(day, before) should "
@@ -122,7 +122,8 @@ auto TestDataLayerCrossIngestConsistency(
   tracer_core::core::dto::StructuredReportQueryRequest struct_request;
   struct_request.type = tracer_core::core::dto::ReportQueryType::kDay;
   struct_request.argument = target_date;
-  const auto data_before = core_api->RunStructuredReportQuery(struct_request);
+  const auto data_before =
+      runtime_api->report().RunStructuredReportQuery(struct_request);
   if (!data_before.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunStructuredReportQuery(before) should "
@@ -149,7 +150,7 @@ auto TestDataLayerCrossIngestConsistency(
   reingest_request.date_check_mode = DateCheckMode::kNone;
   reingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
 
-  const auto reingest_result = core_api->RunIngest(reingest_request);
+  const auto reingest_result = runtime_api->pipeline().RunIngest(reingest_request);
   if (!reingest_result.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: re-ingest (replace_month) should "
@@ -158,7 +159,7 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto md_after = core_api->RunReportQuery(md_request);
+  const auto md_after = runtime_api->report().RunReportQuery(md_request);
   if (!md_after.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunReportQuery(day, after) should "
@@ -167,7 +168,8 @@ auto TestDataLayerCrossIngestConsistency(
     return;
   }
 
-  const auto data_after = core_api->RunStructuredReportQuery(struct_request);
+  const auto data_after =
+      runtime_api->report().RunStructuredReportQuery(struct_request);
   if (!data_after.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: RunStructuredReportQuery(after) should "
@@ -226,14 +228,14 @@ auto TestDataLayerCrossIngestConsistency(
 }  // namespace
 
 auto RunReportConsistencyFieldVerificationTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api, int& failures) -> void {
-  TestDataLayerStructuredFieldVerification(core_api, failures);
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+  TestDataLayerStructuredFieldVerification(runtime_api, failures);
 }
 
 auto RunReportConsistencyCrossIngestTests(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const std::filesystem::path& input_path, int& failures) -> void {
-  TestDataLayerCrossIngestConsistency(core_api, input_path, failures);
+  TestDataLayerCrossIngestConsistency(runtime_api, input_path, failures);
 }
 
 }  // namespace android_runtime_tests::report_consistency_internal

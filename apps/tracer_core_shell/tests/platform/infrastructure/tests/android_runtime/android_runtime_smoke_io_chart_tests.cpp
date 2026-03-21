@@ -11,7 +11,7 @@ namespace android_runtime_tests::smoke {
 namespace {
 
 auto VerifyStatsForRootScenarios(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const ChartProbeContext& chart_probe, std::string_view missing_root,
     int& failures) -> void {
   if (!chart_probe.latest_date.has_value()) {
@@ -24,7 +24,8 @@ auto VerifyStatsForRootScenarios(
   stats_base_request.tree_period = "day";
   stats_base_request.tree_period_argument = *chart_probe.latest_date;
 
-  const auto stats_base_result = core_api->RunDataQuery(stats_base_request);
+  const auto stats_base_result =
+      runtime_api->query().RunDataQuery(stats_base_request);
   if (!stats_base_result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunDataQuery(days-stats, baseline day) should "
@@ -40,7 +41,7 @@ auto VerifyStatsForRootScenarios(
       stats_base_request;
   stats_empty_root_request.root = "   ";
   const auto stats_empty_root_result =
-      core_api->RunDataQuery(stats_empty_root_request);
+      runtime_api->query().RunDataQuery(stats_empty_root_request);
   if (!stats_empty_root_result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunDataQuery(days-stats, empty root) should "
@@ -58,7 +59,7 @@ auto VerifyStatsForRootScenarios(
         stats_base_request;
     stats_valid_root_request.root = *chart_probe.selected_root;
     const auto stats_valid_root_result =
-        core_api->RunDataQuery(stats_valid_root_request);
+        runtime_api->query().RunDataQuery(stats_valid_root_request);
     if (!stats_valid_root_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunDataQuery(days-stats, selected root) should "
@@ -76,7 +77,7 @@ auto VerifyStatsForRootScenarios(
       stats_base_request;
   stats_missing_root_request.root = std::string(missing_root);
   const auto stats_missing_root_result =
-      core_api->RunDataQuery(stats_missing_root_request);
+      runtime_api->query().RunDataQuery(stats_missing_root_request);
   if (!stats_missing_root_result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunDataQuery(days-stats, missing root) should "
@@ -91,14 +92,14 @@ auto VerifyStatsForRootScenarios(
 
 }  // namespace
 
-auto ProbeChartRange(const std::shared_ptr<ITracerCoreApi>& core_api,
+auto ProbeChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
                      ChartProbeContext& chart_probe, int& failures) -> void {
   tracer_core::core::dto::DataQueryRequest chart_range_request;
   chart_range_request.action =
       tracer_core::core::dto::DataQueryAction::kReportChart;
   chart_range_request.lookback_days = 7;
   if (const auto chart_range_result = RunDataQueryOrRecordFailure(
-          core_api, chart_range_request, "RunDataQuery(report-chart, range)",
+          runtime_api, chart_range_request, "RunDataQuery(report-chart, range)",
           failures);
       chart_range_result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -151,7 +152,7 @@ auto ProbeChartRange(const std::shared_ptr<ITracerCoreApi>& core_api,
   }
 }
 
-auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreApi>& core_api,
+auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
                               const ChartProbeContext& chart_probe,
                               int& failures) -> void {
   if (!chart_probe.earliest_date.has_value() ||
@@ -165,7 +166,7 @@ auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreApi>& core_api,
   chart_explicit_range_request.from_date = *chart_probe.earliest_date;
   chart_explicit_range_request.to_date = *chart_probe.latest_date;
   if (const auto chart_explicit_range_result = RunDataQueryOrRecordFailure(
-          core_api, chart_explicit_range_request,
+          runtime_api, chart_explicit_range_request,
           "RunDataQuery(report-chart, explicit range)", failures);
       chart_explicit_range_result.has_value()) {
     if (const auto payload =
@@ -194,7 +195,7 @@ auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreApi>& core_api,
 }
 
 auto VerifyChartForRootScenarios(
-    const std::shared_ptr<ITracerCoreApi>& core_api,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const ChartProbeContext& chart_probe, int& failures) -> void {
   if (!chart_probe.selected_root.has_value()) {
     return;
@@ -208,7 +209,7 @@ auto VerifyChartForRootScenarios(
   chart_root_request.lookback_days = 7;
   chart_root_request.root = *chart_probe.selected_root;
   if (const auto chart_root_result = RunDataQueryOrRecordFailure(
-          core_api, chart_root_request,
+          runtime_api, chart_root_request,
           "RunDataQuery(report-chart, selected root)", failures);
       chart_root_result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -239,7 +240,7 @@ auto VerifyChartForRootScenarios(
   chart_root_overrides_project_request.root = *chart_probe.selected_root;
   chart_root_overrides_project_request.project = "zzzz_override_project";
   if (const auto result = RunDataQueryOrRecordFailure(
-          core_api, chart_root_overrides_project_request,
+          runtime_api, chart_root_overrides_project_request,
           "RunDataQuery(report-chart, root overrides project)", failures);
       result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -262,7 +263,7 @@ auto VerifyChartForRootScenarios(
   chart_missing_root_request.lookback_days = 7;
   chart_missing_root_request.root = missing_root;
   if (const auto result = RunDataQueryOrRecordFailure(
-          core_api, chart_missing_root_request,
+          runtime_api, chart_missing_root_request,
           "RunDataQuery(report-chart, missing root)", failures);
       result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -294,7 +295,7 @@ auto VerifyChartForRootScenarios(
   chart_empty_root_request.lookback_days = 7;
   chart_empty_root_request.root = "   ";
   if (const auto result = RunDataQueryOrRecordFailure(
-          core_api, chart_empty_root_request,
+          runtime_api, chart_empty_root_request,
           "RunDataQuery(report-chart, empty root)", failures);
       result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -315,7 +316,7 @@ auto VerifyChartForRootScenarios(
   chart_boundary_request.root = *chart_probe.selected_root;
   chart_boundary_request.lookback_days = 1;
   if (const auto result = RunDataQueryOrRecordFailure(
-          core_api, chart_boundary_request,
+          runtime_api, chart_boundary_request,
           "RunDataQuery(report-chart, boundary)", failures);
       result.has_value()) {
     if (const auto payload = ParseJsonOrRecordFailure(
@@ -343,7 +344,7 @@ auto VerifyChartForRootScenarios(
     }
   }
 
-  VerifyStatsForRootScenarios(core_api, chart_probe, missing_root, failures);
+  VerifyStatsForRootScenarios(runtime_api, chart_probe, missing_root, failures);
 }
 
 }  // namespace android_runtime_tests::smoke

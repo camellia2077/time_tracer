@@ -1,22 +1,20 @@
 module;
 
-#include <exception>
-#include <string>
-#include <string_view>
-
-#include "application/dto/core_responses.hpp"
-#include "application/dto/tree_query_response.hpp"
-#include "domain/reports/types/report_types.hpp"
-
-namespace tracer_core::application::ports {
-class IReportDtoFormatter;
-}  // namespace tracer_core::application::ports
+#include "application/use_cases/core_api_failure.hpp"
+#include "application/use_cases/report_api_support.hpp"
 
 export module tracer.core.application.use_cases.helpers;
 
 export namespace tracer::core::application::use_cases::helpers {
 
-#include "application/use_cases/detail/tracer_core_api_helpers_decl.inc"
+using ::tracer::core::application::use_cases::failure::BuildErrorMessage;
+using ::tracer::core::application::use_cases::failure::BuildOperationFailure;
+using ::tracer::core::application::use_cases::failure::BuildTextFailure;
+using ::tracer::core::application::use_cases::failure::BuildTreeFailure;
+using ::tracer::core::application::use_cases::report_support::BuildStructuredReportFailure;
+using ::tracer::core::application::use_cases::report_support::BuildStructuredPeriodBatchFailure;
+using ::tracer::core::application::use_cases::report_support::FormatStructuredReport;
+using ::tracer::core::application::use_cases::report_support::BuildPeriodBatchErrorLine;
 
 }  // namespace tracer::core::application::use_cases::helpers
 
@@ -26,10 +24,8 @@ using tracer::core::application::use_cases::helpers::BuildErrorMessage;
 using tracer::core::application::use_cases::helpers::BuildOperationFailure;
 using tracer::core::application::use_cases::helpers::BuildTextFailure;
 using tracer::core::application::use_cases::helpers::BuildTreeFailure;
-using tracer::core::application::use_cases::helpers::
-    BuildStructuredReportFailure;
-using tracer::core::application::use_cases::helpers::
-    BuildStructuredPeriodBatchFailure;
+using tracer::core::application::use_cases::helpers::BuildStructuredReportFailure;
+using tracer::core::application::use_cases::helpers::BuildStructuredPeriodBatchFailure;
 using tracer::core::application::use_cases::helpers::FormatStructuredReport;
 using tracer::core::application::use_cases::helpers::BuildPeriodBatchErrorLine;
 

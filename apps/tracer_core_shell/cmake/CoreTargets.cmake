@@ -271,6 +271,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/data_query_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/import_service_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/tracer_exchange_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/tracer_core_runtime_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main.cpp"
     )
     add_executable(tt_core_api_tests

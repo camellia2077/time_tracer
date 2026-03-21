@@ -50,7 +50,8 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
           tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
   };
 
-  const auto result = runtime->core_api->RunTracerExchangeExport(request);
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeExport(request);
   if (!result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunTracerExchangeExport failed unexpectedly: "
@@ -154,7 +155,8 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
       .passphrase = std::string(kPassphrase),
   };
 
-  const auto result = runtime->core_api->RunTracerExchangeInspect(request);
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeInspect(request);
   if (!result.ok) {
     ++failures;
     std::cerr << "[FAIL] RunTracerExchangeInspect failed unexpectedly: "
@@ -242,7 +244,7 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
     return;
   }
 
-  const auto result = runtime->core_api->RunTracerExchangeExport({
+  const auto result = runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
       .input_text_root_path = input_root,
       .requested_output_path = tracer_path,
       .active_converter_main_config_path = main_config_path,
@@ -345,7 +347,8 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
     return;
   }
 
-  const auto android_result = runtime->core_api->RunTracerExchangeExport({
+  const auto android_result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
       .input_text_root_path = input_root,
       .requested_output_path = android_tracer,
       .active_converter_main_config_path = main_config_path,
@@ -356,7 +359,8 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
       .security_level =
           tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
   });
-  const auto windows_result = runtime->core_api->RunTracerExchangeExport({
+  const auto windows_result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
       .input_text_root_path = input_root,
       .requested_output_path = windows_tracer,
       .active_converter_main_config_path = main_config_path,

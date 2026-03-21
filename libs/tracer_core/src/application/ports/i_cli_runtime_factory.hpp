@@ -12,6 +12,7 @@
 
 namespace tracer::core::application::use_cases {
 class ITracerCoreApi;
+class ITracerCoreRuntime;
 }
 
 namespace tracer_core::application::ports {
@@ -24,6 +25,8 @@ struct CliRuntimeRequest {
 };
 
 struct CliRuntime {
+  std::shared_ptr<tracer::core::application::use_cases::ITracerCoreRuntime>
+      runtime_api;
   std::shared_ptr<tracer::core::application::use_cases::ITracerCoreApi>
       core_api;
   tracer_core::application::dto::CliConfig cli_config;

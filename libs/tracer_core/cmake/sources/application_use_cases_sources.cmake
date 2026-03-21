@@ -1,9 +1,12 @@
 set(TIME_TRACKER_APPLICATION_USE_CASE_FAMILY_SOURCES
-    "use_cases/tracer_core_api_helpers.module.cpp"
-    "use_cases/tracer_core_api_pipeline.module.cpp"
-    "use_cases/tracer_core_api_tracer_exchange.module.cpp"
-    "use_cases/tracer_core_api_report.module.cpp"
-    "use_cases/tracer_core_api_query.module.cpp"
+    "use_cases/core_api_failure.cpp"
+    "use_cases/report_api_support.cpp"
+    "use_cases/pipeline_api.cpp"
+    "use_cases/query_api.cpp"
+    "use_cases/report_api.cpp"
+    "use_cases/tracer_exchange_api.cpp"
+    "use_cases/tracer_core_runtime.cpp"
+    "use_cases/tracer_core_api.cpp"
 )
 
 set(TIME_TRACKER_APPLICATION_USE_CASE_SOURCES

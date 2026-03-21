@@ -11,12 +11,12 @@
 #include "api/c_api/tracer_core_c_api_internal.hpp"
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 #include "host/crypto_progress_bridge.hpp"
 #include "host/tracer_exchange_inspect_formatter.hpp"
 #include "nlohmann/json.hpp"
 
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 using tracer_core::core::c_api::internal::BuildFailureResponse;
 using tracer_core::core::c_api::internal::BuildTextResponse;
@@ -232,7 +232,7 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
                                     std::string_view request_json)
     -> app_dto::TextOutput {
   const json payload = ParseJsonRequest(request_json);
-  ITracerCoreApi& runtime = RequireRuntime(handle);
+  ITracerCoreRuntime& runtime = RequireRuntime(handle);
 
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   if (const auto mode = OptionalStringField(payload, "date_check_mode");
@@ -254,14 +254,15 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
           ParseSecurityLevel(OptionalStringField(payload, "security_level")),
       .progress_observer = BuildProgressObserver(),
   };
-  return BuildEncryptTextOutput(runtime.RunTracerExchangeExport(request), request);
+  return BuildEncryptTextOutput(
+      runtime.tracer_exchange().RunTracerExchangeExport(request), request);
 }
 
 [[nodiscard]] auto RunCryptoDecrypt(TtCoreRuntimeHandle* handle,
                                     std::string_view request_json)
     -> app_dto::TextOutput {
   const json payload = ParseJsonRequest(request_json);
-  ITracerCoreApi& runtime = RequireRuntime(handle);
+  ITracerCoreRuntime& runtime = RequireRuntime(handle);
   const auto output_path = OptionalStringField(payload, "output_path");
   RejectFieldIfPresent(payload, "apply_config",
                        "field `apply_config` is no longer supported for "
@@ -283,14 +284,15 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
       .passphrase = RequireStringField(payload, "passphrase"),
       .progress_observer = BuildProgressObserver(),
   };
-  return BuildImportTextOutput(runtime.RunTracerExchangeImport(request), request);
+  return BuildImportTextOutput(
+      runtime.tracer_exchange().RunTracerExchangeImport(request), request);
 }
 
 [[nodiscard]] auto RunCryptoInspect(TtCoreRuntimeHandle* handle,
                                     std::string_view request_json)
     -> app_dto::TextOutput {
   const json payload = ParseJsonRequest(request_json);
-  ITracerCoreApi& runtime = RequireRuntime(handle);
+  ITracerCoreRuntime& runtime = RequireRuntime(handle);
   RejectFieldIfPresent(payload, "output_path",
                        "field `output_path` is not supported for crypto "
                        "inspect.");
@@ -301,7 +303,8 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
       .passphrase = RequireStringField(payload, "passphrase"),
       .progress_observer = BuildProgressObserver(),
   };
-  return BuildInspectTextOutput(runtime.RunTracerExchangeInspect(request));
+  return BuildInspectTextOutput(
+      runtime.tracer_exchange().RunTracerExchangeInspect(request));
 }
 
 }  // namespace

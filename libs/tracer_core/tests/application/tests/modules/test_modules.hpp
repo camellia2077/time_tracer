@@ -11,6 +11,7 @@ auto RunReportTests(TestState& state) -> void;
 auto RunDataQueryTests(TestState& state) -> void;
 auto RunImportServiceTests(TestState& state) -> void;
 auto RunTracerExchangeTests(TestState& state) -> void;
+auto RunTracerCoreRuntimeTests(TestState& state) -> void;
 
 }  // namespace tracer_core::application::tests
 

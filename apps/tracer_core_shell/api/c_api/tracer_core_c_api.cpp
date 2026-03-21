@@ -320,7 +320,7 @@ extern "C" TT_CORE_API auto tracer_core_runtime_create(
     request.diagnostics_sink = CreateAbiDiagnosticsAdapter();
 
     auto runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
-    if (!runtime.core_api) {
+    if (!runtime.runtime_api) {
       throw std::runtime_error("failed to create core runtime.");
     }
 

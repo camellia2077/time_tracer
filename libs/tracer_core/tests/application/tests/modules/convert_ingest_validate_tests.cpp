@@ -17,9 +17,9 @@ using tracer_core::core::dto::IngestRequest;
 namespace {
 
 auto TestConvertResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   const ConvertRequest kRequest = {.input_path = "source-path",
                                    .date_check_mode = DateCheckMode::kFull,
@@ -27,32 +27,32 @@ auto TestConvertResponses(TestState& state) -> void {
                                    .validate_logic = false,
                                    .validate_structure = true};
 
-  const auto kSuccess = core_api.RunConvert(kRequest);
+  const auto kSuccess = runtime_api.pipeline().RunConvert(kRequest);
   Expect(state, kSuccess.ok, "RunConvert should return ok on success.");
   Expect(state, kSuccess.error_message.empty(),
          "RunConvert success should have empty error_message.");
-  Expect(state, workflow_handler.convert_call_count == 1,
+  Expect(state, pipeline_workflow.convert_call_count == 1,
          "RunConvert should call workflow handler once.");
-  Expect(state, workflow_handler.last_converter_input == kRequest.input_path,
+  Expect(state, pipeline_workflow.last_converter_input == kRequest.input_path,
          "RunConvert should forward input path.");
   Expect(state,
-         workflow_handler.last_converter_options.date_check_mode ==
+         pipeline_workflow.last_converter_options.date_check_mode ==
              kRequest.date_check_mode,
          "RunConvert should forward date_check_mode.");
   Expect(state,
-         workflow_handler.last_converter_options.save_processed_output ==
+         pipeline_workflow.last_converter_options.save_processed_output ==
              kRequest.save_processed_output,
          "RunConvert should forward save_processed_output.");
   Expect(state,
-         workflow_handler.last_converter_options.validate_logic ==
+         pipeline_workflow.last_converter_options.validate_logic ==
              kRequest.validate_logic,
          "RunConvert should forward validate_logic.");
   Expect(state,
-         workflow_handler.last_converter_options.validate_structure ==
+         pipeline_workflow.last_converter_options.validate_structure ==
              kRequest.validate_structure,
          "RunConvert should forward validate_structure.");
   Expect(state,
-         !workflow_handler
+         !pipeline_workflow
               .last_converter_options.run_structure_validation_before_conversion,
          "RunConvert should not enable structure precheck when validate_logic is false.");
 
@@ -61,16 +61,16 @@ auto TestConvertResponses(TestState& state) -> void {
                                         .save_processed_output = false,
                                         .validate_logic = true,
                                         .validate_structure = false};
-  const auto kLogicSuccess = core_api.RunConvert(kLogicRequest);
+  const auto kLogicSuccess = runtime_api.pipeline().RunConvert(kLogicRequest);
   Expect(state, kLogicSuccess.ok,
          "RunConvert should succeed for validate_logic precheck request.");
   Expect(state,
-         workflow_handler
+         pipeline_workflow
              .last_converter_options.run_structure_validation_before_conversion,
          "RunConvert should enable structure precheck when validate_logic is true.");
 
-  workflow_handler.fail_convert = true;
-  const auto kFailure = core_api.RunConvert(kRequest);
+  pipeline_workflow.fail_convert = true;
+  const auto kFailure = runtime_api.pipeline().RunConvert(kRequest);
   Expect(state, !kFailure.ok,
          "RunConvert should return failed DTO on exception.");
   Expect(state, Contains(kFailure.error_message, "RunConvert failed"),
@@ -80,35 +80,35 @@ auto TestConvertResponses(TestState& state) -> void {
 }
 
 auto TestIngestResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   const IngestRequest kRequest = {.input_path = "source-folder",
                                   .date_check_mode = DateCheckMode::kContinuity,
                                   .save_processed_output = true,
                                   .ingest_mode = IngestMode::kStandard};
 
-  const auto kSuccess = core_api.RunIngest(kRequest);
+  const auto kSuccess = runtime_api.pipeline().RunIngest(kRequest);
   Expect(state, kSuccess.ok, "RunIngest should return ok on success.");
   Expect(state, kSuccess.error_message.empty(),
          "RunIngest success should have empty error_message.");
-  Expect(state, workflow_handler.ingest_call_count == 1,
+  Expect(state, pipeline_workflow.ingest_call_count == 1,
          "RunIngest should call workflow handler once.");
-  Expect(state, workflow_handler.last_ingest_input == kRequest.input_path,
+  Expect(state, pipeline_workflow.last_ingest_input == kRequest.input_path,
          "RunIngest should forward input path.");
-  Expect(state, workflow_handler.last_ingest_mode == kRequest.date_check_mode,
+  Expect(state, pipeline_workflow.last_ingest_mode == kRequest.date_check_mode,
          "RunIngest should forward date_check_mode.");
   Expect(state,
-         workflow_handler.last_ingest_save_processed ==
+         pipeline_workflow.last_ingest_save_processed ==
              kRequest.save_processed_output,
          "RunIngest should forward save_processed_output.");
   Expect(state,
-         workflow_handler.last_ingest_import_mode == kRequest.ingest_mode,
+         pipeline_workflow.last_ingest_import_mode == kRequest.ingest_mode,
          "RunIngest should forward ingest_mode.");
 
-  workflow_handler.fail_ingest = true;
-  const auto kFailure = core_api.RunIngest(kRequest);
+  pipeline_workflow.fail_ingest = true;
+  const auto kFailure = runtime_api.pipeline().RunIngest(kRequest);
   Expect(state, !kFailure.ok,
          "RunIngest should return failed DTO on exception.");
   Expect(state, Contains(kFailure.error_message, "RunIngest failed"),
@@ -118,42 +118,42 @@ auto TestIngestResponses(TestState& state) -> void {
 }
 
 auto TestValidateResponses(TestState& state) -> void {
-  FakeWorkflowHandler workflow_handler;
+  FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
-  auto core_api = BuildCoreApiForTest(workflow_handler, report_handler);
+  auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
   const auto kStructureOk =
-      core_api.RunValidateStructure({.input_path = "input-folder"});
+      runtime_api.pipeline().RunValidateStructure({.input_path = "input-folder"});
   Expect(state, kStructureOk.ok,
          "RunValidateStructure should return ok on success.");
-  Expect(state, workflow_handler.validate_structure_call_count == 1,
+  Expect(state, pipeline_workflow.validate_structure_call_count == 1,
          "RunValidateStructure should call workflow handler once.");
   Expect(state,
-         workflow_handler.last_validate_structure_input == "input-folder",
+         pipeline_workflow.last_validate_structure_input == "input-folder",
          "RunValidateStructure should forward input path.");
 
-  workflow_handler.fail_validate_structure = true;
+  pipeline_workflow.fail_validate_structure = true;
   const auto kStructureFailure =
-      core_api.RunValidateStructure({.input_path = "bad-input"});
+      runtime_api.pipeline().RunValidateStructure({.input_path = "bad-input"});
   Expect(state, !kStructureFailure.ok,
          "RunValidateStructure should return failed DTO when handler throws.");
   Expect(state,
          Contains(kStructureFailure.error_message, "RunValidateStructure"),
          "RunValidateStructure failure should include operation name.");
 
-  const auto kLogicOk = core_api.RunValidateLogic(
+  const auto kLogicOk = runtime_api.pipeline().RunValidateLogic(
       {.input_path = "logic-folder", .date_check_mode = DateCheckMode::kFull});
   Expect(state, kLogicOk.ok, "RunValidateLogic should return ok on success.");
-  Expect(state, workflow_handler.validate_logic_call_count == 1,
+  Expect(state, pipeline_workflow.validate_logic_call_count == 1,
          "RunValidateLogic should call workflow handler once.");
-  Expect(state, workflow_handler.last_validate_logic_input == "logic-folder",
+  Expect(state, pipeline_workflow.last_validate_logic_input == "logic-folder",
          "RunValidateLogic should forward input path.");
   Expect(state,
-         workflow_handler.last_validate_logic_mode == DateCheckMode::kFull,
+         pipeline_workflow.last_validate_logic_mode == DateCheckMode::kFull,
          "RunValidateLogic should forward date_check_mode.");
 
-  workflow_handler.fail_validate_logic = true;
-  const auto kLogicFailure = core_api.RunValidateLogic(
+  pipeline_workflow.fail_validate_logic = true;
+  const auto kLogicFailure = runtime_api.pipeline().RunValidateLogic(
       {.input_path = "bad-logic", .date_check_mode = DateCheckMode::kNone});
   Expect(state, !kLogicFailure.ok,
          "RunValidateLogic should return failed DTO when handler throws.");

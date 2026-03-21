@@ -6,10 +6,10 @@
 
 namespace android_runtime_tests::smoke {
 
-auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreApi>& core_api,
+auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
                          int& failures) -> void {
   const auto report_result = RunAndCheckReportQuery(
-      core_api,
+      runtime_api,
       {.type = tracer_core::core::dto::ReportQueryType::kRecent,
        .argument = "1",
        .format = ReportFormat::kMarkdown},
@@ -21,7 +21,7 @@ auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreApi>& core_api,
   }
 
   const auto day_report_result = RunAndCheckReportQuery(
-      core_api,
+      runtime_api,
       {.type = tracer_core::core::dto::ReportQueryType::kDay,
        .argument = "2026-02-01",
        .format = ReportFormat::kMarkdown},
@@ -39,7 +39,7 @@ auto VerifyReportOutputs(const std::shared_ptr<ITracerCoreApi>& core_api,
     }
   }
 
-  const auto structured_result = core_api->RunStructuredReportQuery(
+  const auto structured_result = runtime_api->report().RunStructuredReportQuery(
       {.type = tracer_core::core::dto::ReportQueryType::kRecent,
        .argument = "1"});
   if (!structured_result.ok) {

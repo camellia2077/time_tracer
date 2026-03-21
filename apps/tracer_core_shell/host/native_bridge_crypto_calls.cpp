@@ -9,7 +9,7 @@
 #include "api/c_api/tracer_core_c_api_internal.hpp"
 #include "application/dto/core_requests.hpp"
 #include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_api.hpp"
+#include "application/use_cases/i_tracer_core_runtime.hpp"
 #include "host/native_bridge_crypto_helpers.hpp"
 #include "host/tracer_exchange_inspect_formatter.hpp"
 
@@ -18,7 +18,7 @@ namespace tracer_core::api::android::bridge_internal {
 namespace fs = std::filesystem;
 namespace app_dto = tracer_core::core::dto;
 using nlohmann::json;
-using tracer::core::application::use_cases::ITracerCoreApi;
+using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 namespace {
 
@@ -210,12 +210,12 @@ auto NativeExportTracerExchange(JNIEnv* env, jobject /*thiz*/,
     {
       std::scoped_lock lock(g_runtime_mutex);
       if (g_runtime.core_runtime == nullptr ||
-          g_runtime.core_runtime->runtime.core_api == nullptr) {
+          g_runtime.core_runtime->runtime.runtime_api == nullptr) {
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
 
-      ITracerCoreApi& runtime = *g_runtime.core_runtime->runtime.core_api;
+      ITracerCoreRuntime& runtime = *g_runtime.core_runtime->runtime.runtime_api;
       const app_dto::TracerExchangeExportRequest request{
           .input_text_root_path = fs::absolute(fs::path(input_path_utf8)),
           .requested_output_path = fs::absolute(fs::path(output_path_utf8)),
@@ -228,7 +228,7 @@ auto NativeExportTracerExchange(JNIEnv* env, jobject /*thiz*/,
           .security_level = parsed_security_level.value(),
           .progress_observer = BuildTracerExchangeProgressObserver(env),
       };
-      result = runtime.RunTracerExchangeExport(request);
+      result = runtime.tracer_exchange().RunTracerExchangeExport(request);
     }
 
     if (!result.ok) {
@@ -269,12 +269,12 @@ auto NativeImportTracerExchange(JNIEnv* env, jobject /*thiz*/,
     {
       std::scoped_lock lock(g_runtime_mutex);
       if (g_runtime.core_runtime == nullptr ||
-          g_runtime.core_runtime->runtime.core_api == nullptr) {
+          g_runtime.core_runtime->runtime.runtime_api == nullptr) {
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
 
-      ITracerCoreApi& runtime = *g_runtime.core_runtime->runtime.core_api;
+      ITracerCoreRuntime& runtime = *g_runtime.core_runtime->runtime.runtime_api;
       const app_dto::TracerExchangeImportRequest request{
           .input_tracer_path = fs::absolute(fs::path(input_path_utf8)),
           .active_text_root_path = ResolveActiveTextRootPath(
@@ -285,7 +285,7 @@ auto NativeImportTracerExchange(JNIEnv* env, jobject /*thiz*/,
           .passphrase = passphrase_utf8,
           .progress_observer = BuildTracerExchangeProgressObserver(env),
       };
-      result = runtime.RunTracerExchangeImport(request);
+      result = runtime.tracer_exchange().RunTracerExchangeImport(request);
     }
 
     if (!result.ok) {
@@ -319,18 +319,18 @@ auto NativeInspectTracerExchange(JNIEnv* env, jobject /*thiz*/,
     {
       std::scoped_lock lock(g_runtime_mutex);
       if (g_runtime.core_runtime == nullptr ||
-          g_runtime.core_runtime->runtime.core_api == nullptr) {
+          g_runtime.core_runtime->runtime.runtime_api == nullptr) {
         return BuildResponseJson(false, "nativeInit must be called first.",
                                  std::string{});
       }
 
-      ITracerCoreApi& runtime = *g_runtime.core_runtime->runtime.core_api;
+      ITracerCoreRuntime& runtime = *g_runtime.core_runtime->runtime.runtime_api;
       const app_dto::TracerExchangeInspectRequest request{
           .input_tracer_path = fs::absolute(fs::path(input_path_utf8)),
           .passphrase = passphrase_utf8,
           .progress_observer = BuildTracerExchangeProgressObserver(env),
       };
-      result = runtime.RunTracerExchangeInspect(request);
+      result = runtime.tracer_exchange().RunTracerExchangeInspect(request);
     }
 
     if (!result.ok) {

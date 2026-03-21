@@ -14,12 +14,14 @@ struct TestState {
   int failures = 0;
 };
 
-auto BuildCoreApiForTest(FakeWorkflowHandler& workflow_handler,
-                         FakeReportHandler& report_handler) -> TracerCoreApi;
+auto BuildRuntimeApiForTest(FakePipelineWorkflow& pipeline_workflow,
+                            FakeReportHandler& report_handler)
+    -> TracerCoreRuntime;
 
-auto BuildCoreApiForTest(
-    FakeWorkflowHandler& workflow_handler, FakeReportHandler& report_handler,
-    const std::shared_ptr<FakeDataQueryService>& data_query) -> TracerCoreApi;
+auto BuildRuntimeApiForTest(
+    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    const std::shared_ptr<FakeDataQueryService>& data_query)
+    -> TracerCoreRuntime;
 
 inline auto Expect(TestState& state, bool condition, const std::string& message)
     -> void {

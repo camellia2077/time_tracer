@@ -21,20 +21,20 @@ auto RunIoSmokeSection(int& failures) -> void {
     ingest_request.input_path = fixture.input_path.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     const auto ingest_result =
-        fixture.runtime.core_api->RunIngest(ingest_request);
+        fixture.runtime.runtime_api->pipeline().RunIngest(ingest_request);
     if (!ingest_result.ok) {
       ++failures;
       std::cerr << "[FAIL] RunIngest should succeed for report-chart test: "
                 << ingest_result.error_message << '\n';
     } else {
       ChartProbeContext chart_probe;
-      ProbeChartRange(fixture.runtime.core_api, chart_probe, failures);
-      VerifyExplicitChartRange(fixture.runtime.core_api, chart_probe, failures);
-      VerifyChartForRootScenarios(fixture.runtime.core_api, chart_probe,
+      ProbeChartRange(fixture.runtime.runtime_api, chart_probe, failures);
+      VerifyExplicitChartRange(fixture.runtime.runtime_api, chart_probe, failures);
+      VerifyChartForRootScenarios(fixture.runtime.runtime_api, chart_probe,
                                   failures);
     }
 
-    VerifyReportOutputs(fixture.runtime.core_api, failures);
+    VerifyReportOutputs(fixture.runtime.runtime_api, failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Android runtime IO smoke test threw exception: "

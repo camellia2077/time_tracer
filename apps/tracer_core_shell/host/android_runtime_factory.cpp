@@ -143,10 +143,18 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       tracer_core::infrastructure::crypto::CreateTracerExchangeService(*workflow);
 
   AndroidRuntime runtime;
-  runtime.core_api = std::make_shared<app_use_cases::TracerCoreApi>(
-      *workflow, *report, project_repository, std::move(data_query_service),
-      std::move(report_data_query_service), std::move(report_dto_formatter),
-      std::move(report_export_writer), std::move(tracer_exchange_service));
+  auto pipeline_api = std::make_shared<app_use_cases::PipelineApi>(*workflow);
+  auto query_api = std::make_shared<app_use_cases::QueryApi>(
+      project_repository, std::move(data_query_service));
+  auto report_api = std::make_shared<app_use_cases::ReportApi>(
+      *report, std::move(report_data_query_service),
+      std::move(report_dto_formatter), std::move(report_export_writer));
+  auto tracer_exchange_api = std::make_shared<app_use_cases::TracerExchangeApi>(
+      std::move(tracer_exchange_service));
+  auto runtime_impl = std::make_shared<app_use_cases::TracerCoreRuntime>(
+      std::move(pipeline_api), std::move(query_api), std::move(report_api),
+      std::move(tracer_exchange_api));
+  runtime.runtime_api = runtime_impl;
 
   auto runtime_state = std::make_shared<AndroidRuntimeState>();
   runtime_state->workflow_handler = std::move(workflow);
