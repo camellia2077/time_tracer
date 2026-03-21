@@ -23,7 +23,7 @@ data class ConfigUiState(
     val statusText: String = "Preparing config..."
 )
 
-class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
+class ConfigViewModel(private val configGateway: ConfigGateway) : ViewModel() {
     var uiState by mutableStateOf(ConfigUiState())
         private set
 
@@ -34,7 +34,7 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
     fun refreshConfigFiles() {
         viewModelScope.launch {
             uiState = uiState.copy(statusText = "refreshing config toml...")
-            val listResult = controller.listConfigTomlFiles()
+            val listResult = configGateway.listConfigTomlFiles()
             if (!listResult.ok) {
                 uiState = uiState.copy(statusText = listResult.message)
                 return@launch
@@ -60,7 +60,7 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
                 return@launch
             }
 
-            val readResult = controller.readConfigTomlFile(targetFile)
+            val readResult = configGateway.readConfigTomlFile(targetFile)
             uiState = if (readResult.ok) {
                 updated.copy(
                     selectedFile = readResult.filePath,
@@ -93,7 +93,7 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
             } else {
                 files.first()
             }
-            val readResult = controller.readConfigTomlFile(targetFile)
+            val readResult = configGateway.readConfigTomlFile(targetFile)
             uiState = if (readResult.ok) {
                 changed.copy(
                     selectedFile = readResult.filePath,
@@ -113,7 +113,7 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
             return
         }
         viewModelScope.launch {
-            val readResult = controller.readConfigTomlFile(trimmedPath)
+            val readResult = configGateway.readConfigTomlFile(trimmedPath)
             uiState = if (readResult.ok) {
                 uiState.copy(
                     selectedFile = readResult.filePath,
@@ -142,7 +142,7 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
             return
         }
         viewModelScope.launch {
-            val saveResult = controller.saveConfigTomlFile(
+            val saveResult = configGateway.saveConfigTomlFile(
                 relativePath = selectedFile,
                 content = uiState.editableContent
             )
@@ -174,11 +174,11 @@ class ConfigViewModel(private val controller: RuntimeGateway) : ViewModel() {
     }
 }
 
-class ConfigViewModelFactory(private val controller: RuntimeGateway) : ViewModelProvider.Factory {
+class ConfigViewModelFactory(private val configGateway: ConfigGateway) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(ConfigViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return ConfigViewModel(controller) as T
+            return ConfigViewModel(configGateway) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
     }

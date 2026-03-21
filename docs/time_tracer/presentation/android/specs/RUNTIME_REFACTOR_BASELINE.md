@@ -1,46 +1,48 @@
-# tracer_android Runtime Refactor Baseline
+# Android Runtime Refactor Baseline
 
-This checklist locks guardrails for Android runtime refactor phases.
+## Purpose
 
-## 1. Boundary Guardrails
+Capture the guardrails for Android runtime refactors.
 
-1. Runtime `coreadapter/services/translators` layers must not depend on UI resources.
-2. Feature modules must not parse native raw JSON directly.
-3. New error handling should use typed domain error first, with legacy `message` as compatibility output.
-4. Semantic JSON compatibility must follow:
-   - `docs/time_tracer/core/contracts/stats/json_schema_v1.md`
-   - `docs/time_tracer/core/contracts/stats/semantic_json_versioning_policy.md`
+## When To Open
 
-## 2. Baseline Verification Commands
+- Open this before changing runtime layering, translators, services, or execution paths.
 
-Run from repository root:
+## What This Doc Does Not Cover
+
+- UI routing
+- Feature behavior
+- Historical refactor notes
+
+## Boundary Guardrails
+
+- Runtime `coreadapter`, `services`, and `translators` must not depend on UI resources.
+- Feature modules must not parse raw native JSON directly.
+- Prefer typed domain errors first, while keeping legacy `message` compatibility where needed.
+- Keep semantic JSON compatibility aligned with the core contract docs.
+
+## Baseline Validation
+
+Run from repo root:
 
 ```powershell
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
 ```
 
-## 3. Baseline Unit Test Set
+## Baseline Regression Anchors
 
-Primary regression anchors for refactor:
+- `apps/android/app/src/test/java/com/example/tracer/TracerTabRegistryTest.kt`
+- `apps/android/app/src/test/java/com/example/tracer/DomainResultCompatibilityTest.kt`
+- `apps/android/feature-report/src/test/java/com/example/tracer/QueryPeriodArgumentResolverTest.kt`
+- `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
+- `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelStatsTest.kt`
+- `apps/android/runtime/src/test/java/com/example/tracer/NativeRuntimeQueryOpsTest.kt`
 
-1. `apps/android/app/src/test/java/com/example/tracer/TracerTabRegistryTest.kt`
-2. `apps/android/app/src/test/java/com/example/tracer/DomainResultCompatibilityTest.kt`
-3. `apps/android/feature-report/src/test/java/com/example/tracer/QueryPeriodArgumentResolverTest.kt`
-4. `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelChartTest.kt`
-5. `apps/android/feature-report/src/test/java/com/example/tracer/QueryReportViewModelStatsTest.kt`
-6. `apps/android/runtime/src/test/java/com/example/tracer/NativeRuntimeQueryOpsTest.kt`
+## Runtime Layout Rule
 
-## 4. Runtime Package Naming Convention (In-Module)
+Before any future physical module split, keep logical runtime layering inside `:runtime`:
 
-Before physical module split, keep logical package layout in `:runtime`:
-
-1. `runtime/coreadapter/*`
-2. `runtime/services/*`
-3. `runtime/translators/*`
-
-Current Phase 2 landing path:
-
-1. `apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeQueryTranslator.kt`
-2. `apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeReportTranslator.kt`
-3. `apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeRecordTranslator.kt`
+- `runtime/coreadapter/*`
+- `runtime/services/*`
+- `runtime/translators/*`

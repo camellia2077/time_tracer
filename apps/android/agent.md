@@ -1,33 +1,45 @@
 # android
 
-Android host app for `apps/tracer_core_shell` (`Jetpack Compose + JNI`).
+## Purpose
 
-This file is a short navigation page. Keep detailed rules in `docs/time_tracer/presentation/android/**`.
+Local navigation entry for coding agents working in `apps/android`.
 
-## Read Order
+## When To Open
+
+- Open this first when the task touches Android code.
+- Use it to find the next 2 to 4 documents to read.
+
+## What This Doc Does Not Cover
+
+- Detailed module boundaries
+- File-by-file edit routing
+- Runtime payload details
+- Product behavior reference
+
+## 5-Minute Path
 
 1. `docs/time_tracer/presentation/android/README.md`
 2. `docs/time_tracer/presentation/android/specs/AGENT_ONBOARDING.md`
-3. `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
+3. `docs/time_tracer/presentation/android/specs/EDIT_ROUTING.md`
 4. `docs/time_tracer/presentation/android/specs/BUILD_WORKFLOW.md`
-5. `docs/time_tracer/presentation/android/specs/EDIT_ROUTING.md`
-6. `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
 
-Open additional docs only when the task needs them:
+Open additional docs only when needed:
 
-- Runtime protocol:
+- Stable boundaries:
+  - `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
+- Runtime/config bootstrap:
+  - `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
+- JNI/runtime payloads:
   - `docs/time_tracer/presentation/android/runtime-protocol.md`
-- Preference storage:
-  - `docs/time_tracer/presentation/android/specs/preference-storage.md`
-- i18n button sync:
-  - `docs/time_tracer/presentation/android/specs/i18n-button-sync.md`
-- Runtime refactor baseline:
-  - `docs/time_tracer/presentation/android/specs/RUNTIME_REFACTOR_BASELINE.md`
+- Behavior reference:
+  - `docs/time_tracer/presentation/android/features.md`
+- Activity doc rules:
+  - `docs/time_tracer/presentation/android/specs/DOC_RULES.md`
 
 ## Hard Rules
 
 - Shared config source of truth is `assets/tracer_core/config`.
-- Android runtime config copy under `apps/android/runtime/src/main/assets/tracer_core/config` is generated, not canonical.
+- Android runtime config snapshot under `apps/android/runtime/src/main/assets/tracer_core/config` is generated, not canonical.
 - Android app version source is `apps/android/meta/version.properties`.
 - Core version source is `libs/tracer_core/src/shared/types/version.hpp`.
 - Do not run Gradle commands for `apps/android` in parallel.
@@ -35,30 +47,29 @@ Open additional docs only when the task needs them:
 
 ## Code Areas
 
-- Composition root:
+- Composition root and app-local wiring:
   - `apps/android/app`
-- Data feature:
+- Data UI:
   - `apps/android/feature-data`
-- Record/TXT feature:
+- Record/TXT UI:
   - `apps/android/feature-record`
-- Report feature:
+- Report/chart UI:
   - `apps/android/feature-report`
-- Runtime/JNI bridge:
+- Runtime/JNI implementation:
   - `apps/android/runtime`
 - Shared contracts:
   - `apps/android/contract`
 
-Detailed edit routing lives in:
+## Validation
 
-- `docs/time_tracer/presentation/android/specs/EDIT_ROUTING.md`
-- `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
+Run from repo root:
 
-## Scan Scope
+```powershell
+python tools/run.py verify --app tracer_android --profile android_style --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
+```
 
-- Prefer source dirs under `apps/android/**/src`.
-- Ignore generated outputs by default:
-  - `apps/android/**/build/**`
-  - `apps/android/**/.gradle/**`
-  - `apps/android/**/.kotlin/**`
-  - `apps/android/**/.cxx/**`
-  - `apps/android/**/.externalNativeBuild/**`
+## Boundary Notes
+
+- `RuntimeGateway` remains a contract-layer aggregate, but Android `app` routes and app-side tests should prefer the smallest gateway interfaces they actually need.
+- `NativeRuntimeController` may still implement `RuntimeGateway`, but treat that aggregate as a runtime/composition-root boundary, not the default UI entrypoint.

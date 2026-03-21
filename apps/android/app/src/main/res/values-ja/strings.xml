@@ -29,9 +29,13 @@
     <string name="tracer_export_unknown_error">不明なエラー</string>
     <string name="tracer_export_already_in_progress">エクスポートはすでに進行中です。</string>
     <string name="tracer_export_select_tracer_destination">完全交換パッケージの出力先フォルダを選択してください。</string>
+    <string name="tracer_import_select_single_txt">単一 TXT を選択中...</string>
+    <string name="tracer_import_single_txt_canceled">単一 TXT の取り込みをキャンセルしました。</string>
+    <string name="tracer_import_single_txt_failed">単一 TXT の取り込み失敗: %1$s</string>
     <string name="tracer_import_select_single_tracer">単一 TRACER を選択中...</string>
     <string name="tracer_import_single_tracer_canceled">単一 TRACER の取り込みをキャンセルしました。</string>
     <string name="tracer_import_single_tracer_failed">単一 TRACER の取り込み失敗: %1$s</string>
+    <string name="tracer_import_error_read_selected_document">選択したドキュメントを読み取れません。</string>
     <string name="tracer_import_single_tracer_completed_success">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。</string>
     <string name="tracer_import_single_tracer_completed_with_errors">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。%3$s</string>
     <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスフレーズ</string>

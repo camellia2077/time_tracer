@@ -25,12 +25,13 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         val appContainer = (application as TracerApplication).appContainer
-        val runtimeGateway = appContainer.runtimeGateway
         val runtimeInitializer = appContainer.runtimeInitializer
         val recordGateway = appContainer.recordGateway
         val txtStorageGateway = appContainer.txtStorageGateway
         val reportGateway = appContainer.reportGateway
         val queryGateway = appContainer.queryGateway
+        val configGateway = appContainer.configGateway
+        val tracerExchangeGateway = appContainer.tracerExchangeGateway
         val userPreferencesRepository = appContainer.userPreferencesRepository
 
         setContent {
@@ -55,7 +56,8 @@ class MainActivity : ComponentActivity() {
                             txtStorageGateway = txtStorageGateway,
                             reportGateway = reportGateway,
                             queryGateway = queryGateway,
-                            controller = runtimeGateway,
+                            configGateway = configGateway,
+                            tracerExchangeGateway = tracerExchangeGateway,
                             userPreferencesRepository = userPreferencesRepository,
                             themeConfig = currentTheme,
                             onSetThemeColor = themeViewModel::setThemeColor,

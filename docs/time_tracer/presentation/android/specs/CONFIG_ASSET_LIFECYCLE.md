@@ -1,72 +1,63 @@
-# Config/Asset Lifecycle (Android Runtime)
+# Android Config / Asset Lifecycle
 
-This document defines the Android-side lifecycle from source config to runtime consumption.
+## Purpose
 
-## 1. Source of Truth
+Describe the path from shared config source to Android runtime consumption.
 
-- Core config source: `assets/tracer_core/config`
-- Android checked-in snapshot:
+## When To Open
+
+- Open this when the task touches config snapshots, runtime bootstrap, or diagnostics/config access.
+
+## What This Doc Does Not Cover
+
+- Full runtime protocol
+- UI behavior details
+- Historical refactor notes
+
+## Source of Truth
+
+- Shared config source:
+  - `assets/tracer_core/config`
+- Android checked-in runtime snapshot:
   - `apps/android/runtime/src/main/assets/tracer_core/config`
-- Explicit refresh entry:
-  - `tools/platform_config/run.py --target android --apply`
-- Explicit Gradle wrappers:
-  - `:runtime:syncTracerCoreConfigSnapshot`
-  - `:runtime:verifyTracerCoreConfigSnapshot`
 
-## 1.1 Boundary Rules
+Boundary rules:
 
-- `assets/tracer_core/config` is the only shared config source.
-- `apps/android/runtime/src/main/assets/tracer_core/config` is the checked-in Android runtime snapshot consumed by IDE/Gradle builds.
-- Android-side fixes to shared config must be applied back at `assets/tracer_core/config`, then refreshed into the snapshot explicitly.
-- Android runtime Gradle no longer supports overriding config roots or debug asset roots via custom path properties; the repository paths above are canonical.
-- Design-reference SVG / branding exploration files are outside this lifecycle; their long-term home is `design/branding/**`, not the Android runtime asset tree.
+- The shared config source is canonical.
+- The Android runtime snapshot is generated and consumed by Android builds.
+- Fix shared config at the shared source, then refresh the Android snapshot.
 
-## 2. Runtime Asset Layout
+## Runtime Consumption Path
 
-- Snapshot root consumed by Android Gradle builds:
-  - `apps/android/runtime/src/main/assets/tracer_core/config`
-- Bundle metadata:
-  - `apps/android/runtime/src/main/assets/tracer_core/config/meta/bundle.toml`
-- `bundle.toml` carries:
-  - `schema_version`
-  - `profile` (must be `android`)
-  - `file_list.required` (startup required files)
+1. `NativeRuntimeController.initializeRuntime()` delegates to `RuntimeInitService`.
+2. `RuntimeInitService` calls `RuntimeCoreAdapter.initializeRuntimeInternal()`.
+3. `RuntimeEnvironment.prepareRuntimePaths()` copies assets into app-private files:
+   - `<filesDir>/tracer_core/config`
+4. `RuntimeEnvironment` validates `meta/bundle.toml`.
+5. Successful validation proceeds to `nativeInit(...)`.
 
-## 2.1 Debug Seed TXT Assets
+## Runtime Access Paths
+
+- Native init config TOML:
+  - `<filesDir>/tracer_core/config/converter/interval_processor_config.toml`
+- Config editor reads and writes under:
+  - `<filesDir>/tracer_core/config`
+
+## Diagnostics and Support
+
+- Runtime diagnostics log path:
+  - `<filesDir>/tracer_core/output/logs/diagnostics.jsonl`
+- Config-related diagnostics entrypoints:
+  - `ConfigGateway.listRecentDiagnostics(limit)`
+  - `ConfigGateway.buildDiagnosticsPayload(maxEntries)`
+- Runtime-side diagnostics assembly:
+  - `RuntimeDiagnosticsService`
+
+## Debug Seed TXT Assets
 
 - Canonical source:
   - `test/data/**/*.txt`
-- Debug generated assets root:
+- Debug generated asset root:
   - `apps/android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full`
-- Sync mode:
-  - pure Gradle sync, attached only to debug asset generation
-- Release builds do not consume or package these seed TXT assets.
 
-## 3. App Startup Consumption Chain
-
-1. `NativeRuntimeController.initializeRuntimeInternal()` requests runtime paths.
-2. `RuntimeEnvironment.prepareRuntimePaths()` copies assets to app files dir:
-   - `<filesDir>/tracer_core/config`
-3. `RuntimeEnvironment` validates `meta/bundle.toml` via `validateRuntimeConfigBundle(...)`:
-   - schema/version check
-   - profile check (`android`)
-   - required file existence check
-4. Validation failure throws and stops runtime init.
-5. Validation success proceeds to `nativeInit(...)`.
-
-## 4. Runtime Access Paths
-
-- Native init config path:
-  - `<filesDir>/tracer_core/config/converter/interval_processor_config.toml`
-- Config editor gateway (`ConfigTomlStorage`) reads/writes under:
-  - `<filesDir>/tracer_core/config`
-- Config tab edits the local runtime snapshot in place; Android no longer exposes a config bundle import/export exchange flow.
-
-## 5. Diagnostics and Support
-
-- Runtime writes structured diagnostics JSONL:
-  - `<filesDir>/tracer_core/output/logs/diagnostics.jsonl`
-- `RuntimeGateway` exposes:
-  - `listRecentDiagnostics(limit)`
-  - `buildDiagnosticsPayload(maxEntries)`
-- Config tab "Copy Diagnostics Payload" uses the payload for support triage.
+Release builds do not package these seed TXT assets.

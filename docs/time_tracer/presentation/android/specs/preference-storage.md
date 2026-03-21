@@ -1,66 +1,58 @@
-# tracer_android Preference Storage
+# Android Preference Storage
 
-This document defines where UI preference state is stored, and how it should be read/written.
+## Purpose
 
-## Scope
+Describe where Android UI preference state lives and which layer owns read/write behavior.
 
-Current focus:
+## When To Open
 
-1. Report chart `root node` selection persistence.
-2. Report chart `lookback days` persistence (optional but recommended with root).
-3. Report chart `show average line` toggle persistence.
+- Open this when the task adds or changes persisted UI preferences.
 
-This is for UI preference state only. It is not business data storage.
+## What This Doc Does Not Cover
 
-## Storage Location
+- Runtime business data storage
+- SQLite schema
+- Feature behavior details
 
-Use Android `DataStore<Preferences>`:
+## Storage Owner
 
-1. File owner: `apps/android/app/src/main/java/com/example/tracer/data/UserPreferencesRepository.kt`
-2. DataStore declaration:
-   - `val Context.dataStore ... preferencesDataStore(name = "settings")`
-3. Backing file: `settings.preferences_pb` (app-private storage).
+Android UI preferences use `DataStore<Preferences>`:
 
-Do not store chart preference in SQLite runtime DB.
+- Repository owner:
+  - `apps/android/app/src/main/java/com/example/tracer/data/UserPreferencesRepository.kt`
+- Backing store:
+  - app-private `settings.preferences_pb`
 
-## Key Design
+Do not store UI preferences in the runtime SQLite database.
 
-Add keys in `UserPreferencesRepository.PreferencesKeys`:
+## Current Preference Groups
 
-1. `report_chart_selected_root` (`string`)
-2. `report_chart_lookback_days` (`int`)
-3. `report_chart_show_average_line` (`boolean`)
-
-Recommended defaults:
-
-1. `selected_root = ""` (means All Roots)
-2. `lookback_days = 7`
-3. `show_average_line = false`
-
-## Read Path
-
-1. `UserPreferencesRepository` exposes a `Flow` for chart preferences.
-2. `TracerScreen` collects that flow (same pattern as `recordSuggestionPreferences`).
-3. Collected values are pushed into `QueryReportViewModel` on first load and when preferences change.
-
-## Write Path
-
-When user changes chart inputs:
-
-1. UI event updates `QueryReportViewModel` state immediately (for responsive UI).
-2. The same event writes to `UserPreferencesRepository` (DataStore edit).
-3. Writes should be debounced only if needed; default immediate write is acceptable.
-
-## Fallback Rules
-
-When chart query response returns a root list:
-
-1. If stored root exists in returned roots, keep it.
-2. If stored root does not exist, fallback to `""` (All Roots).
-3. If `lookback_days <= 0`, clamp to default `7`.
+- Theme and appearance:
+  - theme color
+  - theme mode
+  - dynamic color toggle
+  - dark theme style
+- App language
+- Record assistance preferences:
+  - suggestion lookback days
+  - suggestion top-N
+  - quick activities
+  - assist panel expansion flags
+- Report chart preference:
+  - show average line
 
 ## Ownership
 
-1. Preference schema and persistence: `app` module (`UserPreferencesRepository`).
-2. Query state machine and validation: `feature-report` module (`QueryReportViewModel`).
-3. Bridge wiring between repository flow and viewmodel events: `app` module (`TracerScreen`).
+- Preference schema and persistence:
+  - `app` module
+- Theme and language write path:
+  - `ThemeViewModel`
+- Record/report preference bridge into feature state:
+  - `TracerScreen` and its route helpers
+- Feature modules consume injected state/callbacks; they should not depend on `DataStore` directly.
+
+## Read / Write Rule
+
+- Read preferences through repository flows.
+- Write preferences through app-layer callbacks or app-layer view models.
+- Keep defaults and normalization in `UserPreferencesRepository`.

@@ -46,7 +46,7 @@ class TracerTabRegistryTest {
 
     @Test
     fun onEnter_record_refreshes_mapping_and_clears_unavailable_status() = runTest(dispatcher) {
-        val runtime = FakeRuntimeGateway(
+        val runtime = FakeRuntimeServices(
             mappingNamesResult = ActivityMappingNamesResult(
                 ok = true,
                 names = listOf("meal", "study"),
@@ -69,7 +69,7 @@ class TracerTabRegistryTest {
         TracerTabRegistry.onEnter(
             tab = TracerTab.RECORD,
             args = TracerTabLifecycleArgs(
-                controller = runtime,
+                queryGateway = runtime,
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -83,7 +83,7 @@ class TracerTabRegistryTest {
 
     @Test
     fun onLeave_txt_discards_unsaved_editor_draft() = runTest(dispatcher) {
-        val runtime = FakeRuntimeGateway()
+        val runtime = FakeRuntimeServices()
         val recordViewModel = RecordViewModel(
             RecordUseCases(
                 recordGateway = runtime,
@@ -100,7 +100,7 @@ class TracerTabRegistryTest {
         TracerTabRegistry.onLeave(
             tab = TracerTab.TXT,
             args = TracerTabLifecycleArgs(
-                controller = runtime,
+                queryGateway = runtime,
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -113,7 +113,7 @@ class TracerTabRegistryTest {
 
     @Test
     fun onLeave_config_discards_unsaved_toml_draft() = runTest(dispatcher) {
-        val runtime = FakeRuntimeGateway()
+        val runtime = FakeRuntimeServices()
         val recordViewModel = RecordViewModel(
             RecordUseCases(
                 recordGateway = runtime,
@@ -130,7 +130,7 @@ class TracerTabRegistryTest {
         TracerTabRegistry.onLeave(
             tab = TracerTab.CONFIG,
             args = TracerTabLifecycleArgs(
-                controller = runtime,
+                queryGateway = runtime,
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
@@ -157,13 +157,17 @@ class TracerTabRegistryTest {
     }
 }
 
-private class FakeRuntimeGateway(
+private class FakeRuntimeServices(
     private val mappingNamesResult: ActivityMappingNamesResult = ActivityMappingNamesResult(
         ok = true,
         names = emptyList(),
         message = "ok"
     )
-) : RuntimeGateway {
+) : RuntimeInitializer,
+    RecordGateway,
+    TxtStorageGateway,
+    QueryGateway,
+    ConfigGateway {
     override suspend fun initializeRuntime(): NativeCallResult = NativeCallResult(
         initialized = true,
         operationOk = true,
@@ -208,18 +212,6 @@ private class FakeRuntimeGateway(
         ok = true,
         message = "ok"
     )
-
-    override suspend fun reportDayMarkdown(date: String): ReportCallResult = emptyReportResult()
-
-    override suspend fun reportMonthMarkdown(month: String): ReportCallResult = emptyReportResult()
-
-    override suspend fun reportYearMarkdown(year: String): ReportCallResult = emptyReportResult()
-
-    override suspend fun reportWeekMarkdown(week: String): ReportCallResult = emptyReportResult()
-
-    override suspend fun reportRecentMarkdown(days: String): ReportCallResult = emptyReportResult()
-
-    override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult = emptyReportResult()
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -315,54 +307,4 @@ private class FakeRuntimeGateway(
             entryCount = 0,
             diagnosticsLogPath = ""
         )
-
-    override suspend fun exportTracerExchange(
-        inputPath: String,
-        outputPath: String,
-        passphrase: String,
-        securityLevel: FileCryptoSecurityLevel,
-        dateCheckMode: Int,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
-    ): TracerExchangeExportResult = TracerExchangeExportResult(
-        ok = false,
-        message = "unsupported",
-        outputPath = "",
-        sourceRootName = "",
-        payloadFileCount = 0
-    )
-
-    override suspend fun importTracerExchange(
-        inputPath: String,
-        workRoot: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
-    ): TracerExchangeImportResult = TracerExchangeImportResult(
-        ok = false,
-        message = "unsupported",
-        sourceRootName = "",
-        payloadFileCount = 0
-    )
-
-    override suspend fun inspectTracerExchange(
-        inputPath: String,
-        passphrase: String,
-        onProgress: ((FileCryptoProgressEvent) -> Unit)?
-    ): TracerExchangeInspectResult = TracerExchangeInspectResult(
-        ok = false,
-        message = "unsupported",
-        renderedText = "",
-        inputPath = "",
-        sourceRootName = "",
-        payloadFileCount = 0,
-        producerPlatform = "",
-        producerApp = "",
-        createdAtUtc = ""
-    )
-
-    private fun emptyReportResult(): ReportCallResult = ReportCallResult(
-        initialized = true,
-        operationOk = true,
-        outputText = "",
-        rawResponse = """{"ok":true}"""
-    )
 }

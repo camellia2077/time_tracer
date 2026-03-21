@@ -1,72 +1,52 @@
-# tracer_android i18n Button Text Sync
+# Android i18n Resource Sync
 
-This document defines where to update multilingual resources when a button text is added, changed, or removed.
+## Purpose
 
-## Scope
+Define the minimum rule for keeping visible Android strings aligned across supported locales.
 
-Applies to any visible button text in:
+## When To Open
 
-1. `app` module
-2. feature modules (`feature-data`, `feature-record`, `feature-report`)
+- Open this when a task adds, removes, or changes visible text in Android UI.
 
-Do not hardcode user-visible button text in Compose code.
+## What This Doc Does Not Cover
 
-## Language Baseline
+- Full localization strategy
+- Product copy decisions
+- Non-Android clients
 
-For every button text key, keep these three locales aligned:
+## Locale Baseline
 
-1. English: `values/strings.xml`
-2. Chinese: `values-zh/strings.xml`
-3. Japanese: `values-ja/strings.xml`
+Keep these locales aligned for active Android UI strings:
 
-## Where To Modify
+- English: `values/strings.xml`
+- Chinese: `values-zh/strings.xml`
+- Japanese: `values-ja/strings.xml`
 
-### App module buttons
+## Where To Change Strings
 
-Update all:
+- App-level UI strings:
+  - `apps/android/app/src/main/res/values*`
+- Feature-level UI strings:
+  - the matching `values*` files inside the touched feature module
 
-1. `apps/android/app/src/main/res/values/strings.xml`
-2. `apps/android/app/src/main/res/values-zh/strings.xml`
-3. `apps/android/app/src/main/res/values-ja/strings.xml`
-
-### Feature module buttons
-
-Update all `values*` files inside the same feature module:
-
-1. `apps/android/feature-data/src/main/res/values/strings.xml`
-2. `apps/android/feature-data/src/main/res/values-zh/strings.xml`
-3. `apps/android/feature-data/src/main/res/values-ja/strings.xml`
-4. `apps/android/feature-record/src/main/res/values/strings.xml`
-5. `apps/android/feature-record/src/main/res/values-zh/strings.xml`
-6. `apps/android/feature-record/src/main/res/values-ja/strings.xml`
-7. `apps/android/feature-report/src/main/res/values/strings.xml`
-8. `apps/android/feature-report/src/main/res/values-zh/strings.xml`
-9. `apps/android/feature-report/src/main/res/values-ja/strings.xml`
-
-If a feature currently has only `values/strings.xml`, add matching `values-zh` and `values-ja` entries when introducing new visible button text.
+Do not hardcode user-visible text in Compose code.
 
 ## Change Rules
 
-### Add button text
+- Add:
+  - add the key in all supported locales in the touched module
+- Update:
+  - keep the key stable if the meaning is unchanged
+  - update all locales in the same change
+- Remove:
+  - remove usage first
+  - then remove the key from all matching locales
 
-1. Add a new string key in English.
-2. Add the same key in Chinese and Japanese.
-3. Use the key in Compose (`stringResource(...)`), not literal text.
+## Quick Verification
 
-### Update button text
+- Search for suspicious hardcoded UI text in the touched module.
+- Run:
 
-1. Keep key name stable if semantics are unchanged.
-2. Update all locales in the same change.
-
-### Remove button text
-
-1. Remove UI usage first.
-2. Remove the key in all locales.
-3. If key is reused elsewhere, do not delete; rename/document as needed.
-
-## Verification Checklist
-
-1. `rg -n "Text\\(\"|Button\\(|TextButton\\(" apps/android` to spot hardcoded button labels.
-2. Build and style verify:
-   - `python .\scripts\verify.py --app tracer_android --profile android_style *>&1 | Tee-Object .\scripts\docs\android-check.log`
-3. Manually switch app language (`中文 / English / 日本語`) and confirm button labels render correctly.
+```powershell
+python tools/run.py verify --app tracer_android --profile android_style --concise
+```

@@ -80,7 +80,7 @@ internal data class TracerTabRouteArgs(
 )
 
 internal data class TracerTabLifecycleArgs(
-    val controller: RuntimeGateway,
+    val queryGateway: QueryGateway,
     val recordViewModel: RecordViewModel,
     val configViewModel: ConfigViewModel,
     val recordStatusText: () -> String,
@@ -297,7 +297,7 @@ private const val ActivityMappingValidationUnavailablePrefix =
     "Activity mapping validation unavailable:"
 
 private suspend fun refreshRecordMappingValidation(args: TracerTabLifecycleArgs) {
-    val mappingResult = args.controller.listActivityMappingNames()
+    val mappingResult = args.queryGateway.listActivityMappingNames()
     if (mappingResult.ok) {
         args.onValidMappingNamesChanged(mappingResult.names.toSet())
         if (args.recordStatusText().startsWith(ActivityMappingValidationUnavailablePrefix)) {
