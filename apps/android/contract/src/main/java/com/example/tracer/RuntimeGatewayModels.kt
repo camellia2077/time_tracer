@@ -30,6 +30,11 @@ data class ClearTxtResult(
     val message: String
 )
 
+data class ClearDatabaseResult(
+    val ok: Boolean,
+    val message: String
+)
+
 data class RecordActionResult(
     val ok: Boolean,
     val message: String,

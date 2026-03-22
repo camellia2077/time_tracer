@@ -56,6 +56,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val initService = RuntimeInitService(
         initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
         clearRuntimeData = runtimeEnvironment::clearRuntimeData,
+        clearDatabaseData = runtimeEnvironment::clearDatabaseData,
         resetRuntimeCaches = runtimeSession::reset
     )
     private val ingestService = RuntimeIngestService(
@@ -100,6 +101,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun clearAndReinitialize(): ClearAndInitResult =
         initService.clearAndReinitialize()
+    override suspend fun clearDatabase(): ClearDatabaseResult =
+        initService.clearDatabase()
+
 
     // ingest
     override suspend fun ingestFull(): NativeCallResult =

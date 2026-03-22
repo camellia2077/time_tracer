@@ -30,6 +30,10 @@
     <string name="txt_picker_open_year_month">%1$s-%2$s を開く</string>
     <string name="txt_picker_field_value">%1$s: %2$s</string>
 
+    <string name="txt_empty_state_title">TXT ファイルがありません</string>
+    <string name="txt_empty_state_description">当月ファイルを作成して活動の記録を開始しましょう。Record タブが毎日のエントリを自動的に作成します。</string>
+    <string name="txt_action_create_current_month">当月ファイルを作成</string>
+
     <string name="record_label_target_date">対象日付</string>
     <string name="record_mode_manual">手動</string>
     <string name="record_mode_auto">自動</string>

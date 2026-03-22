@@ -6,6 +6,149 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
+internal object RuntimeDataCleanupTargets {
+    private const val DatabaseDirName = "db"
+    private const val DatabaseFileName = "time_data.sqlite3"
+    private val DatabaseWhitelistNames = listOf(
+        DatabaseFileName,
+        "$DatabaseFileName-wal",
+        "$DatabaseFileName-shm",
+        "$DatabaseFileName-journal"
+    )
+    private val TxtWhitelistRoots = listOf(
+        "input/full",
+        "input/live_raw",
+        "input/live_auto_sync"
+    )
+
+    fun clearDatabaseData(roots: List<File>): ClearDatabaseResult {
+        val existingRoots = roots.filter { it.exists() }
+        if (existingRoots.isEmpty()) {
+            return ClearDatabaseResult(
+                ok = true,
+                message = "clear db -> no database data to remove"
+            )
+        }
+
+        val databaseFiles = existingRoots
+            .flatMap(::databaseFilesFor)
+            .distinctBy { it.absolutePath }
+        if (databaseFiles.isEmpty()) {
+            return ClearDatabaseResult(
+                ok = true,
+                message = "clear db -> no database found"
+            )
+        }
+
+        var removedCount = 0
+        val failedPaths = mutableListOf<String>()
+        for (databaseFile in databaseFiles) {
+            if (databaseFile.delete()) {
+                removedCount += 1
+            } else {
+                failedPaths += databaseFile.absolutePath
+            }
+        }
+        existingRoots.forEach(::pruneEmptyDatabaseDir)
+
+        return if (failedPaths.isNotEmpty()) {
+            val preview = failedPaths.take(3).joinToString(" | ")
+            val suffix = if (failedPaths.size > 3) {
+                " | ...(${failedPaths.size} failed)"
+            } else {
+                ""
+            }
+            ClearDatabaseResult(
+                ok = false,
+                message = "clear db -> removed $removedCount/${databaseFiles.size} whitelisted file(s). failed: $preview$suffix"
+            )
+        } else {
+            ClearDatabaseResult(
+                ok = true,
+                message = "clear db -> removed $removedCount database file(s)"
+            )
+        }
+    }
+
+    fun clearTxtData(roots: List<File>): ClearTxtResult {
+        val existingRoots = roots.filter { it.exists() }
+        if (existingRoots.isEmpty()) {
+            return ClearTxtResult(
+                ok = true,
+                message = "clear txt -> no input directory to remove"
+            )
+        }
+
+        val txtFiles = existingRoots
+            .flatMap(::txtFilesFor)
+            .distinctBy { it.absolutePath }
+        if (txtFiles.isEmpty()) {
+            return ClearTxtResult(
+                ok = true,
+                message = "clear txt -> no txt files in whitelisted input roots"
+            )
+        }
+
+        var removedCount = 0
+        val failedPaths = mutableListOf<String>()
+        for (txtFile in txtFiles) {
+            if (txtFile.delete()) {
+                removedCount += 1
+            } else {
+                failedPaths += txtFile.absolutePath
+            }
+        }
+
+        if (failedPaths.isNotEmpty()) {
+            val preview = failedPaths.take(3).joinToString(" | ")
+            val suffix = if (failedPaths.size > 3) {
+                " | ...(${failedPaths.size} failed)"
+            } else {
+                ""
+            }
+            return ClearTxtResult(
+                ok = false,
+                message = "clear txt -> removed $removedCount/${txtFiles.size} whitelisted file(s). failed: $preview$suffix"
+            )
+        }
+
+        return ClearTxtResult(
+            ok = true,
+            message = "clear txt -> removed $removedCount txt file(s) from whitelisted input roots"
+        )
+    }
+
+    private fun databaseFilesFor(root: File): List<File> {
+        val dbDir = File(root, DatabaseDirName)
+        return DatabaseWhitelistNames
+            .map { fileName -> File(dbDir, fileName) }
+            .filter { it.exists() && it.isFile }
+    }
+
+    private fun pruneEmptyDatabaseDir(root: File) {
+        val dbDir = File(root, DatabaseDirName)
+        if (!dbDir.exists() || !dbDir.isDirectory) {
+            return
+        }
+        if (dbDir.listFiles()?.isEmpty() == true) {
+            dbDir.delete()
+        }
+    }
+
+    private fun txtFilesFor(root: File): List<File> {
+        return TxtWhitelistRoots.flatMap { relativeRoot ->
+            val inputRoot = File(root, relativeRoot)
+            if (!inputRoot.exists() || !inputRoot.isDirectory) {
+                emptyList()
+            } else {
+                inputRoot.walkTopDown()
+                    .filter { it.isFile && it.extension.equals("txt", ignoreCase = true) }
+                    .toList()
+            }
+        }
+    }
+}
+
 internal class RuntimeEnvironment(private val context: Context) {
     private companion object {
         const val RUNTIME_ROOT_DIR_NAME = "tracer_core"
@@ -103,54 +246,22 @@ internal class RuntimeEnvironment(private val context: Context) {
         }
     }
 
+    fun clearDatabaseData(): ClearDatabaseResult {
+        return RuntimeDataCleanupTargets.clearDatabaseData(candidateRuntimeRoots())
+    }
+
     fun clearTxtData(): ClearTxtResult {
-        val inputDir = File(resolveRuntimeRootDir(), "input")
-        if (!inputDir.exists()) {
-            return ClearTxtResult(
-                ok = true,
-                message = "clear txt -> no input directory: ${inputDir.absolutePath}"
-            )
-        }
-
-        val txtFiles = inputDir
-            .walkTopDown()
-            .filter { it.isFile && it.extension.equals("txt", ignoreCase = true) }
-            .toList()
-
-        if (txtFiles.isEmpty()) {
-            return ClearTxtResult(
-                ok = true,
-                message = "clear txt -> no txt files under ${inputDir.absolutePath}"
-            )
-        }
-
-        var removedCount = 0
-        val failedPaths = mutableListOf<String>()
-        for (txtFile in txtFiles) {
-            if (txtFile.delete()) {
-                removedCount += 1
-            } else {
-                failedPaths += txtFile.absolutePath
-            }
-        }
-
-        if (failedPaths.isNotEmpty()) {
-            val preview = failedPaths.take(3).joinToString(" | ")
-            val suffix = if (failedPaths.size > 3) {
-                " | ...(${failedPaths.size} failed)"
-            } else {
-                ""
-            }
-            return ClearTxtResult(
-                ok = false,
-                message = "clear txt -> removed $removedCount/${txtFiles.size} file(s). failed: $preview$suffix"
-            )
-        }
-
-        return ClearTxtResult(
-            ok = true,
-            message = "clear txt -> removed $removedCount txt file(s) under ${inputDir.absolutePath}"
+        val runtimeRootDir = resolveRuntimeRootDir()
+        val legacyRootDir = File(context.filesDir, LEGACY_RUNTIME_ROOT_DIR_NAME)
+        return RuntimeDataCleanupTargets.clearTxtData(
+            listOf(runtimeRootDir, legacyRootDir).distinctBy { it.absolutePath }
         )
+    }
+
+    private fun candidateRuntimeRoots(): List<File> {
+        val runtimeRootDir = File(context.filesDir, RUNTIME_ROOT_DIR_NAME)
+        val legacyRootDir = File(context.filesDir, LEGACY_RUNTIME_ROOT_DIR_NAME)
+        return listOf(runtimeRootDir, legacyRootDir).distinctBy { it.absolutePath }
     }
 
     private fun resolveRuntimeRootDir(): File {

@@ -118,6 +118,9 @@ internal class RecordIntentHandler(
     suspend fun saveHistoryFileAndSync(state: RecordUiState): RecordUiState =
         useCaseCaller.saveHistoryFileAndSync(state)
 
+    suspend fun createCurrentMonthTxt(state: RecordUiState): RecordUiState =
+        useCaseCaller.createCurrentMonthTxt(state)
+
     fun discardUnsavedHistoryDraft(state: RecordUiState): RecordUiState =
         RecordStateReducer.discardUnsavedHistoryDraft(state)
 

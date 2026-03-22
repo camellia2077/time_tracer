@@ -16,18 +16,66 @@ internal class RuntimeRecordDelegate(
     ) -> NativeCallResult,
     private val syncLiveOperation: (RuntimePaths) -> String
 ) {
+    // Design intent – TXT month file creation:
+    //
+    // 1. Release builds do not bundle test TXT data. New users arrive with empty
+    //    input/full/ and input/live_raw/ directories, leaving the TXT Editor tab
+    //    in a "Select File" empty state. This create-month flow lets them
+    //    bootstrap their first TXT without leaving the editor.
+    //
+    // 2. The generated file contains mandatory header lines (yYYYY, mMM).
+    //    Business logic resolves a TXT's logical date from these header lines,
+    //    not from the filename. Omitting them would break month identification.
+    //
+    // 3. Day markers (e.g. 0322) are intentionally NOT pre-generated.
+    //    - The Record Input flow auto-creates day blocks on demand via
+    //      LiveRawRecordPersistence.appendNewDayBlock().
+    //    - Pre-generating all 28-31 day markers would produce empty noise
+    //      blocks for days with no activity.
+    //    - DAY editor mode is designed to edit existing blocks only; it does
+    //      not need empty placeholders.
+
     suspend fun createCurrentMonthTxt(): RecordActionResult = withContext(Dispatchers.IO) {
-        RecordActionResult(
-            ok = false,
-            message = "TXT create entry is removed. Select existing imported TXT files from full/ or live_raw/."
-        )
+        try {
+            val paths = ensureRuntimePaths()
+            val result = rawRecordStore.ensureCurrentMonthFile(paths.liveRawInputPath)
+            RecordActionResult(
+                ok = true,
+                message = "Created month TXT -> ${result.monthFile.name}" +
+                    if (result.created) " (new file)" else " (already exists)"
+            )
+        } catch (error: Exception) {
+            buildRecordActionFailure(prefix = "Create current month TXT failed", error = error)
+        }
     }
 
     suspend fun createMonthTxt(month: String): RecordActionResult = withContext(Dispatchers.IO) {
-        RecordActionResult(
-            ok = false,
-            message = "TXT create entry is removed for $month. Select existing imported TXT files from full/ or live_raw/."
-        )
+        try {
+            val parsed = month.trim().split("-")
+            if (parsed.size != 2) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Invalid month format: $month. Expected YYYY-MM."
+                )
+            }
+            val year = parsed[0].toIntOrNull()
+            val monthValue = parsed[1].toIntOrNull()
+            if (year == null || monthValue == null || monthValue !in 1..12) {
+                return@withContext RecordActionResult(
+                    ok = false,
+                    message = "Invalid month format: $month. Expected YYYY-MM with month 01-12."
+                )
+            }
+            val paths = ensureRuntimePaths()
+            val result = rawRecordStore.ensureMonthFile(paths.liveRawInputPath, year, monthValue)
+            RecordActionResult(
+                ok = true,
+                message = "Created month TXT -> ${result.monthFile.name}" +
+                    if (result.created) " (new file)" else " (already exists)"
+            )
+        } catch (error: Exception) {
+            buildRecordActionFailure(prefix = "Create month TXT failed for $month", error = error)
+        }
     }
 
     suspend fun recordNow(

@@ -10,9 +10,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -44,7 +47,8 @@ fun TxtEditorSection(
     editableHistoryContent: String,
     onEditableHistoryContentChange: (String) -> Unit,
     onSaveHistoryFile: () -> Unit,
-    inlineStatusText: String
+    inlineStatusText: String,
+    onCreateCurrentMonthTxt: () -> Unit
 ) {
     var outputMode by remember { mutableStateOf(TxtOutputMode.DAY) }
     var dayMarkerInput by remember {
@@ -115,6 +119,10 @@ fun TxtEditorSection(
         (dayEditorStateForSave.isMarkerValid && dayEditorStateForSave.found)
     val showSaveFab = selectedHistoryFile.isNotEmpty() && isEditorContentVisible
 
+    // Empty-state: no TXT files exist yet (typical for fresh release installs).
+    // Show a guidance card so users can bootstrap their first month TXT file.
+    val showEmptyState = availableMonths.isEmpty() && selectedHistoryFile.isEmpty()
+
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
             TxtMonthNavigationCard(
@@ -138,7 +146,9 @@ fun TxtEditorSection(
                     .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                if (selectedHistoryFile.isNotEmpty()) {
+                if (showEmptyState) {
+                    TxtEmptyStateCard(onCreateCurrentMonthTxt = onCreateCurrentMonthTxt)
+                } else if (selectedHistoryFile.isNotEmpty()) {
                     TxtEditorContentCard(
                         selectedHistoryFile = selectedHistoryFile,
                         selectedMonth = selectedMonth,
@@ -191,6 +201,44 @@ fun TxtEditorSection(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = stringResource(R.string.txt_cd_ingest)
                 )
+            }
+        }
+    }
+}
+
+// Empty-state guidance card for users who have no TXT files yet.
+// This is the primary entry point for fresh release installs where no
+// bundled test data exists. Creating the current month TXT bootstraps
+// the file with mandatory header lines (yYYYY, mMM) so that the
+// Record Input flow can immediately append day blocks on demand.
+@Composable
+private fun TxtEmptyStateCard(onCreateCurrentMonthTxt: () -> Unit) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.txt_empty_state_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = stringResource(R.string.txt_empty_state_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Button(
+                onClick = onCreateCurrentMonthTxt,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.txt_action_create_current_month))
             }
         }
     }

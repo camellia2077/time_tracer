@@ -69,6 +69,15 @@ internal class DataUseCases(
         )
     }
 
+    suspend fun clearDatabase(currentState: DataUiState): DataUiState {
+        val runningState = currentState.copy(statusText = "clearing database...")
+        val result = runtimeInitializer.clearDatabase()
+        return runningState.copy(
+            initialized = false,
+            statusText = result.message
+        )
+    }
+
     suspend fun clearTxt(currentState: DataUiState): DataUiState {
         val runningState = currentState.copy(statusText = "clearing txt...")
         val result = recordGateway.clearTxt()

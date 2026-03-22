@@ -96,6 +96,11 @@ private class FakeTracerScreenServices(
         initResponse = """{"ok":true}"""
     )
 
+    override suspend fun clearDatabase(): ClearDatabaseResult = ClearDatabaseResult(
+        ok = true,
+        message = "ok"
+    )
+
     override suspend fun createCurrentMonthTxt(): RecordActionResult = RecordActionResult(
         ok = true,
         message = "ok"

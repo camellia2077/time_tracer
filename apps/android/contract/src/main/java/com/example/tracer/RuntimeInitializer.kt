@@ -5,4 +5,5 @@ interface RuntimeInitializer {
     suspend fun ingestFull(): NativeCallResult
     suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult
     suspend fun clearAndReinitialize(): ClearAndInitResult
+    suspend fun clearDatabase(): ClearDatabaseResult
 }

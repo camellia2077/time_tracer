@@ -76,7 +76,8 @@ internal data class TracerTabRouteArgs(
     val isTracerExportInProgress: Boolean,
     val selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     val onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    val onCopyDiagnosticsPayload: () -> Unit
+    val onCopyDiagnosticsPayload: () -> Unit,
+    val onClearDatabase: () -> Unit
 )
 
 internal data class TracerTabLifecycleArgs(
@@ -151,6 +152,7 @@ internal object TracerTabRegistry {
                         args.dataViewModel.clearTxt()
                         args.recordViewModel.clearTxtEditorState()
                     },
+                    onClearDatabase = args.onClearDatabase,
                     onClearData = args.dataViewModel::clearDataAndReinitialize
                 )
             }
@@ -228,7 +230,8 @@ internal object TracerTabRegistry {
                     editableHistoryContent = args.recordUiState.editableHistoryContent,
                     onEditableHistoryContentChange = args.recordViewModel::updateEditableHistoryContent,
                     onSaveHistoryFile = args.recordViewModel::saveHistoryFileAndSync,
-                    inlineStatusText = args.recordUiState.statusText
+                    inlineStatusText = args.recordUiState.statusText,
+                    onCreateCurrentMonthTxt = args.recordViewModel::createCurrentMonthTxt
                 )
             }
         ),

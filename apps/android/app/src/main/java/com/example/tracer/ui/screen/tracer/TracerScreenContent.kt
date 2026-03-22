@@ -51,7 +51,8 @@ internal fun TracerScreenContent(
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit,
+    onClearDatabase: () -> Unit
 ) {
     TracerBottomNavShell(
         selectedTab = selectedTab,
@@ -111,7 +112,8 @@ internal fun TracerScreenContent(
                 isTracerExportInProgress = isTracerExportInProgress,
                 selectedTracerSecurityLevel = selectedTracerSecurityLevel,
                 onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
+                onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
+                onClearDatabase = onClearDatabase
             )
         }
     }

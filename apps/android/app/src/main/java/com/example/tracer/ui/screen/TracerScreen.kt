@@ -219,6 +219,7 @@ fun TracerScreen(
         isTracerExportInProgress = exportActions.isTracerExportInProgress,
         selectedTracerSecurityLevel = exportActions.selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = exportActions.onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload
+        onCopyDiagnosticsPayload = actions.onCopyDiagnosticsPayload,
+        onClearDatabase = dataViewModel::clearDatabase
     )
 }

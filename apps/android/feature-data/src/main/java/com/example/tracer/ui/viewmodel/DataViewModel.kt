@@ -29,6 +29,7 @@ class DataViewModel(
         data object IngestFull : DataIntent
         data class IngestSingleTxtReplaceMonth(val inputPath: String) : DataIntent
         data object ClearDataAndReinitialize : DataIntent
+        data object ClearDatabase : DataIntent
         data object ClearTxt : DataIntent
     }
 
@@ -63,6 +64,10 @@ class DataViewModel(
         dispatchIntent(DataIntent.ClearDataAndReinitialize)
     }
 
+    fun clearDatabase() {
+        dispatchIntent(DataIntent.ClearDatabase)
+    }
+
     fun clearTxt() {
         dispatchIntent(DataIntent.ClearTxt)
     }
@@ -84,6 +89,7 @@ class DataViewModel(
                 }
 
                 DataIntent.ClearDataAndReinitialize -> useCases.clearDataAndReinitialize(uiState)
+                DataIntent.ClearDatabase -> useCases.clearDatabase(uiState)
                 DataIntent.ClearTxt -> useCases.clearTxt(uiState)
             }
         }

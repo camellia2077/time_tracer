@@ -6,6 +6,7 @@ import kotlinx.coroutines.withContext
 internal class RuntimeInitService(
     private val initializeRuntimeInternal: () -> NativeCallResult,
     private val clearRuntimeData: () -> String,
+    private val clearDatabaseData: () -> ClearDatabaseResult,
     private val resetRuntimeCaches: () -> Unit
 ) {
     suspend fun initializeRuntime(): NativeCallResult = withContext(Dispatchers.IO) {
@@ -36,6 +37,20 @@ internal class RuntimeInitService(
                 initResponse = buildNativeErrorResponseJson(
                     formatNativeFailure("clear and reinitialize failed", error)
                 )
+            )
+        }
+    }
+
+    suspend fun clearDatabase(): ClearDatabaseResult = withContext(Dispatchers.IO) {
+        try {
+            val clearResult = clearDatabaseData()
+            resetRuntimeCaches()
+            clearResult
+        } catch (error: Exception) {
+            resetRuntimeCaches()
+            ClearDatabaseResult(
+                ok = false,
+                message = formatNativeFailure("clear database failed", error)
             )
         }
     }

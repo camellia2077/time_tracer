@@ -34,6 +34,9 @@ internal class RecordUseCaseCaller(
     suspend fun saveHistoryFileAndSync(state: RecordUiState): RecordUiState =
         recordUseCases.saveHistoryFileAndSync(state)
 
+    suspend fun createCurrentMonthTxt(state: RecordUiState): RecordUiState =
+        recordUseCases.createCurrentMonthTxt(state)
+
     fun clearEditorState(state: RecordUiState): RecordUiState =
         recordUseCases.clearEditorState(state)
 }
