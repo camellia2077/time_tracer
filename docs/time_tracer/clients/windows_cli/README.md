@@ -3,7 +3,7 @@
 ## Purpose
 
 Provide the minimal navigation map for the Windows Rust CLI implementation under
-`apps/tracer_cli/windows/rust_cli`.
+`apps/cli/windows/rust`.
 
 ## When To Open
 
@@ -20,14 +20,14 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 ## Start Here
 
 1. CLI entry and command model:
-   - `apps/tracer_cli/windows/rust_cli/src/main.rs`
-   - `apps/tracer_cli/windows/rust_cli/src/cli/*.rs`
+   - `apps/cli/windows/rust/src/main.rs`
+   - `apps/cli/windows/rust/src/cli/*.rs`
 2. Command routing:
-   - `apps/tracer_cli/windows/rust_cli/src/commands/mod.rs`
-   - `apps/tracer_cli/windows/rust_cli/src/commands/handlers/`
+   - `apps/cli/windows/rust/src/commands/mod.rs`
+   - `apps/cli/windows/rust/src/commands/handlers/`
 3. Runtime host boundary:
-   - `apps/tracer_cli/windows/rust_cli/src/core/runtime.rs`
-   - `apps/tracer_cli/windows/rust_cli/src/core/runtime/*.rs`
+   - `apps/cli/windows/rust/src/core/runtime.rs`
+   - `apps/cli/windows/rust/src/core/runtime/*.rs`
 
 ## Command Families
 

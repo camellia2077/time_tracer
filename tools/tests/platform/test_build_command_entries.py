@@ -114,7 +114,7 @@ path = "apps/demo"
                 repo_root / "tools" / "toolchain" / "config.toml",
                 """
 [apps.tracer_windows_rust_cli]
-path = "apps/tracer_cli/windows/rust_cli"
+path = "apps/cli/windows/rust"
 backend = "cargo"
 """.strip(),
             )

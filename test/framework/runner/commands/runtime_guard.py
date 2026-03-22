@@ -106,7 +106,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--build-dir",
         default=None,
-        help="Build dir under apps/tracer_cli/windows (e.g. build_fast).",
+        help="Build dir under apps/cli/windows (e.g. build_fast).",
     )
     parser.add_argument(
         "--bin-dir",

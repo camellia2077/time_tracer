@@ -1,0 +1,32 @@
+{
+  "target": "windows",
+  "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
+  "input_hash": "40562cbb4c7d5044116a5e3a575dcb5742334ee91b9a788c8df2907a7cc19cf2",
+  "planned_file_count": 23,
+  "file_hashes": {
+    "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
+    "config.toml": "bfd1d159757115bb9f476f8576f08d981bacee0801bd6dcf75d5127634c6311e",
+    "converter/alias_mapping.toml": "6d38dda510d2bb6a49a8406011ee6dee0b15f18e9965412981cb2996fe696bdc",
+    "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
+    "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
+    "meta/bundle.toml": "209b0d94a9c9c4bbd3854a606c68c4aaa1ff3f0c91170caf70a4eda1a033a60c",
+    "reports/latex/common_style.toml": "35540e77e0618a202b75151751f1c2bb5e6dcbc0603f177c31aef1b1358bd6de",
+    "reports/latex/day.toml": "8111f2bac2edb58a652ee404115f935fb02ca20d6e8e3cf1799f4464ad1a25d1",
+    "reports/latex/month.toml": "8d7b5951d6c7c016912609e54163affc4d194273feb87938b7593d4bc047be65",
+    "reports/latex/period.toml": "222bef59058852dca0d3db6acdaf2ac1bc678d35aa0895aed0dffdedf385af75",
+    "reports/latex/week.toml": "2b8306a135ac9592a8b0df6d707aa13b51e89cd4db60d45aca94ba6a4ec66883",
+    "reports/latex/year.toml": "ce7b3e07369ee9013cfe5988216bfb1ed31dacf96e8482a13d2f06a76bea857c",
+    "reports/markdown/day.toml": "6a02b89b311aa5184a7f95b9d6852cd813e9fef705b5a907f6360db6750783c3",
+    "reports/markdown/month.toml": "1c9156e6c5bd2a09e708cdb61bbe39eb03a1d78db5d944117fb54acded3d8697",
+    "reports/markdown/period.toml": "70f5cf16431635fc8d13aa26b1225e38b9765af830a3f886b5d1733045eac423",
+    "reports/markdown/week.toml": "8fa9a44fbacdd055cf7d3ecbd5209ce9592197ab82814b8a113c6e77f80a5327",
+    "reports/markdown/year.toml": "a0b80911567b56f913c8afa9e7d92d1e1161ae67fae034b51f8b9868fd724cae",
+    "reports/typst/common_style.toml": "2403c4a20e1b9fc528b9d33ba418ff20fbb4bf8a045fef4a06d2397242d4e75f",
+    "reports/typst/day.toml": "5f079cd556938d9987709224e46a960c9745ad75ebecef2076d5ba4ac2f33d49",
+    "reports/typst/month.toml": "6e660534a8b68d4c2954a5e0174d62a98270209b60a220bd5db9ec7b93cb3dd5",
+    "reports/typst/period.toml": "222bef59058852dca0d3db6acdaf2ac1bc678d35aa0895aed0dffdedf385af75",
+    "reports/typst/week.toml": "0e09e36312c608a6b10021537b45ad1cfb3187b7d541dbc9046fe7e3bc85e443",
+    "reports/typst/year.toml": "c4923f504081b91af3354551a8c4783df4b0a404a8c5fc9d060e1212ad95fd1f"
+  },
+  "generated_at_utc": "2026-03-22T13:52:37.700678+00:00"
+}

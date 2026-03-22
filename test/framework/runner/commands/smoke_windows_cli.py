@@ -21,7 +21,7 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--build-dir",
         default="build_fast",
-        help="Build directory name under apps/tracer_cli/windows (default: build_fast).",
+        help="Build directory name under apps/cli/windows (default: build_fast).",
     )
     parser.add_argument(
         "--no-concise",

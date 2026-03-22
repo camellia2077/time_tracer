@@ -28,11 +28,11 @@ Windows CLI 图标设计源优先从以下目录选择：
 
 Windows CLI 图标在构建期生成：
 
-- `apps/tracer_cli/windows/rust_cli/<build_dir>/resources/time_tracer_cli.ico`
+- `apps/cli/windows/rust/<build_dir>/resources/time_tracer_cli.ico`
 
 生成后的 `.ico` 会由以下文件注入到 EXE 资源：
 
-- `apps/tracer_cli/windows/rust_cli/build.rs`
+- `apps/cli/windows/rust/build.rs`
 
 ## 默认生效方式
 
@@ -118,12 +118,12 @@ SVG 转 `.ico` 依赖：
 - `bg_white_vertical_padding_rounded.svg` 等文件作为旧版导出稿保留
 - 若默认视觉方案改变，应同时更新：
   - `tools/toolchain/commands/cmd_build/windows_icon_resources.py`
-  - `apps/tracer_cli/windows/README.md`
-  - `apps/tracer_cli/windows/icon_generation.md`
-  - `apps/tracer_cli/windows/agent.md`
+  - `apps/cli/windows/README.md`
+  - `apps/cli/windows/icon_generation.md`
+  - `apps/cli/windows/agent.md`
   - `ui/branding/README.md`
 
 ## 相关文档
 
 - `ui/branding/README.md`
-- `apps/tracer_cli/windows/icon_generation.md`
+- `apps/cli/windows/icon_generation.md`

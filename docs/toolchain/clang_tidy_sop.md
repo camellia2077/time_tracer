@@ -13,7 +13,7 @@
 1. 任务队列目录固定为：
    - `out/tidy/tracer_core_shell/build_tidy/tasks/batch_*/task_*.json`
 2. 诊断涉及代码范围：
-   - `apps/tracer_cli/windows`
+   - `apps/cli/windows`
    - `apps/tracer_core_shell`
 3. 批次收口统一命令：
    - `python tools/run.py tidy-batch ...`

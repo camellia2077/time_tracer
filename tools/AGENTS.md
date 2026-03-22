@@ -19,7 +19,7 @@
 4. 只改入口转发：
    - `tools/run.py`
 5. 只改 Windows CLI wrapper 参数通道：
-   - `apps/tracer_cli/windows/scripts/build*.sh`
+   - `apps/cli/windows/scripts/build*.sh`
 
 ## 最小修改原则
 

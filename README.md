@@ -47,7 +47,7 @@ python tools/run.py build --app tracer_core --profile release_safe --build-dir b
 python tools/run.py verify --app tracer_core --quick
 
 # 代码行数扫描（开发辅助工具，可选）
-python tools/scripts/devtools/loc/scan_cpp_lines.py apps/tracer_cli/windows apps/tracer_core_shell libs/tracer_core -t 350
+python tools/scripts/devtools/loc/scan_cpp_lines.py apps/cli/windows apps/tracer_core_shell libs/tracer_core -t 350
 ```
 
 ➡️ **详细步骤请参考：[构建指南](docs/time_tracer/guides/build_guide.md)**
@@ -129,7 +129,7 @@ docs/time_tracer/
 * **[Apache ECharts](https://echarts.apache.org/)**: Windows CLI `report-chart` 单文件 HTML 图表渲染（Line/Bar/Pie/Heatmap-Year/Heatmap-Month）(Apache License 2.0)。
 * **[Matplotlib](https://matplotlib.org/)**: 绘图引擎 (BSD 风格许可证)。
 
-### Windows Rust CLI (`apps/tracer_cli/windows/rust_cli`)
+### Windows Rust CLI (`apps/cli/windows/rust`)
 
 * **[clap](https://github.com/clap-rs/clap)**: Rust CLI 参数解析与子命令框架（MIT 或 Apache License 2.0）。
 * **[thiserror](https://github.com/dtolnay/thiserror)**: Rust 错误类型派生（MIT 或 Apache License 2.0）。
@@ -139,7 +139,7 @@ docs/time_tracer/
 * **[toml](https://github.com/toml-rs/toml)**: TOML 解析（MIT 或 Apache License 2.0）。
 
 依赖版本清单位于：
-* `apps/tracer_cli/windows/rust_cli/Cargo.toml`
+* `apps/cli/windows/rust/Cargo.toml`
  
 ### Android 应用 (`apps/android`)
 
