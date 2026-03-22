@@ -1,0 +1,50 @@
+// infra/io/txt_ingest_input_provider.cpp
+#include "infra/io/internal/runtime_adapter_types.hpp"
+
+#include <algorithm>
+#include <string>
+#include <utility>
+
+import tracer.adapters.io.core.fs;
+import tracer.adapters.io.core.reader;
+import tracer.adapters.io.utils.file_utils;
+
+namespace modcore = tracer::adapters::io::modcore;
+namespace modutils = tracer::adapters::io::modutils;
+
+namespace infrastructure::io::internal {
+
+auto TxtIngestInputProviderAdapter::CollectTextInputs(
+    const std::filesystem::path& input_root, std::string_view extension) const
+    -> tracer_core::application::dto::IngestInputCollection {
+  tracer_core::application::dto::IngestInputCollection collection;
+  collection.input_exists = modcore::Exists(input_root);
+  if (!collection.input_exists) {
+    return collection;
+  }
+
+  const std::string kExtension(extension);
+  std::vector<std::filesystem::path> files =
+      modutils::FindFilesByExtensionRecursively(input_root, kExtension);
+  if (modcore::IsRegularFile(input_root) &&
+      input_root.extension() == kExtension &&
+      std::ranges::find(files, input_root) == files.end()) {
+    files.push_back(input_root);
+  }
+
+  collection.inputs.reserve(files.size());
+  for (const auto& file_path : files) {
+    std::string source_label = file_path.filename().string();
+    if (source_label.empty()) {
+      source_label = file_path.string();
+    }
+    collection.inputs.push_back(
+        {.source_id = file_path.string(),
+         .source_label = std::move(source_label),
+         .content = modcore::ReadCanonicalText(file_path)});
+  }
+
+  return collection;
+}
+
+}  // namespace infrastructure::io::internal

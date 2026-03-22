@@ -17,13 +17,11 @@ struct RawEvent {
   std::optional<SourceSpan> source_span;
 };
 
-// [核心修改] 移除 Activity 和 GeneratedStats 的定义
-
 struct DailyLog {
   std::string date;
   bool hasStudyActivity = false;
   bool hasExerciseActivity = false;
-  bool hasSleepActivity = false;
+  bool hasWakeAnchor = false;
 
   std::string getupTime;
   std::vector<std::string> generalRemarks;
@@ -37,14 +35,11 @@ struct DailyLog {
 
   int activityCount = 0;
 
-  // [核心修改] 使用 ActivityStats，并重命名为 stats
-  ActivityStats stats;
-
   void Clear() {
     date.clear();
     hasStudyActivity = false;
     hasExerciseActivity = false;
-    hasSleepActivity = false;
+    hasWakeAnchor = false;
     getupTime.clear();
     generalRemarks.clear();
     rawEvents.clear();
@@ -52,7 +47,6 @@ struct DailyLog {
     processedActivities.clear();
     isContinuation = false;
     activityCount = 0;
-    stats = {};  // 重置为默认值
   }
 };
 

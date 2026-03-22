@@ -11,7 +11,6 @@ namespace {
 
 using tracer::core::domain::moderrors::ErrorRecord;
 using tracer::core::domain::moderrors::ErrorSeverity;
-using tracer::core::domain::model::ActivityStats;
 using tracer::core::domain::model::BaseActivityRecord;
 using tracer::core::domain::model::DailyLog;
 using tracer::core::domain::model::ProcessingResult;
@@ -132,16 +131,11 @@ void TestDomainModelsAndTypes(int& failures) {
   record.project_path = "study_cpp";
   record.duration_seconds = 1800;
   record.source_span = span;
-  ActivityStats stats;
-  stats.study_time = 1800;
-
   DailyLog daily;
   daily.date = "2026-03-04";
   daily.processedActivities.push_back(record);
-  daily.stats = stats;
   Expect(daily.processedActivities.size() == 1U,
          "DailyLog processedActivities mismatch.", failures);
-  Expect(daily.stats.study_time == 1800, "DailyLog stats mismatch.", failures);
 
   ProcessingResult result;
   result.timings.validation_source_ms = 1.0;

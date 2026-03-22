@@ -88,5 +88,5 @@
 ## 8. 相关代码入口
 1. `libs/tracer_core/src/domain/logic/validator/common/validator_utils.hpp`
 2. `libs/tracer_core/src/domain/logic/validator/common/diagnostic.hpp`
-3. `libs/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
+3. `libs/tracer_core/src/infra/logging/validation_issue_reporter.cpp`
 4. `libs/tracer_core/src/domain/ports/diagnostics.hpp`

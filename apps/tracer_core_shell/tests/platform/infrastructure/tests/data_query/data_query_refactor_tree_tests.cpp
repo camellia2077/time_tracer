@@ -113,20 +113,20 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
 
   const std::vector<AdapterGuardRule> kRules = {
       {
-          "apps/tracer_cli/windows/rust_cli/src/commands/handlers/query.rs",
+          "apps/cli/windows/rust/src/commands/handlers/query.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/tracer_cli/windows/rust_cli/src/commands/handlers/chart/"
+          "apps/cli/windows/rust/src/commands/handlers/chart/"
           "request.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
       },
       {
-          "apps/tracer_cli/windows/rust_cli/src/core/runtime/invoke.rs",
+          "apps/cli/windows/rust/src/core/runtime/invoke.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
@@ -141,19 +141,19 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
       },
 
       {
-          "libs/tracer_core/src/infrastructure/persistence/"
+          "libs/tracer_core/src/infra/persistence/"
           "sqlite_data_query_service.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },
       {
-          "libs/tracer_core/src/infrastructure/persistence/"
+          "libs/tracer_core/src/infra/persistence/"
           "sqlite_data_query_service_dispatch.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },
       {
-          "libs/tracer_core/src/infrastructure/persistence/"
+          "libs/tracer_core/src/infra/persistence/"
           "sqlite_data_query_service_report_mapping.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},

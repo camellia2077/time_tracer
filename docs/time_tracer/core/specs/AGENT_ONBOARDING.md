@@ -50,8 +50,8 @@ without broad repository search.
      - `libs/tracer_core/src/application/reporting/tree`
 5. Change query/report/stat output semantics:
    - read [Stats contracts](../contracts/stats/README.md)
-   - start in `libs/tracer_core/src/infrastructure/query`
-   - then inspect `libs/tracer_core/src/infrastructure/reports`
+   - start in `libs/tracer_core/src/infra/query`
+   - then inspect `libs/tracer_core/src/infra/reports`
 6. Change file-system ingest or processed-data IO:
    - start in [tracer_adapters_io](../../architecture/libraries/tracer_adapters_io.md)
 
@@ -108,5 +108,5 @@ python tools/run.py verify --app tracer_core_shell --profile fast --scope batch 
    - `apps/tracer_core_shell/host`
 3. If stats or report output regresses, re-check:
    - `contracts/stats/*`
-   - `libs/tracer_core/src/infrastructure/query`
-   - `libs/tracer_core/src/infrastructure/reports`
+   - `libs/tracer_core/src/infra/query`
+   - `libs/tracer_core/src/infra/reports`

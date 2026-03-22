@@ -5,7 +5,7 @@ module;
 #include "application/ports/i_ingest_input_provider.hpp"
 #include "application/ports/i_processed_data_loader.hpp"
 #include "application/ports/i_processed_data_storage.hpp"
-#include "infrastructure/io/internal/runtime_adapter_types.hpp"
+#include "infra/io/internal/runtime_adapter_types.hpp"
 
 export module tracer.adapters.io.runtime;
 

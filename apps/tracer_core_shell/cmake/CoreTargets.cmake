@@ -66,7 +66,7 @@ enforce_core_include_boundary(
         "application"
     FORBIDDEN_PREFIXES
         "api/"
-        "infrastructure/"
+        "infra/"
         "host/"
         "tests/"
     FORBIDDEN_PATTERNS
@@ -133,7 +133,7 @@ enforce_shell_api_include_boundary(
 
 # 3. Infrastructure composition
 # - `tracer_transport` / `tracer_adapters_io` stay as standalone adapter libs.
-# - `libs/tracer_core/infrastructure` owns reports/persistence/config assembly.
+# - `libs/tracer_core/infra` owns reports/persistence/config assembly.
 add_subdirectory(
     "${PROJECT_SOURCE_DIR}/../../libs/tracer_transport"
     "${CMAKE_BINARY_DIR}/libs/tracer_transport"
@@ -143,8 +143,8 @@ add_subdirectory(
     "${CMAKE_BINARY_DIR}/libs/tracer_adapters_io"
 )
 add_subdirectory(
-    "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/infrastructure"
-    "${CMAKE_BINARY_DIR}/libs/tracer_core/infrastructure"
+    "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/infra"
+    "${CMAKE_BINARY_DIR}/libs/tracer_core/infra"
 )
 
 if(NOT TARGET tc_infra_full_lib)
@@ -175,7 +175,7 @@ if(ANDROID)
 elseif(WIN32)
     message(STATUS
         "apps/tracer_core_shell no longer builds the Windows CLI. "
-        "Use apps/tracer_cli/windows for desktop executable delivery."
+        "Use apps/cli/windows for desktop executable delivery."
     )
 endif()
 
@@ -239,13 +239,13 @@ if(BUILD_TESTING)
         )
 
         set(TC_INFRA_MOD_SMOKE_TEST_SOURCES
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/infrastructure_modules_smoke_tests.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/logging_platform_config.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/crypto_exchange.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_stats_repository.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/query_internal_orchestrators.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/persistence.cpp"
-            "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/modules_smoke/reports.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/infrastructure_modules_smoke_tests.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/logging_platform_config.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/crypto_exchange.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/query_stats_repository.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/query_internal_orchestrators.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/persistence.cpp"
+            "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/modules_smoke/reports.cpp"
         )
         add_executable(tc_infra_mod_smoke_tests
             ${TC_INFRA_MOD_SMOKE_TEST_SOURCES}
@@ -339,11 +339,11 @@ if(BUILD_TESTING)
     )
 
     add_executable(tt_fmt_parity_tests
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_fixture_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_md_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_snapshot_support.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_tex_tests.cpp"
-        "${TRACER_CORE_LIB_TESTS_ROOT}/infrastructure/tests/report_formatter/report_formatter_parity_typ_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_fixture_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_md_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_snapshot_support.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_tex_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/infra/tests/report_formatter/report_formatter_parity_typ_tests.cpp"
     )
     setup_app_target(tt_fmt_parity_tests)
     target_include_directories(tt_fmt_parity_tests PRIVATE

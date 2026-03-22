@@ -11,6 +11,7 @@ import tracer.core.infrastructure.query.data.stats;
 #include <vector>
 
 #include "application/dto/core_requests.hpp"
+#include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 
 namespace android_runtime_tests::data_query_refactor_internal {
@@ -342,6 +343,86 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
   return true;
 }
 
+auto TestDerivedStatusExerciseFilters(int& failures) -> void {
+  const auto kDatabase = OpenInMemoryDatabase();
+  Expect(kDatabase != nullptr,
+         "derived status/exercise filter test should open sqlite database.",
+         failures);
+  if (kDatabase == nullptr) {
+    return;
+  }
+
+  const bool kCreatedDays = ExecuteSql(
+      kDatabase.get(),
+      "CREATE TABLE days ("
+      "date TEXT PRIMARY KEY,"
+      "year INTEGER NOT NULL,"
+      "month INTEGER NOT NULL,"
+      "sleep INTEGER NOT NULL DEFAULT 0,"
+      "remark TEXT NOT NULL DEFAULT '',"
+      "getup_time TEXT"
+      ");");
+  const bool kCreatedRecords = ExecuteSql(
+      kDatabase.get(),
+      "CREATE TABLE time_records ("
+      "date TEXT NOT NULL,"
+      "duration INTEGER NOT NULL,"
+      "project_path_snapshot TEXT,"
+      "activity_remark TEXT"
+      ");");
+  const bool kSeededDays = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO days(date, year, month, sleep, remark, getup_time) VALUES "
+      "('2026-02-01', 2026, 2, 0, '', '07:00'),"
+      "('2026-02-02', 2026, 2, 0, '', '07:30'),"
+      "('2026-02-03', 2026, 2, 0, '', '08:00');");
+  const bool kSeededRecords = ExecuteSql(
+      kDatabase.get(),
+      "INSERT INTO time_records(date, duration, project_path_snapshot, activity_remark) VALUES "
+      "('2026-02-01', 3600, 'study_cpp', ''),"
+      "('2026-02-02', 1800, 'exercise_cardio', ''),"
+      "('2026-02-03', 600, 'meal_short', '');");
+  Expect(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords,
+         "derived status/exercise filter test should seed sqlite fixture.",
+         failures);
+  if (!(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords)) {
+    return;
+  }
+
+  QueryFilters status_true_filters;
+  status_true_filters.status = 1;
+  const auto kStatusTrueDates =
+      data_query::QueryDatesByFilters(kDatabase.get(), status_true_filters);
+  Expect(kStatusTrueDates.size() == 1U && kStatusTrueDates.front() == "2026-02-01",
+         "status=true filter should match only study days.", failures);
+
+  QueryFilters status_false_filters;
+  status_false_filters.status = 0;
+  const auto kStatusFalseDates =
+      data_query::QueryDatesByFilters(kDatabase.get(), status_false_filters);
+  Expect(kStatusFalseDates.size() == 2U &&
+             kStatusFalseDates[0] == "2026-02-02" &&
+             kStatusFalseDates[1] == "2026-02-03",
+         "status=false filter should exclude study days.", failures);
+
+  QueryFilters exercise_true_filters;
+  exercise_true_filters.exercise = 1;
+  const auto kExerciseTrueDates =
+      data_query::QueryDatesByFilters(kDatabase.get(), exercise_true_filters);
+  Expect(kExerciseTrueDates.size() == 1U &&
+             kExerciseTrueDates.front() == "2026-02-02",
+         "exercise=true filter should match only exercise days.", failures);
+
+  QueryFilters exercise_false_filters;
+  exercise_false_filters.exercise = 0;
+  const auto kExerciseFalseDates =
+      data_query::QueryDatesByFilters(kDatabase.get(), exercise_false_filters);
+  Expect(kExerciseFalseDates.size() == 2U &&
+             kExerciseFalseDates[0] == "2026-02-01" &&
+             kExerciseFalseDates[1] == "2026-02-03",
+         "exercise=false filter should exclude exercise days.", failures);
+}
+
 auto TestOrchestratorRendererSemanticSnapshot(int& failures) -> void {
   const auto kDatabase = OpenSeededDatabaseOrRecordFailure(failures);
   if (kDatabase == nullptr) {
@@ -366,6 +447,7 @@ auto RunDataQueryRefactorStatsScenarioTests(int& failures) -> void {
   TestDayDurationStatsCalculator(failures);
   TestReportChartSeriesCalculator(failures);
   TestSemanticDayStatsSnapshot(failures);
+  TestDerivedStatusExerciseFilters(failures);
   TestOrchestratorRendererSemanticSnapshot(failures);
 }
 

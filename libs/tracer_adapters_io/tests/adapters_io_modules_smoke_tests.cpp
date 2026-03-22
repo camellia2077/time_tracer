@@ -2,6 +2,8 @@ import tracer.adapters.io;
 import tracer.core.domain.model.daily_log;
 import tracer.core.domain.model.time_data_models;
 
+#include <nlohmann/json.hpp>
+
 #include <chrono>
 #include <exception>
 #include <filesystem>
@@ -76,7 +78,6 @@ auto BuildRoundTripDay() -> DailyLog {
   day.processedActivities.push_back(first);
   day.processedActivities.push_back(second);
   day.activityCount = static_cast<int>(day.processedActivities.size());
-  day.stats.study_time = 7200;
   return day;
 }
 
@@ -172,6 +173,29 @@ void TestRuntimeFactories(int& failures) {
     if (!written.empty()) {
       Expect(Exists(written.front()),
              "Processed-data storage should create the JSON file.", failures);
+      const auto written_text = ReadCanonicalText(written.front());
+      const auto written_json = nlohmann::json::parse(written_text);
+      const bool has_status =
+          written_json.is_array() && !written_json.empty() &&
+          written_json.front().contains("headers") &&
+          written_json.front()["headers"].contains("status");
+      const bool has_exercise =
+          written_json.is_array() && !written_json.empty() &&
+          written_json.front().contains("headers") &&
+          written_json.front()["headers"].contains("exercise");
+      Expect(!has_status,
+             "Processed-data JSON should not persist derived header.status.",
+             failures);
+      Expect(!has_exercise,
+             "Processed-data JSON should not persist derived header.exercise.",
+             failures);
+      const bool has_sleep =
+          written_json.is_array() && !written_json.empty() &&
+          written_json.front().contains("headers") &&
+          written_json.front()["headers"].contains("sleep");
+      Expect(has_sleep && written_json.front()["headers"]["sleep"] == 1,
+             "Processed-data JSON should persist header.sleep from wake anchor.",
+             failures);
     }
 
     const auto loaded =
@@ -190,6 +214,71 @@ void TestRuntimeFactories(int& failures) {
                "Processed-data loader should preserve the day date.", failures);
         Expect(loaded_days.front().processedActivities.size() == 2U,
                "Processed-data loader should preserve activity rows.",
+               failures);
+      }
+    }
+
+    const fs::path legacy_root = root / "legacy_input";
+    CreateDirectories(legacy_root);
+    const fs::path legacy_file = legacy_root / "2026-03.json";
+    WriteCanonicalText(
+        legacy_file,
+        R"([
+  {
+    "headers": {
+      "date": "2026-03-16",
+      "status": 0,
+      "exercise": 0,
+      "sleep": 0,
+      "getup": "07:30",
+      "activity_count": 2,
+      "remark": "legacy"
+    },
+    "activities": [
+      {
+        "logical_id": 1,
+        "start_timestamp": 25200,
+        "end_timestamp": 27000,
+        "start_time": "07:00",
+        "end_time": "07:30",
+        "duration_seconds": 1800,
+        "activity_remark": null,
+        "activity": { "project_path": "study_cpp" }
+      },
+      {
+        "logical_id": 2,
+        "start_timestamp": 27000,
+        "end_timestamp": 28800,
+        "start_time": "07:30",
+        "end_time": "08:00",
+        "duration_seconds": 1800,
+        "activity_remark": null,
+        "activity": { "project_path": "exercise_cardio" }
+      }
+    ]
+  }
+])");
+    const auto legacy_loaded =
+        processed_data_loader->LoadDailyLogs(legacy_root.string());
+    Expect(legacy_loaded.errors.empty(),
+           "Processed-data loader should accept legacy header.status/exercise fields.",
+           failures);
+    Expect(legacy_loaded.data_by_source.size() == 1U,
+           "Processed-data loader should load one legacy source file.", failures);
+    if (!legacy_loaded.data_by_source.empty()) {
+      const auto& legacy_days = legacy_loaded.data_by_source.begin()->second;
+      Expect(!legacy_days.empty(),
+             "Processed-data loader should deserialize legacy day rows.",
+             failures);
+      if (!legacy_days.empty()) {
+        Expect(legacy_days.front().hasStudyActivity,
+               "Legacy JSON load should rebuild study flag from activities.",
+               failures);
+        Expect(legacy_days.front().hasExerciseActivity,
+               "Legacy JSON load should rebuild exercise flag from activities.",
+               failures);
+        Expect(legacy_days.front().hasWakeAnchor,
+               "Legacy JSON load should rebuild wake anchor from getup/isContinuation.",
                failures);
       }
     }

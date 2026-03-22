@@ -200,15 +200,16 @@ auto TextParser::ProcessEventContext(DailyLog& current_day,
   }
 
   if (is_wake) {
-    // First wake event in a day establishes getupTime; later wake-like events
-    // do not override to keep ingest deterministic.
-    if (current_day.getupTime.empty()) {
+    // Wake keywords define the day-level wake anchor, not a sleep activity.
+    // Only the first semantic event may establish that anchor; later wake
+    // keywords are rejected by logic validation and must not redefine the day.
+    if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
       current_day.getupTime = FormatTime(std::string(input.time_str_hhmm));
     }
 
   } else {
-    // No wake + first event of the day means this day may be continuation of
-    // previous-day sleep/activity segment.
+    // No wake on the first semantic event means this day continues a previous
+    // overnight segment. This affects wake-anchor status, not activity naming.
     if (current_day.getupTime.empty() && current_day.rawEvents.empty()) {
       current_day.isContinuation = true;
     }

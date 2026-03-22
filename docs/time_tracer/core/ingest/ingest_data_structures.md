@@ -8,7 +8,7 @@
 - `libs/tracer_core/src/domain/model/time_data_models.hpp`
 - `libs/tracer_core/src/application/parser/memory_parser.cpp`
 - `libs/tracer_core/src/application/importer/model/import_models.hpp`
-- `libs/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+- `libs/tracer_core/src/infra/persistence/importer/sqlite/writer.cpp`
 
 相关算法文档：
 - `docs/time_tracer/core/ingest/ingest_conversion_algorithms.md`（文本到 struct 的转换算法细节）
@@ -20,7 +20,7 @@ txt 行文本
   -> TextParser
   -> DailyLog.rawEvents
   -> DayProcessor(ActivityMapper + DayStats)
-  -> DailyLog.processedActivities + DailyLog.stats
+  -> DailyLog.processedActivities + day-level flags
   -> LogProcessingResult (map<YYYY-MM, vector<DailyLog>>)
   -> MemoryParser
   -> ParsedData { vector<DayData>, vector<TimeRecordInternal> }
@@ -60,7 +60,7 @@ txt 行文本
 
 文件：`libs/tracer_core/src/domain/model/time_data_models.hpp`
 
-作用：一天内统计聚合结果（单位秒）。
+作用：查询/报表阶段的统计聚合结果（单位秒）。
 
 字段包括：
 - 睡眠：`sleep_night_time`, `sleep_day_time`, `sleep_total_time`
@@ -90,16 +90,15 @@ txt 行文本
 作用：单日完整领域对象，是转换阶段的核心载体。
 
 关键字段：
-- 日期与标记：`date`, `hasStudyActivity`, `hasExerciseActivity`, `hasSleepActivity`
+- 日期与标记：`date`, `hasStudyActivity`, `hasExerciseActivity`, `hasWakeAnchor`
 - 起床与备注：`getupTime`, `generalRemarks`
 - 原始事件：`rawEvents`（`vector<RawEvent>`）
 - 归一化事件：`processedActivities`（`vector<BaseActivityRecord>`）
-- 日统计：`stats`（`ActivityStats`）
 - 其他：`isContinuation`, `activityCount`, `source_span`
 
 说明：
-- `TextParser` 先填充 `rawEvents`。
-- `DayProcessor` 再生成 `processedActivities` 和 `stats`。
+- `TextParser` 先填充 `rawEvents`，并借助 `wake_keywords` 建立 `getupTime` / `isContinuation`。
+- `DayProcessor` 再生成 `processedActivities` 并补齐日级标记。
 - 跨天睡眠（如 `sleep_night`）在 `DayProcessor` / `LogLinker` 阶段补齐。
 
 ### 3.4 `LogProcessingResult`
@@ -126,12 +125,11 @@ txt 行文本
 字段：
 - 基础：`date`, `remark`, `getup_time`
 - 日期拆分：`year`, `month`
-- 标记：`status`, `sleep`, `exercise`
-- 聚合：`stats`（`ActivityStats`）
-
+- 标记：`wake_anchor`
 当前实现注意：
 - `getup_time` 为 `std::optional<std::string>`。
 - `MemoryParser` 在续写日写入 `nullopt`；`sqlite::Writer` 写入 `NULL`。
+- `wake_anchor` 列语义为 `hasWakeAnchor`，不是 `sleep_night` 活动是否存在。
 
 ### 4.2 `TimeRecordInternal`
 
@@ -160,18 +158,18 @@ txt 行文本
 
 ### 5.1 `DayData -> days`
 
-文件：`libs/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+文件：`libs/tracer_core/src/infra/persistence/importer/sqlite/writer.cpp`
 
 映射关系要点：
-- `DayData.date/year/month/status/sleep/exercise/remark/getup_time` -> `days` 同名列
-- `DayData.stats.*` -> `days` 中对应统计列（全部为秒）
+- `DayData.date/year/month/sleep/remark/getup_time` -> `days` 同名列
+- `days` 只保存 `date/year/month/sleep/remark/getup_time` 等元数据列
 - `getup_time` 为 `nullopt` 时写入 `NULL`
 
 ### 5.2 `TimeRecordInternal -> projects + time_records`
 
 文件：
-- `libs/tracer_core/src/infrastructure/persistence/importer/sqlite/project_resolver.cpp`
-- `libs/tracer_core/src/infrastructure/persistence/importer/sqlite/writer.cpp`
+- `libs/tracer_core/src/infra/persistence/importer/sqlite/project_resolver.cpp`
+- `libs/tracer_core/src/infra/persistence/importer/sqlite/writer.cpp`
 
 流程：
 1. 先用 `project_path`（`_` 分隔）经 `ProjectResolver` 解析/创建 `projects` 树节点，得到 `project_id`。
@@ -206,7 +204,7 @@ BaseActivityRecord (经过 mapping):
   { start_time_str:"08:27", end_time_str:"11:38", project_path:"exercise_cardio", remark:"remark", ... }
 
 DayData:
-  { date:"2021-01-01", status:1, exercise:1, sleep:0, stats:{...} }
+  { date:"2021-01-01", sleep:0, getup_time:"07:00" }
 ```
 
 ## 7. 对外接入建议

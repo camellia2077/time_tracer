@@ -117,34 +117,6 @@ auto StringToTimeT(const std::string& datetime_str) -> long long {
   return timestamp;
 }
 
-struct StatsRule {
-  const char* match_path;
-  int ActivityStats::* member;
-};
-
-constexpr std::array kStatsRules = {
-    StatsRule{.match_path = "study", .member = &ActivityStats::study_time},
-    StatsRule{.match_path = "exercise",
-              .member = &ActivityStats::total_exercise_time},
-    StatsRule{.match_path = "exercise_cardio",
-              .member = &ActivityStats::cardio_time},
-    StatsRule{.match_path = "exercise_anaerobic",
-              .member = &ActivityStats::anaerobic_time},
-    StatsRule{.match_path = "routine_grooming",
-              .member = &ActivityStats::grooming_time},
-    StatsRule{.match_path = "routine_toilet",
-              .member = &ActivityStats::toilet_time},
-    StatsRule{.match_path = "recreation_game",
-              .member = &ActivityStats::gaming_time},
-    StatsRule{.match_path = "recreation",
-              .member = &ActivityStats::recreation_time},
-    StatsRule{.match_path = "recreation_zhihu",
-              .member = &ActivityStats::recreation_zhihu_time},
-    StatsRule{.match_path = "recreation_bilibili",
-              .member = &ActivityStats::recreation_bilibili_time},
-    StatsRule{.match_path = "recreation_douyin",
-              .member = &ActivityStats::recreation_douyin_time}};
-
 }  // namespace
 
 auto NormalizeTime(std::string_view time_str) -> std::string {
@@ -200,9 +172,10 @@ auto MergeSpans(const std::optional<SourceSpan>& start_span,
 
 void DayStats::CalculateStats(DailyLog& day) {
   day.activityCount = static_cast<int>(day.processedActivities.size());
-  day.stats = {};
   day.hasStudyActivity = false;
   day.hasExerciseActivity = false;
+  day.hasWakeAnchor = !day.isContinuation && !day.getupTime.empty() &&
+                      day.getupTime != "00:00";
 
   long long activity_sequence = 1;
   long long date_as_long = 0;
@@ -232,23 +205,7 @@ void DayStats::CalculateStats(DailyLog& day) {
     if (activity.project_path.starts_with("exercise")) {
       day.hasExerciseActivity = true;
     }
-
-    if (activity.project_path == "sleep_night") {
-      day.stats.sleep_night_time += activity.duration_seconds;
-    }
-    if (activity.project_path == "sleep_day") {
-      day.stats.sleep_day_time += activity.duration_seconds;
-    }
-
-    for (const auto& rule : kStatsRules) {
-      if (activity.project_path.starts_with(rule.match_path)) {
-        (day.stats.*(rule.member)) += activity.duration_seconds;
-      }
-    }
   }
-
-  day.stats.sleep_total_time =
-      day.stats.sleep_night_time + day.stats.sleep_day_time;
 }
 
 }  // namespace converter_core_internal

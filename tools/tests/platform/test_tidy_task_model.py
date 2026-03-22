@@ -90,7 +90,7 @@ class TestTidyTaskModel(TestCase):
             self.assertEqual(loaded.source_file, source_file)
 
     def test_task_record_to_dict_writes_minimal_v2_schema(self):
-        source_file = "C:/code/time_tracer/libs/tracer_core/src/infrastructure/query/data/stats/stats_boundary.module.cpp"
+        source_file = "C:/code/time_tracer/libs/tracer_core/src/infra/query/data/stats/stats_boundary.module.cpp"
         record = _make_task_record(
             source_file=source_file,
             diagnostics=(
@@ -222,7 +222,7 @@ class TestTidyTaskModel(TestCase):
         self.assertNotIn("Found compiler error(s).", rendered)
 
     def test_render_toon_outputs_compact_schema(self):
-        source_file = "C:/code/time_tracer/libs/tracer_core/src/infrastructure/query/data/stats/stats_boundary.module.cpp"
+        source_file = "C:/code/time_tracer/libs/tracer_core/src/infra/query/data/stats/stats_boundary.module.cpp"
         record = _make_task_record(
             source_file=source_file,
             diagnostics=(
@@ -394,7 +394,7 @@ class TestTidyTaskModel(TestCase):
                     [
                         "[1/1] Building CXX object",
                         (
-                            "C:/code/time_tracer/libs/tracer_core/src/infrastructure/query/data/stats/"
+                            "C:/code/time_tracer/libs/tracer_core/src/infra/query/data/stats/"
                             "stats_boundary.module.cpp:3:8: error: module not found "
                             "[clang-diagnostic-error]"
                         ),

@@ -28,9 +28,9 @@ import tracer.core.infrastructure.platform.android.clock;
 #include "application/ports/logger.hpp"
 #include "application/reporting/report_handler.hpp"
 #include "domain/ports/diagnostics.hpp"
-#include "infrastructure/crypto/tracer_exchange_service.hpp"
-#include "infrastructure/persistence/sqlite_data_query_service.hpp"
-#include "infrastructure/reports/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/crypto/tracer_exchange_service.hpp"
+#include "infra/persistence/sqlite_data_query_service.hpp"
+#include "infra/reports/facade/android_static_report_formatter_registrar.hpp"
 
 namespace {
 

@@ -1,9 +1,9 @@
 add_library(taio_lib STATIC
-    src/infrastructure/io/txt_ingest_input_provider.cpp
-    src/infrastructure/io/core/file_reader.cpp
-    src/infrastructure/io/core/file_writer.cpp
-    src/infrastructure/io/core/file_system_helper.cpp
-    src/infrastructure/io/utils/file_utils.cpp
+    src/infra/io/txt_ingest_input_provider.cpp
+    src/infra/io/core/file_reader.cpp
+    src/infra/io/core/file_writer.cpp
+    src/infra/io/core/file_system_helper.cpp
+    src/infra/io/utils/file_utils.cpp
 )
 
 set(TRACER_CORE_LIB_SOURCE_ROOT "${PROJECT_SOURCE_DIR}/../../libs/tracer_core/src")
@@ -23,13 +23,13 @@ set_target_properties(taio_lib PROPERTIES
 
 if(TT_ENABLE_PROCESSED_JSON_IO)
     target_sources(taio_lib PRIVATE
-        src/infrastructure/io/processed_data_io.cpp
-        src/infrastructure/io/processed_json_validation.cpp
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/infrastructure/serialization/json_serializer.cpp"
+        src/infra/io/processed_data_io.cpp
+        src/infra/io/processed_json_validation.cpp
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/infra/serialization/json_serializer.cpp"
     )
 else()
     target_sources(taio_lib PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/infrastructure/io/processed_data_io_noop.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/infra/io/processed_data_io_noop.cpp"
     )
 endif()
 

@@ -73,7 +73,7 @@
    - `tracer.core.application.importer.service`
    - `tracer.core.application.pipeline.*`
    - `tracer.core.application.workflow_handler`
-6. `libs/tracer_core/src/infrastructure/modules/`
+6. `libs/tracer_core/src/infra/modules/`
    - `tracer.core.infrastructure`（聚合）
    - 按 family 子目录组织：
      - `logging/**`
@@ -90,8 +90,8 @@
 3. `tracer.core.application.*` 的构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_application_lib`）。
 4. `tracer.core.infrastructure.*` 低耦合模块构建归属在 `libs/tracer_core/CMakeLists.txt`（`tracer_core_infrastructure_lite_lib`）。
 5. `infrastructure` 剩余业务实现（含 reports/query/persistence/config/crypto）的构建归属在
-   `libs/tracer_core/infrastructure/CMakeLists.txt`（`tti`/`ttri`/`reports_*`）。
-6. `libs/tracer_core/src/infrastructure/CMakeLists.txt` 仅保留壳层接线，不再维护业务源码清单。
+   `libs/tracer_core/infra/CMakeLists.txt`（`tti`/`ttri`/`reports_*`）。
+6. `libs/tracer_core/src/infra/CMakeLists.txt` 仅保留壳层接线，不再维护业务源码清单。
 
 ## 3. 命名规则
 

@@ -1,6 +1,6 @@
 module;
 
-#include "infrastructure/io/core/file_reader.hpp"
+#include "infra/io/core/file_reader.hpp"
 
 export module tracer.adapters.io.core.reader;
 

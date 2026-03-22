@@ -40,9 +40,9 @@ JSON 允许存在于以下边界层：
    - 负责 runtime request/response 的 JSON 协议编码与解码。
 2. `libs/tracer_adapters_io`
    - 负责 processed JSON 文件导入导出。
-3. `libs/tracer_core/src/infrastructure/serialization/**`
+3. `libs/tracer_core/src/infra/serialization/**`
    - 负责 typed log model 与 JSON text 之间的编解码。
-4. `libs/tracer_core/src/infrastructure/query/data/renderers/**`
+4. `libs/tracer_core/src/infra/query/data/renderers/**`
    - 负责把 semantic result 渲染成 `text` 或 `semantic_json`。
 5. `apps/*` 宿主边界
    - 例如 C API、JNI、CLI runtime glue。
@@ -82,11 +82,11 @@ JSON 允许存在于以下边界层：
 
 对 processed JSON 文件，当前设计是：
 
-1. `libs/tracer_adapters_io/src/infrastructure/io/processed_data_io.cpp`
+1. `libs/tracer_adapters_io/src/infra/io/processed_data_io.cpp`
    负责读取文件文本并解析 JSON。
-2. `libs/tracer_adapters_io/src/infrastructure/io/processed_json_validation.*`
+2. `libs/tracer_adapters_io/src/infra/io/processed_json_validation.*`
    负责原始 JSON 的 shape 校验。
-3. `libs/tracer_core/src/infrastructure/serialization/json_serializer.*`
+3. `libs/tracer_core/src/infra/serialization/json_serializer.*`
    负责把 JSON text 转成 `DailyLog` 等 typed model。
 4. `domain` 不再承担“原始 JSON 结构是否合法”的职责。
 
@@ -190,9 +190,9 @@ JSON 允许存在于以下边界层：
 
 1. `libs/tracer_core/src/domain/logic/validator/json/rules/json_rules.*`
    - 旧的 domain 层 JSON 结构校验链路。
-2. `libs/tracer_core/src/infrastructure/reports/shared/utils/config/config_utils.*`
+2. `libs/tracer_core/src/infra/reports/shared/utils/config/config_utils.*`
    - 未继续使用的旧 JSON 配置工具口子。
-3. `libs/tracer_core/src/infrastructure/serialization/core/log_codec.*`
+3. `libs/tracer_core/src/infra/serialization/core/log_codec.*`
    - 旧的内部 JSON codec 头接口。
 
 这些删除对应的设计理念是：

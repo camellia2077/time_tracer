@@ -108,13 +108,13 @@ If the database already exists before the run:
 - `apps/tracer_core_shell/host/android_runtime_factory.cpp` keeps runtime
   bootstrap side-effect free with respect to ingest persistence and no longer
   bootstraps SQLite during runtime creation.
-- `libs/tracer_core/src/infrastructure/persistence/importer/repository.*`
+- `libs/tracer_core/src/infra/persistence/importer/repository.*`
   stores the database path and opens / initializes SQLite only when a write path
   actually executes.
-- `libs/tracer_core/src/infrastructure/persistence/sqlite_database_health_checker.cpp`
+- `libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.cpp`
   validates write preconditions by checking path readiness instead of opening
   SQLite.
-- `libs/tracer_core/src/infrastructure/reports/lazy_sqlite_report_query_service.*`
+- `libs/tracer_core/src/infra/reports/lazy_sqlite_report_query_service.*`
   and `lazy_sqlite_report_data_query_service.*` keep report/query reads lazy and
   return explicit missing-database errors instead of silently creating a new
   database.

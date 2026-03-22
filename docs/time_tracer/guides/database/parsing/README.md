@@ -23,9 +23,9 @@
 
 ## 3. 主源码入口
 
-- `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`
-- `libs/tracer_core/src/infrastructure/query/data/data_query_repository_sql.cpp`
-- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`
+- `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
+- `libs/tracer_core/src/infra/query/data/data_query_repository_sql.cpp`
+- `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`
 
 ## 4. 与树生成算法的边界
 

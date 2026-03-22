@@ -36,20 +36,20 @@ Detailed navigation for the IO adapter library used around the core runtime.
 ## Public Surfaces
 
 1. Canonical module surfaces under `src/modules`
-2. Runtime adapter declarations under `src/infrastructure/io/internal/runtime_adapter_types.hpp`
+2. Runtime adapter declarations under `src/infra/io/internal/runtime_adapter_types.hpp`
    remain implementation-owned, not consumer-facing contracts
 
 ## Change Routing
 
 1. Change raw file enumeration, file read/write behavior, or filesystem edge cases:
-   - start in `src/infrastructure/io/core`
-   - then inspect `src/infrastructure/io/utils/file_utils.*`
+   - start in `src/infra/io/core`
+   - then inspect `src/infra/io/utils/file_utils.*`
 2. Change TXT ingest source collection:
-   - start in `src/infrastructure/io/txt_ingest_input_provider.cpp`
-   - then inspect `src/infrastructure/io/internal/runtime_adapter_types.hpp`
+   - start in `src/infra/io/txt_ingest_input_provider.cpp`
+   - then inspect `src/infra/io/internal/runtime_adapter_types.hpp`
 3. Change processed-data persistence or validation:
-   - start in `src/infrastructure/io/processed_data_io.cpp`
-   - then inspect `src/infrastructure/io/processed_json_validation.*`
+   - start in `src/infra/io/processed_data_io.cpp`
+   - then inspect `src/infra/io/processed_json_validation.*`
    - pair with core serialization if format behavior changes
 4. Change module exports or runtime bridge assembly:
    - inspect `src/modules`

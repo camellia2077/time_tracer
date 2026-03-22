@@ -1,6 +1,6 @@
 module;
 
-#include "infrastructure/io/core/file_writer.hpp"
+#include "infra/io/core/file_writer.hpp"
 
 export module tracer.adapters.io.core.writer;
 
