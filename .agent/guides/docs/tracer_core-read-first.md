@@ -1,32 +1,15 @@
 # tracer_core Read-First Guide
 
 Use this guide before editing `libs/tracer_core/**` or `apps/tracer_core_shell/**`.
-It is intentionally scoped to the current line:
-`tracer_core_consumer_import_expansion_reassessment`.
 
 ## Base Read Set
-Read these first for any task on the current line:
+Read these first for any core task:
 1. `docs/time_tracer/architecture/library_dependency_map.md`
 2. `docs/time_tracer/architecture/libraries/tracer_core.md`
 3. `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
-4. `temp/tracer_core_module_refactor_master.md`
-5. `temp/tracer_core_consumer_import_expansion_reassessment.md`
-6. `temp/archive/module_refactor/tracer_core_ecosystem_compat_surface_reassessment.md`
 
 Do not treat `libs/tracer_core/README.md` as the primary implementation guide.
 It is only a short local index.
-
-## Current Baseline
-- Active default line:
-  `tracer_core_consumer_import_expansion_reassessment`
-- Current open checkpoint:
-  `Phase 3 closeout complete / retain core_responses deferred`
-- Closed baseline:
-  `tracer_core_pure_module_only_reassessment`
-  → `done with retained outer-boundary surface`
-- Latest closed line:
-  `tracer_core_ecosystem_compat_surface_reassessment`
-  → `done`
 
 ## Current Focus
 - Wave 1 completed:
@@ -34,7 +17,7 @@ It is only a short local index.
 - Wave 1 completed:
   `apps/tracer_core_shell/tests/platform/infrastructure/tests/validation_issue_reporter_tests.cpp`
 - Wave 1 completed:
-  `libs/tracer_core/tests/infrastructure/tests/report_formatter/report_formatter_parity_fixture_tests.cpp`
+  `libs/tracer_core/tests/infra/tests/report_formatter/report_formatter_parity_fixture_tests.cpp`
 - Phase 3 completed:
   `apps/tracer_core_shell/pch.hpp`
   first shrink wave (`6` immediate removals)
@@ -113,6 +96,6 @@ It is only a short local index.
 - Core code changes:
   `python tools/run.py validate --plan <plan> --paths-file <paths>`
 - Shell/runtime integration touched:
-  `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+  `python tools/run.py verify --app tracer_core_shell --scope batch --concise`
 - Android host/runtime touched:
   `python tools/run.py build --app tracer_android --profile android_edit`

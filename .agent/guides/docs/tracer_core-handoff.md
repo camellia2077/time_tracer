@@ -3,17 +3,9 @@
 Use this document when a new agent takes over work in `libs/tracer_core/**`
 or `apps/tracer_core_shell/**`.
 
-This handoff is scoped to the current line only:
-`tracer_core_consumer_import_expansion_reassessment`.
-Older patch history belongs in:
-- `temp/tracer_core_module_refactor_master.md`
-- `temp/archive/module_refactor/**`
-
 ## Current Snapshot
 - Snapshot date:
   `2026-03-16`
-- Active line:
-  `tracer_core_consumer_import_expansion_reassessment`
 - Current status:
   `Phase 3`
   closeout is complete;
@@ -21,17 +13,12 @@ Older patch history belongs in:
   shrink line now ends with retained
   `core_responses`
   boundary
-- Closed prerequisites:
-  - `tracer_core_pure_module_only_reassessment`
-    → `done with retained outer-boundary surface`
-  - `tracer_core_ecosystem_compat_surface_reassessment`
-    → `done`
 
-## What This Line Is
+## Scope
 - Goal:
   expand remaining safe
   `direct module consumption`
-  after `Goal 2` closeout
+  after the earlier module-boundary closeout
 - Non-goal:
   reopen ecosystem compat-removal cleanup
 - Non-goal:
@@ -128,7 +115,7 @@ Older patch history belongs in:
 - `apps/tracer_core_shell/tests/platform/infrastructure/tests/validation_issue_reporter_tests.cpp`
   now consumes
   `tracer.core.infrastructure.logging`
-- `libs/tracer_core/tests/infrastructure/tests/report_formatter/report_formatter_parity_fixture_tests.cpp`
+- `libs/tracer_core/tests/infra/tests/report_formatter/report_formatter_parity_fixture_tests.cpp`
   now consumes
   `tracer.core.infrastructure.config.loader`
   and
@@ -147,9 +134,6 @@ Before editing:
 2. `docs/time_tracer/architecture/libraries/tracer_core.md`
 3. `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
 4. `.agent/guides/docs/tracer_core-read-first.md`
-5. `temp/tracer_core_module_refactor_master.md`
-6. `temp/tracer_core_consumer_import_expansion_reassessment.md`
-7. `temp/archive/module_refactor/tracer_core_ecosystem_compat_surface_reassessment.md`
 
 Read extra contract docs only when the touched path crosses that boundary:
 - `docs/time_tracer/core/contracts/c_abi.md`
@@ -170,14 +154,6 @@ Read extra contract docs only when the touched path crosses that boundary:
 - Core code changes:
   `python tools/run.py validate --plan <plan> --paths-file <paths>`
 - Shell/runtime integration touched:
-  `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+  `python tools/run.py verify --app tracer_core_shell --scope batch --concise`
 - Android host/runtime touched:
   `python tools/run.py build --app tracer_android --profile android_edit`
-
-## Closeout Rule
-- Update `temp/tracer_core_consumer_import_expansion_reassessment.md`
-  whenever phase status changes
-- Update `temp/tracer_core_module_refactor_master.md`
-  when the default next step changes
-- Leave a concrete next step,
-  not a vague “continue later”

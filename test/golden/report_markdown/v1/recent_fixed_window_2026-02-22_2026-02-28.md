@@ -3,7 +3,7 @@
 - **Total Time Recorded**: 168h 12m (average: 24h 1m/day)
 - **Actual Days with Records**: 7
 - **Status Days (True)**: 7 (100.00%)
-- **Sleep Days (True)**: 7 (100.00%)
+- **Wake Anchor Days (True)**: 7 (100.00%)
 - **Exercise Days (True)**: 4 (57.14%)
 - **Cardio Days (True)**: 3 (42.86%)
 - **Anaerobic Days (True)**: 2 (28.57%)
