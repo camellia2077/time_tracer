@@ -130,7 +130,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             next_action=f"Fix errors and rerun: {_build_command_text(args)}",
             app_name=args.app,
             repo_root=ctx.repo_root,
-            log_path=cmd.resolve_output_log_path(
+            stage="build",
+            build_log_path=cmd.resolve_output_log_path(
                 app_name=args.app,
                 tidy=args.tidy,
                 build_dir_name=args.build_dir,

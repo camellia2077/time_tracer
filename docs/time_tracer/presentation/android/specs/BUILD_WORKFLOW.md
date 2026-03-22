@@ -67,6 +67,7 @@ Common targeted commands:
 - `out/test/artifact_android/result_cases.json`
 - `out/test/artifact_android/logs/output.log`
 - `out/validate/<run_name>/summary.json`
+- `apps/android/app/build/outputs/final-apk/release/Tracer.apk`
 
 ## Related Docs
 

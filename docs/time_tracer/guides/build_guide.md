@@ -24,25 +24,13 @@ python tools/run.py verify ...
 3. `TT_STATIC_MINGW_RUNTIME`
 作用：MinGW 目标优先静态链接 `libgcc/libstdc++/winpthread`，减少运行时 DLL。
 默认：Windows `ON`，其他平台 `OFF`。
-4. `TT_ENABLE_EXPERIMENTAL_LTO`
-作用：启用实验性 LTO/FTO 开关（默认关闭）。
+4. `TT_ENABLE_LTO`
+作用：启用显式 LTO/FTO 路径（默认关闭）。
 默认：`OFF`。
 
 ## Recommended Profiles
 
-1. `default`（稳定）
-用途：日常开发/PR 快速验证。
-命令：
-
-```bash
-# 默认 Rust
-python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
-
-# 回退 C++
-python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
-```
-
-2. `optimized`（稳定发布）
+1. `optimized`（稳定发布）
 用途：Windows 发布构建（bundled sqlite + header-only toml++ + static runtime）。
 命令：
 
@@ -54,13 +42,13 @@ python tools/run.py build --app tracer_core --profile release_bundle --build-dir
 python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows
 ```
 
-3. `lto-experimental`（实验）
-用途：仅用于试验 LTO 参数组合，建议允许失败，不阻塞主线。
+2. `lto`（正式可选）
+用途：显式启用 LTO 验证路径；默认 profile 仍保持关闭。
 命令：
 
 ```bash
-# C++ 轨专用（实验 LTO 开关走 CMake）
-python tools/run.py verify --app tracer_windows_cli --profile release_bundle --build-dir build_lto_exp --concise --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON
+# C++ 轨专用（显式 LTO 开关走 CMake）
+python tools/run.py verify --app tracer_core_shell --profile release_bundle_ci_no_pch --build-dir build_lto --concise --cmake-args=-DTT_ENABLE_LTO=ON
 ```
 
 ## Rollback Playbook
@@ -88,11 +76,11 @@ python tools/run.py build --app tracer_windows_cli --profile release_bundle --bu
 python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_STATIC_MINGW_RUNTIME=OFF
 ```
 
-4. 关闭实验 LTO：
+4. 关闭 LTO：
 
 ```bash
 # C++ 轨专用（CMake 开关）
-python tools/run.py build --app tracer_windows_cli --profile release_bundle --build-dir build --cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=OFF
+python tools/run.py build --app tracer_core_shell --profile release_bundle_ci_no_pch --build-dir build --cmake-args=-DTT_ENABLE_LTO=OFF
 ```
 
 建议：每次只变更一个开关，并记录构建日志与二进制依赖变化。

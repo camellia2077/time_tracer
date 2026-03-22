@@ -10,6 +10,47 @@ on:
     - cron: "0 2 * * 0"
 
 jobs:
+  detect-changes:
+    name: detect-changes
+    runs-on: ubuntu-latest
+    outputs:
+      run_heavy_verify: ${{ steps.decide.outputs.run_heavy_verify }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Filter changed paths
+        id: filter
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            code:
+              - 'apps/**'
+              - 'libs/**'
+              - 'tools/**'
+              - 'test/**'
+              - 'assets/**'
+              - 'cmake/**'
+              - '.github/workflows/**'
+              - '.gitignore'
+              - '.gitattributes'
+              - '.clang-format'
+              - '.clang-tidy'
+              - 'pyproject.toml'
+
+      - name: Decide whether to run heavy verify
+        id: decide
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "schedule" ]]; then
+            echo "run_heavy_verify=true" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ steps.filter.outputs.code }}" == "true" ]]; then
+            echo "run_heavy_verify=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run_heavy_verify=false" >> "$GITHUB_OUTPUT"
+          fi
+
   prepare-windows-matrix:
     name: prepare-windows-matrix
     runs-on: ubuntu-latest
@@ -32,7 +73,9 @@ jobs:
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
   windows-matrix:
-    needs: prepare-windows-matrix
+    needs:
+      - detect-changes
+      - prepare-windows-matrix
     name: ${{ matrix.job_name }}
     runs-on: windows-latest
     continue-on-error: ${{ matrix.allow_failure }}
@@ -41,15 +84,24 @@ jobs:
       matrix: ${{ fromJson(needs.prepare-windows-matrix.outputs.matrix) }}
 
     steps:
+      - name: Skip heavy verify for docs/ui-only change
+        if: needs.detect-changes.outputs.run_heavy_verify != 'true'
+        shell: pwsh
+        run: |
+          Write-Host "Skipping Windows verify because this push/PR only changed docs/ui or other non-code paths."
+
       - name: Checkout
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
         uses: actions/checkout@v4
 
       - name: Setup Python
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
       - name: Setup MSYS2 UCRT64 Toolchain
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
         uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
@@ -63,24 +115,25 @@ jobs:
             mingw-w64-ucrt-x86_64-nlohmann-json
 
       - name: Add UCRT64 Bin To PATH
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
         shell: pwsh
         run: |
           "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
       - name: Verify tracer_core_shell (stable rows)
-        if: matrix.cmake_args == ''
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true' && matrix.cmake_args == ''
         shell: pwsh
         run: |
           python tools/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise
 
       - name: Verify tracer_core_shell (experimental row)
-        if: matrix.cmake_args != ''
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true' && matrix.cmake_args != ''
         shell: pwsh
         run: |
           python tools/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir ${{ matrix.build_dir }} --concise ${{ matrix.cmake_args }}
 
       - name: Show markdown audit report
-        if: always()
+        if: always() && needs.detect-changes.outputs.run_heavy_verify == 'true'
         shell: pwsh
         run: |
           $p = "temp/report-md-golden-byte-audit.md"
@@ -92,7 +145,7 @@ jobs:
           }
 
       - name: Upload markdown audit report
-        if: always()
+        if: always() && needs.detect-changes.outputs.run_heavy_verify == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: report-md-golden-byte-audit-${{ matrix.job_name }}

@@ -122,7 +122,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             next_action=f"Fix errors and rerun: {_build_command_text(args)}",
             app_name=args.app,
             repo_root=ctx.repo_root,
-            log_path=ctx.get_tidy_dir(args.app, workspace.build_dir_name) / "build.log",
+            stage="tidy",
+            build_log_path=ctx.get_tidy_dir(args.app, workspace.build_dir_name) / "build.log",
             fallback_key_error_hint="Tidy failed. See command output above.",
             include_result_json=False,
         )

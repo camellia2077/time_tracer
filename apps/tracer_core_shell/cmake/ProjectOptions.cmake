@@ -23,8 +23,8 @@ option(TT_STATIC_MINGW_RUNTIME
 option(TT_STATIC_MINGW_RUNTIME_PLUGINS
        "Prefer static libgcc/libstdc++/winpthread for plugin/runtime shared libraries on Windows MinGW builds"
        ${TT_STATIC_MINGW_RUNTIME})
-option(TT_ENABLE_EXPERIMENTAL_LTO
-       "Enable experimental LTO/FTO path for Release builds"
+option(TT_ENABLE_LTO
+       "Enable LTO/FTO path for Release builds"
        OFF)
 unset(TT_WINDOWS_DEP_DEFAULT)
 
@@ -85,4 +85,4 @@ message(STATUS "TT_USE_BUNDLED_SQLITE=${TT_USE_BUNDLED_SQLITE}")
 message(STATUS "TT_TOML_HEADER_ONLY=${TT_TOML_HEADER_ONLY}")
 message(STATUS "TT_STATIC_MINGW_RUNTIME=${TT_STATIC_MINGW_RUNTIME}")
 message(STATUS "TT_STATIC_MINGW_RUNTIME_PLUGINS=${TT_STATIC_MINGW_RUNTIME_PLUGINS}")
-message(STATUS "TT_ENABLE_EXPERIMENTAL_LTO=${TT_ENABLE_EXPERIMENTAL_LTO}")
+message(STATUS "TT_ENABLE_LTO=${TT_ENABLE_LTO}")

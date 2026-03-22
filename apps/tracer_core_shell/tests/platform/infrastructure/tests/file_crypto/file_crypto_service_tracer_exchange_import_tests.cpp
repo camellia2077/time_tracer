@@ -1,4 +1,5 @@
 // infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_import_tests.cpp
+#include <iostream>
 #include <string>
 #include <string_view>
 

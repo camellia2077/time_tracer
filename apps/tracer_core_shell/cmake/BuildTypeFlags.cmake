@@ -12,16 +12,17 @@ option(DISABLE_OPTIMIZATION "Disable all optimizations for fastest compilation s
 option(ENABLE_SHARED_LINK_SIZE_OPT
        "Enable shared-library linker size opts (ICF/gc-sections) in Release"
        ON)
-option(TT_ENABLE_EXPERIMENTAL_LTO
-       "Enable experimental Link-Time Optimization for Release builds"
-       OFF)
 option(ENABLE_LTO
-       "Legacy switch for Link-Time Optimization (prefer TT_ENABLE_EXPERIMENTAL_LTO)"
+       "Legacy switch for Link-Time Optimization (prefer TT_ENABLE_LTO)"
        OFF)
 
-if(TT_ENABLE_EXPERIMENTAL_LTO)
+if(NOT DEFINED TT_ENABLE_LTO)
+    set(TT_ENABLE_LTO OFF)
+endif()
+
+if(TT_ENABLE_LTO)
     set(ENABLE_LTO ON CACHE BOOL
-        "Legacy switch for Link-Time Optimization (prefer TT_ENABLE_EXPERIMENTAL_LTO)"
+        "Legacy switch for Link-Time Optimization (prefer TT_ENABLE_LTO)"
         FORCE)
 endif()
 
@@ -60,16 +61,16 @@ endif()
 # ==================== [核心修改] ====================
 set(TIME_TRACKER_FTO_FORCED_OFF OFF)
 if(ENABLE_LTO AND NOT DISABLE_OPTIMIZATION)
-    message(WARNING
-        "FTO/LTO is forbidden for full-optimization builds because it "
-        "deterministically triggers compiler ICE. Forcing ENABLE_LTO=OFF.")
-    set(ENABLE_LTO OFF CACHE BOOL
-        "Enable Link-Time Optimization for Release builds" FORCE)
-    set(TIME_TRACKER_FTO_FORCED_OFF ON)
-
-    if(TT_ENABLE_EXPERIMENTAL_LTO)
+    if(TT_ENABLE_LTO)
         message(WARNING
-            "TT_ENABLE_EXPERIMENTAL_LTO is ignored by ICE-safety policy.")
+            "TT_ENABLE_LTO explicitly enables the opt-in LTO path for this build.")
+    else()
+        message(WARNING
+            "FTO/LTO is forbidden for full-optimization builds because it "
+            "deterministically triggers compiler ICE. Forcing ENABLE_LTO=OFF.")
+        set(ENABLE_LTO OFF CACHE BOOL
+            "Enable Link-Time Optimization for Release builds" FORCE)
+        set(TIME_TRACKER_FTO_FORCED_OFF ON)
     endif()
 endif()
 # ====================================================

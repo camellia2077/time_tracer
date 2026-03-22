@@ -116,7 +116,8 @@ def handle_post_build_state(
             next_action=f"Fix errors and rerun: {verify_command_text}",
             app_name=app_name,
             repo_root=repo_root,
-            log_path=build_log_path,
+            stage="build",
+            build_log_path=build_log_path,
             fallback_key_error_hint="Build failed. See command output above.",
         )
         print_result_paths_fn(app_name=app_name, repo_root=repo_root)

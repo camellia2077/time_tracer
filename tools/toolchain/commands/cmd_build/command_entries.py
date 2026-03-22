@@ -9,7 +9,7 @@ def _print_build_output_dir(
     tidy: bool,
 ) -> None:
     if backend == "gradle":
-        build_root = (command.ctx.get_app_dir(app_name) / "build").resolve()
+        build_root = (command.ctx.get_app_dir(app_name) / "app" / "build" / "outputs" / "apk" / "release").resolve()
     elif tidy:
         build_root = command.ctx.get_tidy_dir(app_name, build_dir_name)
     else:

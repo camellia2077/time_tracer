@@ -1,12 +1,12 @@
 module;
 
 #include <chrono>
-#include <future>
+#include <exception>
 #include <iomanip>
 #include <iterator>
-#include <mutex>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "application/ports/logger.hpp"
@@ -36,33 +36,48 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
   }
   const auto kStartTime = std::chrono::steady_clock::now();
 
-  std::mutex data_mutex;
-  std::vector<std::future<LogProcessingResult>> futures;
+  const auto& inputs = session.state.ingest_inputs;
+  std::vector<LogProcessingResult> results(inputs.size());
+  std::vector<std::exception_ptr> thread_errors(inputs.size());
+  std::vector<std::thread> workers;
+  workers.reserve(inputs.size());
 
-  for (const auto& input : session.state.ingest_inputs) {
-    futures.push_back(std::async(
-        std::launch::async, [&session, input]() -> LogProcessingResult {
+  for (size_t index = 0; index < inputs.size(); ++index) {
+    workers.emplace_back(
+        [&session, &results, &thread_errors, index, input = inputs[index]]() {
           try {
             LogProcessor processor(session.state.converter_config);
-            return processor.ProcessSourceContent(input.source_id,
-                                                  input.content);
-
+            results[index] = processor.ProcessSourceContent(input.source_id,
+                                                            input.content);
           } catch (const std::exception& e) {
             const std::string kSourceLabel = input.source_label.empty()
                                                  ? input.source_id
                                                  : input.source_label;
             tracer_core::application::ports::LogError(
                 "Thread Error [" + kSourceLabel + "]: " + e.what());
-            return LogProcessingResult{.success = false, .processed_data = {}};
+            results[index] = LogProcessingResult{
+                .success = false,
+                .processed_data = {},
+            };
+          } catch (...) {
+            thread_errors[index] = std::current_exception();
           }
-        }));
+        });
+  }
+
+  for (auto& worker : workers) {
+    worker.join();
   }
 
   bool all_success = true;
   int processed_count = 0;
 
-  for (auto& future : futures) {
-    LogProcessingResult result = future.get();
+  for (size_t index = 0; index < results.size(); ++index) {
+    if (thread_errors[index]) {
+      std::rethrow_exception(thread_errors[index]);
+    }
+
+    auto& result = results[index];
     ++processed_count;
 
     if (!result.success) {
@@ -70,7 +85,6 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
       continue;
     }
 
-    std::scoped_lock lock(data_mutex);
     for (auto& [year_month_key, month_days] : result.processed_data) {
       auto& merged_days = session.result.processed_data[year_month_key];
       merged_days.insert(merged_days.end(),
