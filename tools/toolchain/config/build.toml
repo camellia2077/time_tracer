@@ -148,13 +148,6 @@ gradle_tasks = [
 [build.ci]
 # Source of truth for GitHub Actions windows matrix generation.
 [[build.ci.windows_matrix]]
-job_name = "default"
-profile = "fast_ci_no_pch"
-build_dir = "build_fast"
-cmake_args = ""
-allow_failure = false
-
-[[build.ci.windows_matrix]]
 job_name = "optimized"
 profile = "release_bundle_ci_no_pch"
 build_dir = "build_release"
@@ -162,8 +155,8 @@ cmake_args = ""
 allow_failure = false
 
 [[build.ci.windows_matrix]]
-job_name = "lto-experimental"
+job_name = "lto"
 profile = "release_bundle_ci_no_pch"
-build_dir = "build_lto_exp"
-cmake_args = "--cmake-args=-DTT_ENABLE_EXPERIMENTAL_LTO=ON"
-allow_failure = true
+build_dir = "build_lto"
+cmake_args = "--cmake-args=-DTT_ENABLE_LTO=ON"
+allow_failure = false

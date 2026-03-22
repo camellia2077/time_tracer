@@ -13,6 +13,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from tools.toolchain.core.context import Context  # noqa: E402
 from tools.toolchain.commands.tidy import workspace as tidy_workspace  # noqa: E402
+from tools.tests.platform._path_assertions import assert_same_paths  # noqa: E402
 
 
 def _write_text(path: Path, content: str) -> None:
@@ -279,12 +280,15 @@ prebuild_targets = ["tc_shared_lib", "tc_domain_lib"]
                 workspace.prebuild_targets,
                 ["tc_shared_lib", "tc_domain_lib"],
             )
-            self.assertEqual(
+            expected_roots = [
+                repo_root / "libs" / "tracer_core" / "src",
+                repo_root / "libs" / "tracer_adapters_io" / "src",
+                repo_root / "libs" / "tracer_core_bridge_common" / "src",
+                repo_root / "libs" / "tracer_transport" / "src",
+            ]
+            for root in expected_roots:
+                root.mkdir(parents=True, exist_ok=True)
+            assert_same_paths(
                 workspace.source_roots,
-                [
-                    repo_root / "libs" / "tracer_core" / "src",
-                    repo_root / "libs" / "tracer_adapters_io" / "src",
-                    repo_root / "libs" / "tracer_core_bridge_common" / "src",
-                    repo_root / "libs" / "tracer_transport" / "src",
-                ],
+                expected_roots,
             )

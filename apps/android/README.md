@@ -41,6 +41,7 @@ Gradle rule:
 - Runtime config source of truth: `assets/tracer_core/config`
 - Android runtime config snapshot: `apps/android/runtime/src/main/assets/tracer_core/config`
 - Android app version source: `apps/android/meta/version.properties`
+- Core business version source: `libs/tracer_core/src/shared/types/version.hpp`
 - Release signing template: `apps/android/keystore.properties.example`
 
 ## Start Here

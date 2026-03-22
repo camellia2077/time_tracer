@@ -58,6 +58,7 @@ captures/
 # 忽略 keystore 文件
 *.jks
 apps/tracer_android/keystore.properties
+apps/android/keystore.properties
 
 
 # 忽略 Code Runner 产生的任何临时 Python 文件

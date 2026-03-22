@@ -21,7 +21,7 @@ def run_scope_pipeline(
     print_failure_report_fn,
     print_result_paths_fn,
 ) -> int:
-    suite_ret = run_scope_checks(
+    suite_ret, failed_stage = run_scope_checks(
         verify_scope=verify_scope,
         run_task_scope_checks=run_task_scope_checks,
         run_unit_scope_checks=run_unit_scope_checks,
@@ -45,6 +45,7 @@ def run_scope_pipeline(
             next_action=f"Fix errors and rerun: {verify_command_text}",
             app_name=app_name,
             repo_root=repo_root,
+            stage=failed_stage,
             fallback_key_error_hint="Test gate failed. See command output above.",
         )
 

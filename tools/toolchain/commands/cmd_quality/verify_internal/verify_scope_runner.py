@@ -12,15 +12,15 @@ def run_scope_checks(
     run_task_scope_checks: Callable[[], int],
     run_unit_scope_checks: Callable[[], int],
     run_artifact_scope_checks: Callable[[], int],
-) -> int:
+) -> tuple[int, str]:
     if verify_scope == "task":
-        return run_task_scope_checks()
+        return run_task_scope_checks(), "verify-task"
     if verify_scope == "unit":
-        return run_unit_scope_checks()
+        return run_unit_scope_checks(), "verify-unit"
     if verify_scope == "artifact":
-        return run_artifact_scope_checks()
+        return run_artifact_scope_checks(), "verify-artifact"
 
     unit_ret = run_unit_scope_checks()
     if unit_ret != 0:
-        return unit_ret
-    return run_artifact_scope_checks()
+        return unit_ret, "verify-unit"
+    return run_artifact_scope_checks(), "verify-artifact"

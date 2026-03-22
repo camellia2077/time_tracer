@@ -44,6 +44,10 @@ trigger: always_on
   - `validate` requires explicit focused paths via `--paths` or `--paths-file`; do not infer scope from the whole dirty worktree.
   - If the change only touches documentation files (`docs/**`, `*.md`) and does not modify code/config/scripts/tests, skip build/test by default.
   - Heavy workflows (`tidy-flow`, full test matrix, installer packaging) run only on explicit user request.
+- Pre-push gate:
+  - Before pushing non-`docs/**` / non-`ui/**`-only changes to a remote, run:
+    - `python tools/run.py verify --app tracer_core_shell --profile fast_ci_no_pch --build-dir build_fast --concise`
+  - `docs/**`-only or `ui/**`-only changes may skip this gate unless the user explicitly requests a full verify.
 - High-risk contract gates:
   - Read `docs/time_tracer/core/contracts/c_abi.md` before editing C ABI symbols / signatures.
   - Read `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md` before editing report-chart fields / semantics.

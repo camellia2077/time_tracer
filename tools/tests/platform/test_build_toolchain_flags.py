@@ -12,6 +12,9 @@ if str(REPO_ROOT) not in sys.path:
 from tools.toolchain.commands.cmd_build.common.flags import resolve_toolchain_flags  # noqa: E402
 from tools.toolchain.commands.cmd_build import cmake as build_cmake  # noqa: E402
 from tools.toolchain.core.context import Context  # noqa: E402
+from tools.tests.platform._path_assertions import (  # noqa: E402
+    assert_command_path_arg,
+)
 
 
 def _write_text(path: Path, content: str) -> None:
@@ -240,10 +243,10 @@ path = "apps/demo"
 
             self.assertEqual(ret, 0)
             self.assertEqual(configure_calls, [])
-            self.assertEqual(
-                build_calls,
-                [["cmake", "--build", str(build_dir), "-j"]],
-            )
+            self.assertEqual(len(build_calls), 1)
+            self.assertEqual(build_calls[0][0:2], ["cmake", "--build"])
+            assert_command_path_arg(build_calls[0], 2, build_dir)
+            self.assertEqual(build_calls[0][3:], ["-j"])
 
     def test_runtime_platform_windows_adds_core_runtime_targets(self):
         with TemporaryDirectory() as tmp:
@@ -288,15 +291,10 @@ path = "apps/tracer_core_shell"
             )
 
             self.assertEqual(ret, 0)
+            self.assertEqual(len(build_calls), 1)
+            self.assertEqual(build_calls[0][0:2], ["cmake", "--build"])
+            assert_command_path_arg(build_calls[0], 2, build_dir)
             self.assertEqual(
-                build_calls,
-                [[
-                    "cmake",
-                    "--build",
-                    str(build_dir),
-                    "-j",
-                    "--target",
-                    "tc_rpt_shared_lib",
-                    "tc_shared_dll",
-                ]],
+                build_calls[0][3:],
+                ["-j", "--target", "tc_rpt_shared_lib", "tc_shared_dll"],
             )
