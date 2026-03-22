@@ -2,7 +2,7 @@ title_template = "Weekly Summary for {range_label} ({start_date} to {end_date})"
 actual_days_label = "Actual Days with Records"
 
 status_days_label = "Status Days (True)"
-sleep_days_label = "Sleep Days (True)"
+wake_anchor_days_label = "Wake Anchor Days (True)"
 exercise_days_label = "Exercise Days (True)"
 
 cardio_days_label = "Cardio Days (True)"

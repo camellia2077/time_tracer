@@ -75,7 +75,7 @@ python tools/run.py build --app tracer_android --profile android_edit
 
 ## 7. 与其他端的关系
 
-- Windows 图标流程见：`apps/tracer_cli/windows/icon_generation.md`
+- Windows 图标流程见：`apps/cli/windows/icon_generation.md`
 - Android 与 Windows 共用同一套品牌母版：
   - `design/branding/master/time_tracer_brand_master_symbol.svg`
 - 两端最终资源不同：
