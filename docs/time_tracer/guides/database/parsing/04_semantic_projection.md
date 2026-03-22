@@ -43,8 +43,8 @@ return records
 
 ## 5. 源码定位
 
-- `libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`：`QueryProjectTree(...)` 取行与空值过滤
-- `libs/tracer_core/src/infrastructure/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromRecords(...)`（投影结果的下游消费者）
+- `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`：`QueryProjectTree(...)` 取行与空值过滤
+- `libs/tracer_core/src/infra/reports/data/utils/project_tree_builder.cpp`：`BuildProjectTreeFromRecords(...)`（投影结果的下游消费者）
 
 ## 6. 回到总览
 

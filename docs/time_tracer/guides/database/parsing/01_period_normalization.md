@@ -40,9 +40,9 @@ return filters
 
 ## 5. 源码定位
 
-- `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`：`BuildCliFilters(...)`
-- `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`：`ApplyTreePeriod(...)`
-- `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`：`SqliteDataQueryService::RunDataQuery(...)`
+- `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`：`BuildCliFilters(...)`
+- `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`：`ApplyTreePeriod(...)`
+- `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`：`SqliteDataQueryService::RunDataQuery(...)`
 
 ## 6. 下一步
 

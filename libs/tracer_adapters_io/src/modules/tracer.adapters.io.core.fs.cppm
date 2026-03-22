@@ -1,6 +1,6 @@
 module;
 
-#include "infrastructure/io/core/file_system_helper.hpp"
+#include "infra/io/core/file_system_helper.hpp"
 
 export module tracer.adapters.io.core.fs;
 

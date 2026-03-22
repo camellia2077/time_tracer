@@ -1,6 +1,6 @@
 module;
 
-#include "infrastructure/io/utils/file_utils.hpp"
+#include "infra/io/utils/file_utils.hpp"
 
 export module tracer.adapters.io.utils.file_utils;
 

@@ -3,9 +3,9 @@
 本文用于说明当前 `time_tracer` 的 SQLite 存储结构，方便外部程序（Python、Go、Rust、BI 工具等）直接查询。
 
 权威来源（以代码为准）：
-- `libs/tracer_core/src/infrastructure/persistence/importer/sqlite/connection.cpp`
-- `libs/tracer_core/src/infrastructure/schema/day_schema.hpp`
-- `libs/tracer_core/src/infrastructure/schema/sqlite_schema.hpp`
+- `libs/tracer_core/src/infra/persistence/importer/sqlite/connection.cpp`
+- `libs/tracer_core/src/infra/schema/day_schema.hpp`
+- `libs/tracer_core/src/infra/schema/sqlite_schema.hpp`
 
 相关文档：
 - `docs/time_tracer/core/ingest/ingest_data_structures.md`（文本内容转换为 struct 的流程与字段说明）
@@ -38,25 +38,14 @@
 | `date` | TEXT | PRIMARY KEY | 日期 |
 | `year` | INTEGER |  | 年 |
 | `month` | INTEGER |  | 月（1~12） |
-| `status` | INTEGER |  | 状态标记（0/1） |
-| `sleep` | INTEGER |  | 睡眠标记（0/1） |
+| `wake_anchor` | INTEGER |  | 起床锚点标记（0/1） |
 | `remark` | TEXT |  | 当天备注 |
 | `getup_time` | TEXT |  | 起床时间（`HH:MM`） |
-| `exercise` | INTEGER |  | 运动标记（0/1） |
-| `total_exercise_time` | INTEGER |  | 运动总时长（秒） |
-| `cardio_time` | INTEGER |  | 有氧时长（秒） |
-| `anaerobic_time` | INTEGER |  | 无氧时长（秒） |
-| `gaming_time` | INTEGER |  | 游戏时长（秒） |
-| `grooming_time` | INTEGER |  | 洗漱时长（秒） |
-| `toilet_time` | INTEGER |  | 如厕时长（秒） |
-| `study_time` | INTEGER |  | 学习时长（秒） |
-| `sleep_night_time` | INTEGER |  | 夜间睡眠（秒） |
-| `sleep_day_time` | INTEGER |  | 白天睡眠（秒） |
-| `sleep_total_time` | INTEGER |  | 睡眠总时长（秒） |
-| `recreation_time` | INTEGER |  | 娱乐总时长（秒） |
-| `recreation_zhihu_time` | INTEGER |  | 知乎娱乐（秒） |
-| `recreation_bilibili_time` | INTEGER |  | B 站娱乐（秒） |
-| `recreation_douyin_time` | INTEGER |  | 抖音娱乐（秒） |
+
+说明：
+- `days` 表不再持久化 `study_time`、`sleep_total_time`、`grooming_time` 等派生时长列。
+- `status` / `exercise` 也不再持久化，改为在查询/报表阶段基于 `time_records` 与项目路径事实即时派生。
+- `wake_anchor` 代表 `hasWakeAnchor`，其语义为 `!isContinuation && getupTime 有效`。
 
 ### 3.2 `projects`
 
@@ -169,5 +158,5 @@ ORDER BY tr.logical_id;
 
 ## 8. 字段常量参考
 
-- `libs/tracer_core/src/infrastructure/schema/day_schema.hpp`
-- `libs/tracer_core/src/infrastructure/schema/sqlite_schema.hpp`
+- `libs/tracer_core/src/infra/schema/day_schema.hpp`
+- `libs/tracer_core/src/infra/schema/sqlite_schema.hpp`

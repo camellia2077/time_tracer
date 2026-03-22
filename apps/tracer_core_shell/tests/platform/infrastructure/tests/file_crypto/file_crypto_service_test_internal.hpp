@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-#include "infrastructure/crypto/file_crypto_service.hpp"
+#include "infra/crypto/file_crypto_service.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 #if defined(_WIN32)

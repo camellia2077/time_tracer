@@ -27,9 +27,9 @@ ProjectNode(1) ---- (N) ProjectNode.children
 | 字段组 | 代表字段 |
 | --- | --- |
 | 主键/时间 | `date`, `year`, `month` |
-| 日标记 | `status`, `sleep`, `exercise` |
+| 日元数据 | `wake_anchor`, `remark`, `getup_time` |
 | 文本信息 | `remark`, `getup_time` |
-| 聚合统计（秒） | `study_time`, `total_exercise_time`, `cardio_time`, `anaerobic_time`, `recreation_time`, `sleep_total_time` 等 |
+| 派生统计（查询期计算） | `study_time`, `total_exercise_time`, `cardio_time`, `anaerobic_time`, `recreation_time`, `sleep_total_time` 等 |
 
 ### 2.2 ProjectNode（项目层级）
 
@@ -87,9 +87,8 @@ ProjectNode(1) ---- (N) ProjectNode.children
 {
   "day": {
     "date": "2026-01-03",
-    "status": 1,
-    "exercise": 1,
-    "study_time": 3600
+    "wake_anchor": 1,
+    "remark": "duration-derived stats are computed at query time"
   },
   "record": {
     "logical_id": 20260103000001,

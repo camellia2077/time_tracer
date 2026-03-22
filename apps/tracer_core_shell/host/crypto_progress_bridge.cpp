@@ -3,7 +3,7 @@
 #include <string_view>
 
 #include "application/dto/core_requests.hpp"
-#include "infrastructure/crypto/file_crypto_service.hpp"
+#include "infra/crypto/file_crypto_service.hpp"
 #include "nlohmann/json.hpp"
 
 namespace tracer_core::shell::crypto_progress_bridge {

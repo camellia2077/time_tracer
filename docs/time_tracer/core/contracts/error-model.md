@@ -72,9 +72,9 @@
 ## 8. 相关代码入口
 1. `libs/tracer_core/src/domain/ports/diagnostics.hpp`
 2. `libs/tracer_core/src/domain/ports/diagnostics.cpp`
-3. `libs/tracer_core/src/infrastructure/logging/file_error_report_writer.hpp`
-4. `libs/tracer_core/src/infrastructure/logging/file_error_report_writer.cpp`
-5. `libs/tracer_core/src/infrastructure/logging/validation_issue_reporter.cpp`
+3. `libs/tracer_core/src/infra/logging/file_error_report_writer.hpp`
+4. `libs/tracer_core/src/infra/logging/file_error_report_writer.cpp`
+5. `libs/tracer_core/src/infra/logging/validation_issue_reporter.cpp`
 6. `apps/tracer_core_shell/api/android_jni/android_runtime_factory.cpp`
 7. `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`
 8. `apps/tracer_core_shell/api/c_api/tracer_core_c_api_internal.cpp`

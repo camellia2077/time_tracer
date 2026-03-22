@@ -50,13 +50,13 @@ Detailed navigation for the core business-logic library.
    - start in `src/application/use_cases`, `src/application/workflow`, or `src/application/pipeline`
    - if the change is shell-visible, also inspect `apps/tracer_core_shell/api/c_api`
 2. Change reporting/query semantics:
-   - start in `src/application/reporting/tree`, `src/infrastructure/query`, or `src/infrastructure/reports`
+   - start in `src/application/reporting/tree`, `src/infra/query`, or `src/infra/reports`
    - read stats contract docs first if external meaning changes
 3. Change config ownership or shell config bridges:
-   - start in `src/infrastructure/config`
+   - start in `src/infra/config`
    - then inspect `apps/tracer_core_shell/api/c_api` and `apps/tracer_core_shell/host`
 4. Change persistence or schema behavior:
-   - start in `src/infrastructure/persistence` and `src/infrastructure/schema`
+   - start in `src/infra/persistence` and `src/infra/schema`
 5. Change module ownership or retained declaration boundaries:
    - inspect `src/*/modules`, explicit boundary headers, and `cmake/sources/*.cmake`
 

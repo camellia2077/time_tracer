@@ -19,11 +19,7 @@ struct DayData {
 
   int year;
   int month;
-  int status;
-  int sleep;
-  int exercise;
-
-  ActivityStats stats;
+  int wake_anchor;
 };
 
 struct TimeRecordInternal {

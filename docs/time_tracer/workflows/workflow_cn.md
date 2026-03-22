@@ -41,13 +41,13 @@ flowchart LR
 旨在将原始文本转化为结构化的 JSON 归档。此流程常用于数据备份、调试或人工审核转换结果。
 
 **执行路径**:
-`物理硬盘 (.txt)` -> **[摄取管道: src/domain/logic/converter]** -> `领域实体 (DailyLog)` -> **[序列化器: src/infrastructure/serialization]** -> `物理硬盘 (.json)`
+`物理硬盘 (.txt)` -> **[摄取管道: src/domain/logic/converter]** -> `领域实体 (DailyLog)` -> **[序列化器: src/infra/serialization]** -> `物理硬盘 (.json)`
 
 ### 2.2 导入命令 (`import`)
 支持将已有的 JSON 归档文件批量快速导入数据库。
 
 **执行路径**:
-`物理硬盘 (.json)` -> **[适配器: src/application/adapters]** -> `领域实体 (DailyLog)` -> **[应用层: src/application/importer]** -> `基础设施: src/infrastructure/persistence`
+`物理硬盘 (.json)` -> **[适配器: src/application/adapters]** -> `领域实体 (DailyLog)` -> **[应用层: src/application/importer]** -> `基础设施: src/infra/persistence`
 
 ---
 

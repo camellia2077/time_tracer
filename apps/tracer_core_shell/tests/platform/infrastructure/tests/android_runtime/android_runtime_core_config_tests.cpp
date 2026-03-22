@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#include "infrastructure/config/loader/report_config_loader.hpp"
+#include "infra/config/loader/report_config_loader.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
 namespace android_runtime_tests {

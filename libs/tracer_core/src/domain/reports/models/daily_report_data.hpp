@@ -19,7 +19,7 @@ struct TimeRecord {
 
 struct DayMetadata {
   std::string status = "N/A";
-  std::string sleep = "N/A";
+  std::string wake_anchor = "N/A";
   std::string remark = "N/A";
   std::string getup_time = "N/A";
   std::string exercise = "N/A";

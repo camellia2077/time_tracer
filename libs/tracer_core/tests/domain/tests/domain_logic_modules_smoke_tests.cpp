@@ -60,8 +60,8 @@ void TestConverterBridge(int& failures) {
   day_to_process.date = "2026-03-02";
   day_to_process.getupTime = "07:00";
   processor.Process(previous_day, day_to_process);
-  Expect(day_to_process.hasSleepActivity,
-         "DayProcessor should generate sleep activity when previous day exists.",
+  Expect(day_to_process.hasWakeAnchor,
+         "DayProcessor should mark wake anchor when getup time exists.",
          failures);
 
   std::map<std::string, std::vector<DailyLog>> data_map;
@@ -75,8 +75,8 @@ void TestConverterBridge(int& failures) {
   linker.LinkFirstDayWithExternalPreviousEvent(data_map,
                                                external_previous_event);
   const DailyLog& linked_day = data_map["2026-03"].front();
-  Expect(linked_day.hasSleepActivity,
-         "LogLinker should link external previous event for first day.",
+  Expect(linked_day.hasWakeAnchor,
+         "LogLinker should preserve wake anchor for first day.",
          failures);
   Expect(!linked_day.processedActivities.empty(),
          "Linked day should contain generated sleep activity.", failures);
@@ -154,7 +154,7 @@ void TestValidatorBridge(int& failures) {
 }
 
 void TestStructureValidatorBridge(int& failures) {
-  StructValidator struct_validator(DateCheckMode::kNone);
+  StructValidator struct_validator(DateCheckMode::kNone, {"wake"});
 
   DailyLog day;
   day.date = "2026-03-01";
@@ -182,6 +182,32 @@ void TestStructureValidatorBridge(int& failures) {
   Expect(ok, "StructValidator should pass for valid activity data.", failures);
   Expect(diagnostics.empty(),
          "StructValidator diagnostics should be empty for valid sample.",
+         failures);
+
+  DailyLog invalid_day;
+  invalid_day.date = "2026-03-02";
+  invalid_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "0700", .description = "study"});
+  invalid_day.rawEvents.push_back(
+      RawEvent{.endTimeStr = "0800",
+               .description = "wake",
+               .source_span = SourceSpan{.file_path = "module-smoke.txt",
+                                         .line_start = 2,
+                                         .line_end = 2,
+                                         .column_start = 1,
+                                         .column_end = 8,
+                                         .raw_text = "0800wake"}});
+
+  std::vector<DailyLog> invalid_days{invalid_day};
+  std::vector<Diagnostic> invalid_diagnostics;
+  const bool invalid_ok = struct_validator.Validate(
+      "module-smoke.txt", invalid_days, invalid_diagnostics);
+  Expect(!invalid_ok,
+         "StructValidator should fail when wake keyword is not first event.",
+         failures);
+  Expect(!invalid_diagnostics.empty() &&
+             invalid_diagnostics.front().code == "wake.keyword.not_first_event",
+         "Wake keyword ordering should surface dedicated logic diagnostic.",
          failures);
 }
 

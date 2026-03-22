@@ -5,7 +5,7 @@
 ## 1. Data Query（SQLite）
 
 ### 入口层
-- 文件：`libs/tracer_core/src/infrastructure/query/data/data_query_repository.cpp`
+- 文件：`libs/tracer_core/src/infra/query/data/data_query_repository.cpp`
 - 对外入口：
   - `QueryYears`
   - `QueryMonths`
@@ -20,21 +20,21 @@
 - 责任：仅保留请求编排与结果汇总，不再承载大段 SQL 拼装和手写 row decode。
 
 ### SQL Builders 层
-- 文件：`libs/tracer_core/src/infrastructure/query/data/data_query_sql_builders.cpp`
+- 文件：`libs/tracer_core/src/infra/query/data/data_query_sql_builders.cpp`
 - 责任：
   - SQL 片段构建与条件拼装。
   - `project_path_snapshot` 列存在性检查。
   - lookback/limit 的输入归一化辅助。
 
 ### Row Mappers / Executors 层
-- 文件：`libs/tracer_core/src/infrastructure/query/data/data_query_row_mappers.cpp`
+- 文件：`libs/tracer_core/src/infra/query/data/data_query_row_mappers.cpp`
 - 责任：
   - sqlite 参数绑定。
   - `ActivitySuggestionRow` / project tree records 的取行解码。
   - 统一 prepare/step/finalize 执行路径。
 
 ### 共享契约
-- 文件：`libs/tracer_core/src/infrastructure/query/data/data_query_repository_internal.hpp`
+- 文件：`libs/tracer_core/src/infra/query/data/data_query_repository_internal.hpp`
 - 责任：跨 TU 的最小内部接口，不暴露到应用层。
 
 ### 依赖方向
@@ -113,8 +113,8 @@
 ## 4. 测试文件拆分
 
 `time_tracker_android_runtime_tests` 场景拆分为：
-1. `libs/tracer_core/src/infrastructure/tests/android_runtime_smoke_tests.cpp`
-2. `libs/tracer_core/src/infrastructure/tests/android_runtime_core_config_tests.cpp`
-3. `libs/tracer_core/src/infrastructure/tests/android_runtime_business_regression_tests.cpp`
+1. `libs/tracer_core/src/infra/tests/android_runtime_smoke_tests.cpp`
+2. `libs/tracer_core/src/infra/tests/android_runtime_core_config_tests.cpp`
+3. `libs/tracer_core/src/infra/tests/android_runtime_business_regression_tests.cpp`
 
 目的：将 smoke/config/regression 分开，失败定位更直接。

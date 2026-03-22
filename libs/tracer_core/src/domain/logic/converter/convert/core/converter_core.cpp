@@ -12,6 +12,25 @@ namespace {
 
 constexpr int kMaxLinkedSleepDurationSeconds = 16 * 60 * 60;
 
+auto ResolveGeneratedSleepProjectPath(const ConverterConfig& config)
+    -> std::string {
+  // This only controls the generated overnight sleep activity path. It must
+  // not be treated as the source of the day-level wake-anchor status.
+  return config.generated_sleep_project_path.empty()
+             ? "sleep_night"
+             : config.generated_sleep_project_path;
+}
+
+auto HasGeneratedOvernightSleep(const DailyLog& day,
+                                const ConverterConfig& config) -> bool {
+  // This guard exists only to avoid inserting the same generated overnight
+  // sleep activity twice during linking. It is intentionally separate from
+  // wake-anchor semantics.
+  return !day.processedActivities.empty() &&
+         (day.processedActivities.front().project_path ==
+          ResolveGeneratedSleepProjectPath(config));
+}
+
 }  // namespace
 
 DayProcessor::DayProcessor(const ConverterConfig& config) : config_(config) {}
@@ -29,17 +48,19 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
   converter_core_internal::ActivityMapper activity_mapper(config_);
   activity_mapper.MapActivities(day_to_process);
 
+  // If the day starts with a valid wake anchor, we may synthesize an overnight
+  // sleep activity from the previous day's tail. This link repair creates an
+  // activity fact, but it does not define wake-anchor status.
   if (!previous_day.date.empty() && !previous_day.rawEvents.empty() &&
       !day_to_process.getupTime.empty() && !day_to_process.isContinuation) {
     BaseActivityRecord sleep_activity;
     sleep_activity.start_time_str = converter_core_internal::NormalizeTime(
         previous_day.rawEvents.back().endTimeStr);
     sleep_activity.end_time_str = day_to_process.getupTime;
-    sleep_activity.project_path = "sleep_night";
+    sleep_activity.project_path = ResolveGeneratedSleepProjectPath(config_);
 
     day_to_process.processedActivities.insert(
         day_to_process.processedActivities.begin(), sleep_activity);
-    day_to_process.hasSleepActivity = true;
   }
 
   converter_core_internal::DayStats::CalculateStats(day_to_process);
@@ -62,8 +83,12 @@ void LogLinker::LinkLogs(
     if (prev_month_last_day != nullptr) {
       const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
                                   current_first_day.getupTime != "00:00";
-      const bool kMissingSleep = !current_first_day.hasSleepActivity;
-      if (kHasValidGetup && kMissingSleep) {
+      const bool kMissingGeneratedSleep =
+          !HasGeneratedOvernightSleep(current_first_day, config_);
+      // Linking depends on "do we have a valid wake anchor?" and "have we
+      // already synthesized the overnight sleep activity?", not on any
+      // generic sleep_* activity presence.
+      if (kHasValidGetup && kMissingGeneratedSleep) {
         ProcessCrossDay(current_first_day, *prev_month_last_day);
         linked_count++;
       }
@@ -93,8 +118,9 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
   DailyLog& current_first_day = first_month_iter->second.front();
   const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
                                current_first_day.getupTime != "00:00";
-  const bool kMissingSleep = !current_first_day.hasSleepActivity;
-  if (!kHasValidGetup || !kMissingSleep) {
+  const bool kMissingGeneratedSleep =
+      !HasGeneratedOvernightSleep(current_first_day, config_);
+  if (!kHasValidGetup || !kMissingGeneratedSleep) {
     return;
   }
 
@@ -131,13 +157,12 @@ void LogLinker::ProcessCrossDay(DailyLog& current_day,
   BaseActivityRecord sleep_activity;
   sleep_activity.start_time_str = kStartTime;
   sleep_activity.end_time_str = kEndTime;
-  sleep_activity.project_path = config_.generated_sleep_project_path.empty()
-                                    ? "sleep_night"
-                                    : config_.generated_sleep_project_path;
+  sleep_activity.project_path = ResolveGeneratedSleepProjectPath(config_);
 
+  // This inserts the generated overnight sleep activity into the fact set.
+  // Wake-anchor status is still derived from getupTime/isContinuation.
   current_day.processedActivities.insert(
       current_day.processedActivities.begin(), sleep_activity);
-  current_day.hasSleepActivity = true;
   RecalculateStats(current_day);
 }
 

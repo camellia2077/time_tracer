@@ -1,19 +1,19 @@
 # Adapter Code Map (Stats/DataQuery)
 
 ## Core Adapter（入口适配）
-1. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service.cpp`
+1. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
    - 请求入口、action 分发起点、错误边界。
-2. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_dispatch.cpp`
+2. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_dispatch.cpp`
    - 轻量路由（调用 orchestrators）。
-3. `libs/tracer_core/src/infrastructure/persistence/sqlite_data_query_service_report_mapping.cpp`
+3. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
    - `report-chart` payload 组装，调用 `orchestrators + stats`。
 
 ## Windows CLI Adapter
-1. `apps/tracer_cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
+1. `apps/cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
    - 参数解析与 request 归一化。
-2. `apps/tracer_cli/windows/src/api/cli/impl/commands/query/query_command.cpp`
+2. `apps/cli/windows/src/api/cli/impl/commands/query/query_command.cpp`
    - 请求提交与输出展示。
-3. `apps/tracer_cli/windows/src/bootstrap/cli_runtime_factory_proxy.cpp`
+3. `apps/cli/windows/src/bootstrap/cli_runtime_factory_proxy.cpp`
    - transport/runtime 请求映射与响应解码。
 
 ## Android Adapter
@@ -31,10 +31,10 @@
    - runtime 总入口与生命周期管理。
 
 ## 自动化守卫（防回流）
-1. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp`
+1. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_tree_tests.cpp`
    - `TestAdapterBoundaryGuardrails` 扫描 adapter 文件中的禁止 token。
-2. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_period_tests.cpp`
-3. `libs/tracer_core/src/infrastructure/tests/data_query/data_query_refactor_stats_tests.cpp`
+2. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_period_tests.cpp`
+3. `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_stats_tests.cpp`
    - 三个测试文件共同承担 DataQuery 重构回归覆盖。
    - CLI/Android adapter 禁止出现统计公式与 core 编排函数调用。
    - Core adapter 禁止出现手写统计公式实现片段。

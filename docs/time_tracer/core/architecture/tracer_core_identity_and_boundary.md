@@ -79,7 +79,7 @@ Phase 5 之后，`apps/tracer_core` 已被物理删除。
 
 ## 4. Phase 6 收口结果
 
-1. `libs/tracer_core/src/infrastructure/tests/**` 已迁至：
+1. `libs/tracer_core/src/infra/tests/**` 已迁至：
    - `apps/tracer_core_shell/tests/platform/infrastructure/tests/**`
 2. `libs/tracer_core_bridge_common/src/shared/crypto_progress_json.hpp` 已迁至：
    - `libs/tracer_core_bridge_common/src/shared/crypto_progress_json.hpp`
@@ -95,7 +95,7 @@ flowchart LR
     C --> D["libs/tracer_core<br/>business implementation"]
     C --> E["libs/tracer_core_bridge_common<br/>bridge helpers"]
     D --> F["libs/tracer_adapters_io"]
-    G["apps/tracer_cli/windows/rust_cli"] --> B
+    G["apps/cli/windows/rust"] --> B
     H["apps/android/runtime"] --> B
 ```
 

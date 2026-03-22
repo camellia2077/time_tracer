@@ -51,7 +51,8 @@ auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
     return true;
   }
 
-  StructValidator validator(session.config.date_check_mode);
+  StructValidator validator(session.config.date_check_mode,
+                            session.state.converter_config.wake_keywords);
 
   bool all_valid = true;
   for (const auto& [month_key, days] : session.result.processed_data) {

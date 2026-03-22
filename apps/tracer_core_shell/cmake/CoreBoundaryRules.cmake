@@ -16,7 +16,7 @@ function(enforce_core_include_boundary)
     endif()
 
     if(NOT ECB_FORBIDDEN_PREFIXES)
-        set(ECB_FORBIDDEN_PREFIXES "api/" "infrastructure/")
+        set(ECB_FORBIDDEN_PREFIXES "api/" "infra/")
     endif()
 
     foreach(_core_dir IN LISTS ECB_CORE_DIRS)
@@ -269,7 +269,7 @@ function(enforce_shell_api_include_boundary)
 
     if(NOT ESAIB_FORBIDDEN_PREFIXES)
         set(ESAIB_FORBIDDEN_PREFIXES
-            "infrastructure/"
+            "infra/"
             "api/shared/"
         )
     endif()

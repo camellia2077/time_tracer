@@ -2,6 +2,10 @@
 
 本文聚焦算法层面，说明 TimeTracer 如何把输入文本逐步转换为可入库的结构化 `struct` 数据。
 
+若要理解“单日总时长可超过 `24h`”、“wake anchor 是什么”、“自动补出的 `sleep_night` 与 day status 的区别”，请先阅读：
+
+- `docs/time_tracer/core/ingest/day_bucket_and_wake_anchor_semantics.md`
+
 权威代码入口（以实现为准）：
 - `libs/tracer_core/src/application/parser/text_parser.cpp`
 - `libs/tracer_core/src/application/service/converter_service.cpp`
@@ -27,8 +31,8 @@
 txt
  -> TextParser (语法解析)
  -> DailyLog.rawEvents
- -> DayProcessor (映射/补全/统计)
- -> DailyLog.processedActivities + stats
+ -> DayProcessor (映射/补全/主键与标记)
+ -> DailyLog.processedActivities + day-level flags
  -> LogProcessor (按 YYYY-MM 分桶)
  -> Pipeline merge + LogLinker (跨月补链)
  -> MemoryParser
@@ -94,7 +98,7 @@ txt
 - `libs/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayProcessor::Process(...)`
 - `libs/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`ActivityMapper`（活动映射）
 
-## 6. DayStats：为 struct 填充统计与主键字段
+## 6. DayStats：为 struct 填充主键字段与日级标记
 
 `DayStats::CalculateStats(...)` 对 `processedActivities` 逐条计算：
 
@@ -102,13 +106,15 @@ txt
    1. `YYYYMMDD * 1_000_000 + sequence`，同一天内顺序递增。
 2. `duration_seconds`
    1. 由 `HH:MM` 计算；若终点小于起点视为跨午夜，自动 +24h。
+   2. 这是 activity 级时长，不会因为“单日报表已经超过 `24h`”而自动视为错误。
 3. `start_timestamp/end_timestamp`
    1. 基于 `date + HH:MM` 转时间戳；跨日结束时间自动补一天。
 4. 日标记
    1. `project_path` 前缀命中 `study` / `exercise`，置 `hasStudyActivity` / `hasExerciseActivity`。
-5. 聚合统计
-   1. 通过 `kStatsRules` 按路径前缀累加到 `ActivityStats`（学习、运动、娱乐、洗漱等）。
-   2. `sleep_total_time = sleep_night_time + sleep_day_time`。
+5. 日级标记
+   1. 更新 `hasStudyActivity` / `hasExerciseActivity`。
+   2. 根据 `!isContinuation && getupTime 有效` 计算 `hasWakeAnchor`。
+   3. `hasWakeAnchor` 是 day status，不等于是否存在 `sleep_night` 活动。
 
 源码定位：
 - `libs/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`：`DayStats::CalculateStats(...)`
@@ -122,6 +128,7 @@ txt
 3. `LogicLinker::LinkLogs(...)`
    1. 处理“上月最后一天 -> 本月第一天”的睡眠衔接。
    2. 条件满足时在本月首日插入生成睡眠段并重算统计。
+   3. 这里补的是 activity 事实，不负责决定 `wake_anchor`。
 
 源码定位：
 - `libs/tracer_core/src/domain/logic/converter/log_processor.hpp`：`LogProcessor::ProcessSourceContent(...)`
@@ -137,15 +144,13 @@ txt
 2. DayData 生成
    1. 从 `date` 解析 `year/month`，失败则告警并跳过该天。
    2. 标记映射：
-      1. `status = hasStudyActivity ? 1 : 0`
-      2. `sleep = hasSleepActivity ? 1 : 0`
-      3. `exercise = hasExerciseActivity ? 1 : 0`
+      1. `wake_anchor = hasWakeAnchor ? 1 : 0`
    3. `remark` 把 `generalRemarks` 用换行拼接。
    4. `getup_time` 规则：
       1. 续写日 -> `nullopt`
       2. 空值 -> `"00:00"`
       3. 否则 -> 原值
-   5. `day.stats = input_day.stats`（整包复制统计）。
+   5. 不再复制学习/睡眠/娱乐等派生时长；这些统计改为查询阶段从事实数据现算。
 3. TimeRecordInternal 生成
    1. 对每条 `processedActivities` 复制核心字段：
       1. `logical_id/start_timestamp/end_timestamp`

@@ -3,6 +3,7 @@
 
 #include <optional>
 #include <set>
+#include <unordered_set>
 #include <string>
 #include <string_view>
 
@@ -124,6 +125,29 @@ void ValidateActivityDuration(const DailyLog& day,
   }
 }
 
+void ValidateWakeKeywordPosition(
+    const DailyLog& day, const std::unordered_set<std::string>& wake_keywords,
+    std::vector<Diagnostic>& diagnostics) {
+  if (wake_keywords.empty() || day.rawEvents.empty()) {
+    return;
+  }
+
+  for (size_t index = 1; index < day.rawEvents.size(); ++index) {
+    const auto& raw_event = day.rawEvents[index];
+    if (!wake_keywords.contains(raw_event.description)) {
+      continue;
+    }
+
+    diagnostics.push_back(
+        {.severity = DiagnosticSeverity::kError,
+         .code = "wake.keyword.not_first_event",
+         .message = "In file for date " + day.date +
+                    ": Wake keyword activity '" + raw_event.description +
+                    "' must appear only as the first event of the day.",
+         .source_span = raw_event.source_span});
+  }
+}
+
 void ValidateDateContinuity(const std::vector<DailyLog>& days,
                             std::vector<Diagnostic>& diagnostics,
                             DateCheckMode mode) {
@@ -179,7 +203,10 @@ void ValidateDateContinuity(const std::vector<DailyLog>& days,
 }
 }  // namespace
 
-StructValidator::StructValidator(DateCheckMode mode) : date_check_mode_(mode) {}
+StructValidator::StructValidator(DateCheckMode mode,
+                                 std::vector<std::string> wake_keywords)
+    : date_check_mode_(mode),
+      wake_keywords_(wake_keywords.begin(), wake_keywords.end()) {}
 
 auto StructValidator::Validate(const std::string& /*filename*/,
                                const std::vector<DailyLog>& days,
@@ -188,6 +215,7 @@ auto StructValidator::Validate(const std::string& /*filename*/,
   for (const auto& day : days) {
     ValidateActivityCount(day, diagnostics);
     ValidateActivityDuration(day, diagnostics);
+    ValidateWakeKeywordPosition(day, wake_keywords_, diagnostics);
   }
   return diagnostics.empty();
 }

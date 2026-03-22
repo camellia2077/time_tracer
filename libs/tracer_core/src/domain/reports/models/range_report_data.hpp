@@ -15,7 +15,7 @@ struct RangeReportData {
   long long total_duration = 0;
   int actual_days = 0;
   int status_true_days = 0;
-  int sleep_true_days = 0;
+  int wake_anchor_true_days = 0;
   int exercise_true_days = 0;
   int cardio_true_days = 0;
   int anaerobic_true_days = 0;

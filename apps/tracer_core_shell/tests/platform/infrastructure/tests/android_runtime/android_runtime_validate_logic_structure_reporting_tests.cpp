@@ -179,6 +179,82 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
   cleanup();
 }
 
+auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
+  const RuntimeTestPaths kPaths = BuildTempTestPaths(
+      "time_tracer_android_runtime_validate_logic_wake_position_test");
+  RemoveTree(kPaths.test_root);
+
+  const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
+
+  const std::filesystem::path kRepoRoot = BuildRepoRoot();
+  const std::filesystem::path kConfigTomlPath =
+      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
+      "interval_processor_config.toml";
+
+  auto logger = std::make_shared<CapturingLogger>();
+  auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
+  auto error_report_writer = std::make_shared<CapturingErrorReportWriter>();
+
+  infrastructure::bootstrap::AndroidRuntimeRequest request =
+      BuildRuntimeRequest(kPaths, kConfigTomlPath);
+  request.logger = logger;
+  request.diagnostics_sink = diagnostics_sink;
+  request.error_report_writer = error_report_writer;
+
+  infrastructure::bootstrap::AndroidRuntime runtime;
+  try {
+    runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for wake-position "
+                 "logic validation test: "
+              << exception.what() << '\n';
+    cleanup();
+    return;
+  }
+
+  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
+  if (!WriteFileWithParents(
+          kSourceFile,
+          "y2026\nm03\n0101\n0700w\n0800study\n0900wake\n1000exercise\n")) {
+    ++failures;
+    std::cerr << "[FAIL] Wake-position logic validation test should write "
+                 "input file.\n";
+    cleanup();
+    return;
+  }
+
+  const auto kAck = runtime.runtime_api->pipeline().RunValidateLogic(
+      {.input_path = kSourceRoot.string(),
+       .date_check_mode = DateCheckMode::kNone});
+  if (kAck.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should fail when wake keyword "
+                 "appears after the first event.\n";
+    cleanup();
+    return;
+  }
+
+  const std::string kExpectedText =
+      "Wake keyword activity 'wake' must appear only as the first event of the day.";
+  if (!Contains(diagnostics_sink->Errors(), kExpectedText) ||
+      !Contains(diagnostics_sink->Errors(), kSourceFile.string() + ":6")) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should report clickable wake-order "
+                 "diagnostic with source line.\n";
+  }
+
+  if (!Contains(kAck.error_message, "Recent diagnostics:") ||
+      !Contains(kAck.error_message, kExpectedText)) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should surface wake-order logic "
+                 "diagnostics in top-level error_message.\n";
+  }
+
+  cleanup();
+}
+
 auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_validate_structure_terminal_only_test");
@@ -518,6 +594,7 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
 
 auto RunValidateLogicStructureReportingTests(int& failures) -> void {
   TestValidateLogicReusesStructureReporter(failures);
+  TestValidateLogicRejectsWakeKeywordAfterFirstEvent(failures);
   TestValidateStructureSkipsErrorReportFiles(failures);
   TestConvertLogsActualConversionFailure(failures);
   TestAndroidDefaultRuntimeSkipsErrorReportFiles(failures);

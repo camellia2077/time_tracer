@@ -87,14 +87,16 @@ auto MemoryParser::Parse(
       day_data.year = kParsedYearMonth->first;
       day_data.month = kParsedYearMonth->second;
 
-      day_data.status = input_day.hasStudyActivity ? 1 : 0;
-      day_data.sleep = input_day.hasSleepActivity ? 1 : 0;
-      day_data.exercise = input_day.hasExerciseActivity ? 1 : 0;
+      // days.wake_anchor is persisted as day metadata. It is derived from the
+      // wake anchor rule (getupTime + continuation state), not from whether
+      // any sleep_* activity exists in the fact set.
+      day_data.wake_anchor =
+          (!input_day.isContinuation && !input_day.getupTime.empty() &&
+           input_day.getupTime != "00:00")
+              ? 1
+              : 0;
       day_data.remark = ProcessDayRemarks(input_day.generalRemarks);
       day_data.getup_time = ResolveGetupTime(input_day);
-
-      // [核心修改] 直接赋值统计数据！
-      day_data.stats = input_day.stats;
 
       all_data.days.push_back(std::move(day_data));
 
