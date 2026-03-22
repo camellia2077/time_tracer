@@ -1,7 +1,7 @@
 {
   "target": "android",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "a756b006984188b34bcaa1555555fd94339721e573de99b5e4e6ca16bb2f2ab9",
+  "input_hash": "4b9693d8d7719b5e5da319a107e2be8855b46ba9180c68c3a28b7b0c3a13d86e",
   "planned_file_count": 11,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
@@ -10,11 +10,11 @@
     "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
     "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
     "meta/bundle.toml": "c9d9b59386b3f8c92545192d1cc56a2cfad0a4defd43b8d28135ff534a328f56",
-    "reports/markdown/day.toml": "d28f0e66d089a12ffcb7cc5dee9b8720c2648fde8919527da4d8c565789506f2",
-    "reports/markdown/month.toml": "2bdbda9c5bf20a80890ed3d3156e14693179d54f14c16b6a36dae33c42308a1d",
-    "reports/markdown/period.toml": "6b08e7c3697c9c80d807a647ca3b19b022763172f712a66f94f0e88360d088b8",
-    "reports/markdown/week.toml": "1a1610c600a402b9ccca53a54082a2c50dfc13a7edf2393090b780bc1e1ac06b",
-    "reports/markdown/year.toml": "68b62b9f5fba449b79fc35698f10e9346d757557f6f6b7a65722c5ebfdb6d8a1"
+    "reports/markdown/day.toml": "6a02b89b311aa5184a7f95b9d6852cd813e9fef705b5a907f6360db6750783c3",
+    "reports/markdown/month.toml": "1c9156e6c5bd2a09e708cdb61bbe39eb03a1d78db5d944117fb54acded3d8697",
+    "reports/markdown/period.toml": "70f5cf16431635fc8d13aa26b1225e38b9765af830a3f886b5d1733045eac423",
+    "reports/markdown/week.toml": "8fa9a44fbacdd055cf7d3ecbd5209ce9592197ab82814b8a113c6e77f80a5327",
+    "reports/markdown/year.toml": "a0b80911567b56f913c8afa9e7d92d1e1161ae67fae034b51f8b9868fd724cae"
   },
-  "generated_at_utc": "2026-03-12T06:37:35.665234+00:00"
+  "generated_at_utc": "2026-03-22T18:00:02.149644+00:00"
 }

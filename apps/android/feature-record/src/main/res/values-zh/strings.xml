@@ -30,6 +30,10 @@
     <string name="txt_picker_open_year_month">打开 %1$s-%2$s</string>
     <string name="txt_picker_field_value">%1$s：%2$s</string>
 
+    <string name="txt_empty_state_title">暂无 TXT 文件</string>
+    <string name="txt_empty_state_description">创建当月文件以开始记录活动。Record 标签页会自动创建每日条目。</string>
+    <string name="txt_action_create_current_month">创建当月文件</string>
+
     <string name="record_label_target_date">目标日期</string>
     <string name="record_mode_manual">手动</string>
     <string name="record_mode_auto">自动</string>

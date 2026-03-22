@@ -212,6 +212,12 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         }
     }
 
+    fun createCurrentMonthTxt() {
+        viewModelScope.launch {
+            uiState = intentHandler.createCurrentMonthTxt(uiState)
+        }
+    }
+
     fun discardUnsavedHistoryDraft() {
         uiState = intentHandler.discardUnsavedHistoryDraft(uiState)
     }

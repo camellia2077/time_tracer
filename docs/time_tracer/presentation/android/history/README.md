@@ -23,13 +23,14 @@ Index for historical Android notes, milestones, and archived discussions.
 
 ## Detailed Milestones
 
-- `docs/time_tracer/presentation/android/history/0.1.0.md`
-- `docs/time_tracer/presentation/android/history/0.2.0.md`
-- `docs/time_tracer/presentation/android/history/0.2.1.md`
-- `docs/time_tracer/presentation/android/history/0.2.2.md`
-- `docs/time_tracer/presentation/android/history/0.2.3.md`
-- `docs/time_tracer/presentation/android/history/0.2.4.md`
-- `docs/time_tracer/presentation/android/history/0.2.5.md`
+- `docs/time_tracer/presentation/android/history/v0.1/0.1.0.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.0.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.1.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.2.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.3.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.4.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.5.md`
+- `docs/time_tracer/presentation/android/history/v0.2/0.2.6.md`
 
 ## Archived Notes
 

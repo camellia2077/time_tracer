@@ -30,6 +30,10 @@
     <string name="txt_picker_open_year_month">Open %1$s-%2$s</string>
     <string name="txt_picker_field_value">%1$s: %2$s</string>
 
+    <string name="txt_empty_state_title">No TXT files yet</string>
+    <string name="txt_empty_state_description">Create your first month file to start recording activities. The Record tab will automatically create daily entries.</string>
+    <string name="txt_action_create_current_month">Create Current Month</string>
+
     <string name="record_label_target_date">Target Date</string>
     <string name="record_mode_manual">Manual</string>
     <string name="record_mode_auto">Auto</string>

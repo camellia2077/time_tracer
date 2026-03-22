@@ -35,6 +35,7 @@ import com.example.tracer.feature.data.R
 
 private enum class DestructiveAction {
     ClearTxt,
+    ClearDatabase,
     ClearAllData
 }
 
@@ -59,6 +60,7 @@ fun DataManagementSection(
     cryptoDetailsText: String,
     cryptoAdvancedDetailsText: String,
     onClearTxt: () -> Unit,
+    onClearDatabase: () -> Unit,
     onClearData: () -> Unit
 ) {
     var pendingAction by remember { mutableStateOf<DestructiveAction?>(null) }
@@ -271,6 +273,18 @@ fun DataManagementSection(
                         Text(stringResource(R.string.data_action_clear_txt))
                     }
 
+                    OutlinedButton(
+                        onClick = { pendingAction = DestructiveAction.ClearDatabase },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        Icon(Icons.Filled.Delete, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.data_action_clear_database))
+                    }
+
                     Button(
                         onClick = { pendingAction = DestructiveAction.ClearAllData },
                         modifier = Modifier.fillMaxWidth(),
@@ -294,6 +308,10 @@ fun DataManagementSection(
                 R.string.data_dialog_clear_txt_title,
                 R.string.data_dialog_clear_txt_message
             )
+            DestructiveAction.ClearDatabase -> Pair(
+                R.string.data_dialog_clear_database_title,
+                R.string.data_dialog_clear_database_message
+            )
             DestructiveAction.ClearAllData -> Pair(
                 R.string.data_dialog_clear_all_data_title,
                 R.string.data_dialog_clear_all_data_message
@@ -309,6 +327,7 @@ fun DataManagementSection(
                     onClick = {
                         when (currentAction) {
                             DestructiveAction.ClearTxt -> onClearTxt()
+                            DestructiveAction.ClearDatabase -> onClearDatabase()
                             DestructiveAction.ClearAllData -> onClearData()
                         }
                         pendingAction = null

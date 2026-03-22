@@ -17,6 +17,7 @@ class RuntimeInitServiceTest {
         val service = RuntimeInitService(
             initializeRuntimeInternal = { expected },
             clearRuntimeData = { "unused" },
+            clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
 
@@ -30,6 +31,7 @@ class RuntimeInitServiceTest {
         val service = RuntimeInitService(
             initializeRuntimeInternal = { throw IllegalStateException("boom") },
             clearRuntimeData = { "unused" },
+            clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
 
@@ -56,6 +58,10 @@ class RuntimeInitServiceTest {
                 callOrder += "clear"
                 "clear -> removed"
             },
+            clearDatabaseData = {
+                callOrder += "clear-db"
+                ClearDatabaseResult(ok = true, message = "clear db -> removed")
+            },
             resetRuntimeCaches = {
                 callOrder += "reset"
             }
@@ -80,6 +86,7 @@ class RuntimeInitServiceTest {
                 )
             },
             clearRuntimeData = { throw IllegalArgumentException("cannot delete") },
+            clearDatabaseData = { ClearDatabaseResult(ok = true, message = "unused") },
             resetRuntimeCaches = {}
         )
 
@@ -89,5 +96,59 @@ class RuntimeInitServiceTest {
         assertFalse(actual.operationOk)
         assertEquals("clear -> failed", actual.clearMessage)
         assertTrue(actual.initResponse.contains("clear and reinitialize failed"))
+    }
+
+    @Test
+    fun clearDatabase_success_runsClearAndResetWithoutInit() = runBlocking {
+        val callOrder = mutableListOf<String>()
+        val service = RuntimeInitService(
+            initializeRuntimeInternal = {
+                callOrder += "init"
+                NativeCallResult(
+                    initialized = true,
+                    operationOk = true,
+                    rawResponse = """{"ok":true}"""
+                )
+            },
+            clearRuntimeData = { "unused" },
+            clearDatabaseData = {
+                callOrder += "clear-db"
+                ClearDatabaseResult(ok = true, message = "clear db -> removed database")
+            },
+            resetRuntimeCaches = {
+                callOrder += "reset"
+            }
+        )
+
+        val actual = service.clearDatabase()
+
+        assertEquals(listOf("clear-db", "reset"), callOrder)
+        assertTrue(actual.ok)
+        assertEquals("clear db -> removed database", actual.message)
+    }
+
+    @Test
+    fun clearDatabase_exception_returnsFailureResult() = runBlocking {
+        var resetCalled = false
+        val service = RuntimeInitService(
+            initializeRuntimeInternal = {
+                NativeCallResult(
+                    initialized = true,
+                    operationOk = true,
+                    rawResponse = """{"ok":true}"""
+                )
+            },
+            clearRuntimeData = { "unused" },
+            clearDatabaseData = { throw IllegalArgumentException("cannot delete db") },
+            resetRuntimeCaches = {
+                resetCalled = true
+            }
+        )
+
+        val actual = service.clearDatabase()
+
+        assertTrue(resetCalled)
+        assertFalse(actual.ok)
+        assertTrue(actual.message.contains("clear database failed"))
     }
 }

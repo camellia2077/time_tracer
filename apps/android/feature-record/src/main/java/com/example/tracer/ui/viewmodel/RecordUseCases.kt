@@ -125,6 +125,15 @@ class RecordUseCases(
         }
     }
 
+    suspend fun createCurrentMonthTxt(state: RecordUiState): RecordUiState {
+        val result = recordGateway.createCurrentMonthTxt()
+        if (!result.ok) {
+            return state.copy(statusText = result.message)
+        }
+        val currentMonth = getCurrentMonthKey()
+        return refreshAndOpen(state, currentMonth, result.message)
+    }
+
     suspend fun loadActivitySuggestions(
         state: RecordUiState,
         lookbackDays: Int = 7,

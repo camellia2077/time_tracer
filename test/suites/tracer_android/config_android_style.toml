@@ -1,1 +1,7 @@
-includes = ["config.toml", "tests_style.toml"]
+includes = [
+  "env.toml",
+  "tests/base.toml",
+  "tests/commands_base_setup.toml",
+  "tests/commands_base_config.toml",
+  "tests_style.toml",
+]

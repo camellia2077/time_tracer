@@ -69,7 +69,8 @@ internal fun TracerTabRouteContent(
     isTracerExportInProgress: Boolean,
     selectedTracerSecurityLevel: FileCryptoSecurityLevel,
     onTracerSecurityLevelChange: (FileCryptoSecurityLevel) -> Unit,
-    onCopyDiagnosticsPayload: () -> Unit
+    onCopyDiagnosticsPayload: () -> Unit,
+    onClearDatabase: () -> Unit
 ) {
     val args = TracerTabRouteArgs(
         dataViewModel = dataViewModel,
@@ -106,7 +107,8 @@ internal fun TracerTabRouteContent(
         isTracerExportInProgress = isTracerExportInProgress,
         selectedTracerSecurityLevel = selectedTracerSecurityLevel,
         onTracerSecurityLevelChange = onTracerSecurityLevelChange,
-        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload
+        onCopyDiagnosticsPayload = onCopyDiagnosticsPayload,
+        onClearDatabase = onClearDatabase
     )
     TracerTabRegistry.entry(selectedTab).content(modifier, args)
 }
