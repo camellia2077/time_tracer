@@ -114,7 +114,7 @@ Third-party dependencies remain under their respective licenses.
 * **[Apache ECharts](https://echarts.apache.org/)**: Used by Windows CLI `report-chart` single-file HTML chart rendering (Line/Bar/Pie/Heatmap-Year/Heatmap-Month) (Apache License 2.0).
 * **[Matplotlib](https://matplotlib.org/)**: Plotting engine (BSD-style license).
 
-### Windows Rust CLI (`apps/tracer_cli/windows/rust_cli`)
+### Windows Rust CLI (`apps/cli/windows/rust`)
 
 * **[clap](https://github.com/clap-rs/clap)**: Rust CLI argument parser and subcommand framework (MIT or Apache License 2.0).
 * **[thiserror](https://github.com/dtolnay/thiserror)**: Rust error type derive helper (MIT or Apache License 2.0).
@@ -124,7 +124,7 @@ Third-party dependencies remain under their respective licenses.
 * **[toml](https://github.com/toml-rs/toml)**: TOML parser (MIT or Apache License 2.0).
 
 Dependency versions are managed in:
-* `apps/tracer_cli/windows/rust_cli/Cargo.toml`
+* `apps/cli/windows/rust/Cargo.toml`
  
 ### Android App (`apps/android`)
 

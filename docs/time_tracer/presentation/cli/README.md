@@ -18,9 +18,9 @@
 
 ## 对应代码目录
 
-1. `apps/tracer_cli/windows/rust_cli/src/`
-2. `apps/tracer_cli/windows/rust_cli/runtime/`
-3. `apps/tracer_cli/windows/scripts/`
+1. `apps/cli/windows/rust/src/`
+2. `apps/cli/windows/rust/runtime/`
+3. `apps/cli/windows/scripts/`
 
 ## 测试与验收
 

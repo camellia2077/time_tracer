@@ -49,7 +49,7 @@ over_inclusive = true
 
 [rs]
 display_name = "Rust"
-default_paths = ["apps/tracer_cli/windows/rust_cli/src"]
+default_paths = ["apps/cli/windows/rust/src"]
 extensions = [".rs"]
 ignore_dirs = [".git", ".idea", ".vscode", "target", "build", "dist", "__pycache__"]
 ignore_prefixes = []

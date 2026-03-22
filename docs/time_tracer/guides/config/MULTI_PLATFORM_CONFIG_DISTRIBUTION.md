@@ -6,7 +6,7 @@
 
 1. Canonical source：`assets/tracer_core/config`
 2. Generated runtime copy：
-   - `apps/tracer_cli/windows/rust_cli/runtime/config`
+   - `apps/cli/windows/rust/runtime/config`
    - `apps/android/runtime/src/main/assets/tracer_core/config`
 3. 维护规则：
    - 修改共享 config 时，只改 `assets/tracer_core/config`
@@ -22,7 +22,7 @@
 
 ## 2. 目标目录（当前）
 
-1. Windows CLI generated copy：`apps/tracer_cli/windows/rust_cli/runtime/config`
+1. Windows CLI generated copy：`apps/cli/windows/rust/runtime/config`
 2. Android Runtime generated copy：`apps/android/runtime/src/main/assets/tracer_core/config`
 
 ## 3. 触发策略

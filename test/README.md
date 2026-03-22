@@ -25,7 +25,7 @@ Suite naming policy:
   - `framework/core/`: reusable testing engine package.
   - `framework/runner/service.py`: suite execution orchestrator.
   - `framework/runner/commands/`: `test/run.py` 子命令实现（suite/runtime-guard/smoke）。
-- `suites/tracer_windows_rust_cli/`: artifact suite folder for `artifact_windows_cli` (`apps/tracer_cli/windows` build target).
+- `suites/tracer_windows_rust_cli/`: artifact suite folder for `artifact_windows_cli` (`apps/cli/windows` build target).
 - `suites/tracer_android/`: artifact suite folder for `artifact_android`.
 - `suites/log_generator/`: artifact suite folder for `artifact_log_generator`.
 - `data/`: canonical integration/e2e input dataset shared by CLI/Android.

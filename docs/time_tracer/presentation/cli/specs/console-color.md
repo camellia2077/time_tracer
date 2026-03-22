@@ -6,7 +6,7 @@
 
 1. Rust CLI 本身默认输出以纯文本为主。
 2. Core 通过 severity + UTF-8 文本输出诊断语义，不再导出稳定的 ANSI 常量契约。
-3. Windows 控制台 UTF-8 代码页初始化在：`apps/tracer_cli/windows/rust_cli/src/main.rs`。
+3. Windows 控制台 UTF-8 代码页初始化在：`apps/cli/windows/rust/src/main.rs`。
 
 ## 2. 颜色源定义
 
@@ -24,5 +24,5 @@
 
 ```powershell
 rg -n "DiagnosticSeverity|EmitInfo|EmitWarn|EmitError|LogInfo|LogWarn|LogError" libs/tracer_core/src
-rg -n "\\x1b|ansi|color|SetConsoleOutputCP|SetConsoleCP|severity" apps/tracer_cli/windows/rust_cli/src
+rg -n "\\x1b|ansi|color|SetConsoleOutputCP|SetConsoleCP|severity" apps/cli/windows/rust/src
 ```

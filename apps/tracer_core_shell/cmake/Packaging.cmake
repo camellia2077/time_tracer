@@ -8,7 +8,7 @@ if(BUILD_INSTALLER)
         message(FATAL_ERROR
             "BUILD_INSTALLER requires desktop executable targets, "
             "but apps/tracer_core no longer provides them. "
-            "Use apps/tracer_cli/windows for Windows packaging."
+            "Use apps/cli/windows for Windows packaging."
         )
     endif()
 

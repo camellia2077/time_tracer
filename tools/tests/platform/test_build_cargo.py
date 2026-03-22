@@ -30,7 +30,7 @@ def _write_config(repo_root: Path) -> None:
 path = "apps/tracer_core_shell"
 
 [apps.tracer_windows_rust_cli]
-path = "apps/tracer_cli/windows/rust_cli"
+path = "apps/cli/windows/rust"
 backend = "cargo"
 config_sync_target = "windows"
 """.strip(),

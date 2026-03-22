@@ -35,7 +35,7 @@
 ```text
 time_tracer/
 ├── apps/                 # 展现层 (Thin Clients)
-│   ├── rust_cli/
+│   ├── rust/
 │   ├── tracer_android/
 │   └── ...
 ├── libs/                 # 核心引擎与组件 (The Engine)

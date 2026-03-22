@@ -31,7 +31,7 @@ python tools/scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--ov
 - `cpp` -> `apps/tracer_core_shell`, `libs/tracer_core`
 - `kt` -> `apps/android`
 - `py` -> `test`, `scripts`
-- `rs` -> `apps/tracer_cli/windows/rust_cli/src`
+- `rs` -> `apps/cli/windows/rust/src`
 
 目录文件数扫描默认阈值（`--dir-over-files` 不带 `N` 时生效）：
 

@@ -2,7 +2,7 @@
 
 ## 状态
 1. 状态：Draft / Proposal
-2. 适用范围：`windows/rust_cli`、`windows/cpp_cli` 等表现层。
+2. 适用范围：`windows/rust`、`windows/cpp_cli` 等表现层。
 3. 目标：让多实现 CLI 共享“语义契约”，而非共享“文案文本”。
 
 ## 1. 背景

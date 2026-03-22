@@ -1,6 +1,6 @@
 # Windows Rust CLI 结构规范
 
-本文档定义 `apps/tracer_cli/windows/rust_cli` 的稳定分层与改动路由。
+本文档定义 `apps/cli/windows/rust` 的稳定分层与改动路由。
 
 ## 1. 分层与职责
 
