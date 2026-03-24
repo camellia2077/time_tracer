@@ -66,10 +66,16 @@ auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "invalid.toml";
+      paths.test_root / "config" / "converter" / "invalid.toml";
 
   RemoveTree(paths.test_root);
-  std::filesystem::create_directories(paths.test_root);
+  if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {
+    ++failures;
+    std::cerr << "[FAIL] Failed to prepare Android config fixture for invalid "
+                 "converter config test.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
 
   {
     std::ofstream file(kInvalidConfigPath);
@@ -97,10 +103,16 @@ auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures) -> void 
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =
-      paths.test_root / "invalid_utf8.toml";
+      paths.test_root / "config" / "converter" / "invalid_utf8.toml";
 
   RemoveTree(paths.test_root);
-  std::filesystem::create_directories(paths.test_root);
+  if (!PrepareAndroidConfigFixture(paths.test_root / "config")) {
+    ++failures;
+    std::cerr << "[FAIL] Failed to prepare Android config fixture for invalid "
+                 "UTF-8 converter config test.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
 
   {
     std::ofstream file(kInvalidConfigPath, std::ios::binary | std::ios::trunc);

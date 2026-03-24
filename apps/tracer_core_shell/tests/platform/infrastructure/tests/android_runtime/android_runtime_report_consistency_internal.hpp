@@ -7,7 +7,7 @@
 #include <string>
 #include <string_view>
 
-#include "application/use_cases/i_tracer_core_runtime.hpp"
+#include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
 
 namespace android_runtime_tests::report_consistency_internal {
 

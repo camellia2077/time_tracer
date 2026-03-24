@@ -1,5 +1,5 @@
 // infrastructure/tests/data_query/data_query_refactor_tree_tests.cpp
-import tracer.core.application.reporting.tree.data;
+import tracer.core.application.query.tree.data;
 import tracer.core.infrastructure.query.data.renderers;
 
 #include <filesystem>
@@ -19,7 +19,7 @@ using nlohmann::json;
 using tracer_core::core::dto::DataQueryOutputMode;
 namespace data_query_renderers =
     tracer::core::infrastructure::query::data::renderers;
-using tracer::core::application::reporting::tree::ProjectTreeNode;
+using tracer::core::application::query::tree::ProjectTreeNode;
 
 auto TestRendererGateway(int& failures) -> void {
   const std::vector<std::string> kYears = {"2024", "2025"};
@@ -113,7 +113,13 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
 
   const std::vector<AdapterGuardRule> kRules = {
       {
-          "apps/cli/windows/rust/src/commands/handlers/query.rs",
+          "apps/cli/windows/rust/src/commands/handlers/query/data.rs",
+          {"ComputeDayDurationStats(", "BuildReportChartSeries(",
+           "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
+           "variance_seconds", "stddev_seconds", "mad_seconds"},
+      },
+      {
+          "apps/cli/windows/rust/src/commands/handlers/query/tree.rs",
           {"ComputeDayDurationStats(", "BuildReportChartSeries(",
            "ResolveExplicitDateRange(", "ResolveRollingDateRange(",
            "variance_seconds", "stddev_seconds", "mad_seconds"},
@@ -141,20 +147,20 @@ auto TestAdapterBoundaryGuardrails(int& failures) -> void {
       },
 
       {
-          "libs/tracer_core/src/infra/persistence/"
-          "sqlite_data_query_service.cpp",
+          "libs/tracer_core/src/infra/query/data/repository/"
+          "query_runtime_service.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },
       {
-          "libs/tracer_core/src/infra/persistence/"
-          "sqlite_data_query_service_dispatch.cpp",
+          "libs/tracer_core/src/infra/query/data/repository/"
+          "query_runtime_service_dispatch.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },
       {
-          "libs/tracer_core/src/infra/persistence/"
-          "sqlite_data_query_service_report_mapping.cpp",
+          "libs/tracer_core/src/infra/query/data/repository/"
+          "query_runtime_service_report_mapping.cpp",
           {"std::sqrt(", "nearest-rank",
            "variance_seconds =", "stddev_seconds ="},
       },

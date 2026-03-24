@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_IO_INTERNAL_HPP_
 #define INFRASTRUCTURE_TESTS_ANDROID_RUNTIME_ANDROID_RUNTIME_SMOKE_IO_INTERNAL_HPP_
 
-#include "application/use_cases/i_tracer_core_runtime.hpp"
+#include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
 
 #include <memory>
 #include <optional>

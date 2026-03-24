@@ -2,9 +2,11 @@
 #include <iostream>
 #include <variant>
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
-#include "application/use_cases/i_tracer_core_runtime.hpp"
+#include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
+#include "application/dto/query_requests.hpp"
+#include "application/dto/reporting_requests.hpp"
+#include "application/dto/reporting_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_report_consistency_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_smoke_internal.hpp"
 

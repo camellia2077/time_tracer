@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_TESTS_FILE_CRYPTO_SERVICE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
 #define INFRASTRUCTURE_TESTS_FILE_CRYPTO_SERVICE_TRACER_EXCHANGE_TEST_SUPPORT_HPP_
 
-import tracer.core.infrastructure.crypto.exchange;
+import tracer.core.infrastructure.exchange;
 
 #include <cstdint>
 #include <filesystem>
@@ -40,8 +40,10 @@ auto ReplaceFirst(std::string text, std::string_view from, std::string_view to)
     -> std::string;
 auto NormalizeLf(std::string text) -> std::string;
 auto StripUtf8Bom(std::string text) -> std::string;
+auto BuildLegacyText(std::string text) -> std::string;
 auto CanonicalizeLegacyTextForAssertion(std::string text) -> std::string;
 auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string;
+auto ReadLegacyRepoConverterConfig(std::string_view relative_path) -> std::string;
 auto BuildSamplePayloads() -> std::vector<PayloadFixture>;
 auto BuildValidExportPayloads() -> std::vector<PayloadFixture>;
 auto ResolveInputPayloadPath(std::string_view relative_package_path) -> fs::path;

@@ -21,13 +21,13 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
   const fs::path package_path = paths.test_root / "package" / "legacy.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "legacy.tracer";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600 study\r\n";
-  const std::string legacy_main =
-      "\xEF\xBB\xBFremark_prefix = \"r\"\r\n";
-  const std::string legacy_alias =
-      "\xEF\xBB\xBF[aliases]\r\nstudy = \"study\"\r\n";
-  const std::string legacy_duration =
-      "\xEF\xBB\xBF[duration_rules]\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
+  const std::string legacy_main = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/interval_processor_config.toml");
+  const std::string legacy_alias = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/alias_mapping.toml");
+  const std::string legacy_duration = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/duration_rules.toml");
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -113,11 +113,20 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "sample.tracer";
 
-  const std::string original_main = "active-main = \"original\"\n";
-  const std::string original_alias = "active-alias = \"original\"\n";
-  const std::string original_duration = "active-duration = \"original\"\n";
+  const std::string original_main =
+      "# active-main fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/interval_processor_config.toml");
+  const std::string original_alias =
+      "# active-alias fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/alias_mapping.toml");
+  const std::string original_duration =
+      "# active-duration fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/duration_rules.toml");
   const std::string preserved_month =
-      "y2024\nm01\n0101\n0600 legacy_project r keep\n";
+      "y2024\nm01\n0101\n0600w\n0630meal\n0700rest\n";
   const std::string package_main = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string package_alias = ReadRepoConverterConfig(
@@ -206,24 +215,26 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   Expect(!result.backup_retained_root.has_value(),
          "Successful transaction import should not retain backup_root.",
          failures);
-  Expect(ReadTextFile(main_config_path) == package_main,
+  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(package_main),
          "RunTracerExchangeImport should overwrite active main config.",
          failures);
-  Expect(ReadTextFile(alias_config_path) == package_alias,
+  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(package_alias),
          "RunTracerExchangeImport should overwrite active alias config.",
          failures);
-  Expect(ReadTextFile(duration_config_path) == package_duration,
+  Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
+             NormalizeLf(package_duration),
          "RunTracerExchangeImport should overwrite active duration config.",
          failures);
-  Expect(ReadTextFile(active_text_root / "2024-01.txt") == preserved_month,
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024-01.txt")) ==
+             NormalizeLf(preserved_month),
          "Transaction import should preserve package-external local months.",
          failures);
-  Expect(ReadTextFile(active_text_root / "2025-01.txt") ==
-             BuildSamplePayloads().front().text,
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2025-01.txt")) ==
+             NormalizeLf(BuildSamplePayloads().front().text),
          "Transaction import should replace package months in active text root.",
          failures);
-  Expect(ReadTextFile(active_text_root / "2026-12.txt") ==
-             BuildSamplePayloads().back().text,
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2026-12.txt")) ==
+             NormalizeLf(BuildSamplePayloads().back().text),
          "Transaction import should write every package payload into active text root.",
          failures);
   Expect(fs::exists(paths.db_path),
@@ -249,10 +260,20 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "rollback.tracer";
 
-  const std::string original_main = "active-main = \"original\"\n";
-  const std::string original_alias = "active-alias = \"original\"\n";
-  const std::string original_duration = "active-duration = \"original\"\n";
-  const std::string original_month = "y2024\nm01\n0101\n0600 keep r stable\n";
+  const std::string original_main =
+      "# active-main fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/interval_processor_config.toml");
+  const std::string original_alias =
+      "# active-alias fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/alias_mapping.toml");
+  const std::string original_duration =
+      "# active-duration fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/duration_rules.toml");
+  const std::string original_month =
+      "y2024\nm01\n0101\n0600w\n0630meal\n0700rest\n";
   const std::string package_main = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/interval_processor_config.toml");
   const std::string package_alias = ReadRepoConverterConfig(
@@ -312,16 +333,18 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
   Expect(result.retained_failure_root.has_value(),
          "Failed transaction import should retain a failure root for debugging.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(main_config_path)) == original_main,
+  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
          "Rollback should restore the original main config after apply failure.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == original_alias,
+  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(original_alias),
          "Rollback should preserve the original alias config after apply failure.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(duration_config_path)) == original_duration,
+  Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
+             NormalizeLf(original_duration),
          "Rollback should preserve the original duration config after apply failure.",
          failures);
-  Expect(ReadTextFile(active_text_root / "2024-01.txt") == original_month,
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024-01.txt")) ==
+             NormalizeLf(original_month),
          "Rollback should preserve the original active text root content.",
          failures);
   Expect(!fs::exists(active_text_root / "2025-01.txt"),
@@ -351,9 +374,18 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "broken.tracer";
 
-  const std::string original_main = "active-main = \"original\"\n";
-  const std::string original_alias = "active-alias = \"original\"\n";
-  const std::string original_duration = "active-duration = \"original\"\n";
+  const std::string original_main =
+      "# active-main fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/interval_processor_config.toml");
+  const std::string original_alias =
+      "# active-alias fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/alias_mapping.toml");
+  const std::string original_duration =
+      "# active-duration fixture\n" +
+      ReadRepoConverterConfig(
+          "assets/tracer_core/config/converter/duration_rules.toml");
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -410,15 +442,14 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
   Expect(!result.ok,
          "RunTracerExchangeImport should reject invalid package converter config.",
          failures);
-  Expect(Contains(ReadTextFile(main_config_path), "active-main = \"original\""),
+  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
          "Invalid package config should not overwrite active main config.",
          failures);
-  Expect(
-      Contains(ReadTextFile(alias_config_path), "active-alias = \"original\""),
-      "Invalid package config should not overwrite active alias config.",
-      failures);
-  Expect(Contains(ReadTextFile(duration_config_path),
-                  "active-duration = \"original\""),
+  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(original_alias),
+         "Invalid package config should not overwrite active alias config.",
+         failures);
+  Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
+             NormalizeLf(original_duration),
          "Invalid package config should not overwrite active duration config.",
          failures);
   Expect(result.retained_failure_root.has_value(),

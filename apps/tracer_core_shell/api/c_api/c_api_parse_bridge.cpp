@@ -5,8 +5,9 @@
 #include <ranges>
 #include <stdexcept>
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
+#include "application/dto/pipeline_requests.hpp"
+#include "application/dto/query_requests.hpp"
+#include "application/dto/reporting_requests.hpp"
 #include "domain/reports/types/report_types.hpp"
 
 namespace tracer_core::shell::c_api_bridge {

@@ -1,5 +1,5 @@
 // infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp
-import tracer.core.infrastructure.crypto.exchange;
+import tracer.core.infrastructure.exchange;
 
 #include <algorithm>
 #include <cstdint>
@@ -95,6 +95,21 @@ auto StripUtf8Bom(std::string text) -> std::string {
   return text;
 }
 
+auto BuildLegacyText(std::string text) -> std::string {
+  const std::string normalized = NormalizeLf(StripUtf8Bom(std::move(text)));
+  std::string legacy;
+  legacy.reserve(normalized.size() + 3U);
+  legacy += "\xEF\xBB\xBF";
+  for (const char value : normalized) {
+    if (value == '\n') {
+      legacy += "\r\n";
+    } else {
+      legacy.push_back(value);
+    }
+  }
+  return legacy;
+}
+
 auto CanonicalizeLegacyTextForAssertion(std::string text) -> std::string {
   return NormalizeLf(StripUtf8Bom(std::move(text)));
 }
@@ -103,21 +118,25 @@ auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string {
   return ReadTextFile(ResolveRepoRootForInterop() / fs::path(relative_path));
 }
 
+auto ReadLegacyRepoConverterConfig(std::string_view relative_path) -> std::string {
+  return BuildLegacyText(ReadRepoConverterConfig(relative_path));
+}
+
 auto BuildSamplePayloads() -> std::vector<PayloadFixture> {
   return {
       {.relative_path = "payload/2025/2025-01.txt",
-       .text = "y2025\nm01\n0101\n0600 study_math r alpha\n"},
+       .text = "y2025\nm01\n0101\n0600w\n0630meal\n0700rest\n"},
       {.relative_path = "payload/2026/2026-12.txt",
-       .text = "y2026\nm12\n1201\n0600 study_math r beta\n"},
+       .text = "y2026\nm12\n1201\n0630w\n0700rest\n0730meal\n"},
   };
 }
 
 auto BuildValidExportPayloads() -> std::vector<PayloadFixture> {
   return {
       {.relative_path = "payload/2025/2025-01.txt",
-       .text = "y2025\nm01\n0101\n0600 study\n"},
+       .text = "y2025\nm01\n0101\n0600w\n0630meal\n0700rest\n"},
       {.relative_path = "payload/2025/2025-02.txt",
-       .text = "y2025\nm02\n0201\n0630 work\n"},
+       .text = "y2025\nm02\n0201\n0630w\n0700rest\n0730meal\n"},
   };
 }
 

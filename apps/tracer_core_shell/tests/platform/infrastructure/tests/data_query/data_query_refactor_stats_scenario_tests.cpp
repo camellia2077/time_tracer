@@ -10,7 +10,7 @@ import tracer.core.infrastructure.query.data.stats;
 #include <string>
 #include <vector>
 
-#include "application/dto/core_requests.hpp"
+#include "application/dto/query_requests.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 #include "infrastructure/tests/data_query/data_query_refactor_test_internal.hpp"
 

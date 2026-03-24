@@ -5,7 +5,7 @@
 #include <optional>
 #include <string_view>
 
-#include "application/dto/core_requests.hpp"
+#include "application/dto/exchange_requests.hpp"
 #include "infra/crypto/file_crypto_service.hpp"
 
 namespace tracer_core::api::android::bridge_internal {

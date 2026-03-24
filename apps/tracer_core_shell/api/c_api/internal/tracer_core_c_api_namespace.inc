@@ -53,14 +53,15 @@ auto GetDiagnosticsCallbackRegistration() -> DiagnosticsCallbackRegistration {
   return g_diagnostics_callback_registration;
 }
 
-auto ToAbiLogSeverity(tracer_core::application::ports::LogSeverity severity)
+auto ToAbiLogSeverity(
+    tracer_core::application::runtime_bridge::LogSeverity severity)
     -> TtCoreLogSeverity {
   switch (severity) {
-    case tracer_core::application::ports::LogSeverity::kInfo:
+    case tracer_core::application::runtime_bridge::LogSeverity::kInfo:
       return TT_CORE_LOG_INFO;
-    case tracer_core::application::ports::LogSeverity::kWarn:
+    case tracer_core::application::runtime_bridge::LogSeverity::kWarn:
       return TT_CORE_LOG_WARN;
-    case tracer_core::application::ports::LogSeverity::kError:
+    case tracer_core::application::runtime_bridge::LogSeverity::kError:
       return TT_CORE_LOG_ERROR;
   }
   return TT_CORE_LOG_INFO;
@@ -81,9 +82,9 @@ auto ToAbiDiagnosticSeverity(
 }
 
 class AbiLogCallbackLogger final
-    : public tracer_core::application::ports::ILogger {
+    : public tracer_core::application::runtime_bridge::ILogger {
  public:
-  auto Log(tracer_core::application::ports::LogSeverity severity,
+  auto Log(tracer_core::application::runtime_bridge::LogSeverity severity,
            std::string_view message) -> void override {
     const LogCallbackRegistration registration = GetLogCallbackRegistration();
     if (registration.callback == nullptr) {
@@ -120,7 +121,7 @@ class AbiDiagnosticsCallbackSink final
 };
 
 auto CreateAbiLoggerAdapter()
-    -> std::shared_ptr<tracer_core::application::ports::ILogger> {
+    -> std::shared_ptr<tracer_core::application::runtime_bridge::ILogger> {
   return std::make_shared<AbiLogCallbackLogger>();
 }
 

@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <memory>
 
-#include "application/ports/logger.hpp"
+#include "application/runtime_bridge/logger.hpp"
 #include "domain/ports/diagnostics.hpp"
 
 namespace tracer::core::application::use_cases {
@@ -21,7 +21,7 @@ struct AndroidRuntimeRequest {
   std::filesystem::path output_root;
   std::filesystem::path converter_config_toml_path;
 
-  std::shared_ptr<tracer_core::application::ports::ILogger> logger;
+  std::shared_ptr<tracer_core::application::runtime_bridge::ILogger> logger;
   std::shared_ptr<tracer_core::domain::ports::IDiagnosticsSink>
       diagnostics_sink;
   std::shared_ptr<tracer_core::domain::ports::IErrorReportWriter>

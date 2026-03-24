@@ -6,7 +6,7 @@
 #include <optional>
 
 #include "infra/config/models/report_catalog.hpp"
-#include "infra/reports/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/reporting/facade/android_static_report_formatter_registrar.hpp"
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 

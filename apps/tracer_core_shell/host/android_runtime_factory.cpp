@@ -6,10 +6,10 @@ import tracer.core.infrastructure.config.file_converter_config_provider;
 import tracer.core.infrastructure.logging;
 import tracer.core.infrastructure.persistence.runtime;
 import tracer.core.infrastructure.persistence.write;
-import tracer.core.infrastructure.reports.data_querying;
-import tracer.core.infrastructure.reports.dto;
-import tracer.core.infrastructure.reports.exporting;
-import tracer.core.infrastructure.reports.querying;
+import tracer.core.infrastructure.reporting.data_querying;
+import tracer.core.infrastructure.reporting.dto;
+import tracer.core.infrastructure.reporting.exporting;
+import tracer.core.infrastructure.reporting.querying;
 import tracer.core.infrastructure.platform.android.clock;
 
 #include "host/android_runtime_factory.hpp"
@@ -23,14 +23,14 @@ import tracer.core.infrastructure.platform.android.clock;
 #include <utility>
 
 #include "host/android_runtime_factory_internal.hpp"
-#include "application/interfaces/i_report_handler.hpp"
-#include "application/ports/i_report_formatter_registry.hpp"
-#include "application/ports/logger.hpp"
+#include "application/compat/reporting/i_report_handler.hpp"
+#include "application/ports/reporting/i_report_formatter_registry.hpp"
+#include "application/runtime_bridge/logger.hpp"
 #include "application/reporting/report_handler.hpp"
 #include "domain/ports/diagnostics.hpp"
-#include "infra/crypto/tracer_exchange_service.hpp"
-#include "infra/persistence/sqlite_data_query_service.hpp"
-#include "infra/reports/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/exchange/tracer_exchange_service.hpp"
+#include "infra/query/data/repository/query_runtime_service.hpp"
+#include "infra/reporting/facade/android_static_report_formatter_registrar.hpp"
 
 namespace {
 
@@ -71,7 +71,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   const fs::path kConverterConfigTomlPath =
       kRuntimeConfigPaths.converter_config_toml_path;
 
-  tracer_core::application::ports::SetLogger(request.logger);
+  tracer_core::application::runtime_bridge::SetLogger(request.logger);
   tracer_core::domain::ports::SetDiagnosticsSink(request.diagnostics_sink);
   // Android keeps validation/runtime failures in the active UI diagnostics
   // channel and should not default to writing sidecar error-report files.
@@ -121,7 +121,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::make_shared<infra_persistence_runtime::SqliteProjectRepository>(
           kDbPath.string());
   auto data_query_service =
-      std::make_shared<infrastructure::persistence::SqliteDataQueryService>(
+      std::make_shared<
+          tracer::core::infrastructure::query::data::repository::QueryRuntimeService>(
           kDbPath, kConverterConfigTomlPath);
   auto report_data_query_service =
       std::make_shared<infra_reports::LazySqliteReportDataQueryService>(
@@ -142,15 +143,19 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   auto tracer_exchange_service =
       tracer_core::infrastructure::crypto::CreateTracerExchangeService(*workflow);
 
-  AndroidRuntime runtime;
+  // Runtime bootstrap owns capability composition; TracerCoreRuntime only
+  // aggregates the already-constructed capability APIs.
   auto pipeline_api = std::make_shared<app_use_cases::PipelineApi>(*workflow);
   auto query_api = std::make_shared<app_use_cases::QueryApi>(
-      project_repository, std::move(data_query_service));
+      project_repository, data_query_service);
   auto report_api = std::make_shared<app_use_cases::ReportApi>(
-      *report, std::move(report_data_query_service),
-      std::move(report_dto_formatter), std::move(report_export_writer));
-  auto tracer_exchange_api = std::make_shared<app_use_cases::TracerExchangeApi>(
-      std::move(tracer_exchange_service));
+      *report, report_data_query_service, report_dto_formatter,
+      report_export_writer);
+  auto tracer_exchange_api =
+      std::make_shared<app_use_cases::TracerExchangeApi>(
+          tracer_exchange_service);
+
+  AndroidRuntime runtime;
   auto runtime_impl = std::make_shared<app_use_cases::TracerCoreRuntime>(
       std::move(pipeline_api), std::move(query_api), std::move(report_api),
       std::move(tracer_exchange_api));

@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-#include "application/dto/core_requests.hpp"
+#include "application/dto/exchange_requests.hpp"
 #include "infra/crypto/file_crypto_service.hpp"
 #include "nlohmann/json.hpp"
 

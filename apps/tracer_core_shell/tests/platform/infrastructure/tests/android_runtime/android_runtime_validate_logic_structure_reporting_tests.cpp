@@ -13,7 +13,7 @@ namespace android_runtime_tests {
 namespace {
 
 namespace modports = tracer_core::domain::ports;
-namespace applog = tracer_core::application::ports;
+namespace applog = tracer_core::application::runtime_bridge;
 
 class CapturingLogger final : public applog::ILogger {
  public:
@@ -217,7 +217,7 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(
           kSourceFile,
-          "y2026\nm03\n0101\n0700w\n0800study\n0900wake\n1000exercise\n")) {
+          "y2026\nm03\n0301\n0700w\n0800高等数学\n0900wake\n1000有氧训练\n")) {
     ++failures;
     std::cerr << "[FAIL] Wake-position logic validation test should write "
                  "input file.\n";

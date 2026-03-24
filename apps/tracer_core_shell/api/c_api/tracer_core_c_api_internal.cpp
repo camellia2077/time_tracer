@@ -7,8 +7,8 @@ import tracer.core.application.use_cases.interface;
 #include <stdexcept>
 #include <utility>
 
-#include "application/dto/core_responses.hpp"
-#include "application/dto/tree_query_response.hpp"
+#include "application/dto/query_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "api/c_api/c_api_parse_bridge.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 

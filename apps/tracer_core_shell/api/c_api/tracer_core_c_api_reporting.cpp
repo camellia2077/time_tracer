@@ -12,8 +12,10 @@ import tracer.core.application.use_cases.interface;
 
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/tracer_core_c_api_internal.hpp"
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
+#include "application/dto/query_requests.hpp"
+#include "application/dto/query_responses.hpp"
+#include "application/dto/reporting_requests.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "tracer/transport/envelope.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 

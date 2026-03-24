@@ -217,13 +217,13 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
   const fs::path decrypted_package_path =
       paths.test_root / "export" / "legacy.ttpkg";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600 study\r\n";
-  const std::string legacy_main =
-      "\xEF\xBB\xBFremark_prefix = \"r\"\r\n";
-  const std::string legacy_alias =
-      "\xEF\xBB\xBF[aliases]\r\nstudy = \"study\"\r\n";
-  const std::string legacy_duration =
-      "\xEF\xBB\xBF[duration_rules]\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
+  const std::string legacy_main = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/interval_processor_config.toml");
+  const std::string legacy_alias = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/alias_mapping.toml");
+  const std::string legacy_duration = ReadLegacyRepoConverterConfig(
+      "assets/tracer_core/config/converter/duration_rules.toml");
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -329,7 +329,7 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
   const fs::path android_package = paths.test_root / "export" / "android.ttpkg";
   const fs::path windows_package = paths.test_root / "export" / "windows.ttpkg";
   const std::string legacy_payload =
-      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600 study\r\n";
+      "\xEF\xBB\xBFy2025\r\nm01\r\n0101\r\n0600w\r\n0630meal\r\n0700rest\r\n";
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;

@@ -80,7 +80,7 @@ endfunction()
 function(enforce_source_content_boundary)
     set(options)
     set(oneValueArgs ROOT)
-    set(multiValueArgs TARGET_DIRS FORBIDDEN_PATTERNS)
+    set(multiValueArgs TARGET_DIRS FORBIDDEN_PATTERNS EXEMPT_FILES)
     cmake_parse_arguments(ESCB "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
     if(NOT ESCB_ROOT)
@@ -101,33 +101,45 @@ function(enforce_source_content_boundary)
 
     foreach(_target_dir IN LISTS ESCB_TARGET_DIRS)
         if(IS_ABSOLUTE "${_target_dir}")
-            set(_scan_dir "${_target_dir}")
+            set(_scan_path "${_target_dir}")
         else()
-            set(_scan_dir "${ESCB_ROOT}/${_target_dir}")
+            set(_scan_path "${ESCB_ROOT}/${_target_dir}")
         endif()
 
-        if(NOT EXISTS "${_scan_dir}")
+        if(NOT EXISTS "${_scan_path}")
             continue()
         endif()
 
-        file(GLOB_RECURSE _content_files CONFIGURE_DEPENDS
-            LIST_DIRECTORIES false
-            "${_scan_dir}/*.h"
-            "${_scan_dir}/*.hh"
-            "${_scan_dir}/*.hpp"
-            "${_scan_dir}/*.hxx"
-            "${_scan_dir}/*.c"
-            "${_scan_dir}/*.cc"
-            "${_scan_dir}/*.cpp"
-            "${_scan_dir}/*.cxx"
-        )
+        if(IS_DIRECTORY "${_scan_path}")
+            file(GLOB_RECURSE _content_files CONFIGURE_DEPENDS
+                LIST_DIRECTORIES false
+                "${_scan_path}/*.h"
+                "${_scan_path}/*.hh"
+                "${_scan_path}/*.hpp"
+                "${_scan_path}/*.hxx"
+                "${_scan_path}/*.c"
+                "${_scan_path}/*.cc"
+                "${_scan_path}/*.cpp"
+                "${_scan_path}/*.cxx"
+                "${_scan_path}/*.ixx"
+                "${_scan_path}/*.cppm"
+                "${_scan_path}/*.inc"
+            )
+        else()
+            set(_content_files "${_scan_path}")
+        endif()
 
         foreach(_file IN LISTS _content_files)
+            file(RELATIVE_PATH _relative_file "${ESCB_ROOT}" "${_file}")
+            list(FIND ESCB_EXEMPT_FILES "${_relative_file}" _exempt_index)
+            if(NOT _exempt_index EQUAL -1)
+                continue()
+            endif()
+
             foreach(_pattern IN LISTS ESCB_FORBIDDEN_PATTERNS)
                 file(STRINGS "${_file}" _matched_lines REGEX "${_pattern}")
                 if(_matched_lines)
                     list(GET _matched_lines 0 _first_match)
-                    file(RELATIVE_PATH _relative_file "${ESCB_ROOT}" "${_file}")
                     message(FATAL_ERROR
                         "[core-boundary] forbidden content pattern in "
                         "${_relative_file}: ${_first_match}"
@@ -156,6 +168,19 @@ function(enforce_core_target_link_boundary)
             "tc_adapters_iface"
             "tc_infra_full_lib"
             "tc_infra_reports_lib"
+            "tc_infra_reporting_lib"
+            "tc_infra_query_lib"
+            "tc_infra_config_lib"
+            "tc_infra_exchange_lib"
+            "tc_infra_persistence_write_lib"
+            "tc_infra_persistence_runtime_lib"
+            "tc_cap_pipeline_lib"
+            "tc_cap_query_lib"
+            "tc_cap_reporting_lib"
+            "tc_cap_config_lib"
+            "tc_cap_exchange_lib"
+            "tc_rpt_shared_lib"
+            "tc_rpt_data_lib"
         )
     endif()
 

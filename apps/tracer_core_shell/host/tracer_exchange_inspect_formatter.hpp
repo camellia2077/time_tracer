@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "application/dto/core_responses.hpp"
+#include "application/dto/exchange_responses.hpp"
 
 namespace tracer_core::shell::tracer_exchange {
 

@@ -17,7 +17,6 @@ enum class ReportFormat;
 
 namespace tracer::core::application::use_cases {
 
-class ITracerCoreApi;
 class ITracerCoreRuntime;
 
 }  // namespace tracer::core::application::use_cases

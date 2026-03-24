@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "infra/reports/data/cache/project_name_cache.hpp"
+#include "infra/reporting/data/cache/project_name_cache.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_business_regression_internal.hpp"
 #include "infrastructure/tests/android_runtime/android_runtime_test_common.hpp"
 
