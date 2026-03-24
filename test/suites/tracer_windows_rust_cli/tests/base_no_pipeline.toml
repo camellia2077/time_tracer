@@ -1,0 +1,30 @@
+# Test scenario configuration without implicit pipeline fixture setup.
+
+[run_control]
+enable_test_execution = 1
+stop_on_failure = 1
+
+[pipeline]
+mode = "none"
+
+[paths]
+test_data_path = "${test_root}/data"
+
+[log_routing]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "tree"]
+subdir = "tree"
+legacy_name_contains = ["_query_data_tree_"]
+
+[[log_routing.rules]]
+stage = "query-data"
+command_prefix = ["query", "data", "days-stats"]
+subdir = "stats"
+legacy_name_contains = ["_query_data_days_stats_"]
+
+[[log_routing.rules]]
+stage = "exchange"
+command_prefix = ["exchange"]
+subdir = "exchange"

@@ -1,0 +1,30 @@
+# Persistence runtime capability command tests
+
+[[commands]]
+name = "Prepare Runtime Read Fixture"
+stage = "persistence-runtime-setup"
+args = ["pipeline", "convert", "{data_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Import Runtime Read Fixture"
+stage = "persistence-runtime-setup"
+args = ["pipeline", "import", "{processed_json_dir}", "--db", "{db_path}"]
+expect_exit = 0
+expect_files = ["{db_path}"]
+
+[[commands]]
+name = "Doctor Sees Runtime Database File"
+stage = "persistence-runtime"
+args = ["doctor", "--db", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = [
+  "db_file ->",
+  "(present) [optional]",
+]
+
+[[commands]]
+name = "Query Data Years Through Runtime Database"
+stage = "persistence-runtime"
+args = ["query", "data", "years", "--db", "{db_path}"]
+expect_exit = 0

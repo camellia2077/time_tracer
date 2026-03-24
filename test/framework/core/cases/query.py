@@ -1,6 +1,6 @@
 # test/cases/query.py
 from ..conf.definitions import Colors, TestContext, TestReport
-from ..core.base import BaseTester, TestCounter
+from ..base import BaseTester, TestCounter
 
 
 class QueryTester(BaseTester):

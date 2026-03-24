@@ -24,7 +24,7 @@ def _write_bytes(path: Path, content: bytes = b"x") -> None:
 
 def _write_config(repo_root: Path) -> None:
     _write_text(
-        repo_root / "tools" / "toolchain" / "config.toml",
+        repo_root / "tools" / "toolchain" / "config" / "test.toml",
         """
 [apps.tracer_core]
 path = "apps/tracer_core_shell"

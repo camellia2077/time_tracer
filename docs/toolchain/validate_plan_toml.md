@@ -20,7 +20,6 @@ continue_on_failure = false
 [defaults]
 kind = "verify"
 app = "tracer_core_shell"
-verify_scope = "batch"
 concise = true
 
 [[tracks]]
@@ -68,7 +67,6 @@ CLI 传入 `--run-name` 时，会覆盖 `[run].name`。
 - `profile`：构建 profile 名
 - `build_dir`：逻辑构建目录名
 - `cmake_args`：字符串数组，附加 CMake 参数
-- `verify_scope`：`task` | `unit` | `artifact` | `batch`（默认 `batch`）
 - `concise`：是否启用简洁输出（默认 `true`）
 - `kill_build_procs`：是否启用 build 前工具清理（默认 `false`）
 
@@ -82,15 +80,14 @@ CLI 传入 `--run-name` 时，会覆盖 `[run].name`。
   - 若两者都缺失，命令报错并退出
 - 其余字段：同理先 track，再 defaults，再代码默认值
 
-## 5. `kind` 与 `verify_scope` 行为
+## 5. `kind` 行为
 
 - `kind = "configure"`：只跑 configure 阶段。
 - `kind = "build"`：跑 build 阶段（必要时会先完成 configure）。
-- `kind = "verify"`：先 build，再按 `verify_scope` 决定后续验证：
-  - `task`：任务级检查
-  - `unit`：单元/内部检查
-  - `artifact`：产物套件检查
-  - `batch`：`unit + artifact` 组合
+- `kind = "verify"`：执行完整验证流程：
+  - 先 build
+  - 再跑 Python unit/component checks
+  - 再跑 suite / native smoke / applicable quality gates
 
 ## 6. 输出产物位置
 
@@ -127,7 +124,6 @@ continue_on_failure = false
 [defaults]
 kind = "verify"
 app = "tracer_core_shell"
-verify_scope = "batch"
 concise = true
 
 [[tracks]]
@@ -149,7 +145,6 @@ continue_on_failure = false
 [defaults]
 kind = "verify"
 app = "tracer_core_shell"
-verify_scope = "batch"
 concise = true
 
 [[tracks]]
@@ -167,7 +162,6 @@ continue_on_failure = false
 [defaults]
 kind = "verify"
 app = "tracer_core_shell"
-verify_scope = "batch"
 concise = true
 
 [[tracks]]
@@ -192,7 +186,6 @@ continue_on_failure = false
 [defaults]
 kind = "verify"
 app = "tracer_core_shell"
-verify_scope = "batch"
 concise = true
 
 [[tracks]]

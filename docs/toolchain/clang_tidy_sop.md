@@ -33,8 +33,8 @@ python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --p
 2. 逐个处理该批次里的 `task_*.json`（一次只修一个 task，允许同文件聚类 clean）。
    - `task_*.log` / `task_*.toon` 只是可选渲染视图，不是 canonical 数据源。
 3. 每个 task 修复后先做任务级轻量验证：
-   - `python tools/run.py verify --app tracer_core --build-dir build_fast --concise --scope task`
-   - `task` scope 当前仅包含轻量稳定检查（build + native runtime smoke），不包含 `runtime_guard`。
+   - `python tools/run.py build --app tracer_core --build-dir build_fast --concise`
+   - 该命令当前作为轻量构建校验入口，仅验证能否成功编译，不承担完整 `verify` 职责。
 4. 对同一源码文件的多个 task，建议一次性清理（减少重复 verify）：
    - `python tools/run.py clean --app tracer_core_shell --strict --batch-id <BATCH_ID> --cluster-by-file <ID>`
 5. 批次修复完成后，执行批次收口命令（批次级全量 verify）：
@@ -56,7 +56,7 @@ python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --p
 仅当 `tidy-batch` 执行失败时，允许临时拆分排查：
 
 ```bash
-python tools/run.py verify --app tracer_core --build-dir build_fast --concise --scope task
+python tools/run.py build --app tracer_core --build-dir build_fast --concise
 python tools/run.py clean --app tracer_core_shell --strict --batch-id <BATCH_ID> <ID>
 python tools/run.py tidy-refresh --app tracer_core_shell --batch-id <BATCH_ID> --full-every 3 --keep-going
 ```

@@ -87,10 +87,11 @@ python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_
 python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
 python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
 python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
-# `tidy-step` apply mode now does: auto-fix -> task-scope verify -> focused clang-tidy re-check -> archive current task artifact
+# `tidy-step` apply mode now does: auto-fix -> build sanity check -> focused clang-tidy re-check -> archive current task artifact
 
 # Run tools/toolchain minimal regression tests
 python tools/run.py self-test
+python tools/run.py self-test --group verify-stack --quiet
 
 # Generate/refresh bundle metadata from historical config paths (default dry-run, C++ lane)
 python tools/run.py config-migrate --app tracer_windows_rust_cli --show-diff

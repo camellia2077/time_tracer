@@ -1,0 +1,15 @@
+[run]
+name = "tracer_core_exchange"
+continue_on_failure = false
+
+[scope]
+paths_file = "../exchange.paths"
+
+[defaults]
+kind = "verify"
+app = "tracer_core_shell"
+profile = "cap_exchange"
+concise = true
+
+[[tracks]]
+name = "cap_exchange"

@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--run-verify-core",
         action="store_true",
-        help="Run `python tools/run.py verify --app tracer_core --profile fast --scope task --concise` before audit.",
+        help="Run `python tools/run.py build --app tracer_core --profile fast --concise` before audit.",
     )
     parser.add_argument(
         "--fail-on-diff",
@@ -112,12 +112,12 @@ def run_verify_core(repo_root: Path) -> int:
     cmd = [
         sys.executable,
         "tools/run.py",
-        "verify",
+        "build",
         "--app",
         "tracer_core",
-        "--quick",
-        "--scope",
-        "task",
+        "--profile",
+        "fast",
+        "--concise",
     ]
     completed = subprocess.run(cmd, cwd=str(repo_root), check=False)
     return int(completed.returncode)

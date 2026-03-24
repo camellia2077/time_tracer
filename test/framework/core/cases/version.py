@@ -1,6 +1,6 @@
 # test/cases/version.py
 from ..conf.definitions import CommandSpec, TestContext, TestReport
-from ..core.base import BaseTester, TestCounter
+from ..base import BaseTester, TestCounter
 from ..utils.file_ops import format_size
 
 

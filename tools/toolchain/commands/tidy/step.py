@@ -6,7 +6,7 @@ from pathlib import Path
 from ...core.executor import run_command
 from ...services import log_parser
 from ...core.context import Context
-from ..cmd_quality.verify import VerifyCommand
+from ..cmd_build import BuildCommand
 from ..shared import tidy as tidy_shared
 from .batch import TidyBatchCommand
 from .clean import CleanCommand
@@ -99,21 +99,20 @@ class TidyStepCommand:
             print("--- tidy-step: dry-run mode, skip verify/batch follow-up.")
             return 0
 
-        print("--- tidy-step: running task-scope verify...")
-        verify_ret = VerifyCommand(self.ctx).execute(
+        print("--- tidy-step: running build sanity check...")
+        verify_ret = BuildCommand(self.ctx).build(
             app_name=app_name,
             tidy=False,
             build_dir_name=verify_build_dir_name,
             profile_name=profile_name,
             concise=concise,
             kill_build_procs=kill_build_procs,
-            verify_scope="task",
         )
         if verify_ret != 0:
-            print("--- tidy-step: task-scope verify failed.")
+            print("--- tidy-step: build sanity check failed.")
             return verify_ret
 
-        print("--- tidy-step: running task-scope clang-tidy re-check...")
+        print("--- tidy-step: running post-build clang-tidy re-check...")
         recheck_result = self._run_task_recheck(
             app_name=app_name,
             parsed=parsed,

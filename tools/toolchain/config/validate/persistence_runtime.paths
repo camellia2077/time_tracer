@@ -1,0 +1,7 @@
+libs/tracer_core/src/application/ports/pipeline/i_database_health_checker.hpp
+libs/tracer_core/src/infra/persistence/repositories
+libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.module.cpp
+libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.hpp
+libs/tracer_core/src/infra/persistence/sqlite/db_manager.cpp
+libs/tracer_core/src/infra/persistence/sqlite/db_manager.hpp
+libs/tracer_core/src/infra/modules/persistence/runtime

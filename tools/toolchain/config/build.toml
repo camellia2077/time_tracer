@@ -29,6 +29,34 @@ gradle_tasks = [":app:assembleDebug"]
 extends = "_fast_base"
 description = "Fast local verification profile."
 
+[build.profiles.cap_pipeline]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core pipeline surfaces."
+
+[build.profiles.cap_query]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core query surfaces."
+
+[build.profiles.cap_reporting]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core reporting surfaces."
+
+[build.profiles.cap_exchange]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core exchange surfaces."
+
+[build.profiles.cap_config]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core config surfaces."
+
+[build.profiles.cap_persistence_runtime]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core persistence runtime surfaces."
+
+[build.profiles.cap_persistence_write]
+extends = "fast"
+description = "Focused capability verification profile for tracer_core persistence write surfaces."
+
 [build.profiles.fast_ci_no_pch]
 extends = "_fast_base"
 description = "CI fast profile with PCH disabled for toolchain/header compatibility."

@@ -30,7 +30,6 @@ class TestVerifyCliHandler(TestCase):
             no_kill_build_procs=False,
             cmake_args=[],
             concise=False,
-            scope="batch",
             extra_args=[],
         )
 

@@ -42,7 +42,7 @@ python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family
 python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise
 
 # 里程碑唯一入口（兼容旧 app id: tracer_core）
-python tools/run.py verify --app tracer_core_shell --scope batch --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --concise
 
 # 先构建 Windows core runtime DLL（staged output: out/build/tracer_core_shell/build/bin）
 python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows
@@ -58,7 +58,7 @@ python tools/run.py build --app tracer_android --profile android_edit
 
 # Android 验证期
 python tools/run.py verify --app tracer_android --profile android_style --concise
-python tools/run.py verify --app tracer_android --profile android_ci --scope batch --concise
+python tools/run.py verify --app tracer_android --profile android_ci --concise
 ```
 
 ## clang-tidy scoped workspace

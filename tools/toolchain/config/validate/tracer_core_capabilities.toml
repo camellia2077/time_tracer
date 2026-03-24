@@ -1,0 +1,12 @@
+[run]
+name = "tracer_core_capabilities"
+continue_on_failure = false
+
+[defaults]
+kind = "verify"
+app = "tracer_core_shell"
+concise = true
+
+[[tracks]]
+name = "modules_on"
+build_dir = "build_fast"

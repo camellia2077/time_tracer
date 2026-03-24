@@ -1,0 +1,10 @@
+libs/tracer_core/src/application/reporting
+libs/tracer_core/src/application/dto/reporting_requests.hpp
+libs/tracer_core/src/application/dto/reporting_responses.hpp
+libs/tracer_core/src/application/ports/reporting
+libs/tracer_core/src/application/use_cases/report_api.cpp
+libs/tracer_core/src/application/use_cases/report_api.hpp
+libs/tracer_core/src/application/use_cases/report_api_support.cpp
+libs/tracer_core/src/application/use_cases/report_api_support.hpp
+libs/tracer_core/src/infra/reporting
+libs/tracer_core/src/infra/modules/reporting

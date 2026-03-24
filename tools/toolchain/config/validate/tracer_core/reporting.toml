@@ -1,0 +1,15 @@
+[run]
+name = "tracer_core_reporting"
+continue_on_failure = false
+
+[scope]
+paths_file = "../reporting.paths"
+
+[defaults]
+kind = "verify"
+app = "tracer_core_shell"
+profile = "cap_reporting"
+concise = true
+
+[[tracks]]
+name = "cap_reporting"

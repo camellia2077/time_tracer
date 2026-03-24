@@ -1,6 +1,4 @@
-import sys
 import time
-from typing import Literal
 
 from ...core.context import Context
 from ...core.executor import run_command
@@ -16,10 +14,11 @@ from .verify_internal.verify_build_stage import execute_build_stage, handle_post
 from .verify_internal.verify_command_text import build_verify_command_text
 from .verify_internal.verify_markdown_gate_runner import run_report_markdown_gates
 from .verify_internal.verify_native_runner import run_native_core_runtime_tests
-from .verify_internal.verify_pipeline import run_artifact_pipeline, run_scope_pipeline
+from .verify_internal.verify_pipeline import run_artifact_pipeline
 from .verify_internal.verify_profile_policy import resolve_suite_config_override
 from .verify_internal.verify_result_writer import write_build_only_result_json
 from .verify_internal.verify_suite_runner import build_suite_test_command
+from .self_test import SelfTestCommand
 
 
 class VerifyCommand:
@@ -30,7 +29,6 @@ class VerifyCommand:
     def _build_verify_command_text(
         *,
         app_name: str,
-        verify_scope: str,
         profile_name: str | None,
         build_dir_name: str | None,
         concise: bool,
@@ -40,7 +38,6 @@ class VerifyCommand:
     ) -> str:
         return build_verify_command_text(
             app_name=app_name,
-            verify_scope=verify_scope,
             profile_name=profile_name,
             build_dir_name=build_dir_name,
             concise=concise,
@@ -87,14 +84,12 @@ class VerifyCommand:
         profile_name: str | None = None,
         concise: bool = False,
         kill_build_procs: bool = False,
-        verify_scope: Literal["task", "unit", "artifact", "batch"] = "batch",
         run_command_fn=None,
     ) -> int:
         started_at = time.monotonic()
         effective_run_command = run_command if run_command_fn is None else run_command_fn
         verify_command_text = self._build_verify_command_text(
             app_name=app_name,
-            verify_scope=verify_scope,
             profile_name=profile_name,
             build_dir_name=build_dir_name,
             concise=concise,
@@ -121,7 +116,6 @@ class VerifyCommand:
 
         early_exit = handle_post_build_state(
             suite_name=suite_name,
-            verify_scope=verify_scope,
             build_ret=build_ret,
             app_name=app_name,
             resolved_build_dir_name=resolved_build_dir_name,
@@ -136,32 +130,76 @@ class VerifyCommand:
         if early_exit is not None:
             return int(early_exit)
 
-        return run_scope_pipeline(
-            verify_scope=verify_scope,
-            run_task_scope_checks=lambda: self.run_task_scope_checks(
+        unit_ret = self.run_unit_scope_checks(
+            run_command_fn=effective_run_command,
+        )
+        if unit_ret != 0:
+            if not suite_name:
+                self._write_build_only_result_json(
+                    app_name=app_name,
+                    build_dir_name=resolved_build_dir_name,
+                    success=False,
+                    exit_code=unit_ret,
+                    duration_seconds=time.monotonic() - started_at,
+                    error_message="Unit verification failed.",
+                    build_only=True,
+                )
+            self._report_verify_failure(
                 app_name=app_name,
-                build_dir_name=resolved_build_dir_name,
-                run_command_fn=effective_run_command,
-            ),
-            run_unit_scope_checks=lambda: self.run_unit_scope_checks(
-                run_command_fn=effective_run_command,
-            ),
-            run_artifact_scope_checks=lambda: self.run_artifact_scope_checks(
-                app_name=app_name,
-                build_dir_name=resolved_build_dir_name,
-                profile_name=profile_name,
-                concise=concise,
-                run_command_fn=effective_run_command,
-            ),
-            suite_name=suite_name,
+                command_text=verify_command_text,
+                exit_code=unit_ret,
+                stage="verify-unit",
+            )
+            print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
+            return unit_ret
+
+        artifact_ret = self.run_artifact_scope_checks(
             app_name=app_name,
-            resolved_build_dir_name=resolved_build_dir_name,
-            started_at=started_at,
-            verify_command_text=verify_command_text,
+            build_dir_name=resolved_build_dir_name,
+            profile_name=profile_name,
+            concise=concise,
+            run_command_fn=effective_run_command,
+        )
+        if not suite_name:
+            self._write_build_only_result_json(
+                app_name=app_name,
+                build_dir_name=resolved_build_dir_name,
+                success=(artifact_ret == 0),
+                exit_code=artifact_ret,
+                duration_seconds=time.monotonic() - started_at,
+                error_message=(
+                    "Full verification failed." if artifact_ret != 0 else ""
+                ),
+                build_only=True,
+            )
+
+        if artifact_ret != 0:
+            self._report_verify_failure(
+                app_name=app_name,
+                command_text=verify_command_text,
+                exit_code=artifact_ret,
+                stage="verify-artifact",
+            )
+
+        print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
+        return artifact_ret
+
+    def _report_verify_failure(
+        self,
+        *,
+        app_name: str,
+        command_text: str,
+        exit_code: int,
+        stage: str,
+    ) -> None:
+        print_failure_report(
+            command=command_text,
+            exit_code=exit_code,
+            next_action=f"Fix errors and rerun: {command_text}",
+            app_name=app_name,
             repo_root=self.ctx.repo_root,
-            write_build_only_result_json_fn=self._write_build_only_result_json,
-            print_failure_report_fn=print_failure_report,
-            print_result_paths_fn=print_result_paths,
+            stage=stage,
+            fallback_key_error_hint="Verification failed. See command output above.",
         )
 
     def run_artifact_scope_checks(
@@ -171,7 +209,7 @@ class VerifyCommand:
         profile_name: str | None = None,
         concise: bool = False,
         run_command_fn=None,
-    ) -> int:
+        ) -> int:
         return self.run_tests(
             app_name=app_name,
             build_dir_name=build_dir_name,
@@ -182,27 +220,11 @@ class VerifyCommand:
         )
 
     def run_unit_scope_checks(self, run_command_fn=None) -> int:
-        test_cmd = [
-            sys.executable,
-            "-m",
-            "unittest",
-            "tools.tests.platform.test_build_toolchain_flags",
-            "tools.tests.platform.test_context_config_resolution",
-            "tools.tests.platform.test_platform_config_sync",
-            "tools.tests.platform.test_tidy_task_automation",
-            "tools.tests.validate.test_validate_plan",
-            "tools.tests.validate.test_validate_command",
-            "tools.tests.validate.test_validate_cli_handler",
-            "tools.tests.verify.test_verify_run_tests",
-            "tools.tests.verify.test_verify_execute_flow",
-            "tools.tests.verify.test_verify_cli_handler",
-        ]
         print("--- verify: running internal logic tests (Python unit/component)")
-        effective_run_command = run_command if run_command_fn is None else run_command_fn
-        return effective_run_command(
-            test_cmd,
-            cwd=self.ctx.repo_root,
-            env=self.ctx.setup_env(),
+        return SelfTestCommand(self.ctx).execute(
+            verbose=False,
+            group="verify-stack",
+            run_command_fn=run_command if run_command_fn is None else run_command_fn,
         )
 
     def run_tests(
@@ -231,6 +253,7 @@ class VerifyCommand:
             test_cmd=test_cmd,
             app_name=app_name,
             build_dir_name=build_dir_name,
+            profile_name=profile_name,
             repo_root=self.ctx.repo_root,
             setup_env_fn=self.ctx.setup_env,
             run_command_fn=effective_run_command,
@@ -239,32 +262,4 @@ class VerifyCommand:
                 normalize_ext=tuple(self.ctx.config.quality.gate_audit.normalize_ext),
             ),
             run_native_core_runtime_tests_fn=run_native_core_runtime_tests,
-        )
-
-    def run_task_scope_checks(
-        self,
-        app_name: str,
-        build_dir_name: str,
-        run_command_fn=None,
-    ) -> int:
-        # Task-scope verify is intentionally lightweight and stable:
-        # keep only native ABI/runtime smoke checks.
-        return self._run_native_core_runtime_tests(
-            app_name=app_name,
-            build_dir_name=build_dir_name,
-            run_command_fn=run_command if run_command_fn is None else run_command_fn,
-        )
-
-    def _run_native_core_runtime_tests(
-        self,
-        app_name: str,
-        build_dir_name: str,
-        run_command_fn=None,
-    ) -> int:
-        return run_native_core_runtime_tests(
-            repo_root=self.ctx.repo_root,
-            setup_env_fn=self.ctx.setup_env,
-            run_command_fn=run_command if run_command_fn is None else run_command_fn,
-            app_name=app_name,
-            build_dir_name=build_dir_name,
         )

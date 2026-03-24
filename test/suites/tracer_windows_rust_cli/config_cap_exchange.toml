@@ -1,0 +1,5 @@
+includes = [
+  "env.toml",
+  "tests/base.toml",
+  "tests/commands_exchange.toml",
+]

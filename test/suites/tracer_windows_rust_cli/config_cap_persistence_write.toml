@@ -1,0 +1,5 @@
+includes = [
+  "env.toml",
+  "tests/base_no_pipeline.toml",
+  "tests/commands_persistence_write.toml",
+]

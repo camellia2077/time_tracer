@@ -22,12 +22,16 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _write_split_config(repo_root: Path, content: str) -> None:
+    _write_text(repo_root / "tools" / "toolchain" / "config" / "test.toml", content)
+
+
 class TestBuildToolchainFlags(TestCase):
     def test_compiler_clang_sets_c_and_cxx_compilers(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 '[build]\ncompiler = "clang"\n',
             )
             ctx = Context(repo_root)
@@ -47,8 +51,8 @@ class TestBuildToolchainFlags(TestCase):
     def test_compiler_gcc_sets_c_and_cxx_compilers(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 '[build]\ncompiler = "gcc"\n',
             )
             ctx = Context(repo_root)
@@ -68,8 +72,8 @@ class TestBuildToolchainFlags(TestCase):
     def test_tidy_reconfigure_required_when_compile_db_dir_mismatches(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"
@@ -106,8 +110,8 @@ tidy_build_dir = "build_tidy_core_family"
     def test_tidy_reconfigure_required_when_target_wrapper_is_missing(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"
@@ -144,8 +148,8 @@ tidy_build_dir = "build_tidy_core_family"
     def test_tidy_configure_strips_conflicting_profile_clang_tidy_flags(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"
@@ -197,8 +201,8 @@ cmake_args = [
     def test_profile_build_does_not_force_reconfigure_when_already_configured(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"
@@ -251,8 +255,8 @@ path = "apps/demo"
     def test_runtime_platform_windows_adds_core_runtime_targets(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.tracer_core]
 path = "apps/tracer_core_shell"

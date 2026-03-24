@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 from ...commands.cmd_build import BuildCommand
 from ...commands.shared.result_reporting import print_failure_report
@@ -10,6 +9,7 @@ from ..common import (
     add_kill_build_procs_args,
     add_profile_arg,
     parse_cmake_args,
+    print_cli_error,
     reject_unsupported_build_dir_override,
 )
 from ..model import CommandSpec, ParserDefaults
@@ -90,10 +90,9 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
     if args.app == "tracer_windows_rust_cli" and args.runtime_platform != "windows":
-        print(
+        print_cli_error(
             "Error: `build --app tracer_windows_rust_cli` now requires "
             "`--runtime-platform windows`.",
-            file=sys.stderr,
         )
         return 2
     build_dir_error = reject_unsupported_build_dir_override(

@@ -1,15 +1,22 @@
 import importlib.util
 import io
+import argparse
 import sys
-from contextlib import redirect_stderr
+from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
 
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from tools.toolchain.cli.dispatch import dispatch_command  # noqa: E402
+from tools.toolchain.core.context import Context  # noqa: E402
+
 
 def _load_run_module():
-    repo_root = Path(__file__).resolve().parents[3]
-    run_py = repo_root / "tools" / "run.py"
+    run_py = REPO_ROOT / "tools" / "run.py"
     spec = importlib.util.spec_from_file_location("tools_run_module", run_py)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Failed to load module spec from {run_py}")
@@ -180,16 +187,18 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["runtime_platform"], "windows")
 
     def test_build_rejects_tracer_windows_rust_cli_without_runtime_platform(self):
+        stdout = io.StringIO()
         stderr = io.StringIO()
         with patch.object(
             sys,
             "argv",
             ["run.py", "build", "--app", "tracer_windows_rust_cli", "--profile", "release_bundle"],
-        ), redirect_stderr(stderr):
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
             rc = self.run_module.main()
 
         self.assertEqual(rc, 2)
         self.assertIn("--runtime-platform windows", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
 
     def test_validate_dispatches_plan_paths_and_run_name(self):
         class FakeValidateCommand:
@@ -812,26 +821,60 @@ class TestRunCliDispatch(TestCase):
         self.assertTrue(FakeTidyStepCommand.last_kwargs["kill_build_procs"])
 
     def test_build_rejects_build_dir_for_tracer_android(self):
+        stdout = io.StringIO()
         stderr = io.StringIO()
         with patch.object(
             sys,
             "argv",
             ["run.py", "build", "--app", "tracer_android", "--build-dir", "build_fast"],
-        ), redirect_stderr(stderr):
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
             rc = self.run_module.main()
 
         self.assertEqual(rc, 2)
+        self.assertIn("does not support `--build-dir`", stderr.getvalue())
+        self.assertIn("tracer_android", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
 
     def test_verify_rejects_build_dir_for_tracer_android(self):
+        stdout = io.StringIO()
         stderr = io.StringIO()
         with patch.object(
             sys,
             "argv",
             ["run.py", "verify", "--app", "tracer_android", "--build-dir", "build_fast"],
-        ), redirect_stderr(stderr):
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
             rc = self.run_module.main()
 
         self.assertEqual(rc, 2)
+        self.assertIn("does not support `--build-dir`", stderr.getvalue())
+        self.assertIn("tracer_android", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+
+    def test_dispatch_unsupported_command_writes_error_to_stderr(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        ctx = Context(REPO_ROOT)
+        args = argparse.Namespace(command="unsupported", app=None, app_path=None)
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            rc = dispatch_command(args, ctx)
+
+        self.assertEqual(rc, 2)
+        self.assertIn("unsupported command `unsupported`", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+
+    def test_dispatch_missing_app_for_app_path_writes_error_to_stderr(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        ctx = Context(REPO_ROOT)
+        args = argparse.Namespace(command="build", app=None, app_path="apps/demo")
+
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            rc = dispatch_command(args, ctx)
+
+        self.assertEqual(rc, 2)
+        self.assertIn("--app-path requires --app", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
 
     def test_verify_rejects_removed_quick_flag(self):
         stderr = io.StringIO()
@@ -931,3 +974,31 @@ class TestRunCliDispatch(TestCase):
         self.assertTrue(FakeConfigMigrateCommand.last_kwargs["dry_run"])
         self.assertFalse(FakeConfigMigrateCommand.last_kwargs["apply_changes"])
         self.assertFalse(FakeConfigMigrateCommand.last_kwargs["rollback"])
+
+    def test_self_test_dispatches_group(self):
+        class FakeSelfTestCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeSelfTestCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.quality.self_test.SelfTestCommand",
+            FakeSelfTestCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "self-test",
+                    "--group",
+                    "verify-stack",
+                    "--quiet",
+                ]
+            )
+
+        self.assertEqual(FakeSelfTestCommand.last_kwargs["group"], "verify-stack")
+        self.assertFalse(FakeSelfTestCommand.last_kwargs["verbose"])

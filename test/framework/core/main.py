@@ -3,7 +3,7 @@ from pathlib import Path
 
 from .conf.definitions import Colors
 from .conf.loader import load_config
-from .core.suite.engine import TestEngine
+from .suite.engine import TestEngine
 
 
 def print_header(paths, no_color: bool):

@@ -372,7 +372,7 @@ python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family
 
 1. 选择一个 task（默认最小 pending task）
 2. 执行 `tidy-task-fix`
-3. 非 dry-run 时执行 `verify --scope task`
+3. 非 dry-run 时执行 `build`
 4. 若当前 batch 只有这一个 task，则自动转入 `tidy-batch --preset sop`
 5. 写回 `automation/tidy_step_last.json`
 

@@ -1,0 +1,15 @@
+[run]
+name = "tracer_core_persistence_write"
+continue_on_failure = false
+
+[scope]
+paths_file = "../persistence_write.paths"
+
+[defaults]
+kind = "verify"
+app = "tracer_core_shell"
+profile = "cap_persistence_write"
+concise = true
+
+[[tracks]]
+name = "cap_persistence_write"

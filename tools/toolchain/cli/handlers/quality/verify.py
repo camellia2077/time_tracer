@@ -32,18 +32,6 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         parser,
         help_text="Use concise top-level output and concise test runner output.",
     )
-    parser.add_argument(
-        "--scope",
-        choices=["task", "unit", "artifact", "batch"],
-        default="batch",
-        help=(
-            "Verification scope. "
-            "`task` = lightweight task-level checks (build + native runtime smoke); "
-            "`unit` = internal logic tests (Python unit/component); "
-            "`artifact` = report/runtime artifact checks (suite + gates + native runtime); "
-            "`batch` = unit + artifact full verify."
-        ),
-    )
     parser.add_argument("extra_args", nargs=argparse.REMAINDER)
 
 
@@ -67,7 +55,6 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         profile_name=args.profile,
         concise=bool(args.concise),
         kill_build_procs=kill_build_procs,
-        verify_scope=args.scope,
     )
 
 

@@ -88,7 +88,6 @@ def execute_build_stage(
 def handle_post_build_state(
     *,
     suite_name: str | None,
-    verify_scope: str,
     build_ret: int,
     app_name: str,
     resolved_build_dir_name: str,
@@ -122,16 +121,5 @@ def handle_post_build_state(
         )
         print_result_paths_fn(app_name=app_name, repo_root=repo_root)
         return build_ret
-
-    if suite_name is None and verify_scope != "unit":
-        write_build_only_result_json_fn(
-            app_name=app_name,
-            build_dir_name=resolved_build_dir_name,
-            success=True,
-            exit_code=0,
-            duration_seconds=time.monotonic() - started_at,
-        )
-        print_result_paths_fn(app_name=app_name, repo_root=repo_root)
-        return 0
 
     return None

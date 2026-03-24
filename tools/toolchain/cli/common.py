@@ -1,5 +1,6 @@
 import argparse
 import shlex
+import sys
 from collections.abc import Iterable
 
 from ..core.context import Context
@@ -13,10 +14,14 @@ def parse_cmake_args(raw_args: Iterable[str] | None) -> list[str]:
     return flattened
 
 
+def print_cli_error(message: str) -> None:
+    print(message, file=sys.stderr)
+
+
 def apply_app_path_override(args: argparse.Namespace, ctx: Context) -> int:
     if getattr(args, "app_path", None):
         if not getattr(args, "app", None):
-            print("Error: --app-path requires --app.")
+            print_cli_error("Error: --app-path requires --app.")
             return 2
         ctx.set_app_path_override(args.app, args.app_path)
     return 0
@@ -44,7 +49,7 @@ def reject_unsupported_build_dir_override(
     fixed_build_dir = resolve_fixed_build_dir(ctx, app_name)
     if not fixed_build_dir:
         return 0
-    print(
+    print_cli_error(
         f"Error: `{command_name}` does not support `--build-dir` for app `{app_name}`. "
         f"This backend always uses `{fixed_build_dir}`."
     )

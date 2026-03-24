@@ -134,7 +134,7 @@ class TestTidyStepCommand(TestCase):
                 patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
                 patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
-                patch("tools.toolchain.commands.tidy.step.VerifyCommand.execute", return_value=0),
+                patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
                 patch("tools.toolchain.commands.tidy.step.TidyBatchCommand.execute", return_value=0),
             ):
@@ -208,7 +208,7 @@ class TestTidyStepCommand(TestCase):
                 patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
                 patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
-                patch("tools.toolchain.commands.tidy.step.VerifyCommand.execute", return_value=0),
+                patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
                 ret = command.execute(
@@ -297,7 +297,7 @@ class TestTidyStepCommand(TestCase):
                 patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
                 patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
-                patch("tools.toolchain.commands.tidy.step.VerifyCommand.execute", return_value=0),
+                patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
                 ret = command.execute(
@@ -368,7 +368,7 @@ class TestTidyStepCommand(TestCase):
                 patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
                 patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
-                patch("tools.toolchain.commands.tidy.step.VerifyCommand.execute", return_value=0),
+                patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
                 patch("tools.toolchain.commands.tidy.step.TidyBatchCommand.execute", return_value=0) as batch_execute,
             ):

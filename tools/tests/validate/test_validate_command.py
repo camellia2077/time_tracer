@@ -111,6 +111,62 @@ class TestValidateCommand(TestCase):
                 (repo_root / "out" / "validate" / "import_batch01" / "logs" / "output.full.log").exists()
             )
 
+    def test_execute_uses_plan_scope_when_cli_scope_missing(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            self._write_minimal_repo(repo_root)
+            ctx = Context(repo_root)
+            command = ValidateCommand(ctx)
+            plan_path = self._write_plan(
+                repo_root,
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "import_batch_scope_default"',
+                        "",
+                        "[scope]",
+                        'paths = ["libs/tracer_core/src/application/query/tree"]',
+                        "",
+                        "[defaults]",
+                        'kind = "build"',
+                        'app = "tracer_core"',
+                        "",
+                        "[[tracks]]",
+                        'name = "modules_on"',
+                        'build_dir = "build_on"',
+                    ]
+                )
+                + "\n",
+            )
+
+            def fake_build(self, **kwargs):
+                print(f"build ok: {kwargs['build_dir_name']}")
+                return 0
+
+            with patch(
+                "tools.toolchain.commands.cmd_validate.command.BuildCommand.build",
+                new=fake_build,
+            ):
+                result = self._execute_silently(
+                    command,
+                    plan_path=str(plan_path),
+                    verbose=False,
+                )
+
+            self.assertEqual(result, 0)
+            summary_path = (
+                repo_root
+                / "out"
+                / "validate"
+                / "import_batch_scope_default"
+                / "summary.json"
+            )
+            payload = json.loads(summary_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                payload["scope_paths"],
+                ["libs/tracer_core/src/application/query/tree"],
+            )
+
     def test_execute_continues_and_collects_failure_summary_by_default(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             repo_root = Path(temp_dir)
@@ -237,7 +293,6 @@ class TestValidateCommand(TestCase):
                         "[defaults]",
                         'kind = "verify"',
                         'app = "tracer_core"',
-                        'verify_scope = "task"',
                         "concise = false",
                         "",
                         "[[tracks]]",
@@ -254,11 +309,23 @@ class TestValidateCommand(TestCase):
 
             with (
                 patch(
-                    "tools.toolchain.commands.cmd_validate.command.execute_build_stage",
+                    "tools.toolchain.commands.cmd_validate.verify_track.execute_build_stage",
                     new=fake_execute_build_stage,
                 ),
                 patch(
-                    "tools.toolchain.commands.cmd_validate.command.VerifyCommand.run_task_scope_checks",
+                    "tools.toolchain.commands.cmd_validate.verify_track.VerifyCommand.run_unit_scope_checks",
+                    return_value=0,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_suite_step",
+                    return_value=None,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_report_markdown_gates",
+                    return_value=0,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_native_core_runtime_tests",
                     return_value=0,
                 ),
             ):
@@ -271,6 +338,66 @@ class TestValidateCommand(TestCase):
 
             self.assertEqual(result, 0)
             self.assertEqual(captured, [False])
+
+    def test_execute_verify_track_passes_profile_to_markdown_gates(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            self._write_minimal_repo(repo_root)
+            ctx = Context(repo_root)
+            command = ValidateCommand(ctx)
+            plan_path = self._write_plan(
+                repo_root,
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "import_batch04b"',
+                        "",
+                        "[defaults]",
+                        'kind = "verify"',
+                        'app = "tracer_core"',
+                        'profile = "cap_query"',
+                        "",
+                        "[[tracks]]",
+                        'name = "verify_track"',
+                    ]
+                )
+                + "\n",
+            )
+
+            def fake_execute_build_stage(**_kwargs):
+                return 0, "build_test", "tracer_core", repo_root / "build.log"
+
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.execute_build_stage",
+                    new=fake_execute_build_stage,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.VerifyCommand.run_unit_scope_checks",
+                    return_value=0,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_suite_step",
+                    return_value=None,
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_report_markdown_gates",
+                    return_value=0,
+                ) as mocked_markdown,
+                patch(
+                    "tools.toolchain.commands.cmd_validate.verify_track.run_native_core_runtime_tests",
+                    return_value=0,
+                ),
+            ):
+                result = self._execute_silently(
+                    command,
+                    plan_path=str(plan_path),
+                    raw_paths=["libs/tracer_core/src/application/use_cases/query_api.cpp"],
+                    verbose=False,
+                )
+
+            self.assertEqual(result, 0)
+            self.assertEqual(mocked_markdown.call_args.kwargs["profile_name"], "cap_query")
 
     def test_execute_build_and_configure_tracks_pass_concise_to_build_command(self):
         with tempfile.TemporaryDirectory() as temp_dir:

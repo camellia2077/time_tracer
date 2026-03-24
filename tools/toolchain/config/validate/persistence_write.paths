@@ -1,0 +1,6 @@
+libs/tracer_core/src/application/ports/pipeline/i_processed_data_storage.hpp
+libs/tracer_core/src/application/ports/pipeline/i_time_sheet_repository.hpp
+libs/tracer_core/src/infra/persistence/importer
+libs/tracer_core/src/infra/persistence/sqlite_time_sheet_repository.module.cpp
+libs/tracer_core/src/infra/persistence/sqlite_time_sheet_repository.hpp
+libs/tracer_core/src/infra/modules/persistence/write

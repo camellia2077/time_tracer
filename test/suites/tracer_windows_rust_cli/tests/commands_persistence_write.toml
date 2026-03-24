@@ -1,0 +1,24 @@
+# Persistence write capability command tests
+
+[[commands]]
+name = "Convert Source To Processed Json"
+stage = "persistence-write-setup"
+args = ["pipeline", "convert", "{data_path}"]
+expect_exit = 0
+
+[[commands]]
+name = "Import Processed Json Into Database"
+stage = "persistence-write"
+args = ["pipeline", "import", "{processed_json_dir}", "--db", "{db_path}"]
+expect_exit = 0
+expect_files = ["{db_path}"]
+
+[[commands]]
+name = "Doctor Confirms Persistence Write Database"
+stage = "persistence-write"
+args = ["doctor", "--db", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = [
+  "db_file ->",
+  "(present) [optional]",
+]

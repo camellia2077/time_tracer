@@ -30,6 +30,10 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _write_split_config(repo_root: Path, content: str) -> None:
+    _write_text(repo_root / "tools" / "toolchain" / "config" / "test.toml", content)
+
+
 class TestAnalyzeCommand(TestCase):
     def test_execute_auto_splits_after_success(self):
         with TemporaryDirectory() as tmp:
@@ -38,8 +42,8 @@ class TestAnalyzeCommand(TestCase):
             source_file = app_dir / "src" / "demo.cpp"
             build_dir = repo_root / "out" / "build" / "demo" / "build_analyze"
 
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"

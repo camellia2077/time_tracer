@@ -1,0 +1,8 @@
+libs/tracer_core/src/application/dto/exchange_requests.hpp
+libs/tracer_core/src/application/dto/exchange_responses.hpp
+libs/tracer_core/src/application/ports/exchange
+libs/tracer_core/src/application/use_cases/tracer_exchange_api.cpp
+libs/tracer_core/src/application/use_cases/tracer_exchange_api.hpp
+libs/tracer_core/src/infra/exchange
+libs/tracer_core/src/infra/crypto
+libs/tracer_core/src/infra/modules/exchange

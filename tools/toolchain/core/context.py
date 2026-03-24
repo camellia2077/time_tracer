@@ -99,7 +99,7 @@ class Context:
         except Exception as e:
             print(
                 "Warning: Failed to load config from tools/toolchain/config/*.toml "
-                f"(and legacy merged fallback, if present): {e}. Using defaults."
+                f": {e}. Using defaults."
             )
             return AgentConfig()
 
@@ -182,24 +182,14 @@ class Context:
         return parsed
 
     def _load_raw_config_data(self) -> dict:
-        base_path = self.repo_root / "tools" / "toolchain" / "config.toml"
         split_dir = self.repo_root / "tools" / "toolchain" / "config"
 
         merged: dict = {}
-        base_data: dict = {}
-        fragment_data_list: list[dict] = []
-
-        if base_path.exists():
-            base_data = self._load_toml_file(base_path)
-            merged = self._deep_merge_dicts(merged, base_data)
 
         if split_dir.is_dir():
             for fragment_path in sorted(split_dir.glob("*.toml")):
                 fragment_data = self._load_toml_file(fragment_path)
-                fragment_data_list.append(fragment_data)
                 merged = self._deep_merge_dicts(merged, fragment_data)
-
-        self._warn_deprecated_base_overlaps(base_data, fragment_data_list)
 
         return merged
 
@@ -221,53 +211,6 @@ class Context:
             else:
                 merged[key] = value
         return merged
-
-    @classmethod
-    def _collect_leaf_key_paths(
-        cls,
-        data: dict,
-        prefix: tuple[str, ...] = (),
-    ) -> set[tuple[str, ...]]:
-        paths: set[tuple[str, ...]] = set()
-        for key, value in data.items():
-            next_prefix = (*prefix, str(key))
-            if isinstance(value, dict):
-                paths |= cls._collect_leaf_key_paths(value, next_prefix)
-            else:
-                paths.add(next_prefix)
-        return paths
-
-    @classmethod
-    def _warn_deprecated_base_overlaps(
-        cls,
-        base_data: dict,
-        fragment_data_list: list[dict],
-    ) -> None:
-        if not base_data or not fragment_data_list:
-            return
-
-        base_paths = cls._collect_leaf_key_paths(base_data)
-        if not base_paths:
-            return
-
-        fragment_paths: set[tuple[str, ...]] = set()
-        for fragment_data in fragment_data_list:
-            fragment_paths |= cls._collect_leaf_key_paths(fragment_data)
-
-        overlaps = sorted(base_paths & fragment_paths)
-        if not overlaps:
-            return
-
-        sample_limit = 8
-        sample = ", ".join(".".join(path) for path in overlaps[:sample_limit])
-        more_count = max(0, len(overlaps) - sample_limit)
-        more_suffix = f" (+{more_count} more)" if more_count else ""
-        print(
-            "Warning: deprecated duplicate config keys detected between "
-            "legacy merged config and tools/toolchain/config/*.toml. "
-            f"Prefer keeping these keys only in split files. "
-            f"keys: {sample}{more_suffix}"
-        )
 
     def set_app_path_override(self, app_name: str, path: str):
         """Manually override an application path (e.g. from CLI)."""

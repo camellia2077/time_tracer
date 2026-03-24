@@ -22,7 +22,6 @@ class TestValidatePlan(TestCase):
                         "[defaults]",
                         'kind = "verify"',
                         'app = "tracer_core"',
-                        'verify_scope = "batch"',
                         "concise = true",
                         "",
                         "[[tracks]]",
@@ -45,7 +44,6 @@ class TestValidatePlan(TestCase):
         self.assertFalse(plan.continue_on_failure)
         self.assertEqual(len(plan.tracks), 2)
         self.assertEqual(plan.tracks[0].app, "tracer_core")
-        self.assertEqual(plan.tracks[0].verify_scope, "batch")
         self.assertEqual(plan.tracks[1].cmake_args, ["-DTT_ENABLE_CPP20_MODULES=OFF"])
 
     def test_resolve_scope_paths_merges_cli_and_file(self):
@@ -84,3 +82,38 @@ class TestValidatePlan(TestCase):
         with tempfile.TemporaryDirectory() as temp_dir:
             with self.assertRaisesRegex(ValueError, "requires --paths or --paths-file"):
                 resolve_scope_paths(Path(temp_dir), raw_paths=[], paths_file=None)
+
+    def test_load_validation_plan_parses_scope_defaults(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            plan_path = repo_root / "tools" / "toolchain" / "config" / "validate" / "query.toml"
+            plan_path.parent.mkdir(parents=True, exist_ok=True)
+            plan_path.write_text(
+                "\n".join(
+                    [
+                        "[run]",
+                        'name = "cap_query"',
+                        "",
+                        "[scope]",
+                        'paths = ["libs/tracer_core/src/application/query/tree"]',
+                        'paths_file = "../query.paths"',
+                        "",
+                        "[defaults]",
+                        'kind = "verify"',
+                        'app = "tracer_core_shell"',
+                        "",
+                        "[[tracks]]",
+                        'name = "cap_query"',
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            plan = load_validation_plan(plan_path)
+
+        self.assertEqual(plan.scope.paths, ["libs/tracer_core/src/application/query/tree"])
+        self.assertEqual(
+            plan.scope.paths_file,
+            str((plan_path.parent / "../query.paths").resolve()),
+        )

@@ -65,6 +65,16 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             ),
             patch.object(
                 VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ),
+            patch.object(
+                VerifyCommand,
                 "_write_build_only_result_json",
                 return_value=None,
             ) as mocked_writer,
@@ -137,7 +147,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertEqual(call_kwargs["exit_code"], 5)
         self.assertFalse(call_kwargs["build_only"])
 
-    def test_execute_unit_scope_only_runs_unit_checks(self):
+    def test_execute_runs_unit_then_artifact_checks(self):
         with (
             patch(
                 "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
@@ -157,63 +167,34 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             result = self.execute_silently(
                 app_name="tracer_core",
                 build_dir_name="build_fast",
-                verify_scope="unit",
             )
 
         self.assertEqual(result, 0)
+        mocked_unit.assert_called_once()
+        mocked_artifact.assert_called_once()
+
+    def test_execute_stops_before_artifact_when_unit_checks_fail(self):
+        with (
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
+                make_fake_build_command(exit_code=0),
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=7,
+            ) as mocked_unit,
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ) as mocked_artifact,
+        ):
+            result = self.execute_silently(
+                app_name="tracer_core",
+                build_dir_name="build_fast",
+            )
+
+        self.assertEqual(result, 7)
         mocked_unit.assert_called_once()
         mocked_artifact.assert_not_called()
-
-    def test_execute_artifact_scope_only_runs_artifact_checks(self):
-        with (
-            patch(
-                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
-                make_fake_build_command(exit_code=0),
-            ),
-            patch.object(
-                VerifyCommand,
-                "run_unit_scope_checks",
-                return_value=0,
-            ) as mocked_unit,
-            patch.object(
-                VerifyCommand,
-                "run_artifact_scope_checks",
-                return_value=0,
-            ) as mocked_artifact,
-        ):
-            result = self.execute_silently(
-                app_name="tracer_core",
-                build_dir_name="build_fast",
-                verify_scope="artifact",
-            )
-
-        self.assertEqual(result, 0)
-        mocked_unit.assert_not_called()
-        mocked_artifact.assert_called_once()
-
-    def test_execute_batch_scope_runs_unit_then_artifact(self):
-        with (
-            patch(
-                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
-                make_fake_build_command(exit_code=0),
-            ),
-            patch.object(
-                VerifyCommand,
-                "run_unit_scope_checks",
-                return_value=0,
-            ) as mocked_unit,
-            patch.object(
-                VerifyCommand,
-                "run_artifact_scope_checks",
-                return_value=0,
-            ) as mocked_artifact,
-        ):
-            result = self.execute_silently(
-                app_name="tracer_core",
-                build_dir_name="build_fast",
-                verify_scope="batch",
-            )
-
-        self.assertEqual(result, 0)
-        mocked_unit.assert_called_once()
-        mocked_artifact.assert_called_once()

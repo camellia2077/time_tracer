@@ -6,6 +6,7 @@ from pathlib import Path
 
 from ....core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ....services.suite_registry import resolve_result_output_name
+from .verify_profile_policy import should_run_reporting_markdown_gates
 
 
 def run_report_triplet_gates(
@@ -91,10 +92,13 @@ def run_report_markdown_gates(
     run_command_fn,
     app_name: str,
     build_dir_name: str,
+    profile_name: str | None = None,
     normalize_ext: tuple[str, ...] = (".md",),
 ) -> int:
     output_name = resolve_result_output_name(app_name)
     if output_name != "artifact_windows_cli":
+        return 0
+    if not should_run_reporting_markdown_gates(profile_name):
         return 0
 
     result_layout = resolve_test_result_layout(repo_root, output_name)

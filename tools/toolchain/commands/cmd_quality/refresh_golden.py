@@ -280,7 +280,6 @@ class RefreshGoldenCommand:
                 build_dir_name=resolved_build_dir,
                 profile_name=profile_name,
                 concise=concise,
-                verify_scope="artifact",
             )
             if verify_ret != 0:
                 return verify_ret

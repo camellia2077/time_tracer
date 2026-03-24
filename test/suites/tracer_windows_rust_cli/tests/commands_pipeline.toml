@@ -1,0 +1,7 @@
+# Pipeline command tests
+
+[[commands]]
+name = "Pipeline Validate All"
+stage = "pipeline"
+args = ["pipeline", "validate", "all", "{data_path}", "--no-date-check"]
+expect_exit = 0

@@ -22,7 +22,7 @@
 
 ```bash
 # Python 工具链主入口
-python tools/run.py verify --app tracer_core_shell --scope batch --profile fast --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --concise
 
 # 开发辅助脚本示例
 python tools/scripts/devtools/loc/run.py --lang py tools test tools/scripts/devtools --under 120

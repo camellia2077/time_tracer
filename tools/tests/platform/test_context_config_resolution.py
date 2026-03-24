@@ -21,14 +21,17 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _write_split_config(repo_root: Path, name: str, content: str) -> None:
+    _write_text(repo_root / "tools" / "toolchain" / "config" / name, content)
+
+
 class TestContextConfigResolution(TestCase):
     def test_uses_toolchain_config(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            new_cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                new_cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 '[apps.demo]\npath = "apps/new_demo"\n',
             )
 
@@ -54,84 +57,50 @@ class TestContextConfigResolution(TestCase):
     def test_loads_split_toolchain_config_files(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            split_cfg = repo_root / "tools" / "toolchain" / "config" / "apps.toml"
-
-            _write_text(
-                split_cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 '[apps.demo]\npath = "apps/split_demo"\n',
             )
 
             ctx = Context(repo_root)
             self.assertEqual(ctx.get_app_dir("demo"), repo_root / "apps" / "split_demo")
 
-    def test_split_config_overrides_base_config(self):
+    def test_split_config_ignores_legacy_toolchain_config(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            base_cfg = repo_root / "tools" / "toolchain" / "config.toml"
-            split_cfg = repo_root / "tools" / "toolchain" / "config" / "apps.toml"
 
             _write_text(
-                base_cfg,
+                repo_root / "tools" / "toolchain" / "config.toml",
                 '[apps.demo]\npath = "apps/base_demo"\n',
             )
-            _write_text(
-                split_cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 '[apps.demo]\npath = "apps/split_demo"\n',
             )
 
             ctx = Context(repo_root)
             self.assertEqual(ctx.get_app_dir("demo"), repo_root / "apps" / "split_demo")
 
-    def test_warns_when_base_config_duplicates_split_keys(self):
+    def test_legacy_toolchain_config_is_ignored_when_split_files_are_absent(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            base_cfg = repo_root / "tools" / "toolchain" / "config.toml"
-            split_cfg = repo_root / "tools" / "toolchain" / "config" / "apps.toml"
 
             _write_text(
-                base_cfg,
+                repo_root / "tools" / "toolchain" / "config.toml",
                 '[apps.demo]\npath = "apps/base_demo"\n',
             )
-            _write_text(
-                split_cfg,
-                '[apps.demo]\npath = "apps/split_demo"\n',
-            )
 
-            captured = StringIO()
-            with redirect_stdout(captured):
-                Context(repo_root)
-            output = captured.getvalue()
-            self.assertIn("deprecated duplicate config keys", output)
-            self.assertIn("apps.demo.path", output)
-
-    def test_no_duplicate_warning_when_keys_do_not_overlap(self):
-        with TemporaryDirectory() as tmp:
-            repo_root = Path(tmp)
-            base_cfg = repo_root / "tools" / "toolchain" / "config.toml"
-            split_cfg = repo_root / "tools" / "toolchain" / "config" / "apps.toml"
-
-            _write_text(
-                base_cfg,
-                '[apps.base]\npath = "apps/base_demo"\n',
-            )
-            _write_text(
-                split_cfg,
-                '[apps.split]\npath = "apps/split_demo"\n',
-            )
-
-            captured = StringIO()
-            with redirect_stdout(captured):
-                Context(repo_root)
-            output = captured.getvalue()
-            self.assertNotIn("deprecated duplicate config keys", output)
+            ctx = Context(repo_root)
+            self.assertEqual(ctx.get_app_dir("demo"), repo_root / "apps" / "demo")
 
     def test_build_profile_extends_merges_parent_lists(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "build.toml",
                 """
 [build]
 default_profile = "child"
@@ -156,8 +125,9 @@ cmake_args = ["-D", "B=2"]
             repo_root = Path(tmp)
             cfg = repo_root / "tools" / "toolchain" / "config.toml"
 
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "build.toml",
                 """
 [build.profiles.a]
 extends = "b"
@@ -177,10 +147,9 @@ extends = "a"
     def test_app_fixed_build_dir_is_loaded(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 """
 [apps.demo]
 path = "apps/demo"
@@ -195,10 +164,9 @@ fixed_build_dir = "build"
     def test_app_cmake_source_path_overrides_source_dir_only(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 """
 [apps.demo]
 path = "apps/demo_shell"
@@ -216,10 +184,9 @@ cmake_source_path = "apps/demo_legacy"
     def test_empty_cmake_source_path_falls_back_to_app_dir(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "apps.toml",
                 """
 [apps.demo]
 path = "apps/demo_shell"
@@ -236,10 +203,9 @@ cmake_source_path = ""
     def test_tidy_source_scope_is_loaded_and_resolved(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            cfg = repo_root / "tools" / "toolchain" / "config.toml"
-
-            _write_text(
-                cfg,
+            _write_split_config(
+                repo_root,
+                "workflow.toml",
                 """
 [apps.demo]
 path = "apps/demo"

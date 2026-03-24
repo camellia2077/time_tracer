@@ -20,6 +20,10 @@ def _write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
+def _write_split_config(repo_root: Path, content: str) -> None:
+    _write_text(repo_root / "tools" / "toolchain" / "config" / "test.toml", content)
+
+
 class _FakeBuildCommand:
     def __init__(self, ctx: Context, backend: str):
         self.ctx = ctx
@@ -75,8 +79,8 @@ class TestBuildCommandEntries(TestCase):
     def test_build_entry_prints_cmake_build_dir_after_success(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.demo]
 path = "apps/demo"
@@ -110,8 +114,8 @@ path = "apps/demo"
     def test_build_entry_prints_cargo_build_dir_after_success(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)
-            _write_text(
-                repo_root / "tools" / "toolchain" / "config.toml",
+            _write_split_config(
+                repo_root,
                 """
 [apps.tracer_windows_rust_cli]
 path = "apps/cli/windows/rust"

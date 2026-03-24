@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from ..conf.definitions import Colors, SingleTestResult, TestContext, TestReport
-from ..core.base import BaseTester, TestCounter
+from ..base import BaseTester, TestCounter
 
 
 class ExportTester(BaseTester):

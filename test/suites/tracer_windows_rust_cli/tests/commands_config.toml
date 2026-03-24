@@ -1,0 +1,23 @@
+# Config capability command tests
+
+[[commands]]
+name = "Doctor Runtime Config"
+stage = "config"
+args = ["doctor"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Runtime Doctor",
+  "config_toml ->",
+  "converter_alias_mapping ->",
+  "Summary: required 4/4 passed.",
+]
+
+[[commands]]
+name = "Chart Heatmap Palette Config Loads"
+stage = "config"
+args = ["chart", "--list-heatmap-palettes"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Heatmap palettes",
+  "default-light",
+]

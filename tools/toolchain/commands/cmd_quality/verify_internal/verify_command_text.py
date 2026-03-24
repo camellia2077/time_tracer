@@ -4,7 +4,6 @@ from __future__ import annotations
 def build_verify_command_text(
     *,
     app_name: str,
-    verify_scope: str,
     profile_name: str | None,
     build_dir_name: str | None,
     concise: bool,
@@ -13,8 +12,6 @@ def build_verify_command_text(
     cmake_args: list[str] | None,
 ) -> str:
     cmd = ["python", "tools/run.py", "verify", "--app", app_name]
-    if verify_scope:
-        cmd.extend(["--scope", verify_scope])
     if profile_name:
         cmd.extend(["--profile", profile_name])
     if build_dir_name:
