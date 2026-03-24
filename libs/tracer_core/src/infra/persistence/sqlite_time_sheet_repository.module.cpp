@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "infra/persistence/sqlite_time_sheet_repository.hpp"
-#include "application/ports/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_repository.hpp"
 
 import tracer.core.infrastructure.persistence.write.importer.repository;
 

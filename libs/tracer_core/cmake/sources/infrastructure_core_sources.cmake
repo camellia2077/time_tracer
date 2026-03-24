@@ -17,48 +17,7 @@ else()
         "platform/android/android_platform_clock.cpp")
 endif()
 
-set(TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES
-    "query/data/stats/day_duration_stats_calculator.module.cpp"
-    "query/data/stats/report_chart_stats_calculator.module.cpp"
-    "query/data/stats/stats_boundary.module.cpp"
-)
-
 set(TIME_TRACKER_INFRA_CORE_SOURCES
-    "query/data/data_query_repository.cpp"
-    "query/data/data_query_sql_common.cpp"
-    "query/data/data_query_sql_filters.cpp"
-    "query/data/data_query_sql_builders_calendar.cpp"
-    "query/data/data_query_sql_builders_dates.cpp"
-    "query/data/data_query_sql_builders_activity.cpp"
-    "query/data/data_query_row_mappers.cpp"
-    "query/data/data_query_repository_sql.cpp"
-    ${TIME_TRACKER_INFRA_QUERY_DATA_STATS_SOURCES}
-    "query/data/orchestrators/date_range_resolver.cpp"
-    "query/data/orchestrators/list_query_orchestrator.cpp"
-    "query/data/orchestrators/days_stats_orchestrator.cpp"
-    "query/data/orchestrators/report_chart_orchestrator.cpp"
-    "query/data/orchestrators/tree_orchestrator.cpp"
-    "query/data/orchestrators/orchestrators_boundary.cpp"
-    "query/data/renderers/data_query_renderer.cpp"
-    "query/data/renderers/text_renderer.cpp"
-    "query/data/renderers/semantic_json_renderer.cpp"
-    "query/data/renderers/renderers_boundary.cpp"
     "${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
     "${TIME_TRACKER_INFRA_ANDROID_HELPER_CLOCK_SOURCE}"
-    "crypto/internal/file_crypto_progress_control.cpp"
-    "crypto/internal/file_crypto_directory_plan.cpp"
-    "crypto/internal/file_crypto_io.cpp"
-    "crypto/internal/file_crypto_format_compat.cpp"
-    "crypto/internal/file_crypto_backend_engine.cpp"
-    "crypto/internal/file_crypto_kdf.cpp"
-    "crypto/internal/file_crypto_compress.cpp"
-    "crypto/internal/file_crypto_encrypt_flow.cpp"
-    "crypto/internal/file_crypto_decrypt_flow.cpp"
-    "crypto/internal/file_crypto_directory_orchestrator.cpp"
-    "crypto/file_crypto_service.cpp"
-    "crypto/tracer_exchange_service_common.cpp"
-    "crypto/tracer_exchange_service_export.cpp"
-    "crypto/tracer_exchange_service_import.cpp"
-    "crypto/tracer_exchange_service_inspect.cpp"
-    "crypto/tracer_exchange_service.cpp"
 )

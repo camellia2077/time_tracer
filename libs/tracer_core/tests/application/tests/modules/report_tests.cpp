@@ -1,5 +1,5 @@
 // application/tests/modules/report_tests.cpp
-#include "application/tests/modules/test_modules.hpp"
+#include "application/tests/modules/reporting_tests.hpp"
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 

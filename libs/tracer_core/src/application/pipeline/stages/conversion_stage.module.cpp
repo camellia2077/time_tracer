@@ -9,7 +9,7 @@ module;
 #include <thread>
 #include <vector>
 
-#include "application/ports/logger.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 module tracer.core.application.pipeline.stages;
 
@@ -28,10 +28,10 @@ constexpr double kMillisPerSecond = 1000.0;
 
 auto ConversionStage::Execute(PipelineSession& session) -> bool {
   if (session.config.structure_validation_blocks_conversion) {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         "Step: Converting files after structure precheck (Parallel)...");
   } else {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         "Step: Converting files (Parallel)...");
   }
   const auto kStartTime = std::chrono::steady_clock::now();
@@ -53,7 +53,7 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
             const std::string kSourceLabel = input.source_label.empty()
                                                  ? input.source_id
                                                  : input.source_label;
-            tracer_core::application::ports::LogError(
+            tracer_core::application::runtime_bridge::LogError(
                 "Thread Error [" + kSourceLabel + "]: " + e.what());
             results[index] = LogProcessingResult{
                 .success = false,
@@ -99,11 +99,11 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
   PrintTiming(kDuration);
 
   if (all_success) {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         "转换阶段 全部成功 (" + std::to_string(processed_count) +
         " files).");
   } else {
-    tracer_core::application::ports::LogWarn(
+    tracer_core::application::runtime_bridge::LogWarn(
         "转换阶段 完成，但存在部分错误。");
   }
 
@@ -119,7 +119,7 @@ void ConversionStage::PrintTiming(double total_time_ms) {
          << " 秒 (" << total_time_ms << " ms)\n";
   stream << "--------------------------------------";
 
-  tracer_core::application::ports::LogInfo(stream.str());
+  tracer_core::application::runtime_bridge::LogInfo(stream.str());
 }
 
 }  // namespace tracer::core::application::pipeline

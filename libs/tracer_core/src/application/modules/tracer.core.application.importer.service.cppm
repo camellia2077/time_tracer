@@ -1,8 +1,8 @@
 module;
 
-#include "application/importer/import_service.hpp"
+#include "application/pipeline/importer/import_service.hpp"
 
-export module tracer.core.application.importer.service;
+export module tracer.core.application.pipeline.importer.service;
 
 export namespace tracer::core::application::modimporter {
 

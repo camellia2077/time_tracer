@@ -9,10 +9,10 @@ namespace tracer::core::infrastructure::query::data::internal {
 
 }  // namespace tracer::core::infrastructure::query::data::internal
 
-namespace infrastructure::persistence::data_query_service_internal {
+namespace tracer::core::infrastructure::query::data::repository::internal {
 
 using tracer::core::infrastructure::query::data::internal::ApplyTreePeriod;
 
-}  // namespace infrastructure::persistence::data_query_service_internal
+}  // namespace tracer::core::infrastructure::query::data::repository::internal
 
 #endif  // INFRASTRUCTURE_QUERY_DATA_INTERNAL_PERIOD_H_

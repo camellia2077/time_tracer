@@ -3,7 +3,7 @@
 
 #include <utility>
 
-#include "application/ports/i_report_dto_formatter.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
 
 namespace tracer::core::application::use_cases::helpers {
 

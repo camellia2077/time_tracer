@@ -8,9 +8,9 @@
 #include <string_view>
 #include <vector>
 
-#include "application/ports/i_ingest_input_provider.hpp"
-#include "application/ports/i_processed_data_loader.hpp"
-#include "application/ports/i_processed_data_storage.hpp"
+#include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/ports/pipeline/i_processed_data_loader.hpp"
+#include "application/ports/pipeline/i_processed_data_storage.hpp"
 #include "domain/model/daily_log.hpp"
 
 namespace infrastructure::io::internal {

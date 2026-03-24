@@ -1,0 +1,7 @@
+// infra/tests/modules_smoke/exchange.hpp
+#ifndef TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_EXCHANGE_HPP_
+#define TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_EXCHANGE_HPP_
+
+auto RunInfrastructureModuleCryptoExchangeSmoke() -> int;
+
+#endif  // TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_EXCHANGE_HPP_

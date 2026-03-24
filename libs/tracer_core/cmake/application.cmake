@@ -1,12 +1,12 @@
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_bootstrap_sources.cmake")
-include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_reporting_tree_sources.cmake")
+include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_query_tree_sources.cmake")
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_use_cases_sources.cmake")
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_workflow_sources.cmake")
 include("${TRACER_CORE_LIB_CMAKE_SOURCES_ROOT}/application_pipeline_sources.cmake")
 
 set(TRACER_CORE_APPLICATION_SOURCES
     ${TIME_TRACKER_APPLICATION_BOOTSTRAP_SOURCES}
-    ${TIME_TRACKER_APPLICATION_REPORTING_TREE_SOURCES}
+    ${TIME_TRACKER_APPLICATION_QUERY_TREE_SOURCES}
     ${TIME_TRACKER_APPLICATION_USE_CASE_SOURCES}
     ${TIME_TRACKER_APPLICATION_WORKFLOW_SOURCES}
     ${TIME_TRACKER_APPLICATION_PIPELINE_SOURCES}
@@ -29,10 +29,10 @@ target_sources(tc_app_lib PUBLIC
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.interface.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.api.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.use_cases.helpers.cppm"
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.cppm"
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.data.cppm"
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.nodes.cppm"
-        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.reporting.tree.viewer.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.query.tree.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.query.tree.data.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.query.tree.nodes.cppm"
+        "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.query.tree.viewer.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.service.converter.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.importer.service.cppm"
         "${TRACER_CORE_LIB_SOURCE_ROOT}/application/modules/tracer.core.application.pipeline.types.cppm"

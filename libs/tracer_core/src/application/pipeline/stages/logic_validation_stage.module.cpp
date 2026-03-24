@@ -3,8 +3,8 @@ module;
 #include <string>
 #include <vector>
 
-#include "application/ports/i_validation_issue_reporter.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
+#include "application/runtime_bridge/logger.hpp"
 #include "domain/model/daily_log.hpp"
 
 module tracer.core.application.pipeline.stages;
@@ -43,11 +43,11 @@ auto ResolveLogicFallbackLabel(const std::string& month_key,
 }  // namespace
 
 auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
-  tracer_core::application::ports::LogInfo(
+  tracer_core::application::runtime_bridge::LogInfo(
       "Step: Validating Business Logic (Dates, Continuity)...");
 
   if (session.result.processed_data.empty()) {
-    tracer_core::application::ports::LogWarn("No data to validate.");
+    tracer_core::application::runtime_bridge::LogWarn("No data to validate.");
     return true;
   }
 
@@ -74,9 +74,9 @@ auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
   }
 
   if (all_valid) {
-    tracer_core::application::ports::LogInfo("Logic validation passed.");
+    tracer_core::application::runtime_bridge::LogInfo("Logic validation passed.");
   } else {
-    tracer_core::application::ports::LogError(
+    tracer_core::application::runtime_bridge::LogError(
         "Logic validation found issues (e.g., broken date continuity).");
   }
 

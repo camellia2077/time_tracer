@@ -1,0 +1,7 @@
+// infra/tests/modules_smoke/config.hpp
+#ifndef TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_
+#define TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_
+
+auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int;
+
+#endif  // TRACER_CORE_TESTS_INFRASTRUCTURE_MODULES_SMOKE_CONFIG_HPP_

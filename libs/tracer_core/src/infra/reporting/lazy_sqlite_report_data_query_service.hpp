@@ -1,0 +1,48 @@
+#ifndef INFRASTRUCTURE_REPORTS_LAZY_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
+#define INFRASTRUCTURE_REPORTS_LAZY_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
+
+#include <filesystem>
+#include <memory>
+
+#include "application/ports/reporting/i_platform_clock.hpp"
+#include "application/ports/reporting/i_report_data_query_service.hpp"
+
+namespace tracer::core::infrastructure::reports {
+class LazySqliteReportDataQueryService final
+    : public tracer_core::application::ports::IReportDataQueryService {
+ public:
+  LazySqliteReportDataQueryService(
+      std::filesystem::path db_path,
+      std::shared_ptr<tracer_core::application::ports::IPlatformClock>
+          platform_clock);
+
+  auto QueryDaily(std::string_view date) -> DailyReportData override;
+  auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
+  auto QueryPeriod(int days) -> PeriodReportData override;
+  auto QueryRange(std::string_view start_date, std::string_view end_date)
+      -> PeriodReportData override;
+  auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
+  auto QueryYearly(std::string_view year) -> YearlyReportData override;
+
+  auto QueryPeriodBatch(const std::vector<int>& days_list)
+      -> std::map<int, PeriodReportData> override;
+  auto QueryAllDaily() -> std::map<std::string, DailyReportData> override;
+  auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override;
+  auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override;
+  auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override;
+
+ private:
+  std::filesystem::path db_path_;
+  std::shared_ptr<tracer_core::application::ports::IPlatformClock>
+      platform_clock_;
+};
+
+}  // namespace tracer::core::infrastructure::reports
+
+namespace infrastructure::reports {
+
+using tracer::core::infrastructure::reports::LazySqliteReportDataQueryService;
+
+}  // namespace infrastructure::reports
+
+#endif  // INFRASTRUCTURE_REPORTS_LAZY_SQLITE_REPORT_DATA_QUERY_SERVICE_H_

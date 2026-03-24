@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "application/ports/i_tracer_exchange_service.hpp"
+#include "application/ports/exchange/i_tracer_exchange_service.hpp"
 #include "application/use_cases/i_tracer_exchange_api.hpp"
 
 namespace tracer::core::application::use_cases {

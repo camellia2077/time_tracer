@@ -6,7 +6,7 @@
 #include <optional>
 #include <unordered_map>
 
-#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
 
 namespace tracer::core::infrastructure::config {
 

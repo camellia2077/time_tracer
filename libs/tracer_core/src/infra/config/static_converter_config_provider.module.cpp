@@ -2,7 +2,7 @@ module;
 
 #include <utility>
 
-#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
 
 module tracer.core.infrastructure.config.static_converter_config_provider;
 

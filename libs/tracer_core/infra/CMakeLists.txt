@@ -1,15 +1,16 @@
 #
 # Infrastructure assembly owned here:
-# - reports shared/data/full report adapters
-# - persistence/config/full infrastructure targets
-# This directory expects the parent `libs/tracer_core` layer targets to
-# already exist, especially `tc_infra_lite_lib` and `tc_all_lib`.
+# - reporting shared/data/full reporting adapters
+# - capability-aligned query/config/exchange/persistence targets
+# - compatibility aggregation for tracer_core.dll consumers
 #
 
 set(TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT
     "${CMAKE_CURRENT_SOURCE_DIR}/../cmake/sources"
 )
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_core_sources.cmake")
+include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_query_sources.cmake")
+include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_exchange_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_persistence_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_reports_sources.cmake")
 include("${TRACER_CORE_INFRA_LIB_CMAKE_SOURCES_ROOT}/infrastructure_config_sources.cmake")
@@ -21,9 +22,36 @@ if(NOT TARGET tc_infra_lite_lib)
     message(FATAL_ERROR
         "Required target missing: tc_infra_lite_lib")
 endif()
+if(NOT TARGET tc_all_lib)
+    message(FATAL_ERROR "Required target missing: tc_all_lib")
+endif()
+if(NOT TARGET sodium)
+    message(FATAL_ERROR "Required target missing: sodium")
+endif()
+if(NOT TARGET zstd::libzstd)
+    message(FATAL_ERROR "Required target missing: zstd::libzstd")
+endif()
 
 set(TRACER_CORE_INFRA_LIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../src/infra")
-set(TRACER_CORE_REPORTS_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/reports")
+set(TRACER_CORE_INFRA_MODULE_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/modules")
+set(TRACER_CORE_SOURCE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../src")
+set(TRACER_CORE_REPORTS_ROOT "${TRACER_CORE_INFRA_LIB_ROOT}/reporting")
+
+function(tc_prepend_infra_root out_var)
+    set(_files)
+    foreach(_relative IN LISTS ARGN)
+        list(APPEND _files "${TRACER_CORE_INFRA_LIB_ROOT}/${_relative}")
+    endforeach()
+    set(${out_var} "${_files}" PARENT_SCOPE)
+endfunction()
+
+function(tc_prepend_module_root out_var)
+    set(_files)
+    foreach(_relative IN LISTS ARGN)
+        list(APPEND _files "${TRACER_CORE_INFRA_MODULE_ROOT}/${_relative}")
+    endforeach()
+    set(${out_var} "${_files}" PARENT_SCOPE)
+endfunction()
 
 set(TRACER_CORE_REPORTS_SHARED_SOURCES
     "${TRACER_CORE_REPORTS_ROOT}/daily/common/day_base_config.cpp"
@@ -85,51 +113,204 @@ target_link_libraries(tc_rpt_data_lib PUBLIC
     tc_domain_lib
 )
 
-set(TRACER_CORE_INFRA_REPORTS_SOURCES ${TIME_TRACKER_INFRA_REPORTS_SOURCES})
-list(FILTER TRACER_CORE_INFRA_REPORTS_SOURCES EXCLUDE REGEX "^$")
-list(TRANSFORM TRACER_CORE_INFRA_REPORTS_SOURCES
-    PREPEND "${TRACER_CORE_INFRA_LIB_ROOT}/"
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_PERSISTENCE_RUNTIME_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_ALL_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_PERSISTENCE_RUNTIME_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_PERSISTENCE_RUNTIME_MODULE_FILES}
+)
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_PERSISTENCE_WRITE_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_PERSISTENCE_WRITE_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_PERSISTENCE_WRITE_MODULE_FILES}
+)
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_CONFIG_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_CONFIG_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_CONFIG_MODULE_FILES_ABS
+    "config/tracer.core.infrastructure.config.cppm"
+    "config/tracer.core.infrastructure.config.config_loader.cppm"
+    "config/tracer.core.infrastructure.config.file_converter_config_provider.cppm"
+    "config/loader/tracer.core.infrastructure.config.loader.cppm"
+    "config/loader/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
+    "config/loader/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
+    "config/loader/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
+    "config/internal/tracer.core.infrastructure.config.internal.cppm"
+    "config/internal/tracer.core.infrastructure.config.internal.android_bundle_config_paths.cppm"
+    "config/internal/tracer.core.infrastructure.config.internal.cli_config_snapshot.cppm"
+    "config/internal/tracer.core.infrastructure.config.internal.config_detail_loader.cppm"
+    "config/internal/tracer.core.infrastructure.config.internal.config_parser_utils.cppm"
+)
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_QUERY_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_QUERY_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_QUERY_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_QUERY_MODULE_FILES}
+)
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_REPORTING_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_REPORTING_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_REPORTING_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_REPORTING_MODULE_FILES}
+)
+tc_prepend_infra_root(
+    TRACER_CORE_INFRA_EXCHANGE_SOURCES_ABS
+    ${TIME_TRACKER_INFRA_EXCHANGE_SOURCES}
+)
+tc_prepend_module_root(
+    TRACER_CORE_INFRA_EXCHANGE_MODULE_FILES_ABS
+    ${TIME_TRACKER_INFRA_EXCHANGE_MODULE_FILES}
 )
 
-add_library(tc_infra_reports_lib STATIC)
-target_sources(tc_infra_reports_lib PRIVATE
-    ${TRACER_CORE_INFRA_REPORTS_SOURCES}
+add_library(tc_infra_persistence_runtime_lib STATIC)
+target_sources(tc_infra_persistence_runtime_lib PRIVATE
+    ${TRACER_CORE_INFRA_PERSISTENCE_RUNTIME_SOURCES_ABS}
 )
-target_sources(tc_infra_reports_lib PUBLIC
-    FILE_SET core_infrastructure_reports_modules TYPE CXX_MODULES
+target_sources(tc_infra_persistence_runtime_lib PUBLIC
+    FILE_SET core_infrastructure_persistence_runtime_modules TYPE CXX_MODULES
     BASE_DIRS
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
     FILES
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.export_utils.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.report_file_manager.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/exporting/tracer.core.infrastructure.reports.exporting.exporter.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.formatter.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/dto/tracer.core.infrastructure.reports.dto.export_writer.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/dq.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/dq_lazy_sqlite.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/data_querying/dq_sqlite.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/q.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/q_lazy_sqlite.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/q_report_service.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/svc.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/day.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/month.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/week.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/reports/querying/services/year.cppm"
+        ${TRACER_CORE_INFRA_PERSISTENCE_RUNTIME_MODULE_FILES_ABS}
 )
-set_target_properties(tc_infra_reports_lib PROPERTIES
+set_target_properties(tc_infra_persistence_runtime_lib PROPERTIES
     CXX_SCAN_FOR_MODULES ON
 )
 setup_app_target(
-    tc_infra_reports_lib
+    tc_infra_persistence_runtime_lib
     NO_PCH
     NO_APP_SOURCE_ROOT_INCLUDE
 )
-target_link_libraries(tc_infra_reports_lib PUBLIC
-    taio_lib
+target_include_directories(tc_infra_persistence_runtime_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
+)
+target_link_libraries(tc_infra_persistence_runtime_lib PUBLIC
     tc_all_lib
+    SQLite3
+)
+
+add_library(tc_infra_persistence_write_lib STATIC)
+target_sources(tc_infra_persistence_write_lib PRIVATE
+    ${TRACER_CORE_INFRA_PERSISTENCE_WRITE_SOURCES_ABS}
+)
+target_sources(tc_infra_persistence_write_lib PUBLIC
+    FILE_SET core_infrastructure_persistence_write_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
+    FILES
+        ${TRACER_CORE_INFRA_PERSISTENCE_WRITE_MODULE_FILES_ABS}
+)
+set_target_properties(tc_infra_persistence_write_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
+setup_app_target(
+    tc_infra_persistence_write_lib
+    NO_PCH
+    NO_APP_SOURCE_ROOT_INCLUDE
+)
+target_include_directories(tc_infra_persistence_write_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
+)
+target_link_libraries(tc_infra_persistence_write_lib PUBLIC
+    tc_all_lib
+    tc_infra_persistence_runtime_lib
+    SQLite3
+)
+
+add_library(tc_infra_config_lib STATIC)
+target_sources(tc_infra_config_lib PRIVATE
+    ${TRACER_CORE_INFRA_CONFIG_SOURCES_ABS}
+)
+target_sources(tc_infra_config_lib PUBLIC
+    FILE_SET core_infrastructure_config_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
+    FILES
+        ${TRACER_CORE_INFRA_CONFIG_MODULE_FILES_ABS}
+)
+set_target_properties(tc_infra_config_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
+setup_app_target(
+    tc_infra_config_lib
+    NO_PCH
+    NO_APP_SOURCE_ROOT_INCLUDE
+)
+target_include_directories(tc_infra_config_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
+)
+target_link_libraries(tc_infra_config_lib PUBLIC
+    tc_all_lib
+    tomlplusplus::tomlplusplus
+)
+
+add_library(tc_infra_query_lib STATIC)
+target_sources(tc_infra_query_lib PRIVATE
+    ${TRACER_CORE_INFRA_QUERY_SOURCES_ABS}
+)
+target_sources(tc_infra_query_lib PUBLIC
+    FILE_SET core_infrastructure_query_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
+    FILES
+        ${TRACER_CORE_INFRA_QUERY_MODULE_FILES_ABS}
+)
+set_target_properties(tc_infra_query_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
+setup_app_target(
+    tc_infra_query_lib
+    NO_PCH
+    NO_APP_SOURCE_ROOT_INCLUDE
+)
+target_include_directories(tc_infra_query_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
+)
+target_link_libraries(tc_infra_query_lib PUBLIC
+    tc_all_lib
+    tc_infra_config_lib
+    tc_infra_persistence_runtime_lib
+    SQLite3
+    nlohmann_json::nlohmann_json
+)
+
+add_library(tc_infra_reporting_lib STATIC)
+target_sources(tc_infra_reporting_lib PRIVATE
+    ${TRACER_CORE_INFRA_REPORTING_SOURCES_ABS}
+)
+target_sources(tc_infra_reporting_lib PUBLIC
+    FILE_SET core_infrastructure_reporting_modules TYPE CXX_MODULES
+    BASE_DIRS
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
+    FILES
+        ${TRACER_CORE_INFRA_REPORTING_MODULE_FILES_ABS}
+)
+set_target_properties(tc_infra_reporting_lib PROPERTIES
+    CXX_SCAN_FOR_MODULES ON
+)
+setup_app_target(
+    tc_infra_reporting_lib
+    NO_PCH
+    NO_APP_SOURCE_ROOT_INCLUDE
+)
+target_include_directories(tc_infra_reporting_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
+)
+target_link_libraries(tc_infra_reporting_lib PUBLIC
+    tc_all_lib
+    tc_infra_config_lib
+    tc_infra_persistence_runtime_lib
     tc_rpt_data_lib
     tc_rpt_shared_lib
     SQLite3
@@ -137,127 +318,83 @@ target_link_libraries(tc_infra_reports_lib PUBLIC
     nlohmann_json::nlohmann_json
 )
 
-set(TRACER_CORE_INFRA_CORE_SOURCES_REMAINING ${TIME_TRACKER_INFRA_CORE_SOURCES})
-list(REMOVE_ITEM TRACER_CORE_INFRA_CORE_SOURCES_REMAINING
-    "config/static_converter_config_provider.cpp"
-    "${TIME_TRACKER_INFRA_PLATFORM_CLOCK_SOURCE}"
+add_library(tc_infra_exchange_lib STATIC)
+target_sources(tc_infra_exchange_lib PRIVATE
+    ${TRACER_CORE_INFRA_EXCHANGE_SOURCES_ABS}
 )
-if(TIME_TRACKER_INFRA_ANDROID_HELPER_CLOCK_SOURCE)
-    list(REMOVE_ITEM TRACER_CORE_INFRA_CORE_SOURCES_REMAINING
-        "${TIME_TRACKER_INFRA_ANDROID_HELPER_CLOCK_SOURCE}"
-    )
-endif()
-list(FILTER TRACER_CORE_INFRA_CORE_SOURCES_REMAINING EXCLUDE REGEX "^$")
-
-set(TRACER_CORE_INFRA_PERSISTENCE_SOURCES ${TIME_TRACKER_INFRA_PERSISTENCE_SOURCES})
-set(TRACER_CORE_INFRA_CONFIG_SOURCES ${TIME_TRACKER_INFRA_CONFIG_SOURCES})
-
-list(TRANSFORM TRACER_CORE_INFRA_CORE_SOURCES_REMAINING
-    PREPEND "${TRACER_CORE_INFRA_LIB_ROOT}/"
-)
-list(TRANSFORM TRACER_CORE_INFRA_PERSISTENCE_SOURCES
-    PREPEND "${TRACER_CORE_INFRA_LIB_ROOT}/"
-)
-list(TRANSFORM TRACER_CORE_INFRA_CONFIG_SOURCES
-    PREPEND "${TRACER_CORE_INFRA_LIB_ROOT}/"
-)
-
-add_library(tc_infra_full_lib STATIC)
-target_sources(tc_infra_full_lib PRIVATE
-    ${TRACER_CORE_INFRA_CORE_SOURCES_REMAINING}
-    ${TRACER_CORE_INFRA_PERSISTENCE_SOURCES}
-    ${TRACER_CORE_INFRA_CONFIG_SOURCES}
-)
-target_sources(tc_infra_full_lib PUBLIC
-    FILE_SET core_infrastructure_full_modules TYPE CXX_MODULES
+target_sources(tc_infra_exchange_lib PUBLIC
+    FILE_SET core_infrastructure_exchange_modules TYPE CXX_MODULES
     BASE_DIRS
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules"
+        "${TRACER_CORE_INFRA_MODULE_ROOT}"
     FILES
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/crypto/exchange.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.config_loader.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/tracer.core.infrastructure.config.file_converter_config_provider.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.toml_loader_utils.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.report_config_loader.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/loader/tracer.core.infrastructure.config.loader.converter_config_loader.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.config_detail_loader.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.android_bundle_config_paths.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.cli_config_snapshot.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/config/internal/tracer.core.infrastructure.config.internal.config_parser_utils.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/repo.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/repo_models.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/repo_types.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/repository/repo_data_query.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/internal.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/internal_request.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/internal_period.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/internal/internal_report_mapping.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/renderers.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/renderer_data_query.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/renderer_text.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/renderer_semantic_json.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/renderers/renderer_boundary.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orchestrators.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_list.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_days_stats.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_report_chart.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_tree.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_date_range.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/orchestrators/orch_boundary.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/stats.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/stats_models.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/stats_day_duration.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/stats_report_chart.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/query/data/stats/stats_boundary.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/tracer.core.infrastructure.persistence.write.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/tracer.core.infrastructure.persistence.runtime.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/imp.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/sql.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/tracer.core.infrastructure.persistence.write.sqlite_time_sheet_repository.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/rt_project_repo.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/runtime/rt_db_health.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/imp_repo.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/sql_conn.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/sql_stmt.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/sql_writer.cppm"
-        "${TRACER_CORE_INFRA_LIB_ROOT}/modules/persistence/write/importer/sqlite/sql_proj.cppm"
+        ${TRACER_CORE_INFRA_EXCHANGE_MODULE_FILES_ABS}
 )
-set_target_properties(tc_infra_full_lib PROPERTIES
+set_target_properties(tc_infra_exchange_lib PROPERTIES
     CXX_SCAN_FOR_MODULES ON
 )
-
 setup_app_target(
-    tc_infra_full_lib
+    tc_infra_exchange_lib
     NO_PCH
     NO_APP_SOURCE_ROOT_INCLUDE
 )
-
-target_link_libraries(tc_infra_full_lib PUBLIC
-    taio_lib
-    tc_infra_reports_lib
-    tc_infra_lite_lib
-    tc_all_lib
-    SQLite3
-    tomlplusplus::tomlplusplus
-    nlohmann_json::nlohmann_json
+target_include_directories(tc_infra_exchange_lib PUBLIC
+    "${TRACER_CORE_SOURCE_ROOT}"
 )
-if(NOT TARGET sodium)
-    message(FATAL_ERROR "Required target missing: sodium")
-endif()
-if(NOT TARGET zstd::libzstd)
-    message(FATAL_ERROR "Required target missing: zstd::libzstd")
-endif()
-target_link_libraries(tc_infra_full_lib PUBLIC
+target_link_libraries(tc_infra_exchange_lib PUBLIC
+    tc_all_lib
+    tc_infra_config_lib
     sodium
     zstd::libzstd
+)
+
+add_library(tc_infra_reports_lib ALIAS tc_infra_reporting_lib)
+
+add_library(tc_cap_config_lib INTERFACE)
+target_link_libraries(tc_cap_config_lib INTERFACE
+    tc_all_lib
+    tc_infra_config_lib
+)
+
+add_library(tc_cap_pipeline_lib INTERFACE)
+target_link_libraries(tc_cap_pipeline_lib INTERFACE
+    tc_all_lib
+    tc_cap_config_lib
+    tc_infra_persistence_write_lib
+    taio_lib
+)
+
+add_library(tc_cap_query_lib INTERFACE)
+target_link_libraries(tc_cap_query_lib INTERFACE
+    tc_all_lib
+    tc_cap_config_lib
+    tc_infra_persistence_runtime_lib
+    tc_infra_query_lib
+)
+
+add_library(tc_cap_reporting_lib INTERFACE)
+target_link_libraries(tc_cap_reporting_lib INTERFACE
+    tc_all_lib
+    tc_cap_config_lib
+    tc_infra_persistence_runtime_lib
+    tc_infra_reporting_lib
+)
+
+add_library(tc_cap_exchange_lib INTERFACE)
+target_link_libraries(tc_cap_exchange_lib INTERFACE
+    tc_all_lib
+    tc_cap_config_lib
+    tc_infra_exchange_lib
+)
+
+add_library(tc_infra_full_lib INTERFACE)
+target_link_libraries(tc_infra_full_lib INTERFACE
+    tc_cap_pipeline_lib
+    tc_cap_query_lib
+    tc_cap_reporting_lib
+    tc_cap_exchange_lib
 )
 
 add_library(tc_adapters_iface INTERFACE)
 target_link_libraries(tc_adapters_iface INTERFACE
     tc_infra_full_lib
 )
-
-
-

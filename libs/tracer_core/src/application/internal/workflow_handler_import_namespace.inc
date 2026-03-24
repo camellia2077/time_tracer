@@ -153,7 +153,7 @@ struct ActivityTailCandidate {
   const std::string raw_text = buffer.str();
   const auto canonical = modtext::Canonicalize(raw_text, path.string());
   if (!canonical.ok) {
-    app_ports::LogWarn("Skipping sibling TXT fallback due to invalid text: " +
+    runtime_bridge::LogWarn("Skipping sibling TXT fallback due to invalid text: " +
                        canonical.error_message);
     return std::nullopt;
   }
@@ -299,7 +299,7 @@ struct ActivityTailCandidate {
   }
 
   if (candidates.size() > 1U) {
-    app_ports::LogWarn(
+    runtime_bridge::LogWarn(
         "[LogLinker] Found multiple sibling TXT files for previous month " +
         kPreviousMonth->month_key +
         ". Fallback uses lexicographically first path: " +
@@ -311,14 +311,14 @@ struct ActivityTailCandidate {
   auto conversion_result =
       processor.ProcessSourceContent(selected.path.string(), selected.content);
   if (!conversion_result.success || conversion_result.processed_data.empty()) {
-    app_ports::LogWarn("[LogLinker] Failed to convert sibling TXT fallback: " +
+    runtime_bridge::LogWarn("[LogLinker] Failed to convert sibling TXT fallback: " +
                        selected.path.string());
     return std::nullopt;
   }
 
   if (!IsSingleMonthConsistent(conversion_result.processed_data,
                                kPreviousMonth->month_key)) {
-    app_ports::LogWarn(
+    runtime_bridge::LogWarn(
         "[LogLinker] Sibling TXT fallback is not single-month consistent: " +
         selected.path.string());
     return std::nullopt;
@@ -327,13 +327,13 @@ struct ActivityTailCandidate {
   const auto kTail = TryExtractLatestTailFromProcessedData(
       conversion_result.processed_data, kPreviousMonth->month_key);
   if (!kTail.has_value()) {
-    app_ports::LogWarn(
+    runtime_bridge::LogWarn(
         "[LogLinker] Sibling TXT fallback has no activity tail: " +
         selected.path.string());
     return std::nullopt;
   }
 
-  app_ports::LogInfo("[LogLinker] Loaded previous tail from sibling TXT: " +
+  runtime_bridge::LogInfo("[LogLinker] Loaded previous tail from sibling TXT: " +
                      selected.path.string());
   return kTail;
 }

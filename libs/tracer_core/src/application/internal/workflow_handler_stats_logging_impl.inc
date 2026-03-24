@@ -4,17 +4,17 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
     -> void {
   std::ostringstream stream;
   stream << "\n--- " << title << " Report ---";
-  app_ports::LogInfo(stream.str());
+  runtime_bridge::LogInfo(stream.str());
 
   if (!stats.db_open_success) {
-    app_ports::LogError(
+    runtime_bridge::LogError(
         "[Fatal] DB Error: " +
         (stats.error_message.empty() ? "Unknown" : stats.error_message));
     return;
   }
 
   if (!stats.transaction_success) {
-    app_ports::LogError("[Fatal] Transaction Failed: " + stats.error_message);
+    runtime_bridge::LogError("[Fatal] Transaction Failed: " + stats.error_message);
     return;
   }
 
@@ -23,7 +23,7 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   const bool kHasLegacyFailed = !stats.failed_files.empty();
 
   if (!kHasLegacyFailed && !kHasSkipped) {
-    app_ports::LogInfo("[Success] Processed " +
+    runtime_bridge::LogInfo("[Success] Processed " +
                        std::to_string(stats.successful_files) + " items.");
   } else {
     std::ostringstream summary;
@@ -33,10 +33,10 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
     if (kHasLegacyFailed) {
       summary << ", LegacyFailedFiles=" << stats.failed_files.size();
     }
-    app_ports::LogWarn(summary.str());
+    runtime_bridge::LogWarn(summary.str());
 
     for (const auto& failed_file : stats.failed_files) {
-      app_ports::LogError("  Failed: " + failed_file);
+      runtime_bridge::LogError("  Failed: " + failed_file);
     }
   }
 
@@ -48,13 +48,13 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
                          << "), records(total=" << stats.total_records
                          << ", success=" << stats.successful_records
                          << ", skipped=" << stats.skipped_records << ")";
-    app_ports::LogInfo(day_record_breakdown.str());
+    runtime_bridge::LogInfo(day_record_breakdown.str());
   }
 
   if (!stats.reason_buckets.empty()) {
-    app_ports::LogInfo("Reason Buckets:");
+    runtime_bridge::LogInfo("Reason Buckets:");
     for (const auto& [reason, count] : stats.reason_buckets) {
-      app_ports::LogInfo("  - " + reason + ": " + std::to_string(count));
+      runtime_bridge::LogInfo("  - " + reason + ": " + std::to_string(count));
     }
   }
 
@@ -66,10 +66,10 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
          << "Timing: Parse=" << stats.parsing_duration_s
          << "s, Insert=" << stats.db_insertion_duration_s
          << "s, Total=" << kTotalTime << "s";
-  app_ports::LogInfo(timing.str());
+  runtime_bridge::LogInfo(timing.str());
 
   if (stats.replaced_month.has_value()) {
-    app_ports::LogInfo("Replace scope: month=" + *stats.replaced_month);
+    runtime_bridge::LogInfo("Replace scope: month=" + *stats.replaced_month);
   }
 }
 
@@ -78,17 +78,17 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
 namespace tracer::core::application::workflow {
 
 void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
-  app_ports::LogInfo("正在解析 JSON 数据...");
+  runtime_bridge::LogInfo("正在解析 JSON 数据...");
 
   auto load_result = processed_data_loader_->LoadDailyLogs(processed_path_str);
 
   for (const auto& error : load_result.errors) {
-    app_ports::LogError("解析文件失败 " + error.source + ": " +
+    runtime_bridge::LogError("解析文件失败 " + error.source + ": " +
                         error.message);
   }
 
   if (load_result.data_by_source.empty()) {
-    app_ports::LogWarn("没有有效的 JSON 数据可供导入。");
+    runtime_bridge::LogWarn("没有有效的 JSON 数据可供导入。");
     return;
   }
 
@@ -97,7 +97,7 @@ void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
 
 auto WorkflowHandler::RunDatabaseImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
-  app_ports::LogInfo("Task: Memory Import...");
+  runtime_bridge::LogInfo("Task: Memory Import...");
 
   ImportService service(*time_sheet_repository_);
   ImportStats stats = service.ImportFromMemory(data_map);
@@ -109,7 +109,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemory(
 
 auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingAll(
     const std::map<std::string, std::vector<DailyLog>>& data_map) -> void {
-  app_ports::LogInfo("Task: Memory Import (Replace All)...");
+  runtime_bridge::LogInfo("Task: Memory Import (Replace All)...");
 
   ImportService service(*time_sheet_repository_);
   ImportStats stats =
@@ -123,7 +123,7 @@ auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingAll(
 auto WorkflowHandler::RunDatabaseImportFromMemoryReplacingMonth(
     const std::map<std::string, std::vector<DailyLog>>& data_map, int year,
     int month) -> void {
-  app_ports::LogInfo("Task: Memory Import (Replace Month)...");
+  runtime_bridge::LogInfo("Task: Memory Import (Replace Month)...");
 
   ImportService service(*time_sheet_repository_);
   ImportStats stats = service.ImportFromMemory(

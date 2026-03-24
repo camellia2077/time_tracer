@@ -2,8 +2,8 @@ module;
 
 #include <string>
 
-#include "application/ports/i_ingest_input_provider.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 module tracer.core.application.pipeline.stages;
 
@@ -21,19 +21,19 @@ auto InputCollectionStage::Execute(
       input_provider.CollectTextInputs(session.config.input_root, extension);
 
   if (!kInputCollection.input_exists) {
-    tracer_core::application::ports::LogError(
+    tracer_core::application::runtime_bridge::LogError(
         "错误: 输入的路径不存在: " + session.config.input_root.string());
     return false;
   }
 
   if (kInputCollection.inputs.empty()) {
-    tracer_core::application::ports::LogWarn(
+    tracer_core::application::runtime_bridge::LogWarn(
         "警告: 在指定路径下没有找到 " + extension + " 文件。");
     return false;
   }
 
   session.state.ingest_inputs = kInputCollection.inputs;
-  tracer_core::application::ports::LogInfo(
+  tracer_core::application::runtime_bridge::LogInfo(
       "信息: 成功收集到 " +
       std::to_string(session.state.ingest_inputs.size()) +
       " 个待处理文件 (" + extension + ").");

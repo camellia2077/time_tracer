@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-import tracer.core.application.service.converter;
+import tracer.core.application.pipeline.converter.service;
 import tracer.core.domain.logic.converter.log_processor;
 import tracer.core.domain.model.daily_log;
 import tracer.core.domain.ports.diagnostics;

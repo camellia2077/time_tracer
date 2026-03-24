@@ -1,6 +1,6 @@
-import tracer.core.infrastructure.crypto.exchange;
+import tracer.core.infrastructure.exchange;
 
-#include "infra/tests/modules_smoke/support.hpp"
+#include "infra/tests/modules_smoke/exchange.hpp"
 
 #include <string>
 #include <string_view>

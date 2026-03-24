@@ -1,4 +1,4 @@
-#include "application/tests/modules/test_modules.hpp"
+#include "application/tests/modules/exchange_tests.hpp"
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 

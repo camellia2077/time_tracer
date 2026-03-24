@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "application/workflow_handler.hpp"
-#include "application/ports/i_processed_data_loader.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_processed_data_loader.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 namespace fs = std::filesystem;
 
@@ -27,10 +27,11 @@ class ITimeSheetRepository;
 class IValidationIssueReporter;
 }  // namespace tracer_core::application::ports
 
-import tracer.core.application.importer.service;
+import tracer.core.application.pipeline.importer.service;
 import tracer.core.domain.model.daily_log;
 
 namespace app_ports = tracer_core::application::ports;
+namespace runtime_bridge = tracer_core::application::runtime_bridge;
 using tracer::core::application::modimporter::ImportService;
 using tracer::core::application::modimporter::ImportStats;
 using tracer::core::application::modimporter::ReplaceAllTarget;

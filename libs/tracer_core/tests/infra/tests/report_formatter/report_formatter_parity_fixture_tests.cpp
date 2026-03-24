@@ -4,7 +4,7 @@ import tracer.core.domain.reports.models.daily_report_data;
 import tracer.core.domain.reports.models.period_report_models;
 import tracer.core.domain.reports.models.project_tree;
 import tracer.core.domain.reports.types.report_types;
-import tracer.core.infrastructure.reports.dto;
+import tracer.core.infrastructure.reporting.dto;
 
 #include <cstdlib>
 #include <exception>
@@ -13,9 +13,9 @@ import tracer.core.infrastructure.reports.dto;
 #include <memory>
 #include <utility>
 
-#include "application/ports/i_report_formatter_registry.hpp"
+#include "application/ports/reporting/i_report_formatter_registry.hpp"
 #include "infra/config/models/report_catalog.hpp"
-#include "infra/reports/facade/android_static_report_formatter_registrar.hpp"
+#include "infra/reporting/facade/android_static_report_formatter_registrar.hpp"
 #include "infra/tests/report_formatter/report_formatter_parity_internal.hpp"
 
 namespace {
@@ -47,19 +47,17 @@ auto BuildRepoRoot() -> fs::path {
       .parent_path()   // tests
       .parent_path()   // tracer_core
       .parent_path()   // libs
-      .parent_path()   // time_tracer
-      .parent_path();  // workspace root parent
+      .parent_path();  // repo root
 }
 
 auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
   ReportCatalog catalog;
 
-  const fs::path markdown_config_dir =
-      repo_root / "time_tracer" / "config" / "reports" / "markdown";
-  const fs::path latex_config_dir =
-      repo_root / "time_tracer" / "config" / "reports" / "latex";
-  const fs::path typst_config_dir =
-      repo_root / "time_tracer" / "config" / "reports" / "typst";
+  const fs::path report_config_root =
+      repo_root / "assets" / "tracer_core" / "config" / "reports";
+  const fs::path markdown_config_dir = report_config_root / "markdown";
+  const fs::path latex_config_dir = report_config_root / "latex";
+  const fs::path typst_config_dir = report_config_root / "typst";
 
   catalog.loaded_reports.markdown.day = infra_config::ReportConfigLoader::
       LoadDailyMdConfig(markdown_config_dir / "day.toml");
@@ -258,9 +256,8 @@ auto RunFormatterParityTests() -> int {
   int failures = 0;
 
   const fs::path repo_root = BuildRepoRoot();
-  const fs::path snapshot_root = repo_root / "time_tracer" / "src" /
-                                 "infrastructure" / "tests" / "golden" /
-                                 "formatter_parity";
+  const fs::path snapshot_root =
+      repo_root / "test" / "golden" / "report_formatter_parity" / "v1";
   const bool update_snapshots =
       std::getenv("TT_UPDATE_FORMATTER_SNAPSHOTS") != nullptr;
 

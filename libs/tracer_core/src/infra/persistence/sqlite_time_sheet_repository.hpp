@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-#include "application/ports/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_time_sheet_repository.hpp"
 #include "infra/persistence/importer/repository.hpp"
 
 namespace tracer::core::infrastructure::persistence {

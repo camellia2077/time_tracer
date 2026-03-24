@@ -2,7 +2,7 @@ import tracer.core.domain.logic.converter.core;
 import tracer.core.domain.types.converter_config;
 
 // application/tests/modules/convert_ingest_validate_tests.cpp
-#include "application/tests/modules/test_modules.hpp"
+#include "application/tests/modules/pipeline_tests.hpp"
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 

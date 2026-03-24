@@ -5,14 +5,13 @@
 
 #include <stdexcept>
 
-#include "infra/io/core/file_reader.hpp"
+#include "infra/internal/canonical_file_io.hpp"
 
-import tracer.adapters.io.core.fs;
 import tracer.core.infrastructure.config.internal.config_detail_loader;
 import tracer.core.infrastructure.config.internal.config_parser_utils;
 
 namespace fs = std::filesystem;
-namespace modcore = tracer::adapters::io::modcore;
+namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
 namespace infra_config_internal = tracer::core::infrastructure::config::internal;
 
@@ -35,14 +34,14 @@ auto ConfigLoader::GetMainConfigPath() const -> std::string {
 }
 
 auto ConfigLoader::LoadConfiguration() -> AppConfig {
-  if (!modcore::Exists(main_config_path_)) {
+  if (!fs::exists(main_config_path_)) {
     throw std::runtime_error("Configuration file not found: " +
                              main_config_path_.string());
   }
 
   toml::table tbl;
   try {
-    tbl = toml::parse(FileReader::ReadCanonicalText(main_config_path_));
+    tbl = toml::parse(infra_file_io::ReadCanonicalText(main_config_path_));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse config.toml: " +
                              std::string(err.description()));

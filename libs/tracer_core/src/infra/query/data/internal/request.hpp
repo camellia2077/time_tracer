@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 
-#include "application/ports/i_data_query_service.hpp"
+#include "application/ports/query/i_data_query_service.hpp"
 #include "infra/query/data/data_query_models.hpp"
 #include "infra/query/data/data_query_types.hpp"
 
@@ -21,7 +21,7 @@ namespace tracer::core::infrastructure::query::data::internal {
 
 }  // namespace tracer::core::infrastructure::query::data::internal
 
-namespace infrastructure::persistence::data_query_service_internal {
+namespace tracer::core::infrastructure::query::data::repository::internal {
 
 using tracer::core::infrastructure::query::data::internal::BuildCliFilters;
 using tracer::core::infrastructure::query::data::internal::EnsureDbConnectionOrThrow;
@@ -34,6 +34,6 @@ using tracer::core::infrastructure::query::data::internal::ResolvePositiveLookba
 using tracer::core::infrastructure::query::data::internal::ToCliDataQueryAction;
 using tracer::core::infrastructure::query::data::internal::TrimCopy;
 
-}  // namespace infrastructure::persistence::data_query_service_internal
+}  // namespace tracer::core::infrastructure::query::data::repository::internal
 
 #endif  // INFRASTRUCTURE_QUERY_DATA_INTERNAL_REQUEST_H_

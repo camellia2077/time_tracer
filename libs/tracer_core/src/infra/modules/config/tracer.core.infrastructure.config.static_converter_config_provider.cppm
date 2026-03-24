@@ -1,6 +1,6 @@
 module;
 
-#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
 
 export module tracer.core.infrastructure.config.static_converter_config_provider;
 

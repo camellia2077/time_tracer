@@ -2,7 +2,7 @@ module;
 
 #include <string>
 
-#include "application/ports/logger.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 module tracer.core.application.pipeline.stages;
 
@@ -18,7 +18,7 @@ auto CrossMonthLinkStage::Execute(PipelineSession& session) -> bool {
     return true;
   }
 
-  tracer_core::application::ports::LogInfo(
+  tracer_core::application::runtime_bridge::LogInfo(
       "Step: Linking cross-month data...");
 
   try {
@@ -26,7 +26,7 @@ auto CrossMonthLinkStage::Execute(PipelineSession& session) -> bool {
     linker.LinkLogs(session.result.processed_data);
 
   } catch (const std::exception& e) {
-    tracer_core::application::ports::LogError(
+    tracer_core::application::runtime_bridge::LogError(
         std::string("[Pipeline] Logic Linker Error: ") + e.what());
     return true;
   }

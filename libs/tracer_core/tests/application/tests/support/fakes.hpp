@@ -8,11 +8,11 @@
 #include <string>
 #include <vector>
 
-#include "application/interfaces/i_report_handler.hpp"
+#include "application/compat/reporting/i_report_handler.hpp"
 #include "application/pipeline/i_pipeline_workflow.hpp"
-#include "application/ports/i_data_query_service.hpp"
-#include "application/ports/i_tracer_exchange_service.hpp"
-#include "application/use_cases/tracer_core_runtime.hpp"
+#include "application/ports/query/i_data_query_service.hpp"
+#include "application/ports/exchange/i_tracer_exchange_service.hpp"
+#include "application/aggregate_runtime/tracer_core_runtime.hpp"
 #include "domain/model/daily_log.hpp"
 #include "domain/repositories/i_project_repository.hpp"
 #include "domain/types/app_options.hpp"

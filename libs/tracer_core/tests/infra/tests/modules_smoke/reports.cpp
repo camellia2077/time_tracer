@@ -1,10 +1,13 @@
 import tracer.core.infrastructure.persistence.write;
-import tracer.core.infrastructure.reports.data_querying;
-import tracer.core.infrastructure.reports.dto;
-import tracer.core.infrastructure.reports.exporting;
-import tracer.core.infrastructure.reports.querying;
+import tracer.core.infrastructure.reporting.data_querying;
+import tracer.core.infrastructure.reporting.dto;
+import tracer.core.infrastructure.reporting.exporting;
+import tracer.core.infrastructure.reporting.querying;
 
-#include "application/ports/i_report_dto_formatter.hpp"
+#include "application/compat/reporting/i_report_exporter.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
+#include "infra/config/models/report_catalog.hpp"
+#include "infra/tests/modules_smoke/reporting.hpp"
 #include "infra/tests/modules_smoke/support.hpp"
 
 namespace {

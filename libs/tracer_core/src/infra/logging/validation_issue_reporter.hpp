@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_LOGGING_VALIDATION_ISSUE_REPORTER_H_
 #define INFRASTRUCTURE_LOGGING_VALIDATION_ISSUE_REPORTER_H_
 
-#include "application/ports/i_validation_issue_reporter.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
 
 namespace tracer::core::infrastructure::logging {
 

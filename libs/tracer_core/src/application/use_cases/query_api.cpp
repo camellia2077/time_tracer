@@ -5,13 +5,13 @@
 
 #include "application/use_cases/core_api_failure.hpp"
 
-import tracer.core.application.reporting.tree.viewer;
+import tracer.core.application.query.tree.viewer;
 
 namespace tracer::core::application::use_cases {
 
 using namespace tracer_core::core::dto;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
-using tracer::core::application::reporting::tree::ProjectTreeViewer;
+using tracer::core::application::query::tree::ProjectTreeViewer;
 
 QueryApi::QueryApi(ProjectRepositoryPtr project_repository,
                    DataQueryServicePtr data_query_service)

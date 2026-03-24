@@ -4,11 +4,11 @@ module;
 #include <string>
 #include <utility>
 
-#include "application/ports/i_converter_config_provider.hpp"
-#include "application/ports/i_ingest_input_provider.hpp"
-#include "application/ports/i_processed_data_storage.hpp"
-#include "application/ports/i_validation_issue_reporter.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/ports/pipeline/i_processed_data_storage.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 module tracer.core.application.pipeline.orchestrator;
 
@@ -73,7 +73,7 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   session.config.save_processed_output = options.save_processed_output;
   session.state.validation_issue_reporter = validation_issue_reporter_;
 
-  tracer_core::application::ports::LogInfo(
+  tracer_core::application::runtime_bridge::LogInfo(
       "\n--- Pipeline Execution Started ---");
 
   if (!InputCollectionStage::Execute(session, *ingest_input_provider_, ".txt")) {
@@ -82,24 +82,24 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
 
   if (options.validate_structure || options.convert) {
     try {
-      tracer_core::application::ports::LogInfo("Loading Configuration...");
+      tracer_core::application::runtime_bridge::LogInfo("Loading Configuration...");
 
       session.state.converter_config =
           converter_config_provider_->LoadConverterConfig();
 
     } catch (const std::exception& e) {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           std::string("[Pipeline] 配置加载失败: ") + e.what());
       return std::nullopt;
     }
   }
 
   if (kRunStructureValidation) {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         BuildStructureValidationStepLabel(
             session.config.structure_validation_blocks_conversion));
     if (!StructureValidationStage::Execute(session)) {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           BuildStructureValidationFailureMessage(
               session.config.structure_validation_blocks_conversion));
       return std::nullopt;
@@ -108,20 +108,20 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
 
   if (options.convert) {
     if (!ConversionStage::Execute(session)) {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           "[Pipeline] 转换阶段失败，流程终止。");
       return std::nullopt;
     }
 
     if (!CrossMonthLinkStage::Execute(session)) {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           "[Pipeline] 跨月数据连接失败，流程终止。");
       return std::nullopt;
     }
   }
 
   if (options.validate_logic) {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         "[STEP] Step: Validating Business Logic...");
     if (!LogicValidationStage::Execute(session)) {
       return std::nullopt;
@@ -129,7 +129,7 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   }
 
   if (options.convert && options.save_processed_output) {
-    tracer_core::application::ports::LogInfo(
+    tracer_core::application::runtime_bridge::LogInfo(
         "[STEP] Step: Saving Validated JSON...");
 
     auto new_files = processed_data_storage_->WriteProcessedData(
@@ -139,15 +139,15 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
                                          new_files.begin(), new_files.end());
 
     if (new_files.empty() && !session.result.processed_data.empty()) {
-      tracer_core::application::ports::LogWarn(
+      tracer_core::application::runtime_bridge::LogWarn(
           "[WARN] Data exists but no files were generated (flush failed).");
     } else {
-      tracer_core::application::ports::LogInfo(
+      tracer_core::application::runtime_bridge::LogInfo(
           "[OK] JSON data safely persisted to disk.");
     }
   }
 
-  tracer_core::application::ports::LogInfo(
+  tracer_core::application::runtime_bridge::LogInfo(
       "\n--- Pipeline Finished Successfully ---");
   return session;
 }

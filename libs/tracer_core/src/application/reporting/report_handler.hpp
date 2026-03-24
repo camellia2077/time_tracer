@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "application/interfaces/i_report_handler.hpp"
+#include "application/compat/reporting/i_report_handler.hpp"
 
 class IReportExporter;
 class IReportQueryService;

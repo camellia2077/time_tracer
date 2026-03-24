@@ -6,7 +6,7 @@ module;
 #include <unordered_map>
 #include <utility>
 
-#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
 
 module tracer.core.infrastructure.config.file_converter_config_provider;
 

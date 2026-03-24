@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "application/workflow_handler.hpp"
-#include "application/ports/i_database_health_checker.hpp"
-#include "application/ports/i_time_sheet_repository.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_database_health_checker.hpp"
+#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 namespace fs = std::filesystem;
 
@@ -47,6 +47,7 @@ import tracer.core.shared.canonical_text;
 import tracer.core.shared.string_utils;
 
 namespace app_ports = tracer_core::application::ports;
+namespace runtime_bridge = tracer_core::application::runtime_bridge;
 namespace app_pipeline = tracer::core::application::pipeline;
 namespace modtext = tracer::core::shared::canonical_text;
 using tracer::core::shared::string_utils::Trim;

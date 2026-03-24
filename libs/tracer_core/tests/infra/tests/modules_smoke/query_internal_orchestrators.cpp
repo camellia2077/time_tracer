@@ -3,8 +3,10 @@ import tracer.core.infrastructure.query.data.internal;
 import tracer.core.infrastructure.query.data.orchestrators;
 import tracer.core.infrastructure.query.data.repository;
 
-#include "application/dto/core_requests.hpp"
-#include "infra/tests/modules_smoke/support.hpp"
+#include <filesystem>
+
+#include "application/dto/query_requests.hpp"
+#include "infra/tests/modules_smoke/query.hpp"
 
 auto RunInfrastructureModuleQueryInternalOrchestratorsSmoke() -> int {
   const auto kTrimCopy =

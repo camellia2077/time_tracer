@@ -3,13 +3,11 @@
 
 #include <sqlite3.h>
 
+#include <filesystem>
 #include <optional>
 #include <utility>
 
-import tracer.adapters.io.core.fs;
 import tracer.core.domain.ports.diagnostics;
-
-namespace modcore = tracer::adapters::io::modcore;
 
 namespace modports = tracer::core::domain::ports;
 
@@ -41,8 +39,7 @@ auto DBManager::OpenDatabaseIfNeeded() -> bool {
     return true;
   }
 
-  // 使用模块导出的文件系统能力检查文件存在性
-  if (!modcore::Exists(db_name_)) {
+  if (!std::filesystem::exists(db_name_)) {
     modports::EmitError("错误: 数据库文件 '" + db_name_ +
                         "' 不存在。请先导入数据。");
     return false;

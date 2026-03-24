@@ -5,9 +5,10 @@ module;
 #include <string_view>
 #include <utility>
 
-#include "application/dto/core_responses.hpp"
-#include "application/dto/tree_query_response.hpp"
-#include "application/ports/i_report_dto_formatter.hpp"
+#include "application/dto/query_responses.hpp"
+#include "application/dto/reporting_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
 
 module tracer.core.application.use_cases.helpers;
 

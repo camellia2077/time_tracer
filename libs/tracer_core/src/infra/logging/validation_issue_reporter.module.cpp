@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "infra/logging/validation_issue_reporter.hpp"
-#include "application/ports/i_validation_issue_reporter.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
 #include "shared/utils/ide_location_formatter.hpp"
 
 import tracer.core.domain.ports.diagnostics;

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "application/reporting/tree/project_tree_data.hpp"
+#include "application/query/tree/project_tree_data.hpp"
 #include "infra/query/data/data_query_types.hpp"
 
 namespace tracer::core::infrastructure::query::data::renderers {

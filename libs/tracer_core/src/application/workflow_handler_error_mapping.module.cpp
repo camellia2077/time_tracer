@@ -4,7 +4,7 @@
 
 #include "application/workflow_handler.hpp"
 
-import tracer.core.application.importer.service;
+import tracer.core.application.pipeline.importer.service;
 import tracer.core.domain.ports.diagnostics;
 
 using tracer::core::application::modimporter::ImportStats;

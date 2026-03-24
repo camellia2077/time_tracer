@@ -1,20 +1,22 @@
 // infra/config/loader/toml_loader_utils.cpp
 #include "infra/config/loader/toml_loader_utils.hpp"
 
+#include <filesystem>
 #include <stdexcept>
 #include <string_view>
 
-#include "infra/io/core/file_reader.hpp"
+#include "infra/internal/canonical_file_io.hpp"
 
 namespace {
 constexpr double kTypLineSpacingEm = 0.65;
 constexpr double kTypMarginTopBottomCm = 2.5;
 constexpr double kTypMarginLeftRightCm = 2.0;
 constexpr std::string_view kStyleSourceKey = "style_source";
+namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
 auto ParseTomlFile(const fs::path& path) -> toml::table {
   try {
-    return toml::parse(FileReader::ReadCanonicalText(path));
+    return toml::parse(infra_file_io::ReadCanonicalText(path));
   } catch (const toml::parse_error& e) {
     throw std::runtime_error("Config TOML Parse Error [" + path.string() +
                              "]: " + std::string(e.description()));

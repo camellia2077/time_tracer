@@ -2,12 +2,32 @@ import tracer.core.infrastructure;
 import tracer.core.infrastructure.config;
 
 #include <toml++/toml.h>
+#include <unordered_map>
 
+#include "application/runtime_bridge/logger.hpp"
+#include "domain/types/converter_config.hpp"
+#include "infra/config/models/app_config.hpp"
+#include "infra/tests/modules_smoke/config.hpp"
 #include "infra/tests/modules_smoke/support.hpp"
+
+namespace {
+
+auto BuildRepoRoot() -> std::filesystem::path {
+  return std::filesystem::path(__FILE__)
+      .parent_path()   // modules_smoke
+      .parent_path()   // tests
+      .parent_path()   // infra
+      .parent_path()   // tests
+      .parent_path()   // tracer_core
+      .parent_path()   // libs
+      .parent_path();  // repo root
+}
+
+}  // namespace
 
 auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
   tracer::core::infrastructure::logging::ConsoleLogger logger;
-  logger.Log(tracer_core::application::ports::LogSeverity::kInfo,
+  logger.Log(tracer_core::application::runtime_bridge::LogSeverity::kInfo,
              "phase6 infrastructure module smoke logger");
 
   tracer::core::infrastructure::logging::ConsoleDiagnosticsSink sink;
@@ -77,12 +97,15 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
       kConfigSmokeDir / "bin" / "tracer_core_smoke.exe";
   const std::filesystem::path kCopiedConfigRoot =
       kFakeExePath.parent_path() / "config";
+  const std::filesystem::path kSourceConfigRoot =
+      BuildRepoRoot() / "assets" / "tracer_core" / "config";
   std::filesystem::remove_all(kConfigSmokeDir, cleanup_error);
   std::filesystem::create_directories(kConfigSmokeDir);
   std::filesystem::create_directories(kCopiedConfigRoot.parent_path());
-  std::filesystem::copy(std::filesystem::path("assets") / "tracer_core" /
-                            "config",
-                        kCopiedConfigRoot,
+  if (!std::filesystem::exists(kSourceConfigRoot)) {
+    return 404;
+  }
+  std::filesystem::copy(kSourceConfigRoot, kCopiedConfigRoot,
                         std::filesystem::copy_options::recursive);
   WriteSmokeFile(kFakeExePath, "smoke");
 

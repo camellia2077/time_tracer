@@ -4,7 +4,7 @@
 #include <chrono>
 #include <optional>
 
-#include "application/ports/i_report_dto_formatter.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
 #include "application/use_cases/core_api_failure.hpp"
 
 namespace tracer::core::application::use_cases::report_support {

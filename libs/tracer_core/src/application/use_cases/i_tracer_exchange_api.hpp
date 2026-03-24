@@ -1,8 +1,8 @@
 #ifndef APPLICATION_USE_CASES_I_TRACER_EXCHANGE_API_HPP_
 #define APPLICATION_USE_CASES_I_TRACER_EXCHANGE_API_HPP_
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
+#include "application/dto/exchange_requests.hpp"
+#include "application/dto/exchange_responses.hpp"
 
 namespace tracer::core::application::use_cases {
 

@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "application/pipeline/i_pipeline_workflow.hpp"
-#include "application/ports/i_converter_config_provider.hpp"
-#include "application/ports/i_database_health_checker.hpp"
-#include "application/ports/i_ingest_input_provider.hpp"
-#include "application/ports/i_processed_data_loader.hpp"
-#include "application/ports/i_processed_data_storage.hpp"
-#include "application/ports/i_time_sheet_repository.hpp"
-#include "application/ports/i_validation_issue_reporter.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_database_health_checker.hpp"
+#include "application/ports/pipeline/i_ingest_input_provider.hpp"
+#include "application/ports/pipeline/i_processed_data_loader.hpp"
+#include "application/ports/pipeline/i_processed_data_storage.hpp"
+#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
 
 namespace tracer::core::application::pipeline {
 

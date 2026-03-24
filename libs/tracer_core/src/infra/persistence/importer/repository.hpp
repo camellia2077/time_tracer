@@ -8,7 +8,7 @@
 #include <string_view>
 #include <vector>
 
-#include "application/importer/model/import_models.hpp"
+#include "application/pipeline/importer/model/import_models.hpp"
 
 namespace tracer::core::infrastructure::persistence::importer::sqlite {
 

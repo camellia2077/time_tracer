@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <string_view>
 
-#include "application/ports/logger.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 import tracer.core.shared.string_utils;
 
@@ -87,7 +87,7 @@ auto TextParser::Parse(std::istream& input_stream,
 
     if (IsMonthMarker(line)) {
       if (current_year_prefix.empty()) {
-        tracer_core::application::ports::LogWarn(
+        tracer_core::application::runtime_bridge::LogWarn(
             "Warning: Skipping line '" + line +
             "' because a year header (e.g., y2025) has not been found yet.");
         continue;
@@ -97,7 +97,7 @@ auto TextParser::Parse(std::istream& input_stream,
     }
 
     if (current_year_prefix.empty()) {
-      tracer_core::application::ports::LogWarn(
+      tracer_core::application::runtime_bridge::LogWarn(
           "Warning: Skipping line '" + line +
           "' because a year header (e.g., y2025) has not been found yet.");
       continue;

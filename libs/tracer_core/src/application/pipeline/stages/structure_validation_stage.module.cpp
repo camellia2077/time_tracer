@@ -3,8 +3,8 @@ module;
 #include <set>
 #include <string>
 
-#include "application/ports/i_validation_issue_reporter.hpp"
-#include "application/ports/logger.hpp"
+#include "application/ports/pipeline/i_validation_issue_reporter.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 module tracer.core.application.pipeline.stages;
 
@@ -42,21 +42,21 @@ auto StructureValidationStage::Execute(PipelineSession& session) -> bool {
 
   if (all_valid) {
     if (session.config.structure_validation_blocks_conversion) {
-      tracer_core::application::ports::LogInfo(
+      tracer_core::application::runtime_bridge::LogInfo(
           "Source structure precheck passed for " +
           std::to_string(files_checked) + " files. Proceeding to conversion.");
     } else {
-      tracer_core::application::ports::LogInfo(
+      tracer_core::application::runtime_bridge::LogInfo(
           "Structure validation passed for " + std::to_string(files_checked) +
           " files.");
     }
   } else {
     if (session.config.structure_validation_blocks_conversion) {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           "Source structure precheck failed. Fix the errors above before "
           "conversion.");
     } else {
-      tracer_core::application::ports::LogError(
+      tracer_core::application::runtime_bridge::LogError(
           "Structure validation failed. Please fix the errors above.");
     }
   }

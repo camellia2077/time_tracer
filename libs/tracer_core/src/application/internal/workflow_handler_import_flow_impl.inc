@@ -4,7 +4,7 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
                                 DateCheckMode date_check_mode,
                                 bool save_processed, IngestMode ingest_mode)
     -> void {
-  app_ports::LogInfo("\n--- 启动数据摄入 (Ingest) ---");
+  runtime_bridge::LogInfo("\n--- 启动数据摄入 (Ingest) ---");
   modports::ClearBufferedDiagnostics();
 
   const auto kDbCheck = database_health_checker_->CheckReady();
@@ -23,14 +23,14 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
   auto result_context_opt = pipeline.Run(kFullOptions);
 
   if (!result_context_opt) {
-    app_ports::LogError("\n=== Ingest 执行失败 ===");
+    runtime_bridge::LogError("\n=== Ingest 执行失败 ===");
     throw std::runtime_error(
         workflow_handler_internal::BuildPipelineFailureMessage(
             "Ingestion process failed."));
   }
 
   auto& context = *result_context_opt;
-  app_ports::LogInfo("\n--- 流水线验证通过，准备入库 ---");
+  runtime_bridge::LogInfo("\n--- 流水线验证通过，准备入库 ---");
 
   if (ingest_mode == IngestMode::kSingleTxtReplaceMonth) {
     const auto kTargetMonth = TryResolveSingleTxtTargetMonth(context);
@@ -60,29 +60,29 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
               .end_time = kPreviousTail->end_time,
           });
     } else if (!context.result.processed_data.empty()) {
-      app_ports::LogWarn(
+      runtime_bridge::LogWarn(
           "[LogLinker] No previous-month tail context found (DB/sibling "
           "TXT). Ingest will proceed without cross-month backfill.");
     }
 
     RunDatabaseImportFromMemoryReplacingMonth(
         context.result.processed_data, kTargetMonth->year, kTargetMonth->month);
-    app_ports::LogInfo("\n=== Ingest 执行成功（单月替换）===");
+    runtime_bridge::LogInfo("\n=== Ingest 执行成功（单月替换）===");
     return;
   }
 
   if (!context.result.processed_data.empty()) {
     RunDatabaseImportFromMemory(context.result.processed_data);
-    app_ports::LogInfo("\n=== Ingest 执行成功 ===");
+    runtime_bridge::LogInfo("\n=== Ingest 执行成功 ===");
   } else {
-    app_ports::LogWarn("\n=== Ingest 完成但无数据产生 ===");
+    runtime_bridge::LogWarn("\n=== Ingest 完成但无数据产生 ===");
   }
 }
 
 auto WorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
                                             DateCheckMode date_check_mode,
                                             bool save_processed) -> void {
-  app_ports::LogInfo("\n--- 启动数据摄入 (Replace All) ---");
+  runtime_bridge::LogInfo("\n--- 启动数据摄入 (Replace All) ---");
   modports::ClearBufferedDiagnostics();
 
   const auto db_check = database_health_checker_->CheckReady();
@@ -101,16 +101,16 @@ auto WorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
   auto result_context_opt = pipeline.Run(full_options);
 
   if (!result_context_opt) {
-    app_ports::LogError("\n=== Replace-all ingest 执行失败 ===");
+    runtime_bridge::LogError("\n=== Replace-all ingest 执行失败 ===");
     throw std::runtime_error(
         workflow_handler_internal::BuildPipelineFailureMessage(
             "Replace-all ingestion process failed."));
   }
 
   auto& context = *result_context_opt;
-  app_ports::LogInfo("\n--- 流水线验证通过，准备全量替换入库 ---");
+  runtime_bridge::LogInfo("\n--- 流水线验证通过，准备全量替换入库 ---");
   RunDatabaseImportFromMemoryReplacingAll(context.result.processed_data);
-  app_ports::LogInfo("\n=== Ingest 执行成功（全量替换）===");
+  runtime_bridge::LogInfo("\n=== Ingest 执行成功（全量替换）===");
 }
 
 }  // namespace tracer::core::application::workflow

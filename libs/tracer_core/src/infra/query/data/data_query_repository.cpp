@@ -8,9 +8,9 @@
 #include <utility>
 #include <vector>
 
+#include "infra/query/data/internal/project_tree_projection.hpp"
 #include "infra/query/data/data_query_repository_internal.hpp"
 #include "infra/query/data/data_query_repository_sql.hpp"
-#include "infra/reports/data/utils/project_tree_builder.hpp"
 
 namespace query_data_detail = tracer_core::infrastructure::query::data::detail;
 namespace query_data_internal =
@@ -130,7 +130,7 @@ auto QueryProjectTree(sqlite3* db_conn, const QueryFilters& filters)
       query_data_internal::ExecuteProjectTreeRecords(db_conn, kSql, params);
 
   reporting::ProjectTree tree;
-  BuildProjectTreeFromRecords(tree, records);
+  query_data_internal::BuildProjectTreeFromRecords(tree, records);
   return tree;
 }
 

@@ -11,7 +11,7 @@ module;
 #include <vector>
 
 #include "infra/config/models/report_config_models.hpp"
-#include "infra/io/core/file_reader.hpp"
+#include "infra/internal/canonical_file_io.hpp"
 
 namespace fs = std::filesystem;
 
@@ -22,10 +22,11 @@ constexpr double kTypLineSpacingEm = 0.65;
 constexpr double kTypMarginTopBottomCm = 2.5;
 constexpr double kTypMarginLeftRightCm = 2.0;
 constexpr std::string_view kStyleSourceKey = "style_source";
+namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
 auto ParseTomlFile(const fs::path& path) -> toml::table {
   try {
-    return toml::parse(FileReader::ReadCanonicalText(path));
+    return toml::parse(infra_file_io::ReadCanonicalText(path));
   } catch (const toml::parse_error& error) {
     throw std::runtime_error("Config TOML Parse Error [" + path.string() +
                              "]: " + std::string(error.description()));

@@ -5,8 +5,8 @@
 #include <string>
 #include <string_view>
 
-#include "application/dto/core_responses.hpp"
-#include "application/dto/tree_query_response.hpp"
+#include "application/dto/query_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
 
 namespace tracer::core::application::use_cases::failure {
 

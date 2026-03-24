@@ -3,7 +3,7 @@
 
 #include <memory>
 
-#include "application/ports/i_data_query_service.hpp"
+#include "application/ports/query/i_data_query_service.hpp"
 #include "application/use_cases/i_query_api.hpp"
 #include "domain/repositories/i_project_repository.hpp"
 

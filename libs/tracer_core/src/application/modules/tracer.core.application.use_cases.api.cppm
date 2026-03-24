@@ -4,8 +4,7 @@ module;
 #include "application/use_cases/query_api.hpp"
 #include "application/use_cases/report_api.hpp"
 #include "application/use_cases/tracer_exchange_api.hpp"
-#include "application/use_cases/tracer_core_runtime.hpp"
-#include "application/use_cases/tracer_core_api.hpp"
+#include "application/aggregate_runtime/tracer_core_runtime.hpp"
 
 export module tracer.core.application.use_cases.api;
 
@@ -18,7 +17,6 @@ using ::tracer::core::application::use_cases::QueryApi;
 using ::tracer::core::application::use_cases::ReportApi;
 using ::tracer::core::application::use_cases::TracerExchangeApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
-using ::tracer::core::application::use_cases::TracerCoreApi;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -29,6 +27,5 @@ using ::tracer::core::application::use_cases::QueryApi;
 using ::tracer::core::application::use_cases::ReportApi;
 using ::tracer::core::application::use_cases::TracerExchangeApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
-using ::tracer::core::application::use_cases::TracerCoreApi;
 
 }  // namespace tracer::core::application::modusecases

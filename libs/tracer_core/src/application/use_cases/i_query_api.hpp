@@ -1,9 +1,9 @@
 #ifndef APPLICATION_USE_CASES_I_QUERY_API_HPP_
 #define APPLICATION_USE_CASES_I_QUERY_API_HPP_
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
-#include "application/dto/tree_query_response.hpp"
+#include "application/dto/query_requests.hpp"
+#include "application/dto/query_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
 
 namespace tracer::core::application::use_cases {
 

@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "infra/reports/data/utils/time_derived_stats.hpp"
+#include "infra/reporting/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 
 import tracer.core.domain.ports.diagnostics;

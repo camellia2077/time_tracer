@@ -1,7 +1,7 @@
 // application/tests/modules/data_query_tests.cpp
 #include <memory>
 
-#include "application/tests/modules/test_modules.hpp"
+#include "application/tests/modules/query_tests.hpp"
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 

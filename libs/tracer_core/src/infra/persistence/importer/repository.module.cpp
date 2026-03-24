@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "infra/persistence/importer/repository.hpp"
-#include "application/importer/model/import_models.hpp"
+#include "application/pipeline/importer/model/import_models.hpp"
 #include "infra/persistence/sqlite/db_manager.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"

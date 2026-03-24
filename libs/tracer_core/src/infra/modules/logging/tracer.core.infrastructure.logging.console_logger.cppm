@@ -2,15 +2,16 @@ module;
 
 #include <mutex>
 
-#include "application/ports/logger.hpp"
+#include "application/runtime_bridge/logger.hpp"
 
 export module tracer.core.infrastructure.logging.console_logger;
 
 export namespace tracer::core::infrastructure::logging {
 
-class ConsoleLogger final : public tracer_core::application::ports::ILogger {
+class ConsoleLogger final
+    : public tracer_core::application::runtime_bridge::ILogger {
  public:
-  auto Log(tracer_core::application::ports::LogSeverity severity,
+  auto Log(tracer_core::application::runtime_bridge::LogSeverity severity,
            std::string_view message) -> void override;
 
  private:

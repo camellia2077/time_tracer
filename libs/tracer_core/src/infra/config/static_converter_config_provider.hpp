@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_CONFIG_STATIC_CONVERTER_CONFIG_PROVIDER_H_
 #define INFRASTRUCTURE_CONFIG_STATIC_CONVERTER_CONFIG_PROVIDER_H_
 
-#include "application/ports/i_converter_config_provider.hpp"
+#include "application/ports/pipeline/i_converter_config_provider.hpp"
 
 namespace tracer::core::infrastructure::config {
 

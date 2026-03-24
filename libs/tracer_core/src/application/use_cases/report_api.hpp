@@ -3,10 +3,10 @@
 
 #include <memory>
 
-#include "application/interfaces/i_report_handler.hpp"
-#include "application/ports/i_report_data_query_service.hpp"
-#include "application/ports/i_report_dto_formatter.hpp"
-#include "application/ports/i_report_export_writer.hpp"
+#include "application/compat/reporting/i_report_handler.hpp"
+#include "application/ports/reporting/i_report_data_query_service.hpp"
+#include "application/ports/reporting/i_report_dto_formatter.hpp"
+#include "application/ports/reporting/i_report_export_writer.hpp"
 #include "application/use_cases/i_report_api.hpp"
 
 namespace tracer::core::application::use_cases {

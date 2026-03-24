@@ -1,11 +1,11 @@
-#include "application/tests/modules/test_modules.hpp"
+#include "application/tests/modules/aggregate_runtime_tests.hpp"
 
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 #include "application/use_cases/pipeline_api.hpp"
 #include "application/use_cases/query_api.hpp"
 #include "application/use_cases/report_api.hpp"
-#include "application/use_cases/tracer_core_runtime.hpp"
+#include "application/aggregate_runtime/tracer_core_runtime.hpp"
 #include "application/use_cases/tracer_exchange_api.hpp"
 
 namespace tracer_core::application::tests {

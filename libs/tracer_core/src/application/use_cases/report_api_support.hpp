@@ -5,7 +5,8 @@
 #include <string>
 #include <string_view>
 
-#include "application/dto/core_responses.hpp"
+#include "application/dto/reporting_responses.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "domain/reports/types/report_types.hpp"
 
 namespace tracer_core::application::ports {

@@ -4,12 +4,12 @@
 #include <stdexcept>
 #include <utility>
 
-import tracer.core.application.reporting.tree.nodes;
+import tracer.core.application.query.tree.nodes;
 import tracer.core.infrastructure.query.data.internal.period;
 import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.renderers;
 
-namespace app_tree = tracer::core::application::reporting::tree;
+namespace app_tree = tracer::core::application::query::tree;
 namespace query_internal =
     tracer::core::infrastructure::query::data::internal;
 namespace query_data_repository = tracer::core::infrastructure::query::data;

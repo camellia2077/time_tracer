@@ -9,7 +9,7 @@
 
 #include <nlohmann/json_fwd.hpp>
 
-#include "application/ports/i_processed_data_loader.hpp"
+#include "application/ports/pipeline/i_processed_data_loader.hpp"
 
 namespace infrastructure::io {
 

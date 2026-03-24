@@ -1,0 +1,22 @@
+set(TIME_TRACKER_INFRA_EXCHANGE_SOURCES
+    "crypto/internal/file_crypto_progress_control.cpp"
+    "crypto/internal/file_crypto_directory_plan.cpp"
+    "crypto/internal/file_crypto_io.cpp"
+    "crypto/internal/file_crypto_format_compat.cpp"
+    "crypto/internal/file_crypto_backend_engine.cpp"
+    "crypto/internal/file_crypto_kdf.cpp"
+    "crypto/internal/file_crypto_compress.cpp"
+    "crypto/internal/file_crypto_encrypt_flow.cpp"
+    "crypto/internal/file_crypto_decrypt_flow.cpp"
+    "crypto/internal/file_crypto_directory_orchestrator.cpp"
+    "crypto/file_crypto_service.cpp"
+    "exchange/tracer_exchange_service_common.cpp"
+    "exchange/tracer_exchange_service_export.cpp"
+    "exchange/tracer_exchange_service_import.cpp"
+    "exchange/tracer_exchange_service_inspect.cpp"
+    "exchange/tracer_exchange_service.cpp"
+)
+
+set(TIME_TRACKER_INFRA_EXCHANGE_MODULE_FILES
+    "exchange/tracer.core.infrastructure.exchange.cppm"
+)

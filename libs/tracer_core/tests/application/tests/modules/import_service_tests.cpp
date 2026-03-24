@@ -1,4 +1,4 @@
-import tracer.core.application.importer.service;
+import tracer.core.application.pipeline.importer.service;
 import tracer.core.domain.model.daily_log;
 import tracer.core.domain.model.time_data_models;
 
@@ -9,8 +9,8 @@ import tracer.core.domain.model.time_data_models;
 #include <string_view>
 #include <vector>
 
-#include "application/ports/i_time_sheet_repository.hpp"
-#include "application/tests/modules/test_modules.hpp"
+#include "application/ports/pipeline/i_time_sheet_repository.hpp"
+#include "application/tests/modules/pipeline_tests.hpp"
 #include "application/tests/support/test_support.hpp"
 
 namespace tracer_core::application::tests {

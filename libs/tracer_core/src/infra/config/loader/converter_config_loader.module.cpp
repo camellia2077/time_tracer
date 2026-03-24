@@ -7,19 +7,17 @@ module;
 #include <filesystem>
 #include <initializer_list>
 #include <stdexcept>
-#include <utility>
 #include <string_view>
+#include <utility>
 
 #include "domain/types/converter_config.hpp"
 #include "infra/config/validator/converter/rules/converter_rules.hpp"
 
 module tracer.core.infrastructure.config.loader.converter_config_loader;
 
-import tracer.adapters.io.core.fs;
 import tracer.core.infrastructure.config.loader.toml_loader_utils;
 
 namespace fs = std::filesystem;
-namespace modcore = tracer::adapters::io::modcore;
 namespace modloader = tracer::core::infrastructure::config::loader;
 
 namespace {
@@ -28,7 +26,7 @@ constexpr std::string_view kAliasesSection = "aliases";
 
 auto ReadRequiredToml(const fs::path& file_path, std::string_view logical_name)
     -> toml::table {
-  if (!modcore::Exists(file_path)) {
+  if (!fs::exists(file_path)) {
     throw std::runtime_error(std::string(logical_name) +
                              " config file not found: " + file_path.string());
   }
@@ -98,7 +96,7 @@ auto ConverterConfigLoader::MergeOptionalSections(
   }
 
   fs::path file_path = config_dir / *path_node;
-  if (!modcore::Exists(file_path)) {
+  if (!fs::exists(file_path)) {
     return;
   }
 
@@ -110,7 +108,7 @@ auto ConverterConfigLoader::MergeOptionalSections(
 
 auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
     -> toml::table {
-  if (!modcore::Exists(main_config_path)) {
+  if (!fs::exists(main_config_path)) {
     throw std::runtime_error("Converter config file not found: " +
                              main_config_path.string());
   }

@@ -5,8 +5,8 @@
 #include <string>
 #include <utility>
 
-#include "application/interfaces/i_report_exporter.hpp"
-#include "application/interfaces/i_report_query_service.hpp"
+#include "application/compat/reporting/i_report_exporter.hpp"
+#include "application/compat/reporting/i_report_query_service.hpp"
 
 namespace {
 constexpr int kSeparatorLength = 40;

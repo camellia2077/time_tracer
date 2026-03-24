@@ -1,7 +1,7 @@
 // infra/query/data/renderers/data_query_renderer.cpp
 #include "infra/query/data/renderers/data_query_renderer.hpp"
 
-import tracer.core.application.reporting.tree.data;
+import tracer.core.application.query.tree.data;
 import tracer.core.infrastructure.query.data.renderers.semantic_json_renderer;
 import tracer.core.infrastructure.query.data.renderers.text_renderer;
 import tracer.core.infrastructure.query.data.repository.types;
@@ -10,7 +10,7 @@ namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
 using tracer_core::core::dto::DataQueryOutputMode;
-using tracer::core::application::reporting::tree::ProjectTreeNode;
+using tracer::core::application::query::tree::ProjectTreeNode;
 
 [[nodiscard]] auto ShouldRenderSemanticJson(DataQueryOutputMode output_mode)
     -> bool {

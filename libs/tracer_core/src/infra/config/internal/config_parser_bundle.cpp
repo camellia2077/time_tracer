@@ -8,11 +8,13 @@
 #include <vector>
 
 #include "infra/config/internal/config_parser_utils_internal.hpp"
-#include "infra/io/core/file_reader.hpp"
+#include "infra/internal/canonical_file_io.hpp"
 
 namespace ConfigParserUtils::internal {
 
 #include "infra/config/internal/bundle/config_parser_bundle_namespace.inc"
+
+namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
 
 auto LoadReportPathsFromTable(const toml::table& section,
@@ -119,7 +121,7 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
 
   toml::table bundle_tbl;
   try {
-    bundle_tbl = toml::parse(FileReader::ReadCanonicalText(kBundlePath));
+    bundle_tbl = toml::parse(infra_file_io::ReadCanonicalText(kBundlePath));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse bundle TOML [" +
                              kBundlePath.string() +
@@ -248,7 +250,7 @@ auto TryParseBundlePathsImpl(const fs::path& config_dir, AppConfig& config)
 
   toml::table bundle_tbl;
   try {
-    bundle_tbl = toml::parse(FileReader::ReadCanonicalText(kBundlePath));
+    bundle_tbl = toml::parse(infra_file_io::ReadCanonicalText(kBundlePath));
   } catch (const toml::parse_error& err) {
     throw std::runtime_error("Failed to parse bundle TOML [" +
                              kBundlePath.string() +

@@ -3,8 +3,8 @@
 
 #include "infra/sqlite_fwd.hpp"
 
-#include "application/dto/core_requests.hpp"
-#include "application/dto/core_responses.hpp"
+#include "application/dto/query_requests.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "infra/query/data/data_query_models.hpp"
 
 namespace tracer::core::infrastructure::query::data::orchestrators {

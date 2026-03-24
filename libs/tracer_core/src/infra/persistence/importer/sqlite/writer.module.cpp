@@ -7,7 +7,7 @@ module;
 #include <string>
 #include <vector>
 
-#include "application/importer/model/import_models.hpp"
+#include "application/pipeline/importer/model/import_models.hpp"
 
 module tracer.core.infrastructure.persistence.write.importer.sqlite.writer;
 

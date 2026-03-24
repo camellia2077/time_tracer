@@ -9,23 +9,25 @@
 #include <utility>
 #include <vector>
 
-#include "infra/reports/shared/utils/format/time_format.hpp"
+#include "infra/query/data/renderers/detail/query_duration_text.hpp"
 
-import tracer.core.application.reporting.tree.data;
+import tracer.core.application.query.tree.data;
 import tracer.core.infrastructure.query.data.repository.types;
 
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
-using tracer::core::application::reporting::tree::ProjectTreeNode;
+using tracer::core::application::query::tree::ProjectTreeNode;
+namespace query_text_detail =
+    tracer::core::infrastructure::query::data::renderers::detail;
 
 constexpr int kDefaultOutputPrecision = 6;
 
 [[nodiscard]] auto FormatDurationSeconds(double seconds) -> std::string {
   if (seconds <= 0.0) {
-    return TimeFormatDuration(0);
+    return query_text_detail::FormatQueryDurationText(0);
   }
-  return TimeFormatDuration(std::llround(seconds));
+  return query_text_detail::FormatQueryDurationText(std::llround(seconds));
 }
 
 auto AppendDayDurationStats(std::ostream& output_stream,
@@ -147,7 +149,9 @@ auto RenderDayDurationsText(const std::vector<DayDurationRow>& rows)
     -> std::string {
   std::ostringstream output_stream;
   for (const auto& row : rows) {
-    output_stream << row.date << " " << TimeFormatDuration(row.total_seconds)
+    output_stream << row.date << " "
+                  << query_text_detail::FormatQueryDurationText(
+                         row.total_seconds)
                   << "\n";
   }
   output_stream << "Total: " << rows.size() << "\n";
@@ -172,14 +176,18 @@ auto RenderTopDayDurationsText(const std::vector<DayDurationRow>& rows,
   for (int index = 0; index < kCount; ++index) {
     const auto& row = rows[rows.size() - 1 - index];
     output_stream << "- " << row.date << " "
-                  << TimeFormatDuration(row.total_seconds) << "\n";
+                  << query_text_detail::FormatQueryDurationText(
+                         row.total_seconds)
+                  << "\n";
   }
 
   output_stream << "\n### Top " << kCount << " Shortest Days\n";
   for (int index = 0; index < kCount; ++index) {
     const auto& row = rows[index];
     output_stream << "- " << row.date << " "
-                  << TimeFormatDuration(row.total_seconds) << "\n";
+                  << query_text_detail::FormatQueryDurationText(
+                         row.total_seconds)
+                  << "\n";
   }
 
   return output_stream.str();
@@ -205,7 +213,8 @@ auto RenderActivitySuggestionsText(
         row.last_used_date.empty() ? "-" : row.last_used_date;
     output_stream << row.activity_name << " | score: " << row.score
                   << " | count: " << row.usage_count << " | duration: "
-                  << TimeFormatDuration(row.total_duration_seconds)
+                  << query_text_detail::FormatQueryDurationText(
+                         row.total_duration_seconds)
                   << " | last: " << kLastUsed << "\n";
   }
   output_stream.unsetf(std::ios::floatfield);

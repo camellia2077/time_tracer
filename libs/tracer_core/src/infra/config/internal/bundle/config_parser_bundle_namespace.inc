@@ -105,7 +105,9 @@ auto ValidatePalettes(const toml::table& palettes_table,
 auto ValidateHeatmapConfigFile(const fs::path& heatmap_path) -> void {
   toml::table table;
   try {
-    table = toml::parse(FileReader::ReadCanonicalText(heatmap_path));
+    table = toml::parse(
+        tracer::core::infrastructure::internal::file_io::ReadCanonicalText(
+            heatmap_path));
   } catch (const toml::parse_error& err) {
     ThrowConfigFieldError(
         heatmap_path, "",

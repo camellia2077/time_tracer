@@ -3,7 +3,7 @@
 #include <utility>
 
 #include "infra/persistence/sqlite_database_health_checker.hpp"
-#include "application/ports/i_database_health_checker.hpp"
+#include "application/ports/pipeline/i_database_health_checker.hpp"
 
 namespace tracer::core::infrastructure::persistence {
 

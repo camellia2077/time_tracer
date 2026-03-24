@@ -2,7 +2,7 @@
 #ifndef INFRASTRUCTURE_PLATFORM_ANDROID_ANDROID_PLATFORM_CLOCK_H_
 #define INFRASTRUCTURE_PLATFORM_ANDROID_ANDROID_PLATFORM_CLOCK_H_
 
-#include "application/ports/i_platform_clock.hpp"
+#include "application/ports/reporting/i_platform_clock.hpp"
 
 namespace infrastructure::platform {
 
