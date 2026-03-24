@@ -8,7 +8,7 @@ description: Agent 专用发布历史模板
 
 ## Hard Rules
 
-- 最新版本必须写在最前面
+- 最新条目必须写在最前面
 - 版本标题格式必须为 `## [vX.Y.Z] - YYYY-MM-DD`
 - 日期必须使用 ISO 8601：`YYYY-MM-DD`
 - 分类只使用以下几类：

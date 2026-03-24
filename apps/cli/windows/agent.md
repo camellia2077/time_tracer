@@ -12,7 +12,7 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 ## 必跑流程
 
 1. 标准验证：
-   - `python tools/run.py verify --app tracer_core --scope batch --concise`
+   - `python tools/run.py verify --app tracer_core --concise`
 2. 如需显式确认 Windows runtime + Rust CLI 构建：
    - `python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows`
    - `python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows`
@@ -46,7 +46,9 @@ description: Windows Rust CLI capability-family layout, build, and verification 
    - `apps/cli/windows/rust/runtime/config/`
    - canonical source：`assets/tracer_core/config`
 7. 输出契约测试入口：
-   - `test/suites/tracer_windows_rust_cli/tests/command_groups.toml`
+   - `test/suites/tracer_windows_rust_cli/tests.toml`
+   - `test/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `test/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_tree_version.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - `test/suites/tracer_windows_rust_cli/tests/commands_exchange.toml`

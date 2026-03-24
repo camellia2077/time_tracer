@@ -6,8 +6,10 @@ without broad repository search.
 ## 5-Minute Reading Order
 1. [Library Dependency Map](../../architecture/library_dependency_map.md)
 2. [tracer_core](../../architecture/libraries/tracer_core.md)
-3. This file: `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
-4. Then read the exact contract docs for the boundary you are touching:
+3. [tracer_core Capability Dependency Map](../architecture/tracer_core_capability_dependency_map.md)
+4. [tracer_core Capability Boundary Contract](../design/tracer_core_capability_boundary_contract.md)
+5. This file: `docs/time_tracer/core/specs/AGENT_ONBOARDING.md`
+6. Then read the exact contract docs for the boundary you are touching:
    - [C ABI](../contracts/c_abi.md)
    - [Stats contracts](../contracts/stats/README.md)
    - [Android runtime protocol](../../clients/android_ui/runtime-protocol.md)
@@ -26,6 +28,9 @@ without broad repository search.
    - runtime envelope, field, and codec implementation
 6. `libs/tracer_adapters_io`
    - file-system ingest and processed-data adapter behavior
+7. `ITracerCoreRuntime`
+   - the only aggregate runtime surface; all application capability entry
+     points flow through `pipeline()/query()/report()/tracer_exchange()`
 
 ## High-Frequency Change Routes
 1. Change C ABI inputs, outputs, or runtime behavior:
@@ -38,20 +43,27 @@ without broad repository search.
    - start in `apps/tracer_core_shell/api/android_jni`
    - pair with [tracer_core_bridge_common](../../architecture/libraries/tracer_core_bridge_common.md)
 3. Change core config ownership or shell config bridging:
-   - start in [tracer_core](../../architecture/libraries/tracer_core.md)
-   - then inspect:
-     - `apps/tracer_core_shell/api/c_api`
-     - `apps/tracer_core_shell/host`
+    - start in [tracer_core](../../architecture/libraries/tracer_core.md)
+    - confirm capability ownership in
+      [tracer_core Capability Dependency Map](../architecture/tracer_core_capability_dependency_map.md)
+    - then inspect:
+      - `apps/tracer_core_shell/api/c_api`
+      - `apps/tracer_core_shell/host`
 4. Change use cases, workflow, or reporting-tree boundaries:
-   - start in [tracer_core](../../architecture/libraries/tracer_core.md)
-   - then inspect:
-     - `libs/tracer_core/src/application/use_cases`
-     - `libs/tracer_core/src/application/workflow`
-     - `libs/tracer_core/src/application/reporting/tree`
+    - start in [tracer_core](../../architecture/libraries/tracer_core.md)
+    - then confirm the owner capability in
+      [tracer_core Capability Boundary Contract](../design/tracer_core_capability_boundary_contract.md)
+    - then inspect:
+      - `libs/tracer_core/src/application/use_cases`
+      - `libs/tracer_core/src/application/workflow`
+      - `libs/tracer_core/src/application/query/tree`
+      - `libs/tracer_core/src/application/reporting`
 5. Change query/report/stat output semantics:
-   - read [Stats contracts](../contracts/stats/README.md)
-   - start in `libs/tracer_core/src/infra/query`
-   - then inspect `libs/tracer_core/src/infra/reports`
+    - read [Stats contracts](../contracts/stats/README.md)
+    - then confirm whether the work belongs to `query` or `reporting` in
+      [tracer_core Capability Dependency Map](../architecture/tracer_core_capability_dependency_map.md)
+    - start in `libs/tracer_core/src/infra/query`
+    - then inspect `libs/tracer_core/src/infra/reporting`
 6. Change file-system ingest or processed-data IO:
    - start in [tracer_adapters_io](../../architecture/libraries/tracer_adapters_io.md)
 
@@ -84,17 +96,21 @@ Default exclusions:
 1. Focused change:
 
 ```powershell
-python tools/run.py validate --plan <plan_name> --paths <touched paths>
+python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core_capabilities.toml --paths-file tools/toolchain/config/validate/pipeline.paths
 ```
 
 2. Shell/runtime integration:
 
 ```powershell
-python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --concise
 ```
 
-3. Before editing module or explicit boundary declaration surfaces, also inspect
-   the relevant module smoke tests and contract regressions listed in the touched detailed library doc under
+3. If the change touches more than one capability, combine explicit paths or
+   escalate to full `verify`.
+
+4. Before editing module or explicit boundary declaration surfaces, also inspect
+   the relevant module smoke tests and contract regressions listed in the
+   touched detailed library doc under
    `docs/time_tracer/architecture/libraries/`.
 
 ## Common Failure Checks
@@ -103,10 +119,12 @@ python tools/run.py verify --app tracer_core_shell --profile fast --scope batch 
    - `runtime-protocol.md`
    - `docs/time_tracer/architecture/libraries/tracer_transport.md`
 2. If config or bridge changes fail under `modules_on`, re-check:
-   - `docs/time_tracer/architecture/libraries/tracer_core.md`
-   - `apps/tracer_core_shell/api/c_api`
-   - `apps/tracer_core_shell/host`
+    - `docs/time_tracer/architecture/libraries/tracer_core.md`
+    - `docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md`
+    - `docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md`
+    - `apps/tracer_core_shell/api/c_api`
+    - `apps/tracer_core_shell/host`
 3. If stats or report output regresses, re-check:
-   - `contracts/stats/*`
-   - `libs/tracer_core/src/infra/query`
-   - `libs/tracer_core/src/infra/reports`
+    - `contracts/stats/*`
+    - `libs/tracer_core/src/infra/query`
+    - `libs/tracer_core/src/infra/reporting`

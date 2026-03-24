@@ -106,7 +106,7 @@ Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
    1. 将 `ProjectNameCache::EnsureLoaded` 改为每次刷新 DB 快照。
    2. 增加“项目表变化后缓存必须刷新”的回归测试。
 4. 相关代码：
-   1. `libs/tracer_core/src/infra/reports/data/cache/project_name_cache.hpp`
+   1. `libs/tracer_core/src/infra/reporting/data/cache/project_name_cache.hpp`
    2. `libs/tracer_core/src/infra/tests/android_runtime/android_runtime_business_regression_tests.cpp`
 
 ## 8. 变更要求

@@ -38,6 +38,8 @@ Provide first-pass routing across the four active architecture library docs.
 Open:
 
 1. [tracer_core](libraries/tracer_core.md)
+2. [`../core/architecture/tracer_core_capability_dependency_map.md`](../core/architecture/tracer_core_capability_dependency_map.md)
+3. [`../core/design/tracer_core_capability_boundary_contract.md`](../core/design/tracer_core_capability_boundary_contract.md)
 
 Read first if the change is shell-visible:
 
@@ -77,4 +79,4 @@ Open:
 1. Preferred focused entry:
    - `python tools/run.py validate --plan <plan_name> --paths <touched paths>`
 2. If the change touches shell-facing integration:
-   - `python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise`
+   - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`

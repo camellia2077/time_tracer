@@ -104,8 +104,8 @@ docs/time_tracer/
 ### AI 合作开发者
 在此感谢以下模型在重构与架构优化中提供的协助：
 * **Google**: Gemini 2.5 Pro, 3 Pro, 3 Flash, 3.1 Pro
-* **Anthropic**: Claude 4.5 Opus
-* **OpenAI**: GPT-5.2 Codex, 5.3 Codex
+* **Anthropic**: Claude 4.5 Opus, 4.6 Opus
+* **OpenAI**: GPT-5.2 Codex, 5.3 Codex ,5.4
 
 ---
 

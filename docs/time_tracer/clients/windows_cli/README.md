@@ -71,7 +71,7 @@ Provide the minimal navigation map for the Windows Rust CLI implementation under
 ## Validation
 
 ```powershell
-python tools/run.py verify --app tracer_core --scope batch --concise
+python tools/run.py verify --app tracer_core --concise
 ```
 
 If you need explicit build confirmation for the Windows runtime + Rust CLI:

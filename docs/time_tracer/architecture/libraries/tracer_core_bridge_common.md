@@ -58,7 +58,7 @@ Detailed navigation for the shared bridge-helper library.
 
 ```powershell
 python tools/run.py validate --plan <plan_name> --paths libs/tracer_core_bridge_common apps/tracer_core_shell libs/tracer_transport
-python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
+python tools/run.py verify --app tracer_core_shell --profile fast --concise
 ```
 
 ## Read-First Docs

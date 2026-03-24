@@ -49,7 +49,9 @@
 ## 4. 测试契约落点
 
 1. 套件入口：`test/suites/tracer_windows_rust_cli/tests.toml`
-2. 命令集：`test/suites/tracer_windows_rust_cli/tests/command_groups.toml`
+2. capability 命令集：
+   - `test/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `test/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml`
 3. 细分用例：
    - `commands_tree_version.toml`
    - `commands_query_data.toml`
@@ -61,5 +63,5 @@
 
 ```powershell
 python tools/run.py build --app tracer_windows_rust_cli --build-dir build_fast --runtime-platform windows
-python tools/run.py verify --app tracer_core --build-dir build_fast --scope artifact --concise
+python tools/run.py verify --app tracer_core --build-dir build_fast --concise
 ```

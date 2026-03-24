@@ -114,7 +114,7 @@ If the database already exists before the run:
 - `libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.cpp`
   validates write preconditions by checking path readiness instead of opening
   SQLite.
-- `libs/tracer_core/src/infra/reports/lazy_sqlite_report_query_service.*`
+- `libs/tracer_core/src/infra/reporting/lazy_sqlite_report_query_service.*`
   and `lazy_sqlite_report_data_query_service.*` keep report/query reads lazy and
   return explicit missing-database errors instead of silently creating a new
   database.

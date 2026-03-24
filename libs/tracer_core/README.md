@@ -20,10 +20,26 @@ Local entrypoint for agents touching the core business-logic library.
 1. [Detailed library doc](../../docs/time_tracer/architecture/libraries/tracer_core.md)
 2. [Library dependency map](../../docs/time_tracer/architecture/library_dependency_map.md)
 3. [Core agent onboarding](../../docs/time_tracer/core/specs/AGENT_ONBOARDING.md)
+4. [Capability dependency map](../../docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md)
+5. [Capability boundary contract](../../docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md)
+
+## Runtime Surface
+
+1. Aggregate application runtime surface:
+   - `ITracerCoreRuntime`
+   - `TracerCoreRuntime` only aggregates prebuilt capability APIs; host/runtime
+     wiring should stay outside this class
+   - shell/runtime bridge helpers now live under `src/application/runtime_bridge/**`,
+     not under capability-owned `application/ports/**`
+2. Capability entry points:
+   - `runtime.pipeline()`
+   - `runtime.query()`
+   - `runtime.report()`
+   - `runtime.tracer_exchange()`
 
 ## Validate
 
 ```powershell
-python tools/run.py validate --plan <plan_name> --paths libs/tracer_core apps/tracer_core_shell
-python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise
+python tools/run.py validate --plan tools/toolchain/config/validate/tracer_core_capabilities.toml --paths-file tools/toolchain/config/validate/pipeline.paths
+python tools/run.py verify --app tracer_core_shell --profile fast --concise
 ```

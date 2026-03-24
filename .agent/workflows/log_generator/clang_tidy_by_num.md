@@ -31,7 +31,7 @@ description: Agent policy for one numbered log_generator clang-tidy task
 - Only if the previews still show manual work:
   - fix that one task
   - keep changes minimal
-  - rerun task-scope verify
+  - rerun build sanity check
 - Prefer `automation/` reports over re-reading the raw task log repeatedly.
 
 ## Batch Close Policy (MUST)

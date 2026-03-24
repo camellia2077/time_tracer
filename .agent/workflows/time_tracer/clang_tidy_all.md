@@ -32,7 +32,7 @@ description: Agent policy for the full time_tracer clang-tidy queue
 
 ## Batch Policy (MUST)
 - `tidy-step` is the normal one-task close path:
-  - it runs task-scope verify
+  - it runs build sanity check
   - reruns focused clang-tidy on the selected task source
   - archives the matching `task_<TASK_ID>` artifact when that re-check is clean
 - Normal batch close path is `tidy-batch --preset sop`.

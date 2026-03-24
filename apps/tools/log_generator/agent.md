@@ -11,7 +11,7 @@ description: Build and test log_generator after code changes
 - This is the primary flow: it runs configure/build first, then runs the `test` suite automatically.
 
 2. Milestone/Release Verify (required)
-- `python tools/run.py verify --app log_generator --build-dir build_fast --scope batch --concise`
+- `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
 
 3. Optional Split Flow (for debugging only)
 - Configure:
@@ -19,7 +19,7 @@ description: Build and test log_generator after code changes
 - Build:
   - `python tools/run.py build --app log_generator --build-dir build_fast`
 - Run suite:
-  - `python tools/run.py verify --app log_generator --build-dir build_fast --scope artifact --concise`
+  - `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
 
 4. Validate Test Result (required)
 - State: `out/build/log_generator/build_fast/post_change_last.json`

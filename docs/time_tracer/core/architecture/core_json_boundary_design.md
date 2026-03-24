@@ -190,7 +190,7 @@ JSON 允许存在于以下边界层：
 
 1. `libs/tracer_core/src/domain/logic/validator/json/rules/json_rules.*`
    - 旧的 domain 层 JSON 结构校验链路。
-2. `libs/tracer_core/src/infra/reports/shared/utils/config/config_utils.*`
+2. `libs/tracer_core/src/infra/reporting/shared/utils/config/config_utils.*`
    - 未继续使用的旧 JSON 配置工具口子。
 3. `libs/tracer_core/src/infra/serialization/core/log_codec.*`
    - 旧的内部 JSON codec 头接口。

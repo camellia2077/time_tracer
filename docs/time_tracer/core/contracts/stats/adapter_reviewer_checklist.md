@@ -6,7 +6,7 @@
 1. 统计公式只在 `query/data/stats/` 修改。
 2. 时间范围解析只在 `query/data/orchestrators/` 修改。
 3. 文本/语义渲染只在 `query/data/renderers/` 修改。
-4. `sqlite_data_query_service*`、CLI、Android adapter 不新增统计公式实现。
+4. `query_runtime_service*`、CLI、Android adapter 不新增统计公式实现。
 
 ## B. 适配层改动检查
 1. CLI/Android 改动是否仅为参数映射、调用透传、响应解码、提示文案。

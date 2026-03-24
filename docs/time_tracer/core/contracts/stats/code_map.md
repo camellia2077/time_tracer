@@ -6,7 +6,7 @@
 1. 新增统计公式与派生指标优先落在 `libs/tracer_core/src/infra/query/data/stats/`。
 2. 新增时间范围解析与 action 编排优先落在 `libs/tracer_core/src/infra/query/data/orchestrators/`。
 3. 新增 `text/semantic_json` 输出逻辑优先落在 `libs/tracer_core/src/infra/query/data/renderers/`。
-4. `sqlite_data_query_service_*`、CLI、Android 路径仅承担入口适配职责，不新增业务统计实现。
+4. `query_runtime_service_*`、CLI、Android 路径仅承担入口适配职责，不新增业务统计实现。
 
 ## 契约与守卫文档（Phase 7/8）
 1. `docs/time_tracer/core/contracts/stats/report_chart_contract_v1.md`
@@ -16,10 +16,12 @@
 5. `docs/time_tracer/core/contracts/stats/adapter_reviewer_checklist.md`
 
 ## Core 契约层
-1. `libs/tracer_core/src/application/dto/core_requests.hpp`
+1. `libs/tracer_core/src/application/dto/query_requests.hpp`
    - `DataQueryRequest`、`DataQueryOutputMode` 契约定义。
-2. `libs/tracer_core/src/application/dto/core_responses.hpp`
-   - 通用文本响应结构（`TextOutput`）。
+2. `libs/tracer_core/src/application/dto/query_responses.hpp`
+   - 查询语义输出契约（含 tree/data query 响应模型）。
+3. `libs/tracer_core/src/application/dto/shared_envelopes.hpp`
+   - 通用文本响应结构（`TextOutput`）与共享 envelope。
 
 ## Core 查询与统计语义层
 1. `libs/tracer_core/src/infra/query/data/data_query_types.hpp`
@@ -44,11 +46,11 @@
 7. `libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.cpp`
 8. `libs/tracer_core/src/infra/query/data/orchestrators/tree_orchestrator.cpp`
    - data query action 编排与 period/range 解析。
-9. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_request.cpp`
+9. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_request.cpp`
    - 请求参数归一化、过滤参数解析与校验。
-10. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_dispatch.cpp`
+10. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
    - 轻量 action 路由（调用 orchestrators）。
-11. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
+11. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
    - `report-chart` 统计字段组装（平均值、总时长、活跃天数、范围天数）。
 
 ## Transport 层

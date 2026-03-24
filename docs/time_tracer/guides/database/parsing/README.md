@@ -16,14 +16,14 @@
 
 以 `query data tree` 为例，主链路如下：
 
-1. `SqliteDataQueryService::RunDataQuery(...)` 进入查询服务。
+1. `QueryRuntimeService::RunDataQuery(...)` 进入查询服务。
 2. 归一化周期参数并构建过滤器（步骤 1 + 2）。
 3. 执行 SQL、逐行读取（步骤 3）。
 4. 做语义投影后交给树生成算法（步骤 4 -> generation）。
 
 ## 3. 主源码入口
 
-- `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
+- `libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
 - `libs/tracer_core/src/infra/query/data/data_query_repository_sql.cpp`
 - `libs/tracer_core/src/infra/query/data/data_query_repository.cpp`
 

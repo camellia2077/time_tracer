@@ -47,11 +47,11 @@
 
 ### 4.1 Core adapter
 
-1. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
-2. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_request.cpp`
-3. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_dispatch.cpp`
-4. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
-5. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_period.cpp`
+1. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
+2. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_request.cpp`
+3. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
+4. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
+5. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_period.cpp`
 
 ### 4.2 Windows CLI adapter
 
@@ -72,10 +72,10 @@
 
 1. CLI 参数解析：`apps/cli/windows/src/api/cli/impl/commands/query/data_query_parser.cpp`
 2. CLI 转发 Core：`apps/cli/windows/src/bootstrap/cli_runtime_factory_proxy.cpp`
-3. Core 入口接收：`libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
-4. action 分发：`libs/tracer_core/src/infra/persistence/sqlite_data_query_service_dispatch.cpp`
+3. Core 入口接收：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
+4. action 分发：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
 5. 编排器：`libs/tracer_core/src/infra/query/data/orchestrators/report_chart_orchestrator.cpp`
-6. report-chart 语义组装：`libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
+6. report-chart 语义组装：`libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
 7. 统计计算：`libs/tracer_core/src/infra/query/data/stats/report_chart_stats_calculator.cpp`
 8. 输出渲染：`libs/tracer_core/src/infra/query/data/renderers/data_query_renderer.cpp`
 

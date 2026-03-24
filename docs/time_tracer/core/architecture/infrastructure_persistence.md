@@ -32,16 +32,20 @@ Time Tracer 在持久化 `time_records` 时，并未简单地把 `study_math_adv
   - 接着处理子项目 `night`，将其关联至父项目 ID。
 - 最终，解析器返回叶子节点的唯一 ID，由 `writer` 作为外键存入明细记录中。
 
-### 1.3 `DataQueryService` (基于关系型的强大检索阀)
-**核心基建**：`libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
+### 1.3 `persistence.runtime` 的边界
+`persistence.runtime` 现在只保留稳定的数据库运行时支撑，不再承载 query-owned 的主读服务入口。
 
-Time Tracer 除了高并发入库外，另一个终极场景就是“查询与导出”。
-我们支持了极其繁复的诸如 `query data period --from 2024-01-01 --to 2024-02-01 --filter study`。
+当前稳定 owner 包括：
 
-这些过滤法则如果全靠内存里的循环去比较不但耗时且极其不优雅（像极了早年直接读 TXT 算数的时候）。`infrastructure` 的这层将它们全部转化成了纯血的 SQL 查询：
+- `libs/tracer_core/src/infra/persistence/repositories/sqlite_project_repository.*`
+- `libs/tracer_core/src/infra/persistence/sqlite_database_health_checker.*`
+- `libs/tracer_core/src/infra/persistence/sqlite/db_manager.*`
 
-- **强大的聚合**：所有日报告的数据汇总（例如一天到底打了几小时游戏），不再走应用层计算，而是利用底层的 `SUM(case when ... then duration else 0 end)`，在极低消耗下借助 SQLite 的内部优化的执行计划迅速完成。
-- **组合化拼接框架**：底层封装了参数化绑定流，支持安全的动态 `WHERE` 语句拼接，完全杜绝了任何 SQL 注入的安全漏洞。
+`query data` 的主读服务入口已经对齐到 `query` owner 路径，由：
+
+- `libs/tracer_core/src/infra/query/data/repository/query_runtime_service.*`
+
+承接请求入口、action 分发与 query-specific read orchestration。
 
 ## 2. 数据库连接管理核心
 

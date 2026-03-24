@@ -137,9 +137,9 @@
 
 1. tracer_core_shell focused validate：
    - `python tools/run.py validate --plan <plan.toml> --paths <touched paths>`
-2. Shell quick batch verify：
-   - `python tools/run.py verify --app tracer_core_shell --profile fast --scope batch --concise`
+2. Shell full verify：
+   - `python tools/run.py verify --app tracer_core_shell --profile fast --concise`
 3. Android edit/build verify：
    - `python tools/run.py build --app tracer_android --profile android_edit`
 4. Android CI 样式单元回归：
-   - `python tools/run.py verify --app tracer_android --profile android_ci --scope unit --concise`
+   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`

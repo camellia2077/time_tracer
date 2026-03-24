@@ -55,7 +55,7 @@
 
 ## 代码落点
 1. Core 映射入口：
-   - `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
+   - `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
 2. Android 解析入口：
    - `apps/android/runtime/src/main/java/com/example/tracer/runtime/NativeRuntimeQueryParsing.kt`
 3. Windows 查询适配入口：

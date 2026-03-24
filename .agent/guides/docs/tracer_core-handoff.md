@@ -154,6 +154,6 @@ Read extra contract docs only when the touched path crosses that boundary:
 - Core code changes:
   `python tools/run.py validate --plan <plan> --paths-file <paths>`
 - Shell/runtime integration touched:
-  `python tools/run.py verify --app tracer_core_shell --scope batch --concise`
+  `python tools/run.py verify --app tracer_core_shell --concise`
 - Android host/runtime touched:
   `python tools/run.py build --app tracer_android --profile android_edit`

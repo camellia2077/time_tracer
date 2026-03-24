@@ -16,7 +16,7 @@ Windows CLI 当前交付实现为 Rust-only 版本。
 
 ```powershell
 # 阶段性批量验证
-python tools/run.py verify --app tracer_core --scope batch --concise
+python tools/run.py verify --app tracer_core --concise
 
 # 默认发布构建入口：先编 Windows runtime，再编 Rust CLI
 python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows

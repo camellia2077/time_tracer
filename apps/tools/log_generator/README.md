@@ -12,7 +12,7 @@ Run from repository root and prefer Python entry commands:
 - Daily one-command flow:
   - `python tools/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise`
 - Milestone/release flow:
-  - `python tools/run.py verify --app log_generator --build-dir build_fast --scope batch --concise`
+  - `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
 - Other operations:
   - `python tools/run.py ...`
 
@@ -37,7 +37,7 @@ This command is the primary flow: configure/build first, then run the
 ```powershell
 python tools/run.py configure --app log_generator --build-dir build_fast
 python tools/run.py build --app log_generator --build-dir build_fast
-python tools/run.py verify --app log_generator --build-dir build_fast --scope artifact --concise
+python tools/run.py verify --app log_generator --build-dir build_fast --concise
 ```
 
 ## Result Files and Logs

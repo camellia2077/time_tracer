@@ -12,6 +12,10 @@ trigger: always_on
     validate runs.
 - Build / test entry:
   - Use `python tools/run.py ...` as the default project build / verify / validate entry.
+  - Command semantics:
+    - `build` = compile artifacts only.
+    - `verify` = `build` + Python unit/component checks + suite + native smoke + applicable quality gates.
+    - `validate` = focused, path-scoped orchestration for refactor/change-local verification.
   - Do not use ad-hoc `cmake` / `ninja` wrappers unless the user explicitly asks for them.
   - Before using command flags, read help first:
     - `python tools/run.py -h`

@@ -1,11 +1,11 @@
 # Adapter Code Map (Stats/DataQuery)
 
 ## Core Adapter（入口适配）
-1. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service.cpp`
+1. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service.cpp`
    - 请求入口、action 分发起点、错误边界。
-2. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_dispatch.cpp`
+2. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_dispatch.cpp`
    - 轻量路由（调用 orchestrators）。
-3. `libs/tracer_core/src/infra/persistence/sqlite_data_query_service_report_mapping.cpp`
+3. `libs/tracer_core/src/infra/query/data/repository/query_runtime_service_report_mapping.cpp`
    - `report-chart` payload 组装，调用 `orchestrators + stats`。
 
 ## Windows CLI Adapter

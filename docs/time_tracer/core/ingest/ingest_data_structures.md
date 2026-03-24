@@ -7,7 +7,7 @@
 - `libs/tracer_core/src/domain/model/daily_log.hpp`
 - `libs/tracer_core/src/domain/model/time_data_models.hpp`
 - `libs/tracer_core/src/application/parser/memory_parser.cpp`
-- `libs/tracer_core/src/application/importer/model/import_models.hpp`
+- `libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`
 - `libs/tracer_core/src/infra/persistence/importer/sqlite/writer.cpp`
 
 相关算法文档：
@@ -118,7 +118,7 @@ txt 行文本
 
 ### 4.1 `DayData`
 
-文件：`libs/tracer_core/src/application/importer/model/import_models.hpp`
+文件：`libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`
 
 作用：`days` 表的入库模型。
 
@@ -133,7 +133,7 @@ txt 行文本
 
 ### 4.2 `TimeRecordInternal`
 
-文件：`libs/tracer_core/src/application/importer/model/import_models.hpp`
+文件：`libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`
 
 作用：`time_records` 表入库模型。
 
@@ -146,7 +146,7 @@ txt 行文本
 
 ### 4.3 `ParsedData`
 
-文件：`libs/tracer_core/src/application/importer/model/import_models.hpp`
+文件：`libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`
 
 作用：一次导入的批量入库数据包。
 

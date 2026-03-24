@@ -32,12 +32,12 @@ description: Agent policy for one numbered time_tracer clang-tidy task
 - Only if the previews still show manual work:
   - fix that one task
   - keep changes minimal
-  - rerun task-scope verify
+  - rerun build sanity check
 - Prefer `automation/` reports over re-reading the raw task log repeatedly.
 
 ## Batch Close Policy (MUST)
 - `tidy-step` is the normal close path for one task:
-  - it runs task-scope verify
+  - it runs build sanity check
   - reruns focused clang-tidy on the selected task source
   - archives the matching `task_<TASK_ID>` artifact when that re-check is clean
 - After that, close the batch with `tidy-batch --preset sop`.

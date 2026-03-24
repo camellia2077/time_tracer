@@ -13,6 +13,10 @@ and core-specific onboarding.
    - Architecture constraints and subsystem design docs.
 4. [Core Contracts Index](contracts/README.md)
    - External behavior contracts and stable payload definitions.
+5. [tracer_core Capability Dependency Map](architecture/tracer_core_capability_dependency_map.md)
+   - Authority map for `tracer_core` internal capability ownership and direct deps.
+6. [tracer_core Capability Boundary Contract](design/tracer_core_capability_boundary_contract.md)
+   - Engineering contract for owner paths, forbidden edges, and validate entrypoints.
 
 ## What Lives Here
 1. Domain model, business rules, and application orchestration docs.
@@ -32,15 +36,19 @@ and core-specific onboarding.
 1. C ABI or runtime boundary behavior:
    - [contracts/c_abi.md](contracts/c_abi.md)
    - [../clients/android_ui/runtime-protocol.md](../clients/android_ui/runtime-protocol.md)
-2. Core use case, workflow, reporting tree, or config ownership changes:
+2. Core use case, workflow, query tree, or config ownership changes:
    - [specs/AGENT_ONBOARDING.md](specs/AGENT_ONBOARDING.md)
    - [../architecture/libraries/tracer_core.md](../architecture/libraries/tracer_core.md)
+   - [architecture/tracer_core_capability_dependency_map.md](architecture/tracer_core_capability_dependency_map.md)
+   - [design/tracer_core_capability_boundary_contract.md](design/tracer_core_capability_boundary_contract.md)
 3. Query/report payload or chart output changes:
    - [contracts/stats/README.md](contracts/stats/README.md)
    - [contracts/reporting/report_data_consistency_spec_v1.md](contracts/reporting/report_data_consistency_spec_v1.md)
 4. JSON boundary changes:
    - [architecture/core_json_boundary_design.md](architecture/core_json_boundary_design.md)
 5. Module-boundary refactors:
+   - [architecture/tracer_core_capability_dependency_map.md](architecture/tracer_core_capability_dependency_map.md)
+   - [design/tracer_core_capability_boundary_contract.md](design/tracer_core_capability_boundary_contract.md)
    - [architecture/refactor_module_boundaries.md](architecture/refactor_module_boundaries.md)
    - [architecture/tracer_core_identity_and_boundary.md](architecture/tracer_core_identity_and_boundary.md)
 

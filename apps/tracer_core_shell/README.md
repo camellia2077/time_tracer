@@ -17,7 +17,7 @@ Current phase:
 - Preferred daily validation:
   - `python tools/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
 - Milestone / batch validation:
-  - `python tools/run.py verify --app tracer_core_shell --quick --scope batch --concise`
+  - `python tools/run.py verify --app tracer_core_shell --concise`
 - Result files:
   - `out/build/tracer_core_shell/build_fast/post_change_last.json`
   - `out/test/artifact_windows_cli/result.json`

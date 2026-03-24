@@ -27,16 +27,20 @@
    - Application 层架构：流水线编排驱动、前后解析器降维处理（TextParser & MemoryParser）、Ports 防腐层映射。
 4. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
    - Infrastructure 持久层架构：SQLite 高速直接入库（Writer）、动态生成层级项目树（Project Resolver）、基于关联型数据库构建底层聚合查询（DataQueryService）与依赖隔离。
-5. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
-6. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
+5. `docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md`
+   - `tracer_core` 内部 capability 的权威依赖图与 validate 入口映射。
+6. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
+7. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
    - Core 分层与模块边界重构与开发规则说明。
-7. `docs/time_tracer/core/design/ingest-persistence-boundary.md`
+8. `docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md`
+   - `tracer_core` capability owner 路径、允许依赖、禁止边界与达标条件。
+9. `docs/time_tracer/core/design/ingest-persistence-boundary.md`
    - Ingest 持久化边界规则：只有全部校验通过后，才允许创建数据库并写入。
-2. `docs/time_tracer/core/architecture/data_query/README.md`
+10. `docs/time_tracer/core/architecture/data_query/README.md`
    - DataQuery 子域总览与阅读顺序。
-3. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
+11. `docs/time_tracer/core/architecture/data_query/data_query_refactor_completion_v1.md`
    - DataQuery 重构收口结果与稳定化约束。
-4. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
+12. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
    - 按职责边界拆分后的代码落点（含 Core/CLI/Android 路径）。
-5. `docs/time_tracer/core/architecture/tracer_core_identity_and_boundary.md`
+13. `docs/time_tracer/core/architecture/tracer_core_identity_and_boundary.md`
    - `tracer_core` 对外标识、apps/libs 语义边界与脚本/CI 一致性基线。

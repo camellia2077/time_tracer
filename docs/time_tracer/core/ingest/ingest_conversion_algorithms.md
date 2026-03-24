@@ -8,12 +8,12 @@
 
 权威代码入口（以实现为准）：
 - `libs/tracer_core/src/application/parser/text_parser.cpp`
-- `libs/tracer_core/src/application/service/converter_service.cpp`
+- `libs/tracer_core/src/application/pipeline/converter/converter_service.cpp`
 - `libs/tracer_core/src/domain/logic/converter/convert/core/converter_core.cpp`
 - `libs/tracer_core/src/domain/logic/converter/log_processor.cpp`
 - `libs/tracer_core/src/application/pipeline/steps/pipeline_stages.cpp`
 - `libs/tracer_core/src/application/parser/memory_parser.cpp`
-- `libs/tracer_core/src/application/importer/model/import_models.hpp`
+- `libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`
 
 ## 1. 输入与输出
 
@@ -76,7 +76,7 @@ txt
 该设计保证跨天逻辑可在单遍扫描内完成，不需要全量回看历史。
 
 源码定位：
-- `libs/tracer_core/src/application/service/converter_service.cpp`：`ConverterService::ExecuteConversion(...)`
+- `libs/tracer_core/src/application/pipeline/converter/converter_service.cpp`：`ConverterService::ExecuteConversion(...)`
 
 ## 5. DayProcessor：RawEvent 转 BaseActivityRecord
 
@@ -160,7 +160,7 @@ txt
 
 源码定位：
 - `libs/tracer_core/src/application/parser/memory_parser.cpp`：`MemoryParser::Parse(...)`
-- `libs/tracer_core/src/application/importer/model/import_models.hpp`：`ParsedData`、`DayData`、`TimeRecordInternal`
+- `libs/tracer_core/src/application/pipeline/importer/model/import_models.hpp`：`ParsedData`、`DayData`、`TimeRecordInternal`
 
 ## 9. 关键特性总结
 
