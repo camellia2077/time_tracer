@@ -43,3 +43,18 @@ class TestVerifyMarkdownGateRunner(TestCase):
         self.assertTrue(
             any("collect_report_markdown_cases.py" in command for command in called_commands)
         )
+
+    def test_shell_aggregate_skips_reporting_markdown_gates(self):
+        mocked_run = Mock(return_value=0)
+
+        result = run_report_markdown_gates(
+            repo_root=REPO_ROOT,
+            setup_env_fn=lambda: {},
+            run_command_fn=mocked_run,
+            app_name="tracer_core_shell",
+            build_dir_name="build_fast",
+            profile_name="shell_aggregate",
+        )
+
+        self.assertEqual(result, 0)
+        mocked_run.assert_not_called()

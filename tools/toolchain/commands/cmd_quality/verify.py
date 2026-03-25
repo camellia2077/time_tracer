@@ -15,6 +15,7 @@ from .verify_internal.verify_command_text import build_verify_command_text
 from .verify_internal.verify_markdown_gate_runner import run_report_markdown_gates
 from .verify_internal.verify_native_runner import run_native_core_runtime_tests
 from .verify_internal.verify_pipeline import run_artifact_pipeline
+from .verify_internal.verify_profile_inference import infer_verify_profiles
 from .verify_internal.verify_profile_policy import resolve_suite_config_override
 from .verify_internal.verify_result_writer import write_build_only_result_json
 from .verify_internal.verify_suite_runner import build_suite_test_command
@@ -86,6 +87,108 @@ class VerifyCommand:
         kill_build_procs: bool = False,
         run_command_fn=None,
     ) -> int:
+        if profile_name or app_name not in {"tracer_core", "tracer_core_shell"}:
+            return self._execute_single(
+                app_name=app_name,
+                tidy=tidy,
+                extra_args=extra_args,
+                cmake_args=cmake_args,
+                build_dir_name=build_dir_name,
+                profile_name=profile_name,
+                concise=concise,
+                kill_build_procs=kill_build_procs,
+                run_command_fn=run_command_fn,
+                skip_unit_checks=False,
+            )
+
+        inference = infer_verify_profiles(self.ctx.repo_root)
+        if inference.fallback_to_fast:
+            print(f"--- verify: falling back to profile `fast`: {inference.reason}")
+            return self._execute_single(
+                app_name=app_name,
+                tidy=tidy,
+                extra_args=extra_args,
+                cmake_args=cmake_args,
+                build_dir_name=build_dir_name,
+                profile_name="fast",
+                concise=concise,
+                kill_build_procs=kill_build_procs,
+                run_command_fn=run_command_fn,
+                skip_unit_checks=False,
+            )
+
+        if len(inference.profiles) == 1:
+            print(f"--- verify: inferred focused profile `{inference.profiles[0]}`")
+            return self._execute_single(
+                app_name=app_name,
+                tidy=tidy,
+                extra_args=extra_args,
+                cmake_args=cmake_args,
+                build_dir_name=build_dir_name,
+                profile_name=inference.profiles[0],
+                concise=concise,
+                kill_build_procs=kill_build_procs,
+                run_command_fn=run_command_fn,
+                skip_unit_checks=False,
+            )
+
+        effective_run_command = run_command if run_command_fn is None else run_command_fn
+        inferred_profiles = ", ".join(inference.profiles)
+        print(f"--- verify: inferred focused profiles: {inferred_profiles}")
+        unit_ret = self.run_unit_scope_checks(run_command_fn=effective_run_command)
+        if unit_ret != 0:
+            self._report_verify_failure(
+                app_name=app_name,
+                command_text=self._build_verify_command_text(
+                    app_name=app_name,
+                    profile_name=None,
+                    build_dir_name=build_dir_name,
+                    concise=concise,
+                    tidy=tidy,
+                    kill_build_procs=kill_build_procs,
+                    cmake_args=cmake_args,
+                ),
+                exit_code=unit_ret,
+                stage="verify-unit",
+            )
+            print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
+            return unit_ret
+
+        for index, inferred_profile in enumerate(inference.profiles, start=1):
+            print(
+                f"--- verify: running inferred profile [{index}/{len(inference.profiles)}] "
+                f"`{inferred_profile}`"
+            )
+            ret = self._execute_single(
+                app_name=app_name,
+                tidy=tidy,
+                extra_args=extra_args,
+                cmake_args=cmake_args,
+                build_dir_name=build_dir_name,
+                profile_name=inferred_profile,
+                concise=concise,
+                kill_build_procs=kill_build_procs,
+                run_command_fn=run_command_fn,
+                skip_unit_checks=True,
+            )
+            if ret != 0:
+                return ret
+        return 0
+
+    def _execute_single(
+        self,
+        *,
+        app_name: str,
+        tidy: bool = False,
+        extra_args: list[str] | None = None,
+        cmake_args: list[str] | None = None,
+        build_dir_name: str | None = None,
+        profile_name: str | None = None,
+        concise: bool = False,
+        kill_build_procs: bool = False,
+        run_command_fn=None,
+        skip_unit_checks: bool = False,
+    ) -> int:
         started_at = time.monotonic()
         effective_run_command = run_command if run_command_fn is None else run_command_fn
         verify_command_text = self._build_verify_command_text(
@@ -130,28 +233,29 @@ class VerifyCommand:
         if early_exit is not None:
             return int(early_exit)
 
-        unit_ret = self.run_unit_scope_checks(
-            run_command_fn=effective_run_command,
-        )
-        if unit_ret != 0:
-            if not suite_name:
-                self._write_build_only_result_json(
-                    app_name=app_name,
-                    build_dir_name=resolved_build_dir_name,
-                    success=False,
-                    exit_code=unit_ret,
-                    duration_seconds=time.monotonic() - started_at,
-                    error_message="Unit verification failed.",
-                    build_only=True,
-                )
-            self._report_verify_failure(
-                app_name=app_name,
-                command_text=verify_command_text,
-                exit_code=unit_ret,
-                stage="verify-unit",
+        if not skip_unit_checks:
+            unit_ret = self.run_unit_scope_checks(
+                run_command_fn=effective_run_command,
             )
-            print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
-            return unit_ret
+            if unit_ret != 0:
+                if not suite_name:
+                    self._write_build_only_result_json(
+                        app_name=app_name,
+                        build_dir_name=resolved_build_dir_name,
+                        success=False,
+                        exit_code=unit_ret,
+                        duration_seconds=time.monotonic() - started_at,
+                        error_message="Unit verification failed.",
+                        build_only=True,
+                    )
+                self._report_verify_failure(
+                    app_name=app_name,
+                    command_text=verify_command_text,
+                    exit_code=unit_ret,
+                    stage="verify-unit",
+                )
+                print_result_paths(app_name=app_name, repo_root=self.ctx.repo_root)
+                return unit_ret
 
         artifact_ret = self.run_artifact_scope_checks(
             app_name=app_name,

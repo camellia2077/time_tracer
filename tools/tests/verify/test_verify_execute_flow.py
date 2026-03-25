@@ -1,6 +1,11 @@
+import io
+from contextlib import redirect_stderr, redirect_stdout
 from unittest.mock import patch
 
 from .test_verify_fixtures import VerifyCommand, VerifyCommandTestBase, make_fake_build_command
+from tools.toolchain.commands.cmd_quality.verify_internal.verify_profile_inference import (
+    VerifyProfileInference,
+)
 
 
 class TestVerifyExecuteFlow(VerifyCommandTestBase):
@@ -24,9 +29,20 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 return Path(__file__).resolve().parents[3] / "out" / "fake" / "build.log"
 
         with patch("tools.toolchain.commands.cmd_quality.verify.BuildCommand", FakeBuildCommand):
-            with patch(
-                "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
-            ) as mocked_run:
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                    return_value=VerifyProfileInference(
+                        changed_paths=(),
+                        profiles=("fast",),
+                        fallback_to_fast=True,
+                        reason="test fallback",
+                    ),
+                ),
+                patch(
+                    "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
+                ) as mocked_run,
+            ):
                 result = self.execute_silently(
                     app_name="tracer_core",
                     build_dir_name="build_fast",
@@ -62,6 +78,15 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
             patch(
                 "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
                 make_fake_build_command(exit_code=0),
+            ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=(),
+                    profiles=("fast",),
+                    fallback_to_fast=True,
+                    reason="test fallback",
+                ),
             ),
             patch.object(
                 VerifyCommand,
@@ -153,6 +178,15 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
                 make_fake_build_command(exit_code=0),
             ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=(),
+                    profiles=("fast",),
+                    fallback_to_fast=True,
+                    reason="test fallback",
+                ),
+            ),
             patch.object(
                 VerifyCommand,
                 "run_unit_scope_checks",
@@ -179,6 +213,15 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                 "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
                 make_fake_build_command(exit_code=0),
             ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=(),
+                    profiles=("fast",),
+                    fallback_to_fast=True,
+                    reason="test fallback",
+                ),
+            ),
             patch.object(
                 VerifyCommand,
                 "run_unit_scope_checks",
@@ -198,3 +241,117 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertEqual(result, 7)
         mocked_unit.assert_called_once()
         mocked_artifact.assert_not_called()
+
+    def test_execute_runs_multiple_inferred_profiles_after_one_unit_check(self):
+        with (
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
+                make_fake_build_command(exit_code=0),
+            ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=("apps/tracer_core_shell/api/c_api/capabilities/query/x.cpp",),
+                    profiles=("cap_query", "shell_aggregate"),
+                    fallback_to_fast=False,
+                    reason="all changed paths mapped to focused profiles",
+                ),
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ) as mocked_unit,
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ) as mocked_artifact,
+        ):
+            result = self.execute_silently(
+                app_name="tracer_core_shell",
+                build_dir_name="build_fast",
+            )
+
+        self.assertEqual(result, 0)
+        mocked_unit.assert_called_once()
+        self.assertEqual(mocked_artifact.call_count, 2)
+        self.assertEqual(
+            [call.kwargs["profile_name"] for call in mocked_artifact.call_args_list],
+            ["cap_query", "shell_aggregate"],
+        )
+
+    def test_execute_reports_single_inferred_profile(self):
+        stdout = io.StringIO()
+        with (
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
+                make_fake_build_command(exit_code=0),
+            ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=("apps/tracer_core_shell/api/c_api/capabilities/query/x.cpp",),
+                    profiles=("cap_query",),
+                    fallback_to_fast=False,
+                    reason="all changed paths mapped to focused profiles",
+                ),
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ),
+            redirect_stdout(stdout),
+            redirect_stderr(io.StringIO()),
+        ):
+            result = self.command.execute(
+                app_name="tracer_core_shell",
+                build_dir_name="build_fast",
+            )
+
+        self.assertEqual(result, 0)
+        self.assertIn("inferred focused profile `cap_query`", stdout.getvalue())
+
+    def test_execute_reports_fast_fallback_reason(self):
+        stdout = io.StringIO()
+        with (
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.BuildCommand",
+                make_fake_build_command(exit_code=0),
+            ),
+            patch(
+                "tools.toolchain.commands.cmd_quality.verify.infer_verify_profiles",
+                return_value=VerifyProfileInference(
+                    changed_paths=("apps/tracer_core_shell/cmake/CoreTargets.cmake",),
+                    profiles=("fast",),
+                    fallback_to_fast=True,
+                    reason="shared/build-system paths require profile `fast`: apps/tracer_core_shell/cmake/coretargets.cmake",
+                ),
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_unit_scope_checks",
+                return_value=0,
+            ),
+            patch.object(
+                VerifyCommand,
+                "run_artifact_scope_checks",
+                return_value=0,
+            ),
+            redirect_stdout(stdout),
+            redirect_stderr(io.StringIO()),
+        ):
+            result = self.command.execute(
+                app_name="tracer_core_shell",
+                build_dir_name="build_fast",
+            )
+
+        self.assertEqual(result, 0)
+        self.assertIn("falling back to profile `fast`", stdout.getvalue())
+        self.assertIn("shared/build-system", stdout.getvalue())

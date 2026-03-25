@@ -8,6 +8,7 @@ _TRACER_WINDOWS_RUST_CLI_PROFILE_CONFIGS = {
     "cap_config": "config_cap_config.toml",
     "cap_persistence_runtime": "config_cap_persistence_runtime.toml",
     "cap_persistence_write": "config_cap_persistence_write.toml",
+    "shell_aggregate": "config_shell_aggregate.toml",
 }
 
 
@@ -18,6 +19,9 @@ def should_run_reporting_markdown_gates(profile_name: str | None) -> bool:
 
     if normalized_profile == "cap_reporting":
         return True
+
+    if normalized_profile == "shell_aggregate":
+        return False
 
     return not normalized_profile.startswith("cap_")
 

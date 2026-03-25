@@ -14,42 +14,42 @@ jobs:
     name: detect-changes
     runs-on: ubuntu-latest
     outputs:
-      run_heavy_verify: ${{ steps.decide.outputs.run_heavy_verify }}
+      run_heavy_verify: ${{ steps.capability.outputs.run_heavy_verify }}
+      run_capability_smoke: ${{ steps.capability.outputs.run_capability_smoke }}
+      capability_matrix: ${{ steps.capability.outputs.capability_matrix }}
+      capability_reason: ${{ steps.capability.outputs.capability_reason }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Filter changed paths
-        id: filter
-        if: github.event_name == 'push' || github.event_name == 'pull_request'
-        uses: dorny/paths-filter@v3
         with:
-          filters: |
-            code:
-              - 'apps/**'
-              - 'libs/**'
-              - 'tools/**'
-              - 'test/**'
-              - 'assets/**'
-              - 'cmake/**'
-              - '.github/workflows/**'
-              - '.gitignore'
-              - '.gitattributes'
-              - '.clang-format'
-              - '.clang-tidy'
-              - 'pyproject.toml'
+          fetch-depth: 0
 
-      - name: Decide whether to run heavy verify
-        id: decide
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compute capability smoke profiles
+        id: capability
         shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.sha }}
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" || "${{ github.event_name }}" == "schedule" ]]; then
-            echo "run_heavy_verify=true" >> "$GITHUB_OUTPUT"
-          elif [[ "${{ steps.filter.outputs.code }}" == "true" ]]; then
-            echo "run_heavy_verify=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "run_heavy_verify=false" >> "$GITHUB_OUTPUT"
-          fi
+          PAYLOAD="$(python tools/toolchain/ci/capability_smoke_profiles.py --repo-root . --event-name "$EVENT_NAME" --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA")"
+          export PAYLOAD
+          echo "payload=${PAYLOAD}"
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+import json
+import os
+
+payload = json.loads(os.environ["PAYLOAD"])
+print(f"run_heavy_verify={'true' if payload['run_heavy_verify'] else 'false'}")
+print(f"run_capability_smoke={'true' if payload['run_capability_smoke'] else 'false'}")
+print(f"capability_matrix={payload['matrix']}")
+print(f"capability_reason={payload['reason']}")
+PY
 
   prepare-windows-matrix:
     name: prepare-windows-matrix
@@ -72,12 +72,55 @@ jobs:
           MATRIX_JSON="$(python tools/toolchain/ci/windows_matrix.py --config tools/toolchain/config/build.toml)"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
+  windows-capability-smoke:
+    needs:
+      - detect-changes
+    if: needs.detect-changes.outputs.run_capability_smoke == 'true'
+    name: capability-smoke (${{ matrix.profile }})
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.detect-changes.outputs.capability_matrix) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Setup MSYS2 UCRT64 Toolchain
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            mingw-w64-ucrt-x86_64-clang
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ccache
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-ninja
+            mingw-w64-ucrt-x86_64-nlohmann-json
+
+      - name: Add UCRT64 Bin To PATH
+        shell: pwsh
+        run: |
+          "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Focused capability verify
+        shell: pwsh
+        run: |
+          python tools/run.py verify --app tracer_core_shell --profile ${{ matrix.profile }} --build-dir build_fast --concise
+
   windows-matrix:
     needs:
       - detect-changes
       - prepare-windows-matrix
+      - windows-capability-smoke
     name: ${{ matrix.job_name }}
     runs-on: windows-latest
+    if: ${{ always() && (needs.detect-changes.outputs.run_heavy_verify == 'true' || needs.detect-changes.outputs.run_heavy_verify == 'false') && (needs.windows-capability-smoke.result == 'success' || needs.windows-capability-smoke.result == 'skipped' || needs.windows-capability-smoke.result == '') }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false

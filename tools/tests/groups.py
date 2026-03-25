@@ -11,7 +11,9 @@ VERIFY_STACK_TESTS: tuple[str, ...] = (
     "tools.tests.validate.test_validate_plan",
     "tools.tests.validate.test_validate_command",
     "tools.tests.validate.test_validate_cli_handler",
+    "tools.tests.verify.test_capability_smoke_profiles",
     "tools.tests.verify.test_verify_markdown_gate_runner",
+    "tools.tests.verify.test_verify_profile_inference",
     "tools.tests.verify.test_verify_native_runner",
     "tools.tests.verify.test_verify_run_tests",
     "tools.tests.verify.test_verify_execute_flow",
@@ -36,7 +38,9 @@ VALIDATE_TESTS: tuple[str, ...] = (
 )
 
 VERIFY_TESTS: tuple[str, ...] = (
+    "tools.tests.verify.test_capability_smoke_profiles",
     "tools.tests.verify.test_verify_markdown_gate_runner",
+    "tools.tests.verify.test_verify_profile_inference",
     "tools.tests.verify.test_verify_native_runner",
     "tools.tests.verify.test_verify_run_tests",
     "tools.tests.verify.test_verify_execute_flow",

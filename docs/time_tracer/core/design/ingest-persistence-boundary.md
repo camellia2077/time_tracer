@@ -105,7 +105,7 @@ If the database already exists before the run:
 
 ## Implementation Snapshot (2026-03-07)
 
-- `apps/tracer_core_shell/host/android_runtime_factory.cpp` keeps runtime
+- `apps/tracer_core_shell/host/bootstrap/android_runtime_factory.cpp` keeps runtime
   bootstrap side-effect free with respect to ingest persistence and no longer
   bootstraps SQLite during runtime creation.
 - `libs/tracer_core/src/infra/persistence/importer/repository.*`

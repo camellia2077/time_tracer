@@ -105,3 +105,25 @@ class TestVerifyRunTests(VerifyCommandTestBase):
         self.assertIsNotNone(called_cmd)
         self.assertIn("--config", called_cmd)
         self.assertIn("config_cap_query.toml", called_cmd)
+
+    def test_run_tests_shell_aggregate_uses_shell_suite_config(self):
+        with patch(
+            "tools.toolchain.commands.cmd_quality.verify.run_command", return_value=0
+        ) as mocked_run:
+            result = self.run_tests_silently(
+                app_name="tracer_core_shell",
+                build_dir_name="build_fast",
+                profile_name="shell_aggregate",
+                concise=True,
+            )
+
+        self.assertEqual(result, 0)
+        called_cmd = None
+        for call in mocked_run.call_args_list:
+            cmd = call.args[0]
+            if "--suite" in cmd and "artifact_windows_cli" in cmd:
+                called_cmd = cmd
+                break
+        self.assertIsNotNone(called_cmd)
+        self.assertIn("--config", called_cmd)
+        self.assertIn("config_shell_aggregate.toml", called_cmd)

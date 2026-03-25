@@ -8,10 +8,11 @@ from ....services.suite_registry import resolve_result_output_name
 
 _DEFAULT_NATIVE_TESTS = [
     "tc_c_api_smoke_tests",
-    "tc_c_api_stability_tests",
+    "tc_c_api_shell_aggregate_tests",
     "tt_aggregate_runtime_tests",
     "tc_app_aggregate_runtime_smoke_tests",
     "tt_android_runtime_shell_smoke_tests",
+    "tt_file_crypto_runtime_bridge_tests",
 ]
 
 _PROFILE_NATIVE_TESTS = {
@@ -20,23 +21,26 @@ _PROFILE_NATIVE_TESTS = {
         "tc_app_pipeline_mod_smoke_tests",
         "tc_app_workflow_mod_smoke_tests",
         "tt_android_runtime_pipeline_regression_tests",
+        "tc_c_api_pipeline_tests",
     ],
     "cap_query": [
         "tt_query_api_tests",
         "tc_app_query_mod_smoke_tests",
         "tc_query_infra_smoke_tests",
         "tt_android_runtime_query_tests",
+        "tc_c_api_query_tests",
     ],
     "cap_reporting": [
         "tt_reporting_api_tests",
         "tc_reporting_infra_smoke_tests",
         "tt_fmt_parity_tests",
         "tt_android_runtime_reporting_tests",
+        "tc_c_api_reporting_tests",
     ],
     "cap_exchange": [
         "tt_exchange_api_tests",
         "tc_exchange_infra_smoke_tests",
-        "tt_file_crypto_tests",
+        "tt_exchange_runtime_tests",
     ],
     "cap_config": [
         "tc_config_infra_smoke_tests",
@@ -47,6 +51,14 @@ _PROFILE_NATIVE_TESTS = {
     ],
     "cap_persistence_write": [
         "tc_persistence_write_infra_smoke_tests",
+    ],
+    "shell_aggregate": [
+        "tc_c_api_smoke_tests",
+        "tc_c_api_shell_aggregate_tests",
+        "tt_aggregate_runtime_tests",
+        "tc_app_aggregate_runtime_smoke_tests",
+        "tt_android_runtime_shell_smoke_tests",
+        "tt_file_crypto_runtime_bridge_tests",
     ],
 }
 

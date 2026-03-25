@@ -196,10 +196,20 @@
 
 ## Implementation Notes (Non-Contract)
 1. Core C ABI implementation is split by operation domain to reduce single-TU coupling:
-   - `time_tracer_core_c_api.cpp`: base/runtime lifecycle and capability entry
-   - `time_tracer_core_c_api_workflow.cpp`: ingest/convert/import/validate
-   - `time_tracer_core_c_api_reporting.cpp`: query/report/export/tree
-   - `time_tracer_core_c_api_internal.cpp`: shared parsing/error/response helpers
+   - `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`:
+     stable ABI facade and shared export entry
+   - `apps/tracer_core_shell/api/c_api/capabilities/pipeline/tracer_core_c_api_pipeline.cpp`:
+     ingest/convert/import/validate
+   - `apps/tracer_core_shell/api/c_api/capabilities/query/tracer_core_c_api_query.cpp`:
+     query/tree
+   - `apps/tracer_core_shell/api/c_api/capabilities/reporting/tracer_core_c_api_reporting.cpp`:
+     report/report_batch/export
+   - `apps/tracer_core_shell/api/c_api/capabilities/exchange/tracer_core_c_api_exchange.cpp`:
+     exchange inspect
+   - `apps/tracer_core_shell/api/c_api/capabilities/config/tracer_core_c_api_runtime_config.cpp`:
+     runtime check/resolve cli context
+   - `apps/tracer_core_shell/api/c_api/runtime/*.cpp`:
+     shared parsing/error/response helpers and direct file-crypto bridge
 2. This split is internal and does not change exported ABI names.
 
 ## Host Integration Notes

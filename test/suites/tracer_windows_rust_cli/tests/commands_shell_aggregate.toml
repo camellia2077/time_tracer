@@ -1,0 +1,156 @@
+[[commands]]
+name = "Version Check"
+stage = "version"
+args = ["--version"]
+expect_exit = 0
+expect_stdout_regex = [
+  "(?m)^time_tracer_cli\\s+\\S+$",
+]
+
+[[commands]]
+name = "Global Help"
+stage = "version"
+args = ["--help"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Rust CLI shell for time tracer",
+  "Usage: time_tracer_cli.exe [OPTIONS] <COMMAND>",
+  "Commands:",
+  "query",
+  "chart",
+  "pipeline",
+  "report",
+  "exchange",
+  "licenses",
+  "Options:",
+  "-v, --version",
+  "-h, --help",
+]
+
+[[commands]]
+name = "Project License"
+stage = "version"
+args = ["--license"]
+expect_exit = 0
+expect_stdout_contains = [
+  "TimeTracer project license: Apache License 2.0",
+  "Run `licenses`",
+]
+
+[[commands]]
+name = "Third-party Licenses Summary"
+stage = "version"
+args = ["licenses"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Third-party licenses (summary):",
+  "nlohmann/json",
+  "clap",
+]
+
+[[commands]]
+name = "Third-party Licenses Full"
+stage = "version"
+args = ["licenses", "--full"]
+expect_exit = 0
+expect_stdout_contains = [
+  "Third-party licenses (full):",
+  "License URL: https://www.apache.org/licenses/LICENSE-2.0",
+]
+
+[[commands]]
+name = "Tracer Easter Egg"
+stage = "version"
+args = ["tracer"]
+expect_exit = 0
+expect_stdout_contains = ["timetracer is here"]
+
+[[commands]]
+name = "Motto Easter Egg"
+stage = "version"
+args = ["motto"]
+expect_exit = 0
+expect_stdout_contains = ["Trace your time, log your life."]
+
+[[commands]]
+name = "Doctor Check"
+stage = "version"
+args = ["doctor"]
+expect_exit = 0
+expect_stdout_contains = ["Runtime Doctor", "Summary: required"]
+
+[[commands]]
+name = "Unknown Command Returns CommandNotFound"
+stage = "failure"
+args = ["unknown_cmd"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'unknown_cmd'."]
+
+[[commands]]
+name = "Legacy Pre Command Removed"
+stage = "failure"
+args = ["pre"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'pre'."]
+
+[[commands]]
+name = "Legacy Blink Alias Removed"
+stage = "failure"
+args = ["blink", "--db", "{db_path}"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'blink'."]
+
+[[commands]]
+name = "Legacy Zen Alias Removed"
+stage = "failure"
+args = ["zen"]
+expect_exit = 2
+expect_error_code = "cli.command_not_found"
+expect_error_category = "cli"
+expect_hints_contains = ["Run with --help to see available commands."]
+expect_stderr_contains = ["Unknown command 'zen'."]
+
+[[commands]]
+name = "Query Invalid Subcommand Returns InvalidArguments"
+stage = "failure"
+args = ["query", "foo", "20260101", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = [
+  "unrecognized subcommand 'foo'",
+  "Usage: time_tracer_cli.exe query",
+]
+
+[[commands]]
+name = "Query Tree Invalid Level Returns InvalidArguments"
+stage = "failure"
+args = ["query", "tree", "-l", "abc", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = [
+  "invalid value 'abc' for '--level <LEVEL>'",
+  "For more information, try '--help'.",
+]
+
+[[commands]]
+name = "Report Export Missing Day Argument Returns InvalidArguments"
+stage = "failure"
+args = ["report", "export", "day", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`report export day` requires <argument>."]

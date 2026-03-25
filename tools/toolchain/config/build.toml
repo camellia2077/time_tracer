@@ -32,30 +32,78 @@ description = "Fast local verification profile."
 [build.profiles.cap_pipeline]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core pipeline surfaces."
+build_targets = [
+    "tt_pipeline_api_tests",
+    "tc_app_pipeline_mod_smoke_tests",
+    "tc_app_workflow_mod_smoke_tests",
+    "tt_android_runtime_pipeline_regression_tests",
+    "tc_c_api_pipeline_tests",
+]
 
 [build.profiles.cap_query]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core query surfaces."
+build_targets = [
+    "tt_query_api_tests",
+    "tc_app_query_mod_smoke_tests",
+    "tc_query_infra_smoke_tests",
+    "tt_android_runtime_query_tests",
+    "tc_c_api_query_tests",
+]
 
 [build.profiles.cap_reporting]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core reporting surfaces."
+build_targets = [
+    "tt_reporting_api_tests",
+    "tc_reporting_infra_smoke_tests",
+    "tt_fmt_parity_tests",
+    "tt_android_runtime_reporting_tests",
+    "tc_c_api_reporting_tests",
+]
 
 [build.profiles.cap_exchange]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core exchange surfaces."
+build_targets = [
+    "tt_exchange_api_tests",
+    "tc_exchange_infra_smoke_tests",
+    "tt_exchange_runtime_tests",
+]
 
 [build.profiles.cap_config]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core config surfaces."
+build_targets = [
+    "tc_config_infra_smoke_tests",
+    "tt_android_runtime_config_tests",
+]
 
 [build.profiles.cap_persistence_runtime]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core persistence runtime surfaces."
+build_targets = [
+    "tc_persistence_runtime_infra_smoke_tests",
+]
 
 [build.profiles.cap_persistence_write]
 extends = "fast"
 description = "Focused capability verification profile for tracer_core persistence write surfaces."
+build_targets = [
+    "tc_persistence_write_infra_smoke_tests",
+]
+
+[build.profiles.shell_aggregate]
+extends = "fast"
+description = "Focused shell aggregate verification profile for tracer_core_shell non-owner surfaces."
+build_targets = [
+    "tc_c_api_smoke_tests",
+    "tc_c_api_shell_aggregate_tests",
+    "tt_aggregate_runtime_tests",
+    "tc_app_aggregate_runtime_smoke_tests",
+    "tt_android_runtime_shell_smoke_tests",
+    "tt_file_crypto_runtime_bridge_tests",
+]
 
 [build.profiles.fast_ci_no_pch]
 extends = "_fast_base"

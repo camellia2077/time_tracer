@@ -32,6 +32,17 @@ This is an architecture/design contract, not an external runtime contract.
 8. Focused validate scopes should cover owner implementation paths together
    with the canonical capability-owned port subtrees and canonical module
    trees that publish the same capability boundary.
+9. Shell reviewer routing is authoritative by path family first:
+   `apps/tracer_core_shell/api/c_api/capabilities/**`,
+   `apps/tracer_core_shell/api/c_api/runtime/**`,
+   `apps/tracer_core_shell/host/bootstrap/**`, and
+   `apps/tracer_core_shell/host/exchange/**`.
+10. New shell files must enter an existing shell family. If a new file cannot
+    be mapped to an existing family, update this contract plus
+    `verify_profile_inference.py` and its tests before adding the file.
+11. New shell entrypoints must not reintroduce flat `api/c_api/*.cpp` or
+    `host/*.cpp` layouts. The retained root-level `tracer_core_c_api.cpp` /
+    `.h` pair stays as the stable C ABI facade exception only.
 
 ## pipeline
 
@@ -160,7 +171,7 @@ This is an architecture/design contract, not an external runtime contract.
 - Main regression surfaces:
   - `tt_exchange_api_tests`
   - `tc_exchange_infra_smoke_tests`
-  - `tt_file_crypto_tests`
+  - `tt_exchange_runtime_tests`
 
 ## config
 
@@ -263,6 +274,12 @@ runtime bridges.
   `src/application/aggregate_runtime/**`
 - shell/runtime bridge:
   `src/application/runtime_bridge/**`
+- shell aggregate focused bucket:
+  `apps/tracer_core_shell/api/c_api/runtime/**`,
+  `apps/tracer_core_shell/host/bootstrap/**`,
+  `apps/tracer_core_shell/host/exchange/**`,
+  retained root-level `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`
+  / `.h`, and the shell/runtime tests that exercise those non-owner families
 
 Legacy forwarding shims under `src/application/dto/core_*`,
 `src/application/interfaces/i_report_*`, and
