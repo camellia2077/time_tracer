@@ -34,9 +34,10 @@ auto BuildEntry(std::string_view relative_path, std::string_view text)
   return entry;
 }
 
-auto BuildValidPackageEntries(
-    const std::vector<PayloadFixture>& payloads, const std::string& main_config,
-    const std::string& alias_config, const std::string& duration_config)
+auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
+                              const std::string& main_config,
+                              const std::string& alias_config,
+                              const std::string& duration_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
   exchange_pkg::TracerExchangeManifest manifest{};
   manifest.producer_platform = "windows";
@@ -118,7 +119,8 @@ auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string {
   return ReadTextFile(ResolveRepoRootForInterop() / fs::path(relative_path));
 }
 
-auto ReadLegacyRepoConverterConfig(std::string_view relative_path) -> std::string {
+auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
+    -> std::string {
   return BuildLegacyText(ReadRepoConverterConfig(relative_path));
 }
 
@@ -140,7 +142,8 @@ auto BuildValidExportPayloads() -> std::vector<PayloadFixture> {
   };
 }
 
-auto ResolveInputPayloadPath(std::string_view relative_package_path) -> fs::path {
+auto ResolveInputPayloadPath(std::string_view relative_package_path)
+    -> fs::path {
   return fs::path(relative_package_path).lexically_relative("payload");
 }
 
@@ -148,10 +151,10 @@ auto SeedExportInputRoot(const fs::path& input_root,
                          const std::vector<PayloadFixture>& payloads) -> bool {
   bool seeded = true;
   for (const auto& payload : payloads) {
-    seeded = seeded && WriteFileWithParents(
-                            input_root /
-                                ResolveInputPayloadPath(payload.relative_path),
-                            payload.text);
+    seeded = seeded &&
+             WriteFileWithParents(
+                 input_root / ResolveInputPayloadPath(payload.relative_path),
+                 payload.text);
   }
   return seeded;
 }
@@ -169,7 +172,8 @@ auto WriteRawBytesWithParents(const fs::path& path,
 
 auto WriteEncryptedTracerFromEntries(
     const fs::path& package_path, const fs::path& tracer_path,
-    const std::vector<exchange_pkg::TracerExchangePackageEntry>& package_entries,
+    const std::vector<exchange_pkg::TracerExchangePackageEntry>&
+        package_entries,
     std::string_view passphrase, int& failures) -> bool {
   const auto package_bytes = exchange_pkg::EncodePackageBytes(package_entries);
 
@@ -197,9 +201,8 @@ auto DecodeTracerPackage(const fs::path& tracer_path,
                          const fs::path& decrypted_package_path,
                          std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage> {
-  const auto decrypt_result =
-      file_crypto::DecryptFile(tracer_path, decrypted_package_path,
-                               std::string(passphrase));
+  const auto decrypt_result = file_crypto::DecryptFile(
+      tracer_path, decrypted_package_path, std::string(passphrase));
   if (!decrypt_result.ok()) {
     ++failures;
     std::cerr << "[FAIL] DecryptFile(tracer package) failed unexpectedly: "

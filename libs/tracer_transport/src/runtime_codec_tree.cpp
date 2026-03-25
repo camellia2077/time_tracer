@@ -79,7 +79,8 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
   const auto kDurationSecondsIt = node_json.find("duration_seconds");
   if (kDurationSecondsIt != node_json.end() && !kDurationSecondsIt->is_null()) {
     if (!kDurationSecondsIt->is_number_integer()) {
-      throw std::invalid_argument("field `duration_seconds` must be an integer.");
+      throw std::invalid_argument(
+          "field `duration_seconds` must be an integer.");
     }
     out.duration_seconds = kDurationSecondsIt->get<long long>();
   }

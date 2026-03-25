@@ -134,16 +134,14 @@ auto WriteU16LE(std::vector<std::uint8_t>& out, std::size_t offset,
 auto WriteU32LE(std::vector<std::uint8_t>& out, std::size_t offset,
                 std::uint32_t value) -> void {
   for (std::size_t i = 0; i < sizeof(value); ++i) {
-    out[offset + i] =
-        static_cast<std::uint8_t>((value >> (i * 8U)) & 0xFFU);
+    out[offset + i] = static_cast<std::uint8_t>((value >> (i * 8U)) & 0xFFU);
   }
 }
 
 auto WriteU64LE(std::vector<std::uint8_t>& out, std::size_t offset,
                 std::uint64_t value) -> void {
   for (std::size_t i = 0; i < sizeof(value); ++i) {
-    out[offset + i] =
-        static_cast<std::uint8_t>((value >> (i * 8U)) & 0xFFU);
+    out[offset + i] = static_cast<std::uint8_t>((value >> (i * 8U)) & 0xFFU);
   }
 }
 
@@ -208,8 +206,7 @@ auto ThrowMalformedPackage(std::string_view detail) -> void {
   if (path.empty() || path.find('\\') != std::string_view::npos) {
     return false;
   }
-  if (!path.starts_with(kPayloadRoot) ||
-      path.size() <= kPayloadRoot.size() ||
+  if (!path.starts_with(kPayloadRoot) || path.size() <= kPayloadRoot.size() ||
       path[kPayloadRoot.size()] != '/') {
     return false;
   }
@@ -227,9 +224,8 @@ auto ThrowMalformedPackage(std::string_view detail) -> void {
   const std::string_view year_dir = relative.substr(0U, slash);
   const std::string_view filename = relative.substr(slash + 1U);
   if (year_dir.size() != 4U ||
-      !std::all_of(year_dir.begin(), year_dir.end(), [](char ch) {
-        return ch >= '0' && ch <= '9';
-      })) {
+      !std::all_of(year_dir.begin(), year_dir.end(),
+                   [](char ch) { return ch >= '0' && ch <= '9'; })) {
     return false;
   }
   if (filename.size() != 11U || filename[4] != '-' ||
@@ -251,22 +247,25 @@ auto ThrowMalformedPackage(std::string_view detail) -> void {
   return month >= 1 && month <= 12;
 }
 
-auto ValidateManifestPayloadFiles(
-    const std::vector<std::string>& payload_files) -> void {
+auto ValidateManifestPayloadFiles(const std::vector<std::string>& payload_files)
+    -> void {
   if (payload_files.empty()) {
     ThrowMalformedPackage(
-        "manifest payload files must be a non-empty array of payload .txt paths.");
+        "manifest payload files must be a non-empty array of payload .txt "
+        "paths.");
   }
 
   std::string previous_path;
   for (const auto& payload_path : payload_files) {
     if (!IsValidPayloadPath(payload_path)) {
-      ThrowMalformedPackage("manifest payload path must be under `payload/` "
-                            "and end with `.txt`.");
+      ThrowMalformedPackage(
+          "manifest payload path must be under `payload/` "
+          "and end with `.txt`.");
     }
     if (!previous_path.empty() && payload_path <= previous_path) {
       ThrowMalformedPackage(
-          "manifest payload files must be unique and sorted lexicographically.");
+          "manifest payload files must be unique and sorted "
+          "lexicographically.");
     }
     previous_path = payload_path;
   }
@@ -278,8 +277,9 @@ auto ValidatePackageEntryLayout(
   const std::size_t expected_entry_count =
       kRequiredPackagePaths.size() + manifest.payload_files.size();
   if (entries.size() != expected_entry_count) {
-    ThrowMalformedPackage("entry_count does not match manifest payload file "
-                          "count.");
+    ThrowMalformedPackage(
+        "entry_count does not match manifest payload file "
+        "count.");
   }
 
   for (std::size_t index = 0; index < kRequiredPackagePaths.size(); ++index) {
@@ -295,11 +295,13 @@ auto ValidatePackageEntryLayout(
   }
 
   for (std::size_t index = 0; index < manifest.payload_files.size(); ++index) {
-    const std::string_view expected_payload_path = manifest.payload_files[index];
+    const std::string_view expected_payload_path =
+        manifest.payload_files[index];
     const std::size_t entry_index = kRequiredPackagePaths.size() + index;
     if (entries[entry_index].relative_path != expected_payload_path) {
-      ThrowMalformedPackage("payload entry set does not match manifest "
-                            "payload.files.");
+      ThrowMalformedPackage(
+          "payload entry set does not match manifest "
+          "payload.files.");
     }
   }
 }
@@ -338,10 +340,10 @@ auto ValidatePackageEntryLayout(
     AppendU64LE(bytes, record.offset);
     AppendU64LE(bytes, record.size);
     AppendBytes(bytes, record.sha256);
-    AppendBytes(bytes, std::span<const std::uint8_t>(
-                           reinterpret_cast<const std::uint8_t*>(
-                               record.path.data()),
-                           record.path.size()));
+    AppendBytes(bytes,
+                std::span<const std::uint8_t>(
+                    reinterpret_cast<const std::uint8_t*>(record.path.data()),
+                    record.path.size()));
   }
   for (const auto& record : records) {
     AppendBytes(bytes, *record.data);
@@ -352,8 +354,7 @@ auto ValidatePackageEntryLayout(
   WriteU16LE(bytes, 6U, kPackageHeaderSize);
   WriteU16LE(bytes, 8U, kPackageFlags);
   if (records.size() > static_cast<std::size_t>(UINT16_MAX)) {
-    throw std::runtime_error(
-        "Tracer exchange entry count exceeds UINT16_MAX.");
+    throw std::runtime_error("Tracer exchange entry count exceeds UINT16_MAX.");
   }
   WriteU16LE(bytes, 10U, static_cast<std::uint16_t>(records.size()));
   WriteU16LE(bytes, 12U, kManifestIndex);
@@ -481,8 +482,9 @@ auto ParseManifestText(std::string_view manifest_text)
   if (manifest.converter_main_config != kConverterMainPath ||
       manifest.converter_alias_mapping != kAliasMappingPath ||
       manifest.converter_duration_rules != kDurationRulesPath) {
-    ThrowMalformedPackage("manifest converter paths must match fixed package "
-                          "layout.");
+    ThrowMalformedPackage(
+        "manifest converter paths must match fixed package "
+        "layout.");
   }
   return manifest;
 }
@@ -504,9 +506,9 @@ auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
   if (bytes.size() < kPackageHeaderSize) {
     ThrowMalformedPackage("package header is truncated.");
   }
-  if (!std::equal(kPackageMagic.begin(), kPackageMagic.end(), bytes.begin(),
-                  bytes.begin() +
-                      static_cast<std::ptrdiff_t>(kPackageMagic.size()))) {
+  if (!std::equal(
+          kPackageMagic.begin(), kPackageMagic.end(), bytes.begin(),
+          bytes.begin() + static_cast<std::ptrdiff_t>(kPackageMagic.size()))) {
     ThrowMalformedPackage("magic must be `TTPKG`.");
   }
   if (bytes[5U] != kPackageVersion) {
@@ -527,8 +529,9 @@ auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
   const std::uint32_t reserved_u32 = ReadU32LE(bytes, 28U);
 
   if (entry_count < kRequiredPackagePaths.size() + 1U) {
-    ThrowMalformedPackage("entry_count must include manifest, converter files, "
-                          "and at least one payload text file.");
+    ThrowMalformedPackage(
+        "entry_count must include manifest, converter files, "
+        "and at least one payload text file.");
   }
   if (manifest_index != kManifestIndex) {
     ThrowMalformedPackage("manifest_index must be 0.");
@@ -598,9 +601,9 @@ auto DecodePackageBytes(std::span<const std::uint8_t> bytes)
     entry.relative_path = std::move(relative_path);
     entry.entry_flags = entry_flags;
     entry.sha256 = sha256;
-    entry.data.assign(bytes.begin() +
-                          static_cast<std::ptrdiff_t>(absolute_offset),
-                      bytes.begin() + static_cast<std::ptrdiff_t>(absolute_end));
+    entry.data.assign(
+        bytes.begin() + static_cast<std::ptrdiff_t>(absolute_offset),
+        bytes.begin() + static_cast<std::ptrdiff_t>(absolute_end));
     entries.push_back(std::move(entry));
   }
 

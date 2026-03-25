@@ -9,7 +9,8 @@ auto BuildCryptoOptions(
         [progress_observer](
             const file_crypto::FileCryptoProgressSnapshot& snapshot) {
           try {
-            return progress_observer(ToTracerExchangeProgressSnapshot(snapshot)) ==
+            return progress_observer(
+                       ToTracerExchangeProgressSnapshot(snapshot)) ==
                            app_dto::TracerExchangeProgressControl::kCancel
                        ? file_crypto::FileCryptoControl::kCancel
                        : file_crypto::FileCryptoControl::kContinue;

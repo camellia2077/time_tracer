@@ -43,26 +43,25 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
   workers.reserve(inputs.size());
 
   for (size_t index = 0; index < inputs.size(); ++index) {
-    workers.emplace_back(
-        [&session, &results, &thread_errors, index, input = inputs[index]]() {
-          try {
-            LogProcessor processor(session.state.converter_config);
-            results[index] = processor.ProcessSourceContent(input.source_id,
-                                                            input.content);
-          } catch (const std::exception& e) {
-            const std::string kSourceLabel = input.source_label.empty()
-                                                 ? input.source_id
-                                                 : input.source_label;
-            tracer_core::application::runtime_bridge::LogError(
-                "Thread Error [" + kSourceLabel + "]: " + e.what());
-            results[index] = LogProcessingResult{
-                .success = false,
-                .processed_data = {},
-            };
-          } catch (...) {
-            thread_errors[index] = std::current_exception();
-          }
-        });
+    workers.emplace_back([&session, &results, &thread_errors, index,
+                          input = inputs[index]]() {
+      try {
+        LogProcessor processor(session.state.converter_config);
+        results[index] =
+            processor.ProcessSourceContent(input.source_id, input.content);
+      } catch (const std::exception& e) {
+        const std::string kSourceLabel =
+            input.source_label.empty() ? input.source_id : input.source_label;
+        tracer_core::application::runtime_bridge::LogError(
+            "Thread Error [" + kSourceLabel + "]: " + e.what());
+        results[index] = LogProcessingResult{
+            .success = false,
+            .processed_data = {},
+        };
+      } catch (...) {
+        thread_errors[index] = std::current_exception();
+      }
+    });
   }
 
   for (auto& worker : workers) {
@@ -100,8 +99,7 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
 
   if (all_success) {
     tracer_core::application::runtime_bridge::LogInfo(
-        "转换阶段 全部成功 (" + std::to_string(processed_count) +
-        " files).");
+        "转换阶段 全部成功 (" + std::to_string(processed_count) + " files).");
   } else {
     tracer_core::application::runtime_bridge::LogWarn(
         "转换阶段 完成，但存在部分错误。");

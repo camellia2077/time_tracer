@@ -33,8 +33,7 @@ auto main() -> int {
     Require(!io_error, "Failed to prepare temp output directories");
 
     {
-      auto runtime =
-          CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);
+      auto runtime = CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);
       SeedRuntimeWithBaselineData(api, runtime.Get(), kInputRoot);
       RunQueryChecks(api, runtime.Get());
     }

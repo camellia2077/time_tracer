@@ -22,8 +22,7 @@ using tracer_core::core::dto::DataQueryOutputMode;
 namespace data_query = tracer::core::infrastructure::query::data;
 namespace data_query_orchestrators = data_query::orchestrators;
 namespace data_query_renderers = data_query::renderers;
-namespace data_query_stats =
-    tracer::core::infrastructure::query::data::stats;
+namespace data_query_stats = tracer::core::infrastructure::query::data::stats;
 using data_query::DayDurationRow;
 using data_query::QueryFilters;
 
@@ -33,8 +32,7 @@ constexpr double kDuration1800Double = 1800.0;
 constexpr double kVariance2160000Double = 2160000.0;
 constexpr long long kDuration5400 = 5400;
 
-auto BuildStatsSampleRows()
-    -> std::vector<DayDurationRow> {
+auto BuildStatsSampleRows() -> std::vector<DayDurationRow> {
   return {
       {.date = "2026-02-01", .total_seconds = kDuration3600},
       {.date = "2026-02-02", .total_seconds = kDuration1800},
@@ -42,8 +40,7 @@ auto BuildStatsSampleRows()
   };
 }
 
-auto BuildSparseReportChartRows()
-    -> std::vector<DayDurationRow> {
+auto BuildSparseReportChartRows() -> std::vector<DayDurationRow> {
   return {
       {.date = "2026-02-01", .total_seconds = kDuration3600},
       {.date = "2026-02-03", .total_seconds = kDuration1800},
@@ -118,8 +115,9 @@ auto TestSemanticDayStatsSnapshot(int& failures) -> void {
 
   const auto kRows = BuildStatsSampleRows();
   const auto kStats = ComputeDayDurationStats(kRows);
-  const std::string kSemantic = data_query_renderers::RenderDayDurationStatsOutput(
-      kRows, kStats, 2, DataQueryOutputMode::kSemanticJson);
+  const std::string kSemantic =
+      data_query_renderers::RenderDayDurationStatsOutput(
+          kRows, kStats, 2, DataQueryOutputMode::kSemanticJson);
 
   const auto kPayload = json::parse(kSemantic);
   Expect(kPayload.value("schema_version", 0) == 1,
@@ -218,7 +216,8 @@ auto CheckDaysStatsOrchestratorSemanticSnapshot(sqlite3* database,
   stats_request.top_n = 1;
   QueryFilters base_filters;
   const auto kStatsOutput = data_query_orchestrators::HandleDaysStatsQuery(
-      database, stats_request, base_filters, DataQueryOutputMode::kSemanticJson);
+      database, stats_request, base_filters,
+      DataQueryOutputMode::kSemanticJson);
   Expect(kStatsOutput.ok, "days-stats orchestrator should succeed.", failures);
   if (!kStatsOutput.ok) {
     return false;
@@ -307,8 +306,9 @@ auto CheckReportChartOrchestratorSemanticSnapshot(sqlite3* database,
 
   DataQueryRequest missing_root_request = report_chart_request;
   missing_root_request.root = "nosuchroot";
-  const auto kMissingRootOutput = data_query_orchestrators::HandleReportChartQuery(
-      database, missing_root_request, DataQueryOutputMode::kSemanticJson);
+  const auto kMissingRootOutput =
+      data_query_orchestrators::HandleReportChartQuery(
+          database, missing_root_request, DataQueryOutputMode::kSemanticJson);
   Expect(kMissingRootOutput.ok,
          "report-chart missing-root fallback should succeed.", failures);
   if (!kMissingRootOutput.ok) {
@@ -352,36 +352,35 @@ auto TestDerivedStatusExerciseFilters(int& failures) -> void {
     return;
   }
 
-  const bool kCreatedDays = ExecuteSql(
-      kDatabase.get(),
-      "CREATE TABLE days ("
-      "date TEXT PRIMARY KEY,"
-      "year INTEGER NOT NULL,"
-      "month INTEGER NOT NULL,"
-      "sleep INTEGER NOT NULL DEFAULT 0,"
-      "remark TEXT NOT NULL DEFAULT '',"
-      "getup_time TEXT"
-      ");");
-  const bool kCreatedRecords = ExecuteSql(
-      kDatabase.get(),
-      "CREATE TABLE time_records ("
-      "date TEXT NOT NULL,"
-      "duration INTEGER NOT NULL,"
-      "project_path_snapshot TEXT,"
-      "activity_remark TEXT"
-      ");");
+  const bool kCreatedDays = ExecuteSql(kDatabase.get(),
+                                       "CREATE TABLE days ("
+                                       "date TEXT PRIMARY KEY,"
+                                       "year INTEGER NOT NULL,"
+                                       "month INTEGER NOT NULL,"
+                                       "sleep INTEGER NOT NULL DEFAULT 0,"
+                                       "remark TEXT NOT NULL DEFAULT '',"
+                                       "getup_time TEXT"
+                                       ");");
+  const bool kCreatedRecords = ExecuteSql(kDatabase.get(),
+                                          "CREATE TABLE time_records ("
+                                          "date TEXT NOT NULL,"
+                                          "duration INTEGER NOT NULL,"
+                                          "project_path_snapshot TEXT,"
+                                          "activity_remark TEXT"
+                                          ");");
   const bool kSeededDays = ExecuteSql(
       kDatabase.get(),
       "INSERT INTO days(date, year, month, sleep, remark, getup_time) VALUES "
       "('2026-02-01', 2026, 2, 0, '', '07:00'),"
       "('2026-02-02', 2026, 2, 0, '', '07:30'),"
       "('2026-02-03', 2026, 2, 0, '', '08:00');");
-  const bool kSeededRecords = ExecuteSql(
-      kDatabase.get(),
-      "INSERT INTO time_records(date, duration, project_path_snapshot, activity_remark) VALUES "
-      "('2026-02-01', 3600, 'study_cpp', ''),"
-      "('2026-02-02', 1800, 'exercise_cardio', ''),"
-      "('2026-02-03', 600, 'meal_short', '');");
+  const bool kSeededRecords =
+      ExecuteSql(kDatabase.get(),
+                 "INSERT INTO time_records(date, duration, "
+                 "project_path_snapshot, activity_remark) VALUES "
+                 "('2026-02-01', 3600, 'study_cpp', ''),"
+                 "('2026-02-02', 1800, 'exercise_cardio', ''),"
+                 "('2026-02-03', 600, 'meal_short', '');");
   Expect(kCreatedDays && kCreatedRecords && kSeededDays && kSeededRecords,
          "derived status/exercise filter test should seed sqlite fixture.",
          failures);
@@ -393,8 +392,9 @@ auto TestDerivedStatusExerciseFilters(int& failures) -> void {
   status_true_filters.status = 1;
   const auto kStatusTrueDates =
       data_query::QueryDatesByFilters(kDatabase.get(), status_true_filters);
-  Expect(kStatusTrueDates.size() == 1U && kStatusTrueDates.front() == "2026-02-01",
-         "status=true filter should match only study days.", failures);
+  Expect(
+      kStatusTrueDates.size() == 1U && kStatusTrueDates.front() == "2026-02-01",
+      "status=true filter should match only study days.", failures);
 
   QueryFilters status_false_filters;
   status_false_filters.status = 0;

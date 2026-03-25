@@ -52,12 +52,10 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
       BuildEntry(exchange::kAliasMappingPath, "alias = \"study\"\n"));
   entries.push_back(
       BuildEntry(exchange::kDurationRulesPath, "duration = \"rule\"\n"));
-  entries.push_back(BuildEntry(
-      "payload/2025/2025-01.txt",
-      "y2025\nm01\n0101\n0600 study_math r alpha\n"));
-  entries.push_back(BuildEntry(
-      "payload/2026/2026-12.txt",
-      "y2026\nm12\n1201\n0600 study_math r alpha\n"));
+  entries.push_back(BuildEntry("payload/2025/2025-01.txt",
+                               "y2025\nm01\n0101\n0600 study_math r alpha\n"));
+  entries.push_back(BuildEntry("payload/2026/2026-12.txt",
+                               "y2026\nm12\n1201\n0600 study_math r alpha\n"));
 
   const auto package_bytes = exchange::EncodePackageBytes(entries);
   const exchange::DecodedTracerExchangePackage decoded =

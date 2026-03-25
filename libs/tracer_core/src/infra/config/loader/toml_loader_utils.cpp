@@ -137,8 +137,7 @@ void FillDailyLabels(const toml::table& tbl, DailyReportLabels& labels) {
   labels.total_time_label = GetRequired<std::string>(tbl, "total_time_label");
 
   labels.status_label = tbl["status_label"].value_or("Status");
-  labels.wake_anchor_label =
-      tbl["wake_anchor_label"].value_or("Wake Anchor");
+  labels.wake_anchor_label = tbl["wake_anchor_label"].value_or("Wake Anchor");
   labels.exercise_label = tbl["exercise_label"].value_or("Exercise");
   labels.getup_time_label = tbl["getup_time_label"].value_or("Getup Time");
   labels.remark_label = tbl["remark_label"].value_or("Remark");

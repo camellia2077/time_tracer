@@ -36,9 +36,9 @@ class ProjectResolver {
 
 namespace infrastructure::persistence::importer::sqlite {
 
-using tracer::core::infrastructure::persistence::importer::sqlite::ProjectResolver;
+using tracer::core::infrastructure::persistence::importer::sqlite::
+    ProjectResolver;
 
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_PROJECT_RESOLVER_H_
-

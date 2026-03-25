@@ -12,8 +12,8 @@
 
 import tracer.core.shared.string_utils;
 
-using tracer::core::shared::string_utils::Trim;
 using tracer::core::shared::ide_location::BuildIdeLocationPrefix;
+using tracer::core::shared::string_utils::Trim;
 
 namespace {
 constexpr size_t kYearMarkerLength = 5;
@@ -55,8 +55,8 @@ auto FormatTime(const std::string& time_str_hhmm) -> std::string {
   if (prefix.empty()) {
     prefix = "unknown location: ";
   }
-  throw std::runtime_error(prefix + "Parse error: " + message + " => '" +
-                           line + "'");
+  throw std::runtime_error(prefix + "Parse error: " + message + " => '" + line +
+                           "'");
 }
 }  // namespace
 

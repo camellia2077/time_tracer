@@ -60,7 +60,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
     -> AndroidRuntime {
   // Runtime bootstrap must stay side-effect free with respect to ingest
   // persistence. Creating the runtime is not permission to create the ingest
-  // database; database creation belongs only to the post-validation write phase.
+  // database; database creation belongs only to the post-validation write
+  // phase.
   const fs::path kOutputRoot =
       android_runtime_detail::ResolveOutputRoot(request.output_root);
   const fs::path kDbPath =
@@ -84,9 +85,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   auto time_sheet_repository =
       std::make_shared<infra_persistence_write::SqliteTimeSheetRepository>(
           kDbPath.string());
-  auto database_health_checker = std::make_shared<
-      infra_persistence_runtime::SqliteDatabaseHealthChecker>(
-      kDbPath.string());
+  auto database_health_checker =
+      std::make_shared<infra_persistence_runtime::SqliteDatabaseHealthChecker>(
+          kDbPath.string());
   auto converter_config_provider =
       std::make_shared<FileConverterConfigProvider>(
           kConverterConfigTomlPath, std::unordered_map<fs::path, fs::path>{});
@@ -121,9 +122,9 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       std::make_shared<infra_persistence_runtime::SqliteProjectRepository>(
           kDbPath.string());
   auto data_query_service =
-      std::make_shared<
-          tracer::core::infrastructure::query::data::repository::QueryRuntimeService>(
-          kDbPath, kConverterConfigTomlPath);
+      std::make_shared<tracer::core::infrastructure::query::data::repository::
+                           QueryRuntimeService>(kDbPath,
+                                                kConverterConfigTomlPath);
   auto report_data_query_service =
       std::make_shared<infra_reports::LazySqliteReportDataQueryService>(
           kDbPath, platform_clock);
@@ -138,10 +139,12 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
       infra_reports::CreateReportDtoFormatter(*report_catalog);
   auto report_exporter_for_dto =
       std::make_shared<infra_reports::Exporter>(kOutputRoot);
-  auto report_export_writer = std::make_shared<infra_reports::ReportDtoExportWriter>(
-      report_dto_formatter, report_exporter_for_dto);
+  auto report_export_writer =
+      std::make_shared<infra_reports::ReportDtoExportWriter>(
+          report_dto_formatter, report_exporter_for_dto);
   auto tracer_exchange_service =
-      tracer_core::infrastructure::crypto::CreateTracerExchangeService(*workflow);
+      tracer_core::infrastructure::crypto::CreateTracerExchangeService(
+          *workflow);
 
   // Runtime bootstrap owns capability composition; TracerCoreRuntime only
   // aggregates the already-constructed capability APIs.
@@ -151,9 +154,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   auto report_api = std::make_shared<app_use_cases::ReportApi>(
       *report, report_data_query_service, report_dto_formatter,
       report_export_writer);
-  auto tracer_exchange_api =
-      std::make_shared<app_use_cases::TracerExchangeApi>(
-          tracer_exchange_service);
+  auto tracer_exchange_api = std::make_shared<app_use_cases::TracerExchangeApi>(
+      tracer_exchange_service);
 
   AndroidRuntime runtime;
   auto runtime_impl = std::make_shared<app_use_cases::TracerCoreRuntime>(

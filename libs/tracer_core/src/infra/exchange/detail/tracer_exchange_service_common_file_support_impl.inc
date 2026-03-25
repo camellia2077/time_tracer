@@ -10,7 +10,7 @@ auto CopyFileWithOverwrite(const fs::path& source, const fs::path& target)
   }
 }
 
-auto BuildBackupPath(const fs::path& backup_root, std::string_view relative_path)
-    -> fs::path {
+auto BuildBackupPath(const fs::path& backup_root,
+                     std::string_view relative_path) -> fs::path {
   return backup_root / fs::path(relative_path);
 }

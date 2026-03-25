@@ -19,8 +19,7 @@ using tracer::core::infrastructure::query::data::orchestrators::
     HandleActivitySuggestQuery;
 using tracer::core::infrastructure::query::data::orchestrators::
     HandleDaysDurationQuery;
-using tracer::core::infrastructure::query::data::orchestrators::
-    HandleDaysQuery;
+using tracer::core::infrastructure::query::data::orchestrators::HandleDaysQuery;
 using tracer::core::infrastructure::query::data::orchestrators::
     HandleMonthsQuery;
 using tracer::core::infrastructure::query::data::orchestrators::
@@ -29,4 +28,3 @@ using tracer::core::infrastructure::query::data::orchestrators::
     HandleYearsQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
-

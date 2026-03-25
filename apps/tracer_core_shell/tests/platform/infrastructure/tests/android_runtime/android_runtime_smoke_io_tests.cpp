@@ -29,7 +29,8 @@ auto RunIoSmokeSection(int& failures) -> void {
     } else {
       ChartProbeContext chart_probe;
       ProbeChartRange(fixture.runtime.runtime_api, chart_probe, failures);
-      VerifyExplicitChartRange(fixture.runtime.runtime_api, chart_probe, failures);
+      VerifyExplicitChartRange(fixture.runtime.runtime_api, chart_probe,
+                               failures);
       VerifyChartForRootScenarios(fixture.runtime.runtime_api, chart_probe,
                                   failures);
     }

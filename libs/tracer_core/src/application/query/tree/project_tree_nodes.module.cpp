@@ -22,8 +22,8 @@ struct NamedReportNodeRef {
   const ProjectNode* node = nullptr;
 };
 
-[[nodiscard]] auto CollectSortedReportChildren(
-    const ProjectNode& node) -> std::vector<NamedReportNodeRef> {
+[[nodiscard]] auto CollectSortedReportChildren(const ProjectNode& node)
+    -> std::vector<NamedReportNodeRef> {
   std::vector<NamedReportNodeRef> children;
   children.reserve(node.children.size());
   for (const auto& [name, child] : node.children) {

@@ -2,7 +2,8 @@ module;
 
 #include "infra/persistence/importer/sqlite/connection.hpp"
 
-export module tracer.core.infrastructure.persistence.write.importer.sqlite.connection;
+export module tracer.core.infrastructure.persistence.write.importer.sqlite
+    .connection;
 
 export namespace tracer::core::infrastructure::persistence::importer::sqlite {
 

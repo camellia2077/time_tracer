@@ -38,8 +38,8 @@ namespace app_ports = tracer_core::application::ports;
 namespace runtime_bridge = tracer_core::application::runtime_bridge;
 namespace modtext = tracer::core::shared::canonical_text;
 namespace modports = tracer_core::domain::ports;
-using tracer::core::shared::string_utils::Trim;
 using tracer::core::domain::types::AppOptions;
+using tracer::core::shared::string_utils::Trim;
 
 namespace {
 
@@ -114,7 +114,8 @@ auto PipelineWorkflow::RunDatabaseImport(const std::string& processed_path_str)
 
   auto load_result = processed_data_loader_->LoadDailyLogs(processed_path_str);
   for (const auto& error : load_result.errors) {
-    runtime_bridge::LogError("解析文件失败 " + error.source + ": " + error.message);
+    runtime_bridge::LogError("解析文件失败 " + error.source + ": " +
+                             error.message);
   }
   if (load_result.data_by_source.empty()) {
     runtime_bridge::LogWarn("没有有效的 JSON 数据可供导入。");
@@ -162,8 +163,8 @@ namespace {
 
 auto PipelineWorkflow::RunIngest(const std::string& source_path,
                                  DateCheckMode date_check_mode,
-                                 bool save_processed,
-                                 IngestMode ingest_mode) -> void {
+                                 bool save_processed, IngestMode ingest_mode)
+    -> void {
   runtime_bridge::LogInfo("\n--- 启动数据摄入 (Ingest) ---");
   modports::ClearBufferedDiagnostics();
 
@@ -223,9 +224,8 @@ auto PipelineWorkflow::RunIngest(const std::string& source_path,
           "TXT). Ingest will proceed without cross-month backfill.");
     }
 
-    RunDatabaseImportFromMemoryReplacingMonth(context.result.processed_data,
-                                             target_month->year,
-                                             target_month->month);
+    RunDatabaseImportFromMemoryReplacingMonth(
+        context.result.processed_data, target_month->year, target_month->month);
     runtime_bridge::LogInfo("\n=== Ingest 执行成功（单月替换）===");
     return;
   }

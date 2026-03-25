@@ -15,7 +15,7 @@ export namespace tracer::core::infrastructure::config {
 
 export namespace tracer::core::infrastructure::modconfig {
 
-using tracer::core::infrastructure::config::ConfigLoader;
 using ::AppConfig;
+using tracer::core::infrastructure::config::ConfigLoader;
 
 }  // namespace tracer::core::infrastructure::modconfig

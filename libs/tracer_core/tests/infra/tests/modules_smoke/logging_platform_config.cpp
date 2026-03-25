@@ -63,19 +63,16 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
     return 4;
   }
 
-  const auto load_converter_config =
-      &tracer::core::infrastructure::config::ConverterConfigLoader::
-          LoadFromFile;
-  const auto load_daily_md_config =
-      &tracer::core::infrastructure::config::ReportConfigLoader::
-          LoadDailyMdConfig;
+  const auto load_converter_config = &tracer::core::infrastructure::config::
+                                         ConverterConfigLoader::LoadFromFile;
+  const auto load_daily_md_config = &tracer::core::infrastructure::config::
+                                        ReportConfigLoader::LoadDailyMdConfig;
   const auto read_toml =
       &tracer::core::infrastructure::config::loader::ReadToml;
   const auto load_detailed_reports =
       &tracer::core::infrastructure::config::internal::LoadDetailedReports;
   const auto parse_system_settings =
-      &tracer::core::infrastructure::config::internal::
-          ParseSystemSettings;
+      &tracer::core::infrastructure::config::internal::ParseSystemSettings;
   const auto load_configuration =
       &tracer::core::infrastructure::config::ConfigLoader::LoadConfiguration;
   const auto load_file_provider =
@@ -118,9 +115,8 @@ auto RunInfrastructureModuleLoggingPlatformConfigSmoke() -> int {
     return 400;
   }
 
-  const auto kDailyMarkdown =
-      tracer::core::infrastructure::config::ReportConfigLoader::
-          LoadDailyMdConfig(kDailyMarkdownConfig);
+  const auto kDailyMarkdown = tracer::core::infrastructure::config::
+      ReportConfigLoader::LoadDailyMdConfig(kDailyMarkdownConfig);
   if (kDailyMarkdown.labels.date_label != "Date" ||
       kDailyMarkdown.statistics_items.empty()) {
     return 401;

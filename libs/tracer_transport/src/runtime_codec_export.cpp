@@ -29,7 +29,8 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 
 }  // namespace
 
-auto DecodeExportRequest(std::string_view request_json) -> ExportRequestPayload {
+auto DecodeExportRequest(std::string_view request_json)
+    -> ExportRequestPayload {
   const json kPayload = ParseRequestObject(request_json);
 
   const auto kType = RequireStringField(kPayload, "type");
@@ -44,8 +45,7 @@ auto DecodeExportRequest(std::string_view request_json) -> ExportRequestPayload 
   if (kFormat.HasError()) {
     throw std::invalid_argument(kFormat.error.message);
   }
-  const auto kRecentDays =
-      TryReadIntListField(kPayload, "recent_days_list");
+  const auto kRecentDays = TryReadIntListField(kPayload, "recent_days_list");
   if (kRecentDays.HasError()) {
     throw std::invalid_argument(kRecentDays.error.message);
   }

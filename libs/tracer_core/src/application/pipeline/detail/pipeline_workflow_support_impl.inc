@@ -26,8 +26,9 @@ void PersistBufferedDiagnosticsReportIfEnabled() {
     return;
   }
 
-  const std::string diagnostic_summary = modports::GetBufferedDiagnosticsSummary(
-      modports::DiagnosticSeverity::kError, 8);
+  const std::string diagnostic_summary =
+      modports::GetBufferedDiagnosticsSummary(
+          modports::DiagnosticSeverity::kError, 8);
   if (diagnostic_summary.empty()) {
     return;
   }
@@ -40,8 +41,9 @@ void PersistBufferedDiagnosticsReportIfEnabled() {
   std::string message(base_message);
   const std::string report_destination =
       modports::GetErrorReportDestinationLabel();
-  const std::string diagnostic_summary = modports::GetBufferedDiagnosticsSummary(
-      modports::DiagnosticSeverity::kError, 8);
+  const std::string diagnostic_summary =
+      modports::GetBufferedDiagnosticsSummary(
+          modports::DiagnosticSeverity::kError, 8);
   if (!report_destination.empty() && report_destination != "disabled") {
     message += "\nFull error report: " + report_destination;
   }
@@ -124,7 +126,8 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   }
 
   if (!stats.transaction_success) {
-    runtime_bridge::LogError("[Fatal] Transaction Failed: " + stats.error_message);
+    runtime_bridge::LogError("[Fatal] Transaction Failed: " +
+                             stats.error_message);
     return;
   }
 
@@ -153,8 +156,9 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   std::ostringstream breakdown;
   breakdown << "Breakdown: days(total=" << stats.total_days
             << ", success=" << stats.successful_days
-            << ", skipped=" << stats.skipped_days << "), records(total="
-            << stats.total_records << ", success=" << stats.successful_records
+            << ", skipped=" << stats.skipped_days
+            << "), records(total=" << stats.total_records
+            << ", success=" << stats.successful_records
             << ", skipped=" << stats.skipped_records << ")";
   runtime_bridge::LogInfo(breakdown.str());
 

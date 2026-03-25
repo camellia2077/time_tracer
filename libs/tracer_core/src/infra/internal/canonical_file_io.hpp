@@ -27,8 +27,8 @@ inline auto ReadBytes(const std::filesystem::path& path)
                              path.string());
   }
 
-  const std::vector<std::uint8_t> bytes = {
-      std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
+  const std::vector<std::uint8_t> bytes = {std::istreambuf_iterator<char>(file),
+                                           std::istreambuf_iterator<char>()};
   if (file.bad()) {
     throw std::runtime_error("Error occurred while reading file: " +
                              path.string());
@@ -67,7 +67,8 @@ inline auto WriteCanonicalText(const std::filesystem::path& path,
   const std::string canonical =
       tracer::core::shared::canonical_text::RequireCanonicalText(content,
                                                                  path.string());
-  const auto bytes = tracer::core::shared::canonical_text::ToUtf8Bytes(canonical);
+  const auto bytes =
+      tracer::core::shared::canonical_text::ToUtf8Bytes(canonical);
   WriteBytes(path, bytes);
 }
 

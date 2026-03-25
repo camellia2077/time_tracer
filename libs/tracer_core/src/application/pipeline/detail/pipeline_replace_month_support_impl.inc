@@ -150,8 +150,9 @@ struct ActivityTailCandidate {
   const std::string raw_text = buffer.str();
   const auto canonical = modtext::Canonicalize(raw_text, path.string());
   if (!canonical.ok) {
-    runtime_bridge::LogWarn("Skipping sibling TXT fallback due to invalid text: " +
-                            canonical.error_message);
+    runtime_bridge::LogWarn(
+        "Skipping sibling TXT fallback due to invalid text: " +
+        canonical.error_message);
     return std::nullopt;
   }
   return canonical.text;
@@ -205,15 +206,15 @@ struct ActivityTailCandidate {
       continue;
     }
 
-    candidates.push_back(
-        PreviousMonthFileCandidate{.path = entry.path(), .content = *content_opt});
+    candidates.push_back(PreviousMonthFileCandidate{.path = entry.path(),
+                                                    .content = *content_opt});
   }
 
-  std::ranges::sort(
-      candidates, [](const PreviousMonthFileCandidate& left,
-                     const PreviousMonthFileCandidate& right) -> bool {
-        return left.path.string() < right.path.string();
-      });
+  std::ranges::sort(candidates,
+                    [](const PreviousMonthFileCandidate& left,
+                       const PreviousMonthFileCandidate& right) -> bool {
+                      return left.path.string() < right.path.string();
+                    });
   return candidates;
 }
 
@@ -308,8 +309,9 @@ struct ActivityTailCandidate {
   auto conversion_result =
       processor.ProcessSourceContent(selected.path.string(), selected.content);
   if (!conversion_result.success || conversion_result.processed_data.empty()) {
-    runtime_bridge::LogWarn("[LogLinker] Failed to convert sibling TXT fallback: " +
-                            selected.path.string());
+    runtime_bridge::LogWarn(
+        "[LogLinker] Failed to convert sibling TXT fallback: " +
+        selected.path.string());
     return std::nullopt;
   }
 
@@ -330,8 +332,9 @@ struct ActivityTailCandidate {
     return std::nullopt;
   }
 
-  runtime_bridge::LogInfo("[LogLinker] Loaded previous tail from sibling TXT: " +
-                          selected.path.string());
+  runtime_bridge::LogInfo(
+      "[LogLinker] Loaded previous tail from sibling TXT: " +
+      selected.path.string());
   return tail;
 }
 

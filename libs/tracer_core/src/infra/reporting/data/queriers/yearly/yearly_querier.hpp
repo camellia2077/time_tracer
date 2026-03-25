@@ -41,4 +41,3 @@ class BatchYearDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_YEARLY_YEARLY_QUERIER_H_
-

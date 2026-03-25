@@ -34,8 +34,7 @@ auto InputCollectionStage::Execute(
 
   session.state.ingest_inputs = kInputCollection.inputs;
   tracer_core::application::runtime_bridge::LogInfo(
-      "信息: 成功收集到 " +
-      std::to_string(session.state.ingest_inputs.size()) +
+      "信息: 成功收集到 " + std::to_string(session.state.ingest_inputs.size()) +
       " 个待处理文件 (" + extension + ").");
   return true;
 }

@@ -18,15 +18,13 @@ auto WithIndefiniteArticle(std::string_view noun) -> std::string {
       kFirst == 'u' || kFirst == 'A' || kFirst == 'E' || kFirst == 'I' ||
       kFirst == 'O' || kFirst == 'U';
   return kStartsWithVowel ? "an " + std::string(noun)
-                           : "a " + std::string(noun);
+                          : "a " + std::string(noun);
 }
 
 auto BuildTypeTransportError(std::string_view field_name,
-                             std::string_view expected_type)
-    -> TransportError {
-  return MakeTransportError(
-      TransportErrorCode::kInvalidArgument,
-      BuildTypeError(field_name, expected_type).message);
+                             std::string_view expected_type) -> TransportError {
+  return MakeTransportError(TransportErrorCode::kInvalidArgument,
+                            BuildTypeError(field_name, expected_type).message);
 }
 
 }  // namespace
@@ -104,8 +102,8 @@ auto TryReadBoolField(const nlohmann::json& payload,
   };
 }
 
-auto TryReadIntField(const nlohmann::json& payload,
-                     std::string_view field_name) -> IntFieldResult {
+auto TryReadIntField(const nlohmann::json& payload, std::string_view field_name)
+    -> IntFieldResult {
   const auto kIt = payload.find(std::string(field_name));
   if (kIt == payload.end() || kIt->is_null()) {
     return IntFieldResult{

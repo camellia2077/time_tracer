@@ -74,8 +74,8 @@ void DayMdFormatter::FormatHeaderContent(std::string& report_stream,
       config_->GetTotalTimeLabel(), TimeFormatDuration(data.total_duration));
   report_stream += BuildMarkdownItemLine(config_->GetStatusLabel(),
                                          BoolToString(data.metadata.status));
-  report_stream += BuildMarkdownItemLine(config_->GetWakeAnchorLabel(),
-                                         BoolToString(data.metadata.wake_anchor));
+  report_stream += BuildMarkdownItemLine(
+      config_->GetWakeAnchorLabel(), BoolToString(data.metadata.wake_anchor));
   report_stream += BuildMarkdownItemLine(config_->GetExerciseLabel(),
                                          BoolToString(data.metadata.exercise));
   report_stream += BuildMarkdownItemLine(config_->GetGetupTimeLabel(),

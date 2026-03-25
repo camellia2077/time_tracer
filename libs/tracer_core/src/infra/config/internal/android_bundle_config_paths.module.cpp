@@ -10,9 +10,8 @@ namespace {
 
 [[nodiscard]] auto ToAndroidBundleReportConfigPathSet(
     const legacy_config_parser_internal::AndroidBundleReportConfigPathSet&
-        paths)
-    -> tracer::core::infrastructure::config::internal::
-        AndroidBundleReportConfigPathSet {
+        paths) -> tracer::core::infrastructure::config::internal::
+    AndroidBundleReportConfigPathSet {
   return {
       .day = paths.day,
       .month = paths.month,
@@ -24,7 +23,8 @@ namespace {
 
 [[nodiscard]] auto ToAndroidBundleConfigPaths(
     const legacy_config_parser_internal::AndroidBundleConfigPaths& paths)
-    -> tracer::core::infrastructure::config::internal::AndroidBundleConfigPaths {
+    -> tracer::core::infrastructure::config::internal::
+        AndroidBundleConfigPaths {
   return {
       .converter_config_toml_path = paths.converter_config_toml_path,
       .markdown = ToAndroidBundleReportConfigPathSet(paths.markdown),

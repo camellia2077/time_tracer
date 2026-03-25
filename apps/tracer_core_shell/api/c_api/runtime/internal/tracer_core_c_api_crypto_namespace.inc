@@ -108,9 +108,10 @@ void ValidateInputForEncryption(ITracerCoreRuntime& runtime, DateCheckMode mode,
                               ValidateStructureRequest{.input_path = input}),
                           "TXT structure validation failed before encryption.");
 
-  EnsureValidationSuccess(runtime.pipeline().RunValidateLogic(ValidateLogicRequest{
-                              .input_path = input, .date_check_mode = mode}),
-                          "TXT logic validation failed before encryption.");
+  EnsureValidationSuccess(
+      runtime.pipeline().RunValidateLogic(
+          ValidateLogicRequest{.input_path = input, .date_check_mode = mode}),
+      "TXT logic validation failed before encryption.");
 }
 
 void EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
@@ -123,11 +124,10 @@ void EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
                            " | " + result.error_message);
 }
 
-auto EmitCryptoProgress(
-    const file_crypto::FileCryptoProgressSnapshot& snapshot)
+auto EmitCryptoProgress(const file_crypto::FileCryptoProgressSnapshot& snapshot)
     -> file_crypto::FileCryptoControl {
-  const auto registration =
-      tracer_core::core::c_api::internal::GetCryptoProgressCallbackRegistration();
+  const auto registration = tracer_core::core::c_api::internal::
+      GetCryptoProgressCallbackRegistration();
   if (registration.callback == nullptr) {
     return file_crypto::FileCryptoControl::kContinue;
   }

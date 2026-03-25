@@ -126,7 +126,8 @@ class BaseQuerier {
     // generated overnight sleep activities or arbitrary sleep_* records.
     std::string sql = "SELECT SUM(CASE WHEN ";
     sql += schema::day::db::kWakeAnchor;
-    sql += " != 0 THEN 1 ELSE 0 END) "
+    sql +=
+        " != 0 THEN 1 ELSE 0 END) "
         "FROM ";
     sql += schema::day::db::kTable;
     sql += " WHERE ";
@@ -147,41 +148,33 @@ class BaseQuerier {
         "SELECT "
         "COUNT(DISTINCT CASE WHEN (";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " = 'study' OR ";
+    record_sql += " = 'study' OR ";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " LIKE 'study\\_%' ESCAPE '\\') THEN ";
+    record_sql += " LIKE 'study\\_%' ESCAPE '\\') THEN ";
     record_sql += schema::time_records::db::kDate;
     record_sql +=
         " END), "
         "COUNT(DISTINCT CASE WHEN (";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " = 'exercise' OR ";
+    record_sql += " = 'exercise' OR ";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " LIKE 'exercise\\_%' ESCAPE '\\') THEN ";
+    record_sql += " LIKE 'exercise\\_%' ESCAPE '\\') THEN ";
     record_sql += schema::time_records::db::kDate;
     record_sql +=
         " END), "
         "COUNT(DISTINCT CASE WHEN (";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " = 'exercise_cardio' OR ";
+    record_sql += " = 'exercise_cardio' OR ";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " LIKE 'exercise_cardio\\_%' ESCAPE '\\') THEN ";
+    record_sql += " LIKE 'exercise_cardio\\_%' ESCAPE '\\') THEN ";
     record_sql += schema::time_records::db::kDate;
     record_sql +=
         " END), "
         "COUNT(DISTINCT CASE WHEN (";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " = 'exercise_anaerobic' OR ";
+    record_sql += " = 'exercise_anaerobic' OR ";
     record_sql += schema::time_records::db::kProjectPathSnapshot;
-    record_sql +=
-        " LIKE 'exercise_anaerobic\\_%' ESCAPE '\\') THEN ";
+    record_sql += " LIKE 'exercise_anaerobic\\_%' ESCAPE '\\') THEN ";
     record_sql += schema::time_records::db::kDate;
     record_sql +=
         " END) "
@@ -191,8 +184,8 @@ class BaseQuerier {
     record_sql += GetDateConditionSql();
     record_sql += ";";
 
-    if (sqlite3_prepare_v2(this->db_, record_sql.c_str(), -1, &stmt,
-                           nullptr) == SQLITE_OK) {
+    if (sqlite3_prepare_v2(this->db_, record_sql.c_str(), -1, &stmt, nullptr) ==
+        SQLITE_OK) {
       BindSqlParameters(stmt);
       if (sqlite3_step(stmt) == SQLITE_ROW) {
         counts.status_true_days = sqlite3_column_int(stmt, 0);

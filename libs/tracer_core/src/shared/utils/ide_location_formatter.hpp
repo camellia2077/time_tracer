@@ -47,7 +47,8 @@ template <typename SpanLike>
                                           std::string_view fallback_file = {})
     -> std::string {
   if (!span.file_path.empty()) {
-    return BuildIdeLocationPrefix(span.file_path, span.line_start, span.line_end);
+    return BuildIdeLocationPrefix(span.file_path, span.line_start,
+                                  span.line_end);
   }
   return BuildIdeLocationPrefix(fallback_file, span.line_start, span.line_end);
 }

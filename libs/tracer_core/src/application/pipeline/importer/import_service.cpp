@@ -17,8 +17,7 @@ ImportService::ImportService(
 auto ImportService::ImportFromMemory(
     const std::map<std::string, std::vector<DailyLog>>& data_map,
     const std::optional<ReplaceMonthTarget>& replace_month_target,
-    const std::optional<ReplaceAllTarget>& replace_all_target)
-    -> ImportStats {
+    const std::optional<ReplaceAllTarget>& replace_all_target) -> ImportStats {
   ImportStats stats;
   for (const auto& [source_key, days] : data_map) {
     static_cast<void>(source_key);

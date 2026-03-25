@@ -12,9 +12,8 @@ using namespace tracer_exchange_tests_internal;
 
 auto TestTracerExchangePackageRoundTrip(int& failures) -> void {
   const auto payloads = BuildSamplePayloads();
-  const auto entries = BuildValidPackageEntries(payloads, "main = true\n",
-                                                "alias = true\n",
-                                                "duration = true\n");
+  const auto entries = BuildValidPackageEntries(
+      payloads, "main = true\n", "alias = true\n", "duration = true\n");
   const auto bytes = exchange_pkg::EncodePackageBytes(entries);
   const auto decoded = exchange_pkg::DecodePackageBytes(bytes);
 
@@ -76,9 +75,9 @@ auto TestTracerExchangeManifestRejectsPathDrift(int& failures) -> void {
   manifest.source_root_name = "data";
   manifest.payload_files = {"payload/2025/2025-01.txt"};
 
-  const std::string invalid_manifest = ReplaceFirst(
-      exchange_pkg::BuildManifestText(manifest), "payload/2025/2025-01.txt",
-      "other/2025-01.txt");
+  const std::string invalid_manifest =
+      ReplaceFirst(exchange_pkg::BuildManifestText(manifest),
+                   "payload/2025/2025-01.txt", "other/2025-01.txt");
 
   bool did_throw = false;
   std::string message;

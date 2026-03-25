@@ -10,9 +10,8 @@ namespace tracer::core::infrastructure::logging {
 
 namespace modports = tracer::core::domain::ports;
 
-auto ConsoleDiagnosticsSink::Emit(
-    const modports::DiagnosticSeverity kSeverity,
-    const std::string_view kMessage) -> void {
+auto ConsoleDiagnosticsSink::Emit(const modports::DiagnosticSeverity kSeverity,
+                                  const std::string_view kMessage) -> void {
   if (kSeverity == modports::DiagnosticSeverity::kError) {
     std::cerr << kMessage << std::endl;
     return;

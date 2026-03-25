@@ -20,8 +20,7 @@ auto PipelineApi::RunConvert(const ConvertRequest& request) -> OperationAck {
     options.convert = true;
     options.validate_structure = request.validate_structure;
     options.validate_logic = request.validate_logic;
-    options.run_structure_validation_before_conversion =
-        request.validate_logic;
+    options.run_structure_validation_before_conversion = request.validate_logic;
     options.date_check_mode = request.date_check_mode;
     options.save_processed_output = request.save_processed_output;
 
@@ -58,8 +57,8 @@ auto PipelineApi::RunImport(const ImportRequest& request) -> OperationAck {
   }
 }
 
-auto PipelineApi::RunValidateStructure(
-    const ValidateStructureRequest& request) -> OperationAck {
+auto PipelineApi::RunValidateStructure(const ValidateStructureRequest& request)
+    -> OperationAck {
   try {
     pipeline_workflow_.RunValidateStructure(request.input_path);
     return {.ok = true, .error_message = ""};

@@ -30,17 +30,15 @@ auto BuildImportContentJson(const app_dto::TracerExchangeImportResult& result)
       {"text_root_updated", result.text_root_updated},
       {"config_applied", result.config_applied},
       {"database_rebuilt", result.database_rebuilt},
-      {"retained_failure_root",
-       result.retained_failure_root.has_value()
-           ? result.retained_failure_root->string()
-           : std::string()},
-      {"backup_retained_root",
-       result.backup_retained_root.has_value()
-           ? result.backup_retained_root->string()
-           : std::string()},
+      {"retained_failure_root", result.retained_failure_root.has_value()
+                                    ? result.retained_failure_root->string()
+                                    : std::string()},
+      {"backup_retained_root", result.backup_retained_root.has_value()
+                                   ? result.backup_retained_root->string()
+                                   : std::string()},
       {"backup_cleanup_error", result.backup_cleanup_error},
   }
-        .dump();
+      .dump();
 }
 
 auto BuildInspectContentJson(const app_dto::TracerExchangeInspectResult& result)
@@ -78,11 +76,11 @@ auto BuildFileCryptoResponse(const file_crypto::FileCryptoResult& result,
 auto BuildTracerExchangeExportResponse(
     const app_dto::TracerExchangeExportResult& result) -> std::string {
   if (!result.ok) {
-    return BuildResponseJson(
-        false,
-        result.error_message.empty() ? "complete exchange package export failed."
-                                     : result.error_message,
-        std::string{});
+    return BuildResponseJson(false,
+                             result.error_message.empty()
+                                 ? "complete exchange package export failed."
+                                 : result.error_message,
+                             std::string{});
   }
   return BuildResponseJson(true, std::string{}, BuildExportContentJson(result));
 }
@@ -90,11 +88,11 @@ auto BuildTracerExchangeExportResponse(
 auto BuildTracerExchangeImportResponse(
     const app_dto::TracerExchangeImportResult& result) -> std::string {
   if (!result.ok) {
-    return BuildResponseJson(
-        false,
-        result.error_message.empty() ? "import tracer exchange failed."
-                                     : result.error_message,
-        BuildImportContentJson(result));
+    return BuildResponseJson(false,
+                             result.error_message.empty()
+                                 ? "import tracer exchange failed."
+                                 : result.error_message,
+                             BuildImportContentJson(result));
   }
   return BuildResponseJson(true, std::string{}, BuildImportContentJson(result));
 }
@@ -102,11 +100,12 @@ auto BuildTracerExchangeImportResponse(
 auto BuildTracerExchangeInspectResponse(
     const app_dto::TracerExchangeInspectResult& result) -> std::string {
   if (!result.ok) {
-    return BuildResponseJson(
-        false,
-        result.error_message.empty() ? "inspect tracer exchange failed."
-                                     : result.error_message,
-        std::string{});
+    return BuildResponseJson(false,
+                             result.error_message.empty()
+                                 ? "inspect tracer exchange failed."
+                                 : result.error_message,
+                             std::string{});
   }
-  return BuildResponseJson(true, std::string{}, BuildInspectContentJson(result));
+  return BuildResponseJson(true, std::string{},
+                           BuildInspectContentJson(result));
 }

@@ -9,8 +9,7 @@
 
 import tracer.core.infrastructure.query.data.internal.request;
 
-namespace query_internal =
-    tracer::core::infrastructure::query::data::internal;
+namespace query_internal = tracer::core::infrastructure::query::data::internal;
 
 namespace tracer::core::infrastructure::query::data::orchestrators {
 namespace {

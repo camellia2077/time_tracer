@@ -39,8 +39,8 @@ auto ResolveFiles(const std::vector<std::string>& input_paths,
   for (const std::string& path_str : input_paths) {
     fs::path input_path(path_str);
     if (!fs::exists(input_path)) {
-      tracer_core::domain::ports::EmitWarn(
-          "Warning: Path does not exist: " + path_str);
+      tracer_core::domain::ports::EmitWarn("Warning: Path does not exist: " +
+                                           path_str);
       continue;
     }
 

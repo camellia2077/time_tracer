@@ -33,7 +33,8 @@ using tracer::core::domain::modtypes::IngestMode;
 
 namespace app_use_cases = tracer::core::application::use_cases;
 
-class SmokePipelineWorkflow final : public tracer::core::application::workflow::IWorkflowHandler {
+class SmokePipelineWorkflow final
+    : public tracer::core::application::workflow::IWorkflowHandler {
  public:
   auto RunConverter(const std::string&, const AppOptions&) -> void override {}
   auto RunDatabaseImport(const std::string&) -> void override {}
@@ -132,9 +133,9 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
          failures);
 
   auto (*build_error_message_fn)(std::string_view, std::string_view)
-      -> std::string = &app_use_cases::helpers::BuildErrorMessage;
+      ->std::string = &app_use_cases::helpers::BuildErrorMessage;
   auto (*build_text_failure_fn)(std::string_view)
-      -> tracer_core::core::dto::TextOutput =
+      ->tracer_core::core::dto::TextOutput =
       &app_use_cases::helpers::BuildTextFailure;
   Expect(build_error_message_fn != nullptr,
          "BuildErrorMessage should remain exported.", failures);
@@ -157,7 +158,8 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
         std::make_shared<app_use_cases::PipelineApi>(pipeline_workflow);
     auto query_api = std::make_shared<app_use_cases::QueryApi>(
         project_repository, data_query_service);
-    auto report_api = std::make_shared<app_use_cases::ReportApi>(report_handler);
+    auto report_api =
+        std::make_shared<app_use_cases::ReportApi>(report_handler);
     auto tracer_exchange_api =
         std::make_shared<app_use_cases::TracerExchangeApi>();
     app_use_cases::TracerCoreRuntime runtime_api(
@@ -165,26 +167,25 @@ auto RunAggregateRuntimeSmoke(int& failures) -> void {
         std::move(tracer_exchange_api));
 
     const auto data_query_result = runtime_api.query().RunDataQuery({});
-    Expect(data_query_result.ok &&
-               data_query_result.content == "smoke-data-query",
-           "Aggregate runtime should dispatch query API.", failures);
+    Expect(
+        data_query_result.ok && data_query_result.content == "smoke-data-query",
+        "Aggregate runtime should dispatch query API.", failures);
 
     const auto report_query_result = runtime_api.report().RunReportQuery(
         {.type = tracer_core::core::dto::ReportQueryType::kDay,
          .argument = "2026-03-10",
          .format = ReportFormat::kMarkdown});
-    Expect(report_query_result.ok &&
-               report_query_result.content == "smoke-daily",
-           "Aggregate runtime should dispatch report API.", failures);
+    Expect(
+        report_query_result.ok && report_query_result.content == "smoke-daily",
+        "Aggregate runtime should dispatch report API.", failures);
   } catch (const std::exception& exception) {
     ++failures;
     std::cerr << "[FAIL] Aggregate runtime smoke should construct and execute: "
               << exception.what() << '\n';
   } catch (...) {
     ++failures;
-    std::cerr
-        << "[FAIL] Aggregate runtime smoke should construct and execute: "
-        << "unknown non-standard exception\n";
+    std::cerr << "[FAIL] Aggregate runtime smoke should construct and execute: "
+              << "unknown non-standard exception\n";
   }
 }
 
@@ -194,11 +195,12 @@ auto main() -> int {
   int failures = 0;
   RunAggregateRuntimeSmoke(failures);
   if (failures == 0) {
-    std::cout << "[PASS] tracer_core_application_aggregate_runtime_smoke_tests\n";
+    std::cout
+        << "[PASS] tracer_core_application_aggregate_runtime_smoke_tests\n";
     return 0;
   }
-  std::cerr
-      << "[FAIL] tracer_core_application_aggregate_runtime_smoke_tests failures: "
-      << failures << '\n';
+  std::cerr << "[FAIL] tracer_core_application_aggregate_runtime_smoke_tests "
+               "failures: "
+            << failures << '\n';
   return 1;
 }

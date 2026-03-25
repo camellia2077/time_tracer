@@ -9,8 +9,8 @@ import tracer.core.infrastructure.query.data.repository.types;
 namespace tracer::core::infrastructure::query::data::renderers {
 namespace {
 
-using tracer_core::core::dto::DataQueryOutputMode;
 using tracer::core::application::query::tree::ProjectTreeNode;
+using tracer_core::core::dto::DataQueryOutputMode;
 
 [[nodiscard]] auto ShouldRenderSemanticJson(DataQueryOutputMode output_mode)
     -> bool {
@@ -21,8 +21,7 @@ using tracer::core::application::query::tree::ProjectTreeNode;
 
 auto RenderListOutput(std::string_view action,
                       const std::vector<std::string>& items,
-                      DataQueryOutputMode output_mode)
-    -> std::string {
+                      DataQueryOutputMode output_mode) -> std::string {
   if (ShouldRenderSemanticJson(output_mode)) {
     return BuildSemanticListPayload(action, items);
   }
@@ -51,8 +50,7 @@ auto RenderDayDurationStatsOutput(const std::vector<DayDurationRow>& rows,
 
 auto RenderActivitySuggestionsOutput(
     const std::vector<ActivitySuggestionRow>& rows,
-    DataQueryOutputMode output_mode)
-    -> std::string {
+    DataQueryOutputMode output_mode) -> std::string {
   if (ShouldRenderSemanticJson(output_mode)) {
     return BuildSemanticActivitySuggestionsPayload(rows);
   }

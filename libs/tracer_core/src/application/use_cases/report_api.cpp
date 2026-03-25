@@ -104,14 +104,16 @@ auto ReportApi::RunStructuredReportQuery(
 
     switch (request.type) {
       case ReportQueryType::kDay:
-        return {.ok = true,
-                .kind = StructuredReportKind::kDay,
-                .report = report_data_query_service_->QueryDaily(request.argument),
-                .error_message = ""};
+        return {
+            .ok = true,
+            .kind = StructuredReportKind::kDay,
+            .report = report_data_query_service_->QueryDaily(request.argument),
+            .error_message = ""};
       case ReportQueryType::kMonth:
         return {.ok = true,
                 .kind = StructuredReportKind::kMonth,
-                .report = report_data_query_service_->QueryMonthly(request.argument),
+                .report =
+                    report_data_query_service_->QueryMonthly(request.argument),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
         const int days = std::stoi(request.argument);
@@ -121,23 +123,26 @@ auto ReportApi::RunStructuredReportQuery(
                 .error_message = ""};
       }
       case ReportQueryType::kRange: {
-        const auto range = report_api_support::ParseRangeArgument(request.argument);
+        const auto range =
+            report_api_support::ParseRangeArgument(request.argument);
         return {.ok = true,
                 .kind = StructuredReportKind::kRange,
-                .report = report_data_query_service_->QueryRange(range.start_date,
-                                                                 range.end_date),
+                .report = report_data_query_service_->QueryRange(
+                    range.start_date, range.end_date),
                 .error_message = ""};
       }
       case ReportQueryType::kWeek:
-        return {.ok = true,
-                .kind = StructuredReportKind::kWeek,
-                .report = report_data_query_service_->QueryWeekly(request.argument),
-                .error_message = ""};
+        return {
+            .ok = true,
+            .kind = StructuredReportKind::kWeek,
+            .report = report_data_query_service_->QueryWeekly(request.argument),
+            .error_message = ""};
       case ReportQueryType::kYear:
-        return {.ok = true,
-                .kind = StructuredReportKind::kYear,
-                .report = report_data_query_service_->QueryYearly(request.argument),
-                .error_message = ""};
+        return {
+            .ok = true,
+            .kind = StructuredReportKind::kYear,
+            .report = report_data_query_service_->QueryYearly(request.argument),
+            .error_message = ""};
     }
 
     return report_api_support::BuildStructuredReportFailure(
@@ -217,7 +222,8 @@ auto ReportApi::RunStructuredPeriodBatchQuery(
           "Report data query service is not configured.");
     }
 
-    StructuredPeriodBatchOutput output{.ok = true, .items = {}, .error_message = ""};
+    StructuredPeriodBatchOutput output{
+        .ok = true, .items = {}, .error_message = ""};
     output.items.reserve(request.kDays.size());
 
     for (const int days : request.kDays) {
@@ -260,15 +266,14 @@ auto ReportApi::RunReportExport(const ReportExportRequest& request)
           const auto daily_report =
               report_data_query_service_->QueryDaily(request.argument);
           report_export_writer_->ExportSingleDay(request.argument, daily_report,
-                                                request.format);
+                                                 request.format);
           break;
         }
         case ReportExportType::kMonth: {
           const auto monthly_report =
               report_data_query_service_->QueryMonthly(request.argument);
-          report_export_writer_->ExportSingleMonth(request.argument,
-                                                  monthly_report,
-                                                  request.format);
+          report_export_writer_->ExportSingleMonth(
+              request.argument, monthly_report, request.format);
           break;
         }
         case ReportExportType::kRecent: {
@@ -276,21 +281,21 @@ auto ReportApi::RunReportExport(const ReportExportRequest& request)
           const auto period_report =
               report_data_query_service_->QueryPeriod(days);
           report_export_writer_->ExportSinglePeriod(days, period_report,
-                                                   request.format);
+                                                    request.format);
           break;
         }
         case ReportExportType::kWeek: {
           const auto weekly_report =
               report_data_query_service_->QueryWeekly(request.argument);
-          report_export_writer_->ExportSingleWeek(request.argument, weekly_report,
-                                                 request.format);
+          report_export_writer_->ExportSingleWeek(
+              request.argument, weekly_report, request.format);
           break;
         }
         case ReportExportType::kYear: {
           const auto yearly_report =
               report_data_query_service_->QueryYearly(request.argument);
-          report_export_writer_->ExportSingleYear(request.argument, yearly_report,
-                                                 request.format);
+          report_export_writer_->ExportSingleYear(
+              request.argument, yearly_report, request.format);
           break;
         }
         case ReportExportType::kAllDay: {
@@ -304,8 +309,8 @@ auto ReportApi::RunReportExport(const ReportExportRequest& request)
           break;
         }
         case ReportExportType::kAllRecent: {
-          const auto reports =
-              report_data_query_service_->QueryPeriodBatch(request.recent_days_list);
+          const auto reports = report_data_query_service_->QueryPeriodBatch(
+              request.recent_days_list);
           report_export_writer_->ExportAllPeriod(reports, request.format);
           break;
         }
@@ -325,7 +330,8 @@ auto ReportApi::RunReportExport(const ReportExportRequest& request)
 
     switch (request.type) {
       case ReportExportType::kDay:
-        report_handler_.RunExportSingleDayReport(request.argument, request.format);
+        report_handler_.RunExportSingleDayReport(request.argument,
+                                                 request.format);
         break;
       case ReportExportType::kMonth:
         report_handler_.RunExportSingleMonthReport(request.argument,
@@ -364,7 +370,8 @@ auto ReportApi::RunReportExport(const ReportExportRequest& request)
 
     return {.ok = true, .error_message = ""};
   } catch (const std::exception& exception) {
-    return core_api_failure::BuildOperationFailure("RunReportExport", exception);
+    return core_api_failure::BuildOperationFailure("RunReportExport",
+                                                   exception);
   } catch (...) {
     return core_api_failure::BuildOperationFailure("RunReportExport");
   }

@@ -31,19 +31,15 @@ struct ResponseEnvelopeParseArgs {
   std::string_view context;
 };
 
-[[nodiscard]] auto BuildResponseEnvelope(bool is_ok,
-                                         std::string_view error_message,
-                                         std::string_view content,
-                                         std::string_view error_code = {},
-                                         std::string_view error_category = {},
-                                         const std::vector<std::string>& hints = {})
-    -> ResponseEnvelope;
+[[nodiscard]] auto BuildResponseEnvelope(
+    bool is_ok, std::string_view error_message, std::string_view content,
+    std::string_view error_code = {}, std::string_view error_category = {},
+    const std::vector<std::string>& hints = {}) -> ResponseEnvelope;
 
 [[nodiscard]] auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)
     -> std::string;
 
-[[nodiscard]] auto ParseResponseEnvelope(
-    ResponseEnvelopeParseArgs parse_args)
+[[nodiscard]] auto ParseResponseEnvelope(ResponseEnvelopeParseArgs parse_args)
     -> ParseResponseEnvelopeResult;
 
 }  // namespace tracer::transport

@@ -13,7 +13,8 @@ module;
 
 #include "infra/schema/sqlite_schema.hpp"
 
-module tracer.core.infrastructure.persistence.write.importer.sqlite.project_resolver;
+module tracer.core.infrastructure.persistence.write.importer.sqlite
+    .project_resolver;
 
 import tracer.core.shared.string_utils;
 

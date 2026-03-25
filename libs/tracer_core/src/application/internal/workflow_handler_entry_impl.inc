@@ -98,8 +98,7 @@ WorkflowHandler::~WorkflowHandler() = default;
 auto WorkflowHandler::RunConverter(const std::string& input_path,
                                    const AppOptions& options) -> void {
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
-                                ingest_input_provider_,
-                                processed_data_storage_,
+                                ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
   if (!pipeline.Run(options)) {
     throw std::runtime_error("Converter Pipeline Failed.");
@@ -115,11 +114,9 @@ auto WorkflowHandler::RunValidateStructure(const std::string& source_path)
   const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
-                                ingest_input_provider_,
-                                processed_data_storage_,
+                                ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, kOptions,
-                     "Validate structure pipeline failed.");
+  RunPipelineOrThrow(pipeline, kOptions, "Validate structure pipeline failed.");
 }
 
 auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
@@ -132,11 +129,9 @@ auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
   const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
-                                ingest_input_provider_,
-                                processed_data_storage_,
+                                ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, kOptions,
-                     "Validate logic pipeline failed.");
+  RunPipelineOrThrow(pipeline, kOptions, "Validate logic pipeline failed.");
 }
 
 }  // namespace tracer::core::application::workflow

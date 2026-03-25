@@ -55,8 +55,8 @@ auto ResolvePayloadPackagePath(const fs::path& source_path) -> std::string {
         source_path.string());
   }
 
-  return (fs::path(exchange_pkg::kPayloadRoot) / std::to_string(file_info.year) /
-          file_info.file_name)
+  return (fs::path(exchange_pkg::kPayloadRoot) /
+          std::to_string(file_info.year) / file_info.file_name)
       .generic_string();
 }
 
@@ -78,10 +78,9 @@ auto CollectInputPayloadFiles(const fs::path& input_root)
     if (const auto [it, inserted] =
             path_by_month.emplace(month_info.month_key, entry.path());
         !inserted) {
-      throw std::runtime_error("Duplicate month TXT inputs detected for " +
-                               month_info.month_key + ": " +
-                               it->second.string() + " | " +
-                               entry.path().string());
+      throw std::runtime_error(
+          "Duplicate month TXT inputs detected for " + month_info.month_key +
+          ": " + it->second.string() + " | " + entry.path().string());
     }
     payload_files.push_back(InputPayloadFile{
         .source_path = entry.path(),
@@ -99,9 +98,10 @@ auto CollectInputPayloadFiles(const fs::path& input_root)
   return payload_files;
 }
 
-auto ValidateInputForExport(app_workflow::IWorkflowHandler& workflow_handler,
-                            tracer::core::domain::types::DateCheckMode date_check_mode,
-                            const fs::path& input_path) -> void {
+auto ValidateInputForExport(
+    app_workflow::IWorkflowHandler& workflow_handler,
+    tracer::core::domain::types::DateCheckMode date_check_mode,
+    const fs::path& input_path) -> void {
   const std::string input = input_path.string();
   workflow_handler.RunValidateStructure(input);
   workflow_handler.RunValidateLogic(input, date_check_mode);
@@ -133,10 +133,10 @@ auto BuildFileEntry(std::string_view relative_path, const fs::path& source_path)
   TracerExchangePackageEntry entry{};
   entry.relative_path = std::string(relative_path);
   const auto source_bytes = ReadFileBytes(source_path);
-  entry.data = IsCanonicalTextPackagePath(relative_path)
-                   ? CanonicalizePackageTextBytes(source_bytes,
-                                                  source_path.string())
-                   : source_bytes;
+  entry.data =
+      IsCanonicalTextPackagePath(relative_path)
+          ? CanonicalizePackageTextBytes(source_bytes, source_path.string())
+          : source_bytes;
   entry.entry_flags = exchange_pkg::kStandardEntryFlags;
   return entry;
 }
@@ -146,7 +146,8 @@ auto BuildFileEntry(std::string_view relative_path, const fs::path& source_path)
 auto TracerExchangeService::RunExport(
     const app_dto::TracerExchangeExportRequest& request)
     -> app_dto::TracerExchangeExportResult {
-  if (request.input_text_root_path.empty() || request.requested_output_path.empty()) {
+  if (request.input_text_root_path.empty() ||
+      request.requested_output_path.empty()) {
     throw std::invalid_argument("input/output paths are required.");
   }
   if (request.active_converter_main_config_path.empty()) {
@@ -177,7 +178,8 @@ auto TracerExchangeService::RunExport(
   }
 
   const ActiveConverterConfigPaths config_paths =
-      ResolveActiveConverterConfigPaths(request.active_converter_main_config_path);
+      ResolveActiveConverterConfigPaths(
+          request.active_converter_main_config_path);
   EnsureActiveConverterConfigExists(config_paths);
   ValidateInputPayloadsForExport(workflow_handler_, request.date_check_mode,
                                  payload_files);
@@ -186,8 +188,9 @@ auto TracerExchangeService::RunExport(
       input_path, fs::absolute(request.requested_output_path));
   EnsureParentDirectory(resolved_output);
 
-  const fs::path staging_dir = BuildScopedStagingDir(
-      resolved_output.parent_path(), "encrypt", resolved_output.stem().string());
+  const fs::path staging_dir =
+      BuildScopedStagingDir(resolved_output.parent_path(), "encrypt",
+                            resolved_output.stem().string());
   const fs::path package_path = staging_dir / "exchange.ttpkg";
 
   std::error_code io_error;
@@ -215,25 +218,25 @@ auto TracerExchangeService::RunExport(
     entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
                     payload_files.size());
     entries.push_back(BuildManifestEntry(manifest));
-    entries.push_back(
-        BuildFileEntry(exchange_pkg::kConverterMainPath, config_paths.main_config_path));
-    entries.push_back(
-        BuildFileEntry(exchange_pkg::kAliasMappingPath, config_paths.alias_mapping_path));
-    entries.push_back(
-        BuildFileEntry(exchange_pkg::kDurationRulesPath, config_paths.duration_rules_path));
+    entries.push_back(BuildFileEntry(exchange_pkg::kConverterMainPath,
+                                     config_paths.main_config_path));
+    entries.push_back(BuildFileEntry(exchange_pkg::kAliasMappingPath,
+                                     config_paths.alias_mapping_path));
+    entries.push_back(BuildFileEntry(exchange_pkg::kDurationRulesPath,
+                                     config_paths.duration_rules_path));
     for (const auto& payload_file : payload_files) {
-      entries.push_back(
-          BuildFileEntry(payload_file.relative_package_path, payload_file.source_path));
+      entries.push_back(BuildFileEntry(payload_file.relative_package_path,
+                                       payload_file.source_path));
     }
 
     const std::vector<std::uint8_t> package_bytes = EncodePackageBytes(entries);
     WriteFileBytes(package_path, package_bytes);
 
-    EnsureCryptoResultOk(
-        file_crypto::EncryptFile(
-            package_path, resolved_output, request.passphrase,
-            BuildCryptoOptions(request.security_level, request.progress_observer)),
-        "Encrypt", input_path);
+    EnsureCryptoResultOk(file_crypto::EncryptFile(
+                             package_path, resolved_output, request.passphrase,
+                             BuildCryptoOptions(request.security_level,
+                                                request.progress_observer)),
+                         "Encrypt", input_path);
   } catch (...) {
     RemoveDirectoryBestEffort(staging_dir);
     throw;

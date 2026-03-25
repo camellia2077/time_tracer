@@ -42,7 +42,7 @@ void TestDecodeResolveCliContextResponse(int& failures) {
          "DecodeResolveCliContextResponse default_date_check_mode mismatch.",
          failures);
   Expect(response.cli_config->command_defaults.convert_validate_logic
-             .has_value() &&
+                 .has_value() &&
              *response.cli_config->command_defaults.convert_validate_logic,
          "DecodeResolveCliContextResponse convert_validate_logic mismatch.",
          failures);
@@ -68,13 +68,13 @@ void TestDecodeTreeResponse(int& failures) {
       R"({"ok":true,"found":false,"error_message":"","roots":["study","sleep"],"nodes":[{"name":"study","path":"study","duration_seconds":3600,"children":[{"name":"math","path":"study_math","duration_seconds":1800,"children":[]}]}]})");
   Expect(response.ok, "DecodeTreeResponse ok mismatch.", failures);
   Expect(!response.found, "DecodeTreeResponse found mismatch.", failures);
-  Expect(response.roots.size() == 2U,
-         "DecodeTreeResponse roots size mismatch.", failures);
-  Expect(response.nodes.size() == 1U,
-         "DecodeTreeResponse nodes size mismatch.", failures);
-  Expect(response.nodes[0].path.has_value() &&
-             *response.nodes[0].path == "study",
-         "DecodeTreeResponse node path mismatch.", failures);
+  Expect(response.roots.size() == 2U, "DecodeTreeResponse roots size mismatch.",
+         failures);
+  Expect(response.nodes.size() == 1U, "DecodeTreeResponse nodes size mismatch.",
+         failures);
+  Expect(
+      response.nodes[0].path.has_value() && *response.nodes[0].path == "study",
+      "DecodeTreeResponse node path mismatch.", failures);
   Expect(response.nodes[0].duration_seconds.has_value() &&
              *response.nodes[0].duration_seconds == 3600LL,
          "DecodeTreeResponse node duration mismatch.", failures);
@@ -114,8 +114,8 @@ void TestDecodeAckAndTextResponses(int& failures) {
   Expect(ack_ok.error_message.empty(),
          "DecodeAckResponse error_message mismatch.", failures);
 
-  const auto ack_failed = DecodeAckResponse(
-      R"({"ok":false,"error_message":""})", "runtime_export");
+  const auto ack_failed =
+      DecodeAckResponse(R"({"ok":false,"error_message":""})", "runtime_export");
   Expect(!ack_failed.ok, "DecodeAckResponse failed ok mismatch.", failures);
   Expect(ack_failed.error_message == "Core operation failed.",
          "DecodeAckResponse failed fallback error mismatch.", failures);
@@ -130,7 +130,8 @@ void TestDecodeAckAndTextResponses(int& failures) {
          "DecodeTextResponse content mismatch.", failures);
 
   const auto text_failed = DecodeTextResponse(
-      R"({"ok":false,"error_message":"","content":"partial"})", "runtime_report");
+      R"({"ok":false,"error_message":"","content":"partial"})",
+      "runtime_report");
   Expect(!text_failed.ok, "DecodeTextResponse failed ok mismatch.", failures);
   Expect(text_failed.error_message == "Core operation failed.",
          "DecodeTextResponse failed fallback error mismatch.", failures);
@@ -142,8 +143,8 @@ void TestDecodeAckAndTextResponses(int& failures) {
         (void)DecodeAckResponse(R"({"error_message":"missing ok"})",
                                 "runtime_validate_logic");
       },
-      "runtime_validate_logic:",
-      "DecodeAckResponse invalid envelope context", failures);
+      "runtime_validate_logic:", "DecodeAckResponse invalid envelope context",
+      failures);
   ExpectInvalidArgument(
       [] { (void)DecodeTextResponse(R"({"ok":1})", "runtime_query"); },
       "runtime_query:", "DecodeTextResponse invalid envelope context",

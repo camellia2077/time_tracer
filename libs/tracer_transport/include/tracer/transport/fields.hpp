@@ -44,8 +44,7 @@ struct IntListFieldResult {
 };
 
 [[nodiscard]] auto BuildTypeError(std::string_view field_name,
-                                  std::string_view expected_type)
-    -> FieldIssue;
+                                  std::string_view expected_type) -> FieldIssue;
 
 [[nodiscard]] auto FormatFieldIssue(const FieldIssue& issue) -> std::string;
 

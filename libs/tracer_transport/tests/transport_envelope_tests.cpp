@@ -30,7 +30,8 @@ void TestParseSuccess(int& failures) {
           R"({"ok":true,"error_message":"","content":"ingest completed"})",
       .context = "nativeIngest",
   });
-  Expect(!parsed.HasError(), "Parse success should not return error.", failures);
+  Expect(!parsed.HasError(), "Parse success should not return error.",
+         failures);
   Expect(parsed.envelope.ok, "Parsed envelope `ok` should be true.", failures);
   Expect(parsed.envelope.error_message.empty(),
          "Parsed envelope `error_message` should be empty.", failures);
@@ -43,9 +44,10 @@ void TestParseMissingOptionalDefaults(int& failures) {
       .response_json = R"({"ok":false})",
       .context = "nativeQuery",
   });
-  Expect(!parsed.HasError(),
-         "Missing optional fields should not fail parsing.", failures);
-  Expect(!parsed.envelope.ok, "Parsed envelope `ok` should be false.", failures);
+  Expect(!parsed.HasError(), "Missing optional fields should not fail parsing.",
+         failures);
+  Expect(!parsed.envelope.ok, "Parsed envelope `ok` should be false.",
+         failures);
   Expect(parsed.envelope.error_message.empty(),
          "Missing `error_message` should default to empty string.", failures);
   Expect(parsed.envelope.content.empty(),
@@ -63,7 +65,8 @@ void TestParseOptionalTypeMismatchDefaults(int& failures) {
          "Type mismatch on optional fields should not fail parsing.", failures);
   Expect(parsed.envelope.ok, "Parsed envelope `ok` should be true.", failures);
   Expect(parsed.envelope.error_message.empty(),
-         "Non-string `error_message` should default to empty string.", failures);
+         "Non-string `error_message` should default to empty string.",
+         failures);
   Expect(parsed.envelope.content.empty(),
          "Non-string `content` should default to empty string.", failures);
 }
@@ -85,7 +88,8 @@ void TestParseRejectsMissingOrInvalidOk(int& failures) {
       .response_json = R"({"ok":"true"})",
       .context = "nativeValidateLogic",
   });
-  Expect(wrong_ok.HasError(), "Non-boolean `ok` should fail parsing.", failures);
+  Expect(wrong_ok.HasError(), "Non-boolean `ok` should fail parsing.",
+         failures);
   Expect(wrong_ok.error.code == TransportErrorCode::kValidationFailure,
          "Non-boolean `ok` should be a validation failure.", failures);
 }
@@ -127,14 +131,15 @@ void TestParseNonObjectJson(int& failures) {
 }
 
 void TestSerializeRoundTrip(int& failures) {
-  const auto envelope = BuildResponseEnvelope(
-      true, "line 1\nline 2 \"quoted\"", "content payload");
+  const auto envelope = BuildResponseEnvelope(true, "line 1\nline 2 \"quoted\"",
+                                              "content payload");
   const std::string serialized = SerializeResponseEnvelope(envelope);
   const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
       .response_json = serialized,
       .context = "roundtrip",
   });
-  Expect(!parsed.HasError(), "Serialized envelope should parse back.", failures);
+  Expect(!parsed.HasError(), "Serialized envelope should parse back.",
+         failures);
   Expect(parsed.envelope.ok == envelope.ok, "Roundtrip `ok` mismatch.",
          failures);
   Expect(parsed.envelope.error_message == envelope.error_message,
@@ -154,8 +159,8 @@ void TestSerializeRoundTripWithHash(int& failures) {
       .response_json = serialized,
       .context = "roundtrip_with_hash",
   });
-  Expect(!parsed.HasError(),
-         "Serialized envelope with hash should parse back.", failures);
+  Expect(!parsed.HasError(), "Serialized envelope with hash should parse back.",
+         failures);
   Expect(parsed.envelope.report_hash_sha256 == envelope.report_hash_sha256,
          "Roundtrip `report_hash_sha256` mismatch.", failures);
 }

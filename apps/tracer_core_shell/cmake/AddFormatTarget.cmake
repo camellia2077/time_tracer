@@ -6,15 +6,53 @@ find_program(CLANG_FORMAT_EXE NAMES "clang-format")
 if(CLANG_FORMAT_EXE)
     message(STATUS "Found clang-format: ${CLANG_FORMAT_EXE}")
 
-    # 2. 自动扫描所有源文件与头文件
-    # 逻辑修补：由于项目采用了 Clean Architecture，源文件分布在 src/ 下的多个层级中。
-    # 采用递归扫描以确保所有新层（api, application, domain, infrastructure, shared）都能被覆盖。
-    file(GLOB_RECURSE ALL_FORMAT_SOURCES
-        "src/*.cpp"
-        "src/*.hpp"
-        "src/*.h"
-        # 排除外部生成的或不需要格式化的文件（如有需要可在下面添加 EXCLUDE 逻辑）
+    # 2. 自动扫描 shell host 的真实源码家族。
+    # 这里不能继续假设存在 src/ 根目录；tracer_core_shell 现在使用 api/、host/、tests/
+    # 和少量根目录 PCH 头文件作为真实源码入口。
+    set(FORMAT_GLOB_PATTERNS
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.cxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.hh"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.hxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.inc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.ipp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.ixx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/api/*.cppm"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.cxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.hh"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.hxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.inc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.ipp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.ixx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/host/*.cppm"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.c"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hh"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.hxx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.inc"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.ipp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.ixx"
+        "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cppm"
+        "${CMAKE_CURRENT_SOURCE_DIR}/pch*.h"
+        "${CMAKE_CURRENT_SOURCE_DIR}/pch*.hpp"
     )
+    file(GLOB_RECURSE ALL_FORMAT_SOURCES CONFIGURE_DEPENDS
+        ${FORMAT_GLOB_PATTERNS}
+    )
+    list(REMOVE_DUPLICATES ALL_FORMAT_SOURCES)
 
     # 4. 建立单独的任务以绕过 Windows 命令行长度限制
     set(CHECK_DEP_TARGETS "")

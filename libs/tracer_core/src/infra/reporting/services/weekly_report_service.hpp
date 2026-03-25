@@ -37,4 +37,3 @@ using WeeklyReportService =
     tracer::core::infrastructure::reports::services::WeeklyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_WEEKLY_REPORT_SERVICE_H_
-

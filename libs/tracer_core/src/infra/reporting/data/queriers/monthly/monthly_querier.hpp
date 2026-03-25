@@ -52,4 +52,3 @@ class BatchMonthDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_MONTHLY_MONTHLY_QUERIER_H_
-

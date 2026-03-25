@@ -17,11 +17,12 @@
 #include "infra/schema/sqlite_schema.hpp"
 
 namespace {
+using tracer::core::infrastructure::reports::data::stats::
+    IsAnaerobicProjectPath;
+using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsAnaerobicProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
-}
+}  // namespace
 
 BatchPeriodDataFetcher::BatchPeriodDataFetcher(
     sqlite3* db_connection,
@@ -89,9 +90,8 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
 
   sqlite3_stmt* flag_stmt = nullptr;
   const std::string kFlagSql = std::format(
-      "SELECT {0}, {1} FROM {2} WHERE {0} >= ?",
-      schema::day::db::kDate, schema::day::db::kWakeAnchor,
-      schema::day::db::kTable);
+      "SELECT {0}, {1} FROM {2} WHERE {0} >= ?", schema::day::db::kDate,
+      schema::day::db::kWakeAnchor, schema::day::db::kTable);
   if (sqlite3_prepare_v2(db_, kFlagSql.c_str(), -1, &flag_stmt, nullptr) ==
       SQLITE_OK) {
     sqlite3_bind_text(flag_stmt, 1, max_start_date.c_str(), -1,

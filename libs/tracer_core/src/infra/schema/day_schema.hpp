@@ -79,30 +79,18 @@ struct JsonOnlyKeySet {
 };
 
 inline constexpr std::array<std::string_view, 6> kDaysTableColumns = {
-    db::kDate,
-    db::kYear,
-    db::kMonth,
-    db::kWakeAnchor,
-    db::kRemark,
-    db::kGetupTime,
+    db::kDate,       db::kYear,   db::kMonth,
+    db::kWakeAnchor, db::kRemark, db::kGetupTime,
 };
 
 inline constexpr std::array<std::string_view, 7> kHeaderJsonKeys = {
-    json::kDate,
-    json::kWakeAnchor,
-    json::kCardio,
-    json::kAnaerobic,
-    json::kGetup,
-    json::kActivityCount,
-    json::kRemark,
+    json::kDate,  json::kWakeAnchor,    json::kCardio, json::kAnaerobic,
+    json::kGetup, json::kActivityCount, json::kRemark,
 };
 
 inline constexpr std::array<std::string_view, 5> kHeaderJsonOnlyKeys = {
-    json::kStatus,
-    json::kExercise,
-    json::kCardio,
-    json::kAnaerobic,
-    json::kActivityCount,
+    json::kStatus,    json::kExercise,      json::kCardio,
+    json::kAnaerobic, json::kActivityCount,
 };
 
 inline constexpr std::array<FieldMapping, 9> kHeaderFieldMappings = {{

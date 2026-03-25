@@ -63,15 +63,13 @@ auto BuildProcessedJsonValidationInput(const nlohmann::json& payload)
 }
 
 auto CollectProcessedJsonValidationErrors(
-    std::string_view source,
-    const ProcessedJsonValidationInput& input)
+    std::string_view source, const ProcessedJsonValidationInput& input)
     -> std::vector<tracer_core::application::ports::ProcessedDataLoadError> {
   std::vector<tracer_core::application::ports::ProcessedDataLoadError> errors;
 
   if (!input.has_root_array) {
-    errors.push_back(
-        {.source = std::string(source),
-         .message = "Processed data JSON root must be an array."});
+    errors.push_back({.source = std::string(source),
+                      .message = "Processed data JSON root must be an array."});
     return errors;
   }
 
@@ -79,10 +77,9 @@ auto CollectProcessedJsonValidationErrors(
     const std::string kDisplayDate = ResolveDisplayDate(day);
 
     if (!day.has_day_object) {
-      errors.push_back(
-          {.source = std::string(source),
-           .message = "In file for date " + kDisplayDate +
-                      ": Each day entry must be a JSON object."});
+      errors.push_back({.source = std::string(source),
+                        .message = "In file for date " + kDisplayDate +
+                                   ": Each day entry must be a JSON object."});
       continue;
     }
 

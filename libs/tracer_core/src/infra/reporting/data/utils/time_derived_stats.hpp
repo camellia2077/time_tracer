@@ -37,10 +37,9 @@ namespace detail {
   size_t start = 0;
   while (start <= path.size()) {
     const size_t separator = path.find('_', start);
-    const std::string_view part =
-        path.substr(start, separator == std::string_view::npos
-                               ? std::string_view::npos
-                               : separator - start);
+    const std::string_view part = path.substr(
+        start, separator == std::string_view::npos ? std::string_view::npos
+                                                   : separator - start);
     if (part == segment) {
       return true;
     }
@@ -76,8 +75,8 @@ namespace detail {
 
 class DerivedTimeStatsAggregator {
  public:
-  auto AddPathDuration(std::string_view project_path, long long duration_seconds)
-      -> void {
+  auto AddPathDuration(std::string_view project_path,
+                       long long duration_seconds) -> void {
     if (project_path.empty() || duration_seconds <= 0) {
       return;
     }

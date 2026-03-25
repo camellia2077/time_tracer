@@ -94,4 +94,3 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
 }
 
 }  // namespace tracer_core_c_api_stability_internal
-

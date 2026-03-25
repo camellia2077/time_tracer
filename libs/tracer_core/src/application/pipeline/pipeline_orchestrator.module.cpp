@@ -76,13 +76,15 @@ auto PipelineOrchestrator::Run(const AppOptions& options)
   tracer_core::application::runtime_bridge::LogInfo(
       "\n--- Pipeline Execution Started ---");
 
-  if (!InputCollectionStage::Execute(session, *ingest_input_provider_, ".txt")) {
+  if (!InputCollectionStage::Execute(session, *ingest_input_provider_,
+                                     ".txt")) {
     return std::nullopt;
   }
 
   if (options.validate_structure || options.convert) {
     try {
-      tracer_core::application::runtime_bridge::LogInfo("Loading Configuration...");
+      tracer_core::application::runtime_bridge::LogInfo(
+          "Loading Configuration...");
 
       session.state.converter_config =
           converter_config_provider_->LoadConverterConfig();

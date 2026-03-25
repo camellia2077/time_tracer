@@ -11,8 +11,10 @@ export module tracer.adapters.io.runtime;
 
 export namespace tracer::adapters::io::modruntime {
 
-using IngestInputProvider = ::tracer_core::application::ports::IIngestInputProvider;
-using ProcessedDataLoader = ::tracer_core::application::ports::IProcessedDataLoader;
+using IngestInputProvider =
+    ::tracer_core::application::ports::IIngestInputProvider;
+using ProcessedDataLoader =
+    ::tracer_core::application::ports::IProcessedDataLoader;
 using ProcessedDataStorage =
     ::tracer_core::application::ports::IProcessedDataStorage;
 

@@ -30,4 +30,3 @@ class PeriodQuerier : public RangeQuerierBase<PeriodReportData, int> {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_PERIOD_PERIOD_QUERIER_H_
-

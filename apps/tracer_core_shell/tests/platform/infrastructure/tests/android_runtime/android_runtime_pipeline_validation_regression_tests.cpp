@@ -36,8 +36,8 @@ class CapturingLogger final : public applog::ILogger {
 
 class CapturingDiagnosticsSink final : public modports::IDiagnosticsSink {
  public:
-  auto Emit(modports::DiagnosticSeverity severity,
-            std::string_view message) -> void override {
+  auto Emit(modports::DiagnosticSeverity severity, std::string_view message)
+      -> void override {
     if (severity == modports::DiagnosticSeverity::kError) {
       errors_.append(message);
       errors_.push_back('\n');
@@ -103,7 +103,8 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(
           kSourceFile,
@@ -127,7 +128,8 @@ auto TestValidateLogicRejectsWakeKeywordAfterFirstEvent(int& failures) -> void {
   }
 
   const std::string kExpectedText =
-      "Wake keyword activity 'wake' must appear only as the first event of the day.";
+      "Wake keyword activity 'wake' must appear only as the first event of the "
+      "day.";
   if (!Contains(diagnostics_sink->Errors(), kExpectedText) ||
       !Contains(diagnostics_sink->Errors(), kSourceFile.string() + ":6")) {
     ++failures;
@@ -179,7 +181,8 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
     ++failures;
@@ -221,7 +224,8 @@ auto TestConvertLogsActualConversionFailure(int& failures) -> void {
   }
 
   const std::string kExpectedParseError =
-      kSourceFile.string() + ":4: Parse error: Invalid event line format => 'r'";
+      kSourceFile.string() +
+      ":4: Parse error: Invalid event line format => 'r'";
   if (!Contains(diagnostics_sink->Errors(), kExpectedParseError)) {
     ++failures;
     std::cerr << "[FAIL] RunConvert should still surface parser-style "
@@ -269,7 +273,8 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   std::error_code error;
   std::filesystem::create_directories(kSourceRoot, error);
@@ -293,8 +298,8 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
     }
   }
 
-  const auto kAck =
-      runtime.runtime_api->pipeline().RunValidateStructure({.input_path = kSourceRoot.string()});
+  const auto kAck = runtime.runtime_api->pipeline().RunValidateStructure(
+      {.input_path = kSourceRoot.string()});
   if (kAck.ok) {
     ++failures;
     std::cerr << "[FAIL] RunValidateStructure should fail for invalid UTF-8 "

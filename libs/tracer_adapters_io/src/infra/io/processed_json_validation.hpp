@@ -31,8 +31,7 @@ struct ProcessedJsonValidationInput {
     const nlohmann::json& payload) -> ProcessedJsonValidationInput;
 
 [[nodiscard]] auto CollectProcessedJsonValidationErrors(
-    std::string_view source,
-    const ProcessedJsonValidationInput& input)
+    std::string_view source, const ProcessedJsonValidationInput& input)
     -> std::vector<tracer_core::application::ports::ProcessedDataLoadError>;
 
 }  // namespace infrastructure::io

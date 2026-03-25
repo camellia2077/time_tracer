@@ -2,7 +2,8 @@ module;
 
 #include "infra/query/data/renderers/semantic_json_renderer.hpp"
 
-export module tracer.core.infrastructure.query.data.renderers.semantic_json_renderer;
+export module tracer.core.infrastructure.query.data.renderers
+    .semantic_json_renderer;
 
 export namespace tracer::core::infrastructure::query::data::renderers {
 

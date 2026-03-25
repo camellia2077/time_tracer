@@ -90,8 +90,9 @@ auto BuildTotalsByDate(const std::vector<LegacyDayDurationRow>& sparse_rows)
 
 }  // namespace
 
-auto BuildReportChartSeries(ReportChartDateRange range,
-                            const std::vector<LegacyDayDurationRow>& sparse_rows)
+auto BuildReportChartSeries(
+    ReportChartDateRange range,
+    const std::vector<LegacyDayDurationRow>& sparse_rows)
     -> ReportChartSeriesResult {
   const auto kStartYmd = ParseIsoDate(range.start_date);
   const auto kEndYmd = ParseIsoDate(range.end_date);

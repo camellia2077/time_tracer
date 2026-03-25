@@ -15,11 +15,12 @@
 #include "infra/schema/sqlite_schema.hpp"
 
 namespace {
+using tracer::core::infrastructure::reports::data::stats::
+    IsAnaerobicProjectPath;
+using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsAnaerobicProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
-}
+}  // namespace
 
 YearQuerier::YearQuerier(sqlite3* sqlite_db, std::string_view year_str)
     : RangeQuerierBase(sqlite_db, year_str) {}

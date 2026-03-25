@@ -27,9 +27,9 @@ auto FindEntrySummary(const exchange_pkg::DecodedTracerExchangePackage& package,
   return summary;
 }
 
-auto BuildInspectResult(const fs::path& input_path,
-                        const file_crypto::TracerFileMetadata& metadata,
-                        const exchange_pkg::DecodedTracerExchangePackage& package)
+auto BuildInspectResult(
+    const fs::path& input_path, const file_crypto::TracerFileMetadata& metadata,
+    const exchange_pkg::DecodedTracerExchangePackage& package)
     -> app_dto::TracerExchangeInspectResult {
   app_dto::TracerExchangeInspectResult result{};
   result.ok = true;
@@ -79,8 +79,8 @@ auto TracerExchangeService::RunInspect(
 
   const fs::path input_path = fs::absolute(request.input_tracer_path);
   if (!fs::exists(input_path) || !fs::is_regular_file(input_path)) {
-    throw std::invalid_argument("Inspect input path must be an existing file: " +
-                                input_path.string());
+    throw std::invalid_argument(
+        "Inspect input path must be an existing file: " + input_path.string());
   }
   if (!HasExtensionCaseInsensitive(input_path, ".tracer")) {
     throw std::invalid_argument("Inspect input file must be .tracer: " +
@@ -91,9 +91,9 @@ auto TracerExchangeService::RunInspect(
   EnsureCryptoResultOk(file_crypto::InspectEncryptedFile(input_path, &metadata),
                        "Inspect", input_path);
 
-  const std::string stem =
-      input_path.stem().empty() ? input_path.filename().string()
-                                : input_path.stem().string();
+  const std::string stem = input_path.stem().empty()
+                               ? input_path.filename().string()
+                               : input_path.stem().string();
   const fs::path staging_dir =
       BuildScopedStagingDir(input_path.parent_path(), "inspect", stem);
   const fs::path package_path = staging_dir / "exchange.ttpkg";
@@ -109,8 +109,9 @@ auto TracerExchangeService::RunInspect(
     EnsureCryptoResultOk(
         file_crypto::DecryptFile(
             input_path, package_path, request.passphrase,
-            BuildCryptoOptions(app_dto::TracerExchangeSecurityLevel::kInteractive,
-                               request.progress_observer)),
+            BuildCryptoOptions(
+                app_dto::TracerExchangeSecurityLevel::kInteractive,
+                request.progress_observer)),
         "Inspect", input_path);
     const exchange_pkg::DecodedTracerExchangePackage package =
         DecodePackageBytes(ReadFileBytes(package_path));

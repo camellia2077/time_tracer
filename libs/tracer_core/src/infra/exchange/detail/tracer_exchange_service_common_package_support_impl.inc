@@ -49,8 +49,7 @@ auto ParseMonthInfoFromFileName(std::string_view file_name,
 auto ParseMonthInfoFromCanonicalText(std::span<const std::uint8_t> bytes,
                                      std::string_view source_label)
     -> ParsedMonthInfo {
-  const std::string text =
-      modtext::RequireCanonicalText(bytes, source_label);
+  const std::string text = modtext::RequireCanonicalText(bytes, source_label);
   std::optional<int> year;
   std::optional<int> month;
   std::istringstream stream(text);
@@ -64,17 +63,15 @@ auto ParseMonthInfoFromCanonicalText(std::span<const std::uint8_t> bytes,
       continue;
     }
     if (!year.has_value() && trimmed.size() == 5U && trimmed.front() == 'y' &&
-        std::all_of(trimmed.begin() + 1U, trimmed.end(), [](char ch) {
-          return ch >= '0' && ch <= '9';
-        })) {
+        std::all_of(trimmed.begin() + 1U, trimmed.end(),
+                    [](char ch) { return ch >= '0' && ch <= '9'; })) {
       year = std::stoi(std::string(trimmed.substr(1U)));
       continue;
     }
     if (year.has_value() && !month.has_value() && trimmed.size() == 3U &&
         trimmed.front() == 'm' &&
-        std::all_of(trimmed.begin() + 1U, trimmed.end(), [](char ch) {
-          return ch >= '0' && ch <= '9';
-        })) {
+        std::all_of(trimmed.begin() + 1U, trimmed.end(),
+                    [](char ch) { return ch >= '0' && ch <= '9'; })) {
       month = std::stoi(std::string(trimmed.substr(1U)));
       if (*month < 1 || *month > 12) {
         throw std::runtime_error("Invalid month header in " +
@@ -212,14 +209,14 @@ auto CanonicalizePackageTextBytes(std::string_view text,
 auto EnsureRegularFileExists(const fs::path& path, std::string_view label)
     -> void {
   if (!fs::exists(path) || !fs::is_regular_file(path)) {
-    throw std::runtime_error(std::string(label) + " is missing: " +
-                             path.string());
+    throw std::runtime_error(std::string(label) +
+                             " is missing: " + path.string());
   }
 }
 
 auto EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
-                          std::string_view action,
-                          const fs::path& input_path) -> void {
+                          std::string_view action, const fs::path& input_path)
+    -> void {
   if (result.ok()) {
     return;
   }

@@ -9,12 +9,20 @@ import tracer.core.domain;
 
 namespace {
 
-using tracer::core::domain::moderrors::ErrorRecord;
-using tracer::core::domain::moderrors::ErrorSeverity;
 using tracer::core::domain::model::BaseActivityRecord;
 using tracer::core::domain::model::DailyLog;
 using tracer::core::domain::model::ProcessingResult;
 using tracer::core::domain::model::SourceSpan;
+using tracer::core::domain::moderrors::ErrorRecord;
+using tracer::core::domain::moderrors::ErrorSeverity;
+using tracer::core::domain::modreports::DailyReportData;
+using tracer::core::domain::modreports::FormattedYearlyReports;
+using tracer::core::domain::modreports::PeriodReportData;
+using tracer::core::domain::modreports::ProjectTree;
+using tracer::core::domain::modreports::ReportFormat;
+using tracer::core::domain::modreports::WeeklyReportData;
+using tracer::core::domain::modrepos::IProjectRepository;
+using tracer::core::domain::modrepos::ProjectEntity;
 using tracer::core::domain::ports::AppendErrorReport;
 using tracer::core::domain::ports::ClearBufferedDiagnostics;
 using tracer::core::domain::ports::ClearDiagnosticsDedup;
@@ -26,14 +34,6 @@ using tracer::core::domain::ports::IDiagnosticsSink;
 using tracer::core::domain::ports::IErrorReportWriter;
 using tracer::core::domain::ports::SetDiagnosticsSink;
 using tracer::core::domain::ports::SetErrorReportWriter;
-using tracer::core::domain::modrepos::IProjectRepository;
-using tracer::core::domain::modrepos::ProjectEntity;
-using tracer::core::domain::modreports::DailyReportData;
-using tracer::core::domain::modreports::FormattedYearlyReports;
-using tracer::core::domain::modreports::PeriodReportData;
-using tracer::core::domain::modreports::ProjectTree;
-using tracer::core::domain::modreports::ReportFormat;
-using tracer::core::domain::modreports::WeeklyReportData;
 using tracer::core::domain::types::AppOptions;
 using tracer::core::domain::types::ConverterConfig;
 using tracer::core::domain::types::DateCheckMode;
@@ -49,7 +49,8 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
 
 class FakeDiagnosticsSink final : public IDiagnosticsSink {
  public:
-  auto Emit(DiagnosticSeverity severity, std::string_view message) -> void override {
+  auto Emit(DiagnosticSeverity severity, std::string_view message)
+      -> void override {
     records.emplace_back(static_cast<int>(severity), std::string(message));
   }
 
@@ -97,7 +98,8 @@ void TestPortsAndRepository(int& failures) {
 
   const auto summary =
       GetBufferedDiagnosticsSummary(DiagnosticSeverity::kInfo, 8U);
-  Expect(!summary.empty(), "Diagnostics summary should not be empty.", failures);
+  Expect(!summary.empty(), "Diagnostics summary should not be empty.",
+         failures);
 
   FakeProjectRepository repo;
   const auto projects = repo.GetAllProjects();
@@ -116,8 +118,8 @@ void TestDomainModelsAndTypes(int& failures) {
   ConverterConfig config;
   config.remark_prefix = "#";
   config.header_order = {"sleep", "study"};
-  Expect(config.header_order.size() == 2U, "ConverterConfig header_order mismatch.",
-         failures);
+  Expect(config.header_order.size() == 2U,
+         "ConverterConfig header_order mismatch.", failures);
   const IngestMode mode = IngestMode::kStandard;
   Expect(mode == IngestMode::kStandard, "IngestMode mismatch.", failures);
 
@@ -139,7 +141,8 @@ void TestDomainModelsAndTypes(int& failures) {
 
   ProcessingResult result;
   result.timings.validation_source_ms = 1.0;
-  Expect(result.success, "ProcessingResult success default mismatch.", failures);
+  Expect(result.success, "ProcessingResult success default mismatch.",
+         failures);
 
   ErrorRecord error;
   error.code = "validation.line.invalid";
@@ -153,8 +156,8 @@ void TestReportModels(int& failures) {
   ProjectTree tree;
   tree["study"].duration = 120;
   tree["study"].children["cpp"].duration = 60;
-  Expect(tree["study"].children.size() == 1U,
-         "ProjectTree children mismatch.", failures);
+  Expect(tree["study"].children.size() == 1U, "ProjectTree children mismatch.",
+         failures);
 
   PeriodReportData period;
   period.range_label = "2026-W10";
@@ -168,8 +171,8 @@ void TestReportModels(int& failures) {
   DailyReportData daily;
   daily.date = "2026-03-04";
   daily.project_tree = tree;
-  Expect(daily.project_tree.size() == 1U, "DailyReportData project_tree mismatch.",
-         failures);
+  Expect(daily.project_tree.size() == 1U,
+         "DailyReportData project_tree mismatch.", failures);
 
   FormattedYearlyReports yearly_reports;
   yearly_reports.emplace(2026, "ok");

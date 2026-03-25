@@ -52,8 +52,9 @@ struct TracerExchangeProgressSnapshot {
   std::string phase;
 };
 
-using TracerExchangeProgressObserver = std::function<
-    TracerExchangeProgressControl(const TracerExchangeProgressSnapshot&)>;
+using TracerExchangeProgressObserver =
+    std::function<TracerExchangeProgressControl(
+        const TracerExchangeProgressSnapshot&)>;
 
 struct TracerExchangeExportRequest {
   std::filesystem::path input_text_root_path;

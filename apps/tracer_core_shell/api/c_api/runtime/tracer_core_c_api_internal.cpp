@@ -39,8 +39,8 @@ CryptoProgressCallbackRegistration g_crypto_progress_callback_registration{};
 
 }  // namespace
 
-void SetCryptoProgressCallbackRegistration(TtCoreCryptoProgressCallback callback,
-                                           void* user_data) {
+void SetCryptoProgressCallbackRegistration(
+    TtCoreCryptoProgressCallback callback, void* user_data) {
   std::scoped_lock lock(g_crypto_progress_callback_mutex);
   g_crypto_progress_callback_registration.callback = callback;
   g_crypto_progress_callback_registration.user_data = user_data;
@@ -65,9 +65,10 @@ struct ErrorContractBuildOptions {
   std::vector<std::string> hints;
 };
 
-[[nodiscard]] auto BuildErrorContract(
-    bool is_ok, std::string_view error_message,
-    ErrorContractBuildOptions options = {}) -> tt_transport::ErrorContractPayload {
+[[nodiscard]] auto BuildErrorContract(bool is_ok,
+                                      std::string_view error_message,
+                                      ErrorContractBuildOptions options = {})
+    -> tt_transport::ErrorContractPayload {
   tt_transport::ErrorContractPayload contract{};
   if (is_ok) {
     return contract;
@@ -113,4 +114,3 @@ auto ConvertTreeNode(const ProjectTreeNode& node)
 #include "api/c_api/runtime/internal/tracer_core_c_api_internal_impl.inc"
 
 }  // namespace tracer_core::core::c_api::internal
-

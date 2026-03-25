@@ -9,9 +9,9 @@ void TestDecodeIngestRequest(int& failures) {
       R"({"input_path":"test/data","date_check_mode":"none","save_processed_output":true,"ingest_mode":"single_txt_replace_month"})");
   Expect(request.input_path == "test/data",
          "DecodeIngestRequest input_path mismatch.", failures);
-  Expect(request.date_check_mode.has_value() &&
-             *request.date_check_mode == "none",
-         "DecodeIngestRequest date_check_mode mismatch.", failures);
+  Expect(
+      request.date_check_mode.has_value() && *request.date_check_mode == "none",
+      "DecodeIngestRequest date_check_mode mismatch.", failures);
   Expect(request.save_processed_output.has_value() &&
              *request.save_processed_output,
          "DecodeIngestRequest save_processed_output mismatch.", failures);
@@ -29,8 +29,8 @@ void TestDecodeQueryRequest(int& failures) {
   const auto request = DecodeQueryRequest(
       R"({"action":"days_duration","output_mode":"semantic_json","year":2026,"month":1,"from_date":"2026-01-01","to_date":"2026-01-31","remark":"x","day_remark":"y","project":"study","root":"study","exercise":1,"status":0,"overnight":false,"reverse":true,"limit":7,"top_n":3,"lookback_days":14,"activity_prefix":"st","activity_score_by_duration":true,"tree_period":"recent","tree_period_argument":"7","tree_max_depth":2})");
 
-  Expect(request.action == "days_duration", "DecodeQueryRequest action mismatch.",
-         failures);
+  Expect(request.action == "days_duration",
+         "DecodeQueryRequest action mismatch.", failures);
   Expect(request.output_mode.has_value() &&
              *request.output_mode == "semantic_json",
          "DecodeQueryRequest output_mode mismatch.", failures);
@@ -48,10 +48,9 @@ void TestDecodeQueryRequest(int& failures) {
   Expect(request.root.has_value() && *request.root == "study",
          "DecodeQueryRequest root mismatch.", failures);
 
-  ExpectInvalidArgument(
-      [] { (void)DecodeQueryRequest(R"({"action":1})"); },
-      "field `action` must be a string.", "DecodeQueryRequest bad action type",
-      failures);
+  ExpectInvalidArgument([] { (void)DecodeQueryRequest(R"({"action":1})"); },
+                        "field `action` must be a string.",
+                        "DecodeQueryRequest bad action type", failures);
   ExpectInvalidArgument(
       [] { (void)DecodeQueryRequest(R"({"action":"days","output_mode":1})"); },
       "field `output_mode` must be a string.",
@@ -63,9 +62,9 @@ void TestDecodeWorkflowRequests(int& failures) {
       R"({"input_path":"test/data","date_check_mode":"none","save_processed_output":true,"validate_logic":false,"validate_structure":true})");
   Expect(convert.input_path == "test/data",
          "DecodeConvertRequest input_path mismatch.", failures);
-  Expect(convert.date_check_mode.has_value() &&
-             *convert.date_check_mode == "none",
-         "DecodeConvertRequest date_check_mode mismatch.", failures);
+  Expect(
+      convert.date_check_mode.has_value() && *convert.date_check_mode == "none",
+      "DecodeConvertRequest date_check_mode mismatch.", failures);
   Expect(convert.save_processed_output.has_value() &&
              *convert.save_processed_output,
          "DecodeConvertRequest save_processed_output mismatch.", failures);
@@ -111,9 +110,10 @@ void TestDecodeWorkflowRequests(int& failures) {
 void TestDecodeReportRequests(int& failures) {
   const auto single = DecodeReportRequest(
       R"({"type":"month","argument":"2026-01","format":"markdown"})");
-  Expect(single.type == "month", "DecodeReportRequest type mismatch.", failures);
-  Expect(single.argument == "2026-01",
-         "DecodeReportRequest argument mismatch.", failures);
+  Expect(single.type == "month", "DecodeReportRequest type mismatch.",
+         failures);
+  Expect(single.argument == "2026-01", "DecodeReportRequest argument mismatch.",
+         failures);
   Expect(single.format.has_value() && *single.format == "markdown",
          "DecodeReportRequest format mismatch.", failures);
 
@@ -162,20 +162,17 @@ void TestDecodeTreeRequest(int& failures) {
          "DecodeTreeRequest max_depth mismatch.", failures);
   Expect(request.period.has_value() && *request.period == "recent",
          "DecodeTreeRequest period mismatch.", failures);
-  Expect(request.period_argument.has_value() &&
-             *request.period_argument == "7",
+  Expect(request.period_argument.has_value() && *request.period_argument == "7",
          "DecodeTreeRequest period_argument mismatch.", failures);
   Expect(request.root.has_value() && *request.root == "study",
          "DecodeTreeRequest root mismatch.", failures);
 
-  ExpectInvalidArgument(
-      [] { (void)DecodeTreeRequest(R"({"max_depth":"3"})"); },
-      "field `max_depth` must be an integer.",
-      "DecodeTreeRequest max_depth type", failures);
-  ExpectInvalidArgument(
-      [] { (void)DecodeTreeRequest(R"({"period":1})"); },
-      "field `period` must be a string.", "DecodeTreeRequest period type",
-      failures);
+  ExpectInvalidArgument([] { (void)DecodeTreeRequest(R"({"max_depth":"3"})"); },
+                        "field `max_depth` must be an integer.",
+                        "DecodeTreeRequest max_depth type", failures);
+  ExpectInvalidArgument([] { (void)DecodeTreeRequest(R"({"period":1})"); },
+                        "field `period` must be a string.",
+                        "DecodeTreeRequest period type", failures);
 }
 
 }  // namespace

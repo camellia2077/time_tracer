@@ -5,7 +5,8 @@
 
 namespace tracer::core::application::workflow {
 
-class IWorkflowHandler : public ::tracer::core::application::pipeline::IPipelineWorkflow {
+class IWorkflowHandler
+    : public ::tracer::core::application::pipeline::IPipelineWorkflow {
  public:
   ~IWorkflowHandler() override = default;
 };

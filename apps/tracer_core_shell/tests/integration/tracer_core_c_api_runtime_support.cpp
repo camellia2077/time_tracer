@@ -95,13 +95,12 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       library, "tracer_core_get_command_contract_json");
   api.last_error =
       RequireSymbol<LastErrorFn>(library, "tracer_core_last_error");
-  api.set_log_callback = RequireSymbol<SetLogCallbackFn>(
-      library, "tracer_core_set_log_callback");
+  api.set_log_callback =
+      RequireSymbol<SetLogCallbackFn>(library, "tracer_core_set_log_callback");
   api.set_diagnostics_callback = RequireSymbol<SetDiagnosticsCallbackFn>(
       library, "tracer_core_set_diagnostics_callback");
-  api.set_crypto_progress_callback =
-      RequireSymbol<SetCryptoProgressCallbackFn>(
-          library, "tracer_core_set_crypto_progress_callback");
+  api.set_crypto_progress_callback = RequireSymbol<SetCryptoProgressCallbackFn>(
+      library, "tracer_core_set_crypto_progress_callback");
   api.runtime_check_environment = RequireSymbol<RuntimeCheckEnvironmentFn>(
       library, "tracer_core_runtime_check_environment_json");
   api.runtime_resolve_cli_context = RequireSymbol<RuntimeResolveCliContextFn>(
@@ -333,9 +332,9 @@ void SeedRuntimeWithBaselineData(const CoreApiFns& api,
                                  TtCoreRuntimeHandle* runtime,
                                  const fs::path& input_root) {
   Require(runtime != nullptr, "SeedRuntimeWithBaselineData requires runtime");
-  Require(fs::exists(input_root),
-          "SeedRuntimeWithBaselineData missing input root: " +
-              input_root.string());
+  Require(
+      fs::exists(input_root),
+      "SeedRuntimeWithBaselineData missing input root: " + input_root.string());
   const json kIngestRequest{
       {"input_path", input_root.string()},
       {"date_check_mode", "none"},

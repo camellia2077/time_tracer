@@ -12,9 +12,10 @@ WorkflowHandler::WorkflowHandler(
     ProcessedDataStoragePtr processed_data_storage,
     ValidationIssueReporterPtr validation_issue_reporter)
     : impl_(std::move(output_root_path), std::move(processed_data_loader),
-            std::move(time_sheet_repository), std::move(database_health_checker),
-            std::move(converter_config_provider), std::move(ingest_input_provider),
-            std::move(processed_data_storage),
+            std::move(time_sheet_repository),
+            std::move(database_health_checker),
+            std::move(converter_config_provider),
+            std::move(ingest_input_provider), std::move(processed_data_storage),
             std::move(validation_issue_reporter)) {}
 
 WorkflowHandler::~WorkflowHandler() = default;
@@ -36,8 +37,8 @@ auto WorkflowHandler::RunDatabaseImportFromMemory(
 
 auto WorkflowHandler::RunIngest(const std::string& source_path,
                                 DateCheckMode date_check_mode,
-                                bool save_processed,
-                                IngestMode ingest_mode) -> void {
+                                bool save_processed, IngestMode ingest_mode)
+    -> void {
   impl_.RunIngest(source_path, date_check_mode, save_processed, ingest_mode);
 }
 

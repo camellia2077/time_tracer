@@ -15,8 +15,8 @@ import tracer.core.domain.logic.validator.common.validator_utils;
 namespace android_runtime_tests {
 namespace {
 
-using tracer::core::domain::modlogic::validator_txt::TextValidator;
 using tracer::core::domain::modlogic::validator_common::Error;
+using tracer::core::domain::modlogic::validator_txt::TextValidator;
 
 auto BuildTestConverterConfig() -> ConverterConfig {
   ConverterConfig config;
@@ -28,8 +28,7 @@ auto BuildTestConverterConfig() -> ConverterConfig {
   return config;
 }
 
-auto CollectErrorMessages(const std::set<Error>& errors)
-    -> std::string {
+auto CollectErrorMessages(const std::set<Error>& errors) -> std::string {
   std::string joined;
   for (const auto& error : errors) {
     joined += error.message;

@@ -32,7 +32,8 @@ auto CollectImportedPayloadFiles(const fs::path& extracted_root)
         ReadFileBytes(entry.path()), entry.path().string());
     if (file_info.month_key != header_info.month_key) {
       throw std::runtime_error(
-          "Imported payload file name must match canonical month headers yYYYY + mMM: " +
+          "Imported payload file name must match canonical month headers yYYYY "
+          "+ mMM: " +
           entry.path().string());
     }
     const std::string expected_relative =
@@ -63,8 +64,7 @@ auto CollectImportedPayloadFiles(const fs::path& extracted_root)
   }
 
   std::sort(imported_payloads.begin(), imported_payloads.end(),
-            [](const ImportedPayloadFile& lhs,
-               const ImportedPayloadFile& rhs) {
+            [](const ImportedPayloadFile& lhs, const ImportedPayloadFile& rhs) {
               return lhs.month_key < rhs.month_key;
             });
   return imported_payloads;

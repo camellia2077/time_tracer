@@ -20,11 +20,11 @@ auto TestBatchEncryptProgressSnapshot(int& failures) -> void {
 
   RemoveTree(kPaths.test_root);
   const bool kSeeded = WriteFileWithParents(kInputRoot / "2025" / "2025-01.txt",
-                                           "y2025\nm01\n0101\n0600 study\n") &&
-                      WriteFileWithParents(kInputRoot / "2025" / "2025-02.txt",
-                                           "y2025\nm02\n0201\n0630 work\n") &&
-                      WriteFileWithParents(kInputRoot / "2026" / "2026-01.txt",
-                                           "y2026\nm01\n0101\n0700 run\n");
+                                            "y2025\nm01\n0101\n0600 study\n") &&
+                       WriteFileWithParents(kInputRoot / "2025" / "2025-02.txt",
+                                            "y2025\nm02\n0201\n0630 work\n") &&
+                       WriteFileWithParents(kInputRoot / "2026" / "2026-01.txt",
+                                            "y2026\nm01\n0101\n0700 run\n");
   if (!kSeeded) {
     ++failures;
     std::cerr << "[FAIL] Failed to seed batch progress plaintext files.\n";

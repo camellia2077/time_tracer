@@ -41,4 +41,3 @@ inline void FormatReportMap(MapT& data_map, FormatterT& formatter,
 }  // namespace reports::services
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_BATCH_EXPORT_HELPERS_H_
-

@@ -16,9 +16,11 @@ export namespace tracer::core::infrastructure::config::internal {
 
 export namespace tracer::core::infrastructure::modconfig::internal {
 
-using tracer::core::infrastructure::config::internal::CliCommandDefaultsSnapshot;
+using tracer::core::infrastructure::config::internal::
+    CliCommandDefaultsSnapshot;
 using tracer::core::infrastructure::config::internal::CliConfigSnapshot;
 using tracer::core::infrastructure::config::internal::CliGlobalDefaultsSnapshot;
-using tracer::core::infrastructure::config::internal::LoadCliConfigSnapshotCached;
+using tracer::core::infrastructure::config::internal::
+    LoadCliConfigSnapshotCached;
 
 }  // namespace tracer::core::infrastructure::modconfig::internal

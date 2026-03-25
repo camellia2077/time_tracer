@@ -52,12 +52,12 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
   const fs::path runtime_work_root = paths.test_root / "work";
   const auto result =
       runtime->runtime_api->tracer_exchange().RunTracerExchangeImport({
-      .input_tracer_path = tracer_path,
-      .active_text_root_path = active_text_root,
-      .active_converter_main_config_path = main_config_path,
-      .runtime_work_root = runtime_work_root,
-      .passphrase = std::string(kPassphrase),
-  });
+          .input_tracer_path = tracer_path,
+          .active_text_root_path = active_text_root,
+          .active_converter_main_config_path = main_config_path,
+          .runtime_work_root = runtime_work_root,
+          .passphrase = std::string(kPassphrase),
+      });
   if (!result.ok) {
     ++failures;
     std::cerr << "[FAIL] Legacy text import should succeed: "
@@ -140,7 +140,8 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   if (!WriteFileWithParents(main_config_path, original_main) ||
       !WriteFileWithParents(alias_config_path, original_alias) ||
       !WriteFileWithParents(duration_config_path, original_duration) ||
-      !WriteFileWithParents(active_text_root / "2024-01.txt", preserved_month)) {
+      !WriteFileWithParents(active_text_root / "2024-01.txt",
+                            preserved_month)) {
     ++failures;
     std::cerr << "[FAIL] Failed to prepare active import fixture.\n";
     RemoveTree(paths.test_root);
@@ -198,7 +199,8 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
          "RunTracerExchangeImport should report config application on success.",
          failures);
   Expect(result.text_root_updated,
-         "RunTracerExchangeImport should report active text root update on success.",
+         "RunTracerExchangeImport should report active text root update on "
+         "success.",
          failures);
   Expect(result.database_rebuilt,
          "RunTracerExchangeImport should report database rebuild on success.",
@@ -207,18 +209,21 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
          "RunTracerExchangeImport should report replaced package month count.",
          failures);
   Expect(result.preserved_month_count == 1U,
-         "RunTracerExchangeImport should preserve local months outside the package.",
+         "RunTracerExchangeImport should preserve local months outside the "
+         "package.",
          failures);
   Expect(result.rebuilt_month_count == BuildSamplePayloads().size() + 1U,
-         "RunTracerExchangeImport should rebuild the preserved and replaced month set.",
+         "RunTracerExchangeImport should rebuild the preserved and replaced "
+         "month set.",
          failures);
   Expect(!result.backup_retained_root.has_value(),
          "Successful transaction import should not retain backup_root.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(package_main),
-         "RunTracerExchangeImport should overwrite active main config.",
-         failures);
-  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(package_alias),
+  Expect(
+      NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(package_main),
+      "RunTracerExchangeImport should overwrite active main config.", failures);
+  Expect(NormalizeLf(ReadTextFile(alias_config_path)) ==
+             NormalizeLf(package_alias),
          "RunTracerExchangeImport should overwrite active alias config.",
          failures);
   Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
@@ -229,25 +234,27 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
              NormalizeLf(preserved_month),
          "Transaction import should preserve package-external local months.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(active_text_root / "2025-01.txt")) ==
-             NormalizeLf(BuildSamplePayloads().front().text),
-         "Transaction import should replace package months in active text root.",
-         failures);
+  Expect(
+      NormalizeLf(ReadTextFile(active_text_root / "2025-01.txt")) ==
+          NormalizeLf(BuildSamplePayloads().front().text),
+      "Transaction import should replace package months in active text root.",
+      failures);
   Expect(NormalizeLf(ReadTextFile(active_text_root / "2026-12.txt")) ==
              NormalizeLf(BuildSamplePayloads().back().text),
-         "Transaction import should write every package payload into active text root.",
+         "Transaction import should write every package payload into active "
+         "text root.",
          failures);
   Expect(fs::exists(paths.db_path),
-         "Transaction import should rebuild the runtime database.",
-         failures);
+         "Transaction import should rebuild the runtime database.", failures);
 
   RemoveTree(paths.test_root);
 }
 
-auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void {
+auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
+    -> void {
   constexpr std::string_view kPassphrase = "phase3-tracer-exchange-passphrase";
-  const RuntimeTestPaths paths =
-      BuildTempTestPaths("tracer_core_tracer_exchange_transaction_rollback_test");
+  const RuntimeTestPaths paths = BuildTempTestPaths(
+      "tracer_core_tracer_exchange_transaction_rollback_test");
   const fs::path config_root = paths.test_root / "config";
   const fs::path active_config_root = paths.test_root / "config" / "converter";
   const fs::path main_config_path =
@@ -289,8 +296,7 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
       !WriteFileWithParents(duration_config_path, original_duration) ||
       !WriteFileWithParents(active_text_root / "2024-01.txt", original_month)) {
     ++failures;
-    std::cerr
-        << "[FAIL] Failed to prepare active transaction import files.\n";
+    std::cerr << "[FAIL] Failed to prepare active transaction import files.\n";
     RemoveTree(paths.test_root);
     return;
   }
@@ -310,7 +316,8 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
 
   if (!SetReadOnlyFlag(alias_config_path, true)) {
     ++failures;
-    std::cerr << "[FAIL] Failed to mark alias_mapping.toml read-only for rollback test.\n";
+    std::cerr << "[FAIL] Failed to mark alias_mapping.toml read-only for "
+                 "rollback test.\n";
     RemoveTree(paths.test_root);
     return;
   }
@@ -328,31 +335,37 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures) -> void 
   static_cast<void>(SetReadOnlyFlag(alias_config_path, false));
 
   Expect(!result.ok,
-         "RunTracerExchangeImport should fail when converter apply rollback is triggered.",
+         "RunTracerExchangeImport should fail when converter apply rollback is "
+         "triggered.",
          failures);
-  Expect(result.retained_failure_root.has_value(),
-         "Failed transaction import should retain a failure root for debugging.",
-         failures);
-  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
-         "Rollback should restore the original main config after apply failure.",
-         failures);
-  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(original_alias),
-         "Rollback should preserve the original alias config after apply failure.",
-         failures);
+  Expect(
+      result.retained_failure_root.has_value(),
+      "Failed transaction import should retain a failure root for debugging.",
+      failures);
+  Expect(
+      NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
+      "Rollback should restore the original main config after apply failure.",
+      failures);
+  Expect(
+      NormalizeLf(ReadTextFile(alias_config_path)) ==
+          NormalizeLf(original_alias),
+      "Rollback should preserve the original alias config after apply failure.",
+      failures);
   Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
              NormalizeLf(original_duration),
-         "Rollback should preserve the original duration config after apply failure.",
+         "Rollback should preserve the original duration config after apply "
+         "failure.",
          failures);
   Expect(NormalizeLf(ReadTextFile(active_text_root / "2024-01.txt")) ==
              NormalizeLf(original_month),
          "Rollback should preserve the original active text root content.",
          failures);
   Expect(!fs::exists(active_text_root / "2025-01.txt"),
-         "Rollback should not leave newly imported month files in active text root.",
+         "Rollback should not leave newly imported month files in active text "
+         "root.",
          failures);
   Expect(fs::exists(*result.retained_failure_root),
-         "Failure root should exist on disk for debugging.",
-         failures);
+         "Failure root should exist on disk for debugging.", failures);
 
   RemoveTree(paths.test_root);
 }
@@ -439,13 +452,16 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
   const auto result =
       runtime->runtime_api->tracer_exchange().RunTracerExchangeImport(request);
 
-  Expect(!result.ok,
-         "RunTracerExchangeImport should reject invalid package converter config.",
-         failures);
-  Expect(NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
-         "Invalid package config should not overwrite active main config.",
-         failures);
-  Expect(NormalizeLf(ReadTextFile(alias_config_path)) == NormalizeLf(original_alias),
+  Expect(
+      !result.ok,
+      "RunTracerExchangeImport should reject invalid package converter config.",
+      failures);
+  Expect(
+      NormalizeLf(ReadTextFile(main_config_path)) == NormalizeLf(original_main),
+      "Invalid package config should not overwrite active main config.",
+      failures);
+  Expect(NormalizeLf(ReadTextFile(alias_config_path)) ==
+             NormalizeLf(original_alias),
          "Invalid package config should not overwrite active alias config.",
          failures);
   Expect(NormalizeLf(ReadTextFile(duration_config_path)) ==
@@ -453,8 +469,7 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
          "Invalid package config should not overwrite active duration config.",
          failures);
   Expect(result.retained_failure_root.has_value(),
-         "Failed import should retain a failure root for debugging.",
-         failures);
+         "Failed import should retain a failure root for debugging.", failures);
   Expect(fs::exists(*result.retained_failure_root),
          "Retained failure root should exist on disk.", failures);
   Expect(!result.error_message.empty(),

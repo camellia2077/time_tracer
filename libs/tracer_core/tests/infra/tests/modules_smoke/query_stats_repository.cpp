@@ -13,8 +13,7 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
       &tracer::core::infrastructure::query::data::stats::
           ComputeDayDurationStats;
   const auto kBuildReportChartSeries =
-      &tracer::core::infrastructure::query::data::stats::
-          BuildReportChartSeries;
+      &tracer::core::infrastructure::query::data::stats::BuildReportChartSeries;
   const auto kStatsBoundaryReady =
       &tracer::core::infrastructure::query::data::stats::BoundaryReady;
   const auto kQueryYears =
@@ -50,8 +49,8 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
           {.date = "2026-02-03", .total_seconds = 7200},
       };
   const auto kStats =
-      tracer::core::infrastructure::query::data::stats::
-          ComputeDayDurationStats(kRows);
+      tracer::core::infrastructure::query::data::stats::ComputeDayDurationStats(
+          kRows);
   if (kStats.count != 2 || kStats.min_seconds != 3600.0 ||
       kStats.max_seconds != 7200.0) {
     return 7;
@@ -77,11 +76,10 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
     return 9;
   }
 
-  const auto kTextOutput =
-      tracer::core::infrastructure::query::data::renderers::
-          RenderDayDurationsOutput(
-              "days_duration", kRows,
-              tracer_core::core::dto::DataQueryOutputMode::kText);
+  const auto kTextOutput = tracer::core::infrastructure::query::data::
+      renderers::RenderDayDurationsOutput(
+          "days_duration", kRows,
+          tracer_core::core::dto::DataQueryOutputMode::kText);
   if (kTextOutput.find("2026-02-01") == std::string::npos ||
       kTextOutput.find("Total: 2") == std::string::npos) {
     return 10;
@@ -116,15 +114,15 @@ auto RunInfrastructureModuleQueryStatsRepositorySmoke() -> int {
     }
     if (!tracer::core::infrastructure::query::data::QueryDays(
              connection.GetDb(), filters.kYear, filters.kMonth,
-             filters.from_date, filters.to_date, filters.reverse,
-             filters.limit)
+             filters.from_date, filters.to_date, filters.reverse, filters.limit)
              .empty()) {
       return 14;
     }
     if (!tracer::core::infrastructure::query::data::QueryProjectTree(
              connection.GetDb(), filters)
              .empty() ||
-        !tracer::core::infrastructure::query::data::QueryYears(connection.GetDb())
+        !tracer::core::infrastructure::query::data::QueryYears(
+             connection.GetDb())
              .empty()) {
       return 15;
     }

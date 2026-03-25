@@ -75,7 +75,8 @@ auto QueryDayDurations(sqlite3* db_conn, const QueryFilters& filters)
 }
 
 auto QueryProjectRootNames(sqlite3* db_conn) -> std::vector<std::string> {
-  const std::string kSql = query_data_internal::BuildProjectRootNamesSql(db_conn);
+  const std::string kSql =
+      query_data_internal::BuildProjectRootNamesSql(db_conn);
   return query_data_detail::QueryStringColumn(db_conn, kSql, {});
 }
 
@@ -92,7 +93,7 @@ auto QueryDayDurationsByRootInDateRange(sqlite3* db_conn,
   };
   const std::string kSql =
       query_data_internal::BuildDayDurationsByRootInDateRangeSql(
-      db_conn, root, kDateRange, params);
+          db_conn, root, kDateRange, params);
   return query_data_detail::QueryRowsWithTotalDuration(db_conn, kSql, params);
 }
 
@@ -108,8 +109,8 @@ auto QueryActivitySuggestions(sqlite3* db_conn,
       db_conn, "QueryActivitySuggestions");
   const std::string kSql =
       query_data_internal::BuildActivitySuggestionsSql(options);
-  return query_data_internal::ExecuteActivitySuggestions(
-      db_conn, kSql, options, kLookbackDays, kLimit);
+  return query_data_internal::ExecuteActivitySuggestions(db_conn, kSql, options,
+                                                         kLookbackDays, kLimit);
 }
 
 auto QueryLatestTrackedDate(sqlite3* db_conn) -> std::optional<std::string> {

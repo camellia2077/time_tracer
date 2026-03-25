@@ -56,10 +56,11 @@ void WeekQuerier::BindSqlParameters(sqlite3_stmt* stmt) const {
 }
 
 namespace {
+using tracer::core::infrastructure::reports::data::stats::
+    IsAnaerobicProjectPath;
+using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsAnaerobicProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 
 struct DayFlagCounts {
   int status_true_days = 0;
@@ -100,15 +101,16 @@ auto ParseWeekRow(const unsigned char* date_ptr) -> std::optional<WeekRow> {
 auto LoadWeeklyFlagCounts(sqlite3* sqlite_db)
     -> std::map<std::string, DayFlagCounts> {
   sqlite3_stmt* flag_stmt = nullptr;
-  const std::string kFlagSql = std::format(
-      "SELECT {0}, {1} FROM {2};", schema::day::db::kDate,
-      schema::day::db::kWakeAnchor, schema::day::db::kTable);
+  const std::string kFlagSql =
+      std::format("SELECT {0}, {1} FROM {2};", schema::day::db::kDate,
+                  schema::day::db::kWakeAnchor, schema::day::db::kTable);
   std::map<std::string, DayFlagCounts> flag_counts;
 
   if (sqlite3_prepare_v2(sqlite_db, kFlagSql.c_str(), -1, &flag_stmt,
                          nullptr) != SQLITE_OK) {
     sqlite3_finalize(flag_stmt);
-    throw std::runtime_error("Failed to prepare statement for weekly sleep flags.");
+    throw std::runtime_error(
+        "Failed to prepare statement for weekly sleep flags.");
   }
 
   while (sqlite3_step(flag_stmt) == SQLITE_ROW) {
@@ -219,9 +221,9 @@ auto BatchWeekDataFetcher::FetchAllData()
     }
     data.status_true_days = static_cast<int>(status_dates[week_label].size());
     data.wake_anchor_true_days = flag_it->second.wake_anchor_true_days;
-    data.exercise_true_days = static_cast<int>(exercise_dates[week_label].size());
-    data.cardio_true_days =
-        static_cast<int>(cardio_dates[week_label].size());
+    data.exercise_true_days =
+        static_cast<int>(exercise_dates[week_label].size());
+    data.cardio_true_days = static_cast<int>(cardio_dates[week_label].size());
     data.anaerobic_true_days =
         static_cast<int>(anaerobic_dates[week_label].size());
   }

@@ -10,9 +10,9 @@ struct ImportTransactionPaths {
 auto BuildImportTransactionPaths(const fs::path& runtime_work_root,
                                  const fs::path& input_path)
     -> ImportTransactionPaths {
-  const std::string stem =
-      input_path.stem().empty() ? input_path.filename().string()
-                                : input_path.stem().string();
+  const std::string stem = input_path.stem().empty()
+                               ? input_path.filename().string()
+                               : input_path.stem().string();
   const fs::path transaction_root =
       BuildScopedStagingDir(runtime_work_root, "import", stem);
   return {
@@ -37,15 +37,10 @@ auto EnsureTransactionRootCreated(const fs::path& transaction_root) -> void {
 
 auto EmitImportTransactionProgress(
     const app_dto::TracerExchangeProgressObserver& progress_observer,
-    std::string_view phase,
-    std::size_t phase_index,
-    std::size_t phase_count,
-    std::string_view current_item,
-    std::size_t done_count,
-    std::size_t total_count,
-    const fs::path& input_root_path,
-    const fs::path& output_root_path,
-    const fs::path& current_input_path = {},
+    std::string_view phase, std::size_t phase_index, std::size_t phase_count,
+    std::string_view current_item, std::size_t done_count,
+    std::size_t total_count, const fs::path& input_root_path,
+    const fs::path& output_root_path, const fs::path& current_input_path = {},
     const fs::path& current_output_path = {}) -> void {
   if (!progress_observer) {
     return;
@@ -81,12 +76,10 @@ auto EmitImportTransactionProgress(
 }
 
 auto TryRollbackImportTransaction(
-    const fs::path& active_text_root,
-    const fs::path& backup_text_root,
+    const fs::path& active_text_root, const fs::path& backup_text_root,
     const fs::path& backup_config_root,
     const fs::path& active_converter_main_config_path,
-    const std::vector<std::string>& added_month_keys,
-    bool text_root_updated,
+    const std::vector<std::string>& added_month_keys, bool text_root_updated,
     bool config_applied) -> std::string {
   try {
     const ActiveConverterConfigPaths active_paths =
@@ -108,19 +101,18 @@ auto BuildSuccessfulImportResult(
     const exchange_pkg::DecodedTracerExchangePackage& package,
     const std::vector<ImportedPayloadFile>& imported_payloads,
     const std::map<std::string, fs::path>& managed_month_files,
-    const fs::path& transaction_root,
-    const std::error_code& cleanup_error) -> app_dto::TracerExchangeImportResult {
+    const fs::path& transaction_root, const std::error_code& cleanup_error)
+    -> app_dto::TracerExchangeImportResult {
   app_dto::TracerExchangeImportResult result{};
   result.ok = true;
   result.source_root_name = package.manifest.source_root_name;
   result.payload_file_count =
       static_cast<std::uint64_t>(imported_payloads.size());
-  const std::uint64_t overlap_count = static_cast<std::uint64_t>(
-      std::count_if(imported_payloads.begin(), imported_payloads.end(),
-                    [&](const ImportedPayloadFile& imported_payload) {
-                      return managed_month_files.contains(
-                          imported_payload.month_key);
-                    }));
+  const std::uint64_t overlap_count = static_cast<std::uint64_t>(std::count_if(
+      imported_payloads.begin(), imported_payloads.end(),
+      [&](const ImportedPayloadFile& imported_payload) {
+        return managed_month_files.contains(imported_payload.month_key);
+      }));
   result.replaced_month_count =
       static_cast<std::uint64_t>(imported_payloads.size());
   result.preserved_month_count =
@@ -151,7 +143,7 @@ auto BuildFailedImportResult(const fs::path& transaction_root,
   failure_result.error_message =
       rollback_error_message.empty()
           ? std::string(failure_message)
-          : std::string(failure_message) + " | rollback_failed: " +
-                std::string(rollback_error_message);
+          : std::string(failure_message) +
+                " | rollback_failed: " + std::string(rollback_error_message);
   return failure_result;
 }

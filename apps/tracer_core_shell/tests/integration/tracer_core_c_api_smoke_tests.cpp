@@ -87,8 +87,8 @@ auto FindRepoRoot() -> std::filesystem::path {
   namespace fs = std::filesystem;
   fs::path current = fs::current_path();
   while (!current.empty()) {
-    const fs::path kConfigProbe = current / "assets" / "tracer_core" / "config" /
-                                  "converter" /
+    const fs::path kConfigProbe = current / "assets" / "tracer_core" /
+                                  "config" / "converter" /
                                   "interval_processor_config.toml";
     if (fs::exists(kConfigProbe)) {
       return current;
@@ -164,8 +164,8 @@ auto main() -> int {
         reinterpret_cast<SetDiagnosticsCallbackFn>(
             LookupSymbol(library, "tracer_core_set_diagnostics_callback"));
     const auto kSetCryptoProgressCallback =
-        reinterpret_cast<SetCryptoProgressCallbackFn>(LookupSymbol(
-            library, "tracer_core_set_crypto_progress_callback"));
+        reinterpret_cast<SetCryptoProgressCallbackFn>(
+            LookupSymbol(library, "tracer_core_set_crypto_progress_callback"));
     const auto kRuntimeCreate = reinterpret_cast<RuntimeCreateFn>(
         LookupSymbol(library, "tracer_core_runtime_create"));
     const auto kRuntimeDestroy = reinterpret_cast<RuntimeDestroyFn>(
@@ -181,10 +181,9 @@ auto main() -> int {
         kGetCapabilities == nullptr || kGetBuildInfo == nullptr ||
         kGetCommandContract == nullptr || kLastError == nullptr ||
         kSetLogCallback == nullptr || kSetDiagnosticsCallback == nullptr ||
-        kSetCryptoProgressCallback == nullptr ||
-        kRuntimeCreate == nullptr || kRuntimeDestroy == nullptr ||
-        kRuntimeIngest == nullptr || kRuntimeQuery == nullptr ||
-        kRuntimeReport == nullptr) {
+        kSetCryptoProgressCallback == nullptr || kRuntimeCreate == nullptr ||
+        kRuntimeDestroy == nullptr || kRuntimeIngest == nullptr ||
+        kRuntimeQuery == nullptr || kRuntimeReport == nullptr) {
       std::cerr << "[FAIL] missing required exported symbols in "
                 << kLibraryName << '\n';
       CloseLibrary(library);
@@ -369,4 +368,3 @@ auto main() -> int {
     return 1;
   }
 }
-

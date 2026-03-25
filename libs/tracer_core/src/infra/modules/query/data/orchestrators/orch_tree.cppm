@@ -2,7 +2,8 @@ module;
 
 #include "infra/query/data/orchestrators/tree_orchestrator.hpp"
 
-export module tracer.core.infrastructure.query.data.orchestrators.tree_orchestrator;
+export module tracer.core.infrastructure.query.data.orchestrators
+    .tree_orchestrator;
 
 export namespace tracer::core::infrastructure::query::data::orchestrators {
 

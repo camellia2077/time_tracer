@@ -7,7 +7,8 @@ module;
 
 #include "application/pipeline/importer/model/import_models.hpp"
 
-export module tracer.core.infrastructure.persistence.write.importer.sqlite.writer;
+export module tracer.core.infrastructure.persistence.write.importer.sqlite
+    .writer;
 
 import tracer.core.infrastructure.persistence.write.importer.sqlite.project_resolver;
 

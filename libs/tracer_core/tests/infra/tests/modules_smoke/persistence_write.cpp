@@ -9,18 +9,15 @@ namespace {
 auto RunPersistenceWriteSmokeImpl() -> int {
   std::error_code cleanup_error;
 
-  const auto kImportData =
-      &tracer::core::infrastructure::persistence::importer::Repository::
-          ImportData;
-  const auto kReplaceMonthData =
-      &tracer::core::infrastructure::persistence::importer::Repository::
-          ReplaceMonthData;
+  const auto kImportData = &tracer::core::infrastructure::persistence::
+                               importer::Repository::ImportData;
+  const auto kReplaceMonthData = &tracer::core::infrastructure::persistence::
+                                     importer::Repository::ReplaceMonthData;
   const auto kLatestActivityTail =
       &tracer::core::infrastructure::persistence::importer::Repository::
           TryGetLatestActivityTailBeforeDate;
   const auto kExecuteSql =
-      &tracer::core::infrastructure::persistence::importer::sqlite::
-          ExecuteSql;
+      &tracer::core::infrastructure::persistence::importer::sqlite::ExecuteSql;
   (void)kImportData;
   (void)kReplaceMonthData;
   (void)kLatestActivityTail;
@@ -40,8 +37,8 @@ auto RunPersistenceWriteSmokeImpl() -> int {
       return 22;
     }
 
-    tracer::core::infrastructure::persistence::importer::Repository
-        repository(kDbPath.string());
+    tracer::core::infrastructure::persistence::importer::Repository repository(
+        kDbPath.string());
     tracer::core::infrastructure::persistence::importer::sqlite::Connection
         connection(kDbPath.string());
     if (connection.GetDb() == nullptr) {
@@ -59,9 +56,9 @@ auto RunPersistenceWriteSmokeImpl() -> int {
     tracer::core::infrastructure::persistence::importer::sqlite::ProjectResolver
         resolver(connection.GetDb(), statement.GetInsertProjectStmt());
     tracer::core::infrastructure::persistence::importer::sqlite::Writer
-        persistence_writer(
-            connection.GetDb(), statement.GetInsertDayStmt(),
-            statement.GetInsertRecordStmt(), statement.GetInsertProjectStmt());
+        persistence_writer(connection.GetDb(), statement.GetInsertDayStmt(),
+                           statement.GetInsertRecordStmt(),
+                           statement.GetInsertProjectStmt());
     (void)repository;
     (void)resolver;
     (void)persistence_writer;

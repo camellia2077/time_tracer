@@ -15,7 +15,8 @@ namespace tracer::core::infrastructure::config::internal {
 
 }  // namespace tracer::core::infrastructure::config::internal
 
-namespace infra_config_internal = tracer::core::infrastructure::config::internal;
+namespace infra_config_internal =
+    tracer::core::infrastructure::config::internal;
 
 namespace {
 
@@ -81,7 +82,8 @@ std::optional<CliConfigSnapshotCacheEntry> g_cli_config_snapshot_cache{};
 
 namespace CliConfigSnapshotBridge::internal {
 
-auto LoadCliConfigSnapshotCachedImpl(const std::filesystem::path& executable_path)
+auto LoadCliConfigSnapshotCachedImpl(
+    const std::filesystem::path& executable_path)
     -> infra_config_internal::CliConfigSnapshot {
   const fs::path kNormalizedPath = NormalizeExecutablePath(executable_path);
   {

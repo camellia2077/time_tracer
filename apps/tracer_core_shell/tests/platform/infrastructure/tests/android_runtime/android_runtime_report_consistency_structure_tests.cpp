@@ -12,7 +12,8 @@ namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
 auto TestStructureLayerMdSectionIntegrity(
-    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
   tracer_core::core::dto::ReportQueryRequest day_request;
   day_request.type = tracer_core::core::dto::ReportQueryType::kDay;
   day_request.argument = "2025-01-03";
@@ -83,7 +84,8 @@ auto TestStructureLayerMdSectionIntegrity(
 }  // namespace
 
 auto RunReportConsistencyStructureTests(
-    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
   TestStructureLayerMdSectionIntegrity(runtime_api, failures);
 }
 

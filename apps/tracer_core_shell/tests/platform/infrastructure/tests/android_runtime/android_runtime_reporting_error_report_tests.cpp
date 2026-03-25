@@ -35,8 +35,8 @@ class CapturingLogger final : public applog::ILogger {
 
 class CapturingDiagnosticsSink final : public modports::IDiagnosticsSink {
  public:
-  auto Emit(modports::DiagnosticSeverity severity,
-            std::string_view message) -> void override {
+  auto Emit(modports::DiagnosticSeverity severity, std::string_view message)
+      -> void override {
     if (severity == modports::DiagnosticSeverity::kError) {
       errors_.append(message);
       errors_.push_back('\n');
@@ -102,7 +102,8 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
     ++failures;
@@ -156,14 +157,14 @@ auto TestValidateLogicReusesStructureReporter(int& failures) -> void {
   }
 
   const std::string kLogs = logger->Joined();
-  if (!Contains(kLogs,
-                "[STEP] Step: Pre-validating File Structure before Conversion...")) {
+  if (!Contains(
+          kLogs,
+          "[STEP] Step: Pre-validating File Structure before Conversion...")) {
     ++failures;
     std::cerr << "[FAIL] RunValidateLogic should announce structure precheck "
                  "before conversion.\n";
   }
-  if (!Contains(kLogs,
-                "[Pipeline] 转换前结构预检失败，已跳过转换阶段。")) {
+  if (!Contains(kLogs, "[Pipeline] 转换前结构预检失败，已跳过转换阶段。")) {
     ++failures;
     std::cerr << "[FAIL] RunValidateLogic should report precheck failure as "
                  "conversion-skipping pipeline stop.\n";
@@ -211,7 +212,8 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
     ++failures;
@@ -221,8 +223,8 @@ auto TestValidateStructureSkipsErrorReportFiles(int& failures) -> void {
     return;
   }
 
-  const auto kAck =
-      runtime.runtime_api->pipeline().RunValidateStructure({.input_path = kSourceRoot.string()});
+  const auto kAck = runtime.runtime_api->pipeline().RunValidateStructure(
+      {.input_path = kSourceRoot.string()});
   if (kAck.ok) {
     ++failures;
     std::cerr << "[FAIL] RunValidateStructure should fail for malformed "
@@ -292,7 +294,8 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
     return;
   }
 
-  const std::filesystem::path kSourceRoot = kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
   const std::filesystem::path kSourceFile = kSourceRoot / "2026-03.txt";
   if (!WriteFileWithParents(kSourceFile, "y2026\nm03\n0101\nr\n")) {
     ++failures;
@@ -317,7 +320,8 @@ auto TestAndroidDefaultRuntimeSkipsErrorReportFiles(int& failures) -> void {
   }
 
   const std::string kExpectedParseError =
-      kSourceFile.string() + ":4: Parse error: Invalid event line format => 'r'";
+      kSourceFile.string() +
+      ":4: Parse error: Invalid event line format => 'r'";
   if (!Contains(diagnostics_sink->Errors(), kExpectedParseError)) {
     ++failures;
     std::cerr << "[FAIL] Android default runtime should still emit parser "

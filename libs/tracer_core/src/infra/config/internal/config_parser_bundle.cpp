@@ -16,7 +16,6 @@ namespace ConfigParserUtils::internal {
 
 namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
-
 auto LoadReportPathsFromTable(const toml::table& section,
                               const ReportPathSource& source,
                               std::string_view section_field_path,
@@ -102,9 +101,9 @@ auto ValidateBundleFileList(const toml::table& bundle_tbl,
   }
 }
 
-auto LoadAndroidReportPathSetFromTable(
-    const toml::table& section, const ReportPathSource& source,
-    std::string_view section_field_path)
+auto LoadAndroidReportPathSetFromTable(const toml::table& section,
+                                       const ReportPathSource& source,
+                                       std::string_view section_field_path)
     -> AndroidBundleReportConfigPathSet {
   AndroidBundleReportConfigPathSet out{};
   LoadReportPathsFromTable(section, source, section_field_path, out.day,
@@ -205,8 +204,7 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
   };
 
   const toml::table* markdown_tbl =
-      TryReadTableField(*reports_tbl, "markdown", kBundlePath,
-                        "paths.reports");
+      TryReadTableField(*reports_tbl, "markdown", kBundlePath, "paths.reports");
   if (markdown_tbl == nullptr) {
     ThrowConfigFieldError(kBundlePath, "paths.reports.markdown",
                           "is required and must be a table for Android "
@@ -228,14 +226,14 @@ auto TryResolveAndroidBundleConfigPathsImpl(const fs::path& config_dir)
 
   if (const toml::table* latex_tbl = TryReadTableField(
           *reports_tbl, "latex", kBundlePath, "paths.reports")) {
-    out.latex = LoadAndroidReportPathSetFromTable(
-        *latex_tbl, kReportPathSource, "paths.reports.latex");
+    out.latex = LoadAndroidReportPathSetFromTable(*latex_tbl, kReportPathSource,
+                                                  "paths.reports.latex");
   }
 
   if (const toml::table* typst_tbl = TryReadTableField(
           *reports_tbl, "typst", kBundlePath, "paths.reports")) {
-    out.typst = LoadAndroidReportPathSetFromTable(
-        *typst_tbl, kReportPathSource, "paths.reports.typst");
+    out.typst = LoadAndroidReportPathSetFromTable(*typst_tbl, kReportPathSource,
+                                                  "paths.reports.typst");
   }
 
   return out;

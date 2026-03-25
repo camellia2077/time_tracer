@@ -20,8 +20,8 @@ namespace tracer::core::application::pipeline {
 
 class PipelineWorkflow final : public IPipelineWorkflow {
  public:
-  using ConverterConfigProviderPtr =
-      std::shared_ptr<tracer_core::application::ports::IConverterConfigProvider>;
+  using ConverterConfigProviderPtr = std::shared_ptr<
+      tracer_core::application::ports::IConverterConfigProvider>;
   using DatabaseHealthCheckerPtr =
       std::shared_ptr<tracer_core::application::ports::IDatabaseHealthChecker>;
   using IngestInputProviderPtr =
@@ -32,8 +32,8 @@ class PipelineWorkflow final : public IPipelineWorkflow {
       std::shared_ptr<tracer_core::application::ports::IProcessedDataStorage>;
   using TimeSheetRepositoryPtr =
       std::shared_ptr<tracer_core::application::ports::ITimeSheetRepository>;
-  using ValidationIssueReporterPtr =
-      std::shared_ptr<tracer_core::application::ports::IValidationIssueReporter>;
+  using ValidationIssueReporterPtr = std::shared_ptr<
+      tracer_core::application::ports::IValidationIssueReporter>;
 
   PipelineWorkflow(std::filesystem::path output_root_path,
                    ProcessedDataLoaderPtr processed_data_loader,

@@ -38,6 +38,7 @@ class IPipelineWorkflow {
 
 }  // namespace tracer::core::application::pipeline
 
-using IPipelineWorkflow = tracer::core::application::pipeline::IPipelineWorkflow;
+using IPipelineWorkflow =
+    tracer::core::application::pipeline::IPipelineWorkflow;
 
 #endif  // APPLICATION_PIPELINE_I_PIPELINE_WORKFLOW_HPP_

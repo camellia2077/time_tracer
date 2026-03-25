@@ -49,8 +49,8 @@ void TestRequireStringField(int& failures) {
          "RequireStringField value mismatch.", failures);
 
   const auto missing = RequireStringField(payload, "type");
-  Expect(missing.HasError(),
-         "RequireStringField should fail on missing field.", failures);
+  Expect(missing.HasError(), "RequireStringField should fail on missing field.",
+         failures);
   Expect(missing.error.code == TransportErrorCode::kInvalidArgument,
          "RequireStringField missing should use invalid-argument error code.",
          failures);
@@ -78,8 +78,8 @@ void TestTryReadStringField(int& failures) {
          "TryReadStringField null should return nullopt.", failures);
 
   const auto missing = TryReadStringField(payload, "day_remark");
-  Expect(!missing.HasError(),
-         "TryReadStringField should allow missing field.", failures);
+  Expect(!missing.HasError(), "TryReadStringField should allow missing field.",
+         failures);
   Expect(!missing.value.has_value(),
          "TryReadStringField missing should return nullopt.", failures);
 
@@ -108,8 +108,8 @@ void TestTryReadBoolField(int& failures) {
          "TryReadBoolField missing should return nullopt.", failures);
 
   const auto wrong_type = TryReadBoolField(payload, "reverse");
-  Expect(wrong_type.HasError(),
-         "TryReadBoolField should fail on wrong type.", failures);
+  Expect(wrong_type.HasError(), "TryReadBoolField should fail on wrong type.",
+         failures);
   Expect(wrong_type.error.message == "field `reverse` must be a boolean.",
          "TryReadBoolField wrong-type message mismatch.", failures);
 }
@@ -121,7 +121,8 @@ void TestTryReadIntField(int& failures) {
   };
 
   const auto ok = TryReadIntField(payload, "year");
-  Expect(!ok.HasError(), "TryReadIntField should succeed on integer.", failures);
+  Expect(!ok.HasError(), "TryReadIntField should succeed on integer.",
+         failures);
   Expect(ok.value.has_value() && *ok.value == 2026,
          "TryReadIntField integer value mismatch.", failures);
 
@@ -156,9 +157,9 @@ void TestTryReadIntListField(int& failures) {
   const auto bad_shape = TryReadIntListField(payload, "bad_shape");
   Expect(bad_shape.HasError(),
          "TryReadIntListField should fail on non-array field.", failures);
-  Expect(bad_shape.error.message ==
-             "field `bad_shape` must be an integer array.",
-         "TryReadIntListField bad-shape message mismatch.", failures);
+  Expect(
+      bad_shape.error.message == "field `bad_shape` must be an integer array.",
+      "TryReadIntListField bad-shape message mismatch.", failures);
 }
 
 }  // namespace

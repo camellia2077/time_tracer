@@ -37,8 +37,8 @@ struct CliConfigSnapshot {
   CliCommandDefaultsSnapshot command_defaults;
 };
 
-[[nodiscard]] auto LoadCliConfigSnapshot(const std::filesystem::path& executable_path)
-    -> CliConfigSnapshot;
+[[nodiscard]] auto LoadCliConfigSnapshot(
+    const std::filesystem::path& executable_path) -> CliConfigSnapshot;
 
 }  // namespace tracer_core::shell::config_bridge
 

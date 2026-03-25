@@ -118,7 +118,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_validate_structure_json(
     ValidateStructureRequest request{};
     request.input_path = kPayload.input_path;
 
-    return BuildOperationResponse(runtime.pipeline().RunValidateStructure(request));
+    return BuildOperationResponse(
+        runtime.pipeline().RunValidateStructure(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -149,4 +150,3 @@ extern "C" TT_CORE_API auto tracer_core_runtime_validate_logic_json(
         "tracer_core_runtime_validate_logic_json failed unexpectedly.");
   }
 }
-

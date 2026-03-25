@@ -91,10 +91,10 @@ auto ValidatePeriodKeys(const toml::table& query_config,
                         const std::string& file_name,
                         const std::string& report_type) -> bool {
   const std::set<std::string> kPeriodKeys = {
-      "title_template",        "actual_days_label",      "status_days_label",
-      "wake_anchor_days_label","exercise_days_label",    "cardio_days_label",
-      "anaerobic_days_label",  "total_time_label",       "no_records_message",
-      "invalid_range_message", "project_breakdown_label"};
+      "title_template",         "actual_days_label",      "status_days_label",
+      "wake_anchor_days_label", "exercise_days_label",    "cardio_days_label",
+      "anaerobic_days_label",   "total_time_label",       "no_records_message",
+      "invalid_range_message",  "project_breakdown_label"};
 
   return std::ranges::all_of(kPeriodKeys, [&](const auto& key) -> auto {
     if (query_config.contains(key)) {

@@ -12,10 +12,9 @@ namespace tracer::core::infrastructure::query::data::repository {
 class QueryRuntimeService final
     : public tracer_core::application::ports::IDataQueryService {
  public:
-  explicit QueryRuntimeService(
-      std::filesystem::path db_path,
-      std::optional<std::filesystem::path> converter_config_toml_path =
-          std::nullopt);
+  explicit QueryRuntimeService(std::filesystem::path db_path,
+                               std::optional<std::filesystem::path>
+                                   converter_config_toml_path = std::nullopt);
 
   auto RunDataQuery(const tracer_core::core::dto::DataQueryRequest& request)
       -> tracer_core::core::dto::TextOutput override;
@@ -29,7 +28,8 @@ class QueryRuntimeService final
 
 namespace tracer_core::infrastructure::query::data::repository {
 
-using tracer::core::infrastructure::query::data::repository::QueryRuntimeService;
+using tracer::core::infrastructure::query::data::repository::
+    QueryRuntimeService;
 
 }  // namespace tracer_core::infrastructure::query::data::repository
 

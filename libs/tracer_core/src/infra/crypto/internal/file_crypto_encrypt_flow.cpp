@@ -56,9 +56,9 @@ auto EncryptFileInternal(const fs::path& input_txt_path,
   }
 
   const bool kUseBatchSubkey = batch_session != nullptr &&
-                                batch_session->encrypt_mode_enabled &&
-                                batch_session->encrypt_master_key.size() ==
-                                    crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
+                               batch_session->encrypt_mode_enabled &&
+                               batch_session->encrypt_master_key.size() ==
+                                   crypto_aead_xchacha20poly1305_ietf_KEYBYTES;
   auto [header_result, header] = BuildDefaultHeaderV2(
       security_level, kUseBatchSubkey ? kKdfArgon2idBatchSubkey : kKdfArgon2id,
       kUseBatchSubkey ? &batch_session->encrypt_batch_salt : nullptr);

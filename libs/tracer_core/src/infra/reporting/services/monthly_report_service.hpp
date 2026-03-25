@@ -37,4 +37,3 @@ using MonthlyReportService =
     tracer::core::infrastructure::reports::services::MonthlyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_MONTHLY_REPORT_SERVICE_H_
-

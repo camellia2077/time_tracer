@@ -52,9 +52,10 @@ auto TestConvertResponses(TestState& state) -> void {
              kRequest.validate_structure,
          "RunConvert should forward validate_structure.");
   Expect(state,
-         !pipeline_workflow
-              .last_converter_options.run_structure_validation_before_conversion,
-         "RunConvert should not enable structure precheck when validate_logic is false.");
+         !pipeline_workflow.last_converter_options
+              .run_structure_validation_before_conversion,
+         "RunConvert should not enable structure precheck when validate_logic "
+         "is false.");
 
   const ConvertRequest kLogicRequest = {.input_path = "source-path",
                                         .date_check_mode = DateCheckMode::kNone,
@@ -65,9 +66,10 @@ auto TestConvertResponses(TestState& state) -> void {
   Expect(state, kLogicSuccess.ok,
          "RunConvert should succeed for validate_logic precheck request.");
   Expect(state,
-         pipeline_workflow
-             .last_converter_options.run_structure_validation_before_conversion,
-         "RunConvert should enable structure precheck when validate_logic is true.");
+         pipeline_workflow.last_converter_options
+             .run_structure_validation_before_conversion,
+         "RunConvert should enable structure precheck when validate_logic is "
+         "true.");
 
   pipeline_workflow.fail_convert = true;
   const auto kFailure = runtime_api.pipeline().RunConvert(kRequest);
@@ -122,8 +124,8 @@ auto TestValidateResponses(TestState& state) -> void {
   FakeReportHandler report_handler;
   auto runtime_api = BuildRuntimeApiForTest(pipeline_workflow, report_handler);
 
-  const auto kStructureOk =
-      runtime_api.pipeline().RunValidateStructure({.input_path = "input-folder"});
+  const auto kStructureOk = runtime_api.pipeline().RunValidateStructure(
+      {.input_path = "input-folder"});
   Expect(state, kStructureOk.ok,
          "RunValidateStructure should return ok on success.");
   Expect(state, pipeline_workflow.validate_structure_call_count == 1,

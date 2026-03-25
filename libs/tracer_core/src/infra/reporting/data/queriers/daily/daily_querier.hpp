@@ -51,4 +51,3 @@ class BatchDayDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_DAILY_DAILY_QUERIER_H_
-

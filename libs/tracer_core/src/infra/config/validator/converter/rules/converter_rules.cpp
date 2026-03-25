@@ -52,8 +52,7 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl,
     return false;
   }
   if (!main_tbl["remark_prefix"].is_string()) {
-    modports::EmitError(
-        "[Validator] Error: 'remark_prefix' must be a string.");
+    modports::EmitError("[Validator] Error: 'remark_prefix' must be a string.");
     return false;
   }
   if (main_tbl.contains("top_parent_mapping") &&
@@ -116,9 +115,9 @@ auto DurationRule::Validate(const toml::table& duration_tbl) -> bool {
     const auto& rules_array = *node.as_array();
     for (const auto& rule_node : rules_array) {
       if (!rule_node.is_table()) {
-        modports::EmitError(
-            "[Validator] Error: In duration rules for '" +
-            std::string(key.str()) + "', each rule must be an inline table.");
+        modports::EmitError("[Validator] Error: In duration rules for '" +
+                            std::string(key.str()) +
+                            "', each rule must be an inline table.");
         return false;
       }
       const auto& rule = *rule_node.as_table();
@@ -135,8 +134,7 @@ auto DurationRule::Validate(const toml::table& duration_tbl) -> bool {
         return false;
       }
       if (!rule["value"].is_string()) {
-        modports::EmitError(
-            "[Validator] Error: 'value' must be a string.");
+        modports::EmitError("[Validator] Error: 'value' must be a string.");
         return false;
       }
     }
@@ -158,16 +156,14 @@ auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
 auto V2Rule::ValidateAliasMapping(const toml::table& alias_tbl) -> bool {
   const toml::table* aliases = alias_tbl["aliases"].as_table();
   if (aliases == nullptr) {
-    modports::EmitError(
-        "[Validator] Error: 'aliases' must be a table.");
+    modports::EmitError("[Validator] Error: 'aliases' must be a table.");
     return false;
   }
   return std::ranges::all_of(*aliases, [](const auto& alias_entry) -> bool {
     const auto& [alias_key, node] = alias_entry;
     const std::string kAliasKey = std::string(alias_key.str());
     if (kAliasKey.empty()) {
-      modports::EmitError(
-          "[Validator] Error: aliases contains an empty key.");
+      modports::EmitError("[Validator] Error: aliases contains an empty key.");
       return false;
     }
     const auto kAliasValue = node.template value<std::string>();

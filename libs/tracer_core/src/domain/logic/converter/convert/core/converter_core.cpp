@@ -117,7 +117,7 @@ void LogLinker::LinkFirstDayWithExternalPreviousEvent(
 
   DailyLog& current_first_day = first_month_iter->second.front();
   const bool kHasValidGetup = !current_first_day.getupTime.empty() &&
-                               current_first_day.getupTime != "00:00";
+                              current_first_day.getupTime != "00:00";
   const bool kMissingGeneratedSleep =
       !HasGeneratedOvernightSleep(current_first_day, config_);
   if (!kHasValidGetup || !kMissingGeneratedSleep) {

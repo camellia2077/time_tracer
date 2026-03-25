@@ -11,9 +11,12 @@ namespace tracer::core::infrastructure::query::data::internal {
 
 namespace tracer::core::infrastructure::query::data::repository::internal {
 
-using tracer::core::infrastructure::query::data::internal::BuildMappingNamesContent;
-using tracer::core::infrastructure::query::data::internal::BuildReportChartContent;
-using tracer::core::infrastructure::query::data::internal::ValidateReportChartRequest;
+using tracer::core::infrastructure::query::data::internal::
+    BuildMappingNamesContent;
+using tracer::core::infrastructure::query::data::internal::
+    BuildReportChartContent;
+using tracer::core::infrastructure::query::data::internal::
+    ValidateReportChartRequest;
 
 }  // namespace tracer::core::infrastructure::query::data::repository::internal
 

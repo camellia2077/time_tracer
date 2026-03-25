@@ -26,8 +26,8 @@ auto SqliteDatabaseHealthChecker::CheckReady()
   if (std::filesystem::exists(kParentPath) &&
       !std::filesystem::is_directory(kParentPath)) {
     return {.ok = false,
-            .message =
-                "Database parent path is not a directory: " + kParentPath.string()};
+            .message = "Database parent path is not a directory: " +
+                       kParentPath.string()};
   }
 
   return {.ok = true, .message = ""};

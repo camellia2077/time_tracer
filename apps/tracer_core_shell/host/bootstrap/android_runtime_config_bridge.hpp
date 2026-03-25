@@ -7,11 +7,12 @@ namespace tracer_core::shell::config_bridge {
 
 [[nodiscard]] auto ResolveAndroidRuntimeConfigPathsBridge(
     const std::filesystem::path& requested_converter_config_toml_path)
-    -> ::infrastructure::bootstrap::android_runtime_detail::AndroidRuntimeConfigPaths;
+    -> ::infrastructure::bootstrap::android_runtime_detail::
+        AndroidRuntimeConfigPaths;
 
 [[nodiscard]] auto BuildAndroidReportCatalogBridge(
-    const ::infrastructure::bootstrap::android_runtime_detail::AndroidRuntimeConfigPaths&
-        runtime_config_paths) -> ReportCatalog;
+    const ::infrastructure::bootstrap::android_runtime_detail::
+        AndroidRuntimeConfigPaths& runtime_config_paths) -> ReportCatalog;
 
 }  // namespace tracer_core::shell::config_bridge
 

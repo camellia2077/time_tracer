@@ -31,6 +31,7 @@ void FileWriter::WriteCanonicalText(const std::filesystem::path& path,
   const std::string canonical =
       tracer::core::shared::canonical_text::RequireCanonicalText(content,
                                                                  path.string());
-  const auto bytes = tracer::core::shared::canonical_text::ToUtf8Bytes(canonical);
+  const auto bytes =
+      tracer::core::shared::canonical_text::ToUtf8Bytes(canonical);
   WriteBytes(path, bytes);
 }

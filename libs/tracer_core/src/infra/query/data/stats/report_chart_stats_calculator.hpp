@@ -15,8 +15,7 @@ struct ReportChartDateRange {
 };
 
 [[nodiscard]] auto BuildReportChartSeries(
-    ReportChartDateRange range,
-    const std::vector<DayDurationRow>& sparse_rows)
+    ReportChartDateRange range, const std::vector<DayDurationRow>& sparse_rows)
     -> ReportChartSeriesResult;
 
 }  // namespace tracer::core::infrastructure::query::data::stats

@@ -57,8 +57,7 @@ auto Writer::InsertDays(const std::vector<DayData>& days) -> void {
                       SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt_insert_day_, kDayIdxYear, day_data.year);
     sqlite3_bind_int(stmt_insert_day_, kDayIdxMonth, day_data.month);
-    sqlite3_bind_int(stmt_insert_day_, kDayIdxWakeAnchor,
-                     day_data.wake_anchor);
+    sqlite3_bind_int(stmt_insert_day_, kDayIdxWakeAnchor, day_data.wake_anchor);
     sqlite3_bind_text(stmt_insert_day_, kDayIdxRemark, day_data.remark.c_str(),
                       -1, SQLITE_TRANSIENT);
 

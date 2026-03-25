@@ -27,25 +27,23 @@ auto QueryRuntimeService::RunDataQuery(
     -> tracer_core::core::dto::TextOutput {
   if (request.action ==
       tracer_core::core::dto::DataQueryAction::kMappingNames) {
-    std::string content =
-        runtime_service_internal::BuildMappingNamesContent(
-            converter_config_toml_path_);
+    std::string content = runtime_service_internal::BuildMappingNamesContent(
+        converter_config_toml_path_);
     content = infra_data_query_renderers::RenderJsonObjectOutput(
         "mapping_names", std::move(content), request.output_mode);
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
 
-  if (request.action ==
-      tracer_core::core::dto::DataQueryAction::kReportChart) {
+  if (request.action == tracer_core::core::dto::DataQueryAction::kReportChart) {
     runtime_service_internal::ValidateReportChartRequest(request);
   }
 
   DBManager db_manager(db_path_.string());
-  sqlite3* db_conn = runtime_service_internal::EnsureDbConnectionOrThrow(
-      db_manager, db_path_);
+  sqlite3* db_conn =
+      runtime_service_internal::EnsureDbConnectionOrThrow(db_manager, db_path_);
 
-  const auto kAction = runtime_service_internal::ToCliDataQueryAction(
-      request.action);
+  const auto kAction =
+      runtime_service_internal::ToCliDataQueryAction(request.action);
   const auto kBaseFilters = runtime_service_internal::BuildCliFilters(request);
   return runtime_service_internal::DispatchDataQueryAction(
       db_conn, request, kAction, kBaseFilters);

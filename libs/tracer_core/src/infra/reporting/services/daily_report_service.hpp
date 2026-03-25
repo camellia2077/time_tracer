@@ -35,4 +35,3 @@ using DailyReportService =
     tracer::core::infrastructure::reports::services::DailyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_DAILY_REPORT_SERVICE_H_
-

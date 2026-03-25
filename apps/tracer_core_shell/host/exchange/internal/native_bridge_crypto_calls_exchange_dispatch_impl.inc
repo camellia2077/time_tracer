@@ -53,8 +53,8 @@ auto BuildImportTracerExchangeRequest(
   };
 }
 
-auto BuildInspectTracerExchangeRequest(
-    JNIEnv* env, const InspectTracerExchangeArgs& args)
+auto BuildInspectTracerExchangeRequest(JNIEnv* env,
+                                       const InspectTracerExchangeArgs& args)
     -> app_dto::TracerExchangeInspectRequest {
   return {
       .input_tracer_path = fs::absolute(args.input_path),

@@ -29,7 +29,8 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 
 }  // namespace
 
-auto DecodeIngestRequest(std::string_view request_json) -> IngestRequestPayload {
+auto DecodeIngestRequest(std::string_view request_json)
+    -> IngestRequestPayload {
   const json kPayload = ParseRequestObject(request_json);
 
   const auto kInputPath = RequireStringField(kPayload, "input_path");
@@ -40,8 +41,7 @@ auto DecodeIngestRequest(std::string_view request_json) -> IngestRequestPayload 
   IngestRequestPayload out{};
   out.input_path = kInputPath.value.value_or("");
 
-  const auto kDateCheckMode =
-      TryReadStringField(kPayload, "date_check_mode");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
   if (kDateCheckMode.HasError()) {
     throw std::invalid_argument(kDateCheckMode.error.message);
   }

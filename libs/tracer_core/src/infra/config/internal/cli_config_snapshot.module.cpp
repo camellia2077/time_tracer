@@ -10,7 +10,8 @@ struct CliConfigSnapshot;
 
 namespace CliConfigSnapshotBridge::internal {
 
-auto LoadCliConfigSnapshotCachedImpl(const std::filesystem::path& executable_path)
+auto LoadCliConfigSnapshotCachedImpl(
+    const std::filesystem::path& executable_path)
     -> tracer::core::infrastructure::config::internal::CliConfigSnapshot;
 
 }  // namespace CliConfigSnapshotBridge::internal

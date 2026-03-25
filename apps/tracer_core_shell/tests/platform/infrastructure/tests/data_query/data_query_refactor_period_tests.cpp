@@ -26,13 +26,12 @@ auto TestDateRangeResolver(int& failures) -> void {
           {
               .invalid_range_error =
                   "report-chart invalid range: from_date must be <= to_date.",
-              .invalid_date_error =
-                  "report-chart resolved invalid date range.",
+              .invalid_date_error = "report-chart resolved invalid date range.",
           },
   };
 
-  const auto kExplicitRange = ResolveExplicitDateRange(
-      "20260201", "20260203", kRangeErrors);
+  const auto kExplicitRange =
+      ResolveExplicitDateRange("20260201", "20260203", kRangeErrors);
   Expect(kExplicitRange.has_value(),
          "explicit date range should be produced when both boundaries exist.",
          failures);

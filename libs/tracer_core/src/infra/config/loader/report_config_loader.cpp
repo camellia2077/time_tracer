@@ -19,7 +19,6 @@ namespace modloader = tracer::core::infrastructure::config::loader;
 
 namespace tracer::core::infrastructure::config {
 
-
 // ==========================================
 // Daily Loaders
 // ==========================================

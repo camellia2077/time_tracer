@@ -224,8 +224,7 @@ auto EncodeQueryRequest(const QueryRequestPayload& request) -> std::string {
   return payload.dump();
 }
 
-auto EncodeQueryResponse(const QueryResponsePayload& response)
-    -> std::string {
+auto EncodeQueryResponse(const QueryResponsePayload& response) -> std::string {
   return json{
       {"ok", response.ok},
       {"content", response.content},

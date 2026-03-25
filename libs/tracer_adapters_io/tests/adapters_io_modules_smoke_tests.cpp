@@ -21,8 +21,6 @@ namespace {
 
 namespace fs = std::filesystem;
 
-using tracer::core::domain::modmodel::BaseActivityRecord;
-using tracer::core::domain::modmodel::DailyLog;
 using tracer::adapters::io::modcore::CreateDirectories;
 using tracer::adapters::io::modcore::Exists;
 using tracer::adapters::io::modcore::IsDirectory;
@@ -36,6 +34,8 @@ using tracer::adapters::io::modruntime::CreateProcessedDataStorage;
 using tracer::adapters::io::modruntime::CreateTxtIngestInputProvider;
 using tracer::adapters::io::modutils::FindFilesByExtensionRecursively;
 using tracer::adapters::io::modutils::ResolveFiles;
+using tracer::core::domain::modmodel::BaseActivityRecord;
+using tracer::core::domain::modmodel::DailyLog;
 
 auto Expect(bool condition, std::string_view message, int& failures) -> void {
   if (condition) {
@@ -98,13 +98,13 @@ void TestCoreAndUtilsBridge(int& failures) {
     Expect(IsDirectory(nested), "Nested path should be directory.", failures);
     Expect(IsRegularFile(note), "note.txt should be a regular file.", failures);
     Expect(ReadCanonicalText(note) == "hello modules",
-           "ReadCanonicalText result mismatch.",
-           failures);
+           "ReadCanonicalText result mismatch.", failures);
     const auto note_bytes = ReadBytes(note);
     Expect(note_bytes == std::vector<std::uint8_t>{'h', 'e', 'l', 'l', 'o', ' ',
                                                    'm', 'o', 'd', 'u', 'l', 'e',
                                                    's'},
-           "ReadBytes should preserve canonical UTF-8 payload bytes.", failures);
+           "ReadBytes should preserve canonical UTF-8 payload bytes.",
+           failures);
 
     const auto files = FindFilesByExtensionRecursively(root, ".txt");
     Expect(files.size() == 2U, "FindFilesByExtensionRecursively size mismatch.",
@@ -131,9 +131,9 @@ void TestRuntimeFactories(int& failures) {
   try {
     CreateDirectories(root);
     const std::vector<std::uint8_t> legacy_bytes = {
-        0xEFU, 0xBBU, 0xBFU, 'r', 'u', 'n', 't', 'i', 'm', 'e',
-        '\r',  '\n', 'f',   'a', 'c', 't', 'o', 'r', 'y', '\r',
-        'b',   'r',  'i',   'd', 'g', 'e'};
+        0xEFU, 0xBBU, 0xBFU, 'r', 'u', 'n', 't', 'i', 'm',
+        'e',   '\r',  '\n',  'f', 'a', 'c', 't', 'o', 'r',
+        'y',   '\r',  'b',   'r', 'i', 'd', 'g', 'e'};
     WriteBytes(note, legacy_bytes);
 
     auto ingest_input_provider = CreateTxtIngestInputProvider();
@@ -189,13 +189,13 @@ void TestRuntimeFactories(int& failures) {
       Expect(!has_exercise,
              "Processed-data JSON should not persist derived header.exercise.",
              failures);
-      const bool has_sleep =
-          written_json.is_array() && !written_json.empty() &&
-          written_json.front().contains("headers") &&
-          written_json.front()["headers"].contains("sleep");
-      Expect(has_sleep && written_json.front()["headers"]["sleep"] == 1,
-             "Processed-data JSON should persist header.sleep from wake anchor.",
-             failures);
+      const bool has_sleep = written_json.is_array() && !written_json.empty() &&
+                             written_json.front().contains("headers") &&
+                             written_json.front()["headers"].contains("sleep");
+      Expect(
+          has_sleep && written_json.front()["headers"]["sleep"] == 1,
+          "Processed-data JSON should persist header.sleep from wake anchor.",
+          failures);
     }
 
     const auto loaded =
@@ -221,9 +221,8 @@ void TestRuntimeFactories(int& failures) {
     const fs::path legacy_root = root / "legacy_input";
     CreateDirectories(legacy_root);
     const fs::path legacy_file = legacy_root / "2026-03.json";
-    WriteCanonicalText(
-        legacy_file,
-        R"([
+    WriteCanonicalText(legacy_file,
+                       R"([
   {
     "headers": {
       "date": "2026-03-16",
@@ -261,10 +260,12 @@ void TestRuntimeFactories(int& failures) {
     const auto legacy_loaded =
         processed_data_loader->LoadDailyLogs(legacy_root.string());
     Expect(legacy_loaded.errors.empty(),
-           "Processed-data loader should accept legacy header.status/exercise fields.",
+           "Processed-data loader should accept legacy header.status/exercise "
+           "fields.",
            failures);
     Expect(legacy_loaded.data_by_source.size() == 1U,
-           "Processed-data loader should load one legacy source file.", failures);
+           "Processed-data loader should load one legacy source file.",
+           failures);
     if (!legacy_loaded.data_by_source.empty()) {
       const auto& legacy_days = legacy_loaded.data_by_source.begin()->second;
       Expect(!legacy_days.empty(),
@@ -278,22 +279,26 @@ void TestRuntimeFactories(int& failures) {
                "Legacy JSON load should rebuild exercise flag from activities.",
                failures);
         Expect(legacy_days.front().hasWakeAnchor,
-               "Legacy JSON load should rebuild wake anchor from getup/isContinuation.",
+               "Legacy JSON load should rebuild wake anchor from "
+               "getup/isContinuation.",
                failures);
       }
     }
 #else
     Expect(written.empty(),
-           "Processed-data storage should no-op when processed JSON I/O is disabled.",
+           "Processed-data storage should no-op when processed JSON I/O is "
+           "disabled.",
            failures);
 
     const auto loaded =
         processed_data_loader->LoadDailyLogs((output_root / "data").string());
     Expect(loaded.data_by_source.empty(),
-           "Processed-data loader should no-op when processed JSON I/O is disabled.",
+           "Processed-data loader should no-op when processed JSON I/O is "
+           "disabled.",
            failures);
     Expect(loaded.errors.empty(),
-           "Processed-data loader no-op path should not fabricate validation errors.",
+           "Processed-data loader no-op path should not fabricate validation "
+           "errors.",
            failures);
 #endif
   } catch (const std::exception& ex) {

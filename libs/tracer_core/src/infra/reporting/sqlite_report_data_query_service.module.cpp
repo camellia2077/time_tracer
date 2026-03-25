@@ -21,7 +21,8 @@ module;
 #include "infra/reporting/data/queriers/yearly/yearly_querier.hpp"
 #include "infra/reporting/services/batch_export_helpers.hpp"
 
-module tracer.core.infrastructure.reporting.data_querying.sqlite_report_data_query_service;
+module tracer.core.infrastructure.reporting.data_querying
+    .sqlite_report_data_query_service;
 
 namespace tracer::core::infrastructure::reports {
 

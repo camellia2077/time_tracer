@@ -50,9 +50,9 @@ auto HandleDaysQuery(sqlite3* db_conn, const QueryFilters& base_filters,
       data_query_renderers::RenderListOutput("days", kDays, output_mode));
 }
 
-auto HandleDaysDurationQuery(sqlite3* db_conn, const QueryFilters& base_filters,
-                             tracer_core::core::dto::DataQueryOutputMode
-                                 output_mode)
+auto HandleDaysDurationQuery(
+    sqlite3* db_conn, const QueryFilters& base_filters,
+    tracer_core::core::dto::DataQueryOutputMode output_mode)
     -> tracer_core::core::dto::TextOutput {
   const auto kRows =
       query_data_repository::QueryDayDurations(db_conn, base_filters);
@@ -83,7 +83,8 @@ auto HandleActivitySuggestQuery(
   const auto kRows =
       query_data_repository::QueryActivitySuggestions(db_conn, options);
   return BuildSuccessOutput(
-      data_query_renderers::RenderActivitySuggestionsOutput(kRows, output_mode));
+      data_query_renderers::RenderActivitySuggestionsOutput(kRows,
+                                                            output_mode));
 }
 
 }  // namespace tracer::core::infrastructure::query::data::orchestrators

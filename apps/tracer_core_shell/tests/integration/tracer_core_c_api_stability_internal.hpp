@@ -150,4 +150,3 @@ void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
 }  // namespace tracer_core_c_api_stability_internal
 
 #endif  // API_CORE_C_TRACER_CORE_C_API_STABILITY_INTERNAL_HPP_
-

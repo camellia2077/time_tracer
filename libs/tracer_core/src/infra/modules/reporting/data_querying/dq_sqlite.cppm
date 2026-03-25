@@ -11,7 +11,8 @@ module;
 #include "application/ports/reporting/i_platform_clock.hpp"
 #include "application/ports/reporting/i_report_data_query_service.hpp"
 
-export module tracer.core.infrastructure.reporting.data_querying.sqlite_report_data_query_service;
+export module tracer.core.infrastructure.reporting.data_querying
+    .sqlite_report_data_query_service;
 
 export namespace tracer::core::infrastructure::reports {
 class SqliteReportDataQueryService final

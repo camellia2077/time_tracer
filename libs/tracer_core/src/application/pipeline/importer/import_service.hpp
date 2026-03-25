@@ -25,8 +25,8 @@ class ImportService {
       const std::map<std::string, std::vector<DailyLog>>& data_map,
       const std::optional<ReplaceMonthTarget>& replace_month_target =
           std::nullopt,
-      const std::optional<ReplaceAllTarget>& replace_all_target =
-          std::nullopt) -> ImportStats;
+      const std::optional<ReplaceAllTarget>& replace_all_target = std::nullopt)
+      -> ImportStats;
 
  private:
   tracer_core::application::ports::ITimeSheetRepository& repository_;

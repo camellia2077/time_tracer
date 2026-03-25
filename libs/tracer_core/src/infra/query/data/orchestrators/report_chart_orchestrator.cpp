@@ -6,8 +6,7 @@
 import tracer.core.infrastructure.query.data.internal.report_mapping;
 import tracer.core.infrastructure.query.data.renderers;
 
-namespace query_internal =
-    tracer::core::infrastructure::query::data::internal;
+namespace query_internal = tracer::core::infrastructure::query::data::internal;
 namespace data_query_renderers =
     tracer::core::infrastructure::query::data::renderers;
 

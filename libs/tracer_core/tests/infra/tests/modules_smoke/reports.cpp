@@ -60,8 +60,7 @@ class RecordingExporter final : public IReportExporter {
   }
 
   auto ExportSingleMonthReport(const SingleExportTask& task,
-                               ReportFormat /*format*/) const
-      -> void override {
+                               ReportFormat /*format*/) const -> void override {
     last_id = std::string(task.id);
     last_content = std::string(task.kContent);
   }
@@ -88,8 +87,8 @@ class RecordingExporter final : public IReportExporter {
                              ReportFormat /*format*/) const -> void override {}
 
   auto ExportAllMonthlyReports(const FormattedMonthlyReports& /*reports*/,
-                               ReportFormat /*format*/) const
-      -> void override {}
+                               ReportFormat /*format*/) const -> void override {
+  }
 
   auto ExportAllPeriodReports(const FormattedPeriodReports& /*reports*/,
                               ReportFormat /*format*/) const -> void override {}
@@ -112,9 +111,8 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
       &tracer::core::infrastructure::reports::ExecuteExportTask;
   const auto kFormatDaily =
       &tracer::core::infrastructure::reports::ReportDtoFormatter::FormatDaily;
-  const auto kExportSingleDay =
-      &tracer::core::infrastructure::reports::ReportDtoExportWriter::
-          ExportSingleDay;
+  const auto kExportSingleDay = &tracer::core::infrastructure::reports::
+                                    ReportDtoExportWriter::ExportSingleDay;
   const auto kRunExportAllPeriodReportsQuery =
       &tracer::core::infrastructure::reports::ReportService::
           RunExportAllPeriodReportsQuery;
@@ -130,9 +128,8 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
   const auto kGenerateYearlyReports =
       &tracer::core::infrastructure::reports::services::YearlyReportService::
           GenerateReports;
-  const auto kQueryAllDaily =
-      &tracer::core::infrastructure::reports::SqliteReportDataQueryService::
-          QueryAllDaily;
+  const auto kQueryAllDaily = &tracer::core::infrastructure::reports::
+                                  SqliteReportDataQueryService::QueryAllDaily;
   const auto kQueryAllYearly =
       &tracer::core::infrastructure::reports::LazySqliteReportDataQueryService::
           QueryAllYearly;
@@ -164,8 +161,7 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
 
   tracer::core::infrastructure::reports::ReportFileManager file_manager(
       kExportSmokeDir);
-  if (file_manager
-          .GetSingleWeekReportPath("2026-W09", ReportFormat::kMarkdown)
+  if (file_manager.GetSingleWeekReportPath("2026-W09", ReportFormat::kMarkdown)
           .extension() != ".md") {
     return 32;
   }
@@ -243,7 +239,8 @@ auto RunInfrastructureModuleReportsSmoke() -> int {
     }
 
     tracer::core::infrastructure::reports::LazySqliteReportDataQueryService
-        lazy_data_query_service(kDbPath, std::make_shared<SmokePlatformClock>());
+        lazy_data_query_service(kDbPath,
+                                std::make_shared<SmokePlatformClock>());
     if (!lazy_data_query_service.QueryAllDaily().empty()) {
       return 39;
     }

@@ -20,7 +20,8 @@
 
 namespace tracer_core::application::tests {
 
-class FakePipelineWorkflow final : public tracer::core::application::pipeline::IPipelineWorkflow {
+class FakePipelineWorkflow final
+    : public tracer::core::application::pipeline::IPipelineWorkflow {
  public:
   bool fail_convert = false;
   bool fail_ingest = false;
@@ -60,8 +61,8 @@ class FakePipelineWorkflow final : public tracer::core::application::pipeline::I
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
                  bool save_processed, IngestMode ingest_mode) -> void override;
   auto RunIngestReplacingAll(const std::string& source_path,
-                             DateCheckMode date_check_mode,
-                             bool save_processed) -> void override;
+                             DateCheckMode date_check_mode, bool save_processed)
+      -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;

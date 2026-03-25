@@ -2,7 +2,8 @@ module;
 
 #include "infra/query/data/orchestrators/date_range_resolver.hpp"
 
-export module tracer.core.infrastructure.query.data.orchestrators.date_range_resolver;
+export module tracer.core.infrastructure.query.data.orchestrators
+    .date_range_resolver;
 
 export namespace tracer::core::infrastructure::query::data::orchestrators {
 

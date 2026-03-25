@@ -27,11 +27,10 @@ using tracer::core::domain::modmodel::SourceSpan;
 constexpr int kUnrecognizedActivityLine = 14;
 constexpr int kDurationDiagnosticLine = 81;
 
-class CapturingDiagnosticsSink final
-    : public modports::IDiagnosticsSink {
+class CapturingDiagnosticsSink final : public modports::IDiagnosticsSink {
  public:
-  auto Emit(modports::DiagnosticSeverity severity,
-            std::string_view message) -> void override {
+  auto Emit(modports::DiagnosticSeverity severity, std::string_view message)
+      -> void override {
     if (severity == modports::DiagnosticSeverity::kError) {
       errors_.append(message);
       errors_.push_back('\n');
@@ -197,8 +196,8 @@ auto TestLogicReporterPrefersSourceSpanPath(int& failures) -> void {
   }
 }
 
-auto TestReporterSkipsSaveNoticeWhenErrorReportWriterDisabled(
-    int& failures) -> void {
+auto TestReporterSkipsSaveNoticeWhenErrorReportWriterDisabled(int& failures)
+    -> void {
   DiagnosticsStateGuard guard;
   auto sink = std::make_shared<CapturingDiagnosticsSink>();
   modports::SetDiagnosticsSink(sink);

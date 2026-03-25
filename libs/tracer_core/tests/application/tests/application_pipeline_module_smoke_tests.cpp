@@ -19,9 +19,11 @@ auto Expect(bool condition, std::string_view message, int& failures) -> void {
 
 auto RunPipelineModuleSmoke(int& failures) -> void {
   Expect(std::is_class_v<app_pipeline::PipelineRunSpec>,
-         "PipelineRunSpec should be visible through pipeline module.", failures);
+         "PipelineRunSpec should be visible through pipeline module.",
+         failures);
   Expect(std::is_class_v<app_pipeline::PipelineSession>,
-         "PipelineSession should be visible through pipeline module.", failures);
+         "PipelineSession should be visible through pipeline module.",
+         failures);
   Expect(std::is_class_v<app_pipeline::PipelineOrchestrator>,
          "PipelineOrchestrator should be visible through pipeline module.",
          failures);
@@ -32,7 +34,8 @@ auto RunPipelineModuleSmoke(int& failures) -> void {
          "StructureValidationStage should be visible through pipeline module.",
          failures);
   Expect(std::is_class_v<app_pipeline::ConversionStage>,
-         "ConversionStage should be visible through pipeline module.", failures);
+         "ConversionStage should be visible through pipeline module.",
+         failures);
   Expect(std::is_class_v<app_pipeline::CrossMonthLinkStage>,
          "CrossMonthLinkStage should be visible through pipeline module.",
          failures);

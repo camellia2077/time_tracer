@@ -50,13 +50,13 @@ namespace app_ports = tracer_core::application::ports;
 namespace runtime_bridge = tracer_core::application::runtime_bridge;
 namespace app_pipeline = tracer::core::application::pipeline;
 namespace modtext = tracer::core::shared::canonical_text;
-using tracer::core::shared::string_utils::Trim;
+using tracer::core::domain::model::DailyLog;
 using tracer::core::domain::modlogic::converter::LogLinker;
 using tracer::core::domain::modlogic::converter::LogProcessor;
-using tracer::core::domain::model::DailyLog;
 using tracer::core::domain::types::AppOptions;
 using tracer::core::domain::types::DateCheckMode;
 using tracer::core::domain::types::IngestMode;
+using tracer::core::shared::string_utils::Trim;
 namespace modports = tracer::core::domain::ports;
 
 using app_pipeline::PipelineOrchestrator;

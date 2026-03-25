@@ -8,8 +8,7 @@ import tracer.core.infrastructure.query.data.repository;
 import tracer.core.infrastructure.query.data.renderers;
 import tracer.core.infrastructure.query.data.stats;
 
-namespace query_internal =
-    tracer::core::infrastructure::query::data::internal;
+namespace query_internal = tracer::core::infrastructure::query::data::internal;
 namespace data_query_repository = tracer::core::infrastructure::query::data;
 namespace data_query_renderers =
     tracer::core::infrastructure::query::data::renderers;

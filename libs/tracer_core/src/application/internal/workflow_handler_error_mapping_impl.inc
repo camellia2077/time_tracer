@@ -5,8 +5,9 @@ namespace workflow_handler_internal {
   std::string message(base_message);
   const std::string kReportDestination =
       modports::GetErrorReportDestinationLabel();
-  const std::string kDiagnosticSummary = modports::GetBufferedDiagnosticsSummary(
-      modports::DiagnosticSeverity::kError, 8);
+  const std::string kDiagnosticSummary =
+      modports::GetBufferedDiagnosticsSummary(
+          modports::DiagnosticSeverity::kError, 8);
   if (!kReportDestination.empty() && kReportDestination != "disabled") {
     message += "\nFull error report: " + kReportDestination;
   }

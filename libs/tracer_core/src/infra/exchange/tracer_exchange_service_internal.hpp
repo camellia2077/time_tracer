@@ -60,7 +60,8 @@ struct ActiveConverterConfigPaths {
 
 class TracerExchangeService final : public app_ports::ITracerExchangeService {
  public:
-  explicit TracerExchangeService(app_workflow::IWorkflowHandler& workflow_handler)
+  explicit TracerExchangeService(
+      app_workflow::IWorkflowHandler& workflow_handler)
       : workflow_handler_(workflow_handler) {}
 
   auto RunExport(const app_dto::TracerExchangeExportRequest& request)
@@ -75,8 +76,8 @@ class TracerExchangeService final : public app_ports::ITracerExchangeService {
 };
 
 auto ToLowerAscii(std::string value) -> std::string;
-auto HasExtensionCaseInsensitive(const fs::path& path, std::string_view ext_lower)
-    -> bool;
+auto HasExtensionCaseInsensitive(const fs::path& path,
+                                 std::string_view ext_lower) -> bool;
 auto ParseMonthInfoFromFileName(std::string_view file_name,
                                 std::string_view source_label)
     -> ParsedMonthInfo;
@@ -101,7 +102,8 @@ auto CanonicalizePackageTextBytes(std::span<const std::uint8_t> bytes,
 auto CanonicalizePackageTextBytes(std::string_view text,
                                   std::string_view source_label)
     -> std::vector<std::uint8_t>;
-auto EnsureRegularFileExists(const fs::path& path, std::string_view label) -> void;
+auto EnsureRegularFileExists(const fs::path& path, std::string_view label)
+    -> void;
 auto EnsureCryptoResultOk(const file_crypto::FileCryptoResult& result,
                           std::string_view action, const fs::path& input_path)
     -> void;
@@ -123,8 +125,9 @@ auto BuildCryptoOptions(
     app_dto::TracerExchangeSecurityLevel security_level,
     const app_dto::TracerExchangeProgressObserver& progress_observer)
     -> file_crypto::FileCryptoOptions;
-auto WriteDecodedPackageToRoot(const exchange_pkg::DecodedTracerExchangePackage& package,
-                               const fs::path& root) -> void;
+auto WriteDecodedPackageToRoot(
+    const exchange_pkg::DecodedTracerExchangePackage& package,
+    const fs::path& root) -> void;
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal
 

@@ -28,8 +28,8 @@ auto RebuildDerivedFlags(DailyLog& day) -> void {
   // headers.wake_anchor is a day-level semantic flag: valid getup anchor +
   // not a continuation day. It is intentionally independent from whether a
   // generated sleep_night activity exists in processedActivities.
-  day.hasWakeAnchor = !day.isContinuation && !day.getupTime.empty() &&
-                      day.getupTime != "00:00";
+  day.hasWakeAnchor =
+      !day.isContinuation && !day.getupTime.empty() && day.getupTime != "00:00";
 
   for (const auto& activity : day.processedActivities) {
     if (activity.project_path.starts_with("study")) {
@@ -61,10 +61,12 @@ auto SerializeLogToJsonObject(const DailyLog& day) -> nlohmann::json {
   // sleep activity presence. Auto-generated sleep activities affect the fact
   // set and time stats, but not this header's meaning.
   headers_obj[json_keys::kWakeAnchor] =
-      (!day.isContinuation && !day.getupTime.empty() && day.getupTime != "00:00")
+      (!day.isContinuation && !day.getupTime.empty() &&
+       day.getupTime != "00:00")
           ? 1
           : 0;
-  headers_obj[json_keys::kCardio] = stats_aggregator.HasCardioActivity() ? 1 : 0;
+  headers_obj[json_keys::kCardio] =
+      stats_aggregator.HasCardioActivity() ? 1 : 0;
   headers_obj[json_keys::kAnaerobic] =
       stats_aggregator.HasAnaerobicActivity() ? 1 : 0;
   std::string getup_time = "Null";
@@ -198,8 +200,8 @@ auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days)
   return SerializeDays(days, -1);
 }
 
-auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days, int indent)
-    -> std::string {
+auto JsonSerializer::SerializeDays(const std::vector<DailyLog>& days,
+                                   int indent) -> std::string {
   return BuildDaysJson(days).dump(indent);
 }
 

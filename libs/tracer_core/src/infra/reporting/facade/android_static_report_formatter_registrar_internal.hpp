@@ -8,8 +8,8 @@ namespace infrastructure::reports::detail {
 
 auto RegisterMarkdownFormatters(
     const AndroidStaticReportFormatterPolicy& policy) -> void;
-auto RegisterLatexFormatters(
-    const AndroidStaticReportFormatterPolicy& policy) -> void;
+auto RegisterLatexFormatters(const AndroidStaticReportFormatterPolicy& policy)
+    -> void;
 auto RegisterTypstFormatters(const AndroidStaticReportFormatterPolicy& policy)
     -> void;
 

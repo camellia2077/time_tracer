@@ -39,7 +39,8 @@ auto BuildRuntimeFixture(std::string_view test_name, int& failures)
 
   if (!fixture.runtime.runtime_api) {
     ++failures;
-    std::cerr << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
+    std::cerr
+        << "[FAIL] BuildAndroidRuntime should return a valid runtime API.\n";
     RemoveTree(fixture.paths.test_root);
     return std::nullopt;
   }

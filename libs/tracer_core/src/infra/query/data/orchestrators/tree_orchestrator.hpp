@@ -16,8 +16,6 @@ namespace tracer::core::infrastructure::query::data::orchestrators {
 
 namespace tracer_core::infrastructure::query::data::orchestrators {
 
-using tracer::core::infrastructure::query::data::orchestrators::
-    HandleTreeQuery;
+using tracer::core::infrastructure::query::data::orchestrators::HandleTreeQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
-

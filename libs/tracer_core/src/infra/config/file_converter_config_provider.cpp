@@ -24,9 +24,8 @@ auto FileConverterConfigProvider::LoadConverterConfig() const
   }
 
   if (!cached_config_.has_value()) {
-    ConverterConfig config =
-        tracer::core::infrastructure::config::ConverterConfigLoader::
-            LoadFromFile(config_path_);
+    ConverterConfig config = tracer::core::infrastructure::config::
+        ConverterConfigLoader::LoadFromFile(config_path_);
     for (const auto& [key, val] : initial_top_parents_) {
       config.initial_top_parents[key.string()] = val.string();
     }

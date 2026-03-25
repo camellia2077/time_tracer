@@ -15,8 +15,8 @@ auto main() -> int {
     return 0;
   }
 
-  std::cerr
-      << "[FAIL] time_tracker_android_runtime_pipeline_regression_tests failures: "
-      << failures << '\n';
+  std::cerr << "[FAIL] time_tracker_android_runtime_pipeline_regression_tests "
+               "failures: "
+            << failures << '\n';
   return 1;
 }

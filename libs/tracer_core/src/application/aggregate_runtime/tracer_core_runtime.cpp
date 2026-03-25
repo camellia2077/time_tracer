@@ -20,9 +20,15 @@ TracerCoreRuntime::TracerCoreRuntime(
   }
 }
 
-auto TracerCoreRuntime::pipeline() -> IPipelineApi& { return *pipeline_api_; }
-auto TracerCoreRuntime::query() -> IQueryApi& { return *query_api_; }
-auto TracerCoreRuntime::report() -> IReportApi& { return *report_api_; }
+auto TracerCoreRuntime::pipeline() -> IPipelineApi& {
+  return *pipeline_api_;
+}
+auto TracerCoreRuntime::query() -> IQueryApi& {
+  return *query_api_;
+}
+auto TracerCoreRuntime::report() -> IReportApi& {
+  return *report_api_;
+}
 auto TracerCoreRuntime::tracer_exchange() -> ITracerExchangeApi& {
   return *tracer_exchange_api_;
 }

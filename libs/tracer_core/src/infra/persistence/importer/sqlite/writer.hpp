@@ -43,4 +43,3 @@ using tracer::core::infrastructure::persistence::importer::sqlite::Writer;
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_WRITER_H_
-

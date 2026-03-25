@@ -49,12 +49,9 @@ using nlohmann::json;
 extern "C" TT_CORE_API auto tracer_core_runtime_crypto_encrypt_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   return ExecuteCryptoTextEndpoint(
-      "tracer_core_runtime_crypto_encrypt_json failed unexpectedly.",
-      [&]() {
-        const CryptoEncryptExecution execution =
-            DispatchCryptoEncrypt(handle,
-                                  ParseCryptoEncryptArgs(
-                                      ToRequestJsonView(request_json)));
+      "tracer_core_runtime_crypto_encrypt_json failed unexpectedly.", [&]() {
+        const CryptoEncryptExecution execution = DispatchCryptoEncrypt(
+            handle, ParseCryptoEncryptArgs(ToRequestJsonView(request_json)));
         return BuildEncryptTextOutput(execution.result, execution.request);
       });
 }
@@ -62,12 +59,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_crypto_encrypt_json(
 extern "C" TT_CORE_API auto tracer_core_runtime_crypto_decrypt_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
   return ExecuteCryptoTextEndpoint(
-      "tracer_core_runtime_crypto_decrypt_json failed unexpectedly.",
-      [&]() {
-        const CryptoDecryptExecution execution =
-            DispatchCryptoDecrypt(handle,
-                                  ParseCryptoDecryptArgs(
-                                      ToRequestJsonView(request_json)));
+      "tracer_core_runtime_crypto_decrypt_json failed unexpectedly.", [&]() {
+        const CryptoDecryptExecution execution = DispatchCryptoDecrypt(
+            handle, ParseCryptoDecryptArgs(ToRequestJsonView(request_json)));
         return BuildImportTextOutput(execution.result, execution.request);
       });
 }

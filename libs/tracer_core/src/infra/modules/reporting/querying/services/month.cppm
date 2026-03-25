@@ -2,7 +2,8 @@ module;
 
 #include "infra/reporting/services/monthly_report_service.hpp"
 
-export module tracer.core.infrastructure.reporting.querying.services.monthly_report_service;
+export module tracer.core.infrastructure.reporting.querying.services
+    .monthly_report_service;
 
 export namespace tracer::core::infrastructure::reports::services {
 

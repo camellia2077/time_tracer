@@ -92,8 +92,8 @@ auto ResolveRepoRootForInterop() -> std::filesystem::path {
 void WriteU64LE(std::vector<std::uint8_t>& bytes, std::size_t offset,
                 std::uint64_t value) {
   for (std::size_t i = 0; i < kU64ByteCount; ++i) {
-    bytes[offset + i] = static_cast<std::uint8_t>(
-        (value >> (i * kByteBitWidth)) & kByteMask);
+    bytes[offset + i] =
+        static_cast<std::uint8_t>((value >> (i * kByteBitWidth)) & kByteMask);
   }
 }
 

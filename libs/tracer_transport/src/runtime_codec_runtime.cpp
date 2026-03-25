@@ -201,8 +201,8 @@ auto DecodeAckResponse(std::string_view response_json, std::string_view context)
   return out;
 }
 
-auto DecodeTextResponse(std::string_view response_json, std::string_view context)
-    -> TextResponsePayload {
+auto DecodeTextResponse(std::string_view response_json,
+                        std::string_view context) -> TextResponsePayload {
   const auto kParsed = ParseEnvelope(response_json, context);
   if (kParsed.HasError()) {
     throw std::invalid_argument(kParsed.error.message);

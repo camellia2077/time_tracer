@@ -30,4 +30,3 @@ using SqliteProjectRepository =
     tracer::core::infrastructure::persistence::SqliteProjectRepository;
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_REPOSITORIES_SQLITE_PROJECT_REPOSITORY_H_
-

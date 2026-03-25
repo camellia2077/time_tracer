@@ -9,15 +9,15 @@ import tracer.core.shared;
 
 namespace {
 
-using tracer::core::shared::modtext::Canonicalize;
-using tracer::core::shared::modtext::RequireCanonicalText;
-using tracer::core::shared::modtext::ToUtf8Bytes;
 using tracer::core::shared::modperiod::FormatIsoWeek;
 using tracer::core::shared::modperiod::IsoWeek;
 using tracer::core::shared::modperiod::IsoWeekEndDate;
 using tracer::core::shared::modperiod::IsoWeekStartDate;
 using tracer::core::shared::modperiod::ParseGregorianYear;
 using tracer::core::shared::modperiod::ParseIsoWeek;
+using tracer::core::shared::modtext::Canonicalize;
+using tracer::core::shared::modtext::RequireCanonicalText;
+using tracer::core::shared::modtext::ToUtf8Bytes;
 using tracer::core::shared::modtypes::AppError;
 using tracer::core::shared::modtypes::AppExitCode;
 using tracer::core::shared::modtypes::LogicError;
@@ -44,10 +44,11 @@ void TestStringModuleContract(int& failures) {
 
 void TestCanonicalTextContract(int& failures) {
   const std::string legacy_text = "\xEF\xBB\xBFy2026\r\nm03\r0101\n";
-  Expect(RequireCanonicalText(legacy_text, "legacy.txt") ==
-             "y2026\nm03\n0101\n",
-         "Canonical text normalization should drop BOM and normalize line endings.",
-         failures);
+  Expect(
+      RequireCanonicalText(legacy_text, "legacy.txt") == "y2026\nm03\n0101\n",
+      "Canonical text normalization should drop BOM and normalize line "
+      "endings.",
+      failures);
 
   const auto empty_text = Canonicalize(std::string_view{}, "empty.txt");
   Expect(empty_text.ok && empty_text.text.empty(),
@@ -83,9 +84,10 @@ void TestPeriodBridge(int& failures) {
   Expect(ParseIsoWeek("2025-W08", week), "ParseIsoWeek should pass.", failures);
   Expect(week.year == 2025 && week.week == 8, "ParseIsoWeek result mismatch.",
          failures);
-  Expect(FormatIsoWeek(week) == "2025-W08", "FormatIsoWeek mismatch.", failures);
-  Expect(!IsoWeekStartDate(week).empty(), "IsoWeekStartDate should not be empty.",
+  Expect(FormatIsoWeek(week) == "2025-W08", "FormatIsoWeek mismatch.",
          failures);
+  Expect(!IsoWeekStartDate(week).empty(),
+         "IsoWeekStartDate should not be empty.", failures);
   Expect(!IsoWeekEndDate(week).empty(), "IsoWeekEndDate should not be empty.",
          failures);
 }

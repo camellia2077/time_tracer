@@ -20,7 +20,8 @@ namespace fs = std::filesystem;
 
 namespace infrastructure::io::internal {
 
-auto ProcessedDataLoaderAdapter::LoadDailyLogs(const std::string& processed_path)
+auto ProcessedDataLoaderAdapter::LoadDailyLogs(
+    const std::string& processed_path)
     -> tracer_core::application::ports::ProcessedDataLoadResult {
   tracer_core::application::ports::ProcessedDataLoadResult result;
 
@@ -60,13 +61,13 @@ auto ProcessedDataWriter::Write(
       modcore::CreateDirectories(month_output_dir);
 
       modcore::WriteCanonicalText(
-          output_file_path, serializer::JsonSerializer::SerializeDays(month_days, 4));
+          output_file_path,
+          serializer::JsonSerializer::SerializeDays(month_days, 4));
 
       written_files.push_back(output_file_path);
     } catch (const std::exception& e) {
-      modports::EmitError(
-          "错误: 无法写入输出文件: " + output_file_path.string() + " - " +
-          e.what());
+      modports::EmitError("错误: 无法写入输出文件: " +
+                          output_file_path.string() + " - " + e.what());
     }
   }
   return written_files;

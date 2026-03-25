@@ -4,7 +4,8 @@ auto BackupManagedTextFiles(
     const fs::path& backup_root) -> std::vector<std::string> {
   std::vector<std::string> added_month_keys;
   for (const auto& imported_payload : imported_payloads) {
-    const auto existing_it = managed_month_files.find(imported_payload.month_key);
+    const auto existing_it =
+        managed_month_files.find(imported_payload.month_key);
     if (existing_it == managed_month_files.end()) {
       added_month_keys.push_back(imported_payload.month_key);
       continue;
@@ -19,8 +20,7 @@ auto BackupManagedTextFiles(
     if (error) {
       throw std::runtime_error("Failed to backup managed text file: " +
                                existing_it->second.string() + " -> " +
-                               backup_path.string() + " | " +
-                               error.message());
+                               backup_path.string() + " | " + error.message());
     }
   }
 
@@ -42,9 +42,9 @@ auto RestoreManagedTextFiles(const fs::path& active_text_root,
       fs::copy_file(entry.path(), active_text_root / entry.path().filename(),
                     fs::copy_options::overwrite_existing, error);
       if (error) {
-        throw std::runtime_error("Failed to restore managed text file: " +
-                                 entry.path().string() + " | " +
-                                 error.message());
+        throw std::runtime_error(
+            "Failed to restore managed text file: " + entry.path().string() +
+            " | " + error.message());
       }
     }
   }
@@ -71,8 +71,7 @@ auto BuildEffectiveTextRoot(
   fs::create_directories(effective_root, error);
   if (error) {
     throw std::runtime_error("Failed to create effective text root: " +
-                             effective_root.string() + " | " +
-                             error.message());
+                             effective_root.string() + " | " + error.message());
   }
 
   for (const auto& [month_key, source_path] : managed_month_files) {
@@ -88,8 +87,8 @@ auto BuildEffectiveTextRoot(
   }
 
   for (const auto& imported_payload : imported_payloads) {
-    EnsureParentDirectory(
-        effective_root / fs::path(imported_payload.month_key + ".txt"));
+    EnsureParentDirectory(effective_root /
+                          fs::path(imported_payload.month_key + ".txt"));
     std::error_code copy_error;
     fs::copy_file(
         imported_payload.source_path,
@@ -98,8 +97,7 @@ auto BuildEffectiveTextRoot(
     if (copy_error) {
       throw std::runtime_error(
           "Failed to write imported payload into effective text root: " +
-          imported_payload.source_path.string() + " | " +
-          copy_error.message());
+          imported_payload.source_path.string() + " | " + copy_error.message());
     }
   }
 }
@@ -110,9 +108,9 @@ auto WriteImportedPayloadsToActiveTextRoot(
   std::error_code error;
   fs::create_directories(active_text_root, error);
   if (error) {
-    throw std::runtime_error("Failed to create active_text_root_path: " +
-                             active_text_root.string() + " | " +
-                             error.message());
+    throw std::runtime_error(
+        "Failed to create active_text_root_path: " + active_text_root.string() +
+        " | " + error.message());
   }
 
   for (const auto& imported_payload : imported_payloads) {
@@ -123,10 +121,10 @@ auto WriteImportedPayloadsToActiveTextRoot(
     fs::copy_file(imported_payload.source_path, target,
                   fs::copy_options::overwrite_existing, copy_error);
     if (copy_error) {
-      throw std::runtime_error("Failed to update active text root month file: " +
-                               imported_payload.source_path.string() + " -> " +
-                               target.string() + " | " +
-                               copy_error.message());
+      throw std::runtime_error(
+          "Failed to update active text root month file: " +
+          imported_payload.source_path.string() + " -> " + target.string() +
+          " | " + copy_error.message());
     }
   }
 }

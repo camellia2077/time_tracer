@@ -41,4 +41,3 @@ class BatchWeekDataFetcher {
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_QUERIERS_WEEKLY_WEEKLY_QUERIER_H_
-

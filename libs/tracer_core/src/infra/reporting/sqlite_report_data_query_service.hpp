@@ -52,4 +52,3 @@ using tracer::core::infrastructure::reports::SqliteReportDataQueryService;
 }  // namespace infrastructure::reports
 
 #endif  // INFRASTRUCTURE_REPORTS_SQLITE_REPORT_DATA_QUERY_SERVICE_H_
-

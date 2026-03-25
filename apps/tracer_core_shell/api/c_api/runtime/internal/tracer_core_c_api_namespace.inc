@@ -170,8 +170,10 @@ auto CreateAbiDiagnosticsAdapter()
       {"defaults",
        {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
-       {{"export_format", ToStringJson(cli_config.command_defaults.export_format)},
-        {"query_format", ToStringJson(cli_config.command_defaults.query_format)},
+       {{"export_format",
+         ToStringJson(cli_config.command_defaults.export_format)},
+        {"query_format",
+         ToStringJson(cli_config.command_defaults.query_format)},
         {"convert_date_check_mode",
          ToDateCheckModeJson(
              cli_config.command_defaults.convert_date_check_mode)},

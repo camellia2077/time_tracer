@@ -25,8 +25,8 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   auto tracer_exchange_api =
       std::make_shared<TracerExchangeApi>(tracer_exchange);
 
-  TracerCoreRuntime runtime(
-      pipeline_api, query_api, report_api, tracer_exchange_api);
+  TracerCoreRuntime runtime(pipeline_api, query_api, report_api,
+                            tracer_exchange_api);
 
   Expect(state, &runtime.pipeline() == pipeline_api.get(),
          "TracerCoreRuntime should expose the same pipeline API instance.");
@@ -34,8 +34,9 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
          "TracerCoreRuntime should expose the same query API instance.");
   Expect(state, &runtime.report() == report_api.get(),
          "TracerCoreRuntime should expose the same report API instance.");
-  Expect(state, &runtime.tracer_exchange() == tracer_exchange_api.get(),
-         "TracerCoreRuntime should expose the same tracer-exchange API instance.");
+  Expect(
+      state, &runtime.tracer_exchange() == tracer_exchange_api.get(),
+      "TracerCoreRuntime should expose the same tracer-exchange API instance.");
 
   const auto ingest_result = runtime.pipeline().RunIngest(
       {.input_path = "input-root",
@@ -43,7 +44,8 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
        .save_processed_output = true,
        .ingest_mode = IngestMode::kStandard});
   Expect(state, ingest_result.ok,
-         "Pipeline API should still report ingest success through runtime accessors.");
+         "Pipeline API should still report ingest success through runtime "
+         "accessors.");
 
   auto data_request = tracer_core::core::dto::DataQueryRequest{};
   data_request.action = tracer_core::core::dto::DataQueryAction::kYears;
@@ -58,10 +60,12 @@ auto TestRuntimeAccessorsAndForwarding(TestState& state) -> void {
   Expect(state, report_result.ok && report_result.content == "daily",
          "Report API should still return the delegated report result.");
 
-  const auto exchange_result = runtime.tracer_exchange().RunTracerExchangeInspect(
-      {.input_tracer_path = "sample.tracer", .passphrase = "secret"});
-  Expect(state, exchange_result.ok,
-         "Tracer exchange API should still return the delegated inspect result.");
+  const auto exchange_result =
+      runtime.tracer_exchange().RunTracerExchangeInspect(
+          {.input_tracer_path = "sample.tracer", .passphrase = "secret"});
+  Expect(
+      state, exchange_result.ok,
+      "Tracer exchange API should still return the delegated inspect result.");
 
   Expect(state, pipeline_workflow.ingest_call_count == 1,
          "Runtime aggregate should not hide pipeline-side delegation.");

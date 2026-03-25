@@ -13,15 +13,13 @@ class TracerCoreApi : public ITracerCoreApi {
       std::shared_ptr<tracer_core::application::ports::ITracerExchangeService>;
 
   TracerCoreApi(
-                ::tracer::core::application::workflow::IWorkflowHandler&
-                    workflow_handler,
-                IReportHandler& report_handler,
-                ProjectRepositoryPtr project_repository,
-                DataQueryServicePtr data_query_service,
-                ReportDataQueryServicePtr report_data_query_service = nullptr,
-                ReportDtoFormatterPtr report_dto_formatter = nullptr,
-                ReportExportWriterPtr report_export_writer = nullptr,
-                TracerExchangeServicePtr tracer_exchange_service = nullptr);
+      ::tracer::core::application::workflow::IWorkflowHandler& workflow_handler,
+      IReportHandler& report_handler, ProjectRepositoryPtr project_repository,
+      DataQueryServicePtr data_query_service,
+      ReportDataQueryServicePtr report_data_query_service = nullptr,
+      ReportDtoFormatterPtr report_dto_formatter = nullptr,
+      ReportExportWriterPtr report_export_writer = nullptr,
+      TracerExchangeServicePtr tracer_exchange_service = nullptr);
 
   auto RunConvert(const tracer_core::core::dto::ConvertRequest& request)
       -> tracer_core::core::dto::OperationAck override;

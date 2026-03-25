@@ -130,4 +130,3 @@ extern const std::array<JNINativeMethod, 13> kNativeMethods;
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 
 }  // namespace tracer_core::api::android::bridge_internal
-

@@ -27,6 +27,8 @@ namespace fs = std::filesystem;
 namespace infra_config = tracer::core::infrastructure::config;
 namespace infra_reports = tracer::core::infrastructure::reports;
 namespace reporting = tracer::core::domain::modreports;
+using report_formatter_parity_internal::CaseOutputs;
+using report_formatter_parity_internal::ParityOutputs;
 using tracer::core::domain::modreports::DailyReportData;
 using tracer::core::domain::modreports::MonthlyReportData;
 using tracer::core::domain::modreports::PeriodReportData;
@@ -34,8 +36,6 @@ using tracer::core::domain::modreports::ReportFormat;
 using tracer::core::domain::modreports::TimeRecord;
 using tracer::core::domain::modreports::WeeklyReportData;
 using tracer::core::domain::modreports::YearlyReportData;
-using report_formatter_parity_internal::CaseOutputs;
-using report_formatter_parity_internal::ParityOutputs;
 
 enum class FormatterPipeline { kDefaultRegistry, kAndroidStatic };
 
@@ -59,52 +59,53 @@ auto BuildReportCatalog(const fs::path& repo_root) -> ReportCatalog {
   const fs::path latex_config_dir = report_config_root / "latex";
   const fs::path typst_config_dir = report_config_root / "typst";
 
-  catalog.loaded_reports.markdown.day = infra_config::ReportConfigLoader::
-      LoadDailyMdConfig(markdown_config_dir / "day.toml");
+  catalog.loaded_reports.markdown.day =
+      infra_config::ReportConfigLoader::LoadDailyMdConfig(markdown_config_dir /
+                                                          "day.toml");
   catalog.loaded_reports.markdown.month =
       infra_config::ReportConfigLoader::LoadMonthlyMdConfig(
           markdown_config_dir / "month.toml");
   catalog.loaded_reports.markdown.period =
-      infra_config::ReportConfigLoader::LoadPeriodMdConfig(
-          markdown_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodMdConfig(markdown_config_dir /
+                                                           "period.toml");
   catalog.loaded_reports.markdown.week =
-      infra_config::ReportConfigLoader::LoadWeeklyMdConfig(
-          markdown_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyMdConfig(markdown_config_dir /
+                                                           "week.toml");
   catalog.loaded_reports.markdown.year =
-      infra_config::ReportConfigLoader::LoadYearlyMdConfig(
-          markdown_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyMdConfig(markdown_config_dir /
+                                                           "year.toml");
 
   catalog.loaded_reports.latex.day =
-      infra_config::ReportConfigLoader::LoadDailyTexConfig(
-          latex_config_dir / "day.toml");
+      infra_config::ReportConfigLoader::LoadDailyTexConfig(latex_config_dir /
+                                                           "day.toml");
   catalog.loaded_reports.latex.month =
-      infra_config::ReportConfigLoader::LoadMonthlyTexConfig(
-          latex_config_dir / "month.toml");
+      infra_config::ReportConfigLoader::LoadMonthlyTexConfig(latex_config_dir /
+                                                             "month.toml");
   catalog.loaded_reports.latex.period =
-      infra_config::ReportConfigLoader::LoadPeriodTexConfig(
-          latex_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodTexConfig(latex_config_dir /
+                                                            "period.toml");
   catalog.loaded_reports.latex.week =
-      infra_config::ReportConfigLoader::LoadWeeklyTexConfig(
-          latex_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyTexConfig(latex_config_dir /
+                                                            "week.toml");
   catalog.loaded_reports.latex.year =
-      infra_config::ReportConfigLoader::LoadYearlyTexConfig(
-          latex_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyTexConfig(latex_config_dir /
+                                                            "year.toml");
 
   catalog.loaded_reports.typst.day =
-      infra_config::ReportConfigLoader::LoadDailyTypConfig(
-          typst_config_dir / "day.toml");
+      infra_config::ReportConfigLoader::LoadDailyTypConfig(typst_config_dir /
+                                                           "day.toml");
   catalog.loaded_reports.typst.month =
-      infra_config::ReportConfigLoader::LoadMonthlyTypConfig(
-          typst_config_dir / "month.toml");
+      infra_config::ReportConfigLoader::LoadMonthlyTypConfig(typst_config_dir /
+                                                             "month.toml");
   catalog.loaded_reports.typst.period =
-      infra_config::ReportConfigLoader::LoadPeriodTypConfig(
-          typst_config_dir / "period.toml");
+      infra_config::ReportConfigLoader::LoadPeriodTypConfig(typst_config_dir /
+                                                            "period.toml");
   catalog.loaded_reports.typst.week =
-      infra_config::ReportConfigLoader::LoadWeeklyTypConfig(
-          typst_config_dir / "week.toml");
+      infra_config::ReportConfigLoader::LoadWeeklyTypConfig(typst_config_dir /
+                                                            "week.toml");
   catalog.loaded_reports.typst.year =
-      infra_config::ReportConfigLoader::LoadYearlyTypConfig(
-          typst_config_dir / "year.toml");
+      infra_config::ReportConfigLoader::LoadYearlyTypConfig(typst_config_dir /
+                                                            "year.toml");
 
   return catalog;
 }
@@ -118,7 +119,8 @@ auto BuildFormatter(FormatterPipeline pipeline, const ReportCatalog& catalog)
   } else {
     auto static_registrar = std::make_shared<
         infrastructure::reports::AndroidStaticReportFormatterRegistrar>(
-        infrastructure::reports::AndroidStaticReportFormatterPolicy::AllFormats());
+        infrastructure::reports::AndroidStaticReportFormatterPolicy::
+            AllFormats());
     auto registry =
         tracer_core::application::ports::CreateReportFormatterRegistry(
             static_registrar);

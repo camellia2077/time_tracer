@@ -127,12 +127,11 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::ReportQueryType;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
 
-void SetCryptoProgressCallbackRegistration(TtCoreCryptoProgressCallback callback,
-                                           void* user_data);
+void SetCryptoProgressCallbackRegistration(
+    TtCoreCryptoProgressCallback callback, void* user_data);
 [[nodiscard]] auto GetCryptoProgressCallbackRegistration()
     -> CryptoProgressCallbackRegistration;
 
 }  // namespace tracer_core::core::c_api::internal
 
 #endif  // API_CORE_C_TRACER_CORE_C_API_INTERNAL_H_
-

@@ -16,8 +16,7 @@ struct CallbackProbeState {
 };
 
 extern "C" void CaptureLogCallback(TtCoreLogSeverity /*severity*/,
-                                   const char* utf8_message,
-                                   void* user_data) {
+                                   const char* utf8_message, void* user_data) {
   if (user_data == nullptr) {
     return;
   }
@@ -130,10 +129,10 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
   api.set_crypto_progress_callback(&CaptureCryptoProgressCallback,
                                    &callback_state);
 
-  const std::string kIngestRequest = json{{"input_path", input_root.string()},
-                                          {"date_check_mode", "none"},
-                                          {"save_processed_output", false}}
-                                         .dump();
+  const std::string kIngestRequest = json{
+      {"input_path", input_root.string()},
+      {"date_check_mode", "none"},
+      {"save_processed_output", false}}.dump();
   RequireOk(api.runtime_ingest(runtime, kIngestRequest.c_str()),
             "callback ingest");
 
@@ -145,9 +144,8 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
                                  "test-data.tracer";
   std::error_code io_error;
   fs::create_directories(fs::absolute(kCryptoOutput).parent_path(), io_error);
-  Require(!io_error,
-          "callback crypto output directory creation failed: " +
-              io_error.message());
+  Require(!io_error, "callback crypto output directory creation failed: " +
+                         io_error.message());
   const std::string kCryptoEncryptRequest =
       json{{"input_path", fs::absolute(kCryptoInput).string()},
            {"output_path", fs::absolute(kCryptoOutput).string()},
@@ -162,7 +160,8 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
   api.set_diagnostics_callback(nullptr, nullptr);
   api.set_crypto_progress_callback(nullptr, nullptr);
 
-  const int kLogCount = callback_state.kLogCount.load(std::memory_order_relaxed);
+  const int kLogCount =
+      callback_state.kLogCount.load(std::memory_order_relaxed);
   const int kDiagnosticsCount =
       callback_state.kDiagnosticsCount.load(std::memory_order_relaxed);
   const int kCryptoProgressCount =

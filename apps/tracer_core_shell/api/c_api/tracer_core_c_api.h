@@ -43,8 +43,7 @@ typedef enum TtCoreDiagnosticSeverity {
 } TtCoreDiagnosticSeverity;
 
 typedef void (*TtCoreLogCallback)(TtCoreLogSeverity severity,
-                                  const char* utf8_message,
-                                  void* user_data);
+                                  const char* utf8_message, void* user_data);
 typedef void (*TtCoreDiagnosticsCallback)(TtCoreDiagnosticSeverity severity,
                                           const char* utf8_message,
                                           void* user_data);
@@ -171,4 +170,3 @@ TT_CORE_API const char* tracer_core_runtime_crypto_inspect_json(
 // NOLINTEND(readability-identifier-naming,modernize-use-trailing-return-type,modernize-use-using,readability-use-concise-preprocessor-directives)
 
 #endif  // API_CORE_C_TRACER_CORE_C_API_H_
-

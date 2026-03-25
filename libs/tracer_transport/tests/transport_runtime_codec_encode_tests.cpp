@@ -180,36 +180,31 @@ void TestEncodeRequestRoundTrip(int& failures) {
 }
 
 void TestEncodeResponses(int& failures) {
-  const std::string ingest_json =
-      EncodeIngestResponse(IngestResponsePayload{.ok = true, .error_message = ""});
+  const std::string ingest_json = EncodeIngestResponse(
+      IngestResponsePayload{.ok = true, .error_message = ""});
   const json ingest = json::parse(ingest_json);
   Expect(ingest.value("ok", false), "EncodeIngestResponse ok mismatch.",
          failures);
   Expect(ingest.value("error_message", std::string("x")).empty(),
          "EncodeIngestResponse error_message mismatch.", failures);
 
-  const std::string query_json = EncodeQueryResponse(
-      QueryResponsePayload{.ok = true,
-                           .error_message = "",
-                           .content = "2026\nTotal: 1\n"});
+  const std::string query_json = EncodeQueryResponse(QueryResponsePayload{
+      .ok = true, .error_message = "", .content = "2026\nTotal: 1\n"});
   const json query = json::parse(query_json);
   Expect(query.value("ok", false), "EncodeQueryResponse ok mismatch.",
          failures);
   Expect(query.value("content", std::string{}) == "2026\nTotal: 1\n",
          "EncodeQueryResponse content mismatch.", failures);
 
-  const std::string report_json = EncodeReportResponse(
-      ReportResponsePayload{.ok = true,
-                            .error_message = "",
-                            .content = "## Monthly Summary"});
+  const std::string report_json = EncodeReportResponse(ReportResponsePayload{
+      .ok = true, .error_message = "", .content = "## Monthly Summary"});
   const json report = json::parse(report_json);
   Expect(report.value("content", std::string{}) == "## Monthly Summary",
          "EncodeReportResponse content mismatch.", failures);
 
-  const std::string batch_json = EncodeReportBatchResponse(
-      ReportBatchResponsePayload{.ok = false,
-                                 .error_message = "failed",
-                                 .content = ""});
+  const std::string batch_json =
+      EncodeReportBatchResponse(ReportBatchResponsePayload{
+          .ok = false, .error_message = "failed", .content = ""});
   const json batch = json::parse(batch_json);
   Expect(!batch.value("ok", true), "EncodeReportBatchResponse ok mismatch.",
          failures);
@@ -221,9 +216,9 @@ void TestEncodeResponses(int& failures) {
   const json export_payload = json::parse(export_json);
   Expect(!export_payload.value("ok", true), "EncodeExportResponse ok mismatch.",
          failures);
-  Expect(export_payload.value("error_message", std::string{}) ==
-             "export failed",
-         "EncodeExportResponse error mismatch.", failures);
+  Expect(
+      export_payload.value("error_message", std::string{}) == "export failed",
+      "EncodeExportResponse error mismatch.", failures);
 
   CapabilitiesResponsePayload capabilities{};
   capabilities.abi.name = "tracer_core_c";
@@ -247,9 +242,9 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.report_typst = false;
   const json capabilities_json =
       json::parse(EncodeCapabilitiesResponse(capabilities));
-  Expect(capabilities_json["abi"].value("name", std::string{}) ==
-             "tracer_core_c",
-         "EncodeCapabilitiesResponse abi.name mismatch.", failures);
+  Expect(
+      capabilities_json["abi"].value("name", std::string{}) == "tracer_core_c",
+      "EncodeCapabilitiesResponse abi.name mismatch.", failures);
   Expect(capabilities_json["abi"].value("version", 0) == 1,
          "EncodeCapabilitiesResponse abi.version mismatch.", failures);
   Expect(capabilities_json["features"].value("runtime_ingest_json", false),
@@ -316,9 +311,9 @@ void TestEncodeTreeResponse(int& failures) {
   Expect(tree["nodes"][0]["children"][0].value("path", std::string{}) ==
              "study_math",
          "EncodeTreeResponse child node path mismatch.", failures);
-  Expect(tree["nodes"][0]["children"][0].value("duration_seconds", -1LL) ==
-             1800LL,
-         "EncodeTreeResponse child node duration mismatch.", failures);
+  Expect(
+      tree["nodes"][0]["children"][0].value("duration_seconds", -1LL) == 1800LL,
+      "EncodeTreeResponse child node duration mismatch.", failures);
 }
 
 }  // namespace

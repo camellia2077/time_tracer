@@ -53,8 +53,7 @@ inline auto ValidateUtf8(std::span<const std::uint8_t> bytes,
       continue;
     }
 
-    const auto require_continuation =
-        [&](std::size_t offset) -> bool {
+    const auto require_continuation = [&](std::size_t offset) -> bool {
       return offset < bytes.size() && IsContinuationByte(bytes[offset]);
     };
 
@@ -96,7 +95,8 @@ inline auto ValidateUtf8(std::span<const std::uint8_t> bytes,
       }
       if (bytes[index + 1] < 0x80U || bytes[index + 1] > 0x9FU ||
           !require_continuation(index + 2)) {
-        return error_at(index, "UTF-16 surrogate code points are not valid UTF-8");
+        return error_at(index,
+                        "UTF-16 surrogate code points are not valid UTF-8");
       }
       index += 3;
       continue;
@@ -135,7 +135,8 @@ inline auto ValidateUtf8(std::span<const std::uint8_t> bytes,
       if (bytes[index + 1] < 0x80U || bytes[index + 1] > 0x8FU ||
           !require_continuation(index + 2) ||
           !require_continuation(index + 3)) {
-        return error_at(index, "code points above U+10FFFF are not valid UTF-8");
+        return error_at(index,
+                        "code points above U+10FFFF are not valid UTF-8");
       }
       index += 4;
       continue;
@@ -182,9 +183,8 @@ inline auto CanonicalizeValidatedBytes(std::span<const std::uint8_t> bytes,
   if (!validation_error.empty()) {
     return {.ok = false, .text = "", .error_message = validation_error};
   }
-  return {.ok = true,
-          .text = NormalizeValidatedBytes(bytes),
-          .error_message = ""};
+  return {
+      .ok = true, .text = NormalizeValidatedBytes(bytes), .error_message = ""};
 }
 
 }  // namespace detail

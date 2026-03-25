@@ -15,10 +15,11 @@
 #include "infra/schema/sqlite_schema.hpp"
 
 namespace {
+using tracer::core::infrastructure::reports::data::stats::
+    IsAnaerobicProjectPath;
+using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsExerciseProjectPath;
 using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsAnaerobicProjectPath;
-using tracer::core::infrastructure::reports::data::stats::IsCardioProjectPath;
 
 auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
   if (parts.empty()) {
@@ -30,7 +31,7 @@ auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
   }
   return path;
 }
-}
+}  // namespace
 
 MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month)
     : RangeQuerierBase(sqlite_db, year_month) {}
@@ -176,7 +177,8 @@ void BatchMonthDataFetcher::FetchProjectStats(
     project_agg[year_month][project_id] += duration;
     data.total_duration += duration;
 
-    const std::string project_path = JoinPathParts(provider.GetPathParts(project_id));
+    const std::string project_path =
+        JoinPathParts(provider.GetPathParts(project_id));
     if (IsStudyProjectPath(project_path)) {
       status_dates[year_month].insert(date);
     }

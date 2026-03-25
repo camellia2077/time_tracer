@@ -74,7 +74,8 @@ auto LogicValidationStage::Execute(PipelineSession& session) -> bool {
   }
 
   if (all_valid) {
-    tracer_core::application::runtime_bridge::LogInfo("Logic validation passed.");
+    tracer_core::application::runtime_bridge::LogInfo(
+        "Logic validation passed.");
   } else {
     tracer_core::application::runtime_bridge::LogError(
         "Logic validation found issues (e.g., broken date continuity).");

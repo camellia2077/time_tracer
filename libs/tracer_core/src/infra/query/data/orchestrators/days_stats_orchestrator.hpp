@@ -19,4 +19,3 @@ using tracer::core::infrastructure::query::data::orchestrators::
     HandleDaysStatsQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
-

@@ -18,7 +18,6 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
 
 }  // namespace
 
-
 auto ResolveOutputRoot(const fs::path& output_root) -> fs::path {
   if (output_root.empty()) {
     throw std::invalid_argument(
@@ -38,8 +37,9 @@ auto ResolveDbPath(const fs::path& db_path, const fs::path& output_root)
 auto ResolveAndroidRuntimeConfigPaths(
     const fs::path& requested_converter_config_toml_path)
     -> AndroidRuntimeConfigPaths {
-  return tracer_core::shell::config_bridge::ResolveAndroidRuntimeConfigPathsBridge(
-      requested_converter_config_toml_path);
+  return tracer_core::shell::config_bridge::
+      ResolveAndroidRuntimeConfigPathsBridge(
+          requested_converter_config_toml_path);
 }
 
 }  // namespace infrastructure::bootstrap::android_runtime_detail

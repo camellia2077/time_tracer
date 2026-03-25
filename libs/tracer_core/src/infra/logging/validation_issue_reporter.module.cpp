@@ -26,7 +26,8 @@ auto BuildLogHeader(std::string_view filename) -> std::string {
 }
 
 auto GetEnabledReportDestinationLabel() -> std::optional<std::string> {
-  const std::string kDestinationLabel = modports::GetErrorReportDestinationLabel();
+  const std::string kDestinationLabel =
+      modports::GetErrorReportDestinationLabel();
   if (kDestinationLabel.empty() || kDestinationLabel == "disabled") {
     return std::nullopt;
   }
@@ -100,14 +101,15 @@ auto GetDiagnosticHeader(const std::string& code) -> std::string {
 auto BuildLocationPrefix(const validator::Error& error,
                          std::string_view fallback_label) -> std::string {
   if (error.source_span.has_value() && error.source_span->HasLine()) {
-    const bool kHasFileLabel = !error.source_span->file_path.empty() ||
-                               !fallback_label.empty();
+    const bool kHasFileLabel =
+        !error.source_span->file_path.empty() || !fallback_label.empty();
     const std::string kIdePrefix =
-        kHasFileLabel ? BuildIdeLocationPrefix(*error.source_span, fallback_label)
-                      : std::string();
-    return kIdePrefix +
-           BuildIdeLocationPrefix(std::string_view{}, error.source_span->line_start,
-                                  error.source_span->line_end);
+        kHasFileLabel
+            ? BuildIdeLocationPrefix(*error.source_span, fallback_label)
+            : std::string();
+    return kIdePrefix + BuildIdeLocationPrefix(std::string_view{},
+                                               error.source_span->line_start,
+                                               error.source_span->line_end);
   }
   if (error.line_number > 0) {
     return BuildIdeLocationPrefix(std::string_view{}, error.line_number);
@@ -118,14 +120,16 @@ auto BuildLocationPrefix(const validator::Error& error,
 auto BuildLocationPrefix(const validator::Diagnostic& diagnostic,
                          std::string_view fallback_label) -> std::string {
   if (diagnostic.source_span.has_value() && diagnostic.source_span->HasLine()) {
-    const bool kHasFileLabel = !diagnostic.source_span->file_path.empty() ||
-                               !fallback_label.empty();
+    const bool kHasFileLabel =
+        !diagnostic.source_span->file_path.empty() || !fallback_label.empty();
     const std::string kIdePrefix =
-        kHasFileLabel ? BuildIdeLocationPrefix(*diagnostic.source_span, fallback_label)
-                      : std::string();
-    return kIdePrefix + BuildIdeLocationPrefix(std::string_view{},
-                                               diagnostic.source_span->line_start,
-                                               diagnostic.source_span->line_end);
+        kHasFileLabel
+            ? BuildIdeLocationPrefix(*diagnostic.source_span, fallback_label)
+            : std::string();
+    return kIdePrefix +
+           BuildIdeLocationPrefix(std::string_view{},
+                                  diagnostic.source_span->line_start,
+                                  diagnostic.source_span->line_end);
   }
   if (!fallback_label.empty()) {
     return BuildIdeLocationPrefix(fallback_label, 0);

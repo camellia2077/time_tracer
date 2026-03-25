@@ -2,7 +2,8 @@ module;
 
 #include "infra/query/data/renderers/data_query_renderer.hpp"
 
-export module tracer.core.infrastructure.query.data.renderers.data_query_renderer;
+export module tracer.core.infrastructure.query.data.renderers
+    .data_query_renderer;
 
 export namespace tracer::core::infrastructure::query::data::renderers {
 

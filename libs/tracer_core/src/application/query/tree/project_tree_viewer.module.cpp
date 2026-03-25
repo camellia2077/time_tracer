@@ -102,10 +102,10 @@ auto ProjectTreeViewer::GetTree(const std::string& root_pattern, int max_depth)
     full_tree_roots.push_back(ConvertToTreeNode(root, root->name));
   }
 
-  auto selected_roots = root_pattern.empty()
-                            ? full_tree_roots
-                            : FindProjectTreeNodesByPath(full_tree_roots,
-                                                         root_pattern);
+  auto selected_roots =
+      root_pattern.empty()
+          ? full_tree_roots
+          : FindProjectTreeNodesByPath(full_tree_roots, root_pattern);
   if (selected_roots.empty()) {
     return std::nullopt;
   }

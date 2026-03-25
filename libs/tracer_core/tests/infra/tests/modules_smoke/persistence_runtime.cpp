@@ -10,12 +10,10 @@ namespace {
 auto RunPersistenceRuntimeSmokeImpl() -> int {
   std::error_code cleanup_error;
 
-  const auto kCheckReady =
-      &tracer::core::infrastructure::persistence::SqliteDatabaseHealthChecker::
-          CheckReady;
-  const auto kGetAllProjects =
-      &tracer::core::infrastructure::persistence::SqliteProjectRepository::
-          GetAllProjects;
+  const auto kCheckReady = &tracer::core::infrastructure::persistence::
+                               SqliteDatabaseHealthChecker::CheckReady;
+  const auto kGetAllProjects = &tracer::core::infrastructure::persistence::
+                                   SqliteProjectRepository::GetAllProjects;
   (void)kCheckReady;
   (void)kGetAllProjects;
 

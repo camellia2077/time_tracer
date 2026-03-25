@@ -17,7 +17,6 @@ struct ProjectTreeNode {
 
 }  // namespace tracer::core::application::query::tree
 
-using ProjectTreeNode =
-    tracer::core::application::query::tree::ProjectTreeNode;
+using ProjectTreeNode = tracer::core::application::query::tree::ProjectTreeNode;
 
 #endif  // APPLICATION_QUERY_TREE_PROJECT_TREE_DATA_H_

@@ -136,9 +136,10 @@ auto TestReplaceMonthUsesReplacePath(TestState& state) -> void {
          "Replace-month import should pass parsed days/records.");
   Expect(state, kStats.db_open_success && kStats.transaction_success,
          "Replace-month import should report successful DB transaction.");
-  Expect(state,
-         kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
-         "Replace-month import should expose replaced_month in stats.");
+  Expect(
+      state,
+      kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
+      "Replace-month import should expose replaced_month in stats.");
 }
 
 auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
@@ -156,9 +157,10 @@ auto TestReplaceMonthStillRunsForEmptyData(TestState& state) -> void {
          "Empty replace-month import should pass empty data vectors.");
   Expect(state, kStats.db_open_success && kStats.transaction_success,
          "Empty replace-month import should report successful DB transaction.");
-  Expect(state,
-         kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
-         "Empty replace-month import should still report replaced_month.");
+  Expect(
+      state,
+      kStats.replaced_month.has_value() && *kStats.replaced_month == "2026-02",
+      "Empty replace-month import should still report replaced_month.");
 }
 
 auto TestReplaceAllUsesReplaceAllPath(TestState& state) -> void {
@@ -174,9 +176,10 @@ auto TestReplaceAllUsesReplaceAllPath(TestState& state) -> void {
          "Replace-all import should not call ImportData.");
   Expect(state, repository.replace_call_count == 0,
          "Replace-all import should not call ReplaceMonthData.");
-  Expect(state,
-         repository.replace_all_days == 1 && repository.replace_all_records == 1,
-         "Replace-all import should pass parsed days/records.");
+  Expect(
+      state,
+      repository.replace_all_days == 1 && repository.replace_all_records == 1,
+      "Replace-all import should pass parsed days/records.");
   Expect(state, stats.db_open_success && stats.transaction_success,
          "Replace-all import should report successful DB transaction.");
   Expect(state,

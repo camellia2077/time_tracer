@@ -80,9 +80,9 @@ auto BuildMappingNamesContent(
 
 auto ValidateReportChartRequest(
     const tracer_core::core::dto::DataQueryRequest& request) -> void {
-  static_cast<void>(ResolvePositiveLookbackDays(
-      request.lookback_days, kDefaultReportChartLookbackDays,
-      "--lookback-days"));
+  static_cast<void>(ResolvePositiveLookbackDays(request.lookback_days,
+                                                kDefaultReportChartLookbackDays,
+                                                "--lookback-days"));
 
   const infra_data_query_orchestrators::ExplicitDateRangeErrors kRangeErrors{
       .missing_boundary_error =
@@ -91,8 +91,7 @@ auto ValidateReportChartRequest(
           {
               .invalid_range_error =
                   "report-chart invalid range: from_date must be <= to_date.",
-              .invalid_date_error =
-                  "report-chart resolved invalid date range.",
+              .invalid_date_error = "report-chart resolved invalid date range.",
           },
   };
   static_cast<void>(infra_data_query_orchestrators::ResolveExplicitDateRange(
@@ -117,8 +116,7 @@ auto BuildReportChartContent(
           {
               .invalid_range_error =
                   "report-chart invalid range: from_date must be <= to_date.",
-              .invalid_date_error =
-                  "report-chart resolved invalid date range.",
+              .invalid_date_error = "report-chart resolved invalid date range.",
           },
   };
   const auto kExplicitRange =

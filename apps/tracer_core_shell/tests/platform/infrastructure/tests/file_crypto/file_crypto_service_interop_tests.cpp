@@ -134,8 +134,9 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
       return;
     }
 
-    const auto kStructureAck = runtime.runtime_api->pipeline().RunValidateStructure(
-        {.input_path = kAndroidImportTxt.string()});
+    const auto kStructureAck =
+        runtime.runtime_api->pipeline().RunValidateStructure(
+            {.input_path = kAndroidImportTxt.string()});
     Expect(kStructureAck.ok,
            "Android import pre-check: structure validation should pass.",
            failures);
@@ -158,7 +159,8 @@ auto TestWindowsToAndroidCryptoImportInterop(int& failures) -> void {
     ingest_request.input_path = kAndroidImportTxt.string();
     ingest_request.date_check_mode = DateCheckMode::kNone;
     ingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
-    const auto kIngestAck = runtime.runtime_api->pipeline().RunIngest(ingest_request);
+    const auto kIngestAck =
+        runtime.runtime_api->pipeline().RunIngest(ingest_request);
     Expect(kIngestAck.ok,
            "Android import should ingest TXT decrypted from Windows .tracer.",
            failures);

@@ -2,7 +2,8 @@ module;
 
 #include "infra/persistence/repositories/sqlite_project_repository.hpp"
 
-export module tracer.core.infrastructure.persistence.runtime.sqlite_project_repository;
+export module tracer.core.infrastructure.persistence.runtime
+    .sqlite_project_repository;
 
 export namespace tracer::core::infrastructure::persistence {
 

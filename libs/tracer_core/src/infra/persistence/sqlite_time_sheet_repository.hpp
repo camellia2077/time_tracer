@@ -26,9 +26,8 @@ class SqliteTimeSheetRepository final
                         const std::vector<TimeRecordInternal>& records)
       -> void override;
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view date)
-      const
-      -> std::optional<tracer_core::application::ports::PreviousActivityTail>
-          override;
+      const -> std::optional<
+          tracer_core::application::ports::PreviousActivityTail> override;
 
  private:
   importer::Repository repository_;

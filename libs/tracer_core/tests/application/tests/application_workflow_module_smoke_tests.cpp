@@ -28,7 +28,8 @@ namespace app_workflow = tracer::core::application::workflow;
 
 class SmokeProcessedDataLoader final : public app_ports::IProcessedDataLoader {
  public:
-  auto LoadDailyLogs(const std::string&) -> app_ports::ProcessedDataLoadResult override {
+  auto LoadDailyLogs(const std::string&)
+      -> app_ports::ProcessedDataLoadResult override {
     return {};
   }
 };
@@ -39,9 +40,11 @@ class SmokeTimeSheetRepository final : public app_ports::ITimeSheetRepository {
   auto ImportData(const std::vector<DayData>&,
                   const std::vector<TimeRecordInternal>&) -> void override {}
   auto ReplaceAllData(const std::vector<DayData>&,
-                      const std::vector<TimeRecordInternal>&) -> void override {}
+                      const std::vector<TimeRecordInternal>&) -> void override {
+  }
   auto ReplaceMonthData(int, int, const std::vector<DayData>&,
-                        const std::vector<TimeRecordInternal>&) -> void override {}
+                        const std::vector<TimeRecordInternal>&)
+      -> void override {}
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view) const
       -> std::optional<app_ports::PreviousActivityTail> override {
     return std::nullopt;
@@ -66,9 +69,9 @@ class SmokeConverterConfigProvider final
 
 class SmokeIngestInputProvider final : public app_ports::IIngestInputProvider {
  public:
-  [[nodiscard]] auto CollectTextInputs(
-      const std::filesystem::path&, std::string_view)
-      const -> tracer_core::application::dto::IngestInputCollection override {
+  [[nodiscard]] auto CollectTextInputs(const std::filesystem::path&,
+                                       std::string_view) const
+      -> tracer_core::application::dto::IngestInputCollection override {
     return {};
   }
 };
@@ -76,9 +79,8 @@ class SmokeIngestInputProvider final : public app_ports::IIngestInputProvider {
 class SmokeProcessedDataStorage final
     : public app_ports::IProcessedDataStorage {
  public:
-  auto WriteProcessedData(
-      const std::map<std::string, std::vector<DailyLog>>&,
-      const std::filesystem::path&)
+  auto WriteProcessedData(const std::map<std::string, std::vector<DailyLog>>&,
+                          const std::filesystem::path&)
       -> std::vector<std::filesystem::path> override {
     return {};
   }
@@ -88,7 +90,8 @@ class SmokeValidationIssueReporter final
     : public app_ports::IValidationIssueReporter {
  public:
   auto ReportStructureErrors(std::string_view,
-                             const std::set<validator::Error>&) -> void override {}
+                             const std::set<validator::Error>&)
+      -> void override {}
   auto ReportLogicDiagnostics(std::string_view,
                               const std::vector<validator::Diagnostic>&)
       -> void override {}
@@ -119,8 +122,7 @@ auto RunWorkflowModuleSmoke(int& failures) -> void {
     auto converter_config_provider =
         std::make_shared<SmokeConverterConfigProvider>();
     auto ingest_input_provider = std::make_shared<SmokeIngestInputProvider>();
-    auto processed_data_storage =
-        std::make_shared<SmokeProcessedDataStorage>();
+    auto processed_data_storage = std::make_shared<SmokeProcessedDataStorage>();
     auto validation_issue_reporter =
         std::make_shared<SmokeValidationIssueReporter>();
 
@@ -134,14 +136,14 @@ auto RunWorkflowModuleSmoke(int& failures) -> void {
     pipeline_workflow.RunDatabaseImport("phase4-workflow-module-smoke.json");
   } catch (const std::exception& exception) {
     ++failures;
-    std::cerr
-        << "[FAIL] WorkflowHandler should construct and execute RunDatabaseImport: "
-        << exception.what() << '\n';
+    std::cerr << "[FAIL] WorkflowHandler should construct and execute "
+                 "RunDatabaseImport: "
+              << exception.what() << '\n';
   } catch (...) {
     ++failures;
-    std::cerr
-        << "[FAIL] WorkflowHandler should construct and execute RunDatabaseImport: "
-        << "unknown non-standard exception\n";
+    std::cerr << "[FAIL] WorkflowHandler should construct and execute "
+                 "RunDatabaseImport: "
+              << "unknown non-standard exception\n";
   }
 }
 

@@ -29,7 +29,8 @@ auto ParseRequestObject(std::string_view request_json) -> json {
 
 }  // namespace
 
-auto DecodeReportRequest(std::string_view request_json) -> ReportRequestPayload {
+auto DecodeReportRequest(std::string_view request_json)
+    -> ReportRequestPayload {
   const json kPayload = ParseRequestObject(request_json);
 
   const auto kType = RequireStringField(kPayload, "type");

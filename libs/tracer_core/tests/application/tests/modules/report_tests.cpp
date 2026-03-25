@@ -19,8 +19,8 @@ auto TestReportQueryResponses(TestState& state) -> void {
   report_handler.daily_query_result = "daily-report";
   const auto kSuccess =
       runtime_api.report().RunReportQuery({.type = ReportQueryType::kDay,
-                               .argument = "20260101",
-                               .format = ReportFormat::kMarkdown});
+                                           .argument = "20260101",
+                                           .format = ReportFormat::kMarkdown});
   Expect(state, kSuccess.ok, "RunReportQuery should return ok on success.");
   Expect(state, kSuccess.content == "daily-report",
          "RunReportQuery should return handler content.");
@@ -28,8 +28,8 @@ auto TestReportQueryResponses(TestState& state) -> void {
   report_handler.fail_query = true;
   const auto kFailure =
       runtime_api.report().RunReportQuery({.type = ReportQueryType::kMonth,
-                               .argument = "202601",
-                               .format = ReportFormat::kMarkdown});
+                                           .argument = "202601",
+                                           .format = ReportFormat::kMarkdown});
   Expect(state, !kFailure.ok,
          "RunReportQuery should return failed DTO when handler throws.");
   Expect(state, Contains(kFailure.error_message, "RunReportQuery failed"),
@@ -38,8 +38,8 @@ auto TestReportQueryResponses(TestState& state) -> void {
   report_handler.fail_query = false;
   const auto kBadRecentArg =
       runtime_api.report().RunReportQuery({.type = ReportQueryType::kRecent,
-                               .argument = "abc",
-                               .format = ReportFormat::kMarkdown});
+                                           .argument = "abc",
+                                           .format = ReportFormat::kMarkdown});
   Expect(state, !kBadRecentArg.ok,
          "RunReportQuery recent should fail DTO on invalid days argument.");
   Expect(state, Contains(kBadRecentArg.error_message, "RunReportQuery failed"),
@@ -69,9 +69,9 @@ auto TestReportExportResponses(TestState& state) -> void {
 
   const auto kSuccess =
       runtime_api.report().RunReportExport({.type = ReportExportType::kDay,
-                                .format = ReportFormat::kMarkdown,
-                                .argument = "20260101",
-                                .recent_days_list = {}});
+                                            .format = ReportFormat::kMarkdown,
+                                            .argument = "20260101",
+                                            .recent_days_list = {}});
   Expect(state, kSuccess.ok, "RunReportExport should return ok on success.");
   Expect(state, report_handler.daily_export_count == 1,
          "RunReportExport day should call day exporter once.");
@@ -79,9 +79,9 @@ auto TestReportExportResponses(TestState& state) -> void {
   report_handler.fail_export = true;
   const auto kFailure =
       runtime_api.report().RunReportExport({.type = ReportExportType::kMonth,
-                                .format = ReportFormat::kMarkdown,
-                                .argument = "202601",
-                                .recent_days_list = {}});
+                                            .format = ReportFormat::kMarkdown,
+                                            .argument = "202601",
+                                            .recent_days_list = {}});
   Expect(state, !kFailure.ok,
          "RunReportExport should return failed DTO when exporter throws.");
   Expect(state, Contains(kFailure.error_message, "RunReportExport failed"),
@@ -90,9 +90,9 @@ auto TestReportExportResponses(TestState& state) -> void {
   report_handler.fail_export = false;
   const auto kBadRecentArg =
       runtime_api.report().RunReportExport({.type = ReportExportType::kRecent,
-                                .format = ReportFormat::kMarkdown,
-                                .argument = "oops",
-                                .recent_days_list = {}});
+                                            .format = ReportFormat::kMarkdown,
+                                            .argument = "oops",
+                                            .recent_days_list = {}});
   Expect(state, !kBadRecentArg.ok,
          "RunReportExport recent should fail DTO on invalid days argument.");
   Expect(state, Contains(kBadRecentArg.error_message, "RunReportExport failed"),

@@ -13,7 +13,8 @@ import tracer.core.infrastructure.config.internal.config_parser_utils;
 namespace fs = std::filesystem;
 namespace infra_file_io = tracer::core::infrastructure::internal::file_io;
 
-namespace infra_config_internal = tracer::core::infrastructure::config::internal;
+namespace infra_config_internal =
+    tracer::core::infrastructure::config::internal;
 
 namespace tracer::core::infrastructure::config {
 
@@ -54,13 +55,13 @@ auto ConfigLoader::LoadConfiguration() -> AppConfig {
   app_config.exe_dir_path = exe_path_;
 
   // 1. 解析基础路径和设置
-  infra_config_internal::ParseSystemSettings(tbl, exe_path_,
-                                             main_config_path_, app_config);
+  infra_config_internal::ParseSystemSettings(tbl, exe_path_, main_config_path_,
+                                             app_config);
   infra_config_internal::ParseCliDefaults(tbl, exe_path_, main_config_path_,
                                           app_config);
 
-  const bool kBundlePathsLoaded = infra_config_internal::TryParseBundlePaths(
-      config_dir_path_, app_config);
+  const bool kBundlePathsLoaded =
+      infra_config_internal::TryParseBundlePaths(config_dir_path_, app_config);
   if (!kBundlePathsLoaded) {
     const fs::path kBundlePath =
         infra_config_internal::ResolveBundlePath(config_dir_path_);

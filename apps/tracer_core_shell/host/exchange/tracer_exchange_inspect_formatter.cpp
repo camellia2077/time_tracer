@@ -10,14 +10,11 @@ auto BuildInspectContent(
   std::ostringstream stream;
   stream << "File: " << inspect_result.input_tracer_path.string() << '\n';
   stream << "  version: "
-         << static_cast<int>(inspect_result.outer_metadata.version)
-         << '\n';
+         << static_cast<int>(inspect_result.outer_metadata.version) << '\n';
   stream << "  kdf_id: "
-         << static_cast<int>(inspect_result.outer_metadata.kdf_id)
-         << '\n';
+         << static_cast<int>(inspect_result.outer_metadata.kdf_id) << '\n';
   stream << "  cipher_id: "
-         << static_cast<int>(inspect_result.outer_metadata.cipher_id)
-         << '\n';
+         << static_cast<int>(inspect_result.outer_metadata.cipher_id) << '\n';
   stream << "  compression_id: "
          << static_cast<int>(inspect_result.outer_metadata.compression_id)
          << '\n';
@@ -30,13 +27,11 @@ auto BuildInspectContent(
   stream << "  plaintext_size: " << inspect_result.outer_metadata.plaintext_size
          << '\n';
   stream << "  ciphertext_size: "
-         << inspect_result.outer_metadata.ciphertext_size
-         << '\n';
+         << inspect_result.outer_metadata.ciphertext_size << '\n';
   stream << "Package:\n";
   stream << "  package_type: " << inspect_result.package_type << '\n';
   stream << "  package_version: " << inspect_result.package_version << '\n';
-  stream << "  producer_platform: " << inspect_result.producer_platform
-         << '\n';
+  stream << "  producer_platform: " << inspect_result.producer_platform << '\n';
   stream << "  producer_app: " << inspect_result.producer_app << '\n';
   stream << "  created_at_utc: " << inspect_result.created_at_utc << '\n';
   stream << "  source_root_name: " << inspect_result.source_root_name << '\n';

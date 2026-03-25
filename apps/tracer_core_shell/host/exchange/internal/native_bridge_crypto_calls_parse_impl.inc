@@ -126,8 +126,7 @@ auto ParseDecryptFileArgs(JNIEnv* env, jstring input_path, jstring output_path,
 
 auto ParseExportTracerExchangeArgs(JNIEnv* env, jstring input_path,
                                    jstring output_path, jstring passphrase,
-                                   jstring security_level,
-                                   jint date_check_mode)
+                                   jstring security_level, jint date_check_mode)
     -> ExportTracerExchangeArgs {
   const std::string input_path_utf8 =
       RequireNonEmptyText(ToUtf8(env, input_path), "inputPath");
@@ -141,8 +140,7 @@ auto ParseExportTracerExchangeArgs(JNIEnv* env, jstring input_path,
       .input_path = fs::path(input_path_utf8),
       .output_path = fs::path(output_path_utf8),
       .passphrase = passphrase_utf8,
-      .security_level =
-          RequireTracerExchangeSecurityLevel(security_level_utf8),
+      .security_level = RequireTracerExchangeSecurityLevel(security_level_utf8),
       .date_check_mode = ParseAndroidDateCheckMode(date_check_mode),
   };
 }

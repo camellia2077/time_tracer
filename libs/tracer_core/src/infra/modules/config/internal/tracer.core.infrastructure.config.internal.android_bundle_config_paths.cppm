@@ -3,7 +3,8 @@ module;
 #include <filesystem>
 #include <optional>
 
-export module tracer.core.infrastructure.config.internal.android_bundle_config_paths;
+export module tracer.core.infrastructure.config.internal
+    .android_bundle_config_paths;
 
 export namespace tracer::core::infrastructure::config::internal {
 

@@ -44,8 +44,7 @@ ReportService::ReportService(
 auto ReportService::RunDailyQuery(std::string_view date,
                                   ReportFormat format) const -> std::string {
   BaseGenerator<modreports::DailyReportData, DayQuerier, std::string_view>
-      generator(
-      db_, report_catalog_);
+      generator(db_, report_catalog_);
   return generator.GenerateReport(date, format);
 }
 

@@ -14,7 +14,8 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
   }
 
   if (!stats.transaction_success) {
-    runtime_bridge::LogError("[Fatal] Transaction Failed: " + stats.error_message);
+    runtime_bridge::LogError("[Fatal] Transaction Failed: " +
+                             stats.error_message);
     return;
   }
 
@@ -24,7 +25,7 @@ auto PrintImportStats(const ImportStats& stats, std::string_view title)
 
   if (!kHasLegacyFailed && !kHasSkipped) {
     runtime_bridge::LogInfo("[Success] Processed " +
-                       std::to_string(stats.successful_files) + " items.");
+                            std::to_string(stats.successful_files) + " items.");
   } else {
     std::ostringstream summary;
     summary << "[Partial] Days=" << stats.successful_days << "/"
@@ -84,7 +85,7 @@ void WorkflowHandler::RunDatabaseImport(const std::string& processed_path_str) {
 
   for (const auto& error : load_result.errors) {
     runtime_bridge::LogError("解析文件失败 " + error.source + ": " +
-                        error.message);
+                             error.message);
   }
 
   if (load_result.data_by_source.empty()) {

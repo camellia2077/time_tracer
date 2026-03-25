@@ -10,6 +10,10 @@ import tracer.core.domain;
 
 namespace {
 
+using tracer::core::domain::model::BaseActivityRecord;
+using tracer::core::domain::model::DailyLog;
+using tracer::core::domain::model::RawEvent;
+using tracer::core::domain::model::SourceSpan;
 using tracer::core::domain::modlogic::converter::DayProcessor;
 using tracer::core::domain::modlogic::converter::LogLinker;
 using tracer::core::domain::modlogic::converter::LogProcessingResult;
@@ -22,10 +26,6 @@ using tracer::core::domain::modlogic::validator_structure::StructValidator;
 using tracer::core::domain::modlogic::validator_txt::LineRules;
 using tracer::core::domain::modlogic::validator_txt::StructureRules;
 using tracer::core::domain::modlogic::validator_txt::TextValidator;
-using tracer::core::domain::model::BaseActivityRecord;
-using tracer::core::domain::model::DailyLog;
-using tracer::core::domain::model::RawEvent;
-using tracer::core::domain::model::SourceSpan;
 using tracer::core::domain::types::ConverterConfig;
 using tracer::core::domain::types::DateCheckMode;
 
@@ -70,14 +70,13 @@ void TestConverterBridge(int& failures) {
   first_day.getupTime = "06:45";
   data_map["2026-03"].push_back(first_day);
 
-  LogLinker::ExternalPreviousEvent external_previous_event{
-      "2026-02-28", "23:45"};
+  LogLinker::ExternalPreviousEvent external_previous_event{"2026-02-28",
+                                                           "23:45"};
   linker.LinkFirstDayWithExternalPreviousEvent(data_map,
                                                external_previous_event);
   const DailyLog& linked_day = data_map["2026-03"].front();
   Expect(linked_day.hasWakeAnchor,
-         "LogLinker should preserve wake anchor for first day.",
-         failures);
+         "LogLinker should preserve wake anchor for first day.", failures);
   Expect(!linked_day.processedActivities.empty(),
          "Linked day should contain generated sleep activity.", failures);
 
@@ -111,16 +110,16 @@ void TestValidatorBridge(int& failures) {
   span.raw_text = "0730study";
 
   std::set<Error> valid_errors;
-  const bool valid_event = line_rules.IsValidEventLine("0730study", 4,
-                                                       valid_errors, span);
+  const bool valid_event =
+      line_rules.IsValidEventLine("0730study", 4, valid_errors, span);
   Expect(valid_event && valid_errors.empty(),
          "Known activity should pass without validation errors.", failures);
 
   std::set<Error> unknown_errors;
   const bool unknown_event =
       line_rules.IsValidEventLine("0900unknown", 5, unknown_errors, span);
-  Expect(unknown_event, "Unknown activity should remain a structural-valid line.",
-         failures);
+  Expect(unknown_event,
+         "Unknown activity should remain a structural-valid line.", failures);
   Expect(!unknown_errors.empty(),
          "Unknown activity should be reported as semantic error.", failures);
   Expect(!unknown_errors.empty() &&
@@ -140,10 +139,9 @@ void TestValidatorBridge(int& failures) {
 
   TextValidator text_validator(config);
   std::set<Error> text_errors;
-  const bool text_ok =
-      text_validator.Validate("module-smoke.txt",
-                              "y2026\nm03\n0301\n0730study\n0800sleep\n",
-                              text_errors);
+  const bool text_ok = text_validator.Validate(
+      "module-smoke.txt", "y2026\nm03\n0301\n0730study\n0800sleep\n",
+      text_errors);
   Expect(text_ok && text_errors.empty(),
          "TextValidator should pass a minimal valid text sample.", failures);
 
@@ -177,8 +175,8 @@ void TestStructureValidatorBridge(int& failures) {
   std::vector<DailyLog> days;
   days.push_back(day);
   std::vector<Diagnostic> diagnostics;
-  const bool ok = struct_validator.Validate("module-smoke.txt", days,
-                                            diagnostics);
+  const bool ok =
+      struct_validator.Validate("module-smoke.txt", days, diagnostics);
   Expect(ok, "StructValidator should pass for valid activity data.", failures);
   Expect(diagnostics.empty(),
          "StructValidator diagnostics should be empty for valid sample.",
@@ -224,8 +222,7 @@ auto main() -> int {
     return 0;
   }
 
-  std::cerr
-      << "[FAIL] tracer_core_domain_logic_modules_smoke_tests failures: "
-      << failures << '\n';
+  std::cerr << "[FAIL] tracer_core_domain_logic_modules_smoke_tests failures: "
+            << failures << '\n';
   return 1;
 }

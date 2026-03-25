@@ -36,4 +36,3 @@ using YearlyReportService =
     tracer::core::infrastructure::reports::services::YearlyReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_SERVICES_YEARLY_REPORT_SERVICE_H_
-

@@ -24,15 +24,13 @@ using tracer::core::application::query::tree::ProjectTreeNode;
 auto TestRendererGateway(int& failures) -> void {
   const std::vector<std::string> kYears = {"2024", "2025"};
 
-  const std::string kText =
-      data_query_renderers::RenderListOutput("years", kYears,
-                                             DataQueryOutputMode::kText);
+  const std::string kText = data_query_renderers::RenderListOutput(
+      "years", kYears, DataQueryOutputMode::kText);
   Expect(Contains(kText, "Total: 2"),
          "text renderer should preserve total footer.", failures);
 
-  const std::string kSemantic =
-      data_query_renderers::RenderListOutput("years", kYears,
-                                             DataQueryOutputMode::kSemanticJson);
+  const std::string kSemantic = data_query_renderers::RenderListOutput(
+      "years", kYears, DataQueryOutputMode::kSemanticJson);
   const auto kSemanticJson = json::parse(kSemantic);
   Expect(kSemanticJson.value("schema_version", 0) == 1,
          "semantic renderer should emit schema_version.", failures);
@@ -195,4 +193,3 @@ auto RunDataQueryRefactorTreeTests(int& failures) -> void {
 }
 
 }  // namespace android_runtime_tests::data_query_refactor_internal
-

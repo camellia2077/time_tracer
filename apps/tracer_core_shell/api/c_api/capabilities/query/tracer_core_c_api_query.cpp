@@ -108,4 +108,3 @@ extern "C" TT_CORE_API auto tracer_core_runtime_tree_json(
         "tracer_core_runtime_tree_json failed unexpectedly.");
   }
 }
-

@@ -38,8 +38,7 @@ auto DecodeConvertRequest(std::string_view request_json)
     throw std::invalid_argument(kInputPath.error.message);
   }
 
-  const auto kDateCheckMode =
-      TryReadStringField(kPayload, "date_check_mode");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
   const auto kSaveProcessed =
       TryReadBoolField(kPayload, "save_processed_output");
   const auto kValidateLogic = TryReadBoolField(kPayload, "validate_logic");
@@ -86,7 +85,8 @@ auto EncodeConvertRequest(const ConvertRequestPayload& request) -> std::string {
   return payload.dump();
 }
 
-auto DecodeImportRequest(std::string_view request_json) -> ImportRequestPayload {
+auto DecodeImportRequest(std::string_view request_json)
+    -> ImportRequestPayload {
   const json kPayload = ParseRequestObject(request_json);
 
   const auto kProcessedPath = RequireStringField(kPayload, "processed_path");
@@ -120,8 +120,8 @@ auto DecodeValidateStructureRequest(std::string_view request_json)
   return out;
 }
 
-auto EncodeValidateStructureRequest(const ValidateStructureRequestPayload& request)
-    -> std::string {
+auto EncodeValidateStructureRequest(
+    const ValidateStructureRequestPayload& request) -> std::string {
   return json{
       {"input_path", request.input_path},
   }
@@ -136,8 +136,7 @@ auto DecodeValidateLogicRequest(std::string_view request_json)
   if (kInputPath.HasError()) {
     throw std::invalid_argument(kInputPath.error.message);
   }
-  const auto kDateCheckMode =
-      TryReadStringField(kPayload, "date_check_mode");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
   if (kDateCheckMode.HasError()) {
     throw std::invalid_argument(kDateCheckMode.error.message);
   }

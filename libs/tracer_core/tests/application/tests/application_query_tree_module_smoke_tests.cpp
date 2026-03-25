@@ -44,8 +44,8 @@ auto RunQueryTreeModuleSmoke(int& failures) -> void {
          "BuildProjectTreeNodesFromReportTree should be exported.", failures);
   Expect(find_nodes_fn != nullptr,
          "FindProjectTreeNodesByPath should be exported.", failures);
-  Expect(limit_depth_fn != nullptr,
-         "LimitProjectTreeDepth should be exported.", failures);
+  Expect(limit_depth_fn != nullptr, "LimitProjectTreeDepth should be exported.",
+         failures);
 }
 
 }  // namespace
@@ -54,11 +54,12 @@ auto main() -> int {
   int failures = 0;
   RunQueryTreeModuleSmoke(failures);
   if (failures == 0) {
-    std::cout << "[PASS] tracer_core_application_query_tree_module_smoke_tests\n";
+    std::cout
+        << "[PASS] tracer_core_application_query_tree_module_smoke_tests\n";
     return 0;
   }
-  std::cerr
-      << "[FAIL] tracer_core_application_query_tree_module_smoke_tests failures: "
-      << failures << '\n';
+  std::cerr << "[FAIL] tracer_core_application_query_tree_module_smoke_tests "
+               "failures: "
+            << failures << '\n';
   return 1;
 }

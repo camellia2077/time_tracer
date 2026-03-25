@@ -117,8 +117,7 @@ auto ProgressReporter::ShouldEmit(bool force_emit) const -> bool {
           ? snapshot_.overall_done_bytes - last_emit_overall_done_bytes_
           : 0;
   const std::uint64_t kMinBytesDelta = options_->progress_min_bytes_delta;
-  const bool kBytesReady =
-      kMinBytesDelta == 0 || kBytesDelta >= kMinBytesDelta;
+  const bool kBytesReady = kMinBytesDelta == 0 || kBytesDelta >= kMinBytesDelta;
 
   return kIntervalReady || kBytesReady;
 }

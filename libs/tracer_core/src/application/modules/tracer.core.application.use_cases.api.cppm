@@ -15,8 +15,8 @@ export namespace tracer::core::application::use_cases {
 using ::tracer::core::application::use_cases::PipelineApi;
 using ::tracer::core::application::use_cases::QueryApi;
 using ::tracer::core::application::use_cases::ReportApi;
-using ::tracer::core::application::use_cases::TracerExchangeApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
+using ::tracer::core::application::use_cases::TracerExchangeApi;
 
 }  // namespace tracer::core::application::use_cases
 
@@ -25,7 +25,7 @@ export namespace tracer::core::application::modusecases {
 using ::tracer::core::application::use_cases::PipelineApi;
 using ::tracer::core::application::use_cases::QueryApi;
 using ::tracer::core::application::use_cases::ReportApi;
-using ::tracer::core::application::use_cases::TracerExchangeApi;
 using ::tracer::core::application::use_cases::TracerCoreRuntime;
+using ::tracer::core::application::use_cases::TracerExchangeApi;
 
 }  // namespace tracer::core::application::modusecases

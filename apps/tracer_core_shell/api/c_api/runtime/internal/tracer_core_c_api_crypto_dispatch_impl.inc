@@ -27,8 +27,8 @@ struct CryptoInspectExecution {
 [[nodiscard]] auto EmitCryptoProgress(
     const app_dto::TracerExchangeProgressSnapshot& snapshot)
     -> app_dto::TracerExchangeProgressControl {
-  const auto registration =
-      tracer_core::core::c_api::internal::GetCryptoProgressCallbackRegistration();
+  const auto registration = tracer_core::core::c_api::internal::
+      GetCryptoProgressCallbackRegistration();
   if (registration.callback == nullptr) {
     return app_dto::TracerExchangeProgressControl::kContinue;
   }
@@ -51,8 +51,8 @@ struct CryptoInspectExecution {
   };
 }
 
-[[nodiscard]] auto BuildCryptoEncryptRequest(
-    TtCoreRuntimeHandle* handle, const CryptoEncryptArgs& args)
+[[nodiscard]] auto BuildCryptoEncryptRequest(TtCoreRuntimeHandle* handle,
+                                             const CryptoEncryptArgs& args)
     -> app_dto::TracerExchangeExportRequest {
   return {
       .input_text_root_path = args.input_path,
@@ -67,17 +67,17 @@ struct CryptoInspectExecution {
   };
 }
 
-[[nodiscard]] auto BuildCryptoDecryptRequest(
-    TtCoreRuntimeHandle* handle, const CryptoDecryptArgs& args)
+[[nodiscard]] auto BuildCryptoDecryptRequest(TtCoreRuntimeHandle* handle,
+                                             const CryptoDecryptArgs& args)
     -> app_dto::TracerExchangeImportRequest {
   return {
       .input_tracer_path = args.input_path,
       .active_text_root_path =
           ResolveActiveTextRootPath(handle->converter_config_toml_path),
       .active_converter_main_config_path = handle->converter_config_toml_path,
-      .runtime_work_root =
-          args.work_root_override.has_value() ? *args.work_root_override
-                                              : handle->output_root,
+      .runtime_work_root = args.work_root_override.has_value()
+                               ? *args.work_root_override
+                               : handle->output_root,
       .passphrase = args.passphrase,
       .progress_observer = BuildProgressObserver(),
   };

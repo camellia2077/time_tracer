@@ -105,7 +105,8 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
   }
 
   return {
-      .input_path = fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
+      .input_path =
+          fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
       .output_path =
           fs::absolute(fs::path(RequireStringField(payload, "output_path"))),
       .date_check_mode = date_check_mode,
@@ -128,11 +129,12 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
   }
 
   return {
-      .input_path = fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
-      .work_root_override = output_path.has_value()
-                                ? std::optional<fs::path>(
-                                      fs::absolute(fs::path(*output_path)))
-                                : std::nullopt,
+      .input_path =
+          fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
+      .work_root_override =
+          output_path.has_value()
+              ? std::optional<fs::path>(fs::absolute(fs::path(*output_path)))
+              : std::nullopt,
       .passphrase = RequireStringField(payload, "passphrase"),
   };
 }
@@ -145,7 +147,8 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
                        "inspect.");
 
   return {
-      .input_path = fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
+      .input_path =
+          fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
       .passphrase = RequireStringField(payload, "passphrase"),
   };
 }

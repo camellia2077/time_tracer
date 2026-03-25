@@ -4,7 +4,8 @@ import tracer.core.infrastructure.config.internal.cli_config_snapshot;
 
 namespace tracer_core::shell::config_bridge {
 
-namespace modconfig_internal = tracer::core::infrastructure::modconfig::internal;
+namespace modconfig_internal =
+    tracer::core::infrastructure::modconfig::internal;
 
 namespace {
 
@@ -30,8 +31,7 @@ namespace {
       .convert_validate_structure = defaults.convert_validate_structure,
       .ingest_date_check_mode = defaults.ingest_date_check_mode,
       .ingest_save_processed_output = defaults.ingest_save_processed_output,
-      .validate_logic_date_check_mode =
-          defaults.validate_logic_date_check_mode,
+      .validate_logic_date_check_mode = defaults.validate_logic_date_check_mode,
   };
 }
 
@@ -39,8 +39,8 @@ namespace {
 
 auto LoadCliConfigSnapshot(const std::filesystem::path& executable_path)
     -> CliConfigSnapshot {
-  const auto config = modconfig_internal::LoadCliConfigSnapshotCached(
-      executable_path);
+  const auto config =
+      modconfig_internal::LoadCliConfigSnapshotCached(executable_path);
   return {
       .exe_dir_path = config.exe_dir_path,
       .export_path = config.export_path,

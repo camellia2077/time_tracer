@@ -79,8 +79,10 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
       {"defaults",
        {{"default_format", ToStringJson(cli_config.defaults.default_format)}}},
       {"command_defaults",
-       {{"export_format", ToStringJson(cli_config.command_defaults.export_format)},
-        {"query_format", ToStringJson(cli_config.command_defaults.query_format)},
+       {{"export_format",
+         ToStringJson(cli_config.command_defaults.export_format)},
+        {"query_format",
+         ToStringJson(cli_config.command_defaults.query_format)},
         {"convert_date_check_mode",
          ToDateCheckModeJson(
              cli_config.command_defaults.convert_date_check_mode)},
@@ -104,7 +106,7 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
              ? json(*cli_config.command_defaults.ingest_save_processed_output)
              : json(nullptr)},
         {"validate_logic_date_check_mode",
-             ToDateCheckModeJson(
+         ToDateCheckModeJson(
              cli_config.command_defaults.validate_logic_date_check_mode)}}}};
 }
 
@@ -134,7 +136,8 @@ constexpr std::string_view kLibwinpthreadRuntimeName = "libwinpthread-1.dll";
   return tracer_core::core::c_api::internal::g_last_response.c_str();
 }
 
-[[nodiscard]] auto BuildSuccessJsonResponse(const json& payload) -> const char* {
+[[nodiscard]] auto BuildSuccessJsonResponse(const json& payload) -> const
+    char* {
   json normalized = payload;
   normalized["error_code"] = "";
   normalized["error_category"] = "";
@@ -178,8 +181,7 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
       .convert_validate_structure = defaults.convert_validate_structure,
       .ingest_date_check_mode = defaults.ingest_date_check_mode,
       .ingest_save_processed_output = defaults.ingest_save_processed_output,
-      .validate_logic_date_check_mode =
-          defaults.validate_logic_date_check_mode,
+      .validate_logic_date_check_mode = defaults.validate_logic_date_check_mode,
   };
 }
 
@@ -190,8 +192,7 @@ constexpr std::string_view kDatabaseFilename = "time_data.sqlite3";
       .exe_dir_path = cli_config.exe_dir_path,
       .export_path = cli_config.export_path,
       .converter_config_toml_path = cli_config.converter_config_toml_path,
-      .default_save_processed_output =
-          cli_config.default_save_processed_output,
+      .default_save_processed_output = cli_config.default_save_processed_output,
       .default_date_check_mode = cli_config.default_date_check_mode,
       .defaults = ToCliGlobalDefaultsContext(cli_config.defaults),
       .command_defaults =
@@ -232,9 +233,9 @@ auto ResolveCliContext(const char* executable_path, const char* db_override,
     db_path = fs::absolute(fs::path(db_override));
   }
 
-  const std::string resolved_command =
-      IsNonEmptyCString(command_name) ? std::string(command_name)
-                                      : std::string();
+  const std::string resolved_command = IsNonEmptyCString(command_name)
+                                           ? std::string(command_name)
+                                           : std::string();
   const fs::path runtime_output_root =
       (resolved_command == "export" && !export_root.empty()) ? export_root
                                                              : output_root;

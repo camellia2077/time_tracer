@@ -129,10 +129,11 @@ auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
 auto BuildStructuredReportFailure(std::string_view operation,
                                   std::string_view details)
     -> StructuredReportOutput {
-  return {.ok = false,
-          .kind = StructuredReportKind::kDay,
-          .report = DailyReportData{},
-          .error_message = core_api_failure::BuildErrorMessage(operation, details)};
+  return {
+      .ok = false,
+      .kind = StructuredReportKind::kDay,
+      .report = DailyReportData{},
+      .error_message = core_api_failure::BuildErrorMessage(operation, details)};
 }
 
 auto BuildStructuredReportFailure(std::string_view operation,
@@ -150,9 +151,10 @@ auto BuildStructuredReportFailure(std::string_view operation)
 auto BuildStructuredPeriodBatchFailure(std::string_view operation,
                                        std::string_view details)
     -> StructuredPeriodBatchOutput {
-  return {.ok = false,
-          .items = {},
-          .error_message = core_api_failure::BuildErrorMessage(operation, details)};
+  return {
+      .ok = false,
+      .items = {},
+      .error_message = core_api_failure::BuildErrorMessage(operation, details)};
 }
 
 auto BuildStructuredPeriodBatchFailure(std::string_view operation,

@@ -63,12 +63,13 @@ auto TestTreeQueryResponses(TestState& state) -> void {
       {.id = 4, .parent_id = 1, .name = "focus"},
       {.id = kRootBId, .parent_id = std::nullopt, .name = "root_b"},
   };
-  auto runtime_api =
-      BuildRuntimeApi(pipeline_workflow, report_handler, repository, data_query);
+  auto runtime_api = BuildRuntimeApi(pipeline_workflow, report_handler,
+                                     repository, data_query);
 
   TreeQueryRequest list_roots_request{};
   list_roots_request.list_roots = true;
-  const auto kRootsResponse = runtime_api.query().RunTreeQuery(list_roots_request);
+  const auto kRootsResponse =
+      runtime_api.query().RunTreeQuery(list_roots_request);
   Expect(state, kRootsResponse.ok,
          "RunTreeQuery list roots should return ok=true.");
   Expect(state, kRootsResponse.found,
@@ -82,7 +83,8 @@ auto TestTreeQueryResponses(TestState& state) -> void {
 
   TreeQueryRequest filtered_request{};
   filtered_request.root_pattern = "root_child";
-  const auto kFilteredResponse = runtime_api.query().RunTreeQuery(filtered_request);
+  const auto kFilteredResponse =
+      runtime_api.query().RunTreeQuery(filtered_request);
   Expect(state, kFilteredResponse.ok,
          "RunTreeQuery root pattern should return ok=true.");
   Expect(state, kFilteredResponse.found,
@@ -116,7 +118,8 @@ auto TestTreeQueryResponses(TestState& state) -> void {
 
   TreeQueryRequest missing_request{};
   missing_request.root_pattern = "missing";
-  const auto kMissingResponse = runtime_api.query().RunTreeQuery(missing_request);
+  const auto kMissingResponse =
+      runtime_api.query().RunTreeQuery(missing_request);
   Expect(state, kMissingResponse.ok,
          "RunTreeQuery missing root should still return ok=true.");
   Expect(state, !kMissingResponse.found,
@@ -125,7 +128,8 @@ auto TestTreeQueryResponses(TestState& state) -> void {
          "RunTreeQuery missing root should return empty nodes.");
 
   repository->fail_get_all_projects = true;
-  const auto kFailureResponse = runtime_api.query().RunTreeQuery(list_roots_request);
+  const auto kFailureResponse =
+      runtime_api.query().RunTreeQuery(list_roots_request);
   Expect(state, !kFailureResponse.ok,
          "RunTreeQuery should return failed DTO when repository throws.");
   Expect(state, Contains(kFailureResponse.error_message, "RunTreeQuery failed"),

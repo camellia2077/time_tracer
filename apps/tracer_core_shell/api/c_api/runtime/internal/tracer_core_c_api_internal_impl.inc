@@ -29,13 +29,13 @@ void SetLastError(const char* message) {
       tt_transport::EncodeIngestResponse(tt_transport::IngestResponsePayload{
           .ok = false,
           .error_message = message,
-          .error_contract = BuildErrorContract(
-              false, message,
-              ErrorContractBuildOptions{
-                  .error_code = error_code,
-                  .error_category = error_category,
-                  .hints = std::move(hints),
-              }),
+          .error_contract =
+              BuildErrorContract(false, message,
+                                 ErrorContractBuildOptions{
+                                     .error_code = error_code,
+                                     .error_category = error_category,
+                                     .hints = std::move(hints),
+                                 }),
       });
   return g_last_response.c_str();
 }

@@ -41,9 +41,8 @@ auto NativeEncryptFile(JNIEnv* env, jobject /*thiz*/, jstring input_path,
                        jstring output_path, jstring passphrase,
                        jstring security_level) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
-    const EncryptFileArgs args =
-        ParseEncryptFileArgs(env, input_path, output_path, passphrase,
-                             security_level);
+    const EncryptFileArgs args = ParseEncryptFileArgs(
+        env, input_path, output_path, passphrase, security_level);
     return BuildFileCryptoResponse(RunEncryptFileOperation(env, args),
                                    args.input_path, args.output_path);
   });
@@ -64,8 +63,7 @@ auto NativeExportTracerExchange(JNIEnv* env, jobject /*thiz*/,
 
 auto NativeImportTracerExchange(JNIEnv* env, jobject /*thiz*/,
                                 jstring input_path, jstring work_root,
-                                jstring passphrase)
-    -> jstring {
+                                jstring passphrase) -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {
     const ImportTracerExchangeArgs args =
         ParseImportTracerExchangeArgs(env, input_path, work_root, passphrase);

@@ -28,7 +28,8 @@ struct ReportChartSeriesResult {
 
 namespace tracer_core::infrastructure::query::data::stats {
 
-using tracer::core::infrastructure::query::data::stats::ReportChartAggregateStats;
+using tracer::core::infrastructure::query::data::stats::
+    ReportChartAggregateStats;
 using tracer::core::infrastructure::query::data::stats::ReportChartSeriesPoint;
 using tracer::core::infrastructure::query::data::stats::ReportChartSeriesResult;
 

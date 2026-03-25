@@ -6,7 +6,8 @@
 
 namespace infrastructure::io::internal {
 
-auto ProcessedDataLoaderAdapter::LoadDailyLogs(const std::string& processed_path)
+auto ProcessedDataLoaderAdapter::LoadDailyLogs(
+    const std::string& processed_path)
     -> tracer_core::application::ports::ProcessedDataLoadResult {
   tracer_core::application::runtime_bridge::LogWarn(
       "[ProcessedDataLoader] Processed JSON I/O is disabled by "

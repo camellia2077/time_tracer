@@ -20,7 +20,6 @@ using tracer_core::core::c_api::internal::SetLastError;
 
 #include "api/c_api/runtime/internal/tracer_core_c_api_namespace.inc"
 
-
 extern "C" TT_CORE_API auto tracer_core_get_version(void) -> const char* {
   try {
     ClearLastError();
@@ -232,4 +231,3 @@ extern "C" TT_CORE_API void tracer_core_runtime_destroy(
     TtCoreRuntimeHandle* handle) {
   delete handle;
 }
-

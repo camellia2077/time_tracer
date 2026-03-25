@@ -14,4 +14,3 @@ using Error = ::tracer::transport::TransportError;
 }
 
 }  // namespace tracer::transport::moderrors
-

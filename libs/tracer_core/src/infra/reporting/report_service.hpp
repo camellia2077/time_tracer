@@ -75,4 +75,3 @@ using tracer::core::infrastructure::reports::ReportService;
 using ReportService = tracer::core::infrastructure::reports::ReportService;
 
 #endif  // INFRASTRUCTURE_REPORTS_REPORT_SERVICE_H_
-

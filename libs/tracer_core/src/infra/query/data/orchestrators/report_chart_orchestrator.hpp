@@ -18,4 +18,3 @@ using tracer::core::infrastructure::query::data::orchestrators::
     HandleReportChartQuery;
 
 }  // namespace tracer_core::infrastructure::query::data::orchestrators
-

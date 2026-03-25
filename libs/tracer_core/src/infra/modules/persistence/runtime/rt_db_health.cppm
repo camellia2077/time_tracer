@@ -2,7 +2,8 @@ module;
 
 #include "infra/persistence/sqlite_database_health_checker.hpp"
 
-export module tracer.core.infrastructure.persistence.runtime.sqlite_database_health_checker;
+export module tracer.core.infrastructure.persistence.runtime
+    .sqlite_database_health_checker;
 
 export namespace tracer::core::infrastructure::persistence {
 

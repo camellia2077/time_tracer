@@ -16,7 +16,8 @@ namespace android_runtime_tests::report_consistency_internal {
 namespace {
 
 auto TestDataLayerStructuredFieldVerification(
-    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
   tracer_core::core::dto::StructuredReportQueryRequest structured_request;
   structured_request.type = tracer_core::core::dto::ReportQueryType::kDay;
   structured_request.argument = "2025-01-03";
@@ -152,7 +153,8 @@ auto TestDataLayerCrossIngestConsistency(
   reingest_request.date_check_mode = DateCheckMode::kNone;
   reingest_request.ingest_mode = IngestMode::kSingleTxtReplaceMonth;
 
-  const auto reingest_result = runtime_api->pipeline().RunIngest(reingest_request);
+  const auto reingest_result =
+      runtime_api->pipeline().RunIngest(reingest_request);
   if (!reingest_result.ok) {
     ++failures;
     std::cerr << "[FAIL] CrossIngest: re-ingest (replace_month) should "
@@ -230,7 +232,8 @@ auto TestDataLayerCrossIngestConsistency(
 }  // namespace
 
 auto RunReportConsistencyFieldVerificationTests(
-    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures) -> void {
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, int& failures)
+    -> void {
   TestDataLayerStructuredFieldVerification(runtime_api, failures);
 }
 

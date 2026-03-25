@@ -7,7 +7,8 @@ module;
 #include <unordered_map>
 #include <vector>
 
-export module tracer.core.infrastructure.persistence.write.importer.sqlite.project_resolver;
+export module tracer.core.infrastructure.persistence.write.importer.sqlite
+    .project_resolver;
 
 export namespace tracer::core::infrastructure::persistence::importer::sqlite {
 struct ImportProjectNode;

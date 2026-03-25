@@ -29,8 +29,9 @@ auto TestAndroidRuntimeBootstrapStaysSideEffectFree(int& failures) -> void {
     static_cast<void>(infrastructure::bootstrap::BuildAndroidRuntime(request));
   } catch (const std::exception& exception) {
     ++failures;
-    std::cerr << "[FAIL] BuildAndroidRuntime should not throw for valid config: "
-              << exception.what() << '\n';
+    std::cerr
+        << "[FAIL] BuildAndroidRuntime should not throw for valid config: "
+        << exception.what() << '\n';
     RemoveTree(paths.test_root);
     return;
   }
@@ -99,7 +100,8 @@ auto TestAndroidRuntimeRejectsInvalidConverterConfig(int& failures) -> void {
   RemoveTree(paths.test_root);
 }
 
-auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures) -> void {
+auto TestAndroidRuntimeRejectsInvalidUtf8ConverterConfig(int& failures)
+    -> void {
   const RuntimeTestPaths paths = BuildTempTestPaths(
       "time_tracer_android_runtime_factory_invalid_utf8_config_test");
   const std::filesystem::path kInvalidConfigPath =

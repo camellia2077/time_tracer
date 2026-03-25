@@ -15,8 +15,7 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
   }
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
-                                ingest_input_provider_,
-                                processed_data_storage_,
+                                ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
   const AppOptions kFullOptions =
       BuildIngestOptions(source_path, date_check_mode, save_processed);
@@ -93,8 +92,7 @@ auto WorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
   }
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
-                                ingest_input_provider_,
-                                processed_data_storage_,
+                                ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
   const AppOptions full_options =
       BuildIngestOptions(source_path, date_check_mode, save_processed);

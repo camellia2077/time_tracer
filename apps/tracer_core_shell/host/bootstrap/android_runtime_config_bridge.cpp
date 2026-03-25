@@ -20,12 +20,13 @@ import tracer.core.infrastructure.config.loader.report_config_loader;
 namespace tracer_core::shell::config_bridge {
 
 namespace modconfig = tracer::core::infrastructure::modconfig;
-namespace modconfig_internal = tracer::core::infrastructure::modconfig::internal;
+namespace modconfig_internal =
+    tracer::core::infrastructure::modconfig::internal;
 using ReportConfigLoader = modconfig::ReportConfigLoader;
-using AndroidRuntimeConfigPaths =
-    ::infrastructure::bootstrap::android_runtime_detail::AndroidRuntimeConfigPaths;
-using AndroidReportConfigPathSet =
-    ::infrastructure::bootstrap::android_runtime_detail::AndroidReportConfigPathSet;
+using AndroidRuntimeConfigPaths = ::infrastructure::bootstrap::
+    android_runtime_detail::AndroidRuntimeConfigPaths;
+using AndroidReportConfigPathSet = ::infrastructure::bootstrap::
+    android_runtime_detail::AndroidReportConfigPathSet;
 
 namespace {
 
@@ -44,8 +45,9 @@ auto ResolveAndroidRuntimeConfigPathsBridge(
   const fs::path config_root =
       ResolveReportConfigRoot(requested_converter_config_path);
 
-  const std::optional<modconfig_internal::AndroidBundleConfigPaths> bundle_paths =
-      modconfig_internal::TryResolveAndroidBundleConfigPaths(config_root);
+  const std::optional<modconfig_internal::AndroidBundleConfigPaths>
+      bundle_paths =
+          modconfig_internal::TryResolveAndroidBundleConfigPaths(config_root);
   if (bundle_paths.has_value()) {
 #if TT_REPORT_ENABLE_LATEX
     const std::optional<AndroidReportConfigPathSet> latex_paths =
@@ -112,10 +114,10 @@ auto BuildAndroidReportCatalogBridge(
   catalog.loaded_reports.markdown.period =
       ReportConfigLoader::LoadPeriodMdConfig(
           runtime_config_paths.markdown.period);
-  catalog.loaded_reports.markdown.week =
-      ReportConfigLoader::LoadWeeklyMdConfig(runtime_config_paths.markdown.week);
-  catalog.loaded_reports.markdown.year =
-      ReportConfigLoader::LoadYearlyMdConfig(runtime_config_paths.markdown.year);
+  catalog.loaded_reports.markdown.week = ReportConfigLoader::LoadWeeklyMdConfig(
+      runtime_config_paths.markdown.week);
+  catalog.loaded_reports.markdown.year = ReportConfigLoader::LoadYearlyMdConfig(
+      runtime_config_paths.markdown.year);
 
 #if TT_REPORT_ENABLE_LATEX
   if (runtime_config_paths.latex.has_value()) {

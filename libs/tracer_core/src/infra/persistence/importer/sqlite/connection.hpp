@@ -36,4 +36,3 @@ using tracer::core::infrastructure::persistence::importer::sqlite::ExecuteSql;
 }  // namespace infrastructure::persistence::importer::sqlite
 
 #endif  // INFRASTRUCTURE_PERSISTENCE_IMPORTER_SQLITE_CONNECTION_H_
-

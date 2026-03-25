@@ -29,9 +29,10 @@ struct PayloadFixture {
 auto ToBytes(std::string_view text) -> std::vector<std::uint8_t>;
 auto BuildEntry(std::string_view relative_path, std::string_view text)
     -> exchange_pkg::TracerExchangePackageEntry;
-auto BuildValidPackageEntries(
-    const std::vector<PayloadFixture>& payloads, const std::string& main_config,
-    const std::string& alias_config, const std::string& duration_config)
+auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
+                              const std::string& main_config,
+                              const std::string& alias_config,
+                              const std::string& duration_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto FindEntry(const exchange_pkg::DecodedTracerExchangePackage& package,
                std::string_view path)
@@ -43,17 +44,20 @@ auto StripUtf8Bom(std::string text) -> std::string;
 auto BuildLegacyText(std::string text) -> std::string;
 auto CanonicalizeLegacyTextForAssertion(std::string text) -> std::string;
 auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string;
-auto ReadLegacyRepoConverterConfig(std::string_view relative_path) -> std::string;
+auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
+    -> std::string;
 auto BuildSamplePayloads() -> std::vector<PayloadFixture>;
 auto BuildValidExportPayloads() -> std::vector<PayloadFixture>;
-auto ResolveInputPayloadPath(std::string_view relative_package_path) -> fs::path;
+auto ResolveInputPayloadPath(std::string_view relative_package_path)
+    -> fs::path;
 auto SeedExportInputRoot(const fs::path& input_root,
                          const std::vector<PayloadFixture>& payloads) -> bool;
 auto WriteRawBytesWithParents(const fs::path& path,
                               std::span<const std::uint8_t> bytes) -> bool;
 auto WriteEncryptedTracerFromEntries(
     const fs::path& package_path, const fs::path& tracer_path,
-    const std::vector<exchange_pkg::TracerExchangePackageEntry>& package_entries,
+    const std::vector<exchange_pkg::TracerExchangePackageEntry>&
+        package_entries,
     std::string_view passphrase, int& failures) -> bool;
 auto DecodeTracerPackage(const fs::path& tracer_path,
                          const fs::path& decrypted_package_path,

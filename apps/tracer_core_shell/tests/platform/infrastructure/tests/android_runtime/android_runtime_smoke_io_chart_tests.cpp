@@ -152,9 +152,9 @@ auto ProbeChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
   }
 }
 
-auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-                              const ChartProbeContext& chart_probe,
-                              int& failures) -> void {
+auto VerifyExplicitChartRange(
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
+    const ChartProbeContext& chart_probe, int& failures) -> void {
   if (!chart_probe.earliest_date.has_value() ||
       !chart_probe.latest_date.has_value()) {
     return;

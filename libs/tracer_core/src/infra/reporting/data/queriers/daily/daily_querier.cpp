@@ -39,7 +39,8 @@ auto BuildDailyStats(
 
 auto BuildDailyFlags(
     const std::vector<std::pair<long long, long long>>& project_stats,
-    const IProjectInfoProvider& provider) -> std::pair<std::string, std::string> {
+    const IProjectInfoProvider& provider)
+    -> std::pair<std::string, std::string> {
   DerivedTimeStatsAggregator aggregator;
   for (const auto& [project_id, duration_seconds] : project_stats) {
     aggregator.AddPathDuration(JoinPathParts(provider.GetPathParts(project_id)),
@@ -67,7 +68,8 @@ auto DayQuerier::FetchData() -> DailyReportData {
     name_cache.EnsureLoaded(db_);
     FetchDetailedRecords(data, name_cache);
     data.stats = BuildDailyStats(data.project_stats, name_cache);
-    const auto [status, exercise] = BuildDailyFlags(data.project_stats, name_cache);
+    const auto [status, exercise] =
+        BuildDailyFlags(data.project_stats, name_cache);
     data.metadata.status = status;
     data.metadata.exercise = exercise;
     BuildProjectTreeFromIds(data.project_tree, data.project_stats, name_cache);
@@ -88,10 +90,10 @@ void DayQuerier::PrepareData(DailyReportData& data) const {
 
 void DayQuerier::FetchMetadata(DailyReportData& data) {
   sqlite3_stmt* stmt;
-  std::string sql = std::format("SELECT {}, {}, {} FROM {} WHERE {} = ?;",
-                                schema::day::db::kWakeAnchor, schema::day::db::kRemark,
-                                schema::day::db::kGetupTime, schema::day::db::kTable,
-                                schema::day::db::kDate);
+  std::string sql = std::format(
+      "SELECT {}, {}, {} FROM {} WHERE {} = ?;", schema::day::db::kWakeAnchor,
+      schema::day::db::kRemark, schema::day::db::kGetupTime,
+      schema::day::db::kTable, schema::day::db::kDate);
   if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
     sqlite3_bind_text(stmt, 1, param_.data(), static_cast<int>(param_.size()),
                       SQLITE_TRANSIENT);
@@ -170,8 +172,8 @@ void BatchDayDataFetcher::FetchDaysMetadata(BatchDataResult& result) {
       "{4}, {5}, {6} "
       "FROM {0} ORDER BY {1} ASC;",
       schema::day::db::kTable, schema::day::db::kDate, schema::day::db::kYear,
-      schema::day::db::kMonth, schema::day::db::kWakeAnchor, schema::day::db::kRemark,
-      schema::day::db::kGetupTime);
+      schema::day::db::kMonth, schema::day::db::kWakeAnchor,
+      schema::day::db::kRemark, schema::day::db::kGetupTime);
 
   if (sqlite3_prepare_v2(db_, kSql.c_str(), -1, &stmt, nullptr) != SQLITE_OK) {
     throw std::runtime_error("Failed to prepare statement for days metadata.");
@@ -277,7 +279,8 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
       data.project_stats.emplace_back(project_entry);
     }
     data.stats = BuildDailyStats(data.project_stats, provider_);
-    const auto [status, exercise] = BuildDailyFlags(data.project_stats, provider_);
+    const auto [status, exercise] =
+        BuildDailyFlags(data.project_stats, provider_);
     data.metadata.status = status;
     data.metadata.exercise = exercise;
   }

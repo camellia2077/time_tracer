@@ -115,7 +115,8 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_batch_json(
       request.format = ParseReportFormat(*kPayload.format);
     }
 
-    return BuildReportTextResponse(runtime.report().RunPeriodBatchQuery(request));
+    return BuildReportTextResponse(
+        runtime.report().RunPeriodBatchQuery(request));
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

@@ -31,7 +31,8 @@ auto TestSuccessfulIngestCreatesDbAndPersistsData(int& failures) -> void {
       return;
     }
 
-    const std::filesystem::path input_path = paths.test_root / "input" / "ok.txt";
+    const std::filesystem::path input_path =
+        paths.test_root / "input" / "ok.txt";
     if (!WriteFileWithParents(input_path, BuildValidSingleMonthTxt())) {
       ++failures;
       std::cerr << "[FAIL] Failed to create valid ingest fixture.\n";
@@ -129,7 +130,8 @@ auto TestInvalidStructureIngestDoesNotCreateDb(int& failures) -> void {
 
     const std::filesystem::path input_path =
         paths.test_root / "input" / "invalid_structure.txt";
-    if (!WriteFileWithParents(input_path, BuildInvalidStructureSingleMonthTxt())) {
+    if (!WriteFileWithParents(input_path,
+                              BuildInvalidStructureSingleMonthTxt())) {
       ++failures;
       std::cerr << "[FAIL] Failed to create invalid-structure ingest "
                    "fixture.\n";
@@ -234,7 +236,8 @@ auto TestReplaceMonthInvalidInputDoesNotCreateDb(int& failures) -> void {
 
     const std::filesystem::path input_path =
         paths.test_root / "input" / "replace_invalid.txt";
-    if (!WriteFileWithParents(input_path, BuildInvalidStructureSingleMonthTxt())) {
+    if (!WriteFileWithParents(input_path,
+                              BuildInvalidStructureSingleMonthTxt())) {
       ++failures;
       std::cerr << "[FAIL] Failed to create replace-month invalid ingest "
                    "fixture.\n";
@@ -288,7 +291,8 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
       return;
     }
 
-    const std::filesystem::path ok_input_path = paths.test_root / "input" / "ok.txt";
+    const std::filesystem::path ok_input_path =
+        paths.test_root / "input" / "ok.txt";
     const std::filesystem::path invalid_input_path =
         paths.test_root / "input" / "invalid_structure.txt";
     if (!WriteFileWithParents(ok_input_path, BuildValidSingleMonthTxt()) ||
@@ -327,7 +331,8 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
       return;
     }
 
-    const auto before_day_count = QueryCount(database, "SELECT COUNT(*) FROM days;");
+    const auto before_day_count =
+        QueryCount(database, "SELECT COUNT(*) FROM days;");
     const auto before_record_count =
         QueryCount(database, "SELECT COUNT(*) FROM time_records;");
     sqlite3_close(database);
@@ -357,7 +362,8 @@ auto TestFailedIngestDoesNotMutateExistingDb(int& failures) -> void {
       return;
     }
 
-    const auto after_day_count = QueryCount(database, "SELECT COUNT(*) FROM days;");
+    const auto after_day_count =
+        QueryCount(database, "SELECT COUNT(*) FROM days;");
     const auto after_record_count =
         QueryCount(database, "SELECT COUNT(*) FROM time_records;");
     sqlite3_close(database);

@@ -102,9 +102,9 @@ void MonthTypFormatter::FormatHeaderContent(
         BuildBulletLine(config_->GetStatusDaysLabel(),
                         FormatRatio(data.status_true_days, data.actual_days));
     report_stream += "\n";
-    report_stream +=
-        BuildBulletLine(config_->GetWakeAnchorDaysLabel(),
-                        FormatRatio(data.wake_anchor_true_days, data.actual_days));
+    report_stream += BuildBulletLine(
+        config_->GetWakeAnchorDaysLabel(),
+        FormatRatio(data.wake_anchor_true_days, data.actual_days));
     report_stream += "\n";
     report_stream +=
         BuildBulletLine(config_->GetExerciseDaysLabel(),

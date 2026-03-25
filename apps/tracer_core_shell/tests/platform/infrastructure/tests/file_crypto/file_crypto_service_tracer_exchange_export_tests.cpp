@@ -68,8 +68,7 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
          "RunTracerExchangeExport should preserve the input root name.",
          failures);
   Expect(result.payload_file_count == payloads.size(),
-         "RunTracerExchangeExport should report payload_file_count.",
-         failures);
+         "RunTracerExchangeExport should report payload_file_count.", failures);
   Expect(fs::exists(tracer_path),
          "RunTracerExchangeExport should materialize the .tracer artifact.",
          failures);
@@ -89,9 +88,10 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
       exchange_pkg::DecodePackageBytes(ReadBytes(decrypted_package_path));
   Expect(package.manifest.source_root_name == "data",
          "Exported manifest should retain source_root_name.", failures);
-  Expect(package.manifest.producer_platform == "android",
-         "Exported manifest should stamp producer_platform from the host request.",
-         failures);
+  Expect(
+      package.manifest.producer_platform == "android",
+      "Exported manifest should stamp producer_platform from the host request.",
+      failures);
   Expect(package.manifest.producer_app == "time_tracer_android",
          "Exported manifest should stamp producer_app from the host request.",
          failures);
@@ -174,8 +174,7 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
   Expect(result.package_version == 3,
          "RunTracerExchangeInspect should report package_version.", failures);
   Expect(result.producer_platform == "windows",
-         "RunTracerExchangeInspect should report producer_platform.",
-         failures);
+         "RunTracerExchangeInspect should report producer_platform.", failures);
   Expect(result.producer_app == "time_tracer_cli",
          "RunTracerExchangeInspect should report producer_app.", failures);
   Expect(result.created_at_utc == "2026-03-18T12:34:56Z",
@@ -188,9 +187,10 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
   Expect(result.payload_entries.size() == payloads.size(),
          "RunTracerExchangeInspect should return a payload entry per TXT file.",
          failures);
-  Expect(result.converter_entries[0].present,
-         "RunTracerExchangeInspect should report interval_processor_config.toml.",
-         failures);
+  Expect(
+      result.converter_entries[0].present,
+      "RunTracerExchangeInspect should report interval_processor_config.toml.",
+      failures);
   Expect(result.converter_entries[1].present,
          "RunTracerExchangeInspect should report alias_mapping.toml.",
          failures);
@@ -245,17 +245,18 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
     return;
   }
 
-  const auto result = runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
-      .input_text_root_path = input_root,
-      .requested_output_path = tracer_path,
-      .active_converter_main_config_path = main_config_path,
-      .date_check_mode = DateCheckMode::kNone,
-      .passphrase = std::string(kPassphrase),
-      .producer_platform = "windows",
-      .producer_app = "time_tracer_cli",
-      .security_level =
-          tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
-  });
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
+          .input_text_root_path = input_root,
+          .requested_output_path = tracer_path,
+          .active_converter_main_config_path = main_config_path,
+          .date_check_mode = DateCheckMode::kNone,
+          .passphrase = std::string(kPassphrase),
+          .producer_platform = "windows",
+          .producer_app = "time_tracer_cli",
+          .security_level =
+              tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
+      });
   if (!result.ok) {
     ++failures;
     std::cerr << "[FAIL] Legacy text export should succeed: "
@@ -264,9 +265,8 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
     return;
   }
 
-  const auto package_opt =
-      DecodeTracerPackage(tracer_path, decrypted_package_path, kPassphrase,
-                          failures);
+  const auto package_opt = DecodeTracerPackage(
+      tracer_path, decrypted_package_path, kPassphrase, failures);
   if (!package_opt.has_value()) {
     RemoveTree(paths.test_root);
     return;
@@ -278,20 +278,20 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
   const auto* alias_entry = FindEntry(package, exchange_pkg::kAliasMappingPath);
   const auto* duration_entry =
       FindEntry(package, exchange_pkg::kDurationRulesPath);
-  Expect(payload_entry != nullptr, "Canonical export should include payload entry.",
-         failures);
-  Expect(main_entry != nullptr, "Canonical export should include main TOML entry.",
-         failures);
+  Expect(payload_entry != nullptr,
+         "Canonical export should include payload entry.", failures);
+  Expect(main_entry != nullptr,
+         "Canonical export should include main TOML entry.", failures);
   Expect(alias_entry != nullptr,
          "Canonical export should include alias TOML entry.", failures);
   Expect(duration_entry != nullptr,
          "Canonical export should include duration TOML entry.", failures);
 
   if (payload_entry != nullptr) {
-    Expect(std::string(payload_entry->data.begin(), payload_entry->data.end()) ==
-               CanonicalizeLegacyTextForAssertion(legacy_payload),
-           "Exported payload TXT bytes should be canonical UTF-8 text.",
-           failures);
+    Expect(
+        std::string(payload_entry->data.begin(), payload_entry->data.end()) ==
+            CanonicalizeLegacyTextForAssertion(legacy_payload),
+        "Exported payload TXT bytes should be canonical UTF-8 text.", failures);
   }
   if (main_entry != nullptr) {
     Expect(std::string(main_entry->data.begin(), main_entry->data.end()) ==
@@ -306,10 +306,11 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
            failures);
   }
   if (duration_entry != nullptr) {
-    Expect(std::string(duration_entry->data.begin(), duration_entry->data.end()) ==
-               CanonicalizeLegacyTextForAssertion(legacy_duration),
-           "Exported duration config bytes should be canonical UTF-8 text.",
-           failures);
+    Expect(
+        std::string(duration_entry->data.begin(), duration_entry->data.end()) ==
+            CanonicalizeLegacyTextForAssertion(legacy_duration),
+        "Exported duration config bytes should be canonical UTF-8 text.",
+        failures);
   }
 
   RemoveTree(paths.test_root);
@@ -350,28 +351,28 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
 
   const auto android_result =
       runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
-      .input_text_root_path = input_root,
-      .requested_output_path = android_tracer,
-      .active_converter_main_config_path = main_config_path,
-      .date_check_mode = DateCheckMode::kNone,
-      .passphrase = std::string(kPassphrase),
-      .producer_platform = "android",
-      .producer_app = "time_tracer_android",
-      .security_level =
-          tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
-  });
+          .input_text_root_path = input_root,
+          .requested_output_path = android_tracer,
+          .active_converter_main_config_path = main_config_path,
+          .date_check_mode = DateCheckMode::kNone,
+          .passphrase = std::string(kPassphrase),
+          .producer_platform = "android",
+          .producer_app = "time_tracer_android",
+          .security_level =
+              tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
+      });
   const auto windows_result =
       runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
-      .input_text_root_path = input_root,
-      .requested_output_path = windows_tracer,
-      .active_converter_main_config_path = main_config_path,
-      .date_check_mode = DateCheckMode::kNone,
-      .passphrase = std::string(kPassphrase),
-      .producer_platform = "windows",
-      .producer_app = "time_tracer_cli",
-      .security_level =
-          tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
-  });
+          .input_text_root_path = input_root,
+          .requested_output_path = windows_tracer,
+          .active_converter_main_config_path = main_config_path,
+          .date_check_mode = DateCheckMode::kNone,
+          .passphrase = std::string(kPassphrase),
+          .producer_platform = "windows",
+          .producer_app = "time_tracer_cli",
+          .security_level =
+              tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
+      });
   if (!android_result.ok || !windows_result.ok) {
     ++failures;
     std::cerr << "[FAIL] Cross-host exports should both succeed.\n";
@@ -379,12 +380,10 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
     return;
   }
 
-  const auto android_package_opt =
-      DecodeTracerPackage(android_tracer, android_package, kPassphrase,
-                          failures);
-  const auto windows_package_opt =
-      DecodeTracerPackage(windows_tracer, windows_package, kPassphrase,
-                          failures);
+  const auto android_package_opt = DecodeTracerPackage(
+      android_tracer, android_package, kPassphrase, failures);
+  const auto windows_package_opt = DecodeTracerPackage(
+      windows_tracer, windows_package, kPassphrase, failures);
   if (!android_package_opt.has_value() || !windows_package_opt.has_value()) {
     RemoveTree(paths.test_root);
     return;

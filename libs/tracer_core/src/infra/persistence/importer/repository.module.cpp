@@ -101,9 +101,9 @@ auto Repository::ImportData(const std::vector<DayData>& days,
   }
 }
 
-auto Repository::ReplaceAllData(
-    const std::vector<DayData>& days,
-    const std::vector<TimeRecordInternal>& records) -> void {
+auto Repository::ReplaceAllData(const std::vector<DayData>& days,
+                                const std::vector<TimeRecordInternal>& records)
+    -> void {
   EnsureWriteRepositoryReady();
 
   if (!connection_manager_->BeginTransaction()) {
@@ -111,8 +111,8 @@ auto Repository::ReplaceAllData(
   }
 
   try {
-    const std::string delete_records_sql = std::format(
-        "DELETE FROM {0};", schema::time_records::db::kTable);
+    const std::string delete_records_sql =
+        std::format("DELETE FROM {0};", schema::time_records::db::kTable);
     if (!sqlite::ExecuteSql(connection_manager_->GetDb(), delete_records_sql,
                             "Delete all rows from time_records")) {
       throw std::runtime_error("Failed to delete all data from time_records.");

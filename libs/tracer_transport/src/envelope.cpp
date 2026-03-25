@@ -28,9 +28,8 @@ auto ParseError(std::string_view context, std::string_view message)
     -> ParseResponseEnvelopeResult {
   return ParseResponseEnvelopeResult{
       .envelope = ResponseEnvelope{},
-      .error =
-          MakeTransportError(TransportErrorCode::kParseFailure,
-                             PrefixContext(context, message)),
+      .error = MakeTransportError(TransportErrorCode::kParseFailure,
+                                  PrefixContext(context, message)),
   };
 }
 
@@ -38,9 +37,8 @@ auto ValidationError(std::string_view context, std::string_view message)
     -> ParseResponseEnvelopeResult {
   return ParseResponseEnvelopeResult{
       .envelope = ResponseEnvelope{},
-      .error =
-          MakeTransportError(TransportErrorCode::kValidationFailure,
-                             PrefixContext(context, message)),
+      .error = MakeTransportError(TransportErrorCode::kValidationFailure,
+                                  PrefixContext(context, message)),
   };
 }
 
@@ -98,7 +96,8 @@ auto BuildResponseEnvelope(bool is_ok, std::string_view error_message,
   };
 }
 
-auto SerializeResponseEnvelope(const ResponseEnvelope& envelope) -> std::string {
+auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)
+    -> std::string {
   json payload = {
       {"ok", envelope.ok},
       {"error_message", envelope.error_message},

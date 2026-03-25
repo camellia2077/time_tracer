@@ -114,7 +114,8 @@ auto ValidateHeatmapConfigFile(const fs::path& heatmap_path) -> void {
         "failed to parse TOML: " + std::string(err.description()) + ".");
   } catch (const std::exception& err) {
     ThrowConfigFieldError(
-        heatmap_path, "", "failed to load TOML: " + std::string(err.what()) + ".");
+        heatmap_path, "",
+        "failed to load TOML: " + std::string(err.what()) + ".");
   }
 
   const auto kSchemaVersion = RequireTypedField<int64_t>(

@@ -26,7 +26,8 @@ class FileWriter {
    * @brief 将文本按 canonical UTF-8 规则写入指定文件。
    * @param path 目标文件路径。
    * @param content 要写入的文本内容。
-   * @throws std::runtime_error 如果文件无法打开、内容不是有效 UTF-8 或写入失败。
+   * @throws std::runtime_error 如果文件无法打开、内容不是有效 UTF-8
+   * 或写入失败。
    */
   static void WriteCanonicalText(const std::filesystem::path& path,
                                  std::string_view content);

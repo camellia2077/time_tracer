@@ -54,16 +54,13 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
   randombytes_buf(session.encrypt_batch_salt.data(),
                   session.encrypt_batch_salt.size());
 
-  auto [derive_result, master_key] =
-      DeriveMasterKeyWithArgon2id(passphrase,
-                                  Argon2idLimits{
-                                      .ops_limit = static_cast<std::uint32_t>(
-                                          kLimits.ops_limit),
-                                      .mem_limit_kib =
-                                          static_cast<std::uint32_t>(
-                                              kMemLimitKib),
-                                  },
-                                  session.encrypt_batch_salt);
+  auto [derive_result, master_key] = DeriveMasterKeyWithArgon2id(
+      passphrase,
+      Argon2idLimits{
+          .ops_limit = static_cast<std::uint32_t>(kLimits.ops_limit),
+          .mem_limit_kib = static_cast<std::uint32_t>(kMemLimitKib),
+      },
+      session.encrypt_batch_salt);
   if (!derive_result.ok()) {
     return {derive_result, {}};
   }

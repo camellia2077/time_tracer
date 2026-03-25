@@ -62,11 +62,10 @@ auto ExpectReportQueryFailureWithoutDb(
 }
 
 auto ExpectStatsPeriodQueryFailureWithoutDb(
-    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-    std::string period, std::optional<std::string> period_argument,
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api, std::string period,
+    std::optional<std::string> period_argument,
     std::optional<int> lookback_days, const std::filesystem::path& db_path,
-    int& failures)
-    -> void {
+    int& failures) -> void {
   tracer_core::core::dto::DataQueryRequest request;
   request.action = tracer_core::core::dto::DataQueryAction::kDaysStats;
   request.tree_period = period;
@@ -322,22 +321,22 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
     ExpectStatsPeriodQueryFailureWithoutDb(
         fixture.runtime.runtime_api, "week", std::string("2026-W05"),
         std::nullopt, fixture.paths.db_path, failures);
-    ExpectStatsPeriodQueryFailureWithoutDb(
-        fixture.runtime.runtime_api, "month", std::string("2026-02"),
-        std::nullopt, fixture.paths.db_path, failures);
-    ExpectStatsPeriodQueryFailureWithoutDb(
-        fixture.runtime.runtime_api, "year", std::string("2026"), std::nullopt,
-        fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(fixture.runtime.runtime_api, "month",
+                                           std::string("2026-02"), std::nullopt,
+                                           fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(fixture.runtime.runtime_api, "year",
+                                           std::string("2026"), std::nullopt,
+                                           fixture.paths.db_path, failures);
     ExpectStatsPeriodQueryFailureWithoutDb(
         fixture.runtime.runtime_api, "recent", std::string("7"), std::nullopt,
         fixture.paths.db_path, failures);
-    ExpectStatsPeriodQueryFailureWithoutDb(
-        fixture.runtime.runtime_api, "recent", std::nullopt, 7,
-        fixture.paths.db_path, failures);
-    ExpectStatsPeriodQueryFailureWithoutDb(
-        fixture.runtime.runtime_api, "range",
-        std::string("2026-02-01|2026-02-15"), std::nullopt,
-        fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(fixture.runtime.runtime_api,
+                                           "recent", std::nullopt, 7,
+                                           fixture.paths.db_path, failures);
+    ExpectStatsPeriodQueryFailureWithoutDb(fixture.runtime.runtime_api, "range",
+                                           std::string("2026-02-01|2026-02-15"),
+                                           std::nullopt, fixture.paths.db_path,
+                                           failures);
 
     tracer_core::core::dto::DataQueryRequest invalid_stats_period_request;
     invalid_stats_period_request.action =
@@ -359,8 +358,8 @@ auto RunBootstrapSmokeSection(int& failures) -> void {
     tree_request.tree_period_argument = "7";
     tree_request.tree_max_depth = 1;
     ExpectDataQueryFailureWithoutDb(fixture.runtime.runtime_api, tree_request,
-                                    fixture.paths.db_path,
-                                    "RunDataQuery(tree)", failures);
+                                    fixture.paths.db_path, "RunDataQuery(tree)",
+                                    failures);
 
     ExpectReportQueryFailureWithoutDb(
         fixture.runtime.runtime_api,

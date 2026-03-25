@@ -18,9 +18,9 @@ struct ChartProbeContext {
 
 auto ProbeChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
                      ChartProbeContext& chart_probe, int& failures) -> void;
-auto VerifyExplicitChartRange(const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
-                              const ChartProbeContext& chart_probe,
-                              int& failures) -> void;
+auto VerifyExplicitChartRange(
+    const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
+    const ChartProbeContext& chart_probe, int& failures) -> void;
 auto VerifyChartForRootScenarios(
     const std::shared_ptr<ITracerCoreRuntime>& runtime_api,
     const ChartProbeContext& chart_probe, int& failures) -> void;

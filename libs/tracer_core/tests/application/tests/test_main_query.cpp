@@ -12,7 +12,7 @@ auto main() -> int {
     return 0;
   }
 
-  std::cerr << "[FAIL] time_tracker_query_api_tests failures: " << state.failures
-            << '\n';
+  std::cerr << "[FAIL] time_tracker_query_api_tests failures: "
+            << state.failures << '\n';
   return 1;
 }

@@ -141,13 +141,15 @@ auto BuildPeriodMarkdownCoreFormatter(const ReportCatalog& catalog)
 auto BuildWeeklyMarkdownCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<WeeklyReportData>> {
   return std::make_unique<RangeReportFormatterAdapter<WeeklyReportData>>(
-      BuildRangeMarkdownCoreFormatter(catalog.loaded_reports.markdown.week.labels));
+      BuildRangeMarkdownCoreFormatter(
+          catalog.loaded_reports.markdown.week.labels));
 }
 
 auto BuildYearlyMarkdownCoreFormatter(const ReportCatalog& catalog)
     -> std::unique_ptr<IReportFormatter<YearlyReportData>> {
   return std::make_unique<RangeReportFormatterAdapter<YearlyReportData>>(
-      BuildRangeMarkdownCoreFormatter(catalog.loaded_reports.markdown.year.labels));
+      BuildRangeMarkdownCoreFormatter(
+          catalog.loaded_reports.markdown.year.labels));
 }
 
 #if TT_REPORT_ENABLE_LATEX
