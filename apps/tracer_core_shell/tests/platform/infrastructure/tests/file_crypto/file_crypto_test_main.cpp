@@ -5,14 +5,14 @@
 
 auto main() -> int {
   int failures = 0;
-  android_runtime_tests::RunFileCryptoServiceTests(failures);
+  android_runtime_tests::RunFileCryptoRuntimeBridgeTests(failures);
 
   if (failures == 0) {
-    std::cout << "[PASS] time_tracker_file_crypto_tests\n";
+    std::cout << "[PASS] time_tracker_file_crypto_runtime_bridge_tests\n";
     return 0;
   }
 
-  std::cerr << "[FAIL] time_tracker_file_crypto_tests failures: " << failures
-            << '\n';
+  std::cerr << "[FAIL] time_tracker_file_crypto_runtime_bridge_tests failures: "
+            << failures << '\n';
   return 1;
 }

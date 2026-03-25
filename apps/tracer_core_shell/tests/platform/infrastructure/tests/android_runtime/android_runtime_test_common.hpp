@@ -10,7 +10,7 @@
 #include <string>
 #include <string_view>
 
-#include "host/android_runtime_factory.hpp"
+#include "host/bootstrap/android_runtime_factory.hpp"
 #include "application/dto/query_requests.hpp"
 #include "application/dto/query_responses.hpp"
 #include "application/dto/reporting_requests.hpp"
@@ -59,9 +59,11 @@ auto RunAndroidBundlePolicyTests(int& failures) -> void;
 auto RunCompatibilityTests(int& failures) -> void;
 auto RunValidationIssueReporterTests(int& failures) -> void;
 auto RunTxtMonthHeaderTests(int& failures) -> void;
-auto RunValidateLogicStructureReportingTests(int& failures) -> void;
+auto RunPipelineValidationRegressionTests(int& failures) -> void;
+auto RunReportingErrorReportTests(int& failures) -> void;
 auto RunDataQueryRefactorTests(int& failures) -> void;
-auto RunFileCryptoServiceTests(int& failures) -> void;
+auto RunFileCryptoRuntimeBridgeTests(int& failures) -> void;
+auto RunFileCryptoTracerExchangeTests(int& failures) -> void;
 
 }  // namespace android_runtime_tests
 

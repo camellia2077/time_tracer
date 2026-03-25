@@ -5,14 +5,13 @@
 
 namespace android_runtime_tests {
 
-auto RunFileCryptoServiceTests(int& failures) -> void {
+auto RunFileCryptoRuntimeBridgeTests(int& failures) -> void {
 #if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM && defined(TT_HAS_ZSTD) && \
     TT_HAS_ZSTD
   RunFileCryptoRoundtripTests(failures);
   RunFileCryptoFailureTests(failures);
   RunFileCryptoProgressTests(failures);
   RunFileCryptoInteropTests(failures);
-  RunFileCryptoTracerExchangeTests(failures);
 #else
   (void)failures;
   std::cout << "[INFO] Skip file crypto tests: libsodium/zstd backend is not "

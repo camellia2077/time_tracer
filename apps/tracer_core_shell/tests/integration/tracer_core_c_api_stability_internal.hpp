@@ -130,6 +130,9 @@ void RunRuntimeBootstrapChecks(const CoreApiFns& api,
 auto CreateRuntime(const CoreApiFns& api, const fs::path& db_path,
                    const fs::path& output_root,
                    const fs::path& converter_config) -> RuntimeGuard;
+void SeedRuntimeWithBaselineData(const CoreApiFns& api,
+                                 TtCoreRuntimeHandle* runtime,
+                                 const fs::path& input_root);
 void RunConcurrentChecks(const CoreApiFns& api, const RuntimePathBundle& paths);
 void RunCreateDestroyChurn(const CoreApiFns& api,
                            const RuntimePathBundle& paths);
@@ -138,6 +141,9 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
                              const fs::path& input_root);
 
 void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
+void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
+void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
+                       const fs::path& input_root);
 void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                         const fs::path& converter_config);
 

@@ -58,19 +58,18 @@ auto main() -> int {
       auto baseline_runtime =
           CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);
       RunCallbackBridgeChecks(api, baseline_runtime.Get(), kInputRoot);
-      RunQueryChecks(api, baseline_runtime.Get());
       RunErrorPathChecks(api, baseline_runtime.Get(), kConverterConfig);
       RunConcurrentChecks(api, kRuntimePaths);
       RunCreateDestroyChurn(api, kRuntimePaths);
     }
 
-    std::cout << "[PASS] tracer_core_c_api_stability_tests version=" << version
-              << '\n';
+    std::cout << "[PASS] tracer_core_c_api_shell_aggregate_tests version="
+              << version << '\n';
     CloseLibrary(library);
     return 0;
   } catch (const std::exception& error) {
-    std::cerr << "[FAIL] tracer_core_c_api_stability_tests: " << error.what()
-              << '\n';
+    std::cerr << "[FAIL] tracer_core_c_api_shell_aggregate_tests: "
+              << error.what() << '\n';
     return 1;
   }
 }

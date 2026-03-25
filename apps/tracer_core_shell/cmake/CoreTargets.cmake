@@ -69,9 +69,9 @@ set(TT_FORBIDDEN_NON_OWNER_INCLUDE_PATTERNS
 )
 
 set_source_files_properties(
-    "${TRACER_CORE_SHELL_SOURCE_ROOT}/api/c_api/cli_runtime_config_bridge.cpp"
-    "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
-    "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
+    "${TRACER_CORE_SHELL_SOURCE_ROOT}/api/c_api/capabilities/config/cli_runtime_config_bridge.cpp"
+    "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
+    "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
     PROPERTIES
         CXX_SCAN_FOR_MODULES ON
 )
@@ -653,6 +653,7 @@ if(BUILD_TESTING)
     add_executable(tt_android_runtime_reporting_tests
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_smoke_fixture_support.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_reporting_error_report_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_support.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_data_layer_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_report_consistency_structure_tests.cpp"
@@ -674,7 +675,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_history_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_ingest_guard_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_business_regression_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_validate_logic_structure_reporting_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_pipeline_validation_regression_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/validation_issue_reporter_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/txt_month_header_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_pipeline_regression_test_main.cpp"
@@ -688,10 +689,10 @@ if(BUILD_TESTING)
             tt_android_runtime_pipeline_regression_tests
         )
             target_sources(${tt_android_runtime_target} PRIVATE
-                "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
-                "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
-                "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_resolver.cpp"
-                "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_catalog.cpp"
+                "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
+                "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
+                "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_resolver.cpp"
+                "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_catalog.cpp"
             )
         endforeach()
     endif()
@@ -735,11 +736,11 @@ if(BUILD_TESTING)
         COMMAND tt_fmt_parity_tests
     )
 
-    add_executable(tt_file_crypto_tests
-        "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_config_bridge.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_resolver.cpp"
-        "${TRACER_CORE_SHELL_HOST_ROOT}/android_runtime_factory_catalog.cpp"
+    add_executable(tt_file_crypto_runtime_bridge_tests
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_resolver.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_catalog.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tests.cpp"
@@ -747,25 +748,39 @@ if(BUILD_TESTING)
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_failure_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_progress_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_interop_tests.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_test_main.cpp"
+    )
+    add_executable(tt_exchange_runtime_tests
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_config_bridge.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_resolver.cpp"
+        "${TRACER_CORE_SHELL_HOST_ROOT}/bootstrap/android_runtime_factory_catalog.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/android_runtime/android_runtime_test_common.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_test_common.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_test_support.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_package_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_export_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_import_tests.cpp"
         "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_service_tracer_exchange_tests.cpp"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_test_main.cpp"
+        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}/infrastructure/tests/file_crypto/file_crypto_exchange_test_main.cpp"
     )
-    setup_app_target(tt_file_crypto_tests)
-    target_include_directories(tt_file_crypto_tests PRIVATE
-        "${TRACER_CORE_SHELL_SOURCE_ROOT}"
-        "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}"
+    foreach(tt_file_crypto_target
+        tt_file_crypto_runtime_bridge_tests
+        tt_exchange_runtime_tests
     )
-    target_link_libraries(tt_file_crypto_tests PRIVATE
-        tc_infra_full_lib
-    )
-    add_test(
-        NAME tt_file_crypto_tests
-        COMMAND tt_file_crypto_tests
-    )
+        setup_app_target(${tt_file_crypto_target})
+        target_include_directories(${tt_file_crypto_target} PRIVATE
+            "${TRACER_CORE_SHELL_SOURCE_ROOT}"
+            "${TRACER_CORE_SHELL_PLATFORM_TESTS_ROOT}"
+        )
+        target_link_libraries(${tt_file_crypto_target} PRIVATE
+            tc_infra_full_lib
+        )
+        add_test(
+            NAME ${tt_file_crypto_target}
+            COMMAND ${tt_file_crypto_target}
+        )
+    endforeach()
 endif()
 
 

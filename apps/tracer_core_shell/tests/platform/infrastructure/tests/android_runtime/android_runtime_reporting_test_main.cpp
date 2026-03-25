@@ -5,6 +5,7 @@
 auto main() -> int {
   int failures = 0;
   android_runtime_tests::RunReportConsistencyTests(failures);
+  android_runtime_tests::RunReportingErrorReportTests(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] time_tracker_android_runtime_reporting_tests\n";

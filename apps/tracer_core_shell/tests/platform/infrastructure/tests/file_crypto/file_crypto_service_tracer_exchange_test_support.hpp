@@ -12,7 +12,7 @@ import tracer.core.infrastructure.exchange;
 #include <string_view>
 #include <vector>
 
-#include "host/android_runtime_factory.hpp"
+#include "host/bootstrap/android_runtime_factory.hpp"
 #include "infrastructure/tests/file_crypto/file_crypto_service_test_internal.hpp"
 
 namespace android_runtime_tests::tracer_exchange_tests_internal {

@@ -329,4 +329,20 @@ auto CreateRuntime(const CoreApiFns& api, const fs::path& db_path,
   return {api.runtime_destroy, handle};
 }
 
+void SeedRuntimeWithBaselineData(const CoreApiFns& api,
+                                 TtCoreRuntimeHandle* runtime,
+                                 const fs::path& input_root) {
+  Require(runtime != nullptr, "SeedRuntimeWithBaselineData requires runtime");
+  Require(fs::exists(input_root),
+          "SeedRuntimeWithBaselineData missing input root: " +
+              input_root.string());
+  const json kIngestRequest{
+      {"input_path", input_root.string()},
+      {"date_check_mode", "none"},
+      {"save_processed_output", false},
+  };
+  RequireOk(api.runtime_ingest(runtime, kIngestRequest.dump().c_str()),
+            "baseline ingest");
+}
+
 }  // namespace tracer_core_c_api_stability_internal

@@ -66,6 +66,7 @@ auto UpdateBatchProgressExpectationState(
 
 namespace android_runtime_tests {
 
+auto RunFileCryptoRuntimeBridgeTests(int& failures) -> void;
 auto RunFileCryptoRoundtripTests(int& failures) -> void;
 auto RunFileCryptoFailureTests(int& failures) -> void;
 auto RunFileCryptoProgressTests(int& failures) -> void;

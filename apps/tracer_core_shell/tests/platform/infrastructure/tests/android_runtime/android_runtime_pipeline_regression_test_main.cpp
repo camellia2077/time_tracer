@@ -7,7 +7,7 @@ auto main() -> int {
   android_runtime_tests::RunBusinessRegressionTests(failures);
   android_runtime_tests::RunValidationIssueReporterTests(failures);
   android_runtime_tests::RunTxtMonthHeaderTests(failures);
-  android_runtime_tests::RunValidateLogicStructureReportingTests(failures);
+  android_runtime_tests::RunPipelineValidationRegressionTests(failures);
 
   if (failures == 0) {
     std::cout
