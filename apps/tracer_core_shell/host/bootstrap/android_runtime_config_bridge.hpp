@@ -1,7 +1,7 @@
 #ifndef HOST_ANDROID_RUNTIME_CONFIG_BRIDGE_H_
 #define HOST_ANDROID_RUNTIME_CONFIG_BRIDGE_H_
 
-#include "host/android_runtime_factory_internal.hpp"
+#include "host/bootstrap/android_runtime_factory_internal.hpp"
 
 namespace tracer_core::shell::config_bridge {
 

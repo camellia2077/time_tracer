@@ -1,12 +1,12 @@
-// host/android_runtime_factory_resolver.cpp
+// host/bootstrap/android_runtime_factory_resolver.cpp
 #include <filesystem>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
-#include "host/android_runtime_config_bridge.hpp"
-#include "host/android_runtime_factory_internal.hpp"
+#include "host/bootstrap/android_runtime_config_bridge.hpp"
+#include "host/bootstrap/android_runtime_factory_internal.hpp"
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 

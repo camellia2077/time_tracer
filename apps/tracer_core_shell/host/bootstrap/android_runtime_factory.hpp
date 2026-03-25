@@ -1,4 +1,4 @@
-// host/android_runtime_factory.hpp
+// host/bootstrap/android_runtime_factory.hpp
 #ifndef API_ANDROID_ANDROID_RUNTIME_FACTORY_H_
 #define API_ANDROID_ANDROID_RUNTIME_FACTORY_H_
 

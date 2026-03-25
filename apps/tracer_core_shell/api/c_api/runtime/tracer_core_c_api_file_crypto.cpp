@@ -9,13 +9,13 @@
 #include <utility>
 
 #include "api/c_api/tracer_core_c_api.h"
-#include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/exchange_requests.hpp"
 #include "application/dto/exchange_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
-#include "host/crypto_progress_bridge.hpp"
-#include "host/tracer_exchange_inspect_formatter.hpp"
+#include "host/exchange/crypto_progress_bridge.hpp"
+#include "host/exchange/tracer_exchange_inspect_formatter.hpp"
 #include "nlohmann/json.hpp"
 
 using tracer::core::application::use_cases::ITracerCoreRuntime;
@@ -33,16 +33,16 @@ namespace fs = std::filesystem;
 namespace app_dto = tracer_core::core::dto;
 using nlohmann::json;
 
-#include "api/c_api/internal/tracer_core_c_api_crypto_parse_impl.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_crypto_parse_impl.inc"
 
 // Build user-facing TextOutput envelopes from exchange results.
-#include "api/c_api/internal/tracer_core_c_api_crypto_response_impl.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_crypto_response_impl.inc"
 
 // Construct exchange DTOs, attach progress bridge, and dispatch to runtime.
-#include "api/c_api/internal/tracer_core_c_api_crypto_dispatch_impl.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_crypto_dispatch_impl.inc"
 
 // Wrap TextOutput endpoints into stable C ABI responses.
-#include "api/c_api/internal/tracer_core_c_api_crypto_entry_impl.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_crypto_entry_impl.inc"
 
 }  // namespace
 
@@ -69,18 +69,5 @@ extern "C" TT_CORE_API auto tracer_core_runtime_crypto_decrypt_json(
                                   ParseCryptoDecryptArgs(
                                       ToRequestJsonView(request_json)));
         return BuildImportTextOutput(execution.result, execution.request);
-      });
-}
-
-extern "C" TT_CORE_API auto tracer_core_runtime_crypto_inspect_json(
-    TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
-  return ExecuteCryptoTextEndpoint(
-      "tracer_core_runtime_crypto_inspect_json failed unexpectedly.",
-      [&]() {
-        const CryptoInspectExecution execution =
-            DispatchCryptoInspect(handle,
-                                  ParseCryptoInspectArgs(
-                                      ToRequestJsonView(request_json)));
-        return BuildInspectTextOutput(execution.result);
       });
 }

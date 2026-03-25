@@ -1,4 +1,4 @@
-#include "host/android_runtime_config_bridge.hpp"
+#include "host/bootstrap/android_runtime_config_bridge.hpp"
 
 import tracer.core.infrastructure.config.internal.android_bundle_config_paths;
 import tracer.core.infrastructure.config.loader.report_config_loader;
@@ -32,7 +32,7 @@ namespace {
 namespace fs = std::filesystem;
 namespace infra_config_internal = modconfig_internal;
 
-#include "host/internal/android_runtime_factory_resolver_namespace.inc"
+#include "host/bootstrap/internal/android_runtime_factory_resolver_namespace.inc"
 
 }  // namespace
 

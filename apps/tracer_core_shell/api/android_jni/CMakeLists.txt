@@ -4,18 +4,18 @@ set(TIME_TRACKER_ANDROID_BRIDGE_SOURCES
     "jni_runtime_code_bridge.cpp"
     "native_bridge_query_calls.cpp"
     "native_bridge_registration.cpp"
-    "${PROJECT_SOURCE_DIR}/host/native_bridge_crypto_calls.cpp"
-    "${PROJECT_SOURCE_DIR}/host/crypto_progress_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/exchange/native_bridge_crypto_calls.cpp"
+    "${PROJECT_SOURCE_DIR}/host/exchange/crypto_progress_bridge.cpp"
     "${PROJECT_SOURCE_DIR}/host/native_bridge_progress.cpp"
-    "${PROJECT_SOURCE_DIR}/host/tracer_exchange_inspect_formatter.cpp"
-    "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
-    "${PROJECT_SOURCE_DIR}/host/android_runtime_factory.cpp"
-    "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_resolver.cpp"
-    "${PROJECT_SOURCE_DIR}/host/android_runtime_factory_catalog.cpp"
+    "${PROJECT_SOURCE_DIR}/host/exchange/tracer_exchange_inspect_formatter.cpp"
+    "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_config_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_factory.cpp"
+    "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_factory_resolver.cpp"
+    "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_factory_catalog.cpp"
 )
 
 set_source_files_properties(
-    "${PROJECT_SOURCE_DIR}/host/android_runtime_config_bridge.cpp"
+    "${PROJECT_SOURCE_DIR}/host/bootstrap/android_runtime_config_bridge.cpp"
     PROPERTIES
         CXX_SCAN_FOR_MODULES ON
 )

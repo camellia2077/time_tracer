@@ -1,4 +1,4 @@
-#include "api/c_api/cli_runtime_config_bridge.hpp"
+#include "api/c_api/capabilities/config/cli_runtime_config_bridge.hpp"
 
 import tracer.core.infrastructure.config.internal.cli_config_snapshot;
 

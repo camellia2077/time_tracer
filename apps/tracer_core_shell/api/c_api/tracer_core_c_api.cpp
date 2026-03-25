@@ -1,7 +1,6 @@
 // api/c_api/tracer_core_c_api.cpp
 #include "api/c_api/tracer_core_c_api.h"
 
-#include <filesystem>
 #include <memory>
 #include <mutex>
 #include <nlohmann/json.hpp>
@@ -12,16 +11,14 @@
 #include <system_error>
 #include <vector>
 
-#include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "shared/types/version.hpp"
 
 using tracer_core::core::c_api::internal::BuildCapabilitiesResponseJson;
 using tracer_core::core::c_api::internal::ClearLastError;
-using tracer_core::core::c_api::internal::ResolveCliContext;
-using tracer_core::core::c_api::internal::ResolvedCliContext;
 using tracer_core::core::c_api::internal::SetLastError;
 
-#include "api/c_api/internal/tracer_core_c_api_namespace.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_namespace.inc"
 
 
 extern "C" TT_CORE_API auto tracer_core_get_version(void) -> const char* {
@@ -155,115 +152,6 @@ extern "C" TT_CORE_API auto tracer_core_get_command_contract_json(
     return BuildFailureJsonResponse(
         "tracer_core_get_command_contract_json failed unexpectedly.", {},
         "contract.internal_error", "contract");
-  }
-}
-
-extern "C" TT_CORE_API auto tracer_core_runtime_check_environment_json(
-    const char* executable_path, int is_help_mode) -> const char* {
-  try {
-    ClearLastError();
-    const ResolvedCliContext kContext =
-        ResolveCliContext(executable_path, nullptr, nullptr, nullptr);
-    if (is_help_mode != 0) {
-      return BuildSuccessJsonResponse(json{
-          {"ok", true},
-          {"error_message", ""},
-          {"messages", json::array()},
-      });
-    }
-
-    const fs::path kBinDir = kContext.cli_config.exe_dir_path;
-    std::vector<std::string> errors;
-    std::vector<fs::path> required_files = {
-        kBinDir / kCoreLibraryName,
-        kBinDir / kReportsSharedLibraryName,
-        kBinDir / "config" / "config.toml",
-    };
-    if (TT_RUNTIME_REQUIRE_SQLITE_DLL != 0) {
-      required_files.emplace_back(kBinDir / kSqliteLibraryName);
-    }
-    if (TT_RUNTIME_REQUIRE_TOML_DLL != 0) {
-      required_files.emplace_back(kBinDir / kTomlLibraryName);
-    }
-    if (TT_RUNTIME_REQUIRE_MINGW_DLLS != 0) {
-      required_files.emplace_back(kBinDir / kLibgccRuntimeName);
-      required_files.emplace_back(kBinDir / kLibstdcppRuntimeName);
-      required_files.emplace_back(kBinDir / kLibwinpthreadRuntimeName);
-    }
-
-    for (const auto& path : required_files) {
-      if (!fs::exists(path)) {
-        errors.emplace_back("[runtime-check] missing required runtime file: " +
-                            path.string());
-      }
-    }
-
-    if (tracer_core_ping() != TT_CORE_STATUS_OK) {
-      const char* error = tracer_core_last_error();
-      errors.emplace_back(std::string("[runtime-check] core ping failed: ") +
-                          (error != nullptr ? error : "unknown"));
-    }
-
-    const char* capabilities_json = tracer_core_get_capabilities_json();
-    if (capabilities_json == nullptr || capabilities_json[0] == '\0') {
-      errors.emplace_back(
-          "[runtime-check] tracer_core_get_capabilities_json returned empty "
-          "payload.");
-    } else {
-      try {
-        const json kCapabilities = json::parse(capabilities_json);
-        const auto kFeaturesIt = kCapabilities.find("features");
-        if (kFeaturesIt == kCapabilities.end() || !kFeaturesIt->is_object()) {
-          errors.emplace_back(
-              "[runtime-check] capabilities payload missing `features` "
-              "object.");
-        }
-      } catch (const std::exception& error) {
-        errors.emplace_back(std::string("[runtime-check] invalid capabilities "
-                                        "payload: ") +
-                            error.what());
-      }
-    }
-
-    if (!errors.empty()) {
-      return BuildFailureJsonResponse(errors.front(), errors);
-    }
-    return BuildSuccessJsonResponse(
-        json{{"ok", true}, {"error_message", ""}, {"messages", json::array()}});
-  } catch (const std::exception& error) {
-    return BuildFailureJsonResponse(error.what());
-  } catch (...) {
-    return BuildFailureJsonResponse(
-        "tracer_core_runtime_check_environment_json failed unexpectedly.");
-  }
-}
-
-extern "C" TT_CORE_API auto tracer_core_runtime_resolve_cli_context_json(
-    const char* executable_path, const char* db_override,
-    const char* output_override, const char* command_name) -> const char* {
-  try {
-    ClearLastError();
-    const ResolvedCliContext kContext = ResolveCliContext(
-        executable_path, db_override, output_override, command_name);
-    return BuildSuccessJsonResponse(
-        json{{"ok", true},
-             {"error_message", ""},
-             {"paths",
-              {{"exe_dir", kContext.cli_config.exe_dir_path.string()},
-               {"db_path", kContext.db_path.string()},
-               {"output_root", kContext.output_root.string()},
-               {"export_root", kContext.export_root.string()},
-               {"runtime_output_root", kContext.runtime_output_root.string()},
-               {"converter_config_toml_path",
-                kContext.cli_config.converter_config_toml_path.string()}}},
-             {"cli_config", BuildCliConfigJson(kContext.cli_config)}});
-  } catch (const std::exception& error) {
-    return BuildFailureJsonResponse(error.what(), {}, "config.resolve_failed",
-                                    "config");
-  } catch (...) {
-    return BuildFailureJsonResponse(
-        "tracer_core_runtime_resolve_cli_context_json failed unexpectedly.", {},
-        "config.resolve_failed", "config");
   }
 }
 

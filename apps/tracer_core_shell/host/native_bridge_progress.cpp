@@ -9,8 +9,8 @@
 #include <ranges>
 #include <string>
 
-#include "host/native_bridge_crypto_helpers.hpp"
-#include "host/crypto_progress_bridge.hpp"
+#include "host/exchange/native_bridge_crypto_helpers.hpp"
+#include "host/exchange/crypto_progress_bridge.hpp"
 #include "api/android_jni/native_bridge_internal.hpp"
 
 namespace tracer_core::api::android::bridge_internal {

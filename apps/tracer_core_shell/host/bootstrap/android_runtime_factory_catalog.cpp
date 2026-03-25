@@ -1,6 +1,6 @@
-// host/android_runtime_factory_catalog.cpp
-#include "host/android_runtime_config_bridge.hpp"
-#include "host/android_runtime_factory_internal.hpp"
+// host/bootstrap/android_runtime_factory_catalog.cpp
+#include "host/bootstrap/android_runtime_config_bridge.hpp"
+#include "host/bootstrap/android_runtime_factory_internal.hpp"
 
 namespace infrastructure::bootstrap::android_runtime_detail {
 

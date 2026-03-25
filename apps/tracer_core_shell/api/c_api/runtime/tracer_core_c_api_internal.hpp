@@ -1,4 +1,4 @@
-// api/c_api/tracer_core_c_api_internal.hpp
+// api/c_api/runtime/tracer_core_c_api_internal.hpp
 #ifndef API_CORE_C_TRACER_CORE_C_API_INTERNAL_H_
 #define API_CORE_C_TRACER_CORE_C_API_INTERNAL_H_
 
@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "api/c_api/tracer_core_c_api.h"
-#include "host/android_runtime_factory.hpp"
 #include "domain/types/date_check_mode.hpp"
+#include "host/bootstrap/android_runtime_factory.hpp"
 
 enum class IngestMode;
 enum class ReportFormat;

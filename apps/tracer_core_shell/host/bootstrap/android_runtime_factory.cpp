@@ -1,4 +1,4 @@
-// host/android_runtime_factory.cpp
+// host/bootstrap/android_runtime_factory.cpp
 import tracer.core.application.use_cases.api;
 import tracer.core.application.workflow;
 import tracer.adapters.io.runtime;
@@ -12,7 +12,7 @@ import tracer.core.infrastructure.reporting.exporting;
 import tracer.core.infrastructure.reporting.querying;
 import tracer.core.infrastructure.platform.android.clock;
 
-#include "host/android_runtime_factory.hpp"
+#include "host/bootstrap/android_runtime_factory.hpp"
 
 #include <filesystem>
 #include <memory>
@@ -22,7 +22,7 @@ import tracer.core.infrastructure.platform.android.clock;
 #include <unordered_map>
 #include <utility>
 
-#include "host/android_runtime_factory_internal.hpp"
+#include "host/bootstrap/android_runtime_factory_internal.hpp"
 #include "application/compat/reporting/i_report_handler.hpp"
 #include "application/ports/reporting/i_report_formatter_registry.hpp"
 #include "application/runtime_bridge/logger.hpp"

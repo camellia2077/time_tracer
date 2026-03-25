@@ -1,4 +1,4 @@
-// host/android_runtime_factory_internal.hpp
+// host/bootstrap/android_runtime_factory_internal.hpp
 #ifndef API_ANDROID_ANDROID_RUNTIME_FACTORY_INTERNAL_H_
 #define API_ANDROID_ANDROID_RUNTIME_FACTORY_INTERNAL_H_
 

@@ -6,13 +6,13 @@
 #include <string_view>
 
 #include "api/android_jni/native_bridge_internal.hpp"
-#include "api/c_api/c_api_parse_bridge.hpp"
-#include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "api/c_api/runtime/c_api_parse_bridge.hpp"
+#include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/exchange_requests.hpp"
 #include "application/dto/exchange_responses.hpp"
 #include "application/aggregate_runtime/i_tracer_core_runtime.hpp"
-#include "host/native_bridge_crypto_helpers.hpp"
-#include "host/tracer_exchange_inspect_formatter.hpp"
+#include "host/exchange/native_bridge_crypto_helpers.hpp"
+#include "host/exchange/tracer_exchange_inspect_formatter.hpp"
 
 namespace tracer_core::api::android::bridge_internal {
 
@@ -24,16 +24,16 @@ using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 namespace {
 
-#include "host/internal/native_bridge_crypto_calls_parse_impl.inc"
+#include "host/exchange/internal/native_bridge_crypto_calls_parse_impl.inc"
 
 // JSON content and top-level bridge responses.
-#include "host/internal/native_bridge_crypto_calls_response_impl.inc"
+#include "host/exchange/internal/native_bridge_crypto_calls_response_impl.inc"
 
 // Tracer exchange DTO construction plus runtime-locked dispatch.
-#include "host/internal/native_bridge_crypto_calls_exchange_dispatch_impl.inc"
+#include "host/exchange/internal/native_bridge_crypto_calls_exchange_dispatch_impl.inc"
 
 // Direct file encrypt/decrypt execution helpers.
-#include "host/internal/native_bridge_crypto_calls_file_ops_impl.inc"
+#include "host/exchange/internal/native_bridge_crypto_calls_file_ops_impl.inc"
 
 }  // namespace
 

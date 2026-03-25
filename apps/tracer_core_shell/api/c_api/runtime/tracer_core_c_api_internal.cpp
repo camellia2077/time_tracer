@@ -1,7 +1,7 @@
-// api/c_api/tracer_core_c_api_internal.cpp
+// api/c_api/runtime/tracer_core_c_api_internal.cpp
 import tracer.core.application.use_cases.interface;
 
-#include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 
 #include <mutex>
 #include <stdexcept>
@@ -9,7 +9,7 @@ import tracer.core.application.use_cases.interface;
 
 #include "application/dto/query_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
-#include "api/c_api/c_api_parse_bridge.hpp"
+#include "api/c_api/runtime/c_api_parse_bridge.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
 #ifndef TT_ENABLE_PROCESSED_JSON_IO
@@ -110,7 +110,7 @@ auto ConvertTreeNode(const ProjectTreeNode& node)
 
 }  // namespace
 
-#include "api/c_api/internal/tracer_core_c_api_internal_impl.inc"
+#include "api/c_api/runtime/internal/tracer_core_c_api_internal_impl.inc"
 
 }  // namespace tracer_core::core::c_api::internal
 

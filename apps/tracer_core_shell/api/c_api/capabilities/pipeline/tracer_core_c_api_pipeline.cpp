@@ -1,10 +1,10 @@
-// api/c_api/tracer_core_c_api_workflow.cpp
+// api/c_api/capabilities/pipeline/tracer_core_c_api_pipeline.cpp
 import tracer.core.application.use_cases.interface;
 
 #include <exception>
 
 #include "api/c_api/tracer_core_c_api.h"
-#include "api/c_api/tracer_core_c_api_internal.hpp"
+#include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/pipeline_requests.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
