@@ -4,6 +4,7 @@
 
 #include "infra/sqlite_fwd.hpp"
 
+#include <cstdint>
 #include <map>
 #include <string>
 
@@ -41,7 +42,7 @@ class BatchMonthDataFetcher {
 
   void FetchProjectStats(
       std::map<std::string, MonthlyReportData>& all_months_data,
-      std::map<std::string, std::map<long long, long long>>& project_agg,
+      std::map<std::string, std::map<std::int64_t, std::int64_t>>& project_agg,
       std::map<std::string, int>& status_days,
       std::map<std::string, int>& exercise_days,
       std::map<std::string, int>& cardio_days,

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <utility>
 #include <vector>
@@ -11,7 +12,7 @@ namespace tracer::core::infrastructure::query::data::internal {
 
 inline auto BuildProjectTreeFromRecords(
     reporting::ProjectTree& tree,
-    const std::vector<std::pair<std::string, long long>>& records) -> void {
+    const std::vector<std::pair<std::string, std::int64_t>>& records) -> void {
   using tracer::core::shared::string_utils::SplitString;
 
   for (const auto& [project_path, duration] : records) {

@@ -2,6 +2,7 @@
 #include "infra/reporting/data/queriers/yearly/yearly_querier.hpp"
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <format>
 #include <map>
 #include <set>
@@ -91,7 +92,7 @@ auto BatchYearDataFetcher::FetchAllData()
     throw std::runtime_error("Failed to prepare statement for yearly stats.");
   }
 
-  std::map<std::string, std::map<long long, long long>> project_agg;
+  std::map<std::string, std::map<std::int64_t, std::int64_t>> project_agg;
   std::map<std::string, std::set<std::string>> distinct_dates;
   std::map<std::string, std::set<std::string>> status_dates;
   std::map<std::string, std::set<std::string>> exercise_dates;
@@ -112,8 +113,8 @@ auto BatchYearDataFetcher::FetchAllData()
       continue;
     }
 
-    long long project_id = sqlite3_column_int64(stmt, 2);
-    long long duration = sqlite3_column_int64(stmt, 3);
+    std::int64_t project_id = sqlite3_column_int64(stmt, 2);
+    std::int64_t duration = sqlite3_column_int64(stmt, 3);
 
     YearlyReportData& data = results[year_str];
     if (data.range_label.empty()) {

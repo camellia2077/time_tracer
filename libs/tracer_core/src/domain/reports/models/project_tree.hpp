@@ -2,13 +2,14 @@
 #ifndef DOMAIN_REPORTS_MODELS_PROJECT_TREE_H_
 #define DOMAIN_REPORTS_MODELS_PROJECT_TREE_H_
 
+#include <cstdint>
 #include <string>
 #include <unordered_map>
 
 namespace reporting {
 
 struct ProjectNode {
-  long long duration = 0;
+  std::int64_t duration = 0;
   // 使用 unordered_map 提升构建速度
   // 在生成报告时（如 ProjectTreeFormatter），
   // 程序显式地按 duration（时长）进行了重新排序。

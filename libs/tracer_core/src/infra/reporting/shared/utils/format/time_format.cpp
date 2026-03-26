@@ -2,12 +2,13 @@
 #include "infra/reporting/shared/utils/format/time_format.hpp"
 
 #include <chrono>
+#include <cstdint>
 #include <ctime>
 #include <string>
 
 namespace {
-constexpr long long kSecondsInHour = 3600;
-constexpr long long kSecondsInMinute = 60;
+constexpr std::int64_t kSecondsInHour = 3600;
+constexpr std::int64_t kSecondsInMinute = 60;
 constexpr int kDateStringLength = 10;
 constexpr std::size_t kDurationBufferSize = 32U;
 constexpr int kMonthOffset = 5;
@@ -19,9 +20,9 @@ constexpr int kMonthDayWidth = 2;
 
 namespace {
 
-auto BuildDurationText(long long total_seconds) -> std::string {
-  long long hours = total_seconds / kSecondsInHour;
-  long long minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
+auto BuildDurationText(std::int64_t total_seconds) -> std::string {
+  std::int64_t hours = total_seconds / kSecondsInHour;
+  std::int64_t minutes = (total_seconds % kSecondsInHour) / kSecondsInMinute;
 
   std::string output;
   output.reserve(kDurationBufferSize);
@@ -54,7 +55,7 @@ auto FormatDateTm(const std::tm& time_info) -> std::string {
 
 }  // namespace
 
-auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
+auto TimeFormatDuration(std::int64_t total_seconds, int avg_days) -> std::string {
   if (total_seconds == 0) {
     if (avg_days > 1) {
       return "0h 0m (average: 0h 0m/day)";
@@ -62,7 +63,7 @@ auto TimeFormatDuration(long long total_seconds, int avg_days) -> std::string {
     return "0h 0m";
   }
 
-  long long seconds_per_day =
+  std::int64_t seconds_per_day =
       (avg_days > 1) ? (total_seconds / avg_days) : total_seconds;
 
   std::string main_duration_str = BuildDurationText(total_seconds);

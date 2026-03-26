@@ -4,6 +4,7 @@
 
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -16,7 +17,7 @@ class IProjectInfoProvider {
   virtual void EnsureLoaded(sqlite3* sqlite_db) = 0;
 
   // 获取项目路径部分
-  [[nodiscard]] virtual auto GetPathParts(long long project_id) const
+  [[nodiscard]] virtual auto GetPathParts(std::int64_t project_id) const
       -> std::vector<std::string> = 0;
 };
 

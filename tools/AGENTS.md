@@ -1,28 +1,28 @@
 # AGENTS Guide (tools)
 
-当任务涉及 `tools/` 下的 Python 构建/验证工具链时，先阅读以下文档再改代码：
+本文件只保留 `tools/` 范围的阅读顺序与索引；详细规则统一维护在 `docs/toolchain/`。
 
-1. `docs/toolchain/clang_tidy_architecture.md`（先看文件分层与改动路由）
-2. `docs/toolchain/clang_tidy_flow.md`（再看 clang-tidy 工作流与状态文件）
-3. `docs/toolchain/python_command_map.md`
-4. `tools/toolchain/README.md`
+## 先读哪些文档
 
-## 改动路由规则
+1. 总索引：
+   - `docs/toolchain/README.md`
+2. 工具链主文档：
+   - `docs/toolchain/tools/README.md`
+3. 测试与结果契约：
+   - `docs/toolchain/test/README.md`
+4. 命令改动定位：
+   - `docs/toolchain/command_map/README.md`
+5. clang-tidy 改动：
+   - `docs/toolchain/tidy/README.md`
+6. workflow 约定：
+   - `docs/toolchain/workflows/README.md`
+7. 补充 notes：
+   - `docs/toolchain/notes/README.md`
+8. 演进 history：
+   - `docs/toolchain/history/README.md`
 
-1. 只改命令行参数定义：
-   - `tools/toolchain/cli/handlers/*.py`
-2. 只改构建/验证执行逻辑：
-   - `tools/toolchain/commands/**`
-3. 只改默认配置与 profile：
-   - `tools/toolchain/config/*.toml`
-   - `tools/toolchain/core/config.py`
-4. 只改入口转发：
-   - `tools/run.py`
-5. 只改 Windows CLI wrapper 参数通道：
-   - `apps/cli/windows/scripts/build*.sh`
+## 工作约束
 
-## 最小修改原则
-
-1. 先改最靠近问题的一层，避免跨层重复修复。
-2. 若改动影响参数协议，必须同步更新对应 README/文档。
-3. 未明确要求时，保持 `tools/` 作为唯一官方入口，不再回退旧 `scripts/` 路径。
+1. `tools/run.py` 仍是官方入口。
+2. 改动影响协议、状态文件、结果契约时，同步更新 `docs/toolchain/` 文档。
+3. 不要把 `tools/README.md`、`tools/AGENTS.md` 扩写回厚文档；新增细节优先写到 `docs/toolchain/`。

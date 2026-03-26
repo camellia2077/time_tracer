@@ -20,14 +20,14 @@ auto FileReader::ReadBytes(const std::filesystem::path& path)
                              path.string());
   }
 
-  const std::vector<std::uint8_t> bytes = {std::istreambuf_iterator<char>(file),
-                                           std::istreambuf_iterator<char>()};
+  const std::vector<std::uint8_t> kBytes = {std::istreambuf_iterator<char>(file),
+                                            std::istreambuf_iterator<char>()};
   if (file.bad()) {
     throw std::runtime_error("Error occurred while reading file: " +
                              path.string());
   }
 
-  return bytes;
+  return kBytes;
 }
 
 auto FileReader::ReadCanonicalText(const std::filesystem::path& path)

@@ -3,6 +3,7 @@
 
 #include <cctype>
 #include <chrono>
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -81,11 +82,11 @@ auto FormatDate(const sys_days& date) -> std::string {
   year_month_day ymd = date;
   std::string output;
   output.reserve(kDateStringLength);
-  AppendPaddedNumber(output, int(ymd.year()), 4);
+  AppendPaddedNumber(output, static_cast<int>(ymd.year()), 4);
   output += "-";
-  AppendPaddedNumber(output, static_cast<int>(unsigned(ymd.month())), 2);
+  AppendPaddedNumber(output, static_cast<int>(static_cast<unsigned>(ymd.month())), 2);
   output += "-";
-  AppendPaddedNumber(output, static_cast<int>(unsigned(ymd.day())), 2);
+  AppendPaddedNumber(output, static_cast<int>(static_cast<unsigned>(ymd.day())), 2);
   return output;
 }
 }  // namespace
@@ -188,7 +189,7 @@ auto IsoWeekFromDate(std::string_view date_str) -> IsoWeek {
       static_cast<int>(weekday{date}.iso_encoding());  // 1=Mon ... 7=Sun
   sys_days thursday = date + days{kThursdayOffset - iso_weekday};
   year_month_day thursday_ymd = thursday;
-  int iso_year = int(thursday_ymd.year());
+  int iso_year = static_cast<int>(thursday_ymd.year());
 
   sys_days jan4 = sys_days{year{iso_year} / January / kJan4Day};
   int jan4_weekday = static_cast<int>(weekday{jan4}.iso_encoding());
@@ -206,7 +207,7 @@ auto IsoWeekStartDate(const IsoWeek& week) -> std::string {
   sys_days first_thursday = jan4 + days{kThursdayOffset - jan4_weekday};
   sys_days first_monday = first_thursday - days{kFirstMondayOffset};
   sys_days start = first_monday +
-                   days{static_cast<long long>(kDaysInWeek) * (week.week - 1)};
+                   days{static_cast<std::int64_t>(kDaysInWeek) * (week.week - 1)};
   return FormatDate(start);
 }
 

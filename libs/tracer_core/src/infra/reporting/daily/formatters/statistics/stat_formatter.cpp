@@ -1,6 +1,7 @@
 // infra/reporting/daily/formatters/statistics/stat_formatter.cpp
 #include "infra/reporting/daily/formatters/statistics/stat_formatter.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 #include <vector>
 
@@ -25,7 +26,7 @@ void ProcessStatItems(const std::vector<StatisticItemConfig>& items,
     }
 
     // 1. 从 data.stats 中获取数据
-    long long duration = 0;
+    std::int64_t duration = 0;
     if (!item.db_column.empty() && data.stats.contains(item.db_column)) {
       duration = data.stats.at(item.db_column);
     }

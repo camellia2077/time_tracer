@@ -22,7 +22,8 @@ struct StackFrame {
   bool list_started = false;
 };
 
-auto CalculatePercentage(int64_t duration, long long total_duration) -> double {
+auto CalculatePercentage(std::int64_t duration,
+                         std::int64_t total_duration) -> double {
   if (total_duration <= 0) {
     return 0.0;
   }
@@ -43,7 +44,7 @@ ProjectTreeFormatter::ProjectTreeFormatter(
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto ProjectTreeFormatter::FormatProjectTree(const ProjectTree& tree,
-                                             long long total_duration,
+                                             std::int64_t total_duration,
                                              int avg_days) const
     -> std::string {
   std::string output;

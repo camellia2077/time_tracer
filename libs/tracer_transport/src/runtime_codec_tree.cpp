@@ -1,5 +1,6 @@
 #include "tracer/transport/runtime_codec.hpp"
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 
@@ -82,7 +83,7 @@ auto ParseTreeNode(const json& node_json) -> ProjectTreeNodePayload {
       throw std::invalid_argument(
           "field `duration_seconds` must be an integer.");
     }
-    out.duration_seconds = kDurationSecondsIt->get<long long>();
+    out.duration_seconds = kDurationSecondsIt->get<std::int64_t>();
   }
 
   const auto kChildrenIt = node_json.find("children");

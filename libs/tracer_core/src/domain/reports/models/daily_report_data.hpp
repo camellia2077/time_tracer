@@ -2,6 +2,7 @@
 #ifndef DOMAIN_REPORTS_MODELS_DAILY_REPORT_DATA_H_
 #define DOMAIN_REPORTS_MODELS_DAILY_REPORT_DATA_H_
 
+#include <cstdint>
 #include <map>
 #include <optional>
 #include <string>
@@ -13,7 +14,7 @@ struct TimeRecord {
   std::string start_time;
   std::string end_time;
   std::string project_path;
-  long long duration_seconds;
+  std::int64_t duration_seconds;
   std::optional<std::string> activityRemark;
 };
 
@@ -28,11 +29,11 @@ struct DayMetadata {
 struct DailyReportData {
   std::string date;
   DayMetadata metadata;
-  long long total_duration = 0;
+  std::int64_t total_duration = 0;
 
-  std::vector<std::pair<long long, long long>> project_stats;
+  std::vector<std::pair<std::int64_t, std::int64_t>> project_stats;
   std::vector<TimeRecord> detailed_records;
-  std::map<std::string, long long> stats;
+  std::map<std::string, std::int64_t> stats;
   reporting::ProjectTree project_tree;
 };
 

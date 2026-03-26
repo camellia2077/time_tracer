@@ -4,6 +4,7 @@
 
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -86,8 +87,8 @@ class BaseQuerier {
     if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
       BindSqlParameters(stmt);
       while (sqlite3_step(stmt) == SQLITE_ROW) {
-        long long project_id = sqlite3_column_int64(stmt, 0);
-        long long total_duration = sqlite3_column_int64(stmt, 1);
+        std::int64_t project_id = sqlite3_column_int64(stmt, 0);
+        std::int64_t total_duration = sqlite3_column_int64(stmt, 1);
 
         data.project_stats.push_back({project_id, total_duration});
 

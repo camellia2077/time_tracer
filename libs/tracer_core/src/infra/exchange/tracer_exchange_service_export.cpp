@@ -121,8 +121,8 @@ auto BuildManifestEntry(const TracerExchangeManifest& manifest)
     -> TracerExchangePackageEntry {
   TracerExchangePackageEntry entry{};
   entry.relative_path = std::string(exchange_pkg::kManifestPath);
-  const std::string text = BuildManifestText(manifest);
-  entry.data = CanonicalizePackageTextBytes(text, exchange_pkg::kManifestPath);
+  const std::string kText = BuildManifestText(manifest);
+  entry.data = CanonicalizePackageTextBytes(kText, exchange_pkg::kManifestPath);
   entry.entry_flags = exchange_pkg::kStandardEntryFlags;
   return entry;
 }
@@ -132,11 +132,11 @@ auto BuildFileEntry(std::string_view relative_path, const fs::path& source_path)
   EnsureRegularFileExists(source_path, "Tracer exchange source file");
   TracerExchangePackageEntry entry{};
   entry.relative_path = std::string(relative_path);
-  const auto source_bytes = ReadFileBytes(source_path);
+  const auto kSourceBytes = ReadFileBytes(source_path);
   entry.data =
       IsCanonicalTextPackagePath(relative_path)
-          ? CanonicalizePackageTextBytes(source_bytes, source_path.string())
-          : source_bytes;
+          ? CanonicalizePackageTextBytes(kSourceBytes, source_path.string())
+          : kSourceBytes;
   entry.entry_flags = exchange_pkg::kStandardEntryFlags;
   return entry;
 }
@@ -162,42 +162,42 @@ auto TracerExchangeService::RunExport(
         "producer_platform/producer_app must not be empty.");
   }
 
-  const fs::path input_path = fs::absolute(request.input_text_root_path);
-  if (!fs::exists(input_path) || !fs::is_directory(input_path)) {
+  const fs::path kInputPath = fs::absolute(request.input_text_root_path);
+  if (!fs::exists(kInputPath) || !fs::is_directory(kInputPath)) {
     throw std::invalid_argument(
         "Encrypt input path must be an existing directory: " +
-        input_path.string());
+        kInputPath.string());
   }
 
-  const std::vector<InputPayloadFile> payload_files =
-      CollectInputPayloadFiles(input_path);
-  if (payload_files.empty()) {
+  const std::vector<InputPayloadFile> kPayloadFiles =
+      CollectInputPayloadFiles(kInputPath);
+  if (kPayloadFiles.empty()) {
     throw std::invalid_argument(
         "Encrypt input directory must contain at least one .txt file: " +
-        input_path.string());
+        kInputPath.string());
   }
 
-  const ActiveConverterConfigPaths config_paths =
+  const ActiveConverterConfigPaths kConfigPaths =
       ResolveActiveConverterConfigPaths(
           request.active_converter_main_config_path);
-  EnsureActiveConverterConfigExists(config_paths);
+  EnsureActiveConverterConfigExists(kConfigPaths);
   ValidateInputPayloadsForExport(workflow_handler_, request.date_check_mode,
-                                 payload_files);
+                                 kPayloadFiles);
 
-  const fs::path resolved_output = ResolveEncryptOutputPath(
-      input_path, fs::absolute(request.requested_output_path));
-  EnsureParentDirectory(resolved_output);
+  const fs::path kResolvedOutput = ResolveEncryptOutputPath(
+      kInputPath, fs::absolute(request.requested_output_path));
+  EnsureParentDirectory(kResolvedOutput);
 
-  const fs::path staging_dir =
-      BuildScopedStagingDir(resolved_output.parent_path(), "encrypt",
-                            resolved_output.stem().string());
-  const fs::path package_path = staging_dir / "exchange.ttpkg";
+  const fs::path kStagingDir =
+      BuildScopedStagingDir(kResolvedOutput.parent_path(), "encrypt",
+                            kResolvedOutput.stem().string());
+  const fs::path kPackagePath = kStagingDir / "exchange.ttpkg";
 
   std::error_code io_error;
-  fs::create_directories(staging_dir, io_error);
+  fs::create_directories(kStagingDir, io_error);
   if (io_error) {
     throw std::runtime_error("Failed to create tracer exchange staging dir: " +
-                             staging_dir.string() + " | " + io_error.message());
+                             kStagingDir.string() + " | " + io_error.message());
   }
 
   try {
@@ -205,51 +205,51 @@ auto TracerExchangeService::RunExport(
     manifest.producer_platform = request.producer_platform;
     manifest.producer_app = request.producer_app;
     manifest.created_at_utc = CurrentUtcTimestampRfc3339();
-    manifest.source_root_name = input_path.filename().string();
+    manifest.source_root_name = kInputPath.filename().string();
     if (manifest.source_root_name.empty()) {
       manifest.source_root_name = "text_root";
     }
-    manifest.payload_files.reserve(payload_files.size());
-    for (const auto& payload_file : payload_files) {
+    manifest.payload_files.reserve(kPayloadFiles.size());
+    for (const auto& payload_file : kPayloadFiles) {
       manifest.payload_files.push_back(payload_file.relative_package_path);
     }
 
     std::vector<TracerExchangePackageEntry> entries;
     entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
-                    payload_files.size());
+                    kPayloadFiles.size());
     entries.push_back(BuildManifestEntry(manifest));
     entries.push_back(BuildFileEntry(exchange_pkg::kConverterMainPath,
-                                     config_paths.main_config_path));
+                                     kConfigPaths.main_config_path));
     entries.push_back(BuildFileEntry(exchange_pkg::kAliasMappingPath,
-                                     config_paths.alias_mapping_path));
+                                     kConfigPaths.alias_mapping_path));
     entries.push_back(BuildFileEntry(exchange_pkg::kDurationRulesPath,
-                                     config_paths.duration_rules_path));
-    for (const auto& payload_file : payload_files) {
+                                     kConfigPaths.duration_rules_path));
+    for (const auto& payload_file : kPayloadFiles) {
       entries.push_back(BuildFileEntry(payload_file.relative_package_path,
                                        payload_file.source_path));
     }
 
-    const std::vector<std::uint8_t> package_bytes = EncodePackageBytes(entries);
-    WriteFileBytes(package_path, package_bytes);
+    const std::vector<std::uint8_t> kPackageBytes = EncodePackageBytes(entries);
+    WriteFileBytes(kPackagePath, kPackageBytes);
 
     EnsureCryptoResultOk(file_crypto::EncryptFile(
-                             package_path, resolved_output, request.passphrase,
+                             kPackagePath, kResolvedOutput, request.passphrase,
                              BuildCryptoOptions(request.security_level,
                                                 request.progress_observer)),
-                         "Encrypt", input_path);
+                         "Encrypt", kInputPath);
   } catch (...) {
-    RemoveDirectoryBestEffort(staging_dir);
+    RemoveDirectoryBestEffort(kStagingDir);
     throw;
   }
 
-  RemoveDirectoryBestEffort(staging_dir);
+  RemoveDirectoryBestEffort(kStagingDir);
   return {
       .ok = true,
-      .resolved_output_tracer_path = resolved_output,
-      .source_root_name = input_path.filename().empty()
+      .resolved_output_tracer_path = kResolvedOutput,
+      .source_root_name = kInputPath.filename().empty()
                               ? std::string("text_root")
-                              : input_path.filename().string(),
-      .payload_file_count = static_cast<std::uint64_t>(payload_files.size()),
+                              : kInputPath.filename().string(),
+      .payload_file_count = static_cast<std::uint64_t>(kPayloadFiles.size()),
       .converter_file_count = 3,
       .manifest_included = true,
       .error_message = "",

@@ -2,6 +2,7 @@
 #include "infra/reporting/data/queriers/daily/daily_querier.hpp"
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <format>
 #include <stdexcept>
 
@@ -27,8 +28,9 @@ auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
 }
 
 auto BuildDailyStats(
-    const std::vector<std::pair<long long, long long>>& project_stats,
-    const IProjectInfoProvider& provider) -> std::map<std::string, long long> {
+    const std::vector<std::pair<std::int64_t, std::int64_t>>& project_stats,
+    const IProjectInfoProvider& provider)
+    -> std::map<std::string, std::int64_t> {
   DerivedTimeStatsAggregator aggregator;
   for (const auto& [project_id, duration_seconds] : project_stats) {
     aggregator.AddPathDuration(JoinPathParts(provider.GetPathParts(project_id)),
@@ -38,7 +40,7 @@ auto BuildDailyStats(
 }
 
 auto BuildDailyFlags(
-    const std::vector<std::pair<long long, long long>>& project_stats,
+    const std::vector<std::pair<std::int64_t, std::int64_t>>& project_stats,
     const IProjectInfoProvider& provider)
     -> std::pair<std::string, std::string> {
   DerivedTimeStatsAggregator aggregator;
@@ -134,7 +136,7 @@ void DayQuerier::FetchDetailedRecords(DailyReportData& data,
           reinterpret_cast<const char*>(sqlite3_column_text(stmt, 0));
       record.end_time =
           reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
-      const long long kProjectId = sqlite3_column_int64(stmt, 2);
+      const std::int64_t kProjectId = sqlite3_column_int64(stmt, 2);
       record.project_path = JoinPathParts(provider.GetPathParts(kProjectId));
       record.duration_seconds = sqlite3_column_int64(stmt, 3);
       const unsigned char* remark_text = sqlite3_column_text(stmt, 4);
@@ -226,7 +228,7 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
     throw std::runtime_error("Failed to prepare statement for time records.");
   }
 
-  std::map<std::string, std::map<long long, long long>> temp_aggregation;
+  std::map<std::string, std::map<std::int64_t, std::int64_t>> temp_aggregation;
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
     const char* date_cstr =
@@ -254,7 +256,7 @@ void BatchDayDataFetcher::FetchTimeRecords(BatchDataResult& result) {
         reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColStart));
     record.end_time =
         reinterpret_cast<const char*>(sqlite3_column_text(stmt, kColEnd));
-    long long project_id = sqlite3_column_int64(stmt, kColProjectId);
+    std::int64_t project_id = sqlite3_column_int64(stmt, kColProjectId);
     record.duration_seconds = sqlite3_column_int64(stmt, kColDuration);
     const unsigned char* remark_ptr =
         sqlite3_column_text(stmt, kColActivityRemark);

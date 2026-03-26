@@ -6,7 +6,12 @@ import tracer.core.domain.types.app_options;
 
 namespace tracer::core::application::use_cases {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::ConvertRequest;
+using tracer_core::core::dto::OperationAck;
+using tracer_core::core::dto::IngestRequest;
+using tracer_core::core::dto::ImportRequest;
+using tracer_core::core::dto::ValidateStructureRequest;
+using tracer_core::core::dto::ValidateLogicRequest;
 using tracer::core::domain::types::AppOptions;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 

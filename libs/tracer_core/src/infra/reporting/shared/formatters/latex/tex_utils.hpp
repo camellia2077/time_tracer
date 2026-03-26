@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
 #define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_LATEX_TEX_UTILS_H_
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -56,7 +57,8 @@ namespace TexUtils {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 [[nodiscard]] REPORTS_SHARED_API auto FormatProjectTree(
-    const reporting::ProjectTree& tree, long long total_duration, int avg_days,
+    const reporting::ProjectTree& tree, std::int64_t total_duration,
+    int avg_days,
     int category_title_font_size, double list_top_sep_pt,
     double list_item_sep_ex) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)

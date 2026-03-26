@@ -1,6 +1,7 @@
 // infrastructure/platform/windows/windows_platform_clock.cpp
 #include "infra/platform/windows/windows_platform_clock.hpp"
 
+#include <cstdint>
 #include <ctime>
 #include <string>
 
@@ -73,7 +74,7 @@ auto WindowsPlatformClock::LocalUtcOffsetMinutes() const -> int {
   }
 
   const auto kOffsetSeconds =
-      static_cast<long long>(kLocalAsEpoch - kUtcAsLocalEpoch);
+      static_cast<std::int64_t>(kLocalAsEpoch - kUtcAsLocalEpoch);
   return static_cast<int>(kOffsetSeconds / kSecondsPerMinute);
 }
 

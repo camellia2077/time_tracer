@@ -1,6 +1,6 @@
 # Clang-Tidy 工作流与状态文件
 
-本文档补充 `docs/toolchain/clang_tidy_architecture.md`，专门描述 clang-tidy Python 工具链的执行流与落盘状态。
+本文档补充 `docs/toolchain/tidy/architecture.md`，专门描述 clang-tidy Python 工具链的执行流与落盘状态。
 
 如果你已经知道“文件大概在哪”，但还不确定“命令之间怎么串”、“失败后看哪个 JSON”，优先看这里。
 
@@ -46,8 +46,8 @@ flowchart TD
 命令：
 
 ```bash
-python tools/run.py tidy --app tracer_core_shell
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family
+python tools/run.py tidy --app tracer_core_shell --task-view toon
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
 ```
 
 执行链路：
@@ -67,7 +67,9 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 3. 执行 `cmake --build <tidy_workspace_dir> --target tidy`
 4. 将输出写入 `out/tidy/<app>/<tidy_workspace>/build.log`
 5. 将 `build.log` 拆成 `tasks/batch_*/task_*.json`
-   - 如配置 `--task-view`，再额外渲染 `task_*.log` / `task_*.toon`
+   - `task_*.json` 始终写出；`--task-view` 只控制额外渲染 `task_*.log` / `task_*.toon`
+   - 未显式指定 `--task-view` 时，复用当前队列已有视图；若无历史任务，则回落到 `toon`
+   - full refresh / rebase 会沿用当前 pending 队列最小的 `batch_NNN` / `task_NNN` 命名空间
 6. 生成 `tasks/tasks_summary.md`
 7. 写 `out/tidy/<app>/<tidy_workspace>/tidy_result.json`
 
@@ -90,7 +92,7 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 命令：
 
 ```bash
-python tools/run.py tidy-split --app tracer_core_shell
+python tools/run.py tidy-split --app tracer_core_shell --task-view toon
 ```
 
 适用场景：
@@ -172,6 +174,10 @@ python tools/run.py tidy-refresh --app tracer_core_shell --source-scope core_fam
 6. 更新 `refresh_state.json`
 7. 同步更新 `batch_state.json`
 8. 重新写 `tidy_result.json`
+
+补充：
+
+- full tidy 由 `tidy-refresh` / `tidy-flow` / `tidy-close` 间接触发时，也会沿用当前队列的 `task_view` contract；不会静默退回只写 `.log`
 
 核心状态文件：
 
@@ -316,11 +322,15 @@ python tools/run.py tidy-loop --app tracer_core_shell --tidy-build-dir build_tid
 
 ### 8.1 `tidy-task-patch` / `tidy-task-fix`：task 级安全自动化
 
+规则准入边界见：
+
+- `docs/toolchain/tidy/autofix_policy.md`
+
 命令：
 
 ```bash
-python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
-python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
+python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
+python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
 ```
 
 职责：
@@ -328,7 +338,10 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 1. 读取单个 `task_*.json`
 2. 识别可安全自动处理的模式：
    - `readability-identifier-naming` 的 rule-driven const rename
+     - 对 `task_*.toon` 这类不保留 clang-tidy rename suggestion note 的任务，也会回退到本地命名模板（例如 `canonical -> kCanonical`）
    - `readability-redundant-casting` 的 same-type cast 去除
+   - `google-runtime-int` 的实现文件内 `long long` / `unsigned long long` 定点替换，并在需要时补 `<cstdint>`
+   - `google-build-using-namespace` 的 preview-only 窄规则：仅对 `application/use_cases` 实现文件里的 `using namespace tracer_core::core::dto;` 生成 `using` 声明建议
 3. 输出 candidate patch / apply report
 4. 把 report 写到 `out/tidy/<app>/<tidy_workspace>/automation/`
 
@@ -336,6 +349,7 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 
 - `tools/toolchain/commands/tidy/task_log.py`
 - `tools/toolchain/commands/tidy/task_auto_fix.py`
+- `tools/toolchain/commands/tidy/autofix/`
 - `tools/toolchain/commands/tidy/task_fix.py`
 - `tools/toolchain/commands/tidy/task_patch.py`
 
@@ -344,7 +358,7 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 命令：
 
 ```bash
-python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011
+python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
 ```
 
 职责：
@@ -365,7 +379,7 @@ python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope cor
 命令：
 
 ```bash
-python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id 002 --task-id 011 --dry-run
+python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
 ```
 
 职责：
@@ -385,8 +399,8 @@ python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family
 命令：
 
 ```bash
-python tools/run.py tidy-flow --app tracer_core_shell --all --test-every 3
-python tools/run.py tidy-flow --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --all --test-every 3
+python tools/run.py tidy-flow --app tracer_core_shell --task-view toon --all --test-every 3
+python tools/run.py tidy-flow --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-view toon --all --test-every 3
 ```
 
 职责不是“替代 SOP”，而是“自动串一遍通用流程”。

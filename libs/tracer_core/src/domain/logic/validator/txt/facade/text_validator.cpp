@@ -17,7 +17,7 @@ struct TextValidator::PImpl {
   LineRules line_processor;
   StructureRules structural_validator;
 
-  PImpl(const ConverterConfig& config) : line_processor(config) {}
+  explicit PImpl(const ConverterConfig& config) : line_processor(config) {}
 };
 
 TextValidator::TextValidator(const ConverterConfig& config)

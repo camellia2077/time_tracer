@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_BASE_PROJECT_TREE_FORMATTER_H_
 #define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_BASE_PROJECT_TREE_FORMATTER_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -50,7 +51,7 @@ class REPORTS_SHARED_API ProjectTreeFormatter {  // [新增] 必须添加 API �
   // Public API: keep parameter order and naming for ABI compatibility.
   // NOLINTBEGIN(bugprone-easily-swappable-parameters)
   [[nodiscard]] auto FormatProjectTree(const ProjectTree& tree,
-                                       long long total_duration,
+                                       std::int64_t total_duration,
                                        int avg_days) const -> std::string;
   // NOLINTEND(bugprone-easily-swappable-parameters)
 

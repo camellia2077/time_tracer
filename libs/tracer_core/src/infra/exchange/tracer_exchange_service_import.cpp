@@ -69,6 +69,8 @@ auto TracerExchangeService::RunImport(
 
   try {
     constexpr std::size_t kPhaseCount = 10U;
+    constexpr std::size_t kRebuildDatabasePhase = 9U;
+    constexpr std::size_t kCleanupPhase = 10U;
     EmitImportTransactionProgress(
         request.progress_observer, "decrypt_package", 1U, kPhaseCount,
         input_path.filename().string(), 0U, 1U, input_path, active_text_root,
@@ -201,7 +203,8 @@ auto TracerExchangeService::RunImport(
         transaction_paths.effective_text_root, active_text_root);
 
     EmitImportTransactionProgress(
-        request.progress_observer, "rebuild_database", 9U, kPhaseCount,
+        request.progress_observer, "rebuild_database", kRebuildDatabasePhase,
+        kPhaseCount,
         transaction_paths.effective_text_root.string(), 0U, 1U, input_path,
         active_text_root, transaction_paths.effective_text_root,
         active_text_root);
@@ -209,13 +212,14 @@ auto TracerExchangeService::RunImport(
         transaction_paths.effective_text_root.string(), request.date_check_mode,
         false);
     EmitImportTransactionProgress(
-        request.progress_observer, "rebuild_database", 9U, kPhaseCount,
+        request.progress_observer, "rebuild_database", kRebuildDatabasePhase,
+        kPhaseCount,
         transaction_paths.effective_text_root.string(), 1U, 1U, input_path,
         active_text_root, transaction_paths.effective_text_root,
         active_text_root);
 
     EmitImportTransactionProgress(
-        request.progress_observer, "cleanup", 10U, kPhaseCount,
+        request.progress_observer, "cleanup", kCleanupPhase, kPhaseCount,
         transaction_paths.transaction_root.string(), 0U, 1U, input_path,
         active_text_root, transaction_paths.transaction_root,
         runtime_work_root);

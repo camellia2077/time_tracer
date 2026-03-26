@@ -1,5 +1,6 @@
 module;
 
+#include <cstdint>
 #include <sqlite3.h>
 
 #include <format>
@@ -23,7 +24,7 @@ using tracer::core::shared::string_utils::SplitString;
 namespace tracer::core::infrastructure::persistence::importer::sqlite {
 
 struct ImportProjectNode {
-  long long id = 0;
+  std::int64_t id = 0;
   std::string name;
   std::unordered_map<std::string, std::unique_ptr<ImportProjectNode>> children;
 };
@@ -48,18 +49,18 @@ auto ProjectResolver::LoadFromDb() -> void {
   }
 
   struct Row {
-    long long id;
+    std::int64_t id;
     std::string name;
-    long long parent_id;
+    std::int64_t parent_id;
   };
   std::vector<Row> all_rows;
 
   while (sqlite3_step(stmt) == SQLITE_ROW) {
-    long long project_id = sqlite3_column_int64(stmt, 0);
+    std::int64_t project_id = sqlite3_column_int64(stmt, 0);
     const unsigned char* name_ptr = sqlite3_column_text(stmt, 1);
     std::string name =
         (name_ptr != nullptr) ? reinterpret_cast<const char*>(name_ptr) : "";
-    long long parent_id = 0;
+    std::int64_t parent_id = 0;
     if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) {
       parent_id = sqlite3_column_int64(stmt, 2);
     }
@@ -67,19 +68,19 @@ auto ProjectResolver::LoadFromDb() -> void {
   }
   sqlite3_finalize(stmt);
 
-  std::unordered_map<long long, std::vector<Row>> adjacency_list;
+  std::unordered_map<std::int64_t, std::vector<Row>> adjacency_list;
   for (const auto& row : all_rows) {
     adjacency_list[row.parent_id].push_back(row);
   }
 
-  std::queue<long long> queue;
+  std::queue<std::int64_t> queue;
   queue.push(0);
 
-  std::unordered_map<long long, ImportProjectNode*> node_ptr_map;
+  std::unordered_map<std::int64_t, ImportProjectNode*> node_ptr_map;
   node_ptr_map[0] = root_.get();
 
   while (!queue.empty()) {
-    long long current_parent_id = queue.front();
+    std::int64_t current_parent_id = queue.front();
     queue.pop();
 
     ImportProjectNode* parent_node = node_ptr_map[current_parent_id];
@@ -102,11 +103,11 @@ auto ProjectResolver::LoadFromDb() -> void {
   }
 }
 
-auto ProjectResolver::EnsurePath(const std::string& full_path) -> long long {
+auto ProjectResolver::EnsurePath(const std::string& full_path) -> std::int64_t {
   std::vector<std::string> parts = SplitString(full_path, '_');
 
   ImportProjectNode* current_node = root_.get();
-  long long current_parent_id = 0;
+  std::int64_t current_parent_id = 0;
   std::string current_full_path;
   current_full_path.reserve(full_path.size());
   int current_depth = 0;
@@ -141,7 +142,7 @@ auto ProjectResolver::EnsurePath(const std::string& full_path) -> long long {
         throw std::runtime_error("Error inserting project: " + part_name);
       }
 
-      long long new_id = sqlite3_last_insert_rowid(db_);
+      std::int64_t new_id = sqlite3_last_insert_rowid(db_);
 
       auto new_node = std::make_unique<ImportProjectNode>();
       new_node->id = new_id;
@@ -165,14 +166,14 @@ auto ProjectResolver::PreloadAndResolve(
 
   for (const auto& path : project_paths) {
     if (!cache_.contains(path)) {
-      long long project_id = EnsurePath(path);
+      std::int64_t project_id = EnsurePath(path);
       cache_[path] = project_id;
     }
   }
 }
 
 auto ProjectResolver::GetId(const std::string& project_path) const
-    -> long long {
+    -> std::int64_t {
   auto cache_it = cache_.find(project_path);
   if (cache_it != cache_.end()) {
     return cache_it->second;

@@ -2,6 +2,7 @@
 #include "infra/query/data/renderers/semantic_json_renderer.hpp"
 
 #include <algorithm>
+#include <cstdint>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <string>
@@ -92,7 +93,7 @@ struct NamedNodeRef {
 }
 
 [[nodiscard]] auto ResolveNodeDurationSeconds(const ProjectTreeNode& node)
-    -> long long {
+    -> std::int64_t {
   return node.duration_seconds.value_or(0LL);
 }
 

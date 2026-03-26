@@ -1,6 +1,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_UTILS_TIME_DERIVED_STATS_H_
 #define INFRASTRUCTURE_REPORTS_DATA_UTILS_TIME_DERIVED_STATS_H_
 
+#include <cstdint>
 #include <map>
 #include <string>
 #include <string_view>
@@ -76,7 +77,7 @@ namespace detail {
 class DerivedTimeStatsAggregator {
  public:
   auto AddPathDuration(std::string_view project_path,
-                       long long duration_seconds) -> void {
+                       std::int64_t duration_seconds) -> void {
     if (project_path.empty() || duration_seconds <= 0) {
       return;
     }
@@ -136,7 +137,7 @@ class DerivedTimeStatsAggregator {
   }
 
   [[nodiscard]] auto BuildReportStatsMap() const
-      -> std::map<std::string, long long> {
+      -> std::map<std::string, std::int64_t> {
     const ActivityStats result = BuildActivityStats();
     return {
         {std::string(schema::day::stats::kSleepNightTime),

@@ -1,6 +1,7 @@
 // infra/query/data/data_query_repository_internal.hpp
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -93,6 +94,6 @@ auto AppendOptionalLimitClause(std::string& sql,
 [[nodiscard]] auto ExecuteProjectTreeRecords(
     sqlite3* db_conn, const std::string& sql,
     const std::vector<detail::SqlParam>& params)
-    -> std::vector<std::pair<std::string, long long>>;
+    -> std::vector<std::pair<std::string, std::int64_t>>;
 
 }  // namespace tracer_core::infrastructure::query::data::internal

@@ -44,7 +44,7 @@ auto ConversionStage::Execute(PipelineSession& session) -> bool {
 
   for (size_t index = 0; index < inputs.size(); ++index) {
     workers.emplace_back([&session, &results, &thread_errors, index,
-                          input = inputs[index]]() {
+                          input = inputs[index]]() -> void {
       try {
         LogProcessor processor(session.state.converter_config);
         results[index] =

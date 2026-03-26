@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <ranges>
 #include <vector>
 
@@ -25,7 +26,7 @@ auto ComputeDayDurationStats(const std::vector<DayDurationRow>& rows)
     return stats;
   }
 
-  std::vector<long long> durations;
+  std::vector<std::int64_t> durations;
   durations.reserve(rows.size());
   for (const auto& row : rows) {
     durations.push_back(row.total_seconds);

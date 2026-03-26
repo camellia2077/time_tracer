@@ -11,6 +11,69 @@ python tools/run.py build ...
 python tools/run.py verify ...
 ```
 
+## Windows Prerequisites
+
+以下内容是在 Windows 宿主机上执行构建时的最小必需项，尤其适用于
+`tracer_windows_rust_cli` 的 Rust + MSVC 链路。
+
+### 必须安装
+
+1. Visual Studio Build Tools 或 Visual Studio Community/Professional
+要求：安装时包含 `使用 C++ 的桌面开发` 工作负载。
+
+2. `适用于 x64/x86 的 MSVC 生成工具(最新版)`
+作用：提供 `cl.exe`、正确的 `link.exe` 与对应的 MSVC 链接工具链。
+
+3. `MSVC v143 - VS 2022 C++ x64/x86 生成工具`
+作用：为当前仓库的 Windows Rust/MSVC 构建提供稳定、明确的 v143 工具集。
+
+4. `Windows 11 SDK`
+可选版本：`10.0.26100.7705` 或 `10.0.22621.0`，安装任意一个即可。
+作用：提供 `kernel32.lib`、`ntdll.lib`、`ws2_32.lib`、`dbghelp.lib` 等
+Windows import libraries。
+
+5. `用于 Windows 的 C++ CMake 工具`
+作用：提供 CMake/Windows C++ 工作流所需的 VS 侧集成。虽然 Rust CLI 直接
+走 cargo，但本仓库的 Windows 构建经常与 core/runtime CMake 构建配套使用，
+建议作为标准前置条件安装。
+
+### 为什么这些是必须的
+
+1. `tracer_windows_rust_cli` 当前使用 Rust `x86_64-pc-windows-msvc` 目标。
+这条链路不是纯 GNU/MinGW 路线，最终链接依赖 MSVC linker 与 Windows SDK。
+
+2. 如果缺少上述组件，常见失败特征包括：
+   - `where cl` 找不到 `cl.exe`
+   - `cargo build` 阶段提示找不到 `kernel32.lib`
+   - Rust 链接阶段错误使用了非 MSVC 的 `link.exe`
+
+### 环境检查
+
+安装完成后，建议在 `Developer PowerShell for Visual Studio` 或
+`x64 Native Tools Command Prompt for VS 2022` 中运行：
+
+```powershell
+where cl
+where link
+```
+
+预期：
+
+1. `cl.exe` 应指向 Visual Studio / MSVC 工具目录。
+2. `link.exe` 应指向 Visual Studio / MSVC 工具目录。
+3. 不应命中第三方路径（例如 `C:\masm32\bin\link.exe`）。
+
+### 已知风险
+
+1. 若系统 `PATH` 中存在 `C:\masm32\bin\link.exe` 等第三方 linker，并且排在
+MSVC 之前，Rust `cargo` 构建可能会错误调用它，导致：
+   - `LNK4044 unrecognized option`
+   - `symbols.o : fatal error LNK1136`
+   - `extra operand ...rcgu.o`
+
+2. 遇到上述情况时，优先使用 Visual Studio 的开发者命令行重新执行构建，
+或清理会劫持 `link.exe` 的 PATH 项。
+
 ## Core Switches
 
 以下开关主要作用于 `apps/tracer_core_shell`（`tracer_windows_cli` 通过 add_subdirectory 复用）：

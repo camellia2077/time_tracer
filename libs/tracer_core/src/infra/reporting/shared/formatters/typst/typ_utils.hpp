@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
 #define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_TYPST_TYP_UTILS_H_
 
+#include <cstdint>
 #include <string>
 
 #include "domain/reports/models/project_tree.hpp"
@@ -45,7 +46,8 @@ namespace TypUtils {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API auto FormatProjectTree(
-    const reporting::ProjectTree& tree, long long total_duration, int avg_days,
+    const reporting::ProjectTree& tree, std::int64_t total_duration,
+    int avg_days,
     const std::string& category_title_font, int category_title_font_size)
     -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)

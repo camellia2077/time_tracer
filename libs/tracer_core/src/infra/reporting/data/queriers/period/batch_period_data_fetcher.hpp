@@ -4,6 +4,7 @@
 
 #include "infra/sqlite_fwd.hpp"
 
+#include <cstdint>
 #include <map>
 #include <vector>
 
@@ -38,8 +39,8 @@ class BatchPeriodDataFetcher {
   // 内部结构，用于存储原始查询结果
   struct RawRecord {
     std::string date;
-    long long project_id;
-    long long duration;
+    std::int64_t project_id;
+    std::int64_t duration;
   };
 };
 

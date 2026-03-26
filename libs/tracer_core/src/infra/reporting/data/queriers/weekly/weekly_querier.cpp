@@ -2,6 +2,7 @@
 #include "infra/reporting/data/queriers/weekly/weekly_querier.hpp"
 #include <sqlite3.h>
 
+#include <cstdint>
 #include <format>
 #include <map>
 #include <optional>
@@ -157,7 +158,7 @@ auto BatchWeekDataFetcher::FetchAllData()
     throw std::runtime_error("Failed to prepare statement for weekly stats.");
   }
 
-  std::map<std::string, std::map<long long, long long>> project_agg;
+  std::map<std::string, std::map<std::int64_t, std::int64_t>> project_agg;
   std::map<std::string, std::set<std::string>> distinct_dates;
   std::map<std::string, std::set<std::string>> status_dates;
   std::map<std::string, std::set<std::string>> exercise_dates;
@@ -170,8 +171,8 @@ auto BatchWeekDataFetcher::FetchAllData()
       continue;
     }
 
-    long long project_id = sqlite3_column_int64(stmt, kProjectIdColumn);
-    long long duration = sqlite3_column_int64(stmt, kDurationColumn);
+    std::int64_t project_id = sqlite3_column_int64(stmt, kProjectIdColumn);
+    std::int64_t duration = sqlite3_column_int64(stmt, kDurationColumn);
 
     WeeklyReportData& data = results[week_row->week_label];
     if (data.range_label.empty()) {

@@ -1,6 +1,7 @@
 // infra/query/data/data_query_repository.cpp
 #include "infra/query/data/data_query_repository.hpp"
 
+#include <cstdint>
 #include <sqlite3.h>
 
 #include <optional>
@@ -127,7 +128,7 @@ auto QueryProjectTree(sqlite3* db_conn, const QueryFilters& filters)
   std::vector<query_data_detail::SqlParam> params;
   const std::string kSql =
       query_data_internal::BuildProjectTreeSql(db_conn, filters, params);
-  std::vector<std::pair<std::string, long long>> records =
+  std::vector<std::pair<std::string, std::int64_t>> records =
       query_data_internal::ExecuteProjectTreeRecords(db_conn, kSql, params);
 
   reporting::ProjectTree tree;

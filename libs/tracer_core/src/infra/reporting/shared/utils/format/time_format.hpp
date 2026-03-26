@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
 #define INFRASTRUCTURE_REPORTS_SHARED_UTILS_FORMAT_TIME_FORMAT_H_
 
+#include <cstdint>
 #include <string>
 
 #include "infra/reporting/shared/api/shared_api.hpp"
@@ -12,7 +13,7 @@
  * @param avg_days 用于计算平均值的天数，默认为1。
  * @return 格式化后的时长字符串。
  */
-REPORTS_SHARED_API auto TimeFormatDuration(long long total_seconds,
+REPORTS_SHARED_API auto TimeFormatDuration(std::int64_t total_seconds,
                                            int avg_days = 1) -> std::string;
 
 /**

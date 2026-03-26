@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
 #define INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -11,12 +12,12 @@
 // [修改] 移除 REPORTS_DATA_API 宏，直接声明函数
 void BuildProjectTreeFromRecords(
     reporting::ProjectTree& tree,
-    const std::vector<std::pair<std::string, long long>>& records);
+    const std::vector<std::pair<std::string, std::int64_t>>& records);
 
 // [修改] 移除 REPORTS_DATA_API 宏，直接声明函数
 void BuildProjectTreeFromIds(
     reporting::ProjectTree& tree,
-    const std::vector<std::pair<long long, long long>>& id_records,
+    const std::vector<std::pair<std::int64_t, std::int64_t>>& id_records,
     const IProjectInfoProvider& provider);
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_UTILS_PROJECT_TREE_BUILDER_H_

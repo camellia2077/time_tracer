@@ -2,7 +2,9 @@
 
 namespace tracer::core::application::use_cases::failure {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::OperationAck;
+using tracer_core::core::dto::TextOutput;
+using tracer_core::core::dto::TreeQueryResponse;
 
 auto BuildErrorMessage(std::string_view operation, std::string_view details)
     -> std::string {

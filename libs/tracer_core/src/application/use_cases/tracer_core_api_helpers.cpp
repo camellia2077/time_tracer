@@ -7,7 +7,12 @@
 
 namespace tracer::core::application::use_cases::helpers {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::OperationAck;
+using tracer_core::core::dto::TextOutput;
+using tracer_core::core::dto::TreeQueryResponse;
+using tracer_core::core::dto::StructuredReportOutput;
+using tracer_core::core::dto::StructuredReportKind;
+using tracer_core::core::dto::StructuredPeriodBatchOutput;
 
 auto BuildErrorMessage(std::string_view operation, std::string_view details)
     -> std::string {

@@ -1,6 +1,7 @@
 // infra/reporting/shared/formatters/markdown/markdown_formatter.cpp
 #include "infra/reporting/shared/formatters/markdown/markdown_formatter.hpp"
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -12,9 +13,9 @@ namespace {
 constexpr std::size_t kDecimalOutputReserve = 24U;
 
 auto FormatOneDecimal(double value) -> std::string {
-  const auto kScaled = static_cast<long long>(
+  const auto kScaled = static_cast<std::int64_t>(
       (value >= 0.0) ? ((value * 10.0) + 0.5) : ((value * 10.0) - 0.5));
-  long long abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
+  std::int64_t abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
   const auto kWholePart = abs_scaled / 10;
   const auto kFractionalPart = abs_scaled % 10;
 
@@ -75,7 +76,8 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto FormatProjectTree(const reporting::ProjectTree& tree,
-                       long long total_duration, int avg_days) -> std::string {
+                       std::int64_t total_duration,
+                       int avg_days) -> std::string {
   auto strategy = std::make_unique<MarkdownFormattingStrategy>();
   reporting::ProjectTreeFormatter formatter(std::move(strategy));
   return formatter.FormatProjectTree(tree, total_duration, avg_days);

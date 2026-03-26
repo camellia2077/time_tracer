@@ -50,7 +50,7 @@
 
 测试框架采用“二层模型”覆盖核心算法与交付产物。
 
-### 二层测试模型 (test/README.md)
+### 二层测试模型 (docs/toolchain/test/README.md)
 1.  **逻辑测试层**：`tracer_core` 的 C++ 单元与组件测试。
 2.  **产物测试层**：针对二进制交付件（如 `time_tracer_cli.exe`）的集成测试。
 

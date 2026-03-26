@@ -3,6 +3,7 @@
 #include <sqlite3.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <format>
 #include <map>
 #include <set>
@@ -77,8 +78,8 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
       const unsigned char* date_ptr = sqlite3_column_text(stmt, 0);
       std::string date =
           (date_ptr != nullptr) ? reinterpret_cast<const char*>(date_ptr) : "";
-      long long pid = sqlite3_column_int64(stmt, 1);
-      long long dur = sqlite3_column_int64(stmt, 2);
+      std::int64_t pid = sqlite3_column_int64(stmt, 1);
+      std::int64_t dur = sqlite3_column_int64(stmt, 2);
 
       raw_records.push_back({std::move(date), pid, dur});
     }
@@ -123,7 +124,7 @@ auto BatchPeriodDataFetcher::FetchAllData(const std::vector<int>& days_list)
     data.range_label = std::to_string(days) + " days";
 
     // 临时聚合容器: Project ID -> Duration
-    std::map<long long, long long> project_agg;
+    std::map<std::int64_t, std::int64_t> project_agg;
     std::set<std::string> distinct_dates;
     std::set<std::string> status_dates;
     std::set<std::string> exercise_dates;

@@ -17,6 +17,7 @@ namespace {
 
 constexpr int kThresholdTwoDigits = 10;
 constexpr size_t kProjectDateJoinReserve = 192;
+constexpr size_t kDerivedRootExistsClauseReserve = 256;
 
 [[nodiscard]] auto EscapeLikeLiteral(const std::string& value) -> std::string {
   std::string escaped;
@@ -64,7 +65,7 @@ constexpr size_t kProjectDateJoinReserve = 192;
                                                 bool should_exist)
     -> std::string {
   std::string clause;
-  clause.reserve(256);
+  clause.reserve(kDerivedRootExistsClauseReserve);
   if (!should_exist) {
     clause += "NOT ";
   }

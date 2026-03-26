@@ -1,4 +1,5 @@
 // infra/reporting/shared/utils/format/report_string_utils.cpp
+#include <cstdint>
 #include "infra/reporting/shared/utils/format/report_string_utils.hpp"
 
 namespace {
@@ -62,14 +63,14 @@ auto FormatCountWithPercentage(int count, int total_count,
     return std::to_string(count);
   }
 
-  const auto kDenominator = static_cast<long long>(total_count);
+  const auto kDenominator = static_cast<std::int64_t>(total_count);
   const auto kScaled =
-      static_cast<long long>(count) * static_cast<long long>(10000);
+      static_cast<std::int64_t>(count) * static_cast<std::int64_t>(10000);
   const auto kRounded = (kScaled >= 0)
                             ? ((kScaled + (kDenominator / 2)) / kDenominator)
                             : ((kScaled - (kDenominator / 2)) / kDenominator);
 
-  long long abs_value = (kRounded < 0) ? -kRounded : kRounded;
+  std::int64_t abs_value = (kRounded < 0) ? -kRounded : kRounded;
   const auto kWhole = abs_value / 100;
   const auto kFraction = abs_value % 100;
 

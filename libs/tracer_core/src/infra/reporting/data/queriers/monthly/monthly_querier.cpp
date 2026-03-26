@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cstdint>
 #include <format>
 #include <set>
 #include <stdexcept>
@@ -90,7 +91,7 @@ auto BatchMonthDataFetcher::FetchAllData()
   ProjectNameCache name_cache;
   name_cache.EnsureLoaded(db_);
 
-  std::map<std::string, std::map<long long, long long>> project_agg;
+  std::map<std::string, std::map<std::int64_t, std::int64_t>> project_agg;
   std::map<std::string, int> status_days;
   std::map<std::string, int> exercise_days;
   std::map<std::string, int> cardio_days;
@@ -130,7 +131,7 @@ auto BatchMonthDataFetcher::FetchAllData()
 
 void BatchMonthDataFetcher::FetchProjectStats(
     std::map<std::string, MonthlyReportData>& all_months_data,
-    std::map<std::string, std::map<long long, long long>>& project_agg,
+    std::map<std::string, std::map<std::int64_t, std::int64_t>>& project_agg,
     std::map<std::string, int>& status_days,
     std::map<std::string, int>& exercise_days,
     std::map<std::string, int>& cardio_days,
@@ -163,8 +164,8 @@ void BatchMonthDataFetcher::FetchProjectStats(
 
     std::string year_month = reinterpret_cast<const char*>(ym_ptr);
     std::string date = reinterpret_cast<const char*>(date_ptr);
-    long long project_id = sqlite3_column_int64(stmt, 2);
-    long long duration = sqlite3_column_int64(stmt, 3);
+    std::int64_t project_id = sqlite3_column_int64(stmt, 2);
+    std::int64_t duration = sqlite3_column_int64(stmt, 3);
 
     MonthlyReportData& data = all_months_data[year_month];
     if (data.range_label.empty()) {

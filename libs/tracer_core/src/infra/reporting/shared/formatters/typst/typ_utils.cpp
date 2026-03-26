@@ -1,6 +1,7 @@
 // infra/reporting/shared/formatters/typst/typ_utils.cpp
 #include "infra/reporting/shared/formatters/typst/typ_utils.hpp"
 
+#include <cstdint>
 #include <memory>
 
 #include "infra/reporting/shared/formatters/base/project_tree_formatter.hpp"
@@ -29,9 +30,9 @@ auto FormatCompactNumber(double value) -> std::string {
 }
 
 auto FormatOneDecimal(double value) -> std::string {
-  const auto kScaled = static_cast<long long>(
+  const auto kScaled = static_cast<std::int64_t>(
       (value >= 0.0) ? ((value * 10.0) + 0.5) : ((value * 10.0) - 0.5));
-  long long abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
+  std::int64_t abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
   const auto kWholePart = abs_scaled / kDecimalBase;
   const auto kFractionalPart = abs_scaled % kDecimalBase;
 
@@ -139,7 +140,7 @@ auto BuildTitleText(const std::string& category_title_font,
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto FormatProjectTree(const reporting::ProjectTree& tree,
-                       long long total_duration, int avg_days,
+                       std::int64_t total_duration, int avg_days,
                        const std::string& category_title_font,
                        int category_title_font_size) -> std::string {
   auto strategy = std::make_unique<TypstFormattingStrategy>(

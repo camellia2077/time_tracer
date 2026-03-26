@@ -18,14 +18,16 @@ Describe the stable Android runtime boundary contracts between Kotlin, JNI, and 
 
 Runtime call chain:
 
-1. Kotlin/Compose calls JNI-facing native methods.
-2. JNI calls core C ABI entrypoints (`tracer_core_*`).
-3. C ABI forwards into core/runtime implementation.
+1. Kotlin app/runtime code calls `NativeRuntimeBridge`.
+2. `NativeRuntimeBridge` forwards to raw JNI methods on `NativeBridge`.
+3. JNI calls core C ABI entrypoints (`tracer_core_*`).
+4. C ABI forwards into core/runtime implementation.
 
 Important rules:
 
 - Kotlin does not call `tracer_core_*` directly.
-- Kotlin-visible runtime APIs remain JNI methods.
+- `NativeBridge` is the raw JNI registration surface and should stay thin.
+- Android runtime flows should prefer `NativeRuntimeBridge` over calling `NativeBridge.native*` directly.
 - Business payloads between JNI and core remain UTF-8 JSON strings.
 
 ## C ABI Scope

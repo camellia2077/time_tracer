@@ -77,48 +77,48 @@ auto TracerExchangeService::RunInspect(
     throw std::invalid_argument("Passphrase must not be empty.");
   }
 
-  const fs::path input_path = fs::absolute(request.input_tracer_path);
-  if (!fs::exists(input_path) || !fs::is_regular_file(input_path)) {
+  const fs::path kInputPath = fs::absolute(request.input_tracer_path);
+  if (!fs::exists(kInputPath) || !fs::is_regular_file(kInputPath)) {
     throw std::invalid_argument(
-        "Inspect input path must be an existing file: " + input_path.string());
+        "Inspect input path must be an existing file: " + kInputPath.string());
   }
-  if (!HasExtensionCaseInsensitive(input_path, ".tracer")) {
+  if (!HasExtensionCaseInsensitive(kInputPath, ".tracer")) {
     throw std::invalid_argument("Inspect input file must be .tracer: " +
-                                input_path.string());
+                                kInputPath.string());
   }
 
   file_crypto::TracerFileMetadata metadata{};
-  EnsureCryptoResultOk(file_crypto::InspectEncryptedFile(input_path, &metadata),
-                       "Inspect", input_path);
+  EnsureCryptoResultOk(file_crypto::InspectEncryptedFile(kInputPath, &metadata),
+                       "Inspect", kInputPath);
 
-  const std::string stem = input_path.stem().empty()
-                               ? input_path.filename().string()
-                               : input_path.stem().string();
-  const fs::path staging_dir =
-      BuildScopedStagingDir(input_path.parent_path(), "inspect", stem);
-  const fs::path package_path = staging_dir / "exchange.ttpkg";
+  const std::string kStem = kInputPath.stem().empty()
+                                ? kInputPath.filename().string()
+                                : kInputPath.stem().string();
+  const fs::path kStagingDir =
+      BuildScopedStagingDir(kInputPath.parent_path(), "inspect", kStem);
+  const fs::path kPackagePath = kStagingDir / "exchange.ttpkg";
 
   std::error_code io_error;
-  fs::create_directories(staging_dir, io_error);
+  fs::create_directories(kStagingDir, io_error);
   if (io_error) {
     throw std::runtime_error("Failed to create tracer exchange staging dir: " +
-                             staging_dir.string() + " | " + io_error.message());
+                             kStagingDir.string() + " | " + io_error.message());
   }
 
   try {
     EnsureCryptoResultOk(
         file_crypto::DecryptFile(
-            input_path, package_path, request.passphrase,
+            kInputPath, kPackagePath, request.passphrase,
             BuildCryptoOptions(
                 app_dto::TracerExchangeSecurityLevel::kInteractive,
                 request.progress_observer)),
-        "Inspect", input_path);
-    const exchange_pkg::DecodedTracerExchangePackage package =
-        DecodePackageBytes(ReadFileBytes(package_path));
-    RemoveDirectoryBestEffort(staging_dir);
-    return BuildInspectResult(input_path, metadata, package);
+        "Inspect", kInputPath);
+    const exchange_pkg::DecodedTracerExchangePackage kPackage =
+        DecodePackageBytes(ReadFileBytes(kPackagePath));
+    RemoveDirectoryBestEffort(kStagingDir);
+    return BuildInspectResult(kInputPath, metadata, kPackage);
   } catch (...) {
-    RemoveDirectoryBestEffort(staging_dir);
+    RemoveDirectoryBestEffort(kStagingDir);
     throw;
   }
 }

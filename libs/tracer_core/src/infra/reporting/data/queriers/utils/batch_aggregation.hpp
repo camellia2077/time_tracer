@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
 #define INFRASTRUCTURE_REPORTS_DATA_QUERIERS_UTILS_BATCH_AGGREGATION_H_
 
+#include <cstdint>
 #include <map>
 #include <set>
 #include <string>
@@ -13,7 +14,7 @@ namespace reports::data::batch {
 
 template <typename ReportDataT>
 void FinalizeAggregation(ReportDataT& data,
-                         const std::map<long long, long long>& project_agg,
+                         const std::map<std::int64_t, std::int64_t>& project_agg,
                          int actual_days,
                          const IProjectInfoProvider& provider) {
   data.actual_days = actual_days;
@@ -30,7 +31,7 @@ void FinalizeAggregation(ReportDataT& data,
 
 template <typename ReportDataT>
 void FinalizeAggregation(ReportDataT& data,
-                         const std::map<long long, long long>& project_agg,
+                         const std::map<std::int64_t, std::int64_t>& project_agg,
                          const std::set<std::string>& distinct_dates,
                          const IProjectInfoProvider& provider) {
   FinalizeAggregation(data, project_agg,
@@ -50,7 +51,7 @@ void FinalizeAggregationFromStats(ReportDataT& data, int actual_days,
 template <typename KeyT, typename ReportDataT>
 void FinalizeGroupedAggregation(
     std::map<KeyT, ReportDataT>& results,
-    const std::map<KeyT, std::map<long long, long long>>& project_agg,
+    const std::map<KeyT, std::map<std::int64_t, std::int64_t>>& project_agg,
     const std::map<KeyT, std::set<std::string>>& distinct_dates,
     const IProjectInfoProvider& provider) {
   for (auto& [key, data] : results) {
@@ -68,7 +69,7 @@ void FinalizeGroupedAggregation(
 template <typename KeyT, typename ReportDataT>
 void FinalizeGroupedAggregationWithDays(
     std::map<KeyT, ReportDataT>& results,
-    const std::map<KeyT, std::map<long long, long long>>& project_agg,
+    const std::map<KeyT, std::map<std::int64_t, std::int64_t>>& project_agg,
     const std::map<KeyT, int>& actual_days,
     const IProjectInfoProvider& provider) {
   for (auto& [key, data] : results) {

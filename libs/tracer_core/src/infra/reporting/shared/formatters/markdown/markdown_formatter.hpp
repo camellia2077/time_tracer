@@ -2,6 +2,7 @@
 #ifndef INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_H_
 #define INFRASTRUCTURE_REPORTS_SHARED_FORMATTERS_MARKDOWN_MARKDOWN_FORMATTER_H_
 
+#include <cstdint>
 #include <string>
 
 #include "domain/reports/models/project_tree.hpp"
@@ -21,7 +22,7 @@ namespace MarkdownFormatter {
 // Public API: keep parameter order and naming for ABI compatibility.
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 REPORTS_SHARED_API auto FormatProjectTree(const reporting::ProjectTree& tree,
-                                          long long total_duration,
+                                          std::int64_t total_duration,
                                           int avg_days) -> std::string;
 // NOLINTEND(bugprone-easily-swappable-parameters)
 

@@ -12,9 +12,9 @@
 建议阅读顺序：
 
 1. 本文：先建立目录与职责地图
-2. `docs/toolchain/clang_tidy_flow.md`：再看命令流转与状态文件
-3. `docs/toolchain/python_command_map.md`：快速查命令入口
-4. `docs/toolchain/clang_tidy_sop.md`：看标准操作流程
+2. `docs/toolchain/tidy/flow.md`：再看命令流转与状态文件
+3. `docs/toolchain/command_map/python.md`：快速查命令入口
+4. `docs/toolchain/tidy/sop.md`：看标准操作流程
 
 ## 1. 总入口与分层
 
@@ -35,6 +35,7 @@ python tools/run.py ...
    - `tools/toolchain/commands/tidy/*.py`
    - `tools/toolchain/commands/tidy/*_internal/*.py`
 4. 基础能力 / 状态 / 解析层
+   - `tools/toolchain/formats/toon/*.py`
    - `tools/toolchain/services/*.py`
    - `tools/toolchain/core/*.py`
    - `tools/toolchain/config/workflow.toml`
@@ -47,9 +48,10 @@ flowchart TD
     B --> C["cli/handlers/tidy/*.py"]
     C --> D["commands/tidy/*.py"]
     D --> E["commands/tidy/*_internal/*.py"]
-    D --> F["services/*.py"]
-    D --> G["core/context.py + core/config.py"]
-    G --> H["config/workflow.toml"]
+    D --> F["formats/toon/*.py"]
+    D --> G["services/*.py"]
+    D --> H["core/context.py + core/config.py"]
+    H --> I["config/workflow.toml"]
 ```
 
 ## 1.1 source scope / tidy workspace 新约定
@@ -76,6 +78,7 @@ flowchart TD
 | 改 `python tools/run.py tidy ...` 的执行主链 | `tools/toolchain/commands/tidy/command.py`、`tools/toolchain/commands/tidy/command_execute.py` |
 | 改 `cmake --build ... --target tidy` 的拼装方式 | `tools/toolchain/commands/tidy/invoker.py` |
 | 改 `build.log` 到 task records / task views 的拆分策略 | `tools/toolchain/commands/tidy/task_builder.py`、`tools/toolchain/commands/tidy/log_splitter.py` |
+| 改 `task_*.toon` / `issue_*.toon` 的编码格式 | `tools/toolchain/formats/toon/*.py` |
 | 改诊断解析规则 | `tools/toolchain/services/log_parser.py` |
 | 改任务优先级排序 | `tools/toolchain/services/task_sorter.py` |
 | 改批次收口（verify -> clean -> refresh -> finalize） | `tools/toolchain/commands/tidy/batch.py` |
@@ -157,7 +160,8 @@ flowchart TD
   - 用于避免 clang-tidy 在模块扫描产物未生成时直接失败
 - `task_builder.py`
   - 把 `build.log` 切成 canonical `task_*.json`
-  - 可选渲染 `task_*.log` / `task_*.toon`
+  - 根据当前队列 contract 可选渲染 `task_*.log` / `task_*.toon`
+  - full rebase / full refresh 时沿用当前 pending 队列最小的 `batch_NNN` / `task_NNN` 命名空间，不回卷到 `batch_001`
   - 做 section 分组、诊断聚类、优先级排序、batch 写盘
 - `log_splitter.py`
   - 日志读取、split 调用、ninja timing 汇总
@@ -180,8 +184,11 @@ flowchart TD
   - 单个 task record 的解析 / 选择 / batch/task id 解析
   - 优先读取 `task_*.json`，仅兼容旧 `task_*.log`
 - `task_auto_fix.py`
-  - task 级自动化核心
-  - 管 rule-driven const rename、redundant cast、suggest report
+  - task 级自动化 facade / 兼容入口
+  - 对外维持旧 CLI / report contract，内部转到 `commands/tidy/autofix/`
+- `autofix/`
+  - task 级自动化内部实现
+  - 按 `models.py` / `registry.py` / `orchestrator.py` / `rules/` / `engines/` / `analyzers/` 分层
 - `task_fix.py`
   - `tidy-task-fix` 主入口
 - `task_patch.py`
@@ -336,9 +343,9 @@ out/tidy/<app>/<tidy_workspace>/
 | `out/tidy/<app>/<tidy_workspace>/build.log` | `tidy` build 原始日志 |
 | `out/tidy/<app>/<tidy_workspace>/analysis_compile_db/compile_commands.json` | clang-tidy 唯一官方输入；供分析使用的 sanitized compile db（剥离 `@*.obj.modmap`） |
 | `out/tidy/<app>/<tidy_workspace>/.ninja_log` | Ninja 执行时序，用于 timing summary |
-| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.json` | canonical 待处理任务 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.json` | canonical 待处理任务；单 task 自动化应优先以它为真实来源 |
 | `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.log` | 可选 text 视图 |
-| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.toon` | 可选 TOON 视图 |
+| `out/tidy/<app>/<tidy_workspace>/tasks/batch_*/task_*.toon` | 可选 TOON 视图；面向 agent 的紧凑语义格式，保留源码片段与建议 hint，省略纯视觉 caret marker |
 | `out/tidy/<app>/<tidy_workspace>/tasks/tasks_summary.md` | 拆分后的任务摘要 |
 | `out/tidy/<app>/<tidy_workspace>/tasks_done/batch_*/task_*.json` | canonical 已归档任务 |
 | `out/tidy/<app>/<tidy_workspace>/tidy_result.json` | 面向人和 agent 的统一状态摘要 |
@@ -354,7 +361,7 @@ agent 排查建议：
 
 1. 先看 `tidy_result.json`
 2. 再看 `batch_state.json` / `refresh_state.json` / `flow_state.json`
-3. 最后再深入 `task_*.json`、`build.log`、`incremental_tidy_*.log`
+3. 最后再深入 `task_*.json`（必要时再看 `.toon` / `.log` 视图）、`build.log`、`incremental_tidy_*.log`
 
 ## 6. 常见场景应该从哪里进
 
@@ -443,7 +450,7 @@ pwsh -Command "python tools/run.py tidy --app tracer_core_shell"
    - 若有状态文件，再补文档
 2. 修改状态 JSON 结构时：
    - 同步检查 `tidy_result.json` 的 `next_action`
-   - 同步更新本文和 `docs/toolchain/clang_tidy_sop.md`
+   - 同步更新本文和 `docs/toolchain/tidy/sop.md`
 3. 修改批次流转时：
    - 同步检查 `tidy-batch`、`tidy-refresh`、`tidy-close`
    - 因为这三者共享同一个 tidy workspace 状态目录

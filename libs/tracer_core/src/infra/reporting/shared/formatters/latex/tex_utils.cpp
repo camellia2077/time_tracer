@@ -1,6 +1,7 @@
 // infra/reporting/shared/formatters/latex/tex_utils.cpp
 #include "infra/reporting/shared/formatters/latex/tex_utils.hpp"
 
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -32,9 +33,9 @@ auto FormatCompactNumber(double value) -> std::string {
 }
 
 auto FormatOneDecimal(double value) -> std::string {
-  const auto kScaled = static_cast<long long>(
+  const auto kScaled = static_cast<std::int64_t>(
       (value >= 0.0) ? ((value * 10.0) + 0.5) : ((value * 10.0) - 0.5));
-  long long abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
+  std::int64_t abs_scaled = (kScaled < 0) ? -kScaled : kScaled;
   const auto kWholePart = abs_scaled / kDecimalBase;
   const auto kFractionalPart = abs_scaled % kDecimalBase;
 
@@ -227,7 +228,7 @@ auto EscapeLatex(const std::string& input) -> std::string {
 // NOLINTBEGIN(bugprone-easily-swappable-parameters)
 auto FormatProjectTree(
     const reporting::ProjectTree& tree,  // [修改] 加上 reporting:: 命名空间
-    long long total_duration, int avg_days, int category_title_font_size,
+    std::int64_t total_duration, int avg_days, int category_title_font_size,
     double list_top_sep_pt, double list_item_sep_ex) -> std::string {
   auto strategy = std::make_unique<LatexFormattingStrategy>(
       category_title_font_size, list_top_sep_pt, list_item_sep_ex);

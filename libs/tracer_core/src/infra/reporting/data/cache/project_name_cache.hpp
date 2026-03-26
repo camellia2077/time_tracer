@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 
 #include <algorithm>
+#include <cstdint>
 #include <format>
 #include <string>
 #include <unordered_map>
@@ -16,7 +17,7 @@
 
 struct ProjectInfo {
   std::string name;
-  long long parent_id;
+  std::int64_t parent_id;
 };
 
 class ProjectNameCache : public IProjectInfoProvider {
@@ -42,16 +43,16 @@ class ProjectNameCache : public IProjectInfoProvider {
     const std::string kSql = std::format(
         "SELECT {0}, {1}, {2} FROM {3}", schema::projects::db::kId,
         schema::projects::db::kName, schema::projects::db::kParentId,
-        schema::projects::db::kTable);
+      schema::projects::db::kTable);
     sqlite3_stmt* stmt = nullptr;
     if (sqlite3_prepare_v2(sqlite_db, kSql.c_str(), -1, &stmt, nullptr) ==
         SQLITE_OK) {
       while (sqlite3_step(stmt) == SQLITE_ROW) {
-        long long project_id = sqlite3_column_int64(stmt, 0);
+        std::int64_t project_id = sqlite3_column_int64(stmt, 0);
         const unsigned char* txt = sqlite3_column_text(stmt, 1);
         std::string name =
             (txt != nullptr) ? reinterpret_cast<const char*>(txt) : "";
-        long long parent = 0;
+        std::int64_t parent = 0;
         if (sqlite3_column_type(stmt, 2) != SQLITE_NULL) {
           parent = sqlite3_column_int64(stmt, 2);
         }
@@ -66,10 +67,10 @@ class ProjectNameCache : public IProjectInfoProvider {
 
   void Invalidate() { cache_.clear(); }
 
-  [[nodiscard]] auto GetPathParts(long long project_id) const
+  [[nodiscard]] auto GetPathParts(std::int64_t project_id) const
       -> std::vector<std::string> override {
     std::vector<std::string> parts;
-    long long curr = project_id;
+    std::int64_t curr = project_id;
     while (curr != 0 && cache_.contains(curr)) {
       const auto& info = cache_.at(curr);
       parts.push_back(info.name);
@@ -80,7 +81,7 @@ class ProjectNameCache : public IProjectInfoProvider {
   }
 
  private:
-  std::unordered_map<long long, ProjectInfo> cache_;
+  std::unordered_map<std::int64_t, ProjectInfo> cache_;
 };
 
 #endif  // INFRASTRUCTURE_REPORTS_DATA_CACHE_PROJECT_NAME_CACHE_H_
