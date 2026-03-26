@@ -92,6 +92,32 @@ def resolve_task_log_path(
     return next_path
 
 
+def resolve_task_json_path(
+    tasks_dir: Path,
+    *,
+    task_log_path: str | None = None,
+    batch_id: str | None = None,
+    task_id: str | None = None,
+) -> Path:
+    resolved = resolve_task_log_path(
+        tasks_dir,
+        task_log_path=task_log_path,
+        batch_id=batch_id,
+        task_id=task_id,
+    )
+    if resolved.suffix.lower() == ".json":
+        return resolved
+
+    json_path = resolved.with_suffix(".json")
+    if json_path.exists():
+        return json_path
+
+    # Auto-fix needs a stable machine-readable contract. `.log` and `.toon`
+    # are human-facing views whose text layout can evolve, so we require the
+    # canonical JSON artifact instead of reparsing presentation formats.
+    raise FileNotFoundError(f"canonical task json not found: {json_path}")
+
+
 def task_id(task_path: Path) -> str:
     resolved_id = task_id_from_artifact_name(task_path.name)
     if resolved_id is None:

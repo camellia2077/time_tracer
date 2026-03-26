@@ -4,6 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 import re
 
+from ...formats.toon.task_codec import parse_task_record
 from ...services import log_parser
 from .task_record_types import (
     TASK_RECORD_VERSION,
@@ -91,7 +92,11 @@ def finalize_task_record(
 
 def task_record_from_dict(payload: dict, *, fallback_path: Path | None = None) -> TaskRecord:
     task_id = _read_text(payload.get("task_id")) or _task_id_from_path(fallback_path)
-    batch_id = _read_text(payload.get("batch_id")) or _batch_id_from_path(fallback_path)
+    batch_id = (
+        _read_text(payload.get("queue_batch_id"))
+        or _read_text(payload.get("batch_id"))
+        or _batch_id_from_path(fallback_path)
+    )
     source_file = _read_text(payload.get("source_file"))
     diagnostics_payload = _read_dict_list(payload.get("diagnostics"))
 
@@ -228,147 +233,7 @@ def toon_task_record_from_text(
     *,
     task_path: Path,
 ) -> TaskRecord:
-    lines = content.splitlines()
-    section = ""
-    task_id = _task_id_from_path(task_path)
-    batch_id = _batch_id_from_path(task_path)
-    source_file = ""
-    workspace = ""
-    source_scope: str | None = None
-    compiler_errors = False
-    diagnostic_rows: list[dict] = []
-    snippet_rows: dict[int, dict] = {}
-
-    for raw_line in lines:
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if not stripped:
-            continue
-        if stripped == "task:":
-            section = "task"
-            continue
-        if stripped == "summary:":
-            section = "summary"
-            continue
-        if stripped.startswith("checks["):
-            section = "checks"
-            continue
-        if stripped.startswith("diagnostics["):
-            section = "diagnostics"
-            continue
-        if stripped.startswith("snippets["):
-            section = "snippets"
-            continue
-        if not line.startswith("  "):
-            continue
-
-        value = line[2:]
-        if section == "task" and ":" in value:
-            key, item = value.split(":", 1)
-            parsed = item.strip()
-            if key == "id":
-                task_id = parsed or task_id
-            elif key == "batch":
-                batch_id = parsed or batch_id
-            elif key == "source":
-                source_file = parsed
-            elif key == "workspace":
-                workspace = "" if parsed == "<unset>" else parsed
-            elif key == "source_scope":
-                source_scope = parsed or None
-            continue
-        if section == "summary" and ":" in value:
-            key, item = value.split(":", 1)
-            parsed = item.strip()
-            if key == "compiler_errors":
-                compiler_errors = parsed.lower() == "true"
-            continue
-        if section == "diagnostics":
-            parts = value.split(",", 5)
-            if len(parts) != 6:
-                continue
-            diagnostic_rows.append(
-                {
-                    "index": _read_int(parts[0], default=len(diagnostic_rows) + 1),
-                    "line": _read_int(parts[1]),
-                    "col": _read_int(parts[2]),
-                    "severity": parts[3].strip(),
-                    "check": parts[4].strip(),
-                    "message": parts[5].strip(),
-                }
-            )
-            continue
-        if section == "snippets":
-            parts = value.split(",", 3)
-            if len(parts) != 4:
-                continue
-            snippet_rows[_read_int(parts[0], default=0)] = {
-                "source_line": _read_optional_int(parts[1]),
-                "code": parts[2].strip(),
-                "caret": parts[3].strip(),
-            }
-
-    diagnostics_list: list[TaskDiagnostic] = []
-    snippets_list: list[TaskSnippet] = []
-    for item in diagnostic_rows:
-        index = int(item["index"])
-        snippet_item = snippet_rows.get(index, {})
-        snippet = TaskSnippet(
-            diagnostic_index=index,
-            source_line=snippet_item.get("source_line"),
-            code=str(snippet_item.get("code", "")),
-            caret=str(snippet_item.get("caret", "")),
-            notes=(),
-        )
-        if snippet.source_line is not None or snippet.code or snippet.caret:
-            snippets_list.append(snippet)
-        diagnostics_list.append(
-            TaskDiagnostic(
-                file=source_file,
-                line=int(item["line"]),
-                col=int(item["col"]),
-                severity=str(item["severity"]),
-                check=str(item["check"]),
-                message=str(item["message"]),
-                raw_lines=_compose_raw_lines(
-                    file=source_file,
-                    line=int(item["line"]),
-                    col=int(item["col"]),
-                    severity=str(item["severity"]),
-                    check=str(item["check"]),
-                    message=str(item["message"]),
-                    source_line=snippet.source_line,
-                    code=snippet.code,
-                    caret=snippet.caret,
-                    snippet_notes=(),
-                    notes=(),
-                ),
-                notes=(),
-            )
-        )
-
-    diagnostics = tuple(diagnostics_list)
-    checks = tuple(_collect_checks(diagnostics))
-    inferred_summary = _build_summary(diagnostics, source_file=source_file)
-    summary = TaskSummary(
-        diagnostic_count=len(diagnostics),
-        compiler_errors=compiler_errors or inferred_summary.compiler_errors,
-        files=inferred_summary.files,
-        checks=inferred_summary.checks,
-    )
-    return TaskRecord(
-        version=TASK_RECORD_VERSION,
-        task_id=task_id,
-        batch_id=batch_id,
-        source_file=source_file,
-        workspace=workspace,
-        source_scope=source_scope,
-        checks=checks,
-        summary=summary,
-        diagnostics=diagnostics,
-        snippets=tuple(snippets_list),
-        raw_lines=tuple(_flatten_diagnostic_lines(diagnostics)),
-    )
+    return parse_task_record(content, task_path=task_path)
 
 
 def extract_snippet(

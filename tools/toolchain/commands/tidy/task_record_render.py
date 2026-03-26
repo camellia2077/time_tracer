@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ...formats.toon.task_codec import render_task_record
 from .task_record_parse import extract_snippet
 from .task_record_types import TaskRecord
 
@@ -9,6 +10,7 @@ def task_record_to_dict(record: TaskRecord) -> dict:
         "version": record.version,
         "task_id": record.task_id,
         "batch_id": record.batch_id,
+        "queue_batch_id": record.batch_id,
         "source_file": record.source_file,
         "workspace": record.workspace,
         "source_scope": record.source_scope,
@@ -89,45 +91,4 @@ def render_text(record: TaskRecord) -> str:
 
 
 def render_toon(record: TaskRecord) -> str:
-    lines = [
-        "task:",
-        f"  id: {record.task_id}",
-        f"  batch: {record.batch_id}",
-        f"  source: {record.source_file}",
-        f"  workspace: {record.workspace or '<unset>'}",
-    ]
-    if record.source_scope:
-        lines.append(f"  source_scope: {record.source_scope}")
-    lines.extend(
-        [
-            "summary:",
-            f"  diagnostics: {record.summary.diagnostic_count}",
-            f"  compiler_errors: {str(record.summary.compiler_errors).lower()}",
-        ]
-    )
-    if record.summary.checks:
-        check_rows = ",".join(f"{entry.name},{entry.count}" for entry in record.summary.checks)
-        lines.append(f"checks[{len(record.summary.checks)}]{{name,count}}:")
-        lines.append(f"  {check_rows}" if len(record.summary.checks) == 1 else "")
-        if len(record.summary.checks) > 1:
-            for entry in record.summary.checks:
-                lines.append(f"  {entry.name},{entry.count}")
-    if record.diagnostics:
-        lines.append(
-            f"diagnostics[{len(record.diagnostics)}]"
-            "{index,line,col,severity,check,message}:"
-        )
-        for index, diagnostic in enumerate(record.diagnostics, 1):
-            message = diagnostic.message.replace("\n", " ").replace(",", ";")
-            lines.append(
-                f"  {index},{diagnostic.line},{diagnostic.col},"
-                f"{diagnostic.severity},{diagnostic.check},{message}"
-            )
-    if record.snippets:
-        lines.append(f"snippets[{len(record.snippets)}]{{diag,line,code,caret}}:")
-        for snippet in record.snippets:
-            source_line = "" if snippet.source_line is None else str(snippet.source_line)
-            code = snippet.code.replace("\n", " ").replace(",", ";")
-            caret = snippet.caret.replace("\n", " ").replace(",", ";")
-            lines.append(f"  {snippet.diagnostic_index},{source_line},{code},{caret}")
-    return "\n".join(line for line in lines if line != "") + "\n"
+    return render_task_record(record)
