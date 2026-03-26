@@ -8,6 +8,7 @@ from ...core.context import Context
 DEFAULT_TIDY_BUILD_DIR_NAME = "build_tidy"
 CMAKE_CACHE_KEY_SOURCE_SCOPE = "TT_CLANG_TIDY_SOURCE_SCOPE"
 CMAKE_CACHE_KEY_SOURCE_ROOTS = "TT_CLANG_TIDY_SOURCE_ROOTS"
+CMAKE_CACHE_KEY_SOURCE_TARGETS = "TT_CLANG_TIDY_SOURCE_TARGETS"
 
 
 @dataclass(frozen=True, slots=True)
@@ -71,6 +72,13 @@ def resolve_prebuild_targets(ctx: Context, source_scope: str | None) -> list[str
     return resolved
 
 
+def resolve_source_targets(ctx: Context, source_scope: str | None) -> list[str]:
+    # Keep the scope definition single-sourced in toolchain config: the same
+    # target set used for module prebuild is also the authoritative tidy source
+    # owner set for CMake target-source collection.
+    return resolve_prebuild_targets(ctx, source_scope)
+
+
 def resolve_tidy_build_dir_name(
     ctx: Context,
     *,
@@ -115,11 +123,14 @@ def source_scope_cache_values(ctx: Context, source_scope: str | None) -> tuple[s
 
 def build_source_scope_cmake_args(ctx: Context, source_scope: str | None) -> list[str]:
     scope_value, roots_value = source_scope_cache_values(ctx, source_scope)
+    targets_value = source_scope_cache_targets_value(ctx, source_scope)
     return [
         "-D",
         f"{CMAKE_CACHE_KEY_SOURCE_SCOPE}={scope_value}",
         "-D",
         f"{CMAKE_CACHE_KEY_SOURCE_ROOTS}={roots_value}",
+        "-D",
+        f"{CMAKE_CACHE_KEY_SOURCE_TARGETS}={targets_value}",
     ]
 
 
@@ -133,4 +144,21 @@ def normalize_cache_roots_value(value: str | None) -> str:
         if not text:
             continue
         normalized.append(text.replace("\\", "/"))
+    return ";".join(normalized)
+
+
+def source_scope_cache_targets_value(ctx: Context, source_scope: str | None) -> str:
+    return ";".join(resolve_source_targets(ctx, source_scope))
+
+
+def normalize_cache_targets_value(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return ""
+    normalized: list[str] = []
+    for item in raw.split(";"):
+        text = item.strip()
+        if not text:
+            continue
+        normalized.append(text)
     return ";".join(normalized)

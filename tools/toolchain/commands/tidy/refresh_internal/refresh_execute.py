@@ -24,6 +24,7 @@ def execute_refresh_command(
     final_full: bool = False,
     source_scope: str | None = None,
     build_dir_name: str | None = None,
+    task_view: str | None = None,
     dry_run: bool = False,
 ) -> int:
     resolved_build_dir_name = (
@@ -200,12 +201,14 @@ def execute_refresh_command(
             keep_going=effective_keep_going,
             source_scope=source_scope,
             build_dir_name=resolved_build_dir_name,
+            task_view=task_view,
         )
         if full_ret != 0:
             return full_ret
         next_state["batches_since_full"] = 0
         next_state["last_full_reason"] = ",".join(full_reasons)
         next_state["last_full_batch"] = normalized_batch
+        next_state["last_full_queue_batch"] = normalized_batch
         next_state["last_full_at"] = command._utc_now_iso()
 
     next_state["last_seen_rename_report_mtime_ns"] = rename_report_mtime_ns(build_dir)

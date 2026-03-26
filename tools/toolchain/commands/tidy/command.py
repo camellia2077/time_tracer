@@ -114,9 +114,10 @@ class TidyCommand:
         max_lines: int | None = None,
         max_diags: int | None = None,
         batch_size: int | None = None,
-        task_view: str = "text",
+        task_view: str | None = None,
         workspace_name: str = "",
         source_scope: str | None = None,
+        compile_units: list[Path] | None = None,
     ) -> tuple[dict, float]:
         return tidy_log_splitter.split_from_log(
             log_path,
@@ -129,6 +130,7 @@ class TidyCommand:
             task_view=task_view,
             workspace_name=workspace_name,
             source_scope=source_scope,
+            compile_units=compile_units,
         )
 
     def _split_and_sort(
@@ -139,9 +141,10 @@ class TidyCommand:
         max_lines: int | None = None,
         max_diags: int | None = None,
         batch_size: int | None = None,
-        task_view: str = "text",
+        task_view: str | None = None,
         workspace_name: str = "",
         source_scope: str | None = None,
+        compile_units: list[Path] | None = None,
     ) -> dict:
         return tidy_task_builder.split_and_sort(
             self.ctx,
@@ -154,6 +157,7 @@ class TidyCommand:
             task_view=task_view,
             workspace_name=workspace_name,
             source_scope=source_scope,
+            compile_units=compile_units,
         )
 
     def _group_ninja_sections(self, log_lines: list[str]) -> list[list[str]]:
@@ -191,12 +195,18 @@ class TidyCommand:
         processed: list[dict],
         tasks_dir: Path,
         batch_size: int,
+        task_view: str | None = None,
+        workspace_name: str = "",
+        source_scope: str | None = None,
     ) -> int:
         return tidy_task_builder.write_task_batches(
             processed,
             tasks_dir,
             batch_size,
             fix_strategy_config=self.ctx.config.tidy.fix_strategy,
+            task_view=task_view,
+            workspace_name=workspace_name,
+            source_scope=source_scope,
         )
 
     def _cleanup_old_tasks(self, tasks_dir: Path) -> None:
@@ -266,7 +276,7 @@ class TidyCommand:
         keep_going: bool | None = None,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
-        task_view: str = "text",
+        task_view: str | None = None,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -310,7 +320,7 @@ class TidyCommand:
         batch_size: int | None = None,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
-        task_view: str = "text",
+        task_view: str | None = None,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,

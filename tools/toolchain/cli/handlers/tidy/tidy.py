@@ -10,6 +10,7 @@ from ...common import (
     add_profile_arg,
     reject_unsupported_build_dir_override,
     add_source_scope_arg,
+    add_tidy_task_view_arg,
 )
 from ...model import CommandSpec, ParserDefaults
 from ....commands.tidy import workspace as tidy_workspace
@@ -31,7 +32,7 @@ def _build_command_text(args: argparse.Namespace) -> str:
         parts.extend(["--parse-workers", str(args.parse_workers)])
     if args.source_scope:
         parts.extend(["--source-scope", args.source_scope])
-    if args.task_view and args.task_view != "text":
+    if args.task_view:
         parts.extend(["--task-view", args.task_view])
     if args.keep_going is True:
         parts.append("--keep-going")
@@ -64,12 +65,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         defaults,
         help_suffix="When omitted, use the app's default full tidy source set.",
     )
-    parser.add_argument(
-        "--task-view",
-        choices=["json", "text", "toon", "text+toon"],
-        default="text",
-        help="Additional task artifact view(s) to write alongside canonical JSON.",
-    )
+    add_tidy_task_view_arg(parser)
     tidy_keep_going_group = parser.add_mutually_exclusive_group()
     tidy_keep_going_group.add_argument(
         "--keep-going",

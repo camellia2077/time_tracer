@@ -107,6 +107,53 @@ tidy_build_dir = "build_tidy_core_family"
                 )
             )
 
+    def test_tidy_configure_passes_source_targets_cache_arg(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_split_config(
+                repo_root,
+                """
+[apps.demo]
+path = "apps/demo"
+
+[tidy.source_scopes.core_family]
+roots = ["libs/tracer_core/src"]
+tidy_build_dir = "build_tidy_core_family"
+prebuild_targets = ["tc_shared_lib", "tc_app_lib"]
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            app_dir = repo_root / "apps" / "demo"
+            app_dir.mkdir(parents=True, exist_ok=True)
+
+            captured: list[list[str]] = []
+
+            def _capture_run(command: list[str], env=None, **_kwargs):
+                captured.append(command)
+                return 0
+
+            ret = build_cmake.configure_cmake(
+                ctx=ctx,
+                app_name="demo",
+                tidy=True,
+                source_scope="core_family",
+                extra_args=None,
+                cmake_args=None,
+                build_dir_name="build_tidy_core_family",
+                profile_name=None,
+                resolve_build_dir_name_fn=lambda tidy, build_dir_name, profile_name, app_name: (
+                    build_dir_name or "build_tidy_core_family"
+                ),
+                run_command_fn=_capture_run,
+            )
+
+            self.assertEqual(ret, 0)
+            self.assertEqual(len(captured), 1)
+            self.assertIn(
+                "TT_CLANG_TIDY_SOURCE_TARGETS=tc_shared_lib;tc_app_lib",
+                captured[0],
+            )
+
     def test_tidy_reconfigure_required_when_target_wrapper_is_missing(self):
         with TemporaryDirectory() as tmp:
             repo_root = Path(tmp)

@@ -45,6 +45,8 @@ auto_fix = [
   "readability-braces-around-statements",
   "readability-else-after-return",
   "readability-redundant-control-flow",
+  "google-runtime-int",
+  "google-explicit-constructor",
 ]
 safe_refactor = [
   "bugprone-easily-swappable-parameters",

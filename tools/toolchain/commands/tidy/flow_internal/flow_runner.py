@@ -15,6 +15,7 @@ class TidyFlowOptions:
     jobs: int | None = None
     parse_workers: int | None = None
     keep_going: bool | None = None
+    task_view: str | None = None
     run_tidy_fix: bool | None = None
     tidy_fix_limit: int | None = None
     build_dir_name: str | None = None

@@ -2,7 +2,7 @@ import argparse
 
 from ....commands.tidy.refresh import TidyRefreshCommand
 from ....core.context import Context
-from ...common import add_source_scope_arg
+from ...common import add_source_scope_arg, add_tidy_task_view_arg
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -10,7 +10,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument(
         "--batch-id",
         default=None,
-        help="Batch identifier from tasks_done (e.g. 1, 001, batch_001).",
+        help="Queue batch identifier from tasks_done (e.g. 1, 001, batch_001).",
     )
     add_source_scope_arg(
         parser,
@@ -45,6 +45,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         "--build-dir",
         default=None,
         help="Override tidy build directory name (default: build_tidy).",
+    )
+    add_tidy_task_view_arg(
+        parser,
+        help_text=(
+            "Optional extra task artifact view(s) for full tidy rebuilds. Canonical "
+            "task_*.json is always written; when omitted, reuse the current queue "
+            "contract or fall back to `toon`."
+        ),
     )
     tidy_refresh_keep_going_group = parser.add_mutually_exclusive_group()
     tidy_refresh_keep_going_group.add_argument(
@@ -91,6 +99,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         final_full=args.final_full,
         source_scope=args.source_scope,
         build_dir_name=args.build_dir,
+        task_view=args.task_view,
         dry_run=args.dry_run,
     )
 

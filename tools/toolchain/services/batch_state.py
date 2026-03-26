@@ -28,6 +28,12 @@ def load_state(path: Path, app_name: str) -> dict:
 
     merged = dict(state)
     merged.update(payload)
+    queue_batch_id = merged.get("queue_batch_id")
+    batch_id = merged.get("batch_id")
+    if queue_batch_id is None and batch_id is not None:
+        merged["queue_batch_id"] = batch_id
+    if batch_id is None and queue_batch_id is not None:
+        merged["batch_id"] = queue_batch_id
 
     cleaned_task_ids = merged.get("cleaned_task_ids")
     if not isinstance(cleaned_task_ids, list):
@@ -59,6 +65,7 @@ def update_state(
     state = load_state(path, app_name)
     if batch_id:
         state["batch_id"] = batch_id
+        state["queue_batch_id"] = batch_id
     if cleaned_task_ids is not None:
         existing = state.get("cleaned_task_ids", [])
         for task_id in cleaned_task_ids:
@@ -84,9 +91,18 @@ def _default_state(app_name: str) -> dict:
         "version": 1,
         "app": app_name,
         "batch_id": None,
+        "queue_batch_id": None,
         "cleaned_task_ids": [],
         "last_verify_success": None,
         "last_refresh_ok": None,
+        "queue_requires_reresolve": False,
+        "historical_selection_stale": False,
+        "reparse_required_reason": None,
+        "next_queue_head": None,
+        "replacement_queue_head": None,
+        "queue_transition_summary": None,
+        "historical_batch": None,
+        "next_action": None,
         "updated_at": None,
     }
 

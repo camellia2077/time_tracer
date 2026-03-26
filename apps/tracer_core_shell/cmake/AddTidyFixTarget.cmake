@@ -20,10 +20,59 @@ if(CLANG_TIDY_EXE)
     endif()
 
     # 1. 汇总源文件
-    # 逻辑修补：采用递归扫描以匹配项目新的分层架构（api, application, domain, infrastructure, shared）。
-    # 注意：我们只对 .cpp 进行 Tidy 检查，因为头文件会被包含在 .cpp 中一同分析。
+    # 优先从真实 CMake target 的 SOURCES 属性收集 .cpp 编译单元，
+    # 避免把已经脱离构建图的“孤儿”文件扫进 tidy 队列。
     set(ALL_TIDY_SOURCES "")
-    if(DEFINED TT_CLANG_TIDY_SOURCE_ROOTS AND NOT "${TT_CLANG_TIDY_SOURCE_ROOTS}" STREQUAL "")
+    if(DEFINED TT_CLANG_TIDY_SOURCE_TARGETS AND NOT "${TT_CLANG_TIDY_SOURCE_TARGETS}" STREQUAL "")
+        message(STATUS
+            "Using scoped clang-tidy source targets"
+            " (scope=${TT_CLANG_TIDY_SOURCE_SCOPE}): ${TT_CLANG_TIDY_SOURCE_TARGETS}"
+        )
+        foreach(TIDY_SCOPE_TARGET ${TT_CLANG_TIDY_SOURCE_TARGETS})
+            if(NOT TARGET "${TIDY_SCOPE_TARGET}")
+                message(WARNING "clang-tidy scope target does not exist: ${TIDY_SCOPE_TARGET}")
+                continue()
+            endif()
+
+            get_target_property(TIDY_SCOPE_TARGET_SOURCES "${TIDY_SCOPE_TARGET}" SOURCES)
+            get_target_property(TIDY_SCOPE_TARGET_SOURCE_DIR "${TIDY_SCOPE_TARGET}" SOURCE_DIR)
+            if(NOT TIDY_SCOPE_TARGET_SOURCES)
+                continue()
+            endif()
+
+            foreach(TIDY_SCOPE_SOURCE ${TIDY_SCOPE_TARGET_SOURCES})
+                if("${TIDY_SCOPE_SOURCE}" MATCHES "^\\$<")
+                    continue()
+                endif()
+
+                get_filename_component(TIDY_SCOPE_SOURCE_EXT "${TIDY_SCOPE_SOURCE}" EXT)
+                if(NOT TIDY_SCOPE_SOURCE_EXT STREQUAL ".cpp")
+                    continue()
+                endif()
+
+                set(TIDY_SOURCE_FILE "${TIDY_SCOPE_SOURCE}")
+                if(NOT IS_ABSOLUTE "${TIDY_SOURCE_FILE}")
+                    if(TIDY_SCOPE_TARGET_SOURCE_DIR)
+                        get_filename_component(
+                            TIDY_SOURCE_FILE
+                            "${TIDY_SCOPE_TARGET_SOURCE_DIR}/${TIDY_SOURCE_FILE}"
+                            ABSOLUTE
+                        )
+                    else()
+                        get_filename_component(
+                            TIDY_SOURCE_FILE
+                            "${CMAKE_SOURCE_DIR}/${TIDY_SOURCE_FILE}"
+                            ABSOLUTE
+                        )
+                    endif()
+                endif()
+
+                if(EXISTS "${TIDY_SOURCE_FILE}")
+                    list(APPEND ALL_TIDY_SOURCES "${TIDY_SOURCE_FILE}")
+                endif()
+            endforeach()
+        endforeach()
+    elseif(DEFINED TT_CLANG_TIDY_SOURCE_ROOTS AND NOT "${TT_CLANG_TIDY_SOURCE_ROOTS}" STREQUAL "")
         set(TT_CLANG_TIDY_SCOPE_ROOTS "${TT_CLANG_TIDY_SOURCE_ROOTS}")
         message(STATUS
             "Using scoped clang-tidy source roots"

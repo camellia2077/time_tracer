@@ -5,10 +5,6 @@ libs/tracer_core/src/application/dto/pipeline_requests.hpp
 libs/tracer_core/src/application/interfaces/i_workflow_handler.hpp
 libs/tracer_core/src/application/workflow_handler.cpp
 libs/tracer_core/src/application/workflow_handler.hpp
-libs/tracer_core/src/application/workflow_handler_entry.module.cpp
-libs/tracer_core/src/application/workflow_handler_import_flow.module.cpp
-libs/tracer_core/src/application/workflow_handler_error_mapping.module.cpp
-libs/tracer_core/src/application/workflow_handler_stats_logging.module.cpp
 libs/tracer_core/src/application/ports/pipeline
 libs/tracer_core/src/application/use_cases/pipeline_api.cpp
 libs/tracer_core/src/application/use_cases/pipeline_api.hpp

@@ -46,6 +46,7 @@ def run_prepare_phase(
         keep_going=effective_keep_going,
         source_scope=options.source_scope,
         build_dir_name=options.tidy_build_dir_name,
+        task_view=options.task_view,
     )
     if tidy_ret != 0:
         tidy_flow_state.set_step(state, "prepare_tasks", "failed", tidy_ret)

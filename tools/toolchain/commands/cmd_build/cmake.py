@@ -92,9 +92,13 @@ def needs_tidy_filter_reconfigure(
         return True
 
     expected_scope, expected_roots = tidy_workspace.source_scope_cache_values(ctx, source_scope)
+    expected_targets = tidy_workspace.source_scope_cache_targets_value(ctx, source_scope)
     actual_scope = (_read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_SCOPE) or "").strip()
     actual_roots = tidy_workspace.normalize_cache_roots_value(
         _read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_ROOTS)
+    )
+    actual_targets = tidy_workspace.normalize_cache_targets_value(
+        _read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS)
     )
     actual_compile_db_dir = build_common.normalize_cache_path(
         _read_cmake_cache_value(
@@ -112,6 +116,7 @@ def needs_tidy_filter_reconfigure(
     return (
         actual_scope != expected_scope
         or actual_roots != expected_roots
+        or actual_targets != expected_targets
         or actual_compile_db_dir != expected_compile_db_dir
         or actual_tidy_wrapper != "OFF"
     )
@@ -229,6 +234,10 @@ def configure_cmake(
     configure_args = build_common.strip_cmake_definition(
         configure_args,
         tidy_workspace.CMAKE_CACHE_KEY_SOURCE_ROOTS,
+    )
+    configure_args = build_common.strip_cmake_definition(
+        configure_args,
+        tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS,
     )
     configure_args = build_common.strip_cmake_definition(
         configure_args,

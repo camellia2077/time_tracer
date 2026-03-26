@@ -2,7 +2,12 @@ import argparse
 
 from ....commands.tidy.flow import TidyFlowCommand
 from ....core.context import Context
-from ...common import add_profile_arg, add_source_scope_arg, add_tidy_build_dir_arg
+from ...common import (
+    add_profile_arg,
+    add_source_scope_arg,
+    add_tidy_build_dir_arg,
+    add_tidy_task_view_arg,
+)
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -58,6 +63,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         parser,
         defaults,
         help_suffix="Used for the tidy generation/fix/rename workspace inside tidy-flow.",
+    )
+    add_tidy_task_view_arg(
+        parser,
+        help_text=(
+            "Optional extra task artifact view(s) for generated/refreshed queue files. "
+            "Canonical task_*.json is always written; when omitted, reuse the current "
+            "queue contract or fall back to `toon`."
+        ),
     )
     tidy_flow_keep_going_group = parser.add_mutually_exclusive_group()
     tidy_flow_keep_going_group.add_argument(
@@ -119,6 +132,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         jobs=args.jobs,
         parse_workers=args.parse_workers,
         keep_going=args.keep_going,
+        task_view=args.task_view,
         run_tidy_fix=args.run_tidy_fix,
         tidy_fix_limit=args.tidy_fix_limit,
         build_dir_name=args.build_dir,

@@ -1,6 +1,6 @@
-import json
 from pathlib import Path
 
+from .. import analysis_compile_db
 from ...shared import tidy as tidy_shared
 from ..task_log import list_task_paths, load_task_record
 
@@ -26,30 +26,7 @@ def collect_batch_files(batch_dir: Path) -> list[Path]:
 
 
 def load_compile_units(compile_commands_path: Path) -> list[Path]:
-    try:
-        raw_payload = json.loads(
-            compile_commands_path.read_text(encoding="utf-8", errors="replace")
-        )
-    except json.JSONDecodeError:
-        return []
-
-    if not isinstance(raw_payload, list):
-        return []
-
-    files_by_key: dict[str, Path] = {}
-    for item in raw_payload:
-        if not isinstance(item, dict):
-            continue
-        file_raw = item.get("file")
-        if not isinstance(file_raw, str) or not file_raw.strip():
-            continue
-        file_path = Path(file_raw)
-        if not file_path.is_absolute():
-            directory_raw = item.get("directory")
-            if isinstance(directory_raw, str) and directory_raw.strip():
-                file_path = Path(directory_raw) / file_path
-        files_by_key[path_key(file_path)] = file_path
-    return sorted(files_by_key.values(), key=lambda path: path_key(path))
+    return analysis_compile_db.load_compile_units(compile_commands_path)
 
 
 def resolve_incremental_files(

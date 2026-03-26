@@ -2,7 +2,7 @@ import argparse
 
 from ....commands.tidy import TidyCommand
 from ....core.context import Context
-from ...common import add_source_scope_arg
+from ...common import add_source_scope_arg, add_tidy_task_view_arg
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -41,11 +41,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         default=None,
         help="Max task logs per batch folder (default from config).",
     )
-    parser.add_argument(
-        "--task-view",
-        choices=["json", "text", "toon", "text+toon"],
-        default="text",
-        help="Additional task artifact view(s) to write alongside canonical JSON.",
+    add_tidy_task_view_arg(
+        parser,
+        choices=("text", "text+toon"),
+        help_text=(
+            "Optional human-facing task view(s) for tidy-split. Canonical task_*.json "
+            "is always written for machine consumers; explicit `--task-view` here only "
+            "supports `text` or `text+toon`."
+        ),
     )
 
 

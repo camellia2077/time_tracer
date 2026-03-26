@@ -9,9 +9,12 @@ def load_state(state_path: Path) -> dict:
         "version": 1,
         "batches_since_full": 0,
         "processed_batches": [],
+        "processed_queue_batches": [],
         "last_batch": None,
+        "last_queue_batch": None,
         "last_full_at": None,
         "last_full_batch": None,
+        "last_full_queue_batch": None,
         "last_full_reason": "",
         "full_every": None,
         "last_seen_build_log_mtime_ns": None,
@@ -25,6 +28,22 @@ def load_state(state_path: Path) -> dict:
     merged.update(payload)
     if not isinstance(merged.get("processed_batches"), list):
         merged["processed_batches"] = []
+    if not isinstance(merged.get("processed_queue_batches"), list):
+        merged["processed_queue_batches"] = list(merged.get("processed_batches", []))
+    if merged.get("last_queue_batch") is None and merged.get("last_batch") is not None:
+        merged["last_queue_batch"] = merged.get("last_batch")
+    if merged.get("last_batch") is None and merged.get("last_queue_batch") is not None:
+        merged["last_batch"] = merged.get("last_queue_batch")
+    if (
+        merged.get("last_full_queue_batch") is None
+        and merged.get("last_full_batch") is not None
+    ):
+        merged["last_full_queue_batch"] = merged.get("last_full_batch")
+    if (
+        merged.get("last_full_batch") is None
+        and merged.get("last_full_queue_batch") is not None
+    ):
+        merged["last_full_batch"] = merged.get("last_full_queue_batch")
     return merged
 
 
@@ -46,12 +65,15 @@ def register_batch(
 
     processed = ensure_processed_batches(state)
     if batch_name in processed:
+        state["processed_queue_batches"] = list(processed)
         return True
 
     processed.append(batch_name)
     state["processed_batches"] = processed[-max_batches:]
+    state["processed_queue_batches"] = list(state["processed_batches"])
     state["batches_since_full"] = int(state.get("batches_since_full", 0)) + 1
     state["last_batch"] = batch_name
+    state["last_queue_batch"] = batch_name
     return False
 
 

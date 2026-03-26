@@ -48,6 +48,7 @@ class TidyFixStrategyConfig:
             "readability-braces-around-statements",
             "readability-else-after-return",
             "readability-redundant-control-flow",
+            "google-runtime-int",
         ]
     )
     safe_refactor: list[str] = field(

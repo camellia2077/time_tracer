@@ -60,6 +60,7 @@ def ensure_configured(
     cache_path = build_dir / "CMakeCache.txt"
     expected_filter = _resolve_tidy_header_filter_regex(ctx)
     expected_scope, expected_roots = tidy_workspace.source_scope_cache_values(ctx, source_scope)
+    expected_targets = tidy_workspace.source_scope_cache_targets_value(ctx, source_scope)
     if cache_path.exists():
         current_filter = _read_cmake_cache_value(cache_path, _TIDY_HEADER_FILTER_CACHE_KEY)
         current_scope = (
@@ -67,6 +68,9 @@ def ensure_configured(
         ).strip()
         current_roots = tidy_workspace.normalize_cache_roots_value(
             _read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_ROOTS)
+        )
+        current_targets = tidy_workspace.normalize_cache_targets_value(
+            _read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS)
         )
         current_compile_db_dir = (
             _read_cmake_cache_value(
@@ -80,6 +84,7 @@ def ensure_configured(
             current_filter == expected_filter
             and current_scope == expected_scope
             and current_roots == expected_roots
+            and current_targets == expected_targets
             and current_compile_db_dir.replace("\\", "/") == expected_compile_db_dir
         ):
             return 0, False, 0.0
@@ -89,6 +94,7 @@ def ensure_configured(
             f"(cache keys={_TIDY_HEADER_FILTER_CACHE_KEY}, "
             f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_SCOPE}, "
             f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_ROOTS}, "
+            f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS}, "
             f"{analysis_compile_db.CMAKE_CACHE_KEY_ANALYSIS_COMPILE_DB_DIR}). "
             "Running auto-configure..."
         )

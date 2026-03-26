@@ -56,6 +56,7 @@ def _run_auto_full_tidy(ctx: Context, options) -> int:
         keep_going=options.keep_going,
         source_scope=options.source_scope,
         build_dir_name=options.tidy_build_dir_name,
+        task_view=options.task_view,
     )
 
 

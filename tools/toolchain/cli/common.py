@@ -147,16 +147,40 @@ def add_tidy_build_dir_arg(
     )
 
 
+def add_tidy_task_view_arg(
+    parser_obj: argparse.ArgumentParser,
+    *,
+    default: str | None = None,
+    help_text: str | None = None,
+    choices: tuple[str, ...] | None = None,
+) -> None:
+    effective_choices = list(choices or ("json", "text", "toon", "text+toon"))
+    effective_help = (
+        help_text
+        or "Optional extra task artifact view(s). Canonical task_*.json is always written; "
+        "when omitted, reuse the current queue contract or fall back to `toon`."
+    )
+    parser_obj.add_argument(
+        "--task-view",
+        choices=effective_choices,
+        default=default,
+        help=effective_help,
+    )
+
+
 def add_task_selector_args(parser_obj: argparse.ArgumentParser) -> None:
     parser_obj.add_argument(
         "--task-log",
         default=None,
-        help="Explicit task artifact path (.json/.log). Overrides --batch-id/--task-id selection.",
+        help=(
+            "Explicit task artifact path (.json/.toon/.log). Preferred after refresh/rebase; "
+            "overrides --batch-id/--task-id selection."
+        ),
     )
     parser_obj.add_argument(
         "--batch-id",
         default=None,
-        help="Batch identifier under tasks/ (e.g. 2, 002, batch_002).",
+        help="Queue batch identifier under tasks/ (e.g. 2, 002, batch_002).",
     )
     parser_obj.add_argument(
         "--task-id",

@@ -10,7 +10,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument(
         "--batch-id",
         required=True,
-        help="Batch identifier under tasks/ (e.g. 1, 001, batch_001).",
+        help="Queue batch identifier under tasks/ (e.g. 1, 001, batch_001).",
     )
     parser.add_argument(
         "--preset",

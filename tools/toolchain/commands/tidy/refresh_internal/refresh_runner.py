@@ -126,6 +126,7 @@ def run_full_tidy(
     keep_going: bool,
     source_scope: str | None,
     build_dir_name: str,
+    task_view: str | None = None,
 ) -> int:
     return TidyCommand(ctx).execute(
         app_name=app_name,
@@ -135,6 +136,7 @@ def run_full_tidy(
         keep_going=keep_going,
         source_scope=source_scope,
         build_dir_name=build_dir_name,
+        task_view=task_view,
     )
 
 

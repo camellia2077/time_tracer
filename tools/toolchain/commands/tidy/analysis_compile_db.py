@@ -22,6 +22,33 @@ def resolve_compile_db_cache_value(build_dir: Path) -> str:
     return str(resolve_compile_db_dir(build_dir).resolve()).replace("\\", "/")
 
 
+def load_compile_units(compile_commands_path: Path) -> list[Path]:
+    try:
+        raw_payload = json.loads(
+            compile_commands_path.read_text(encoding="utf-8", errors="replace")
+        )
+    except (OSError, json.JSONDecodeError):
+        return []
+
+    if not isinstance(raw_payload, list):
+        return []
+
+    files_by_key: dict[str, Path] = {}
+    for item in raw_payload:
+        if not isinstance(item, dict):
+            continue
+        file_raw = item.get("file")
+        if not isinstance(file_raw, str) or not file_raw.strip():
+            continue
+        file_path = Path(file_raw)
+        if not file_path.is_absolute():
+            directory_raw = item.get("directory")
+            if isinstance(directory_raw, str) and directory_raw.strip():
+                file_path = Path(directory_raw) / file_path
+        files_by_key[_path_key(file_path)] = file_path
+    return sorted(files_by_key.values(), key=_path_key)
+
+
 def _resolve_modmap_path(arg_text: str, directory: str | None) -> Path | None:
     if not arg_text.startswith("@"):
         return None
@@ -95,3 +122,10 @@ def ensure_analysis_compile_db(build_dir: Path) -> Path:
         encoding="utf-8",
     )
     return target_dir
+
+
+def _path_key(path: Path) -> str:
+    normalized = str(path).replace("\\", "/")
+    while "//" in normalized:
+        normalized = normalized.replace("//", "/")
+    return normalized.lower()

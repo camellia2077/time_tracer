@@ -1,5 +1,7 @@
 import time
 
+from . import analysis_compile_db
+
 
 def execute_tidy_command(
     command,
@@ -13,7 +15,7 @@ def execute_tidy_command(
     keep_going: bool | None = None,
     source_scope: str | None = None,
     build_dir_name: str | None = None,
-    task_view: str = "text",
+    task_view: str | None = None,
     prebuild_targets: list[str] | None = None,
 ) -> int:
     paths = command._resolve_tidy_paths(app_name, build_dir_name=build_dir_name)
@@ -74,10 +76,13 @@ def execute_tidy_command(
             return prebuild_ret
 
     try:
-        command._ensure_analysis_compile_db(build_dir)
+        compile_db_dir = command._ensure_analysis_compile_db(build_dir)
     except (FileNotFoundError, OSError, ValueError) as error:
         print(f"--- Failed to prepare analysis compile db: {error}")
         return 1
+    compile_units = analysis_compile_db.load_compile_units(
+        compile_db_dir / "compile_commands.json"
+    )
 
     cmd = command._build_tidy_command(
         app_name,
@@ -104,6 +109,7 @@ def execute_tidy_command(
                 task_view=task_view,
                 workspace_name=build_dir_name or "",
                 source_scope=source_scope,
+                compile_units=compile_units,
             )
         except ValueError as error:
             print(f"--- Tidy log split failed: {error}")
@@ -122,4 +128,4 @@ def execute_tidy_command(
         jobs=effective_jobs,
     )
 
-    return 0
+    return ret

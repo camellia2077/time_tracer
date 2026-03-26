@@ -165,6 +165,7 @@ class TidyRefreshCommand:
         keep_going: bool,
         source_scope: str | None,
         build_dir_name: str,
+        task_view: str | None,
     ) -> int:
         return tidy_refresh_runner.run_full_tidy(
             ctx=self.ctx,
@@ -174,6 +175,7 @@ class TidyRefreshCommand:
             keep_going=keep_going,
             source_scope=source_scope,
             build_dir_name=build_dir_name,
+            task_view=task_view,
         )
 
     def _chunk_paths(self, paths: list[Path], chunk_size: int) -> list[list[Path]]:
@@ -193,6 +195,7 @@ class TidyRefreshCommand:
         final_full: bool = False,
         source_scope: str | None = None,
         build_dir_name: str | None = None,
+        task_view: str | None = None,
         dry_run: bool = False,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
@@ -213,6 +216,7 @@ class TidyRefreshCommand:
             final_full=final_full,
             source_scope=workspace.source_scope,
             build_dir_name=workspace.build_dir_name,
+            task_view=task_view,
             dry_run=dry_run,
         )
         status = "completed" if ret == 0 else "failed"
