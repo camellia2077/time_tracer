@@ -64,7 +64,8 @@ def write_result_report(result) -> None:
             ]
         )
         if action.old_name or action.new_name:
-            md_lines.append(f"- Rename: `{action.old_name}` -> `{action.new_name}`")
+            change_label = "Rename" if action.kind == "rename" else "Change"
+            md_lines.append(f"- {change_label}: `{action.old_name}` -> `{action.new_name}`")
         if action.replacement:
             md_lines.append(f"- Replacement: `{action.replacement}`")
         if action.changed_files:
