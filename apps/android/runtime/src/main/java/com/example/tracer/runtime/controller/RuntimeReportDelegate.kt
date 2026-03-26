@@ -7,7 +7,11 @@ internal class RuntimeReportDelegate(
     private val executeReportAfterInit: (
         operationName: String,
         action: (RuntimePaths) -> String
-    ) -> ReportCallResult
+    ) -> ReportCallResult,
+    private val nativeReportSingle: (
+        reportType: Int,
+        argument: String
+    ) -> String
 ) {
     suspend fun reportDayMarkdown(date: String): ReportCallResult =
         runMarkdownReportFlow(
@@ -50,13 +54,7 @@ internal class RuntimeReportDelegate(
         argument: String
     ): ReportCallResult = withContext(Dispatchers.IO) {
         executeReportAfterInit(buildReportOperationName(reportType)) {
-            NativeBridge.nativeReport(
-                mode = NativeBridge.REPORT_MODE_SINGLE,
-                reportType = reportType,
-                argument = argument,
-                format = NativeBridge.REPORT_FORMAT_MARKDOWN,
-                daysList = null
-            )
+            nativeReportSingle(reportType, argument)
         }
     }
 

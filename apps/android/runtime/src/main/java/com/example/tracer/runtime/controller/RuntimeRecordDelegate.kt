@@ -14,6 +14,13 @@ internal class RuntimeRecordDelegate(
         operationName: String,
         action: (RuntimePaths) -> String
     ) -> NativeCallResult,
+    private val nativeValidateStructure: (inputPath: String) -> String,
+    private val nativeValidateLogic: (inputPath: String, dateCheckMode: Int) -> String,
+    private val nativeIngest: (
+        inputPath: String,
+        dateCheckMode: Int,
+        saveProcessedOutput: Boolean
+    ) -> String,
     private val syncLiveOperation: (RuntimePaths) -> String
 ) {
     // Design intent – TXT month file creation:
@@ -127,9 +134,7 @@ internal class RuntimeRecordDelegate(
                 val targetInputPath = File(sourceTarget.first, sourceTarget.second).absolutePath
 
                 val structureCheckResult = executeAfterInit("native_validate_structure") {
-                    NativeBridge.nativeValidateStructure(
-                        inputPath = targetInputPath
-                    )
+                    nativeValidateStructure(targetInputPath)
                 }
                 extractNativeStageFailure(
                     result = structureCheckResult,
@@ -143,10 +148,7 @@ internal class RuntimeRecordDelegate(
                 }
 
                 val logicCheckResult = executeAfterInit("native_validate_logic") {
-                    NativeBridge.nativeValidateLogic(
-                        inputPath = targetInputPath,
-                        dateCheckMode = NativeBridge.DATE_CHECK_CONTINUITY
-                    )
+                    nativeValidateLogic(targetInputPath, NativeBridge.DATE_CHECK_CONTINUITY)
                 }
                 extractNativeStageFailure(
                     result = logicCheckResult,
@@ -160,11 +162,7 @@ internal class RuntimeRecordDelegate(
                 }
 
                 val syncResult = executeAfterInit("native_reimport_txt") {
-                    NativeBridge.nativeIngest(
-                        inputPath = targetInputPath,
-                        dateCheckMode = NativeBridge.DATE_CHECK_CONTINUITY,
-                        saveProcessedOutput = false
-                    )
+                    nativeIngest(targetInputPath, NativeBridge.DATE_CHECK_CONTINUITY, false)
                 }
                 extractNativeStageFailure(
                     result = syncResult,
@@ -258,11 +256,7 @@ internal class RuntimeRecordDelegate(
 
     private fun syncRecordInput(inputPath: String): NativeCallResult {
         return executeAfterInit("native_record_sync_ingest") {
-            NativeBridge.nativeIngest(
-                inputPath = inputPath,
-                dateCheckMode = NativeBridge.DATE_CHECK_NONE,
-                saveProcessedOutput = false
-            )
+            nativeIngest(inputPath, NativeBridge.DATE_CHECK_NONE, false)
         }
     }
 

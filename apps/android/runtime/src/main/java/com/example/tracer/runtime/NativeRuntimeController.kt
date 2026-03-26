@@ -29,7 +29,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nextOperationId = operationIdGenerator::next,
         errorMapper = errorMapper
     )
-    private val syncUseCase = IngestSyncUseCase(AutoSyncMaterializer())
+    private val syncUseCase = IngestSyncUseCase(
+        autoSyncMaterializer = AutoSyncMaterializer(),
+        nativeIngest = runtimeBridge::nativeIngest
+    )
 
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
@@ -38,6 +41,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         responseCodec = responseCodec,
         recordTranslator = recordTranslator,
         executeAfterInit = coreAdapter::executeAfterInit,
+        nativeValidateStructure = runtimeBridge::nativeValidateStructure,
+        nativeValidateLogic = runtimeBridge::nativeValidateLogic,
+        nativeIngest = runtimeBridge::nativeIngest,
         syncLiveOperation = { paths -> syncUseCase.run(paths) }
     )
     private val storageDelegate = RuntimeStorageDelegate(
@@ -45,7 +51,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
     )
     private val reportDelegate = RuntimeReportDelegate(
-        executeReportAfterInit = coreAdapter::executeReportAfterInit
+        executeReportAfterInit = coreAdapter::executeReportAfterInit,
+        nativeReportSingle = runtimeBridge::nativeReportSingle
     )
     private val queryDelegate = RuntimeQueryDelegate(
         queryTranslator = queryTranslator,
@@ -86,13 +93,15 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val cryptoService = RuntimeCryptoService(
         responseCodec = responseCodec,
         nativeEncryptFile = runtimeBridge::nativeEncryptFile,
-        nativeDecryptFile = runtimeBridge::nativeDecryptFile
+        nativeDecryptFile = runtimeBridge::nativeDecryptFile,
+        setProgressListener = runtimeBridge::setCryptoProgressListener
     )
     private val tracerExchangeService = RuntimeTracerExchangeService(
         responseCodec = responseCodec,
         nativeExportTracerExchange = runtimeBridge::nativeExportTracerExchange,
         nativeImportTracerExchange = runtimeBridge::nativeImportTracerExchange,
-        nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange
+        nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
+        setProgressListener = runtimeBridge::setCryptoProgressListener
     )
 
     // init

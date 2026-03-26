@@ -1,5 +1,11 @@
 package com.example.tracer
 
+/**
+ * Thin Kotlin-side adapter over `NativeBridge`.
+ *
+ * Android runtime flows should depend on this adapter instead of calling raw
+ * `external fun` JNI methods directly.
+ */
 internal class NativeRuntimeBridge {
     fun nativeInit(paths: RuntimePaths): String =
         NativeBridge.nativeInit(
@@ -82,6 +88,19 @@ internal class NativeRuntimeBridge {
         passphrase = passphrase
     )
 
+    fun nativeValidateStructure(inputPath: String): String =
+        NativeBridge.nativeValidateStructure(
+            inputPath = inputPath
+        )
+
+    fun nativeValidateLogic(
+        inputPath: String,
+        dateCheckMode: Int
+    ): String = NativeBridge.nativeValidateLogic(
+        inputPath = inputPath,
+        dateCheckMode = dateCheckMode
+    )
+
     fun nativeQuery(request: DataQueryRequest): String = NativeBridge.nativeQuery(
         action = request.action,
         year = request.year ?: 0,
@@ -114,4 +133,20 @@ internal class NativeRuntimeBridge {
         periodArgument = params.periodArgument,
         root = ""
     )
+
+    fun nativeReportSingle(
+        reportType: Int,
+        argument: String,
+        format: Int = NativeBridge.REPORT_FORMAT_MARKDOWN
+    ): String = NativeBridge.nativeReport(
+        mode = NativeBridge.REPORT_MODE_SINGLE,
+        reportType = reportType,
+        argument = argument,
+        format = format,
+        daysList = null
+    )
+
+    fun setCryptoProgressListener(listener: ((String) -> Unit)?) {
+        NativeBridge.setCryptoProgressListener(listener)
+    }
 }

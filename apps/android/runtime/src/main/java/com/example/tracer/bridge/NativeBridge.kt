@@ -2,6 +2,12 @@ package com.example.tracer
 
 import java.util.concurrent.atomic.AtomicReference
 
+/**
+ * Raw JNI surface mirrored 1:1 from `apps/tracer_core_shell/api/android_jni`.
+ *
+ * Kotlin runtime code should prefer `NativeRuntimeBridge` so JNI wiring,
+ * protocol-code translation, and future signature churn stay isolated here.
+ */
 object NativeBridge {
     const val UNSET_INT = -1
 

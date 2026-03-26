@@ -72,6 +72,9 @@ class RuntimeRecordDelegateTest {
                         )
                     }
                 },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
+                nativeIngest = { _, _, _ -> """{"ok":true}""" },
                 syncLiveOperation = { """{"ok":true}""" }
             )
 
