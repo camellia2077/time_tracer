@@ -994,6 +994,43 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(raised.exception.code, 2)
         self.assertIn("unrecognized arguments: --quick", stderr.getvalue())
 
+    def test_report_markdown_gate_dispatches_build_dir_and_refresh(self):
+        class FakeReportMarkdownGateCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeReportMarkdownGateCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.quality.report_markdown_gate.ReportMarkdownGateCommand",
+            FakeReportMarkdownGateCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "report-markdown-gate",
+                    "--app",
+                    "tracer_core_shell",
+                    "--build-dir",
+                    "build_release",
+                    "--refresh-golden",
+                ]
+            )
+
+        self.assertEqual(
+            FakeReportMarkdownGateCommand.last_kwargs["app_name"],
+            "tracer_core_shell",
+        )
+        self.assertEqual(
+            FakeReportMarkdownGateCommand.last_kwargs["build_dir_name"],
+            "build_release",
+        )
+        self.assertTrue(FakeReportMarkdownGateCommand.last_kwargs["refresh_golden"])
+
     def test_tidy_dispatches_profile_concise_and_kill_build_procs(self):
         class FakeTidyCommand:
             last_args = None
