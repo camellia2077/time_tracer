@@ -4,6 +4,7 @@ class StaticConverterConfigProvider final
   explicit StaticConverterConfigProvider(ConverterConfig converter_config);
 
   [[nodiscard]] auto LoadConverterConfig() const -> ConverterConfig override;
+  auto InvalidateCache() -> void override;
 
  private:
   ConverterConfig converter_config_;

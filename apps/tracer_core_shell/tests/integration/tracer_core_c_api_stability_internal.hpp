@@ -37,6 +37,9 @@ using RuntimeCreateFn = TtCoreRuntimeHandle* (*)(const char*, const char*,
                                                  const char*);
 using RuntimeDestroyFn = void (*)(TtCoreRuntimeHandle*);
 using RuntimeIngestFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeIngestSyncStatusFn = const char* (*)(TtCoreRuntimeHandle*,
+                                                  const char*);
+using RuntimeClearIngestSyncStatusFn = const char* (*)(TtCoreRuntimeHandle*);
 using RuntimeConvertFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeImportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeValidateStructureFn = const char* (*)(TtCoreRuntimeHandle*,
@@ -46,6 +49,8 @@ using RuntimeValidateLogicFn = const char* (*)(TtCoreRuntimeHandle*,
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeReportTargetsFn = const char* (*)(TtCoreRuntimeHandle*,
+                                               const char*);
 using RuntimeExportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeTreeFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeCryptoEncryptFn = const char* (*)(TtCoreRuntimeHandle*,
@@ -70,6 +75,8 @@ struct CoreApiFns {
   RuntimeCreateFn runtime_create = nullptr;
   RuntimeDestroyFn runtime_destroy = nullptr;
   RuntimeIngestFn runtime_ingest = nullptr;
+  RuntimeIngestSyncStatusFn runtime_ingest_sync_status = nullptr;
+  RuntimeClearIngestSyncStatusFn runtime_clear_ingest_sync_status = nullptr;
   RuntimeConvertFn runtime_convert = nullptr;
   RuntimeImportFn runtime_import = nullptr;
   RuntimeValidateStructureFn runtime_validate_structure = nullptr;
@@ -77,6 +84,7 @@ struct CoreApiFns {
   RuntimeQueryFn runtime_query = nullptr;
   RuntimeReportFn runtime_report = nullptr;
   RuntimeReportBatchFn runtime_report_batch = nullptr;
+  RuntimeReportTargetsFn runtime_report_targets = nullptr;
   RuntimeExportFn runtime_export = nullptr;
   RuntimeTreeFn runtime_tree = nullptr;
   RuntimeCryptoEncryptFn runtime_crypto_encrypt = nullptr;
@@ -141,7 +149,8 @@ void RunCallbackBridgeChecks(const CoreApiFns& api,
                              const fs::path& input_root);
 
 void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
-void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime);
+void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
+                        const fs::path& output_root);
 void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                        const fs::path& input_root);
 void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,

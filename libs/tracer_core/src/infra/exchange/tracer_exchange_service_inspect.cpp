@@ -90,37 +90,21 @@ auto TracerExchangeService::RunInspect(
   file_crypto::TracerFileMetadata metadata{};
   EnsureCryptoResultOk(file_crypto::InspectEncryptedFile(kInputPath, &metadata),
                        "Inspect", kInputPath);
-
-  const std::string kStem = kInputPath.stem().empty()
-                                ? kInputPath.filename().string()
-                                : kInputPath.stem().string();
-  const fs::path kStagingDir =
-      BuildScopedStagingDir(kInputPath.parent_path(), "inspect", kStem);
-  const fs::path kPackagePath = kStagingDir / "exchange.ttpkg";
-
-  std::error_code io_error;
-  fs::create_directories(kStagingDir, io_error);
-  if (io_error) {
-    throw std::runtime_error("Failed to create tracer exchange staging dir: " +
-                             kStagingDir.string() + " | " + io_error.message());
-  }
-
-  try {
-    EnsureCryptoResultOk(
-        file_crypto::DecryptFile(
-            kInputPath, kPackagePath, request.passphrase,
-            BuildCryptoOptions(
-                app_dto::TracerExchangeSecurityLevel::kInteractive,
-                request.progress_observer)),
-        "Inspect", kInputPath);
-    const exchange_pkg::DecodedTracerExchangePackage kPackage =
-        DecodePackageBytes(ReadFileBytes(kPackagePath));
-    RemoveDirectoryBestEffort(kStagingDir);
-    return BuildInspectResult(kInputPath, metadata, kPackage);
-  } catch (...) {
-    RemoveDirectoryBestEffort(kStagingDir);
-    throw;
-  }
+  const file_crypto::FileCryptoPathContext kPathContext{
+      .input_root_path = kInputPath.parent_path(),
+      .output_root_path = kInputPath.parent_path(),
+      .current_input_path = kInputPath,
+      .current_output_path = kInputPath.parent_path() /
+                             (kInputPath.stem().string() + ".ttpkg"),
+  };
+  auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
+      kInputPath, request.passphrase, kPathContext,
+      BuildCryptoOptions(app_dto::TracerExchangeSecurityLevel::kInteractive,
+                         request.progress_observer));
+  EnsureCryptoResultOk(decrypt_result, "Inspect", kInputPath);
+  const exchange_pkg::DecodedTracerExchangePackage kPackage =
+      DecodePackageBytes(package_bytes);
+  return BuildInspectResult(kInputPath, metadata, kPackage);
 }
 
 }  // namespace tracer_core::infrastructure::crypto::tracer_exchange_internal

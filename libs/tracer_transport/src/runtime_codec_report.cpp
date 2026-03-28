@@ -77,6 +77,39 @@ auto EncodeReportResponse(const ReportResponsePayload& response)
       .dump();
 }
 
+auto DecodeReportTargetsRequest(std::string_view request_json)
+    -> ReportTargetsRequestPayload {
+  const json kPayload = ParseRequestObject(request_json);
+
+  const auto kType = RequireStringField(kPayload, "type");
+  if (kType.HasError()) {
+    throw std::invalid_argument(kType.error.message);
+  }
+
+  ReportTargetsRequestPayload out{};
+  out.type = kType.value.value_or("");
+  return out;
+}
+
+auto EncodeReportTargetsRequest(const ReportTargetsRequestPayload& request)
+    -> std::string {
+  return json{{"type", request.type}}.dump();
+}
+
+auto EncodeReportTargetsResponse(const ReportTargetsResponsePayload& response)
+    -> std::string {
+  return json{
+      {"ok", response.ok},
+      {"type", response.type},
+      {"items", response.items},
+      {"error_message", response.error_message},
+      {"error_code", response.error_contract.error_code},
+      {"error_category", response.error_contract.error_category},
+      {"hints", response.error_contract.hints},
+  }
+      .dump();
+}
+
 auto DecodeReportBatchRequest(std::string_view request_json)
     -> ReportBatchRequestPayload {
   const json kPayload = ParseRequestObject(request_json);

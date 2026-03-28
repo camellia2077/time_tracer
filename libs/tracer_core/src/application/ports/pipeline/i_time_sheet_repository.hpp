@@ -7,6 +7,7 @@
 #include <string_view>
 #include <vector>
 
+#include "application/dto/pipeline_responses.hpp"
 #include "application/pipeline/importer/model/import_models.hpp"
 
 namespace tracer_core::application::ports {
@@ -31,6 +32,15 @@ class ITimeSheetRepository {
                                 const std::vector<DayData>& days,
                                 const std::vector<TimeRecordInternal>& records)
       -> void = 0;
+  virtual auto UpsertIngestSyncStatus(
+      const tracer_core::core::dto::IngestSyncStatusEntry& entry) -> void = 0;
+  virtual auto ReplaceIngestSyncStatuses(
+      const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
+      -> void = 0;
+  virtual auto ClearIngestSyncStatus() -> void = 0;
+  [[nodiscard]] virtual auto ListIngestSyncStatuses(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request) const
+      -> tracer_core::core::dto::IngestSyncStatusOutput = 0;
   [[nodiscard]] virtual auto TryGetLatestActivityTailBeforeDate(
       std::string_view date) const -> std::optional<PreviousActivityTail> = 0;
 };

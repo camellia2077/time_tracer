@@ -49,7 +49,7 @@ auto TestImportFailureIsWrapped(TestState& state) -> void {
 
   const auto result = runtime_api.tracer_exchange().RunTracerExchangeImport(
       {.input_tracer_path = "sample.tracer",
-       .active_text_root_path = "runtime/input/full",
+       .active_text_root_path = "runtime/input",
        .active_converter_main_config_path =
            "config/converter/interval_processor_config.toml",
        .runtime_work_root = "runtime/work",

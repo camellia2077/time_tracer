@@ -7,6 +7,7 @@ class FileConverterConfigProvider final
           initial_top_parents);
 
   [[nodiscard]] auto LoadConverterConfig() const -> ConverterConfig override;
+  auto InvalidateCache() -> void override;
 
  private:
   std::filesystem::path config_path_;

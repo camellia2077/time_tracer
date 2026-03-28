@@ -15,6 +15,7 @@ using nlohmann::json;
 using tracer::transport::modfields::RequireStringField;
 using tracer::transport::modfields::TryReadBoolField;
 using tracer::transport::modfields::TryReadStringField;
+using tracer::transport::modfields::TryReadStringListField;
 
 auto ParseRequestObject(std::string_view request_json) -> json {
   if (request_json.empty()) {
@@ -83,6 +84,55 @@ auto EncodeIngestResponse(const IngestResponsePayload& response)
     -> std::string {
   return json{
       {"ok", response.ok},
+      {"error_message", response.error_message},
+      {"error_code", response.error_contract.error_code},
+      {"error_category", response.error_contract.error_category},
+      {"hints", response.error_contract.hints},
+  }
+      .dump();
+}
+
+auto DecodeIngestSyncStatusRequest(std::string_view request_json)
+    -> IngestSyncStatusRequestPayload {
+  if (request_json.empty()) {
+    return IngestSyncStatusRequestPayload{};
+  }
+
+  const json kPayload = ParseRequestObject(request_json);
+  const auto kMonths = TryReadStringListField(kPayload, "months");
+  if (kMonths.HasError()) {
+    throw std::invalid_argument(kMonths.error.message);
+  }
+
+  IngestSyncStatusRequestPayload out{};
+  out.months = kMonths.value;
+  return out;
+}
+
+auto EncodeIngestSyncStatusRequest(
+    const IngestSyncStatusRequestPayload& request) -> std::string {
+  json payload = json::object();
+  if (request.months.has_value()) {
+    payload["months"] = *request.months;
+  }
+  return payload.dump();
+}
+
+auto EncodeIngestSyncStatusResponse(
+    const IngestSyncStatusResponsePayload& response) -> std::string {
+  json items = json::array();
+  for (const auto& item : response.items) {
+    items.push_back(json{
+        {"month_key", item.month_key},
+        {"txt_relative_path", item.txt_relative_path},
+        {"txt_content_hash_sha256", item.txt_content_hash_sha256},
+        {"ingested_at_unix_ms", item.ingested_at_unix_ms},
+    });
+  }
+
+  return json{
+      {"ok", response.ok},
+      {"items", std::move(items)},
       {"error_message", response.error_message},
       {"error_code", response.error_contract.error_code},
       {"error_category", response.error_contract.error_category},

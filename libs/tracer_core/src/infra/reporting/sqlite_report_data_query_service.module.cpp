@@ -2,8 +2,10 @@ module;
 
 #include "infra/sqlite_fwd.hpp"
 
+#include <format>
 #include <map>
 #include <memory>
+#include <set>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -20,6 +22,8 @@ module;
 #include "infra/reporting/data/queriers/weekly/weekly_querier.hpp"
 #include "infra/reporting/data/queriers/yearly/yearly_querier.hpp"
 #include "infra/reporting/services/batch_export_helpers.hpp"
+#include "infra/schema/sqlite_schema.hpp"
+#include "shared/utils/period_utils.hpp"
 
 module tracer.core.infrastructure.reporting.data_querying
     .sqlite_report_data_query_service;
@@ -33,6 +37,29 @@ auto EnsureDbConnection(sqlite3* db_connection) -> sqlite3* {
     throw std::runtime_error("Database connection is null.");
   }
   return db_connection;
+}
+
+auto LoadDistinctTextTargets(sqlite3* db_connection, const std::string& sql,
+                             std::string_view prepare_error)
+    -> std::vector<std::string> {
+  sqlite3_stmt* stmt = nullptr;
+  if (sqlite3_prepare_v2(db_connection, sql.c_str(), -1, &stmt, nullptr) !=
+      SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    throw std::runtime_error(std::string(prepare_error));
+  }
+
+  std::vector<std::string> items;
+  while (sqlite3_step(stmt) == SQLITE_ROW) {
+    const unsigned char* value_ptr = sqlite3_column_text(stmt, 0);
+    if (value_ptr == nullptr) {
+      continue;
+    }
+    items.emplace_back(reinterpret_cast<const char*>(value_ptr));
+  }
+
+  sqlite3_finalize(stmt);
+  return items;
 }
 
 }  // namespace
@@ -85,6 +112,52 @@ auto SqliteReportDataQueryService::QueryYearly(std::string_view year)
     -> YearlyReportData {
   YearQuerier querier(EnsureDbConnection(db_connection_), year);
   return querier.FetchData();
+}
+
+auto SqliteReportDataQueryService::ListDailyTargets()
+    -> std::vector<std::string> {
+  sqlite3* db_connection = EnsureDbConnection(db_connection_);
+  const std::string kSql = std::format(
+      "SELECT DISTINCT {0} FROM {1} ORDER BY {0};",
+      schema::time_records::db::kDate, schema::time_records::db::kTable);
+  return LoadDistinctTextTargets(db_connection, kSql,
+                                 "Failed to prepare daily target query.");
+}
+
+auto SqliteReportDataQueryService::ListMonthlyTargets()
+    -> std::vector<std::string> {
+  sqlite3* db_connection = EnsureDbConnection(db_connection_);
+  const std::string kSql = std::format(
+      "SELECT DISTINCT strftime('%Y-%m', {0}) FROM {1} ORDER BY 1;",
+      schema::time_records::db::kDate, schema::time_records::db::kTable);
+  return LoadDistinctTextTargets(db_connection, kSql,
+                                 "Failed to prepare monthly target query.");
+}
+
+auto SqliteReportDataQueryService::ListWeeklyTargets()
+    -> std::vector<std::string> {
+  const std::vector<std::string> kDates = ListDailyTargets();
+  std::vector<std::string> items;
+  std::set<std::string> seen;
+  items.reserve(kDates.size());
+  for (const auto& date : kDates) {
+    const IsoWeek week = IsoWeekFromDate(date);
+    const std::string label = FormatIsoWeek(week);
+    if (seen.insert(label).second) {
+      items.push_back(label);
+    }
+  }
+  return items;
+}
+
+auto SqliteReportDataQueryService::ListYearlyTargets()
+    -> std::vector<std::string> {
+  sqlite3* db_connection = EnsureDbConnection(db_connection_);
+  const std::string kSql = std::format(
+      "SELECT DISTINCT strftime('%Y', {0}) FROM {1} ORDER BY 1;",
+      schema::time_records::db::kDate, schema::time_records::db::kTable);
+  return LoadDistinctTextTargets(db_connection, kSql,
+                                 "Failed to prepare yearly target query.");
 }
 
 auto SqliteReportDataQueryService::QueryPeriodBatch(

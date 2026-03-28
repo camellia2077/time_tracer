@@ -176,17 +176,14 @@ auto WriteEncryptedTracerFromEntries(
         package_entries,
     std::string_view passphrase, int& failures) -> bool {
   const auto package_bytes = exchange_pkg::EncodePackageBytes(package_entries);
-
-  std::error_code error;
-  fs::create_directories(package_path.parent_path(), error);
-  if (error || !WriteBytes(package_path, package_bytes)) {
-    ++failures;
-    std::cerr << "[FAIL] Failed to write tracer exchange package bytes.\n";
-    return false;
-  }
-
-  const auto encrypt_result =
-      file_crypto::EncryptFile(package_path, tracer_path, passphrase);
+  const file_crypto::FileCryptoPathContext path_context{
+      .input_root_path = package_path.parent_path(),
+      .output_root_path = tracer_path.parent_path(),
+      .current_input_path = package_path,
+      .current_output_path = tracer_path,
+  };
+  const auto encrypt_result = file_crypto::EncryptBytesToFile(
+      package_bytes, tracer_path, passphrase, path_context);
   if (!encrypt_result.ok()) {
     ++failures;
     std::cerr << "[FAIL] Encrypt error: " << encrypt_result.error_code << " | "
@@ -201,18 +198,25 @@ auto DecodeTracerPackage(const fs::path& tracer_path,
                          const fs::path& decrypted_package_path,
                          std::string_view passphrase, int& failures)
     -> std::optional<exchange_pkg::DecodedTracerExchangePackage> {
-  const auto decrypt_result = file_crypto::DecryptFile(
-      tracer_path, decrypted_package_path, std::string(passphrase));
+  const file_crypto::FileCryptoPathContext path_context{
+      .input_root_path = tracer_path.parent_path(),
+      .output_root_path = decrypted_package_path.parent_path(),
+      .current_input_path = tracer_path,
+      .current_output_path = decrypted_package_path,
+  };
+  auto [decrypt_result, package_bytes] = file_crypto::DecryptFileToBytes(
+      tracer_path, std::string(passphrase), path_context);
   if (!decrypt_result.ok()) {
     ++failures;
-    std::cerr << "[FAIL] DecryptFile(tracer package) failed unexpectedly: "
+    std::cerr << "[FAIL] DecryptFileToBytes(tracer package) failed "
+                 "unexpectedly: "
               << decrypt_result.error_code << " | "
               << decrypt_result.error_message << '\n';
     return std::nullopt;
   }
 
   try {
-    return exchange_pkg::DecodePackageBytes(ReadBytes(decrypted_package_path));
+    return exchange_pkg::DecodePackageBytes(package_bytes);
   } catch (const std::exception& error) {
     ++failures;
     std::cerr << "[FAIL] DecodePackageBytes failed unexpectedly: "

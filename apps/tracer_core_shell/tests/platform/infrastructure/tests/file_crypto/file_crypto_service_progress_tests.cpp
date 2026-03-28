@@ -231,12 +231,77 @@ auto TestSingleFileEncryptCancelToken(int& failures) -> void {
   RemoveTree(kPaths.test_root);
 }
 
+auto TestEncryptBytesProgressUsesLogicalPaths(int& failures) -> void {
+  using namespace file_crypto_tests_internal;
+
+  const RuntimeTestPaths kPaths =
+      BuildTempTestPaths("tracer_core_file_crypto_bytes_progress_test");
+  const auto kEncrypted = kPaths.test_root / "payload.tracer";
+  const auto kLogicalInputRoot = kPaths.test_root / "logical_input";
+  const auto kLogicalInputPath = kLogicalInputRoot / "payload.ttpkg";
+  constexpr std::string_view kPassphrase = "bytes-progress-passphrase";
+
+  using tracer_core::infrastructure::crypto::FileCryptoControl;
+  using tracer_core::infrastructure::crypto::FileCryptoOptions;
+  using tracer_core::infrastructure::crypto::FileCryptoPhase;
+  using tracer_core::infrastructure::crypto::FileCryptoProgressSnapshot;
+
+  std::vector<FileCryptoProgressSnapshot> snapshots;
+  FileCryptoOptions options{};
+  options.progress_min_interval = std::chrono::milliseconds(0);
+  options.progress_min_bytes_delta = 1;
+  options.progress_callback =
+      [&](const FileCryptoProgressSnapshot& snapshot) -> FileCryptoControl {
+    snapshots.push_back(snapshot);
+    return FileCryptoControl::kContinue;
+  };
+
+  RemoveTree(kPaths.test_root);
+  const auto kEncryptResult =
+      tracer_core::infrastructure::crypto::EncryptBytesToFile(
+          std::vector<std::uint8_t>{'t', 'e', 's', 't'}, kEncrypted,
+          kPassphrase,
+          {.input_root_path = kLogicalInputRoot,
+           .output_root_path = kEncrypted.parent_path(),
+           .current_input_path = kLogicalInputPath,
+           .current_output_path = kEncrypted},
+          options);
+  Expect(kEncryptResult.ok(),
+         "EncryptBytesToFile should succeed with progress callback enabled.",
+         failures);
+  Expect(!snapshots.empty(),
+         "EncryptBytesToFile should emit progress snapshots.", failures);
+  if (!snapshots.empty()) {
+    const bool has_logical_input_path = std::ranges::any_of(
+        snapshots, [&](const FileCryptoProgressSnapshot& snapshot) {
+          return snapshot.phase != FileCryptoPhase::kScan &&
+                 snapshot.current_input_path == kLogicalInputPath;
+        });
+    const bool has_real_output_path = std::ranges::any_of(
+        snapshots, [&](const FileCryptoProgressSnapshot& snapshot) {
+          return snapshot.phase != FileCryptoPhase::kScan &&
+                 snapshot.current_output_path == kEncrypted;
+        });
+    Expect(has_logical_input_path,
+           "EncryptBytesToFile should publish logical current_input_path.",
+           failures);
+    Expect(has_real_output_path,
+           "EncryptBytesToFile should publish real current_output_path.",
+           failures);
+    Expect(snapshots.back().phase == FileCryptoPhase::kCompleted,
+           "EncryptBytesToFile final snapshot should be completed.", failures);
+  }
+
+  RemoveTree(kPaths.test_root);
+}
+
 }  // namespace
 
 auto RunFileCryptoProgressTests(int& failures) -> void {
   TestBatchEncryptProgressSnapshot(failures);
   TestBatchDecryptCancellation(failures);
   TestSingleFileEncryptCancelToken(failures);
+  TestEncryptBytesProgressUsesLogicalPaths(failures);
 }
 
 }  // namespace android_runtime_tests

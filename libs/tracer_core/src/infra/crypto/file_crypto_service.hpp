@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -160,6 +161,16 @@ struct TracerFileMetadata {
   std::uint64_t ciphertext_size = 0;
 };
 
+struct FileCryptoPathContext {
+  std::filesystem::path input_root_path;
+  std::filesystem::path output_root_path;
+  std::filesystem::path current_input_path;
+  std::filesystem::path current_output_path;
+};
+
+using FileCryptoWriteCallback =
+    std::function<FileCryptoResult(std::span<const std::uint8_t>)>;
+
 auto ToErrorCode(FileCryptoError error) -> std::string_view;
 
 auto EncryptFile(const std::filesystem::path& input_txt_path,
@@ -179,6 +190,26 @@ auto DecryptFile(const std::filesystem::path& input_tracer_path,
                  const std::filesystem::path& output_txt_path,
                  std::string_view passphrase, const FileCryptoOptions& options)
     -> FileCryptoResult;
+
+auto EncryptBytesToFile(std::span<const std::uint8_t> plaintext_bytes,
+                        const std::filesystem::path& output_tracer_path,
+                        std::string_view passphrase,
+                        const FileCryptoPathContext& path_context = {},
+                        const FileCryptoOptions& options = FileCryptoOptions{})
+    -> FileCryptoResult;
+
+auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
+                          const FileCryptoWriteCallback& write_callback,
+                          std::string_view passphrase,
+                          const FileCryptoPathContext& path_context = {},
+                          const FileCryptoOptions& options = FileCryptoOptions{})
+    -> FileCryptoResult;
+
+auto DecryptFileToBytes(
+    const std::filesystem::path& input_tracer_path, std::string_view passphrase,
+    const FileCryptoPathContext& path_context = {},
+    const FileCryptoOptions& options = FileCryptoOptions{})
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>>;
 
 auto EncryptDirectory(const std::filesystem::path& input_root_path,
                       const std::filesystem::path& output_root_path,

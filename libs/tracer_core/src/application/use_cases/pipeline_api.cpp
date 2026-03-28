@@ -7,6 +7,8 @@ import tracer.core.domain.types.app_options;
 namespace tracer::core::application::use_cases {
 
 using tracer_core::core::dto::ConvertRequest;
+using tracer_core::core::dto::IngestSyncStatusOutput;
+using tracer_core::core::dto::IngestSyncStatusRequest;
 using tracer_core::core::dto::OperationAck;
 using tracer_core::core::dto::IngestRequest;
 using tracer_core::core::dto::ImportRequest;
@@ -48,6 +50,35 @@ auto PipelineApi::RunIngest(const IngestRequest& request) -> OperationAck {
     return core_api_failure::BuildOperationFailure("RunIngest", exception);
   } catch (...) {
     return core_api_failure::BuildOperationFailure("RunIngest");
+  }
+}
+
+auto PipelineApi::RunIngestSyncStatusQuery(
+    const IngestSyncStatusRequest& request) -> IngestSyncStatusOutput {
+  try {
+    return pipeline_workflow_.RunIngestSyncStatusQuery(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .items = {},
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunIngestSyncStatusQuery", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .items = {},
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunIngestSyncStatusQuery", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::ClearIngestSyncStatus() -> OperationAck {
+  try {
+    pipeline_workflow_.ClearIngestSyncStatus();
+    return {.ok = true, .error_message = ""};
+  } catch (const std::exception& exception) {
+    return core_api_failure::BuildOperationFailure("ClearIngestSyncStatus",
+                                                   exception);
+  } catch (...) {
+    return core_api_failure::BuildOperationFailure("ClearIngestSyncStatus");
   }
 }
 

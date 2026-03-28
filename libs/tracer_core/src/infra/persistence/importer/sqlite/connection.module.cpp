@@ -141,6 +141,19 @@ Connection::Connection(const std::string& db_path) {
         schema::time_records::db::kProjectPathSnapshot);
     ExecuteSql(db_, kCreateRecordsDatePathSnapshotIndexSql,
                "Create index on time_records(date, project_path_snapshot)");
+
+    const std::string kCreateIngestMonthSyncSql = std::format(
+        "CREATE TABLE IF NOT EXISTS {0} ("
+        "{1} TEXT PRIMARY KEY, "
+        "{2} TEXT NOT NULL, "
+        "{3} TEXT NOT NULL, "
+        "{4} INTEGER NOT NULL);",
+        schema::ingest_month_sync::db::kTable,
+        schema::ingest_month_sync::db::kMonthKey,
+        schema::ingest_month_sync::db::kTxtRelativePath,
+        schema::ingest_month_sync::db::kTxtContentHashSha256,
+        schema::ingest_month_sync::db::kIngestedAtUnixMs);
+    ExecuteSql(db_, kCreateIngestMonthSyncSql, "Create ingest_month_sync table");
   }
 }
 

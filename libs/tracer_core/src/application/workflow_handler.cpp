@@ -42,6 +42,16 @@ auto WorkflowHandler::RunIngest(const std::string& source_path,
   impl_.RunIngest(source_path, date_check_mode, save_processed, ingest_mode);
 }
 
+auto WorkflowHandler::RunIngestSyncStatusQuery(
+    const tracer_core::core::dto::IngestSyncStatusRequest& request)
+    -> tracer_core::core::dto::IngestSyncStatusOutput {
+  return impl_.RunIngestSyncStatusQuery(request);
+}
+
+auto WorkflowHandler::ClearIngestSyncStatus() -> void {
+  impl_.ClearIngestSyncStatus();
+}
+
 auto WorkflowHandler::RunIngestReplacingAll(const std::string& source_path,
                                             DateCheckMode date_check_mode,
                                             bool save_processed) -> void {
@@ -56,6 +66,13 @@ auto WorkflowHandler::RunValidateStructure(const std::string& source_path)
 auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
                                        DateCheckMode date_check_mode) -> void {
   impl_.RunValidateLogic(source_path, date_check_mode);
+}
+
+auto WorkflowHandler::InstallActiveConverterConfig(
+    const std::string& source_main_config_path,
+    const std::string& target_main_config_path) -> void {
+  impl_.InstallActiveConverterConfig(source_main_config_path,
+                                     target_main_config_path);
 }
 
 }  // namespace tracer::core::application::workflow

@@ -7,8 +7,6 @@ class TracerCoreApi : public ITracerCoreApi {
       std::shared_ptr<tracer_core::application::ports::IReportDataQueryService>;
   using ReportDtoFormatterPtr =
       std::shared_ptr<tracer_core::application::ports::IReportDtoFormatter>;
-  using ReportExportWriterPtr =
-      std::shared_ptr<tracer_core::application::ports::IReportExportWriter>;
   using TracerExchangeServicePtr =
       std::shared_ptr<tracer_core::application::ports::ITracerExchangeService>;
 
@@ -18,7 +16,6 @@ class TracerCoreApi : public ITracerCoreApi {
       DataQueryServicePtr data_query_service,
       ReportDataQueryServicePtr report_data_query_service = nullptr,
       ReportDtoFormatterPtr report_dto_formatter = nullptr,
-      ReportExportWriterPtr report_export_writer = nullptr,
       TracerExchangeServicePtr tracer_exchange_service = nullptr);
 
   auto RunConvert(const tracer_core::core::dto::ConvertRequest& request)
@@ -53,10 +50,6 @@ class TracerCoreApi : public ITracerCoreApi {
       const tracer_core::core::dto::StructuredPeriodBatchQueryRequest& request)
       -> tracer_core::core::dto::StructuredPeriodBatchOutput override;
 
-  auto RunReportExport(
-      const tracer_core::core::dto::ReportExportRequest& request)
-      -> tracer_core::core::dto::OperationAck override;
-
   auto RunDataQuery(const tracer_core::core::dto::DataQueryRequest& request)
       -> tracer_core::core::dto::TextOutput override;
 
@@ -82,6 +75,5 @@ class TracerCoreApi : public ITracerCoreApi {
   DataQueryServicePtr data_query_service_;
   ReportDataQueryServicePtr kReport_;
   ReportDtoFormatterPtr report_dto_formatter_;
-  ReportExportWriterPtr report_export_writer_;
   TracerExchangeServicePtr tracer_exchange_service_;
 };

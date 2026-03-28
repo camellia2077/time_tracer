@@ -50,7 +50,7 @@ class MarkdownFormattingStrategy : public reporting::IFormattingStrategy {
     output += formatted_duration;
     output += " (";
     output += FormatOneDecimal(percentage);
-    output += "%) ###\n";
+    output += "%)\n";
     return output;
   }
   [[nodiscard]] auto FormatTreeNode(const std::string& project_name,

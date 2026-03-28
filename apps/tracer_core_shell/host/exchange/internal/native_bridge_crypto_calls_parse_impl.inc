@@ -21,6 +21,17 @@ struct ExportTracerExchangeArgs {
   DateCheckMode date_check_mode;
 };
 
+struct ExportTracerExchangeFromPayloadArgs {
+  std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
+  std::string logical_source_root_name = "data";
+  std::string output_display_name = "data.tracer";
+  std::string passphrase;
+  app_dto::TracerExchangeSecurityLevel security_level =
+      app_dto::TracerExchangeSecurityLevel::kInteractive;
+  DateCheckMode date_check_mode;
+  int output_fd = -1;
+};
+
 struct ImportTracerExchangeArgs {
   fs::path input_path;
   fs::path work_root;
@@ -142,6 +153,64 @@ auto ParseExportTracerExchangeArgs(JNIEnv* env, jstring input_path,
       .passphrase = passphrase_utf8,
       .security_level = RequireTracerExchangeSecurityLevel(security_level_utf8),
       .date_check_mode = ParseAndroidDateCheckMode(date_check_mode),
+  };
+}
+
+auto ParseExportTracerExchangeFromPayloadArgs(JNIEnv* env, jstring request_json,
+                                              jint output_fd)
+    -> ExportTracerExchangeFromPayloadArgs {
+  const std::string request_json_utf8 =
+      RequireNonEmptyText(ToUtf8(env, request_json), "requestJson");
+  if (output_fd < 0) {
+    throw std::invalid_argument("outputFd must be a valid detached fd.");
+  }
+
+  const json request_payload = json::parse(request_json_utf8);
+  const std::string logical_source_root_name =
+      request_payload.value("logical_source_root_name", std::string("data"));
+  const std::string output_display_name =
+      request_payload.value("output_display_name", std::string("data.tracer"));
+  const std::string passphrase_utf8 = RequireNonEmptyText(
+      request_payload.value("passphrase", std::string{}), "passphrase");
+  const std::string security_level_utf8 = request_payload.value(
+      "security_level", std::string("interactive"));
+  const jint date_check_mode = static_cast<jint>(
+      request_payload.value("date_check_mode", 0));
+
+  std::vector<app_dto::TracerExchangeTextPayloadItem> payload_items;
+  const auto payload_iter = request_payload.find("payload_items");
+  if (payload_iter == request_payload.end() || !payload_iter->is_array()) {
+    throw std::invalid_argument("payload_items must be a non-empty array.");
+  }
+
+  for (const auto& payload_json : *payload_iter) {
+    if (!payload_json.is_object()) {
+      throw std::invalid_argument("payload_items entries must be objects.");
+    }
+    const std::string content = RequireNonEmptyText(
+        payload_json.value("content", std::string{}), "payload content");
+    payload_items.push_back(app_dto::TracerExchangeTextPayloadItem{
+        .relative_path_hint =
+            payload_json.value("relative_path_hint", std::string{}),
+        .content = content,
+    });
+  }
+  if (payload_items.empty()) {
+    throw std::invalid_argument("payload_items must not be empty.");
+  }
+
+  return {
+      .payload_items = std::move(payload_items),
+      .logical_source_root_name = logical_source_root_name.empty()
+                                      ? std::string("data")
+                                      : logical_source_root_name,
+      .output_display_name = output_display_name.empty()
+                                 ? std::string("data.tracer")
+                                 : output_display_name,
+      .passphrase = passphrase_utf8,
+      .security_level = RequireTracerExchangeSecurityLevel(security_level_utf8),
+      .date_check_mode = ParseAndroidDateCheckMode(date_check_mode),
+      .output_fd = static_cast<int>(output_fd),
   };
 }
 

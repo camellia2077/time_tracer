@@ -8,6 +8,7 @@
 #include <string_view>
 #include <vector>
 
+#include "application/dto/pipeline_responses.hpp"
 #include "application/pipeline/importer/model/import_models.hpp"
 
 namespace tracer::core::infrastructure::persistence::importer::sqlite {
@@ -37,6 +38,15 @@ class Repository {
                       const std::vector<TimeRecordInternal>& records) -> void;
   auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
                         const std::vector<TimeRecordInternal>& records) -> void;
+  auto UpsertIngestSyncStatus(
+      const tracer_core::core::dto::IngestSyncStatusEntry& entry) -> void;
+  auto ReplaceIngestSyncStatuses(
+      const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
+      -> void;
+  auto ClearIngestSyncStatus() -> void;
+  [[nodiscard]] auto ListIngestSyncStatuses(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request) const
+      -> tracer_core::core::dto::IngestSyncStatusOutput;
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
       std::string_view date) const -> std::optional<LatestActivityTail>;
 

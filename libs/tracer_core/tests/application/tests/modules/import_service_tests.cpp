@@ -90,6 +90,21 @@ class FakeTimeSheetRepository final
     }
   }
 
+  auto UpsertIngestSyncStatus(
+      const tracer_core::core::dto::IngestSyncStatusEntry&) -> void override {}
+
+  auto ReplaceIngestSyncStatuses(
+      const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>&)
+      -> void override {}
+
+  auto ClearIngestSyncStatus() -> void override {}
+
+  [[nodiscard]] auto ListIngestSyncStatuses(
+      const tracer_core::core::dto::IngestSyncStatusRequest&) const
+      -> tracer_core::core::dto::IngestSyncStatusOutput override {
+    return {.ok = true, .items = {}, .error_message = ""};
+  }
+
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(
       std::string_view /*date*/) const
       -> std::optional<

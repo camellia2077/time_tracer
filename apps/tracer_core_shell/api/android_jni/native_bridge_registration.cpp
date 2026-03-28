@@ -6,7 +6,7 @@
 
 namespace tracer_core::api::android::bridge_internal {
 
-const std::array<JNINativeMethod, 13> kNativeMethods = {
+const std::array<JNINativeMethod, 16> kNativeMethods = {
     JNINativeMethod{
         const_cast<char*>("nativeInit"),
         const_cast<char*>(
@@ -23,6 +23,16 @@ const std::array<JNINativeMethod, 13> kNativeMethods = {
         const_cast<char*>("nativeIngestSingleTxtReplaceMonth"),
         const_cast<char*>("(Ljava/lang/String;IZ)Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeIngestSingleTxtReplaceMonth),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeListTxtIngestSyncStatus"),
+        const_cast<char*>("(Ljava/lang/String;)Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeListTxtIngestSyncStatus),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeClearTxtIngestSyncStatus"),
+        const_cast<char*>("()Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeClearTxtIngestSyncStatus),
     },
     JNINativeMethod{
         const_cast<char*>("nativeValidateStructure"),
@@ -55,6 +65,11 @@ const std::array<JNINativeMethod, 13> kNativeMethods = {
             "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;"
             "Ljava/lang/String;I)Ljava/lang/String;"),
         reinterpret_cast<void*>(&NativeExportTracerExchange),
+    },
+    JNINativeMethod{
+        const_cast<char*>("nativeExportTracerExchangeFromPayloadJson"),
+        const_cast<char*>("(Ljava/lang/String;I)Ljava/lang/String;"),
+        reinterpret_cast<void*>(&NativeExportTracerExchangeFromPayloadJson),
     },
     JNINativeMethod{
         const_cast<char*>("nativeImportTracerExchange"),

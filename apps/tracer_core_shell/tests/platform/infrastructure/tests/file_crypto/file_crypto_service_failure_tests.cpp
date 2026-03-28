@@ -113,11 +113,63 @@ auto TestCompressionMetadataMismatchRejected(int& failures) -> void {
   RemoveTree(kPaths.test_root);
 }
 
+auto TestDecryptFileToBytesWrongPassphraseRejected(int& failures) -> void {
+  using namespace file_crypto_tests_internal;
+
+  const RuntimeTestPaths kPaths =
+      BuildTempTestPaths("tracer_core_file_crypto_bytes_wrong_passphrase_test");
+  const auto kEncrypted = kPaths.test_root / "payload.tracer";
+  const std::string kPlaintext = "y2026\nm02\n0204\n0700 study\n";
+
+  RemoveTree(kPaths.test_root);
+
+  const auto kEncryptResult =
+      tracer_core::infrastructure::crypto::EncryptBytesToFile(
+          std::vector<std::uint8_t>(kPlaintext.begin(), kPlaintext.end()),
+          kEncrypted, "correct-passphrase",
+          {.input_root_path = kPaths.test_root / "logical_input",
+           .output_root_path = kEncrypted.parent_path(),
+           .current_input_path = kPaths.test_root / "logical_input" /
+                                 "payload.ttpkg",
+           .current_output_path = kEncrypted});
+  if (!kEncryptResult.ok()) {
+    ++failures;
+    std::cerr << "[FAIL] EncryptBytesToFile setup failed: "
+              << kEncryptResult.error_code << " | "
+              << kEncryptResult.error_message << '\n';
+    RemoveTree(kPaths.test_root);
+    return;
+  }
+
+  const auto [kDecryptResult, kBytes] =
+      tracer_core::infrastructure::crypto::DecryptFileToBytes(
+          kEncrypted, "wrong-passphrase",
+          {.input_root_path = kEncrypted.parent_path(),
+           .output_root_path = kPaths.test_root / "logical_output",
+           .current_input_path = kEncrypted,
+           .current_output_path =
+               kPaths.test_root / "logical_output" / "restored.ttpkg"});
+  static_cast<void>(kBytes);
+  Expect(!kDecryptResult.ok(),
+         "DecryptFileToBytes should fail when passphrase is incorrect.",
+         failures);
+  if (!kDecryptResult.ok()) {
+    Expect(kDecryptResult.error ==
+               tracer_core::infrastructure::crypto::FileCryptoError::
+                   kDecryptFailed,
+           "Wrong passphrase should map to kDecryptFailed for DecryptFileToBytes.",
+           failures);
+  }
+
+  RemoveTree(kPaths.test_root);
+}
+
 }  // namespace
 
 auto RunFileCryptoFailureTests(int& failures) -> void {
   TestWrongPassphraseRejected(failures);
   TestCompressionMetadataMismatchRejected(failures);
+  TestDecryptFileToBytesWrongPassphraseRejected(failures);
 }
 
 }  // namespace android_runtime_tests

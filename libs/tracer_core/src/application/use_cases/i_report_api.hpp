@@ -27,9 +27,9 @@ class IReportApi {
       const tracer_core::core::dto::StructuredPeriodBatchQueryRequest& request)
       -> tracer_core::core::dto::StructuredPeriodBatchOutput = 0;
 
-  virtual auto RunReportExport(
-      const tracer_core::core::dto::ReportExportRequest& request)
-      -> tracer_core::core::dto::OperationAck = 0;
+  virtual auto RunReportTargetsQuery(
+      const tracer_core::core::dto::ReportTargetsRequest& request)
+      -> tracer_core::core::dto::ReportTargetsOutput = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

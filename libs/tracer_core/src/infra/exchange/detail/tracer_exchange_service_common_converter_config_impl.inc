@@ -40,35 +40,10 @@ auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
       BuildBackupPath(backup_root, exchange_pkg::kDurationRulesPath));
 }
 
-auto RestoreBackupConfig(const fs::path& backup_root,
-                         const ActiveConverterConfigPaths& active_paths)
-    -> void {
-  CopyFileWithOverwrite(
-      BuildBackupPath(backup_root, exchange_pkg::kConverterMainPath),
-      active_paths.main_config_path);
-  CopyFileWithOverwrite(
-      BuildBackupPath(backup_root, exchange_pkg::kAliasMappingPath),
-      active_paths.alias_mapping_path);
-  CopyFileWithOverwrite(
-      BuildBackupPath(backup_root, exchange_pkg::kDurationRulesPath),
-      active_paths.duration_rules_path);
-}
-
 auto ValidatePackageConverterConfig(const fs::path& work_root) -> void {
   const fs::path main_config_path =
       work_root / fs::path(exchange_pkg::kConverterMainPath);
   EnsureRegularFileExists(main_config_path, "Package converter main config");
   static_cast<void>(
       infra_config::ConverterConfigLoader::LoadFromFile(main_config_path));
-}
-
-auto ApplyPackageConverterConfig(const fs::path& work_root,
-                                 const ActiveConverterConfigPaths& active_paths)
-    -> void {
-  CopyFileWithOverwrite(work_root / fs::path(exchange_pkg::kConverterMainPath),
-                        active_paths.main_config_path);
-  CopyFileWithOverwrite(work_root / fs::path(exchange_pkg::kAliasMappingPath),
-                        active_paths.alias_mapping_path);
-  CopyFileWithOverwrite(work_root / fs::path(exchange_pkg::kDurationRulesPath),
-                        active_paths.duration_rules_path);
 }

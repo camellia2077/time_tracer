@@ -5,6 +5,7 @@
 #include <array>
 #include <cstdint>
 #include <filesystem>
+#include <span>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -35,6 +36,19 @@ struct BatchCryptoSession {
 auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
                                     FileCryptoSecurityLevel security_level)
     -> std::pair<FileCryptoResult, BatchCryptoSession>;
+
+auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
+                          std::string_view passphrase,
+                          FileCryptoSecurityLevel security_level,
+                          ProgressReporter* reporter,
+                          BatchCryptoSession* batch_session = nullptr)
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>>;
+
+auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
+                          std::string_view passphrase,
+                          ProgressReporter* reporter,
+                          BatchCryptoSession* batch_session = nullptr)
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>>;
 
 auto EncryptFileInternal(const fs::path& input_txt_path,
                          const fs::path& output_tracer_path,

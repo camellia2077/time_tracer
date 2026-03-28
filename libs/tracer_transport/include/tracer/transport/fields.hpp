@@ -43,6 +43,13 @@ struct IntListFieldResult {
   [[nodiscard]] auto HasError() const -> bool { return error.HasError(); }
 };
 
+struct StringListFieldResult {
+  std::optional<std::vector<std::string>> value;
+  TransportError error;
+
+  [[nodiscard]] auto HasError() const -> bool { return error.HasError(); }
+};
+
 [[nodiscard]] auto BuildTypeError(std::string_view field_name,
                                   std::string_view expected_type) -> FieldIssue;
 
@@ -67,5 +74,9 @@ struct IntListFieldResult {
 [[nodiscard]] auto TryReadIntListField(const nlohmann::json& payload,
                                        std::string_view field_name)
     -> IntListFieldResult;
+
+[[nodiscard]] auto TryReadStringListField(const nlohmann::json& payload,
+                                          std::string_view field_name)
+    -> StringListFieldResult;
 
 }  // namespace tracer::transport

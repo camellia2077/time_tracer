@@ -27,8 +27,11 @@ enum class DataQueryAction;
 enum class DataQueryOutputMode;
 enum class ReportExportType;
 enum class ReportQueryType;
+enum class ReportTargetType;
 
 struct OperationAck;
+struct IngestSyncStatusOutput;
+struct ReportTargetsOutput;
 struct TextOutput;
 struct TreeQueryResponse;
 
@@ -97,6 +100,11 @@ void SetLastError(const char* message);
     char*;
 [[nodiscard]] auto BuildOperationResponse(
     const tracer_core::core::dto::OperationAck& output) -> const char*;
+[[nodiscard]] auto BuildIngestSyncStatusResponse(
+    const tracer_core::core::dto::IngestSyncStatusOutput& output)
+    -> const char*;
+[[nodiscard]] auto BuildReportTargetsResponse(
+    const tracer_core::core::dto::ReportTargetsOutput& output) -> const char*;
 [[nodiscard]] auto BuildTextResponse(
     const tracer_core::core::dto::TextOutput& output) -> const char*;
 [[nodiscard]] auto BuildTreeResponse(
@@ -125,6 +133,8 @@ void SetLastError(const char* message);
     -> tracer_core::core::dto::ReportExportType;
 [[nodiscard]] auto ParseReportType(const std::string& value)
     -> tracer_core::core::dto::ReportQueryType;
+[[nodiscard]] auto ParseReportTargetType(const std::string& value)
+    -> tracer_core::core::dto::ReportTargetType;
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat;
 
 void SetCryptoProgressCallbackRegistration(

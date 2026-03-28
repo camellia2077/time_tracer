@@ -2,6 +2,7 @@
 #define APPLICATION_USE_CASES_I_PIPELINE_API_HPP_
 
 #include "application/dto/pipeline_requests.hpp"
+#include "application/dto/pipeline_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
 
 namespace tracer::core::application::use_cases {
@@ -15,6 +16,13 @@ class IPipelineApi {
 
   virtual auto RunIngest(const tracer_core::core::dto::IngestRequest& request)
       -> tracer_core::core::dto::OperationAck = 0;
+
+  virtual auto RunIngestSyncStatusQuery(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request)
+      -> tracer_core::core::dto::IngestSyncStatusOutput = 0;
+
+  virtual auto ClearIngestSyncStatus() -> tracer_core::core::dto::OperationAck =
+      0;
 
   virtual auto RunImport(const tracer_core::core::dto::ImportRequest& request)
       -> tracer_core::core::dto::OperationAck = 0;

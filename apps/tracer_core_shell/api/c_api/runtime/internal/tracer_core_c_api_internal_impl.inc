@@ -45,6 +45,55 @@ void SetLastError(const char* message) {
   return BuildAckResponse(output.ok, output.error_message);
 }
 
+[[nodiscard]] auto BuildIngestSyncStatusResponse(
+    const tracer_core::core::dto::IngestSyncStatusOutput& output)
+    -> const char* {
+  tt_transport::IngestSyncStatusResponsePayload payload{};
+  payload.ok = output.ok;
+  payload.error_message = output.error_message;
+  payload.error_contract = BuildErrorContract(output.ok, output.error_message);
+  payload.items.reserve(output.items.size());
+  for (const auto& item : output.items) {
+    payload.items.push_back(tt_transport::IngestSyncStatusItemPayload{
+        .month_key = item.month_key,
+        .txt_relative_path = item.txt_relative_path,
+        .txt_content_hash_sha256 = item.txt_content_hash_sha256,
+        .ingested_at_unix_ms = item.ingested_at_unix_ms,
+    });
+  }
+  g_last_response = tt_transport::EncodeIngestSyncStatusResponse(payload);
+  return g_last_response.c_str();
+}
+
+[[nodiscard]] auto BuildReportTargetsResponse(
+    const tracer_core::core::dto::ReportTargetsOutput& output) -> const char* {
+  using tracer_core::core::dto::ReportTargetType;
+
+  auto target_type = [](ReportTargetType value) -> std::string {
+    switch (value) {
+      case ReportTargetType::kDay:
+        return "day";
+      case ReportTargetType::kMonth:
+        return "month";
+      case ReportTargetType::kWeek:
+        return "week";
+      case ReportTargetType::kYear:
+        return "year";
+    }
+    return "day";
+  };
+
+  g_last_response = tt_transport::EncodeReportTargetsResponse(
+      tt_transport::ReportTargetsResponsePayload{
+          .ok = output.ok,
+          .error_message = output.error_message,
+          .type = target_type(output.type),
+          .items = output.items,
+          .error_contract = BuildErrorContract(output.ok, output.error_message),
+      });
+  return g_last_response.c_str();
+}
+
 [[nodiscard]] auto BuildTextResponse(
     const tracer_core::core::dto::TextOutput& output) -> const char* {
   g_last_response =
@@ -84,6 +133,7 @@ void SetLastError(const char* message) {
   payload.features.runtime_diagnostics_callback = true;
   payload.features.runtime_crypto_progress_callback = true;
   payload.features.runtime_ingest_json = true;
+  payload.features.runtime_ingest_sync_status_json = true;
   payload.features.runtime_convert_json = true;
   payload.features.runtime_import_json = true;
   payload.features.runtime_validate_structure_json = true;
@@ -91,6 +141,7 @@ void SetLastError(const char* message) {
   payload.features.runtime_query_json = true;
   payload.features.runtime_report_json = true;
   payload.features.runtime_report_batch_json = true;
+  payload.features.runtime_report_targets_json = true;
   payload.features.runtime_export_json = true;
   payload.features.runtime_tree_json = true;
   payload.features.processed_json_io = TT_ENABLE_PROCESSED_JSON_IO != 0;
@@ -142,6 +193,11 @@ void SetLastError(const char* message) {
 [[nodiscard]] auto ParseReportType(const std::string& value)
     -> tracer_core::core::dto::ReportQueryType {
   return tracer_core::shell::c_api_bridge::ParseReportType(value);
+}
+
+[[nodiscard]] auto ParseReportTargetType(const std::string& value)
+    -> tracer_core::core::dto::ReportTargetType {
+  return tracer_core::shell::c_api_bridge::ParseReportTargetType(value);
 }
 
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {

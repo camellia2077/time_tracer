@@ -23,6 +23,11 @@ auto BuildRuntimeApiForTest(
     const std::shared_ptr<FakeDataQueryService>& data_query)
     -> TracerCoreRuntime;
 
+auto BuildRuntimeApiForTest(
+    FakePipelineWorkflow& pipeline_workflow, FakeReportHandler& report_handler,
+    const std::shared_ptr<FakeReportDataQueryService>& report_data_query)
+    -> TracerCoreRuntime;
+
 inline auto Expect(TestState& state, bool condition, const std::string& message)
     -> void {
   if (condition) {

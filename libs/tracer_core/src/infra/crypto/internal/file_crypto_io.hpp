@@ -20,6 +20,9 @@ auto ReadAllBytes(const fs::path& path, ProgressReporter* reporter)
 auto WriteAllBytes(const fs::path& path, const std::vector<std::uint8_t>& bytes)
     -> FileCryptoResult;
 
+auto WriteAllBytes(const FileCryptoWriteCallback& write_callback,
+                   std::span<const std::uint8_t> bytes) -> FileCryptoResult;
+
 }  // namespace tracer_core::infrastructure::crypto::internal
 
 #endif  // INFRASTRUCTURE_CRYPTO_INTERNAL_FILE_CRYPTO_IO_HPP_

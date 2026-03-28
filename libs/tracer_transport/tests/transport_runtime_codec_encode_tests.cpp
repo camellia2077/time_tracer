@@ -26,6 +26,16 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
+    IngestSyncStatusRequestPayload request{};
+    request.months = std::vector<std::string>{"2026-03", "2026-04"};
+    const auto encoded = EncodeIngestSyncStatusRequest(request);
+    const auto decoded = DecodeIngestSyncStatusRequest(encoded);
+    Expect(decoded.months == request.months,
+           "EncodeIngestSyncStatusRequest round-trip months mismatch.",
+           failures);
+  }
+
+  {
     ConvertRequestPayload request{};
     request.input_path = "test/data";
     request.date_check_mode = "none";
@@ -126,6 +136,15 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
+    ReportTargetsRequestPayload request{};
+    request.type = "month";
+    const auto encoded = EncodeReportTargetsRequest(request);
+    const auto decoded = DecodeReportTargetsRequest(encoded);
+    Expect(decoded.type == request.type,
+           "EncodeReportTargetsRequest round-trip type mismatch.", failures);
+  }
+
+  {
     ReportBatchRequestPayload request{};
     request.days_list = {7, 14, 30};
     request.format = "md";
@@ -211,6 +230,20 @@ void TestEncodeResponses(int& failures) {
   Expect(batch.value("error_message", std::string{}) == "failed",
          "EncodeReportBatchResponse error mismatch.", failures);
 
+  const std::string report_targets_json =
+      EncodeReportTargetsResponse(ReportTargetsResponsePayload{
+          .ok = true,
+          .error_message = "",
+          .type = "month",
+          .items = {"2026-01", "2026-02"},
+      });
+  const json report_targets = json::parse(report_targets_json);
+  Expect(report_targets.value("type", std::string{}) == "month",
+         "EncodeReportTargetsResponse type mismatch.", failures);
+  Expect(report_targets.contains("items") && report_targets["items"].is_array() &&
+             report_targets["items"].size() == 2U,
+         "EncodeReportTargetsResponse items mismatch.", failures);
+
   const std::string export_json = EncodeExportResponse(
       ExportResponsePayload{.ok = false, .error_message = "export failed"});
   const json export_payload = json::parse(export_json);
@@ -227,6 +260,7 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_diagnostics_callback = true;
   capabilities.features.runtime_crypto_progress_callback = true;
   capabilities.features.runtime_ingest_json = true;
+  capabilities.features.runtime_ingest_sync_status_json = true;
   capabilities.features.runtime_convert_json = true;
   capabilities.features.runtime_import_json = true;
   capabilities.features.runtime_validate_structure_json = true;
@@ -234,6 +268,7 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_query_json = true;
   capabilities.features.runtime_report_json = true;
   capabilities.features.runtime_report_batch_json = true;
+  capabilities.features.runtime_report_targets_json = true;
   capabilities.features.runtime_export_json = true;
   capabilities.features.runtime_tree_json = true;
   capabilities.features.processed_json_io = true;
@@ -250,8 +285,18 @@ void TestEncodeResponses(int& failures) {
   Expect(capabilities_json["features"].value("runtime_ingest_json", false),
          "EncodeCapabilitiesResponse features.runtime_ingest_json mismatch.",
          failures);
+  Expect(capabilities_json["features"].value("runtime_ingest_sync_status_json",
+                                             false),
+         "EncodeCapabilitiesResponse "
+         "features.runtime_ingest_sync_status_json mismatch.",
+         failures);
   Expect(capabilities_json["features"].value("runtime_log_callback", false),
          "EncodeCapabilitiesResponse features.runtime_log_callback mismatch.",
+         failures);
+  Expect(capabilities_json["features"].value("runtime_report_targets_json",
+                                             false),
+         "EncodeCapabilitiesResponse "
+         "features.runtime_report_targets_json mismatch.",
          failures);
   Expect(capabilities_json["features"].value("runtime_diagnostics_callback",
                                              false),
@@ -266,6 +311,32 @@ void TestEncodeResponses(int& failures) {
   Expect(!capabilities_json["features"].value("report_latex", true),
          "EncodeCapabilitiesResponse features.report_latex mismatch.",
          failures);
+
+  const std::string ingest_sync_status_json =
+      EncodeIngestSyncStatusResponse(IngestSyncStatusResponsePayload{
+          .ok = true,
+          .error_message = "",
+          .items =
+              {
+                  IngestSyncStatusItemPayload{
+                      .month_key = "2026-03",
+                      .txt_relative_path = "2026/2026-03.txt",
+                      .txt_content_hash_sha256 = "abc123",
+                      .ingested_at_unix_ms = 123456789LL,
+                  },
+              },
+      });
+  const json ingest_sync_status = json::parse(ingest_sync_status_json);
+  Expect(ingest_sync_status.value("ok", false),
+         "EncodeIngestSyncStatusResponse ok mismatch.", failures);
+  Expect(ingest_sync_status.contains("items") &&
+             ingest_sync_status["items"].is_array() &&
+             ingest_sync_status["items"].size() == 1U,
+         "EncodeIngestSyncStatusResponse items mismatch.", failures);
+  Expect(
+      ingest_sync_status["items"][0].value("txt_relative_path", std::string{}) ==
+          "2026/2026-03.txt",
+      "EncodeIngestSyncStatusResponse txt_relative_path mismatch.", failures);
 }
 
 void TestEncodeTreeResponse(int& failures) {

@@ -17,6 +17,13 @@ enum class ReportQueryType {
   kYear,
 };
 
+enum class ReportTargetType {
+  kDay,
+  kMonth,
+  kWeek,
+  kYear,
+};
+
 enum class ReportExportType {
   kDay,
   kMonth,
@@ -48,6 +55,10 @@ struct StructuredReportQueryRequest {
 
 struct StructuredPeriodBatchQueryRequest {
   std::vector<int> kDays;
+};
+
+struct ReportTargetsRequest {
+  ReportTargetType type = ReportTargetType::kDay;
 };
 
 struct ReportExportRequest {

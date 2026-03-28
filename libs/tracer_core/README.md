@@ -37,6 +37,25 @@ Local entrypoint for agents touching the core business-logic library.
    - `runtime.report()`
    - `runtime.tracer_exchange()`
 
+## Exchange Docs
+
+Open these when the task is specifically about `tracer exchange` or
+`infra/crypto`:
+
+1. [Capability dependency map (exchange owner/deps)](../../docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md)
+2. [Capability boundary contract (exchange owner paths/public surfaces)](../../docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md)
+3. [Tracer exchange package contract (`TTPKG v3`)](../../docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md)
+4. [Runtime crypto JSON contract](../../docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md)
+
+## Validation Docs
+
+Open these when the task is specifically about converter-config validation,
+TXT structure validation, TXT logic validation, or ingest validation order:
+
+1. [Ingest persistence boundary](../../docs/time_tracer/core/design/ingest-persistence-boundary.md)
+2. [Validation error codes](../../docs/time_tracer/core/contracts/error-codes.md)
+3. [Core architecture index](../../docs/time_tracer/core/architecture/README.md)
+
 ## Validate
 
 ```powershell

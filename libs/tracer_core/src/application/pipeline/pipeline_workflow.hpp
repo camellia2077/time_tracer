@@ -56,12 +56,19 @@ class PipelineWorkflow final : public IPipelineWorkflow {
                  bool save_processed = false,
                  IngestMode ingest_mode = IngestMode::kStandard)
       -> void override;
+  auto RunIngestSyncStatusQuery(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request)
+      -> tracer_core::core::dto::IngestSyncStatusOutput override;
+  auto ClearIngestSyncStatus() -> void override;
   auto RunIngestReplacingAll(const std::string& source_path,
                              DateCheckMode date_check_mode,
                              bool save_processed = false) -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
+  auto InstallActiveConverterConfig(
+      const std::string& source_main_config_path,
+      const std::string& target_main_config_path) -> void override;
 
  private:
   std::filesystem::path output_root_path_;

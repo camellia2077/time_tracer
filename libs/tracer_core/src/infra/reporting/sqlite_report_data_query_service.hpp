@@ -30,6 +30,11 @@ class SqliteReportDataQueryService final
   auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
   auto QueryYearly(std::string_view year) -> YearlyReportData override;
 
+  auto ListDailyTargets() -> std::vector<std::string> override;
+  auto ListMonthlyTargets() -> std::vector<std::string> override;
+  auto ListWeeklyTargets() -> std::vector<std::string> override;
+  auto ListYearlyTargets() -> std::vector<std::string> override;
+
   auto QueryPeriodBatch(const std::vector<int>& days_list)
       -> std::map<int, PeriodReportData> override;
   auto QueryAllDaily() -> std::map<std::string, DailyReportData> override;

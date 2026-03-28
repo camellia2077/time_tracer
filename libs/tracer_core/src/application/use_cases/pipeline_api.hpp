@@ -16,6 +16,12 @@ class PipelineApi final : public IPipelineApi {
   auto RunIngest(const tracer_core::core::dto::IngestRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 
+  auto RunIngestSyncStatusQuery(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request)
+      -> tracer_core::core::dto::IngestSyncStatusOutput override;
+
+  auto ClearIngestSyncStatus() -> tracer_core::core::dto::OperationAck override;
+
   auto RunImport(const tracer_core::core::dto::ImportRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 

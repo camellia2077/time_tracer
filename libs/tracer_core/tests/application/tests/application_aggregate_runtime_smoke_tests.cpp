@@ -42,10 +42,18 @@ class SmokePipelineWorkflow final
       const std::map<std::string, std::vector<DailyLog>>&) -> void override {}
   auto RunIngest(const std::string&, DateCheckMode, bool, IngestMode)
       -> void override {}
+  auto RunIngestSyncStatusQuery(
+      const tracer_core::core::dto::IngestSyncStatusRequest&)
+      -> tracer_core::core::dto::IngestSyncStatusOutput override {
+    return {.ok = true, .items = {}, .error_message = ""};
+  }
+  auto ClearIngestSyncStatus() -> void override {}
   auto RunIngestReplacingAll(const std::string&, DateCheckMode, bool)
       -> void override {}
   auto RunValidateStructure(const std::string&) -> void override {}
   auto RunValidateLogic(const std::string&, DateCheckMode) -> void override {}
+  auto InstallActiveConverterConfig(const std::string&,
+                                    const std::string&) -> void override {}
 };
 
 class SmokeReportHandler final : public IReportHandler {
@@ -69,21 +77,6 @@ class SmokeReportHandler final : public IReportHandler {
       -> std::string override {
     return "smoke-period-batch";
   }
-  auto RunExportSingleDayReport(std::string_view, ReportFormat)
-      -> void override {}
-  auto RunExportSingleMonthReport(std::string_view, ReportFormat)
-      -> void override {}
-  auto RunExportSinglePeriodReport(int, ReportFormat) -> void override {}
-  auto RunExportSingleWeekReport(std::string_view, ReportFormat)
-      -> void override {}
-  auto RunExportSingleYearReport(std::string_view, ReportFormat)
-      -> void override {}
-  auto RunExportAllDailyReportsQuery(ReportFormat) -> void override {}
-  auto RunExportAllMonthlyReportsQuery(ReportFormat) -> void override {}
-  auto RunExportAllPeriodReportsQuery(const std::vector<int>&, ReportFormat)
-      -> void override {}
-  auto RunExportAllWeeklyReportsQuery(ReportFormat) -> void override {}
-  auto RunExportAllYearlyReportsQuery(ReportFormat) -> void override {}
 };
 
 class SmokeDataQueryService final

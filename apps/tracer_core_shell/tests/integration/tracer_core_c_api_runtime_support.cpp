@@ -111,6 +111,11 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       RequireSymbol<RuntimeDestroyFn>(library, "tracer_core_runtime_destroy");
   api.runtime_ingest = RequireSymbol<RuntimeIngestFn>(
       library, "tracer_core_runtime_ingest_json");
+  api.runtime_ingest_sync_status = RequireSymbol<RuntimeIngestSyncStatusFn>(
+      library, "tracer_core_runtime_ingest_sync_status_json");
+  api.runtime_clear_ingest_sync_status =
+      RequireSymbol<RuntimeClearIngestSyncStatusFn>(
+          library, "tracer_core_runtime_clear_ingest_sync_status_json");
   api.runtime_convert = RequireSymbol<RuntimeConvertFn>(
       library, "tracer_core_runtime_convert_json");
   api.runtime_import = RequireSymbol<RuntimeImportFn>(
@@ -125,6 +130,8 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       library, "tracer_core_runtime_report_json");
   api.runtime_report_batch = RequireSymbol<RuntimeReportBatchFn>(
       library, "tracer_core_runtime_report_batch_json");
+  api.runtime_report_targets = RequireSymbol<RuntimeReportTargetsFn>(
+      library, "tracer_core_runtime_report_targets_json");
   api.runtime_export = RequireSymbol<RuntimeExportFn>(
       library, "tracer_core_runtime_export_json");
   api.runtime_tree =
@@ -207,6 +214,7 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("runtime_diagnostics_callback");
   kRequireBool("runtime_crypto_progress_callback");
   kRequireBool("runtime_ingest_json");
+  kRequireBool("runtime_ingest_sync_status_json");
   kRequireBool("runtime_convert_json");
   kRequireBool("runtime_import_json");
   kRequireBool("runtime_validate_structure_json");
@@ -214,6 +222,7 @@ void RunCapabilitiesChecks(const CoreApiFns& api) {
   kRequireBool("runtime_query_json");
   kRequireBool("runtime_report_json");
   kRequireBool("runtime_report_batch_json");
+  kRequireBool("runtime_report_targets_json");
   kRequireBool("runtime_export_json");
   kRequireBool("runtime_tree_json");
   kRequireBool("processed_json_io");

@@ -23,23 +23,6 @@ class IReportHandler {
       -> std::string = 0;
   virtual auto RunPeriodQueries(const std::vector<int>& days_list,
                                 ReportFormat format) -> std::string = 0;
-
-  virtual auto RunExportSingleDayReport(std::string_view date,
-                                        ReportFormat format) -> void = 0;
-  virtual auto RunExportSingleMonthReport(std::string_view month,
-                                          ReportFormat format) -> void = 0;
-  virtual auto RunExportSinglePeriodReport(int days, ReportFormat format)
-      -> void = 0;
-  virtual auto RunExportSingleWeekReport(std::string_view iso_week,
-                                         ReportFormat format) -> void = 0;
-  virtual auto RunExportSingleYearReport(std::string_view year,
-                                         ReportFormat format) -> void = 0;
-  virtual auto RunExportAllDailyReportsQuery(ReportFormat format) -> void = 0;
-  virtual auto RunExportAllMonthlyReportsQuery(ReportFormat format) -> void = 0;
-  virtual auto RunExportAllPeriodReportsQuery(const std::vector<int>& days_list,
-                                              ReportFormat format) -> void = 0;
-  virtual auto RunExportAllWeeklyReportsQuery(ReportFormat format) -> void = 0;
-  virtual auto RunExportAllYearlyReportsQuery(ReportFormat format) -> void = 0;
 };
 
 #endif  // APPLICATION_COMPAT_REPORTING_I_REPORT_HANDLER_H_

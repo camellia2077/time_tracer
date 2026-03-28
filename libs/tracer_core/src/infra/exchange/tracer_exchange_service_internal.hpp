@@ -31,6 +31,8 @@ namespace file_crypto = tracer_core::infrastructure::crypto;
 
 struct InputPayloadFile {
   fs::path source_path;
+  std::string source_label;
+  std::vector<std::uint8_t> content_bytes;
   std::string relative_package_path;
   std::string month_key;
   int year = 0;
@@ -114,13 +116,7 @@ auto EnsureActiveConverterConfigExists(
     const ActiveConverterConfigPaths& active_paths) -> void;
 auto BackupActiveConverterConfig(const ActiveConverterConfigPaths& active_paths,
                                  const fs::path& backup_root) -> void;
-auto RestoreBackupConfig(const fs::path& backup_root,
-                         const ActiveConverterConfigPaths& active_paths)
-    -> void;
 auto ValidatePackageConverterConfig(const fs::path& work_root) -> void;
-auto ApplyPackageConverterConfig(const fs::path& work_root,
-                                 const ActiveConverterConfigPaths& active_paths)
-    -> void;
 auto BuildCryptoOptions(
     app_dto::TracerExchangeSecurityLevel security_level,
     const app_dto::TracerExchangeProgressObserver& progress_observer)

@@ -8,7 +8,6 @@ import tracer.core.infrastructure.persistence.runtime;
 import tracer.core.infrastructure.persistence.write;
 import tracer.core.infrastructure.reporting.data_querying;
 import tracer.core.infrastructure.reporting.dto;
-import tracer.core.infrastructure.reporting.exporting;
 import tracer.core.infrastructure.reporting.querying;
 import tracer.core.infrastructure.platform.android.clock;
 
@@ -114,9 +113,8 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   auto report_query_service =
       std::make_unique<infra_reports::LazySqliteReportQueryService>(
           kDbPath, report_catalog, platform_clock);
-  auto exporter = std::make_unique<infra_reports::Exporter>(kOutputRoot);
-  auto report = std::make_shared<ReportHandler>(std::move(report_query_service),
-                                                std::move(exporter));
+  auto report =
+      std::make_shared<ReportHandler>(std::move(report_query_service));
 
   auto project_repository =
       std::make_shared<infra_persistence_runtime::SqliteProjectRepository>(
@@ -136,12 +134,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
           static_formatter_registrar);
   formatter_registry->RegisterFormatters();
   auto report_dto_formatter =
-      infra_reports::CreateReportDtoFormatter(*report_catalog);
-  auto report_exporter_for_dto =
-      std::make_shared<infra_reports::Exporter>(kOutputRoot);
-  auto report_export_writer =
-      std::make_shared<infra_reports::ReportDtoExportWriter>(
-          report_dto_formatter, report_exporter_for_dto);
+      std::make_shared<infra_reports::ReportDtoFormatter>(*report_catalog);
   auto tracer_exchange_service =
       tracer_core::infrastructure::crypto::CreateTracerExchangeService(
           *workflow);
@@ -152,8 +145,7 @@ auto BuildAndroidRuntime(const AndroidRuntimeRequest& request)
   auto query_api = std::make_shared<app_use_cases::QueryApi>(
       project_repository, data_query_service);
   auto report_api = std::make_shared<app_use_cases::ReportApi>(
-      *report, report_data_query_service, report_dto_formatter,
-      report_export_writer);
+      *report, report_data_query_service, report_dto_formatter);
   auto tracer_exchange_api = std::make_shared<app_use_cases::TracerExchangeApi>(
       tracer_exchange_service);
 

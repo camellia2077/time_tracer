@@ -33,6 +33,26 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
                                       .dump()
                                       .c_str()),
       "baseline pipeline ingest");
+
+  const json kSyncStatus = ParseResponse(
+      api.runtime_ingest_sync_status(runtime, json::object().dump().c_str()),
+      "baseline pipeline ingest sync status");
+  Require(kSyncStatus.value("ok", false),
+          "ingest sync status should return ok=true");
+  Require(kSyncStatus.contains("items") && kSyncStatus["items"].is_array(),
+          "ingest sync status should include array field `items`");
+
+  RequireOk(api.runtime_clear_ingest_sync_status(runtime),
+            "baseline pipeline clear ingest sync status");
+
+  const json kClearedSyncStatus =
+      ParseResponse(api.runtime_ingest_sync_status(
+                        runtime, json::object().dump().c_str()),
+                    "baseline pipeline ingest sync status after clear");
+  Require(kClearedSyncStatus.value("ok", false),
+          "ingest sync status after clear should return ok=true");
+  Require(kClearedSyncStatus["items"].empty(),
+          "ingest sync status after clear should return no items");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

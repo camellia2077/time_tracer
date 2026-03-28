@@ -27,18 +27,6 @@ class IReportQueryService {
   [[nodiscard]] virtual auto RunYearlyQuery(std::string_view year_str,
                                             ReportFormat format) const
       -> std::string = 0;
-
-  [[nodiscard]] virtual auto RunExportAllDailyReportsQuery(
-      ReportFormat format) const -> FormattedGroupedReports = 0;
-  [[nodiscard]] virtual auto RunExportAllMonthlyReportsQuery(
-      ReportFormat format) const -> FormattedMonthlyReports = 0;
-  [[nodiscard]] virtual auto RunExportAllPeriodReportsQuery(
-      const std::vector<int>& days_list, ReportFormat format) const
-      -> FormattedPeriodReports = 0;
-  [[nodiscard]] virtual auto RunExportAllWeeklyReportsQuery(
-      ReportFormat format) const -> FormattedWeeklyReports = 0;
-  [[nodiscard]] virtual auto RunExportAllYearlyReportsQuery(
-      ReportFormat format) const -> FormattedYearlyReports = 0;
 };
 
 #endif  // APPLICATION_COMPAT_REPORTING_I_REPORT_QUERY_SERVICE_H_

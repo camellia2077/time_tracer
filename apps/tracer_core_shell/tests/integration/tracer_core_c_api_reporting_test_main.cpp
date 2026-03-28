@@ -35,7 +35,7 @@ auto main() -> int {
     {
       auto runtime = CreateRuntime(api, kDbPath, kOutputRoot, kConverterConfig);
       SeedRuntimeWithBaselineData(api, runtime.Get(), kInputRoot);
-      RunReportingChecks(api, runtime.Get());
+      RunReportingChecks(api, runtime.Get(), kOutputRoot);
     }
 
     std::cout << "[PASS] tracer_core_c_api_reporting_tests\n";

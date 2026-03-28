@@ -48,7 +48,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
     return;
   }
 
-  const fs::path active_text_root = paths.test_root / "input" / "full";
+  const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const auto result =
       runtime->runtime_api->tracer_exchange().RunTracerExchangeImport({
@@ -66,7 +66,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
     return;
   }
 
-  const fs::path payload_path = active_text_root / "2025-01.txt";
+  const fs::path payload_path = active_text_root / "2025" / "2025-01.txt";
   const fs::path alias_config_path =
       config_root / "converter" / "alias_mapping.toml";
   const fs::path duration_config_path =
@@ -108,7 +108,7 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   const fs::path alias_config_path = active_config_root / "alias_mapping.toml";
   const fs::path duration_config_path =
       active_config_root / "duration_rules.toml";
-  const fs::path active_text_root = paths.test_root / "input" / "full";
+  const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "sample.tracer";
@@ -140,7 +140,7 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   if (!WriteFileWithParents(main_config_path, original_main) ||
       !WriteFileWithParents(alias_config_path, original_alias) ||
       !WriteFileWithParents(duration_config_path, original_duration) ||
-      !WriteFileWithParents(active_text_root / "2024-01.txt",
+      !WriteFileWithParents(active_text_root / "2024" / "2024-01.txt",
                             preserved_month)) {
     ++failures;
     std::cerr << "[FAIL] Failed to prepare active import fixture.\n";
@@ -148,25 +148,11 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
     return;
   }
 
-  const auto package_entries = BuildValidPackageEntries(
-      BuildSamplePayloads(), package_main, package_alias, package_duration);
-  const auto package_bytes = exchange_pkg::EncodePackageBytes(package_entries);
-
-  std::error_code error;
-  fs::create_directories(package_path.parent_path(), error);
-  if (error || !WriteBytes(package_path, package_bytes)) {
-    ++failures;
-    std::cerr << "[FAIL] Failed to write tracer exchange package bytes.\n";
-    RemoveTree(paths.test_root);
-    return;
-  }
-
-  const auto encrypt_result =
-      file_crypto::EncryptFile(package_path, tracer_path, kPassphrase);
-  if (!encrypt_result.ok()) {
-    ++failures;
-    std::cerr << "[FAIL] Encrypt error: " << encrypt_result.error_code << " | "
-              << encrypt_result.error_message << '\n';
+  if (!WriteEncryptedTracerFromEntries(
+          package_path, tracer_path,
+          BuildValidPackageEntries(BuildSamplePayloads(), package_main,
+                                   package_alias, package_duration),
+          kPassphrase, failures)) {
     RemoveTree(paths.test_root);
     return;
   }
@@ -230,16 +216,16 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
              NormalizeLf(package_duration),
          "RunTracerExchangeImport should overwrite active duration config.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024-01.txt")) ==
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024" / "2024-01.txt")) ==
              NormalizeLf(preserved_month),
          "Transaction import should preserve package-external local months.",
          failures);
   Expect(
-      NormalizeLf(ReadTextFile(active_text_root / "2025-01.txt")) ==
+      NormalizeLf(ReadTextFile(active_text_root / "2025" / "2025-01.txt")) ==
           NormalizeLf(BuildSamplePayloads().front().text),
       "Transaction import should replace package months in active text root.",
       failures);
-  Expect(NormalizeLf(ReadTextFile(active_text_root / "2026-12.txt")) ==
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2026" / "2026-12.txt")) ==
              NormalizeLf(BuildSamplePayloads().back().text),
          "Transaction import should write every package payload into active "
          "text root.",
@@ -262,7 +248,7 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
   const fs::path alias_config_path = active_config_root / "alias_mapping.toml";
   const fs::path duration_config_path =
       active_config_root / "duration_rules.toml";
-  const fs::path active_text_root = paths.test_root / "input" / "full";
+  const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "rollback.tracer";
@@ -294,7 +280,7 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
   if (!WriteFileWithParents(main_config_path, original_main) ||
       !WriteFileWithParents(alias_config_path, original_alias) ||
       !WriteFileWithParents(duration_config_path, original_duration) ||
-      !WriteFileWithParents(active_text_root / "2024-01.txt", original_month)) {
+      !WriteFileWithParents(active_text_root / "2024" / "2024-01.txt", original_month)) {
     ++failures;
     std::cerr << "[FAIL] Failed to prepare active transaction import files.\n";
     RemoveTree(paths.test_root);
@@ -356,16 +342,19 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
          "Rollback should preserve the original duration config after apply "
          "failure.",
          failures);
-  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024-01.txt")) ==
+  Expect(NormalizeLf(ReadTextFile(active_text_root / "2024" / "2024-01.txt")) ==
              NormalizeLf(original_month),
          "Rollback should preserve the original active text root content.",
          failures);
-  Expect(!fs::exists(active_text_root / "2025-01.txt"),
+  Expect(!fs::exists(active_text_root / "2025" / "2025-01.txt"),
          "Rollback should not leave newly imported month files in active text "
          "root.",
          failures);
   Expect(fs::exists(*result.retained_failure_root),
          "Failure root should exist on disk for debugging.", failures);
+  Expect(!fs::exists(*result.retained_failure_root / "exchange.ttpkg"),
+         "Failed import should not retain a decrypted package file on disk.",
+         failures);
 
   RemoveTree(paths.test_root);
 }
@@ -382,7 +371,7 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
   const fs::path alias_config_path = active_config_root / "alias_mapping.toml";
   const fs::path duration_config_path =
       active_config_root / "duration_rules.toml";
-  const fs::path active_text_root = paths.test_root / "input" / "full";
+  const fs::path active_text_root = paths.test_root / "input";
   const fs::path runtime_work_root = paths.test_root / "work";
   const fs::path package_path = paths.test_root / "package" / "exchange.ttpkg";
   const fs::path tracer_path = paths.test_root / "package" / "broken.tracer";
@@ -412,26 +401,12 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
     return;
   }
 
-  const auto package_entries = BuildValidPackageEntries(
-      BuildSamplePayloads(), "invalid = [\n", "alias = \"broken\"\n",
-      "duration = \"broken\"\n");
-  const auto package_bytes = exchange_pkg::EncodePackageBytes(package_entries);
-
-  std::error_code error;
-  fs::create_directories(package_path.parent_path(), error);
-  if (error || !WriteBytes(package_path, package_bytes)) {
-    ++failures;
-    std::cerr << "[FAIL] Failed to write tracer exchange package bytes.\n";
-    RemoveTree(paths.test_root);
-    return;
-  }
-
-  const auto encrypt_result =
-      file_crypto::EncryptFile(package_path, tracer_path, kPassphrase);
-  if (!encrypt_result.ok()) {
-    ++failures;
-    std::cerr << "[FAIL] Encrypt error: " << encrypt_result.error_code << " | "
-              << encrypt_result.error_message << '\n';
+  if (!WriteEncryptedTracerFromEntries(
+          package_path, tracer_path,
+          BuildValidPackageEntries(BuildSamplePayloads(), "invalid = [\n",
+                                   "alias = \"broken\"\n",
+                                   "duration = \"broken\"\n"),
+          kPassphrase, failures)) {
     RemoveTree(paths.test_root);
     return;
   }
@@ -474,6 +449,9 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
          "Retained failure root should exist on disk.", failures);
   Expect(!result.error_message.empty(),
          "Invalid package converter config should surface an error message.",
+         failures);
+  Expect(!fs::exists(*result.retained_failure_root / "exchange.ttpkg"),
+         "Rejected import should not retain a decrypted package file on disk.",
          failures);
 
   RemoveTree(paths.test_root);

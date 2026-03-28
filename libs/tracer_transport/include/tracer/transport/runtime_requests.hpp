@@ -13,6 +13,10 @@ struct IngestRequestPayload {
   std::optional<std::string> ingest_mode;
 };
 
+struct IngestSyncStatusRequestPayload {
+  std::optional<std::vector<std::string>> months;
+};
+
 struct ConvertRequestPayload {
   std::string input_path;
   std::optional<std::string> date_check_mode;
@@ -68,6 +72,10 @@ struct ReportRequestPayload {
 struct ReportBatchRequestPayload {
   std::vector<int> days_list;
   std::optional<std::string> format;
+};
+
+struct ReportTargetsRequestPayload {
+  std::string type;
 };
 
 struct ExportRequestPayload {

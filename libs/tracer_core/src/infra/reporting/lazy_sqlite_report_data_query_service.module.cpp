@@ -112,6 +112,46 @@ auto LazySqliteReportDataQueryService::QueryYearly(std::string_view year)
       });
 }
 
+auto LazySqliteReportDataQueryService::ListDailyTargets()
+    -> std::vector<std::string> {
+  return WithStructuredReportService(
+      db_path_, platform_clock_,
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::vector<std::string> {
+        return report_service.ListDailyTargets();
+      });
+}
+
+auto LazySqliteReportDataQueryService::ListMonthlyTargets()
+    -> std::vector<std::string> {
+  return WithStructuredReportService(
+      db_path_, platform_clock_,
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::vector<std::string> {
+        return report_service.ListMonthlyTargets();
+      });
+}
+
+auto LazySqliteReportDataQueryService::ListWeeklyTargets()
+    -> std::vector<std::string> {
+  return WithStructuredReportService(
+      db_path_, platform_clock_,
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::vector<std::string> {
+        return report_service.ListWeeklyTargets();
+      });
+}
+
+auto LazySqliteReportDataQueryService::ListYearlyTargets()
+    -> std::vector<std::string> {
+  return WithStructuredReportService(
+      db_path_, platform_clock_,
+      [&](SqliteReportDataQueryService& report_service)
+          -> std::vector<std::string> {
+        return report_service.ListYearlyTargets();
+      });
+}
+
 auto LazySqliteReportDataQueryService::QueryPeriodBatch(
     const std::vector<int>& days_list) -> std::map<int, PeriodReportData> {
   return WithStructuredReportService(

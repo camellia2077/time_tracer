@@ -11,6 +11,7 @@ class IConverterConfigProvider {
   virtual ~IConverterConfigProvider() = default;
 
   [[nodiscard]] virtual auto LoadConverterConfig() const -> ConverterConfig = 0;
+  virtual auto InvalidateCache() -> void = 0;
 };
 
 }  // namespace tracer_core::application::ports

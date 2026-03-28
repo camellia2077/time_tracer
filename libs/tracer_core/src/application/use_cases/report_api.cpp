@@ -24,12 +24,10 @@ constexpr int kPeriodSeparatorLength = 40;
 
 ReportApi::ReportApi(IReportHandler& report_handler,
                      ReportDataQueryServicePtr report_data_query_service,
-                     ReportDtoFormatterPtr report_dto_formatter,
-                     ReportExportWriterPtr report_export_writer)
+                     ReportDtoFormatterPtr report_dto_formatter)
     : report_handler_(report_handler),
       report_data_query_service_(std::move(report_data_query_service)),
-      report_dto_formatter_(std::move(report_dto_formatter)),
-      report_export_writer_(std::move(report_export_writer)) {}
+      report_dto_formatter_(std::move(report_dto_formatter)) {}
 
 auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
     -> TextOutput {
@@ -257,123 +255,55 @@ auto ReportApi::RunStructuredPeriodBatchQuery(
   }
 }
 
-auto ReportApi::RunReportExport(const ReportExportRequest& request)
-    -> OperationAck {
+auto ReportApi::RunReportTargetsQuery(const ReportTargetsRequest& request)
+    -> ReportTargetsOutput {
   try {
-    if (report_data_query_service_ && report_export_writer_) {
-      switch (request.type) {
-        case ReportExportType::kDay: {
-          const auto daily_report =
-              report_data_query_service_->QueryDaily(request.argument);
-          report_export_writer_->ExportSingleDay(request.argument, daily_report,
-                                                 request.format);
-          break;
-        }
-        case ReportExportType::kMonth: {
-          const auto monthly_report =
-              report_data_query_service_->QueryMonthly(request.argument);
-          report_export_writer_->ExportSingleMonth(
-              request.argument, monthly_report, request.format);
-          break;
-        }
-        case ReportExportType::kRecent: {
-          const int days = std::stoi(request.argument);
-          const auto period_report =
-              report_data_query_service_->QueryPeriod(days);
-          report_export_writer_->ExportSinglePeriod(days, period_report,
-                                                    request.format);
-          break;
-        }
-        case ReportExportType::kWeek: {
-          const auto weekly_report =
-              report_data_query_service_->QueryWeekly(request.argument);
-          report_export_writer_->ExportSingleWeek(
-              request.argument, weekly_report, request.format);
-          break;
-        }
-        case ReportExportType::kYear: {
-          const auto yearly_report =
-              report_data_query_service_->QueryYearly(request.argument);
-          report_export_writer_->ExportSingleYear(
-              request.argument, yearly_report, request.format);
-          break;
-        }
-        case ReportExportType::kAllDay: {
-          const auto reports = report_data_query_service_->QueryAllDaily();
-          report_export_writer_->ExportAllDaily(reports, request.format);
-          break;
-        }
-        case ReportExportType::kAllMonth: {
-          const auto reports = report_data_query_service_->QueryAllMonthly();
-          report_export_writer_->ExportAllMonthly(reports, request.format);
-          break;
-        }
-        case ReportExportType::kAllRecent: {
-          const auto reports = report_data_query_service_->QueryPeriodBatch(
-              request.recent_days_list);
-          report_export_writer_->ExportAllPeriod(reports, request.format);
-          break;
-        }
-        case ReportExportType::kAllWeek: {
-          const auto reports = report_data_query_service_->QueryAllWeekly();
-          report_export_writer_->ExportAllWeekly(reports, request.format);
-          break;
-        }
-        case ReportExportType::kAllYear: {
-          const auto reports = report_data_query_service_->QueryAllYearly();
-          report_export_writer_->ExportAllYearly(reports, request.format);
-          break;
-        }
-      }
-      return {.ok = true, .error_message = ""};
+    if (!report_data_query_service_) {
+      return {
+          .ok = false,
+          .type = request.type,
+          .items = {},
+          .error_message = core_api_failure::BuildErrorMessage(
+              "RunReportTargetsQuery",
+              "Report data query service is not configured."),
+      };
     }
 
     switch (request.type) {
-      case ReportExportType::kDay:
-        report_handler_.RunExportSingleDayReport(request.argument,
-                                                 request.format);
-        break;
-      case ReportExportType::kMonth:
-        report_handler_.RunExportSingleMonthReport(request.argument,
-                                                   request.format);
-        break;
-      case ReportExportType::kRecent: {
-        const int days = std::stoi(request.argument);
-        report_handler_.RunExportSinglePeriodReport(days, request.format);
-        break;
-      }
-      case ReportExportType::kWeek:
-        report_handler_.RunExportSingleWeekReport(request.argument,
-                                                  request.format);
-        break;
-      case ReportExportType::kYear:
-        report_handler_.RunExportSingleYearReport(request.argument,
-                                                  request.format);
-        break;
-      case ReportExportType::kAllDay:
-        report_handler_.RunExportAllDailyReportsQuery(request.format);
-        break;
-      case ReportExportType::kAllMonth:
-        report_handler_.RunExportAllMonthlyReportsQuery(request.format);
-        break;
-      case ReportExportType::kAllRecent:
-        report_handler_.RunExportAllPeriodReportsQuery(request.recent_days_list,
-                                                       request.format);
-        break;
-      case ReportExportType::kAllWeek:
-        report_handler_.RunExportAllWeeklyReportsQuery(request.format);
-        break;
-      case ReportExportType::kAllYear:
-        report_handler_.RunExportAllYearlyReportsQuery(request.format);
-        break;
+      case ReportTargetType::kDay:
+        return {.ok = true,
+                .type = request.type,
+                .items = report_data_query_service_->ListDailyTargets(),
+                .error_message = ""};
+      case ReportTargetType::kMonth:
+        return {.ok = true,
+                .type = request.type,
+                .items = report_data_query_service_->ListMonthlyTargets(),
+                .error_message = ""};
+      case ReportTargetType::kWeek:
+        return {.ok = true,
+                .type = request.type,
+                .items = report_data_query_service_->ListWeeklyTargets(),
+                .error_message = ""};
+      case ReportTargetType::kYear:
+        return {.ok = true,
+                .type = request.type,
+                .items = report_data_query_service_->ListYearlyTargets(),
+                .error_message = ""};
     }
-
-    return {.ok = true, .error_message = ""};
   } catch (const std::exception& exception) {
-    return core_api_failure::BuildOperationFailure("RunReportExport",
-                                                   exception);
+    return {.ok = false,
+            .type = request.type,
+            .items = {},
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReportTargetsQuery", exception.what())};
   } catch (...) {
-    return core_api_failure::BuildOperationFailure("RunReportExport");
+    return {.ok = false,
+            .type = request.type,
+            .items = {},
+            .error_message =
+                core_api_failure::BuildErrorMessage("RunReportTargetsQuery",
+                                                    "Unknown error.")};
   }
 }
 

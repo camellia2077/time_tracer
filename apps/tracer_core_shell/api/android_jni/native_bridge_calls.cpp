@@ -132,6 +132,49 @@ auto NativeIngestSingleTxtReplaceMonth(JNIEnv* env, jobject /*thiz*/,
   });
 }
 
+auto NativeListTxtIngestSyncStatus(JNIEnv* env, jobject /*thiz*/,
+                                   jstring request_json) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const std::string request_json_utf8 = ToUtf8(env, request_json);
+
+    std::scoped_lock lock(g_runtime_mutex);
+    if (g_runtime.core_runtime == nullptr) {
+      return BuildResponseJson(false, "nativeInit must be called first.",
+                               std::string{});
+    }
+
+    const char* response_json = tracer_core_runtime_ingest_sync_status_json(
+        g_runtime.core_runtime, request_json_utf8.empty()
+                                    ? "{}"
+                                    : request_json_utf8.c_str());
+    return response_json != nullptr ? std::string(response_json)
+                                    : BuildResponseJson(
+                                          false,
+                                          "nativeListTxtIngestSyncStatus "
+                                          "returned null response.",
+                                          std::string{});
+  });
+}
+
+auto NativeClearTxtIngestSyncStatus(JNIEnv* env, jobject /*thiz*/) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    std::scoped_lock lock(g_runtime_mutex);
+    if (g_runtime.core_runtime == nullptr) {
+      return BuildResponseJson(false, "nativeInit must be called first.",
+                               std::string{});
+    }
+
+    const char* response_json = tracer_core_runtime_clear_ingest_sync_status_json(
+        g_runtime.core_runtime);
+    return response_json != nullptr
+               ? std::string(response_json)
+               : BuildResponseJson(false,
+                                   "nativeClearTxtIngestSyncStatus returned "
+                                   "null response.",
+                                   std::string{});
+  });
+}
+
 auto NativeValidateStructure(JNIEnv* env, jobject /*thiz*/, jstring input_path)
     -> jstring {
   return ExecuteJniMethod(env, [&]() -> std::string {

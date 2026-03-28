@@ -14,6 +14,12 @@ namespace tracer::transport {
     -> std::string;
 [[nodiscard]] auto EncodeIngestResponse(const IngestResponsePayload& response)
     -> std::string;
+[[nodiscard]] auto DecodeIngestSyncStatusRequest(std::string_view request_json)
+    -> IngestSyncStatusRequestPayload;
+[[nodiscard]] auto EncodeIngestSyncStatusRequest(
+    const IngestSyncStatusRequestPayload& request) -> std::string;
+[[nodiscard]] auto EncodeIngestSyncStatusResponse(
+    const IngestSyncStatusResponsePayload& response) -> std::string;
 [[nodiscard]] auto DecodeAckResponse(std::string_view response_json,
                                      std::string_view context = {})
     -> AckResponsePayload;
@@ -60,6 +66,12 @@ namespace tracer::transport {
     -> std::string;
 [[nodiscard]] auto EncodeReportResponse(const ReportResponsePayload& response)
     -> std::string;
+[[nodiscard]] auto DecodeReportTargetsRequest(std::string_view request_json)
+    -> ReportTargetsRequestPayload;
+[[nodiscard]] auto EncodeReportTargetsRequest(
+    const ReportTargetsRequestPayload& request) -> std::string;
+[[nodiscard]] auto EncodeReportTargetsResponse(
+    const ReportTargetsResponsePayload& response) -> std::string;
 [[nodiscard]] auto DecodeReportBatchRequest(std::string_view request_json)
     -> ReportBatchRequestPayload;
 [[nodiscard]] auto EncodeReportBatchRequest(

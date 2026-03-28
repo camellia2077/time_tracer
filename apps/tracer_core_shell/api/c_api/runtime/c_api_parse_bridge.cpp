@@ -169,6 +169,26 @@ namespace tracer_core::shell::c_api_bridge {
       "field `type` must be one of: day|month|recent|range|week|year.");
 }
 
+[[nodiscard]] auto ParseReportTargetType(const std::string& value)
+    -> tracer_core::core::dto::ReportTargetType {
+  using tracer_core::core::dto::ReportTargetType;
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "day") {
+    return ReportTargetType::kDay;
+  }
+  if (normalized == "month") {
+    return ReportTargetType::kMonth;
+  }
+  if (normalized == "week") {
+    return ReportTargetType::kWeek;
+  }
+  if (normalized == "year") {
+    return ReportTargetType::kYear;
+  }
+  throw std::invalid_argument(
+      "field `type` must be one of: day|month|week|year.");
+}
+
 [[nodiscard]] auto ParseReportFormat(const std::string& value) -> ReportFormat {
   const std::string normalized = ToLowerAscii(value);
   if (normalized == "markdown" || normalized == "md") {

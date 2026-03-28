@@ -10,7 +10,9 @@
 
 #include "application/compat/reporting/i_report_handler.hpp"
 #include "application/pipeline/i_pipeline_workflow.hpp"
+#include "application/dto/pipeline_responses.hpp"
 #include "application/ports/query/i_data_query_service.hpp"
+#include "application/ports/reporting/i_report_data_query_service.hpp"
 #include "application/ports/exchange/i_tracer_exchange_service.hpp"
 #include "application/aggregate_runtime/tracer_core_runtime.hpp"
 #include "domain/model/daily_log.hpp"
@@ -29,6 +31,8 @@ class FakePipelineWorkflow final
   bool fail_validate_structure = false;
   bool fail_validate_logic = false;
   bool fail_ingest_replace_all = false;
+  bool fail_ingest_sync_status_query = false;
+  bool fail_clear_ingest_sync_status = false;
 
   std::string last_converter_input;
   AppOptions last_converter_options;
@@ -50,6 +54,14 @@ class FakePipelineWorkflow final
   int import_call_count = 0;
   int validate_structure_call_count = 0;
   int validate_logic_call_count = 0;
+  int ingest_sync_status_query_call_count = 0;
+  int clear_ingest_sync_status_call_count = 0;
+  tracer_core::core::dto::IngestSyncStatusRequest last_ingest_sync_status_request;
+  tracer_core::core::dto::IngestSyncStatusOutput ingest_sync_status_output = {
+      .ok = true,
+      .items = {},
+      .error_message = "",
+  };
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
       -> void override;
@@ -60,19 +72,25 @@ class FakePipelineWorkflow final
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
                  bool save_processed, IngestMode ingest_mode) -> void override;
+  auto RunIngestSyncStatusQuery(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request)
+      -> tracer_core::core::dto::IngestSyncStatusOutput override;
+  auto ClearIngestSyncStatus() -> void override;
   auto RunIngestReplacingAll(const std::string& source_path,
                              DateCheckMode date_check_mode, bool save_processed)
       -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
+  auto InstallActiveConverterConfig(
+      const std::string& source_main_config_path,
+      const std::string& target_main_config_path) -> void override;
 };
 
 class FakeReportHandler final : public IReportHandler {
  public:
   bool fail_query = false;
   bool fail_period_batch_query = false;
-  bool fail_export = false;
 
   std::string daily_query_result = "daily";
   std::string monthly_query_result = "monthly";
@@ -80,12 +98,6 @@ class FakeReportHandler final : public IReportHandler {
   std::string yearly_query_result = "yearly";
   std::string recent_query_result = "recent";
   std::string period_batch_result = "period-batch";
-
-  int daily_export_count = 0;
-  int monthly_export_count = 0;
-  int weekly_export_count = 0;
-  int yearly_export_count = 0;
-  int recent_export_count = 0;
 
   auto RunDailyQuery(std::string_view date, ReportFormat format)
       -> std::string override;
@@ -98,22 +110,37 @@ class FakeReportHandler final : public IReportHandler {
       -> std::string override;
   auto RunPeriodQueries(const std::vector<int>& days_list, ReportFormat format)
       -> std::string override;
-  auto RunExportSingleDayReport(std::string_view date, ReportFormat format)
-      -> void override;
-  auto RunExportSingleMonthReport(std::string_view month, ReportFormat format)
-      -> void override;
-  auto RunExportSinglePeriodReport(int days, ReportFormat format)
-      -> void override;
-  auto RunExportSingleWeekReport(std::string_view iso_week, ReportFormat format)
-      -> void override;
-  auto RunExportSingleYearReport(std::string_view year, ReportFormat format)
-      -> void override;
-  auto RunExportAllDailyReportsQuery(ReportFormat format) -> void override;
-  auto RunExportAllMonthlyReportsQuery(ReportFormat format) -> void override;
-  auto RunExportAllPeriodReportsQuery(const std::vector<int>& days_list,
-                                      ReportFormat format) -> void override;
-  auto RunExportAllWeeklyReportsQuery(ReportFormat format) -> void override;
-  auto RunExportAllYearlyReportsQuery(ReportFormat format) -> void override;
+};
+
+class FakeReportDataQueryService final
+    : public tracer_core::application::ports::IReportDataQueryService {
+ public:
+  bool fail_list_targets = false;
+
+  std::vector<std::string> daily_targets = {"2026-01-03", "2026-01-04"};
+  std::vector<std::string> monthly_targets = {"2026-01", "2026-02"};
+  std::vector<std::string> weekly_targets = {"2026-W01", "2026-W02"};
+  std::vector<std::string> yearly_targets = {"2025", "2026"};
+
+  auto QueryDaily(std::string_view date) -> DailyReportData override;
+  auto QueryMonthly(std::string_view month) -> MonthlyReportData override;
+  auto QueryPeriod(int days) -> PeriodReportData override;
+  auto QueryRange(std::string_view start_date, std::string_view end_date)
+      -> PeriodReportData override;
+  auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData override;
+  auto QueryYearly(std::string_view year) -> YearlyReportData override;
+
+  auto ListDailyTargets() -> std::vector<std::string> override;
+  auto ListMonthlyTargets() -> std::vector<std::string> override;
+  auto ListWeeklyTargets() -> std::vector<std::string> override;
+  auto ListYearlyTargets() -> std::vector<std::string> override;
+
+  auto QueryPeriodBatch(const std::vector<int>& days_list)
+      -> std::map<int, PeriodReportData> override;
+  auto QueryAllDaily() -> std::map<std::string, DailyReportData> override;
+  auto QueryAllMonthly() -> std::map<std::string, MonthlyReportData> override;
+  auto QueryAllWeekly() -> std::map<std::string, WeeklyReportData> override;
+  auto QueryAllYearly() -> std::map<std::string, YearlyReportData> override;
 };
 
 class FakeDataQueryService final
@@ -200,7 +227,9 @@ auto BuildRuntimeApi(
     const std::shared_ptr<FakeProjectRepository>& repository,
     const std::shared_ptr<FakeDataQueryService>& data_query,
     const std::shared_ptr<FakeTracerExchangeService>& tracer_exchange_service =
-        nullptr) -> TracerCoreRuntime;
+        nullptr,
+    const std::shared_ptr<FakeReportDataQueryService>&
+        report_data_query_service = nullptr) -> TracerCoreRuntime;
 
 }  // namespace tracer_core::application::tests
 

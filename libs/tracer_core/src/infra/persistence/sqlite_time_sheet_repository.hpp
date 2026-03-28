@@ -25,6 +25,16 @@ class SqliteTimeSheetRepository final
   auto ReplaceMonthData(int year, int month, const std::vector<DayData>& days,
                         const std::vector<TimeRecordInternal>& records)
       -> void override;
+  auto UpsertIngestSyncStatus(
+      const tracer_core::core::dto::IngestSyncStatusEntry& entry)
+      -> void override;
+  auto ReplaceIngestSyncStatuses(
+      const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
+      -> void override;
+  auto ClearIngestSyncStatus() -> void override;
+  [[nodiscard]] auto ListIngestSyncStatuses(
+      const tracer_core::core::dto::IngestSyncStatusRequest& request) const
+      -> tracer_core::core::dto::IngestSyncStatusOutput override;
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view date)
       const -> std::optional<
           tracer_core::application::ports::PreviousActivityTail> override;

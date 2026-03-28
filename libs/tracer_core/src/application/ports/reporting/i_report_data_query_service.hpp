@@ -24,6 +24,11 @@ class IReportDataQueryService {
   virtual auto QueryWeekly(std::string_view iso_week) -> WeeklyReportData = 0;
   virtual auto QueryYearly(std::string_view year) -> YearlyReportData = 0;
 
+  virtual auto ListDailyTargets() -> std::vector<std::string> = 0;
+  virtual auto ListMonthlyTargets() -> std::vector<std::string> = 0;
+  virtual auto ListWeeklyTargets() -> std::vector<std::string> = 0;
+  virtual auto ListYearlyTargets() -> std::vector<std::string> = 0;
+
   virtual auto QueryPeriodBatch(const std::vector<int>& days_list)
       -> std::map<int, PeriodReportData> = 0;
   virtual auto QueryAllDaily() -> std::map<std::string, DailyReportData> = 0;

@@ -72,20 +72,17 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
   Expect(fs::exists(tracer_path),
          "RunTracerExchangeExport should materialize the .tracer artifact.",
          failures);
+  Expect(!fs::exists(tracer_path.parent_path() / ".tracer_staging"),
+         "RunTracerExchangeExport should not leave a tracer staging directory.",
+         failures);
 
-  const auto decrypt_result = file_crypto::DecryptFile(
-      tracer_path, decrypted_package_path, std::string(kPassphrase));
-  if (!decrypt_result.ok()) {
-    ++failures;
-    std::cerr << "[FAIL] DecryptFile(exported tracer) failed unexpectedly: "
-              << decrypt_result.error_code << " | "
-              << decrypt_result.error_message << '\n';
+  const auto package_opt = DecodeTracerPackage(
+      tracer_path, decrypted_package_path, kPassphrase, failures);
+  if (!package_opt.has_value()) {
     RemoveTree(paths.test_root);
     return;
   }
-
-  const auto package =
-      exchange_pkg::DecodePackageBytes(ReadBytes(decrypted_package_path));
+  const auto& package = *package_opt;
   Expect(package.manifest.source_root_name == "data",
          "Exported manifest should retain source_root_name.", failures);
   Expect(
@@ -118,6 +115,106 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
              "Exported payload bytes should match source TXT content.",
              failures);
     }
+  }
+
+  RemoveTree(paths.test_root);
+}
+
+auto TestTracerExchangeExportFromPayloadWritesToSink(int& failures) -> void {
+  constexpr std::string_view kPassphrase = "phase3-tracer-exchange-passphrase";
+  const RuntimeTestPaths paths = BuildTempTestPaths(
+      "tracer_core_tracer_exchange_export_payload_writer_test");
+  const fs::path config_root = paths.test_root / "config";
+  const fs::path main_config_path =
+      config_root / "converter" / "interval_processor_config.toml";
+  const fs::path tracer_path = paths.test_root / "export" / "data.tracer";
+  const fs::path decrypted_package_path =
+      paths.test_root / "export" / "payload_writer.ttpkg";
+  const auto payloads = BuildValidExportPayloads();
+
+  if (!PrepareRuntimeFixture(paths, config_root, failures)) {
+    return;
+  }
+
+  auto runtime = BuildTracerExchangeRuntime(paths, main_config_path, failures);
+  if (!runtime.has_value()) {
+    return;
+  }
+
+  std::vector<tracer_core::core::dto::TracerExchangeTextPayloadItem>
+      request_payloads;
+  std::size_t emitted_ciphertext_size = 0;
+  request_payloads.reserve(payloads.size());
+  for (const auto& payload : payloads) {
+    request_payloads.push_back({
+        .relative_path_hint =
+            fs::path(payload.relative_path).lexically_relative("payload")
+                .generic_string(),
+        .content = payload.text,
+    });
+  }
+
+  const auto result =
+      runtime->runtime_api->tracer_exchange().RunTracerExchangeExport({
+          .input_text_payloads = request_payloads,
+          .encrypted_output_writer =
+              [&tracer_path, &emitted_ciphertext_size](
+                  std::span<const std::uint8_t> bytes,
+                             std::string& error_message) -> bool {
+                emitted_ciphertext_size = bytes.size();
+                if (!WriteRawBytesWithParents(
+                        tracer_path,
+                        std::vector<std::uint8_t>(bytes.begin(), bytes.end()))) {
+                  error_message =
+                      "Failed to persist payload-writer tracer bytes.";
+                  return false;
+                }
+                return true;
+              },
+          .active_converter_main_config_path = main_config_path,
+          .date_check_mode = DateCheckMode::kNone,
+          .passphrase = std::string(kPassphrase),
+          .logical_source_root_name = "data",
+          .output_display_name = "data.tracer",
+          .producer_platform = "android",
+          .producer_app = "time_tracer_android",
+          .security_level =
+              tracer_core::core::dto::TracerExchangeSecurityLevel::kInteractive,
+      });
+  if (!result.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunTracerExchangeExport(payload writer) failed: "
+              << result.error_message << '\n';
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  Expect(result.resolved_output_tracer_path ==
+             fs::path("android_export_sink") / "data.tracer",
+         "Payload export should use logical sink output label.", failures);
+  Expect(emitted_ciphertext_size > 0,
+         "Payload export sink should receive non-empty ciphertext bytes.",
+         failures);
+  Expect(fs::exists(tracer_path),
+         "Payload export should write tracer bytes through the supplied sink.",
+         failures);
+
+  const auto package_opt = DecodeTracerPackage(
+      tracer_path, decrypted_package_path, kPassphrase, failures);
+  if (!package_opt.has_value()) {
+    RemoveTree(paths.test_root);
+    return;
+  }
+  const auto& package = *package_opt;
+  Expect(package.manifest.source_root_name == "data",
+         "Payload export manifest should keep logical source_root_name.",
+         failures);
+  Expect(package.manifest.payload_files.size() == payloads.size(),
+         "Payload export manifest should list every payload entry.", failures);
+  for (const auto& payload : payloads) {
+    const auto* payload_entry = FindEntry(package, payload.relative_path);
+    Expect(payload_entry != nullptr,
+           "Payload export should include each TXT payload entry.", failures);
   }
 
   RemoveTree(paths.test_root);
@@ -196,6 +293,9 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
          failures);
   Expect(result.converter_entries[2].present,
          "RunTracerExchangeInspect should report duration_rules.toml.",
+         failures);
+  Expect(!fs::exists(tracer_path.parent_path() / ".tracer_staging"),
+         "RunTracerExchangeInspect should not create a tracer staging directory.",
          failures);
 
   RemoveTree(paths.test_root);
@@ -412,6 +512,7 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
 
 auto RunFileCryptoTracerExchangeExportTests(int& failures) -> void {
   TestTracerExchangeExportEndToEnd(failures);
+  TestTracerExchangeExportFromPayloadWritesToSink(failures);
   TestTracerExchangeInspectEndToEnd(failures);
   TestTracerExchangeExportCanonicalizesLegacyText(failures);
   TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(failures);

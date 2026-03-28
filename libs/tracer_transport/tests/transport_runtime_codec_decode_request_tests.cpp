@@ -23,6 +23,22 @@ void TestDecodeIngestRequest(int& failures) {
       [] { (void)DecodeIngestRequest(R"({"date_check_mode":"none"})"); },
       "field `input_path` must be a string.", "DecodeIngestRequest missing",
       failures);
+
+  const auto status_request = DecodeIngestSyncStatusRequest(
+      R"({"months":["2026-03","2026-04"]})");
+  Expect(status_request.months.has_value() &&
+             status_request.months->size() == 2U &&
+             (*status_request.months)[0] == "2026-03",
+         "DecodeIngestSyncStatusRequest months mismatch.", failures);
+
+  const auto empty_status_request = DecodeIngestSyncStatusRequest("");
+  Expect(!empty_status_request.months.has_value(),
+         "DecodeIngestSyncStatusRequest empty payload mismatch.", failures);
+
+  ExpectInvalidArgument(
+      [] { (void)DecodeIngestSyncStatusRequest(R"({"months":[1]})"); },
+      "field `months` must be a string array.",
+      "DecodeIngestSyncStatusRequest bad months type", failures);
 }
 
 void TestDecodeQueryRequest(int& failures) {
@@ -126,10 +142,18 @@ void TestDecodeReportRequests(int& failures) {
   Expect(batch.format.has_value() && *batch.format == "md",
          "DecodeReportBatchRequest format mismatch.", failures);
 
+  const auto targets = DecodeReportTargetsRequest(R"({"type":"month"})");
+  Expect(targets.type == "month",
+         "DecodeReportTargetsRequest type mismatch.", failures);
+
   ExpectInvalidArgument(
       [] { (void)DecodeReportBatchRequest(R"({"format":"md"})"); },
       "field `days_list` must be an integer array.",
       "DecodeReportBatchRequest missing days_list", failures);
+  ExpectInvalidArgument(
+      [] { (void)DecodeReportTargetsRequest(R"({"argument":"x"})"); },
+      "field `type` must be a string.",
+      "DecodeReportTargetsRequest missing type", failures);
 }
 
 void TestDecodeExportRequest(int& failures) {

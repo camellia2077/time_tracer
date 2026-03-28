@@ -100,4 +100,13 @@ auto WriteAllBytes(const fs::path& path, const std::vector<std::uint8_t>& bytes)
   return {};
 }
 
+auto WriteAllBytes(const FileCryptoWriteCallback& write_callback,
+                   std::span<const std::uint8_t> bytes) -> FileCryptoResult {
+  if (!write_callback) {
+    return MakeError(FileCryptoError::kInvalidArgument,
+                     "Output writer callback is required.");
+  }
+  return write_callback(bytes);
+}
+
 }  // namespace tracer_core::infrastructure::crypto::internal

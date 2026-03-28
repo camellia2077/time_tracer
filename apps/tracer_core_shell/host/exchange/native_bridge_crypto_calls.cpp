@@ -1,9 +1,17 @@
+#include <climits>
 #include <filesystem>
+#include <span>
 #include <nlohmann/json.hpp>
 #include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
+
+#if defined(_WIN32)
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
 
 #include "api/android_jni/native_bridge_internal.hpp"
 #include "api/c_api/runtime/c_api_parse_bridge.hpp"
@@ -58,6 +66,17 @@ auto NativeExportTracerExchange(JNIEnv* env, jobject /*thiz*/,
                                       security_level, date_check_mode);
     return BuildTracerExchangeExportResponse(
         DispatchExportTracerExchange(env, args));
+  });
+}
+
+auto NativeExportTracerExchangeFromPayloadJson(JNIEnv* env, jobject /*thiz*/,
+                                               jstring request_json,
+                                               jint output_fd) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const ExportTracerExchangeFromPayloadArgs args =
+        ParseExportTracerExchangeFromPayloadArgs(env, request_json, output_fd);
+    return BuildTracerExchangeExportResponse(
+        DispatchExportTracerExchangeFromPayload(env, args));
   });
 }
 

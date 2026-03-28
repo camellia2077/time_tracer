@@ -32,18 +32,6 @@ class LazySqliteReportQueryService final : public IReportQueryService {
                                     ReportFormat format) const
       -> std::string override;
 
-  [[nodiscard]] auto RunExportAllDailyReportsQuery(ReportFormat format) const
-      -> FormattedGroupedReports override;
-  [[nodiscard]] auto RunExportAllMonthlyReportsQuery(ReportFormat format) const
-      -> FormattedMonthlyReports override;
-  [[nodiscard]] auto RunExportAllPeriodReportsQuery(
-      const std::vector<int>& days_list, ReportFormat format) const
-      -> FormattedPeriodReports override;
-  [[nodiscard]] auto RunExportAllWeeklyReportsQuery(ReportFormat format) const
-      -> FormattedWeeklyReports override;
-  [[nodiscard]] auto RunExportAllYearlyReportsQuery(ReportFormat format) const
-      -> FormattedYearlyReports override;
-
  private:
   std::filesystem::path db_path_;
   std::shared_ptr<ReportCatalog> report_catalog_;

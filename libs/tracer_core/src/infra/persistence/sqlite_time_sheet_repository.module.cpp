@@ -38,6 +38,27 @@ auto SqliteTimeSheetRepository::ReplaceMonthData(
   repository_.ReplaceMonthData(year, month, days, records);
 }
 
+auto SqliteTimeSheetRepository::UpsertIngestSyncStatus(
+    const tracer_core::core::dto::IngestSyncStatusEntry& entry) -> void {
+  repository_.UpsertIngestSyncStatus(entry);
+}
+
+auto SqliteTimeSheetRepository::ReplaceIngestSyncStatuses(
+    const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>& entries)
+    -> void {
+  repository_.ReplaceIngestSyncStatuses(entries);
+}
+
+auto SqliteTimeSheetRepository::ClearIngestSyncStatus() -> void {
+  repository_.ClearIngestSyncStatus();
+}
+
+auto SqliteTimeSheetRepository::ListIngestSyncStatuses(
+    const tracer_core::core::dto::IngestSyncStatusRequest& request) const
+    -> tracer_core::core::dto::IngestSyncStatusOutput {
+  return repository_.ListIngestSyncStatuses(request);
+}
+
 auto SqliteTimeSheetRepository::TryGetLatestActivityTailBeforeDate(
     std::string_view date) const
     -> std::optional<tracer_core::application::ports::PreviousActivityTail> {

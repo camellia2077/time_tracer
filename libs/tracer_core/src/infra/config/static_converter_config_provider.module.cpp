@@ -17,4 +17,6 @@ auto StaticConverterConfigProvider::LoadConverterConfig() const
   return converter_config_;
 }
 
+auto StaticConverterConfigProvider::InvalidateCache() -> void {}
+
 }  // namespace tracer::core::infrastructure::config

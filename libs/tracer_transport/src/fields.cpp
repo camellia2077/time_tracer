@@ -157,4 +157,39 @@ auto TryReadIntListField(const nlohmann::json& payload,
   };
 }
 
+auto TryReadStringListField(const nlohmann::json& payload,
+                            std::string_view field_name)
+    -> StringListFieldResult {
+  const auto kIt = payload.find(std::string(field_name));
+  if (kIt == payload.end() || kIt->is_null()) {
+    return StringListFieldResult{
+        .value = std::nullopt,
+        .error = TransportError{},
+    };
+  }
+  if (!kIt->is_array()) {
+    return StringListFieldResult{
+        .value = std::nullopt,
+        .error = BuildTypeTransportError(field_name, "string array"),
+    };
+  }
+
+  std::vector<std::string> values;
+  values.reserve(kIt->size());
+  for (const auto& item : *kIt) {
+    if (!item.is_string()) {
+      return StringListFieldResult{
+          .value = std::nullopt,
+          .error = BuildTypeTransportError(field_name, "string array"),
+      };
+    }
+    values.push_back(item.get<std::string>());
+  }
+
+  return StringListFieldResult{
+      .value = std::move(values),
+      .error = TransportError{},
+  };
+}
+
 }  // namespace tracer::transport

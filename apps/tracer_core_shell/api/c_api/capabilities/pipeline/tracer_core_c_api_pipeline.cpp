@@ -6,12 +6,14 @@ import tracer.core.application.use_cases.interface;
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/pipeline_requests.hpp"
+#include "application/dto/pipeline_responses.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
 namespace tt_transport = tracer::transport;
 using tracer::core::application::use_cases::ITracerCoreRuntime;
 
 using tracer_core::core::c_api::internal::BuildFailureResponse;
+using tracer_core::core::c_api::internal::BuildIngestSyncStatusResponse;
 using tracer_core::core::c_api::internal::BuildOperationResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::ParseDateCheckMode;
@@ -21,6 +23,7 @@ using tracer_core::core::c_api::internal::ToRequestJsonView;
 using tracer_core::core::dto::ConvertRequest;
 using tracer_core::core::dto::ImportRequest;
 using tracer_core::core::dto::IngestRequest;
+using tracer_core::core::dto::IngestSyncStatusRequest;
 using tracer_core::core::dto::ValidateLogicRequest;
 using tracer_core::core::dto::ValidateStructureRequest;
 
@@ -51,6 +54,44 @@ extern "C" TT_CORE_API auto tracer_core_runtime_ingest_json(
   } catch (...) {
     return BuildFailureResponse(
         "tracer_core_runtime_ingest_json failed unexpectedly.");
+  }
+}
+
+extern "C" TT_CORE_API auto tracer_core_runtime_ingest_sync_status_json(
+    TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
+  try {
+    ClearLastError();
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
+    const auto kPayload = tt_transport::DecodeIngestSyncStatusRequest(
+        ToRequestJsonView(request_json));
+
+    IngestSyncStatusRequest request{};
+    if (kPayload.months.has_value()) {
+      request.months = *kPayload.months;
+    }
+
+    return BuildIngestSyncStatusResponse(
+        runtime.pipeline().RunIngestSyncStatusQuery(request));
+  } catch (const std::exception& error) {
+    return BuildFailureResponse(error.what());
+  } catch (...) {
+    return BuildFailureResponse(
+        "tracer_core_runtime_ingest_sync_status_json failed unexpectedly.");
+  }
+}
+
+extern "C" TT_CORE_API auto tracer_core_runtime_clear_ingest_sync_status_json(
+    TtCoreRuntimeHandle* handle) -> const char* {
+  try {
+    ClearLastError();
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
+    return BuildOperationResponse(runtime.pipeline().ClearIngestSyncStatus());
+  } catch (const std::exception& error) {
+    return BuildFailureResponse(error.what());
+  } catch (...) {
+    return BuildFailureResponse(
+        "tracer_core_runtime_clear_ingest_sync_status_json failed "
+        "unexpectedly.");
   }
 }
 

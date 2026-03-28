@@ -1,7 +1,7 @@
 // api/c_api/tracer_core_c_api.h
 // - All exported symbols must use `tracer_core_*` prefix.
 // - Do not add or reintroduce legacy `tt_*` symbols.
-// Canonical spec: docs/time_tracer/core/contracts/c_abi.md
+// Canonical spec: docs/time_tracer/core/shared/c_abi.md
 #ifndef API_CORE_C_TRACER_CORE_C_API_H_
 #define API_CORE_C_TRACER_CORE_C_API_H_
 
@@ -130,6 +130,10 @@ TT_CORE_API void tracer_core_runtime_destroy(TtCoreRuntimeHandle* handle);
 // - content (for text responses)
 TT_CORE_API const char* tracer_core_runtime_ingest_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_ingest_sync_status_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_clear_ingest_sync_status_json(
+    TtCoreRuntimeHandle* handle);
 TT_CORE_API const char* tracer_core_runtime_convert_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_import_json(
@@ -141,6 +145,8 @@ TT_CORE_API const char* tracer_core_runtime_validate_logic_json(
 TT_CORE_API const char* tracer_core_runtime_query_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_report_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_report_targets_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_report_batch_json(
     TtCoreRuntimeHandle* handle, const char* request_json);

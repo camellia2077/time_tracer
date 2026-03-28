@@ -45,6 +45,17 @@ class SmokeTimeSheetRepository final : public app_ports::ITimeSheetRepository {
   auto ReplaceMonthData(int, int, const std::vector<DayData>&,
                         const std::vector<TimeRecordInternal>&)
       -> void override {}
+  auto UpsertIngestSyncStatus(
+      const tracer_core::core::dto::IngestSyncStatusEntry&) -> void override {}
+  auto ReplaceIngestSyncStatuses(
+      const std::vector<tracer_core::core::dto::IngestSyncStatusEntry>&)
+      -> void override {}
+  auto ClearIngestSyncStatus() -> void override {}
+  [[nodiscard]] auto ListIngestSyncStatuses(
+      const tracer_core::core::dto::IngestSyncStatusRequest&) const
+      -> tracer_core::core::dto::IngestSyncStatusOutput override {
+    return {.ok = true, .items = {}, .error_message = ""};
+  }
   [[nodiscard]] auto TryGetLatestActivityTailBeforeDate(std::string_view) const
       -> std::optional<app_ports::PreviousActivityTail> override {
     return std::nullopt;
@@ -65,6 +76,7 @@ class SmokeConverterConfigProvider final
   [[nodiscard]] auto LoadConverterConfig() const -> ConverterConfig override {
     return {};
   }
+  auto InvalidateCache() -> void override {}
 };
 
 class SmokeIngestInputProvider final : public app_ports::IIngestInputProvider {

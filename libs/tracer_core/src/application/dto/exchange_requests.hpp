@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <functional>
+#include <span>
 #include <string>
 
 #include "domain/types/date_check_mode.hpp"
@@ -56,12 +57,25 @@ using TracerExchangeProgressObserver =
     std::function<TracerExchangeProgressControl(
         const TracerExchangeProgressSnapshot&)>;
 
+struct TracerExchangeTextPayloadItem {
+  std::string relative_path_hint;
+  std::string content;
+};
+
+using TracerExchangeEncryptedOutputWriter =
+    std::function<bool(std::span<const std::uint8_t> ciphertext_bytes,
+                       std::string& error_message)>;
+
 struct TracerExchangeExportRequest {
   std::filesystem::path input_text_root_path;
+  std::vector<TracerExchangeTextPayloadItem> input_text_payloads;
   std::filesystem::path requested_output_path;
+  TracerExchangeEncryptedOutputWriter encrypted_output_writer{};
   std::filesystem::path active_converter_main_config_path;
   DateCheckMode date_check_mode = DateCheckMode::kNone;
   std::string passphrase;
+  std::string logical_source_root_name;
+  std::string output_display_name;
   std::string producer_platform;
   std::string producer_app;
   TracerExchangeSecurityLevel security_level =

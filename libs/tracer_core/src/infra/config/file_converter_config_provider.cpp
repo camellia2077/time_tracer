@@ -35,4 +35,8 @@ auto FileConverterConfigProvider::LoadConverterConfig() const
   return *cached_config_;
 }
 
+auto FileConverterConfigProvider::InvalidateCache() -> void {
+  cached_config_.reset();
+}
+
 }  // namespace tracer::core::infrastructure::config

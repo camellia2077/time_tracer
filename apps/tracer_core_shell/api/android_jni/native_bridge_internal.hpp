@@ -83,6 +83,11 @@ auto NativeIngestSingleTxtReplaceMonth(JNIEnv* env, jobject thiz,
                                        jboolean save_processed_output)
     -> jstring;
 
+auto NativeListTxtIngestSyncStatus(JNIEnv* env, jobject thiz,
+                                   jstring request_json) -> jstring;
+
+auto NativeClearTxtIngestSyncStatus(JNIEnv* env, jobject thiz) -> jstring;
+
 auto NativeValidateStructure(JNIEnv* env, jobject thiz, jstring input_path)
     -> jstring;
 
@@ -100,6 +105,10 @@ auto NativeExportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
                                 jstring output_path, jstring passphrase,
                                 jstring security_level, jint date_check_mode)
     -> jstring;
+
+auto NativeExportTracerExchangeFromPayloadJson(JNIEnv* env, jobject thiz,
+                                               jstring request_json,
+                                               jint output_fd) -> jstring;
 
 auto NativeImportTracerExchange(JNIEnv* env, jobject thiz, jstring input_path,
                                 jstring work_root, jstring passphrase)
@@ -125,7 +134,7 @@ auto NativeReport(JNIEnv* env, jobject thiz, jint mode, jint report_type,
                   jstring argument, jint format, jintArray days_list)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 13> kNativeMethods;
+extern const std::array<JNINativeMethod, 16> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

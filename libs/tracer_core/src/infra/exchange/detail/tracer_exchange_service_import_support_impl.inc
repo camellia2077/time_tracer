@@ -1,6 +1,5 @@
 struct ImportTransactionPaths {
   fs::path transaction_root;
-  fs::path package_path;
   fs::path extracted_root;
   fs::path effective_text_root;
   fs::path backup_config_root;
@@ -17,7 +16,6 @@ auto BuildImportTransactionPaths(const fs::path& runtime_work_root,
       BuildScopedStagingDir(runtime_work_root, "import", stem);
   return {
       .transaction_root = transaction_root,
-      .package_path = transaction_root / "exchange.ttpkg",
       .extracted_root = transaction_root / "decoded",
       .effective_text_root = transaction_root / "effective_text_root",
       .backup_config_root = transaction_root / "backup" / "config",
@@ -76,20 +74,22 @@ auto EmitImportTransactionProgress(
 }
 
 auto TryRollbackImportTransaction(
+    app_workflow::IWorkflowHandler& workflow_handler,
     const fs::path& active_text_root, const fs::path& backup_text_root,
     const fs::path& backup_config_root,
     const fs::path& active_converter_main_config_path,
-    const std::vector<std::string>& added_month_keys, bool text_root_updated,
-    bool config_applied) -> std::string {
+    const std::vector<ImportedPayloadFile>& imported_payloads,
+    bool text_root_updated, bool config_applied) -> std::string {
   try {
-    const ActiveConverterConfigPaths active_paths =
-        ResolveActiveConverterConfigPaths(active_converter_main_config_path);
     if (text_root_updated) {
       RestoreManagedTextFiles(active_text_root, backup_text_root,
-                              added_month_keys);
+                              imported_payloads);
     }
     if (config_applied) {
-      RestoreBackupConfig(backup_config_root, active_paths);
+      workflow_handler.InstallActiveConverterConfig(
+          (backup_config_root / fs::path(exchange_pkg::kConverterMainPath))
+              .string(),
+          active_converter_main_config_path.string());
     }
   } catch (const std::exception& rollback_error) {
     return rollback_error.what();

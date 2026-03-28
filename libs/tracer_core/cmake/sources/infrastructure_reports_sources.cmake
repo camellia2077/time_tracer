@@ -1,11 +1,8 @@
 set(TIME_TRACKER_INFRA_REPORTING_EXPORT_SOURCES
     "reporting/export_utils.module.cpp"
-    "reporting/exporter.module.cpp"
-    "reporting/report_file_manager.module.cpp"
 )
 
 set(TIME_TRACKER_INFRA_REPORTING_DTO_SOURCES
-    "reporting/report_dto_export_writer.module.cpp"
     "reporting/report_dto_formatter.module.cpp"
 )
 
@@ -61,11 +58,8 @@ endif()
 set(TIME_TRACKER_INFRA_REPORTING_MODULE_FILES
     "reporting/exporting/tracer.core.infrastructure.reporting.exporting.cppm"
     "reporting/exporting/tracer.core.infrastructure.reporting.exporting.export_utils.cppm"
-    "reporting/exporting/tracer.core.infrastructure.reporting.exporting.report_file_manager.cppm"
-    "reporting/exporting/tracer.core.infrastructure.reporting.exporting.exporter.cppm"
     "reporting/dto/tracer.core.infrastructure.reporting.dto.cppm"
     "reporting/dto/tracer.core.infrastructure.reporting.dto.formatter.cppm"
-    "reporting/dto/tracer.core.infrastructure.reporting.dto.export_writer.cppm"
     "reporting/data_querying/dq.cppm"
     "reporting/data_querying/dq_lazy_sqlite.cppm"
     "reporting/data_querying/dq_sqlite.cppm"

@@ -18,6 +18,20 @@ struct IngestResponsePayload {
   ErrorContractPayload error_contract;
 };
 
+struct IngestSyncStatusItemPayload {
+  std::string month_key;
+  std::string txt_relative_path;
+  std::string txt_content_hash_sha256;
+  long long ingested_at_unix_ms = 0;
+};
+
+struct IngestSyncStatusResponsePayload {
+  bool ok = false;
+  std::string error_message;
+  std::vector<IngestSyncStatusItemPayload> items;
+  ErrorContractPayload error_contract;
+};
+
 struct AckResponsePayload {
   bool ok = false;
   std::string error_message;
@@ -90,6 +104,7 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_diagnostics_callback = false;
   bool runtime_crypto_progress_callback = false;
   bool runtime_ingest_json = false;
+  bool runtime_ingest_sync_status_json = false;
   bool runtime_convert_json = false;
   bool runtime_import_json = false;
   bool runtime_validate_structure_json = false;
@@ -97,6 +112,7 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_query_json = false;
   bool runtime_report_json = false;
   bool runtime_report_batch_json = false;
+  bool runtime_report_targets_json = false;
   bool runtime_export_json = false;
   bool runtime_tree_json = false;
   bool processed_json_io = false;
@@ -128,6 +144,14 @@ struct ReportBatchResponsePayload {
   bool ok = false;
   std::string error_message;
   std::string content;
+  ErrorContractPayload error_contract;
+};
+
+struct ReportTargetsResponsePayload {
+  bool ok = false;
+  std::string error_message;
+  std::string type;
+  std::vector<std::string> items;
   ErrorContractPayload error_contract;
 };
 

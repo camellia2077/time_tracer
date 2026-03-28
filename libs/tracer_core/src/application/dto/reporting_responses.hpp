@@ -6,6 +6,7 @@
 #include <variant>
 #include <vector>
 
+#include "application/dto/reporting_requests.hpp"
 #include "domain/reports/models/daily_report_data.hpp"
 #include "domain/reports/models/period_report_models.hpp"
 
@@ -41,6 +42,13 @@ struct StructuredPeriodBatchItem {
 struct StructuredPeriodBatchOutput {
   bool ok = true;
   std::vector<StructuredPeriodBatchItem> items;
+  std::string error_message;
+};
+
+struct ReportTargetsOutput {
+  bool ok = true;
+  ReportTargetType type = ReportTargetType::kDay;
+  std::vector<std::string> items;
   std::string error_message;
 };
 
