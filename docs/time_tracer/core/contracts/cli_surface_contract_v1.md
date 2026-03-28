@@ -88,7 +88,7 @@
 3. 再逐步补齐 Core 的能力描述/错误结构字段。
 
 ## 8. 关联文档
-1. `docs/time_tracer/core/contracts/c_abi.md`
-2. `docs/time_tracer/core/contracts/error-model.md`
-3. `docs/time_tracer/core/contracts/error-codes.md`
+1. `docs/time_tracer/core/shared/c_abi.md`
+2. `docs/time_tracer/core/shared/error-model.md`
+3. `docs/time_tracer/core/shared/error-codes.md`
 4. `temp/rs-independence.md`

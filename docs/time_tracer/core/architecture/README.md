@@ -2,6 +2,14 @@
 
 本目录放置 Core 架构与边界约束文档。
 
+## Migration Note
+1. Core docs are gradually moving to capability-first routing.
+2. Validation should now start from `docs/time_tracer/core/capabilities/validation/README.md`.
+3. Ingest should now start from `docs/time_tracer/core/capabilities/ingest/README.md`.
+4. Query / reporting / exchange / config / persistence should now start from
+   `docs/time_tracer/core/capabilities/`.
+5. This directory still owns most legacy long-form architecture docs.
+
 ## 关注问题
 1. 多端复用：同一套 Core 统计与查询能力需要被 Windows CLI 与 Android 共同复用，避免端侧重复实现与口径漂移。
 2. 数据与渲染解耦：统计计算、时间范围编排、输出渲染需要分层，避免“业务逻辑混入展示层”。
@@ -27,14 +35,14 @@
    - Application 层架构：流水线编排驱动、前后解析器降维处理（TextParser & MemoryParser）、Ports 防腐层映射。
 4. `docs/time_tracer/core/architecture/infrastructure_persistence.md`
    - Infrastructure 持久层架构：SQLite 高速直接入库（Writer）、动态生成层级项目树（Project Resolver）、基于关联型数据库构建底层聚合查询（DataQueryService）与依赖隔离。
-5. `docs/time_tracer/core/architecture/tracer_core_capability_dependency_map.md`
+5. `docs/time_tracer/core/overview/capability_map.md`
    - `tracer_core` 内部 capability 的权威依赖图与 validate 入口映射。
 6. `docs/time_tracer/core/architecture/refactor_module_boundaries.md`
 7. `docs/time_tracer/core/architecture/core_json_boundary_design.md`
    - Core 分层与模块边界重构与开发规则说明。
-8. `docs/time_tracer/core/design/tracer_core_capability_boundary_contract.md`
+8. `docs/time_tracer/core/overview/module_boundaries.md`
    - `tracer_core` capability owner 路径、允许依赖、禁止边界与达标条件。
-9. `docs/time_tracer/core/design/ingest-persistence-boundary.md`
+9. `docs/time_tracer/core/capabilities/ingest/persistence_boundary.md`
    - Ingest 持久化边界规则：只有全部校验通过后，才允许创建数据库并写入。
 10. `docs/time_tracer/core/architecture/data_query/README.md`
    - DataQuery 子域总览与阅读顺序。
@@ -42,5 +50,5 @@
    - DataQuery 重构收口结果与稳定化约束。
 12. `docs/time_tracer/core/architecture/data_query/data_query_responsibility_boundaries_v1.md`
    - 按职责边界拆分后的代码落点（含 Core/CLI/Android 路径）。
-13. `docs/time_tracer/core/architecture/tracer_core_identity_and_boundary.md`
+13. `docs/time_tracer/core/overview/identity_and_boundary.md`
    - `tracer_core` 对外标识、apps/libs 语义边界与脚本/CI 一致性基线。

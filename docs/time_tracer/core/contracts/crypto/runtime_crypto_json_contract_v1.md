@@ -188,7 +188,7 @@
 ```
 
 ## 9. 关联文档
-1. `docs/time_tracer/core/contracts/c_abi.md`
+1. `docs/time_tracer/core/shared/c_abi.md`
 2. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
 3. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
 4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`

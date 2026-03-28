@@ -22,6 +22,24 @@ Each suite contains:
 - `env.toml` (environment / deployment paths)
 - `tests.toml` (command table)
 
+Recommended layering inside each suite:
+
+- aggregate entry:
+  - `config.toml`
+  - `tests.toml`
+- capability / profile entry:
+  - `config_cap_<capability>.toml`
+  - `config_<profile>.toml`
+- base / responsibility command files:
+  - `tests/base*.toml`
+  - `tests/commands_*.toml`
+
+Naming rule:
+
+- use `commands_*.toml` for responsibility-scoped command files
+- do not introduce new `command_groups*.toml` filenames
+- file names express responsibility, even when the TOML body uses `[[command_groups]]`
+
 `tracer_android` also provides profile-specific entries:
 
 - `config_android_style.toml`
@@ -47,4 +65,8 @@ Schema validation is enforced before test execution starts:
 Manual lint command:
 
 - `python test/suites/lint_suites.py`
+
+Further organization guide:
+
+- `docs/toolchain/test/suite_toml_organization.md`
 

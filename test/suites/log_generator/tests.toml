@@ -2,6 +2,6 @@
 includes = [
   "tests/base.toml",
   "tests/commands_version.toml",
-  "tests/command_groups_generate.toml",
+  "tests/commands_generate.toml",
   "tests/commands_average_guard.toml",
 ]

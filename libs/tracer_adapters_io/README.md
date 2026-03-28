@@ -21,6 +21,11 @@ Local entrypoint for agents touching the IO adapter library.
 2. [Library dependency map](../../docs/time_tracer/architecture/library_dependency_map.md)
 3. [Detailed `tracer_core` doc](../../docs/time_tracer/architecture/libraries/tracer_core.md)
 
+## Validation Boundary
+
+- `tracer_adapters_io` does not own TXT/TOML business validation.
+- For converter-config validation and TXT structure/logic validation, open [libs/tracer_core/README.md](../tracer_core/README.md) and follow its `Validation Docs` section.
+
 ## Validate
 
 ```powershell

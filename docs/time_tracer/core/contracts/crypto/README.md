@@ -2,22 +2,27 @@
 
 本目录定义 `tracer_core` 的加密文件契约（`.tracer`），用于 Windows CLI / Android / 其他端统一互通。
 
-## 文档列表
+## Migration Note
+1. Capability-first exchange routing now starts at
+   `docs/time_tracer/core/capabilities/exchange/README.md`.
+2. This directory still holds the detailed exchange/crypto contract set.
+
+## Group Indexes
+1. `docs/time_tracer/core/contracts/crypto/file_format/README.md`
+   - 外层 `.tracer` 文件格式分组。
+2. `docs/time_tracer/core/contracts/crypto/package/README.md`
+   - tracer-exchange package 契约分组。
+3. `docs/time_tracer/core/contracts/crypto/runtime/README.md`
+   - runtime JSON / progress / error model 分组。
+
+## Flat Docs Retained For Compatibility
 1. `docs/time_tracer/core/contracts/crypto/file_format_v1.md`
-   - `.tracer` 二进制格式 `v1` 字段定义与解析约束。
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-   - `.tracer` 外层二进制格式 `v2`（zstd 后加密）字段定义与解析约束。
 3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
-   - 当前 tracer exchange 内层 `TTPKG v3` package 契约、严格 `payload/<year>/YYYY-MM.txt` 路径与事务式导入前提。
 4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v2.md`
-   - 历史 `v2` package 说明；当前主线不再支持导入。
 5. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
-   - 加密/解密错误模型、稳定错误码与对外行为。
 6. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
-   - 进度回调字段、阶段语义、节流与取消约束。
 7. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
-   - C ABI `runtime_crypto_*_json` 的请求字段、默认值、路径语义与响应 envelope。
-   - 进度事件通过独立 callback side channel 提供，不混入 response envelope。
 
 ## 约束
 1. `.tracer` 格式必须带 `magic + version`，禁止仅靠扩展名识别。

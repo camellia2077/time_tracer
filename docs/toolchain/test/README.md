@@ -95,4 +95,5 @@ python test/run.py suite --suite artifact_windows_cli --agent --build-dir build_
 1. [../README.md](../README.md)
 2. [../tools/README.md](../tools/README.md)
 3. [../validate/README.md](../validate/README.md)
-4. [history/README.md](history/README.md)
+4. [suite_toml_organization.md](suite_toml_organization.md)
+5. [history/README.md](history/README.md)

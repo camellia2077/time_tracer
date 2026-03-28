@@ -30,7 +30,7 @@ name = "Android TXT Month Header Parser Uses mMM"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:monthRegex ..\\..\\..\\..\\apps\\android\\feature-record\\src\\main\\java\\com\\example\\tracer\\ui\\viewmodel\\RecordUseCases.kt >nul && exit /b 0 || (echo Missing monthRegex parser in RecordUseCases.kt && exit /b 1)"
+  "findstr /c:monthRegex ..\\..\\..\\..\\apps\\android\\contract\\src\\main\\java\\com\\example\\tracer\\TxtMonthHeader.kt | findstr /c:m(\\\\d >nul && exit /b 0 || (echo Missing shared monthRegex parser in TxtMonthHeader.kt && exit /b 1)"
 ]
 expect_exit = 0
 

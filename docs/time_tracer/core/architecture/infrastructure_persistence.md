@@ -1,5 +1,11 @@
 # Infrastructure 层架构：持久化与外部服务基石
 
+## Migration Note
+1. Capability-first persistence routing now starts at
+   `docs/time_tracer/core/capabilities/persistence/README.md`.
+2. This document remains the long-form architecture explanation for persistence
+   internals during the migration.
+
 本篇文档解析 Time Tracer 架构中最外围、也是最“重”的物理防守层 —— `infrastructure`（基础设施）层。
 
 根据 Clean Architecture 的原则，内部的 `domain`（业务模型）和 `application`（用例调度）都是不包含任何具象存储或外部依赖的乌托邦。所有的底层 I/O 实现——例如读写文件、连接 SQLite 数据库、调用系统的时钟或终端彩色打印——全部被隔离在这层执行。
