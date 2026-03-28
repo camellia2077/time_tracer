@@ -1,3 +1,17 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "time-tracer-tools"
+version = "0.0.0"
+description = "Internal Python tooling for the time_tracer repository"
+requires-python = ">=3.11"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tools*"]
+
 [tool.ruff]
 line-length = 100
 target-version = "py311"

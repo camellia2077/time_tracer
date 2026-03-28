@@ -5,6 +5,7 @@ from pathlib import Path
 from time import monotonic
 
 from ...core.context import Context
+from ...core.path_display import to_repo_relative
 from ..cmd_build import BuildCommand
 from .plan import ValidationPlan, load_validation_plan
 from .scope import resolve_scope_paths
@@ -152,7 +153,7 @@ class ValidateCommand:
             "tools/run.py",
             "validate",
             "--plan",
-            str(plan_path.relative_to(self.ctx.repo_root).as_posix()),
+            to_repo_relative(self.ctx.repo_root, plan_path),
         ]
         for item in raw_paths:
             cmd.extend(["--paths", item])

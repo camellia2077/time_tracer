@@ -16,7 +16,7 @@
 - Python 构建 / 编译 / verify / tidy 官方入口：
   - `python tools/run.py ...`
 - 平台配置同步入口：
-  - `python tools/platform_config/run.py ...`
+  - `python -m tools.platform_config.run ...`
 
 ## 示例
 
@@ -25,5 +25,5 @@
 python tools/run.py verify --app tracer_core_shell --profile fast --concise
 
 # 开发辅助脚本示例
-python tools/scripts/devtools/loc/run.py --lang py tools test tools/scripts/devtools --under 120
+python -m tools.scripts.devtools.loc.run --lang py tools test tools/scripts/devtools --under 120
 ```

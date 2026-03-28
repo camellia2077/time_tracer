@@ -16,18 +16,24 @@ jobs:
     outputs:
       run_heavy_verify: ${{ steps.capability.outputs.run_heavy_verify }}
       run_capability_smoke: ${{ steps.capability.outputs.run_capability_smoke }}
+      capability_mode: ${{ steps.capability.outputs.capability_mode }}
       capability_matrix: ${{ steps.capability.outputs.capability_matrix }}
       capability_reason: ${{ steps.capability.outputs.capability_reason }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+
+      - name: Install repo tools package
+        shell: bash
+        run: |
+          python -m pip install -e .
 
       - name: Compute capability smoke profiles
         id: capability
@@ -37,19 +43,28 @@ jobs:
           BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.sha }}
         run: |
-          PAYLOAD="$(python tools/toolchain/ci/capability_smoke_profiles.py --repo-root . --event-name "$EVENT_NAME" --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA")"
+          PAYLOAD="$(python -m tools.toolchain.ci.capability_smoke_profiles --repo-root . --event-name "$EVENT_NAME" --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA")"
           export PAYLOAD
           echo "payload=${PAYLOAD}"
           python - <<'PY' >> "$GITHUB_OUTPUT"
-import json
-import os
+          import json
+          import os
 
-payload = json.loads(os.environ["PAYLOAD"])
-print(f"run_heavy_verify={'true' if payload['run_heavy_verify'] else 'false'}")
-print(f"run_capability_smoke={'true' if payload['run_capability_smoke'] else 'false'}")
-print(f"capability_matrix={payload['matrix']}")
-print(f"capability_reason={payload['reason']}")
-PY
+          payload = json.loads(os.environ["PAYLOAD"])
+          print(f"run_heavy_verify={'true' if payload['run_heavy_verify'] else 'false'}")
+          print(f"run_capability_smoke={'true' if payload['run_capability_smoke'] else 'false'}")
+          print(f"capability_mode={payload['mode']}")
+          print(f"capability_matrix={payload['matrix']}")
+          print(f"capability_reason={payload['reason']}")
+          PY
+
+      - name: Show capability smoke decision
+        shell: bash
+        run: |
+          echo "capability_mode=${{ steps.capability.outputs.capability_mode }}"
+          echo "run_capability_smoke=${{ steps.capability.outputs.run_capability_smoke }}"
+          echo "capability_reason=${{ steps.capability.outputs.capability_reason }}"
+          echo "capability_matrix=${{ steps.capability.outputs.capability_matrix }}"
 
   prepare-windows-matrix:
     name: prepare-windows-matrix
@@ -58,37 +73,47 @@ PY
       matrix: ${{ steps.generate.outputs.matrix }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+
+      - name: Install repo tools package
+        shell: bash
+        run: |
+          python -m pip install -e .
 
       - name: Generate matrix from toolchain config
         id: generate
         shell: bash
         run: |
-          MATRIX_JSON="$(python tools/toolchain/ci/windows_matrix.py --config tools/toolchain/config/build.toml)"
+          MATRIX_JSON="$(python -m tools.toolchain.ci.windows_matrix --config tools/toolchain/config/build.toml)"
           echo "matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
   windows-capability-smoke:
     needs:
       - detect-changes
     if: needs.detect-changes.outputs.run_capability_smoke == 'true'
-    name: capability-smoke (${{ matrix.profile }})
+    name: capability-smoke
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix: ${{ fromJson(needs.detect-changes.outputs.capability_matrix) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+
+      - name: Install repo tools package
+        shell: pwsh
+        run: |
+          python -m pip install -e .
 
       - name: Setup MSYS2 UCRT64 Toolchain
         uses: msys2/setup-msys2@v2
@@ -135,13 +160,19 @@ PY
 
       - name: Checkout
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Python
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
+
+      - name: Install repo tools package
+        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
+        shell: pwsh
+        run: |
+          python -m pip install -e .
 
       - name: Setup MSYS2 UCRT64 Toolchain
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from ...core.path_display import to_repo_relative
+
 
 def _to_repo_relative(repo_root: Path, raw_path: str) -> str:
     candidate = Path(raw_path)
@@ -9,11 +11,7 @@ def _to_repo_relative(repo_root: Path, raw_path: str) -> str:
         candidate = (repo_root / candidate).resolve()
     else:
         candidate = candidate.resolve()
-
-    try:
-        return str(candidate.relative_to(repo_root.resolve())).replace("\\", "/")
-    except ValueError:
-        return str(candidate)
+    return to_repo_relative(repo_root, candidate)
 
 
 def resolve_scope_paths(

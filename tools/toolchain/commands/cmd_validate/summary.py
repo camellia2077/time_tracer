@@ -6,18 +6,12 @@ from datetime import UTC, datetime
 from pathlib import Path
 from time import monotonic
 
+from ...core.path_display import to_repo_relative
 from .plan import ValidationPlan
 
 
 def utc_now_iso() -> str:
     return datetime.now(UTC).isoformat()
-
-
-def to_repo_relative(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root.resolve())).replace("\\", "/")
-    except ValueError:
-        return str(path.resolve())
 
 
 @dataclass

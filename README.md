@@ -1,6 +1,6 @@
 [English Version](README.en.md) | [中文版本](README.md)
 
-# time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)
+# time tracer ![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg) [![Windows Build Matrix](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml/badge.svg)](https://github.com/camellia2077/time_tracer/actions/workflows/windows-build-matrix.yml)
 
 **time tracer** - 基于 C++23 构建的个人时间追踪与分析系统。
 

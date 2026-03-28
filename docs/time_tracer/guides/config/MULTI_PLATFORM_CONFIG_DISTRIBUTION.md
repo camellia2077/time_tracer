@@ -17,7 +17,7 @@
 ## 1. 单一事实来源
 
 1. 源配置目录（唯一 source of truth）：`assets/tracer_core/config`
-2. 分发入口脚本：`tools/platform_config/run.py`
+2. 分发入口模块：`tools.platform_config.run`
 3. 构建链路触发点：`tools/run.py build|configure` -> `tools/toolchain/commands/cmd_build/common/config_sync.py`
 
 ## 2. 目标目录（当前）
@@ -68,18 +68,18 @@
    - `windows_cli_config_root(repo_root)`
    - `android_config_root(repo_root)`
 
-`platform_config/run.py` 与 `toolchain config_sync.py` 均使用该模块提供的路径函数。
+`python -m tools.platform_config.run` 与 `toolchain config_sync.py` 均使用该模块提供的路径函数。
 
 ## 7. 常用命令
 
 1. Windows dry-run：
 ```bash
-python tools/platform_config/run.py --target windows
+python -m tools.platform_config.run --target windows
 ```
 
 2. Android apply：
 ```bash
-python tools/platform_config/run.py --target android --apply
+python -m tools.platform_config.run --target android --apply
 ```
 
 3. 构建时自动触发（示例）：
@@ -92,4 +92,3 @@ python tools/run.py build --app tracer_android --profile fast
 
 1. Android 资产生命周期：`docs/time_tracer/clients/android_ui/specs/CONFIG_ASSET_LIFECYCLE.md`
 2. Windows CLI 文档域：`docs/time_tracer/clients/windows_cli/README.md`
-

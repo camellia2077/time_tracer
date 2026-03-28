@@ -2,14 +2,14 @@
 
 本目录提供统一的代码行数扫描工具，入口只有一个：
 
-- `python tools/scripts/devtools/loc/run.py`
+- `python -m tools.scripts.devtools.loc.run`
 
 ## 1. 基本用法
 
 从仓库根目录执行：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--over N | --under [N] | --dir-over-files [N]] [--dir-max-depth N] [--log-file <path>]
+python -m tools.scripts.devtools.loc.run --lang <cpp|kt|py|rs> [paths ...] [--over N | --under [N] | --dir-over-files [N]] [--dir-max-depth N] [--log-file <path>]
 ```
 
 参数说明：
@@ -56,7 +56,7 @@ python tools/scripts/devtools/loc/run.py --lang <cpp|kt|py|rs> [paths ...] [--ov
 可用 `--log-file` 覆盖，例如：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang py --under 120 --log-file temp/loc_scan_py.json
+python -m tools.scripts.devtools.loc.run --lang py --under 120 --log-file temp/loc_scan_py.json
 ```
 
 ## 4. 常用命令模板（Agent）
@@ -64,37 +64,37 @@ python tools/scripts/devtools/loc/run.py --lang py --under 120 --log-file temp/l
 扫描 Python 大文件（默认路径）：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang py --over 200
+python -m tools.scripts.devtools.loc.run --lang py --over 200
 ```
 
 扫描 Kotlin 小文件（默认小文件阈值）：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang kt --under
+python -m tools.scripts.devtools.loc.run --lang kt --under
 ```
 
 扫描 C++，指定绝对路径：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang cpp "C:/abs/path/to/project" --over 300
+python -m tools.scripts.devtools.loc.run --lang cpp "C:/abs/path/to/project" --over 300
 ```
 
 扫描多个路径（分开打印）：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang py tools test tools/scripts/devtools --under 80
+python -m tools.scripts.devtools.loc.run --lang py tools test tools/scripts/devtools --under 80
 ```
 
 扫描目录中文件过多的热点目录（按 Python 扩展名过滤）：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang py --dir-over-files 25 --dir-max-depth 2
+python -m tools.scripts.devtools.loc.run --lang py --dir-over-files 25 --dir-max-depth 2
 ```
 
 扫描目录中文件过多的热点目录（使用语言默认阈值）：
 
 ```bash
-python tools/scripts/devtools/loc/run.py --lang py --dir-over-files
+python -m tools.scripts.devtools.loc.run --lang py --dir-over-files
 ```
 
 Windows 快捷入口（bat 与 `run.py` 同目录）：

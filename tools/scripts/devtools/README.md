@@ -12,7 +12,7 @@
 ## 示例
 
 ```bash
-python tools/scripts/devtools/loc/scan_cpp_lines.py apps/cli/windows apps/tracer_core_shell libs/tracer_core -t 350
-python tools/scripts/devtools/loc/scan_kt_lines.py apps/android -t 350
-python tools/scripts/devtools/loc/scan_py_lines.py tools test tools/scripts/devtools -t 200
+python -m tools.scripts.devtools.loc.run --lang cpp apps/cli/windows apps/tracer_core_shell libs/tracer_core --over 350
+python -m tools.scripts.devtools.loc.run --lang kt apps/android --over 350
+python -m tools.scripts.devtools.loc.run --lang py tools test tools/scripts/devtools --over 200
 ```
