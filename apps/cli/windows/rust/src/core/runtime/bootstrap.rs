@@ -38,31 +38,33 @@ struct ResolveCliContextResponse {
     error_contract: ErrorContract,
 }
 
-pub(crate) fn bootstrap<'a>(
-    api: &'a CoreApi,
+pub(crate) fn bootstrap(
+    api: CoreApi,
     command_name: &str,
     ctx: &CommandContext,
-) -> Result<RuntimeSession<'a>, AppError> {
+) -> Result<RuntimeSession, AppError> {
     let bootstrap_start = Instant::now();
-    configure_callbacks(api);
+    configure_callbacks(&api);
     let exe = env::current_exe()
         .map_err(|e| AppError::Io(format!("Resolve current exe path failed: {e}")))?;
 
     let check_start = Instant::now();
-    check_environment(api, &exe)?;
+    check_environment(&api, &exe)?;
     log_timing("runtime.check_environment", check_start.elapsed());
 
     let resolve_start = Instant::now();
-    let resolved = resolve_cli_context(api, &exe, command_name, ctx)?;
+    let resolved = resolve_cli_context(&api, &exe, command_name, ctx)?;
     log_timing("runtime.resolve_cli_context", resolve_start.elapsed());
 
+    let paths = resolved.paths;
     let create_start = Instant::now();
-    let runtime = create_runtime(api, &resolved.paths)?;
+    let runtime = create_runtime(api, &paths)?;
     log_timing("runtime.create", create_start.elapsed());
     log_timing("runtime.bootstrap_total", bootstrap_start.elapsed());
     Ok(RuntimeSession {
         runtime,
         cli_config: resolved.cli_config,
+        paths,
     })
 }
 
@@ -133,10 +135,10 @@ fn resolve_cli_context(
     Ok(ResolvedCliContext { paths, cli_config })
 }
 
-fn create_runtime<'a>(
-    api: &'a CoreApi,
+fn create_runtime(
+    api: CoreApi,
     paths: &ResolvedCliPaths,
-) -> Result<CoreRuntime<'a>, AppError> {
+) -> Result<CoreRuntime, AppError> {
     let db_c = CString::new(paths.db_path.clone())
         .map_err(|e| AppError::InvalidArguments(format!("Invalid db path: {e}")))?;
     let output_c = CString::new(paths.runtime_output_root.clone())

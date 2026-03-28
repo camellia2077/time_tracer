@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -151,6 +152,8 @@ pub(crate) struct RecordedReportSession {
     requests: RefCell<Vec<Value>>,
     cli_config: CliConfig,
     render_response: String,
+    runtime_output_root: String,
+    target_lists: RefCell<HashMap<String, Vec<String>>>,
 }
 
 impl RecordedReportSession {
@@ -160,11 +163,33 @@ impl RecordedReportSession {
             requests: RefCell::new(Vec::new()),
             cli_config,
             render_response: render_response.into(),
+            runtime_output_root: std::env::temp_dir()
+                .join("time_tracer_report_test_output")
+                .to_string_lossy()
+                .to_string(),
+            target_lists: RefCell::new(HashMap::new()),
         }
+    }
+
+    pub(crate) fn with_runtime_output_root(mut self, runtime_output_root: impl Into<String>) -> Self {
+        self.runtime_output_root = runtime_output_root.into();
+        self
+    }
+
+    pub(crate) fn with_targets(self, target_type: &str, items: Vec<&str>) -> Self {
+        self.target_lists.borrow_mut().insert(
+            target_type.to_string(),
+            items.into_iter().map(|value| value.to_string()).collect(),
+        );
+        self
     }
 
     pub(crate) fn load_cli_config(&self) -> CliConfig {
         self.cli_config.clone()
+    }
+
+    pub(crate) fn runtime_output_root(&self) -> &str {
+        &self.runtime_output_root
     }
 
     pub(crate) fn record_render(
@@ -179,16 +204,23 @@ impl RecordedReportSession {
         Ok(self.render_response.clone())
     }
 
-    pub(crate) fn record_export(
+    pub(crate) fn record_list_targets(
         &self,
         command_name: &str,
-        request: &Value,
-    ) -> Result<(), AppError> {
+        target_type: &str,
+    ) -> Result<Vec<String>, AppError> {
         self.command_names
             .borrow_mut()
             .push(command_name.to_string());
-        self.requests.borrow_mut().push(request.clone());
-        Ok(())
+        self.requests
+            .borrow_mut()
+            .push(serde_json::json!({"type": target_type, "kind": "targets"}));
+        Ok(self
+            .target_lists
+            .borrow()
+            .get(target_type)
+            .cloned()
+            .unwrap_or_default())
     }
 
     pub(crate) fn command_names(&self) -> Vec<String> {

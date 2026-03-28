@@ -4,12 +4,12 @@ use crate::error::AppError;
 
 use super::{CoreRuntime, invoke};
 
-pub struct PipelineClient<'runtime, 'api> {
-    runtime: &'runtime CoreRuntime<'api>,
+pub struct PipelineClient<'runtime> {
+    runtime: &'runtime CoreRuntime,
 }
 
-impl<'runtime, 'api> PipelineClient<'runtime, 'api> {
-    pub(crate) fn new(runtime: &'runtime CoreRuntime<'api>) -> Self {
+impl<'runtime> PipelineClient<'runtime> {
+    pub(crate) fn new(runtime: &'runtime CoreRuntime) -> Self {
         Self { runtime }
     }
 

@@ -55,13 +55,13 @@ expect_stdout_contains = [
   "Database rebuilt: yes",
 ]
 expect_files = [
-  "{exe_dir}/input/full/2025-01.txt",
-  "{exe_dir}/input/full/2026-12.txt",
+  "{exe_dir}/input/full/2025/2025-01.txt",
+  "{exe_dir}/input/full/2026/2026-12.txt",
   "{exe_dir}/output/db/time_data.sqlite3",
 ]
 expect_file_contains = [
-  "{exe_dir}/input/full/2025-01.txt::y2025",
-  "{exe_dir}/input/full/2026-12.txt::y2026",
+  "{exe_dir}/input/full/2025/2025-01.txt::y2025",
+  "{exe_dir}/input/full/2026/2026-12.txt::y2026",
 ]
 
 [[commands]]
@@ -74,4 +74,92 @@ expect_stdout_contains = [
   "Imported complete tracer exchange package:",
   "Updated active text root:",
   "Database rebuilt: yes",
+]
+
+[[commands]]
+name = "Prepare Exchange Import Config Refresh Fixture"
+stage = "exchange"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/test/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
+  "prepare",
+  "--workspace-root",
+  "{exe_dir}",
+  "--scenario-root",
+  "{output_dir}/exchange_config_refresh",
+  "--source-txt",
+  "{data_path}/2026/2026-03.txt",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] prepared exchange config refresh fixture"]
+
+[[commands]]
+name = "Exchange Export Tracer Package With Updated Config"
+stage = "exchange"
+args = [
+  "--output",
+  "{output_dir}/crypt/config-refresh.tracer",
+  "exchange",
+  "export",
+  "--in",
+  "{output_dir}/exchange_config_refresh/custom_data",
+]
+stdin_input = "phase3pass\nphase3pass\n"
+expect_exit = 0
+expect_files = ["{output_dir}/crypt/config-refresh.tracer"]
+
+[[commands]]
+name = "Restore Stale Runtime Before Config Refresh Import"
+stage = "exchange"
+raw_command = true
+args = [
+  "python",
+  "${repo_root}/test/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
+  "restore",
+  "--workspace-root",
+  "{exe_dir}",
+  "--scenario-root",
+  "{output_dir}/exchange_config_refresh",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] restored stale runtime config and cleared runtime state"]
+
+[[commands]]
+name = "Exchange Import Tracer Package Refreshes Active Config"
+stage = "exchange"
+args = ["exchange", "import", "--in", "{output_dir}/crypt/config-refresh.tracer"]
+stdin_input = "phase3pass\n"
+expect_exit = 0
+expect_stdout_contains = [
+  "Imported complete tracer exchange package:",
+  "Applied converter config: yes",
+  "Replaced months: 1",
+  "Preserved local months: 0",
+  "Rebuilt months: 1",
+  "Database rebuilt: yes",
+]
+expect_files = [
+  "{exe_dir}/input/full/2026/2026-03.txt",
+  "{exe_dir}/output/db/time_data.sqlite3",
+]
+expect_file_contains = [
+  "{exe_dir}/input/full/2026/2026-03.txt::0210cliimportalias",
+  "{exe_dir}/config/converter/alias_mapping.toml::\"cliimportalias\" = \"zzdemo_only\"",
+]
+
+[[commands]]
+name = "Pipeline Validate Imported Text With Refreshed Config"
+stage = "exchange"
+args = ["pipeline", "validate", "all", "{exe_dir}/input/full", "--no-date-check"]
+expect_exit = 0
+
+[[commands]]
+name = "Query Tree Uses Imported Config Mapping"
+stage = "exchange"
+args = ["query", "tree", "zzdemo", "--db", "{db_path}"]
+expect_exit = 0
+expect_stdout_contains = [
+  "zzdemo [zzdemo]",
+  "only [zzdemo_only]",
 ]

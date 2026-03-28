@@ -1,0 +1,11 @@
+# Runtime/business failure-path regression cases for exit code / stderr contract.
+
+[[commands]]
+name = "Query Data Invalid Day Boundary Returns LogicError"
+stage = "failure"
+args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--db", "{db_path}"]
+expect_exit = 6
+expect_error_code = "runtime.generic_error"
+expect_error_category = "runtime"
+expect_hints_contains = ["Inspect `error_message` for detailed failure reason."]
+expect_stderr_contains = ["Logic Error:", "Invalid date boundary: 20261301"]

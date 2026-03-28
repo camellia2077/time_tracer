@@ -4,12 +4,12 @@ use crate::error::AppError;
 
 use super::{CoreRuntime, invoke};
 
-pub struct TracerExchangeClient<'runtime, 'api> {
-    runtime: &'runtime CoreRuntime<'api>,
+pub struct TracerExchangeClient<'runtime> {
+    runtime: &'runtime CoreRuntime,
 }
 
-impl<'runtime, 'api> TracerExchangeClient<'runtime, 'api> {
-    pub(crate) fn new(runtime: &'runtime CoreRuntime<'api>) -> Self {
+impl<'runtime> TracerExchangeClient<'runtime> {
+    pub(crate) fn new(runtime: &'runtime CoreRuntime) -> Self {
         Self { runtime }
     }
 

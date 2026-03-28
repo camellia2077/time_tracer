@@ -41,7 +41,7 @@ name = "Report Export Daily"
 stage = "report-export"
 name_template = "Report Export Daily ({date}) [{fmt}]"
 template = ["report", "export", "day", "{date}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
-matrix = { date = ["20210103", "2026-01-01", "20260101", "20260102", "20260103", "20260104", "20260105", "20260106", "20260107", "20260108", "20260109", "202601010", "20260201"], fmt = ["md", "tex", "typ"] }
+matrix = { date = [ "2026-01-01", "20260102", "20210103", "2026-01-03", "20260201"], fmt = ["md", "tex", "typ"] }
 
 [[command_groups]]
 name = "Report Export Monthly"

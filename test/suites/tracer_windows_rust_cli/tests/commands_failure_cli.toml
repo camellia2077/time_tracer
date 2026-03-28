@@ -1,4 +1,4 @@
-# Failure-path regression cases for CLI exit code / stderr contract.
+# CLI surface failure-path regression cases for exit code / stderr contract.
 # Note:
 # - bootstrap runtime guard cases (missing core/config dll) remain covered by
 #   `python test/run.py runtime-guard --build-dir build_fast`.
@@ -72,13 +72,3 @@ expect_error_code = "cli.invalid_arguments"
 expect_error_category = "cli"
 expect_hints_contains = ["Run command --help to inspect required arguments."]
 expect_stderr_contains = ["`report export day` requires <argument>."]
-
-[[commands]]
-name = "Query Data Invalid Day Boundary Returns LogicError"
-stage = "failure"
-args = ["query", "data", "days-stats", "--period", "day", "--period-arg", "20261301", "--db", "{db_path}"]
-expect_exit = 6
-expect_error_code = "runtime.generic_error"
-expect_error_category = "runtime"
-expect_hints_contains = ["Inspect `error_message` for detailed failure reason."]
-expect_stderr_contains = ["Logic Error:", "Invalid date boundary: 20261301"]

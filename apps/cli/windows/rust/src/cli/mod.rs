@@ -60,7 +60,7 @@ pub struct Cli {
         long = "output",
         value_name = "PATH",
         global = true,
-        help = "Output path override"
+        help = "Output path override. Required for `exchange export`."
     )]
     pub output: Option<String>,
     #[command(subcommand)]
@@ -181,6 +181,20 @@ mod tests {
             },
             _ => panic!("expected exchange command"),
         }
+    }
+
+    #[test]
+    fn exchange_export_help_mentions_required_output_and_usage() {
+        let error =
+            Cli::try_parse_from(["time_tracer_cli", "exchange", "export", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains(
+            "Usage: time_tracer_cli.exe -o <PATH> exchange export --in <PATH> [--security-level <SECURITY_LEVEL>]"
+        ));
+        assert!(help.contains(
+            "Output path override. Required for `exchange export`."
+        ));
     }
 
     #[test]

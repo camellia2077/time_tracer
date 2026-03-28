@@ -4,12 +4,12 @@ use crate::error::AppError;
 
 use super::{CoreRuntime, TreeResponse, invoke};
 
-pub struct QueryClient<'runtime, 'api> {
-    runtime: &'runtime CoreRuntime<'api>,
+pub struct QueryClient<'runtime> {
+    runtime: &'runtime CoreRuntime,
 }
 
-impl<'runtime, 'api> QueryClient<'runtime, 'api> {
-    pub(crate) fn new(runtime: &'runtime CoreRuntime<'api>) -> Self {
+impl<'runtime> QueryClient<'runtime> {
+    pub(crate) fn new(runtime: &'runtime CoreRuntime) -> Self {
         Self { runtime }
     }
 

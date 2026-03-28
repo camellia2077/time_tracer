@@ -7,6 +7,7 @@
 1. 命令语义、参数模型与输出契约。
 2. Windows 运行时交付（`time_tracer_cli.exe` + `tracer_core.dll` + runtime config/assets）。
 3. 测试套件 `tracer_windows_rust_cli` 的约束与验收口径。
+4. `exchange import` 会覆盖 active converter config，且由 core 在导入流程内立即刷新运行态配置视图。
 
 ## 快速导航
 
@@ -36,7 +37,8 @@
 1. 改 CLI 参数或命令：同步更新 `specs/STRUCTURE.md` 与对应测试 TOML。
 2. 改输出文本：同步更新 `specs/cli-output-style.md` 与测试断言。
 3. 改 C ABI 交互：同步更新 `docs/time_tracer/core/contracts/c_abi.md`。
-4. 本目录不再维护旧前端主线说明；历史仅在归档文档中保留。
+4. 改 `exchange import` 的配置应用语义：同步更新 `test/suites/tracer_windows_rust_cli/tests/commands_exchange.toml` 中“导入后立即 validate/query”回归。
+5. 本目录不再维护旧前端主线说明；历史仅在归档文档中保留。
 
 ## Ingest 持久化边界
 

@@ -1,7 +1,7 @@
 use std::time::Instant;
 
 use serde::Deserialize;
-use serde_json::Value;
+use serde_json::{Value, json};
 
 use crate::error::AppError;
 
@@ -31,8 +31,19 @@ struct TextResponse {
     error_contract: ErrorContract,
 }
 
+#[derive(Deserialize)]
+struct ReportTargetsResponse {
+    ok: bool,
+    #[serde(default)]
+    error_message: String,
+    #[serde(default)]
+    items: Vec<String>,
+    #[serde(flatten)]
+    error_contract: ErrorContract,
+}
+
 pub(crate) fn run_query_data(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(runtime, runtime.api.symbols.runtime_query, request, "query")?;
@@ -40,7 +51,7 @@ pub(crate) fn run_query_data(
 }
 
 pub(crate) fn run_report_text(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(
@@ -53,7 +64,7 @@ pub(crate) fn run_report_text(
 }
 
 pub(crate) fn run_report_batch_text(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(
@@ -65,20 +76,26 @@ pub(crate) fn run_report_batch_text(
     Ok(payload.content)
 }
 
-pub(crate) fn run_report_export(
-    runtime: &CoreRuntime<'_>,
-    request: &Value,
-) -> Result<(), AppError> {
-    run_ack(
-        runtime,
-        runtime.api.symbols.runtime_export,
-        request,
-        "export",
-    )
+pub(crate) fn run_report_targets(
+    runtime: &CoreRuntime,
+    target_type: &str,
+) -> Result<Vec<String>, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(&json!({ "type": target_type }))?;
+    let raw = unsafe { (runtime.api.symbols.runtime_report_targets)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<ReportTargetsResponse>(raw, "report_targets")?;
+    log_timing("runtime.report_targets", run_start.elapsed());
+    if payload.ok {
+        return Ok(payload.items);
+    }
+    Err(AppError::Logic(format_error_detail(
+        payload.error_message,
+        &payload.error_contract,
+    )))
 }
 
 pub(crate) fn run_pipeline_convert(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<(), AppError> {
     run_ack(
@@ -90,7 +107,7 @@ pub(crate) fn run_pipeline_convert(
 }
 
 pub(crate) fn run_pipeline_import(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<(), AppError> {
     run_ack(
@@ -102,7 +119,7 @@ pub(crate) fn run_pipeline_import(
 }
 
 pub(crate) fn run_pipeline_ingest(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<(), AppError> {
     run_ack(
@@ -114,7 +131,7 @@ pub(crate) fn run_pipeline_ingest(
 }
 
 pub(crate) fn run_pipeline_validate_structure(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<(), AppError> {
     run_ack(
@@ -126,7 +143,7 @@ pub(crate) fn run_pipeline_validate_structure(
 }
 
 pub(crate) fn run_pipeline_validate_logic(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<(), AppError> {
     run_ack(
@@ -138,7 +155,7 @@ pub(crate) fn run_pipeline_validate_logic(
 }
 
 pub(crate) fn run_tree_query(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<TreeResponse, AppError> {
     let run_start = Instant::now();
@@ -153,7 +170,7 @@ pub(crate) fn run_tree_query(
 }
 
 pub(crate) fn run_tracer_exchange_export(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(
@@ -166,7 +183,7 @@ pub(crate) fn run_tracer_exchange_export(
 }
 
 pub(crate) fn run_tracer_exchange_import(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(
@@ -179,7 +196,7 @@ pub(crate) fn run_tracer_exchange_import(
 }
 
 pub(crate) fn run_tracer_exchange_inspect(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     request: &Value,
 ) -> Result<String, AppError> {
     let payload = run_text(
@@ -192,7 +209,7 @@ pub(crate) fn run_tracer_exchange_inspect(
 }
 
 fn run_ack(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     function: RuntimeJsonFn,
     request: &Value,
     context: &str,
@@ -212,7 +229,7 @@ fn run_ack(
 }
 
 fn run_text(
-    runtime: &CoreRuntime<'_>,
+    runtime: &CoreRuntime,
     function: RuntimeJsonFn,
     request: &Value,
     context: &str,

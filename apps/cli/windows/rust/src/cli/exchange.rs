@@ -35,7 +35,10 @@ pub struct ExchangeInspectArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum ExchangeCommand {
-    #[command(about = "Export a tracer exchange package from a TXT root")]
+    #[command(
+        about = "Export a tracer exchange package from a TXT root",
+        override_usage = "time_tracer_cli.exe -o <PATH> exchange export --in <PATH> [--security-level <SECURITY_LEVEL>]"
+    )]
     Export(ExchangeExportArgs),
     #[command(about = "Import a tracer exchange package into the active runtime")]
     Import(ExchangeImportArgs),

@@ -4,12 +4,12 @@ use crate::error::AppError;
 
 use super::{CoreRuntime, invoke};
 
-pub struct ReportClient<'runtime, 'api> {
-    runtime: &'runtime CoreRuntime<'api>,
+pub struct ReportClient<'runtime> {
+    runtime: &'runtime CoreRuntime,
 }
 
-impl<'runtime, 'api> ReportClient<'runtime, 'api> {
-    pub(crate) fn new(runtime: &'runtime CoreRuntime<'api>) -> Self {
+impl<'runtime> ReportClient<'runtime> {
+    pub(crate) fn new(runtime: &'runtime CoreRuntime) -> Self {
         Self { runtime }
     }
 
@@ -20,7 +20,7 @@ impl<'runtime, 'api> ReportClient<'runtime, 'api> {
         invoke::run_report_text(self.runtime, request)
     }
 
-    pub fn export(&self, request: &Value) -> Result<(), AppError> {
-        invoke::run_report_export(self.runtime, request)
+    pub fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError> {
+        invoke::run_report_targets(self.runtime, target_type)
     }
 }

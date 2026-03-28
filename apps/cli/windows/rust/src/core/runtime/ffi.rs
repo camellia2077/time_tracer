@@ -37,7 +37,7 @@ pub(crate) struct RuntimeSymbols {
     pub(crate) runtime_query: RuntimeJsonFn,
     pub(crate) runtime_report: RuntimeJsonFn,
     pub(crate) runtime_report_batch: RuntimeJsonFn,
-    pub(crate) runtime_export: RuntimeJsonFn,
+    pub(crate) runtime_report_targets: RuntimeJsonFn,
     pub(crate) runtime_tree: RuntimeJsonFn,
     pub(crate) runtime_crypto_encrypt: RuntimeJsonFn,
     pub(crate) runtime_crypto_decrypt: RuntimeJsonFn,

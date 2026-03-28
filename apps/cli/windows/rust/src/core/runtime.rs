@@ -91,17 +91,18 @@ pub struct CoreApi {
     symbols: ffi::RuntimeSymbols,
 }
 
-pub(crate) struct CoreRuntime<'a> {
-    api: &'a CoreApi,
+pub(crate) struct CoreRuntime {
+    api: CoreApi,
     handle: *mut c_void,
 }
 
-pub struct RuntimeSession<'a> {
-    runtime: CoreRuntime<'a>,
+pub struct RuntimeSession {
+    runtime: CoreRuntime,
     cli_config: CliConfig,
+    paths: ResolvedCliPaths,
 }
 
-impl Drop for CoreRuntime<'_> {
+impl Drop for CoreRuntime {
     fn drop(&mut self) {
         unsafe {
             (self.api.symbols.runtime_destroy)(self.handle);
@@ -122,11 +123,7 @@ impl CoreApi {
         Ok(Self { _lib: lib, symbols })
     }
 
-    pub fn bootstrap(
-        &self,
-        command_name: &str,
-        ctx: &CommandContext,
-    ) -> Result<RuntimeSession<'_>, AppError> {
+    pub fn bootstrap(self, command_name: &str, ctx: &CommandContext) -> Result<RuntimeSession, AppError> {
         bootstrap::bootstrap(self, command_name, ctx)
     }
 }
@@ -135,25 +132,29 @@ pub fn finalize_tracer_exchange_progress_line() {
     callbacks::finalize_crypto_progress_line();
 }
 
-impl<'a> RuntimeSession<'a> {
-    pub fn pipeline(&self) -> PipelineClient<'_, 'a> {
+impl RuntimeSession {
+    pub fn pipeline(&self) -> PipelineClient<'_> {
         PipelineClient::new(&self.runtime)
     }
 
-    pub fn query(&self) -> QueryClient<'_, 'a> {
+    pub fn query(&self) -> QueryClient<'_> {
         QueryClient::new(&self.runtime)
     }
 
-    pub fn report(&self) -> ReportClient<'_, 'a> {
+    pub fn report(&self) -> ReportClient<'_> {
         ReportClient::new(&self.runtime)
     }
 
-    pub fn exchange(&self) -> TracerExchangeClient<'_, 'a> {
+    pub fn exchange(&self) -> TracerExchangeClient<'_> {
         TracerExchangeClient::new(&self.runtime)
     }
 
     pub fn cli_config(&self) -> &CliConfig {
         &self.cli_config
+    }
+
+    pub fn paths(&self) -> &ResolvedCliPaths {
+        &self.paths
     }
 }
 

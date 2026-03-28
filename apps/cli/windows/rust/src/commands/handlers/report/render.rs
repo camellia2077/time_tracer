@@ -18,15 +18,15 @@ pub(crate) fn run_render_with_port(
     ctx: &CommandContext,
     port: &dyn ReportSessionPort,
 ) -> Result<(), AppError> {
-    let cli_config = port.load_cli_config("query", ctx)?;
-    let formats = resolve_render_formats(&args, &cli_config);
+    let session = port.open("query", ctx)?;
+    let formats = resolve_render_formats(&args, session.cli_config());
 
     for (index, format) in formats.iter().enumerate() {
         if index > 0 {
             println!("\n{}", "=".repeat(40));
         }
         let request = build_render_request(args.period, &args.argument, format)?;
-        let content = port.render("query", ctx, &request)?;
+        let content = session.render(&request)?;
         print!("{content}");
     }
     Ok(())

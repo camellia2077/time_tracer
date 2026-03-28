@@ -22,6 +22,20 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 4. 通过标准：
    - `out/test/artifact_windows_cli/result.json` 中应包含 `"success": true`
 
+## Build 顺序约束
+
+- 如果改动落在 `libs/tracer_core/`、`apps/tracer_core_shell/` 或任何会进入
+  `tracer_core.dll` 的 native/core 代码，不能只执行
+  `--app tracer_windows_rust_cli`。
+- 原因：`python tools/run.py build --app tracer_windows_rust_cli ...` 主要负责
+  构建 Rust CLI，并同步当前已有的 runtime 文件；它不会替你重新编译一遍最新
+  的 core native 产物。
+- 正确顺序是先重建 core，再重建 CLI：
+  - `python tools/run.py build --app tracer_core --profile release_bundle --build-dir build --runtime-platform windows`
+  - `python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle --build-dir build --runtime-platform windows`
+- 否则很容易出现 Rust CLI 已更新、但实际加载的 `tracer_core.dll` 仍是旧版本，
+  从而让 `exchange import`、`validate`、`query` 之类能力表现得像“修复没生效”。
+
 ## Agent 快速定位
 
 1. CLI 入口与参数解析：
@@ -61,6 +75,12 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 - `report export`
 - `exchange export/import/inspect`
 - `pipeline convert/import/ingest/validate`
+
+## Exchange Import 语义
+
+- `exchange import` 会覆盖 runtime active converter config（`main` / `alias_mapping` / `duration_rules`）。
+- 配置覆盖后的运行态刷新由 core 负责完成，CLI 不应再维护独立的缓存失效补丁。
+- 若你改动 import 链路，至少补一条“导入后立刻 validate/query 使用新 config”的回归。
 
 ## 已移除兼容入口
 
