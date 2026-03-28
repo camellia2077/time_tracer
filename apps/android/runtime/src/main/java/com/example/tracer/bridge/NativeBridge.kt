@@ -71,6 +71,12 @@ object NativeBridge {
         saveProcessedOutput: Boolean
     ): String
 
+    external fun nativeListTxtIngestSyncStatus(
+        requestJson: String
+    ): String
+
+    external fun nativeClearTxtIngestSyncStatus(): String
+
     external fun nativeValidateStructure(
         inputPath: String
     ): String
@@ -99,6 +105,11 @@ object NativeBridge {
         passphrase: String,
         securityLevel: String,
         dateCheckMode: Int
+    ): String
+
+    external fun nativeExportTracerExchangeFromPayloadJson(
+        requestJson: String,
+        outputFd: Int
     ): String
 
     external fun nativeImportTracerExchange(

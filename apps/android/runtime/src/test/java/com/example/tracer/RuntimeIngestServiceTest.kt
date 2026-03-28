@@ -9,28 +9,6 @@ import java.nio.file.Files
 
 class RuntimeIngestServiceTest {
     @Test
-    fun ingestFull_whenExecutorThrows_returnsFailure() = runBlocking {
-        val root = Files.createTempDirectory("runtime-ingest-fail").toFile()
-        try {
-            val paths = createPaths(root)
-            val service = RuntimeIngestService(
-                ensureRuntimePaths = { paths },
-                executeAfterInit = { _, _ -> throw IllegalStateException("executor down") },
-                nativeIngest = { _, _, _ -> """{"ok":true}""" },
-                nativeIngestSingleTxtReplaceMonth = { _, _, _ -> """{"ok":true}""" }
-            )
-
-            val result = service.ingestFull()
-
-            assertFalse(result.initialized)
-            assertFalse(result.operationOk)
-            assertTrue(result.rawResponse.contains("nativeIngest failed"))
-        } finally {
-            root.deleteRecursively()
-        }
-    }
-
-    @Test
     fun ingestSingleTxtReplaceMonth_missingHeader_returnsFailureBeforeExecutor() = runBlocking {
         val root = Files.createTempDirectory("runtime-ingest-single-missing").toFile()
         try {
@@ -44,7 +22,8 @@ class RuntimeIngestServiceTest {
                     executorCalled = true
                     NativeCallResult(initialized = true, operationOk = true, rawResponse = """{"ok":true}""")
                 },
-                nativeIngest = { _, _, _ -> """{"ok":true}""" },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
                 nativeIngestSingleTxtReplaceMonth = { _, _, _ -> """{"ok":true}""" }
             )
 
@@ -76,7 +55,8 @@ class RuntimeIngestServiceTest {
                         rawResponse = action(paths)
                     )
                 },
-                nativeIngest = { _, _, _ -> """{"ok":true}""" },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
                 nativeIngestSingleTxtReplaceMonth = { inputPath, _, _ ->
                     capturedManagedInputPath = inputPath
                     """{"ok":true}"""
@@ -90,10 +70,12 @@ class RuntimeIngestServiceTest {
             val managedFile = File(capturedManagedInputPath)
             assertTrue(managedFile.exists())
             assertTrue(managedFile.name == "2026-03.txt")
+            assertTrue(managedFile.parentFile?.name == "2026")
             val savedContent = managedFile.readText()
             assertFalse(savedContent.startsWith("\uFEFF"))
             assertFalse(savedContent.contains("\r"))
             assertTrue(savedContent.contains("y2026\nm03\n"))
+            assertTrue(File(paths.cacheRootPath).isDirectory)
         } finally {
             root.deleteRecursively()
         }
@@ -113,7 +95,8 @@ class RuntimeIngestServiceTest {
                     executorCalled = true
                     NativeCallResult(initialized = true, operationOk = true, rawResponse = """{"ok":true}""")
                 },
-                nativeIngest = { _, _, _ -> """{"ok":true}""" },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
                 nativeIngestSingleTxtReplaceMonth = { _, _, _ -> """{"ok":true}""" }
             )
 
@@ -128,10 +111,101 @@ class RuntimeIngestServiceTest {
         }
     }
 
+    @Test
+    fun ingestSingleTxtReplaceMonth_structureValidateFailure_doesNotCopyOrIngest() = runBlocking {
+        val root = Files.createTempDirectory("runtime-ingest-single-validate-structure").toFile()
+        try {
+            val paths = createPaths(root)
+            val source = File(root, "source.txt")
+            source.writeText("y2026\nm03\n2026-03-01 08:00|study|remark\n")
+            var ingestCalled = false
+            val service = RuntimeIngestService(
+                ensureRuntimePaths = { paths },
+                executeAfterInit = { operationName, action ->
+                    val rawResponse = action(paths)
+                    when (operationName) {
+                        "native_validate_structure" -> NativeCallResult(
+                            initialized = true,
+                            operationOk = false,
+                            rawResponse = buildNativeErrorResponseJson("structure invalid")
+                        )
+
+                        else -> NativeCallResult(
+                            initialized = true,
+                            operationOk = true,
+                            rawResponse = rawResponse
+                        )
+                    }
+                },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
+                nativeIngestSingleTxtReplaceMonth = { _, _, _ ->
+                    ingestCalled = true
+                    """{"ok":true}"""
+                }
+            )
+
+            val result = service.ingestSingleTxtReplaceMonth(source.absolutePath)
+
+            assertTrue(result.initialized)
+            assertFalse(result.operationOk)
+            assertTrue(result.rawResponse.contains("structure invalid"))
+            assertFalse(File(paths.inputRootPath, "2026/2026-03.txt").exists())
+            assertFalse(ingestCalled)
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
+    @Test
+    fun ingestSingleTxtReplaceMonth_logicValidateFailure_doesNotCopyOrIngest() = runBlocking {
+        val root = Files.createTempDirectory("runtime-ingest-single-validate-logic").toFile()
+        try {
+            val paths = createPaths(root)
+            val source = File(root, "source.txt")
+            source.writeText("y2026\nm03\n2026-03-01 08:00|study|remark\n")
+            var ingestCalled = false
+            val service = RuntimeIngestService(
+                ensureRuntimePaths = { paths },
+                executeAfterInit = { operationName, action ->
+                    val rawResponse = action(paths)
+                    when (operationName) {
+                        "native_validate_logic" -> NativeCallResult(
+                            initialized = true,
+                            operationOk = false,
+                            rawResponse = buildNativeErrorResponseJson("logic invalid")
+                        )
+
+                        else -> NativeCallResult(
+                            initialized = true,
+                            operationOk = true,
+                            rawResponse = rawResponse
+                        )
+                    }
+                },
+                nativeValidateStructure = { """{"ok":true}""" },
+                nativeValidateLogic = { _, _ -> """{"ok":true}""" },
+                nativeIngestSingleTxtReplaceMonth = { _, _, _ ->
+                    ingestCalled = true
+                    """{"ok":true}"""
+                }
+            )
+
+            val result = service.ingestSingleTxtReplaceMonth(source.absolutePath)
+
+            assertTrue(result.initialized)
+            assertFalse(result.operationOk)
+            assertTrue(result.rawResponse.contains("logic invalid"))
+            assertFalse(File(paths.inputRootPath, "2026/2026-03.txt").exists())
+            assertFalse(ingestCalled)
+        } finally {
+            root.deleteRecursively()
+        }
+    }
+
     private fun createPaths(root: File): RuntimePaths {
-        val full = File(root, "input/full").apply { mkdirs() }
-        val liveRaw = File(root, "input/live_raw").apply { mkdirs() }
-        val liveAutoSync = File(root, "input/live_auto_sync").apply { mkdirs() }
+        val input = File(root, "input").apply { mkdirs() }
+        val cache = File(root, "cache").apply { mkdirs() }
         val output = File(root, "output").apply { mkdirs() }
         val configRoot = File(root, "config").apply { mkdirs() }
         val db = File(root, "db/time_data.sqlite3").apply {
@@ -147,9 +221,8 @@ class RuntimeIngestServiceTest {
             outputRoot = output.absolutePath,
             configRootPath = configRoot.absolutePath,
             configTomlPath = configToml.absolutePath,
-            fullInputPath = full.absolutePath,
-            liveRawInputPath = liveRaw.absolutePath,
-            liveAutoSyncInputPath = liveAutoSync.absolutePath
+            inputRootPath = input.absolutePath,
+            cacheRootPath = cache.absolutePath
         )
     }
 }

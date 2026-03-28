@@ -6,7 +6,8 @@ import kotlinx.coroutines.withContext
 internal class RuntimeRecordService(
     private val recordDelegate: RuntimeRecordDelegate,
     private val storageDelegate: RuntimeStorageDelegate,
-    private val clearTxtData: () -> ClearTxtResult
+    private val clearTxtData: () -> ClearTxtResult,
+    private val clearTxtIngestSyncStatus: () -> NativeCallResult
 ) {
     suspend fun createCurrentMonthTxt(): RecordActionResult =
         recordDelegate.createCurrentMonthTxt()
@@ -25,6 +26,9 @@ internal class RuntimeRecordService(
     suspend fun syncLiveToDatabase(): NativeCallResult =
         recordDelegate.syncLiveToDatabase()
 
+    suspend fun inspectTxtFiles(): TxtInspectionResult =
+        storageDelegate.inspectTxtFiles()
+
     suspend fun listTxtFiles(): TxtHistoryListResult =
         storageDelegate.listTxtFiles()
 
@@ -36,7 +40,19 @@ internal class RuntimeRecordService(
 
     suspend fun clearTxt(): ClearTxtResult = withContext(Dispatchers.IO) {
         try {
-            clearTxtData()
+            val txtResult = clearTxtData()
+            val syncResult = clearTxtIngestSyncStatus()
+            val syncPayload = NativeResponseCodec().parse(syncResult.rawResponse)
+            val syncMessage = if (syncResult.initialized && syncResult.operationOk) {
+                "clear ingest sync -> ok"
+            } else {
+                "clear ingest sync -> ${syncPayload.errorMessage.ifEmpty { syncResult.rawResponse }}"
+            }
+
+            ClearTxtResult(
+                ok = txtResult.ok && syncResult.initialized && syncResult.operationOk,
+                message = "${txtResult.message}\n$syncMessage"
+            )
         } catch (error: Exception) {
             ClearTxtResult(
                 ok = false,

@@ -41,6 +41,11 @@ data class RecordActionResult(
     val operationId: String = ""
 )
 
+data class TracerExchangePayloadItem(
+    val relativePathHint: String,
+    val content: String
+)
+
 data class TracerExchangeExportResult(
     val ok: Boolean,
     val message: String,
@@ -82,6 +87,31 @@ data class TracerExchangeInspectResult(
 data class TxtHistoryListResult(
     val ok: Boolean,
     val files: List<String>,
+    val message: String
+)
+
+enum class TxtSyncState {
+    SYNCED,
+    NOT_INGESTED,
+    HEADER_INVALID,
+    PATH_MISMATCH,
+    DB_HASH_MISMATCH,
+    DB_PATH_MISMATCH,
+    DUPLICATE_MONTH
+}
+
+data class TxtInspectionEntry(
+    val relativePath: String,
+    val headerMonth: String?,
+    val expectedCanonicalRelativePath: String?,
+    val syncState: TxtSyncState,
+    val canOpen: Boolean,
+    val message: String
+)
+
+data class TxtInspectionResult(
+    val ok: Boolean,
+    val entries: List<TxtInspectionEntry>,
     val message: String
 )
 

@@ -2,6 +2,7 @@ package com.example.tracer
 
 internal data class MonthExportItem(
     val monthKey: String,
+    val sourceRelativePath: String,
     val exportYear: String,
     val content: String
 )
@@ -18,13 +19,20 @@ internal suspend fun buildMonthExportItems(
     onProgress: ((processedCount: Int, totalCount: Int) -> Unit)? = null
 ): MonthExportItemsResult {
     val errors = mutableListOf<String>()
-    val normalizedHistoryFiles = recordUiState.historyFiles
-        .map { it.replace('\\', '/') }
-        .sorted()
-    val monthToSourcePath = buildMonthToSourcePathIndex(
-        historyFiles = normalizedHistoryFiles,
-        readTxtFile = { path -> txtStorageGateway.readTxtFile(path) }
-    )
+    val inspection = txtStorageGateway.inspectTxtFiles()
+    if (!inspection.ok) {
+        return MonthExportItemsResult(
+            items = emptyList(),
+            errors = listOf(inspection.message)
+        )
+    }
+    val monthToSourcePath = inspection.entries
+        .filter { it.canOpen && !it.headerMonth.isNullOrBlank() }
+        .sortedBy { it.relativePath }
+        .associateBy(
+            keySelector = { it.headerMonth!! },
+            valueTransform = { it.relativePath.replace('\\', '/') }
+        )
 
     val totalCount = recordUiState.availableMonths.size.coerceAtLeast(1)
     val items = recordUiState.availableMonths.sorted().mapIndexed { index, monthKey ->
@@ -80,6 +88,7 @@ internal suspend fun buildMonthExportItems(
         onProgress?.invoke(index + 1, totalCount)
         MonthExportItem(
             monthKey = normalizedMonthKey,
+            sourceRelativePath = sourcePath,
             exportYear = exportYear,
             content = content
         )

@@ -34,6 +34,12 @@ internal class NativeRuntimeBridge {
         saveProcessedOutput = saveProcessedOutput
     )
 
+    fun nativeListTxtIngestSyncStatus(requestJson: String): String =
+        NativeBridge.nativeListTxtIngestSyncStatus(requestJson)
+
+    fun nativeClearTxtIngestSyncStatus(): String =
+        NativeBridge.nativeClearTxtIngestSyncStatus()
+
     fun nativeEncryptFile(
         inputPath: String,
         outputPath: String,
@@ -68,6 +74,14 @@ internal class NativeRuntimeBridge {
         passphrase = passphrase,
         securityLevel = securityLevel.wireValue,
         dateCheckMode = dateCheckMode
+    )
+
+    fun nativeExportTracerExchangeFromPayloadJson(
+        requestJson: String,
+        outputFd: Int
+    ): String = NativeBridge.nativeExportTracerExchangeFromPayloadJson(
+        requestJson = requestJson,
+        outputFd = outputFd
     )
 
     fun nativeImportTracerExchange(

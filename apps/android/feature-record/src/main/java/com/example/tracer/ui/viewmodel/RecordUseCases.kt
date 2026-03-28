@@ -44,12 +44,25 @@ class RecordUseCases(
     }
 
     suspend fun openHistoryFile(state: RecordUiState, path: String): RecordUiState {
-        val readResult = txtStorageGateway.readTxtFile(path)
+        val inspection = txtStorageGateway.inspectTxtFiles()
+        if (!inspection.ok) {
+            return state.copy(statusText = inspection.message)
+        }
+
+        val normalizedPath = path.replace('\\', '/')
+        val inspectionEntry = inspection.entries.firstOrNull {
+            it.relativePath.replace('\\', '/') == normalizedPath
+        } ?: return state.copy(statusText = "TXT file $path not found.")
+        if (!inspectionEntry.canOpen) {
+            return state.copy(statusText = inspectionEntry.message)
+        }
+
+        val readResult = txtStorageGateway.readTxtFile(inspectionEntry.relativePath)
         if (!readResult.ok) {
             return state.copy(statusText = readResult.message)
         }
 
-        val selectedMonth = parseMonthFromContent(readResult.content)
+        val selectedMonth = inspectionEntry.headerMonth
             ?: state.selectedMonth
 
         return state.copy(
@@ -199,23 +212,24 @@ class RecordUseCases(
         preferredMonth: String?,
         statusPrefix: String
     ): RecordUiState {
-        val history = txtStorageGateway.listTxtFiles()
-        if (!history.ok) {
-            return state.copy(statusText = "$statusPrefix ${history.message}")
+        val inspection = txtStorageGateway.inspectTxtFiles()
+        if (!inspection.ok) {
+            return state.copy(statusText = "$statusPrefix ${inspection.message}")
         }
 
-        val monthToFile = buildMonthToFileIndex(history.files)
+        val historyFiles = inspection.entries.map { it.relativePath }.sorted()
+        val monthToFile = buildMonthToFileIndex(inspection.entries)
         val months = monthToFile.keys.sorted()
 
         if (months.isEmpty()) {
             return state.copy(
-                historyFiles = history.files,
+                historyFiles = historyFiles,
                 availableMonths = emptyList(),
                 selectedMonth = "",
                 selectedHistoryFile = "",
                 selectedHistoryContent = "",
                 editableHistoryContent = "",
-                statusText = "$statusPrefix No TXT files found under input sources."
+                statusText = "$statusPrefix No openable TXT files found under input."
             )
         }
 
@@ -231,14 +245,14 @@ class RecordUseCases(
         val readResult = txtStorageGateway.readTxtFile(targetFile)
         if (!readResult.ok) {
             return state.copy(
-                historyFiles = history.files,
+                historyFiles = historyFiles,
                 availableMonths = months,
                 statusText = "$statusPrefix ${readResult.message}"
             )
         }
 
         return state.copy(
-            historyFiles = history.files,
+            historyFiles = historyFiles,
             availableMonths = months,
             selectedMonth = targetMonth,
             selectedHistoryFile = readResult.filePath,
@@ -248,56 +262,17 @@ class RecordUseCases(
         )
     }
 
-    private suspend fun buildMonthToFileIndex(files: List<String>): Map<String, String> {
+    private fun buildMonthToFileIndex(entries: List<TxtInspectionEntry>): Map<String, String> {
         val index = linkedMapOf<String, String>()
-        for (path in files.sorted()) {
-            val readResult = txtStorageGateway.readTxtFile(path)
-            if (!readResult.ok) {
+        for (entry in entries.sortedBy { it.relativePath }) {
+            if (!entry.canOpen) {
                 continue
             }
-            val month = parseMonthFromContent(readResult.content) ?: continue
+            val month = entry.headerMonth ?: continue
             if (!index.containsKey(month)) {
-                index[month] = readResult.filePath
+                index[month] = entry.relativePath
             }
         }
         return index
     }
-
-    private fun parseMonthFromContent(content: String): String? {
-        var year: String? = null
-        var monthFromHeader: String? = null
-        val yearRegex = Regex("""^y(\d{4})$""")
-        val monthRegex = Regex("""^m(\d{2})$""")
-
-        for (rawLine in content.lineSequence()) {
-            val line = rawLine.trim()
-            if (line.isEmpty()) {
-                continue
-            }
-
-            val yearMatch = yearRegex.matchEntire(line)
-            if (yearMatch != null && year == null) {
-                year = yearMatch.groupValues[1]
-                continue
-            }
-
-            val monthMatch = monthRegex.matchEntire(line)
-            if (monthMatch != null && monthFromHeader == null) {
-                if (year == null) {
-                    return null
-                }
-                val monthValue = monthMatch.groupValues[1].toIntOrNull() ?: continue
-                if (monthValue in 1..12) {
-                    monthFromHeader = String.format(Locale.US, "%02d", monthValue)
-                    break
-                }
-            }
-        }
-
-        if (year == null || monthFromHeader == null) {
-            return null
-        }
-        return "$year-$monthFromHeader"
-    }
-
 }

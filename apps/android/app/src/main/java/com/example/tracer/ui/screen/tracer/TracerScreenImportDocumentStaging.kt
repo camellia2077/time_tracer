@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import java.io.File
+import java.util.UUID
 
 internal fun stageSelectedTxtDocument(context: Context, documentUri: Uri): String {
     return stageSelectedDocument(
@@ -58,8 +59,8 @@ private fun queryDocumentDisplayName(context: Context, documentUri: Uri): String
 }
 
 private fun buildStagedFileName(displayName: String?, expectedExtension: String): String {
-    val timestampPrefix = System.currentTimeMillis().toString()
-    val fallback = "${timestampPrefix}_import$expectedExtension"
+    val uniquePrefix = UUID.randomUUID().toString()
+    val fallback = "${uniquePrefix}_import$expectedExtension"
     val rawName = displayName?.trim().orEmpty()
     if (rawName.isEmpty()) {
         return fallback
@@ -74,5 +75,5 @@ private fun buildStagedFileName(displayName: String?, expectedExtension: String)
     } else {
         "$sanitized$expectedExtension"
     }
-    return "${timestampPrefix}_$ensuredExtension"
+    return "${uniquePrefix}_$ensuredExtension"
 }

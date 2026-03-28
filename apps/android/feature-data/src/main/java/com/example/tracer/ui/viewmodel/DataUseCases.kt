@@ -18,24 +18,6 @@ internal class DataUseCases(
         )
     }
 
-    suspend fun ingestFull(currentState: DataUiState): DataUiState {
-        return ingestFullWithResult(currentState).state
-    }
-
-    suspend fun ingestFullWithResult(
-        currentState: DataUiState
-    ): OperationUpdate {
-        val runningState = currentState.copy(statusText = "nativeIngest(full) running...")
-        val result = runtimeInitializer.ingestFull()
-        return OperationUpdate(
-            state = runningState.copy(
-                initialized = result.initialized,
-                statusText = "nativeIngest(full) -> ${result.rawResponse}"
-            ),
-            operationOk = result.operationOk
-        )
-    }
-
     suspend fun ingestSingleTxtReplaceMonth(
         currentState: DataUiState,
         inputPath: String
@@ -48,13 +30,13 @@ internal class DataUseCases(
         inputPath: String
     ): OperationUpdate {
         val runningState = currentState.copy(
-            statusText = "nativeIngest(single_txt_replace_month) running..."
+            statusText = "TXT import running..."
         )
         val result = runtimeInitializer.ingestSingleTxtReplaceMonth(inputPath)
         return OperationUpdate(
             state = runningState.copy(
                 initialized = result.initialized,
-                statusText = "nativeIngest(single_txt_replace_month) -> ${result.rawResponse}"
+                statusText = "TXT import -> ${result.rawResponse}"
             ),
             operationOk = result.operationOk
         )

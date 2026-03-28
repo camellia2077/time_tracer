@@ -5,8 +5,8 @@ import android.content.Context
 class NativeRuntimeController(context: Context) : RuntimeGateway {
     // RuntimeGateway is the aggregate contract that composes all domain gateways.
     private val runtimeEnvironment = RuntimeEnvironment(context)
-    private val rawRecordStore = LiveRawRecordStore()
-    private val runtimeSession = RuntimeSession(runtimeEnvironment, rawRecordStore)
+    private val inputRecordStore = InputRecordStore()
+    private val runtimeSession = RuntimeSession(runtimeEnvironment, inputRecordStore)
     private val runtimeBridge = NativeRuntimeBridge()
     private val errorMapper = RuntimeErrorMapper()
     private val operationIdGenerator = RuntimeOperationIdGenerator()
@@ -14,6 +14,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         runtimePathsProvider = runtimeSession::runtimePathsOrNull
     )
     private val responseCodec = NativeResponseCodec()
+    private val ingestSyncStatusCodec = NativeIngestSyncStatusCodec()
     private val reportTranslator = NativeReportTranslator(responseCodec)
     private val queryTranslator = NativeQueryTranslator(responseCodec)
     private val recordTranslator = NativeRecordTranslator(responseCodec)
@@ -29,26 +30,30 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nextOperationId = operationIdGenerator::next,
         errorMapper = errorMapper
     )
-    private val syncUseCase = IngestSyncUseCase(
-        autoSyncMaterializer = AutoSyncMaterializer(),
-        nativeIngest = runtimeBridge::nativeIngest
+    private val txtInspectionService = TxtInspectionService(
+        ensureTextStorage = runtimeSession::ensureTextStorage,
+        executeAfterInit = coreAdapter::executeAfterInit,
+        nativeListTxtIngestSyncStatus = runtimeBridge::nativeListTxtIngestSyncStatus,
+        responseCodec = responseCodec,
+        statusCodec = ingestSyncStatusCodec
     )
-
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
-        rawRecordStore = rawRecordStore,
+        rawRecordStore = inputRecordStore,
         responseCodec = responseCodec,
         recordTranslator = recordTranslator,
+        inspectTxtFilesInternal = txtInspectionService::inspectTxtFiles,
         executeAfterInit = coreAdapter::executeAfterInit,
         nativeValidateStructure = runtimeBridge::nativeValidateStructure,
         nativeValidateLogic = runtimeBridge::nativeValidateLogic,
-        nativeIngest = runtimeBridge::nativeIngest,
-        syncLiveOperation = { paths -> syncUseCase.run(paths) }
+        nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth,
+        nativeClearTxtIngestSyncStatus = runtimeBridge::nativeClearTxtIngestSyncStatus
     )
     private val storageDelegate = RuntimeStorageDelegate(
         ensureTextStorage = runtimeSession::ensureTextStorage,
-        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage
+        ensureConfigTomlStorage = runtimeSession::ensureConfigTomlStorage,
+        inspectTxtFilesInternal = txtInspectionService::inspectTxtFiles
     )
     private val reportDelegate = RuntimeReportDelegate(
         executeReportAfterInit = coreAdapter::executeReportAfterInit,
@@ -69,7 +74,8 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val ingestService = RuntimeIngestService(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         executeAfterInit = coreAdapter::executeAfterInit,
-        nativeIngest = runtimeBridge::nativeIngest,
+        nativeValidateStructure = runtimeBridge::nativeValidateStructure,
+        nativeValidateLogic = runtimeBridge::nativeValidateLogic,
         nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth
     )
     private val recordService = RuntimeRecordService(
@@ -78,6 +84,11 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         clearTxtData = {
             runtimeSession.ensureRuntimePaths()
             runtimeEnvironment.clearTxtData()
+        },
+        clearTxtIngestSyncStatus = {
+            coreAdapter.executeAfterInit("native_clear_txt_ingest_sync_status") {
+                runtimeBridge.nativeClearTxtIngestSyncStatus()
+            }
         }
     )
     private val queryService = RuntimeQueryService(queryDelegate)
@@ -99,6 +110,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val tracerExchangeService = RuntimeTracerExchangeService(
         responseCodec = responseCodec,
         nativeExportTracerExchange = runtimeBridge::nativeExportTracerExchange,
+        nativeExportTracerExchangeFromPayloadJson = runtimeBridge::nativeExportTracerExchangeFromPayloadJson,
         nativeImportTracerExchange = runtimeBridge::nativeImportTracerExchange,
         nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
         setProgressListener = runtimeBridge::setCryptoProgressListener
@@ -115,9 +127,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
 
     // ingest
-    override suspend fun ingestFull(): NativeCallResult =
-        ingestService.ingestFull()
-
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
         ingestService.ingestSingleTxtReplaceMonth(inputPath)
 
@@ -141,6 +150,9 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun listTxtFiles(): TxtHistoryListResult =
         recordService.listTxtFiles()
+
+    override suspend fun inspectTxtFiles(): TxtInspectionResult =
+        recordService.inspectTxtFiles()
 
     override suspend fun readTxtFile(relativePath: String): TxtFileContentResult =
         recordService.readTxtFile(relativePath)
@@ -201,6 +213,26 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         passphrase = passphrase,
         securityLevel = securityLevel,
         dateCheckMode = dateCheckMode,
+        onProgress = onProgress
+    )
+
+    override suspend fun exportTracerExchangeFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        outputFd: Int,
+        passphrase: String,
+        securityLevel: FileCryptoSecurityLevel,
+        dateCheckMode: Int,
+        logicalSourceRootName: String,
+        outputDisplayName: String,
+        onProgress: ((FileCryptoProgressEvent) -> Unit)?
+    ): TracerExchangeExportResult = tracerExchangeService.exportTracerExchangeFromPayload(
+        payloads = payloads,
+        outputFd = outputFd,
+        passphrase = passphrase,
+        securityLevel = securityLevel,
+        dateCheckMode = dateCheckMode,
+        logicalSourceRootName = logicalSourceRootName,
+        outputDisplayName = outputDisplayName,
         onProgress = onProgress
     )
 

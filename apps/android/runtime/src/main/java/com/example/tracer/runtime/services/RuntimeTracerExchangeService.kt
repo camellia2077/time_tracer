@@ -2,6 +2,7 @@ package com.example.tracer
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
 import org.json.JSONObject
 
 internal class RuntimeTracerExchangeService(
@@ -12,6 +13,10 @@ internal class RuntimeTracerExchangeService(
         passphrase: String,
         securityLevel: FileCryptoSecurityLevel,
         dateCheckMode: Int
+    ) -> String,
+    private val nativeExportTracerExchangeFromPayloadJson: (
+        requestJson: String,
+        outputFd: Int
     ) -> String,
     private val nativeImportTracerExchange: (
         inputPath: String,
@@ -102,6 +107,123 @@ internal class RuntimeTracerExchangeService(
                 message = "complete exchange package export completed: $resolvedOutput",
                 outputPath = resolvedOutput,
                 sourceRootName = content.optString("source_root_name"),
+                payloadFileCount = content.optInt("payload_file_count", 0),
+                converterFileCount = content.optInt("converter_file_count", 0),
+                manifestIncluded = content.optBoolean("manifest_included", false)
+            )
+        }.getOrElse { error ->
+            TracerExchangeExportResult(
+                ok = false,
+                message = formatNativeFailure(
+                    "complete exchange package export failed",
+                    error as? Exception ?: Exception(error)
+                ),
+                outputPath = "",
+                sourceRootName = "",
+                payloadFileCount = 0,
+                converterFileCount = 0,
+                manifestIncluded = false
+            )
+        }
+    }
+
+    suspend fun exportTracerExchangeFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        outputFd: Int,
+        passphrase: String,
+        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        dateCheckMode: Int = NativeBridge.DATE_CHECK_NONE,
+        logicalSourceRootName: String = "data",
+        outputDisplayName: String = "data.tracer",
+        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+    ): TracerExchangeExportResult = withContext(Dispatchers.IO) {
+        val safePassphrase = passphrase
+        val safeSourceRootName = logicalSourceRootName.trim().ifBlank { "data" }
+        val safeOutputDisplayName = outputDisplayName.trim().ifBlank { "data.tracer" }
+
+        if (payloads.isEmpty()) {
+            return@withContext TracerExchangeExportResult(
+                ok = false,
+                message = "complete exchange package export failed: payloads must not be empty.",
+                outputPath = "",
+                sourceRootName = "",
+                payloadFileCount = 0,
+                converterFileCount = 0,
+                manifestIncluded = false
+            )
+        }
+        if (outputFd < 0) {
+            return@withContext TracerExchangeExportResult(
+                ok = false,
+                message = "complete exchange package export failed: outputFd must be a valid detached file descriptor.",
+                outputPath = "",
+                sourceRootName = "",
+                payloadFileCount = 0,
+                converterFileCount = 0,
+                manifestIncluded = false
+            )
+        }
+        if (safePassphrase.isBlank()) {
+            return@withContext TracerExchangeExportResult(
+                ok = false,
+                message = "complete exchange package export failed: passphrase must not be empty.",
+                outputPath = "",
+                sourceRootName = "",
+                payloadFileCount = 0,
+                converterFileCount = 0,
+                manifestIncluded = false
+            )
+        }
+
+        val requestJson = JSONObject()
+            .put("logical_source_root_name", safeSourceRootName)
+            .put("output_display_name", safeOutputDisplayName)
+            .put("passphrase", safePassphrase)
+            .put("security_level", securityLevel.wireValue)
+            .put("date_check_mode", dateCheckMode)
+            .put(
+                "payload_items",
+                JSONArray().apply {
+                    payloads.forEach { payload ->
+                        put(
+                            JSONObject()
+                                .put("relative_path_hint", payload.relativePathHint)
+                                .put("content", payload.content)
+                        )
+                    }
+                }
+            )
+            .toString()
+
+        runCatching {
+            val rawResponse = executeWithCryptoProgressListener(
+                onProgress = onProgress,
+                setProgressListener = setProgressListener
+            ) {
+                nativeExportTracerExchangeFromPayloadJson(requestJson, outputFd)
+            }
+            val payload = responseCodec.parse(rawResponse)
+            if (!payload.ok) {
+                return@runCatching TracerExchangeExportResult(
+                    ok = false,
+                    message = payload.errorMessage.ifBlank {
+                        "complete exchange package export failed."
+                    },
+                    outputPath = "",
+                    sourceRootName = "",
+                    payloadFileCount = 0,
+                    converterFileCount = 0,
+                    manifestIncluded = false
+                )
+            }
+
+            val content = parseContentObject(payload.content)
+            val resolvedOutput = content.optString("output_path", safeOutputDisplayName)
+            TracerExchangeExportResult(
+                ok = true,
+                message = "complete exchange package export completed: $resolvedOutput",
+                outputPath = resolvedOutput,
+                sourceRootName = content.optString("source_root_name", safeSourceRootName),
                 payloadFileCount = content.optInt("payload_file_count", 0),
                 converterFileCount = content.optInt("converter_file_count", 0),
                 manifestIncluded = content.optBoolean("manifest_included", false)

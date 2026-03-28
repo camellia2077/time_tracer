@@ -15,11 +15,7 @@ internal object RuntimeDataCleanupTargets {
         "$DatabaseFileName-shm",
         "$DatabaseFileName-journal"
     )
-    private val TxtWhitelistRoots = listOf(
-        "input/full",
-        "input/live_raw",
-        "input/live_auto_sync"
-    )
+    private val TxtWhitelistRoots = listOf("input")
 
     fun clearDatabaseData(roots: List<File>): ClearDatabaseResult {
         val existingRoots = roots.filter { it.exists() }
@@ -201,17 +197,13 @@ internal class RuntimeEnvironment(private val context: Context) {
             throw IllegalStateException("Missing config TOML: ${configToml.absolutePath}")
         }
 
-        val fullInput = File(rootDir, "input/full")
-        if (!fullInput.exists()) {
-            fullInput.mkdirs()
+        val inputRoot = File(rootDir, "input")
+        if (!inputRoot.exists()) {
+            inputRoot.mkdirs()
         }
-        val liveRawInput = File(rootDir, "input/live_raw")
-        if (!liveRawInput.exists()) {
-            liveRawInput.mkdirs()
-        }
-        val liveAutoSyncInput = File(rootDir, "input/live_auto_sync")
-        if (!liveAutoSyncInput.exists()) {
-            liveAutoSyncInput.mkdirs()
+        val cacheRoot = File(rootDir, "cache")
+        if (!cacheRoot.exists()) {
+            cacheRoot.mkdirs()
         }
 
         return RuntimePaths(
@@ -219,9 +211,8 @@ internal class RuntimeEnvironment(private val context: Context) {
             outputRoot = outputRoot.absolutePath,
             configRootPath = configRootDir.absolutePath,
             configTomlPath = configToml.absolutePath,
-            fullInputPath = fullInput.absolutePath,
-            liveRawInputPath = liveRawInput.absolutePath,
-            liveAutoSyncInputPath = liveAutoSyncInput.absolutePath
+            inputRootPath = inputRoot.absolutePath,
+            cacheRootPath = cacheRoot.absolutePath
         )
     }
 

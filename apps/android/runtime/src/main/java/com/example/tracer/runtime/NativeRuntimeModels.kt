@@ -5,9 +5,8 @@ internal data class RuntimePaths(
     val outputRoot: String,
     val configRootPath: String,
     val configTomlPath: String,
-    val fullInputPath: String,
-    val liveRawInputPath: String,
-    val liveAutoSyncInputPath: String
+    val inputRootPath: String,
+    val cacheRootPath: String
 )
 
 internal data class NativeResponsePayload(

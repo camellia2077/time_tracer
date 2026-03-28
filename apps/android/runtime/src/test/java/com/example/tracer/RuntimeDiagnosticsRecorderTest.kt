@@ -54,9 +54,8 @@ class RuntimeDiagnosticsRecorderTest {
     }
 
     private fun createPaths(root: File): RuntimePaths {
-        val full = File(root, "input/full").apply { mkdirs() }
-        val liveRaw = File(root, "input/live_raw").apply { mkdirs() }
-        val liveAutoSync = File(root, "input/live_auto_sync").apply { mkdirs() }
+        val input = File(root, "input").apply { mkdirs() }
+        val cache = File(root, "cache").apply { mkdirs() }
         val output = File(root, "output").apply { mkdirs() }
         val configRoot = File(root, "config").apply { mkdirs() }
         val db = File(root, "db/time_data.sqlite3").apply {
@@ -72,9 +71,8 @@ class RuntimeDiagnosticsRecorderTest {
             outputRoot = output.absolutePath,
             configRootPath = configRoot.absolutePath,
             configTomlPath = configToml.absolutePath,
-            fullInputPath = full.absolutePath,
-            liveRawInputPath = liveRaw.absolutePath,
-            liveAutoSyncInputPath = liveAutoSync.absolutePath
+            inputRootPath = input.absolutePath,
+            cacheRootPath = cache.absolutePath
         )
     }
 }

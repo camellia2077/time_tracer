@@ -237,7 +237,6 @@ fun registerAboutLibrariesAssetSyncTask(variant: String): TaskProvider<GenerateA
 
 fun registerPackagedAssetsPolicyTask(
     variant: String,
-    expectBundledSeedTxt: Boolean,
 ): TaskProvider<Task> {
     val taskSuffix = variantTaskSuffix(variant)
     val apkDirs =
@@ -248,7 +247,7 @@ fun registerPackagedAssetsPolicyTask(
     return tasks.register("verify${taskSuffix}PackagedAssetsPolicy") {
         group = "verification"
         description =
-            "Verify packaged assets policy for $variant: bundled licenses present and test TXT fixtures policy enforced."
+            "Verify packaged assets policy for $variant: bundled licenses present and no runtime TXT fixtures packaged."
         dependsOn("assemble$taskSuffix")
         doLast {
             val candidateApks =
@@ -286,21 +285,16 @@ fun registerPackagedAssetsPolicyTask(
                     val entry = entries.nextElement()
                     if (
                         !entry.isDirectory &&
-                        entry.name.startsWith("assets/tracer_core/input/full/") &&
+                        entry.name.startsWith("assets/tracer_core/input/") &&
                         entry.name.endsWith(".txt", ignoreCase = true)
                     ) {
                         bundledTxtEntries += entry.name
                     }
                 }
 
-                if (expectBundledSeedTxt && bundledTxtEntries.isEmpty()) {
+                if (bundledTxtEntries.isNotEmpty()) {
                     throw GradleException(
-                        "APK ${targetApk.name} should include debug seed TXT assets, but none were packaged.",
-                    )
-                }
-                if (!expectBundledSeedTxt && bundledTxtEntries.isNotEmpty()) {
-                    throw GradleException(
-                        "APK ${targetApk.name} unexpectedly packaged release TXT fixtures: " +
+                        "APK ${targetApk.name} unexpectedly packaged runtime TXT fixtures: " +
                             bundledTxtEntries.take(5).joinToString(),
                     )
                 }
@@ -314,12 +308,10 @@ val syncReleaseAboutLibrariesAsset = registerAboutLibrariesAssetSyncTask("releas
 val verifyDebugPackagedAssetsPolicy =
     registerPackagedAssetsPolicyTask(
         variant = "debug",
-        expectBundledSeedTxt = true,
     )
 val verifyReleasePackagedAssetsPolicy =
     registerPackagedAssetsPolicyTask(
         variant = "release",
-        expectBundledSeedTxt = false,
     )
 
 androidComponents {

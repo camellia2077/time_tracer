@@ -53,11 +53,14 @@ Boundary rules:
 - Runtime-side diagnostics assembly:
   - `RuntimeDiagnosticsService`
 
-## Debug Seed TXT Assets
+Runtime TXT layout:
 
-- Canonical source:
-  - `test/data/**/*.txt`
-- Debug generated asset root:
-  - `apps/android/runtime/build/generated/tracer/runtime/debug/assets/tracer_core/input/full`
-
-Release builds do not package these seed TXT assets.
+- Canonical runtime input root:
+  - `<filesDir>/tracer_core/input`
+- Managed month files:
+  - `<filesDir>/tracer_core/input/YYYY/YYYY-MM.txt`
+- Temporary validation/staging files:
+  - `<filesDir>/tracer_core/cache`
+- APK assets do not package runtime TXT input files.
+- Runtime TXT content should come only from user-managed import, edit, record,
+  or explicit device-side copy flows.

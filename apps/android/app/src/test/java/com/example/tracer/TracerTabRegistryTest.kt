@@ -174,8 +174,6 @@ private class FakeRuntimeServices(
         rawResponse = """{"ok":true}"""
     )
 
-    override suspend fun ingestFull(): NativeCallResult = initializeRuntime()
-
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
         initializeRuntime()
 
@@ -256,6 +254,12 @@ private class FakeRuntimeServices(
     override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
         ok = true,
         files = emptyList(),
+        message = "ok"
+    )
+
+    override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
+        ok = true,
+        entries = emptyList(),
         message = "ok"
     )
 

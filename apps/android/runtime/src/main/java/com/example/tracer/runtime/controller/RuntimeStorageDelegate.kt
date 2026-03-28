@@ -5,8 +5,21 @@ import kotlinx.coroutines.withContext
 
 internal class RuntimeStorageDelegate(
     private val ensureTextStorage: () -> TextStorage,
-    private val ensureConfigTomlStorage: () -> ConfigTomlStorage
+    private val ensureConfigTomlStorage: () -> ConfigTomlStorage,
+    private val inspectTxtFilesInternal: () -> TxtInspectionResult
 ) {
+    suspend fun inspectTxtFiles(): TxtInspectionResult = withContext(Dispatchers.IO) {
+        try {
+            inspectTxtFilesInternal()
+        } catch (error: Exception) {
+            TxtInspectionResult(
+                ok = false,
+                entries = emptyList(),
+                message = formatNativeFailure("inspect txt failed", error)
+            )
+        }
+    }
+
     suspend fun listTxtFiles(): TxtHistoryListResult = withContext(Dispatchers.IO) {
         try {
             val storage = ensureTextStorage()

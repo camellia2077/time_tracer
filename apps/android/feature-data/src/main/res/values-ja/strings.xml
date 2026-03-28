@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_title_ingestion">データ取り込み</string>
-    <string name="data_action_ingest_full">Full データを取り込む</string>
-    <string name="data_action_import_single_txt">単一 TXT を取り込む</string>
+    <string name="data_action_import_single_txt">TXT フォルダを取り込む</string>
     <string name="data_action_import_single_tracer">単一 TRACER を取り込む</string>
 
     <string name="data_title_tracer_export">完全交換パッケージのエクスポート</string>

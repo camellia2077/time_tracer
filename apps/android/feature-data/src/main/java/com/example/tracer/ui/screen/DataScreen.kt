@@ -42,7 +42,6 @@ private enum class DestructiveAction {
 @Composable
 fun DataManagementSection(
     modifier: Modifier = Modifier,
-    onIngestFull: () -> Unit,
     onImportSingleTxt: () -> Unit,
     onImportSingleTracer: () -> Unit,
     canExportAllMonthsTracer: Boolean,
@@ -89,15 +88,6 @@ fun DataManagementSection(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-
-                    Button(
-                        onClick = onIngestFull,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(Icons.Filled.Refresh, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(R.string.data_action_ingest_full))
-                    }
 
                     Button(
                         onClick = onImportSingleTxt,

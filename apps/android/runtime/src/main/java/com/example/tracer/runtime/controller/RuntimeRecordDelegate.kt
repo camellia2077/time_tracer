@@ -7,45 +7,27 @@ import java.io.File
 internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
-    private val rawRecordStore: LiveRawRecordStore,
+    private val rawRecordStore: InputRecordStore,
     private val responseCodec: NativeResponseCodec,
     private val recordTranslator: NativeRecordTranslator,
+    private val inspectTxtFilesInternal: () -> TxtInspectionResult,
     private val executeAfterInit: (
         operationName: String,
         action: (RuntimePaths) -> String
     ) -> NativeCallResult,
     private val nativeValidateStructure: (inputPath: String) -> String,
     private val nativeValidateLogic: (inputPath: String, dateCheckMode: Int) -> String,
-    private val nativeIngest: (
+    private val nativeIngestSingleTxtReplaceMonth: (
         inputPath: String,
         dateCheckMode: Int,
         saveProcessedOutput: Boolean
     ) -> String,
-    private val syncLiveOperation: (RuntimePaths) -> String
+    private val nativeClearTxtIngestSyncStatus: () -> String
 ) {
-    // Design intent – TXT month file creation:
-    //
-    // 1. Release builds do not bundle test TXT data. New users arrive with empty
-    //    input/full/ and input/live_raw/ directories, leaving the TXT Editor tab
-    //    in a "Select File" empty state. This create-month flow lets them
-    //    bootstrap their first TXT without leaving the editor.
-    //
-    // 2. The generated file contains mandatory header lines (yYYYY, mMM).
-    //    Business logic resolves a TXT's logical date from these header lines,
-    //    not from the filename. Omitting them would break month identification.
-    //
-    // 3. Day markers (e.g. 0322) are intentionally NOT pre-generated.
-    //    - The Record Input flow auto-creates day blocks on demand via
-    //      LiveRawRecordPersistence.appendNewDayBlock().
-    //    - Pre-generating all 28-31 day markers would produce empty noise
-    //      blocks for days with no activity.
-    //    - DAY editor mode is designed to edit existing blocks only; it does
-    //      not need empty placeholders.
-
     suspend fun createCurrentMonthTxt(): RecordActionResult = withContext(Dispatchers.IO) {
         try {
             val paths = ensureRuntimePaths()
-            val result = rawRecordStore.ensureCurrentMonthFile(paths.liveRawInputPath)
+            val result = rawRecordStore.ensureCurrentMonthFile(paths.inputRootPath)
             RecordActionResult(
                 ok = true,
                 message = "Created month TXT -> ${result.monthFile.name}" +
@@ -74,7 +56,7 @@ internal class RuntimeRecordDelegate(
                 )
             }
             val paths = ensureRuntimePaths()
-            val result = rawRecordStore.ensureMonthFile(paths.liveRawInputPath, year, monthValue)
+            val result = rawRecordStore.ensureMonthFile(paths.inputRootPath, year, monthValue)
             RecordActionResult(
                 ok = true,
                 message = "Created month TXT -> ${result.monthFile.name}" +
@@ -105,9 +87,7 @@ internal class RuntimeRecordDelegate(
 
     suspend fun syncLiveToDatabase(): NativeCallResult = withContext(Dispatchers.IO) {
         try {
-            executeAfterInit("native_sync_live_to_database") { paths ->
-                syncLiveOperation(paths)
-            }
+            runSyncLiveToDatabaseInternal()
         } catch (error: Exception) {
             buildNativeCallFailure(prefix = "syncLiveToDatabase failed", error = error)
         }
@@ -115,26 +95,38 @@ internal class RuntimeRecordDelegate(
 
     suspend fun saveTxtFileAndSync(relativePath: String, content: String): RecordActionResult =
         withContext(Dispatchers.IO) {
+            var validationCandidateFile: File? = null
             try {
-                ensureRuntimePaths()
+                val paths = ensureRuntimePaths()
                 val storage = ensureTextStorage()
-                val saveResult = storage.writeTxtFile(relativePath = relativePath, content = content)
-                if (!saveResult.ok) {
+                val canonicalRelativePath = resolveCanonicalTxtRelativePath(paths.inputRootPath, relativePath)
+                    ?: return@withContext RecordActionResult(
+                        ok = false,
+                        message = "save blocked: cannot resolve txt path inside input root."
+                    )
+
+                val canonicalContent = CanonicalTextCodec.canonicalizeText(content)
+                val header = parseTxtMonthHeader(canonicalContent)
+                    ?: return@withContext RecordActionResult(
+                        ok = false,
+                        message = "save blocked: TXT is missing valid yYYYY + mMM headers."
+                    )
+                if (header.canonicalRelativePath != canonicalRelativePath) {
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save failed: ${saveResult.message}"
+                        message = "save blocked: TXT header month resolves to ${header.canonicalRelativePath}, but target path is $canonicalRelativePath."
                     )
                 }
 
-                val sourceTarget = storage.resolveSourceTarget(relativePath)
-                    ?: return@withContext RecordActionResult(
-                        ok = false,
-                        message = "save failed: cannot resolve txt source path."
-                    )
-                val targetInputPath = File(sourceTarget.first, sourceTarget.second).absolutePath
+                validationCandidateFile = File.createTempFile(
+                    "txt_edit_validate_",
+                    ".txt",
+                    File(paths.cacheRootPath).apply { mkdirs() }
+                )
+                CanonicalTextCodec.writeFile(validationCandidateFile, canonicalContent)
 
                 val structureCheckResult = executeAfterInit("native_validate_structure") {
-                    nativeValidateStructure(targetInputPath)
+                    nativeValidateStructure(validationCandidateFile.absolutePath)
                 }
                 extractNativeStageFailure(
                     result = structureCheckResult,
@@ -142,13 +134,13 @@ internal class RuntimeRecordDelegate(
                 )?.let { failureMessage ->
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save ok, $failureMessage",
+                        message = "save blocked, $failureMessage",
                         operationId = structureCheckResult.operationId
                     )
                 }
 
                 val logicCheckResult = executeAfterInit("native_validate_logic") {
-                    nativeValidateLogic(targetInputPath, NativeBridge.DATE_CHECK_CONTINUITY)
+                    nativeValidateLogic(validationCandidateFile.absolutePath, NativeBridge.DATE_CHECK_CONTINUITY)
                 }
                 extractNativeStageFailure(
                     result = logicCheckResult,
@@ -156,13 +148,29 @@ internal class RuntimeRecordDelegate(
                 )?.let { failureMessage ->
                     return@withContext RecordActionResult(
                         ok = false,
-                        message = "save ok, $failureMessage",
+                        message = "save blocked, $failureMessage",
                         operationId = logicCheckResult.operationId
                     )
                 }
 
+                val saveResult = storage.writeTxtFile(
+                    relativePath = canonicalRelativePath,
+                    content = canonicalContent
+                )
+                if (!saveResult.ok) {
+                    return@withContext RecordActionResult(
+                        ok = false,
+                        message = "save failed: ${saveResult.message}"
+                    )
+                }
+
+                val targetInputPath = File(paths.inputRootPath, canonicalRelativePath).absolutePath
                 val syncResult = executeAfterInit("native_reimport_txt") {
-                    nativeIngest(targetInputPath, NativeBridge.DATE_CHECK_CONTINUITY, false)
+                    nativeIngestSingleTxtReplaceMonth(
+                        targetInputPath,
+                        NativeBridge.DATE_CHECK_CONTINUITY,
+                        false
+                    )
                 }
                 extractNativeStageFailure(
                     result = syncResult,
@@ -182,6 +190,8 @@ internal class RuntimeRecordDelegate(
                 )
             } catch (error: Exception) {
                 buildRecordActionFailure(prefix = "save txt failed", error = error)
+            } finally {
+                validationCandidateFile?.delete()
             }
         }
 
@@ -192,7 +202,6 @@ internal class RuntimeRecordDelegate(
         preferredTxtPath: String?
     ): RecordActionResult {
         val paths = ensureRuntimePaths()
-        val storage = ensureTextStorage()
         val logicalDateResult = parseLogicalDate(targetDateIso)
         if (!logicalDateResult.ok || logicalDateResult.date == null) {
             return RecordActionResult(
@@ -201,6 +210,7 @@ internal class RuntimeRecordDelegate(
             )
         }
         val logicalDate = logicalDateResult.date
+        val logicalMonth = logicalDate.substring(0, 7)
 
         val normalizedActivity = rawRecordStore.normalizeActivityName(activityName)
         if (normalizedActivity.isEmpty()) {
@@ -209,18 +219,39 @@ internal class RuntimeRecordDelegate(
                 message = "Activity name is empty."
             )
         }
+
+        val inspection = inspectTxtFilesInternal()
+        if (!inspection.ok) {
+            return RecordActionResult(
+                ok = false,
+                message = inspection.message
+            )
+        }
+
+        val validatedTarget = validateRecordTarget(
+            paths = paths,
+            logicalMonth = logicalMonth,
+            preferredTxtPath = preferredTxtPath,
+            inspection = inspection
+        )
+        if (validatedTarget.errorMessage != null) {
+            return RecordActionResult(
+                ok = false,
+                message = validatedTarget.errorMessage
+            )
+        }
+
         val normalizedRemark = rawRecordStore.normalizeRemark(remark)
         val target = resolveRecordTarget(
             paths = paths,
-            storage = storage,
             logicalDate = logicalDate,
-            preferredTxtPath = preferredTxtPath
+            preferredTxtPath = validatedTarget.preferredRelativePath
         )
         val createdMonthFile = !target.targetFile.exists()
 
         val snapshot = try {
             rawRecordStore.appendRecord(
-                liveRawInputPath = target.inputPath,
+                inputRootPath = target.inputPath,
                 logicalDateString = logicalDate,
                 activityName = normalizedActivity,
                 remark = normalizedRemark,
@@ -237,7 +268,7 @@ internal class RuntimeRecordDelegate(
             monthFileCreated = createdMonthFile
         )
 
-        val syncResult = syncRecordInput(target.inputPath)
+        val syncResult = syncRecordInput(target.targetFile.absolutePath)
         val failure = buildRecordSyncFailureResult(
             recordSummary = recordSummary,
             syncResult = syncResult,
@@ -254,15 +285,136 @@ internal class RuntimeRecordDelegate(
         )
     }
 
+    private fun runSyncLiveToDatabaseInternal(): NativeCallResult {
+        val inspection = inspectTxtFilesInternal()
+        if (!inspection.ok) {
+            return NativeCallResult(
+                initialized = false,
+                operationOk = false,
+                rawResponse = buildNativeErrorResponseJson(inspection.message)
+            )
+        }
+
+        val blockedEntries = inspection.entries.filterNot { it.canOpen }
+        if (blockedEntries.isNotEmpty()) {
+            val details = blockedEntries.joinToString(separator = " | ") {
+                "${it.relativePath}: ${it.message}"
+            }
+            return NativeCallResult(
+                initialized = true,
+                operationOk = false,
+                rawResponse = buildNativeErrorResponseJson(
+                    "syncLiveToDatabase blocked by TXT conflicts: $details"
+                )
+            )
+        }
+
+        val clearResult = executeAfterInit("native_clear_txt_ingest_sync_status") {
+            nativeClearTxtIngestSyncStatus()
+        }
+        if (!clearResult.initialized || !clearResult.operationOk) {
+            return clearResult
+        }
+
+        val paths = ensureRuntimePaths()
+        var lastResult = clearResult
+        for (entry in inspection.entries.filter { it.canOpen }.sortedBy { it.relativePath }) {
+            val targetInputPath = File(paths.inputRootPath, entry.relativePath).absolutePath
+            lastResult = executeAfterInit("native_ingest_single_txt_replace_month") {
+                nativeIngestSingleTxtReplaceMonth(
+                    targetInputPath,
+                    NativeBridge.DATE_CHECK_CONTINUITY,
+                    false
+                )
+            }
+            if (!lastResult.initialized || !lastResult.operationOk) {
+                return lastResult
+            }
+        }
+
+        return lastResult
+    }
+
     private fun syncRecordInput(inputPath: String): NativeCallResult {
         return executeAfterInit("native_record_sync_ingest") {
-            nativeIngest(inputPath, NativeBridge.DATE_CHECK_NONE, false)
+            nativeIngestSingleTxtReplaceMonth(inputPath, NativeBridge.DATE_CHECK_NONE, false)
         }
     }
 
+    private fun validateRecordTarget(
+        paths: RuntimePaths,
+        logicalMonth: String,
+        preferredTxtPath: String?,
+        inspection: TxtInspectionResult
+    ): ValidatedRecordTarget {
+        val inspectionByPath = inspection.entries.associateBy { it.relativePath.replace('\\', '/') }
+        if (!preferredTxtPath.isNullOrBlank()) {
+            val preferredRelativePath = resolveCanonicalTxtRelativePath(paths.inputRootPath, preferredTxtPath)
+                ?: return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Selected TXT path is outside input root. Refresh TXT list and try again."
+                )
+            val entry = inspectionByPath[preferredRelativePath]
+                ?: return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Selected TXT file no longer exists. Refresh TXT list and try again."
+                )
+            if (!entry.canOpen) {
+                return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Selected TXT cannot be opened: ${entry.message} Refresh TXT list and try again."
+                )
+            }
+            if (entry.headerMonth != logicalMonth) {
+                return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Selected TXT month ${entry.headerMonth ?: "unknown"} does not match logical date month $logicalMonth. Refresh TXT list and try again."
+                )
+            }
+            return ValidatedRecordTarget(
+                preferredRelativePath = preferredRelativePath,
+                errorMessage = null
+            )
+        }
+
+        val defaultRelativePath = buildMonthRelativePath(logicalMonth)
+        val monthEntries = inspection.entries.filter { it.headerMonth == logicalMonth }
+        val blockingMonthEntry = monthEntries.firstOrNull { !it.canOpen }
+        if (blockingMonthEntry != null) {
+            return ValidatedRecordTarget(
+                preferredRelativePath = null,
+                errorMessage = "Target month $logicalMonth is blocked: ${blockingMonthEntry.message}"
+            )
+        }
+
+        val entry = inspectionByPath[defaultRelativePath]
+        if (entry != null) {
+            if (!entry.canOpen) {
+                return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Target TXT cannot be opened: ${entry.message}"
+                )
+            }
+            if (entry.headerMonth != logicalMonth) {
+                return ValidatedRecordTarget(
+                    preferredRelativePath = null,
+                    errorMessage = "Target TXT month ${entry.headerMonth ?: "unknown"} does not match logical date month $logicalMonth."
+                )
+            }
+        }
+
+        return ValidatedRecordTarget(
+            preferredRelativePath = null,
+            errorMessage = null
+        )
+    }
+
     private fun extractNativeStageFailure(result: NativeCallResult, stage: String): String? {
-        // Android surfaces native validation failures directly in UI and should
-        // not depend on any sidecar error-report files being readable locally.
         return recordTranslator.extractStageFailure(result, stage)
     }
+
+    private data class ValidatedRecordTarget(
+        val preferredRelativePath: String?,
+        val errorMessage: String?
+    )
 }

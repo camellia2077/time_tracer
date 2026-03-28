@@ -40,6 +40,7 @@ class RuntimeTracerExchangeServiceTest {
                         .toString()
                 )
             },
+            nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { _, _ -> error("unused") },
             setProgressListener = { progressListener = it }
@@ -68,11 +69,82 @@ class RuntimeTracerExchangeServiceTest {
     }
 
     @Test
+    fun exportTracerExchangeFromPayload_success_mapsContentAndRequest() = runBlocking {
+        var progressListener: ((String) -> Unit)? = null
+        val service = RuntimeTracerExchangeService(
+            responseCodec = NativeResponseCodec(),
+            nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
+            nativeExportTracerExchangeFromPayloadJson = { requestJson, outputFd ->
+                assertEquals(37, outputFd)
+                val request = JSONObject(requestJson)
+                assertEquals("data", request.getString("logical_source_root_name"))
+                assertEquals("data.tracer", request.getString("output_display_name"))
+                assertEquals("secret", request.getString("passphrase"))
+                assertEquals("moderate", request.getString("security_level"))
+                assertEquals(NativeBridge.DATE_CHECK_CONTINUITY, request.getInt("date_check_mode"))
+                val payloadItems = request.getJSONArray("payload_items")
+                assertEquals(1, payloadItems.length())
+                val payload = payloadItems.getJSONObject(0)
+                assertEquals("2026/2026-03.txt", payload.getString("relative_path_hint"))
+                assertTrue(payload.getString("content").contains("y2026"))
+                progressListener?.invoke(
+                    buildProgressJson(
+                        operation = "encrypt",
+                        phase = "write_output",
+                        currentFileDoneBytes = 64L,
+                        currentFileTotalBytes = 64L,
+                        overallDoneBytes = 64L,
+                        overallTotalBytes = 64L
+                    )
+                )
+                buildNativeOkResponse(
+                    JSONObject()
+                        .put("output_path", "data.tracer")
+                        .put("source_root_name", "data")
+                        .put("payload_file_count", 1)
+                        .put("converter_file_count", 3)
+                        .put("manifest_included", true)
+                        .toString()
+                )
+            },
+            nativeImportTracerExchange = { _, _, _ -> error("unused") },
+            nativeInspectTracerExchange = { _, _ -> error("unused") },
+            setProgressListener = { progressListener = it }
+        )
+
+        val progressEvents = mutableListOf<FileCryptoProgressEvent>()
+        val result = service.exportTracerExchangeFromPayload(
+            payloads = listOf(
+                TracerExchangePayloadItem(
+                    relativePathHint = "2026/2026-03.txt",
+                    content = "y2026\nm03\n0301\n0600 study\n"
+                )
+            ),
+            outputFd = 37,
+            passphrase = "secret",
+            securityLevel = FileCryptoSecurityLevel.MODERATE,
+            dateCheckMode = NativeBridge.DATE_CHECK_CONTINUITY,
+            onProgress = progressEvents::add
+        )
+
+        assertTrue(result.ok)
+        assertEquals("data.tracer", result.outputPath)
+        assertEquals("data", result.sourceRootName)
+        assertEquals(1, result.payloadFileCount)
+        assertEquals(3, result.converterFileCount)
+        assertTrue(result.manifestIncluded)
+        assertEquals(1, progressEvents.size)
+        assertEquals(FileCryptoPhase.WRITE_OUTPUT, progressEvents.single().phase)
+        assertNull(progressListener)
+    }
+
+    @Test
     fun importTracerExchange_success_mapsConfigFields() = runBlocking {
         var progressListener: ((String) -> Unit)? = null
         val service = RuntimeTracerExchangeService(
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
+            nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
             nativeImportTracerExchange = { inputPath, workRoot, passphrase ->
                 assertEquals("bundle.tracer", inputPath)
                 assertEquals("work/root", workRoot)
@@ -137,6 +209,7 @@ class RuntimeTracerExchangeServiceTest {
         val service = RuntimeTracerExchangeService(
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
+            nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { inputPath, passphrase ->
                 assertEquals("bundle.tracer", inputPath)
@@ -177,6 +250,7 @@ class RuntimeTracerExchangeServiceTest {
         val service = RuntimeTracerExchangeService(
             responseCodec = NativeResponseCodec(),
             nativeExportTracerExchange = { _, _, _, _, _ -> error("unused") },
+            nativeExportTracerExchangeFromPayloadJson = { _, _ -> error("unused") },
             nativeImportTracerExchange = { _, _, _ -> error("unused") },
             nativeInspectTracerExchange = { _, _ -> error("unused") },
             setProgressListener = {}

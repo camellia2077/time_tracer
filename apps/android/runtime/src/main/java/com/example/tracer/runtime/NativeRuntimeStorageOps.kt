@@ -17,7 +17,7 @@ internal fun ensureRuntimePathsCached(
 internal fun ensureTextStorageCached(
     existing: TextStorage?,
     runtimePathsProvider: () -> RuntimePaths,
-    rawRecordStore: LiveRawRecordStore,
+    rawRecordStore: InputRecordStore,
     onPrepared: (TextStorage) -> Unit
 ): TextStorage {
     if (existing != null) {
@@ -25,9 +25,8 @@ internal fun ensureTextStorageCached(
     }
 
     val paths = runtimePathsProvider()
-    val created = MultiInputTextStorage(
-        fullInputPath = paths.fullInputPath,
-        liveRawInputPath = paths.liveRawInputPath,
+    val created = CanonicalInputTextStorage(
+        inputRootPath = paths.inputRootPath,
         recordStore = rawRecordStore
     )
     onPrepared(created)

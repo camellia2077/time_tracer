@@ -18,6 +18,25 @@ interface TracerExchangeGateway {
         manifestIncluded = false
     )
 
+    suspend fun exportTracerExchangeFromPayload(
+        payloads: List<TracerExchangePayloadItem>,
+        outputFd: Int,
+        passphrase: String,
+        securityLevel: FileCryptoSecurityLevel = FileCryptoSecurityLevel.INTERACTIVE,
+        dateCheckMode: Int = 0,
+        logicalSourceRootName: String = "data",
+        outputDisplayName: String = "data.tracer",
+        onProgress: ((FileCryptoProgressEvent) -> Unit)? = null
+    ): TracerExchangeExportResult = TracerExchangeExportResult(
+        ok = false,
+        message = "Complete exchange package export is not supported by current runtime.",
+        outputPath = "",
+        sourceRootName = "",
+        payloadFileCount = 0,
+        converterFileCount = 0,
+        manifestIncluded = false
+    )
+
     suspend fun importTracerExchange(
         inputPath: String,
         workRoot: String,

@@ -36,6 +36,16 @@ Open additional docs only when needed:
 - Activity doc rules:
   - `docs/time_tracer/presentation/android/specs/DOC_RULES.md`
 
+## Exchange Docs
+
+Open these when the task is specifically about Android tracer exchange export /
+import, TXT import-export behavior, or SAF/document/fd export behavior:
+
+1. `docs/time_tracer/presentation/android/reference/data-import-export.md`
+2. `docs/time_tracer/presentation/android/runtime-protocol.md`
+3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+4. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+
 ## Hard Rules
 
 - Shared config source of truth is `assets/tracer_core/config`.

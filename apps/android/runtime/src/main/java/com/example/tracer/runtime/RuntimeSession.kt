@@ -2,7 +2,7 @@ package com.example.tracer
 
 internal class RuntimeSession(
     private val runtimeEnvironment: RuntimeEnvironment,
-    private val rawRecordStore: LiveRawRecordStore
+    private val rawRecordStore: InputRecordStore
 ) {
     private var runtimePaths: RuntimePaths? = null
     private var textStorage: TextStorage? = null

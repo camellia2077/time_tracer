@@ -101,3 +101,73 @@ internal fun resolveOrCreateDocumentForOverwrite(
         )
     }.getOrNull()
 }
+
+internal data class TreeTextDocument(
+    val documentUri: Uri,
+    val relativePath: String
+)
+
+internal fun listTextDocumentsRecursively(
+    contentResolver: ContentResolver,
+    treeUri: Uri
+): List<TreeTextDocument> {
+    val rootDocumentId = runCatching {
+        DocumentsContract.getTreeDocumentId(treeUri)
+    }.getOrNull() ?: return emptyList()
+    val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, rootDocumentId)
+    val output = mutableListOf<TreeTextDocument>()
+    collectTextDocumentsRecursively(
+        contentResolver = contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = rootDocumentUri,
+        currentRelativeDir = "",
+        output = output
+    )
+    return output.sortedBy { it.relativePath }
+}
+
+private fun collectTextDocumentsRecursively(
+    contentResolver: ContentResolver,
+    treeUri: Uri,
+    parentDocumentUri: Uri,
+    currentRelativeDir: String,
+    output: MutableList<TreeTextDocument>
+) {
+    val children = listDirectChildDocuments(
+        contentResolver = contentResolver,
+        treeUri = treeUri,
+        parentDocumentUri = parentDocumentUri
+    )
+    for (child in children) {
+        val childDocumentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, child.documentId)
+        if (child.mimeType == DocumentsContract.Document.MIME_TYPE_DIR) {
+            val nextRelativeDir = if (currentRelativeDir.isBlank()) {
+                child.displayName
+            } else {
+                "$currentRelativeDir/${child.displayName}"
+            }
+            collectTextDocumentsRecursively(
+                contentResolver = contentResolver,
+                treeUri = treeUri,
+                parentDocumentUri = childDocumentUri,
+                currentRelativeDir = nextRelativeDir,
+                output = output
+            )
+            continue
+        }
+
+        if (!child.displayName.endsWith(".txt", ignoreCase = true)) {
+            continue
+        }
+
+        val relativePath = if (currentRelativeDir.isBlank()) {
+            child.displayName
+        } else {
+            "$currentRelativeDir/${child.displayName}"
+        }
+        output += TreeTextDocument(
+            documentUri = childDocumentUri,
+            relativePath = relativePath
+        )
+    }
+}

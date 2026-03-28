@@ -11,7 +11,7 @@ class LiveRawRecordPersistenceTest {
     fun ensureRawMonthFile_createsFileWithExpectedHeaders() {
         val root = Files.createTempDirectory("runtime-persistence-month").toFile()
         try {
-            val target = File(root, "input/live_raw/2026-03.txt")
+            val target = File(root, "input/2026/2026-03.txt")
             val persistence = createPersistence()
 
             persistence.ensureRawMonthFile(target, year = 2026, month = 3)
@@ -27,7 +27,7 @@ class LiveRawRecordPersistenceTest {
     fun ensureRawMonthFile_whenFileExists_keepsOriginalContent() {
         val root = Files.createTempDirectory("runtime-persistence-existing").toFile()
         try {
-            val target = File(root, "input/live_raw/2026-03.txt")
+            val target = File(root, "input/2026/2026-03.txt")
             target.parentFile?.mkdirs()
             target.writeText("y2024\nm11\n0101\n0800work\n")
             val original = target.readText()

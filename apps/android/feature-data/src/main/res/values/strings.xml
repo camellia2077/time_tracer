@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_title_ingestion">Data Ingestion</string>
-    <string name="data_action_ingest_full">Ingest Full Data</string>
-    <string name="data_action_import_single_txt">Import Single TXT</string>
+    <string name="data_action_import_single_txt">Import TXT Folder</string>
     <string name="data_action_import_single_tracer">Import Single TRACER</string>
 
     <string name="data_title_tracer_export">Complete Exchange Package Export</string>

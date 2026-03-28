@@ -45,24 +45,32 @@ internal fun parseLogicalDate(targetDateIso: String?): LogicalDateParseResult {
 
 internal fun resolveRecordTarget(
     paths: RuntimePaths,
-    storage: TextStorage,
     logicalDate: String,
     preferredTxtPath: String?
 ): RecordTarget {
-    val resolvedSourceTarget = preferredTxtPath?.let { storage.resolveSourceTarget(it) }
-    val targetInputPath = resolvedSourceTarget?.first ?: paths.liveRawInputPath
-    val preferredInnerPath = resolvedSourceTarget?.second
-    val targetMonthFileName = "${logicalDate.substring(0, 7)}.txt"
+    val preferredInnerPath = preferredTxtPath?.let {
+        resolveCanonicalTxtRelativePath(paths.inputRootPath, it)
+    }
+    val targetMonthFileName = buildMonthRelativePath(logicalDate.substring(0, 7))
     val targetFile = if (preferredInnerPath.isNullOrBlank()) {
-        java.io.File(targetInputPath, targetMonthFileName)
+        java.io.File(paths.inputRootPath, targetMonthFileName)
     } else {
-        java.io.File(targetInputPath, preferredInnerPath)
+        java.io.File(paths.inputRootPath, preferredInnerPath)
     }
     return RecordTarget(
-        inputPath = targetInputPath,
+        inputPath = paths.inputRootPath,
         preferredInnerPath = preferredInnerPath,
         targetFile = targetFile
     )
+}
+
+internal fun buildMonthRelativePath(monthKey: String): String {
+    val normalized = monthKey.trim()
+    require(Regex("""^\d{4}-\d{2}$""").matches(normalized)) {
+        "Invalid month key: $monthKey"
+    }
+    val year = normalized.substring(0, 4)
+    return "$year/$normalized.txt"
 }
 
 internal fun buildRecordSyncFailureResult(

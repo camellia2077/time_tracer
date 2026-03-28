@@ -6,32 +6,31 @@ import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
-internal class LiveRawRecordStore {
+internal class InputRecordStore {
     private val appMonthFileFormatter = SimpleDateFormat("yyyy-MM", Locale.US)
     private val dayMarkerFormatter = SimpleDateFormat("MMdd", Locale.US)
     private val hhmmFormatter = SimpleDateFormat("HHmm", Locale.US)
-    private val txtFileStore = LiveRawTxtFileStore()
+    private val txtFileStore = InputTxtFileStore()
     private val normalization = LiveRawRecordNormalization()
     private val parsing = LiveRawRecordParsing(normalization)
     private val persistence = LiveRawRecordPersistence(parsing)
 
-    fun ensureCurrentMonthFile(liveRawInputPath: String): EnsureMonthFileResult {
+    fun ensureCurrentMonthFile(inputRootPath: String): EnsureMonthFileResult {
         val cal = Calendar.getInstance()
         return ensureMonthFile(
-            liveRawInputPath = liveRawInputPath,
+            inputRootPath = inputRootPath,
             year = cal.get(Calendar.YEAR),
             month = cal.get(Calendar.MONTH) + 1
         )
     }
 
     fun ensureMonthFile(
-        liveRawInputPath: String,
+        inputRootPath: String,
         year: Int,
         month: Int
     ): EnsureMonthFileResult {
         require(month in 1..12) { "Month must be between 1 and 12." }
-        val monthFileName = String.format(Locale.US, "%04d-%02d.txt", year, month)
-        val monthFile = File(liveRawInputPath, monthFileName)
+        val monthFile = File(inputRootPath, buildMonthRelativePath(String.format(Locale.US, "%04d-%02d", year, month)))
         val created = !monthFile.exists()
         ensureRawMonthFile(monthFile, year, month)
         return EnsureMonthFileResult(monthFile = monthFile, created = created)
@@ -46,7 +45,7 @@ internal class LiveRawRecordStore {
     }
 
     fun appendRecord(
-        liveRawInputPath: String,
+        inputRootPath: String,
         logicalDateString: String, // Expected YYYY-MM-DD
         activityName: String,
         remark: String,
@@ -59,7 +58,7 @@ internal class LiveRawRecordStore {
         val dayMarker = dayMarkerFormatter.format(logicalDate)
         val eventTime = hhmmFormatter.format(now)
         val monthFile = resolveTargetMonthFile(
-            liveRawInputPath = liveRawInputPath,
+            inputRootPath = inputRootPath,
             logicalDate = logicalDate,
             preferredRelativePath = preferredRelativePath
         )
@@ -100,12 +99,12 @@ internal class LiveRawRecordStore {
     }
 
     private fun resolveTargetMonthFile(
-        liveRawInputPath: String,
+        inputRootPath: String,
         logicalDate: Date,
         preferredRelativePath: String?
     ): File {
         if (!preferredRelativePath.isNullOrBlank()) {
-            val root = File(liveRawInputPath).canonicalFile
+            val root = File(inputRootPath).canonicalFile
             val candidate = File(root, preferredRelativePath.trim()).canonicalFile
             val relative = candidate.relativeToOrNull(root)
             if (relative != null &&
@@ -115,20 +114,19 @@ internal class LiveRawRecordStore {
             }
         }
 
-        val monthFileName = "${appMonthFileFormatter.format(logicalDate)}.txt"
-        return File(liveRawInputPath, monthFileName)
+        return File(inputRootPath, buildMonthRelativePath(appMonthFileFormatter.format(logicalDate)))
     }
 
-    fun listTxtFiles(liveRawInputPath: String): TxtHistoryListResult {
-        return txtFileStore.listTxtFiles(liveRawInputPath)
+    fun listTxtFiles(inputRootPath: String): TxtHistoryListResult {
+        return txtFileStore.listTxtFiles(inputRootPath)
     }
 
-    fun readTxtFile(liveRawInputPath: String, relativePath: String): TxtFileContentResult {
-        return txtFileStore.readTxtFile(liveRawInputPath, relativePath)
+    fun readTxtFile(inputRootPath: String, relativePath: String): TxtFileContentResult {
+        return txtFileStore.readTxtFile(inputRootPath, relativePath)
     }
 
-    fun writeTxtFile(liveRawInputPath: String, relativePath: String, content: String): TxtFileContentResult {
-        return txtFileStore.writeTxtFile(liveRawInputPath, relativePath, content)
+    fun writeTxtFile(inputRootPath: String, relativePath: String, content: String): TxtFileContentResult {
+        return txtFileStore.writeTxtFile(inputRootPath, relativePath, content)
     }
 
     private fun buildRawEventLine(hhmm: String, activity: String, remark: String): String {

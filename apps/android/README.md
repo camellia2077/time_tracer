@@ -66,6 +66,20 @@ Open only when needed:
 - Behavior reference:
   - `docs/time_tracer/presentation/android/features.md`
 
+## Exchange Docs
+
+Open these when the task touches Android-side tracer exchange export/import,
+TXT import/export flow, or SAF/document/fd export behavior:
+
+- Android import/export behavior:
+  - `docs/time_tracer/presentation/android/reference/data-import-export.md`
+- Android runtime payload/protocol surface:
+  - `docs/time_tracer/presentation/android/runtime-protocol.md`
+- Core tracer exchange package contract:
+  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+- Core runtime crypto JSON contract:
+  - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+
 ## Boundary Notes
 
 - Android `app` wiring should inject the smallest gateway interface a route needs.

@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="data_title_ingestion">数据导入</string>
-    <string name="data_action_ingest_full">导入 Full 数据</string>
-    <string name="data_action_import_single_txt">导入单个 TXT</string>
+    <string name="data_action_import_single_txt">导入 TXT 文件夹</string>
     <string name="data_action_import_single_tracer">导入单个 TRACER</string>
 
     <string name="data_title_tracer_export">完整交换包导出</string>

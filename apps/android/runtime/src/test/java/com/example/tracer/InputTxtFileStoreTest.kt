@@ -7,7 +7,7 @@ import org.junit.Test
 import java.io.File
 import java.nio.file.Files
 
-class LiveRawTxtFileStoreTest {
+class InputTxtFileStoreTest {
     @Test
     fun readTxtFile_canonicalizesLegacyUtf8Text() {
         val root = Files.createTempDirectory("live-raw-txt-store").toFile()
@@ -33,7 +33,7 @@ class LiveRawTxtFileStoreTest {
                 )
             )
 
-            val result = LiveRawTxtFileStore().readTxtFile(root.absolutePath, "2026/2026-03.txt")
+            val result = InputTxtFileStore().readTxtFile(root.absolutePath, "2026/2026-03.txt")
 
             assertTrue(result.ok)
             assertEquals("y2026\nm03\n", result.content)
@@ -49,7 +49,7 @@ class LiveRawTxtFileStoreTest {
             val target = File(root, "broken.txt")
             target.writeBytes(byteArrayOf(0xFF.toByte()))
 
-            val result = LiveRawTxtFileStore().readTxtFile(root.absolutePath, "broken.txt")
+            val result = InputTxtFileStore().readTxtFile(root.absolutePath, "broken.txt")
 
             assertFalse(result.ok)
             assertTrue(result.message.contains("Invalid UTF-8"))
@@ -62,12 +62,13 @@ class LiveRawTxtFileStoreTest {
     fun writeTxtFile_rewritesContentAsCanonicalUtf8() {
         val root = Files.createTempDirectory("live-raw-txt-store-write").toFile()
         try {
-            val target = File(root, "2026-03.txt")
+            val target = File(root, "2026/2026-03.txt")
+            target.parentFile?.mkdirs()
             target.writeText("seed")
 
-            val result = LiveRawTxtFileStore().writeTxtFile(
-                liveRawInputPath = root.absolutePath,
-                relativePath = "2026-03.txt",
+            val result = InputTxtFileStore().writeTxtFile(
+                inputRootPath = root.absolutePath,
+                relativePath = "2026/2026-03.txt",
                 content = "\uFEFFy2026\r\nm03\r"
             )
 

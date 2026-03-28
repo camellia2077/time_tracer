@@ -120,7 +120,7 @@ fun TracerScreen(
         tracerExchangeGateway = tracerExchangeGateway,
         recordViewModel = recordViewModel
     )
-    val importSingleTxtAction = rememberTracerSingleTxtImportAction(
+    val importSingleTxtAction = rememberTracerTxtFolderImportAction(
         context = context,
         coroutineScope = coroutineScope,
         dataViewModel = dataViewModel,

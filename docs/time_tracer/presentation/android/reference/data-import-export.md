@@ -25,16 +25,20 @@ Capture the user-visible behavior and core data flow for Data-tab import and exp
   - stages it in app cache
   - requests a passphrase
   - imports through the TRACER exchange runtime path
+  - native import decrypts the package, validates packaged converter TOML,
+    builds an effective canonical TXT view, runs TXT structure validation,
+    then runs TXT logic validation with the imported converter config before
+    replacing managed files and rebuilding the database
 - `Export Complete Exchange Package`
   - selects a destination tree
-  - collects managed TXT and config payloads
+  - collects managed TXT payloads in memory
   - requests a passphrase
-  - exports one complete `.tracer` package
+  - exports one complete `.tracer` package through a native fd sink
 
 ## Core Data Flow
 
-- App route helpers own picker flow, staging, status updates, and transfer skeleton behavior.
-- Runtime owns exchange import/export execution and payload validation.
+- App route helpers own picker flow, SAF target resolution, status updates, and transfer skeleton behavior.
+- Runtime owns exchange import/export execution, payload validation, package assembly, and native output writing.
 - Record-side UI state owns crypto progress presentation.
 
 ## First Code Entry Points

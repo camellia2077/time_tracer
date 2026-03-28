@@ -5,7 +5,6 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import java.io.File
 
 internal data class TracerBatchCryptoExportResult(
     val message: String,
@@ -13,9 +12,8 @@ internal data class TracerBatchCryptoExportResult(
 )
 
 private const val TRACER_EXCHANGE_EXPORT_ROOT_NAME = "data"
-private const val TRACER_EXCHANGE_STAGE_COUNT = 5
-private const val TRACER_EXCHANGE_CONVERTER_FILE_COUNT = 3
-private const val TRACER_EXCHANGE_MANIFEST_FILE_COUNT = 1
+private const val TRACER_EXCHANGE_EXPORT_FILE_NAME = "data.tracer"
+private const val TRACER_EXCHANGE_STAGE_COUNT = 2
 
 // Android only exposes complete exchange package export to users.
 // Do not reintroduce TXT-only or TOML-only export flows here.
@@ -81,211 +79,127 @@ internal suspend fun exportAllMonthsTracerToTree(
             )
         }
 
-        val stagingSessionRoot = buildTracerExchangeExportSessionRoot(context)
-        try {
-            val stagedInputRoot = File(stagingSessionRoot, TRACER_EXCHANGE_EXPORT_ROOT_NAME)
-            updateTracerExchangeStageProgress(
+        val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
+        val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+            treeUri,
+            treeDocumentId
+        )
+        val outputUri = resolveOrCreateDocumentForOverwrite(
+            contentResolver = context.contentResolver,
+            treeUri = treeUri,
+            parentDocumentUri = rootDocumentUri,
+            fileName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
+            mimeType = "application/octet-stream"
+        )
+        if (outputUri == null) {
+            progressStatusText = failedText
+            return@runCatching buildTracerExchangeExportSummary(
                 context = context,
-                recordViewModel = recordViewModel,
-                phaseText = context.getString(R.string.tracer_progress_phase_collect_config),
-                overallProgress = 0.4f,
-                overallText = buildStageOverallText(
-                    context = context,
-                    stageIndex = 2,
-                    stageCount = TRACER_EXCHANGE_STAGE_COUNT,
-                    detail = context.getString(
-                        R.string.tracer_progress_detail_collect_config,
-                        TRACER_EXCHANGE_CONVERTER_FILE_COUNT,
-                        TRACER_EXCHANGE_CONVERTER_FILE_COUNT
-                    )
-                ),
-                currentText = buildStageCurrentText(
-                    context = context,
-                    label = context.getString(R.string.tracer_progress_phase_collect_config),
-                    progress = 1f
-                ),
-                currentProgress = 1f
-            )
-            updateTracerExchangeStageProgress(
-                context = context,
-                recordViewModel = recordViewModel,
-                phaseText = context.getString(R.string.tracer_progress_phase_generate_manifest),
-                overallProgress = 0.6f,
-                overallText = buildStageOverallText(
-                    context = context,
-                    stageIndex = 3,
-                    stageCount = TRACER_EXCHANGE_STAGE_COUNT,
-                    detail = context.getString(
-                        R.string.tracer_progress_detail_generate_manifest,
-                        TRACER_EXCHANGE_MANIFEST_FILE_COUNT,
-                        TRACER_EXCHANGE_MANIFEST_FILE_COUNT
-                    )
-                ),
-                currentText = buildStageCurrentText(
-                    context = context,
-                    label = context.getString(R.string.tracer_progress_phase_generate_manifest),
-                    progress = 1f
-                ),
-                currentProgress = 1f
-            )
-            stageTracerExchangePayloads(stagedInputRoot, validItems)
-            val stagedOutput = File(stagingSessionRoot, "${stagedInputRoot.name}.tracer")
-
-            val exportResult = tracerExchangeGateway.exportTracerExchange(
-                inputPath = stagedInputRoot.absolutePath,
-                outputPath = stagedOutput.absolutePath,
-                passphrase = passphrase,
-                securityLevel = tracerSecurityLevel,
-                dateCheckMode = NativeBridge.DATE_CHECK_NONE,
-                onProgress = { event ->
-                    val overallProgress = event.overallProgressFraction.coerceIn(0f, 1f)
-                    val currentProgress = event.currentFileProgressFraction.coerceIn(0f, 1f)
-                    runBlocking(Dispatchers.Main) {
-                        recordViewModel.updateCryptoProgress(
-                            event = event,
-                            operationTextOverride = context.getString(
-                                R.string.tracer_progress_operation_export_tracer
-                            ),
-                            phaseTextOverride = context.getString(
-                                R.string.tracer_progress_phase_package_and_encrypt
-                            ),
-                            overallProgressOverride = 0.6f + (overallProgress * 0.3f),
-                            overallTextOverride = buildStageOverallText(
-                                context = context,
-                                stageIndex = 4,
-                                stageCount = TRACER_EXCHANGE_STAGE_COUNT,
-                                detail = context.getString(
-                                    R.string.tracer_progress_detail_package_percent,
-                                    (overallProgress * 100f).toInt()
-                                )
-                            ),
-                            currentTextOverride = buildStageCurrentText(
-                                context = context,
-                                label = stagedOutput.name,
-                                progress = currentProgress
-                            ),
-                            currentProgressOverride = currentProgress
-                        )
-                    }
-                }
-            )
-            if (!exportResult.ok) {
-                progressStatusText = failedText
-                return@runCatching context.getString(
-                    R.string.tracer_export_all_tracer_failed,
-                    exportResult.message
+                exportedTxtCount = 0,
+                totalTxtCount = monthKeys.size,
+                converterFileCount = 0,
+                manifestFileCount = 0,
+                errors = exportItems.errors + context.getString(
+                    R.string.tracer_export_error_create_target_file,
+                    TRACER_EXCHANGE_EXPORT_FILE_NAME
                 )
-            }
-
-            val treeDocumentId = DocumentsContract.getTreeDocumentId(treeUri)
-            val rootDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
-                treeUri,
-                treeDocumentId
             )
-            val exportName = File(exportResult.outputPath).name.ifBlank {
-                "${TRACER_EXCHANGE_EXPORT_ROOT_NAME}.tracer"
-            }
-            val outputUri = resolveOrCreateDocumentForOverwrite(
-                contentResolver = context.contentResolver,
-                treeUri = treeUri,
-                parentDocumentUri = rootDocumentUri,
-                fileName = exportName,
-                mimeType = "application/octet-stream"
-            )
-            if (outputUri == null) {
-                progressStatusText = failedText
-                return@runCatching buildTracerExchangeExportSummary(
-                    context = context,
-                    exportedTxtCount = 0,
-                    totalTxtCount = monthKeys.size,
-                    converterFileCount = 0,
-                    manifestFileCount = 0,
-                    errors = exportItems.errors + context.getString(
-                        R.string.tracer_export_error_create_target_file,
-                        exportName
-                    )
-                )
-            }
+        }
 
-            updateTracerExchangeStageProgress(
+        val detachedOutputFd = runCatching {
+            context.contentResolver.openFileDescriptor(outputUri, "w")?.use { descriptor ->
+                descriptor.detachFd()
+            } ?: error(context.getString(R.string.tracer_export_error_open_output_stream))
+        }.getOrElse {
+            progressStatusText = failedText
+            return@runCatching buildTracerExchangeExportSummary(
                 context = context,
-                recordViewModel = recordViewModel,
-                phaseText = context.getString(R.string.tracer_progress_phase_write_package_output),
-                overallProgress = 0.9f,
-                overallText = buildStageOverallText(
-                    context = context,
-                    stageIndex = 5,
-                    stageCount = TRACER_EXCHANGE_STAGE_COUNT,
-                    detail = context.getString(R.string.tracer_progress_detail_write_percent, 0)
-                ),
-                currentText = buildStageCurrentText(
-                    context = context,
-                    label = exportName,
-                    progress = 0f
-                ),
-                currentProgress = 0f
-            )
-            val writeOk = runCatching {
-                val output = context.contentResolver.openOutputStream(outputUri, "w")
-                    ?: error(context.getString(R.string.tracer_export_error_open_output_stream))
-                output.use { stream ->
-                    stagedOutput.inputStream().use { input ->
-                        input.copyTo(stream)
-                    }
-                }
-            }.isSuccess
-            val summaryErrors = exportItems.errors.toMutableList()
-            if (!writeOk) {
-                summaryErrors += context.getString(
+                exportedTxtCount = 0,
+                totalTxtCount = monthKeys.size,
+                converterFileCount = 0,
+                manifestFileCount = 0,
+                errors = exportItems.errors + context.getString(
                     R.string.tracer_export_error_write_failed,
-                    exportName
+                    TRACER_EXCHANGE_EXPORT_FILE_NAME
                 )
-            } else {
-                updateTracerExchangeStageProgress(
-                    context = context,
-                    recordViewModel = recordViewModel,
-                    phaseText = context.getString(R.string.tracer_progress_status_completed),
-                    overallProgress = 1f,
-                    overallText = buildStageOverallText(
-                        context = context,
-                        stageIndex = 5,
-                        stageCount = TRACER_EXCHANGE_STAGE_COUNT,
-                        detail = context.getString(R.string.tracer_progress_detail_write_percent, 100)
-                    ),
-                    currentText = buildStageCurrentText(
-                        context = context,
-                        label = exportName,
-                        progress = 1f
-                    ),
-                    currentProgress = 1f
-                )
-            }
+            )
+        }
 
-            progressStatusText = when {
-                !writeOk -> failedText
-                summaryErrors.isEmpty() -> completedText
-                else -> partialText
-            }
-            if (writeOk && summaryErrors.isEmpty()) {
-                context.resources.getQuantityString(
-                    R.plurals.tracer_export_all_tracer_success,
-                    exportResult.payloadFileCount,
-                    exportResult.payloadFileCount,
-                    exportResult.converterFileCount,
-                    if (exportResult.manifestIncluded) 1 else 0
+        val exportResult = tracerExchangeGateway.exportTracerExchangeFromPayload(
+            payloads = validItems.map { item ->
+                TracerExchangePayloadItem(
+                    relativePathHint = item.sourceRelativePath,
+                    content = item.content
                 )
-            } else {
-                buildTracerExchangeExportSummary(
-                    context = context,
-                    exportedTxtCount = if (writeOk) exportResult.payloadFileCount else 0,
-                    totalTxtCount = monthKeys.size,
-                    converterFileCount = if (writeOk) exportResult.converterFileCount else 0,
-                    manifestFileCount = if (writeOk && exportResult.manifestIncluded) 1 else 0,
-                    errors = summaryErrors
-                )
+            },
+            outputFd = detachedOutputFd,
+            passphrase = passphrase,
+            securityLevel = tracerSecurityLevel,
+            dateCheckMode = NativeBridge.DATE_CHECK_NONE,
+            logicalSourceRootName = TRACER_EXCHANGE_EXPORT_ROOT_NAME,
+            outputDisplayName = TRACER_EXCHANGE_EXPORT_FILE_NAME,
+            onProgress = { event ->
+                val overallProgress = event.overallProgressFraction.coerceIn(0f, 1f)
+                val currentProgress = event.currentFileProgressFraction.coerceIn(0f, 1f)
+                runBlocking(Dispatchers.Main) {
+                    recordViewModel.updateCryptoProgress(
+                        event = event,
+                        operationTextOverride = context.getString(
+                            R.string.tracer_progress_operation_export_tracer
+                        ),
+                        phaseTextOverride = context.getString(
+                            R.string.tracer_progress_phase_package_and_encrypt
+                        ),
+                        overallProgressOverride = 0.2f + (overallProgress * 0.8f),
+                        overallTextOverride = buildStageOverallText(
+                            context = context,
+                            stageIndex = 2,
+                            stageCount = TRACER_EXCHANGE_STAGE_COUNT,
+                            detail = context.getString(
+                                R.string.tracer_progress_detail_package_percent,
+                                (overallProgress * 100f).toInt()
+                            )
+                        ),
+                        currentTextOverride = buildStageCurrentText(
+                            context = context,
+                            label = TRACER_EXCHANGE_EXPORT_FILE_NAME,
+                            progress = currentProgress
+                        ),
+                        currentProgressOverride = currentProgress
+                    )
+                }
             }
-        } finally {
-            stagingSessionRoot.deleteRecursively()
+        )
+        if (!exportResult.ok) {
+            progressStatusText = failedText
+            return@runCatching context.getString(
+                R.string.tracer_export_all_tracer_failed,
+                exportResult.message
+            )
+        }
+
+        progressStatusText = if (exportItems.errors.isEmpty()) {
+            completedText
+        } else {
+            partialText
+        }
+        if (exportItems.errors.isEmpty()) {
+            context.resources.getQuantityString(
+                R.plurals.tracer_export_all_tracer_success,
+                exportResult.payloadFileCount,
+                exportResult.payloadFileCount,
+                exportResult.converterFileCount,
+                if (exportResult.manifestIncluded) 1 else 0
+            )
+        } else {
+            buildTracerExchangeExportSummary(
+                context = context,
+                exportedTxtCount = exportResult.payloadFileCount,
+                totalTxtCount = monthKeys.size,
+                converterFileCount = exportResult.converterFileCount,
+                manifestFileCount = if (exportResult.manifestIncluded) 1 else 0,
+                errors = exportItems.errors
+            )
         }
     }.getOrElse { error ->
         progressStatusText = failedText
@@ -299,39 +213,6 @@ internal suspend fun exportAllMonthsTracerToTree(
         message = message,
         progressStatusText = progressStatusText
     )
-}
-
-private fun buildTracerExchangeExportSessionRoot(context: Context): File {
-    val sessionRoot = File(
-        context.cacheDir,
-        "time_tracer/export_tracer_exchange/${System.currentTimeMillis()}"
-    )
-    require(sessionRoot.mkdirs()) {
-        "cannot create tracer exchange export staging directory: ${sessionRoot.absolutePath}"
-    }
-    return sessionRoot
-}
-
-private fun stageTracerExchangePayloads(
-    stagedInputRoot: File,
-    items: List<MonthExportItem>
-) {
-    for (item in items) {
-        val yearDir = File(stagedInputRoot, item.exportYear)
-        if (!yearDir.exists()) {
-            require(yearDir.mkdirs()) {
-                "cannot create tracer exchange year directory: ${yearDir.absolutePath}"
-            }
-        }
-
-        val targetFile = File(yearDir, "${item.monthKey}.txt")
-        targetFile.outputStream().use { output ->
-            CanonicalTextCodec.writeOutputStream(
-                output = output,
-                content = item.content
-            )
-        }
-    }
 }
 
 private fun buildTracerExchangeExportSummary(

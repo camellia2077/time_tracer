@@ -35,23 +35,19 @@ class RuntimeDataCleanupTargetsTest {
     @Test
     fun clearTxtData_removesOnlyWhitelistedTxtFiles() {
         val root = Files.createTempDirectory("runtime-clean-txt").toFile()
-        val fullTxt = root.resolve("input/full/2026-03.txt").apply {
+        val monthTxt = root.resolve("input/2026/2026-03.txt").apply {
             parentFile?.mkdirs()
-            writeText("full")
+            writeText("month")
         }
-        val liveRawTxt = root.resolve("input/live_raw/2026-03.txt").apply {
+        val secondMonthTxt = root.resolve("input/2027/2027-01.txt").apply {
             parentFile?.mkdirs()
-            writeText("live raw")
+            writeText("keep removing")
         }
-        val autoSyncTxt = root.resolve("input/live_auto_sync/2026-03.txt").apply {
-            parentFile?.mkdirs()
-            writeText("auto sync")
-        }
-        val nonWhitelistedTxt = root.resolve("input/other/2026-03.txt").apply {
+        val nonTxtFile = root.resolve("input/2026/2026-03.json").apply {
             parentFile?.mkdirs()
             writeText("keep")
         }
-        val nonTxtFile = root.resolve("input/full/2026-03.json").apply {
+        val cacheTxt = root.resolve("cache/validate/scratch.txt").apply {
             parentFile?.mkdirs()
             writeText("keep")
         }
@@ -63,11 +59,10 @@ class RuntimeDataCleanupTargetsTest {
         val result = RuntimeDataCleanupTargets.clearTxtData(listOf(root))
 
         assertTrue(result.ok)
-        assertFalse(fullTxt.exists())
-        assertFalse(liveRawTxt.exists())
-        assertFalse(autoSyncTxt.exists())
-        assertTrue(nonWhitelistedTxt.exists())
+        assertFalse(monthTxt.exists())
+        assertFalse(secondMonthTxt.exists())
         assertTrue(nonTxtFile.exists())
+        assertTrue(cacheTxt.exists())
         assertTrue(outputTxt.exists())
     }
 }

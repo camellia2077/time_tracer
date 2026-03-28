@@ -3,6 +3,7 @@ package com.example.tracer
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -13,6 +14,7 @@ import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
 import com.example.tracer.data.UserPreferencesRepository
 import com.example.tracer.data.dataStore
+import com.example.tracer.feature.report.R as ReportR
 import com.example.tracer.ui.theme.TracerTheme
 import org.junit.Rule
 import org.junit.Test
@@ -28,6 +30,18 @@ class TracerScreenStatsMarkdownRenderTest {
         val fakeRuntime = FakeTracerScreenServices(
             statsMarkdown = "## Day Duration Stats\n\nstats-md-marker"
         )
+        val dayLabel =
+            composeRule.activity.getString(ReportR.string.report_mode_day)
+        val generateDayStatsLabel = composeRule.activity.getString(
+            ReportR.string.report_action_generate_stats,
+            dayLabel
+        )
+        val dayStatsResultLabel = composeRule.activity.getString(
+            ReportR.string.report_result_title_stats,
+            dayLabel
+        )
+        val expandLabel =
+            composeRule.activity.getString(ReportR.string.report_cd_expand)
         val themeConfig = ThemeConfig(
             themeColor = ThemeColor.Slate,
             themeMode = ThemeMode.Light,
@@ -60,11 +74,11 @@ class TracerScreenStatsMarkdownRenderTest {
         }
 
         composeRule.onNodeWithText("Report").performClick()
-        composeRule.onNodeWithText("Recent").performClick()
-        composeRule.onNodeWithText("Generate recent Stats").performClick()
+        composeRule.onAllNodesWithContentDescription(expandLabel)[0].performClick()
+        composeRule.onNodeWithText(generateDayStatsLabel).performClick()
         composeRule.waitForIdle()
 
-        composeRule.onNodeWithText("Recent Stats Result").assertIsDisplayed()
+        composeRule.onNodeWithText(dayStatsResultLabel).assertIsDisplayed()
         composeRule.onNodeWithText("stats-md-marker").assertIsDisplayed()
     }
 }
@@ -83,8 +97,6 @@ private class FakeTracerScreenServices(
         operationOk = true,
         rawResponse = """{"ok":true,"content":"","error_message":""}"""
     )
-
-    override suspend fun ingestFull(): NativeCallResult = initializeRuntime()
 
     override suspend fun ingestSingleTxtReplaceMonth(inputPath: String): NativeCallResult =
         initializeRuntime()
@@ -185,6 +197,12 @@ private class FakeTracerScreenServices(
     override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
         ok = true,
         files = emptyList(),
+        message = "ok"
+    )
+
+    override suspend fun inspectTxtFiles(): TxtInspectionResult = TxtInspectionResult(
+        ok = true,
+        entries = emptyList(),
         message = "ok"
     )
 

@@ -13,6 +13,11 @@ data class DataUiState(
     val statusText: String = "Preparing runtime..."
 )
 
+data class DataImportOperationResult(
+    val operationOk: Boolean,
+    val statusText: String
+)
+
 class DataViewModel(
     runtimeInitializer: RuntimeInitializer,
     recordGateway: RecordGateway
@@ -26,7 +31,6 @@ class DataViewModel(
 
     private sealed interface DataIntent {
         data object InitializeRuntime : DataIntent
-        data object IngestFull : DataIntent
         data class IngestSingleTxtReplaceMonth(val inputPath: String) : DataIntent
         data object ClearDataAndReinitialize : DataIntent
         data object ClearDatabase : DataIntent
@@ -37,27 +41,24 @@ class DataViewModel(
         dispatchIntent(DataIntent.InitializeRuntime)
     }
 
-    fun ingestFull() {
-        dispatchIntent(DataIntent.IngestFull)
-    }
-
-    suspend fun ingestFullAndGetResult(): Boolean {
-        val update = useCases.ingestFullWithResult(uiState)
-        uiState = update.state
-        return update.operationOk
-    }
-
     fun ingestSingleTxtReplaceMonth(inputPath: String) {
         dispatchIntent(DataIntent.IngestSingleTxtReplaceMonth(inputPath))
     }
 
     suspend fun ingestSingleTxtReplaceMonthAndGetResult(inputPath: String): Boolean {
+        return ingestSingleTxtReplaceMonthAndGetOperationResult(inputPath).operationOk
+    }
+
+    suspend fun ingestSingleTxtReplaceMonthAndGetOperationResult(inputPath: String): DataImportOperationResult {
         val update = useCases.ingestSingleTxtReplaceMonthWithResult(
             currentState = uiState,
             inputPath = inputPath
         )
         uiState = update.state
-        return update.operationOk
+        return DataImportOperationResult(
+            operationOk = update.operationOk,
+            statusText = update.state.statusText
+        )
     }
 
     fun clearDataAndReinitialize() {
@@ -80,7 +81,6 @@ class DataViewModel(
         viewModelScope.launch {
             uiState = when (intent) {
                 DataIntent.InitializeRuntime -> useCases.initializeRuntime(uiState)
-                DataIntent.IngestFull -> useCases.ingestFull(uiState)
                 is DataIntent.IngestSingleTxtReplaceMonth -> {
                     useCases.ingestSingleTxtReplaceMonth(
                         currentState = uiState,

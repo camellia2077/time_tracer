@@ -2,14 +2,14 @@ package com.example.tracer
 
 import java.io.File
 
-internal class LiveRawTxtFileStore {
-    fun listTxtFiles(liveRawInputPath: String): TxtHistoryListResult {
-        val root = File(liveRawInputPath)
+internal class InputTxtFileStore {
+    fun listTxtFiles(inputRootPath: String): TxtHistoryListResult {
+        val root = File(inputRootPath)
         if (!root.exists()) {
             return TxtHistoryListResult(
                 ok = true,
                 files = emptyList(),
-                message = "No live TXT directory."
+                message = "No TXT input directory."
             )
         }
 
@@ -26,7 +26,7 @@ internal class LiveRawTxtFileStore {
         )
     }
 
-    fun readTxtFile(liveRawInputPath: String, relativePath: String): TxtFileContentResult {
+    fun readTxtFile(inputRootPath: String, relativePath: String): TxtFileContentResult {
         val requested = relativePath.trim()
         if (requested.isEmpty()) {
             return TxtFileContentResult(
@@ -37,7 +37,7 @@ internal class LiveRawTxtFileStore {
             )
         }
 
-        val root = File(liveRawInputPath).canonicalFile
+        val root = File(inputRootPath).canonicalFile
         val target = File(root, requested).canonicalFile
         val relative = target.relativeToOrNull(root)
         if (relative == null) {
@@ -45,7 +45,7 @@ internal class LiveRawTxtFileStore {
                 ok = false,
                 filePath = requested,
                 content = "",
-                message = "TXT path is outside live input root."
+                message = "TXT path is outside input root."
             )
         }
         if (!target.exists() || !target.isFile) {
@@ -76,7 +76,7 @@ internal class LiveRawTxtFileStore {
         )
     }
 
-    fun writeTxtFile(liveRawInputPath: String, relativePath: String, content: String): TxtFileContentResult {
+    fun writeTxtFile(inputRootPath: String, relativePath: String, content: String): TxtFileContentResult {
         val requested = relativePath.trim()
         if (requested.isEmpty()) {
             return TxtFileContentResult(
@@ -87,7 +87,7 @@ internal class LiveRawTxtFileStore {
             )
         }
 
-        val root = File(liveRawInputPath).canonicalFile
+        val root = File(inputRootPath).canonicalFile
         val target = File(root, requested).canonicalFile
         val relative = target.relativeToOrNull(root)
         if (relative == null) {
@@ -95,7 +95,7 @@ internal class LiveRawTxtFileStore {
                 ok = false,
                 filePath = requested,
                 content = "",
-                message = "TXT path is outside live input root."
+                message = "TXT path is outside input root."
             )
         }
         if (!target.exists() || !target.isFile) {

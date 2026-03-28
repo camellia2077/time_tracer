@@ -9,7 +9,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.example.tracer.data.AppLanguage
@@ -17,7 +16,6 @@ import com.example.tracer.data.DarkThemeStyle
 import com.example.tracer.data.ThemeColor
 import com.example.tracer.data.ThemeConfig
 import com.example.tracer.data.ThemeMode
-import kotlinx.coroutines.launch
 
 internal enum class TracerTab {
     DATA,
@@ -118,20 +116,8 @@ internal object TracerTabRegistry {
             statusText = { args -> args.dataStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { modifier, args ->
-                val coroutineScope = rememberCoroutineScope()
                 DataManagementSection(
                     modifier = modifier,
-                    onIngestFull = {
-                        coroutineScope.launch {
-                            val ingestOk = args.dataViewModel.ingestFullAndGetResult()
-                            // Keep Data tab export availability in sync with TXT store state,
-                            // even when ingest returns non-ok (e.g. partial/diagnostic response).
-                            args.recordViewModel.refreshHistory()
-                            if (!ingestOk) {
-                                return@launch
-                            }
-                        }
-                    },
                     onImportSingleTxt = args.onImportSingleTxt,
                     onImportSingleTracer = args.onImportSingleTracer,
                     canExportAllMonthsTracer = args.recordUiState.availableMonths.isNotEmpty(),
