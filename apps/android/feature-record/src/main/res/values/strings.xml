@@ -45,6 +45,7 @@
     <string name="record_label_remark_optional">Remark (Optional)</string>
     <string name="record_action_record_activity">Record Activity</string>
     <string name="record_title_quick_access">Quick Access</string>
+    <string name="record_hint_long_press_drag_sort">Long press and drag to reorder quick activities.</string>
     <string name="record_cd_collapse">Collapse</string>
     <string name="record_cd_expand">Expand</string>
     <string name="record_title_assist_settings">Assist Settings</string>

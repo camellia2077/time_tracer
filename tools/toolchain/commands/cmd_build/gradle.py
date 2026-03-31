@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from ...core.context import Context
 from ...core.executor import run_command
+from ...core.process_lock import ProcessLockBusyError, hold_process_lock
 from . import common as build_common
 
 
@@ -67,10 +68,25 @@ def build_gradle(
         *gradle_tasks,
         *gradle_extra_args,
     ]
-    return effective_run_command(
-        gradle_cmd,
-        cwd=ctx.get_app_dir(app_name),
-        env=ctx.setup_env(),
-        log_file=log_file,
-        output_mode=output_mode,
-    )
+    app_dir = ctx.get_app_dir(app_name)
+    lock_path = ctx.get_out_root() / "locks" / app_name / "android_gradle.lock"
+    lock_metadata = {
+        "command": " ".join(str(token) for token in gradle_cmd),
+        "cwd": app_dir.as_posix(),
+    }
+    try:
+        with hold_process_lock(
+            lock_path=lock_path,
+            label=f"Android Gradle command for `{app_name}`",
+            metadata=lock_metadata,
+        ):
+            return effective_run_command(
+                gradle_cmd,
+                cwd=app_dir,
+                env=ctx.setup_env(),
+                log_file=log_file,
+                output_mode=output_mode,
+            )
+    except ProcessLockBusyError as error:
+        print(error.render_user_message())
+        return 1

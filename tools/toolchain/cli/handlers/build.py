@@ -7,7 +7,9 @@ from ..common import (
     add_build_dir_arg,
     add_concise_arg,
     add_kill_build_procs_args,
-    add_profile_arg,
+    add_profile_arg_with_options,
+    append_profiles_to_command,
+    normalize_profile_selection,
     parse_cmake_args,
     print_cli_error,
     reject_unsupported_build_dir_override,
@@ -19,8 +21,7 @@ def _build_command_text(args: argparse.Namespace) -> str:
     parts = ["python tools/run.py build", "--app", args.app]
     if args.tidy:
         parts.append("--tidy")
-    if args.profile:
-        parts.extend(["--profile", args.profile])
+    append_profiles_to_command(parts, getattr(args, "profile", None))
     if args.build_dir:
         parts.extend(["--build-dir", args.build_dir])
     if args.kill_build_procs and not args.no_kill_build_procs:
@@ -44,7 +45,7 @@ def _build_command_text(args: argparse.Namespace) -> str:
 
 def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
     parser.add_argument("--tidy", action="store_true")
-    add_profile_arg(parser, defaults)
+    add_profile_arg_with_options(parser, defaults, allow_multiple=True)
     add_build_dir_arg(parser)
     add_kill_build_procs_args(parser)
     add_concise_arg(parser)
@@ -95,6 +96,15 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             "`--runtime-platform windows`.",
         )
         return 2
+    normalized_profile = normalize_profile_selection(getattr(args, "profile", None))
+    if isinstance(normalized_profile, list):
+        backend = (getattr(ctx.get_app_metadata(args.app), "backend", "cmake") or "cmake").strip().lower()
+        if backend != "gradle":
+            print_cli_error(
+                "Error: repeated `--profile` is currently supported only for Gradle-backed apps "
+                "(for example `tracer_android`)."
+            )
+            return 2
     build_dir_error = reject_unsupported_build_dir_override(
         ctx=ctx,
         app_name=args.app,
@@ -111,7 +121,7 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         extra_args=args.extra_args,
         cmake_args=parse_cmake_args(getattr(args, "cmake_args", [])),
         build_dir_name=args.build_dir,
-        profile_name=args.profile,
+        profile_name=normalized_profile,
         windows_icon_svg=getattr(args, "windows_icon_svg", None),
         rust_runtime_sync=(
             getattr(args, "rust_runtime_sync", None)
@@ -131,11 +141,11 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
             repo_root=ctx.repo_root,
             stage="build",
             build_log_path=cmd.resolve_output_log_path(
-                app_name=args.app,
-                tidy=args.tidy,
-                build_dir_name=args.build_dir,
-                profile_name=args.profile,
-            ),
+            app_name=args.app,
+            tidy=args.tidy,
+            build_dir_name=args.build_dir,
+            profile_name=normalized_profile,
+        ),
             fallback_key_error_hint="Build failed. See command output above.",
             include_result_json=False,
         )

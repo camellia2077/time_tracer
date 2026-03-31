@@ -57,20 +57,71 @@ def reject_unsupported_build_dir_override(
 
 
 def add_profile_arg(parser_obj: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
+    add_profile_arg_with_options(parser_obj, defaults, allow_multiple=False)
+
+
+def add_profile_arg_with_options(
+    parser_obj: argparse.ArgumentParser,
+    defaults: ParserDefaults,
+    *,
+    allow_multiple: bool,
+) -> None:
     help_text = (
         "Build profile from tools/toolchain/config/*.toml."
     )
+    if allow_multiple:
+        help_text += " Repeat `--profile` to merge multiple profiles into one backend invocation when supported."
     if defaults.default_profile:
         help_text += f" Default profile: {defaults.default_profile}."
+    argument_kwargs = {
+        "default": None,
+        "help": help_text,
+    }
+    if allow_multiple:
+        argument_kwargs["action"] = "append"
     if defaults.profile_choices:
-        parser_obj.add_argument(
-            "--profile",
-            choices=defaults.profile_choices,
-            default=None,
-            help=help_text,
-        )
+        argument_kwargs["choices"] = defaults.profile_choices
+        parser_obj.add_argument("--profile", **argument_kwargs)
     else:
-        parser_obj.add_argument("--profile", default=None, help=help_text)
+        parser_obj.add_argument("--profile", **argument_kwargs)
+
+
+def normalize_profile_selection(
+    raw_profiles: str | Iterable[str] | None,
+) -> str | list[str] | None:
+    if raw_profiles is None:
+        return None
+    if isinstance(raw_profiles, str):
+        normalized = raw_profiles.strip()
+        return normalized or None
+
+    seen: set[str] = set()
+    normalized_profiles: list[str] = []
+    for raw_profile in raw_profiles:
+        profile_name = str(raw_profile or "").strip()
+        if not profile_name or profile_name in seen:
+            continue
+        seen.add(profile_name)
+        normalized_profiles.append(profile_name)
+    if not normalized_profiles:
+        return None
+    if len(normalized_profiles) == 1:
+        return normalized_profiles[0]
+    return normalized_profiles
+
+
+def append_profiles_to_command(
+    parts: list[str],
+    profiles: str | Iterable[str] | None,
+) -> None:
+    normalized_profiles = normalize_profile_selection(profiles)
+    if normalized_profiles is None:
+        return
+    if isinstance(normalized_profiles, str):
+        parts.extend(["--profile", normalized_profiles])
+        return
+    for profile_name in normalized_profiles:
+        parts.extend(["--profile", profile_name])
 
 
 def add_build_dir_arg(

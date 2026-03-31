@@ -18,8 +18,6 @@ import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SuggestionChip
-import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -28,7 +26,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
 
@@ -74,31 +71,41 @@ internal fun RecordQuickAccessCard(
         shape = MaterialTheme.shapes.extraLarge
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onToggleAssistSettings() }
                     .padding(16.dp),
-                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = stringResource(R.string.record_title_quick_access),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = if (assistSettingsExpanded) {
+                            Icons.Default.ExpandLess
+                        } else {
+                            Icons.Default.ExpandMore
+                        },
+                        contentDescription = if (assistSettingsExpanded) {
+                            stringResource(R.string.record_cd_collapse)
+                        } else {
+                            stringResource(R.string.record_cd_expand)
+                        },
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 Text(
-                    text = stringResource(R.string.record_title_quick_access),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = if (assistSettingsExpanded) {
-                        Icons.Default.ExpandLess
-                    } else {
-                        Icons.Default.ExpandMore
-                    },
-                    contentDescription = if (assistSettingsExpanded) {
-                        stringResource(R.string.record_cd_collapse)
-                    } else {
-                        stringResource(R.string.record_cd_expand)
-                    },
-                    tint = MaterialTheme.colorScheme.primary
+                    text = stringResource(R.string.record_hint_long_press_drag_sort),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -210,72 +217,14 @@ internal fun RecordQuickAccessCard(
                     .padding(bottom = 16.dp)
             ) {
                 if (quickActivities.isNotEmpty()) {
-                    com.example.tracer.ui.components.SimpleFlowRow(
+                    QuickAccessActivityGrid(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalGap = 8.dp,
-                        verticalGap = 8.dp
-                    ) {
-                        quickActivities.forEach { activity ->
-                            val isSelected = recordContent.trim() == activity
-                            val isDeleting = assistSettingsExpanded
-
-                            if (isDeleting) {
-                                InputChip(
-                                    selected = isSelected,
-                                    onClick = {
-                                        onQuickActivitiesUpdate(
-                                            quickActivities.filter { it != activity }
-                                        )
-                                    },
-                                    label = {
-                                        Text(
-                                            stringResource(
-                                                R.string.record_chip_remove_activity,
-                                                activity
-                                            )
-                                        )
-                                    },
-                                    colors = InputChipDefaults.inputChipColors(
-                                        containerColor = MaterialTheme.colorScheme.errorContainer,
-                                        labelColor = MaterialTheme.colorScheme.onErrorContainer
-                                    )
-                                )
-                            } else {
-                                SuggestionChip(
-                                    onClick = { onRecordContentChange(activity) },
-                                    label = {
-                                        Text(
-                                            text = activity,
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            modifier = Modifier.padding(vertical = 4.dp),
-                                            maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
-                                        )
-                                    },
-                                    colors = SuggestionChipDefaults.suggestionChipColors(
-                                        containerColor = if (isSelected) {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.surfaceContainerHigh
-                                        },
-                                        labelColor = if (isSelected) {
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurface
-                                        }
-                                    ),
-                                    border = SuggestionChipDefaults.suggestionChipBorder(
-                                        enabled = true,
-                                        borderColor = if (isSelected) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else {
-                                            MaterialTheme.colorScheme.outline
-                                        }
-                                    )
-                                )
-                            }
-                        }
-                    }
+                        quickActivities = quickActivities,
+                        recordContent = recordContent,
+                        isDeleteMode = assistSettingsExpanded,
+                        onRecordContentChange = onRecordContentChange,
+                        onQuickActivitiesUpdate = onQuickActivitiesUpdate
+                    )
                 } else {
                     Text(
                         stringResource(R.string.record_hint_no_quick_activities),

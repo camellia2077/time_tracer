@@ -45,6 +45,7 @@
     <string name="record_label_remark_optional">备注（可选）</string>
     <string name="record_action_record_activity">记录活动</string>
     <string name="record_title_quick_access">快捷入口</string>
+    <string name="record_hint_long_press_drag_sort">长按并拖动即可调整快捷活动顺序。</string>
     <string name="record_cd_collapse">收起</string>
     <string name="record_cd_expand">展开</string>
     <string name="record_title_assist_settings">辅助设置</string>

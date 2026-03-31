@@ -25,6 +25,8 @@ Run from repo root unless a section explicitly says otherwise.
   - `python tools/run.py verify --app tracer_android --profile android_style --concise`
 - CI-like verify:
   - `python tools/run.py verify --app tracer_android --profile android_ci --concise`
+- Combined closeout in one Gradle invocation:
+  - `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 - Device verify:
   - `python tools/run.py verify --app tracer_android --profile android_device --concise`
 
@@ -32,6 +34,8 @@ Run from repo root unless a section explicitly says otherwise.
 
 - Do not run Gradle commands for `apps/android` in parallel.
 - Do not launch multiple `gradlew` or Gradle-backed `tools/run.py` commands at the same time against the same workspace.
+- Repeating `--profile` for `tracer_android` is allowed only when `tools/run.py` merges them into one Gradle invocation.
+- Multi-profile merge does not make this workspace safe for concurrent Gradle processes.
 
 ## Direct Gradle
 
@@ -58,6 +62,8 @@ Common targeted commands:
   - `android_style` is the minimum closeout.
 - If a change touches runtime, contracts, or build behavior:
   - run both `android_style` and `android_ci`.
+  - Prefer one merged invocation when practical:
+    `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 - If a change touches core-side code that affects the Android host/runtime path:
   - include `python tools/run.py build --app tracer_android --profile android_edit`.
 

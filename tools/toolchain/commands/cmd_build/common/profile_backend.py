@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Iterable
 
 from ....core.config import BuildProfileConfig
 from ....core.context import Context
@@ -56,16 +57,77 @@ def resolve_profile(
     return selected_profile, profile_cfg
 
 
-def profile_cmake_args(ctx: Context, profile_name: str | None) -> list[str]:
-    _, profile_cfg = resolve_profile(ctx, profile_name)
+def _normalize_profile_names(profile_name: str | Iterable[str] | None) -> list[str]:
+    if profile_name is None:
+        return []
+    if isinstance(profile_name, str):
+        selected = profile_name.strip()
+        return [selected] if selected else []
+
+    normalized: list[str] = []
+    seen: set[str] = set()
+    for raw_profile in profile_name:
+        selected = str(raw_profile or "").strip()
+        if not selected or selected in seen:
+            continue
+        seen.add(selected)
+        normalized.append(selected)
+    return normalized
+
+
+def resolve_profiles(
+    ctx: Context,
+    profile_name: str | Iterable[str] | None,
+) -> list[tuple[str, BuildProfileConfig]]:
+    resolved: list[tuple[str, BuildProfileConfig]] = []
+    for selected_profile in _normalize_profile_names(profile_name):
+        profile_cfg = ctx.config.build.profiles.get(selected_profile)
+        if profile_cfg is None:
+            print(
+                "Warning: build profile "
+                f"`{selected_profile}` not found in "
+                "tools/toolchain/config/*.toml. "
+                "Profile settings will be ignored."
+            )
+            continue
+        resolved.append((selected_profile, profile_cfg))
+    return resolved
+
+
+def _merge_profile_list_values(
+    profiles: list[tuple[str, BuildProfileConfig]],
+    *,
+    field_name: str,
+) -> list[str]:
+    merged: list[str] = []
+    seen: set[str] = set()
+    for _, profile_cfg in profiles:
+        raw_values = getattr(profile_cfg, field_name, []) or []
+        for raw_value in raw_values:
+            value = str(raw_value).strip()
+            if not value or value == "--" or value in seen:
+                continue
+            seen.add(value)
+            merged.append(value)
+    return merged
+
+
+def profile_cmake_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
+    profiles = resolve_profiles(ctx, profile_name)
+    if profiles:
+        return _merge_profile_list_values(profiles, field_name="cmake_args")
+    _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
     raw_args = getattr(profile_cfg, "cmake_args", []) or []
     return [arg for arg in raw_args if arg != "--"]
 
 
-def profile_build_targets(ctx: Context, profile_name: str | None) -> list[str]:
-    _, profile_cfg = resolve_profile(ctx, profile_name)
+def profile_build_targets(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
+    profiles = resolve_profiles(ctx, profile_name)
+    if profiles:
+        return _merge_profile_list_values(profiles, field_name="build_targets")
+    _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
     raw_targets = getattr(profile_cfg, "build_targets", []) or []
@@ -78,31 +140,44 @@ def profile_build_targets(ctx: Context, profile_name: str | None) -> list[str]:
     return normalized_targets
 
 
-def profile_gradle_tasks(ctx: Context, profile_name: str | None) -> list[str]:
-    _, profile_cfg = resolve_profile(ctx, profile_name)
+def profile_gradle_tasks(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
+    profiles = resolve_profiles(ctx, profile_name)
+    if profiles:
+        return _merge_profile_list_values(profiles, field_name="gradle_tasks")
+    _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
     raw_tasks = getattr(profile_cfg, "gradle_tasks", []) or []
     return [task for task in raw_tasks if task and task != "--"]
 
 
-def profile_gradle_args(ctx: Context, profile_name: str | None) -> list[str]:
-    _, profile_cfg = resolve_profile(ctx, profile_name)
+def profile_gradle_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
+    profiles = resolve_profiles(ctx, profile_name)
+    if profiles:
+        return _merge_profile_list_values(profiles, field_name="gradle_args")
+    _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
     raw_args = getattr(profile_cfg, "gradle_args", []) or []
     return [arg for arg in raw_args if arg and arg != "--"]
 
 
-def profile_cargo_args(ctx: Context, profile_name: str | None) -> list[str]:
-    _, profile_cfg = resolve_profile(ctx, profile_name)
+def profile_cargo_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
+    profiles = resolve_profiles(ctx, profile_name)
+    if profiles:
+        return _merge_profile_list_values(profiles, field_name="cargo_args")
+    _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
     raw_args = getattr(profile_cfg, "cargo_args", []) or []
     return [arg for arg in raw_args if arg and arg != "--"]
 
 
-def resolve_gradle_tasks(ctx: Context, app_name: str, profile_name: str | None) -> list[str]:
+def resolve_gradle_tasks(
+    ctx: Context,
+    app_name: str,
+    profile_name: str | Iterable[str] | None,
+) -> list[str]:
     profile_tasks = profile_gradle_tasks(ctx, profile_name)
     if profile_tasks:
         return profile_tasks

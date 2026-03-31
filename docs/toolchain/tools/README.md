@@ -75,6 +75,8 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 python tools/run.py build --app tracer_android --profile android_edit
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
+# Android single-invocation merged profiles
+python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
 ```
 
 ## 5. clang-tidy workspace 契约

@@ -46,3 +46,16 @@ class TestVerifyCliHandler(TestCase):
         kwargs = mocked_command.return_value.execute.call_args.kwargs
         self.assertEqual(kwargs["build_dir_name"], "custom_build")
         self.assertTrue(kwargs["concise"])
+
+    def test_run_normalizes_repeated_profiles_for_gradle_app(self):
+        args = self._base_args()
+        args.app = "tracer_android"
+        args.profile = ["android_style", "android_ci"]
+
+        with patch("tools.toolchain.cli.handlers.quality.verify.VerifyCommand") as mocked_command:
+            mocked_command.return_value.execute.return_value = 0
+            result = verify_handler.run(args, self.ctx)
+
+        self.assertEqual(result, 0)
+        kwargs = mocked_command.return_value.execute.call_args.kwargs
+        self.assertEqual(kwargs["profile_name"], ["android_style", "android_ci"])

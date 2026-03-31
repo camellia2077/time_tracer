@@ -70,6 +70,36 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(FakeBuildCommand.last_kwargs["profile_name"], "fast")
         self.assertEqual(FakeBuildCommand.last_kwargs["cmake_args"], ["-DA=1", "-DB=2"])
 
+    def test_build_dispatches_repeated_profiles_for_gradle_app(self):
+        class FakeBuildCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def build(self, *args, **kwargs):
+                FakeBuildCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.build.BuildCommand", FakeBuildCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "build",
+                    "--app",
+                    "tracer_android",
+                    "--profile",
+                    "android_style",
+                    "--profile",
+                    "android_ci",
+                ]
+            )
+
+        self.assertEqual(
+            FakeBuildCommand.last_kwargs["profile_name"],
+            ["android_style", "android_ci"],
+        )
+
     def test_build_dispatches_concise_and_kill_build_procs(self):
         class FakeBuildCommand:
             last_kwargs = None
@@ -954,6 +984,29 @@ class TestRunCliDispatch(TestCase):
         self.assertEqual(rc, 2)
         self.assertIn("does not support `--build-dir`", stderr.getvalue())
         self.assertIn("tracer_android", stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+
+    def test_verify_repeated_profiles_rejected_for_non_gradle_app(self):
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            [
+                "run.py",
+                "verify",
+                "--app",
+                "tracer_core",
+                "--profile",
+                "fast",
+                "--profile",
+                "release_bundle",
+            ],
+        ), redirect_stdout(stdout), redirect_stderr(stderr):
+            rc = self.run_module.main()
+
+        self.assertEqual(rc, 2)
+        self.assertIn("supported only for Gradle-backed apps", stderr.getvalue())
         self.assertEqual(stdout.getvalue(), "")
 
     def test_dispatch_unsupported_command_writes_error_to_stderr(self):
