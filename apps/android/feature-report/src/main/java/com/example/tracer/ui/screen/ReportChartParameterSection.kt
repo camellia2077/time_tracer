@@ -23,9 +23,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.SegmentedDateInput
+import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import com.example.tracer.ui.components.mergeDateDigits
 import com.example.tracer.ui.components.splitDateDigits
 
@@ -66,6 +69,7 @@ internal fun ReportChartParameterSection(
                     )
                 }
             },
+            shape = TracerOutlinedTextFieldDefaults.shape,
             modifier = Modifier.fillMaxWidth()
         )
         DropdownMenu(
@@ -97,14 +101,25 @@ internal fun ReportChartParameterSection(
     )
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         dateModes.forEachIndexed { index, mode ->
+            val selected = chartDateInputMode == mode
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
                     count = dateModes.size
                 ),
                 onClick = { onChartDateInputModeChange(mode) },
-                selected = chartDateInputMode == mode,
-                label = { Text(text = stringResource(mode.labelRes())) }
+                selected = selected,
+                colors = TracerSegmentedButtonDefaults.colors(),
+                label = {
+                    Text(
+                        text = stringResource(mode.labelRes()),
+                        fontWeight = if (selected) {
+                            TracerSegmentedButtonDefaults.activeLabelFontWeight
+                        } else {
+                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                        }
+                    )
+                }
             )
         }
     }
@@ -116,6 +131,7 @@ internal fun ReportChartParameterSection(
             label = { Text(stringResource(R.string.report_label_chart_lookback_days)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            shape = TracerOutlinedTextFieldDefaults.shape,
             modifier = Modifier.fillMaxWidth()
         )
     } else {

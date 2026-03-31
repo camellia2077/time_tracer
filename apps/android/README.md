@@ -23,18 +23,23 @@ Human-facing local entrypoint for the Android host app workspace.
 
 ## Common Commands
 
-Run from repo root:
+For standard build/verify flows, run from repo root:
 
 ```bash
 python tools/run.py build --app tracer_android --profile android_edit
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
 ```
 
 Gradle rule:
 
 - Do not run Gradle commands for `apps/android` in parallel.
 - Always serialize Gradle build/test/verify tasks for this app.
+- `python tools/run.py` is the recommended entrypoint for standard Android workflows.
+- Direct Gradle is also acceptable for targeted debugging or narrower module/task validation when it is the more precise tool.
+- Choose the smallest command that safely validates the change.
+- Repeating `--profile` for `tracer_android` is supported only when `tools/run.py` merges them into one Gradle invocation; it does not make this workspace safe for multiple concurrent Gradle processes.
 
 ## Local Facts
 

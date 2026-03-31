@@ -86,6 +86,13 @@ Important boundary:
 `Record Input` free typing is not finally accepted or rejected by Compose UI
 alone. The authoritative acceptance check happens in core atomic record.
 
+### 1.3 Current Haptic Feedback
+
+Current Android `Record` interactions provide haptic feedback in:
+
+1. `Quick Access`: long press to enter drag-reorder triggers one haptic feedback
+2. `Record Activity`: triggering the record action provides one haptic feedback
+
 ## 2. ViewModel And Use Case Layer
 
 When the user taps record:

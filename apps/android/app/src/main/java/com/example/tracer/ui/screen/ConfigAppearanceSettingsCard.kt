@@ -45,6 +45,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -250,17 +251,24 @@ internal fun AppearanceSettingsCard(
             val themeModes = com.example.tracer.data.ThemeMode.entries
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 themeModes.forEachIndexed { index, mode ->
+                    val selected = themeConfig.themeMode == mode
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = themeModes.size),
                         onClick = { onSetThemeMode(mode) },
-                        selected = themeConfig.themeMode == mode,
+                        selected = selected,
                         modifier = Modifier.weight(1f),
+                        colors = TracerSegmentedButtonDefaults.colors(),
                         label = {
                             Text(
                                 text = when (mode) {
                                     com.example.tracer.data.ThemeMode.System -> stringResource(R.string.config_theme_mode_system)
                                     com.example.tracer.data.ThemeMode.Light -> stringResource(R.string.config_theme_mode_light)
                                     com.example.tracer.data.ThemeMode.Dark -> stringResource(R.string.config_theme_mode_dark)
+                                },
+                                fontWeight = if (selected) {
+                                    TracerSegmentedButtonDefaults.activeLabelFontWeight
+                                } else {
+                                    TracerSegmentedButtonDefaults.inactiveLabelFontWeight
                                 }
                             )
                         }
@@ -283,12 +291,23 @@ internal fun AppearanceSettingsCard(
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 appLanguages.forEachIndexed { index, (language, label) ->
+                    val selected = appLanguage == language
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = appLanguages.size),
                         onClick = { onSetAppLanguage(language) },
-                        selected = appLanguage == language,
+                        selected = selected,
                         modifier = Modifier.weight(1f),
-                        label = { Text(label) }
+                        colors = TracerSegmentedButtonDefaults.colors(),
+                        label = {
+                            Text(
+                                text = label,
+                                fontWeight = if (selected) {
+                                    TracerSegmentedButtonDefaults.activeLabelFontWeight
+                                } else {
+                                    TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                                }
+                            )
+                        }
                     )
                 }
             }

@@ -18,8 +18,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 import java.time.LocalDate
 
 @Composable
@@ -31,14 +33,25 @@ fun ReportResultModeSwitcher(
     val modes = ReportResultDisplayMode.entries
     SingleChoiceSegmentedButtonRow(modifier = modifier.fillMaxWidth()) {
         modes.forEachIndexed { index, item ->
+            val selected = mode == item
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
                     count = modes.size
                 ),
                 onClick = { onModeChange(item) },
-                selected = mode == item,
-                label = { Text(text = stringResource(item.labelRes())) }
+                selected = selected,
+                colors = TracerSegmentedButtonDefaults.colors(),
+                label = {
+                    Text(
+                        text = stringResource(item.labelRes()),
+                        fontWeight = if (selected) {
+                            TracerSegmentedButtonDefaults.activeLabelFontWeight
+                        } else {
+                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                        }
+                    )
+                }
             )
         }
     }

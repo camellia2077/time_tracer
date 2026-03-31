@@ -13,8 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import com.example.tracer.feature.report.R
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @Composable
 internal fun ReportChartVisualModeSelector(
@@ -29,20 +31,27 @@ internal fun ReportChartVisualModeSelector(
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         val visualModes = ReportChartVisualMode.entries
         visualModes.forEachIndexed { index, visualMode ->
+            val selected = chartVisualMode == visualMode
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
                     count = visualModes.size
                 ),
                 onClick = { onChartVisualModeChange(visualMode) },
-                selected = chartVisualMode == visualMode,
+                selected = selected,
+                colors = TracerSegmentedButtonDefaults.colors(),
                 icon = {},
                 label = {
                     Text(
                         text = stringResource(visualMode.labelRes()),
                         maxLines = 1,
                         softWrap = false,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = if (selected) {
+                            TracerSegmentedButtonDefaults.activeLabelFontWeight
+                        } else {
+                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                        }
                     )
                 }
             )

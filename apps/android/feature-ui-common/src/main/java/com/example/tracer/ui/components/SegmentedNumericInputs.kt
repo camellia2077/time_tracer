@@ -200,6 +200,7 @@ private fun SegmentNumberField(
         singleLine = true,
         keyboardOptions = keyboardOptions,
         textStyle = MaterialTheme.typography.titleMedium.copy(textAlign = TextAlign.Center),
+        shape = TracerOutlinedTextFieldDefaults.shape,
         modifier = Modifier
             .width(width)
             .height(SegmentFieldHeight)

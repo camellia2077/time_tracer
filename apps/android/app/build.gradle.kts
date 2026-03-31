@@ -368,6 +368,7 @@ dependencies {
     implementation(project(":feature-data"))
     implementation(project(":feature-report"))
     implementation(project(":feature-record"))
+    implementation(project(":feature-ui-common"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -37,6 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
+import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @Composable
 internal fun ReportChartHeatmapSettings(
@@ -101,19 +103,26 @@ private fun HeatmapThemePolicySelector(
     )
     SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
         options.forEachIndexed { index, option ->
+            val selected = selectedPolicy == option
             SegmentedButton(
                 shape = SegmentedButtonDefaults.itemShape(
                     index = index,
                     count = options.size
                 ),
                 onClick = { onPolicyChange(option) },
-                selected = selectedPolicy == option,
+                selected = selected,
+                colors = TracerSegmentedButtonDefaults.colors(),
                 label = {
                     Text(
                         text = stringResource(option.labelRes()),
                         maxLines = 1,
                         softWrap = false,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = if (selected) {
+                            TracerSegmentedButtonDefaults.activeLabelFontWeight
+                        } else {
+                            TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                        }
                     )
                 }
             )
@@ -158,6 +167,7 @@ private fun HeatmapPaletteSelector(
                     )
                 }
             },
+            shape = TracerOutlinedTextFieldDefaults.shape,
             modifier = Modifier.fillMaxWidth()
         )
         DropdownMenu(

@@ -53,7 +53,11 @@ import, TXT import-export behavior, or SAF/document/fd export behavior:
 - Android app version source is `apps/android/meta/version.properties`.
 - Core version source is `libs/tracer_core/src/shared/types/version.hpp`.
 - Do not run Gradle commands for `apps/android` in parallel.
-- Prefer `python tools/run.py build --app tracer_android --profile android_edit` for the default edit loop.
+- For standard Android build/verify flows, `python tools/run.py` is the recommended entrypoint.
+- For targeted debugging or narrower module/task validation, direct Gradle is also allowed when it is the more precise tool.
+- Choose the smallest command that safely validates the change.
+- Multi-profile `tools/run.py` merge is allowed for Android only when it still results in one Gradle invocation.
+  - Example: `python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise`
 
 ## Code Areas
 
@@ -72,11 +76,12 @@ import, TXT import-export behavior, or SAF/document/fd export behavior:
 
 ## Validation
 
-Run from repo root:
+Run from repo root for standard validation flows:
 
 ```powershell
 python tools/run.py verify --app tracer_android --profile android_style --concise
 python tools/run.py verify --app tracer_android --profile android_ci --concise
+python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
 ```
 
 ## Boundary Notes

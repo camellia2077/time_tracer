@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,6 +70,7 @@ internal fun ConfigCategorySwitchCard(
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                 configCategories.forEachIndexed { index, (category, label) ->
+                    val selected = selectedCategory == category
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = configCategories.size),
                         onClick = {
@@ -78,9 +80,19 @@ internal fun ConfigCategorySwitchCard(
                                 onSelectReports()
                             }
                         },
-                        selected = selectedCategory == category,
+                        selected = selected,
                         modifier = Modifier.weight(1f),
-                        label = { Text(label) }
+                        colors = TracerSegmentedButtonDefaults.colors(),
+                        label = {
+                            Text(
+                                text = label,
+                                fontWeight = if (selected) {
+                                    TracerSegmentedButtonDefaults.activeLabelFontWeight
+                                } else {
+                                    TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                                }
+                            )
+                        }
                     )
                 }
             }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
+import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
 
 @Composable
 internal fun TreeParametersCard(
@@ -69,6 +70,7 @@ internal fun TreeParametersCard(
                 label = { Text(stringResource(R.string.report_label_tree_level)) },
                 singleLine = true,
                 keyboardOptions = keyboardOptions,
+                shape = TracerOutlinedTextFieldDefaults.shape,
                 modifier = Modifier.fillMaxWidth()
             )
             Button(

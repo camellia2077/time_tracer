@@ -27,6 +27,7 @@ import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.SegmentedDateInput
 import com.example.tracer.ui.components.SegmentedYearMonthInput
 import com.example.tracer.ui.components.SegmentedYearWeekInput
+import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
 import com.example.tracer.ui.components.mergeDateDigits
 import com.example.tracer.ui.components.mergeYearMonthDigits
 import com.example.tracer.ui.components.mergeYearWeekDigits
@@ -114,6 +115,7 @@ internal fun SegmentedAnalysisPeriodInputs(
                 label = { Text(stringResource(R.string.report_label_section_year, section)) },
                 singleLine = true,
                 keyboardOptions = keyboardOptions,
+                shape = TracerOutlinedTextFieldDefaults.shape,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -169,6 +171,7 @@ internal fun SegmentedAnalysisPeriodInputs(
                 label = { Text(stringResource(R.string.report_label_section_recent_days, section)) },
                 singleLine = true,
                 keyboardOptions = keyboardOptions,
+                shape = TracerOutlinedTextFieldDefaults.shape,
                 modifier = Modifier.fillMaxWidth()
             )
         }
