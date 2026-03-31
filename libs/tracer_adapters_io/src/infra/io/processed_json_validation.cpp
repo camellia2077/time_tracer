@@ -98,14 +98,6 @@ auto CollectProcessedJsonValidationErrors(
       continue;
     }
 
-    if (day.activity_count < 2) {
-      errors.push_back(
-          {.source = std::string(source),
-           .message =
-               "In file for date " + kDisplayDate +
-               ": The day has less than 2 activities. This may cause issues "
-               "with 'sleep' activity generation."});
-    }
   }
 
   return errors;

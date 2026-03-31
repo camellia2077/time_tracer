@@ -4,6 +4,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <unordered_map>
 #include <vector>
 
@@ -31,6 +32,30 @@ constexpr int kDefaultReportChartLookbackDays = 7;
 
 using nlohmann::json;
 
+auto LoadConverterConfigOrThrow(
+    const std::optional<std::filesystem::path>& converter_config_toml_path,
+    std::string_view query_name) -> modtypes::ConverterConfig {
+  if (!converter_config_toml_path.has_value() ||
+      converter_config_toml_path->empty()) {
+    throw std::runtime_error(std::string(query_name) +
+                             " query requires converter config path.");
+  }
+
+  FileConverterConfigProvider config_provider(
+      *converter_config_toml_path,
+      std::unordered_map<std::filesystem::path, std::filesystem::path>{});
+  return config_provider.LoadConverterConfig();
+}
+
+auto BuildNamesPayload(const std::set<std::string>& names) -> std::string {
+  json payload = json::object();
+  payload["names"] = json::array();
+  for (const auto& name : names) {
+    payload["names"].push_back(name);
+  }
+  return payload.dump();
+}
+
 auto ResolveRequestedRootFilter(
     const tracer_core::core::dto::DataQueryRequest& request)
     -> std::optional<std::string> {
@@ -46,17 +71,8 @@ auto ResolveRequestedRootFilter(
 auto BuildMappingNamesContent(
     const std::optional<std::filesystem::path>& converter_config_toml_path)
     -> std::string {
-  if (!converter_config_toml_path.has_value() ||
-      converter_config_toml_path->empty()) {
-    throw std::runtime_error(
-        "mapping_names query requires converter config path.");
-  }
-
-  FileConverterConfigProvider config_provider(
-      *converter_config_toml_path,
-      std::unordered_map<std::filesystem::path, std::filesystem::path>{});
-  const modtypes::ConverterConfig kConfig =
-      config_provider.LoadConverterConfig();
+  const modtypes::ConverterConfig kConfig = LoadConverterConfigOrThrow(
+      converter_config_toml_path, "mapping_names");
 
   std::set<std::string> names;
   for (const auto& [alias, full_name] : kConfig.text_mapping) {
@@ -69,13 +85,61 @@ auto BuildMappingNamesContent(
       names.insert(kTrimmedFullName);
     }
   }
+  return BuildNamesPayload(names);
+}
 
-  json payload = json::object();
-  payload["names"] = json::array();
-  for (const auto& name : names) {
-    payload["names"].push_back(name);
+auto BuildMappingAliasKeysContent(
+    const std::optional<std::filesystem::path>& converter_config_toml_path)
+    -> std::string {
+  const modtypes::ConverterConfig kConfig = LoadConverterConfigOrThrow(
+      converter_config_toml_path, "mapping_alias_keys");
+
+  std::set<std::string> alias_keys;
+  for (const auto& [alias, _] : kConfig.text_mapping) {
+    const std::string kTrimmedAlias = TrimCopy(alias);
+    if (!kTrimmedAlias.empty()) {
+      alias_keys.insert(kTrimmedAlias);
+    }
   }
-  return payload.dump();
+  return BuildNamesPayload(alias_keys);
+}
+
+auto BuildWakeKeywordsContent(
+    const std::optional<std::filesystem::path>& converter_config_toml_path)
+    -> std::string {
+  const modtypes::ConverterConfig kConfig = LoadConverterConfigOrThrow(
+      converter_config_toml_path, "wake_keywords");
+
+  std::set<std::string> wake_keywords;
+  for (const auto& wake_keyword : kConfig.wake_keywords) {
+    const std::string kTrimmedKeyword = TrimCopy(wake_keyword);
+    if (!kTrimmedKeyword.empty()) {
+      wake_keywords.insert(kTrimmedKeyword);
+    }
+  }
+  return BuildNamesPayload(wake_keywords);
+}
+
+auto BuildAuthorableEventTokensContent(
+    const std::optional<std::filesystem::path>& converter_config_toml_path)
+    -> std::string {
+  const modtypes::ConverterConfig kConfig = LoadConverterConfigOrThrow(
+      converter_config_toml_path, "authorable_event_tokens");
+
+  std::set<std::string> authorable_tokens;
+  for (const auto& [alias, _] : kConfig.text_mapping) {
+    const std::string kTrimmedAlias = TrimCopy(alias);
+    if (!kTrimmedAlias.empty()) {
+      authorable_tokens.insert(kTrimmedAlias);
+    }
+  }
+  for (const auto& wake_keyword : kConfig.wake_keywords) {
+    const std::string kTrimmedKeyword = TrimCopy(wake_keyword);
+    if (!kTrimmedKeyword.empty()) {
+      authorable_tokens.insert(kTrimmedKeyword);
+    }
+  }
+  return BuildNamesPayload(authorable_tokens);
 }
 
 auto ValidateReportChartRequest(

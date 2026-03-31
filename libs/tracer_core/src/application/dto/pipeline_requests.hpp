@@ -5,6 +5,7 @@
 
 #include "domain/types/date_check_mode.hpp"
 #include "domain/types/ingest_mode.hpp"
+#include "domain/types/time_order_mode.hpp"
 
 namespace tracer_core::core::dto {
 
@@ -34,6 +35,15 @@ struct ValidateStructureRequest {
 struct ValidateLogicRequest {
   std::string input_path;
   DateCheckMode date_check_mode = DateCheckMode::kNone;
+};
+
+struct RecordActivityAtomicallyRequest {
+  std::string target_date_iso;
+  std::string raw_activity_name;
+  std::string remark;
+  std::string preferred_txt_path;
+  DateCheckMode date_check_mode = DateCheckMode::kNone;
+  TimeOrderMode time_order_mode = TimeOrderMode::kStrictCalendar;
 };
 
 }  // namespace tracer_core::core::dto

@@ -158,4 +158,64 @@ auto EncodeValidateLogicRequest(const ValidateLogicRequestPayload& request)
   return payload.dump();
 }
 
+auto DecodeRecordActivityAtomicallyRequest(std::string_view request_json)
+    -> RecordActivityAtomicallyRequestPayload {
+  const json kPayload = ParseRequestObject(request_json);
+
+  const auto kTargetDateIso = RequireStringField(kPayload, "target_date_iso");
+  const auto kRawActivityName =
+      RequireStringField(kPayload, "raw_activity_name");
+  const auto kRemark = RequireStringField(kPayload, "remark");
+  const auto kPreferredTxtPath =
+      TryReadStringField(kPayload, "preferred_txt_path");
+  const auto kDateCheckMode = TryReadStringField(kPayload, "date_check_mode");
+  const auto kTimeOrderMode = TryReadStringField(kPayload, "time_order_mode");
+  if (kTargetDateIso.HasError()) {
+    throw std::invalid_argument(kTargetDateIso.error.message);
+  }
+  if (kRawActivityName.HasError()) {
+    throw std::invalid_argument(kRawActivityName.error.message);
+  }
+  if (kRemark.HasError()) {
+    throw std::invalid_argument(kRemark.error.message);
+  }
+  if (kPreferredTxtPath.HasError()) {
+    throw std::invalid_argument(kPreferredTxtPath.error.message);
+  }
+  if (kDateCheckMode.HasError()) {
+    throw std::invalid_argument(kDateCheckMode.error.message);
+  }
+  if (kTimeOrderMode.HasError()) {
+    throw std::invalid_argument(kTimeOrderMode.error.message);
+  }
+
+  RecordActivityAtomicallyRequestPayload out{};
+  out.target_date_iso = kTargetDateIso.value.value_or("");
+  out.raw_activity_name = kRawActivityName.value.value_or("");
+  out.remark = kRemark.value.value_or("");
+  out.preferred_txt_path = kPreferredTxtPath.value;
+  out.date_check_mode = kDateCheckMode.value;
+  out.time_order_mode = kTimeOrderMode.value;
+  return out;
+}
+
+auto EncodeRecordActivityAtomicallyRequest(
+    const RecordActivityAtomicallyRequestPayload& request) -> std::string {
+  json payload = {
+      {"target_date_iso", request.target_date_iso},
+      {"raw_activity_name", request.raw_activity_name},
+      {"remark", request.remark},
+  };
+  if (request.preferred_txt_path.has_value()) {
+    payload["preferred_txt_path"] = *request.preferred_txt_path;
+  }
+  if (request.date_check_mode.has_value()) {
+    payload["date_check_mode"] = *request.date_check_mode;
+  }
+  if (request.time_order_mode.has_value()) {
+    payload["time_order_mode"] = *request.time_order_mode;
+  }
+  return payload.dump();
+}
+
 }  // namespace tracer::transport

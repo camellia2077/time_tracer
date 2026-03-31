@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -19,9 +21,13 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.SuggestionChipDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
@@ -32,7 +38,7 @@ internal fun RecordQuickAccessCard(
     onRecordContentChange: (String) -> Unit,
     quickActivities: List<String>,
     availableActivityNames: List<String>,
-    onQuickActivitiesUpdate: (List<String>) -> Unit,
+    onQuickActivitiesUpdate: (List<String>) -> Boolean,
     assistSettingsExpanded: Boolean,
     onToggleAssistSettings: () -> Unit,
     suggestionLookbackDays: Int,
@@ -43,6 +49,26 @@ internal fun RecordQuickAccessCard(
     onQuickActivitySearchChange: (String) -> Unit,
     maxQuickActivityCount: Int
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val searchToken = quickActivitySearch.trim()
+    val candidates = if (searchToken.isEmpty()) {
+        emptyList()
+    } else {
+        availableActivityNames.filter {
+            !quickActivities.contains(it) && it.contains(searchToken, true)
+        }.take(5)
+    }
+
+    fun tryAddSearchToken(): Boolean {
+        if (searchToken.isEmpty()) {
+            return false
+        }
+        val updated = (quickActivities + searchToken)
+            .distinct()
+            .take(maxQuickActivityCount)
+        return onQuickActivitiesUpdate(updated)
+    }
+
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.extraLarge
@@ -93,8 +119,8 @@ internal fun RecordQuickAccessCard(
                             onValueChange = onSuggestionLookbackDaysChange,
                             label = { Text(stringResource(R.string.record_label_days)) },
                             modifier = Modifier.weight(1f),
-                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
                             )
                         )
                         OutlinedTextField(
@@ -102,8 +128,8 @@ internal fun RecordQuickAccessCard(
                             onValueChange = onSuggestionTopNChange,
                             label = { Text(stringResource(R.string.record_label_top_n)) },
                             modifier = Modifier.weight(1f),
-                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Number
                             )
                         )
                     }
@@ -114,14 +140,32 @@ internal fun RecordQuickAccessCard(
                         label = {
                             Text(stringResource(R.string.record_label_search_add_quick_activity))
                         },
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                if (tryAddSearchToken()) {
+                                    onQuickActivitySearchChange("")
+                                    keyboardController?.hide()
+                                }
+                            }
+                        ),
+                        trailingIcon = {
+                            TextButton(
+                                onClick = {
+                                    if (tryAddSearchToken()) {
+                                        onQuickActivitySearchChange("")
+                                        keyboardController?.hide()
+                                    }
+                                },
+                                enabled = searchToken.isNotEmpty()
+                            ) {
+                                Text(stringResource(R.string.record_action_add_quick_activity))
+                            }
+                        }
                     )
 
-                    val searchToken = quickActivitySearch.trim()
                     if (searchToken.isNotEmpty()) {
-                        val candidates = availableActivityNames.filter {
-                            !quickActivities.contains(it) && it.contains(searchToken, true)
-                        }.take(5)
                         com.example.tracer.ui.components.SimpleFlowRow(
                             horizontalGap = 8.dp,
                             verticalGap = 8.dp
@@ -133,7 +177,10 @@ internal fun RecordQuickAccessCard(
                                         val updated = (quickActivities + candidate)
                                             .distinct()
                                             .take(maxQuickActivityCount)
-                                        onQuickActivitiesUpdate(updated)
+                                        if (onQuickActivitiesUpdate(updated)) {
+                                            onQuickActivitySearchChange("")
+                                            keyboardController?.hide()
+                                        }
                                     },
                                     label = {
                                         Text(
@@ -145,6 +192,13 @@ internal fun RecordQuickAccessCard(
                                     }
                                 )
                             }
+                        }
+                        if (candidates.isEmpty()) {
+                            Text(
+                                text = stringResource(R.string.record_hint_no_matching_alias_key),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
                     }
                 }

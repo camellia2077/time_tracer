@@ -45,7 +45,7 @@ class TracerTabRegistryTest {
     }
 
     @Test
-    fun onEnter_record_refreshes_mapping_and_clears_unavailable_status() = runTest(dispatcher) {
+    fun onEnter_record_refreshes_authorable_tokens_and_clears_unavailable_status() = runTest(dispatcher) {
         val runtime = FakeRuntimeServices(
             mappingNamesResult = ActivityMappingNamesResult(
                 ok = true,
@@ -63,7 +63,7 @@ class TracerTabRegistryTest {
         val configViewModel = ConfigViewModel(runtime)
         advanceUntilIdle()
 
-        recordViewModel.setStatusText("Activity mapping validation unavailable: stale")
+        recordViewModel.setStatusText("Activity authorable token validation unavailable: stale")
         var capturedNames: Set<String> = emptySet()
 
         TracerTabRegistry.onEnter(
@@ -73,7 +73,7 @@ class TracerTabRegistryTest {
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
-                onValidMappingNamesChanged = { capturedNames = it }
+                onValidAuthorableEventTokensChanged = { capturedNames = it }
             )
         )
 
@@ -104,7 +104,7 @@ class TracerTabRegistryTest {
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
-                onValidMappingNamesChanged = {}
+                onValidAuthorableEventTokensChanged = {}
             )
         )
 
@@ -134,7 +134,7 @@ class TracerTabRegistryTest {
                 recordViewModel = recordViewModel,
                 configViewModel = configViewModel,
                 recordStatusText = { recordViewModel.uiState.statusText },
-                onValidMappingNamesChanged = {}
+                onValidAuthorableEventTokensChanged = {}
             )
         )
 
@@ -203,7 +203,8 @@ private class FakeRuntimeServices(
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = RecordActionResult(
         ok = true,
         message = "ok"
@@ -250,6 +251,8 @@ private class FakeRuntimeServices(
         )
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult = mappingNamesResult
+
+    override suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult = mappingNamesResult
 
     override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
         ok = true,

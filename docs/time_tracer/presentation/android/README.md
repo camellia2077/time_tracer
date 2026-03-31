@@ -18,7 +18,7 @@ Navigation hub for active Android documentation.
 ## Start Here
 
 - Local entry:
-  - `apps/android/agent.md`
+  - `apps/android/AGENTS.md`
   - `apps/android/README.md`
 - Fast onboarding:
   - `docs/time_tracer/presentation/android/specs/AGENT_ONBOARDING.md`
@@ -36,6 +36,8 @@ Navigation hub for active Android documentation.
 
 - Runtime protocol:
   - `docs/time_tracer/presentation/android/runtime-protocol.md`
+- Record Input atomic flow:
+  - `docs/time_tracer/presentation/android/record_input_atomic_flow.md`
 - Runtime/config lifecycle:
   - `docs/time_tracer/presentation/android/specs/CONFIG_ASSET_LIFECYCLE.md`
 - Preference persistence:

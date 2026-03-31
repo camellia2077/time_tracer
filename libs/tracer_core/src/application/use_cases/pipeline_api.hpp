@@ -33,6 +33,10 @@ class PipelineApi final : public IPipelineApi {
       const tracer_core::core::dto::ValidateLogicRequest& request)
       -> tracer_core::core::dto::OperationAck override;
 
+  auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
+
  private:
   pipeline::IPipelineWorkflow& pipeline_workflow_;
 };

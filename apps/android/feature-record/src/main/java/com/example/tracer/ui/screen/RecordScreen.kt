@@ -32,7 +32,7 @@ fun RecordSection(
     onRecordRemarkChange: (String) -> Unit,
     quickActivities: List<String>,
     availableActivityNames: List<String>,
-    onQuickActivitiesUpdate: (List<String>) -> Unit,
+    onQuickActivitiesUpdate: (List<String>) -> Boolean,
     assistExpanded: Boolean,
     assistSettingsExpanded: Boolean,
     onToggleAssist: () -> Unit,
@@ -44,23 +44,25 @@ fun RecordSection(
     suggestedActivities: List<String>,
     suggestionsVisible: Boolean,
     isSuggestionsLoading: Boolean,
-    useManualDate: Boolean,
-    manualDate: String,
-    onUseAutoDate: () -> Unit,
-    onUseManualDate: () -> Unit,
-    onManualDateChange: (String) -> Unit,
+    logicalDayTarget: RecordLogicalDayTarget,
+    onSelectLogicalDayYesterday: () -> Unit,
+    onSelectLogicalDayToday: () -> Unit,
+    onRefreshLogicalDayDefault: (Long) -> Unit,
     onToggleSuggestions: () -> Unit,
     onSuggestedActivityClick: (String) -> Unit,
     onRecordNow: () -> Unit
 ) {
-    var currentTimeText by remember { mutableStateOf(formatCurrentTime()) }
+    var currentTimeText by remember { mutableStateOf(formatCurrentTime(System.currentTimeMillis())) }
     var quickActivitySearch by remember { mutableStateOf("") }
     val haptic = LocalHapticFeedback.current
 
-    // Keep the time header live while the screen is active.
+    // Keep the displayed clock live and let the state layer auto-switch the activity-day default
+    // at 06:00 whenever the user has not explicitly overridden yesterday/today on this visit.
     LaunchedEffect(Unit) {
         while (true) {
-            currentTimeText = formatCurrentTime()
+            val now = System.currentTimeMillis()
+            currentTimeText = formatCurrentTime(now)
+            onRefreshLogicalDayDefault(now)
             delay(1000)
         }
     }
@@ -87,12 +89,10 @@ fun RecordSection(
         }
 
         RecordTimeSettingsCard(
-            useManualDate = useManualDate,
-            manualDate = manualDate,
             currentTimeText = currentTimeText,
-            onUseAutoDate = onUseAutoDate,
-            onUseManualDate = onUseManualDate,
-            onManualDateChange = onManualDateChange
+            logicalDayTarget = logicalDayTarget,
+            onSelectLogicalDayYesterday = onSelectLogicalDayYesterday,
+            onSelectLogicalDayToday = onSelectLogicalDayToday
         )
 
         RecordQuickAccessCard(
@@ -126,4 +126,5 @@ fun RecordSection(
     }
 }
 
-private fun formatCurrentTime(): String = DISPLAY_TIME_FORMATTER.format(Date())
+private fun formatCurrentTime(currentTimeMillis: Long): String =
+    DISPLAY_TIME_FORMATTER.format(Date(currentTimeMillis))

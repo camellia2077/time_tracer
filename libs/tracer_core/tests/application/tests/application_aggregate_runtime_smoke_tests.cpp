@@ -52,6 +52,16 @@ class SmokePipelineWorkflow final
       -> void override {}
   auto RunValidateStructure(const std::string&) -> void override {}
   auto RunValidateLogic(const std::string&, DateCheckMode) -> void override {}
+  auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest&)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse override {
+    return {.ok = true,
+            .message = "record: ok\nsync: ok",
+            .operation_id = "smoke-txn",
+            .warnings = {},
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
+  }
   auto InstallActiveConverterConfig(const std::string&,
                                     const std::string&) -> void override {}
 };

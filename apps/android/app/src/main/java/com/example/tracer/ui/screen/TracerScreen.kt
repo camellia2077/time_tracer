@@ -38,7 +38,7 @@ fun TracerScreen(
     onSetAppLanguage: (com.example.tracer.data.AppLanguage) -> Unit
 ) {
     var selectedTab by remember { mutableStateOf(DefaultTracerTab) }
-    var validMappingNames by remember { mutableStateOf<Set<String>>(emptySet()) }
+    var validAuthorableEventTokens by remember { mutableStateOf<Set<String>>(emptySet()) }
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val dataViewModel: DataViewModel = viewModel(
@@ -139,7 +139,7 @@ fun TracerScreen(
             recordViewModel = recordViewModel,
             configViewModel = configViewModel,
             recordStatusText = { recordViewModel.uiState.statusText },
-            onValidMappingNamesChanged = { names -> validMappingNames = names }
+            onValidAuthorableEventTokensChanged = { names -> validAuthorableEventTokens = names }
         )
     }
     val actions = rememberTracerScreenActions(
@@ -207,7 +207,7 @@ fun TracerScreen(
         isAppDarkThemeActive = isAppDarkThemeActive,
         appLanguage = appLanguage,
         onSetAppLanguage = onSetAppLanguage,
-        validMappingNames = validMappingNames,
+        validAuthorableEventTokens = validAuthorableEventTokens,
         onPersistRecordQuickActivities = actions.onPersistRecordQuickActivities,
         onPersistRecordAssistExpanded = actions.onPersistRecordAssistExpanded,
         onPersistRecordAssistSettingsExpanded = actions.onPersistRecordAssistSettingsExpanded,

@@ -34,6 +34,10 @@ class IPipelineApi {
   virtual auto RunValidateLogic(
       const tracer_core::core::dto::ValidateLogicRequest& request)
       -> tracer_core::core::dto::OperationAck = 0;
+
+  virtual auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

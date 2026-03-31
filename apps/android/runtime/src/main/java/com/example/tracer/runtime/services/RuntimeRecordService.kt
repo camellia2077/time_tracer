@@ -19,9 +19,10 @@ internal class RuntimeRecordService(
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult =
-        recordDelegate.recordNow(activityName, remark, targetDateIso, preferredTxtPath)
+        recordDelegate.recordNow(activityName, remark, targetDateIso, preferredTxtPath, timeOrderMode)
 
     suspend fun syncLiveToDatabase(): NativeCallResult =
         recordDelegate.syncLiveToDatabase()

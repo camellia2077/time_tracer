@@ -9,14 +9,27 @@ internal object RecordStateReducer {
     fun onRecordRemarkChange(state: RecordUiState, value: String): RecordUiState =
         state.copy(recordRemark = value)
 
-    fun useAutoDate(state: RecordUiState): RecordUiState =
-        state.copy(useManualDate = false)
+    fun selectLogicalDayYesterday(state: RecordUiState): RecordUiState =
+        selectLogicalDayTarget(state, RecordLogicalDayTarget.YESTERDAY)
 
-    fun useManualDate(state: RecordUiState): RecordUiState =
-        state.copy(useManualDate = true)
+    fun selectLogicalDayToday(state: RecordUiState): RecordUiState =
+        selectLogicalDayTarget(state, RecordLogicalDayTarget.TODAY)
 
-    fun onManualDateChange(state: RecordUiState, value: String): RecordUiState =
-        state.copy(manualDate = value)
+    fun refreshLogicalDayDefault(
+        state: RecordUiState,
+        currentTimeMillis: Long
+    ): RecordUiState {
+        // Record uses an activity-day concept instead of the natural day: before 06:00 we still
+        // default to "yesterday" so late-night work keeps appending to the previous day's block.
+        if (state.logicalDayIsUserOverride) {
+            return state
+        }
+        val defaultTarget = defaultLogicalDayTarget(currentTimeMillis)
+        if (state.logicalDayTarget == defaultTarget) {
+            return state
+        }
+        return state.copy(logicalDayTarget = defaultTarget)
+    }
 
     fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState =
         state.copy(editableHistoryContent = value)
@@ -40,7 +53,9 @@ internal object RecordStateReducer {
             .map { it.trim() }
             .filter { it.isNotEmpty() }
             .distinct()
-        if (normalized.isEmpty() || state.quickActivities == normalized) {
+        // Allow an empty quick-access list so users can clear default chips that do not match
+        // the currently imported alias config before rebuilding their own list.
+        if (state.quickActivities == normalized) {
             return state
         }
         return state.copy(quickActivities = normalized)
@@ -187,6 +202,21 @@ internal object RecordStateReducer {
             return state
         }
         return state.copy(editableHistoryContent = state.selectedHistoryContent)
+    }
+
+    private fun selectLogicalDayTarget(
+        state: RecordUiState,
+        target: RecordLogicalDayTarget
+    ): RecordUiState {
+        // Once users explicitly choose yesterday/today, keep that override for the current app
+        // session so Record and TXT tabs stay aligned on the same target-day intent.
+        if (state.logicalDayTarget == target && state.logicalDayIsUserOverride) {
+            return state
+        }
+        return state.copy(
+            logicalDayTarget = target,
+            logicalDayIsUserOverride = true
+        )
     }
 
     private fun formatBytes(bytes: Long): String {

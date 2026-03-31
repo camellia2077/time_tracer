@@ -53,6 +53,23 @@ void RunPipelineChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
           "ingest sync status after clear should return ok=true");
   Require(kClearedSyncStatus["items"].empty(),
           "ingest sync status after clear should return no items");
+
+  const json kInvalidTimeOrderMode = ParseResponse(
+      api.runtime_record_activity_atomically(
+          runtime, json{{"target_date_iso", "2026-03-29"},
+                        {"raw_activity_name", "study"},
+                        {"remark", ""},
+                        {"time_order_mode", "invalid_mode"}}
+                       .dump()
+                       .c_str()),
+      "record activity atomically invalid time_order_mode");
+  Require(!kInvalidTimeOrderMode.value("ok", true),
+          "invalid time_order_mode should return ok=false");
+  const std::string kInvalidModeError =
+      kInvalidTimeOrderMode.value("error_message", "");
+  Require(kInvalidModeError.find("strict_calendar|logical_day_0600") !=
+              std::string::npos,
+          "invalid time_order_mode error should list allowed values");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

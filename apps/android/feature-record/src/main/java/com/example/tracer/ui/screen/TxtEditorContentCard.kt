@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.MaterialTheme
@@ -15,8 +16,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
+import com.example.tracer.ui.components.SegmentedMonthDayInput
+import com.example.tracer.ui.components.filterDigits
+import com.example.tracer.ui.components.splitYearMonthDigits
 
 @Composable
 internal fun TxtEditorContentCard(
@@ -33,6 +38,10 @@ internal fun TxtEditorContentCard(
     onEditableHistoryContentChange: (String) -> Unit
 ) {
     val normalizedDayMarker = dayMarkerInput.filter { it.isDigit() }.take(4)
+    val (selectedYear, selectedMonthDigits) = splitYearMonthDigits(selectedMonth)
+    val (markerMonthDigits, markerDayDigits) = splitDayMarkerDigits(normalizedDayMarker)
+    val monthForInput = if (markerMonthDigits.isNotBlank()) markerMonthDigits else selectedMonthDigits
+    val dayForInput = markerDayDigits
     val dayContentIsoDate = buildDayContentIsoDate(
         selectedMonth = selectedMonth,
         dayMarker = normalizedDayMarker
@@ -92,12 +101,26 @@ internal fun TxtEditorContentCard(
                 }
             }
             if (outputMode == TxtOutputMode.DAY) {
-                OutlinedTextField(
-                    value = dayMarkerInput,
-                    onValueChange = onDayMarkerInputChange,
-                    label = { Text(stringResource(R.string.txt_label_target_day)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                val numericKeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                SegmentedMonthDayInput(
+                    title = if (selectedYear.isNotBlank()) {
+                        stringResource(R.string.txt_label_target_day) + " ($selectedYear)"
+                    } else {
+                        stringResource(R.string.txt_label_target_day)
+                    },
+                    month = monthForInput,
+                    day = dayForInput,
+                    keyboardOptions = numericKeyboardOptions,
+                    onMonthChange = { nextMonth ->
+                        onDayMarkerInputChange(
+                            filterDigits(nextMonth, 2) + filterDigits(dayForInput, 2)
+                        )
+                    },
+                    onDayChange = { nextDay ->
+                        onDayMarkerInputChange(
+                            filterDigits(monthForInput, 2) + filterDigits(nextDay, 2)
+                        )
+                    }
                 )
             }
 
@@ -111,7 +134,12 @@ internal fun TxtEditorContentCard(
 
             if (inlineStatusText.isNotBlank()) {
                 val isError = inlineStatusText.contains("fail", ignoreCase = true) ||
-                    inlineStatusText.contains("error", ignoreCase = true)
+                    inlineStatusText.contains("error", ignoreCase = true) ||
+                    inlineStatusText.contains("invalid", ignoreCase = true) ||
+                    inlineStatusText.contains("blocked", ignoreCase = true) ||
+                    inlineStatusText.contains("duplicate", ignoreCase = true) ||
+                    inlineStatusText.contains("mismatch", ignoreCase = true) ||
+                    inlineStatusText.contains("missing", ignoreCase = true)
                 val statusColor = if (isError) {
                     MaterialTheme.colorScheme.error
                 } else {
@@ -193,4 +221,9 @@ private fun isValidDayMarkerForIsoTitle(value: String): Boolean {
     val month = value.substring(0, 2).toIntOrNull() ?: return false
     val day = value.substring(2, 4).toIntOrNull() ?: return false
     return month in 1..12 && day in 1..31
+}
+
+private fun splitDayMarkerDigits(value: String): Pair<String, String> {
+    val digits = filterDigits(value, 4)
+    return Pair(digits.take(2), digits.drop(2).take(2))
 }

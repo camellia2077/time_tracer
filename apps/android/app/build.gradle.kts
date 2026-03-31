@@ -235,9 +235,7 @@ fun registerAboutLibrariesAssetSyncTask(variant: String): TaskProvider<GenerateA
     }
 }
 
-fun registerPackagedAssetsPolicyTask(
-    variant: String,
-): TaskProvider<Task> {
+fun registerPackagedAssetsPolicyTask(variant: String): TaskProvider<Task> {
     val taskSuffix = variantTaskSuffix(variant)
     val apkDirs =
         listOf(

@@ -68,6 +68,12 @@ auto WorkflowHandler::RunValidateLogic(const std::string& source_path,
   impl_.RunValidateLogic(source_path, date_check_mode);
 }
 
+auto WorkflowHandler::RunRecordActivityAtomically(
+    const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+    -> tracer_core::core::dto::RecordActivityAtomicallyResponse {
+  return impl_.RunRecordActivityAtomically(request);
+}
+
 auto WorkflowHandler::InstallActiveConverterConfig(
     const std::string& source_main_config_path,
     const std::string& target_main_config_path) -> void {

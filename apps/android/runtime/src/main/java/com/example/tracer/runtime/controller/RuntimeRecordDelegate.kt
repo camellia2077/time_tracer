@@ -8,7 +8,9 @@ internal class RuntimeRecordDelegate(
     private val ensureRuntimePaths: () -> RuntimePaths,
     private val ensureTextStorage: () -> TextStorage,
     private val rawRecordStore: InputRecordStore,
+    private val loadWakeKeywords: suspend () -> ActivityMappingNamesResult,
     private val responseCodec: NativeResponseCodec,
+    private val atomicRecordCodec: NativeAtomicRecordCodec,
     private val recordTranslator: NativeRecordTranslator,
     private val inspectTxtFilesInternal: () -> TxtInspectionResult,
     private val executeAfterInit: (
@@ -17,6 +19,14 @@ internal class RuntimeRecordDelegate(
     ) -> NativeCallResult,
     private val nativeValidateStructure: (inputPath: String) -> String,
     private val nativeValidateLogic: (inputPath: String, dateCheckMode: Int) -> String,
+    private val nativeRecordActivityAtomically: (
+        targetDateIso: String,
+        rawActivityName: String,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int,
+        timeOrderMode: RecordTimeOrderMode
+    ) -> String,
     private val nativeIngestSingleTxtReplaceMonth: (
         inputPath: String,
         dateCheckMode: Int,
@@ -71,14 +81,16 @@ internal class RuntimeRecordDelegate(
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = withContext(Dispatchers.IO) {
         try {
             runRecordNowInternal(
                 activityName = activityName,
                 remark = remark,
                 targetDateIso = targetDateIso,
-                preferredTxtPath = preferredTxtPath
+                preferredTxtPath = preferredTxtPath,
+                timeOrderMode = timeOrderMode
             )
         } catch (error: Exception) {
             buildRecordActionFailure(prefix = "Record failed", error = error)
@@ -185,7 +197,10 @@ internal class RuntimeRecordDelegate(
 
                 RecordActionResult(
                     ok = true,
-                    message = "save+re-import -> ${saveResult.filePath}",
+                    message = buildSaveSuccessMessage(
+                        baseMessage = "save+re-import -> ${saveResult.filePath}",
+                        canonicalContent = canonicalContent
+                    ),
                     operationId = syncResult.operationId
                 )
             } catch (error: Exception) {
@@ -199,9 +214,9 @@ internal class RuntimeRecordDelegate(
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult {
-        val paths = ensureRuntimePaths()
         val logicalDateResult = parseLogicalDate(targetDateIso)
         if (!logicalDateResult.ok || logicalDateResult.date == null) {
             return RecordActionResult(
@@ -210,78 +225,55 @@ internal class RuntimeRecordDelegate(
             )
         }
         val logicalDate = logicalDateResult.date
-        val logicalMonth = logicalDate.substring(0, 7)
 
-        val normalizedActivity = rawRecordStore.normalizeActivityName(activityName)
-        if (normalizedActivity.isEmpty()) {
+        // Record Activity authority now lives in libs so TXT candidate validation, canonical
+        // alias resolution, ingest, and rollback all share one atomic decision path. Android must
+        // not rebuild the old "write TXT first, then sync DB" flow locally.
+        val atomicResult = executeAfterInit("native_record_activity_atomically") {
+            nativeRecordActivityAtomically(
+                logicalDate,
+                activityName,
+                remark,
+                preferredTxtPath,
+                NativeBridge.DATE_CHECK_NONE,
+                timeOrderMode
+            )
+        }
+        val payload = responseCodec.parse(atomicResult.rawResponse)
+        val atomicPayload = atomicRecordCodec.parse(payload.content)
+        val baseMessage = atomicPayload?.message
+            ?.takeIf { it.isNotBlank() }
+            ?: payload.errorMessage.takeIf { it.isNotBlank() }
+            ?: if (atomicResult.operationOk) "record: ok\nsync: ok" else "Record failed."
+
+        if (!atomicResult.initialized) {
             return RecordActionResult(
                 ok = false,
-                message = "Activity name is empty."
+                message = appendFailureContext(
+                    message = baseMessage,
+                    operationId = atomicResult.operationId,
+                    errorLogPath = atomicResult.errorLogPath
+                ),
+                operationId = atomicResult.operationId
             )
         }
 
-        val inspection = inspectTxtFilesInternal()
-        if (!inspection.ok) {
+        if (!atomicResult.operationOk) {
             return RecordActionResult(
                 ok = false,
-                message = inspection.message
+                message = appendFailureContext(
+                    message = baseMessage,
+                    operationId = atomicResult.operationId,
+                    errorLogPath = atomicResult.errorLogPath
+                ),
+                operationId = atomicResult.operationId
             )
-        }
-
-        val validatedTarget = validateRecordTarget(
-            paths = paths,
-            logicalMonth = logicalMonth,
-            preferredTxtPath = preferredTxtPath,
-            inspection = inspection
-        )
-        if (validatedTarget.errorMessage != null) {
-            return RecordActionResult(
-                ok = false,
-                message = validatedTarget.errorMessage
-            )
-        }
-
-        val normalizedRemark = rawRecordStore.normalizeRemark(remark)
-        val target = resolveRecordTarget(
-            paths = paths,
-            logicalDate = logicalDate,
-            preferredTxtPath = validatedTarget.preferredRelativePath
-        )
-        val createdMonthFile = !target.targetFile.exists()
-
-        val snapshot = try {
-            rawRecordStore.appendRecord(
-                inputRootPath = target.inputPath,
-                logicalDateString = logicalDate,
-                activityName = normalizedActivity,
-                remark = normalizedRemark,
-                preferredRelativePath = target.preferredInnerPath
-            )
-        } catch (error: Exception) {
-            return buildRecordActionFailure(
-                prefix = "Record failed: cannot write TXT",
-                error = error
-            )
-        }
-        val recordSummary = buildRecordSummary(
-            snapshot = snapshot,
-            monthFileCreated = createdMonthFile
-        )
-
-        val syncResult = syncRecordInput(target.targetFile.absolutePath)
-        val failure = buildRecordSyncFailureResult(
-            recordSummary = recordSummary,
-            syncResult = syncResult,
-            responseCodec = responseCodec
-        )
-        if (failure != null) {
-            return failure
         }
 
         return RecordActionResult(
             ok = true,
-            message = "$recordSummary\nsync: ok",
-            operationId = syncResult.operationId
+            message = baseMessage,
+            operationId = atomicResult.operationId
         )
     }
 
@@ -411,6 +403,28 @@ internal class RuntimeRecordDelegate(
 
     private fun extractNativeStageFailure(result: NativeCallResult, stage: String): String? {
         return recordTranslator.extractStageFailure(result, stage)
+    }
+
+    private suspend fun buildSaveSuccessMessage(baseMessage: String, canonicalContent: String): String {
+        val wakeKeywordsResult = try {
+            loadWakeKeywords()
+        } catch (_: Exception) {
+            null
+        }
+        val normalizedWakeKeywords = if (wakeKeywordsResult?.ok == true) {
+            wakeKeywordsResult.names.toSet()
+        } else {
+            emptySet()
+        }
+        val warning = rawRecordStore.resolveCompletenessWarningForMonthContent(
+            content = canonicalContent,
+            wakeKeywords = normalizedWakeKeywords
+        )
+        return if (warning.isNullOrBlank()) {
+            baseMessage
+        } else {
+            "$baseMessage\n$warning"
+        }
     }
 
     private data class ValidatedRecordTarget(

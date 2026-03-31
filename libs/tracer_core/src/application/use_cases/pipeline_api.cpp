@@ -14,6 +14,8 @@ using tracer_core::core::dto::IngestRequest;
 using tracer_core::core::dto::ImportRequest;
 using tracer_core::core::dto::ValidateStructureRequest;
 using tracer_core::core::dto::ValidateLogicRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyResponse;
 using tracer::core::domain::types::AppOptions;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
@@ -117,6 +119,30 @@ auto PipelineApi::RunValidateLogic(const ValidateLogicRequest& request)
                                                    exception);
   } catch (...) {
     return core_api_failure::BuildOperationFailure("RunValidateLogic");
+  }
+}
+
+auto PipelineApi::RunRecordActivityAtomically(
+    const RecordActivityAtomicallyRequest& request)
+    -> RecordActivityAtomicallyResponse {
+  try {
+    return pipeline_workflow_.RunRecordActivityAtomically(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunRecordActivityAtomically", exception.what()),
+            .operation_id = "",
+            .warnings = {},
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
+  } catch (...) {
+    return {.ok = false,
+            .message = core_api_failure::BuildErrorMessage(
+                "RunRecordActivityAtomically", "Unknown error."),
+            .operation_id = "",
+            .warnings = {},
+            .rollback_failed = false,
+            .retained_transaction_root = std::nullopt};
   }
 }
 

@@ -125,8 +125,10 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             ?: DEFAULT_RECORD_SUGGEST_LOOKBACK_DAYS
         val storedTopN = preferences[PreferencesKeys.RECORD_SUGGEST_TOP_N]
             ?: DEFAULT_RECORD_SUGGEST_TOP_N
+        val hasStoredQuickActivities = preferences.contains(PreferencesKeys.RECORD_QUICK_ACTIVITIES)
         val quickActivities = parseQuickActivities(
-            preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES]
+            raw = preferences[PreferencesKeys.RECORD_QUICK_ACTIVITIES],
+            hasStoredValue = hasStoredQuickActivities
         )
         val assistExpanded = preferences[PreferencesKeys.RECORD_ASSIST_EXPANDED]
             ?: DEFAULT_RECORD_ASSIST_EXPANDED
@@ -223,20 +225,21 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
         return value.coerceIn(MIN_RECORD_SUGGEST_TOP_N, MAX_RECORD_SUGGEST_TOP_N)
     }
 
-    private fun parseQuickActivities(raw: String?): List<String> {
-        if (raw.isNullOrBlank()) {
+    private fun parseQuickActivities(raw: String?, hasStoredValue: Boolean): List<String> {
+        // Only use shipped defaults when the preference key has never been configured.
+        // Once users explicitly clear the list, keep it empty instead of rehydrating defaults.
+        if (!hasStoredValue) {
             return DEFAULT_RECORD_QUICK_ACTIVITIES
+        }
+        if (raw.isNullOrBlank()) {
+            return emptyList()
         }
         val parsed = raw
             .split(Regex("""[,\n;，]+"""))
             .map { it.trim() }
             .filter { it.isNotEmpty() }
 
-        val normalized = normalizeQuickActivities(parsed)
-        if (normalized.isEmpty()) {
-            return DEFAULT_RECORD_QUICK_ACTIVITIES
-        }
-        return normalized
+        return normalizeQuickActivities(parsed)
     }
 
     private fun normalizeQuickActivities(values: List<String>): List<String> {
@@ -255,9 +258,6 @@ class UserPreferencesRepository(private val dataStore: DataStore<Preferences>) {
             if (unique.size >= MAX_RECORD_QUICK_ACTIVITY_COUNT) {
                 break
             }
-        }
-        if (unique.isEmpty()) {
-            return DEFAULT_RECORD_QUICK_ACTIVITIES
         }
         return unique.toList()
     }

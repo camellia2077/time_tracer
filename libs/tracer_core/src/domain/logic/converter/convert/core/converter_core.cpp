@@ -50,7 +50,9 @@ void DayProcessor::Process(DailyLog& previous_day, DailyLog& day_to_process) {
 
   // If the day starts with a valid wake anchor, we may synthesize an overnight
   // sleep activity from the previous day's tail. This link repair creates an
-  // activity fact, but it does not define wake-anchor status.
+  // activity fact in parsed/converted struct data, but it does not define
+  // wake-anchor status. The prerequisite "wake must be the first semantic
+  // event of the day" belongs to earlier parse + logic-validation semantics.
   if (!previous_day.date.empty() && !previous_day.rawEvents.empty() &&
       !day_to_process.getupTime.empty() && !day_to_process.isContinuation) {
     BaseActivityRecord sleep_activity;

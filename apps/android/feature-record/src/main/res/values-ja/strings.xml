@@ -33,10 +33,13 @@
     <string name="txt_empty_state_title">TXT ファイルがありません</string>
     <string name="txt_empty_state_description">当月ファイルを作成して活動の記録を開始しましょう。Record タブが毎日のエントリを自動的に作成します。</string>
     <string name="txt_action_create_current_month">当月ファイルを作成</string>
+    <string name="txt_unselected_state_title">TXT ファイルを選択</string>
+    <string name="txt_unselected_state_description">上部の年月ピッカーで対応する TXT を開いてください。月ヘッダーがある異常 TXT もここから修正用に開けます。</string>
 
-    <string name="record_label_target_date">対象日付</string>
-    <string name="record_mode_manual">手動</string>
-    <string name="record_mode_auto">自動</string>
+    <string name="record_label_actual_time">実時間</string>
+    <string name="record_label_record_to">記録先</string>
+    <string name="record_action_record_to_yesterday">昨日</string>
+    <string name="record_action_record_to_today">今日</string>
     <string name="record_title_record_input">記録入力</string>
     <string name="record_label_activity_name">アクティビティ名</string>
     <string name="record_label_remark_optional">備考（任意）</string>
@@ -48,19 +51,21 @@
     <string name="record_label_days">日数</string>
     <string name="record_label_top_n">上位 N</string>
     <string name="record_label_search_add_quick_activity">クイック活動を検索して追加</string>
+    <string name="record_action_add_quick_activity">追加</string>
+    <string name="record_hint_no_matching_alias_key">一致する入力可能なイベントトークンがありません。</string>
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
-    <string name="record_hint_no_quick_activities">クイック活動がありません。ヘッダーを押して追加してください。</string>
+    <string name="record_hint_no_quick_activities">クイック活動がありません。検索して「追加」を押してください。</string>
     <string name="record_action_suggestions">提案</string>
     <string name="record_hint_loading">読み込み中...</string>
     <string name="record_hint_no_suggestions">提案がありません。</string>
 
-    <string name="record_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: alias_mapping.toml の検証セットが空です。</string>
+    <string name="record_status_quick_activities_save_failed_empty_validation">クイック活動を保存できません: 設定済みの入力可能イベントトークン集合が空です。</string>
     <string name="record_status_quick_activities_cannot_be_empty">クイック活動は空にできません。</string>
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="other">クイック活動は %1$d 件を超えられません。</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
+    <string name="record_status_invalid_quick_activities">無効なクイック活動: %1$s。設定された入力可能イベントトークン（alias key または wake keyword）に一致する必要があります。</string>
     <string name="record_status_quick_activities_saved">クイック活動を保存しました (%1$d)。</string>
-    <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。alias_mapping.toml の [aliases] キーまたは値に一致する必要があります。</string>
+    <string name="record_status_invalid_suggested_activity">無効な提案活動: %1$s。設定された入力可能イベントトークン（alias key または wake keyword）に一致する必要があります。</string>
 </resources>

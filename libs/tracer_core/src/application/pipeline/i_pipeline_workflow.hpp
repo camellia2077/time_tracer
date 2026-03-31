@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "application/dto/pipeline_requests.hpp"
 #include "application/dto/pipeline_responses.hpp"
 #include "domain/types/date_check_mode.hpp"
 #include "domain/types/ingest_mode.hpp"
@@ -39,6 +40,9 @@ class IPipelineWorkflow {
   virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
   virtual auto RunValidateLogic(const std::string& source_path,
                                 DateCheckMode date_check_mode) -> void = 0;
+  virtual auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
   virtual auto InstallActiveConverterConfig(
       const std::string& source_main_config_path,
       const std::string& target_main_config_path) -> void = 0;

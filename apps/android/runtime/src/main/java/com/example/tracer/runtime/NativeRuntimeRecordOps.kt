@@ -118,12 +118,14 @@ internal fun buildRecordSummary(
     parts += "record: ok"
     parts += "logical_date: ${snapshot.logicalDate}"
     parts += "target_file: ${snapshot.monthFile.absolutePath}"
-    parts += "write_time: ${snapshot.eventTime}"
+    // Android local fallback summary has no previous-event context here,
+    // so keep the same field contract with `n/a`.
+    parts += "gap_from_previous: n/a"
     if (monthFileCreated) {
         parts += "month_file_created: true"
     }
     for (warning in snapshot.warnings) {
-        parts += "warning: $warning"
+        parts += if (warning.startsWith("Warning:")) warning else "warning: $warning"
     }
     return parts.joinToString(separator = "\n")
 }

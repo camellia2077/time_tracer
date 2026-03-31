@@ -2,11 +2,14 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cctype>
 #include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <format>
 #include <fstream>
+#include <functional>
 #include <iomanip>
 #include <cstdint>
 #include <map>
@@ -23,6 +26,7 @@
 #include <vector>
 
 #include "application/pipeline/importer/import_service.hpp"
+#include "application/pipeline/detail/pipeline_record_time_order_support.hpp"
 #include "application/runtime_bridge/logger.hpp"
 #include "domain/logic/converter/convert/core/converter_core.hpp"
 #include "domain/logic/converter/log_processor.hpp"
@@ -32,6 +36,7 @@
 #include "shared/utils/string_utils.hpp"
 
 import tracer.core.application.pipeline.orchestrator;
+import tracer.core.application.pipeline.stages;
 import tracer.core.application.pipeline.types;
 import tracer.core.domain.types.app_options;
 
@@ -48,11 +53,15 @@ using tracer_core::application::dto::IngestInputModel;
 using tracer_core::core::dto::IngestSyncStatusEntry;
 using tracer_core::core::dto::IngestSyncStatusOutput;
 using tracer_core::core::dto::IngestSyncStatusRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyResponse;
 
 namespace {
 
 #include "application/pipeline/detail/pipeline_workflow_support_impl.inc"
 #include "application/pipeline/detail/pipeline_replace_month_support_impl.inc"
+#include "application/pipeline/detail/pipeline_record_alias_text_support_impl.inc"
+#include "application/pipeline/detail/pipeline_record_atomic_support_impl.inc"
 
 struct ConverterConfigPathSet {
   fs::path main_config_path;
@@ -109,6 +118,7 @@ auto CopyConverterConfigFile(const fs::path& source_path,
     const SingleTxtTargetMonth& month) -> std::string {
   return std::format("{0:04d}/{0:04d}-{1:02d}.txt", month.year, month.month);
 }
+
 
 [[nodiscard]] constexpr auto RotateRight(const std::uint32_t value,
                                          const std::uint32_t amount)
@@ -429,6 +439,21 @@ auto PipelineWorkflow::RunValidateLogic(const std::string& source_path,
   RunPipelineOrThrow(pipeline, options, "Validate logic pipeline failed.");
 }
 
+auto PipelineWorkflow::RunRecordActivityAtomically(
+    const RecordActivityAtomicallyRequest& request)
+    -> RecordActivityAtomicallyResponse {
+  // This is orchestration only: delegate atomic TXT candidate build/validate/ingest+rollback
+  // to dedicated record helpers, while keeping workflow-owned RunIngest invocation here.
+  return RunRecordActivityAtomicallySupport(
+      request, output_root_path_, *converter_config_provider_,
+      validation_issue_reporter_,
+      [this](const std::string& source_path,
+             const DateCheckMode date_check_mode) -> void {
+        RunIngest(source_path, date_check_mode, false,
+                  IngestMode::kSingleTxtReplaceMonth);
+      });
+}
+
 auto PipelineWorkflow::InstallActiveConverterConfig(
     const std::string& source_main_config_path,
     const std::string& target_main_config_path) -> void {
@@ -626,3 +651,4 @@ auto PipelineWorkflow::RunIngestReplacingAll(const std::string& source_path,
 }
 
 }  // namespace tracer::core::application::pipeline
+

@@ -124,6 +124,9 @@ auto LoadApi(LibHandle library) -> CoreApiFns {
       library, "tracer_core_runtime_validate_structure_json");
   api.runtime_validate_logic = RequireSymbol<RuntimeValidateLogicFn>(
       library, "tracer_core_runtime_validate_logic_json");
+  api.runtime_record_activity_atomically =
+      RequireSymbol<RuntimeRecordActivityAtomicallyFn>(
+          library, "tracer_core_runtime_record_activity_atomically_json");
   api.runtime_query =
       RequireSymbol<RuntimeQueryFn>(library, "tracer_core_runtime_query_json");
   api.runtime_report = RequireSymbol<RuntimeReportFn>(

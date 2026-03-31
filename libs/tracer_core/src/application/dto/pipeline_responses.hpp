@@ -2,6 +2,7 @@
 #define APPLICATION_DTO_PIPELINE_RESPONSES_HPP_
 
 #include <cstdint>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,15 @@ struct IngestSyncStatusOutput {
   bool ok = true;
   std::vector<IngestSyncStatusEntry> items;
   std::string error_message;
+};
+
+struct RecordActivityAtomicallyResponse {
+  bool ok = false;
+  std::string message;
+  std::string operation_id;
+  std::vector<std::string> warnings;
+  bool rollback_failed = false;
+  std::optional<std::string> retained_transaction_root;
 };
 
 }  // namespace tracer_core::core::dto

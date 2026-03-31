@@ -53,6 +53,11 @@ namespace tracer::transport {
 [[nodiscard]] auto EncodeValidateLogicRequest(
     const ValidateLogicRequestPayload& request) -> std::string;
 
+[[nodiscard]] auto DecodeRecordActivityAtomicallyRequest(
+    std::string_view request_json) -> RecordActivityAtomicallyRequestPayload;
+[[nodiscard]] auto EncodeRecordActivityAtomicallyRequest(
+    const RecordActivityAtomicallyRequestPayload& request) -> std::string;
+
 [[nodiscard]] auto DecodeQueryRequest(std::string_view request_json)
     -> QueryRequestPayload;
 [[nodiscard]] auto EncodeQueryRequest(const QueryRequestPayload& request)

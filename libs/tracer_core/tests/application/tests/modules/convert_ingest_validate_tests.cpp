@@ -161,6 +161,61 @@ auto TestValidateResponses(TestState& state) -> void {
          "RunValidateLogic should return failed DTO when handler throws.");
   Expect(state, Contains(kLogicFailure.error_message, "RunValidateLogic"),
          "RunValidateLogic failure should include operation name.");
+
+  const auto kAtomicRecordOk =
+      runtime_api.pipeline().RunRecordActivityAtomically(
+          {.target_date_iso = "2026-03-29",
+           .raw_activity_name = "study",
+           .remark = "remark",
+           .preferred_txt_path = "2026/2026-03.txt",
+           .date_check_mode = DateCheckMode::kNone,
+           .time_order_mode = TimeOrderMode::kLogicalDay0600});
+  Expect(state, kAtomicRecordOk.ok,
+         "RunRecordActivityAtomically should return ok on success.");
+  Expect(state, pipeline_workflow.record_activity_atomically_call_count == 1,
+         "RunRecordActivityAtomically should call workflow handler once.");
+  Expect(state,
+         pipeline_workflow.last_record_activity_request.target_date_iso ==
+             "2026-03-29",
+         "RunRecordActivityAtomically should forward target_date_iso.");
+  Expect(state,
+         pipeline_workflow.last_record_activity_request.raw_activity_name ==
+             "study",
+         "RunRecordActivityAtomically should forward raw_activity_name.");
+  Expect(state,
+         pipeline_workflow.last_record_activity_request.time_order_mode ==
+             TimeOrderMode::kLogicalDay0600,
+         "RunRecordActivityAtomically should forward time_order_mode.");
+
+  const auto kAtomicRecordDefaultMode =
+      runtime_api.pipeline().RunRecordActivityAtomically(
+          {.target_date_iso = "2026-03-29",
+           .raw_activity_name = "study",
+           .remark = "",
+           .preferred_txt_path = "",
+           .date_check_mode = DateCheckMode::kNone});
+  Expect(state, kAtomicRecordDefaultMode.ok,
+         "RunRecordActivityAtomically should succeed when time_order_mode is omitted.");
+  Expect(state,
+         pipeline_workflow.last_record_activity_request.time_order_mode ==
+             TimeOrderMode::kStrictCalendar,
+         "RunRecordActivityAtomically should default time_order_mode to strict_calendar.");
+
+  pipeline_workflow.fail_record_activity_atomically = true;
+  const auto kAtomicRecordFailure =
+      runtime_api.pipeline().RunRecordActivityAtomically(
+          {.target_date_iso = "2026-03-29",
+           .raw_activity_name = "study",
+           .remark = "",
+           .preferred_txt_path = "",
+           .date_check_mode = DateCheckMode::kContinuity,
+           .time_order_mode = TimeOrderMode::kStrictCalendar});
+  Expect(state, !kAtomicRecordFailure.ok,
+         "RunRecordActivityAtomically should return failed DTO when handler throws.");
+  Expect(state,
+         Contains(kAtomicRecordFailure.message,
+                  "RunRecordActivityAtomically failed"),
+         "RunRecordActivityAtomically failure should include operation name.");
 }
 
 auto TestContinuationDayPreservesFirstSegment(TestState& state) -> void {

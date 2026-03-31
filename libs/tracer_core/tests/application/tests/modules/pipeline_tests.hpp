@@ -8,6 +8,7 @@ namespace tracer_core::application::tests {
 
 auto RunConvertIngestValidateTests(TestState& state) -> void;
 auto RunImportServiceTests(TestState& state) -> void;
+auto RunRecordTimeOrderModeTests(TestState& state) -> void;
 
 }  // namespace tracer_core::application::tests
 

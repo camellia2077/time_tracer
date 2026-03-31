@@ -12,7 +12,7 @@ import java.util.Locale
 fun RecordTabContent(
     recordUiState: RecordUiState,
     recordViewModel: RecordViewModel,
-    validMappingNames: Set<String>,
+    validAuthorableEventTokens: Set<String>,
     onPersistQuickActivities: (List<String>) -> Unit,
     onPersistAssistExpanded: (Boolean) -> Unit,
     onPersistAssistSettingsExpanded: (Boolean) -> Unit,
@@ -29,8 +29,6 @@ fun RecordTabContent(
     }
     val quickActivitiesSaveFailedEmptyValidationText =
         stringResource(R.string.record_status_quick_activities_save_failed_empty_validation)
-    val quickActivitiesCannotBeEmptyText =
-        stringResource(R.string.record_status_quick_activities_cannot_be_empty)
     val quickActivitiesExceedLimitText = pluralStringResource(
         id = R.plurals.record_status_quick_activities_exceed_limit,
         count = 12,
@@ -49,32 +47,39 @@ fun RecordTabContent(
         recordRemark = recordUiState.recordRemark,
         onRecordRemarkChange = recordViewModel::onRecordRemarkChange,
         quickActivities = recordUiState.quickActivities,
-        availableActivityNames = remember(validMappingNames) { validMappingNames.toList().sorted() },
+        availableActivityNames = remember(validAuthorableEventTokens) {
+            validAuthorableEventTokens.toList().sorted()
+        },
         onQuickActivitiesUpdate = { targetActivities ->
-            if (validMappingNames.isEmpty()) {
-                recordViewModel.setStatusText(
-                    quickActivitiesSaveFailedEmptyValidationText
-                )
-                return@RecordSection
-            }
+            val currentNormalized = recordUiState.quickActivities
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+                .distinct()
             val normalized = targetActivities
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
                 .distinct()
-            if (normalized.isEmpty()) {
+            val isRemovalOnlyUpdate = normalized.size <= currentNormalized.size &&
+                normalized.all(currentNormalized::contains)
+
+            // Deleting quick activities should never depend on authorable-token validation.
+            // This lets users clear shipped defaults before re-adding entries that match config.
+            if (!isRemovalOnlyUpdate && validAuthorableEventTokens.isEmpty()) {
                 recordViewModel.setStatusText(
-                    quickActivitiesCannotBeEmptyText
+                    quickActivitiesSaveFailedEmptyValidationText
                 )
-                return@RecordSection
+                return@RecordSection false
             }
             if (normalized.size > 12) {
                 recordViewModel.setStatusText(
                     quickActivitiesExceedLimitText
                 )
-                return@RecordSection
+                return@RecordSection false
             }
-            val invalidActivities = normalized.filter { !validMappingNames.contains(it) }
-            if (invalidActivities.isNotEmpty()) {
+            val invalidActivities = normalized.filter {
+                !validAuthorableEventTokens.contains(it)
+            }
+            if (!isRemovalOnlyUpdate && invalidActivities.isNotEmpty()) {
                 recordViewModel.setStatusText(
                     formatWithLocale(
                         locale,
@@ -82,13 +87,17 @@ fun RecordTabContent(
                         invalidActivities.joinToString(", ")
                     )
                 )
-                return@RecordSection
+                return@RecordSection false
+            }
+            if (normalized == currentNormalized) {
+                return@RecordSection false
             }
             recordViewModel.updateQuickActivities(normalized)
             recordViewModel.setStatusText(
                 formatWithLocale(locale, quickActivitiesSavedTemplate, normalized.size)
             )
             onPersistQuickActivities(normalized)
+            true
         },
         assistExpanded = recordUiState.assistExpanded,
         assistSettingsExpanded = recordUiState.assistSettingsExpanded,
@@ -135,14 +144,15 @@ fun RecordTabContent(
         suggestedActivities = recordUiState.suggestedActivities,
         suggestionsVisible = recordUiState.suggestionsVisible,
         isSuggestionsLoading = recordUiState.isSuggestionsLoading,
-        useManualDate = recordUiState.useManualDate,
-        manualDate = recordUiState.manualDate,
-        onUseAutoDate = recordViewModel::useAutoDate,
-        onUseManualDate = recordViewModel::useManualDate,
-        onManualDateChange = recordViewModel::onManualDateChange,
+        logicalDayTarget = recordUiState.logicalDayTarget,
+        onSelectLogicalDayYesterday = recordViewModel::selectLogicalDayYesterday,
+        onSelectLogicalDayToday = recordViewModel::selectLogicalDayToday,
+        onRefreshLogicalDayDefault = recordViewModel::refreshLogicalDayDefault,
         onToggleSuggestions = recordViewModel::toggleSuggestions,
         onSuggestedActivityClick = { activity ->
-            if (validMappingNames.isNotEmpty() && !validMappingNames.contains(activity)) {
+            if (validAuthorableEventTokens.isNotEmpty() &&
+                !validAuthorableEventTokens.contains(activity)
+            ) {
                 recordViewModel.setStatusText(
                     formatWithLocale(
                         locale,

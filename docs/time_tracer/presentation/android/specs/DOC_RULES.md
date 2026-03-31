@@ -20,7 +20,7 @@ Define how active Android documents should be written and maintained.
 Use these layers consistently:
 
 1. Local entry
-   - `apps/android/agent.md`
+   - `apps/android/AGENTS.md`
    - `apps/android/README.md`
 2. Navigation and rules
    - `docs/time_tracer/presentation/android/README.md`

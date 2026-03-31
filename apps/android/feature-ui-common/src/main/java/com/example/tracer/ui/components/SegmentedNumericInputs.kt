@@ -1,4 +1,4 @@
-package com.example.tracer
+package com.example.tracer.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -21,7 +21,7 @@ private val SegmentShortWidth: Dp = 68.dp
 private val SegmentFieldHeight: Dp = 52.dp
 
 @Composable
-internal fun SegmentedDateInput(
+fun SegmentedDateInput(
     title: String,
     year: String,
     month: String,
@@ -68,7 +68,7 @@ internal fun SegmentedDateInput(
 }
 
 @Composable
-internal fun SegmentedYearMonthInput(
+fun SegmentedYearMonthInput(
     title: String,
     year: String,
     month: String,
@@ -105,7 +105,7 @@ internal fun SegmentedYearMonthInput(
 }
 
 @Composable
-internal fun SegmentedYearWeekInput(
+fun SegmentedYearWeekInput(
     title: String,
     year: String,
     week: String,
@@ -137,6 +137,43 @@ internal fun SegmentedYearWeekInput(
             keyboardOptions = keyboardOptions,
             width = SegmentShortWidth,
             placeholder = "WW"
+        )
+    }
+}
+
+@Composable
+fun SegmentedMonthDayInput(
+    title: String,
+    month: String,
+    day: String,
+    keyboardOptions: KeyboardOptions,
+    onMonthChange: (String) -> Unit,
+    onDayChange: (String) -> Unit
+) {
+    Text(
+        text = "$title (MM-DD)",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        SegmentNumberField(
+            value = month,
+            onValueChange = { onMonthChange(filterDigits(it, 2)) },
+            keyboardOptions = keyboardOptions,
+            width = SegmentShortWidth,
+            placeholder = "MM"
+        )
+        IsoSeparator("-")
+        SegmentNumberField(
+            value = day,
+            onValueChange = { onDayChange(filterDigits(it, 2)) },
+            keyboardOptions = keyboardOptions,
+            width = SegmentShortWidth,
+            placeholder = "DD"
         )
     }
 }

@@ -63,8 +63,6 @@ auto GetErrorTypeHeader(validator::ErrorType type) -> std::string {
       return "Activity Time Discontinuity errors (活动时间不连续):";
     case validator::ErrorType::kMissingSleepNight:
       return "Lack of sleep activity errors(最后的活动项目缺少sleep活动):";
-    case validator::ErrorType::kJsonTooFewActivities:
-      return "Activity count errors(活动数量错误):";
     case validator::ErrorType::kZeroDurationActivity:
     case validator::ErrorType::kActivityDurationTooLong:
       return "Activity duration errors(活动时长错误):";
@@ -85,9 +83,6 @@ auto GetDiagnosticHeader(const std::string& code) -> std::string {
   if (code == "activity.duration.zero" ||
       code == "activity.duration.too_long") {
     return "Activity duration errors(活动时长错误):";
-  }
-  if (code == "activity.count.too_few") {
-    return "Activity count errors(活动数量错误):";
   }
   if (code == "date.continuity.missing") {
     return "Date Continuity errors (日期中断/缺失):";

@@ -547,6 +547,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/test_support.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/convert_ingest_validate_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/import_service_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/record_time_order_mode_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_pipeline.cpp"
     )
     setup_app_target(tt_pipeline_api_tests)

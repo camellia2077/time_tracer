@@ -4,14 +4,13 @@ import java.util.Locale
 
 internal class LiveRawRecordNormalization {
     fun normalizeActivityName(raw: String): String {
+        // Keep raw alias key text: record-time should only sanitize user input,
+        // not convert alias key -> canonical value.
         val cleaned = raw.replace("\n", " ").replace("\r", " ").trim()
         if (cleaned.isEmpty()) {
             return ""
         }
-        return when (cleaned.lowercase(Locale.US)) {
-            "zh" -> "zhihu"
-            else -> cleaned
-        }
+        return cleaned
     }
 
     fun normalizeRemark(raw: String): String {

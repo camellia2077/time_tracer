@@ -189,12 +189,14 @@ void TestRuntimeFactories(int& failures) {
       Expect(!has_exercise,
              "Processed-data JSON should not persist derived header.exercise.",
              failures);
-      const bool has_sleep = written_json.is_array() && !written_json.empty() &&
-                             written_json.front().contains("headers") &&
-                             written_json.front()["headers"].contains("sleep");
+      const bool has_wake_anchor =
+          written_json.is_array() && !written_json.empty() &&
+          written_json.front().contains("headers") &&
+          written_json.front()["headers"].contains("wake_anchor");
       Expect(
-          has_sleep && written_json.front()["headers"]["sleep"] == 1,
-          "Processed-data JSON should persist header.sleep from wake anchor.",
+          has_wake_anchor &&
+              written_json.front()["headers"]["wake_anchor"] == 1,
+          "Processed-data JSON should persist header.wake_anchor from day semantics.",
           failures);
     }
 
@@ -228,7 +230,7 @@ void TestRuntimeFactories(int& failures) {
       "date": "2026-03-16",
       "status": 0,
       "exercise": 0,
-      "sleep": 0,
+      "wake_anchor": 1,
       "getup": "07:30",
       "activity_count": 2,
       "remark": "legacy"
@@ -281,6 +283,55 @@ void TestRuntimeFactories(int& failures) {
         Expect(legacy_days.front().hasWakeAnchor,
                "Legacy JSON load should rebuild wake anchor from "
                "getup/isContinuation.",
+               failures);
+      }
+    }
+
+    const fs::path sparse_root = root / "sparse_input";
+    CreateDirectories(sparse_root);
+    const fs::path sparse_file = sparse_root / "2026-04.json";
+    WriteCanonicalText(sparse_file,
+                       R"([
+  {
+    "headers": {
+      "date": "2026-04-01",
+      "status": 0,
+      "exercise": 0,
+      "wake_anchor": 1,
+      "getup": "07:30",
+      "activity_count": 1,
+      "remark": ""
+    },
+    "activities": [
+      {
+        "logical_id": 1,
+        "start_timestamp": 25200,
+        "end_timestamp": 27000,
+        "start_time": "07:00",
+        "end_time": "07:30",
+        "duration_seconds": 1800,
+        "activity_remark": null,
+        "activity": { "project_path": "study_cpp" }
+      }
+    ]
+  }
+])");
+    const auto sparse_loaded =
+        processed_data_loader->LoadDailyLogs(sparse_root.string());
+    Expect(sparse_loaded.errors.empty(),
+           "Processed-data loader should accept JSON days with one activity.",
+           failures);
+    Expect(sparse_loaded.data_by_source.size() == 1U,
+           "Processed-data loader should load sparse source files.",
+           failures);
+    if (!sparse_loaded.data_by_source.empty()) {
+      const auto& sparse_days = sparse_loaded.data_by_source.begin()->second;
+      Expect(sparse_days.size() == 1U,
+             "Processed-data loader should deserialize sparse day rows.",
+             failures);
+      if (!sparse_days.empty()) {
+        Expect(sparse_days.front().processedActivities.size() == 1U,
+               "Processed-data loader should preserve sparse activity rows.",
                failures);
       }
     }

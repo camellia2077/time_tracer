@@ -102,19 +102,6 @@ internal class LiveRawRecordParsing(
         }
         return rawBody.substring(0, cutAt).trim()
     }
-
-    fun isWakeLikeActivity(activityName: String): Boolean {
-        val normalized = normalization.normalizeForComparison(activityName)
-        if (normalized.isEmpty()) {
-            return false
-        }
-
-        return normalized == "w" ||
-            normalized.contains("wake") ||
-            normalized.contains("起床") ||
-            normalized.contains("新的一天开始了")
-    }
-
     fun findDayBlockEnd(lines: List<String>, blockStart: Int): Int {
         for (index in (blockStart + 1) until lines.size) {
             if (isDayMarker(lines[index])) {

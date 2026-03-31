@@ -54,6 +54,9 @@ class WorkflowHandler final : public IWorkflowHandler {
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
+  auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto InstallActiveConverterConfig(
       const std::string& source_main_config_path,
       const std::string& target_main_config_path) -> void override;

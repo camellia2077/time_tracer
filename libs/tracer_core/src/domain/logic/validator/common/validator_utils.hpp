@@ -27,7 +27,6 @@ enum class ErrorType {
   kUnrecognizedActivity,
   kSourceInvalidLineFormat,
   kSourceMissingYearHeader,
-  kJsonTooFewActivities,
   kZeroDurationActivity,
   kActivityDurationTooLong
 };

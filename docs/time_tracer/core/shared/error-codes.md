@@ -50,7 +50,6 @@ Source:
 | `kUnrecognizedActivity` | `validation.source.unrecognized_activity` |
 | `kSourceInvalidLineFormat` | `validation.source.invalid_line_format` |
 | `kSourceMissingYearHeader` | `validation.source.missing_year_header` |
-| `kJsonTooFewActivities` | `validation.json.too_few_activities` |
 | `kZeroDurationActivity` | `validation.activity.zero_duration` |
 | `kActivityDurationTooLong` | `validation.activity.duration_too_long` |
 

@@ -17,7 +17,7 @@ Get a coding agent to the correct Android code area in a few minutes.
 
 ## 5-Minute Path
 
-1. `apps/android/agent.md`
+1. `apps/android/AGENTS.md`
 2. `docs/time_tracer/presentation/android/README.md`
 3. `docs/time_tracer/presentation/android/specs/STRUCTURE.md`
 4. `docs/time_tracer/presentation/android/specs/EDIT_ROUTING.md`
@@ -48,7 +48,9 @@ Open only when needed:
    - report, query, and chart presentation
 5. `apps/android/runtime`
    - runtime implementation, JNI bridge integration, services, coreadapter
-6. `apps/android/contract`
+6. `apps/android/feature-ui-common`
+   - shared reusable Compose UI primitives (for example segmented numeric inputs)
+7. `apps/android/contract`
    - shared gateway interfaces and result models
 
 ## First Routing Heuristic

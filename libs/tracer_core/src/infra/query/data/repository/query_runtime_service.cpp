@@ -33,6 +33,32 @@ auto QueryRuntimeService::RunDataQuery(
         "mapping_names", std::move(content), request.output_mode);
     return {.ok = true, .content = std::move(content), .error_message = ""};
   }
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kMappingAliasKeys) {
+    std::string content =
+        runtime_service_internal::BuildMappingAliasKeysContent(
+            converter_config_toml_path_);
+    content = infra_data_query_renderers::RenderJsonObjectOutput(
+        "mapping_alias_keys", std::move(content), request.output_mode);
+    return {.ok = true, .content = std::move(content), .error_message = ""};
+  }
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kWakeKeywords) {
+    std::string content = runtime_service_internal::BuildWakeKeywordsContent(
+        converter_config_toml_path_);
+    content = infra_data_query_renderers::RenderJsonObjectOutput(
+        "wake_keywords", std::move(content), request.output_mode);
+    return {.ok = true, .content = std::move(content), .error_message = ""};
+  }
+  if (request.action ==
+      tracer_core::core::dto::DataQueryAction::kAuthorableEventTokens) {
+    std::string content =
+        runtime_service_internal::BuildAuthorableEventTokensContent(
+            converter_config_toml_path_);
+    content = infra_data_query_renderers::RenderJsonObjectOutput(
+        "authorable_event_tokens", std::move(content), request.output_mode);
+    return {.ok = true, .content = std::move(content), .error_message = ""};
+  }
 
   if (request.action == tracer_core::core::dto::DataQueryAction::kReportChart) {
     runtime_service_internal::ValidateReportChartRequest(request);

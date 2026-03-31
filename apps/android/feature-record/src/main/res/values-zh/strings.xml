@@ -33,10 +33,13 @@
     <string name="txt_empty_state_title">暂无 TXT 文件</string>
     <string name="txt_empty_state_description">创建当月文件以开始记录活动。Record 标签页会自动创建每日条目。</string>
     <string name="txt_action_create_current_month">创建当月文件</string>
+    <string name="txt_unselected_state_title">选择一个 TXT 文件</string>
+    <string name="txt_unselected_state_description">请使用上方年月选择器打开对应 TXT。带月份头的异常 TXT 也可以在这里进入编辑修复。</string>
 
-    <string name="record_label_target_date">目标日期</string>
-    <string name="record_mode_manual">手动</string>
-    <string name="record_mode_auto">自动</string>
+    <string name="record_label_actual_time">实际时间</string>
+    <string name="record_label_record_to">记录到</string>
+    <string name="record_action_record_to_yesterday">昨天</string>
+    <string name="record_action_record_to_today">今天</string>
     <string name="record_title_record_input">记录输入</string>
     <string name="record_label_activity_name">活动名称</string>
     <string name="record_label_remark_optional">备注（可选）</string>
@@ -48,19 +51,21 @@
     <string name="record_label_days">天数</string>
     <string name="record_label_top_n">前 N 项</string>
     <string name="record_label_search_add_quick_activity">搜索并添加快捷活动</string>
+    <string name="record_action_add_quick_activity">添加</string>
+    <string name="record_hint_no_matching_alias_key">未找到匹配的可输入活动 token。</string>
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
-    <string name="record_hint_no_quick_activities">暂无快捷活动，点击标题添加。</string>
+    <string name="record_hint_no_quick_activities">暂无快捷活动，请使用搜索框并点击“添加”。</string>
     <string name="record_action_suggestions">建议</string>
     <string name="record_hint_loading">加载中...</string>
     <string name="record_hint_no_suggestions">暂无建议。</string>
 
-    <string name="record_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：alias_mapping.toml 校验集合为空。</string>
+    <string name="record_status_quick_activities_save_failed_empty_validation">无法保存快捷活动：配置的可输入活动 token 集合为空。</string>
     <string name="record_status_quick_activities_cannot_be_empty">快捷活动不能为空。</string>
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="other">快捷活动不能超过 %1$d 项。</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
+    <string name="record_status_invalid_quick_activities">无效快捷活动：%1$s。必须匹配配置允许的可输入活动 token（alias key 或 wake keyword）。</string>
     <string name="record_status_quick_activities_saved">快捷活动已保存（%1$d）。</string>
-    <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配 alias_mapping.toml [aliases] 的 key 或 value。</string>
+    <string name="record_status_invalid_suggested_activity">无效建议活动：%1$s。必须匹配配置允许的可输入活动 token（alias key 或 wake keyword）。</string>
 </resources>

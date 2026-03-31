@@ -244,4 +244,52 @@ auto NativeValidateLogic(JNIEnv* env, jobject /*thiz*/, jstring input_path,
   });
 }
 
+auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
+                                    jstring target_date_iso,
+                                    jstring raw_activity_name, jstring remark,
+                                    jstring preferred_txt_path,
+                                    jint date_check_mode,
+                                    jint time_order_mode) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const std::string target_date_iso_utf8 = ToUtf8(env, target_date_iso);
+    const std::string raw_activity_name_utf8 = ToUtf8(env, raw_activity_name);
+    const std::string remark_utf8 = ToUtf8(env, remark);
+    const std::string preferred_txt_path_utf8 =
+        ToUtf8(env, preferred_txt_path);
+    if (target_date_iso_utf8.empty()) {
+      return BuildResponseJson(false, "targetDateIso must not be empty.",
+                               std::string{});
+    }
+
+    tt_transport::RecordActivityAtomicallyRequestPayload request_payload{};
+    request_payload.target_date_iso = target_date_iso_utf8;
+    request_payload.raw_activity_name = raw_activity_name_utf8;
+    request_payload.remark = remark_utf8;
+    if (!preferred_txt_path_utf8.empty()) {
+      request_payload.preferred_txt_path = preferred_txt_path_utf8;
+    }
+    request_payload.date_check_mode = ParseDateCheckMode(date_check_mode);
+    request_payload.time_order_mode =
+        ParseRecordTimeOrderMode(time_order_mode);
+    const std::string request_json =
+        tt_transport::EncodeRecordActivityAtomicallyRequest(request_payload);
+
+    tt_transport::ResponseEnvelope response_payload{};
+    {
+      std::scoped_lock lock(g_runtime_mutex);
+      if (g_runtime.core_runtime == nullptr) {
+        return BuildResponseJson(false, "nativeInit must be called first.",
+                                 std::string{});
+      }
+      response_payload =
+          ParseCoreResponse(
+              tracer_core_runtime_record_activity_atomically_json(
+                  g_runtime.core_runtime, request_json.c_str()),
+              "nativeRecordActivityAtomically");
+    }
+
+    return tt_transport::SerializeResponseEnvelope(response_payload);
+  });
+}
+
 }  // namespace tracer_core::api::android::bridge_internal

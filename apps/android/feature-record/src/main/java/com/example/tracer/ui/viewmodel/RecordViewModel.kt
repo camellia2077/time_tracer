@@ -7,9 +7,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+
+enum class RecordLogicalDayTarget {
+    YESTERDAY,
+    TODAY
+}
 
 data class CryptoProgressUiState(
     val isVisible: Boolean = false,
@@ -28,9 +30,11 @@ data class CryptoProgressUiState(
 data class RecordUiState(
     val recordContent: String = "",
     val recordRemark: String = "",
-    val useManualDate: Boolean = false,
-    val manualDate: String = currentIsoDate(),
+    val logicalDayTarget: RecordLogicalDayTarget =
+        defaultLogicalDayTarget(System.currentTimeMillis()),
+    val logicalDayIsUserOverride: Boolean = false,
     val historyFiles: List<String> = emptyList(),
+    val txtInspectionEntries: List<TxtInspectionEntry> = emptyList(),
     val availableMonths: List<String> = emptyList(),
     val selectedMonth: String = "",
     val selectedHistoryFile: String = "",
@@ -48,9 +52,6 @@ data class RecordUiState(
     val cryptoProgress: CryptoProgressUiState = CryptoProgressUiState()
 )
 
-private fun currentIsoDate(): String =
-    SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
-
 class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() {
     private val intentHandler = RecordIntentHandler(
         useCaseCaller = RecordUseCaseCaller(recordUseCases)
@@ -67,16 +68,19 @@ class RecordViewModel(private val recordUseCases: RecordUseCases) : ViewModel() 
         uiState = intentHandler.onRecordRemarkChange(uiState, value)
     }
 
-    fun useAutoDate() {
-        uiState = intentHandler.useAutoDate(uiState)
+    fun selectLogicalDayYesterday() {
+        uiState = intentHandler.selectLogicalDayYesterday(uiState)
     }
 
-    fun useManualDate() {
-        uiState = intentHandler.useManualDate(uiState)
+    fun selectLogicalDayToday() {
+        uiState = intentHandler.selectLogicalDayToday(uiState)
     }
 
-    fun onManualDateChange(value: String) {
-        uiState = intentHandler.onManualDateChange(uiState, value)
+    fun refreshLogicalDayDefault(currentTimeMillis: Long = System.currentTimeMillis()) {
+        uiState = intentHandler.refreshLogicalDayDefault(
+            state = uiState,
+            currentTimeMillis = currentTimeMillis
+        )
     }
 
     fun updateEditableHistoryContent(value: String) {

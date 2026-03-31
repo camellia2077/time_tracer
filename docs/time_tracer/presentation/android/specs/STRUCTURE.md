@@ -23,6 +23,8 @@ Describe stable Android module boundaries and dependency direction.
   - Data tab presentation
 - `feature-record`
   - Record/TXT presentation and shared record-side UI state
+- `feature-ui-common`
+  - shared reusable Compose presentation primitives for multiple feature modules
 - `feature-report`
   - report/query/chart presentation
 - `runtime`
@@ -33,7 +35,10 @@ Describe stable Android module boundaries and dependency direction.
 ## Dependency Direction
 
 - `app -> contract + feature-* + runtime`
-- `feature-* -> contract`
+- `feature-data -> contract`
+- `feature-record -> contract + feature-ui-common`
+- `feature-report -> contract + feature-ui-common`
+- `feature-ui-common -> (no Android project-module dependency)`
 - `runtime -> contract`
 
 Within the app layer, prefer the smallest gateway interface needed by the UI route.
@@ -69,6 +74,8 @@ App-side tests should follow the same rule and avoid implementing `RuntimeGatewa
   - `app`
 - Change tab-specific UI behavior:
   - matching `feature-*`
+- Change reusable shared UI primitives used by multiple tabs:
+  - `feature-ui-common`
 - Change runtime capability behavior:
   - `runtime/services` or `runtime/coreadapter`
 - Change raw/native response translation:

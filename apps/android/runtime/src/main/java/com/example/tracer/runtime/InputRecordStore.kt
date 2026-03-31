@@ -82,11 +82,12 @@ internal class InputRecordStore {
         if (insertResult.duplicateSuspected) {
             warnings += "Possible duplicate record: same HHmm and activity already exists in this day."
         }
-        if (
-            insertResult.firstActivityName != null &&
-            !parsing.isWakeLikeActivity(insertResult.firstActivityName)
-        ) {
-            warnings += "First entry of the day is not wake-related."
+        resolveCompletenessWarningForDayContent(
+            content = monthFile.readText(),
+            dayMarker = dayMarker,
+            wakeKeywords = emptySet()
+        )?.let { warning ->
+            warnings += warning
         }
 
         return RecordWriteSnapshot(
@@ -129,6 +130,71 @@ internal class InputRecordStore {
         return txtFileStore.writeTxtFile(inputRootPath, relativePath, content)
     }
 
+    fun resolveCompletenessWarningForMonthContent(
+        content: String,
+        wakeKeywords: Set<String> = emptySet()
+    ): String? {
+        val lines = content.lineSequence().toList()
+        var hasIncompleteDay = false
+        val normalizedWakeKeywords = wakeKeywords
+            .asSequence()
+            .map(normalization::normalizeForComparison)
+            .filter { it.isNotEmpty() }
+            .toSet()
+
+        for (index in lines.indices) {
+            if (!parsing.isDayMarker(lines[index])) {
+                continue
+            }
+
+            val blockEnd = parsing.findDayBlockEnd(lines, index)
+            when (
+                resolveCompletenessWarningForDayBlock(
+                    lines = lines,
+                    blockStart = index,
+                    blockEnd = blockEnd,
+                    normalizedWakeKeywords = normalizedWakeKeywords
+                )
+            ) {
+                WarningKind.OVERNIGHT_CONTINUATION -> return OVERNIGHT_CONTINUATION_WARNING
+                WarningKind.INCOMPLETE_DAY -> hasIncompleteDay = true
+                WarningKind.NONE -> Unit
+            }
+        }
+
+        return if (hasIncompleteDay) INCOMPLETE_DAY_WARNING else null
+    }
+
+    fun resolveCompletenessWarningForDayContent(
+        content: String,
+        dayMarker: String,
+        wakeKeywords: Set<String> = emptySet()
+    ): String? {
+        val lines = content.lineSequence().toList()
+        val blockStart = lines.indexOfFirst { it.trim() == dayMarker }
+        if (blockStart < 0 || !parsing.isDayMarker(lines[blockStart])) {
+            return null
+        }
+        val normalizedWakeKeywords = wakeKeywords
+            .asSequence()
+            .map(normalization::normalizeForComparison)
+            .filter { it.isNotEmpty() }
+            .toSet()
+
+        return when (
+            resolveCompletenessWarningForDayBlock(
+                lines = lines,
+                blockStart = blockStart,
+                blockEnd = parsing.findDayBlockEnd(lines, blockStart),
+                normalizedWakeKeywords = normalizedWakeKeywords
+            )
+        ) {
+            WarningKind.OVERNIGHT_CONTINUATION -> OVERNIGHT_CONTINUATION_WARNING
+            WarningKind.INCOMPLETE_DAY -> INCOMPLETE_DAY_WARNING
+            WarningKind.NONE -> null
+        }
+    }
+
     private fun buildRawEventLine(hhmm: String, activity: String, remark: String): String {
         return persistence.buildRawEventLine(hhmm, activity, remark)
     }
@@ -163,4 +229,46 @@ internal class InputRecordStore {
         val duplicateSuspected: Boolean,
         val firstActivityName: String?
     )
+
+    private fun resolveCompletenessWarningForDayBlock(
+        lines: List<String>,
+        blockStart: Int,
+        blockEnd: Int,
+        normalizedWakeKeywords: Set<String>
+    ): WarningKind {
+        var authoredEventCount = 0
+        val firstActivityName = parsing.findFirstActivityName(lines, blockStart, blockEnd)
+        for (index in (blockStart + 1) until blockEnd) {
+            if (parsing.extractActivityName(lines[index]).isNotEmpty()) {
+                authoredEventCount += 1
+            }
+        }
+
+        if (authoredEventCount >= 2) {
+            return WarningKind.NONE
+        }
+        val normalizedFirstActivity = firstActivityName
+            ?.let(normalization::normalizeForComparison)
+            ?.takeIf { it.isNotEmpty() }
+        if (normalizedFirstActivity != null &&
+            normalizedWakeKeywords.isNotEmpty() &&
+            !normalizedWakeKeywords.contains(normalizedFirstActivity)
+        ) {
+            return WarningKind.OVERNIGHT_CONTINUATION
+        }
+        return WarningKind.INCOMPLETE_DAY
+    }
+
+    private enum class WarningKind {
+        NONE,
+        INCOMPLETE_DAY,
+        OVERNIGHT_CONTINUATION
+    }
+
+    internal companion object {
+        const val INCOMPLETE_DAY_WARNING =
+            "Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet."
+        const val OVERNIGHT_CONTINUATION_WARNING =
+            "Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated."
+    }
 }

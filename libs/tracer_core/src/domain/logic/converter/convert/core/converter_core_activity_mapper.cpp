@@ -72,6 +72,9 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
     std::string_view description) const -> std::string {
   std::string mapped_description(description);
 
+  // Canonical mapping stage:
+  // TXT stores alias keys (raw activity tokens). During full-text conversion/ingest we map
+  // alias key -> canonical value defined in alias_mapping.toml [aliases].
   auto map_it = config_.text_mapping.find(mapped_description);
   if (map_it != config_.text_mapping.end()) {
     mapped_description = map_it->second;

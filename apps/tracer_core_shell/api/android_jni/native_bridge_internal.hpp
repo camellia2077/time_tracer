@@ -46,6 +46,7 @@ auto DestroyRuntimeLocked() -> void;
     -> std::vector<int>;
 
 [[nodiscard]] auto ParseDateCheckMode(jint value) -> std::string;
+[[nodiscard]] auto ParseRecordTimeOrderMode(jint value) -> std::string;
 
 [[nodiscard]] auto ParseDataQueryAction(jint value) -> std::string;
 
@@ -94,6 +95,14 @@ auto NativeValidateStructure(JNIEnv* env, jobject thiz, jstring input_path)
 auto NativeValidateLogic(JNIEnv* env, jobject thiz, jstring input_path,
                          jint date_check_mode) -> jstring;
 
+auto NativeRecordActivityAtomically(JNIEnv* env, jobject thiz,
+                                    jstring target_date_iso,
+                                    jstring raw_activity_name,
+                                    jstring remark,
+                                    jstring preferred_txt_path,
+                                    jint date_check_mode,
+                                    jint time_order_mode) -> jstring;
+
 auto NativeEncryptFile(JNIEnv* env, jobject thiz, jstring input_path,
                        jstring output_path, jstring passphrase,
                        jstring security_level) -> jstring;
@@ -134,7 +143,7 @@ auto NativeReport(JNIEnv* env, jobject thiz, jint mode, jint report_type,
                   jstring argument, jint format, jintArray days_list)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 16> kNativeMethods;
+extern const std::array<JNINativeMethod, 17> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

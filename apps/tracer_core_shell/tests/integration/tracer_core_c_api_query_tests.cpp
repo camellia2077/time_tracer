@@ -20,6 +20,48 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
               kMappingNamesContent["names"].is_array(),
           "baseline query mapping names content should include names array");
 
+  const json kMappingAliasKeysResponse =
+      ParseResponse(api.runtime_query(runtime,
+                                      json{{"action", "mapping_alias_keys"}}
+                                          .dump()
+                                          .c_str()),
+                    "baseline query mapping alias keys");
+  Require(kMappingAliasKeysResponse.value("ok", false),
+          "baseline query mapping alias keys should return ok=true");
+  const json kMappingAliasKeysContent =
+      json::parse(kMappingAliasKeysResponse.value("content", "{}"));
+  Require(kMappingAliasKeysContent.contains("names") &&
+              kMappingAliasKeysContent["names"].is_array(),
+          "baseline query mapping alias keys content should include names "
+          "array");
+
+  const json kWakeKeywordsResponse = ParseResponse(
+      api.runtime_query(runtime,
+                        json{{"action", "wake_keywords"}}.dump().c_str()),
+      "baseline query wake keywords");
+  Require(kWakeKeywordsResponse.value("ok", false),
+          "baseline query wake keywords should return ok=true");
+  const json kWakeKeywordsContent =
+      json::parse(kWakeKeywordsResponse.value("content", "{}"));
+  Require(kWakeKeywordsContent.contains("names") &&
+              kWakeKeywordsContent["names"].is_array(),
+          "baseline query wake keywords content should include names array");
+
+  const json kAuthorableTokensResponse =
+      ParseResponse(api.runtime_query(runtime,
+                                      json{{"action", "authorable_event_tokens"}}
+                                          .dump()
+                                          .c_str()),
+                    "baseline query authorable event tokens");
+  Require(kAuthorableTokensResponse.value("ok", false),
+          "baseline query authorable event tokens should return ok=true");
+  const json kAuthorableTokensContent =
+      json::parse(kAuthorableTokensResponse.value("content", "{}"));
+  Require(kAuthorableTokensContent.contains("names") &&
+              kAuthorableTokensContent["names"].is_array(),
+          "baseline query authorable event tokens content should include names "
+          "array");
+
   const json kReportChartResponse = ParseResponse(
       api.runtime_query(runtime,
                         json{{"action", "report_chart"}, {"lookback_days", 7}}

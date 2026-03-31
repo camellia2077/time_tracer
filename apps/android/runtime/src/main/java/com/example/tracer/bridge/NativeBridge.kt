@@ -14,6 +14,8 @@ object NativeBridge {
     const val DATE_CHECK_NONE = 0
     const val DATE_CHECK_CONTINUITY = 1
     const val DATE_CHECK_FULL = 2
+    const val RECORD_TIME_ORDER_STRICT_CALENDAR = 0
+    const val RECORD_TIME_ORDER_LOGICAL_DAY_0600 = 1
 
     const val QUERY_ACTION_YEARS = 0
     const val QUERY_ACTION_MONTHS = 1
@@ -25,6 +27,9 @@ object NativeBridge {
     const val QUERY_ACTION_TREE = 7
     const val QUERY_ACTION_MAPPING_NAMES = 8
     const val QUERY_ACTION_REPORT_CHART = 9
+    const val QUERY_ACTION_MAPPING_ALIAS_KEYS = 10
+    const val QUERY_ACTION_WAKE_KEYWORDS = 11
+    const val QUERY_ACTION_AUTHORABLE_EVENT_TOKENS = 12
 
     const val REPORT_MODE_SINGLE = 0
     const val REPORT_MODE_PERIOD_BATCH = 1
@@ -84,6 +89,15 @@ object NativeBridge {
     external fun nativeValidateLogic(
         inputPath: String,
         dateCheckMode: Int
+    ): String
+
+    external fun nativeRecordActivityAtomically(
+        targetDateIso: String,
+        rawActivityName: String,
+        remark: String,
+        preferredTxtPath: String,
+        dateCheckMode: Int,
+        timeOrderMode: Int
     ): String
 
     external fun nativeEncryptFile(

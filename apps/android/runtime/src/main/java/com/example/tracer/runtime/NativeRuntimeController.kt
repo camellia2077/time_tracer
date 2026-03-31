@@ -14,6 +14,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         runtimePathsProvider = runtimeSession::runtimePathsOrNull
     )
     private val responseCodec = NativeResponseCodec()
+    private val atomicRecordCodec = NativeAtomicRecordCodec()
     private val ingestSyncStatusCodec = NativeIngestSyncStatusCodec()
     private val reportTranslator = NativeReportTranslator(responseCodec)
     private val queryTranslator = NativeQueryTranslator(responseCodec)
@@ -37,16 +38,24 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         responseCodec = responseCodec,
         statusCodec = ingestSyncStatusCodec
     )
+    private val queryDelegate = RuntimeQueryDelegate(
+        queryTranslator = queryTranslator,
+        executeNativeTreeQuery = coreAdapter::executeNativeTreeQuery,
+        executeNativeDataQuery = coreAdapter::executeNativeDataQuery
+    )
     private val recordDelegate = RuntimeRecordDelegate(
         ensureRuntimePaths = runtimeSession::ensureRuntimePaths,
         ensureTextStorage = runtimeSession::ensureTextStorage,
         rawRecordStore = inputRecordStore,
+        loadWakeKeywords = queryDelegate::listWakeKeywords,
         responseCodec = responseCodec,
+        atomicRecordCodec = atomicRecordCodec,
         recordTranslator = recordTranslator,
         inspectTxtFilesInternal = txtInspectionService::inspectTxtFiles,
         executeAfterInit = coreAdapter::executeAfterInit,
         nativeValidateStructure = runtimeBridge::nativeValidateStructure,
         nativeValidateLogic = runtimeBridge::nativeValidateLogic,
+        nativeRecordActivityAtomically = runtimeBridge::nativeRecordActivityAtomically,
         nativeIngestSingleTxtReplaceMonth = runtimeBridge::nativeIngestSingleTxtReplaceMonth,
         nativeClearTxtIngestSyncStatus = runtimeBridge::nativeClearTxtIngestSyncStatus
     )
@@ -58,11 +67,6 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val reportDelegate = RuntimeReportDelegate(
         executeReportAfterInit = coreAdapter::executeReportAfterInit,
         nativeReportSingle = runtimeBridge::nativeReportSingle
-    )
-    private val queryDelegate = RuntimeQueryDelegate(
-        queryTranslator = queryTranslator,
-        executeNativeTreeQuery = coreAdapter::executeNativeTreeQuery,
-        executeNativeDataQuery = coreAdapter::executeNativeDataQuery
     )
 
     private val initService = RuntimeInitService(
@@ -141,9 +145,10 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult =
-        recordService.recordNow(activityName, remark, targetDateIso, preferredTxtPath)
+        recordService.recordNow(activityName, remark, targetDateIso, preferredTxtPath, timeOrderMode)
 
     override suspend fun syncLiveToDatabase(): NativeCallResult =
         recordService.syncLiveToDatabase()
@@ -307,4 +312,13 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
         queryService.listActivityMappingNames()
+
+    override suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
+        queryService.listActivityAliasKeys()
+
+    override suspend fun listWakeKeywords(): ActivityMappingNamesResult =
+        queryService.listWakeKeywords()
+
+    override suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult =
+        queryService.listAuthorableEventTokens()
 }

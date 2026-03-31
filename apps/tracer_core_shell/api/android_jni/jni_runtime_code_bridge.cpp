@@ -10,6 +10,8 @@ namespace {
 constexpr int kDateCheckModeNone = 0;
 constexpr int kDateCheckModeContinuity = 1;
 constexpr int kDateCheckModeFull = 2;
+constexpr int kRecordTimeOrderStrictCalendar = 0;
+constexpr int kRecordTimeOrderLogicalDay0600 = 1;
 
 constexpr int kQueryActionYears = 0;
 constexpr int kQueryActionMonths = 1;
@@ -21,6 +23,9 @@ constexpr int kQueryActionActivitySuggest = 6;
 constexpr int kQueryActionTree = 7;
 constexpr int kQueryActionMappingNames = 8;
 constexpr int kQueryActionReportChart = 9;
+constexpr int kQueryActionMappingAliasKeys = 10;
+constexpr int kQueryActionWakeKeywords = 11;
+constexpr int kQueryActionAuthorableEventTokens = 12;
 
 constexpr int kReportTypeDay = 0;
 constexpr int kReportTypeMonth = 1;
@@ -47,6 +52,18 @@ constexpr int kReportFormatTypst = 2;
   }
   throw std::invalid_argument("Unsupported date_check_mode code: " +
                               std::to_string(value));
+}
+
+[[nodiscard]] auto ParseRecordTimeOrderModeCode(int value) -> std::string {
+  if (value == kRecordTimeOrderStrictCalendar) {
+    return "strict_calendar";
+  }
+  if (value == kRecordTimeOrderLogicalDay0600) {
+    return "logical_day_0600";
+  }
+  throw std::invalid_argument(
+      "Unsupported time_order_mode code: " + std::to_string(value) +
+      ". Allowed: 0(strict_calendar), 1(logical_day_0600).");
 }
 
 [[nodiscard]] auto ParseDataQueryActionCode(int value) -> std::string {
@@ -79,6 +96,15 @@ constexpr int kReportFormatTypst = 2;
   }
   if (value == kQueryActionReportChart) {
     return "report_chart";
+  }
+  if (value == kQueryActionMappingAliasKeys) {
+    return "mapping_alias_keys";
+  }
+  if (value == kQueryActionWakeKeywords) {
+    return "wake_keywords";
+  }
+  if (value == kQueryActionAuthorableEventTokens) {
+    return "authorable_event_tokens";
   }
   throw std::invalid_argument("Unsupported query action code: " +
                               std::to_string(value));

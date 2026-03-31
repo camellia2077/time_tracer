@@ -106,6 +106,35 @@ void TestDecodeWorkflowRequests(int& failures) {
              *validate_logic.date_check_mode == "continuity",
          "DecodeValidateLogicRequest date_check_mode mismatch.", failures);
 
+  const auto atomic_record = DecodeRecordActivityAtomicallyRequest(
+      R"({"target_date_iso":"2026-03-29","raw_activity_name":"study","remark":"remark","preferred_txt_path":"2026/2026-03.txt","date_check_mode":"none","time_order_mode":"logical_day_0600"})");
+  Expect(atomic_record.target_date_iso == "2026-03-29",
+         "DecodeRecordActivityAtomicallyRequest target_date_iso mismatch.",
+         failures);
+  Expect(atomic_record.raw_activity_name == "study",
+         "DecodeRecordActivityAtomicallyRequest raw_activity_name mismatch.",
+         failures);
+  Expect(atomic_record.remark == "remark",
+         "DecodeRecordActivityAtomicallyRequest remark mismatch.", failures);
+  Expect(atomic_record.preferred_txt_path.has_value() &&
+             *atomic_record.preferred_txt_path == "2026/2026-03.txt",
+         "DecodeRecordActivityAtomicallyRequest preferred_txt_path mismatch.",
+         failures);
+  Expect(atomic_record.date_check_mode.has_value() &&
+             *atomic_record.date_check_mode == "none",
+         "DecodeRecordActivityAtomicallyRequest date_check_mode mismatch.",
+         failures);
+  Expect(atomic_record.time_order_mode.has_value() &&
+             *atomic_record.time_order_mode == "logical_day_0600",
+         "DecodeRecordActivityAtomicallyRequest time_order_mode mismatch.",
+         failures);
+
+  const auto atomic_record_without_mode = DecodeRecordActivityAtomicallyRequest(
+      R"({"target_date_iso":"2026-03-29","raw_activity_name":"study","remark":"remark"})");
+  Expect(!atomic_record_without_mode.time_order_mode.has_value(),
+         "DecodeRecordActivityAtomicallyRequest missing time_order_mode should remain unset.",
+         failures);
+
   ExpectInvalidArgument(
       [] { (void)DecodeConvertRequest(R"({"input_path":1})"); },
       "field `input_path` must be a string.",
@@ -121,6 +150,22 @@ void TestDecodeWorkflowRequests(int& failures) {
       },
       "field `date_check_mode` must be a string.",
       "DecodeValidateLogicRequest bad date_check_mode type", failures);
+  ExpectInvalidArgument(
+      [] {
+        (void)DecodeRecordActivityAtomicallyRequest(
+            R"({"raw_activity_name":"x","remark":""})");
+      },
+      "field `target_date_iso` must be a string.",
+      "DecodeRecordActivityAtomicallyRequest missing target_date_iso",
+      failures);
+  ExpectInvalidArgument(
+      [] {
+        (void)DecodeRecordActivityAtomicallyRequest(
+            R"({"target_date_iso":"2026-03-29","raw_activity_name":"x","remark":"","time_order_mode":1})");
+      },
+      "field `time_order_mode` must be a string.",
+      "DecodeRecordActivityAtomicallyRequest bad time_order_mode type",
+      failures);
 }
 
 void TestDecodeReportRequests(int& failures) {

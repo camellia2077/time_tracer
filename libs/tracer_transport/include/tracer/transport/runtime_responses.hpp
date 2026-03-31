@@ -109,6 +109,7 @@ struct CapabilitiesFeaturesPayload {
   bool runtime_import_json = false;
   bool runtime_validate_structure_json = false;
   bool runtime_validate_logic_json = false;
+  bool runtime_record_activity_atomically_json = false;
   bool runtime_query_json = false;
   bool runtime_report_json = false;
   bool runtime_report_batch_json = false;

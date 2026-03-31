@@ -33,10 +33,13 @@
     <string name="txt_empty_state_title">No TXT files yet</string>
     <string name="txt_empty_state_description">Create your first month file to start recording activities. The Record tab will automatically create daily entries.</string>
     <string name="txt_action_create_current_month">Create Current Month</string>
+    <string name="txt_unselected_state_title">Select a TXT file</string>
+    <string name="txt_unselected_state_description">Use the year-month picker above to open the corresponding TXT. TXT with month headers can still be opened here for repair.</string>
 
-    <string name="record_label_target_date">Target Date</string>
-    <string name="record_mode_manual">Manual</string>
-    <string name="record_mode_auto">Auto</string>
+    <string name="record_label_actual_time">Actual Time</string>
+    <string name="record_label_record_to">Record to</string>
+    <string name="record_action_record_to_yesterday">Yesterday</string>
+    <string name="record_action_record_to_today">Today</string>
     <string name="record_title_record_input">Record Input</string>
     <string name="record_label_activity_name">Activity Name</string>
     <string name="record_label_remark_optional">Remark (Optional)</string>
@@ -48,20 +51,22 @@
     <string name="record_label_days">Days</string>
     <string name="record_label_top_n">Top N</string>
     <string name="record_label_search_add_quick_activity">Search &amp; Add Quick Activity</string>
+    <string name="record_action_add_quick_activity">Add</string>
+    <string name="record_hint_no_matching_alias_key">No matching authorable event token.</string>
     <string name="record_chip_add_activity">+ %1$s</string>
     <string name="record_chip_remove_activity">%1$s X</string>
-    <string name="record_hint_no_quick_activities">No quick activities. Click header to add.</string>
+    <string name="record_hint_no_quick_activities">No quick activities. Use search and Add to create one.</string>
     <string name="record_action_suggestions">Suggestions</string>
     <string name="record_hint_loading">Loading...</string>
     <string name="record_hint_no_suggestions">No suggestions.</string>
 
-    <string name="record_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: alias_mapping.toml validation set is empty.</string>
+    <string name="record_status_quick_activities_save_failed_empty_validation">Cannot save quick activities: configured authorable event token set is empty.</string>
     <string name="record_status_quick_activities_cannot_be_empty">Quick activities cannot be empty.</string>
     <plurals name="record_status_quick_activities_exceed_limit">
         <item quantity="one">Quick activities cannot exceed %1$d entry.</item>
         <item quantity="other">Quick activities cannot exceed %1$d entries.</item>
     </plurals>
-    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
+    <string name="record_status_invalid_quick_activities">Invalid quick activities: %1$s. Must match configured authorable event token (alias key or wake keyword).</string>
     <string name="record_status_quick_activities_saved">Quick activities saved (%1$d).</string>
-    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match alias_mapping.toml [aliases] key or value.</string>
+    <string name="record_status_invalid_suggested_activity">Invalid suggested activity: %1$s. Must match configured authorable event token (alias key or wake keyword).</string>
 </resources>

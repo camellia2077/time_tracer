@@ -9,14 +9,19 @@ internal class RecordIntentHandler(
     fun onRecordRemarkChange(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.onRecordRemarkChange(state, value)
 
-    fun useAutoDate(state: RecordUiState): RecordUiState =
-        RecordStateReducer.useAutoDate(state)
+    fun selectLogicalDayYesterday(state: RecordUiState): RecordUiState =
+        RecordStateReducer.selectLogicalDayYesterday(state)
 
-    fun useManualDate(state: RecordUiState): RecordUiState =
-        RecordStateReducer.useManualDate(state)
+    fun selectLogicalDayToday(state: RecordUiState): RecordUiState =
+        RecordStateReducer.selectLogicalDayToday(state)
 
-    fun onManualDateChange(state: RecordUiState, value: String): RecordUiState =
-        RecordStateReducer.onManualDateChange(state, value)
+    fun refreshLogicalDayDefault(
+        state: RecordUiState,
+        currentTimeMillis: Long
+    ): RecordUiState = RecordStateReducer.refreshLogicalDayDefault(
+        state = state,
+        currentTimeMillis = currentTimeMillis
+    )
 
     fun updateEditableHistoryContent(state: RecordUiState, value: String): RecordUiState =
         RecordStateReducer.updateEditableHistoryContent(state, value)

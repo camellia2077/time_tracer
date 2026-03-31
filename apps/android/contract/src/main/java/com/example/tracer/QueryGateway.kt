@@ -11,4 +11,20 @@ interface QueryGateway {
     suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult
+
+    // Keep this API alias-only so callers never have to infer left keys from mixed name sets.
+    suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
+        listActivityMappingNames()
+
+    // Wake semantics are config-driven. Authoring/runtime callers should not hardcode wake tokens.
+    suspend fun listWakeKeywords(): ActivityMappingNamesResult =
+        ActivityMappingNamesResult(
+            ok = false,
+            names = emptyList(),
+            message = "Wake keywords query not implemented."
+        )
+
+    // Authorable event tokens are alias_mapping keys union wake_keywords.
+    suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult =
+        listActivityAliasKeys()
 }

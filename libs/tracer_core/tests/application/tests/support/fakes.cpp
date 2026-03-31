@@ -96,6 +96,17 @@ auto FakePipelineWorkflow::RunValidateLogic(const std::string& source_path,
   }
 }
 
+auto FakePipelineWorkflow::RunRecordActivityAtomically(
+    const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+    -> tracer_core::core::dto::RecordActivityAtomicallyResponse {
+  ++record_activity_atomically_call_count;
+  last_record_activity_request = request;
+  if (fail_record_activity_atomically) {
+    throw std::runtime_error("record activity atomically failed");
+  }
+  return record_activity_atomically_response;
+}
+
 auto FakePipelineWorkflow::InstallActiveConverterConfig(
     const std::string& /*source_main_config_path*/,
     const std::string& /*target_main_config_path*/) -> void {}

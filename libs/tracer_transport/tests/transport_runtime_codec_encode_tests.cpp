@@ -94,6 +94,36 @@ void TestEncodeRequestRoundTrip(int& failures) {
   }
 
   {
+    RecordActivityAtomicallyRequestPayload request{};
+    request.target_date_iso = "2026-03-29";
+    request.raw_activity_name = "study_cpp";
+    request.remark = "remark";
+    request.preferred_txt_path = "2026/2026-03.txt";
+    request.date_check_mode = "none";
+    request.time_order_mode = "logical_day_0600";
+    const auto encoded = EncodeRecordActivityAtomicallyRequest(request);
+    const auto decoded = DecodeRecordActivityAtomicallyRequest(encoded);
+    Expect(decoded.target_date_iso == request.target_date_iso,
+           "EncodeRecordActivityAtomicallyRequest round-trip target_date_iso mismatch.",
+           failures);
+    Expect(decoded.raw_activity_name == request.raw_activity_name,
+           "EncodeRecordActivityAtomicallyRequest round-trip raw_activity_name mismatch.",
+           failures);
+    Expect(decoded.remark == request.remark,
+           "EncodeRecordActivityAtomicallyRequest round-trip remark mismatch.",
+           failures);
+    Expect(decoded.preferred_txt_path == request.preferred_txt_path,
+           "EncodeRecordActivityAtomicallyRequest round-trip preferred_txt_path mismatch.",
+           failures);
+    Expect(decoded.date_check_mode == request.date_check_mode,
+           "EncodeRecordActivityAtomicallyRequest round-trip date_check_mode mismatch.",
+           failures);
+    Expect(decoded.time_order_mode == request.time_order_mode,
+           "EncodeRecordActivityAtomicallyRequest round-trip time_order_mode mismatch.",
+           failures);
+  }
+
+  {
     QueryRequestPayload request{};
     request.action = "days";
     request.output_mode = "text";

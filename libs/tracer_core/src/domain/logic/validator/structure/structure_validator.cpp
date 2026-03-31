@@ -1,11 +1,12 @@
 // domain/logic/validator/structure/structure_validator.cpp
 #include "domain/logic/validator/structure/structure_validator.hpp"
 
+#include <algorithm>
 #include <optional>
 #include <set>
-#include <unordered_set>
 #include <string>
 #include <string_view>
+#include <unordered_set>
 
 namespace validator::structure {
 namespace {
@@ -53,19 +54,6 @@ auto DaysInMonth(int year, int month) -> int {
   return kDaysInBigMonth;
 }
 // NOLINTEND(bugprone-easily-swappable-parameters)
-
-void ValidateActivityCount(const DailyLog& day,
-                           std::vector<Diagnostic>& diagnostics) {
-  if (day.processedActivities.size() < 2) {
-    diagnostics.push_back(
-        {.severity = DiagnosticSeverity::kError,
-         .code = "activity.count.too_few",
-         .message = "In file for date " + day.date +
-                    ": The day has less than 2 activities. This may cause "
-                    "issues with 'sleep' activity generation.",
-         .source_span = day.source_span});
-  }
-}
 
 void ValidateActivityDuration(const DailyLog& day,
                               std::vector<Diagnostic>& diagnostics) {
@@ -132,6 +120,9 @@ void ValidateWakeKeywordPosition(
     return;
   }
 
+  // Parser only establishes first-event semantics (`getupTime` or
+  // `isContinuation`). The formal ingest rule "wake keyword must be the first
+  // semantic event of the day" is enforced here during logic validation.
   for (size_t index = 1; index < day.rawEvents.size(); ++index) {
     const auto& raw_event = day.rawEvents[index];
     if (!wake_keywords.contains(raw_event.description)) {
@@ -213,11 +204,13 @@ auto StructValidator::Validate(const std::string& /*filename*/,
                                std::vector<Diagnostic>& diagnostics) -> bool {
   ValidateDateContinuity(days, diagnostics, date_check_mode_);
   for (const auto& day : days) {
-    ValidateActivityCount(day, diagnostics);
     ValidateActivityDuration(day, diagnostics);
     ValidateWakeKeywordPosition(day, wake_keywords_, diagnostics);
   }
-  return diagnostics.empty();
+  return !std::ranges::any_of(
+      diagnostics, [](const Diagnostic& diagnostic) -> bool {
+        return diagnostic.severity == DiagnosticSeverity::kError;
+      });
 }
 
 }  // namespace validator::structure

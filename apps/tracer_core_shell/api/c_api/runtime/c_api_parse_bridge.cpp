@@ -49,6 +49,20 @@ namespace tracer_core::shell::c_api_bridge {
       "field `ingest_mode` must be one of: standard|single_txt_replace_month.");
 }
 
+[[nodiscard]] auto ParseTimeOrderMode(const std::string& value)
+    -> TimeOrderMode {
+  const std::string normalized = ToLowerAscii(value);
+  if (normalized == "strict_calendar") {
+    return TimeOrderMode::kStrictCalendar;
+  }
+  if (normalized == "logical_day_0600") {
+    return TimeOrderMode::kLogicalDay0600;
+  }
+  throw std::invalid_argument(
+      "field `time_order_mode` must be one of: "
+      "strict_calendar|logical_day_0600.");
+}
+
 [[nodiscard]] auto ParseQueryAction(const std::string& value)
     -> tracer_core::core::dto::DataQueryAction {
   using tracer_core::core::dto::DataQueryAction;
@@ -77,6 +91,20 @@ namespace tracer_core::shell::c_api_bridge {
   if (normalized == "mapping_names" || normalized == "mapping-names") {
     return DataQueryAction::kMappingNames;
   }
+  if (normalized == "mapping_alias_keys" ||
+      normalized == "mapping-alias-keys" ||
+      normalized == "alias_keys" || normalized == "alias-keys") {
+    return DataQueryAction::kMappingAliasKeys;
+  }
+  if (normalized == "wake_keywords" || normalized == "wake-keywords") {
+    return DataQueryAction::kWakeKeywords;
+  }
+  if (normalized == "authorable_event_tokens" ||
+      normalized == "authorable-event-tokens" ||
+      normalized == "authorable_tokens" ||
+      normalized == "authorable-tokens") {
+    return DataQueryAction::kAuthorableEventTokens;
+  }
   if (normalized == "report_chart" || normalized == "report-chart" ||
       normalized == "chart") {
     return DataQueryAction::kReportChart;
@@ -86,7 +114,8 @@ namespace tracer_core::shell::c_api_bridge {
   }
   throw std::invalid_argument(
       "field `action` must be one of: years|months|days|days_duration|"
-      "days_stats|search|activity_suggest|mapping_names|report_chart|tree.");
+      "days_stats|search|activity_suggest|mapping_names|mapping_alias_keys|"
+      "wake_keywords|authorable_event_tokens|report_chart|tree.");
 }
 
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)

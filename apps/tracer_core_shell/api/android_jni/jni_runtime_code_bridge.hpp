@@ -6,6 +6,7 @@
 namespace tracer_core::shell::jni_bridge {
 
 [[nodiscard]] auto ParseDateCheckModeCode(int value) -> std::string;
+[[nodiscard]] auto ParseRecordTimeOrderModeCode(int value) -> std::string;
 [[nodiscard]] auto ParseDataQueryActionCode(int value) -> std::string;
 [[nodiscard]] auto ParseReportTypeCode(int value) -> std::string;
 [[nodiscard]] auto ParseReportFormatCode(int value) -> std::string;

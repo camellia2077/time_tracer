@@ -3,6 +3,7 @@ import tracer.core.application.use_cases.interface;
 
 #include <exception>
 
+#include "nlohmann/json.hpp"
 #include "api/c_api/tracer_core_c_api.h"
 #include "api/c_api/runtime/tracer_core_c_api_internal.hpp"
 #include "application/dto/pipeline_requests.hpp"
@@ -18,14 +19,44 @@ using tracer_core::core::c_api::internal::BuildOperationResponse;
 using tracer_core::core::c_api::internal::ClearLastError;
 using tracer_core::core::c_api::internal::ParseDateCheckMode;
 using tracer_core::core::c_api::internal::ParseIngestMode;
+using tracer_core::core::c_api::internal::ParseTimeOrderMode;
 using tracer_core::core::c_api::internal::RequireRuntime;
 using tracer_core::core::c_api::internal::ToRequestJsonView;
 using tracer_core::core::dto::ConvertRequest;
 using tracer_core::core::dto::ImportRequest;
 using tracer_core::core::dto::IngestRequest;
 using tracer_core::core::dto::IngestSyncStatusRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyRequest;
+using tracer_core::core::dto::RecordActivityAtomicallyResponse;
 using tracer_core::core::dto::ValidateLogicRequest;
 using tracer_core::core::dto::ValidateStructureRequest;
+
+namespace {
+
+[[nodiscard]] auto BuildRecordActivityAtomicallyResponseJson(
+    const RecordActivityAtomicallyResponse& response) -> const char* {
+  nlohmann::json content = {
+      {"ok", response.ok},
+      {"message", response.message},
+      {"operation_id", response.operation_id},
+      {"warnings", response.warnings},
+      {"rollback_failed", response.rollback_failed},
+  };
+  if (response.retained_transaction_root.has_value()) {
+    content["retained_transaction_root"] = *response.retained_transaction_root;
+  }
+
+  tracer::transport::QueryResponsePayload payload{};
+  payload.ok = response.ok;
+  payload.error_message = response.ok ? "" : response.message;
+  payload.content = content.dump();
+  return tracer_core::core::c_api::internal::BuildTextResponse(
+      {.ok = payload.ok,
+       .content = payload.content,
+       .error_message = payload.error_message});
+}
+
+}  // namespace
 
 extern "C" TT_CORE_API auto tracer_core_runtime_ingest_json(
     TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
@@ -189,5 +220,35 @@ extern "C" TT_CORE_API auto tracer_core_runtime_validate_logic_json(
   } catch (...) {
     return BuildFailureResponse(
         "tracer_core_runtime_validate_logic_json failed unexpectedly.");
+  }
+}
+
+extern "C" TT_CORE_API auto tracer_core_runtime_record_activity_atomically_json(
+    TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
+  try {
+    ClearLastError();
+    ITracerCoreRuntime& runtime = RequireRuntime(handle);
+    const auto kPayload = tt_transport::DecodeRecordActivityAtomicallyRequest(
+        ToRequestJsonView(request_json));
+
+    RecordActivityAtomicallyRequest request{};
+    request.target_date_iso = kPayload.target_date_iso;
+    request.raw_activity_name = kPayload.raw_activity_name;
+    request.remark = kPayload.remark;
+    request.preferred_txt_path = kPayload.preferred_txt_path.value_or("");
+    if (kPayload.date_check_mode.has_value()) {
+      request.date_check_mode = ParseDateCheckMode(*kPayload.date_check_mode);
+    }
+    if (kPayload.time_order_mode.has_value()) {
+      request.time_order_mode = ParseTimeOrderMode(*kPayload.time_order_mode);
+    }
+
+    return BuildRecordActivityAtomicallyResponseJson(
+        runtime.pipeline().RunRecordActivityAtomically(request));
+  } catch (const std::exception& error) {
+    return BuildFailureResponse(error.what());
+  } catch (...) {
+    return BuildFailureResponse(
+        "tracer_core_runtime_record_activity_atomically_json failed unexpectedly.");
   }
 }

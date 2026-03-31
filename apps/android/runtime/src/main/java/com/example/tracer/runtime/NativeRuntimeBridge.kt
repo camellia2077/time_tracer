@@ -115,6 +115,27 @@ internal class NativeRuntimeBridge {
         dateCheckMode = dateCheckMode
     )
 
+    fun nativeRecordActivityAtomically(
+        targetDateIso: String,
+        rawActivityName: String,
+        remark: String,
+        preferredTxtPath: String?,
+        dateCheckMode: Int,
+        timeOrderMode: RecordTimeOrderMode
+    ): String = NativeBridge.nativeRecordActivityAtomically(
+        targetDateIso = targetDateIso,
+        rawActivityName = rawActivityName,
+        remark = remark,
+        preferredTxtPath = preferredTxtPath.orEmpty(),
+        dateCheckMode = dateCheckMode,
+        timeOrderMode = when (timeOrderMode) {
+            RecordTimeOrderMode.STRICT_CALENDAR ->
+                NativeBridge.RECORD_TIME_ORDER_STRICT_CALENDAR
+            RecordTimeOrderMode.LOGICAL_DAY_0600 ->
+                NativeBridge.RECORD_TIME_ORDER_LOGICAL_DAY_0600
+        }
+    )
+
     fun nativeQuery(request: DataQueryRequest): String = NativeBridge.nativeQuery(
         action = request.action,
         year = request.year ?: 0,

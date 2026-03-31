@@ -38,6 +38,15 @@ struct ValidateLogicRequestPayload {
   std::optional<std::string> date_check_mode;
 };
 
+struct RecordActivityAtomicallyRequestPayload {
+  std::string target_date_iso;
+  std::string raw_activity_name;
+  std::string remark;
+  std::optional<std::string> preferred_txt_path;
+  std::optional<std::string> date_check_mode;
+  std::optional<std::string> time_order_mode;
+};
+
 struct QueryRequestPayload {
   std::string action;
   std::optional<std::string> output_mode;

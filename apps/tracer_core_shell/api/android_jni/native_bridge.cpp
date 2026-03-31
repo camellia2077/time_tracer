@@ -83,6 +83,11 @@ auto DestroyRuntimeLocked() -> void {
       static_cast<int>(value));
 }
 
+[[nodiscard]] auto ParseRecordTimeOrderMode(jint value) -> std::string {
+  return tracer_core::shell::jni_bridge::ParseRecordTimeOrderModeCode(
+      static_cast<int>(value));
+}
+
 [[nodiscard]] auto ParseDataQueryAction(jint value) -> std::string {
   return tracer_core::shell::jni_bridge::ParseDataQueryActionCode(
       static_cast<int>(value));

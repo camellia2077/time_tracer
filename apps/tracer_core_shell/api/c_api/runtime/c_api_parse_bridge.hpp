@@ -4,6 +4,7 @@
 #include <string>
 
 #include "domain/types/date_check_mode.hpp"
+#include "domain/types/time_order_mode.hpp"
 
 enum class IngestMode;
 enum class ReportFormat;
@@ -25,6 +26,8 @@ namespace tracer_core::shell::c_api_bridge {
 [[nodiscard]] auto ParseDateCheckMode(const std::string& value)
     -> DateCheckMode;
 [[nodiscard]] auto ParseIngestMode(const std::string& value) -> IngestMode;
+[[nodiscard]] auto ParseTimeOrderMode(const std::string& value)
+    -> TimeOrderMode;
 [[nodiscard]] auto ParseQueryAction(const std::string& value)
     -> tracer_core::core::dto::DataQueryAction;
 [[nodiscard]] auto ParseDataQueryOutputMode(const std::string& value)

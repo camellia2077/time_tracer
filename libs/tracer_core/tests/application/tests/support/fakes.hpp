@@ -33,6 +33,7 @@ class FakePipelineWorkflow final
   bool fail_ingest_replace_all = false;
   bool fail_ingest_sync_status_query = false;
   bool fail_clear_ingest_sync_status = false;
+  bool fail_record_activity_atomically = false;
 
   std::string last_converter_input;
   AppOptions last_converter_options;
@@ -47,6 +48,8 @@ class FakePipelineWorkflow final
   std::string last_validate_structure_input;
   std::string last_validate_logic_input;
   DateCheckMode last_validate_logic_mode = DateCheckMode::kNone;
+  tracer_core::core::dto::RecordActivityAtomicallyRequest
+      last_record_activity_request;
 
   int convert_call_count = 0;
   int ingest_call_count = 0;
@@ -56,12 +59,22 @@ class FakePipelineWorkflow final
   int validate_logic_call_count = 0;
   int ingest_sync_status_query_call_count = 0;
   int clear_ingest_sync_status_call_count = 0;
+  int record_activity_atomically_call_count = 0;
   tracer_core::core::dto::IngestSyncStatusRequest last_ingest_sync_status_request;
   tracer_core::core::dto::IngestSyncStatusOutput ingest_sync_status_output = {
       .ok = true,
       .items = {},
       .error_message = "",
   };
+  tracer_core::core::dto::RecordActivityAtomicallyResponse
+      record_activity_atomically_response = {
+          .ok = true,
+          .message = "record: ok\nsync: ok",
+          .operation_id = "fake-txn",
+          .warnings = {},
+          .rollback_failed = false,
+          .retained_transaction_root = std::nullopt,
+      };
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
       -> void override;
@@ -82,6 +95,9 @@ class FakePipelineWorkflow final
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
+  auto RunRecordActivityAtomically(
+      const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
+      -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto InstallActiveConverterConfig(
       const std::string& source_main_config_path,
       const std::string& target_main_config_path) -> void override;

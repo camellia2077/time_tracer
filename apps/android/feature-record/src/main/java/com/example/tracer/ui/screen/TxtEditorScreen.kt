@@ -27,7 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
-import java.util.Calendar
+import java.time.Clock
+import java.time.YearMonth
 import java.util.Locale
 
 internal enum class TxtOutputMode {
@@ -37,8 +38,10 @@ internal enum class TxtOutputMode {
 
 @Composable
 fun TxtEditorSection(
+    inspectionEntries: List<TxtInspectionEntry>,
     availableMonths: List<String>,
     selectedMonth: String,
+    logicalDayTarget: RecordLogicalDayTarget,
     onOpenPreviousMonth: () -> Unit,
     onOpenNextMonth: () -> Unit,
     onOpenMonth: (String) -> Unit,
@@ -56,8 +59,9 @@ fun TxtEditorSection(
     }
     var autoDayMarkerLoadedKey by remember { mutableStateOf("") }
     var isEditorContentVisible by remember(selectedHistoryFile) { mutableStateOf(false) }
-    val parsedAvailableMonths = remember(availableMonths) {
-        availableMonths
+    val parsedAvailableMonths = remember(inspectionEntries) {
+        inspectionEntries
+            .mapNotNull { it.headerMonth }
             .mapNotNull(::parseYearMonthKey)
             .distinctBy { it.key }
             .sortedBy { it.key }
@@ -83,27 +87,34 @@ fun TxtEditorSection(
         ?.takeIf { availableMonthValues.contains(it) }
         ?: availableMonthValues.lastOrNull().orEmpty()
 
-    LaunchedEffect(selectedMonth) {
-        outputMode = TxtOutputMode.DAY
+    LaunchedEffect(selectedHistoryFile, selectedMonth) {
+        outputMode = if (selectedMonth.isBlank()) {
+            TxtOutputMode.ALL
+        } else {
+            TxtOutputMode.DAY
+        }
     }
 
-    LaunchedEffect(selectedHistoryFile, selectedMonth) {
+    LaunchedEffect(selectedHistoryFile, selectedMonth, logicalDayTarget) {
         if (selectedHistoryFile.isBlank()) {
             autoDayMarkerLoadedKey = ""
             return@LaunchedEffect
         }
-        val loadKey = "$selectedHistoryFile@$selectedMonth"
+        val loadKey = "$selectedHistoryFile@$selectedMonth@$logicalDayTarget"
         if (autoDayMarkerLoadedKey == loadKey) {
             return@LaunchedEffect
         }
 
-        dayMarkerInput = defaultDayMarkerForSelectedMonth(selectedMonth)
+        dayMarkerInput = defaultDayMarkerForSelectedMonth(
+            selectedMonth = selectedMonth,
+            logicalDayTarget = logicalDayTarget
+        )
         autoDayMarkerLoadedKey = loadKey
     }
 
     // Auto-load TXT list when entering the tab to avoid requiring manual refresh.
-    LaunchedEffect(selectedHistoryFile, availableMonths) {
-        if (selectedHistoryFile.isBlank() && availableMonths.isEmpty()) {
+    LaunchedEffect(selectedHistoryFile, inspectionEntries) {
+        if (selectedHistoryFile.isBlank() && inspectionEntries.isEmpty()) {
             onRefreshHistory()
         }
     }
@@ -121,7 +132,7 @@ fun TxtEditorSection(
 
     // Empty-state: no TXT files exist yet (typical for fresh release installs).
     // Show a guidance card so users can bootstrap their first month TXT file.
-    val showEmptyState = availableMonths.isEmpty() && selectedHistoryFile.isEmpty()
+    val showEmptyState = inspectionEntries.isEmpty()
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -155,7 +166,10 @@ fun TxtEditorSection(
                         outputMode = outputMode,
                         onOutputModeChange = { nextMode ->
                             if (nextMode == TxtOutputMode.DAY && outputMode != TxtOutputMode.DAY) {
-                                dayMarkerInput = defaultDayMarkerForSelectedMonth(selectedMonth)
+                                dayMarkerInput = defaultDayMarkerForSelectedMonth(
+                                    selectedMonth = selectedMonth,
+                                    logicalDayTarget = logicalDayTarget
+                                )
                             }
                             outputMode = nextMode
                         },
@@ -171,6 +185,8 @@ fun TxtEditorSection(
                         editableHistoryContent = editableHistoryContent,
                         onEditableHistoryContentChange = onEditableHistoryContentChange
                     )
+                } else {
+                    TxtSelectionHintCard()
                 }
             }
         }
@@ -202,6 +218,33 @@ fun TxtEditorSection(
                     contentDescription = stringResource(R.string.txt_cd_ingest)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun TxtSelectionHintCard() {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.txt_unselected_state_title),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = stringResource(R.string.txt_unselected_state_description),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }
@@ -321,10 +364,18 @@ private fun findDayBlockEndIndex(lines: List<String>, startIndex: Int): Int {
     return lines.size
 }
 
-private fun defaultDayMarkerForSelectedMonth(selectedMonth: String): String {
-    val now = Calendar.getInstance()
-    val fallbackMonth = now.get(Calendar.MONTH) + 1
-    val fallbackDay = now.get(Calendar.DAY_OF_MONTH)
+private fun defaultDayMarkerForSelectedMonth(
+    selectedMonth: String,
+    logicalDayTarget: RecordLogicalDayTarget,
+    clock: Clock = Clock.systemDefaultZone()
+): String {
+    // Keep TXT default day aligned with Record's current yesterday/today intent.
+    val targetDate = resolveLogicalDayTargetDate(
+        logicalDayTarget = logicalDayTarget,
+        clock = clock
+    )
+    val fallbackMonth = targetDate.monthValue
+    val fallbackDay = targetDate.dayOfMonth
     val parsed = parseYearMonthKey(selectedMonth)
     if (parsed == null) {
         return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
@@ -336,12 +387,7 @@ private fun defaultDayMarkerForSelectedMonth(selectedMonth: String): String {
         return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
     }
 
-    val maxDay = Calendar.getInstance().run {
-        clear()
-        set(Calendar.YEAR, selectedYear)
-        set(Calendar.MONTH, selectedMonth - 1)
-        getActualMaximum(Calendar.DAY_OF_MONTH)
-    }
+    val maxDay = YearMonth.of(selectedYear, selectedMonth).lengthOfMonth()
     val targetDay = fallbackDay.coerceAtMost(maxDay)
     return String.format(Locale.US, "%02d%02d", selectedMonth, targetDay)
 }

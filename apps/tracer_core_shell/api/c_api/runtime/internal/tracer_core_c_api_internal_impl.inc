@@ -138,6 +138,7 @@ void SetLastError(const char* message) {
   payload.features.runtime_import_json = true;
   payload.features.runtime_validate_structure_json = true;
   payload.features.runtime_validate_logic_json = true;
+  payload.features.runtime_record_activity_atomically_json = true;
   payload.features.runtime_query_json = true;
   payload.features.runtime_report_json = true;
   payload.features.runtime_report_batch_json = true;
@@ -173,6 +174,11 @@ void SetLastError(const char* message) {
 
 [[nodiscard]] auto ParseIngestMode(const std::string& value) -> IngestMode {
   return tracer_core::shell::c_api_bridge::ParseIngestMode(value);
+}
+
+[[nodiscard]] auto ParseTimeOrderMode(const std::string& value)
+    -> TimeOrderMode {
+  return tracer_core::shell::c_api_bridge::ParseTimeOrderMode(value);
 }
 
 [[nodiscard]] auto ParseQueryAction(const std::string& value)

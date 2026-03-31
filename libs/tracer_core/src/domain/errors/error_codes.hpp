@@ -50,10 +50,6 @@ inline constexpr std::string_view kTimeDiscontinuity =
 inline constexpr std::string_view kSleepMissingNight =
     "validation.sleep.missing_night";
 
-// JSON / activity counts
-inline constexpr std::string_view kJsonTooFewActivities =
-    "validation.json.too_few_activities";
-
 // Activity duration
 inline constexpr std::string_view kActivityZeroDuration =
     "validation.activity.zero_duration";

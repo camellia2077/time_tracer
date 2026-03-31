@@ -55,9 +55,21 @@
 
 - **活动时长必须 > 0**（`start_time == end_time` 视为错误）。
 - **单个活动时长不得超过 16 小时**，除非事件备注包含 `@allow-long`。
-- **每天至少 2 条活动**（用于保证睡眠等统计的合理性）。
+- **wake 相关活动只能是当天第一条语义活动**。
+- **作者态可输入活动名** 采用：
+  `authorable_event_tokens = alias_mapping.keys ∪ wake_keywords`。
+  也就是说，wake 词本身也属于可直接输入的合法 token。
 
-## 5. 完整示例
+## 5. 作者态完整性提醒
+
+- **每天少于 2 条 authored events 不再是硬性错误**。
+- 这类情况表示“当天记录暂未补全”，仍然可以保存、继续追加、继续导入。
+- `Record Input` 与 `TXT save+sync` 可能提示：
+  - `Warning: this day currently has fewer than 2 authored events, so some intervals may not be computable yet.`
+  - `Warning: possible overnight continuation; the first event of this day is not wake-related, so no sleep activity will be auto-generated.`
+- 第二条 warning 只在“当天不完整且首条 authored event 不是 wake”时出现，并替代第一条泛化提示。
+
+## 6. 完整示例
 
 ```
 y2021

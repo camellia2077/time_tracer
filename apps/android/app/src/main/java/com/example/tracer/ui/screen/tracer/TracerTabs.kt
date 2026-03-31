@@ -62,7 +62,7 @@ internal data class TracerTabRouteArgs(
     val isAppDarkThemeActive: Boolean,
     val appLanguage: AppLanguage,
     val onSetAppLanguage: (AppLanguage) -> Unit,
-    val validMappingNames: Set<String>,
+    val validAuthorableEventTokens: Set<String>,
     val onPersistRecordQuickActivities: (List<String>) -> Unit,
     val onPersistRecordAssistExpanded: (Boolean) -> Unit,
     val onPersistRecordAssistSettingsExpanded: (Boolean) -> Unit,
@@ -83,7 +83,7 @@ internal data class TracerTabLifecycleArgs(
     val recordViewModel: RecordViewModel,
     val configViewModel: ConfigViewModel,
     val recordStatusText: () -> String,
-    val onValidMappingNamesChanged: (Set<String>) -> Unit
+    val onValidAuthorableEventTokensChanged: (Set<String>) -> Unit
 )
 
 internal data class TracerTabStatusArgs(
@@ -176,14 +176,21 @@ internal object TracerTabRegistry {
                 testTag = "tab_record"
             ),
             scrollBehavior = TracerTabScrollBehavior.VERTICAL,
-            onEnter = { args -> refreshRecordMappingValidation(args) },
+            // Do not clear logical-day override on tab leave.
+            // Yesterday/today is shared session state across Record and TXT so users keep one
+            // target-day intent while switching tabs.
+            onEnter = { args ->
+                refreshRecordMappingValidation(args)
+                // Refresh only updates when no user override is active.
+                args.recordViewModel.refreshLogicalDayDefault()
+            },
             statusText = { args -> args.recordStatusText },
             statusEvent = { args -> defaultStatusUiEvent(args) },
             content = { _, args ->
                 RecordTabContent(
                     recordUiState = args.recordUiState,
                     recordViewModel = args.recordViewModel,
-                    validMappingNames = args.validMappingNames,
+                    validAuthorableEventTokens = args.validAuthorableEventTokens,
                     onPersistQuickActivities = args.onPersistRecordQuickActivities,
                     onPersistAssistExpanded = args.onPersistRecordAssistExpanded,
                     onPersistAssistSettingsExpanded = args.onPersistRecordAssistSettingsExpanded,
@@ -200,14 +207,20 @@ internal object TracerTabRegistry {
                 testTag = "tab_txt"
             ),
             scrollBehavior = TracerTabScrollBehavior.NONE,
-            onEnter = { args -> refreshRecordMappingValidation(args) },
+            onEnter = { args ->
+                refreshRecordMappingValidation(args)
+                // Keep TXT aligned with Record's auto default when users have not overridden.
+                args.recordViewModel.refreshLogicalDayDefault()
+            },
             onLeave = { args -> args.recordViewModel.discardUnsavedHistoryDraft() },
             statusText = { args -> args.recordStatusText },
             statusEvent = { null },
             content = { _, args ->
                 TxtEditorSection(
+                    inspectionEntries = args.recordUiState.txtInspectionEntries,
                     availableMonths = args.recordUiState.availableMonths,
                     selectedMonth = args.recordUiState.selectedMonth,
+                    logicalDayTarget = args.recordUiState.logicalDayTarget,
                     onOpenPreviousMonth = args.recordViewModel::openPreviousMonth,
                     onOpenNextMonth = args.recordViewModel::openNextMonth,
                     onOpenMonth = args.recordViewModel::openMonth,
@@ -282,22 +295,22 @@ internal object TracerTabRegistry {
     }
 }
 
-private const val ActivityMappingValidationUnavailablePrefix =
-    "Activity mapping validation unavailable:"
+private const val ActivityAuthorableTokenValidationUnavailablePrefix =
+    "Activity authorable token validation unavailable:"
 
 private suspend fun refreshRecordMappingValidation(args: TracerTabLifecycleArgs) {
-    val mappingResult = args.queryGateway.listActivityMappingNames()
+    val mappingResult = args.queryGateway.listAuthorableEventTokens()
     if (mappingResult.ok) {
-        args.onValidMappingNamesChanged(mappingResult.names.toSet())
-        if (args.recordStatusText().startsWith(ActivityMappingValidationUnavailablePrefix)) {
+        args.onValidAuthorableEventTokensChanged(mappingResult.names.toSet())
+        if (args.recordStatusText().startsWith(ActivityAuthorableTokenValidationUnavailablePrefix)) {
             args.recordViewModel.setStatusText("")
         }
         return
     }
 
-    args.onValidMappingNamesChanged(emptySet())
+    args.onValidAuthorableEventTokensChanged(emptySet())
     args.recordViewModel.setStatusText(
-        "$ActivityMappingValidationUnavailablePrefix ${mappingResult.message}"
+        "$ActivityAuthorableTokenValidationUnavailablePrefix ${mappingResult.message}"
     )
 }
 

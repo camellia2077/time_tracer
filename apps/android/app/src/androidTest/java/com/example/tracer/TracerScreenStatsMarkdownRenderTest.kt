@@ -127,7 +127,8 @@ private class FakeTracerScreenServices(
         activityName: String,
         remark: String,
         targetDateIso: String?,
-        preferredTxtPath: String?
+        preferredTxtPath: String?,
+        timeOrderMode: RecordTimeOrderMode
     ): RecordActionResult = RecordActionResult(ok = true, message = "ok")
 
     override suspend fun syncLiveToDatabase(): NativeCallResult = initializeRuntime()
