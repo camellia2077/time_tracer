@@ -98,6 +98,7 @@ def _merge_profile_list_values(
     profiles: list[tuple[str, BuildProfileConfig]],
     *,
     field_name: str,
+    dedupe_values: bool = True,
 ) -> list[str]:
     merged: list[str] = []
     seen: set[str] = set()
@@ -105,9 +106,12 @@ def _merge_profile_list_values(
         raw_values = getattr(profile_cfg, field_name, []) or []
         for raw_value in raw_values:
             value = str(raw_value).strip()
-            if not value or value == "--" or value in seen:
+            if not value or value == "--":
                 continue
-            seen.add(value)
+            if dedupe_values and value in seen:
+                continue
+            if dedupe_values:
+                seen.add(value)
             merged.append(value)
     return merged
 
@@ -115,7 +119,11 @@ def _merge_profile_list_values(
 def profile_cmake_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
     profiles = resolve_profiles(ctx, profile_name)
     if profiles:
-        return _merge_profile_list_values(profiles, field_name="cmake_args")
+        return _merge_profile_list_values(
+            profiles,
+            field_name="cmake_args",
+            dedupe_values=False,
+        )
     _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
@@ -154,7 +162,11 @@ def profile_gradle_tasks(ctx: Context, profile_name: str | Iterable[str] | None)
 def profile_gradle_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
     profiles = resolve_profiles(ctx, profile_name)
     if profiles:
-        return _merge_profile_list_values(profiles, field_name="gradle_args")
+        return _merge_profile_list_values(
+            profiles,
+            field_name="gradle_args",
+            dedupe_values=False,
+        )
     _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []
@@ -165,7 +177,11 @@ def profile_gradle_args(ctx: Context, profile_name: str | Iterable[str] | None) 
 def profile_cargo_args(ctx: Context, profile_name: str | Iterable[str] | None) -> list[str]:
     profiles = resolve_profiles(ctx, profile_name)
     if profiles:
-        return _merge_profile_list_values(profiles, field_name="cargo_args")
+        return _merge_profile_list_values(
+            profiles,
+            field_name="cargo_args",
+            dedupe_values=False,
+        )
     _, profile_cfg = resolve_profile(ctx, profile_name if isinstance(profile_name, str) else None)
     if profile_cfg is None:
         return []

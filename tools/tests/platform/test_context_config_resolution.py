@@ -12,6 +12,9 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from tools.toolchain.core.context import Context  # noqa: E402
+from tools.toolchain.commands.cmd_build.common.profile_backend import (  # noqa: E402
+    profile_cmake_args,
+)
 from tools.toolchain.commands.tidy import workspace as tidy_workspace  # noqa: E402
 from tools.tests.platform._path_assertions import assert_same_paths  # noqa: E402
 
@@ -119,6 +122,31 @@ cmake_args = ["-D", "B=2"]
             profile = ctx.config.build.profiles["child"]
             self.assertEqual(profile.build_dir, "build_fast")
             self.assertEqual(profile.cmake_args, ["-D", "A=1", "-D", "B=2"])
+
+    def test_profile_cmake_args_preserves_repeated_dash_d_tokens(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_split_config(
+                repo_root,
+                "build.toml",
+                """
+[build]
+default_profile = "child"
+
+[build.profiles._base]
+cmake_args = ["-D", "BUILD_TESTING=OFF"]
+
+[build.profiles.child]
+extends = "_base"
+cmake_args = ["-D", "ENABLE_PCH=OFF"]
+""".strip(),
+            )
+
+            ctx = Context(repo_root)
+            self.assertEqual(
+                profile_cmake_args(ctx, "child"),
+                ["-D", "BUILD_TESTING=OFF", "-D", "ENABLE_PCH=OFF"],
+            )
 
     def test_build_profile_extends_cycle_falls_back_to_defaults(self):
         with TemporaryDirectory() as tmp:
