@@ -18,6 +18,8 @@ import com.example.tracer.feature.report.R
 internal fun QueryReportResultDisplay(
     resultDisplayMode: ReportResultDisplayMode,
     activeResult: QueryResult?,
+    reportSummary: ReportSummary?,
+    reportError: String,
     analysisError: String,
     chartRoots: List<String>,
     chartSelectedRoot: String,
@@ -86,6 +88,13 @@ internal fun QueryReportResultDisplay(
         return
     }
 
+    if (reportSummary != null) {
+        ReportSummaryCard(
+            summary = reportSummary,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+
     if (activeResult != null) {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
@@ -143,6 +152,26 @@ internal fun QueryReportResultDisplay(
         }
     }
 
+    if (reportError.isNotBlank()) {
+        ElevatedCard(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = stringResource(R.string.report_result_title_report_error),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = reportError,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+    }
+
     if (analysisError.isNotBlank()) {
         ElevatedCard(
             modifier = Modifier.fillMaxWidth()
@@ -162,6 +191,129 @@ internal fun QueryReportResultDisplay(
             }
         }
     }
+}
+
+@Composable
+private fun ReportSummaryCard(
+    summary: ReportSummary,
+    modifier: Modifier = Modifier
+) {
+    ElevatedCard(modifier = modifier) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            when (summary) {
+                is ReportSummary.MissingTarget -> {
+                    val periodLabel = stringResource(summary.period.reportModeResId())
+                    Text(
+                        text = stringResource(
+                            R.string.report_result_title_report_missing_target,
+                            periodLabel
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.report_summary_missing_target_body,
+                            periodLabel
+                        ),
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (summary.errorCode.isNotBlank()) {
+                        SummaryLine(
+                            text = stringResource(
+                                R.string.report_summary_error_code,
+                                summary.errorCode
+                            )
+                        )
+                    }
+                    if (summary.errorCategory.isNotBlank()) {
+                        SummaryLine(
+                            text = stringResource(
+                                R.string.report_summary_error_category,
+                                summary.errorCategory
+                            )
+                        )
+                    }
+                    if (summary.hints.isNotEmpty()) {
+                        SummaryLine(
+                            text = stringResource(
+                                R.string.report_summary_hints,
+                                summary.hints.joinToString(separator = " | ")
+                            )
+                        )
+                    }
+                }
+
+                is ReportSummary.WindowMetadata -> {
+                    val periodLabel = stringResource(summary.period.reportModeResId())
+                    val metadata = summary.metadata
+                    Text(
+                        text = stringResource(
+                            R.string.report_result_title_report_window_summary,
+                            periodLabel
+                        ),
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = if (metadata.hasRecords) {
+                            stringResource(
+                                R.string.report_summary_window_has_records_body,
+                                periodLabel
+                            )
+                        } else {
+                            stringResource(
+                                R.string.report_summary_window_empty_body,
+                                periodLabel
+                            )
+                        },
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    if (metadata.startDate.isNotBlank() || metadata.endDate.isNotBlank()) {
+                        SummaryLine(
+                            text = stringResource(
+                                R.string.report_summary_window_range,
+                                metadata.startDate.ifBlank { "-" },
+                                metadata.endDate.ifBlank { "-" }
+                            )
+                        )
+                    }
+                    if (metadata.requestedDays > 0) {
+                        SummaryLine(
+                            text = stringResource(
+                                R.string.report_summary_requested_days,
+                                metadata.requestedDays
+                            )
+                        )
+                    }
+                    SummaryLine(
+                        text = stringResource(
+                            R.string.report_summary_matched_days,
+                            metadata.matchedDayCount
+                        )
+                    )
+                    SummaryLine(
+                        text = stringResource(
+                            R.string.report_summary_matched_records,
+                            metadata.matchedRecordCount
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SummaryLine(text: String) {
+    Spacer(modifier = Modifier.height(6.dp))
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 private fun DataTreePeriod.reportModeResId(): Int {

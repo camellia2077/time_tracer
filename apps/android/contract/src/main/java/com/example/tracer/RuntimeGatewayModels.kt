@@ -8,13 +8,30 @@ data class NativeCallResult(
     val operationId: String = ""
 )
 
+data class ReportErrorContract(
+    val errorCode: String,
+    val errorCategory: String,
+    val hints: List<String> = emptyList()
+)
+
+data class ReportWindowMetadata(
+    val hasRecords: Boolean,
+    val matchedDayCount: Int,
+    val matchedRecordCount: Int,
+    val startDate: String,
+    val endDate: String,
+    val requestedDays: Int
+)
+
 data class ReportCallResult(
     val initialized: Boolean,
     val operationOk: Boolean,
     val outputText: String,
     val rawResponse: String,
     val errorLogPath: String = "",
-    val operationId: String = ""
+    val operationId: String = "",
+    val errorContract: ReportErrorContract? = null,
+    val reportWindowMetadata: ReportWindowMetadata? = null
 )
 
 data class ClearAndInitResult(

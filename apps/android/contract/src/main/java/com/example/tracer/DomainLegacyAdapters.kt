@@ -6,7 +6,9 @@ data class DomainNativeEnvelope(
     val rawResponse: String,
     val outputText: String = "",
     val errorLogPath: String = "",
-    val operationId: String = ""
+    val operationId: String = "",
+    val errorContract: ReportErrorContract? = null,
+    val reportWindowMetadata: ReportWindowMetadata? = null
 )
 
 fun DomainResult<DomainNativeEnvelope>.toLegacyNativeCallResult(
@@ -46,7 +48,9 @@ fun DomainResult<DomainNativeEnvelope>.toLegacyReportCallResult(
                 outputText = envelope.outputText,
                 rawResponse = envelope.rawResponse,
                 errorLogPath = envelope.errorLogPath,
-                operationId = envelope.operationId
+                operationId = envelope.operationId,
+                errorContract = envelope.errorContract,
+                reportWindowMetadata = envelope.reportWindowMetadata
             )
         },
         onFailure = { error ->

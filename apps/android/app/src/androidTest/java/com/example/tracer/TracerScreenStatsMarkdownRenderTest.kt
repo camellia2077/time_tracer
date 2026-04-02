@@ -2,8 +2,10 @@ package com.example.tracer
 
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -81,10 +83,162 @@ class TracerScreenStatsMarkdownRenderTest {
         composeRule.onNodeWithText(dayStatsResultLabel).assertIsDisplayed()
         composeRule.onNodeWithText("stats-md-marker").assertIsDisplayed()
     }
+
+    @Test
+    fun reportTab_recentEmptyWindow_rendersSummaryAboveMarkdown() {
+        val fakeRuntime = FakeTracerScreenServices(
+            statsMarkdown = "## Day Duration Stats\n\nstats-md-marker",
+            recentReportResult = ReportCallResult(
+                initialized = true,
+                operationOk = true,
+                outputText = "## Recent Report\n\nrecent-md-marker",
+                rawResponse = """{"ok":true}""",
+                reportWindowMetadata = ReportWindowMetadata(
+                    hasRecords = false,
+                    matchedDayCount = 0,
+                    matchedRecordCount = 0,
+                    startDate = "2026-02-01",
+                    endDate = "2026-02-07",
+                    requestedDays = 7
+                )
+            )
+        )
+        val recentLabel = composeRule.activity.getString(ReportR.string.report_mode_recent)
+        val emptyWindowTitle = composeRule.activity.getString(
+            ReportR.string.report_result_title_report_window_summary,
+            recentLabel
+        )
+        val emptyWindowBody = composeRule.activity.getString(
+            ReportR.string.report_summary_window_empty_body,
+            recentLabel
+        )
+        val generateReportLabel =
+            composeRule.activity.getString(ReportR.string.report_action_generate_report_md)
+        val expandLabel =
+            composeRule.activity.getString(ReportR.string.report_cd_expand)
+
+        val themeConfig = ThemeConfig(
+            themeColor = ThemeColor.Slate,
+            themeMode = ThemeMode.Light,
+            useDynamicColor = false,
+            darkThemeStyle = DarkThemeStyle.Tinted
+        )
+        val userPreferencesRepository =
+            UserPreferencesRepository(composeRule.activity.dataStore)
+
+        composeRule.setContent {
+            TracerTheme(themeConfig = themeConfig) {
+                TracerScreen(
+                    runtimeInitializer = fakeRuntime,
+                    recordGateway = fakeRuntime,
+                    txtStorageGateway = fakeRuntime,
+                    reportGateway = fakeRuntime,
+                    queryGateway = fakeRuntime,
+                    configGateway = fakeRuntime,
+                    tracerExchangeGateway = fakeRuntime,
+                    userPreferencesRepository = userPreferencesRepository,
+                    themeConfig = themeConfig,
+                    onSetThemeColor = {},
+                    onSetThemeMode = {},
+                    onSetUseDynamicColor = {},
+                    onSetDarkThemeStyle = {},
+                    appLanguage = AppLanguage.English,
+                    onSetAppLanguage = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Report").performClick()
+        composeRule.onNodeWithText(recentLabel).performClick()
+        composeRule.onAllNodesWithContentDescription(expandLabel)[0].performClick()
+        composeRule.onNodeWithText(generateReportLabel).performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText(emptyWindowTitle).assertIsDisplayed()
+        composeRule.onNodeWithText(emptyWindowBody).assertIsDisplayed()
+        composeRule.onNodeWithText("recent-md-marker").assertIsDisplayed()
+    }
+
+    @Test
+    fun reportTab_dayMissingTarget_rendersSummaryWithoutMarkdown() {
+        val fakeRuntime = FakeTracerScreenServices(
+            statsMarkdown = "## Day Duration Stats\n\nstats-md-marker",
+            dayReportResult = ReportCallResult(
+                initialized = true,
+                operationOk = false,
+                outputText = "runtime report failed. [op=missing-day]",
+                rawResponse = """{"ok":false}""",
+                errorContract = ReportErrorContract(
+                    errorCode = "reporting.target.not_found",
+                    errorCategory = "reporting",
+                    hints = listOf("Try another date.")
+                )
+            )
+        )
+        val dayLabel = composeRule.activity.getString(ReportR.string.report_mode_day)
+        val missingTitle = composeRule.activity.getString(
+            ReportR.string.report_result_title_report_missing_target,
+            dayLabel
+        )
+        val missingBody = composeRule.activity.getString(
+            ReportR.string.report_summary_missing_target_body,
+            dayLabel
+        )
+        val generateReportLabel =
+            composeRule.activity.getString(ReportR.string.report_action_generate_report_md)
+        val expandLabel =
+            composeRule.activity.getString(ReportR.string.report_cd_expand)
+
+        val themeConfig = ThemeConfig(
+            themeColor = ThemeColor.Slate,
+            themeMode = ThemeMode.Light,
+            useDynamicColor = false,
+            darkThemeStyle = DarkThemeStyle.Tinted
+        )
+        val userPreferencesRepository =
+            UserPreferencesRepository(composeRule.activity.dataStore)
+
+        composeRule.setContent {
+            TracerTheme(themeConfig = themeConfig) {
+                TracerScreen(
+                    runtimeInitializer = fakeRuntime,
+                    recordGateway = fakeRuntime,
+                    txtStorageGateway = fakeRuntime,
+                    reportGateway = fakeRuntime,
+                    queryGateway = fakeRuntime,
+                    configGateway = fakeRuntime,
+                    tracerExchangeGateway = fakeRuntime,
+                    userPreferencesRepository = userPreferencesRepository,
+                    themeConfig = themeConfig,
+                    onSetThemeColor = {},
+                    onSetThemeMode = {},
+                    onSetUseDynamicColor = {},
+                    onSetDarkThemeStyle = {},
+                    appLanguage = AppLanguage.English,
+                    onSetAppLanguage = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Report").performClick()
+        composeRule.onAllNodesWithContentDescription(expandLabel)[0].performClick()
+        composeRule.onNodeWithText(generateReportLabel).performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText(missingTitle).assertIsDisplayed()
+        composeRule.onNodeWithText(missingBody).assertIsDisplayed()
+        composeRule.onAllNodesWithText("runtime report failed. [op=missing-day]").assertCountEquals(0)
+    }
 }
 
 private class FakeTracerScreenServices(
-    private val statsMarkdown: String
+    private val statsMarkdown: String,
+    private val dayReportResult: ReportCallResult = emptyReportResult(),
+    private val monthReportResult: ReportCallResult = emptyReportResult(),
+    private val yearReportResult: ReportCallResult = emptyReportResult(),
+    private val weekReportResult: ReportCallResult = emptyReportResult(),
+    private val recentReportResult: ReportCallResult = emptyReportResult(),
+    private val rangeReportResult: ReportCallResult = emptyReportResult()
 ) : RuntimeInitializer,
     RecordGateway,
     TxtStorageGateway,
@@ -139,22 +293,22 @@ private class FakeTracerScreenServices(
     )
 
     override suspend fun reportDayMarkdown(date: String): ReportCallResult =
-        emptyReportResult()
+        dayReportResult
 
     override suspend fun reportMonthMarkdown(month: String): ReportCallResult =
-        emptyReportResult()
+        monthReportResult
 
     override suspend fun reportYearMarkdown(year: String): ReportCallResult =
-        emptyReportResult()
+        yearReportResult
 
     override suspend fun reportWeekMarkdown(week: String): ReportCallResult =
-        emptyReportResult()
+        weekReportResult
 
     override suspend fun reportRecentMarkdown(days: String): ReportCallResult =
-        emptyReportResult()
+        recentReportResult
 
     override suspend fun reportRange(startDate: String, endDate: String): ReportCallResult =
-        emptyReportResult()
+        rangeReportResult
 
     override suspend fun queryActivitySuggestions(
         lookbackDays: Int,
@@ -248,10 +402,12 @@ private class FakeTracerScreenServices(
             diagnosticsLogPath = ""
         )
 
-    private fun emptyReportResult(): ReportCallResult = ReportCallResult(
-        initialized = true,
-        operationOk = true,
-        outputText = "",
-        rawResponse = """{"ok":true,"content":"","error_message":""}"""
-    )
+    companion object {
+        private fun emptyReportResult(): ReportCallResult = ReportCallResult(
+            initialized = true,
+            operationOk = true,
+            outputText = "",
+            rawResponse = """{"ok":true,"content":"","error_message":""}"""
+        )
+    }
 }

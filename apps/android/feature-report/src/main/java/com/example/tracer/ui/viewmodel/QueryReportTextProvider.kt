@@ -9,6 +9,8 @@ interface QueryReportTextProvider {
 
     fun nativeReportRunning(mode: String): String
     fun nativeReportResult(mode: String, ok: Boolean): String
+    fun nativeReportTargetMissing(mode: String): String
+    fun nativeReportEmptyWindow(mode: String): String
     fun rangeStartDateInvalid(detail: String): String
     fun rangeEndDateInvalid(detail: String): String
     fun queryStatsRunning(period: String): String
@@ -57,6 +59,12 @@ object DefaultQueryReportTextProvider : QueryReportTextProvider {
 
     override fun nativeReportResult(mode: String, ok: Boolean): String =
         "nativeReport($mode, md) -> OK=$ok"
+
+    override fun nativeReportTargetMissing(mode: String): String =
+        "nativeReport($mode, md) -> target not found"
+
+    override fun nativeReportEmptyWindow(mode: String): String =
+        "nativeReport($mode, md) -> empty window"
 
     override fun rangeStartDateInvalid(detail: String): String =
         "Range start date invalid. $detail"
@@ -164,6 +172,12 @@ class AndroidQueryReportTextProvider(
 
     override fun nativeReportResult(mode: String, ok: Boolean): String =
         context.getString(R.string.report_status_native_report_result, mode, ok.toString())
+
+    override fun nativeReportTargetMissing(mode: String): String =
+        context.getString(R.string.report_status_native_report_target_missing, mode)
+
+    override fun nativeReportEmptyWindow(mode: String): String =
+        context.getString(R.string.report_status_native_report_empty_window, mode)
 
     override fun rangeStartDateInvalid(detail: String): String =
         context.getString(R.string.report_status_range_start_date_invalid, detail)

@@ -6,7 +6,10 @@ import java.util.Date
 import java.util.Locale
 
 sealed class QueryResult {
-    data class Report(val text: String) : QueryResult()
+    data class Report(
+        val text: String,
+        val summary: ReportSummary? = null
+    ) : QueryResult()
     data class Stats(val text: String, val period: DataTreePeriod) : QueryResult()
     data class Tree(
         val period: DataTreePeriod,
@@ -17,6 +20,20 @@ sealed class QueryResult {
         val fallbackText: String = "",
         val usesTextFallback: Boolean = false
     ) : QueryResult()
+}
+
+sealed interface ReportSummary {
+    data class MissingTarget(
+        val period: DataTreePeriod,
+        val errorCode: String,
+        val errorCategory: String,
+        val hints: List<String> = emptyList()
+    ) : ReportSummary
+
+    data class WindowMetadata(
+        val period: DataTreePeriod,
+        val metadata: ReportWindowMetadata
+    ) : ReportSummary
 }
 
 enum class ReportResultDisplayMode {
@@ -38,6 +55,8 @@ data class QueryReportUiState(
     val reportRangeEndDate: String = currentDateDigits(),
     val reportRecentDays: String = "7",
     val reportResultsByPeriod: Map<DataTreePeriod, QueryResult.Report> = emptyMap(),
+    val reportSummariesByPeriod: Map<DataTreePeriod, ReportSummary> = emptyMap(),
+    val reportErrorsByPeriod: Map<DataTreePeriod, String> = emptyMap(),
     val activeResult: QueryResult? = null,
     val statsPeriod: DataTreePeriod = DataTreePeriod.RECENT,
     val treePeriod: DataTreePeriod = DataTreePeriod.RECENT,

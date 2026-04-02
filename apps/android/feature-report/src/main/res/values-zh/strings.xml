@@ -81,6 +81,8 @@
 
     <string name="report_status_native_report_running">nativeReport(%1$s, md) 运行中...</string>
     <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_native_report_target_missing">nativeReport(%1$s, md) -&gt; 目标不存在</string>
+    <string name="report_status_native_report_empty_window">nativeReport(%1$s, md) -&gt; 窗口为空</string>
     <string name="report_status_range_start_date_invalid">区间开始日期无效。%1$s</string>
     <string name="report_status_range_end_date_invalid">区间结束日期无效。%1$s</string>
     <string name="report_status_query_stats_running">query data days-stats 运行中... period=%1$s</string>
@@ -91,10 +93,23 @@
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
 
     <string name="report_result_title_report">报表结果</string>
+    <string name="report_result_title_report_error">报表错误</string>
+    <string name="report_result_title_report_missing_target">%1$s目标不存在</string>
+    <string name="report_result_title_report_window_summary">%1$s窗口摘要</string>
     <string name="report_result_title_chart">图表结果</string>
     <string name="report_result_title_analysis_error">分析错误</string>
     <string name="report_result_title_stats">%1$s统计结果</string>
     <string name="report_result_title_tree">%1$s树结果</string>
+    <string name="report_summary_missing_target_body">所选%1$s目标没有对应的报表数据。</string>
+    <string name="report_summary_error_code">错误码：%1$s</string>
+    <string name="report_summary_error_category">分类：%1$s</string>
+    <string name="report_summary_hints">提示：%1$s</string>
+    <string name="report_summary_window_has_records_body">该%1$s报表已返回结构化窗口元数据。</string>
+    <string name="report_summary_window_empty_body">所请求的%1$s窗口中没有记录。</string>
+    <string name="report_summary_window_range">窗口：%1$s 到 %2$s</string>
+    <string name="report_summary_requested_days">请求天数：%1$d</string>
+    <string name="report_summary_matched_days">匹配天数：%1$d</string>
+    <string name="report_summary_matched_records">匹配记录数：%1$d</string>
 
     <string name="report_error_tree_level_min">树层级必须 &gt;= -1。</string>
     <string name="report_error_chart_payload_invalid">图表数据载荷无效。</string>

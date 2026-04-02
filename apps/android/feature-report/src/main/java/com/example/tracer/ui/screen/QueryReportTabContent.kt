@@ -25,9 +25,18 @@ fun QueryReportTabContent(
     isAppDarkThemeActive: Boolean
 ) {
     var reportMode by rememberSaveable { mutableStateOf(ReportMode.DAY) }
+    val selectedPeriod = reportMode.toPeriod()
     val displayResult = resolveDisplayResult(
         uiState = queryUiState,
-        selectedMode = reportMode
+        selectedPeriod = selectedPeriod
+    )
+    val displayReportSummary = resolveDisplayReportSummary(
+        uiState = queryUiState,
+        selectedPeriod = selectedPeriod
+    )
+    val displayReportError = resolveDisplayReportError(
+        uiState = queryUiState,
+        selectedPeriod = selectedPeriod
     )
 
     Column(
@@ -67,6 +76,8 @@ fun QueryReportTabContent(
         QueryReportResultDisplay(
             resultDisplayMode = queryUiState.resultDisplayMode,
             activeResult = displayResult,
+            reportSummary = displayReportSummary,
+            reportError = displayReportError,
             analysisError = queryUiState.analysisError,
             chartRoots = queryUiState.chartRoots,
             chartSelectedRoot = queryUiState.chartSelectedRoot,
@@ -98,13 +109,39 @@ fun QueryReportTabContent(
 
 private fun resolveDisplayResult(
     uiState: QueryReportUiState,
-    selectedMode: ReportMode
+    selectedPeriod: DataTreePeriod
 ): QueryResult? {
-    val selectedPeriod = selectedMode.toPeriod()
     return when (uiState.activeResult) {
         is QueryResult.Report,
         null -> uiState.reportResultsByPeriod[selectedPeriod]
         else -> uiState.activeResult
+    }
+}
+
+private fun resolveDisplayReportSummary(
+    uiState: QueryReportUiState,
+    selectedPeriod: DataTreePeriod
+): ReportSummary? {
+    val activeResult = uiState.activeResult
+    return if (activeResult is QueryResult.Report) {
+        activeResult.summary
+    } else if (activeResult == null) {
+        uiState.reportResultsByPeriod[selectedPeriod]?.summary
+            ?: uiState.reportSummariesByPeriod[selectedPeriod]
+    } else {
+        null
+    }
+}
+
+private fun resolveDisplayReportError(
+    uiState: QueryReportUiState,
+    selectedPeriod: DataTreePeriod
+): String {
+    val activeResult = uiState.activeResult
+    return if (activeResult == null) {
+        uiState.reportErrorsByPeriod[selectedPeriod].orEmpty()
+    } else {
+        ""
     }
 }
 

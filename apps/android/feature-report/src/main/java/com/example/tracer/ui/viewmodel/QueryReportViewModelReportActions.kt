@@ -1,5 +1,7 @@
 package com.example.tracer
 
+private const val REPORTING_TARGET_NOT_FOUND = "reporting.target.not_found"
+
 internal suspend fun runDayReportAction(
     currentState: QueryReportUiState,
     inputValidator: QueryInputValidator,
@@ -22,10 +24,7 @@ internal suspend fun runDayReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.DAY,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.DAY),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
@@ -51,10 +50,7 @@ internal suspend fun runMonthReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.MONTH,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.MONTH),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
@@ -79,10 +75,7 @@ internal suspend fun runYearReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.YEAR,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.YEAR),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
@@ -108,10 +101,7 @@ internal suspend fun runWeekReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.WEEK,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.WEEK),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
@@ -136,10 +126,7 @@ internal suspend fun runRecentReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.RECENT,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.RECENT),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
@@ -184,27 +171,104 @@ internal suspend fun runRangeReportAction(
     return runningState.copyWithReportOutcome(
         period = DataTreePeriod.RANGE,
         result = result,
-        statusText = textProvider.nativeReportResult(
-            mode = textProvider.periodLabel(DataTreePeriod.RANGE),
-            ok = result.operationOk
-        )
+        textProvider = textProvider
     )
 }
 
 private fun QueryReportUiState.copyWithReportOutcome(
     period: DataTreePeriod,
     result: ReportCallResult,
-    statusText: String
+    textProvider: QueryReportTextProvider
 ): QueryReportUiState {
-    val report = if (result.operationOk) QueryResult.Report(result.outputText) else null
+    val summary = buildReportSummary(period, result)
+    val report = if (result.operationOk) {
+        QueryResult.Report(
+            text = result.outputText,
+            summary = summary
+        )
+    } else {
+        null
+    }
     val nextReportResults = if (report != null) {
         reportResultsByPeriod + (period to report)
     } else {
         reportResultsByPeriod - period
     }
+    val nextReportSummaries = if (summary != null) {
+        reportSummariesByPeriod + (period to summary)
+    } else {
+        reportSummariesByPeriod - period
+    }
+    val nextReportErrors = when {
+        result.operationOk -> reportErrorsByPeriod - period
+        summary is ReportSummary.MissingTarget -> reportErrorsByPeriod - period
+        else -> reportErrorsByPeriod + (period to result.outputText)
+    }
     return copy(
         reportResultsByPeriod = nextReportResults,
+        reportSummariesByPeriod = nextReportSummaries,
+        reportErrorsByPeriod = nextReportErrors,
         activeResult = report,
-        statusText = statusText
+        analysisError = "",
+        statusText = resolveReportStatusText(
+            period = period,
+            result = result,
+            textProvider = textProvider
+        )
     )
+}
+
+private fun buildReportSummary(
+    period: DataTreePeriod,
+    result: ReportCallResult
+): ReportSummary? {
+    val errorContract = result.errorContract
+    if (!result.operationOk &&
+        errorContract?.errorCode == REPORTING_TARGET_NOT_FOUND &&
+        period.isNamedTargetPeriod()
+    ) {
+        return ReportSummary.MissingTarget(
+            period = period,
+            errorCode = errorContract.errorCode,
+            errorCategory = errorContract.errorCategory,
+            hints = errorContract.hints
+        )
+    }
+    if (result.operationOk &&
+        period.isWindowedPeriod()
+    ) {
+        val metadata = result.reportWindowMetadata ?: return null
+        return ReportSummary.WindowMetadata(
+            period = period,
+            metadata = metadata
+        )
+    }
+    return null
+}
+
+private fun resolveReportStatusText(
+    period: DataTreePeriod,
+    result: ReportCallResult,
+    textProvider: QueryReportTextProvider
+): String {
+    val mode = textProvider.periodLabel(period)
+    return when {
+        buildReportSummary(period, result) is ReportSummary.MissingTarget ->
+            textProvider.nativeReportTargetMissing(mode)
+        buildReportSummary(period, result) is ReportSummary.WindowMetadata &&
+            result.reportWindowMetadata?.hasRecords == false ->
+            textProvider.nativeReportEmptyWindow(mode)
+        else -> textProvider.nativeReportResult(mode = mode, ok = result.operationOk)
+    }
+}
+
+private fun DataTreePeriod.isNamedTargetPeriod(): Boolean {
+    return this == DataTreePeriod.DAY ||
+        this == DataTreePeriod.WEEK ||
+        this == DataTreePeriod.MONTH ||
+        this == DataTreePeriod.YEAR
+}
+
+private fun DataTreePeriod.isWindowedPeriod(): Boolean {
+    return this == DataTreePeriod.RECENT || this == DataTreePeriod.RANGE
 }

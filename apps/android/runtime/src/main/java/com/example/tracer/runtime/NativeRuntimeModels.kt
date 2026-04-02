@@ -13,7 +13,9 @@ internal data class NativeResponsePayload(
     val ok: Boolean,
     val content: String,
     val errorMessage: String,
-    val reportHashSha256: String = ""
+    val reportHashSha256: String = "",
+    val errorContract: ReportErrorContract? = null,
+    val reportWindowMetadata: ReportWindowMetadata? = null
 )
 
 internal data class RecordWriteSnapshot(

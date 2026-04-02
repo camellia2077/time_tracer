@@ -45,6 +45,42 @@ class DomainResultCompatibilityTest {
         assertEquals("raw:native crash", result.rawResponse)
         assertEquals("/tmp/report.log", result.errorLogPath)
         assertEquals("op-report-1", result.operationId)
+        assertEquals(null, result.errorContract)
+        assertEquals(null, result.reportWindowMetadata)
+    }
+
+    @Test
+    fun domainNativeEnvelope_reportFields_map_to_reportCallResult() {
+        val result = DomainResult.Success(
+            DomainNativeEnvelope(
+                initialized = true,
+                operationOk = true,
+                rawResponse = """{"ok":true}""",
+                outputText = "# Report",
+                operationId = "op-report-structured",
+                errorContract = ReportErrorContract(
+                    errorCode = "reporting.target.not_found",
+                    errorCategory = "reporting",
+                    hints = listOf("Try another date.")
+                ),
+                reportWindowMetadata = ReportWindowMetadata(
+                    hasRecords = false,
+                    matchedDayCount = 0,
+                    matchedRecordCount = 0,
+                    startDate = "2026-02-01",
+                    endDate = "2026-02-07",
+                    requestedDays = 7
+                )
+            )
+        ).toLegacyReportCallResult()
+
+        assertTrue(result.initialized)
+        assertTrue(result.operationOk)
+        assertEquals("reporting.target.not_found", result.errorContract?.errorCode)
+        assertEquals("reporting", result.errorContract?.errorCategory)
+        assertEquals(listOf("Try another date."), result.errorContract?.hints)
+        assertEquals(false, result.reportWindowMetadata?.hasRecords)
+        assertEquals(7, result.reportWindowMetadata?.requestedDays)
     }
 
     @Test

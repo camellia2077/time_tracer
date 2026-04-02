@@ -81,6 +81,8 @@
 
     <string name="report_status_native_report_running">nativeReport(%1$s, md) 実行中...</string>
     <string name="report_status_native_report_result">nativeReport(%1$s, md) -&gt; OK=%2$s</string>
+    <string name="report_status_native_report_target_missing">nativeReport(%1$s, md) -&gt; 対象なし</string>
+    <string name="report_status_native_report_empty_window">nativeReport(%1$s, md) -&gt; 空のウィンドウ</string>
     <string name="report_status_range_start_date_invalid">期間の開始日が無効です。%1$s</string>
     <string name="report_status_range_end_date_invalid">期間の終了日が無効です。%1$s</string>
     <string name="report_status_query_stats_running">query data days-stats 実行中... period=%1$s</string>
@@ -91,10 +93,23 @@
     <string name="report_status_query_chart_result">query data report-chart -&gt; OK=%1$s</string>
 
     <string name="report_result_title_report">レポート結果</string>
+    <string name="report_result_title_report_error">レポートエラー</string>
+    <string name="report_result_title_report_missing_target">%1$s レポート対象なし</string>
+    <string name="report_result_title_report_window_summary">%1$s ウィンドウ概要</string>
     <string name="report_result_title_chart">グラフ結果</string>
     <string name="report_result_title_analysis_error">解析エラー</string>
     <string name="report_result_title_stats">%1$s 統計結果</string>
     <string name="report_result_title_tree">%1$s ツリー結果</string>
+    <string name="report_summary_missing_target_body">選択した %1$s 対象に対応するレポートデータはありません。</string>
+    <string name="report_summary_error_code">コード: %1$s</string>
+    <string name="report_summary_error_category">カテゴリ: %1$s</string>
+    <string name="report_summary_hints">ヒント: %1$s</string>
+    <string name="report_summary_window_has_records_body">この %1$s レポートには構造化ウィンドウメタデータがあります。</string>
+    <string name="report_summary_window_empty_body">要求された %1$s ウィンドウには記録がありません。</string>
+    <string name="report_summary_window_range">ウィンドウ: %1$s から %2$s</string>
+    <string name="report_summary_requested_days">要求日数: %1$d</string>
+    <string name="report_summary_matched_days">一致日数: %1$d</string>
+    <string name="report_summary_matched_records">一致レコード数: %1$d</string>
 
     <string name="report_error_tree_level_min">ツリーレベルは -1 以上である必要があります。</string>
     <string name="report_error_chart_payload_invalid">グラフデータのペイロードが無効です。</string>

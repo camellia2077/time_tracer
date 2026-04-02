@@ -17,7 +17,8 @@ internal class NativeReportTranslator(
                 outputText = outputText,
                 rawResponse = initResult.rawResponse,
                 errorLogPath = initResult.errorLogPath,
-                operationId = initResult.operationId
+                operationId = initResult.operationId,
+                errorContract = initPayload.errorContract
             )
         ).toLegacyReportCallResult()
     }
@@ -82,7 +83,9 @@ internal class NativeReportTranslator(
                 outputText = outputText,
                 rawResponse = response,
                 errorLogPath = errorLogPath,
-                operationId = operationId
+                operationId = operationId,
+                errorContract = payload.errorContract,
+                reportWindowMetadata = payload.reportWindowMetadata
             )
         ).toLegacyReportCallResult()
     }
