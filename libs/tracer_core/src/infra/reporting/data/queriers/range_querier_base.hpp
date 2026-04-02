@@ -17,6 +17,9 @@ class RangeQuerierBase : public BaseQuerier<ReportDataType, QueryParamType> {
         BaseQuerier<ReportDataType, QueryParamType>::FetchData();
 
     this->FetchActualDays(data);
+    data.matched_day_count = this->FetchMatchedDayRowCount();
+    data.matched_record_count = this->FetchMatchedRecordCount();
+    data.has_records = data.matched_record_count > 0;
     const auto kFlagCounts = this->FetchDayFlagCounts();
     data.status_true_days = kFlagCounts.status_true_days;
     data.wake_anchor_true_days = kFlagCounts.wake_anchor_true_days;

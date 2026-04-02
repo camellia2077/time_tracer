@@ -54,6 +54,9 @@ void TestParseMissingOptionalDefaults(int& failures) {
          "Missing `content` should default to empty string.", failures);
   Expect(!parsed.envelope.report_hash_sha256.has_value(),
          "Missing `report_hash_sha256` should default to nullopt.", failures);
+  Expect(!parsed.envelope.report_window_metadata.has_value(),
+         "Missing report window metadata should default to nullopt.",
+         failures);
 }
 
 void TestParseOptionalTypeMismatchDefaults(int& failures) {
@@ -148,6 +151,8 @@ void TestSerializeRoundTrip(int& failures) {
          "Roundtrip `content` mismatch.", failures);
   Expect(!parsed.envelope.report_hash_sha256.has_value(),
          "Roundtrip missing hash should keep nullopt.", failures);
+  Expect(!parsed.envelope.report_window_metadata.has_value(),
+         "Roundtrip missing window metadata should keep nullopt.", failures);
 }
 
 void TestSerializeRoundTripWithHash(int& failures) {
@@ -165,6 +170,33 @@ void TestSerializeRoundTripWithHash(int& failures) {
          "Roundtrip `report_hash_sha256` mismatch.", failures);
 }
 
+void TestSerializeRoundTripWithWindowMetadata(int& failures) {
+  auto envelope = BuildResponseEnvelope(true, "", "report body");
+  envelope.report_window_metadata =
+      tracer::transport::ReportWindowMetadataPayload{
+          .has_records = false,
+          .matched_day_count = 0,
+          .matched_record_count = 0,
+          .start_date = "2024-12-01",
+          .end_date = "2024-12-31",
+          .requested_days = 31,
+      };
+  const std::string serialized = SerializeResponseEnvelope(envelope);
+  const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
+      .response_json = serialized,
+      .context = "roundtrip_with_window_metadata",
+  });
+  Expect(!parsed.HasError(),
+         "Serialized envelope with window metadata should parse back.",
+         failures);
+  Expect(parsed.envelope.report_window_metadata.has_value(),
+         "Roundtrip window metadata should be present.", failures);
+  Expect(parsed.envelope.report_window_metadata->requested_days == 31,
+         "Roundtrip requested_days mismatch.", failures);
+  Expect(parsed.envelope.report_window_metadata->start_date == "2024-12-01",
+         "Roundtrip start_date mismatch.", failures);
+}
+
 }  // namespace
 
 auto main() -> int {
@@ -178,6 +210,7 @@ auto main() -> int {
   TestParseNonObjectJson(failures);
   TestSerializeRoundTrip(failures);
   TestSerializeRoundTripWithHash(failures);
+  TestSerializeRoundTripWithWindowMetadata(failures);
 
   if (failures == 0) {
     std::cout << "[PASS] tracer_transport_tests\n";

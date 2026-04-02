@@ -337,7 +337,11 @@ auto main() -> int {
 
     const std::string kReportRequest =
         nlohmann::json{
-            {"type", "day"}, {"argument", "2021-01-01"}, {"format", "markdown"}}
+            // The test data spans exclusively 2025-01-01, 2026-12-31.
+            // Do not include dates outside this range
+            {"type", "day"},
+            {"argument", "2026-01-01"},
+            {"format", "markdown"}}
             .dump();
     if (!IsOkResponse(kRuntimeReport(runtime_handle, kReportRequest.c_str()),
                       "report", &response_error)) {

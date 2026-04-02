@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "application/dto/reporting_requests.hpp"
+#include "application/dto/shared_envelopes.hpp"
 #include "domain/reports/models/daily_report_data.hpp"
 #include "domain/reports/models/period_report_models.hpp"
 
@@ -30,6 +31,7 @@ struct StructuredReportOutput {
   StructuredReportKind kind = StructuredReportKind::kDay;
   ReportDto report = DailyReportData{};
   std::string error_message;
+  ErrorContractFields error_contract;
 };
 
 struct StructuredPeriodBatchItem {
@@ -43,6 +45,7 @@ struct StructuredPeriodBatchOutput {
   bool ok = true;
   std::vector<StructuredPeriodBatchItem> items;
   std::string error_message;
+  ErrorContractFields error_contract;
 };
 
 struct ReportTargetsOutput {
@@ -50,6 +53,7 @@ struct ReportTargetsOutput {
   ReportTargetType type = ReportTargetType::kDay;
   std::vector<std::string> items;
   std::string error_message;
+  ErrorContractFields error_contract;
 };
 
 }  // namespace tracer_core::core::dto

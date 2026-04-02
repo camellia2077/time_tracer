@@ -82,7 +82,28 @@ auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
   return true;
 }
 
+auto BuildWindowMetadata(const PeriodReportData& report)
+    -> tracer_core::core::dto::ReportWindowMetadata {
+  return {
+      .has_records = report.has_records,
+      .matched_day_count = report.matched_day_count,
+      .matched_record_count = report.matched_record_count,
+      .start_date = report.start_date,
+      .end_date = report.end_date,
+      .requested_days = report.requested_days,
+  };
+}
+
 }  // namespace
+
+auto ParseRecentDaysArgument(std::string_view argument) -> int {
+  const std::string_view trimmed = TrimAscii(argument);
+  int days = 0;
+  if (!ParseUnsigned(trimmed, days) || days <= 0) {
+    throw std::invalid_argument("Recent argument must be a positive integer.");
+  }
+  return days;
+}
 
 auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
   const std::string_view trimmed = TrimAscii(argument);
@@ -203,7 +224,8 @@ auto FormatStructuredReport(
       }
       return {.ok = true,
               .content = formatter.FormatPeriod(*report, format),
-              .error_message = ""};
+              .error_message = "",
+              .report_window_metadata = BuildWindowMetadata(*report)};
     }
     case StructuredReportKind::kRange: {
       const auto* report = std::get_if<PeriodReportData>(&output.report);
@@ -213,7 +235,8 @@ auto FormatStructuredReport(
       }
       return {.ok = true,
               .content = formatter.FormatPeriod(*report, format),
-              .error_message = ""};
+              .error_message = "",
+              .report_window_metadata = BuildWindowMetadata(*report)};
     }
     case StructuredReportKind::kWeek: {
       const auto* report = std::get_if<WeeklyReportData>(&output.report);

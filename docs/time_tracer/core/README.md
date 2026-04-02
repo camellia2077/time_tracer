@@ -16,21 +16,23 @@ routing. During the transition, both the new and legacy folders remain valid.
    - Capability-first top-level routing for core docs.
 4. [shared/README.md](shared/README.md)
    - Shared cross-capability contracts and semantics.
-5. [capabilities/validation/README.md](capabilities/validation/README.md)
+5. [errors/README.md](errors/README.md)
+   - Core-wide error model, logging semantics, and machine-readable error codes.
+6. [capabilities/validation/README.md](capabilities/validation/README.md)
    - Primary entry for validation docs.
-6. [capabilities/ingest/README.md](capabilities/ingest/README.md)
+7. [capabilities/ingest/README.md](capabilities/ingest/README.md)
    - Primary entry for ingest docs.
-7. [capabilities/query/README.md](capabilities/query/README.md)
+8. [capabilities/query/README.md](capabilities/query/README.md)
    - Primary entry for query docs.
-8. [capabilities/reporting/README.md](capabilities/reporting/README.md)
+9. [capabilities/reporting/README.md](capabilities/reporting/README.md)
    - Primary entry for reporting docs.
-9. [capabilities/exchange/README.md](capabilities/exchange/README.md)
+10. [capabilities/exchange/README.md](capabilities/exchange/README.md)
    - Primary entry for exchange docs.
-10. [capabilities/config/README.md](capabilities/config/README.md)
+11. [capabilities/config/README.md](capabilities/config/README.md)
    - Primary entry for config docs.
-11. [capabilities/persistence/README.md](capabilities/persistence/README.md)
+12. [capabilities/persistence/README.md](capabilities/persistence/README.md)
    - Primary entry for persistence docs.
-12. [overview/module_boundaries.md](overview/module_boundaries.md)
+13. [overview/module_boundaries.md](overview/module_boundaries.md)
    - Engineering contract for owner paths, forbidden edges, and validate entrypoints.
 
 ## What Lives Here
@@ -53,7 +55,7 @@ routing. During the transition, both the new and legacy folders remain valid.
 1. Validation flow, canonical text, or validation diagnostics changes:
    - [capabilities/validation/README.md](capabilities/validation/README.md)
    - [shared/canonical_text_contract_v1.md](shared/canonical_text_contract_v1.md)
-   - [shared/error-codes.md](shared/error-codes.md)
+   - [errors/error-codes.md](errors/error-codes.md)
 2. Core-wide boundary, capability ownership, or module routing changes:
    - [overview/identity_and_boundary.md](overview/identity_and_boundary.md)
    - [overview/capability_map.md](overview/capability_map.md)
@@ -99,9 +101,11 @@ routing. During the transition, both the new and legacy folders remain valid.
    - Capability-first top-level routing and migration-friendly entry docs.
 2. `shared/`
    - Shared contracts and semantics used by more than one capability.
-3. `capabilities/`
+3. `errors/`
+   - Core-wide error model, machine-readable error codes, and logging semantics.
+4. `capabilities/`
    - Capability-owned docs such as validation and ingest.
-4. Legacy folders still retained during migration:
+5. Legacy folders still retained during migration:
    - `contracts/`
    - `architecture/`
    - `design/`
@@ -109,7 +113,7 @@ routing. During the transition, both the new and legacy folders remain valid.
    - `specs/`
 
 ## Core Rules
-1. New core docs should prefer `shared/` or `capabilities/<name>/` when the
+1. New core docs should prefer `shared/`, `errors/`, or `capabilities/<name>/` when the
    ownership is clear.
 2. Legacy doc-type folders may remain as thin indexes or transitional homes
    until each capability is migrated.

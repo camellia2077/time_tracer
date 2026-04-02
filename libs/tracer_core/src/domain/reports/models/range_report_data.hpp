@@ -13,6 +13,9 @@ struct RangeReportData {
   std::string start_date;
   std::string end_date;
   int requested_days = 0;
+  bool has_records = false;
+  int matched_day_count = 0;
+  int matched_record_count = 0;
   std::int64_t total_duration = 0;
   int actual_days = 0;
   int status_true_days = 0;

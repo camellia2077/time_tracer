@@ -42,7 +42,14 @@ void SetLastError(const char* message) {
 
 [[nodiscard]] auto BuildOperationResponse(
     const tracer_core::core::dto::OperationAck& output) -> const char* {
-  return BuildAckResponse(output.ok, output.error_message);
+  g_last_response =
+      tt_transport::EncodeIngestResponse(tt_transport::IngestResponsePayload{
+          .ok = output.ok,
+          .error_message = output.error_message,
+          .error_contract = BuildErrorContract(output.ok, output.error_message,
+                                               output.error_contract),
+      });
+  return g_last_response.c_str();
 }
 
 [[nodiscard]] auto BuildIngestSyncStatusResponse(
@@ -89,7 +96,8 @@ void SetLastError(const char* message) {
           .error_message = output.error_message,
           .type = target_type(output.type),
           .items = output.items,
-          .error_contract = BuildErrorContract(output.ok, output.error_message),
+          .error_contract = BuildErrorContract(output.ok, output.error_message,
+                                               output.error_contract),
       });
   return g_last_response.c_str();
 }
@@ -101,7 +109,8 @@ void SetLastError(const char* message) {
           .ok = output.ok,
           .error_message = output.error_message,
           .content = output.content,
-          .error_contract = BuildErrorContract(output.ok, output.error_message),
+          .error_contract = BuildErrorContract(output.ok, output.error_message,
+                                               output.error_contract),
       });
   return g_last_response.c_str();
 }

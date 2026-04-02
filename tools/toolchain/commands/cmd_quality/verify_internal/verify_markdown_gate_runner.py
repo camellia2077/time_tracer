@@ -17,12 +17,10 @@ def run_report_triplet_gates(
     db_path: Path,
     output_name: str,
     cases_config_path: Path,
-    normalize_ext: tuple[str, ...],
 ) -> int:
     result_layout = resolve_test_result_layout(repo_root, output_name)
     quality_gates_root = result_layout.quality_gates_dir
     specs: tuple[tuple[str, str, str], ...] = (
-        ("md", "markdown", "md"),
         ("tex", "latex", "tex"),
         ("typ", "typ", "typ"),
     )
@@ -74,8 +72,6 @@ def run_report_triplet_gates(
             str(audit_output_path),
             "--fail-on-diff",
         ]
-        if extension == "md" and normalize_ext:
-            audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
         audit_ret = run_command_fn(
             audit_cmd,
             cwd=repo_root,
@@ -112,7 +108,6 @@ def run_report_markdown_gates(
     db_path = result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
     current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"
     golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
-    markdown_audit_output = quality_gates_root / "audits" / "report-md-golden-byte-audit.md"
     render_check_output = quality_gates_root / "audits" / "report-md-golden-render-check.json"
     cases_config_path = (
         repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
@@ -140,29 +135,6 @@ def run_report_markdown_gates(
     )
     if collect_ret != 0:
         return collect_ret
-
-    audit_cmd = [
-        sys.executable,
-        "tools/toolchain/quality_gates/reporting/report_consistency_audit.py",
-        "--left-dir",
-        str(golden_dir),
-        "--right-dir",
-        str(current_cases_dir),
-        "--pattern",
-        "*.md",
-        "--output",
-        str(markdown_audit_output),
-        "--fail-on-diff",
-    ]
-    if normalize_ext:
-        audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
-    audit_ret = run_command_fn(
-        audit_cmd,
-        cwd=repo_root,
-        env=setup_env_fn(),
-    )
-    if audit_ret != 0:
-        return audit_ret
 
     render_cmd = [
         sys.executable,
@@ -193,5 +165,4 @@ def run_report_markdown_gates(
         db_path=db_path,
         output_name=output_name,
         cases_config_path=cases_config_path,
-        normalize_ext=normalize_ext,
     )

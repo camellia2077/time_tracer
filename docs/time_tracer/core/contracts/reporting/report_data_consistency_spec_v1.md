@@ -63,7 +63,7 @@ Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
 | **数据层** | 同一份 txt 导入后，报告的 `total_duration`、`detailed_records` 条数、`project_tree` 节点、各字段值完全一致 | **MUST** | 共享 `DayQuerier` / `BaseQuerier` 同一份 SQL + 映射代码 |
 | **结构层** | MD 输出包含相同的 section 标题（`## All Activities`、`## Project Breakdown`、`## Statistics` 等）和标签（`- **Date**:`、`- **Total Time Recorded**:` 等） | **MUST** | 共享 `ReportDtoFormatter` + 同一份 `day.toml` 配置 |
 | **格式层** | 文本结构与换行语义一致（UTF-8 + LF + 末尾 LF） | **MUST** | `report_formatter_parity_md_tests.cpp` + `ReportOutputPolicy` |
-| **字节层** | 原始字节（含换行符）完全相同，且 `sha256` 一致 | **MUST** | parity/consistency 硬门禁 + 审计脚本 |
+| **字节层** | 原始字节（含换行符）完全相同，且 `sha256` 一致 | **MUST** | parity 硬门禁（CLI/Android 原始字节 + `sha256`） |
 
 ### 5.5.3 字节层门禁变更说明（2026-02-28）
 > 本条在 `2026-02-28` 废弃。当前发布门禁已升级为原始字节全等。
@@ -80,10 +80,9 @@ Windows: cli_runtime_factory_proxy.cpp → tracer_core_runtime_report_json()
 | `android_runtime_report_consistency_tests.cpp` — `TestDataLayerStructuredFieldVerification` | 数据层 | ingest 真实 txt → `RunStructuredReportQuery` → 断言 `total_duration > 0`、records 非空、sum(duration) == total、project_tree 有节点 |
 | `android_runtime_report_consistency_tests.cpp` — `TestDataLayerCrossIngestConsistency` | 数据层 + 格式层 | 同 runtime 内 ingest → report → replace_month → report，断言数据字段不变 + 归一化 MD 内容不变 |
 | `android_runtime_report_consistency_tests.cpp` — `TestStructureLayerMdSectionIntegrity` | 结构层 | 断言日报/月报 MD 包含预期 section 标题和标签 |
-| `report_formatter_parity_md_tests.cpp` | 格式层 + 字节层 | 同一 fixture，CLI/Android 原始字节一致 + sha256 一致 + golden snapshot |
+| `report_formatter_parity_md_tests.cpp` | 格式层 + 字节层 | 同一 fixture，CLI/Android 原始字节一致 + `sha256` 一致（不再做 md snapshot 字节 golden 比对） |
 | `android_runtime_business_regression_tests.cpp` | 数据层 | 项目重命名后缓存刷新、项目表变更后映射更新 |
-| `tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py` + `report_consistency_audit.py` | 字节层 | 固定六类样本（day/month/week/year/recent/range）对 golden 做字节级审计 |
-| `tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py` | 结构层（渲染） | 固定六类样本做标题/列表/代码块/表格/空行结构快照对比 |
+| `tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py` + `report_markdown_render_snapshot_check.py` | 结构层（渲染） | 固定六类样本（day/month/week/year/recent/range）做 `markdown-it-py` 语义 token 对比 |
 
 
 ## 6. 代码评审检查单（必须逐项勾选）

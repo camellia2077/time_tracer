@@ -14,6 +14,7 @@
 #include "infra/reporting/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 namespace {
 using tracer::core::infrastructure::reports::data::stats::
@@ -36,6 +37,18 @@ auto JoinPathParts(const std::vector<std::string>& parts) -> std::string {
 
 MonthQuerier::MonthQuerier(sqlite3* sqlite_db, std::string_view year_month)
     : RangeQuerierBase(sqlite_db, year_month) {}
+
+auto MonthQuerier::FetchData() -> MonthlyReportData {
+  if (!ValidateInput()) {
+    MonthlyReportData data;
+    HandleInvalidInput(data);
+    return data;
+  }
+  if (!this->HasAnyDayRows()) {
+    throw tracer_core::common::ReportTargetNotFoundError("month", this->param_);
+  }
+  return RangeQuerierBase::FetchData();
+}
 
 auto MonthQuerier::ValidateInput() const -> bool {
   if (this->param_.length() != static_cast<size_t>(kYearMonthLength)) {

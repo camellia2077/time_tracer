@@ -22,6 +22,7 @@ class MonthQuerier
   static constexpr int kMonthEndPosition = 6;
 
   explicit MonthQuerier(sqlite3* sqlite_db, std::string_view year_month);
+  [[nodiscard]] auto FetchData() -> MonthlyReportData override;
 
  protected:
   [[nodiscard]] auto GetDateConditionSql() const -> std::string override;

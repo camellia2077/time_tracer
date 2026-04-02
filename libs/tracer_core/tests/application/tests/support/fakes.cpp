@@ -7,6 +7,7 @@
 #include "application/use_cases/query_api.hpp"
 #include "application/use_cases/report_api.hpp"
 #include "application/use_cases/tracer_exchange_api.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 namespace tracer_core::application::tests {
 
@@ -113,6 +114,9 @@ auto FakePipelineWorkflow::InstallActiveConverterConfig(
 
 auto FakeReportHandler::RunDailyQuery(std::string_view /*date*/,
                                       ReportFormat /*format*/) -> std::string {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("day", "missing-day");
+  }
   if (fail_query) {
     throw std::runtime_error("daily query failed");
   }
@@ -122,6 +126,10 @@ auto FakeReportHandler::RunDailyQuery(std::string_view /*date*/,
 auto FakeReportHandler::RunMonthlyQuery(std::string_view /*month*/,
                                         ReportFormat /*format*/)
     -> std::string {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("month",
+                                                         "missing-month");
+  }
   if (fail_query) {
     throw std::runtime_error("monthly query failed");
   }
@@ -138,6 +146,9 @@ auto FakeReportHandler::RunPeriodQuery(int /*days*/, ReportFormat /*format*/)
 
 auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
                                        ReportFormat /*format*/) -> std::string {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("week", "missing-week");
+  }
   if (fail_query) {
     throw std::runtime_error("weekly query failed");
   }
@@ -146,6 +157,9 @@ auto FakeReportHandler::RunWeeklyQuery(std::string_view /*iso_week*/,
 
 auto FakeReportHandler::RunYearlyQuery(std::string_view /*year*/,
                                        ReportFormat /*format*/) -> std::string {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("year", "missing-year");
+  }
   if (fail_query) {
     throw std::runtime_error("yearly query failed");
   }
@@ -163,6 +177,9 @@ auto FakeReportHandler::RunPeriodQueries(const std::vector<int>& /*days_list*/,
 
 auto FakeReportDataQueryService::QueryDaily(std::string_view date)
     -> DailyReportData {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("day", date);
+  }
   DailyReportData report;
   report.date = std::string(date);
   return report;
@@ -170,6 +187,9 @@ auto FakeReportDataQueryService::QueryDaily(std::string_view date)
 
 auto FakeReportDataQueryService::QueryMonthly(std::string_view month)
     -> MonthlyReportData {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("month", month);
+  }
   MonthlyReportData report;
   report.range_label = std::string(month);
   return report;
@@ -192,6 +212,9 @@ auto FakeReportDataQueryService::QueryRange(std::string_view start_date,
 
 auto FakeReportDataQueryService::QueryWeekly(std::string_view iso_week)
     -> WeeklyReportData {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("week", iso_week);
+  }
   WeeklyReportData report;
   report.range_label = std::string(iso_week);
   return report;
@@ -199,6 +222,9 @@ auto FakeReportDataQueryService::QueryWeekly(std::string_view iso_week)
 
 auto FakeReportDataQueryService::QueryYearly(std::string_view year)
     -> YearlyReportData {
+  if (fail_target_not_found) {
+    throw tracer_core::common::ReportTargetNotFoundError("year", year);
+  }
   YearlyReportData report;
   report.range_label = std::string(year);
   return report;

@@ -84,6 +84,25 @@ struct ErrorContractBuildOptions {
   return contract;
 }
 
+[[nodiscard]] auto BuildErrorContract(
+    bool is_ok, std::string_view error_message,
+    const tracer_core::core::dto::ErrorContractFields& fields)
+    -> tt_transport::ErrorContractPayload {
+  if (is_ok) {
+    return {};
+  }
+
+  ErrorContractBuildOptions options{};
+  if (!fields.error_code.empty()) {
+    options.error_code = fields.error_code;
+  }
+  if (!fields.error_category.empty()) {
+    options.error_category = fields.error_category;
+  }
+  options.hints = fields.hints;
+  return BuildErrorContract(is_ok, error_message, std::move(options));
+}
+
 [[nodiscard]] auto BuildAckResponse(bool is_ok,
                                     const std::string& error_message) -> const
     char* {

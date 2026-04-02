@@ -11,6 +11,7 @@
 #include "infra/reporting/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 namespace {
 using tracer::core::infrastructure::reports::data::stats::
@@ -59,6 +60,9 @@ DayQuerier::DayQuerier(sqlite3* sqlite_db, std::string_view date)
     : BaseQuerier(sqlite_db, date) {}
 
 auto DayQuerier::FetchData() -> DailyReportData {
+  if (!HasAnyDayRows()) {
+    throw tracer_core::common::ReportTargetNotFoundError("day", param_);
+  }
   DailyReportData data =
       BaseQuerier::FetchData();  // BaseQuerier 填充 data.project_stats
   FetchMetadata(data);

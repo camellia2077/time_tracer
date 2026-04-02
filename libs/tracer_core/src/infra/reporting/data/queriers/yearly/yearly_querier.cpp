@@ -14,6 +14,7 @@
 #include "infra/reporting/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 namespace {
 using tracer::core::infrastructure::reports::data::stats::
@@ -25,6 +26,20 @@ using tracer::core::infrastructure::reports::data::stats::IsStudyProjectPath;
 
 YearQuerier::YearQuerier(sqlite3* sqlite_db, std::string_view year_str)
     : RangeQuerierBase(sqlite_db, year_str) {}
+
+auto YearQuerier::FetchData() -> YearlyReportData {
+  if (!ValidateInput()) {
+    YearlyReportData data;
+    HandleInvalidInput(data);
+    return data;
+  }
+  YearlyReportData probe;
+  PrepareData(probe);
+  if (!this->HasAnyDayRows()) {
+    throw tracer_core::common::ReportTargetNotFoundError("year", this->param_);
+  }
+  return RangeQuerierBase::FetchData();
+}
 
 auto YearQuerier::ValidateInput() const -> bool {
   int gregorian_year = 0;

@@ -14,9 +14,24 @@
 #include "infra/reporting/data/utils/time_derived_stats.hpp"
 #include "infra/schema/day_schema.hpp"
 #include "infra/schema/sqlite_schema.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 WeekQuerier::WeekQuerier(sqlite3* sqlite_db, std::string_view iso_week)
     : RangeQuerierBase(sqlite_db, iso_week) {}
+
+auto WeekQuerier::FetchData() -> WeeklyReportData {
+  if (!ValidateInput()) {
+    WeeklyReportData data;
+    HandleInvalidInput(data);
+    return data;
+  }
+  WeeklyReportData probe;
+  PrepareData(probe);
+  if (!this->HasAnyDayRows()) {
+    throw tracer_core::common::ReportTargetNotFoundError("week", this->param_);
+  }
+  return RangeQuerierBase::FetchData();
+}
 
 auto WeekQuerier::ValidateInput() const -> bool {
   IsoWeek temp;

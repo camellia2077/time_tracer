@@ -18,6 +18,7 @@ import tracer.core.application.use_cases.interface;
 #include "application/dto/reporting_requests.hpp"
 #include "application/dto/reporting_responses.hpp"
 #include "application/dto/shared_envelopes.hpp"
+#include "shared/types/reporting_errors.hpp"
 #include "tracer/transport/envelope.hpp"
 #include "tracer/transport/runtime_codec.hpp"
 
@@ -85,6 +86,19 @@ auto BuildReportTextResponse(const tracer_core::core::dto::TextOutput& output)
   auto envelope = tt_transport::BuildResponseEnvelope(
       output.ok, output.error_message, output.content);
   envelope.report_hash_sha256 = ComputeSha256Hex(output.content);
+  if (output.report_window_metadata.has_value()) {
+    envelope.report_window_metadata =
+        tt_transport::ReportWindowMetadataPayload{
+            .has_records = output.report_window_metadata->has_records,
+            .matched_day_count =
+                output.report_window_metadata->matched_day_count,
+            .matched_record_count =
+                output.report_window_metadata->matched_record_count,
+            .start_date = output.report_window_metadata->start_date,
+            .end_date = output.report_window_metadata->end_date,
+            .requested_days = output.report_window_metadata->requested_days,
+        };
+  }
   tracer_core::core::c_api::internal::g_last_response =
       tt_transport::SerializeResponseEnvelope(envelope);
   return tracer_core::core::c_api::internal::g_last_response.c_str();
@@ -222,6 +236,14 @@ auto RequireDaysList(const ReportExportRequest& request) -> const std::vector<in
 auto RequireOkText(const TextOutput& output, std::string_view context)
     -> std::string {
   if (!output.ok) {
+    if (!output.error_contract.error_code.empty()) {
+      throw tracer_core::common::ReportingContractError(
+          output.error_message.empty() ? std::string(context) + " failed."
+                                       : output.error_message,
+          output.error_contract.error_code,
+          output.error_contract.error_category,
+          output.error_contract.hints);
+    }
     if (!output.error_message.empty()) {
       throw std::runtime_error(output.error_message);
     }
@@ -233,6 +255,14 @@ auto RequireOkText(const TextOutput& output, std::string_view context)
 auto RequireOkTargets(const ReportTargetsOutput& output,
                       std::string_view context) -> std::vector<std::string> {
   if (!output.ok) {
+    if (!output.error_contract.error_code.empty()) {
+      throw tracer_core::common::ReportingContractError(
+          output.error_message.empty() ? std::string(context) + " failed."
+                                       : output.error_message,
+          output.error_contract.error_code,
+          output.error_contract.error_category,
+          output.error_contract.hints);
+    }
     if (!output.error_message.empty()) {
       throw std::runtime_error(output.error_message);
     }
@@ -384,6 +414,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_json(
     }
 
     return BuildReportTextResponse(runtime.report().RunReportQuery(request));
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    return BuildFailureResponse(error.what(), error.error_code(),
+                                error.error_category(), error.hints());
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -408,6 +441,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_batch_json(
 
     return BuildReportTextResponse(
         runtime.report().RunPeriodBatchQuery(request));
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    return BuildFailureResponse(error.what(), error.error_code(),
+                                error.error_category(), error.hints());
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -427,6 +463,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_report_targets_json(
     ReportTargetsRequest request{};
     request.type = ParseReportTargetType(kPayload.type);
     return BuildReportTargetsResponse(runtime.report().RunReportTargetsQuery(request));
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    return BuildFailureResponse(error.what(), error.error_code(),
+                                error.error_category(), error.hints());
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {
@@ -473,6 +512,9 @@ extern "C" TT_CORE_API auto tracer_core_runtime_export_json(
         break;
     }
     return BuildOperationResponse(OperationAck{.ok = true, .error_message = ""});
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    return BuildFailureResponse(error.what(), error.error_code(),
+                                error.error_category(), error.hints());
   } catch (const std::exception& error) {
     return BuildFailureResponse(error.what());
   } catch (...) {

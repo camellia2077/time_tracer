@@ -107,6 +107,7 @@ class FakeReportHandler final : public IReportHandler {
  public:
   bool fail_query = false;
   bool fail_period_batch_query = false;
+  bool fail_target_not_found = false;
 
   std::string daily_query_result = "daily";
   std::string monthly_query_result = "monthly";
@@ -132,6 +133,7 @@ class FakeReportDataQueryService final
     : public tracer_core::application::ports::IReportDataQueryService {
  public:
   bool fail_list_targets = false;
+  bool fail_target_not_found = false;
 
   std::vector<std::string> daily_targets = {"2026-01-03", "2026-01-04"};
   std::vector<std::string> monthly_targets = {"2026-01", "2026-02"};

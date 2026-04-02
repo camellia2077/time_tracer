@@ -21,6 +21,7 @@
 ### 3.1 退出码契约
 1. 表现层必须遵守统一退出码定义（参考 `error-codes.md` 与现有 `AppExitCode`）。
 2. 同一错误类别在不同表现层必须落到同一退出码区间。
+3. 当实现为某个稳定机器错误码分配专用退出码时，必须在契约文档中明确记录映射。
 
 ### 3.2 错误对象契约（当前执行）
 1. `ok`（bool）
@@ -32,6 +33,7 @@
 说明：
 1. `error_message` 可因实现和语言风格不同而差异。
 2. `error_code` 与 `error_category` 必须稳定，供测试和上层自动化判定。
+3. 例如 `reporting.target.not_found` 可由 CLI 映射到专用退出码，只要该映射保持稳定。
 
 ### 3.3 能力描述契约（当前执行）
 1. Core 对外提供“能力描述”字段，避免 CLI 自行推断特性。
@@ -89,6 +91,6 @@
 
 ## 8. 关联文档
 1. `docs/time_tracer/core/shared/c_abi.md`
-2. `docs/time_tracer/core/shared/error-model.md`
-3. `docs/time_tracer/core/shared/error-codes.md`
+2. `docs/time_tracer/core/errors/error-model.md`
+3. `docs/time_tracer/core/errors/error-codes.md`
 4. `temp/rs-independence.md`

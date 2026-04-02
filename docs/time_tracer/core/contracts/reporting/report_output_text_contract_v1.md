@@ -25,7 +25,7 @@
 1. Android runtime 必须覆盖“成功响应正文原样透传”单测。
 2. Core formatter parity 必须持续覆盖 `md/tex/typ` 三格式快照回归。
 3. `md` 跨端一致性（Windows CLI vs Android）必须覆盖原始字节一致与 `sha256` 一致。
-4. 六类固定样本（`day/month/week/year/recent/range`）必须通过 md golden 字节级校验与渲染结构校验。
+4. 六类固定样本（`day/month/week/year/recent/range`）必须通过 md golden 语义渲染结构校验（`markdown-it-py` 语义 token 对比）。
 
 ## 5. 代码落点
 1. Android report translator：`apps/android/runtime/src/main/java/com/example/tracer/runtime/translators/NativeReportTranslator.kt`
@@ -33,5 +33,5 @@
 3. Core formatter parity tests：`libs/tracer_core/src/infra/tests/report_formatter/`
 4. Android runtime report consistency tests：`libs/tracer_core/src/infra/tests/android_runtime/android_runtime_report_consistency_tests.cpp`
 5. 固定样本采样脚本：`tools/toolchain/quality_gates/reporting/collect_report_markdown_cases.py`
-6. 字节级审计脚本：`tools/toolchain/quality_gates/reporting/report_consistency_audit.py`
-7. 渲染结构校验脚本：`tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py`
+6. 渲染结构校验脚本：`tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py`
+7. `tex/typ` 字节级审计脚本：`tools/toolchain/quality_gates/reporting/report_consistency_audit.py`

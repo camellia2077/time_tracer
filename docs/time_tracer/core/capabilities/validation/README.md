@@ -41,5 +41,5 @@ Use it when you need to understand:
 Validation topics were previously spread across:
 1. `core/design/ingest-persistence-boundary.md`
 2. `core/contracts/text/canonical_text_contract_v1.md`
-3. `core/contracts/error-codes.md`
+3. `core/errors/error-codes.md`
 4. `core/ingest/day_bucket_and_wake_anchor_semantics.md`

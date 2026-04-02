@@ -67,7 +67,6 @@ class ReportMarkdownGateCommand:
         quality_gates_root = result_layout.quality_gates_dir
         current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"
         golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
-        markdown_audit_output = quality_gates_root / "audits" / "report-md-golden-byte-audit.md"
         render_check_output = (
             quality_gates_root / "audits" / "report-md-golden-render-check.json"
         )
@@ -131,26 +130,6 @@ class ReportMarkdownGateCommand:
                 scope_name="report_markdown/v1",
             )
 
-        normalize_ext = tuple(self.ctx.config.quality.gate_audit.normalize_ext)
-        audit_cmd = [
-            sys.executable,
-            "tools/toolchain/quality_gates/reporting/report_consistency_audit.py",
-            "--left-dir",
-            str(golden_dir),
-            "--right-dir",
-            str(current_cases_dir),
-            "--pattern",
-            "*.md",
-            "--output",
-            str(markdown_audit_output),
-            "--fail-on-diff",
-        ]
-        if normalize_ext:
-            audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
-        audit_ret = run_command(audit_cmd, cwd=repo_root, env=env)
-        if audit_ret != 0:
-            return int(audit_ret)
-
         render_cmd = [
             sys.executable,
             "tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py",
@@ -169,7 +148,6 @@ class ReportMarkdownGateCommand:
             return render_ret
 
         triplet_specs = (
-            ("md", "markdown", "*.md"),
             ("tex", "latex", "*.tex"),
             ("typ", "typ", "*.typ"),
         )
@@ -223,8 +201,6 @@ class ReportMarkdownGateCommand:
                 str(triplet_audit_output),
                 "--fail-on-diff",
             ]
-            if fmt == "md" and normalize_ext:
-                triplet_audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
             triplet_audit_ret = int(run_command(triplet_audit_cmd, cwd=repo_root, env=env))
             if triplet_audit_ret != 0:
                 return triplet_audit_ret

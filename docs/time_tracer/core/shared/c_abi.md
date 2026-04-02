@@ -225,8 +225,8 @@
    - preserve UTF-8 and avoid ANSI dependency on contract-critical paths
 
 ## Related Shared Docs
-1. [error-model.md](error-model.md)
-2. [error-codes.md](error-codes.md)
+1. [../errors/error-model.md](../errors/error-model.md)
+2. [../errors/error-codes.md](../errors/error-codes.md)
 
 ## Detailed Related Contracts
 1. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`

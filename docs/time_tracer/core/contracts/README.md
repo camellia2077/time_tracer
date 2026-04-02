@@ -3,7 +3,7 @@
 本目录放置 Core 对外契约相关文档，包含 ABI、错误模型、错误码与统计语义契约。
 
 ## Migration Note
-1. Shared cross-capability contracts are gradually moving to `docs/time_tracer/core/shared/`.
+1. Shared cross-capability contracts are gradually moving to `docs/time_tracer/core/shared/` and `docs/time_tracer/core/errors/`.
 2. Validation-owned interpretation docs are moving to
    `docs/time_tracer/core/capabilities/validation/`.
 3. Query / reporting / exchange capability-first routing now starts under
@@ -13,8 +13,8 @@
 
 ## 文档
 1. `docs/time_tracer/core/shared/c_abi.md`
-2. `docs/time_tracer/core/shared/error-model.md`
-3. `docs/time_tracer/core/shared/error-codes.md`
+2. `docs/time_tracer/core/errors/error-model.md`
+3. `docs/time_tracer/core/errors/error-codes.md`
 4. `docs/time_tracer/core/capabilities/query/README.md`
 5. `docs/time_tracer/core/capabilities/reporting/README.md`
 6. `docs/time_tracer/core/capabilities/exchange/README.md`

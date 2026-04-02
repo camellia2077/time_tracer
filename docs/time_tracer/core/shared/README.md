@@ -12,10 +12,10 @@ multiple core capabilities.
 1. [canonical_text_contract_v1.md](canonical_text_contract_v1.md)
    - Canonical UTF-8, BOM, and newline contract used by validation, ingest,
      exchange, and runtime-managed text IO.
-2. [error-codes.md](error-codes.md)
-   - Shared error-code vocabulary, with validation-related mappings linked from
-     the validation capability docs.
-3. [error-model.md](error-model.md)
-   - Shared error and logging model across runtime hosts.
-4. [c_abi.md](c_abi.md)
+2. [c_abi.md](c_abi.md)
    - Stable `tracer_core_*` ABI naming and JSON-boundary contract.
+
+## Related Cross-Capability Docs
+1. [../errors/README.md](../errors/README.md)
+   - Core-wide error model, machine-readable error codes, and diagnostics
+     vocabulary.

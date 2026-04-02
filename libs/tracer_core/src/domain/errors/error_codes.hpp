@@ -8,7 +8,7 @@
 //
 // Naming convention: domain.category.detail (all lowercase).
 // Codes are stable identifiers — error messages may change, codes should not.
-// When adding new codes, update docs/time_tracer/core/contracts/error-codes.md
+// When adding new codes, update docs/time_tracer/core/errors/error-codes.md
 // as well.
 //
 // Usage:
@@ -124,6 +124,16 @@ inline constexpr std::string_view kLoadFailed = "config.load.failed";
 inline constexpr std::string_view kFieldInvalid = "config.field.invalid";
 
 }  // namespace config
+
+// ---------------------------------------------------------------------------
+// reporting.*   Reporting query / export semantic failures
+// ---------------------------------------------------------------------------
+namespace reporting {
+
+inline constexpr std::string_view kTargetNotFound =
+    "reporting.target.not_found";
+
+}  // namespace reporting
 
 }  // namespace tracer_core::domain::errors::codes
 

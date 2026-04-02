@@ -73,6 +73,67 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   Require(!kTargetsResponse["items"].empty(),
           "baseline runtime report targets should list at least one month");
 
+  const json kEmptyRangeResponse = ParseResponse(
+      api.runtime_report(runtime,
+                         json{{"type", "range"},
+                              {"argument", "2024-12-01|2024-12-31"},
+                              {"format", "markdown"}}
+                             .dump()
+                             .c_str()),
+      "empty range runtime report");
+  Require(kEmptyRangeResponse.value("ok", false),
+          "empty range runtime report should return ok=true");
+  Require(!kEmptyRangeResponse.contains("error_code") ||
+              kEmptyRangeResponse.value("error_code", std::string{}).empty(),
+          "empty range runtime report should not expose reporting.target.not_found");
+  Require(kEmptyRangeResponse.value("has_records", true) == false,
+          "empty range runtime report should expose has_records=false");
+  Require(kEmptyRangeResponse.value("matched_day_count", -1) == 0,
+          "empty range runtime report should expose matched_day_count=0");
+  Require(kEmptyRangeResponse.value("matched_record_count", -1) == 0,
+          "empty range runtime report should expose matched_record_count=0");
+  Require(kEmptyRangeResponse.value("start_date", std::string{}) ==
+              "2024-12-01",
+          "empty range runtime report should expose start_date");
+  Require(kEmptyRangeResponse.value("end_date", std::string{}) ==
+              "2024-12-31",
+          "empty range runtime report should expose end_date");
+  Require(kEmptyRangeResponse.value("requested_days", 0) == 31,
+          "empty range runtime report should expose requested_days=31");
+
+  const json kMissingReportResponse =
+      ParseResponse(api.runtime_report(runtime, json{{"type", "day"},
+                                                     {"argument", "2024-12-31"},
+                                                     {"format", "markdown"}}
+                                                    .dump()
+                                                    .c_str()),
+                    "missing runtime report target");
+  Require(!kMissingReportResponse.value("ok", true),
+          "missing runtime report target should return ok=false");
+  Require(kMissingReportResponse.value("error_code", std::string{}) ==
+              "reporting.target.not_found",
+          "missing runtime report target should expose reporting.target.not_found");
+  Require(kMissingReportResponse.value("error_category", std::string{}) ==
+              "reporting",
+          "missing runtime report target should expose reporting category");
+
+  const json kMissingExportResponse = ParseResponse(
+      api.runtime_export(runtime,
+                         json{{"type", "month"},
+                              {"argument", "2024-12"},
+                              {"format", "md"}}
+                             .dump()
+                             .c_str()),
+      "missing runtime export target");
+  Require(!kMissingExportResponse.value("ok", true),
+          "missing runtime export target should return ok=false");
+  Require(kMissingExportResponse.value("error_code", std::string{}) ==
+              "reporting.target.not_found",
+          "missing runtime export target should expose reporting.target.not_found");
+  Require(kMissingExportResponse.value("error_category", std::string{}) ==
+              "reporting",
+          "missing runtime export target should expose reporting category");
+
   RequireOk(api.runtime_export(
                 runtime,
                 json{{"type", "month"},

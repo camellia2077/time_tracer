@@ -35,6 +35,7 @@ class BaseQuerier {
     PrepareData(data);
     // [FIX] Moved FetchActualDays to subclasses that actually need it.
     FetchRecordsAndDuration(data);
+    FinalizeData(data);
 
     return data;
   }
@@ -63,6 +64,10 @@ class BaseQuerier {
 
   // [FIX] Silenced unused parameter warning.
   virtual void PrepareData(ReportDataType& /*data*/) const {
+    // Default implementation does nothing.
+  }
+
+  virtual void FinalizeData(ReportDataType& /*data*/) const {
     // Default implementation does nothing.
   }
 
@@ -96,6 +101,61 @@ class BaseQuerier {
       }
     }
     sqlite3_finalize(stmt);
+  }
+
+  [[nodiscard]] auto HasAnyDayRows() const -> bool {
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = "SELECT 1 FROM ";
+    sql += schema::day::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += " LIMIT 1;";
+
+    bool exists = false;
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+      BindSqlParameters(stmt);
+      exists = sqlite3_step(stmt) == SQLITE_ROW;
+    }
+    sqlite3_finalize(stmt);
+    return exists;
+  }
+
+  [[nodiscard]] auto FetchMatchedDayRowCount() const -> int {
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = "SELECT COUNT(*) FROM ";
+    sql += schema::day::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += ";";
+
+    int count = 0;
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+      BindSqlParameters(stmt);
+      if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+      }
+    }
+    sqlite3_finalize(stmt);
+    return count;
+  }
+
+  [[nodiscard]] auto FetchMatchedRecordCount() const -> int {
+    sqlite3_stmt* stmt = nullptr;
+    std::string sql = "SELECT COUNT(*) FROM ";
+    sql += schema::time_records::db::kTable;
+    sql += " WHERE ";
+    sql += GetDateConditionSql();
+    sql += ";";
+
+    int count = 0;
+    if (sqlite3_prepare_v2(db_, sql.c_str(), -1, &stmt, nullptr) == SQLITE_OK) {
+      BindSqlParameters(stmt);
+      if (sqlite3_step(stmt) == SQLITE_ROW) {
+        count = sqlite3_column_int(stmt, 0);
+      }
+    }
+    sqlite3_finalize(stmt);
+    return count;
   }
 
   // [FIX] This is now a helper for subclasses, not part of the main FetchData

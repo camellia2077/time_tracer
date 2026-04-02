@@ -8,6 +8,7 @@
 
 #include "application/use_cases/core_api_failure.hpp"
 #include "application/use_cases/report_api_support.hpp"
+#include "shared/types/reporting_errors.hpp"
 
 namespace tracer::core::application::use_cases {
 
@@ -39,7 +40,8 @@ auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
         if (!structured.error_message.empty()) {
           return {.ok = false,
                   .content = "",
-                  .error_message = structured.error_message};
+                  .error_message = structured.error_message,
+                  .error_contract = structured.error_contract};
         }
         return core_api_failure::BuildTextFailure(
             "RunReportQuery",
@@ -61,7 +63,8 @@ auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
                                                            request.format),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
-        const int days = std::stoi(request.argument);
+        const int days =
+            report_api_support::ParseRecentDaysArgument(request.argument);
         return {.ok = true,
                 .content = report_handler_.RunPeriodQuery(days, request.format),
                 .error_message = ""};
@@ -84,6 +87,10 @@ auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
 
     return core_api_failure::BuildTextFailure("RunReportQuery",
                                               "Unhandled report query type.");
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    auto failure = core_api_failure::BuildTextFailure("RunReportQuery", error);
+    tracer_core::common::ApplyReportingContract(failure, error);
+    return failure;
   } catch (const std::exception& exception) {
     return core_api_failure::BuildTextFailure("RunReportQuery", exception);
   } catch (...) {
@@ -114,7 +121,8 @@ auto ReportApi::RunStructuredReportQuery(
                     report_data_query_service_->QueryMonthly(request.argument),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
-        const int days = std::stoi(request.argument);
+        const int days =
+            report_api_support::ParseRecentDaysArgument(request.argument);
         return {.ok = true,
                 .kind = StructuredReportKind::kRecent,
                 .report = report_data_query_service_->QueryPeriod(days),
@@ -145,6 +153,11 @@ auto ReportApi::RunStructuredReportQuery(
 
     return report_api_support::BuildStructuredReportFailure(
         "RunStructuredReportQuery", "Unhandled report query type.");
+  } catch (const tracer_core::common::ReportingContractError& error) {
+    auto failure = report_api_support::BuildStructuredReportFailure(
+        "RunStructuredReportQuery", error);
+    tracer_core::common::ApplyReportingContract(failure, error);
+    return failure;
   } catch (const std::exception& exception) {
     return report_api_support::BuildStructuredReportFailure(
         "RunStructuredReportQuery", exception);

@@ -5,7 +5,7 @@ This legacy entry has moved to the shared docs.
 ## Read Next
 1. `docs/time_tracer/core/shared/c_abi.md`
    - Canonical shared `tracer_core_*` ABI contract.
-2. `docs/time_tracer/core/shared/error-model.md`
+2. `docs/time_tracer/core/errors/error-model.md`
    - Shared error-envelope and diagnostics model used by the ABI.
 
 ## Migration Note

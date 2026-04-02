@@ -7,8 +7,8 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from ...core.context import Context
-from ...core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ...core.executor import run_command
+from ...core.generated_paths import resolve_build_layout, resolve_test_result_layout
 from ...services.suite_registry import resolve_result_output_name
 from .verify import VerifyCommand
 
@@ -79,7 +79,9 @@ class RefreshGoldenCommand:
         markdown_export_root = result_layout.artifacts_dir / "reports" / "markdown"
         markdown_current = quality_gates_root / "report_markdown_cases" / "current_v1"
         markdown_golden = repo_root / "test" / "golden" / "report_markdown" / "v1"
-        markdown_audit_output = quality_gates_root / "audits" / "report-md-golden-byte-audit.md"
+        markdown_render_output = (
+            quality_gates_root / "audits" / "report-md-golden-render-check.json"
+        )
 
         collect_markdown_cmd = [
             os.sys.executable,
@@ -104,10 +106,9 @@ class RefreshGoldenCommand:
             ("report_markdown/v1", self._sync_snapshot_dir(markdown_current, markdown_golden, "*.md"))
         )
 
-        normalize_ext = tuple(self.ctx.config.quality.gate_audit.normalize_ext)
-        audit_markdown_cmd = [
+        render_markdown_cmd = [
             os.sys.executable,
-            "tools/toolchain/quality_gates/reporting/report_consistency_audit.py",
+            "tools/toolchain/quality_gates/reporting/report_markdown_render_snapshot_check.py",
             "--left-dir",
             str(markdown_golden),
             "--right-dir",
@@ -115,16 +116,13 @@ class RefreshGoldenCommand:
             "--pattern",
             "*.md",
             "--output",
-            str(markdown_audit_output),
-            "--fail-on-diff",
+            str(markdown_render_output),
+            "--fail-on-structure-diff",
         ]
-        if normalize_ext:
-            audit_markdown_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
-        if run_command(audit_markdown_cmd, cwd=repo_root, env=env) != 0:
+        if run_command(render_markdown_cmd, cwd=repo_root, env=env) != 0:
             return 1, changes
 
         triplet_specs = (
-            ("md", "markdown", "*.md"),
             ("tex", "latex", "*.tex"),
             ("typ", "typ", "*.typ"),
         )
@@ -174,8 +172,6 @@ class RefreshGoldenCommand:
                 str(audit_output),
                 "--fail-on-diff",
             ]
-            if fmt == "md" and normalize_ext:
-                audit_cmd.extend(["--normalize-ext", ",".join(normalize_ext)])
             if run_command(audit_cmd, cwd=repo_root, env=env) != 0:
                 return 1, changes
 

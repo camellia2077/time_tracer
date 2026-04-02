@@ -20,6 +20,7 @@ struct DateRangeArgument {
   std::string end_date;
 };
 
+auto ParseRecentDaysArgument(std::string_view argument) -> int;
 auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument;
 
 auto BuildStructuredReportFailure(std::string_view operation,

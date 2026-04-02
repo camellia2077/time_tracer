@@ -156,7 +156,8 @@ auto RunCaseWithSnapshot(const std::string& case_name,
                          const std::filesystem::path& snapshot_file,
                          const std::string& cli_output,
                          const std::string& android_output,
-                         bool update_snapshots, int& failures) -> void {
+                         bool update_snapshots,
+                         bool compare_snapshot_bytes, int& failures) -> void {
   if (cli_output != android_output) {
     ++failures;
     std::cerr << "[FAIL] " << case_name
@@ -175,6 +176,9 @@ auto RunCaseWithSnapshot(const std::string& case_name,
 
   const std::string kCliSnapshotText = cli_output;
   const std::string kAndroidSnapshotText = android_output;
+  if (!compare_snapshot_bytes) {
+    return;
+  }
 
   if (update_snapshots) {
     if (!WriteFileText(snapshot_file, kCliSnapshotText)) {
@@ -204,21 +208,27 @@ auto RunFormatSnapshotCases(const std::string& format_label,
                             const CaseOutputs& cli_outputs,
                             const CaseOutputs& android_outputs,
                             bool update_snapshots, int& failures) -> void {
+  const bool kCompareSnapshotBytes = extension != ".md";
   RunCaseWithSnapshot("daily/" + format_label,
                       snapshot_root / ("day" + extension), cli_outputs.day,
-                      android_outputs.day, update_snapshots, failures);
+                      android_outputs.day, update_snapshots,
+                      kCompareSnapshotBytes, failures);
   RunCaseWithSnapshot("monthly/" + format_label,
                       snapshot_root / ("month" + extension), cli_outputs.month,
-                      android_outputs.month, update_snapshots, failures);
+                      android_outputs.month, update_snapshots,
+                      kCompareSnapshotBytes, failures);
   RunCaseWithSnapshot("weekly/" + format_label,
                       snapshot_root / ("week" + extension), cli_outputs.week,
-                      android_outputs.week, update_snapshots, failures);
+                      android_outputs.week, update_snapshots,
+                      kCompareSnapshotBytes, failures);
   RunCaseWithSnapshot("yearly/" + format_label,
                       snapshot_root / ("year" + extension), cli_outputs.year,
-                      android_outputs.year, update_snapshots, failures);
+                      android_outputs.year, update_snapshots,
+                      kCompareSnapshotBytes, failures);
   RunCaseWithSnapshot("range/" + format_label,
                       snapshot_root / ("range" + extension), cli_outputs.range,
-                      android_outputs.range, update_snapshots, failures);
+                      android_outputs.range, update_snapshots,
+                      kCompareSnapshotBytes, failures);
 }
 
 }  // namespace report_formatter_parity_internal

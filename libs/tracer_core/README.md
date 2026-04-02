@@ -53,7 +53,7 @@ Open these when the task is specifically about converter-config validation,
 TXT structure validation, TXT logic validation, or ingest validation order:
 
 1. [Ingest persistence boundary](../../docs/time_tracer/core/design/ingest-persistence-boundary.md)
-2. [Validation error codes](../../docs/time_tracer/core/contracts/error-codes.md)
+2. [Validation error codes](../../docs/time_tracer/core/errors/error-codes.md)
 3. [Core architecture index](../../docs/time_tracer/core/architecture/README.md)
 
 ## Validate

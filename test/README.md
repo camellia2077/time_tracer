@@ -19,21 +19,23 @@ Read docs before broad search:
 
 1. [test/suites/README.md](./suites/README.md)
    - suite layout and naming
-2. [test/AGENTS.md](./AGENTS.md)
+2. [test/data/README.md](./data/README.md)
+   - shared fixture date range and input-target guidance
+3. [test/AGENTS.md](./AGENTS.md)
    - test scope reading order for agents
-3. [docs/toolchain/test/README.md](../docs/toolchain/test/README.md)
+4. [docs/toolchain/test/README.md](../docs/toolchain/test/README.md)
    - toolchain-side test and result contract
-4. [docs/toolchain/workflows/README.md](../docs/toolchain/workflows/README.md)
+5. [docs/toolchain/workflows/README.md](../docs/toolchain/workflows/README.md)
    - shared toolchain workflow and cadence notes
-5. [docs/toolchain/test/history/README.md](../docs/toolchain/test/history/README.md)
+6. [docs/toolchain/test/history/README.md](../docs/toolchain/test/history/README.md)
    - test contract and framework evolution notes
-6. [docs/time_tracer/core/README.md](../docs/time_tracer/core/README.md)
+7. [docs/time_tracer/core/README.md](../docs/time_tracer/core/README.md)
    - core-side routing and boundary docs
-7. [docs/time_tracer/core/specs/AGENT_ONBOARDING.md](../docs/time_tracer/core/specs/AGENT_ONBOARDING.md)
+8. [docs/time_tracer/core/specs/AGENT_ONBOARDING.md](../docs/time_tracer/core/specs/AGENT_ONBOARDING.md)
    - fastest route for core/shell changes
-8. [docs/time_tracer/presentation/cli/README.md](../docs/time_tracer/presentation/cli/README.md)
+9. [docs/time_tracer/presentation/cli/README.md](../docs/time_tracer/presentation/cli/README.md)
    - Windows CLI artifact/runtime expectations
-9. [docs/time_tracer/presentation/android/README.md](../docs/time_tracer/presentation/android/README.md)
+10. [docs/time_tracer/presentation/android/README.md](../docs/time_tracer/presentation/android/README.md)
    - Android-side presentation/runtime verification
 
 Do not treat this README as the detailed test spec. Keep detailed structure,

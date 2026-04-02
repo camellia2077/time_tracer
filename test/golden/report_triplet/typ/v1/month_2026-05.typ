@@ -3,4 +3,56 @@
 
 #text(font: "MiSans VF", size: 14pt)[= Monthly Summary for 2026-01])
 
-No time records found for this month.
++ *Actual Days with Records:* 31
++ *Total Time Recorded:* 743h 48m (average: 23h 59m/day)
++ *Status Days (True):* 30 (96.77%)
++ *Wake Anchor Days (True):* 31 (100.00%)
++ *Exercise Days (True):* 13 (41.94%)
++ *Cardio Days (True):* 9 (29.03%)
++ *Anaerobic Days (True):* 8 (25.81%)
+#text(font: "MiSans VF", size: 12pt)[= Project Breakdown])
+
+#text(font: "MiSans VF", size: 12pt)[== study: 225h 40m (average: 7h 16m/day) (30.3%)]
++ math: 109h 30m (average: 3h 31m/day)
+  + linear-algebra: 46h 36m (average: 1h 30m/day)
+    + matrix: 17h 26m (average: 0h 33m/day)
+  + probability-theory: 46h 3m (average: 1h 29m/day)
+  + calculus: 16h 51m (average: 0h 32m/day)
+    + double-integral: 7h 52m (average: 0h 15m/day)
++ english: 62h 14m (average: 2h 0m/day)
+  + article: 22h 24m (average: 0h 43m/day)
+  + writing: 20h 12m (average: 0h 39m/day)
+  + words: 12h 55m (average: 0h 25m/day)
+  + listening: 6h 43m (average: 0h 13m/day)
++ computer: 53h 56m (average: 1h 44m/day)
+  + data: 35h 6m (average: 1h 7m/day)
+    + structure: 35h 6m (average: 1h 7m/day)
+  + data-structure: 18h 50m (average: 0h 36m/day)
+    + trees: 14h 30m (average: 0h 28m/day)
+    + graphs: 4h 20m (average: 0h 8m/day)
+#text(font: "MiSans VF", size: 12pt)[== recreation: 169h 38m (average: 5h 28m/day) (22.8%)]
++ game: 92h 13m (average: 2h 58m/day)
+  + overwatch: 56h 1m (average: 1h 48m/day)
+  + minecraft: 25h 48m (average: 0h 49m/day)
+  + clash-royale: 10h 24m (average: 0h 20m/day)
++ online-platforms: 77h 25m (average: 2h 29m/day)
+  + zhihu: 40h 34m (average: 1h 18m/day)
+  + douyin: 24h 11m (average: 0h 46m/day)
+  + bilibili: 12h 40m (average: 0h 24m/day)
+#text(font: "MiSans VF", size: 12pt)[== sleep: 150h 31m (average: 4h 51m/day) (20.2%)]
++ night: 105h 50m (average: 3h 24m/day)
++ day: 44h 41m (average: 1h 26m/day)
+#text(font: "MiSans VF", size: 12pt)[== meal: 83h 34m (average: 2h 41m/day) (11.2%)]
++ long: 82h 59m (average: 2h 40m/day)
++ medium: 0h 25m (average: 0h 0m/day)
++ short: 0h 10m (average: 0h 0m/day)
+#text(font: "MiSans VF", size: 12pt)[== routine: 82h 4m (average: 2h 38m/day) (11.0%)]
++ toilet: 31h 48m (average: 1h 1m/day)
++ personal-hygiene: 25h 46m (average: 0h 49m/day)
+  + oral-hygiene: 25h 46m (average: 0h 49m/day)
++ express: 14h 38m (average: 0h 28m/day)
++ body-hygiene: 9h 52m (average: 0h 19m/day)
+  + bathing: 9h 52m (average: 0h 19m/day)
+#text(font: "MiSans VF", size: 12pt)[== exercise: 32h 21m (average: 1h 2m/day) (4.3%)]
++ anaerobic: 30h 34m (average: 0h 59m/day)
++ cardio: 1h 47m (average: 0h 3m/day)

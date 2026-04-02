@@ -10,7 +10,7 @@ Validation diagnostics must be stable enough for:
 ## Shared Error-Code Vocabulary
 
 The shared cross-capability error-code registry now lives in:
-1. [../../shared/error-codes.md](../../shared/error-codes.md)
+1. [../../errors/error-codes.md](../../errors/error-codes.md)
 
 This page focuses on how validation uses that shared vocabulary.
 

@@ -78,6 +78,50 @@ auto ReadOptionalStringArray(const json& payload, const char* field_name)
   return out;
 }
 
+auto ReadOptionalInt(const json& payload, const char* field_name)
+    -> std::optional<int> {
+  const auto kIt = payload.find(field_name);
+  if (kIt == payload.end() || !kIt->is_number_integer()) {
+    return std::nullopt;
+  }
+  return kIt->get<int>();
+}
+
+auto ReadOptionalBool(const json& payload, const char* field_name)
+    -> std::optional<bool> {
+  const auto kIt = payload.find(field_name);
+  if (kIt == payload.end() || !kIt->is_boolean()) {
+    return std::nullopt;
+  }
+  return kIt->get<bool>();
+}
+
+auto ReadOptionalReportWindowMetadata(const json& payload)
+    -> std::optional<ReportWindowMetadataPayload> {
+  const auto kHasRecords = ReadOptionalBool(payload, "has_records");
+  const auto kMatchedDayCount = ReadOptionalInt(payload, "matched_day_count");
+  const auto kMatchedRecordCount =
+      ReadOptionalInt(payload, "matched_record_count");
+  const auto kRequestedDays = ReadOptionalInt(payload, "requested_days");
+  const auto kStartDate = ReadOptionalStringValue(payload, "start_date");
+  const auto kEndDate = ReadOptionalStringValue(payload, "end_date");
+
+  if (!kHasRecords.has_value() && !kMatchedDayCount.has_value() &&
+      !kMatchedRecordCount.has_value() && !kRequestedDays.has_value() &&
+      !kStartDate.has_value() && !kEndDate.has_value()) {
+    return std::nullopt;
+  }
+
+  return ReportWindowMetadataPayload{
+      .has_records = kHasRecords.value_or(false),
+      .matched_day_count = kMatchedDayCount.value_or(0),
+      .matched_record_count = kMatchedRecordCount.value_or(0),
+      .start_date = kStartDate.value_or(""),
+      .end_date = kEndDate.value_or(""),
+      .requested_days = kRequestedDays.value_or(0),
+  };
+}
+
 }  // namespace
 
 auto BuildResponseEnvelope(bool is_ok, std::string_view error_message,
@@ -108,6 +152,16 @@ auto SerializeResponseEnvelope(const ResponseEnvelope& envelope)
   };
   if (envelope.report_hash_sha256.has_value()) {
     payload["report_hash_sha256"] = *envelope.report_hash_sha256;
+  }
+  if (envelope.report_window_metadata.has_value()) {
+    payload["has_records"] = envelope.report_window_metadata->has_records;
+    payload["matched_day_count"] =
+        envelope.report_window_metadata->matched_day_count;
+    payload["matched_record_count"] =
+        envelope.report_window_metadata->matched_record_count;
+    payload["start_date"] = envelope.report_window_metadata->start_date;
+    payload["end_date"] = envelope.report_window_metadata->end_date;
+    payload["requested_days"] = envelope.report_window_metadata->requested_days;
   }
   return payload.dump();
 }
@@ -147,6 +201,7 @@ auto ParseResponseEnvelope(ResponseEnvelopeParseArgs parse_args)
               .content = ReadOptionalString(payload, "content"),
               .report_hash_sha256 =
                   ReadOptionalStringValue(payload, "report_hash_sha256"),
+              .report_window_metadata = ReadOptionalReportWindowMetadata(payload),
           },
       .error = TransportError{},
   };

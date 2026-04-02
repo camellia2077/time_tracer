@@ -14,6 +14,22 @@ using tracer_core::core::dto::StructuredReportOutput;
 using tracer_core::core::dto::StructuredReportKind;
 using tracer_core::core::dto::StructuredPeriodBatchOutput;
 
+namespace {
+
+auto BuildWindowMetadata(const PeriodReportData& report)
+    -> tracer_core::core::dto::ReportWindowMetadata {
+  return {
+      .has_records = report.has_records,
+      .matched_day_count = report.matched_day_count,
+      .matched_record_count = report.matched_record_count,
+      .start_date = report.start_date,
+      .end_date = report.end_date,
+      .requested_days = report.requested_days,
+  };
+}
+
+}  // namespace
+
 auto BuildErrorMessage(std::string_view operation, std::string_view details)
     -> std::string {
   if (details.empty()) {
@@ -150,7 +166,8 @@ auto FormatStructuredReport(
       }
       return {.ok = true,
               .content = formatter.FormatPeriod(*report, format),
-              .error_message = ""};
+              .error_message = "",
+              .report_window_metadata = BuildWindowMetadata(*report)};
     }
     case StructuredReportKind::kRange: {
       const auto* report = std::get_if<PeriodReportData>(&output.report);
@@ -160,7 +177,8 @@ auto FormatStructuredReport(
       }
       return {.ok = true,
               .content = formatter.FormatPeriod(*report, format),
-              .error_message = ""};
+              .error_message = "",
+              .report_window_metadata = BuildWindowMetadata(*report)};
     }
     case StructuredReportKind::kWeek: {
       const auto* report = std::get_if<WeeklyReportData>(&output.report);
