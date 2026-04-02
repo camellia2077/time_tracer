@@ -2,6 +2,7 @@ use serde_json::Value;
 
 use crate::error::AppError;
 
+pub(crate) use super::invoke::ReportTextOutput;
 use super::{CoreRuntime, invoke};
 
 pub struct ReportClient<'runtime> {
@@ -13,7 +14,7 @@ impl<'runtime> ReportClient<'runtime> {
         Self { runtime }
     }
 
-    pub fn render(&self, request: &Value) -> Result<String, AppError> {
+    pub fn render(&self, request: &Value) -> Result<ReportTextOutput, AppError> {
         if request.get("days_list").is_some() {
             return invoke::run_report_batch_text(self.runtime, request);
         }

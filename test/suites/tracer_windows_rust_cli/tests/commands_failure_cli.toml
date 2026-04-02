@@ -72,3 +72,43 @@ expect_error_code = "cli.invalid_arguments"
 expect_error_category = "cli"
 expect_hints_contains = ["Run command --help to inspect required arguments."]
 expect_stderr_contains = ["`report export day` requires <argument>."]
+
+[[commands]]
+name = "Report Render Range Rejects Invalid Date Order"
+stage = "failure"
+args = ["report", "render", "range", "2026-01-31|2026-01-01", "--format", "md", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`report render range` expects start <= end."]
+
+[[commands]]
+name = "Report Render Range Rejects Invalid Date"
+stage = "failure"
+args = ["report", "render", "range", "2026-02-30|2026-03-01", "--format", "md", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`report render range` expects YYYYMMDD or YYYY-MM-DD, got `2026-02-30`."]
+
+[[commands]]
+name = "Report Render Recent Rejects Zero"
+stage = "failure"
+args = ["report", "render", "recent", "0", "--format", "md", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`report render recent` expects positive integers, got `0`."]
+
+[[commands]]
+name = "Report Render Recent Rejects NonInteger"
+stage = "failure"
+args = ["report", "render", "recent", "abc", "--format", "md", "--db", "{db_path}"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["Invalid integer in list `abc`"]

@@ -14,6 +14,7 @@ _PATH_KEYS = {
     "output_dir_name",
     "processed_json_dir",
 }
+_ORDERED_COMMAND_ENTRIES_KEY = "_ordered_command_entries"
 
 
 def _merge_toml(base, override, key_path=""):
@@ -28,11 +29,25 @@ def _merge_toml(base, override, key_path=""):
         return merged
 
     if isinstance(base, list) and isinstance(override, list):
-        if key_path in {"commands", "command_groups"}:
+        if key_path in {"commands", "command_groups", _ORDERED_COMMAND_ENTRIES_KEY}:
             return base + override
         return override
 
     return override
+
+
+def _collect_ordered_command_entries(data: dict[str, Any]) -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    for key, value in data.items():
+        if key not in {"commands", "command_groups"} or not isinstance(value, list):
+            continue
+
+        entry_kind = "command" if key == "commands" else "command_group"
+        for item in value:
+            if not isinstance(item, dict):
+                continue
+            entries.append({"kind": entry_kind, "payload": item})
+    return entries
 
 
 def _detect_repo_root(config_path: Path) -> Path:
@@ -153,5 +168,8 @@ def _load_toml_with_includes(
         data_no_includes,
         resolved.parent,
     )
+    ordered_command_entries = _collect_ordered_command_entries(data_no_includes)
+    if ordered_command_entries:
+        data_no_includes[_ORDERED_COMMAND_ENTRIES_KEY] = ordered_command_entries
     merged = _merge_toml(merged, data_no_includes)
     return merged

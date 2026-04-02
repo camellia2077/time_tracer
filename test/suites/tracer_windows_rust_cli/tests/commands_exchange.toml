@@ -153,6 +153,10 @@ name = "Pipeline Validate Imported Text With Refreshed Config"
 stage = "exchange"
 args = ["pipeline", "validate", "all", "{exe_dir}/input/full", "--no-date-check"]
 expect_exit = 0
+expect_stderr_contains = [
+  "Structure validation passed for 1 files.",
+  "Logic validation passed.",
+]
 
 [[commands]]
 name = "Query Tree Uses Imported Config Mapping"

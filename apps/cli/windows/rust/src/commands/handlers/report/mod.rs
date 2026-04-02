@@ -16,10 +16,26 @@ use self::render::RenderHandler;
 
 pub struct ReportHandler;
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct ReportWindowMetadata {
+    pub(crate) has_records: bool,
+    pub(crate) matched_day_count: i32,
+    pub(crate) matched_record_count: i32,
+    pub(crate) start_date: String,
+    pub(crate) end_date: String,
+    pub(crate) requested_days: i32,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) struct RenderedReport {
+    pub(crate) content: String,
+    pub(crate) report_window_metadata: Option<ReportWindowMetadata>,
+}
+
 pub(crate) trait ReportSession {
     fn cli_config(&self) -> &CliConfig;
     fn runtime_output_root(&self) -> &Path;
-    fn render(&self, request: &Value) -> Result<String, AppError>;
+    fn render(&self, request: &Value) -> Result<RenderedReport, AppError>;
     fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError>;
 }
 
@@ -46,8 +62,21 @@ impl ReportSession for RuntimeBoundReportSession {
         Path::new(&self.session.paths().runtime_output_root)
     }
 
-    fn render(&self, request: &Value) -> Result<String, AppError> {
-        self.session.report().render(request)
+    fn render(&self, request: &Value) -> Result<RenderedReport, AppError> {
+        let rendered = self.session.report().render(request)?;
+        Ok(RenderedReport {
+            content: rendered.content,
+            report_window_metadata: rendered.report_window_metadata.map(|metadata| {
+                ReportWindowMetadata {
+                    has_records: metadata.has_records,
+                    matched_day_count: metadata.matched_day_count,
+                    matched_record_count: metadata.matched_record_count,
+                    start_date: metadata.start_date,
+                    end_date: metadata.end_date,
+                    requested_days: metadata.requested_days,
+                }
+            }),
+        })
     }
 
     fn list_targets(&self, target_type: &str) -> Result<Vec<String>, AppError> {
@@ -92,9 +121,9 @@ mod tests {
     };
     use crate::core::runtime::CliConfig;
 
-    use super::{ReportSession, ReportSessionPort};
     use super::export::run_export_with_port;
     use super::render::run_render_with_port;
+    use super::{RenderedReport, ReportSession, ReportSessionPort, ReportWindowMetadata};
 
     struct TestReportPort {
         recorded: Rc<RecordedReportSession>,
@@ -116,7 +145,7 @@ mod tests {
             &self.runtime_output_root
         }
 
-        fn render(&self, request: &Value) -> Result<String, crate::error::AppError> {
+        fn render(&self, request: &Value) -> Result<RenderedReport, crate::error::AppError> {
             self.recorded.record_render(&self.command_name, request)
         }
 
@@ -166,6 +195,30 @@ mod tests {
     }
 
     #[test]
+    fn report_render_single_recent_request_uses_runtime_report_shape() {
+        let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
+        let port = TestReportPort {
+            recorded: Rc::clone(&recorded),
+        };
+
+        run_render_with_port(
+            ReportRenderArgs {
+                period: ReportRenderPeriod::Recent,
+                argument: "7".to_string(),
+                format: vec![ReportFormat::Md],
+            },
+            &default_context(),
+            &port,
+        )
+        .expect("report render single recent should succeed");
+
+        let request = recorded.requests().remove(0);
+        assert_eq!(request["type"], "recent");
+        assert_eq!(request["argument"], "7");
+        assert_eq!(request["format"], "md");
+    }
+
+    #[test]
     fn report_render_day_request_uses_period_and_argument() {
         let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
         let port = TestReportPort {
@@ -185,7 +238,7 @@ mod tests {
 
         let request = recorded.requests().remove(0);
         assert_eq!(request["type"], "day");
-        assert_eq!(request["argument"], "20260103");
+        assert_eq!(request["argument"], "2026-01-03");
         assert_eq!(request["format"], "tex");
     }
 
@@ -209,8 +262,48 @@ mod tests {
 
         let request = recorded.requests().remove(0);
         assert_eq!(request["type"], "range");
-        assert_eq!(request["argument"], "20260101|20260131");
+        assert_eq!(request["argument"], "2026-01-01|2026-01-31");
         assert_eq!(request["format"], "typ");
+    }
+
+    #[test]
+    fn report_session_preserves_window_metadata() {
+        let recorded = Rc::new(
+            RecordedReportSession::new(sample_cli_config(), "ok").with_window_metadata(
+                ReportWindowMetadata {
+                    has_records: false,
+                    matched_day_count: 0,
+                    matched_record_count: 0,
+                    start_date: "2024-12-01".to_string(),
+                    end_date: "2024-12-31".to_string(),
+                    requested_days: 31,
+                },
+            ),
+        );
+        let port = TestReportPort {
+            recorded: Rc::clone(&recorded),
+        };
+        let session = port
+            .open("query", &default_context())
+            .expect("open report session");
+
+        let rendered = session
+            .render(
+                &serde_json::json!({"type": "range", "argument": "2024-12-01|2024-12-31", "format": "md"}),
+            )
+            .expect("render report");
+
+        assert_eq!(
+            rendered.report_window_metadata,
+            Some(ReportWindowMetadata {
+                has_records: false,
+                matched_day_count: 0,
+                matched_record_count: 0,
+                start_date: "2024-12-01".to_string(),
+                end_date: "2024-12-31".to_string(),
+                requested_days: 31,
+            })
+        );
     }
 
     #[test]
@@ -239,8 +332,14 @@ mod tests {
         assert_eq!(recorded.command_names(), vec!["export".to_string()]);
         let request = recorded.requests().remove(0);
         assert_eq!(request["type"], "month");
-        assert_eq!(request["argument"], "202603");
-        assert!(export_root.join("markdown").join("month").join("2026-03.md").exists());
+        assert_eq!(request["argument"], "2026-03");
+        assert!(
+            export_root
+                .join("markdown")
+                .join("month")
+                .join("2026-03.md")
+                .exists()
+        );
         let _ = fs::remove_dir_all(&export_root);
     }
 
@@ -268,8 +367,20 @@ mod tests {
         )
         .expect("month export all should succeed");
 
-        assert!(export_root.join("markdown").join("month").join("2026-03.md").exists());
-        assert!(export_root.join("markdown").join("month").join("2026-04.md").exists());
+        assert!(
+            export_root
+                .join("markdown")
+                .join("month")
+                .join("2026-03.md")
+                .exists()
+        );
+        assert!(
+            export_root
+                .join("markdown")
+                .join("month")
+                .join("2026-04.md")
+                .exists()
+        );
         let _ = fs::remove_dir_all(&export_root);
     }
 

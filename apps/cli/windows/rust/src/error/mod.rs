@@ -14,6 +14,7 @@ pub enum AppExitCode {
     MemoryError = 8,
     UnknownError = 9,
     DllCompatibilityError = 10,
+    ReportTargetNotFound = 11,
 }
 
 #[allow(dead_code)]
@@ -100,6 +101,11 @@ impl AppError {
                     "runtime.logic_error",
                     "runtime",
                     "Inspect error_message for detailed reason.",
+                ),
+                AppExitCode::ReportTargetNotFound => (
+                    "reporting.target.not_found",
+                    "reporting",
+                    "Check that the requested report target exists in the current database.",
                 ),
                 AppExitCode::DatabaseError => (
                     "runtime.database_error",

@@ -192,9 +192,7 @@ mod tests {
         assert!(help.contains(
             "Usage: time_tracer_cli.exe -o <PATH> exchange export --in <PATH> [--security-level <SECURITY_LEVEL>]"
         ));
-        assert!(help.contains(
-            "Output path override. Required for `exchange export`."
-        ));
+        assert!(help.contains("Output path override. Required for `exchange export`."));
     }
 
     #[test]
@@ -309,6 +307,29 @@ mod tests {
             },
             _ => panic!("expected report command"),
         }
+    }
+
+    #[test]
+    fn report_render_help_mentions_iso_normalization_rules() {
+        let error =
+            Cli::try_parse_from(["time_tracer_cli", "report", "render", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains("day: YYYYMMDD or YYYY-MM-DD"));
+        assert!(help.contains("month: YYYYMM or YYYY-MM"));
+        assert!(help.contains("range: <from>|<to>"));
+        assert!(help.contains("normalized to ISO YYYY-MM-DD before querying"));
+    }
+
+    #[test]
+    fn report_export_help_mentions_iso_normalization_rules() {
+        let error =
+            Cli::try_parse_from(["time_tracer_cli", "report", "export", "--help"]).unwrap_err();
+        assert_eq!(error.kind(), ErrorKind::DisplayHelp);
+        let help = error.to_string();
+        assert!(help.contains("day: YYYYMMDD or YYYY-MM-DD"));
+        assert!(help.contains("month: YYYYMM or YYYY-MM"));
+        assert!(help.contains("normalized to ISO YYYY-MM-DD before querying and output naming"));
     }
 
     #[test]

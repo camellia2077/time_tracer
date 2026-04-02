@@ -5,6 +5,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde_json::Value;
 
+use crate::commands::handlers::report::{RenderedReport, ReportWindowMetadata};
 use crate::core::runtime::{CliCommandDefaults, CliConfig, CliDefaults, TreeResponse};
 use crate::error::AppError;
 
@@ -154,6 +155,7 @@ pub(crate) struct RecordedReportSession {
     render_response: String,
     runtime_output_root: String,
     target_lists: RefCell<HashMap<String, Vec<String>>>,
+    report_window_metadata: Option<ReportWindowMetadata>,
 }
 
 impl RecordedReportSession {
@@ -168,10 +170,14 @@ impl RecordedReportSession {
                 .to_string_lossy()
                 .to_string(),
             target_lists: RefCell::new(HashMap::new()),
+            report_window_metadata: None,
         }
     }
 
-    pub(crate) fn with_runtime_output_root(mut self, runtime_output_root: impl Into<String>) -> Self {
+    pub(crate) fn with_runtime_output_root(
+        mut self,
+        runtime_output_root: impl Into<String>,
+    ) -> Self {
         self.runtime_output_root = runtime_output_root.into();
         self
     }
@@ -181,6 +187,11 @@ impl RecordedReportSession {
             target_type.to_string(),
             items.into_iter().map(|value| value.to_string()).collect(),
         );
+        self
+    }
+
+    pub(crate) fn with_window_metadata(mut self, metadata: ReportWindowMetadata) -> Self {
+        self.report_window_metadata = Some(metadata);
         self
     }
 
@@ -196,12 +207,15 @@ impl RecordedReportSession {
         &self,
         command_name: &str,
         request: &Value,
-    ) -> Result<String, AppError> {
+    ) -> Result<RenderedReport, AppError> {
         self.command_names
             .borrow_mut()
             .push(command_name.to_string());
         self.requests.borrow_mut().push(request.clone());
-        Ok(self.render_response.clone())
+        Ok(RenderedReport {
+            content: self.render_response.clone(),
+            report_window_metadata: self.report_window_metadata.clone(),
+        })
     }
 
     pub(crate) fn record_list_targets(

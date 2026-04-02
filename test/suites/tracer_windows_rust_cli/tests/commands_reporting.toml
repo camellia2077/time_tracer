@@ -1,6 +1,11 @@
 # ==============================================================================
 #                     REPORTING COMMAND GROUPS
 # ==============================================================================
+# Shared fixture range for reporting targets:
+#   - earliest supported ISO target: 2025-01-01
+#   - latest supported ISO target:   2026-12-31
+# Compact CLI inputs such as YYYYMMDD / YYYYMM are allowed in this suite only
+# when they normalize into the ISO range above.
 [[command_groups]]
 name = "Render Daily"
 stage = "report"
@@ -36,12 +41,33 @@ name_template = "Render Recent ({days} days) [{fmt}]"
 template = ["report", "render", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}"]
 matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
 
+[[commands]]
+name = "Render Range Empty Window Includes Window Hint"
+stage = "report"
+args = ["report", "render", "range", "2024-12-01|2024-12-31", "--format", "md", "--db", "{db_path}"]
+expect_stdout_contains = [
+  "No time records found in this period.",
+  "Window query returned no records.",
+  "start_date=2024-12-01",
+  "end_date=2024-12-31",
+  "requested_days=31",
+  "matched_day_count=0",
+  "matched_record_count=0",
+]
+
+[[command_groups]]
+name = "Render Range"
+stage = "report"
+name_template = "Render Range ({range}) [{fmt}]"
+template = ["report", "render", "range", "{range}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { range = ["2026-01-01|2026-01-31", "2026-05-01|2026-05-31"], fmt = ["md", "tex", "typ"] }
+
 [[command_groups]]
 name = "Report Export Daily"
 stage = "report-export"
 name_template = "Report Export Daily ({date}) [{fmt}]"
 template = ["report", "export", "day", "{date}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
-matrix = { date = [ "2026-01-01", "20260102", "20210103", "2026-01-03", "20260201"], fmt = ["md", "tex", "typ"] }
+matrix = { date = [ "2026-01-01", "20260102", "2025-01-03", "2026-01-03", "20260201"], fmt = ["md", "tex", "typ"] }
 
 [[command_groups]]
 name = "Report Export Monthly"
@@ -70,3 +96,10 @@ stage = "report-export"
 name_template = "Report Export Recent ({days} days) [{fmt}]"
 template = ["report", "export", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
 matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Report Export Range"
+stage = "report-export"
+name_template = "Report Export Range ({range}) [{fmt}]"
+template = ["report", "export", "range", "{range}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { range = ["2026-01-01|2026-01-31", "2026-05-01|2026-05-31"], fmt = ["md", "tex", "typ"] }

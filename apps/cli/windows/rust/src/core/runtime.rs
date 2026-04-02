@@ -123,7 +123,11 @@ impl CoreApi {
         Ok(Self { _lib: lib, symbols })
     }
 
-    pub fn bootstrap(self, command_name: &str, ctx: &CommandContext) -> Result<RuntimeSession, AppError> {
+    pub fn bootstrap(
+        self,
+        command_name: &str,
+        ctx: &CommandContext,
+    ) -> Result<RuntimeSession, AppError> {
         bootstrap::bootstrap(self, command_name, ctx)
     }
 }

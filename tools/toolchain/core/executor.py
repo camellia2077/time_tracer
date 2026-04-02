@@ -126,6 +126,32 @@ def kill_runtime_lock_processes(process_names: list[str] | None = None) -> None:
     )
 
 
+def _format_cmd_display(cmd: list[str], cwd: Path | None) -> str:
+    """Format a command list for concise log display.
+
+    Shortens absolute paths relative to *cwd* (typically the repo root) and
+    abbreviates the Python interpreter to ``python``.
+    """
+    resolved_cwd = cwd.resolve() if cwd else None
+    parts: list[str] = []
+    for token in cmd:
+        text = str(token)
+        # Shorten Python interpreter path.
+        if text.lower().endswith(("python.exe", "python3.exe", "python")):
+            parts.append("python")
+            continue
+        # Convert absolute paths under cwd to relative.
+        if resolved_cwd and Path(text).is_absolute():
+            try:
+                rel = Path(text).resolve().relative_to(resolved_cwd)
+                parts.append(str(rel).replace("\\", "/"))
+                continue
+            except ValueError:
+                pass
+        parts.append(text)
+    return " ".join(parts)
+
+
 def run_command(
     cmd: list[str],
     cwd: Path | None = None,
@@ -142,7 +168,7 @@ def run_command(
         raise ValueError(f"unsupported output_mode: {output_mode}")
 
     if normalized_output_mode == "live":
-        print(f"--- Running: {' '.join(str(c) for c in cmd)}", flush=True)
+        print(f"--- Running: {_format_cmd_display(cmd, cwd)}", flush=True)
 
     # Ensure stdout is mirrored and line-buffered
     f = None

@@ -9,3 +9,43 @@ expect_error_code = "runtime.generic_error"
 expect_error_category = "runtime"
 expect_hints_contains = ["Inspect `error_message` for detailed failure reason."]
 expect_stderr_contains = ["Logic Error:", "Invalid date boundary: 20261301"]
+
+[[commands]]
+name = "Report Render Missing Day Target Returns ReportTargetNotFound"
+stage = "failure"
+args = ["report", "render", "day", "2024-12-31", "--format", "md", "--db", "{db_path}"]
+expect_exit = 11
+expect_error_code = "reporting.target.not_found"
+expect_error_category = "reporting"
+expect_hints_contains = ["Check that the requested report target exists in the current database."]
+expect_stderr_contains = ["Report target not found: day `2024-12-31`."]
+
+[[commands]]
+name = "Report Render Missing Month Target Returns ReportTargetNotFound"
+stage = "failure"
+args = ["report", "render", "month", "2024-12", "--format", "md", "--db", "{db_path}"]
+expect_exit = 11
+expect_error_code = "reporting.target.not_found"
+expect_error_category = "reporting"
+expect_hints_contains = ["Check that the requested report target exists in the current database."]
+expect_stderr_contains = ["Report target not found: month `2024-12`."]
+
+[[commands]]
+name = "Report Render Missing Week Target Returns ReportTargetNotFound"
+stage = "failure"
+args = ["report", "render", "week", "2024-W52", "--format", "md", "--db", "{db_path}"]
+expect_exit = 11
+expect_error_code = "reporting.target.not_found"
+expect_error_category = "reporting"
+expect_hints_contains = ["Check that the requested report target exists in the current database."]
+expect_stderr_contains = ["Report target not found: week `2024-W52`."]
+
+[[commands]]
+name = "Report Render Missing Year Target Returns ReportTargetNotFound"
+stage = "failure"
+args = ["report", "render", "year", "2024", "--format", "md", "--db", "{db_path}"]
+expect_exit = 11
+expect_error_code = "reporting.target.not_found"
+expect_error_category = "reporting"
+expect_hints_contains = ["Check that the requested report target exists in the current database."]
+expect_stderr_contains = ["Report target not found: year `2024`."]

@@ -53,9 +53,7 @@ fn resolve_heatmap_config_path(exe_path: &Path) -> Result<PathBuf, AppError> {
         candidates.push(cwd.join("config/heatmap.toml"));
         let mut cursor = Some(cwd.as_path());
         while let Some(dir) = cursor {
-            candidates.push(
-                dir.join("apps/cli/windows/rust/runtime/config/charts/heatmap.toml"),
-            );
+            candidates.push(dir.join("apps/cli/windows/rust/runtime/config/charts/heatmap.toml"));
             cursor = dir.parent();
         }
     }

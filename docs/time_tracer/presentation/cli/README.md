@@ -32,6 +32,29 @@
 3. 验收结果目录：`out/test/artifact_windows_cli/`
 4. 通过判定：`out/test/artifact_windows_cli/result.json` 中 `success=true`
 
+## Report 日期参数约定
+
+1. `report render day` / `report export day`
+   - 接受 `YYYYMMDD` 或 `YYYY-MM-DD`
+   - CLI 会在调用 runtime 前统一归一化为 ISO `YYYY-MM-DD`
+2. `report render month` / `report export month`
+   - 接受 `YYYYMM` 或 `YYYY-MM`
+   - CLI 会在调用 runtime 前统一归一化为 ISO `YYYY-MM`
+3. `report render range`
+   - 接受 `<from>|<to>`
+   - 两端都接受 `YYYYMMDD` 或 `YYYY-MM-DD`
+   - CLI 会在调用 runtime 前把两端分别归一化为 ISO，再拼成 `YYYY-MM-DD|YYYY-MM-DD`
+4. `report render/export week`、`year`、`recent`
+   - 继续使用各自 canonical 参数形式，不做 day/month 风格的紧凑日期归一化
+
+## Reporting Fixture Range
+
+1. `test/data/` 当前共享报表 fixture 覆盖范围是 `2025-01-01` 到 `2026-12-31`。
+2. 编写 `tracer_windows_rust_cli` reporting suite 目标日期时，应保证 canonical ISO 目标落在这个闭区间内。
+3. 若扩展 fixture 年份范围，需同步更新：
+   - `test/data/README.md`
+   - `test/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+
 ## 文档维护规则
 
 1. 改 CLI 参数或命令：同步更新 `specs/STRUCTURE.md` 与对应测试 TOML。

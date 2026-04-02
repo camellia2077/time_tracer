@@ -24,12 +24,17 @@ pub enum ReportExportPeriod {
     Week,
     Year,
     Recent,
+    Range,
 }
 
 #[derive(Debug, Args)]
 pub struct ReportRenderArgs {
     #[arg(value_enum)]
     pub period: ReportRenderPeriod,
+    #[arg(
+        value_name = "TARGET",
+        help = "Render target. day accepts YYYYMMDD or YYYY-MM-DD; month accepts YYYYMM or YYYY-MM; range accepts <from>|<to> with each side in YYYYMMDD or YYYY-MM-DD. Compact day/month/range endpoints are normalized to ISO before querying."
+    )]
     pub argument: String,
     #[arg(short = 'f', long = "format", value_enum, value_delimiter = ',')]
     pub format: Vec<ReportFormat>,
@@ -39,6 +44,10 @@ pub struct ReportRenderArgs {
 pub struct ReportExportArgs {
     #[arg(value_enum)]
     pub period: ReportExportPeriod,
+    #[arg(
+        value_name = "TARGET",
+        help = "Export target. day accepts YYYYMMDD or YYYY-MM-DD; month accepts YYYYMM or YYYY-MM. Compact day/month inputs are normalized to ISO before querying and file naming. recent expects a positive integer or comma-separated list with --all."
+    )]
     pub argument: Option<String>,
     #[arg(long = "all", action = ArgAction::SetTrue)]
     pub all: bool,
@@ -48,9 +57,15 @@ pub struct ReportExportArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum ReportCommand {
-    #[command(about = "Render textual reports from runtime report queries")]
+    #[command(
+        about = "Render textual reports from runtime report queries",
+        long_about = "Render textual reports from runtime report queries.\n\nDate target rules:\n- day: YYYYMMDD or YYYY-MM-DD, normalized to ISO YYYY-MM-DD before querying\n- month: YYYYMM or YYYY-MM, normalized to ISO YYYY-MM before querying\n- range: <from>|<to>, where each side accepts YYYYMMDD or YYYY-MM-DD and is normalized to ISO before querying\n- week/year/recent keep their canonical argument forms"
+    )]
     Render(ReportRenderArgs),
-    #[command(about = "Export reports to md/tex/typ formats")]
+    #[command(
+        about = "Export reports to md/tex/typ formats",
+        long_about = "Export reports to md/tex/typ formats.\n\nDate target rules:\n- day: YYYYMMDD or YYYY-MM-DD, normalized to ISO YYYY-MM-DD before querying and output naming\n- month: YYYYMM or YYYY-MM, normalized to ISO YYYY-MM before querying and output naming\n- range: <from>|<to>, where each side accepts YYYYMMDD or YYYY-MM-DD and is normalized to ISO before querying and output naming\n- week/year/recent keep their canonical argument forms"
+    )]
     Export(ReportExportArgs),
 }
 

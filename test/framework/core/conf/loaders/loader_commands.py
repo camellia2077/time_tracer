@@ -1,5 +1,7 @@
 from ..definitions import CommandSpec, PipelineConfig
 
+ORDERED_COMMAND_ENTRIES_KEY = "_ordered_command_entries"
+
 
 def _normalize_list(value):
     if value is None:
@@ -73,102 +75,133 @@ def _expand_command_groups(toml_data) -> list[CommandSpec]:
     for group in groups:
         if not isinstance(group, dict):
             continue
-
-        name = group.get("name", "group")
-        stage = group.get("stage", "commands")
-        template = _normalize_list(group.get("template") or group.get("args"))
-        if not template:
-            continue
-
-        matrix = group.get("matrix", {})
-        if not isinstance(matrix, dict):
-            matrix = {}
-
-        keys = list(matrix.keys())
-        value_lists = [_normalize_list(matrix[key]) for key in keys]
-
-        if not keys:
-            combos = [()]
-        else:
-            combos = [[]]
-            for values in value_lists:
-                combos = [combo + [value] for combo in combos for value in values]
-
-        name_template = group.get("name_template")
-        for combo in combos:
-            variables = dict(zip(keys, combo, strict=True))
-            args = [_safe_format(str(item), variables) for item in template]
-
-            if name_template:
-                cmd_name = _safe_format(str(name_template), variables)
-            else:
-                suffix = ", ".join(f"{key}={variables[key]}" for key in keys)
-                cmd_name = f"{name} ({suffix})" if suffix else name
-
-            expanded.append(
-                CommandSpec(
-                    name=cmd_name,
-                    args=args,
-                    stage=stage,
-                    expect_exit=int(group.get("expect_exit", 0)),
-                    raw_command=bool(group.get("raw_command", False)),
-                    add_output_dir=bool(group.get("add_output_dir", False)),
-                    stdin_input=group.get("stdin_input"),
-                    expect_files=[
-                        _safe_format(str(path), variables)
-                        for path in _normalize_list(group.get("expect_files"))
-                    ],
-                    expect_file_contains=[
-                        _safe_format(str(path), variables)
-                        for path in _normalize_list(group.get("expect_file_contains"))
-                    ],
-                    expect_stdout_contains=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_stdout_contains"))
-                    ],
-                    expect_stdout_regex=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_stdout_regex"))
-                    ],
-                    expect_stdout_any_of=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_stdout_any_of"))
-                    ],
-                    expect_stderr_contains=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_stderr_contains"))
-                    ],
-                    expect_error_code=(
-                        _safe_format(str(group.get("expect_error_code")), variables)
-                        if group.get("expect_error_code") is not None
-                        else None
-                    ),
-                    expect_error_category=(
-                        _safe_format(str(group.get("expect_error_category")), variables)
-                        if group.get("expect_error_category") is not None
-                        else None
-                    ),
-                    expect_hints_contains=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_hints_contains"))
-                    ],
-                    expect_json_fields=[
-                        _safe_format(str(text), variables)
-                        for text in _normalize_list(group.get("expect_json_fields"))
-                    ],
-                )
-            )
+        expanded.extend(_expand_command_group(group))
 
     return expanded
 
 
-def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]:
-    commands: list[CommandSpec] = []
-    for item in toml_data.get("commands", []):
-        if isinstance(item, dict):
-            commands.append(_parse_command_item(item))
+def _expand_command_group(group: dict) -> list[CommandSpec]:
+    name = group.get("name", "group")
+    stage = group.get("stage", "commands")
+    template = _normalize_list(group.get("template") or group.get("args"))
+    if not template:
+        return []
 
-    commands.extend(_expand_command_groups(toml_data))
+    matrix = group.get("matrix", {})
+    if not isinstance(matrix, dict):
+        matrix = {}
+
+    keys = list(matrix.keys())
+    value_lists = [_normalize_list(matrix[key]) for key in keys]
+
+    if not keys:
+        combos = [()]
+    else:
+        combos = [[]]
+        for values in value_lists:
+            combos = [combo + [value] for combo in combos for value in values]
+
+    expanded: list[CommandSpec] = []
+    name_template = group.get("name_template")
+    for combo in combos:
+        variables = dict(zip(keys, combo, strict=True))
+        args = [_safe_format(str(item), variables) for item in template]
+
+        if name_template:
+            cmd_name = _safe_format(str(name_template), variables)
+        else:
+            suffix = ", ".join(f"{key}={variables[key]}" for key in keys)
+            cmd_name = f"{name} ({suffix})" if suffix else name
+
+        expanded.append(
+            CommandSpec(
+                name=cmd_name,
+                args=args,
+                stage=stage,
+                expect_exit=int(group.get("expect_exit", 0)),
+                raw_command=bool(group.get("raw_command", False)),
+                add_output_dir=bool(group.get("add_output_dir", False)),
+                stdin_input=group.get("stdin_input"),
+                expect_files=[
+                    _safe_format(str(path), variables)
+                    for path in _normalize_list(group.get("expect_files"))
+                ],
+                expect_file_contains=[
+                    _safe_format(str(path), variables)
+                    for path in _normalize_list(group.get("expect_file_contains"))
+                ],
+                expect_stdout_contains=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_stdout_contains"))
+                ],
+                expect_stdout_regex=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_stdout_regex"))
+                ],
+                expect_stdout_any_of=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_stdout_any_of"))
+                ],
+                expect_stderr_contains=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_stderr_contains"))
+                ],
+                expect_error_code=(
+                    _safe_format(str(group.get("expect_error_code")), variables)
+                    if group.get("expect_error_code") is not None
+                    else None
+                ),
+                expect_error_category=(
+                    _safe_format(str(group.get("expect_error_category")), variables)
+                    if group.get("expect_error_category") is not None
+                    else None
+                ),
+                expect_hints_contains=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_hints_contains"))
+                ],
+                expect_json_fields=[
+                    _safe_format(str(text), variables)
+                    for text in _normalize_list(group.get("expect_json_fields"))
+                ],
+            )
+        )
+    return expanded
+
+
+def _load_ordered_commands(toml_data) -> list[CommandSpec]:
+    raw_entries = toml_data.get(ORDERED_COMMAND_ENTRIES_KEY)
+    if not isinstance(raw_entries, list):
+        return []
+
+    commands: list[CommandSpec] = []
+    for entry in raw_entries:
+        if not isinstance(entry, dict):
+            continue
+
+        kind = entry.get("kind")
+        payload = entry.get("payload")
+        if not isinstance(payload, dict):
+            continue
+
+        if kind == "command":
+            commands.append(_parse_command_item(payload))
+        elif kind == "command_group":
+            commands.extend(_expand_command_group(payload))
+    return commands
+
+
+def _load_commands(toml_data, pipeline_cfg: PipelineConfig) -> list[CommandSpec]:
+    ordered_commands = _load_ordered_commands(toml_data)
+    if ordered_commands:
+        commands = ordered_commands
+    else:
+        commands = []
+        for item in toml_data.get("commands", []):
+            if isinstance(item, dict):
+                commands.append(_parse_command_item(item))
+
+        commands.extend(_expand_command_groups(toml_data))
 
     if pipeline_cfg.MODE == "staged":
         commands.insert(
