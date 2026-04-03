@@ -95,7 +95,8 @@ auto BuildMappingAliasKeysContent(
       converter_config_toml_path, "mapping_alias_keys");
 
   std::set<std::string> alias_keys;
-  for (const auto& [alias, _] : kConfig.text_mapping) {
+  for (const auto& [alias, full_name] : kConfig.text_mapping) {
+    static_cast<void>(full_name);
     const std::string kTrimmedAlias = TrimCopy(alias);
     if (!kTrimmedAlias.empty()) {
       alias_keys.insert(kTrimmedAlias);
@@ -127,7 +128,8 @@ auto BuildAuthorableEventTokensContent(
       converter_config_toml_path, "authorable_event_tokens");
 
   std::set<std::string> authorable_tokens;
-  for (const auto& [alias, _] : kConfig.text_mapping) {
+  for (const auto& [alias, full_name] : kConfig.text_mapping) {
+    static_cast<void>(full_name);
     const std::string kTrimmedAlias = TrimCopy(alias);
     if (!kTrimmedAlias.empty()) {
       authorable_tokens.insert(kTrimmedAlias);

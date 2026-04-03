@@ -163,6 +163,8 @@ auto CopyConverterConfigFile(const fs::path& source_path,
 
 [[nodiscard]] constexpr auto kSha256RoundConstants()
     -> std::array<std::uint32_t, 64> {
+  // SHA-256 round constants are fixed by the algorithm specification.
+  // NOLINTBEGIN(readability-magic-numbers)
   return {
       0x428a2f98U, 0x71374491U, 0xb5c0fbcfU, 0xe9b5dba5U, 0x3956c25bU,
       0x59f111f1U, 0x923f82a4U, 0xab1c5ed5U, 0xd807aa98U, 0x12835b01U,
@@ -178,6 +180,7 @@ auto CopyConverterConfigFile(const fs::path& source_path,
       0x682e6ff3U, 0x748f82eeU, 0x78a5636fU, 0x84c87814U, 0x8cc70208U,
       0x90befffaU, 0xa4506cebU, 0xbef9a3f7U, 0xc67178f2U,
   };
+  // NOLINTEND(readability-magic-numbers)
 }
 
 [[nodiscard]] auto ComputeSha256Bytes(std::span<const std::uint8_t> data)
@@ -633,9 +636,9 @@ auto PipelineWorkflow::RunIngestReplacingAll(const std::string& source_path,
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  const AppOptions full_options =
+  const AppOptions kFullOptions =
       BuildIngestOptions(source_path, date_check_mode, save_processed);
-  auto result_context_opt = pipeline.Run(full_options);
+  auto result_context_opt = pipeline.Run(kFullOptions);
 
   if (!result_context_opt) {
     runtime_bridge::LogError("\n=== Replace-all ingest 执行失败 ===");
