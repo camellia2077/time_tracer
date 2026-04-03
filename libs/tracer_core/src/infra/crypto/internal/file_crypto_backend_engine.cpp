@@ -33,7 +33,7 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
                       "Invalid KDF limits for batch session."),
             {}};
   }
-  if (kLimits.ops_limit > static_cast<unsigned long long>(
+  if (kLimits.ops_limit > static_cast<std::uint64_t>(
                               std::numeric_limits<std::uint32_t>::max())) {
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
                       "Batch session opslimit exceeds header capacity."),
@@ -42,7 +42,7 @@ auto BuildEncryptBatchCryptoSession(std::string_view passphrase,
 
   const auto kMemLimitKib = kLimits.kMemLimitBytes / 1024ULL;
   if (kMemLimitKib == 0 ||
-      kMemLimitKib > static_cast<unsigned long long>(
+      kMemLimitKib > static_cast<std::uint64_t>(
                          std::numeric_limits<std::uint32_t>::max())) {
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
                       "Batch session memlimit exceeds header capacity."),
