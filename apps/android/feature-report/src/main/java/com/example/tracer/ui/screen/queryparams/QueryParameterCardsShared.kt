@@ -25,14 +25,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.report.R
 import com.example.tracer.ui.components.SegmentedDateInput
-import com.example.tracer.ui.components.SegmentedYearMonthInput
 import com.example.tracer.ui.components.SegmentedYearWeekInput
 import com.example.tracer.ui.components.TracerOutlinedTextFieldDefaults
 import com.example.tracer.ui.components.mergeDateDigits
-import com.example.tracer.ui.components.mergeYearMonthDigits
 import com.example.tracer.ui.components.mergeYearWeekDigits
 import com.example.tracer.ui.components.splitDateDigits
-import com.example.tracer.ui.components.splitYearMonthDigits
 import com.example.tracer.ui.components.splitYearWeekDigits
 
 @Composable
@@ -77,18 +74,10 @@ internal fun SegmentedAnalysisPeriodInputs(
         }
 
         DataTreePeriod.MONTH -> {
-            val (year, month) = splitYearMonthDigits(reportMonth)
-            SegmentedYearMonthInput(
+            QueryYearMonthDropdownInput(
                 title = stringResource(R.string.report_title_section_month, section),
-                year = year,
-                month = month,
-                keyboardOptions = keyboardOptions,
-                onYearChange = { nextYear ->
-                    onReportMonthChange(mergeYearMonthDigits(nextYear, month))
-                },
-                onMonthChange = { nextMonth ->
-                    onReportMonthChange(mergeYearMonthDigits(year, nextMonth))
-                }
+                reportMonth = reportMonth,
+                onReportMonthChange = onReportMonthChange
             )
         }
 

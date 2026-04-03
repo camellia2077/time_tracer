@@ -11,6 +11,15 @@ internal class RuntimeQueryDelegate(
         onRuntimePaths: ((RuntimePaths) -> Unit)?
     ) -> NativeCallResult
 ) {
+    private val dataDelegate = RuntimeDataQueryDelegate(
+        queryTranslator = queryTranslator,
+        executeNativeTreeQuery = executeNativeTreeQuery,
+        executeNativeDataQuery = executeNativeDataQuery
+    )
+    private val mappingDelegate = RuntimeMappingQueryDelegate(
+        runDataQuery = dataDelegate::runDataQuery
+    )
+
     suspend fun queryActivitySuggestions(
         lookbackDays: Int,
         topN: Int
@@ -47,7 +56,7 @@ internal class RuntimeQueryDelegate(
                     )
                 }
             }
-            val authorableTokensResult = queryAuthorableEventTokensFromCore()
+            val authorableTokensResult = mappingDelegate.queryAuthorableEventTokensFromCore()
             val validActivityNames = if (authorableTokensResult.ok) {
                 authorableTokensResult.names.toSet()
             } else {
@@ -75,352 +84,29 @@ internal class RuntimeQueryDelegate(
     }
 
     suspend fun queryDayDurations(params: DataDurationQueryParams): DataQueryTextResult =
-        withContext(Dispatchers.IO) {
-            runDataQuery(
-                request = DataQueryRequest(
-                    action = NativeBridge.QUERY_ACTION_DAYS_DURATION,
-                    year = params.year,
-                    month = params.month,
-                    fromDateIso = params.fromDateIso,
-                    toDateIso = params.toDateIso,
-                    reverse = params.reverse,
-                    limit = params.limit
-                )
-            )
-        }
+        dataDelegate.queryDayDurations(params)
 
     suspend fun queryDayDurationStats(params: DataDurationQueryParams): DataQueryTextResult =
-        withContext(Dispatchers.IO) {
-            val period = params.period
-            val normalizedPeriodArgument = if (period == null) {
-                null
-            } else {
-                val periodValidation = validateAndNormalizePeriodArgument(
-                    period = period,
-                    periodArgument = params.periodArgument
-                )
-                if (periodValidation.error != null) {
-                    return@withContext periodValidation.error
-                }
-                periodValidation.argument
-            }
-            runDataQuery(
-                request = DataQueryRequest(
-                    action = NativeBridge.QUERY_ACTION_DAYS_STATS,
-                    year = params.year,
-                    month = params.month,
-                    fromDateIso = params.fromDateIso,
-                    toDateIso = params.toDateIso,
-                    topN = params.topN,
-                    treePeriod = period?.wireValue,
-                    treePeriodArgument = normalizedPeriodArgument
-                )
-            )
-        }
+        dataDelegate.queryDayDurationStats(params)
 
     suspend fun queryProjectTree(params: DataTreeQueryParams): TreeQueryResult =
-        withContext(Dispatchers.IO) {
-            val periodValidation = validateAndNormalizePeriodArgument(
-                period = params.period,
-                periodArgument = params.periodArgument
-            )
-            if (periodValidation.error != null) {
-                return@withContext TreeQueryResult(
-                    ok = false,
-                    found = false,
-                    message = periodValidation.error.message,
-                    operationId = periodValidation.error.operationId
-                )
-            }
-            val normalizedParams = params.copy(periodArgument = periodValidation.argument)
-
-            try {
-                val structuredResult = queryTranslator.toTreeQueryResult(
-                    executeNativeTreeQuery(normalizedParams)
-                )
-                if (structuredResult.ok) {
-                    return@withContext structuredResult
-                }
-
-                val legacyResult = runLegacyTreeQuery(normalizedParams)
-                if (!legacyResult.ok) {
-                    return@withContext structuredResult
-                }
-                val operationId = structuredResult.operationId.ifBlank {
-                    legacyResult.operationId
-                }
-                TreeQueryResult(
-                    ok = true,
-                    found = legacyResult.outputText.isNotBlank(),
-                    roots = emptyList(),
-                    nodes = emptyList(),
-                    message = buildTreeResultMessage(
-                        found = legacyResult.outputText.isNotBlank(),
-                        roots = emptyList(),
-                        nodes = emptyList(),
-                        usesTextFallback = true
-                    ),
-                    operationId = operationId,
-                    legacyText = legacyResult.outputText,
-                    usesTextFallback = true
-                )
-            } catch (error: Exception) {
-                TreeQueryResult(
-                    ok = false,
-                    found = false,
-                    message = formatNativeFailure("query project tree failed", error)
-                )
-            }
-        }
+        dataDelegate.queryProjectTree(params)
 
     suspend fun queryProjectTreeText(params: DataTreeQueryParams): DataQueryTextResult =
-        withContext(Dispatchers.IO) {
-            val periodValidation = validateAndNormalizePeriodArgument(
-                period = params.period,
-                periodArgument = params.periodArgument
-            )
-            if (periodValidation.error != null) {
-                return@withContext periodValidation.error
-            }
-            runLegacyTreeQuery(params.copy(periodArgument = periodValidation.argument))
-        }
+        dataDelegate.queryProjectTreeText(params)
 
     suspend fun queryReportChart(params: ReportChartQueryParams): ReportChartQueryResult =
-        withContext(Dispatchers.IO) {
-            val fromDateIso = params.fromDateIso?.trim()?.takeIf { it.isNotEmpty() }
-            val toDateIso = params.toDateIso?.trim()?.takeIf { it.isNotEmpty() }
-            val validationFailure = validateReportChartQueryParams(
-                lookbackDays = params.lookbackDays,
-                fromDateIso = fromDateIso,
-                toDateIso = toDateIso
-            )
-            if (validationFailure != null) {
-                return@withContext validationFailure
-            }
-
-            try {
-                val root = params.root?.trim()?.takeIf { it.isNotEmpty() }
-                val queryResult = runDataQuery(
-                    request = DataQueryRequest(
-                        action = NativeBridge.QUERY_ACTION_REPORT_CHART,
-                        outputMode = DataQueryOutputMode.SEMANTIC_JSON,
-                        root = root,
-                        lookbackDays = params.lookbackDays,
-                        fromDateIso = fromDateIso,
-                        toDateIso = toDateIso
-                    )
-                )
-
-                if (!queryResult.ok) {
-                    return@withContext ReportChartQueryResult(
-                        ok = false,
-                        data = null,
-                        message = queryResult.message,
-                        operationId = queryResult.operationId
-                    )
-                }
-
-                val parsed = parseReportChartContent(queryResult.outputText)
-                    ?: return@withContext ReportChartQueryResult(
-                        ok = false,
-                        data = null,
-                        message = appendFailureContext(
-                            message = "report chart query returned invalid payload.",
-                            operationId = queryResult.operationId
-                        ),
-                        operationId = queryResult.operationId
-                    )
-
-                ReportChartQueryResult(
-                    ok = true,
-                    data = parsed,
-                    message = buildReportChartResultMessage(parsed.points.size),
-                    operationId = queryResult.operationId
-                )
-            } catch (error: Exception) {
-                ReportChartQueryResult(
-                    ok = false,
-                    data = null,
-                    message = formatNativeFailure("query report chart failed", error)
-                )
-            }
-        }
+        dataDelegate.queryReportChart(params)
 
     suspend fun listActivityMappingNames(): ActivityMappingNamesResult =
-        withContext(Dispatchers.IO) {
-            try {
-                queryActivityMappingNamesFromCore()
-            } catch (error: Exception) {
-                ActivityMappingNamesResult(
-                    ok = false,
-                    names = emptyList(),
-                    message = formatNativeFailure("list activity mapping names failed", error)
-                )
-            }
-        }
+        mappingDelegate.listActivityMappingNames()
 
     suspend fun listActivityAliasKeys(): ActivityMappingNamesResult =
-        withContext(Dispatchers.IO) {
-            try {
-                queryActivityAliasKeysFromCore()
-            } catch (error: Exception) {
-                ActivityMappingNamesResult(
-                    ok = false,
-                    names = emptyList(),
-                    message = formatNativeFailure("list activity alias keys failed", error)
-                )
-            }
-        }
+        mappingDelegate.listActivityAliasKeys()
 
     suspend fun listWakeKeywords(): ActivityMappingNamesResult =
-        withContext(Dispatchers.IO) {
-            try {
-                queryWakeKeywordsFromCore()
-            } catch (error: Exception) {
-                ActivityMappingNamesResult(
-                    ok = false,
-                    names = emptyList(),
-                    message = formatNativeFailure("list wake keywords failed", error)
-                )
-            }
-        }
+        mappingDelegate.listWakeKeywords()
 
     suspend fun listAuthorableEventTokens(): ActivityMappingNamesResult =
-        withContext(Dispatchers.IO) {
-            try {
-                queryAuthorableEventTokensFromCore()
-            } catch (error: Exception) {
-                ActivityMappingNamesResult(
-                    ok = false,
-                    names = emptyList(),
-                    message = formatNativeFailure("list authorable event tokens failed", error)
-                )
-            }
-        }
-
-    private fun runDataQuery(request: DataQueryRequest): DataQueryTextResult {
-        val queryResult = executeNativeDataQuery(request, null)
-        return queryTranslator.toDataQueryTextResult(queryResult)
-    }
-
-    private fun runLegacyTreeQuery(params: DataTreeQueryParams): DataQueryTextResult {
-        return runDataQuery(
-            request = DataQueryRequest(
-                action = NativeBridge.QUERY_ACTION_TREE,
-                treePeriod = params.period.wireValue,
-                treePeriodArgument = params.periodArgument,
-                treeMaxDepth = params.level
-            )
-        )
-    }
-
-    private fun queryActivityMappingNamesFromCore(): ActivityMappingNamesResult {
-        val queryResult = runDataQuery(
-            request = DataQueryRequest(
-                action = NativeBridge.QUERY_ACTION_MAPPING_NAMES
-            )
-        )
-        if (!queryResult.ok) {
-            return ActivityMappingNamesResult(
-                ok = false,
-                names = emptyList(),
-                message = appendFailureContext(
-                    message = "mapping names query failed: ${queryResult.message}",
-                    operationId = queryResult.operationId
-                ),
-                operationId = queryResult.operationId
-            )
-        }
-
-        val names = parseMappingNamesContent(queryResult.outputText).sorted()
-        if (names.isEmpty()) {
-            return ActivityMappingNamesResult(
-                ok = false,
-                names = emptyList(),
-                message = appendFailureContext(
-                    message = "mapping names query failed: empty names.",
-                    operationId = queryResult.operationId
-                ),
-                operationId = queryResult.operationId
-            )
-        }
-
-        return ActivityMappingNamesResult(
-            ok = true,
-            names = names,
-            message = "Loaded ${names.size} mapping names.",
-            operationId = queryResult.operationId
-        )
-    }
-
-    private fun queryActivityAliasKeysFromCore(): ActivityMappingNamesResult {
-        return queryNamedMappingSet(
-            action = NativeBridge.QUERY_ACTION_MAPPING_ALIAS_KEYS,
-            failurePrefix = "mapping alias keys query failed",
-            emptyNamesMessage = "mapping alias keys query failed: empty alias keys.",
-            successMessageTemplate = "Loaded %d mapping alias keys."
-        )
-    }
-
-    private fun queryWakeKeywordsFromCore(): ActivityMappingNamesResult {
-        return queryNamedMappingSet(
-            action = NativeBridge.QUERY_ACTION_WAKE_KEYWORDS,
-            failurePrefix = "wake keywords query failed",
-            emptyNamesMessage = "wake keywords query failed: empty wake keywords.",
-            successMessageTemplate = "Loaded %d wake keywords."
-        )
-    }
-
-    private fun queryAuthorableEventTokensFromCore(): ActivityMappingNamesResult {
-        return queryNamedMappingSet(
-            action = NativeBridge.QUERY_ACTION_AUTHORABLE_EVENT_TOKENS,
-            failurePrefix = "authorable event tokens query failed",
-            emptyNamesMessage = "authorable event tokens query failed: empty authorable token set.",
-            successMessageTemplate = "Loaded %d authorable event tokens."
-        )
-    }
-
-    private fun queryNamedMappingSet(
-        action: Int,
-        failurePrefix: String,
-        emptyNamesMessage: String,
-        successMessageTemplate: String
-    ): ActivityMappingNamesResult {
-        val queryResult = runDataQuery(
-            request = DataQueryRequest(
-                action = action
-            )
-        )
-        if (!queryResult.ok) {
-            return ActivityMappingNamesResult(
-                ok = false,
-                names = emptyList(),
-                message = appendFailureContext(
-                    message = "$failurePrefix: ${queryResult.message}",
-                    operationId = queryResult.operationId
-                ),
-                operationId = queryResult.operationId
-            )
-        }
-
-        val names = parseMappingNamesContent(queryResult.outputText).sorted()
-        if (names.isEmpty()) {
-            return ActivityMappingNamesResult(
-                ok = false,
-                names = emptyList(),
-                message = appendFailureContext(
-                    message = emptyNamesMessage,
-                    operationId = queryResult.operationId
-                ),
-                operationId = queryResult.operationId
-            )
-        }
-
-        return ActivityMappingNamesResult(
-            ok = true,
-            names = names,
-            message = successMessageTemplate.format(names.size),
-            operationId = queryResult.operationId
-        )
-    }
+        mappingDelegate.listAuthorableEventTokens()
 }
