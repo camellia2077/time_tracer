@@ -22,10 +22,10 @@ auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
                           ProgressReporter* reporter,
                           BatchCryptoSession* batch_session)
     -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
-  const std::vector<std::uint8_t> encrypted_buffer(encrypted_bytes.begin(),
+  const std::vector<std::uint8_t> kEncryptedBuffer(encrypted_bytes.begin(),
                                                    encrypted_bytes.end());
   TracerFileHeader header{};
-  if (const auto kParseResult = ParseHeader(encrypted_buffer, header);
+  if (const auto kParseResult = ParseHeader(kEncryptedBuffer, header);
       !kParseResult.ok()) {
     return {kParseResult, {}};
   }
@@ -82,10 +82,10 @@ auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
   }
 
   const auto kPayloadBegin =
-      encrypted_buffer.begin() +
+      kEncryptedBuffer.begin() +
       static_cast<std::ptrdiff_t>(header.header_size);
   const std::vector<std::uint8_t> kCiphertext(kPayloadBegin,
-                                              encrypted_buffer.end());
+                                              kEncryptedBuffer.end());
   if (kCiphertext.size() < crypto_aead_xchacha20poly1305_ietf_ABYTES) {
     sodium_memzero(key.data(), key.size());
     return {
@@ -95,11 +95,11 @@ auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
   }
 
   std::vector<std::uint8_t> decrypted_payload(kCiphertext.size());
-  unsigned long long decrypted_size = 0;
+  std::uint64_t decrypted_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_decrypt(
           decrypted_payload.data(), &decrypted_size, nullptr,
           kCiphertext.data(),
-          static_cast<unsigned long long>(kCiphertext.size()), nullptr, 0,
+          static_cast<std::uint64_t>(kCiphertext.size()), nullptr, 0,
           header.nonce.data(), key.data()) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(

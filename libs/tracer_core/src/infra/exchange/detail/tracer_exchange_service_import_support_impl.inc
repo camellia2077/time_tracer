@@ -86,10 +86,13 @@ auto TryRollbackImportTransaction(
                               imported_payloads);
     }
     if (config_applied) {
-      workflow_handler.InstallActiveConverterConfig(
-          (backup_config_root / fs::path(exchange_pkg::kConverterMainPath))
-              .string(),
-          active_converter_main_config_path.string());
+      workflow_handler.InstallActiveConverterConfig({
+          .source_main_config_path =
+              (backup_config_root / fs::path(exchange_pkg::kConverterMainPath))
+                  .string(),
+          .target_main_config_path =
+              active_converter_main_config_path.string(),
+      });
     }
   } catch (const std::exception& rollback_error) {
     return rollback_error.what();

@@ -15,6 +15,11 @@ struct DailyLog;
 
 namespace tracer::core::application::pipeline {
 
+struct ActiveConverterConfigInstallRequest {
+  std::string source_main_config_path;
+  std::string target_main_config_path;
+};
+
 class IPipelineWorkflow {
  public:
   virtual ~IPipelineWorkflow() = default;
@@ -27,8 +32,8 @@ class IPipelineWorkflow {
       const std::map<std::string, std::vector<DailyLog>>& data_map) -> void = 0;
   virtual auto RunIngest(const std::string& source_path,
                          DateCheckMode date_check_mode,
-                         bool save_processed = false,
-                         IngestMode ingest_mode = IngestMode::kStandard)
+                         bool save_processed,
+                         IngestMode ingest_mode)
       -> void = 0;
   virtual auto RunIngestSyncStatusQuery(
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
@@ -36,7 +41,7 @@ class IPipelineWorkflow {
   virtual auto ClearIngestSyncStatus() -> void = 0;
   virtual auto RunIngestReplacingAll(const std::string& source_path,
                                      DateCheckMode date_check_mode,
-                                     bool save_processed = false) -> void = 0;
+                                     bool save_processed) -> void = 0;
   virtual auto RunValidateStructure(const std::string& source_path) -> void = 0;
   virtual auto RunValidateLogic(const std::string& source_path,
                                 DateCheckMode date_check_mode) -> void = 0;
@@ -44,8 +49,7 @@ class IPipelineWorkflow {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
   virtual auto InstallActiveConverterConfig(
-      const std::string& source_main_config_path,
-      const std::string& target_main_config_path) -> void = 0;
+      const ActiveConverterConfigInstallRequest& request) -> void = 0;
 };
 
 }  // namespace tracer::core::application::pipeline

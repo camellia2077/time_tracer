@@ -75,10 +75,8 @@ auto WorkflowHandler::RunRecordActivityAtomically(
 }
 
 auto WorkflowHandler::InstallActiveConverterConfig(
-    const std::string& source_main_config_path,
-    const std::string& target_main_config_path) -> void {
-  impl_.InstallActiveConverterConfig(source_main_config_path,
-                                     target_main_config_path);
+    const pipeline::ActiveConverterConfigInstallRequest& request) -> void {
+  impl_.InstallActiveConverterConfig(request);
 }
 
 }  // namespace tracer::core::application::workflow

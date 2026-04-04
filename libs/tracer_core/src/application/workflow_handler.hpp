@@ -41,16 +41,15 @@ class WorkflowHandler final : public IWorkflowHandler {
       const std::map<std::string, std::vector<DailyLog>>& data_map)
       -> void override;
   auto RunIngest(const std::string& source_path, DateCheckMode date_check_mode,
-                 bool save_processed = false,
-                 IngestMode ingest_mode = IngestMode::kStandard)
+                 bool save_processed, IngestMode ingest_mode)
       -> void override;
   auto RunIngestSyncStatusQuery(
       const tracer_core::core::dto::IngestSyncStatusRequest& request)
       -> tracer_core::core::dto::IngestSyncStatusOutput override;
   auto ClearIngestSyncStatus() -> void override;
   auto RunIngestReplacingAll(const std::string& source_path,
-                             DateCheckMode date_check_mode,
-                             bool save_processed = false) -> void override;
+                             DateCheckMode date_check_mode, bool save_processed)
+      -> void override;
   auto RunValidateStructure(const std::string& source_path) -> void override;
   auto RunValidateLogic(const std::string& source_path,
                         DateCheckMode date_check_mode) -> void override;
@@ -58,8 +57,8 @@ class WorkflowHandler final : public IWorkflowHandler {
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto InstallActiveConverterConfig(
-      const std::string& source_main_config_path,
-      const std::string& target_main_config_path) -> void override;
+      const pipeline::ActiveConverterConfigInstallRequest& request)
+      -> void override;
 
  private:
   pipeline::PipelineWorkflow impl_;

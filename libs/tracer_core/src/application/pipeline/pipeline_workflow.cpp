@@ -76,12 +76,12 @@ struct ConverterConfigPathSet {
         "Converter main config path must not be empty.");
   }
 
-  const fs::path resolved_main_config_path = fs::absolute(main_config_path);
-  const fs::path config_dir = resolved_main_config_path.parent_path();
+  const fs::path kResolvedMainConfigPath = fs::absolute(main_config_path);
+  const fs::path kConfigDir = kResolvedMainConfigPath.parent_path();
   return {
-      .main_config_path = resolved_main_config_path,
-      .alias_mapping_path = config_dir / "alias_mapping.toml",
-      .duration_rules_path = config_dir / "duration_rules.toml",
+      .main_config_path = kResolvedMainConfigPath,
+      .alias_mapping_path = kConfigDir / "alias_mapping.toml",
+      .duration_rules_path = kConfigDir / "duration_rules.toml",
   };
 }
 
@@ -120,6 +120,9 @@ auto CopyConverterConfigFile(const fs::path& source_path,
 }
 
 
+// SHA-256 helper formulas intentionally keep the specification's operand names
+// and bit-shift constants for readability against the standard.
+// NOLINTBEGIN(readability-magic-numbers,readability-identifier-naming,readability-identifier-length)
 [[nodiscard]] constexpr auto RotateRight(const std::uint32_t value,
                                          const std::uint32_t amount)
     -> std::uint32_t {
@@ -153,15 +156,16 @@ auto CopyConverterConfigFile(const fs::path& source_path,
                                     const std::uint32_t z) -> std::uint32_t {
   return (x & y) ^ (~x & z);
 }
+// NOLINTEND(readability-magic-numbers,readability-identifier-naming,readability-identifier-length)
 
-[[nodiscard]] constexpr auto Majority(const std::uint32_t x,
-                                      const std::uint32_t y,
-                                      const std::uint32_t z)
+[[nodiscard]] constexpr auto Majority(const std::uint32_t kX,
+                                      const std::uint32_t kY,
+                                      const std::uint32_t kZ)
     -> std::uint32_t {
-  return (x & y) ^ (x & z) ^ (y & z);
+  return (kX & kY) ^ (kX & kZ) ^ (kY & kZ);
 }
 
-[[nodiscard]] constexpr auto kSha256RoundConstants()
+[[nodiscard]] constexpr auto Sha256RoundConstants()
     -> std::array<std::uint32_t, 64> {
   // SHA-256 round constants are fixed by the algorithm specification.
   // NOLINTBEGIN(readability-magic-numbers)
@@ -185,14 +189,14 @@ auto CopyConverterConfigFile(const fs::path& source_path,
 
 [[nodiscard]] auto ComputeSha256Bytes(std::span<const std::uint8_t> data)
     -> std::array<std::uint8_t, 32> {
-  static constexpr auto kRoundConstants = kSha256RoundConstants();
+  static constexpr auto kRoundConstants = Sha256RoundConstants();
   std::array<std::uint32_t, 8> state = {
       0x6a09e667U, 0xbb67ae85U, 0x3c6ef372U, 0xa54ff53aU,
       0x510e527fU, 0x9b05688cU, 0x1f83d9abU, 0x5be0cd19U,
   };
 
   std::vector<std::uint8_t> padded(data.begin(), data.end());
-  const std::uint64_t bit_length =
+  const std::uint64_t kBitLength =
       static_cast<std::uint64_t>(data.size()) * 8ULL;
   padded.push_back(0x80U);
   while ((padded.size() % 64U) != 56U) {
@@ -200,18 +204,18 @@ auto CopyConverterConfigFile(const fs::path& source_path,
   }
   for (int shift = 56; shift >= 0; shift -= 8) {
     padded.push_back(
-        static_cast<std::uint8_t>((bit_length >> shift) & 0xFFULL));
+        static_cast<std::uint8_t>((kBitLength >> shift) & 0xFFULL));
   }
 
   std::array<std::uint32_t, 64> schedule{};
   for (std::size_t offset = 0; offset < padded.size(); offset += 64U) {
     for (std::size_t index = 0; index < 16U; ++index) {
-      const std::size_t base = offset + index * 4U;
+      const std::size_t kBase = offset + index * 4U;
       schedule[index] =
-          (static_cast<std::uint32_t>(padded[base]) << 24U) |
-          (static_cast<std::uint32_t>(padded[base + 1U]) << 16U) |
-          (static_cast<std::uint32_t>(padded[base + 2U]) << 8U) |
-          static_cast<std::uint32_t>(padded[base + 3U]);
+          (static_cast<std::uint32_t>(padded[kBase]) << 24U) |
+          (static_cast<std::uint32_t>(padded[kBase + 1U]) << 16U) |
+          (static_cast<std::uint32_t>(padded[kBase + 2U]) << 8U) |
+          static_cast<std::uint32_t>(padded[kBase + 3U]);
     }
     for (std::size_t index = 16U; index < 64U; ++index) {
       schedule[index] = SmallSigma1(schedule[index - 2U]) +
@@ -230,18 +234,18 @@ auto CopyConverterConfigFile(const fs::path& source_path,
     std::uint32_t h = state[7];
 
     for (std::size_t index = 0; index < 64U; ++index) {
-      const std::uint32_t temp1 =
+      const std::uint32_t kTemp1 =
           h + BigSigma1(e) + Choose(e, f, g) + kRoundConstants[index] +
           schedule[index];
-      const std::uint32_t temp2 = BigSigma0(a) + Majority(a, b, c);
+      const std::uint32_t kTemp2 = BigSigma0(a) + Majority(a, b, c);
       h = g;
       g = f;
       f = e;
-      e = d + temp1;
+      e = d + kTemp1;
       d = c;
       c = b;
       b = a;
-      a = temp1 + temp2;
+      a = kTemp1 + kTemp2;
     }
 
     state[0] += a;
@@ -256,13 +260,13 @@ auto CopyConverterConfigFile(const fs::path& source_path,
 
   std::array<std::uint8_t, 32> digest{};
   for (std::size_t index = 0; index < state.size(); ++index) {
-    const std::uint32_t word = state[index];
-    digest[index * 4U] = static_cast<std::uint8_t>((word >> 24U) & 0xFFU);
+    const std::uint32_t kWord = state[index];
+    digest[index * 4U] = static_cast<std::uint8_t>((kWord >> 24U) & 0xFFU);
     digest[index * 4U + 1U] =
-        static_cast<std::uint8_t>((word >> 16U) & 0xFFU);
+        static_cast<std::uint8_t>((kWord >> 16U) & 0xFFU);
     digest[index * 4U + 2U] =
-        static_cast<std::uint8_t>((word >> 8U) & 0xFFU);
-    digest[index * 4U + 3U] = static_cast<std::uint8_t>(word & 0xFFU);
+        static_cast<std::uint8_t>((kWord >> 8U) & 0xFFU);
+    digest[index * 4U + 3U] = static_cast<std::uint8_t>(kWord & 0xFFU);
   }
   return digest;
 }
@@ -271,13 +275,13 @@ auto CopyConverterConfigFile(const fs::path& source_path,
     -> std::string {
   const auto* input =
       reinterpret_cast<const std::uint8_t*>(canonical_text.data());
-  const auto digest = ComputeSha256Bytes(
+  const auto kDigest = ComputeSha256Bytes(
       std::span<const std::uint8_t>(input, canonical_text.size()));
 
   std::ostringstream stream;
   stream << std::hex << std::setfill('0');
-  for (const std::uint8_t byte : digest) {
-    stream << std::setw(2) << static_cast<unsigned int>(byte);
+  for (const std::uint8_t kByte : kDigest) {
+    stream << std::setw(2) << static_cast<unsigned int>(kByte);
   }
   return stream.str();
 }
@@ -289,20 +293,20 @@ auto CopyConverterConfigFile(const fs::path& source_path,
 }
 
 [[nodiscard]] auto TryBuildIngestSyncEntry(const IngestInputModel& input,
-                                           const std::int64_t ingested_at_ms)
+                                           const std::int64_t kIngestedAtMs)
     -> std::optional<IngestSyncStatusEntry> {
-  const auto canonical = modtext::Canonicalize(
+  const auto kCanonical = modtext::Canonicalize(
       input.content, input.source_label.empty() ? input.source_id
                                                 : input.source_label);
-  if (!canonical.ok) {
+  if (!kCanonical.ok) {
     runtime_bridge::LogWarn("Skipping ingest sync snapshot due to invalid TXT: " +
-                            canonical.error_message);
+                            kCanonical.error_message);
     return std::nullopt;
   }
 
-  const auto target_month =
-      TryParseSingleTxtTargetMonthFromContent(canonical.text);
-  if (!target_month.has_value()) {
+  const auto kTargetMonth =
+      TryParseSingleTxtTargetMonthFromContent(kCanonical.text);
+  if (!kTargetMonth.has_value()) {
     runtime_bridge::LogWarn(
         "Skipping ingest sync snapshot because TXT month header is missing: " +
         (input.source_label.empty() ? input.source_id : input.source_label));
@@ -310,10 +314,10 @@ auto CopyConverterConfigFile(const fs::path& source_path,
   }
 
   return IngestSyncStatusEntry{
-      .month_key = target_month->month_key,
-      .txt_relative_path = BuildCanonicalMonthRelativePath(*target_month),
-      .txt_content_hash_sha256 = ComputeSha256Hex(canonical.text),
-      .ingested_at_unix_ms = ingested_at_ms,
+      .month_key = kTargetMonth->month_key,
+      .txt_relative_path = BuildCanonicalMonthRelativePath(*kTargetMonth),
+      .txt_content_hash_sha256 = ComputeSha256Hex(kCanonical.text),
+      .ingested_at_unix_ms = kIngestedAtMs,
   };
 }
 
@@ -321,26 +325,26 @@ auto CopyConverterConfigFile(const fs::path& source_path,
     -> std::vector<IngestSyncStatusEntry> {
   std::map<std::string, IngestSyncStatusEntry> unique_entries;
   std::set<std::string> duplicate_months;
-  const std::int64_t ingested_at_ms = CurrentUnixMillis();
+  const std::int64_t kIngestedAtMs = CurrentUnixMillis();
 
   for (const auto& input : context.state.ingest_inputs) {
-    const auto entry = TryBuildIngestSyncEntry(input, ingested_at_ms);
-    if (!entry.has_value()) {
+    const auto kEntry = TryBuildIngestSyncEntry(input, kIngestedAtMs);
+    if (!kEntry.has_value()) {
       continue;
     }
 
-    if (duplicate_months.contains(entry->month_key)) {
+    if (duplicate_months.contains(kEntry->month_key)) {
       continue;
     }
 
-    const auto insert_result =
-        unique_entries.emplace(entry->month_key, *entry);
-    if (!insert_result.second) {
-      duplicate_months.insert(entry->month_key);
-      unique_entries.erase(entry->month_key);
+    const auto kInsertResult =
+        unique_entries.emplace(kEntry->month_key, *kEntry);
+    if (!kInsertResult.second) {
+      duplicate_months.insert(kEntry->month_key);
+      unique_entries.erase(kEntry->month_key);
       runtime_bridge::LogWarn(
           "Duplicate TXT month detected during ingest sync snapshot: " +
-          entry->month_key +
+          kEntry->month_key +
           ". Sync row will be omitted for this month.");
     }
   }
@@ -368,15 +372,15 @@ auto PersistSingleIngestSyncEntry(const PipelineSession& context,
         "Single TXT ingest sync snapshot requires exactly one input.");
   }
 
-  const auto entry =
+  const auto kEntry =
       TryBuildIngestSyncEntry(context.state.ingest_inputs.front(),
                               CurrentUnixMillis());
-  if (!entry.has_value()) {
+  if (!kEntry.has_value()) {
     throw std::runtime_error(
         "Single TXT ingest sync snapshot requires valid yYYYY + mMM headers.");
   }
 
-  repository.UpsertIngestSyncStatus(*entry);
+  repository.UpsertIngestSyncStatus(*kEntry);
 }
 
 }  // namespace
@@ -420,26 +424,26 @@ auto PipelineWorkflow::RunConverter(const std::string& input_path,
 auto PipelineWorkflow::RunValidateStructure(const std::string& source_path)
     -> void {
   modports::ClearBufferedDiagnostics();
-  const AppOptions options = BuildStructureValidationOptions(source_path);
-  const ScopedErrorReportWriterOverride disable_error_reports(nullptr);
+  const AppOptions kOptions = BuildStructureValidationOptions(source_path);
+  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, options, "Validate structure pipeline failed.");
+  RunPipelineOrThrow(pipeline, kOptions, "Validate structure pipeline failed.");
 }
 
 auto PipelineWorkflow::RunValidateLogic(const std::string& source_path,
                                         DateCheckMode date_check_mode) -> void {
   modports::ClearBufferedDiagnostics();
-  const AppOptions options =
+  const AppOptions kOptions =
       BuildLogicValidationOptions(source_path, date_check_mode);
-  const ScopedErrorReportWriterOverride disable_error_reports(nullptr);
+  const ScopedErrorReportWriterOverride kDisableErrorReports(nullptr);
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  RunPipelineOrThrow(pipeline, options, "Validate logic pipeline failed.");
+  RunPipelineOrThrow(pipeline, kOptions, "Validate logic pipeline failed.");
 }
 
 auto PipelineWorkflow::RunRecordActivityAtomically(
@@ -451,35 +455,34 @@ auto PipelineWorkflow::RunRecordActivityAtomically(
       request, output_root_path_, *converter_config_provider_,
       validation_issue_reporter_,
       [this](const std::string& source_path,
-             const DateCheckMode date_check_mode) -> void {
-        RunIngest(source_path, date_check_mode, false,
+             const DateCheckMode kDateCheckMode) -> void {
+        RunIngest(source_path, kDateCheckMode, false,
                   IngestMode::kSingleTxtReplaceMonth);
       });
 }
 
 auto PipelineWorkflow::InstallActiveConverterConfig(
-    const std::string& source_main_config_path,
-    const std::string& target_main_config_path) -> void {
-  const auto source_paths =
-      ResolveConverterConfigPathSet(source_main_config_path);
-  const auto target_paths =
-      ResolveConverterConfigPathSet(target_main_config_path);
+    const ActiveConverterConfigInstallRequest& request) -> void {
+  const auto kSourcePaths =
+      ResolveConverterConfigPathSet(request.source_main_config_path);
+  const auto kTargetPaths =
+      ResolveConverterConfigPathSet(request.target_main_config_path);
 
-  EnsureConverterConfigSourceExists(source_paths.main_config_path,
+  EnsureConverterConfigSourceExists(kSourcePaths.main_config_path,
                                     "Converter main config");
-  EnsureConverterConfigSourceExists(source_paths.alias_mapping_path,
+  EnsureConverterConfigSourceExists(kSourcePaths.alias_mapping_path,
                                     "Alias mapping config");
-  EnsureConverterConfigSourceExists(source_paths.duration_rules_path,
+  EnsureConverterConfigSourceExists(kSourcePaths.duration_rules_path,
                                     "Duration rules config");
 
-  CopyConverterConfigFile(source_paths.main_config_path,
-                          target_paths.main_config_path,
+  CopyConverterConfigFile(kSourcePaths.main_config_path,
+                          kTargetPaths.main_config_path,
                           "converter main config");
-  CopyConverterConfigFile(source_paths.alias_mapping_path,
-                          target_paths.alias_mapping_path,
+  CopyConverterConfigFile(kSourcePaths.alias_mapping_path,
+                          kTargetPaths.alias_mapping_path,
                           "alias mapping config");
-  CopyConverterConfigFile(source_paths.duration_rules_path,
-                          target_paths.duration_rules_path,
+  CopyConverterConfigFile(kSourcePaths.duration_rules_path,
+                          kTargetPaths.duration_rules_path,
                           "duration rules config");
   converter_config_provider_->InvalidateCache();
 }
@@ -538,19 +541,19 @@ auto PipelineWorkflow::RunIngest(const std::string& source_path,
   runtime_bridge::LogInfo("\n--- 启动数据摄入 (Ingest) ---");
   modports::ClearBufferedDiagnostics();
 
-  const auto db_check = database_health_checker_->CheckReady();
-  if (!db_check.ok) {
-    throw std::runtime_error(db_check.message.empty()
+  const auto kDbCheck = database_health_checker_->CheckReady();
+  if (!kDbCheck.ok) {
+    throw std::runtime_error(kDbCheck.message.empty()
                                  ? "Database readiness check failed."
-                                 : db_check.message);
+                                 : kDbCheck.message);
   }
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,
                                 ingest_input_provider_, processed_data_storage_,
                                 validation_issue_reporter_);
-  const AppOptions full_options =
+  const AppOptions kFullOptions =
       BuildIngestOptions(source_path, date_check_mode, save_processed);
-  auto result_context_opt = pipeline.Run(full_options);
+  auto result_context_opt = pipeline.Run(kFullOptions);
 
   if (!result_context_opt) {
     runtime_bridge::LogError("\n=== Ingest 执行失败 ===");
@@ -562,31 +565,31 @@ auto PipelineWorkflow::RunIngest(const std::string& source_path,
   runtime_bridge::LogInfo("\n--- 流水线验证通过，准备入库 ---");
 
   if (ingest_mode == IngestMode::kSingleTxtReplaceMonth) {
-    const auto target_month = TryResolveSingleTxtTargetMonth(context);
-    if (!target_month.has_value()) {
+    const auto kTargetMonth = TryResolveSingleTxtTargetMonth(context);
+    if (!kTargetMonth.has_value()) {
       throw std::runtime_error(
           "Single TXT replace-month ingest requires exactly one TXT input "
           "with valid headers: yYYYY + mMM.");
     }
 
     if (!IsSingleMonthConsistent(context.result.processed_data,
-                                 target_month->month_key)) {
+                                 kTargetMonth->month_key)) {
       throw std::runtime_error(
           "Single TXT replace-month ingest failed: parsed days are not "
           "consistent with header month " +
-          target_month->month_key + ".");
+          kTargetMonth->month_key + ".");
     }
 
-    const auto previous_tail = ResolvePreviousTailForReplaceMonth(
-        context, *target_month, context.result.processed_data,
+    const auto kPreviousTail = ResolvePreviousTailForReplaceMonth(
+        context, *kTargetMonth, context.result.processed_data,
         *time_sheet_repository_);
-    if (previous_tail.has_value()) {
+    if (kPreviousTail.has_value()) {
       LogLinker linker(context.state.converter_config);
       linker.LinkFirstDayWithExternalPreviousEvent(
           context.result.processed_data,
           LogLinker::ExternalPreviousEvent{
-              .date = previous_tail->date,
-              .end_time = previous_tail->end_time,
+              .date = kPreviousTail->date,
+              .end_time = kPreviousTail->end_time,
           });
     } else if (!context.result.processed_data.empty()) {
       runtime_bridge::LogWarn(
@@ -595,7 +598,8 @@ auto PipelineWorkflow::RunIngest(const std::string& source_path,
     }
 
     RunDatabaseImportFromMemoryReplacingMonth(
-        context.result.processed_data, target_month->year, target_month->month);
+        context.result.processed_data, kTargetMonth->year,
+        kTargetMonth->month);
     PersistSingleIngestSyncEntry(context, *time_sheet_repository_);
     runtime_bridge::LogInfo("\n=== Ingest 执行成功（单月替换）===");
     return;
@@ -626,11 +630,11 @@ auto PipelineWorkflow::RunIngestReplacingAll(const std::string& source_path,
   runtime_bridge::LogInfo("\n--- 启动数据摄入 (Replace All) ---");
   modports::ClearBufferedDiagnostics();
 
-  const auto db_check = database_health_checker_->CheckReady();
-  if (!db_check.ok) {
-    throw std::runtime_error(db_check.message.empty()
+  const auto kDbCheck = database_health_checker_->CheckReady();
+  if (!kDbCheck.ok) {
+    throw std::runtime_error(kDbCheck.message.empty()
                                  ? "Database readiness check failed."
-                                 : db_check.message);
+                                 : kDbCheck.message);
   }
 
   PipelineOrchestrator pipeline(output_root_path_, converter_config_provider_,

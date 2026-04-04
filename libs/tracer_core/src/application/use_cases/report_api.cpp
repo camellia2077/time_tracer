@@ -34,21 +34,21 @@ auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
     -> TextOutput {
   try {
     if (report_data_query_service_ && report_dto_formatter_) {
-      const auto structured = RunStructuredReportQuery(
+      const auto kStructured = RunStructuredReportQuery(
           {.type = request.type, .argument = request.argument});
-      if (!structured.ok) {
-        if (!structured.error_message.empty()) {
+      if (!kStructured.ok) {
+        if (!kStructured.error_message.empty()) {
           return {.ok = false,
                   .content = "",
-                  .error_message = structured.error_message,
-                  .error_contract = structured.error_contract};
+                  .error_message = kStructured.error_message,
+                  .error_contract = kStructured.error_contract};
         }
         return core_api_failure::BuildTextFailure(
             "RunReportQuery",
             "Structured report query failed without error message.");
       }
       return report_api_support::FormatStructuredReport(
-          structured, request.format, *report_dto_formatter_);
+          kStructured, request.format, *report_dto_formatter_);
     }
 
     switch (request.type) {
@@ -63,10 +63,10 @@ auto ReportApi::RunReportQuery(const ReportQueryRequest& request)
                                                            request.format),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
-        const int days =
+        const int kDays =
             report_api_support::ParseRecentDaysArgument(request.argument);
         return {.ok = true,
-                .content = report_handler_.RunPeriodQuery(days, request.format),
+                .content = report_handler_.RunPeriodQuery(kDays, request.format),
                 .error_message = ""};
       }
       case ReportQueryType::kRange:
@@ -121,20 +121,20 @@ auto ReportApi::RunStructuredReportQuery(
                     report_data_query_service_->QueryMonthly(request.argument),
                 .error_message = ""};
       case ReportQueryType::kRecent: {
-        const int days =
+        const int kDays =
             report_api_support::ParseRecentDaysArgument(request.argument);
         return {.ok = true,
                 .kind = StructuredReportKind::kRecent,
-                .report = report_data_query_service_->QueryPeriod(days),
+                .report = report_data_query_service_->QueryPeriod(kDays),
                 .error_message = ""};
       }
       case ReportQueryType::kRange: {
-        const auto range =
+        const auto kRange =
             report_api_support::ParseRangeArgument(request.argument);
         return {.ok = true,
                 .kind = StructuredReportKind::kRange,
                 .report = report_data_query_service_->QueryRange(
-                    range.start_date, range.end_date),
+                    kRange.start_date, kRange.end_date),
                 .error_message = ""};
       }
       case ReportQueryType::kWeek:
@@ -171,13 +171,13 @@ auto ReportApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
     -> TextOutput {
   try {
     if (report_data_query_service_ && report_dto_formatter_) {
-      const auto structured =
+      const auto kStructured =
           RunStructuredPeriodBatchQuery({.kDays = request.days_list});
-      if (!structured.ok && structured.items.empty()) {
-        if (!structured.error_message.empty()) {
+      if (!kStructured.ok && kStructured.items.empty()) {
+        if (!kStructured.error_message.empty()) {
           return {.ok = false,
                   .content = "",
-                  .error_message = structured.error_message};
+                  .error_message = kStructured.error_message};
         }
         return core_api_failure::BuildTextFailure(
             "RunPeriodBatchQuery",
@@ -185,12 +185,12 @@ auto ReportApi::RunPeriodBatchQuery(const PeriodBatchQueryRequest& request)
       }
 
       std::ostringstream output;
-      for (size_t index = 0; index < structured.items.size(); ++index) {
+      for (size_t index = 0; index < kStructured.items.size(); ++index) {
         if (index > 0) {
           output << "\n" << std::string(kPeriodSeparatorLength, '-') << "\n";
         }
 
-        const auto& item = structured.items[index];
+        const auto& item = kStructured.items[index];
         if (!item.ok || !item.report.has_value()) {
           output << report_api_support::BuildPeriodBatchErrorLine(
               item.kDays, item.error_message);
@@ -237,15 +237,15 @@ auto ReportApi::RunStructuredPeriodBatchQuery(
         .ok = true, .items = {}, .error_message = ""};
     output.items.reserve(request.kDays.size());
 
-    for (const int days : request.kDays) {
+    for (const int kDays : request.kDays) {
       StructuredPeriodBatchItem item{
-          .kDays = days,
+          .kDays = kDays,
           .ok = true,
           .report = std::nullopt,
           .error_message = "",
       };
       try {
-        item.report = report_data_query_service_->QueryPeriod(days);
+        item.report = report_data_query_service_->QueryPeriod(kDays);
       } catch (const std::exception& exception) {
         item.ok = false;
         item.error_message = exception.what();

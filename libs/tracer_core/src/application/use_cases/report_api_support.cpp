@@ -44,11 +44,11 @@ auto ParseUnsigned(std::string_view value, int& out_value) -> bool {
   }
 
   int parsed = 0;
-  for (const char character : value) {
-    if (std::isdigit(static_cast<unsigned char>(character)) == 0) {
+  for (const char kCharacter : value) {
+    if (std::isdigit(static_cast<unsigned char>(kCharacter)) == 0) {
       return false;
     }
-    parsed = (parsed * kDecimalBase) + (character - '0');
+    parsed = (parsed * kDecimalBase) + (kCharacter - '0');
   }
   out_value = parsed;
   return true;
@@ -71,14 +71,14 @@ auto ParseIsoDate(std::string_view value, std::chrono::year_month_day& out_ymd)
     return false;
   }
 
-  const std::chrono::year_month_day ymd(
+  const std::chrono::year_month_day kYmd(
       std::chrono::year(year), std::chrono::month(static_cast<unsigned>(month)),
       std::chrono::day(static_cast<unsigned>(day)));
-  if (!ymd.ok()) {
+  if (!kYmd.ok()) {
     return false;
   }
 
-  out_ymd = ymd;
+  out_ymd = kYmd;
   return true;
 }
 
@@ -97,24 +97,24 @@ auto BuildWindowMetadata(const PeriodReportData& report)
 }  // namespace
 
 auto ParseRecentDaysArgument(std::string_view argument) -> int {
-  const std::string_view trimmed = TrimAscii(argument);
+  const std::string_view kTrimmed = TrimAscii(argument);
   int days = 0;
-  if (!ParseUnsigned(trimmed, days) || days <= 0) {
+  if (!ParseUnsigned(kTrimmed, days) || days <= 0) {
     throw std::invalid_argument("Recent argument must be a positive integer.");
   }
   return days;
 }
 
 auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
-  const std::string_view trimmed = TrimAscii(argument);
-  const size_t separator_pos = trimmed.find('|');
-  const size_t comma_pos = trimmed.find(',');
+  const std::string_view kTrimmed = TrimAscii(argument);
+  const size_t kSeparatorPos = kTrimmed.find('|');
+  const size_t kCommaPos = kTrimmed.find(',');
 
   size_t split_pos = std::string_view::npos;
-  if (separator_pos != std::string_view::npos) {
-    split_pos = separator_pos;
-  } else if (comma_pos != std::string_view::npos) {
-    split_pos = comma_pos;
+  if (kSeparatorPos != std::string_view::npos) {
+    split_pos = kSeparatorPos;
+  } else if (kCommaPos != std::string_view::npos) {
+    split_pos = kCommaPos;
   }
 
   if (split_pos == std::string_view::npos) {
@@ -123,28 +123,28 @@ auto ParseRangeArgument(std::string_view argument) -> DateRangeArgument {
         "(ISO YYYY-MM-DD).");
   }
 
-  const std::string_view start_view = TrimAscii(trimmed.substr(0U, split_pos));
-  const std::string_view end_view = TrimAscii(trimmed.substr(split_pos + 1U));
-  if (start_view.empty() || end_view.empty()) {
+  const std::string_view kStartView = TrimAscii(kTrimmed.substr(0U, split_pos));
+  const std::string_view kEndView = TrimAscii(kTrimmed.substr(split_pos + 1U));
+  if (kStartView.empty() || kEndView.empty()) {
     throw std::invalid_argument("Range start/end date must not be empty.");
   }
 
   std::chrono::year_month_day start_ymd;
   std::chrono::year_month_day end_ymd;
-  if (!ParseIsoDate(start_view, start_ymd)) {
+  if (!ParseIsoDate(kStartView, start_ymd)) {
     throw std::invalid_argument("Invalid range start date (ISO YYYY-MM-DD): " +
-                                std::string(start_view));
+                                std::string(kStartView));
   }
-  if (!ParseIsoDate(end_view, end_ymd)) {
+  if (!ParseIsoDate(kEndView, end_ymd)) {
     throw std::invalid_argument("Invalid range end date (ISO YYYY-MM-DD): " +
-                                std::string(end_view));
+                                std::string(kEndView));
   }
   if (std::chrono::sys_days(start_ymd) > std::chrono::sys_days(end_ymd)) {
     throw std::invalid_argument("Range start date must be <= end date.");
   }
 
-  return {.start_date = std::string(start_view),
-          .end_date = std::string(end_view)};
+  return {.start_date = std::string(kStartView),
+          .end_date = std::string(kEndView)};
 }
 
 auto BuildStructuredReportFailure(std::string_view operation,

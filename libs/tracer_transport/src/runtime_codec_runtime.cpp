@@ -35,148 +35,148 @@ auto ParseResponseObject(std::string_view response_json) -> json {
 
 auto ParseCliGlobalDefaults(const json& payload) -> CliGlobalDefaultsPayload {
   CliGlobalDefaultsPayload out{};
-  const auto default_format = TryReadStringField(payload, "default_format");
-  if (default_format.HasError()) {
-    throw std::invalid_argument(default_format.error.message);
+  const auto kDefaultFormat = TryReadStringField(payload, "default_format");
+  if (kDefaultFormat.HasError()) {
+    throw std::invalid_argument(kDefaultFormat.error.message);
   }
-  out.default_format = default_format.value;
+  out.default_format = kDefaultFormat.value;
   return out;
 }
 
 auto ParseCliCommandDefaults(const json& payload) -> CliCommandDefaultsPayload {
   CliCommandDefaultsPayload out{};
 
-  const auto export_format = TryReadStringField(payload, "export_format");
-  const auto query_format = TryReadStringField(payload, "query_format");
-  const auto convert_date_check_mode =
+  const auto kExportFormat = TryReadStringField(payload, "export_format");
+  const auto kQueryFormat = TryReadStringField(payload, "query_format");
+  const auto kConvertDateCheckMode =
       TryReadStringField(payload, "convert_date_check_mode");
-  const auto convert_save_processed_output =
+  const auto kConvertSaveProcessedOutput =
       TryReadBoolField(payload, "convert_save_processed_output");
-  const auto convert_validate_logic =
+  const auto kConvertValidateLogic =
       TryReadBoolField(payload, "convert_validate_logic");
-  const auto convert_validate_structure =
+  const auto kConvertValidateStructure =
       TryReadBoolField(payload, "convert_validate_structure");
-  const auto ingest_date_check_mode =
+  const auto kIngestDateCheckMode =
       TryReadStringField(payload, "ingest_date_check_mode");
-  const auto ingest_save_processed_output =
+  const auto kIngestSaveProcessedOutput =
       TryReadBoolField(payload, "ingest_save_processed_output");
-  const auto validate_logic_date_check_mode =
+  const auto kValidateLogicDateCheckMode =
       TryReadStringField(payload, "validate_logic_date_check_mode");
 
-  if (export_format.HasError()) {
-    throw std::invalid_argument(export_format.error.message);
+  if (kExportFormat.HasError()) {
+    throw std::invalid_argument(kExportFormat.error.message);
   }
-  if (query_format.HasError()) {
-    throw std::invalid_argument(query_format.error.message);
+  if (kQueryFormat.HasError()) {
+    throw std::invalid_argument(kQueryFormat.error.message);
   }
-  if (convert_date_check_mode.HasError()) {
-    throw std::invalid_argument(convert_date_check_mode.error.message);
+  if (kConvertDateCheckMode.HasError()) {
+    throw std::invalid_argument(kConvertDateCheckMode.error.message);
   }
-  if (convert_save_processed_output.HasError()) {
-    throw std::invalid_argument(convert_save_processed_output.error.message);
+  if (kConvertSaveProcessedOutput.HasError()) {
+    throw std::invalid_argument(kConvertSaveProcessedOutput.error.message);
   }
-  if (convert_validate_logic.HasError()) {
-    throw std::invalid_argument(convert_validate_logic.error.message);
+  if (kConvertValidateLogic.HasError()) {
+    throw std::invalid_argument(kConvertValidateLogic.error.message);
   }
-  if (convert_validate_structure.HasError()) {
-    throw std::invalid_argument(convert_validate_structure.error.message);
+  if (kConvertValidateStructure.HasError()) {
+    throw std::invalid_argument(kConvertValidateStructure.error.message);
   }
-  if (ingest_date_check_mode.HasError()) {
-    throw std::invalid_argument(ingest_date_check_mode.error.message);
+  if (kIngestDateCheckMode.HasError()) {
+    throw std::invalid_argument(kIngestDateCheckMode.error.message);
   }
-  if (ingest_save_processed_output.HasError()) {
-    throw std::invalid_argument(ingest_save_processed_output.error.message);
+  if (kIngestSaveProcessedOutput.HasError()) {
+    throw std::invalid_argument(kIngestSaveProcessedOutput.error.message);
   }
-  if (validate_logic_date_check_mode.HasError()) {
-    throw std::invalid_argument(validate_logic_date_check_mode.error.message);
+  if (kValidateLogicDateCheckMode.HasError()) {
+    throw std::invalid_argument(kValidateLogicDateCheckMode.error.message);
   }
 
-  out.export_format = export_format.value;
-  out.query_format = query_format.value;
-  out.convert_date_check_mode = convert_date_check_mode.value;
-  out.convert_save_processed_output = convert_save_processed_output.value;
-  out.convert_validate_logic = convert_validate_logic.value;
-  out.convert_validate_structure = convert_validate_structure.value;
-  out.ingest_date_check_mode = ingest_date_check_mode.value;
-  out.ingest_save_processed_output = ingest_save_processed_output.value;
-  out.validate_logic_date_check_mode = validate_logic_date_check_mode.value;
+  out.export_format = kExportFormat.value;
+  out.query_format = kQueryFormat.value;
+  out.convert_date_check_mode = kConvertDateCheckMode.value;
+  out.convert_save_processed_output = kConvertSaveProcessedOutput.value;
+  out.convert_validate_logic = kConvertValidateLogic.value;
+  out.convert_validate_structure = kConvertValidateStructure.value;
+  out.ingest_date_check_mode = kIngestDateCheckMode.value;
+  out.ingest_save_processed_output = kIngestSaveProcessedOutput.value;
+  out.validate_logic_date_check_mode = kValidateLogicDateCheckMode.value;
   return out;
 }
 
 auto ParseCliConfig(const json& payload) -> CliConfigPayload {
   CliConfigPayload out{};
 
-  const auto default_save =
+  const auto kDefaultSave =
       TryReadBoolField(payload, "default_save_processed_output");
-  const auto default_date_mode =
+  const auto kDefaultDateMode =
       TryReadStringField(payload, "default_date_check_mode");
-  if (default_save.HasError()) {
-    throw std::invalid_argument(default_save.error.message);
+  if (kDefaultSave.HasError()) {
+    throw std::invalid_argument(kDefaultSave.error.message);
   }
-  if (default_date_mode.HasError()) {
-    throw std::invalid_argument(default_date_mode.error.message);
+  if (kDefaultDateMode.HasError()) {
+    throw std::invalid_argument(kDefaultDateMode.error.message);
   }
-  out.default_save_processed_output = default_save.value.value_or(false);
-  out.default_date_check_mode = default_date_mode.value;
+  out.default_save_processed_output = kDefaultSave.value.value_or(false);
+  out.default_date_check_mode = kDefaultDateMode.value;
 
-  if (const auto defaults_it = payload.find("defaults");
-      defaults_it != payload.end() && !defaults_it->is_null()) {
-    if (!defaults_it->is_object()) {
+  if (const auto kDefaultsIt = payload.find("defaults");
+      kDefaultsIt != payload.end() && !kDefaultsIt->is_null()) {
+    if (!kDefaultsIt->is_object()) {
       throw std::invalid_argument("field `defaults` must be an object.");
     }
-    out.defaults = ParseCliGlobalDefaults(*defaults_it);
+    out.defaults = ParseCliGlobalDefaults(*kDefaultsIt);
   }
 
-  if (const auto command_defaults_it = payload.find("command_defaults");
-      command_defaults_it != payload.end() && !command_defaults_it->is_null()) {
-    if (!command_defaults_it->is_object()) {
+  if (const auto kCommandDefaultsIt = payload.find("command_defaults");
+      kCommandDefaultsIt != payload.end() && !kCommandDefaultsIt->is_null()) {
+    if (!kCommandDefaultsIt->is_object()) {
       throw std::invalid_argument(
           "field `command_defaults` must be an object.");
     }
-    out.command_defaults = ParseCliCommandDefaults(*command_defaults_it);
+    out.command_defaults = ParseCliCommandDefaults(*kCommandDefaultsIt);
   }
 
   return out;
 }
 
 auto ParseResolvedCliPaths(const json& payload) -> ResolvedCliPathsPayload {
-  const auto db_path = RequireStringField(payload, "db_path");
-  const auto runtime_output_root =
+  const auto kDbPath = RequireStringField(payload, "db_path");
+  const auto kRuntimeOutputRoot =
       RequireStringField(payload, "runtime_output_root");
-  const auto converter_config_toml_path =
+  const auto kConverterConfigTomlPath =
       RequireStringField(payload, "converter_config_toml_path");
 
-  if (db_path.HasError()) {
-    throw std::invalid_argument(db_path.error.message);
+  if (kDbPath.HasError()) {
+    throw std::invalid_argument(kDbPath.error.message);
   }
-  if (runtime_output_root.HasError()) {
-    throw std::invalid_argument(runtime_output_root.error.message);
+  if (kRuntimeOutputRoot.HasError()) {
+    throw std::invalid_argument(kRuntimeOutputRoot.error.message);
   }
-  if (converter_config_toml_path.HasError()) {
-    throw std::invalid_argument(converter_config_toml_path.error.message);
+  if (kConverterConfigTomlPath.HasError()) {
+    throw std::invalid_argument(kConverterConfigTomlPath.error.message);
   }
 
-  const auto exe_dir = TryReadStringField(payload, "exe_dir");
-  const auto output_root = TryReadStringField(payload, "output_root");
-  const auto export_root = TryReadStringField(payload, "export_root");
+  const auto kExeDir = TryReadStringField(payload, "exe_dir");
+  const auto kOutputRoot = TryReadStringField(payload, "output_root");
+  const auto kExportRoot = TryReadStringField(payload, "export_root");
 
-  if (exe_dir.HasError()) {
-    throw std::invalid_argument(exe_dir.error.message);
+  if (kExeDir.HasError()) {
+    throw std::invalid_argument(kExeDir.error.message);
   }
-  if (output_root.HasError()) {
-    throw std::invalid_argument(output_root.error.message);
+  if (kOutputRoot.HasError()) {
+    throw std::invalid_argument(kOutputRoot.error.message);
   }
-  if (export_root.HasError()) {
-    throw std::invalid_argument(export_root.error.message);
+  if (kExportRoot.HasError()) {
+    throw std::invalid_argument(kExportRoot.error.message);
   }
 
   ResolvedCliPathsPayload out{};
-  out.db_path = *db_path.value;
-  out.runtime_output_root = *runtime_output_root.value;
-  out.converter_config_toml_path = *converter_config_toml_path.value;
-  out.exe_dir = exe_dir.value;
-  out.output_root = output_root.value;
-  out.export_root = export_root.value;
+  out.db_path = *kDbPath.value;
+  out.runtime_output_root = *kRuntimeOutputRoot.value;
+  out.converter_config_toml_path = *kConverterConfigTomlPath.value;
+  out.exe_dir = kExeDir.value;
+  out.output_root = kOutputRoot.value;
+  out.export_root = kExportRoot.value;
   return out;
 }
 
@@ -285,12 +285,12 @@ auto DecodeRuntimeCheckResponse(std::string_view response_json)
 
 auto DecodeResolveCliContextResponse(std::string_view response_json)
     -> ResolveCliContextResponsePayload {
-  const json payload = ParseResponseObject(response_json);
+  const json kPayload = ParseResponseObject(response_json);
 
-  const auto kOk = TryReadBoolField(payload, "ok");
-  const auto kErrorMessage = TryReadStringField(payload, "error_message");
-  const auto kErrorCode = TryReadStringField(payload, "error_code");
-  const auto kErrorCategory = TryReadStringField(payload, "error_category");
+  const auto kOk = TryReadBoolField(kPayload, "ok");
+  const auto kErrorMessage = TryReadStringField(kPayload, "error_message");
+  const auto kErrorCode = TryReadStringField(kPayload, "error_code");
+  const auto kErrorCategory = TryReadStringField(kPayload, "error_category");
 
   if (kOk.HasError()) {
     throw std::invalid_argument(kOk.error.message);
@@ -314,8 +314,8 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
   out.error_contract.error_code = kErrorCode.value.value_or("");
   out.error_contract.error_category = kErrorCategory.value.value_or("");
   if (!out.ok) {
-    if (const auto kHintsIt = payload.find("hints");
-        kHintsIt != payload.end() && kHintsIt->is_array()) {
+    if (const auto kHintsIt = kPayload.find("hints");
+        kHintsIt != kPayload.end() && kHintsIt->is_array()) {
       out.error_contract.hints.reserve(kHintsIt->size());
       for (const auto& item : *kHintsIt) {
         if (item.is_string()) {
@@ -326,15 +326,15 @@ auto DecodeResolveCliContextResponse(std::string_view response_json)
     return out;
   }
 
-  const auto kPathsIt = payload.find("paths");
-  if (kPathsIt == payload.end() || !kPathsIt->is_object()) {
+  const auto kPathsIt = kPayload.find("paths");
+  if (kPathsIt == kPayload.end() || !kPathsIt->is_object()) {
     throw std::invalid_argument(
         "field `paths` must be an object when `ok=true`.");
   }
   out.paths = ParseResolvedCliPaths(*kPathsIt);
 
-  const auto kCliConfigIt = payload.find("cli_config");
-  if (kCliConfigIt == payload.end() || !kCliConfigIt->is_object()) {
+  const auto kCliConfigIt = kPayload.find("cli_config");
+  if (kCliConfigIt == kPayload.end() || !kCliConfigIt->is_object()) {
     throw std::invalid_argument(
         "field `cli_config` must be an object when `ok=true`.");
   }

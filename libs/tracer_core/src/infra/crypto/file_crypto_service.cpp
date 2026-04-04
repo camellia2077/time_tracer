@@ -49,22 +49,22 @@ auto ResolveGroupLabel(const std::filesystem::path& input_root_path,
     return "(root)";
   }
   std::error_code relative_error;
-  const std::filesystem::path relative =
+  const std::filesystem::path kRelative =
       std::filesystem::relative(current_input_path, input_root_path,
                                 relative_error);
   if (relative_error) {
     return "(root)";
   }
-  const std::filesystem::path parent = relative.parent_path();
-  if (parent.empty() || parent == ".") {
+  const std::filesystem::path kParent = kRelative.parent_path();
+  if (kParent.empty() || kParent == ".") {
     return "(root)";
   }
-  const auto it = parent.begin();
-  if (it == parent.end()) {
+  const auto kIt = kParent.begin();
+  if (kIt == kParent.end()) {
     return "(root)";
   }
-  const std::string label = it->string();
-  return label.empty() ? "(root)" : label;
+  const std::string kLabel = kIt->string();
+  return kLabel.empty() ? "(root)" : kLabel;
 }
 
 auto BuildSingleFileDescriptor(const FileCryptoPathContext& path_context,
@@ -77,10 +77,10 @@ auto BuildSingleFileDescriptor(const FileCryptoPathContext& path_context,
       path_context.current_input_path, fallback_input_path);
   descriptor.output_path = ResolvePathOrFallback(
       path_context.current_output_path, fallback_output_path);
-  const std::filesystem::path input_root_path =
+  const std::filesystem::path kInputRootPath =
       ResolveRootOrFallback(path_context.input_root_path, descriptor.input_path);
   descriptor.group_label =
-      ResolveGroupLabel(input_root_path, descriptor.input_path);
+      ResolveGroupLabel(kInputRootPath, descriptor.input_path);
   descriptor.group_index = 1;
   descriptor.group_file_index = 1;
   descriptor.group_file_count = 1;
@@ -95,30 +95,30 @@ auto PrepareSingleFileReporter(
     const std::filesystem::path& fallback_output_path,
     const FileCryptoPathContext& path_context, std::uint64_t input_size_bytes,
     file_crypto_internal::ProgressReporter& reporter) -> FileCryptoResult {
-  const std::filesystem::path input_path =
+  const std::filesystem::path kInputPath =
       ResolvePathOrFallback(path_context.current_input_path, fallback_input_path);
-  const std::filesystem::path output_path = ResolvePathOrFallback(
+  const std::filesystem::path kOutputPath = ResolvePathOrFallback(
       path_context.current_output_path, fallback_output_path);
-  const std::filesystem::path input_root_path =
-      ResolveRootOrFallback(path_context.input_root_path, input_path);
-  const std::filesystem::path output_root_path =
-      ResolveRootOrFallback(path_context.output_root_path, output_path);
-  if (const auto scan_result =
-          reporter.BeginScan(input_root_path, output_root_path);
-      !scan_result.ok()) {
-    return scan_result;
+  const std::filesystem::path kInputRootPath =
+      ResolveRootOrFallback(path_context.input_root_path, kInputPath);
+  const std::filesystem::path kOutputRootPath =
+      ResolveRootOrFallback(path_context.output_root_path, kOutputPath);
+  if (const auto kScanResult =
+          reporter.BeginScan(kInputRootPath, kOutputRootPath);
+      !kScanResult.ok()) {
+    return kScanResult;
   }
-  if (const auto totals_result =
+  if (const auto kTotalsResult =
           reporter.SetAggregateTotals(1, input_size_bytes, 1, true);
-      !totals_result.ok()) {
-    return totals_result;
+      !kTotalsResult.ok()) {
+    return kTotalsResult;
   }
-  if (const auto select_result = reporter.SetCurrentFile(
+  if (const auto kSelectResult = reporter.SetCurrentFile(
           BuildSingleFileDescriptor(path_context, fallback_input_path,
                                     fallback_output_path, input_size_bytes),
           0);
-      !select_result.ok()) {
-    return select_result;
+      !kSelectResult.ok()) {
+    return kSelectResult;
   }
   return {};
 }
@@ -235,14 +235,14 @@ auto EncryptBytesToFile(std::span<const std::uint8_t> plaintext_bytes,
                         std::string_view passphrase,
                         const FileCryptoPathContext& path_context,
                         const FileCryptoOptions& options) -> FileCryptoResult {
-  const auto write_callback =
+  const auto kWriteCallback =
       [&output_tracer_path](
           std::span<const std::uint8_t> bytes) -> FileCryptoResult {
     return file_crypto_internal::WriteAllBytes(
         output_tracer_path,
         std::vector<std::uint8_t>(bytes.begin(), bytes.end()));
   };
-  return EncryptBytesToWriter(plaintext_bytes, write_callback, passphrase,
+  return EncryptBytesToWriter(plaintext_bytes, kWriteCallback, passphrase,
                               path_context, options);
 }
 
@@ -261,18 +261,18 @@ auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
                                            "Passphrase must not be empty.");
   }
 
-  const std::filesystem::path output_label =
+  const std::filesystem::path kOutputLabel =
       path_context.current_output_path.empty()
           ? std::filesystem::path("memory_output.tracer")
           : path_context.current_output_path;
 
   file_crypto_internal::ProgressReporter reporter(FileCryptoOperation::kEncrypt,
                                                   &options);
-  const auto prepare_result = PrepareSingleFileReporter(
-      path_context.current_input_path, output_label, path_context,
+  const auto kPrepareResult = PrepareSingleFileReporter(
+      path_context.current_input_path, kOutputLabel, path_context,
       static_cast<std::uint64_t>(plaintext_bytes.size()), reporter);
-  if (!prepare_result.ok()) {
-    return prepare_result;
+  if (!kPrepareResult.ok()) {
+    return kPrepareResult;
   }
 
   auto [encrypt_result, encrypted_bytes] =
@@ -287,20 +287,20 @@ auto EncryptBytesToWriter(std::span<const std::uint8_t> plaintext_bytes,
     return encrypt_result;
   }
 
-  if (const auto phase_result =
+  if (const auto kPhaseResult =
           reporter.SetPhase(FileCryptoPhase::kWriteOutput, true);
-      !phase_result.ok()) {
-    return phase_result;
+      !kPhaseResult.ok()) {
+    return kPhaseResult;
   }
-  const auto write_result =
+  const auto kWriteResult =
       file_crypto_internal::WriteAllBytes(write_callback, encrypted_bytes);
-  if (!write_result.ok()) {
+  if (!kWriteResult.ok()) {
     (void)reporter.MarkFailed();
-    return write_result;
+    return kWriteResult;
   }
-  if (const auto complete_result = reporter.MarkCompleted();
-      !complete_result.ok()) {
-    return complete_result;
+  if (const auto kCompleteResult = reporter.MarkCompleted();
+      !kCompleteResult.ok()) {
+    return kCompleteResult;
   }
   return {};
 }
@@ -394,7 +394,7 @@ auto DecryptFileToBytes(
   }
 
   std::error_code size_error;
-  const auto input_size = std::filesystem::file_size(input_tracer_path,
+  const auto kInputSize = std::filesystem::file_size(input_tracer_path,
                                                      size_error);
   if (size_error) {
     return {file_crypto_internal::MakeError(FileCryptoError::kInputReadFailed,
@@ -404,17 +404,17 @@ auto DecryptFileToBytes(
 
   file_crypto_internal::ProgressReporter reporter(FileCryptoOperation::kDecrypt,
                                                   &options);
-  const auto prepare_result = PrepareSingleFileReporter(
+  const auto kPrepareResult = PrepareSingleFileReporter(
       input_tracer_path, path_context.current_output_path, path_context,
-      input_size, reporter);
-  if (!prepare_result.ok()) {
-    return {prepare_result, {}};
+      kInputSize, reporter);
+  if (!kPrepareResult.ok()) {
+    return {kPrepareResult, {}};
   }
 
-  if (const auto phase_result =
+  if (const auto kPhaseResult =
           reporter.SetPhase(FileCryptoPhase::kReadInput, true);
-      !phase_result.ok()) {
-    return {phase_result, {}};
+      !kPhaseResult.ok()) {
+    return {kPhaseResult, {}};
   }
   auto [read_result, encrypted_bytes] =
       file_crypto_internal::ReadAllBytes(input_tracer_path, &reporter);
@@ -439,14 +439,14 @@ auto DecryptFileToBytes(
     return {decrypt_result, {}};
   }
 
-  if (const auto phase_result =
+  if (const auto kPhaseResult =
           reporter.SetPhase(FileCryptoPhase::kWriteOutput, true);
-      !phase_result.ok()) {
-    return {phase_result, {}};
+      !kPhaseResult.ok()) {
+    return {kPhaseResult, {}};
   }
-  if (const auto complete_result = reporter.MarkCompleted();
-      !complete_result.ok()) {
-    return {complete_result, {}};
+  if (const auto kCompleteResult = reporter.MarkCompleted();
+      !kCompleteResult.ok()) {
+    return {kCompleteResult, {}};
   }
   return {{}, std::move(plaintext_bytes)};
 }

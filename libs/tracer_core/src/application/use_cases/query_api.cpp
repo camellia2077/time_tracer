@@ -9,7 +9,11 @@ import tracer.core.application.query.tree.viewer;
 
 namespace tracer::core::application::use_cases {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::DataQueryRequest;
+using tracer_core::core::dto::TextOutput;
+using tracer_core::core::dto::TreeQueryPayload;
+using tracer_core::core::dto::TreeQueryRequest;
+using tracer_core::core::dto::TreeQueryResponse;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 using tracer::core::application::query::tree::ProjectTreeViewer;
 
@@ -53,9 +57,9 @@ auto QueryApi::RunTreeQuery(const TreeQueryRequest& request)
               .error_message = ""};
     }
 
-    const auto tree_result =
+    const auto kTreeResult =
         viewer.GetTree(request.root_pattern, request.max_depth);
-    if (!tree_result.has_value()) {
+    if (!kTreeResult.has_value()) {
       return {.ok = true,
               .found = false,
               .roots = {},
@@ -66,7 +70,7 @@ auto QueryApi::RunTreeQuery(const TreeQueryRequest& request)
     return {.ok = true,
             .found = true,
             .roots = {},
-            .tree = TreeQueryPayload{.nodes = std::move(*tree_result)},
+            .tree = TreeQueryPayload{.nodes = std::move(*kTreeResult)},
             .error_message = ""};
   } catch (const std::exception& exception) {
     return core_api_failure::BuildTreeFailure("RunTreeQuery", exception);

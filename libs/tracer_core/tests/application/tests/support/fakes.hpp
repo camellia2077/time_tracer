@@ -99,8 +99,8 @@ class FakePipelineWorkflow final
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
   auto InstallActiveConverterConfig(
-      const std::string& source_main_config_path,
-      const std::string& target_main_config_path) -> void override;
+      const tracer::core::application::pipeline::ActiveConverterConfigInstallRequest&
+          request) -> void override;
 };
 
 class FakeReportHandler final : public IReportHandler {

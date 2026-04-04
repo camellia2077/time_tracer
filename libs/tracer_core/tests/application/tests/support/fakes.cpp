@@ -109,8 +109,8 @@ auto FakePipelineWorkflow::RunRecordActivityAtomically(
 }
 
 auto FakePipelineWorkflow::InstallActiveConverterConfig(
-    const std::string& /*source_main_config_path*/,
-    const std::string& /*target_main_config_path*/) -> void {}
+    const tracer::core::application::pipeline::
+        ActiveConverterConfigInstallRequest& /*request*/) -> void {}
 
 auto FakeReportHandler::RunDailyQuery(std::string_view /*date*/,
                                       ReportFormat /*format*/) -> std::string {

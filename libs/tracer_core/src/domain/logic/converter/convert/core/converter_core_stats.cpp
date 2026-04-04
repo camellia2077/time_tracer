@@ -1,6 +1,7 @@
 // domain/logic/converter/convert/core/converter_core_stats.cpp
 #include <algorithm>
 #include <array>
+#include <cstdint>
 #include <ctime>
 #include <iomanip>
 #include <optional>
@@ -13,7 +14,7 @@
 namespace converter_core_internal {
 namespace {
 
-constexpr long long kDailySequenceBase = 1000000;
+constexpr std::int64_t kDailySequenceBase = 1000000;
 constexpr int kHoursPerDay = 24;
 constexpr int kMinutesPerHour = 60;
 constexpr int kSecondsPerMinute = 60;
@@ -32,7 +33,7 @@ constexpr size_t kTimeMinuteLength = 2;
 constexpr size_t kTimeDigitsMinuteOffset = 2;
 constexpr size_t kDateTimeMinLength = 16;
 
-auto StringToTimeT(const std::string& datetime_str) -> long long {
+auto StringToTimeT(const std::string& datetime_str) -> std::int64_t {
   if (datetime_str.length() < kDateTimeMinLength) {
     return 0;
   }
@@ -42,7 +43,7 @@ auto StringToTimeT(const std::string& datetime_str) -> long long {
   if (time_stream.fail()) {
     return 0;
   }
-  return static_cast<long long>(std::mktime(&time_info));
+  return static_cast<std::int64_t>(std::mktime(&time_info));
 }
 
 [[nodiscard]] auto ParseHhmmToSeconds(std::string_view time_value)
@@ -103,16 +104,16 @@ auto StringToTimeT(const std::string& datetime_str) -> long long {
 [[nodiscard]] auto TimeStringToTimestamp(const std::string& date,
                                          const std::string& time,
                                          bool is_end_time,
-                                         long long start_timestamp_for_end)
-    -> long long {
+                                         std::int64_t start_timestamp_for_end)
+    -> std::int64_t {
   if (date.length() != kDateStringLength ||
       time.length() != kTimeStringLength) {
     return 0;
   }
 
-  long long timestamp = StringToTimeT(date + " " + time);
+  std::int64_t timestamp = StringToTimeT(date + " " + time);
   if (is_end_time && timestamp < start_timestamp_for_end) {
-    timestamp += static_cast<long long>(kSecondsPerDay);
+    timestamp += static_cast<std::int64_t>(kSecondsPerDay);
   }
   return timestamp;
 }
@@ -177,8 +178,8 @@ void DayStats::CalculateStats(DailyLog& day) {
   day.hasWakeAnchor =
       !day.isContinuation && !day.getupTime.empty() && day.getupTime != "00:00";
 
-  long long activity_sequence = 1;
-  long long date_as_long = 0;
+  std::int64_t activity_sequence = 1;
+  std::int64_t date_as_long = 0;
   try {
     std::string temp_date = day.date;
     temp_date.erase(std::ranges::remove(temp_date, '-').begin(),

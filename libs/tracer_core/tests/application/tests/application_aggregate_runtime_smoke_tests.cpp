@@ -10,6 +10,7 @@ import tracer.core.domain.types.ingest_mode;
 #include "application/dto/query_requests.hpp"
 #include "application/dto/reporting_requests.hpp"
 #include "application/dto/shared_envelopes.hpp"
+#include "application/pipeline/i_pipeline_workflow.hpp"
 #include "application/ports/query/i_data_query_service.hpp"
 
 #include <exception>
@@ -62,8 +63,9 @@ class SmokePipelineWorkflow final
             .rollback_failed = false,
             .retained_transaction_root = std::nullopt};
   }
-  auto InstallActiveConverterConfig(const std::string&,
-                                    const std::string&) -> void override {}
+  auto InstallActiveConverterConfig(
+      const tracer::core::application::pipeline::
+          ActiveConverterConfigInstallRequest&) -> void override {}
 };
 
 class SmokeReportHandler final : public IReportHandler {

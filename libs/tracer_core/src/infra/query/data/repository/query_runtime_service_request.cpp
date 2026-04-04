@@ -109,9 +109,12 @@ auto ParseIsoDate(std::string_view value)
 
 auto FormatIsoDate(const std::chrono::year_month_day& ymd) -> std::string {
   std::ostringstream stream;
-  stream << std::setw(4) << std::setfill('0') << int(ymd.year()) << "-"
-         << std::setw(2) << std::setfill('0') << unsigned(ymd.month()) << "-"
-         << std::setw(2) << std::setfill('0') << unsigned(ymd.day());
+  stream << std::setw(4) << std::setfill('0')
+         << static_cast<int>(ymd.year()) << "-"
+         << std::setw(2) << std::setfill('0')
+         << static_cast<unsigned>(ymd.month()) << "-"
+         << std::setw(2) << std::setfill('0')
+         << static_cast<unsigned>(ymd.day());
   return stream.str();
 }
 

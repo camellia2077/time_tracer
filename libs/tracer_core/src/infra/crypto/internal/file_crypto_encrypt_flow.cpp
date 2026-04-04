@@ -28,7 +28,7 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
   if (const auto kInitResult = InitializeCryptoBackend(); !kInitResult.ok()) {
     return {kInitResult, {}};
   }
-  const std::vector<std::uint8_t> plaintext(plaintext_bytes.begin(),
+  const std::vector<std::uint8_t> kPlaintext(plaintext_bytes.begin(),
                                             plaintext_bytes.end());
 
   if (reporter != nullptr) {
@@ -39,7 +39,7 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
     }
   }
   auto [compress_result, compressed_plaintext] =
-      CompressWithZstdLevel1(plaintext);
+      CompressWithZstdLevel1(kPlaintext);
   if (!compress_result.ok()) {
     return {compress_result, {}};
   }
@@ -54,7 +54,7 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
   if (!header_result.ok()) {
     return {header_result, {}};
   }
-  header.plaintext_size = static_cast<std::uint64_t>(plaintext.size());
+  header.plaintext_size = static_cast<std::uint64_t>(kPlaintext.size());
 
   if (reporter != nullptr) {
     if (const auto kPhaseResult =
@@ -97,10 +97,10 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
 
   std::vector<std::uint8_t> ciphertext(
       compressed_plaintext.size() + crypto_aead_xchacha20poly1305_ietf_ABYTES);
-  unsigned long long ciphertext_size = 0;
+  std::uint64_t ciphertext_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_encrypt(
           ciphertext.data(), &ciphertext_size, compressed_plaintext.data(),
-          static_cast<unsigned long long>(compressed_plaintext.size()), nullptr,
+          static_cast<std::uint64_t>(compressed_plaintext.size()), nullptr,
           0, nullptr, header.nonce.data(), key.data()) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(FileCryptoError::kCryptoOperationFailed,

@@ -79,36 +79,36 @@ auto ResolvePwhashLimits(FileCryptoSecurityLevel security_level)
     case FileCryptoSecurityLevel::kMin:
       return {
           .ops_limit =
-              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MIN),
+              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MIN),
           .kMemLimitBytes =
-              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MIN),
+              static_cast<std::uint64_t>(crypto_pwhash_MEMLIMIT_MIN),
       };
     case FileCryptoSecurityLevel::kHigh:
       return {
           .ops_limit =
-              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_SENSITIVE),
+              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_SENSITIVE),
           .kMemLimitBytes =
-              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_SENSITIVE),
+              static_cast<std::uint64_t>(crypto_pwhash_MEMLIMIT_SENSITIVE),
       };
     case FileCryptoSecurityLevel::kMax:
       return {
           .ops_limit =
-              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MAX),
+              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MAX),
           .kMemLimitBytes = crypto_pwhash_MEMLIMIT_MAX,
       };
     case FileCryptoSecurityLevel::kModerate:
       return {
           .ops_limit =
-              static_cast<unsigned long long>(crypto_pwhash_OPSLIMIT_MODERATE),
+              static_cast<std::uint64_t>(crypto_pwhash_OPSLIMIT_MODERATE),
           .kMemLimitBytes =
-              static_cast<unsigned long long>(crypto_pwhash_MEMLIMIT_MODERATE),
+              static_cast<std::uint64_t>(crypto_pwhash_MEMLIMIT_MODERATE),
       };
     case FileCryptoSecurityLevel::kInteractive:
     default:
       return {
-          .ops_limit = static_cast<unsigned long long>(
+          .ops_limit = static_cast<std::uint64_t>(
               crypto_pwhash_OPSLIMIT_INTERACTIVE),
-          .kMemLimitBytes = static_cast<unsigned long long>(
+          .kMemLimitBytes = static_cast<std::uint64_t>(
               crypto_pwhash_MEMLIMIT_INTERACTIVE),
       };
   }
@@ -127,9 +127,9 @@ auto DeriveMasterKeyWithArgon2id(
   const std::size_t kMemLimitBytes =
       static_cast<std::size_t>(limits.mem_limit_kib) * 1024U;
   if (crypto_pwhash(key.data(), key.size(), passphrase.data(),
-                    static_cast<unsigned long long>(passphrase.size()),
+                    static_cast<std::uint64_t>(passphrase.size()),
                     salt.data(),
-                    static_cast<unsigned long long>(limits.ops_limit),
+                    static_cast<std::uint64_t>(limits.ops_limit),
                     kMemLimitBytes, crypto_pwhash_ALG_ARGON2ID13) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
@@ -226,7 +226,7 @@ auto BuildDefaultHeaderV2(FileCryptoSecurityLevel security_level,
   const auto kMemLimitBytes = kLimits.kMemLimitBytes;
   const auto kMemLimitKiB = kMemLimitBytes / 1024ULL;
   if (kMemLimitKiB == 0 ||
-      kMemLimitKiB > static_cast<unsigned long long>(
+      kMemLimitKiB > static_cast<std::uint64_t>(
                          std::numeric_limits<std::uint32_t>::max())) {
     return {MakeError(FileCryptoError::kCryptoOperationFailed,
                       "libsodium memlimit exceeds v2 header capacity."),
