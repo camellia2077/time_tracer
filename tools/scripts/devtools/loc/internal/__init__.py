@@ -1,1 +1,0 @@
-"""LOC scanner internals."""

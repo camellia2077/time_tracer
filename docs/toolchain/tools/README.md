@@ -9,7 +9,7 @@
 2. 工具链实现：
    - `tools/toolchain/`
 3. 开发辅助脚本：
-   - `tools/scripts/devtools/loc/`
+   - `tools/devtools/loc_scanner/`
    - `tools/scripts/devtools/android/`
 
 ## 2. 分层结构

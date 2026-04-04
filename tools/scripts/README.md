@@ -4,11 +4,9 @@
 
 ## 目录
 
-1. `tools/scripts/devtools/loc/`
-   - 代码行数统计等辅助脚本
-2. `tools/scripts/devtools/android/`
+1. `tools/scripts/devtools/android/`
    - Android 辅助脚本
-3. `tools/scripts/devtools/ps/`
+2. `tools/scripts/devtools/ps/`
    - PowerShell 辅助脚本
 
 ## 官方入口说明
@@ -25,5 +23,5 @@
 python tools/run.py verify --app tracer_core_shell --profile fast --concise
 
 # 开发辅助脚本示例
-python -m tools.scripts.devtools.loc.run --lang py tools test tools/scripts/devtools --under 120
+python -m tools.devtools.loc_scanner --lang py tools test tools/scripts/devtools --under 120
 ```

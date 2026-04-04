@@ -47,7 +47,7 @@ python tools/run.py build --app tracer_core --profile release_safe --build-dir b
 python tools/run.py verify --app tracer_core --quick
 
 # 代码行数扫描（开发辅助工具，可选）
-python tools/scripts/devtools/loc/scan_cpp_lines.py apps/cli/windows apps/tracer_core_shell libs/tracer_core -t 350
+python -m tools.devtools.loc_scanner --lang cpp apps/cli/windows apps/tracer_core_shell libs/tracer_core --over 350
 ```
 
 ➡️ **详细步骤请参考：[构建指南](docs/time_tracer/guides/build_guide.md)**
