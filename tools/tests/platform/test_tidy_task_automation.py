@@ -19,6 +19,7 @@ from tools.toolchain.commands.tidy.task_auto_fix import (
     suggest_task_refactors,
 )
 from tools.toolchain.commands.tidy.autofix.models import ExecutionRecord
+from tools.toolchain.commands.tidy.task_context import resolve_task_context
 from tools.toolchain.commands.tidy.task_log import parse_task_log, resolve_task_log_path
 from tools.toolchain.commands.tidy.task_model import (
     TaskDiagnostic,
@@ -28,6 +29,9 @@ from tools.toolchain.commands.tidy.task_model import (
     task_record_to_dict,
 )
 from tools.toolchain.commands.tidy.workspace import ResolvedTidyWorkspace
+from tools.toolchain.core.context import Context
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TestTidyTaskAutomation(TestCase):
@@ -49,6 +53,125 @@ class TestTidyTaskAutomation(TestCase):
 
             resolved = resolve_task_log_path(tasks_dir)
             self.assertEqual(resolved, first)
+
+    def test_resolve_task_context_derives_workspace_from_task_path(self):
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            task_dir = (
+                root
+                / "out"
+                / "tidy"
+                / "tracer_core_shell"
+                / "build_tidy_core_family"
+                / "tasks"
+                / "batch_001"
+            )
+            task_dir.mkdir(parents=True)
+            source_file = root / "query_api.cpp"
+            source_file.write_text("int main() { return 0; }\n", encoding="utf-8")
+            record = TaskRecord(
+                version=3,
+                task_id="003",
+                batch_id="batch_001",
+                queue_generation=None,
+                source_file=str(source_file),
+                source_fingerprint=None,
+                workspace="build_tidy_core_family",
+                source_scope=None,
+                checks=("readability-identifier-naming",),
+                summary=TaskSummary(
+                    diagnostic_count=1,
+                    compiler_errors=False,
+                    files=(TaskSummaryEntry(name=str(source_file), count=1),),
+                    checks=(TaskSummaryEntry(name="readability-identifier-naming", count=1),),
+                ),
+                diagnostics=(
+                    TaskDiagnostic(
+                        file=str(source_file),
+                        line=1,
+                        col=1,
+                        severity="warning",
+                        check="readability-identifier-naming",
+                        message="invalid case style for constant 'value'",
+                        raw_lines=(),
+                        notes=(),
+                    ),
+                ),
+                snippets=(),
+                raw_lines=(),
+            )
+            task_json_path = task_dir / "task_003.json"
+            task_json_path.write_text(
+                json.dumps(task_record_to_dict(record), indent=2),
+                encoding="utf-8",
+            )
+
+            task_ctx = resolve_task_context(Context(REPO_ROOT), task_log_path=str(task_json_path))
+
+            self.assertEqual(task_ctx.app_name, "tracer_core_shell")
+            self.assertEqual(task_ctx.tidy_build_dir_name, "build_tidy_core_family")
+            self.assertEqual(task_ctx.source_scope, "core_family")
+            self.assertEqual(task_ctx.tasks_dir, task_dir.parent)
+            self.assertEqual(task_ctx.task_json_path, task_json_path)
+
+    def test_resolve_task_context_rejects_stale_queue_generation(self):
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            task_dir = (
+                root
+                / "out"
+                / "tidy"
+                / "tracer_core_shell"
+                / "build_tidy_core_family"
+                / "tasks"
+                / "batch_001"
+            )
+            task_dir.mkdir(parents=True)
+            source_file = root / "query_api.cpp"
+            source_file.write_text("int main() { return 0; }\n", encoding="utf-8")
+            record = TaskRecord(
+                version=3,
+                task_id="003",
+                batch_id="batch_001",
+                queue_generation=1,
+                source_file=str(source_file),
+                source_fingerprint=None,
+                workspace="build_tidy_core_family",
+                source_scope=None,
+                checks=("readability-identifier-naming",),
+                summary=TaskSummary(
+                    diagnostic_count=1,
+                    compiler_errors=False,
+                    files=(TaskSummaryEntry(name=str(source_file), count=1),),
+                    checks=(TaskSummaryEntry(name="readability-identifier-naming", count=1),),
+                ),
+                diagnostics=(
+                    TaskDiagnostic(
+                        file=str(source_file),
+                        line=1,
+                        col=1,
+                        severity="warning",
+                        check="readability-identifier-naming",
+                        message="invalid case style for constant 'value'",
+                        raw_lines=(),
+                        notes=(),
+                    ),
+                ),
+                snippets=(),
+                raw_lines=(),
+            )
+            task_json_path = task_dir / "task_003.json"
+            task_json_path.write_text(
+                json.dumps(task_record_to_dict(record), indent=2),
+                encoding="utf-8",
+            )
+            (task_dir.parent / "queue_state.json").write_text(
+                json.dumps({"queue_generation": 2}, indent=2),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "queue generation is stale"):
+                resolve_task_context(Context(REPO_ROOT), task_log_path=str(task_json_path))
 
     def test_plan_redundant_cast_actions_extracts_replacement(self):
         with TemporaryDirectory() as temp_dir:
@@ -469,8 +592,9 @@ class TestTidyTaskAutomation(TestCase):
     def test_run_task_auto_fix_aggregates_mixed_task_actions(self):
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
-            tasks_dir = root / "tasks"
-            automation_dir = root / "automation"
+            build_tidy_dir = root / "out" / "tidy" / "tracer_core_shell" / "build_tidy_test"
+            tasks_dir = build_tidy_dir / "tasks"
+            automation_dir = build_tidy_dir / "automation"
             batch_dir = tasks_dir / "batch_003"
             source_dir = root / "libs" / "tracer_core" / "src" / "application" / "use_cases"
             batch_dir.mkdir(parents=True)
@@ -535,12 +659,14 @@ class TestTidyTaskAutomation(TestCase):
                 encoding="utf-8",
             )
             record = TaskRecord(
-                version=2,
+                version=3,
                 task_id="030",
                 batch_id="batch_003",
+                queue_generation=None,
                 source_file=str(source_file),
+                source_fingerprint=None,
                 workspace="build_tidy_test",
-                source_scope=None,
+                source_scope="core_family",
                 checks=("google-build-using-namespace", "readability-identifier-naming"),
                 summary=TaskSummary(
                     diagnostic_count=2,
@@ -586,17 +712,17 @@ class TestTidyTaskAutomation(TestCase):
                 encoding="utf-8",
             )
 
-            ctx = SimpleNamespace()
+            ctx = Context(REPO_ROOT)
             ctx.get_tidy_layout = lambda *_args, **_kwargs: SimpleNamespace(
-                root=root,
+                root=build_tidy_dir,
                 tasks_dir=tasks_dir,
                 automation_dir=automation_dir,
-                tasks_done_dir=root / "tasks_done",
-                batch_state_path=root / "batch_state.json",
+                tasks_done_dir=build_tidy_dir / "tasks_done",
+                batch_state_path=build_tidy_dir / "batch_state.json",
             )
 
             workspace = ResolvedTidyWorkspace(
-                source_scope=None,
+                source_scope="core_family",
                 build_dir_name="build_tidy_test",
                 source_roots=[],
                 prebuild_targets=[],
@@ -621,9 +747,7 @@ class TestTidyTaskAutomation(TestCase):
             ):
                 result = run_task_auto_fix(
                     ctx,
-                    app_name="tracer_core_shell",
                     task_log_path=str(task_path),
-                    tidy_build_dir_name="build_tidy_test",
                     dry_run=True,
                     report_suffix="patch",
                 )

@@ -11,6 +11,7 @@ def task_record_to_dict(record: TaskRecord) -> dict:
         "task_id": record.task_id,
         "batch_id": record.batch_id,
         "queue_batch_id": record.batch_id,
+        "queue_generation": record.queue_generation,
         "source_file": record.source_file,
         "workspace": record.workspace,
         "source_scope": record.source_scope,
@@ -18,6 +19,12 @@ def task_record_to_dict(record: TaskRecord) -> dict:
         "checks": list(record.checks),
         "diagnostics": [],
     }
+    if record.source_fingerprint is not None:
+        payload["source_fingerprint"] = {
+            "mtime_ns": record.source_fingerprint.mtime_ns,
+            "size_bytes": record.source_fingerprint.size_bytes,
+            "sha256": record.source_fingerprint.sha256,
+        }
     snippet_by_diag = {snippet.diagnostic_index: snippet for snippet in record.snippets}
     for index, diagnostic in enumerate(record.diagnostics, 1):
         item = {

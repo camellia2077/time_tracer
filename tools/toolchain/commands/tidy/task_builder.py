@@ -8,6 +8,7 @@ from ...core.context import Context
 from ...services import log_parser, task_sorter
 from ..shared import tidy as tidy_shared
 from .fix_strategy import resolve_primary_strategy
+from .task_queue import next_queue_generation, write_queue_state
 from .task_model import (
     TaskDraft,
     build_task_draft_from_diagnostics,
@@ -178,6 +179,7 @@ def write_task_batches(
     resolved_task_view = resolve_task_view(task_view, tasks_dir=tasks_dir)
     start_batch_number, start_task_number = resolve_rebuild_queue_start(tasks_dir)
     cleanup_old_tasks(tasks_dir)
+    queue_generation = next_queue_generation(tasks_dir)
     selected_views = _resolve_task_views(resolved_task_view)
     for idx, task in enumerate(processed, 1):
         batch_number = start_batch_number + ((idx - 1) // batch_size)
@@ -190,6 +192,7 @@ def write_task_batches(
             task["draft"],
             task_id=task_id,
             batch_id=batch_name,
+            queue_generation=queue_generation,
             workspace=workspace_name,
             source_scope=source_scope,
         )
@@ -208,6 +211,16 @@ def write_task_batches(
         tasks_dir / "tasks_summary.md",
         fix_strategy_config=fix_strategy_config,
         start_task_number=start_task_number,
+    )
+    # Queue generation is persisted separately from task records so task-local
+    # commands can reject historical selections after a refresh/full tidy
+    # rebuild rewrites the tasks/ tree.
+    write_queue_state(
+        tasks_dir,
+        queue_generation=queue_generation,
+        task_count=len(processed),
+        batch_count=0 if not processed else ((len(processed) - 1) // batch_size) + 1,
+        task_view=resolved_task_view,
     )
     if not processed:
         return 0

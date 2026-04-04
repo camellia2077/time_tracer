@@ -10,7 +10,7 @@
 
 - `--source-scope core_family`
 - `--build-dir build_tidy_core_family`（用于 `tidy` / `tidy-split` / `tidy-refresh`）
-- `--tidy-build-dir build_tidy_core_family`（用于 `tidy-fix` / `clean` / `tidy-batch` / `tidy-close` / `tidy-loop` / `tidy-flow` / `tidy-task-*` / `tidy-step`）
+- `--tidy-build-dir build_tidy_core_family`（用于 `tidy-fix` / `clean` / `tidy-batch` / `tidy-close` / `tidy-loop` / `tidy-flow`）
 
 那么整条工作流会切到独立的 scoped workspace：`out/tidy/tracer_core_shell/build_tidy_core_family`。
 
@@ -329,21 +329,22 @@ python tools/run.py tidy-loop --app tracer_core_shell --tidy-build-dir build_tid
 命令：
 
 ```bash
-python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
-python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
+python tools/run.py tidy-task-patch --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
+python tools/run.py tidy-task-fix --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
 ```
 
 职责：
 
 1. 读取单个 `task_*.json`
-2. 识别可安全自动处理的模式：
+2. 从 `--task-log` 路径反推 `app` / tidy workspace / source scope
+3. 识别可安全自动处理的模式：
    - `readability-identifier-naming` 的 rule-driven const rename
      - 对 `task_*.toon` 这类不保留 clang-tidy rename suggestion note 的任务，也会回退到本地命名模板（例如 `canonical -> kCanonical`）
    - `readability-redundant-casting` 的 same-type cast 去除
    - `google-runtime-int` 的实现文件内 `long long` / `unsigned long long` 定点替换，并在需要时补 `<cstdint>`
    - `google-build-using-namespace` 的 preview-only 窄规则：仅对 `application/use_cases` 实现文件里的 `using namespace tracer_core::core::dto;` 生成 `using` 声明建议
-3. 输出 candidate patch / apply report
-4. 把 report 写到 `out/tidy/<app>/<tidy_workspace>/automation/`
+4. 输出 candidate patch / apply report
+5. 把 report 写到 `out/tidy/<app>/<tidy_workspace>/automation/`
 
 实现文件：
 
@@ -358,7 +359,7 @@ python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_fa
 命令：
 
 ```bash
-python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
+python tools/run.py tidy-task-suggest --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
 ```
 
 职责：
@@ -379,16 +380,17 @@ python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope cor
 命令：
 
 ```bash
-python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
+python tools/run.py tidy-step --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
 ```
 
 职责：
 
-1. 选择一个 task（默认最小 pending task）
+1. 读取一个显式 `task_*.json`，并从 `--task-log` 路径反推 `app` / tidy workspace / source scope
 2. 执行 `tidy-task-fix`
 3. 非 dry-run 时执行 `build`
-4. 若当前 batch 只有这一个 task，则自动转入 `tidy-batch --preset sop`
+4. re-check 通过后归档该 task artifact
 5. 写回 `automation/tidy_step_last.json`
+6. 若当前 batch 仍有剩余 task，提示后续手动执行 `tidy-batch --preset sop`
 
 实现文件：
 

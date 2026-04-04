@@ -285,6 +285,9 @@ class TestTidyBatchCommand(TestCase):
                 batch_id="batch_001",
                 full_every=3,
                 keep_going=True,
+                jobs=None,
+                parse_workers=None,
+                concise=False,
                 source_scope="core_family",
                 tidy_build_dir_name="build_tidy_core_family",
                 start_time=0.0,
@@ -293,3 +296,48 @@ class TestTidyBatchCommand(TestCase):
 
         self.assertEqual(ret, 0)
         self.assertIn("refresh still running for batch_001", stdout.getvalue())
+
+    def test_run_refresh_stage_forwards_strict_config_flag(self):
+        class FakeProcess:
+            def poll(self):
+                return 0
+
+        ctx = SimpleNamespace(
+            repo_root=REPO_ROOT,
+            setup_env=lambda: {},
+        )
+        spawned_commands: list[list[str]] = []
+
+        def _capture_popen(command, **_kwargs):
+            spawned_commands.append(command)
+            return FakeProcess()
+
+        with patch(
+            "tools.toolchain.commands.tidy.batch_internal.tidy_batch_pipeline.subprocess.Popen",
+            side_effect=_capture_popen,
+        ):
+            ret = run_refresh_stage(
+                ctx=ctx,
+                refresh_command_cls=None,
+                app_name="tracer_core_shell",
+                batch_id="batch_001",
+                full_every=3,
+                keep_going=True,
+                jobs=5,
+                parse_workers=7,
+                concise=True,
+                source_scope="core_family",
+                tidy_build_dir_name="build_tidy_core_family",
+                start_time=0.0,
+                timeout_seconds=None,
+                strict_config=True,
+            )
+
+        self.assertEqual(ret, 0)
+        self.assertEqual(len(spawned_commands), 1)
+        self.assertIn("--jobs", spawned_commands[0])
+        self.assertIn("5", spawned_commands[0])
+        self.assertIn("--parse-workers", spawned_commands[0])
+        self.assertIn("7", spawned_commands[0])
+        self.assertIn("--concise", spawned_commands[0])
+        self.assertIn("--strict-config", spawned_commands[0])

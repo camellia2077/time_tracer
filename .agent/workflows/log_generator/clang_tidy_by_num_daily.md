@@ -1,11 +1,16 @@
 ---
-description: Agent policy for one numbered log_generator clang-tidy task
+description: Agent policy for one numbered log_generator clang-tidy task (daily profile)
 ---
 
 ## Fixed Contract (MUST)
 - Official app anchor: `log_generator`
 - Official tidy workspace: `build_tidy`
+- Official config profile: daily
 - Run from repo root only: `C:\code\time_tracer`
+
+## Config Policy (MUST)
+- Always use the repo-root `.clang-tidy`.
+- Do not switch to strict config inside this workflow.
 
 ## Fixed Paths (MUST)
 - Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.json|toon|log`

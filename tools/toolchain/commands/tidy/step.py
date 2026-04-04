@@ -8,11 +8,20 @@ from ...services import batch_state, log_parser
 from ...core.context import Context
 from ..cmd_build import BuildCommand
 from ..shared import tidy as tidy_shared
+from . import clang_tidy_config
 from .clean import CleanCommand
 from .refresh_internal import refresh_runner as tidy_refresh_runner
 from . import tidy_result as tidy_result_summary
 from .task_auto_fix import run_task_auto_fix
-from .task_log import list_task_paths, load_task_record, parse_task_log, resolve_task_log_path
+from .task_context import resolve_task_context
+from .task_log import list_task_paths, load_task_record, task_artifact_paths
+from .task_model import (
+    build_task_draft_from_diagnostics,
+    finalize_task_record,
+    render_text,
+    render_toon,
+    task_record_to_dict,
+)
 from .workspace import resolve_workspace
 
 
@@ -22,6 +31,7 @@ class TaskRecheckResult:
     exit_code: int
     log_path: Path
     remaining_diagnostics: tuple[dict, ...]
+    diagnostics: tuple[dict, ...]
 
 
 class TidyStepCommand:
@@ -31,45 +41,60 @@ class TidyStepCommand:
     def execute(
         self,
         *,
-        app_name: str,
-        task_log_path: str | None = None,
-        batch_id: str | None = None,
-        task_id: str | None = None,
-        tidy_build_dir_name: str | None = None,
-        source_scope: str | None = None,
+        task_log_path: str,
         verify_build_dir_name: str | None = None,
         profile_name: str | None = None,
         concise: bool = False,
         kill_build_procs: bool = False,
         dry_run: bool = False,
         strict: bool = False,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> int:
+        task_ctx = resolve_task_context(self.ctx, task_log_path=task_log_path)
         workspace = resolve_workspace(
             self.ctx,
-            build_dir_name=tidy_build_dir_name,
-            source_scope=source_scope,
+            build_dir_name=task_ctx.tidy_build_dir_name,
+            source_scope=task_ctx.source_scope,
         )
+        app_name = task_ctx.app_name
         tidy_layout = self.ctx.get_tidy_layout(app_name, workspace.build_dir_name)
-        tasks_dir = tidy_layout.tasks_dir
-        resolved_task_path = resolve_task_log_path(
-            tasks_dir,
-            task_log_path=task_log_path,
-            batch_id=batch_id,
-            task_id=task_id,
-        )
-        parsed = parse_task_log(resolved_task_path)
+        tasks_dir = task_ctx.tasks_dir
+        resolved_task_path = task_ctx.task_json_path
+        parsed = task_ctx.parsed_task
         batch_tasks_before = list_task_paths(tasks_dir, batch_id=parsed.batch_id)
         print(
             f"--- tidy-step: selected {parsed.batch_id}/task_{parsed.task_id} "
             f"({parsed.source_file or resolved_task_path})"
         )
 
+        if not task_ctx.source_fingerprint_matches:
+            print(
+                "--- tidy-step: source fingerprint drift detected; "
+                "running build sanity + focused re-check before trusting task artifacts."
+            )
+            if dry_run:
+                print("--- tidy-step: dry-run mode, skip stale-task recovery.")
+                return 0
+
+            stale_ret = self._handle_stale_task_before_fix(
+                app_name=app_name,
+                task_ctx=task_ctx,
+                verify_build_dir_name=verify_build_dir_name,
+                profile_name=profile_name,
+                concise=concise,
+                kill_build_procs=kill_build_procs,
+                workspace=workspace,
+                resolved_task_path=resolved_task_path,
+                config_file=config_file,
+                strict_config=strict_config,
+            )
+            if stale_ret is not None:
+                return stale_ret
+
         fix_result = run_task_auto_fix(
             self.ctx,
-            app_name=app_name,
             task_log_path=str(resolved_task_path),
-            tidy_build_dir_name=workspace.build_dir_name,
-            source_scope=workspace.source_scope,
             dry_run=dry_run,
             report_suffix="step",
         )
@@ -117,6 +142,8 @@ class TidyStepCommand:
             parsed=parsed,
             tidy_build_dir_name=workspace.build_dir_name,
             source_scope=workspace.source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         if not recheck_result.ok:
             print("--- tidy-step: task re-check failed or matching diagnostics remain.")
@@ -154,6 +181,8 @@ class TidyStepCommand:
             closed_task_path=resolved_task_path,
             recheck_log_path=recheck_result.log_path,
             queue_head_after_close=queue_head_after_close,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         if len(batch_tasks_before) == 1:
             next_action = self._build_single_task_close_next_action(
@@ -183,12 +212,19 @@ class TidyStepCommand:
             print(f"--- tidy-step: step state -> {step_state_path}")
             return 0
 
-        handoff_command = "python tools/run.py tidy-batch --app " f"{app_name}"
+        handoff_parts = ["python", "tools/run.py", "tidy-batch", "--app", app_name]
         if workspace.source_scope:
-            handoff_command += f" --source-scope {workspace.source_scope}"
+            handoff_parts.extend(["--source-scope", workspace.source_scope])
         if workspace.build_dir_name:
-            handoff_command += f" --tidy-build-dir {workspace.build_dir_name}"
-        handoff_command += f" --batch-id {parsed.batch_id} --preset sop"
+            handoff_parts.extend(["--tidy-build-dir", workspace.build_dir_name])
+        handoff_parts.extend(
+            clang_tidy_config.build_cli_args(
+                config_file=config_file,
+                strict_config=strict_config,
+            )
+        )
+        handoff_parts.extend(["--batch-id", parsed.batch_id, "--preset", "sop"])
+        handoff_command = " ".join(handoff_parts)
         next_action = (
             f"Task {parsed.batch_id}/task_{parsed.task_id} is closed. If you continue with batch "
             f"handoff, run `{handoff_command}`. After refresh completes, the historical batch/task "
@@ -228,6 +264,8 @@ class TidyStepCommand:
         closed_task_path: Path,
         recheck_log_path: Path,
         queue_head_after_close: dict | None,
+        config_file: str | None,
+        strict_config: bool,
     ) -> None:
         transition_summary = self._build_close_transition_summary(
             batch_id=closed_batch_id,
@@ -243,6 +281,8 @@ class TidyStepCommand:
             build_dir_name=tidy_build_dir_name,
             source_scope=source_scope,
             verify_mode="full",
+            config_file=config_file,
+            strict_config=strict_config,
         )
         result_payload = tidy_shared.read_json_dict(result_path) or {}
         next_action = str(result_payload.get("next_action") or "").strip() or None
@@ -339,6 +379,8 @@ class TidyStepCommand:
         parsed,
         tidy_build_dir_name: str,
         source_scope: str | None,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> TaskRecheckResult:
         tidy_layout = self.ctx.get_tidy_layout(app_name, tidy_build_dir_name)
         build_dir = tidy_layout.root
@@ -348,6 +390,8 @@ class TidyStepCommand:
             build_dir=build_dir,
             build_dir_name=tidy_build_dir_name,
             source_scope=source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         log_path = (
             tidy_layout.automation_dir
@@ -359,6 +403,7 @@ class TidyStepCommand:
                 exit_code=ensure_ret,
                 log_path=log_path,
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
 
         source_files = self._collect_recheck_files(parsed)
@@ -368,6 +413,7 @@ class TidyStepCommand:
                 exit_code=1,
                 log_path=log_path,
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
 
         compile_db_dir = tidy_refresh_runner.analysis_compile_db.ensure_analysis_compile_db(
@@ -384,6 +430,13 @@ class TidyStepCommand:
             str(compile_db_dir),
             f"-header-filter={header_filter}",
         ]
+        cmd.extend(
+            clang_tidy_config.build_config_file_args(
+                self.ctx,
+                config_file=config_file,
+                strict_config=strict_config,
+            )
+        )
         if checks and all(str(check).startswith("clang-diagnostic-") for check in checks):
             cmd.append("--allow-no-checks")
         if checks:
@@ -409,6 +462,7 @@ class TidyStepCommand:
             exit_code=recheck_ret,
             log_path=log_path,
             remaining_diagnostics=remaining,
+            diagnostics=tuple(diagnostics),
         )
 
     def _collect_recheck_files(self, parsed) -> list[Path]:
@@ -477,3 +531,114 @@ class TidyStepCommand:
             if not any(marker in reason for marker in allowed_rename_failure_markers):
                 return False
         return True
+
+    def _handle_stale_task_before_fix(
+        self,
+        *,
+        app_name: str,
+        task_ctx,
+        verify_build_dir_name: str | None,
+        profile_name: str | None,
+        concise: bool,
+        kill_build_procs: bool,
+        workspace,
+        resolved_task_path: Path,
+        config_file: str | None,
+        strict_config: bool,
+    ) -> int | None:
+        verify_ret = BuildCommand(self.ctx).build(
+            app_name=app_name,
+            tidy=False,
+            build_dir_name=verify_build_dir_name,
+            profile_name=profile_name,
+            concise=concise,
+            kill_build_procs=kill_build_procs,
+        )
+        if verify_ret != 0:
+            print("--- tidy-step: build sanity check failed during stale-task recovery.")
+            return verify_ret
+
+        recheck_result = self._run_task_recheck(
+            app_name=app_name,
+            parsed=task_ctx.parsed_task,
+            tidy_build_dir_name=workspace.build_dir_name,
+            source_scope=workspace.source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
+        )
+        if recheck_result.ok:
+            print(
+                "--- tidy-step: stale task no longer has matching diagnostics; "
+                "archiving outdated task artifact(s)."
+            )
+            clean_ret = CleanCommand(self.ctx).execute(
+                app_name=app_name,
+                task_ids=[task_ctx.parsed_task.task_id],
+                batch_id=task_ctx.parsed_task.batch_id,
+                tidy_build_dir_name=workspace.build_dir_name,
+            )
+            if clean_ret != 0:
+                print("--- tidy-step: clean/archive failed after stale-task re-check.")
+                return clean_ret
+            queue_head_after_close = self._build_queue_head(task_ctx.tasks_dir)
+            self._sync_queue_snapshot_after_close(
+                app_name=app_name,
+                tidy_build_dir_name=workspace.build_dir_name,
+                source_scope=workspace.source_scope,
+                closed_batch_id=task_ctx.parsed_task.batch_id,
+                closed_task_id=task_ctx.parsed_task.task_id,
+                closed_task_path=resolved_task_path,
+                recheck_log_path=recheck_result.log_path,
+                queue_head_after_close=queue_head_after_close,
+                config_file=config_file,
+                strict_config=strict_config,
+            )
+            return 0
+
+        if recheck_result.diagnostics:
+            self._rewrite_task_artifacts_from_recheck(
+                task_ctx=task_ctx,
+                diagnostics=list(recheck_result.diagnostics),
+                resolved_task_path=resolved_task_path,
+            )
+            print(
+                "--- tidy-step: stale task artifact refreshed from focused re-check; "
+                "rerun the current queue head before applying fixes."
+            )
+            return 1
+
+        print("--- tidy-step: stale task re-check failed before diagnostics could be refreshed.")
+        return recheck_result.exit_code or 1
+
+    def _rewrite_task_artifacts_from_recheck(
+        self,
+        *,
+        task_ctx,
+        diagnostics: list[dict],
+        resolved_task_path: Path,
+    ) -> None:
+        draft = build_task_draft_from_diagnostics(diagnostics)
+        if draft is None:
+            return
+        refreshed_record = finalize_task_record(
+            draft,
+            task_id=task_ctx.parsed_task.task_id,
+            batch_id=task_ctx.parsed_task.batch_id,
+            queue_generation=task_ctx.current_queue_generation,
+            workspace=task_ctx.tidy_build_dir_name,
+            source_scope=task_ctx.source_scope,
+        )
+        json_path = resolved_task_path.with_suffix(".json")
+        tidy_shared.write_json_dict(json_path, task_record_to_dict(refreshed_record))
+        existing_artifacts = {artifact.suffix.lower() for artifact in task_artifact_paths(json_path)}
+        base_path = json_path.with_suffix("")
+        if ".log" in existing_artifacts:
+            base_path.with_suffix(".log").write_text(
+                render_text(refreshed_record),
+                encoding="utf-8",
+            )
+        if ".toon" in existing_artifacts:
+            base_path.with_suffix(".toon").write_text(
+                render_toon(refreshed_record),
+                encoding="utf-8",
+            )

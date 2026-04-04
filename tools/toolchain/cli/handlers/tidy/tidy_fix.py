@@ -2,7 +2,7 @@ import argparse
 
 from ....commands.tidy.fix import TidyFixCommand
 from ....core.context import Context
-from ...common import add_source_scope_arg, add_tidy_build_dir_arg
+from ...common import add_source_scope_arg, add_tidy_build_dir_arg, add_tidy_config_args
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -13,6 +13,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         help_suffix="Used to select a named scoped tidy source set.",
     )
     add_tidy_build_dir_arg(parser)
+    add_tidy_config_args(parser)
     parser.add_argument(
         "--limit",
         type=int,
@@ -50,6 +51,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         keep_going=args.keep_going,
         source_scope=args.source_scope,
         tidy_build_dir_name=args.tidy_build_dir,
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
     )
 
 

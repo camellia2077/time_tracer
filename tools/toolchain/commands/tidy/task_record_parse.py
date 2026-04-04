@@ -5,9 +5,11 @@ from pathlib import Path
 import re
 
 from ...formats.toon.task_codec import parse_task_record
+from .task_fingerprint import compute_source_fingerprint
 from ...services import log_parser
 from .task_record_types import (
     TASK_RECORD_VERSION,
+    SourceFingerprint,
     TaskDiagnostic,
     TaskDraft,
     TaskRecord,
@@ -72,6 +74,7 @@ def finalize_task_record(
     *,
     task_id: str,
     batch_id: str,
+    queue_generation: int | None,
     workspace: str,
     source_scope: str | None,
 ) -> TaskRecord:
@@ -79,7 +82,9 @@ def finalize_task_record(
         version=TASK_RECORD_VERSION,
         task_id=task_id,
         batch_id=batch_id,
+        queue_generation=queue_generation,
         source_file=draft.source_file,
+        source_fingerprint=compute_source_fingerprint(draft.source_file),
         workspace=workspace,
         source_scope=source_scope,
         checks=draft.checks,
@@ -97,7 +102,9 @@ def task_record_from_dict(payload: dict, *, fallback_path: Path | None = None) -
         or _read_text(payload.get("batch_id"))
         or _batch_id_from_path(fallback_path)
     )
+    queue_generation = _read_optional_int(payload.get("queue_generation"))
     source_file = _read_text(payload.get("source_file"))
+    source_fingerprint = _read_source_fingerprint(payload.get("source_fingerprint"))
     diagnostics_payload = _read_dict_list(payload.get("diagnostics"))
 
     diagnostics_list: list[TaskDiagnostic] = []
@@ -177,7 +184,9 @@ def task_record_from_dict(payload: dict, *, fallback_path: Path | None = None) -
         version=_read_int(payload.get("version"), default=TASK_RECORD_VERSION),
         task_id=task_id,
         batch_id=batch_id,
+        queue_generation=queue_generation,
         source_file=source_file,
+        source_fingerprint=source_fingerprint,
         workspace=_read_text(payload.get("workspace")),
         source_scope=_read_optional_text(payload.get("source_scope")),
         checks=checks,
@@ -217,7 +226,9 @@ def legacy_task_record_from_text(
         version=TASK_RECORD_VERSION,
         task_id=_task_id_from_path(task_path),
         batch_id=_batch_id_from_path(task_path),
+        queue_generation=None,
         source_file=source_file,
+        source_fingerprint=compute_source_fingerprint(source_file),
         workspace="",
         source_scope=None,
         checks=checks,
@@ -449,3 +460,16 @@ def _read_optional_int(value: object) -> int | None:
     if not text and not isinstance(value, int):
         return None
     return _read_int(value, default=0)
+
+
+def _read_source_fingerprint(value: object) -> SourceFingerprint | None:
+    if not isinstance(value, dict):
+        return None
+    sha256 = _read_text(value.get("sha256"))
+    if not sha256:
+        return None
+    return SourceFingerprint(
+        mtime_ns=_read_int(value.get("mtime_ns")),
+        size_bytes=_read_int(value.get("size_bytes")),
+        sha256=sha256,
+    )

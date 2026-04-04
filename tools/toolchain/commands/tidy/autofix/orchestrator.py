@@ -6,40 +6,29 @@ from pathlib import Path
 from .engines import ClangdRenameEngine, TextEditEngine
 from .models import ExecutionRecord, FixContext, FixIntent
 from .registry import build_default_registry
+from ..task_context import resolve_task_context
 from ..task_auto_fix_report import report_paths, write_result_report
 from ..task_auto_fix_types import AutoFixAction, TaskAutoFixResult
-from ..task_log import parse_task_log, resolve_task_json_path
 from ..workspace import resolve_workspace
 
 
 def run_task_auto_fix_orchestrator(
     ctx,
     *,
-    app_name: str,
-    task_log_path: str | None = None,
-    batch_id: str | None = None,
-    task_id: str | None = None,
-    tidy_build_dir_name: str | None = None,
-    source_scope: str | None = None,
+    task_log_path: str,
     dry_run: bool = False,
     report_suffix: str = "fix",
 ) -> TaskAutoFixResult:
+    task_ctx = resolve_task_context(ctx, task_log_path=task_log_path)
     workspace = resolve_workspace(
         ctx,
-        build_dir_name=tidy_build_dir_name,
-        source_scope=source_scope,
+        build_dir_name=task_ctx.tidy_build_dir_name,
+        source_scope=task_ctx.source_scope,
     )
-    tidy_layout = ctx.get_tidy_layout(app_name, workspace.build_dir_name)
+    tidy_layout = ctx.get_tidy_layout(task_ctx.app_name, workspace.build_dir_name)
     build_tidy_dir = tidy_layout.root
-    tasks_dir = tidy_layout.tasks_dir
-    resolved_task_path = resolve_task_json_path(
-        tasks_dir,
-        task_log_path=task_log_path,
-        batch_id=batch_id,
-        task_id=task_id,
-    )
-    parsed = parse_task_log(resolved_task_path)
-    source_file = parsed.source_file or str(resolved_task_path)
+    parsed = task_ctx.parsed_task
+    source_file = parsed.source_file or str(task_ctx.task_json_path)
     json_path, markdown_path = report_paths(
         build_tidy_dir,
         parsed.batch_id or "batch_unknown",
@@ -49,7 +38,7 @@ def run_task_auto_fix_orchestrator(
 
     context = FixContext(
         ctx=ctx,
-        app_name=app_name,
+        app_name=task_ctx.app_name,
         workspace=workspace,
         parsed=parsed,
         build_tidy_dir=build_tidy_dir,
@@ -61,10 +50,10 @@ def run_task_auto_fix_orchestrator(
     actions = [_intent_record_to_action(intent, record) for intent, record in zip(intents, records)]
 
     result = TaskAutoFixResult(
-        app_name=app_name,
+        app_name=task_ctx.app_name,
         task_id=parsed.task_id,
         batch_id=parsed.batch_id,
-        task_log=str(resolved_task_path),
+        task_log=str(task_ctx.task_json_path),
         source_file=source_file,
         mode="dry_run" if dry_run else "apply",
         workspace=workspace.build_dir_name,

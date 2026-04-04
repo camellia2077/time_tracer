@@ -4,6 +4,7 @@ import sys
 from collections.abc import Iterable
 
 from ..core.context import Context
+from ..commands.tidy import clang_tidy_config
 from .model import ParserDefaults
 
 
@@ -198,6 +199,40 @@ def add_tidy_build_dir_arg(
     )
 
 
+def add_tidy_config_args(parser_obj: argparse.ArgumentParser) -> None:
+    tidy_config_group = parser_obj.add_mutually_exclusive_group()
+    tidy_config_group.add_argument(
+        "--config-file",
+        default=None,
+        help=(
+            "Use an explicit clang-tidy config file. Relative paths are resolved from "
+            "the repo root."
+        ),
+    )
+    tidy_config_group.add_argument(
+        "--strict-config",
+        action="store_true",
+        help=(
+            "Use the repo-root strict clang-tidy profile "
+            f"(`{clang_tidy_config.STRICT_CONFIG_FILE}`)."
+        ),
+    )
+
+
+def append_tidy_config_to_command(
+    parts: list[str],
+    *,
+    config_file: str | None,
+    strict_config: bool,
+) -> None:
+    parts.extend(
+        clang_tidy_config.build_cli_args(
+            config_file=config_file,
+            strict_config=strict_config,
+        )
+    )
+
+
 def add_tidy_task_view_arg(
     parser_obj: argparse.ArgumentParser,
     *,
@@ -237,4 +272,21 @@ def add_task_selector_args(parser_obj: argparse.ArgumentParser) -> None:
         "--task-id",
         default=None,
         help="Task identifier (e.g. 11, 011). When omitted, use the smallest pending task.",
+    )
+
+
+def add_required_task_log_arg(
+    parser_obj: argparse.ArgumentParser,
+    *,
+    help_text: str | None = None,
+) -> None:
+    parser_obj.add_argument(
+        "--task-log",
+        required=True,
+        help=(
+            help_text
+            or "Canonical task artifact path (.json/.toon/.log). "
+            "This command resolves app and tidy workspace from the task path and always "
+            "uses the matching task_*.json contract."
+        ),
     )

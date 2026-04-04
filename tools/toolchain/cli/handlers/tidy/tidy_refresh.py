@@ -2,7 +2,12 @@ import argparse
 
 from ....commands.tidy.refresh import TidyRefreshCommand
 from ....core.context import Context
-from ...common import add_source_scope_arg, add_tidy_task_view_arg
+from ...common import (
+    add_concise_arg,
+    add_source_scope_arg,
+    add_tidy_config_args,
+    add_tidy_task_view_arg,
+)
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -17,6 +22,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         defaults,
         help_suffix="Used when tidy-refresh needs to auto-configure a scoped tidy workspace.",
     )
+    add_tidy_config_args(parser)
     parser.add_argument(
         "--full-every",
         type=int,
@@ -33,7 +39,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         "--jobs",
         type=int,
         default=None,
-        help="Ninja jobs for full tidy when triggered.",
+        help="Bounded parallel jobs for full tidy when triggered (0 = auto-throttled).",
     )
     parser.add_argument(
         "--parse-workers",
@@ -83,6 +89,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         action="store_true",
         help="Preview selected files/cadence decision without running tidy.",
     )
+    add_concise_arg(parser)
 
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
@@ -101,6 +108,9 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         build_dir_name=args.build_dir,
         task_view=args.task_view,
         dry_run=args.dry_run,
+        concise=bool(args.concise),
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
     )
 
 

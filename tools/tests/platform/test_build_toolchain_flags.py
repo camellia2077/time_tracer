@@ -137,6 +137,8 @@ prebuild_targets = ["tc_shared_lib", "tc_app_lib"]
                 app_name="demo",
                 tidy=True,
                 source_scope="core_family",
+                config_file=None,
+                strict_config=False,
                 extra_args=None,
                 cmake_args=None,
                 build_dir_name="build_tidy_core_family",
@@ -226,6 +228,8 @@ cmake_args = [
                 app_name="demo",
                 tidy=True,
                 source_scope=None,
+                config_file=None,
+                strict_config=False,
                 extra_args=None,
                 cmake_args=None,
                 build_dir_name="build_tidy",
@@ -277,6 +281,8 @@ path = "apps/demo"
                 app_name="demo",
                 tidy=False,
                 source_scope=None,
+                config_file=None,
+                strict_config=False,
                 extra_args=None,
                 cmake_args=None,
                 build_dir_name="build_fast",
@@ -326,6 +332,8 @@ path = "apps/tracer_core_shell"
                 app_name="tracer_core",
                 tidy=False,
                 source_scope=None,
+                config_file=None,
+                strict_config=False,
                 extra_args=None,
                 cmake_args=None,
                 build_dir_name="build",
@@ -348,4 +356,84 @@ path = "apps/tracer_core_shell"
             self.assertEqual(
                 build_calls[0][3:],
                 ["-j", "--target", "tc_rpt_shared_lib", "tc_shared_dll"],
+            )
+
+    def test_tidy_reconfigure_required_when_config_file_mismatches(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_split_config(
+                repo_root,
+                """
+[apps.demo]
+path = "apps/demo"
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            build_dir = repo_root / "apps" / "demo" / "build_tidy"
+            build_dir.mkdir(parents=True, exist_ok=True)
+            cache_text = "\n".join(
+                [
+                    "TT_CLANG_TIDY_HEADER_FILTER:STRING=^(?!.*[\\\\/]_deps[\\\\/]).*",
+                    "TT_CLANG_TIDY_CONFIG_FILE:STRING=C:/tmp/old/.clang-tidy",
+                    "TT_ANALYSIS_COMPILE_DB_DIR:STRING="
+                    + str((build_dir / "analysis_compile_db").resolve()).replace("\\", "/"),
+                    "TT_ENABLE_CXX_CLANG_TIDY_WRAPPER:BOOL=OFF",
+                ]
+            )
+            _write_text(build_dir / "CMakeCache.txt", cache_text)
+
+            self.assertTrue(
+                build_cmake.needs_tidy_filter_reconfigure(
+                    ctx=ctx,
+                    tidy=True,
+                    build_dir=build_dir,
+                    source_scope=None,
+                    config_file=".clang-tidy.strict",
+                    strict_config=False,
+                )
+            )
+
+    def test_tidy_configure_passes_explicit_config_file_cache_arg(self):
+        with TemporaryDirectory() as tmp:
+            repo_root = Path(tmp)
+            _write_split_config(
+                repo_root,
+                """
+[apps.demo]
+path = "apps/demo"
+""".strip(),
+            )
+            ctx = Context(repo_root)
+            app_dir = repo_root / "apps" / "demo"
+            app_dir.mkdir(parents=True, exist_ok=True)
+
+            captured: list[list[str]] = []
+
+            def _capture_run(command: list[str], env=None, **_kwargs):
+                captured.append(command)
+                return 0
+
+            ret = build_cmake.configure_cmake(
+                ctx=ctx,
+                app_name="demo",
+                tidy=True,
+                source_scope=None,
+                config_file=".clang-tidy.strict",
+                strict_config=False,
+                extra_args=None,
+                cmake_args=None,
+                build_dir_name="build_tidy",
+                profile_name=None,
+                resolve_build_dir_name_fn=lambda tidy, build_dir_name, profile_name, app_name: (
+                    build_dir_name or "build_tidy"
+                ),
+                run_command_fn=_capture_run,
+            )
+
+            self.assertEqual(ret, 0)
+            self.assertEqual(len(captured), 1)
+            self.assertIn(
+                "TT_CLANG_TIDY_CONFIG_FILE="
+                + str((repo_root / ".clang-tidy.strict").resolve()).replace("\\", "/"),
+                captured[0],
             )

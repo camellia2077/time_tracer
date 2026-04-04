@@ -17,6 +17,8 @@ def execute_tidy_command(
     build_dir_name: str | None = None,
     task_view: str | None = None,
     prebuild_targets: list[str] | None = None,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> int:
     paths = command._resolve_tidy_paths(app_name, build_dir_name=build_dir_name)
     build_dir = paths["build_dir"]
@@ -39,6 +41,8 @@ def execute_tidy_command(
         app_name=app_name,
         build_dir=build_dir,
         source_scope=source_scope,
+        config_file=config_file,
+        strict_config=strict_config,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
         concise=concise,
@@ -53,7 +57,12 @@ def execute_tidy_command(
         has_target_override,
         effective_jobs,
         effective_keep_going,
-    ) = command._resolve_build_options(extra_args, jobs, keep_going)
+    ) = command._resolve_build_options(
+        extra_args,
+        jobs,
+        keep_going,
+        job_mode="full",
+    )
     resolved_prebuild_targets = [target for target in (prebuild_targets or []) if str(target).strip()]
     if resolved_prebuild_targets:
         prebuild_log_path = log_path

@@ -1,24 +1,31 @@
 ---
-description: Agent policy for the full log_generator clang-tidy queue
+description: Agent policy for the full time_tracer clang-tidy queue (daily profile)
 ---
 
 ## Fixed Contract (MUST)
-- Official app anchor: `log_generator`
-- Official tidy workspace: `build_tidy`
+- Official app anchor: `tracer_core_shell`
+- Official source scope: `core_family`
+- Official tidy workspace: `build_tidy_core_family`
+- Official config profile: daily
 - Run from repo root only: `C:\code\time_tracer`
 
+## Config Policy (MUST)
+- Always use the repo-root `.clang-tidy`.
+- Do not switch to strict config inside this workflow.
+- If the user explicitly asks for strict cleanup, use the strict workflow doc instead of modifying this one ad hoc.
+
 ## Fixed Paths (MUST)
-- Task queue: `out/tidy/log_generator/build_tidy/tasks/batch_*/task_*.json|toon|log`
+- Task queue: `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_*/task_*.json|toon|log`
   - `task_*.json` is canonical for machine execution only
   - `task_*.toon` is the default reading view for humans/agents when present
   - `task_*.log` is compatibility-only
-- Machine summary: `out/tidy/log_generator/build_tidy/tidy_result.json`
-- Automation reports: `out/tidy/log_generator/build_tidy/automation/`
-- Verify result: `out/test/artifact_log_generator/result.json`
+- Machine summary: `out/tidy/tracer_core_shell/build_tidy_core_family/tidy_result.json`
+- Automation reports: `out/tidy/tracer_core_shell/build_tidy_core_family/automation/`
+- Verify result: `out/test/artifact_windows_cli/result.json`
 
 ## First Command (MUST)
 - Start with the official auto entry:
-  - `python tools/run.py tidy-flow --app log_generator --tidy-build-dir build_tidy --task-view toon --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N>`
+  - `python tools/run.py tidy-flow --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-view toon --all --resume --test-every 3 --concise --keep-going --with-tidy-fix --tidy-fix-limit <FIX_N>`
 - If flags are unclear, read `python tools/run.py tidy-flow -h` before changing anything.
 
 ## Single-Task Policy (MUST)
@@ -41,19 +48,21 @@ description: Agent policy for the full log_generator clang-tidy queue
   - it runs build sanity check
   - reruns focused clang-tidy on the selected task source
   - archives the matching `task_<TASK_ID>` artifact when that re-check is clean
-- Normal close path is `tidy-batch --preset sop`.
+- Normal batch close path is `tidy-batch --preset sop`.
 - Queue batch id is a queue code, not a historical identity. Full rebase / full refresh keeps the current pending queue namespace instead of rewinding to `batch_001`.
 - `clean + tidy-refresh` is troubleshooting-only, not the normal workflow.
 - If the same file has several task logs in one batch, prefer clustered clean.
 
 ## Completion Gate (MUST)
 - Done means:
-  - no `task_*.json` / `task_*.log` / `task_*.toon` remains under `out/tidy/log_generator/build_tidy/tasks/`
-  - `out/test/artifact_log_generator/result.json` still reports success
+  - no `task_*.json` / `task_*.log` / `task_*.toon` remains under `out/tidy/tracer_core_shell/build_tidy_core_family/tasks/`
+  - `out/test/artifact_windows_cli/result.json` still reports success
 - Exit code `2` from auto flow is not completion.
 - Final acceptance command is:
-  - `python tools/run.py tidy-close --app log_generator --tidy-build-dir build_tidy --keep-going --concise`
+  - `python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise`
 
 ## Repo-Specific Guardrails (MUST)
-- Use suppression only when there is a real boundary reason; otherwise prefer real fixes.
+- Only use pinpoint suppression at true ABI boundaries such as `apps/tracer_core_shell/api/c_api`.
+- Non-ABI implementation files must prefer real fixes over suppression.
+- Do not add app-side shell wrappers for clang-tidy; use `python tools/run.py ...` directly.
 - For parameter syntax and defaults, always consult `python tools/run.py <subcommand> -h`.

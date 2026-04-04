@@ -48,10 +48,12 @@ def _make_task_record(
         checks=(TaskSummaryEntry(name=check, count=1),),
     )
     return TaskRecord(
-        version=2,
+        version=3,
         task_id=task_id,
         batch_id=batch_id,
+        queue_generation=None,
         source_file=source_file,
+        source_fingerprint=None,
         workspace="build_tidy_core_family",
         source_scope="core_family",
         checks=(check,),
@@ -63,6 +65,121 @@ def _make_task_record(
 
 
 class TestTidyStepCommand(TestCase):
+    def test_execute_archives_stale_task_after_focused_recheck(self):
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            tasks_dir = root / "tasks"
+            tasks_done_dir = root / "tasks_done"
+            automation_dir = root / "automation"
+            batch_dir = tasks_dir / "batch_002"
+            batch_dir.mkdir(parents=True)
+            automation_dir.mkdir(parents=True)
+
+            source_file = str(root / "example.cpp")
+            task_path = batch_dir / "task_011.toon"
+            task_path.write_text("task artifact\n", encoding="utf-8")
+            record = _make_task_record(source_file=source_file)
+
+            ctx = Context(REPO_ROOT)
+            ctx.get_tidy_layout = lambda *_args, **_kwargs: SimpleNamespace(
+                root=root,
+                tasks_dir=tasks_dir,
+                tasks_done_dir=tasks_done_dir,
+                automation_dir=automation_dir,
+                batch_state_path=root / "batch_state.json",
+                tidy_result_path=root / "tidy_result.json",
+            )
+
+            command = TidyStepCommand(ctx)
+            workspace = ResolvedTidyWorkspace(
+                source_scope="core_family",
+                build_dir_name="build_tidy_core_family",
+                source_roots=[],
+                prebuild_targets=[],
+            )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=SimpleNamespace(),
+                source_fingerprint_matches=False,
+            )
+            recheck_result = TaskRecheckResult(
+                ok=True,
+                exit_code=0,
+                log_path=automation_dir / "batch_002_task_011_recheck.log",
+                remaining_diagnostics=(),
+                diagnostics=(),
+            )
+
+            with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
+                patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
+                patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
+                patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
+                patch("tools.toolchain.commands.tidy.step.run_task_auto_fix") as run_task_auto_fix,
+            ):
+                ret = command.execute(task_log_path=str(task_path))
+
+            self.assertEqual(ret, 0)
+            run_task_auto_fix.assert_not_called()
+            self.assertFalse(task_path.exists())
+            self.assertTrue((tasks_done_dir / "batch_002" / "task_011.toon").exists())
+
+    def test_run_task_recheck_passes_explicit_config_file(self):
+        with TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            automation_dir = root / "automation"
+            automation_dir.mkdir(parents=True)
+            source_file = root / "example.cpp"
+            source_file.write_text("int main() { return 0; }\n", encoding="utf-8")
+            analysis_dir = root / "analysis_compile_db"
+            analysis_dir.mkdir(parents=True)
+
+            ctx = Context(REPO_ROOT)
+            ctx.get_tidy_layout = lambda *_args, **_kwargs: SimpleNamespace(
+                root=root,
+                automation_dir=automation_dir,
+            )
+
+            record = _make_task_record(source_file=str(source_file))
+            commands: list[list[str]] = []
+
+            def _capture_run(command, **_kwargs):
+                commands.append(command)
+                return 0
+
+            with (
+                patch(
+                    "tools.toolchain.commands.tidy.step.tidy_refresh_runner.ensure_analysis_compile_db",
+                    return_value=0,
+                ),
+                patch(
+                    "tools.toolchain.commands.tidy.step.tidy_refresh_runner.analysis_compile_db.ensure_analysis_compile_db",
+                    return_value=analysis_dir,
+                ),
+                patch("tools.toolchain.commands.tidy.step.run_command", side_effect=_capture_run),
+            ):
+                result = TidyStepCommand(ctx)._run_task_recheck(
+                    app_name="tracer_core_shell",
+                    parsed=record,
+                    tidy_build_dir_name="build_tidy_core_family",
+                    source_scope="core_family",
+                    config_file=".clang-tidy.strict",
+                    strict_config=False,
+                )
+
+            self.assertEqual(result.exit_code, 0)
+            self.assertEqual(len(commands), 1)
+            self.assertIn(
+                "--config-file=" + str((REPO_ROOT / ".clang-tidy.strict").resolve()),
+                commands[0],
+            )
+
     def test_execute_continues_after_stale_rename_failures(self):
         with TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
@@ -95,11 +212,23 @@ class TestTidyStepCommand(TestCase):
                 source_roots=[],
                 prebuild_targets=[],
             )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=None,
+                source_fingerprint_matches=True,
+            )
             recheck_result = TaskRecheckResult(
                 ok=True,
                 exit_code=0,
                 log_path=automation_dir / "batch_002_task_012_recheck.log",
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
             fix_result = TaskAutoFixResult(
                 app_name="tracer_core_shell",
@@ -132,20 +261,13 @@ class TestTidyStepCommand(TestCase):
             )
 
             with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
                 patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
-                patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
-                patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
                 patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
-                ret = command.execute(
-                    app_name="tracer_core_shell",
-                    batch_id="002",
-                    task_id="012",
-                    tidy_build_dir_name="build_tidy_core_family",
-                    source_scope="core_family",
-                )
+                ret = command.execute(task_log_path=str(task_path))
 
             self.assertEqual(ret, 0)
             self.assertFalse(task_path.exists())
@@ -183,11 +305,23 @@ class TestTidyStepCommand(TestCase):
                 source_roots=[],
                 prebuild_targets=[],
             )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=None,
+                source_fingerprint_matches=True,
+            )
             recheck_result = TaskRecheckResult(
                 ok=True,
                 exit_code=0,
                 log_path=automation_dir / "batch_002_task_013_recheck.log",
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
             fix_result = TaskAutoFixResult(
                 app_name="tracer_core_shell",
@@ -221,20 +355,13 @@ class TestTidyStepCommand(TestCase):
             )
 
             with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
                 patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
-                patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
-                patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
                 patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
-                ret = command.execute(
-                    app_name="tracer_core_shell",
-                    batch_id="002",
-                    task_id="013",
-                    tidy_build_dir_name="build_tidy_core_family",
-                    source_scope="core_family",
-                )
+                ret = command.execute(task_log_path=str(task_path))
 
             self.assertEqual(ret, 0)
             self.assertFalse(task_path.exists())
@@ -278,11 +405,23 @@ class TestTidyStepCommand(TestCase):
                 source_roots=[],
                 prebuild_targets=[],
             )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=None,
+                source_fingerprint_matches=True,
+            )
             recheck_result = TaskRecheckResult(
                 ok=True,
                 exit_code=0,
                 log_path=automation_dir / "batch_002_task_011_recheck.log",
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
             fix_result = TaskAutoFixResult(
                 app_name="tracer_core_shell",
@@ -299,20 +438,13 @@ class TestTidyStepCommand(TestCase):
             )
 
             with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
                 patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
-                patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
-                patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
                 patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
-                ret = command.execute(
-                    app_name="tracer_core_shell",
-                    batch_id="002",
-                    task_id="011",
-                    tidy_build_dir_name="build_tidy_core_family",
-                    source_scope="core_family",
-                )
+                ret = command.execute(task_log_path=str(task_path))
 
             self.assertEqual(ret, 0)
             self.assertFalse(task_path.exists())
@@ -379,6 +511,17 @@ class TestTidyStepCommand(TestCase):
                 source_roots=[],
                 prebuild_targets=[],
             )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=None,
+                source_fingerprint_matches=True,
+            )
             recheck_result = TaskRecheckResult(
                 ok=False,
                 exit_code=1,
@@ -389,6 +532,16 @@ class TestTidyStepCommand(TestCase):
                         "line": 7,
                         "col": 4,
                         "check": "readability-identifier-naming",
+                        "message": "invalid case style for variable 'payload'",
+                    },
+                ),
+                diagnostics=(
+                    {
+                        "file": source_file,
+                        "line": 7,
+                        "col": 4,
+                        "check": "readability-identifier-naming",
+                        "severity": "warning",
                         "message": "invalid case style for variable 'payload'",
                     },
                 ),
@@ -408,20 +561,13 @@ class TestTidyStepCommand(TestCase):
             )
 
             with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
                 patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
-                patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
-                patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
                 patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
-                ret = command.execute(
-                    app_name="tracer_core_shell",
-                    batch_id="002",
-                    task_id="011",
-                    tidy_build_dir_name="build_tidy_core_family",
-                    source_scope="core_family",
-                )
+                ret = command.execute(task_log_path=str(task_path))
 
             self.assertEqual(ret, 1)
             self.assertTrue(task_path.exists())
@@ -459,11 +605,23 @@ class TestTidyStepCommand(TestCase):
                 source_roots=[],
                 prebuild_targets=[],
             )
+            task_ctx = SimpleNamespace(
+                app_name="tracer_core_shell",
+                tidy_build_dir_name="build_tidy_core_family",
+                source_scope="core_family",
+                tasks_dir=tasks_dir,
+                task_json_path=task_path,
+                parsed_task=record,
+                current_queue_generation=1,
+                current_source_fingerprint=None,
+                source_fingerprint_matches=True,
+            )
             recheck_result = TaskRecheckResult(
                 ok=True,
                 exit_code=0,
                 log_path=automation_dir / "batch_002_task_011_recheck.log",
                 remaining_diagnostics=(),
+                diagnostics=(),
             )
             fix_result = TaskAutoFixResult(
                 app_name="tracer_core_shell",
@@ -480,20 +638,13 @@ class TestTidyStepCommand(TestCase):
             )
 
             with (
+                patch("tools.toolchain.commands.tidy.step.resolve_task_context", return_value=task_ctx),
                 patch("tools.toolchain.commands.tidy.step.resolve_workspace", return_value=workspace),
-                patch("tools.toolchain.commands.tidy.step.resolve_task_log_path", return_value=task_path),
-                patch("tools.toolchain.commands.tidy.step.parse_task_log", return_value=record),
                 patch("tools.toolchain.commands.tidy.step.run_task_auto_fix", return_value=fix_result),
                 patch("tools.toolchain.commands.tidy.step.BuildCommand.build", return_value=0),
                 patch.object(TidyStepCommand, "_run_task_recheck", return_value=recheck_result),
             ):
-                ret = command.execute(
-                    app_name="tracer_core_shell",
-                    batch_id="002",
-                    task_id="011",
-                    tidy_build_dir_name="build_tidy_core_family",
-                    source_scope="core_family",
-                )
+                ret = command.execute(task_log_path=str(task_path))
 
             self.assertEqual(ret, 0)
             self.assertFalse(task_path.exists())

@@ -34,6 +34,8 @@ class TidyCommand:
         app_name: str,
         build_dir: Path,
         source_scope: str | None = None,
+        config_file: str | None = None,
+        strict_config: bool = False,
         build_dir_name: str | None = None,
         profile_name: str | None = None,
         concise: bool = False,
@@ -44,6 +46,8 @@ class TidyCommand:
             app_name,
             build_dir,
             source_scope=source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
             build_dir_name=build_dir_name,
             profile_name=profile_name,
             concise=concise,
@@ -55,8 +59,16 @@ class TidyCommand:
         extra_args: list[str] | None,
         jobs: int | None,
         keep_going: bool | None,
+        *,
+        job_mode: str = "full",
     ) -> tuple[list[str], bool, int | None, bool]:
-        return tidy_invoker.resolve_build_options(self.ctx, extra_args, jobs, keep_going)
+        return tidy_invoker.resolve_build_options(
+            self.ctx,
+            extra_args,
+            jobs,
+            keep_going,
+            job_mode=job_mode,
+        )
 
     def _build_tidy_command(
         self,
@@ -277,6 +289,8 @@ class TidyCommand:
         source_scope: str | None = None,
         build_dir_name: str | None = None,
         task_view: str | None = None,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -297,6 +311,8 @@ class TidyCommand:
             build_dir_name=workspace.build_dir_name,
             task_view=task_view,
             prebuild_targets=workspace.prebuild_targets,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         status = "completed" if ret == 0 else "failed"
         tidy_result_summary.write_tidy_result(
@@ -308,6 +324,8 @@ class TidyCommand:
             build_dir_name=workspace.build_dir_name,
             source_scope=workspace.source_scope,
             verify_mode="skip",
+            config_file=config_file,
+            strict_config=strict_config,
         )
         return ret
 

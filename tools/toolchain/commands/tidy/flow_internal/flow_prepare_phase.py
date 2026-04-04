@@ -32,6 +32,8 @@ def run_prepare_phase(
             keep_going=effective_keep_going,
             source_scope=options.source_scope,
             tidy_build_dir_name=options.tidy_build_dir_name,
+            config_file=options.config_file,
+            strict_config=options.strict_config,
         )
         state["tidy_fix_exit_code"] = tidy_fix_ret
         if tidy_fix_ret != 0:
@@ -47,6 +49,8 @@ def run_prepare_phase(
         source_scope=options.source_scope,
         build_dir_name=options.tidy_build_dir_name,
         task_view=options.task_view,
+        config_file=options.config_file,
+        strict_config=options.strict_config,
     )
     if tidy_ret != 0:
         tidy_flow_state.set_step(state, "prepare_tasks", "failed", tidy_ret)

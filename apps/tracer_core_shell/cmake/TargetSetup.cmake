@@ -36,6 +36,9 @@ endif()
 if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")
     set(TT_CLANG_TIDY_HEADER_FILTER "^(?!.*[\\\\/]_deps[\\\\/]).*")
 endif()
+if(NOT DEFINED TT_CLANG_TIDY_CONFIG_FILE OR "${TT_CLANG_TIDY_CONFIG_FILE}" STREQUAL "")
+    set(TT_CLANG_TIDY_CONFIG_FILE "${CMAKE_SOURCE_DIR}/.clang-tidy")
+endif()
 
 function(_setup_target_common TARGET_NAME)
     set(options NO_PCH NO_APP_SOURCE_ROOT_INCLUDE)
@@ -78,7 +81,8 @@ function(_setup_target_common TARGET_NAME)
 
     if(ENABLE_CLANG_TIDY AND CLANG_TIDY_EXE AND TT_ENABLE_CXX_CLANG_TIDY_WRAPPER)
         set_target_properties(${TARGET_NAME} PROPERTIES
-            CXX_CLANG_TIDY "${CLANG_TIDY_EXE};-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+            CXX_CLANG_TIDY
+            "${CLANG_TIDY_EXE};-header-filter=${TT_CLANG_TIDY_HEADER_FILTER};--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
         )
     endif()
 

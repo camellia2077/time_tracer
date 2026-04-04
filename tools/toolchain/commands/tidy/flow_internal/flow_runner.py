@@ -23,6 +23,8 @@ class TidyFlowOptions:
     source_scope: str | None = None
     profile_name: str | None = None
     kill_build_procs: bool = False
+    config_file: str | None = None
+    strict_config: bool = False
 
 
 def execute_flow(ctx: Context, options: TidyFlowOptions) -> int:

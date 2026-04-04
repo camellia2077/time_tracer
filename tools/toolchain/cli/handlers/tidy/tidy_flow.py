@@ -6,6 +6,7 @@ from ...common import (
     add_profile_arg,
     add_source_scope_arg,
     add_tidy_build_dir_arg,
+    add_tidy_config_args,
     add_tidy_task_view_arg,
 )
 from ...model import CommandSpec, ParserDefaults
@@ -64,6 +65,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         defaults,
         help_suffix="Used for the tidy generation/fix/rename workspace inside tidy-flow.",
     )
+    add_tidy_config_args(parser)
     add_tidy_task_view_arg(
         parser,
         help_text=(
@@ -140,6 +142,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         source_scope=args.source_scope,
         profile_name=args.profile,
         kill_build_procs=kill_build_procs,
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
     )
 
 

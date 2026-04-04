@@ -45,10 +45,12 @@ def _make_task_record(
         checks=tuple(TaskSummaryEntry(name=check, count=1) for check in checks),
     )
     return TaskRecord(
-        version=2,
+        version=3,
         task_id=task_id,
         batch_id=batch_id,
+        queue_generation=None,
         source_file=source_file,
+        source_fingerprint=None,
         workspace="build_tidy_core_family",
         source_scope="core_family",
         checks=checks,
@@ -138,8 +140,9 @@ class TestTidyTaskModel(TestCase):
 
         payload = task_record_to_dict(record)
 
-        self.assertEqual(payload["version"], 2)
+        self.assertEqual(payload["version"], 3)
         self.assertEqual(payload["queue_batch_id"], "batch_001")
+        self.assertIn("queue_generation", payload)
         self.assertNotIn("summary", payload)
         self.assertNotIn("snippets", payload)
         self.assertNotIn("raw_lines", payload)
@@ -225,6 +228,7 @@ class TestTidyTaskModel(TestCase):
             draft,
             task_id="002",
             batch_id="batch_001",
+            queue_generation=1,
             workspace="build_tidy_core_family",
             source_scope="core_family",
         )
@@ -470,6 +474,12 @@ class TestTidyTaskModel(TestCase):
             self.assertTrue((tasks_dir / "batch_001" / "task_001.json").exists())
             self.assertTrue((tasks_dir / "batch_001" / "task_001.log").exists())
             self.assertFalse((tasks_dir / "batch_001" / "task_001.toon").exists())
+            queue_state = json.loads(
+                (tasks_dir / "queue_state.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(queue_state["queue_generation"], 1)
+            self.assertEqual(queue_state["task_count"], 1)
+            self.assertEqual(queue_state["task_view"], "text")
 
     def test_split_and_sort_writes_json_only_view(self):
         with TemporaryDirectory() as temp_dir:

@@ -117,6 +117,8 @@ class TidyRefreshCommand:
         build_dir: Path,
         build_dir_name: str,
         source_scope: str | None,
+        config_file: str | None,
+        strict_config: bool,
     ) -> int:
         return tidy_refresh_runner.ensure_analysis_compile_db(
             ctx=self.ctx,
@@ -124,6 +126,8 @@ class TidyRefreshCommand:
             build_dir=build_dir,
             build_dir_name=build_dir_name,
             source_scope=source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
         )
 
     def _run_incremental_tidy(
@@ -132,6 +136,8 @@ class TidyRefreshCommand:
         batch_name: str,
         files: list[Path],
         keep_going: bool,
+        config_file: str | None,
+        strict_config: bool,
     ) -> int:
         return tidy_refresh_runner.run_incremental_tidy(
             ctx=self.ctx,
@@ -139,6 +145,8 @@ class TidyRefreshCommand:
             batch_name=batch_name,
             files=files,
             keep_going=keep_going,
+            config_file=config_file,
+            strict_config=strict_config,
         )
 
     def _detect_incremental_auto_reasons(
@@ -163,9 +171,12 @@ class TidyRefreshCommand:
         jobs: int | None,
         parse_workers: int | None,
         keep_going: bool,
+        concise: bool,
         source_scope: str | None,
         build_dir_name: str,
         task_view: str | None,
+        config_file: str | None,
+        strict_config: bool,
     ) -> int:
         return tidy_refresh_runner.run_full_tidy(
             ctx=self.ctx,
@@ -173,9 +184,12 @@ class TidyRefreshCommand:
             jobs=jobs,
             parse_workers=parse_workers,
             keep_going=keep_going,
+            concise=concise,
             source_scope=source_scope,
             build_dir_name=build_dir_name,
             task_view=task_view,
+            config_file=config_file,
+            strict_config=strict_config,
         )
 
     def _chunk_paths(self, paths: list[Path], chunk_size: int) -> list[list[Path]]:
@@ -197,6 +211,9 @@ class TidyRefreshCommand:
         build_dir_name: str | None = None,
         task_view: str | None = None,
         dry_run: bool = False,
+        concise: bool = False,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -218,6 +235,9 @@ class TidyRefreshCommand:
             build_dir_name=workspace.build_dir_name,
             task_view=task_view,
             dry_run=dry_run,
+            concise=concise,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         status = "completed" if ret == 0 else "failed"
         stage = "tidy-refresh"
@@ -233,5 +253,7 @@ class TidyRefreshCommand:
             build_dir_name=workspace.build_dir_name,
             source_scope=workspace.source_scope,
             verify_mode=verify_mode,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         return ret

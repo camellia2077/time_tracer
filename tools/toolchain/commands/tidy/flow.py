@@ -26,6 +26,8 @@ class TidyFlowCommand:
         source_scope: str | None = None,
         profile_name: str | None = None,
         kill_build_procs: bool = False,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -50,6 +52,8 @@ class TidyFlowCommand:
             source_scope=workspace.source_scope,
             profile_name=profile_name,
             kill_build_procs=kill_build_procs,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         ret = tidy_flow_runner.execute_flow(self.ctx, options)
         if ret == 0:
@@ -67,5 +71,7 @@ class TidyFlowCommand:
             build_dir_name=workspace.build_dir_name,
             source_scope=workspace.source_scope,
             verify_mode="full",
+            config_file=config_file,
+            strict_config=strict_config,
         )
         return ret

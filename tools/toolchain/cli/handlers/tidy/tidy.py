@@ -10,7 +10,9 @@ from ...common import (
     add_profile_arg,
     reject_unsupported_build_dir_override,
     add_source_scope_arg,
+    add_tidy_config_args,
     add_tidy_task_view_arg,
+    append_tidy_config_to_command,
 )
 from ...model import CommandSpec, ParserDefaults
 from ....commands.tidy import workspace as tidy_workspace
@@ -34,6 +36,11 @@ def _build_command_text(args: argparse.Namespace) -> str:
         parts.extend(["--source-scope", args.source_scope])
     if args.task_view:
         parts.extend(["--task-view", args.task_view])
+    append_tidy_config_to_command(
+        parts,
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
+    )
     if args.keep_going is True:
         parts.append("--keep-going")
     elif args.keep_going is False:
@@ -65,6 +72,7 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         defaults,
         help_suffix="When omitted, use the app's default full tidy source set.",
     )
+    add_tidy_config_args(parser)
     add_tidy_task_view_arg(parser)
     tidy_keep_going_group = parser.add_mutually_exclusive_group()
     tidy_keep_going_group.add_argument(
@@ -105,6 +113,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         source_scope=args.source_scope,
         build_dir_name=args.build_dir,
         task_view=args.task_view,
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
     )
     if ret != 0:
         workspace = tidy_workspace.resolve_workspace(

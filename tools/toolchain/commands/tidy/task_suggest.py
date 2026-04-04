@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from ...core.context import Context
 from .task_auto_fix import suggest_task_refactors, write_task_suggestion_report
-from .task_log import parse_task_log, resolve_task_log_path
+from .task_context import resolve_task_context
 from .workspace import resolve_workspace
 
 
@@ -13,32 +13,22 @@ class TidyTaskSuggestCommand:
     def execute(
         self,
         *,
-        app_name: str,
-        task_log_path: str | None = None,
-        batch_id: str | None = None,
-        task_id: str | None = None,
-        tidy_build_dir_name: str | None = None,
-        source_scope: str | None = None,
+        task_log_path: str,
     ) -> int:
+        task_ctx = resolve_task_context(self.ctx, task_log_path=task_log_path)
         workspace = resolve_workspace(
             self.ctx,
-            build_dir_name=tidy_build_dir_name,
-            source_scope=source_scope,
+            build_dir_name=task_ctx.tidy_build_dir_name,
+            source_scope=task_ctx.source_scope,
         )
-        tidy_layout = self.ctx.get_tidy_layout(app_name, workspace.build_dir_name)
+        tidy_layout = self.ctx.get_tidy_layout(task_ctx.app_name, workspace.build_dir_name)
         build_tidy_dir = tidy_layout.root
-        tasks_dir = tidy_layout.tasks_dir
-        task_path = resolve_task_log_path(
-            tasks_dir,
-            task_log_path=task_log_path,
-            batch_id=batch_id,
-            task_id=task_id,
-        )
-        parsed = parse_task_log(task_path)
+        task_path = task_ctx.task_json_path
+        parsed = task_ctx.parsed_task
         suggestions = suggest_task_refactors(parsed)
         json_path, markdown_path = write_task_suggestion_report(
             build_tidy_dir=build_tidy_dir,
-            app_name=app_name,
+            app_name=task_ctx.app_name,
             parsed=parsed,
             task_path=task_path,
             workspace_name=workspace.build_dir_name,

@@ -9,8 +9,12 @@ max_lines = 150
 max_diags = 12
 # Store tasks by folder batches to reduce agent context scope.
 batch_size = 10
-# Ninja parallelism (0 = build tool default, equivalent to `-j` without a value).
-jobs = 0
+# Full tidy parallelism.
+# 0 = auto-throttled bounded fan-out, not unbounded Ninja `-j`.
+jobs_full = 0
+# Task/batch helper parallelism (tidy-fix, module prebuild, batch refresh helpers).
+# 0 = auto-throttled bounded fan-out tuned separately from full tidy.
+jobs_task_batch = 0
 # Log parser worker count (0 = auto).
 parse_workers = 0
 # User preference: keep going through as many tidy checks as possible.

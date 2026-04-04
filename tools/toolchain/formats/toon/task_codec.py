@@ -6,6 +6,7 @@ import re
 
 from ...commands.tidy.task_record_types import (
     TASK_RECORD_VERSION,
+    SourceFingerprint,
     TaskDiagnostic,
     TaskRecord,
     TaskSnippet,
@@ -26,8 +27,14 @@ def render_task_record(record: TaskRecord) -> str:
         f"  source: {record.source_file}",
         f"  workspace: {record.workspace or '<unset>'}",
     ]
+    if record.queue_generation is not None:
+        lines.append(f"  queue_generation: {record.queue_generation}")
     if record.source_scope:
         lines.append(f"  source_scope: {record.source_scope}")
+    if record.source_fingerprint is not None:
+        lines.append(f"  source_mtime_ns: {record.source_fingerprint.mtime_ns}")
+        lines.append(f"  source_size_bytes: {record.source_fingerprint.size_bytes}")
+        lines.append(f"  source_sha256: {record.source_fingerprint.sha256}")
     lines.extend(
         [
             "summary:",
@@ -76,7 +83,11 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
     batch_id = _batch_id_from_path(task_path)
     source_file = ""
     workspace = ""
+    queue_generation: int | None = None
     source_scope: str | None = None
+    source_mtime_ns: int | None = None
+    source_size_bytes: int | None = None
+    source_sha256 = ""
     compiler_errors = False
     diagnostic_rows: list[dict] = []
     snippet_rows: dict[int, dict] = {}
@@ -116,8 +127,16 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
                 source_file = parsed
             elif key == "workspace":
                 workspace = "" if parsed == "<unset>" else parsed
+            elif key == "queue_generation":
+                queue_generation = _read_optional_int(parsed)
             elif key == "source_scope":
                 source_scope = parsed or None
+            elif key == "source_mtime_ns":
+                source_mtime_ns = _read_optional_int(parsed)
+            elif key == "source_size_bytes":
+                source_size_bytes = _read_optional_int(parsed)
+            elif key == "source_sha256":
+                source_sha256 = parsed
             continue
         if section == "summary" and ":" in value:
             key, item = value.split(":", 1)
@@ -198,7 +217,13 @@ def parse_task_record(content: str, *, task_path: Path) -> TaskRecord:
         version=TASK_RECORD_VERSION,
         task_id=task_id,
         batch_id=batch_id,
+        queue_generation=queue_generation,
         source_file=source_file,
+        source_fingerprint=_build_source_fingerprint(
+            source_mtime_ns=source_mtime_ns,
+            source_size_bytes=source_size_bytes,
+            source_sha256=source_sha256,
+        ),
         workspace=workspace,
         source_scope=source_scope,
         checks=tuple(entry.name for entry in summary.checks),
@@ -321,3 +346,18 @@ def _read_optional_int(value: object) -> int | None:
     if not text and not isinstance(value, int):
         return None
     return _read_int(value, default=0)
+
+
+def _build_source_fingerprint(
+    *,
+    source_mtime_ns: int | None,
+    source_size_bytes: int | None,
+    source_sha256: str,
+):
+    if source_mtime_ns is None or source_size_bytes is None or not source_sha256:
+        return None
+    return SourceFingerprint(
+        mtime_ns=source_mtime_ns,
+        size_bytes=source_size_bytes,
+        sha256=source_sha256,
+    )

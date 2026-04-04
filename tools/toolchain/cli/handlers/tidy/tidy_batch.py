@@ -2,7 +2,12 @@ import argparse
 
 from ....commands.tidy.batch import TidyBatchCommand
 from ....core.context import Context
-from ...common import add_profile_arg, add_source_scope_arg, add_tidy_build_dir_arg
+from ...common import (
+    add_profile_arg,
+    add_source_scope_arg,
+    add_tidy_build_dir_arg,
+    add_tidy_config_args,
+)
 from ...model import CommandSpec, ParserDefaults
 
 
@@ -42,12 +47,25 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
         default=None,
         help=("Build directory for verify stage only (default: build_fast or profile build_dir)."),
     )
+    parser.add_argument(
+        "--jobs",
+        type=int,
+        default=None,
+        help="Bounded parallel jobs for full tidy when refresh escalates (0 = auto-throttled).",
+    )
+    parser.add_argument(
+        "--parse-workers",
+        type=int,
+        default=None,
+        help="Log split workers for full tidy when refresh escalates.",
+    )
     add_tidy_build_dir_arg(parser)
     add_source_scope_arg(
         parser,
         defaults,
         help_suffix="Used when tidy-batch refresh/final full tidy needs scoped configure metadata.",
     )
+    add_tidy_config_args(parser)
     add_profile_arg(parser, defaults)
     parser.add_argument(
         "--concise",
@@ -124,8 +142,12 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         profile_name=args.profile,
         concise=args.concise,
         kill_build_procs=kill_build_procs,
+        jobs=args.jobs,
+        parse_workers=args.parse_workers,
         timeout_seconds=args.timeout_seconds,
         resume_checkpoint=not args.no_resume_checkpoint,
+        config_file=args.config_file,
+        strict_config=bool(args.strict_config),
     )
 
 

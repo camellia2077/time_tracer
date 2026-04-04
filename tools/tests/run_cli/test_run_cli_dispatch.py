@@ -476,6 +476,122 @@ class TestRunCliDispatch(TestCase):
 
         self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "text+toon")
 
+    def test_tidy_dispatches_strict_config(self):
+        class FakeTidyCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, *args, **kwargs):
+                FakeTidyCommand.last_kwargs = kwargs
+                return 0
+
+        with patch("tools.toolchain.cli.handlers.tidy.tidy.TidyCommand", FakeTidyCommand):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy",
+                    "--app",
+                    "tracer_core_shell",
+                    "--strict-config",
+                ]
+            )
+
+        self.assertTrue(FakeTidyCommand.last_kwargs["strict_config"])
+
+    def test_tidy_refresh_dispatches_config_file(self):
+        class FakeTidyRefreshCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeTidyRefreshCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.tidy.tidy_refresh.TidyRefreshCommand",
+            FakeTidyRefreshCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-refresh",
+                    "--app",
+                    "tracer_core_shell",
+                    "--batch-id",
+                    "003",
+                    "--config-file",
+                    ".clang-tidy.strict",
+                ]
+            )
+
+        self.assertEqual(FakeTidyRefreshCommand.last_kwargs["config_file"], ".clang-tidy.strict")
+
+    def test_tidy_batch_dispatches_strict_config(self):
+        class FakeTidyBatchCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeTidyBatchCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.tidy.tidy_batch.TidyBatchCommand",
+            FakeTidyBatchCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-batch",
+                    "--app",
+                    "tracer_core_shell",
+                    "--batch-id",
+                    "001",
+                    "--strict-config",
+                ]
+            )
+
+        self.assertTrue(FakeTidyBatchCommand.last_kwargs["strict_config"])
+
+    def test_tidy_close_dispatches_stabilize(self):
+        class FakeTidyCloseCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeTidyCloseCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.tidy.tidy_close.TidyCloseCommand",
+            FakeTidyCloseCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-close",
+                    "--app",
+                    "tracer_core_shell",
+                    "--stabilize",
+                    "--jobs",
+                    "4",
+                    "--parse-workers",
+                    "6",
+                ]
+            )
+
+        self.assertTrue(FakeTidyCloseCommand.last_kwargs["stabilize"])
+        self.assertEqual(FakeTidyCloseCommand.last_kwargs["jobs"], 4)
+        self.assertEqual(FakeTidyCloseCommand.last_kwargs["parse_workers"], 6)
+
     def test_tidy_dispatches_toon_only_task_view(self):
         class FakeTidyCommand:
             last_kwargs = None
@@ -636,6 +752,33 @@ class TestRunCliDispatch(TestCase):
             FakeTidyFixCommand.last_kwargs["tidy_build_dir_name"],
             "build_tidy_core_family",
         )
+
+    def test_tidy_fix_dispatches_strict_config(self):
+        class FakeTidyFixCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeTidyFixCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.tidy.tidy_fix.TidyFixCommand",
+            FakeTidyFixCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-fix",
+                    "--app",
+                    "tracer_core_shell",
+                    "--strict-config",
+                ]
+            )
+
+        self.assertTrue(FakeTidyFixCommand.last_kwargs["strict_config"])
 
     def test_clean_dispatches_tidy_build_dir(self):
         class FakeCleanCommand:
@@ -806,7 +949,7 @@ class TestRunCliDispatch(TestCase):
 
         self.assertEqual(FakeTidyFlowCommand.last_kwargs["task_view"], "text+toon")
 
-    def test_tidy_task_fix_dispatches_task_selector_and_scope(self):
+    def test_tidy_task_fix_dispatches_task_log_and_dry_run(self):
         class FakeTidyTaskFixCommand:
             last_kwargs = None
 
@@ -825,27 +968,15 @@ class TestRunCliDispatch(TestCase):
                 [
                     "run.py",
                     "tidy-task-fix",
-                    "--app",
-                    "tracer_core_shell",
-                    "--batch-id",
-                    "002",
-                    "--task-id",
-                    "011",
-                    "--source-scope",
-                    "core_family",
-                    "--tidy-build-dir",
-                    "build_tidy_core_family",
+                    "--task-log",
+                    "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
                     "--dry-run",
                 ]
             )
 
-        self.assertEqual(FakeTidyTaskFixCommand.last_kwargs["app_name"], "tracer_core_shell")
-        self.assertEqual(FakeTidyTaskFixCommand.last_kwargs["batch_id"], "002")
-        self.assertEqual(FakeTidyTaskFixCommand.last_kwargs["task_id"], "011")
-        self.assertEqual(FakeTidyTaskFixCommand.last_kwargs["source_scope"], "core_family")
         self.assertEqual(
-            FakeTidyTaskFixCommand.last_kwargs["tidy_build_dir_name"],
-            "build_tidy_core_family",
+            FakeTidyTaskFixCommand.last_kwargs["task_log_path"],
+            "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
         )
         self.assertTrue(FakeTidyTaskFixCommand.last_kwargs["dry_run"])
 
@@ -868,20 +999,17 @@ class TestRunCliDispatch(TestCase):
                 [
                     "run.py",
                     "tidy-task-patch",
-                    "--app",
-                    "tracer_core_shell",
                     "--task-log",
                     "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
                 ]
             )
 
-        self.assertEqual(FakeTidyTaskPatchCommand.last_kwargs["app_name"], "tracer_core_shell")
         self.assertEqual(
             FakeTidyTaskPatchCommand.last_kwargs["task_log_path"],
             "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.log",
         )
 
-    def test_tidy_task_suggest_dispatches_task_selector(self):
+    def test_tidy_task_suggest_dispatches_task_log(self):
         class FakeTidyTaskSuggestCommand:
             last_kwargs = None
 
@@ -900,22 +1028,15 @@ class TestRunCliDispatch(TestCase):
                 [
                     "run.py",
                     "tidy-task-suggest",
-                    "--app",
-                    "tracer_core_shell",
-                    "--batch-id",
-                    "002",
-                    "--task-id",
-                    "011",
-                    "--tidy-build-dir",
-                    "build_tidy_core_family",
+                    "--task-log",
+                    "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
                 ]
             )
 
         self.assertEqual(
-            FakeTidyTaskSuggestCommand.last_kwargs["tidy_build_dir_name"],
-            "build_tidy_core_family",
+            FakeTidyTaskSuggestCommand.last_kwargs["task_log_path"],
+            "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
         )
-        self.assertEqual(FakeTidyTaskSuggestCommand.last_kwargs["task_id"], "011")
 
     def test_tidy_step_dispatches_verify_related_flags(self):
         class FakeTidyStepCommand:
@@ -936,12 +1057,8 @@ class TestRunCliDispatch(TestCase):
                 [
                     "run.py",
                     "tidy-step",
-                    "--app",
-                    "tracer_core_shell",
-                    "--batch-id",
-                    "002",
-                    "--task-id",
-                    "011",
+                    "--task-log",
+                    "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
                     "--build-dir",
                     "build_fast",
                     "--profile",
@@ -951,10 +1068,54 @@ class TestRunCliDispatch(TestCase):
                 ]
             )
 
+        self.assertEqual(
+            FakeTidyStepCommand.last_kwargs["task_log_path"],
+            "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
+        )
         self.assertEqual(FakeTidyStepCommand.last_kwargs["verify_build_dir_name"], "build_fast")
         self.assertEqual(FakeTidyStepCommand.last_kwargs["profile_name"], "fast")
         self.assertTrue(FakeTidyStepCommand.last_kwargs["concise"])
         self.assertTrue(FakeTidyStepCommand.last_kwargs["kill_build_procs"])
+
+    def test_tidy_step_dispatches_config_file(self):
+        class FakeTidyStepCommand:
+            last_kwargs = None
+
+            def __init__(self, _ctx):
+                pass
+
+            def execute(self, **kwargs):
+                FakeTidyStepCommand.last_kwargs = kwargs
+                return 0
+
+        with patch(
+            "tools.toolchain.cli.handlers.tidy.tidy_step.TidyStepCommand",
+            FakeTidyStepCommand,
+        ):
+            self._assert_return_zero(
+                [
+                    "run.py",
+                    "tidy-step",
+                    "--task-log",
+                    "out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json",
+                    "--config-file",
+                    ".clang-tidy.strict",
+                ]
+            )
+
+        self.assertEqual(FakeTidyStepCommand.last_kwargs["config_file"], ".clang-tidy.strict")
+
+    def test_tidy_task_patch_requires_task_log(self):
+        stderr = io.StringIO()
+        with patch.object(
+            sys,
+            "argv",
+            ["run.py", "tidy-task-patch"],
+        ), redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+            self.run_module.main()
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("--task-log", stderr.getvalue())
 
     def test_build_rejects_build_dir_for_tracer_android(self):
         stdout = io.StringIO()

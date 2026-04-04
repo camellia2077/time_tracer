@@ -3,7 +3,13 @@ from pathlib import Path
 from ....core.context import Context
 from ....core.executor import run_command
 from ...cmd_build import BuildCommand
-from .. import TidyCommand, analysis_compile_db, invoker as tidy_invoker, workspace as tidy_workspace
+from .. import (
+    TidyCommand,
+    analysis_compile_db,
+    clang_tidy_config,
+    invoker as tidy_invoker,
+    workspace as tidy_workspace,
+)
 
 AUTO_REASON_NO_SUCH_FILE = "auto_no_such_file"
 AUTO_REASON_GLOB_MISMATCH = "auto_glob_mismatch"
@@ -27,6 +33,8 @@ def ensure_analysis_compile_db(
     build_dir: Path,
     build_dir_name: str,
     source_scope: str | None,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> int:
     raw_compile_commands_path = build_dir / "compile_commands.json"
     if not raw_compile_commands_path.exists():
@@ -38,6 +46,8 @@ def ensure_analysis_compile_db(
             app_name=app_name,
             tidy=True,
             source_scope=source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
             build_dir_name=build_dir_name,
         )
         if ret != 0:
@@ -49,10 +59,16 @@ def ensure_analysis_compile_db(
         source_scope=source_scope,
     )
     if workspace.prebuild_targets:
+        # Batch/refresh helpers should not inherit full tidy fan-out. Module
+        # prebuilds are smaller scoped and use the task/batch throttle lane.
         prebuild_cmd = tidy_invoker.build_module_prereq_command(
             build_dir,
             workspace.prebuild_targets,
-            ctx.config.tidy.jobs,
+            tidy_invoker.resolve_effective_tidy_jobs(
+                ctx,
+                None,
+                mode="task_batch",
+            ),
         )
         prebuild_log = build_dir / "module_prereq_build.log"
         print(
@@ -78,6 +94,8 @@ def run_incremental_tidy(
     batch_name: str,
     files: list[Path],
     keep_going: bool,
+    config_file: str | None = None,
+    strict_config: bool = False,
     chunk_size: int = 40,
 ) -> int:
     if not files:
@@ -96,7 +114,15 @@ def run_incremental_tidy(
             "-p",
             str(compile_db_dir),
             f"-header-filter={header_filter}",
-        ] + [str(path) for path in chunk]
+        ]
+        cmd.extend(
+            clang_tidy_config.build_config_file_args(
+                ctx,
+                config_file=config_file,
+                strict_config=strict_config,
+            )
+        )
+        cmd += [str(path) for path in chunk]
         log_path = refresh_dir / f"incremental_tidy_{chunk_index:03d}.log"
         print(
             f"--- tidy-refresh: incremental chunk {chunk_index}/{len(chunks)} ({len(chunk)} files)."
@@ -124,19 +150,25 @@ def run_full_tidy(
     jobs: int | None,
     parse_workers: int | None,
     keep_going: bool,
+    concise: bool,
     source_scope: str | None,
     build_dir_name: str,
     task_view: str | None = None,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> int:
     return TidyCommand(ctx).execute(
         app_name=app_name,
         extra_args=[],
         jobs=jobs,
         parse_workers=parse_workers,
+        concise=concise,
         keep_going=keep_going,
         source_scope=source_scope,
         build_dir_name=build_dir_name,
         task_view=task_view,
+        config_file=config_file,
+        strict_config=strict_config,
     )
 
 

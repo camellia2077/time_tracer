@@ -51,10 +51,12 @@
 
 8. 针对单个 clang-tidy task 做自动 patch / fix / suggest / step
    - 命令：
-     - `python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>`
-     - `python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>`
-     - `python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>`
-     - `python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>`
+     - `python tools/run.py tidy-task-patch --task-log <resolved_task_json>`
+     - `python tools/run.py tidy-task-fix --task-log <resolved_task_json>`
+     - `python tools/run.py tidy-task-suggest --task-log <resolved_task_json>`
+     - `python tools/run.py tidy-step --task-log <resolved_task_json>`
+   - 约束：
+     - `app` / `tidy workspace` / `source scope` 全部从 `--task-log` 路径反推
    - 参数层：
      - `tools/toolchain/cli/handlers/tidy/tidy_task_fix.py`
      - `tools/toolchain/cli/handlers/tidy/tidy_task_patch.py`
@@ -82,8 +84,8 @@ python tools/run.py build --app tracer_core --profile fast --concise
 python tools/run.py verify --app tracer_core --profile fast --concise
 python tools/run.py tidy --app tracer_core_shell -- --target tidy_all
 python tools/run.py tidy-batch --app tracer_core_shell --batch-id <BATCH_ID> --strict-clean --run-verify --concise --full-every 3 --keep-going
-python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>
-python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json> --dry-run
+python tools/run.py tidy-task-patch --task-log <resolved_task_json>
+python tools/run.py tidy-step --task-log <resolved_task_json> --dry-run
 ```
 
 ## 4. 相关导航

@@ -12,6 +12,7 @@ from .task_record_parse import (
 from .task_record_render import render_text, render_toon, task_record_to_dict
 from .task_record_types import (
     TASK_RECORD_VERSION,
+    SourceFingerprint,
     TaskDiagnostic,
     TaskDraft,
     TaskRecord,
@@ -22,6 +23,7 @@ from .task_record_types import (
 
 __all__ = [
     "TASK_RECORD_VERSION",
+    "SourceFingerprint",
     "TaskSummaryEntry",
     "TaskSnippet",
     "TaskDiagnostic",

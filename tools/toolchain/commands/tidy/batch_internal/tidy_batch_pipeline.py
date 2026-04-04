@@ -4,6 +4,8 @@ import subprocess
 import sys
 import time
 
+from .. import clang_tidy_config
+
 
 def should_run_stage(next_stage: str, stage: str, stage_order: tuple[str, ...]) -> bool:
     try:
@@ -26,10 +28,15 @@ def run_refresh_stage(
     batch_id: str,
     full_every: int,
     keep_going: bool | None,
+    jobs: int | None,
+    parse_workers: int | None,
+    concise: bool,
     source_scope: str | None,
     tidy_build_dir_name: str,
     start_time: float,
     timeout_seconds: int | None,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> int:
     cmd = [
         sys.executable,
@@ -46,6 +53,16 @@ def run_refresh_stage(
     ]
     if source_scope:
         cmd += ["--source-scope", source_scope]
+    if jobs is not None:
+        cmd += ["--jobs", str(jobs)]
+    if parse_workers is not None:
+        cmd += ["--parse-workers", str(parse_workers)]
+    if concise:
+        cmd.append("--concise")
+    cmd += clang_tidy_config.build_cli_args(
+        config_file=config_file,
+        strict_config=strict_config,
+    )
     if keep_going is True:
         cmd.append("--keep-going")
     elif keep_going is False:

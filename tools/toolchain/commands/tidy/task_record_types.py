@@ -2,7 +2,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-TASK_RECORD_VERSION = 2
+TASK_RECORD_VERSION = 3
+
+
+@dataclass(frozen=True, slots=True)
+class SourceFingerprint:
+    mtime_ns: int
+    size_bytes: int
+    sha256: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,7 +63,9 @@ class TaskRecord:
     version: int
     task_id: str
     batch_id: str
+    queue_generation: int | None
     source_file: str
+    source_fingerprint: SourceFingerprint | None
     workspace: str
     source_scope: str | None
     checks: tuple[str, ...]

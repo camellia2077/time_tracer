@@ -11,6 +11,7 @@ from .fix_strategy import (
     resolve_fix_strategy,
     resolve_primary_strategy,
 )
+from . import clang_tidy_config
 from .task_log import list_task_paths, load_task_record
 from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
@@ -207,6 +208,7 @@ def _build_blocking_files(ctx: Context, pending_logs: list[Path]) -> tuple[list[
                 "task_id": parsed.task_id,
                 "batch_id": parsed.batch_id,
                 "queue_batch_id": parsed.batch_id,
+                "task_log": str(log_path),
                 "source_file": source_file,
                 "checks": checks,
                 "check_fix_strategy": check_strategies,
@@ -229,14 +231,24 @@ def _default_next_action(
     queue_requires_reresolve: bool,
     queue_head: dict | None,
     historical_batch: dict | None,
+    config_file: str | None,
+    strict_config: bool,
 ) -> str:
     tidy_args = ""
+    tidy_config_args = clang_tidy_config.build_cli_args(
+        config_file=config_file,
+        strict_config=strict_config,
+    )
+    tidy_config_suffix = ""
+    if tidy_config_args:
+        tidy_config_suffix = " " + " ".join(tidy_config_args)
     normalized_build_dir = (build_dir_name or "").strip()
     normalized_scope = (source_scope or "").strip()
     if normalized_build_dir and normalized_build_dir != DEFAULT_TIDY_BUILD_DIR_NAME:
         tidy_args += f" --tidy-build-dir {normalized_build_dir}"
     if normalized_scope:
         tidy_args += f" --source-scope {normalized_scope}"
+    tidy_args += tidy_config_suffix
 
     if pending_count <= 0:
         if stage == "tidy-close" and status == "completed":
@@ -266,13 +278,13 @@ def _default_next_action(
     first_block = blocking_files[0] if blocking_files else {}
     batch_id = first_block.get("batch_id") or "<BATCH_ID>"
     task_id = first_block.get("task_id") or "<TASK_ID>"
+    task_log = first_block.get("task_log") or "<TASK_LOG>"
     primary_strategy = first_block.get("primary_fix_strategy", STRATEGY_MANUAL_ONLY)
     recommended_action = first_block.get("recommended_action")
     if recommended_action == RECOMMENDED_ACTION_RECHECK_FIRST:
         return (
             f"Re-check transient compiler task_{task_id} first: "
-            f"python tools/run.py tidy-step --app {app_name}{tidy_args} "
-            f"--batch-id {batch_id} --task-id {task_id} --dry-run"
+            f"python tools/run.py tidy-step --task-log {task_log}{tidy_config_suffix} --dry-run"
         )
     if primary_strategy == STRATEGY_MANUAL_ONLY:
         return (
@@ -299,6 +311,8 @@ def write_tidy_result(
     historical_batch_id: str | None = None,
     historical_task_ids: list[str] | None = None,
     queue_requires_reresolve: bool = False,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> Path:
     tidy_layout = ctx.get_tidy_layout(app_name, build_dir_name)
     tasks_dir = tidy_layout.tasks_dir
@@ -335,6 +349,8 @@ def write_tidy_result(
             queue_requires_reresolve=effective_queue_requires_reresolve,
             queue_head=queue_head,
             historical_batch=historical_batch,
+            config_file=config_file,
+            strict_config=strict_config,
         )
 
     payload = {

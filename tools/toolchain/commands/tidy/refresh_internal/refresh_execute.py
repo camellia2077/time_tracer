@@ -26,6 +26,9 @@ def execute_refresh_command(
     build_dir_name: str | None = None,
     task_view: str | None = None,
     dry_run: bool = False,
+    concise: bool = False,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> int:
     resolved_build_dir_name = (
         (build_dir_name or "").strip() or tidy_workspace.DEFAULT_TIDY_BUILD_DIR_NAME
@@ -84,6 +87,8 @@ def execute_refresh_command(
                 build_dir=build_dir,
                 build_dir_name=resolved_build_dir_name,
                 source_scope=source_scope,
+                config_file=config_file,
+                strict_config=strict_config,
             )
             if ensure_ret != 0:
                 return ensure_ret
@@ -171,6 +176,8 @@ def execute_refresh_command(
             batch_name=normalized_batch,
             files=incremental_files,
             keep_going=effective_keep_going,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         if incremental_ret != 0:
             incremental_auto_reasons = command._detect_incremental_auto_reasons(
@@ -199,9 +206,12 @@ def execute_refresh_command(
             jobs=jobs,
             parse_workers=parse_workers,
             keep_going=effective_keep_going,
+            concise=concise,
             source_scope=source_scope,
             build_dir_name=resolved_build_dir_name,
             task_view=task_view,
+            config_file=config_file,
+            strict_config=strict_config,
         )
         if full_ret != 0:
             return full_ret

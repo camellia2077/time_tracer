@@ -35,6 +35,7 @@ class TestTidyTaskContract(TestCase):
                 jobs=8,
                 parse_workers=4,
                 keep_going=True,
+                concise=True,
                 source_scope="core_family",
                 build_dir_name="build_tidy_core_family",
                 task_view="toon",
@@ -42,6 +43,7 @@ class TestTidyTaskContract(TestCase):
 
         self.assertEqual(ret, 0)
         self.assertEqual(FakeTidyCommand.last_kwargs["task_view"], "toon")
+        self.assertTrue(FakeTidyCommand.last_kwargs["concise"])
 
     def test_flow_prepare_phase_passes_task_view(self):
         class FakeTidyCommand:
@@ -67,6 +69,8 @@ class TestTidyTaskContract(TestCase):
                 source_scope="core_family",
                 tidy_build_dir_name="build_tidy_core_family",
                 task_view="text+toon",
+                config_file=None,
+                strict_config=False,
             )
             state = new_state(
                 app_name="tracer_core_shell",

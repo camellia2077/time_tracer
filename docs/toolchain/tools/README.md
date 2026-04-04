@@ -56,10 +56,10 @@ python tools/run.py tidy --app tracer_core_shell --source-scope core_family --bu
 python tools/run.py tidy-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family
 
 # task 级自动化
-python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
-python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
-python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
-python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
+python tools/run.py tidy-task-patch --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
+python tools/run.py tidy-task-fix --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
+python tools/run.py tidy-task-suggest --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json
+python tools/run.py tidy-step --task-log out/tidy/tracer_core_shell/build_tidy_core_family/tasks/batch_002/task_011.json --dry-run
 python tools/run.py tidy-batch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id batch_002 --preset sop
 
 # configure / build / format
@@ -105,6 +105,7 @@ python tools/run.py verify --app tracer_android --profile android_style --profil
    - `.toon` 缺失或明显不足时才回退 `.json` / `.log`
 3. 对命令执行：
    - `tidy-task-*` / `tidy-step` 统一使用 `task_*.json` 作为 `--task-log`
+   - `app` / `tidy workspace` / `source scope` 统一从 `--task-log` 路径反推
 4. `--task-view` 只控制附加阅读视图：
    - `json` -> `task_*.json`
    - `text` -> `task_*.json + task_*.log`

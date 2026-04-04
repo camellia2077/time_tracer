@@ -2,7 +2,7 @@ from collections.abc import Callable
 from pathlib import Path
 
 from ...core.context import Context
-from ..tidy import analysis_compile_db, workspace as tidy_workspace
+from ..tidy import analysis_compile_db, clang_tidy_config, workspace as tidy_workspace
 from . import common as build_common
 
 
@@ -80,6 +80,8 @@ def needs_tidy_filter_reconfigure(
     tidy: bool,
     build_dir: Path,
     source_scope: str | None = None,
+    config_file: str | None = None,
+    strict_config: bool = False,
 ) -> bool:
     if not tidy:
         return False
@@ -89,6 +91,18 @@ def needs_tidy_filter_reconfigure(
     expected = _resolve_tidy_header_filter_regex(ctx)
     actual = _read_cmake_cache_value(cache_path, "TT_CLANG_TIDY_HEADER_FILTER")
     if actual != expected:
+        return True
+    expected_config_file = build_common.normalize_cache_path(
+        clang_tidy_config.resolve_config_cache_value(
+            ctx,
+            config_file=config_file,
+            strict_config=strict_config,
+        )
+    )
+    actual_config_file = build_common.normalize_cache_path(
+        _read_cmake_cache_value(cache_path, clang_tidy_config.CMAKE_CACHE_KEY_CONFIG_FILE) or ""
+    )
+    if actual_config_file != expected_config_file:
         return True
 
     expected_scope, expected_roots = tidy_workspace.source_scope_cache_values(ctx, source_scope)
@@ -172,6 +186,8 @@ def configure_cmake(
     app_name: str,
     tidy: bool,
     source_scope: str | None,
+    config_file: str | None,
+    strict_config: bool,
     extra_args: list[str] | None,
     cmake_args: list[str] | None,
     build_dir_name: str | None,
@@ -243,6 +259,10 @@ def configure_cmake(
         configure_args,
         analysis_compile_db.CMAKE_CACHE_KEY_ANALYSIS_COMPILE_DB_DIR,
     )
+    configure_args = build_common.strip_cmake_definition(
+        configure_args,
+        clang_tidy_config.CMAKE_CACHE_KEY_CONFIG_FILE,
+    )
     if tidy:
         configure_args = build_common.strip_cmake_definition(
             configure_args,
@@ -264,13 +284,22 @@ def configure_cmake(
             f"TT_CLANG_TIDY_HEADER_FILTER={_resolve_tidy_header_filter_regex(ctx)}",
         ]
     if tidy:
+        resolved_config_cache_value = clang_tidy_config.resolve_config_cache_value(
+            ctx,
+            config_file=config_file,
+            strict_config=strict_config,
+        )
         configure_args += [
-                "-D",
-                (
+            "-D",
+            f"{clang_tidy_config.CMAKE_CACHE_KEY_CONFIG_FILE}={resolved_config_cache_value}",
+        ]
+        configure_args += [
+            "-D",
+            (
                 f"{analysis_compile_db.CMAKE_CACHE_KEY_ANALYSIS_COMPILE_DB_DIR}="
                 f"{analysis_compile_db.resolve_compile_db_cache_value(build_dir)}"
-                ),
-            ]
+            ),
+        ]
         configure_args += tidy_workspace.build_source_scope_cmake_args(ctx, source_scope)
     toolchain_flags = build_common.resolve_toolchain_flags(ctx, flags + configure_args)
     config_cmd = (
@@ -292,6 +321,8 @@ def build_cmake(
     app_name: str,
     tidy: bool,
     source_scope: str | None,
+    config_file: str | None,
+    strict_config: bool,
     extra_args: list[str] | None,
     cmake_args: list[str] | None,
     build_dir_name: str | None,
@@ -330,7 +361,14 @@ def build_cmake(
         filtered_cmake_args
         or not is_currently_configured
         or needs_windows_config_reconfigure_fn(app_name, build_dir)
-        or needs_tidy_filter_reconfigure(ctx, tidy, build_dir, source_scope)
+        or needs_tidy_filter_reconfigure(
+            ctx,
+            tidy,
+            build_dir,
+            source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
+        )
     )
     if should_configure:
         if not is_currently_configured:
@@ -339,6 +377,8 @@ def build_cmake(
             app_name=app_name,
             tidy=tidy,
             source_scope=source_scope,
+            config_file=config_file,
+            strict_config=strict_config,
             extra_args=None,
             cmake_args=filtered_cmake_args,
             build_dir_name=build_dir_name,

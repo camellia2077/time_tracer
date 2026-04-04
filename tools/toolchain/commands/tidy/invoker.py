@@ -1,11 +1,45 @@
+import os
 import time
 from pathlib import Path
 
 from ...core.context import Context
 from ...core.executor import run_command
-from . import analysis_compile_db, workspace as tidy_workspace
+from . import analysis_compile_db, clang_tidy_config, workspace as tidy_workspace
 
 _TIDY_HEADER_FILTER_CACHE_KEY = "TT_CLANG_TIDY_HEADER_FILTER"
+_AUTO_FULL_TIDY_JOB_CAP = 6
+_AUTO_TASK_BATCH_JOB_CAP = 8
+
+
+def resolve_effective_tidy_jobs(
+    ctx: Context,
+    jobs: int | None,
+    *,
+    mode: str,
+) -> int:
+    if mode not in {"full", "task_batch"}:
+        raise ValueError(f"unsupported tidy job mode: {mode}")
+
+    configured_jobs = (
+        ctx.config.tidy.jobs_full
+        if mode == "full"
+        else ctx.config.tidy.jobs_task_batch
+    )
+    requested_jobs = configured_jobs if jobs is None else jobs
+    if requested_jobs > 0:
+        return requested_jobs
+
+    cpu_count = os.cpu_count() or 1
+    if mode == "full":
+        # jobs=0 now means auto-throttled parallelism, not bare Ninja `-j`.
+        # Full tidy fans out many clang-tidy custom commands, so bounded
+        # concurrency avoids the long-tail memory/IO stalls that made
+        # tidy-close --stabilize look hung after stdout went quiet.
+        return max(1, min(_AUTO_FULL_TIDY_JOB_CAP, max(1, cpu_count // 3)))
+
+    # Task/batch helpers work on smaller scopes than full tidy, so they can use
+    # a slightly wider bounded fan-out without reintroducing unbounded builds.
+    return max(1, min(_AUTO_TASK_BATCH_JOB_CAP, max(1, cpu_count // 2)))
 
 
 def _resolve_tidy_header_filter_regex(ctx: Context) -> str:
@@ -50,6 +84,8 @@ def ensure_configured(
     app_name: str,
     build_dir: Path,
     source_scope: str | None = None,
+    config_file: str | None = None,
+    strict_config: bool = False,
     build_dir_name: str | None = None,
     profile_name: str | None = None,
     concise: bool = False,
@@ -61,6 +97,11 @@ def ensure_configured(
     expected_filter = _resolve_tidy_header_filter_regex(ctx)
     expected_scope, expected_roots = tidy_workspace.source_scope_cache_values(ctx, source_scope)
     expected_targets = tidy_workspace.source_scope_cache_targets_value(ctx, source_scope)
+    expected_config_file = clang_tidy_config.resolve_config_cache_value(
+        ctx,
+        config_file=config_file,
+        strict_config=strict_config,
+    )
     if cache_path.exists():
         current_filter = _read_cmake_cache_value(cache_path, _TIDY_HEADER_FILTER_CACHE_KEY)
         current_scope = (
@@ -72,6 +113,10 @@ def ensure_configured(
         current_targets = tidy_workspace.normalize_cache_targets_value(
             _read_cmake_cache_value(cache_path, tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS)
         )
+        current_config_file = (
+            _read_cmake_cache_value(cache_path, clang_tidy_config.CMAKE_CACHE_KEY_CONFIG_FILE)
+            or ""
+        ).strip()
         current_compile_db_dir = (
             _read_cmake_cache_value(
                 cache_path,
@@ -85,6 +130,7 @@ def ensure_configured(
             and current_scope == expected_scope
             and current_roots == expected_roots
             and current_targets == expected_targets
+            and current_config_file.replace("\\", "/") == expected_config_file
             and current_compile_db_dir.replace("\\", "/") == expected_compile_db_dir
         ):
             return 0, False, 0.0
@@ -95,6 +141,7 @@ def ensure_configured(
             f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_SCOPE}, "
             f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_ROOTS}, "
             f"{tidy_workspace.CMAKE_CACHE_KEY_SOURCE_TARGETS}, "
+            f"{clang_tidy_config.CMAKE_CACHE_KEY_CONFIG_FILE}, "
             f"{analysis_compile_db.CMAKE_CACHE_KEY_ANALYSIS_COMPILE_DB_DIR}). "
             "Running auto-configure..."
         )
@@ -107,6 +154,8 @@ def ensure_configured(
         app_name=app_name,
         tidy=True,
         source_scope=source_scope,
+        config_file=config_file,
+        strict_config=strict_config,
         build_dir_name=build_dir_name,
         profile_name=profile_name,
         concise=concise,
@@ -120,12 +169,13 @@ def resolve_build_options(
     extra_args: list[str] | None,
     jobs: int | None,
     keep_going: bool | None,
+    *,
+    job_mode: str = "full",
 ) -> tuple[list[str], bool, int | None, bool]:
     filtered_args = [a for a in (extra_args or []) if a != "--"]
     has_target_override = "--target" in filtered_args
-    configured_jobs = ctx.config.tidy.jobs
     configured_keep_going = ctx.config.tidy.keep_going
-    effective_jobs = jobs if jobs is not None else configured_jobs
+    effective_jobs = resolve_effective_tidy_jobs(ctx, jobs, mode=job_mode)
     effective_keep_going = configured_keep_going if keep_going is None else keep_going
     return filtered_args, has_target_override, effective_jobs, effective_keep_going
 
@@ -145,7 +195,10 @@ def build_tidy_command(
     if effective_jobs and effective_jobs > 0:
         cmd += [f"-j{effective_jobs}"]
     else:
-        cmd += ["-j"]
+        # Keep tidy fan-out deterministic. Bare `-j` lets Ninja choose an
+        # effectively unbounded worker count, which is too aggressive for
+        # clang-tidy-heavy full runs on Windows.
+        cmd += ["-j1"]
     cmd += filtered_args
     if effective_keep_going:
         # Project preference: during tidy, continue checks even when

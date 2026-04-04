@@ -1,7 +1,6 @@
-# 默认日常版：
-# - 只保留高信号、低争议、较易自动修复或低成本手工修复的规则。
-# - 目标是让日常 tidy-step / tidy-batch 更容易稳定收口。
-# - 高人工成本的大范围风格治理，放到 `.clang-tidy.strict`。
+# 可选严格版：
+# - 用于集中清理遗留代码、专项风格治理、重构期清债。
+# - 默认日常门禁请使用 `.clang-tidy`。
 #
 # 说明：
 # - `-google-runtime-references` 保持关闭：这里不再强制套用旧的非常量引用限制。
@@ -10,20 +9,17 @@
 #   无法稳定收口；等上游工具问题确认修复后再评估恢复。
 Checks: >-
   -*,
+  google-*,
+  readability-*,
+  modernize-*,
   bugprone-*,
   -bugprone-unchecked-optional-access,
-  google-default-arguments,
-  google-explicit-constructor,
-  google-readability-casting,
-  google-runtime-int,
-  modernize-pass-by-value,
+  -google-runtime-references,
+  modernize-use-std-print,
   modernize-use-nullptr,
   modernize-use-override,
-  readability-braces-around-statements,
-  readability-else-after-return,
-  readability-identifier-naming,
-  readability-redundant-control-flow,
-  -google-runtime-references
+  modernize-pass-by-value,
+  readability-identifier-naming
 
 CheckOptions:
   # 命名逻辑修正

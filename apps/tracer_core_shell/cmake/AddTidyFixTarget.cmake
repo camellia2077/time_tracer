@@ -15,6 +15,9 @@ if(CLANG_TIDY_EXE)
     if(NOT DEFINED TT_CLANG_TIDY_HEADER_FILTER OR "${TT_CLANG_TIDY_HEADER_FILTER}" STREQUAL "")
         set(TT_CLANG_TIDY_HEADER_FILTER "^(?!.*[\\\\/]_deps[\\\\/]).*")
     endif()
+    if(NOT DEFINED TT_CLANG_TIDY_CONFIG_FILE OR "${TT_CLANG_TIDY_CONFIG_FILE}" STREQUAL "")
+        set(TT_CLANG_TIDY_CONFIG_FILE "${CMAKE_SOURCE_DIR}/.clang-tidy")
+    endif()
     if(NOT DEFINED TT_ANALYSIS_COMPILE_DB_DIR OR "${TT_ANALYSIS_COMPILE_DB_DIR}" STREQUAL "")
         set(TT_ANALYSIS_COMPILE_DB_DIR "${CMAKE_BINARY_DIR}/analysis_compile_db")
     endif()
@@ -162,6 +165,7 @@ if(CLANG_TIDY_EXE)
                 --fix 
                 --format-style=file 
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
                 ${TIDY_ERR_FLAG}
                 "${TIDY_SOURCE_FILE}"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
@@ -180,6 +184,7 @@ if(CLANG_TIDY_EXE)
                 -p ${TT_ANALYSIS_COMPILE_DB_DIR} 
                 --format-style=file 
                 "-header-filter=${TT_CLANG_TIDY_HEADER_FILTER}"
+                "--config-file=${TT_CLANG_TIDY_CONFIG_FILE}"
                 ${TIDY_ERR_FLAG}
                 "${TIDY_SOURCE_FILE}"
             WORKING_DIRECTORY ${CMAKE_BINARY_DIR}

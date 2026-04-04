@@ -35,8 +35,12 @@ class TidyBatchCommand:
         profile_name: str | None = None,
         concise: bool = False,
         kill_build_procs: bool = False,
+        jobs: int | None = None,
+        parse_workers: int | None = None,
         timeout_seconds: int | None = None,
         resume_checkpoint: bool = True,
+        config_file: str | None = None,
+        strict_config: bool = False,
     ) -> int:
         workspace = tidy_workspace.resolve_workspace(
             self.ctx,
@@ -59,6 +63,8 @@ class TidyBatchCommand:
                 historical_batch_id=normalized_batch if 'normalized_batch' in locals() else None,
                 historical_task_ids=task_ids if 'task_ids' in locals() else None,
                 queue_requires_reresolve=(status == "completed"),
+                config_file=config_file,
+                strict_config=strict_config,
             )
             return code
 
@@ -201,6 +207,8 @@ class TidyBatchCommand:
                 historical_batch_id=normalized_batch,
                 historical_task_ids=task_ids,
                 queue_requires_reresolve=True,
+                config_file=config_file,
+                strict_config=strict_config,
             )
             print(f"--- tidy-batch: refreshing tidy state for {normalized_batch}...")
             refresh_ret = run_refresh_stage(
@@ -210,10 +218,15 @@ class TidyBatchCommand:
                 batch_id=normalized_batch,
                 full_every=full_every,
                 keep_going=keep_going,
+                jobs=jobs,
+                parse_workers=parse_workers,
+                concise=concise,
                 source_scope=workspace.source_scope,
                 tidy_build_dir_name=resolved_build_dir_name,
                 start_time=start_time,
                 timeout_seconds=timeout_seconds,
+                config_file=config_file,
+                strict_config=strict_config,
             )
             if refresh_ret == 124:
                 save_checkpoint(

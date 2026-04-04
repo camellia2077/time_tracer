@@ -1,6 +1,7 @@
-# Clang-Tidy Python Commands
+# Clang-Tidy 起手说明
 
-clang-tidy 不再依赖 `apps/tracer_core_shell/scripts/*.sh` 转发脚本。
+`clang-tidy` 现在统一通过 Python toolchain 入口启动，不再依赖
+`apps/tracer_core_shell/scripts/*.sh` 转发脚本。
 
 统一入口：
 
@@ -10,25 +11,89 @@ python tools/run.py ...
 
 ## tracer_core_shell / core_family
 
-默认 scoped workspace:
+当前常用默认组合：
 
 - app: `tracer_core_shell`
 - source scope: `core_family`
 - tidy workspace: `build_tidy_core_family`
 
-## 生成 clang-tidy 队列
+## 配置档选择
+
+### 默认日常版
+
+不传额外参数时，默认使用仓库根目录的：
+
+- `.clang-tidy`
+
+也可以显式写成：
+
+```bash
+--config-file .clang-tidy
+```
+
+### 可选严格版
+
+严格版使用仓库根目录的：
+
+- `.clang-tidy.strict`
+
+推荐直接传：
+
+```bash
+--strict-config
+```
+
+等价写法：
+
+```bash
+--config-file .clang-tidy.strict
+```
+
+## 开始一次新的 clang-tidy 队列
+
+默认日常版：
 
 ```bash
 python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family
 ```
 
+严格版：
+
+```bash
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --strict-config
+```
+
+这条命令会重新执行 `clang-tidy`，并生成当前队列。
+
 ## 仅从已有 build.log 重新切分
+
+如果你不想重新跑一遍 `clang-tidy`，只是想从已有 `build.log` 重新生成 task 队列，用：
 
 ```bash
 python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family
 ```
 
-显式传 `--task-view` 时，当前仅允许：
+注意：
+
+- `tidy-split` 不会重新执行 `clang-tidy`
+- 所以这里不涉及日常版 / 严格版切换
+
+## 可选的 task 视图
+
+### `tidy`
+
+`tidy` 可以额外指定要不要输出阅读视图：
+
+```bash
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view json
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text
+python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
+```
+
+### `tidy-split`
+
+`tidy-split` 显式传 `--task-view` 时，只允许面向人阅读的视图：
 
 ```bash
 python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text
@@ -42,98 +107,15 @@ python tools/run.py tidy-split --app tracer_core_shell --source-scope core_famil
 python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
 ```
 
-上面两种现在会被 CLI 直接拒绝。
+上面两种会被 CLI 直接拒绝。
 
-## task 视图格式
-
-### `tidy`
-
-`tidy` 仍然支持完整的 task view 选择：
-
-```bash
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view json
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
-```
-
-### `tidy-split`
-
-`tidy-split` 显式传参时只允许面向人阅读的视图参数：
-
-```bash
-python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text
-python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
-```
-
-原因是 `tidy-split` 的机器契约固定是 canonical `task_*.json`，显式 `--task-view` 只控制是否额外渲染 `.log` / `.toon` 这类阅读视图。
-
-### JSON canonical record
-
-- `task_*.json`
-
-canonical JSON 始终作为后续工具链的稳定输入。
-
-### Text view
-
-```bash
-python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text
-```
-
-产物：
-
-- `task_*.log`
-
-### TOON view
-
-`tidy` 可以显式要求额外输出 TOON：
-
-```bash
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view toon
-```
-
-产物：
-
-- `task_*.toon`
-- `task_*.json`
-
-### Text + TOON
-
-```bash
-python tools/run.py tidy --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
-python tools/run.py tidy-split --app tracer_core_shell --source-scope core_family --build-dir build_tidy_core_family --task-view text+toon
-```
-
-产物：
+## 常见产物
 
 - `task_*.json`
 - `task_*.log`
 - `task_*.toon`
 
-## 后续常用命令
+如果你只是想开始一次 clang-tidy，通常只需要记住两件事：
 
-```bash
-python tools/run.py tidy-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family
-python tools/run.py tidy-batch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --batch-id <BATCH_ID> --preset sop
-python tools/run.py tidy-close --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --keep-going --concise
-python tools/run.py tidy-task-patch --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>
-python tools/run.py tidy-task-fix --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json> --dry-run
-python tools/run.py tidy-task-suggest --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json>
-python tools/run.py tidy-step --app tracer_core_shell --source-scope core_family --tidy-build-dir build_tidy_core_family --task-log <resolved_task_json> --dry-run
-```
-
-## 当前 task 契约
-
-- canonical task record: `task_*.json`
-- human-readable text view: `task_*.log`
-- agent-facing compact view: `task_*.toon`
-
-后两者都是渲染视图，不再作为后续工具链的解析来源。
-
-## 为什么 auto-fix 统一解析 JSON
-
-- `auto-fix`、`refresh`、`clean` 这类机器消费路径现在统一以 `task_*.json` 为准。
-- TOON 适合人和 agent 阅读，但它目前没有官方标准库，也没有成熟、通用的第三方解析生态。
-- 如果把 TOON 当成机器契约，通常只能依赖项目内 codec 或手写解析；一旦展示格式继续演进，解析逻辑就更容易变脆。
-- JSON 则直接有稳定解析器，字段结构也更适合作为 source of truth。
-- 所以当前取舍是：`toon` 用来读，`json` 用来解析。
+1. 新跑一轮就用 `tidy`
+2. 只想从已有 `build.log` 重切队列就用 `tidy-split`
