@@ -5,6 +5,7 @@ set(TIME_TRACKER_INFRA_PERSISTENCE_SUPPORT_SOURCES
 set(TIME_TRACKER_INFRA_PERSISTENCE_WRITE_SOURCES
     "persistence/sqlite_time_sheet_repository.module.cpp"
     "persistence/importer/repository.module.cpp"
+    "persistence/importer/repository_ingest_sync_sql.cpp"
     "persistence/importer/sqlite/writer.module.cpp"
     "persistence/importer/sqlite/project_resolver.module.cpp"
     "persistence/importer/sqlite/connection.module.cpp"

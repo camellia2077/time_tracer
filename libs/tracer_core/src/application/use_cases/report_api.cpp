@@ -12,7 +12,19 @@
 
 namespace tracer::core::application::use_cases {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::ReportQueryRequest;
+using tracer_core::core::dto::TextOutput;
+using tracer_core::core::dto::ReportQueryType;
+using tracer_core::core::dto::StructuredReportQueryRequest;
+using tracer_core::core::dto::StructuredReportOutput;
+using tracer_core::core::dto::StructuredReportKind;
+using tracer_core::core::dto::PeriodBatchQueryRequest;
+using tracer_core::core::dto::StructuredPeriodBatchQueryRequest;
+using tracer_core::core::dto::StructuredPeriodBatchOutput;
+using tracer_core::core::dto::StructuredPeriodBatchItem;
+using tracer_core::core::dto::ReportTargetsRequest;
+using tracer_core::core::dto::ReportTargetsOutput;
+using tracer_core::core::dto::ReportTargetType;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 namespace report_api_support =
     tracer::core::application::use_cases::report_support;

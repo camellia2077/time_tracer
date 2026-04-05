@@ -17,6 +17,109 @@
 
 namespace tracer_core::infrastructure::crypto::internal {
 
+#if defined(TT_HAS_LIBSODIUM) && TT_HAS_LIBSODIUM && defined(TT_HAS_ZSTD) && \
+    TT_HAS_ZSTD
+namespace {
+
+auto SetPhaseIfNeeded(ProgressReporter* reporter, const FileCryptoPhase kPhase)
+    -> FileCryptoResult {
+  if (reporter == nullptr) {
+    return {};
+  }
+  return reporter->SetPhase(kPhase, true);
+}
+
+auto DeriveDecryptKey(std::string_view passphrase,
+                      const TracerFileHeader& header,
+                      BatchCryptoSession* batch_session)
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
+  if (header.kdf_id == kKdfArgon2idBatchSubkey) {
+    auto [master_result, master_key] =
+        GetOrDeriveMasterKeyForHeader(passphrase, header, batch_session);
+    if (!master_result.ok()) {
+      return {master_result, {}};
+    }
+
+    auto [subkey_result, subkey] =
+        DeriveSubkeyFromBatchMaster(master_key, header.nonce);
+    sodium_memzero(master_key.data(), master_key.size());
+    if (!subkey_result.ok()) {
+      return {subkey_result, {}};
+    }
+    return {{}, std::move(subkey)};
+  }
+
+  auto [derive_result, derived_key] =
+      DeriveMasterKeyWithArgon2id(passphrase,
+                                  Argon2idLimits{
+                                      .ops_limit = header.ops_limit,
+                                      .mem_limit_kib = header.mem_limit_kib,
+                                  },
+                                  header.salt);
+  if (!derive_result.ok()) {
+    return {derive_result, {}};
+  }
+  return {{}, std::move(derived_key)};
+}
+
+auto DecryptCiphertext(std::span<const std::uint8_t> ciphertext,
+                       const TracerFileHeader& header,
+                       std::span<const std::uint8_t> key)
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
+  if (ciphertext.size() < crypto_aead_xchacha20poly1305_ietf_ABYTES) {
+    return {MakeError(FileCryptoError::kUnsupportedFormat,
+                      "Encrypted payload is too small."),
+            {}};
+  }
+
+  std::vector<std::uint8_t> decrypted_payload(ciphertext.size());
+  std::uint64_t decrypted_size = 0;
+  if (crypto_aead_xchacha20poly1305_ietf_decrypt(
+          decrypted_payload.data(), &decrypted_size, nullptr, ciphertext.data(),
+          static_cast<std::uint64_t>(ciphertext.size()), nullptr, 0,
+          header.nonce.data(), key.data()) != 0) {
+    return {MakeError(
+                FileCryptoError::kDecryptFailed,
+                "Decryption failed (wrong passphrase or corrupted ciphertext)."),
+            {}};
+  }
+
+  decrypted_payload.resize(static_cast<std::size_t>(decrypted_size));
+  return {{}, std::move(decrypted_payload)};
+}
+
+auto DecodePlaintext(std::vector<std::uint8_t> decrypted_payload,
+                     const TracerFileHeader& header,
+                     ProgressReporter* reporter)
+    -> std::pair<FileCryptoResult, std::vector<std::uint8_t>> {
+  if (header.kVersion == kFormatVersionV1 ||
+      header.compression_id == kCompressionNone) {
+    return {{}, std::move(decrypted_payload)};
+  }
+
+  if (header.compression_id != kCompressionZstd) {
+    return {MakeError(FileCryptoError::kUnsupportedFormat,
+                      "Unsupported compression identifier."),
+            {}};
+  }
+
+  if (const auto kPhaseResult =
+          SetPhaseIfNeeded(reporter, FileCryptoPhase::kDecompress);
+      !kPhaseResult.ok()) {
+    return {kPhaseResult, {}};
+  }
+
+  auto [decompress_result, plaintext] =
+      DecompressWithZstd(decrypted_payload, header.plaintext_size);
+  if (!decompress_result.ok()) {
+    return {decompress_result, {}};
+  }
+  return {{}, std::move(plaintext)};
+}
+
+}  // namespace
+#endif
+
 auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
                           std::string_view passphrase,
                           ProgressReporter* reporter,
@@ -36,103 +139,44 @@ auto DecryptBytesInternal(std::span<const std::uint8_t> encrypted_bytes,
     return {kInitResult, {}};
   }
 
-  if (reporter != nullptr) {
-    if (const auto kPhaseResult =
-            reporter->SetPhase(FileCryptoPhase::kDeriveKey, true);
-        !kPhaseResult.ok()) {
-      return {kPhaseResult, {}};
-    }
+  if (const auto kPhaseResult =
+          SetPhaseIfNeeded(reporter, FileCryptoPhase::kDeriveKey);
+      !kPhaseResult.ok()) {
+    return {kPhaseResult, {}};
   }
 
-  std::vector<std::uint8_t> key;
-  if (header.kdf_id == kKdfArgon2idBatchSubkey) {
-    auto [master_result, master_key] =
-        GetOrDeriveMasterKeyForHeader(passphrase, header, batch_session);
-    if (!master_result.ok()) {
-      return {master_result, {}};
-    }
-    auto [subkey_result, subkey] =
-        DeriveSubkeyFromBatchMaster(master_key, header.nonce);
-    sodium_memzero(master_key.data(), master_key.size());
-    if (!subkey_result.ok()) {
-      return {subkey_result, {}};
-    }
-    key = std::move(subkey);
-  } else {
-    auto [derive_result, derived_key] =
-        DeriveMasterKeyWithArgon2id(passphrase,
-                                    Argon2idLimits{
-                                        .ops_limit = header.ops_limit,
-                                        .mem_limit_kib = header.mem_limit_kib,
-                                    },
-                                    header.salt);
-    if (!derive_result.ok()) {
-      return {derive_result, {}};
-    }
-    key = std::move(derived_key);
+  auto [derive_result, key] =
+      DeriveDecryptKey(passphrase, header, batch_session);
+  if (!derive_result.ok()) {
+    return {derive_result, {}};
   }
 
-  if (reporter != nullptr) {
-    if (const auto kPhaseResult =
-            reporter->SetPhase(FileCryptoPhase::kDecrypt, true);
-        !kPhaseResult.ok()) {
-      sodium_memzero(key.data(), key.size());
-      return {kPhaseResult, {}};
-    }
+  if (const auto kPhaseResult =
+          SetPhaseIfNeeded(reporter, FileCryptoPhase::kDecrypt);
+      !kPhaseResult.ok()) {
+    sodium_memzero(key.data(), key.size());
+    return {kPhaseResult, {}};
   }
 
   const auto kPayloadBegin =
       kEncryptedBuffer.begin() +
       static_cast<std::ptrdiff_t>(header.header_size);
-  const std::vector<std::uint8_t> kCiphertext(kPayloadBegin,
-                                              kEncryptedBuffer.end());
-  if (kCiphertext.size() < crypto_aead_xchacha20poly1305_ietf_ABYTES) {
-    sodium_memzero(key.data(), key.size());
-    return {
-        MakeError(FileCryptoError::kUnsupportedFormat,
-                  "Encrypted payload is too small."),
-        {}};
-  }
+  const std::vector<std::uint8_t> kCiphertext(
+      kPayloadBegin, kEncryptedBuffer.end());
 
-  std::vector<std::uint8_t> decrypted_payload(kCiphertext.size());
-  std::uint64_t decrypted_size = 0;
-  if (crypto_aead_xchacha20poly1305_ietf_decrypt(
-          decrypted_payload.data(), &decrypted_size, nullptr,
-          kCiphertext.data(),
-          static_cast<std::uint64_t>(kCiphertext.size()), nullptr, 0,
-          header.nonce.data(), key.data()) != 0) {
-    sodium_memzero(key.data(), key.size());
-    return {MakeError(
-                FileCryptoError::kDecryptFailed,
-                "Decryption failed (wrong passphrase or corrupted ciphertext)."),
-            {}};
-  }
+  auto [decrypt_result, decrypted_payload] =
+      DecryptCiphertext(kCiphertext, header, key);
   sodium_memzero(key.data(), key.size());
-  decrypted_payload.resize(static_cast<std::size_t>(decrypted_size));
-
-  std::vector<std::uint8_t> plaintext;
-  if (header.kVersion == kFormatVersionV1 ||
-      header.compression_id == kCompressionNone) {
-    plaintext = std::move(decrypted_payload);
-  } else if (header.compression_id == kCompressionZstd) {
-    if (reporter != nullptr) {
-          if (const auto kPhaseResult =
-              reporter->SetPhase(FileCryptoPhase::kDecompress, true);
-          !kPhaseResult.ok()) {
-        return {kPhaseResult, {}};
-      }
-    }
-    auto [decompress_result, decompressed] =
-        DecompressWithZstd(decrypted_payload, header.plaintext_size);
-    if (!decompress_result.ok()) {
-      return {decompress_result, {}};
-    }
-    plaintext = std::move(decompressed);
-  } else {
-    return {MakeError(FileCryptoError::kUnsupportedFormat,
-                      "Unsupported compression identifier."),
-            {}};
+  if (!decrypt_result.ok()) {
+    return {decrypt_result, {}};
   }
+
+  auto [decode_result, plaintext] =
+      DecodePlaintext(std::move(decrypted_payload), header, reporter);
+  if (!decode_result.ok()) {
+    return {decode_result, {}};
+  }
+
   return {{}, std::move(plaintext)};
 #else
   (void)passphrase;

@@ -9,7 +9,11 @@
 
 namespace tracer::core::application::use_cases::report_support {
 
-using namespace tracer_core::core::dto;
+using tracer_core::core::dto::ReportWindowMetadata;
+using tracer_core::core::dto::StructuredReportOutput;
+using tracer_core::core::dto::StructuredReportKind;
+using tracer_core::core::dto::StructuredPeriodBatchOutput;
+using tracer_core::core::dto::TextOutput;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
 namespace {

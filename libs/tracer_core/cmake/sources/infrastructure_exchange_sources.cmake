@@ -11,6 +11,7 @@ set(TIME_TRACKER_INFRA_EXCHANGE_SOURCES
     "crypto/internal/file_crypto_directory_orchestrator.cpp"
     "crypto/file_crypto_service.cpp"
     "exchange/tracer_exchange_service_common.cpp"
+    "exchange/tracer_exchange_service_export_support.cpp"
     "exchange/tracer_exchange_service_export.cpp"
     "exchange/tracer_exchange_service_import.cpp"
     "exchange/tracer_exchange_service_inspect.cpp"
