@@ -41,6 +41,13 @@ name_template = "Render Recent ({days} days) [{fmt}]"
 template = ["report", "render", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}"]
 matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
 
+[[command_groups]]
+name = "Render Recent Fixed AsOf"
+stage = "report"
+name_template = "Render Recent AsOf ({days} days @ {as_of}) [{fmt}]"
+template = ["report", "render", "recent", "{days}", "--as-of", "{as_of}", "--format", "{fmt}", "--db", "{db_path}"]
+matrix = { days = [7], as_of = ["2026-03-07"], fmt = ["md", "tex", "typ"] }
+
 [[commands]]
 name = "Render Range Empty Window Includes Window Hint"
 stage = "report"
@@ -60,7 +67,7 @@ name = "Render Range"
 stage = "report"
 name_template = "Render Range ({range}) [{fmt}]"
 template = ["report", "render", "range", "{range}", "--format", "{fmt}", "--db", "{db_path}"]
-matrix = { range = ["2026-01-01|2026-01-31", "2026-05-01|2026-05-31"], fmt = ["md", "tex", "typ"] }
+matrix = { range = ["2026-01-01|2026-01-31"], fmt = ["md", "tex", "typ"] }
 
 [[command_groups]]
 name = "Report Export Daily"
@@ -96,6 +103,13 @@ stage = "report-export"
 name_template = "Report Export Recent ({days} days) [{fmt}]"
 template = ["report", "export", "recent", "{days}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
 matrix = { days = [7, 10, 15], fmt = ["md", "tex", "typ"] }
+
+[[command_groups]]
+name = "Report Export Recent Fixed AsOf"
+stage = "report-export"
+name_template = "Report Export Recent AsOf ({days} days @ {as_of}) [{fmt}]"
+template = ["report", "export", "recent", "{days}", "--as-of", "{as_of}", "--format", "{fmt}", "--db", "{db_path}", "--output", "{export_output_dir}"]
+matrix = { days = [7], as_of = ["2026-03-07"], fmt = ["md", "tex", "typ"] }
 
 [[command_groups]]
 name = "Report Export Range"

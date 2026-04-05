@@ -25,7 +25,7 @@ pub(crate) fn run_render_with_port(
         if index > 0 {
             println!("\n{}", "=".repeat(40));
         }
-        let request = build_render_request(args.period, &args.argument, format)?;
+        let request = build_render_request(args.period, &args.argument, args.as_of.as_deref(), format)?;
         let rendered = session.render(&request)?;
         print!("{}", rendered.content);
         if let Some(hint) = build_empty_window_hint(&rendered) {

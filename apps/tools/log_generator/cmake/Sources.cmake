@@ -8,6 +8,7 @@ set(SOURCES
     src/application/application.cpp
     src/application/config/config_handler.cpp
     src/application/workflow/workflow_handler.cpp
+    src/application/workflow/workflow_monthly_average_stats.cpp
     src/application/reporting/report_handler.cpp
     
     # CLI

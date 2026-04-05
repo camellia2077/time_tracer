@@ -56,7 +56,12 @@ fn build_export_plan(
     let raw_argument = require_export_argument(args.period, args.argument.as_deref())?;
     let normalized_id = normalize_export_name(args.period, raw_argument)?;
     Ok(vec![PlannedExport {
-        render_request: build_export_render_request(args.period, raw_argument, format)?,
+        render_request: build_export_render_request(
+            args.period,
+            raw_argument,
+            args.as_of.as_deref(),
+            format,
+        )?,
         output_path: build_export_output_path(
             session.runtime_output_root(),
             format,
@@ -87,6 +92,7 @@ fn build_all_export_plan(
                         render_request: build_export_render_request(
                             args.period,
                             &canonical_id,
+                            args.as_of.as_deref(),
                             format,
                         )?,
                         output_path: build_export_output_path(
@@ -114,6 +120,7 @@ fn build_all_export_plan(
                         render_request: build_export_render_request(
                             args.period,
                             &normalized_id,
+                            args.as_of.as_deref(),
                             format,
                         )?,
                         output_path: build_export_output_path(

@@ -79,6 +79,10 @@ expect_stdout_contains = [
 [[commands]]
 name = "Prepare Exchange Import Config Refresh Fixture"
 stage = "exchange"
+# Config-refresh regression chain:
+# - builds a package with custom converter config + custom small dataset (single month)
+# - later `exchange import` uses replace-all semantics and intentionally rebuilds DB
+# - post-import query/report differences are expected and validate config refresh behavior
 raw_command = true
 args = [
   "python",

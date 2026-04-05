@@ -181,6 +181,7 @@ mod tests {
             ReportRenderArgs {
                 period: ReportRenderPeriod::Recent,
                 argument: "7,10".to_string(),
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -205,6 +206,7 @@ mod tests {
             ReportRenderArgs {
                 period: ReportRenderPeriod::Recent,
                 argument: "7".to_string(),
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -219,6 +221,31 @@ mod tests {
     }
 
     #[test]
+    fn report_render_recent_as_of_uses_range_request_shape() {
+        let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
+        let port = TestReportPort {
+            recorded: Rc::clone(&recorded),
+        };
+
+        run_render_with_port(
+            ReportRenderArgs {
+                period: ReportRenderPeriod::Recent,
+                argument: "7".to_string(),
+                as_of: Some("2026-03-07".to_string()),
+                format: vec![ReportFormat::Md],
+            },
+            &default_context(),
+            &port,
+        )
+        .expect("report render recent as-of should succeed");
+
+        let request = recorded.requests().remove(0);
+        assert_eq!(request["type"], "range");
+        assert_eq!(request["argument"], "2026-03-01|2026-03-07");
+        assert_eq!(request["format"], "md");
+    }
+
+    #[test]
     fn report_render_day_request_uses_period_and_argument() {
         let recorded = Rc::new(RecordedReportSession::new(sample_cli_config(), "ok"));
         let port = TestReportPort {
@@ -229,6 +256,7 @@ mod tests {
             ReportRenderArgs {
                 period: ReportRenderPeriod::Day,
                 argument: "20260103".to_string(),
+                as_of: None,
                 format: vec![ReportFormat::Tex],
             },
             &default_context(),
@@ -253,6 +281,7 @@ mod tests {
             ReportRenderArgs {
                 period: ReportRenderPeriod::Range,
                 argument: "20260101|20260131".to_string(),
+                as_of: None,
                 format: vec![ReportFormat::Typ],
             },
             &default_context(),
@@ -322,6 +351,7 @@ mod tests {
                 period: ReportExportPeriod::Month,
                 argument: Some("202603".to_string()),
                 all: false,
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -360,6 +390,7 @@ mod tests {
                 period: ReportExportPeriod::Month,
                 argument: None,
                 all: true,
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -400,6 +431,7 @@ mod tests {
                 period: ReportExportPeriod::Day,
                 argument: Some("20260103".to_string()),
                 all: false,
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -411,6 +443,7 @@ mod tests {
                 period: ReportExportPeriod::Recent,
                 argument: Some("7".to_string()),
                 all: false,
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),
@@ -438,6 +471,43 @@ mod tests {
     }
 
     #[test]
+    fn report_export_recent_as_of_uses_range_request_but_keeps_recent_path() {
+        let export_root = temp_output_path("report_export_recent_as_of", "root");
+        let recorded = Rc::new(
+            RecordedReportSession::new(sample_cli_config(), "content\n")
+                .with_runtime_output_root(export_root.to_string_lossy().to_string()),
+        );
+        let port = TestReportPort {
+            recorded: Rc::clone(&recorded),
+        };
+
+        run_export_with_port(
+            ReportExportArgs {
+                period: ReportExportPeriod::Recent,
+                argument: Some("7".to_string()),
+                all: false,
+                as_of: Some("2026-03-07".to_string()),
+                format: vec![ReportFormat::Md],
+            },
+            &default_context(),
+            &port,
+        )
+        .expect("recent as-of export should succeed");
+
+        let request = recorded.requests().remove(0);
+        assert_eq!(request["type"], "range");
+        assert_eq!(request["argument"], "2026-03-01|2026-03-07");
+        assert!(
+            export_root
+                .join("markdown")
+                .join("recent")
+                .join("last_7_days_report.md")
+                .exists()
+        );
+        let _ = fs::remove_dir_all(&export_root);
+    }
+
+    #[test]
     fn report_export_output_override_stays_directory_root_even_if_it_looks_like_file() {
         let export_root = temp_output_path("report_export_file_like_root", "md");
         let recorded = Rc::new(
@@ -453,6 +523,7 @@ mod tests {
                 period: ReportExportPeriod::Month,
                 argument: Some("2026-03".to_string()),
                 all: false,
+                as_of: None,
                 format: vec![ReportFormat::Md],
             },
             &default_context(),

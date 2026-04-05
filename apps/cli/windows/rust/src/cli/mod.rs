@@ -278,7 +278,53 @@ mod tests {
                 ReportCommand::Export(args) => {
                     assert!(args.all);
                     assert_eq!(args.argument.as_deref(), Some("7,10"));
+                    assert_eq!(args.as_of, None);
                     assert!(matches!(args.period, ReportExportPeriod::Recent));
+                }
+                _ => panic!("expected report export command"),
+            },
+            _ => panic!("expected report command"),
+        }
+    }
+
+    #[test]
+    fn report_recent_as_of_still_parses_for_render_and_export() {
+        let render_cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "report",
+            "render",
+            "recent",
+            "7",
+            "--as-of",
+            "2026-03-07",
+        ])
+        .unwrap();
+        let export_cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "report",
+            "export",
+            "recent",
+            "7",
+            "--as-of",
+            "2026-03-07",
+        ])
+        .unwrap();
+
+        match render_cli.command {
+            Command::Report(args) => match args.command {
+                ReportCommand::Render(args) => {
+                    assert!(matches!(args.period, ReportRenderPeriod::Recent));
+                    assert_eq!(args.as_of.as_deref(), Some("2026-03-07"));
+                }
+                _ => panic!("expected report render command"),
+            },
+            _ => panic!("expected report command"),
+        }
+        match export_cli.command {
+            Command::Report(args) => match args.command {
+                ReportCommand::Export(args) => {
+                    assert!(matches!(args.period, ReportExportPeriod::Recent));
+                    assert_eq!(args.as_of.as_deref(), Some("2026-03-07"));
                 }
                 _ => panic!("expected report export command"),
             },
@@ -319,6 +365,7 @@ mod tests {
         assert!(help.contains("month: YYYYMM or YYYY-MM"));
         assert!(help.contains("range: <from>|<to>"));
         assert!(help.contains("normalized to ISO YYYY-MM-DD before querying"));
+        assert!(help.contains("--as-of"));
     }
 
     #[test]
@@ -330,6 +377,7 @@ mod tests {
         assert!(help.contains("day: YYYYMMDD or YYYY-MM-DD"));
         assert!(help.contains("month: YYYYMM or YYYY-MM"));
         assert!(help.contains("normalized to ISO YYYY-MM-DD before querying and output naming"));
+        assert!(help.contains("--as-of"));
     }
 
     #[test]
