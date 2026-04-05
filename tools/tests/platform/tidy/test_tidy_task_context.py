@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest import TestCase
 
+from tools.tests.platform.support.path_assertions import assert_same_path
 from tools.toolchain.commands.tidy.tasking.task_context import resolve_task_context
 from tools.toolchain.commands.tidy.tasking.task_log import resolve_task_log_path
 from tools.toolchain.commands.tidy.tasking.task_model import (
@@ -88,8 +89,8 @@ class TestTidyTaskContext(TestCase):
             self.assertEqual(task_ctx.app_name, "tracer_core_shell")
             self.assertEqual(task_ctx.tidy_build_dir_name, "build_tidy_core_family")
             self.assertEqual(task_ctx.source_scope, "core_family")
-            self.assertEqual(task_ctx.tasks_dir, task_dir.parent)
-            self.assertEqual(task_ctx.task_json_path, task_json_path)
+            assert_same_path(task_ctx.tasks_dir, task_dir.parent)
+            assert_same_path(task_ctx.task_json_path, task_json_path)
 
     def test_resolve_task_context_rejects_stale_queue_generation(self):
         with TemporaryDirectory() as temp_dir:

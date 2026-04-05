@@ -1,14 +1,11 @@
 from __future__ import annotations
 
 VERIFY_STACK_TESTS: tuple[str, ...] = (
-    "tools.tests.platform.build.test_build_toolchain_flags_resolve",
-    "tools.tests.platform.build.test_build_cmake_build_targets",
-    "tools.tests.platform.build.test_build_cmake_configure_args",
-    "tools.tests.platform.build.test_build_cmake_tidy_reconfigure",
     "tools.tests.platform.core.test_capability_boundary_scan",
     "tools.tests.platform.core.test_context_config_resolution",
     "tools.tests.platform.core.test_core_boundary_policy",
     "tools.tests.platform.core.test_platform_config_sync",
+    "tools.tests.platform.core.test_test_runner_build_support",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_apply",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_orchestrator",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_plan",
@@ -39,14 +36,11 @@ VERIFY_STACK_TESTS: tuple[str, ...] = (
 )
 
 PLATFORM_TESTS: tuple[str, ...] = (
-    "tools.tests.platform.build.test_build_toolchain_flags_resolve",
-    "tools.tests.platform.build.test_build_cmake_build_targets",
-    "tools.tests.platform.build.test_build_cmake_configure_args",
-    "tools.tests.platform.build.test_build_cmake_tidy_reconfigure",
     "tools.tests.platform.core.test_capability_boundary_scan",
     "tools.tests.platform.core.test_context_config_resolution",
     "tools.tests.platform.core.test_core_boundary_policy",
     "tools.tests.platform.core.test_platform_config_sync",
+    "tools.tests.platform.core.test_test_runner_build_support",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_apply",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_orchestrator",
     "tools.tests.platform.tidy.test_tidy_task_auto_fix_plan",

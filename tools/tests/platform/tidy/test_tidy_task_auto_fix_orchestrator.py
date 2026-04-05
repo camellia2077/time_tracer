@@ -3,6 +3,7 @@ from unittest import TestCase
 from unittest.mock import patch
 
 from tools.tests.platform.support.tidy_task_auto_fix_support import AutoFixFixtureBuilder, DiagnosticEntry
+from tools.tests.platform.support.path_assertions import assert_same_path
 from tools.toolchain.commands.tidy.autofix.models import ExecutionRecord
 from tools.toolchain.commands.tidy.tasking.task_auto_fix import run_task_auto_fix
 
@@ -103,7 +104,7 @@ class TestTidyTaskAutoFixOrchestrator(TestCase):
             self.assertEqual(result.previewed, 2)
             self.assertEqual(result.failed, 0)
             self.assertEqual(result.skipped, 0)
-            self.assertEqual(result.task_log, str(task_path.with_suffix(".json")))
+            assert_same_path(result.task_log, task_path.with_suffix(".json"))
             self.assertEqual({action.kind for action in result.actions}, {"rename", "using_namespace"})
             rename_action = next(action for action in result.actions if action.kind == "rename")
             self.assertEqual(rename_action.new_name, "kTreeResult")
