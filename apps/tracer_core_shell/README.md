@@ -15,11 +15,10 @@ Current phase:
 
 - Use `python tools/run.py -h` and `python tools/run.py <subcommand> -h` before trying new flag combinations.
 - Preferred daily validation:
-  - `python tools/run.py post-change --app tracer_core_shell --run-tests always --build-dir build_fast --concise`
+  - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise`
 - Milestone / batch validation:
-  - `python tools/run.py verify --app tracer_core_shell --concise`
+  - `python tools/run.py verify --app tracer_core_shell --profile fast_ci_no_pch --build-dir build_fast --concise`
 - Result files:
-  - `out/build/tracer_core_shell/build_fast/post_change_last.json`
   - `out/test/artifact_windows_cli/result.json`
   - `out/test/artifact_windows_cli/logs/output.log`
 - CMake baseline for this host is `3.28` or newer.

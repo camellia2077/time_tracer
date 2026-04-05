@@ -43,6 +43,16 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 - `exchange export/import/inspect`
 - `pipeline convert/import/ingest/validate`
 
+## Recent Fixed Window
+
+- `recent` 默认仍然以“当天”为锚点。
+- 若需要固定逻辑当天窗口，可用 `--as-of`（仅 `recent` 支持）：
+
+```powershell
+time_tracer_cli report render recent 7 --as-of 2026-03-07 --format md --db <db_path>
+time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_path> --output <out_dir>
+```
+
 ## Removed Compat Surface
 
 - `blink`

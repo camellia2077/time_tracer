@@ -7,7 +7,7 @@ description: Build and test log_generator after code changes
 - Do not delete `out/build/log_generator/build_fast` unless explicitly requested.
 
 1. Canonical One-Command Verify (required)
-- `python tools/run.py post-change --app log_generator --run-tests always --build-dir build_fast --concise`
+- `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
 - This is the primary flow: it runs configure/build first, then runs the `test` suite automatically.
 
 2. Milestone/Release Verify (required)
@@ -22,7 +22,6 @@ description: Build and test log_generator after code changes
   - `python tools/run.py verify --app log_generator --build-dir build_fast --concise`
 
 4. Validate Test Result (required)
-- State: `out/build/log_generator/build_fast/post_change_last.json`
 - Summary: `out/test/artifact_log_generator/result.json`
 - Case details: `out/test/artifact_log_generator/result_cases.json`
 - Expected: `"success": true`.
@@ -33,7 +32,6 @@ description: Build and test log_generator after code changes
 
 6. Command Policy
 - Use Python entry commands only:
-  - `python tools/run.py post-change ...`
   - `python tools/run.py verify ...`
   - `python tools/run.py ...`
 - Do not use ad-hoc direct `cmake`/`ninja` commands for this workflow.
