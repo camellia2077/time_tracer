@@ -17,3 +17,12 @@ def test_load_default_config_for_python() -> None:
     assert ".py" in config.extensions
     assert config.default_over_threshold > 0
     assert config.default_under_threshold > 0
+    assert config.path_mode == "cli_override"
+
+
+def test_load_default_config_for_cpp_uses_toml_only_paths() -> None:
+    config_path = PROJECT_ROOT / "config" / "scan_lines.toml"
+    config = load_language_config(config_path=config_path, lang="cpp")
+
+    assert config.path_mode == "toml_only"
+    assert config.default_paths == ["apps", "libs"]

@@ -6,7 +6,7 @@ from ..cmd_quality.verify import VerifyCommand
 from . import tidy_result as tidy_result_summary, workspace as tidy_workspace
 from .refresh import TidyRefreshCommand
 from .step import TidyStepCommand
-from .task_log import list_task_paths, load_task_record
+from .tasking.task_log import list_task_paths, load_task_record
 
 
 _MAX_STABILIZE_ROUNDS = 8

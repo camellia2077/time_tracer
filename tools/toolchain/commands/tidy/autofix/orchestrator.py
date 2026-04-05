@@ -4,11 +4,19 @@ from dataclasses import replace
 from pathlib import Path
 
 from .engines import ClangdRenameEngine, TextEditEngine
-from .models import ExecutionRecord, FixContext, FixIntent
+from .models import (
+    ExecutionRecord,
+    FixContext,
+    FixIntent,
+    operation_new_name,
+    operation_old_name,
+    operation_replacement,
+)
+from .reasons import CommonReasons
 from .registry import build_default_registry
-from ..task_context import resolve_task_context
-from ..task_auto_fix_report import report_paths, write_result_report
-from ..task_auto_fix_types import AutoFixAction, TaskAutoFixResult
+from ..tasking.task_context import resolve_task_context
+from ..tasking.task_auto_fix_report import report_paths, write_result_report
+from ..tasking.task_auto_fix_types import AutoFixAction, TaskAutoFixResult
 from ..workspace import resolve_workspace
 
 
@@ -95,7 +103,7 @@ def _execute_intents(context: FixContext, intents: list[FixIntent]) -> list[Exec
                 ordered_records[intent.intent_id] = ExecutionRecord(
                     intent_id=intent.intent_id,
                     status="failed",
-                    reason=f"unsupported_engine:{engine_id}",
+                    reason=f"{CommonReasons.UNSUPPORTED_ENGINE}:{engine_id}",
                 )
             continue
         try:
@@ -109,9 +117,9 @@ def _execute_intents(context: FixContext, intents: list[FixIntent]) -> list[Exec
                     intent_id=intent.intent_id,
                     status="failed",
                     reason=failure_reason,
-                    old_name=str(intent.payload.get("old_name", "")),
-                    new_name=str(intent.payload.get("new_name", "")),
-                    replacement=str(intent.payload.get("replacement", "")),
+                    old_name=operation_old_name(intent.operation),
+                    new_name=operation_new_name(intent.operation),
+                    replacement=operation_replacement(intent.operation),
                 )
             continue
         for record in engine_records:
@@ -125,7 +133,7 @@ def _execute_intents(context: FixContext, intents: list[FixIntent]) -> list[Exec
             ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason="missing_execution_record",
+                reason=CommonReasons.MISSING_EXECUTION_RECORD,
             ),
         )
         for intent in intents
@@ -135,11 +143,14 @@ def _execute_intents(context: FixContext, intents: list[FixIntent]) -> list[Exec
 def _intent_record_to_action(intent: FixIntent, record: ExecutionRecord) -> AutoFixAction:
     return AutoFixAction(
         action_id=intent.intent_id,
-        kind=str(intent.payload.get("action_kind", intent.rule_id)),
+        kind=intent.action_kind,
         file_path=intent.file_path,
         line=intent.line,
         col=intent.col,
         check=intent.check,
+        rule_id=intent.rule_id,
+        risk_level=intent.risk_level,
+        preview_only=intent.preview_only,
         status=record.status,
         reason=record.reason,
         old_name=record.old_name,

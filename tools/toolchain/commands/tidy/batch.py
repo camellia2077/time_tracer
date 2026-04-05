@@ -11,7 +11,7 @@ from .batch_internal.tidy_batch_checkpoint import load_checkpoint, save_checkpoi
 from .batch_internal.tidy_batch_pipeline import run_refresh_stage, should_run_stage, timeout_reached
 from .clean import CleanCommand
 from .refresh import TidyRefreshCommand
-from .task_log import list_task_paths, load_task_record
+from .tasking.task_log import list_task_paths, load_task_record
 
 TASK_FILE_PATTERN = re.compile(r"^task_(\d+)\.(?:json|log|toon)$")
 _BATCH_STAGES = ("verify", "clean", "refresh", "finalize")

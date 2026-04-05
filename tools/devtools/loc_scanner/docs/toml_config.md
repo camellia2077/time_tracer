@@ -10,6 +10,7 @@
 [py]
 display_name = "Python"
 default_paths = ["."]
+path_mode = "cli_override"
 extensions = [".py", ".pyw"]
 ignore_dirs = [".git", "__pycache__", "venv"]
 ignore_prefixes = [".", "site-packages"]
@@ -32,9 +33,16 @@ over_inclusive = true
   - 用途：报告标题显示名。
   - 类型：字符串。
 - `default_paths`:
-  - 用途：命令不传 `paths` 时的默认扫描路径。
+  - 用途：默认扫描路径。
   - 类型：字符串数组。
   - 规则：相对路径按 `--workspace-root` 解析。
+- `path_mode`:
+  - 用途：控制命令行 `paths` 与 `default_paths` 的关系。
+  - 类型：字符串。
+  - 可选值：
+    - `cli_override`：有命令行 `paths` 时覆盖 `default_paths`（默认）。
+    - `toml_only`：始终只使用 `default_paths`，忽略命令行 `paths`。
+    - `merge`：先用 `default_paths`，再追加命令行 `paths`（自动去重）。
 - `extensions`:
   - 用途：纳入统计的文件扩展名。
   - 类型：字符串数组。
@@ -63,6 +71,8 @@ over_inclusive = true
 
 - 只扫描某个子目录：
   - 在目标语言的 `default_paths` 写入该目录，例如 `["apps/android"]`。
+- 强制只能用 TOML 控制扫描目录（忽略 bat/CLI 的路径参数）：
+  - 设置 `path_mode = "toml_only"`。
 - 提高大文件告警门槛：
   - 调大 `default_over_threshold`。
 - 只统计源码，不统计头文件：
@@ -73,6 +83,7 @@ over_inclusive = true
 ## 4. 常见错误
 
 - `default_paths` 不是数组，或数组中有空字符串。
+- `path_mode` 不是 `cli_override` / `toml_only` / `merge`。
 - `default_*_threshold` 不是正整数。
 - 漏写语言 section（例如没有 `[py]`）。
 - 扩展名未带点（建议写成 `.py`、`.cpp` 形式）。

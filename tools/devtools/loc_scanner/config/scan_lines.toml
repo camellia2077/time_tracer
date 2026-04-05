@@ -3,7 +3,8 @@
 
 [cpp]
 display_name = "C++"
-default_paths = ["."]
+default_paths = ["apps", "libs"]
+path_mode = "toml_only"
 extensions = [".cpp", ".h", ".hpp", ".cppm", ".cc", ".cxx", ".c"]
 ignore_dirs = [".git", ".idea", ".vscode", "vs", "bin", "obj", "Debug", "Release"]
 ignore_prefixes = ["build", "cmake", "out"]

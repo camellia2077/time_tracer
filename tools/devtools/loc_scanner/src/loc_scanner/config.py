@@ -7,6 +7,7 @@ except ModuleNotFoundError:  # pragma: no cover
     import tomli as tomllib  # type: ignore
 
 LANG_CHOICES = ("cpp", "kt", "py", "rs")
+PATH_MODE_CHOICES = ("cli_override", "toml_only", "merge")
 
 
 @dataclass(frozen=True)
@@ -17,6 +18,7 @@ class LanguageConfig:
     extensions: set[str]
     ignore_dirs: set[str]
     ignore_prefixes: tuple[str, ...]
+    path_mode: str
     default_over_threshold: int
     default_under_threshold: int
     default_dir_over_files: int
@@ -44,6 +46,7 @@ def load_language_config(config_path: Path, lang: str) -> LanguageConfig:
         item.lower()
         for item in _as_str_list(section.get("ignore_prefixes"), f"{lang}.ignore_prefixes")
     )
+    path_mode = _as_path_mode(section.get("path_mode", "cli_override"), f"{lang}.path_mode")
     default_over_threshold = _as_positive_int(
         section.get("default_over_threshold"),
         f"{lang}.default_over_threshold",
@@ -65,6 +68,7 @@ def load_language_config(config_path: Path, lang: str) -> LanguageConfig:
         extensions=extensions,
         ignore_dirs=ignore_dirs,
         ignore_prefixes=ignore_prefixes,
+        path_mode=path_mode,
         default_over_threshold=default_over_threshold,
         default_under_threshold=default_under_threshold,
         default_dir_over_files=default_dir_over_files,
@@ -87,3 +91,15 @@ def _as_positive_int(value, field_name: str) -> int:
     if not isinstance(value, int) or value <= 0:
         raise ValueError(f"配置字段必须是正整数: {field_name}")
     return value
+
+
+def _as_path_mode(value, field_name: str) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"配置字段必须是字符串: {field_name}")
+
+    normalized = value.strip().lower()
+    if normalized not in PATH_MODE_CHOICES:
+        raise ValueError(
+            f"配置字段必须是 {PATH_MODE_CHOICES} 之一: {field_name}"
+        )
+    return normalized

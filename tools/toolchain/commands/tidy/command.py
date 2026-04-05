@@ -7,10 +7,10 @@ from . import (
     command_split as tidy_command_split,
     invoker as tidy_invoker,
     log_splitter as tidy_log_splitter,
-    task_builder as tidy_task_builder,
     tidy_result as tidy_result_summary,
     workspace as tidy_workspace,
 )
+from .tasking import task_builder as tidy_task_builder
 
 
 class TidyCommand:

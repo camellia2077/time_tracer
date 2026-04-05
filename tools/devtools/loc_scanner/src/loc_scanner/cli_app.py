@@ -10,6 +10,7 @@ from .service import UNDER_SENTINEL, LocScanService, ScanArgumentResolver
 
 class LocCliApplication:
     DIR_OVER_SENTINEL = -1
+    _LOG_DIR_GITIGNORE_CONTENT = "# Automatically created by loc_scanner.\n*\n"
 
     def run(self) -> int:
         args = self.parse_args()
@@ -58,6 +59,7 @@ class LocCliApplication:
         paths = resolver.resolve_paths(
             args.paths,
             config.default_paths,
+            config.path_mode,
             workspace_root=workspace_root,
         )
 
@@ -170,7 +172,10 @@ class LocCliApplication:
         parser.add_argument(
             "paths",
             nargs="*",
-            help="待扫描目录（可传多个，支持相对/绝对路径）。未传时使用 TOML 默认路径。",
+            help=(
+                "待扫描目录（可传多个，支持相对/绝对路径）。"
+                "未传时使用 TOML default_paths；若 path_mode=toml_only 则忽略该参数。"
+            ),
         )
         parser.add_argument(
             "--workspace-root",
@@ -259,6 +264,29 @@ class LocCliApplication:
     @staticmethod
     def _write_json_log(path: Path, payload: dict) -> None:
         path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        LocCliApplication._ensure_log_dir_gitignore(path.parent)
+
+    @staticmethod
+    def _ensure_log_dir_gitignore(log_dir: Path) -> None:
+        gitignore_path = log_dir / ".gitignore"
+        required_lines = ("# Automatically created by loc_scanner.", "*")
+        if not gitignore_path.exists():
+            gitignore_path.write_text(
+                LocCliApplication._LOG_DIR_GITIGNORE_CONTENT,
+                encoding="utf-8",
+            )
+            return
+
+        existing_lines = gitignore_path.read_text(encoding="utf-8").splitlines()
+        missing = [line for line in required_lines if line not in existing_lines]
+        if not missing:
+            return
+
+        output_lines = existing_lines[:]
+        if output_lines and output_lines[-1].strip():
+            output_lines.append("")
+        output_lines.extend(missing)
+        gitignore_path.write_text("\n".join(output_lines) + "\n", encoding="utf-8")
 
     @staticmethod
     def _error(message: str, payload: dict) -> tuple[int, dict]:

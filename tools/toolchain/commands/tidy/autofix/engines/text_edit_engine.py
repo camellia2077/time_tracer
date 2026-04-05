@@ -1,16 +1,22 @@
 from __future__ import annotations
 
-import re
 from dataclasses import replace
 from pathlib import Path
 
 from ..analyzers import build_diff, ensure_standard_include, load_text_lines, resolve_line_range, select_literal_match
-from ..models import ExecutionRecord, FixContext, FixIntent, WorkspaceTextEdit
-
-_REDUNDANT_CAST_PATTERN = re.compile(
-    r"static_cast<(?P<target>[^>]+)>\((?P<expr>[^()]+)\)"
+from ..models import (
+    ExecutionRecord,
+    FixContext,
+    FixIntent,
+    InsertPrefixOnLineOp,
+    ReplaceLineWithBlockOp,
+    ReplaceLiteralOnLineOp,
+    WorkspaceTextEdit,
+    operation_new_name,
+    operation_old_name,
+    operation_replacement,
 )
-_DTO_USING_NAMESPACE_LINE = "using namespace tracer_core::core::dto;"
+from ..reasons import CommonReasons
 
 
 class TextEditEngine:
@@ -26,10 +32,10 @@ class TextEditEngine:
             records_by_id[intent.intent_id] = ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="skipped",
-                reason="no_edit_generated",
-                old_name=str(intent.payload.get("old_name", "")),
-                new_name=str(intent.payload.get("new_name", "")),
-                replacement=str(intent.payload.get("replacement", "")),
+                reason=CommonReasons.NO_EDIT_GENERATED,
+                old_name=operation_old_name(intent.operation),
+                new_name=operation_new_name(intent.operation),
+                replacement=operation_replacement(intent.operation),
             )
 
         for file_path, file_intents in intents_by_file.items():
@@ -38,7 +44,7 @@ class TextEditEngine:
                     records_by_id[intent.intent_id] = replace(
                         records_by_id[intent.intent_id],
                         status="failed",
-                        reason="file_not_found",
+                        reason=CommonReasons.FILE_NOT_FOUND,
                     )
                 continue
 
@@ -48,19 +54,19 @@ class TextEditEngine:
                     records_by_id[intent.intent_id] = replace(
                         records_by_id[intent.intent_id],
                         status="failed",
-                        reason="file_read_failed",
+                        reason=CommonReasons.FILE_READ_FAILED,
                     )
                 continue
             before_text, lines = loaded
 
             file_edits: list[tuple[WorkspaceTextEdit, str]] = []
-            include_requests: list[FixIntent] = []
+            include_requests: list[tuple[str, FixIntent]] = []
             for intent in file_intents:
                 if intent.preview_only and not context.dry_run:
                     records_by_id[intent.intent_id] = replace(
                         records_by_id[intent.intent_id],
                         status="skipped",
-                        reason="apply_not_enabled_preview_only_rule",
+                        reason=CommonReasons.APPLY_NOT_ENABLED_PREVIEW_ONLY_RULE,
                     )
                     continue
                 record, edits, include_header = self._plan_file_edits(
@@ -75,22 +81,27 @@ class TextEditEngine:
                 for edit in edits:
                     file_edits.append((edit, intent.intent_id))
                 if include_header and record.status in {"previewed", "applied"}:
-                    include_requests.append(intent)
+                    include_requests.append((include_header, intent))
 
             if include_requests:
-                include_edit = ensure_standard_include(
-                    before_text,
-                    file_path=str(file_path),
-                    header="cstdint",
-                )
-                if include_edit is not None:
-                    first_intent = include_requests[0]
-                    file_edits.append((include_edit, first_intent.intent_id))
-                    current = records_by_id[first_intent.intent_id]
-                    records_by_id[first_intent.intent_id] = replace(
+                applied_headers: set[str] = set()
+                for header, include_intent in include_requests:
+                    if header in applied_headers:
+                        continue
+                    include_edit = ensure_standard_include(
+                        before_text,
+                        file_path=str(file_path),
+                        header=header,
+                    )
+                    if include_edit is None:
+                        continue
+                    file_edits.append((include_edit, include_intent.intent_id))
+                    current = records_by_id[include_intent.intent_id]
+                    records_by_id[include_intent.intent_id] = replace(
                         current,
                         edit_count=current.edit_count + 1,
                     )
+                    applied_headers.add(header)
 
             overlap_ids = self._overlapping_intent_ids(file_edits)
             if overlap_ids:
@@ -99,7 +110,7 @@ class TextEditEngine:
                     records_by_id[intent_id] = replace(
                         current,
                         status="failed",
-                        reason="overlapping_workspace_edits",
+                        reason=CommonReasons.OVERLAPPING_WORKSPACE_EDITS,
                         edit_count=0,
                         changed_files=(),
                     )
@@ -133,7 +144,7 @@ class TextEditEngine:
                     records_by_id[intent.intent_id] = replace(
                         current,
                         status="skipped",
-                        reason="no_edit_generated",
+                        reason=CommonReasons.NO_EDIT_GENERATED,
                         edit_count=0,
                         changed_files=(),
                     )
@@ -147,27 +158,25 @@ class TextEditEngine:
         file_path: Path,
         text: str,
         lines: list[str],
-    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], bool]:
-        operation = str(intent.payload.get("operation", "")).strip()
-        if operation == "replace_literal_on_line":
-            return self._plan_replace_literal_on_line(intent, file_path, text, lines)
-        if operation == "replace_redundant_cast_on_line":
-            return self._plan_replace_redundant_cast(intent, file_path, text, lines)
-        if operation == "insert_prefix_on_line":
-            return self._plan_insert_prefix_on_line(intent, file_path, text, lines)
-        if operation == "replace_line_with_block":
-            return self._plan_replace_line_with_block(intent, file_path, text, lines)
+    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], str | None]:
+        operation = intent.operation
+        if isinstance(operation, ReplaceLiteralOnLineOp):
+            return self._plan_replace_literal_on_line(intent, file_path, text, lines, operation)
+        if isinstance(operation, InsertPrefixOnLineOp):
+            return self._plan_insert_prefix_on_line(intent, file_path, text, lines, operation)
+        if isinstance(operation, ReplaceLineWithBlockOp):
+            return self._plan_replace_line_with_block(intent, file_path, text, lines, operation)
         return (
             ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason="unsupported_text_operation",
-                old_name=str(intent.payload.get("old_name", "")),
-                new_name=str(intent.payload.get("new_name", "")),
-                replacement=str(intent.payload.get("replacement", "")),
+                reason=CommonReasons.UNSUPPORTED_TEXT_OPERATION,
+                old_name=operation_old_name(intent.operation),
+                new_name=operation_new_name(intent.operation),
+                replacement=operation_replacement(intent.operation),
             ),
             [],
-            False,
+            None,
         )
 
     def _plan_replace_literal_on_line(
@@ -176,15 +185,16 @@ class TextEditEngine:
         file_path: Path,
         text: str,
         lines: list[str],
-    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], bool]:
+        operation: ReplaceLiteralOnLineOp,
+    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], str | None]:
         line_index = intent.line - 1
         if line_index < 0 or line_index >= len(lines):
-            return self._failed_record(intent, "invalid_line"), [], False
+            return self._failed_record(intent, CommonReasons.INVALID_LINE), [], None
         source_line = lines[line_index]
-        old_text = str(intent.payload.get("old_name", "")).strip()
-        new_text = str(intent.payload.get("new_name") or intent.payload.get("replacement") or "").strip()
+        old_text = operation.old_name.strip()
+        new_text = operation.new_name.strip()
         if not old_text or not new_text:
-            return self._skipped_record(intent, "missing_runtime_int_payload"), [], False
+            return self._skipped_record(intent, operation.missing_reason), [], None
         match_span = select_literal_match(
             source_line,
             literal=old_text,
@@ -192,11 +202,11 @@ class TextEditEngine:
         )
         if match_span is None:
             if new_text in source_line and old_text not in source_line:
-                return self._skipped_record(intent, "already_rewritten"), [], False
-            return self._skipped_record(intent, "no_safe_same_line_runtime_int_match"), [], False
+                return self._skipped_record(intent, operation.already_rewritten_reason), [], None
+            return self._skipped_record(intent, operation.no_match_reason), [], None
         line_range = resolve_line_range(text, intent.line)
         if line_range is None:
-            return self._failed_record(intent, "invalid_line"), [], False
+            return self._failed_record(intent, CommonReasons.INVALID_LINE), [], None
         line_start, _line_end = line_range
         start_col, end_col = match_span
         edit = WorkspaceTextEdit(
@@ -208,60 +218,15 @@ class TextEditEngine:
         return (
             ExecutionRecord(
                 intent_id=intent.intent_id,
-                status="previewed" if True else "previewed",
-                reason="google_runtime_int_replaced",
+                status="previewed",
+                reason=operation.success_reason,
                 edit_count=1,
                 old_name=old_text,
                 new_name=new_text,
                 replacement=new_text,
             ),
             [edit],
-            bool(intent.payload.get("ensure_include")),
-        )
-
-    def _plan_replace_redundant_cast(
-        self,
-        intent: FixIntent,
-        file_path: Path,
-        text: str,
-        lines: list[str],
-    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], bool]:
-        line_index = intent.line - 1
-        if line_index < 0 or line_index >= len(lines):
-            return self._failed_record(intent, "invalid_line"), [], False
-        source_line = lines[line_index]
-        matches = list(_REDUNDANT_CAST_PATTERN.finditer(source_line))
-        if not matches:
-            return self._skipped_record(intent, "no_safe_same_line_cast_match"), [], False
-        source_index = max(0, intent.col - 1)
-        selected_match = None
-        for match in matches:
-            if match.start() <= source_index <= match.end():
-                selected_match = match
-                break
-        if selected_match is None:
-            selected_match = matches[0]
-        replacement = selected_match.group("expr").strip()
-        line_range = resolve_line_range(text, intent.line)
-        if line_range is None:
-            return self._failed_record(intent, "invalid_line"), [], False
-        line_start, _line_end = line_range
-        edit = WorkspaceTextEdit(
-            file_path=str(file_path),
-            start_offset=line_start + selected_match.start(),
-            end_offset=line_start + selected_match.end(),
-            new_text=replacement,
-        )
-        return (
-            ExecutionRecord(
-                intent_id=intent.intent_id,
-                status="previewed",
-                reason="safe_same_type_cast_removed",
-                edit_count=1,
-                replacement=replacement,
-            ),
-            [edit],
-            False,
+            operation.ensure_include.strip() or None,
         )
 
     def _plan_insert_prefix_on_line(
@@ -270,40 +235,40 @@ class TextEditEngine:
         file_path: Path,
         text: str,
         lines: list[str],
-    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], bool]:
+        operation: InsertPrefixOnLineOp,
+    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], str | None]:
         line_index = intent.line - 1
         if line_index < 0 or line_index >= len(lines):
-            return self._failed_record(intent, "invalid_line"), [], False
+            return self._failed_record(intent, CommonReasons.INVALID_LINE), [], None
         source_line = lines[line_index]
         stripped_line = source_line.lstrip()
         if not stripped_line:
-            return self._skipped_record(intent, "empty_constructor_line"), [], False
-        prefix = str(intent.payload.get("prefix", ""))
-        if stripped_line.startswith(prefix):
-            return self._skipped_record(intent, "already_explicit"), [], False
+            return self._skipped_record(intent, operation.no_match_reason), [], None
+        if stripped_line.startswith(operation.prefix):
+            return self._skipped_record(intent, operation.already_prefixed_reason), [], None
         if "(" not in stripped_line:
-            return self._skipped_record(intent, "no_safe_constructor_signature_match"), [], False
+            return self._skipped_record(intent, operation.no_match_reason), [], None
         line_range = resolve_line_range(text, intent.line)
         if line_range is None:
-            return self._failed_record(intent, "invalid_line"), [], False
+            return self._failed_record(intent, CommonReasons.INVALID_LINE), [], None
         line_start, _line_end = line_range
         indent_len = len(source_line) - len(stripped_line)
         edit = WorkspaceTextEdit(
             file_path=str(file_path),
             start_offset=line_start + indent_len,
             end_offset=line_start + indent_len,
-            new_text=prefix,
+            new_text=operation.prefix,
         )
         return (
             ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="previewed",
-                reason="google_explicit_constructor_added",
+                reason=operation.success_reason,
                 edit_count=1,
-                replacement=prefix,
+                replacement=operation.prefix,
             ),
             [edit],
-            False,
+            None,
         )
 
     def _plan_replace_line_with_block(
@@ -312,21 +277,20 @@ class TextEditEngine:
         file_path: Path,
         text: str,
         lines: list[str],
-    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], bool]:
+        operation: ReplaceLineWithBlockOp,
+    ) -> tuple[ExecutionRecord, list[WorkspaceTextEdit], str | None]:
         line_index = intent.line - 1
         if line_index < 0 or line_index >= len(lines):
-            return self._skipped_record(intent, "using_namespace_directive_not_found"), [], False
+            return self._skipped_record(intent, operation.missing_reason), [], None
         source_line = lines[line_index]
-        if source_line.strip() != _DTO_USING_NAMESPACE_LINE:
-            return self._skipped_record(intent, "using_namespace_directive_not_found"), [], False
-        replacement_lines = [
-            line for line in str(intent.payload.get("replacement", "")).splitlines() if line.strip()
-        ]
+        if source_line.strip() != operation.expected_line.strip():
+            return self._skipped_record(intent, operation.missing_reason), [], None
+        replacement_lines = [line for line in operation.replacement_lines if line.strip()]
         if not replacement_lines:
-            return self._skipped_record(intent, "no_safe_using_declarations_generated"), [], False
+            return self._skipped_record(intent, operation.empty_replacement_reason), [], None
         line_range = resolve_line_range(text, intent.line)
         if line_range is None:
-            return self._skipped_record(intent, "using_namespace_directive_not_found"), [], False
+            return self._skipped_record(intent, operation.missing_reason), [], None
         line_start, line_end = line_range
         indent = source_line[: len(source_line) - len(source_line.lstrip())]
         block_text = "\n".join(indent + line for line in replacement_lines)
@@ -340,13 +304,13 @@ class TextEditEngine:
             ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="previewed",
-                reason="dto_using_declarations_preview",
+                reason=operation.success_reason,
                 edit_count=len(replacement_lines),
-                old_name=_DTO_USING_NAMESPACE_LINE,
+                old_name=operation.expected_line,
                 replacement="\n".join(replacement_lines),
             ),
             [edit],
-            False,
+            None,
         )
 
     def _overlapping_intent_ids(
@@ -372,9 +336,9 @@ class TextEditEngine:
             intent_id=intent.intent_id,
             status="failed",
             reason=reason,
-            old_name=str(intent.payload.get("old_name", "")),
-            new_name=str(intent.payload.get("new_name", "")),
-            replacement=str(intent.payload.get("replacement", "")),
+            old_name=operation_old_name(intent.operation),
+            new_name=operation_new_name(intent.operation),
+            replacement=operation_replacement(intent.operation),
         )
 
     @staticmethod
@@ -383,7 +347,7 @@ class TextEditEngine:
             intent_id=intent.intent_id,
             status="skipped",
             reason=reason,
-            old_name=str(intent.payload.get("old_name", "")),
-            new_name=str(intent.payload.get("new_name", "")),
-            replacement=str(intent.payload.get("replacement", "")),
+            old_name=operation_old_name(intent.operation),
+            new_name=operation_new_name(intent.operation),
+            replacement=operation_replacement(intent.operation),
         )

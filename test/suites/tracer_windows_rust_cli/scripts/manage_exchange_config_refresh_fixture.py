@@ -8,6 +8,10 @@ from pathlib import Path
 CUSTOM_ALIAS = "cliimportalias"
 CUSTOM_PROJECT_PATH = "zzdemo_only"
 
+# This fixture intentionally creates a small custom package for config-refresh
+# regression tests. When imported via exchange replace-all, runtime DB is
+# expected to be cleared/rebuilt from this custom source (not the baseline set).
+
 
 def _backup_converter_config(workspace_root: Path, scenario_root: Path) -> None:
     converter_root = workspace_root / "config" / "converter"
@@ -35,6 +39,15 @@ def _append_custom_alias(alias_mapping_path: Path) -> None:
 
 
 def _build_custom_txt(source_txt_path: Path, target_txt_path: Path) -> None:
+    # Design intent:
+    # build a deterministic config-refresh fixture by injecting one synthetic line
+    # into 2026-03 data so exchange import can verify both:
+    # 1) replace-all DB rebuild from fixture payload, and
+    # 2) alias mapping refresh (`cliimportalias` -> `zzdemo_only`).
+    #
+    # Concrete mutation:
+    # insert `0210cliimportalias` immediately after the anchor line `0205meal`
+    # (currently this is line 12 in the generated fixture file).
     lines = source_txt_path.read_text(encoding="utf-8").splitlines()
     if any(CUSTOM_ALIAS in line for line in lines):
         raise RuntimeError(f"source TXT already contains {CUSTOM_ALIAS}")

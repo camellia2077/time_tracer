@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 
 from . import log_parser
-from ..commands.tidy.task_log import list_task_paths, load_task_record
+from ..commands.tidy.tasking.task_log import list_task_paths, load_task_record
 
 TASK_FILE_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 

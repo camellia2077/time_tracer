@@ -27,24 +27,39 @@ class ScanArgumentResolver:
     def resolve_paths(
         raw_paths: list[str],
         default_paths: list[str],
+        path_mode: str,
         workspace_root: Path,
     ) -> list[Path]:
-        source = raw_paths if raw_paths else default_paths
+        source: list[str]
+        if path_mode == "toml_only":
+            source = default_paths
+        elif path_mode == "merge":
+            source = [*default_paths, *raw_paths]
+        else:
+            source = raw_paths if raw_paths else default_paths
+
         resolved: list[Path] = []
+        seen: set[Path] = set()
         for item in source:
             path = Path(item)
             if not path.is_absolute():
                 path = (workspace_root / path).resolve()
             else:
                 path = path.resolve()
+            if path in seen:
+                continue
+            seen.add(path)
             resolved.append(path)
         return resolved
 
 
 class LocScanService:
+    _LINE_COUNT_CHUNK_SIZE = 1024 * 1024
+
     def __init__(self, config: LanguageConfig):
         self.config = config
         self._ignore_dirs_lower = {name.lower() for name in config.ignore_dirs}
+        self._extensions_tuple = tuple(ext.lower() for ext in config.extensions)
 
     def analyze_path(
         self,
@@ -58,20 +73,18 @@ class LocScanService:
             dirs[:] = [name for name in dirs if not self._should_skip_dir(name)]
 
             for file_name in files:
-                ext = Path(file_name).suffix.lower()
-                if ext not in self.config.extensions:
+                if not file_name.lower().endswith(self._extensions_tuple):
                     continue
 
-                file_path = Path(root) / file_name
+                file_path = os.path.join(root, file_name)
                 try:
-                    with file_path.open(encoding="utf-8", errors="ignore") as handle:
-                        line_count = sum(1 for _ in handle)
+                    line_count = self._count_lines_fast(file_path)
                 except Exception as error:
                     print(f"读取文件时发生意外错误 {file_path}: {error}")
                     continue
 
                 if self._matches_threshold(line_count, mode, threshold):
-                    result_files.append((str(file_path), line_count))
+                    result_files.append((file_path, line_count))
 
         result_files.sort(key=lambda item: item[1], reverse=(mode == "over"))
         return result_files
@@ -94,8 +107,7 @@ class LocScanService:
 
             file_count = 0
             for file_name in files:
-                ext = Path(file_name).suffix.lower()
-                if ext in self.config.extensions:
+                if file_name.lower().endswith(self._extensions_tuple):
                     file_count += 1
 
             if file_count > threshold:
@@ -116,3 +128,21 @@ class LocScanService:
                 return line_count >= threshold
             return line_count > threshold
         return line_count < threshold
+
+    def _count_lines_fast(self, file_path: str) -> int:
+        line_count = 0
+        has_data = False
+        last_byte = b""
+
+        with open(file_path, "rb") as handle:
+            while True:
+                chunk = handle.read(self._LINE_COUNT_CHUNK_SIZE)
+                if not chunk:
+                    break
+                has_data = True
+                line_count += chunk.count(b"\n")
+                last_byte = chunk[-1:]
+
+        if has_data and last_byte != b"\n":
+            line_count += 1
+        return line_count

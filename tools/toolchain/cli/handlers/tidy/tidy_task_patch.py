@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.task_patch import TidyTaskPatchCommand
+from ....commands.tidy.tasking.task_patch import TidyTaskPatchCommand
 from ....core.context import Context
 from ...common import add_required_task_log_arg
 from ...model import CommandSpec, ParserDefaults

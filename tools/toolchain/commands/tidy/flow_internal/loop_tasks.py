@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from ....core.context import Context
-from ..task_log import list_task_paths, load_task_record
+from ..tasking.task_log import list_task_paths, load_task_record
 
 TASK_ID_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 

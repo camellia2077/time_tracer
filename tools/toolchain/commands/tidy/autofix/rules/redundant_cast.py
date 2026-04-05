@@ -1,27 +1,26 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 
-from ..models import FixContext, FixIntent
+from ..models import FixContext, ReplaceLiteralOnLineOp
+from .base import RuleBase
+from .catalog import REDUNDANT_CAST_METADATA
 
 _REDUNDANT_CAST_PATTERN = re.compile(
     r"static_cast<(?P<target>[^>]+)>\((?P<expr>[^()]+)\)"
 )
 
 
-class RedundantCastRule:
-    rule_id = "redundant_cast"
-    supported_checks = ("readability-redundant-casting",)
-    engine_id = "text"
-    preview_only = False
+class RedundantCastRule(RuleBase):
+    metadata = REDUNDANT_CAST_METADATA
 
-    def plan(self, context: FixContext, diagnostic) -> list[FixIntent]:
-        if diagnostic.check != "readability-redundant-casting":
+    def plan(self, context: FixContext, diagnostic) -> list:
+        if not self.supports(diagnostic.check):
             return []
         if "same type" not in diagnostic.message.strip():
             return []
-        source_file = Path(diagnostic.file or context.parsed.source_file)
+        source_file = Path(self.resolve_source_file(context, diagnostic))
         if not source_file.exists():
             return []
         source_lines = source_file.read_text(encoding="utf-8", errors="replace").splitlines()
@@ -40,21 +39,22 @@ class RedundantCastRule:
                 break
         if selected_match is None:
             selected_match = matches[0]
+        old_text = selected_match.group(0).strip()
         replacement = selected_match.group("expr").strip()
         return [
-            FixIntent(
+            self.build_intent(
                 intent_id=f"cast:{diagnostic.line:03d}:{diagnostic.col:03d}",
-                rule_id=self.rule_id,
                 check=diagnostic.check,
-                engine_id=self.engine_id,
                 file_path=str(source_file),
                 line=diagnostic.line,
                 col=diagnostic.col,
-                payload={
-                    "action_kind": "redundant_cast",
-                    "operation": "replace_redundant_cast_on_line",
-                    "replacement": replacement,
-                },
-                preview_only=self.preview_only,
+                operation=ReplaceLiteralOnLineOp(
+                    old_name=old_text,
+                    new_name=replacement,
+                    success_reason="safe_same_type_cast_removed",
+                    missing_reason="missing_redundant_cast_payload",
+                    no_match_reason="no_safe_same_line_cast_match",
+                    already_rewritten_reason="already_rewritten",
+                ),
             )
         ]

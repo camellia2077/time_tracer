@@ -4,7 +4,9 @@ import re
 from pathlib import Path
 
 from ..analyzers import line_text
-from ..models import FixContext, FixIntent
+from ..models import FixContext, RenameSymbolOp
+from .base import RuleBase
+from .catalog import IDENTIFIER_NAMING_METADATA
 
 _SUPPORTED_RENAME_KINDS = {"constant", "variable"}
 _EXACT_NAME_RULES = {
@@ -25,13 +27,10 @@ _INVALID_CASE_STYLE_PATTERN = re.compile(r"invalid case style for ([^']+) '([^']
 _SUGGESTED_NAME_PATTERN = re.compile(r"^\s*\|\s+([A-Za-z_][A-Za-z0-9_]*)\s*$")
 
 
-class IdentifierNamingRule:
-    rule_id = "identifier_naming"
-    supported_checks = ("readability-identifier-naming",)
-    engine_id = "clangd"
-    preview_only = False
+class IdentifierNamingRule(RuleBase):
+    metadata = IDENTIFIER_NAMING_METADATA
 
-    def plan(self, context: FixContext, diagnostic) -> list[FixIntent]:
+    def plan(self, context: FixContext, diagnostic) -> list:
         candidate = diagnostic_to_candidate(diagnostic, default_file=context.parsed.source_file)
         if candidate is None:
             return []
@@ -46,21 +45,18 @@ class IdentifierNamingRule:
         if not supported:
             return []
         return [
-            FixIntent(
+            self.build_intent(
                 intent_id=f"rename:{int(candidate['line']):03d}:{int(candidate['col']):03d}",
-                rule_id=self.rule_id,
                 check=str(candidate["check"]),
-                engine_id=self.engine_id,
                 file_path=str(candidate["file"]),
                 line=int(candidate["line"]),
                 col=int(candidate["col"]),
-                payload={
-                    "action_kind": "rename",
-                    "symbol_kind": str(candidate["symbol_kind"]),
-                    "old_name": str(candidate["old_name"]),
-                    "new_name": str(candidate["new_name"]),
-                },
-                preview_only=self.preview_only,
+                operation=RenameSymbolOp(
+                    symbol_kind=str(candidate["symbol_kind"]),
+                    old_name=str(candidate["old_name"]),
+                    new_name=str(candidate["new_name"]),
+                    success_reason="supported_rule_driven_const_rename",
+                ),
             )
         ]
 

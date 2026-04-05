@@ -4,6 +4,7 @@ import hashlib
 import os
 import re
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 from ...core.context import Context
@@ -21,6 +22,8 @@ class SyncStats:
 
 
 class RefreshGoldenCommand:
+    REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+
     def __init__(self, ctx: Context):
         self.ctx = ctx
 
@@ -218,6 +221,15 @@ class RefreshGoldenCommand:
         suffix = "" if text.endswith("\n") else "\n"
         return text + suffix + replacement + "\n"
 
+    @staticmethod
+    def _replace_int_line(text: str, key: str, value: int) -> str:
+        pattern = re.compile(rf"^{re.escape(key)}\s*=\s*\d+\s*$", flags=re.MULTILINE)
+        replacement = f"{key} = {value}"
+        if pattern.search(text):
+            return pattern.sub(replacement, text, count=1)
+        suffix = "" if text.endswith("\n") else "\n"
+        return text + suffix + replacement + "\n"
+
     def _update_gate_cases(
         self,
         *,
@@ -239,10 +251,18 @@ class RefreshGoldenCommand:
                         f"range_{start}_{end}.md",
                     )
         if recent_range:
-            text = self._replace_line(text, "recent_range_argument", recent_range)
             if "|" in recent_range:
                 start, end = [part.strip() for part in recent_range.split("|", 1)]
                 if start and end:
+                    start_date = date.fromisoformat(start)
+                    end_date = date.fromisoformat(end)
+                    if end_date < start_date:
+                        raise ValueError(
+                            f"recent range must satisfy start<=end, got `{recent_range}`"
+                        )
+                    recent_days = (end_date - start_date).days + 1
+                    text = self._replace_int_line(text, "recent_days", recent_days)
+                    text = self._replace_line(text, "recent_as_of", end)
                     text = self._replace_line(
                         text,
                         "recent_case_name",
@@ -292,12 +312,22 @@ class RefreshGoldenCommand:
             "tracer_windows_rust_cli",
             resolved_build_dir,
         ).bin_dir / cli_name
-        db_path = (
+        workspace_db_path = (
             resolve_test_result_layout(repo_root, output_name).workspace_dir
             / "output"
             / "db"
             / "time_data.sqlite3"
         )
+        snapshot_db_path = (
+            resolve_test_result_layout(repo_root, output_name).workspace_dir
+            / "output"
+            / "db_snapshots"
+            / self.REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+        )
+        # Refresh should use the same stable reporting snapshot as verify/gates.
+        # Otherwise exchange-stage replace-all imports (for example config-refresh.tracer)
+        # can overwrite DB content and produce non-deterministic golden inputs.
+        db_path = snapshot_db_path if snapshot_db_path.is_file() else workspace_db_path
         cases_config_path = (
             repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
         )

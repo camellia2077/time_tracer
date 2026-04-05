@@ -25,8 +25,8 @@ class TestSelfTestCommand(TestCase):
         self.assertEqual(called_cmd[:3], [sys.executable, "-m", "unittest"])
         self.assertIn("tools.tests.verify.test_verify_execute_flow", called_cmd)
         self.assertIn("tools.tests.validate.test_validate_command", called_cmd)
-        self.assertIn("tools.tests.platform.test_tidy_step", called_cmd)
-        self.assertIn("tools.tests.run_cli.test_run_cli_dispatch", called_cmd)
+        self.assertIn("tools.tests.platform.tidy.test_tidy_step", called_cmd)
+        self.assertIn("tools.tests.run_cli.test_run_cli_dispatch_tidy_task", called_cmd)
         self.assertNotIn("discover", called_cmd)
         self.assertNotIn("-v", called_cmd)
 

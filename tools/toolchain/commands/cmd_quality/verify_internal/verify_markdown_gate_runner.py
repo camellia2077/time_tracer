@@ -8,6 +8,25 @@ from ....core.generated_paths import resolve_build_layout, resolve_test_result_l
 from ....services.suite_registry import resolve_result_output_name
 from .verify_profile_policy import should_run_reporting_markdown_gates
 
+REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+
+
+def _resolve_reporting_db_for_gates(result_layout) -> Path:
+    # Prefer the reporting snapshot captured before exchange-stage imports.
+    # Exchange fixtures may later import `config-refresh.tracer` with replace-all,
+    # which intentionally replaces runtime DB content with a smaller fixture dataset.
+    # Using this snapshot prevents golden gates from being affected by that
+    # expected post-report DB overwrite.
+    snapshot_path = (
+        result_layout.workspace_dir
+        / "output"
+        / "db_snapshots"
+        / REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+    )
+    if snapshot_path.is_file():
+        return snapshot_path
+    return result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
+
 
 def run_report_triplet_gates(
     repo_root: Path,
@@ -105,7 +124,7 @@ def run_report_markdown_gates(
         build_dir_name,
     ).bin_dir / ("time_tracer_cli.exe" if os.name == "nt" else "time_tracer_cli")
     export_root = result_layout.artifacts_dir / "reports" / "markdown"
-    db_path = result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
+    db_path = _resolve_reporting_db_for_gates(result_layout)
     current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"
     golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
     render_check_output = quality_gates_root / "audits" / "report-md-golden-render-check.json"

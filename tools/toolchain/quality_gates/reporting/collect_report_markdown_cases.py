@@ -141,6 +141,45 @@ def collect_query_range_case(
     (output_dir / output_name).write_bytes(content)
 
 
+def collect_query_recent_case(
+    cli_bin: Path,
+    db_path: Path,
+    output_dir: Path,
+    strict: bool,
+    output_name: str,
+    days: int,
+    as_of: str,
+) -> None:
+    cmd = [
+        str(cli_bin),
+        "report",
+        "render",
+        "recent",
+        str(days),
+        "--as-of",
+        as_of,
+        "--format",
+        "md",
+        "--db",
+        str(db_path),
+    ]
+    completed = subprocess.run(
+        cmd,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        stderr_text = completed.stderr.decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"recent report render failed while collecting `{output_name}`: "
+            f"exit={completed.returncode}, stderr={stderr_text}"
+        )
+    content = normalize_crlf_to_lf(completed.stdout)
+    if strict:
+        check_text_policy(output_name, content)
+    (output_dir / output_name).write_bytes(content)
+
+
 def main() -> int:
     args = parse_args()
     export_root = Path(args.export_root)
@@ -175,14 +214,15 @@ def main() -> int:
         strict=bool(args.strict_text_policy),
         file_cases=cases_config.markdown.file_cases,
     )
-    # Use fixed date ranges for deterministic golden cases.
-    collect_query_range_case(
+    # Use fixed recent anchor day for deterministic recent golden checks.
+    collect_query_recent_case(
         cli_bin=cli_bin,
         db_path=db_path,
         output_dir=output_dir,
         strict=bool(args.strict_text_policy),
         output_name=cases_config.markdown.recent_case_name,
-        range_argument=cases_config.markdown.recent_range_argument,
+        days=cases_config.markdown.recent_days,
+        as_of=cases_config.markdown.recent_as_of,
     )
     collect_query_range_case(
         cli_bin=cli_bin,

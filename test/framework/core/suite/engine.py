@@ -19,6 +19,9 @@ from .table_tester import TableTester
 
 
 class TestEngine:
+    REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+    SQLITE_SIDECARE_SUFFIXES = ("", "-wal", "-shm", "-journal")
+
     def __init__(self, config: GlobalConfig, options: dict | None = None):
         self.cfg = config
         self.paths = config.paths
@@ -210,6 +213,7 @@ class TestEngine:
             report.duration = time.monotonic() - module_start
             reports.append(report)
             self.reporter.print_module_report(report)
+            self._maybe_snapshot_reporting_db(module_name=module.module_name, report=report)
 
             if report.failed_count > 0:
                 print(
@@ -218,3 +222,35 @@ class TestEngine:
                 )
                 break
         return reports
+
+    def _maybe_snapshot_reporting_db(self, module_name: str, report: TestReport) -> None:
+        # Capture a stable DB snapshot after report/report-export stages complete.
+        #
+        # Why:
+        # - exchange stage includes `exchange import` fixtures.
+        # - a later fixture imports `config-refresh.tracer` with "replace all" semantics.
+        # - "replace all" clears and rebuilds runtime DB from the imported package.
+        # - therefore data drift is expected when import source packages differ:
+        #   this is not import instability, but deterministic overwrite by another source.
+        #
+        # The snapshot keeps markdown/triplet golden gates pinned to the reporting dataset
+        # before exchange fixtures intentionally replace DB contents.
+        if module_name != "report-export" or report.failed_count > 0:
+            return
+        db_path = self.paths.DB_DIR
+        if not db_path or not db_path.is_file():
+            return
+
+        snapshot_dir = db_path.parent.parent / "db_snapshots"
+        snapshot_dir.mkdir(parents=True, exist_ok=True)
+        snapshot_db_path = snapshot_dir / self.REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+
+        for suffix in self.SQLITE_SIDECARE_SUFFIXES:
+            src = Path(f"{db_path}{suffix}")
+            dst = Path(f"{snapshot_db_path}{suffix}")
+            if src.is_file():
+                shutil.copy2(src, dst)
+            elif dst.exists():
+                dst.unlink()
+
+        print(f"  Captured reporting DB snapshot: {snapshot_db_path}")

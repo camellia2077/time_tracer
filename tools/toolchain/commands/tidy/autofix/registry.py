@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from .models import AutoFixRule, FixContext, FixIntent
 from .rules import (
+    ConcisePreprocessorDirectivesRule,
     ExplicitConstructorRule,
     IdentifierNamingRule,
     RedundantCastRule,
@@ -37,5 +38,6 @@ def build_default_registry() -> RuleRegistry:
             RuntimeIntRule(),
             ExplicitConstructorRule(),
             UsingNamespaceRule(),
+            ConcisePreprocessorDirectivesRule(),
         ]
     )

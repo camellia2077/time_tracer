@@ -5,7 +5,7 @@ from pathlib import Path
 from ....core.context import Context
 from ...cmd_quality.verify import VerifyCommand
 from ..clean import CleanCommand
-from ..task_log import list_task_paths as list_task_record_paths, load_task_record
+from ..tasking.task_log import list_task_paths as list_task_record_paths, load_task_record
 
 TASK_ID_PATTERN = re.compile(r"task_(\d+)\.(?:json|log|toon)$")
 

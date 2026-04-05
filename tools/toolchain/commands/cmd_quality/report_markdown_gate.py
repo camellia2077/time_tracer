@@ -10,6 +10,8 @@ from ...core.generated_paths import resolve_build_layout, resolve_test_result_la
 from ...services.suite_registry import resolve_result_output_name
 from .refresh_golden import RefreshGoldenCommand
 
+REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
+
 
 class ReportMarkdownGateCommand:
     def __init__(self, ctx: Context):
@@ -62,7 +64,20 @@ class ReportMarkdownGateCommand:
             resolved_build_dir,
         ).bin_dir / cli_name
         result_layout = resolve_test_result_layout(repo_root, output_name)
-        db_path = result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
+        snapshot_db_path = (
+            result_layout.workspace_dir
+            / "output"
+            / "db_snapshots"
+            / REPORTING_GOLDEN_DB_SNAPSHOT_NAME
+        )
+        # Keep manual gate runs aligned with verify:
+        # prefer pre-exchange reporting snapshot to avoid DB drift after
+        # `exchange import ... (replace all)` fixtures (for example config-refresh.tracer).
+        db_path = (
+            snapshot_db_path
+            if snapshot_db_path.is_file()
+            else result_layout.workspace_dir / "output" / "db" / "time_data.sqlite3"
+        )
         export_root = result_layout.artifacts_dir / "reports" / "markdown"
         quality_gates_root = result_layout.quality_gates_dir
         current_cases_dir = quality_gates_root / "report_markdown_cases" / "current_v1"

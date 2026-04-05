@@ -2,7 +2,7 @@ from pathlib import Path
 
 from .. import analysis_compile_db
 from ...shared import tidy as tidy_shared
-from ..task_log import list_task_paths, load_task_record
+from ..tasking.task_log import list_task_paths, load_task_record
 
 
 def normalize_batch_name(batch_id: str) -> str:

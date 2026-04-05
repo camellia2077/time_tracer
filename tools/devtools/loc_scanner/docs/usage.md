@@ -15,7 +15,7 @@ python -m tools.devtools.loc_scanner --lang py --over 200
 # Kotlin 小文件（使用配置默认阈值）
 python -m tools.devtools.loc_scanner --lang kt --under
 
-# C++ 指定目录
+# C++ 指定目录（当该语言 path_mode 允许命令行路径时）
 python -m tools.devtools.loc_scanner --lang cpp libs --over 300
 
 # 目录文件密度扫描
@@ -32,6 +32,8 @@ tools\devtools\loc_scanner\scripts\run_rs.bat
 ```
 
 可追加参数透传给 `run.py`。
+
+注意：若语言配置中 `path_mode = "toml_only"`，则命令行 `paths`（包括 bat 透传的位置参数）会被忽略，仅使用 TOML 里的 `default_paths`。
 
 ## 配置文件
 

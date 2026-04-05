@@ -12,7 +12,7 @@ from .fix_strategy import (
     resolve_primary_strategy,
 )
 from . import clang_tidy_config
-from .task_log import list_task_paths, load_task_record
+from .tasking.task_log import list_task_paths, load_task_record
 from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
 

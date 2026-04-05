@@ -26,7 +26,7 @@ python -m tools.devtools.loc_scanner --lang py --under
 常用参数：
 
 - `--lang`：`cpp | kt | py | rs`
-- `paths`：可选，待扫描目录；不传时使用配置中的 `default_paths`
+- `paths`：可选，待扫描目录；默认可覆盖配置中的 `default_paths`（若该语言 `path_mode = "toml_only"`，则忽略命令行 `paths`）
 - `--workspace-root`：相对路径解析根目录，默认当前目录
 - `--config`：配置文件路径，默认 `tools/devtools/loc_scanner/config/scan_lines.toml`
 - `--log-file`：日志输出路径；不传时写入 `<workspace-root>/.loc_scanner_logs/scan_<lang>.json`

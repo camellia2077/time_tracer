@@ -6,7 +6,8 @@ from .....services.clangd_lsp import ClangdClient
 from ....cmd_rename.internal.common_symbols import resolve_position
 from ...analysis_compile_db import ensure_analysis_compile_db
 from ..analyzers import build_diff, has_identifier, line_text
-from ..models import ExecutionRecord, FixContext, FixIntent
+from ..models import ExecutionRecord, FixContext, FixIntent, RenameSymbolOp
+from ..reasons import CommonReasons, RenameReasons
 from ..rules.identifier_naming import supported_rename_candidate
 
 
@@ -35,15 +36,22 @@ class ClangdRenameEngine:
         allowed: list[Path],
         intent: FixIntent,
     ) -> ExecutionRecord:
+        if not isinstance(intent.operation, RenameSymbolOp):
+            return ExecutionRecord(
+                intent_id=intent.intent_id,
+                status="failed",
+                reason=CommonReasons.UNSUPPORTED_RENAME_OPERATION,
+            )
         file_path = Path(intent.file_path)
+        operation = intent.operation
         candidate = {
             "file": str(file_path),
             "line": intent.line,
             "col": intent.col,
             "check": intent.check,
-            "symbol_kind": intent.payload.get("symbol_kind", ""),
-            "old_name": intent.payload.get("old_name", ""),
-            "new_name": intent.payload.get("new_name", ""),
+            "symbol_kind": operation.symbol_kind,
+            "old_name": operation.old_name,
+            "new_name": operation.new_name,
         }
         supported, reason = supported_rename_candidate(
             candidate,
@@ -55,20 +63,20 @@ class ClangdRenameEngine:
                 intent_id=intent.intent_id,
                 status="skipped",
                 reason=reason,
-                old_name=str(intent.payload.get("old_name", "")),
-                new_name=str(intent.payload.get("new_name", "")),
+                old_name=operation.old_name,
+                new_name=operation.new_name,
             )
         if not file_path.exists():
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason="file_not_found",
-                old_name=str(intent.payload.get("old_name", "")),
-                new_name=str(intent.payload.get("new_name", "")),
+                reason=CommonReasons.FILE_NOT_FOUND,
+                old_name=operation.old_name,
+                new_name=operation.new_name,
             )
 
-        old_name = str(intent.payload.get("old_name", ""))
-        new_name = str(intent.payload.get("new_name", ""))
+        old_name = operation.old_name
+        new_name = operation.new_name
         before_text = file_path.read_text(encoding="utf-8", errors="replace")
         source_line = line_text(file_path, intent.line)
         has_old = has_identifier(source_line, old_name)
@@ -77,7 +85,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="skipped",
-                reason="already_renamed",
+                reason=RenameReasons.ALREADY_RENAMED,
                 old_name=old_name,
                 new_name=new_name,
             )
@@ -101,7 +109,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason=str(preview_result.get("error", "rename_failed")),
+                reason=str(preview_result.get("error", RenameReasons.RENAME_FAILED)),
                 old_name=old_name,
                 new_name=new_name,
             )
@@ -111,7 +119,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason="out_of_scope_workspace_edit_blocked",
+                reason=RenameReasons.OUT_OF_SCOPE_WORKSPACE_EDIT_BLOCKED,
                 old_name=old_name,
                 new_name=new_name,
             )
@@ -121,7 +129,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="skipped",
-                reason="rename_crosses_file_boundary",
+                reason=RenameReasons.RENAME_CROSSES_FILE_BOUNDARY,
                 changed_files=tuple(preview_changed_files),
                 old_name=old_name,
                 new_name=new_name,
@@ -142,7 +150,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="previewed" if edit_count > 0 else "skipped",
-                reason="supported_rule_driven_const_rename" if edit_count > 0 else "no_edit_generated",
+                reason=operation.success_reason if edit_count > 0 else CommonReasons.NO_EDIT_GENERATED,
                 diff=diff,
                 edit_count=edit_count,
                 changed_files=tuple(preview_changed_files),
@@ -162,7 +170,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason=str(apply_result.get("error", "rename_failed")),
+                reason=str(apply_result.get("error", RenameReasons.RENAME_FAILED)),
                 old_name=old_name,
                 new_name=new_name,
             )
@@ -172,7 +180,7 @@ class ClangdRenameEngine:
             return ExecutionRecord(
                 intent_id=intent.intent_id,
                 status="failed",
-                reason="rename_crosses_file_boundary",
+                reason=RenameReasons.RENAME_CROSSES_FILE_BOUNDARY,
                 changed_files=tuple(changed_files),
                 old_name=old_name,
                 new_name=new_name,
@@ -183,7 +191,7 @@ class ClangdRenameEngine:
         return ExecutionRecord(
             intent_id=intent.intent_id,
             status="applied" if applied_count > 0 else "skipped",
-            reason="supported_rule_driven_const_rename" if applied_count > 0 else "no_edit_generated",
+            reason=operation.success_reason if applied_count > 0 else CommonReasons.NO_EDIT_GENERATED,
             diff=build_diff(file_path, before_text, after_text),
             edit_count=applied_count,
             changed_files=tuple(changed_files),

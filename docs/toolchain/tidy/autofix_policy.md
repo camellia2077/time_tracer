@@ -71,6 +71,9 @@
   - 删除同型冗余 `static_cast`
 - `google-explicit-constructor`
   - 在目标构造函数前插入 `explicit `
+- `readability-use-concise-preprocessor-directives`
+  - 例如 `#if defined(_WIN32) -> #ifdef _WIN32`
+  - 例如 `#if !defined(FOO) -> #ifndef FOO`
 
 这类规则的共同特点：
 
@@ -88,7 +91,8 @@
 - `google-build-using-namespace`
   - 把 `using namespace tracer_core::core::dto;`
   - 替换成显式 `using` 声明块
-  - 当前仅允许在 `/application/use_cases/` 下工作
+  - 支持 `/application/use_cases/` 与 `/application/pipeline/` 受限目录
+  - 其中 `using namespace std::chrono;` 会生成 `using std::chrono::<symbol>;` 声明块
   - 当前默认 `preview_only`
 
 这类规则比单行替换风险更高，所以必须额外限制：
@@ -243,7 +247,8 @@
 | `google-runtime-int` | `runtime_int` | `text` | apply | 固定类型替换，必要时补 `<cstdint>` |
 | `readability-redundant-casting` | `redundant_cast` | `text` | apply | 单行冗余 cast 删除 |
 | `google-explicit-constructor` | `explicit_constructor` | `text` | apply | 行前缀插入 |
-| `google-build-using-namespace` | `using_namespace` | `text` | preview-only | 当前只做受限目录块替换 |
+| `readability-use-concise-preprocessor-directives` | `concise_preprocessor_directive` | `text` | apply | 条件宏写法收敛为 `#ifdef/#ifndef` |
+| `google-build-using-namespace` | `using_namespace` | `text` | preview-only | 受限目录块替换（dto + chrono） |
 
 ## 11. 一句话准入标准
 

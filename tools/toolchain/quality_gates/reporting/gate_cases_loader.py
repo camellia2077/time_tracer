@@ -27,7 +27,8 @@ class MarkdownCases:
     range_case_name: str
     range_argument: str
     recent_case_name: str
-    recent_range_argument: str
+    recent_days: int
+    recent_as_of: str
 
 
 @dataclass(frozen=True)
@@ -53,6 +54,12 @@ def _expect_str(value, path: str) -> str:
     if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{path} must be a non-empty string.")
     return value.strip()
+
+
+def _expect_positive_int(value, path: str) -> int:
+    if not isinstance(value, int) or value <= 0:
+        raise ValueError(f"{path} must be a positive integer.")
+    return value
 
 
 def _load_markdown_cases(markdown_payload: dict) -> MarkdownCases:
@@ -88,9 +95,13 @@ def _load_markdown_cases(markdown_payload: dict) -> MarkdownCases:
             markdown_payload.get("recent_case_name"),
             "[markdown].recent_case_name",
         ),
-        recent_range_argument=_expect_str(
-            markdown_payload.get("recent_range_argument"),
-            "[markdown].recent_range_argument",
+        recent_days=_expect_positive_int(
+            markdown_payload.get("recent_days"),
+            "[markdown].recent_days",
+        ),
+        recent_as_of=_expect_str(
+            markdown_payload.get("recent_as_of"),
+            "[markdown].recent_as_of",
         ),
     )
 

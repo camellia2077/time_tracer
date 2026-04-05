@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from pathlib import Path
 import re
+from pathlib import Path
 
-from ..models import FixContext, FixIntent
+from ..models import FixContext, ReplaceLiteralOnLineOp
+from .base import RuleBase
+from .catalog import RUNTIME_INT_METADATA
 
 _GOOGLE_RUNTIME_INT_PATTERN = re.compile(
     r"consider replacing '(?P<source>[^']+)' with '(?P<target>[^']+)'"
@@ -19,16 +21,13 @@ _GOOGLE_RUNTIME_INT_TARGETS = {
 }
 
 
-class RuntimeIntRule:
-    rule_id = "runtime_int"
-    supported_checks = ("google-runtime-int",)
-    engine_id = "text"
-    preview_only = False
+class RuntimeIntRule(RuleBase):
+    metadata = RUNTIME_INT_METADATA
 
-    def plan(self, context: FixContext, diagnostic) -> list[FixIntent]:
-        if diagnostic.check != "google-runtime-int":
+    def plan(self, context: FixContext, diagnostic) -> list:
+        if not self.supports(diagnostic.check):
             return []
-        source_file = Path(diagnostic.file or context.parsed.source_file)
+        source_file = Path(self.resolve_source_file(context, diagnostic))
         if not source_file.exists():
             return []
         if source_file.suffix.lower() not in _CPP_IMPLEMENTATION_SUFFIXES:
@@ -37,23 +36,21 @@ class RuntimeIntRule:
         if not old_type or not new_type:
             return []
         return [
-            FixIntent(
+            self.build_intent(
                 intent_id=f"runtime_int:{diagnostic.line:03d}:{diagnostic.col:03d}",
-                rule_id=self.rule_id,
                 check=diagnostic.check,
-                engine_id=self.engine_id,
                 file_path=str(source_file),
                 line=diagnostic.line,
                 col=diagnostic.col,
-                payload={
-                    "action_kind": "runtime_int",
-                    "operation": "replace_literal_on_line",
-                    "old_name": old_type,
-                    "new_name": new_type,
-                    "replacement": new_type,
-                    "ensure_include": "cstdint",
-                },
-                preview_only=self.preview_only,
+                operation=ReplaceLiteralOnLineOp(
+                    old_name=old_type,
+                    new_name=new_type,
+                    ensure_include="cstdint",
+                    success_reason="google_runtime_int_replaced",
+                    missing_reason="missing_runtime_int_payload",
+                    no_match_reason="no_safe_same_line_runtime_int_match",
+                    already_rewritten_reason="already_rewritten",
+                ),
             )
         ]
 

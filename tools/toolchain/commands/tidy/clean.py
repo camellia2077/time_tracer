@@ -3,7 +3,7 @@ from pathlib import Path
 from ...core.context import Context
 from ...services import batch_state
 from ..shared import tidy as tidy_shared
-from .task_log import list_task_paths, load_task_record, task_artifact_paths
+from .tasking.task_log import list_task_paths, load_task_record, task_artifact_paths
 from .workspace import DEFAULT_TIDY_BUILD_DIR_NAME
 
 

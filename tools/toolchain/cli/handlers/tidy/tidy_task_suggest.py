@@ -1,6 +1,6 @@
 import argparse
 
-from ....commands.tidy.task_suggest import TidyTaskSuggestCommand
+from ....commands.tidy.tasking.task_suggest import TidyTaskSuggestCommand
 from ....core.context import Context
 from ...common import add_required_task_log_arg
 from ...model import CommandSpec, ParserDefaults

@@ -4,7 +4,7 @@ from collections import defaultdict
 from pathlib import Path
 import re
 
-from ...commands.tidy.task_record_types import (
+from ...commands.tidy.tasking.task_record_types import (
     TASK_RECORD_VERSION,
     SourceFingerprint,
     TaskDiagnostic,

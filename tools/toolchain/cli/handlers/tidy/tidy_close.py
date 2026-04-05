@@ -86,6 +86,14 @@ def register(parser: argparse.ArgumentParser, defaults: ParserDefaults) -> None:
 
 def run(args: argparse.Namespace, ctx: Context) -> int:
     kill_build_procs = bool(args.kill_build_procs and not args.no_kill_build_procs)
+    strict_config = bool(args.strict_config)
+    stabilize = bool(args.stabilize)
+    # In strict mode, tidy-close is treated as the final acceptance gate.
+    # A final full tidy refresh can legitimately repopulate tasks/ with a new
+    # queue wave, so we automatically enable stabilize to drain/retry instead
+    # of failing early with a transient "pending_tasks" status.
+    if strict_config:
+        stabilize = True
     cmd = TidyCloseCommand(ctx)
     return cmd.execute(
         app_name=args.app,
@@ -100,8 +108,8 @@ def run(args: argparse.Namespace, ctx: Context) -> int:
         kill_build_procs=kill_build_procs,
         tidy_only=args.tidy_only,
         config_file=args.config_file,
-        strict_config=bool(args.strict_config),
-        stabilize=bool(args.stabilize),
+        strict_config=strict_config,
+        stabilize=stabilize,
     )
 
 
