@@ -26,7 +26,7 @@ expect_stdout_contains = [
   "compression_level: 1",
   "Package:",
   "package_type: tracer_exchange",
-  "package_version: 3",
+  "package_version: 4",
   "producer_platform: windows",
   "producer_app: time_tracer_cli",
   "created_at_utc: ",
@@ -149,7 +149,7 @@ expect_files = [
 ]
 expect_file_contains = [
   "{exe_dir}/input/full/2026/2026-03.txt::0210cliimportalias",
-  "{exe_dir}/config/converter/alias_mapping.toml::\"cliimportalias\" = \"zzdemo_only\"",
+  "{exe_dir}/config/converter/aliases/zzdemo.toml::\"cliimportalias\" = \"only\"",
 ]
 
 [[commands]]

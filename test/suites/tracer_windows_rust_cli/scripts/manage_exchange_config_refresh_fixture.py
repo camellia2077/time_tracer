@@ -6,7 +6,9 @@ from pathlib import Path
 
 
 CUSTOM_ALIAS = "cliimportalias"
-CUSTOM_PROJECT_PATH = "zzdemo_only"
+CUSTOM_PARENT = "zzdemo"
+CUSTOM_LEAF = "only"
+CUSTOM_CHILD_FILE = "zzdemo.toml"
 
 # This fixture intentionally creates a small custom package for config-refresh
 # regression tests. When imported via exchange replace-all, runtime DB is
@@ -23,17 +25,36 @@ def _backup_converter_config(workspace_root: Path, scenario_root: Path) -> None:
         "duration_rules.toml",
     ):
         shutil.copy2(converter_root / file_name, backup_root / file_name)
+    aliases_root = converter_root / "aliases"
+    backup_aliases_root = backup_root / "aliases"
+    if backup_aliases_root.exists():
+        shutil.rmtree(backup_aliases_root)
+    shutil.copytree(aliases_root, backup_aliases_root)
 
 
 def _append_custom_alias(alias_mapping_path: Path) -> None:
     content = alias_mapping_path.read_text(encoding="utf-8")
-    custom_line = f'"{CUSTOM_ALIAS}" = "{CUSTOM_PROJECT_PATH}"'
-    if custom_line in content:
+    custom_include = f'"aliases/{CUSTOM_CHILD_FILE}"'
+    if custom_include in content:
         return
 
     suffix = "" if content.endswith("\n") else "\n"
     alias_mapping_path.write_text(
-        f"{content}{suffix}\n{custom_line}\n",
+        content.replace(
+            "]",
+            f'  "aliases/{CUSTOM_CHILD_FILE}",\n]',
+            1,
+        )
+        + suffix,
+        encoding="utf-8",
+    )
+
+
+def _write_custom_alias_child(converter_root: Path) -> None:
+    custom_child_path = converter_root / "aliases" / CUSTOM_CHILD_FILE
+    custom_child_path.parent.mkdir(parents=True, exist_ok=True)
+    custom_child_path.write_text(
+        'parent = "zzdemo"\n\n[aliases]\n"cliimportalias" = "only"\n',
         encoding="utf-8",
     )
 
@@ -64,7 +85,9 @@ def _build_custom_txt(source_txt_path: Path, target_txt_path: Path) -> None:
 
 def prepare_fixture(workspace_root: Path, scenario_root: Path, source_txt_path: Path) -> None:
     _backup_converter_config(workspace_root, scenario_root)
-    _append_custom_alias(workspace_root / "config" / "converter" / "alias_mapping.toml")
+    converter_root = workspace_root / "config" / "converter"
+    _append_custom_alias(converter_root / "alias_mapping.toml")
+    _write_custom_alias_child(converter_root)
 
     custom_data_root = scenario_root / "custom_data"
     target_txt_path = custom_data_root / "2026" / "2026-03.txt"
@@ -85,6 +108,10 @@ def restore_runtime(workspace_root: Path, scenario_root: Path) -> None:
         "duration_rules.toml",
     ):
         shutil.copy2(backup_root / file_name, converter_root / file_name)
+    aliases_root = converter_root / "aliases"
+    if aliases_root.exists():
+        shutil.rmtree(aliases_root)
+    shutil.copytree(backup_root / "aliases", aliases_root)
 
     input_root = workspace_root / "input" / "full"
     if input_root.exists():

@@ -38,9 +38,10 @@
    - `manifest.toml`
    - `config/converter/interval_processor_config.toml`
    - `config/converter/alias_mapping.toml`
+   - `config/converter/aliases/*.toml`
    - `config/converter/duration_rules.toml`
    - `payload/<year>/YYYY-MM.txt`
-   共同组装为 tracer exchange package `v3`，再交给外层 `.tracer` v2 容器压缩加密。
+   共同组装为 tracer exchange package `v4`，再交给外层 `.tracer` v2 容器压缩加密。
 8. 若 `output_path` 已存在且是目录，则实际输出为：
    - `<output_path>/<input_dir_name>.tracer`
 9. 否则将 `output_path` 的扩展名替换为 `.tracer` 作为最终输出文件。
@@ -63,10 +64,11 @@
 ### 4.2 处理语义
 1. `input_path` 必须是已存在的单个 `.tracer` 文件。
 2. decrypt 的当前业务语义是“事务式完整导入 tracer exchange package”，不是“解包到目录”。
-3. 外层 `.tracer` 解密后，runtime 会解析内层 `TTPKG v3`。
+3. 外层 `.tracer` 解密后，runtime 会解析内层 tracer exchange package `v4`。
 4. runtime 必须先成功加载校验包内：
    - `config/converter/interval_processor_config.toml`
    - `config/converter/alias_mapping.toml`
+   - `config/converter/aliases/*.toml`
    - `config/converter/duration_rules.toml`
 5. runtime 会备份当前 active converter config 与将被覆盖的本地月份 TXT。
 6. 随后包内 3 个 converter TOML 会覆盖当前 active config。
@@ -124,7 +126,7 @@
 ## 6. Exchange Package 校验语义
 1. decrypt / inspect 成功的前提是：外层 `.tracer` 载荷必须是有效的 tracer exchange package。
 2. 当前 exchange package 载荷契约见：
-   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 3. 若内层 package 不满足该契约，错误消息通常以：
    - `unsupported/malformed tracer package: ...`
    开头。
@@ -191,5 +193,5 @@
 1. `docs/time_tracer/core/shared/c_abi.md`
 2. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
 3. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 5. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`

@@ -31,8 +31,13 @@ auto BuildEntry(std::string_view relative_path, std::string_view text)
     -> exchange_pkg::TracerExchangePackageEntry;
 auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
                               const std::string& main_config,
-                              const std::string& alias_config,
+                              const std::string& alias_index_config,
                               const std::string& duration_config)
+    -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
+auto BuildValidPackageEntries(
+    const std::vector<PayloadFixture>& payloads, const std::string& main_config,
+    const std::string& alias_index_config, const std::string& duration_config,
+    const std::vector<PayloadFixture>& alias_child_configs)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry>;
 auto FindEntry(const exchange_pkg::DecodedTracerExchangePackage& package,
                std::string_view path)
@@ -46,6 +51,8 @@ auto CanonicalizeLegacyTextForAssertion(std::string text) -> std::string;
 auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string;
 auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
     -> std::string;
+auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture>;
+auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture>;
 auto BuildSamplePayloads() -> std::vector<PayloadFixture>;
 auto BuildValidExportPayloads() -> std::vector<PayloadFixture>;
 auto ResolveInputPayloadPath(std::string_view relative_package_path)

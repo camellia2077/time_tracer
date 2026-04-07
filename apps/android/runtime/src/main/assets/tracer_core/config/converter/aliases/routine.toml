@@ -1,0 +1,11 @@
+parent = "routine"
+
+[aliases]
+"上厕所" = "toilet"
+"快递" = "express"
+
+[aliases.body-hygiene]
+"洗澡" = "bathing"
+
+[aliases.personal-hygiene]
+"洗漱" = "oral-hygiene"

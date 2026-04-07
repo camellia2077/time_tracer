@@ -1,0 +1,7 @@
+parent = "rest"
+
+[aliases]
+"rest" = "rest"
+"休息" = "rest"
+"r" = "rest"
+"失眠" = "insomnia"

@@ -1,15 +1,22 @@
 {
   "target": "windows",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "40562cbb4c7d5044116a5e3a575dcb5742334ee91b9a788c8df2907a7cc19cf2",
-  "planned_file_count": 23,
+  "input_hash": "28ef65a5872f349a6e577d0447b7f2d8ccade1487de8e3007fa0670b2d2a7c76",
+  "planned_file_count": 30,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
     "config.toml": "bfd1d159757115bb9f476f8576f08d981bacee0801bd6dcf75d5127634c6311e",
-    "converter/alias_mapping.toml": "6d38dda510d2bb6a49a8406011ee6dee0b15f18e9965412981cb2996fe696bdc",
+    "converter/alias_mapping.toml": "529320459b745ae7f2c730a6a47065f140f61ee0c1a7a2b7e7305ca8a2310dbf",
+    "converter/aliases/exercise.toml": "86667f84e2e4f2ac5f762a65a43d944898668a5e93db3652a551f114ff4f6300",
+    "converter/aliases/meal.toml": "466814d43d6a668b1605e724e8c7244cbc9b555d7bfe32638e1d261cc7c96377",
+    "converter/aliases/recreation.toml": "dbc2fd9b12f3fd4444fa15c3729dff6850f29e722336e5cb1c8e53342287f343",
+    "converter/aliases/rest.toml": "d1b1f7b5566d7058704f8a3de690e4a517a728dba706268b8ecfcc5dadafd479",
+    "converter/aliases/routine.toml": "1a55d70caaf18c3656bd7bb501f1d357c865fd6451aabdd0c9a090d94b8ac22a",
+    "converter/aliases/sleep.toml": "9f82dd9f5b1baaa1e519681a082e1e1e24217da79fe8be7e0842624c1b205986",
+    "converter/aliases/study.toml": "01722c1813418bcc592e2ec9ca4da90ee05e65af8d703d1e20272733bfb6f25c",
     "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
     "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
-    "meta/bundle.toml": "209b0d94a9c9c4bbd3854a606c68c4aaa1ff3f0c91170caf70a4eda1a033a60c",
+    "meta/bundle.toml": "feb7603cc1a91a7f043b84afc6be5496d425624914058c04dda6d93adc8dc751",
     "reports/latex/common_style.toml": "35540e77e0618a202b75151751f1c2bb5e6dcbc0603f177c31aef1b1358bd6de",
     "reports/latex/day.toml": "8111f2bac2edb58a652ee404115f935fb02ca20d6e8e3cf1799f4464ad1a25d1",
     "reports/latex/month.toml": "8d7b5951d6c7c016912609e54163affc4d194273feb87938b7593d4bc047be65",
@@ -28,5 +35,5 @@
     "reports/typst/week.toml": "0e09e36312c608a6b10021537b45ad1cfb3187b7d541dbc9046fe7e3bc85e443",
     "reports/typst/year.toml": "c4923f504081b91af3354551a8c4783df4b0a404a8c5fc9d060e1212ad95fd1f"
   },
-  "generated_at_utc": "2026-03-22T13:52:37.700678+00:00"
+  "generated_at_utc": "2026-04-07T12:27:01.853332+00:00"
 }

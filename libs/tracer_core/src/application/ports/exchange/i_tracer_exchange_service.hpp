@@ -18,6 +18,10 @@ class ITracerExchangeService {
       const tracer_core::core::dto::TracerExchangeImportRequest& request)
       -> tracer_core::core::dto::TracerExchangeImportResult = 0;
 
+  virtual auto RunUnpack(
+      const tracer_core::core::dto::TracerExchangeUnpackRequest& request)
+      -> tracer_core::core::dto::TracerExchangeUnpackResult = 0;
+
   virtual auto RunInspect(
       const tracer_core::core::dto::TracerExchangeInspectRequest& request)
       -> tracer_core::core::dto::TracerExchangeInspectResult = 0;

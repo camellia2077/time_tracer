@@ -74,7 +74,11 @@ auto ActivityMapper::MapActivities(DailyLog& day) -> void {
 
   // Canonical mapping stage:
   // TXT stores alias keys (raw activity tokens). During full-text conversion/ingest we map
-  // alias key -> canonical value defined in alias_mapping.toml [aliases].
+  // alias key -> canonical value expanded from alias_mapping.toml index +
+  // converter/aliases/*.toml child files.
+  // Timing semantics are applied later: alias normalization decides only the
+  // canonical activity path, while time ranges and durations are derived from
+  // neighboring authored event timestamps in subsequent steps.
   auto map_it = config_.text_mapping.find(mapped_description);
   if (map_it != config_.text_mapping.end()) {
     mapped_description = map_it->second;

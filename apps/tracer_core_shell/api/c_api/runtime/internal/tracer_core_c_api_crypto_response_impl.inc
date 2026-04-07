@@ -77,3 +77,25 @@
       .error_message = "",
   };
 }
+
+[[nodiscard]] auto BuildUnpackTextOutput(
+    const app_dto::TracerExchangeUnpackResult& result,
+    const app_dto::TracerExchangeUnpackRequest& request)
+    -> tracer_core::core::dto::TextOutput {
+  if (!result.ok) {
+    return {.ok = false, .content = "", .error_message = result.error_message};
+  }
+  return {
+      .ok = true,
+      .content = "Unpacked tracer exchange package: " +
+                 fs::absolute(request.input_tracer_path).string() + " -> " +
+                 result.resolved_output_root_path.string() + "\n" +
+                 "Included payload TXT files: " +
+                 std::to_string(result.payload_file_count) + "\n" +
+                 "Included converter TOML files: " +
+                 std::to_string(result.converter_file_count) + "\n" +
+                 "Manifest included: " +
+                 std::string(result.manifest_included ? "yes" : "no"),
+      .error_message = "",
+  };
+}

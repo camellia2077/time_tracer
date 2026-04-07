@@ -64,6 +64,10 @@ class TracerCoreApi : public ITracerCoreApi {
       const tracer_core::core::dto::TracerExchangeImportRequest& request)
       -> tracer_core::core::dto::TracerExchangeImportResult override;
 
+  auto RunTracerExchangeUnpack(
+      const tracer_core::core::dto::TracerExchangeUnpackRequest& request)
+      -> tracer_core::core::dto::TracerExchangeUnpackResult override;
+
   auto RunTracerExchangeInspect(
       const tracer_core::core::dto::TracerExchangeInspectRequest& request)
       -> tracer_core::core::dto::TracerExchangeInspectResult override;

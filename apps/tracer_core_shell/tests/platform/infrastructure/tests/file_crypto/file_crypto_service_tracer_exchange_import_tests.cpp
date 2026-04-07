@@ -28,6 +28,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
       "assets/tracer_core/config/converter/alias_mapping.toml");
   const std::string legacy_duration = ReadLegacyRepoConverterConfig(
       "assets/tracer_core/config/converter/duration_rules.toml");
+  const auto alias_child_configs = BuildRepoAliasChildConfigs();
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -37,7 +38,7 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
           BuildValidPackageEntries(
               {{.relative_path = "payload/2025/2025-01.txt",
                 .text = legacy_payload}},
-              legacy_main, legacy_alias, legacy_duration),
+              legacy_main, legacy_alias, legacy_duration, alias_child_configs),
           kPassphrase, failures)) {
     RemoveTree(paths.test_root);
     return;
@@ -88,6 +89,16 @@ auto TestTracerExchangeImportCanonicalizesLegacyText(int& failures) -> void {
              CanonicalizeLegacyTextForAssertion(legacy_duration),
          "Applied duration config should be rewritten to canonical text.",
          failures);
+  for (const auto& alias_child_config : alias_child_configs) {
+    const fs::path alias_child_path =
+        config_root /
+        fs::path(alias_child_config.relative_path)
+            .lexically_relative("config/converter");
+    Expect(ReadTextFile(alias_child_path) ==
+               NormalizeLf(alias_child_config.text),
+           "Applied alias child config should be rewritten to canonical text.",
+           failures);
+  }
   Expect(result.text_root_updated && result.config_applied &&
              result.database_rebuilt,
          "Legacy canonicalized import should complete the full transaction.",
@@ -133,6 +144,7 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
       "assets/tracer_core/config/converter/alias_mapping.toml");
   const std::string package_duration = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/duration_rules.toml");
+  const auto package_alias_children = BuildRepoAliasChildConfigs();
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -151,7 +163,8 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
   if (!WriteEncryptedTracerFromEntries(
           package_path, tracer_path,
           BuildValidPackageEntries(BuildSamplePayloads(), package_main,
-                                   package_alias, package_duration),
+                                   package_alias, package_duration,
+                                   package_alias_children),
           kPassphrase, failures)) {
     RemoveTree(paths.test_root);
     return;
@@ -216,6 +229,16 @@ auto TestTracerExchangeImportPreservesExtraMonthsAndRebuildsDatabase(
              NormalizeLf(package_duration),
          "RunTracerExchangeImport should overwrite active duration config.",
          failures);
+  for (const auto& alias_child_config : package_alias_children) {
+    const fs::path alias_child_path =
+        active_config_root /
+        fs::path(alias_child_config.relative_path)
+            .lexically_relative("config/converter");
+    Expect(NormalizeLf(ReadTextFile(alias_child_path)) ==
+               NormalizeLf(alias_child_config.text),
+           "RunTracerExchangeImport should overwrite active alias child config.",
+           failures);
+  }
   Expect(NormalizeLf(ReadTextFile(active_text_root / "2024" / "2024-01.txt")) ==
              NormalizeLf(preserved_month),
          "Transaction import should preserve package-external local months.",
@@ -273,6 +296,7 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
       "assets/tracer_core/config/converter/alias_mapping.toml");
   const std::string package_duration = ReadRepoConverterConfig(
       "assets/tracer_core/config/converter/duration_rules.toml");
+  const auto package_alias_children = BuildRepoAliasChildConfigs();
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -289,7 +313,8 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
   if (!WriteEncryptedTracerFromEntries(
           package_path, tracer_path,
           BuildValidPackageEntries(BuildSamplePayloads(), package_main,
-                                   package_alias, package_duration),
+                                   package_alias, package_duration,
+                                   package_alias_children),
           kPassphrase, failures)) {
     RemoveTree(paths.test_root);
     return;
@@ -342,6 +367,16 @@ auto TestTracerExchangeImportApplyFailureRollsBackConfig(int& failures)
          "Rollback should preserve the original duration config after apply "
          "failure.",
          failures);
+  for (const auto& alias_child_config : package_alias_children) {
+    const fs::path alias_child_path =
+        active_config_root /
+        fs::path(alias_child_config.relative_path)
+            .lexically_relative("config/converter");
+    Expect(NormalizeLf(ReadTextFile(alias_child_path)) ==
+               NormalizeLf(alias_child_config.text),
+           "Rollback should restore alias child configs after apply failure.",
+           failures);
+  }
   Expect(NormalizeLf(ReadTextFile(active_text_root / "2024" / "2024-01.txt")) ==
              NormalizeLf(original_month),
          "Rollback should preserve the original active text root content.",
@@ -404,7 +439,7 @@ auto TestTracerExchangeImportRejectsInvalidConverterConfig(int& failures)
   if (!WriteEncryptedTracerFromEntries(
           package_path, tracer_path,
           BuildValidPackageEntries(BuildSamplePayloads(), "invalid = [\n",
-                                   "alias = \"broken\"\n",
+                                   "includes = [\"aliases/default.toml\"]\n",
                                    "duration = \"broken\"\n"),
           kPassphrase, failures)) {
     RemoveTree(paths.test_root);

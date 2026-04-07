@@ -14,6 +14,9 @@
 #include <string_view>
 #include <system_error>
 
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
+#include "infra/config/loader/toml_loader_utils.hpp"
+
 import tracer.core.infrastructure.exchange;
 import tracer.core.infrastructure.config.loader.converter_config_loader;
 import tracer.core.shared.canonical_text;

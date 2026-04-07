@@ -99,10 +99,16 @@ auto TestTracerExchangeExportEndToEnd(int& failures) -> void {
   Expect(FindEntry(package, exchange_pkg::kConverterMainPath) != nullptr,
          "Exported package should contain interval_processor_config.toml.",
          failures);
-  Expect(FindEntry(package, exchange_pkg::kAliasMappingPath) != nullptr,
+  Expect(FindEntry(package, exchange_pkg::kAliasMappingIndexPath) != nullptr,
          "Exported package should contain alias_mapping.toml.", failures);
   Expect(FindEntry(package, exchange_pkg::kDurationRulesPath) != nullptr,
          "Exported package should contain duration_rules.toml.", failures);
+  Expect(package.manifest.converter_alias_mapping_files.size() == 7U,
+         "Exported package should list every alias child config.", failures);
+  for (const auto& alias_child_path : package.manifest.converter_alias_mapping_files) {
+    Expect(FindEntry(package, alias_child_path) != nullptr,
+           "Exported package should contain each alias child config.", failures);
+  }
 
   for (const auto& payload : payloads) {
     const auto* payload_entry = FindEntry(package, payload.relative_path);
@@ -236,7 +242,8 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
   }
   if (!WriteEncryptedTracerFromEntries(
           package_path, tracer_path,
-          BuildValidPackageEntries(payloads, "main = true\n", "alias = true\n",
+          BuildValidPackageEntries(payloads, "main = true\n",
+                                   "includes = [\"aliases/default.toml\"]\n",
                                    "duration = true\n"),
           kPassphrase, failures)) {
     RemoveTree(paths.test_root);
@@ -268,7 +275,7 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
          failures);
   Expect(result.package_type == "tracer_exchange",
          "RunTracerExchangeInspect should report package_type.", failures);
-  Expect(result.package_version == 3,
+  Expect(result.package_version == 4,
          "RunTracerExchangeInspect should report package_version.", failures);
   Expect(result.producer_platform == "windows",
          "RunTracerExchangeInspect should report producer_platform.", failures);
@@ -285,14 +292,19 @@ auto TestTracerExchangeInspectEndToEnd(int& failures) -> void {
          "RunTracerExchangeInspect should return a payload entry per TXT file.",
          failures);
   Expect(
-      result.converter_entries[0].present,
+      !result.converter_entries.empty() && result.converter_entries[0].present,
       "RunTracerExchangeInspect should report interval_processor_config.toml.",
       failures);
-  Expect(result.converter_entries[1].present,
+  Expect(result.converter_entries.size() >= 2U &&
+             result.converter_entries[1].present,
          "RunTracerExchangeInspect should report alias_mapping.toml.",
          failures);
-  Expect(result.converter_entries[2].present,
+  Expect(result.converter_entries.size() >= 3U &&
+             result.converter_entries[2].present,
          "RunTracerExchangeInspect should report duration_rules.toml.",
+         failures);
+  Expect(result.converter_entries.size() == 4U,
+         "RunTracerExchangeInspect should report alias child entries.",
          failures);
   Expect(!fs::exists(tracer_path.parent_path() / ".tracer_staging"),
          "RunTracerExchangeInspect should not create a tracer staging directory.",
@@ -324,6 +336,7 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
       "assets/tracer_core/config/converter/alias_mapping.toml");
   const std::string legacy_duration = ReadLegacyRepoConverterConfig(
       "assets/tracer_core/config/converter/duration_rules.toml");
+  const auto alias_child_configs = BuildRepoAliasChildConfigs();
 
   if (!PrepareRuntimeFixture(paths, config_root, failures)) {
     return;
@@ -338,6 +351,18 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
     std::cerr << "[FAIL] Failed to seed legacy TXT/TOML bytes for export.\n";
     RemoveTree(paths.test_root);
     return;
+  }
+  for (const auto& alias_child_config : alias_child_configs) {
+    if (!WriteRawBytesWithParents(
+            config_root / fs::path(alias_child_config.relative_path)
+                              .lexically_relative("config/converter"),
+            ToBytes(BuildLegacyText(alias_child_config.text)))) {
+      ++failures;
+      std::cerr << "[FAIL] Failed to seed legacy alias child TOML bytes for "
+                   "export.\n";
+      RemoveTree(paths.test_root);
+      return;
+    }
   }
 
   auto runtime = BuildTracerExchangeRuntime(paths, main_config_path, failures);
@@ -375,9 +400,11 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
 
   const auto* payload_entry = FindEntry(package, "payload/2025/2025-01.txt");
   const auto* main_entry = FindEntry(package, exchange_pkg::kConverterMainPath);
-  const auto* alias_entry = FindEntry(package, exchange_pkg::kAliasMappingPath);
+  const auto* alias_entry =
+      FindEntry(package, exchange_pkg::kAliasMappingIndexPath);
   const auto* duration_entry =
       FindEntry(package, exchange_pkg::kDurationRulesPath);
+  const auto* alias_child_entry = FindEntry(package, "config/converter/aliases/meal.toml");
   Expect(payload_entry != nullptr,
          "Canonical export should include payload entry.", failures);
   Expect(main_entry != nullptr,
@@ -386,6 +413,8 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
          "Canonical export should include alias TOML entry.", failures);
   Expect(duration_entry != nullptr,
          "Canonical export should include duration TOML entry.", failures);
+  Expect(alias_child_entry != nullptr,
+         "Canonical export should include alias child TOML entry.", failures);
 
   if (payload_entry != nullptr) {
     Expect(
@@ -411,6 +440,14 @@ auto TestTracerExchangeExportCanonicalizesLegacyText(int& failures) -> void {
             CanonicalizeLegacyTextForAssertion(legacy_duration),
         "Exported duration config bytes should be canonical UTF-8 text.",
         failures);
+  }
+  if (alias_child_entry != nullptr) {
+    Expect(std::string(alias_child_entry->data.begin(),
+                       alias_child_entry->data.end()) ==
+               CanonicalizeLegacyTextForAssertion(
+                   BuildLegacyText(alias_child_configs.front().text)),
+           "Exported alias child config bytes should be canonical UTF-8 text.",
+           failures);
   }
 
   RemoveTree(paths.test_root);
@@ -491,8 +528,9 @@ auto TestTracerExchangeExportKeepsCanonicalTextStableAcrossHosts(int& failures)
 
   for (const std::string_view path :
        {std::string_view("payload/2025/2025-01.txt"),
-        exchange_pkg::kConverterMainPath, exchange_pkg::kAliasMappingPath,
-        exchange_pkg::kDurationRulesPath}) {
+        exchange_pkg::kConverterMainPath, exchange_pkg::kAliasMappingIndexPath,
+        exchange_pkg::kDurationRulesPath,
+        std::string_view("config/converter/aliases/meal.toml")}) {
     const auto* android_entry = FindEntry(*android_package_opt, path);
     const auto* windows_entry = FindEntry(*windows_package_opt, path);
     Expect(android_entry != nullptr && windows_entry != nullptr,

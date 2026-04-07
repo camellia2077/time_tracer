@@ -26,7 +26,7 @@ export namespace tracer::core::infrastructure::crypto::exchange {
 inline constexpr std::string_view kManifestPath = "manifest.toml";
 inline constexpr std::string_view kConverterMainPath =
     "config/converter/interval_processor_config.toml";
-inline constexpr std::string_view kAliasMappingPath =
+inline constexpr std::string_view kAliasMappingIndexPath =
     "config/converter/alias_mapping.toml";
 inline constexpr std::string_view kDurationRulesPath =
     "config/converter/duration_rules.toml";
@@ -35,7 +35,7 @@ inline constexpr std::string_view kPayloadRoot = "payload";
 inline constexpr std::array<std::string_view, 4> kRequiredPackagePaths = {
     kManifestPath,
     kConverterMainPath,
-    kAliasMappingPath,
+    kAliasMappingIndexPath,
     kDurationRulesPath,
 };
 
@@ -46,7 +46,12 @@ inline constexpr std::uint16_t kStandardEntryFlags =
 
 struct TracerExchangeManifest {
   std::string package_type = "tracer_exchange";
-  std::int64_t package_version = 3;
+  // v4 extends converter packaging from a fixed three-file layout
+  // (main_config + alias_mapping + duration_rules) to
+  // main_config + alias_mapping_index + alias_mapping_files + duration_rules.
+  // The version bump makes that manifest/layout change explicit for import and
+  // inspect flows.
+  std::int64_t package_version = 4;
   std::string producer_platform;
   std::string producer_app;
   std::string created_at_utc;
@@ -54,7 +59,9 @@ struct TracerExchangeManifest {
   std::string payload_root = std::string(kPayloadRoot);
   std::vector<std::string> payload_files;
   std::string converter_main_config = std::string(kConverterMainPath);
-  std::string converter_alias_mapping = std::string(kAliasMappingPath);
+  std::string converter_alias_mapping_index =
+      std::string(kAliasMappingIndexPath);
+  std::vector<std::string> converter_alias_mapping_files;
   std::string converter_duration_rules = std::string(kDurationRulesPath);
 };
 
@@ -271,11 +278,36 @@ auto ValidateManifestPayloadFiles(const std::vector<std::string>& payload_files)
   }
 }
 
+auto ValidateAliasMappingFiles(
+    const std::vector<std::string>& alias_mapping_files) -> void {
+  if (alias_mapping_files.empty()) {
+    ThrowMalformedPackage(
+        "manifest alias mapping files must be a non-empty array.");
+  }
+
+  std::string previous_path;
+  for (const auto& alias_path : alias_mapping_files) {
+    if (!alias_path.starts_with("config/converter/aliases/") ||
+        !alias_path.ends_with(".toml")) {
+      ThrowMalformedPackage(
+          "manifest alias mapping files must live under "
+          "`config/converter/aliases/` and end with `.toml`.");
+    }
+    if (!previous_path.empty() && alias_path <= previous_path) {
+      ThrowMalformedPackage(
+          "manifest alias mapping files must be unique and sorted "
+          "lexicographically.");
+    }
+    previous_path = alias_path;
+  }
+}
+
 auto ValidatePackageEntryLayout(
     const std::vector<TracerExchangePackageEntry>& entries,
     const TracerExchangeManifest& manifest) -> void {
   const std::size_t expected_entry_count =
-      kRequiredPackagePaths.size() + manifest.payload_files.size();
+      kRequiredPackagePaths.size() +
+      manifest.converter_alias_mapping_files.size() + manifest.payload_files.size();
   if (entries.size() != expected_entry_count) {
     ThrowMalformedPackage(
         "entry_count does not match manifest payload file "
@@ -294,10 +326,23 @@ auto ValidatePackageEntryLayout(
     }
   }
 
-  for (std::size_t index = 0; index < manifest.payload_files.size(); ++index) {
-    const std::string_view expected_payload_path =
-        manifest.payload_files[index];
+  for (std::size_t index = 0;
+       index < manifest.converter_alias_mapping_files.size(); ++index) {
+    const std::string_view expected_alias_path =
+        manifest.converter_alias_mapping_files[index];
     const std::size_t entry_index = kRequiredPackagePaths.size() + index;
+    if (entries[entry_index].relative_path != expected_alias_path) {
+      ThrowMalformedPackage(
+          "alias child entry set does not match manifest "
+          "converter.alias_mapping_files.");
+    }
+  }
+
+  const std::size_t payload_offset =
+      kRequiredPackagePaths.size() + manifest.converter_alias_mapping_files.size();
+  for (std::size_t index = 0; index < manifest.payload_files.size(); ++index) {
+    const std::string_view expected_payload_path = manifest.payload_files[index];
+    const std::size_t entry_index = payload_offset + index;
     if (entries[entry_index].relative_path != expected_payload_path) {
       ThrowMalformedPackage(
           "payload entry set does not match manifest "
@@ -419,7 +464,12 @@ auto BuildManifestText(const TracerExchangeManifest& manifest) -> std::string {
 
   toml::table converter;
   converter.insert("main_config", manifest.converter_main_config);
-  converter.insert("alias_mapping", manifest.converter_alias_mapping);
+  converter.insert("alias_mapping_index", manifest.converter_alias_mapping_index);
+  toml::array alias_mapping_files{};
+  for (const auto& path : manifest.converter_alias_mapping_files) {
+    alias_mapping_files.push_back(path);
+  }
+  converter.insert("alias_mapping_files", std::move(alias_mapping_files));
   converter.insert("duration_rules", manifest.converter_duration_rules);
   table.insert("converter", std::move(converter));
 
@@ -464,23 +514,26 @@ auto ParseManifestText(std::string_view manifest_text)
   }
   manifest.converter_main_config =
       ParseExpectedString(*converter_table, "main_config");
-  manifest.converter_alias_mapping =
-      ParseExpectedString(*converter_table, "alias_mapping");
+  manifest.converter_alias_mapping_index =
+      ParseExpectedString(*converter_table, "alias_mapping_index");
+  manifest.converter_alias_mapping_files =
+      ParseStringArray(*converter_table, "alias_mapping_files");
   manifest.converter_duration_rules =
       ParseExpectedString(*converter_table, "duration_rules");
 
   if (manifest.package_type != "tracer_exchange") {
     ThrowMalformedPackage("manifest `package_type` must be `tracer_exchange`.");
   }
-  if (manifest.package_version != 3) {
-    ThrowMalformedPackage("manifest `package_version` must be 3.");
+  if (manifest.package_version != 4) {
+    ThrowMalformedPackage("manifest `package_version` must be 4.");
   }
   if (manifest.payload_root != kPayloadRoot) {
     ThrowMalformedPackage("manifest payload root must be `payload`.");
   }
   ValidateManifestPayloadFiles(manifest.payload_files);
+  ValidateAliasMappingFiles(manifest.converter_alias_mapping_files);
   if (manifest.converter_main_config != kConverterMainPath ||
-      manifest.converter_alias_mapping != kAliasMappingPath ||
+      manifest.converter_alias_mapping_index != kAliasMappingIndexPath ||
       manifest.converter_duration_rules != kDurationRulesPath) {
     ThrowMalformedPackage(
         "manifest converter paths must match fixed package "

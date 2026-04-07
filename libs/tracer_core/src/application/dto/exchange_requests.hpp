@@ -93,6 +93,13 @@ struct TracerExchangeImportRequest {
   TracerExchangeProgressObserver progress_observer{};
 };
 
+struct TracerExchangeUnpackRequest {
+  std::filesystem::path input_tracer_path;
+  std::filesystem::path requested_output_root_path;
+  std::string passphrase;
+  TracerExchangeProgressObserver progress_observer{};
+};
+
 struct TracerExchangeInspectRequest {
   std::filesystem::path input_tracer_path;
   std::string passphrase;

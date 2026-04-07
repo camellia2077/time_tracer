@@ -1,0 +1,25 @@
+parent = "study"
+
+[aliases.english]
+"英语单词" = "words"
+"英语写作" = "writing"
+"英语听力" = "listening"
+"英语文章" = "article"
+
+[aliases.math]
+"高等数学" = "calculus"
+"线性代数" = "linear-algebra"
+"概率统计" = "probability-theory"
+
+[aliases.math.calculus]
+"高等数学二重积分" = "double-integral"
+
+[aliases.math.linear-algebra]
+"线性代数矩阵" = "matrix"
+
+[aliases.computer]
+"数据结构" = "data_structure"
+
+[aliases.computer.data-structure]
+"数据结构二叉树" = "trees"
+"数据结构图" = "graphs"

@@ -327,6 +327,17 @@ auto FakeTracerExchangeService::RunImport(
   return import_result;
 }
 
+auto FakeTracerExchangeService::RunUnpack(
+    const tracer_core::core::dto::TracerExchangeUnpackRequest& request)
+    -> tracer_core::core::dto::TracerExchangeUnpackResult {
+  ++unpack_call_count;
+  last_unpack_request = request;
+  if (throw_on_unpack) {
+    throw std::runtime_error("unpack");
+  }
+  return unpack_result;
+}
+
 auto FakeTracerExchangeService::RunInspect(
     const tracer_core::core::dto::TracerExchangeInspectRequest& request)
     -> tracer_core::core::dto::TracerExchangeInspectResult {

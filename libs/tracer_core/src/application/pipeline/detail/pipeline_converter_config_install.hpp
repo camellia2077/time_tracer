@@ -10,6 +10,7 @@ struct ConverterConfigPathSet {
   std::filesystem::path main_config_path;
   std::filesystem::path alias_mapping_path;
   std::filesystem::path duration_rules_path;
+  std::filesystem::path alias_directory_path;
 };
 
 [[nodiscard]] auto ResolveConverterConfigPathSet(
@@ -21,6 +22,13 @@ auto EnsureConverterConfigSourceExists(const std::filesystem::path& path,
 auto CopyConverterConfigFile(const std::filesystem::path& source_path,
                              const std::filesystem::path& target_path,
                              std::string_view label) -> void;
+
+auto RemoveConverterAliasDirectory(const std::filesystem::path& target_root)
+    -> void;
+
+auto CopyConverterAliasDirectory(const std::filesystem::path& source_root,
+                                 const std::filesystem::path& target_root)
+    -> void;
 
 }  // namespace tracer::core::application::pipeline::detail
 

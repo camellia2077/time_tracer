@@ -168,6 +168,8 @@ TT_CORE_API const char* tracer_core_runtime_crypto_encrypt_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_crypto_decrypt_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
+TT_CORE_API const char* tracer_core_runtime_crypto_unpack_json(
+    TtCoreRuntimeHandle* handle, const char* request_json);
 TT_CORE_API const char* tracer_core_runtime_crypto_inspect_json(
     TtCoreRuntimeHandle* handle, const char* request_json);
 

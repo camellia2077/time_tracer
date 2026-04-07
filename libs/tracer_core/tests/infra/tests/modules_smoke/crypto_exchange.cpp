@@ -31,12 +31,15 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
       "payload/2025/2025-01.txt",
       "payload/2026/2026-12.txt",
   };
+  manifest.converter_alias_mapping_files = {
+      "config/converter/aliases/default.toml",
+  };
 
   const std::string manifest_text = exchange::BuildManifestText(manifest);
   const exchange::TracerExchangeManifest parsed_manifest =
       exchange::ParseManifestText(manifest_text);
   if (parsed_manifest.package_type != "tracer_exchange" ||
-      parsed_manifest.package_version != 3 ||
+      parsed_manifest.package_version != 4 ||
       parsed_manifest.producer_platform != "windows" ||
       parsed_manifest.producer_app != "time_tracer_cli" ||
       parsed_manifest.source_root_name != "data" ||
@@ -45,13 +48,17 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   }
 
   std::vector<exchange::TracerExchangePackageEntry> entries;
-  entries.reserve(exchange::kRequiredPackagePaths.size() + 2U);
+  entries.reserve(exchange::kRequiredPackagePaths.size() + 1U + 2U);
   entries.push_back(BuildEntry(exchange::kManifestPath, manifest_text));
   entries.push_back(BuildEntry(exchange::kConverterMainPath, "main = true\n"));
   entries.push_back(
-      BuildEntry(exchange::kAliasMappingPath, "alias = \"study\"\n"));
+      BuildEntry(exchange::kAliasMappingIndexPath,
+                 "includes = [\"aliases/default.toml\"]\n"));
   entries.push_back(
       BuildEntry(exchange::kDurationRulesPath, "duration = \"rule\"\n"));
+  entries.push_back(BuildEntry("config/converter/aliases/default.toml",
+                               "parent = \"study\"\n\n[aliases]\n\"study\" = "
+                               "\"math\"\n"));
   entries.push_back(BuildEntry("payload/2025/2025-01.txt",
                                "y2025\nm01\n0101\n0600 study_math r alpha\n"));
   entries.push_back(BuildEntry("payload/2026/2026-12.txt",
@@ -60,7 +67,8 @@ auto RunInfrastructureModuleCryptoExchangeSmoke() -> int {
   const auto package_bytes = exchange::EncodePackageBytes(entries);
   const exchange::DecodedTracerExchangePackage decoded =
       exchange::DecodePackageBytes(package_bytes);
-  if (decoded.entries.size() != exchange::kRequiredPackagePaths.size() + 2U) {
+  if (decoded.entries.size() !=
+      exchange::kRequiredPackagePaths.size() + 1U + 2U) {
     return 12;
   }
   if (decoded.entries.front().relative_path != exchange::kManifestPath) {

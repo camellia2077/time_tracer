@@ -28,8 +28,8 @@
 ## 数据链路
 1. 外层编码固定为：`plaintext payload -> zstd(level=1) -> encrypt(XChaCha20-Poly1305) -> .tracer`
 2. 外层解码固定为：`.tracer -> decrypt -> zstd decompress -> plaintext payload`
-3. 当前 Windows tracer exchange 流程中，`plaintext payload` 是 `TTPKG v3` 批量文本交换包字节流：
-   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+3. 当前 Windows tracer exchange 流程中，`plaintext payload` 是 `tracer_exchange_package_v4` 定义的 tracer exchange 包字节流：
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 
 ## 解析规则
 1. 文件总长度必须 `>= 80`。
@@ -43,7 +43,7 @@
 ## 载荷解释约束
 1. `file_format_v2` 只约束外层 `.tracer` 容器，不单独保证业务可导入。
 2. 当前 tracer exchange `decrypt/import` / `inspect` 路径除了要求外层 `v2` 合法，还要求解密后的明文 payload 必须满足：
-   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+   - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 3. 历史上“外层 v2 合法、但明文 payload 不是当前支持的 tracer exchange package”的文件，不属于当前 exchange import 成功范围。
 
 ## 与 v1 兼容策略

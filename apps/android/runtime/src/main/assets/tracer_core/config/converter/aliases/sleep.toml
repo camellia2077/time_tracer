@@ -1,0 +1,10 @@
+parent = "sleep"
+
+[aliases]
+"睡觉" = "day"
+"白天睡觉" = "day"
+"wake" = "getup"
+"w" = "getup"
+"起床" = "getup"
+"醒" = "getup"
+"新的一天开始了" = "getup"

@@ -14,6 +14,7 @@ set(TIME_TRACKER_INFRA_EXCHANGE_SOURCES
     "exchange/tracer_exchange_service_export_support.cpp"
     "exchange/tracer_exchange_service_export.cpp"
     "exchange/tracer_exchange_service_import.cpp"
+    "exchange/tracer_exchange_service_unpack.cpp"
     "exchange/tracer_exchange_service_inspect.cpp"
     "exchange/tracer_exchange_service.cpp"
 )

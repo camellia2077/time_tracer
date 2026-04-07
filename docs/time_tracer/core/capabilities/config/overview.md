@@ -30,6 +30,7 @@ Config does not own:
 2. capability-specific business flows
 
 ## Read Next
-1. [../../capabilities/validation/config_validation.md](../../capabilities/validation/config_validation.md)
-2. [../../overview/capability_map.md](../../overview/capability_map.md)
-3. [../../overview/module_boundaries.md](../../overview/module_boundaries.md)
+1. [alias_mapping_rules.md](./alias_mapping_rules.md)
+2. [../../capabilities/validation/config_validation.md](../../capabilities/validation/config_validation.md)
+3. [../../overview/capability_map.md](../../overview/capability_map.md)
+4. [../../overview/module_boundaries.md](../../overview/module_boundaries.md)

@@ -266,6 +266,10 @@ auto PipelineWorkflow::InstallActiveConverterConfig(
   pipeline_detail::CopyConverterConfigFile(
       kSourcePaths.duration_rules_path, kTargetPaths.duration_rules_path,
       "duration rules config");
+  pipeline_detail::RemoveConverterAliasDirectory(
+      kTargetPaths.alias_mapping_path.parent_path());
+  pipeline_detail::CopyConverterAliasDirectory(
+      kSourcePaths.alias_directory_path, kTargetPaths.alias_directory_path);
   converter_config_provider_->InvalidateCache();
 }
 

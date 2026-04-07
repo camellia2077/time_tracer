@@ -11,6 +11,7 @@ module;
 #include <utility>
 
 #include "domain/types/converter_config.hpp"
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
 #include "infra/config/validator/converter/rules/converter_rules.hpp"
 
 module tracer.core.infrastructure.config.loader.converter_config_loader;
@@ -19,10 +20,9 @@ import tracer.core.infrastructure.config.loader.toml_loader_utils;
 
 namespace fs = std::filesystem;
 namespace modloader = tracer::core::infrastructure::config::loader;
+namespace modalias = tracer::core::infrastructure::config::loader::detail;
 
 namespace {
-
-constexpr std::string_view kAliasesSection = "aliases";
 
 auto ReadRequiredToml(const fs::path& file_path, std::string_view logical_name)
     -> toml::table {
@@ -33,20 +33,14 @@ auto ReadRequiredToml(const fs::path& file_path, std::string_view logical_name)
   return modloader::ReadToml(file_path);
 }
 
-auto BuildTextMappingsFromAlias(toml::table& main_tbl,
+auto BuildTextMappingsFromAlias(toml::table& main_tbl, const fs::path& index_path,
                                 const toml::table& alias_tbl) -> void {
-  const toml::table* aliases = alias_tbl[kAliasesSection].as_table();
-
+  const modalias::AliasMappingDefinition definition =
+      modalias::LoadAliasMappingDefinition(index_path, alias_tbl,
+                                           modloader::ReadToml);
   toml::table text_mappings;
-  for (const auto& [alias_key, alias_value] : *aliases) {
-    const std::string kAlias = std::string(alias_key.str());
-    const auto kProjectPathNode = alias_value.value<std::string>();
-    if (!kProjectPathNode.has_value()) {
-      throw std::runtime_error(
-          "aliases values must be non-empty strings in alias mapping config.");
-    }
-    const std::string kProjectPath = *kProjectPathNode;
-    text_mappings.insert(kAlias, kProjectPath);
+  for (const auto& entry : definition.expanded_entries) {
+    text_mappings.insert(entry.alias_key, entry.canonical_value);
   }
   main_tbl.insert_or_assign("text_mappings", std::move(text_mappings));
 }
@@ -131,14 +125,14 @@ auto ConverterConfigLoader::LoadMergedToml(const fs::path& main_config_path)
       ReadRequiredToml(kAliasMappingPath, "Alias mapping");
   const toml::table kDurationTbl =
       ReadRequiredToml(kDurationRulesPath, "Duration rules");
-  if (!V2Rule::ValidateAliasMapping(kAliasMappingTbl) ||
+  if (!V2Rule::ValidateAliasMapping(kAliasMappingPath, kAliasMappingTbl) ||
       !DurationRule::Validate(kDurationTbl)) {
     throw std::runtime_error(
         "Converter config validation failed for converter schema under: " +
         config_dir.string());
   }
 
-  BuildTextMappingsFromAlias(main_tbl, kAliasMappingTbl);
+  BuildTextMappingsFromAlias(main_tbl, kAliasMappingPath, kAliasMappingTbl);
   MergeSectionIfPresent(main_tbl, kDurationTbl, "text_duration_mappings");
   MergeSectionIfPresent(main_tbl, kDurationTbl, "duration_mappings");
 

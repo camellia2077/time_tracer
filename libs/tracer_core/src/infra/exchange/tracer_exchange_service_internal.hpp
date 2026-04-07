@@ -58,6 +58,7 @@ struct ActiveConverterConfigPaths {
   fs::path main_config_path;
   fs::path alias_mapping_path;
   fs::path duration_rules_path;
+  std::vector<fs::path> alias_child_paths;
 };
 
 class TracerExchangeService final : public app_ports::ITracerExchangeService {
@@ -70,6 +71,8 @@ class TracerExchangeService final : public app_ports::ITracerExchangeService {
       -> app_dto::TracerExchangeExportResult override;
   auto RunImport(const app_dto::TracerExchangeImportRequest& request)
       -> app_dto::TracerExchangeImportResult override;
+  auto RunUnpack(const app_dto::TracerExchangeUnpackRequest& request)
+      -> app_dto::TracerExchangeUnpackResult override;
   auto RunInspect(const app_dto::TracerExchangeInspectRequest& request)
       -> app_dto::TracerExchangeInspectResult override;
 

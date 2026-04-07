@@ -59,9 +59,16 @@ auto BuildInspectResult(
   }
   result.converter_entries = {
       FindEntrySummary(package, exchange_pkg::kConverterMainPath),
-      FindEntrySummary(package, exchange_pkg::kAliasMappingPath),
+      FindEntrySummary(package, exchange_pkg::kAliasMappingIndexPath),
       FindEntrySummary(package, exchange_pkg::kDurationRulesPath),
   };
+  result.converter_entries.reserve(result.converter_entries.size() +
+                                   package.manifest.converter_alias_mapping_files
+                                       .size());
+  for (const auto& alias_child_path :
+       package.manifest.converter_alias_mapping_files) {
+    result.converter_entries.push_back(FindEntrySummary(package, alias_child_path));
+  }
   return result;
 }
 

@@ -1,0 +1,6 @@
+parent = "meal"
+
+[aliases]
+"meal" = "dining"
+"吃饭" = "dining"
+"饭" = "dining"

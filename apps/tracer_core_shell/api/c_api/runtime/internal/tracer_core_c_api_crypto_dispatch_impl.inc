@@ -11,6 +11,11 @@ struct CryptoDecryptExecution {
   app_dto::TracerExchangeImportResult result;
 };
 
+struct CryptoUnpackExecution {
+  app_dto::TracerExchangeUnpackRequest request;
+  app_dto::TracerExchangeUnpackResult result;
+};
+
 struct CryptoInspectExecution {
   app_dto::TracerExchangeInspectRequest request;
   app_dto::TracerExchangeInspectResult result;
@@ -92,6 +97,16 @@ struct CryptoInspectExecution {
   };
 }
 
+[[nodiscard]] auto BuildCryptoUnpackRequest(const CryptoUnpackArgs& args)
+    -> app_dto::TracerExchangeUnpackRequest {
+  return {
+      .input_tracer_path = args.input_path,
+      .requested_output_root_path = args.output_path,
+      .passphrase = args.passphrase,
+      .progress_observer = BuildProgressObserver(),
+  };
+}
+
 [[nodiscard]] auto DispatchCryptoEncrypt(TtCoreRuntimeHandle* handle,
                                          const CryptoEncryptArgs& args)
     -> CryptoEncryptExecution {
@@ -125,5 +140,17 @@ struct CryptoInspectExecution {
   };
   execution.result =
       runtime.tracer_exchange().RunTracerExchangeInspect(execution.request);
+  return execution;
+}
+
+[[nodiscard]] auto DispatchCryptoUnpack(TtCoreRuntimeHandle* handle,
+                                        const CryptoUnpackArgs& args)
+    -> CryptoUnpackExecution {
+  ITracerCoreRuntime& runtime = RequireRuntime(handle);
+  CryptoUnpackExecution execution{
+      .request = BuildCryptoUnpackRequest(args),
+  };
+  execution.result =
+      runtime.tracer_exchange().RunTracerExchangeUnpack(execution.request);
   return execution;
 }

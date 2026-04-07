@@ -4,6 +4,7 @@
 
 #include <toml++/toml.h>
 
+#include <filesystem>
 #include <string>
 
 struct MainConfigPaths {
@@ -29,7 +30,9 @@ class MappingRule {
 
 class V2Rule {
  public:
-  static auto ValidateAliasMapping(const toml::table& alias_tbl) -> bool;
+  static auto ValidateAliasMapping(
+      const std::filesystem::path& alias_index_path,
+      const toml::table& alias_tbl) -> bool;
 };
 
 #endif  // INFRASTRUCTURE_CONFIG_VALIDATOR_CONVERTER_RULES_CONVERTER_RULES_H_

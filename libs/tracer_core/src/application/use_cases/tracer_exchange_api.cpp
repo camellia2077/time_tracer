@@ -38,6 +38,8 @@ using tracer_core::core::dto::TracerExchangeImportRequest;
 using tracer_core::core::dto::TracerExchangeImportResult;
 using tracer_core::core::dto::TracerExchangeInspectRequest;
 using tracer_core::core::dto::TracerExchangeInspectResult;
+using tracer_core::core::dto::TracerExchangeUnpackRequest;
+using tracer_core::core::dto::TracerExchangeUnpackResult;
 
 TracerExchangeApi::TracerExchangeApi(
     TracerExchangeServicePtr tracer_exchange_service)
@@ -74,6 +76,23 @@ auto TracerExchangeApi::RunTracerExchangeImport(
   } catch (...) {
     return BuildUnexpectedFailure<TracerExchangeImportResult>(
         "RunTracerExchangeImport");
+  }
+}
+
+auto TracerExchangeApi::RunTracerExchangeUnpack(
+    const TracerExchangeUnpackRequest& request) -> TracerExchangeUnpackResult {
+  try {
+    if (!tracer_exchange_service_) {
+      return BuildServiceUnavailable<TracerExchangeUnpackResult>(
+          "RunTracerExchangeUnpack");
+    }
+    return tracer_exchange_service_->RunUnpack(request);
+  } catch (const std::exception& exception) {
+    return BuildTracerExchangeFailure<TracerExchangeUnpackResult>(
+        "RunTracerExchangeUnpack", exception.what());
+  } catch (...) {
+    return BuildUnexpectedFailure<TracerExchangeUnpackResult>(
+        "RunTracerExchangeUnpack");
   }
 }
 

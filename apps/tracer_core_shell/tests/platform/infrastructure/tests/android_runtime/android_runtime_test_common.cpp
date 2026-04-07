@@ -85,6 +85,20 @@ auto CopyFileWithParents(const std::filesystem::path& source_path,
   return !error;
 }
 
+auto CopyDirectoryTree(const std::filesystem::path& source_path,
+                       const std::filesystem::path& target_path) -> bool {
+  std::error_code error;
+  std::filesystem::create_directories(target_path, error);
+  if (error) {
+    return false;
+  }
+  std::filesystem::copy(source_path, target_path,
+                        std::filesystem::copy_options::recursive |
+                            std::filesystem::copy_options::overwrite_existing,
+                        error);
+  return !error;
+}
+
 }  // namespace
 
 auto WriteFileWithParents(const std::filesystem::path& target_path,
@@ -117,6 +131,8 @@ auto PrepareAndroidConfigFixture(const std::filesystem::path& target_root)
   return copy_required_file("converter/interval_processor_config.toml") &&
          copy_required_file("converter/alias_mapping.toml") &&
          copy_required_file("converter/duration_rules.toml") &&
+         CopyDirectoryTree(source_root / "converter" / "aliases",
+                           target_root / "converter" / "aliases") &&
          copy_required_file("charts/heatmap.toml") &&
          copy_required_file("reports/markdown/day.toml") &&
          copy_required_file("reports/markdown/month.toml") &&

@@ -18,15 +18,16 @@
 ## Flat Docs Retained For Compatibility
 1. `docs/time_tracer/core/contracts/crypto/file_format_v1.md`
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
-3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 4. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v2.md`
-5. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
-6. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
-7. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
+5. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+6. `docs/time_tracer/core/contracts/crypto/error_model_v1.md`
+7. `docs/time_tracer/core/contracts/crypto/progress_callback_v1.md`
+8. `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 
 ## 约束
 1. `.tracer` 格式必须带 `magic + version`，禁止仅靠扩展名识别。
 2. 任何破坏性变更必须升级 `version`，禁止 silent break。
 3. 密钥与口令不写入日志、不写入错误文件。
 4. 进度回调字段必须保持跨宿主一致（Android / Windows C ABI 同源映射）。
-5. 当前 Windows tracer exchange 流程下，`file_format_v2` 的明文 payload 固定为 `tracer_exchange_package_v3`。
+5. 当前 Windows tracer exchange 流程下，`file_format_v2` 的明文 payload 固定为 `tracer_exchange_package_v4`。

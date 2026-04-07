@@ -73,10 +73,10 @@ auto DecryptCiphertext(std::span<const std::uint8_t> ciphertext,
   }
 
   std::vector<std::uint8_t> decrypted_payload(ciphertext.size());
-  std::uint64_t decrypted_size = 0;
+  unsigned long long decrypted_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_decrypt(
           decrypted_payload.data(), &decrypted_size, nullptr, ciphertext.data(),
-          static_cast<std::uint64_t>(ciphertext.size()), nullptr, 0,
+          static_cast<unsigned long long>(ciphertext.size()), nullptr, 0,
           header.nonce.data(), key.data()) != 0) {
     return {MakeError(
                 FileCryptoError::kDecryptFailed,

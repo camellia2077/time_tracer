@@ -97,10 +97,10 @@ auto EncryptBytesInternal(std::span<const std::uint8_t> plaintext_bytes,
 
   std::vector<std::uint8_t> ciphertext(
       compressed_plaintext.size() + crypto_aead_xchacha20poly1305_ietf_ABYTES);
-  std::uint64_t ciphertext_size = 0;
+  unsigned long long ciphertext_size = 0;
   if (crypto_aead_xchacha20poly1305_ietf_encrypt(
           ciphertext.data(), &ciphertext_size, compressed_plaintext.data(),
-          static_cast<std::uint64_t>(compressed_plaintext.size()), nullptr,
+          static_cast<unsigned long long>(compressed_plaintext.size()), nullptr,
           0, nullptr, header.nonce.data(), key.data()) != 0) {
     sodium_memzero(key.data(), key.size());
     return {MakeError(FileCryptoError::kCryptoOperationFailed,

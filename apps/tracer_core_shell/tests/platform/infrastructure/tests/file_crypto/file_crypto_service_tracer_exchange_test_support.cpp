@@ -36,9 +36,25 @@ auto BuildEntry(std::string_view relative_path, std::string_view text)
 
 auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
                               const std::string& main_config,
-                              const std::string& alias_config,
+                              const std::string& alias_index_config,
                               const std::string& duration_config)
     -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
+  return BuildValidPackageEntries(payloads, main_config, alias_index_config,
+                                  duration_config,
+                                  BuildDefaultAliasChildConfigs());
+}
+
+auto BuildValidPackageEntries(
+    const std::vector<PayloadFixture>& payloads, const std::string& main_config,
+    const std::string& alias_index_config, const std::string& duration_config,
+    const std::vector<PayloadFixture>& alias_child_configs)
+    -> std::vector<exchange_pkg::TracerExchangePackageEntry> {
+  std::vector<PayloadFixture> sorted_alias_child_configs = alias_child_configs;
+  std::sort(sorted_alias_child_configs.begin(), sorted_alias_child_configs.end(),
+            [](const PayloadFixture& left, const PayloadFixture& right) {
+              return left.relative_path < right.relative_path;
+            });
+
   exchange_pkg::TracerExchangeManifest manifest{};
   manifest.producer_platform = "windows";
   manifest.producer_app = "time_tracer_cli";
@@ -48,15 +64,25 @@ auto BuildValidPackageEntries(const std::vector<PayloadFixture>& payloads,
   for (const auto& payload : payloads) {
     manifest.payload_files.push_back(payload.relative_path);
   }
+  manifest.converter_alias_mapping_files.reserve(
+      sorted_alias_child_configs.size());
+  for (const auto& alias_child : sorted_alias_child_configs) {
+    manifest.converter_alias_mapping_files.push_back(alias_child.relative_path);
+  }
 
   std::vector<exchange_pkg::TracerExchangePackageEntry> entries;
-  entries.reserve(exchange_pkg::kRequiredPackagePaths.size() + payloads.size());
+  entries.reserve(exchange_pkg::kRequiredPackagePaths.size() +
+                  sorted_alias_child_configs.size() + payloads.size());
   entries.push_back(BuildEntry(exchange_pkg::kManifestPath,
                                exchange_pkg::BuildManifestText(manifest)));
   entries.push_back(BuildEntry(exchange_pkg::kConverterMainPath, main_config));
-  entries.push_back(BuildEntry(exchange_pkg::kAliasMappingPath, alias_config));
+  entries.push_back(
+      BuildEntry(exchange_pkg::kAliasMappingIndexPath, alias_index_config));
   entries.push_back(
       BuildEntry(exchange_pkg::kDurationRulesPath, duration_config));
+  for (const auto& alias_child : sorted_alias_child_configs) {
+    entries.push_back(BuildEntry(alias_child.relative_path, alias_child.text));
+  }
   for (const auto& payload : payloads) {
     entries.push_back(BuildEntry(payload.relative_path, payload.text));
   }
@@ -122,6 +148,39 @@ auto ReadRepoConverterConfig(std::string_view relative_path) -> std::string {
 auto ReadLegacyRepoConverterConfig(std::string_view relative_path)
     -> std::string {
   return BuildLegacyText(ReadRepoConverterConfig(relative_path));
+}
+
+auto BuildDefaultAliasChildConfigs() -> std::vector<PayloadFixture> {
+  return {{
+      .relative_path = "config/converter/aliases/default.toml",
+      .text = "parent = \"study\"\n\n[aliases]\n\"study\" = \"math\"\n",
+  }};
+}
+
+auto BuildRepoAliasChildConfigs() -> std::vector<PayloadFixture> {
+  const std::vector<std::string> relative_paths = {
+      "assets/tracer_core/config/converter/aliases/meal.toml",
+      "assets/tracer_core/config/converter/aliases/recreation.toml",
+      "assets/tracer_core/config/converter/aliases/routine.toml",
+      "assets/tracer_core/config/converter/aliases/sleep.toml",
+      "assets/tracer_core/config/converter/aliases/rest.toml",
+      "assets/tracer_core/config/converter/aliases/exercise.toml",
+      "assets/tracer_core/config/converter/aliases/study.toml",
+  };
+
+  std::vector<PayloadFixture> entries;
+  entries.reserve(relative_paths.size());
+  for (const auto& relative_path : relative_paths) {
+    const fs::path relative_fs_path(relative_path);
+    entries.push_back({
+        .relative_path =
+            (fs::path("config") / "converter" / "aliases" /
+             relative_fs_path.filename())
+                .generic_string(),
+        .text = ReadRepoConverterConfig(relative_path),
+    });
+  }
+  return entries;
 }
 
 auto BuildSamplePayloads() -> std::vector<PayloadFixture> {

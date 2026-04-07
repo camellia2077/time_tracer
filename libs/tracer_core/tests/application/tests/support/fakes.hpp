@@ -189,6 +189,7 @@ class FakeTracerExchangeService final
  public:
   bool throw_on_export = false;
   bool throw_on_import = false;
+  bool throw_on_unpack = false;
   bool throw_on_inspect = false;
 
   tracer_core::core::dto::TracerExchangeExportResult export_result{
@@ -210,11 +211,20 @@ class FakeTracerExchangeService final
       .database_rebuilt = true,
       .error_message = "",
   };
+  tracer_core::core::dto::TracerExchangeUnpackResult unpack_result{
+      .ok = true,
+      .resolved_output_root_path = "out/unpacked",
+      .source_root_name = "data",
+      .payload_file_count = 2,
+      .converter_file_count = 4,
+      .manifest_included = true,
+      .error_message = "",
+  };
   tracer_core::core::dto::TracerExchangeInspectResult inspect_result{
       .ok = true,
       .input_tracer_path = "out/sample.tracer",
       .package_type = "tracer_exchange",
-      .package_version = 3,
+      .package_version = 4,
       .source_root_name = "data",
       .payload_file_count = 2,
       .error_message = "",
@@ -222,9 +232,11 @@ class FakeTracerExchangeService final
 
   tracer_core::core::dto::TracerExchangeExportRequest last_export_request;
   tracer_core::core::dto::TracerExchangeImportRequest last_import_request;
+  tracer_core::core::dto::TracerExchangeUnpackRequest last_unpack_request;
   tracer_core::core::dto::TracerExchangeInspectRequest last_inspect_request;
   int export_call_count = 0;
   int import_call_count = 0;
+  int unpack_call_count = 0;
   int inspect_call_count = 0;
 
   auto RunExport(
@@ -234,6 +246,10 @@ class FakeTracerExchangeService final
   auto RunImport(
       const tracer_core::core::dto::TracerExchangeImportRequest& request)
       -> tracer_core::core::dto::TracerExchangeImportResult override;
+
+  auto RunUnpack(
+      const tracer_core::core::dto::TracerExchangeUnpackRequest& request)
+      -> tracer_core::core::dto::TracerExchangeUnpackResult override;
 
   auto RunInspect(
       const tracer_core::core::dto::TracerExchangeInspectRequest& request)

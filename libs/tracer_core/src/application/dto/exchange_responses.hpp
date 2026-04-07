@@ -1,7 +1,6 @@
 #ifndef APPLICATION_DTO_EXCHANGE_RESPONSES_HPP_
 #define APPLICATION_DTO_EXCHANGE_RESPONSES_HPP_
 
-#include <array>
 #include <cstdint>
 #include <filesystem>
 #include <optional>
@@ -36,6 +35,16 @@ struct TracerExchangeImportResult {
   std::string error_message;
 };
 
+struct TracerExchangeUnpackResult {
+  bool ok = true;
+  std::filesystem::path resolved_output_root_path;
+  std::string source_root_name;
+  std::uint64_t payload_file_count = 0;
+  std::uint64_t converter_file_count = 0;
+  bool manifest_included = false;
+  std::string error_message;
+};
+
 struct TracerExchangeInspectOuterMetadata {
   std::uint8_t version = 0;
   std::uint8_t kdf_id = 0;
@@ -66,7 +75,7 @@ struct TracerExchangeInspectResult {
   std::string source_root_name;
   std::uint64_t payload_file_count = 0;
   std::vector<TracerExchangeInspectEntrySummary> payload_entries;
-  std::array<TracerExchangeInspectEntrySummary, 3> converter_entries{};
+  std::vector<TracerExchangeInspectEntrySummary> converter_entries;
   std::string error_message;
 };
 

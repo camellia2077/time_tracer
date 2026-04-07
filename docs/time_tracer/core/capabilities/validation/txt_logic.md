@@ -44,6 +44,9 @@ That document explains:
 Logic validation still depends on validated config because activity semantics
 and wake-related meaning come from converter configuration and alias mapping.
 
+For alias-key and canonical-path rules themselves, see:
+1. [../config/alias_mapping_rules.md](../config/alias_mapping_rules.md)
+
 For authoring-facing input checks, use the explicit config-driven boundary:
 1. `alias_mapping.keys` for alias-only lookup
 2. `wake_keywords` for wake semantics

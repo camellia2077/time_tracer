@@ -65,3 +65,13 @@ extern "C" TT_CORE_API auto tracer_core_runtime_crypto_decrypt_json(
         return BuildImportTextOutput(execution.result, execution.request);
       });
 }
+
+extern "C" TT_CORE_API auto tracer_core_runtime_crypto_unpack_json(
+    TtCoreRuntimeHandle* handle, const char* request_json) -> const char* {
+  return ExecuteCryptoTextEndpoint(
+      "tracer_core_runtime_crypto_unpack_json failed unexpectedly.", [&]() {
+        const CryptoUnpackExecution execution = DispatchCryptoUnpack(
+            handle, ParseCryptoUnpackArgs(ToRequestJsonView(request_json)));
+        return BuildUnpackTextOutput(execution.result, execution.request);
+      });
+}

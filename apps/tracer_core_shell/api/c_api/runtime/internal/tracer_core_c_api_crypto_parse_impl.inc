@@ -13,6 +13,12 @@ struct CryptoDecryptArgs {
   std::string passphrase;
 };
 
+struct CryptoUnpackArgs {
+  fs::path input_path;
+  fs::path output_path;
+  std::string passphrase;
+};
+
 struct CryptoInspectArgs {
   fs::path input_path;
   std::string passphrase;
@@ -149,6 +155,19 @@ auto RejectFieldIfPresent(const json& payload, std::string_view key,
   return {
       .input_path =
           fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
+      .passphrase = RequireStringField(payload, "passphrase"),
+  };
+}
+
+[[nodiscard]] auto ParseCryptoUnpackArgs(std::string_view request_json)
+    -> CryptoUnpackArgs {
+  const json payload = ParseJsonRequest(request_json);
+
+  return {
+      .input_path =
+          fs::absolute(fs::path(RequireStringField(payload, "input_path"))),
+      .output_path =
+          fs::absolute(fs::path(RequireStringField(payload, "output_path"))),
       .passphrase = RequireStringField(payload, "passphrase"),
   };
 }

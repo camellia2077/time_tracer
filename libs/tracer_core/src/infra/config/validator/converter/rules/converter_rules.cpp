@@ -2,13 +2,20 @@
 #include "infra/config/validator/converter/rules/converter_rules.hpp"
 
 #include <algorithm>
+#include <filesystem>
 #include <set>
 #include <string>
 #include <string_view>
 
+#include "infra/config/loader/alias_mapping_index_utils.hpp"
+#include "infra/config/loader/toml_loader_utils.hpp"
+
 import tracer.core.domain.ports.diagnostics;
 
 namespace modports = tracer::core::domain::ports;
+namespace modloader = tracer::core::infrastructure::config::loader;
+namespace modalias = tracer::core::infrastructure::config::loader::detail;
+namespace fs = std::filesystem;
 
 namespace {
 
@@ -33,7 +40,7 @@ auto ValidateMainStrictAlias(const toml::table& main_tbl,
   if (main_tbl.contains("mappings_config_path")) {
     modports::EmitError(
         "[Validator] Error: 'mappings_config_path' is no longer supported. "
-        "Use 'alias_mapping_path' and alias_mapping.toml [aliases].");
+        "Use 'alias_mapping_path' and alias mapping index files.");
     return false;
   }
 
@@ -153,25 +160,15 @@ auto MappingRule::Validate(const toml::table& mappings_tbl) -> bool {
   return true;
 }
 
-auto V2Rule::ValidateAliasMapping(const toml::table& alias_tbl) -> bool {
-  const toml::table* aliases = alias_tbl["aliases"].as_table();
-  if (aliases == nullptr) {
-    modports::EmitError("[Validator] Error: 'aliases' must be a table.");
+auto V2Rule::ValidateAliasMapping(const fs::path& alias_index_path,
+                                  const toml::table& alias_tbl) -> bool {
+  try {
+    static_cast<void>(modalias::LoadAliasMappingDefinition(
+        alias_index_path, alias_tbl, modloader::ReadToml));
+    return true;
+  } catch (const std::exception& error) {
+    modports::EmitError("[Validator] Error: alias mapping validation failed: " +
+                        std::string(error.what()));
     return false;
   }
-  return std::ranges::all_of(*aliases, [](const auto& alias_entry) -> bool {
-    const auto& [alias_key, node] = alias_entry;
-    const std::string kAliasKey = std::string(alias_key.str());
-    if (kAliasKey.empty()) {
-      modports::EmitError("[Validator] Error: aliases contains an empty key.");
-      return false;
-    }
-    const auto kAliasValue = node.template value<std::string>();
-    if (!kAliasValue || kAliasValue->empty()) {
-      modports::EmitError("[Validator] Error: aliases.'" + kAliasKey +
-                          "' must be a non-empty string.");
-      return false;
-    }
-    return true;
-  });
 }

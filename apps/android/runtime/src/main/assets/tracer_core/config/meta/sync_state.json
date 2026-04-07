@@ -1,20 +1,27 @@
 {
   "target": "android",
   "source_root": "C:\\code\\time_tracer\\assets\\tracer_core\\config",
-  "input_hash": "4b9693d8d7719b5e5da319a107e2be8855b46ba9180c68c3a28b7b0c3a13d86e",
-  "planned_file_count": 11,
+  "input_hash": "4397488e9060fa80a2dd9c4382cdb7712e433617fde58491512a3bbf181121a0",
+  "planned_file_count": 18,
   "file_hashes": {
     "charts/heatmap.toml": "7d03d6428d057d252a8518321424b511ffe7ae9a87f9901958029557a29278a2",
     "config.toml": "509e2a3085c548639da2fe144865a8f50bfdaa2cb527726f752d7706c3d045e6",
-    "converter/alias_mapping.toml": "6d38dda510d2bb6a49a8406011ee6dee0b15f18e9965412981cb2996fe696bdc",
+    "converter/alias_mapping.toml": "529320459b745ae7f2c730a6a47065f140f61ee0c1a7a2b7e7305ca8a2310dbf",
+    "converter/aliases/exercise.toml": "86667f84e2e4f2ac5f762a65a43d944898668a5e93db3652a551f114ff4f6300",
+    "converter/aliases/meal.toml": "466814d43d6a668b1605e724e8c7244cbc9b555d7bfe32638e1d261cc7c96377",
+    "converter/aliases/recreation.toml": "dbc2fd9b12f3fd4444fa15c3729dff6850f29e722336e5cb1c8e53342287f343",
+    "converter/aliases/rest.toml": "d1b1f7b5566d7058704f8a3de690e4a517a728dba706268b8ecfcc5dadafd479",
+    "converter/aliases/routine.toml": "1a55d70caaf18c3656bd7bb501f1d357c865fd6451aabdd0c9a090d94b8ac22a",
+    "converter/aliases/sleep.toml": "9f82dd9f5b1baaa1e519681a082e1e1e24217da79fe8be7e0842624c1b205986",
+    "converter/aliases/study.toml": "01722c1813418bcc592e2ec9ca4da90ee05e65af8d703d1e20272733bfb6f25c",
     "converter/duration_rules.toml": "8f4b5f430d26e4e4c959b3193226d712c6e00e8d0afeafc4a3c68ade683c2a7b",
     "converter/interval_processor_config.toml": "0ad36e30bf0449ee72c25ec818dae6c7144b6be19b34fd773ccd5dd53107fac7",
-    "meta/bundle.toml": "c9d9b59386b3f8c92545192d1cc56a2cfad0a4defd43b8d28135ff534a328f56",
+    "meta/bundle.toml": "0320976d9fdda59196ccb5119c018e7897f928f502c068f2510d31e993d7eaeb",
     "reports/markdown/day.toml": "6a02b89b311aa5184a7f95b9d6852cd813e9fef705b5a907f6360db6750783c3",
     "reports/markdown/month.toml": "1c9156e6c5bd2a09e708cdb61bbe39eb03a1d78db5d944117fb54acded3d8697",
     "reports/markdown/period.toml": "70f5cf16431635fc8d13aa26b1225e38b9765af830a3f886b5d1733045eac423",
     "reports/markdown/week.toml": "8fa9a44fbacdd055cf7d3ecbd5209ce9592197ab82814b8a113c6e77f80a5327",
     "reports/markdown/year.toml": "a0b80911567b56f913c8afa9e7d92d1e1161ae67fae034b51f8b9868fd724cae"
   },
-  "generated_at_utc": "2026-03-22T18:00:02.149644+00:00"
+  "generated_at_utc": "2026-04-07T12:27:01.907370+00:00"
 }

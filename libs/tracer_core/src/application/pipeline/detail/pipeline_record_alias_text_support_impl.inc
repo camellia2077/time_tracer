@@ -341,7 +341,8 @@ constexpr std::string_view kOvernightContinuationWarning =
     std::string_view raw_activity_name, const ConverterConfig& config)
     -> std::string {
   // Design intent:
-  // 1) Atomic record validates authorable event tokens: alias_mapping.toml LEFT
+  // 1) Atomic record validates authorable event tokens against alias_mapping.toml
+  //    index + converter/aliases/*.toml child files, before later canonical mapping.
   //    keys plus converter-config wake_keywords.
   // 2) On success, TXT keeps the user-entered key text unchanged (no key->value rewrite here).
   // 3) Alias key->value mapping happens later during full TXT parse/ingest into DB.

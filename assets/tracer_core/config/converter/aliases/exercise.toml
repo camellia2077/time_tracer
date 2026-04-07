@@ -1,0 +1,5 @@
+parent = "exercise"
+
+[aliases]
+"有氧训练" = "cardio"
+"无氧训练" = "anaerobic"
