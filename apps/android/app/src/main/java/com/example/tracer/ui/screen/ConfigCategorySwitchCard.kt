@@ -35,10 +35,15 @@ import com.example.tracer.ui.components.TracerSegmentedButtonDefaults
 @Composable
 internal fun ConfigCategorySwitchCard(
     selectedCategory: ConfigCategory,
-    selectedFile: String,
-    visibleFiles: List<String>,
+    selectedConverterSubcategory: ConverterSubcategory,
+    selectedFileDisplayName: String,
+    visibleFiles: List<ConfigTomlFileEntry>,
     onSelectConverter: () -> Unit,
+    onSelectCharts: () -> Unit,
+    onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
+    onSelectConverterAliases: () -> Unit,
+    onSelectConverterRules: () -> Unit,
     onRefreshFiles: () -> Unit,
     onOpenFile: (String) -> Unit
 ) {
@@ -66,6 +71,8 @@ internal fun ConfigCategorySwitchCard(
 
             val configCategories = listOf(
                 ConfigCategory.CONVERTER to stringResource(R.string.config_category_converter),
+                ConfigCategory.CHARTS to stringResource(R.string.config_category_charts),
+                ConfigCategory.META to stringResource(R.string.config_category_meta),
                 ConfigCategory.REPORTS to stringResource(R.string.config_category_reports)
             )
             SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
@@ -74,10 +81,11 @@ internal fun ConfigCategorySwitchCard(
                     SegmentedButton(
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = configCategories.size),
                         onClick = {
-                            if (category == ConfigCategory.CONVERTER) {
-                                onSelectConverter()
-                            } else {
-                                onSelectReports()
+                            when (category) {
+                                ConfigCategory.CONVERTER -> onSelectConverter()
+                                ConfigCategory.CHARTS -> onSelectCharts()
+                                ConfigCategory.META -> onSelectMeta()
+                                ConfigCategory.REPORTS -> onSelectReports()
                             }
                         },
                         selected = selected,
@@ -97,9 +105,48 @@ internal fun ConfigCategorySwitchCard(
                 }
             }
 
+            if (selectedCategory == ConfigCategory.CONVERTER) {
+                val converterSections = listOf(
+                    ConverterSubcategory.ALIASES to stringResource(R.string.config_converter_section_aliases),
+                    ConverterSubcategory.RULES to stringResource(R.string.config_converter_section_rules)
+                )
+                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                    converterSections.forEachIndexed { index, (subcategory, label) ->
+                        val selected = selectedConverterSubcategory == subcategory
+                        SegmentedButton(
+                            shape = SegmentedButtonDefaults.itemShape(
+                                index = index,
+                                count = converterSections.size
+                            ),
+                            onClick = {
+                                when (subcategory) {
+                                    ConverterSubcategory.ALIASES -> onSelectConverterAliases()
+                                    ConverterSubcategory.RULES -> onSelectConverterRules()
+                                }
+                            },
+                            selected = selected,
+                            modifier = Modifier.weight(1f),
+                            colors = TracerSegmentedButtonDefaults.colors(),
+                            label = {
+                                Text(
+                                    text = label,
+                                    fontWeight = if (selected) {
+                                        TracerSegmentedButtonDefaults.activeLabelFontWeight
+                                    } else {
+                                        TracerSegmentedButtonDefaults.inactiveLabelFontWeight
+                                    }
+                                )
+                            }
+                        )
+                    }
+                }
+            }
+
             if (visibleFiles.isEmpty()) {
                 val categoryLabel = when (selectedCategory) {
                     ConfigCategory.CONVERTER -> stringResource(R.string.config_category_converter)
+                    ConfigCategory.CHARTS -> stringResource(R.string.config_category_charts)
+                    ConfigCategory.META -> stringResource(R.string.config_category_meta)
                     ConfigCategory.REPORTS -> stringResource(R.string.config_category_reports)
                 }
                 Text(
@@ -113,8 +160,8 @@ internal fun ConfigCategorySwitchCard(
                         onClick = { fileMenuExpanded = true },
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        val buttonText = if (selectedFile.isNotBlank()) {
-                            selectedFile
+                        val buttonText = if (selectedFileDisplayName.isNotBlank()) {
+                            selectedFileDisplayName
                         } else {
                             stringResource(R.string.config_action_select_toml_file)
                         }
@@ -127,12 +174,12 @@ internal fun ConfigCategorySwitchCard(
                         expanded = fileMenuExpanded,
                         onDismissRequest = { fileMenuExpanded = false }
                     ) {
-                        for (filePath in visibleFiles) {
+                        for (fileEntry in visibleFiles) {
                             DropdownMenuItem(
-                                text = { Text(filePath) },
+                                text = { Text(fileEntry.displayName) },
                                 onClick = {
                                     fileMenuExpanded = false
-                                    onOpenFile(filePath)
+                                    onOpenFile(fileEntry.relativePath)
                                 }
                             )
                         }

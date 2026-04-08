@@ -55,6 +55,8 @@ internal class RuntimeStorageDelegate(
             ConfigTomlListResult(
                 ok = false,
                 converterFiles = emptyList(),
+                chartFiles = emptyList(),
+                metaFiles = emptyList(),
                 reportFiles = emptyList(),
                 message = formatNativeFailure("list config toml failed", error)
             )

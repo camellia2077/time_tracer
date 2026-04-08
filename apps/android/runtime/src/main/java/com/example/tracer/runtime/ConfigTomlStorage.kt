@@ -9,6 +9,8 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             return ConfigTomlListResult(
                 ok = true,
                 converterFiles = emptyList(),
+                chartFiles = emptyList(),
+                metaFiles = emptyList(),
                 reportFiles = emptyList(),
                 message = "No config directory."
             )
@@ -20,19 +22,27 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             .sorted()
             .toList()
 
-        val converterFiles = mutableListOf<String>()
-        val reportFiles = mutableListOf<String>()
+        val converterFiles = mutableListOf<ConfigTomlFileEntry>()
+        val chartFiles = mutableListOf<ConfigTomlFileEntry>()
+        val metaFiles = mutableListOf<ConfigTomlFileEntry>()
+        val reportFiles = mutableListOf<ConfigTomlFileEntry>()
         for (path in allTomlFiles) {
             if (path.startsWith("reports/")) {
-                reportFiles += path
+                reportFiles += path.toConfigTomlFileEntry(prefixToTrim = "reports/")
+            } else if (path.startsWith("charts/")) {
+                chartFiles += path.toConfigTomlFileEntry(prefixToTrim = "charts/")
+            } else if (path == "config.toml" || path.startsWith("meta/")) {
+                metaFiles += path.toConfigTomlFileEntry(prefixToTrim = null)
             } else {
-                converterFiles += path
+                converterFiles += path.toConfigTomlFileEntry(prefixToTrim = "converter/")
             }
         }
 
         return ConfigTomlListResult(
             ok = true,
             converterFiles = converterFiles,
+            chartFiles = chartFiles,
+            metaFiles = metaFiles,
             reportFiles = reportFiles,
             message = "Found ${allTomlFiles.size} TOML file(s)."
         )
@@ -152,5 +162,20 @@ internal class ConfigTomlStorage(private val configRootPath: String) {
             return null
         }
         return trimmed
+    }
+
+    private fun String.toConfigTomlFileEntry(prefixToTrim: String?): ConfigTomlFileEntry {
+        // Read/write must keep the canonical relative path because config references
+        // inside tracer_core use these paths as stable identifiers.
+        // Only the display label drops the selected top-level category prefix.
+        val displayName = if (prefixToTrim != null && startsWith(prefixToTrim)) {
+            removePrefix(prefixToTrim)
+        } else {
+            this
+        }
+        return ConfigTomlFileEntry(
+            relativePath = this,
+            displayName = displayName
+        )
     }
 }

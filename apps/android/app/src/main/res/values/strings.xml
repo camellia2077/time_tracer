@@ -43,6 +43,15 @@
     <string name="tracer_import_error_read_selected_document">cannot read selected document.</string>
     <string name="tracer_import_single_tracer_completed_success">Single TRACER import completed -&gt; %1$d/%2$d TXT files.</string>
     <string name="tracer_import_single_tracer_completed_with_errors">Single TRACER import completed -&gt; %1$d/%2$d TXT files. %3$s</string>
+    <string name="tracer_import_confirm_title">Confirm Import</string>
+    <string name="tracer_import_confirm_import">Import</string>
+    <string name="tracer_import_confirm_cancel">Cancel</string>
+    <string name="tracer_import_confirm_unknown">Unknown</string>
+    <string name="tracer_import_confirm_message">Please confirm this is the backup you want to import.\n\nCreated time: %1$s\nPackage version: %2$s\nProducer: %3$s\nSource root: %4$s\nPayload: %5$s\n\nImport will replace the package months in local TXT and rebuild the database.</string>
+    <plurals name="tracer_import_confirm_payload_count">
+        <item quantity="one">%1$d TXT file</item>
+        <item quantity="other">%1$d TXT files</item>
+    </plurals>
     <string name="tracer_crypto_passphrase_encrypt_title">Encrypt Passphrase</string>
     <string name="tracer_crypto_passphrase_decrypt_title">Decrypt Passphrase</string>
     <string name="tracer_crypto_passphrase_hint">Enter passphrase</string>
@@ -91,13 +100,34 @@
     <string name="config_title_configuration_files">Configuration Files</string>
     <string name="config_action_refresh_list">Refresh List</string>
     <string name="config_category_converter">Converter</string>
+    <string name="config_category_charts">Charts</string>
+    <string name="config_category_meta">Meta</string>
     <string name="config_category_reports">Reports</string>
+    <string name="config_converter_section_aliases">Aliases</string>
+    <string name="config_converter_section_rules">Rules</string>
     <string name="config_no_toml_files_in_category">No TOML files in %1$s.</string>
     <string name="config_action_select_toml_file">Select TOML file</string>
 
     <string name="config_title_editor_file">Editor: %1$s</string>
     <string name="config_label_toml_content">TOML Content</string>
     <string name="config_action_save_changes">Save Changes</string>
+    <string name="config_alias_mode_structured">Structured</string>
+    <string name="config_alias_mode_advanced">Advanced</string>
+    <string name="config_alias_structured_unavailable">Structured alias editing is unavailable for this file.</string>
+    <string name="config_alias_parent_label">Parent</string>
+    <string name="config_alias_action_add_group">Add Group</string>
+    <string name="config_alias_action_add_alias">Add Alias</string>
+    <string name="config_alias_action_rename">Edit</string>
+    <string name="config_alias_action_delete">Delete</string>
+    <string name="config_alias_dialog_add_group_title">Add Alias Group</string>
+    <string name="config_alias_dialog_rename_group_title">Rename Alias Group</string>
+    <string name="config_alias_dialog_add_entry_title">Add Alias Entry</string>
+    <string name="config_alias_dialog_edit_entry_title">Edit Alias Entry</string>
+    <string name="config_alias_group_name_label">Group Name</string>
+    <string name="config_alias_group_name_required">Group name must not be empty.</string>
+    <string name="config_alias_alias_key_label">Alias Key</string>
+    <string name="config_alias_canonical_leaf_label">Canonical Leaf</string>
+    <string name="config_alias_entry_required">Alias key and canonical leaf must not be empty.</string>
 
     <string name="config_title_about">About</string>
     <string name="config_about_author">Author: %1$s</string>

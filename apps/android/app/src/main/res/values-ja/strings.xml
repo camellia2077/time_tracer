@@ -41,6 +41,14 @@
     <string name="tracer_import_error_read_selected_document">選択したドキュメントを読み取れません。</string>
     <string name="tracer_import_single_tracer_completed_success">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。</string>
     <string name="tracer_import_single_tracer_completed_with_errors">単一 TRACER の取り込み完了 -&gt; %1$d/%2$d 個の TXT ファイル。%3$s</string>
+    <string name="tracer_import_confirm_title">インポート確認</string>
+    <string name="tracer_import_confirm_import">インポート</string>
+    <string name="tracer_import_confirm_cancel">キャンセル</string>
+    <string name="tracer_import_confirm_unknown">不明</string>
+    <string name="tracer_import_confirm_message">このバックアップを本当に取り込むか確認してください。\n\n作成時刻: %1$s\nパッケージバージョン: %2$s\n生成元: %3$s\nSource root: %4$s\n内容数: %5$s\n\n取り込みを実行すると、パッケージ内の月に対応するローカル TXT を置き換え、データベースを再構築します。</string>
+    <plurals name="tracer_import_confirm_payload_count">
+        <item quantity="other">%1$d 個の TXT ファイル</item>
+    </plurals>
     <string name="tracer_crypto_passphrase_encrypt_title">暗号化パスフレーズ</string>
     <string name="tracer_crypto_passphrase_decrypt_title">復号パスフレーズ</string>
     <string name="tracer_crypto_passphrase_hint">パスフレーズを入力</string>
@@ -89,13 +97,34 @@
     <string name="config_title_configuration_files">設定ファイル</string>
     <string name="config_action_refresh_list">一覧を更新</string>
     <string name="config_category_converter">Converter</string>
+    <string name="config_category_charts">Charts</string>
+    <string name="config_category_meta">Meta</string>
     <string name="config_category_reports">レポート</string>
+    <string name="config_converter_section_aliases">Aliases</string>
+    <string name="config_converter_section_rules">Rules</string>
     <string name="config_no_toml_files_in_category">%1$s に TOML ファイルがありません。</string>
     <string name="config_action_select_toml_file">TOML ファイルを選択</string>
 
     <string name="config_title_editor_file">エディタ: %1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_action_save_changes">保存</string>
+    <string name="config_alias_mode_structured">Structured</string>
+    <string name="config_alias_mode_advanced">Advanced</string>
+    <string name="config_alias_structured_unavailable">このファイルでは構造化 alias 編集を利用できません。</string>
+    <string name="config_alias_parent_label">Parent</string>
+    <string name="config_alias_action_add_group">グループ追加</string>
+    <string name="config_alias_action_add_alias">Alias 追加</string>
+    <string name="config_alias_action_rename">編集</string>
+    <string name="config_alias_action_delete">削除</string>
+    <string name="config_alias_dialog_add_group_title">Alias グループを追加</string>
+    <string name="config_alias_dialog_rename_group_title">Alias グループ名を変更</string>
+    <string name="config_alias_dialog_add_entry_title">Alias エントリを追加</string>
+    <string name="config_alias_dialog_edit_entry_title">Alias エントリを編集</string>
+    <string name="config_alias_group_name_label">グループ名</string>
+    <string name="config_alias_group_name_required">グループ名は必須です。</string>
+    <string name="config_alias_alias_key_label">Alias Key</string>
+    <string name="config_alias_canonical_leaf_label">Canonical Leaf</string>
+    <string name="config_alias_entry_required">Alias key と canonical leaf は必須です。</string>
 
     <string name="config_title_about">情報</string>
     <string name="config_about_author">作者: %1$s</string>

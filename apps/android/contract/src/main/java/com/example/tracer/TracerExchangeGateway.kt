@@ -60,6 +60,7 @@ interface TracerExchangeGateway {
         inputPath = "",
         sourceRootName = "",
         payloadFileCount = 0,
+        packageVersion = 0,
         producerPlatform = "",
         producerApp = "",
         createdAtUtc = ""

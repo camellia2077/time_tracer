@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 internal fun ConfigEditorCard(
-    selectedFile: String,
+    selectedFileDisplayName: String,
     editableContent: String,
     onEditableContentChange: (String) -> Unit,
     onSaveCurrentFile: () -> Unit
@@ -32,7 +32,7 @@ internal fun ConfigEditorCard(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = stringResource(R.string.config_title_editor_file, selectedFile),
+                text = stringResource(R.string.config_title_editor_file, selectedFileDisplayName),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )

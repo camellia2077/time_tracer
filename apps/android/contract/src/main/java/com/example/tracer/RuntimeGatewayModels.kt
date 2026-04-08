@@ -96,6 +96,7 @@ data class TracerExchangeInspectResult(
     val inputPath: String,
     val sourceRootName: String,
     val payloadFileCount: Int,
+    val packageVersion: Int,
     val producerPlatform: String,
     val producerApp: String,
     val createdAtUtc: String
@@ -139,10 +140,17 @@ data class TxtFileContentResult(
     val message: String
 )
 
+data class ConfigTomlFileEntry(
+    val relativePath: String,
+    val displayName: String
+)
+
 data class ConfigTomlListResult(
     val ok: Boolean,
-    val converterFiles: List<String>,
-    val reportFiles: List<String>,
+    val converterFiles: List<ConfigTomlFileEntry>,
+    val chartFiles: List<ConfigTomlFileEntry>,
+    val metaFiles: List<ConfigTomlFileEntry>,
+    val reportFiles: List<ConfigTomlFileEntry>,
     val message: String
 )
 

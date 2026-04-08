@@ -41,6 +41,14 @@
     <string name="tracer_import_error_read_selected_document">无法读取所选文档。</string>
     <string name="tracer_import_single_tracer_completed_success">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。</string>
     <string name="tracer_import_single_tracer_completed_with_errors">单个 TRACER 导入完成 -&gt; %1$d/%2$d 个 TXT 文件。%3$s</string>
+    <string name="tracer_import_confirm_title">确认导入</string>
+    <string name="tracer_import_confirm_import">导入</string>
+    <string name="tracer_import_confirm_cancel">取消</string>
+    <string name="tracer_import_confirm_unknown">未知</string>
+    <string name="tracer_import_confirm_message">请确认这是你要导入的备份包。\n\n创建时间：%1$s\n包版本：%2$s\n来源：%3$s\nSource root：%4$s\n内容数量：%5$s\n\n导入会替换包内月份对应的本地 TXT，并重建数据库。</string>
+    <plurals name="tracer_import_confirm_payload_count">
+        <item quantity="other">%1$d 个 TXT 文件</item>
+    </plurals>
     <string name="tracer_crypto_passphrase_encrypt_title">加密口令</string>
     <string name="tracer_crypto_passphrase_decrypt_title">解密口令</string>
     <string name="tracer_crypto_passphrase_hint">输入口令</string>
@@ -89,13 +97,34 @@
     <string name="config_title_configuration_files">配置文件</string>
     <string name="config_action_refresh_list">刷新列表</string>
     <string name="config_category_converter">转换器</string>
+    <string name="config_category_charts">图表</string>
+    <string name="config_category_meta">元信息</string>
     <string name="config_category_reports">报表</string>
+    <string name="config_converter_section_aliases">活动名转换</string>
+    <string name="config_converter_section_rules">规则</string>
     <string name="config_no_toml_files_in_category">%1$s 下没有 TOML 文件。</string>
     <string name="config_action_select_toml_file">选择 TOML 文件</string>
 
     <string name="config_title_editor_file">编辑器：%1$s</string>
     <string name="config_label_toml_content">TOML 内容</string>
     <string name="config_action_save_changes">保存更改</string>
+    <string name="config_alias_mode_structured">结构化</string>
+    <string name="config_alias_mode_advanced">高级模式</string>
+    <string name="config_alias_structured_unavailable">当前文件暂时无法使用结构化活动名编辑。</string>
+    <string name="config_alias_parent_label">Parent</string>
+    <string name="config_alias_action_add_group">新增分组</string>
+    <string name="config_alias_action_add_alias">新增活动名</string>
+    <string name="config_alias_action_rename">编辑</string>
+    <string name="config_alias_action_delete">删除</string>
+    <string name="config_alias_dialog_add_group_title">新增活动名分组</string>
+    <string name="config_alias_dialog_rename_group_title">重命名活动名分组</string>
+    <string name="config_alias_dialog_add_entry_title">新增活动名条目</string>
+    <string name="config_alias_dialog_edit_entry_title">编辑活动名条目</string>
+    <string name="config_alias_group_name_label">分组名</string>
+    <string name="config_alias_group_name_required">分组名不能为空。</string>
+    <string name="config_alias_alias_key_label">活动名键</string>
+    <string name="config_alias_canonical_leaf_label">规范叶子值</string>
+    <string name="config_alias_entry_required">活动名键和规范叶子值都不能为空。</string>
 
     <string name="config_title_about">关于</string>
     <string name="config_about_author">作者：%1$s</string>

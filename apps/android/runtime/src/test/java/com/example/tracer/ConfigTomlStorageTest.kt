@@ -87,4 +87,74 @@ class ConfigTomlStorageTest {
             root.deleteRecursively()
         }
     }
+
+    @Test
+    fun listTomlFiles_separates_converter_chart_and_report_categories() {
+        val root = Files.createTempDirectory("config-toml-storage-list").toFile()
+        try {
+            File(root, "config.toml").writeText("root = true\n")
+            File(root, "meta/bundle.toml").apply {
+                parentFile?.mkdirs()
+                writeText("meta = true\n")
+            }
+            File(root, "converter/interval_processor_config.toml").apply {
+                parentFile?.mkdirs()
+                writeText("converter = true\n")
+            }
+            File(root, "charts/heatmap.toml").apply {
+                parentFile?.mkdirs()
+                writeText("chart = true\n")
+            }
+            File(root, "reports/markdown/day.toml").apply {
+                parentFile?.mkdirs()
+                writeText("report = true\n")
+            }
+
+            val result = ConfigTomlStorage(root.absolutePath).listTomlFiles()
+
+            assertTrue(result.ok)
+            assertEquals(
+                listOf(
+                    ConfigTomlFileEntry(
+                        relativePath = "converter/interval_processor_config.toml",
+                        displayName = "interval_processor_config.toml"
+                    )
+                ),
+                result.converterFiles
+            )
+            assertEquals(
+                listOf(
+                    ConfigTomlFileEntry(
+                        relativePath = "charts/heatmap.toml",
+                        displayName = "heatmap.toml"
+                    )
+                ),
+                result.chartFiles
+            )
+            assertEquals(
+                listOf(
+                    ConfigTomlFileEntry(
+                        relativePath = "config.toml",
+                        displayName = "config.toml"
+                    ),
+                    ConfigTomlFileEntry(
+                        relativePath = "meta/bundle.toml",
+                        displayName = "meta/bundle.toml"
+                    )
+                ),
+                result.metaFiles
+            )
+            assertEquals(
+                listOf(
+                    ConfigTomlFileEntry(
+                        relativePath = "reports/markdown/day.toml",
+                        displayName = "markdown/day.toml"
+                    )
+                ),
+                result.reportFiles
+            )
+        } finally {
+            root.deleteRecursively()
+        }
+    }
 }

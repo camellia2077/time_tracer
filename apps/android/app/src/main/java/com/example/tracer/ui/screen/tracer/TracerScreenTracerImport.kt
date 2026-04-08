@@ -6,6 +6,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -69,32 +70,81 @@ internal fun rememberTracerSingleTracerImportAction(
         contract = ActivityResultContracts.OpenDocument()
     ) { documentUri ->
         if (documentUri == null) {
-            transferCoordinator.handleSelectionCanceled(
-                uiCallbacks = transferUiCallbacks,
-                canceledStatusText = canceledStatusText
-            )
-            return@rememberLauncherForActivityResult
+        transferCoordinator.handleSelectionCanceled(
+            uiCallbacks = transferUiCallbacks,
+            canceledStatusText = canceledStatusText
+        )
+        return@rememberLauncherForActivityResult
         }
 
-        transferCoordinator.launchCryptoTransfer(
-            uiCallbacks = transferUiCallbacks,
-            passphraseRequest = passphraseRequest,
-            progressOperationText = progressOperationText,
-            prepareInput = {
-                stageSelectedDocument(
-                    context = context,
-                    documentUri = documentUri,
-                    expectedExtension = ".tracer"
+        coroutineScope.launch {
+            val stagedTracerPath = runCatching {
+                withContext(Dispatchers.IO) {
+                    stageSelectedDocument(
+                        context = context,
+                        documentUri = documentUri,
+                        expectedExtension = ".tracer"
+                    )
+                }
+            }.getOrElse { error ->
+                dataViewModel.setStatusText(
+                    context.getString(
+                        R.string.tracer_import_single_tracer_failed,
+                        error.message ?: context.getString(R.string.tracer_export_unknown_error)
+                    )
                 )
-            },
-            formatPrepareFailure = { error ->
-                context.getString(
-                    R.string.tracer_import_single_tracer_failed,
-                    error.message ?: context.getString(R.string.tracer_export_unknown_error)
+                return@launch
+            }
+
+            val passphrase = promptPassphrase(
+                context = context,
+                title = passphraseRequest.title,
+                firstHint = passphraseRequest.firstHint,
+                secondHint = passphraseRequest.secondHint,
+                requiredMessage = passphraseRequest.requiredMessage,
+                mismatchMessage = passphraseRequest.mismatchMessage
+            )
+            if (passphrase.isNullOrBlank()) {
+                transferCoordinator.handleSelectionCanceled(
+                    uiCallbacks = transferUiCallbacks,
+                    canceledStatusText = canceledStatusText
                 )
-            },
-            runTransfer = { stagedTracerPath, passphrase ->
-                val sourceFileName = File(stagedTracerPath).name
+                return@launch
+            }
+
+            // Inspect before import so the user can confirm this is the
+            // intended backup package before we replace managed TXT months and
+            // rebuild the database. The main UX goal is to reduce accidental
+            // imports of stale `data.tracer` files.
+            val inspectResult = tracerExchangeGateway.inspectTracerExchange(
+                inputPath = stagedTracerPath,
+                passphrase = passphrase,
+            )
+            if (!inspectResult.ok) {
+                dataViewModel.setStatusText(
+                    context.getString(
+                        R.string.tracer_import_single_tracer_failed,
+                        inspectResult.message
+                    )
+                )
+                return@launch
+            }
+
+            val confirmed = confirmTracerExchangeImport(
+                context = context,
+                inspectResult = inspectResult,
+            )
+            if (!confirmed) {
+                transferCoordinator.handleSelectionCanceled(
+                    uiCallbacks = transferUiCallbacks,
+                    canceledStatusText = canceledStatusText
+                )
+                return@launch
+            }
+
+            val sourceFileName = File(stagedTracerPath).name
+            transferUiCallbacks.startCryptoProgress(progressOperationText)
+            val transferResult = runCatching {
                 val importResult = importTracerExchangeTransaction(
                     context = context,
                     tracerExchangeGateway = tracerExchangeGateway,
@@ -130,8 +180,7 @@ internal fun rememberTracerSingleTracerImportAction(
                     progressStatusText = finalStatusText,
                     message = importResult.message
                 )
-            },
-            formatTransferFailure = { error ->
+            }.getOrElse { error ->
                 TracerCryptoTransferResult(
                     progressStatusText = failedText,
                     message = context.getString(
@@ -139,12 +188,15 @@ internal fun rememberTracerSingleTracerImportAction(
                         error.message ?: context.getString(R.string.tracer_export_unknown_error)
                     )
                 )
-            },
-            afterTransfer = { _, _ ->
-                // Keep Data tab export availability in sync with TXT store state.
-                recordViewModel.refreshHistory()
             }
-        )
+
+            recordViewModel.refreshHistory()
+            transferUiCallbacks.finishCryptoProgress(
+                transferResult.progressStatusText,
+                transferResult.message
+            )
+            transferUiCallbacks.setStatusText(transferResult.message)
+        }
     }
 
     return {

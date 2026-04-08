@@ -81,7 +81,7 @@ TXT import/export flow, or SAF/document/fd export behavior:
 - Android runtime payload/protocol surface:
   - `docs/time_tracer/presentation/android/runtime-protocol.md`
 - Core tracer exchange package contract:
-  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
+  - `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v4.md`
 - Core runtime crypto JSON contract:
   - `docs/time_tracer/core/contracts/crypto/runtime_crypto_json_contract_v1.md`
 

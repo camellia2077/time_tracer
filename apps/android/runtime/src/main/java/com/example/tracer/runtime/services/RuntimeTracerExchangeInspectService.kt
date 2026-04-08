@@ -51,6 +51,7 @@ internal class RuntimeTracerExchangeInspectService(
                 inputPath = content.optString("input_path", safeInput),
                 sourceRootName = content.optString("source_root_name"),
                 payloadFileCount = content.optInt("payload_file_count", 0),
+                packageVersion = content.optInt("package_version", 0),
                 producerPlatform = content.optString("producer_platform"),
                 producerApp = content.optString("producer_app"),
                 createdAtUtc = content.optString("created_at_utc")
@@ -65,4 +66,3 @@ internal class RuntimeTracerExchangeInspectService(
         }
     }
 }
-

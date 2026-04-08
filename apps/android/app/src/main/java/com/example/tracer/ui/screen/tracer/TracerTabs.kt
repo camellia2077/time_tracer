@@ -249,17 +249,48 @@ internal object TracerTabRegistry {
             content = { _, args ->
                 ConfigSection(
                     selectedCategory = args.configUiState.selectedCategory,
+                    selectedConverterSubcategory = args.configUiState.selectedConverterSubcategory,
                     converterFiles = args.configUiState.converterFiles,
+                    chartFiles = args.configUiState.chartFiles,
+                    metaFiles = args.configUiState.metaFiles,
                     reportFiles = args.configUiState.reportFiles,
-                    selectedFile = args.configUiState.selectedFile,
+                    selectedFilePath = args.configUiState.selectedFilePath,
+                    selectedFileDisplayName = args.configUiState.selectedFileDisplayName,
                     editableContent = args.configUiState.editableContent,
+                    aliasEditorMode = args.configUiState.aliasEditorMode,
+                    aliasDocumentDraft = args.configUiState.aliasDocumentDraft,
+                    aliasParentOptions = args.configUiState.aliasParentOptions,
+                    aliasAdvancedTomlDraft = args.configUiState.aliasAdvancedTomlDraft,
+                    aliasEditorErrorMessage = args.configUiState.aliasEditorErrorMessage,
                     themeConfig = args.themeConfig,
                     onSelectConverter = { args.configViewModel.selectCategory(ConfigCategory.CONVERTER) },
+                    onSelectCharts = { args.configViewModel.selectCategory(ConfigCategory.CHARTS) },
+                    onSelectMeta = { args.configViewModel.selectCategory(ConfigCategory.META) },
                     onSelectReports = { args.configViewModel.selectCategory(ConfigCategory.REPORTS) },
+                    onSelectConverterAliases = {
+                        args.configViewModel.selectConverterSubcategory(ConverterSubcategory.ALIASES)
+                    },
+                    onSelectConverterRules = {
+                        args.configViewModel.selectConverterSubcategory(ConverterSubcategory.RULES)
+                    },
                     onRefreshFiles = args.configViewModel::refreshConfigFiles,
                     onOpenFile = args.configViewModel::openFile,
                     onCopyDiagnosticsPayload = args.onCopyDiagnosticsPayload,
                     onEditableContentChange = args.configViewModel::onEditableContentChange,
+                    onSelectAliasStructuredMode = {
+                        args.configViewModel.selectAliasEditorMode(AliasEditorMode.STRUCTURED)
+                    },
+                    onSelectAliasAdvancedMode = {
+                        args.configViewModel.selectAliasEditorMode(AliasEditorMode.ADVANCED)
+                    },
+                    onAliasParentChange = args.configViewModel::updateAliasParent,
+                    onAliasAdvancedTomlChange = args.configViewModel::onAliasAdvancedTomlChange,
+                    onAddAliasGroup = args.configViewModel::addAliasGroup,
+                    onRenameAliasGroup = args.configViewModel::renameAliasGroup,
+                    onDeleteAliasGroup = args.configViewModel::deleteAliasGroup,
+                    onAddAliasEntry = args.configViewModel::addAliasEntry,
+                    onUpdateAliasEntry = args.configViewModel::updateAliasEntry,
+                    onDeleteAliasEntry = args.configViewModel::deleteAliasEntry,
                     onSaveCurrentFile = args.configViewModel::saveCurrentFile,
                     onSetThemeColor = args.onSetThemeColor,
                     onSetThemeMode = args.onSetThemeMode,

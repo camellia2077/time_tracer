@@ -44,19 +44,42 @@ private data class LibrariesLoadState(
 )
 
 @Composable
-fun ConfigSection(
+internal fun ConfigSection(
     selectedCategory: ConfigCategory,
-    converterFiles: List<String>,
-    reportFiles: List<String>,
-    selectedFile: String,
+    selectedConverterSubcategory: ConverterSubcategory,
+    converterFiles: List<ConfigTomlFileEntry>,
+    chartFiles: List<ConfigTomlFileEntry>,
+    metaFiles: List<ConfigTomlFileEntry>,
+    reportFiles: List<ConfigTomlFileEntry>,
+    selectedFilePath: String,
+    selectedFileDisplayName: String,
     editableContent: String,
+    aliasEditorMode: AliasEditorMode,
+    aliasDocumentDraft: AliasTomlDocument?,
+    aliasParentOptions: List<String>,
+    aliasAdvancedTomlDraft: String,
+    aliasEditorErrorMessage: String,
     themeConfig: com.example.tracer.data.ThemeConfig,
     onSelectConverter: () -> Unit,
+    onSelectCharts: () -> Unit,
+    onSelectMeta: () -> Unit,
     onSelectReports: () -> Unit,
+    onSelectConverterAliases: () -> Unit,
+    onSelectConverterRules: () -> Unit,
     onRefreshFiles: () -> Unit,
     onOpenFile: (String) -> Unit,
     onCopyDiagnosticsPayload: () -> Unit,
     onEditableContentChange: (String) -> Unit,
+    onSelectAliasStructuredMode: () -> Unit,
+    onSelectAliasAdvancedMode: () -> Unit,
+    onAliasParentChange: (String) -> Unit,
+    onAliasAdvancedTomlChange: (String) -> Unit,
+    onAddAliasGroup: (String?, String) -> Unit,
+    onRenameAliasGroup: (String, String) -> Unit,
+    onDeleteAliasGroup: (String) -> Unit,
+    onAddAliasEntry: (String?, String, String) -> Unit,
+    onUpdateAliasEntry: (String, String, String) -> Unit,
+    onDeleteAliasEntry: (String) -> Unit,
     onSaveCurrentFile: () -> Unit,
     onSetThemeColor: (com.example.tracer.data.ThemeColor) -> Unit,
     onSetThemeMode: (com.example.tracer.data.ThemeMode) -> Unit,
@@ -67,9 +90,25 @@ fun ConfigSection(
 ) {
     var showAboutPage by rememberSaveable { mutableStateOf(false) }
     val visibleFiles = when (selectedCategory) {
-        ConfigCategory.CONVERTER -> converterFiles
+        ConfigCategory.CONVERTER -> converterFiles.filter { entry ->
+            // Converter exposes an extra in-category level because alias files are
+            // edited far more often than the converter rule/config bundle.
+            when (selectedConverterSubcategory) {
+                ConverterSubcategory.ALIASES -> entry.relativePath.startsWith("converter/aliases/")
+                ConverterSubcategory.RULES -> !entry.relativePath.startsWith("converter/aliases/")
+            }
+        }
+        ConfigCategory.CHARTS -> chartFiles
+        ConfigCategory.META -> metaFiles
         ConfigCategory.REPORTS -> reportFiles
+    }.map { entry ->
+        entry.copy(displayName = displayNameForCurrentScope(entry, selectedCategory, selectedConverterSubcategory))
     }
+    val scopedSelectedFileDisplayName = selectedFileDisplayName.removeCurrentScopePrefix(
+        selectedCategory = selectedCategory,
+        selectedConverterSubcategory = selectedConverterSubcategory
+    )
+    val usesAliasStructuredEditor = selectedFilePath.isAliasFilePathForConfigScreen()
 
     if (showAboutPage) {
         ConfigAboutPage(
@@ -95,21 +134,48 @@ fun ConfigSection(
 
         ConfigCategorySwitchCard(
             selectedCategory = selectedCategory,
-            selectedFile = selectedFile,
+            selectedConverterSubcategory = selectedConverterSubcategory,
+            selectedFileDisplayName = scopedSelectedFileDisplayName,
             visibleFiles = visibleFiles,
             onSelectConverter = onSelectConverter,
+            onSelectCharts = onSelectCharts,
+            onSelectMeta = onSelectMeta,
             onSelectReports = onSelectReports,
+            onSelectConverterAliases = onSelectConverterAliases,
+            onSelectConverterRules = onSelectConverterRules,
             onRefreshFiles = onRefreshFiles,
             onOpenFile = onOpenFile
         )
 
         if (visibleFiles.isNotEmpty()) {
-            ConfigEditorCard(
-                selectedFile = selectedFile,
-                editableContent = editableContent,
-                onEditableContentChange = onEditableContentChange,
-                onSaveCurrentFile = onSaveCurrentFile
-            )
+            if (usesAliasStructuredEditor) {
+                ConfigAliasEditorCard(
+                    selectedFileDisplayName = scopedSelectedFileDisplayName,
+                    mode = aliasEditorMode,
+                    document = aliasDocumentDraft,
+                    parentOptions = aliasParentOptions,
+                    advancedTomlDraft = aliasAdvancedTomlDraft,
+                    errorMessage = aliasEditorErrorMessage,
+                    onSelectStructuredMode = onSelectAliasStructuredMode,
+                    onSelectAdvancedMode = onSelectAliasAdvancedMode,
+                    onParentChange = onAliasParentChange,
+                    onAdvancedTomlChange = onAliasAdvancedTomlChange,
+                    onAddGroup = onAddAliasGroup,
+                    onRenameGroup = onRenameAliasGroup,
+                    onDeleteGroup = onDeleteAliasGroup,
+                    onAddEntry = onAddAliasEntry,
+                    onUpdateEntry = onUpdateAliasEntry,
+                    onDeleteEntry = onDeleteAliasEntry,
+                    onSave = onSaveCurrentFile
+                )
+            } else {
+                ConfigEditorCard(
+                    selectedFileDisplayName = scopedSelectedFileDisplayName,
+                    editableContent = editableContent,
+                    onEditableContentChange = onEditableContentChange,
+                    onSaveCurrentFile = onSaveCurrentFile
+                )
+            }
         }
 
         ConfigAboutCard(
@@ -118,6 +184,37 @@ fun ConfigSection(
         )
     }
 }
+
+private fun displayNameForCurrentScope(
+    entry: ConfigTomlFileEntry,
+    selectedCategory: ConfigCategory,
+    selectedConverterSubcategory: ConverterSubcategory
+): String {
+    // Keep canonical path and stable displayName untouched in state/runtime.
+    // Only trim the in-scope subcategory prefix at render time when the user
+    // has already narrowed Converter into Aliases.
+    return entry.displayName.removeCurrentScopePrefix(
+        selectedCategory = selectedCategory,
+        selectedConverterSubcategory = selectedConverterSubcategory
+    )
+}
+
+private fun String.removeCurrentScopePrefix(
+    selectedCategory: ConfigCategory,
+    selectedConverterSubcategory: ConverterSubcategory
+): String {
+    return if (
+        selectedCategory == ConfigCategory.CONVERTER &&
+        selectedConverterSubcategory == ConverterSubcategory.ALIASES
+    ) {
+        removePrefix("aliases/")
+    } else {
+        this
+    }
+}
+
+private fun String.isAliasFilePathForConfigScreen(): Boolean =
+    startsWith("converter/aliases/") && endsWith(".toml", ignoreCase = true)
 
 @Composable
 private fun ConfigAboutCard(

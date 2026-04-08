@@ -42,6 +42,8 @@ Boundary rules:
   - `<filesDir>/tracer_core/config/converter/interval_processor_config.toml`
 - Config editor reads and writes under:
   - `<filesDir>/tracer_core/config`
+  - The Config tab currently exposes raw TOML editing for three user-facing
+    categories: `converter`, `charts`, and `reports`.
 
 ## Diagnostics and Support
 
