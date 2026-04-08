@@ -62,6 +62,12 @@ Release-Version: vX.Y.Z
 - `[Added]`、`[Changed & Refactored]`、`[Fixed]` 按实际改动保留
 - 列表项统一使用 `- `
 
+## Release-Version Semantics
+
+- `Release-Version` 表示本次对外发布版本，不等于某单一组件的内部实现版本
+- 当 core / cli / android 在同一发布批次内共同交付时，commit message 中的 `Release-Version` 必须统一为同一个发布版本
+- 组件内部版本（如构建号、内部协议号）可以独立演进，但不得替代 `Release-Version`
+
 ## Generic Example
 
 ```text

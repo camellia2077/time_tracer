@@ -62,3 +62,4 @@ git push origin vX.Y.Z
 - 代码中的版本号应与正式 tag 一致
 - 对应发布说明文件应存在
 - 若用户明确要求重挂到指定提交或当前 `HEAD`，agent 直接执行，不重复询问
+- `vX.Y.Z` tag 表示统一对外发布版本；即使 core / cli / android 维护各自内部实现版本，正式 release tag 仍以统一发布版本为准
