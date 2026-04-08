@@ -5,7 +5,7 @@ use crate::commands::handler::{CommandContext, CommandHandler};
 use crate::error::AppError;
 
 use super::support::{
-    absolute_existing_path, print_content, require_output_path, security_level_token,
+    absolute_existing_path, print_content, require_output_path_for, security_level_token,
     validate_exchange_export_input,
 };
 use super::{
@@ -35,7 +35,7 @@ pub(crate) fn run_export_with_port(
     let input = absolute_existing_path(&args.input)?;
     validate_exchange_export_input(&input)?;
 
-    let output = require_output_path(ctx.output_path.as_deref())?;
+    let output = require_output_path_for(ctx.output_path.as_deref(), "exchange export")?;
     let passphrase = prompts.prompt_export_passphrase()?;
     let cli_config = port.load_cli_config("crypto", ctx)?;
     let date_check_mode = cli_config

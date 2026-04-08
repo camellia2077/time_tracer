@@ -101,6 +101,9 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_crypto_decrypt: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_crypto_decrypt_json")
             .map_err(symbol_error)?;
+        let runtime_crypto_unpack: RuntimeJsonFn = *lib
+            .get(b"tracer_core_runtime_crypto_unpack_json")
+            .map_err(symbol_error)?;
         let runtime_crypto_inspect: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_crypto_inspect_json")
             .map_err(symbol_error)?;
@@ -125,6 +128,7 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
             runtime_tree,
             runtime_crypto_encrypt,
             runtime_crypto_decrypt,
+            runtime_crypto_unpack,
             runtime_crypto_inspect,
         })
     }

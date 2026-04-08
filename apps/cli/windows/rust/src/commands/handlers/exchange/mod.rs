@@ -1,5 +1,6 @@
 pub mod export;
 pub mod import;
+pub mod unpack;
 pub mod inspect;
 pub mod support;
 
@@ -13,6 +14,7 @@ use crate::error::AppError;
 use self::export::ExportHandler;
 use self::import::ImportHandler;
 use self::inspect::InspectHandler;
+use self::unpack::UnpackHandler;
 
 pub struct ExchangeHandler;
 
@@ -29,6 +31,12 @@ pub(crate) trait ExchangeSessionPort {
         request: &Value,
     ) -> Result<String, AppError>;
     fn import_package(
+        &self,
+        command_name: &str,
+        ctx: &CommandContext,
+        request: &Value,
+    ) -> Result<String, AppError>;
+    fn unpack_package(
         &self,
         command_name: &str,
         ctx: &CommandContext,
@@ -82,6 +90,17 @@ impl ExchangeSessionPort for RuntimeExchangeSessionPort {
         session.exchange().import_package(request)
     }
 
+    fn unpack_package(
+        &self,
+        command_name: &str,
+        ctx: &CommandContext,
+        request: &Value,
+    ) -> Result<String, AppError> {
+        let api = CoreApi::load()?;
+        let session = api.bootstrap(command_name, &ctx.without_output())?;
+        session.exchange().unpack_package(request)
+    }
+
     fn inspect_package(
         &self,
         command_name: &str,
@@ -120,6 +139,7 @@ impl CommandHandler<ExchangeArgs> for ExchangeHandler {
         match args.command {
             ExchangeCommand::Export(args) => ExportHandler.handle(args, ctx),
             ExchangeCommand::Import(args) => ImportHandler.handle(args, ctx),
+            ExchangeCommand::Unpack(args) => UnpackHandler.handle(args, ctx),
             ExchangeCommand::Inspect(args) => InspectHandler.handle(args, ctx),
         }
     }
@@ -129,7 +149,10 @@ impl CommandHandler<ExchangeArgs> for ExchangeHandler {
 mod tests {
     use serde_json::Value;
 
-    use crate::cli::{ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs, SecurityLevel};
+    use crate::cli::{
+        ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs, ExchangeUnpackArgs,
+        SecurityLevel,
+    };
     use crate::commands::testing::{
         RecordedExchangeSession, default_context, sample_cli_config, temp_output_path,
     };
@@ -171,6 +194,15 @@ mod tests {
         }
 
         fn inspect_package(
+            &self,
+            command_name: &str,
+            _ctx: &crate::commands::handler::CommandContext,
+            request: &Value,
+        ) -> Result<String, crate::error::AppError> {
+            self.recorded.record_text(command_name, request)
+        }
+
+        fn unpack_package(
             &self,
             command_name: &str,
             _ctx: &crate::commands::handler::CommandContext,
@@ -331,6 +363,37 @@ mod tests {
                 .as_str()
                 .unwrap_or_default()
                 .contains("Cargo.toml")
+        );
+    }
+
+    #[test]
+    fn exchange_unpack_uses_crypto_bootstrap_token_and_requires_output() {
+        let recorded = RecordedExchangeSession::new(sample_cli_config(), "ok");
+        let port = TestExchangePort {
+            recorded: &recorded,
+        };
+        let output_path = temp_output_path("exchange_unpack", "dir");
+        let mut ctx = default_context();
+        ctx.output_path = Some(output_path.to_string_lossy().to_string());
+
+        crate::commands::handlers::exchange::unpack::run_unpack_with_port(
+            ExchangeUnpackArgs {
+                input: "Cargo.toml".to_string(),
+            },
+            &ctx,
+            &port,
+            &TestPromptPort,
+        )
+        .expect("exchange unpack should succeed");
+
+        assert_eq!(recorded.command_names(), vec!["crypto".to_string()]);
+        let request = recorded.requests().remove(0);
+        assert_eq!(request["passphrase"], "secret-import");
+        assert!(
+            request["output_path"]
+                .as_str()
+                .unwrap_or_default()
+                .contains("exchange_unpack")
         );
     }
 }

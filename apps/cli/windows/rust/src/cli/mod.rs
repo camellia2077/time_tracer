@@ -12,7 +12,7 @@ pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
 pub use exchange::{
     ExchangeArgs, ExchangeCommand, ExchangeExportArgs, ExchangeImportArgs, ExchangeInspectArgs,
-    SecurityLevel,
+    ExchangeUnpackArgs, SecurityLevel,
 };
 pub use licenses::LicensesArgs;
 pub use pipeline::{
@@ -178,6 +178,24 @@ mod tests {
                     assert_eq!(args.input, "a.tracer");
                 }
                 _ => panic!("expected exchange import command"),
+            },
+            _ => panic!("expected exchange command"),
+        }
+    }
+
+    #[test]
+    fn exchange_unpack_still_requires_output_before_execution() {
+        let cli =
+            Cli::try_parse_from(["time_tracer_cli", "exchange", "unpack", "--in", "a.tracer"])
+                .unwrap();
+        assert!(cli.output.is_none());
+
+        match cli.command {
+            Command::Exchange(args) => match args.command {
+                ExchangeCommand::Unpack(args) => {
+                    assert_eq!(args.input, "a.tracer");
+                }
+                _ => panic!("expected exchange unpack command"),
             },
             _ => panic!("expected exchange command"),
         }

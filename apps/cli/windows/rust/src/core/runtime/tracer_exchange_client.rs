@@ -21,6 +21,10 @@ impl<'runtime> TracerExchangeClient<'runtime> {
         invoke::run_tracer_exchange_import(self.runtime, request)
     }
 
+    pub fn unpack_package(&self, request: &Value) -> Result<String, AppError> {
+        invoke::run_tracer_exchange_unpack(self.runtime, request)
+    }
+
     pub fn inspect_package(&self, request: &Value) -> Result<String, AppError> {
         invoke::run_tracer_exchange_inspect(self.runtime, request)
     }

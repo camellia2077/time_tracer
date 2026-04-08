@@ -41,5 +41,6 @@ pub(crate) struct RuntimeSymbols {
     pub(crate) runtime_tree: RuntimeJsonFn,
     pub(crate) runtime_crypto_encrypt: RuntimeJsonFn,
     pub(crate) runtime_crypto_decrypt: RuntimeJsonFn,
+    pub(crate) runtime_crypto_unpack: RuntimeJsonFn,
     pub(crate) runtime_crypto_inspect: RuntimeJsonFn,
 }

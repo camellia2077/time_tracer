@@ -46,17 +46,17 @@ pub fn validate_exchange_package_input(input: &PathBuf) -> Result<(), AppError> 
     ))
 }
 
-pub fn require_output_path(raw: Option<&str>) -> Result<PathBuf, AppError> {
+pub fn require_output_path_for(raw: Option<&str>, context: &str) -> Result<PathBuf, AppError> {
     let value = raw.ok_or_else(|| {
-        AppError::InvalidArguments("-o/--output is required for exchange export.".to_string())
+        AppError::InvalidArguments(format!("-o/--output is required for {context}."))
     })?;
     if value.trim().is_empty() {
         return Err(AppError::InvalidArguments(
-            "-o/--output is required for exchange export.".to_string(),
+            format!("-o/--output is required for {context}."),
         ));
     }
     resolve_output_path(Some(value))?.ok_or_else(|| {
-        AppError::InvalidArguments("-o/--output is required for exchange export.".to_string())
+        AppError::InvalidArguments(format!("-o/--output is required for {context}."))
     })
 }
 

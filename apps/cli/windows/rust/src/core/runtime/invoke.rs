@@ -213,6 +213,19 @@ pub(crate) fn run_tracer_exchange_import(
     Ok(payload.content)
 }
 
+pub(crate) fn run_tracer_exchange_unpack(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<String, AppError> {
+    let payload = run_text(
+        runtime,
+        runtime.api.symbols.runtime_crypto_unpack,
+        request,
+        "exchange_unpack",
+    )?;
+    Ok(payload.content)
+}
+
 pub(crate) fn run_tracer_exchange_inspect(
     runtime: &CoreRuntime,
     request: &Value,
