@@ -14,6 +14,7 @@ use crate::commands::handlers::pipeline::PipelineHandler;
 use crate::commands::handlers::query::QueryHandler;
 use crate::commands::handlers::report::ReportHandler;
 use crate::commands::handlers::tracer::TracerHandler;
+use crate::commands::handlers::txt::TxtHandler;
 use crate::error::AppError;
 
 pub fn execute(cli: Cli) -> Result<(), AppError> {
@@ -28,6 +29,7 @@ pub fn execute(cli: Cli) -> Result<(), AppError> {
         Command::Pipeline(args) => PipelineHandler.handle(args, &ctx),
         Command::Report(args) => ReportHandler.handle(args, &ctx),
         Command::Exchange(args) => ExchangeHandler.handle(args, &ctx),
+        Command::Txt(args) => TxtHandler.handle(args, &ctx),
         Command::Doctor(args) => DoctorHandler.handle(args, &ctx),
         Command::Licenses(args) => LicensesHandler.handle(args, &ctx),
         Command::Tracer => TracerHandler.handle((), &ctx),

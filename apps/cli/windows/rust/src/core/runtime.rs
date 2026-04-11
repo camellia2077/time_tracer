@@ -10,6 +10,7 @@ mod pipeline_client;
 mod query_client;
 mod report_client;
 mod tracer_exchange_client;
+mod txt_client;
 
 // Facade module: keep public runtime API stable while delegating internals to focused submodules.
 use std::ffi::c_void;
@@ -25,6 +26,7 @@ pub use self::pipeline_client::PipelineClient;
 pub use self::query_client::QueryClient;
 pub use self::report_client::ReportClient;
 pub use self::tracer_exchange_client::TracerExchangeClient;
+pub use self::txt_client::{TxtClient, TxtResolveOutput};
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct ResolvedCliPaths {
@@ -151,6 +153,10 @@ impl RuntimeSession {
 
     pub fn exchange(&self) -> TracerExchangeClient<'_> {
         TracerExchangeClient::new(&self.runtime)
+    }
+
+    pub fn txt(&self) -> TxtClient<'_> {
+        TxtClient::new(&self.runtime)
     }
 
     pub fn cli_config(&self) -> &CliConfig {

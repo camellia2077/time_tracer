@@ -1,0 +1,58 @@
+# TXT view-day command tests
+
+[[commands]]
+name = "TXT View-Day Existing Block"
+stage = "txt-view-day"
+args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "0102"]
+expect_exit = 0
+expect_stdout_contains = [
+  "0656w",
+  "0904无氧训练 #cherry",
+  "2207minecraft",
+]
+expect_stderr_contains = []
+
+[[commands]]
+name = "TXT View-Day Missing Block"
+stage = "txt-view-day"
+args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "0201"]
+expect_exit = 6
+expect_error_code = "runtime.logic_error"
+expect_error_category = "runtime"
+expect_hints_contains = ["Inspect error_message for detailed reason."]
+expect_stderr_contains = ["Day block 0201 was not found"]
+
+[[commands]]
+name = "TXT View-Day Invalid Marker"
+stage = "txt-view-day"
+args = ["txt", "view-day", "--in", "{data_path}/2025/2025-01.txt", "--day", "0132"]
+expect_exit = 3
+expect_error_code = "cli.invalid_arguments"
+expect_error_category = "cli"
+expect_hints_contains = ["Run command --help to inspect required arguments."]
+expect_stderr_contains = ["`--day` must be a valid MMDD marker."]
+
+[[commands]]
+name = "Prepare TXT View-Day NonMonth Fixture"
+stage = "txt-view-day"
+raw_command = true
+args = [
+  "python",
+  "-c",
+  "from pathlib import Path; src = Path(r'{data_path}/2025/2025-01.txt'); dst = Path(r'{output_dir}/txt/journal.txt'); dst.parent.mkdir(parents=True, exist_ok=True); dst.write_text(src.read_text(encoding='utf-8'), encoding='utf-8'); print('[PASS] prepared txt non-month fixture')",
+]
+expect_exit = 0
+expect_stdout_contains = ["[PASS] prepared txt non-month fixture"]
+expect_files = ["{output_dir}/txt/journal.txt"]
+
+[[commands]]
+name = "TXT View-Day Without SelectedMonth Inference"
+stage = "txt-view-day"
+args = ["txt", "view-day", "--in", "{output_dir}/txt/journal.txt", "--day", "0102"]
+expect_exit = 0
+expect_stdout_contains = [
+  "0656w",
+  "0904无氧训练 #cherry",
+  "2207minecraft",
+]
+expect_stderr_contains = []

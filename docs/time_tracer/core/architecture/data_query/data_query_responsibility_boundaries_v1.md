@@ -97,5 +97,5 @@
    - `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_period_tests.cpp`
    - `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_tree_tests.cpp`
    - `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_stats_tests.cpp`
-6. CLI 场景回归：`test/suites/tracer_windows_cli/tests/commands_query_data.toml`
+6. CLI 场景回归：`tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
 

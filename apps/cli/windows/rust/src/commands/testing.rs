@@ -6,7 +6,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde_json::Value;
 
 use crate::commands::handlers::report::{RenderedReport, ReportWindowMetadata};
-use crate::core::runtime::{CliCommandDefaults, CliConfig, CliDefaults, TreeResponse};
+use crate::core::runtime::{
+    CliCommandDefaults, CliConfig, CliDefaults, TreeResponse, TxtResolveOutput,
+};
 use crate::error::AppError;
 
 use super::handler::CommandContext;
@@ -272,6 +274,42 @@ impl RecordedExchangeSession {
         command_name: &str,
         request: &Value,
     ) -> Result<String, AppError> {
+        self.command_names
+            .borrow_mut()
+            .push(command_name.to_string());
+        self.requests.borrow_mut().push(request.clone());
+        Ok(self.response.clone())
+    }
+
+    pub(crate) fn command_names(&self) -> Vec<String> {
+        self.command_names.borrow().clone()
+    }
+
+    pub(crate) fn requests(&self) -> Vec<Value> {
+        self.requests.borrow().clone()
+    }
+}
+
+pub(crate) struct RecordedTxtSession {
+    command_names: RefCell<Vec<String>>,
+    requests: RefCell<Vec<Value>>,
+    response: TxtResolveOutput,
+}
+
+impl RecordedTxtSession {
+    pub(crate) fn new(response: TxtResolveOutput) -> Self {
+        Self {
+            command_names: RefCell::new(Vec::new()),
+            requests: RefCell::new(Vec::new()),
+            response,
+        }
+    }
+
+    pub(crate) fn record_resolve(
+        &self,
+        command_name: &str,
+        request: &Value,
+    ) -> Result<TxtResolveOutput, AppError> {
         self.command_names
             .borrow_mut()
             .push(command_name.to_string());

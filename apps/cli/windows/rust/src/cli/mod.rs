@@ -7,6 +7,7 @@ mod licenses;
 mod pipeline;
 mod query;
 mod report;
+mod txt;
 
 pub use chart::{ChartArgs, ChartTheme, ChartType};
 pub use doctor::DoctorArgs;
@@ -28,6 +29,7 @@ pub use report::{
     ReportArgs, ReportCommand, ReportExportArgs, ReportExportPeriod, ReportFormat,
     ReportRenderArgs, ReportRenderPeriod,
 };
+pub use txt::{TxtArgs, TxtCommand, TxtViewDayArgs};
 
 #[derive(Debug, Parser)]
 #[command(
@@ -79,6 +81,8 @@ pub enum Command {
     Report(ReportArgs),
     #[command(about = "Export/import/inspect tracer exchange packages")]
     Exchange(ExchangeArgs),
+    #[command(about = "Inspect monthly TXT files through shared day-block semantics")]
+    Txt(TxtArgs),
     #[command(about = "Run runtime dependency/config diagnostics")]
     Doctor(DoctorArgs),
     #[command(about = "Print third-party dependency licenses")]
@@ -96,6 +100,7 @@ mod tests {
     use super::{
         Cli, Command, DataOutputMode, DateCheckMode, ExchangeCommand, PipelineCommand,
         PipelineValidateCommand, ReportCommand, ReportExportPeriod, ReportRenderPeriod,
+        TxtCommand,
     };
 
     #[test]
@@ -211,6 +216,30 @@ mod tests {
             "Usage: time_tracer_cli.exe -o <PATH> exchange export --in <PATH> [--security-level <SECURITY_LEVEL>]"
         ));
         assert!(help.contains("Output path override. Required for `exchange export`."));
+    }
+
+    #[test]
+    fn txt_view_day_parses_input_and_marker() {
+        let cli = Cli::try_parse_from([
+            "time_tracer_cli",
+            "txt",
+            "view-day",
+            "--in",
+            "test/data/2025/2025-01.txt",
+            "--day",
+            "0102",
+        ])
+        .unwrap();
+
+        match cli.command {
+            Command::Txt(args) => match args.command {
+                TxtCommand::ViewDay(args) => {
+                    assert_eq!(args.input, "test/data/2025/2025-01.txt");
+                    assert_eq!(args.day, "0102");
+                }
+            },
+            _ => panic!("expected txt command"),
+        }
     }
 
     #[test]

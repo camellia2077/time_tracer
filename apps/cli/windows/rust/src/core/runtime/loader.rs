@@ -80,6 +80,9 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
         let runtime_validate_logic: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_validate_logic_json")
             .map_err(symbol_error)?;
+        let runtime_txt: RuntimeJsonFn = *lib
+            .get(b"tracer_core_runtime_txt_json")
+            .map_err(symbol_error)?;
         let runtime_query: RuntimeJsonFn = *lib
             .get(b"tracer_core_runtime_query_json")
             .map_err(symbol_error)?;
@@ -121,6 +124,7 @@ pub(crate) fn load_runtime_symbols(lib: &Library) -> Result<RuntimeSymbols, AppE
             runtime_import,
             runtime_validate_structure,
             runtime_validate_logic,
+            runtime_txt,
             runtime_query,
             runtime_report,
             runtime_report_batch,

@@ -9,7 +9,7 @@ use super::codec::{read_c_json, to_request_json};
 use super::env_flags::log_timing;
 use super::errors::{ErrorContract, format_error_detail, format_tree_error_detail};
 use super::ffi::RuntimeJsonFn;
-use super::{CoreRuntime, TreeResponse};
+use super::{CoreRuntime, TreeResponse, TxtResolveOutput};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct ReportWindowMetadata {
@@ -66,6 +66,27 @@ struct ReportTargetsResponse {
     error_message: String,
     #[serde(default)]
     items: Vec<String>,
+    #[serde(flatten)]
+    error_contract: ErrorContract,
+}
+
+#[derive(Deserialize)]
+struct TxtResolveResponse {
+    ok: bool,
+    #[serde(default)]
+    error_message: String,
+    #[serde(default)]
+    normalized_day_marker: String,
+    #[serde(default)]
+    found: bool,
+    #[serde(default)]
+    is_marker_valid: bool,
+    #[serde(default)]
+    can_save: bool,
+    #[serde(default)]
+    day_body: String,
+    #[serde(default)]
+    day_content_iso_date: Option<String>,
     #[serde(flatten)]
     error_contract: ErrorContract,
 }
@@ -185,6 +206,31 @@ pub(crate) fn run_tree_query(
         return Ok(payload);
     }
     Err(AppError::Logic(format_tree_error_detail(&payload)))
+}
+
+pub(crate) fn run_txt_resolve_day_block(
+    runtime: &CoreRuntime,
+    request: &Value,
+) -> Result<TxtResolveOutput, AppError> {
+    let run_start = Instant::now();
+    let request_json = to_request_json(request)?;
+    let raw = unsafe { (runtime.api.symbols.runtime_txt)(runtime.handle, request_json.as_ptr()) };
+    let payload = read_c_json::<TxtResolveResponse>(raw, "txt")?;
+    log_timing("runtime.txt", run_start.elapsed());
+    if !payload.ok {
+        return Err(map_runtime_text_error(
+            payload.error_message,
+            &payload.error_contract,
+        ));
+    }
+    Ok(TxtResolveOutput {
+        normalized_day_marker: payload.normalized_day_marker,
+        found: payload.found,
+        is_marker_valid: payload.is_marker_valid,
+        can_save: payload.can_save,
+        day_body: payload.day_body,
+        day_content_iso_date: payload.day_content_iso_date,
+    })
 }
 
 pub(crate) fn run_tracer_exchange_export(

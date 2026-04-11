@@ -4,7 +4,7 @@
 
 ## 1. 总原则
 
-1. 以 `test/suites/tracer_windows_rust_cli/tests/*.toml` 为可执行契约。
+1. 以 `tools/suites/tracer_windows_rust_cli/tests/*.toml` 为可执行契约。
 2. 新增或改动输出文本时，必须同步修改对应测试断言。
 3. 输出保持“可读 + 可脚本解析”，避免同义重复与冗余段落。
 

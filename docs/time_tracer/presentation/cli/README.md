@@ -14,8 +14,9 @@
 1. 结构与改动落点：`specs/STRUCTURE.md`
 2. 输出文案与解析约定：`specs/cli-output-style.md`
 3. 颜色与终端显示：`specs/console-color.md`
-4. 用户可见变更：`CHANGELOG.md`
-5. 历史阶段记录：`history.md`
+4. TXT runtime / `txt view-day` 共享入口：`../../core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
+5. 用户可见变更：`CHANGELOG.md`
+6. 历史阶段记录：`history.md`
 
 ## 对应代码目录
 
@@ -23,14 +24,35 @@
 2. `apps/cli/windows/rust/runtime/`
 3. `apps/cli/windows/scripts/`
 
+## TXT Runtime Family
+
+1. Windows CLI `txt view-day` is a host presentation command over the shared
+   core TXT runtime family.
+2. CLI owns:
+   - argument parsing
+   - reading the input TXT file
+   - best-effort `selected_month` inference from `YYYY-MM.txt`
+   - terminal output and exit-code mapping
+3. Core owns:
+   - `MMDD` normalization and validation
+   - day-block extraction
+   - default day marker semantics
+   - day-block replacement semantics for future write flows
+4. Canonical contract docs:
+   - `docs/time_tracer/core/shared/c_abi.md`
+   - `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
+
 ## 测试与验收
 
-1. 集成套件目录：`test/suites/tracer_windows_rust_cli/`
+1. 集成套件目录：`tools/suites/tracer_windows_rust_cli/`
 2. 推荐命令：
    - `python tools/run.py verify --app tracer_core_shell --build-dir build_fast --concise`
    - `python tools/run.py verify --app tracer_core --profile fast --concise`
 3. 验收结果目录：`out/test/artifact_windows_cli/`
 4. 通过判定：`out/test/artifact_windows_cli/result.json` 中 `success=true`
+5. TXT day-block 黑盒场景：
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml`
+   - stage/log group: `txt-view-day`
 
 ## Report 日期参数约定
 
@@ -53,15 +75,18 @@
 2. 编写 `tracer_windows_rust_cli` reporting suite 目标日期时，应保证 canonical ISO 目标落在这个闭区间内。
 3. 若扩展 fixture 年份范围，需同步更新：
    - `test/data/README.md`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
 
 ## 文档维护规则
 
 1. 改 CLI 参数或命令：同步更新 `specs/STRUCTURE.md` 与对应测试 TOML。
 2. 改输出文本：同步更新 `specs/cli-output-style.md` 与测试断言。
-3. 改 C ABI 交互：同步更新 `docs/time_tracer/core/contracts/c_abi.md`。
-4. 改 `exchange import` 的配置应用语义：同步更新 `test/suites/tracer_windows_rust_cli/tests/commands_exchange.toml` 中“导入后立即 validate/query”回归。
-5. 本目录不再维护旧前端主线说明；历史仅在归档文档中保留。
+3. 改 C ABI 交互：同步更新 `docs/time_tracer/core/shared/c_abi.md`。
+4. 改 `txt view-day` 或 TXT runtime action 承接：同步更新
+   `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
+   与 `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml`。
+5. 改 `exchange import` 的配置应用语义：同步更新 `tools/suites/tracer_windows_rust_cli/tests/commands_exchange.toml` 中“导入后立即 validate/query”回归。
+6. 本目录不再维护旧前端主线说明；历史仅在归档文档中保留。
 
 ## Ingest 持久化边界
 

@@ -9,7 +9,7 @@ Windows CLI 当前交付实现为 Rust-only 版本。
    - 负责参数解析、命令分发、Core C ABI 调用、运行时装配
 2. `apps/cli/windows/agent.md`
    - 本模块的 agent 约束与验证入口
-3. `docs/time_tracer/clients/windows_cli/README.md`
+3. `docs/time_tracer/presentation/cli/README.md`
    - Windows CLI 文档入口
 
 ## 常用命令
@@ -42,6 +42,17 @@ python tools/run.py build --app tracer_windows_rust_cli --profile release_bundle
 - `report export`
 - `exchange export/import/inspect`
 - `pipeline convert/import/ingest/validate`
+- `txt view-day`
+
+## TXT Runtime Family
+
+- `txt view-day` reads a month TXT file locally, then calls the shared
+  `tracer_core_runtime_txt_json` runtime family.
+- CLI owns file/path handling and terminal presentation only.
+- Shared month-TXT day-block semantics stay in core.
+- Canonical docs:
+  - `docs/time_tracer/presentation/cli/README.md`
+  - `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
 ## Recent Fixed Window
 
@@ -76,6 +87,7 @@ time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_p
    - `apps/cli/windows/rust/src/commands/handlers/query/*`
    - `apps/cli/windows/rust/src/commands/handlers/report/*`
    - `apps/cli/windows/rust/src/commands/handlers/exchange/*`
+   - `apps/cli/windows/rust/src/commands/handlers/txt.rs`
    - `apps/cli/windows/rust/src/commands/handlers/chart/*`
 5. Core ABI 调用
    - `apps/cli/windows/rust/src/core/runtime.rs`
@@ -86,8 +98,8 @@ time_tracer_cli report export recent 7 --as-of 2026-03-07 --format md --db <db_p
 ## 文档驱动定位
 
 1. 总入口
-   - `docs/time_tracer/clients/windows_cli/README.md`
+   - `docs/time_tracer/presentation/cli/README.md`
 2. 结构与职责分层
-   - `docs/time_tracer/clients/windows_cli/specs/STRUCTURE.md`
+   - `docs/time_tracer/presentation/cli/specs/STRUCTURE.md`
 3. Core C ABI 契约
-   - `docs/time_tracer/core/contracts/c_abi.md`
+   - `docs/time_tracer/core/shared/c_abi.md`

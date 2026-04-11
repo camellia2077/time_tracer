@@ -24,6 +24,6 @@
    `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_tree_tests.cpp`、
    `libs/tracer_core/src/infra/tests/data_query/data_query_refactor_stats_tests.cpp`
    是否同步更新。
-2. `test/suites/tracer_windows_cli/tests/commands_query_data.toml` 是否补充关键回归场景。
+2. `tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml` 是否补充关键回归场景。
 3. `docs/time_tracer/core/contracts/stats/*.md` 是否同步更新（能力、schema、版本策略）。
 4. 版本历史是否补充迁移说明（`docs/time_tracer/history/`）。

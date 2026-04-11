@@ -60,12 +60,12 @@ description: Windows Rust CLI capability-family layout, build, and verification 
    - `apps/cli/windows/rust/runtime/config/`
    - canonical source：`assets/tracer_core/config`
 7. 输出契约测试入口：
-   - `test/suites/tracer_windows_rust_cli/tests.toml`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_tree_version.toml`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
-   - `test/suites/tracer_windows_rust_cli/tests/commands_exchange.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_reporting.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_pipeline.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_tree_version.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
+   - `tools/suites/tracer_windows_rust_cli/tests/commands_exchange.toml`
 
 ## Canonical 命令面
 

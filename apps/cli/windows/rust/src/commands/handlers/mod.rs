@@ -7,3 +7,4 @@ pub mod pipeline;
 pub mod query;
 pub mod report;
 pub mod tracer;
+pub mod txt;

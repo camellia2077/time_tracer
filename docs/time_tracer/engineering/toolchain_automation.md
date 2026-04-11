@@ -54,7 +54,7 @@
 1.  **逻辑测试层**：`tracer_core` 的 C++ 单元与组件测试。
 2.  **产物测试层**：针对二进制交付件（如 `time_tracer_cli.exe`）的集成测试。
 
-### 命令行命令 100% 覆盖策略 (test/suites/tracer_windows_rust_cli)
+### 命令行命令 100% 覆盖策略 (tools/suites/tracer_windows_rust_cli)
 *   **契约化断言**：通过 TOML 定义命令行为，支持 JSON 字段路径校验。
 *   **结构化反馈**：系统输出 `result.json`，Agent 可通过解析 JSON 状态判定结果。
 *   **自动格式修正**：验证通过后自动执行 `clang-format`。

@@ -34,6 +34,7 @@ pub(crate) struct RuntimeSymbols {
     pub(crate) runtime_import: RuntimeJsonFn,
     pub(crate) runtime_validate_structure: RuntimeJsonFn,
     pub(crate) runtime_validate_logic: RuntimeJsonFn,
+    pub(crate) runtime_txt: RuntimeJsonFn,
     pub(crate) runtime_query: RuntimeJsonFn,
     pub(crate) runtime_report: RuntimeJsonFn,
     pub(crate) runtime_report_batch: RuntimeJsonFn,
