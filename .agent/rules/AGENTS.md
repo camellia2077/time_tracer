@@ -5,7 +5,7 @@ trigger: always_on
 [CONSTRAINTS]
 
 - Shell / encoding:
-  - Use `pwsh` (PowerShell 7.5.4) as the default shell entry for command execution.
+  - Use `pwsh` (PowerShell 7.6.0) as the default shell entry for command execution.
   - Run `.sh` workflows only when explicitly requested.
   - When tool permissions allow escalation, prefer non-sandbox execution for
     repository commands; do not intentionally start sandboxed build / verify /

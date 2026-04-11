@@ -14,6 +14,10 @@ jobs:
     name: detect-changes
     runs-on: ubuntu-latest
     outputs:
+      # These outputs drive the whole Windows verify fan-out:
+      # docs/ui-only changes can skip heavy Windows work, focused owner paths can
+      # run a small capability smoke matrix, and everything else can fall back to
+      # the full heavy verify matrix.
       run_heavy_verify: ${{ steps.capability.outputs.run_heavy_verify }}
       run_capability_smoke: ${{ steps.capability.outputs.run_capability_smoke }}
       capability_mode: ${{ steps.capability.outputs.capability_mode }}
@@ -25,15 +29,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Install repo tools package
-        shell: bash
-        run: |
-          python -m pip install -e .
+      - name: Setup shared Python repo tools
+        uses: ./.github/actions/setup-python-repo-tools
 
       - name: Compute capability smoke profiles
         id: capability
@@ -75,15 +72,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Install repo tools package
-        shell: bash
-        run: |
-          python -m pip install -e .
+      - name: Setup shared Python repo tools
+        uses: ./.github/actions/setup-python-repo-tools
 
       - name: Generate matrix from toolchain config
         id: generate
@@ -96,6 +86,9 @@ jobs:
     needs:
       - detect-changes
     if: needs.detect-changes.outputs.run_capability_smoke == 'true'
+    # This is an early, owner-focused gate for high-reuse capabilities. It is
+    # intentionally narrower than the full Windows matrix and exists to surface
+    # core/runtime regressions before the expensive matrix fan-out starts.
     name: capability-smoke
     runs-on: windows-latest
     strategy:
@@ -105,33 +98,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-
-      - name: Install repo tools package
-        shell: pwsh
-        run: |
-          python -m pip install -e .
-
-      - name: Setup MSYS2 UCRT64 Toolchain
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: >-
-            mingw-w64-ucrt-x86_64-clang
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ccache
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-nlohmann-json
-
-      - name: Add UCRT64 Bin To PATH
-        shell: pwsh
-        run: |
-          "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Setup shared Windows verify environment
+        uses: ./.github/actions/setup-windows-verify-env
 
       - name: Focused capability verify
         shell: pwsh
@@ -145,6 +113,9 @@ jobs:
       - windows-capability-smoke
     name: ${{ matrix.job_name }}
     runs-on: windows-latest
+    # Keep the heavy matrix visible for both real verify runs and docs-only skips.
+    # The capability smoke dependency is allowed to be success/skipped/empty so
+    # that non-focused changes do not get blocked by a smoke job that never ran.
     if: ${{ always() && (needs.detect-changes.outputs.run_heavy_verify == 'true' || needs.detect-changes.outputs.run_heavy_verify == 'false') && (needs.windows-capability-smoke.result == 'success' || needs.windows-capability-smoke.result == 'skipped' || needs.windows-capability-smoke.result == '') }}
     continue-on-error: ${{ matrix.allow_failure }}
     strategy:
@@ -162,38 +133,12 @@ jobs:
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
         uses: actions/checkout@v5
 
-      - name: Setup Python
+      - name: Setup shared Windows verify environment
         if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
+        uses: ./.github/actions/setup-windows-verify-env
 
-      - name: Install repo tools package
-        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        shell: pwsh
-        run: |
-          python -m pip install -e .
-
-      - name: Setup MSYS2 UCRT64 Toolchain
-        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: >-
-            mingw-w64-ucrt-x86_64-clang
-            mingw-w64-ucrt-x86_64-cmake
-            mingw-w64-ucrt-x86_64-ccache
-            mingw-w64-ucrt-x86_64-gcc
-            mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-nlohmann-json
-
-      - name: Add UCRT64 Bin To PATH
-        if: needs.detect-changes.outputs.run_heavy_verify == 'true'
-        shell: pwsh
-        run: |
-          "C:\msys64\ucrt64\bin" | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-
+      # Empty cmake_args means the standard baseline row. Non-empty cmake_args are
+      # reserved for experimental/variant rows so the default path stays explicit.
       - name: Verify tracer_core_shell (stable rows)
         if: needs.detect-changes.outputs.run_heavy_verify == 'true' && matrix.cmake_args == ''
         shell: pwsh
