@@ -6,10 +6,18 @@ namespace {
 
 void TestDecodeRuntimeCheckResponse(int& failures) {
   const auto response = DecodeRuntimeCheckResponse(
-      R"({"ok":false,"error_message":"missing config","messages":["line1","line2"]})");
+      R"({"ok":false,"error_message":"missing config","error_code":"runtime.invalid_request","error_category":"runtime","hints":["check request","check config"],"messages":["line1","line2"]})");
   Expect(!response.ok, "DecodeRuntimeCheckResponse ok mismatch.", failures);
   Expect(response.error_message == "missing config",
          "DecodeRuntimeCheckResponse error_message mismatch.", failures);
+  Expect(response.error_contract.error_code == "runtime.invalid_request",
+         "DecodeRuntimeCheckResponse error_code mismatch.", failures);
+  Expect(response.error_contract.error_category == "runtime",
+         "DecodeRuntimeCheckResponse error_category mismatch.", failures);
+  Expect(response.error_contract.hints.size() == 2U,
+         "DecodeRuntimeCheckResponse hints size mismatch.", failures);
+  Expect(response.error_contract.hints[0] == "check request",
+         "DecodeRuntimeCheckResponse first hint mismatch.", failures);
   Expect(response.messages.size() == 2U,
          "DecodeRuntimeCheckResponse messages size mismatch.", failures);
   Expect(response.messages[0] == "line1",
@@ -45,6 +53,20 @@ void TestDecodeResolveCliContextResponse(int& failures) {
                  .has_value() &&
              *response.cli_config->command_defaults.convert_validate_logic,
          "DecodeResolveCliContextResponse convert_validate_logic mismatch.",
+         failures);
+
+  const auto failed = DecodeResolveCliContextResponse(
+      R"({"ok":false,"error_message":"dll mismatch","error_code":"runtime.symbol_missing","error_category":"compatibility","hints":["upgrade cli","upgrade dll"]})");
+  Expect(!failed.ok, "DecodeResolveCliContextResponse failed ok mismatch.",
+         failures);
+  Expect(failed.error_contract.error_code == "runtime.symbol_missing",
+         "DecodeResolveCliContextResponse failed error_code mismatch.",
+         failures);
+  Expect(failed.error_contract.error_category == "compatibility",
+         "DecodeResolveCliContextResponse failed error_category mismatch.",
+         failures);
+  Expect(failed.error_contract.hints.size() == 2U,
+         "DecodeResolveCliContextResponse failed hints size mismatch.",
          failures);
 
   ExpectInvalidArgument(
@@ -87,6 +109,23 @@ void TestDecodeTreeResponse(int& failures) {
              *response.nodes[0].children[0].duration_seconds == 1800LL,
          "DecodeTreeResponse child duration mismatch.", failures);
 
+  const auto missing_contract = DecodeTreeResponse(
+      R"({"ok":false,"found":false,"error_message":"missing target","roots":[],"nodes":[]})");
+  Expect(!missing_contract.ok,
+         "DecodeTreeResponse missing-contract ok mismatch.", failures);
+  Expect(!missing_contract.found,
+         "DecodeTreeResponse missing-contract found mismatch.", failures);
+  Expect(missing_contract.error_contract.error_code.empty(),
+         "DecodeTreeResponse missing-contract error_code should default empty.",
+         failures);
+  Expect(
+      missing_contract.error_contract.error_category.empty(),
+      "DecodeTreeResponse missing-contract error_category should default empty.",
+      failures);
+  Expect(missing_contract.error_contract.hints.empty(),
+         "DecodeTreeResponse missing-contract hints should default empty.",
+         failures);
+
   ExpectInvalidArgument(
       [] {
         (void)DecodeTreeResponse(
@@ -115,10 +154,19 @@ void TestDecodeAckAndTextResponses(int& failures) {
          "DecodeAckResponse error_message mismatch.", failures);
 
   const auto ack_failed =
-      DecodeAckResponse(R"({"ok":false,"error_message":""})", "runtime_export");
+      DecodeAckResponse(
+          R"({"ok":false,"error_message":"","error_code":"runtime.logic_error","error_category":"logic","hints":["retry later"]})",
+          "runtime_export");
   Expect(!ack_failed.ok, "DecodeAckResponse failed ok mismatch.", failures);
   Expect(ack_failed.error_message == "Core operation failed.",
          "DecodeAckResponse failed fallback error mismatch.", failures);
+  Expect(ack_failed.error_contract.error_code == "runtime.logic_error",
+         "DecodeAckResponse failed error_code mismatch.", failures);
+  Expect(ack_failed.error_contract.error_category == "logic",
+         "DecodeAckResponse failed error_category mismatch.", failures);
+  Expect(ack_failed.error_contract.hints.size() == 1U &&
+             ack_failed.error_contract.hints[0] == "retry later",
+         "DecodeAckResponse failed hints mismatch.", failures);
 
   const auto text_ok = DecodeTextResponse(
       R"({"ok":true,"error_message":"","content":"query content"})",
@@ -130,13 +178,37 @@ void TestDecodeAckAndTextResponses(int& failures) {
          "DecodeTextResponse content mismatch.", failures);
 
   const auto text_failed = DecodeTextResponse(
-      R"({"ok":false,"error_message":"","content":"partial"})",
+      R"({"ok":false,"error_message":"","error_code":"reporting.target.not_found","error_category":"logic","hints":["check target"],"content":"partial"})",
       "runtime_report");
   Expect(!text_failed.ok, "DecodeTextResponse failed ok mismatch.", failures);
   Expect(text_failed.error_message == "Core operation failed.",
          "DecodeTextResponse failed fallback error mismatch.", failures);
   Expect(text_failed.content == "partial",
          "DecodeTextResponse failed content mismatch.", failures);
+  Expect(text_failed.error_contract.error_code ==
+             "reporting.target.not_found",
+         "DecodeTextResponse failed error_code mismatch.", failures);
+  Expect(text_failed.error_contract.error_category == "logic",
+         "DecodeTextResponse failed error_category mismatch.", failures);
+  Expect(text_failed.error_contract.hints.size() == 1U &&
+             text_failed.error_contract.hints[0] == "check target",
+         "DecodeTextResponse failed hints mismatch.", failures);
+
+  const auto ack_missing_contract = DecodeAckResponse(
+      R"({"ok":false,"error_message":"failed without contract"})",
+      "runtime_export");
+  Expect(!ack_missing_contract.ok,
+         "DecodeAckResponse missing-contract ok mismatch.", failures);
+  Expect(ack_missing_contract.error_contract.error_code.empty(),
+         "DecodeAckResponse missing-contract error_code should default empty.",
+         failures);
+  Expect(
+      ack_missing_contract.error_contract.error_category.empty(),
+      "DecodeAckResponse missing-contract error_category should default empty.",
+      failures);
+  Expect(ack_missing_contract.error_contract.hints.empty(),
+         "DecodeAckResponse missing-contract hints should default empty.",
+         failures);
 
   ExpectInvalidArgument(
       [] {
