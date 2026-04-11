@@ -26,6 +26,14 @@ Local entrypoint for agents touching the IO adapter library.
 - `tracer_adapters_io` does not own TXT/TOML business validation.
 - For converter-config validation and TXT structure/logic validation, open [libs/tracer_core/README.md](../tracer_core/README.md) and follow its `Validation Docs` section.
 
+## Capability / Ownership Index
+
+1. `tracer_adapters_io` owns filesystem-facing TXT read/write helpers only.
+2. It does not own month-TXT day-block extraction, replacement, default
+   `MMDD` selection, or TXT runtime DTO semantics.
+3. Shared TXT day-block rules live in `tracer_core` pipeline-owned semantics
+   and are exposed to hosts through the TXT runtime family.
+
 ## Validate
 
 ```powershell

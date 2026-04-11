@@ -48,6 +48,7 @@ using RuntimeValidateLogicFn = const char* (*)(TtCoreRuntimeHandle*,
                                                const char*);
 using RuntimeRecordActivityAtomicallyFn = const char* (*)(TtCoreRuntimeHandle*,
                                                           const char*);
+using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportBatchFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
@@ -85,6 +86,7 @@ struct CoreApiFns {
   RuntimeValidateLogicFn runtime_validate_logic = nullptr;
   RuntimeRecordActivityAtomicallyFn runtime_record_activity_atomically =
       nullptr;
+  RuntimeTxtFn runtime_txt = nullptr;
   RuntimeQueryFn runtime_query = nullptr;
   RuntimeReportFn runtime_report = nullptr;
   RuntimeReportBatchFn runtime_report_batch = nullptr;

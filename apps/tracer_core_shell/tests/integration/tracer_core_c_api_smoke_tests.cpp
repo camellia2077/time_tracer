@@ -29,6 +29,7 @@ using RuntimeCreateFn = TtCoreRuntimeHandle* (*)(const char*, const char*,
                                                  const char*);
 using RuntimeDestroyFn = void (*)(TtCoreRuntimeHandle*);
 using RuntimeIngestFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
+using RuntimeTxtFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeQueryFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 using RuntimeReportFn = const char* (*)(TtCoreRuntimeHandle*, const char*);
 
@@ -172,6 +173,8 @@ auto main() -> int {
         LookupSymbol(library, "tracer_core_runtime_destroy"));
     const auto kRuntimeIngest = reinterpret_cast<RuntimeIngestFn>(
         LookupSymbol(library, "tracer_core_runtime_ingest_json"));
+    const auto kRuntimeTxt = reinterpret_cast<RuntimeTxtFn>(
+        LookupSymbol(library, "tracer_core_runtime_txt_json"));
     const auto kRuntimeQuery = reinterpret_cast<RuntimeQueryFn>(
         LookupSymbol(library, "tracer_core_runtime_query_json"));
     const auto kRuntimeReport = reinterpret_cast<RuntimeReportFn>(
@@ -183,7 +186,8 @@ auto main() -> int {
         kSetLogCallback == nullptr || kSetDiagnosticsCallback == nullptr ||
         kSetCryptoProgressCallback == nullptr || kRuntimeCreate == nullptr ||
         kRuntimeDestroy == nullptr || kRuntimeIngest == nullptr ||
-        kRuntimeQuery == nullptr || kRuntimeReport == nullptr) {
+        kRuntimeTxt == nullptr || kRuntimeQuery == nullptr ||
+        kRuntimeReport == nullptr) {
       std::cerr << "[FAIL] missing required exported symbols in "
                 << kLibraryName << '\n';
       CloseLibrary(library);

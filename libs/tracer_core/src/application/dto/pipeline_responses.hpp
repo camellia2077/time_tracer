@@ -34,6 +34,32 @@ struct RecordActivityAtomicallyResponse {
   std::optional<std::string> retained_transaction_root;
 };
 
+struct DefaultTxtDayMarkerResponse {
+  bool ok = false;
+  std::string normalized_day_marker;
+  std::string error_message;
+};
+
+struct ResolveTxtDayBlockResponse {
+  bool ok = false;
+  std::string normalized_day_marker;
+  bool found = false;
+  bool is_marker_valid = false;
+  bool can_save = false;
+  std::string day_body;
+  std::optional<std::string> day_content_iso_date;
+  std::string error_message;
+};
+
+struct ReplaceTxtDayBlockResponse {
+  bool ok = false;
+  std::string normalized_day_marker;
+  bool found = false;
+  bool is_marker_valid = false;
+  std::string updated_content;
+  std::string error_message;
+};
+
 }  // namespace tracer_core::core::dto
 
 #endif  // APPLICATION_DTO_PIPELINE_RESPONSES_HPP_

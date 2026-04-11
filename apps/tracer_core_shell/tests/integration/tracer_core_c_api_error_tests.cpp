@@ -18,6 +18,8 @@ void RunErrorPathChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
   RequireNotOk(
       api.runtime_export(runtime, json{{"format", "md"}}.dump().c_str()),
       "error-injection missing export type");
+  RequireNotOk(api.runtime_txt(runtime, "{bad json"),
+               "error-injection invalid txt json");
   RequireNotOk(api.runtime_tree(
                    runtime, json{{"max_depth", "bad-string"}}.dump().c_str()),
                "error-injection invalid tree max_depth");

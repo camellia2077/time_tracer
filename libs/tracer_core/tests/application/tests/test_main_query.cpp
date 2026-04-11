@@ -6,6 +6,7 @@ auto main() -> int {
   tracer_core::application::tests::TestState state;
 
   tracer_core::application::tests::RunDataQueryTests(state);
+  tracer_core::application::tests::RunQuerySemanticsTests(state);
 
   if (state.failures == 0) {
     std::cout << "[PASS] time_tracker_query_api_tests" << '\n';

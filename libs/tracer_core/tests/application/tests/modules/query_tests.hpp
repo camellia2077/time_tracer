@@ -7,6 +7,7 @@
 namespace tracer_core::application::tests {
 
 auto RunDataQueryTests(TestState& state) -> void;
+auto RunQuerySemanticsTests(TestState& state) -> void;
 
 }  // namespace tracer_core::application::tests
 

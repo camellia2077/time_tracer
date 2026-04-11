@@ -34,3 +34,4 @@
 20. `docs/time_tracer/core/contracts/reporting/report_output_text_contract_v1.md`
 21. `docs/time_tracer/core/contracts/cli_surface_contract_v1.md`
 22. `docs/time_tracer/core/shared/canonical_text_contract_v1.md`
+23. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`

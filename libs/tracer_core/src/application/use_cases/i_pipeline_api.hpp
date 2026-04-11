@@ -38,6 +38,18 @@ class IPipelineApi {
   virtual auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse = 0;
+
+  virtual auto RunDefaultTxtDayMarker(
+      const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
+      -> tracer_core::core::dto::DefaultTxtDayMarkerResponse = 0;
+
+  virtual auto RunResolveTxtDayBlock(
+      const tracer_core::core::dto::ResolveTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayBlockResponse = 0;
+
+  virtual auto RunReplaceTxtDayBlock(
+      const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtDayBlockResponse = 0;
 };
 
 }  // namespace tracer::core::application::use_cases

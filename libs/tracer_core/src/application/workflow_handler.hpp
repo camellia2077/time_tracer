@@ -56,6 +56,15 @@ class WorkflowHandler final : public IWorkflowHandler {
   auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
+  auto RunDefaultTxtDayMarker(
+      const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
+      -> tracer_core::core::dto::DefaultTxtDayMarkerResponse override;
+  auto RunResolveTxtDayBlock(
+      const tracer_core::core::dto::ResolveTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayBlockResponse override;
+  auto RunReplaceTxtDayBlock(
+      const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
   auto InstallActiveConverterConfig(
       const pipeline::ActiveConverterConfigInstallRequest& request)
       -> void override;

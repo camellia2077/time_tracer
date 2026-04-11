@@ -16,6 +16,7 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
     private val responseCodec = NativeResponseCodec()
     private val atomicRecordCodec = NativeAtomicRecordCodec()
     private val ingestSyncStatusCodec = NativeIngestSyncStatusCodec()
+    private val txtRuntimeCodec = NativeTxtRuntimeCodec()
     private val reportTranslator = NativeReportTranslator(responseCodec)
     private val queryTranslator = NativeQueryTranslator(responseCodec)
     private val recordTranslator = NativeRecordTranslator(responseCodec)
@@ -119,6 +120,11 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
         nativeInspectTracerExchange = runtimeBridge::nativeInspectTracerExchange,
         setProgressListener = runtimeBridge::setCryptoProgressListener
     )
+    private val txtDayBlockService = RuntimeTxtDayBlockService(
+        initializeRuntimeInternal = coreAdapter::initializeRuntimeInternal,
+        nativeTxt = runtimeBridge::nativeTxt,
+        codec = txtRuntimeCodec
+    )
 
     // init
     override suspend fun initializeRuntime(): NativeCallResult =
@@ -164,6 +170,34 @@ class NativeRuntimeController(context: Context) : RuntimeGateway {
 
     override suspend fun saveTxtFileAndSync(relativePath: String, content: String): RecordActionResult =
         recordService.saveTxtFileAndSync(relativePath, content)
+
+    override suspend fun defaultTxtDayMarker(
+        selectedMonth: String,
+        targetDateIso: String
+    ): TxtDayMarkerResult = txtDayBlockService.defaultTxtDayMarker(
+        selectedMonth = selectedMonth,
+        targetDateIso = targetDateIso
+    )
+
+    override suspend fun resolveTxtDayBlock(
+        content: String,
+        dayMarker: String,
+        selectedMonth: String
+    ): TxtDayBlockResolveResult = txtDayBlockService.resolveTxtDayBlock(
+        content = content,
+        dayMarker = dayMarker,
+        selectedMonth = selectedMonth
+    )
+
+    override suspend fun replaceTxtDayBlock(
+        content: String,
+        dayMarker: String,
+        editedDayBody: String
+    ): TxtDayBlockReplaceResult = txtDayBlockService.replaceTxtDayBlock(
+        content = content,
+        dayMarker = dayMarker,
+        editedDayBody = editedDayBody
+    )
 
     override suspend fun clearTxt(): ClearTxtResult =
         recordService.clearTxt()

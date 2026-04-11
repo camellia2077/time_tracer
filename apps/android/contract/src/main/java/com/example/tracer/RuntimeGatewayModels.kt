@@ -140,6 +140,32 @@ data class TxtFileContentResult(
     val message: String
 )
 
+data class TxtDayMarkerResult(
+    val ok: Boolean,
+    val normalizedDayMarker: String,
+    val message: String
+)
+
+data class TxtDayBlockResolveResult(
+    val ok: Boolean,
+    val normalizedDayMarker: String,
+    val found: Boolean,
+    val isMarkerValid: Boolean,
+    val canSave: Boolean,
+    val dayBody: String,
+    val dayContentIsoDate: String?,
+    val message: String
+)
+
+data class TxtDayBlockReplaceResult(
+    val ok: Boolean,
+    val normalizedDayMarker: String,
+    val found: Boolean,
+    val isMarkerValid: Boolean,
+    val updatedContent: String,
+    val message: String
+)
+
 data class ConfigTomlFileEntry(
     val relativePath: String,
     val displayName: String

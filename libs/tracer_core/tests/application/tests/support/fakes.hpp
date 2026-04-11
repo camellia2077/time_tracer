@@ -34,6 +34,9 @@ class FakePipelineWorkflow final
   bool fail_ingest_sync_status_query = false;
   bool fail_clear_ingest_sync_status = false;
   bool fail_record_activity_atomically = false;
+  bool fail_default_txt_day_marker = false;
+  bool fail_resolve_txt_day_block = false;
+  bool fail_replace_txt_day_block = false;
 
   std::string last_converter_input;
   AppOptions last_converter_options;
@@ -50,6 +53,12 @@ class FakePipelineWorkflow final
   DateCheckMode last_validate_logic_mode = DateCheckMode::kNone;
   tracer_core::core::dto::RecordActivityAtomicallyRequest
       last_record_activity_request;
+  tracer_core::core::dto::DefaultTxtDayMarkerRequest
+      last_default_txt_day_marker_request;
+  tracer_core::core::dto::ResolveTxtDayBlockRequest
+      last_resolve_txt_day_block_request;
+  tracer_core::core::dto::ReplaceTxtDayBlockRequest
+      last_replace_txt_day_block_request;
 
   int convert_call_count = 0;
   int ingest_call_count = 0;
@@ -60,6 +69,9 @@ class FakePipelineWorkflow final
   int ingest_sync_status_query_call_count = 0;
   int clear_ingest_sync_status_call_count = 0;
   int record_activity_atomically_call_count = 0;
+  int default_txt_day_marker_call_count = 0;
+  int resolve_txt_day_block_call_count = 0;
+  int replace_txt_day_block_call_count = 0;
   tracer_core::core::dto::IngestSyncStatusRequest last_ingest_sync_status_request;
   tracer_core::core::dto::IngestSyncStatusOutput ingest_sync_status_output = {
       .ok = true,
@@ -74,6 +86,32 @@ class FakePipelineWorkflow final
           .warnings = {},
           .rollback_failed = false,
           .retained_transaction_root = std::nullopt,
+      };
+  tracer_core::core::dto::DefaultTxtDayMarkerResponse
+      default_txt_day_marker_response = {
+          .ok = true,
+          .normalized_day_marker = "0102",
+          .error_message = "",
+      };
+  tracer_core::core::dto::ResolveTxtDayBlockResponse
+      resolve_txt_day_block_response = {
+          .ok = true,
+          .normalized_day_marker = "0102",
+          .found = true,
+          .is_marker_valid = true,
+          .can_save = true,
+          .day_body = "0904study",
+          .day_content_iso_date = std::string("2025-01-02"),
+          .error_message = "",
+      };
+  tracer_core::core::dto::ReplaceTxtDayBlockResponse
+      replace_txt_day_block_response = {
+          .ok = true,
+          .normalized_day_marker = "0102",
+          .found = true,
+          .is_marker_valid = true,
+          .updated_content = "updated-content\n",
+          .error_message = "",
       };
 
   auto RunConverter(const std::string& input_path, const AppOptions& options)
@@ -98,6 +136,15 @@ class FakePipelineWorkflow final
   auto RunRecordActivityAtomically(
       const tracer_core::core::dto::RecordActivityAtomicallyRequest& request)
       -> tracer_core::core::dto::RecordActivityAtomicallyResponse override;
+  auto RunDefaultTxtDayMarker(
+      const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
+      -> tracer_core::core::dto::DefaultTxtDayMarkerResponse override;
+  auto RunResolveTxtDayBlock(
+      const tracer_core::core::dto::ResolveTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ResolveTxtDayBlockResponse override;
+  auto RunReplaceTxtDayBlock(
+      const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
+      -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override;
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::ActiveConverterConfigInstallRequest&
           request) -> void override;

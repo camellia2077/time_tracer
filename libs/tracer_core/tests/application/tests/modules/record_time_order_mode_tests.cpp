@@ -43,11 +43,33 @@ auto TestNormalDaySequence(TestState& state) -> void {
   }
 }
 
+auto TestLogicalDayBoundaryAndEquality(TestState& state) -> void {
+  using tracer::core::application::pipeline::record_time_order::IsStrictlyAfter;
+
+  Expect(state,
+         IsStrictlyAfter("0559", "2359", TimeOrderMode::kLogicalDay0600),
+         "logical_day_0600 should roll times before 0600 into the next logical day.");
+  Expect(state,
+         !IsStrictlyAfter("0600", "2359", TimeOrderMode::kLogicalDay0600),
+         "logical_day_0600 should keep 0600 anchored to the same logical day boundary.");
+  Expect(state,
+         !IsStrictlyAfter("0600", "2359", TimeOrderMode::kStrictCalendar),
+         "strict_calendar should keep 0600 earlier than 2359.");
+
+  Expect(state,
+         !IsStrictlyAfter("0904", "0904", TimeOrderMode::kStrictCalendar),
+         "strict_calendar should reject equal timestamps as strictly increasing.");
+  Expect(state,
+         !IsStrictlyAfter("0904", "0904", TimeOrderMode::kLogicalDay0600),
+         "logical_day_0600 should reject equal timestamps as strictly increasing.");
+}
+
 }  // namespace
 
 auto RunRecordTimeOrderModeTests(TestState& state) -> void {
   TestLogicalDayModeCrossMidnight(state);
   TestNormalDaySequence(state);
+  TestLogicalDayBoundaryAndEquality(state);
 }
 
 }  // namespace tracer_core::application::tests

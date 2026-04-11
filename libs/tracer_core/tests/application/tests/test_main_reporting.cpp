@@ -6,6 +6,7 @@ auto main() -> int {
   tracer_core::application::tests::TestState state;
 
   tracer_core::application::tests::RunReportTests(state);
+  tracer_core::application::tests::RunReportSemanticsTests(state);
 
   if (state.failures == 0) {
     std::cout << "[PASS] time_tracker_reporting_api_tests" << '\n';

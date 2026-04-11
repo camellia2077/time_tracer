@@ -7,6 +7,7 @@
 namespace tracer_core::application::tests {
 
 auto RunReportTests(TestState& state) -> void;
+auto RunReportSemanticsTests(TestState& state) -> void;
 
 }  // namespace tracer_core::application::tests
 

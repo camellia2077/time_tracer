@@ -46,6 +46,23 @@ struct RecordActivityAtomicallyRequest {
   TimeOrderMode time_order_mode = TimeOrderMode::kStrictCalendar;
 };
 
+struct DefaultTxtDayMarkerRequest {
+  std::string selected_month;
+  std::string target_date_iso;
+};
+
+struct ResolveTxtDayBlockRequest {
+  std::string content;
+  std::string day_marker;
+  std::string selected_month;
+};
+
+struct ReplaceTxtDayBlockRequest {
+  std::string content;
+  std::string day_marker;
+  std::string edited_day_body;
+};
+
 }  // namespace tracer_core::core::dto
 
 #endif  // APPLICATION_DTO_PIPELINE_REQUESTS_HPP_

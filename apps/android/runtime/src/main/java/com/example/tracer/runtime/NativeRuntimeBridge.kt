@@ -136,6 +136,8 @@ internal class NativeRuntimeBridge {
         }
     )
 
+    fun nativeTxt(requestJson: String): String = NativeBridge.nativeTxt(requestJson)
+
     fun nativeQuery(request: DataQueryRequest): String = NativeBridge.nativeQuery(
         action = request.action,
         year = request.year ?: 0,

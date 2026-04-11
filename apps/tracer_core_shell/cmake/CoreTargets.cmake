@@ -548,6 +548,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/convert_ingest_validate_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/import_service_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/record_time_order_mode_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/txt_day_block_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_pipeline.cpp"
     )
     setup_app_target(tt_pipeline_api_tests)
@@ -566,6 +567,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/fakes.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/test_support.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/data_query_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/query_semantics_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_query.cpp"
     )
     setup_app_target(tt_query_api_tests)
@@ -584,6 +586,7 @@ if(BUILD_TESTING)
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/fakes.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/support/test_support.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/report_tests.cpp"
+        "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/modules/report_semantics_tests.cpp"
         "${TRACER_CORE_LIB_TESTS_ROOT}/application/tests/test_main_reporting.cpp"
     )
     setup_app_target(tt_reporting_api_tests)

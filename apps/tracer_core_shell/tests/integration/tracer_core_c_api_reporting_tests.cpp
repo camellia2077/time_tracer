@@ -151,6 +151,34 @@ void RunReportingChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime,
             "baseline runtime export all month");
   Require(fs::exists(output_root / "markdown" / "month" / "202501.md"),
           "baseline runtime export all month should preserve compact legacy layout");
+
+  const json kInvalidRecentReportResponse =
+      ParseResponse(api.runtime_report(runtime, json{{"type", "recent"},
+                                                     {"argument", "0"},
+                                                     {"format", "markdown"}}
+                                                    .dump()
+                                                    .c_str()),
+                    "invalid recent runtime report");
+  Require(!kInvalidRecentReportResponse.value("ok", true),
+          "invalid recent runtime report should return ok=false");
+  Require(kInvalidRecentReportResponse.value("error_code", std::string{}) ==
+              "runtime.generic_error",
+          "invalid recent runtime report should use generic runtime error code");
+  Require(kInvalidRecentReportResponse.value("error_message", std::string{}).find(
+              "Recent argument must be a positive integer.") != std::string::npos,
+          "invalid recent runtime report should explain positive-integer requirement");
+
+  const json kInvalidTargetsResponse = ParseResponse(
+      api.runtime_report_targets(runtime, json{{"type", "quarter"}}.dump().c_str()),
+      "invalid runtime report targets");
+  Require(!kInvalidTargetsResponse.value("ok", true),
+          "invalid runtime report targets should return ok=false");
+  Require(kInvalidTargetsResponse.value("error_code", std::string{}) ==
+              "runtime.generic_error",
+          "invalid runtime report targets should use generic runtime error code");
+  Require(kInvalidTargetsResponse.value("error_message", std::string{}).find(
+              "field `type` must be one of") != std::string::npos,
+          "invalid runtime report targets should explain supported target types");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

@@ -2,7 +2,7 @@
 
 ## 元信息
 1. 版本：`v1`
-2. 更新日期：`2026-02-25`
+2. 更新日期：`2026-04-09`
 3. 目标：记录“`tracer_core` 已实现，但当前仅 Android 复用、`windows_cli` 尚未复用”的能力状态。
 
 ## 状态枚举
@@ -15,8 +15,9 @@
 
 | Capability | Core Status | Android Status | Windows CLI Status | Reason (why not adopted) | Contract/Test Coverage | Next Action |
 | --- | --- | --- | --- | --- | --- | --- |
+| TXT day-block runtime family（`default_day_marker` / `resolve_day_block` / `replace_day_block`） | `done` | `done` | `done` | Shared month-TXT day-block semantics now live in `tracer_core` pipeline and are reused through `tracer_core_runtime_txt_json`; Android keeps only UI state, and Windows CLI v1 exposes read-only `txt view-day`. | Contract: `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`; C ABI: `docs/time_tracer/core/shared/c_abi.md`; Core tests: `libs/tracer_core/tests/application/tests/modules/txt_day_block_tests.cpp`; Shell tests: `apps/tracer_core_shell/tests/integration/tracer_core_c_api_pipeline_tests.cpp`; Android runtime test: `apps/android/runtime/src/test/java/com/example/tracer/NativeTxtRuntimeCodecTest.kt`; Windows CLI suite: `tools/suites/tracer_windows_rust_cli/tests/commands_txt_view_day.toml` | Keep future Android/CLI TXT features on the same runtime family instead of re-implementing month-TXT semantics in hosts. |
 | `ingest_mode=single_txt_replace_month`（同年月替换） | `done` | `done` | `not_started` | `ingest` 命令当前未暴露 ingest mode 参数，默认标准模式。 | Core: `apps/tracer_core_shell/api/c_api/tracer_core_c_api_internal.cpp`; Android bridge: `apps/tracer_core_shell/api/android_jni/native_bridge_calls.cpp`; Android runtime test: `apps/android/runtime/src/test/java/com/example/tracer/RuntimeIngestServiceTest.kt` | Windows CLI 评估是否增加 `--ingest-mode single_txt_replace_month`。 |
-| 单次调用导入 `.tracer`（解密后按月替换入库）能力基元（`decrypt + single_txt_replace_month ingest`） | `done` | `done` | `not_started` | Windows 目前是两步命令（`crypto decrypt` + `ingest`），没有一体化导入命令。 | CLI crypto tests: `test/suites/tracer_windows_cli/tests/commands_crypto.toml`; Android 导入说明：`docs/time_tracer/clients/android_ui/features.md` | 后续若需要 Windows 一键导入，可新增 `crypto import` 或 `ingest --from-tracer`。 |
+| 单次调用导入 `.tracer`（解密后按月替换入库）能力基元（`decrypt + single_txt_replace_month ingest`） | `done` | `done` | `not_started` | Windows 目前是两步命令（`crypto decrypt` + `ingest`），没有一体化导入命令。 | CLI crypto tests: `tools/suites/tracer_windows_rust_cli/tests/commands_crypto.toml`; Android 导入说明：`docs/time_tracer/clients/android_ui/features.md` | 后续若需要 Windows 一键导入，可新增 `crypto import` 或 `ingest --from-tracer`。 |
 | Android JNI 专用入口 `nativeIngestSingleTxtReplaceMonth` | `done` | `done` | `blocked` | 该入口是 Android Native Bridge 专用，Windows CLI 不走 JNI。 | Registration: `apps/tracer_core_shell/api/android_jni/native_bridge_registration.cpp`; Bridge decl: `apps/android/runtime/src/main/java/com/example/tracer/bridge/NativeBridge.kt` | 保持 Android-only；Windows 若要复用，走 CLI 参数层接入 core runtime API。 |
 
 ## 维护规则

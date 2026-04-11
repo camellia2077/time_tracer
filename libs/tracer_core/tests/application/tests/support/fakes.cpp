@@ -108,6 +108,39 @@ auto FakePipelineWorkflow::RunRecordActivityAtomically(
   return record_activity_atomically_response;
 }
 
+auto FakePipelineWorkflow::RunDefaultTxtDayMarker(
+    const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
+    -> tracer_core::core::dto::DefaultTxtDayMarkerResponse {
+  ++default_txt_day_marker_call_count;
+  last_default_txt_day_marker_request = request;
+  if (fail_default_txt_day_marker) {
+    throw std::runtime_error("default txt day marker failed");
+  }
+  return default_txt_day_marker_response;
+}
+
+auto FakePipelineWorkflow::RunResolveTxtDayBlock(
+    const tracer_core::core::dto::ResolveTxtDayBlockRequest& request)
+    -> tracer_core::core::dto::ResolveTxtDayBlockResponse {
+  ++resolve_txt_day_block_call_count;
+  last_resolve_txt_day_block_request = request;
+  if (fail_resolve_txt_day_block) {
+    throw std::runtime_error("resolve txt day block failed");
+  }
+  return resolve_txt_day_block_response;
+}
+
+auto FakePipelineWorkflow::RunReplaceTxtDayBlock(
+    const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtDayBlockResponse {
+  ++replace_txt_day_block_call_count;
+  last_replace_txt_day_block_request = request;
+  if (fail_replace_txt_day_block) {
+    throw std::runtime_error("replace txt day block failed");
+  }
+  return replace_txt_day_block_response;
+}
+
 auto FakePipelineWorkflow::InstallActiveConverterConfig(
     const tracer::core::application::pipeline::
         ActiveConverterConfigInstallRequest& /*request*/) -> void {}

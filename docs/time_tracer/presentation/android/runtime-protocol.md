@@ -41,6 +41,7 @@ Current Android JNI integration uses C ABI entrypoints in these categories:
 - runtime create/destroy
 - ingest/query/tree/report
 - record-atomic pipeline calls (including explicit `time_order_mode` passthrough)
+- TXT runtime day-block calls (`tracer_core_runtime_txt_json`)
 - structure/logic validation
 - last-error access
 
@@ -51,7 +52,12 @@ Android-specific host adapter scope currently covers:
 
 Canonical global rules live in:
 
-- `docs/time_tracer/core/contracts/c_abi.md`
+- `docs/time_tracer/core/shared/c_abi.md`
+
+TXT runtime day-block contract and ownership live in:
+
+- `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
+- `docs/time_tracer/architecture/libraries/tracer_core.md`
 
 ## Stable Response Envelope
 
@@ -69,11 +75,30 @@ Current status:
 
 - JNI request encoding for main ingest/query/tree/report paths is unified through shared transport helpers.
 - Atomic record requests carry explicit `time_order_mode` (`strict_calendar` / `logical_day_0600`) from Kotlin -> JNI -> C ABI.
+- TXT day-block requests use the dedicated `tracer_core_runtime_txt_json` family and keep month-TXT business semantics in core rather than Kotlin UI helpers.
 - Validation requests still have JNI-local request assembly.
 - Android tracer exchange export supports an in-memory payload JSON request plus fd sink output.
 - Tree responses are normalized before returning to Kotlin.
 - Kotlin-visible response shape remains `{ok,error_message,content}`.
 - JNI native method signatures remain stable.
+
+## TXT Runtime Family
+
+Android uses the TXT runtime family for shared month-TXT day-block semantics.
+
+Current Android-facing responsibilities are:
+
+1. Kotlin UI keeps presentation state such as mode, raw marker input, and
+   editor visibility.
+2. Android runtime services encode TXT actions and forward them through JNI.
+3. JNI forwards those JSON payloads to `tracer_core_runtime_txt_json`.
+4. Core owns:
+   - default day marker resolution
+   - `MMDD` normalization and validation
+   - day-block extraction and replacement
+   - machine-readable fields such as `found`, `can_save`, and
+     `day_content_iso_date`
+5. Android does not re-implement these month-TXT semantics locally.
 
 ## Crypto Progress Note
 

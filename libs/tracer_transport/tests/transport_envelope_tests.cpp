@@ -170,6 +170,32 @@ void TestSerializeRoundTripWithHash(int& failures) {
          "Roundtrip `report_hash_sha256` mismatch.", failures);
 }
 
+void TestSerializeRoundTripWithErrorContract(int& failures) {
+  const auto envelope = BuildResponseEnvelope(
+      false, "", "partial payload", "runtime.invalid_request", "runtime",
+      {"check request", "check contract"});
+  const std::string serialized = SerializeResponseEnvelope(envelope);
+  const auto parsed = ParseResponseEnvelope(ResponseEnvelopeParseArgs{
+      .response_json = serialized,
+      .context = "roundtrip_with_error_contract",
+  });
+  Expect(!parsed.HasError(),
+         "Serialized envelope with error contract should parse back.",
+         failures);
+  Expect(!parsed.envelope.ok, "Roundtrip error envelope `ok` mismatch.",
+         failures);
+  Expect(parsed.envelope.error_code == "runtime.invalid_request",
+         "Roundtrip `error_code` mismatch.", failures);
+  Expect(parsed.envelope.error_category == "runtime",
+         "Roundtrip `error_category` mismatch.", failures);
+  Expect(parsed.envelope.hints.size() == 2U,
+         "Roundtrip `hints` size mismatch.", failures);
+  Expect(parsed.envelope.hints[0] == "check request",
+         "Roundtrip first hint mismatch.", failures);
+  Expect(parsed.envelope.content == "partial payload",
+         "Roundtrip error envelope content mismatch.", failures);
+}
+
 void TestSerializeRoundTripWithWindowMetadata(int& failures) {
   auto envelope = BuildResponseEnvelope(true, "", "report body");
   envelope.report_window_metadata =
@@ -210,6 +236,7 @@ auto main() -> int {
   TestParseNonObjectJson(failures);
   TestSerializeRoundTrip(failures);
   TestSerializeRoundTripWithHash(failures);
+  TestSerializeRoundTripWithErrorContract(failures);
   TestSerializeRoundTripWithWindowMetadata(failures);
 
   if (failures == 0) {

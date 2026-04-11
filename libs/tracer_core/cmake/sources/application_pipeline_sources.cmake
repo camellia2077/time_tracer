@@ -1,4 +1,5 @@
 set(TIME_TRACKER_APPLICATION_PIPELINE_SOURCES
+    "pipeline/txt_day_block_support.cpp"
     "pipeline/pipeline_orchestrator.module.cpp"
     "pipeline/stages/input_collection_stage.module.cpp"
     "pipeline/stages/structure_validation_stage.module.cpp"

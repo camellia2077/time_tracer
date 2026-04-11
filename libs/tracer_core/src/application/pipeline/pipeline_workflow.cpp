@@ -26,6 +26,7 @@
 #include <vector>
 
 #include "application/pipeline/importer/import_service.hpp"
+#include "application/pipeline/txt_day_block_support.hpp"
 #include "application/pipeline/detail/pipeline_converter_config_install.hpp"
 #include "application/pipeline/detail/pipeline_sha256.hpp"
 #include "application/pipeline/detail/pipeline_record_time_order_support.hpp"
@@ -58,6 +59,12 @@ using tracer_core::core::dto::IngestSyncStatusOutput;
 using tracer_core::core::dto::IngestSyncStatusRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyResponse;
+using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
+using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
+using tracer_core::core::dto::ResolveTxtDayBlockRequest;
+using tracer_core::core::dto::ResolveTxtDayBlockResponse;
+using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
+using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
 
 namespace {
 
@@ -239,6 +246,21 @@ auto PipelineWorkflow::RunRecordActivityAtomically(
         RunIngest(source_path, kDateCheckMode, false,
                   IngestMode::kSingleTxtReplaceMonth);
       });
+}
+
+auto PipelineWorkflow::RunDefaultTxtDayMarker(
+    const DefaultTxtDayMarkerRequest& request) -> DefaultTxtDayMarkerResponse {
+  return txt_day_block::DefaultDayMarker(request);
+}
+
+auto PipelineWorkflow::RunResolveTxtDayBlock(
+    const ResolveTxtDayBlockRequest& request) -> ResolveTxtDayBlockResponse {
+  return txt_day_block::ResolveDayBlock(request);
+}
+
+auto PipelineWorkflow::RunReplaceTxtDayBlock(
+    const ReplaceTxtDayBlockRequest& request) -> ReplaceTxtDayBlockResponse {
+  return txt_day_block::ReplaceDayBlock(request);
 }
 
 auto PipelineWorkflow::InstallActiveConverterConfig(

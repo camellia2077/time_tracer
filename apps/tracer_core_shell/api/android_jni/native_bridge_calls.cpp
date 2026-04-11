@@ -292,4 +292,34 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject /*thiz*/,
   });
 }
 
+auto NativeTxt(JNIEnv* env, jobject /*thiz*/, jstring request_json) -> jstring {
+  return ExecuteJniMethod(env, [&]() -> std::string {
+    const std::string request_json_utf8 = ToUtf8(env, request_json);
+
+    std::scoped_lock lock(g_runtime_mutex);
+    if (g_runtime.core_runtime == nullptr) {
+      return nlohmann::json{
+          {"ok", false},
+          {"error_message", "nativeInit must be called first."},
+          {"error_code", "runtime.generic_error"},
+          {"error_category", "runtime"},
+          {"hints", nlohmann::json::array()}}
+          .dump();
+    }
+
+    const char* response_json = tracer_core_runtime_txt_json(
+        g_runtime.core_runtime,
+        request_json_utf8.empty() ? "{}" : request_json_utf8.c_str());
+    return response_json != nullptr
+               ? std::string(response_json)
+               : nlohmann::json{
+                     {"ok", false},
+                     {"error_message", "nativeTxt returned null response."},
+                     {"error_code", "runtime.generic_error"},
+                     {"error_category", "runtime"},
+                     {"hints", nlohmann::json::array()}}
+                     .dump();
+  });
+}
+
 }  // namespace tracer_core::api::android::bridge_internal

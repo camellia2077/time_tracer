@@ -103,6 +103,8 @@ auto NativeRecordActivityAtomically(JNIEnv* env, jobject thiz,
                                     jint date_check_mode,
                                     jint time_order_mode) -> jstring;
 
+auto NativeTxt(JNIEnv* env, jobject thiz, jstring request_json) -> jstring;
+
 auto NativeEncryptFile(JNIEnv* env, jobject thiz, jstring input_path,
                        jstring output_path, jstring passphrase,
                        jstring security_level) -> jstring;
@@ -143,7 +145,7 @@ auto NativeReport(JNIEnv* env, jobject thiz, jint mode, jint report_type,
                   jstring argument, jint format, jintArray days_list)
     -> jstring;
 
-extern const std::array<JNINativeMethod, 17> kNativeMethods;
+extern const std::array<JNINativeMethod, 18> kNativeMethods;
 
 auto TryRegisterNativeMethods(JNIEnv* env, const char* class_name) -> bool;
 

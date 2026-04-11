@@ -23,6 +23,21 @@ Current phase:
   - `out/test/artifact_windows_cli/logs/output.log`
 - CMake baseline for this host is `3.28` or newer.
 
+Focused capability profiles include the high-reuse core test baseline, not only
+CLI black-box coverage:
+
+- `cap_query`
+  - `tt_query_api_tests`
+  - `tc_c_api_query_tests`
+- `cap_reporting`
+  - `tt_reporting_api_tests`
+  - `tc_c_api_reporting_tests`
+- `cap_pipeline`
+  - `tt_pipeline_api_tests`
+  - `tc_c_api_pipeline_tests`
+- `shell_aggregate`
+  - `tc_c_api_shell_aggregate_tests`
+
 ## Runtime Boundary
 
 - `tracer_core_shell` host assembly must not treat runtime bootstrap as permission to create a database.

@@ -74,6 +74,24 @@ auto WorkflowHandler::RunRecordActivityAtomically(
   return impl_.RunRecordActivityAtomically(request);
 }
 
+auto WorkflowHandler::RunDefaultTxtDayMarker(
+    const tracer_core::core::dto::DefaultTxtDayMarkerRequest& request)
+    -> tracer_core::core::dto::DefaultTxtDayMarkerResponse {
+  return impl_.RunDefaultTxtDayMarker(request);
+}
+
+auto WorkflowHandler::RunResolveTxtDayBlock(
+    const tracer_core::core::dto::ResolveTxtDayBlockRequest& request)
+    -> tracer_core::core::dto::ResolveTxtDayBlockResponse {
+  return impl_.RunResolveTxtDayBlock(request);
+}
+
+auto WorkflowHandler::RunReplaceTxtDayBlock(
+    const tracer_core::core::dto::ReplaceTxtDayBlockRequest& request)
+    -> tracer_core::core::dto::ReplaceTxtDayBlockResponse {
+  return impl_.RunReplaceTxtDayBlock(request);
+}
+
 auto WorkflowHandler::InstallActiveConverterConfig(
     const pipeline::ActiveConverterConfigInstallRequest& request) -> void {
   impl_.InstallActiveConverterConfig(request);

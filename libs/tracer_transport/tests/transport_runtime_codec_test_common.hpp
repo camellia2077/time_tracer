@@ -55,6 +55,7 @@ using tracer::transport::EncodeTreeRequest;
 using tracer::transport::EncodeTreeResponse;
 using tracer::transport::EncodeValidateLogicRequest;
 using tracer::transport::EncodeValidateStructureRequest;
+using tracer::transport::ErrorContractPayload;
 using tracer::transport::ExportRequestPayload;
 using tracer::transport::ExportResponsePayload;
 using tracer::transport::ImportRequestPayload;

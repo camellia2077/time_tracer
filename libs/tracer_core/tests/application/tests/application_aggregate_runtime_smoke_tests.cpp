@@ -63,6 +63,33 @@ class SmokePipelineWorkflow final
             .rollback_failed = false,
             .retained_transaction_root = std::nullopt};
   }
+  auto RunDefaultTxtDayMarker(
+      const tracer_core::core::dto::DefaultTxtDayMarkerRequest&)
+      -> tracer_core::core::dto::DefaultTxtDayMarkerResponse override {
+    return {.ok = true, .normalized_day_marker = "0102", .error_message = ""};
+  }
+  auto RunResolveTxtDayBlock(
+      const tracer_core::core::dto::ResolveTxtDayBlockRequest&)
+      -> tracer_core::core::dto::ResolveTxtDayBlockResponse override {
+    return {.ok = true,
+            .normalized_day_marker = "0102",
+            .found = true,
+            .is_marker_valid = true,
+            .can_save = true,
+            .day_body = "0904study",
+            .day_content_iso_date = std::string("2026-03-29"),
+            .error_message = ""};
+  }
+  auto RunReplaceTxtDayBlock(
+      const tracer_core::core::dto::ReplaceTxtDayBlockRequest&)
+      -> tracer_core::core::dto::ReplaceTxtDayBlockResponse override {
+    return {.ok = true,
+            .normalized_day_marker = "0102",
+            .found = true,
+            .is_marker_valid = true,
+            .updated_content = "updated-content\n",
+            .error_message = ""};
+  }
   auto InstallActiveConverterConfig(
       const tracer::core::application::pipeline::
           ActiveConverterConfigInstallRequest&) -> void override {}

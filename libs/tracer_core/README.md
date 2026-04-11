@@ -36,6 +36,31 @@ Local entrypoint for agents touching the core business-logic library.
    - `runtime.query()`
    - `runtime.report()`
    - `runtime.tracer_exchange()`
+3. Pipeline-owned TXT day-block semantics are also exposed to hosts through the
+   dedicated `tracer_core_runtime_txt_json` runtime family.
+
+## Capability / Ownership Index
+
+1. `pipeline` owns month-TXT authoring semantics, including TXT day-block
+   normalization, extraction, replacement, and default `MMDD` resolution.
+2. `tracer_core` owns the machine-readable DTO semantics for TXT runtime
+   actions; the current public action family is `default_day_marker`,
+   `resolve_day_block`, and `replace_day_block`.
+3. `tracer_transport` owns JSON envelope/codec mechanics, not TXT business
+   meaning.
+4. `tracer_core_bridge_common` owns shared bridge helpers only; it is not the
+   owner of TXT runtime actions or day-block rules.
+5. `tracer_adapters_io` may read/write month TXT files, but it does not own
+   day-block parsing, validation, or replacement semantics.
+
+## TXT Day-Block Docs
+
+Open these when the task changes shared TXT day-block behavior or runtime-facing
+contracts:
+
+1. [Detailed library doc](../../docs/time_tracer/architecture/libraries/tracer_core.md)
+2. [TXT runtime JSON contract](../../docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md)
+3. [Core C ABI contract](../../docs/time_tracer/core/shared/c_abi.md)
 
 ## Exchange Docs
 
@@ -55,6 +80,13 @@ TXT structure validation, TXT logic validation, or ingest validation order:
 1. [Ingest persistence boundary](../../docs/time_tracer/core/design/ingest-persistence-boundary.md)
 2. [Validation error codes](../../docs/time_tracer/core/errors/error-codes.md)
 3. [Core architecture index](../../docs/time_tracer/core/architecture/README.md)
+
+## Tests / Semantics Covered
+
+1. `libs/tracer_core/tests/**` 主要保护 core 业务语义与 capability DTO 边界。
+2. reporting 语义回归会区分“空窗口成功”与“target 不存在失败”。
+3. 详细测试意图见
+   [docs/time_tracer/architecture/libraries/tracer_core.md](../../docs/time_tracer/architecture/libraries/tracer_core.md).
 
 ## Validate
 

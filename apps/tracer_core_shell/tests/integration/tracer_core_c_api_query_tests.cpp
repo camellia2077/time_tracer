@@ -133,6 +133,37 @@ void RunQueryChecks(const CoreApiFns& api, TtCoreRuntimeHandle* runtime) {
             "baseline runtime tree node duration_seconds should be integer "
             "when present");
   }
+
+  const json kInvalidActionResponse =
+      ParseResponse(api.runtime_query(runtime,
+                                      json{{"action", "not_a_real_action"}}
+                                          .dump()
+                                          .c_str()),
+                    "baseline query invalid action");
+  Require(!kInvalidActionResponse.value("ok", true),
+          "baseline query invalid action should return ok=false");
+  Require(kInvalidActionResponse.value("error_code", std::string{}) ==
+              "runtime.generic_error",
+          "baseline query invalid action should use generic runtime error code");
+  Require(kInvalidActionResponse.value("error_message", std::string{}).find(
+              "field `action` must be one of") != std::string::npos,
+          "baseline query invalid action should explain supported query actions");
+
+  const json kInvalidChartRangeResponse =
+      ParseResponse(api.runtime_query(runtime, json{{"action", "report_chart"},
+                                                    {"from_date", "2026-01-07"},
+                                                    {"to_date", "2026-01-01"}}
+                                                   .dump()
+                                                   .c_str()),
+                    "baseline query invalid report_chart range");
+  Require(!kInvalidChartRangeResponse.value("ok", true),
+          "baseline query invalid report_chart range should return ok=false");
+  Require(kInvalidChartRangeResponse.value("error_code", std::string{}) ==
+              "runtime.generic_error",
+          "baseline query invalid report_chart range should use generic runtime error code");
+  Require(kInvalidChartRangeResponse.value("error_message", std::string{}).find(
+              "report-chart invalid range") != std::string::npos,
+          "baseline query invalid report_chart range should explain descending ranges");
 }
 
 }  // namespace tracer_core_c_api_stability_internal

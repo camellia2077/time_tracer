@@ -8,6 +8,7 @@ auto main() -> int {
   tracer_core::application::tests::RunConvertIngestValidateTests(state);
   tracer_core::application::tests::RunImportServiceTests(state);
   tracer_core::application::tests::RunRecordTimeOrderModeTests(state);
+  tracer_core::application::tests::RunTxtDayBlockTests(state);
 
   if (state.failures == 0) {
     std::cout << "[PASS] time_tracker_pipeline_api_tests" << '\n';

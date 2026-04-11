@@ -42,6 +42,7 @@
 27. `tracer_core_runtime_crypto_encrypt_json`
 28. `tracer_core_runtime_crypto_decrypt_json`
 29. `tracer_core_runtime_crypto_inspect_json`
+30. `tracer_core_runtime_txt_json`
 
 ## JSON Boundary Policy
 1. JSON-returning runtime operations keep UTF-8 JSON object responses as the ABI
@@ -79,6 +80,7 @@
      - `runtime_report_targets_json`
      - `runtime_export_json`
      - `runtime_tree_json`
+     - `runtime_txt_json`
      - `processed_json_io`
      - `report_markdown`
      - `report_latex`
@@ -190,6 +192,14 @@
      - `error_code`
      - `error_category`
      - `hints`
+15. `tracer_core_runtime_txt_json` contract:
+   - request/response payloads are UTF-8 JSON objects
+   - `action` currently supports:
+     - `default_day_marker`
+     - `resolve_day_block`
+     - `replace_day_block`
+   - detailed DTO fields and semantics live in
+     `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
 ## Response Envelope Contract
 1. Standard envelope fields:
@@ -233,6 +243,7 @@
 2. `docs/time_tracer/core/contracts/crypto/file_format_v2.md`
 3. `docs/time_tracer/core/contracts/crypto/tracer_exchange_package_v3.md`
 4. `docs/time_tracer/clients/android_ui/runtime-protocol.md`
+5. `docs/time_tracer/core/contracts/text/runtime_txt_day_block_json_contract_v1.md`
 
 ## Related Implementation Paths
 1. `apps/tracer_core_shell/api/c_api/tracer_core_c_api.cpp`

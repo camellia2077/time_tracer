@@ -1,5 +1,7 @@
 #include "application/use_cases/pipeline_api.hpp"
 
+#include <optional>
+
 #include "application/use_cases/core_api_failure.hpp"
 
 import tracer.core.domain.types.app_options;
@@ -16,6 +18,12 @@ using tracer_core::core::dto::ValidateStructureRequest;
 using tracer_core::core::dto::ValidateLogicRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyRequest;
 using tracer_core::core::dto::RecordActivityAtomicallyResponse;
+using tracer_core::core::dto::DefaultTxtDayMarkerRequest;
+using tracer_core::core::dto::DefaultTxtDayMarkerResponse;
+using tracer_core::core::dto::ResolveTxtDayBlockRequest;
+using tracer_core::core::dto::ResolveTxtDayBlockResponse;
+using tracer_core::core::dto::ReplaceTxtDayBlockRequest;
+using tracer_core::core::dto::ReplaceTxtDayBlockResponse;
 using tracer::core::domain::types::AppOptions;
 namespace core_api_failure = tracer::core::application::use_cases::failure;
 
@@ -143,6 +151,73 @@ auto PipelineApi::RunRecordActivityAtomically(
             .warnings = {},
             .rollback_failed = false,
             .retained_transaction_root = std::nullopt};
+  }
+}
+
+auto PipelineApi::RunDefaultTxtDayMarker(
+    const DefaultTxtDayMarkerRequest& request) -> DefaultTxtDayMarkerResponse {
+  try {
+    return pipeline_workflow_.RunDefaultTxtDayMarker(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunDefaultTxtDayMarker", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunDefaultTxtDayMarker", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunResolveTxtDayBlock(
+    const ResolveTxtDayBlockRequest& request) -> ResolveTxtDayBlockResponse {
+  try {
+    return pipeline_workflow_.RunResolveTxtDayBlock(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .can_save = false,
+            .day_body = "",
+            .day_content_iso_date = std::nullopt,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunResolveTxtDayBlock", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .can_save = false,
+            .day_body = "",
+            .day_content_iso_date = std::nullopt,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunResolveTxtDayBlock", "Unknown error.")};
+  }
+}
+
+auto PipelineApi::RunReplaceTxtDayBlock(
+    const ReplaceTxtDayBlockRequest& request) -> ReplaceTxtDayBlockResponse {
+  try {
+    return pipeline_workflow_.RunReplaceTxtDayBlock(request);
+  } catch (const std::exception& exception) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtDayBlock", exception.what())};
+  } catch (...) {
+    return {.ok = false,
+            .normalized_day_marker = "",
+            .found = false,
+            .is_marker_valid = false,
+            .updated_content = request.content,
+            .error_message = core_api_failure::BuildErrorMessage(
+                "RunReplaceTxtDayBlock", "Unknown error.")};
   }
 }
 

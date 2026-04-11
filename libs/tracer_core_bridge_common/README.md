@@ -21,6 +21,14 @@ Local entrypoint for agents touching the shared bridge-helper layer.
 2. [Library dependency map](../../docs/time_tracer/architecture/library_dependency_map.md)
 3. [C ABI contract](../../docs/time_tracer/core/contracts/c_abi.md)
 
+## Capability / Ownership Index
+
+1. `tracer_core_bridge_common` owns shared bridge helpers only.
+2. It does not own TXT month authoring semantics, day-block parsing rules, or
+   the `tracer_core_runtime_txt_json` action contract.
+3. If the task changes TXT day-block behavior, move upstream to
+   [libs/tracer_core/README.md](../tracer_core/README.md).
+
 ## Validate
 
 ```powershell

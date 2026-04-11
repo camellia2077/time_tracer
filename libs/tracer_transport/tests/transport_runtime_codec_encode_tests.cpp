@@ -238,18 +238,44 @@ void TestEncodeResponses(int& failures) {
          "EncodeIngestResponse error_message mismatch.", failures);
 
   const std::string query_json = EncodeQueryResponse(QueryResponsePayload{
-      .ok = true, .error_message = "", .content = "2026\nTotal: 1\n"});
+      .ok = true,
+      .error_message = "",
+      .content = "2026\nTotal: 1\n",
+      .error_contract =
+          ErrorContractPayload{.error_code = "query.none",
+                               .error_category = "logic",
+                               .hints = {"hint-a", "hint-b"}}});
   const json query = json::parse(query_json);
   Expect(query.value("ok", false), "EncodeQueryResponse ok mismatch.",
          failures);
   Expect(query.value("content", std::string{}) == "2026\nTotal: 1\n",
          "EncodeQueryResponse content mismatch.", failures);
+  Expect(query.value("error_code", std::string{}) == "query.none",
+         "EncodeQueryResponse error_code mismatch.", failures);
+  Expect(query.value("error_category", std::string{}) == "logic",
+         "EncodeQueryResponse error_category mismatch.", failures);
+  Expect(query.contains("hints") && query["hints"].is_array() &&
+             query["hints"].size() == 2U,
+         "EncodeQueryResponse hints mismatch.", failures);
 
   const std::string report_json = EncodeReportResponse(ReportResponsePayload{
-      .ok = true, .error_message = "", .content = "## Monthly Summary"});
+      .ok = true,
+      .error_message = "",
+      .content = "## Monthly Summary",
+      .error_contract =
+          ErrorContractPayload{.error_code = "report.none",
+                               .error_category = "logic",
+                               .hints = {"hint-report"}}});
   const json report = json::parse(report_json);
   Expect(report.value("content", std::string{}) == "## Monthly Summary",
          "EncodeReportResponse content mismatch.", failures);
+  Expect(report.value("error_code", std::string{}) == "report.none",
+         "EncodeReportResponse error_code mismatch.", failures);
+  Expect(report.value("error_category", std::string{}) == "logic",
+         "EncodeReportResponse error_category mismatch.", failures);
+  Expect(report.contains("hints") && report["hints"].is_array() &&
+             report["hints"].size() == 1U,
+         "EncodeReportResponse hints mismatch.", failures);
 
   const std::string batch_json =
       EncodeReportBatchResponse(ReportBatchResponsePayload{
@@ -295,6 +321,7 @@ void TestEncodeResponses(int& failures) {
   capabilities.features.runtime_import_json = true;
   capabilities.features.runtime_validate_structure_json = true;
   capabilities.features.runtime_validate_logic_json = true;
+  capabilities.features.runtime_txt_json = true;
   capabilities.features.runtime_query_json = true;
   capabilities.features.runtime_report_json = true;
   capabilities.features.runtime_report_batch_json = true;
@@ -332,6 +359,9 @@ void TestEncodeResponses(int& failures) {
                                              false),
          "EncodeCapabilitiesResponse features.runtime_diagnostics_callback "
          "mismatch.",
+         failures);
+  Expect(capabilities_json["features"].value("runtime_txt_json", false),
+         "EncodeCapabilitiesResponse features.runtime_txt_json mismatch.",
          failures);
   Expect(capabilities_json["features"].value("runtime_crypto_progress_callback",
                                              false),

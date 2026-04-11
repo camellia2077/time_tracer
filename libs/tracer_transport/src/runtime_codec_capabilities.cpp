@@ -38,6 +38,7 @@ auto EncodeCapabilitiesResponse(const CapabilitiesResponsePayload& response)
             response.features.runtime_validate_structure_json},
            {"runtime_validate_logic_json",
             response.features.runtime_validate_logic_json},
+           {"runtime_txt_json", response.features.runtime_txt_json},
            {"runtime_query_json", response.features.runtime_query_json},
            {"runtime_report_json", response.features.runtime_report_json},
            {"runtime_report_batch_json",

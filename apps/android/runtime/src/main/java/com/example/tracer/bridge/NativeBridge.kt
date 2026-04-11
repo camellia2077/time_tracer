@@ -100,6 +100,10 @@ object NativeBridge {
         timeOrderMode: Int
     ): String
 
+    external fun nativeTxt(
+        requestJson: String
+    ): String
+
     external fun nativeEncryptFile(
         inputPath: String,
         outputPath: String,
