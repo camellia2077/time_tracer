@@ -43,6 +43,7 @@ internal data class TracerTabRouteArgs(
     val dataViewModel: DataViewModel,
     val queryUiState: QueryReportUiState,
     val queryReportViewModel: QueryReportViewModel,
+    val txtStorageGateway: TxtStorageGateway,
     val recordUiState: RecordUiState,
     val recordViewModel: RecordViewModel,
     val configUiState: ConfigUiState,
@@ -217,6 +218,7 @@ internal object TracerTabRegistry {
             statusEvent = { null },
             content = { _, args ->
                 TxtEditorSection(
+                    txtStorageGateway = args.txtStorageGateway,
                     inspectionEntries = args.recordUiState.txtInspectionEntries,
                     availableMonths = args.recordUiState.availableMonths,
                     selectedMonth = args.recordUiState.selectedMonth,

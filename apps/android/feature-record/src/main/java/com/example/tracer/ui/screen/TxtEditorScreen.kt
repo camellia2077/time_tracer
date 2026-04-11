@@ -20,16 +20,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.tracer.feature.record.R
-import java.time.Clock
-import java.time.YearMonth
-import java.util.Locale
+import kotlinx.coroutines.launch
 
 internal enum class TxtOutputMode {
     ALL,
@@ -38,6 +38,7 @@ internal enum class TxtOutputMode {
 
 @Composable
 fun TxtEditorSection(
+    txtStorageGateway: TxtStorageGateway,
     inspectionEntries: List<TxtInspectionEntry>,
     availableMonths: List<String>,
     selectedMonth: String,
@@ -59,6 +60,7 @@ fun TxtEditorSection(
     }
     var autoDayMarkerLoadedKey by remember { mutableStateOf("") }
     var isEditorContentVisible by remember(selectedHistoryFile) { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
     val parsedAvailableMonths = remember(inspectionEntries) {
         inspectionEntries
             .mapNotNull { it.headerMonth }
@@ -105,10 +107,11 @@ fun TxtEditorSection(
             return@LaunchedEffect
         }
 
-        dayMarkerInput = defaultDayMarkerForSelectedMonth(
+        val markerResult = txtStorageGateway.defaultTxtDayMarker(
             selectedMonth = selectedMonth,
-            logicalDayTarget = logicalDayTarget
+            targetDateIso = resolveLogicalDayTargetDate(logicalDayTarget).toString()
         )
+        dayMarkerInput = markerResult.normalizedDayMarker.ifBlank { dayMarkerInput }
         autoDayMarkerLoadedKey = loadKey
     }
 
@@ -119,15 +122,34 @@ fun TxtEditorSection(
         }
     }
 
-    val normalizedDayMarker = dayMarkerInput.filter { it.isDigit() }.take(4)
-    val dayEditorStateForSave = remember(editableHistoryContent, normalizedDayMarker) {
-        buildDayBlockEditorState(
+    val normalizedDayMarkerInput = remember(dayMarkerInput) {
+        dayMarkerInput.filter { it.isDigit() }.take(4)
+    }
+    // DAY mode is runtime-driven on purpose: the screen owns only UI state,
+    // while shared month-TXT day-block semantics now live in core.
+    val dayBlockEditorState by produceState(
+        initialValue = TxtDayBlockResolveResult(
+            ok = false,
+            normalizedDayMarker = normalizedDayMarkerInput,
+            found = false,
+            isMarkerValid = false,
+            canSave = false,
+            dayBody = "",
+            dayContentIsoDate = null,
+            message = ""
+        ),
+        editableHistoryContent,
+        normalizedDayMarkerInput,
+        selectedMonth
+    ) {
+        value = txtStorageGateway.resolveTxtDayBlock(
             content = editableHistoryContent,
-            dayMarker = normalizedDayMarker
+            dayMarker = normalizedDayMarkerInput,
+            selectedMonth = selectedMonth
         )
     }
     val canSaveCurrentContent = outputMode == TxtOutputMode.ALL ||
-        (dayEditorStateForSave.isMarkerValid && dayEditorStateForSave.found)
+        (dayBlockEditorState.ok && dayBlockEditorState.canSave)
     val showSaveFab = selectedHistoryFile.isNotEmpty() && isEditorContentVisible
 
     // Empty-state: no TXT files exist yet (typical for fresh release installs).
@@ -166,16 +188,33 @@ fun TxtEditorSection(
                         outputMode = outputMode,
                         onOutputModeChange = { nextMode ->
                             if (nextMode == TxtOutputMode.DAY && outputMode != TxtOutputMode.DAY) {
-                                dayMarkerInput = defaultDayMarkerForSelectedMonth(
-                                    selectedMonth = selectedMonth,
-                                    logicalDayTarget = logicalDayTarget
-                                )
+                                coroutineScope.launch {
+                                    val markerResult = txtStorageGateway.defaultTxtDayMarker(
+                                        selectedMonth = selectedMonth,
+                                        targetDateIso = resolveLogicalDayTargetDate(logicalDayTarget).toString()
+                                    )
+                                    dayMarkerInput =
+                                        markerResult.normalizedDayMarker.ifBlank { dayMarkerInput }
+                                }
                             }
                             outputMode = nextMode
                         },
+                        dayBlockEditorState = dayBlockEditorState,
                         dayMarkerInput = dayMarkerInput,
                         onDayMarkerInputChange = { value ->
                             dayMarkerInput = value.filter { it.isDigit() }.take(4)
+                        },
+                        onDayEditorBodyChange = { value ->
+                            coroutineScope.launch {
+                                val replaced = txtStorageGateway.replaceTxtDayBlock(
+                                    content = editableHistoryContent,
+                                    dayMarker = normalizedDayMarkerInput,
+                                    editedDayBody = value
+                                )
+                                if (replaced.ok) {
+                                    onEditableHistoryContentChange(replaced.updatedContent)
+                                }
+                            }
                         },
                         inlineStatusText = inlineStatusText,
                         isEditorContentVisible = isEditorContentVisible,
@@ -285,124 +324,6 @@ private fun TxtEmptyStateCard(onCreateCurrentMonthTxt: () -> Unit) {
             }
         }
     }
-}
-
-internal data class DayBlockEditorState(
-    val text: String,
-    val found: Boolean,
-    val isMarkerValid: Boolean
-)
-
-internal fun buildDayBlockEditorState(content: String, dayMarker: String): DayBlockEditorState {
-    if (!isValidDayMarker(dayMarker)) {
-        return DayBlockEditorState(
-            text = "",
-            found = false,
-            isMarkerValid = false
-        )
-    }
-
-    val lines = content.lines().map { it.trimEnd('\r') }
-    val startIndex = lines.indexOfFirst { it.trim() == dayMarker }
-    if (startIndex < 0) {
-        return DayBlockEditorState(
-            text = "",
-            found = false,
-            isMarkerValid = true
-        )
-    }
-
-    val endIndex = findDayBlockEndIndex(lines, startIndex)
-    val bodyLines = lines.subList(startIndex + 1, endIndex)
-    return DayBlockEditorState(
-        text = bodyLines.joinToString(separator = "\n"),
-        found = true,
-        isMarkerValid = true
-    )
-}
-
-internal fun mergeDayBlockContent(
-    fullContent: String,
-    dayMarker: String,
-    editedDayBody: String
-): String {
-    if (!isValidDayMarker(dayMarker)) {
-        return fullContent
-    }
-
-    val lines = fullContent.lines().map { it.trimEnd('\r') }.toMutableList()
-    val startIndex = lines.indexOfFirst { it.trim() == dayMarker }
-    if (startIndex < 0) {
-        return fullContent
-    }
-
-    val endIndex = findDayBlockEndIndex(lines, startIndex)
-    val normalizedDayBodyLines = normalizeEditedDayBody(dayMarker, editedDayBody)
-    lines.subList(startIndex + 1, endIndex).clear()
-    lines.addAll(startIndex + 1, normalizedDayBodyLines)
-
-    return lines.joinToString(separator = "\n")
-}
-
-private fun normalizeEditedDayBody(dayMarker: String, editedDayBody: String): List<String> {
-    val lines = editedDayBody.lines().map { it.trimEnd('\r') }.toMutableList()
-
-    // Keep trailing blank lines so Enter in DAY editor is reflected immediately.
-    // Backward-compat: tolerate pasted content that still includes MMDD header.
-    if (lines.firstOrNull()?.trim() == dayMarker) {
-        lines.removeAt(0)
-    }
-    return lines
-}
-
-private fun findDayBlockEndIndex(lines: List<String>, startIndex: Int): Int {
-    for (index in (startIndex + 1) until lines.size) {
-        if (isDayMarkerLine(lines[index])) {
-            return index
-        }
-    }
-    return lines.size
-}
-
-private fun defaultDayMarkerForSelectedMonth(
-    selectedMonth: String,
-    logicalDayTarget: RecordLogicalDayTarget,
-    clock: Clock = Clock.systemDefaultZone()
-): String {
-    // Keep TXT default day aligned with Record's current yesterday/today intent.
-    val targetDate = resolveLogicalDayTargetDate(
-        logicalDayTarget = logicalDayTarget,
-        clock = clock
-    )
-    val fallbackMonth = targetDate.monthValue
-    val fallbackDay = targetDate.dayOfMonth
-    val parsed = parseYearMonthKey(selectedMonth)
-    if (parsed == null) {
-        return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
-    }
-
-    val selectedYear = parsed.year.toIntOrNull()
-    val selectedMonth = parsed.month.toIntOrNull()
-    if (selectedYear == null || selectedMonth == null) {
-        return String.format(Locale.US, "%02d%02d", fallbackMonth, fallbackDay)
-    }
-
-    val maxDay = YearMonth.of(selectedYear, selectedMonth).lengthOfMonth()
-    val targetDay = fallbackDay.coerceAtMost(maxDay)
-    return String.format(Locale.US, "%02d%02d", selectedMonth, targetDay)
-}
-
-private fun isDayMarkerLine(line: String): Boolean {
-    return isValidDayMarker(line.trim())
-}
-
-private fun isValidDayMarker(value: String): Boolean {
-    if (value.length != 4 || !value.all { it.isDigit() }) {
-        return false
-    }
-    val month = value.substring(0, 2).toIntOrNull() ?: return false
-    val day = value.substring(2, 4).toIntOrNull() ?: return false
-    return month in 1..12 && day in 1..31
 }
 
 private data class YearMonthKey(

@@ -29,42 +29,39 @@ internal fun TxtEditorContentCard(
     selectedMonth: String,
     outputMode: TxtOutputMode,
     onOutputModeChange: (TxtOutputMode) -> Unit,
+    dayBlockEditorState: TxtDayBlockResolveResult,
     dayMarkerInput: String,
     onDayMarkerInputChange: (String) -> Unit,
+    onDayEditorBodyChange: (String) -> Unit,
     inlineStatusText: String,
     isEditorContentVisible: Boolean,
     onToggleEditorContentVisibility: () -> Unit,
     editableHistoryContent: String,
     onEditableHistoryContentChange: (String) -> Unit
 ) {
-    val normalizedDayMarker = dayMarkerInput.filter { it.isDigit() }.take(4)
     val (selectedYear, selectedMonthDigits) = splitYearMonthDigits(selectedMonth)
-    val (markerMonthDigits, markerDayDigits) = splitDayMarkerDigits(normalizedDayMarker)
+    val (markerMonthDigits, markerDayDigits) = splitDayMarkerDigits(dayBlockEditorState.normalizedDayMarker)
     val monthForInput = if (markerMonthDigits.isNotBlank()) markerMonthDigits else selectedMonthDigits
     val dayForInput = markerDayDigits
-    val dayContentIsoDate = buildDayContentIsoDate(
-        selectedMonth = selectedMonth,
-        dayMarker = normalizedDayMarker
-    )
-    val dayEditorState = buildDayBlockEditorState(
-        content = editableHistoryContent,
-        dayMarker = normalizedDayMarker
-    )
     val editorText = if (outputMode == TxtOutputMode.ALL) {
         editableHistoryContent
     } else {
-        dayEditorState.text
+        dayBlockEditorState.dayBody
     }
+    val dayContentIsoDate = dayBlockEditorState.dayContentIsoDate
     val dayModeHint = if (outputMode == TxtOutputMode.DAY) {
         when {
-            !dayEditorState.isMarkerValid ->
+            !dayBlockEditorState.ok && dayBlockEditorState.message.isNotBlank() ->
+                dayBlockEditorState.message
+
+            !dayBlockEditorState.isMarkerValid ->
                 stringResource(R.string.txt_hint_invalid_day_marker)
 
-            dayEditorState.found ->
+            dayBlockEditorState.found ->
                 stringResource(R.string.txt_hint_day_edit_enabled)
 
             else ->
-                stringResource(R.string.txt_hint_day_not_found, normalizedDayMarker)
+                stringResource(R.string.txt_hint_day_not_found, dayBlockEditorState.normalizedDayMarker)
         }
     } else {
         ""
@@ -172,14 +169,8 @@ internal fun TxtEditorContentCard(
                     onValueChange = { value ->
                         if (outputMode == TxtOutputMode.ALL) {
                             onEditableHistoryContentChange(value)
-                        } else if (dayEditorState.isMarkerValid && dayEditorState.found) {
-                            onEditableHistoryContentChange(
-                                mergeDayBlockContent(
-                                    fullContent = editableHistoryContent,
-                                    dayMarker = normalizedDayMarker,
-                                    editedDayBody = value
-                                )
-                            )
+                        } else if (dayBlockEditorState.ok && dayBlockEditorState.canSave) {
+                            onDayEditorBodyChange(value)
                         }
                     },
                     readOnly = false,
@@ -187,7 +178,10 @@ internal fun TxtEditorContentCard(
                         val label = if (outputMode == TxtOutputMode.ALL) {
                             stringResource(R.string.txt_label_content)
                         } else if (dayContentIsoDate != null) {
-                            stringResource(R.string.txt_label_day_content_with_date, dayContentIsoDate)
+                            stringResource(
+                                R.string.txt_label_day_content_with_date,
+                                dayContentIsoDate
+                            )
                         } else {
                             stringResource(R.string.txt_label_day_content)
                         }
@@ -200,27 +194,6 @@ internal fun TxtEditorContentCard(
             }
         }
     }
-}
-
-private fun buildDayContentIsoDate(selectedMonth: String, dayMarker: String): String? {
-    if (!isValidDayMarkerForIsoTitle(dayMarker)) {
-        return null
-    }
-    val yearMonth = Regex("""^(\d{4})-(\d{2})$""").matchEntire(selectedMonth.trim())
-        ?: return null
-    val year = yearMonth.groupValues[1]
-    val month = dayMarker.substring(0, 2)
-    val day = dayMarker.substring(2, 4)
-    return "$year-$month-$day"
-}
-
-private fun isValidDayMarkerForIsoTitle(value: String): Boolean {
-    if (value.length != 4 || !value.all { it.isDigit() }) {
-        return false
-    }
-    val month = value.substring(0, 2).toIntOrNull() ?: return false
-    val day = value.substring(2, 4).toIntOrNull() ?: return false
-    return month in 1..12 && day in 1..31
 }
 
 private fun splitDayMarkerDigits(value: String): Pair<String, String> {

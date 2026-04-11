@@ -256,12 +256,54 @@ class RecordUseCasesTest {
         assertEquals("2026-03-30", gateway.lastTargetDateIso)
         assertEquals(RecordTimeOrderMode.STRICT_CALENDAR, gateway.lastTimeOrderMode)
     }
+
+    @Test
+    fun saveHistoryFileAndSync_usesEditableHistoryContentAsTheOnlySaveSource() = runTest {
+        val txtStorageGateway = FakeTxtStorageGateway(
+            inspectionResult = TxtInspectionResult(
+                ok = true,
+                entries = listOf(inspectionEntry("2026/2026-03.txt", "2026-03")),
+                message = "ok"
+            ),
+            readResults = mapOf(
+                "2026/2026-03.txt" to txtReadResult("2026/2026-03.txt")
+            ),
+            saveResult = RecordActionResult(
+                ok = true,
+                message = "save ok"
+            )
+        )
+        val useCases = RecordUseCases(
+            recordGateway = FakeRecordGateway(),
+            txtStorageGateway = txtStorageGateway,
+            queryGateway = FakeQueryGateway()
+        )
+
+        val result = useCases.saveHistoryFileAndSync(
+            RecordUiState(
+                selectedHistoryFile = "2026/2026-03.txt",
+                selectedHistoryContent = "old content",
+                editableHistoryContent = "new content"
+            )
+        )
+
+        assertEquals("2026/2026-03.txt", txtStorageGateway.lastSavedRelativePath)
+        assertEquals("new content", txtStorageGateway.lastSavedContent)
+        assertEquals("new content", result.selectedHistoryContent)
+    }
 }
 
 private class FakeTxtStorageGateway(
     private val inspectionResult: TxtInspectionResult,
-    private val readResults: Map<String, TxtFileContentResult>
+    private val readResults: Map<String, TxtFileContentResult>,
+    private val saveResult: RecordActionResult = RecordActionResult(
+        ok = true,
+        message = "ok"
+    )
 ) : TxtStorageGateway {
+    var lastSavedRelativePath: String? = null
+    var lastSavedContent: String? = null
+
     override suspend fun inspectTxtFiles(): TxtInspectionResult = inspectionResult
 
     override suspend fun listTxtFiles(): TxtHistoryListResult = TxtHistoryListResult(
@@ -282,10 +324,11 @@ private class FakeTxtStorageGateway(
     override suspend fun saveTxtFileAndSync(
         relativePath: String,
         content: String
-    ): RecordActionResult = RecordActionResult(
-        ok = true,
-        message = "ok"
-    )
+    ): RecordActionResult {
+        lastSavedRelativePath = relativePath
+        lastSavedContent = content
+        return saveResult
+    }
 }
 
 private class FakeRecordGateway(

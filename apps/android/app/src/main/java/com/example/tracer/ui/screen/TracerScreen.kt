@@ -184,6 +184,7 @@ fun TracerScreen(
         dataViewModel = dataViewModel,
         queryUiState = queryUiState,
         queryReportViewModel = queryReportViewModel,
+        txtStorageGateway = txtStorageGateway,
         recordUiState = recordUiState,
         recordViewModel = recordViewModel,
         configUiState = configUiState,
