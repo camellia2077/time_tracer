@@ -1,5 +1,7 @@
 from pathlib import Path
 import tempfile
+import io
+from contextlib import redirect_stdout
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -23,10 +25,10 @@ class TestVerifyNativeRunner(TestCase):
             bin_dir.mkdir(parents=True, exist_ok=True)
             for name in (
                 "tt_query_api_tests.exe",
+                "tc_c_api_query_tests.exe",
                 "tc_app_query_mod_smoke_tests.exe",
                 "tc_query_infra_smoke_tests.exe",
                 "tt_android_runtime_query_tests.exe",
-                "tc_c_api_query_tests.exe",
             ):
                 (bin_dir / name).write_text("", encoding="utf-8")
 
@@ -50,12 +52,57 @@ class TestVerifyNativeRunner(TestCase):
             executed,
             [
                 "tt_query_api_tests.exe",
+                "tc_c_api_query_tests.exe",
                 "tc_app_query_mod_smoke_tests.exe",
                 "tc_query_infra_smoke_tests.exe",
                 "tt_android_runtime_query_tests.exe",
-                "tc_c_api_query_tests.exe",
             ],
         )
+
+    def test_cap_query_reports_native_phases(self):
+        commands: list[list[str]] = []
+
+        def fake_run_command(cmd, cwd=None, env=None):
+            _ = cwd, env
+            commands.append(list(cmd))
+            return 0
+
+        stdout = io.StringIO()
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo_root = Path(temp_dir)
+            bin_dir = repo_root / "bin"
+            bin_dir.mkdir(parents=True, exist_ok=True)
+            for name in (
+                "tt_query_api_tests.exe",
+                "tc_c_api_query_tests.exe",
+                "tc_app_query_mod_smoke_tests.exe",
+                "tc_query_infra_smoke_tests.exe",
+                "tt_android_runtime_query_tests.exe",
+            ):
+                (bin_dir / name).write_text("", encoding="utf-8")
+
+            fake_layout = type("Layout", (), {"bin_dir": bin_dir})()
+            with (
+                patch(
+                    "tools.toolchain.commands.cmd_quality.verify_internal.verify_native_runner.resolve_build_layout",
+                    return_value=fake_layout,
+                ),
+                redirect_stdout(stdout),
+            ):
+                result = run_native_core_runtime_tests(
+                    repo_root=repo_root,
+                    setup_env_fn=lambda: {},
+                    run_command_fn=fake_run_command,
+                    app_name="tracer_core_shell",
+                    build_dir_name="build_fast",
+                    profile_name="cap_query",
+                )
+
+        self.assertEqual(result, 0)
+        output = stdout.getvalue()
+        self.assertIn("native phase [core_semantics]", output)
+        self.assertIn("native phase [c_abi_contract]", output)
+        self.assertIn("native phase [runtime_smoke_and_bridge]", output)
 
     def test_cap_config_runs_config_native_targets(self):
         commands: list[list[str]] = []
@@ -114,6 +161,8 @@ class TestVerifyNativeRunner(TestCase):
             for name in (
                 "tc_c_api_smoke_tests.exe",
                 "tc_c_api_shell_aggregate_tests.exe",
+                "ttr_tests.exe",
+                "ttr_rt_codec_tests.exe",
                 "tt_aggregate_runtime_tests.exe",
                 "tc_app_aggregate_runtime_smoke_tests.exe",
                 "tt_android_runtime_shell_smoke_tests.exe",
@@ -142,6 +191,8 @@ class TestVerifyNativeRunner(TestCase):
             [
                 "tc_c_api_smoke_tests.exe",
                 "tc_c_api_shell_aggregate_tests.exe",
+                "ttr_tests.exe",
+                "ttr_rt_codec_tests.exe",
                 "tt_aggregate_runtime_tests.exe",
                 "tc_app_aggregate_runtime_smoke_tests.exe",
                 "tt_android_runtime_shell_smoke_tests.exe",

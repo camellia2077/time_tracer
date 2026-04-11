@@ -1,4 +1,7 @@
+import io
+import os
 import sys
+import tempfile
 from pathlib import Path
 from unittest import TestCase
 from unittest.mock import patch
@@ -93,4 +96,46 @@ class TestResultReporting(TestCase):
         self.assertEqual(
             summary.likely_fix,
             "Add `#include <iostream>` to the failing source file before using standard stream objects.",
+        )
+
+    def test_print_verify_phase_summary_writes_console_and_github_summary(self) -> None:
+        stream = _EncodingSensitiveStream()
+        phases = [
+            {
+                "name": "build",
+                "category": "verify",
+                "status": "passed",
+                "exit_code": 0,
+            },
+            {
+                "name": "artifact.host_blackbox",
+                "category": "artifact",
+                "status": "failed",
+                "exit_code": 9,
+            },
+        ]
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            summary_path = Path(temp_dir) / "github_step_summary.md"
+            with (
+                patch.object(sys, "stdout", stream),
+                patch.object(sys, "__stdout__", stream),
+                patch.dict(os.environ, {"GITHUB_STEP_SUMMARY": str(summary_path)}),
+            ):
+                result_reporting.print_verify_phase_summary(phases)
+
+            console_output = stream.getvalue()
+            summary_output = summary_path.read_text(encoding="utf-8")
+
+        self.assertIn("--- verify phase summary", console_output)
+        self.assertIn("build: status=passed, exit_code=0, category=verify", console_output)
+        self.assertIn(
+            "artifact.host_blackbox: status=failed, exit_code=9, category=artifact",
+            console_output,
+        )
+        self.assertIn("### Verify Phase Summary", summary_output)
+        self.assertIn("| `build` | `passed` | `0` | `verify` |", summary_output)
+        self.assertIn(
+            "| `artifact.host_blackbox` | `failed` | `9` | `artifact` |",
+            summary_output,
         )

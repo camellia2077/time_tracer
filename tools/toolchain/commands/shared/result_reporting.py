@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -60,6 +61,40 @@ def print_result_paths(
         _emit_line(f"state_json: {state_json}")
     _emit_line(f"result_json (summary): {paths['result_json']}")
     _emit_line(f"aggregated_log: {paths['aggregated_log']}")
+
+
+def _append_github_step_summary(lines: list[str]) -> None:
+    summary_path = str(os.environ.get("GITHUB_STEP_SUMMARY", "") or "").strip()
+    if not summary_path:
+        return
+    try:
+        with Path(summary_path).open("a", encoding="utf-8") as handle:
+            handle.write("\n".join(lines) + "\n")
+    except OSError:
+        return
+
+
+def print_verify_phase_summary(verify_phases: list[dict[str, object]]) -> None:
+    if not verify_phases:
+        return
+
+    _emit_line("--- verify phase summary")
+    markdown_lines = [
+        "### Verify Phase Summary",
+        "",
+        "| Phase | Status | Exit | Category |",
+        "| --- | --- | ---: | --- |",
+    ]
+    for phase in verify_phases:
+        name = str(phase.get("name", "") or "")
+        status = str(phase.get("status", "") or "")
+        exit_code = int(phase.get("exit_code", 0) or 0)
+        category = str(phase.get("category", "") or "")
+        _emit_line(
+            f"- {name}: status={status}, exit_code={exit_code}, category={category}"
+        )
+        markdown_lines.append(f"| `{name}` | `{status}` | `{exit_code}` | `{category}` |")
+    _append_github_step_summary(markdown_lines)
 
 
 def print_failure_report(

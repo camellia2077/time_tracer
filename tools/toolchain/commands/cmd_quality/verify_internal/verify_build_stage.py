@@ -98,6 +98,7 @@ def handle_post_build_state(
     print_failure_report_fn,
     print_result_paths_fn,
     build_log_path,
+    verify_phases=None,
 ) -> int | None:
     if build_ret != 0:
         write_build_only_result_json_fn(
@@ -108,6 +109,7 @@ def handle_post_build_state(
             duration_seconds=time.monotonic() - started_at,
             error_message="Build failed during verify.",
             build_only=(suite_name is None),
+            verify_phases=verify_phases,
         )
         print_failure_report_fn(
             command=verify_command_text,

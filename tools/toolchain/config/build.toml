@@ -99,6 +99,8 @@ description = "Focused shell aggregate verification profile for tracer_core_shel
 build_targets = [
     "tc_c_api_smoke_tests",
     "tc_c_api_shell_aggregate_tests",
+    "ttr_tests",
+    "ttr_rt_codec_tests",
     "tt_aggregate_runtime_tests",
     "tc_app_aggregate_runtime_smoke_tests",
     "tt_android_runtime_shell_smoke_tests",

@@ -8,6 +8,11 @@
 
 ---
 
+## [0.9.6] - 2026-04-11
+* **TXT day-block 能力下沉到 Core/Runtime**：将 `default_day_marker`、`resolve_day_block`、`replace_day_block` 从端侧局部实现收敛到 `tracer_core` / shared runtime contract，统一 Android 与 Windows CLI 的 day-block 语义来源。
+* **Android 转为 runtime consumer**：Android TXT editor 不再持有本地 day-block 业务语义，只保留 UI 状态、输入路由与保存编排，通过 shared TXT runtime family 调用核心能力。
+* **Windows CLI 接入共享 TXT runtime**：新增 `txt view-day` 命令，通过 shared TXT runtime family 复用核心 day-block 解析能力，避免端侧重复维护解析逻辑。
+
 ## [0.6.2] - 2026-02-22
 **项目里程碑："Apollo-Soyuz"（阿波罗-联盟号）对接成功**
 > **注记**：从 2026 年 2 月 14 日开始，截止到北京时间 2026 年 2 月 23 日 00:21，项目在春节期间完成了里程碑式的架构演进。通过剥离 `time_tracer_core` DLL 并实现与 Android 环境的深度“对接”，标志着项目正式跨越了平台鸿沟。

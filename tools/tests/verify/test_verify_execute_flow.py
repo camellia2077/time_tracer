@@ -143,6 +143,17 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertEqual(call_kwargs["build_dir_name"], "build_fast")
         self.assertFalse(call_kwargs["success"])
         self.assertEqual(call_kwargs["exit_code"], 3)
+        self.assertEqual(
+            call_kwargs["verify_phases"],
+            [
+                {
+                    "name": "build",
+                    "category": "verify",
+                    "status": "failed",
+                    "exit_code": 3,
+                }
+            ],
+        )
 
     def test_execute_mapped_app_writes_result_on_build_failure(self):
         with (
@@ -171,6 +182,17 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
         self.assertFalse(call_kwargs["success"])
         self.assertEqual(call_kwargs["exit_code"], 5)
         self.assertFalse(call_kwargs["build_only"])
+        self.assertEqual(
+            call_kwargs["verify_phases"],
+            [
+                {
+                    "name": "build",
+                    "category": "verify",
+                    "status": "failed",
+                    "exit_code": 5,
+                }
+            ],
+        )
 
     def test_execute_runs_unit_then_artifact_checks(self):
         with (
