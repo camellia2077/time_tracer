@@ -21,6 +21,7 @@ from .table_tester import TableTester
 class TestEngine:
     REPORTING_GOLDEN_DB_SNAPSHOT_NAME = "reporting_golden_db.sqlite3"
     SQLITE_SIDECARE_SUFFIXES = ("", "-wal", "-shm", "-journal")
+    ACTIVE_RUNNER_LOG_NAME = "python_output.latest.log"
 
     def __init__(self, config: GlobalConfig, options: dict | None = None):
         self.cfg = config
@@ -83,6 +84,7 @@ class TestEngine:
         )
         self.paths.TARGET_EXECUTABLES_DIR = final_exe_path
         if self.run_control.ENABLE_ENVIRONMENT_CLEAN:
+            self._clean_python_logs_output()
             self._clean_artifacts_output()
             self._clean_additional_directories()
 
@@ -119,11 +121,25 @@ class TestEngine:
             return
         self._clean_directory_contents(self.paths.OUTPUT_DIR_NAME)
 
+    def _clean_python_logs_output(self) -> None:
+        if not self.paths.PY_OUTPUT_DIR:
+            return
+        self._clean_directory_contents(
+            self.paths.PY_OUTPUT_DIR,
+            preserved_names={self.ACTIVE_RUNNER_LOG_NAME},
+        )
+
     @staticmethod
-    def _clean_directory_contents(path: Path) -> None:
+    def _clean_directory_contents(
+        path: Path,
+        preserved_names: set[str] | None = None,
+    ) -> None:
         path.mkdir(parents=True, exist_ok=True)
         print(f"  Cleaning configured directory: {path}")
+        preserved = preserved_names or set()
         for item in path.iterdir():
+            if item.name in preserved:
+                continue
             try:
                 if item.is_dir():
                     shutil.rmtree(item)

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from gate_cases_loader import MarkdownFileCase
 
 
-DEFAULT_CASES_CONFIG = "test/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
+DEFAULT_CASES_CONFIG = "tools/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
 
 
 def _load_gate_cases_config(config_path: Path):

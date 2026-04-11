@@ -24,7 +24,7 @@ def register(parser: argparse.ArgumentParser, _defaults: ParserDefaults) -> None
         default=None,
         help=(
             "Optional gate case config TOML. Default: "
-            "test/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
+            "tools/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
         ),
     )
 

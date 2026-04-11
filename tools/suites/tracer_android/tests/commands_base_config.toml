@@ -62,11 +62,11 @@ args = [
 expect_exit = 0
 
 [[commands]]
-name = "Alias Mapping Uses aliases Table"
+name = "Alias Mapping Uses Index Includes"
 stage = "base-config"
 args = [
   "/c",
-  "findstr /c:[aliases] ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\alias_mapping.toml >nul && exit /b 0 || (echo Missing [aliases] table in alias_mapping.toml && exit /b 1)"
+  "findstr /c:includes ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\alias_mapping.toml >nul && if exist ..\\..\\..\\..\\assets\\tracer_core\\config\\converter\\aliases\\*.toml (exit /b 0) else (echo Missing alias_mapping index includes or aliases child files && exit /b 1)"
 ]
 expect_exit = 0
 

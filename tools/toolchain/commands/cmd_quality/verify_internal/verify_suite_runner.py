@@ -23,7 +23,7 @@ def build_suite_test_command(
 
     test_cmd = [
         "python",
-        "test/run.py",
+        "tools/test.py",
         "suite",
         "--suite",
         suite_runner_name,

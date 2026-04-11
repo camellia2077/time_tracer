@@ -22,7 +22,7 @@ stage = "duration-stats"
 raw_command = true
 args = [
   "python",
-  "${repo_root}/test/suites/log_generator/scripts/check_daily_average.py",
+  "${repo_root}/tools/suites/log_generator/scripts/check_daily_average.py",
   "--input-root",
   "{output_dir}/avg_guard_nosleep",
   "--activities-config",
@@ -60,7 +60,7 @@ stage = "duration-stats"
 raw_command = true
 args = [
   "python",
-  "${repo_root}/test/suites/log_generator/scripts/check_daily_average.py",
+  "${repo_root}/tools/suites/log_generator/scripts/check_daily_average.py",
   "--input-root",
   "{output_dir}/avg_guard_normal",
   "--activities-config",

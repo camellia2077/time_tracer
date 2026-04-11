@@ -41,3 +41,8 @@ legacy_name_contains = ["_query_data_days_stats_"]
 stage = "exchange"
 command_prefix = ["exchange"]
 subdir = "exchange"
+
+[[log_routing.rules]]
+stage = "txt-view-day"
+command_prefix = ["txt"]
+subdir = "txt-view-day"

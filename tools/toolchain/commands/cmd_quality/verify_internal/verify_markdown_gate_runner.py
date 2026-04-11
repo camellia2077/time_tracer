@@ -129,7 +129,7 @@ def run_report_markdown_gates(
     golden_dir = repo_root / "test" / "golden" / "report_markdown" / "v1"
     render_check_output = quality_gates_root / "audits" / "report-md-golden-render-check.json"
     cases_config_path = (
-        repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
+        repo_root / "tools" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
     )
 
     collect_cmd = [

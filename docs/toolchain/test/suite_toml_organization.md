@@ -1,6 +1,6 @@
 # Suite TOML Organization
 
-本文档约定 `test/suites/` 下 suite TOML 的分层职责、命名方式与推荐 include 关系。
+本文档约定 `tools/suites/` 下 suite TOML 的分层职责、命名方式与推荐 include 关系。
 
 ## 1. 目标
 

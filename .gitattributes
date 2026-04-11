@@ -3,3 +3,6 @@ test/golden/report_markdown/**/*.md text eol=lf
 test/golden/report_triplet/**/*.md text eol=lf
 test/golden/report_triplet/**/*.tex text eol=lf
 test/golden/report_triplet/**/*.typ text eol=lf
+
+# Keep shared test data fixtures byte-stable across platforms.
+test/data/**/*.txt text eol=lf

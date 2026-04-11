@@ -9,7 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-RUN_SUPPORT_PATH = REPO_ROOT / "test" / "framework" / "runner" / "commands" / "run_support.py"
+RUN_SUPPORT_PATH = REPO_ROOT / "tools" / "test_framework" / "runner" / "commands" / "run_support.py"
 RUN_SUPPORT_SPEC = importlib.util.spec_from_file_location("tt_run_support", RUN_SUPPORT_PATH)
 run_support = importlib.util.module_from_spec(RUN_SUPPORT_SPEC)
 assert RUN_SUPPORT_SPEC is not None

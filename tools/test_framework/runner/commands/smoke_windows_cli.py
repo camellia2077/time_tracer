@@ -37,7 +37,7 @@ def main(argv: list[str], repo_root: Path) -> int:
 
     suite_command = [
         sys.executable,
-        "test/run.py",
+        "tools/test.py",
         "suite",
         "--suite",
         "artifact_windows_cli",
@@ -48,7 +48,7 @@ def main(argv: list[str], repo_root: Path) -> int:
     ]
     runtime_guard_command = [
         sys.executable,
-        "test/run.py",
+        "tools/test.py",
         "runtime-guard",
         "--build-dir",
         args.build_dir,

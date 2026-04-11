@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from gate_cases_loader import TripletFileCase
 
 
-DEFAULT_CASES_CONFIG = "test/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
+DEFAULT_CASES_CONFIG = "tools/suites/tracer_windows_rust_cli/tests/gate_cases.toml"
 
 
 FORMAT_SPECS: dict[str, tuple[str, str]] = {

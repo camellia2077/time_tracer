@@ -86,7 +86,7 @@ stage = "exchange"
 raw_command = true
 args = [
   "python",
-  "${repo_root}/test/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
+  "${repo_root}/tools/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
   "prepare",
   "--workspace-root",
   "{exe_dir}",
@@ -119,7 +119,7 @@ stage = "exchange"
 raw_command = true
 args = [
   "python",
-  "${repo_root}/test/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
+  "${repo_root}/tools/suites/tracer_windows_rust_cli/scripts/manage_exchange_config_refresh_fixture.py",
   "restore",
   "--workspace-root",
   "{exe_dir}",

@@ -110,7 +110,12 @@ def _resolve_effective_bin_dir(
     return resolve_build_layout(repo_root, app_name, build_dir).bin_dir
 
 
-def main(argv: list[str], test_root: Path, repo_root: Path | None = None) -> int:
+def main(
+    argv: list[str],
+    suite_assets_root: Path,
+    test_root: Path,
+    repo_root: Path | None = None,
+) -> int:
     parser = build_parser()
     args, forwarded = parser.parse_known_args(argv)
     suite_key = args.suite
@@ -123,7 +128,7 @@ def main(argv: list[str], test_root: Path, repo_root: Path | None = None) -> int
     meta = SUITE_META[suite_key]
     app_name = meta.get("build_app", suite_key)
     suite_folder = str(meta.get("suite_folder", meta["suite_name"]))
-    suite_root = test_root / "suites" / suite_folder
+    suite_root = suite_assets_root / suite_folder
     active_repo_root = repo_root if repo_root else test_root.parent
 
     print(

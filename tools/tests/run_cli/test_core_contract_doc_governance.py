@@ -14,8 +14,8 @@ CORE_CONTRACT_DOCS = {
 }
 
 TEST_RELATED_PREFIXES = (
-    "test/framework/",
-    "test/suites/",
+    "tools/test_framework/",
+    "tools/suites/",
     "tools/tests/",
 )
 

@@ -1,7 +1,7 @@
 # CLI surface failure-path regression cases for exit code / stderr contract.
 # Note:
 # - bootstrap runtime guard cases (missing core/config dll) remain covered by
-#   `python test/run.py runtime-guard --build-dir build_fast`.
+#   `python tools/test.py runtime-guard --build-dir build_fast`.
 
 [[commands]]
 name = "Unknown Command Returns CommandNotFound"

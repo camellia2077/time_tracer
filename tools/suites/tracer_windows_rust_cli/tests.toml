@@ -3,6 +3,7 @@
 includes = [
   "tests/base.toml",
   "tests/commands_reporting.toml",
+  "tests/commands_txt_view_day.toml",
   "tests/commands_version.toml",
   "tests/commands_query_tree.toml",
   "tests/commands_failure_cli.toml",

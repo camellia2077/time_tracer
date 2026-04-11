@@ -36,7 +36,7 @@ def auto_detect_build_dir(repo_root: Path, app_name: str) -> str | None:
 
 
 def load_runtime_bundle_spec(repo_root: Path) -> tuple[list[str], list[str]]:
-    env_path = repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "env.toml"
+    env_path = repo_root / "tools" / "suites" / "tracer_windows_rust_cli" / "env.toml"
     if not env_path.exists():
         return DEFAULT_RUNTIME_FILES, DEFAULT_RUNTIME_FOLDERS
 

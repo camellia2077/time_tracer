@@ -89,7 +89,7 @@ class ReportMarkdownGateCommand:
             Path(cases_config_path)
             if cases_config_path
             else repo_root
-            / "test"
+            / "tools"
             / "suites"
             / "tracer_windows_rust_cli"
             / "tests"

@@ -10,5 +10,5 @@
 - `report_markdown_render_snapshot_check.py`
 
 测试样本来源统一由
-`test/suites/tracer_windows_rust_cli/tests/gate_cases.toml` 定义，
+`tools/suites/tracer_windows_rust_cli/tests/gate_cases.toml` 定义，
 上述脚本由 `tools/toolchain/commands/cmd_quality/verify.py` 编排调用。

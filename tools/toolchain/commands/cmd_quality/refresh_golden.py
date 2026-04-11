@@ -329,7 +329,7 @@ class RefreshGoldenCommand:
         # can overwrite DB content and produce non-deterministic golden inputs.
         db_path = snapshot_db_path if snapshot_db_path.is_file() else workspace_db_path
         cases_config_path = (
-            repo_root / "test" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
+            repo_root / "tools" / "suites" / "tracer_windows_rust_cli" / "tests" / "gate_cases.toml"
         )
         self._update_gate_cases(
             cases_config_path=cases_config_path,

@@ -46,7 +46,7 @@ def verify_loop(ctx: Context, app_name: str, concise: bool, kill_build_procs: bo
 
     test_cmd = [
         "python",
-        "test/run.py",
+        "tools/test.py",
         "suite",
         "--suite",
         suite_runner_name,

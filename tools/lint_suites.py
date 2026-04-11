@@ -5,12 +5,17 @@ import argparse
 import sys
 from pathlib import Path
 
-SUITES_ROOT = Path(__file__).resolve().parent
-TEST_ROOT = SUITES_ROOT.parent
-FRAMEWORK_ROOT = TEST_ROOT / "framework"
+TOOLS_ROOT = Path(__file__).resolve().parent
+REPO_ROOT = TOOLS_ROOT.parent
+TEST_ROOT = REPO_ROOT / "test"
+SUITES_ROOT = TOOLS_ROOT / "suites"
+FRAMEWORK_ROOT = TOOLS_ROOT / "test_framework"
 
 
 def _ensure_framework_path() -> None:
+    repo_root_str = str(REPO_ROOT)
+    if repo_root_str not in sys.path:
+        sys.path.insert(0, repo_root_str)
     framework_root_str = str(FRAMEWORK_ROOT)
     if framework_root_str not in sys.path:
         sys.path.insert(0, framework_root_str)
@@ -56,10 +61,10 @@ def main() -> int:
     for config_path in suite_configs:
         try:
             load_config(config_path=config_path, build_dir_name=args.build_dir)
-            print(f"PASS: {config_path.relative_to(TEST_ROOT)}")
+            print(f"PASS: {config_path.relative_to(REPO_ROOT)}")
         except Exception as error:
             failures += 1
-            print(f"FAIL: {config_path.relative_to(TEST_ROOT)}")
+            print(f"FAIL: {config_path.relative_to(REPO_ROOT)}")
             print(f"  -> {error}")
 
     if failures:

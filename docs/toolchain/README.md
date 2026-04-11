@@ -2,14 +2,16 @@
 
 `docs/toolchain/` 是 Python 工具链、测试契约与工程执行规则的权威文档目录。
 
-根目录 `tools/` 与 `test/` 只保留薄层 `README.md` / `AGENTS.md` 索引；详细说明统一下沉到本目录。
+根目录 `tools/` 保留薄层 `README.md` / `AGENTS.md` 索引；`test/` 只保留共享测试资产目录，详细说明统一下沉到本目录。
 
 ## 主文档
 
 1. [tools/README.md](tools/README.md)
-   - `tools/run.py` 入口、工具链分层、命令路由、clang-tidy workspace 约定
-2. [test/README.md](test/README.md)
-   - `verify` / `validate` / `self-test` / suite 运行方式与结果产物契约
+   - `tools/run.py`、`tools/test.py`、`tools/lint_suites.py` 入口，以及
+     `tools/` / `test/` 当前目录职责索引
+2. [docs/toolchain/test/README.md](test/README.md)
+   - `verify` / `validate` / suite / result contract 与 `tools/` / `test/`
+     分工入口
 
 ## 专项文档
 
