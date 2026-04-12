@@ -1,0 +1,5 @@
+parent = "study"
+
+[aliases]
+"study" = "misc"
+"riseup" = "morning"

@@ -84,6 +84,17 @@ python tools/run.py verify --app tracer_android --profile android_ci --concise
 python tools/run.py verify --app tracer_android --profile android_style --profile android_ci --concise
 ```
 
+## 测试资产边界
+
+- Android 与 Windows CLI 共用 `test/data/**` 作为 canonical TXT 输入。
+- Android compat / runtime 错误路径优先复用 `test/fixtures/config/**` 与
+  `test/fixtures/text/**`。
+- `test/golden/**` 只承载最终稳定输出基线，不承载 Android 运行时临时结果。
+- 不要把 Android 运行结果、临时数据库或导出产物写回 `test/**`；
+  运行结果目录应看 `out/test/**`。
+- `apps/tools/log_generator` 是生成 canonical TXT 数据的工具 app，不迁入
+  `test/**`。
+
 ## Boundary Notes
 
 - `RuntimeGateway` remains a contract-layer aggregate, but Android `app` routes and app-side tests should prefer the smallest gateway interfaces they actually need.

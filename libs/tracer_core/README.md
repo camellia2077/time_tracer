@@ -88,6 +88,16 @@ TXT structure validation, TXT logic validation, or ingest validation order:
 3. 详细测试意图见
    [docs/time_tracer/architecture/libraries/tracer_core.md](../../docs/time_tracer/architecture/libraries/tracer_core.md).
 
+## Test Asset Boundary
+
+1. core 语义测试源码继续放在 `libs/tracer_core/tests/**`，不迁入 `test/**`。
+2. `test/data/**` 是跨 CLI / shell / Android 复用的 canonical TXT 输入。
+3. `test/fixtures/text/**` 与 `test/fixtures/config/**` 适合承载 core 相关的
+   小型专项样本，例如最小合法月文件、非法 TXT、legacy config 与 custom
+   config。
+4. `test/golden/**` 只承载最终输出对账基线，不承载 core 中间态数据。
+5. 本项目的数据真源仍是文本输入，不引入 checked-in 的 DB 中间态目录。
+
 ## Validate
 
 ```powershell

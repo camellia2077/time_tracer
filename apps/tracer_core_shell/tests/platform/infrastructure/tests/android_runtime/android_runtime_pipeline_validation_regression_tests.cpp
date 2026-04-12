@@ -1,8 +1,12 @@
+#include <chrono>
+#include <ctime>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <optional>
+#include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -22,35 +26,64 @@ constexpr std::string_view kOvernightContinuationWarning =
     "Warning: possible overnight continuation; the first event of this day is "
     "not wake-related, so no sleep activity will be auto-generated.";
 
-auto PrepareCustomWakeConfig(const std::filesystem::path& config_root)
+auto CopyFixtureFile(const std::filesystem::path& relative_path,
+                     const std::filesystem::path& target_path) -> bool {
+  std::error_code error;
+  std::filesystem::create_directories(target_path.parent_path(), error);
+  if (error) {
+    return false;
+  }
+
+  std::filesystem::copy_file(BuildRepoRoot() / relative_path, target_path,
+                             std::filesystem::copy_options::overwrite_existing,
+                             error);
+  return !error;
+}
+
+auto PrepareCustomConfigFixture(
+    const std::filesystem::path& config_root,
+    const std::filesystem::path& interval_fixture_relative_path)
     -> std::optional<std::filesystem::path> {
   if (!PrepareAndroidConfigFixture(config_root)) {
     return std::nullopt;
   }
 
-  const std::filesystem::path interval_config_path =
-      config_root / "converter" / "interval_processor_config.toml";
-  const std::string interval_config =
-      "duration_rules_config_path = \"duration_rules.toml\"\n"
-      "alias_mapping_path = \"alias_mapping.toml\"\n"
-      "\n"
-      "header_order = [\n"
-      "    \"Date:\",\n"
-      "    \"Status:\",\n"
-      "    \"Sleep:\",\n"
-      "    \"Getup:\",\n"
-      "    \"Remark:\"\n"
-      "]\n"
-      "\n"
-      "remark_prefix = \"r \"\n"
-      "wake_keywords = [\"riseup\"]\n"
-      "\n"
-      "[generated_activities]\n"
-      "sleep_project_path = \"sleep_night\"\n";
-  if (!WriteFileWithParents(interval_config_path, interval_config)) {
+  const std::filesystem::path converter_root = config_root / "converter";
+  if (!CopyFixtureFile(interval_fixture_relative_path,
+                       converter_root / "interval_processor_config.toml") ||
+      !CopyFixtureFile("test/fixtures/config/custom/alias_mapping.single_include.toml",
+                       converter_root / "alias_mapping.toml") ||
+      !CopyFixtureFile("test/fixtures/config/custom/duration_rules.minimal.toml",
+                       converter_root / "duration_rules.toml") ||
+      !CopyFixtureFile("test/fixtures/config/custom/aliases/minimal.toml",
+                       converter_root / "aliases" / "minimal.toml")) {
     return std::nullopt;
   }
-  return interval_config_path;
+  return converter_root / "interval_processor_config.toml";
+}
+
+auto BuildRecentWakeEventLine() -> std::string {
+  const auto now = std::chrono::system_clock::now();
+  const auto prior = now - std::chrono::minutes(1);
+  const std::time_t prior_time = std::chrono::system_clock::to_time_t(prior);
+
+  std::tm local_time{};
+#ifdef _WIN32
+  localtime_s(&local_time, &prior_time);
+#else
+  localtime_r(&prior_time, &local_time);
+#endif
+
+  std::ostringstream output;
+  output << std::setw(2) << std::setfill('0') << local_time.tm_hour
+         << std::setw(2) << std::setfill('0') << local_time.tm_min << "w\n";
+  return output.str();
+}
+
+auto PrepareCustomWakeConfig(const std::filesystem::path& config_root)
+    -> std::optional<std::filesystem::path> {
+  return PrepareCustomConfigFixture(
+      config_root, "test/fixtures/config/custom/wake_keywords.riseup.toml");
 }
 
 class CapturingLogger final : public applog::ILogger {
@@ -253,6 +286,79 @@ auto TestValidateLogicAllowsSingleAuthoredEventDay(int& failures) -> void {
   cleanup();
 }
 
+auto TestValidateLogicRejectsBadTimeRangeFixture(int& failures) -> void {
+  const RuntimeTestPaths kPaths = BuildTempTestPaths(
+      "time_tracer_android_runtime_validate_logic_bad_time_range_fixture_test");
+  RemoveTree(kPaths.test_root);
+
+  const auto cleanup = [&]() -> void { RemoveTree(kPaths.test_root); };
+
+  const std::filesystem::path kRepoRoot = BuildRepoRoot();
+  const std::filesystem::path kConfigTomlPath =
+      kRepoRoot / "assets" / "tracer_core" / "config" / "converter" /
+      "interval_processor_config.toml";
+
+  auto diagnostics_sink = std::make_shared<CapturingDiagnosticsSink>();
+  auto error_report_writer = std::make_shared<CapturingErrorReportWriter>();
+
+  infrastructure::bootstrap::AndroidRuntimeRequest request =
+      BuildRuntimeRequest(kPaths, kConfigTomlPath);
+  request.diagnostics_sink = diagnostics_sink;
+  request.error_report_writer = error_report_writer;
+
+  infrastructure::bootstrap::AndroidRuntime runtime;
+  try {
+    runtime = infrastructure::bootstrap::BuildAndroidRuntime(request);
+  } catch (const std::exception& exception) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should succeed for bad-time-range "
+                 "fixture validation test: "
+              << exception.what() << '\n';
+    cleanup();
+    return;
+  }
+
+  const std::filesystem::path kSourceRoot =
+      kPaths.test_root / "source" / "2026";
+  const std::filesystem::path kSourceFile = kSourceRoot / "2026-01.txt";
+  if (!CopyFixtureFile("test/fixtures/text/invalid/2026-01.bad_time_range.txt",
+                       kSourceFile)) {
+    ++failures;
+    std::cerr << "[FAIL] Bad-time-range fixture validation test should copy "
+                 "fixture input file.\n";
+    cleanup();
+    return;
+  }
+
+  const auto kAck = runtime.runtime_api->pipeline().RunValidateLogic(
+      {.input_path = kSourceRoot.string(),
+       .date_check_mode = DateCheckMode::kNone});
+  if (kAck.ok) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should fail for the bad-time-range "
+                 "fixture.\n";
+    cleanup();
+    return;
+  }
+
+  if (!Contains(diagnostics_sink->Errors(), kSourceFile.string()) ||
+      !Contains(diagnostics_sink->Errors(),
+                "Activity duration must be positive")) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should report the bad-time-range "
+                 "fixture as a positive-duration violation.\n";
+  }
+
+  if (!Contains(kAck.error_message, "Recent diagnostics:") ||
+      !Contains(kAck.error_message, "Activity duration must be positive")) {
+    ++failures;
+    std::cerr << "[FAIL] RunValidateLogic should surface bad-time-range "
+                 "fixture diagnostics in top-level error_message.\n";
+  }
+
+  cleanup();
+}
+
 auto TestRecordActivityAtomicallyWarnsForWakeOnlyDay(int& failures) -> void {
   const RuntimeTestPaths kPaths = BuildTempTestPaths(
       "time_tracer_android_runtime_record_warning_wake_only_day_test");
@@ -434,7 +540,9 @@ auto TestRecordActivityAtomicallySkipsCompletenessWarningForCompleteDay(
 
   const std::filesystem::path kMonthFile =
       kPaths.test_root / "input" / "2026" / "2026-03.txt";
-  if (!WriteFileWithParents(kMonthFile, "y2026\nm03\n0301\n0000w\n")) {
+  const std::string month_file_text =
+      std::string("y2026\nm03\n0301\n") + BuildRecentWakeEventLine();
+  if (!WriteFileWithParents(kMonthFile, month_file_text)) {
     ++failures;
     std::cerr << "[FAIL] Complete-day record warning test should write the "
                  "pre-existing month file.\n";
@@ -664,6 +772,7 @@ auto TestValidateStructureReportsInvalidUtf8(int& failures) -> void {
 auto RunPipelineValidationRegressionTests(int& failures) -> void {
   TestValidateLogicRejectsWakeKeywordAfterFirstEvent(failures);
   TestValidateLogicAllowsSingleAuthoredEventDay(failures);
+  TestValidateLogicRejectsBadTimeRangeFixture(failures);
   TestRecordActivityAtomicallyWarnsForWakeOnlyDay(failures);
   TestRecordActivityAtomicallyAcceptsWakeKeywordFromConfigOnly(failures);
   TestRecordActivityAtomicallyWarnsForOvernightContinuationDay(failures);

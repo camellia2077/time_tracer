@@ -37,6 +37,18 @@ Local entrypoint for agents touching the shared transport implementation layer.
 3. 详细测试意图见
    [docs/time_tracer/architecture/libraries/tracer_transport.md](../../docs/time_tracer/architecture/libraries/tracer_transport.md).
 
+## Test Asset Boundary
+
+1. `tracer_transport` 的测试源码继续放在 `libs/tracer_transport/tests/**`。
+2. transport 测试默认优先使用库内 inline payload，而不是把业务语义样本写进
+   `test/**`。
+3. 只有跨层共享、且确实需要文件化的小型 payload，才考虑放入
+   `test/fixtures/**`。
+4. `test/data/**` 是主程序消费的 canonical TXT 输入，不是 transport
+   专用样本池。
+5. `test/golden/**` 是最终输出对账基线，不属于 transport 自身的 codec
+   回归资产。
+
 ## Validate
 
 ```powershell

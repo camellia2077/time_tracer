@@ -4,6 +4,10 @@
 #include "application/tests/support/fakes.hpp"
 #include "application/tests/support/test_support.hpp"
 
+#include <filesystem>
+#include <fstream>
+#include <iterator>
+
 namespace tracer_core::application::tests {
 
 using tracer::core::application::pipeline::txt_day_block::DefaultDayMarker;
@@ -11,6 +15,27 @@ using tracer::core::application::pipeline::txt_day_block::ReplaceDayBlock;
 using tracer::core::application::pipeline::txt_day_block::ResolveDayBlock;
 
 namespace {
+
+auto BuildRepoRoot() -> std::filesystem::path {
+  return std::filesystem::path(__FILE__)
+      .parent_path()   // modules
+      .parent_path()   // tests
+      .parent_path()   // application
+      .parent_path()   // tests
+      .parent_path()   // tracer_core
+      .parent_path()   // libs
+      .parent_path();  // repo root
+}
+
+auto ReadFixtureText(const std::filesystem::path& relative_path) -> std::string {
+  const std::filesystem::path fixture_path = BuildRepoRoot() / relative_path;
+  std::ifstream input(fixture_path, std::ios::binary);
+  if (!input.is_open()) {
+    return {};
+  }
+  return std::string(std::istreambuf_iterator<char>(input),
+                     std::istreambuf_iterator<char>());
+}
 
 constexpr std::string_view kMonthContent =
     "y2025\n"
@@ -108,6 +133,57 @@ auto TestTxtDayBlockSemantics(TestState& state) -> void {
          "DefaultDayMarker should fall back to target_date_iso month/day when selected month is invalid.");
 }
 
+auto TestTxtDayBlockFixtureFiles(TestState& state) -> void {
+  const std::string empty_month = ReadFixtureText(
+      "test/fixtures/text/minimal_month/2026-01.empty.txt");
+  Expect(state, !empty_month.empty(),
+         "empty month fixture should be readable from test/fixtures.");
+  const auto empty_resolved = ResolveDayBlock({
+      .content = empty_month,
+      .day_marker = "0101",
+      .selected_month = "2026-01",
+  });
+  Expect(state, empty_resolved.ok,
+         "empty month fixture should still resolve with ok=true.");
+  Expect(state, !empty_resolved.found,
+         "empty month fixture should not find a missing day block.");
+  Expect(state, !empty_resolved.can_save,
+         "empty month fixture should keep save disabled for missing day.");
+
+  const std::string single_day = ReadFixtureText(
+      "test/fixtures/text/minimal_month/2026-01.single_day.txt");
+  Expect(state, !single_day.empty(),
+         "single-day fixture should be readable from test/fixtures.");
+  const auto single_resolved = ResolveDayBlock({
+      .content = single_day,
+      .day_marker = "0101",
+      .selected_month = "2026-01",
+  });
+  Expect(state, single_resolved.ok && single_resolved.found,
+         "single-day fixture should resolve the authored day block.");
+  Expect(state,
+         Contains(single_resolved.day_body, "0700wake") &&
+             Contains(single_resolved.day_body, "0830study"),
+         "single-day fixture should preserve authored event lines.");
+
+  const std::string cross_midnight = ReadFixtureText(
+      "test/fixtures/text/minimal_month/2026-01.cross_midnight.txt");
+  Expect(state, !cross_midnight.empty(),
+         "cross-midnight fixture should be readable from test/fixtures.");
+  const auto overnight_resolved = ResolveDayBlock({
+      .content = cross_midnight,
+      .day_marker = "0101",
+      .selected_month = "2026-01",
+  });
+  Expect(state, overnight_resolved.ok && overnight_resolved.found,
+         "cross-midnight fixture should resolve the target day block.");
+  Expect(state,
+         Contains(overnight_resolved.day_body, "2350睡觉") &&
+             Contains(overnight_resolved.day_body, "0700起床") &&
+             Contains(overnight_resolved.day_body, "0830meal"),
+         "cross-midnight fixture should preserve overnight boundary lines.");
+}
+
 auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
   FakePipelineWorkflow pipeline_workflow;
   FakeReportHandler report_handler;
@@ -169,6 +245,7 @@ auto TestTxtDayBlockPipelineApiForwarding(TestState& state) -> void {
 
 auto RunTxtDayBlockTests(TestState& state) -> void {
   TestTxtDayBlockSemantics(state);
+  TestTxtDayBlockFixtureFiles(state);
   TestTxtDayBlockPipelineApiForwarding(state);
 }
 

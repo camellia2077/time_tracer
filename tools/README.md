@@ -6,8 +6,9 @@
 2. suite 资产
 3. 测试工具链实现
 
-共享测试数据、fixtures 与 golden 仍留在 `test/`，但不再单独维护
-`test/README.md` / `test/AGENTS.md`。
+共享测试数据、fixtures 与 golden 仍留在 `test/`。
+根目录 `test/README.md` 保持薄索引，详细规则统一下沉到
+`docs/toolchain/test/README.md`。
 
 ## 入口
 
@@ -43,6 +44,8 @@
    - 小型专用 fixture
 3. `test/golden/`
    - golden / snapshot 基线
+4. `out/test/`
+   - 每次运行的结果、日志与临时产物
 
 这些目录属于共享测试资产层：
 
@@ -52,6 +55,8 @@
    - 看 `test/fixtures/**`
 3. 改 golden / snapshot：
    - 看 `test/golden/**`
+4. 改运行结果目录契约：
+   - 看 `docs/toolchain/test/README.md`
 
 ## 先读哪些文档
 

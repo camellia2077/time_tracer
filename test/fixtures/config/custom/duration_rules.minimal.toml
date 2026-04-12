@@ -1,0 +1,14 @@
+[text_duration_mappings]
+"饭" = "meal"
+"meal_dining" = "meal"
+"rest" = "rest"
+
+[duration_mappings]
+meal = [
+    { less_than_minutes = 30, value = "meal_short" },
+    { less_than_minutes = 1440, value = "meal_long" }
+]
+rest = [
+    { less_than_minutes = 15, value = "rest_short" },
+    { less_than_minutes = 1440, value = "rest_long" }
+]

@@ -67,6 +67,18 @@ description: Windows Rust CLI capability-family layout, build, and verification 
    - `tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml`
    - `tools/suites/tracer_windows_rust_cli/tests/commands_exchange.toml`
 
+## 测试资产边界
+
+1. CLI 黑盒输入来源分三类：
+   - `test/data/**`：canonical 全量输入
+   - `test/fixtures/text/**` 与 `test/fixtures/config/**`：小型专项黑盒输入
+   - `test/golden/**`：最终输出对账基线
+2. 不要把库级测试源码或 CLI 黑盒测试源码迁入 `test/**`。
+3. `apps/tools/log_generator` 是生成 canonical TXT 数据的工具 app，不属于
+   `test/**`。
+4. `test/output/**` 不再作为有效输出目录；运行结果只看
+   `out/test/artifact_windows_cli/**`。
+
 ## Canonical 命令面
 
 - `query data`
@@ -113,7 +125,8 @@ description: Windows Rust CLI capability-family layout, build, and verification 
 
 - 使用 `tools/run.py` 作为统一入口
 - 不要重新引入已归档前端实现的运行时依赖
-- 测试输入源固定为 `test/data`
+- 测试输入源优先使用 `test/data`；小型专项场景可使用 `test/fixtures/text/**`
+  或 `test/fixtures/config/**`
 - 临时产物放在 `temp/`
 - `ingest` 的持久化语义必须保持严格边界：
   - 只有全部校验通过后，才允许创建数据库并写入

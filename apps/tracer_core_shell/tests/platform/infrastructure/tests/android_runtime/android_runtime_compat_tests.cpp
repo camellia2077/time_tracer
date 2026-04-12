@@ -8,6 +8,20 @@
 namespace android_runtime_tests {
 namespace {
 
+auto CopyFixtureFile(const std::filesystem::path& relative_path,
+                     const std::filesystem::path& target_path) -> bool {
+  std::error_code error;
+  std::filesystem::create_directories(target_path.parent_path(), error);
+  if (error) {
+    return false;
+  }
+
+  std::filesystem::copy_file(BuildRepoRoot() / relative_path, target_path,
+                             std::filesystem::copy_options::overwrite_existing,
+                             error);
+  return !error;
+}
+
 auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
     int& failures) -> void {
   const RuntimeTestPaths paths = BuildTempTestPaths(
@@ -66,10 +80,60 @@ auto TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(
   RemoveTree(paths.test_root);
 }
 
+auto TestAndroidRuntimeRejectsLegacyAliasMappingFixture(int& failures) -> void {
+  const RuntimeTestPaths paths = BuildTempTestPaths(
+      "time_tracer_android_runtime_factory_legacy_alias_fixture_test");
+  const std::filesystem::path kLegacyConfigRoot = paths.test_root / "config";
+  const std::filesystem::path kConverterTomlPath =
+      kLegacyConfigRoot / "converter" / "interval_processor_config.toml";
+  const std::filesystem::path kAliasMappingPath =
+      kLegacyConfigRoot / "converter" / "alias_mapping.toml";
+  RemoveTree(paths.test_root);
+  if (!PrepareAndroidConfigFixture(kLegacyConfigRoot)) {
+    ++failures;
+    std::cerr << "[FAIL] Failed to prepare config fixtures for legacy alias "
+                 "compat test.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
+  if (!CopyFixtureFile("test/fixtures/config/legacy/alias_mapping.legacy.toml",
+                       kAliasMappingPath)) {
+    ++failures;
+    std::cerr << "[FAIL] Legacy alias compat test should overwrite alias "
+                 "mapping with the legacy fixture.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  std::string message;
+  const bool threw =
+      ExpectBuildRuntimeThrows(BuildRuntimeRequest(paths, kConverterTomlPath),
+                               message);
+  if (!threw) {
+    ++failures;
+    std::cerr << "[FAIL] BuildAndroidRuntime should reject legacy single-file "
+                 "alias mapping fixtures that no longer match the index-based "
+                 "config format.\n";
+    RemoveTree(paths.test_root);
+    return;
+  }
+
+  if (!Contains(message, "Converter config validation failed")) {
+    ++failures;
+    std::cerr << "[FAIL] Legacy alias compat failure should explain that the "
+                 "legacy alias fixture is rejected during converter config "
+                 "validation, actual: "
+              << message << '\n';
+  }
+
+  RemoveTree(paths.test_root);
+}
+
 }  // namespace
 
 auto RunCompatibilityTests(int& failures) -> void {
   TestAndroidRuntimeFallsBackToLegacyConfigPathsWhenBundleMissing(failures);
+  TestAndroidRuntimeRejectsLegacyAliasMappingFixture(failures);
 }
 
 }  // namespace android_runtime_tests

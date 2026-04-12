@@ -3,7 +3,10 @@ import tracer.core.domain.logic.validator.txt.facade;
 import tracer.core.domain.logic.validator.common.validator_utils;
 
 #include <exception>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <sstream>
 #include <string>
@@ -43,6 +46,17 @@ auto Expect(bool condition, const std::string& message, int& failures) -> void {
   }
   ++failures;
   std::cerr << "[FAIL] " << message << '\n';
+}
+
+auto ReadFixtureText(const std::filesystem::path& relative_path)
+    -> std::string {
+  const std::filesystem::path fixture_path = BuildRepoRoot() / relative_path;
+  std::ifstream input(fixture_path, std::ios::binary);
+  if (!input.is_open()) {
+    return {};
+  }
+  return std::string(std::istreambuf_iterator<char>(input),
+                     std::istreambuf_iterator<char>());
 }
 
 auto TestParserPrefersMonthHeader(int& failures) -> void {
@@ -94,6 +108,40 @@ auto TestParserRejectsMissingMonthHeader(int& failures) -> void {
          failures);
 }
 
+auto TestParserRejectsMissingMonthHeaderFixture(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextParser parser(kConfig);
+
+  const std::string fixture_text = ReadFixtureText(
+      "test/fixtures/text/invalid/2026-01.missing_month_header.txt");
+  Expect(!fixture_text.empty(),
+         "missing-month fixture should be readable from test/fixtures.",
+         failures);
+  if (fixture_text.empty()) {
+    return;
+  }
+
+  bool threw = false;
+  std::string message;
+  try {
+    std::vector<DailyLog> parsed_days;
+    std::istringstream input(fixture_text);
+    parser.Parse(
+        input,
+        [&parsed_days](DailyLog& day) -> void { parsed_days.push_back(day); },
+        "2026-01.missing_month_header.txt");
+  } catch (const std::exception& error) {
+    message = error.what();
+    threw = Contains(message, "month header (mMM)");
+  }
+  Expect(threw,
+         "TextParser should reject the missing-month fixture with an mMM error.",
+         failures);
+  Expect(Contains(message, "2026-01.missing_month_header.txt:3"),
+         "missing-month fixture parse error should point at the first day marker line.",
+         failures);
+}
+
 auto TestValidatorRequiresMonthHeader(int& failures) -> void {
   const ConverterConfig kConfig = BuildTestConverterConfig();
   TextValidator text_validator(kConfig);
@@ -124,6 +172,30 @@ auto TestValidatorRequiresMonthHeader(int& failures) -> void {
          failures);
   Expect(Contains(kYearOnlyText, "Month header (mMM) is required"),
          "Year-only files should report missing mMM requirement.", failures);
+}
+
+auto TestValidatorRequiresMonthHeaderFixture(int& failures) -> void {
+  const ConverterConfig kConfig = BuildTestConverterConfig();
+  TextValidator text_validator(kConfig);
+
+  const std::string fixture_text = ReadFixtureText(
+      "test/fixtures/text/invalid/2026-01.missing_month_header.txt");
+  Expect(!fixture_text.empty(),
+         "validator missing-month fixture should be readable from test/fixtures.",
+         failures);
+  if (fixture_text.empty()) {
+    return;
+  }
+
+  std::set<Error> errors;
+  const bool ok = text_validator.Validate("2026-01.missing_month_header.txt",
+                                          fixture_text, errors);
+  const std::string error_text = CollectErrorMessages(errors);
+  Expect(!ok,
+         "TextValidator should reject the missing-month fixture.", failures);
+  Expect(Contains(error_text, "Month header (mMM) is required"),
+         "missing-month fixture should report explicit missing header wording.",
+         failures);
 }
 
 auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
@@ -162,7 +234,9 @@ auto TestValidatorRejectsMonthConflicts(int& failures) -> void {
 auto RunTxtMonthHeaderTests(int& failures) -> void {
   TestParserPrefersMonthHeader(failures);
   TestParserRejectsMissingMonthHeader(failures);
+  TestParserRejectsMissingMonthHeaderFixture(failures);
   TestValidatorRequiresMonthHeader(failures);
+  TestValidatorRequiresMonthHeaderFixture(failures);
   TestValidatorRejectsMonthConflicts(failures);
 }
 

@@ -34,6 +34,16 @@ Local entrypoint for agents touching the IO adapter library.
 3. Shared TXT day-block rules live in `tracer_core` pipeline-owned semantics
    and are exposed to hosts through the TXT runtime family.
 
+## Test Asset Boundary
+
+1. `tracer_adapters_io` 的测试源码继续放在 `libs/tracer_adapters_io/tests/**`。
+2. 因为它会消费实际文件，`test/fixtures/text/**` 对它是合理的小型样本来源。
+3. `test/data/**` 仍是跨端 canonical TXT 输入，不是 adapters_io 自己的
+   私有 fixture 目录。
+4. day-block 语义、默认 `MMDD` 与业务规则仍归 `tracer_core`，不要因为文件
+   读写发生在这里就扩大 owner。
+5. 运行结果目录仍应落在 `out/test/**`，不要新增 `test/output/**` 依赖。
+
 ## Validate
 
 ```powershell

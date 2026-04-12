@@ -5,6 +5,7 @@
 1. 官方测试命令入口
 2. `tools/` 与 `test/` 的职责分工
 3. `verify` / `validate` / suite 的结果产物契约
+4. 仓库长期采用的测试资产布局
 
 ## 1. 官方入口
 
@@ -36,7 +37,7 @@
 6. `test/data/**`
    - 共享输入数据
 7. `test/fixtures/**`
-   - 小型 fixture
+   - 小型专项 fixture
 8. `test/golden/**`
    - golden / snapshot 基线
 
@@ -45,6 +46,47 @@
 1. runner 实现属于 `tools/`
 2. suite 资产也属于 `tools/`
 3. `test/` 仅保留共享测试资产
+4. 运行结果统一写入 `out/test/**`
+5. `apps/tools/log_generator` 保持为独立工具 app，不迁入 `test/`
+6. `test/output/**` 不再作为新测试的输出落点
+
+## 2.1 仓库长期布局约定
+
+1. `libs/**/tests`
+   - 库级语义、模块、codec、contract 测试源码
+2. `apps/**/tests`
+   - host / CLI / bridge / runtime 入口级测试源码
+3. `test/**`
+   - 共享静态测试资产
+4. `tools/**`
+   - suite、verify / validate、资产刷新工具、runner 实现
+
+对当前仓库的具体解释：
+
+1. `apps/tools/log_generator`
+   - 是生成测试数据的工具 app
+2. `test/data/**`
+   - 是主程序消费的 canonical TXT 输入资产
+3. `test/fixtures/**`
+   - 保存小型专项样本，而不是第二套 canonical 数据库
+4. `test/golden/**`
+   - 保存最终输出对账基线
+
+当前项目的测试主链路：
+
+1. `log_generator` 生成 canonical TXT 数据
+2. `test/data/**` 保存共享输入 TXT
+3. core / shell / Android 对这些 TXT 执行 validate / convert / ingest
+4. query / report / export 的稳定对账结果进入 `test/golden/**`
+5. 所有运行时生成物进入 `out/test/**`
+
+`test/fixtures/**` 的推荐结构：
+
+1. `text/minimal_month/`
+2. `text/invalid/`
+3. `config/legacy/`
+4. `config/custom/`
+5. `exchange/`
 
 ## 3. 常见命令
 
@@ -119,6 +161,7 @@ python tools/lint_suites.py --suite tracer_windows_rust_cli
    - `out/test/<result_target>/result_cases.json`
    - `out/test/<result_target>/logs/output.log`
    - `out/test/<result_target>/quality_gates/`
+3. `test/**` 不保存每次运行的临时输出目录
 
 ## 8. result target 映射
 
@@ -137,18 +180,23 @@ python tools/lint_suites.py --suite tracer_windows_rust_cli
 
 1. 改 CLI handler：
    - 至少补或运行对应 `tools/tests/run_cli/` 回归
+   - 如涉及请求映射或 host 输出，也检查 `apps/**/tests`
 2. 改 `verify` / `validate` / result contract：
    - 至少补或运行 `tools/tests/verify/`、`tools/tests/validate/` 对应回归
 3. 改 suite runner、runtime guard、suite loader：
    - 至少补或运行 `tools/tests/platform/core/` 与相关 `tools/tests/verify/` 回归
 4. 改 suite 资产、命令矩阵、suite-local 脚本：
    - 至少运行对应 `python tools/test.py suite ...` 或 `python tools/lint_suites.py`
+5. 改 canonical TXT 输入、fixture、golden：
+   - 至少同步更新 `test/README.md` 与对应资产说明
 
 ## 10. 测试分层与测试意图
 
 1. 测试目录职责边界见：
    - [test_layering.md](test_layering.md)
-2. 库级语义 / contract 测试意图的写法见相关 library docs：
+2. 共享测试资产目录说明见：
+   - [../../../test/README.md](../../../test/README.md)
+3. 库级语义 / contract 测试意图的写法见相关 library docs：
    - `docs/time_tracer/architecture/libraries/tracer_core.md`
    - `docs/time_tracer/architecture/libraries/tracer_transport.md`
 

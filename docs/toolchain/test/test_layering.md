@@ -80,6 +80,15 @@
 1. `test/data/**`
 2. `test/golden/**`
 
+补充说明：
+
+1. `test/**` 只承载静态资产，不承载测试源码。
+2. `apps/tools/log_generator` 是生成测试数据的工具 app，不属于 `test/**`。
+3. `test/data/**` 保存主程序消费的 canonical 输入资产。
+4. `test/fixtures/**` 保存小型专项资产，不是第二套 canonical 数据库。
+5. `out/test/**` 属于运行结果目录，不属于 `test/**` 静态资产层。
+6. `test/output/**` 不再作为新测试的输出落点。
+
 ## 6. `tools/**`
 
 适用对象：
@@ -113,7 +122,7 @@
    - 是：放 `apps/**/tests`
 3. 主要是共享输入数据、fixture、golden 吗：
    - 是：放 `test/**`
-4. 主要在测交付产物的 suite 场景、命令矩阵或工具链吗：
+4. 主要是测试数据生成工具本体、suite 场景、命令矩阵或工具链吗：
    - 是：放 `tools/**`
 
 如果一个测试同时跨两层，默认选择“更靠外”的那层：

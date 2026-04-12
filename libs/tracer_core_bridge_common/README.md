@@ -29,6 +29,15 @@ Local entrypoint for agents touching the shared bridge-helper layer.
 3. If the task changes TXT day-block behavior, move upstream to
    [libs/tracer_core/README.md](../tracer_core/README.md).
 
+## Test Asset Boundary
+
+1. `tracer_core_bridge_common` 不新增自己独立的测试资产层。
+2. 若 bridge helper 测试需要小型文件资产，优先复用 `test/fixtures/config/**`
+   或下游 app 的专用测试资产。
+3. `test/data/**` 仍是跨端 canonical TXT 输入，不因为 bridge helper
+   读取它而改变 owner。
+4. 运行时输出与临时目录应进入 `out/test/**`，不要把新输出落回 `test/**`。
+
 ## Validate
 
 ```powershell

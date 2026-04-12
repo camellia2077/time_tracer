@@ -1,0 +1,7 @@
+# Minimal legacy-style alias sample for compat/fallback tests.
+# This file is intentionally small and should only cover targeted scenarios.
+
+[aliases]
+"meal" = "meal_dining"
+"study" = "study_misc"
+"睡觉" = "sleep_day"

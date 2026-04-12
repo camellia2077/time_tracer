@@ -8,6 +8,7 @@ Python 工程工作流的演进历史。
 1. 同一天只保留一份日期文件。
 2. `test/framework/**`、`test/run.py`、`test/suites/**` 等历史迁移也并入
    `docs/toolchain/history/`，不再单独维护 `test` 侧历史目录。
+   这些旧路径仅用于描述当时的迁移背景，不代表当前仓库入口。
 3. 写作格式遵循：
    - `.agent/guides/docs/history-style-guide-python.md`
 

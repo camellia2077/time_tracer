@@ -1,0 +1,16 @@
+duration_rules_config_path = "duration_rules.toml"
+alias_mapping_path = "alias_mapping.toml"
+
+header_order = [
+    "Date:",
+    "Status:",
+    "Sleep:",
+    "Getup:",
+    "Remark:"
+]
+
+remark_prefix = "r "
+wake_keywords = ["w", "wake"]
+
+[generated_activities]
+sleep_project_path = "sleep_night"
