@@ -353,7 +353,7 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
                     changed_paths=("apps/tracer_core_shell/cmake/CoreTargets.cmake",),
                     profiles=("fast",),
                     fallback_to_fast=True,
-                    reason="shared/build-system paths require profile `fast`: apps/tracer_core_shell/cmake/coretargets.cmake",
+                    reason="shared build/test infra paths require profile `fast`: apps/tracer_core_shell/cmake/coretargets.cmake",
                 ),
             ),
             patch.object(
@@ -376,4 +376,4 @@ class TestVerifyExecuteFlow(VerifyCommandTestBase):
 
         self.assertEqual(result, 0)
         self.assertIn("falling back to profile `fast`", stdout.getvalue())
-        self.assertIn("shared/build-system", stdout.getvalue())
+        self.assertIn("shared build/test infra", stdout.getvalue())

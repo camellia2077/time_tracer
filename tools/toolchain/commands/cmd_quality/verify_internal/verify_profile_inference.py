@@ -216,6 +216,11 @@ _NON_OWNER_SHELL_PROFILE_RULES: tuple[tuple[str, str], ...] = (
 _SHARED_FALLBACK_PREFIXES: tuple[str, ...] = (
     "apps/tracer_core_shell/cmake/",
     ".github/workflows/",
+    "tools/suites/",
+    "tools/test_framework/",
+    "tools/tests/",
+    "tools/test.py",
+    "tools/lint_suites.py",
     "tools/toolchain/",
 )
 
@@ -276,7 +281,7 @@ def classify_changed_paths(paths: list[str] | tuple[str, ...]) -> VerifyProfileI
             changed_paths=normalized_paths,
             profiles=("fast",),
             fallback_to_fast=True,
-            reason=f"shared/build-system paths require profile `fast`: {sample}",
+            reason=f"shared build/test infra paths require profile `fast`: {sample}",
         )
 
     if unmatched_paths:

@@ -10,9 +10,9 @@ except ModuleNotFoundError:  # pragma: no cover
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
-SUITE_ROOT = REPO_ROOT / "test" / "suites" / "tracer_windows_rust_cli"
+SUITE_ROOT = REPO_ROOT / "tools" / "suites" / "tracer_windows_rust_cli"
 if not SUITE_ROOT.exists():
-    candidates = sorted((REPO_ROOT / "test" / "suites").glob("*windows*cli*"))
+    candidates = sorted((REPO_ROOT / "tools" / "suites").glob("*windows*cli*"))
     if candidates:
         SUITE_ROOT = candidates[0]
 SUITE_TOML = SUITE_ROOT / "tests.toml"

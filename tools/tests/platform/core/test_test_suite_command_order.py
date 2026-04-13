@@ -1,19 +1,15 @@
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from unittest import TestCase
 
 
 REPO_ROOT = Path(__file__).resolve().parents[4]
-TEST_ROOT = REPO_ROOT / "test"
-if str(TEST_ROOT) not in sys.path:
-    sys.path.insert(0, str(TEST_ROOT))
 
-from framework.core.conf.loader import load_config
+from tools.test_framework.core.conf.loader import load_config
 
 
-SUITE_CONFIG = REPO_ROOT / "test" / "suites" / "tracer_windows_rust_cli" / "config.toml"
+SUITE_CONFIG = REPO_ROOT / "tools" / "suites" / "tracer_windows_rust_cli" / "config.toml"
 
 
 def _first_stage_indexes(stage_names: list[str]) -> dict[str, int]:

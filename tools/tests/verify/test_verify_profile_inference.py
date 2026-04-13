@@ -40,7 +40,25 @@ class TestVerifyProfileInference(TestCase):
 
         self.assertTrue(inference.fallback_to_fast)
         self.assertEqual(inference.profiles, ("fast",))
-        self.assertIn("shared/build-system", inference.reason)
+        self.assertIn("shared build/test infra", inference.reason)
+
+    def test_classify_suite_asset_path_falls_back_to_fast(self):
+        inference = classify_changed_paths(
+            ["tools/suites/tracer_windows_rust_cli/tests/commands_query_data.toml"]
+        )
+
+        self.assertTrue(inference.fallback_to_fast)
+        self.assertEqual(inference.profiles, ("fast",))
+        self.assertIn("shared build/test infra", inference.reason)
+
+    def test_classify_test_framework_path_falls_back_to_fast(self):
+        inference = classify_changed_paths(
+            ["tools/test_framework/runner/service.py"]
+        )
+
+        self.assertTrue(inference.fallback_to_fast)
+        self.assertEqual(inference.profiles, ("fast",))
+        self.assertIn("shared build/test infra", inference.reason)
 
     def test_classify_unknown_path_falls_back_to_fast_as_unmapped(self):
         inference = classify_changed_paths(
@@ -77,7 +95,7 @@ class TestVerifyProfileInference(TestCase):
 
         self.assertTrue(inference.fallback_to_fast)
         self.assertEqual(inference.profiles, ("fast",))
-        self.assertIn("shared/build-system", inference.reason)
+        self.assertIn("shared build/test infra", inference.reason)
 
     def test_classify_windows_workflow_falls_back_to_fast_with_shared_reason(self):
         inference = classify_changed_paths(
@@ -86,7 +104,7 @@ class TestVerifyProfileInference(TestCase):
 
         self.assertTrue(inference.fallback_to_fast)
         self.assertEqual(inference.profiles, ("fast",))
-        self.assertIn("shared/build-system", inference.reason)
+        self.assertIn("shared build/test infra", inference.reason)
 
     def test_classify_capability_and_shell_aggregate_keeps_shell_last(self):
         inference = classify_changed_paths(

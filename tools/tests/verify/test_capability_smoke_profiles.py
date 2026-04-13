@@ -35,7 +35,7 @@ class TestCapabilitySmokeProfiles(TestCase):
         self.assertFalse(payload["run_capability_smoke"])
         self.assertEqual(payload["mode"], "fast_fallback")
         self.assertEqual(payload["profiles"], [])
-        self.assertIn("shared/build-system", payload["reason"])
+        self.assertIn("shared build/test infra", payload["reason"])
 
     def test_build_payload_maps_shell_runtime_helper_to_shell_aggregate(self):
         payload = build_payload(
@@ -61,7 +61,7 @@ class TestCapabilitySmokeProfiles(TestCase):
         self.assertTrue(payload["run_heavy_verify"])
         self.assertFalse(payload["run_capability_smoke"])
         self.assertEqual(payload["mode"], "fast_fallback")
-        self.assertIn("shared/build-system", payload["reason"])
+        self.assertIn("shared build/test infra", payload["reason"])
 
     def test_build_payload_skips_when_only_non_code_paths_change(self):
         payload = build_payload(
